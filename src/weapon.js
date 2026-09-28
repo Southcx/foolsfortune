@@ -44,6 +44,34 @@ export class Weapon {
     this.shellMat = new THREE.MeshStandardMaterial({ color: PALETTE.potLight, roughness: 0.7, flatShading: true });
     this.chargeReserved = 0;
     this.pressT = -1; // time since the trigger went down (release-to-fire mode)
+    // holster: drawT 0 = on the hip, 1 = in hand
+    this.drawT = 0;
+    this.drawTarget = 0;
+    this.idleT = 0;
+    this.holsterPos = new THREE.Vector3();
+    this.holsterQ = new THREE.Quaternion();
+  }
+
+  get drawn() { return this.drawT >= 1; }
+  // the draw in two beats: the hand reaches the hip, then the gun comes up and the support hand joins
+  get gripR() { return smooth(0, 0.35, this.drawT); }
+  get gripL() { return smooth(0.65, 1, this.drawT); }
+  get gunUp() { return smooth(0.3, 1, this.drawT); }
+
+  updateHolster(dt, input, player) {
+    const W = T.weapon;
+    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('KeyF') || input.wasPressed('Mouse1') || this.holding;
+    if (input.wasPressed('KeyX')) { this.drawTarget = this.drawTarget > 0.5 ? 0 : 1; this.manualHolster = this.drawTarget === 0; this.idleT = 0; }
+    if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; }
+    if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
+    this.idleT += dt;
+    if (this.charge > 0 || this.adsT > 0 || this.reloading || this.cooldown > -0.3 || this.wantShell) this.idleT = 0;
+    if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay) this.drawTarget = 0;
+    const was = this.drawT;
+    const rate = this.drawTarget > this.drawT ? 1 / W.drawTime : -1 / W.holsterTime;
+    this.drawT = THREE.MathUtils.clamp(this.drawT + rate * dt, 0, 1);
+    if (was === 0 && this.drawT > 0) sfx.draw?.();
+    if (was > 0.3 && this.drawT <= 0.3 && this.drawTarget === 0) sfx.holster?.();
   }
 
   get reloading() { return this.reloadT >= 0; }
@@ -51,7 +79,8 @@ export class Weapon {
   /** Input + timers. Called once per frame before physics. */
   update(dt, input, player) {
     const W = T.weapon;
-    const wantAds = input.isDown('Mouse2') && !this.reloading;
+    this.updateHolster(dt, input, player);
+    const wantAds = input.isDown('Mouse2') && !this.reloading && this.drawn;
     const step = dt / Math.max(0.01, W.adsTime);
     this.adsT = wantAds ? Math.min(1, this.adsT + step) : Math.max(0, this.adsT - step);
     this.adsEase = this.adsT * this.adsT * (3 - 2 * this.adsT);
@@ -209,6 +238,12 @@ export class Weapon {
     if (rl > 0) {
       q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-40 * DEG * rl, 0, 18 * DEG * rl)));
     }
+    // holstered / drawing: from the hip socket, lifted clear of it on the way up
+    const out = this.gunUp;
+    if (out < 1 && character.holsterPose(this.holsterPos, this.holsterQ)) {
+      pos.lerpVectors(this.holsterPos, pos, out).addScaledVector(UP, Math.sin(Math.PI * out) * 0.12);
+      q.copy(this.holsterQ).slerp(q, out);
+    }
     character.gun.position.copy(pos);
     character.gun.quaternion.copy(q);
     character.gun.updateMatrixWorld(true);
@@ -233,7 +268,7 @@ export class Weapon {
     const startAt = C.mode === 'press' ? C.delay : C.tapWindow;
     if (this.holding && held) {
       this.holdT += dt;
-      if (this.holdT > startAt && !this.reloading && this.charge < 1) {
+      if (this.holdT > startAt && !this.reloading && this.charge < 1 && this.drawn) {
         const want = (dt / C.time) * C.cost;
         const got = pool.reserve(pool.cost(want, 'charge'));
         this.chargeReserved += got;
@@ -279,13 +314,14 @@ export class Weapon {
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
     if (this.wantShell) {
-      if (this.cooldown > 0) return; // held until the gun is ready
+      if (this.cooldown > 0 || !this.drawn) return; // held until the gun is ready (and out)
       this.wantShell = false;
       this.game.shells.fire({ camera, player, character, weapon: this });
       this.cooldown = T.weapon.fireInterval * 1.5;
       return;
     }
     if (this.releaseCharged) { this.fireCharged(camera, player, character); return; }
+    if (this.buffer > 0 && !this.drawn) { this.buffer = Math.max(this.buffer, 0.05); return; } // quick-draw: fires once it's out
     if (this.buffer <= 0 || this.cooldown > 0) return;
     if (this.reloading) return;
     this.buffer = 0;

@@ -7,7 +7,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
-const LOW_HALF = 0.25; // crouched / sliding: 1.1 m
+const LOW_HALF = 0.375; // crouched / sliding: 1.35 m (the posed body, hair included, fits under 1.5 m)
 const STAND_SHAPE = new RAPIER.Capsule(HALF, RADIUS - 0.02);
 const LOW_SHAPE = new RAPIER.Capsule(LOW_HALF, RADIUS - 0.03);
 const QF = RAPIER.QueryFilterFlags;
@@ -249,6 +249,7 @@ export class Player {
         if (wishDir.lengthSq() > 0.01) hv.copy(wishDir).normalize().multiplyScalar(Math.max(hs, M.walkSpeed));
         this.jumpFx(0.6);
         sfx.airJump();
+        this.airJumpPulse = true; // (the animation reads and clears it)
         jumped = true;
       }
       if (jumped) { this.jumpBuf = 0; this.grounded = false; }
@@ -525,7 +526,8 @@ export class Player {
     if (!this.fits(to, true)) return false;
     if (this.physics.raycast({ x: P.x, y: P.y + this.height - 0.1, z: P.z }, UP, h + 0.1, this.collider, GROUPS.controllerQuery, solid)) return false;
     const speed = hlen(this.vel);
-    this.mantle = { from: P.clone(), to, t: 0, dur: M.mantleTime * THREE.MathUtils.lerp(0.75, 1.1, h / M.mantleMax), exit: Math.max(2.5, speed * 0.6) };
+    this.mantle = { from: P.clone(), to, t: 0, dur: M.mantleTime * THREE.MathUtils.lerp(0.75, 1.1, h / M.mantleMax), exit: Math.max(2.5, speed * 0.6),
+      edge: new THREE.Vector3(P.x + f.x * wall.distance, down.point.y, P.z + f.z * wall.distance), right: this.right(new THREE.Vector3()) };
     this.sliding = false;
     this.dashT = 0;
     this.wallrun = null;

@@ -14,14 +14,14 @@ import { sfx } from './audio.js';
 //
 //   RING (16 m wide, around the hub): eight rooms in a loop, one movement
 //   skill each, a checkpoint at every entrance and split times between them.
-//     1 S   run, slide, hop       floor: slots (1.2 m) and hurdles, speed gates
+//     1 S   run, slide, hop       floor: slots (1.5 m) and hurdles, speed gates
 //     2 SE  mantle                blocks 1.4 / 2.4 / 3.0 m up to the platforms
 //     3 E   gaps                  3.5 m sprint jump, 5.5 m double, 7.5 m jump + dash
 //     4 NE  wallrun + wall jump   wall, a pillar in the way, a panel across
 //     5 N   zigzag                wallrun / wall jump between staggered panels
 //     6 NW  climb                 2.8 m (jump + mantle), 3.4 m (double + mantle)
 //     7 W   speed                 slide ramp to top speed, 7 m gap
-//     8 SW  low                   slide chute, 1.2 m tunnel, back to 1
+//     8 SW  low                   slide chute, 1.5 m tunnel, back to 1
 //   Rooms 3-7 are over a reset floor: touch it and you're back at the room's
 //   checkpoint. R respawns at the last checkpoint, H returns to the hub.
 //
@@ -164,11 +164,11 @@ export function buildBasement(L, W, D) {
   buildHub(S, blk, incline);
 
   // ---- 1 S: run, slide, hop (heading +x) ----
-  const slot = (x) => { blk(x - 0.3, x + 0.3, 1.2, 4, -OUT, -HUB, C.dark); strip(S, [x - 0.31, B + 1.19, -28], [0.02, 0.05, 16]); };
+  const slot = (x) => { blk(x - 0.3, x + 0.3, 1.5, 4, -OUT, -HUB, C.dark); strip(S, [x - 0.31, B + 1.49, -28], [0.02, 0.05, 16]); };
   const hurdle = (x, h) => blk(x - 0.2, x + 0.2, 0, h, -OUT, -HUB, C.wood);
   slot(-3); hurdle(3, 0.6); slot(9); hurdle(14, 0.7);
   label(S, '1', [-18.2, B + 0.02, -28], { rotY: -Math.PI / 2, width: 1.2, sub: 'run / slide / hop' });
-  label(S, 'SLIDE', [-5, B + 0.02, -28], { rotY: -Math.PI / 2, width: 1.6, sub: '1.2 m slot' });
+  label(S, 'SLIDE', [-5, B + 0.02, -28], { rotY: -Math.PI / 2, width: 1.6, sub: '1.5 m slot' });
   label(S, 'HOP', [1.2, B + 0.02, -28], { rotY: -Math.PI / 2, width: 1.4, sub: '0.6 / 0.7 m' });
   for (const x of [-8, 18]) { blk(x - 0.1, x + 0.1, 0, 3, -OUT, -35.6, C.dark); blk(x - 0.1, x + 0.1, 0, 3, -20.4, -HUB, C.dark); strip(S, [x, B + 3, -28], [0.1, 0.1, 16]); }
   label(S, 'SPEED GATE', [-8, B + 3.4, -20.3], { rotY: Math.PI, width: 2.4, vertical: true });
@@ -228,14 +228,14 @@ export function buildBasement(L, W, D) {
   label(S, '7 m', [-30, B + 3.22, -4], { width: 1.2, sub: 'jump at top speed' });
   blk(-33.4, -33.2, 0, 7, -4.6, -4.4, C.dark); blk(-26.8, -26.6, 0, 7, -4.6, -4.4, C.dark); strip(S, [-30, B + 7, -4.5], [6.6, 0.1, 0.1]);
 
-  // ---- 8 SW: slide chute, 1.2 m tunnel, back to 1 ----
+  // ---- 8 SW: slide chute, 1.5 m tunnel, back to 1 ----
   plat(-OUT, -24, -24, -20);
   incline(-OUT, -30, -31, 0, -24, P);
   blk(-30, -HUB, 0, 7, -31, -24, C.mid); // a wall beside the chute (no running over the tunnel roof)
-  blk(-30, -21, 1.2, 4, -OUT, -31, C.dark); // tunnel roof
-  strip(S, [-25.5, B + 1.19, -31.02], [9, 0.05, 0.02]);
+  blk(-30, -21, 1.5, 4, -OUT, -31, C.dark); // tunnel roof: 1.5 m (standing is 1.7, crouched 1.35)
+  strip(S, [-25.5, B + 1.49, -31.02], [9, 0.05, 0.02]);
   label(S, '8', [-30, B + P + 0.02, -21.5], { width: 1.2, sub: 'low' });
-  label(S, 'TUNNEL', [-32.5, B + 0.02, -33.5], { rotY: -Math.PI / 2, width: 1.6, sub: '1.2 m' });
+  label(S, 'TUNNEL', [-32.5, B + 0.02, -33.5], { rotY: -Math.PI / 2, width: 1.6, sub: '1.5 m' });
 
   // checkpoint rings
   for (const cp of CHECKPOINTS) {
@@ -274,15 +274,15 @@ function buildHub(S, blk, incline) {
   });
   label(S, 'HEIGHTS', [-19.7, B + 1.2, 1.25], { rotY: Math.PI / 2, width: 2.6, vertical: true, sub: 'step · mantle · jump+mantle · double+mantle' });
 
-  // clearance gates (z 6): bar heights; the courier is 1.7 m standing, 1.1 m crouched
-  [1.0, 1.2, 1.5, 1.75, 2.0].forEach((h, i) => {
+  // clearance gates (z 6): bar heights; the courier is 1.7 m standing (1.9 with the hair), 1.35 m crouched
+  [1.2, 1.5, 1.75, 1.9, 2.2].forEach((h, i) => {
     const x = -17 + i * 3.2;
     blk(x - 1.1, x - 0.9, 0, h + 0.3, 5.9, 6.1, C.dark);
     blk(x + 0.9, x + 1.1, 0, h + 0.3, 5.9, 6.1, C.dark);
     blk(x - 1.1, x + 1.1, h, h + 0.3, 5.9, 6.1, C.dark);
     label(S, `${h} m`, [x, B + 0.02, 4.8], { rotY: Math.PI, width: 1.1 });
   });
-  label(S, 'CLEARANCE', [-10.6, B + 0.02, 3.6], { rotY: Math.PI, width: 2.4, sub: 'stand 1.7 · crouch 1.1' });
+  label(S, 'CLEARANCE', [-10.6, B + 0.02, 3.6], { rotY: Math.PI, width: 2.4, sub: 'stand 1.7 (hair 1.9) · crouch 1.35' });
 
   // slope ramps (x 3..18, z 5..), 1.5 m rise; 46° is the steepest you can walk up
   [10, 20, 30, 40, 46, 55].forEach((deg, i) => {
@@ -386,7 +386,7 @@ export class Course {
       ['jump height / double', `${h.toFixed(2)} / ${h2.toFixed(2)} m`],
       ['sprint jump (flat)', `${(M.sprintSpeed * air).toFixed(2)} m`],
       ['step / mantle / jump+mantle', `${M.stepHeight} / ${M.mantleMax} / ${(h + M.mantleMax).toFixed(2)} m`],
-      ['stand / crouch height', '1.7 / 1.1 m'],
+      ['stand / crouch height', '1.7 / 1.35 m'],
       ['dash', `${M.dashSpeed} m/s, ${M.dashCost} Lachryma`],
     ];
     g.fillStyle = '#ffb27a'; g.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace';

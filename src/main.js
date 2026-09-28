@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { T, PALETTE, loadTuning } from './config.js';
-import { Physics, RAPIER } from './physics.js';
+import { Physics, RAPIER, GROUPS } from './physics.js';
 import { FX } from './fx.js';
 import { Breakables } from './breakables.js';
 import { Level } from './level.js';
@@ -245,6 +245,31 @@ async function main() {
     }
   }
 
+  // ---- animation helpers ----
+  let lastHeading = null;
+  const _gd = new THREE.Vector3(0, -1, 0);
+  const groundAt = (x, z, yTop) => {
+    const hit = physics.raycast({ x, y: yTop, z }, _gd, 1.4, player.collider, GROUPS.controllerQuery, (c) => !c.isSensor() && !c.parent()?.isDynamic());
+    return hit && hit.normal.y > 0.6 ? hit.point.y : null;
+  };
+  // where the hands go: the gun grips, a wall, a ledge, the floor
+  const armContext = () => {
+    const o = { gripR: weapon.gripR, gripL: weapon.gripL, leftOverride: weapon.leftOverride, leftBlend: weapon.leftBlend };
+    const w = player.wallrun;
+    if (w) {
+      // the wall-side hand reaches a little ahead along the run
+      const sh = character.shoulder(w.side > 0 ? 'R' : 'L', new THREE.Vector3()).addScaledVector(w.dir, 0.3);
+      const hit = physics.raycast(sh, w.n.clone().negate(), 1.3, player.collider, GROUPS.controllerQuery);
+      if (hit) { o.wallPoint = hit.point; o.wallNormal = w.n; o.wallSide = w.side; }
+    }
+    if (player.mantle) o.ledge = { point: player.mantle.edge, right: player.mantle.right };
+    else if (player.mantleBlend > 0.05 && lastLedge) o.ledge = lastLedge;
+    if (o.ledge) lastLedge = o.ledge;
+    if (player.slideBlend > 0.05) o.floorY = player.renderPos.y;
+    return o;
+  };
+  let lastLedge = null;
+
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
@@ -287,16 +312,24 @@ async function main() {
     character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
     weapon.computeAimPoint(camera, player);
     const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
+    // heading change rate (the slide leans into turns)
+    const heading = Math.atan2(player.vel.x, player.vel.z);
+    const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
+    lastHeading = heading;
     character.poseBody(dt, {
       pos: player.renderPos,
       yaw: player.bodyYaw,
       velocity: player.vel,
-      grounded: player.grounded || !!player.wallrun,
+      vy: player.vel.y,
+      turnRate,
+      airJump: player.airJumpPulse ? (player.airJumpPulse = false, true) : false,
+      ground: groundAt,
+      grounded: player.grounded,
       wall: player.wallBlend,
       slide: player.slideBlend, mantle: player.mantleBlend, dash: player.dashBlend, crouch: player.crouchBlend,
       aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
       aimYawOffset: player.aimYawOffset,
-      combat: Math.max(weapon.combatBlend, player.fpWeight),
+      combat: Math.max(weapon.combatBlend * weapon.gunUp, player.fpWeight),
       walkSpeed: T.movement.walkSpeed,
       sprintSpeed: T.movement.sprintSpeed,
       recoil: weapon.kick,
@@ -305,7 +338,7 @@ async function main() {
     });
     player.headRel = character.headRel;
     weapon.poseGun(dt, camera, player, character);
-    character.poseArms(weapon.leftOverride, weapon.leftBlend);
+    character.poseArms(armContext());
     weapon.tryFire(camera, player, character);
     if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     weapon.updateDebris(dt);

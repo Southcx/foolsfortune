@@ -29,6 +29,7 @@ npm run build      # static bundle in dist/
 | F / middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
 | 1–7 / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek |
 | Right click (hold) | aim down sights |
+| X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
 | V | toggle first / third person |
 | Q | swap shoulder (third person) |
 | G | time trial (again to restart) |
@@ -88,7 +89,7 @@ the air dashes. Air steering never bleeds speed above a run, and landing fast bl
 moment instead of snapping to run speed, so a quick hop keeps it. Top speed is capped at 14 m/s.
 The speedometer (bottom left) shows speed, a short peak hold, and the current move.
 
-Crouching and sliding shorten the capsule to 1.1 m (you only stand up with headroom), and the
+Crouching and sliding shorten the capsule to 1.35 m (you only stand up with headroom), and the
 first-person eye follows the posed head. In first person only the hands and gun are drawn.
 
 **The walking hitch** was Rapier's character controller occasionally returning zero motion
@@ -106,7 +107,7 @@ measured against, so future spaces share one rubric.
 
 - a height ladder (0.25 to 4 m, toned by what it takes: step, mantle, jump + mantle,
   double jump + mantle)
-- clearance gates (1.0 to 2.0 m; the courier is 1.7 m standing, 1.1 m crouched)
+- clearance gates (1.2 to 2.2 m; the courier is 1.7 m standing, 1.9 with the hair, 1.35 m crouched)
 - slope ramps (10° to 55°; 46° is the steepest you can walk up)
 - a long-jump lane with 1 m ticks and the measured chain distances marked
 - a metrics board: live values from the tuning panel next to the measured chains
@@ -117,14 +118,14 @@ entrance and split times (and a lap time) between them:
 
 | Room | Skill | What's in it |
 | --- | --- | --- |
-| 1 S | run / slide / hop | 1.2 m slots to slide under, 0.6 and 0.7 m hurdles, two speed gates |
+| 1 S | run / slide / hop | 1.5 m slots to slide under, 0.6 and 0.7 m hurdles, two speed gates |
 | 2 SE | mantle | 1.4, 2.4 and 3.0 m blocks up to the platforms |
 | 3 E | gaps | 3.5 m (sprint jump), 5.5 m (double jump), 7.5 m (jump, then dash) |
 | 4 NE | wallrun + wall jump | run the wall, jump across before the pillar, run the panel |
 | 5 N | zigzag | wallrun and wall jump between four staggered panels |
 | 6 NW | climb | 2.8 m (jump + mantle), 3.4 m (double jump + mantle) |
 | 7 W | speed | slide a 17° ramp to top speed, jump a 7 m gap at the bottom |
-| 8 SW | low | slide chute into a 1.2 m tunnel, back to room 1 |
+| 8 SW | low | slide chute into a 1.5 m tunnel, back to room 1 |
 
 Rooms 3 to 7 are over a reset floor: touch it and you're back at the room's checkpoint.
 **R** returns to the last checkpoint, **H** to the hub. Teleports refill Lachryma.
@@ -189,10 +190,28 @@ triangles are grouped into shards. Each shard is the convex hull of its outer po
 the matching inner-wall points, so it gets both a render mesh and an exact Rapier collider.
 Shards near the bullet's impact are smaller and get more push.
 
-**Animation.** The rig has no clips yet, so everything is procedural and layered on the
-T-pose each frame. The gun is placed first, then the arms IK to its grip points, so ADS
-alignment is exact whatever the arm proportions. In first person, the arm armour plates are
-hidden per-vertex (by arm-bone skin weight) so they don't block the sights.
+**Animation.** The rig has no clips, so everything is procedural and posed from targets
+rather than joint angles, every frame:
+
+- **Legs:** the hips get a height and lean for each movement mode (deep crouch, low slide,
+  sprint lean, dash, wallrun roll), each foot gets a target, and two-bone IK bends the knees
+  to fit. On the ground, the feet follow a gait path (planted, then an arc through the swing)
+  whose stride matches the speed, so they don't skate. The feet are raycast onto slopes and
+  stairs, and the hips drop for the lower one. In the air it's a tuck rising, reaching
+  falling, and a bigger tuck on the double jump; mantling tucks the knees; sliding puts the
+  lead leg out and folds the trailing one under.
+- **Arms:** each hand has a target and an elbow pole. Hands swing opposite the legs when
+  walking, pump when sprinting, and go out for balance in the air. The wall-side hand plants
+  on the wall while wallrunning (raycast from the shoulder), both hands plant on the ledge
+  when mantling, the left hand drags on the floor in a slide, and hands blend onto the gun
+  grips by weight.
+- **Holster:** the gun rides on the right hip. Drawing is two beats: the hand reaches the hip,
+  then the gun comes up and the support hand joins. Holstering reverses it. Clicking while
+  holstered draws and fires as soon as the gun is out.
+- **First person:** only the hands and the gun are drawn.
+
+Crouching uses a 1.35 m capsule, which is where the crouched body (hair included) tops out;
+crawlspaces are 1.5 m.
 
 **Impulses on ropes**: Rapier recomputes a multibody link's velocity from its joint
 coordinates, so a raw impulse on a rope link or a hung pot is lost. `physics.kick()` turns

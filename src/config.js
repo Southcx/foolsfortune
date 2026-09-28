@@ -103,6 +103,10 @@ export const DEFAULTS = {
     gunScale: 0.85,
     adsDistance: 0.55, // how far in front of the eye the gun sits when aiming down sights
     adsHeight: 0.0, // fine-tune sight alignment
+    drawTime: 0.32, // holster -> hands, first reach to the hip, then up
+    holsterTime: 0.45,
+    autoHolster: true, // third person: put it away after a while out of combat
+    holsterDelay: 5,
   },
   charge: {
     mode: 'release', // 'release': tap fires on release, hold charges from cold. 'press': fire on press, keep holding to charge
@@ -231,11 +235,16 @@ export const DEFAULTS = {
   trial: { gold: 90, silver: 150, bronze: 240, quickWindow: 1.5, quickBonus: 1 },
   anim: {
     strideWalk: 1.45,
-    strideRun: 2.3,
+    strideRun: 2.5,
     thighSwing: 30,
     kneeBend: 55,
-    runLean: 9,
-    hipBob: 0.035,
+    runLean: 19,
+    hipBob: 0.045,
+    crouchDrop: 0.42, // how far the hips drop in a crouch (m)
+    crouchHunch: 32, // degrees the back bends forward crouching
+    slideDrop: 0.58,
+    slideRecline: 46,
+    wallLean: 24, // whole-body roll off the wall while wallrunning (deg)
     spinePitchShare: 0.55,
     landDip: 0.09,
   },

@@ -341,6 +341,21 @@ class Sfx {
     this.tone(t, 0.2, { f0: 220, f1: 660, type: 'sine', gain: 0.3, dest: d });
   }
 
+  // holster: leather-and-click out, click-and-slide in
+  draw() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.15);
+    this.noise(t, 0.12, { type: 'bandpass', f0: 900, f1: 2200, q: 1.5, gain: 0.5, attack: 0.02, dest: d });
+    this.tone(t + 0.1, 0.04, { f0: 2600, f1: 2300, type: 'square', gain: 0.08, dest: d });
+  }
+
+  holster() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.15);
+    this.noise(t, 0.16, { type: 'bandpass', f0: 1800, f1: 700, q: 1.5, gain: 0.45, attack: 0.02, dest: d });
+    this.tone(t + 0.14, 0.04, { f0: 1900, f1: 1700, type: 'square', gain: 0.07, dest: d });
+  }
+
   airJump() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.5, 0.3);
