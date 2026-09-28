@@ -5,8 +5,8 @@ Needs the `bpy` module (pip install bpy==4.5.*) or run inside Blender:
     blender -b courier.blend -P tools/export_courier.py -- courier.blend
 
 Produces:
-  public/assets/courier.glb  - skinned character, rest (T) pose, no outline shells
-  public/assets/psygun.glb   - the PsyGun mesh in its own local space
+  src/assets/courier.glb  - skinned character, rest (T) pose, no outline shells
+  src/assets/psygun.glb   - the PsyGun mesh in its own local space
 Outlines are re-created in-engine (inverted hull) so thickness is tunable.
 """
 import sys, os
@@ -18,7 +18,7 @@ if src and bpy.data.filepath != os.path.abspath(src):
     bpy.ops.wm.open_mainfile(filepath=src)
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-out_dir = os.path.join(root, "public", "assets")
+out_dir = os.path.join(root, "src", "assets")
 os.makedirs(out_dir, exist_ok=True)
 
 arm = bpy.data.objects["basedoll_male_rig"]

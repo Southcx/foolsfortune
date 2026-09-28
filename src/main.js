@@ -13,6 +13,8 @@ import { Hud } from './hud.js';
 import { buildTuningPanel } from './tuning.js';
 import { setOutlineThickness } from './outline.js';
 import { sfx } from './audio.js';
+import courierB64 from './assets/courier.glb?b64';
+import gunB64 from './assets/psygun.glb?b64';
 
 const FIXED = 1 / 60;
 
@@ -88,10 +90,10 @@ async function main() {
   game.breakables = breakables;
 
   const loader = new GLTFLoader();
-  const base = import.meta.env.BASE_URL;
+  const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
   const [charG, gunG] = await Promise.all([
-    loader.loadAsync(`${base}assets/courier.glb`),
-    loader.loadAsync(`${base}assets/psygun.glb`),
+    loader.parseAsync(bytes(courierB64), ''),
+    loader.parseAsync(bytes(gunB64), ''),
   ]);
   const character = new Character(scene, charG, gunG);
   character.onFootstep = () => sfx.footstep();

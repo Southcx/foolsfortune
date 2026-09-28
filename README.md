@@ -78,9 +78,10 @@ hidden per-vertex (by arm-bone skin weight) so they don't block the sights.
 
 ## Character asset
 
-`tools/export_courier.py` converts the source `.blend` into `public/assets/courier.glb`
-and `public/assets/psygun.glb`. It strips the Solidify outline shells (outlines are rebuilt
-in-engine) and exports the rig in rest pose.
+`tools/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
+`src/assets/courier.glb` and `src/assets/psygun.glb`, which are bundled into the JS build.
+It strips the Solidify outline shells (outlines are rebuilt in-engine) and exports the rig
+in rest pose.
 
 ```bash
 pip install bpy==4.5.*   # Blender as a Python module (Python 3.11)
