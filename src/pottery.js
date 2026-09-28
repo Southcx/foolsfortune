@@ -81,6 +81,32 @@ export const PROFILES = {
   },
   // hanging lantern jar (gets a glowing core)
   lantern: { pts: [[0.06, 0], [0.13, 0.04], [0.16, 0.14], [0.15, 0.24], [0.09, 0.3], [0.08, 0.34]], segs: 10, th: 0.012, pattern: [{ type: 'dots', from: 0.3, to: 0.7, n: 8, k: 0.55 }] },
+  // --- sculpture ------------------------------------------------------------
+  // haniwa: tube body, flared skirt, dome head with punched eyes + mouth
+  haniwa: {
+    pts: [[0.2, 0], [0.25, 0.04], [0.2, 0.1], [0.16, 0.34], [0.14, 0.55], [0.155, 0.74], [0.125, 0.84], [0.085, 0.9], [0.12, 0.95], [0.14, 1.05], [0.13, 1.17], [0.08, 1.24], [0.04, 1.27]],
+    segs: 16, th: 0.02, hp: 160,
+    pattern: [{ type: 'face', holes: [{ f: 0.87, a: 0.34, w: 0.2, h: 0.022 }, { f: 0.87, a: -0.34, w: 0.2, h: 0.022 }, { f: 0.79, a: 0, w: 0.28, h: 0.018 }], k: 0.18 },
+      { type: 'band', from: 0.3, to: 0.33, k: 0.7 }],
+  },
+  // dogū: the goggle-eyed Jōmon figure, as a lathe with stubby arms and goggles
+  dogu: {
+    pts: [[0.3, 0], [0.34, 0.08], [0.3, 0.3], [0.36, 0.5], [0.26, 0.72], [0.4, 0.95], [0.36, 1.05], [0.18, 1.14], [0.36, 1.26], [0.42, 1.45], [0.34, 1.64], [0.14, 1.74], [0.08, 1.78]],
+    segs: 20, th: 0.04, mat: 'stoneware', hp: 700,
+    pattern: [{ type: 'face', holes: [{ f: 0.8, a: 0.4, w: 0.2, h: 0.012 }, { f: 0.8, a: -0.4, w: 0.2, h: 0.012 }, { f: 0.72, a: 0, w: 0.12, h: 0.01 }], k: 0.2 },
+      { type: 'cord', from: 0.05, to: 0.62, n: 18, k: 0.72 }, { type: 'zigzag', from: 0.44, to: 0.52, n: 10, k: 0.6 }],
+  },
+  // clay bust on its own little socle
+  bust: {
+    pts: [[0.16, 0], [0.22, 0.03], [0.22, 0.09], [0.1, 0.18], [0.09, 0.24], [0.15, 0.3], [0.19, 0.42], [0.18, 0.54], [0.12, 0.63], [0.03, 0.67]],
+    segs: 14, th: 0.02, hp: 140,
+    pattern: [{ type: 'face', holes: [{ f: 0.72, a: 0.36, w: 0.16, h: 0.02 }, { f: 0.72, a: -0.36, w: 0.16, h: 0.02 }, { f: 0.58, a: 0, w: 0.22, h: 0.016 }], k: 0.22 }],
+  },
+  // Brancusi-ish endless column of stacked rhomboids
+  endless: {
+    pts: (() => { const p = [[0.12, 0]]; for (let i = 0; i < 7; i++) p.push([0.2, 0.2 + i * 0.4], [0.08, 0.4 + i * 0.4]); p.push([0.1, 2.85]); return p; })(),
+    segs: 4, th: 0.03, mat: 'stoneware', hp: 260,
+  },
   // clapperjar body proxy (for its shatter)
   clapper: { pts: [[0.12, 0], [0.2, 0.08], [0.24, 0.22], [0.22, 0.4], [0.17, 0.5], [0.18, 0.58]], segs: 10, th: 0.018 },
 };
@@ -153,7 +179,7 @@ export function patternAt(P, p) {
       if (Math.floor(r * pt.n * 2) % 2 === 1) k *= pt.k;
       continue;
     }
-    if (f < from || f > to) continue;
+    if (pt.type !== 'face' && (f < from || f > to)) continue;
     const t = (f - from) / (to - from);
     const tri = (x) => Math.abs(((x % 1) + 1) % 1 - 0.5) * 2; // 0..1 triangle wave
     switch (pt.type) {
@@ -161,6 +187,14 @@ export function patternAt(P, p) {
       case 'zigzag': if (Math.abs(t - 0.5) < 0.18 + 0.32 * (tri(ang / (Math.PI * 2) * pt.n) - 0.5)) k *= pt.k; break;
       case 'wave': if (Math.abs(t - 0.5 - 0.3 * Math.sin(ang * pt.n)) < 0.18) k *= pt.k; break;
       case 'cord': if (((t * pt.n + ang / (Math.PI * 2) * pt.n * 1.5) % 1 + 1) % 1 < 0.45) k *= pt.k; break;
+      case 'face': {
+        // punched holes facing +Z (angle pi/2)
+        for (const hl of pt.holes) {
+          const da = Math.atan2(Math.sin(ang - (Math.PI / 2 + hl.a)), Math.cos(ang - (Math.PI / 2 + hl.a)));
+          if ((da / hl.w) ** 2 + ((f - hl.f) / (hl.h * 2)) ** 2 < 1) { k *= pt.k; break; }
+        }
+        break;
+      }
       case 'dots': {
         const u = ((ang / (Math.PI * 2)) * pt.n % 1 + 1) % 1;
         if ((u - 0.5) ** 2 * 4 + (t - 0.5) ** 2 * 5 < 0.35) k *= pt.k;
@@ -356,3 +390,60 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
   }
   return pieces;
 }
+
+// ---- decorations: extra meshes stuck onto a lathe body (they break off as chunks)
+const tube = (r, len, color) => {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.85, len, 6), new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true }));
+  m.geometry.translate(0, len / 2, 0);
+  return m;
+};
+
+export const DECOR = {
+  haniwa(P, color, variant = 0) {
+    const s = P.height / 1.27, out = [];
+    for (const side of [-1, 1]) {
+      const up = variant === 1 && side > 0; // the dancer raises one arm
+      const a = tube(0.035 * s, 0.26 * s, color);
+      a.position.set(side * 0.14 * s, 0.64 * s, 0.02 * s);
+      a.rotation.z = side * (up ? -2.3 : -0.5);
+      a.rotation.x = up ? 0 : -0.5;
+      out.push(a);
+    }
+    if (variant === 2) { // warrior hat brim
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.2 * s, 0.2 * s, 0.025 * s, 12), new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true }));
+      brim.position.y = 1.16 * s;
+      out.push(brim);
+    }
+    return out;
+  },
+  dogu(P, color) {
+    const s = P.height / 1.78, out = [];
+    const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true });
+    for (const side of [-1, 1]) {
+      const arm = tube(0.1 * s, 0.34 * s, color);
+      arm.position.set(side * 0.34 * s, 0.98 * s, 0);
+      arm.rotation.z = side * -1.25;
+      out.push(arm);
+      const gog = new THREE.Mesh(new THREE.TorusGeometry(0.1 * s, 0.035 * s, 5, 10), mat);
+      gog.scale.set(1.25, 0.8, 1);
+      gog.position.set(side * 0.16 * s, 1.42 * s, 0.36 * s);
+      gog.rotation.y = side * -0.35;
+      out.push(gog);
+    }
+    const crown = new THREE.Mesh(new THREE.TorusGeometry(0.16 * s, 0.05 * s, 5, 12), mat);
+    crown.rotation.x = Math.PI / 2;
+    crown.position.y = 1.72 * s;
+    out.push(crown);
+    return out;
+  },
+  bust(P, color) {
+    const s = P.height / 0.67, out = [];
+    for (const side of [-1, 1]) {
+      const ear = new THREE.Mesh(new THREE.SphereGeometry(0.045 * s, 6, 4), new THREE.MeshStandardMaterial({ color, roughness: 0.85, flatShading: true }));
+      ear.scale.set(0.5, 1, 0.8);
+      ear.position.set(side * 0.19 * s, 0.46 * s, 0);
+      out.push(ear);
+    }
+    return out;
+  },
+};

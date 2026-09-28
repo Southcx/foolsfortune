@@ -37,11 +37,8 @@ export const DEFAULTS = {
     collisionRadius: 0.2,
   },
   weapon: {
-    magSize: 7,
     fireInterval: 0.16, // min seconds between shots (semi-auto cap)
     inputBuffer: 0.09, // click this early and the shot still fires when ready
-    reloadTime: 1.3,
-    autoReload: true,
     damage: 100,
     impulse: 6, // N·s pushed into whatever you hit
     range: 150,
@@ -58,10 +55,12 @@ export const DEFAULTS = {
     adsHeight: 0.0, // fine-tune sight alignment
   },
   charge: {
-    delay: 0.22, // hold this long after the tap shot before charging starts
+    mode: 'release', // 'release': tap fires on release, hold charges from cold. 'press': fire on press, keep holding to charge
+    tapWindow: 0.13, // (release mode) presses shorter than this are taps
+    delay: 0.22, // (press mode) hold this long after the tap shot before charging starts
     time: 0.85, // seconds to full charge
     min: 0.25, // release below this and nothing fires
-    ammoCost: 2,
+    cost: 24, // Lachryma for a full charge (reserved as it winds up, refunded if cancelled)
     damage: 450,
     pierce: 6, // objects the beam passes through
     impulse: 30,
@@ -70,6 +69,33 @@ export const DEFAULTS = {
     shake: 1.0,
     fovPunch: 7,
     moveMult: 0.75,
+  },
+  lachryma: {
+    max: 100,
+    regenRate: 3.5, // per second, after regenDelay without spending
+    regenDelay: 2.2,
+    shotCost: 4,
+    baubleValue: 6,
+    baubleRadius: 0.075,
+    bounce: 0.6,
+    magnetRadius: 3.2,
+    magnetDelay: 0.6,
+    clapperDrop: 6, // baubles inside every clapperjar
+    markedDrop: 2, // baubles from a marked pot
+  },
+  shells: {
+    start: 4,
+    max: 8,
+    refill: 3, // per reliquary visit
+    reliquaryCooldown: 20,
+    rackTime: 0.6,
+    kick: 1.8,
+    slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160 },
+    push: { range: 10, angle: 32, velocity: 13, selfKnock: 3 },
+    well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11 },
+    mark: { radius: 2.4, stun: 4.5, duration: 15, damageMult: 2 },
+    bomb: { speed: 13, lift: 4, fuse: 1.8, bounces: 2, radius: 3.6, damage: 260, velocity: 10, droplets: 110, dropletDamage: 10,
+      splatLife: 11, poolRadius: 1.6, poolLife: 12, poolDps: 45 },
   },
   recoil: {
     kickPitch: 3.4,
@@ -110,6 +136,7 @@ export const DEFAULTS = {
     chips: 18,
     dust: 1.0,
     shardOutlines: true,
+    ropeKick: 0.45, // impulse on rope links when the pot they carry is shot away
   },
   explosion: {
     radius: 4.5,
@@ -120,11 +147,15 @@ export const DEFAULTS = {
   },
   clappers: {
     count: 4,
+    upstairs: 2,
     runSpeed: 3.0,
     fleeSpeed: 4.6,
     respawn: 3.5, // seconds before a new one hops out of the kiln
     spookRadius: 1.8, // shots landing this close make them stumble and bolt
     scale: 1.15,
+    hideChance: 0.55, // when spooked: hide behind a big pot instead of just running
+    tauntChance: 0.3, // when idle and they can see you
+    fallShatter: 2.4, // metres of fall that shatter them
   },
   physics: {
     gravity: 14,

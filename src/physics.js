@@ -23,10 +23,13 @@ export class Physics {
   async init() {
     await RAPIER.init();
     this.world = new RAPIER.World({ x: 0, y: -T.physics.gravity, z: 0 });
+    this.dt = 1 / 60;
     this.events = new RAPIER.EventQueue(true);
     this.synced = new Set(); // { body, mesh }
     this.byCollider = new Map(); // collider handle -> entity
     this.forceHandlers = [];
+    this.links = new Set(); // bodies that are multibody links (ropes, hung pots)
+    this.pendingForces = [];
     this.collisionHandlers = [];
   }
 
@@ -43,14 +46,34 @@ export class Physics {
 
   removeSynced(s) { this.synced.delete(s); }
 
+  markLink(body) { this.links.add(body.handle); }
+
+  /**
+   * Impulse that also works on multibody links: Rapier recomputes a link's
+   * velocity from its joint coordinates, so a raw impulse on a rope segment is
+   * silently lost. Links get the equivalent force for one physics step instead.
+   */
+  kick(body, imp, point) {
+    if (this.links.has(body.handle)) {
+      this.pendingForces.push({ body, f: { x: imp.x / this.dt, y: imp.y / this.dt, z: imp.z / this.dt } });
+      body.wakeUp();
+    } else if (point) body.applyImpulseAtPoint(imp, point, true);
+    else body.applyImpulse(imp, true);
+  }
+
   removeBody(body) {
+    this.links.delete(body.handle);
     for (let i = 0; i < body.numColliders(); i++) this.byCollider.delete(body.collider(i).handle);
     this.world.removeRigidBody(body);
   }
 
   step(dt) {
     this.world.timestep = dt;
+    const forces = this.pendingForces;
+    this.pendingForces = [];
+    for (const pf of forces) if (pf.body.isValid()) pf.body.addForce(pf.f, true);
     this.world.step(this.events);
+    for (const pf of forces) if (pf.body.isValid()) pf.body.resetForces(false);
     this.events.drainContactForceEvents((e) => {
       for (const h of this.forceHandlers) h(e.collider1(), e.collider2(), e.maxForceMagnitude(), e);
     });

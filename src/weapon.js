@@ -18,7 +18,6 @@ function basisQuat(dir, up, target = new THREE.Quaternion()) {
 export class Weapon {
   constructor(game) {
     this.game = game;
-    this.ammo = T.weapon.magSize;
     this.cooldown = 0;
     this.buffer = 0;
     this.reloadT = -1; // <0 = not reloading, else 0..1
@@ -41,8 +40,10 @@ export class Weapon {
     this.releaseCharged = false;
     this.casingGeo = new THREE.CylinderGeometry(0.009, 0.009, 0.032, 6);
     this.casingMat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.3, metalness: 0.4, flatShading: true });
-    this.magGeo = new THREE.BoxGeometry(0.03, 0.11, 0.055);
-    this.magMat = new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true });
+    this.shellGeo = new THREE.CylinderGeometry(0.022, 0.022, 0.07, 7);
+    this.shellMat = new THREE.MeshStandardMaterial({ color: PALETTE.potLight, roughness: 0.7, flatShading: true });
+    this.chargeReserved = 0;
+    this.pressT = -1; // time since the trigger went down (release-to-fire mode)
   }
 
   get reloading() { return this.reloadT >= 0; }
@@ -58,16 +59,19 @@ export class Weapon {
     this.buffer -= dt;
     this.bloom = Math.max(0, this.bloom - W.bloomRecovery * dt);
 
-    if (input.wasPressed('Mouse0')) { this.buffer = W.inputBuffer; this.holding = true; this.holdT = 0; }
-    if (input.wasPressed('KeyR') && this.ammo < W.magSize && !this.reloading) this.startReload();
+    this.updateTrigger(dt, input);
     this.updateCharge(dt, input);
+    const shells = this.game.shells;
+    for (let i = 0; i < 5; i++) if (input.wasPressed(`Digit${i + 1}`)) shells.select(i);
+    if (input.wheel) shells.cycle(Math.sign(input.wheel));
+    if ((input.wasPressed('KeyF') || input.wasPressed('Mouse1')) && !this.reloading && this.charge === 0) this.wantShell = true;
 
     if (this.reloading) {
       const prev = this.reloadT;
-      this.reloadT += dt / W.reloadTime;
-      if (prev < 0.18 && this.reloadT >= 0.18) { sfx.reloadOut(); this.dropMag(); }
+      this.reloadT += dt / T.shells.rackTime;
+      if (prev < 0.18 && this.reloadT >= 0.18) sfx.reloadOut();
       if (prev < 0.68 && this.reloadT >= 0.68) sfx.reloadIn();
-      if (this.reloadT >= 1) { this.reloadT = -1; this.ammo = W.magSize; }
+      if (this.reloadT >= 1) this.reloadT = -1;
     }
 
     // gun spring
@@ -90,11 +94,31 @@ export class Weapon {
 
   get wantsFire() { return this.buffer > 0; }
 
-  startReload() {
+  // after a shell: the support hand goes to the belt and feeds the next one
+  startRack() {
     if (this.reloading) return;
     this.cancelCharge();
     this.reloadT = 0;
     this.buffer = 0;
+  }
+
+  // Trigger handling. In 'release' mode a tap fires when the button comes back up
+  // (or after tapWindow if still held -> that becomes a charge instead), so a
+  // charge can start from a cold gun without spending a round first.
+  updateTrigger(dt, input) {
+    const C = T.charge, W = T.weapon;
+    if (C.mode === 'press') {
+      if (input.wasPressed('Mouse0')) { this.buffer = W.inputBuffer; this.holding = true; this.holdT = 0; }
+      return;
+    }
+    if (input.wasPressed('Mouse0')) { this.pressT = 0; this.holding = true; this.holdT = 0; }
+    if (this.pressT >= 0) {
+      this.pressT += dt;
+      if (!input.isDown('Mouse0')) {
+        if (this.pressT <= C.tapWindow || this.charge < C.min) this.buffer = W.inputBuffer; // a tap
+        this.pressT = -1;
+      }
+    }
   }
 
   spreadDeg(player) {
@@ -195,17 +219,24 @@ export class Weapon {
     }
   }
 
-  // Metroid-style: a tap fires normally; keep holding to charge, release to unleash.
+  // Hold to charge (reserving Lachryma as it winds up), release to unleash.
   updateCharge(dt, input) {
     const C = T.charge;
+    const pool = this.game.lachryma;
     const held = input.isDown('Mouse0');
+    const startAt = C.mode === 'press' ? C.delay : C.tapWindow;
     if (this.holding && held) {
       this.holdT += dt;
-      if (this.holdT > C.delay && !this.reloading && this.ammo > 0) {
-        if (!this.chargeSound) this.chargeSound = sfx.chargeLoop();
-        const was = this.charge;
-        this.charge = Math.min(1, this.charge + dt / C.time);
-        if (was < 1 && this.charge >= 1) this.game.hud.popup('CHARGED');
+      if (this.holdT > startAt && !this.reloading && this.charge < 1) {
+        const want = (dt / C.time) * C.cost;
+        const got = pool.reserve(pool.cost(want, 'charge'));
+        this.chargeReserved += got;
+        if (got > 0) {
+          if (!this.chargeSound) this.chargeSound = sfx.chargeLoop();
+          const was = this.charge;
+          this.charge = Math.min(1, this.charge + dt / C.time);
+          if (was < 1 && this.charge >= 1) this.game.hud.popup('CHARGED');
+        } else if (this.charge === 0 && this.holdT - dt <= startAt) { sfx.fizzle(); this.game.hud.lachrymaPulse(false); }
       }
     } else if (this.holding) {
       this.holding = false;
@@ -218,6 +249,8 @@ export class Weapon {
   }
 
   cancelCharge() {
+    if (this.chargeReserved) this.game.lachryma.refund(this.chargeReserved);
+    this.chargeReserved = 0;
     this.charge = 0;
     this.holding = false;
     this.releaseCharged = false;
@@ -239,19 +272,23 @@ export class Weapon {
 
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
+    if (this.wantShell) {
+      this.wantShell = false;
+      if (this.cooldown <= 0) { this.game.shells.fire({ camera, player, character, weapon: this }); this.cooldown = T.weapon.fireInterval * 1.5; }
+      return;
+    }
     if (this.releaseCharged) { this.fireCharged(camera, player, character); return; }
     if (this.buffer <= 0 || this.cooldown > 0) return;
     if (this.reloading) return;
-    if (this.ammo <= 0) {
-      this.buffer = 0;
-      this.cooldown = 0.25;
-      sfx.dryFire();
-      if (T.weapon.autoReload) this.startReload();
+    this.buffer = 0;
+    if (!this.game.lachryma.spend(T.lachryma.shotCost, 'shot')) {
+      this.cooldown = 0.2;
+      sfx.fizzle();
+      this.game.hud.lachrymaPulse(false);
+      this.game.fx.impact(character.gunPoint('muzzle', new THREE.Vector3()), new THREE.Vector3(0, 1, 0), { sparks: 3, dust: 2 });
       return;
     }
-    this.buffer = 0;
     this.cooldown = T.weapon.fireInterval;
-    this.ammo--;
     this.shots++;
     const game = this.game;
 
@@ -283,17 +320,17 @@ export class Weapon {
     player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);
     this.kickV += 1 * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = Math.min(T.weapon.bloomMax, this.bloom + T.weapon.bloomPerShot);
-    this.ejectCasing(character, player);
-    if (this.ammo === 0 && T.weapon.autoReload) game.fx.after(0.25, () => this.startReload());
+    this.vent(character);
   }
 
   fireCharged(camera, player, character) {
     const C = T.charge, game = this.game;
     const p = 0.4 + 0.6 * this.charge;
+    this.game.lachryma.commit(this.chargeReserved, 'charge');
+    this.chargeReserved = 0;
     this.cancelCharge();
     this.buffer = 0;
     this.cooldown = T.weapon.fireInterval * 2;
-    this.ammo = Math.max(0, this.ammo - C.ammoCost);
     this.shots++;
 
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
@@ -313,8 +350,9 @@ export class Weapon {
       if (solid || i === C.pierce) { game.fx.impact(hit.point, hit.normal, { sparks: 14, dust: 12, decal: true }); break; }
       if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p, hit.point, dir, 1.3 + 0.5 * p); }
       else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
-      else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6); }
-      else body.applyImpulseAtPoint(dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point, true);
+      else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6, 'charged'); }
+      else if (ent.type === 'slice') { hits++; game.breakables.crumble(ent, hit.point, dir); }
+      else game.physics.kick(body, dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point);
     }
     if (!end) end = ray.origin.clone().addScaledVector(dir, T.weapon.range);
     if (hits) { this.hits++; game.hud.hitmarker(true); sfx.hitmarker(); }
@@ -337,9 +375,7 @@ export class Weapon {
     player.fovPunch = C.fovPunch * p;
     this.kickV += 1.8 * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = T.weapon.bloomMax;
-    this.ejectCasing(character, player);
-    this.ejectCasing(character, player);
-    if (this.ammo === 0 && T.weapon.autoReload) game.fx.after(0.35, () => this.startReload());
+    this.vent(character, 3);
   }
 
   applyHit(hit, dir) {
@@ -357,9 +393,16 @@ export class Weapon {
       sfx.hitmarker();
       return;
     }
+    if (ent?.type === 'slice') {
+      this.hits++;
+      game.breakables.crumble(ent, hit.point, dir);
+      game.hud.hitmarker(true);
+      return;
+    }
+    if (ent?.type === 'bauble') { ent.body.applyImpulse(dir.clone().multiplyScalar(0.3 * ent.body.mass() * 10), true); return; }
     if (ent?.type === 'breakable') {
       this.hits++;
-      const broke = game.breakables.damage(ent, T.weapon.damage, hit.point, dir);
+      const broke = game.breakables.damage(ent, T.weapon.damage * (ent.marked ? T.shells.mark.damageMult : 1), hit.point, dir);
       game.hud.hitmarker(broke);
       sfx.hitmarker();
       return;
@@ -367,7 +410,7 @@ export class Weapon {
     const body = hit.collider.parent();
     if (body && body.isDynamic()) {
       const imp = Math.min(T.weapon.impulse, body.mass() * 14);
-      body.applyImpulseAtPoint(dir.clone().multiplyScalar(imp), hit.point, true);
+      game.physics.kick(body, dir.clone().multiplyScalar(imp), hit.point);
       game.fx.impact(hit.point, hit.normal, { color: PALETTE.pale, sparks: 4, dust: 3 });
       if (ent?.type === 'prop') game.hud.hitmarker(false);
     } else {
@@ -387,10 +430,24 @@ export class Weapon {
     this.spawnDebris(p, q, v, this.casingGeo, this.casingMat, RAPIER.ColliderDesc.cylinder(0.016, 0.009), 'casing');
   }
 
-  dropMag() {
-    const ch = this.game.character;
-    const p = ch.gunPoint('magwell', new THREE.Vector3());
-    this.spawnDebris(p, ch.gun.quaternion, new THREE.Vector3(0, -1, 0).add(this.game.player.vel), this.magGeo, this.magMat, RAPIER.ColliderDesc.cuboid(0.015, 0.055, 0.0275), 'mag');
+  // spent clay shell tumbles out of the port
+  ejectShell(character, player) {
+    const p = character.gunPoint('eject', new THREE.Vector3());
+    const q = character.gun.quaternion;
+    const v = new THREE.Vector3(0, 0, 1).applyQuaternion(q).multiplyScalar(2.5).addScaledVector(new THREE.Vector3(0, 1, 0).applyQuaternion(q), 2.2).add(player.vel);
+    this.spawnDebris(p, q, v, this.shellGeo, this.shellMat, RAPIER.ColliderDesc.cylinder(0.035, 0.022), 'casing');
+  }
+
+  // energy shots vent a puff of pale vapour instead of brass
+  vent(character, n = 1) {
+    const fx = this.game.fx;
+    const p = character.gunPoint('eject', new THREE.Vector3());
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(character.gun.quaternion);
+    const c = new THREE.Color(PALETTE.cream);
+    for (let i = 0; i < 4 * n; i++) {
+      fx.alpha.emit({ pos: p, vel: up.clone().multiplyScalar(0.6 + Math.random()).add(new THREE.Vector3().randomDirection().multiplyScalar(0.3)),
+        life: 0.5 + Math.random() * 0.4, size: 0.03, sizeEnd: 0.2, color: c, alpha: 0.3, drag: 3, gravity: -0.5 });
+    }
   }
 
   spawnDebris(p, q, v, geo, mat, cd, kind) {

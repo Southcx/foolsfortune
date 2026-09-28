@@ -110,3 +110,21 @@ export function withFade(material, key) {
   material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fade-${key}`;
   return material;
 }
+
+/** Pulsing see-through outline used for marked things (own thickness, no depth test). */
+export function makeGlowOutline(color, thickness, xray = false) {
+  // rim: a depth-tested glowing hull. xray: the same hull drawn only where it is
+  // hidden behind something (GreaterDepth), so marked things show through walls.
+  const m = new THREE.MeshBasicMaterial({ color, side: xray ? THREE.FrontSide : THREE.BackSide, transparent: true, opacity: xray ? 0.22 : 0.8,
+    depthTest: true, depthWrite: false, blending: THREE.AdditiveBlending });
+  if (xray) m.depthFunc = THREE.GreaterDepth;
+  const th = { value: thickness };
+  m.onBeforeCompile = (shader) => {
+    shader.uniforms.uOutline = th;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec3 smoothNormal;\nuniform float uOutline;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normalize(smoothNormal) * uOutline;');
+  };
+  m.customProgramCacheKey = () => (xray ? 'glow-xray' : 'glow-outline');
+  return m;
+}

@@ -221,6 +221,112 @@ class Sfx {
     this.tone(t, 0.12, { f0: 300, f1: 900, type: 'sine', gain: 0.5, dest: d });
   }
 
+  click() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.25, 0);
+    this.tone(t, 0.03, { f0: 2200, f1: 1800, type: 'square', gain: 0.1, dest: d });
+  }
+
+  fizzle() {
+    if (!this.ok() || !this.allow('fizzle', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.1);
+    this.noise(t, 0.12, { type: 'bandpass', f0: 4000, f1: 1500, q: 3, gain: 0.8, dest: d });
+    this.tone(t, 0.1, { f0: 300, f1: 120, type: 'sawtooth', gain: 0.08, dest: d });
+  }
+
+  thump() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.9, 0.7);
+    this.tone(t, 0.25, { f0: 120, f1: 45, gain: 1.1, dest: d });
+    this.noise(t, 0.18, { f0: 1800, f1: 150, gain: 0.8, dest: d });
+  }
+
+  clonk(dist = 5) {
+    if (!this.ok() || !this.allow('clonk', 12)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5 / (0.5 + dist * 0.1), 0.3);
+    this.tone(t, 0.08, { f0: 420, f1: 300, type: 'triangle', gain: 0.6, dest: d });
+  }
+
+  slice() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.8, 0.6);
+    this.noise(t, 0.25, { type: 'highpass', f0: 7000, f1: 2500, gain: 0.9, attack: 0.01, dest: d });
+    this.tone(t, 0.3, { f0: 3000, f1: 900, type: 'sawtooth', gain: 0.08, dest: d });
+    this.tone(t, 0.18, { f0: 140, f1: 60, gain: 0.8, dest: d });
+  }
+
+  push() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(1, 0.8);
+    this.noise(t, 0.5, { f0: 300, f1: 2500, gain: 1, attack: 0.04, dest: d });
+    this.tone(t, 0.4, { f0: 60, f1: 140, gain: 1, dest: d });
+  }
+
+  wellLoop() {
+    if (!this.ok()) return null;
+    const o = this.ctx.createOscillator(), lfo = this.ctx.createOscillator(), lg = this.ctx.createGain();
+    o.type = 'sawtooth'; lfo.frequency.value = 7; lg.gain.value = 20;
+    lfo.connect(lg).connect(o.frequency);
+    const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 400;
+    const g = this.ctx.createGain(); g.gain.value = 0;
+    o.connect(f).connect(g).connect(this.master);
+    g.connect(this.verbSend);
+    o.start(); lfo.start();
+    const ctx = this.ctx;
+    return {
+      set(k) { const t = ctx.currentTime; o.frequency.setTargetAtTime(40 + k * 90, t, 0.05); f.frequency.setTargetAtTime(300 + k * 900, t, 0.05); g.gain.setTargetAtTime(0.25, t, 0.05); },
+      stop() { const t = ctx.currentTime; g.gain.setTargetAtTime(0, t, 0.02); o.stop(t + 0.1); lfo.stop(t + 0.1); },
+    };
+  }
+
+  mark() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.6);
+    for (const [k, f] of [[0, 1320], [0.05, 1760], [0.1, 2640]]) this.tone(t + k, 0.25, { f0: f, f1: f, type: 'triangle', gain: 0.25, dest: d });
+    this.noise(t, 0.15, { type: 'bandpass', f0: 5000, q: 2, gain: 0.5, dest: d });
+  }
+
+  sizzle(dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.4 / (0.5 + dist * 0.08), 0.3);
+    this.noise(t + 0.1, 1.6, { type: 'highpass', f0: 5000, f1: 3000, gain: 0.5, attack: 0.2, dest: d });
+  }
+
+  boing(speed = 2, dist = 5) {
+    if (!this.ok() || !this.allow('boing', 16)) return;
+    const t = this.ctx.currentTime, d = this.out(Math.min(0.3, speed * 0.05) / (0.5 + dist * 0.1), 0.2);
+    const f = 380 + Math.random() * 160;
+    this.tone(t, 0.14, { f0: f, f1: f * 1.9, type: 'sine', gain: 0.6, dest: d });
+  }
+
+  absorb(combo = 0) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.3);
+    const f = 660 * Math.pow(2, Math.min(12, combo) / 12);
+    this.tone(t, 0.08, { f0: f, f1: f * 1.5, type: 'sine', gain: 0.5, dest: d });
+    this.tone(t + 0.05, 0.12, { f0: f * 2, f1: f * 2, type: 'sine', gain: 0.25, dest: d });
+  }
+
+  clap(dist = 5) {
+    if (!this.ok() || !this.allow('clap', 14)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.1), 0.3);
+    this.noise(t, 0.035, { type: 'bandpass', f0: 1800 + Math.random() * 600, q: 2.5, gain: 1, dest: d });
+    this.tone(t, 0.04, { f0: 700, f1: 500, type: 'triangle', gain: 0.3, dest: d });
+  }
+
+  gulp(dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.4 / (0.5 + dist * 0.1), 0.2);
+    this.tone(t, 0.12, { f0: 500, f1: 200, type: 'sine', gain: 0.6, dest: d });
+  }
+
+  geyser() {
+    if (!this.ok() || !this.allow('geyser', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.7, 0.6);
+    this.noise(t, 0.8, { f0: 400, f1: 4000, gain: 0.8, attack: 0.05, dest: d });
+    this.tone(t, 0.6, { f0: 100, f1: 400, gain: 0.5, dest: d });
+  }
+
   casing(dist = 1) {
     if (!this.ok() || !this.allow('casing', 20)) return;
     const t = this.ctx.currentTime, d = this.out(0.18 / (0.6 + dist * 0.2), 0.3);

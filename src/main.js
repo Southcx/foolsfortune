@@ -17,6 +17,8 @@ import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import { Clappers } from './clappers.js';
+import { LachrymaPool, Baubles } from './lachryma.js';
+import { Shells, SHELL_TYPES } from './shells.js';
 
 const FIXED = 1 / 60;
 
@@ -39,11 +41,13 @@ async function main() {
   scene.add(new THREE.HemisphereLight(0xffe4cc, 0x6f3726, 2.3));
   scene.add(new THREE.AmbientLight(0xffd0b0, 0.35));
   const sun = new THREE.DirectionalLight(0xffe8d2, 3.2);
-  sun.position.set(7, 14, -6);
+  // steep sun through the skylights: lights the upper floor and drops a shaft
+  // down the atrium onto the ground floor
+  sun.position.set(4, 30, -5);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   const sc = sun.shadow.camera;
-  sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 1; sc.far = 40;
+  sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 5; sc.far = 50;
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   scene.add(sun);
@@ -64,9 +68,9 @@ async function main() {
       hud.onBroken(stats.broken);
       if (stats.broken === stats.total) hud.popup('WORKSHOP CLEARED · T TO RESET');
     },
-    onClapper() {
+    onClapper(c, text = 'CLAPPED') {
       stats.clappers = (stats.clappers || 0) + 1;
-      hud.popup(stats.clappers % 5 === 0 ? `${stats.clappers} CLAPPERS` : 'CLAPPED');
+      hud.popup(stats.clappers % 5 === 0 ? `${stats.clappers} CLAPPERS` : text);
     },
     onExplosion(center, R) {
       const pc = player.pos.clone(); pc.y += 0.9;
@@ -85,6 +89,7 @@ async function main() {
 
   const breakables = new Breakables(scene, physics, fx, game);
   const level = new Level(scene, physics, breakables);
+  game.level = level;
   level.build();
   const spawnRoom = () => {
     level.spawnDynamic();
@@ -114,6 +119,13 @@ async function main() {
   game.player = player;
   const weapon = new Weapon(game);
   game.weapon = weapon;
+  const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
+  game.lachryma = lachryma;
+  const baubles = new Baubles(game);
+  game.baubles = baubles;
+  const shells = new Shells(game);
+  game.shells = shells;
+  hud.buildShells(SHELL_TYPES);
 
   // physics debug lines (F3)
   const dbgGeo = new THREE.BufferGeometry();
@@ -129,6 +141,10 @@ async function main() {
     spawnRoom();
     game.clappers?.clear();
     game.clappers?.spawnAll();
+    game.baubles?.clear();
+    game.shells?.clear();
+    if (game.shells) for (const k of Object.keys(game.shells.counts)) game.shells.counts[k] = T.shells.start;
+    game.lachryma?.reset();
   };
 
   const gui = buildTuningPanel((group, key) => {
@@ -140,6 +156,7 @@ async function main() {
     if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
     if (key === 'shadows' || group === '*') { sun.castShadow = T.visual.shadows; }
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
+    if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => hud.popup('SETTINGS COPIED')),
     resetRoom,
@@ -212,6 +229,7 @@ async function main() {
     while (acc >= FIXED && steps < 4) {
       player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
       clappers.fixedUpdate(FIXED);
+      shells.fixedUpdate(FIXED);
       breakables.preStep();
       physics.step(FIXED);
       acc -= FIXED;
@@ -249,6 +267,11 @@ async function main() {
 
     breakables.update(dt);
     clappers.update(dt, acc / FIXED);
+    shells.update(dt);
+    baubles.update(dt);
+    baubles.tick(dt);
+    lachryma.update(dt);
+    level.updateFeatures?.(dt, game);
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -259,7 +282,7 @@ async function main() {
     }
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, ammo: weapon.ammo, mag: T.weapon.magSize,
+      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
     });
@@ -269,7 +292,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, manual: false };
+  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, manual: false };
   window.__ready = true;
 }
 

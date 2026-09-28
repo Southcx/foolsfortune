@@ -11,17 +11,21 @@ export class Input {
     this.lockFailed = false;
     this.enabled = false;
     this.onLockChange = null;
+    this.wheel = 0;
+    el.addEventListener('wheel', (e) => { if (this.enabled) { this.wheel += e.deltaY; e.preventDefault(); } }, { passive: false });
+    el.addEventListener('auxclick', (e) => e.preventDefault());
 
     addEventListener('keydown', (e) => {
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
       this.down.add(e.code);
-      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown'].includes(e.code)) e.preventDefault();
+      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => this.down.delete(e.code));
     addEventListener('blur', () => this.down.clear());
     el.addEventListener('mousedown', (e) => {
       if (!this.enabled) return;
+      if (e.button === 1) e.preventDefault();
       const code = `Mouse${e.button}`;
       this.pressed.add(code);
       this.down.add(code);
@@ -67,5 +71,6 @@ export class Input {
     this.pressed.clear();
     this.dx = 0;
     this.dy = 0;
+    this.wheel = 0;
   }
 }

@@ -175,6 +175,9 @@ export class FX {
     this.decalMat = new THREE.MeshBasicMaterial({ map: decalTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
     this.decalGeo = new THREE.PlaneGeometry(0.16, 0.16);
     this.decals = [];
+    this.haloTexture = radialTexture('rgba(255,255,255,1)', 'rgba(255,255,255,0)');
+    this.slashes = [];
+    this.waves = [];
     this.beams = [];
     this.rings = [];
   }
@@ -324,6 +327,87 @@ export class FX {
     this.rings.push({ ring, age: 0, life: 0.3, radius });
   }
 
+  // Slicer: a thin white-hot blade plane along the shot that fades fast
+  slash(from, to, blade) {
+    const dir = new THREE.Vector3().subVectors(to, from);
+    const len = dir.length();
+    if (len < 0.05) return;
+    dir.divideScalar(len);
+    const geo = new THREE.PlaneGeometry(1, 1);
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    // plane spans dir (length) x blade (width)
+    blade = blade.clone().addScaledVector(dir, -blade.dot(dir)).normalize();
+    const n = new THREE.Vector3().crossVectors(dir, blade).normalize();
+    m.matrix.makeBasis(dir, blade, n);
+    m.quaternion.setFromRotationMatrix(m.matrix);
+    m.position.copy(from).addScaledVector(dir, len / 2);
+    m.scale.set(len, 0.5, 1);
+    m.renderOrder = 6;
+    m.frustumCulled = false;
+    this.scene.add(m);
+    this.slashes.push({ m, age: 0, life: 0.22 });
+    const hot = new THREE.Color(PALETTE.hot);
+    for (let i = 0; i < 50; i++) {
+      const p = from.clone().addScaledVector(dir, Math.random() * len).addScaledVector(blade, (Math.random() - 0.5) * 0.4);
+      this.add.emit({ pos: p, vel: blade.clone().multiplyScalar((Math.random() - 0.5) * 3), life: 0.25 + Math.random() * 0.25, size: 0.03, sizeEnd: 0.005, color: hot, drag: 3, twinkle: 30 });
+    }
+  }
+
+  // Force push: an expanding open cone of air
+  pushWave(from, axis, range, angleDeg) {
+    const geo = new THREE.ConeGeometry(Math.tan(angleDeg * Math.PI / 180), 1, 24, 1, true);
+    geo.translate(0, -0.5, 0);
+    geo.rotateX(-Math.PI / 2); // apex at origin, opening toward +Z
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.cream, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    m.position.copy(from);
+    m.quaternion.setFromUnitVectors(Z, axis);
+    m.frustumCulled = false;
+    m.renderOrder = 5;
+    this.scene.add(m);
+    this.waves.push({ m, age: 0, life: 0.35, range });
+    const dust = new THREE.Color(PALETTE.pale);
+    for (let i = 0; i < 40; i++) {
+      const d = axis.clone().add(new THREE.Vector3().randomDirection().multiplyScalar(0.5)).normalize();
+      this.alpha.emit({ pos: from.clone().addScaledVector(d, 0.5 + Math.random()), vel: d.multiplyScalar(8 + Math.random() * 8), life: 0.5, size: 0.08, sizeEnd: 0.5, color: dust, alpha: 0.25, drag: 4 });
+    }
+  }
+
+  // Gravity well collapse: particles rush in then burst
+  implode(center) {
+    const glow = new THREE.Color(PALETTE.glow), hot = new THREE.Color(PALETTE.hot);
+    for (let i = 0; i < 70; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(3 + Math.random() * 9);
+      this.add.emit({ pos: center, vel: v, life: 0.4 + Math.random() * 0.4, size: 0.06, sizeEnd: 0.01, color: Math.random() < 0.5 ? hot : glow, drag: 2.5, twinkle: 20 });
+    }
+    this.boomLight.position.copy(center);
+    this.boomLight.intensity = 90;
+    this.boomT = 0.3;
+  }
+
+  // Mark shell: sigil ring on the surface + crackle
+  markBurst(point, normal, radius) {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1, 6), new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    ring.position.copy(point).addScaledVector(normal, 0.02);
+    ring.quaternion.setFromUnitVectors(Z, normal);
+    ring.renderOrder = 5;
+    this.scene.add(ring);
+    this.rings.push({ ring, age: 0, life: 0.5, radius, flat: true });
+    const c = new THREE.Color(PALETTE.hot);
+    for (let i = 0; i < 30; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 4);
+      this.add.emit({ pos: point, vel: v, life: 0.2 + Math.random() * 0.2, size: 0.04, sizeEnd: 0.005, color: c, drag: 1, twinkle: 40 });
+    }
+  }
+
+  // Lachryma absorbed: a little starburst
+  absorbSparkle(p) {
+    const c = new THREE.Color(PALETTE.cream), h = new THREE.Color(PALETTE.hot);
+    for (let i = 0; i < 12; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 1.5);
+      this.add.emit({ pos: p, vel: v, life: 0.3 + Math.random() * 0.2, size: 0.035, sizeEnd: 0.005, color: Math.random() < 0.5 ? c : h, drag: 3, twinkle: 30 });
+    }
+  }
+
   // Charging: sparks spiral into the muzzle
   chargeTick(muzzle, level, dt) {
     const n = Math.random() < level * 60 * dt ? 1 + Math.floor(level * 2) : 0;
@@ -404,6 +488,23 @@ export class FX {
       if (k <= 0) { for (const m of b.parts) { this.scene.remove(m); m.material.dispose(); } this.beams.splice(i, 1); continue; }
       b.parts.forEach((m, j) => { const w = b.w * (j ? 4 : 1) * (0.4 + 0.6 * k); m.scale.x = m.scale.y = w; m.material.opacity = (j ? 0.5 : 1) * k; });
     }
+    for (let i = this.slashes.length - 1; i >= 0; i--) {
+      const sl = this.slashes[i];
+      sl.age += dt;
+      const k = 1 - sl.age / sl.life;
+      if (k <= 0) { this.scene.remove(sl.m); sl.m.geometry.dispose(); sl.m.material.dispose(); this.slashes.splice(i, 1); continue; }
+      sl.m.material.opacity = 0.9 * k * k;
+      sl.m.scale.y = 0.5 * (0.3 + 0.7 * k);
+    }
+    for (let i = this.waves.length - 1; i >= 0; i--) {
+      const w = this.waves[i];
+      w.age += dt;
+      const t = w.age / w.life;
+      if (t >= 1) { this.scene.remove(w.m); w.m.geometry.dispose(); w.m.material.dispose(); this.waves.splice(i, 1); continue; }
+      const L = 0.5 + w.range * (1 - (1 - t) ** 2);
+      w.m.scale.set(L, L, L);
+      w.m.material.opacity = 0.35 * (1 - t);
+    }
     this.camPos = camera.position;
     for (let i = this.rings.length - 1; i >= 0; i--) {
       const r = this.rings[i];
@@ -411,7 +512,7 @@ export class FX {
       const t = r.age / r.life;
       if (t >= 1) { this.scene.remove(r.ring); r.ring.geometry.dispose(); r.ring.material.dispose(); this.rings.splice(i, 1); continue; }
       r.ring.scale.setScalar(0.2 + r.radius * (1 - (1 - t) ** 3));
-      r.ring.lookAt(camera.position);
+      if (!r.flat) r.ring.lookAt(camera.position);
       r.ring.material.opacity = (1 - t) * 0.9;
     }
     this.add.update(dt);

@@ -1,15 +1,17 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from './physics.js';
-import { PALETTE } from './config.js';
+import { PALETTE, T } from './config.js';
+import { sfx } from './audio.js';
 import { addOutline } from './outline.js';
 import { PROFILES, prepProfile } from './pottery.js';
 
 // Greybox terracotta workshop. Everything static is merged per colour into a
 // handful of meshes; colliders are simple cuboids/cylinders/balls.
 
-const W = 10, D = 15, H = 7; // half-width, half-depth, height
-export const ROOM = { W, D, H };
+const W = 10, D = 15, H = 13.5; // half-width, half-depth, total height
+const F2 = 7; // second floor walking height
+export const ROOM = { W, D, H, F2 };
 
 const rand = (a, b) => a + Math.random() * (b - a);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -28,17 +30,17 @@ export class Level {
     return new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 });
   }
 
-  addGeo(geo, color, outline = true) {
-    const k = `${color}_${outline}`;
-    if (!this.batches.has(k)) this.batches.set(k, { color, outline, geos: [] });
+  addGeo(geo, color, outline = true, shadow = true) {
+    const k = `${color}_${outline}_${shadow}`;
+    if (!this.batches.has(k)) this.batches.set(k, { color, outline, shadow, geos: [] });
     this.batches.get(k).geos.push(geo.index ? geo.toNonIndexed() : geo);
   }
 
-  box(pos, size, color, { outline = true, rotX = 0, rotY = 0, collide = true } = {}) {
+  box(pos, size, color, { outline = true, rotX = 0, rotY = 0, collide = true, shadow = true } = {}) {
     const g = new THREE.BoxGeometry(size[0], size[1], size[2]);
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(rotX, rotY, 0));
     g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), q, new THREE.Vector3(1, 1, 1)));
-    this.addGeo(g, color, outline);
+    this.addGeo(g, color, outline, shadow);
     if (collide) {
       const cd = RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
         .setTranslation(...pos).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9);
@@ -55,11 +57,11 @@ export class Level {
   }
 
   finalizeStatic() {
-    for (const { color, outline, geos } of this.batches.values()) {
+    for (const { color, outline, shadow, geos } of this.batches.values()) {
       const merged = mergeGeometries(geos.map((g) => { g.deleteAttribute('uv'); return g; }), false);
       const m = new THREE.Mesh(merged, this.mat(color));
       m.receiveShadow = true;
-      m.castShadow = true;
+      m.castShadow = shadow;
       if (outline) addOutline(m);
       this.scene.add(m);
     }
@@ -69,44 +71,64 @@ export class Level {
   // ---------------------------------------------------------------------------
   build() {
     const C = PALETTE;
-    // shell
+    // shell: walls and roof don't cast shadows, so sun spills through the skylights
+    // onto the upper floor and down the atrium onto the ground floor
+    const wall = { outline: false, shadow: false };
     this.box([0, -0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.floor, { outline: false });
-    this.box([0, H + 0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.deep, { outline: false });
-    this.box([-(W + 0.25), H / 2, 0], [0.5, H, D * 2 + 1], C.wall, { outline: false });
-    this.box([W + 0.25, H / 2, 0], [0.5, H, D * 2 + 1], C.wall, { outline: false });
-    this.box([0, H / 2, -(D + 0.25)], [W * 2 + 1, H, 0.5], C.wall, { outline: false });
-    this.box([0, H / 2, D + 0.25], [W * 2 + 1, H, 0.5], C.wall, { outline: false });
+    this.box([0, H + 0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.deep, wall);
+    this.box([-(W + 0.25), H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
+    this.box([W + 0.25, H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
+    this.box([0, H / 2, -(D + 0.25)], [W * 2 + 1, H, 0.5], C.wall, wall);
+    this.box([0, H / 2, D + 0.25], [W * 2 + 1, H, 0.5], C.wall, wall);
     // floor planks / tiles: subtle darker strips (visual only)
-    for (let z = -D + 1.5; z < D; z += 3) this.box([0, 0.005, z], [W * 2, 0.01, 0.06], C.deep, { outline: false, collide: false });
-    for (let x = -W + 2; x < W; x += 4) this.box([x, 0.005, 0], [0.06, 0.01, D * 2], C.deep, { outline: false, collide: false });
+    for (const y of [0.005, F2 + 0.005]) {
+      for (let z = -D + 1.5; z < D; z += 3) this.box([0, y, z], [W * 2, 0.01, 0.06], C.deep, { outline: false, collide: false, shadow: false });
+      for (let x = -W + 2; x < W; x += 4) this.box([x, y, 0], [0.06, 0.01, D * 2], C.deep, { outline: false, collide: false, shadow: false });
+    }
     // baseboards
-    this.box([-(W - 0.05), 0.15, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false });
-    this.box([W - 0.05, 0.15, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false });
-    // roof beams + wall columns
+    for (const y of [0.15, F2 + 0.15]) {
+      this.box([-(W - 0.05), y, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false, shadow: false });
+      this.box([W - 0.05, y, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false, shadow: false });
+    }
+    // ground-floor ceiling beams (they stop short of the upper stair flight) + wall columns
     for (const z of [-10, -5, 0, 5, 10]) {
-      this.box([0, 5.6, z], [W * 2, 0.35, 0.4], C.dark);
-      if (z !== -5) this.box([-(W - 0.2), H / 2, z], [0.4, H, 0.5], C.dark); // (skip where the stairs run)
-      this.box([W - 0.2, H / 2, z], [0.4, H, 0.5], C.dark, { outline: true });
+      this.box([0.8, 5.6, z], [W * 2 - 1.6, 0.35, 0.4], C.dark);
+      if (z === -10) this.box([-(W - 0.2), H / 2, z], [0.4, H, 0.5], C.dark, { shadow: false });
+      this.box([W - 0.2, H / 2, z], [0.4, H, 0.5], C.dark, { shadow: false });
+      this.box([0, H - 0.9, z], [W * 2, 0.4, 0.45], C.dark, { shadow: false }); // roof beams
     }
     this.box([0, 5.95, 0], [0.3, 0.3, D * 2], C.dark, { collide: false });
-    // windows (emissive, no collision)
+    this.buildSlab();
+    // windows (emissive, no collision) on both storeys
     const winMat = new THREE.MeshBasicMaterial({ color: C.cream });
-    for (const z of [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5]) {
-      for (const side of [-1, 1]) {
-        if (side < 0 && z > -3) continue; // mezzanine side: fewer windows
-        const w = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.4), winMat);
-        w.position.set(side * (W - 0.01), 4.6, z);
-        w.rotation.y = -side * Math.PI / 2;
-        this.scene.add(w);
-        this.box([side * (W - 0.05), 3.85, z], [0.14, 0.12, 1.9], C.deep, { collide: false });
-        this.box([side * (W - 0.05), 4.6, z], [0.12, 1.4, 0.08], C.deep, { collide: false, outline: false });
+    for (const [wy, skipMezz] of [[4.6, true], [10.3, false]]) {
+      for (const z of [-12.5, -7.5, -2.5, 2.5, 7.5, 12.5]) {
+        for (const side of [-1, 1]) {
+          if (skipMezz && side < 0 && z > -3) continue; // mezzanine side: fewer windows
+          const w = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), winMat);
+          w.position.set(side * (W - 0.01), wy, z);
+          w.rotation.y = -side * Math.PI / 2;
+          this.scene.add(w);
+          this.box([side * (W - 0.05), wy - 0.85, z], [0.14, 0.12, 1.9], C.deep, { collide: false, shadow: false });
+          this.box([side * (W - 0.05), wy, z], [0.12, 1.6, 0.08], C.deep, { collide: false, outline: false, shadow: false });
+        }
       }
+    }
+    // skylights
+    const skyMat = new THREE.MeshBasicMaterial({ color: 0xfff1dc });
+    for (const z of [-7.5, -2.5, 2.5, 7.5]) {
+      const sk = new THREE.Mesh(new THREE.PlaneGeometry(3, 2.2), skyMat);
+      sk.position.set(0, H - 0.01, z);
+      sk.rotation.x = Math.PI / 2;
+      this.scene.add(sk);
     }
 
     this.buildMezzanine();
     this.buildPlatform();
     this.buildKiln();
     this.buildRange();
+    this.buildUpperFloor();
+    this.buildFeatures();
 
     // workbenches
     this.bench(-3.2, -4.5, 2.6, 1.0);
@@ -131,6 +153,165 @@ export class Level {
     kilnLight.position.set(0, 1.1, 9.8);
     this.scene.add(kilnLight);
     this.kilnLight = kilnLight;
+  }
+
+  // Second-floor slab with a central atrium and a hole for the upper stair flight.
+  buildSlab() {
+    const C = PALETTE;
+    const slab = (x0, x1, z0, z1) => this.box([(x0 + x1) / 2, F2 - 0.15, (z0 + z1) / 2], [x1 - x0, 0.3, z1 - z0], C.wood);
+    slab(-W, W, -D, -6);
+    slab(-8.4, W, 6, D);
+    slab(-W, -8.4, 12, D);
+    slab(-8.4, -4, -6, 6);
+    slab(-W, -8.4, -6, 0);
+    slab(4, W, -6, 6);
+    // atrium balustrade (gap on the east side where the geyser drops you off)
+    const rail = (x0, z0, x1, z1) => {
+      const len = Math.hypot(x1 - x0, z1 - z0), along = x1 !== x0;
+      this.box([(x0 + x1) / 2, F2 + 1.0, (z0 + z1) / 2], along ? [len, 0.08, 0.08] : [0.08, 0.08, len], C.dark);
+      this.box([(x0 + x1) / 2, F2 + 0.08, (z0 + z1) / 2], along ? [len, 0.16, 0.1] : [0.1, 0.16, len], C.dark);
+      const n = Math.max(1, Math.round(len / 0.9));
+      for (let i = 0; i <= n; i++) {
+        const t = i / n;
+        this.box([x0 + (x1 - x0) * t, F2 + 0.5, z0 + (z1 - z0) * t], [0.07, 1.0, 0.07], C.dark, { collide: false });
+      }
+    };
+    rail(-4, -6, 4, -6);
+    rail(-4, 6, 4, 6);
+    rail(-4, -6, -4, 6);
+    rail(4, -6, 4, -2.7);
+    rail(4, -0.5, 4, 6);
+    // around the stair hole
+    rail(-8.4, 0, -8.4, 12);
+    rail(-W, 0, -8.4, 0);
+  }
+
+  buildUpperFloor() {
+    const C = PALETTE;
+    const y = F2;
+    // upper stair flight: mezzanine (2.6) -> second floor (7.0) along the west wall
+    const n = 20, rise = (F2 - 2.6) / n, run = 0.5, z0 = 2;
+    for (let k = 1; k <= n; k++) {
+      const h = 2.6 + k * rise;
+      this.box([-9.2, (2.6 + h) / 2, z0 + (k - 0.5) * run], [1.6, h - 2.6, run], k % 2 ? C.wood : C.mid);
+    }
+    this.box([-8.35, 4.8, 7], [0.08, 4.4, 10.2], C.dark, { collide: false });
+    // gallery: plinths for the sculpture
+    this.box([0, y + 0.2, 11.2], [1.8, 0.4, 1.8], C.dark);
+    for (const x of [-5, -2.5, 2.5, 5]) this.box([x, y + 0.25, 13.9], [0.8, 0.5, 0.8], C.mid);
+    for (const x of [-6.5, 6.5]) this.box([x, y + 0.55, 8], [0.55, 1.1, 0.55], C.mid);
+    for (const x of [-3, 3]) this.box([x, y + 0.1, 8.2], [0.7, 0.2, 0.7], C.dark);
+    // showroom: long display tables + a stepped pyramid stand
+    for (const x of [-6, 6]) {
+      this.box([x, y + 0.9, -10.5], [1.0, 0.1, 6], C.wood);
+      for (const dz of [-2.8, 0, 2.8]) for (const dx of [-0.4, 0.4]) this.box([x + dx, y + 0.425, -10.5 + dz], [0.1, 0.85, 0.1], C.dark);
+    }
+    this.box([0, y + 0.2, -11.5], [3.2, 0.4, 3.2], C.mid);
+    this.box([0, y + 0.6, -11.5], [2.2, 0.4, 2.2], C.wood);
+    this.box([0, y + 1.0, -11.5], [1.2, 0.4, 1.2], C.mid);
+    // west showcase platform
+    this.box([-6.2, y + 0.15, -1], [3.0, 0.3, 4.4], C.mid);
+    // upper kiln where the upstairs clapperjars are born
+    const kr = 1.1, kpos = new THREE.Vector3(8.7, y, 2.6);
+    const g = new THREE.SphereGeometry(kr, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2);
+    g.translate(kpos.x, kpos.y, kpos.z);
+    this.addGeo(g, C.dark, true);
+    this.physics.world.createCollider(RAPIER.ColliderDesc.ball(kr).setTranslation(kpos.x, kpos.y, kpos.z).setCollisionGroups(GROUPS.static), this.fixedBody);
+    const mouth = new THREE.Mesh(new THREE.CircleGeometry(0.45, 8, 0, Math.PI), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
+    mouth.position.set(kpos.x - kr + 0.08, y + 0.02, kpos.z);
+    mouth.rotation.y = -Math.PI / 2;
+    mouth.scale.set(1, 1.2, 1);
+    this.scene.add(mouth);
+    const upLight = new THREE.PointLight(0xff9050, 12, 8, 1.6);
+    upLight.position.set(kpos.x - kr - 0.4, y + 0.7, kpos.z);
+    this.scene.add(upLight);
+    this.upperKilnLight = upLight;
+  }
+
+  // Lachryma geyser (lift up the atrium) and shell reliquaries
+  buildFeatures() {
+    const C = PALETTE;
+    this.geyser = { pos: new THREE.Vector3(2.9, 0, -1.6), exit: new THREE.Vector3(5.2, F2, -1.6), r: 0.9, t: 0 };
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.07, 5, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
+    ring.rotation.x = Math.PI / 2;
+    ring.position.copy(this.geyser.pos).y += 0.05;
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.MeshBasicMaterial({ color: C.cream, transparent: true, opacity: 0.35 }));
+    disc.rotation.x = -Math.PI / 2;
+    disc.position.copy(this.geyser.pos).y += 0.03;
+    this.scene.add(ring, disc);
+    this.box([this.geyser.pos.x, 0.03, this.geyser.pos.z], [1.9, 0.06, 1.9], C.dark, { collide: false });
+    this.reliquaries = [];
+    for (const p of [[-3.4, 0, -13.2], [8.4, F2, -4.6]]) {
+      const pos = new THREE.Vector3(...p);
+      this.box([pos.x, pos.y + 0.45, pos.z], [0.6, 0.9, 0.6], C.dark);
+      const icon = new THREE.Group();
+      const shellMat = new THREE.MeshStandardMaterial({ color: C.potLight, emissive: C.glow, emissiveIntensity: 0.5, flatShading: true });
+      for (let i = 0; i < 5; i++) {
+        const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.16, 7), shellMat);
+        const a = (i / 5) * Math.PI * 2;
+        sh.position.set(Math.cos(a) * 0.12, 0, Math.sin(a) * 0.12);
+        icon.add(sh);
+      }
+      icon.position.set(pos.x, pos.y + 1.2, pos.z);
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ color: C.glow, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+      halo.scale.setScalar(0.8);
+      icon.add(halo);
+      this.scene.add(icon);
+      this.reliquaries.push({ pos, icon, halo, cool: 0 });
+    }
+    this.clapperFloors = [
+      { y: 0, x0: -5.9, x1: 5.9, z0: -13.5, z1: 9.2, spawn: new THREE.Vector3(0, 0, 9.9), heading: Math.PI },
+      { y: F2, x0: -7.9, x1: 7.3, z0: -14.3, z1: 14.2, spawn: new THREE.Vector3(7.2, F2, 2.6), heading: -Math.PI / 2 },
+    ];
+  }
+
+  updateFeatures(dt, game) {
+    const g = this.geyser, p = game.player, fx = game.fx;
+    g.t += dt;
+    // particle column
+    if (Math.random() < 0.9) {
+      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.6;
+      fx.add.emit({ pos: g.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(0, 6 + Math.random() * 6, 0),
+        life: 0.9, size: 0.05, sizeEnd: 0.01, color: new THREE.Color(PALETTE.cream), drag: 0.3, twinkle: 18 });
+    }
+    const feet = p.pos;
+    const dx = feet.x - g.pos.x, dz = feet.z - g.pos.z;
+    const inCol = dx * dx + dz * dz < g.r * g.r;
+    if (inCol && feet.y < F2 + 1.3 && !p.exiting) {
+      if (!p.riding) { p.riding = true; sfx.geyser(); }
+      // ballistic ease-out: just enough speed to crest above the balustrade
+      const need = Math.sqrt(2 * T.movement.gravity * Math.max(0, F2 + 1.7 - feet.y));
+      p.vel.y = Math.max(p.vel.y, Math.min(12, need + 0.5));
+      p.vel.x *= 0.8; p.vel.z *= 0.8;
+      p.grounded = false;
+    } else if (p.riding && feet.y > F2 + 1.2) {
+      // over the balustrade: carry the rider onto the landing
+      p.riding = false;
+      p.exiting = 1.2;
+    }
+    if (p.exiting) {
+      p.exiting -= dt;
+      const d = g.exit.clone().sub(feet).setY(0);
+      if (d.length() < 0.4 || p.grounded || p.exiting <= 0) p.exiting = 0;
+      else { const v = d.normalize().multiplyScalar(5); p.vel.x = v.x; p.vel.z = v.z; }
+    }
+    if (p.riding && !inCol && feet.y < F2) p.riding = false;
+    // shell reliquaries
+    for (const r of this.reliquaries) {
+      r.cool -= dt;
+      r.icon.rotation.y += dt * (r.cool > 0 ? 0.3 : 1.5);
+      r.icon.position.y = r.pos.y + 1.2 + Math.sin(g.t * 2) * 0.05;
+      r.halo.material.opacity = r.cool > 0 ? 0.1 : 0.5 + 0.2 * Math.sin(g.t * 4);
+      if (r.cool <= 0 && Math.abs(feet.y - r.pos.y) < 1 && feet.distanceTo(r.pos.clone().setY(feet.y)) < 1.3) {
+        const got = game.shells.refill();
+        if (got > 0) {
+          r.cool = T.shells.reliquaryCooldown;
+          game.hud.popup(`+${got} SHELLS`);
+          sfx.absorb(8);
+          fx.absorbSparkle(r.icon.position.clone());
+        }
+      }
+    }
   }
 
   buildMezzanine() {
@@ -306,8 +487,8 @@ export class Level {
       const kind = pick([...smalls, 'amphora', 'spindle', 'onion']);
       pot(kind, -7.05 + rand(-0.1, 0.1), 2.6, z, { spindle: 0.8, onion: 0.8 }[kind] ?? rand(0.85, 1.1));
     }
-    big('urn', -8.8, 11.5, 1, undefined, 2.6);
-    big('gourd', -8.8, 1.5, 0.9, undefined, 2.6);
+    big('urn', -7.6, 14.1, 1, undefined, 2.6);
+    big('gourd', -7.7, -2.4, 0.9, undefined, 2.6);
     // right platform cluster around an ember urn
     B.spawn({ kind: 'ember', ember: true, pos: [8.2, 1.202, 10.2], scale: 1 });
     for (let i = 0; i < 10; i++) {
@@ -329,12 +510,74 @@ export class Level {
     // targets
     for (const t of this.targetDefs) B.spawn(t);
 
+    this.spawnUpper(pot, big, colors, smalls);
+
     // crates
     const crates = [[4.6, 3.6], [5.35, 3.6], [4.6, 4.35], [5.35, 4.35]];
     for (const [x, z] of crates) this.crate([x, 0.35, z], 0.7);
     this.crate([4.95, 1.05, 3.95], 0.7);
     for (const [x, z] of [[-6.2, -1], [-6.2, -0.25]]) this.crate([x, 0.35, z], 0.7);
     this.crate([-6.2, 1.05, -0.6], 0.7);
+  }
+
+  // ---- second floor population ------------------------------------------------
+  spawnUpper(pot, big, colors, smalls) {
+    const B = this.breakables, C = PALETTE, y = F2;
+    const sculpt = (kind, x, yy, z, scale, extra = {}) => B.spawn({ kind, pos: [x, yy + 0.002, z], scale, color: C.pot, yaw: Math.PI, ...extra });
+    // gallery: the dogū, a row of haniwa, busts, endless columns
+    sculpt('dogu', 0, y + 0.4, 11.2, 1.3, { color: C.mid });
+    [-5, -2.5, 2.5, 5].forEach((x, i) => sculpt('haniwa', x, y + 0.5, 13.9, rand(0.95, 1.1), { variant: i % 3, color: pick([C.pot, C.potLight, C.mid]) }));
+    for (const x of [-6.5, 6.5]) sculpt('bust', x, y + 1.1, 8, 1.1, { color: C.potLight });
+    for (const x of [-3, 3]) sculpt('endless', x, y + 0.2, 8.2, 1.05, { color: C.wood });
+    // showroom tables: rows of porcelain (diamond dust)
+    for (const x of [-6, 6]) {
+      for (let z = -13.1; z <= -7.9; z += 0.52) pot(pick(['cup', 'bottle', 'crown', 'twist', 'vase']), x + rand(-0.2, 0.2), y + 0.95, z, rand(0.8, 1.05));
+    }
+    // stepped pyramid stand
+    const tiers = [[1.35, 0.4, 10], [0.85, 0.8, 7], [0.3, 1.2, 3]];
+    for (const [r, h, n] of tiers) {
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + 0.3;
+        pot(pick([...smalls, 'jar', 'melon']), Math.cos(a) * r, y + h, -11.5 + Math.sin(a) * r, 0.8);
+      }
+    }
+    B.spawn({ kind: 'ember', ember: true, pos: [0, y + 1.202, -11.5], scale: 0.8 });
+    // two teetering bowl towers by the atrium
+    for (const x of [-2.2, 2.2]) {
+      let h = y;
+      for (let i = 0; i < 9; i++) {
+        const plate = i % 2 === 0;
+        const P = prepProfile(plate ? 'plate' : 'bowl', plate ? 0.7 : 1);
+        B.spawn({ kind: plate ? 'plate' : 'bowl', pos: [x, h + 0.002, -7.7], scale: plate ? 0.7 : 1, color: pick(colors), yaw: 0 });
+        h += P.height + 0.003;
+      }
+    }
+    // west showcase
+    big('tsubo', -6.8, -2.4, 1.0, undefined, y + 0.3);
+    big('gourd', -5.6, -0.4, 1.2, undefined, y + 0.3);
+    big('jomon', -6.6, 0.8, 1.0, C.mid, y + 0.3);
+    big('onion', -5.4, -2.6, 1.3, undefined, y + 0.3);
+    // east: ember cluster near the upper kiln
+    B.spawn({ kind: 'ember', ember: true, pos: [7.2, y + 0.002, 5.6], scale: 1.1 });
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      pot(pick(['jar', 'amphora', 'pitcher', 'melon', 'stack']), 7.2 + Math.cos(a) * 1.1, y, 5.6 + Math.sin(a) * 1.1, rand(0.8, 1.1));
+    }
+    big('urn', 9.2, 13.8, 1.0, undefined, y);
+    big('tsubo', -1.5, 14.2, 0.9, undefined, y);
+    big('gourd', 9.1, -13.9, 1.2, undefined, y);
+    // the mobile: long ropes from the roof into the atrium, seen from both floors
+    for (const [x, z, len, kind, sc] of [[-1.6, 0, 3.7, 'lantern', 1.4], [1.6, 0, 4.1, 'lantern', 1.3], [0, -2.2, 3.4, 'gourd', 0.6], [0, 2.2, 3.9, 'lantern', 1.5]]) {
+      const anchor = [x, H - 1.12, z];
+      const hh = prepProfile(kind, sc).fullHeight;
+      B.spawn({ kind, scale: sc, lantern: kind === 'lantern', color: pick(colors), pos: [x, anchor[1] - len - hh * 0.95, z], hang: { anchor } });
+    }
+    // upstairs lanterns along the gallery
+    for (const [x, z, len] of [[-5, 10, 2.4], [5, 10, 2.1], [-5, -10, 2.2], [5, -10, 2.6]]) {
+      const anchor = [x, H - 1.12, z];
+      const hh = prepProfile('lantern', 1.2).fullHeight;
+      B.spawn({ kind: 'lantern', scale: 1.2, lantern: true, color: pick(colors), pos: [x, anchor[1] - len - hh * 0.95, z], hang: { anchor } });
+    }
   }
 
   crate(pos, s) {
@@ -359,9 +602,21 @@ export class Level {
     mesh.position.set(...pos);
     this.scene.add(mesh);
     const ent = this.breakables.addDebris(body, mesh);
+    ent.sliceable = true;
+    ent.owner = this;
+    ent.baseColor = mesh.material.color.clone();
     ent.sync = this.physics.addSynced(body, mesh);
     this.physics.register(col, ent);
     this.dynamic.push(ent);
+  }
+
+  removeProp(e) {
+    const i = this.dynamic.indexOf(e);
+    if (i >= 0) this.dynamic.splice(i, 1);
+    this.physics.removeSynced(e.sync);
+    this.physics.removeBody(e.body);
+    this.scene.remove(e.mesh);
+    this.breakables.debris.delete(e);
   }
 
   clearDynamic() {

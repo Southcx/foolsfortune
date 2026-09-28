@@ -1,22 +1,32 @@
 import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RAPIER, G, groups } from './physics.js';
-import { T, PALETTE } from './config.js';
+import { T, PALETTE, DEG } from './config.js';
 import { addOutline } from './outline.js';
 import { prepProfile } from './pottery.js';
 import { sfx } from './audio.js';
 
-// Clapperjars: little clay figments that scurry around the workshop floor.
-// They wander, stumble and bolt when a shot lands near them, shatter when hit,
-// and hop back out of the kiln a few seconds later.
+// Clapperjars: little clay figments full of Lachryma.
+//
+// Behaviour (a small state machine, run in the fixed physics step):
+//   idle -> wander | forage (eat dropped baubles) | taunt (clap at you)
+//   spooked -> stumble -> flee | hide behind a big pot and cower
+//   shells: stunned (mark), knocked (push/blasts), pulled (gravity well),
+//           scalded (molten slip) ... and long falls shatter them.
+// Animation: the authored idle/sprint/stumble clips from the .blend, with
+// procedural layers on top: lid clapping, head look-at, blinking, squash,
+// hops, cowering tremble, dizzy wobble.
 
 const UP = new THREE.Vector3(0, 1, 0);
-const KILN_MOUTH = new THREE.Vector3(0, 0, 9.9);
-const FLOOR = { x0: -5.9, x1: 5.9, z0: -13.5, z1: 9.2 };
+const X = new THREE.Vector3(1, 0, 0);
 const RADIUS = 0.2, HALF = 0.12;
 const CLAPPER_GROUPS = groups(G.PROP, 0xffff);
 const QUERY = groups(0xffff, G.STATIC | G.PROP | G.PLAYER);
+const STATIC_ONLY = groups(0xffff, G.STATIC);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
+
+const DEATH_TEXT = { shot: 'CLAPPED', sliced: 'SLICED', cooked: 'COOKED', splat: 'SPLAT', well: 'CRUSHED', explosion: 'KABOOM', charged: 'VAPORISED' };
 
 export class Clappers {
   constructor(game, gltf) {
@@ -31,18 +41,26 @@ export class Clappers {
     this.ctrl.enableAutostep(0.12, 0.1, false);
     this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.potLight, roughness: 0.75, flatShading: true });
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });
+    this.starMat = new THREE.MeshBasicMaterial({ color: PALETTE.hot });
     this.clips = Object.fromEntries(gltf.animations.map((c) => [c.name.replace('clapper_', ''), c]));
   }
+
+  get floors() { return this.game.level.clapperFloors; }
 
   spawnAll() {
     const spots = [[-3, -2], [3, -2], [0, -6.5], [2.5, 5.8], [-3.5, 3], [0, 7]];
     for (let i = 0; i < T.clappers.count; i++) {
       const [x, z] = spots[i % spots.length];
-      this.spawn(new THREE.Vector3(x, 0, z), false);
+      this.spawn(new THREE.Vector3(x, 0, z), false, 0);
+    }
+    const up = [[-6, -4.6], [2, 9.5], [-6.5, 4], [6, -8], [-2.5, -13.5]];
+    for (let i = 0; i < T.clappers.upstairs; i++) {
+      const [x, z] = up[i % up.length];
+      this.spawn(new THREE.Vector3(x, this.floors[1].y, z), false, 1);
     }
   }
 
-  spawn(pos, fromKiln) {
+  spawn(pos, fromKiln, floor = 0) {
     const game = this.game;
     const root = new THREE.Group();
     const model = cloneSkinned(this.gltf.scene);
@@ -54,8 +72,8 @@ export class Clappers {
       o.frustumCulled = false;
       addOutline(o);
     }
-    // the eye texture didn't come across, so give it two beady eyes
-    const eyesBone = model.getObjectByName('eyes');
+    const bone = (n) => model.getObjectByName(n);
+    const eyesBone = bone('eyes');
     if (eyesBone) {
       for (const x of [-0.055, 0.055]) {
         const e = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 4), this.eyeMat);
@@ -64,8 +82,16 @@ export class Clappers {
         eyesBone.add(e);
       }
     }
-    root.add(model);
-    root.scale.setScalar(T.clappers.scale);
+    // dizzy stars (hidden until stunned)
+    const stars = new THREE.Group();
+    for (let i = 0; i < 3; i++) {
+      const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.04, 0), this.starMat);
+      st.userData.a = (i / 3) * Math.PI * 2;
+      stars.add(st);
+    }
+    stars.position.y = 0.72;
+    stars.visible = false;
+    root.add(model, stars);
     game.scene.add(root);
 
     const mixer = new THREE.AnimationMixer(model);
@@ -73,22 +99,31 @@ export class Clappers {
     for (const [k, clip] of Object.entries(this.clips)) actions[k] = mixer.clipAction(clip);
     if (actions.stumble) { actions.stumble.setLoop(THREE.LoopOnce, 1); actions.stumble.clampWhenFinished = true; }
 
+    // rest orientations (relative to the model) for the procedural layers
+    model.updateMatrixWorld(true);
+    const mq = model.getWorldQuaternion(new THREE.Quaternion()).invert();
+    const restInv = (b) => (b ? b.getWorldQuaternion(new THREE.Quaternion()).premultiply(mq).invert() : null);
+    const bones = { body: bone('body'), head: bone('head'), eyes: eyesBone };
+
     const w = game.physics.world;
     const s = T.clappers.scale;
     const body = w.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(pos.x, pos.y + (HALF + RADIUS) * s, pos.z));
     const col = w.createCollider(RAPIER.ColliderDesc.capsule(HALF * s, RADIUS * s).setCollisionGroups(CLAPPER_GROUPS), body);
+    const f = this.floors[floor];
     const c = {
-      type: 'clapper', root, model, mixer, actions, body, col, alive: true,
-      pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? Math.PI : Math.random() * Math.PI * 2,
+      type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars,
+      headInv: restInv(bones.head), bodyInv: restInv(bones.body),
+      floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : Math.random() * Math.PI * 2,
       state: 'idle', timer: 0.3 + Math.random(), target: null, speed: 0, current: null, stuckT: 0, lastPos: pos.clone(),
-      squeakT: 0,
+      squeakT: 0, stash: 0, kv: new THREE.Vector3(), grounded: true, peakY: pos.y, heat: 0, stunT: 0, pulledT: 0,
+      clapT: 0, clapRate: 0, look: 0, blinkT: 2 + Math.random() * 3, squash: 0, squashV: 0, hop: 0, spin: 0, t: Math.random() * 10,
     };
     game.physics.register(col, c);
     this.play(c, 'idle', 0);
     if (fromKiln) {
       sfx.pop(game.listenerDistance(pos));
       c.state = 'run';
-      c.target = this.pickTarget(c) || new THREE.Vector3(0, 0, 5);
+      c.target = this.pickTarget(c) || f.spawn.clone().add(new THREE.Vector3(Math.sin(f.heading) * 3, 0, Math.cos(f.heading) * 3));
     }
     this.list.push(c);
     return c;
@@ -102,36 +137,73 @@ export class Clappers {
     c.current = a;
   }
 
-  // a random reachable spot on the open floor (vertical probe + swept path check)
-  pickTarget(c, away) {
-    const w = this.game.physics.world;
+  // ---- navigation ------------------------------------------------------------
+  onFloor(c, p, f = this.floors[c.floor]) {
+    const down = this.game.physics.raycast({ x: p.x, y: f.y + 2.5, z: p.z }, { x: 0, y: -1, z: 0 }, 3.5, c.col, STATIC_ONLY);
+    return down && Math.abs(down.point.y - f.y) < 0.12;
+  }
+
+  reachable(c, p) {
+    const f = this.floors[c.floor];
+    if (p.x < f.x0 || p.x > f.x1 || p.z < f.z0 || p.z > f.z1) return false;
+    if (!this.onFloor(c, p)) return false;
+    const from = c.pos.clone().setY(f.y + 0.4), to = p.clone().setY(f.y + 0.4);
+    const d = to.clone().sub(from);
+    const len = d.length();
+    if (len < 0.3) return true;
+    d.divideScalar(len);
     const ball = new RAPIER.Ball(RADIUS * T.clappers.scale);
-    for (let i = 0; i < 14; i++) {
+    if (this.game.physics.world.castShape(from, { x: 0, y: 0, z: 0, w: 1 }, d, ball, 0, len, true, undefined, STATIC_ONLY, c.col)) return false;
+    // no holes (the atrium!) along the way
+    for (let s = 0.6; s < len; s += 0.6) if (!this.onFloor(c, from.clone().addScaledVector(d, s))) return false;
+    return true;
+  }
+
+  pickTarget(c, away) {
+    const f = this.floors[c.floor];
+    for (let i = 0; i < 12; i++) {
       let p;
-      if (away && i < 8) {
+      if (away && i < 7) {
         const d = c.pos.clone().sub(away).setY(0).normalize().applyAxisAngle(UP, (Math.random() - 0.5) * 1.6);
         p = c.pos.clone().addScaledVector(d, 3 + Math.random() * 3);
       } else {
-        p = new THREE.Vector3(THREE.MathUtils.lerp(FLOOR.x0, FLOOR.x1, Math.random()), 0, THREE.MathUtils.lerp(FLOOR.z0, FLOOR.z1, Math.random()));
+        p = new THREE.Vector3(THREE.MathUtils.lerp(f.x0, f.x1, Math.random()), f.y, THREE.MathUtils.lerp(f.z0, f.z1, Math.random()));
       }
-      if (p.x < FLOOR.x0 || p.x > FLOOR.x1 || p.z < FLOOR.z0 || p.z > FLOOR.z1) continue;
-      const down = this.game.physics.raycast({ x: p.x, y: 3, z: p.z }, { x: 0, y: -1, z: 0 }, 4, c.col);
-      if (!down || down.point.y > 0.05) continue;
-      const from = c.pos.clone().setY(0.4);
-      const to = p.clone().setY(0.4);
-      const d = to.clone().sub(from);
-      const len = d.length();
-      if (len < 1) continue;
-      d.divideScalar(len);
-      const hit = w.castShape(from, { x: 0, y: 0, z: 0, w: 1 }, d, ball, 0, len, true, undefined, groups(0xffff, G.STATIC), c.col);
-      if (hit) continue;
-      return p;
+      p.y = f.y;
+      if (c.pos.distanceTo(p) > 1 && this.reachable(c, p)) return p;
     }
     return null;
   }
 
-  // AI + movement, run inside the fixed physics step (the controller needs
-  // the collider's current position, which only updates when physics steps)
+  // a big pot between us and the threat
+  findCover(c, threat) {
+    let best = null, bd = 1e9;
+    for (const ent of this.game.breakables.items) {
+      if (ent.size < 0.7 || ent.def.hang) continue;
+      const t = ent.body.translation();
+      if (Math.abs(t.y - this.floors[c.floor].y) > 0.5) continue;
+      const pot = new THREE.Vector3(t.x, t.y, t.z);
+      const d = pot.distanceTo(c.pos);
+      if (d > 9 || d > bd) continue;
+      const spot = pot.clone().add(pot.clone().sub(threat).setY(0).normalize().multiplyScalar(ent.P.rMax + 0.45));
+      spot.y = this.floors[c.floor].y;
+      if (!this.reachable(c, spot)) continue;
+      best = { spot, ent }; bd = d;
+    }
+    return best;
+  }
+
+  canSeePlayer(c) {
+    const p = this.game.player;
+    const eye = c.pos.clone().setY(c.pos.y + 0.5);
+    const chest = p.renderPos.clone().setY(p.renderPos.y + 1.2);
+    const d = chest.clone().sub(eye);
+    const len = d.length();
+    if (len > 8) return false;
+    return !this.game.physics.raycast(eye, d.divideScalar(len), len - 0.3, c.col, STATIC_ONLY);
+  }
+
+  // ---- AI + movement (fixed step) ------------------------------------------------
   fixedUpdate(dt) {
     const C = T.clappers;
     for (const c of this.list) {
@@ -139,46 +211,110 @@ export class Clappers {
       c.prevPos.copy(c.pos);
       c.timer -= dt;
       c.squeakT -= dt;
+      c.pulledT -= dt;
+      c.heat = Math.max(0, c.heat - dt * 0.35);
       let wantSpeed = 0;
+      const physical = c.state === 'knocked' || c.pulledT > 0;
       switch (c.state) {
         case 'idle':
-          if (c.timer <= 0) {
-            c.target = this.pickTarget(c);
-            if (c.target) { c.state = 'run'; c.stuckT = 0; } else c.timer = 0.5;
-          }
+          if (c.timer <= 0) this.decide(c);
           break;
+        case 'taunt': {
+          const p = this.game.player.renderPos;
+          c.heading += wrap(Math.atan2(p.x - c.pos.x, p.z - c.pos.z) - c.heading) * (1 - Math.exp(-8 * dt));
+          if (c.timer <= 0) { c.state = 'flee'; c.target = this.pickTarget(c, p) || this.pickTarget(c); c.timer = 2.5; }
+          break;
+        }
+        case 'forage': {
+          wantSpeed = C.runSpeed;
+          const b = c.bauble;
+          if (!b || b.state !== 'loose' || b.claimed) { c.state = 'idle'; c.timer = 0.3; break; }
+          c.target = b.root.position.clone().setY(c.pos.y);
+          if (c.pos.distanceTo(c.target) < 0.42 && this.game.baubles.steal(b)) {
+            c.stash++;
+            c.clapT = 0.45; c.clapRate = 14;
+            sfx.gulp(this.game.listenerDistance(c.pos));
+            c.state = 'idle'; c.timer = 0.6;
+            c.squashV += 4;
+          }
+          if (c.timer <= -6) { c.state = 'idle'; c.timer = 0.2; }
+          break;
+        }
         case 'stumble':
           wantSpeed = 0.6;
-          if (c.timer <= 0) { c.state = 'flee'; c.target = this.pickTarget(c, c.threat) || this.pickTarget(c); c.timer = 3; }
+          if (c.timer <= 0) {
+            const cover = Math.random() < C.hideChance ? this.findCover(c, c.threat) : null;
+            if (cover) { c.state = 'hide'; c.target = cover.spot; c.cover = cover.ent; c.timer = 4; }
+            else { c.state = 'flee'; c.target = this.pickTarget(c, c.threat) || this.pickTarget(c); c.timer = 3; }
+          }
           break;
+        case 'hide':
+          wantSpeed = C.fleeSpeed;
+          if (!c.target || c.pos.distanceTo(c.target) < 0.35 || c.timer <= 0) { c.state = 'cower'; c.timer = 3 + Math.random() * 2.5; }
+          break;
+        case 'cower': {
+          const th = c.threat || this.game.player.renderPos;
+          c.heading += wrap(Math.atan2(th.x - c.pos.x, th.z - c.pos.z) - c.heading) * (1 - Math.exp(-5 * dt));
+          if (c.timer <= 0 || !c.cover?.alive) { c.state = 'flee'; c.target = this.pickTarget(c, th) || this.pickTarget(c); c.timer = 2.5; }
+          break;
+        }
         case 'run':
         case 'flee':
           wantSpeed = c.state === 'flee' ? C.fleeSpeed : C.runSpeed;
-          if (!c.target || c.pos.distanceTo(c.target) < 0.5 || (c.state === 'flee' && c.timer <= 0)) {
-            c.state = 'idle';
-            c.timer = 0.6 + Math.random() * 2;
-            c.target = null;
-          }
+          if (!c.target || c.pos.distanceTo(c.target) < 0.5 || (c.state === 'flee' && c.timer <= 0)) { c.state = 'idle'; c.timer = 0.6 + Math.random() * 2; c.target = null; }
+          break;
+        case 'stunned':
+          c.stunT -= dt;
+          if (c.stunT <= 0) { c.state = 'flee'; c.target = this.pickTarget(c, this.game.player.renderPos); c.timer = 2; }
+          break;
+        case 'scalded':
+          wantSpeed = C.fleeSpeed * 1.1;
+          if (c.grounded && Math.random() < dt * 5) { c.vy = 2.6; c.squashV -= 3; }
+          if (!c.target || c.pos.distanceTo(c.target) < 0.5) c.target = this.pickTarget(c);
+          if (c.timer <= 0) { c.state = 'flee'; c.timer = 1.5; }
+          break;
+        case 'knocked':
+          if (c.grounded && c.kv.lengthSq() < 0.6) { c.state = 'stumble'; c.timer = 0.4; c.threat = c.threat || c.pos.clone(); c.spin = 0; }
           break;
         default: break;
       }
-      c.speed = THREE.MathUtils.damp(c.speed, wantSpeed, 8, dt);
-      // steer
-      if (c.target && c.state !== 'idle') {
-        const want = Math.atan2(c.target.x - c.pos.x, c.target.z - c.pos.z);
-        c.heading += wrap(want - c.heading) * (1 - Math.exp(-10 * dt));
+
+      let desired;
+      if (physical) {
+        if (c.pulledT <= 0) c.kv.y -= 14 * dt;
+        if (c.grounded && c.pulledT <= 0) { const k = Math.exp(-5 * dt); c.kv.x *= k; c.kv.z *= k; }
+        desired = { x: c.kv.x * dt, y: c.kv.y * dt, z: c.kv.z * dt };
+        c.spin += dt * c.kv.length() * 2;
+      } else {
+        c.speed = THREE.MathUtils.damp(c.speed, c.state === 'stunned' || c.state === 'cower' || c.state === 'taunt' ? 0 : wantSpeed, 8, dt);
+        if (c.target && ['run', 'flee', 'forage', 'hide', 'scalded', 'stumble'].includes(c.state)) {
+          const want = Math.atan2(c.target.x - c.pos.x, c.target.z - c.pos.z);
+          c.heading += wrap(want - c.heading) * (1 - Math.exp(-10 * dt));
+        }
+        c.vy -= 14 * dt;
+        desired = { x: Math.sin(c.heading) * c.speed * dt, y: c.vy * dt, z: Math.cos(c.heading) * c.speed * dt };
       }
-      const fwd = new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading));
-      c.vy -= 14 * dt;
-      const desired = { x: fwd.x * c.speed * dt, y: c.vy * dt, z: fwd.z * c.speed * dt };
       this.ctrl.computeColliderMovement(c.col, desired, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, QUERY);
       const mv = this.ctrl.computedMovement();
-      if (this.ctrl.computedGrounded() && c.vy < 0) c.vy = 0;
+      const wasGrounded = c.grounded;
+      c.grounded = this.ctrl.computedGrounded();
+      if (c.grounded && c.vy < 0) c.vy = 0;
+      if (c.grounded && c.kv.y < 0) c.kv.y = 0;
       c.pos.x += mv.x; c.pos.y += mv.y; c.pos.z += mv.z;
-      if (c.pos.y < -5) c.pos.copy(KILN_MOUTH);
+      if (physical && mv.x * mv.x + mv.z * mv.z < desired.x * desired.x * 0.25) { c.kv.x *= -0.3; c.kv.z *= -0.3; } // bounce off walls
+      // long falls shatter them
+      if (!c.grounded) c.peakY = Math.max(c.peakY, c.pos.y);
+      if (c.grounded && !wasGrounded) {
+        const drop = c.peakY - c.pos.y;
+        if (drop > C.fallShatter && c.pulledT <= 0) { this.hit(c, c.pos.clone().setY(c.pos.y + 0.2), new THREE.Vector3(0, -1, 0), 1.2, 'splat'); continue; }
+        if (drop > 0.3) c.squashV -= Math.min(8, drop * 5);
+        this.retarget(c);
+      }
+      if (c.grounded) c.peakY = c.pos.y;
+      if (c.pos.y < -5) { this.hit(c, c.pos.clone(), UP, 1, 'splat'); continue; }
       c.body.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + (HALF + RADIUS) * C.scale, z: c.pos.z });
       // stuck? pick somewhere else
-      if (c.speed > 1) {
+      if (!physical && c.speed > 1) {
         c.stuckT += dt;
         if (c.stuckT > 0.5) {
           if (c.pos.distanceTo(c.lastPos) < c.speed * 0.5 * 0.3) { c.target = this.pickTarget(c); if (!c.target) c.state = 'idle'; }
@@ -189,33 +325,158 @@ export class Clappers {
     }
   }
 
-  // per render frame: animation + interpolated placement
+  // which floor are we on now (after falls)?
+  retarget(c) {
+    const fi = this.floors.findIndex((f) => Math.abs(c.pos.y - f.y) < 0.6);
+    if (fi >= 0) c.floor = fi;
+  }
+
+  decide(c) {
+    const b = this.game.baubles?.near(c.pos, 5).find((bb) => Math.abs(bb.root.position.y - c.pos.y) < 0.8);
+    if (b && Math.random() < 0.85) { c.state = 'forage'; c.bauble = b; c.timer = 0; return; }
+    if (this.canSeePlayer(c) && Math.random() < T.clappers.tauntChance) {
+      c.state = 'taunt'; c.timer = 1.2 + Math.random() * 0.8; c.clapT = c.timer; c.clapRate = 11;
+      return;
+    }
+    c.target = this.pickTarget(c);
+    if (c.target) { c.state = 'run'; c.stuckT = 0; } else c.timer = 0.5;
+  }
+
+  // ---- animation layers (per frame) ---------------------------------------------
   update(dt, alpha) {
     const C = T.clappers;
+    const player = this.game.player.renderPos;
     for (const c of this.list) {
       if (!c.alive) continue;
+      c.t += dt;
+      const moving = c.speed > 0.8 || c.state === 'scalded';
       if (c.state === 'stumble') this.play(c, 'stumble', 0.08);
-      else if (c.speed > 0.8) {
-        this.play(c, 'sprint', 0.12);
-        c.actions.sprint.timeScale = 0.55 * (c.speed / C.runSpeed) + 0.25;
-      } else this.play(c, 'idle', 0.2);
-      c.mixer.update(dt);
+      else if (c.state === 'knocked' || c.pulledT > 0) { this.play(c, 'sprint', 0.08); c.actions.sprint.timeScale = 2.4; }
+      else if (moving) { this.play(c, 'sprint', 0.12); c.actions.sprint.timeScale = 0.55 * (Math.max(c.speed, 2) / C.runSpeed) + 0.25; }
+      else this.play(c, 'idle', 0.2);
+      c.mixer.update(c.state === 'stunned' ? dt * 0.3 : dt);
+
+      // squash spring
+      c.squashV += (-120 * c.squash - 9 * c.squashV) * dt;
+      c.squash += c.squashV * dt;
+      let squash = c.squash;
+      if (c.state === 'cower') squash -= 0.22 + Math.sin(c.t * 40) * 0.015;
+      if (c.state === 'taunt') { c.hop = Math.abs(Math.sin(c.t * 9)) * 0.08; squash += (c.hop < 0.02 ? -0.1 : 0.05); } else c.hop = THREE.MathUtils.damp(c.hop, 0, 10, dt);
+      const b = c.bones;
+      if (b.body && c.bodyInv) b.body.scale.set(1 - squash * 0.5, 1 + squash, 1 - squash * 0.5);
+
+      // lid: clap (taunts, gulps) + look at the courier
+      if (b.head && c.headInv) {
+        let lid = 0;
+        if (c.clapT > 0) { c.clapT -= dt; const ph = Math.sin(c.t * c.clapRate); lid = Math.max(0, ph) * 0.9; if (ph > 0.97 && !c.clapLatch) { c.clapLatch = true; } if (ph < 0 && c.clapLatch) { c.clapLatch = false; sfx.clap(this.game.listenerDistance(c.pos)); } }
+        if (c.state === 'cower') lid = 0.25 + 0.15 * Math.max(0, Math.sin(c.t * 1.7)); // peeking out
+        const wantLook = ['idle', 'taunt', 'cower', 'stunned'].includes(c.state)
+          ? THREE.MathUtils.clamp(wrap(Math.atan2(player.x - c.pos.x, player.z - c.pos.z) - c.heading), -1.2, 1.2) : 0;
+        c.look = THREE.MathUtils.damp(c.look, c.state === 'stunned' ? Math.sin(c.t * 5) * 0.8 : wantLook, 6, dt);
+        const up = _v.copy(UP).applyQuaternion(c.headInv);
+        b.head.quaternion.multiply(_q.setFromAxisAngle(up.normalize(), c.look));
+        const hinge = _v.copy(X).applyQuaternion(c.headInv);
+        b.head.quaternion.multiply(_q.setFromAxisAngle(hinge.normalize(), -lid));
+      }
+      // blink
+      c.blinkT -= dt;
+      if (b.eyes) b.eyes.scale.y = c.blinkT < 0.1 ? 0.15 : 1;
+      if (c.blinkT < 0) c.blinkT = 2 + Math.random() * 4;
+
+      // placement + whole-body flourishes
       c.root.position.lerpVectors(c.prevPos, c.pos, alpha);
-      c.root.rotation.y = c.heading;
+      c.root.position.y += c.hop;
+      c.root.rotation.set(0, c.heading, 0);
+      if (c.state === 'stunned') { c.root.rotation.z = Math.sin(c.t * 6) * 0.18; c.root.rotation.x = Math.cos(c.t * 5) * 0.12; }
+      if (c.state === 'knocked' || c.pulledT > 0) c.root.rotation.x = c.spin;
+      c.root.scale.setScalar(T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045));
+      c.stars.visible = c.state === 'stunned';
+      if (c.stars.visible) c.stars.children.forEach((st, i) => { const a = st.userData.a + c.t * 5; st.position.set(Math.cos(a) * 0.2, Math.sin(c.t * 7 + i) * 0.03, Math.sin(a) * 0.2); st.rotation.y += dt * 8; });
+      if (c.glows && c.markT !== undefined) {
+        c.markT -= dt;
+        if (c.markT <= 0) this.unmark(c);
+      }
     }
   }
 
-  // a shot landed nearby: stumble, squeak, then bolt away
+  // ---- reactions --------------------------------------------------------------
   spook(point, radius = T.clappers.spookRadius) {
     for (const c of this.list) {
-      if (!c.alive || c.state === 'stumble') continue;
+      if (!c.alive || ['stumble', 'stunned', 'knocked', 'hide'].includes(c.state) || c.pulledT > 0) continue;
       const d = c.pos.distanceTo(point);
       if (d > radius) continue;
       c.state = 'stumble';
       c.timer = 0.4;
-      c.threat = point.clone();
+      c.threat = this.game.player.renderPos.clone();
       c.heading = Math.atan2(c.pos.x - point.x, c.pos.z - point.z);
       if (c.squeakT <= 0) { sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.6; }
+    }
+  }
+
+  knock(c, vel) {
+    if (!c.alive) return;
+    c.kv.copy(vel);
+    c.kv.y = Math.max(c.kv.y, 2.5);
+    c.state = 'knocked';
+    c.grounded = false;
+    c.threat = this.game.player.renderPos.clone();
+    if (c.squeakT <= 0) { sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.4; }
+  }
+
+  pull(c, center, strength, dt) {
+    if (!c.alive) return;
+    if (c.state !== 'knocked') c.state = 'knocked';
+    c.pulledT = 0.15;
+    _v.subVectors(center, c.pos.clone().setY(c.pos.y + 0.3));
+    const d = _v.length();
+    _v.divideScalar(d || 1);
+    const tang = new THREE.Vector3().crossVectors(UP, _v).normalize();
+    c.kv.addScaledVector(_v, 16 * strength * dt).addScaledVector(tang, 7 * strength * dt);
+    c.kv.y += 11 * strength * dt;
+    if (d < 0.6) c.kv.multiplyScalar(0.9);
+    c.kv.clampLength(0, 8);
+    c.grounded = false;
+    c.peakY = Math.max(c.peakY, c.pos.y);
+    c.threat = center.clone();
+    if (c.squeakT <= 0) { sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.5; }
+  }
+
+  stun(c, dur, glowMat, xrayMat) {
+    if (!c.alive) return;
+    c.state = 'stunned';
+    c.stunT = dur;
+    c.speed = 0;
+    c.marked = true;
+    c.markT = T.shells.mark.duration;
+    if (!c.glows) {
+      c.glows = [];
+      c.model.traverse((o) => { if (o.isSkinnedMesh && !o.userData.isOutline) c.glows.push(o); });
+      c.glows = c.glows.flatMap((o) => {
+        const gl = addOutline(o, glowMat); gl.renderOrder = 9;
+        if (!xrayMat) return [gl];
+        const xr = new THREE.SkinnedMesh(o.geometry, xrayMat); xr.bind(o.skeleton, o.bindMatrix); xr.renderOrder = 10; xr.frustumCulled = false;
+        o.parent.add(xr);
+        return [gl, xr];
+      });
+    }
+  }
+
+  unmark(c) {
+    c.marked = false;
+    c.glows?.forEach((gl) => gl.parent?.remove(gl));
+    c.glows = null;
+    c.markT = undefined;
+  }
+
+  scald(c, amount) {
+    if (!c.alive) return;
+    c.heat += amount;
+    if (c.heat > 1) { this.hit(c, c.pos.clone().setY(c.pos.y + 0.2), UP, 0.8, 'cooked'); return; }
+    if (c.state !== 'scalded' && c.state !== 'stunned') {
+      c.state = 'scalded';
+      c.timer = 1.4;
+      c.target = this.pickTarget(c);
+      if (c.squeakT <= 0) { sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.3; }
     }
   }
 
@@ -223,27 +484,34 @@ export class Clappers {
     for (const c of this.list) {
       if (!c.alive) continue;
       const d = c.pos.distanceTo(center);
-      if (d < R * 0.7) this.hit(c, c.pos.clone().setY(0.3), c.pos.clone().sub(center).normalize(), 1.4);
-      else if (d < R * 1.6) this.spook(center, R * 1.6);
+      if (d < R * 0.7) this.hit(c, c.pos.clone().setY(c.pos.y + 0.3), c.pos.clone().sub(center).normalize(), 1.4, 'explosion');
+      else if (d < R * 1.6) this.knock(c, c.pos.clone().sub(center).setY(0).normalize().multiplyScalar(6 * (1 - d / (R * 1.6))));
     }
   }
 
-  hit(c, point, dir, power = 1) {
+  hit(c, point, dir, power = 1, cause = 'shot') {
     if (!c.alive) return;
     c.alive = false;
     const game = this.game;
-    const s = T.clappers.scale;
+    const s = T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045);
     game.physics.removeBody(c.body);
     game.scene.remove(c.root);
     c.mixer.stopAllAction();
     const P = prepProfile('clapper', s);
     const rot = new THREE.Quaternion().setFromAxisAngle(UP, c.heading);
-    const vel = new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)).multiplyScalar(c.speed);
+    const vel = new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)).multiplyScalar(c.speed).add(c.kv);
     game.breakables.burst(P, new THREE.Color(PALETTE.potLight), c.pos.clone(), rot, vel, new THREE.Vector3(), point, dir, power * 1.2, P.fullHeight);
-    game.fx.embers(c.pos.clone().setY(0.3), 12);
-    game.onClapper?.(c);
+    // the juicy part: Lachryma baubles
+    const n = Math.round((T.lachryma.clapperDrop + c.stash) * (c.marked || c.state === 'stunned' ? 2 : 1));
+    game.baubles?.spawn(c.pos.clone().setY(c.pos.y + 0.35), n);
+    game.fx.embers(c.pos.clone().setY(c.pos.y + 0.3), 12);
+    game.onClapper?.(c, DEATH_TEXT[cause] || 'CLAPPED');
     this.list = this.list.filter((x) => x !== c);
-    game.fx.after(T.clappers.respawn, () => this.spawn(KILN_MOUTH.clone(), true));
+    const floor = c.floor;
+    game.fx.after(T.clappers.respawn, () => {
+      const f = this.floors[floor];
+      this.spawn(f.spawn.clone(), true, floor);
+    });
   }
 
   clear() {
