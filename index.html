@@ -48,6 +48,9 @@
     #reloadbar { position: absolute; left: 50%; top: calc(50% + 40px); width: 80px; height: 3px; transform: translateX(-50%); background: rgba(28,13,8,.6); opacity: 0; }
     #reloadbar i { display: block; height: 100%; width: 0; background: var(--accent); }
     #mode { position: absolute; left: 24px; bottom: 22px; opacity: .7; letter-spacing: .12em; font-size: 12px; }
+    #speed { position: absolute; left: 24px; bottom: 42px; font-size: 12px; letter-spacing: .08em; opacity: .75; font-variant-numeric: tabular-nums; }
+    #speed b { font-size: 20px; color: #fff1dc; font-weight: normal; }
+    #speed i { font-style: normal; color: var(--accent); }
     #stats { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); letter-spacing: .1em; font-size: 12px; opacity: .85;
       background: rgba(28,13,8,.35); padding: 4px 10px; border-radius: 3px; }
     #popups { position: absolute; left: 50%; top: 32%; transform: translateX(-50%); }
@@ -101,6 +104,7 @@
     <div id="trialarrow"></div>
     <div id="popups"></div>
     <div id="mode"></div>
+    <div id="speed"></div>
     <div id="lachryma"><div class="lab">LACHRYMA <span class="num"></span></div><div class="bar"><div class="fill"></div><div class="res"></div></div></div>
     <div id="shells"></div>
   </div>
@@ -109,10 +113,12 @@
       <h1>CLAY WORKSHOP</h1>
       <p>Mechanics sandbox. Break every pot. Needs a keyboard and mouse.</p>
       <table>
-        <tr><td>WASD / Shift</td><td>move / sprint</td></tr>
-        <tr><td>Space</td><td>jump (into a ledge: mantle)</td></tr>
-        <tr><td>C</td><td>crouch / slide when running (C + Space: slide-jump)</td></tr>
+        <tr><td>WASD / Shift</td><td>move / sprint (any direction but back)</td></tr>
+        <tr><td>Space / again in the air</td><td>jump / double jump (into a ledge: mantle)</td></tr>
+        <tr><td>Space by a wall, hold W</td><td>wallrun; Space again to wall jump</td></tr>
+        <tr><td>C</td><td>crouch / slide when running (C + Space: slide-hop)</td></tr>
         <tr><td>Shift in the air</td><td>air-dash (Lachryma)</td></tr>
+        <tr><td>Hole in the SE corner</td><td>basement movement course (geyser back up)</td></tr>
         <tr><td>Mouse</td><td>look</td></tr>
         <tr><td>Left click</td><td>fire (semi-auto)</td></tr>
         <tr><td>Hold left click</td><td>charge (Lachryma), release to fire a piercing beam</td></tr>

@@ -9,6 +9,7 @@ const _v2 = new THREE.Vector3();
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
 const LOW_HALF = 0.25; // crouched / sliding: 1.1 m
 const STAND_SHAPE = new RAPIER.Capsule(HALF, RADIUS - 0.02);
+const LOW_SHAPE = new RAPIER.Capsule(LOW_HALF, RADIUS - 0.03);
 const QF = RAPIER.QueryFilterFlags;
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -158,11 +159,14 @@ export class Player {
     this.collider.setTranslationWrtParent({ x: 0, y: half + RADIUS, z: 0 });
   }
 
-  canStand() {
-    const hit = this.physics.world.intersectionWithShape(
-      { x: this.pos.x, y: this.pos.y + HALF + RADIUS + 0.03, z: this.pos.z }, { x: 0, y: 0, z: 0, w: 1 }, STAND_SHAPE,
+  canStand() { return this.fits(this.pos, false); }
+
+  /** Would the capsule (standing or low) fit with its feet at p? Loose props don't count. */
+  fits(p, low) {
+    const half = low ? LOW_HALF : HALF;
+    return !this.physics.world.intersectionWithShape(
+      { x: p.x, y: p.y + half + RADIUS + 0.03, z: p.z }, { x: 0, y: 0, z: 0, w: 1 }, low ? LOW_SHAPE : STAND_SHAPE,
       QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
-    return !hit;
   }
 
   // ---- the fixed step -------------------------------------------------------------
@@ -370,9 +374,11 @@ export class Player {
     }
     if (this.grounded && this.vel.y < 0) this.vel.y = 0;
     // walls remove only the velocity pointing into them (a glancing hit keeps its speed)
+    // (only if the wall actually stopped us: a lip the controller stepped over costs nothing)
     for (const n of walls) {
+      const blocked = (mv.x * n.x + mv.z * n.z) - (want.x * n.x + want.z * n.z) > 1e-4;
       const d = this.vel.x * n.x + this.vel.z * n.z;
-      if (d < 0) { this.vel.x -= n.x * d; this.vel.z -= n.z * d; }
+      if (blocked && d < 0) { this.vel.x -= n.x * d; this.vel.z -= n.z * d; }
     }
     if (walls.length && this.stuck > 1) { this.vel.x = mv.x / dt; this.vel.z = mv.z / dt; } // really wedged in a corner
 
@@ -510,11 +516,10 @@ export class Player {
     if (!down || down.normal.y < 0.7) return false;
     const h = down.point.y - P.y;
     if (h < minH || h > M.mantleMax) return false;
-    // headroom above the ledge (crouch height is enough), and over our own head for the climb
-    const up = { x: down.point.x, y: down.point.y + 0.05, z: down.point.z };
-    if (this.physics.raycast(up, UP, LOW_HALF * 2 + RADIUS * 2 - 0.05, this.collider, GROUPS.controllerQuery, solid)) return false;
-    if (this.physics.raycast({ x: P.x, y: P.y + this.height - 0.1, z: P.z }, UP, h + 0.1, this.collider, GROUPS.controllerQuery, solid)) return false;
+    // room to crouch on the ledge (a thin lip against a wall doesn't count), and over our own head for the climb
     const to = new THREE.Vector3(down.point.x, down.point.y + 0.02, down.point.z).addScaledVector(f, 0.15);
+    if (!this.fits(to, true)) return false;
+    if (this.physics.raycast({ x: P.x, y: P.y + this.height - 0.1, z: P.z }, UP, h + 0.1, this.collider, GROUPS.controllerQuery, solid)) return false;
     const speed = hlen(this.vel);
     this.mantle = { from: P.clone(), to, t: 0, dur: M.mantleTime * THREE.MathUtils.lerp(0.75, 1.1, h / M.mantleMax), exit: Math.max(2.5, speed * 0.6) };
     this.sliding = false;

@@ -300,6 +300,8 @@ async function main() {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
+      speed: Math.hypot(player.vel.x, player.vel.z),
+      move: player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : !player.grounded ? 'AIR' : '',
     });
 
     input.endFrame();

@@ -41,8 +41,8 @@ export const DEFAULTS = {
     wallrunMinSpeed: 4.2,
     wallrunSpeed: 9.5,
     wallrunAccel: 7,
-    wallrunHold: 0.4, // seconds of near-zero gravity at the start
-    wallrunGravity: 3.5,
+    wallrunHold: 0.5, // seconds of light gravity at the start
+    wallrunGravity: 3,
     wallrunMaxFall: 3,
     wallrunMaxTime: 1.8,
     wallrunStartUp: 1.2,

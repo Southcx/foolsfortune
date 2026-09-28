@@ -18,8 +18,9 @@ npm run build      # static bundle in dist/
 
 | Input | Action |
 | --- | --- |
-| WASD / Shift | move / sprint |
-| Space | jump (into a ledge: mantle) |
+| WASD / Shift | move / sprint (any direction but backwards) |
+| Space / again in the air | jump / double jump (into a ledge: mantle) |
+| Space by a wall, holding W | wallrun; Space again to wall jump |
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Mouse | look |
@@ -76,10 +77,33 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 
 ## Moving around
 
-Slide (C while running) for a burst of speed; slopes and ramps keep you going, and jumping out
-of a slide keeps the momentum (land with C held to chain another). Push into a ledge while
-jumping or falling to mantle onto it (the mezzanine is in reach from the floor). Shift in the
-air dashes. Air steering never bleeds speed above a run, so slide-jumps and dashes carry.
+Titanfall-flavoured. Sprint works in any direction but backwards. Crouch while running (above
+5 m/s, or straight out of a sprint) to slide: the first slide in a while gets a speed boost,
+slopes keep you going, and jumping out keeps the momentum (land with C held to chain another).
+Jump beside a wall while holding W to wallrun (the camera tilts away from the wall; gravity
+eases back in over a second or so), and jump again to kick off it. One air jump, refilled on
+the ground and on walls. Push into a ledge while jumping or falling to mantle onto it. Shift in
+the air dashes. Air steering never bleeds speed above a run, and landing fast bleeds it over a
+moment instead of snapping to run speed, so a quick hop keeps it. Top speed is capped at 14 m/s.
+The speedometer (bottom left) shows speed, a short peak hold, and the current move.
+
+Crouching and sliding shorten the capsule to 1.1 m (you only stand up with headroom), and the
+first-person eye follows the posed head so it never ends up inside the body.
+
+**The walking hitch** was Rapier's character controller occasionally returning zero motion
+for a step while the capsule rested in its contact margin, which then zeroed the velocity.
+Grounded steps no longer push into the floor, a stalled move is retried, and walls only take
+away the velocity pointing into them. Stairs collide as smooth ramps.
+
+## The basement
+
+A movement course under the workshop: drop through the glowing hole in the ground floor's
+south-east corner, ride the geyser beside the landing back up. The loop runs stairs, a wallrun
+over an 8 m gap, gap jumps of 2 / 3 / 4.5 m (the last wants a double jump or a slide-hop), a
+slide ramp into a 1.2 m tunnel (crouch or slide under), mantle blocks of 0.9 / 1.4 / 1.9 m and a
+zigzag wallrun back to the start, with a free-standing wall in the middle for practice. The
+floor has a 2 m grid, and falling anywhere just drops you on it. A few jars along the way
+come back after being broken.
 
 ## Cracks and kintsugi
 
@@ -120,7 +144,7 @@ arrow points at the nearest one, two breaks within 1.5 s take a second off, and 
 | File | Role |
 | --- | --- |
 | `src/main.js` | bootstrap, fixed-step loop (60 Hz physics, interpolated camera) |
-| `src/player.js` | Rapier kinematic character controller, FP/TP camera, recoil punch |
+| `src/player.js` | Rapier kinematic character controller (slide, wallrun, mantle, dash), FP/TP camera, recoil punch |
 | `src/weapon.js` | firing, spread/bloom, hitscan, reload, gun placement (FP camera-space / TP aim-space) |
 | `src/character.js` | procedural animation: FK gait, spine aim, two-bone arm IK onto the gun |
 | `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture |
@@ -131,6 +155,7 @@ arrow points at the nearest one, two breaks within 1.5 s take a second off, and 
 | `src/specials.js` | ricochet and homing shells, lock-on reticles |
 | `src/cracks.js` | crack paths on pot surfaces, kintsugi gold seams |
 | `src/trial.js` | the time trial |
+| `src/basement.js` | the basement movement course |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
 | `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |

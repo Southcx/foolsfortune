@@ -1,3 +1,4 @@
+import { buildBasement, groundFloor, spawnBasement, inHole, HOLE, BASE_Y } from './basement.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from './physics.js';
@@ -106,16 +107,23 @@ export class Level {
     // shell: walls and roof don't cast shadows, so sun spills through the skylights
     // onto the upper floor and down the atrium onto the ground floor
     const wall = { outline: false, shadow: false };
-    this.box([0, -0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.floor, { outline: false });
+    groundFloor(this, W, D, C.floor); // (with the basement hole cut out)
     this.box([0, H + 0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.deep, wall);
     this.box([-(W + 0.25), H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
     this.box([W + 0.25, H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
     this.box([0, H / 2, -(D + 0.25)], [W * 2 + 1, H, 0.5], C.wall, wall);
     this.box([0, H / 2, D + 0.25], [W * 2 + 1, H, 0.5], C.wall, wall);
-    // floor planks / tiles: subtle darker strips (visual only)
+    // floor planks / tiles: subtle darker strips (visual only, broken around the basement hole)
+    const lineX = (y, z, a, b) => this.box([(a + b) / 2, y, z], [b - a, 0.01, 0.06], C.deep, { outline: false, collide: false, shadow: false });
+    const lineZ = (y, x, a, b) => this.box([x, y, (a + b) / 2], [0.06, 0.01, b - a], C.deep, { outline: false, collide: false, shadow: false });
     for (const y of [0.005, F2 + 0.005]) {
-      for (let z = -D + 1.5; z < D; z += 3) this.box([0, y, z], [W * 2, 0.01, 0.06], C.deep, { outline: false, collide: false, shadow: false });
-      for (let x = -W + 2; x < W; x += 4) this.box([x, y, 0], [0.06, 0.01, D * 2], C.deep, { outline: false, collide: false, shadow: false });
+      const cut = y < 1;
+      for (let z = -D + 1.5; z < D; z += 3) {
+        if (cut && z > HOLE.z0 && z < HOLE.z1) { lineX(y, z, -W, HOLE.x0); lineX(y, z, HOLE.x1, W); } else lineX(y, z, -W, W);
+      }
+      for (let x = -W + 2; x < W; x += 4) {
+        if (cut && x > HOLE.x0 && x < HOLE.x1) { lineZ(y, x, -D, HOLE.z0); lineZ(y, x, HOLE.z1, D); } else lineZ(y, x, -D, D);
+      }
     }
     // baseboards
     for (const y of [0.15, F2 + 0.15]) {
@@ -161,6 +169,7 @@ export class Level {
     this.buildRange();
     this.buildUpperFloor();
     this.buildFeatures();
+    buildBasement(this, W, D);
 
     // workbenches
     this.bench(-3.2, -4.5, 2.6, 1.0);
@@ -273,15 +282,22 @@ export class Level {
   // Lachryma geyser (lift up the atrium) and shell reliquaries
   buildFeatures() {
     const C = PALETTE;
-    this.geyser = { pos: new THREE.Vector3(2.9, 0, -1.6), exit: new THREE.Vector3(5.2, F2, -1.6), r: 0.9, t: 0 };
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.07, 5, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
-    ring.rotation.x = Math.PI / 2;
-    ring.position.copy(this.geyser.pos).y += 0.05;
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.MeshBasicMaterial({ color: C.cream, transparent: true, opacity: 0.35 }));
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.copy(this.geyser.pos).y += 0.03;
-    this.scene.add(ring, disc);
-    this.box([this.geyser.pos.x, 0.03, this.geyser.pos.z], [1.9, 0.06, 1.9], C.dark, { collide: false });
+    // Lachryma geysers: stand in the ring and it lifts you to `top`, then carries you to `exit`
+    this.geysers = [
+      { pos: new THREE.Vector3(2.9, 0, -1.6), exit: new THREE.Vector3(5.2, F2, -1.6), top: F2 + 1.7, maxV: 12, r: 0.9, t: 0 },
+      { pos: new THREE.Vector3(7.9, BASE_Y, -13.5), exit: new THREE.Vector3(6.7, 0, -11.2), top: 1.5, maxV: 20, r: 0.9, t: 0 },
+    ];
+    this.geyser = this.geysers[0];
+    for (const g of this.geysers) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.07, 5, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
+      ring.rotation.x = Math.PI / 2;
+      ring.position.copy(g.pos).y += 0.05;
+      const disc = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.MeshBasicMaterial({ color: C.cream, transparent: true, opacity: 0.35 }));
+      disc.rotation.x = -Math.PI / 2;
+      disc.position.copy(g.pos).y += 0.03;
+      this.scene.add(ring, disc);
+      this.box([g.pos.x, g.pos.y + 0.03, g.pos.z], [1.9, 0.06, 1.9], C.dark, { collide: false });
+    }
     this.reliquaries = [];
     for (const p of [[-3.4, 0, -13.2], [8.4, F2, -4.6]]) {
       const pos = new THREE.Vector3(...p);
@@ -308,36 +324,40 @@ export class Level {
   }
 
   updateFeatures(dt, game) {
-    const g = this.geyser, p = game.player, fx = game.fx;
-    g.t += dt;
-    // particle column
-    if (Math.random() < 0.9) {
-      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.6;
-      fx.add.emit({ pos: g.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(0, 6 + Math.random() * 6, 0),
-        life: 0.9, size: 0.05, sizeEnd: 0.01, color: new THREE.Color(PALETTE.cream), drag: 0.3, twinkle: 18 });
-    }
-    const feet = p.pos;
-    const dx = feet.x - g.pos.x, dz = feet.z - g.pos.z;
-    const inCol = dx * dx + dz * dz < g.r * g.r;
-    if (inCol && feet.y < F2 + 1.3 && !p.exiting) {
-      if (!p.riding) { p.riding = true; sfx.geyser(); }
-      // ballistic ease-out: just enough speed to crest above the balustrade
-      const need = Math.sqrt(2 * T.movement.gravity * Math.max(0, F2 + 1.7 - feet.y));
-      p.vel.y = Math.max(p.vel.y, Math.min(12, need + 0.5));
-      p.vel.x *= 0.8; p.vel.z *= 0.8;
-      p.grounded = false;
-    } else if (p.riding && feet.y > F2 + 1.2) {
-      // over the balustrade: carry the rider onto the landing
-      p.riding = false;
-      p.exiting = 1.2;
+    const p = game.player, fx = game.fx, feet = p.pos;
+    const g = this.geyser;
+    for (const gy of this.geysers) {
+      gy.t += dt;
+      // particle column
+      if (Math.random() < 0.9) {
+        const a = Math.random() * Math.PI * 2, r = Math.random() * 0.6;
+        fx.add.emit({ pos: gy.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(0, 6 + Math.random() * 6, 0),
+          life: 0.9, size: 0.05, sizeEnd: 0.01, color: new THREE.Color(PALETTE.cream), drag: 0.3, twinkle: 18 });
+      }
+      const dx = feet.x - gy.pos.x, dz = feet.z - gy.pos.z;
+      const inCol = dx * dx + dz * dz < gy.r * gy.r;
+      if (inCol && feet.y > gy.pos.y - 0.5 && feet.y < gy.top - 0.4 && !p.exiting) {
+        if (p.riding !== gy) { p.riding = gy; sfx.geyser(); }
+        // ballistic ease-out: just enough speed to crest over `top`
+        const need = Math.sqrt(2 * T.movement.gravity * Math.max(0, gy.top - feet.y));
+        p.vel.y = Math.max(p.vel.y, Math.min(gy.maxV, need + 0.5));
+        p.vel.x *= 0.8; p.vel.z *= 0.8;
+        p.grounded = false;
+        p.wallrun = null;
+      } else if (p.riding === gy && feet.y > gy.top - 0.5) {
+        // over the lip: carry the rider onto the landing
+        p.riding = null;
+        p.exiting = 1.2;
+        p.exitTo = gy.exit;
+      }
+      if (p.riding === gy && !inCol && feet.y < gy.top - 1) p.riding = null;
     }
     if (p.exiting) {
       p.exiting -= dt;
-      const d = g.exit.clone().sub(feet).setY(0);
+      const d = p.exitTo.clone().sub(feet).setY(0);
       if (d.length() < 0.4 || p.grounded || p.exiting <= 0) p.exiting = 0;
       else { const v = d.normalize().multiplyScalar(5); p.vel.x = v.x; p.vel.z = v.z; }
     }
-    if (p.riding && !inCol && feet.y < F2) p.riding = false;
     // shell reliquaries
     for (const r of this.reliquaries) {
       r.cool -= dt;
@@ -566,6 +586,7 @@ export class Level {
     for (const t of this.targetDefs) B.spawn(t);
 
     this.spawnUpper(pot, big, colors, smalls);
+    spawnBasement(B);
 
     // crates
     const crates = [[4.6, 3.6], [5.35, 3.6], [4.6, 4.35], [5.35, 4.35]];
@@ -573,6 +594,11 @@ export class Level {
     this.crate([4.95, 1.05, 3.95], 0.7);
     for (const [x, z] of [[-6.2, -1], [-6.2, -0.25]]) this.crate([x, 0.35, z], 0.7);
     this.crate([-6.2, 1.05, -0.6], 0.7);
+    // nothing parked over the basement hole
+    for (const e of [...B.items]) {
+      const t = e.body.translation();
+      if (t.y > -0.5 && t.y < 1 && inHole(t.x, t.z, 0.4)) B.removeQuiet(e);
+    }
   }
 
   // ---- second floor population ------------------------------------------------

@@ -17,6 +17,7 @@ export class Hud {
       reload: document.getElementById('reloadbar'),
       reloadFill: document.querySelector('#reloadbar i'),
       charge: document.getElementById('charge'),
+      speed: document.getElementById('speed'),
       chargeArc: document.querySelector('#charge circle.arc'),
     };
     this.hitT = 0;
@@ -58,7 +59,11 @@ export class Hud {
     setTimeout(() => d.remove(), 900);
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, shots, hits, total, charge = 0, pool, shells }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, shots, hits, total, charge = 0, pool, shells, speed = 0, move = '' }) {
+    // speedometer (with a short peak hold, for tuning movement)
+    this.peakT = (this.peakT || 0) - dt;
+    if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
+    this.el.speed.innerHTML = `<b>${speed.toFixed(1)}</b> m/s · peak ${this.peak.toFixed(1)} ${move ? `<i>${move}</i>` : ''}`;
     const h = window.innerHeight;
     const px = Math.tan((spreadDeg * Math.PI) / 180) / Math.tan((fov * Math.PI) / 360) * (h / 2);
     const gap = 4 + px;
