@@ -125,10 +125,12 @@ export class Player {
     this.landT = (this.landT || 0) - dt;
 
     if (this.mantle) { this.stepMantle(dt); return; }
+    if (this.freeze) { this.jumpBuf = this.slideBuf = this.dashBuf = 0; this.jumpHeldLast = true; } // trial countdown
+    const live = this.freeze ? 0 : 1;
 
     const f = this.forward(_v), r = this.right(_v2);
-    const ix = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
-    const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
+    const ix = live * ((inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0));
+    const iz = live * ((inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0));
     const wish = new THREE.Vector3().addScaledVector(f, iz).addScaledVector(r, ix);
     if (wish.lengthSq() > 1) wish.normalize();
     const wishDir = wish.clone();

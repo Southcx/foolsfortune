@@ -19,15 +19,18 @@ npm run build      # static bundle in dist/
 | Input | Action |
 | --- | --- |
 | WASD / Shift | move / sprint |
-| Space | jump |
+| Space | jump (into a ledge: mantle) |
+| C | crouch; while running, slide (jump out of it to keep the speed) |
+| Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
-| F / middle click | fire the selected shell |
-| 1–5 / mouse wheel | pick a shell: slice, push, well, mark, bomb |
+| F / middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
+| 1–7 / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek |
 | Right click (hold) | aim down sights |
 | V | toggle first / third person |
 | Q | swap shoulder (third person) |
+| G | time trial (again to restart) |
 | T | reset the room |
 | Tab | tuning panel (frees the mouse) |
 | F3 | physics debug wireframe |
@@ -65,9 +68,33 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 | --- | --- |
 | Slice | a blade plane along the shot cuts pots, shards, crates and earlier slices cleanly in two; pierces a whole row |
 | Push | a cone of force: shelves get swept, clapperjars go flying |
-| Well | a lobbed singularity that drags everything into orbit for 3 s, then pops |
+| Well | a lobbed singularity that drags everything into orbit for 3 s, then pops; debris that reaches the core is crushed, and every few pieces condense into a Lachryma bauble |
 | Mark | stuns clapperjars (dizzy stars) and marks pots in a radius; marked things glow through walls, take double damage and drop Lachryma |
 | Bomb | a lobbed clay grenade: splash damage, a spray of molten slip that splats and cools, and a hot pool that cooks pots and scalds clapperjars |
+| Bank | a ricochet round: banks off walls and floors up to 5 times, hits harder each bounce and bends toward a target after each one. ADS previews the first bounce |
+| Seek | hold to paint up to 6 targets (the lock-on squares spin in and snap together), release to loose a fan of seekers |
+
+## Moving around
+
+Slide (C while running) for a burst of speed; slopes and ramps keep you going, and jumping out
+of a slide keeps the momentum (land with C held to chain another). Push into a ledge while
+jumping or falling to mantle onto it (the mezzanine is in reach from the floor). Shift in the
+air dashes. Air steering never bleeds speed above a run, so slide-jumps and dashes carry.
+
+## Cracks and kintsugi
+
+Pots that survive a hit crack from the impact point, and at 80/50/25% health the cracks spread
+and the pot gets easier to knock over and break. When you're not nearby, clapperjars go to
+work: they mend badly cracked pots (the cracks turn to gold seams and the pot gets tougher)
+and rebuild broken ones where they fell, sweeping the shards back in. Gold pots drop
+Lachryma when you break them again.
+
+## Time trial
+
+Press **G**: the room resets, shells and Lachryma are topped up, and twelve glowing jars appear
+across both floors. Break them all. It's meant to be friendly: the jars glow through walls, an
+arrow points at the nearest one, two breaks within 1.5 s take a second off, and the medal times
+(tunable under `trial`) are generous. Your best time is kept in the browser.
 
 ## What's in the room
 
@@ -100,7 +127,10 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 | `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions |
 | `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
 | `src/lachryma.js` | the Lachryma energy pool + collectable baubles |
-| `src/shells.js` | shell inventory and the five shell effects, projectiles, molten/slip fluid |
+| `src/shells.js` | shell inventory and the first five shell effects, projectiles, molten/slip fluid |
+| `src/specials.js` | ricochet and homing shells, lock-on reticles |
+| `src/cracks.js` | crack paths on pot surfaces, kintsugi gold seams |
+| `src/trial.js` | the time trial |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
 | `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |

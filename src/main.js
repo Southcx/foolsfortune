@@ -19,6 +19,7 @@ import clapperB64 from './assets/clapperjar.glb?b64';
 import { Clappers } from './clappers.js';
 import { LachrymaPool, Baubles } from './lachryma.js';
 import { Shells, SHELL_TYPES } from './shells.js';
+import { Trial } from './trial.js';
 
 const FIXED = 1 / 60;
 
@@ -60,9 +61,10 @@ async function main() {
 
   const stats = { broken: 0, total: 0 };
   const game = {
-    scene, physics, fx, hud, camera,
+    scene, physics, fx, hud, camera, stats,
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent) {
+      if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) { hud.onBroken(stats.broken, 0); return; }
       stats.broken++;
       hud.onBroken(stats.broken);
@@ -130,6 +132,7 @@ async function main() {
   const shells = new Shells(game);
   game.shells = shells;
   hud.buildShells(SHELL_TYPES);
+  game.input = input;
 
   // physics debug lines (F3)
   const dbgGeo = new THREE.BufferGeometry();
@@ -139,6 +142,7 @@ async function main() {
   scene.add(dbg);
 
   const resetRoom = () => {
+    game.trial?.abort();
     fx.timed.length = 0;
     level.clearDynamic();
     weapon.clearDebris();
@@ -166,6 +170,9 @@ async function main() {
     resetRoom,
   });
   setOutlineThickness(T.visual.outline);
+  game.resetRoom = resetRoom;
+  const trial = new Trial(game);
+  game.trial = trial;
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -223,6 +230,7 @@ async function main() {
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
+    trial.update(dt);
     player.look(dt, weapon.adsEase || 0);
     player.chargeLevel = weapon.charge;
     weapon.update(dt, input, player);
@@ -297,7 +305,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, manual: false };
   window.__ready = true;
 }
 

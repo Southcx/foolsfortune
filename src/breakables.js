@@ -491,6 +491,16 @@ export class Breakables {
     return ent;
   }
 
+  /** Take an intact pot away without breaking it (no shards, no side effects). */
+  removeQuiet(ent) {
+    if (!ent.alive || ent.rope) return;
+    ent.alive = false;
+    this.items.delete(ent);
+    this.physics.removeSynced(ent.sync);
+    this.physics.removeBody(ent.body);
+    this.scene.remove(ent.mesh);
+  }
+
   /** Mend a cracked (still standing) pot: cracks turn to gold, and it's tougher. */
   mend(ent) {
     if (!ent.alive) return;

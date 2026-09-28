@@ -203,6 +203,8 @@ export const DEFAULTS = {
   physics: {
     gravity: 14,
   },
+  // time trial medals (seconds, generous) and the quick-double bonus
+  trial: { gold: 90, silver: 150, bronze: 240, quickWindow: 1.5, quickBonus: 1 },
   anim: {
     strideWalk: 1.45,
     strideRun: 2.3,

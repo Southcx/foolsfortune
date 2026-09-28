@@ -72,6 +72,18 @@
     .lock span { position: absolute; left: calc(var(--s) / 2 + 3px); top: calc(var(--s) / -2 - 6px); font-size: 11px; color: #fff1dc; text-shadow: 0 1px 0 #1c0d08; }
     .lock.burst { animation: lburst .25s ease-out forwards; }
     @keyframes lburst { to { opacity: 0; scale: 1.9; } }
+    #trial { position: absolute; left: 50%; top: 48px; transform: translateX(-50%); text-align: center; display: none; }
+    #trial .row { display: flex; gap: 14px; align-items: baseline; justify-content: center; }
+    #trial .time { font-size: 30px; color: #fff1dc; letter-spacing: .06em; text-shadow: 0 2px 0 #1c0d08; font-variant-numeric: tabular-nums; }
+    #trial .count { font-size: 16px; color: var(--accent); }
+    #trial .medals { font-size: 10px; letter-spacing: .12em; opacity: .7; margin-top: 2px; }
+    #trialbig { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 64px; color: #fff1dc; text-align: center;
+      letter-spacing: .08em; text-shadow: 0 3px 0 #1c0d08, 0 0 24px rgba(255,178,122,.6); display: none; }
+    #trialbig small { display: block; font-size: 16px; letter-spacing: .2em; color: var(--accent); margin-top: 8px; line-height: 1.6; }
+    #trialarrow { position: absolute; left: 0; top: 0; width: 0; height: 0; display: none; }
+    #trialarrow::before { content: ''; position: absolute; left: -9px; top: -9px; width: 0; height: 0; }
+    #trialarrow.edge::before { border-left: 18px solid #ffb27a; border-top: 9px solid transparent; border-bottom: 9px solid transparent; filter: drop-shadow(0 0 4px #ffb27a); }
+    #trialarrow.over::before { left: -6px; top: -14px; border-top: 10px solid #fff1dc; border-left: 6px solid transparent; border-right: 6px solid transparent; }
     #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: .2em; z-index: 11; background: var(--bg); }
   </style>
 </head>
@@ -84,6 +96,9 @@
     <div id="reloadbar"><i></i></div>
     <div id="stats"></div>
     <div id="locks"></div>
+    <div id="trial"><div class="row"><span class="time">0:00.0</span><span class="count">0/12</span></div><div class="medals"></div></div>
+    <div id="trialbig"></div>
+    <div id="trialarrow"></div>
     <div id="popups"></div>
     <div id="mode"></div>
     <div id="lachryma"><div class="lab">LACHRYMA <span class="num"></span></div><div class="bar"><div class="fill"></div><div class="res"></div></div></div>
@@ -107,6 +122,7 @@
         <tr><td>Glowing floor ring</td><td>Lachryma geyser up to the gallery</td></tr>
         <tr><td>V</td><td>toggle 1st / 3rd person</td></tr>
         <tr><td>Q</td><td>swap shoulder (3rd person)</td></tr>
+        <tr><td>G</td><td>time trial: break the 12 glowing jars (G again to restart)</td></tr>
         <tr><td>T</td><td>reset room</td></tr>
         <tr><td>Tab</td><td>tuning panel (frees the mouse)</td></tr>
         <tr><td>F3</td><td>physics debug lines</td></tr>
