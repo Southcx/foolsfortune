@@ -307,6 +307,27 @@ class Sfx {
     this.tone(t + 0.05, 0.12, { f0: f * 2, f1: f * 2, type: 'sine', gain: 0.25, dest: d });
   }
 
+  creak(stage = 1, dist = 5) {
+    if (!this.ok() || !this.allow('creak', 8)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5 / (0.5 + dist * 0.1), 0.4);
+    const f = 260 - stage * 40;
+    this.tone(t, 0.18 + stage * 0.06, { f0: f * 1.4, f1: f, type: 'sawtooth', gain: 0.08, dest: d });
+    this.noise(t, 0.12, { type: 'bandpass', f0: 2600, f1: 1200, q: 4, gain: 0.5, dest: d });
+  }
+
+  // kintsugi: a clapper's little hammer taps, and a bright chime when the pot's whole again
+  tap(dist = 5) {
+    if (!this.ok() || !this.allow('tap', 12)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3 / (0.5 + dist * 0.1), 0.3);
+    this.tone(t, 0.05, { f0: 1500 + Math.random() * 400, f1: 1200, type: 'triangle', gain: 0.3, dest: d });
+  }
+
+  mended(dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.08), 0.8);
+    for (const [k, f] of [[0, 1047], [0.08, 1319], [0.16, 1568], [0.24, 2093]]) this.tone(t + k, 0.5, { f0: f, f1: f, type: 'sine', gain: 0.22, dest: d });
+  }
+
   slide() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.5, 0.2);

@@ -221,11 +221,56 @@ function ringUs(P, spacing) {
   return us;
 }
 
+function ringSpacing(P) {
+  return Math.min((2 * Math.PI * P.rMax) / P.segs * 0.85, P.pattern.length ? 0.035 + P.height * 0.03 : 1);
+}
+
+/** The (ring, segment) grid the intact mesh is built on (for points exactly on its facets). */
+export function surfaceGrid(P) {
+  return { us: ringUs(P, ringSpacing(P)), S: P.segs };
+}
+
+/**
+ * Point on the *faceted* outer surface at (arc-length u, angle ang): the same
+ * triangles buildPotGeometry emits, so decals drawn here sit flush on the mesh.
+ */
+export function facetPoint(P, grid, u, ang, out = new THREE.Vector3()) {
+  const { us, S } = grid;
+  u = THREE.MathUtils.clamp(u, 0, P.len);
+  let i = 0;
+  while (i < us.length - 2 && us[i + 1] < u) i++;
+  const s = THREE.MathUtils.clamp((u - us[i]) / Math.max(1e-6, us[i + 1] - us[i]), 0, 1);
+  const seg = (Math.PI * 2) / S;
+  const fj = (((ang / seg) % S) + S) % S;
+  const j = Math.floor(fj), t = fj - j;
+  const a = potPoint(P, us[i], j * seg, false, _fa);
+  const b = potPoint(P, us[i], (j + 1) * seg, false, _fb);
+  const c = potPoint(P, us[i + 1], (j + 1) * seg, false, _fc);
+  const d = potPoint(P, us[i + 1], j * seg, false, _fd);
+  // quads are split along a–c: (a, d, c) where t <= s, (a, c, b) where t >= s
+  if (t <= s) return out.copy(a).addScaledVector(_fe.subVectors(d, a), s).addScaledVector(_fe.subVectors(c, d), t);
+  return out.copy(a).addScaledVector(_fe.subVectors(b, a), t).addScaledVector(_fe.subVectors(c, b), s);
+}
+const _fa = new THREE.Vector3(), _fb = new THREE.Vector3(), _fc = new THREE.Vector3(), _fd = new THREE.Vector3(), _fe = new THREE.Vector3();
+
+/** Nearest (u, ang) surface parameters to a local-space point. */
+export function locateOnPot(P, p) {
+  const f = THREE.MathUtils.clamp(p.y / P.height, 0, 1);
+  const ang = Math.atan2(p.z, p.x) - P.twist * f;
+  let best = 0, bd = Infinity;
+  const q = new THREE.Vector3();
+  for (let k = 0; k <= 48; k++) {
+    const u = (P.len * k) / 48;
+    const d = potPoint(P, u, ang, false, q).distanceToSquared(p);
+    if (d < bd) { bd = d; best = u; }
+  }
+  return { u: best, ang };
+}
+
 /** Non-indexed, per-face coloured geometry (flat lowpoly look, crisp patterns). */
 export function buildPotGeometry(P, baseColor) {
   const S = P.segs;
-  const spacing = Math.min((2 * Math.PI * P.rMax) / S * 0.85, P.pattern.length ? 0.035 + P.height * 0.03 : 1);
-  const us = ringUs(P, spacing);
+  const us = ringUs(P, ringSpacing(P));
   const R = us.length;
   const outer = [], inner = [];
   for (const u of us) {

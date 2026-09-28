@@ -5,13 +5,15 @@ import { T, PALETTE } from './config.js';
 import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
+import { crackPaths, randomPaths, setCracks } from './cracks.js';
 import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from './slicing.js';
 
 export { PROFILES };
 
 const potMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true });
-const crackedMat = potMat.clone();
-crackedMat.color.setScalar(0.78);
+// crack stages: hp fraction thresholds, and how much easier a knock breaks the pot at each stage
+const CRACK_AT = [0.8, 0.5, 0.25];
+const FRAGILE = [1, 0.85, 0.7, 0.5];
 const shardMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true });
 const glazeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.05, flatShading: true });
 const glyphMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
@@ -54,6 +56,7 @@ export class Breakables {
     this.debris = new Set(); // non-breakable dynamic props (crates, bricks) for explosions
     this.ropes = new Set();
     this.slices = [];
+    this.wrecks = []; // broken pots the clapperjars can rebuild (kintsugi)
     physics.forceHandlers.push((h1, h2) => this.onForce(h1, h2));
     physics.collisionHandlers.push((h1, h2) => this.onCollision(h1, h2));
   }
@@ -119,12 +122,16 @@ export class Breakables {
     col.setContactForceEventThreshold(body.mass() * 45);
 
     const size = Math.max(P.fullHeight, P.rMax * 2);
+    const gold = def.gold || 0;
+    const hp = (def.hp ?? PROFILES[kind].hp ?? 100) * (gold ? T.clappers.kintsugiHp : 1);
     const ent = {
       type: 'breakable', def, kind, P, mesh, body, col, alive: true,
-      hp: def.hp ?? PROFILES[kind].hp ?? 100,
+      hp, maxHp: hp, crackStage: 0, gold,
       size, color: new THREE.Color(color), extras,
       prevVel: new THREE.Vector3(),
     };
+    // rebuilt by a clapperjar: gold seams where it broke
+    if (gold) setCracks(ent, { gold: randomPaths(P, 3 + gold * 2, size * 0.55) });
     this.physics.register(col, ent);
     ent.sync = this.physics.addSynced(body, mesh);
     mesh.position.set(...def.pos);
@@ -220,16 +227,36 @@ export class Breakables {
   damage(ent, amount, point, dir, power = 1, quiet = false) {
     if (!ent.alive) return false;
     ent.hp -= amount;
-    if (ent.hp > 0 && quiet) { if (ent.hp < (PROFILES[ent.kind].hp ?? 100) * 0.5) ent.mesh.material = crackedMat; return false; }
-    if (ent.hp > 0) {
-      this.physics.kick(ent.body, _v.copy(dir).multiplyScalar(T.weapon.impulse), point);
-      this.fx.impact(point, _v2.copy(dir).negate(), { color: PALETTE.pale, sparks: 3, dust: 8 });
-      ent.mesh.material = crackedMat;
-      sfx.thunk(ent.size, this.game.listenerDistance(point));
-      return false;
+    if (ent.hp <= 0) { this.shatter(ent, point, dir, power); return true; }
+    this.crack(ent, point, quiet);
+    if (quiet) return false;
+    this.physics.kick(ent.body, _v.copy(dir).multiplyScalar(T.weapon.impulse), point);
+    this.fx.impact(point, _v2.copy(dir).negate(), { color: PALETTE.pale, sparks: 3, dust: 8 });
+    sfx.thunk(ent.size, this.game.listenerDistance(point));
+    return false;
+  }
+
+  /** Grow cracks from a hit; crossing a stage threshold spreads them and weakens the pot. */
+  crack(ent, point, quiet) {
+    const frac = ent.hp / ent.maxHp;
+    let stage = 0;
+    while (stage < CRACK_AT.length && frac < CRACK_AT[stage]) stage++;
+    const local = point ? ent.mesh.worldToLocal(point.clone()) : new THREE.Vector3(0, ent.P.height * Math.random(), 0);
+    const dark = ent.cracks?.dark || [];
+    let grew = false;
+    if (stage > ent.crackStage) {
+      const n = [0, 2, 3, 4][stage], len = ent.size * [0, 0.3, 0.45, 0.65][stage];
+      dark.push(...crackPaths(ent.P, local, n, len));
+      ent.crackStage = stage;
+      ent.col.setContactForceEventThreshold(ent.body.mass() * 45 * FRAGILE[stage]);
+      sfx.creak(stage, this.game.listenerDistance(point || ent.mesh.position));
+      if (stage === 3) this.fx.shatterBurst(point || ent.mesh.position, ent.size * 0.4, _v.set(0, -1, 0), { dust: 0.6, chips: 1 });
+      grew = true;
+    } else if (!quiet && dark.length < 16) {
+      dark.push(...crackPaths(ent.P, local, 1, ent.size * 0.14));
+      grew = true;
     }
-    this.shatter(ent, point, dir, power);
-    return true;
+    if (grew) setCracks(ent, { dark });
   }
 
   // Remove the intact pot and replace it with physics shards (and dust).
@@ -248,6 +275,7 @@ export class Breakables {
     if (ent.rope) this.kickRope(ent.rope, dir || new THREE.Vector3(0, 1, 0), 1);
     this.game.onBroken(ent, cause);
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
+    this.onGone(ent, new THREE.Vector3(t.x, t.y, t.z));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0), cause === 'sliced' ? 0.6 : 1);
     if (ent.def.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center));
@@ -429,11 +457,51 @@ export class Breakables {
     if (ent.rope) this.kickRope(ent.rope, dir || new THREE.Vector3(0, 1, 0), power);
 
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
+    this.onGone(ent, bodyPos);
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0));
     if (ent.def.ember) this.fx.after(0.03, () => this.explode(center));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
+  }
+
+  /** Shared by shatter + slice: kintsugi payout, and leave a wreck site to rebuild. */
+  onGone(ent, basePos) {
+    const def = ent.def;
+    if (ent.gold) {
+      const c = basePos.clone().setY(basePos.y + ent.P.height * 0.5);
+      this.game.baubles?.spawn(c, T.clappers.kintsugiDrop * ent.gold);
+      this.fx.glitter([c], c, UP, new THREE.Color(0xf2b24a));
+    }
+    if (def.hang || def.lantern || def.ember || def.slip || def.target || def.respawn || ent.size < 0.2) return;
+    // the site is the floor under where it broke
+    const down = this.physics.raycast({ x: basePos.x, y: basePos.y + 0.2, z: basePos.z }, { x: 0, y: -1, z: 0 }, 12, undefined, GROUPS.controllerQuery,
+      (c) => !c.isSensor() && !c.parent()?.isDynamic());
+    if (!down || down.normal.y < 0.8) return;
+    this.wrecks.push({ def, pos: down.point.clone(), t: performance.now() * 0.001, gold: ent.gold || 0, claimed: null, size: ent.size, rMax: ent.P.rMax });
+    if (this.wrecks.length > 24) this.wrecks.shift();
+  }
+
+  /** A clapperjar finished a repair: the pot pops back with gold seams. */
+  rebuild(w) {
+    const i = this.wrecks.indexOf(w);
+    if (i >= 0) this.wrecks.splice(i, 1);
+    const ent = this.spawn({ ...w.def, pos: [w.pos.x, w.pos.y + 0.01, w.pos.z], popIn: true, gold: Math.min(3, (w.gold || 0) + 1), yaw: Math.random() * Math.PI * 2, facing: undefined });
+    this.game.onRepaired?.(ent);
+    return ent;
+  }
+
+  /** Mend a cracked (still standing) pot: cracks turn to gold, and it's tougher. */
+  mend(ent) {
+    if (!ent.alive) return;
+    const dark = ent.cracks?.dark || [];
+    const gold = [...(ent.cracks?.gold || []), ...dark];
+    ent.gold = Math.min(3, (ent.gold || 0) + 1);
+    ent.maxHp = (ent.def.hp ?? PROFILES[ent.kind].hp ?? 100) * T.clappers.kintsugiHp;
+    ent.hp = ent.maxHp;
+    ent.crackStage = 0;
+    ent.col.setContactForceEventThreshold(ent.body.mass() * 45);
+    setCracks(ent, { dark: [], gold });
   }
 
   /** Turn a lathe body (at a transform) into shards + dust. Returns its centre. */
@@ -590,7 +658,8 @@ export class Breakables {
     const vel = (e) => e?.prevVel || (e?.body && !e.body.isFixed() ? e.body.linvel() : { x: 0, y: 0, z: 0 });
     const v1 = vel(e1), v2 = vel(e2);
     const rel = Math.hypot(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
-    if (rel < T.shatter.breakSpeed) return;
+    const frag = Math.min(e1?.type === 'breakable' ? FRAGILE[e1.crackStage || 0] : 1, e2?.type === 'breakable' ? FRAGILE[e2.crackStage || 0] : 1);
+    if (rel < T.shatter.breakSpeed * frag) return;
     const massOf = (e) => (!e?.body || e.body.isFixed() ? Infinity : e.body.mass());
     for (const [e, v, o] of [[e1, v1, e2], [e2, v2, e1]]) {
       if (e?.type !== 'breakable' || !e.alive || e.def.target) continue;
@@ -666,6 +735,7 @@ export class Breakables {
       this.scene.remove(ent.mesh);
     }
     this.items.clear();
+    this.wrecks = [];
     for (const s of this.shards) this.removeShard(s);
     this.shards.length = 0;
     for (const sl of [...this.slices]) this.removeSlice(sl);

@@ -26,6 +26,7 @@ const STATIC_ONLY = groups(0xffff, G.STATIC);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
 
+const GOLD = new THREE.Color(0xf2b24a);
 const DEATH_TEXT = { shot: 'CLAPPED', sliced: 'SLICED', cooked: 'COOKED', splat: 'SPLAT', well: 'CRUSHED', explosion: 'KABOOM', charged: 'VAPORISED', ricochet: 'BANKED', homing: 'HUNTED' };
 
 export class Clappers {
@@ -214,6 +215,7 @@ export class Clappers {
       c.squeakT -= dt;
       c.pulledT -= dt;
       c.heat = Math.max(0, c.heat - dt * 0.35);
+      if (c.job && c.state !== 'mendGo' && c.state !== 'mend') this.dropJob(c); // interrupted
       let wantSpeed = 0;
       const physical = c.state === 'knocked' || c.pulledT > 0;
       switch (c.state) {
@@ -288,6 +290,23 @@ export class Clappers {
           if (!c.target || c.pos.distanceTo(c.target) < 0.5) c.target = this.pickTarget(c);
           if (c.timer <= 0) { c.state = 'flee'; c.timer = 1.5; }
           break;
+        case 'mendGo': {
+          wantSpeed = C.runSpeed;
+          const job = c.job;
+          if (!this.jobValid(c, job) || c.timer <= -8) { this.dropJob(c); c.state = 'idle'; c.timer = 0.4; break; }
+          if (c.pos.distanceTo(c.target) < 0.4) { c.state = 'mend'; c.timer = C.mendTime; c.tapT = 0; }
+          break;
+        }
+        case 'mend': {
+          const job = c.job;
+          if (!this.jobValid(c, job)) { this.dropJob(c); c.state = 'idle'; c.timer = 0.4; break; }
+          const at = job.pos;
+          c.heading += wrap(Math.atan2(at.x - c.pos.x, at.z - c.pos.z) - c.heading) * (1 - Math.exp(-8 * dt));
+          c.clapT = 0.3; c.clapRate = 18;
+          this.mendWork(c, job, dt);
+          if (c.timer <= 0) this.finishJob(c);
+          break;
+        }
         case 'knocked':
           if (c.grounded && c.kv.lengthSq() < 0.6) { c.state = 'stumble'; c.timer = 0.4; c.threat = c.threat || c.pos.clone(); c.spin = 0; }
           break;
@@ -301,8 +320,8 @@ export class Clappers {
         desired = { x: c.kv.x * dt, y: c.kv.y * dt, z: c.kv.z * dt };
         c.spin += dt * c.kv.length() * 2;
       } else {
-        c.speed = THREE.MathUtils.damp(c.speed, ['stunned', 'cower', 'taunt', 'nap', 'celebrate'].includes(c.state) ? 0 : wantSpeed, 8, dt);
-        if (c.target && ['run', 'flee', 'forage', 'hide', 'scalded', 'stumble'].includes(c.state)) {
+        c.speed = THREE.MathUtils.damp(c.speed, ['stunned', 'cower', 'taunt', 'nap', 'celebrate', 'mend'].includes(c.state) ? 0 : wantSpeed, 8, dt);
+        if (c.target && ['run', 'flee', 'forage', 'hide', 'scalded', 'stumble', 'mendGo'].includes(c.state)) {
           const want = Math.atan2(c.target.x - c.pos.x, c.target.z - c.pos.z);
           c.heading += wrap(want - c.heading) * (1 - Math.exp(-10 * dt));
         }
@@ -349,6 +368,7 @@ export class Clappers {
   decide(c) {
     const b = this.game.baubles?.near(c.pos, 5).find((bb) => Math.abs(bb.root.position.y - c.pos.y) < 0.8);
     if (b && Math.random() < 0.85) { c.state = 'forage'; c.bauble = b; c.timer = 0; return; }
+    if (Math.random() < T.clappers.mendChance && this.takeJob(c)) return;
     const far = c.pos.distanceTo(this.game.player.renderPos) > 9;
     if (far && Math.random() < T.clappers.napChance) { c.state = 'nap'; c.timer = 6 + Math.random() * 6; return; }
     if (this.canSeePlayer(c) && Math.random() < T.clappers.tauntChance) {
@@ -357,6 +377,93 @@ export class Clappers {
     }
     c.target = this.pickTarget(c);
     if (c.target) { c.state = 'run'; c.stuckT = 0; } else c.timer = 0.5;
+  }
+
+  // ---- kintsugi: rebuild wrecks, mend cracked pots ------------------------------------
+  jobs(c) {
+    const B = this.game.breakables, f = this.floors[c.floor], now = performance.now() * 0.001;
+    const out = [];
+    for (const w of B.wrecks) {
+      if (w.claimed || now - w.t < T.clappers.wreckDelay || Math.abs(w.pos.y - f.y) > 0.3) continue;
+      out.push({ kind: 'wreck', w, pos: w.pos, r: w.rMax });
+    }
+    for (const ent of B.items) {
+      if (ent.crackStage < 2 || ent.mendBy || ent.def.hang || ent.def.target) continue;
+      const t = ent.body.translation();
+      if (Math.abs(t.y - f.y) > 0.3) continue;
+      out.push({ kind: 'pot', ent, pos: new THREE.Vector3(t.x, t.y, t.z), r: ent.P.rMax });
+    }
+    return out;
+  }
+
+  takeJob(c) {
+    const C = T.clappers, player = this.game.player.renderPos;
+    const cands = this.jobs(c)
+      .filter((j) => j.pos.distanceTo(c.pos) < C.mendRange && j.pos.distanceTo(player) > C.mendShy)
+      .sort((a, b) => a.pos.distanceTo(c.pos) - b.pos.distanceTo(c.pos));
+    for (const job of cands.slice(0, 4)) {
+      // stand next to it, on our side
+      const side = c.pos.clone().sub(job.pos).setY(0);
+      if (side.lengthSq() < 1e-4) side.set(1, 0, 0);
+      const spot = job.pos.clone().addScaledVector(side.normalize(), job.r + 0.3);
+      spot.y = this.floors[c.floor].y;
+      if (!this.reachable(c, spot)) continue;
+      if (job.kind === 'wreck') job.w.claimed = c; else job.ent.mendBy = c;
+      c.job = job; c.target = spot; c.state = 'mendGo'; c.timer = 0; c.stuckT = 0;
+      return true;
+    }
+    return false;
+  }
+
+  jobValid(c, job) {
+    if (!job) return false;
+    if (job.pos.distanceTo(this.game.player.renderPos) < T.clappers.mendShy * 0.6) return false; // too close for comfort
+    return job.kind === 'wreck' ? this.game.breakables.wrecks.includes(job.w) : job.ent.alive;
+  }
+
+  dropJob(c) {
+    const job = c.job;
+    if (!job) return;
+    if (job.kind === 'wreck' && job.w.claimed === c) job.w.claimed = null;
+    if (job.kind === 'pot' && job.ent.mendBy === c) job.ent.mendBy = null;
+    c.job = null;
+  }
+
+  mendWork(c, job, dt) {
+    const g = this.game;
+    c.tapT = (c.tapT || 0) - dt;
+    if (c.tapT <= 0) {
+      c.tapT = 0.16 + Math.random() * 0.12;
+      sfx.tap(g.listenerDistance(c.pos));
+      c.squashV -= 1.5;
+      const p = job.pos.clone().setY(job.pos.y + 0.1 + Math.random() * 0.3);
+      g.fx.add.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(1.2).setY(1.5), life: 0.5, size: 0.03, sizeEnd: 0.005, color: GOLD, drag: 2, twinkle: 25 });
+    }
+    // sweep the shards back in: pull the nearby ones to the pile, and tidy away what arrives
+    if (job.kind === 'wreck') {
+      const B = g.breakables;
+      for (let i = B.shards.length - 1; i >= 0; i--) {
+        const s = B.shards[i];
+        const t = s.body.translation();
+        const d = Math.hypot(t.x - job.pos.x, t.z - job.pos.z);
+        if (d > 2.2 || Math.abs(t.y - job.pos.y) > 1.2) continue;
+        if (d < 0.3 || (c.timer < 0.6 && d < 1)) { B.shards.splice(i, 1); B.removeShard(s); continue; }
+        const m = s.body.mass();
+        g.physics.kick(s.body, { x: (job.pos.x - t.x) / d * m * 3 * dt, y: m * 2 * dt, z: (job.pos.z - t.z) / d * m * 3 * dt });
+      }
+    }
+  }
+
+  finishJob(c) {
+    const g = this.game, job = c.job;
+    const d = g.listenerDistance(job.pos);
+    if (job.kind === 'wreck') g.breakables.rebuild(job.w);
+    else g.breakables.mend(job.ent);
+    c.job = null;
+    sfx.mended(d);
+    const top = job.pos.clone().setY(job.pos.y + 0.4);
+    g.fx.glitter([top], top, UP, GOLD);
+    c.state = 'celebrate'; c.timer = 0.75; c.vy = 3.4; c.grounded = false; c.twirl = 0; c.squashV += 4;
   }
 
   // ---- animation layers (per frame) ---------------------------------------------
@@ -401,6 +508,7 @@ export class Clappers {
       if (c.state === 'taunt') { arm(b.armR, c.armInv.R, -1.9 - Math.sin(c.t * 14) * 0.5); arm(b.foreR, c.armInv.fR, -Math.sin(c.t * 14 + 1) * 0.6); }
       if (c.state === 'celebrate') { arm(b.armL, c.armInv.L, 1.8); arm(b.armR, c.armInv.R, -1.8); }
       if (c.state === 'nap') { arm(b.armL, c.armInv.L, -0.6); arm(b.armR, c.armInv.R, 0.6); }
+      if (c.state === 'mend') { arm(b.armL, c.armInv.L, 1.1 + Math.sin(c.t * 16) * 0.6); arm(b.armR, c.armInv.R, -1.1 - Math.sin(c.t * 16 + Math.PI) * 0.6); }
       // blink (eyes stay shut while napping)
       c.blinkT -= dt;
       if (b.eyes) b.eyes.scale.y = c.blinkT < 0.1 || c.state === 'nap' ? 0.15 : 1;
@@ -515,6 +623,7 @@ export class Clappers {
   hit(c, point, dir, power = 1, cause = 'shot') {
     if (!c.alive) return;
     c.alive = false;
+    this.dropJob(c);
     const game = this.game;
     const s = T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045);
     game.physics.removeBody(c.body);

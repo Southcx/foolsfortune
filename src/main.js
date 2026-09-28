@@ -72,6 +72,9 @@ async function main() {
       stats.clappers = (stats.clappers || 0) + 1;
       hud.popup(stats.clappers % 5 === 0 ? `${stats.clappers} CLAPPERS` : text);
     },
+    onRepaired() {
+      stats.total++;
+    },
     onExplosion(center, R) {
       const pc = player.pos.clone(); pc.y += 0.9;
       const d = pc.distanceTo(center);

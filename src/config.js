@@ -191,6 +191,14 @@ export const DEFAULTS = {
     tauntChance: 0.3, // when idle and they can see you
     napChance: 0.12, // when idle and you're far away
     fallShatter: 2.4, // metres of fall that shatter them
+    // kintsugi: idle clappers rebuild broken pots / mend badly cracked ones with gold seams
+    mendChance: 0.55, // when idle and there's a job on their floor
+    mendTime: 4.5,
+    mendShy: 3.5, // they won't start (and give up) if you're closer than this to the job
+    mendRange: 14,
+    wreckDelay: 2.5, // seconds a wreck settles before anyone comes for it
+    kintsugiHp: 1.6, // hp multiplier of mended pots
+    kintsugiDrop: 3, // extra baubles per gold level when a mended pot breaks
   },
   physics: {
     gravity: 14,
