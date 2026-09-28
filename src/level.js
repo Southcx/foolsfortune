@@ -64,6 +64,22 @@ export class Level {
     }
   }
 
+  /**
+   * Stairs walk like a ramp: an invisible slab from (za, ya) up to (zb, yb) along +z,
+   * a few cm above the step noses' midline so feet sit on the treads. Per-step boxes
+   * made the character controller catch on every riser.
+   */
+  rampCollider(x, width, za, ya, zb, yb, lift = 0.05) {
+    const th = 0.4, len = Math.hypot(zb - za, yb - ya);
+    const ang = Math.atan2(yb - ya, zb - za);
+    const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(-ang, 0, 0));
+    const n = new THREE.Vector3(0, Math.cos(ang), -Math.sin(ang));
+    const c = new THREE.Vector3(x, (ya + yb) / 2 + lift, (za + zb) / 2).addScaledVector(n, -th / 2);
+    const cd = RAPIER.ColliderDesc.cuboid(width / 2, th / 2, len / 2).setTranslation(c.x, c.y, c.z).setRotation(q)
+      .setCollisionGroups(GROUPS.static).setFriction(0.9);
+    this.physics.world.createCollider(cd, this.fixedBody);
+  }
+
   cylinder(pos, r, h, color, segs = 10, outline = true) {
     const g = new THREE.CylinderGeometry(r, r, h, segs);
     g.translate(...pos);
@@ -209,8 +225,9 @@ export class Level {
     const n = 20, rise = (F2 - 2.6) / n, run = 0.5, z0 = 2;
     for (let k = 1; k <= n; k++) {
       const h = 2.6 + k * rise;
-      this.box([-9.2, (2.6 + h) / 2, z0 + (k - 0.5) * run], [1.6, h - 2.6, run], k % 2 ? C.wood : C.mid);
+      this.box([-9.2, (2.6 + h) / 2, z0 + (k - 0.5) * run], [1.6, h - 2.6, run], k % 2 ? C.wood : C.mid, { collide: false });
     }
+    this.rampCollider(-9.2, 1.6, z0, 2.6, z0 + n * run, F2);
     this.box([-8.35, 4.8, 7], [0.08, 4.4, 10.2], C.dark, { collide: false });
     // gallery: plinths for the sculpture
     this.box([0, y + 0.2, 11.2], [1.8, 0.4, 1.8], C.dark);
@@ -351,8 +368,9 @@ export class Level {
     const n = 12, rise = top / n, run = 0.5, z0 = -9;
     for (let k = 1; k <= n; k++) {
       const h = k * rise;
-      this.box([-9.2, h / 2, z0 + (k - 0.5) * run], [1.6, h, run], k % 2 ? C.wood : C.mid);
+      this.box([-9.2, h / 2, z0 + (k - 0.5) * run], [1.6, h, run], k % 2 ? C.wood : C.mid, { collide: false });
     }
+    this.rampCollider(-9.2, 1.6, z0, 0, z0 + n * run, top);
     this.box([-8.35, 1.3, -6], [0.08, 2.6, 6.2], C.dark, { collide: false }); // stringer
   }
 

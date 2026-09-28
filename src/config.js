@@ -17,19 +17,42 @@ export const DEFAULTS = {
     tpTurnSpeed: 11, // how fast the body turns toward the move direction in 3rd person
     tpMaxTurn: 540, // deg/s cap on that turn (doubled in combat stance)
     combatStanceTime: 1.6, // seconds the body keeps facing the crosshair after firing
+    strafeSprintMult: 0.9, // sprinting sideways (anything but backwards sprints)
+    maxSpeed: 14, // hard cap on horizontal speed (Titanfall tops out around 13 m/s)
     airDrag: 2.5, // m/s² momentum loss in the air above run speed (steering never kills it)
+    overspeedDecel: 10, // m/s² bleed of extra speed on the ground (so a quick hop keeps it)
+    groundSteer: 6,
     crouchSpeed: 2.2,
-    crouchEyeDrop: 0.45,
-    // slide: C while moving faster than slideMinSpeed; slopes push you along
-    slideSpeed: 9.5,
-    slideMinSpeed: 4,
-    slideFriction: 6,
+    // slide: crouch above slideMinSpeed (or out of a sprint); slopes push you along
+    slideSpeed: 9.5, // a boosted slide starts at least this fast
+    slideBoost: 2, // added on top of your speed when the boost is ready
+    slideBoostCooldown: 1.6,
+    slideMinSpeed: 5,
+    slideBuffer: 0.2, // a crouch press this early still counts once you're fast enough
+    slideFriction: 5.5,
     slideSlopeAccel: 30,
     slideSteer: 2.5,
-    slideMaxTime: 1.1,
-    slideCooldown: 0.3,
-    slideJumpBoost: 1.12,
-    slideEyeDrop: 0.75,
+    slideMaxTime: 1.2,
+    slideCooldown: 0.25,
+    slideJumpBoost: 1.08,
+    airJumps: 1, // jump-kit double jumps (refilled on the ground and on walls)
+    airJumpMult: 0.9,
+    // wallrun: airborne, pushing forward, a wall beside you
+    wallrunMinSpeed: 4.2,
+    wallrunSpeed: 9.5,
+    wallrunAccel: 7,
+    wallrunHold: 0.4, // seconds of near-zero gravity at the start
+    wallrunGravity: 3.5,
+    wallrunMaxFall: 3,
+    wallrunMaxTime: 1.8,
+    wallrunStartUp: 1.2,
+    wallrunMinHeight: 0.6,
+    wallrunReach: 0.6, // how far from your side a wall can be to catch it
+    wallrunTilt: 12, // camera roll, degrees
+    wallJumpOut: 5.5,
+    wallJumpUp: 6.2,
+    wallJumpKeep: 1.0,
+    critterPush: 0.2, // share of a clapperjar overlap that moves you (the rest moves them)
     // mantle: push into a ledge while jumping or falling
     mantleMin: 0.45,
     mantleJumpMin: 0.75, // on the ground, a jump into a ledge at least this tall becomes a mantle
@@ -57,6 +80,7 @@ export const DEFAULTS = {
     tpAdsDistance: 1.5,
     tpShoulder: 0.7,
     tpAdsShoulder: 0.6,
+    speedFov: 8, // extra fov at top speed
     tpLift: 0.18,
     viewBlendTime: 0.22,
     fpHeadBob: 0.5,

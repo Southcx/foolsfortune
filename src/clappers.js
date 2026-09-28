@@ -20,8 +20,8 @@ import { sfx } from './audio.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const RADIUS = 0.2, HALF = 0.12;
-const CLAPPER_GROUPS = groups(G.PROP, 0xffff);
-const QUERY = groups(0xffff, G.STATIC | G.PROP | G.PLAYER);
+const CLAPPER_GROUPS = groups(G.CRITTER, 0xffff);
+const QUERY = groups(0xffff, G.STATIC | G.PROP | G.PLAYER | G.CRITTER);
 const STATIC_ONLY = groups(0xffff, G.STATIC);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -328,6 +328,7 @@ export class Clappers {
         c.vy -= 14 * dt;
         desired = { x: Math.sin(c.heading) * c.speed * dt, y: c.vy * dt, z: Math.cos(c.heading) * c.speed * dt };
       }
+      if (c.bumpX || c.bumpZ) { desired.x += c.bumpX; desired.z += c.bumpZ; c.bumpX = c.bumpZ = 0; } // shoved by the courier
       this.ctrl.computeColliderMovement(c.col, desired, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, QUERY);
       const mv = this.ctrl.computedMovement();
       const wasGrounded = c.grounded;
@@ -542,6 +543,12 @@ export class Clappers {
       c.heading = Math.atan2(c.pos.x - point.x, c.pos.z - point.z);
       if (c.squeakT <= 0) { sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.6; }
     }
+  }
+
+  /** The courier leaning on one: a small displacement next step. */
+  bump(c, dx, dz) {
+    c.bumpX = (c.bumpX || 0) + dx;
+    c.bumpZ = (c.bumpZ || 0) + dz;
   }
 
   knock(c, vel) {

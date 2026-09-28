@@ -20,7 +20,8 @@ const MATS = {
   Courier_Armor: () => new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.65, metalness: 0.05, flatShading: true }),
   CourierEnergy: () => new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.4, emissive: PALETTE.glow, emissiveIntensity: 0.18 }),
   CourierEnergyShell: () => new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3, transparent: true, opacity: 0.22, depthWrite: false }),
-  CourierMask: () => new THREE.MeshStandardMaterial({ color: PALETTE.deep, roughness: 0.5, flatShading: true }),
+  // the mask is armour too (it used to be near-black)
+  CourierMask: () => new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.65, metalness: 0.05, flatShading: true }),
 };
 const OUTLINED = new Set(['Courier_Armor', 'CourierMask', 'Kiritohair']);
 
@@ -227,7 +228,9 @@ export class Character {
 
     const m = this.moveDir;
     const swingAxis = _v4.crossVectors(UP, m).normalize();
-    const sl = s.slide || 0, mn = s.mantle || 0, da = s.dash || 0, cr = s.crouch || 0;
+    const sl = s.slide || 0, mn = s.mantle || 0, da = s.dash || 0, cr = s.crouch || 0, wr = s.wall || 0;
+    // wallrunning: the whole body leans off the wall, feet on it (roll about the facing axis)
+    if (Math.abs(wr) > 0.01) this.root.rotation.z = -wr * 0.42;
     const mt = this.moveT * (1 - this.airT) * (1 - sl) * (1 - da) * (1 - mn);
     const amp = A.thighSwing * DEG * THREE.MathUtils.lerp(0.8, 1.35, this.runT) * mt;
     const kneeAmp = A.kneeBend * DEG * THREE.MathUtils.lerp(0.7, 1.3, this.runT) * mt;
@@ -304,6 +307,8 @@ export class Character {
     this.rot(B.head, X, -headPitch * 0.5 + 8 * DEG * s.adsT);
     this.rot(B.head, Zv, 6 * DEG * s.adsT);
     this.root.updateMatrixWorld(true);
+    // where the head ended up, relative to the feet (the first-person eye follows it in postures)
+    this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
   }
 
   chestPoint(target) { return this.bones.spine004.getWorldPosition(target); }

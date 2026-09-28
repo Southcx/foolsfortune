@@ -113,7 +113,7 @@ export class LachrymaPool {
 // settle and wobble, get pulled toward the courier, then get absorbed.
 // ---------------------------------------------------------------------------
 const PICKUP = 32;
-const BAUBLE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | G.DEBRIS);
+const BAUBLE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER);
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();

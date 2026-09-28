@@ -341,6 +341,19 @@ class Sfx {
     this.tone(t, 0.2, { f0: 220, f1: 660, type: 'sine', gain: 0.3, dest: d });
   }
 
+  airJump() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.3);
+    this.noise(t, 0.18, { type: 'bandpass', f0: 500, f1: 1800, q: 1.2, gain: 0.7, attack: 0.005, dest: d });
+    this.tone(t, 0.12, { f0: 180, f1: 360, type: 'sine', gain: 0.3, dest: d });
+  }
+
+  wallTouch() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.2);
+    this.noise(t, 0.06, { f0: 1200, f1: 300, gain: 0.7, dest: d });
+  }
+
   mantle() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.35, 0.2);

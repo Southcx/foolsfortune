@@ -261,7 +261,8 @@ async function main() {
       pos: player.renderPos,
       yaw: player.bodyYaw,
       velocity: player.vel,
-      grounded: player.grounded,
+      grounded: player.grounded || !!player.wallrun,
+      wall: player.wallBlend,
       slide: player.slideBlend, mantle: player.mantleBlend, dash: player.dashBlend, crouch: player.crouchBlend,
       aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
       aimYawOffset: player.aimYawOffset,
@@ -272,6 +273,7 @@ async function main() {
       adsT: weapon.adsEase,
       landed: player.landedOut,
     });
+    player.headRel = character.headRel;
     weapon.poseGun(dt, camera, player, character);
     character.poseArms(weapon.leftOverride, weapon.leftBlend);
     weapon.tryFire(camera, player, character);
