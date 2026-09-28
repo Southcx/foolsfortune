@@ -24,6 +24,8 @@ export class Hud {
     this.chain = 0;
     this.chainT = 0;
     this.broken = 0;
+    this.peak = 0;
+    this.peakT = 0;
   }
 
   hitmarker(kill) {

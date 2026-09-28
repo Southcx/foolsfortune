@@ -203,16 +203,43 @@ async function main() {
 
   document.getElementById('loading').remove();
 
+  // --- errors: shown on screen (once each) instead of a silent freeze ------------
+  const seenErrors = new Set();
+  function reportError(e) {
+    const msg = `${e?.message || e}`;
+    if (seenErrors.has(msg)) return;
+    seenErrors.add(msg);
+    console.error(e);
+    let box = document.getElementById('errbox');
+    if (!box) {
+      box = document.createElement('div');
+      box.id = 'errbox';
+      box.style.cssText = 'position:fixed;left:12px;top:12px;max-width:60%;z-index:30;background:rgba(28,13,8,.9);color:#ffb27a;'
+        + 'border:1px solid #ff7a4a;padding:8px 10px;font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;pointer-events:none';
+      document.body.appendChild(box);
+    }
+    box.textContent += `${box.textContent ? '\n' : 'Something broke (the game keeps running):\n'}${msg}\n${(e?.stack || '').split('\n').slice(1, 3).join('\n')}`;
+  }
+  addEventListener('error', (ev) => reportError(ev.error || ev.message));
+  addEventListener('unhandledrejection', (ev) => reportError(ev.reason));
+
   // --- loop -------------------------------------------------------------------
   let acc = 0;
   let last = performance.now();
   const clock = { frame: 0 };
   let simTime = 0;
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000);
-    last = now;
-    if (!window.__game?.manual) { tick(dt); renderer.render(scene, window.__debugCam || camera); }
     requestAnimationFrame(frame);
+    // (the first rAF timestamp can be earlier than the performance.now() taken at startup)
+    const dt = THREE.MathUtils.clamp((now - last) / 1000, 0, 0.05);
+    last = now;
+    if (window.__game?.manual) return;
+    try {
+      tick(dt);
+      renderer.render(scene, window.__debugCam || camera);
+    } catch (e) {
+      reportError(e); // keep the loop alive and say what broke instead of freezing
+    }
   }
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
