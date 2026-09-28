@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
-import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE } from './outline.js';
+import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
 
 // Procedural animation for the Courier rig. Everything is layered on top of the
 // T-pose rest each frame:
@@ -68,7 +68,7 @@ export class Character {
       if (!byMat.has(key)) {
         const m = (MATS[name] || MATS.CourierEnergy)();
         if (isArmor) { m.onBeforeCompile = applyFpHide; m.customProgramCacheKey = () => 'fphide'; }
-        byMat.set(key, m);
+        byMat.set(key, withFade(m, key));
       }
       o.material = byMat.get(key);
       if (isArmor) tagArmBones(o);
@@ -76,7 +76,7 @@ export class Character {
       o.receiveShadow = true;
       o.frustumCulled = false;
       const outlined = OUTLINED.has(name) || OUTLINED.has(o.parent?.name) || OUTLINED.has(o.name);
-      if (outlined) addOutline(o, isArmor ? OUTLINE_MAT_FPHIDE : undefined);
+      if (outlined) addOutline(o, isArmor ? OUTLINE_MAT_FPHIDE : OUTLINE_MAT_CHAR);
       if (o.name === 'Courier_Mask' || o.name === 'Kiritohair') this.fpHidden.push(o, o.userData.outline);
     }
 
@@ -117,12 +117,13 @@ export class Character {
       o.material = o.material.name === 'CourierEnergyShell'
         ? new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.5, flatShading: true })
         : new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.55, metalness: 0.1, flatShading: true });
+      withFade(o.material, `gun${gunMeshes.indexOf(o)}`);
       o.castShadow = true;
-      addOutline(o);
+      addOutline(o, OUTLINE_MAT_CHAR);
     }
     // greybox iron sights so ADS has something to line up
-    const sightMat = new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true });
-    const dotMat = new THREE.MeshBasicMaterial({ color: PALETTE.hot });
+    const sightMat = withFade(new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true }), 'sight');
+    const dotMat = withFade(new THREE.MeshBasicMaterial({ color: PALETTE.hot }), 'dot');
     const y = GUN_POINTS.sightY;
     for (const z of [-0.016, 0.016]) {
       const r = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.036, 0.012), sightMat);
@@ -151,6 +152,8 @@ export class Character {
     this.onFootstep = null;
     this.fpMode = false;
   }
+
+  setFade(f) { fadeUniform.value = f; }
 
   setGunScale(s) { this.gunModel.scale.setScalar(s); this.gunScale = s; }
 
@@ -251,15 +254,20 @@ export class Character {
     this.rot(B.spine001, Zv, sideLean);
     this.rot(B.spine002, X, Math.sin(this.time * 1.7) * 1.2 * DEG + 6 * DEG * this.airT);
 
-    const pitch = s.aimPitch * A.spinePitchShare;
-    const yawOff = s.aimYawOffset;
+    // upper body only twists/pitches toward the crosshair while in a combat stance;
+    // relaxed, it follows the hips and just the head looks around
+    const cw = s.combat ?? 1;
+    const pitch = s.aimPitch * A.spinePitchShare * cw;
+    this.yawOff = THREE.MathUtils.damp(this.yawOff ?? 0, s.aimYawOffset * cw, 18, dt);
+    const yawOff = this.yawOff;
     const shares = [[B.spine001, 0.25], [B.spine002, 0.3], [B.spine003, 0.45]];
     for (const [b, w] of shares) {
       this.rot(b, UP, yawOff * w);
       this.rot(b, X, -pitch * w);
     }
     this.rot(B.spine003, X, -s.recoil * 6 * DEG);
-    const headPitch = s.aimPitch - pitch;
+    const headPitch = (s.aimPitch - pitch) * (0.4 + 0.6 * cw);
+    this.rot(B.head, UP, (s.aimYawOffset * (1 - cw)) * 0.35);
     this.rot(B.spine004, X, -headPitch * 0.4);
     this.rot(B.head, X, -headPitch * 0.5 + 8 * DEG * s.adsT);
     this.rot(B.head, Zv, 6 * DEG * s.adsT);
@@ -280,8 +288,8 @@ export class Character {
     const gy = _v1.set(0, 1, 0).applyQuaternion(gq).clone();
     const gz = _v1.set(0, 0, 1).applyQuaternion(gq).clone();
     const yawQ = new THREE.Quaternion().setFromAxisAngle(UP, this.root.rotation.y);
-    const bodyRight = new THREE.Vector3(-1, 0, 0).applyQuaternion(yawQ);
-    const bodyBack = new THREE.Vector3(0, 0, -1).applyQuaternion(yawQ);
+    const bodyRight = this.shoulder('R', new THREE.Vector3()).sub(this.shoulder('L', new THREE.Vector3())).setY(0).normalize();
+    const bodyBack = new THREE.Vector3().crossVectors(bodyRight, UP);
 
     // right hand
     const tR = this.gunPoint('gripR', new THREE.Vector3());

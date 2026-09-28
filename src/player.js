@@ -163,7 +163,15 @@ export class Player {
     if (this.fp || inCombat) { target = this.yaw; rate *= 2.2; }
     else if (hs > 0.5) target = Math.atan2(this.vel.x, this.vel.z);
     if (this.fp) this.bodyYaw = this.yaw;
-    else this.bodyYaw += wrap(target - this.bodyYaw) * (1 - Math.exp(-rate * dt));
+    else {
+      // eased turn with a speed cap and angular acceleration, so a 180 doesn't whip the upper body
+      const err = wrap(target - this.bodyYaw);
+      const maxW = (inCombat ? 2 : 1) * T.movement.tpMaxTurn * DEG;
+      const wantW = THREE.MathUtils.clamp(err * rate, -maxW, maxW);
+      const accel = maxW * 12 * dt;
+      this.turnW = (this.turnW || 0) + THREE.MathUtils.clamp(wantW - (this.turnW || 0), -accel, accel);
+      this.bodyYaw += Math.abs(this.turnW * dt) > Math.abs(err) ? err : this.turnW * dt;
+    }
     this.aimYawOffset = THREE.MathUtils.clamp(wrap(this.yaw - this.bodyYaw), -80 * DEG, 80 * DEG);
     this.inCombat = inCombat || this.fp;
   }
@@ -184,7 +192,9 @@ export class Player {
 
     const targetBlend = this.fp ? 0 : 1;
     const step = dt / Math.max(0.01, C.viewBlendTime);
-    this.tpBlend = targetBlend > this.tpBlend ? Math.min(1, this.tpBlend + step) : Math.max(0, this.tpBlend - step);
+    // (exact equality must hold still: the old ternary stepped away from 1 and back every frame)
+    if (targetBlend > this.tpBlend) this.tpBlend = Math.min(1, this.tpBlend + step);
+    else if (targetBlend < this.tpBlend) this.tpBlend = Math.max(0, this.tpBlend - step);
     this.shoulderBlend = THREE.MathUtils.damp(this.shoulderBlend, this.shoulder, 10, dt);
     const tb = this.tpBlend * this.tpBlend * (3 - 2 * this.tpBlend);
 

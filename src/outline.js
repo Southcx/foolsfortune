@@ -35,7 +35,7 @@ export function applyFpHide(shader) {
 }
 
 export const OUTLINE_MAT = makeOutlineMaterial();
-export const OUTLINE_MAT_FPHIDE = makeOutlineMaterial(true);
+
 
 /** Adds a `smoothNormal` attribute (normals averaged across coincident vertices). */
 export function ensureSmoothNormals(geometry) {
@@ -84,4 +84,29 @@ export function addOutline(mesh, material = OUTLINE_MAT) {
   o.frustumCulled = mesh.frustumCulled;
   mesh.userData.outline = o;
   return o;
+}
+
+export const OUTLINE_MAT_FPHIDE = withFade(makeOutlineMaterial(true), 'ol-fphide');
+export const OUTLINE_MAT_CHAR = withFade(makeOutlineMaterial(), 'ol-char');
+
+// Screen-door fade for the player character when the 3rd-person camera is
+// squeezed against a wall (dithered discard keeps it opaque/sortable).
+export const fadeUniform = { value: 1 };
+export function withFade(material, key) {
+  const prev = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, r) => {
+    prev?.call(material, shader, r);
+    shader.uniforms.uFade = fadeUniform;
+    shader.fragmentShader = shader.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uFade;')
+      .replace('void main() {', `void main() {
+  if (uFade < 0.999) {
+    vec2 c = floor(mod(gl_FragCoord.xy, 4.0));
+    float b = mod(c.x * 8.0 + c.y * 4.0 + mod(c.x + c.y * 2.0, 4.0) * 1.0, 16.0) / 16.0;
+    if (uFade <= b) discard;
+  }`);
+  };
+  const prevKey = material.customProgramCacheKey?.bind(material);
+  material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fade-${key}`;
+  return material;
 }

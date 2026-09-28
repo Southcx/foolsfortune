@@ -15,6 +15,7 @@ export const DEFAULTS = {
     stepHeight: 0.4,
     maxSlope: 46,
     tpTurnSpeed: 11, // how fast the body turns toward the move direction in 3rd person
+    tpMaxTurn: 540, // deg/s cap on that turn (doubled in combat stance)
     combatStanceTime: 1.6, // seconds the body keeps facing the crosshair after firing
   },
   camera: {
@@ -67,6 +68,14 @@ export const DEFAULTS = {
     gunRecoverSpeed: 16,
     shake: 0.35,
     fovPunch: 2.5,
+  },
+  tpPose: {
+    reach: 0.38, // wrist distance in front of the shoulders when aiming
+    aimDrop: 0.1,
+    adsRaise: 0.05,
+    lowForward: 0.3,
+    lowDrop: 0.32,
+    lowPitch: 38, // how far the muzzle points down at low ready
   },
   tracer: {
     speed: 320,

@@ -76,7 +76,10 @@ export class Weapon {
     this.sway.y = THREE.MathUtils.damp(this.sway.y, THREE.MathUtils.clamp((player.lookDY || 0) * 0.0006, -0.04, 0.04) * sw, 10, dt);
 
     const combat = player.fp || this.adsT > 0 || this.cooldown > -0.4 || this.reloading || player.inCombat;
-    this.combatBlend = THREE.MathUtils.damp(this.combatBlend, combat ? 1 : 0, combat ? 14 : 4, dt);
+    // critically damped spring: eases in and out instead of starting at full speed
+    const cw = combat ? 16 : 7;
+    this.combatV = (this.combatV || 0) + ((combat ? 1 : 0) - this.combatBlend) * cw * cw * dt - 2 * cw * (this.combatV || 0) * dt;
+    this.combatBlend = THREE.MathUtils.clamp(this.combatBlend + this.combatV * dt, 0, 1);
     this.sprintBlend = THREE.MathUtils.damp(this.sprintBlend, player.sprinting ? 1 : 0, 8, dt);
   }
 
@@ -133,21 +136,29 @@ export class Weapon {
     const fpDir = hipDir.lerp(camFwd, e).normalize();
     fpDir.addScaledVector(camUp, -0.6 * this.sprintBlend).normalize();
 
-    // ---- third-person pose, around the shoulders ---------------------------
-    const O = character.shoulder('R', new THREE.Vector3()).add(character.shoulder('L', new THREE.Vector3())).multiplyScalar(0.5);
+    // ---- third-person pose: anchor the right wrist, hang the gun off it ------
+    // Anchoring the hand (not the gun) keeps the arms at a comfortable reach
+    // whatever the gun's scale, so the IK never folds or over-stretches.
+    const sR = character.shoulder('R', new THREE.Vector3());
+    const sL = character.shoulder('L', new THREE.Vector3());
+    const O = sR.clone().add(sL).multiplyScalar(0.5);
+    const chestRight = sR.sub(sL).setY(0).normalize();
+    const chestFwd = new THREE.Vector3().crossVectors(UP, chestRight);
     const aimDir = aim.clone().sub(O).normalize();
     const r = new THREE.Vector3().crossVectors(aimDir, UP).normalize();
     const u = new THREE.Vector3().crossVectors(r, aimDir);
-    const aimPos = O.clone().addScaledVector(aimDir, 0.66).addScaledVector(r, 0.02).addScaledVector(u, -0.06);
-    const adsPos = O.clone().addScaledVector(aimDir, 0.68).addScaledVector(u, 0.13).addScaledVector(r, -0.02);
-    const bodyFwd = new THREE.Vector3(Math.sin(player.bodyYaw), 0, Math.cos(player.bodyYaw));
-    const bodyRight = new THREE.Vector3(-bodyFwd.z, 0, bodyFwd.x);
-    const lowPos = O.clone().addScaledVector(bodyFwd, 0.45).addScaledVector(UP, -0.28).addScaledVector(bodyRight, 0.08);
-    const lowDir = bodyFwd.clone().addScaledVector(UP, -1.1).addScaledVector(bodyRight, -0.2).normalize();
+    const TP = T.tpPose;
+    const wAim = O.clone().addScaledVector(aimDir, TP.reach).addScaledVector(r, 0.02).addScaledVector(u, -TP.aimDrop);
+    const wAds = O.clone().addScaledVector(aimDir, TP.reach + 0.02).addScaledVector(u, TP.adsRaise);
+    const wLow = O.clone().addScaledVector(chestFwd, TP.lowForward).addScaledVector(UP, -TP.lowDrop).addScaledVector(chestRight, 0.1);
+    const lowDir = chestFwd.clone().multiplyScalar(Math.cos(TP.lowPitch * DEG)).addScaledVector(UP, -Math.sin(TP.lowPitch * DEG))
+      .addScaledVector(chestRight, -0.2).normalize();
     const cb = this.combatBlend * (1 - this.sprintBlend * 0.6);
-    const tpPos = lowPos.lerp(aimPos.lerp(adsPos, e), cb);
-    tpPos.addScaledVector(r, -0.08 * rl).addScaledVector(u, -0.1 * rl).addScaledVector(aimDir, -0.1 * rl);
-    const tpDir = lowDir.lerp(aim.clone().sub(tpPos).normalize(), cb).normalize();
+    const wrist = wLow.lerp(wAim.lerp(wAds, e), cb);
+    wrist.addScaledVector(r, -0.06 * rl).addScaledVector(u, -0.08 * rl).addScaledVector(aimDir, -0.08 * rl);
+    const tpDir = lowDir.lerp(aim.clone().sub(wrist).normalize(), cb).normalize();
+    const tpQ = basisQuat(tpDir, UP);
+    const tpPos = wrist.sub(GUN_POINTS.gripR.clone().multiplyScalar(s).applyQuaternion(tpQ));
 
     // ---- blend + recoil ------------------------------------------------------
     const fw = player.fpWeight;

@@ -167,10 +167,19 @@ async function main() {
   let acc = 0;
   let last = performance.now();
   const clock = { frame: 0 };
+  let simTime = 0;
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
+    if (!window.__game?.manual) { tick(dt); renderer.render(scene, window.__debugCam || camera); }
+    requestAnimationFrame(frame);
+  }
+
+  // One simulation + animation frame. Split out so tests can drive exact frame rates.
+  function tick(dt) {
     clock.frame++;
+    simTime += dt;
+    const now = simTime * 1000;
 
     if (input.wasPressed('Tab')) {
       guiOpen = !guiOpen;
@@ -199,6 +208,9 @@ async function main() {
 
     player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
     character.setFirstPerson(player.fpWeight > 0.5);
+    // fade the courier out when the 3rd-person camera is pressed up against her
+    const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
+    character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
     weapon.computeAimPoint(camera, player);
     const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
     character.poseBody(dt, {
@@ -208,6 +220,7 @@ async function main() {
       grounded: player.grounded,
       aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
       aimYawOffset: player.aimYawOffset,
+      combat: Math.max(weapon.combatBlend, player.fpWeight),
       walkSpeed: T.movement.walkSpeed,
       sprintSpeed: T.movement.sprintSpeed,
       recoil: weapon.kick,
@@ -235,14 +248,12 @@ async function main() {
       shots: weapon.shots, hits: weapon.hits, total: stats.total,
     });
 
-    renderer.render(scene, window.__debugCam || camera);
     input.endFrame();
-    requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock };
+  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, manual: false };
   window.__ready = true;
 }
 
