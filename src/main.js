@@ -1,0 +1,251 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { T, PALETTE, loadTuning } from './config.js';
+import { Physics } from './physics.js';
+import { FX } from './fx.js';
+import { Breakables } from './breakables.js';
+import { Level } from './level.js';
+import { Character } from './character.js';
+import { Input } from './input.js';
+import { Player } from './player.js';
+import { Weapon } from './weapon.js';
+import { Hud } from './hud.js';
+import { buildTuningPanel } from './tuning.js';
+import { setOutlineThickness } from './outline.js';
+import { sfx } from './audio.js';
+
+const FIXED = 1 / 60;
+
+async function main() {
+  loadTuning();
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = T.visual.shadows;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = T.visual.exposure;
+  document.body.prepend(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(PALETTE.deep);
+  scene.fog = new THREE.FogExp2(PALETTE.deep, T.visual.fog);
+  const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.03, 200);
+
+  scene.add(new THREE.HemisphereLight(0xffe4cc, 0x6f3726, 2.3));
+  scene.add(new THREE.AmbientLight(0xffd0b0, 0.35));
+  const sun = new THREE.DirectionalLight(0xffe8d2, 3.2);
+  sun.position.set(7, 14, -6);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  const sc = sun.shadow.camera;
+  sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 1; sc.far = 40;
+  sun.shadow.bias = -0.0004;
+  sun.shadow.normalBias = 0.02;
+  scene.add(sun);
+
+  const physics = new Physics();
+  await physics.init();
+  const fx = new FX(scene);
+  fx.pixelRatio = renderer.getPixelRatio();
+  const hud = new Hud();
+
+  const stats = { broken: 0, total: 0 };
+  const game = {
+    scene, physics, fx, hud, camera,
+    listenerDistance: (p) => camera.position.distanceTo(p),
+    onBroken(ent) {
+      if (ent.def.target) { hud.onBroken(stats.broken, 0); return; }
+      stats.broken++;
+      hud.onBroken(stats.broken);
+      if (stats.broken === stats.total) hud.popup('WORKSHOP CLEARED · T TO RESET');
+    },
+    onExplosion(center, R) {
+      const pc = player.pos.clone(); pc.y += 0.9;
+      const d = pc.distanceTo(center);
+      const reach = R * 1.3;
+      if (d < reach) {
+        const dir = pc.sub(center).normalize();
+        const k = T.explosion.playerKnock * (1 - d / reach);
+        player.vel.addScaledVector(dir, k);
+        player.vel.y += k * 0.5;
+        player.grounded = false;
+      }
+      player.shake = Math.max(player.shake, T.explosion.shake * Math.max(0, 1 - d / (R * 3.5)));
+    },
+  };
+
+  const breakables = new Breakables(scene, physics, fx, game);
+  const level = new Level(scene, physics, breakables);
+  level.build();
+  const spawnRoom = () => {
+    level.spawnDynamic();
+    stats.broken = 0;
+    stats.total = [...breakables.items].filter((e) => !e.def.target).length;
+    hud.broken = 0;
+  };
+  spawnRoom();
+  game.breakables = breakables;
+
+  const loader = new GLTFLoader();
+  const base = import.meta.env.BASE_URL;
+  const [charG, gunG] = await Promise.all([
+    loader.loadAsync(`${base}assets/courier.glb`),
+    loader.loadAsync(`${base}assets/psygun.glb`),
+  ]);
+  const character = new Character(scene, charG, gunG);
+  character.onFootstep = () => sfx.footstep();
+  game.character = character;
+
+  const input = new Input(renderer.domElement);
+  const player = new Player(physics, camera, input);
+  game.player = player;
+  const weapon = new Weapon(game);
+  game.weapon = weapon;
+
+  // physics debug lines (F3)
+  const dbgGeo = new THREE.BufferGeometry();
+  const dbg = new THREE.LineSegments(dbgGeo, new THREE.LineBasicMaterial({ vertexColors: true }));
+  dbg.frustumCulled = false;
+  dbg.visible = false;
+  scene.add(dbg);
+
+  const resetRoom = () => {
+    fx.timed.length = 0;
+    level.clearDynamic();
+    weapon.clearDebris();
+    spawnRoom();
+  };
+
+  const gui = buildTuningPanel((group, key) => {
+    if (group === 'physics' || group === '*') physics.setGravity(T.physics.gravity);
+    if (group === 'movement' || group === '*') player.applyTuning();
+    if (key === 'gunScale' || group === '*') character.setGunScale(T.weapon.gunScale);
+    if (key === 'outline' || group === '*') setOutlineThickness(T.visual.outline);
+    if (key === 'exposure' || group === '*') renderer.toneMappingExposure = T.visual.exposure;
+    if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
+    if (key === 'shadows' || group === '*') { sun.castShadow = T.visual.shadows; }
+    if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
+  }, {
+    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => hud.popup('SETTINGS COPIED')),
+    resetRoom,
+  });
+  setOutlineThickness(T.visual.outline);
+
+  // --- overlay / pointer lock -----------------------------------------------
+  const overlay = document.getElementById('overlay');
+  let guiOpen = false;
+  const start = () => {
+    sfx.unlock();
+    overlay.style.display = 'none';
+    input.enabled = true;
+    input.requestLock();
+  };
+  overlay.addEventListener('click', start);
+  input.onLockChange = (locked) => {
+    if (input.lockFailed) {
+      document.getElementById('lockwarn').style.display = 'block';
+      return;
+    }
+    if (!locked && !guiOpen) { overlay.style.display = 'flex'; input.enabled = false; }
+  };
+  renderer.domElement.addEventListener('click', () => {
+    if (input.enabled && !input.locked && !input.lockFailed && !guiOpen) input.requestLock();
+  });
+
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
+
+  document.getElementById('loading').remove();
+
+  // --- loop -------------------------------------------------------------------
+  let acc = 0;
+  let last = performance.now();
+  const clock = { frame: 0 };
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    clock.frame++;
+
+    if (input.wasPressed('Tab')) {
+      guiOpen = !guiOpen;
+      if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
+      else { gui.hide(); if (input.enabled && !input.lockFailed) input.requestLock(); }
+    }
+    if (input.wasPressed('KeyT')) resetRoom();
+    if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
+    if (guiOpen) { input.dx = 0; input.dy = 0; }
+
+    player.look(dt, weapon.adsEase || 0);
+    weapon.update(dt, input, player);
+    player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0);
+
+    acc += dt;
+    let steps = 0;
+    while (acc >= FIXED && steps < 4) {
+      player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
+      breakables.preStep();
+      physics.step(FIXED);
+      acc -= FIXED;
+      steps++;
+    }
+    if (steps === 4) acc = 0;
+    physics.sync();
+
+    player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
+    character.setFirstPerson(player.fpWeight > 0.5);
+    weapon.computeAimPoint(camera, player);
+    const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
+    character.poseBody(dt, {
+      pos: player.renderPos,
+      yaw: player.bodyYaw,
+      velocity: player.vel,
+      grounded: player.grounded,
+      aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
+      aimYawOffset: player.aimYawOffset,
+      walkSpeed: T.movement.walkSpeed,
+      sprintSpeed: T.movement.sprintSpeed,
+      recoil: weapon.kick,
+      adsT: weapon.adsEase,
+      landed: player.landedOut,
+    });
+    weapon.poseGun(dt, camera, player, character);
+    character.poseArms(weapon.leftOverride, weapon.leftBlend);
+    weapon.tryFire(camera, player, character);
+    weapon.updateDebris(dt);
+
+    breakables.update(dt);
+    fx.update(dt, camera);
+    level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
+
+    if (dbg.visible) {
+      const { vertices, colors } = physics.world.debugRender();
+      dbgGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+      dbgGeo.setAttribute('color', new THREE.BufferAttribute(colors, 4));
+    }
+
+    hud.update(dt, {
+      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, ammo: weapon.ammo, mag: T.weapon.magSize,
+      reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
+      shots: weapon.shots, hits: weapon.hits, total: stats.total,
+    });
+
+    renderer.render(scene, window.__debugCam || camera);
+    input.endFrame();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // handle for automated tests / console tinkering
+  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock };
+  window.__ready = true;
+}
+
+main().catch((e) => {
+  console.error(e);
+  const l = document.getElementById('loading');
+  if (l) l.textContent = `Failed to start: ${e.message}`;
+});

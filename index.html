@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fool's Fortune: Clay Workshop</title>
+  <style>
+    :root { --ink: #fbe3cf; --accent: #ffb27a; --bg: #2a140d; --panel: rgba(42, 20, 13, 0.82); }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);
+      font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; user-select: none; }
+    canvas { display: block; }
+    #hud { position: fixed; inset: 0; pointer-events: none; }
+    #crosshair { position: absolute; left: 50%; top: 50%; transition: opacity .08s; }
+    #crosshair .l { position: absolute; background: var(--ink); box-shadow: 0 0 0 1px rgba(28,13,8,.7); }
+    #crosshair .v { width: 2px; height: 9px; } #crosshair .h { width: 9px; height: 2px; }
+    #crosshair .dot { position: absolute; width: 3px; height: 3px; transform: translate(-50%,-50%); background: var(--accent); border-radius: 50%; }
+    #hitmarker { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; transform: translate(-50%,-50%) rotate(45deg); opacity: 0; }
+    #hitmarker::before, #hitmarker::after { content: ''; position: absolute; background: var(--ink); left: 50%; top: 50%; transform: translate(-50%,-50%); }
+    #hitmarker::before { width: 22px; height: 2px; } #hitmarker::after { width: 2px; height: 22px; }
+    #hitmarker.kill::before, #hitmarker.kill::after { background: var(--accent); }
+    #hitmarker.kill { width: 30px; height: 30px; }
+    #hitmarker.kill::before { width: 30px; height: 3px; } #hitmarker.kill::after { width: 3px; height: 30px; }
+    #ammo { position: absolute; right: 28px; bottom: 22px; font-size: 14px; opacity: .9; }
+    #ammo b { font-size: 34px; color: var(--ink); } #ammo span { margin-left: 6px; opacity: .6; }
+    #ammo.low b { color: var(--accent); }
+    #reloadbar { position: absolute; left: 50%; top: calc(50% + 40px); width: 80px; height: 3px; transform: translateX(-50%); background: rgba(28,13,8,.6); opacity: 0; }
+    #reloadbar i { display: block; height: 100%; width: 0; background: var(--accent); }
+    #mode { position: absolute; left: 24px; bottom: 22px; opacity: .7; letter-spacing: .12em; font-size: 12px; }
+    #stats { position: absolute; left: 50%; top: 18px; transform: translateX(-50%); letter-spacing: .1em; font-size: 12px; opacity: .85;
+      background: rgba(28,13,8,.35); padding: 4px 10px; border-radius: 3px; }
+    #popups { position: absolute; left: 50%; top: 32%; transform: translateX(-50%); }
+    .pop { font-size: 26px; color: var(--accent); letter-spacing: .1em; text-shadow: 0 2px 0 #1c0d08; animation: pop .9s ease-out forwards; }
+    @keyframes pop { 0% { transform: scale(1.5); opacity: 0 } 15% { transform: scale(1); opacity: 1 } 100% { transform: translateY(-30px); opacity: 0 } }
+    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(28,13,8,.55); z-index: 10; cursor: pointer; }
+    #overlay .card { background: var(--panel); border: 1px solid rgba(255,178,122,.35); padding: 26px 30px; max-width: 520px; width: calc(100% - 32px); box-sizing: border-box; }
+    #overlay h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .08em; color: var(--accent); }
+    #overlay p { margin: 0 0 16px; opacity: .8; }
+    #overlay table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    #overlay td { padding: 3px 0; } #overlay td:first-child { color: var(--accent); width: 42%; }
+    #overlay .go { margin-top: 18px; text-align: center; letter-spacing: .2em; animation: blink 1.4s infinite; }
+    #overlay .warn { color: var(--accent); margin-top: 10px; font-size: 12px; display: none; }
+    @keyframes blink { 50% { opacity: .45 } }
+    #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: .2em; z-index: 11; background: var(--bg); }
+  </style>
+</head>
+<body>
+  <div id="loading">FIRING THE KILN…</div>
+  <div id="hud">
+    <div id="crosshair"><div class="l v"></div><div class="l h"></div><div class="l v"></div><div class="l h"></div><div class="dot"></div></div>
+    <div id="hitmarker"></div>
+    <div id="reloadbar"><i></i></div>
+    <div id="stats"></div>
+    <div id="popups"></div>
+    <div id="mode"></div>
+    <div id="ammo"></div>
+  </div>
+  <div id="overlay">
+    <div class="card">
+      <h1>CLAY WORKSHOP</h1>
+      <p>Mechanics sandbox. Break every pot.</p>
+      <table>
+        <tr><td>WASD / Shift</td><td>move / sprint</td></tr>
+        <tr><td>Space</td><td>jump</td></tr>
+        <tr><td>Mouse</td><td>look</td></tr>
+        <tr><td>Left click</td><td>fire (semi-auto)</td></tr>
+        <tr><td>Right click (hold)</td><td>aim down sights</td></tr>
+        <tr><td>R</td><td>reload</td></tr>
+        <tr><td>V</td><td>toggle 1st / 3rd person</td></tr>
+        <tr><td>Q</td><td>swap shoulder (3rd person)</td></tr>
+        <tr><td>T</td><td>reset room</td></tr>
+        <tr><td>Tab</td><td>tuning panel (frees the mouse)</td></tr>
+        <tr><td>F3</td><td>physics debug lines</td></tr>
+      </table>
+      <div class="go">CLICK TO PLAY</div>
+      <div class="warn" id="lockwarn">Pointer lock unavailable here: look follows the cursor instead.</div>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>

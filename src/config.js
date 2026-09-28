@@ -1,0 +1,169 @@
+// Every number that affects game feel lives here so the in-game tuning panel
+// (Tab) can edit it live. Angles are in degrees, distances in metres, times in seconds.
+export const DEFAULTS = {
+  movement: {
+    walkSpeed: 4.2,
+    sprintSpeed: 6.8,
+    adsSpeedMult: 0.55,
+    groundAccel: 55,
+    groundDecel: 40,
+    airAccel: 10,
+    jumpVelocity: 6.4,
+    gravity: 21,
+    coyoteTime: 0.1,
+    jumpBuffer: 0.12,
+    stepHeight: 0.4,
+    maxSlope: 46,
+    tpTurnSpeed: 11, // how fast the body turns toward the move direction in 3rd person
+    combatStanceTime: 1.6, // seconds the body keeps facing the crosshair after firing
+  },
+  camera: {
+    sensitivity: 1.0,
+    adsSensMult: 0.65,
+    fpFov: 78,
+    fpAdsFov: 54,
+    tpFov: 70,
+    tpAdsFov: 50,
+    eyeHeight: 1.6,
+    tpPivotHeight: 1.5,
+    tpDistance: 3.0,
+    tpAdsDistance: 1.5,
+    tpShoulder: 0.7,
+    tpAdsShoulder: 0.6,
+    tpLift: 0.18,
+    viewBlendTime: 0.22,
+    fpHeadBob: 0.5,
+    collisionRadius: 0.2,
+  },
+  weapon: {
+    magSize: 7,
+    fireInterval: 0.16, // min seconds between shots (semi-auto cap)
+    inputBuffer: 0.09, // click this early and the shot still fires when ready
+    reloadTime: 1.3,
+    autoReload: true,
+    damage: 100,
+    impulse: 6, // N·s pushed into whatever you hit
+    range: 150,
+    hipSpread: 1.6,
+    adsSpread: 0.1,
+    moveSpread: 1.4,
+    airSpread: 3.0,
+    bloomPerShot: 1.1,
+    bloomMax: 4.0,
+    bloomRecovery: 6.5, // deg per second
+    adsTime: 0.15,
+    gunScale: 0.85,
+    adsDistance: 0.55, // how far in front of the eye the gun sits when aiming down sights
+    adsHeight: 0.0, // fine-tune sight alignment
+  },
+  recoil: {
+    kickPitch: 3.4,
+    kickYaw: 0.9,
+    permanent: 0.3, // fraction of the kick that stays (you pull it down); rest springs back
+    recoverSpeed: 14,
+    adsMult: 0.7,
+    gunKickBack: 0.08,
+    gunKickRot: 16,
+    gunRecoverSpeed: 16,
+    shake: 0.35,
+    fovPunch: 2.5,
+  },
+  tracer: {
+    speed: 320,
+    length: 3.5,
+    width: 0.028,
+    trailLife: 0.22,
+    trailOpacity: 0.28,
+  },
+  shatter: {
+    breakSpeed: 4.2, // impact speed (m/s) at which a falling pot breaks
+    radialBurst: 2.4,
+    bulletPush: 4.5,
+    upBias: 1.4,
+    spin: 14,
+    maxChunk: 3,
+    shardLife: 14,
+    maxShards: 650,
+    chips: 18,
+    dust: 1.0,
+    shardOutlines: true,
+  },
+  explosion: {
+    radius: 4.5,
+    velocity: 13, // velocity change at the centre, falls off to 0 at radius
+    chainDelay: 0.09,
+    playerKnock: 6,
+    shake: 1.4,
+  },
+  physics: {
+    gravity: 14,
+  },
+  anim: {
+    strideWalk: 1.45,
+    strideRun: 2.3,
+    thighSwing: 30,
+    kneeBend: 55,
+    runLean: 9,
+    hipBob: 0.035,
+    spinePitchShare: 0.55,
+    landDip: 0.09,
+  },
+  visual: {
+    outline: 0.006,
+    exposure: 1.2,
+    fog: 0.018,
+    shadows: true,
+  },
+  audio: {
+    volume: 0.7,
+  },
+};
+
+const STORAGE_KEY = 'foolsfortune.tuning.v1';
+
+function deepMerge(target, src) {
+  for (const k in src) {
+    if (!(k in target)) continue;
+    if (typeof target[k] === 'object' && target[k] !== null) deepMerge(target[k], src[k]);
+    else if (typeof src[k] === typeof target[k]) target[k] = src[k];
+  }
+  return target;
+}
+
+export const T = structuredClone(DEFAULTS);
+
+export function loadTuning() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) deepMerge(T, JSON.parse(raw));
+  } catch { /* storage unavailable */ }
+}
+
+export function saveTuning() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(T)); } catch { /* ignore */ }
+}
+
+export function resetTuning() {
+  deepMerge(T, structuredClone(DEFAULTS));
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
+
+export const DEG = Math.PI / 180;
+
+// Monochrome terracotta palette: one hue, many values.
+export const PALETTE = {
+  outline: 0x1c0d08,
+  deep: 0x3b1c13,
+  dark: 0x5a2b1d,
+  wall: 0x8c4a33,
+  floor: 0x6f3726,
+  wood: 0x9c5236,
+  mid: 0xb4603f,
+  pot: 0xc46a45,
+  potLight: 0xd98a62,
+  pale: 0xe8ab86,
+  cream: 0xf3c9a8,
+  glow: 0xffb27a,
+  hot: 0xffe0c0,
+  fracture: 0xe79b75,
+};
