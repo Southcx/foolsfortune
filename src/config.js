@@ -92,7 +92,10 @@ export const DEFAULTS = {
     kick: 1.8,
     slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160 },
     push: { range: 10, angle: 32, velocity: 13, selfKnock: 3 },
-    well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11 },
+    well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11,
+      // debris crushed at the core (zone grows by compressGrow over the well's life, at most
+      // compressMax per step); every compressPer pieces condense into a bauble, up to compressDrops
+      compressRadius: 0.8, compressGrow: 1.5, compressMax: 6, compressPer: 5, compressDrops: 8 },
     mark: { radius: 2.4, stun: 4.5, duration: 15, damageMult: 2 },
     bomb: { speed: 13, lift: 4, fuse: 1.8, bounces: 2, radius: 3.6, damage: 260, velocity: 10, droplets: 110, dropletDamage: 10,
       splatLife: 11, poolRadius: 1.6, poolLife: 12, poolDps: 45 },
@@ -135,7 +138,7 @@ export const DEFAULTS = {
     maxShards: 650,
     chips: 18,
     dust: 1.0,
-    shardOutlines: true,
+    shardOutlines: false, // outlines double the draw calls of every shard
     ropeKick: 0.45, // impulse on rope links when the pot they carry is shot away
   },
   explosion: {
@@ -182,7 +185,10 @@ export const DEFAULTS = {
   },
 };
 
-const STORAGE_KEY = 'foolsfortune.tuning.v1';
+const STORAGE_KEY = 'foolsfortune.tuning.v2';
+const OLD_KEY = 'foolsfortune.tuning.v1';
+// defaults that changed since v1: stored v1 values for these are dropped on migration
+const V1_DROP = [['shatter', 'shardOutlines']];
 
 function deepMerge(target, src) {
   for (const k in src) {
@@ -199,6 +205,14 @@ export function loadTuning() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) deepMerge(T, JSON.parse(raw));
+    else {
+      const old = localStorage.getItem(OLD_KEY);
+      if (old) {
+        const o = JSON.parse(old);
+        for (const [g, k] of V1_DROP) if (o[g]) delete o[g][k];
+        deepMerge(T, o);
+      }
+    }
   } catch { /* storage unavailable */ }
 }
 

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 
 // Plane-cutting utilities for the slicer shell. A plane is { n: unit Vector3, d }
 // with signed distance dist(p) = n·p - d, in whatever space the data lives in.
@@ -19,22 +20,68 @@ export function planeToLocal(plane, pos, quat) {
 }
 
 /**
- * Clip a convex point cloud. The half on each side is the hull of its own
- * points plus every (inside, outside) segment's crossing point, which covers
- * the cut polygon exactly. Returns { a, b, cut } arrays of Vector3.
+ * Clip a convex point cloud. Reduce it to its hull first, then each half is
+ * its hull vertices on that side plus the crossing points of the hull's
+ * *edges* (O(edges), not O(n²) over every vertex pair: a sliced pot half has
+ * hundreds of vertices). Returns { a, b, cut } arrays of Vector3.
  */
 export function splitConvexPoints(points, plane) {
+  const hull = new ConvexHull();
+  try { hull.setFromPoints(points); } catch { return { a: [], b: [], cut: [] }; }
+  const verts = new Map(), edges = new Map();
+  for (const face of hull.faces) {
+    let e = face.edge;
+    do {
+      const p = e.head().point, q = e.tail().point;
+      for (const v of [p, q]) verts.set(v, v);
+      const key = p.x < q.x || (p.x === q.x && p.y < q.y) ? `${p.x},${p.y},${p.z}|${q.x},${q.y},${q.z}` : `${q.x},${q.y},${q.z}|${p.x},${p.y},${p.z}`;
+      edges.set(key, [p, q]);
+      e = e.next;
+    } while (e !== face.edge);
+  }
+  const d = (p) => plane.n.dot(p) - plane.d;
   const a = [], b = [], cut = [];
-  const ds = points.map((p) => plane.n.dot(p) - plane.d);
-  points.forEach((p, i) => { (ds[i] >= 0 ? a : b).push(p.clone()); });
-  for (let i = 0; i < points.length; i++) {
-    for (let j = i + 1; j < points.length; j++) {
-      if ((ds[i] >= 0) === (ds[j] >= 0)) continue;
-      const t = ds[i] / (ds[i] - ds[j]);
-      cut.push(new THREE.Vector3().lerpVectors(points[i], points[j], t));
-    }
+  for (const v of verts.values()) (d(v) >= 0 ? a : b).push(v.clone());
+  for (const [p, q] of edges.values()) {
+    const dp = d(p), dq = d(q);
+    if ((dp >= 0) === (dq >= 0)) continue;
+    cut.push(new THREE.Vector3().lerpVectors(p, q, dp / (dp - dq)));
   }
   return { a: a.concat(cut.map((p) => p.clone())), b: b.concat(cut.map((p) => p.clone())), cut };
+}
+
+/**
+ * Collider-safe hull input. Rapier's hull builder can panic (a WASM trap that
+ * poisons the whole physics world) on near-duplicate or near-flat point sets,
+ * which repeated slicing produces. Returns the hull's vertices, merged within
+ * `merge`, as a flat Float32Array, or null if the piece is thinner than `minWidth`.
+ */
+export function safeHullPoints(points, minWidth = 0.006, merge = 0.0015) {
+  if (points.length < 4) return null;
+  const hull = new ConvexHull();
+  try { hull.setFromPoints(points); } catch { return null; }
+  if (hull.faces.length < 4) return null;
+  const onHull = new Set();
+  for (const face of hull.faces) {
+    let e = face.edge;
+    do { onHull.add(e.head().point); e = e.next; } while (e !== face.edge);
+  }
+  const verts = [];
+  for (const p of onHull) {
+    if (!verts.some((u) => u.distanceToSquared(p) < merge * merge)) verts.push(p);
+  }
+  if (verts.length < 4) return null;
+  // width = the smallest over faces of the farthest vertex behind that face
+  let width = Infinity;
+  for (const f of hull.faces) {
+    let far = 0;
+    for (const v of verts) far = Math.max(far, -f.distanceToPoint(v));
+    width = Math.min(width, far);
+  }
+  if (!(width >= minWidth)) return null;
+  const flat = new Float32Array(verts.length * 3);
+  verts.forEach((p, i) => { flat[i * 3] = p.x; flat[i * 3 + 1] = p.y; flat[i * 3 + 2] = p.z; });
+  return flat;
 }
 
 export function uniquePoints(geometry) {

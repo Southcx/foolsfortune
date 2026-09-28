@@ -5,7 +5,7 @@ import { T, PALETTE } from './config.js';
 import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
-import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints } from './slicing.js';
+import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from './slicing.js';
 
 export { PROFILES };
 
@@ -326,11 +326,9 @@ export class Breakables {
 
   /** A loose sliced piece: dynamic, sliceable again, crumbles when shot. */
   spawnPiece(h, pos, quat, vel, angVel) {
-    const pts = uniquePoints(h.geometry);
-    const flat = new Float32Array(pts.length * 3);
-    pts.forEach((p, i) => { flat[i * 3] = p.x; flat[i * 3 + 1] = p.y; flat[i * 3 + 2] = p.z; });
-    const cd = RAPIER.ColliderDesc.convexHull(flat);
-    if (!cd) return null;
+    const flat = safeHullPoints(uniquePoints(h.geometry));
+    const cd = flat && RAPIER.ColliderDesc.convexHull(flat);
+    if (!cd) { h.geometry.dispose(); return null; }
     const w = this.physics.world;
     const body = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pos.x, pos.y, pos.z).setRotation(quat)
       .setLinvel(vel.x, vel.y, vel.z).setAngvel(angVel).setLinearDamping(0.1).setAngularDamping(0.4).setCcdEnabled(true));
@@ -389,7 +387,8 @@ export class Breakables {
       if (!h) continue;
       const wc = h.center.clone().applyQuaternion(quat).add(pos);
       const v = dir.clone().multiplyScalar(2 + Math.random() * 2).add(wc.clone().sub(point).normalize().multiplyScalar(1.5));
-      this.spawnPiece(h, wc, quat, v, new THREE.Vector3().randomDirection().multiplyScalar(8)).life = T.shatter.shardLife * 0.6;
+      const piece = this.spawnPiece(h, wc, quat, v, new THREE.Vector3().randomDirection().multiplyScalar(8));
+      if (piece) piece.life = T.shatter.shardLife * 0.6;
     }
     this.fx.shatterBurst(pos, 0.6, dir, M);
     sfx.shatter(0.5, this.game.listenerDistance(pos), M.sound);
@@ -489,9 +488,8 @@ export class Breakables {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 
-    const flat = new Float32Array(local.length * 3);
-    local.forEach((p, i) => { flat[i * 3] = p.x; flat[i * 3 + 1] = p.y; flat[i * 3 + 2] = p.z; });
-    const cd = RAPIER.ColliderDesc.convexHull(flat);
+    const flat = safeHullPoints(local, 0.004);
+    const cd = flat && RAPIER.ColliderDesc.convexHull(flat);
     if (!cd) { geo.dispose(); return; }
 
     const worldC = c.clone().applyQuaternion(bodyRot).add(bodyPos);

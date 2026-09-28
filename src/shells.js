@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RAPIER } from './physics.js';
+import { RAPIER, GROUPS } from './physics.js';
 import { T, DEG, PALETTE } from './config.js';
 import { planeFrom } from './slicing.js';
 import { makeGlowOutline, addOutline } from './outline.js';
@@ -39,11 +39,20 @@ function blobTexture(seed) {
     const a = rnd() * Math.PI * 2, r = 24 + rnd() * 30, rr = 5 + rnd() * 14;
     g.beginPath(); g.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, rr, 0, Math.PI * 2); g.fill();
   }
-  // soft edge
-  const d = g.getImageData(0, 0, 128, 128);
-  for (let i = 0; i < d.data.length; i += 4) d.data[i + 3] = d.data[i];
-  g.putImageData(d, 0, 0);
-  return new THREE.CanvasTexture(c);
+  // soften: blur the hard-edged blob into a second canvas, then use luminance as alpha
+  const c2 = document.createElement('canvas');
+  c2.width = c2.height = 128;
+  const g2 = c2.getContext('2d');
+  g2.filter = 'blur(5px)';
+  g2.drawImage(c, 0, 0);
+  const d = g2.getImageData(0, 0, 128, 128);
+  for (let i = 0; i < d.data.length; i += 4) {
+    const a = d.data[i] / 255;
+    d.data[i + 3] = Math.round(255 * THREE.MathUtils.smoothstep(a, 0.25, 0.75));
+    d.data[i] = d.data[i + 1] = d.data[i + 2] = 255;
+  }
+  g2.putImageData(d, 0, 0);
+  return new THREE.CanvasTexture(c2);
 }
 
 export class Shells {
@@ -269,12 +278,20 @@ export class Shells {
       const w = this.wells[i];
       w.t += dt;
       const ramp = Math.min(1, w.t / 0.35);
+      const eat = [], swirled = [];
+      // the crush zone grows as the well feeds, so the debris ball can't pile up
+      const crushR = W.compressRadius * (1 + W.compressGrow * Math.min(1, w.t / w.dur));
       g.physics.world.forEachRigidBody((b) => {
         if (!b.isDynamic()) return;
         const t = b.translation();
         _v.set(w.pos.x - t.x, w.pos.y - t.y, w.pos.z - t.z);
         const d = _v.length();
         if (d > W.radius || d < 1e-3) return;
+        const ent = b.numColliders() ? g.physics.entityOf(b.collider(0)) : null;
+        const debris = ent && (ent.type === 'shard' || ent.type === 'slice');
+        // debris that reaches the core gets crushed (collected, removed after the loop)
+        if (debris && d < crushR && w.t > 0.3 && eat.length < W.compressMax) { eat.push(ent); return; }
+        if (debris && ent.type === 'shard' && !ent.swirled) swirled.push(ent);
         _v.divideScalar(d);
         const f = 1 - d / W.radius;
         const m = b.mass();
@@ -285,6 +302,13 @@ export class Shells {
         g.physics.kick(b, { x: (_v.x * pull + _v2.x * swirl) * m * dt, y: (_v.y * pull + lift) * m * dt, z: (_v.z * pull + _v2.z * swirl) * m * dt });
         if (d < 0.9) { const lv = b.linvel(); b.setLinvel({ x: lv.x * 0.94, y: lv.y * 0.94, z: lv.z * 0.94 }, true); }
       });
+      for (const ent of eat) this.compress(w, ent);
+      for (const ent of swirled) {
+        ent.swirled = true;
+        const col = ent.body.collider(0);
+        col.setCollisionGroups(GROUPS.swirl);
+        col.setActiveEvents(RAPIER.ActiveEvents.NONE);
+      }
       for (const c of g.clappers.list) {
         const d = c.pos.distanceTo(w.pos);
         if (d < W.radius) g.clappers.pull(c, w.pos, (1 - d / W.radius) * ramp, dt);
@@ -292,6 +316,21 @@ export class Shells {
       const pd = g.player.renderPos.clone().setY(g.player.renderPos.y + 0.9).distanceTo(w.pos);
       if (pd < W.radius) g.player.vel.addScaledVector(w.pos.clone().sub(g.player.pos).setY(0).normalize(), W.playerPull * (1 - pd / W.radius) * dt);
       if (w.t >= w.dur) this.collapseWell(i);
+    }
+  }
+
+  /** Crush a piece of debris into the well core; every few condense into a bauble. */
+  compress(w, ent) {
+    const g = this.game, W = T.shells.well;
+    const t = ent.body.translation();
+    const p = new THREE.Vector3(t.x, t.y, t.z);
+    g.breakables.removeAny(ent);
+    g.fx.absorbSparkle(p);
+    w.eaten = (w.eaten || 0) + 1;
+    w.core.scale.setScalar(1 + Math.min(0.8, w.eaten * 0.03));
+    if (w.eaten % W.compressPer === 0 && w.eaten / W.compressPer <= W.compressDrops) {
+      g.baubles?.spawn(w.pos, 1, { spread: 0.3, up: 0.5 });
+      sfx.gulp?.(g.listenerDistance(w.pos));
     }
   }
 
@@ -398,8 +437,8 @@ export class Shells {
       const hit = len > 1e-5 ? g.physics.raycast(d.pos, step.clone().divideScalar(len), len + d.r, g.player.collider, undefined, (c) => !c.isSensor()) : null;
       if (hit || d.age > d.life) {
         if (hit) {
-          this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
           const ent = hit.entity;
+          if (!hit.collider.parent()?.isDynamic()) this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
           if (!d.slip && ent?.type === 'breakable') g.breakables.damage(ent, T.shells.bomb.dropletDamage, hit.point, d.vel.clone().normalize(), 0.5);
           if (!d.slip && ent?.type === 'clapper') g.clappers.scald(ent, 0.4);
           // splash: sometimes spit two smaller droplets
@@ -419,9 +458,18 @@ export class Shells {
 
   addSplat(point, normal, size, slip = false) {
     const g = this.game;
+    // don't stack decals on decals: grow a nearby one a little instead
+    for (let i = this.splats.length - 1; i >= Math.max(0, this.splats.length - 60); i--) {
+      const o = this.splats[i];
+      if (o.m.position.distanceToSquared(point) < (size * 0.35) ** 2) {
+        if ((o.grown = (o.grown || 0) + 1) < 12) o.m.scale.multiplyScalar(1.04);
+        o.age = Math.min(o.age, o.life * 0.3); // fresh slip keeps it wet
+        return;
+      }
+    }
     const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[Math.floor(Math.random() * 4)], color: (slip ? SLIP : HOT).clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
     const m = new THREE.Mesh(g.fx.decalGeo, mat);
-    m.position.copy(point).addScaledVector(normal, 0.006);
+    m.position.copy(point).addScaledVector(normal, 0.004 + (this.splats.length % 16) * 0.0004);
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
     m.rotateZ(Math.random() * Math.PI * 2);
     m.scale.setScalar(size / 0.16);

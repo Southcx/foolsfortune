@@ -5,13 +5,16 @@ import { T } from './config.js';
 export { RAPIER };
 
 // Collision layers (membership << 16 | filter)
-export const G = { STATIC: 1, PLAYER: 2, PROP: 4, DEBRIS: 8 };
+export const G = { STATIC: 1, PLAYER: 2, PROP: 4, DEBRIS: 8, SWIRL: 64 };
 export const groups = (member, filter) => (member << 16) | filter;
 export const GROUPS = {
   static: groups(G.STATIC, 0xffff),
   player: groups(G.PLAYER, G.STATIC | G.PROP | G.DEBRIS),
   prop: groups(G.PROP, 0xffff),
   debris: groups(G.DEBRIS, G.STATIC | G.PROP | G.DEBRIS | G.PLAYER),
+  // debris caught in a gravity well: no debris-debris contacts (a packed, orbiting ball of
+  // shards is otherwise the most expensive thing the solver ever sees)
+  swirl: groups(G.SWIRL, G.STATIC | G.PROP),
   // what the character controller treats as solid (debris gets shoved, not stood on)
   controllerQuery: groups(0xffff, G.STATIC | G.PROP),
 };

@@ -14,6 +14,22 @@ const F2 = 7; // second floor walking height
 export const ROOM = { W, D, H, F2 };
 
 const rand = (a, b) => a + Math.random() * (b - a);
+let _glowTex;
+// soft radial falloff (a SpriteMaterial without a map draws as a hard square)
+function glowTexture() {
+  if (_glowTex) return _glowTex;
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grd.addColorStop(0, 'rgba(255,255,255,1)');
+  grd.addColorStop(0.4, 'rgba(255,255,255,0.35)');
+  grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 64, 64);
+  _glowTex = new THREE.CanvasTexture(c);
+  return _glowTex;
+}
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export class Level {
@@ -262,7 +278,7 @@ export class Level {
         icon.add(sh);
       }
       icon.position.set(pos.x, pos.y + 1.2, pos.z);
-      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ color: C.glow, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: C.glow, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
       halo.scale.setScalar(0.8);
       icon.add(halo);
       this.scene.add(icon);
