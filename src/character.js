@@ -227,7 +227,8 @@ export class Character {
 
     const m = this.moveDir;
     const swingAxis = _v4.crossVectors(UP, m).normalize();
-    const mt = this.moveT * (1 - this.airT);
+    const sl = s.slide || 0, mn = s.mantle || 0, da = s.dash || 0, cr = s.crouch || 0;
+    const mt = this.moveT * (1 - this.airT) * (1 - sl) * (1 - da) * (1 - mn);
     const amp = A.thighSwing * DEG * THREE.MathUtils.lerp(0.8, 1.35, this.runT) * mt;
     const kneeAmp = A.kneeBend * DEG * THREE.MathUtils.lerp(0.7, 1.3, this.runT) * mt;
     const idle = 1 - this.moveT;
@@ -250,6 +251,27 @@ export class Character {
       const thighPitch = thighA * swingAxis.x + stanceA - crouch * 0.9 + L.air[0] * DEG * this.airT;
       this.rot(L.foot, X, -(thighPitch + knee) * 0.8 + 12 * DEG * this.airT);
     }
+    // movement-action poses layered over the gait
+    if (sl > 0.01) {
+      // baseball slide: lead leg out front, trailing leg folded under, lean back
+      this.rot(B.thighL, X, -72 * DEG * sl); this.rot(B.shinL, X, 14 * DEG * sl); this.rot(B.footL, X, 20 * DEG * sl);
+      this.rot(B.thighR, X, -12 * DEG * sl); this.rot(B.shinR, X, 108 * DEG * sl);
+      this.root.position.y -= 0.48 * sl;
+    }
+    if (cr > 0.01) {
+      for (const [th, sh, ft] of [[B.thighL, B.shinL, B.footL], [B.thighR, B.shinR, B.footR]]) {
+        this.rot(th, X, -42 * DEG * cr); this.rot(sh, X, 84 * DEG * cr); this.rot(ft, X, -42 * DEG * cr);
+      }
+      this.root.position.y -= 0.2 * cr;
+    }
+    if (mn > 0.01) {
+      for (const [th, sh] of [[B.thighL, B.shinL], [B.thighR, B.shinR]]) { this.rot(th, X, -55 * DEG * mn); this.rot(sh, X, 85 * DEG * mn); }
+    }
+    if (da > 0.01) {
+      this.rot(B.thighL, X, 18 * DEG * da); this.rot(B.shinL, X, 55 * DEG * da);
+      this.rot(B.thighR, X, -30 * DEG * da); this.rot(B.shinR, X, 40 * DEG * da);
+    }
+
     // hips: bob, sway, dip, lean
     const bob = A.hipBob * mt * (Math.abs(Math.cos(this.phase)) - 1) * (1 + this.runT * 0.6);
     B.spine.position.y = this.hipsRestY + bob + this.dip - crouch * 0.1;
@@ -260,7 +282,7 @@ export class Character {
     const fwdLean = (A.runLean * this.runT + 3 * mt) * DEG * m.z;
     const sideLean = -5 * DEG * mt * m.x;
     this.rot(B.spine001, UP, -Math.sin(this.phase) * 7 * DEG * mt);
-    this.rot(B.spine001, X, fwdLean);
+    this.rot(B.spine001, X, fwdLean - 24 * DEG * sl + 26 * DEG * mn + 18 * DEG * da + 14 * DEG * cr);
     this.rot(B.spine001, Zv, sideLean);
     this.rot(B.spine002, X, Math.sin(this.time * 1.7) * 1.2 * DEG + 6 * DEG * this.airT);
 

@@ -5,6 +5,7 @@ import { T, DEFAULTS, saveTuning, resetTuning } from './config.js';
 // automatic range around its default.
 const RANGES = {
   'movement.maxSlope': [10, 70, 1],
+  'movement.dashCharges': [0, 5, 1],
   'camera.sensitivity': [0.1, 4, 0.01],
   'camera.adsSensMult': [0.1, 1.5, 0.01],
   'weapon.fireInterval': [0.03, 0.6, 0.005],

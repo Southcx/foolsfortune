@@ -307,6 +307,26 @@ class Sfx {
     this.tone(t + 0.05, 0.12, { f0: f * 2, f1: f * 2, type: 'sine', gain: 0.25, dest: d });
   }
 
+  slide() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.2);
+    this.noise(t, 0.55, { type: 'bandpass', f0: 1400, f1: 500, q: 0.8, gain: 0.7, attack: 0.02, dest: d });
+  }
+
+  dash() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.4);
+    this.noise(t, 0.3, { type: 'bandpass', f0: 600, f1: 3000, q: 1, gain: 0.8, attack: 0.01, dest: d });
+    this.tone(t, 0.2, { f0: 220, f1: 660, type: 'sine', gain: 0.3, dest: d });
+  }
+
+  mantle() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.2);
+    this.noise(t, 0.08, { f0: 900, f1: 250, gain: 0.8, dest: d });
+    this.noise(t + 0.16, 0.1, { f0: 700, f1: 200, gain: 0.6, dest: d });
+  }
+
   // ricochet: a bright zing that climbs with each bounce
   ricochet(n = 1, dist = 5) {
     if (!this.ok()) return;

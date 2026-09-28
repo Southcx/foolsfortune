@@ -17,6 +17,32 @@ export const DEFAULTS = {
     tpTurnSpeed: 11, // how fast the body turns toward the move direction in 3rd person
     tpMaxTurn: 540, // deg/s cap on that turn (doubled in combat stance)
     combatStanceTime: 1.6, // seconds the body keeps facing the crosshair after firing
+    airDrag: 2.5, // m/s² momentum loss in the air above run speed (steering never kills it)
+    crouchSpeed: 2.2,
+    crouchEyeDrop: 0.45,
+    // slide: C while moving faster than slideMinSpeed; slopes push you along
+    slideSpeed: 9.5,
+    slideMinSpeed: 4,
+    slideFriction: 6,
+    slideSlopeAccel: 30,
+    slideSteer: 2.5,
+    slideMaxTime: 1.1,
+    slideCooldown: 0.3,
+    slideJumpBoost: 1.12,
+    slideEyeDrop: 0.75,
+    // mantle: push into a ledge while jumping or falling
+    mantleMin: 0.45,
+    mantleJumpMin: 0.75, // on the ground, a jump into a ledge at least this tall becomes a mantle
+    mantleMax: 1.9,
+    mantleReach: 0.55,
+    mantleTime: 0.34,
+    mantleRiseMax: 3.5,
+    // air dash: Shift in the air, costs Lachryma
+    dashSpeed: 13,
+    dashTime: 0.17,
+    dashUp: 1.2,
+    dashCost: 12,
+    dashCharges: 1,
   },
   camera: {
     sensitivity: 1.0,

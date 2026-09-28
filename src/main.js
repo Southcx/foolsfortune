@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { T, PALETTE, loadTuning } from './config.js';
-import { Physics } from './physics.js';
+import { Physics, RAPIER } from './physics.js';
 import { FX } from './fx.js';
 import { Breakables } from './breakables.js';
 import { Level } from './level.js';
@@ -117,6 +117,7 @@ async function main() {
   const input = new Input(renderer.domElement);
   const player = new Player(physics, camera, input);
   game.player = player;
+  player.game = game;
   const weapon = new Weapon(game);
   game.weapon = weapon;
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
@@ -250,6 +251,7 @@ async function main() {
       yaw: player.bodyYaw,
       velocity: player.vel,
       grounded: player.grounded,
+      slide: player.slideBlend, mantle: player.mantleBlend, dash: player.dashBlend, crouch: player.crouchBlend,
       aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
       aimYawOffset: player.aimYawOffset,
       combat: Math.max(weapon.combatBlend, player.fpWeight),
@@ -292,7 +294,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, manual: false };
   window.__ready = true;
 }
 
