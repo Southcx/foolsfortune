@@ -307,6 +307,48 @@ class Sfx {
     this.tone(t + 0.05, 0.12, { f0: f * 2, f1: f * 2, type: 'sine', gain: 0.25, dest: d });
   }
 
+  // ricochet: a bright zing that climbs with each bounce
+  ricochet(n = 1, dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5 / (0.5 + dist * 0.06), 0.6);
+    const f = 1400 * Math.pow(2, Math.min(n, 8) / 6);
+    this.tone(t, 0.22, { f0: f * 1.6, f1: f * 0.7, type: 'sawtooth', gain: 0.14, dest: d });
+    this.tone(t, 0.3, { f0: f, f1: f * 0.55, type: 'sine', gain: 0.35, dest: d });
+    this.noise(t, 0.05, { type: 'highpass', f0: 5000, gain: 0.5, dest: d });
+  }
+
+  // lock-on: soft blip while painting, a two-note chirp per lock (rising)
+  lockTick() {
+    if (!this.ok() || !this.allow('lockTick', 10)) return;
+    const t = this.ctx.currentTime, d = this.out(0.18, 0);
+    this.tone(t, 0.04, { f0: 1100, f1: 1300, type: 'square', gain: 0.08, dest: d });
+  }
+
+  lockOn(n = 1) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.2);
+    const f = 880 * Math.pow(2, (n - 1) / 12 * 2);
+    this.tone(t, 0.05, { f0: f, f1: f, type: 'square', gain: 0.12, dest: d });
+    this.tone(t + 0.055, 0.08, { f0: f * 1.5, f1: f * 1.5, type: 'square', gain: 0.12, dest: d });
+  }
+
+  seekers(n = 1) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.7, 0.5);
+    for (let i = 0; i < n; i++) {
+      const k = t + i * 0.06;
+      this.noise(k, 0.25, { type: 'bandpass', f0: 900, f1: 3500, q: 1.5, gain: 0.5, attack: 0.02, dest: d });
+      this.tone(k, 0.2, { f0: 300, f1: 700, type: 'triangle', gain: 0.15, dest: d });
+    }
+  }
+
+  seekerPop(dist = 5) {
+    if (!this.ok() || !this.allow('seekerPop', 20)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.08), 0.6);
+    this.noise(t, 0.3, { f0: 3000, f1: 200, gain: 0.8, dest: d });
+    this.tone(t, 0.18, { f0: 160, f1: 50, gain: 0.7, dest: d });
+  }
+
   splosh(dist = 5) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.8 / (0.5 + dist * 0.08), 0.5);

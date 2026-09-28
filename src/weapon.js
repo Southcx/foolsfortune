@@ -62,9 +62,15 @@ export class Weapon {
     this.updateTrigger(dt, input);
     this.updateCharge(dt, input);
     const shells = this.game.shells;
-    for (let i = 0; i < 5; i++) if (input.wasPressed(`Digit${i + 1}`)) shells.select(i);
+    for (let i = 0; i < 9; i++) if (input.wasPressed(`Digit${i + 1}`)) shells.select(i);
     if (input.wheel) shells.cycle(Math.sign(input.wheel));
-    if ((input.wasPressed('KeyF') || input.wasPressed('Mouse1')) && !this.reloading && this.charge === 0) this.wantShell = true;
+    const shellPress = (input.wasPressed('KeyF') || input.wasPressed('Mouse1')) && !this.reloading && this.charge === 0;
+    if (shells.type.id === 'homing') {
+      // hold to paint targets, release to fire
+      const sp = shells.specials;
+      if (shellPress && !sp.painting) sp.startPaint();
+      if (sp.painting && !input.isDown('KeyF') && !input.isDown('Mouse1')) this.wantShell = true;
+    } else if (shellPress) this.wantShell = true;
 
     if (this.reloading) {
       const prev = this.reloadT;
@@ -273,8 +279,10 @@ export class Weapon {
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
     if (this.wantShell) {
+      if (this.cooldown > 0) return; // held until the gun is ready
       this.wantShell = false;
-      if (this.cooldown <= 0) { this.game.shells.fire({ camera, player, character, weapon: this }); this.cooldown = T.weapon.fireInterval * 1.5; }
+      this.game.shells.fire({ camera, player, character, weapon: this });
+      this.cooldown = T.weapon.fireInterval * 1.5;
       return;
     }
     if (this.releaseCharged) { this.fireCharged(camera, player, character); return; }

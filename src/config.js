@@ -99,6 +99,11 @@ export const DEFAULTS = {
     mark: { radius: 2.4, stun: 4.5, duration: 15, damageMult: 2 },
     bomb: { speed: 13, lift: 4, fuse: 1.8, bounces: 2, radius: 3.6, damage: 260, velocity: 10, droplets: 110, dropletDamage: 10,
       splatLife: 11, poolRadius: 1.6, poolLife: 12, poolDps: 45 },
+    // banks off walls/floors; every bounce multiplies damage and bends toward a target in seekAngle
+    ricochet: { bounces: 5, damage: 90, bounceMult: 1.35, seekAngle: 30, seekRange: 16, range: 45 },
+    // hold to paint (cone around the crosshair, lockTime per target), release to fire one seeker per lock
+    homing: { maxLocks: 6, lockTime: 0.18, cone: 12, range: 32, launchSpeed: 7, speed: 19, fan: 5, stagger: 0.06,
+      turn: 5, turnGrow: 14, maxFlight: 4, damage: 150, splash: 0.9 },
   },
   recoil: {
     kickPitch: 3.4,

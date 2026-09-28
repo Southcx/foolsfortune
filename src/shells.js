@@ -4,6 +4,7 @@ import { T, DEG, PALETTE } from './config.js';
 import { planeFrom } from './slicing.js';
 import { makeGlowOutline, addOutline } from './outline.js';
 import { sfx } from './audio.js';
+import { Specials } from './specials.js';
 
 // ---------------------------------------------------------------------------
 // Shells: special rounds for the psygun, fired with F / middle mouse.
@@ -12,6 +13,7 @@ import { sfx } from './audio.js';
 //   well    – a lobbed singularity that drags everything in, then pops
 //   mark    – stuns critters and marks things (marked things drop Lachryma)
 //   bomb    – a lobbed clay grenade: splash damage, molten slip, hot pool
+//   ricochet, homing – see specials.js
 // ---------------------------------------------------------------------------
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'SLICE', glyph: '╱' },
@@ -19,6 +21,8 @@ export const SHELL_TYPES = [
   { id: 'well', name: 'WELL', glyph: '◉' },
   { id: 'mark', name: 'MARK', glyph: '✳' },
   { id: 'bomb', name: 'BOMB', glyph: '●' },
+  { id: 'ricochet', name: 'BANK', glyph: '⟀' },
+  { id: 'homing', name: 'SEEK', glyph: '◇' },
 ];
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -79,6 +83,7 @@ export class Shells {
     this.dropMesh.count = 0;
     this.dropMesh.frustumCulled = false;
     game.scene.add(this.dropMesh);
+    this.specials = new Specials(this);
   }
 
   get type() { return SHELL_TYPES[this.selected]; }
@@ -157,6 +162,9 @@ export class Shells {
     if (cuts) { g.hud.hitmarker(true); if (cuts >= 3) g.hud.popup(`×${cuts} SLICED`); }
     g.clappers?.spook(end);
   }
+
+  ricochet(ctx) { this.specials.ricochet(ctx); }
+  homing(ctx) { this.specials.homing(ctx); }
 
   // ---- PUSH ----------------------------------------------------------------
   push({ ray, muzzle, player }) {
@@ -518,6 +526,7 @@ export class Shells {
     this.stepWells(dt);
     this.stepDroplets(dt);
     this.stepPools(dt);
+    this.specials.fixedUpdate(dt);
   }
 
   update(dt) {
@@ -576,6 +585,7 @@ export class Shells {
     }
     this.glowOutline.opacity = 0.55 + 0.3 * Math.sin(now * 6);
     this.xray.opacity = 0.18 + 0.08 * Math.sin(now * 6);
+    this.specials.update(dt);
   }
 
   unmark(ent) {
@@ -594,6 +604,7 @@ export class Shells {
     for (const s of this.splats) g.scene.remove(s.m);
     for (const p of this.pools) g.scene.remove(p.m);
     for (const e of [...this.marked]) this.unmark(e);
+    this.specials.clear();
     this.projectiles = []; this.wells = []; this.splats = []; this.pools = []; this.droplets = [];
   }
 }

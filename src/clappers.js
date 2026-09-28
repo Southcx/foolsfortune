@@ -26,7 +26,7 @@ const STATIC_ONLY = groups(0xffff, G.STATIC);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
 
-const DEATH_TEXT = { shot: 'CLAPPED', sliced: 'SLICED', cooked: 'COOKED', splat: 'SPLAT', well: 'CRUSHED', explosion: 'KABOOM', charged: 'VAPORISED' };
+const DEATH_TEXT = { shot: 'CLAPPED', sliced: 'SLICED', cooked: 'COOKED', splat: 'SPLAT', well: 'CRUSHED', explosion: 'KABOOM', charged: 'VAPORISED', ricochet: 'BANKED', homing: 'HUNTED' };
 
 export class Clappers {
   constructor(game, gltf) {

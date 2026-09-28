@@ -22,6 +22,8 @@ const RANGES = {
   'shells.well.compressPer': [1, 20, 1],
   'shells.well.compressMax': [0, 30, 1],
   'shells.well.compressDrops': [0, 30, 1],
+  'shells.ricochet.bounces': [0, 12, 1],
+  'shells.homing.maxLocks': [1, 16, 1],
   'charge.pierce': [0, 20, 1],
   'lachryma.clapperDrop': [0, 20, 1],
   'lachryma.markedDrop': [0, 10, 1],
