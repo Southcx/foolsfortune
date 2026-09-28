@@ -81,6 +81,12 @@ export const PROFILES = {
   },
   // hanging lantern jar (gets a glowing core)
   lantern: { pts: [[0.06, 0], [0.13, 0.04], [0.16, 0.14], [0.15, 0.24], [0.09, 0.3], [0.08, 0.34]], segs: 10, th: 0.012, pattern: [{ type: 'dots', from: 0.3, to: 0.7, n: 8, k: 0.55 }] },
+  // slip barrel: full of liquid clay
+  barrel: {
+    pts: [[0.22, 0], [0.26, 0.06], [0.29, 0.28], [0.29, 0.5], [0.26, 0.72], [0.22, 0.79], [0.24, 0.82]],
+    segs: 12, th: 0.025, mat: 'stoneware', hp: 140,
+    pattern: [{ type: 'band', from: 0.14, to: 0.19, k: 0.6 }, { type: 'band', from: 0.8, to: 0.85, k: 0.6 }, { type: 'band', from: 0.47, to: 0.52, k: 0.7 }],
+  },
   // --- sculpture ------------------------------------------------------------
   // haniwa: tube body, flared skirt, dome head with punched eyes + mouth
   haniwa: {

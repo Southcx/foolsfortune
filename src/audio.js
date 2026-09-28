@@ -307,6 +307,13 @@ class Sfx {
     this.tone(t + 0.05, 0.12, { f0: f * 2, f1: f * 2, type: 'sine', gain: 0.25, dest: d });
   }
 
+  splosh(dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.8 / (0.5 + dist * 0.08), 0.5);
+    this.noise(t, 0.5, { f0: 900, f1: 180, gain: 1, attack: 0.02, dest: d });
+    for (let i = 0; i < 6; i++) this.tone(t + 0.05 + Math.random() * 0.4, 0.08, { f0: 300 + Math.random() * 300, f1: 900, type: 'sine', gain: 0.2, dest: d });
+  }
+
   clap(dist = 5) {
     if (!this.ok() || !this.allow('clap', 14)) return;
     const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.1), 0.3);

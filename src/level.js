@@ -201,6 +201,15 @@ export class Level {
     for (const x of [-5, -2.5, 2.5, 5]) this.box([x, y + 0.25, 13.9], [0.8, 0.5, 0.8], C.mid);
     for (const x of [-6.5, 6.5]) this.box([x, y + 0.55, 8], [0.55, 1.1, 0.55], C.mid);
     for (const x of [-3, 3]) this.box([x, y + 0.1, 8.2], [0.7, 0.2, 0.7], C.dark);
+    // the kiln chimney carries on up through the gallery to the roof
+    this.cylinder([0, (F2 + H) / 2, 13.4], 0.45, H - F2, C.dark, 8);
+    // upstairs wall shelves (east wall, showroom end)
+    for (const z of [-11.5, -8.2]) this.shelf(W - 0.35, z, -1, 3.0, y);
+    // drying rack on the ground floor: plates standing on edge
+    const rx = -5.0, rz = 14.3;
+    for (const dx of [-1.1, 1.1]) this.box([rx + dx, 0.6, rz], [0.08, 1.2, 0.5], C.dark);
+    for (const hy of [0.35, 0.85]) this.box([rx, hy, rz], [2.3, 0.05, 0.5], C.wood);
+    this.dryingRack = { x: rx, z: rz };
     // showroom: long display tables + a stepped pyramid stand
     for (const x of [-6, 6]) {
       this.box([x, y + 0.9, -10.5], [1.0, 0.1, 6], C.wood);
@@ -383,14 +392,14 @@ export class Level {
     (this.surfaces ||= []).push({ x, z, w, d, y: h });
   }
 
-  shelf(x, z, facing, w = 3.0) {
+  shelf(x, z, facing, w = 3.0, base = 0) {
     const C = PALETTE;
     const depth = 0.6, levels = [0.45, 1.05, 1.65, 2.25];
-    for (const s of [-1, 1]) this.box([x, 1.3, z + s * (w / 2)], [depth, 2.6, 0.06], C.dark);
-    this.box([x - facing * 0.28, 1.3, z], [0.04, 2.6, w], C.deep, { collide: false });
+    for (const s of [-1, 1]) this.box([x, base + 1.3, z + s * (w / 2)], [depth, 2.6, 0.06], C.dark);
+    this.box([x - facing * 0.28, base + 1.3, z], [0.04, 2.6, w], C.deep, { collide: false });
     for (const y of levels) {
-      this.box([x, y - 0.025, z], [depth, 0.05, w], C.wood);
-      (this.shelves ||= []).push({ x, z, w, y, facing });
+      this.box([x, base + y - 0.025, z], [depth, 0.05, w], C.wood);
+      (this.shelves ||= []).push({ x, z, w, y: base + y, facing, upper: base > 0 });
     }
   }
 
@@ -419,7 +428,8 @@ export class Level {
       const n = 3 + Math.floor(Math.random() * 2);
       for (let i = 0; i < n; i++) {
         const zz = s.z - s.w / 2 + (s.w / n) * (i + 0.5) + rand(-0.1, 0.1);
-        const kind = s.y < 1 ? pick([...smalls, 'amphora', 'onion', 'stack']) : pick([...smalls, 'melon']);
+        const low = s.y - (s.upper ? 7 : 0) < 1;
+        const kind = low ? pick([...smalls, 'amphora', 'onion', 'stack']) : pick([...smalls, 'melon']);
         const scale = { amphora: 0.7, onion: 0.7, stack: 0.65, melon: 0.8 }[kind] ?? rand(0.8, 1.1);
         pot(kind, s.x + rand(-0.05, 0.05), s.y, zz, scale);
       }
@@ -453,6 +463,17 @@ export class Level {
     // wheels: something fresh off the wheel
     this.wheels.forEach((w, i) => pot(i ? 'onion' : 'spindle', w.x, w.y, w.z, 0.9));
 
+    // slip barrels
+    for (const [x, yy, z] of [[-5.3, 0, -9.6], [5.3, 0, -10.4], [-6.9, 0, 7.6], [3.8, 7, -13.8], [-3.8, 7, -13.8]]) {
+      B.spawn({ kind: 'barrel', slip: true, pos: [x, yy + 0.002, z], scale: rand(0.95, 1.1), color: pick([C.wood, C.mid, C.dark]) });
+    }
+    // drying rack: plates on edge
+    const dr = this.dryingRack;
+    for (const hy of [0.375, 0.875]) {
+      for (let i = 0; i < 5; i++) {
+        B.spawn({ kind: 'plate', pos: [dr.x - 0.9 + i * 0.45, hy + 0.22, dr.z - 0.02], facing: [0, 0.25, -1], scale: 0.7, color: pick(colors) });
+      }
+    }
     // --- the big stuff -----------------------------------------------------
     // storage bay under the mezzanine
     big('tsubo', -8.55, 0.7, 1.0);

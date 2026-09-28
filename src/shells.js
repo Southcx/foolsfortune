@@ -25,6 +25,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 // molten slip: starts glowing orange, cools through terracotta to dark clay
 const HOT = new THREE.Color(0xffa25a), GLOW = new THREE.Color(0xe0673a), COOL = new THREE.Color(PALETTE.dark);
+const SLIP = new THREE.Color(PALETTE.pale), SLIP_DRY = new THREE.Color(PALETTE.mid);
 
 function blobTexture(seed) {
   const c = document.createElement('canvas');
@@ -366,9 +367,23 @@ export class Shells {
     if (down) this.addPool(down.point, down.normal);
   }
 
-  addDroplet(pos, vel, r) {
+  addDroplet(pos, vel, r, slip = false) {
     if (this.droplets.length >= 400) this.droplets.shift();
-    this.droplets.push({ pos, vel, r, age: 0, life: 2.5 });
+    this.droplets.push({ pos, vel, r, age: 0, life: 2.5, slip });
+  }
+
+  /** A burst barrel: cold liquid clay slops out (harmless, just messy). */
+  spill(center, dir, amount = 1) {
+    const g = this.game;
+    for (let k = 0; k < 70 * amount; k++) {
+      const v = new THREE.Vector3().randomDirection();
+      v.y = Math.abs(v.y) * 0.8;
+      v.multiplyScalar(1.5 + Math.random() * 3.5).addScaledVector(dir, 1.5);
+      this.addDroplet(center.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.3, (Math.random() - 0.3) * 0.4, (Math.random() - 0.5) * 0.3)), v, 0.03 + Math.random() * 0.05, true);
+    }
+    const down = g.physics.raycast(center, new THREE.Vector3(0, -1, 0), 3, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
+    if (down) this.addPool(down.point, down.normal, true);
+    sfx.splosh(g.listenerDistance(center));
   }
 
   stepDroplets(dt) {
@@ -383,15 +398,15 @@ export class Shells {
       const hit = len > 1e-5 ? g.physics.raycast(d.pos, step.clone().divideScalar(len), len + d.r, g.player.collider, undefined, (c) => !c.isSensor()) : null;
       if (hit || d.age > d.life) {
         if (hit) {
-          this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5));
+          this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
           const ent = hit.entity;
-          if (ent?.type === 'breakable') g.breakables.damage(ent, T.shells.bomb.dropletDamage, hit.point, d.vel.clone().normalize(), 0.5);
-          if (ent?.type === 'clapper') g.clappers.scald(ent, 0.4);
+          if (!d.slip && ent?.type === 'breakable') g.breakables.damage(ent, T.shells.bomb.dropletDamage, hit.point, d.vel.clone().normalize(), 0.5);
+          if (!d.slip && ent?.type === 'clapper') g.clappers.scald(ent, 0.4);
           // splash: sometimes spit two smaller droplets
           if (d.r > 0.035 && Math.random() < 0.35) {
             for (let k = 0; k < 2; k++) {
               const v = d.vel.clone().reflect(hit.normal).multiplyScalar(0.3).add(new THREE.Vector3().randomDirection().multiplyScalar(1.2));
-              this.addDroplet(hit.point.clone().addScaledVector(hit.normal, 0.03), v, d.r * 0.5);
+              this.addDroplet(hit.point.clone().addScaledVector(hit.normal, 0.03), v, d.r * 0.5, d.slip);
             }
           }
         }
@@ -402,29 +417,29 @@ export class Shells {
     }
   }
 
-  addSplat(point, normal, size) {
+  addSplat(point, normal, size, slip = false) {
     const g = this.game;
-    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[Math.floor(Math.random() * 4)], color: HOT.clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
+    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[Math.floor(Math.random() * 4)], color: (slip ? SLIP : HOT).clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
     const m = new THREE.Mesh(g.fx.decalGeo, mat);
     m.position.copy(point).addScaledVector(normal, 0.006);
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
     m.rotateZ(Math.random() * Math.PI * 2);
     m.scale.setScalar(size / 0.16);
     g.scene.add(m);
-    this.splats.push({ m, age: 0, life: T.shells.bomb.splatLife * (0.8 + Math.random() * 0.4) });
+    this.splats.push({ m, age: 0, life: T.shells.bomb.splatLife * (0.8 + Math.random() * 0.4), slip });
     if (this.splats.length > 220) { const s = this.splats.shift(); g.scene.remove(s.m); s.m.material.dispose(); }
   }
 
-  addPool(point, normal) {
+  addPool(point, normal, slip = false) {
     const g = this.game, B = T.shells.bomb;
-    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[0], color: HOT.clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[slip ? 2 : 0], color: (slip ? SLIP : HOT).clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
     const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), mat);
     m.position.copy(point).addScaledVector(normal, 0.01);
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
     m.scale.setScalar(B.poolRadius * 2.2);
     m.renderOrder = 1;
     g.scene.add(m);
-    this.pools.push({ m, pos: point.clone(), age: 0, life: B.poolLife, r: B.poolRadius });
+    this.pools.push({ m, pos: point.clone(), age: 0, life: B.poolLife, r: B.poolRadius * (slip ? 0.8 : 1), slip });
   }
 
   stepPools(dt) {
@@ -435,6 +450,7 @@ export class Shells {
       const heat = 1 - p.age / p.life;
       if (heat <= 0) { g.scene.remove(p.m); p.m.material.dispose(); this.pools.splice(i, 1); continue; }
       const r = p.r * (0.55 + 0.45 * heat);
+      if (p.slip) continue; // cold slip: just a mess
       // hot floor: scalds critters, slowly cooks pots sitting in it
       for (const c of g.clappers.list) if (c.alive && Math.abs(c.pos.y - p.pos.y) < 0.4 && c.pos.distanceTo(p.pos) < r) g.clappers.scald(c, dt * heat);
       for (const ent of g.breakables.items) {
@@ -481,7 +497,7 @@ export class Shells {
       sc.set(d.r / Math.sqrt(st), d.r * st, d.r / Math.sqrt(st));
       mtx.compose(d.pos, q, sc);
       this.dropMesh.setMatrixAt(i, mtx);
-      col.copy(HOT).lerp(GLOW, Math.min(1, d.age / 1.2));
+      if (d.slip) col.copy(SLIP); else col.copy(HOT).lerp(GLOW, Math.min(1, d.age / 1.2));
       this.dropMesh.setColorAt(i, col);
     });
     this.dropMesh.count = this.droplets.length;
@@ -493,12 +509,14 @@ export class Shells {
       s.age += dt;
       const t = s.age / s.life;
       if (t >= 1) { g.scene.remove(s.m); s.m.material.dispose(); this.splats.splice(i, 1); continue; }
-      s.m.material.color.copy(HOT).lerp(GLOW, Math.min(1, t * 4)).lerp(COOL, THREE.MathUtils.smoothstep(t, 0.15, 0.6));
+      if (s.slip) s.m.material.color.copy(SLIP).lerp(SLIP_DRY, THREE.MathUtils.smoothstep(t, 0.1, 0.7));
+      else s.m.material.color.copy(HOT).lerp(GLOW, Math.min(1, t * 4)).lerp(COOL, THREE.MathUtils.smoothstep(t, 0.15, 0.6));
       s.m.material.opacity = 1 - THREE.MathUtils.smoothstep(t, 0.7, 1);
     }
     for (const p of this.pools) {
       const t = p.age / p.life;
-      p.m.material.color.copy(HOT).lerp(GLOW, Math.min(1, t * 3)).lerp(COOL, THREE.MathUtils.smoothstep(t, 0.3, 0.85));
+      if (p.slip) p.m.material.color.copy(SLIP).lerp(SLIP_DRY, THREE.MathUtils.smoothstep(t, 0.2, 0.8));
+      else p.m.material.color.copy(HOT).lerp(GLOW, Math.min(1, t * 3)).lerp(COOL, THREE.MathUtils.smoothstep(t, 0.3, 0.85));
       p.m.material.opacity = (1 - THREE.MathUtils.smoothstep(t, 0.75, 1)) * (0.85 + 0.15 * Math.sin(now * 5));
       p.m.scale.setScalar(p.r * 2.2 * (0.6 + 0.4 * (1 - t)));
     }

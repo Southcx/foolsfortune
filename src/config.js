@@ -155,6 +155,7 @@ export const DEFAULTS = {
     scale: 1.15,
     hideChance: 0.55, // when spooked: hide behind a big pot instead of just running
     tauntChance: 0.3, // when idle and they can see you
+    napChance: 0.12, // when idle and you're far away
     fallShatter: 2.4, // metres of fall that shatter them
   },
   physics: {

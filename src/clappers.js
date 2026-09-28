@@ -103,7 +103,7 @@ export class Clappers {
     model.updateMatrixWorld(true);
     const mq = model.getWorldQuaternion(new THREE.Quaternion()).invert();
     const restInv = (b) => (b ? b.getWorldQuaternion(new THREE.Quaternion()).premultiply(mq).invert() : null);
-    const bones = { body: bone('body'), head: bone('head'), eyes: eyesBone };
+    const bones = { body: bone('body'), head: bone('head'), eyes: eyesBone, armL: bone('upper_armL'), armR: bone('upper_armR'), foreL: bone('forearmL'), foreR: bone('forearmR') };
 
     const w = game.physics.world;
     const s = T.clappers.scale;
@@ -113,6 +113,7 @@ export class Clappers {
     const c = {
       type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars,
       headInv: restInv(bones.head), bodyInv: restInv(bones.body),
+      armInv: { L: restInv(bones.armL), R: restInv(bones.armR), fL: restInv(bones.foreL), fR: restInv(bones.foreR) }, idleT: 0, twirl: 0,
       floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : Math.random() * Math.PI * 2,
       state: 'idle', timer: 0.3 + Math.random(), target: null, speed: 0, current: null, stuckT: 0, lastPos: pos.clone(),
       squeakT: 0, stash: 0, kv: new THREE.Vector3(), grounded: true, peakY: pos.y, heat: 0, stunT: 0, pulledT: 0,
@@ -234,7 +235,8 @@ export class Clappers {
             c.stash++;
             c.clapT = 0.45; c.clapRate = 14;
             sfx.gulp(this.game.listenerDistance(c.pos));
-            c.state = 'idle'; c.timer = 0.6;
+            c.state = 'celebrate'; c.timer = 0.75;
+            c.vy = 3.4; c.grounded = false; c.twirl = 0;
             c.squashV += 4;
           }
           if (c.timer <= -6) { c.state = 'idle'; c.timer = 0.2; }
@@ -263,6 +265,19 @@ export class Clappers {
           wantSpeed = c.state === 'flee' ? C.fleeSpeed : C.runSpeed;
           if (!c.target || c.pos.distanceTo(c.target) < 0.5 || (c.state === 'flee' && c.timer <= 0)) { c.state = 'idle'; c.timer = 0.6 + Math.random() * 2; c.target = null; }
           break;
+        case 'celebrate':
+          c.twirl = Math.min(1, c.twirl + dt / 0.6);
+          if (c.timer <= 0) { c.state = 'idle'; c.timer = 0.4; c.twirl = 0; }
+          break;
+        case 'nap': {
+          const pd = c.pos.distanceTo(this.game.player.renderPos);
+          if (pd < 2.6) { // startled awake
+            c.state = 'stumble'; c.timer = 0.35; c.threat = this.game.player.renderPos.clone(); c.vy = 3; c.grounded = false;
+            sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.5;
+          } else if (c.timer <= 0) { c.state = 'idle'; c.timer = 0.5; }
+          if (Math.random() < dt * 1.2) this.game.fx.alpha.emit({ pos: c.pos.clone().setY(c.pos.y + 0.75), vel: new THREE.Vector3(0.15, 0.35, 0), life: 1.6, size: 0.05, sizeEnd: 0.12, color: new THREE.Color(PALETTE.cream), alpha: 0.7, drag: 0.2 });
+          break;
+        }
         case 'stunned':
           c.stunT -= dt;
           if (c.stunT <= 0) { c.state = 'flee'; c.target = this.pickTarget(c, this.game.player.renderPos); c.timer = 2; }
@@ -286,7 +301,7 @@ export class Clappers {
         desired = { x: c.kv.x * dt, y: c.kv.y * dt, z: c.kv.z * dt };
         c.spin += dt * c.kv.length() * 2;
       } else {
-        c.speed = THREE.MathUtils.damp(c.speed, c.state === 'stunned' || c.state === 'cower' || c.state === 'taunt' ? 0 : wantSpeed, 8, dt);
+        c.speed = THREE.MathUtils.damp(c.speed, ['stunned', 'cower', 'taunt', 'nap', 'celebrate'].includes(c.state) ? 0 : wantSpeed, 8, dt);
         if (c.target && ['run', 'flee', 'forage', 'hide', 'scalded', 'stumble'].includes(c.state)) {
           const want = Math.atan2(c.target.x - c.pos.x, c.target.z - c.pos.z);
           c.heading += wrap(want - c.heading) * (1 - Math.exp(-10 * dt));
@@ -334,6 +349,8 @@ export class Clappers {
   decide(c) {
     const b = this.game.baubles?.near(c.pos, 5).find((bb) => Math.abs(bb.root.position.y - c.pos.y) < 0.8);
     if (b && Math.random() < 0.85) { c.state = 'forage'; c.bauble = b; c.timer = 0; return; }
+    const far = c.pos.distanceTo(this.game.player.renderPos) > 9;
+    if (far && Math.random() < T.clappers.napChance) { c.state = 'nap'; c.timer = 6 + Math.random() * 6; return; }
     if (this.canSeePlayer(c) && Math.random() < T.clappers.tauntChance) {
       c.state = 'taunt'; c.timer = 1.2 + Math.random() * 0.8; c.clapT = c.timer; c.clapRate = 11;
       return;
@@ -361,6 +378,7 @@ export class Clappers {
       c.squash += c.squashV * dt;
       let squash = c.squash;
       if (c.state === 'cower') squash -= 0.22 + Math.sin(c.t * 40) * 0.015;
+      if (c.state === 'nap') squash -= 0.16 + Math.sin(c.t * 1.6) * 0.04; // slow sleepy breathing
       if (c.state === 'taunt') { c.hop = Math.abs(Math.sin(c.t * 9)) * 0.08; squash += (c.hop < 0.02 ? -0.1 : 0.05); } else c.hop = THREE.MathUtils.damp(c.hop, 0, 10, dt);
       const b = c.bones;
       if (b.body && c.bodyInv) b.body.scale.set(1 - squash * 0.5, 1 + squash, 1 - squash * 0.5);
@@ -378,15 +396,20 @@ export class Clappers {
         const hinge = _v.copy(X).applyQuaternion(c.headInv);
         b.head.quaternion.multiply(_q.setFromAxisAngle(hinge.normalize(), -lid));
       }
-      // blink
+      // arms: wave while taunting, throw them up when celebrating, droop when napping
+      const arm = (bn, inv, ang) => { if (bn && inv && ang) bn.quaternion.multiply(_q.setFromAxisAngle(_v.set(0, 0, 1).applyQuaternion(inv).normalize(), ang)); };
+      if (c.state === 'taunt') { arm(b.armR, c.armInv.R, -1.9 - Math.sin(c.t * 14) * 0.5); arm(b.foreR, c.armInv.fR, -Math.sin(c.t * 14 + 1) * 0.6); }
+      if (c.state === 'celebrate') { arm(b.armL, c.armInv.L, 1.8); arm(b.armR, c.armInv.R, -1.8); }
+      if (c.state === 'nap') { arm(b.armL, c.armInv.L, -0.6); arm(b.armR, c.armInv.R, 0.6); }
+      // blink (eyes stay shut while napping)
       c.blinkT -= dt;
-      if (b.eyes) b.eyes.scale.y = c.blinkT < 0.1 ? 0.15 : 1;
+      if (b.eyes) b.eyes.scale.y = c.blinkT < 0.1 || c.state === 'nap' ? 0.15 : 1;
       if (c.blinkT < 0) c.blinkT = 2 + Math.random() * 4;
 
       // placement + whole-body flourishes
       c.root.position.lerpVectors(c.prevPos, c.pos, alpha);
       c.root.position.y += c.hop;
-      c.root.rotation.set(0, c.heading, 0);
+      c.root.rotation.set(0, c.heading + (c.state === 'celebrate' ? c.twirl * c.twirl * Math.PI * 2 : 0), 0);
       if (c.state === 'stunned') { c.root.rotation.z = Math.sin(c.t * 6) * 0.18; c.root.rotation.x = Math.cos(c.t * 5) * 0.12; }
       if (c.state === 'knocked' || c.pulledT > 0) c.root.rotation.x = c.spin;
       c.root.scale.setScalar(T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045));

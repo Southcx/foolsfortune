@@ -249,6 +249,7 @@ export class Breakables {
     this.game.onBroken(ent, cause);
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
+    if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0), cause === 'sliced' ? 0.6 : 1);
     if (ent.def.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
@@ -431,6 +432,7 @@ export class Breakables {
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
+    if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0));
     if (ent.def.ember) this.fx.after(0.03, () => this.explode(center));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
   }

@@ -22,9 +22,10 @@ npm run build      # static bundle in dist/
 | Space | jump |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
-| Hold left click | charge the psygun; release to fire a piercing beam with a shockwave |
+| Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
+| F / middle click | fire the selected shell |
+| 1–5 / mouse wheel | pick a shell: slice, push, well, mark, bomb |
 | Right click (hold) | aim down sights |
-| R | reload |
 | V | toggle first / third person |
 | Q | swap shoulder (third person) |
 | T | reset the room |
@@ -42,21 +43,50 @@ offsets, ADS sensitivity), `weapon` (fire interval, spread and bloom, ADS time, 
 `recoil` (view kick, how much of it stays, gun kick), `tracer`, `shatter` (break speed,
 burst forces, shard size and lifetime), and `explosion` (ember urn radius and force).
 
+## Lachryma (energy)
+
+The psygun runs on **Lachryma**. Plain shots cost a little, and a charge reserves it as it
+winds up (refunded if you let go too early). It trickles back slowly, and the rest comes from
+**baubles**, gummy cream-coloured drops that pop out of clapperjars, lanterns and marked
+pots. They bounce, settle and wobble, then fly to you when you get close. Clapperjars will
+eat baubles you leave lying around, and grow fatter (and juicier) for it.
+
+`src/lachryma.js` has the pool as a standalone class meant to be shared by future mechanics:
+costs looked up by tag, stacking modifiers (cost multipliers per tag, regen, max bonus),
+reservations for wind-ups, all-or-nothing `spend()` and partial `drain()`, and events
+(`change`, `spend`, `gain`, `empty`, `full`, `overflow`, `denied`).
+
+## Shells
+
+Special rounds loaded one at a time (the support hand racks each one). Refill at the glowing
+**reliquaries** (one per floor).
+
+| Shell | Effect |
+| --- | --- |
+| Slice | a blade plane along the shot cuts pots, shards, crates and earlier slices cleanly in two; pierces a whole row |
+| Push | a cone of force: shelves get swept, clapperjars go flying |
+| Well | a lobbed singularity that drags everything into orbit for 3 s, then pops |
+| Mark | stuns clapperjars (dizzy stars) and marks pots in a radius; marked things glow through walls, take double damage and drop Lachryma |
+| Bomb | a lobbed clay grenade: splash damage, a spray of molten slip that splats and cools, and a hot pool that cooks pots and scalds clapperjars |
+
 ## What's in the room
 
-- Shelves, workbenches, pottery wheels, a mezzanine with stairs (storage bay underneath),
-  a ramp platform, and a kiln flanked by jōmon flame-rim pots.
-- ~145 procedurally lathed pots in three clay bodies that break differently:
-  - **stoneware** (tsubo, gourds, jōmon pots, urns): heavy, 2-3 hits, big slabs
-  - **earthenware** (jars, amphorae, melons, onions, totems): mid-size shards
-  - **porcelain** (bottles, twisted vases, crowns, cups): a few slivers and a puff of
-    glittering dust
-- **Ember urns** (dark, glowing bands) explode and chain-react.
-- **Lanterns** hanging on 8-segment ropes. Shoot the rope to drop them.
-- **Clapperjars** scurry around the floor. Shots landing nearby make them stumble and
-  bolt, a hit shatters them, and a new one hops out of the kiln.
-- A clay-plate target range (plates respawn), crates and a brick pyramid.
-- Pots falling off shelves or ledges break on impact.
+- **Ground floor**: shelves, workbenches, pottery wheels, slip barrels, a drying rack, a
+  balcony with stairs (storage bay underneath), a ramp platform, and the kiln flanked by
+  jōmon flame-rim pots.
+- **Second floor** (up the balcony stairs, or ride the **Lachryma geyser**, the glowing ring
+  under the atrium): a sculpture gallery (a giant goggle-eyed dogū, haniwa figures, busts,
+  endless columns), a porcelain showroom, teetering bowl towers, an upper kiln, and a mobile
+  of lanterns hanging through the atrium.
+- ~290 procedurally lathed pots and sculptures in three clay bodies that break differently:
+  **stoneware** (big slabs), **earthenware** (mid shards), **porcelain** (slivers and
+  glittering dust).
+- **Ember urns** explode and chain-react. **Slip barrels** burst into a mess of liquid clay.
+- **Lanterns** on 8-segment ropes: shoot the rope to drop them, shoot the lantern and the
+  rope whips.
+- **Clapperjars** on both floors. They wander, taunt you (lid clapping, waving), nap when
+  you're far away, eat baubles, stumble and bolt from near misses, hide behind big pots and
+  peek out, and shatter from shots, slices, blasts, scalding and long falls.
 
 ## How it works
 
@@ -68,7 +98,10 @@ burst forces, shard size and lifetime), and `explosion` (ember urn radius and fo
 | `src/character.js` | procedural animation: FK gait, spine aim, two-bone arm IK onto the gun |
 | `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture |
 | `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions |
-| `src/clappers.js` | clapperjar critters: wander/flee AI, animation clips, respawn from the kiln |
+| `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
+| `src/lachryma.js` | the Lachryma energy pool + collectable baubles |
+| `src/shells.js` | shell inventory and the five shell effects, projectiles, molten/slip fluid |
+| `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
 | `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |
 | `src/level.js` | greybox workshop and prop placement |
@@ -85,6 +118,10 @@ Shards near the bullet's impact are smaller and get more push.
 T-pose each frame. The gun is placed first, then the arms IK to its grip points, so ADS
 alignment is exact whatever the arm proportions. In first person, the arm armour plates are
 hidden per-vertex (by arm-bone skin weight) so they don't block the sights.
+
+**Impulses on ropes**: Rapier recomputes a multibody link's velocity from its joint
+coordinates, so a raw impulse on a rope link or a hung pot is lost. `physics.kick()` turns
+impulses on links into a one-step force instead.
 
 **Ropes** are chains of sensor links on Rapier multibody (reduced-coordinate) joints, so they
 stay stiff under heavy pots. The links are sensors because contacts on multibody links
