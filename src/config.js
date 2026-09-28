@@ -47,7 +47,7 @@ export const DEFAULTS = {
     wallrunMaxTime: 1.8,
     wallrunStartUp: 1.2,
     wallrunMinHeight: 0.6,
-    wallrunReach: 0.6, // how far from your side a wall can be to catch it
+    wallrunReach: 0.9, // how far from your side a wall can be to catch it
     wallrunTilt: 12, // camera roll, degrees
     wallJumpOut: 5.5,
     wallJumpUp: 6.2,
@@ -242,6 +242,7 @@ export const DEFAULTS = {
   visual: {
     outline: 0.006,
     exposure: 1.2,
+    sun: 3.2,
     fog: 0.018,
     shadows: true,
   },

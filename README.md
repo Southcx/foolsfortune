@@ -32,6 +32,7 @@ npm run build      # static bundle in dist/
 | V | toggle first / third person |
 | Q | swap shoulder (third person) |
 | G | time trial (again to restart) |
+| R / H (basement) | back to the last checkpoint / to the hub |
 | T | reset the room |
 | Tab | tuning panel (frees the mouse) |
 | F3 | physics debug wireframe |
@@ -88,37 +89,56 @@ moment instead of snapping to run speed, so a quick hop keeps it. Top speed is c
 The speedometer (bottom left) shows speed, a short peak hold, and the current move.
 
 Crouching and sliding shorten the capsule to 1.1 m (you only stand up with headroom), and the
-first-person eye follows the posed head so it never ends up inside the body.
+first-person eye follows the posed head. In first person only the hands and gun are drawn.
 
 **The walking hitch** was Rapier's character controller occasionally returning zero motion
 for a step while the capsule rested in its contact margin, which then zeroed the velocity.
 Grounded steps no longer push into the floor, a stalled move is retried, and walls only take
 away the velocity pointing into them. Stairs collide as smooth ramps.
 
-## The basement
+## The basement (movement lab)
 
-A movement course under the workshop: drop through the glowing hole in the ground floor's
-south-east corner, ride the geyser beside the landing back up. The loop runs stairs, a wallrun
-over an 8 m gap, gap jumps of 2 / 3 / 4.5 m (the last wants a double jump or a slide-hop), a
-slide ramp into a 1.2 m tunnel (crouch or slide under), mantle blocks of 0.9 / 1.4 / 1.9 m and a
-zigzag wallrun back to the start, with a free-standing wall in the middle for practice. The
-floor has a 2 m grid, and falling anywhere just drops you on it. A few jars along the way
-come back after being broken.
+Drop through the glowing hole in the ground floor's south-east corner; the geyser beside the
+landing fires you back up. Hub and spoke, about 5,000 m² (the old basement was ~600):
 
-## Cracks and kintsugi
+**The hub** (40 × 40 m) is the metrics gym: fixed, labelled references everything else is
+measured against, so future spaces share one rubric.
 
-Pots that survive a hit crack from the impact point, and at 80/50/25% health the cracks spread
-and the pot gets easier to knock over and break. When you're not nearby, clapperjars go to
-work: they mend badly cracked pots (the cracks turn to gold seams and the pot gets tougher)
-and rebuild broken ones where they fell, sweeping the shards back in. Gold pots drop
-Lachryma when you break them again.
+- a height ladder (0.25 to 4 m, toned by what it takes: step, mantle, jump + mantle,
+  double jump + mantle)
+- clearance gates (1.0 to 2.0 m; the courier is 1.7 m standing, 1.1 m crouched)
+- slope ramps (10° to 55°; 46° is the steepest you can walk up)
+- a long-jump lane with 1 m ticks and the measured chain distances marked
+- a metrics board: live values from the tuning panel next to the measured chains
+- the index: eight pads that teleport to each room's checkpoint
 
-## Time trial
+**The ring** (16 m wide) is a loop of eight rooms, one skill each, with a checkpoint across every
+entrance and split times (and a lap time) between them:
 
-Press **G**: the room resets, shells and Lachryma are topped up, and twelve glowing jars appear
-across both floors. Break them all. It's meant to be friendly: the jars glow through walls, an
-arrow points at the nearest one, two breaks within 1.5 s take a second off, and the medal times
-(tunable under `trial`) are generous. Your best time is kept in the browser.
+| Room | Skill | What's in it |
+| --- | --- | --- |
+| 1 S | run / slide / hop | 1.2 m slots to slide under, 0.6 and 0.7 m hurdles, two speed gates |
+| 2 SE | mantle | 1.4, 2.4 and 3.0 m blocks up to the platforms |
+| 3 E | gaps | 3.5 m (sprint jump), 5.5 m (double jump), 7.5 m (jump, then dash) |
+| 4 NE | wallrun + wall jump | run the wall, jump across before the pillar, run the panel |
+| 5 N | zigzag | wallrun and wall jump between four staggered panels |
+| 6 NW | climb | 2.8 m (jump + mantle), 3.4 m (double jump + mantle) |
+| 7 W | speed | slide a 17° ramp to top speed, jump a 7 m gap at the bottom |
+| 8 SW | low | slide chute into a 1.2 m tunnel, back to room 1 |
+
+Rooms 3 to 7 are over a reset floor: touch it and you're back at the room's checkpoint.
+**R** returns to the last checkpoint, **H** to the hub. Teleports refill Lachryma.
+
+**The rubric.** Distances were measured by simulating the controller at default tuning
+(takeoff to landing at the same height): walk jump 2.5 m, sprint jump 4.1, slide-hop 5.5,
+sprint + double jump 6.7, max-speed jump 7.9, slide-hop + double 8.5, sprint jump + dash 8.9,
+sprint + dash + double 12.9, slide-hop + dash + double 13.7, max speed + dash + double 15.2.
+Jump height 0.94 m, double jump 1.68 m. A wallrun over a drop covers about 16.8 m in 1.8 s and
+ends 2.75 m below where it started; a wall jump carries 3 m out and about 9.5 m along. Gaps
+are sized at about 85% of the measured distance.
+
+Underground, the sun is switched off (it would light the lab outside its shadow frustum) and
+the fog thins.
 
 ## What's in the room
 

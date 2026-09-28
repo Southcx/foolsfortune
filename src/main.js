@@ -20,6 +20,7 @@ import { Clappers } from './clappers.js';
 import { LachrymaPool, Baubles } from './lachryma.js';
 import { Shells, SHELL_TYPES } from './shells.js';
 import { Trial } from './trial.js';
+import { Course } from './basement.js';
 
 const FIXED = 1 / 60;
 
@@ -41,7 +42,7 @@ async function main() {
 
   scene.add(new THREE.HemisphereLight(0xffe4cc, 0x6f3726, 2.3));
   scene.add(new THREE.AmbientLight(0xffd0b0, 0.35));
-  const sun = new THREE.DirectionalLight(0xffe8d2, 3.2);
+  const sun = new THREE.DirectionalLight(0xffe8d2, T.visual.sun);
   // steep sun through the skylights: lights the upper floor and drops a shaft
   // down the atrium onto the ground floor
   sun.position.set(4, 30, -5);
@@ -157,7 +158,7 @@ async function main() {
 
   const gui = buildTuningPanel((group, key) => {
     if (group === 'physics' || group === '*') physics.setGravity(T.physics.gravity);
-    if (group === 'movement' || group === '*') player.applyTuning();
+    if (group === 'movement' || group === '*') { player.applyTuning(); game.course?.refreshBoard(); }
     if (key === 'gunScale' || group === '*') character.setGunScale(T.weapon.gunScale);
     if (key === 'outline' || group === '*') setOutlineThickness(T.visual.outline);
     if (key === 'exposure' || group === '*') renderer.toneMappingExposure = T.visual.exposure;
@@ -173,6 +174,8 @@ async function main() {
   game.resetRoom = resetRoom;
   const trial = new Trial(game);
   game.trial = trial;
+  const course = new Course(game);
+  game.course = course;
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -314,6 +317,13 @@ async function main() {
     baubles.tick(dt);
     lachryma.update(dt);
     level.updateFeatures?.(dt, game);
+    course.update(dt);
+    // underground: no sun through the ground (it would light the lab outside its shadow
+    // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
+    const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1);
+    sun.intensity = T.visual.sun * (1 - under);
+    scene.fog.density = T.visual.fog * (1 - 0.6 * under);
+    renderer.shadowMap.autoUpdate = under < 1;
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -336,7 +346,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, manual: false };
   window.__ready = true;
 }
 

@@ -285,7 +285,7 @@ export class Level {
     // Lachryma geysers: stand in the ring and it lifts you to `top`, then carries you to `exit`
     this.geysers = [
       { pos: new THREE.Vector3(2.9, 0, -1.6), exit: new THREE.Vector3(5.2, F2, -1.6), top: F2 + 1.7, maxV: 12, r: 0.9, t: 0 },
-      { pos: new THREE.Vector3(7.9, BASE_Y, -13.5), exit: new THREE.Vector3(6.7, 0, -11.2), top: 1.5, maxV: 20, r: 0.9, t: 0 },
+      { pos: new THREE.Vector3(7.9, BASE_Y, -13.5), exit: new THREE.Vector3(6.7, 0, -11.2), top: 1.5, maxV: 28, r: 0.9, t: 0 },
     ];
     this.geyser = this.geysers[0];
     for (const g of this.geysers) {

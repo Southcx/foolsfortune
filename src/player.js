@@ -232,7 +232,7 @@ export class Player {
         this.wallJump(hv, wishDir);
         jumped = true;
       } else if (this.coyote > 0) {
-        if (iz > 0 && this.tryMantle(M.mantleJumpMin)) return;
+        if (iz > 0 && this.tryMantle(M.mantleJumpMin, M.jumpVelocity)) return;
         this.vel.y = M.jumpVelocity;
         this.coyote = 0;
         jumped = true;
@@ -277,7 +277,9 @@ export class Player {
       }
       const release = !crouchKey && this.slideT > 0.2;
       // (a brief loss of ground, like a stair nose, doesn't end it)
-      if (nsp < M.crouchSpeed + 0.3 || (this.slideT > M.slideMaxTime && !downhill) || release || this.airT > 0.15) {
+      // (the time limit only applies once you're down to sprint speed: a fast slide lasts)
+      const timedOut = this.slideT > M.slideMaxTime && !downhill && nsp < M.sprintSpeed + 0.5;
+      if (nsp < M.crouchSpeed + 0.3 || timedOut || release || this.airT > 0.15) {
         this.sliding = false;
         this.slideCd = M.slideCooldown;
       }
@@ -336,7 +338,7 @@ export class Player {
     else this.vel.y = 0; // grounded: no push into the floor (snap-to-ground keeps us down)
 
     // falling/jumping at a ledge while pushing forward: pull up onto it
-    if (!this.grounded && !this.wallrun && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin)) return;
+    if (!this.grounded && !this.wallrun && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin, this.vel.y)) return;
 
     // slides and dashes bowl clapperjars over; otherwise they just jostle
     this.critters(hv);
@@ -502,7 +504,7 @@ export class Player {
 
   // ---- mantle ---------------------------------------------------------------------
   /** A ledge in front between minH and mantleMax above the feet, with room to stand? */
-  tryMantle(minH) {
+  tryMantle(minH, vy = 0) {
     const M = T.movement;
     const f = this.forward(new THREE.Vector3());
     const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
@@ -516,6 +518,8 @@ export class Player {
     if (!down || down.normal.y < 0.7) return false;
     const h = down.point.y - P.y;
     if (h < minH || h > M.mantleMax) return false;
+    // a ledge the jump will clear anyway isn't a mantle (hop over hurdles at speed)
+    if (vy > 0 && h < (vy * vy) / (2 * M.gravity) - 0.15) return false;
     // room to crouch on the ledge (a thin lip against a wall doesn't count), and over our own head for the climb
     const to = new THREE.Vector3(down.point.x, down.point.y + 0.02, down.point.z).addScaledVector(f, 0.15);
     if (!this.fits(to, true)) return false;

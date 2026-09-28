@@ -35,16 +35,20 @@ export const GUN_POINTS = {
   gripL: new THREE.Vector3(-0.3, -0.19, -0.07),
 };
 
-const ARM_BONE = /^(upper_arm|forearm|hand|f_|thumb)/;
-function tagArmBones(mesh) {
+// First person shows only the hands on the gun: every other vertex of the body is
+// discarded (per vertex, by skin weight) so the camera never sees the torso from inside.
+const HAND_BONE = /^(hand|f_|thumb)/;
+function tagFpHide(mesh, isArmor) {
   const g = mesh.geometry;
   const si = g.attributes.skinIndex, sw = g.attributes.skinWeight;
-  const bones = mesh.skeleton.bones;
-  const out = new Float32Array(si.count);
-  for (let i = 0; i < si.count; i++) {
-    let w = 0;
-    for (let k = 0; k < 4; k++) if (ARM_BONE.test(bones[si.getComponent(i, k)]?.name || '')) w += sw.getComponent(i, k);
-    out[i] = w;
+  const bones = mesh.skeleton?.bones;
+  const out = new Float32Array(g.attributes.position.count).fill(1);
+  if (!isArmor && si && bones) {
+    for (let i = 0; i < si.count; i++) {
+      let w = 0;
+      for (let k = 0; k < 4; k++) if (HAND_BONE.test(bones[si.getComponent(i, k)]?.name || '')) w += sw.getComponent(i, k);
+      out[i] = 1 - w;
+    }
   }
   g.setAttribute('fpHide', new THREE.BufferAttribute(out, 1));
 }
@@ -68,16 +72,17 @@ export class Character {
       const key = isArmor ? `${name}_armor` : name;
       if (!byMat.has(key)) {
         const m = (MATS[name] || MATS.CourierEnergy)();
-        if (isArmor) { m.onBeforeCompile = applyFpHide; m.customProgramCacheKey = () => 'fphide'; }
+        m.onBeforeCompile = applyFpHide;
+        m.customProgramCacheKey = () => `fphide-${key}`;
         byMat.set(key, withFade(m, key));
       }
       o.material = byMat.get(key);
-      if (isArmor) tagArmBones(o);
+      tagFpHide(o, isArmor);
       o.castShadow = true;
       o.receiveShadow = true;
       o.frustumCulled = false;
       const outlined = OUTLINED.has(name) || OUTLINED.has(o.parent?.name) || OUTLINED.has(o.name);
-      if (outlined) addOutline(o, isArmor ? OUTLINE_MAT_FPHIDE : OUTLINE_MAT_CHAR);
+      if (outlined) addOutline(o, OUTLINE_MAT_FPHIDE);
       if (o.name === 'Courier_Mask' || o.name === 'Kiritohair') this.fpHidden.push(o, o.userData.outline);
     }
 

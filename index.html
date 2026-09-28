@@ -66,6 +66,9 @@
     #overlay .warn { color: var(--accent); margin-top: 10px; font-size: 12px; display: none; }
     @keyframes blink { 50% { opacity: .45 } }
     #locks { position: absolute; inset: 0; overflow: hidden; }
+    #course { position: absolute; left: 24px; top: 18px; font-size: 13px; letter-spacing: .06em; background: rgba(28,13,8,.45); padding: 5px 10px;
+      border-radius: 3px; display: none; font-variant-numeric: tabular-nums; }
+    #course b { color: #fff1dc; font-size: 16px; font-weight: normal; }
     .lock { position: absolute; left: 0; top: 0; width: 0; height: 0; --s: 60px; --ra: 45deg; --rb: 45deg; }
     .lock i { position: absolute; left: calc(var(--s) / -2); top: calc(var(--s) / -2); width: var(--s); height: var(--s); box-sizing: border-box;
       border: 2px solid rgba(255,178,122,.9); transform: rotate(var(--ra)); box-shadow: 0 0 6px rgba(255,178,122,.45); }
@@ -99,6 +102,7 @@
     <div id="reloadbar"><i></i></div>
     <div id="stats"></div>
     <div id="locks"></div>
+    <div id="course"></div>
     <div id="trial"><div class="row"><span class="time">0:00.0</span><span class="count">0/12</span></div><div class="medals"></div></div>
     <div id="trialbig"></div>
     <div id="trialarrow"></div>
@@ -118,7 +122,8 @@
         <tr><td>Space by a wall, hold W</td><td>wallrun; Space again to wall jump</td></tr>
         <tr><td>C</td><td>crouch / slide when running (C + Space: slide-hop)</td></tr>
         <tr><td>Shift in the air</td><td>air-dash (Lachryma)</td></tr>
-        <tr><td>Hole in the SE corner</td><td>basement movement course (geyser back up)</td></tr>
+        <tr><td>Hole in the SE corner</td><td>basement movement lab (geyser back up)</td></tr>
+        <tr><td>R / H (basement)</td><td>back to last checkpoint / to the hub</td></tr>
         <tr><td>Mouse</td><td>look</td></tr>
         <tr><td>Left click</td><td>fire (semi-auto)</td></tr>
         <tr><td>Hold left click</td><td>charge (Lachryma), release to fire a piercing beam</td></tr>
