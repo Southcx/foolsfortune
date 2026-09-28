@@ -60,6 +60,7 @@ class ParticlePool {
       vx: o.vel?.x || 0, vy: o.vel?.y || 0, vz: o.vel?.z || 0,
       life: o.life, age: 0, s0: o.size, s1: o.sizeEnd ?? o.size,
       c: o.color, a: o.alpha ?? 1, drag: o.drag ?? 1, grav: o.gravity ?? 0,
+      tw: o.twinkle || 0, seed: Math.random() * 100,
     });
   }
 
@@ -82,7 +83,7 @@ class ParticlePool {
       this.pos[i * 3] = q.x; this.pos[i * 3 + 1] = q.y; this.pos[i * 3 + 2] = q.z;
       this.col[i * 4] = q.c.r; this.col[i * 4 + 1] = q.c.g; this.col[i * 4 + 2] = q.c.b;
       this.col[i * 4 + 3] = q.a * (1 - t) * Math.min(1, t * 12 + 0.3);
-      this.size[i] = q.s0 + (q.s1 - q.s0) * t;
+      this.size[i] = (q.s0 + (q.s1 - q.s0) * t) * (q.tw ? 0.35 + 0.65 * Math.abs(Math.sin(q.age * q.tw + q.seed)) : 1);
     }
     this.geo.setDrawRange(0, w);
     this.geo.attributes.position.needsUpdate = true;
@@ -174,6 +175,8 @@ export class FX {
     this.decalMat = new THREE.MeshBasicMaterial({ map: decalTex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
     this.decalGeo = new THREE.PlaneGeometry(0.16, 0.16);
     this.decals = [];
+    this.beams = [];
+    this.rings = [];
   }
 
   tracer(from, to) {
@@ -244,18 +247,90 @@ export class FX {
     if (this.decals.length > 80) this.scene.remove(this.decals.shift());
   }
 
-  // Dust cloud + chips for a pot bursting
-  shatterBurst(center, size, dir) {
+  // Dust cloud + chips for a pot bursting (amounts scale with the clay body)
+  shatterBurst(center, size, dir, M = { dust: 1, chips: 1 }) {
     const dust = new THREE.Color(PALETTE.pale);
-    const n = Math.round(14 * T.shatter.dust * size);
+    const n = Math.round(14 * T.shatter.dust * size * M.dust);
     for (let i = 0; i < n; i++) {
       const v = new THREE.Vector3().randomDirection().multiplyScalar(1.5 + Math.random() * 2).addScaledVector(dir, 1.5);
       const p = _v.copy(center).add(new THREE.Vector3().randomDirection().multiplyScalar(0.15 * size));
       this.alpha.emit({ pos: p, vel: v, life: 0.8 + Math.random() * 1.0, size: 0.15 * size, sizeEnd: 0.9 * size, color: dust, alpha: 0.4, drag: 3, gravity: -0.15 });
     }
-    for (let i = 0; i < T.shatter.chips; i++) {
+    const chips = Math.round(T.shatter.chips * M.chips);
+    for (let i = 0; i < chips; i++) {
       const v = new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 4).addScaledVector(dir, 2).add(new THREE.Vector3(0, 1.5, 0));
       this.chips.emit(center, v, (0.01 + Math.random() * 0.025) * Math.sqrt(size), 2 + Math.random() * 2);
+    }
+  }
+
+  // Porcelain "diamond dust": twinkling specks seeded across the vanished pieces
+  glitter(points, center, dir, color) {
+    const bright = new THREE.Color(PALETTE.hot), tint = color.clone().lerp(new THREE.Color(0xffffff), 0.5);
+    for (const p of points) {
+      for (let i = 0; i < 7; i++) {
+        const v = p.clone().sub(center).normalize().multiplyScalar(1 + Math.random() * 3)
+          .addScaledVector(dir, 1.5 + Math.random() * 2).add(new THREE.Vector3().randomDirection().multiplyScalar(0.8));
+        this.add.emit({ pos: p, vel: v, life: 0.9 + Math.random() * 1.6, size: 0.022 + Math.random() * 0.02, sizeEnd: 0.012,
+          color: Math.random() < 0.5 ? bright : tint, alpha: 0.95, drag: 2.6, gravity: 1.2, twinkle: 25 + Math.random() * 20 });
+      }
+    }
+    const haze = new THREE.Color(PALETTE.cream);
+    for (let i = 0; i < 8; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(0.8).addScaledVector(dir, 0.8);
+      this.alpha.emit({ pos: center, vel: v, life: 0.9, size: 0.1, sizeEnd: 0.6, color: haze, alpha: 0.25, drag: 3 });
+    }
+  }
+
+  // Lantern cores spill glowing embers
+  embers(center, n = 24) {
+    const hot = new THREE.Color(PALETTE.hot), glow = new THREE.Color(PALETTE.glow);
+    for (let i = 0; i < n; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 2.5).add(new THREE.Vector3(0, 1, 0));
+      this.add.emit({ pos: center, vel: v, life: 0.8 + Math.random() * 1.2, size: 0.05, sizeEnd: 0.015, color: Math.random() < 0.5 ? hot : glow,
+        drag: 1.2, gravity: 4, twinkle: 12 });
+    }
+  }
+
+  // Charged shot: thick lingering beam + ring shockwave at the far end
+  beam(from, to, power) {
+    const dir = new THREE.Vector3().subVectors(to, from);
+    const len = dir.length();
+    if (len < 0.05) return;
+    dir.divideScalar(len);
+    const q = new THREE.Quaternion().setFromUnitVectors(Z, dir);
+    const mk = (mat, w) => {
+      const m = new THREE.Mesh(this.tracerGeo, mat.clone());
+      m.position.copy(from); m.quaternion.copy(q); m.scale.set(w, w, len);
+      m.frustumCulled = false; m.renderOrder = 5;
+      this.scene.add(m);
+      return m;
+    };
+    const w = 0.03 + 0.05 * power;
+    this.beams.push({ parts: [mk(this.tracerMat, w), mk(this.tracerGlowMat, w * 4)], age: 0, life: 0.18 + 0.12 * power, w });
+    for (let i = 0; i < 40 * power; i++) {
+      const p = from.clone().addScaledVector(dir, Math.random() * len);
+      this.add.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(0.6), life: 0.3 + Math.random() * 0.4,
+        size: 0.04, sizeEnd: 0.01, color: new THREE.Color(PALETTE.hot), drag: 2, twinkle: 30 });
+    }
+  }
+
+  shockwave(center, radius) {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 32), new THREE.MeshBasicMaterial({
+      color: PALETTE.hot, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    ring.position.copy(center);
+    ring.lookAt(this.camPos || center.clone().add(Z));
+    ring.renderOrder = 5;
+    this.scene.add(ring);
+    this.rings.push({ ring, age: 0, life: 0.3, radius });
+  }
+
+  // Charging: sparks spiral into the muzzle
+  chargeTick(muzzle, level, dt) {
+    const n = Math.random() < level * 60 * dt ? 1 + Math.floor(level * 2) : 0;
+    const c = new THREE.Color(PALETTE.hot);
+    for (let i = 0; i < n; i++) {
+      const off = new THREE.Vector3().randomDirection().multiplyScalar(0.25 + Math.random() * 0.2);
+      this.add.emit({ pos: muzzle.clone().add(off), vel: off.multiplyScalar(-4.5), life: 0.2, size: 0.03, sizeEnd: 0.005, color: c, drag: 0 });
     }
   }
 
@@ -321,6 +396,23 @@ export class FX {
     if (this.boomT > 0) {
       this.boomT -= dt;
       this.boomLight.intensity = Math.max(0, this.boomT / 0.35) ** 2 * 120;
+    }
+    for (let i = this.beams.length - 1; i >= 0; i--) {
+      const b = this.beams[i];
+      b.age += dt;
+      const k = 1 - b.age / b.life;
+      if (k <= 0) { for (const m of b.parts) { this.scene.remove(m); m.material.dispose(); } this.beams.splice(i, 1); continue; }
+      b.parts.forEach((m, j) => { const w = b.w * (j ? 4 : 1) * (0.4 + 0.6 * k); m.scale.x = m.scale.y = w; m.material.opacity = (j ? 0.5 : 1) * k; });
+    }
+    this.camPos = camera.position;
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const r = this.rings[i];
+      r.age += dt;
+      const t = r.age / r.life;
+      if (t >= 1) { this.scene.remove(r.ring); r.ring.geometry.dispose(); r.ring.material.dispose(); this.rings.splice(i, 1); continue; }
+      r.ring.scale.setScalar(0.2 + r.radius * (1 - (1 - t) ** 3));
+      r.ring.lookAt(camera.position);
+      r.ring.material.opacity = (1 - t) * 0.9;
     }
     this.add.update(dt);
     this.alpha.update(dt);

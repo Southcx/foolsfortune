@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { PALETTE } from './config.js';
 import { addOutline } from './outline.js';
+import { PROFILES, prepProfile } from './pottery.js';
 
 // Greybox terracotta workshop. Everything static is merged per colour into a
 // handful of meshes; colliders are simple cuboids/cylinders/balls.
@@ -226,25 +227,27 @@ export class Level {
     const B = this.breakables;
     const C = PALETTE;
     const colors = [C.pot, C.potLight, C.mid, C.pale, C.wood];
-    const smalls = ['jar', 'vase', 'cup', 'bowl', 'pitcher'];
+    const smalls = ['jar', 'vase', 'cup', 'bowl', 'pitcher', 'bottle', 'crown', 'twist'];
     const pot = (kind, x, y, z, scale = 1, extra = {}) =>
-      B.spawn({ kind, pos: [x, y + 0.002, z], scale, color: pick(colors), ...extra });
+      B.spawn({ kind, pos: [x, y + 0.002, z], scale, color: PROFILES[kind].mat === 'porcelain' ? pick([C.cream, C.pale]) : pick(colors), ...extra });
+    const big = (kind, x, z, scale, color, y = 0) =>
+      B.spawn({ kind, pos: [x, y + 0.002, z], scale, color: color ?? pick([C.mid, C.wood, C.pot, C.dark]) });
 
     // shelves
     for (const s of this.shelves) {
       const n = 3 + Math.floor(Math.random() * 2);
       for (let i = 0; i < n; i++) {
         const zz = s.z - s.w / 2 + (s.w / n) * (i + 0.5) + rand(-0.1, 0.1);
-        const kind = s.y < 1 ? pick([...smalls, 'amphora']) : pick(smalls);
-        const scale = kind === 'amphora' ? 0.7 : rand(0.8, 1.1);
+        const kind = s.y < 1 ? pick([...smalls, 'amphora', 'onion', 'stack']) : pick([...smalls, 'melon']);
+        const scale = { amphora: 0.7, onion: 0.7, stack: 0.65, melon: 0.8 }[kind] ?? rand(0.8, 1.1);
         pot(kind, s.x + rand(-0.05, 0.05), s.y, zz, scale);
       }
     }
     // benches
     const benchLoads = [
-      ['jar', 'vase', 'bowl', 'pitcher', 'cup'],
-      ['amphora', 'cup', 'jar', 'vase', 'cup'],
-      ['jar', 'pitcher', 'cup', 'EMBER', 'bowl', 'vase', 'jar'],
+      ['jar', 'crown', 'bowl', 'bottle', 'cup'],
+      ['amphora', 'twist', 'melon', 'vase', 'crown'],
+      ['jar', 'bottle', 'cup', 'EMBER', 'bowl', 'twist', 'onion'],
       null,
     ];
     this.surfaces.forEach((s, i) => {
@@ -254,7 +257,7 @@ export class Level {
         const x = s.x - s.w / 2 + (s.w / load.length) * (k + 0.5);
         const z = s.z + rand(-0.2, 0.2);
         if (kind === 'EMBER') B.spawn({ kind: 'ember', ember: true, pos: [x, s.y + 0.002, z], scale: 0.9 });
-        else pot(kind, x, s.y, z, kind === 'amphora' ? 0.9 : rand(0.85, 1.15));
+        else pot(kind, x, s.y, z, { amphora: 0.9, melon: 0.75, onion: 0.8 }[kind] ?? rand(0.85, 1.15));
       });
     });
     // brick pyramid on the 4th bench
@@ -266,11 +269,32 @@ export class Level {
         this.brick([x, bs.y + 0.035 + row * 0.072, bs.z + 0.14], [0.24, 0.07, 0.12]);
       }
     }
-    // wheels
-    for (const w of this.wheels) pot(pick(['jar', 'vase', 'amphora']), w.x, w.y, w.z, 0.9);
-    // floor urns
-    for (const [x, z] of [[-7.6, -13.6], [7.6, -13.8], [-5.2, 11.9], [4.9, 11.6], [2.6, -12.4], [-7.5, 8.5]]) {
-      B.spawn({ kind: 'urn', pos: [x, 0.002, z], scale: rand(0.85, 1.05), color: pick([C.mid, C.wood, C.pot]) });
+    // wheels: something fresh off the wheel
+    this.wheels.forEach((w, i) => pot(i ? 'onion' : 'spindle', w.x, w.y, w.z, 0.9));
+
+    // --- the big stuff -----------------------------------------------------
+    // storage bay under the mezzanine
+    big('tsubo', -8.55, 0.7, 1.0);
+    big('gourd', -8.45, 3.6, 1.15);
+    big('melon', -7.4, 2.2, 1.3);
+    big('tsubo', -8.6, 6.3, 0.85);
+    big('stack', -7.35, 5.1, 1.35);
+    big('jomon', -8.45, 11.2, 1.1);
+    big('gourd', -7.5, 9.3, 0.85);
+    // jomon pots flanking the kiln
+    big('jomon', -3.3, 12.9, 1.25, C.mid);
+    big('jomon', 3.3, 12.9, 1.25, C.mid);
+    // right wall nook
+    big('gourd', 8.4, 0.4, 1.3);
+    big('onion', 8.7, -1.3, 1.5);
+    big('melon', 7.5, 1.4, 1.1);
+    // spawn end
+    big('tsubo', 5.2, -13.7, 0.95);
+    big('stack', -4.8, -13.8, 1.5);
+    big('jomon', -2.2, -14.1, 0.9);
+    // classic urns
+    for (const [x, z] of [[-7.6, -13.6], [7.6, -13.8], [-5.2, 11.9], [4.9, 11.6], [2.6, -12.4]]) {
+      big('urn', x, z, rand(0.85, 1.05), pick([C.mid, C.wood, C.pot]));
     }
     // little floor clusters
     for (const [cx, cz] of [[1.8, -7.6], [-6.4, -6.2], [6.3, 5.0], [-1.0, 5.4]]) {
@@ -279,26 +303,28 @@ export class Level {
     // mezzanine edge
     for (let z = -1.5; z < 14; z += 1.25) {
       if (Math.abs(z - 6.0) < 0.3) { B.spawn({ kind: 'ember', ember: true, pos: [-7.1, 2.602, z], scale: 0.9 }); continue; }
-      pot(pick([...smalls, 'amphora', 'amphora']), -7.05 + rand(-0.1, 0.1), 2.6, z, rand(0.85, 1.1));
+      const kind = pick([...smalls, 'amphora', 'spindle', 'onion']);
+      pot(kind, -7.05 + rand(-0.1, 0.1), 2.6, z, { spindle: 0.8, onion: 0.8 }[kind] ?? rand(0.85, 1.1));
     }
-    B.spawn({ kind: 'urn', pos: [-8.8, 2.602, 11.5], scale: 1 });
-    B.spawn({ kind: 'urn', pos: [-8.8, 2.602, 1.5], scale: 0.9 });
+    big('urn', -8.8, 11.5, 1, undefined, 2.6);
+    big('gourd', -8.8, 1.5, 0.9, undefined, 2.6);
     // right platform cluster around an ember urn
     B.spawn({ kind: 'ember', ember: true, pos: [8.2, 1.202, 10.2], scale: 1 });
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * Math.PI * 2, r = rand(0.7, 1.4);
-      pot(pick([...smalls, 'amphora']), 8.2 + Math.cos(a) * r, 1.2, 10.2 + Math.sin(a) * r * 1.6, rand(0.9, 1.2));
+      pot(pick([...smalls, 'amphora', 'melon']), 8.2 + Math.cos(a) * r, 1.2, 10.2 + Math.sin(a) * r * 1.6, rand(0.9, 1.2));
     }
-    B.spawn({ kind: 'urn', pos: [9.0, 1.202, 13.4], scale: 0.95 });
+    big('tsubo', 9.0, 13.5, 0.8, undefined, 1.2);
     // floor ember near crates
     B.spawn({ kind: 'ember', ember: true, pos: [5.6, 0.002, 2.2], scale: 1.1 });
-    // hanging pots
-    for (const [x, z, len] of [[-3, -5, 1.6], [-1, -5, 2.2], [1, -5, 1.4], [3, -5, 2.0], [-2, 5, 1.8], [0, 5, 2.4], [2, 5, 1.5]]) {
-      const kind = pick(['jar', 'pitcher', 'amphora', 'vase']);
-      const scale = kind === 'amphora' ? 0.8 : 1;
+    // hanging lanterns and pots on 8-segment ropes
+    const hangs = [[-3, -5, 1.6, 'lantern'], [-1, -5, 2.2, 'lantern'], [1, -5, 1.4, 'lantern'], [3, -5, 2.0, 'lantern'],
+      [-2, 5, 1.8, 'jar'], [0, 5, 2.4, 'lantern'], [2, 5, 1.5, 'gourd'], [-4.5, 0, 1.2, 'lantern'], [4.5, 0, 1.9, 'lantern']];
+    for (const [x, z, len, kind] of hangs) {
+      const scale = kind === 'gourd' ? 0.45 : kind === 'lantern' ? rand(1.0, 1.3) : 1;
       const anchor = [x, 5.42, z];
-      const hgt = { jar: 0.38, pitcher: 0.4, amphora: 0.66, vase: 0.44 }[kind] * scale;
-      B.spawn({ kind, scale, color: pick(colors), pos: [x, anchor[1] - len - hgt, z], hang: { anchor } });
+      const h = prepProfile(kind, scale).fullHeight;
+      B.spawn({ kind, scale, lantern: kind === 'lantern', color: pick(colors), pos: [x, anchor[1] - len - h * 0.95, z], hang: { anchor } });
     }
     // targets
     for (const t of this.targetDefs) B.spawn(t);

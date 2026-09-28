@@ -12,6 +12,8 @@ export class Hud {
       popups: document.getElementById('popups'),
       reload: document.getElementById('reloadbar'),
       reloadFill: document.querySelector('#reloadbar i'),
+      charge: document.getElementById('charge'),
+      chargeArc: document.querySelector('#charge circle.arc'),
     };
     this.hitT = 0;
     this.chain = 0;
@@ -40,7 +42,7 @@ export class Hud {
     setTimeout(() => d.remove(), 900);
   }
 
-  update(dt, { spreadDeg, fov, ammo, mag, reloadT, fp, ads, shots, hits, total }) {
+  update(dt, { spreadDeg, fov, ammo, mag, reloadT, fp, ads, shots, hits, total, charge = 0 }) {
     const h = window.innerHeight;
     const px = Math.tan((spreadDeg * Math.PI) / 180) / Math.tan((fov * Math.PI) / 360) * (h / 2);
     const gap = 4 + px;
@@ -51,6 +53,9 @@ export class Hud {
     r.style.transform = `translate(${gap}px, -50%)`;
     this.el.cross.style.opacity = fp && ads > 0.5 ? 0 : 1 - ads * 0.3;
 
+    this.el.charge.style.opacity = charge > 0 ? 1 : 0;
+    this.el.chargeArc.style.strokeDashoffset = `${(1 - charge) * 100}`;
+    this.el.charge.classList.toggle('full', charge >= 1);
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
     this.chainT -= dt;

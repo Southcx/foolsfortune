@@ -70,9 +70,9 @@ export class Physics {
   }
 
   /** Ray query returning { collider, point, normal, distance, entity } or null. */
-  raycast(origin, dir, maxDist, excludeCollider, filterGroups) {
+  raycast(origin, dir, maxDist, excludeCollider, filterGroups, predicate) {
     const ray = new RAPIER.Ray(origin, dir);
-    const hit = this.world.castRayAndGetNormal(ray, maxDist, true, undefined, filterGroups, excludeCollider);
+    const hit = this.world.castRayAndGetNormal(ray, maxDist, true, undefined, filterGroups, excludeCollider, undefined, predicate);
     if (!hit) return null;
     const d = hit.timeOfImpact;
     return {

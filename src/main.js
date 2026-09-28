@@ -15,6 +15,8 @@ import { setOutlineThickness } from './outline.js';
 import { sfx } from './audio.js';
 import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
+import clapperB64 from './assets/clapperjar.glb?b64';
+import { Clappers } from './clappers.js';
 
 const FIXED = 1 / 60;
 
@@ -62,6 +64,10 @@ async function main() {
       hud.onBroken(stats.broken);
       if (stats.broken === stats.total) hud.popup('WORKSHOP CLEARED · T TO RESET');
     },
+    onClapper() {
+      stats.clappers = (stats.clappers || 0) + 1;
+      hud.popup(stats.clappers % 5 === 0 ? `${stats.clappers} CLAPPERS` : 'CLAPPED');
+    },
     onExplosion(center, R) {
       const pc = player.pos.clone(); pc.y += 0.9;
       const d = pc.distanceTo(center);
@@ -91,10 +97,14 @@ async function main() {
 
   const loader = new GLTFLoader();
   const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
-  const [charG, gunG] = await Promise.all([
+  const [charG, gunG, clapG] = await Promise.all([
     loader.parseAsync(bytes(courierB64), ''),
     loader.parseAsync(bytes(gunB64), ''),
+    loader.parseAsync(bytes(clapperB64), ''),
   ]);
+  const clappers = new Clappers(game, clapG);
+  game.clappers = clappers;
+  clappers.spawnAll();
   const character = new Character(scene, charG, gunG);
   character.onFootstep = () => sfx.footstep();
   game.character = character;
@@ -117,6 +127,8 @@ async function main() {
     level.clearDynamic();
     weapon.clearDebris();
     spawnRoom();
+    game.clappers?.clear();
+    game.clappers?.spawnAll();
   };
 
   const gui = buildTuningPanel((group, key) => {
@@ -191,6 +203,7 @@ async function main() {
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
     player.look(dt, weapon.adsEase || 0);
+    player.chargeLevel = weapon.charge;
     weapon.update(dt, input, player);
     player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0);
 
@@ -198,6 +211,7 @@ async function main() {
     let steps = 0;
     while (acc >= FIXED && steps < 4) {
       player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
+      clappers.fixedUpdate(FIXED);
       breakables.preStep();
       physics.step(FIXED);
       acc -= FIXED;
@@ -230,9 +244,11 @@ async function main() {
     weapon.poseGun(dt, camera, player, character);
     character.poseArms(weapon.leftOverride, weapon.leftBlend);
     weapon.tryFire(camera, player, character);
+    if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     weapon.updateDebris(dt);
 
     breakables.update(dt);
+    clappers.update(dt, acc / FIXED);
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -245,7 +261,7 @@ async function main() {
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, ammo: weapon.ammo, mag: T.weapon.magSize,
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      shots: weapon.shots, hits: weapon.hits, total: stats.total,
+      shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
     });
 
     input.endFrame();
@@ -253,7 +269,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, manual: false };
+  window.__game = { THREE, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, manual: false };
   window.__ready = true;
 }
 

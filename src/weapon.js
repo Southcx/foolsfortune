@@ -35,6 +35,10 @@ export class Weapon {
     this.leftBlend = 0;
     this.shots = 0;
     this.hits = 0;
+    this.charge = 0; // 0..1 while holding fire
+    this.holding = false;
+    this.holdT = 0;
+    this.releaseCharged = false;
     this.casingGeo = new THREE.CylinderGeometry(0.009, 0.009, 0.032, 6);
     this.casingMat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.3, metalness: 0.4, flatShading: true });
     this.magGeo = new THREE.BoxGeometry(0.03, 0.11, 0.055);
@@ -54,8 +58,9 @@ export class Weapon {
     this.buffer -= dt;
     this.bloom = Math.max(0, this.bloom - W.bloomRecovery * dt);
 
-    if (input.wasPressed('Mouse0')) this.buffer = W.inputBuffer;
+    if (input.wasPressed('Mouse0')) { this.buffer = W.inputBuffer; this.holding = true; this.holdT = 0; }
     if (input.wasPressed('KeyR') && this.ammo < W.magSize && !this.reloading) this.startReload();
+    this.updateCharge(dt, input);
 
     if (this.reloading) {
       const prev = this.reloadT;
@@ -87,6 +92,7 @@ export class Weapon {
 
   startReload() {
     if (this.reloading) return;
+    this.cancelCharge();
     this.reloadT = 0;
     this.buffer = 0;
   }
@@ -189,8 +195,51 @@ export class Weapon {
     }
   }
 
+  // Metroid-style: a tap fires normally; keep holding to charge, release to unleash.
+  updateCharge(dt, input) {
+    const C = T.charge;
+    const held = input.isDown('Mouse0');
+    if (this.holding && held) {
+      this.holdT += dt;
+      if (this.holdT > C.delay && !this.reloading && this.ammo > 0) {
+        if (!this.chargeSound) this.chargeSound = sfx.chargeLoop();
+        const was = this.charge;
+        this.charge = Math.min(1, this.charge + dt / C.time);
+        if (was < 1 && this.charge >= 1) this.game.hud.popup('CHARGED');
+      }
+    } else if (this.holding) {
+      this.holding = false;
+      if (this.charge >= C.min) this.releaseCharged = true;
+      else this.cancelCharge();
+    }
+    if (this.reloading && this.charge > 0) this.cancelCharge();
+    this.chargeSound?.set(this.charge);
+    this.game.character?.setGunGlow(this.charge);
+  }
+
+  cancelCharge() {
+    this.charge = 0;
+    this.holding = false;
+    this.releaseCharged = false;
+    this.chargeSound?.stop();
+    this.chargeSound = null;
+  }
+
+  // The ray a bullet actually travels: from the eye in FP; in TP the crosshair
+  // ray picks a target point and the bullet flies there from the shoulder.
+  shotRay(camera, player, character, dir) {
+    if (player.fpWeight > 0.5) return { origin: camera.position.clone(), dir };
+    const skip = camera.position.distanceTo(player.renderPos) * 0.8;
+    const o = camera.position.clone().addScaledVector(dir, skip);
+    const h1 = this.game.physics.raycast(o, dir, T.weapon.range, player.collider);
+    const P = h1 ? h1.point : o.addScaledVector(dir, T.weapon.range);
+    const origin = character.shoulder('R', new THREE.Vector3());
+    return { origin, dir: P.sub(origin).normalize() };
+  }
+
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
+    if (this.releaseCharged) { this.fireCharged(camera, player, character); return; }
     if (this.buffer <= 0 || this.cooldown > 0) return;
     if (this.reloading) return;
     if (this.ammo <= 0) {
@@ -215,20 +264,9 @@ export class Weapon {
     const dir = fwd.clone().multiplyScalar(Math.cos(a)).addScaledVector(rr, Math.sin(a) * Math.cos(phi)).addScaledVector(uu, Math.sin(a) * Math.sin(phi)).normalize();
 
     const range = T.weapon.range;
-    let hit;
-    if (player.fpWeight > 0.5) {
-      hit = game.physics.raycast(camera.position, dir, range, player.collider);
-    } else {
-      const skip = camera.position.distanceTo(player.renderPos) * 0.8;
-      const o = camera.position.clone().addScaledVector(dir, skip);
-      const h1 = game.physics.raycast(o, dir, range, player.collider);
-      const P = h1 ? h1.point : o.addScaledVector(dir, range);
-      const origin = character.shoulder('R', new THREE.Vector3());
-      const d2 = P.clone().sub(origin);
-      const len = d2.length();
-      hit = game.physics.raycast(origin, d2.divideScalar(len), len + 0.3, player.collider);
-      if (hit) dir.copy(d2);
-    }
+    const ray = this.shotRay(camera, player, character, dir);
+    dir.copy(ray.dir);
+    const hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
 
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
     const gunFwd = new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion);
@@ -238,6 +276,7 @@ export class Weapon {
     sfx.gunshot();
 
     if (hit) this.applyHit(hit, dir);
+    game.clappers?.spook(end);
 
     // recoil
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase);
@@ -248,9 +287,76 @@ export class Weapon {
     if (this.ammo === 0 && T.weapon.autoReload) game.fx.after(0.25, () => this.startReload());
   }
 
+  fireCharged(camera, player, character) {
+    const C = T.charge, game = this.game;
+    const p = 0.4 + 0.6 * this.charge;
+    this.cancelCharge();
+    this.buffer = 0;
+    this.cooldown = T.weapon.fireInterval * 2;
+    this.ammo = Math.max(0, this.ammo - C.ammoCost);
+    this.shots++;
+
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    const ray = this.shotRay(camera, player, character, fwd);
+    const dir = ray.dir;
+    // pierce: keep going through breakables, props and critters until we hit the level
+    const skip = new Set();
+    let origin = ray.origin, end = null, lastNormal = new THREE.Vector3(0, 1, 0), hits = 0;
+    for (let i = 0; i < C.pierce + 1; i++) {
+      const hit = game.physics.raycast(origin, dir, T.weapon.range, player.collider, undefined, (c) => !skip.has(c.handle));
+      if (!hit) break;
+      skip.add(hit.collider.handle);
+      const ent = hit.entity;
+      end = hit.point; lastNormal = hit.normal;
+      const body = hit.collider.parent();
+      const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper');
+      if (solid || i === C.pierce) { game.fx.impact(hit.point, hit.normal, { sparks: 14, dust: 12, decal: true }); break; }
+      if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p, hit.point, dir, 1.3 + 0.5 * p); }
+      else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
+      else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6); }
+      else body.applyImpulseAtPoint(dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point, true);
+    }
+    if (!end) end = ray.origin.clone().addScaledVector(dir, T.weapon.range);
+    if (hits) { this.hits++; game.hud.hitmarker(true); sfx.hitmarker(); }
+
+    const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
+    game.fx.beam(muzzle, end, p);
+    game.fx.muzzleFlash(muzzle, new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion));
+    // small shockwave where the beam lands
+    const R = C.blastRadius * p;
+    const blastAt = end.clone().addScaledVector(lastNormal, 0.1);
+    game.fx.shockwave(blastAt, R);
+    game.fx.impact(blastAt, lastNormal, { sparks: 20, dust: 16 });
+    game.breakables.explode(blastAt, { radius: R, breakFrac: 0.45, velocity: 8 * p, fx: false, cause: 'charged' });
+    game.clappers?.spook(end, 3);
+    sfx.chargedShot(p);
+
+    const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * C.kick * p;
+    player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);
+    player.shake = Math.max(player.shake, C.shake * p);
+    player.fovPunch = C.fovPunch * p;
+    this.kickV += 1.8 * T.recoil.gunRecoverSpeed * Math.E;
+    this.bloom = T.weapon.bloomMax;
+    this.ejectCasing(character, player);
+    this.ejectCasing(character, player);
+    if (this.ammo === 0 && T.weapon.autoReload) game.fx.after(0.35, () => this.startReload());
+  }
+
   applyHit(hit, dir) {
     const game = this.game;
     const ent = hit.entity;
+    if (ent?.type === 'rope') {
+      game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
+      game.hud.hitmarker(false);
+      return;
+    }
+    if (ent?.type === 'clapper') {
+      this.hits++;
+      game.clappers.hit(ent, hit.point, dir, 1);
+      game.hud.hitmarker(true);
+      sfx.hitmarker();
+      return;
+    }
     if (ent?.type === 'breakable') {
       this.hits++;
       const broke = game.breakables.damage(ent, T.weapon.damage, hit.point, dir);

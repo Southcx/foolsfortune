@@ -112,11 +112,14 @@ export class Character {
     this.gun = new THREE.Group();
     this.gunModel = gunGltf.scene;
     const gunMeshes = [];
+    this.gunGlowMats = [];
     this.gunModel.traverse((o) => { if (o.isMesh) gunMeshes.push(o); });
     for (const o of gunMeshes) {
-      o.material = o.material.name === 'CourierEnergyShell'
-        ? new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.5, flatShading: true })
+      const shell = o.material.name === 'CourierEnergyShell';
+      o.material = shell
+        ? new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.5, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0 })
         : new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.55, metalness: 0.1, flatShading: true });
+      if (shell) this.gunGlowMats.push(o.material);
       withFade(o.material, `gun${gunMeshes.indexOf(o)}`);
       o.castShadow = true;
       addOutline(o, OUTLINE_MAT_CHAR);
@@ -154,6 +157,13 @@ export class Character {
   }
 
   setFade(f) { fadeUniform.value = f; }
+
+  // psygun heats up while charging
+  setGunGlow(level) {
+    const t = performance.now() * 0.02;
+    const k = level > 0 ? level * 2.2 + (level >= 1 ? 0.5 * Math.sin(t) : 0) : 0;
+    for (const m of this.gunGlowMats) m.emissiveIntensity = k;
+  }
 
   setGunScale(s) { this.gunModel.scale.setScalar(s); this.gunScale = s; }
 

@@ -57,6 +57,20 @@ export const DEFAULTS = {
     adsDistance: 0.55, // how far in front of the eye the gun sits when aiming down sights
     adsHeight: 0.0, // fine-tune sight alignment
   },
+  charge: {
+    delay: 0.22, // hold this long after the tap shot before charging starts
+    time: 0.85, // seconds to full charge
+    min: 0.25, // release below this and nothing fires
+    ammoCost: 2,
+    damage: 450,
+    pierce: 6, // objects the beam passes through
+    impulse: 30,
+    blastRadius: 2.4,
+    kick: 2.4, // recoil multiplier
+    shake: 1.0,
+    fovPunch: 7,
+    moveMult: 0.75,
+  },
   recoil: {
     kickPitch: 3.4,
     kickYaw: 0.9,
@@ -103,6 +117,14 @@ export const DEFAULTS = {
     chainDelay: 0.09,
     playerKnock: 6,
     shake: 1.4,
+  },
+  clappers: {
+    count: 4,
+    runSpeed: 3.0,
+    fleeSpeed: 4.6,
+    respawn: 3.5, // seconds before a new one hops out of the kiln
+    spookRadius: 1.8, // shots landing this close make them stumble and bolt
+    scale: 1.15,
   },
   physics: {
     gravity: 14,

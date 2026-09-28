@@ -110,6 +110,7 @@ export class Player {
     this.sprinting = inp.isDown('ShiftLeft') && iz > 0 && adsT < 0.3 && !wantsFire;
     let speed = this.sprinting ? M.sprintSpeed : M.walkSpeed;
     speed *= THREE.MathUtils.lerp(1, M.adsSpeedMult, adsT);
+    speed *= THREE.MathUtils.lerp(1, T.charge.moveMult, this.chargeLevel || 0);
 
     const target = wish.multiplyScalar(speed);
     const hv = new THREE.Vector3(this.vel.x, 0, this.vel.z);
@@ -236,7 +237,7 @@ export class Player {
     const baseFov = THREE.MathUtils.lerp(THREE.MathUtils.lerp(C.fpFov, C.fpAdsFov, adsT), THREE.MathUtils.lerp(C.tpFov, C.tpAdsFov, adsT), tb);
     const sprintFov = this.sprinting ? 4 : 0;
     this.sprintFov = THREE.MathUtils.damp(this.sprintFov || 0, sprintFov, 6, dt);
-    cam.fov = baseFov + this.fovPunch + this.sprintFov;
+    cam.fov = baseFov + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0);
     cam.updateProjectionMatrix();
     cam.updateMatrixWorld();
     this.fpWeight = 1 - tb;
