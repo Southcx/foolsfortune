@@ -48,15 +48,13 @@ export class Weapon {
     this.drawT = 0;
     this.drawTarget = 0;
     this.idleT = 0;
-    this.holsterPos = new THREE.Vector3();
-    this.holsterQ = new THREE.Quaternion();
+    this.fpPos = new THREE.Vector3();
+    this.fpQ = new THREE.Quaternion();
   }
 
   get drawn() { return this.drawT >= 1; }
-  // the draw in two beats: the hand reaches the hip, then the gun comes up and the support hand joins
-  get gripR() { return smooth(0, 0.35, this.drawT); }
-  get gripL() { return smooth(0.65, 1, this.drawT); }
-  get gunUp() { return smooth(0.3, 1, this.drawT); }
+  // the draw in two beats: the hand snaps to the hip (drawT < 0.45), then the gun comes up
+  get held() { return smooth(0.45, 1, this.drawT); }
 
   updateHolster(dt, input, player) {
     const W = T.weapon;
@@ -68,8 +66,9 @@ export class Weapon {
     if (this.charge > 0 || this.adsT > 0 || this.reloading || this.cooldown > -0.3 || this.wantShell) this.idleT = 0;
     if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay) this.drawTarget = 0;
     const was = this.drawT;
-    const rate = this.drawTarget > this.drawT ? 1 / W.drawTime : -1 / W.holsterTime;
-    this.drawT = THREE.MathUtils.clamp(this.drawT + rate * dt, 0, 1);
+    // (this used to step back down every other frame once fully drawn - the drawn-state flicker)
+    if (this.drawTarget > this.drawT) this.drawT = Math.min(this.drawTarget, this.drawT + dt / W.drawTime);
+    else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - dt / W.holsterTime);
     if (was === 0 && this.drawT > 0) sfx.draw?.();
     if (was > 0.3 && this.drawT <= 0.3 && this.drawTarget === 0) sfx.holster?.();
   }
@@ -175,14 +174,15 @@ export class Weapon {
     return this.aimPoint;
   }
 
-  /** Place the gun in the world. The arms then IK onto it. */
-  poseGun(dt, camera, player, character) {
+  /**
+   * The first-person (view-model) gun pose, in world space. In third person the gun
+   * lives in the Courier's right hand instead (character.poseHands places it).
+   */
+  fpPose(dt, camera, player, character) {
     const s = character.gunScale;
     const e = this.adsEase;
     const rl = this.reloading ? smooth(0, 0.14, this.reloadT) * (1 - smooth(0.82, 1, this.reloadT)) : 0;
     const aim = this.aimPoint;
-
-    // ---- first-person pose, in camera space (-Z forward) --------------------
     const camQ = camera.quaternion;
     const bob = player.bobPhase;
     const hs = Math.min(1, Math.hypot(player.vel.x, player.vel.z) / 5) * (player.grounded ? 1 : 0);
@@ -193,67 +193,28 @@ export class Weapon {
     off.y += this.sway.y - Math.abs(Math.cos(bob)) * 0.01 * hs * (1 - e * 0.9);
     off.add(new THREE.Vector3(-0.06, -0.08, 0.06).multiplyScalar(rl));
     off.add(new THREE.Vector3(-0.05, -0.1, 0.05).multiplyScalar(this.sprintBlend));
-    const fpPos = off.applyQuaternion(camQ).add(camera.position);
+    const pos = off.applyQuaternion(camQ).add(camera.position);
     const camFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camQ);
     const camUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camQ);
-    const hipDir = aim.clone().sub(fpPos).normalize();
+    const hipDir = aim.clone().sub(pos).normalize();
     if (hipDir.dot(camFwd) < 0.8) hipDir.copy(camFwd);
-    const fpDir = hipDir.lerp(camFwd, e).normalize();
-    fpDir.addScaledVector(camUp, -0.6 * this.sprintBlend).normalize();
-
-    // ---- third-person pose: anchor the right wrist, hang the gun off it ------
-    // Anchoring the hand (not the gun) keeps the arms at a comfortable reach
-    // whatever the gun's scale, so the IK never folds or over-stretches.
-    const sR = character.shoulder('R', new THREE.Vector3());
-    const sL = character.shoulder('L', new THREE.Vector3());
-    const O = sR.clone().add(sL).multiplyScalar(0.5);
-    const chestRight = sR.sub(sL).setY(0).normalize();
-    const chestFwd = new THREE.Vector3().crossVectors(UP, chestRight);
-    const aimDir = aim.clone().sub(O).normalize();
-    const r = new THREE.Vector3().crossVectors(aimDir, UP).normalize();
-    const u = new THREE.Vector3().crossVectors(r, aimDir);
-    const TP = T.tpPose;
-    const wAim = O.clone().addScaledVector(aimDir, TP.reach).addScaledVector(r, 0.02).addScaledVector(u, -TP.aimDrop);
-    const wAds = O.clone().addScaledVector(aimDir, TP.reach + 0.02).addScaledVector(u, TP.adsRaise);
-    const wLow = O.clone().addScaledVector(chestFwd, TP.lowForward).addScaledVector(UP, -TP.lowDrop).addScaledVector(chestRight, 0.1);
-    const lowDir = chestFwd.clone().multiplyScalar(Math.cos(TP.lowPitch * DEG)).addScaledVector(UP, -Math.sin(TP.lowPitch * DEG))
-      .addScaledVector(chestRight, -0.2).normalize();
-    const cb = this.combatBlend * (1 - this.sprintBlend * 0.6);
-    const wrist = wLow.lerp(wAim.lerp(wAds, e), cb);
-    wrist.addScaledVector(r, -0.06 * rl).addScaledVector(u, -0.08 * rl).addScaledVector(aimDir, -0.08 * rl);
-    const tpDir = lowDir.lerp(aim.clone().sub(wrist).normalize(), cb).normalize();
-    const tpQ = basisQuat(tpDir, UP);
-    const tpPos = wrist.sub(GUN_POINTS.gripR.clone().multiplyScalar(s).applyQuaternion(tpQ));
-
-    // ---- blend + recoil ------------------------------------------------------
-    const fw = player.fpWeight;
-    const pos = tpPos.lerp(fpPos, fw);
-    const dir = tpDir.lerp(fpDir, fw).normalize();
-    const up = UP.clone().lerp(camUp, fw).normalize();
-    const q = basisQuat(dir, up);
+    const dir = hipDir.lerp(camFwd, e).normalize();
+    dir.addScaledVector(camUp, -0.6 * this.sprintBlend).normalize();
+    const q = basisQuat(dir, camUp);
     const k = this.kick * (1 - (1 - T.recoil.adsMult) * e);
     pos.addScaledVector(dir, -T.recoil.gunKickBack * k);
     q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), T.recoil.gunKickRot * DEG * k));
     // reload: cant the gun, tip the muzzle up
-    if (rl > 0) {
-      q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-40 * DEG * rl, 0, 18 * DEG * rl)));
-    }
-    // holstered / drawing: from the hip socket, lifted clear of it on the way up
-    const out = this.gunUp;
-    if (out < 1 && character.holsterPose(this.holsterPos, this.holsterQ)) {
-      pos.lerpVectors(this.holsterPos, pos, out).addScaledVector(UP, Math.sin(Math.PI * out) * 0.12);
-      q.copy(this.holsterQ).slerp(q, out);
-    }
-    character.gun.position.copy(pos);
-    character.gun.quaternion.copy(q);
-    character.gun.updateMatrixWorld(true);
+    if (rl > 0) q.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-40 * DEG * rl, 0, 18 * DEG * rl)));
+    this.fpPos.copy(pos);
+    this.fpQ.copy(q);
 
-    // support hand during reload: to the belt, then up into the magwell
+    // first-person reload: the support hand goes to the belt, then up into the magwell
     this.leftBlend = 0;
     if (this.reloading) {
       const t = this.reloadT;
       const belt = new THREE.Vector3(0.18, 0.95, 0.12).applyAxisAngle(UP, player.bodyYaw).add(player.renderPos);
-      const well = character.gunPoint('magwell', new THREE.Vector3()).add(new THREE.Vector3(0, -0.06, 0));
+      const well = GUN_POINTS.magwell.clone().multiplyScalar(s).applyQuaternion(q).add(pos).add(new THREE.Vector3(0, -0.06, 0));
       if (t < 0.45) { this.leftOverride.copy(belt); this.leftBlend = smooth(0.12, 0.35, t); }
       else if (t < 0.75) { this.leftOverride.lerpVectors(belt, well, smooth(0.45, 0.68, t)); this.leftBlend = 1; }
       else { this.leftOverride.copy(well); this.leftBlend = 1 - smooth(0.75, 0.95, t); }

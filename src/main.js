@@ -16,6 +16,8 @@ import { sfx } from './audio.js';
 import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
+import animsB64 from './assets/anims.bin?b64';
+import { decodeAnims } from './anims.js';
 import { Clappers } from './clappers.js';
 import { LachrymaPool, Baubles } from './lachryma.js';
 import { Shells, SHELL_TYPES } from './shells.js';
@@ -116,7 +118,7 @@ async function main() {
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
   clappers.spawnAll();
-  const character = new Character(scene, charG, gunG);
+  const character = new Character(scene, charG, gunG, decodeAnims(animsB64));
   character.onFootstep = () => sfx.footstep();
   game.character = character;
 
@@ -160,6 +162,8 @@ async function main() {
     if (group === 'physics' || group === '*') physics.setGravity(T.physics.gravity);
     if (group === 'movement' || group === '*') { player.applyTuning(); game.course?.refreshBoard(); }
     if (key === 'gunScale' || group === '*') character.setGunScale(T.weapon.gunScale);
+    if (group === 'weapon') character.holsterLocal = null; // holster sliders
+
     if (key === 'outline' || group === '*') setOutlineThickness(T.visual.outline);
     if (key === 'exposure' || group === '*') renderer.toneMappingExposure = T.visual.exposure;
     if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
@@ -252,22 +256,26 @@ async function main() {
     const hit = physics.raycast({ x, y: yTop, z }, _gd, 1.4, player.collider, GROUPS.controllerQuery, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     return hit && hit.normal.y > 0.6 ? hit.point.y : null;
   };
-  // where the hands go: the gun grips, a wall, a ledge, the floor
-  const armContext = () => {
-    const o = { gripR: weapon.gripR, gripL: weapon.gripL, leftOverride: weapon.leftOverride, leftBlend: weapon.leftBlend };
+  // where the hands go besides the gun: a wall, a ledge
+  const handContext = () => {
+    const o = {
+      drawT: weapon.drawT, upper: weapon.combatBlend * weapon.held, fw: player.fpWeight,
+      fpPos: weapon.fpPos, fpQ: weapon.fpQ, camera, aimPoint: weapon.aimPoint, reloading: weapon.reloading,
+      leftOverride: weapon.leftOverride, leftBlend: weapon.leftBlend, mantleT: player.mantle ? player.mantle.t : 1,
+    };
     const w = player.wallrun;
     if (w) {
       // the wall-side hand reaches a little ahead along the run
       const sh = character.shoulder(w.side > 0 ? 'R' : 'L', new THREE.Vector3()).addScaledVector(w.dir, 0.3);
       const hit = physics.raycast(sh, w.n.clone().negate(), 1.3, player.collider, GROUPS.controllerQuery);
-      if (hit) { o.wallPoint = hit.point; o.wallNormal = w.n; o.wallSide = w.side; }
-    }
+      if (hit) { o.wallPoint = hit.point; o.wallNormal = w.n; o.wallSide = w.side; lastWall = o; }
+    } else if (player.wallBlend > 0.05 && lastWall) Object.assign(o, { wallPoint: lastWall.wallPoint, wallNormal: lastWall.wallNormal, wallSide: lastWall.wallSide });
     if (player.mantle) o.ledge = { point: player.mantle.edge, right: player.mantle.right };
     else if (player.mantleBlend > 0.05 && lastLedge) o.ledge = lastLedge;
     if (o.ledge) lastLedge = o.ledge;
-    if (player.slideBlend > 0.05) o.floorY = player.renderPos.y;
     return o;
   };
+  let lastWall = null;
   let lastLedge = null;
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
@@ -316,7 +324,8 @@ async function main() {
     const heading = Math.atan2(player.vel.x, player.vel.z);
     const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
     lastHeading = heading;
-    character.poseBody(dt, {
+    const held = weapon.held;
+    character.animate(dt, {
       pos: player.renderPos,
       yaw: player.bodyYaw,
       velocity: player.vel,
@@ -326,19 +335,22 @@ async function main() {
       ground: groundAt,
       grounded: player.grounded,
       wall: player.wallBlend,
-      slide: player.slideBlend, mantle: player.mantleBlend, dash: player.dashBlend, crouch: player.crouchBlend,
+      slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
+      dash: player.dashBlend, crouch: player.crouchBlend,
       aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
       aimYawOffset: player.aimYawOffset,
-      combat: Math.max(weapon.combatBlend * weapon.gunUp, player.fpWeight),
+      combat: Math.max(weapon.combatBlend * held, player.fpWeight),
+      upper: weapon.combatBlend * held,
+      reload: weapon.reloading ? weapon.reloadT : -1,
       walkSpeed: T.movement.walkSpeed,
       sprintSpeed: T.movement.sprintSpeed,
-      recoil: weapon.kick,
+      recoil: weapon.kick * held,
       adsT: weapon.adsEase,
       landed: player.landedOut,
     });
     player.headRel = character.headRel;
-    weapon.poseGun(dt, camera, player, character);
-    character.poseArms(armContext());
+    weapon.fpPose(dt, camera, player, character);
+    character.poseHands(handContext());
     weapon.tryFire(camera, player, character);
     if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     weapon.updateDebris(dt);

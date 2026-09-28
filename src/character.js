@@ -1,13 +1,9 @@
 import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
+import { Clips, Track } from './animator.js';
 
-// Procedural animation for the Courier rig. Everything is layered on top of the
-// T-pose rest each frame:
-//   legs   – FK gait driven by movement speed/direction, air tuck, landing dip
-//   spine  – aim pitch/yaw distributed through the chest, run lean, breathing
-//   arms   – analytic two-bone IK onto the gun's grip points (gun drives hands)
-//   hands  – oriented from the gun frame, fingers curled into a grip
+// The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
@@ -32,7 +28,7 @@ export const GUN_POINTS = {
   magwell: new THREE.Vector3(-0.25, -0.18, 0),
   sightY: 0.118,
   gripR: new THREE.Vector3(-0.34, -0.13, 0.04),
-  gripL: new THREE.Vector3(-0.3, -0.19, -0.07),
+  gripL: new THREE.Vector3(-0.27, -0.15, -0.075),
 };
 
 // First person shows only the hands on the gun: every other vertex of the body is
@@ -54,7 +50,7 @@ function tagFpHide(mesh, isArmor) {
 }
 
 export class Character {
-  constructor(scene, charGltf, gunGltf) {
+  constructor(scene, charGltf, gunGltf, animPack) {
     this.scene = scene;
     this.root = new THREE.Group();
     this.root.name = 'CourierRoot';
@@ -148,18 +144,10 @@ export class Character {
     scene.add(this.gun);
     this.setGunScale(T.weapon.gunScale);
 
-    // animation state
-    this.phase = 0;
-    this.moveT = 0;
-    this.runT = 0;
-    this.airT = 0;
-    this.dip = 0;
-    this.dipV = 0;
-    this.moveDir = new THREE.Vector3(0, 0, 1);
     this.time = 0;
-    this.lastStepSign = 1;
     this.onFootstep = null;
     this.fpMode = false;
+    this.initAnim(animPack);
   }
 
   setFade(f) { fadeUniform.value = f; }
@@ -171,7 +159,7 @@ export class Character {
     for (const m of this.gunGlowMats) m.emissiveIntensity = k;
   }
 
-  setGunScale(s) { this.gunModel.scale.setScalar(s); this.gunScale = s; this.holsterLocal = null; }
+  setGunScale(s) { this.gunModel.scale.setScalar(s); this.gunScale = s; this.holsterLocal = null; this.socketR = null; }
 
   gunPoint(name, target = new THREE.Vector3()) {
     return target.copy(GUN_POINTS[name]).multiplyScalar(this.gunScale).applyMatrix4(this.gun.matrixWorld);
@@ -198,347 +186,352 @@ export class Character {
   }
 
   // =========================================================================
-  // Procedural animation.
+  // Animation.
   //
-  // Everything is posed from targets, not joint angles: the hips get a height
-  // and lean, each foot a target (a gait path when moving, a key pose in the
-  // air / sliding / mantling), and the legs IK onto them, so dropping the hips
-  // bends the knees by itself. Feet are raycast onto slopes and stairs. Arms
-  // work the same way: each hand has a target (swinging, pumping, on the wall,
-  // on the ledge, dragging on the floor, on the gun) and an elbow pole.
+  // The body is driven by authored clips (Quaternius' Universal Animation
+  // Library, CC0, retargeted offline by tools/bake_anims.mjs): speed-synced
+  // idle/walk/jog/sprint, crouch, jump/flip/fall/land, slide and climb, with a
+  // pistol aim offset layered on the upper body when the gun is up. The gun sits
+  // in the right hand (a socket), so hands never chase the gun. IK only corrects
+  // the animated pose: feet onto slopes and stairs (plus stride warping at speed),
+  // the support hand onto the gun, a hand on the wall, hands on a ledge. Every IK
+  // chain bends toward its *animated* elbow or knee, so limbs can't flip.
   // =========================================================================
 
-  initLegs() {
+  initAnim(pack) {
+    const C = (this.clips = new Clips(pack));
     const B = this.bones;
+    this.driven = C.bones.map((n) => B[n]);
+    this.P = { base: C.pose(), tmp: C.pose(), tmp2: C.pose(), air: C.pose(), up: C.pose(), up2: C.pose() };
+    this.MASK_UPPER = C.mask({ spine001: 0.3, spine002: 0.65, spine003: 1, spine004: 0.6, head: 0.5, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
+    this.airTrack = new Track(C, new Set(['jumpLoop', 'flipLoop']));
+    this.slideTrack = new Track(C, new Set(['slideLoop']));
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.leg = {
-      L: { thigh: B.thighL, shin: B.shinL, foot: B.footL, toe: B.toeL, a: L('thighL', 'shinL'), b: L('shinL', 'footL'), side: 1, off: 0, prevU: 0 },
-      R: { thigh: B.thighR, shin: B.shinR, foot: B.footR, toe: B.toeR, a: L('thighR', 'shinR'), b: L('shinR', 'footR'), side: -1, off: 0.5, prevU: 0.5 },
+      L: { thigh: B.thighL, shin: B.shinL, foot: B.footL, a: L('thighL', 'shinL'), b: L('shinL', 'footL') },
+      R: { thigh: B.thighR, shin: B.shinR, foot: B.footR, a: L('thighR', 'shinR'), b: L('shinR', 'footR') },
     };
-    const ank = this.restPos.get(B.footL), toe = this.restPos.get(B.toeL);
-    this.toeOff = { fwd: toe.z - ank.z, up: toe.y - ank.y }; // toe relative to ankle, flat foot
-    this.ankleH = ank.y; // ankle height when standing (root at the floor)
-    this.hipH = this.restPos.get(B.spine).y;
-    this.st = { phase: 0 };
-  }
-
-  /** Holster socket relative to the pelvis bone: right hip, barrel down, gun top forward. */
-  computeHolster() {
+    // palm centre of each hand, in the hand's own frame (the gun grip and wall contacts use it)
+    for (const s of ['L', 'R']) {
+      const a = this.arm[s];
+      const h = this.restPos.get(a.hand), m = this.restPos.get(B[`f_middle01${s}`]);
+      const n = new THREE.Vector3(0, -1, 0); // T-pose palms face down
+      const w = h.clone().lerp(m, 0.6).addScaledVector(n, 0.025);
+      a.palmPt = w.sub(h).applyQuaternion(this.restCharInv.get(a.hand));
+    }
+    this.gait = {};
+    for (const n of ['walk', 'jog', 'sprint', 'crouchWalk']) this.gait[n] = this.analyseGait(n);
+    this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, landW: 0, landT: 9, dip: 0, dipV: 0, wasFooted: true, sliding: false, yawOff: 0 };
+    this.airT = 0;
     this.resetPose();
-    this.root.updateMatrixWorld(true);
-    const pelvisInRoot = new THREE.Matrix4().copy(this.root.matrixWorld).invert().multiply(this.bones.spine.matrixWorld);
-    const xg = new THREE.Vector3(0, -1, 0.25).normalize(), yg = new THREE.Vector3(0, 0.25, 1).normalize();
-    const zg = new THREE.Vector3().crossVectors(xg, yg);
-    const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xg, yg, zg));
-    const grip = GUN_POINTS.gripR.clone().multiplyScalar(this.gunScale).applyQuaternion(q);
-    const pos = new THREE.Vector3(-0.21, 0.88, -0.04).sub(grip); // grip at the right hip
-    const socket = new THREE.Matrix4().compose(pos, q, new THREE.Vector3(1, 1, 1));
-    this.holsterLocal = pelvisInRoot.invert().multiply(socket);
   }
 
-  /** World transform of the holstered gun (follows the hips). */
-  holsterPose(pos, quat) {
-    if (!this.holsterLocal) return false;
-    _m1.multiplyMatrices(this.bones.spine.matrixWorld, this.holsterLocal).decompose(pos, quat, _v4);
-    return true;
+  applyPose(pose) {
+    const d = this.driven, q = pose.q;
+    for (let i = 0; i < d.length; i++) d[i].quaternion.fromArray(q, i * 4);
+    this.bones.spine.position.fromArray(pose.p);
   }
 
   /**
-   * s: { pos, yaw, velocity, grounded, aimPitch, aimYawOffset, combat, walkSpeed, sprintSpeed, recoil,
-   *      adsT, landed, slide, mantle, dash, crouch, wall (signed: + wall on the right), airJump (pulse),
-   *      vy, ground(x, z, yTop) -> y|null }
+   * Measure a locomotion loop on the Courier: ground speed (how fast the planted
+   * foot travels back under the hips), metres per cycle, and where the left heel
+   * strikes, so every gait loop can share one phase.
    */
-  poseBody(dt, s) {
-    if (!this.leg) this.initLegs();
-    if (!this.holsterLocal) this.computeHolster();
-    const A = T.anim, B = this.bones, st = this.st;
+  analyseGait(name) {
+    const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
+    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
+    const fr = [];
+    for (let f = 0; f < c.n - 1; f++) {
+      this.applyPose(C.sample(name, f / C.fps, p));
+      this.root.updateMatrixWorld(true);
+      fr.push({ L: B.footL.getWorldPosition(new THREE.Vector3()), R: B.footR.getWorldPosition(new THREE.Vector3()) });
+    }
+    // ground speed: the planted foot (the lower one, moving backward) travels at it
+    const vs = [];
+    let best = -1e9, off = 0, zmin = 1e9, zmax = -1e9;
+    for (let f = 0; f < fr.length; f++) {
+      const a = fr[f], b = fr[(f + 1) % fr.length];
+      const s = a.L.y < a.R.y ? 'L' : 'R';
+      vs.push(-(b[s].z - a[s].z) * C.fps);
+      if (a.L.z - a.R.z > best) { best = a.L.z - a.R.z; off = f / fr.length; }
+      zmin = Math.min(zmin, a.L.z); zmax = Math.max(zmax, a.L.z);
+    }
+    vs.sort((x, y) => x - y);
+    const v = vs[Math.floor(vs.length / 2)]; // median: ignores the swap frames between feet
+    this.resetPose();
+    // (fallback for shuffling gaits where the feet swap too often to measure: a stride per cycle)
+    // In-place clips don't pin their feet exactly, so the planted-foot speed (v) is only
+    // a hint; a stride of two steps, each as long as the foot's swing, is the steadier measure.
+    const cycle = 2 * (zmax - zmin);
+    return { speed: cycle / c.dur, footSpeed: v, dur: c.dur, cycle, off };
+  }
+
+  /** Right-hand gun socket and left-hand support grip, measured from the pistol aim pose. */
+  computeSockets() {
+    const C = this.clips, B = this.bones;
+    this.root.updateMatrixWorld(true);
+    const saveP = this.root.position.clone(), saveQ = this.root.quaternion.clone();
+    this.root.position.set(0, 0, 0); this.root.quaternion.identity();
+    this.resetPose();
+    this.applyPose(C.sample('aimMid', 0, this.P.tmp));
+    this.root.updateMatrixWorld(true);
+    const gunQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
+      new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1, 0), new THREE.Vector3(-1, 0, 0)));
+    const palm = (s) => this.arm[s].palmPt.clone().applyMatrix4(this.arm[s].hand.matrixWorld);
+    const gunPos = palm('R').sub(GUN_POINTS.gripR.clone().multiplyScalar(this.gunScale).applyQuaternion(gunQ));
+    const G = new THREE.Matrix4().compose(gunPos, gunQ, new THREE.Vector3(1, 1, 1));
+    this.socketR = new THREE.Matrix4().copy(B.handR.matrixWorld).invert().multiply(G);
+    this.socketRInv = this.socketR.clone().invert();
+    // support hand: the clip's hand orientation, palm centred on the gun's support grip
+    const lq = B.handL.getWorldQuaternion(new THREE.Quaternion());
+    const gl = GUN_POINTS.gripL.clone().multiplyScalar(this.gunScale).applyMatrix4(G);
+    const lp = gl.sub(this.arm.L.palmPt.clone().applyQuaternion(lq));
+    this.socketL = G.clone().invert().multiply(new THREE.Matrix4().compose(lp, lq, new THREE.Vector3(1, 1, 1)));
+    this.resetPose();
+    this.root.position.copy(saveP); this.root.quaternion.copy(saveQ);
+    this.root.updateMatrixWorld(true);
+  }
+
+  /** Holster socket relative to the pelvis bone: right hip, barrel down, grip up and back, clear of the thigh. */
+  computeHolster() {
+    const H = T.weapon.holster;
+    this.resetPose();
+    const saveP = this.root.position.clone(), saveQ = this.root.quaternion.clone();
+    this.root.position.set(0, 0, 0); this.root.quaternion.identity();
+    this.root.updateMatrixWorld(true);
+    const pelvisInv = new THREE.Matrix4().copy(this.bones.spine.matrixWorld).invert();
+    const xg = new THREE.Vector3(0, -1, H.tilt).normalize();
+    const yg = new THREE.Vector3(0, H.tilt, 1).normalize();
+    const zg = new THREE.Vector3().crossVectors(xg, yg);
+    const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xg, yg, zg));
+    q.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), H.cant * DEG)); // muzzle out, away from the thigh
+    const grip = GUN_POINTS.gripR.clone().multiplyScalar(this.gunScale).applyQuaternion(q);
+    const pos = new THREE.Vector3(-H.out, H.height, H.back).sub(grip);
+    this.holsterLocal = pelvisInv.multiply(new THREE.Matrix4().compose(pos, q, new THREE.Vector3(1, 1, 1)));
+    this.root.position.copy(saveP); this.root.quaternion.copy(saveQ);
+    this.root.updateMatrixWorld(true);
+  }
+
+  /** Rotate a bone about a world-space axis through its own origin. */
+  rotW(bone, axisWorld, angle) {
+    if (!angle) return;
+    bone.parent.getWorldQuaternion(_q1).invert();
+    _v1.copy(axisWorld).applyQuaternion(_q1);
+    bone.quaternion.premultiply(_q2.setFromAxisAngle(_v1.normalize(), angle));
+  }
+
+  /** Apply a world-space rotation to a bone (about its origin). */
+  turnW(bone, qWorld) {
+    bone.parent.getWorldQuaternion(_q1);
+    const qp = _q2.copy(_q1).invert().multiply(qWorld).multiply(_q1);
+    bone.quaternion.premultiply(qp);
+  }
+
+  setWorldQuat(bone, qWorld) {
+    bone.parent.getWorldQuaternion(_q1).invert();
+    bone.quaternion.copy(_q1.multiply(qWorld));
+  }
+
+  /**
+   * s: { pos, yaw, velocity, vy, grounded, wall (signed), slide, mantle, mantleT, dash, crouch,
+   *      airJump (pulse), landed (impact), turnRate, ground(x, z, yTop) -> y|null,
+   *      aimPitch, aimYawOffset, combat (facing the aim 0..1), upper (pistol layer 0..1),
+   *      reload (-1 | 0..1), recoil, adsT, walkSpeed, sprintSpeed }
+   */
+  animate(dt, s) {
+    const A = T.anim, C = this.clips, B = this.bones, st = this.st, P = this.P;
+    const clamp = THREE.MathUtils.clamp, damp = THREE.MathUtils.damp;
     this.time += dt;
     this.resetPose();
     const root = this.root;
     root.rotation.order = 'YXZ';
     root.position.copy(s.pos);
+    root.rotation.set(0, s.yaw, 0);
 
-    // ---- blends ----
+    // ---- state ----
     const vLocal = _v2.copy(s.velocity).setY(0).applyAxisAngle(UP, -s.yaw);
     const speed = vLocal.length();
-    const wr = s.wall || 0, onWall = Math.abs(wr) > 0.3;
-    const footed = s.grounded || onWall;
-    this.moveT = THREE.MathUtils.damp(this.moveT, footed ? THREE.MathUtils.clamp(speed / 1.2, 0, 1) : this.moveT, 10, dt);
-    const runT = THREE.MathUtils.clamp((speed - s.walkSpeed) / Math.max(0.1, s.sprintSpeed - s.walkSpeed), 0, 1.4);
-    this.runT = THREE.MathUtils.damp(this.runT, runT, 6, dt);
-    this.airT = THREE.MathUtils.damp(this.airT, footed ? 0 : 1, footed ? 14 : 8, dt);
-    if (speed > 0.3) this.moveDir.lerp(_v3.copy(vLocal).normalize(), 1 - Math.exp(-12 * dt)).normalize();
-    const sl = s.slide || 0, mn = s.mantle || 0, da = s.dash || 0, cr = s.crouch || 0, aw = Math.abs(wr);
+    const wr = s.wall || 0, aw = clamp(Math.abs(wr), 0, 1);
+    const footed = s.grounded || aw > 0.3;
+    const sl = s.slide || 0, mn = s.mantle || 0, da = s.dash || 0, cr = s.crouch || 0;
+    this.airT = damp(this.airT, footed ? 0 : 1, footed ? 18 : 10, dt);
+    if (footed) st.gs = damp(st.gs, speed, 12, dt);
+    const gs = st.gs;
+    // moving backwards (aiming while retreating): the loops run in reverse
+    if (speed > 0.4) st.theta = Math.atan2(vLocal.x, vLocal.z);
+    const back = Math.abs(st.theta) > 110 * DEG;
+    const warpTo = back ? st.theta - Math.PI * Math.sign(st.theta) : st.theta;
+    st.warp = damp(st.warp, clamp(warpTo, -70 * DEG, 70 * DEG) * clamp(gs / 1.2, 0, 1), 10, dt);
+
+    // ---- ground locomotion: idle / walk / jog / sprint on one shared phase ----
+    const g = this.gait;
+    const k1 = A.walkAnimSpeed, k2 = s.walkSpeed, k3 = s.sprintSpeed;
+    const W = [0, 0, 0, 0];
+    if (gs <= k1) { W[1] = gs / k1; W[0] = 1 - W[1]; }
+    else if (gs <= k2) { W[2] = (gs - k1) / (k2 - k1); W[1] = 1 - W[2]; }
+    else if (gs <= k3) { W[3] = (gs - k2) / (k3 - k2); W[2] = 1 - W[3]; }
+    else W[3] = 1;
+    const wm = W[1] + W[2] + W[3];
+    // Game speeds run well past the clips' own (a 7 m/s sprint on a small body): split
+    // the difference between turning the legs over faster and reaching further
+    // (stride warping, done by the foot IK) so neither looks cartoonish.
+    const blendG = (key) => {
+      const v = wm > 0 ? (W[1] * g.walk[key] + W[2] * g.jog[key] + W[3] * g.sprint[key]) / wm : g.walk[key];
+      return THREE.MathUtils.lerp(v, g.crouchWalk[key], cr);
+    };
+    const natSpeed = blendG('speed'), natDur = blendG('dur');
+    const ratio = gs / natSpeed;
+    st.stride = clamp(Math.pow(ratio, A.strideShare), 0.75, A.maxStride);
+    const cad = ratio / st.stride / natDur;
+    if (footed && sl < 0.5) st.phi = (((st.phi + (back ? -1 : 1) * cad * dt) % 1) + 1) % 1;
+    const at = (n) => ((st.phi + g[n].off) % 1) * g[n].dur;
+    const base = C.sample('idle', this.time, P.base);
+    let cum = W[0];
+    for (const [i, n] of [[1, 'walk'], [2, 'jog'], [3, 'sprint']]) {
+      if (W[i] <= 0) continue;
+      cum += W[i];
+      C.blend(base, C.sample(n, at(n), P.tmp), W[i] / cum);
+    }
+    if (cr > 0.001) {
+      const cp = C.sample('crouchIdle', this.time, P.tmp);
+      C.blend(cp, C.sample('crouchWalk', at('crouchWalk'), P.tmp2), clamp(gs / 1.0, 0, 1));
+      C.blend(base, cp, cr * A.crouchDepth);
+    }
+    // footsteps: the left heel lands at phase 0, the right at 0.5
+    const ph = st.phi;
+    if (footed && wm > 0.2 && sl < 0.5 && st.lastPhi !== undefined) {
+      const crossed = (a) => (back ? st.lastPhi > a - 1e-9 && ph <= a : st.lastPhi < a && ph >= a) || Math.abs(ph - st.lastPhi) > 0.5 && a === 0;
+      if (crossed(0) || crossed(0.5)) this.onFootstep?.();
+    }
+    st.lastPhi = ph;
+
+    // ---- landing ----
+    if (s.landed) { st.landW = clamp(s.landed / 7, 0.3, 1); st.landT = A.landFrom; st.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14; }
+    st.landT += dt;
+    const landW = st.landW * (1 - smooth(0.12, 0.5, st.landT)) * (1 - 0.7 * clamp(gs / s.walkSpeed, 0, 1)) * (footed ? 1 : 0);
+    if (landW > 0.001) C.blend(base, C.sample('jumpLand', st.landT, P.tmp, false), landW);
+    st.dipV += (-180 * st.dip - 22 * st.dipV) * dt;
+    st.dip += st.dipV * dt;
+
+    // ---- air: take-off, the air-jump flip, then the airborne loop ----
+    const at2 = this.airTrack;
+    if (!footed && st.wasFooted && mn < 0.5) {
+      if ((s.vy || 0) > 1) at2.play('jumpStart', A.jumpFrom, 0.06);
+      else at2.play('jumpLoop', 0.5, 0.25);
+    }
+    if (s.airJump) at2.play('flipStart', A.flipFrom, 0.06);
+    if (!at2.cur) at2.play('jumpLoop', 0.5);
+    at2.update(dt);
+    if (at2.cur === 'jumpStart' && at2.t > 0.9) at2.play('jumpLoop', 0.4, 0.3);
+    if (at2.cur === 'flipStart' && at2.t > 0.75) at2.play('flipLoop', 0, 0.2);
+    if (at2.cur === 'flipLoop' && (s.vy || 0) < -2.5) at2.play('jumpLoop', 0.4, 0.35);
+    st.wasFooted = footed;
     const air = this.airT * (1 - mn) * (1 - aw);
-    this.jumpPulse = Math.max(0, (this.jumpPulse || 0) - dt * 2.2);
-    if (s.airJump) this.jumpPulse = 1;
-    st.fall = THREE.MathUtils.damp(st.fall || 0, (s.vy || 0) < -1 ? 1 : 0, 6, dt);
-    const gait = this.moveT * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
-    const idle = (1 - this.moveT) * (1 - air) * (1 - sl) * (1 - mn);
+    if (air > 0.001) C.blend(base, at2.sample(P.air), air);
 
-    // ---- gait clock (one cycle = two steps) ----
-    const strideLen = THREE.MathUtils.lerp(A.strideWalk, A.strideRun, Math.min(1, this.runT)) * (1 - 0.35 * cr);
-    if (footed && !sl) st.phase = (st.phase + (speed / strideLen) * dt) % 1;
-    const stance = THREE.MathUtils.lerp(0.62, 0.36, Math.min(1, this.runT));
-    const S = stance * strideLen; // planted distance per step: feet don't skate
+    // ---- slide: drop in, then hold the slide ----
+    const sT = this.slideTrack;
+    if (sl > 0.02 && !st.sliding) { sT.cur = null; sT.play('slideStart', A.slideFrom); st.sliding = true; }
+    if (sl < 0.02) st.sliding = false;
+    if (st.sliding) {
+      sT.update(dt);
+      if (sT.cur === 'slideStart' && sT.t > 0.7) sT.play('slideLoop', 0.2, 0.2);
+      C.blend(base, sT.sample(P.tmp), sl);
+    }
+    // ---- air dash: stretched out like the jump's take-off ----
+    if (da > 0.001) C.blend(base, C.sample('jumpStart', A.dashFrame, P.tmp, false), da);
+    // ---- mantle: the climb, timed to the vault ----
+    if (mn > 0.001) C.blend(base, C.sample('climb', THREE.MathUtils.lerp(A.climbFrom, A.climbTo, clamp(s.mantleT ?? 1, 0, 1)), P.tmp, false), mn);
 
-    // landing dip spring
-    if (s.landed) this.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14;
-    this.dipV += (-180 * this.dip - 22 * this.dipV) * dt;
-    this.dip += this.dipV * dt;
+    // ---- pistol on the upper body: an aim offset (down / level / up) ----
+    const wU = s.upper || 0;
+    if (wU > 0.001) {
+      const up = C.sample('aimMid', 0, P.up);
+      const pk = clamp(s.aimPitch / (A.aimRange * DEG), -1, 1);
+      if (pk > 0) C.blend(up, C.sample('aimUp', 0, P.up2), pk);
+      else if (pk < 0) C.blend(up, C.sample('aimDown', 0, P.up2), -pk);
+      if (s.reload >= 0) C.blend(up, C.sample('reload', s.reload * C.clips.reload.dur, P.up2, false), smooth(0, 0.12, s.reload) * (1 - smooth(0.85, 1, s.reload)));
+      C.blend(base, up, wU, this.MASK_UPPER, 0);
+    }
+    this.applyPose(base);
 
-    // ---- hips: height, bob, lean, roll ----
-    const bob = gait * A.hipBob * (1 + this.runT) * (Math.cos(st.phase * Math.PI * 4) - 1) * 0.5;
-    const drop = cr * A.crouchDrop + sl * A.slideDrop + idle * 0.02 + gait * Math.min(1, this.runT) * 0.05 - this.dip - bob + mn * 0.1;
-    root.position.y -= drop;
-    const lean = (A.runLean * Math.min(1.2, this.runT) * gait * this.moveDir.z + 4 * gait) * DEG + da * 0.85 - sl * 0.12 + air * st.fall * -0.1;
-    root.rotation.set(lean * 0.35, s.yaw, -wr * A.wallLean * DEG);
-    // spine: the rest of the lean, plus crouch hunch and slide recline
-    this.rot(B.spine001, X, lean * 0.65 + cr * A.crouchHunch * DEG - sl * A.slideRecline * DEG + mn * 30 * DEG);
-    this.rot(B.spine002, X, cr * 10 * DEG - sl * 8 * DEG + Math.sin(this.time * 1.7) * 1.2 * DEG);
-    // hips counter-rotate with the stride; shoulders against them
-    const tw = Math.sin(st.phase * Math.PI * 2) * gait;
-    this.rot(B.spine, UP, tw * 8 * DEG);
-    this.rot(B.spine001, UP, -tw * 12 * DEG);
-    this.rot(B.spine, Zv, Math.cos(st.phase * Math.PI * 4) * 2.5 * DEG * gait * (1 - Math.min(1, this.runT) * 0.5));
-    // slide: lean into the turn
-    st.turn = THREE.MathUtils.damp(st.turn || 0, (s.turnRate || 0), 8, dt);
-    this.rot(B.spine001, Zv, -st.turn * 0.08 * sl);
+    // ---- procedural layer ----
+    root.position.y -= st.dip;
+    st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
+    const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
+    root.rotation.set(0, s.yaw, -wr * A.wallLean * DEG + lean);
+    root.updateMatrixWorld(true);
+    const upW = _v3.set(0, 1, 0);
+    // orientation warping: hips turn toward the move, the chest turns back to the aim
+    const gaitW = wm * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
+    const warp = st.warp * gaitW;
+    if (Math.abs(warp) > 1e-3) {
+      this.rotW(B.spine, upW, warp);
+      this.rotW(B.spine001, upW, -warp * 0.45);
+      this.rotW(B.spine002, upW, -warp * 0.3);
+      this.rotW(B.spine003, upW, -warp * 0.25);
+    }
+    // aim: the spine twists toward the camera's yaw when the body lags it; the head does the looking otherwise
+    const cw = s.combat ?? 0;
+    st.yawOff = damp(st.yawOff, s.aimYawOffset * cw, 18, dt);
+    for (const [b, w] of [[B.spine001, 0.25], [B.spine002, 0.3], [B.spine003, 0.45]]) this.rotW(b, upW, st.yawOff * w);
+    const rightW = _v4.set(-1, 0, 0).applyQuaternion(root.quaternion);
+    // air dash: pitch the whole body into the dash, about the hips
+    if (da > 0.001) this.rotW(B.spine, rightW, -da * A.dashLean * DEG);
+    this.rotW(B.spine003, rightW, -(s.recoil || 0) * 5 * DEG);
+    const lookW = 1 - wU;
+    this.rotW(B.spine004, upW, s.aimYawOffset * (1 - cw) * 0.25);
+    this.rotW(B.head, upW, s.aimYawOffset * (1 - cw) * 0.35);
+    this.rotW(B.head, rightW, s.aimPitch * 0.45 * lookW);
     root.updateMatrixWorld(true);
 
-    // ---- feet ----
-    const m = this.moveDir;
-    const legT = {};
-    for (const key of ['L', 'R']) {
-      const leg = this.leg[key], side = leg.side;
-      const t = new THREE.Vector3(side * (0.1 + 0.05 * cr + 0.02 * idle), 0, 0);
-      // gait path
-      const u = (st.phase + leg.off) % 1;
-      let along, lift = 0;
-      if (u < stance) along = S / 2 - S * (u / stance);
-      else {
-        const w = (u - stance) / (1 - stance);
-        along = -S / 2 + S * (w * w * (3 - 2 * w));
-        lift = Math.sin(Math.PI * w) * (0.09 + 0.2 * Math.min(1.2, this.runT) + 0.04 * cr);
-        lift += Math.sin(Math.PI * Math.min(1, w * 1.6)) * 0.14 * Math.min(1, this.runT) * (w < 0.6 ? 1 : 0); // heel kick
-      }
-      if (footed && gait > 0.01 && leg.prevU > u + 0.5) this.onFootstep?.();
-      leg.prevU = u;
-      const g = new THREE.Vector3(t.x, lift, 0).addScaledVector(m, along);
-      // idle / crouch stance: staggered
-      const stanceP = new THREE.Vector3(t.x, 0, side * (0.05 + 0.1 * cr));
-      t.copy(stanceP).lerp(g, THREE.MathUtils.clamp(this.moveT, 0, 1));
-      // air: tuck rising (one knee higher), extend falling, a big tuck on the air jump
-      const tuck = new THREE.Vector3(side * 0.12, side > 0 ? 0.42 : 0.25, side > 0 ? 0.2 : -0.08);
-      const reach = new THREE.Vector3(side * 0.13, 0.1, side > 0 ? 0.12 : -0.18);
-      const airP = tuck.lerp(reach, st.fall);
-      airP.y += this.jumpPulse * 0.25; airP.z += this.jumpPulse * 0.12;
-      t.lerp(airP, air);
-      // slide: lead leg out long, trailing leg folded under with the knee down
-      const slideP = side > 0 ? new THREE.Vector3(0.1, 0.08, 0.72) : new THREE.Vector3(-0.2, 0.1, -0.08);
-      t.lerp(slideP, sl);
-      // mantle: knees up to clear the ledge
-      t.lerp(new THREE.Vector3(side * 0.14, 0.5, 0.25), mn);
-      // dash: legs trail
-      t.lerp(new THREE.Vector3(side * 0.12, side > 0 ? 0.3 : 0.12, side > 0 ? -0.45 : -0.2), da);
-      legT[key] = t;
-    }
-    // ground: raycast under each foot (slopes, stairs), drop the hips for the lower one
+    // ---- feet: stride warping and ground contact ----
     const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw);
-    const deltas = {};
-    for (const key of ['L', 'R']) {
-      deltas[key] = 0;
-      if (planted < 0.05 || !s.ground) continue;
-      const w = _v1.copy(legT[key]).setY(0).applyQuaternion(root.quaternion).add(s.pos);
-      const gy = s.ground(w.x, w.z, s.pos.y + 0.6);
-      if (gy !== null) deltas[key] = THREE.MathUtils.clamp(gy - s.pos.y, -0.45, 0.45) * planted;
-    }
-    const lower = Math.min(0, deltas.L, deltas.R);
-    root.position.y += lower;
-    root.updateMatrixWorld(true);
-    const fwdW = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
-    const upW = new THREE.Vector3(0, 1, 0).applyQuaternion(root.quaternion);
-    const flatFwd = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
-    for (const key of ['L', 'R']) {
-      const leg = this.leg[key];
-      const target = legT[key].clone().applyQuaternion(root.quaternion).add(s.pos);
-      target.y += deltas[key] + this.ankleH;
-      // keep planted feet above the floor they stand on
-      if (planted > 0.5) target.y = Math.max(target.y, s.pos.y + deltas[key] + this.ankleH * 0.9);
-      // knees forward; the trailing slide knee points down and out
-      const hip = leg.thigh.getWorldPosition(new THREE.Vector3());
-      const pole = hip.clone().addScaledVector(fwdW, 0.8).addScaledVector(upW, -0.2)
-        .add(new THREE.Vector3(leg.side * 0.15, 0, 0).applyQuaternion(root.quaternion));
-      if (leg.side < 0 && sl > 0.01) pole.lerp(hip.clone().addScaledVector(upW, -1).add(new THREE.Vector3(-0.6, 0, 0.3).applyQuaternion(root.quaternion)), sl);
-      this.solveLeg(leg, target, pole);
-      // foot: flat on the ground, toes down in the air / when trailing
-      const toePitch = (air * (0.5 + 0.3 * st.fall) + da * 0.8 + (leg.side > 0 ? -0.3 : 0.6) * sl);
-      const f = flatFwd.clone().multiplyScalar(this.toeOff.fwd).add(new THREE.Vector3(0, this.toeOff.up, 0));
-      f.applyAxisAngle(new THREE.Vector3().crossVectors(UP, flatFwd).normalize(), -toePitch);
-      if (Math.abs(wr) > 0.01) f.applyAxisAngle(flatFwd, -wr * A.wallLean * DEG);
-      this.aimBone(leg.foot, leg.toe, target.clone().add(f));
-    }
+    this.footIK(s, planted, (st.stride - 1) * gaitW, speed);
 
-    // ---- upper body aim (combat stance only), head look ----
-    const cw = s.combat ?? 1;
-    const pitch = s.aimPitch * A.spinePitchShare * cw;
-    this.yawOff = THREE.MathUtils.damp(this.yawOff ?? 0, s.aimYawOffset * cw, 18, dt);
-    for (const [b, w] of [[B.spine001, 0.25], [B.spine002, 0.3], [B.spine003, 0.45]]) {
-      this.rot(b, UP, this.yawOff * w);
-      this.rot(b, X, -pitch * w);
-    }
-    this.rot(B.spine003, X, -s.recoil * 6 * DEG);
-    // relaxed: the head does the looking (and counters the body lean a little)
-    const headPitch = (s.aimPitch - pitch) * (0.4 + 0.6 * cw);
-    this.rot(B.head, UP, (s.aimYawOffset * (1 - cw)) * 0.45);
-    this.rot(B.spine004, X, -headPitch * 0.4 - (lean * 0.65 + cr * A.crouchHunch * DEG) * 0.35 * (1 - cw));
-    this.rot(B.head, X, -headPitch * 0.5 + 8 * DEG * s.adsT + sl * A.slideRecline * 0.6 * DEG);
-    this.rot(B.head, Zv, 6 * DEG * s.adsT + wr * 10 * DEG);
-    root.updateMatrixWorld(true);
-    // where the head ended up, relative to the feet (the first-person eye follows it in postures)
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
-    // for the arms
-    st.gait = gait; st.idle = idle; st.air = air; st.sl = sl; st.mn = mn; st.da = da; st.cr = cr; st.wr = wr; st.speed = speed;
+    Object.assign(st, { air, sl, mn, da, cr, wr, aw, gaitW, speed });
   }
 
-  solveLeg(leg, target, pole) {
-    const H = leg.thigh.getWorldPosition(new THREE.Vector3());
-    const a = leg.a, b = leg.b;
-    const toT = new THREE.Vector3().subVectors(target, H);
-    let d = toT.length();
-    const dir = toT.divideScalar(d || 1);
-    d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, a + b - 1e-3);
-    const x = (a * a - b * b + d * d) / (2 * d);
-    const h = Math.sqrt(Math.max(0, a * a - x * x));
-    const pv = new THREE.Vector3().subVectors(pole, H);
-    pv.addScaledVector(dir, -pv.dot(dir)).normalize();
-    const knee = H.clone().addScaledVector(dir, x).addScaledVector(pv, h);
-    this.aimBone(leg.thigh, leg.shin, knee);
-    this.aimBone(leg.shin, leg.foot, H.clone().addScaledVector(dir, d));
-  }
-
-  chestPoint(target) { return this.bones.spine004.getWorldPosition(target); }
-  shoulder(side, target) { return this.arm[side].upper.getWorldPosition(target); }
-
-  /**
-   * Arms. o: {
-   *   gripR: 0..1 right hand on the gun, gripL: 0..1 left hand on the gun,
-   *   leftOverride/leftBlend: reload borrows the support hand,
-   *   wallPoint/wallNormal/wallSide: hand on the wall while wallrunning,
-   *   ledge: { point, right } hands on the ledge while mantling,
-   *   floorY: the floor under a slide (trailing hand drags on it)
-   * }
-   */
-  poseArms(o = {}) {
-    const st = this.st, root = this.root;
-    this.gun.updateMatrixWorld(true);
-    const rq = root.quaternion;
-    const R = (x, y, z) => new THREE.Vector3(x, y, z).applyQuaternion(rq); // char-space direction -> world
-    const gq = this.gun.getWorldQuaternion(_q2);
-    const gx = new THREE.Vector3(1, 0, 0).applyQuaternion(gq);
-    const gy = new THREE.Vector3(0, 1, 0).applyQuaternion(gq);
-    const gz = new THREE.Vector3(0, 0, 1).applyQuaternion(gq);
-    const t = this.time, ph = st.phase * Math.PI * 2;
-    const run = Math.min(1, this.runT);
-
-    const plan = {};
-    for (const s of ['L', 'R']) {
-      const side = s === 'L' ? 1 : -1;
-      const sh = this.shoulder(s, new THREE.Vector3());
-      // ---- free hand: a key pose per movement mode, relative to the shoulder ----
-      const swing = Math.sin(ph + (side > 0 ? Math.PI : 0)); // opposite the leg on this side
-      const walk = new THREE.Vector3(side * 0.08, -0.52 + 0.04 * Math.abs(swing), 0.02 + swing * 0.2);
-      const pump = new THREE.Vector3(side * 0.07, -0.26 + 0.14 * Math.max(0, swing), 0.04 + swing * 0.42);
-      const idleP = new THREE.Vector3(side * 0.1, -0.55 + Math.sin(t * 1.7) * 0.005, 0.04);
-      let c = idleP.clone().lerp(walk, THREE.MathUtils.clamp(this.moveT, 0, 1)).lerp(pump, run * st.gait);
-      c.lerp(new THREE.Vector3(side * 0.2, -0.42, 0.34), st.cr * 0.8); // crouch: hands forward over the knees
-      const airUp = new THREE.Vector3(side * 0.42, -0.02 + this.jumpPulse * 0.3, 0.1);
-      const airOut = new THREE.Vector3(side * 0.5, -0.12, -0.05);
-      c.lerp(airUp.lerp(airOut, st.fall || 0), st.air);
-      c.lerp(new THREE.Vector3(side * 0.18, -0.35, -0.42), st.da); // dash: arms swept back
-      c.lerp(side > 0 ? new THREE.Vector3(0.3, -0.25, 0.3) : new THREE.Vector3(-0.35, -0.05, 0.3), st.sl); // slide balance
-      let target = sh.clone().add(R(c.x, c.y, c.z));
-      let pole = sh.clone().add(R(side * 0.45, -0.5, -0.45));
-      let dir = R(0, -1, 0.35), palm = R(-side, 0, 0.2);
-      let contact = 0;
-      // wallrun: the wall-side hand on the wall, a little ahead
-      if (o.wallPoint && o.wallSide === -side) {
-        target = o.wallPoint.clone().addScaledVector(o.wallNormal, 0.04);
-        pole = sh.clone().add(R(0, -0.6, -0.4)).addScaledVector(o.wallNormal, 0.3);
-        dir = R(0, 0.6, 0.8); palm = o.wallNormal.clone().negate();
-        contact = 1;
+  footIK(s, planted, stretch, speed) {
+    const root = this.root;
+    const mdir = new THREE.Vector3(s.velocity.x, 0, s.velocity.z);
+    const doStride = stretch > 0.01 && speed > 0.5;
+    if (doStride) mdir.normalize();
+    const offs = {}, d = { L: 0, R: 0 };
+    for (const k of ['L', 'R']) {
+      const leg = this.leg[k];
+      const F = leg.foot.getWorldPosition(new THREE.Vector3());
+      const off = new THREE.Vector3();
+      if (doStride) off.addScaledVector(mdir, _v1.subVectors(F, s.pos).dot(mdir) * stretch);
+      if (planted > 0.05 && s.ground) {
+        const gy = s.ground(F.x + off.x, F.z + off.z, s.pos.y + 0.6);
+        if (gy !== null) d[k] = THREE.MathUtils.clamp(gy - s.pos.y, -0.45, 0.45) * planted;
       }
-      // mantle: both hands plant on the ledge
-      if (o.ledge && st.mn > 0.05) {
-        const p = o.ledge.point.clone().addScaledVector(o.ledge.right, -side * 0.26).add(new THREE.Vector3(0, 0.03, 0));
-        target.lerp(p, st.mn);
-        pole.lerp(sh.clone().add(R(side * 0.6, 0.2, -0.3)), st.mn);
-        dir.lerp(R(0, -0.2, 1), st.mn); palm.lerp(new THREE.Vector3(0, -1, 0), st.mn);
-        contact = st.mn;
-      }
-      // slide: the left hand drags on the floor behind the hip
-      if (side > 0 && o.floorY != null && st.sl > 0.05) {
-        const p = sh.clone().add(R(0.38, 0, -0.3)); p.y = o.floorY + 0.04;
-        target.lerp(p, st.sl);
-        dir.lerp(R(0.3, 0, -1), st.sl); palm.lerp(new THREE.Vector3(0, -1, 0), st.sl);
-        contact = Math.max(contact, st.sl);
-      }
-      plan[s] = { sh, target, pole, dir: dir.normalize(), palm: palm.normalize(), contact };
+      offs[k] = off;
     }
-
-    // ---- gun grips, blended in by weight ----
-    const bodyRight = this.shoulder('R', new THREE.Vector3()).sub(this.shoulder('L', new THREE.Vector3())).setY(0).normalize();
-    const bodyBack = new THREE.Vector3().crossVectors(bodyRight, UP);
-    const wR = o.gripR ?? 1;
-    const gR = this.gunPoint('gripR', new THREE.Vector3());
-    const pR = plan.R.sh.clone().addScaledVector(bodyRight, 0.5).add(new THREE.Vector3(0, -0.8, 0)).addScaledVector(bodyBack, 0.3);
-    this.placeHand(this.arm.R, plan.R, wR, gR, pR,
-      _v2.copy(gx).multiplyScalar(0.75).addScaledVector(gy, 0.55).addScaledVector(gz, -0.1), gz.clone().negate());
-
-    // the support hand leaves the gun for a wall or the floor, and during reloads
-    let wL = (o.gripL ?? 1) * (1 - plan.L.contact);
-    let gL = this.gunPoint('gripL', new THREE.Vector3());
-    if (o.leftOverride && o.leftBlend > 0) gL = gL.lerp(o.leftOverride, o.leftBlend);
-    const pL = plan.L.sh.clone().addScaledVector(bodyRight, -0.5).add(new THREE.Vector3(0, -0.8, 0)).addScaledVector(bodyBack, 0.2);
-    const dirL = new THREE.Vector3().copy(gx).multiplyScalar(0.7).addScaledVector(gz, 0.7).addScaledVector(gy, -0.1);
-    if (o.leftBlend > 0) dirL.lerp(new THREE.Vector3(0, -0.2, 1).applyQuaternion(rq), o.leftBlend);
-    this.placeHand(this.arm.L, plan.L, wL, gL, pL, dirL, gz.clone().addScaledVector(gy, 0.35));
-
-    // fingers: wrapped round the grip, flat on a surface, loosely curled otherwise
-    for (const s of ['R', 'L']) {
-      const a = this.arm[s];
-      const grip = s === 'R' ? wR : wL;
-      const flat = plan[s].contact * (1 - grip);
-      for (const f of a.fingers) {
-        const isThumb = f.name.startsWith('thumb');
-        const isIndex = f.name.startsWith('f_index');
-        const gripAng = isThumb ? 18 : isIndex && s === 'R' ? 40 : 72;
-        const relaxed = isThumb ? 10 : 28;
-        let ang = THREE.MathUtils.lerp(relaxed, gripAng, grip) * (1 - flat * 0.85);
-        if (s === 'L' && o.leftBlend > 0.5) ang *= 0.6;
-        const dir = _v1.set(0, 1, 0).applyQuaternion(this.restCharQ.get(f));
-        const axis = _v3.crossVectors(dir, new THREE.Vector3(0, -1, 0)).normalize();
-        if (isThumb) axis.set(0, 0, s === 'R' ? -1 : 1);
-        this.rot(f, axis, ang * DEG);
-      }
+    const lower = Math.min(0, d.L, d.R);
+    if (lower < 0) { root.position.y += lower; root.updateMatrixWorld(true); }
+    const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
+    for (const k of ['L', 'R']) {
+      const off = offs[k];
+      off.y += d[k] - lower;
+      if (off.lengthSq() < 1e-6) continue;
+      const leg = this.leg[k];
+      const target = leg.foot.getWorldPosition(new THREE.Vector3()).add(off);
+      const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(fwd, 0.1);
+      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+      this.solveLeg(leg, target, pole);
+      this.setWorldQuat(leg.foot, fq);
+      leg.foot.updateMatrixWorld(true);
     }
-    root.updateMatrixWorld(true);
   }
 
-  /** IK one arm to a blend of its free-hand plan and a gun grip (weight w). */
-  placeHand(arm, plan, w, gripPos, gripPole, gripDir, gripPalm) {
-    const target = plan.target.clone().lerp(gripPos, w);
-    const pole = plan.pole.clone().lerp(gripPole, w);
-    this.solveArm(arm, target, pole);
-    const dir = plan.dir.clone().lerp(gripDir.clone().normalize(), w);
-    const palm = plan.palm.clone().lerp(gripPalm.clone().normalize(), w);
-    if (dir.lengthSq() < 1e-6) dir.copy(gripDir);
-    this.orientHand(arm, dir.normalize(), palm.normalize());
-  }
+  solveLeg(leg, target, pole) { this.solve2(leg.thigh, leg.shin, leg.foot, leg.a, leg.b, target, pole); }
 
-  solveArm(arm, target, pole) {
-    const S = arm.upper.getWorldPosition(new THREE.Vector3());
-    const a = arm.a, b = arm.b;
+  // analytic two-bone IK: the mid joint bends toward `pole`
+  solve2(upper, mid, end, a, b, target, pole) {
+    const S = upper.getWorldPosition(new THREE.Vector3());
     const toT = new THREE.Vector3().subVectors(target, S);
     let d = toT.length();
     const dir = toT.divideScalar(d || 1);
@@ -546,11 +539,154 @@ export class Character {
     const x = (a * a - b * b + d * d) / (2 * d);
     const h = Math.sqrt(Math.max(0, a * a - x * x));
     const pv = new THREE.Vector3().subVectors(pole, S);
-    pv.addScaledVector(dir, -pv.dot(dir)).normalize();
+    pv.addScaledVector(dir, -pv.dot(dir));
+    if (pv.lengthSq() < 1e-8) pv.set(0, -1, 0).addScaledVector(dir, dir.y);
+    pv.normalize();
     const elbow = S.clone().addScaledVector(dir, x).addScaledVector(pv, h);
-    const wrist = S.clone().addScaledVector(dir, d);
-    this.aimBone(arm.upper, arm.fore, elbow);
-    this.aimBone(arm.fore, arm.hand, wrist);
+    this.aimBone(upper, mid, elbow);
+    this.aimBone(mid, end, S.clone().addScaledVector(dir, d));
+  }
+
+  chestPoint(target) { return this.bones.spine004.getWorldPosition(target); }
+  shoulder(side, target) { return this.arm[side].upper.getWorldPosition(target); }
+
+  /**
+   * Reach a hand toward a world pose with weight w. The elbow bends toward where the
+   * animation had it (a little down), so the solution stays on the animated side.
+   * `shift` moves the shoulder onto the first-person camera rig (view-model arms) -
+   * only in first person, where nothing but the hands is drawn.
+   */
+  reachHand(side, pos, quat, w, shift = 0) {
+    if (w <= 0.001) return;
+    const arm = this.arm[side];
+    const hq = arm.hand.getWorldQuaternion(new THREE.Quaternion());
+    const hp = arm.hand.getWorldPosition(new THREE.Vector3());
+    const target = hp.clone().lerp(pos, w);
+    const pole = arm.fore.getWorldPosition(new THREE.Vector3()).add(_v1.set(0, -0.12, 0));
+    if (shift > 0 && this.fpCam) {
+      // first person: view-model arms. The shoulders hang off the camera, not the animated
+      // body, so the hands never inherit the run cycle; only the hands are drawn anyway.
+      const cq = this.fpCam.quaternion;
+      const S = _v1.set(-arm.side * 0.2, -0.3, 0.06).applyQuaternion(cq).add(this.fpCam.position);
+      const cur = arm.upper.getWorldPosition(new THREE.Vector3());
+      const sh = S.clone().sub(cur).multiplyScalar(shift);
+      arm.upper.parent.getWorldQuaternion(_q1).invert();
+      arm.upper.position.add(sh.applyQuaternion(_q1));
+      arm.upper.updateMatrixWorld(true);
+      pole.copy(S).add(_v3.set(-arm.side * 0.45, -0.35, 0).applyQuaternion(cq));
+    }
+    this.solve2(arm.upper, arm.fore, arm.hand, arm.a, arm.b, target, pole);
+    this.setWorldQuat(arm.hand, hq.slerp(quat, w));
+    arm.hand.updateMatrixWorld(true);
+  }
+
+  /** Where the right hand has to be to hold the gun at world matrix M. */
+  handFromGun(M, side, pos, quat) {
+    _m1.multiplyMatrices(M, side === 'R' ? this.socketRInv : this.socketL).decompose(pos, quat, _v4);
+  }
+
+  /**
+   * Hands and gun, after animate(). o: {
+   *   drawT: 0 holstered .. 1 in hand (the hand reaches the hip first, then the gun comes up),
+   *   upper: pistol layer weight, fw: first-person weight, fpPos/fpQ: first-person gun pose,
+   *   aimPoint, reloading, leftOverride/leftBlend (first-person reload: support hand to the belt),
+   *   wallPoint/wallNormal/wallSide, ledge {point, right}, mantleT
+   * }
+   */
+  poseHands(o) {
+    if (!this.socketR) this.computeSockets();
+    if (!this.holsterLocal) this.computeHolster();
+    const B = this.bones, st = this.st, root = this.root;
+    const HOLD = 0.45;
+    const inHand = o.drawT > HOLD;
+    const reach = inHand ? 1 - smooth(HOLD, 1, o.drawT) : smooth(0, HOLD, o.drawT);
+    const Mg = new THREE.Matrix4(), gp = new THREE.Vector3(), gq = new THREE.Quaternion();
+    const hp = new THREE.Vector3(), hq = new THREE.Quaternion();
+    const holster = _m1.multiplyMatrices(B.spine.matrixWorld, this.holsterLocal).clone();
+
+    // 1) turn the chest so the barrel lines up with the crosshair
+    const wAim = (o.upper || 0) * (inHand ? 1 : 0) * (o.reloading ? 0.3 : 1) * (1 - (o.fw || 0));
+    if (wAim > 0.01 && o.aimPoint) {
+      for (let it = 0; it < 2; it++) {
+        Mg.multiplyMatrices(B.handR.matrixWorld, this.socketR).decompose(gp, gq, _v4);
+        const bar = new THREE.Vector3(1, 0, 0).applyQuaternion(gq);
+        const muzzle = GUN_POINTS.muzzle.clone().multiplyScalar(this.gunScale).applyMatrix4(Mg);
+        const want = o.aimPoint.clone().sub(muzzle);
+        if (want.length() < 0.8) break;
+        want.normalize();
+        const q = new THREE.Quaternion().setFromUnitVectors(bar, want);
+        const ang = 2 * Math.acos(THREE.MathUtils.clamp(q.w, -1, 1));
+        const lim = 55 * DEG;
+        const k = wAim * (ang > lim ? lim / ang : 1);
+        this.turnW(B.spine003, new THREE.Quaternion().slerp(q, k));
+        root.updateMatrixWorld(true);
+      }
+    }
+
+    // 2) the right hand: to the holster to draw / put away, else wherever the animation has it
+    if (reach > 0.001) {
+      this.handFromGun(holster, 'R', hp, hq);
+      this.reachHand('R', hp, hq, reach);
+    }
+    if (inHand) Mg.multiplyMatrices(B.handR.matrixWorld, this.socketR);
+    else Mg.copy(holster);
+    Mg.decompose(gp, gq, _v4);
+    // first person: the view-model pose (the gun rises out of the holster as it's drawn)
+    const fwG = (o.fw || 0) * (inHand ? smooth(HOLD, 0.9, o.drawT) : 0);
+    if (fwG > 0 && o.fpPos) { gp.lerp(o.fpPos, fwG); gq.slerp(o.fpQ, fwG); }
+    this.gun.position.copy(gp);
+    this.gun.quaternion.copy(gq);
+    this.gun.updateMatrixWorld(true);
+
+    // 3) hands on the gun wherever it went (a no-op in third person, where it's already in the hand)
+    const shift = (o.fw || 0) > 0.5 ? 1 : 0;
+    this.fpCam = o.camera;
+    if (inHand && fwG > 0.001) {
+      this.handFromGun(this.gun.matrixWorld, 'R', hp, hq);
+      this.reachHand('R', hp, hq, 1, shift);
+    }
+    // the support hand: on the grip when aiming, off it for reloads and contacts
+    let wL = Math.max(o.upper || 0, fwG) * (inHand ? smooth(HOLD, 1, o.drawT) : 0);
+    if (o.reloading && fwG < 0.5) wL = 0; // the reload clip drives it
+    let contactL = 0, contactR = 0;
+    // wall: the wall-side hand flat on the wall, a little ahead
+    const wallW = st.aw * (o.wallPoint ? 1 : 0);
+    const wallSide = o.wallSide > 0 ? 'R' : 'L';
+    if (wallW > 0.01 && !(wallSide === 'R' && inHand)) {
+      const n = o.wallNormal;
+      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
+      const dir = fwd.clone().addScaledVector(UP, 0.8).addScaledVector(n, -fwd.dot(n)).normalize();
+      const q = this.handQuat(this.arm[wallSide], dir, n.clone().negate());
+      const p = o.wallPoint.clone().addScaledVector(n, 0.02).sub(this.arm[wallSide].palmPt.clone().applyQuaternion(q));
+      this.reachHand(wallSide, p, q, wallW);
+      if (wallSide === 'L') contactL = wallW; else contactR = wallW;
+    }
+    // ledge: both hands plant on the lip during the first part of the vault
+    const ledgeW = (o.ledge ? st.mn : 0) * (1 - smooth(0.45, 0.75, o.mantleT ?? 1));
+    if (ledgeW > 0.01) {
+      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
+      for (const side of ['L', 'R']) {
+        if (side === 'R' && inHand) continue;
+        const sg = side === 'L' ? 1 : -1;
+        const q = this.handQuat(this.arm[side], fwd, new THREE.Vector3(0, -1, 0));
+        const p = o.ledge.point.clone().addScaledVector(o.ledge.right, -sg * 0.22).addScaledVector(fwd, 0.08)
+          .sub(this.arm[side].palmPt.clone().applyQuaternion(q)).add(new THREE.Vector3(0, 0.02, 0));
+        this.reachHand(side, p, q, ledgeW);
+        if (side === 'L') contactL = Math.max(contactL, ledgeW); else contactR = Math.max(contactR, ledgeW);
+      }
+    }
+    wL *= 1 - contactL;
+    if (wL > 0.001) {
+      this.handFromGun(this.gun.matrixWorld, 'L', hp, hq);
+      if (o.leftBlend > 0 && o.leftOverride) hp.lerp(o.leftOverride, o.leftBlend);
+      this.reachHand('L', hp, hq, wL, shift);
+    }
+    // flat fingers on a surface
+    for (const [side, k] of [['L', contactL], ['R', contactR]]) {
+      if (k <= 0.01) continue;
+      for (const f of this.arm[side].fingers) f.quaternion.slerp(this.rest.get(f).q, k * 0.85);
+    }
+    root.updateMatrixWorld(true);
   }
 
   // rotate `bone` (in world space) so that `child` lands on `point`
@@ -567,16 +703,16 @@ export class Character {
     bone.updateMatrixWorld(true);
   }
 
-  orientHand(arm, dirWorld, palmWorld) {
+  /** World rotation for a hand whose fingers point along dirWorld with the palm facing palmWorld. */
+  handQuat(arm, dirWorld, palmWorld) {
     const y1 = dirWorld.clone().normalize();
     const n1 = palmWorld.clone().addScaledVector(y1, -palmWorld.dot(y1)).normalize();
     const y0 = new THREE.Vector3(0, 1, 0);
     const n0 = arm.palmLocal.clone().addScaledVector(y0, -arm.palmLocal.dot(y0)).normalize();
     const M0 = new THREE.Matrix4().makeBasis(y0, n0, new THREE.Vector3().crossVectors(y0, n0));
     const M1 = new THREE.Matrix4().makeBasis(y1, n1, new THREE.Vector3().crossVectors(y1, n1));
-    const qw = new THREE.Quaternion().setFromRotationMatrix(M1.multiply(M0.transpose()));
-    const parentQ = arm.hand.parent.getWorldQuaternion(new THREE.Quaternion());
-    arm.hand.quaternion.copy(parentQ.invert().multiply(qw));
-    arm.hand.updateMatrixWorld(true);
+    return new THREE.Quaternion().setFromRotationMatrix(M1.multiply(M0.transpose()));
   }
 }
+
+function smooth(a, b, t) { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }

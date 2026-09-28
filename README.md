@@ -166,8 +166,9 @@ the fog thins.
 | --- | --- |
 | `src/main.js` | bootstrap, fixed-step loop (60 Hz physics, interpolated camera) |
 | `src/player.js` | Rapier kinematic character controller (slide, wallrun, mantle, dash), FP/TP camera, recoil punch |
-| `src/weapon.js` | firing, spread/bloom, hitscan, reload, gun placement (FP camera-space / TP aim-space) |
-| `src/character.js` | procedural animation: FK gait, spine aim, two-bone arm IK onto the gun |
+| `src/weapon.js` | firing, spread/bloom, hitscan, reload, holster timing, first-person gun pose |
+| `src/character.js` | the Courier: clip blending by movement state, pistol aim offset, gun socket, IK corrections |
+| `src/animator.js`, `src/anims.js` | pose buffers, clip sampling/blending, the baked clip pack decoder |
 | `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture |
 | `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions |
 | `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
@@ -190,25 +191,40 @@ triangles are grouped into shards. Each shard is the convex hull of its outer po
 the matching inner-wall points, so it gets both a render mesh and an exact Rapier collider.
 Shards near the bullet's impact are smaller and get more push.
 
-**Animation.** The rig has no clips, so everything is procedural and posed from targets
-rather than joint angles, every frame:
+**Animation.** The Courier is driven by authored clips with IK corrections on top. The
+clips are from Quaternius' [Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html)
+1 and 2 (the free Standard tiers, CC0), retargeted offline onto the Courier rig by
+`tools/bake_anims.mjs` into `src/assets/anims.bin` (about 220 KB). Both rigs rest in a
+T-pose, so each bone's world rotation away from the T-pose carries straight over.
 
-- **Legs:** the hips get a height and lean for each movement mode (deep crouch, low slide,
-  sprint lean, dash, wallrun roll), each foot gets a target, and two-bone IK bends the knees
-  to fit. On the ground, the feet follow a gait path (planted, then an arc through the swing)
-  whose stride matches the speed, so they don't skate. The feet are raycast onto slopes and
-  stairs, and the hips drop for the lower one. In the air it's a tuck rising, reaching
-  falling, and a bigger tuck on the double jump; mantling tucks the knees; sliding puts the
-  lead leg out and folds the trailing one under.
-- **Arms:** each hand has a target and an elbow pole. Hands swing opposite the legs when
-  walking, pump when sprinting, and go out for balance in the air. The wall-side hand plants
-  on the wall while wallrunning (raycast from the shoulder), both hands plant on the ledge
-  when mantling, the left hand drags on the floor in a slide, and hands blend onto the gun
-  grips by weight.
-- **Holster:** the gun rides on the right hip. Drawing is two beats: the hand reaches the hip,
-  then the gun comes up and the support hand joins. Holstering reverses it. Clicking while
+- **Locomotion:** idle, walk, jog and sprint play on one shared phase (each loop is measured
+  at load for its stride and where the left heel lands) and blend by speed. Game speeds run
+  well past the clips' own, so the extra comes partly from cadence and partly from longer
+  strides (stride warping in the foot IK). Aiming while strafing or backpedalling turns the
+  hips toward the move and the chest back to the aim (orientation warping); backpedalling
+  runs the loops in reverse. Crouch idle/walk blend in with the crouch.
+- **Moves:** jump take-off into the airborne loop, a tuck flip on the double jump, the
+  landing squat (lighter at a run), slide drop-in and hold, the climb clip timed to the
+  mantle, a stretched-out take-off frame pitched forward for the air dash, and a sprint with a
+  roll off the wall for wallruns.
+- **Gun:** the psygun sits in a socket on the right hand (fitted to the palm from the pistol
+  aim pose), so the gun follows the hand rather than the hands chasing the gun. When the gun
+  is up, a pistol aim offset (aim down / level / up) is layered over the upper body and the
+  chest turns the last few degrees so the barrel lines up with the crosshair. The support
+  hand is IK'd onto the gun. Relaxed, the gun just rides in the hand through the run cycle.
+- **IK corrections:** feet onto slopes and stairs (the hips drop for the lower foot), the
+  wall-side hand flat on the wall while wallrunning, both hands on the ledge at the start of
+  a mantle, the support hand on the gun. Each chain bends toward its *animated* elbow or knee,
+  so the correction stays on the animated side and can't flip.
+- **Holster:** the gun rides on the right hip, clear of the thigh. Drawing takes 0.2 s: the
+  hand snaps to the hip, then the gun comes up. Holstering reverses it. Clicking while
   holstered draws and fires as soon as the gun is out.
-- **First person:** only the hands and the gun are drawn.
+- **First person:** only the hands and the gun are drawn. The arms are view-model arms: the
+  shoulders hang off the camera, and the hands are pinned to the gun.
+
+To rebake after changing the clip list or the rig, get the Standard `.glb` files of both
+libraries and run `node tools/bake_anims.mjs ual1.glb ual2.glb`. `npm run dev` then
+`/dev/animlab.html` is a clip viewer for picking frames.
 
 Crouching uses a 1.35 m capsule, which is where the crouched body (hair included) tops out;
 crawlspaces are 1.5 m.
@@ -222,6 +238,9 @@ stay stiff under heavy pots. The links are sensors because contacts on multibody
 produce NaNs; cutting a rope needs Rapier 0.21+ (0.14 panics on joint removal).
 
 ## Character assets
+
+Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1.0 -
+https://quaternius.com. Retargeted to the Courier; see **Animation** above.
 
 `tools/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
 `src/assets/courier.glb` and `src/assets/psygun.glb`, which are bundled into the JS build.

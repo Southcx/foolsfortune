@@ -103,8 +103,10 @@ export const DEFAULTS = {
     gunScale: 0.85,
     adsDistance: 0.55, // how far in front of the eye the gun sits when aiming down sights
     adsHeight: 0.0, // fine-tune sight alignment
-    drawTime: 0.32, // holster -> hands, first reach to the hip, then up
-    holsterTime: 0.45,
+    drawTime: 0.2, // holster -> hands: the hand snaps to the hip, then the gun comes up
+    holsterTime: 0.3,
+    // holstered gun, relative to the hips (m / deg): out past the thigh, grip up and back
+    holster: { out: 0.27, height: 0.86, back: -0.05, tilt: 0.3, cant: 10 },
     autoHolster: true, // third person: put it away after a while out of combat
     holsterDelay: 5,
   },
@@ -171,14 +173,6 @@ export const DEFAULTS = {
     shake: 0.35,
     fovPunch: 2.5,
   },
-  tpPose: {
-    reach: 0.38, // wrist distance in front of the shoulders when aiming
-    aimDrop: 0.1,
-    adsRaise: 0.05,
-    lowForward: 0.3,
-    lowDrop: 0.32,
-    lowPitch: 38, // how far the muzzle points down at low ready
-  },
   tracer: {
     speed: 320,
     length: 3.5,
@@ -234,18 +228,21 @@ export const DEFAULTS = {
   // time trial medals (seconds, generous) and the quick-double bonus
   trial: { gold: 90, silver: 150, bronze: 240, quickWindow: 1.5, quickBonus: 1 },
   anim: {
-    strideWalk: 1.45,
-    strideRun: 2.5,
-    thighSwing: 30,
-    kneeBend: 55,
-    runLean: 19,
-    hipBob: 0.045,
-    crouchDrop: 0.42, // how far the hips drop in a crouch (m)
-    crouchHunch: 32, // degrees the back bends forward crouching
-    slideDrop: 0.58,
-    slideRecline: 46,
+    // clip-driven: see character.js. Speeds in m/s, times in seconds into the clip.
+    walkAnimSpeed: 1.4, // ground speed where the walk loop is fully in (then jog at walkSpeed, sprint at sprintSpeed)
+    strideShare: 0.4, // above a clip's own speed, this much of the extra comes from longer strides (the rest from cadence)
+    maxStride: 1.3, // stride warp cap
+    crouchDepth: 0.8, // how far into the (very low) crouch clips the crouch goes
+    aimRange: 50, // pitch (deg) that maps onto the aim-up / aim-down poses
+    jumpFrom: 0.15, // jump clip: take-off frame
+    flipFrom: 0.12, // air jump: the tuck flip's take-off
+    landFrom: 0.1, // landing clip: impact frame
+    slideFrom: 0.15, // slide clip: the drop
+    dashFrame: 0.19, // air dash holds this frame of the take-off (stretched out)...
+    dashLean: 38, // ...pitched forward this far (deg)
+    climbFrom: 0.15, // mantle plays this span of the climb clip
+    climbTo: 0.62,
     wallLean: 24, // whole-body roll off the wall while wallrunning (deg)
-    spinePitchShare: 0.55,
     landDip: 0.09,
   },
   visual: {
@@ -264,6 +261,8 @@ const STORAGE_KEY = 'foolsfortune.tuning.v2';
 const OLD_KEY = 'foolsfortune.tuning.v1';
 // defaults that changed since v1: stored v1 values for these are dropped on migration
 const V1_DROP = [['shatter', 'shardOutlines']];
+// defaults retuned since: stored values for these are ignored (so an old save can't bring back a slow draw)
+const RETUNED = [['weapon', 'drawTime'], ['weapon', 'holsterTime']];
 
 function deepMerge(target, src) {
   for (const k in src) {
@@ -279,7 +278,11 @@ export const T = structuredClone(DEFAULTS);
 export function loadTuning() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) deepMerge(T, JSON.parse(raw));
+    if (raw) {
+      const o = JSON.parse(raw);
+      if (!o.retuned1) for (const [g, k] of RETUNED) if (o[g]) delete o[g][k];
+      deepMerge(T, o);
+    }
     else {
       const old = localStorage.getItem(OLD_KEY);
       if (old) {
@@ -292,7 +295,7 @@ export function loadTuning() {
 }
 
 export function saveTuning() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(T)); } catch { /* ignore */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...T, retuned1: true })); } catch { /* ignore */ }
 }
 
 export function resetTuning() {
