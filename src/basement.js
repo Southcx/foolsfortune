@@ -1,4 +1,5 @@
 import { SIEGE_SPAWN, inSiege } from './siege.js';
+import { WEIR_SPAWN, inWeir } from './angling/weir.js';
 import * as THREE from 'three';
 import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
@@ -369,6 +370,7 @@ export class Course {
     this.handN = this.rigN + RIG_CPS.length;
     this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below]), ...RIG_PITS.map(([r, i, below]) => [r, i + this.rigN, BASE_Y + below])];
     this.millSpawn = { v: new THREE.Vector3(39, BASE_Y, -47.2), yaw: Math.PI / 2 };
+    this.weirSpawn = { v: new THREE.Vector3(WEIR_SPAWN.pos[0], BASE_Y + WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2]), yaw: WEIR_SPAWN.yaw };
     this.siegeSpawn = { v: new THREE.Vector3(SIEGE_SPAWN.pos[0], BASE_Y + SIEGE_SPAWN.pos[1], SIEGE_SPAWN.pos[2]), yaw: SIEGE_SPAWN.yaw };
     this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
     this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
@@ -449,6 +451,7 @@ export class Course {
       { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
+      { id: 'weir', code: 'KeyW', tag: 'W', name: 'THE WEIR', blurb: 'the Sondelass: cast, sound, hook and land the entities of the water · a cutlass yard · rings to hook', group: 'THE SONDELASS', spawn: 'weir' },
       { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'a sand sea far below · the Solar Surfer (Y stows it)', group: 'THE OPEN', spawn: 'dunes' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id));
@@ -481,6 +484,7 @@ export class Course {
     else if (r.spawn === 'mill') this.toMill();
     else if (r.spawn === 'dunes') this.toDunes();
     else if (r.spawn === 'siege') this.toSiege();
+    else if (r.spawn === 'weir') this.toWeir();
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -501,6 +505,14 @@ export class Course {
     this.current = -1;
     this.lapT = null;
     this.game.player.techs?.get?.('surfer')?.mount();
+    sfx.geyser();
+  }
+
+  toWeir() {
+    this.teleport(this.weirSpawn.v, this.weirSpawn.yaw);
+    this.running = false;
+    this.current = -1;
+    this.lapT = null;
     sfx.geyser();
   }
 
@@ -603,7 +615,7 @@ export class Course {
     const here = this.inBasement();
     if (this.el) this.el.style.display = here ? 'block' : 'none';
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
-    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
+    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else if (inWeir(p.pos)) this.toWeir(); else this.respawn(); return; }
     if (inp.wasPressed('KeyH')) { this.toHub(); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
@@ -646,6 +658,7 @@ export class Course {
       this.el.innerHTML = cp && this.running
         ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
         : inSiege(p.pos) ? 'THE SIEGE · ~ the hand · raids come here · R back to the dais · H hub'
+        : inWeir(p.pos) ? 'THE WEIR · Q the Sondelass · 1 cutlass · 2 rod · 3 hook · R back to the entrance · H hub'
         : g.dunes.active ? 'DUNES · W hoist the sail · S furl and brake · A D steer · Space hop · Shift flare · Y board · H hub'
         : 'HUB · F at the console: pick a room · R checkpoint · H hub';
     }

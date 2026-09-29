@@ -27,7 +27,7 @@
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
-    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true }, { name: 'weir', weir: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -52,6 +52,7 @@
     else if (s.hub) g.course.toHub();
     else if (s.dunes) g.course.toDunes();
     else if (s.siege) g.course.toSiege();
+    else if (s.weir) g.course.toWeir();
     else if (s.circuit) g.game.circuits.enter(s.circuit);
     else {
       P.pos.set(...s.at); P.prevPos.copy(P.pos); P.renderPos.copy(P.pos); P.vel.set(0, 0, 0); P.yaw = s.yaw; P.bodyYaw = s.yaw; P.place();
@@ -122,6 +123,18 @@
           if (rnd() < 0.1) inp.wheel += (rnd() - 0.5) * 600;
         }
         if (--godLeft <= 0) { inp.pressed.add('Backquote'); inp.down.delete('Mouse0'); inp.down.delete('Mouse2'); godLeft = 1e9; }
+      }
+      // the Sondelass: draw, change form, swing, cast, sink, sound, fire the grapnel
+      if (!god.controlling && rnd() < 0.05) {
+        const r = rnd();
+        if (r < 0.1) inp.pressed.add('KeyQ');
+        else if (r < 0.25) inp.pressed.add('Digit' + (1 + Math.floor(rnd() * 3)));
+        else if (r < 0.5) { inp.pressed.add('Mouse0'); inp.down.add('Mouse0'); }
+        else if (r < 0.7) inp.down.delete('Mouse0');
+        else if (r < 0.8) { inp.pressed.add('Mouse2'); inp.down.add('Mouse2'); }
+        else if (r < 0.9) inp.down.delete('Mouse2');
+        else if (r < 0.95) inp.pressed.add('Mouse1');
+        else inp.wheel += (rnd() - 0.5) * 400;
       }
       g.tick(1 / 60);
       if (god.state !== 'off') { if (god.state === 'on' || god.state === 'in') { sink.ticks++; continue; } }

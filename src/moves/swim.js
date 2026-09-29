@@ -16,6 +16,7 @@ export class Swim extends Tech {
     this.overrides = 1;
     this.blendIn = 8;
     this.handsBusy = true; // (the gun goes away while swimming)
+    this.keepsLegs = true; // (the legs are the clip's: no foot IK to re-bend them)
     this.vol = null;
     this.hopT = 0;
   }

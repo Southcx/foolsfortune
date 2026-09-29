@@ -8,6 +8,7 @@
 // Hiscores page: lifetime totals, then personal bests with where and when, then where the time went.
 // ---------------------------------------------------------------------------------------
 import { CATS, TIERS, TYPES, RANKS } from '../achievements.js';
+import { SPECIES, ASPECTS, TIDES } from '../angling/species.js';
 
 const CSS = `
 #codex .lg-head { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; margin-bottom: 10px; font-size: 12px; letter-spacing: .08em; }
@@ -197,4 +198,51 @@ export function renderRecords(codex, cx) {
   };
   foot.appendChild(wipe);
   cx.appendChild(foot);
+}
+
+// ---- the Angling shelf: the bestiary, after FFXIV's Fish Guide and OSRS's collection log. A slot per kind; unknown until landed,
+// the entry itself opening up as you land more of it (what it is at once, what it likes after the first, where and when after three).
+const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
+
+export function renderAngling(codex, cx) {
+  ensureStyle();
+  const g = codex.game, L = g.ledger;
+  codex.asel ||= SPECIES[0].id;
+  const landed = SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length;
+  const head = el('div', 'lg-head');
+  head.innerHTML = `<div><small>LANDED</small><b>${num(L.get('fish.total'))}</b></div><div><small>KINDS</small><b>${landed}</b> / ${SPECIES.length}</div>`
+    + `<div><small>LARGEST</small><b>${L.best('fish.cm.max') ? Math.round(L.best('fish.cm.max')) : '—'}</b> cm</div>`
+    + `<div><small>HEAVIEST</small><b>${L.best('fish.kg.max') ? L.best('fish.kg.max').toFixed(1) : '—'}</b> kg</div>`
+    + `<div><small>LINES LOST</small><b>${num(L.get('angle.escape'))}</b></div><div><small>TIDE</small>${g.weir ? TIDES[g.weir.tide].name : '—'}</div>`;
+  cx.appendChild(head);
+  const body = el('div', 'body');
+  const list = el('div', 'list');
+  for (const sp of SPECIES) {
+    const n = L.get(`fish.sp.${sp.id}`), cm = L.best(`fish.cm.${sp.id}`);
+    const row = el('div', `row${n ? '' : ' locked'}${codex.asel === sp.id ? ' sel' : ''}`,
+      `<span class="g" style="color:${n ? hex(sp.color) : 'inherit'}">${n ? '◉' : '?'}</span><span class="t"><b>${n ? sp.name.toUpperCase() : '· · ·'}</b><s>${n ? `${n} landed · best ${Math.round(cm)} cm` : 'not yet landed'}</s></span>`);
+    row.onclick = () => { codex.asel = sp.id; codex.render(); };
+    list.appendChild(row);
+  }
+  body.appendChild(list);
+  const sp = SPECIES.find((s) => s.id === codex.asel), n = L.get(`fish.sp.${sp.id}`);
+  const card = el('div', 'card');
+  if (!n) {
+    card.appendChild(el('h3', '', '· · ·'));
+    card.appendChild(el('div', 'in', `TIER ${sp.tier}${sp.legend ? ' · SOMETHING ELSE' : ''}`));
+    card.appendChild(el('p', 'hint', sp.legend ? 'It comes to nothing you have thought before. Perhaps to the echo of something large, at the top of the tide.' : 'Not yet landed. Cast a lure, and see what thinks it is hungry for it.'));
+  } else {
+    card.appendChild(el('h3', '', sp.name.toUpperCase()));
+    card.appendChild(el('div', 'in', `TIER ${sp.tier} · ${n} LANDED · ${L.get(`fish.lost.${sp.id}`)} LOST`));
+    card.appendChild(el('p', '', sp.blurb));
+    const aff = el('div');
+    aff.innerHTML = `<div class="in">DRAWN TO</div>` + sp.aff.map((a, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span style="width:88px;color:${hex(ASPECTS[i].color)}">${ASPECTS[i].glyph} ${ASPECTS[i].name}</span><span class="bar" style="flex:1;margin:0"><i style="width:${Math.round(a * 100)}%"></i></span></div>`).join('');
+    card.appendChild(aff);
+    const known = n >= 3;
+    card.appendChild(el('p', '', `<span style="color:var(--accent)">LIVES</span> · ${known ? `${sp.depth[0]}–${sp.depth[1]} m down` : '? (land it three times)'}<br><span style="color:var(--accent)">COMES</span> · ${known ? sp.tides.map((t) => TIDES[t].name).join(', ') : '?'}<br><span style="color:var(--accent)">FIGHTS</span> · ${known ? ({ drift: 'in slow swimming turns', dart: 'in quick flicks', thrash: 'in coils and thrashes: ease off at the tremble', run: 'in long runs: give it line', sweep: 'side to side: follow it', leap: 'leaping clear, and landing hard', anchor: 'by being immovable: reel steadily', legend: 'in phases: it changes as it tires' })[sp.style] : '?'}`));
+    const cm = L.best(`fish.cm.${sp.id}`), kg = L.best(`fish.kg.${sp.id}`);
+    card.appendChild(el('p', '', `<span style="color:var(--accent)">BEST</span> · ${Math.round(cm)} cm · ${kg ? kg.toFixed(2) : '—'} kg <span style="opacity:.6">(kinds run ${sp.size[0]}–${sp.size[1]} cm)</span>`));
+  }
+  body.appendChild(card);
+  cx.appendChild(body);
 }

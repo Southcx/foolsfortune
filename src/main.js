@@ -34,6 +34,8 @@ import { Roll } from './moves/roll.js';
 import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { Surfer } from './moves/surfer.js';
+import { Sondelass } from './moves/sondelass.js';
+import { Zip } from './moves/zip.js';
 import { Circuits } from './circuits.js';
 import { SlipDive } from './moves/slip.js';
 import { Hang } from './moves/hang.js';
@@ -59,6 +61,7 @@ import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
 import { Achievements } from './achievements.js';
+import { Weir } from './angling/weir.js';
 
 const FIXED = 1 / 60;
 
@@ -183,7 +186,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Zip, Sondelass]) techs.add(new T0(techs));
   env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;
@@ -261,13 +264,14 @@ async function main() {
     carto.addAnchor('GALLERY', 'gallery', v([0, clappers.floors[1]?.y ?? 4.6, 0]), 'upper');
     carto.addAnchor('THE HUB', 'hub', course.hubSpawn.v);
     for (const r of course.rooms) {
-      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'siege' ? course.siegeSpawn.v : course.cps[r.cp]?.v;
+      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'siege' ? course.siegeSpawn.v : r.spawn === 'weir' ? course.weirSpawn.v : course.cps[r.cp]?.v;
       if (at) carto.addAnchor(r.name, r.id, at);
     }
     carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
     carto.restoreAnchors();
   }
   // what is counted and what is said about it, then the achievements over the counts
+  game.weir = new Weir(game); // (the Sondelass's own room: the tide and the shoals)
   game.tracking = new Tracking(game);
   game.achievements = new Achievements(game);
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
@@ -404,7 +408,7 @@ async function main() {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
       weapon.update(dt, input, player);
-      player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding);
+      player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
 
     acc += dt;
@@ -501,6 +505,7 @@ async function main() {
     level.updateFeatures?.(dt, game);
     course.update(dt);
     game.circuits.update(dt);
+    game.weir.update(dt);
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);

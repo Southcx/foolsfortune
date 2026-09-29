@@ -23,6 +23,16 @@ function gatedInput(inp) {
   return g;
 }
 
+/** The input with every weapon control held up (a tool is out: see Techs.toolOut). */
+function deadInput(inp) {
+  const g = Object.create(inp);
+  const dead = (c) => c === 'Mouse0' || c === 'Mouse1' || c === 'Mouse2' || c === 'KeyX' || c === 'Minus' || /^Digit/.test(c);
+  g.wasPressed = (c) => (dead(c) ? false : inp.wasPressed(c));
+  g.isDown = (c) => (dead(c) ? false : inp.isDown(c));
+  g.wheel = 0;
+  return g;
+}
+
 export class Weapon {
   constructor(game) {
     this.game = game;
@@ -102,7 +112,9 @@ export class Weapon {
     if (blocked && rawInput.isDown('Mouse0')) this.fireGate = true;
     if (!rawInput.isDown('Mouse0')) this.fireGate = false;
     if (blocked && (this.holding || this.charge > 0)) this.cancelCharge(); // (picked something up mid-charge)
-    const input = blocked || this.fireGate ? gatedInput(rawInput) : rawInput;
+    const toolOut = !!player.techs?.toolOut; // (the Sondelass is out: the Psygun stays on the back, and the mouse is its)
+    if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); }
+    const input = toolOut ? deadInput(rawInput) : blocked || this.fireGate ? gatedInput(rawInput) : rawInput;
     this.updateHolster(dt, input, player);
     const wantAds = input.isDown('Mouse2') && !this.reloading && this.drawn;
     const step = dt / Math.max(0.01, W.adsTime);

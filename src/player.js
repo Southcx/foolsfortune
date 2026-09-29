@@ -167,7 +167,7 @@ export class Player {
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step
     if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
-    if (inp.wasPressed('KeyQ')) this.shoulder *= -1;
+    if (inp.wasPressed('KeyO')) this.shoulder *= -1; // (over-the-shoulder side; Q draws the Sondelass)
     for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG', 'KeyF', 'KeyV', 'Mouse0', 'KeyY']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
     // Sprint pressed while crouched is a dodge (the Roll art reads the latch)
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.latches.Dodge = 0.2;
@@ -699,8 +699,15 @@ export class Player {
     return hit && Math.abs(hit.normal.y) < 0.25 ? hit : null;
   }
 
+  /** In the water or at its surface (feet no more than a hand above it): nothing to run on. */
+  inWater() {
+    const v = this.game?.water?.at(this.pos.x, this.pos.y + 0.9, this.pos.z);
+    return !!v && this.pos.y < v.surface + 0.25;
+  }
+
   tryWallrun(hv) {
     const M = T.movement;
+    if (this.inWater()) return; // (no wallrunning underwater or at the surface)
     if (hlen(hv) < M.wallrunMinSpeed * 0.6) return;
     // too close to the ground to bother
     if (this.physics.raycast({ x: this.pos.x, y: this.pos.y + 0.1, z: this.pos.z }, { x: 0, y: -1, z: 0 }, M.wallrunMinHeight, this.collider, GROUPS.controllerQuery)) return;
@@ -743,7 +750,7 @@ export class Player {
     // gravity comes back in slowly
     const g = w.t < M.wallrunHold ? M.gravity * 0.3 : M.wallrunGravity;
     this.vel.y = Math.max(-M.wallrunMaxFall, this.vel.y - g * dt);
-    if (w.lost > 0.08 || w.t > M.wallrunMaxTime || iz <= 0) this.endWallrun(true);
+    if (w.lost > 0.08 || w.t > M.wallrunMaxTime || iz <= 0 || this.inWater()) this.endWallrun(true);
   }
 
   endWallrun(push) {

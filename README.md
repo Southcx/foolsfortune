@@ -39,7 +39,8 @@ npm run build      # static bundle in dist/
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
 | Z | toggle first / third person |
-| Q | swap shoulder (third person) |
+| Q | draw / stow the Sondelass (the Psygun goes away first); 1 / 2 / 3 while it is out: cutlass / rod / hook |
+| O | swap shoulder (third person) |
 | G | time trial (again to restart) |
 | R / H (basement) | back to the last checkpoint / to the hub |
 | T | reset the room |
@@ -88,6 +89,20 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 | Groove | a mirror-ball orb opens where it lands (9 s, 128 bpm): every clapperjar nearby dances and forgets what it was doing, pots and crates hop to the beat |
 | Anchor | pins one thing where it is, in mid-air if that's where it was: it turns solid and stays for 12 s (a crate becomes a step, a thrown ball hangs there, a critter is stuck) |
 | Hatch | a pot cracks open and a clapperjar climbs out, friendly (a helper that mends cracked pots); a clapperjar hit by it turns friendly. At most 5 helpers |
+
+## The Sondelass (Q)
+
+A telescoping instrument worn on the back, parallel to the Psygun, drawn the same way: **a fishing rod, a cutlass and a grapple hook**, and the first melee tool. It is a passive tech (`src/moves/sondelass.js`): you run, jump and slide with it out; it only owns the right arm and puts the Psygun away. **1 / 2 / 3** change form (the sections slide in and out); the mouse is the tool's while it is out.
+
+| Form | Controls |
+| --- | --- |
+| **Cutlass** | LMB a three-stroke combo (a buffered press inside the chain window continues it, the third is the overhead), RMB a lunge. The blade is swept along its length against pots and clapperjars during each stroke's hit window. |
+| **Hook** | LMB fires the grapnel along the aim (2 Lachryma). Solid ground draws you to it at 27 m/s (jump cuts the line and keeps the momentum; a ledge's lip mantles), something loose is yanked to you. RMB holds the arm out on the aim. |
+| **Rod** | Wheel picks the lure's **aspect** (dread, wonder, grief, hunger, mirth). Hold LMB to charge a cast, release to throw (it lands where the crosshair points, out as far as the charge allows). Then: tap LMB to twitch the lure; hold RMB to sink it; hold LMB to reel it home; middle click to **sound** (a psychic ping that lights up every entity in reach). |
+
+**Angling** (`src/angling/`) is played in **THE WEIR** (hub index, W): a vaulted hall of still water with a pier, a four-terrace basin, a 9.5 m well, a cutlass yard, hook rings on the ceiling beams, a tide lamp and the Tally board. The lure is the Courier's own mind projected (a ghost of her mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
+
+Prior art (also in the module headers): FFXIV (the graded bite, hook sets, tides as fishing windows, the Fish Guide, mooching), FFXI (fish stamina and its pull, arrows), Zelda: Twilight Princess (aim, cast, work the lure) and the Hookshot, Stardew Valley (the band), Red Dead 2 (reel, lean, give line), Dredge (what is in the water is wrong), Monster Hunter (form switching, the telegraphed hit), Animal Crossing (the shadow in the water). The animation is CC0: the Universal Animation Library's sword clips carry the tool with no IK (its socket is measured from the sword pose), and the cast is `Sword_Regular_C` held at its raised frame while a cast charges.
 
 ## The god hand (~)
 
@@ -501,6 +516,8 @@ runtime IK correction on the contact points.
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |
 | `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
+| `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
+| `src/angling/` | angling: species, fish meshes and minds, lure, line, fight, angler (the rod form), the Weir room, gauges |
 | `src/poles.js` | knee pole targets per animation state (gait, crouch, air, slide) |
 | `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (the Codex), `ledgerui.js` (its LEDGER and RECORDS shelves) |
 | `tools/stress.mjs`, `tools/stress.page.js` | the stress test (random-input fuzzing with invariants) |

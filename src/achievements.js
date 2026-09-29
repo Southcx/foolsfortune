@@ -20,6 +20,7 @@
 import { BY_ID, ABILITIES, GOD_ARTS } from './system/skills.js';
 import { SHELL_TYPES } from './shells.js';
 import { PROFILES } from './pottery.js';
+import { SPECIES, ASPECTS, TIDES } from './angling/species.js';
 import { T } from './config.js';
 import { sfx } from './audio.js';
 
@@ -30,6 +31,8 @@ export const CATS = [
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'surf', name: 'SURFING', subs: ['The Board', 'Tricks'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
+  { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
+  { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
@@ -221,6 +224,79 @@ export function buildAchievements(game) {
   C('tr4', 'circuit', 'The Trial', 4, 'speed', 'Trial Gold', `Finish the trial in ${T.trial.gold} s or less.`, 'trial.medal.gold', 1);
   C('tr5', 'circuit', 'The Trial', 3, 'mechanic', 'Double Tap', 'Score 10 quick doubles in the trial.', 'trial.quick', 10);
   S('tr6', 'circuit', 'The Trial', 5, 'Sub-Minute', 'Finish the trial in under 60 seconds.', 'trial.time', 60);
+
+  // ---------------------------------------------------------------- THE SONDELASS: the cutlass and the grapnel
+  C('cu1', 'sond', 'Cutlass', 1, 'count', 'A Swing', 'Swing the cutlass 50 times.', 'cut.swing', 50);
+  C('cu2', 'sond', 'Cutlass', 3, 'endure', 'Swordsmanship', 'Swing the cutlass 1,000 times.', 'cut.swing', 1000);
+  C('cu3', 'sond', 'Cutlass', 1, 'count', 'Cut Down', 'Cut 25 things with the cutlass.', 'cut.hit', 25);
+  C('cu4', 'sond', 'Cutlass', 3, 'endure', 'A Field of Stubble', 'Cut 500 things with the cutlass.', 'cut.hit', 500);
+  C('cu5', 'sond', 'Cutlass', 2, 'mechanic', 'Three-Stroke', 'Finish the three-stroke combination 25 times.', 'cut.combo', 25);
+  C('cu6', 'sond', 'Cutlass', 4, 'perfect', 'Unbroken String', 'Finish the three-stroke combination 200 times.', 'cut.combo', 200);
+  C('cu7', 'sond', 'Cutlass', 2, 'mechanic', 'Lunge', 'Use the lunge 25 times.', 'cut.heavy', 25);
+  C('cu8', 'sond', 'Cutlass', 3, 'mechanic', 'Clapperjar Bane, Blade', 'Cut down 25 clapperjars with the cutlass.', 'cut.hit.clapper', 25);
+  C('hk1', 'sond', 'Grapnel', 1, 'count', 'Bite and Pull', 'Throw the grapnel 25 times.', 'hook.fire', 25);
+  C('hk2', 'sond', 'Grapnel', 2, 'count', 'Drawn In', 'Be drawn to an anchor 25 times.', 'zip.arrive', 25);
+  C('hk3', 'sond', 'Grapnel', 4, 'endure', 'Spider', 'Be drawn to an anchor 250 times.', 'zip.arrive', 250);
+  C('hk4', 'sond', 'Grapnel', 3, 'endure', 'A Long Line', 'Travel 1 km on the grapnel line.', 'zip.dist', 1000, { unit: 'm' });
+  H('hk5', 'sond', 'Grapnel', 3, 'mechanic', 'Across the Hall', 'Be drawn 30 m by a single throw.', 'zip.longest', 30, { unit: 'm' });
+  C('hk6', 'sond', 'Grapnel', 2, 'count', 'Fetch', 'Yank 25 loose things toward you.', 'hook.pull', 25);
+  C('hk7', 'sond', 'Grapnel', 2, 'mechanic', 'Cut Loose', 'Let go of the line mid-pull 10 times.', 'zip.cancel', 10);
+
+  // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)
+  C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);
+  C('an2', 'angle', 'Casting', 2, 'count', 'Line and Mind', 'Cast the lure 100 times.', 'angle.cast', 100);
+  C('an3', 'angle', 'Casting', 4, 'endure', 'Caster', 'Cast the lure 1,000 times.', 'angle.cast', 1000);
+  H('an4', 'angle', 'Casting', 2, 'mechanic', 'Long Arm', 'Cast 18 m.', 'angle.cast.dist', 18, { unit: 'm' });
+  H('an5', 'angle', 'Casting', 3, 'mechanic', 'The Far Bank', 'Cast 28 m.', 'angle.cast.dist', 28, { unit: 'm' });
+  F('an6', 'angle', 'Casting', 2, 'collect', 'Every Mind', 'Cast the lure with every aspect.', (L) => ASPECTS.filter((a) => L.get(`angle.cast.${a.id}`) > 0).length, ASPECTS.length);
+  C('an7', 'angle', 'Casting', 1, 'count', 'Jig', 'Twitch the lure 25 times.', 'angle.twitch', 25);
+  C('an8', 'angle', 'Casting', 1, 'count', 'A Sounding', 'Sound the water 10 times.', 'angle.sound', 10);
+  C('an9', 'angle', 'Casting', 3, 'mechanic', 'Mooching', 'Cast with the echo of a landed fish 10 times.', 'angle.mooch', 10);
+  C('ab1', 'angle', 'The Bite', 1, 'count', 'Something Bit', 'Have a fish take the lure.', 'angle.bite', 1);
+  C('ab2', 'angle', 'The Bite', 2, 'endure', 'Patience', 'Feel 100 nibbles at the lure.', 'angle.nibble', 100);
+  C('ab3', 'angle', 'The Bite', 2, 'mechanic', 'A Gulp', 'Answer a gulp: the heaviest bite.', 'angle.bite.gulp', 1);
+  C('ab4', 'angle', 'The Bite', 3, 'perfect', 'Perfect Timing', 'Set the hook perfectly 10 times.', 'angle.hookset.perfect', 10);
+  C('ab5', 'angle', 'The Bite', 4, 'perfect', 'A Steady Hand', 'Set the hook perfectly 100 times.', 'angle.hookset.perfect', 100);
+  C('ab6', 'angle', 'The Bite', 1, 'count', 'Stripped Bare', 'Let a fish take the bait and get away.', 'angle.miss', 1, { hidden: true });
+  F('af1', 'angle', 'The Fight', 2, 'endure', 'Fighting Fit', 'Spend 5 minutes fighting fish.', (L) => L.get('fish.fight.time') / 60, 5, { unit: 'min' });
+  F('af2', 'angle', 'The Fight', 4, 'endure', 'An Hour on the Line', 'Spend an hour fighting fish.', (L) => L.get('fish.fight.time') / 3600, 1, { unit: 'h' });
+  H('af3', 'angle', 'The Fight', 3, 'endure', 'A Long Fight', 'Land a fish after 40 seconds.', 'fish.fight.longest', 40, { unit: 's' });
+  H('af4', 'angle', 'The Fight', 5, 'endure', 'Iron Line', 'Land a fish after 90 seconds.', 'fish.fight.longest', 90, { unit: 's' });
+  C('af5', 'angle', 'The Fight', 3, 'perfect', 'Clean Hands', 'Land 10 fish without the line ever nearing its limit or going slack.', 'fish.clean', 10);
+  C('af6', 'angle', 'The Fight', 2, 'mechanic', 'Stand Firm', 'Land 10 fish while braced (crouched).', 'fish.braced', 10);
+  C('af7', 'angle', 'The Fight', 3, 'mechanic', 'Ease Off', 'Ride out 25 thrashes and land the fish.', 'fish.thrashes', 25);
+  S('af8', 'angle', 'The Fight', 3, 'Quick Work', 'Land a fish in 8 seconds or less.', 'fish.fight.shortest', 8);
+  C('af9', 'angle', 'The Fight', 1, 'count', 'Snapped', 'Have the line snap.', 'angle.escape.snap', 1, { hidden: true });
+  C('af10', 'angle', 'The Fight', 2, 'count', 'Running on Empty', 'Lose the lure because the mind ran out.', 'angle.mindgone', 1, { hidden: true });
+  C('ac1', 'angle', 'The Catch', 1, 'count', 'First Fish', 'Land a fish.', 'fish.total', 1);
+  C('ac2', 'angle', 'The Catch', 1, 'count', 'A Handful', 'Land 10 fish.', 'fish.total', 10);
+  C('ac3', 'angle', 'The Catch', 2, 'count', 'A Good Day', 'Land 50 fish.', 'fish.total', 50);
+  C('ac4', 'angle', 'The Catch', 3, 'endure', 'Angler', 'Land 250 fish.', 'fish.total', 250);
+  C('ac5', 'angle', 'The Catch', 5, 'endure', 'The Weir Is Empty', 'Land 1,000 fish.', 'fish.total', 1000, { title: 'Angler' });
+  C('ac6', 'angle', 'The Catch', 3, 'mechanic', 'A Giant of Its Kind', 'Land a giant of its kind.', 'fish.cls.giant', 1);
+  C('ac7', 'angle', 'The Catch', 5, 'mechanic', 'Ten Giants', 'Land 10 giants of their kinds.', 'fish.cls.giant', 10);
+  H('ac8', 'angle', 'The Catch', 3, 'mechanic', 'Longer Than a Pole', 'Land something 150 cm long.', 'fish.cm.max', 150, { unit: 'cm' });
+  H('ac9', 'angle', 'The Catch', 5, 'mechanic', 'Longer Than a Boat', 'Land something 250 cm long.', 'fish.cm.max', 250, { unit: 'cm' });
+  F('ac10', 'angle', 'The Catch', 3, 'collect', 'Every Tide', 'Land a fish in every tide.', (L) => TIDES.filter((t) => L.get(`fish.tide.${t.id}`) > 0).length, TIDES.length);
+  F('ac11', 'angle', 'The Catch', 3, 'collect', 'Every Aspect', 'Land a fish on every aspect.', (L) => ASPECTS.filter((a) => L.get(`fish.aspect.${a.id}`) > 0).length, ASPECTS.length);
+  C('ac12', 'angle', 'The Catch', 2, 'count', 'Given Back', 'Take 500 lachryma from what you have landed.', 'fish.lachryma', 500);
+  H('ac13', 'angle', 'The Catch', 2, 'mechanic', 'The Deep End', 'Land a fish from 4 m down.', 'fish.depth.max', 4, { unit: 'm' });
+  const nSp = SPECIES.length;
+  F('be1', 'angle', 'Bestiary', 2, 'collect', 'Field Notes', 'Land 5 different kinds.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, 5);
+  F('be2', 'angle', 'Bestiary', 4, 'collect', 'A Working Bestiary', 'Land 9 different kinds.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, nSp - 1);
+  F('be3', 'angle', 'Bestiary', 6, 'collect', 'Naturalist', 'Land every kind.', (L) => SPECIES.filter((s) => L.get(`fish.sp.${s.id}`) > 0).length, nSp, { title: 'Naturalist' });
+  for (const sp of SPECIES) {
+    const t = Math.min(6, sp.tier);
+    C(`sp_${sp.id}_1`, 'angle', 'Bestiary', t, 'collect', sp.name, `Land ${sp.legend ? sp.name : `a ${sp.name}`}.`, `fish.sp.${sp.id}`, 1, { hidden: t >= 4 });
+    if (!sp.legend) {
+      const big = Math.round(sp.size[0] + (sp.size[1] - sp.size[0]) * 0.85);
+      H(`sp_${sp.id}_2`, 'angle', 'Bestiary', Math.min(6, t + 1), 'mechanic', `A Large ${sp.name.replace(/^The /, '')}`, `Land ${sp.name.match(/^[AEIOU]/i) ? 'an' : 'a'} ${sp.name} of ${big} cm or more.`, `fish.cm.${sp.id}`, big, { unit: 'cm' });
+      if (t <= 2) C(`sp_${sp.id}_3`, 'angle', 'Bestiary', t + 1, 'endure', `${sp.name}, Often`, `Land ${sp.name} 15 times.`, `fish.sp.${sp.id}`, 15);
+    }
+  }
+  C('dp1', 'angle', 'The Deep', 4, 'mechanic', 'Something Vast', 'See the deep thing breach.', 'angle.breach', 1, { hidden: true });
+  C('dp2', 'angle', 'The Deep', 6, 'endure', 'The Drowned Lachryma', 'Land the Drowned Lachryma.', 'fish.legend', 1, { hidden: true, title: 'Drowned King' });
+  C('dp3', 'angle', 'The Deep', 3, 'count', 'Tides Turned', 'Watch the tide turn 20 times.', 'angle.tide', 20);
 
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);

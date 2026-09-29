@@ -659,7 +659,7 @@ export class Character {
     // ---- feet: stride warping and ground contact ----
     const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw) * (1 - sl); // (a slide lies along the slope instead)
     st.pole = kneeProfile({ air, sl, cr });
-    if (!unit) this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW); // (on a skiff the feet are where the clip puts them)
+    if (!unit && !s.techs?.legsOwn) this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW); // (on a skiff the feet are where the clip puts them)
 
     s.techs?.afterPose(this, s);
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);
@@ -775,7 +775,8 @@ export class Character {
     const toT = new THREE.Vector3().subVectors(target, S);
     let d = toT.length();
     const dir = toT.divideScalar(d || 1);
-    d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, a + b - 1e-3);
+    // (never fully straight: a limb at its full length has no bend direction, and hyperextends or flips on the next frame)
+    d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, (a + b) * 0.99);
     const x = (a * a - b * b + d * d) / (2 * d);
     const h = Math.sqrt(Math.max(0, a * a - x * x));
     const pv = new THREE.Vector3().subVectors(pole, S);

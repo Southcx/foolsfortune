@@ -120,12 +120,16 @@ export class Techs {
     for (const t of this.list) if (t.w > 0 && t.afterPose) t.afterPose(ch, s);
   }
   hands(ch, o) {
-    for (const t of this.list) if (t.w > 0 && t.hands) t.hands(ch, o);
+    for (const t of this.list) if ((t.w > 0 || t.alwaysHands) && t.hands) t.hands(ch, o); // (the Sondelass wants it always: it rides the back)
   }
   camera(fp, pivot, dt) {
     for (const t of this.list) if (t.camera) t.camera(fp, pivot, dt);
   }
   /** The fire button belongs to something else for now (a throw): the weapon ignores it. */
+  /** A tool (the Sondelass) is out: the Psygun stays away and ignores the mouse. */
+  get toolOut() { return this.list.some((t) => t.toolOut); }
+  /** Something wants the body turned to the aim (a swing, a cast, a fight). */
+  get stance() { return this.list.some((t) => t.stance); }
   get fireBlocked() { return !!this.active?.blocksFire || this.list.some((t) => t.passive && t.blocksFire); }
   /** How the aim layer behaves during the active tech ({ arm: 'R'|'L'|null, turn: 0..1 }), or null for the full-body aim. */
   aimProfile() { return this.active?.aim || null; }
@@ -146,9 +150,11 @@ export class Techs {
     return null;
   }
   /** Slower while carrying something, and no sprint (from the passive techs). */
-  get speedMult() { let m = 1; for (const t of this.list) if (t.passive && t.speedMult) m *= t.speedMult; return m; }
+  get speedMult() { let m = 1; for (const t of this.list) if (t.passive && t.speedMult) m *= t.speedMult; for (const t of this.list) if (t.slow) m *= t.slow; return m; }
   get noSprint() { return this.list.some((t) => t.passive && t.noSprint); }
   /** How much of the core body animation is replaced (0 = none). */
+  /** A tech that keeps the animated legs as they are (swimming: no foot IK, which bends a straight leg either way). */
+  get legsOwn() { return this.list.some((t) => t.keepsLegs && t.w > 0.05); }
   get override() { let m = 0; for (const t of this.list) m = Math.max(m, t.w * (t.overrides || 0)); return m; }
   reset() { if (this.active) this.stop(); for (const t of this.list) t.reset?.(); }
 }

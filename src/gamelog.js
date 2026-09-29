@@ -19,39 +19,40 @@
 //   PageUp / PageDown scroll, End jumps to the newest, [ and ] change tab.
 // ---------------------------------------------------------------------------------------
 export const CLASSES = {
-  system: { color: '#cdd8ff', tab: 'SYSTEM' },
-  info: { color: '#ffffff', tab: 'SYSTEM' },
-  warn: { color: '#ff9c9c', tab: 'SYSTEM' },
-  move: { color: '#b9f1ff', tab: 'MOVE' },
-  surf: { color: '#a9f2e2', tab: 'MOVE' },
-  battle: { color: '#ffffff', tab: 'BATTLE' },
-  hurt: { color: '#ff9a9a', tab: 'BATTLE' },
-  gain: { color: '#ffe98a', tab: 'BATTLE' },
-  art: { color: '#a3c4ff', tab: 'EVENT' },
-  god: { color: '#e5b8ff', tab: 'EVENT' },
-  circuit: { color: '#ffd07f', tab: 'EVENT' },
-  explore: { color: '#bdffb5', tab: 'EVENT' },
-  record: { color: '#9df0ff', tab: 'EVENT' },
+  system: { color: '#ead9c6', tab: 'SYSTEM' },
+  info: { color: '#fff1e0', tab: 'SYSTEM' },
+  warn: { color: '#ff9f80', tab: 'SYSTEM' },
+  move: { color: '#e9c9a2', tab: 'MOVE' },
+  surf: { color: '#a9d6bd', tab: 'MOVE' },
+  battle: { color: '#fff1e0', tab: 'BATTLE' },
+  hurt: { color: '#ff8f7d', tab: 'BATTLE' },
+  gain: { color: '#ffd67e', tab: 'BATTLE' },
+  art: { color: '#d3bde0', tab: 'EVENT' },
+  god: { color: '#e2adc9', tab: 'EVENT' },
+  circuit: { color: '#ffb87c', tab: 'EVENT' },
+  explore: { color: '#c4d9a0', tab: 'EVENT' },
+  record: { color: '#a8d3c9', tab: 'EVENT' },
   ach: { color: '#ffd45e', tab: 'EVENT' },
+  angle: { color: '#9fd3d6', tab: 'BATTLE' },
 };
 const TABS = ['ALL', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
 
 const CSS = `
 #chatlog { position: absolute; left: 12px; bottom: 12px; width: min(40vw, 580px); height: clamp(150px, 23vh, 260px); box-sizing: border-box; display: flex; flex-direction: column;
-  background: linear-gradient(180deg, rgba(22,29,68,.80), rgba(9,12,34,.88)); border: 2px solid #8d96c8; border-radius: 4px;
-  box-shadow: inset 0 0 0 1px #2b3468, inset 0 0 18px rgba(0,0,10,.5), 0 0 0 1px #05071a; pointer-events: none; transition: opacity .6s;
+  background: linear-gradient(180deg, rgba(70,34,23,.80), rgba(36,17,11,.90)); border: 2px solid #b3735a; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #5d3123, inset 0 0 18px rgba(20,6,2,.55), 0 0 0 1px #1c0d08; pointer-events: none; transition: opacity .6s;
   font-family: "Lucida Grande", "Segoe UI", "DejaVu Sans", Arial, sans-serif; letter-spacing: 0; }
 #chatlog.idle { opacity: .5; }
-#chatlog .tabs { display: flex; gap: 2px; padding: 3px 4px 0; border-bottom: 1px solid #38427a; font-size: 10.5px; letter-spacing: .08em; }
-#chatlog .tab { padding: 2px 8px 3px; color: #8f99cc; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; text-shadow: 1px 1px 0 #000; }
-#chatlog .tab.on { color: #fff; background: rgba(90,104,190,.35); border-color: #59639f; }
-#chatlog .tab.new { color: #ffe98a; }
-#chatlog .tab.on.new { color: #fff; }
-#chatlog .body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 5px; font-size: 12.5px; line-height: 1.34; scrollbar-width: thin; scrollbar-color: #59639f transparent; }
+#chatlog .tabs { display: flex; gap: 2px; padding: 3px 4px 0; border-bottom: 1px solid #6a3a2a; font-size: 10.5px; letter-spacing: .08em; }
+#chatlog .tab { padding: 2px 8px 3px; color: #b58f7a; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; text-shadow: 1px 1px 0 #000; }
+#chatlog .tab.on { color: #fff1e0; background: rgba(196,106,69,.30); border-color: #9a5a44; }
+#chatlog .tab.new { color: #ffd67e; }
+#chatlog .tab.on.new { color: #fff1e0; }
+#chatlog .body { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 5px; font-size: 12.5px; line-height: 1.34; scrollbar-width: thin; scrollbar-color: #9a5a44 transparent; }
 #chatlog .ln { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,.6); word-wrap: break-word; }
-#chatlog .ts { color: #7f89c0; font-size: 10.5px; margin-right: 6px; }
+#chatlog .ts { color: #a98572; font-size: 10.5px; margin-right: 6px; }
 #chatlog .ln.ach { font-weight: bold; }
-#chatlog .foot { padding: 1px 8px 2px; font-size: 9.5px; color: #6f79b0; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
+#chatlog .foot { padding: 1px 8px 2px; font-size: 9.5px; color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
 `;
 
 const pad = (n) => String(n).padStart(2, '0');

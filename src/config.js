@@ -278,6 +278,8 @@ export const DEFAULTS = {
     balance: { enabled: true, speed: 1.9, trot: 3.4, step: 0.8, drift: 0.12, trotDrift: 0.5 }, // walk onto a beam
     carry: { enabled: true, reach: 1.15, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // F at a small thing: hoist it; fire throws
     push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold F at a heavy crate
+    sondelass: { enabled: true }, // Q: the telescoping rod / cutlass / grapnel (src/moves/sondelass.js)
+    zip: { speed: 27, accel: 90, stop: 1.5 }, // the pull of the grapnel (src/moves/zip.js)
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
     surfer: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Surfer, in the dunes: Y stows / summons
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air

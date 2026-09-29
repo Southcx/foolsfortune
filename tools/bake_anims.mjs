@@ -38,6 +38,11 @@ const WANT = {
   // hands and bodies: carrying, pushing, throwing, blocking, knocked back
   Push_Loop: 'push', OverhandThrow: 'throw', PickUp_Table: 'pickup', Walk_Carry_Loop: 'carryWalk', Sword_Block: 'block',
   Interact: 'interact', Hit_Knockback: 'knockback', Punch_Cross: 'punchCross', Melee_Hook: 'meleeHook', Idle_Rail_Loop: 'railIdle',
+  // the Sondelass: a cutlass (Sword_*), and the overhand cast, the ready stance and the exits it borrows for the rod
+  Sword_Idle: 'swordIdle', Sword_Attack: 'swordAtk', Sword_Regular_A: 'swordA', Sword_Regular_B: 'swordB', Sword_Regular_C: 'swordC',
+  Sword_Heavy_Combo: 'swordHeavy', Sword_Dash: 'swordDash', Sword_Regular_A_Rec: 'swordARec', Sword_Regular_B_Rec: 'swordBRec',
+  Spell_Simple_Enter: 'castEnter', Spell_Simple_Idle_Loop: 'castIdle', Spell_Simple_Shoot: 'castShoot', Spell_Simple_Exit: 'castExit',
+  Idle_Torch_Loop: 'torchIdle', Punch_Jab: 'punchJab', Consume: 'consume', Farm_Watering: 'watering', Hit_Chest: 'hitChest',
   Crouch_Idle_Loop_: 'unused',
 };
 

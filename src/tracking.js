@@ -25,6 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import { sfx } from './audio.js';
 import { BY_ID } from './system/skills.js';
+import { BY_SPECIES, ASPECTS } from './angling/species.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
@@ -244,6 +245,89 @@ export class Tracking {
       log.say('circuit', `Trial complete: ${clock(e.time)}${m ? ` (${m})` : ''}${e.pb || r === 'beat' ? '. A new personal best!' : '.'}`);
     });
 
+
+    // ---- the Sondelass: the tool, the cutlass, the grapnel (src/moves/sondelass.js)
+    on('sondelass.draw', () => { L.inc('sondelass.draw'); log.say('info', 'You draw the Sondelass.', { key: 'sdraw', throttle: 2 }); });
+    on('sondelass.stow', () => L.inc('sondelass.stow'));
+    on('sondelass.form', (e) => {
+      L.inc(`sondelass.form.${e.form}`);
+      log.say('info', e.form === 'rod' ? 'The Sondelass telescopes out into a rod.' : e.form === 'hook' ? 'The Sondelass shortens, and a grapnel seats at its tip.' : 'The Sondelass draws in, and a blade slides from its tip.', { key: 'sform', throttle: 0.6 });
+      first(`sondelass.${e.form}`, `Logged: your first time using the Sondelass as a ${e.form === 'hook' ? 'grapnel' : e.form}.`);
+    });
+    on('cut.swing', (e) => { L.inc('cut.swing'); if (e.n >= 2) { L.inc('cut.combo'); log.say('battle', 'You finish a three-stroke combination.', { key: 'combo', throttle: 1.5 }); } });
+    on('cut.heavy', () => { L.inc('cut.heavy'); L.inc('cut.swing'); });
+    on('cut.hit', (e) => {
+      L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
+      const w = e.what === 'clapper' ? 'clapperjar' : 'pot';
+      log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
+    });
+    on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });
+    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You yank the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} toward you.`, { key: 'hpull', win: 1.2 }); });
+    on('zip.start', (e) => { L.inc('zip.start'); L.inc('zip.dist', e.dist); L.hi('zip.longest', e.dist); });
+    on('zip.end', (e) => {
+      L.inc(`zip.${e.how}`);
+      if (e.how === 'arrive') log.say('move', 'The line draws you to the anchor.', { key: 'zip', throttle: 1.5 });
+      else log.say('move', 'You cut the line and let go.', { key: 'zip', throttle: 1.5 });
+    });
+
+    // ---- angling (src/angling/): the counts, and the FFXI/FFXIV-style lines of a fishing log
+    const asp = (id) => ASPECTS.find((a) => a.id === id)?.name.toLowerCase() || id;
+    on('angle.charge', () => L.inc('angle.charge'));
+    on('angle.cast', (e) => {
+      L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); L.hi('angle.cast.dist', e.dist, { at: this.where() });
+      log.say('angle', e.water ? `You cast your lure. It carries a mask of ${asp(e.aspect)}.` : 'You cast your lure. It lands on dry ground.', { key: 'cast', throttle: 0.5 });
+    });
+    on('lure.land', (e) => L.inc(e.water ? 'lure.land.water' : 'lure.land.ground'));
+    on('angle.retrieve', () => { L.inc('angle.retrieve'); log.say('angle', 'You reel in the lure.', { key: 'ret', throttle: 1 }); });
+    on('angle.twitch', () => { L.inc('angle.twitch'); log.say('angle', 'You twitch the lure.', { key: 'twitch', win: 4, fmt: (n) => `You twitch the lure (×${n}).` }); });
+    on('angle.sound', () => { L.inc('angle.sound'); log.say('angle', 'You send a sounding into the water.', { key: 'sound', throttle: 2 }); });
+    on('angle.nibble', (e) => { L.inc('angle.nibble'); log.say('angle', 'Something nibbles at the lure.', { key: 'nib', win: 5, fmt: () => 'Something nibbles at the lure.' }); });
+    on('angle.bite', (e) => {
+      L.inc('angle.bite'); L.inc(`angle.bite.${e.kind}`);
+      log.say('angle', e.kind === 'gulp' ? 'Something takes the lure!!!' : e.kind === 'tug' ? 'Something tugs at your line!!' : 'You feel a light tug!');
+    });
+    on('angle.hookset', (e) => {
+      L.inc('angle.hookset'); L.inc(`angle.hookset.${e.quality}`);
+      log.say('angle', e.quality === 'perfect' ? 'You set the hook perfectly!' : e.quality === 'early' ? 'You set the hook, a little early.' : 'You set the hook, just in time.');
+    });
+    on('angle.miss', () => { L.inc('angle.miss'); log.say('warn', 'The lure comes away bare. Whatever it was has gone.'); });
+    on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Ease off!', { key: 'awarn', throttle: 4 }));
+    on('angle.thrash', () => L.inc('angle.thrash'));
+    on('angle.bolt', () => { L.inc('angle.bolt'); log.say('angle', 'It bolts at the last moment!', { key: 'bolt', throttle: 3 }); });
+    on('angle.breach', () => { L.inc('angle.breach'); log.say('god', 'The water tears open: something enormous breaches!', { key: 'breach', throttle: 4 }); });
+    on('angle.spent', () => log.say('angle', 'It has stopped fighting.', { key: 'spent', throttle: 3 }));
+    on('angle.mindgone', () => { L.inc('angle.mindgone'); log.say('warn', 'Your mind slips from the lure. The line goes slack.'); });
+    on('angle.escape', (e) => {
+      L.inc('angle.escape'); L.inc(`angle.escape.${e.why}`);
+      if (e.species) L.inc(`fish.lost.${e.species}`);
+      if (e.why === 'snap') log.say('hurt', 'The line snaps!');
+      else if (e.why === 'spool') log.say('hurt', 'The line runs out and parts!');
+      else if (e.why === 'slip') log.say('warn', 'The hook slips free. It is gone.');
+      else if (e.why === 'stow') log.say('warn', 'You put the rod away. The line goes slack.');
+      if (e.dur > 25) L.hi('fish.fight.longestlost', e.dur);
+    });
+    on('angle.catch', (e) => {
+      const sp = BY_SPECIES[e.species];
+      L.inc('fish.total'); L.inc(`fish.sp.${e.species}`); L.inc(`fish.cls.${e.cls}`); L.inc(`fish.aspect.${e.aspect}`); L.inc(`fish.tide.${e.tide}`); L.inc(`fish.hookset.${e.quality}`);
+      L.inc('fish.kg', e.kg); L.inc('fish.cm', e.cm); L.inc('fish.fight.time', e.dur); L.inc(`fish.tier.${sp.tier}`);
+      if (e.brace) L.inc('fish.braced'); if (e.peak < 0.9 && e.slackMax < 0.6) L.inc('fish.clean'); if (e.gave < 0.05) L.inc('fish.nogive');
+      if (e.thrashes) L.inc('fish.thrashes', e.thrashes); if (e.legend) L.inc('fish.legend');
+      const r = L.hi(`fish.cm.${e.species}`, e.cm, { at: e.tide }); L.hi(`fish.kg.${e.species}`, e.kg);
+      L.hi('fish.fight.longest', e.dur); L.lo('fish.fight.shortest', e.dur); L.hi('fish.depth.max', e.depth); L.hi('fish.kg.max', e.kg); L.hi('fish.cm.max', e.cm);
+      const cm = e.cm >= 100 ? `${(e.cm / 100).toFixed(2)} m` : `${e.cm.toFixed(1)} cm`;
+      const art = sp.name.startsWith('The ') ? '' : /^[AEIOU]/i.test(sp.name) ? 'an ' : 'a ';
+      log.say('angle', `You land ${art}${sp.name}! (${cm}, ${e.kg.toFixed(2)} kg)`);
+      if (e.cls === 'giant') log.say('angle', `It is a giant of its kind.`);
+      else if (e.cls === 'large') log.say('angle', `A fine, large one.`);
+      if (e.first) log.say('record', `Logged: your first ${sp.name}. ${sp.blurb}`);
+      else if (r === 'beat' || r === 'small') log.say('record', `A new record for the ${sp.name}: ${cm}.`);
+      if (e.legend) log.say('god', 'The Drowned Lachryma comes apart in your hands, and the workshop is a little quieter.');
+    });
+    on('angle.mooch', (e) => { L.inc('angle.mooch'); L.inc(`angle.mooch.${e.echo}`); log.say('angle', `The lure carries an echo of ${BY_SPECIES[e.echo].name}.`); });
+    on('angle.landed', (e) => L.inc('fish.lachryma', e.baubles));
+    on('angle.tide', (e) => { L.inc('angle.tide'); L.inc(`angle.tide.${e.phase}`); if (e.near) log.say('angle', `The tide is ${e.phase === 'low' ? 'at its lowest' : e.phase === 'high' ? 'at the full' : e.phase}.`); });
+    on('angle.legend', () => log.say('god', 'Something vast turns over in the Well.'));
+
     // ---- the System: what has been learned
     on('system.unlock', (e) => {
       if (g.system?.lab) return; // (Lab mode has everything: nothing to say)
@@ -289,6 +373,8 @@ export class Tracking {
     if (g.god?.controlling) L.inc('time.god', dt);
     if (g.techs?.active?.id === 'surfer') L.inc('time.surf', dt);
     if (g.circuits?.active) L.inc('time.circuit', dt);
+    const so = g.techs?.get('sondelass');
+    if (so?.toolOut) { L.inc('time.sondelass', dt); if (so.form === 'rod') L.inc('time.rod', dt); if (so.angler?.state && so.angler.state !== 'idle') L.inc('time.angling', dt); if (so.angler?.state === 'fight') L.inc('time.fight', dt); }
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
     // distance and speed (a jump of more than a few metres in a frame is a teleport, not travel)
@@ -303,7 +389,7 @@ export class Tracking {
       }
       (this.prev ||= at.clone()).copy(at);
       const sp = Math.hypot(P.vel.x, P.vel.z);
-      if (sp > 5 && (s !== 'surfer' && !P.platform)) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
+      if (sp > 5 && s !== 'surfer' && s !== 'zip' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
       L.hi('speed.any.max', Math.hypot(P.vel.x, P.vel.z, P.vel.y));
     } else this.prev = null;
 
