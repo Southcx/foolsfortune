@@ -40,7 +40,11 @@ export class Clappers {
     this.ctrl.setCharacterMass(8);
     this.ctrl.enableSnapToGround(0.2);
     this.ctrl.enableAutostep(0.12, 0.1, false);
-    this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.potLight, roughness: 0.75, flatShading: true });
+    // the Courier's terracotta (her armour's colour); each clapper gets its own copy so a fresh one
+    // can glow from the kiln and cool
+    this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true });
+    this.hot = new THREE.Color(0xffe2a0); // white-hot clay
+    this.ember = new THREE.Color(0xff5a14);
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });
     this.starMat = new THREE.MeshBasicMaterial({ color: PALETTE.hot });
     this.clips = Object.fromEntries(gltf.animations.map((c) => [c.name.replace('clapper_', ''), c]));
@@ -67,8 +71,9 @@ export class Clappers {
     const model = cloneSkinned(this.gltf.scene);
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
+    const mat = this.mat.clone();
     for (const o of meshes) {
-      o.material = this.mat;
+      o.material = mat;
       o.castShadow = true;
       o.frustumCulled = false;
       addOutline(o);
@@ -112,7 +117,7 @@ export class Clappers {
     const col = w.createCollider(RAPIER.ColliderDesc.capsule(HALF * s, RADIUS * s).setCollisionGroups(CLAPPER_GROUPS), body);
     const f = this.floors[floor];
     const c = {
-      type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars,
+      type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars, mat, cool: fromKiln ? 1 : 0,
       headInv: restInv(bones.head), bodyInv: restInv(bones.body),
       armInv: { L: restInv(bones.armL), R: restInv(bones.armR), fL: restInv(bones.foreL), fR: restInv(bones.foreR) }, idleT: 0, twirl: 0,
       floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : Math.random() * Math.PI * 2,
@@ -474,6 +479,14 @@ export class Clappers {
     for (const c of this.list) {
       if (!c.alive) continue;
       c.t += dt;
+      // fresh from the kiln: white-hot, then a glowing orange, then terracotta (about 7 s)
+      if (c.cool > 0) {
+        c.cool = Math.max(0, c.cool - dt / 7);
+        const k = c.cool * c.cool;
+        c.mat.color.copy(this.mat.color).lerp(this.hot, Math.min(1, c.cool * 1.3) * 0.75);
+        c.mat.emissive.copy(this.ember).multiplyScalar(k);
+        c.mat.emissiveIntensity = 1.4;
+      }
       const moving = c.speed > 0.8 || c.state === 'scalded';
       if (c.state === 'stumble') this.play(c, 'stumble', 0.08);
       else if (c.state === 'knocked' || c.pulledT > 0) { this.play(c, 'sprint', 0.08); c.actions.sprint.timeScale = 2.4; }
@@ -639,7 +652,7 @@ export class Clappers {
     const P = prepProfile('clapper', s);
     const rot = new THREE.Quaternion().setFromAxisAngle(UP, c.heading);
     const vel = new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)).multiplyScalar(c.speed).add(c.kv);
-    game.breakables.burst(P, new THREE.Color(PALETTE.potLight), c.pos.clone(), rot, vel, new THREE.Vector3(), point, dir, power * 1.2, P.fullHeight);
+    game.breakables.burst(P, new THREE.Color(PALETTE.mid), c.pos.clone(), rot, vel, new THREE.Vector3(), point, dir, power * 1.2, P.fullHeight);
     // the juicy part: Lachryma baubles
     const n = Math.round((T.lachryma.clapperDrop + c.stash) * (c.marked || c.state === 'stunned' ? 2 : 1));
     game.baubles?.spawn(c.pos.clone().setY(c.pos.y + 0.35), n);

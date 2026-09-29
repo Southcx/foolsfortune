@@ -19,8 +19,8 @@
   const mulberry = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const G = () => window.__game;
 
-  const KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'KeyC', 'AltLeft'];
-  const TAPS = ['Space', 'Space', 'Space', 'KeyE', 'KeyC', 'ShiftLeft'];
+  const KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'KeyC', 'AltLeft', 'KeyZ'];
+  const TAPS = ['Space', 'Space', 'Space', 'KeyE', 'KeyC', 'ShiftLeft', 'KeyZ', 'KeyZ'];
 
   function starts(g) {
     const B = -14;
@@ -92,6 +92,7 @@
         if (rnd() < 0.5) held.add('ShiftLeft');
         if (rnd() < 0.18) held.add('KeyC');
         if (rnd() < 0.06) held.add('AltLeft');
+        if (rnd() < 0.08) held.add('KeyZ'); // (hold Z: a push / pull if there is a crate)
       }
       let tapKey = null;
       if ((tapT -= 1) <= 0) { tapT = 3 + Math.floor(rnd() * 30); tapKey = TAPS[Math.floor(rnd() * TAPS.length)]; inp.pressed.add(tapKey); inp.down.add(tapKey); }

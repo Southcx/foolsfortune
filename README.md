@@ -24,8 +24,10 @@ npm run build      # static bundle in dist/
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
+| Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a hard landing) |
+| Z | pick up something small (hoisted overhead: fire throws, Z sets down) · hold Z at a heavy crate: W push, S pull · on the run, or with nothing in reach: kick (parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
-| B | the System's Codex: belt, variants, Lab mode, save code (pauses the game) |
+| B | the System's Codex: Movement Arts, variants, Lab mode, save code (pauses the game) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
@@ -155,20 +157,31 @@ hooks (an active tech owns the fixed step; landing events; its own pose layer an
 Switching one off gives back the core exactly; the measured metrics above are identical with
 every tech on or off. Techs start in priority order and only one is active at a time.
 
-Most techs are *abilities* you learn (see **The System**); swim and ladders are body moves that
-come with a humanoid. In **Lab mode** (Codex, B) every ability is unlocked and on the belt: that's
-what the tech lab and the torture bot use.
+Some techs are *Movement Arts* you learn (see **The System**); the body moves (swim, ladders,
+hanging, poles and ropes, grates, balance, carrying, pushing) come with a humanoid. In **Lab mode**
+(Codex, B; the default while it's just us testing) every art is unlocked: that's what the tech
+lab and the torture bot use. Techs are *active* (one owns the movement step at a time) or
+*passive* (carry, kick, recoil: they run beside whatever else is going on).
 
 | Tech | Input | What it does |
 | --- | --- | --- |
 | Blink | E | a near-instant 5.5 m dodge along the move keys (or the view), sliding along anything in the way; leaves an afterimage, comes out with your momentum pointed where you blinked; 2 charges |
 | Slam | C in the air, looking down, 1.8 m+ up | straight down; the landing breaks pots nearby and throws the rest (and clapperjars). Then Space: slam jump, higher the further you fell (about 2 m from 5 m); hold C with a direction: slam slide, the fall turned into speed. (Looking ahead, C in the air stays the core's landing slide) |
 | Stomp | land on a pot or a clapperjar | it breaks under you and throws you up (+1.66 m), air jump refilled |
-| Roll | hold C into a hard landing (from about 4 m) | roll out of it with the fall turned into forward speed (above slide speed the core slides instead) |
+| Roll | Shift while crouched; automatic out of a hard landing (about 9 m/s) | a low dash the way you steer (or face) with invulnerability frames at the start (`player.invuln`, ready for a damage system); out of a fall it also mitigates the landing and turns the fall into forward speed (above slide speed the core slides instead). Space out of the second half keeps the speed |
 | Wall climb | jump into a wall head-on, W held | run up it for half a second; a ledge in reach is a mantle (4 m walls from the ground); Space kicks off. Off the ground only: after a wallrun the core's wall moves own the air |
 | Slip dive | hold C on slip | melt into liquid clay: a fast blob (10 m/s) through slip, crawling off it; climbs slip-coated walls, fits through 0.8 m gaps, Space launches out (higher than a jump, keeping the speed), let go of C to stand. Lachryma soaks back in meanwhile. The SLIP shell (8) paints floors and walls wet; burst slip barrels leave puddles |
 | Swim | deep water | float with your head out and paddle (Shift faster); C dives and you swim where you look; Space rises, and at the surface hops out; swim into an edge to climb out |
-| Ladder | walk (or jump) into one | W / S climb (Shift faster), C slides down, Space kicks off, climbing past the top steps off; every hand and foot holds a rung (IK) and moves up two when the body has passed it |
+| Ladder | walk (or jump) into one | W / S climb (Shift faster), C slides down, Space kicks off, climbing past the top steps off; the limbs climb contralateral (right hand with left foot, a rung apart) and each hops two rungs when the body has passed it. The gun stays out at a walk (one hand climbs, one shoots); a fast climb or a slide stows it |
+| Hang | jump at a ledge 1.9-2.95 m up with W held; jump at an overhead bar or cable | both hands catch it and you dangle (the gun hand stays on the gun: aim and fire). A / D shimmy along a ledge, W pulls up onto it, Space kicks off, C drops. On a bar, W / S go hand over hand and Space swings you on (a 2.6 m gap is a swing-jump). A slanted cable is a **zipline**: it runs you down, hanging, and lets go at the end |
+| Wall latch | C in the air beside a wall (not looking down) | cling by the feet and one hand (the other free for the gun), WASD crawl along it, Space kicks off, over the top is a mantle. 2.2 s a jump, then you slide; the time comes back on the ground |
+| Pole / rope | walk (or jump) into one | arms and legs round it: W / S climb (Shift faster), A / D swing round a pole, C slides, Space jumps off. A rope hangs from its top and sways with you |
+| Grate | walk into a grate wall; jump up under a grate ceiling | any direction, for as long as you like. W / S / A / D on a wall; up under a roof it meets, W carries you on out under it (until you look elsewhere), then WASD crawls where you look; the roof's edge lets go. C drops, Space kicks off a wall or hops off a roof |
+| Balance | walk onto a beam | a careful step (1.9 m/s) with your arms out, settling on the middle by itself; Shift is a trot that wobbles you off it and takes steering back. The beam is as wide as your boots (0.3 m and 0.2 m in the lab) |
+| Carry | Z at something small (pots, crates up to 0.9 m) | Zelda-style: a crouch and both hands under it, hoisted over your head (0.55 s), then 72% speed, no sprint, no gun. Fire throws it along where you look (pots shatter where they land, targets ring); Z sets it down |
+| Push / pull | hold Z at a heavy crate (over 0.9 m) | take hold and slide it along the way you face: W pushes, S pulls. It can't turn; a wall stops it and lets go if it gets away |
+| Kick / parry | Z on the run, or with nothing to lift | a leg swing that knocks pots (and cracks them), crates, clapperjars, and rings targets. The first 0.25 s is also a parry: kick a projectile coming at you and it goes back where you look (with a little help toward a target), and you are invulnerable for a beat |
+| Recoil jump | shoot down (steeper than ~20°) in the air | the gun's kick is real: up and back the way the barrel points, three shots a jump (a charged shot counts two), back on the ground; costs what a shot costs |
 
 **The tech lab** is through room 1's south door (or the LAB pad in the hub's index): a
 station per tech, each with a checkpoint (T1-T6, R returns to it) and an index of pads by
@@ -176,6 +189,19 @@ the door. The pool (4.5 m deep, a 5 m dive tower, a wall to swim under, a ladder
 8 m ladder towers (the 8 m one is the slam / roll platform over a field of pots), the slip
 lane (a 0.8 m gap only the blob fits, a slip-coated 6 m wall), a 9 m blink gap over a reset
 pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to climb.
+
+**The rigging and the hands** are two more wings, west of the lab (through its west door, or
+the R1-R4 / H1-H4 pads on the pool's deck). *The rigging* (`src/riglab.js`, built with the
+`Rigging` class in `src/moves/rigging.js`: bars, poles, ropes, grates, beams): R1 a 2.7 m ledge to
+catch and shimmy with a shelf of targets behind you, and a 5.5 m pillar to latch up; R2 a pit
+crossed three ways at once, on two overhead bars a swing-jump apart, a 15 m zipline from a tower,
+and two balance beams (0.3 and 0.2 m); R3 an 8.6 m grate wall up to a grate roof that runs out
+over a pit to a tower; R4 a pole to slide down, a rope to climb, and a tower to get back up.
+*The hands* (`src/moves/carry.js`, `push.js`, `kick.js`, `recoil.js`, `src/lobber.js`): H1 heavy
+and small crates and a 3.2 m wall to stack up to; H2 a throwing range (targets at 10, 16 and 22
+m) with pots and crates on a bench; H3 a mortar that throws a glazed ball at you every few
+seconds (kick it back at the two targets beside it: a parry); H4 a 7.2 m platform you can only
+reach by shooting down in the air.
 
 ## Moving ground, and the clockwork mill
 
@@ -214,7 +240,7 @@ steer 3 m/s to meet a cart that has moved. That is the **Super Slam** feat.
 human-shaped input from teleports all over the workshop, in Lab mode, and checks after every step:
 finite numbers, the body not inside geometry, sane speeds, the blob form only while slip diving,
 no controller stall, no tech stuck for a minute, no falling out of the world. `--pairs` runs every
-pair of techs alone with the rest off (the interference matrix: 37 configurations). It exits
+pair of techs alone with the rest off (the interference matrix: 154 configurations with 17 techs). It exits
 non-zero on a violation and prints where, with the last few moves and what the body was inside.
 The player's own safety net (`Player.guard()`, and a check on every move that pulls a move back
 to the last clear spot if the controller leaves the capsule inside a wall) is counted, not hidden:
@@ -223,22 +249,25 @@ the bot reports how often the controller needed catching.
 ## The System
 
 Nothing here is bought with experience points: **skills are learned by doing.** The core movement
-(and swimming and ladders) is yours from the start; the abilities are earned, each by something you
+(and the body moves: swimming, ladders, hanging, poles, grates, balance, carrying, pushing) is yours from the start; the Movement Arts are earned, each by something you
 can do with what you already have, and each has variants with harder asks. Press **B** for the
-Codex: the belt, what you know, the shapes of what you don't (a hint, and a bar that only fills as
+Codex: the Movement Arts, what you know, the shapes of what you don't (a hint, and a bar that only fills as
 you get closer), and which variant is selected. The game pauses while it's open.
 
 | Ability | Learned by | Variants (and what earns them) |
 | --- | --- | --- |
 | Blink | 20 air dashes | **Rush** (30 blinks): 8 m; **Flicker** (a blink right after a blink, 8 times): 3 short charges |
 | Slam | 3 drops of 12 m or more | **Quake** (40 slams): a wider shockwave; **Super Slam** (slam onto a *moving* target from 50 m up: the kiln stack's carts): a huge double ring, a taller slam jump |
-| Roll | 5 hard landings | **Tumble** (15 rolls): rolls from lower falls, faster |
+| Roll | 5 hard landings | **Tumble** (15 rolls): rolls from lower falls, faster, longer invulnerable |
 | Stomp | 25 pots broken | **Spring** (three stomps in a row): a higher bounce |
 | Wall climb | 8 wallruns and 4 wall jumps | **Scale** (20 climbs): faster and higher |
 | Slip dive | 6 slip-shell splats | **Tide** (90 seconds under the slip): faster, higher launch |
+| Wall latch | 6 ledge and bar hangs | **Iron Grip** (15 latches): longer, faster |
+| Kick & parry | 15 pots broken | **Counter** (4 parries): a wider parry window, thrown back harder, longer invulnerable |
+| Recoil jump | 15 shots fired in mid-air | **Boost** (25 recoil jumps): harder kicks, one more a jump |
 
-The belt has 6 slots and grows to 9 with mastery (abilities plus variants owned); the Codex shows
-how to earn the rest. Progress saves as you go, and **EXPORT CODE / IMPORT** carries a save between
+All the arts you've learned are always on (there is no loadout: the Codex shows how to earn the
+rest, and which variant of each is selected). Progress saves as you go, and **EXPORT CODE / IMPORT** carries a save between
 browsers (`FFS1.<base64>.<checksum>`). A variant only changes its ability's tuning
 (`skills.js: cfg`), laid over `tech.<id>` through a live proxy, so nothing about the core moves.
 
@@ -246,7 +275,7 @@ How it works: everything that happens is reported to an event bus (`src/events.j
 `jump`, `land {drop, fall}`, `slide.end`, `wallrun.end`, `dash`, `blink`, `slam.impact {height,
 target}`, `target.hit {cause, drop, moving}`, `break`, `tech.start/end`, ...). `src/system/skills.js`
 is the data: a goal is `count`, `feat`, `sum` or `chain` over events. `system.js` feeds events
-to the goals of whatever's still to learn, unlocks, auto-equips and saves; a tech asks
+to the goals of whatever's still to learn, unlocks and saves; a tech asks
 `system.allows(id)` before it may start (`Tech.usable()`). New moves ship with an unlock rule, a
 variant and a lab station.
 
@@ -289,11 +318,13 @@ variant and a lab station.
 | `src/basement.js` | the basement movement course |
 | `src/techlab.js` | the tech lab annex |
 | `src/mill.js` | the clockwork mill and the kiln stack |
+| `src/riglab.js` | the rigging and the hands wings west of the lab |
+| `src/lobber.js` | clay mortars that throw balls to parry |
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |
-| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, belt, saves), `codex.js` (belt HUD, toasts, the Codex) |
+| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (toasts, the Codex) |
 | `tools/torture.mjs`, `tools/torture.page.js` | the torture bot |
-| `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage) |
+| `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage, `rigging.js` bars, poles, grates, beams) |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
 | `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |
@@ -342,7 +373,7 @@ T-pose, so each bone's world rotation away from the T-pose carries straight over
   left, grip out on the right (on show from behind). The draw (0.26 s) reaches back, the
   shoulders turning to help, grabs the grip, and whips the gun round the right hip up into
   the hand; holstering reverses it. Clicking while holstered draws and fires as soon as the
-  gun is out. Ladders and swimming stow it (both hands are busy) and bring it back after.
+  gun is out. Swimming, fast ladder climbs and slides, and carrying stow it (both hands are busy) and bring it back after; hanging, latching, walking a ladder and the rest leave the gun hand alone.
 - **Hand swap:** on a right-side wallrun the gun passes to the left hand (a quick hand-off,
   both hands on it mid-way) so the right can take the wall; aiming then uses the mirrored
   pistol pose, and in first person the gun moves to the left of the screen. Poses mirror

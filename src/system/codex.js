@@ -1,24 +1,15 @@
 import { ABILITIES, BY_ID } from './skills.js';
-import { SLOTS_MAX } from './system.js';
 import { sfx } from '../audio.js';
 
 // ---------------------------------------------------------------------------
-// The System's face: the belt on the HUD, the [SYSTEM] toasts, and the Codex (B): the
-// abilities you know and the shapes of the ones you don't, what's on your belt, variants,
-// Lab mode, and the save code. Fired-clay tablets, the same ink as the rest of the HUD.
-// The Codex pauses the game while it's open.
+// The System's face: the [SYSTEM] toasts and the Codex (B). The Codex sorts what you can
+// learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
+// of the ones you don't (a hint, and a bar that only fills as you get closer), and which
+// variant is selected. Lab mode lends you everything. The Codex pauses the game while it's
+// open. Fired-clay tablets, the same ink as the rest of the HUD.
 // ---------------------------------------------------------------------------
 
 const CSS = `
-#belt { position: absolute; left: 24px; bottom: 74px; display: flex; gap: 5px; align-items: flex-end; }
-#belt .b { position: relative; width: 38px; height: 38px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.4); background: rgba(28,13,8,.5); border-radius: 4px;
-  display: flex; align-items: center; justify-content: center; font-size: 17px; }
-#belt .b small { position: absolute; left: 3px; bottom: 1px; font-size: 8px; letter-spacing: .04em; opacity: .85; color: var(--accent); }
-#belt .b em { position: absolute; right: 3px; top: 1px; font-style: normal; font-size: 8px; color: #fff1dc; opacity: .8; }
-#belt .b.busy { border-color: #fff1dc; background: rgba(196,106,69,.45); box-shadow: 0 0 10px rgba(255,178,122,.6); }
-#belt .b.lab { border-style: dashed; }
-#belt .tag { position: absolute; left: 0; top: -14px; font-size: 9px; letter-spacing: .16em; color: var(--accent); opacity: .8; white-space: nowrap; }
-#belt.none { display: none; }
 #sys-toasts { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .sys-toast { font-size: 15px; letter-spacing: .1em; padding: 10px 18px 10px 14px; background: rgba(28,13,8,.86); border: 1px solid var(--accent); border-left-width: 5px;
   text-shadow: 0 1px 0 #1c0d08; box-shadow: 0 0 22px rgba(255,178,122,.35); animation: systoast 5.2s ease-out forwards; max-width: 520px; text-align: left; }
@@ -38,14 +29,7 @@ const CSS = `
 #codex .lab.on { border-color: var(--accent); background: rgba(196,106,69,.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
 #codex .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #codex .x:hover, #codex button:hover { background: rgba(196,106,69,.35); }
-#codex .slots { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,178,122,.2); }
-#codex .slot { width: 92px; height: 62px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.45); background: rgba(196,106,69,.22); border-radius: 4px; padding: 5px 6px; cursor: pointer;
-  display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-#codex .slot .g { font-size: 20px; line-height: 1; } #codex .slot .n { font-size: 10px; letter-spacing: .06em; line-height: 1.15; }
-#codex .slot .v { font-size: 9px; color: var(--accent); opacity: .9; }
-#codex .slot .kk { position: absolute; right: 5px; top: 4px; font-size: 9px; color: var(--accent); }
-#codex .slot.empty { background: none; border-style: dashed; opacity: .55; align-items: center; justify-content: center; font-size: 10px; letter-spacing: .1em; }
-#codex .slot.locked { background: none; border-style: dotted; opacity: .28; align-items: center; justify-content: center; font-size: 10px; }
+#codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
@@ -64,7 +48,6 @@ const CSS = `
 #codex .card .hint { font-style: italic; opacity: .75; }
 #codex .btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
 #codex button { font: inherit; font-size: 12px; letter-spacing: .1em; color: var(--ink); background: rgba(28,13,8,.7); border: 1px solid rgba(255,178,122,.5); padding: 6px 12px; border-radius: 3px; cursor: pointer; }
-#codex button.on { background: rgba(196,106,69,.5); border-color: var(--accent); } #codex button:disabled { opacity: .35; cursor: default; }
 #codex .vars { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
 #codex .var { display: flex; gap: 10px; align-items: flex-start; padding: 7px 9px; border: 1px solid rgba(255,178,122,.22); border-radius: 3px; cursor: pointer; }
 #codex .var.sel { border-color: var(--accent); background: rgba(196,106,69,.25); }
@@ -90,38 +73,21 @@ export class Codex {
     const st = document.createElement('style');
     st.textContent = CSS;
     document.head.appendChild(st);
-    // HUD parts
-    this.belt = el('div');
-    this.belt.id = 'belt';
-    document.getElementById('hud').appendChild(this.belt);
     this.toasts = el('div');
     this.toasts.id = 'sys-toasts';
     document.getElementById('hud').appendChild(this.toasts);
-    // the Codex
     this.root = el('div');
     this.root.id = 'codex';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); });
     document.body.appendChild(this.root);
-    this.sys.listeners.add(() => { this.renderBelt(); if (this.open) this.render(); });
+    this.sys.listeners.add(() => { if (this.open) this.render(); });
     game.events?.on('system.unlock', (e) => {
       const a = BY_ID[e.ability];
-      this.toast(e.variant ? 'VARIANT LEARNED' : 'SKILL ACQUIRED', e.title.toUpperCase(),
-        e.variant ? `${a.name} · press B to choose it` : `${a.blurb.split('.')[0]}. It's on your belt (B).`);
+      this.toast(e.variant ? 'VARIANT LEARNED' : 'MOVEMENT ART LEARNED', e.title.toUpperCase(),
+        e.variant ? `${a.name} · press B to choose it` : `${a.blurb.split('.')[0]}. (B: the Codex)`);
       sfx.systemUnlock?.();
     });
-    // the first time you move: a line about what the System is (once per browser)
-    const INTRO = 'foolsfortune.system.intro';
-    let seen = false;
-    try { seen = !!localStorage.getItem(INTRO); } catch { /* storage unavailable */ }
-    if (!seen && this.sys.mastery() === 0 && !this.sys.lab) {
-      const off = game.events?.on('jump', () => {
-        off?.();
-        try { localStorage.setItem(INTRO, '1'); } catch { /* storage unavailable */ }
-        setTimeout(() => this.toast('NOTICE', 'SKILLS ARE LEARNED BY DOING', 'Dash, fall hard, run walls, break pots: it is watching. B opens the Codex; LAB MODE in it lends you everything.'), 4000);
-      });
-    }
-    this.renderBelt();
   }
 
   toast(kind, title, sub) {
@@ -146,35 +112,6 @@ export class Codex {
     this.onClose?.();
   }
 
-  // ---- the belt on the HUD ----
-  renderBelt() {
-    const s = this.sys, b = this.belt;
-    const ids = s.lab ? ABILITIES.map((a) => a.id) : s.state.equipped;
-    b.className = ids.length ? '' : 'none';
-    b.innerHTML = '';
-    if (!ids.length) return;
-    const tag = el('div', 'tag', s.lab ? 'BELT · LAB MODE' : 'BELT');
-    b.appendChild(tag);
-    for (const id of ids) {
-      const a = BY_ID[id];
-      const vid = s.variantId(id);
-      const d = el('div', `b${s.lab ? ' lab' : ''}`, `${a.glyph}<small>${a.key}</small>${vid ? `<em>${a.variants.find((v) => v.id === vid).name[0]}</em>` : ''}`);
-      d.title = `${a.name}${vid ? ` · ${a.variants.find((v) => v.id === vid).name}` : ''}: ${a.input}`;
-      d.dataset.id = id;
-      b.appendChild(d);
-    }
-  }
-
-  /** Per frame: light a belt slot while its tech is running. */
-  tick() {
-    const active = this.game.techs?.active?.id;
-    for (const d of this.belt.children) {
-      if (!d.dataset.id) continue;
-      d.classList.toggle('busy', BY_ID[d.dataset.id]?.tech === active);
-    }
-  }
-
-  // ---- the Codex ----
   render() {
     const s = this.sys, r = this.root;
     r.innerHTML = '';
@@ -183,9 +120,9 @@ export class Codex {
 
     const head = el('header');
     head.appendChild(el('h2', '', 'THE SYSTEM'));
-    head.appendChild(el('span', 'sub', 'skills are learned by doing · B to close'));
+    head.appendChild(el('span', 'sub', 'arts are learned by doing · B to close'));
     const lab = el('div', `lab${s.lab ? ' on' : ''}`, 'LAB MODE <i></i>');
-    lab.title = 'Everything unlocked and on the belt: for testing and for showing the game off';
+    lab.title = 'Everything unlocked: for testing and for showing the game off';
     lab.onclick = () => s.setLab(!s.lab);
     head.appendChild(lab);
     const x = el('div', 'x', 'CLOSE');
@@ -193,24 +130,7 @@ export class Codex {
     head.appendChild(x);
     cx.appendChild(head);
 
-    // the belt: slots up to capacity, the rest shown as still to be earned
-    const slots = el('div', 'slots');
-    const cap = s.capacity();
-    const ids = s.lab ? ABILITIES.map((a) => a.id) : s.state.equipped;
-    for (let i = 0; i < SLOTS_MAX; i++) {
-      const id = ids[i];
-      if (id) {
-        const a = BY_ID[id], vid = s.variantId(id);
-        const d = el('div', 'slot', `<span class="g">${a.glyph}</span><span class="n">${a.name}</span><span class="v">${vid ? a.variants.find((v) => v.id === vid).name : 'standard'}</span><span class="kk">${a.key}</span>`);
-        d.title = 'click to take off the belt';
-        d.onclick = () => { if (!s.lab) s.unequip(id); };
-        d.onmouseenter = () => { this.sel = id; this.renderCard(); this.markSel(); };
-        slots.appendChild(d);
-      } else if (i < cap) slots.appendChild(el('div', 'slot empty', 'EMPTY'));
-      else slots.appendChild(el('div', 'slot locked', 'EARN'));
-    }
-    cx.appendChild(slots);
-
+    cx.appendChild(el('div', 'shelf', 'MOVEMENT ARTS'));
     const body = el('div', 'body');
     const list = el('div', 'list');
     this.rows = {};
@@ -219,7 +139,7 @@ export class Codex {
       const frac = s.skillFrac(a.id, a.goals);
       const nvar = a.variants.filter((v) => s.has(`${a.id}.${v.id}`)).length;
       const row = el('div', `row${own ? '' : ' locked'}`,
-        `<span class="g">${own ? a.glyph : '?'}</span><span class="t"><b>${own ? a.name.toUpperCase() : '· · ·'}</b><s>${own ? `${s.equipped(a.id) || s.lab ? 'on belt' : 'off belt'} · ${nvar}/${a.variants.length} variants` : frac > 0 ? `${Math.round(frac * 100)}% learned` : 'unknown'}</s>${own ? '' : `<div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div>`}</span>`);
+        `<span class="g">${own ? a.glyph : '?'}</span><span class="t"><b>${own ? a.name.toUpperCase() : '· · ·'}</b><s>${own ? `${nvar}/${a.variants.length} variants` : frac > 0 ? `${Math.round(frac * 100)}% learned` : 'unknown'}</s>${own ? '' : `<div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div>`}</span>`);
       row.onclick = () => { this.sel = a.id; this.renderCard(); this.markSel(); };
       this.rows[a.id] = row;
       list.appendChild(row);
@@ -273,17 +193,11 @@ export class Codex {
     card.appendChild(el('p', '', a.blurb));
     if (a.follows) card.appendChild(el('p', '', `<span style="color:var(--accent)">FOLLOW-UPS</span> · ${a.follows.join(' · ')}`));
     const btns = el('div', 'btns');
-    const on = s.equipped(a.id);
-    const eq = el('button', on || s.lab ? 'on' : '', s.lab ? 'ON THE BELT (LAB)' : on ? 'ON THE BELT · TAKE OFF' : 'PUT ON THE BELT');
-    eq.disabled = s.lab;
-    eq.onclick = () => { if (on) s.unequip(a.id); else if (!s.equip(a.id)) this.setMsg('the belt is full: take something off first'); };
-    btns.appendChild(eq);
     const go = el('button', '', 'GO TO STATION');
     go.title = 'Teleport to where this is practised (the basement labs)';
     go.onclick = () => this.goTo(a.station);
     btns.appendChild(go);
     card.appendChild(btns);
-    // variants
     card.appendChild(el('div', 'in', 'VARIANTS'));
     const vars = el('div', 'vars');
     const cur = s.variantId(a.id);
@@ -297,7 +211,6 @@ export class Codex {
         `<span class="r"></span><span><b>${have ? v.name.toUpperCase() : '▒▒▒▒▒▒'}</b><small>${have ? v.blurb : v.hint}</small>${have ? '' : `<div class="bar"><i style="width:${Math.round(frac * 100)}%"></i></div>`}</span>`);
       if (!have && frac > 0) row.querySelector('span:last-child').appendChild(this.goalLine(vid, v.goals));
       if (have) row.onclick = () => s.setVariant(a.id, v.id);
-      if (!have && v.station) { row.title = `Practised at ${v.station}`; }
       vars.appendChild(row);
     }
     card.appendChild(vars);

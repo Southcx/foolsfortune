@@ -41,6 +41,9 @@ export class Swim extends Tech {
     P.endCore();
     P.setShape('low');
     this.stroke = 0;
+    this.under = false;
+    this.surf = 1;
+    this.diveA = 0;
     if (impact > 3) {
       sfx.splash(Math.min(2, impact / 6));
       this.splash(P.pos.clone().setY(this.vol.surface), impact);
@@ -58,17 +61,23 @@ export class Swim extends Tech {
     // a ladder in reach (the way out of the deep end): take it
     const lad = this.mgr.get('ladder');
     if (lad?.enabled && lad.canStart()) { this.mgr.begin(lad); return true; }
-    const atSurface = depth < 0.25;
     const wish = P.wishDir();
     const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
     const up = inp.isDown('Space') ? 1 : 0, down = inp.isDown('KeyC') ? 1 : 0;
     const fast = inp.isDown('ShiftLeft') || inp.isDown('ShiftRight');
+    // surface or under: two states with a gap between them, so hovering at the boundary
+    // can't flip back and forth (that was the flicker)
+    if (!this.under && (down || depth > 0.7)) this.under = true;
+    else if (this.under && !down && depth < 0.1) this.under = false;
+    const atSurface = !this.under;
     const target = new THREE.Vector3();
     // climb out: a ledge in reach ahead (or Space at the wall)
     if ((iz > 0 || up) && atSurface && P.tryMantle(0.15, 0)) return false;
-    if (atSurface && !down) {
+    if (atSurface) {
       target.copy(wish).multiplyScalar(fast ? c.sprint : c.speed);
-      target.y = THREE.MathUtils.clamp(-depth * c.buoyancy, -3, 3);
+      // (bob to the floating height: velocity proportional to the height error, which settles
+      // without overshoot; depth > 0 means below it, so up)
+      target.y = THREE.MathUtils.clamp(depth * c.buoyancy, -3, 3);
       if (P.latch('Space') && P.pos.y > float - 0.1) {
         // a hop out of the water (onto a low edge, or just a splash)
         P.vel.y = c.exitJump;
@@ -88,9 +97,12 @@ export class Swim extends Tech {
       if (target.lengthSq() > 1) target.normalize();
       target.multiplyScalar(fast ? c.underwater * 1.35 : c.underwater);
       if (target.lengthSq() < 0.01) target.y = 0.8; // buoyancy
-      if (P.pos.y + 0.2 > float && target.y > 0) target.y = Math.min(target.y, -depth * c.buoyancy); // don't overshoot the surface
+      if (P.pos.y + 0.2 > float && target.y > 0) target.y = Math.min(target.y, Math.max(0, depth * c.buoyancy + 0.3)); // slow into the surface, don't shoot through it
     }
-    P.vel.lerp(target, Math.min(1, c.accel * dt));
+    // (horizontal eases; vertical at the surface tracks the target directly so the bob can't ring)
+    P.vel.x += (target.x - P.vel.x) * Math.min(1, c.accel * dt);
+    P.vel.z += (target.z - P.vel.z) * Math.min(1, c.accel * dt);
+    P.vel.y += (target.y - P.vel.y) * Math.min(1, (atSurface ? 3 : 1) * c.accel * dt);
     P.move(dt);
     // strokes
     const sp = Math.hypot(P.vel.x, P.vel.z) + Math.abs(P.vel.y) * 0.5;
@@ -124,7 +136,11 @@ export class Swim extends Tech {
   animate(ch, base, dt) {
     const C = ch.clips, P = this.P;
     const hs = Math.hypot(P.vel.x, P.vel.z);
-    this.crawl = THREE.MathUtils.damp(this.crawl || 0, this.active ? THREE.MathUtils.clamp(hs / 1.5 + Math.abs(P.vel.y) / 3, 0, 1) : 0, 6, dt);
+    // (on the surface only sideways speed swings between treading and crawling: the vertical
+    // bob would flap the pose; under water any motion does)
+    const move = this.under ? hs / 1.5 + Math.abs(P.vel.y) / 3 : hs / 1.5;
+    this.crawl = THREE.MathUtils.damp(this.crawl || 0, this.active ? THREE.MathUtils.clamp(move, 0, 1) : 0, 6, dt);
+    this.surf = THREE.MathUtils.damp(this.surf ?? 1, this.under ? 0 : 1, 7, dt);
     const tread = C.sample('tread', ch.time, ch.P.tmp);
     const swim = C.sample('swim', this.stroke * 1.33 / 2, ch.P.tmp2);
     C.blend(tread, swim, this.crawl);
@@ -138,15 +154,21 @@ export class Swim extends Tech {
     // the crawl clip already lies prone: tilt it only by the dive angle (head down going
     // down, up coming up); the tread clip stays upright
     const vel = P.vel, hs = Math.hypot(vel.x, vel.z);
-    const dive = THREE.MathUtils.clamp(Math.atan2(-vel.y, Math.max(0.6, hs)), -1.1, 1.1);
+    // (the tilt eases toward the dive angle, and only counts once under)
+    const want0 = this.under ? THREE.MathUtils.clamp(Math.atan2(-vel.y, Math.max(0.6, hs)), -1.1, 1.1) : 0;
+    this.diveA = THREE.MathUtils.damp(this.diveA || 0, want0, 6, 1 / 60);
+    const dive = this.diveA;
     root.updateMatrixWorld(true);
     const rightW = new THREE.Vector3(-1, 0, 0).applyQuaternion(root.quaternion);
     ch.rotW(B.spine, rightW, -dive * this.crawl * this.w);
     root.updateMatrixWorld(true);
     // float the body at the waterline: head out when treading, back at the surface when crawling
     const hips = B.spine.getWorldPosition(new THREE.Vector3()), head = B.head.getWorldPosition(new THREE.Vector3());
-    const surfaced = P.pos.y > v.surface - FLOAT - 0.3;
-    let want = surfaced ? THREE.MathUtils.lerp(v.surface + 0.2 - (head.y - hips.y), v.surface - 0.15, this.crawl) : P.pos.y + 0.7;
+    const surfW = this.surf ?? 1;
+    const atWaterline = THREE.MathUtils.lerp(v.surface + 0.2 - (head.y - hips.y), v.surface - 0.15, this.crawl);
+    // (hips at a steady waterline height when floating, at the body's own height when under;
+    // the two blend by how far into either state we are)
+    const want = THREE.MathUtils.lerp(P.renderPos.y + 0.7, atWaterline, surfW);
     root.position.y += (want - hips.y) * this.w;
     root.updateMatrixWorld(true);
   }
@@ -155,9 +177,11 @@ export class Swim extends Tech {
     if (!this.active && this.w < 0.01) return;
     const v = this.vol, P = this.P;
     if (!v) return;
-    if (P.pos.y > v.surface - FLOAT - 0.3) fp.y = THREE.MathUtils.lerp(fp.y, v.surface + 0.22, this.w);
-    pivot.y = THREE.MathUtils.lerp(pivot.y, Math.max(pivot.y - 0.6, v.surface + 0.4), this.w);
-  }
+    // at the surface the eye and the third-person pivot sit at the waterline (steady, whatever
+    // the body's bob); under water they ride the body, so a dive is followed all the way down
+    const body = P.renderPos.y;
+    fp.y = THREE.MathUtils.lerp(fp.y, THREE.MathUtils.lerp(body + 1.3, v.surface + 0.22, this.surf ?? 1), this.w);
+    pivot.y = THREE.MathUtils.lerp(pivot.y, THREE.MathUtils.lerp(body + 0.7, v.surface + 0.4, this.surf ?? 1), this.w);  }
 
   faceYaw() {
     const v = this.P.vel;

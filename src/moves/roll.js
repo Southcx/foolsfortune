@@ -3,32 +3,49 @@ import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
 
-// Landing roll: hold C (or tap it just before) as a hard landing hits and you roll
-// out of it, the fall turned into forward speed - where the core would slide if
-// you were already fast, a roll carries a drop from standing speed.
+// Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
+// and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
+// when there's damage to dodge). The same roll happens on its own out of a hard landing: the
+// fall is turned into forward speed and the landing is mitigated (`mitigated` on the event;
+// fall damage, when it exists, reads it). Jump out of the back half of a roll to keep the speed.
+// It never takes over a slide (the core owns those) or a slam's landing.
 export class Roll extends Tech {
   constructor(mgr) {
     super(mgr, 'roll');
     this.overrides = 1;
     this.blendIn = 25;
-    this.pending = false;
+    this.pending = 0; // a hard landing to roll out of
+    this.cool = 0;
   }
+
+  tick(dt) { this.cool -= dt; }
 
   onLand(fallSpeed) {
     const P = this.P, c = this.cfg, M = T.movement;
-    if (this.active || fallSpeed < c.minFall) return;
-    const crouch = P.input.isDown('KeyC') || P.peekLatch('KeyC');
-    if (!crouch || Math.hypot(P.vel.x, P.vel.z) > M.slideMinSpeed) return; // (fast: the core slides instead)
+    if (this.mgr.active || fallSpeed < c.minFall) return;
+    // (C held and fast: the core's landing slide has it)
+    if ((P.input.isDown('KeyC') || P.peekLatch('KeyC')) && Math.hypot(P.vel.x, P.vel.z) > M.slideMinSpeed) return;
     this.pending = fallSpeed;
   }
 
   canStart() {
-    if (!this.pending) return false;
     const P = this.P;
-    const ok = P.grounded;
-    this.fall = this.pending;
-    this.pending = false;
-    return ok;
+    if (P.mantle || P.freeze) return false;
+    if (this.pending) {
+      const ok = P.grounded;
+      this.fall = this.pending;
+      this.pending = 0;
+      if (ok) { this.code = null; return true; }
+      return false;
+    }
+    if (P.peekLatch('Dodge')) {
+      P.latch('Dodge');
+      if (this.cool > 0 || P.sliding || !P.crouching) return false;
+      this.fall = 0;
+      this.code = true;
+      return true;
+    }
+    return false;
   }
 
   start() {
@@ -36,14 +53,26 @@ export class Roll extends Tech {
     P.endCore();
     P.latch('KeyC');
     P.slideBuf = 0;
-    const wish = P.wishDir();
-    this.dir = wish.lengthSq() > 0.01 ? wish.normalize() : new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
     const hs = Math.hypot(P.vel.x, P.vel.z);
-    this.speed = Math.max(hs, c.speed + (this.fall - c.minFall) * c.speedPerFall);
+        let dir;
+    if (this.code) {
+      const wish = P.wishDir();
+      dir = wish.lengthSq() > 0.01 ? wish.normalize() : new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
+    } else {
+      // out of a fall: the way you were going, or the way you're steering, or the way you face
+      const wish = P.wishDir();
+      dir = hs > 1 ? new THREE.Vector3(P.vel.x, 0, P.vel.z).normalize() : wish.lengthSq() > 0.01 ? wish.normalize() : new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
+    }
+    this.dir = dir.setY(0).normalize();
+    this.speed = this.code ? Math.max(c.speed, hs * 0.6) : Math.max(hs, c.speed + (this.fall - c.minFall) * c.speedPerFall);
     P.setLow(true);
     P.bodyYaw = Math.atan2(this.dir.x, this.dir.z); // roll the way you're going
-    sfx.roll();
+    P.invuln = Math.max(P.invuln, c.iframes);
     P.shake = Math.max(P.shake, 0.15);
+    sfx.roll();
+    this.cool = c.cooldown;
+    this.dust(P.pos);
+    this.game.events?.emit('dodge', { dir: this.code || 'landing', fall: this.fall, mitigated: this.fall > 0 });
   }
 
   update(dt) {
@@ -55,7 +84,8 @@ export class Roll extends Tech {
       P.grounded = false;
       return false;
     }
-    const sp = this.speed * (1 - 0.25 * k);
+    // fast at first, easing off
+    const sp = this.speed * (1 - 0.35 * k * k);
     P.vel.set(this.dir.x * sp, P.grounded ? 0 : P.vel.y - M.gravity * dt, this.dir.z * sp);
     P.move(dt);
     P.bodyYaw = Math.atan2(this.dir.x, this.dir.z);
@@ -66,6 +96,16 @@ export class Roll extends Tech {
   end() {
     const P = this.P;
     if (P.canStand()) P.setLow(false);
+  }
+
+  dust(at) {
+    const fx = this.game.fx;
+    if (!fx) return;
+    const col = new THREE.Color(0xf3c9a8);
+    for (let i = 0; i < 10; i++) {
+      const a = Math.random() * Math.PI * 2;
+      fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.25, 0.1, Math.sin(a) * 0.25)), vel: new THREE.Vector3(Math.cos(a) * 1.4 - this.dir.x * 2, 0.5, Math.sin(a) * 1.4 - this.dir.z * 2), life: 0.4, size: 0.08, sizeEnd: 0.32, color: col, alpha: 0.3, drag: 5 });
+    }
   }
 
   animate(ch, base) {

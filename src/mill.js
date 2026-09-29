@@ -102,10 +102,10 @@ export function buildMill(L, env) {
   {
     const P = CHASM;
     blk(P.x0, P.x1, P.bottom - 0.5, P.bottom, P.z0, P.z1, C.outline, { outline: false });
-    blk(P.x0 - 0.5, P.x0, P.bottom, 0, P.z0, P.z1, C.dark, solid);
-    blk(P.x1, P.x1 + 0.5, P.bottom, 0, P.z0, P.z1, C.dark, solid);
-    blk(P.x0, P.x1, P.bottom, 0, P.z0 - 0.5, P.z0, C.dark, solid);
-    blk(P.x0, P.x1, P.bottom, 0, P.z1, P.z1 + 0.5, C.dark, solid);
+    blk(P.x0 - 0.5, P.x0, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x1, P.x1 + 0.5, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0, C.dark, solid);
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z1, P.z1 + 0.5, C.dark, solid);
     // (the chasm's floor is a reset floor: a dark skin, like the ring's)
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z1 + 0.04], [P.x1 - P.x0, 0.02, 0.08]);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z0 - 0.04], [P.x1 - P.x0, 0.02, 0.08]);
@@ -287,10 +287,10 @@ export function buildMill(L, env) {
     floor(K, [P]);
     shell(K, { doorWest: [-58, -54, 4], lights: [[116, 9, -57, 40], [111, -10, -57, 70], [111, -30, -57, 80], [111, -50, -57, 90]] });
     // the well: walls from the bottom up, a parapet on three sides, a brink to the west
-    blk(P.x0 - 0.5, P.x0, P.bottom, 0, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
-    blk(P.x1, P.x1 + 0.5, P.bottom, 0, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
-    blk(P.x0, P.x1, P.bottom, 0, P.z0 - 0.5, P.z0, C.dark, { outline: false });
-    blk(P.x0, P.x1, P.bottom, 0, P.z1, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x0 - 0.5, P.x0, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x1, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0, C.dark, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z1, P.z1 + 0.5, C.dark, { outline: false });
     blk(P.x0 - 0.5, P.x1 + 0.5, P.bottom - 1, P.bottom, P.z0 - 0.5, P.z1 + 0.5, C.outline, { outline: false });
     // parapets (1.1 m) north, south and east (the lift landing at z -52..-49 stays open)
     blk(P.x0, P.x1, 0, 1.1, P.z1, P.z1 + 0.3, C.pot);
@@ -325,8 +325,8 @@ export function buildMill(L, env) {
     const lift = M.shuttle({ pos: [123.5, B + P.bottom - 0.2, -50.5], to: [0, -P.bottom, 0], move: 22, dwell: 5, name: 'freight' });
     lift.box([3, 0.4, 3], C.pot, [0, 0, 0]);
     lift.mesh(new THREE.BoxGeometry(3.06, 0.1, 3.06), C.glow, [0, 0.16, 0], { outline: false });
-    blk(P.x1 - 0.2, P.x1, P.bottom, 0, -52.1, -51.9, C.dark, { outline: false, collide: false });
-    blk(P.x1 - 0.2, P.x1, P.bottom, 0, -49.1, -48.9, C.dark, { outline: false, collide: false });
+    blk(P.x1 - 0.2, P.x1, P.bottom, -0.02, -52.1, -51.9, C.dark, { outline: false, collide: false });
+    blk(P.x1 - 0.2, P.x1, P.bottom, -0.02, -49.1, -48.9, C.dark, { outline: false, collide: false });
     label(S, 'FREIGHT LIFT', [128, B + 0.02, -50.5], { rotY: Math.PI / 2, width: 2.2, sub: 'the slow way up' });
     for (const z of [-62, -56]) strip(S, [116, B + P.bottom + 0.03, z], [P.x1 - P.x0 - 2, 0.02, 0.05]);
     label(S, 'CARTS', [116, B + P.bottom + 0.06, -59], { rotY: -Math.PI / 2, width: 1.6, sub: 'a moving target: land on one' });

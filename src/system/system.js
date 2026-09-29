@@ -3,8 +3,8 @@ import { ABILITIES, BY_ID, BY_TECH } from './skills.js';
 
 // ---------------------------------------------------------------------------
 // The System: watches what you do (game.events) and teaches you things for it. It owns
-// which abilities and variants are unlocked, how far along each goal is, what's on the belt,
-// and Lab mode (everything unlocked and equipped, for testing and for showing the game off).
+// which Movement Arts (and their variants) are unlocked, how far along each goal is, and
+// Lab mode (everything unlocked, for testing and for showing the game off).
 // It never touches the core movement: a tech asks `allows(id)` before it may start, and
 // reads its tuning through `cfgFor(id)`, which lays the chosen variant over T.tech[id].
 //
@@ -12,17 +12,15 @@ import { ABILITIES, BY_ID, BY_TECH } from './skills.js';
 // browsers as a short code (export / import in the Codex).
 // ---------------------------------------------------------------------------
 
-const KEY = 'foolsfortune.system.v1';
-const VERSION = 1;
-export const SLOTS_MAX = 9;
-export const SLOTS_START = 6;
+const KEY = 'foolsfortune.system.v2'; // (v2: Lab mode is the default)
+const VERSION = 2;
 
 const goalKey = (skill, i) => `${skill}#${i}`;
 
 export class System {
   constructor(game) {
     this.game = game;
-    this.state = { v: VERSION, lab: false, unlocked: {}, progress: {}, equipped: [], variant: {} };
+    this.state = { v: VERSION, lab: true, unlocked: {}, progress: {}, variant: {} };
     this.chain = {}; // running chain state (not saved)
     this.proxies = new Map();
     this.dirty = 0;
@@ -35,21 +33,16 @@ export class System {
   get lab() { return !!this.state.lab; }
   unlocked(id) { return !!this.state.unlocked[id]; }
   has(id) { return this.lab || this.unlocked(id); }
-  equipped(id) { return this.state.equipped.includes(id); }
   variantId(abilityId) { const v = this.state.variant[abilityId]; return v && this.has(`${abilityId}.${v}`) ? v : null; }
 
-  /** How many abilities plus variants you own: the belt grows with it. */
+  /** How many arts plus variants you own. */
   mastery() { return Object.keys(this.state.unlocked).length; }
-  capacity() {
-    const m = this.mastery();
-    return Math.min(SLOTS_MAX, SLOTS_START + (m >= 6 ? 1 : 0) + (m >= 10 ? 1 : 0) + (m >= 14 ? 1 : 0));
-  }
 
-  /** May this tech start? Body techs (swim, ladders) always; abilities only if unlocked and on the belt. */
+  /** May this tech start? Body techs (swim, ladders, hanging) always; Movement Arts once learned. */
   allows(techId) {
     const a = BY_TECH[techId];
     if (!a) return true;
-    return this.lab || (this.unlocked(a.id) && this.equipped(a.id));
+    return this.has(a.id);
   }
 
   /** The tech's tuning with the selected variant laid over it (a live view: tuning edits show through). */
@@ -119,32 +112,13 @@ export class System {
     this.state.unlocked[id] = true;
     const a = sk?.ability || BY_ID[id.split('.')[0]];
     const v = sk?.variant;
-    if (!v && this.state.equipped.length < this.capacity() && !this.state.equipped.includes(a.id)) this.state.equipped.push(a.id);
     if (v && !this.state.variant[a.id]) this.state.variant[a.id] = v.id; // (the first variant you earn is picked up)
     this.touch(true);
     this.game.events?.emit('system.unlock', { id, ability: a.id, variant: v?.id || null, title: v ? v.name : a.name });
     this.changed();
   }
 
-  // ---- the belt ----
-  equip(id) {
-    if (!this.has(id) || this.equipped(id)) return false;
-    if (this.state.equipped.length >= this.capacity()) return false;
-    this.state.equipped.push(id);
-    this.touch(true); this.changed();
-    this.game.events?.emit('system.equip', { id, on: true });
-    return true;
-  }
-
-  unequip(id) {
-    const i = this.state.equipped.indexOf(id);
-    if (i < 0) return false;
-    this.state.equipped.splice(i, 1);
-    this.touch(true); this.changed();
-    this.game.events?.emit('system.equip', { id, on: false });
-    return true;
-  }
-
+  // ---- variants ----
   setVariant(abilityId, variantId) {
     if (variantId && !this.has(`${abilityId}.${variantId}`)) return false;
     this.state.variant[abilityId] = variantId || null;
@@ -179,10 +153,9 @@ export class System {
   adopt(raw) {
     const known = new Set();
     for (const a of ABILITIES) { known.add(a.id); for (const v of a.variants) known.add(`${a.id}.${v.id}`); }
-    const s = { v: VERSION, lab: !!raw.lab, unlocked: {}, progress: {}, equipped: [], variant: {} };
+    const s = { v: VERSION, lab: raw.lab !== false, unlocked: {}, progress: {}, variant: {} };
     for (const k of Object.keys(raw.unlocked || {})) if (known.has(k) && raw.unlocked[k]) s.unlocked[k] = true;
     for (const [k, v] of Object.entries(raw.progress || {})) if (Number.isFinite(v) && v >= 0) s.progress[k] = v;
-    for (const id of raw.equipped || []) if (BY_ID[id] && s.unlocked[id] && !s.equipped.includes(id)) s.equipped.push(id);
     for (const [id, v] of Object.entries(raw.variant || {})) if (BY_ID[id] && (!v || s.unlocked[`${id}.${v}`])) s.variant[id] = v;
     this.state = s;
     this.proxies.clear();

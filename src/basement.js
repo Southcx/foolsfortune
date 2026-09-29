@@ -3,6 +3,7 @@ import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
 import { TECH_CPS, TECH_PITS } from './techlab.js';
 import { MILL_CPS, MILL_PITS } from './mill.js';
+import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 
 // ---------------------------------------------------------------------------
 // The basement: a movement lab under the workshop, hub-and-spoke.
@@ -71,11 +72,12 @@ function labelTexture(text, sub) {
   g.fillStyle = '#fbe3cf';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
+  // (the last argument squeezes a long line to fit the tablet instead of clipping it)
   g.font = 'bold 76px ui-monospace, Menlo, Consolas, monospace';
-  g.fillText(text, 256, sub ? 58 : 80);
-  if (sub) { g.font = '36px ui-monospace, Menlo, Consolas, monospace'; g.fillText(sub, 256, 126); }
+  g.fillText(text, 256, sub ? 58 : 80, 490);
+  if (sub) { g.font = '36px ui-monospace, Menlo, Consolas, monospace'; g.fillText(sub, 256, 126, 496); }
   const t = new THREE.CanvasTexture(c);
-  t.anisotropy = 4;
+  t.anisotropy = 8;
   return t;
 }
 
@@ -85,7 +87,10 @@ function labelTexture(text, sub) {
  */
 export function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 0.8, vertical = false } = {}) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 160 / 512),
-    new THREE.MeshBasicMaterial({ map: labelTexture(text, sub), transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+    new THREE.MeshBasicMaterial({ map: labelTexture(text, sub), transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+  m.renderOrder = 2;
+  // (flat labels sit a hair higher: 2 cm z-fought with the floor at a low grazing angle)
+  if (!vertical) pos = [pos[0], pos[1] + 0.02, pos[2]];
   m.position.set(...pos);
   m.rotation.order = 'YXZ';
   m.rotation.set(vertical ? 0 : -Math.PI / 2, rotY, 0);
@@ -353,10 +358,12 @@ export class Course {
     try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
     // the ring's checkpoints (a lap, with splits), then the tech lab's (no splits)
     this.ringN = CHECKPOINTS.length;
-    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true })), ...MILL_CPS.map((c) => ({ ...c, tech: true }))]
+    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true })), ...MILL_CPS.map((c) => ({ ...c, tech: true })), ...RIG_CPS.map((c) => ({ ...c, tech: true })), ...HAND_CPS.map((c) => ({ ...c, tech: true }))]
       .map((c) => ({ ...c, v: new THREE.Vector3(c.pos[0], BASE_Y + c.pos[1], c.pos[2]) }));
     this.millN = this.ringN + TECH_CPS.length; // (index of the mill's first checkpoint)
-    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below])];
+    this.rigN = this.millN + MILL_CPS.length; // (the rigging's, then the hands')
+    this.handN = this.rigN + RIG_CPS.length;
+    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below]), ...RIG_PITS.map(([r, i, below]) => [r, i + this.rigN, BASE_Y + below])];
     this.millSpawn = { v: new THREE.Vector3(39, BASE_Y, -47.2), yaw: Math.PI / 2 };
     this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
     this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
@@ -438,7 +445,9 @@ export class Course {
     this.pads.push(pad(18, -6, 'lab', 'LAB', 'movement techs'));
     this.pads.push(pad(18, -10.5, 'mill', 'MILL', 'clockwork'));
     this.cps.slice(this.ringN, this.millN).forEach((cp, k) => this.pads.push(pad(-10 + k * 4, -41.5, this.ringN + k, cp.room, cp.name, 0, -1.4)));
-    this.cps.slice(this.millN).forEach((cp, k) => this.pads.push(pad(40 + k * 3.6, -40.2, this.millN + k, cp.room, cp.name, Math.PI, 1.4)));
+    this.cps.slice(this.millN, this.rigN).forEach((cp, k) => this.pads.push(pad(40 + k * 3.6, -40.2, this.millN + k, cp.room, cp.name, Math.PI, 1.4)));
+    // (the rigging and the hands: a row on the pool's deck, by their door)
+    this.cps.slice(this.rigN).forEach((cp, k) => this.pads.push(pad(-34 + k * 3.3, -38.4, this.rigN + k, cp.room, cp.name, 0, -1.4)));
     label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'stand on a pad · R checkpoint · H hub' });
   }
 

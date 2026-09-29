@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------
 // What the System can teach. Nothing here is bought with experience points: every skill
 // is learned by doing something. The core movement (walk, sprint, slide, jump, wallrun,
-// mantle, dash) and the body moves that come with a humanoid (swim, ladders) are always
-// yours; the abilities below sit on the belt.
+// mantle, dash) and the body moves that come with a humanoid (swim, ladders, hanging, poles, grates, balance,
+// carrying, pushing) are always yours; the Movement Arts below are earned.
 //
 // A goal is one of:
 //   count(event, n)              do it n times (`when` filters the event's details)
@@ -50,12 +50,12 @@ export const ABILITIES = [
     ],
   },
   {
-    id: 'roll', key: 'C', name: 'Roll', glyph: '◌', tech: 'roll', input: 'hold C into a hard landing', station: 'T3',
-    blurb: 'Turn a fall into forward speed instead of a stop. Jump out of the second half of it.',
+    id: 'roll', key: '⇧ crouched', name: 'Roll', glyph: '◌', tech: 'roll', input: 'Sprint (Shift) while crouched; automatic out of a hard landing', station: 'T3',
+    blurb: 'An evasive roll: press Sprint while crouched and you tumble the way you steer, invulnerable for the first third of it. It also happens by itself out of a hard landing, where it mitigates the fall and turns it into speed. Jump out of the second half to keep the speed.',
     hint: 'Take hard landings, and get used to them.',
     goals: [count('land', 5, 'hard landings', (e) => e.fall >= 9)],
     variants: [
-      { id: 'tumble', name: 'Tumble', blurb: 'Rolls from lower falls, and carries more speed.', cfg: { minFall: 6, speed: 7, speedPerFall: 0.32 },
+      { id: 'tumble', name: 'Tumble', blurb: 'Rolls out of lower falls, carries more speed, and stays invulnerable a little longer.', cfg: { minFall: 6, speed: 10, speedPerFall: 0.32, iframes: 0.42, cooldown: 0.5 },
         hint: 'Roll until it is second nature.', goals: [count('tech.end', 15, 'rolls', (e) => e.id === 'roll')] },
     ],
   },
@@ -89,8 +89,38 @@ export const ABILITIES = [
         hint: 'Spend a long while under.', goals: [sum('tech.end', 'dur', 90, 'seconds under the slip', (e) => e.id === 'slip')] },
     ],
   },
+  {
+    id: 'latch', key: 'C at wall', name: 'Wall Latch', glyph: '⊣', tech: 'latch', input: 'C in the air, beside a wall (not looking down)', station: 'R1',
+    blurb: 'Cling to any wall by your feet and one hand, the other free for the gun. WASD crawls along it, Space kicks off. It does not last: a couple of seconds a jump, then you start to slide.',
+    hint: 'Get used to hanging: catch ledges with your hands, again and again.',
+    goals: [count('hang.start', 6, 'ledge and bar hangs')],
+    variants: [
+      { id: 'grip', name: 'Iron Grip', blurb: 'Hold on longer, and climb faster.', cfg: { budget: 3.6, speed: 3.2 },
+        hint: 'Cling to walls until your fingers ache.', goals: [count('latch.start', 15, 'wall latches')] },
+    ],
+  },
+  {
+    id: 'kick', key: 'Z', name: 'Kick & Parry', glyph: '⇥', tech: 'kick', input: 'Z with nothing in front to lift or grab', station: 'H3',
+    blurb: 'A quick kick that knocks pots over, sends crates and clapperjars flying, and rings targets. Kick a projectile in its first moments and it is a parry: it goes back the way you look, and you cannot be hit for a beat.',
+    hint: 'Break a great many pots. Feet first is fine.',
+    goals: [count('break', 15, 'pots broken')],
+    variants: [
+      { id: 'counter', name: 'Counter', blurb: 'A wider parry window: it catches more, throws it back harder, and covers you longer.', cfg: { parryRadius: 2.7, parryOut: 16, parryIframes: 0.7, parrySpeed: 3.5 },
+        hint: 'Turn something back on whatever threw it.', goals: [count('parry', 4, 'parries')] },
+    ],
+  },
+  {
+    id: 'recoil', key: 'Shot ↓', name: 'Recoil Jump', glyph: '⇧', tech: 'recoil', input: 'fire the gun, aimed down, in mid-air', station: 'H4',
+    blurb: 'In the air, a shot aimed down kicks you up (and back the way the barrel points). Three shots a jump; a charged shot is worth two. A shot costs what a shot costs: Lachryma.',
+    hint: 'Shoot from the air. Often.',
+    goals: [count('shot', 15, 'shots fired in mid-air', (e) => e.air)],
+    variants: [
+      { id: 'boost', name: 'Boost', blurb: 'Every shot kicks harder, and one more of them a jump.', cfg: { kick: 6.6, chargedKick: 13, charges: 4 },
+        hint: 'Kick yourself up, again and again.', goals: [count('recoil.jump', 25, 'recoil jumps')] },
+    ],
+  },
 ];
 
-/** Every slot on the belt is one of these; the rest of the techs (swim, ladders) are body moves. */
+/** The Movement Arts; the rest of the techs (swim, ladders, hanging) are body moves. */
 export const BY_ID = Object.fromEntries(ABILITIES.map((a) => [a.id, a]));
 export const BY_TECH = Object.fromEntries(ABILITIES.map((a) => [a.tech, a]));

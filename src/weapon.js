@@ -63,7 +63,7 @@ export class Weapon {
     if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; }
     if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
     // both hands busy (a ladder, swimming): stow it, and bring it back out after if it was out
-    const busy = !!player.techs?.active?.handsBusy;
+    const busy = !!player.techs?.handsBusy;
     if (busy) {
       if (this.drawTarget > 0) this.stowed = true;
       this.drawTarget = 0;
@@ -327,6 +327,7 @@ export class Weapon {
     game.fx.tracer(muzzle, end);
     game.fx.muzzleFlash(muzzle, gunFwd);
     sfx.gunshot();
+    game.events?.emit('shot', { dir: dir.clone(), charged: false, air: !player.grounded });
 
     if (hit) this.applyHit(hit, dir);
     game.clappers?.spook(end);
@@ -385,6 +386,7 @@ export class Weapon {
     game.breakables.explode(blastAt, { radius: R, breakFrac: 0.45, velocity: 8 * p, fx: false, cause: 'charged' });
     game.clappers?.spook(end, 3);
     sfx.chargedShot(p);
+    game.events?.emit('shot', { dir: dir.clone(), charged: true, air: !player.grounded });
 
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * C.kick * p;
     player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);

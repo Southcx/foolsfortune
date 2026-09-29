@@ -32,6 +32,17 @@ import { WallClimb } from './moves/wallclimb.js';
 import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { SlipDive } from './moves/slip.js';
+import { Hang } from './moves/hang.js';
+import { Latch } from './moves/latch.js';
+import { Pole } from './moves/pole.js';
+import { Grate } from './moves/grate.js';
+import { Balance } from './moves/balance.js';
+import { Push } from './moves/push.js';
+import { Carry } from './moves/carry.js';
+import { Kick } from './moves/kick.js';
+import { Recoil } from './moves/recoil.js';
+import { Rigging } from './moves/rigging.js';
+import { Lobbers } from './lobber.js';
 import { Water, Ladders, SlipField } from './moves/env.js';
 import { Events } from './events.js';
 import { Movers } from './movers.js';
@@ -115,9 +126,9 @@ async function main() {
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
-  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene), movers };
+  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
-  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers;
+  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   level.build();
   const spawnRoom = () => {
     level.spawnDynamic();
@@ -153,12 +164,13 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, SlipDive, Roll, Slam, Blink, WallClimb, Stomp]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, WallClimb, Stomp, Balance, Carry, Kick, Recoil]) techs.add(new T0(techs));
+  env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;
   const codex = new Codex(game);
   game.codex = codex;
-  codex.onClose = () => { if (input.enabled && !input.lockFailed) input.requestLock(); };
+  codex.onClose = () => { if (input.enabled) input.requestLock(); };
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -177,6 +189,7 @@ async function main() {
 
   const resetRoom = () => {
     game.trial?.abort();
+    game.techs?.get('carry')?.reset(); // (put down what's in your hands before the props are cleared)
     fx.timed.length = 0;
     level.clearDynamic();
     weapon.clearDebris();
@@ -184,6 +197,7 @@ async function main() {
     game.clappers?.clear();
     game.clappers?.spawnAll();
     game.baubles?.clear();
+    game.lobbers?.clear();
     game.shells?.clear();
     if (game.shells) for (const k of Object.keys(game.shells.counts)) game.shells.counts[k] = T.shells.start;
     game.lachryma?.reset();
@@ -230,7 +244,7 @@ async function main() {
     if (!locked && !guiOpen && !game.codex?.open) { overlay.style.display = 'flex'; input.enabled = false; }
   };
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !input.lockFailed && !guiOpen) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !game.codex?.open) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -326,7 +340,7 @@ async function main() {
     if (input.wasPressed('Tab')) {
       guiOpen = !guiOpen;
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
-      else { gui.hide(); if (input.enabled && !input.lockFailed) input.requestLock(); }
+      else { gui.hide(); if (input.enabled) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
     if (game.codex?.open) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex pauses the game)
@@ -360,10 +374,11 @@ async function main() {
     movers.render(acc / FIXED);
     movers.tick(dt);
     system.tick(dt);
-    codex.tick();
 
     techs.tick(dt);
     env.water.update(dt);
+    env.rigging.update(dt);
+    env.lobbers.update(dt);
     env.slip.update(dt);
     player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
     character.setFirstPerson(player.fpWeight > 0.5);
@@ -444,7 +459,7 @@ async function main() {
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
-      move: (techs.active ? techs.label() : player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : '')
+      move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
         + blinkPips(),
     });
 

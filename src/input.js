@@ -44,27 +44,39 @@ export class Input {
     });
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === this.el;
+      if (this.locked) { this.everLocked = true; this.lockFailed = false; }
       this.onLockChange?.(this.locked);
     });
-    document.addEventListener('pointerlockerror', () => {
-      this.lockFailed = true;
-      this.onLockChange?.(false);
-    });
+    document.addEventListener('pointerlockerror', () => this.lockError());
   }
 
-  requestLock() {
+  // A failed request is only "pointer lock isn't available here" (free-cursor look) if it has
+  // never worked. Once it has, a failure is the browser's cooldown after Esc (it refuses a new
+  // lock for a moment): try again shortly, and never give up for good.
+  lockError() {
+    if (!this.everLocked) { this.lockFailed = true; this.onLockChange?.(false); return; }
+    if (this.tries++ < 2) {
+      setTimeout(() => { if (!this.locked && this.enabled) this.requestLock(true); }, 1400);
+      return;
+    }
+    this.tries = 0;
+    this.onLockChange?.(false); // (still refused: back to the "click to play" card)
+  }
+
+  requestLock(retry = false) {
+    if (!retry) this.tries = 0;
     try {
       const p = this.el.requestPointerLock?.({ unadjustedMovement: true });
       if (p && p.catch) {
         p.catch(() => {
-          // unadjustedMovement unsupported -> retry plain; otherwise fall back
+          // unadjustedMovement unsupported -> retry plain; otherwise it's a real failure
           try {
             const p2 = this.el.requestPointerLock();
-            if (p2 && p2.catch) p2.catch(() => { this.lockFailed = true; this.onLockChange?.(false); });
-          } catch { this.lockFailed = true; }
+            if (p2 && p2.catch) p2.catch(() => this.lockError());
+          } catch { this.lockError(); }
         });
       }
-    } catch { this.lockFailed = true; }
+    } catch { this.lockError(); }
   }
 
   isDown(code) { return this.down.has(code); }

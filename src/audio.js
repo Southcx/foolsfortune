@@ -572,6 +572,31 @@ class Sfx {
     this.tone(t + 0.26, 0.9, { f0: 784, f1: 784, type: 'sine', gain: 0.2, dest: d });
   }
 
+  // a leg swung through the air
+  whoosh() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.2);
+    this.noise(t, 0.22, { type: 'bandpass', f0: 500, f1: 2200, q: 0.8, gain: 0.7, attack: 0.05, dest: d });
+  }
+
+  // a timed deflection: a bright metallic clang over a thud
+  parry() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.7, 0.5);
+    this.tone(t, 0.5, { f0: 1320, f1: 1290, type: 'triangle', gain: 0.4, dest: d });
+    this.tone(t, 0.35, { f0: 1980, f1: 1960, type: 'sine', gain: 0.25, dest: d });
+    this.tone(t, 0.18, { f0: 150, f1: 60, gain: 0.7, dest: d });
+    this.noise(t, 0.08, { f0: 4000, f1: 1500, gain: 0.7, dest: d });
+  }
+
+  // hefting something heavy up over your head
+  hoist() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.25);
+    this.tone(t, 0.3, { f0: 90, f1: 150, type: 'triangle', gain: 0.5, dest: d });
+    this.noise(t + 0.1, 0.25, { type: 'bandpass', f0: 300, f1: 800, q: 0.9, gain: 0.5, attack: 0.08, dest: d });
+  }
+
   land(v) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(Math.min(0.4, v * 0.04), 0.2);

@@ -87,6 +87,7 @@ export class Player {
     this.roll = 0;
     this.headRel = null; // posed head position relative to the feet (from the character, last frame)
     this.game = null; // set by main (Lachryma, fx, clappers)
+    this.invuln = 0; // seconds of invulnerability left (a dodge's first frames): read by damage, when there is any
     this.platform = null; // the moving platform under the feet (src/movers.js)
     this.carry = new THREE.Vector3(); // its displacement under us this step
     this.groundVel = new THREE.Vector3(); // ... as a velocity (the animation moves locked feet with it)
@@ -144,6 +145,7 @@ export class Player {
     this.wallrun = null;
     this.mantle = null;
     this.sliding = false;
+    this.invuln = 0;
     this.platform = null;
     this.carry.set(0, 0, 0);
     this.wedged = 0;
@@ -166,7 +168,9 @@ export class Player {
     if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
     if (inp.wasPressed('KeyQ')) this.shoulder *= -1;
-    for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
+    for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG', 'KeyZ', 'Mouse0']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
+    // Sprint pressed while crouched is a dodge (the Roll art reads the latch)
+    if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.latches.Dodge = 0.2;
   }
 
   /** Movement keys as a world direction (length 0..1). */
@@ -210,6 +214,8 @@ export class Player {
     this.shake = Math.max(this.shake, T.recoil.shake);
     this.fovPunch = T.recoil.fovPunch;
   }
+
+  get invulnerable() { return this.invuln > 0; }
 
   /** Report to the event bus (the System, tests). */
   ev(name, data) { this.game?.events?.emit(name, data); }
@@ -309,6 +315,7 @@ export class Player {
     this.slideBoostCd -= dt;
     this.wallCd -= dt;
     this.landT = (this.landT || 0) - dt;
+    this.invuln = Math.max(0, this.invuln - dt);
     this.airT = this.grounded ? 0 : this.airT + dt;
     this.airPeak = this.grounded ? this.pos.y : Math.max(this.airPeak, this.pos.y);
     for (const k in this.latches) this.latches[k] -= dt;
@@ -316,6 +323,7 @@ export class Player {
     this.carry.set(0, 0, 0);
     this.groundVel.set(0, 0, 0);
 
+    if (this.techs && !this.freeze) this.techs.passives(dt);
     if (this.mantle) { this.stepMantle(dt); return; }
     // an active movement tech owns the step (or an idle one claims it)
     if (this.techs && !this.freeze && this.techs.step(dt)) return;
@@ -333,7 +341,7 @@ export class Player {
     const hv = new THREE.Vector3(this.vel.x, 0, this.vel.z);
     const hs = hv.length();
     const crouchKey = live && inp.isDown('KeyC');
-    const sprintKey = live && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight'));
+    const sprintKey = live && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight')) && !this.techs?.noSprint;
     this.walking = live && (inp.isDown('AltLeft') || inp.isDown('AltRight')); // hold to walk
 
     // ---- slide: crouch while moving fast on the ground ----
@@ -436,6 +444,7 @@ export class Player {
     } else {
       let speed = this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : this.walking ? M.walkSlowSpeed : M.walkSpeed;
       speed *= THREE.MathUtils.lerp(1, M.adsSpeedMult, adsT);
+      speed *= this.techs?.speedMult ?? 1;
       speed *= THREE.MathUtils.lerp(1, T.charge.moveMult, this.chargeLevel || 0);
       const before = hv.length();
       if (this.grounded && before > speed + 0.1 && wish.lengthSq() > 0.01) {
@@ -515,6 +524,7 @@ export class Player {
     const wantH = Math.hypot(want.x, want.z);
     let gotH = Math.hypot(mv.x, mv.z);
     if (wantH > 1e-4 && gotH < wantH * 0.5) {
+      const first = { ...mv }, firstAir = !this.ctrl.computedGrounded();
       // (flat first; then a hair upward, for a capsule that has come to rest a few millionths inside
       // its margin - on a surface that just stopped moving, say - where only an upward
       // component gets it going, and the hair is taken back off afterwards)
@@ -524,6 +534,9 @@ export class Player {
         gotH = Math.hypot(mv.x, mv.z);
         if (gotH >= wantH * 0.5) { if (lift) mv = { x: mv.x, y: Math.min(mv.y, Math.max(0, want.y)), z: mv.z }; break; }
       }
+      // (in the air the retry's flat move must not eat the fall: pressed into a wall while dropping
+      // along it, the body used to hang there with its speed climbing)
+      if (firstAir && want.y < 0) mv = { x: mv.x, y: first.y, z: mv.z };
     }
     this.stuck = wantH > 1e-4 && gotH < wantH * 0.15 ? (this.stuck || 0) + 1 : 0;
     const wasGrounded = this.grounded;
@@ -856,7 +869,7 @@ export class Player {
     let rate = T.movement.tpTurnSpeed;
     if (this.fp || inCombat) { target = this.yaw; rate *= 2.2; }
     else if (hs > 0.5) target = Math.atan2(this.vel.x, this.vel.z);
-    const lock = this.techs?.active?.faceYaw?.(); // (a ladder faces its ladder, a roll its roll)
+    const lock = this.techs?.faceYaw(); // (a ladder faces its ladder, a roll its roll)
     if (lock != null && !this.fp) this.bodyYaw = lock;
     else if (this.fp) this.bodyYaw = this.yaw;
     else {

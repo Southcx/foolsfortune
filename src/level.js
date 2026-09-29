@@ -1,6 +1,7 @@
 import { buildBasement, groundFloor, spawnBasement, inHole, HOLE, BASE_Y } from './basement.js';
 import { buildTechLab, spawnTechLab } from './techlab.js';
 import { buildMill } from './mill.js';
+import { buildRigLab, spawnRigLab } from './riglab.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from './physics.js';
@@ -60,11 +61,10 @@ export class Level {
     const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(rotX, rotY, 0));
     g.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), q, new THREE.Vector3(1, 1, 1)));
     this.addGeo(g, color, outline, shadow);
-    if (collide) {
-      const cd = RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
-        .setTranslation(...pos).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9);
-      this.physics.world.createCollider(cd, this.fixedBody);
-    }
+    if (!collide) return null;
+    const cd = RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2)
+      .setTranslation(...pos).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9);
+    return this.physics.world.createCollider(cd, this.fixedBody);
   }
 
   /**
@@ -172,7 +172,7 @@ export class Level {
     this.buildUpperFloor();
     this.buildFeatures();
     buildBasement(this, W, D);
-    if (this.env) { buildTechLab(this, this.env); buildMill(this, this.env); }
+    if (this.env) { buildTechLab(this, this.env); buildMill(this, this.env); buildRigLab(this, this.env); }
 
     // workbenches
     this.bench(-3.2, -4.5, 2.6, 1.0);
@@ -591,6 +591,7 @@ export class Level {
     this.spawnUpper(pot, big, colors, smalls);
     spawnBasement(B);
     spawnTechLab(B);
+    spawnRigLab(B, this);
 
     // crates
     const crates = [[4.6, 3.6], [5.35, 3.6], [4.6, 4.35], [5.35, 4.35]];
@@ -665,13 +666,16 @@ export class Level {
     }
   }
 
+  /** A wooden crate: up to 0.9 m it can be picked up; bigger ones are heavy (push and pull). */
   crate(pos, s) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), this.mat(PALETTE.wood));
     const band = new THREE.Mesh(new THREE.BoxGeometry(s * 1.02, s * 0.14, s * 1.02), this.mat(PALETTE.dark));
     mesh.add(band);
     mesh.castShadow = mesh.receiveShadow = true;
     addOutline(mesh);
-    this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setDensity(40));
+    const ent = this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setDensity(40));
+    ent.size = s; ent.half = [s / 2, s / 2, s / 2]; ent.carry = s <= 0.9 ? 'lift' : 'heavy';
+    return ent;
   }
 
   brick(pos, size) {
@@ -693,6 +697,7 @@ export class Level {
     ent.sync = this.physics.addSynced(body, mesh);
     this.physics.register(col, ent);
     this.dynamic.push(ent);
+    return ent;
   }
 
   removeProp(e) {
