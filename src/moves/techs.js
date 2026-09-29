@@ -29,8 +29,11 @@ export class Tech {
   }
   get P() { return this.mgr.player; }
   get game() { return this.mgr.game; }
-  get cfg() { return T.tech[this.id]; }
+  // (tuning, with the chosen variant laid over it by the System)
+  get cfg() { return this.game.system ? this.game.system.cfgFor(this.id) : T.tech[this.id]; }
   get enabled() { return !!T.tech[this.id]?.enabled; }
+  /** Switched on in the tuning, and the System says it's yours and on the belt. */
+  usable() { return this.enabled && (this.game.system?.allows(this.id) ?? true); }
   get active() { return this.mgr.active === this; }
   // overridables
   canStart() { return false; }
@@ -62,7 +65,7 @@ export class Techs {
       return !!this.active; // (it may have handed over to another tech)
     }
     for (const t of this.list) {
-      if (!t.enabled || !t.canStart()) continue;
+      if (!t.usable() || !t.canStart()) continue;
       this.begin(t);
       t.update(dt);
       return true;
@@ -75,12 +78,14 @@ export class Techs {
     this.active = t;
     t.t = 0;
     t.start();
+    this.game.events?.emit('tech.start', { id: t.id });
   }
 
   stop() {
     const a = this.active;
     this.active = null;
     a?.end();
+    if (a) this.game.events?.emit('tech.end', { id: a.id, dur: a.t });
   }
 
   /** Per render frame: blends, cooldowns, visuals. */
@@ -93,7 +98,7 @@ export class Techs {
   }
 
   onLand(fallSpeed, under = []) {
-    for (const t of this.list) if (t.enabled) t.onLand(fallSpeed, under);
+    for (const t of this.list) if (t.usable()) t.onLand(fallSpeed, under);
   }
 
   // ---- animation / camera ----

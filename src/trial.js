@@ -58,7 +58,7 @@ export class Trial {
     g.resetRoom();
     this.starting = false;
     const P = g.player;
-    P.respawn();
+    P.respawn('trial');
     P.yaw = 0;
     for (const k of Object.keys(g.shells.counts)) g.shells.counts[k] = T.shells.max;
     g.lachryma.reset();

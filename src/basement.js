@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
 import { TECH_CPS, TECH_PITS } from './techlab.js';
+import { MILL_CPS, MILL_PITS } from './mill.js';
 
 // ---------------------------------------------------------------------------
 // The basement: a movement lab under the workshop, hub-and-spoke.
@@ -352,9 +353,11 @@ export class Course {
     try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
     // the ring's checkpoints (a lap, with splits), then the tech lab's (no splits)
     this.ringN = CHECKPOINTS.length;
-    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true }))]
+    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true })), ...MILL_CPS.map((c) => ({ ...c, tech: true }))]
       .map((c) => ({ ...c, v: new THREE.Vector3(c.pos[0], BASE_Y + c.pos[1], c.pos[2]) }));
-    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below])];
+    this.millN = this.ringN + TECH_CPS.length; // (index of the mill's first checkpoint)
+    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below])];
+    this.millSpawn = { v: new THREE.Vector3(39, BASE_Y, -47.2), yaw: Math.PI / 2 };
     this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
     this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
     this.gates = [
@@ -433,12 +436,22 @@ export class Course {
     };
     this.pads = this.cps.slice(0, this.ringN).map((cp, i) => pad(-14 + i * 4, -6, i, `${cp.room}`, cp.name));
     this.pads.push(pad(18, -6, 'lab', 'LAB', 'movement techs'));
-    this.cps.slice(this.ringN).forEach((cp, k) => this.pads.push(pad(-10 + k * 4, -41.5, this.ringN + k, cp.room, cp.name, 0, -1.4)));
+    this.pads.push(pad(18, -10.5, 'mill', 'MILL', 'clockwork'));
+    this.cps.slice(this.ringN, this.millN).forEach((cp, k) => this.pads.push(pad(-10 + k * 4, -41.5, this.ringN + k, cp.room, cp.name, 0, -1.4)));
+    this.cps.slice(this.millN).forEach((cp, k) => this.pads.push(pad(40 + k * 3.6, -40.2, this.millN + k, cp.room, cp.name, Math.PI, 1.4)));
     label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'stand on a pad · R checkpoint · H hub' });
   }
 
   toLab() {
     this.teleport(this.labSpawn.v, this.labSpawn.yaw);
+    this.running = false;
+    this.current = -1;
+    this.lapT = null;
+    sfx.geyser();
+  }
+
+  toMill() {
+    this.teleport(this.millSpawn.v, this.millSpawn.yaw);
     this.running = false;
     this.current = -1;
     this.lapT = null;
@@ -452,11 +465,12 @@ export class Course {
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
-    p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.exiting = 0;
+    p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();
     this.game.character?.setHidden(false);
     p.airJumps = T.movement.airJumps; p.dashCharges = T.movement.dashCharges; p.slideBoostCd = 0;
     p.place();
+    p.markSafe();
     this.game.lachryma.reset(); // save-scumming is allowed here
     this.game.fx.absorbSparkle(v.clone().setY(v.y + 1));
     this.prev.copy(v);
@@ -554,7 +568,7 @@ export class Course {
       const on = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - pad.x, feet.z - pad.z) < 0.8;
       pad.hold = on ? pad.hold + dt : 0;
       pad.disc.material.opacity = 0.45 + Math.min(1, pad.hold / 0.35) * 0.5;
-      if (pad.hold > 0.35) { pad.hold = 0; if (pad.cp === 'lab') this.toLab(); else this.goTo(pad.cp, 'geyser'); return; }
+      if (pad.hold > 0.35) { pad.hold = 0; if (pad.cp === 'lab') this.toLab(); else if (pad.cp === 'mill') this.toMill(); else this.goTo(pad.cp, 'geyser'); return; }
     }
     // speed gates
     for (const gt of this.gates) {

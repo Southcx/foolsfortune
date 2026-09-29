@@ -24,7 +24,8 @@ npm run build      # static bundle in dist/
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
-| E | blink (movement tech, see below) |
+| E | blink (a learned ability, see The System) |
+| B | the System's Codex: belt, variants, Lab mode, save code (pauses the game) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
@@ -154,6 +155,10 @@ hooks (an active tech owns the fixed step; landing events; its own pose layer an
 Switching one off gives back the core exactly; the measured metrics above are identical with
 every tech on or off. Techs start in priority order and only one is active at a time.
 
+Most techs are *abilities* you learn (see **The System**); swim and ladders are body moves that
+come with a humanoid. In **Lab mode** (Codex, B) every ability is unlocked and on the belt: that's
+what the tech lab and the torture bot use.
+
 | Tech | Input | What it does |
 | --- | --- | --- |
 | Blink | E | a near-instant 5.5 m dodge along the move keys (or the view), sliding along anything in the way; leaves an afterimage, comes out with your momentum pointed where you blinked; 2 charges |
@@ -171,6 +176,79 @@ the door. The pool (4.5 m deep, a 5 m dive tower, a wall to swim under, a ladder
 8 m ladder towers (the 8 m one is the slam / roll platform over a field of pots), the slip
 lane (a 0.8 m gap only the blob fits, a slip-coated 6 m wall), a 9 m blink gap over a reset
 pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to climb.
+
+## Moving ground, and the clockwork mill
+
+**Movers** (`src/movers.js`) are kinematic platforms driven by a pose function of time: shuttles
+(lifts, gates, rail carts), cogs (a turning disc), pendulum swings, orbiters (a wheel's
+gondolas), belts (a fixed surface that moves), plus updraft columns. A rider is **carried** by the
+platform (the controller moves the rider against it, then the whole move is carried by the
+platform's displacement under the feet, which is exact for a turning cog: the radius holds to the
+millimetre) and **keeps its velocity** when it leaves: a jump off a 4 m/s shuttle starts at 4 m/s,
+a step off a rising lift keeps rising. Locked feet ride the platform, mantles aim at a moving
+ledge, and anything a platform moves into is pushed out along the shortest way. The core
+controller only ever sees a `carry`: with none, the measured metrics are unchanged.
+
+**The mill** is east of the tech lab (the lab's east door, or the MILL pad in the hub):
+- **Cog walk**: a chasm crossed on four meshing cogs (12 teeth, phased so they really mesh; each
+  turns the opposite way, so at the contact the surfaces move together). Steer, or the turn
+  carries you off the side.
+- **Millstone**: a stone wheel raised 0.6 m that turns under your feet, under a hopper.
+- **Belts and gates**: conveyors with and against you (3 m/s) and gates that lift and drop.
+- **Lifts, gantry, shuttle**: two staggered freight lifts up to a 10 m gantry, a 14 m gap crossed
+  on a shuttle (jump off it moving and clear it by metres), a ladder down.
+- **Ferris wheel**: board a gondola low, ride round, hop onto the deck at the top (ladder down).
+- **Steam**: an updraft column to a 9 m ledge.
+- Wall gears (three meshing on the south wall, two on the north), a line shaft with pulleys
+  turning overhead.
+
+**The kiln stack** beyond it is a 57 m well: depth bands on every wall, a ladder floor to brink,
+a freight lift (the slow way up), and two rail carts running on the floor: the moving targets.
+Look down and slam from the brink (or from higher): a 57 m fall takes about 2.4 s, and you
+steer 3 m/s to meet a cart that has moved. That is the **Super Slam** feat.
+
+## The torture bot
+
+`tools/torture.mjs` (Playwright; `npm i --no-save playwright`, `npm run dev`, then
+`node tools/torture.mjs --seed 1 --runs 40 --ticks 900`) drives the simulation with random,
+human-shaped input from teleports all over the workshop, in Lab mode, and checks after every step:
+finite numbers, the body not inside geometry, sane speeds, the blob form only while slip diving,
+no controller stall, no tech stuck for a minute, no falling out of the world. `--pairs` runs every
+pair of techs alone with the rest off (the interference matrix: 37 configurations). It exits
+non-zero on a violation and prints where, with the last few moves and what the body was inside.
+The player's own safety net (`Player.guard()`, and a check on every move that pulls a move back
+to the last clear spot if the controller leaves the capsule inside a wall) is counted, not hidden:
+the bot reports how often the controller needed catching.
+
+## The System
+
+Nothing here is bought with experience points: **skills are learned by doing.** The core movement
+(and swimming and ladders) is yours from the start; the abilities are earned, each by something you
+can do with what you already have, and each has variants with harder asks. Press **B** for the
+Codex: the belt, what you know, the shapes of what you don't (a hint, and a bar that only fills as
+you get closer), and which variant is selected. The game pauses while it's open.
+
+| Ability | Learned by | Variants (and what earns them) |
+| --- | --- | --- |
+| Blink | 20 air dashes | **Rush** (30 blinks): 8 m; **Flicker** (a blink right after a blink, 8 times): 3 short charges |
+| Slam | 3 drops of 12 m or more | **Quake** (40 slams): a wider shockwave; **Super Slam** (slam onto a *moving* target from 50 m up: the kiln stack's carts): a huge double ring, a taller slam jump |
+| Roll | 5 hard landings | **Tumble** (15 rolls): rolls from lower falls, faster |
+| Stomp | 25 pots broken | **Spring** (three stomps in a row): a higher bounce |
+| Wall climb | 8 wallruns and 4 wall jumps | **Scale** (20 climbs): faster and higher |
+| Slip dive | 6 slip-shell splats | **Tide** (90 seconds under the slip): faster, higher launch |
+
+The belt has 6 slots and grows to 9 with mastery (abilities plus variants owned); the Codex shows
+how to earn the rest. Progress saves as you go, and **EXPORT CODE / IMPORT** carries a save between
+browsers (`FFS1.<base64>.<checksum>`). A variant only changes its ability's tuning
+(`skills.js: cfg`), laid over `tech.<id>` through a live proxy, so nothing about the core moves.
+
+How it works: everything that happens is reported to an event bus (`src/events.js`:
+`jump`, `land {drop, fall}`, `slide.end`, `wallrun.end`, `dash`, `blink`, `slam.impact {height,
+target}`, `target.hit {cause, drop, moving}`, `break`, `tech.start/end`, ...). `src/system/skills.js`
+is the data: a goal is `count`, `feat`, `sum` or `chain` over events. `system.js` feeds events
+to the goals of whatever's still to learn, unlocks, auto-equips and saves; a tech asks
+`system.allows(id)` before it may start (`Tech.usable()`). New moves ship with an unlock rule, a
+variant and a lab station.
 
 ## What's in the room
 
@@ -210,6 +288,11 @@ pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to cli
 | `src/trial.js` | the time trial |
 | `src/basement.js` | the basement movement course |
 | `src/techlab.js` | the tech lab annex |
+| `src/mill.js` | the clockwork mill and the kiln stack |
+| `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
+| `src/events.js` | the event bus everything reports to |
+| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, belt, saves), `codex.js` (belt HUD, toasts, the Codex) |
+| `tools/torture.mjs`, `tools/torture.page.js` | the torture bot |
 | `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage) |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |

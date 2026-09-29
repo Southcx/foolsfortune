@@ -677,6 +677,7 @@ export class Character {
     const lockable = T.anim.footLock && planted > 0.9 && gaitW > 0.25;
     for (const k of ['L', 'R']) {
       const L = this.lock[k];
+      if (L.on && s.groundVel) L.p.addScaledVector(s.groundVel, dt); // (a locked foot rides its platform)
       const want = lockable && st.contact[k] > 0.6;
       if (want && !L.on) { L.on = true; L.p.copy(anim[k]); L.w = 1; } // (locks where the foot is: no pop)
       if (L.on && (!want || Math.hypot(L.p.x - anim[k].x, L.p.z - anim[k].z) > 0.35)) L.on = false;

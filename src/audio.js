@@ -562,6 +562,16 @@ class Sfx {
     this.noise(t, 0.05, { f0: 1100, f1: 300, gain: 0.8, dest: d });
   }
 
+  // the System: a little two-note chime, a bright one over a low one
+  systemUnlock() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime;
+    const d = this.out(0.5, 0.35);
+    this.tone(t, 0.5, { f0: 392, f1: 392, type: 'triangle', gain: 0.22, dest: d });
+    this.tone(t + 0.12, 0.7, { f0: 587, f1: 587, type: 'triangle', gain: 0.22, dest: d });
+    this.tone(t + 0.26, 0.9, { f0: 784, f1: 784, type: 'sine', gain: 0.2, dest: d });
+  }
+
   land(v) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(Math.min(0.4, v * 0.04), 0.2);

@@ -33,6 +33,10 @@ import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { SlipDive } from './moves/slip.js';
 import { Water, Ladders, SlipField } from './moves/env.js';
+import { Events } from './events.js';
+import { Movers } from './movers.js';
+import { System } from './system/system.js';
+import { Codex } from './system/codex.js';
 
 const FIXED = 1 / 60;
 
@@ -73,10 +77,12 @@ async function main() {
   const hud = new Hud();
 
   const stats = { broken: 0, total: 0 };
+  const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, stats,
+    scene, physics, fx, hud, camera, stats, events,
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent) {
+      events.emit('break', { kind: ent.kind, target: !!ent.def.target });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) { hud.onBroken(stats.broken, 0); return; }
       stats.broken++;
@@ -97,8 +103,7 @@ async function main() {
       if (d < reach) {
         const dir = pc.sub(center).normalize();
         const k = T.explosion.playerKnock * (1 - d / reach);
-        player.vel.addScaledVector(dir, k);
-        player.vel.y += k * 0.5;
+        player.impulse(dir.multiplyScalar(k).setY(dir.y * k + k * 0.5), 'explosion');
         player.grounded = false;
       }
       player.shake = Math.max(player.shake, T.explosion.shake * Math.max(0, 1 - d / (R * 3.5)));
@@ -109,9 +114,10 @@ async function main() {
   const level = new Level(scene, physics, breakables);
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
-  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene) };
+  const movers = new Movers(game);
+  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene), movers };
   level.env = env;
-  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip;
+  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers;
   level.build();
   const spawnRoom = () => {
     level.spawnDynamic();
@@ -140,6 +146,9 @@ async function main() {
   const player = new Player(physics, camera, input);
   game.player = player;
   player.game = game;
+  // the System (what you've learned) is up before the techs, which ask it whether they may start
+  const system = new System(game);
+  game.system = system;
   const weapon = new Weapon(game);
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
@@ -147,6 +156,9 @@ async function main() {
   for (const T0 of [Swim, Ladder, SlipDive, Roll, Slam, Blink, WallClimb, Stomp]) techs.add(new T0(techs));
   player.techs = techs;
   game.techs = techs;
+  const codex = new Codex(game);
+  game.codex = codex;
+  codex.onClose = () => { if (input.enabled && !input.lockFailed) input.requestLock(); };
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -215,7 +227,7 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen) { overlay.style.display = 'flex'; input.enabled = false; }
+    if (!locked && !guiOpen && !game.codex?.open) { overlay.style.display = 'flex'; input.enabled = false; }
   };
   renderer.domElement.addEventListener('click', () => {
     if (input.enabled && !input.locked && !input.lockFailed && !guiOpen) input.requestLock();
@@ -301,8 +313,8 @@ async function main() {
   // blink charges on the movement readout (while any are spent)
   const blinkPips = () => {
     const b = techs.get('blink');
-    if (!b?.enabled || b.charges >= T.tech.blink.charges) return '';
-    return ` · E ${'●'.repeat(b.charges)}${'○'.repeat(T.tech.blink.charges - b.charges)}`;
+    if (!b?.enabled || b.charges >= b.cfg.charges) return '';
+    return ` · E ${'●'.repeat(b.charges)}${'○'.repeat(Math.max(0, b.cfg.charges - b.charges))}`;
   };
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
@@ -316,6 +328,8 @@ async function main() {
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
       else { gui.hide(); if (input.enabled && !input.lockFailed) input.requestLock(); }
     }
+    if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
+    if (game.codex?.open) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex pauses the game)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (guiOpen) { input.dx = 0; input.dy = 0; }
@@ -328,17 +342,25 @@ async function main() {
 
     acc += dt;
     let steps = 0;
+    events.time = simTime;
     while (acc >= FIXED && steps < 4) {
+      movers.pre(FIXED);
       player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
+      player.guard();
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
       physics.step(FIXED);
+      movers.post(FIXED);
       acc -= FIXED;
       steps++;
     }
     if (steps === 4) acc = 0;
     physics.sync();
+    movers.render(acc / FIXED);
+    movers.tick(dt);
+    system.tick(dt);
+    codex.tick();
 
     techs.tick(dt);
     env.water.update(dt);
@@ -365,6 +387,7 @@ async function main() {
       ground: groundAt,
       grounded: player.grounded,
       groundN: player.grounded ? player.groundNormal() : null,
+      groundVel: player.groundVel,
       wall: player.wallBlend,
       slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
       dash: player.dashBlend, crouch: player.crouchBlend,
@@ -430,7 +453,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, manual: false };
   window.__ready = true;
 }
 

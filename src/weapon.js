@@ -363,6 +363,7 @@ export class Weapon {
       end = hit.point; lastNormal = hit.normal;
       const body = hit.collider.parent();
       const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper');
+      if (ent?.type === 'mover' && ent.mover.target) ent.mover.hit({ cause: 'shot' });
       if (solid || i === C.pierce) { game.fx.impact(hit.point, hit.normal, { sparks: 14, dust: 12, decal: true }); break; }
       if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p, hit.point, dir, 1.3 + 0.5 * p); }
       else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
@@ -415,6 +416,7 @@ export class Weapon {
       game.hud.hitmarker(true);
       return;
     }
+    if (ent?.type === 'mover' && ent.mover.target) { ent.mover.hit({ cause: 'shot' }); game.fx.impact(hit.point, hit.normal, { color: PALETTE.glow, sparks: 6, dust: 3 }); return; }
     if (ent?.type === 'bauble') { ent.body.applyImpulse(dir.clone().multiplyScalar(0.3 * ent.body.mass() * 10), true); return; }
     if (ent?.type === 'breakable') {
       this.hits++;

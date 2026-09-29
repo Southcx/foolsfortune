@@ -15,6 +15,8 @@ const LOW_SHAPE = new RAPIER.Capsule(LOW_HALF, RADIUS - 0.03);
 const BLOB_SHAPE = new RAPIER.Capsule(BLOB_HALF, RADIUS - 0.03);
 const SHAPES = { stand: STAND_SHAPE, low: LOW_SHAPE, blob: BLOB_SHAPE };
 const UNDERFOOT = new RAPIER.Ball(RADIUS * 0.9);
+// "is the body actually inside something?": the shapes shrunk enough that skin and float noise never count
+const EMBED = { stand: new RAPIER.Capsule(HALF - 0.05, RADIUS - 0.08), low: new RAPIER.Capsule(LOW_HALF - 0.05, RADIUS - 0.08), blob: new RAPIER.Capsule(0.001, RADIUS - 0.08) };
 const QF = RAPIER.QueryFilterFlags;
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -85,6 +87,13 @@ export class Player {
     this.roll = 0;
     this.headRel = null; // posed head position relative to the feet (from the character, last frame)
     this.game = null; // set by main (Lachryma, fx, clappers)
+    this.platform = null; // the moving platform under the feet (src/movers.js)
+    this.carry = new THREE.Vector3(); // its displacement under us this step
+    this.groundVel = new THREE.Vector3(); // ... as a velocity (the animation moves locked feet with it)
+    this.airPeak = 0; // highest point since the feet last touched down
+    this.killY = -100; // below this the world has ended
+    this.safe = { pos: this.pos.clone(), t: 0 }; // last place we stood without being embedded
+    this.wedged = 0; // consecutive steps embedded in something
 
     // recoil / shake
     this.punch = new THREE.Vector2(); // x = pitch, y = yaw (radians)
@@ -122,7 +131,11 @@ export class Player {
     this.physics.world.propagateModifiedBodyPositionsToColliders();
   }
 
-  respawn() {
+  /** Somewhere we know is clear (the guard's fallback): after a teleport, where we are now. */
+  markSafe() { this.safe.pos.copy(this.pos); this.safe.shape = this.shape; this.safe.t = 0; }
+
+  respawn(why = 'fall') {
+    this.ev('respawn', { why });
     this.pos.copy(this.spawn);
     this.prevPos.copy(this.pos);
     this.vel.set(0, 0, 0);
@@ -131,10 +144,14 @@ export class Player {
     this.wallrun = null;
     this.mantle = null;
     this.sliding = false;
+    this.platform = null;
+    this.carry.set(0, 0, 0);
+    this.wedged = 0;
     this.techs?.reset();
     this.setShape('stand');
     this.game?.character?.setHidden(false);
     this.place();
+    this.markSafe();
   }
 
   look(dt, adsT) {
@@ -194,6 +211,19 @@ export class Player {
     this.fovPunch = T.recoil.fovPunch;
   }
 
+  /** Report to the event bus (the System, tests). */
+  ev(name, data) { this.game?.events?.emit(name, data); }
+
+  /**
+   * An outside push (explosion, kick, vent, parry): adds velocity through one door so nothing
+   * has to reach into `vel` itself. Upward pushes lift us off the ground.
+   */
+  impulse(v, why = 'push') {
+    this.vel.add(v);
+    if (v.y > 0.5) { this.grounded = false; this.coyote = 0; }
+    this.ev('impulse', { why, mag: v.length() });
+  }
+
   // ---- capsule height ------------------------------------------------------------
   setLow(low) { this.setShape(low ? 'low' : 'stand'); }
 
@@ -217,6 +247,58 @@ export class Player {
       QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
   }
 
+  /** What the body is inside (for the torture bot's report). */
+  embeddedBy() {
+    const half = HALVES[this.shape], out = [];
+    this.physics.world.intersectionsWithShape({ x: this.pos.x, y: this.pos.y + half + RADIUS, z: this.pos.z }, { x: 0, y: 0, z: 0, w: 1 },
+      EMBED[this.shape], (c) => { const t = c.translation(), e = this.physics.entityOf(c); out.push({ ent: e?.type || 'static', at: [t.x, t.y, t.z].map((v) => +v.toFixed(2)), half: c.halfExtents?.() ? [c.halfExtents().x, c.halfExtents().y, c.halfExtents().z].map((v) => +v.toFixed(2)) : null }); return true; },
+      QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
+    return out;
+  }
+
+  /** Is the body inside level geometry (not merely touching it)? */
+  embedded() {
+    const half = HALVES[this.shape];
+    return !!this.physics.world.intersectionWithShape({ x: this.pos.x, y: this.pos.y + half + RADIUS, z: this.pos.z }, { x: 0, y: 0, z: 0, w: 1 },
+      EMBED[this.shape], QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
+  }
+
+  /**
+   * The net under everything else, after each fixed step: numbers gone bad, a platform or a
+   * tech that left us inside a wall. Nudge out the shortest way; failing that, back to the last
+   * place we stood clear. (It should never fire; the torture bot says whether it does.)
+   */
+  guard() {
+    if (this.mantle || this.freeze) return;
+    const finite = Number.isFinite(this.pos.x + this.pos.y + this.pos.z + this.vel.x + this.vel.y + this.vel.z);
+    if (!finite) {
+      this.pos.copy(this.safe.pos); this.vel.set(0, 0, 0); this.place();
+      this.ev('guard', { kind: 'nan' });
+      return;
+    }
+    if (this.vel.lengthSq() > 90 * 90) this.vel.setLength(90);
+    if (!this.embedded()) {
+      this.wedged = 0;
+      this.safe.t += 1 / 60;
+      if (this.grounded && !this.platform && this.safe.t > 0.4) { this.safe.pos.copy(this.pos); this.safe.shape = this.shape; this.safe.t = 0; }
+      return;
+    }
+    if (++this.wedged < 4) return;
+    const at = this.pos.clone();
+    const tries = [[0, 0.1, 0], [0, 0.25, 0], [0.15, 0, 0], [-0.15, 0, 0], [0, 0, 0.15], [0, 0, -0.15], [0, 0.5, 0], [0.3, 0, 0], [-0.3, 0, 0], [0, 0, 0.3], [0, 0, -0.3], [0, 1, 0]];
+    for (const [x, y, z] of tries) {
+      this.pos.set(at.x + x, at.y + y, at.z + z);
+      if (!this.embedded()) { this.place(); this.wedged = 0; this.ev('guard', { kind: 'nudge' }); return; }
+    }
+    this.pos.copy(this.safe.pos);
+    this.vel.set(0, 0, 0);
+    this.setShape(this.safe.shape || 'stand');
+    this.platform = null;
+    this.place();
+    this.wedged = 0;
+    this.ev('guard', { kind: 'reset' });
+  }
+
   // ---- the fixed step -------------------------------------------------------------
   fixedUpdate(dt, { adsT, wantsFire }) {
     const M = T.movement, inp = this.input;
@@ -228,7 +310,11 @@ export class Player {
     this.wallCd -= dt;
     this.landT = (this.landT || 0) - dt;
     this.airT = this.grounded ? 0 : this.airT + dt;
+    this.airPeak = this.grounded ? this.pos.y : Math.max(this.airPeak, this.pos.y);
     for (const k in this.latches) this.latches[k] -= dt;
+    // (riding a moving platform: move() carries us along with it; our own velocity stays ours)
+    this.carry.set(0, 0, 0);
+    this.groundVel.set(0, 0, 0);
 
     if (this.mantle) { this.stepMantle(dt); return; }
     // an active movement tech owns the step (or an idle one claims it)
@@ -258,7 +344,9 @@ export class Player {
     if (!this.sliding && wantSlide && this.grounded && fast && this.slideCd <= 0) {
       this.sliding = true;
       this.slideT = 0;
+      this.slideDist = 0;
       this.slideBuf = 0;
+      this.ev('slide.start', { speed: hs });
       if (hs > 1e-3) {
         if (this.slideBoostCd <= 0) { hv.setLength(Math.max(hs + M.slideBoost, M.slideSpeed)); this.slideBoostCd = M.slideBoostCooldown; }
         else hv.setLength(Math.max(hs, M.sprintSpeed));
@@ -284,12 +372,15 @@ export class Player {
       if (this.wallrun) {
         this.wallJump(hv, wishDir);
         jumped = true;
+        this.ev('jump', { kind: 'wall' });
       } else if (this.coyote > 0) {
         if (iz > 0 && this.tryMantle(M.mantleJumpMin, M.jumpVelocity)) return;
         this.vel.y = M.jumpVelocity;
         this.coyote = 0;
         jumped = true;
+        this.ev('jump', { kind: this.sliding ? 'slide' : 'ground', speed: hs });
         if (this.sliding) {
+          this.ev('slide.end', { dur: this.slideT, dist: this.slideDist || 0, why: 'jump' });
           // slide-hop keeps (and slightly boosts) the momentum
           hv.multiplyScalar(M.slideJumpBoost).clampLength(0, M.maxSpeed);
           this.sliding = false;
@@ -304,6 +395,7 @@ export class Player {
         sfx.airJump();
         this.airJumpPulse = true; // (the animation reads and clears it)
         jumped = true;
+        this.ev('jump', { kind: 'air' });
       }
       if (jumped) { this.jumpBuf = 0; this.grounded = false; }
     }
@@ -317,6 +409,7 @@ export class Player {
       // handled by stepWallrun
     } else if (this.sliding) {
       this.slideT += dt;
+      this.slideDist = (this.slideDist || 0) + hs * dt;
       // friction, plus gravity along the ground slope (ramps and stairs speed you up)
       const n = this.groundNormal();
       const slope = new THREE.Vector3(n.x, 0, n.z).multiplyScalar(M.slideSlopeAccel);
@@ -334,6 +427,7 @@ export class Player {
       // (the time limit only applies once you're down to sprint speed: a fast slide lasts)
       const timedOut = this.slideT > M.slideMaxTime && !downhill && nsp < M.sprintSpeed + 0.5;
       if (nsp < M.crouchSpeed + 0.3 || timedOut || release || this.airT > 0.15) {
+        this.ev('slide.end', { dur: this.slideT, dist: this.slideDist || 0, why: release ? 'release' : timedOut ? 'time' : 'speed' });
         this.sliding = false;
         this.slideCd = M.slideCooldown;
       }
@@ -376,6 +470,7 @@ export class Player {
         this.dashT = M.dashTime;
         this.fovPunch = Math.max(this.fovPunch, 7);
         sfx.dash();
+        this.ev('dash', { speed: hv.length() });
         this.dashFx(d);
       } else {
         sfx.fizzle();
@@ -400,7 +495,13 @@ export class Player {
     this.move(dt);
   }
 
-  /** Run the controller, then keep only the velocity walls actually took away. */
+  /**
+   * Run the controller, then keep only the velocity walls actually took away. A moving
+   * platform's carry is added after the controller has done its work: the platform is a
+   * rigid frame, so the move made against it (at its current pose) is carried along with
+   * it whole. (Feeding the carry to the controller as part of the move made it return
+   * anything from nothing to double, on and off, on a turning platform.)
+   */
   move(dt) {
     const want = { x: this.vel.x * dt + this.shove.x, y: this.vel.y * dt, z: this.vel.z * dt + this.shove.z };
     this.shove.set(0, 0, 0);
@@ -414,9 +515,15 @@ export class Player {
     const wantH = Math.hypot(want.x, want.z);
     let gotH = Math.hypot(mv.x, mv.z);
     if (wantH > 1e-4 && gotH < wantH * 0.5) {
-      this.ctrl.computeColliderMovement(this.collider, { x: want.x, y: Math.max(0, want.y), z: want.z }, ...opts);
-      mv = this.ctrl.computedMovement();
-      gotH = Math.hypot(mv.x, mv.z);
+      // (flat first; then a hair upward, for a capsule that has come to rest a few millionths inside
+      // its margin - on a surface that just stopped moving, say - where only an upward
+      // component gets it going, and the hair is taken back off afterwards)
+      for (const lift of [0, 0.006]) {
+        this.ctrl.computeColliderMovement(this.collider, { x: want.x, y: Math.max(0, want.y) + lift, z: want.z }, ...opts);
+        mv = this.ctrl.computedMovement();
+        gotH = Math.hypot(mv.x, mv.z);
+        if (gotH >= wantH * 0.5) { if (lift) mv = { x: mv.x, y: Math.min(mv.y, Math.max(0, want.y)), z: mv.z }; break; }
+      }
     }
     this.stuck = wantH > 1e-4 && gotH < wantH * 0.15 ? (this.stuck || 0) + 1 : 0;
     const wasGrounded = this.grounded;
@@ -433,7 +540,14 @@ export class Player {
       this.landT = 0.15;
       if (fallSpeed > 3) { this.landed = fallSpeed; sfx.land(fallSpeed); }
       if (this.wallrun) this.endWallrun(false);
-      if (this.techs) this.techs.onLand(fallSpeed, this.underfoot());
+      const under = this.underfoot();
+      this.lastDrop = Math.max(0, this.airPeak - this.pos.y); // (the whole fall, from the top of the jump)
+      if (this.techs) this.techs.onLand(fallSpeed, under);
+      this.game?.movers?.onLand(fallSpeed, under, this.lastDrop);
+      if (fallSpeed > 3 || this.airT > 0.25) {
+        this.ev('land', { fall: fallSpeed, drop: this.lastDrop, air: this.airT, speed: hlen(this.vel), onMover: !!this.platform });
+        this.airPeak = this.pos.y;
+      }
     }
     if (this.grounded && this.vel.y < 0) this.vel.y = 0;
     // walls remove only the velocity pointing into them (a glancing hit keeps its speed)
@@ -460,9 +574,55 @@ export class Player {
       if (lower(ahead) || lower(gy)) mv.y = 0;
       else if (gy !== null && gy < this.pos.y + 0.01) mv.y = Math.max(0, Math.min(mv.y, gy + 0.02 - this.pos.y));
     }
+    const px = this.pos.x, py = this.pos.y, pz = this.pos.z;
     this.pos.x += mv.x; this.pos.y += mv.y; this.pos.z += mv.z;
-    if (this.pos.y < -30) this.respawn();
+    // (a long move - a blink's metre a step - can graze the underside or edge of something and
+    // leave the capsule inside it; the controller isn't asked twice. Keep the last clear spot.)
+    if ((Math.abs(mv.x) + Math.abs(mv.z) + Math.abs(mv.y)) > 0.004 && this.embedded()) {
+      const hx = this.pos.x, hy = this.pos.y, hz = this.pos.z;
+      this.pos.set(px, py, pz);
+      if (!this.embedded()) {
+        // creep toward where the controller wanted us, as far as it stays clear
+        for (const k of [0.75, 0.5, 0.25, 0.1]) {
+          this.pos.set(px + (hx - px) * k, py + (hy - py) * k, pz + (hz - pz) * k);
+          if (!this.embedded()) break;
+          this.pos.set(px, py, pz);
+        }
+        this.ev('guard', { kind: 'clip' });
+      } else this.pos.set(hx, hy, hz); // (already inside before: leave it to guard())
+    }
+
+    // the platform under us (judged with it still at its current pose) carries the whole move
+    const under = this.grounded ? this.moverUnder() : null;
+    const ride = under || this.platform;
+    if (ride) {
+      ride.displacement(this.pos, this.carry);
+      this.pos.add(this.carry);
+      // (the carry isn't swept: a platform can take us into a wall or a ceiling; then we stay put
+      // and the platform goes on without us)
+      if (this.carry.lengthSq() > 1e-8 && this.embedded()) { this.pos.sub(this.carry); this.carry.set(0, 0, 0); }
+      this.groundVel.copy(this.carry).multiplyScalar(1 / dt);
+      if (!under) {
+        // stepped, jumped or was thrown off: it keeps its velocity
+        this.vel.add(this.groundVel);
+        this.ev('mover.leave', { speed: this.groundVel.length() });
+      }
+    }
+    this.platform = under;
+    if (this.pos.y < this.killY) this.respawn();
     this.body.setNextKinematicTranslation({ x: this.pos.x, y: this.pos.y, z: this.pos.z });
+  }
+
+  /** The moving platform we're standing on, or null. */
+  moverUnder() {
+    const hit = this.physics.raycast({ x: this.pos.x, y: this.pos.y + 0.15, z: this.pos.z }, { x: 0, y: -1, z: 0 }, 0.6, this.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
+    if (hit) return hit.entity?.type === 'mover' ? hit.entity.mover : null;
+    // (over an edge: the capsule can still be resting on it)
+    for (const c of this.underfoot()) {
+      const e = this.physics.entityOf(c);
+      if (e?.type === 'mover') return e.mover;
+    }
+    return null;
   }
 
   /** Horizontal normals of the steep things the last move touched. */
@@ -542,7 +702,8 @@ export class Player {
       if (hit.collider.handle === this.lastWall && this.wallCd > -0.35) continue; // same wall again: needs a moment
       const along = hv.clone().addScaledVector(n, -hv.dot(n));
       if (along.length() < M.wallrunMinSpeed * 0.6 || hv.dot(n) > 1) continue;
-      this.wallrun = { n, side, t: 0, lost: 0, handle: hit.collider.handle, dir: along.normalize() };
+      this.wallrun = { n, side, t: 0, lost: 0, dist: 0, handle: hit.collider.handle, dir: along.normalize() };
+      this.ev('wallrun.start', { side, speed: along.length() });
       this.airJumps = M.airJumps;
       this.dashCharges = M.dashCharges;
       this.sliding = false;
@@ -565,6 +726,7 @@ export class Player {
     let sp = along.length();
     if (sp < M.wallrunSpeed) sp = Math.min(M.wallrunSpeed, sp + M.wallrunAccel * dt);
     hv.copy(w.dir).multiplyScalar(sp).addScaledVector(w.n, -1.2); // hug the wall
+    w.dist += sp * dt;
     // gravity comes back in slowly
     const g = w.t < M.wallrunHold ? M.gravity * 0.3 : M.wallrunGravity;
     this.vel.y = Math.max(-M.wallrunMaxFall, this.vel.y - g * dt);
@@ -575,6 +737,7 @@ export class Player {
     const w = this.wallrun;
     if (!w) return;
     if (push) { this.vel.x += w.n.x * 1.2; this.vel.z += w.n.z * 1.2; }
+    this.ev('wallrun.end', { dur: w.t, dist: w.dist, side: w.side });
     this.lastWall = w.handle;
     this.wallCd = 0.2;
     this.wallrun = null;
@@ -617,6 +780,10 @@ export class Player {
     const speed = hlen(this.vel);
     this.mantle = { from: P.clone(), to, t: 0, dur: M.mantleTime * THREE.MathUtils.lerp(0.75, 1.1, h / M.mantleMax), exit: Math.max(2.5, speed * 0.6),
       edge: new THREE.Vector3(P.x + f.x * wall.distance, down.point.y, P.z + f.z * wall.distance), right: this.right(new THREE.Vector3()) };
+    // a ledge on a moving platform: the goal rides along
+    const mover = down.entity?.type === 'mover' ? down.entity.mover : null;
+    if (mover) Object.assign(this.mantle, { mover, toL: mover.toLocal(to), edgeL: mover.toLocal(this.mantle.edge) });
+    this.platform = null;
     this.sliding = false;
     this.dashT = 0;
     this.wallrun = null;
@@ -624,11 +791,17 @@ export class Player {
     this.jumpBuf = 0;
     this.coyote = 0;
     sfx.mantle();
+    this.ev('mantle', { height: h });
     return true;
   }
 
   stepMantle(dt) {
     const m = this.mantle;
+    if (m.mover) {
+      // where the ledge will be by the end of this step
+      m.mover.toWorld(m.toL, m.to); m.to.add(m.mover.displacement(m.to, _v));
+      m.mover.toWorld(m.edgeL, m.edge); m.edge.add(m.mover.displacement(m.edge, _v));
+    }
     m.t += dt / m.dur;
     const k = Math.min(1, m.t);
     const ky = 1 - (1 - k) * (1 - k); // up first...
@@ -643,6 +816,7 @@ export class Player {
     if (k >= 1) {
       this.mantle = null;
       this.grounded = true;
+      this.platform = this.moverUnder();
       this.landed = 3.5;
       // if the ledge is low-ceilinged, stay crouched
       if (!this.canStand()) this.setLow(true);

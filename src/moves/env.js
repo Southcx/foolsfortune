@@ -60,6 +60,8 @@ export class Ladders {
   /** Build the rails and rungs (static meshes via the level's box helper, no colliders). */
   build(L, rung = 0.3) {
     for (const l of this.list) {
+      if (l.built) continue;
+      l.built = true;
       const along = new THREE.Vector3(-l.n.z, 0, l.n.x);
       const face = new THREE.Vector3(l.x, 0, l.z).addScaledVector(l.n, 0.08);
       const rotY = Math.atan2(l.n.x, l.n.z);

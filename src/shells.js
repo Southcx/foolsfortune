@@ -242,6 +242,7 @@ export class Shells {
     // a big wet patch right where it hit (a wall too)
     this.addSplat(pos.clone().addScaledVector(normal, -0.08), normal, S.patch * 2.2, true);
     g.slip?.addDisc(pos.clone().addScaledVector(normal, -0.1), normal, S.patch, T.tech.slip.coverLife);
+    g.events?.emit('slip.splat', {});
   }
 
   stepProjectiles(dt) {

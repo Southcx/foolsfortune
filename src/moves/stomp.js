@@ -18,6 +18,7 @@ export class Stomp extends Tech {
     P.jumpFx(0.8);
     sfx.boing?.(4, 1);
     this.game.hud?.popup(what);
+    this.game.events?.emit('stomp', { what });
   }
 
   onLand(fallSpeed, under) {

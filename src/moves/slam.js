@@ -89,6 +89,7 @@ export class Slam extends Tech {
     this.phase = 'land';
     this.lt = 0;
     this.fallH = Math.max(0, this.y0 - P.pos.y);
+    const drop = Math.max(this.fallH, P.lastDrop || 0); // (the whole fall, from the top of the jump)
     const power = THREE.MathUtils.clamp(0.5 + this.fallH / 8, 0.5, 1.6);
     const R = c.radius * power;
     const center = P.pos.clone().add(new THREE.Vector3(0, 0.3, 0));
@@ -98,6 +99,11 @@ export class Slam extends Tech {
     P.fovPunch = Math.max(P.fovPunch, 6);
     sfx.slam(power);
     this.ring(P.pos, R);
+    if (g.system?.variantId('slam') === 'super') {
+      // (the Super Slam: a second ring after the first, and the whole room feels it)
+      g.fx.after?.(0.09, () => this.ring(P.pos, R * 1.4));
+      P.shake = Math.max(P.shake, 1); P.fovPunch = Math.max(P.fovPunch, 11);
+    }
     const fx = g.fx;
     if (fx) {
       const col = new THREE.Color(PALETTE.pale);
@@ -107,7 +113,9 @@ export class Slam extends Tech {
       }
     }
     P.landed = Math.max(P.landed, 14); // the heavy landing pose
-    g.hud?.popup(this.fallH > 6 ? `SLAM · ${this.fallH.toFixed(1)} m` : 'SLAM');
+    const hitT = g.movers?.hitTargetsNear(P.pos, 0.6, { cause: 'slam', drop });
+    g.events?.emit('slam.impact', { height: drop, target: !!hitT, power });
+    if (!hitT) g.hud?.popup(drop > 6 ? `SLAM · ${drop.toFixed(1)} m` : 'SLAM');
   }
 
   ring(at, R) {
