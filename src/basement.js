@@ -3,6 +3,9 @@ import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
 import { TECH_CPS, TECH_PITS } from './techlab.js';
 import { MILL_CPS, MILL_PITS } from './mill.js';
+import { IndexMenu } from './indexmenu.js';
+import { addOutline } from './outline.js';
+import { RAPIER, GROUPS } from './physics.js';
 import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 
 // ---------------------------------------------------------------------------
@@ -11,8 +14,8 @@ import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 //   HUB (40 x 40 m, under the building): the metrics gym. Fixed, labelled
 //   references every future space is measured against: a step/mantle ladder,
 //   clearance gates, slope ramps, a long-jump lane with the measured chain
-//   distances marked, a metrics board, and the index: eight pads that teleport
-//   to each room's checkpoint. Drop in through the hole in the ground floor's
+//   distances marked, a metrics board, and the index: a console (F) that lists the
+//   rooms, one teleport each. Drop in through the hole in the ground floor's
 //   south-east corner; the geyser beside the landing fires you back up.
 //
 //   RING (16 m wide, around the hub): eight rooms in a loop, one movement
@@ -343,7 +346,7 @@ export function spawnBasement(Bk) {
   spots.forEach(([x, z], i) => Bk.spawn({ kind: kinds[i % kinds.length], pos: [x, B + 0.002, z], color: i % 2 ? C.potLight : C.pot, respawn: 6 }));
 }
 
-// ---- runtime: checkpoints, reset floors, the index pads, speed gates, splits ---------
+// ---- runtime: checkpoints, reset floors, the index console, speed gates, splits ---------
 const STORE = 'foolsfortune.course.v1';
 
 export class Course {
@@ -374,7 +377,7 @@ export class Course {
     ];
     this.prev = new THREE.Vector3();
     this.el = document.getElementById('course');
-    this.buildPads();
+    this.buildConsole();
     this.buildBoard();
   }
 
@@ -426,29 +429,48 @@ export class Course {
     this.board.tex.needsUpdate = true;
   }
 
-  // the index: eight pads in the hub, stand on one to jump to that room (plus one to the
-  // tech lab); and the lab's own row of pads by its door
-  buildPads() {
-    const S = this.game.scene, B = BASE_Y;
-    const pad = (x, z, cp, text, sub, rotY = Math.PI, dz = 1.4) => {
-      const disc = new THREE.Mesh(new THREE.CircleGeometry(0.8, 24), new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.45 }));
-      disc.rotation.x = -Math.PI / 2;
-      disc.position.set(x, B + 0.03, z);
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.05, 4, 28), glowMat);
-      ring.rotation.x = Math.PI / 2;
-      ring.position.set(x, B + 0.04, z);
-      S.add(disc, ring);
-      label(S, text, [x, B + 1.9, z + dz], { rotY, width: 1.3, vertical: true, sub });
-      return { x, z, cp, disc, hold: 0 };
-    };
-    this.pads = this.cps.slice(0, this.ringN).map((cp, i) => pad(-14 + i * 4, -6, i, `${cp.room}`, cp.name));
-    this.pads.push(pad(18, -6, 'lab', 'LAB', 'movement techs'));
-    this.pads.push(pad(18, -10.5, 'mill', 'MILL', 'clockwork'));
-    this.cps.slice(this.ringN, this.millN).forEach((cp, k) => this.pads.push(pad(-10 + k * 4, -41.5, this.ringN + k, cp.room, cp.name, 0, -1.4)));
-    this.cps.slice(this.millN, this.rigN).forEach((cp, k) => this.pads.push(pad(40 + k * 3.6, -40.2, this.millN + k, cp.room, cp.name, Math.PI, 1.4)));
-    // (the rigging and the hands: a row on the pool's deck, by their door)
-    this.cps.slice(this.rigN).forEach((cp, k) => this.pads.push(pad(-34 + k * 3.3, -38.4, this.rigN + k, cp.room, cp.name, 0, -1.4)));
-    label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'stand on a pad · R checkpoint · H hub' });
+  // the index: one console in the hub's first room. F at it opens a menu of the rooms; one teleport
+  // each (the stations inside a room are checkpoints: R goes back to the last one you touched)
+  buildConsole() {
+    const S = this.game.scene, B = BASE_Y, cx = 0, cz = -6;
+    // the rooms the menu lists
+    const ring = this.cps.slice(0, this.ringN);
+    const ringBlurb = ['speed gates, slots and hurdles', 'mantle 1.4 / 2.4 / 3.0 m', 'gaps of 3.5 / 5.5 / 7.5 m', 'wallrun and wall jump', 'zigzag between panels', 'climb 2.8 / 3.4 m', 'a slide ramp and a 7 m gap', 'a slide chute and a low tunnel'];
+    this.rooms = [
+      ...ring.map((cp, i) => ({ id: `r${i}`, code: `Digit${i + 1}`, tag: `${i + 1}`, name: cp.name, blurb: ringBlurb[i], group: 'THE RING', cp: i })),
+      { id: 'lab', code: 'KeyL', tag: 'L', name: 'TECH LAB', blurb: 'pool · ladders · slam · slip · blink · stomp · climb', group: 'MOVEMENT TECHS', spawn: 'lab' },
+      { id: 'mill', code: 'KeyM', tag: 'M', name: 'CLOCKWORK MILL', blurb: 'moving ground: cogs, lifts, a ferris wheel', group: 'MOVEMENT TECHS', spawn: 'mill' },
+      { id: 'kiln', code: 'KeyK', tag: 'K', name: 'KILN STACK', blurb: 'a 57 m well, a freight lift, a ladder', group: 'MOVEMENT TECHS', cp: this.cps.findIndex((c) => c.room === 'K1') },
+      { id: 'rig', code: 'KeyR', tag: 'R', name: 'THE RIGGING', blurb: 'hang · latch · bars · cable · beams · grates · poles · ropes', group: 'MOVEMENT TECHS', cp: this.rigN },
+      { id: 'hands', code: 'KeyH', tag: 'H', name: 'THE HANDS', blurb: 'lift · throw · push · kick · parry · recoil', group: 'MOVEMENT TECHS', cp: this.handN },
+    ];
+    this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id));
+    this.game.indexMenu = this.menu;
+    this.console = { x: cx, z: cz };
+    // the console: a pedestal with a lit face, on a glowing ring
+    const ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.8), new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.85, flatShading: true }));
+    ped.position.set(cx, B + 0.55, cz);
+    addOutline(ped);
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.05, 4, 36), glowMat);
+    ring2.rotation.x = Math.PI / 2;
+    ring2.position.set(cx, B + 0.04, cz);
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(1.5, 32), new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.22 }));
+    disc.rotation.x = -Math.PI / 2;
+    disc.position.set(cx, B + 0.03, cz);
+    S.add(ped, ring2, disc);
+    this.consoleDisc = disc;
+    const body = this.game.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(cx, B + 0.55, cz));
+    this.game.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.8, 0.55, 0.4).setCollisionGroups(GROUPS.static), body);
+    label(S, 'INDEX', [cx, B + 0.72, cz - 0.41], { rotY: Math.PI, width: 1.4, vertical: true, sub: 'F · pick a room' });
+    label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'F at the console · R checkpoint · H hub' });
+  }
+
+  goRoom(id) {
+    const r = this.rooms.find((x) => x.id === id);
+    if (!r) return;
+    if (r.spawn === 'lab') this.toLab();
+    else if (r.spawn === 'mill') this.toMill();
+    else this.goTo(r.cp, 'geyser');
   }
 
   toLab() {
@@ -572,13 +594,10 @@ export class Course {
         return;
       }
     }
-    // index pads
-    for (const pad of this.pads) {
-      const on = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - pad.x, feet.z - pad.z) < 0.8;
-      pad.hold = on ? pad.hold + dt : 0;
-      pad.disc.material.opacity = 0.45 + Math.min(1, pad.hold / 0.35) * 0.5;
-      if (pad.hold > 0.35) { pad.hold = 0; if (pad.cp === 'lab') this.toLab(); else if (pad.cp === 'mill') this.toMill(); else this.goTo(pad.cp, 'geyser'); return; }
-    }
+    // the index console
+    const cs = this.console, nearConsole = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - cs.x, feet.z - cs.z) < 2.3;
+    this.consoleDisc.material.opacity = nearConsole ? 0.55 : 0.22;
+    if (nearConsole && inp.wasPressed('KeyF')) { this.menu.show(); return; }
     // speed gates
     for (const gt of this.gates) {
       const a = gt.axis === 'x' ? this.prev.x : this.prev.z, b = gt.axis === 'x' ? feet.x : feet.z;
@@ -595,7 +614,7 @@ export class Course {
       const best = cp && this.best[`room${cp.room}`];
       this.el.innerHTML = cp && this.running
         ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
-        : 'HUB · stand on a pad · R checkpoint · H hub';
+        : 'HUB · F at the console: pick a room · R checkpoint · H hub';
     }
   }
 }

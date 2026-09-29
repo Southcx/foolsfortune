@@ -171,6 +171,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled) input.requestLock(); };
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -225,6 +226,7 @@ async function main() {
   game.trial = trial;
   const course = new Course(game);
   game.course = course;
+  course.menu.onClose = () => { if (input.enabled) input.requestLock(); };
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -241,10 +243,10 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !game.codex?.open) { overlay.style.display = 'flex'; input.enabled = false; }
+    if (!locked && !guiOpen && !modalOpen()) { overlay.style.display = 'flex'; input.enabled = false; }
   };
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !game.codex?.open) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen()) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -343,7 +345,7 @@ async function main() {
       else { gui.hide(); if (input.enabled) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
-    if (game.codex?.open) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex pauses the game)
+    if (modalOpen()) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (guiOpen) { input.dx = 0; input.dy = 0; }
@@ -352,7 +354,7 @@ async function main() {
     player.look(dt, weapon.adsEase || 0);
     player.chargeLevel = weapon.charge;
     weapon.update(dt, input, player);
-    player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0);
+    player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding);
 
     acc += dt;
     let steps = 0;

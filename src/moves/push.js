@@ -3,9 +3,9 @@ import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
 
-// Push and pull: facing a heavy crate, hold Z and you take hold of it. Then W pushes it away
+// Push and pull: facing a heavy crate, hold F and you take hold of it. Then W pushes it away
 // from you and S pulls it toward you, along the way you're facing and no other (it can't be
-// turned); letting go of Z (or jumping) lets go. Crates too heavy to lift are meant for this:
+// turned); letting go of F (or jumping) lets go. Crates too heavy to lift are meant for this:
 // steps to build, a plug to shove into a hole, a block to drag to a wall.
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
@@ -27,10 +27,10 @@ export class Push extends Tech {
   canStart() {
     const P = this.P;
     if (this.cool > 0 || !P.grounded || P.sliding || P.mantle || P.freeze || this.carry?.item) return false;
-    if (!P.peekLatch('KeyZ') || Math.hypot(P.vel.x, P.vel.z) >= (this.carry?.cfg.liftMaxSpeed ?? 3)) return false;
+    if (!P.peekLatch('KeyF')) return false;
     const e = this.canGrab();
     if (!e) return false;
-    P.latch('KeyZ');
+    P.latch('KeyF');
     this.crate = e;
     return true;
   }
@@ -68,7 +68,7 @@ export class Push extends Tech {
 
   update(dt) {
     const P = this.P, c = this.cfg, inp = P.input, e = this.crate, body = e.body;
-    if (!inp.isDown('KeyZ') || (inp.isDown('Space') && !this.spaceHeld) || !body.isValid() || !P.grounded) { this.cool = 0.25; return false; }
+    if (!inp.isDown('KeyF') || (inp.isDown('Space') && !this.spaceHeld) || !body.isValid() || !P.grounded) { this.cool = 0.25; return false; }
     this.spaceHeld = inp.isDown('Space');
     const t = body.translation();
     const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);

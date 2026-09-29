@@ -83,6 +83,7 @@ export class Codex {
     document.body.appendChild(this.root);
     this.sys.listeners.add(() => { if (this.open) this.render(); });
     game.events?.on('system.unlock', (e) => {
+      if (this.sys.lab) return; // (Lab mode has everything: nothing to announce)
       const a = BY_ID[e.ability];
       this.toast(e.variant ? 'VARIANT LEARNED' : 'MOVEMENT ART LEARNED', e.title.toUpperCase(),
         e.variant ? `${a.name} · press B to choose it` : `${a.blurb.split('.')[0]}. (B: the Codex)`);

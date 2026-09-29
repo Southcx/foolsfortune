@@ -17,7 +17,10 @@ export class Swim extends Tech {
     this.blendIn = 8;
     this.handsBusy = true; // (the gun goes away while swimming)
     this.vol = null;
+    this.hopT = 0;
   }
+
+  tick(dt) { this.hopT -= dt; }
 
   get water() { return this.game.water; }
 
@@ -29,6 +32,7 @@ export class Swim extends Tech {
 
   canStart() {
     const P = this.P;
+    if (this.hopT > 0) return false; // (mid-hop: the water doesn't grab you back on the way out)
     const v = this.deepAt(P.pos);
     if (!v) return false;
     this.vol = v;
@@ -80,9 +84,11 @@ export class Swim extends Tech {
       target.y = THREE.MathUtils.clamp(depth * c.buoyancy, -3, 3);
       if (P.latch('Space') && P.pos.y > float - 0.1) {
         // a hop out of the water (onto a low edge, or just a splash)
+        // a reduced jump: from floating height it lifts you about 1.3 m, enough to clear a deck edge
         P.vel.y = c.exitJump;
-        P.vel.x *= 0.8; P.vel.z *= 0.8;
+        P.vel.x = P.vel.x * 0.8 + wish.x * c.exitPush; P.vel.z = P.vel.z * 0.8 + wish.z * c.exitPush;
         P.grounded = false;
+        this.hopT = 0.5;
         this.splash(P.pos.clone().setY(v.surface), 3);
         sfx.splash(0.5);
         this.hopped = true;

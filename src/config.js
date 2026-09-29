@@ -240,19 +240,19 @@ export const DEFAULTS = {
     blink: { enabled: true, distance: 5.5, time: 0.09, charges: 2, recharge: 1.8, exitSpeed: 7, airLift: 1.5, ghostLife: 0.45 }, // E
     slam: { enabled: true, lookDown: 30, minHeight: 1.8, speed: 24, steer: 3, radius: 3.2, breakFrac: 0.45, velocity: 9, window: 0.3, jumpMult: 1.15, jumpPerMetre: 0.06, jumpMax: 1.9, slidePerMetre: 0.35 }, // C in the air, looking down
     stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar
-    roll: { enabled: true, minFall: 9, time: 0.5, speed: 8.5, speedPerFall: 0.25, iframes: 0.32, cooldown: 0.7, clipFrom: 0.3, clipTo: 1.0 }, // double-tap a direction; automatic out of a hard landing
+    roll: { enabled: true, minDrop: 20, time: 0.5, speed: 8.5, speedPerFall: 0.25, iframes: 0.32, cooldown: 0.7, clipFrom: 0.3, clipTo: 1.0 }, // Shift while crouched; automatic out of a fall of 20 m or more
     wallclimb: { enabled: true, window: 0.8, reach: 0.45, maxAngle: 40, minSpeed: 1.2, maxFall: 3, speed: 6.5, time: 0.5, steps: 7, kickOut: 5, kickUp: 5.5 }, // jump into a wall, W held
     slip: { enabled: true, speed: 10, accel: 45, dryCrawl: 1.4, climbSpeed: 6, jump: 8.4, keepSpeed: 10, regen: 12, coverLife: 30 }, // C on slip
-    swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 5.5 }, // water
+    swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 7.4, exitPush: 2.2 }, // water
     ladder: { enabled: true, speed: 2.6, fast: 4.2, slide: 7, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder
     hang: { enabled: true, reach: 0.5, minTop: 1.92, maxTop: 2.95, handTol: 0.5, maxRise: 8, maxFall: 9, grace: 0.5, shimmy: 1.8, brachiate: 2.6, kickOut: 4.5, kickUp: 5, barReach: 0.45, barKick: 3.5, zipSpeed: 9, zipAccel: 5 }, // W at a ledge just above mantle height; an overhead bar; a cable
     latch: { enabled: true, reach: 0.55, budget: 2.2, speed: 2.4, kickOut: 5, kickUp: 5.5, slide: 1.6 }, // C in the air beside a wall
     pole: { enabled: true, speed: 2.6, ropeSpeed: 1.9, slide: 7, spin: 2.2, kickOut: 4.5, kickUp: 5 }, // walk into a pole or a rope
     grate: { enabled: true, speed: 2.4, fast: 1.6, kickOut: 5, kickUp: 5.5 }, // walk into a grate wall, jump up under a grate ceiling
     balance: { enabled: true, speed: 1.9, trot: 3.4, step: 0.8, drift: 0.12, trotDrift: 0.5 }, // walk onto a beam
-    carry: { enabled: true, reach: 1.15, liftMaxSpeed: 3, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // Z at a small thing: hoist it; fire throws
-    push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold Z at a heavy crate
-    kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // Z with nothing to lift
+    carry: { enabled: true, reach: 1.15, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // F at a small thing: hoist it; fire throws
+    push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold F at a heavy crate
+    kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {

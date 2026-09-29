@@ -5,7 +5,7 @@ import { BASE_Y, label, strip } from './basement.js';
 // ---------------------------------------------------------------------------
 // The tech lab: an annex south of basement room 1 (through its south door) with a
 // station for each movement tech (src/moves/). Stations have checkpoints (R
-// returns to the last one) and there's an index of pads at the door.
+// returns to the last one); the hub's index console lists the lab as one room.
 //
 //   POOL     x -34..-22   4.5 m deep; dive tower, a wall to swim under, ladder out
 //   LADDERS  x -18..-8    6 m tower; 8 m tower = the slam / roll platform
@@ -70,7 +70,7 @@ export function buildTechLab(L, env) {
     l.position.set(p[0], B + p[1], p[2]);
     S.add(l);
   }
-  label(S, 'TECH LAB', [0, B + 0.02, -39.5], { width: 3.2, sub: 'movement techs · pads below' });
+  label(S, 'TECH LAB', [0, B + 0.02, -39.5], { width: 3.2, sub: 'movement techs' });
   label(S, 'THE SYSTEM', [0, B + 0.02, -42.2], { width: 2.6, sub: 'B · skills are learned by doing · LAB MODE lends them all' });
   label(S, 'MILL', [33.6, B + 0.02, -47], { rotY: -Math.PI / 2, width: 1.6, sub: 'clockwork · moving ground' });
   strip(S, [35.9, B + 4.02, -47], [0.1, 0.06, 4.2]);
@@ -81,10 +81,10 @@ export function buildTechLab(L, env) {
   {
     const P = POOL;
     blk(P.x0 - 0.5, P.x1 + 0.5, P.bottom - 0.5, P.bottom, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
-    blk(P.x0 - 0.5, P.x0, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.mid, { outline: false });
-    blk(P.x1, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.mid, { outline: false });
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0, C.mid, { outline: false });
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z1, P.z1 + 0.5, C.mid, { outline: false });
+    blk(P.x0 - 0.5, P.x0 + 0.01, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.mid, { outline: false });
+    blk(P.x1 - 0.01, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.mid, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0 + 0.01, C.mid, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z1 - 0.01, P.z1 + 0.5, C.mid, { outline: false });
     // the divider: swim under it (a 1.6 m gap along the bottom)
     blk(P.x0, P.x1, P.bottom + 1.6, 1.2, -60.2, -59.8, C.wood);
     env.water.add({ x0: P.x0, x1: P.x1, z0: P.z0, z1: P.z1, bottom: B + P.bottom, surface: B + P.surface });
@@ -131,8 +131,8 @@ export function buildTechLab(L, env) {
   {
     const P = BLINK_PIT;
     blk(P.x0, P.x1, -P.depth - 0.5, -P.depth, P.z0, P.z1, C.outline, { outline: false });
-    blk(P.x0, P.x1, -P.depth, -0.02, P.z1, P.z1 + 0.02, C.dark, solid); // (faces for the pit edges)
-    blk(P.x0, P.x1, -P.depth, -0.02, P.z0 - 0.02, P.z0, C.dark, solid);
+    blk(P.x0, P.x1, -P.depth, -0.02, P.z1 - 0.01, P.z1 + 0.02, C.dark, solid); // (faces for the pit edges)
+    blk(P.x0, P.x1, -P.depth, -0.02, P.z0 - 0.02, P.z0 + 0.01, C.dark, solid);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z1 - 0.04], [P.x1 - P.x0, 0.02, 0.08]);
     label(S, 'BLINK', [24, B + 0.02, -48.5], { width: 1.6, sub: '9 m · sprint jump, E mid-air' });
     // wall climb: a 4 m wall in the far corner

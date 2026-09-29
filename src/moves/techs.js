@@ -125,6 +125,8 @@ export class Techs {
   camera(fp, pivot, dt) {
     for (const t of this.list) if (t.camera) t.camera(fp, pivot, dt);
   }
+  /** The fire button belongs to something else for now (a throw): the weapon ignores it. */
+  get fireBlocked() { return this.list.some((t) => t.passive && t.blocksFire); }
   /** Both hands taken (a ladder, swimming, carrying something): the gun goes away. */
   get handsBusy() { return !!this.active?.handsBusy || this.list.some((t) => t.passive && t.busy); }
   /** Something for the HUD's movement readout. */

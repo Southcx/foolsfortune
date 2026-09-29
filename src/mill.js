@@ -102,10 +102,10 @@ export function buildMill(L, env) {
   {
     const P = CHASM;
     blk(P.x0, P.x1, P.bottom - 0.5, P.bottom, P.z0, P.z1, C.outline, { outline: false });
-    blk(P.x0 - 0.5, P.x0, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
-    blk(P.x1, P.x1 + 0.5, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0, C.dark, solid);
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z1, P.z1 + 0.5, C.dark, solid);
+    blk(P.x0 - 0.5, P.x0 + 0.01, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x1 - 0.01, P.x1 + 0.5, P.bottom, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0 + 0.01, C.dark, solid);
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z1 - 0.01, P.z1 + 0.5, C.dark, solid);
     // (the chasm's floor is a reset floor: a dark skin, like the ring's)
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z1 + 0.04], [P.x1 - P.x0, 0.02, 0.08]);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z0 - 0.04], [P.x1 - P.x0, 0.02, 0.08]);
@@ -287,10 +287,10 @@ export function buildMill(L, env) {
     floor(K, [P]);
     shell(K, { doorWest: [-58, -54, 4], lights: [[116, 9, -57, 40], [111, -10, -57, 70], [111, -30, -57, 80], [111, -50, -57, 90]] });
     // the well: walls from the bottom up, a parapet on three sides, a brink to the west
-    blk(P.x0 - 0.5, P.x0, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
-    blk(P.x1, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0, C.dark, { outline: false });
-    blk(P.x0, P.x1, P.bottom, -0.02, P.z1, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x0 - 0.5, P.x0 + 0.01, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x1 - 0.01, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z0 - 0.5, P.z0 + 0.01, C.dark, { outline: false });
+    blk(P.x0, P.x1, P.bottom, -0.02, P.z1 - 0.01, P.z1 + 0.5, C.dark, { outline: false });
     blk(P.x0 - 0.5, P.x1 + 0.5, P.bottom - 1, P.bottom, P.z0 - 0.5, P.z1 + 0.5, C.outline, { outline: false });
     // parapets (1.1 m) north, south and east (the lift landing at z -52..-49 stays open)
     blk(P.x0, P.x1, 0, 1.1, P.z1, P.z1 + 0.3, C.pot);

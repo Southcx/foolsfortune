@@ -15,6 +15,14 @@ function basisQuat(dir, up, target = new THREE.Quaternion()) {
   return target.setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
 }
 
+/** The input with the fire button held up (see Weapon.update). */
+function gatedInput(inp) {
+  const g = Object.create(inp);
+  g.wasPressed = (c) => (c === 'Mouse0' ? false : inp.wasPressed(c));
+  g.isDown = (c) => (c === 'Mouse0' ? false : inp.isDown(c));
+  return g;
+}
+
 export class Weapon {
   constructor(game) {
     this.game = game;
@@ -58,7 +66,7 @@ export class Weapon {
 
   updateHolster(dt, input, player) {
     const W = T.weapon;
-    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('KeyF') || input.wasPressed('Mouse1') || this.holding;
+    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('Mouse1') || this.holding;
     if (input.wasPressed('KeyX')) { this.drawTarget = this.drawTarget > 0.5 ? 0 : 1; this.manualHolster = this.drawTarget === 0; this.idleT = 0; }
     if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; }
     if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
@@ -85,8 +93,16 @@ export class Weapon {
   get reloading() { return this.reloadT >= 0; }
 
   /** Input + timers. Called once per frame before physics. */
-  update(dt, input, player) {
+  update(dt, rawInput, player) {
     const W = T.weapon;
+    // The fire button can belong to something else (throwing what you're carrying). While it does,
+    // the weapon sees it as up, and it stays up until the button is released, so the click that
+    // threw the pot doesn't also fire, or start a charge, when the hands come free.
+    const blocked = !!player.techs?.fireBlocked;
+    if (blocked && rawInput.isDown('Mouse0')) this.fireGate = true;
+    if (!rawInput.isDown('Mouse0')) this.fireGate = false;
+    if (blocked && (this.holding || this.charge > 0)) this.cancelCharge(); // (picked something up mid-charge)
+    const input = blocked || this.fireGate ? gatedInput(rawInput) : rawInput;
     this.updateHolster(dt, input, player);
     const wantAds = input.isDown('Mouse2') && !this.reloading && this.drawn;
     const step = dt / Math.max(0.01, W.adsTime);
@@ -101,12 +117,12 @@ export class Weapon {
     const shells = this.game.shells;
     for (let i = 0; i < 9; i++) if (input.wasPressed(`Digit${i + 1}`)) shells.select(i);
     if (input.wheel) shells.cycle(Math.sign(input.wheel));
-    const shellPress = (input.wasPressed('KeyF') || input.wasPressed('Mouse1')) && !this.reloading && this.charge === 0;
+    const shellPress = input.wasPressed('Mouse1') && !this.reloading && this.charge === 0;
     if (shells.type.id === 'homing') {
       // hold to paint targets, release to fire
       const sp = shells.specials;
       if (shellPress && !sp.painting) sp.startPaint();
-      if (sp.painting && !input.isDown('KeyF') && !input.isDown('Mouse1')) this.wantShell = true;
+      if (sp.painting && !input.isDown('Mouse1')) this.wantShell = true;
     } else if (shellPress) this.wantShell = true;
 
     if (this.reloading) {

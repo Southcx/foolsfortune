@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 
-// Kick (a Movement Art) and parry. Z with nothing in front to lift or grab (or on the run) is a kick: a quick
+// Kick (a Movement Art) and parry. V is a kick: a quick
 // strike with the leg, forward, that knocks pots over (and cracks them), sends crates and
 // clapperjars flying, and rings targets. The first moments of it are also a parry: kick a
 // projectile that's coming at you and it goes back the way you're looking, faster, and you
@@ -28,12 +28,11 @@ export class Kick extends Tech {
     const P = this.P, c = this.cfg, g = this.game;
     this.cool -= dt;
     if (this.state === 'idle') {
-      if (!P.peekLatch('KeyZ') || this.cool > 0 || P.sliding || P.mantle || P.freeze) return;
-      const carry = this.mgr.get('carry'), push = this.mgr.get('push');
-      const running = Math.hypot(P.vel.x, P.vel.z) >= (carry?.cfg.liftMaxSpeed ?? 3); // (a run-up: the kick beats a lift)
-      if (carry?.item || (carry?.state !== 'idle') || (!running && (carry?.find() || push?.canGrab()))) return;
+      if (!P.peekLatch('KeyV') || this.cool > 0 || P.sliding || P.mantle || P.freeze) return;
+      const carry = this.mgr.get('carry');
+      if (carry?.item || carry?.state !== 'idle') return; // (your hands are full)
       if (this.mgr.active && !['balance', 'blink'].includes(this.mgr.active.id)) return;
-      P.latch('KeyZ');
+      P.latch('KeyV');
       this.state = 'kick';
       this.st = 0;
       this.hit.clear();

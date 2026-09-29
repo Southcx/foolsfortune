@@ -50,12 +50,12 @@ export const ABILITIES = [
     ],
   },
   {
-    id: 'roll', key: '⇧ crouched', name: 'Roll', glyph: '◌', tech: 'roll', input: 'Sprint (Shift) while crouched; automatic out of a hard landing', station: 'T3',
-    blurb: 'An evasive roll: press Sprint while crouched and you tumble the way you steer, invulnerable for the first third of it. It also happens by itself out of a hard landing, where it mitigates the fall and turns it into speed. Jump out of the second half to keep the speed.',
-    hint: 'Take hard landings, and get used to them.',
-    goals: [count('land', 5, 'hard landings', (e) => e.fall >= 9)],
+    id: 'roll', key: '⇧ crouched', name: 'Roll', glyph: '◌', tech: 'roll', input: 'Sprint (Shift) while crouched; automatic out of a fall of 20 m or more', station: 'T3',
+    blurb: 'An evasive roll: press Sprint while crouched and you tumble the way you steer, invulnerable for the first third of it. It also happens by itself out of a fall of 20 m or more, where it mitigates the fall and turns it into speed. Jump out of the second half to keep the speed.',
+    hint: 'Fall a long way, and land it. Three times.',
+    goals: [count('land', 3, 'drops of 20 m or more', (e) => e.drop >= 20)],
     variants: [
-      { id: 'tumble', name: 'Tumble', blurb: 'Rolls out of lower falls, carries more speed, and stays invulnerable a little longer.', cfg: { minFall: 6, speed: 10, speedPerFall: 0.32, iframes: 0.42, cooldown: 0.5 },
+      { id: 'tumble', name: 'Tumble', blurb: 'Rolls out of falls of 12 m, carries more speed, and stays invulnerable a little longer.', cfg: { minDrop: 12, speed: 10, speedPerFall: 0.32, iframes: 0.42, cooldown: 0.5 },
         hint: 'Roll until it is second nature.', goals: [count('tech.end', 15, 'rolls', (e) => e.id === 'roll')] },
     ],
   },
@@ -100,7 +100,7 @@ export const ABILITIES = [
     ],
   },
   {
-    id: 'kick', key: 'Z', name: 'Kick & Parry', glyph: '⇥', tech: 'kick', input: 'Z with nothing in front to lift or grab', station: 'H3',
+    id: 'kick', key: 'V', name: 'Kick & Parry', glyph: '⇥', tech: 'kick', input: 'V', station: 'H3',
     blurb: 'A quick kick that knocks pots over, sends crates and clapperjars flying, and rings targets. Kick a projectile in its first moments and it is a parry: it goes back the way you look, and you cannot be hit for a beat.',
     hint: 'Break a great many pots. Feet first is fine.',
     goals: [count('break', 15, 'pots broken')],

@@ -5,7 +5,7 @@ import { T } from '../config.js';
 
 // Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
 // and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
-// when there's damage to dodge). The same roll happens on its own out of a hard landing: the
+// when there's damage to dodge). The same roll happens on its own out of a fall of 20 m or more: the
 // fall is turned into forward speed and the landing is mitigated (`mitigated` on the event;
 // fall damage, when it exists, reads it). Jump out of the back half of a roll to keep the speed.
 // It never takes over a slide (the core owns those) or a slam's landing.
@@ -22,7 +22,8 @@ export class Roll extends Tech {
 
   onLand(fallSpeed) {
     const P = this.P, c = this.cfg, M = T.movement;
-    if (this.mgr.active || fallSpeed < c.minFall) return;
+    // (only a real fall: 20 m or more of it. Anything less lands like any landing, so the flow isn't broken)
+    if (this.mgr.active || P.lastDrop < c.minDrop) return;
     // (C held and fast: the core's landing slide has it)
     if ((P.input.isDown('KeyC') || P.peekLatch('KeyC')) && Math.hypot(P.vel.x, P.vel.z) > M.slideMinSpeed) return;
     this.pending = fallSpeed;
@@ -64,7 +65,7 @@ export class Roll extends Tech {
       dir = hs > 1 ? new THREE.Vector3(P.vel.x, 0, P.vel.z).normalize() : wish.lengthSq() > 0.01 ? wish.normalize() : new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
     }
     this.dir = dir.setY(0).normalize();
-    this.speed = this.code ? Math.max(c.speed, hs * 0.6) : Math.max(hs, c.speed + (this.fall - c.minFall) * c.speedPerFall);
+    this.speed = this.code ? Math.max(c.speed, hs * 0.6) : Math.max(hs, c.speed + Math.max(0, this.fall - 24) * c.speedPerFall);
     P.setLow(true);
     P.bodyYaw = Math.atan2(this.dir.x, this.dir.z); // roll the way you're going
     P.invuln = Math.max(P.invuln, c.iframes);

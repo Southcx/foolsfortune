@@ -19,7 +19,7 @@ export class Input {
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
       this.down.add(e.code);
-      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG'].includes(e.code)) e.preventDefault();
+      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG', 'KeyV'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => {
       this.down.delete(e.code);

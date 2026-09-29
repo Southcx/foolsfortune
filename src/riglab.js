@@ -3,7 +3,7 @@ import { PALETTE } from './config.js';
 import { BASE_Y, label, strip } from './basement.js';
 
 // ---------------------------------------------------------------------------
-// Two wings west of the tech lab (through the lab's west door, or the pads by it):
+// Two wings west of the tech lab (through the lab's west door, or the hub's index console):
 //
 //   THE RIGGING  x -70..-36.5   things to hang from, climb and walk on
 //     R1 HANG      a 2.7 m ledge to catch and shimmy along (with a shooting shelf behind you),
@@ -108,10 +108,10 @@ export function buildRigLab(L, env) {
   /** A reset pit: dark skin, floor and faces. */
   const pit = (P) => {
     blk(P.x0, P.x1, -P.depth - 0.5, -P.depth, P.z0, P.z1, C.outline, { outline: false });
-    blk(P.x0 - 0.5, P.x0, -P.depth, -0.02, P.z0, P.z1, C.dark, solid);
-    blk(P.x1, P.x1 + 0.5, -P.depth, -0.02, P.z0, P.z1, C.dark, solid);
-    blk(P.x0, P.x1, -P.depth, -0.02, P.z0 - 0.5, P.z0, C.dark, solid);
-    blk(P.x0, P.x1, -P.depth, -0.02, P.z1, P.z1 + 0.5, C.dark, solid);
+    blk(P.x0 - 0.5, P.x0 + 0.01, -P.depth, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x1 - 0.01, P.x1 + 0.5, -P.depth, -0.02, P.z0, P.z1, C.dark, solid);
+    blk(P.x0, P.x1, -P.depth, -0.02, P.z0 - 0.5, P.z0 + 0.01, C.dark, solid);
+    blk(P.x0, P.x1, -P.depth, -0.02, P.z1 - 0.01, P.z1 + 0.5, C.dark, solid);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z1 + 0.04], [P.x1 - P.x0, 0.02, 0.08]);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z0 - 0.04], [P.x1 - P.x0, 0.02, 0.08]);
   };

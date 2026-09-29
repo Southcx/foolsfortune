@@ -3,9 +3,9 @@ import { Tech } from './techs.js';
 import { RAPIER, GROUPS, G, groups } from '../physics.js';
 import { sfx } from '../audio.js';
 
-// Pick up and throw (a body move: it's yours from the start). Z, facing something small
+// Pick up and throw (a body move: it's yours from the start). F, facing something small
 // (a pot, a small crate): you crouch, take it in both hands and hoist it over your head, the way
-// Link does. You walk with it slowly, no sprint and no gun. Z again sets it down; the fire button
+// Link does. You walk with it slowly, no sprint and no gun. F again sets it down; the fire button
 // throws it, along where you look. Pots shatter where they land, and hit what they hit.
 const UP = new THREE.Vector3(0, 1, 0);
 const CARRIED = groups(G.PROP, 0); // touches nothing while it's in your hands
@@ -24,9 +24,12 @@ export class Carry extends Tech {
     this.st = 0;
     this.flying = [];
     this.bob = 0;
+    this.fireHold = 0;
   }
 
   get busy() { return !!this.item; }
+  /** The fire button is the throw button while it's in your hands (and a moment after). */
+  get blocksFire() { return !!this.item || this.state === 'throw' || this.fireHold > 0; }
   get engaged() { return !!this.item; }
   get speedMult() { return this.item ? this.cfg.slow : 1; }
   get noSprint() { return !!this.item; }
@@ -68,13 +71,13 @@ export class Carry extends Tech {
   // ---- state ----
   fixed(dt) {
     const P = this.P, c = this.cfg;
+    this.fireHold -= dt;
     this.trackFlying(dt);
     if (!this.item) {
       if (this.state !== 'idle') { this.st += dt; if (this.st > 0.4) this.state = 'idle'; }
-      // (running at it, Z is a kick, not a lift)
-      if (P.peekLatch('KeyZ') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding && Math.hypot(P.vel.x, P.vel.z) < c.liftMaxSpeed) {
+      if (P.peekLatch('KeyF') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding) {
         const e = this.find();
-        if (e) { P.latch('KeyZ'); this.begin(e); }
+        if (e) { P.latch('KeyF'); this.begin(e); }
       }
       return;
     }
@@ -86,8 +89,8 @@ export class Carry extends Tech {
       if (this.st >= LIFT) { this.state = 'hold'; this.st = 0; }
     } else if (this.state === 'hold') {
       this.bob += Math.hypot(P.vel.x, P.vel.z) * dt * 2.2;
-      if (P.latch('Mouse0')) { this.state = 'throw'; this.st = 0; this.released = false; P.latch('KeyZ'); this.game.weapon && (this.game.weapon.buffer = 0); }
-      else if (P.latch('KeyZ')) { this.state = 'put'; this.st = 0; this.putFrom = this.pose(P.pos, null).p.clone(); }
+      if (P.latch('Mouse0')) { this.state = 'throw'; this.st = 0; this.released = false; P.latch('KeyF'); this.game.weapon && (this.game.weapon.buffer = 0); }
+      else if (P.latch('KeyF')) { this.state = 'put'; this.st = 0; this.putFrom = this.pose(P.pos, null).p.clone(); }
     } else if (this.state === 'throw') {
       if (!this.released && this.st >= THROW_AT) this.release();
       if (this.st >= THROW_END) { this.state = 'idle'; this.st = 0; }
@@ -180,6 +183,7 @@ export class Carry extends Tech {
     e.thrownT = 0;
     this.flying.push({ e, prev: v.length(), t: 0 });
     this.item = null;
+    this.fireHold = 0.35;
     sfx.airJump();
     this.game.events?.emit('throw', { kind: e.kind || 'crate', speed: sp });
   }
