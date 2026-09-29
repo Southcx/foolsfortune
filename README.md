@@ -34,6 +34,7 @@ npm run build      # static bundle in dist/
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
 | Middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
 | 1–9, 0, − / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek, slip, groove, anchor, hatch |
+| M / N | the map / a survey pulse (charts the ground around you) |
 | ~ | **the god hand**: the Courier becomes a jar and you become a hand (see below); ~ again to come back |
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
@@ -97,8 +98,8 @@ physics god game over the same rooms. Ceilings and everything above head height 
 
 | | |
 | --- | --- |
-| Left click (hold) | grab anything loose: pots, crates, clapperjars, a lobber's ball in flight. Release throws it (as fast as the hand was going); Shift lifts it higher |
-| Right click | cast the selected shell where the cursor is, from above (1–9, 0, − pick): bombs and slip fall in, wells open, groove / anchor / hatch act on what's there. Shells come back on their own (one of each every 9 s, up to 6) |
+| Left click (hold) | the selected God Art: by default telekinesis, grab anything loose; release throws it (as fast as the hand was going); Shift lifts it higher |
+| Right click (hold) | the art wheel (1–5 pick too): telekinesis, sunder, swell, wring, manifest, each usable only inside your Zone of Influence (see below). Shells are the Courier's; the hand's powers are God Arts |
 | Q / E, wheel, WASD or the screen edges | turn the view an eighth of a turn, zoom, pan |
 | X | raids on / off |
 | ~ | back to the Courier where the jar stood (once the vessel is whole) |
@@ -112,6 +113,64 @@ its old cracks now gold seams. Counters: grab a raider and throw it away, cut or
 raiders and mends it, the way clapperjars mend cracked pots). A wave cleared gives a shell of each
 kind and mends the vessel a little. Everything is in `src/godmode.js`; the shells' new effects in
 `src/casters.js`. The torture bot drops into it now and then and fuzzes the hand.
+
+## God Arts
+
+In god-hand mode the psygun's shell strip gives way to the **art bar**. Shells are prepackaged
+one-shot rounds and cost no Lachryma; **God Arts** are powers of the hand itself and run on
+Lachryma (regenerating a little faster while you are the hand). Pick with **1–5** or hold
+**right click** for the radial wheel.
+
+| Art | Needs | Does |
+| --- | --- | --- |
+| 1 Telekinesis | sensed ground | hold left click: lift anything loose and throw it (costs Lachryma while held, by weight) |
+| 2 Sunder | charted | drag a blade across the floor: everything it passes through above is cut in two on that plane |
+| 3 Swell | charted | on a pot or crate, drag up / down: grow or shrink it (its weight follows) |
+| 4 Wring | understood | on a pot, drag sideways: twist it; drag up: scallop its walls (pots are re-lathed live) |
+| 5 Manifest | understood | drag: raise a wall of clay from the floor, hold for height; it crumbles after a while |
+
+They live in the Codex (**B**) on a second shelf beside the Movement Arts, with variants, and
+their numbers are in `T.arts`. Code: `src/godarts.js`.
+
+## The Zone of Influence and psychic cartography
+
+Arts work only where you **know the place**. Every layer of the world (the dunes, the basement,
+the ground floor, the upper floor) is a grid of cells; each cell holds *knowledge* from 0 to 1:
+**sensed** (0.08), **charted** (0.45), **understood** (0.85). The hand can use an art on ground
+that is at least as known as the art needs (the veil on the floor shows the tier: grey, amber,
+gold). Knowledge comes from walking about (never past charted), from line-of-sight around you,
+and from the **survey pulse** (**N**: a ring of psychic sonar, costs Lachryma, better from the
+hand), and around the vessel it is always at least charted. Mapping a whole named room
+(a certain number of cells around it) counts it as *understood*, and stays known: it is saved.
+
+* **Compass** (top right): bearing, the layer and place you are in, the mapped cells around
+  you as a little radar, a waypoint arrow. North is −Z.
+* **Map** (**M**): every layer, drag / wheel to pan and zoom, click to set a waypoint, right
+  click to clear, layer tabs, and a list of the named places with how well you know each.
+* `src/cartography.js` (grid, tiers, pulses, compass, map, the veil); `T.zoi` has the numbers.
+
+## The dunes and the Solar Surfer
+
+Far below the workshop there is an open layer: a sand sea in a bowl of mountains, low gold sun,
+half-buried ruins and a pale spire with a beam of light to sail toward. Take the index console
+(**F** in the hub) to **THE DUNES**, or come back any time with **H**. You arrive standing on the
+**Solar Surfer**, a hover-board with a light-sail (after the one in Treasure Planet):
+
+| Key | Action |
+| --- | --- |
+| A / D | steer |
+| W / S | trim the sail in (faster, twitchier) / let it out (S also brakes) |
+| Shift | solar flare: the sail blazes and thrust more than doubles, for Lachryma |
+| Space | hold to crouch the springs, release to hop; in the air A / D spin, land a spin for a boost |
+| C | tuck (less drag) |
+| Y | stow / summon the board |
+| R | start again at the arrival basin |
+
+The sail is real: the wind wanders and gusts, and drives it by a sailing polar (dead upwind it
+stalls, across it flies); the vane at the bottom left shows where the wind goes and how full the
+sail is. Gravity does the rest: a lee face is the fastest anything goes here, the board follows
+the sand with a little lag, and a crest is a launch. Stowed, you walk, and the god hand works
+(no raids in the open). `src/dunes.js`, `src/moves/surfer.js`; tuning in `T.tech.surfer`.
 
 ## Moving around
 
@@ -382,6 +441,9 @@ runtime IK correction on the contact points.
 | `src/mill.js` | the clockwork mill and the kiln stack |
 | `src/riglab.js` | the rigging and the hands wings west of the lab |
 | `src/lobber.js` | clay mortars that throw balls to parry |
+| `src/godarts.js` | the five God Arts, the radial wheel, the art bar |
+| `src/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
+| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (terrain, sky, ruins, wind) and the Solar Surfer |
 | `src/godmode.js`, `src/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |

@@ -33,6 +33,7 @@ import { Stomp } from './moves/stomp.js';
 import { Roll } from './moves/roll.js';
 import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
+import { Surfer } from './moves/surfer.js';
 import { SlipDive } from './moves/slip.js';
 import { Hang } from './moves/hang.js';
 import { Latch } from './moves/latch.js';
@@ -46,6 +47,8 @@ import { Recoil } from './moves/recoil.js';
 import { Rigging } from './moves/rigging.js';
 import { Lobbers } from './lobber.js';
 import { GodMode } from './godmode.js';
+import { Cartography } from './cartography.js';
+import { Dunes, DUNE } from './dunes.js';
 import { Water, Ladders, SlipField } from './moves/env.js';
 import { Events } from './events.js';
 import { Movers } from './movers.js';
@@ -70,8 +73,9 @@ async function main() {
   scene.fog = new THREE.FogExp2(PALETTE.deep, T.visual.fog);
   const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.03, 200);
 
-  scene.add(new THREE.HemisphereLight(0xffe4cc, 0x6f3726, 2.3));
-  scene.add(new THREE.AmbientLight(0xffd0b0, 0.35));
+  const hemi = new THREE.HemisphereLight(0xffe4cc, 0x6f3726, 2.3);
+  const amb = new THREE.AmbientLight(0xffd0b0, 0.35);
+  scene.add(hemi, amb);
   const sun = new THREE.DirectionalLight(0xffe8d2, T.visual.sun);
   // steep sun through the skylights: lights the upper floor and drops a shaft
   // down the atrium onto the ground floor
@@ -82,7 +86,7 @@ async function main() {
   sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 5; sc.far = 50;
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
-  scene.add(sun);
+  scene.add(sun, sun.target);
 
   const physics = new Physics();
   await physics.init();
@@ -95,8 +99,8 @@ async function main() {
   const game = {
     scene, physics, fx, hud, camera, stats, events,
     listenerDistance: (p) => camera.position.distanceTo(p),
-    onBroken(ent) {
-      events.emit('break', { kind: ent.kind, target: !!ent.def.target });
+    onBroken(ent, cause) {
+      events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) { hud.onBroken(stats.broken, 0); return; }
       stats.broken++;
@@ -127,6 +131,7 @@ async function main() {
   };
 
   const breakables = new Breakables(scene, physics, fx, game);
+  game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   const level = new Level(scene, physics, breakables);
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
@@ -173,14 +178,14 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer]) techs.add(new T0(techs));
   env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -189,6 +194,7 @@ async function main() {
   game.shells = shells;
   hud.buildShells(SHELL_TYPES);
   game.input = input;
+  game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   const god = new GodMode(game, renderer, handG, jarG);
   game.god = god;
 
@@ -239,6 +245,21 @@ async function main() {
   const course = new Course(game);
   game.course = course;
   course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  // psychic cartography: the map and compass, and the named places in them
+  const carto = game.cartography;
+  carto.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  {
+    const v = (a) => new THREE.Vector3(...a);
+    carto.addAnchor('WORKSHOP', 'workshop', v([0, 0, 0]), 'ground');
+    carto.addAnchor('GALLERY', 'gallery', v([0, clappers.floors[1]?.y ?? 4.6, 0]), 'upper');
+    carto.addAnchor('THE HUB', 'hub', course.hubSpawn.v);
+    for (const r of course.rooms) {
+      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : course.cps[r.cp]?.v;
+      if (at) carto.addAnchor(r.name, r.id, at);
+    }
+    carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
+    carto.restoreAnchors();
+  }
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -358,8 +379,10 @@ async function main() {
       else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
+    if (input.wasPressed('KeyM') && input.enabled && !guiOpen && (game.cartography.open || !modalOpen())) game.cartography.toggle();
+    if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
-    if (modalOpen()) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
+    if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (guiOpen) { input.dx = 0; input.dy = 0; }
@@ -379,6 +402,7 @@ async function main() {
     events.time = simTime;
     while (acc >= FIXED && steps < 4) {
       movers.pre(FIXED);
+      god.arts.fixed(FIXED);
       if (godOn) god.fixed(FIXED);
       else {
         player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
@@ -397,6 +421,7 @@ async function main() {
     movers.render(acc / FIXED);
     movers.tick(dt);
     system.tick(dt);
+    game.cartography.update(dt);
 
     if (!godOn) techs.tick(dt);
     env.water.update(dt);
@@ -463,13 +488,16 @@ async function main() {
     course.update(dt);
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
-    const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1);
-    sun.intensity = T.visual.sun * (1 - under);
-    scene.fog.density = T.visual.fog * (1 - 0.6 * under);
+    game.dunes.update(dt);
+    const dm = game.dunes.mix; // (in the dunes the sun is a real one)
+    const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
+    sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
+    scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
+    player.killY = game.dunes.active ? DUNE.y - 90 : -100;
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
-    else scene.fog.color.setHex(PALETTE.deep);
+    else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;

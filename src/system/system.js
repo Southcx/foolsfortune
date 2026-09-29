@@ -1,5 +1,5 @@
 import { T } from '../config.js';
-import { ABILITIES, BY_ID, BY_TECH } from './skills.js';
+import { ALL_ARTS, BY_ID, BY_TECH } from './skills.js';
 
 // ---------------------------------------------------------------------------
 // The System: watches what you do (game.events) and teaches you things for it. It owns
@@ -32,7 +32,7 @@ export class System {
   // ---- queries ----
   get lab() { return !!this.state.lab; }
   unlocked(id) { return !!this.state.unlocked[id]; }
-  has(id) { return this.lab || this.unlocked(id); }
+  has(id) { return this.lab || this.unlocked(id) || (!id.includes('.') && !!BY_ID[id]?.basic); }
   variantId(abilityId) { const v = this.state.variant[abilityId]; return v && this.has(`${abilityId}.${v}`) ? v : null; }
 
   /** How many arts plus variants you own. */
@@ -60,6 +60,21 @@ export class System {
     return this.proxies.get(key);
   }
 
+  /** A god art's tuning with the selected variant laid over it (T.arts[id]). */
+  artCfg(id) {
+    const base = T.arts[id];
+    const a = BY_ID[id];
+    if (!a || !base) return base;
+    const vid = this.variantId(id);
+    if (!vid) return base;
+    const key = `art:${id}.${vid}`;
+    if (!this.proxies.has(key)) {
+      const over = a.variants.find((v) => v.id === vid).cfg;
+      this.proxies.set(key, new Proxy(base, { get: (t, k) => (k in over ? over[k] : t[k]) }));
+    }
+    return this.proxies.get(key);
+  }
+
   // ---- progress ----
   /** [0..1] for one goal, or for a skill (the mean over its goals). */
   goalFrac(skillId, i, g) { return Math.min(1, (this.state.progress[goalKey(skillId, i)] || 0) / g.n); }
@@ -69,7 +84,8 @@ export class System {
   /** Everything still to learn right now: [{ id, goals }] (variants only once their ability is yours). */
   pending() {
     const out = [];
-    for (const a of ABILITIES) {
+    for (const a of ALL_ARTS) {
+      if (a.basic) { for (const v of a.variants) if (!this.unlocked(`${a.id}.${v.id}`)) out.push({ id: `${a.id}.${v.id}`, goals: v.goals, ability: a, variant: v }); continue; }
       if (!this.unlocked(a.id)) out.push({ id: a.id, goals: a.goals, ability: a });
       else for (const v of a.variants) if (!this.unlocked(`${a.id}.${v.id}`)) out.push({ id: `${a.id}.${v.id}`, goals: v.goals, ability: a, variant: v });
     }
@@ -152,7 +168,7 @@ export class System {
   /** Take a saved state, keeping only what this build knows about. */
   adopt(raw) {
     const known = new Set();
-    for (const a of ABILITIES) { known.add(a.id); for (const v of a.variants) known.add(`${a.id}.${v.id}`); }
+    for (const a of ALL_ARTS) { known.add(a.id); for (const v of a.variants) known.add(`${a.id}.${v.id}`); }
     const s = { v: VERSION, lab: raw.lab !== false, unlocked: {}, progress: {}, variant: {} };
     for (const k of Object.keys(raw.unlocked || {})) if (known.has(k) && raw.unlocked[k]) s.unlocked[k] = true;
     for (const [k, v] of Object.entries(raw.progress || {})) if (Number.isFinite(v) && v >= 0) s.progress[k] = v;

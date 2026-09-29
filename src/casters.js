@@ -292,27 +292,6 @@ export class Casters {
     g.events?.emit('befriend', {});
   }
 
-  // ---- the god hand's casts: the same shells, dropped where the cursor is ----
-  cast(id, point, normal = UP, height = T.god.castHeight) {
-    const g = this.game, S = this.shells;
-    const above = point.clone().addScaledVector(UP, height);
-    const down = new THREE.Vector3(0, -1, 0);
-    switch (id) {
-      case 'groove': this.openGroove(point.clone().addScaledVector(UP, 1.3)); return true;
-      case 'anchor': { const t = this.near(point, 1.8); if (!t || !this.pin(t)) return false; return true; }
-      case 'hatch': { const t = this.near(point, 1.6, (r) => r.clapper || r.ent?.type === 'breakable'); return !!t && this.hatchAt(t); }
-      case 'well': S.openWell(point.clone().addScaledVector(UP, 0.9)); return true;
-      case 'bomb': S.launch('bomb', above, down, 5, 0); sfx.thump(); return true;
-      case 'slip': S.launch('slip', above, down, 5, 0); sfx.thump(); return true;
-      case 'push': S.pushBurst(point, T.god.pushRadius, T.god.pushForce); return true;
-      case 'mark': S.mark({ ray: { origin: above, dir: down }, muzzle: above }); return true;
-      case 'slicer': S.slicer({ camera: g.camera, ray: { origin: above, dir: down }, muzzle: above }); return true;
-      case 'ricochet': S.ricochet({ ray: { origin: above.clone(), dir: point.clone().sub(above).normalize() }, muzzle: above }); return true;
-      case 'homing': S.homing({ ray: { origin: above.clone(), dir: point.clone().sub(above).normalize() }, muzzle: above, camera: g.camera }); return true;
-      default: return false;
-    }
-  }
-
   update(dt) {
     this.stepGrooves(dt);
     this.stepAnchors(dt);

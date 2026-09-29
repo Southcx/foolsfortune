@@ -1,4 +1,4 @@
-import { ABILITIES, BY_ID } from './skills.js';
+import { ABILITIES, GOD_ARTS, BY_ID } from './skills.js';
 import { sfx } from '../audio.js';
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,8 @@ const CSS = `
 #codex .lab.on { border-color: var(--accent); background: rgba(196,106,69,.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
 #codex .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #codex .x:hover, #codex button:hover { background: rgba(196,106,69,.35); }
-#codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); }
+#codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; gap: 22px; }
+#codex .shelf .tab { cursor: pointer; opacity: .5; padding-bottom: 3px; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
@@ -68,6 +69,7 @@ export class Codex {
     this.game = game;
     this.sys = game.system;
     this.open = false;
+    this.shelf = 'move'; // which shelf is open: the Movement Arts, or the God Arts
     this.sel = ABILITIES[0].id;
     this.msg = '';
     const st = document.createElement('style');
@@ -85,7 +87,7 @@ export class Codex {
     game.events?.on('system.unlock', (e) => {
       if (this.sys.lab) return; // (Lab mode has everything: nothing to announce)
       const a = BY_ID[e.ability];
-      this.toast(e.variant ? 'VARIANT LEARNED' : 'MOVEMENT ART LEARNED', e.title.toUpperCase(),
+      this.toast(e.variant ? 'VARIANT LEARNED' : a.realm === 'god' ? 'GOD ART LEARNED' : 'MOVEMENT ART LEARNED', e.title.toUpperCase(),
         e.variant ? `${a.name} · press B to choose it` : `${a.blurb.split('.')[0]}. (B: the Codex)`);
       sfx.systemUnlock?.();
     });
@@ -131,11 +133,17 @@ export class Codex {
     head.appendChild(x);
     cx.appendChild(head);
 
-    cx.appendChild(el('div', 'shelf', 'MOVEMENT ARTS'));
+    const tabs = el('div', 'shelf');
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS']]) {
+      const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
+      t.onclick = () => { this.shelf = id; this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
+      tabs.appendChild(t);
+    }
+    cx.appendChild(tabs);
     const body = el('div', 'body');
     const list = el('div', 'list');
     this.rows = {};
-    for (const a of ABILITIES) {
+    for (const a of (this.shelf === 'god' ? GOD_ARTS : ABILITIES)) {
       const own = s.has(a.id);
       const frac = s.skillFrac(a.id, a.goals);
       const nvar = a.variants.filter((v) => s.has(`${a.id}.${v.id}`)).length;
@@ -194,10 +202,12 @@ export class Codex {
     card.appendChild(el('p', '', a.blurb));
     if (a.follows) card.appendChild(el('p', '', `<span style="color:var(--accent)">FOLLOW-UPS</span> · ${a.follows.join(' · ')}`));
     const btns = el('div', 'btns');
-    const go = el('button', '', 'GO TO STATION');
-    go.title = 'Teleport to where this is practised (the basement labs)';
-    go.onclick = () => this.goTo(a.station);
-    btns.appendChild(go);
+    if (a.station) {
+      const go = el('button', '', 'GO TO STATION');
+      go.title = 'Teleport to where this is practised (the basement labs)';
+      go.onclick = () => this.goTo(a.station);
+      btns.appendChild(go);
+    } else card.appendChild(el('p', '', '<span style="color:var(--accent)">USE IT</span> · ~ turns you into the hand; right click holds the art wheel; it works on ground you have mapped (M, N).'));
     card.appendChild(btns);
     card.appendChild(el('div', 'in', 'VARIANTS'));
     const vars = el('div', 'vars');

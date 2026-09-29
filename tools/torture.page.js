@@ -20,13 +20,14 @@
   const G = () => window.__game;
 
   const KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'KeyC', 'AltLeft', 'KeyF', 'KeyV'];
-  const TAPS = ['Space', 'Space', 'Space', 'KeyE', 'KeyC', 'ShiftLeft', 'KeyF', 'KeyV', 'KeyV'];
+  const TAPS = ['Space', 'Space', 'Space', 'KeyE', 'KeyC', 'ShiftLeft', 'KeyF', 'KeyV', 'KeyV', 'KeyN', 'KeyY'];
 
   function starts(g) {
     const B = -14;
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -49,6 +50,7 @@
       if (!placed) g.course.teleport(new g.THREE.Vector3(m.cur.p.x + 0.6, m.cur.p.y + 0.9, m.cur.p.z), 0);
     } else if (s.cp !== undefined) g.course.goTo(s.cp, 'dash');
     else if (s.hub) g.course.toHub();
+    else if (s.dunes) g.course.toDunes();
     else {
       P.pos.set(...s.at); P.prevPos.copy(P.pos); P.renderPos.copy(P.pos); P.vel.set(0, 0, 0); P.yaw = s.yaw; P.bodyYaw = s.yaw; P.place();
     }

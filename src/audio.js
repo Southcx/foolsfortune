@@ -279,6 +279,31 @@ class Sfx {
     };
   }
 
+  /** The surfer's hiss and hum: wind over sand and the emitter. Returns { set(speedFrac, boost, air), stop() }. */
+  surfLoop() {
+    if (!this.ok()) return null;
+    const ctx = this.ctx;
+    const src = ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.7;
+    const ng = ctx.createGain(); ng.gain.value = 0;
+    src.connect(bp).connect(ng).connect(this.master);
+    const o = ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = 90;
+    const of = ctx.createBiquadFilter(); of.type = 'lowpass'; of.frequency.value = 500;
+    const og = ctx.createGain(); og.gain.value = 0;
+    o.connect(of).connect(og).connect(this.master);
+    src.start(); o.start();
+    return {
+      set(k, boost = 0, air = 0) {
+        const t = ctx.currentTime;
+        bp.frequency.setTargetAtTime(500 + k * 2600 + boost * 900, t, 0.08);
+        ng.gain.setTargetAtTime((0.04 + k * 0.32) * (air ? 0.55 : 1), t, 0.08);
+        o.frequency.setTargetAtTime(80 + k * 90 + boost * 90, t, 0.08);
+        og.gain.setTargetAtTime(0.05 + boost * 0.12, t, 0.08);
+      },
+      stop() { const t = ctx.currentTime; ng.gain.setTargetAtTime(0, t, 0.05); og.gain.setTargetAtTime(0, t, 0.05); src.stop(t + 0.3); o.stop(t + 0.3); },
+    };
+  }
+
   mark() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.6, 0.6);
@@ -681,6 +706,15 @@ class Sfx {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.6, 0.7);
     for (let i = 0; i < 4; i++) this.tone(t + i * 0.12, 0.8, { f0: 392 * [1, 1.25, 1.5, 2][i], f1: 392 * [1, 1.25, 1.5, 2][i], type: 'sine', gain: 0.22, dest: d });
+  }
+
+  // a psychic survey: a soft sonar sweep
+  survey() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.8);
+    this.tone(t, 0.9, { f0: 300, f1: 1400, type: 'sine', gain: 0.28, dest: d });
+    this.tone(t + 0.18, 0.9, { f0: 450, f1: 2100, type: 'triangle', gain: 0.12, dest: d });
+    this.noise(t, 0.8, { type: 'bandpass', f0: 500, f1: 4000, q: 1.2, gain: 0.25, attack: 0.3, dest: d });
   }
 }
 

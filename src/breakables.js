@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { RAPIER, GROUPS, G, groups } from './physics.js';
 import { T, PALETTE } from './config.js';
-import { addOutline } from './outline.js';
+import { addOutline, ensureSmoothNormals } from './outline.js';
 import { sfx } from './audio.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
 import { crackPaths, randomPaths, setCracks } from './cracks.js';
@@ -282,6 +282,48 @@ export class Breakables {
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     return center;
+  }
+
+  /**
+   * Re-form an intact pot: a new scale (of its own original), a twist about its axis, scalloped
+   * lobes (the god arts Swell and Wring). Rebuilds the mesh and its collider in place; the body,
+   * its motion and its identity stay. Returns false if it can't be (not a pot, or gone).
+   */
+  reshape(ent, { scale = 1, twist = 0, lobe = 0 } = {}) {
+    if (ent?.type !== 'breakable' || !ent.alive || ent.def.hang || ent.def.target) return false;
+    const base = ent.shape || (ent.shape = { scale: ent.def.scale ?? 1, twist: PROFILES[ent.kind].twist || 0, lobes: PROFILES[ent.kind].lobes || null, hp: ent.maxHp });
+    const P = prepProfile(ent.kind, base.scale * scale, { mat: ent.def.mat });
+    P.twist = base.twist + twist;
+    if (lobe > 0.01) { P.lobes = { n: 5, amp: lobe, from: 0.12, to: 0.92 }; P.rMax *= 1 + lobe; }
+    else P.lobes = base.lobes;
+    // the look
+    const old = ent.mesh.geometry;
+    ent.mesh.geometry = buildPotGeometry(P, ent.color);
+    ensureSmoothNormals(ent.mesh.geometry);
+    if (ent.mesh.userData.outline) ent.mesh.userData.outline.geometry = ent.mesh.geometry;
+    old.dispose();
+    if (ent.cracks) { for (const k of ['darkMesh', 'goldMesh']) if (ent.cracks[k]) { ent.mesh.remove(ent.cracks[k]); ent.cracks[k].geometry.dispose(); ent.cracks[k] = null; } ent.cracks.dark = []; ent.cracks.gold = []; }
+    if (ent.extras) {
+      for (const x of ent.extras) ent.mesh.remove(x);
+      ent.extras = DECOR[ent.kind] ? DECOR[ent.kind](P, ent.color, ent.def.variant || 0) : null;
+      for (const x of ent.extras || []) { x.castShadow = true; addOutline(x); ent.mesh.add(x); }
+    }
+    // the body: a new hull under the same body (the mass follows the volume)
+    this.physics.byCollider.delete(ent.col.handle);
+    this.physics.world.removeCollider(ent.col, false);
+    const cd = (RAPIER.ColliderDesc.convexHull(hullPoints(P)) || RAPIER.ColliderDesc.cylinder(P.height / 2, P.rMax))
+      .setDensity(P.M.density).setFriction(0.8).setRestitution(0.1).setCollisionGroups(GROUPS.prop).setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS);
+    ent.col = this.physics.world.createCollider(cd, ent.body);
+    ent.col.setContactForceEventThreshold(ent.body.mass() * 45 * FRAGILE[0]);
+    this.physics.register(ent.col, ent);
+    ent.P = P;
+    ent.size = Math.max(P.fullHeight, P.rMax * 2);
+    const k = ent.hp / ent.maxHp;
+    ent.maxHp = base.hp * Math.pow(scale, 1.5);
+    ent.hp = ent.maxHp * Math.max(0.5, k);
+    ent.crackStage = 0;
+    ent.body.wakeUp();
+    return true;
   }
 
   isSliceable(ent) {

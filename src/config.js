@@ -145,6 +145,22 @@ export const DEFAULTS = {
     clapperDrop: 6, // baubles inside every clapperjar
     markedDrop: 2, // baubles from a marked pot
   },
+  // psychic cartography and the Zone of Influence: see cartography.js
+  zoi: {
+    tiers: [0.08, 0.45, 0.85], // knowledge that makes a cell sensed / charted / understood
+    baseRadius: 6, baseTier: 2, // around the vessel, always charted
+    passiveCap: 0.5, passiveRate: 0.5, // walking about charts (never past .5)
+    pulseRadius: 14, godPulseRadius: 20, pulseCost: 12, pulseCooldown: 3,
+    roomRadius: 14, roomCells: 70, // cells charted near a named place for it to count as mapped
+  },
+  // the god arts (godarts.js): Lachryma costs and reach
+  arts: {
+    telekinesis: { drain: 3, massDrain: 0.12 }, // per second held, plus this per kg
+    sunder: { cost: 8, perCut: 2, maxLen: 12, height: 3.2 },
+    swell: { cost: 4, drain: 5, min: 0.4, max: 2.6 },
+    wring: { cost: 6, drain: 6, twist: 3.6, lobe: 0.35 },
+    manifest: { cost: 8, perVol: 0.6, maxLen: 9, maxH: 4, width: 1.1, life: 40, max: 6 },
+  },
   // the god hand (~): see godmode.js
   god: {
     raids: true, firstWave: 22, waveEvery: 34, waveBase: 2, waveGrow: 1, vesselHp: 100,
@@ -263,6 +279,7 @@ export const DEFAULTS = {
     carry: { enabled: true, reach: 1.15, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // F at a small thing: hoist it; fire throws
     push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold F at a heavy crate
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
+    surfer: { enabled: true, hover: 0.55, sail: 2.4, drag: 0.9, roll: 0.05, grip: 3.2, turn: 1.9, maxSpeed: 42, slopeGain: 1.6, follow: 9, gravity: 24, boostMult: 2.3, boostCost: 22, hop: 7.6, hopCharge: 6 }, // the Solar Surfer, in the dunes: Y stows / summons
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {

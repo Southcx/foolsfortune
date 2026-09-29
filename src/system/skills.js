@@ -111,6 +111,66 @@ export const ABILITIES = [
   },
 ];
 
-/** The Movement Arts; the rest of the techs (swim, ladders, hanging) are body moves. */
-export const BY_ID = Object.fromEntries(ABILITIES.map((a) => [a.id, a]));
+// ---------------------------------------------------------------------------
+// The God Arts: what the hand can do (godarts.js). Same shape as the Movement Arts, learned the
+// same way; they run on Lachryma and work only where the courier's Zone of Influence reaches
+// (cartography.js). `basic` arts are known from the start. Events: god.grab / god.throw /
+// god.sunder / god.swell / god.wring / god.manifest, and map.pulse / map.room from the cartography.
+// ---------------------------------------------------------------------------
+export const GOD_ARTS = [
+  {
+    realm: 'god', id: 'telekinesis', key: '1', name: 'Telekinesis', glyph: '⤒', basic: true, input: 'hold left click on something loose',
+    blurb: 'Lift anything loose (pots, crates, clapperjars, a mortar ball in flight) and throw it as fast as the hand was moving. Holding costs Lachryma, more for heavier things; let go when it runs dry. Works on sensed ground.',
+    hint: 'The first thing the hand ever learned.',
+    goals: [],
+    variants: [
+      { id: 'heavy', name: 'Heavy Hand', blurb: 'Holding is cheaper, and the throw is harder.', cfg: { drain: 1.8, massDrain: 0.07 },
+        hint: 'Throw a great many things.', goals: [count('god.throw', 30, 'things thrown')] },
+    ],
+  },
+  {
+    realm: 'god', id: 'sunder', key: '2', name: 'Sunder', glyph: '╱', input: 'left click and drag across the ground',
+    blurb: 'Draw a blade across the ground: everything it passes through, in the air above the line, is cut in two along that plane. A cut costs Lachryma, a little more for every extra thing it takes. Works on charted ground.',
+    hint: 'Cut pots with the psygun\'s slice shell, again and again.',
+    goals: [count('break', 8, 'pots sliced', (e) => e.cause === 'sliced')],
+    variants: [
+      { id: 'guillotine', name: 'Guillotine', blurb: 'A longer, taller blade.', cfg: { maxLen: 18, height: 4.8 },
+        hint: 'Sunder until it is a habit.', goals: [count('god.sunder', 15, 'cuts')] },
+    ],
+  },
+  {
+    realm: 'god', id: 'swell', key: '3', name: 'Swell', glyph: '⤢', input: 'left click a pot or crate and drag up / down',
+    blurb: 'Grow or shrink a pot or crate: drag up to swell it, down to shrink it. Its weight follows its size. Costs Lachryma while you reshape it. Works on charted ground.',
+    hint: 'Lift and throw things with the hand, again and again.',
+    goals: [count('god.throw', 10, 'things thrown by the hand')],
+    variants: [
+      { id: 'colossus', name: 'Colossus', blurb: 'Swell things to four times their size.', cfg: { max: 4, min: 0.25 },
+        hint: 'Reshape a dozen things.', goals: [count('god.swell', 12, 'things swelled')] },
+    ],
+  },
+  {
+    realm: 'god', id: 'wring', key: '4', name: 'Wring', glyph: '↺', input: 'left click a pot and drag',
+    blurb: 'Wring the clay: drag sideways to twist a pot about its axis, up to scallop its walls. It stays the same clay. Costs Lachryma while you work it. Works on understood ground only.',
+    hint: 'Know two places well: map them, and survey them.',
+    goals: [count('map.room', 2, 'places mapped')],
+    variants: [
+      { id: 'wringer', name: 'Wringer', blurb: 'Twist it round twice, scallop it deep.', cfg: { twist: 7, lobe: 0.5 },
+        hint: 'Wring a dozen pots.', goals: [count('god.wring', 12, 'pots wrung')] },
+    ],
+  },
+  {
+    realm: 'god', id: 'manifest', key: '5', name: 'Manifest', glyph: '▲', input: 'left click, drag and hold',
+    blurb: 'Raise a wall of clay from the floor: press, drag for its length, hold for its height. It stands for a while, then crumbles; whatever stands where it rises is lifted with it. Costs Lachryma by its size. Works on understood ground only.',
+    hint: 'Map four places, and survey ten times.',
+    goals: [count('map.room', 4, 'places mapped'), count('map.pulse', 10, 'surveys')],
+    variants: [
+      { id: 'bastion', name: 'Bastion', blurb: 'Taller, longer, and it stands for a minute and a half.', cfg: { maxH: 6, maxLen: 14, life: 90 },
+        hint: 'Raise a great many walls.', goals: [count('god.manifest', 12, 'walls raised')] },
+    ],
+  },
+];
+export const ALL_ARTS = [...ABILITIES, ...GOD_ARTS];
+
+/** All the arts by id; BY_TECH covers the Movement Arts only (the rest of the techs (swim, ladders, hanging) are body moves). */
+export const BY_ID = Object.fromEntries(ALL_ARTS.map((a) => [a.id, a]));
 export const BY_TECH = Object.fromEntries(ABILITIES.map((a) => [a.tech, a]));

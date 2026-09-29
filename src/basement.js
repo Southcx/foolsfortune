@@ -443,6 +443,7 @@ export class Course {
       { id: 'kiln', code: 'KeyK', tag: 'K', name: 'KILN STACK', blurb: 'a 57 m well, a freight lift, a ladder', group: 'MOVEMENT TECHS', cp: this.cps.findIndex((c) => c.room === 'K1') },
       { id: 'rig', code: 'KeyR', tag: 'R', name: 'THE RIGGING', blurb: 'hang · latch · bars · cable · beams · grates · poles · ropes', group: 'MOVEMENT TECHS', cp: this.rigN },
       { id: 'hands', code: 'KeyH', tag: 'H', name: 'THE HANDS', blurb: 'lift · throw · push · kick · parry · recoil', group: 'MOVEMENT TECHS', cp: this.handN },
+      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'a sand sea far below · the Solar Surfer (Y stows it)', group: 'THE OPEN', spawn: 'dunes' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id));
     this.game.indexMenu = this.menu;
@@ -470,6 +471,7 @@ export class Course {
     if (!r) return;
     if (r.spawn === 'lab') this.toLab();
     else if (r.spawn === 'mill') this.toMill();
+    else if (r.spawn === 'dunes') this.toDunes();
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -478,6 +480,18 @@ export class Course {
     this.running = false;
     this.current = -1;
     this.lapT = null;
+    sfx.geyser();
+  }
+
+  /** The open layer: the sand sea. You arrive on the Solar Surfer. */
+  toDunes() {
+    const D = this.game.dunes;
+    this.game.player.killY = D.center.y - 90; // (before the next step: it is far below the world's end)
+    this.teleport(D.spawnPoint(), Math.PI * 0.75);
+    this.running = false;
+    this.current = -1;
+    this.lapT = null;
+    this.game.player.techs?.get?.('surfer')?.mount();
     sfx.geyser();
   }
 
@@ -573,7 +587,7 @@ export class Course {
     const stats = document.getElementById('stats');
     if (stats) stats.style.visibility = here ? 'hidden' : 'visible'; // the shatter count means nothing down here
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
-    if (inp.wasPressed('KeyR')) { this.respawn(); return; }
+    if (inp.wasPressed('KeyR')) { if (g.dunes.active) this.toDunes(); else this.respawn(); return; }
     if (inp.wasPressed('KeyH')) { this.toHub(); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
@@ -614,6 +628,7 @@ export class Course {
       const best = cp && this.best[`room${cp.room}`];
       this.el.innerHTML = cp && this.running
         ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
+        : g.dunes.active ? 'DUNES · A D steer · W S sail · Shift flare · Space hop · Y board · H hub'
         : 'HUB · F at the console: pick a room · R checkpoint · H hub';
     }
   }

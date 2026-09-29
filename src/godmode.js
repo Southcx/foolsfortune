@@ -3,7 +3,8 @@ import { T, PALETTE } from './config.js';
 import { RAPIER } from './physics.js';
 import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
-import { SHELL_TYPES, SHELL_KEYS } from './shells.js';
+import { GodArts, ART_BY_ID, ARTS } from './godarts.js';
+import { ZoiVeil } from './cartography.js';
 import { crackMat, goldMat, ribbonGeometry } from './cracks.js';
 
 // ---------------------------------------------------------------------------------------
@@ -15,9 +16,8 @@ import { crackMat, goldMat, ribbonGeometry } from './cracks.js';
 //                  come in waves, kamikaze), lobber balls, blasts, and whatever you throw at it
 //                  crack it; at zero it shatters and reforges, more gold-seamed, a few seconds
 //                  later. The hand can't roam further from it than its tether.
-//   the hand       LMB grabs anything loose (pots, crates, clapperjars, a lobber's ball in
-//                  flight) and throws it; RMB casts the selected shell where the cursor is, from
-//                  above. 1-9, 0, - pick shells; the hand's shells come back on their own.
+//   the hand       LMB uses the selected god art (grab and throw anything loose, cut,
+//                  swell, wring, raise clay); hold RMB for the art wheel. (Shells are the psygun's. The hand has GOD ARTS instead: see godarts.js.)
 //   the view       Q / E turn it (a smooth eighth of a turn), the wheel zooms, WASD or the screen
 //                  edges pan. Ceilings and everything above head height are cut away.
 //   counters       grab a raider and throw it somewhere else, cut or blow it up, pin it (ANCHOR),
@@ -60,13 +60,15 @@ export class GodMode {
     this.handPos = new THREE.Vector3(); // the hand's smoothed cursor point
     this.samples = []; // recent cursor points, for the throw
     this.castCool = 0;
-    this.regenT = 0;
     this.raid = { t: T.god.firstWave, wave: 0, on: T.god.raids, alive: 0, banner: 0 };
     this.vessel = { pos: new THREE.Vector3(), hp: T.god.vesselHp, max: T.god.vesselHp, alive: true, mendBy: null, scars: 0, reforgeT: 0, flash: 0, cracks: { dark: [], gold: [] } };
     this.buildHand(handGltf);
     this.buildVessel(jarGltf);
     this.buildCursor();
     this.buildHud();
+    this.arts = new GodArts(this);
+    this.veil = new ZoiVeil(game, game.cartography);
+    this.veil.visible = false;
   }
 
   get controlling() { return this.state === 'in' || this.state === 'on'; }
@@ -152,7 +154,7 @@ export class GodMode {
     el.id = 'god';
     el.innerHTML = `<div class="vessel"><div class="name">PNEUKA VESSEL <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
       <div class="banner"></div>
-      <div class="hint">LMB grab · release throws · RMB cast shell · 1-0 − shells · Q/E turn · wheel zoom · WASD pan · X raids · ~ back to the Courier</div>`;
+      <div class="hint">LMB use the art · hold RMB: the art wheel (or 1-5) · N survey · Q/E turn · wheel zoom · WASD pan · M map · X raids · ~ back to the Courier</div>`;
     document.body.appendChild(el);
     this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub'), banner: el.querySelector('.banner') };
   }
@@ -165,7 +167,7 @@ export class GodMode {
 
   toggle() {
     if (this.state === 'off') {
-      if (!this.canEnter()) { this.game.hud.popup('FIND SOLID GROUND'); return; }
+      if (!this.canEnter()) { this.game.hud.popup(this.game.techs.active?.id === 'surfer' ? 'STOW THE BOARD FIRST (Y)' : 'FIND SOLID GROUND'); return; }
       this.enter();
     } else if (this.state === 'on') {
       if (!this.vessel.alive) { this.game.hud.popup('THE VESSEL IS REFORGING'); return; }
@@ -197,6 +199,10 @@ export class GodMode {
     this.raid.alive = 0;
     document.exitPointerLock?.();
     g.hud.el.cross && (g.hud.el.cross.style.display = 'none');
+    g.hud.el.shells.style.display = 'none'; // (the psygun's shells give way to the hand's arts)
+    this.arts.showBar(true);
+    this.veil.visible = true; this.veil.refresh();
+    g.lachryma.addModifier('god', { regenMult: 1.6, regenDelayMult: 0.5 });
     this.el.root.style.display = 'block';
     this.hand.root.visible = true;
     sfx.godIn();
@@ -207,6 +213,7 @@ export class GodMode {
   exit() {
     const g = this.game, P = g.player;
     this.releaseGrab(true);
+    this.arts.cancel(); this.arts.closeWheel(false);
     this.state = 'out'; this.active = false; this.t = 0;
     this.cam.exitFrom = null;
     g.character.setHidden(false);
@@ -217,6 +224,7 @@ export class GodMode {
     this.ring.visible = this.disc.visible = false;
     for (const b of this.beads) b.visible = false;
     g.hud.el.cross && (g.hud.el.cross.style.display = '');
+    this.restoreUi();
     this.el.root.style.display = 'none';
     this.renderer.clippingPlanes = [];
     if (g.input.enabled) g.input.requestLock();
@@ -237,13 +245,26 @@ export class GodMode {
     this.ring.visible = this.disc.visible = false;
     for (const b of this.beads) b.visible = false;
     g.hud.el.cross && (g.hud.el.cross.style.display = '');
+    this.arts.cancel(); this.arts.closeWheel(false);
+    this.restoreUi();
     this.el.root.style.display = 'none';
     this.renderer.clippingPlanes = [];
+  }
+
+  /** Back to the psygun's HUD. */
+  restoreUi() {
+    const g = this.game;
+    g.hud.el.shells.style.display = '';
+    this.arts.showBar(false);
+    this.arts.tip.style.display = 'none';
+    this.veil.visible = false;
+    g.lachryma.removeModifier('god');
   }
 
   /** The room was reset: nothing held, no raiders. */
   onReset() {
     this.releaseGrab(true);
+    this.arts.clear();
     this.thrown.length = 0;
     this.raid.t = T.god.firstWave;
     this.raid.alive = 0;
@@ -267,8 +288,6 @@ export class GodMode {
     if (this.t > 0.6) this.updateHand(dt);
     this.updateVessel(dt);
     this.updateRaids(dt);
-    this.regen(dt);
-    this.castCool -= dt;
     this.updateHud(dt);
   }
 
@@ -277,7 +296,7 @@ export class GodMode {
     if (input.wasPressed('KeyQ')) C.yawT += Math.PI / 4;
     if (input.wasPressed('KeyE')) C.yawT -= Math.PI / 4;
     if (input.wheel) C.distT = THREE.MathUtils.clamp(C.distT * Math.exp(input.wheel * 0.0012), T.god.minDist, T.god.maxDist);
-    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus'].forEach((k, i) => { if (input.wasPressed(k)) g.shells.select(i); });
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
     if (input.wasPressed('KeyX')) { this.raid.on = !this.raid.on; g.hud.popup(this.raid.on ? 'RAIDS ON' : 'RAIDS OFF'); }
   }
 
@@ -311,7 +330,7 @@ export class GodMode {
     const hit = g.physics.raycast({ x: C.focus.x, y: C.groundY + 1.8, z: C.focus.z }, DOWN, 6, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     if (hit) C.groundY = THREE.MathUtils.damp(C.groundY, hit.point.y, 6, dt);
     C.focus.y = C.groundY;
-    this.clipPlane.constant = C.groundY + T.god.clipAbove;
+    this.clipPlane.constant = C.groundY + (g.dunes?.active ? 400 : T.god.clipAbove); // (no ceilings on the open layer)
     this.renderer.clippingPlanes = [this.clipPlane];
   }
 
@@ -377,6 +396,7 @@ export class GodMode {
     const V = this.vessel;
     K.far = Math.hypot(K.point.x - V.pos.x, K.point.z - V.pos.z) > T.god.range;
     K.ok = !K.far;
+    K.tier = this.game.cartography.tierAt(K.point.x, K.point.y, K.point.z).tier; // (the Zone of Influence under the hand)
   }
 
   updateHand(dt) {
@@ -384,12 +404,21 @@ export class GodMode {
     // ---- what's under the cursor
     const filter = (r) => !r.ent?.carried && !r.clapper?.job;
     this.hover = K.ok && !this.grab && K.start ? g.shells.casters.pick(K.start, K.ray.dir, 250, 0.55, filter) : null;
-    // ---- grab / release
-    if (input.wasPressed('Mouse0') && !this.grab && K.ok && this.hover) this.beginGrab(this.hover);
-    else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.hud.popup('OUT OF REACH');
-    if (this.grab && !input.isDown('Mouse0')) this.releaseGrab(false);
-    // ---- cast
-    if (input.wasPressed('Mouse2') && this.castCool <= 0) this.castShell();
+    // ---- the art wheel (hold the right button), and the art in hand
+    const A = this.arts;
+    if (input.wasPressed('Mouse2') && !this.grab && !A.live) A.openWheel(input.mx, input.my);
+    if (A.wheelOpen) { A.updateWheel(input.mx, input.my); if (!input.isDown('Mouse2')) A.closeWheel(true); }
+    else if (A.art.id === 'telekinesis') {
+      // ---- grab / release
+      if (input.wasPressed('Mouse0') && !this.grab && K.ok && this.hover) {
+        const hp = this.hoverPoint();
+        if (A.gate(ART_BY_ID.telekinesis, hp)) this.beginGrab(this.hover);
+      } else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.hud.popup('OUT OF REACH');
+      if (this.grab && !input.isDown('Mouse0')) this.releaseGrab(false);
+    } else {
+      if (this.grab) this.releaseGrab(false);
+      A.update(dt);
+    }
     // ---- the hand follows the cursor (the held thing's height is the plane the cursor slides on)
     let target = K.point;
     if (this.grab) {
@@ -409,12 +438,24 @@ export class GodMode {
     this.samples.push({ t: this.t, p: target.clone() });
     while (this.samples.length && this.t - this.samples[0].t > 0.2) this.samples.shift();
     // ---- pose the hand and draw it
-    H.grab = THREE.MathUtils.damp(H.grab, this.grab ? 1 : this.hover ? 0.18 : 0, 16, dt);
-    H.point = Math.max(0, H.point - dt * 3.5);
+    const live = A.live, aid = A.art.id;
+    const gr = aid === 'telekinesis' ? (this.grab ? 1 : this.hover ? 0.18 : 0) : live ? (aid === 'sunder' ? 0 : aid === 'manifest' ? -0.15 : 0.7) : 0.12;
+    H.grab = THREE.MathUtils.damp(H.grab, gr, 16, dt);
+    H.point = (aid === 'sunder' && live) ? 1 : Math.max(0, H.point - dt * 3.5);
+    A.updateUi(dt);
+    this.veil.update(this.cam.focus, dt);
     this.poseHand(dt);
     this.placeHand(dt);
     this.placeReticle(dt);
     this.placeTether(dt);
+  }
+
+  /** Where the hovered thing is (for the Zone of Influence check). */
+  hoverPoint() {
+    const h = this.hover;
+    if (h?.clapper) return h.clapper.pos.clone();
+    if (h?.body?.isValid()) { const q = h.body.translation(); return new THREE.Vector3(q.x, q.y, q.z); }
+    return this.cursor.point.clone();
   }
 
   // ------------------------------------------------------------------ grabbing
@@ -486,6 +527,10 @@ export class GodMode {
     const g = this.game, V = this.vessel, gr = this.grab;
     if (gr && gr.target) {
       const t = gr.t;
+      // holding costs Lachryma, by weight; empty, the hand lets go
+      const mass = t.clapper ? 0.6 : t.body?.isValid() ? t.body.mass() : 0;
+      const C = this.arts.cfg('telekinesis');
+      if (!this.arts.drainOk(C.drain + Math.min(60, mass) * C.massDrain, dt)) { g.hud.popup('OUT OF LACHRYMA'); this.releaseGrab(false); return; }
       if (t.clapper) {
         const c = t.clapper;
         if (!c.alive) this.grab = null;
@@ -514,35 +559,6 @@ export class GodMode {
         this.thrown.splice(i, 1);
       }
     }
-  }
-
-  // ------------------------------------------------------------------ casting
-  castRadius(id) {
-    const S = T.shells;
-    return { push: T.god.pushRadius, well: S.well.radius, bomb: S.bomb.radius, mark: S.mark.radius, slip: S.slip.patch, groove: S.groove.radius, slicer: 0.8, anchor: 1.8, hatch: 1.6, ricochet: 0.8, homing: 1.2 }[id] || 1;
-  }
-
-  castShell() {
-    const g = this.game, K = this.cursor, type = g.shells.type, S = g.shells;
-    if (!K.ok) { g.hud.popup('OUT OF REACH'); return; }
-    if (S.counts[type.id] <= 0) { sfx.dryFire(); g.hud.popup(`NO ${type.name} SHELLS`); return; }
-    const ok = S.casters.cast(type.id, K.point.clone(), K.normal.clone(), Math.max(1.5, Math.min(T.god.castHeight, this.clipPlane.constant - 0.6 - K.point.y)));
-    if (!ok) { g.hud.popup(type.id === 'hatch' ? 'NOTHING TO HATCH' : type.id === 'anchor' ? 'NOTHING TO ANCHOR' : 'NO EFFECT'); sfx.fizzle(); this.castCool = 0.2; return; }
-    S.counts[type.id]--;
-    this.castCool = T.god.castCooldown;
-    this.hand.point = 1;
-    g.events?.emit('god.cast', { id: type.id });
-    // the shell's glyph flies down out of the hand (a little show)
-    g.fx.add.emit({ pos: K.point.clone().addScaledVector(UP, T.god.castHeight * 0.5), vel: new THREE.Vector3(0, -6, 0), life: 0.35, size: 0.2, sizeEnd: 0.02, color: new THREE.Color(PALETTE.hot), drag: 0.2 });
-  }
-
-  /** Shells come back to the hand on their own. */
-  regen(dt) {
-    const S = this.game.shells;
-    this.regenT += dt;
-    if (this.regenT < T.god.regenEvery) return;
-    this.regenT = 0;
-    for (const t of SHELL_TYPES) if (S.counts[t.id] < T.god.regenMax) S.counts[t.id]++;
   }
 
   // ------------------------------------------------------------------ the hand itself
@@ -606,8 +622,8 @@ export class GodMode {
   }
 
   placeReticle() {
-    const K = this.cursor, id = this.game.shells.type.id, V = this.vessel;
-    let r = this.grab ? 0.5 : this.castRadius(id);
+    const K = this.cursor, V = this.vessel, A = this.arts;
+    let r = this.grab ? 0.5 : A.art.id === 'manifest' ? 0.9 : 0.6;
     let p = this.grab ? this.grab.target || K.point : K.point;
     let n = this.grab ? UP : K.normal;
     // over something that can be picked up: the ring closes around it
@@ -624,7 +640,8 @@ export class GodMode {
       m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
       m.scale.setScalar(Math.max(0.35, r));
     }
-    const far = K.far;
+    const need = ART_BY_ID[A.art.id].needs, short = (K.tier ?? 0) < need || !A.owns(A.art.id);
+    const far = K.far || (short && !this.grab);
     this.ring.material.color.setHex(far ? 0xff4a3a : this.grab ? 0xffe0c0 : this.hover ? 0xffffff : PALETTE.glow);
     this.disc.material.color.copy(this.ring.material.color);
     this.ring.material.opacity = 0.55 + 0.25 * Math.sin(this.t * 6);
@@ -794,6 +811,7 @@ export class GodMode {
   // ------------------------------------------------------------------ raids
   updateRaids(dt) {
     const g = this.game, R = this.raid, V = this.vessel;
+    if (g.dunes?.active) { R.t = T.god.firstWave; return; } // (the open sand is quiet)
     if (this.state !== 'on' || !V.alive) return;
     const alive = g.clappers.list.filter((c) => c.alive && c.raider).length;
     if (R.alive > 0 && alive === 0 && R.wave > 0) this.waveCleared();
@@ -838,8 +856,8 @@ export class GodMode {
     const g = this.game;
     this.raid.banner = 1.8;
     this.el.banner.textContent = 'WAVE CLEARED';
-    // a gift of shells, and the vessel takes a breath
-    for (const t of SHELL_TYPES) g.shells.counts[t.id] = Math.min(T.shells.max, g.shells.counts[t.id] + 1);
+    // a gift of Lachryma, and the vessel takes a breath
+    g.lachryma.gain(30, 'wave');
     this.mendVessel(8);
     sfx.reforge();
     g.events?.emit('god.wave', { wave: this.raid.wave });
