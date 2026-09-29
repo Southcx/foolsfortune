@@ -1,6 +1,6 @@
 // A tiny event bus. Movement, techs, targets and the level report what happened
 // (`game.events.emit('slam.impact', { height: 52, target: true })`) and anything that cares
-// listens: the System (unlocks), the torture bot, tests. Emitting never throws into the
+// listens: the System (unlocks), the stress test, tests. Emitting never throws into the
 // caller, and the last few hundred events are kept for inspection.
 
 export class Events {

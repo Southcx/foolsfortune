@@ -1,4 +1,4 @@
-// The torture bot (page side). Injected by tools/torture.mjs into a running game with the
+// The stress test (page side). Injected by tools/stress.mjs into a running game with the
 // loop stopped (__game.manual = true); drives the simulation tick by tick with random,
 // human-shaped input, from teleports all over the workshop, and checks invariants after
 // every step:
@@ -13,8 +13,8 @@
 //   respawn     falling out of the world (a reset floor is fine; below the map is not)
 //
 // Usage from the console / runner:
-//   __torture.run({ seed: 1, runs: 20, ticks: 900 })            -> summary
-//   __torture.pairs({ seed: 1, runs: 3, ticks: 600 })           -> summary per tech pair
+//   __stress.run({ seed: 1, runs: 20, ticks: 900 })            -> summary
+//   __stress.pairs({ seed: 1, runs: 3, ticks: 600 })           -> summary per tech pair
 (() => {
   const mulberry = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const G = () => window.__game;
@@ -27,7 +27,7 @@
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
-    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -51,6 +51,7 @@
     } else if (s.cp !== undefined) g.course.goTo(s.cp, 'dash');
     else if (s.hub) g.course.toHub();
     else if (s.dunes) g.course.toDunes();
+    else if (s.siege) g.course.toSiege();
     else {
       P.pos.set(...s.at); P.prevPos.copy(P.pos); P.renderPos.copy(P.pos); P.vel.set(0, 0, 0); P.yaw = s.yaw; P.bodyYaw = s.yaw; P.place();
     }
@@ -108,7 +109,7 @@
 
       // ---- the god hand: now and then the Courier becomes a jar for a while; the hand is fuzzed (grabs, throws, casts, turns) ----
       const god = g.game.god;
-      if (god.state === 'off' && rnd() < 0.0012 && god.canEnter()) { inp.pressed.add('Backquote'); godLeft = 150 + Math.floor(rnd() * 400); god.raid.t = Math.min(god.raid.t, 5 + rnd() * 10); }
+      if (god.state === 'off' && rnd() < 0.0012 && god.canEnter()) { inp.pressed.add('Backquote'); godLeft = 150 + Math.floor(rnd() * 400); god.raids.t = Math.min(god.raids.t, 5 + rnd() * 10); }
       if (god.controlling) {
         if ((godT -= 1) <= 0) {
           godT = 5 + Math.floor(rnd() * 25);
@@ -221,5 +222,5 @@
     return out;
   }
 
-  window.__torture = { run, pairs, fuzzRun, place, starts, makeSink };
+  window.__stress = { run, pairs, fuzzRun, place, starts, makeSink };
 })();

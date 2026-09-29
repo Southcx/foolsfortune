@@ -1,3 +1,4 @@
+import { JointLimits, RIGIFY } from './rom.js';
 import * as THREE from 'three';
 import { T, PALETTE } from './config.js';
 import { RAPIER } from './physics.js';
@@ -5,6 +6,7 @@ import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { GodArts, ART_BY_ID, ARTS } from './godarts.js';
 import { ZoiVeil } from './cartography.js';
+import { Raids } from './raids.js';
 import { crackMat, goldMat, ribbonGeometry } from './cracks.js';
 
 // ---------------------------------------------------------------------------------------
@@ -60,13 +62,13 @@ export class GodMode {
     this.handPos = new THREE.Vector3(); // the hand's smoothed cursor point
     this.samples = []; // recent cursor points, for the throw
     this.castCool = 0;
-    this.raid = { t: T.god.firstWave, wave: 0, on: T.god.raids, alive: 0, banner: 0 };
     this.vessel = { pos: new THREE.Vector3(), hp: T.god.vesselHp, max: T.god.vesselHp, alive: true, mendBy: null, scars: 0, reforgeT: 0, flash: 0, cracks: { dark: [], gold: [] } };
     this.buildHand(handGltf);
     this.buildVessel(jarGltf);
     this.buildCursor();
     this.buildHud();
     this.arts = new GodArts(this);
+    this.raids = new Raids(game, this); // (raids happen in the Siege room only: raids.js)
     this.veil = new ZoiVeil(game, game.cartography);
     this.veil.visible = false;
   }
@@ -93,6 +95,26 @@ export class GodMode {
     this.chains = { index: chain('f_index'), middle: chain('f_middle'), ring: chain('f_ring'), pinky: chain('f_pinky'), thumb: chain('thumb') };
     this.handRest = new Map();
     for (const b of Object.values(bones)) this.handRest.set(b, b.quaternion.clone());
+    // fingers only ever bend the way fingers do (rom.js)
+    // (this model's finger bones share no local hinge axis, so each chain's own is read off its rest
+    // pose: the axis that curls the finger toward the palm, which faces the model's -Z. Fixed in the
+    // bone's frame, so a finger curled past 90 degrees still curls the same way. A live "finger x palm"
+    // axis flips there, and that is what bent them backwards.)
+    this.handLimits = new JointLimits();
+    this.hinge = new Map();
+    model.updateMatrixWorld(true);
+    const palmW = new THREE.Vector3(0, 0, -1).transformDirection(root.matrixWorld);
+    for (const [name, joints] of Object.entries(this.chains)) {
+      if (joints.length < 2) continue;
+      const dir = joints[1].getWorldPosition(new THREE.Vector3()).sub(joints[0].getWorldPosition(new THREE.Vector3())).normalize();
+      const hingeW = new THREE.Vector3().crossVectors(dir, palmW).normalize();
+      joints.forEach((bone, j) => {
+        const hingeL = hingeW.clone().applyQuaternion(bone.getWorldQuaternion(new THREE.Quaternion()).invert());
+        this.hinge.set(bone, hingeL);
+        const spec = RIGIFY[name === 'thumb' ? `thumb0${j + 1}*` : `f_${name}0${j + 1}*`];
+        this.handLimits.add(bone, this.handRest.get(bone), { ...spec, hinge: hingeL.toArray() });
+      });
+    }
     root.visible = false;
     this.game.scene.add(root);
   }
@@ -154,7 +176,7 @@ export class GodMode {
     el.id = 'god';
     el.innerHTML = `<div class="vessel"><div class="name">PNEUKA VESSEL <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
       <div class="banner"></div>
-      <div class="hint">LMB use the art · hold RMB: the art wheel (or 1-5) · N survey · Q/E turn · wheel zoom · WASD pan · M map · X raids · ~ back to the Courier</div>`;
+      <div class="hint">LMB use the art · hold RMB: the art wheel (or 1-5) · N survey · Q/E turn · wheel zoom · WASD pan · M map · ~ back to the Courier</div>`;
     document.body.appendChild(el);
     this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub'), banner: el.querySelector('.banner') };
   }
@@ -194,9 +216,7 @@ export class GodMode {
     this.cam.yawT = this.cam.yaw = Math.round((P.yaw + Math.PI) / (Math.PI / 2)) * (Math.PI / 2) + Math.PI * 0.25;
     this.cam.dist = this.cam.distT = T.god.dist;
     this.handPos.copy(P.pos);
-    this.raid.t = T.god.firstWave;
-    this.raid.wave = 0;
-    this.raid.alive = 0;
+    this.raids.reset();
     document.exitPointerLock?.();
     g.hud.el.cross && (g.hud.el.cross.style.display = 'none');
     g.hud.el.shells.style.display = 'none'; // (the psygun's shells give way to the hand's arts)
@@ -266,8 +286,7 @@ export class GodMode {
     this.releaseGrab(true);
     this.arts.clear();
     this.thrown.length = 0;
-    this.raid.t = T.god.firstWave;
-    this.raid.alive = 0;
+    this.raids.reset();
   }
 
   // ------------------------------------------------------------------ per frame
@@ -287,7 +306,7 @@ export class GodMode {
     this.updateCursor();
     if (this.t > 0.6) this.updateHand(dt);
     this.updateVessel(dt);
-    this.updateRaids(dt);
+    this.raids.update(dt);
     this.updateHud(dt);
   }
 
@@ -297,7 +316,6 @@ export class GodMode {
     if (input.wasPressed('KeyE')) C.yawT -= Math.PI / 4;
     if (input.wheel) C.distT = THREE.MathUtils.clamp(C.distT * Math.exp(input.wheel * 0.0012), T.god.minDist, T.god.maxDist);
     ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.select(i); });
-    if (input.wasPressed('KeyX')) { this.raid.on = !this.raid.on; g.hud.popup(this.raid.on ? 'RAIDS ON' : 'RAIDS OFF'); }
   }
 
   /** The turnable isometric camera: pans, turns in eighths, zooms; ceilings cut away. */
@@ -565,8 +583,6 @@ export class GodMode {
   /** Curl the fingers about the palm: finger-by-finger amounts 0..1. */
   poseHand(dt) {
     const H = this.hand, t = this.t;
-    const rootQ = H.root.getWorldQuaternion(new THREE.Quaternion());
-    const n = _v.set(0, 0, -1).applyQuaternion(rootQ).clone(); // the palm faces -Z of the model
     for (const [b, q] of this.handRest) b.quaternion.copy(q);
     H.root.updateMatrixWorld(true);
     const wob = (i) => Math.sin(t * 2.2 + i * 0.9) * 0.05;
@@ -576,16 +592,12 @@ export class GodMode {
     for (const [name, joints] of Object.entries(this.chains)) {
       const c = Math.max(-0.15, curl[name]);
       joints.forEach((bone, j) => {
-        const d = bone.children.find((x) => x.isBone);
-        const from = bone.getWorldPosition(_v2);
-        const dir = d ? d.getWorldPosition(new THREE.Vector3()).sub(from) : new THREE.Vector3(0, 1, 0);
-        if (dir.lengthSq() < 1e-8) return;
-        dir.normalize();
-        const axis = new THREE.Vector3().crossVectors(dir, n).normalize();
-        if (axis.lengthSq() < 0.5) return;
-        this.rotW(bone, axis, c * amt[name][j] * 1.25 * (name === 'thumb' ? 0.9 : 1));
+        const hinge = this.hinge.get(bone);
+        if (!hinge) return;
+        bone.quaternion.copy(this.handRest.get(bone)).multiply(_q.setFromAxisAngle(hinge, c * amt[name][j] * 1.25 * (name === 'thumb' ? 0.9 : 1)));
       });
     }
+    this.handLimits.apply();
     H.root.updateMatrixWorld(true);
   }
 
@@ -808,69 +820,14 @@ export class GodMode {
     }
   }
 
-  // ------------------------------------------------------------------ raids
-  updateRaids(dt) {
-    const g = this.game, R = this.raid, V = this.vessel;
-    if (g.dunes?.active) { R.t = T.god.firstWave; return; } // (the open sand is quiet)
-    if (this.state !== 'on' || !V.alive) return;
-    const alive = g.clappers.list.filter((c) => c.alive && c.raider).length;
-    if (R.alive > 0 && alive === 0 && R.wave > 0) this.waveCleared();
-    R.alive = alive;
-    R.banner = Math.max(0, R.banner - dt);
-    this.el.banner.classList.toggle('on', R.banner > 0);
-    if (!R.on) return;
-    R.t -= dt;
-    if (R.t <= 0) { this.spawnWave(); R.t = T.god.waveEvery; }
-  }
-
-  spawnWave() {
-    const g = this.game, R = this.raid, V = this.vessel;
-    const n = Math.min(9, T.god.waveBase + R.wave * T.god.waveGrow);
-    R.wave++;
-    let made = 0;
-    for (let i = 0; i < n * 3 && made < n; i++) {
-      const a = Math.random() * Math.PI * 2, r = 8 + Math.random() * 6;
-      const x = V.pos.x + Math.sin(a) * r, z = V.pos.z + Math.cos(a) * r;
-      const down = g.physics.raycast({ x, y: V.pos.y + 2.5, z }, DOWN, 5, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
-      if (!down || Math.abs(down.point.y - V.pos.y) > 0.7 || down.normal.y < 0.85) continue;
-      const from = { x: V.pos.x, y: V.pos.y + 0.6, z: V.pos.z }, to = new THREE.Vector3(x, V.pos.y + 0.6, z);
-      const dir = to.clone().sub(new THREE.Vector3(from.x, from.y, from.z)), len = dir.length();
-      const los = g.physics.raycast(from, dir.divideScalar(len), len - 0.3, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
-      if (los) continue;
-      const fi = Math.max(0, g.clappers.floors.findIndex((f) => Math.abs(V.pos.y - f.y) < 0.9));
-      const c = g.clappers.spawn(new THREE.Vector3(x, down.point.y, z), true, fi);
-      c.cool = 0;
-      c.raider = true; c.strikes = 0; c.state = 'raid'; c.killY = V.pos.y - 14;
-      c.mat.color.set(0x5a2118); c.mat.emissive.set(0xff3a1a); c.mat.emissiveIntensity = 0.55;
-      made++;
-    }
-    if (made) {
-      R.banner = 2.2;
-      this.el.banner.textContent = `RAID ${R.wave}`;
-      sfx.thump();
-      g.events?.emit('god.raid', { wave: R.wave, n: made });
-    }
-  }
-
-  waveCleared() {
-    const g = this.game;
-    this.raid.banner = 1.8;
-    this.el.banner.textContent = 'WAVE CLEARED';
-    // a gift of Lachryma, and the vessel takes a breath
-    g.lachryma.gain(30, 'wave');
-    this.mendVessel(8);
-    sfx.reforge();
-    g.events?.emit('god.wave', { wave: this.raid.wave });
-  }
-
   // ------------------------------------------------------------------ hud
   updateHud() {
-    const V = this.vessel, R = this.raid;
+    const V = this.vessel;
     const pct = Math.round((V.hp / V.max) * 100);
     this.el.fill.style.width = `${pct}%`;
     this.el.fill.style.background = pct > 40 ? '' : 'linear-gradient(90deg, #ff5a3a, #ffb27a)';
     this.el.hp.textContent = V.alive ? `${pct}%` : 'REFORGING';
     const allies = this.game.clappers.list.filter((c) => c.alive && c.ally).length;
-    this.el.sub.textContent = `${R.on ? `raid ${R.wave} · next in ${Math.max(0, Math.ceil(R.t))} s` : 'raids off'} · ${R.alive} raiders · ${allies} helpers${V.scars ? ` · ${V.scars} gold seams` : ''}`;
+    this.el.sub.textContent = `${this.raids.status()}${allies} helpers${V.scars ? ` · ${V.scars} gold seams` : ''}`;
   }
 }

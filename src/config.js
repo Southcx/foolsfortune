@@ -163,7 +163,7 @@ export const DEFAULTS = {
   },
   // the god hand (~): see godmode.js
   god: {
-    raids: true, firstWave: 22, waveEvery: 34, waveBase: 2, waveGrow: 1, vesselHp: 100,
+    firstWave: 22, waveEvery: 34, waveBase: 2, waveGrow: 1, vesselHp: 100,
     range: 36, dist: 17, minDist: 8, maxDist: 46, pitchDeg: 36, fov: 24, clipAbove: 3.9,
     hoverH: 1.7, grabSpeed: 14, throwBoost: 1.15, throwMax: 30, panSpeed: 1.0, edgeScroll: 16,
     castHeight: 7, castCooldown: 0.35, pushRadius: 5.5, pushForce: 11,
@@ -279,7 +279,7 @@ export const DEFAULTS = {
     carry: { enabled: true, reach: 1.15, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // F at a small thing: hoist it; fire throws
     push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold F at a heavy crate
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
-    surfer: { enabled: true, hover: 0.55, sail: 2.4, drag: 0.9, roll: 0.05, grip: 3.2, turn: 1.9, maxSpeed: 42, slopeGain: 1.6, follow: 9, gravity: 24, boostMult: 2.3, boostCost: 22, hop: 7.6, hopCharge: 6 }, // the Solar Surfer, in the dunes: Y stows / summons
+    surfer: { enabled: true, hover: 0.55, cruise: 24, trimIn: 1.18, trimOut: 0.5, windLo: 0.82, windHi: 1.2, accel: 15, coast: 2.4, brake: 22, turn: 2.6, turnFast: 1.55, steerRamp: 10, grip: 8, driftGrip: 2.2, driftTurn: 1.4, driftMin: 0.7, driftBoost: 7, driftMinSpeed: 10, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.5, boostAccel: 34, boostCost: 22, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Surfer, in the dunes: Y stows / summons
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {

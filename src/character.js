@@ -1,3 +1,4 @@
+import { courierLimits } from './rom.js';
 import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
@@ -98,6 +99,8 @@ export class Character {
       this.restCharInv.set(b, wq.clone().invert());
       this.restPos.set(b, b.getWorldPosition(new THREE.Vector3()));
     }
+    // the last word on every posed joint: nothing bends the wrong way (rom.js)
+    this.limits = courierLimits(this.bones, (b) => this.rest.get(b).q);
     const B = this.bones;
     const len = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.arm = {
@@ -967,6 +970,7 @@ export class Character {
     }
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
     o.techs?.hands(this, o);
+    this.limits.apply();
     root.updateMatrixWorld(true);
   }
 

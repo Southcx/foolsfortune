@@ -456,7 +456,14 @@ export class Cartography {
     });
     root.addEventListener('wheel', (e) => { e.preventDefault(); e.stopPropagation(); this.view.scale = THREE.MathUtils.clamp(this.view.scale * Math.exp(-e.deltaY * 0.0012), 0.5, 40); }, { passive: false });
     root.addEventListener('contextmenu', (e) => e.preventDefault());
-    addEventListener('keydown', (e) => { if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); } });
+    // (M opens and closes it, here, in the key's own event: closing hands the mouse back with a pointer lock request, which the
+    // browser only grants inside a user gesture. Handling it a frame later in the game loop is what lost the mouse before.)
+    addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      const g = this.game, tag = document.activeElement?.tagName;
+      if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); return; }
+      if (!this.open && e.code === 'KeyM' && g.input.enabled && tag !== 'INPUT' && tag !== 'TEXTAREA' && !g.codex?.open && !g.indexMenu?.open) { this.show(); e.preventDefault(); }
+    });
   }
 
   toggle() { this.open ? this.hide() : this.show(); }

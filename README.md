@@ -99,20 +99,19 @@ physics god game over the same rooms. Ceilings and everything above head height 
 | | |
 | --- | --- |
 | Left click (hold) | the selected God Art: by default telekinesis, grab anything loose; release throws it (as fast as the hand was going); Shift lifts it higher |
-| Right click (hold) | the art wheel (1–5 pick too): telekinesis, sunder, swell, wring, manifest, each usable only inside your Zone of Influence (see below). Shells are the Courier's; the hand's powers are God Arts |
+| Right click (hold) | the art wheel (1–5 pick too): telekinesis, sunder, swell, wring, manifest, each usable only inside the ground you have explored (see below). Shells are the Courier's; the hand's powers are God Arts |
 | Q / E, wheel, WASD or the screen edges | turn the view an eighth of a turn, zoom, pan |
-| X | raids on / off |
 | ~ | back to the Courier where the jar stood (once the vessel is whole) |
 
 The hand is on a **tether**: it can't reach further than 36 m from the vessel. The vessel can be
-hurt: **raids** (waves of crimson clapperjars, kamikaze, from 22 s in and every 34 s, one more
+hurt: **raids** (in the Siege room only, see Raids: crimson clapperjars, kamikaze, from 22 s in and every 34 s, one more
 each wave), a lobber's balls, blasts (your own bombs too), and whatever you throw at it. Hits
 crack it (the cracks are drawn on the jar); at zero it shatters, and reforges 7 s later at 60%,
 its old cracks now gold seams. Counters: grab a raider and throw it away, cut or blow it up, pin it
 (anchor), make it dance (groove), or turn it (hatch: a turned clapperjar guards the vessel against
 raiders and mends it, the way clapperjars mend cracked pots). A wave cleared gives a shell of each
 kind and mends the vessel a little. Everything is in `src/godmode.js`; the shells' new effects in
-`src/casters.js`. The torture bot drops into it now and then and fuzzes the hand.
+`src/casters.js`. The stress test drops into it now and then and fuzzes the hand.
 
 ## God Arts
 
@@ -121,33 +120,38 @@ one-shot rounds and cost no Lachryma; **God Arts** are powers of the hand itself
 Lachryma (regenerating a little faster while you are the hand). Pick with **1–5** or hold
 **right click** for the radial wheel.
 
-| Art | Needs | Does |
-| --- | --- | --- |
-| 1 Telekinesis | sensed ground | hold left click: lift anything loose and throw it (costs Lachryma while held, by weight) |
-| 2 Sunder | charted | drag a blade across the floor: everything it passes through above is cut in two on that plane |
-| 3 Swell | charted | on a pot or crate, drag up / down: grow or shrink it (its weight follows) |
-| 4 Wring | understood | on a pot, drag sideways: twist it; drag up: scallop its walls (pots are re-lathed live) |
-| 5 Manifest | understood | drag: raise a wall of clay from the floor, hold for height; it crumbles after a while |
+| Art | Does |
+| --- | --- |
+| 1 Telekinesis | hold left click: lift anything loose and throw it (costs Lachryma while held, by weight) |
+| 2 Sunder | drag a blade across the floor: everything it passes through above is cut in two on that plane |
+| 3 Swell | on a pot or crate, drag up / down: grow or shrink it (its weight follows) |
+| 4 Wring | on a pot, drag sideways: twist it; drag up: scallop its walls (pots are re-lathed live) |
+| 5 Manifest | drag: raise a wall of clay from the floor, hold for height; it crumbles after a while |
 
 They live in the Codex (**B**) on a second shelf beside the Movement Arts, with variants, and
 their numbers are in `T.arts`. Code: `src/godarts.js`.
 
 ## The Zone of Influence and psychic cartography
 
-Arts work only where you **know the place**. Every layer of the world (the dunes, the basement,
-the ground floor, the upper floor) is a grid of cells; each cell holds *knowledge* from 0 to 1:
-**sensed** (0.08), **charted** (0.45), **understood** (0.85). The hand can use an art on ground
-that is at least as known as the art needs (the veil on the floor shows the tier: grey, amber,
-gold). Knowledge comes from walking about (never past charted), from line-of-sight around you,
-and from the **survey pulse** (**N**: a ring of psychic sonar, costs Lachryma, better from the
-hand), and around the vessel it is always at least charted. Mapping a whole named room
-(a certain number of cells around it) counts it as *understood*, and stays known: it is saved.
+Arts work only where you have **been**: the Zone of Influence is, for now, simply the ground you have explored (there are
+no "understanding" prompts; outside it the ground just doesn't answer, and the ring under the hand shows it). Every layer
+of the world (the dunes, the basement, the ground floor, the upper floor) is a grid of cells, each holding *knowledge* from
+0 to 1 that the veil on the floor shows (grey, amber, gold). Knowledge comes from walking about, from line of sight around
+you, and from the **survey pulse** (**N**: a ring of psychic sonar, costs Lachryma, stronger from the hand); around the
+vessel the ground is always known. Mapping a whole named room fills it in, and it stays known: it is saved.
 
-* **Compass** (top right): bearing, the layer and place you are in, the mapped cells around
-  you as a little radar, a waypoint arrow. North is −Z.
-* **Map** (**M**): every layer, drag / wheel to pan and zoom, click to set a waypoint, right
-  click to clear, layer tabs, and a list of the named places with how well you know each.
-* `src/cartography.js` (grid, tiers, pulses, compass, map, the veil); `T.zoi` has the numbers.
+* **Compass** (top right): bearing, the layer and place you are in, the mapped cells around you as a little radar, a
+  waypoint arrow. North is −Z.
+* **Map** (**M**, again to close, or Esc): every layer, drag / wheel to pan and zoom, click to set a waypoint, right
+  click to clear, layer tabs, and the named places with how well you know each.
+* `src/cartography.js` (grid, pulses, compass, map, the veil); `T.zoi` has the numbers.
+
+## Raids
+
+Raids (waves of crimson clapperjars that make for the vessel) happen in **one room, THE SIEGE** (the index: S; an arena
+south of the lab with cover, pots and crates, and a dais), and nowhere else: the timer does not run elsewhere, so the
+hand can be learned in peace. `src/raids.js` sends the attackers; `src/siege.js` is the room; the vessel itself only
+knows how to be hurt (`src/godmode.js`).
 
 ## The dunes and the Solar Surfer
 
@@ -158,19 +162,24 @@ half-buried ruins and a pale spire with a beam of light to sail toward. Take the
 
 | Key | Action |
 | --- | --- |
-| A / D | steer |
-| W / S | trim the sail in (faster, twitchier) / let it out (S also brakes) |
-| Shift | solar flare: the sail blazes and thrust more than doubles, for Lachryma |
+| A / D | steer (quick at low speed, calmer fast) |
+| W / S | trim the sail in (a faster cruise) / let it out and brake |
+| Shift | solar flare: top speed and acceleration jump, for Lachryma |
 | Space | hold to crouch the springs, release to hop; in the air A / D spin, land a spin for a boost |
-| C | tuck (less drag) |
+| C | drift: hold it in a turn, and a long one (0.7 s+) pays out as a burst when you let go |
 | Y | stow / summon the board |
 | R | start again at the arrival basin |
 
-The sail is real: the wind wanders and gusts, and drives it by a sailing polar (dead upwind it
-stalls, across it flies); the vane at the bottom left shows where the wind goes and how full the
-sail is. Gravity does the rest: a lee face is the fastest anything goes here, the board follows
-the sand with a little lag, and a crest is a launch. Stowed, you walk, and the god hand works
-(no raids in the open). `src/dunes.js`, `src/moves/surfer.js`; tuning in `T.tech.surfer`.
+The psygun is stowed and cannot be fired while you ride.
+
+The board accelerates by itself to a cruise speed that the wind shapes (a beam reach is quickest, dead upwind slowest, but
+you never stall); the vane at the bottom left shows where the wind goes and how full the sail is. Gravity does the rest: a lee face is the
+fastest anything goes here, the board follows the sand with a little lag, and a crest is a launch. The sand keeps
+a fading trail of where you went (a hull wash and a fine score down the middle) with a fan of spray behind, and
+footprints when you walk. Stowed, you walk, and the god hand works (no raids in the open). Feel was taken from arcade riders and
+karts (auto-acceleration, speed-scaled steering, a loosened keel to drift, the slip paid back as speed on exit),
+the trail from Journey's ripple-layer trails and the render-to-texture trail maps of Horizon / God of War: see the headers of
+`src/dunes.js`, `src/moves/surfer.js`, `src/trailmap.js`, `src/marks.js`; tuning in `T.tech.surfer`.
 
 ## Moving around
 
@@ -250,7 +259,7 @@ every tech on or off. Techs start in priority order and only one is active at a 
 Some techs are *Movement Arts* you learn (see **The System**); the body moves (swim, ladders,
 hanging, poles and ropes, grates, balance, carrying, pushing) come with a humanoid. In **Lab mode**
 (Codex, B; the default while it's just us testing) every art is unlocked: that's what the tech
-lab and the torture bot use. Techs are *active* (one owns the movement step at a time) or
+lab and the stress test use. Techs are *active* (one owns the movement step at a time) or
 *passive* (carry, kick, recoil: they run beside whatever else is going on).
 
 | Tech | Input | What it does |
@@ -321,10 +330,10 @@ a freight lift (the slow way up), and two rail carts running on the floor: the m
 Look down and slam from the brink (or from higher): a 57 m fall takes about 2.4 s, and you
 steer 3 m/s to meet a cart that has moved. That is the **Super Slam** feat.
 
-## The torture bot
+## The stress test
 
-`tools/torture.mjs` (Playwright; `npm i --no-save playwright`, `npm run dev`, then
-`node tools/torture.mjs --seed 1 --runs 40 --ticks 900`) drives the simulation with random,
+`tools/stress.mjs` (Playwright; `npm i --no-save playwright`, `npm run dev`, then
+`npm run stress -- --seed 1 --runs 40 --ticks 900`) drives the simulation with random,
 human-shaped input from teleports all over the workshop, in Lab mode, and checks after every step:
 finite numbers, the body not inside geometry, sane speeds, the blob form only while slip diving,
 no controller stall, no tech stuck for a minute, no falling out of the world. `--pairs` runs every
@@ -332,7 +341,7 @@ pair of techs alone with the rest off (the interference matrix: 154 configuratio
 non-zero on a violation and prints where, with the last few moves and what the body was inside.
 The player's own safety net (`Player.guard()`, and a check on every move that pulls a move back
 to the last clear spot if the controller leaves the capsule inside a wall) is counted, not hidden:
-the bot reports how often the controller needed catching.
+the stress test reports how often the controller needed catching.
 
 ## The System
 
@@ -444,11 +453,15 @@ runtime IK correction on the contact points.
 | `src/godarts.js` | the five God Arts, the radial wheel, the art bar |
 | `src/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
 | `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (terrain, sky, ruins, wind) and the Solar Surfer |
+| `src/trailmap.js`, `src/marks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
+| `src/rom.js`, `src/romdata.js` | range-of-motion limits applied after every pose (fingers, elbows, knees, wrists) |
+| `src/siege.js`, `src/raids.js` | the Siege room and the raids that only happen there |
 | `src/godmode.js`, `src/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |
 | `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (toasts, the Codex) |
-| `tools/torture.mjs`, `tools/torture.page.js` | the torture bot |
+| `tools/stress.mjs`, `tools/stress.page.js` | the stress test (random-input fuzzing with invariants) |
+| `tools/learn_rom.mjs` | learns finger joint limits from the game's own clips into `src/romdata.js` |
 | `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage, `rigging.js` bars, poles, grates, beams) |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { TrailMap, TRAIL_GLSL } from './trailmap.js';
+import { SandMarks, SAND } from './marks.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { T, PALETTE } from './config.js';
 import { addOutline } from './outline.js';
@@ -60,10 +62,11 @@ export class Dunes {
     this.mix = 0; // 0 workshop light .. 1 dune light
     this.t = 0;
     this.wind = { dir: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)), speed: 8, gust: 1 };
+    this.trail = new TrailMap(game.renderer, { size: 96, res: 512, life: 26 });
+    this.marks = new SandMarks(game, this.trail, SAND);
     this.buildTerrain();
     this.buildSky();
     this.buildRuins();
-    this.buildSand();
     this.setVisible(false);
     // the values the workshop is lit with (blended back to when you leave)
     const sc = game.scene;
@@ -127,7 +130,7 @@ export class Dunes {
     const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, U);
+      Object.assign(sh.uniforms, U, this.trail.uniforms);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nvarying vec3 vWN;')
         .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWP = (modelMatrix * vec4(position, 1.0)).xyz;\nvWN = normalize(mat3(modelMatrix) * normal);');
@@ -135,6 +138,7 @@ export class Dunes {
         .replace('#include <common>', `#include <common>
 varying vec3 vWP; varying vec3 vWN;
 uniform float uTime; uniform vec2 uWind; uniform vec3 uSun;
+${TRAIL_GLSL}
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }`)
         .replace('#include <color_fragment>', `#include <color_fragment>
@@ -147,6 +151,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   c = mix(c, shade, lee * 0.75 * (1.0 - smoothstep(0.5, 1.0, sunl)));
   float g = n21(vWP.xz * 0.045) * 0.5 + n21(vWP.xz * 0.3) * 0.5;   // slow patches of colour
   c *= 0.9 + 0.2 * g;
+  float tr = trailAt(vWP.xz);                                        // where something has passed: packed, darker, cooler
+  c = mix(c, c * vec3(0.74, 0.62, 0.62), smoothstep(0.0, 0.8, tr) * 0.75);
   diffuseColor.rgb = c;
 }`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -157,16 +163,19 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   float warp = n21(vWP.xz * 0.4) * 2.2 + n21(vWP.xz * 0.11) * 4.0;
   float ph = along * 2.6 + warp;
   float rip = cos(ph) * (0.16 + 0.1 * n21(vWP.xz * 0.9));
+  float tr2 = trailAt(vWP.xz);
+  rip *= 1.0 - 0.85 * smoothstep(0.0, 0.5, tr2);                      // the ripples are smoothed out along a path
   vec3 gw = vec3(wd.x, 0.0, wd.y) * rip;
+  vec2 tg = trailGrad(vWP.xz);                                        // and its edges catch the light
+  gw += vec3(-tg.x, 0.0, -tg.y) * 1.3;
   normal = normalize(normal + normalize((viewMatrix * vec4(gw, 0.0)).xyz) * 0.55);
 }`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 {
-  // glints: a few grains catch the light and flicker with the view
+  // glints: a few grains that catch the light, fixed in the world
   vec2 cell = floor(vWP.xz * 9.0);
   float r = h21(cell);
-  float flick = 0.5 + 0.5 * sin(uTime * 3.0 + r * 40.0 + dot(normalize(vViewPosition), vec3(0.0, 1.0, 0.0)) * 9.0);
-  float sp = step(0.9955, r) * flick;
+  float sp = step(0.9965, r) * 0.7;                                   // (still: no flicker, no time, no view term)
   float rim = pow(1.0 - clamp(dot(normalize(vViewPosition), normalize(vNormal)), 0.0, 1.0), 3.0);
   totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16);
 }`);
@@ -297,27 +306,8 @@ void main() {
     this.spire = sp;
   }
 
-  // ------------------------------------------------------------------ windblown sand: streaks near the camera
-  buildSand() {
-    const n = 260;
-    const pos = new Float32Array(n * 3), seed = new Float32Array(n);
-    for (let i = 0; i < n; i++) { seed[i] = Math.random(); pos[i * 3 + 1] = -1e5; }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
-    const cv = document.createElement('canvas'); cv.width = cv.height = 32;
-    const cx = cv.getContext('2d'), gr = cx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
-    cx.fillStyle = gr; cx.fillRect(0, 0, 32, 32);
-    const mat = new THREE.PointsMaterial({ color: 0xffd9a0, size: 0.09, map: new THREE.CanvasTexture(cv), transparent: true, opacity: 0.55, depthWrite: false, sizeAttenuation: true });
-    this.sand = new THREE.Points(geo, mat);
-    this.sand.frustumCulled = false;
-    this.game.scene.add(this.sand);
-    this.sandN = n;
-  }
-
   setVisible(v) {
-    this.terrain.visible = this.sky.visible = this.group.visible = this.sand.visible = v;
+    this.terrain.visible = this.sky.visible = this.group.visible = v;
   }
 
   // ------------------------------------------------------------------ per frame
@@ -339,7 +329,6 @@ void main() {
     this.wind.gust = 1 + 0.28 * Math.sin(this.t * 0.4) + 0.14 * Math.sin(this.t * 1.1 + 1);
     this.wind.speed = 8 * this.wind.gust;
     this.uniforms.uTime.value = this.t;
-    this.uniforms.uWind.value.copy(this.wind.dir);
     this.sky.position.copy(cam.position);
     this.sky.material.uniforms.uTime.value = this.t;
     this.beam.material.opacity = 0.13 + 0.05 * Math.sin(this.t * 0.7);
@@ -362,29 +351,8 @@ void main() {
     L.sun.target.updateMatrixWorld();
     // (the caller sets sun.intensity from `under`: see main.js; here the dune value is offered)
     this.sunIntensity = A.sunI;
-    // windblown sand: streaks that drift along the wind past the camera
-    this.stepSand(dt);
-  }
-
-  stepSand(dt) {
-    const g = this.game, cam = g.camera, geo = this.sand.geometry, pos = geo.attributes.position.array;
-    const wx = this.wind.dir.x, wz = this.wind.dir.y, sp = this.wind.speed * 1.8;
-    const R = 34;
-    for (let i = 0; i < this.sandN; i++) {
-      let x = pos[i * 3], y = pos[i * 3 + 1], z = pos[i * 3 + 2];
-      const dx = x - cam.position.x, dz = z - cam.position.z;
-      if (y < -9e4 || dx * dx + dz * dz > R * R) {
-        const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * R * 0.95;
-        x = cam.position.x + Math.cos(a) * r; z = cam.position.z + Math.sin(a) * r;
-        y = this.heightAt(x, z) + 0.15 + Math.random() * 1.6;
-      } else {
-        x += wx * sp * dt * (0.6 + geo.attributes.seed.array[i] * 0.8);
-        z += wz * sp * dt * (0.6 + geo.attributes.seed.array[i] * 0.8);
-        const gy = this.heightAt(x, z);
-        y = Math.max(y + Math.sin(this.t * 3 + i) * dt * 0.4, gy + 0.08);
-      }
-      pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z;
-    }
-    geo.attributes.position.needsUpdate = true;
+    // what has passed over the sand: the fading path, and the spray
+    this.marks.update(dt, this.active);
+    this.trail.update(dt, P.x, P.z);
   }
 }

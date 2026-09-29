@@ -253,7 +253,7 @@ export class Player {
       QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
   }
 
-  /** What the body is inside (for the torture bot's report). */
+  /** What the body is inside (for the stress test's report). */
   embeddedBy() {
     const half = HALVES[this.shape], out = [];
     this.physics.world.intersectionsWithShape({ x: this.pos.x, y: this.pos.y + half + RADIUS, z: this.pos.z }, { x: 0, y: 0, z: 0, w: 1 },
@@ -272,7 +272,7 @@ export class Player {
   /**
    * The net under everything else, after each fixed step: numbers gone bad, a platform or a
    * tech that left us inside a wall. Nudge out the shortest way; failing that, back to the last
-   * place we stood clear. (It should never fire; the torture bot says whether it does.)
+   * place we stood clear. (It should never fire; the stress test says whether it does.)
    */
   guard() {
     if (this.mantle || this.freeze) return;

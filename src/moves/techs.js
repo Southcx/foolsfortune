@@ -126,7 +126,7 @@ export class Techs {
     for (const t of this.list) if (t.camera) t.camera(fp, pivot, dt);
   }
   /** The fire button belongs to something else for now (a throw): the weapon ignores it. */
-  get fireBlocked() { return this.list.some((t) => t.passive && t.blocksFire); }
+  get fireBlocked() { return !!this.active?.blocksFire || this.list.some((t) => t.passive && t.blocksFire); }
   /** How the aim layer behaves during the active tech ({ arm: 'R'|'L'|null, turn: 0..1 }), or null for the full-body aim. */
   aimProfile() { return this.active?.aim || null; }
   /** Both hands taken (a ladder, swimming, carrying something): the gun goes away. */

@@ -97,7 +97,7 @@ async function main() {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, stats, events,
+    scene, physics, fx, hud, camera, renderer, stats, events,
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause) {
       events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause });
@@ -254,7 +254,7 @@ async function main() {
     carto.addAnchor('GALLERY', 'gallery', v([0, clappers.floors[1]?.y ?? 4.6, 0]), 'upper');
     carto.addAnchor('THE HUB', 'hub', course.hubSpawn.v);
     for (const r of course.rooms) {
-      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : course.cps[r.cp]?.v;
+      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'siege' ? course.siegeSpawn.v : course.cps[r.cp]?.v;
       if (at) carto.addAnchor(r.name, r.id, at);
     }
     carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
@@ -379,7 +379,6 @@ async function main() {
       else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
-    if (input.wasPressed('KeyM') && input.enabled && !guiOpen && (game.cartography.open || !modalOpen())) game.cartography.toggle();
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)

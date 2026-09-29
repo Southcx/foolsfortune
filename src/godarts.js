@@ -4,24 +4,22 @@ import { RAPIER, GROUPS } from './physics.js';
 import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { planeFrom } from './slicing.js';
-import { TIER_NAMES } from './cartography.js';
 
 // ---------------------------------------------------------------------------------------
 // GOD ARTS. What the hand can do. They are nothing to do with the psygun's shells: shells are
 // prepackaged one-shot rounds that cost nothing but the shell; a god art is a power of the hand
 // itself, and it runs on Lachryma. And each works only inside the ZONE OF INFLUENCE: the ground
-// it is used on must be known well enough (cartography.js): the deeper the art, the better you
-// must know the place.
+// you have explored (cartography.js). For now that is all there is to it: explored or not.
 //
-//   1 TELEKINESIS  (sensed)      hold LMB: lift anything loose and throw it. Costs Lachryma
+//   1 TELEKINESIS               hold LMB: lift anything loose and throw it. Costs Lachryma
 //                                 while held, by weight.
-//   2 SUNDER       (charted)     LMB drag: draw a blade across the ground; everything it passes
+//   2 SUNDER                    LMB drag: draw a blade across the ground; everything it passes
 //                                 through in the air above is cut in two along that plane.
-//   3 SWELL        (charted)     LMB on a pot or crate, drag up / down: grow or shrink it (its
+//   3 SWELL                     LMB on a pot or crate, drag up / down: grow or shrink it (its
 //                                 weight follows its size).
-//   4 WRING        (understood)  LMB on a pot, drag sideways: twist it about its axis; drag up:
+//   4 WRING                     LMB on a pot, drag sideways: twist it about its axis; drag up:
 //                                 scallop its walls. The clay stays the clay.
-//   5 MANIFEST     (understood)  LMB drag: raise a wall of clay from the floor (hold for height).
+//   5 MANIFEST                  LMB drag: raise a wall of clay from the floor (hold for height).
 //                                 It stands for a while, then crumbles. Things standing where it
 //                                 rises are lifted with it.
 //
@@ -30,10 +28,10 @@ import { TIER_NAMES } from './cartography.js';
 // ---------------------------------------------------------------------------------------
 export const ARTS = [
   { id: 'telekinesis', key: '1', name: 'TELEKINESIS', glyph: '⤒', needs: 1, blurb: 'lift and throw', color: '#ffe0c0' },
-  { id: 'sunder', key: '2', name: 'SUNDER', glyph: '╱', needs: 2, blurb: 'draw a blade', color: '#ffd696' },
-  { id: 'swell', key: '3', name: 'SWELL', glyph: '⤢', needs: 2, blurb: 'grow or shrink', color: '#ffb27a' },
-  { id: 'wring', key: '4', name: 'WRING', glyph: '↺', needs: 3, blurb: 'twist the clay', color: '#ff9a6a' },
-  { id: 'manifest', key: '5', name: 'MANIFEST', glyph: '▲', needs: 3, blurb: 'raise clay', color: '#ffc65c' },
+  { id: 'sunder', key: '2', name: 'SUNDER', glyph: '╱', needs: 1, blurb: 'draw a blade', color: '#ffd696' },
+  { id: 'swell', key: '3', name: 'SWELL', glyph: '⤢', needs: 1, blurb: 'grow or shrink', color: '#ffb27a' },
+  { id: 'wring', key: '4', name: 'WRING', glyph: '↺', needs: 1, blurb: 'twist the clay', color: '#ff9a6a' },
+  { id: 'manifest', key: '5', name: 'MANIFEST', glyph: '▲', needs: 1, blurb: 'raise clay', color: '#ffc65c' },
 ];
 export const ART_BY_ID = Object.fromEntries(ARTS.map((a) => [a.id, a]));
 
@@ -97,7 +95,7 @@ export class GodArts {
     document.head.appendChild(st);
     const bar = document.createElement('div');
     bar.id = 'godarts';
-    bar.innerHTML = ARTS.map((a, i) => `<div class="slot" data-i="${i}"><b>${a.key}</b><u>${'●'.repeat(a.needs)}</u><i>${a.glyph}</i><span>${a.name}</span></div>`).join('');
+    bar.innerHTML = ARTS.map((a, i) => `<div class="slot" data-i="${i}"><b>${a.key}</b><i>${a.glyph}</i><span>${a.name}</span></div>`).join('');
     document.getElementById('hud').appendChild(bar);
     this.bar = bar;
     this.slots = [...bar.querySelectorAll('.slot')];
@@ -119,7 +117,7 @@ export class GodArts {
       const [x0, y0] = pt(R0, a0), [x1, y1] = pt(R1, a0), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R0, a1);
       svg += `<path class="w" data-i="${i}" d="M${x0},${y0} L${x1},${y1} A${R1},${R1} 0 0 1 ${x2},${y2} L${x3},${y3} A${R0},${R0} 0 0 0 ${x0},${y0} Z"/>`;
       const [tx, ty] = pt((R0 + R1) / 2, (a0 + a1) / 2);
-      svg += `<text class="g" x="${tx}" y="${ty + 2}">${a.glyph}</text><text x="${tx}" y="${ty + 20}">${a.name}</text><text class="s" x="${tx}" y="${ty + 33}" data-n="${i}">${'●'.repeat(a.needs)} ${TIER_NAMES[a.needs].toLowerCase()}</text>`;
+      svg += `<text class="g" x="${tx}" y="${ty + 2}">${a.glyph}</text><text x="${tx}" y="${ty + 20}">${a.name}</text>`;
     });
     svg += '<circle class="hub" r="42"/><text id="gw-name" y="-2"></text><text class="s" id="gw-sub" y="12"></text></svg>';
     this.wheel.innerHTML = svg;
@@ -174,24 +172,11 @@ export class GodArts {
     if (!this.owns(a.id)) { msg = `${a.name}: not yet learned (B)`; bad = true; }
     else if (this.live) msg = this.live.tip || '';
     else if (K.far) { msg = 'OUT OF REACH'; bad = true; }
-    else if (tierHere < a.needs) { msg = `${TIER_NAMES[tierHere]} ground · ${a.name} needs ${TIER_NAMES[a.needs]} · N surveys`; bad = true; }
-    else msg = this.idleTip(a);
+    // (no prompts about what the hand does or does not "understand": the ground outside your zone of influence just does not answer, and the ring shows it)
     this.tip.style.display = this.wheelOpen || !input.enabled ? 'none' : 'block';
     this.tip.textContent = msg;
     this.tip.classList.toggle('bad', bad);
     this.tip.style.left = `${input.mx}px`; this.tip.style.top = `${input.my}px`;
-  }
-
-  idleTip(a) {
-    const h = this.god.hover;
-    switch (a.id) {
-      case 'telekinesis': return h ? 'grab' : 'nothing to lift here';
-      case 'sunder': return 'press and drag: draw the blade';
-      case 'swell': return this.swellable(h) ? 'drag up to swell, down to shrink' : 'point at a pot or crate';
-      case 'wring': return this.wringable(h) ? 'drag ← → twist · ↑ scallop' : 'point at a pot';
-      case 'manifest': return 'press, drag and hold: raise clay';
-      default: return '';
-    }
   }
 
   // ------------------------------------------------------------------ fx
@@ -222,9 +207,7 @@ export class GodArts {
     const g = this.game;
     this.lack = null;
     if (!this.owns(a.id)) { g.hud.popup(`${a.name} NOT LEARNED (B)`); return false; }
-    const t = g.cartography.tierAt(point.x, point.y, point.z).tier;
-    if (t < a.needs) { g.hud.popup(`${TIER_NAMES[t]} · NEEDS ${TIER_NAMES[a.needs]}`); sfx.dryFire(); return false; }
-    return true;
+    return g.cartography.tierAt(point.x, point.y, point.z).tier >= a.needs; // (the zone of influence is the ground you have explored)
   }
 
   pay(base, tag = 'god') {
@@ -278,7 +261,7 @@ export class GodArts {
       L.b = K.point.clone();
     } else if (a.id === 'swell' || a.id === 'wring') {
       const h = this.god.hover;
-      if (a.id === 'swell' ? !this.swellable(h) : !this.wringable(h)) { g.hud.popup(a.id === 'swell' ? 'POINT AT A POT OR CRATE' : 'ONLY CLAY WRINGS'); return; }
+      if (a.id === 'swell' ? !this.swellable(h) : !this.wringable(h)) return;
       if (!this.pay(this.cfg(a.id).cost)) return;
       const e = h.ent;
       L.ent = e; L.f0 = e.godScale || 1; L.tw0 = e.godTwist || 0; L.lo0 = e.godLobe || 0;

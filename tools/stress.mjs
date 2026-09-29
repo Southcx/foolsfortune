@@ -1,9 +1,9 @@
-// Torture-test the movement: random human-shaped input from teleports all over the workshop,
-// with invariants checked every step (tools/torture.page.js). Exits non-zero on any violation.
+// Stress-test the movement: random human-shaped input from teleports all over the workshop,
+// with invariants checked every step (tools/stress.page.js). Exits non-zero on any violation.
 //
 //   npm i --no-save playwright          (once; the runner is not part of the shipped game)
 //   npm run dev &                        (or: URL=http://host:port/ )
-//   node tools/torture.mjs [--seed 1] [--runs 24] [--ticks 900] [--pairs] [--only "on lift0,cp M1"]
+//   node tools/stress.mjs [--seed 1] [--runs 24] [--ticks 900] [--pairs] [--only "on lift0,cp M1"]
 //
 // --pairs runs every pair of techs alone (the rest switched off): the interference matrix.
 import { chromium } from 'playwright';
@@ -27,19 +27,19 @@ await page.addInitScript(() => { Object.defineProperty(window, '__game', { confi
 await page.goto(url, { waitUntil: 'commit' });
 for (let i = 0; i < 90; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
 await page.evaluate(`document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; __game.manual = true;`);
-await page.addScriptTag({ content: fs.readFileSync(new URL('./torture.page.js', import.meta.url), 'utf8') });
+await page.addScriptTag({ content: fs.readFileSync(new URL('./stress.page.js', import.meta.url), 'utf8') });
 
 const t0 = Date.now();
 let bad = 0;
 if (args.pairs) {
-  const res = await page.evaluate(`__torture.pairs({ seed: ${seed}, runs: ${Math.max(2, Math.floor(runs / 8))}, ticks: ${ticks} })`);
+  const res = await page.evaluate(`__stress.pairs({ seed: ${seed}, runs: ${Math.max(2, Math.floor(runs / 8))}, ticks: ${ticks} })`);
   for (const r of res) {
     const n = Object.values(r.violations).reduce((a, b) => a + b, 0);
     bad += n;
     console.log(`${n ? 'FAIL' : 'ok  '} ${r.techs.padEnd(24)} ${r.ticks} ticks${n ? '  ' + JSON.stringify(r.violations) : ''}`);
   }
 } else {
-  const res = await page.evaluate(`__torture.run({ seed: ${seed}, runs: ${runs}, ticks: ${ticks}, only: ${only}, trace: ${args.trace ?? -1} })`);
+  const res = await page.evaluate(`__stress.run({ seed: ${seed}, runs: ${runs}, ticks: ${ticks}, only: ${only}, trace: ${args.trace ?? -1} })`);
   bad = Object.values(res.counts).reduce((a, b) => a + b, 0);
   console.log(`${res.runs} runs, ${res.ticks} ticks, seed ${seed}: ${bad} violation${bad === 1 ? '' : 's'}`);
   console.log(`controller clips caught and corrected: ${res.clips}`);

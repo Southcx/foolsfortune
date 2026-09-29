@@ -9,17 +9,18 @@ import { addOutline } from '../outline.js';
 // on it sideways, hold the boom, and the wind does the rest. It rides a little above the sand,
 // follows the dunes, and leaves them at the crests.
 //
-//   A / D   steer (the board carves; it slides a little in a hard turn)
-//   W / S   trim the sail in (faster, twitchier) / let it out (slower, steadier; S also brakes)
-//   Shift   solar flare: the sail blazes and the thrust more than doubles, for Lachryma
+//   A / D   steer (quick at low speed, calmer at high)
+//   W / S   trim the sail in (a faster cruise) / let it out and brake
+//   Shift   solar flare: the sail blazes, top speed and acceleration jump, for Lachryma
 //   Space   hold to crouch the springs, release to hop. In the air A / D spin the board: land a
 //           spin for a burst of speed
-//   C       tuck: low and small, less drag
+//   C       drift: hold it in a turn, and a long one pays out as a burst when you let go
+//   (the psygun is stowed while you ride)
 //   Y       stow / summon the board (in the dunes only). You are on it when you arrive.
 //
-// The sail is a real one: the wind (dunes.wind, which wanders and gusts) drives it by a sailing
-// polar. Straight into the wind it stalls; across it, it flies; downwind it is fair. Gravity does
-// its own work on the slopes: down a lee face is the fastest anything goes here.
+// The wind (dunes.wind, which wanders and gusts) shapes the speed the board settles at by a sailing
+// polar: across it is quickest, dead upwind slowest, but you never stall. Gravity does its own
+// work on the slopes: down a lee face is the fastest anything goes here.
 // The board itself, the sail cloth and the rider's stance are all built here.
 // ---------------------------------------------------------------------------------------
 const UP = new THREE.Vector3(0, 1, 0);
@@ -46,15 +47,17 @@ export class Surfer extends Tech {
     this.trim = 0.6; this.sailA = 0.6;
     this.n = UP.clone();
     this.spin = 0; this.charge = 0; this.spaceWas = false;
+    this.steer = 0; this.drift = 0; this.driftT = 0; this.driftDir = 1;
     this.mouseIdle = 0;
-    this.boosting = 0; this.tuck = 0; this.speed = 0; this.airT = 0;
+    this.boosting = 0; this.speed = 0; this.airT = 0;
     this.buildBoard();
     this.buildVane();
   }
 
   get dunes() { return this.game.dunes; }
-  /** One hand holds the boom; the gun arm can still aim. */
-  get aim() { return { arm: 'R', turn: 0.3 }; }
+  /** Both hands are on the boom: the psygun is stowed and cannot be fired while riding. */
+  get handsBusy() { return true; }
+  get blocksFire() { return true; }
 
   /** A small wind vane on the HUD: the arrow is where the wind goes, against the way you face; the ring is how full the sail is. */
   buildVane() {
@@ -99,6 +102,7 @@ export class Surfer extends Tech {
     this.air = true; this.spin = 0;
     this.board.visible = true;
     this.vane.style.display = 'block';
+    this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
     this.sfxLoop = sfx.surfLoop?.();
     this.game.events?.emit('surf.start', {});
   }
@@ -106,69 +110,93 @@ export class Surfer extends Tech {
   end() {
     this.board.visible = false;
     this.vane.style.display = 'none';
+    this.game.hud.el.cross && (this.game.hud.el.cross.style.display = '');
     this.sfxLoop?.stop(); this.sfxLoop = null;
     const P = this.P;
     P.vel.x = this.v.x * 0.5; P.vel.z = this.v.z * 0.5;
   }
 
   // ------------------------------------------------------------------ the ride
+  // Feel, after what arcade riders and karts do (Sonic Riders: acceleration is automatic and the
+  // meter is for boosts, tricks pay back; the sphere-and-body arcade vehicles: speed-scaled steering,
+  // grip you can loosen to drift, side slip handed back as forward speed when the drift ends;
+  // Wipeout-style brakes). The wind still matters, but as a modifier of the speed you settle at
+  // (a beam reach is quickest, dead upwind is slowest), never as something that can stall you.
   update(dt) {
     const g = this.game, P = this.P, c = this.cfg, inp = P.input, D = this.dunes, W = D.wind;
     if (!D.active) { this.want = false; return false; }
     if (P.latch('KeyY')) { this.want = false; return false; }
-    const steer = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
+    const steerIn = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
     const trimIn = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
-    const tuck = inp.isDown('KeyC');
     const flare = inp.isDown('ShiftLeft') || inp.isDown('ShiftRight');
-    this.tuck = THREE.MathUtils.damp(this.tuck, tuck ? 1 : 0, 10, dt);
+    this.steer = THREE.MathUtils.damp(this.steer, steerIn, c.steerRamp, dt);
+    const steer = this.steer;
 
     const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
     const r = _v2.set(-Math.cos(this.heading), 0, Math.sin(this.heading));
     let vf = this.v.dot(f), vl = this.v.dot(r);
+    const speed0 = Math.hypot(vf, vl);
 
-    // ---- the sail
+    // ---- the sail sets the speed the board settles at
     this.trim = THREE.MathUtils.damp(this.trim, clamp(0.62 + trimIn * 0.38, 0.06, 1), 5, dt);
-    const wsp = W.speed;
     const wgo = _v3.set(W.dir.x, 0, W.dir.y); // where the wind goes
     const ang = wrap(Math.atan2(wgo.x, wgo.z) - this.heading); // 0 = it blows the way we face
-    const eff = polar(Math.cos(ang));
-    this.boosting = 0;
-    let boost = 1;
-    if (flare && g.lachryma.drain(c.boostCost * dt, 'surf') > 0) { boost = c.boostMult; this.boosting = 1; }
-    const top = (wsp * eff * (0.85 + 0.6 * this.trim) * 2.5 + 3.5) * (boost > 1 ? 1.55 : 1);
-    const thrust = c.sail * wsp * (0.25 + 0.85 * this.trim) * eff * boost * clamp(1 - Math.max(0, vf) / Math.max(4, top), 0, 1.2);
-    vf += thrust * dt;
-    vl += wgo.dot(r) * wsp * 0.14 * this.trim * dt; // (a little leeway)
-    // ---- drag, the keel
-    const dragK = c.drag * (1 - 0.4 * this.tuck);
-    vf -= (dragK * vf * Math.abs(vf) * 0.05 + c.roll * vf) * dt;
-    const grip = c.grip * (trimIn < 0 ? 1.7 : 1);
-    vl *= Math.exp(-grip * dt * (this.air ? 0.15 : 1));
-    if (this.air) vf *= Math.exp(-0.02 * dt);
+    const windF = c.windLo + (c.windHi - c.windLo) * polar(Math.cos(ang)) * (0.85 + 0.15 * W.gust);
+    const trimF = trimIn > 0 ? c.trimIn : trimIn < 0 ? c.trimOut : 1;
+    this.boosting = Math.max(0, this.boosting - dt * 2.5); // (a drift boost fades out; the flare holds it up)
+    let target = c.cruise * windF * trimF;
+    let accel = c.accel;
+    if (flare && g.lachryma.drain(c.boostCost * dt, 'surf') > 0) { target *= c.boostMult; accel = c.boostAccel; this.boosting = 1; }
+    else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting * 0.5; accel = c.boostAccel * 0.6; }
+    if (vf < target) vf = Math.min(target, vf + accel * dt);
+    else vf = Math.max(target, vf - (trimIn < 0 ? c.brake : c.coast) * dt); // (speed from a slope is kept a while)
+    if (this.air) vf *= Math.exp(-0.015 * dt);
+
+    // ---- drift: hold C while steering. The keel lets go, the turn tightens, and a long enough
+    // drift pays out as a burst when you let go.
+    const drifting = !this.air && inp.isDown('KeyC') && Math.abs(steer) > 0.25 && speed0 > c.driftMinSpeed;
+    if (drifting) { this.driftT += dt; this.driftDir = Math.sign(steer); }
+    else if (this.driftT > 0) {
+      if (this.driftT >= c.driftMin) {
+        const gain = c.driftBoost * Math.min(1.5, this.driftT / c.driftMin);
+        vf += gain + Math.abs(vl) * 0.5; vl *= 0.3;
+        this.boosting = 1;
+        g.hud.popup('DRIFT BOOST');
+        g.events?.emit('surf.drift', { t: this.driftT });
+        sfx.parry?.();
+      }
+      this.driftT = 0;
+    }
+    this.drift = THREE.MathUtils.damp(this.drift, drifting ? 1 : 0, 12, dt);
+    const grip = THREE.MathUtils.lerp(c.grip, c.driftGrip, this.drift) * (this.air ? 0.15 : 1);
+    vl *= Math.exp(-grip * dt);
+    vl += wgo.dot(r) * W.speed * 0.03 * dt; // (a little leeway)
+
     // ---- slopes: gravity along the ground
     const gy = D.heightAt(P.pos.x, P.pos.z);
     D.normalAt(P.pos.x, P.pos.z, this.n);
     if (!this.air) {
       const gt = _v3.set(0, -T.physics.gravity, 0);
       gt.addScaledVector(this.n, -gt.dot(this.n));
-      this.v.x += gt.x * c.slopeGain * dt; this.v.z += gt.z * c.slopeGain * dt;
+      vf += gt.dot(f) * c.slopeGain * dt;
+      vl += gt.dot(r) * c.slopeGain * dt * 0.5;
     }
-    // (rebuild the velocity from its parts, then turn)
     this.v.set(0, 0, 0).addScaledVector(f, vf).addScaledVector(r, vl);
-    // ---- steering: the heading turns; the velocity follows through the keel
+
+    // ---- steering: a quick turn that eases off with speed (the drift turns tighter still)
     const speedFrac = clamp(this.v.length() / c.maxSpeed, 0, 1);
-    const rate = c.turn * (1.15 - 0.6 * speedFrac) * (1 - 0.3 * this.tuck) * (this.air ? 0.6 : 1);
-    if (!this.air || Math.abs(steer) > 0) this.heading -= steer * rate * dt;
+    const rate = THREE.MathUtils.lerp(c.turn, c.turnFast, speedFrac) * (1 + (c.driftTurn - 1) * this.drift) * (this.air ? 0.55 : 1);
+    if (!this.air || Math.abs(steer) > 0.05) this.heading -= steer * rate * dt;
     if (this.air) this.spin += -steer * 7.5 * dt; else this.spin *= Math.exp(-6 * dt);
     if (this.v.length() > c.maxSpeed) this.v.setLength(c.maxSpeed);
 
-    // ---- hop: hold Space to crouch the springs, let go to hop
+    // ---- hop: hold Space to crouch the springs (a tap is a hop), let go to launch
     const sp2 = inp.isDown('Space');
-    if (sp2 && !this.air) this.charge = Math.min(1, this.charge + dt / 0.45);
+    if (sp2 && !this.air) this.charge = Math.min(1, this.charge + dt / c.hopTime);
     if (!sp2 && this.spaceWas && !this.air) {
       P.vel.y = c.hop + c.hopCharge * this.charge;
       this.v.addScaledVector(f, 1.5 + 2 * this.charge);
-      this.air = true; this.spin = 0;
+      this.air = true; this.spin = 0; this.airT = 0;
       sfx.airJump();
       g.events?.emit('surf.hop', {});
     }
@@ -176,8 +204,8 @@ export class Surfer extends Tech {
     this.spaceWas = sp2;
 
     // ---- height: hover over the sand, follow it with a little lag (that is what makes a crest a launch)
-    const target = gy + c.hover + 0.1;
-    const gap = P.pos.y - target;
+    const target2 = gy + c.hover + 0.1;
+    const gap = P.pos.y - target2;
     const vyT = -(this.n.x * this.v.x + this.n.z * this.v.z) / Math.max(0.2, this.n.y);
     if (!this.air) {
       // (follow the slope's own rise, and let the hover spring pull the gap shut)
@@ -185,9 +213,10 @@ export class Surfer extends Tech {
       if (gap > 0.85 || (gap > 0.25 && P.vel.y > vyT + 5)) { this.air = true; this.spin = 0; this.airT = 0; }
     } else {
       P.vel.y -= c.gravity * dt;
-      this.airT = (this.airT || 0) + dt;
+      this.airT += dt;
       if (gap <= 0.12 && P.vel.y <= 0.5) this.land(vyT);
     }
+    if (this.v.length() > c.maxSpeed) this.v.setLength(c.maxSpeed); // (hops, tricks and boosts all end up under the same cap)
     P.vel.x = this.v.x; P.vel.z = this.v.z;
 
     // ---- go (walls and ruins stop it)
@@ -204,18 +233,17 @@ export class Surfer extends Tech {
     P.grounded = !this.air;
     P.bodyYaw = this.faceYaw();
 
-    // ---- the camera follows where the board goes, unless you are looking about
+    // ---- the camera swings round behind where the board goes, unless you are looking about
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
-    if (this.mouseIdle > 0.9 && this.v.length() > 4) P.yaw += wrap(this.heading - P.yaw) * Math.min(1, dt * 1.7);
+    if (this.mouseIdle > 0.45 && this.v.length() > 4) P.yaw += wrap(this.heading - P.yaw) * Math.min(1, dt * 3.2);
 
-    // lean and pitch of the board itself
+    // lean of the board itself: into the turn, and out of a drift
     const speed = this.v.length();
-    const wantRoll = clamp(-steer * 0.5 * clamp(speed / 14, 0.2, 1), -0.55, 0.55) + (this.air ? 0 : -vl * 0.02);
-    this.roll = THREE.MathUtils.damp(this.roll, wantRoll, 7, dt);
+    const wantRoll = clamp(-steer * 0.5 * clamp(speed / 14, 0.25, 1), -0.55, 0.55) + (this.air ? 0 : -vl * 0.03) - this.driftDir * this.drift * 0.15;
+    this.roll = THREE.MathUtils.damp(this.roll, wantRoll, 9, dt);
     this.speed = speed;
     if (this.sfxLoop) this.sfxLoop.set(clamp(speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0);
-    // emit
-    this.emitFx(dt, gy2);
+    this.emitFx(dt);
     g.events?.emit('surf.tick', { speed });
     return true;
   }
@@ -238,19 +266,14 @@ export class Surfer extends Tech {
     this.spin = 0;
   }
 
-  emitFx(dt, gy) {
-    const g = this.game, P = this.P, fx = g.fx;
+  /** The engine's glow: warm motes off the stern (the sand spray and the trail are marks.js). */
+  emitFx(dt) {
+    const fx = this.game.fx, P = this.P;
     if (!fx) return;
-    const sp = this.speed, low = !this.air;
-    const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
-    // sand thrown up behind, more the faster and the lower
-    if (low && Math.random() < dt * (10 + sp * 2.2)) {
-      const at = P.pos.clone().addScaledVector(f, -0.9).setY(gy + 0.15);
-      fx.alpha.emit({ pos: at, vel: new THREE.Vector3((Math.random() - 0.5) * 1.2, 0.6 + Math.random() * 1.6, (Math.random() - 0.5) * 1.2).addScaledVector(f, -sp * 0.12), life: 0.6 + Math.random() * 0.5, size: 0.14, sizeEnd: 0.5, color: new THREE.Color(0xf0c890), alpha: 0.35, drag: 2, gravity: 1 });
-    }
-    // the engine's glow: gold motes off the stern
-    if (Math.random() < dt * (16 + this.boosting * 40)) {
-      fx.add.emit({ pos: P.pos.clone().addScaledVector(f, -1.1).setY(P.pos.y - 0.3), vel: new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.2 + Math.random(), (Math.random() - 0.5) * 0.8).addScaledVector(f, -sp * 0.1), life: 0.5, size: 0.06, sizeEnd: 0.01, color: new THREE.Color(this.boosting ? 0xfff0c0 : 0xffc65c), drag: 1.5, twinkle: 20 });
+    const sp = this.speed, f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
+    if (Math.random() < dt * (10 + this.boosting * 30 + this.drift * 20)) {
+      const hot = this.boosting > 0.3 || this.drift > 0.5;
+      fx.add.emit({ pos: P.pos.clone().addScaledVector(f, -1.1).setY(P.pos.y - 0.3), vel: new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.2 + Math.random(), (Math.random() - 0.5) * 0.8).addScaledVector(f, -sp * 0.1), life: 0.5, size: 0.06, sizeEnd: 0.01, color: new THREE.Color(hot ? 0xfff0c0 : 0xffc65c), drag: 1.5 });
     }
   }
 
@@ -401,7 +424,7 @@ export class Surfer extends Tech {
     const C = ch.clips;
     // a low, sideways stance: the crouch, sunk a little more with the springs
     const crouch = C.sample('crouchIdle', 0.3, ch.P.tmp);
-    C.blend(base, crouch, this.w * clamp(0.4 + 0.35 * this.tuck + 0.3 * this.charge, 0, 1));
+    C.blend(base, crouch, this.w * clamp(0.4 + 0.3 * this.drift + 0.3 * this.charge, 0, 1));
   }
 
   /** Lean the body into the turn and with the slope. */
@@ -419,31 +442,21 @@ export class Surfer extends Tech {
     if (!this.active || this.w < 0.05 || !this.board.visible) return;
     const w = this.w;
     this.board.updateMatrixWorld(true);
-    const at = (x, y, z) => _v3.set(x, y, z).applyMatrix4(this.board.matrixWorld).clone();
     const dir = (x, y, z) => new THREE.Vector3(x, y, z).transformDirection(this.board.matrixWorld);
-    const deckTop = 0.13;
-    // feet: left (the front one, the body faces starboard) and right
-    const stance = [['L', 0.5, 0.06], ['R', -0.45, -0.06]];
-    for (const [s, z, x] of stance) {
+    // feet: the clip's own stance, only set down onto the deck along the board's up (a correction, not a pose)
+    const up = dir(0, 1, 0), origin = _v3.set(0, 0, 0).applyMatrix4(this.board.matrixWorld).clone();
+    for (const s of ['L', 'R']) {
       const leg = ch.leg[s];
-      const foot = at(x, deckTop + ch.ankleRest * 0.55 + (this.charge > 0 ? -this.charge * 0.05 : 0), z);
-      const toes = dir(-1, 0, 0.15); // (across the board, toward starboard as the body faces)
-      const knee = leg.thigh.getWorldPosition(new THREE.Vector3()).add(dir(-1, 0, 0).multiplyScalar(0.7)).add(new THREE.Vector3(0, 0.3, 0));
       const cur = leg.foot.getWorldPosition(new THREE.Vector3());
-      ch.solveLeg(leg, foot.lerp(cur, 1 - w), knee);
-      const fq = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(dir(0, 0, 1).cross(toes).normalize().negate(), dir(0, 1, 0), toes.clone()));
-      // (the sole flat on the deck, toes across it)
-      const up = dir(0, 1, 0), tw = toes.clone().addScaledVector(up, -toes.dot(up)).normalize();
-      const rt = new THREE.Vector3().crossVectors(up, tw).normalize();
-      _m.makeBasis(rt, up, tw);
-      ch.setWorldQuat(leg.foot, _q.setFromRotationMatrix(_m).multiply(ch.restCharQ.get(leg.foot)));
-      ch.root.updateMatrixWorld(true);
+      const off = cur.clone().sub(origin).dot(up) - (0.13 + ch.ankleRest * 0.55);
+      if (Math.abs(off) < 1e-3) continue;
+      const knee = leg.shin.getWorldPosition(new THREE.Vector3());
+      ch.solveLeg(leg, cur.addScaledVector(up, -off * w), knee);
     }
     // hands on the boom: the boom runs aft from the mast, swung out by the sail
     this.rig.updateMatrixWorld(true);
     const boomAt = (d) => _v3.set(0, 1.05, -d).applyMatrix4(this.rig.matrixWorld).clone();
     for (const [s, d] of [['L', 0.5], ['R', 1.15]]) {
-      if (s === 'R' && ch.gunHeld) continue;
       const arm = ch.arm[s];
       const q = ch.handQuat(arm, dir(0, 0, -1), new THREE.Vector3(0, 1, 0));
       const p = boomAt(d).sub(arm.palmPt.clone().applyQuaternion(q));
