@@ -12,6 +12,8 @@ export class Input {
     this.enabled = false;
     this.onLockChange = null;
     this.wheel = 0;
+    this.mx = innerWidth / 2; // the cursor (only meaningful while the pointer is free: the god hand)
+    this.my = innerHeight / 2;
     el.addEventListener('wheel', (e) => { if (this.enabled) { this.wheel += e.deltaY; e.preventDefault(); } }, { passive: false });
     el.addEventListener('auxclick', (e) => e.preventDefault());
 
@@ -19,7 +21,7 @@ export class Input {
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
       this.down.add(e.code);
-      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG', 'KeyV'].includes(e.code)) e.preventDefault();
+      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG', 'KeyV', 'Backquote', 'Minus'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => {
       this.down.delete(e.code);
@@ -36,12 +38,14 @@ export class Input {
     addEventListener('mouseup', (e) => this.down.delete(`Mouse${e.button}`));
     el.addEventListener('contextmenu', (e) => e.preventDefault());
     addEventListener('mousemove', (e) => {
+      this.mx = e.clientX; this.my = e.clientY;
       if (!this.enabled) return;
       if (this.locked || this.lockFailed) {
         this.dx += e.movementX || 0;
         this.dy += e.movementY || 0;
       }
     });
+    document.addEventListener('mouseleave', () => { this.mx = -1; this.my = -1; }); // (the cursor left the window: no edge-scroll)
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === this.el;
       if (this.locked) { this.everLocked = true; this.lockFailed = false; }

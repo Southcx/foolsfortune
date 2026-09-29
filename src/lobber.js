@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { RAPIER, groups, G } from './physics.js';
-import { PALETTE } from './config.js';
+import { PALETTE, T } from './config.js';
 import { addOutline } from './outline.js';
 import { sfx } from './audio.js';
 
@@ -82,6 +82,7 @@ export class Lobbers {
 
   tickBall(b, dt) {
     const g = this.game, P = g.player;
+    if (b.pinned || b.grabbed) return true; // (anchored, or in the god hand: it stays as it is)
     b.t += dt;
     const t = b.body.translation(), v = b.body.linvel();
     const at = new THREE.Vector3(t.x, t.y, t.z);
@@ -91,7 +92,11 @@ export class Lobbers {
     // a reflected ball rings the targets it strikes
     if (b.reflected && g.movers?.hitTargetsNear(new THREE.Vector3(t.x, t.y - 0.2, t.z), 0.6, { cause: 'parry', drop: 0 })) done = true;
     // one that reaches us knocks us back
-    if (!b.reflected && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.7 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.9) {
+    if (!b.reflected && g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.6 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.4) {
+      // (the Courier is a jar just now)
+      g.god.hitVessel(T.god.ballDamage, new THREE.Vector3(v.x, 0, v.z).normalize().negate(), 'ball');
+      done = true;
+    } else if (!b.reflected && !g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.7 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.9) {
       if (P.invulnerable) { g.events?.emit('lob.dodged', {}); }
       else {
         const dir = new THREE.Vector3(v.x, 0, v.z).normalize();

@@ -145,6 +145,14 @@ export const DEFAULTS = {
     clapperDrop: 6, // baubles inside every clapperjar
     markedDrop: 2, // baubles from a marked pot
   },
+  // the god hand (~): see godmode.js
+  god: {
+    raids: true, firstWave: 22, waveEvery: 34, waveBase: 2, waveGrow: 1, vesselHp: 100,
+    range: 36, dist: 17, minDist: 8, maxDist: 46, pitchDeg: 36, fov: 24, clipAbove: 3.9,
+    hoverH: 1.7, grabSpeed: 14, throwBoost: 1.15, throwMax: 30, panSpeed: 1.0, edgeScroll: 16,
+    castHeight: 7, castCooldown: 0.35, pushRadius: 5.5, pushForce: 11,
+    regenEvery: 9, regenMax: 6, raidDamage: 7, ballDamage: 14, blastDamage: 22, thrownDamage: 4, reforge: 7,
+  },
   shells: {
     start: 4,
     max: 8,
@@ -152,6 +160,9 @@ export const DEFAULTS = {
     reliquaryCooldown: 20,
     rackTime: 0.6,
     kick: 1.8,
+    groove: { speed: 16, lift: 2.4, radius: 6.5, duration: 9, hop: 3.4 },
+    anchor: { duration: 12 },
+    hatch: { maxAllies: 5 },
     slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160 },
     push: { range: 10, angle: 32, velocity: 13, selfKnock: 3 },
     well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11,

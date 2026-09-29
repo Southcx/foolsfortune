@@ -1,5 +1,7 @@
 import { T } from './config.js';
 
+import { SHELL_KEYS } from './shells.js';
+
 export class Hud {
   constructor() {
     this.el = {
@@ -49,7 +51,7 @@ export class Hud {
   }
 
   buildShells(types) {
-    this.el.shells.innerHTML = types.map((t, i) => `<div class="slot" data-i="${i}"><i>${t.glyph}</i><span>${i + 1} ${t.name}</span><b></b></div>`).join('');
+    this.el.shells.innerHTML = types.map((t, i) => `<div class="slot" data-i="${i}"><i>${t.glyph}</i><span>${SHELL_KEYS[i] || ''} ${t.name}</span><b></b></div>`).join('');
     this.slots = [...this.el.shells.querySelectorAll('.slot')];
   }
 

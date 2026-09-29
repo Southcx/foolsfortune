@@ -15,6 +15,8 @@ import { setOutlineThickness } from './outline.js';
 import { sfx } from './audio.js';
 import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
+import handB64 from './assets/godhand.glb?b64';
+import jarB64 from './assets/pneuka.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import animsB64 from './assets/anims.bin?b64';
 import cmuB64 from './assets/anims_cmu.bin?b64';
@@ -43,6 +45,7 @@ import { Kick } from './moves/kick.js';
 import { Recoil } from './moves/recoil.js';
 import { Rigging } from './moves/rigging.js';
 import { Lobbers } from './lobber.js';
+import { GodMode } from './godmode.js';
 import { Water, Ladders, SlipField } from './moves/env.js';
 import { Events } from './events.js';
 import { Movers } from './movers.js';
@@ -108,6 +111,8 @@ async function main() {
       stats.total++;
     },
     onExplosion(center, R) {
+      game.god?.explosion(center, R);
+      if (game.god?.active) return; // (the Courier is a jar just now)
       const pc = player.pos.clone(); pc.y += 0.9;
       const d = pc.distanceTo(center);
       const reach = R * 1.3;
@@ -141,10 +146,12 @@ async function main() {
 
   const loader = new GLTFLoader();
   const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
-  const [charG, gunG, clapG] = await Promise.all([
+  const [charG, gunG, clapG, handG, jarG] = await Promise.all([
     loader.parseAsync(bytes(courierB64), ''),
     loader.parseAsync(bytes(gunB64), ''),
     loader.parseAsync(bytes(clapperB64), ''),
+    loader.parseAsync(bytes(handB64), ''),
+    loader.parseAsync(bytes(jarB64), ''),
   ]);
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
@@ -172,7 +179,7 @@ async function main() {
   game.techs = techs;
   const codex = new Codex(game);
   game.codex = codex;
-  codex.onClose = () => { if (input.enabled) input.requestLock(); };
+  codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
@@ -182,6 +189,8 @@ async function main() {
   game.shells = shells;
   hud.buildShells(SHELL_TYPES);
   game.input = input;
+  const god = new GodMode(game, renderer, handG, jarG);
+  game.god = god;
 
   // physics debug lines (F3)
   const dbgGeo = new THREE.BufferGeometry();
@@ -192,6 +201,7 @@ async function main() {
 
   const resetRoom = () => {
     game.trial?.abort();
+    game.god?.onReset(); // (let go of what the hand holds)
     game.techs?.get('carry')?.reset(); // (put down what's in your hands before the props are cleared)
     fx.timed.length = 0;
     level.clearDynamic();
@@ -228,7 +238,7 @@ async function main() {
   game.trial = trial;
   const course = new Course(game);
   game.course = course;
-  course.menu.onClose = () => { if (input.enabled) input.requestLock(); };
+  course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -245,10 +255,10 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen()) { overlay.style.display = 'flex'; input.enabled = false; }
+    if (!locked && !guiOpen && !modalOpen() && !god.active) { overlay.style.display = 'flex'; input.enabled = false; }
   };
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !modalOpen()) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !god.active) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -345,27 +355,35 @@ async function main() {
     if (input.wasPressed('Tab')) {
       guiOpen = !guiOpen;
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
-      else { gui.hide(); if (input.enabled) input.requestLock(); }
+      else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
+    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
     trial.update(dt);
-    player.look(dt, weapon.adsEase || 0);
-    player.chargeLevel = weapon.charge;
-    weapon.update(dt, input, player);
-    player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding);
+    const godOn = god.controlling; // (the hand: the Courier is a jar, and none of her machinery runs)
+    if (godOn) god.update(dt);
+    else {
+      player.look(dt, weapon.adsEase || 0);
+      player.chargeLevel = weapon.charge;
+      weapon.update(dt, input, player);
+      player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding);
+    }
 
     acc += dt;
     let steps = 0;
     events.time = simTime;
     while (acc >= FIXED && steps < 4) {
       movers.pre(FIXED);
-      player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
-      player.guard();
+      if (godOn) god.fixed(FIXED);
+      else {
+        player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
+        player.guard();
+      }
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
@@ -380,56 +398,59 @@ async function main() {
     movers.tick(dt);
     system.tick(dt);
 
-    techs.tick(dt);
+    if (!godOn) techs.tick(dt);
     env.water.update(dt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);
-    player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
-    character.setFirstPerson(player.fpWeight > 0.5);
-    // fade the courier out when the 3rd-person camera is pressed up against her
-    const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
-    character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
-    weapon.computeAimPoint(camera, player);
-    const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
-    // heading change rate (the slide leans into turns)
-    const heading = Math.atan2(player.vel.x, player.vel.z);
-    const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
-    lastHeading = heading;
-    const held = weapon.held;
-    character.animate(dt, {
-      pos: player.renderPos,
-      yaw: player.bodyYaw,
-      velocity: player.vel,
-      vy: player.vel.y,
-      turnRate,
-      airJump: player.airJumpPulse ? (player.airJumpPulse = false, true) : false,
-      ground: groundAt,
-      grounded: player.grounded,
-      groundN: player.grounded ? player.groundNormal() : null,
-      groundVel: player.groundVel,
-      wall: player.wallBlend,
-      slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
-      dash: player.dashBlend, crouch: player.crouchBlend,
-      aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
-      aimYawOffset: player.aimYawOffset,
-      combat: Math.max(weapon.combatBlend * held, player.fpWeight),
-      upper: weapon.combatBlend * held,
-      // right-side wallrun: the gun goes to the left hand so the right can take the wall
-      gunHand: T.weapon.swapOnWallrun && weapon.drawn && player.wallrun && player.wallrun.side > 0 ? 1 : 0,
-      reload: weapon.reloading ? weapon.reloadT : -1,
-      walkSpeed: T.movement.walkSpeed,
-      sprintSpeed: T.movement.sprintSpeed,
-      recoil: weapon.kick * held,
-      adsT: weapon.adsEase,
-      landed: player.landedOut,
-      techs: player.techs,
-    });
-    player.headRel = character.headRel;
-    weapon.fpPose(dt, camera, player, character);
-    character.poseHands(handContext());
-    weapon.tryFire(camera, player, character);
-    if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
+    if (!godOn) {
+      player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
+      character.setFirstPerson(player.fpWeight > 0.5);
+      // fade the courier out when the 3rd-person camera is pressed up against her
+      const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
+      character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
+      weapon.computeAimPoint(camera, player);
+      const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
+      // heading change rate (the slide leans into turns)
+      const heading = Math.atan2(player.vel.x, player.vel.z);
+      const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
+      lastHeading = heading;
+      const held = weapon.held;
+      character.animate(dt, {
+        pos: player.renderPos,
+        yaw: player.bodyYaw,
+        velocity: player.vel,
+        vy: player.vel.y,
+        turnRate,
+        airJump: player.airJumpPulse ? (player.airJumpPulse = false, true) : false,
+        ground: groundAt,
+        grounded: player.grounded,
+        groundN: player.grounded ? player.groundNormal() : null,
+        groundVel: player.groundVel,
+        wall: player.wallBlend,
+        slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
+        dash: player.dashBlend, crouch: player.crouchBlend,
+        aimPitch: Math.asin(THREE.MathUtils.clamp(aimDir.y, -1, 1)),
+        aimYawOffset: player.aimYawOffset,
+        combat: Math.max(weapon.combatBlend * held, player.fpWeight),
+        upper: weapon.combatBlend * held,
+        // right-side wallrun: the gun goes to the left hand so the right can take the wall
+        gunHand: T.weapon.swapOnWallrun && weapon.drawn && player.wallrun && player.wallrun.side > 0 ? 1 : 0,
+        reload: weapon.reloading ? weapon.reloadT : -1,
+        walkSpeed: T.movement.walkSpeed,
+        sprintSpeed: T.movement.sprintSpeed,
+        recoil: weapon.kick * held,
+        adsT: weapon.adsEase,
+        landed: player.landedOut,
+        techs: player.techs,
+      });
+      player.headRel = character.headRel;
+      weapon.fpPose(dt, camera, player, character);
+      character.poseHands(handContext());
+      weapon.tryFire(camera, player, character);
+      if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
+    } else player.renderPos.copy(player.pos);
+    god.applyCamera(dt);
     weapon.updateDebris(dt);
 
     breakables.update(dt);

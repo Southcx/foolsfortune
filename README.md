@@ -33,7 +33,8 @@ npm run build      # static bundle in dist/
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
 | Middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
-| 1–7 / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek |
+| 1–9, 0, − / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek, slip, groove, anchor, hatch |
+| ~ | **the god hand**: the Courier becomes a jar and you become a hand (see below); ~ again to come back |
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
 | Z | toggle first / third person |
@@ -82,6 +83,35 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 | Bomb | a lobbed clay grenade: splash damage, a spray of molten slip that splats and cools, and a hot pool that cooks pots and scalds clapperjars |
 | Bank | a ricochet round: banks off walls and floors up to 5 times, hits harder each bounce and bends toward a target after each one. ADS previews the first bounce |
 | Seek | hold to paint up to 6 targets (the lock-on squares spin in and snap together), release to loose a fan of seekers |
+| Slip | a lobbed ball of liquid clay that paints floors and walls wet (dive in: C) |
+| Groove | a mirror-ball orb opens where it lands (9 s, 128 bpm): every clapperjar nearby dances and forgets what it was doing, pots and crates hop to the beat |
+| Anchor | pins one thing where it is, in mid-air if that's where it was: it turns solid and stays for 12 s (a crate becomes a step, a thrown ball hangs there, a critter is stuck) |
+| Hatch | a pot cracks open and a clapperjar climbs out, friendly (a helper that mends cracked pots); a clapperjar hit by it turns friendly. At most 5 helpers |
+
+## The god hand (~)
+
+Press **~** on solid ground and the Courier turns into a **Pneuka jar**, an immobile vessel
+(`courier_pneuka.blend`), and you become a disembodied **hand** (`courier_godhand.blend`): the
+camera pulls up into a turnable isometric view, the cursor is the hand, and the game becomes a
+physics god game over the same rooms. Ceilings and everything above head height are cut away.
+
+| | |
+| --- | --- |
+| Left click (hold) | grab anything loose: pots, crates, clapperjars, a lobber's ball in flight. Release throws it (as fast as the hand was going); Shift lifts it higher |
+| Right click | cast the selected shell where the cursor is, from above (1–9, 0, − pick): bombs and slip fall in, wells open, groove / anchor / hatch act on what's there. Shells come back on their own (one of each every 9 s, up to 6) |
+| Q / E, wheel, WASD or the screen edges | turn the view an eighth of a turn, zoom, pan |
+| X | raids on / off |
+| ~ | back to the Courier where the jar stood (once the vessel is whole) |
+
+The hand is on a **tether**: it can't reach further than 36 m from the vessel. The vessel can be
+hurt: **raids** (waves of crimson clapperjars, kamikaze, from 22 s in and every 34 s, one more
+each wave), a lobber's balls, blasts (your own bombs too), and whatever you throw at it. Hits
+crack it (the cracks are drawn on the jar); at zero it shatters, and reforges 7 s later at 60%,
+its old cracks now gold seams. Counters: grab a raider and throw it away, cut or blow it up, pin it
+(anchor), make it dance (groove), or turn it (hatch: a turned clapperjar guards the vessel against
+raiders and mends it, the way clapperjars mend cracked pots). A wave cleared gives a shell of each
+kind and mends the vessel a little. Everything is in `src/godmode.js`; the shells' new effects in
+`src/casters.js`. The torture bot drops into it now and then and fuzzes the hand.
 
 ## Moving around
 
@@ -352,6 +382,7 @@ runtime IK correction on the contact points.
 | `src/mill.js` | the clockwork mill and the kiln stack |
 | `src/riglab.js` | the rigging and the hands wings west of the lab |
 | `src/lobber.js` | clay mortars that throw balls to parry |
+| `src/godmode.js`, `src/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |
 | `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (toasts, the Codex) |
@@ -438,6 +469,8 @@ Standard tiers are used; the paid full tiers are not included.) Motion capture: 
 Motion Capture Database, free for research and games, no resale of the data itself
 (http://mocap.cs.cmu.edu), retargeted with `tools/bake_cmu.mjs` from the BVH conversion;
 `src/assets/anims_cmu.bin` is that exploratory pack (not loaded by the game yet).
+
+`tools/export_godmode.py` exports the god-mode assets (`source_assets/courier_godhand.blend`, a rigged hand, and `courier_pneuka.blend`, the jar) to `src/assets/godhand.glb` / `pneuka.glb`.
 
 `tools/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
 `src/assets/courier.glb` and `src/assets/psygun.glb`, which are bundled into the JS build.

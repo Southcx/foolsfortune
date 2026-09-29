@@ -115,7 +115,7 @@ export class Weapon {
     this.updateTrigger(dt, input);
     this.updateCharge(dt, input);
     const shells = this.game.shells;
-    for (let i = 0; i < 9; i++) if (input.wasPressed(`Digit${i + 1}`)) shells.select(i);
+    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus'].forEach((k, i) => { if (input.wasPressed(k)) shells.select(i); });
     if (input.wheel) shells.cycle(Math.sign(input.wheel));
     const shellPress = input.wasPressed('Mouse1') && !this.reloading && this.charge === 0;
     if (shells.type.id === 'homing') {

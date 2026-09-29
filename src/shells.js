@@ -5,6 +5,7 @@ import { planeFrom } from './slicing.js';
 import { makeGlowOutline, addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { Specials } from './specials.js';
+import { Casters } from './casters.js';
 
 // ---------------------------------------------------------------------------
 // Shells: special rounds for the psygun, fired with F / middle mouse.
@@ -25,7 +26,11 @@ export const SHELL_TYPES = [
   { id: 'ricochet', name: 'BANK', glyph: '⟀' },
   { id: 'homing', name: 'SEEK', glyph: '◇' },
   { id: 'slip', name: 'SLIP', glyph: '≈' }, // paints liquid clay to dive through (the slip tech)
+  { id: 'groove', name: 'GROOVE', glyph: '♪' }, // caster shells: see casters.js
+  { id: 'anchor', name: 'ANCHOR', glyph: '⚓︎' },
+  { id: 'hatch', name: 'HATCH', glyph: '❦' },
 ];
+export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
@@ -86,6 +91,7 @@ export class Shells {
     this.dropMesh.frustumCulled = false;
     game.scene.add(this.dropMesh);
     this.specials = new Specials(this);
+    this.casters = new Casters(this);
   }
 
   get type() { return SHELL_TYPES[this.selected]; }
@@ -167,6 +173,32 @@ export class Shells {
 
   ricochet(ctx) { this.specials.ricochet(ctx); }
   homing(ctx) { this.specials.homing(ctx); }
+  groove(ctx) { this.casters.groove(ctx); }
+  anchor(ctx) { this.casters.anchor(ctx); }
+  hatch(ctx) { this.casters.hatch(ctx); }
+
+  /** A ring of force from a point (the god hand's push): everything loose in range goes outward and up. */
+  pushBurst(point, R, k) {
+    const g = this.game;
+    g.physics.world.forEachRigidBody((b) => {
+      if (!b.isDynamic() || g.physics.links.has(b.handle)) return;
+      const t = b.translation();
+      _v.set(t.x - point.x, t.y - point.y, t.z - point.z);
+      const d = _v.length();
+      if (d > R || d < 1e-3) return;
+      const ent = b.numColliders() ? g.physics.entityOf(b.collider(0)) : null;
+      if (ent?.type === 'player') return;
+      _v.divideScalar(d);
+      const f = k * Math.pow(1 - d / R, 0.6) * b.mass();
+      g.physics.kick(b, { x: _v.x * f, y: (Math.max(0, _v.y) * k * 0.5 + k * 0.25) * b.mass() * (1 - d / R), z: _v.z * f });
+    });
+    for (const c of g.clappers.list) {
+      const d = c.pos.distanceTo(point);
+      if (d < R) g.clappers.knock(c, _v.subVectors(c.pos, point).setY(0.5).normalize().multiplyScalar(k * 0.7 * (1 - d / R)));
+    }
+    g.fx.shockwave?.(point, R * 0.35);
+    sfx.push();
+  }
 
   // ---- PUSH ----------------------------------------------------------------
   push({ ray, muzzle, player }) {
@@ -203,6 +235,7 @@ export class Shells {
     const mesh = kind === 'well'
       ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), new THREE.MeshBasicMaterial({ color: 0x1c0d08 }))
       : kind === 'slip' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3 }))
+      : kind === 'groove' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), new THREE.MeshStandardMaterial({ color: 0xdff4ff, flatShading: true, metalness: 0.4, roughness: 0.15, emissive: 0x9a5cff, emissiveIntensity: 1 }))
       : new THREE.Mesh(new THREE.DodecahedronGeometry(0.09, 0), new THREE.MeshStandardMaterial({ color: PALETTE.dark, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0.3 }));
     if (kind === 'well') {
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -252,6 +285,7 @@ export class Shells {
       p.age += dt;
       p.prev.copy(p.pos);
       const grav = p.kind === 'well' ? T.shells.well.gravity : T.physics.gravity;
+      if (p.kind === 'groove') p.mesh.rotation.y += dt * 10;
       p.vel.y -= grav * dt;
       const step = p.vel.clone().multiplyScalar(dt);
       const len = step.length();
@@ -260,7 +294,7 @@ export class Shells {
       if (hit) {
         const ent = hit.entity;
         p.pos.copy(hit.point).addScaledVector(hit.normal, 0.1);
-        if (p.kind === 'well' || p.kind === 'slip' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
+        if (p.kind === 'well' || p.kind === 'slip' || p.kind === 'groove' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
         else {
           // bounce: reflect with loss
           p.vel.reflect(hit.normal).multiplyScalar(0.45);
@@ -278,6 +312,7 @@ export class Shells {
         this.projectiles.splice(i, 1);
         if (p.kind === 'well') this.openWell(p.pos.clone().addScaledVector(p.normal || UP, 0.5));
         else if (p.kind === 'slip') this.burstSlip(p.pos.clone(), p.normal || UP);
+        else if (p.kind === 'groove') this.casters.openGroove(p.pos.clone().addScaledVector(p.normal || UP, 1.0));
         else this.explodeBomb(p.pos.clone(), p.normal);
       }
     }
@@ -613,6 +648,7 @@ export class Shells {
     this.glowOutline.opacity = 0.55 + 0.3 * Math.sin(now * 6);
     this.xray.opacity = 0.18 + 0.08 * Math.sin(now * 6);
     this.specials.update(dt);
+    this.casters.update(dt);
   }
 
   unmark(ent) {
@@ -633,6 +669,7 @@ export class Shells {
     for (const p of this.pools) g.scene.remove(p.m);
     for (const e of [...this.marked]) this.unmark(e);
     this.specials.clear();
+    this.casters.clear();
     this.projectiles = []; this.wells = []; this.splats = []; this.pools = []; this.droplets = [];
   }
 }

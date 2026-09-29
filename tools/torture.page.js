@@ -63,7 +63,7 @@
   function fuzzRun(g, rnd, ticks, sink, label) {
     const P = g.player, inp = g.input, B = -14;
     const held = new Set();
-    let keyT = 0, turn = 0, turnT = 0, tapT = 0, fireT = 0, shellT = 0;
+    let keyT = 0, turn = 0, turnT = 0, tapT = 0, fireT = 0, shellT = 0, godT = 0, godLeft = 1e9;
     const pos0 = P.pos.clone();
     const lastPos = P.pos.clone();
     let path = 0, winT = 0, hitchT = 0, techT = 0, lastTech = null;
@@ -101,10 +101,26 @@
       P.pitch = Math.max(-1.3, Math.min(1.1, P.pitch + (rnd() - 0.5) * 0.06 - (rnd() < 0.02 ? 0.5 : 0)));
       if (rnd() < 0.01) P.pitch = -0.9 - rnd() * 0.4; // (looking down, for slams)
       if ((fireT -= 1) <= 0) { fireT = 20 + Math.floor(rnd() * 120); if (rnd() < 0.5) { inp.pressed.add('Mouse0'); inp.down.add('Mouse0'); } else inp.down.delete('Mouse0'); }
-      if ((shellT -= 1) <= 0) { shellT = 60 + Math.floor(rnd() * 200); g.shells.select(Math.floor(rnd() * 8)); }
+      if ((shellT -= 1) <= 0) { shellT = 60 + Math.floor(rnd() * 200); g.shells.select(Math.floor(rnd() * Object.keys(g.shells.counts).length)); }
       for (const k of KEYS) { if (held.has(k) || k === tapKey) inp.down.add(k); else inp.down.delete(k); }
 
+      // ---- the god hand: now and then the Courier becomes a jar for a while; the hand is fuzzed (grabs, throws, casts, turns) ----
+      const god = g.game.god;
+      if (god.state === 'off' && rnd() < 0.0012 && god.canEnter()) { inp.pressed.add('Backquote'); godLeft = 150 + Math.floor(rnd() * 400); god.raid.t = Math.min(god.raid.t, 5 + rnd() * 10); }
+      if (god.controlling) {
+        if ((godT -= 1) <= 0) {
+          godT = 5 + Math.floor(rnd() * 25);
+          inp.mx = 60 + rnd() * (innerWidth - 120); inp.my = 60 + rnd() * (innerHeight - 120);
+          if (rnd() < 0.5) inp.down.add('Mouse0'); else inp.down.delete('Mouse0');
+          if (rnd() < 0.35) { inp.pressed.add('Mouse2'); inp.down.add('Mouse2'); } else inp.down.delete('Mouse2');
+          if (rnd() < 0.3) { const d = 'Digit' + (1 + Math.floor(rnd() * 9)); inp.pressed.add(d); }
+          if (rnd() < 0.1) inp.pressed.add(rnd() < 0.5 ? 'KeyQ' : 'KeyE');
+          if (rnd() < 0.1) inp.wheel += (rnd() - 0.5) * 600;
+        }
+        if (--godLeft <= 0) { inp.pressed.add('Backquote'); inp.down.delete('Mouse0'); inp.down.delete('Mouse2'); godLeft = 1e9; }
+      }
       g.tick(1 / 60);
+      if (god.state !== 'off') { if (god.state === 'on' || god.state === 'in') { sink.ticks++; continue; } }
       // taps last one step
       if (tapKey && !held.has(tapKey)) inp.down.delete(tapKey);
 
@@ -135,6 +151,7 @@
       if (sink.tracing && i % 20 === 0) sink.tracing.push([i, ...P.pos.toArray().map((x) => +x.toFixed(2)), ...P.vel.toArray().map((x) => +x.toFixed(1)), P.shape, [...held].join('+'), g.techs.active?.id || '-', P.stuck]);
       sink.ticks++;
     }
+    g.game.god.forceOff();
     P.move = origMove; sink.hist = null;
     guardOff(); respawnOff(); techOff(); evOff();
     for (const k of KEYS.concat(TAPS, ['Mouse0'])) inp.down.delete(k);
