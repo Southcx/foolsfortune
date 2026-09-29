@@ -279,6 +279,13 @@ class Sfx {
     };
   }
 
+  /** A sail going up: a quick rush of cloth. */
+  hoist() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.3);
+    this.noise(t, 0.35, { type: 'bandpass', f0: 500, f1: 2200, q: 1, gain: 0.6, attack: 0.03, dest: d });
+  }
+
   /** The surfer's hiss and hum: wind over sand and the emitter. Returns { set(speedFrac, boost, air), stop() }. */
   surfLoop() {
     if (!this.ok()) return null;

@@ -155,31 +155,48 @@ knows how to be hurt (`src/godmode.js`).
 
 ## The dunes and the Solar Surfer
 
-Far below the workshop there is an open layer: a sand sea in a bowl of mountains, low gold sun,
-half-buried ruins and a pale spire with a beam of light to sail toward. Take the index console
-(**F** in the hub) to **THE DUNES**, or come back any time with **H**. You arrive standing on the
-**Solar Surfer**, a hover-board with a light-sail (after the one in Treasure Planet):
+Far below the workshop there is an open layer: a sand sea in a bowl of mountains, low gold sun, half-buried ruins and a
+pale spire with a beam of light to sail toward. Take the index console (**F** in the hub) to **THE DUNES**, or come back
+any time with **H**. You arrive standing on the **Solar Surfer**: a small hovering skiff with a lug sail, modelled on the
+King of Red Lions in *The Wind Waker*, with a little acrobatics on top.
 
 | Key | Action |
 | --- | --- |
-| A / D | steer (quick at low speed, calmer fast) |
-| W / S | trim the sail in (a faster cruise) / let it out and brake |
-| Shift | solar flare: top speed and acceleration jump, for Lachryma |
-| Space | hold to crouch the springs, release to hop; in the air A / D spin, land a spin for a boost |
-| C | drift: hold it in a turn, and a long one (0.7 s+) pays out as a burst when you let go |
+| W (hold) | hoist the sail; it stays up. How far up is how much you sail |
+| S (hold) | let it down, and brake. Hoist it again quickly from nearly down and it is a **pump**: a burst of speed (as in Wind Waker) |
+| A / D | steer (it turns on the spot, and carves at speed) |
+| Space | hold to crouch the springs, release to hop; in the air A / D spin the whole skiff, rider and all: land a whole turn for a boost |
+| Shift | solar flare: the emblem blazes, top speed and acceleration jump, for Lachryma |
 | Y | stow / summon the board |
 | R | start again at the arrival basin |
 
-The psygun is stowed and cannot be fired while you ride.
+The psygun is stowed and cannot be fired while you ride. The boat is driven by the wind alone (a yellow arrow floats by the
+stern and shows where it goes): a tailwind is fastest, into the wind is slow but never a stall, and with the sail furled you
+can sit perfectly still. The boom swings out to leeward and the cloth bellies or luffs. The wake is drawn as Wind Waker draws it: crisp white bubbles at the bow,
+two thin white lines opening into a V behind, and a paler band between them (built from geometry laid down where the boat went and
+faded by age, with nothing scrolling); on top of that the sand keeps its own fading trail and footprints.
 
-The board accelerates by itself to a cruise speed that the wind shapes (a beam reach is quickest, dead upwind slowest, but
-you never stall); the vane at the bottom left shows where the wind goes and how full the sail is. Gravity does the rest: a lee face is the
-fastest anything goes here, the board follows the sand with a little lag, and a crest is a launch. The sand keeps
-a fading trail of where you went (a hull wash and a fine score down the middle) with a fan of spray behind, and
-footprints when you walk. Stowed, you walk, and the god hand works (no raids in the open). Feel was taken from arcade riders and
-karts (auto-acceleration, speed-scaled steering, a loosened keel to drift, the slip paid back as speed on exit),
-the trail from Journey's ripple-layer trails and the render-to-texture trail maps of Horizon / God of War: see the headers of
-`src/dunes.js`, `src/moves/surfer.js`, `src/trailmap.js`, `src/marks.js`; tuning in `T.tech.surfer`.
+The skiff and the rider are **one rigid unit** (one quaternion for heading, slope, lean and spin; `character.js` places the
+body in the skiff's frame), and the rider is animated by clips authored for it (`src/surfclips.js`: idle, ride, hoist, brake,
+crouch, air; blended by what the board is doing) rather than solved onto the deck. Prior art and what was taken is in the headers of
+`src/moves/surfer.js` (Wind Waker's sailing: wind and speed, the sail you manage, pumping), `src/skiff.js` (the boat's rigging and
+the wind arrow), `src/wake.js` (bow bubbles and the V), `src/trailmap.js` and `src/marks.js` (Journey's trails, render-to-texture trail maps).
+Tuning is `T.tech.surfer`.
+
+## Lap circuits
+
+Three timed courses, in the index under LAP CIRCUITS (`src/circuits.js` is the runner, `src/circuitrooms.js` the halls; the design
+and the analysis behind them are in `docs/CIRCUITS.md`). Cross the first gate to start the clock; each gate shows a split against your best;
+a gate crossed slower than it asks costs a second; **a fall** puts you back on the last gate with +3 s and loses the *clean* mark; the finish gives a
+medal from the par times. **R** restarts, **H** leaves.
+
+| Circuit | What it asks |
+| --- | --- |
+| **The Braid** (B) | five junction platforms across a pit, and three lines between each pair: a balance beam, overhead bars, and islands to blink or double-jump between (gaps of 4.5 to 5.4 m). Change line at any junction: the fast line is the one with the resources for it. Par 34 / 46 / 65 s |
+| **The Mill Race** (C) | the clockwork mill in one loop: the cogs, the millstone, then a fork (the belts under the gates, or the lifts, the gantry and the shuttle), the ferris wheel to its deck, back west and up the steam to the ledge, and drop to the start. The split table shows which fork you took. Par 62 / 80 / 105 s |
+| **The Spindle** (P) | up through a chain of skills: a slot to slide under, a 3.5 m gap, a 12 m wallrun, a latch up a 4.2 m pillar, a hang and pull-up, a 3.0 m mantle, a 7.6 m dash gap, the steam to the top; then a long 19 degree chute (arrive fast) and a last 6 m gap. Par 48 / 64 / 88 s |
+
+*The Sandbar* (a surfing slalom in the dunes) waits until the Solar Surfer's design is settled.
 
 ## Moving around
 
@@ -452,7 +469,9 @@ runtime IK correction on the contact points.
 | `src/lobber.js` | clay mortars that throw balls to parry |
 | `src/godarts.js` | the five God Arts, the radial wheel, the art bar |
 | `src/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
-| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (terrain, sky, ruins, wind) and the Solar Surfer |
+| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (terrain, sky, ruins, wind) and the Solar Surfer's ride |
+| `src/skiff.js`, `src/wake.js`, `src/surfclips.js` | the Surfer's boat (hull, sail, arrow), its Wind Waker wake, and the rider's authored clips |
+| `src/circuits.js`, `src/circuitrooms.js` | the lap-circuit runner (gates, splits, medals) and the halls of The Braid and The Spindle |
 | `src/trailmap.js`, `src/marks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
 | `src/rom.js`, `src/romdata.js` | range-of-motion limits applied after every pose (fingers, elbows, knees, wrists) |
 | `src/siege.js`, `src/raids.js` | the Siege room and the raids that only happen there |

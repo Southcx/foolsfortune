@@ -27,7 +27,7 @@
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
-    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -52,6 +52,7 @@
     else if (s.hub) g.course.toHub();
     else if (s.dunes) g.course.toDunes();
     else if (s.siege) g.course.toSiege();
+    else if (s.circuit) g.game.circuits.enter(s.circuit);
     else {
       P.pos.set(...s.at); P.prevPos.copy(P.pos); P.renderPos.copy(P.pos); P.vel.set(0, 0, 0); P.yaw = s.yaw; P.bodyYaw = s.yaw; P.place();
     }

@@ -136,6 +136,8 @@ export class Techs {
     const a = this.active || this.list.find((t) => t.passive && t.engaged);
     return a?.label?.() || a?.id.toUpperCase() || '';
   }
+  /** A rigid frame that carries the whole body (the Solar Surfer's skiff): { pos, quat }, or null. */
+  unitFrame() { return this.active?.unit || null; }
   /** Where the body must face (a ladder faces its ladder, a kick its target), or null. */
   faceYaw() {
     const v = this.active?.faceYaw?.();

@@ -34,6 +34,7 @@ import { Roll } from './moves/roll.js';
 import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { Surfer } from './moves/surfer.js';
+import { Circuits } from './circuits.js';
 import { SlipDive } from './moves/slip.js';
 import { Hang } from './moves/hang.js';
 import { Latch } from './moves/latch.js';
@@ -244,6 +245,7 @@ async function main() {
   game.trial = trial;
   const course = new Course(game);
   game.course = course;
+  game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
   course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // psychic cartography: the map and compass, and the named places in them
   const carto = game.cartography;
@@ -485,6 +487,7 @@ async function main() {
     lachryma.update(dt);
     level.updateFeatures?.(dt, game);
     course.update(dt);
+    game.circuits.update(dt);
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);

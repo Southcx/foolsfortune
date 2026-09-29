@@ -23,9 +23,24 @@ function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,
   return t;
 }
 
+/** A crisp white disc with a hair of soft edge: the cel-shaded "bubble" of foam and spray (Wind Waker's splash is made of these). */
+function discTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(255,255,255,1)';
+  g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2); g.fill();
+  const grd = g.createRadialGradient(32, 32, 26, 32, 32, 32);
+  grd.addColorStop(0, 'rgba(255,255,255,0.5)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 // Generic GPU point particles (soft round sprites). One additive pool, one alpha pool.
 class ParticlePool {
-  constructor(scene, max, additive) {
+  constructor(scene, max, additive, tex = null) {
     this.max = max;
     this.p = [];
     this.geo = new THREE.BufferGeometry();
@@ -36,7 +51,7 @@ class ParticlePool {
     this.geo.setAttribute('color', new THREE.BufferAttribute(this.col, 4).setUsage(THREE.DynamicDrawUsage));
     this.geo.setAttribute('size', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
     this.mat = new THREE.ShaderMaterial({
-      uniforms: { map: { value: radialTexture() }, scale: { value: 600 } },
+      uniforms: { map: { value: tex || radialTexture() }, scale: { value: 600 } },
       vertexShader: `
         attribute float size; attribute vec4 color; varying vec4 vColor; uniform float scale;
         void main(){ vColor = color; vec4 mv = modelViewMatrix * vec4(position,1.0);
@@ -139,6 +154,7 @@ export class FX {
     this.scene = scene;
     this.add = new ParticlePool(scene, 1500, true);
     this.alpha = new ParticlePool(scene, 1500, false);
+    this.foam = new ParticlePool(scene, 900, false, discTexture()); // (crisp bubbles: bow spray, wakes)
     this.chips = new Chips(scene);
     this.tracers = [];
     this.trails = [];
@@ -520,6 +536,7 @@ export class FX {
     }
     this.add.update(dt);
     this.alpha.update(dt);
+    this.foam.update(dt);
     this.chips.update(dt);
     const h = window.innerHeight;
     const fov = camera.fov * Math.PI / 180;

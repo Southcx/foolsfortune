@@ -71,6 +71,7 @@ export class Blink extends Tech {
   end() {
     const P = this.P, c = this.cfg;
     this.game.character.setHidden(false);
+    if (!P.canStand()) P.setLow(true); // (a blink can end under a low ceiling: come out crouched, not stuck in it)
     const hd = new THREE.Vector3(this.dir.x, 0, this.dir.z);
     if (hd.lengthSq() > 0.04) {
       hd.normalize().multiplyScalar(Math.max(this.hs0, c.exitSpeed));

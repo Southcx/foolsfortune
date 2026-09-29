@@ -324,9 +324,9 @@ void main() {
     }
     if (!this.terrain.visible) this.setVisible(true);
     // the wind wanders
-    const dirA = WIND_AT + Math.sin(this.t * 0.05) * 0.35 + Math.sin(this.t * 0.13 + 2) * 0.15;
+    const dirA = WIND_AT + Math.sin(this.t * 0.02) * 0.08; // (a steady wind, as at sea: it is shown, not guessed at)
     this.wind.dir.set(Math.cos(dirA), Math.sin(dirA));
-    this.wind.gust = 1 + 0.28 * Math.sin(this.t * 0.4) + 0.14 * Math.sin(this.t * 1.1 + 1);
+    this.wind.gust = 1 + 0.08 * Math.sin(this.t * 0.25);
     this.wind.speed = 8 * this.wind.gust;
     this.uniforms.uTime.value = this.t;
     this.sky.position.copy(cam.position);

@@ -1,6 +1,6 @@
 # The gymnasium, taken apart, and four new lap circuits
 
-A draft: nothing here is built yet. Part 1 lists what the gymnasium is made of (from the code as it stands),
+Status: The Braid, The Mill Race and The Spindle are built (see the README's Lap circuits, `src/circuits.js`, `src/circuitrooms.js`), with their numbers adjusted where the physical build needed it; The Sandbar waits for the Solar Surfer. The design as first drafted follows. Part 1 lists what the gymnasium is made of (from the code as it stands),
 what it measures and what it never asks. Part 2 designs four circuits to fill the gaps. Part 3 is the shared
 machinery they would need. Numbers are the measured ones from the basement's rubric (`RUBRIC` in
 `src/basement.js`) and `T.movement` / `T.tech` in `src/config.js`; a gap is sized at about 85% of what the

@@ -626,10 +626,13 @@ export class Character {
     st.slopeP = damp(st.slopeP || 0, sp, 12, dt);
     st.slopeR = damp(st.slopeR || 0, sr, 12, dt);
     root.rotation.set(st.slopeP, s.yaw, -wr * A.wallLean * DEG + lean + st.slopeR);
+    // a body that is part of something (the Solar Surfer's skiff) is placed in that thing's frame instead: one rigid unit
+    const unit = s.techs?.unitFrame?.() || null;
+    if (unit) { root.position.copy(unit.pos); root.quaternion.copy(unit.quat); }
     root.updateMatrixWorld(true);
     const upW = _v3.set(0, 1, 0);
     // orientation warping: hips turn toward the move, the chest turns back to the aim
-    const gaitW = st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
+    const gaitW = unit ? 0 : st.gaitMove * (1 - air) * (1 - sl) * (1 - mn) * (1 - da);
     const warp = st.warp * gaitW;
     if (Math.abs(warp) > 1e-3) {
       this.rotW(B.spine, upW, warp);
@@ -653,7 +656,7 @@ export class Character {
 
     // ---- feet: stride warping and ground contact ----
     const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw) * (1 - sl); // (a slide lies along the slope instead)
-    this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW);
+    if (!unit) this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW); // (on a skiff the feet are where the clip puts them)
 
     s.techs?.afterPose(this, s);
     this.headRel = (this.headRel || new THREE.Vector3()).copy(B.head.getWorldPosition(_v1)).sub(s.pos);

@@ -3,6 +3,7 @@ import { buildTechLab, spawnTechLab } from './techlab.js';
 import { buildMill } from './mill.js';
 import { buildRigLab, spawnRigLab } from './riglab.js';
 import { buildSiege, spawnSiege } from './siege.js';
+import { buildCircuitRooms } from './circuitrooms.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from './physics.js';
@@ -173,7 +174,7 @@ export class Level {
     this.buildUpperFloor();
     this.buildFeatures();
     buildBasement(this, W, D);
-    if (this.env) { buildTechLab(this, this.env); buildMill(this, this.env); buildRigLab(this, this.env); buildSiege(this); }
+    if (this.env) { buildTechLab(this, this.env); buildMill(this, this.env); buildRigLab(this, this.env); buildSiege(this); buildCircuitRooms(this, this.env); }
 
     // workbenches
     this.bench(-3.2, -4.5, 2.6, 1.0);

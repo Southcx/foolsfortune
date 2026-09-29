@@ -33,7 +33,7 @@ export class SandMarks {
     if (!active) { this.have = false; return; }
     if (!this.have || cur.distanceToSquared(this.prev) > 36) { this.prev.copy(cur); this.have = true; this.walk = 0; if (this.trail) this.trail.clear(); return; }
     const surfer = g.techs?.get('surfer');
-    const riding = surfer?.active && surfer.board.visible;
+    const riding = !!surfer?.active;
     const dx = cur.x - this.prev.x, dz = cur.z - this.prev.z, moved = Math.hypot(dx, dz);
     if (riding) this.board(dt, surfer, dx, dz, moved);
     else this.feet(dt, P, dx, dz, moved);
@@ -74,7 +74,7 @@ export class SandMarks {
     }
   }
 
-  // ---- on the Solar Surfer: a soft wash under the hull, a fine score down the middle, a spray fan
+  // ---- on the Solar Surfer: a soft wash under the hull and a fine score down the middle (the bubbles and the white wake are wake.js)
   board(dt, s, dx, dz, moved) {
     const T = this.trail, P = this.game.player, speed = moved / Math.max(dt, 1e-4);
     if (moved < 1e-4) return;
@@ -84,20 +84,6 @@ export class SandMarks {
       T.stamp(this.prev.x, this.prev.z, this.prev.x + dx, this.prev.z + dz, 0.85, 0.35 + 0.35 * k);
       T.stamp(this.prev.x, this.prev.z, this.prev.x + dx, this.prev.z + dz, 0.13, 0.95);
     }
-    // the spray: two fans off the stern, thrown up and out, more with speed; almost none in the air
-    _f.set(dx, 0, dz).normalize();
-    _r.set(-_f.z, 0, _f.x);
-    this.acc += dt * (s.air ? speed * 0.6 : 10 + speed * 5) * (1 + s.boosting);
-    const S = this.surface;
-    while (this.acc >= 1) {
-      this.acc -= 1;
-      const side = Math.random() < 0.5 ? -1 : 1;
-      const at = _p.copy(P.renderPos).addScaledVector(_f, -0.9).addScaledVector(_r, side * 0.3);
-      at.y = this.game.dunes.heightAt(at.x, at.z) + 0.1;
-      const vel = _v.copy(_f).multiplyScalar(-speed * (0.06 + Math.random() * 0.1)).addScaledVector(_r, side * (0.8 + Math.random() * 1.6 + speed * 0.05));
-      vel.y = 1.2 + Math.random() * 2.2 + speed * 0.05;
-      this.game.fx.alpha.emit({ pos: at.clone(), vel: vel.clone(), life: 0.55 + Math.random() * 0.5, size: 0.1, sizeEnd: 0.55, color: S.spray, alpha: 0.5, drag: 1.4, gravity: 5 });
-    }
   }
 
   /** One grain-cloud puff: small, tan, drifting, gone in under a second. */
@@ -105,6 +91,6 @@ export class SandMarks {
     const S = this.surface, d = dir || _v.set(0, 0, 0);
     const vel = new THREE.Vector3((Math.random() - 0.5) * spread, up * (0.4 + Math.random()), (Math.random() - 0.5) * spread);
     if (dir) vel.addScaledVector(dir, spread * 0.6);
-    this.game.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.05), vel, life: 0.4 + Math.random() * 0.4, size: 0.07, sizeEnd: 0.34, color: S.dust, alpha: 0.45, drag: 2.2, gravity: 4 });
+    this.game.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.05), vel, life: 0.4 + Math.random() * 0.4, size: 0.07, sizeEnd: 0.34, color: S.dust, alpha: 0.45, drag: 2.2, gravity: 4, floor: at.y - 0.02 });
   }
 }

@@ -445,6 +445,9 @@ export class Course {
       { id: 'kiln', code: 'KeyK', tag: 'K', name: 'KILN STACK', blurb: 'a 57 m well, a freight lift, a ladder', group: 'MOVEMENT TECHS', cp: this.cps.findIndex((c) => c.room === 'K1') },
       { id: 'rig', code: 'KeyR', tag: 'R', name: 'THE RIGGING', blurb: 'hang · latch · bars · cable · beams · grates · poles · ropes', group: 'MOVEMENT TECHS', cp: this.rigN },
       { id: 'hands', code: 'KeyH', tag: 'H', name: 'THE HANDS', blurb: 'lift · throw · push · kick · parry · recoil', group: 'MOVEMENT TECHS', cp: this.handN },
+      { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
+      { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
+      { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
       { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'a sand sea far below · the Solar Surfer (Y stows it)', group: 'THE OPEN', spawn: 'dunes' },
     ];
@@ -472,6 +475,8 @@ export class Course {
   goRoom(id) {
     const r = this.rooms.find((x) => x.id === id);
     if (!r) return;
+    this.game.circuits?.leave();
+    if (r.spawn === 'circuit') { this.game.circuits.enter(r.circuit || r.id); return; }
     if (r.spawn === 'lab') this.toLab();
     else if (r.spawn === 'mill') this.toMill();
     else if (r.spawn === 'dunes') this.toDunes();
@@ -547,6 +552,7 @@ export class Course {
   respawn() { if (this.current < 0) this.toHub(); else this.goTo(this.current); }
 
   toHub() {
+    this.game.circuits?.leave();
     this.teleport(this.hubSpawn.v, this.hubSpawn.yaw);
     this.running = false;
     this.current = -1;
@@ -599,7 +605,7 @@ export class Course {
     const stats = document.getElementById('stats');
     if (stats) stats.style.visibility = here ? 'hidden' : 'visible'; // the shatter count means nothing down here
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
-    if (inp.wasPressed('KeyR')) { if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
+    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
     if (inp.wasPressed('KeyH')) { this.toHub(); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
@@ -635,13 +641,14 @@ export class Course {
     }
     this.prev.copy(feet);
 
-    if (this.el) {
+    if (this.el && g.circuits?.active) this.el.style.display = 'none';
+    else if (this.el) {
       const cp = this.cps[this.current];
       const best = cp && this.best[`room${cp.room}`];
       this.el.innerHTML = cp && this.running
         ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
         : inSiege(p.pos) ? 'THE SIEGE · ~ the hand · raids come here · R back to the dais · H hub'
-        : g.dunes.active ? 'DUNES · A D steer · W S sail · Shift flare · Space hop · Y board · H hub'
+        : g.dunes.active ? 'DUNES · W hoist the sail · S furl and brake · A D steer · Space hop · Shift flare · Y board · H hub'
         : 'HUB · F at the console: pick a room · R checkpoint · H hub';
     }
   }
