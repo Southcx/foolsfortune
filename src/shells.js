@@ -14,6 +14,7 @@ import { Specials } from './specials.js';
 //   mark    – stuns critters and marks things (marked things drop Lachryma)
 //   bomb    – a lobbed clay grenade: splash damage, molten slip, hot pool
 //   ricochet, homing – see specials.js
+//   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
 // ---------------------------------------------------------------------------
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'SLICE', glyph: '╱' },
@@ -23,6 +24,7 @@ export const SHELL_TYPES = [
   { id: 'bomb', name: 'BOMB', glyph: '●' },
   { id: 'ricochet', name: 'BANK', glyph: '⟀' },
   { id: 'homing', name: 'SEEK', glyph: '◇' },
+  { id: 'slip', name: 'SLIP', glyph: '≈' }, // paints liquid clay to dive through (the slip tech)
 ];
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -200,6 +202,7 @@ export class Shells {
     const g = this.game;
     const mesh = kind === 'well'
       ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.12, 1), new THREE.MeshBasicMaterial({ color: 0x1c0d08 }))
+      : kind === 'slip' ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.11, 1), new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3 }))
       : new THREE.Mesh(new THREE.DodecahedronGeometry(0.09, 0), new THREE.MeshStandardMaterial({ color: PALETTE.dark, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0.3 }));
     if (kind === 'well') {
       const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -222,6 +225,25 @@ export class Shells {
     sfx.thump();
   }
 
+  slip({ ray, muzzle }) {
+    this.launch('slip', muzzle, ray.dir, T.shells.slip.speed, T.shells.slip.lift);
+    sfx.thump();
+  }
+
+  /** A slip ball bursts: liquid clay everywhere, harmless, and wet enough to dive into. */
+  burstSlip(pos, normal = UP) {
+    const g = this.game, S = T.shells.slip;
+    sfx.splosh(g.listenerDistance(pos));
+    for (let k = 0; k < S.droplets; k++) {
+      const v = new THREE.Vector3().randomDirection();
+      v.addScaledVector(normal, 0.6).normalize().multiplyScalar(2 + Math.random() * S.spread);
+      this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.04 + Math.random() * 0.06, true);
+    }
+    // a big wet patch right where it hit (a wall too)
+    this.addSplat(pos.clone().addScaledVector(normal, -0.08), normal, S.patch * 2.2, true);
+    g.slip?.addDisc(pos.clone().addScaledVector(normal, -0.1), normal, S.patch, T.tech.slip.coverLife);
+  }
+
   stepProjectiles(dt) {
     const g = this.game;
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
@@ -237,7 +259,7 @@ export class Shells {
       if (hit) {
         const ent = hit.entity;
         p.pos.copy(hit.point).addScaledVector(hit.normal, 0.1);
-        if (p.kind === 'well' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
+        if (p.kind === 'well' || p.kind === 'slip' || ent?.type === 'breakable' || ent?.type === 'clapper' || p.bounces >= T.shells.bomb.bounces) detonate = true;
         else {
           // bounce: reflect with loss
           p.vel.reflect(hit.normal).multiplyScalar(0.45);
@@ -254,6 +276,7 @@ export class Shells {
         g.scene.remove(p.mesh);
         this.projectiles.splice(i, 1);
         if (p.kind === 'well') this.openWell(p.pos.clone().addScaledVector(p.normal || UP, 0.5));
+        else if (p.kind === 'slip') this.burstSlip(p.pos.clone(), p.normal || UP);
         else this.explodeBomb(p.pos.clone(), p.normal);
       }
     }
@@ -482,7 +505,9 @@ export class Shells {
     m.rotateZ(Math.random() * Math.PI * 2);
     m.scale.setScalar(size / 0.16);
     g.scene.add(m);
-    this.splats.push({ m, age: 0, life: T.shells.bomb.splatLife * (0.8 + Math.random() * 0.4), slip });
+    const life = T.shells.bomb.splatLife * (0.8 + Math.random() * 0.4);
+    this.splats.push({ m, age: 0, life, slip });
+    if (slip) g.slip?.addDisc(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife)); // wet enough to dive into, for a while
     if (this.splats.length > 220) { const s = this.splats.shift(); g.scene.remove(s.m); s.m.material.dispose(); }
   }
 
@@ -496,6 +521,7 @@ export class Shells {
     m.renderOrder = 1;
     g.scene.add(m);
     this.pools.push({ m, pos: point.clone(), age: 0, life: B.poolLife, r: B.poolRadius * (slip ? 0.8 : 1), slip });
+    if (slip) g.slip?.addDisc(point, normal, B.poolRadius * 0.8, Math.min(B.poolLife * 0.7, T.tech.slip.coverLife));
   }
 
   stepPools(dt) {
@@ -602,6 +628,7 @@ export class Shells {
     for (const p of this.projectiles) g.scene.remove(p.mesh);
     for (const w of this.wells) { g.scene.remove(w.group); w.sound?.stop(); }
     for (const s of this.splats) g.scene.remove(s.m);
+    g.slip?.clear();
     for (const p of this.pools) g.scene.remove(p.m);
     for (const e of [...this.marked]) this.unmark(e);
     this.specials.clear();

@@ -23,6 +23,8 @@ npm run build      # static bundle in dist/
 | Space by a wall, holding W | wallrun; Space again to wall jump |
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
+| Hold Alt | walk |
+| E | blink (movement tech, see below) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
@@ -131,15 +133,44 @@ Rooms 3 to 7 are over a reset floor: touch it and you're back at the room's chec
 **R** returns to the last checkpoint, **H** to the hub. Teleports refill Lachryma.
 
 **The rubric.** Distances were measured by simulating the controller at default tuning
-(takeoff to landing at the same height): walk jump 2.5 m, sprint jump 4.1, slide-hop 5.5,
-sprint + double jump 6.7, max-speed jump 7.9, slide-hop + double 8.5, sprint jump + dash 8.9,
+(takeoff to landing at the same height): walk jump 2.45 m, sprint jump 4.0, slide-hop 5.3,
+sprint + double jump 6.7, max-speed jump 7.9, slide-hop + double 8.5, sprint jump + dash 9.1,
 sprint + dash + double 12.9, slide-hop + dash + double 13.7, max speed + dash + double 15.2.
-Jump height 0.94 m, double jump 1.68 m. A wallrun over a drop covers about 16.8 m in 1.8 s and
+Jump height 0.92 m, double jump 1.66 m. (Re-measured in round 10: the first run's test
+teleport left the body 0.85 m up, which read about 2% long. The controller didn't change.) A wallrun over a drop covers about 16.8 m in 1.8 s and
 ends 2.75 m below where it started; a wall jump carries 3 m out and about 9.5 m along. Gaps
 are sized at about 85% of the measured distance.
 
 Underground, the sun is switched off (it would light the lab outside its shadow frustum) and
 the fog thins.
+
+## Movement techs
+
+Optional techniques over the core movement (`src/moves/`). The core (walk, sprint, crouch,
+slide, jumps, wallrun, wall jump, mantle, air dash, tuned under `movement`) is the gold
+standard the basement is measured against, and techs never change it: each lives in its own
+module with its own `tech.<id>` tuning and an `enabled` switch, and acts only through a few
+hooks (an active tech owns the fixed step; landing events; its own pose layer and camera).
+Switching one off gives back the core exactly; the measured metrics above are identical with
+every tech on or off. Techs start in priority order and only one is active at a time.
+
+| Tech | Input | What it does |
+| --- | --- | --- |
+| Blink | E | a near-instant 5.5 m dodge along the move keys (or the view), sliding along anything in the way; leaves an afterimage, comes out with your momentum pointed where you blinked; 2 charges |
+| Slam | C in the air, looking down, 1.8 m+ up | straight down; the landing breaks pots nearby and throws the rest (and clapperjars). Then Space: slam jump, higher the further you fell (about 2 m from 5 m); hold C with a direction: slam slide, the fall turned into speed. (Looking ahead, C in the air stays the core's landing slide) |
+| Stomp | land on a pot or a clapperjar | it breaks under you and throws you up (+1.66 m), air jump refilled |
+| Roll | hold C into a hard landing (from about 4 m) | roll out of it with the fall turned into forward speed (above slide speed the core slides instead) |
+| Wall climb | jump into a wall head-on, W held | run up it for half a second; a ledge in reach is a mantle (4 m walls from the ground); Space kicks off. Off the ground only: after a wallrun the core's wall moves own the air |
+| Slip dive | hold C on slip | melt into liquid clay: a fast blob (10 m/s) through slip, crawling off it; climbs slip-coated walls, fits through 0.8 m gaps, Space launches out (higher than a jump, keeping the speed), let go of C to stand. Lachryma soaks back in meanwhile. The SLIP shell (8) paints floors and walls wet; burst slip barrels leave puddles |
+| Swim | deep water | float with your head out and paddle (Shift faster); C dives and you swim where you look; Space rises, and at the surface hops out; swim into an edge to climb out |
+| Ladder | walk (or jump) into one | W / S climb (Shift faster), C slides down, Space kicks off, climbing past the top steps off; every hand and foot holds a rung (IK) and moves up two when the body has passed it |
+
+**The tech lab** is through room 1's south door (or the LAB pad in the hub's index): a
+station per tech, each with a checkpoint (T1-T6, R returns to it) and an index of pads by
+the door. The pool (4.5 m deep, a 5 m dive tower, a wall to swim under, a ladder out), 6 and
+8 m ladder towers (the 8 m one is the slam / roll platform over a field of pots), the slip
+lane (a 0.8 m gap only the blob fits, a slip-coated 6 m wall), a 9 m blink gap over a reset
+pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to climb.
 
 ## What's in the room
 
@@ -178,6 +209,8 @@ the fog thins.
 | `src/cracks.js` | crack paths on pot surfaces, kintsugi gold seams |
 | `src/trial.js` | the time trial |
 | `src/basement.js` | the basement movement course |
+| `src/techlab.js` | the tech lab annex |
+| `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage) |
 | `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
 | `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
 | `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |
@@ -197,12 +230,18 @@ clips are from Quaternius' [Universal Animation Library](https://quaternius.com/
 `tools/bake_anims.mjs` into `src/assets/anims.bin` (about 220 KB). Both rigs rest in a
 T-pose, so each bone's world rotation away from the T-pose carries straight over.
 
-- **Locomotion:** idle, walk, jog and sprint play on one shared phase (each loop is measured
-  at load for its stride and where the left heel lands) and blend by speed. Game speeds run
-  well past the clips' own, so the extra comes partly from cadence and partly from longer
-  strides (stride warping in the foot IK). Aiming while strafing or backpedalling turns the
-  hips toward the move and the chest back to the aim (orientation warping); backpedalling
-  runs the loops in reverse. Crouch idle/walk blend in with the crouch.
+- **Locomotion:** idle, walk, jog and sprint play on one shared phase and blend by speed.
+  Each loop is measured at load: an in-place clip's planted foot slides back under the hips at
+  the speed the character is meant to travel, so that's its ground speed (walk 0.75 m/s, jog
+  4.7, sprint 4.7: the jog is authored almost exactly at the 4.2 m/s run), and each loop
+  plays at ground speed / its own, split between cadence and longer strides, so the feet
+  don't skate. The walk
+  covers up to a brisk 2.4 m/s (Alt to walk, aiming while moving) by lengthening its steps
+  before its cadence, then hands over to the jog; the hips drop for long strides so the legs
+  can reach. Foot locking pins a planted foot where it landed until the cycle lifts it (or
+  the body gets 35 cm away), which catches what's left: speeding up, turning, blending.
+  Aiming while strafing or backpedalling turns the hips toward the move and the chest back to
+  the aim (orientation warping); backpedalling runs the loops in reverse.
 - **Moves:** jump take-off into the airborne loop, a tuck flip on the double jump, the
   landing squat (lighter at a run), slide drop-in and hold, the climb clip timed to the
   mantle, a stretched-out take-off frame pitched forward for the air dash, and a sprint with a
@@ -216,9 +255,17 @@ T-pose, so each bone's world rotation away from the T-pose carries straight over
   wall-side hand flat on the wall while wallrunning, both hands on the ledge at the start of
   a mantle, the support hand on the gun. Each chain bends toward its *animated* elbow or knee,
   so the correction stays on the animated side and can't flip.
-- **Holster:** the gun rides on the right hip, clear of the thigh. Drawing takes 0.2 s: the
-  hand snaps to the hip, then the gun comes up. Holstering reverses it. Clicking while
-  holstered draws and fires as soon as the gun is out.
+- **Holster:** the gun lies across the small of the back like a fanny pack, barrel to the
+  left, grip out on the right (on show from behind). The draw (0.26 s) reaches back, the
+  shoulders turning to help, grabs the grip, and whips the gun round the right hip up into
+  the hand; holstering reverses it. Clicking while holstered draws and fires as soon as the
+  gun is out. Ladders and swimming stow it (both hands are busy) and bring it back after.
+- **Hand swap:** on a right-side wallrun the gun passes to the left hand (a quick hand-off,
+  both hands on it mid-way) so the right can take the wall; aiming then uses the mirrored
+  pistol pose, and in first person the gun moves to the left of the screen. Poses mirror
+  left/right in character space, corrected per bone so the rest pose maps to itself (the
+  rig's left and right bones don't share axis conventions).
+- **Slopes:** a slide lies along the ground under it (pitched down a hill, rolled across one).
 - **First person:** only the hands and the gun are drawn. The arms are view-model arms: the
   shoulders hang off the camera, and the hands are pinned to the gun.
 

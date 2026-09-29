@@ -32,7 +32,7 @@ const WANT = {
   Jump_Start: 'jumpStart', Jump_Loop: 'jumpLoop', Jump_Land: 'jumpLand',
   NinjaJump_Start: 'flipStart', NinjaJump_Idle_Loop: 'flipLoop', NinjaJump_Land: 'flipLand',
   Slide_Start: 'slideStart', Slide_Loop: 'slideLoop', Slide_Exit: 'slideExit',
-  ClimbUp_1m: 'climb',
+  ClimbUp_1m: 'climb', Roll: 'roll', Swim_Fwd_Loop: 'swim', Swim_Idle_Loop: 'tread',
   Pistol_Idle_Loop: 'pistolIdle', Pistol_Aim_Neutral: 'aimMid', Pistol_Aim_Up: 'aimUp', Pistol_Aim_Down: 'aimDown',
   Pistol_Reload: 'reload',
 };

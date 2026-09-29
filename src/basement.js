@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
+import { TECH_CPS, TECH_PITS } from './techlab.js';
 
 // ---------------------------------------------------------------------------
 // The basement: a movement lab under the workshop, hub-and-spoke.
@@ -36,8 +37,10 @@ const Wt = 0.5; // wall thickness
 
 // measured at default tuning (takeoff to landing at the same height, metres)
 export const RUBRIC = [
-  ['walk jump', 2.5], ['sprint jump', 4.1], ['slide-hop', 5.5], ['sprint + double jump', 6.7],
-  ['max-speed jump', 7.9], ['slide-hop + double', 8.5], ['sprint jump + dash', 8.9],
+  // (re-measured in round 10 with the test teleport placing the body at the feet: the first
+  // numbers started every test from 0.85 m up and read ~2% long)
+  ['walk jump', 2.45], ['sprint jump', 4.0], ['slide-hop', 5.3], ['sprint + double jump', 6.7],
+  ['max-speed jump', 7.9], ['slide-hop + double', 8.5], ['sprint jump + dash', 9.1],
   ['sprint + dash + double', 12.9], ['slide-hop + dash + double', 13.7], ['max speed + dash + double', 15.2],
 ];
 
@@ -58,7 +61,7 @@ const PITS = [
   [[20, OUT, -20, 20], 2], [[20, OUT, 20, OUT], 3], [[-HUB, HUB, 20, OUT], 4], [[-OUT, -HUB, 20, OUT], 5], [[-OUT, -HUB, -20, 20], 6],
 ];
 
-const glowMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
+export const glowMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
 
 function labelTexture(text, sub) {
   const c = document.createElement('canvas');
@@ -79,7 +82,7 @@ function labelTexture(text, sub) {
  * Text on a surface. Flat labels read upright walking toward -z at rotY 0
  * (+x at -PI/2, -x at PI/2, +z at PI). Vertical ones face +z at rotY 0.
  */
-function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 0.8, vertical = false } = {}) {
+export function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 0.8, vertical = false } = {}) {
   const m = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 160 / 512),
     new THREE.MeshBasicMaterial({ map: labelTexture(text, sub), transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
   m.position.set(...pos);
@@ -89,7 +92,7 @@ function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 
   return m;
 }
 
-function strip(scene, pos, size) {
+export function strip(scene, pos, size) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(...size), glowMat);
   m.position.set(...pos);
   scene.add(m);
@@ -109,7 +112,10 @@ export function buildBasement(L, W, D) {
   const incline = (x0, x1, za, ya, zb, yb, color = C.wood) => {
     const th = 0.3, len = Math.hypot(zb - za, yb - ya), ang = Math.atan2(yb - ya, zb - za);
     const nrm = new THREE.Vector3(0, Math.cos(ang), -Math.sin(ang));
-    const c = new THREE.Vector3((x0 + x1) / 2, B + (ya + yb) / 2, (za + zb) / 2).addScaledVector(nrm, -th / 2);
+    // (0.05 longer than the slope, all of it at the low end: the top meets its platform
+    // flush, where a proud lip would bump a slide going over the crest)
+    const dir = new THREE.Vector3(0, yb - ya, zb - za).normalize();
+    const c = new THREE.Vector3((x0 + x1) / 2, B + (ya + yb) / 2, (za + zb) / 2).addScaledVector(nrm, -th / 2).addScaledVector(dir, -0.025);
     L.box([c.x, c.y, c.z], [x1 - x0, th, len + 0.05], color, { rotX: -ang });
   };
   // walls: a line with openings [[a, b, y0?, y1?], ...] along it
@@ -140,7 +146,8 @@ export function buildBasement(L, W, D) {
   blk(-W - 0.5, W + 0.5, ...cy, -OUT - 0.5, -D - 0.5, C.deep, solid);
   blk(-W - 0.5, W + 0.5, ...cy, D + 0.5, OUT + 0.5, C.deep, solid);
   wallX(-OUT - Wt / 2, -OUT, OUT); wallX(OUT + Wt / 2, -OUT, OUT);
-  wallZ(-OUT - Wt / 2, -OUT, OUT); wallZ(OUT + Wt / 2, -OUT, OUT);
+  wallZ(-OUT - Wt / 2, -OUT, OUT, [[-2.5, 2.5, 0, 3.5]]); // (room 1's south door: the tech lab)
+  wallZ(OUT + Wt / 2, -OUT, OUT);
   // hub walls: one door to room 1
   wallZ(-HUB, -HUB, HUB, [[-2, 2, 0, 3.5]]);
   wallZ(HUB, -HUB, HUB); wallX(-HUB, -HUB, HUB); wallX(HUB, -HUB, HUB);
@@ -343,8 +350,13 @@ export class Course {
     this.lapRooms = new Set();
     this.best = {};
     try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
-    this.cps = CHECKPOINTS.map((c) => ({ ...c, v: new THREE.Vector3(c.pos[0], BASE_Y + c.pos[1], c.pos[2]) }));
+    // the ring's checkpoints (a lap, with splits), then the tech lab's (no splits)
+    this.ringN = CHECKPOINTS.length;
+    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true }))]
+      .map((c) => ({ ...c, v: new THREE.Vector3(c.pos[0], BASE_Y + c.pos[1], c.pos[2]) }));
+    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below])];
     this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
+    this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
     this.gates = [
       { axis: 'x', at: -8, a0: -36, a1: -20, y: [0, 3] },
       { axis: 'x', at: 18, a0: -36, a1: -20, y: [0, 3] },
@@ -404,11 +416,11 @@ export class Course {
     this.board.tex.needsUpdate = true;
   }
 
-  // the index: eight pads in the hub, stand on one to jump to that room
+  // the index: eight pads in the hub, stand on one to jump to that room (plus one to the
+  // tech lab); and the lab's own row of pads by its door
   buildPads() {
     const S = this.game.scene, B = BASE_Y;
-    this.pads = this.cps.map((cp, i) => {
-      const x = -14 + i * 4, z = -6;
+    const pad = (x, z, cp, text, sub, rotY = Math.PI, dz = 1.4) => {
       const disc = new THREE.Mesh(new THREE.CircleGeometry(0.8, 24), new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.45 }));
       disc.rotation.x = -Math.PI / 2;
       disc.position.set(x, B + 0.03, z);
@@ -416,10 +428,21 @@ export class Course {
       ring.rotation.x = Math.PI / 2;
       ring.position.set(x, B + 0.04, z);
       S.add(disc, ring);
-      label(S, `${cp.room}`, [x, B + 1.9, z + 1.4], { rotY: Math.PI, width: 1.3, vertical: true, sub: cp.name });
-      return { x, z, cp: i, disc, hold: 0 };
-    });
+      label(S, text, [x, B + 1.9, z + dz], { rotY, width: 1.3, vertical: true, sub });
+      return { x, z, cp, disc, hold: 0 };
+    };
+    this.pads = this.cps.slice(0, this.ringN).map((cp, i) => pad(-14 + i * 4, -6, i, `${cp.room}`, cp.name));
+    this.pads.push(pad(18, -6, 'lab', 'LAB', 'movement techs'));
+    this.cps.slice(this.ringN).forEach((cp, k) => this.pads.push(pad(-10 + k * 4, -41.5, this.ringN + k, cp.room, cp.name, 0, -1.4)));
     label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'stand on a pad · R checkpoint · H hub' });
+  }
+
+  toLab() {
+    this.teleport(this.labSpawn.v, this.labSpawn.yaw);
+    this.running = false;
+    this.current = -1;
+    this.lapT = null;
+    sfx.geyser();
   }
 
   inBasement() { return this.game.player.pos.y < -2; }
@@ -430,6 +453,8 @@ export class Course {
     p.vel.set(0, 0, 0);
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.exiting = 0;
+    p.techs?.reset();
+    this.game.character?.setHidden(false);
     p.airJumps = T.movement.airJumps; p.dashCharges = T.movement.dashCharges; p.slideBoostCd = 0;
     p.place();
     this.game.lachryma.reset(); // save-scumming is allowed here
@@ -460,9 +485,16 @@ export class Course {
 
   touch(i) {
     if (i === this.current && this.running) return;
-    const g = this.game, n = this.cps.length;
+    if (this.cps[i].tech) {
+      // a tech station: somewhere to come back to, no splits
+      this.current = i; this.t = 0; this.running = true; this.lapT = null; this.lapRooms.clear();
+      this.game.hud.popup(`${this.cps[i].room} · ${this.cps[i].name.toUpperCase()}`);
+      sfx.lockOn(2);
+      return;
+    }
+    const g = this.game, n = this.ringN;
     const prev = this.current;
-    const inOrder = this.running && prev >= 0 && (prev + 1) % n === i;
+    const inOrder = this.running && prev >= 0 && prev < n && (prev + 1) % n === i;
     if (inOrder) {
       // a clean split: straight from the previous room's checkpoint
       const key = `room${this.cps[prev].room}`, t = this.t;
@@ -508,13 +540,13 @@ export class Course {
       if (Math.abs(feet.y - cp.v.y) < 1.5 && feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) this.touch(i);
     });
     // reset floors
-    if (feet.y < BASE_Y + 0.4) {
-      for (const [[x0, x1, z0, z1], cpi] of PITS) {
-        if (feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) {
-          this.goTo(cpi, 'fizzle');
-          g.hud.popup('RESET');
-          return;
-        }
+    // (a pit's own trigger height if it has one: the lab's are dug below its floor, where
+    // the ring's are the basement floor itself under raised rooms)
+    for (const [[x0, x1, z0, z1], cpi, below = BASE_Y + 0.4] of this.pits) {
+      if (feet.y < below && feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) {
+        this.goTo(cpi, 'fizzle');
+        g.hud.popup('RESET');
+        return;
       }
     }
     // index pads
@@ -522,7 +554,7 @@ export class Course {
       const on = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - pad.x, feet.z - pad.z) < 0.8;
       pad.hold = on ? pad.hold + dt : 0;
       pad.disc.material.opacity = 0.45 + Math.min(1, pad.hold / 0.35) * 0.5;
-      if (pad.hold > 0.35) { pad.hold = 0; this.goTo(pad.cp, 'geyser'); return; }
+      if (pad.hold > 0.35) { pad.hold = 0; if (pad.cp === 'lab') this.toLab(); else this.goTo(pad.cp, 'geyser'); return; }
     }
     // speed gates
     for (const gt of this.gates) {

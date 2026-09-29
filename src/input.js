@@ -19,9 +19,12 @@ export class Input {
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
       this.down.add(e.code);
-      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF'].includes(e.code)) e.preventDefault();
+      if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG'].includes(e.code)) e.preventDefault();
     });
-    addEventListener('keyup', (e) => this.down.delete(e.code));
+    addEventListener('keyup', (e) => {
+      this.down.delete(e.code);
+      if (this.enabled && (e.code === 'AltLeft' || e.code === 'AltRight')) e.preventDefault(); // (no menu bar on Alt release)
+    });
     addEventListener('blur', () => this.down.clear());
     el.addEventListener('mousedown', (e) => {
       if (!this.enabled) return;

@@ -8,8 +8,13 @@ const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
 const LOW_HALF = 0.375; // crouched / sliding: 1.35 m (the posed body, hair included, fits under 1.5 m)
+const BLOB_HALF = 0.05; // slip form (a tech): 0.7 m, through gaps nothing else fits
+const HALVES = { stand: HALF, low: LOW_HALF, blob: BLOB_HALF };
 const STAND_SHAPE = new RAPIER.Capsule(HALF, RADIUS - 0.02);
 const LOW_SHAPE = new RAPIER.Capsule(LOW_HALF, RADIUS - 0.03);
+const BLOB_SHAPE = new RAPIER.Capsule(BLOB_HALF, RADIUS - 0.03);
+const SHAPES = { stand: STAND_SHAPE, low: LOW_SHAPE, blob: BLOB_SHAPE };
+const UNDERFOOT = new RAPIER.Ball(RADIUS * 0.9);
 const QF = RAPIER.QueryFilterFlags;
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
@@ -54,6 +59,9 @@ export class Player {
 
     // movement actions
     this.low = false; // short capsule
+    this.shape = 'stand'; // stand | low | blob
+    this.latches = {}; // edge presses, buffered for the fixed step: code -> seconds left
+    this.techs = null; // optional movement techs (set by main)
     this.sliding = false;
     this.slideT = 0;
     this.slideCd = 0;
@@ -105,7 +113,7 @@ export class Player {
   }
 
   get fp() { return this.view === 'fp'; }
-  get height() { return (this.low ? LOW_HALF : HALF) * 2 + RADIUS * 2; }
+  get height() { return HALVES[this.shape] * 2 + RADIUS * 2; }
   forward(target = new THREE.Vector3()) { return target.set(Math.sin(this.yaw), 0, Math.cos(this.yaw)); }
   right(target = new THREE.Vector3()) { return target.set(-Math.cos(this.yaw), 0, Math.sin(this.yaw)); }
 
@@ -123,6 +131,9 @@ export class Player {
     this.wallrun = null;
     this.mantle = null;
     this.sliding = false;
+    this.techs?.reset();
+    this.setShape('stand');
+    this.game?.character?.setHidden(false);
     this.place();
   }
 
@@ -138,6 +149,39 @@ export class Player {
     if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
     if (inp.wasPressed('KeyQ')) this.shoulder *= -1;
+    for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
+  }
+
+  /** Movement keys as a world direction (length 0..1). */
+  wishDir(target = new THREE.Vector3()) {
+    const inp = this.input;
+    const ix = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
+    const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
+    target.copy(this.forward(_v)).multiplyScalar(iz).addScaledVector(this.right(_v2), ix);
+    if (target.lengthSq() > 1) target.normalize();
+    return target;
+  }
+
+  /** Where the camera looks (world, unit). */
+  lookDir(target = new THREE.Vector3()) {
+    return target.set(Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), Math.cos(this.yaw) * Math.cos(this.pitch));
+  }
+
+  /** Consume a buffered key press (for techs). */
+  latch(code) {
+    if (!(this.latches[code] > 0)) return false;
+    this.latches[code] = 0;
+    return true;
+  }
+  peekLatch(code) { return this.latches[code] > 0; }
+
+  /** End the core's own states (a tech is taking over). */
+  endCore() {
+    this.sliding = false;
+    if (this.wallrun) this.endWallrun(false);
+    this.dashT = 0;
+    this.mantle = null;
+    this.jumpBuf = 0;
   }
 
   addRecoil(pitchDeg, yawDeg) {
@@ -151,21 +195,25 @@ export class Player {
   }
 
   // ---- capsule height ------------------------------------------------------------
-  setLow(low) {
-    if (low === this.low) return;
-    this.low = low;
-    const half = low ? LOW_HALF : HALF;
+  setLow(low) { this.setShape(low ? 'low' : 'stand'); }
+
+  setShape(kind) {
+    if (kind === this.shape) return;
+    this.shape = kind;
+    this.low = kind !== 'stand';
+    const half = HALVES[kind];
     this.collider.setHalfHeight(half);
     this.collider.setTranslationWrtParent({ x: 0, y: half + RADIUS, z: 0 });
   }
 
   canStand() { return this.fits(this.pos, false); }
 
-  /** Would the capsule (standing or low) fit with its feet at p? Loose props don't count. */
+  /** Would the capsule (standing, low or blob) fit with its feet at p? Loose props don't count. */
   fits(p, low) {
-    const half = low ? LOW_HALF : HALF;
+    const kind = low === true ? 'low' : low === false || low === undefined ? 'stand' : low;
+    const half = HALVES[kind];
     return !this.physics.world.intersectionWithShape(
-      { x: p.x, y: p.y + half + RADIUS + 0.03, z: p.z }, { x: 0, y: 0, z: 0, w: 1 }, low ? LOW_SHAPE : STAND_SHAPE,
+      { x: p.x, y: p.y + half + RADIUS + 0.03, z: p.z }, { x: 0, y: 0, z: 0, w: 1 }, SHAPES[kind],
       QF.EXCLUDE_SENSORS | QF.EXCLUDE_DYNAMIC, GROUPS.controllerQuery, this.collider);
   }
 
@@ -180,8 +228,12 @@ export class Player {
     this.wallCd -= dt;
     this.landT = (this.landT || 0) - dt;
     this.airT = this.grounded ? 0 : this.airT + dt;
+    for (const k in this.latches) this.latches[k] -= dt;
 
     if (this.mantle) { this.stepMantle(dt); return; }
+    // an active movement tech owns the step (or an idle one claims it)
+    if (this.techs && !this.freeze && this.techs.step(dt)) return;
+    if (this.shape === 'blob') this.setShape(this.canStand() ? 'stand' : 'low'); // (a tech left us small)
     if (this.freeze) { this.jumpBuf = this.slideBuf = this.dashBuf = 0; this.jumpHeldLast = true; } // trial countdown
     const live = this.freeze ? 0 : 1;
 
@@ -196,6 +248,7 @@ export class Player {
     const hs = hv.length();
     const crouchKey = live && inp.isDown('KeyC');
     const sprintKey = live && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight'));
+    this.walking = live && (inp.isDown('AltLeft') || inp.isDown('AltRight')); // hold to walk
 
     // ---- slide: crouch while moving fast on the ground ----
     // Starts above slideMinSpeed, or from a sprint that's still spinning up (so a
@@ -219,7 +272,7 @@ export class Player {
     else if (this.low && this.canStand()) this.setLow(false);
     this.crouching = this.low && !this.sliding && this.grounded;
     // sprint in any direction except backwards
-    this.sprinting = sprintKey && iz >= 0 && (iz > 0 || ix !== 0) && adsT < 0.3 && !wantsFire && !this.low;
+    this.sprinting = sprintKey && !this.walking && iz >= 0 && (iz > 0 || ix !== 0) && adsT < 0.3 && !wantsFire && !this.low;
 
     // ---- jumps: ground (with coyote time), wall jump, air jump ----
     let jumped = false;
@@ -287,7 +340,7 @@ export class Player {
     } else if (this.dashT > 0) {
       this.dashT -= dt; // the dash owns the velocity for its duration
     } else {
-      let speed = this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : M.walkSpeed;
+      let speed = this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : this.walking ? M.walkSlowSpeed : M.walkSpeed;
       speed *= THREE.MathUtils.lerp(1, M.adsSpeedMult, adsT);
       speed *= THREE.MathUtils.lerp(1, T.charge.moveMult, this.chargeLevel || 0);
       const before = hv.length();
@@ -368,12 +421,19 @@ export class Player {
     this.stuck = wantH > 1e-4 && gotH < wantH * 0.15 ? (this.stuck || 0) + 1 : 0;
     const wasGrounded = this.grounded;
     this.grounded = this.ctrl.computedGrounded();
+    // the controller sometimes drops "grounded" for a frame (the frame the capsule goes
+    // low, for one): still on the floor if it's right under the feet and we're not rising
+    if (!this.grounded && wasGrounded && want.y <= 0) {
+      const gy = this.floorBelow(this.pos.x + mv.x, this.pos.z + mv.z, this.pos.y + mv.y + 0.3);
+      if (gy !== null && this.pos.y + mv.y - gy < 0.06) this.grounded = true;
+    }
     if (this.vel.y > 0 && mv.y < want.y * 0.5) this.vel.y = 0; // bonk
     const fallSpeed = -this.vel.y;
     if (this.grounded && !wasGrounded) {
       this.landT = 0.15;
       if (fallSpeed > 3) { this.landed = fallSpeed; sfx.land(fallSpeed); }
       if (this.wallrun) this.endWallrun(false);
+      if (this.techs) this.techs.onLand(fallSpeed, this.underfoot());
     }
     if (this.grounded && this.vel.y < 0) this.vel.y = 0;
     // walls remove only the velocity pointing into them (a glancing hit keeps its speed)
@@ -385,6 +445,21 @@ export class Player {
     }
     if (walls.length && this.stuck > 1) { this.vel.x = mv.x / dt; this.vel.z = mv.z / dt; } // really wedged in a corner
 
+    // over a convex crest (the top of a ramp) the controller lifts the capsule a few cm
+    // for a frame: a hop in a slide. Grounded feet don't rise where the floor ahead is lower.
+    if (this.grounded && wasGrounded && mv.y > 0.002 && want.y <= 0) {
+      const gy = this.floorBelow(this.pos.x + mv.x, this.pos.z + mv.z, this.pos.y + 0.3);
+      const mh = Math.hypot(mv.x, mv.z) || 1;
+      // (probed under the capsule's leading edge too: the controller reacts to the crest
+      // before the capsule's centre gets there)
+      const ahead = this.floorBelow(this.pos.x + mv.x + (mv.x / mh) * RADIUS, this.pos.z + mv.z + (mv.z / mh) * RADIUS, this.pos.y + 0.3);
+      const here = gy !== null ? this.floorBelow(this.pos.x, this.pos.z, this.pos.y + 0.3) : null;
+      // the floor falls away ahead (a crest): nothing to rise onto. Elsewhere the controller
+      // still gets to hold its usual 2 cm skin above the floor.
+      const lower = (y) => y !== null && here !== null && y < here - 0.003;
+      if (lower(ahead) || lower(gy)) mv.y = 0;
+      else if (gy !== null && gy < this.pos.y + 0.01) mv.y = Math.max(0, Math.min(mv.y, gy + 0.02 - this.pos.y));
+    }
     this.pos.x += mv.x; this.pos.y += mv.y; this.pos.z += mv.z;
     if (this.pos.y < -30) this.respawn();
     this.body.setNextKinematicTranslation({ x: this.pos.x, y: this.pos.y, z: this.pos.z });
@@ -401,6 +476,20 @@ export class Player {
       if (l > 1e-3) out.push({ x: n.x / l, z: n.z / l });
     }
     return out;
+  }
+
+  /** Colliders right under the feet (what we're standing on; a jar's rim counts). */
+  underfoot() {
+    const out = [];
+    // (reaching a little below the feet: the controller calls it a landing within its snap distance)
+    this.physics.world.intersectionsWithShape({ x: this.pos.x, y: this.pos.y - 0.08, z: this.pos.z }, { x: 0, y: 0, z: 0, w: 1 }, UNDERFOOT,
+      (c) => { out.push(c); return true; }, QF.EXCLUDE_SENSORS, GROUPS.controllerQuery, this.collider);
+    return out;
+  }
+
+  floorBelow(x, z, yTop) {
+    const hit = this.physics.raycast({ x, y: yTop, z }, { x: 0, y: -1, z: 0 }, 0.6, this.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
+    return hit ? hit.point.y : null;
   }
 
   groundNormal() {
@@ -593,7 +682,9 @@ export class Player {
     let rate = T.movement.tpTurnSpeed;
     if (this.fp || inCombat) { target = this.yaw; rate *= 2.2; }
     else if (hs > 0.5) target = Math.atan2(this.vel.x, this.vel.z);
-    if (this.fp) this.bodyYaw = this.yaw;
+    const lock = this.techs?.active?.faceYaw?.(); // (a ladder faces its ladder, a roll its roll)
+    if (lock != null && !this.fp) this.bodyYaw = lock;
+    else if (this.fp) this.bodyYaw = this.yaw;
     else {
       // eased turn with a speed cap and angular acceleration, so a 180 doesn't whip the upper body
       const err = wrap(target - this.bodyYaw);
@@ -672,6 +763,7 @@ export class Player {
     const pivot = this.renderPos.clone();
     const drop = this.slideBlend * 0.55 + this.crouchBlend * 0.35;
     pivot.y += C.tpPivotHeight - drop;
+    this.techs?.camera(fpPos, pivot, dt);
     const dist = THREE.MathUtils.lerp(C.tpDistance, C.tpAdsDistance, adsT);
     const shoulder = THREE.MathUtils.lerp(C.tpShoulder, C.tpAdsShoulder, adsT) * this.shoulderBlend;
     const off = new THREE.Vector3().addScaledVector(right, shoulder).addScaledVector(camUp, C.tpLift).addScaledVector(fwd, -dist);

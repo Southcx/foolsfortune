@@ -6,6 +6,7 @@ const _q = new THREE.Quaternion();
 const _m = new THREE.Matrix4();
 const UP = new THREE.Vector3(0, 1, 0);
 const Z = new THREE.Vector3(0, 0, 1);
+const BASE_FLOOR = -14; // the basement floor (basement.js BASE_Y)
 
 function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,0)') {
   const c = document.createElement('canvas');
@@ -60,6 +61,8 @@ class ParticlePool {
       vx: o.vel?.x || 0, vy: o.vel?.y || 0, vz: o.vel?.z || 0,
       life: o.life, age: 0, s0: o.size, s1: o.sizeEnd ?? o.size,
       c: o.color, a: o.alpha ?? 1, drag: o.drag ?? 1, grav: o.gravity ?? 0,
+      // the floor it settles on (the ground floor, or the basement's: not always y = 0)
+      fl: o.floor ?? (o.pos.y < -2 ? BASE_FLOOR + 0.02 : 0.02),
       tw: o.twinkle || 0, seed: Math.random() * 100,
     });
   }
@@ -74,7 +77,7 @@ class ParticlePool {
       const k = Math.exp(-q.drag * dt);
       q.vx *= k; q.vy = q.vy * k - q.grav * dt; q.vz *= k;
       q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
-      if (q.y < 0.02) { q.y = 0.02; q.vy *= -0.3; }
+      if (q.y < q.fl) { q.y = q.fl; q.vy *= -0.3; }
       arr[w++] = q;
     }
     arr.length = w;
@@ -107,7 +110,7 @@ class Chips {
   }
   emit(pos, vel, size, life = 2.5) {
     if (this.c.length >= this.max) this.c.shift();
-    this.c.push({ p: pos.clone(), v: vel.clone(), s: size, life, age: 0,
+    this.c.push({ p: pos.clone(), v: vel.clone(), s: size, life, age: 0, fl: pos.y < -2 ? BASE_FLOOR : 0,
       q: new THREE.Quaternion().random(), w: new THREE.Vector3().randomDirection().multiplyScalar(15) });
   }
   update(dt) {
@@ -117,7 +120,7 @@ class Chips {
       if (c.age > c.life) continue;
       c.v.y -= T.physics.gravity * dt;
       c.p.addScaledVector(c.v, dt);
-      if (c.p.y < c.s) { c.p.y = c.s; c.v.y *= -0.35; c.v.x *= 0.6; c.v.z *= 0.6; c.w.multiplyScalar(0.6); }
+      if (c.p.y < c.fl + c.s) { c.p.y = c.fl + c.s; c.v.y *= -0.35; c.v.x *= 0.6; c.v.z *= 0.6; c.w.multiplyScalar(0.6); }
       _q.setFromAxisAngle(_v.copy(c.w).normalize(), c.w.length() * dt);
       c.q.premultiply(_q);
       const sc = c.s * Math.min(1, (c.life - c.age) * 3);

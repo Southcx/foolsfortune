@@ -4,6 +4,7 @@ export const DEFAULTS = {
   movement: {
     walkSpeed: 4.2,
     sprintSpeed: 6.8,
+    walkSlowSpeed: 1.8, // hold Alt to walk
     adsSpeedMult: 0.55,
     groundAccel: 55,
     groundDecel: 40,
@@ -103,10 +104,15 @@ export const DEFAULTS = {
     gunScale: 0.85,
     adsDistance: 0.55, // how far in front of the eye the gun sits when aiming down sights
     adsHeight: 0.0, // fine-tune sight alignment
-    drawTime: 0.2, // holster -> hands: the hand snaps to the hip, then the gun comes up
-    holsterTime: 0.3,
-    // holstered gun, relative to the hips (m / deg): out past the thigh, grip up and back
-    holster: { out: 0.27, height: 0.86, back: -0.05, tilt: 0.3, cant: 10 },
+    drawTime: 0.26, // holster -> hands: reach back, grab, whip it round
+    holsterTime: 0.34,
+    drawGrab: 0.4, // share of the draw spent reaching back to the grip
+    swapOnWallrun: true, // right-side wallruns: pass the gun to the left hand, right hand on the wall
+    swapTime: 0.22,
+    drawTwist: 38, // how far the shoulders turn back to reach it (deg)
+    // holstered gun across the small of the back: where the grip sits (m, relative to the
+    // feet, +x left, +z forward), the muzzle dip and how far it wraps round the waist (deg)
+    holster: { x: -0.2, y: 0.98, z: -0.21, tilt: 14, wrap: 12 },
     autoHolster: true, // third person: put it away after a while out of combat
     holsterDelay: 5,
   },
@@ -158,6 +164,7 @@ export const DEFAULTS = {
     // banks off walls/floors; every bounce multiplies damage and bends toward a target in seekAngle
     ricochet: { bounces: 5, damage: 90, bounceMult: 1.35, seekAngle: 30, seekRange: 16, range: 45 },
     // hold to paint (cone around the crosshair, lockTime per target), release to fire one seeker per lock
+    slip: { speed: 15, lift: 3, droplets: 90, spread: 6, patch: 1.6 },
     homing: { maxLocks: 6, lockTime: 0.18, cone: 12, range: 32, launchSpeed: 7, speed: 19, fan: 5, stagger: 0.06,
       turn: 5, turnGrow: 14, maxFlight: 4, damage: 150, splash: 0.9 },
   },
@@ -227,11 +234,30 @@ export const DEFAULTS = {
   },
   // time trial medals (seconds, generous) and the quick-double bonus
   trial: { gold: 90, silver: 150, bronze: 240, quickWindow: 1.5, quickBonus: 1 },
+  // Movement techs (src/moves/): optional techniques over the core movement above. Each
+  // has an `enabled` switch; off, the core behaves exactly as if the tech didn't exist.
+  tech: {
+    blink: { enabled: true, distance: 5.5, time: 0.09, charges: 2, recharge: 1.8, exitSpeed: 7, airLift: 1.5, ghostLife: 0.45 }, // E
+    slam: { enabled: true, lookDown: 30, minHeight: 1.8, speed: 24, steer: 3, radius: 3.2, breakFrac: 0.45, velocity: 9, window: 0.3, jumpMult: 1.15, jumpPerMetre: 0.06, jumpMax: 1.9, slidePerMetre: 0.35 }, // C in the air, looking down
+    stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar
+    roll: { enabled: true, minFall: 9, time: 0.55, speed: 5.5, speedPerFall: 0.25, clipFrom: 0.3, clipTo: 1.0 }, // hold C into a hard landing
+    wallclimb: { enabled: true, window: 0.8, reach: 0.45, maxAngle: 40, minSpeed: 1.2, maxFall: 3, speed: 6.5, time: 0.5, steps: 7, kickOut: 5, kickUp: 5.5 }, // jump into a wall, W held
+    slip: { enabled: true, speed: 10, accel: 45, dryCrawl: 1.4, climbSpeed: 6, jump: 8.4, keepSpeed: 10, regen: 12, coverLife: 30 }, // C on slip
+    swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 5.5 }, // water
+    ladder: { enabled: true, speed: 2.6, fast: 4.2, slide: 7, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder
+  },
   anim: {
     // clip-driven: see character.js. Speeds in m/s, times in seconds into the clip.
-    walkAnimSpeed: 1.4, // ground speed where the walk loop is fully in (then jog at walkSpeed, sprint at sprintSpeed)
-    strideShare: 0.4, // above a clip's own speed, this much of the extra comes from longer strides (the rest from cadence)
-    maxStride: 1.3, // stride warp cap
+    // gait bands (m/s): idle -> walk by walkIn, walk up to walkMax, jog from jogIn (full jog at
+    // movement.walkSpeed), sprint at movement.sprintSpeed. The walk hands over to the jog where a
+    // walk on legs this length would have to spin; raise walkMax to see a power walk.
+    walkIn: 0.5,
+    walkMax: 2.4,
+    jogIn: 3.4,
+    strideShare: 0.5, // above a clip's own speed, this share of the extra comes from longer strides (the rest cadence)
+    walkStride: 1.65, // stride warp cap while walking (a walk can reach much further than it does in the clip)
+    maxStride: 1.3, // stride warp cap for the jog / sprint
+    footLock: true, // pin planted feet to the ground (no skating while speeding up, turning, blending)
     crouchDepth: 0.8, // how far into the (very low) crouch clips the crouch goes
     aimRange: 50, // pitch (deg) that maps onto the aim-up / aim-down poses
     jumpFrom: 0.15, // jump clip: take-off frame
@@ -261,8 +287,11 @@ const STORAGE_KEY = 'foolsfortune.tuning.v2';
 const OLD_KEY = 'foolsfortune.tuning.v1';
 // defaults that changed since v1: stored v1 values for these are dropped on migration
 const V1_DROP = [['shatter', 'shardOutlines']];
-// defaults retuned since: stored values for these are ignored (so an old save can't bring back a slow draw)
-const RETUNED = [['weapon', 'drawTime'], ['weapon', 'holsterTime']];
+// defaults retuned since a save was made: stored values for these are ignored (so an old
+// save can't bring back a slow draw or a hip holster). [version, group, key]
+const RETUNED = [[1, 'weapon', 'drawTime'], [1, 'weapon', 'holsterTime'],
+  [2, 'weapon', 'drawTime'], [2, 'weapon', 'holsterTime'], [2, 'weapon', 'holster'], [2, 'anim', 'strideShare'], [2, 'anim', 'maxStride']];
+const RETUNE_V = 2;
 
 function deepMerge(target, src) {
   for (const k in src) {
@@ -280,7 +309,8 @@ export function loadTuning() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const o = JSON.parse(raw);
-      if (!o.retuned1) for (const [g, k] of RETUNED) if (o[g]) delete o[g][k];
+      const v = o.retunedV ?? (o.retuned1 ? 1 : 0);
+      for (const [rv, g, k] of RETUNED) if (v < rv && o[g]) delete o[g][k];
       deepMerge(T, o);
     }
     else {
@@ -295,7 +325,7 @@ export function loadTuning() {
 }
 
 export function saveTuning() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...T, retuned1: true })); } catch { /* ignore */ }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...T, retunedV: RETUNE_V })); } catch { /* ignore */ }
 }
 
 export function resetTuning() {

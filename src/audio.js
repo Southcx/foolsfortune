@@ -480,6 +480,88 @@ class Sfx {
     this.noise(t, 0.07, { f0: 700, f1: 200, gain: 0.8, dest: d });
   }
 
+  // ---- movement techs ----
+  blink() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.55, 0.5);
+    this.tone(t, 0.16, { f0: 1800, f1: 240, type: 'sine', gain: 0.35, dest: d });
+    this.tone(t + 0.02, 0.12, { f0: 2400, f1: 600, type: 'triangle', gain: 0.18, dest: d });
+    this.noise(t, 0.18, { type: 'highpass', f0: 5000, f1: 1500, gain: 0.35, attack: 0.004, dest: d });
+  }
+
+  blinkArrive() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.6);
+    this.tone(t, 0.1, { f0: 300, f1: 1200, type: 'sine', gain: 0.25, dest: d });
+  }
+
+  slamStart() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.3);
+    this.noise(t, 0.25, { type: 'bandpass', f0: 2500, f1: 400, q: 1.1, gain: 0.8, attack: 0.01, dest: d });
+  }
+
+  slam(power = 1) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.9, 0.7);
+    this.tone(t, 0.45, { f0: 110, f1: 32, type: 'sine', gain: 1.1 * power, dest: d });
+    this.noise(t, 0.4, { f0: 1600, f1: 90, gain: 1.2, attack: 0.002, dest: d });
+    this.noise(t + 0.05, 0.6, { type: 'bandpass', f0: 400, f1: 120, q: 0.6, gain: 0.5, attack: 0.05, dest: d });
+  }
+
+  roll() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.2);
+    this.noise(t, 0.35, { type: 'bandpass', f0: 700, f1: 250, q: 0.9, gain: 0.7, attack: 0.03, dest: d });
+    this.tone(t + 0.02, 0.12, { f0: 140, f1: 70, gain: 0.4, dest: d });
+  }
+
+  rung() {
+    if (!this.ok() || !this.allow('rung', 10)) return;
+    const t = this.ctx.currentTime, d = this.out(0.18, 0.2);
+    this.tone(t, 0.06, { f0: 420 + Math.random() * 60, f1: 300, type: 'triangle', gain: 0.5, dest: d });
+    this.noise(t, 0.04, { f0: 1500, f1: 600, gain: 0.3, dest: d });
+  }
+
+  stroke() {
+    if (!this.ok() || !this.allow('stroke', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.25, 0.4);
+    this.noise(t, 0.3, { type: 'bandpass', f0: 500, f1: 1400, q: 0.7, gain: 0.6, attack: 0.05, dest: d });
+  }
+
+  splash(power = 1) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(Math.min(1, 0.4 + power * 0.3), 0.6);
+    this.noise(t, 0.6, { f0: 2400, f1: 200, gain: 1, attack: 0.01, dest: d });
+    for (let i = 0; i < 5; i++) this.tone(t + 0.08 + Math.random() * 0.3, 0.06, { f0: 500 + Math.random() * 500, f1: 1400, type: 'sine', gain: 0.12, dest: d });
+  }
+
+  slipDive() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.4);
+    this.noise(t, 0.3, { f0: 700, f1: 160, gain: 0.9, attack: 0.01, dest: d });
+    this.tone(t, 0.18, { f0: 520, f1: 130, type: 'sine', gain: 0.35, dest: d });
+  }
+
+  slipSurface() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.4);
+    this.noise(t, 0.25, { f0: 400, f1: 1600, gain: 0.8, attack: 0.02, dest: d });
+    this.tone(t, 0.15, { f0: 160, f1: 620, type: 'sine', gain: 0.35, dest: d });
+  }
+
+  slipSwim() {
+    if (!this.ok() || !this.allow('slipSwim', 5)) return;
+    const t = this.ctx.currentTime, d = this.out(0.12, 0.2);
+    this.noise(t, 0.2, { type: 'bandpass', f0: 300, f1: 700, q: 1.4, gain: 0.8, attack: 0.04, dest: d });
+  }
+
+  climbStep() {
+    if (!this.ok() || !this.allow('climbStep', 9)) return;
+    const t = this.ctx.currentTime, d = this.out(0.14, 0.15);
+    this.noise(t, 0.05, { f0: 1100, f1: 300, gain: 0.8, dest: d });
+  }
+
   land(v) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(Math.min(0.4, v * 0.04), 0.2);

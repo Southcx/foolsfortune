@@ -23,6 +23,16 @@ import { LachrymaPool, Baubles } from './lachryma.js';
 import { Shells, SHELL_TYPES } from './shells.js';
 import { Trial } from './trial.js';
 import { Course } from './basement.js';
+import { Techs } from './moves/techs.js';
+import { Blink } from './moves/blink.js';
+import { Slam } from './moves/slam.js';
+import { Stomp } from './moves/stomp.js';
+import { Roll } from './moves/roll.js';
+import { WallClimb } from './moves/wallclimb.js';
+import { Swim } from './moves/swim.js';
+import { Ladder } from './moves/ladder.js';
+import { SlipDive } from './moves/slip.js';
+import { Water, Ladders, SlipField } from './moves/env.js';
 
 const FIXED = 1 / 60;
 
@@ -98,6 +108,10 @@ async function main() {
   const breakables = new Breakables(scene, physics, fx, game);
   const level = new Level(scene, physics, breakables);
   game.level = level;
+  // what the environmental movement techs read: water, ladders, slip (built with the level)
+  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene) };
+  level.env = env;
+  game.water = env.water; game.ladders = env.ladders; game.slip = env.slip;
   level.build();
   const spawnRoom = () => {
     level.spawnDynamic();
@@ -128,6 +142,11 @@ async function main() {
   player.game = game;
   const weapon = new Weapon(game);
   game.weapon = weapon;
+  // movement techs (priority order: the first that wants the step gets it)
+  const techs = new Techs(player, game);
+  for (const T0 of [Swim, Ladder, SlipDive, Roll, Slam, Blink, WallClimb, Stomp]) techs.add(new T0(techs));
+  player.techs = techs;
+  game.techs = techs;
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -262,6 +281,7 @@ async function main() {
       drawT: weapon.drawT, upper: weapon.combatBlend * weapon.held, fw: player.fpWeight,
       fpPos: weapon.fpPos, fpQ: weapon.fpQ, camera, aimPoint: weapon.aimPoint, reloading: weapon.reloading,
       leftOverride: weapon.leftOverride, leftBlend: weapon.leftBlend, mantleT: player.mantle ? player.mantle.t : 1,
+      techs: player.techs,
     };
     const w = player.wallrun;
     if (w) {
@@ -277,6 +297,13 @@ async function main() {
   };
   let lastWall = null;
   let lastLedge = null;
+
+  // blink charges on the movement readout (while any are spent)
+  const blinkPips = () => {
+    const b = techs.get('blink');
+    if (!b?.enabled || b.charges >= T.tech.blink.charges) return '';
+    return ` · E ${'●'.repeat(b.charges)}${'○'.repeat(T.tech.blink.charges - b.charges)}`;
+  };
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
@@ -313,6 +340,9 @@ async function main() {
     if (steps === 4) acc = 0;
     physics.sync();
 
+    techs.tick(dt);
+    env.water.update(dt);
+    env.slip.update(dt);
     player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
     character.setFirstPerson(player.fpWeight > 0.5);
     // fade the courier out when the 3rd-person camera is pressed up against her
@@ -334,6 +364,7 @@ async function main() {
       airJump: player.airJumpPulse ? (player.airJumpPulse = false, true) : false,
       ground: groundAt,
       grounded: player.grounded,
+      groundN: player.grounded ? player.groundNormal() : null,
       wall: player.wallBlend,
       slide: player.slideBlend, mantle: player.mantleBlend, mantleT: player.mantle ? player.mantle.t : 1,
       dash: player.dashBlend, crouch: player.crouchBlend,
@@ -341,12 +372,15 @@ async function main() {
       aimYawOffset: player.aimYawOffset,
       combat: Math.max(weapon.combatBlend * held, player.fpWeight),
       upper: weapon.combatBlend * held,
+      // right-side wallrun: the gun goes to the left hand so the right can take the wall
+      gunHand: T.weapon.swapOnWallrun && weapon.drawn && player.wallrun && player.wallrun.side > 0 ? 1 : 0,
       reload: weapon.reloading ? weapon.reloadT : -1,
       walkSpeed: T.movement.walkSpeed,
       sprintSpeed: T.movement.sprintSpeed,
       recoil: weapon.kick * held,
       adsT: weapon.adsEase,
       landed: player.landedOut,
+      techs: player.techs,
     });
     player.headRel = character.headRel;
     weapon.fpPose(dt, camera, player, character);
@@ -368,6 +402,10 @@ async function main() {
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1);
     sun.intensity = T.visual.sun * (1 - under);
     scene.fog.density = T.visual.fog * (1 - 0.6 * under);
+    // under the water: close teal murk
+    const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
+    if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
+    else scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
@@ -383,7 +421,8 @@ async function main() {
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
-      move: player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : !player.grounded ? 'AIR' : '',
+      move: (techs.active ? techs.label() : player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : '')
+        + blinkPips(),
     });
 
     input.endFrame();
@@ -391,7 +430,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, manual: false };
   window.__ready = true;
 }
 

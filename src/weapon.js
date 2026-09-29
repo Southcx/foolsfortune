@@ -62,6 +62,15 @@ export class Weapon {
     if (input.wasPressed('KeyX')) { this.drawTarget = this.drawTarget > 0.5 ? 0 : 1; this.manualHolster = this.drawTarget === 0; this.idleT = 0; }
     if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; }
     if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
+    // both hands busy (a ladder, swimming): stow it, and bring it back out after if it was out
+    const busy = !!player.techs?.active?.handsBusy;
+    if (busy) {
+      if (this.drawTarget > 0) this.stowed = true;
+      this.drawTarget = 0;
+    } else if (this.stowed) {
+      this.stowed = false;
+      if (!this.manualHolster) this.drawTarget = 1;
+    }
     this.idleT += dt;
     if (this.charge > 0 || this.adsT > 0 || this.reloading || this.cooldown > -0.3 || this.wantShell) this.idleT = 0;
     if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay) this.drawTarget = 0;
@@ -186,13 +195,15 @@ export class Weapon {
     const camQ = camera.quaternion;
     const bob = player.bobPhase;
     const hs = Math.min(1, Math.hypot(player.vel.x, player.vel.z) / 5) * (player.grounded ? 1 : 0);
-    const hip = new THREE.Vector3(0.16, -0.2, -0.6);
+    // (the gun in the left hand - right-side wallruns - moves the view model to the left)
+    const side = 1 - 2 * smooth(0, 1, character.st?.hand || 0);
+    const hip = new THREE.Vector3(0.16 * side, -0.2, -0.6);
     const ads = new THREE.Vector3(0, -GUN_POINTS.sightY * s + T.weapon.adsHeight, -T.weapon.adsDistance);
     const off = hip.lerp(ads, e);
     off.x += this.sway.x + Math.sin(bob) * 0.012 * hs * (1 - e * 0.9);
     off.y += this.sway.y - Math.abs(Math.cos(bob)) * 0.01 * hs * (1 - e * 0.9);
-    off.add(new THREE.Vector3(-0.06, -0.08, 0.06).multiplyScalar(rl));
-    off.add(new THREE.Vector3(-0.05, -0.1, 0.05).multiplyScalar(this.sprintBlend));
+    off.add(new THREE.Vector3(-0.06 * side, -0.08, 0.06).multiplyScalar(rl));
+    off.add(new THREE.Vector3(-0.05 * side, -0.1, 0.05).multiplyScalar(this.sprintBlend));
     const pos = off.applyQuaternion(camQ).add(camera.position);
     const camFwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camQ);
     const camUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camQ);
