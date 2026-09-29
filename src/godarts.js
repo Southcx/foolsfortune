@@ -206,7 +206,7 @@ export class GodArts {
   gate(a, point) {
     const g = this.game;
     this.lack = null;
-    if (!this.owns(a.id)) { g.hud.popup(`${a.name} NOT LEARNED (B)`); return false; }
+    if (!this.owns(a.id)) { g.log.say('warn', `You have not learned ${a.name}.`, { key: 'unlearned', throttle: 2 }); return false; }
     return g.cartography.tierAt(point.x, point.y, point.z).tier >= a.needs; // (the zone of influence is the ground you have explored)
   }
 
@@ -214,7 +214,6 @@ export class GodArts {
     const L = this.game.lachryma;
     if (L.spend(base, tag)) { this.lack = null; return true; }
     this.lack = this.art.id;
-    this.game.hud.popup('NOT ENOUGH LACHRYMA');
     sfx.dryFire();
     return false;
   }
@@ -412,7 +411,6 @@ export class GodArts {
     g.fx.slash(a.clone().setY(a.y + 0.9), b.clone().setY(a.y + 0.9), UP);
     g.fx.slash(a.clone().setY(a.y + 1.8), b.clone().setY(a.y + 1.8), UP);
     sfx.slice();
-    g.hud.popup(cuts ? `×${cuts} SUNDERED` : 'THE BLADE FINDS NOTHING');
     g.events?.emit('god.sunder', { cuts });
   }
 
@@ -456,7 +454,6 @@ export class GodArts {
     this.manifests.push(m);
     g.fx.impact?.(new THREE.Vector3(mid.x, gy, mid.z), UP, { sparks: 6, dust: 18 });
     sfx.thump();
-    g.hud.popup('MANIFEST');
     g.events?.emit('god.manifest', { len, h });
   }
 

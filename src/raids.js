@@ -16,21 +16,19 @@ const DOWN = new THREE.Vector3(0, -1, 0);
 export class Raids {
   constructor(game, god) {
     this.game = game; this.god = god;
-    this.t = T.god.firstWave; this.wave = 0; this.alive = 0; this.banner = 0;
+    this.t = T.god.firstWave; this.wave = 0; this.alive = 0;
   }
 
   /** Raids run only when the vessel stands in the Siege room. */
   get here() { return inSiege(this.god.vessel.pos); }
 
-  reset() { this.t = T.god.firstWave; this.wave = 0; this.alive = 0; this.banner = 0; }
+  reset() { this.t = T.god.firstWave; this.wave = 0; this.alive = 0; }
 
   status() { return this.here ? `raid ${this.wave} · next in ${Math.max(0, Math.ceil(this.t))} s · ${this.alive} raiders · ` : ''; }
 
   update(dt) {
     const g = this.game, god = this.god, V = god.vessel;
     if (god.state !== 'on' || !V.alive) return;
-    this.banner = Math.max(0, this.banner - dt);
-    god.el.banner.classList.toggle('on', this.banner > 0);
     if (!this.here) {
       // (anything still coming is called off; the clock starts over when the vessel is back here)
       if (this.alive > 0) for (const c of g.clappers.list) if (c.alive && c.raider) g.clappers.dismiss(c);
@@ -66,8 +64,6 @@ export class Raids {
       made++;
     }
     if (made) {
-      this.banner = 2.2;
-      this.god.el.banner.textContent = `RAID ${this.wave}`;
       sfx.thump();
       g.events?.emit('god.raid', { wave: this.wave, n: made });
     }
@@ -75,8 +71,6 @@ export class Raids {
 
   cleared() {
     const g = this.game;
-    this.banner = 1.8;
-    this.god.el.banner.textContent = 'WAVE CLEARED';
     // a gift of Lachryma, and the vessel takes a breath
     g.lachryma.gain(30, 'wave');
     this.god.mendVessel(8);

@@ -1,0 +1,325 @@
+// ---------------------------------------------------------------------------------------
+// ACHIEVEMENTS: a wall of small, dated, checkable things, kept the way the two MMOs that do it best keep theirs.
+//
+// From Old School RuneScape (Combat Achievements, Achievement Diaries, the Collection Log, the Hiscores):
+//  - SIX TIERS worth 1-6 points (Easy, Medium, Hard, Elite, Master, Grandmaster), and a running total that buys standing.
+//  - Every task has a TYPE, so the list teaches by what it asks: a count (kill count), a speed (a time to beat),
+//    perfection (all of it with nothing missed), a mechanic (do the difficult thing once), stamina (keep going).
+//  - RETROACTIVE: a task is a predicate over numbers the game already keeps (stats.js), never a flag set by a hook, so an
+//    achievement added later completes at once for whoever has already done it (OSRS made its kill-count tasks retroactive).
+//  - The COLLECTION LOG: slots for every thing there is to see (kinds of pot, shells, arts, places); a slot is by thing, not by source.
+//  - Hiscores keep a score and the time it took, and never reset: the ledger's records carry where and when.
+// From Final Fantasy XIV's Achievements:
+//  - CATEGORIES with sub-groups, points, a number behind every one (so it can show 37/100 before it is done), hidden
+//    entries that read ??? until they are earned, TITLES as the reward for some, and the total as a running score.
+//  - Nothing is missable and nothing is timed out: it is all there to be filled in at whatever speed the player likes.
+//
+// A task is { id, cat, sub, tier, type, name, desc, cur(ledger, game) -> number, goal, dir: 'up' | 'down', unit, hidden, title }.
+// 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
+// ---------------------------------------------------------------------------------------
+import { BY_ID, ABILITIES, GOD_ARTS } from './system/skills.js';
+import { SHELL_TYPES } from './shells.js';
+import { PROFILES } from './pottery.js';
+import { T } from './config.js';
+import { sfx } from './audio.js';
+
+export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
+export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', mechanic: 'Mechanic', endure: 'Stamina', collect: 'Collection' };
+export const CATS = [
+  { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
+  { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
+  { id: 'surf', name: 'SURFING', subs: ['The Board', 'Tricks'] },
+  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
+  { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places'] },
+  { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
+  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
+];
+
+// what the points buy: a standing, named in the manner of the studio's own trade (a title is the reward, as in FFXIV)
+export const RANKS = [
+  [0, 'Sweeper'], [10, 'Apprentice'], [30, 'Journeyman'], [70, 'Potter'], [130, 'Master Potter'], [220, 'Kiln Warden'], [340, 'Fool\'s Fortune'],
+];
+
+const tiers = [];
+const add = (o) => tiers.push({ dir: 'up', unit: '', hidden: false, ...o });
+// a counter or a total that reaches n
+const C = (id, cat, sub, tier, type, name, desc, key, n, o = {}) => add({ id, cat, sub, tier, type, name, desc, cur: (L) => L.get(key), goal: n, ...o });
+// a record (highest) that reaches n
+const H = (id, cat, sub, tier, type, name, desc, key, n, o = {}) => add({ id, cat, sub, tier, type, name, desc, cur: (L) => L.best(key) || 0, goal: n, ...o });
+// a best time at or under n
+const S = (id, cat, sub, tier, name, desc, key, n, o = {}) => add({ id, cat, sub, tier, type: 'speed', name, desc, cur: (L) => L.best(key) ?? Infinity, goal: n, dir: 'down', unit: 's', ...o });
+// anything else
+const F = (id, cat, sub, tier, type, name, desc, cur, n, o = {}) => add({ id, cat, sub, tier, type, name, desc, cur, goal: n, ...o });
+
+
+export function buildAchievements(game) {
+  tiers.length = 0;
+  const kinds = Object.keys(PROFILES).length;
+  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing'];
+  const sys = game.system;
+
+  // ---------------------------------------------------------------- BREAKING
+  C('br1', 'break', 'Pots', 1, 'count', 'First Casualties', 'Break 10 pots.', 'break.total', 10);
+  C('br2', 'break', 'Pots', 2, 'count', 'Clay Reckoning', 'Break 100 pots.', 'break.total', 100);
+  C('br3', 'break', 'Pots', 3, 'count', 'Kiln Fodder', 'Break 500 pots.', 'break.total', 500);
+  C('br4', 'break', 'Pots', 4, 'count', 'Rubble Maker', 'Break 2,500 pots.', 'break.total', 2500);
+  C('br5', 'break', 'Pots', 5, 'count', 'Shatterer', 'Break 10,000 pots.', 'break.total', 10000, { title: 'Shatterer' });
+  H('ch1', 'break', 'Pots', 1, 'mechanic', 'Two of a Kind', 'Break 5 pots in one chain.', 'chain.max', 5);
+  H('ch2', 'break', 'Pots', 2, 'mechanic', 'Cascade', 'Chain 12.', 'chain.max', 12);
+  H('ch3', 'break', 'Pots', 3, 'mechanic', 'Avalanche', 'Chain 25.', 'chain.max', 25);
+  H('ch4', 'break', 'Pots', 4, 'mechanic', 'Landslide', 'Chain 50.', 'chain.max', 50, { title: 'Landslide' });
+  C('brc', 'break', 'Pots', 2, 'count', 'Every Cause', 'Break pots by shot, slice, cooking, explosion and slam alike (25 of each cause).', 'break.cause.shot', 1,
+    { cur: (L) => Math.min(...['shot', 'sliced', 'explosion'].map((c) => L.get(`break.cause.${c}`))) , goal: 25 });
+  F('brk', 'break', 'Pots', 3, 'collect', 'A Pot of Every Kind', 'Break every kind of pottery.', (L) => L.under('break.kind.').filter(([, v]) => v > 0).length, kinds);
+  C('cl1', 'break', 'Clapperjars', 1, 'count', 'Clapped', 'Defeat 1 clapperjar.', 'clapper.down', 1);
+  C('cl2', 'break', 'Clapperjars', 2, 'count', 'Pest Control', 'Defeat 25 clapperjars.', 'clapper.down', 25);
+  C('cl3', 'break', 'Clapperjars', 3, 'count', 'Exterminator', 'Defeat 100 clapperjars.', 'clapper.down', 100);
+  C('cl4', 'break', 'Clapperjars', 4, 'count', 'Nothing Left to Clap', 'Defeat 500 clapperjars.', 'clapper.down', 500);
+  C('cl5', 'break', 'Clapperjars', 5, 'endure', 'Clapperjar Bane', 'Defeat 2,000 clapperjars.', 'clapper.down', 2000, { title: 'Clapperjar Bane' });
+  C('cls', 'break', 'Clapperjars', 2, 'mechanic', 'Clean Cut', 'Cleave 10 clapperjars with a sliced shot.', 'clapper.cause.sliced', 10);
+  C('clk', 'break', 'Clapperjars', 2, 'mechanic', 'Well Done', 'Bake 5 clapperjars in a kiln.', 'clapper.cause.cooked', 5);
+  C('clw', 'break', 'Clapperjars', 3, 'mechanic', 'Under the Well', 'Crush 10 clapperjars with a well shell.', 'clapper.cause.well', 10);
+  C('clh', 'break', 'Clapperjars', 3, 'mechanic', 'Hunted', 'Hunt down 10 clapperjars with seeking shells.', 'clapper.cause.homing', 10);
+  C('clr', 'break', 'Clapperjars', 3, 'mechanic', 'Off the Wall', 'Take 10 clapperjars with banked shots.', 'clapper.cause.ricochet', 10);
+  C('cle', 'break', 'Clapperjars', 3, 'mechanic', 'Vapour Trail', 'Vaporise 10 clapperjars with charged shots.', 'clapper.cause.charged', 10);
+  F('cla', 'break', 'Clapperjars', 4, 'collect', 'Every Way to Go', 'Defeat a clapperjar in every way there is.', (L) => L.under('clapper.cause.').filter(([, v]) => v > 0).length, CAUSES.length);
+  C('sh1', 'break', 'Shells', 1, 'count', 'Loaded', 'Fire 100 shells.', 'shell.fire', 100);
+  C('sh2', 'break', 'Shells', 3, 'count', 'Ordnance', 'Fire 1,000 shells.', 'shell.fire', 1000);
+  C('sh3', 'break', 'Shells', 5, 'endure', 'Arsenal', 'Fire 10,000 shells.', 'shell.fire', 10000);
+  F('shc', 'break', 'Shells', 3, 'collect', 'Full Rack', 'Fire every kind of shell.', (L) => L.under('shell.fire.').filter(([, v]) => v > 0).length, SHELL_TYPES.length);
+  C('shs', 'break', 'Shells', 2, 'count', 'Charged Up', 'Fire 25 charged shots.', 'shot.charged', 25);
+  H('shx', 'break', 'Shells', 3, 'mechanic', 'Three at Once', 'Slice through 3 targets with one shell.', 'shell.slice.best', 3);
+  H('shy', 'break', 'Shells', 4, 'mechanic', 'Mandoline', 'Slice through 6 targets with one shell.', 'shell.slice.best', 6);
+  H('shm', 'break', 'Shells', 3, 'mechanic', 'Marked Men', 'Mark 5 targets with one shell.', 'shell.mark.best', 5);
+  H('shb', 'break', 'Shells', 3, 'mechanic', 'Cushion Shot', 'Land a shot that ricochets 3 times.', 'shell.bank.best', 3);
+  H('shd', 'break', 'Shells', 4, 'mechanic', 'From on High', 'Hit a target from 30 m above it.', 'target.drop', 30);
+  C('sha', 'break', 'Shells', 2, 'mechanic', 'Airborne', 'Fire 50 shots while airborne.', 'shot.air', 50);
+  F('shp', 'break', 'Shells', 4, 'perfect', 'Steady Hand', 'Land 65% of at least 300 shots.', (L) => (L.get('shot.fired') >= 300 ? L.get('shot.hit') / L.get('shot.fired') : 0), 0.65, { unit: '%' });
+  C('rc1', 'break', 'The Workshop', 2, 'count', 'Swept Clean', 'Break every pot in the workshop.', 'room.cleared', 1);
+  C('rc2', 'break', 'The Workshop', 3, 'endure', 'Regular Custom', 'Clear the workshop 10 times.', 'room.cleared', 10);
+  S('rct', 'break', 'The Workshop', 3, 'Quick Sweep', 'Clear the workshop in under 3 minutes.', 'room.clear.time', 180);
+  S('rcf', 'break', 'The Workshop', 5, 'Spring Cleaning', 'Clear the workshop in under 90 seconds.', 'room.clear.time', 90, { title: 'Spring Cleaner' });
+
+  // ---------------------------------------------------------------- MOVEMENT
+  C('dt1', 'move', 'Distance', 1, 'count', 'Footsore', 'Travel 1 km.', 'dist.total', 1000, { unit: 'm' });
+  C('dt2', 'move', 'Distance', 2, 'count', 'Well Travelled', 'Travel 10 km.', 'dist.total', 10000, { unit: 'm' });
+  C('dt3', 'move', 'Distance', 3, 'endure', 'Marathon', 'Travel 50 km.', 'dist.total', 50000, { unit: 'm' });
+  C('dt4', 'move', 'Distance', 4, 'endure', 'Ultramarathon', 'Travel 200 km.', 'dist.total', 200000, { unit: 'm' });
+  C('dt5', 'move', 'Distance', 5, 'endure', 'Around the World', 'Travel 1,000 km.', 'dist.total', 1000000, { unit: 'm', title: 'Wayfarer' });
+  C('up1', 'move', 'Distance', 2, 'count', 'Up and Up', 'Climb 500 m in all.', 'dist.up', 500, { unit: 'm' });
+  C('up2', 'move', 'Distance', 4, 'endure', 'Everest, Twice', 'Climb 17,700 m in all.', 'dist.up', 17700, { unit: 'm' });
+  C('jp1', 'move', 'Air', 1, 'count', 'Leaps', 'Jump 100 times.', 'move.jump', 100);
+  C('jp2', 'move', 'Air', 3, 'count', 'Springheel', 'Jump 2,000 times.', 'move.jump', 2000);
+  C('jp3', 'move', 'Air', 4, 'endure', 'Jumping Jack', 'Jump 10,000 times.', 'move.jump', 10000);
+  C('ja', 'move', 'Air', 2, 'mechanic', 'Twice Off the Ground', 'Air-jump 100 times.', 'move.airjump', 100);
+  C('jw', 'move', 'Air', 2, 'mechanic', 'Off the Wall', 'Jump off a wall 50 times.', 'move.walljump', 50);
+  H('at1', 'move', 'Air', 2, 'endure', 'Hang Time', 'Stay airborne for 3 seconds.', 'air.longest', 3, { unit: 's' });
+  H('at2', 'move', 'Air', 3, 'endure', 'Glider', 'Stay airborne for 5 seconds.', 'air.longest', 5, { unit: 's' });
+  H('at3', 'move', 'Air', 5, 'endure', 'Float Like a Pot', 'Stay airborne for 9 seconds.', 'air.longest', 9, { unit: 's' });
+  H('fl1', 'move', 'Air', 2, 'mechanic', 'A Long Way Down', 'Fall 20 m.', 'fall.max', 20, { unit: 'm' });
+  H('fl2', 'move', 'Air', 3, 'mechanic', 'Terminal Velocity', 'Fall 40 m.', 'fall.max', 40, { unit: 'm' });
+  H('fl3', 'move', 'Air', 4, 'mechanic', 'Free Fall', 'Fall 60 m.', 'fall.max', 60, { unit: 'm' });
+  H('rl', 'move', 'Air', 4, 'mechanic', 'Landing Gear', 'Roll out of a 30 m fall.', 'roll.fall.height', 30, { unit: 'm' });
+  H('sp1', 'move', 'Ground', 2, 'mechanic', 'Getting Up to Speed', 'Reach 12 m/s.', 'speed.max', 12, { unit: 'm/s' });
+  H('sp2', 'move', 'Ground', 3, 'mechanic', 'Faster', 'Reach 16 m/s on foot.', 'speed.max', 16, { unit: 'm/s' });
+  H('sp3', 'move', 'Ground', 4, 'mechanic', 'Faster Still', 'Reach 22 m/s on foot.', 'speed.max', 22, { unit: 'm/s' });
+  H('sl1', 'move', 'Ground', 2, 'mechanic', 'Slippery', 'Slide 15 m in one go.', 'slide.longest', 15, { unit: 'm' });
+  H('sl2', 'move', 'Ground', 3, 'mechanic', 'Long Slide', 'Slide 35 m in one go.', 'slide.longest', 35, { unit: 'm' });
+  H('wr1', 'move', 'Ground', 2, 'mechanic', 'Wall Walker', 'Run along a wall for 20 m.', 'wallrun.longest', 20, { unit: 'm' });
+  H('wr2', 'move', 'Ground', 4, 'mechanic', 'Along the Whole Wall', 'Run along a wall for 45 m.', 'wallrun.longest', 45, { unit: 'm' });
+  C('mn1', 'move', 'Ground', 2, 'count', 'Ledge Lizard', 'Mantle 50 ledges.', 'move.mantle', 50);
+  H('mn2', 'move', 'Ground', 3, 'mechanic', 'Over the Top', 'Mantle a ledge 2.5 m high.', 'mantle.height', 2.5, { unit: 'm' });
+  C('ds1', 'move', 'Ground', 1, 'count', 'Quick Step', 'Dash 100 times.', 'move.dash', 100);
+  F('gt1', 'move', 'Ground', 2, 'endure', 'Sprinter', 'Sprint for 10 minutes in all.', (L) => L.get('time.state.sprint') / 60, 10, { unit: 'min' });
+  F('gt2', 'move', 'Ground', 4, 'endure', 'Tireless', 'Sprint for 3 hours in all.', (L) => L.get('time.state.sprint') / 3600, 3, { unit: 'h' });
+  F('gt3', 'move', 'Ground', 1, 'count', 'Low Profile', 'Spend 2 minutes crouched.', (L) => L.get('time.state.crouch') / 60, 2, { unit: 'min' });
+  C('bl1', 'move', 'The Arts', 1, 'count', 'Blinker', 'Blink 100 times.', 'move.blink', 100);
+  C('bl2', 'move', 'The Arts', 3, 'count', 'Flicker', 'Blink 1,000 times.', 'move.blink', 1000);
+  C('sm1', 'move', 'The Arts', 2, 'count', 'Slammer', 'Slam 50 times.', 'move.slam', 50);
+  H('sm2', 'move', 'The Arts', 3, 'mechanic', 'Meteor', 'Slam from 30 m.', 'slam.height', 30, { unit: 'm' });
+  H('sm3', 'move', 'The Arts', 5, 'mechanic', 'Orbital Strike', 'Slam from 60 m.', 'slam.height', 60, { unit: 'm' });
+  C('sm4', 'move', 'The Arts', 3, 'mechanic', 'Bullseye', 'Slam onto a target 10 times.', 'slam.target', 10);
+  C('st1', 'move', 'The Arts', 2, 'count', 'Stompy', 'Stomp 50 times.', 'move.stomp', 50);
+  C('pa1', 'move', 'The Arts', 2, 'mechanic', 'Not Today', 'Parry 10 times.', 'move.parry', 10);
+  C('pa2', 'move', 'The Arts', 4, 'mechanic', 'Riposte', 'Parry 100 times.', 'move.parry', 100);
+  C('ki1', 'move', 'The Arts', 1, 'count', 'Field Goal', 'Kick 25 things.', 'kick.hit', 25);
+  H('ki2', 'move', 'The Arts', 3, 'mechanic', 'Through the Line', 'Kick 3 things with one kick.', 'kick.best', 3);
+  C('th1', 'move', 'The Arts', 2, 'count', 'Heave', 'Throw 50 things.', 'move.throw', 50);
+  C('th2', 'move', 'The Arts', 3, 'mechanic', 'Direct Hit', 'Hit something with 25 thrown things.', 'throw.hit', 25);
+  C('rj1', 'move', 'The Arts', 2, 'mechanic', 'Rocket Boots', 'Recoil-jump 50 times.', 'move.recoil', 50);
+  C('lb1', 'move', 'The Arts', 2, 'mechanic', 'Nimble', 'Dodge 10 lobs.', 'lob.dodged', 10);
+  F('mv1', 'move', 'The Arts', 3, 'collect', 'Tried Everything', 'Hang, latch, climb a pole, climb a grate, balance, push, carry and swim.',
+    (L) => ['hang.start', 'latch.start', 'pole.start', 'grate.start', 'balance.start', 'push.start', 'carry.lift'].filter((k) => L.get(`move.${k}`) > 0).length + (L.get('time.tech.swim') > 0 ? 1 : 0), 8);
+  F('ar1', 'move', 'The Arts', 1, 'collect', 'A Quick Study', 'Learn 1 movement art.', () => ABILITIES.filter((a) => sys.unlocked(a.id)).length, 1);
+  F('ar2', 'move', 'The Arts', 3, 'collect', 'Well Practised', 'Learn 5 movement arts.', () => ABILITIES.filter((a) => sys.unlocked(a.id)).length, 5);
+  F('ar3', 'move', 'The Arts', 5, 'collect', 'All the Arts', 'Learn every movement art.', () => ABILITIES.filter((a) => sys.unlocked(a.id)).length, ABILITIES.length, { title: 'Adept' });
+  F('ar4', 'move', 'The Arts', 5, 'collect', 'Every Variant', 'Learn every variant of every movement art.', () => ABILITIES.reduce((n, a) => n + a.variants.filter((v) => sys.unlocked(`${a.id}.${v.id}`)).length, 0), ABILITIES.reduce((n, a) => n + a.variants.length, 0));
+
+  // ---------------------------------------------------------------- SURFING
+  C('sf1', 'surf', 'The Board', 1, 'count', 'Board Rider', 'Unfurl the Solar Surfer.', 'surf.start', 1);
+  F('sf2', 'surf', 'The Board', 2, 'endure', 'Sea Legs', 'Surf for 5 minutes in all.', (L) => L.get('time.surf') / 60, 5, { unit: 'min' });
+  F('sf3', 'surf', 'The Board', 3, 'endure', 'Dune Dweller', 'Surf for 30 minutes in all.', (L) => L.get('time.surf') / 60, 30, { unit: 'min' });
+  F('sf4', 'surf', 'The Board', 5, 'endure', 'Endless Summer', 'Surf for 3 hours in all.', (L) => L.get('time.surf') / 3600, 3, { unit: 'h', title: 'Sandsailor' });
+  C('sfd1', 'surf', 'The Board', 2, 'count', 'Sail a Kilometre', 'Surf 1 km.', 'dist.state.surfer', 1000, { unit: 'm' });
+  C('sfd2', 'surf', 'The Board', 4, 'endure', 'Across the Sea', 'Surf 25 km.', 'dist.state.surfer', 25000, { unit: 'm' });
+  C('sfp', 'surf', 'The Board', 2, 'mechanic', 'In Time with the Wind', 'Pump the board 100 times.', 'surf.pump', 100);
+  H('sfs1', 'surf', 'The Board', 2, 'mechanic', 'Full Sail', 'Surf at 15 m/s.', 'speed.surf.max', 15, { unit: 'm/s' });
+  H('sfs2', 'surf', 'The Board', 3, 'mechanic', 'Trade Winds', 'Surf at 20 m/s.', 'speed.surf.max', 20, { unit: 'm/s' });
+  H('sfs3', 'surf', 'The Board', 5, 'mechanic', 'Storm Front', 'Surf at 26 m/s.', 'speed.surf.max', 26, { unit: 'm/s', title: 'Stormrider' });
+  C('sft1', 'surf', 'Tricks', 1, 'count', 'Ollie', 'Hop 25 times on the board.', 'surf.hop', 25);
+  C('sft2', 'surf', 'Tricks', 2, 'mechanic', 'Spinner', 'Land 10 spins.', 'surf.trick', 10);
+  C('sft3', 'surf', 'Tricks', 4, 'mechanic', 'Whirlwind', 'Land 100 spins.', 'surf.trick', 100);
+  H('sft4', 'surf', 'Tricks', 3, 'mechanic', 'Double Spin', 'Land a double spin.', 'surf.spin.best', 2);
+  H('sft5', 'surf', 'Tricks', 5, 'mechanic', 'Triple Spin', 'Land a triple spin.', 'surf.spin.best', 3, { hidden: true });
+
+  // ---------------------------------------------------------------- THE HAND
+  C('gd1', 'hand', 'Reach', 1, 'count', 'Take the Hand', 'Take the hand.', 'god.enter', 1);
+  F('gd2', 'hand', 'Reach', 2, 'endure', 'Idle Hands', 'Spend 10 minutes as the hand.', (L) => L.get('time.god') / 60, 10, { unit: 'min' });
+  F('gd3', 'hand', 'Reach', 4, 'endure', 'Divine Patience', 'Spend 2 hours as the hand.', (L) => L.get('time.god') / 3600, 2, { unit: 'h' });
+  C('gg1', 'hand', 'Reach', 1, 'count', 'Grab', 'Pick up 50 things with the hand.', 'god.grab', 50);
+  C('gg2', 'hand', 'Reach', 2, 'count', 'Clapper Wrangler', 'Grab 25 clapperjars with the hand.', 'god.grab.clapper', 25);
+  C('gt', 'hand', 'Reach', 2, 'count', 'Throwing Arm', 'Throw 25 things with the hand.', 'god.throw', 25);
+  H('gts', 'hand', 'Reach', 3, 'mechanic', 'Fastball', 'Throw something at 25 m/s.', 'god.throw.speed', 25, { unit: 'm/s' });
+  C('gs1', 'hand', 'Arts', 2, 'count', 'Sunderer', 'Sunder 10 clapperjars.', 'god.cuts', 10);
+  C('gs2', 'hand', 'Arts', 4, 'count', 'Guillotine', 'Sunder 100 clapperjars.', 'god.cuts', 100);
+  H('gs3', 'hand', 'Arts', 3, 'mechanic', 'Three with One Stroke', 'Sunder 3 clapperjars with one stroke.', 'god.cuts.best', 3);
+  H('gs4', 'hand', 'Arts', 5, 'mechanic', 'A Clean Sweep', 'Sunder 6 clapperjars with one stroke.', 'god.cuts.best', 6);
+  C('gm1', 'hand', 'Arts', 2, 'count', 'Bricklayer', 'Manifest 10 walls.', 'god.manifest', 10);
+  F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
+  C('gr1', 'hand', 'Raids', 2, 'count', 'Hold the Silo', 'Clear a raid wave.', 'god.wave', 1);
+  H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
+  H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10);
+  H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
+  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the vessel shatter.', 'vessel.shatter', 1, { hidden: true });
+  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the vessel reforged 5 times.', 'vessel.reforge', 5);
+  F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 lachryma.', (L) => L.get('lach.spent'), 500);
+  F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 lachryma.', (L) => L.get('lach.spent'), 10000);
+  C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of lachryma.', 'lach.empty', 1);
+  C('gl4', 'hand', 'Lachryma', 2, 'count', 'Brimming', 'Fill the pool to the top 25 times.', 'lach.full', 25);
+
+  // ---------------------------------------------------------------- CIRCUITS
+  for (const def of game.circuits?.defs?.values() || []) {
+    const id = def.id, P = def.par;
+    C(`c_${id}_1`, 'circuit', 'Laps', 1, 'count', `${def.name}: Complete`, `Finish ${def.name}.`, `circuit.${id}.finish`, 1);
+    C(`c_${id}_2`, 'circuit', 'Laps', 3, 'endure', `${def.name}: Regular`, `Finish ${def.name} 25 times.`, `circuit.${id}.finish`, 25);
+    C(`c_${id}_c`, 'circuit', 'Laps', 2, 'perfect', `${def.name}: Clean`, `Finish ${def.name} without falling.`, `circuit.${id}.clean`, 1);
+    C(`c_${id}_b`, 'circuit', 'Medals', 2, 'speed', `${def.name}: Bronze`, `Finish ${def.name} in ${P.bronze} s or less.`, `circuit.${id}.medal.bronze`, 1, { cur: (L) => L.get(`circuit.${id}.medal.bronze`) + L.get(`circuit.${id}.medal.silver`) + L.get(`circuit.${id}.medal.gold`) });
+    C(`c_${id}_s`, 'circuit', 'Medals', 3, 'speed', `${def.name}: Silver`, `Finish ${def.name} in ${P.silver} s or less.`, `circuit.${id}.medal.silver`, 1, { cur: (L) => L.get(`circuit.${id}.medal.silver`) + L.get(`circuit.${id}.medal.gold`) });
+    C(`c_${id}_g`, 'circuit', 'Medals', 4, 'speed', `${def.name}: Gold`, `Finish ${def.name} in ${P.gold} s or less.`, `circuit.${id}.medal.gold`, 1);
+    S(`c_${id}_p`, 'circuit', 'Medals', 5, `${def.name}: Flawless`, `Finish ${def.name} in ${P.gold} s or less without falling.`, `circuit.${id}.time.clean`, P.gold, { type: 'perfect' });
+  }
+  C('cx1', 'circuit', 'Laps', 3, 'endure', 'Lap Counter', 'Finish 50 circuits.', 'circuit.finish', 50);
+  C('cx2', 'circuit', 'Medals', 5, 'perfect', 'Clean Gold, Thrice', 'Earn a gold medal without falling, three times.', 'circuit.goldclean', 3);
+  C('cx3', 'circuit', 'Laps', 1, 'count', 'On the Course', 'Complete a lap of the basement ring.', 'course.lap', 1);
+  C('cx4', 'circuit', 'Laps', 3, 'endure', 'Regular Lapper', 'Complete 25 laps of the basement ring.', 'course.lap', 25);
+  S('cx5', 'circuit', 'Laps', 4, 'Around the Ring', 'Complete a lap of the ring in under 90 seconds.', 'course.lap.time', 90);
+  H('cx6', 'circuit', 'Laps', 3, 'mechanic', 'Through the Gate', 'Pass a speed gate at 14 m/s.', 'course.gate.speed', 14, { unit: 'm/s' });
+  C('tr1', 'circuit', 'The Trial', 1, 'count', 'Lantern Lighter', 'Finish the lantern trial.', 'trial.finish', 1);
+  C('tr2', 'circuit', 'The Trial', 2, 'speed', 'Trial Bronze', `Finish the trial in ${T.trial.bronze} s or less.`, 'trial.medal.bronze', 1, { cur: (L) => L.get('trial.medal.bronze') + L.get('trial.medal.silver') + L.get('trial.medal.gold') });
+  C('tr3', 'circuit', 'The Trial', 3, 'speed', 'Trial Silver', `Finish the trial in ${T.trial.silver} s or less.`, 'trial.medal.silver', 1, { cur: (L) => L.get('trial.medal.silver') + L.get('trial.medal.gold') });
+  C('tr4', 'circuit', 'The Trial', 4, 'speed', 'Trial Gold', `Finish the trial in ${T.trial.gold} s or less.`, 'trial.medal.gold', 1);
+  C('tr5', 'circuit', 'The Trial', 3, 'mechanic', 'Double Tap', 'Score 10 quick doubles in the trial.', 'trial.quick', 10);
+  S('tr6', 'circuit', 'The Trial', 5, 'Sub-Minute', 'Finish the trial in under 60 seconds.', 'trial.time', 60);
+
+  // ---------------------------------------------------------------- EXPLORATION
+  C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
+  C('ex2', 'explore', 'Charting', 2, 'count', 'Surveyor', 'Send out 25 survey pulses.', 'map.pulse', 25);
+  C('ex3', 'explore', 'Charting', 4, 'endure', 'Cartographer', 'Send out 250 survey pulses.', 'map.pulse', 250);
+  C('ex4', 'explore', 'Charting', 2, 'count', 'Ink on the Map', 'Chart 500 areas.', 'map.cells', 500);
+  C('ex5', 'explore', 'Charting', 4, 'endure', 'The Whole Picture', 'Chart 10,000 areas.', 'map.cells', 10000, { title: 'Cartographer' });
+  C('ex6', 'explore', 'Charting', 2, 'count', 'From Above', 'Survey with the hand.', 'map.pulse.god', 1);
+  F('pl1', 'explore', 'Places', 1, 'collect', 'Getting Around', 'Chart 3 places.', (L) => L.firstCount('room.'), 3);
+  F('pl2', 'explore', 'Places', 3, 'collect', 'Well Mapped', 'Chart 8 places.', (L) => L.firstCount('room.'), 8);
+  F('pl3', 'explore', 'Places', 5, 'collect', 'Every Place', 'Chart every named place.', (L) => L.firstCount('room.'), game.cartography?.anchors?.length || 12);
+  F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
+  F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
+  F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+
+  // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
+  F('lg1', 'collect', 'Logged', 1, 'collect', 'Fresh Ledger', 'Log 10 firsts.', (L) => L.firstCount(), 10);
+  F('lg2', 'collect', 'Logged', 2, 'collect', 'Getting Filled In', 'Log 30 firsts.', (L) => L.firstCount(), 30);
+  F('lg3', 'collect', 'Logged', 3, 'collect', 'Well Read', 'Log 60 firsts.', (L) => L.firstCount(), 60);
+  F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
+  F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
+  F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
+
+  // ---------------------------------------------------------------- GENERAL
+  F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });
+  F('tm2', 'general', 'Time', 2, 'endure', 'Regular', 'Play for 2 hours.', (L) => L.play / 3600, 2, { unit: 'h' });
+  F('tm3', 'general', 'Time', 4, 'endure', 'Devoted', 'Play for 10 hours.', (L) => L.play / 3600, 10, { unit: 'h' });
+  F('tm4', 'general', 'Time', 6, 'endure', 'Lifer', 'Play for 50 hours.', (L) => L.play / 3600, 50, { unit: 'h', title: 'Lifer' });
+  C('ss1', 'general', 'Persistence', 1, 'count', 'Back Again', 'Return for a second session.', 'sessions', 2, { cur: (L) => L.sessions });
+  C('ss2', 'general', 'Persistence', 3, 'endure', 'Creature of Habit', 'Play in 20 sessions.', 'sessions', 20, { cur: (L) => L.sessions });
+  C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'respawn.fall', 10);
+  C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'respawn.fall', 100);
+  F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
+  F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
+  F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
+  return tiers.slice();
+}
+
+export class Achievements {
+  constructor(game) {
+    this.game = game;
+    this.L = game.ledger;
+    this.list = buildAchievements(game);
+    this.by = Object.fromEntries(this.list.map((a) => [a.id, a]));
+    this.seenVersion = -1;
+    this.t = 0;
+    this.rank = this.rankIndex();
+    this.silent = true;
+    this.check(); // (whatever was already done, silently: the log stays quiet on load)
+    this.silent = false;
+  }
+
+  count() { return this.list.filter((a) => this.L.done[a.id]).length; }
+  get points() { return this.list.reduce((n, a) => n + (this.L.done[a.id] ? TIERS[a.tier].pts : 0), 0); }
+  get maxPoints() { return this.list.reduce((n, a) => n + TIERS[a.tier].pts, 0); }
+  rankIndex() { let r = 0; RANKS.forEach(([p], i) => { if (this.points >= p) r = i; }); return r; }
+  get rankName() { return RANKS[this.rankIndex()][1]; }
+  get titles() { return this.list.filter((a) => a.title && this.L.done[a.id]).map((a) => a.title); }
+
+  /** [current, goal, fraction] for one task. */
+  progress(a) {
+    const v = a.cur(this.L, this.game, this);
+    if (a.dir === 'down') return [v, a.goal, Number.isFinite(v) ? Math.min(1, a.goal / v) : 0];
+    return [v, a.goal, Math.max(0, Math.min(1, v / a.goal))];
+  }
+
+  isDone(a) { const [, , f] = this.progress(a); return f >= 1 - 1e-9; }
+
+  tick(dt) {
+    this.t += dt;
+    if (this.t < 0.6) return;
+    this.t = 0;
+    if (this.L.version !== this.seenVersion) this.check();
+  }
+
+  check() {
+    this.seenVersion = this.L.version;
+    let again = true, guard = 0;
+    while (again && guard++ < 4) { // (the achievements-about-achievements can complete in a chain)
+      again = false;
+      for (const a of this.list) {
+        if (this.L.done[a.id] || !this.isDone(a)) continue;
+        this.L.done[a.id] = this.L.play;
+        this.L.touch();
+        again = true;
+        if (!this.silent) this.announce(a);
+      }
+    }
+    if (!this.silent) {
+      const r = this.rankIndex();
+      if (r > this.rank) { this.game.log?.say('ach', `You are now known as a ${RANKS[r][1]}.`); this.rank = r; }
+    } else this.rank = this.rankIndex();
+  }
+
+  announce(a) {
+    const T0 = TIERS[a.tier];
+    this.game.log?.say('ach', `Achievement complete (${T0.name}, ${T0.pts} ${T0.pts === 1 ? 'pt' : 'pts'}): ${a.name}.`);
+    if (a.title) this.game.log?.say('ach', `You have earned the title "${a.title}".`);
+    this.game.events?.emit('achievement', { id: a.id, tier: a.tier, points: T0.pts });
+    sfx.systemUnlock?.();
+  }
+}

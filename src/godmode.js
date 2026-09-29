@@ -42,8 +42,6 @@ const CSS = `
 #god .vessel .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
 #god .vessel .sub { opacity: .75; font-size: 11px; margin-top: 3px; }
 #god .hint { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); opacity: .75; font-size: 11px; letter-spacing: .05em; background: rgba(28,13,8,.4); padding: 4px 10px; border-radius: 3px; white-space: nowrap; }
-#god .banner { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); font-size: 26px; letter-spacing: .3em; color: #ffe0c0; text-shadow: 0 0 18px #ffb27a; opacity: 0; transition: opacity .3s; }
-#god .banner.on { opacity: 1; }
 `;
 
 export class GodMode {
@@ -175,10 +173,9 @@ export class GodMode {
     const el = document.createElement('div');
     el.id = 'god';
     el.innerHTML = `<div class="vessel"><div class="name">PNEUKA VESSEL <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
-      <div class="banner"></div>
       <div class="hint">LMB use the art · hold RMB: the art wheel (or 1-5) · N survey · Q/E turn · wheel zoom · WASD pan · M map · ~ back to the Courier</div>`;
     document.body.appendChild(el);
-    this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub'), banner: el.querySelector('.banner') };
+    this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub') };
   }
 
   // ------------------------------------------------------------------ entering / leaving
@@ -189,10 +186,10 @@ export class GodMode {
 
   toggle() {
     if (this.state === 'off') {
-      if (!this.canEnter()) { this.game.hud.popup(this.game.techs.active?.id === 'surfer' ? 'STOW THE BOARD FIRST (Y)' : 'FIND SOLID GROUND'); return; }
+      if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'surfer' ? 'You cannot take the hand while riding the board.' : 'You need solid ground to take the hand.', { key: 'nogod', throttle: 3 }); return; }
       this.enter();
     } else if (this.state === 'on') {
-      if (!this.vessel.alive) { this.game.hud.popup('THE VESSEL IS REFORGING'); return; }
+      if (!this.vessel.alive) { this.game.log.say('warn', 'The vessel is still being reforged.', { key: 'nogod', throttle: 3 }); return; }
       this.exit();
     }
   }
@@ -431,7 +428,7 @@ export class GodMode {
       if (input.wasPressed('Mouse0') && !this.grab && K.ok && this.hover) {
         const hp = this.hoverPoint();
         if (A.gate(ART_BY_ID.telekinesis, hp)) this.beginGrab(this.hover);
-      } else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.hud.popup('OUT OF REACH');
+      } else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.log.say('warn', 'That is out of reach.', { key: 'reach', throttle: 2 });
       if (this.grab && !input.isDown('Mouse0')) this.releaseGrab(false);
     } else {
       if (this.grab) this.releaseGrab(false);
@@ -548,7 +545,7 @@ export class GodMode {
       // holding costs Lachryma, by weight; empty, the hand lets go
       const mass = t.clapper ? 0.6 : t.body?.isValid() ? t.body.mass() : 0;
       const C = this.arts.cfg('telekinesis');
-      if (!this.arts.drainOk(C.drain + Math.min(60, mass) * C.massDrain, dt)) { g.hud.popup('OUT OF LACHRYMA'); this.releaseGrab(false); return; }
+      if (!this.arts.drainOk(C.drain + Math.min(60, mass) * C.massDrain, dt)) { this.releaseGrab(false); return; }
       if (t.clapper) {
         const c = t.clapper;
         if (!c.alive) this.grab = null;
@@ -735,7 +732,6 @@ export class GodMode {
     sfx.shatter?.(1.4, 3);
     g.fx.impact?.(at, UP, { sparks: 24, dust: 20 });
     this.cam.shake = 1;
-    g.hud.popup('THE VESSEL SHATTERS');
     for (const c of g.clappers.list) if (c.alive && c.raider) { c.raider = false; g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'shot'); }
     g.events?.emit('vessel.shatter', {});
   }
@@ -753,7 +749,6 @@ export class GodMode {
         V.group.scale.setScalar(0.001);
         V.regrow = 0;
         sfx.reforge();
-        g.hud.popup('REFORGED');
         g.events?.emit('vessel.reforge', {});
       }
     } else if (V.regrow !== undefined) {

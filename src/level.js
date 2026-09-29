@@ -373,7 +373,7 @@ export class Level {
         const got = game.shells.refill();
         if (got > 0) {
           r.cool = T.shells.reliquaryCooldown;
-          game.hud.popup(`+${got} SHELLS`);
+          game.events?.emit('shell.refill', { got });
           sfx.absorb(8);
           fx.absorbSparkle(r.icon.position.clone());
         }

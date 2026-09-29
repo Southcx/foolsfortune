@@ -92,6 +92,7 @@ export class Trial {
     this.state = 'countdown';
     this.el.box.style.display = 'block';
     this.showBig('3');
+    g.events?.emit('trial.start', {});
     sfx.lockOn(1);
   }
 
@@ -117,8 +118,8 @@ export class Trial {
     // quick double: two jars within the window shave a second
     if (this.t - this.lastBreak < T.trial.quickWindow) {
       this.bonus += T.trial.quickBonus;
-      g.hud.popup(`QUICK −${T.trial.quickBonus}s`);
-    } else g.hud.popup(`${this.jars.length - this.left}/${this.jars.length} · ${fmt(this.time)}`);
+    }
+    g.events?.emit('trial.jar', { n: this.jars.length - this.left, of: this.jars.length, quick: this.t - this.lastBreak < T.trial.quickWindow, time: this.time });
     this.lastBreak = this.t;
     sfx.lockOn(this.jars.length - this.left);
     if (this.left <= 0) this.finish();
@@ -136,7 +137,8 @@ export class Trial {
       try { localStorage.setItem(STORE, JSON.stringify(time)); } catch { /* storage unavailable */ }
     }
     this.state = 'done';
-    this.showBig(`${fmt(time)}<small>${medal}${pb ? ' · NEW BEST' : ''}<br>G TO RUN IT AGAIN</small>`, 6);
+    this.showBig(fmt(time), 6);
+    this.game.events?.emit('trial.finish', { time, medal, pb, jars: this.jars.length });
     sfx.mended(1);
     this.el.arrow.style.display = 'none';
   }

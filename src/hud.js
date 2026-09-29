@@ -13,9 +13,6 @@ export class Hud {
       lachRes: document.querySelector('#lachryma .res'),
       lachNum: document.querySelector('#lachryma .num'),
       shells: document.getElementById('shells'),
-      mode: document.getElementById('mode'),
-      stats: document.getElementById('stats'),
-      popups: document.getElementById('popups'),
       reload: document.getElementById('reloadbar'),
       reloadFill: document.querySelector('#reloadbar i'),
       charge: document.getElementById('charge'),
@@ -23,9 +20,6 @@ export class Hud {
       chargeArc: document.querySelector('#charge circle.arc'),
     };
     this.hitT = 0;
-    this.chain = 0;
-    this.chainT = 0;
-    this.broken = 0;
     this.peak = 0;
     this.peakT = 0;
   }
@@ -33,14 +27,6 @@ export class Hud {
   hitmarker(kill) {
     this.hitT = kill ? 0.22 : 0.12;
     this.el.hit.classList.toggle('kill', !!kill);
-  }
-
-  onBroken(total, remaining) {
-    this.broken = total;
-    this.chain = this.chainT > 0 ? this.chain + 1 : 1;
-    this.chainT = 0.45;
-    if (this.chain >= 3) this.popup(`×${this.chain} CHAIN`);
-    this.remaining = remaining;
   }
 
   lachrymaPulse(ok) {
@@ -55,15 +41,7 @@ export class Hud {
     this.slots = [...this.el.shells.querySelectorAll('.slot')];
   }
 
-  popup(text) {
-    const d = document.createElement('div');
-    d.className = 'pop';
-    d.textContent = text;
-    this.el.popups.replaceChildren(d);
-    setTimeout(() => d.remove(), 900);
-  }
-
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, shots, hits, total, charge = 0, pool, shells, speed = 0, move = '' }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '' }) {
     // speedometer (with a short peak hold, for tuning movement)
     this.peakT = (this.peakT || 0) - dt;
     if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
@@ -83,7 +61,6 @@ export class Hud {
     this.el.charge.classList.toggle('full', charge >= 1);
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
-    this.chainT -= dt;
 
     if (pool) {
       this.el.lachFill.style.width = `${(pool.available / pool.max) * 100}%`;
@@ -102,8 +79,5 @@ export class Hud {
     }
     this.el.reload.style.opacity = reloadT >= 0 ? 1 : 0;
     this.el.reloadFill.style.width = `${Math.max(0, reloadT) * 100}%`;
-    this.el.mode.textContent = fp ? '1ST PERSON' : '3RD PERSON';
-    const acc = shots ? Math.round((hits / shots) * 100) : 0;
-    this.el.stats.textContent = `SHATTERED ${this.broken}/${total}  ·  ACC ${acc}%`;
   }
 }

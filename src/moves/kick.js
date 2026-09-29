@@ -138,7 +138,6 @@ export class Kick extends Tech {
       P.shake = Math.max(P.shake, 0.3);
       P.fovPunch = Math.max(P.fovPunch || 0, 5);
       g.fx?.shockwave?.(new THREE.Vector3(t.x, t.y, t.z), 1.4);
-      g.hud?.popup('PARRY');
       sfx.parry();
       g.events?.emit('parry', { speed: sp });
       return;

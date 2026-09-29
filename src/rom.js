@@ -82,12 +82,12 @@ export class JointLimits {
 }
 
 // The Courier's rig (and the god hand's): flexion limits in radians. `*` stands for the side letter.
-// Elbow / knee / finger flexion is positive about local +X (measured over the game's own clips);
-// the thumb bends about its own local -Z.
+// Finger flexion is positive about each bone's own hinge (learned from the game's clips: romdata.js; the god hand reads its own
+// off its rest pose); the thumb bends about its own axis. Only fingers are here: see the note below.
 export const RIGIFY = {
-  'forearm*': { hinge: [1, 0, 0], min: -0.02, max: 2.75, cone: 0.9 }, // (the cone is the forearm's own turn)
-  'shin*': { hinge: [0.83, 0.55, -0.08], min: -0.02, max: 2.7, cone: 0.7 },
-  'hand*': { hinge: [1, 0, 0], min: -1.2, max: 1.2, cone: 0.7 },
+  // (No entries for the forearm, shin or hand. They were here, and clamped what IK and the authored clips legitimately do:
+  // the hinge measured for them is not the axis a solved limb bends about, so the clamp bent knees outward on jumps and slides
+  // and broke the ladder. Knees and elbows are held by explicit per-state poles instead: see poles.js.)
   'f_index01*': { hinge: [1, 0, 0], min: -0.35, max: 1.6, cone: 0.45 },
   'f_index02*': { hinge: [1, 0, 0], min: -0.05, max: 2.0, cone: 0.25 },
   'f_index03*': { hinge: [1, 0, 0], min: -0.05, max: 1.55, cone: 0.25 },

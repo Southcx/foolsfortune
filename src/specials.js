@@ -132,7 +132,7 @@ export class Specials {
       from = hit.point.clone();
     }
     if (hits) { g.hud.hitmarker(true); sfx.hitmarker(); }
-    if (hits && bounces >= 2) g.hud.popup(`BANKED ×${bounces}`);
+    if (hits && bounces >= 2) g.events?.emit('shell.bank', { bounces });
     g.clappers?.spook(origin);
   }
 
@@ -169,7 +169,7 @@ export class Specials {
 
   // ---- HOMING: paint -------------------------------------------------------------
   startPaint() {
-    if (this.shells.counts.homing <= 0) { sfx.dryFire(); this.game.hud.popup('NO HOMING SHELLS'); return; }
+    if (this.shells.counts.homing <= 0) { sfx.dryFire(); this.game.log.say('warn', 'You have no homing shells.', { key: 'dry', throttle: 2 }); return; }
     this.painting = true;
     this.progress.clear();
     this.locks = [];

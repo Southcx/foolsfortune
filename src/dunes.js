@@ -146,29 +146,40 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   vec3 nW = normalize(vWN);
   float lee = clamp(-dot(nW.xz, uWind) * 1.6, 0.0, 1.0);          // faces away from the wind: the steep side
   float sunl = clamp(dot(nW, uSun), 0.0, 1.0);
-  vec3 lit = vec3(1.0, 0.80, 0.52), mid = vec3(0.90, 0.60, 0.42), shade = vec3(0.62, 0.34, 0.36);
+  vec3 lit = vec3(1.0, 0.82, 0.57), mid = vec3(0.94, 0.67, 0.49), shade = vec3(0.76, 0.47, 0.43);   // (a narrower range than it was)
   vec3 c = mix(mid, lit, smoothstep(0.35, 0.95, sunl));
-  c = mix(c, shade, lee * 0.75 * (1.0 - smoothstep(0.5, 1.0, sunl)));
-  float g = n21(vWP.xz * 0.045) * 0.5 + n21(vWP.xz * 0.3) * 0.5;   // slow patches of colour
-  c *= 0.9 + 0.2 * g;
-  float tr = trailAt(vWP.xz);                                        // where something has passed: packed, darker, cooler
-  c = mix(c, c * vec3(0.74, 0.62, 0.62), smoothstep(0.0, 0.8, tr) * 0.75);
+  c = mix(c, shade, lee * 0.5 * (1.0 - smoothstep(0.5, 1.0, sunl)));
+  vec2 p = vWP.xz;
+  float dist = length(vViewPosition);
+  float g = n21(p * 0.045) * 0.5 + n21(p * 0.3) * 0.5;               // slow patches of colour
+  c *= 0.95 + 0.1 * g;
+  // extra layers, each a little multiplied in: broad damp patches, mid-scale mottling, and a fine grain that fades with distance
+  float dampP = smoothstep(0.45, 0.72, n21(p * 0.055 + 7.0));
+  c = mix(c, c * vec3(0.93, 0.88, 0.87), dampP * 0.55);
+  float mott = n21(p * 1.7) * 0.6 + n21(p * 0.55 + 3.0) * 0.4;
+  c *= 0.95 + 0.1 * mott;
+  float grain = h21(floor(p * 15.0));
+  c *= 1.0 + (grain - 0.5) * 0.06 * (1.0 - smoothstep(10.0, 38.0, dist));
   diffuseColor.rgb = c;
 }`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
 {
-  // wind ripples, running across the wind
+  // wind ripples, running across the wind: the bands' width and their wander are both modulated, and they are softer
   vec2 wd = uWind; vec2 pd = vec2(-wd.y, wd.x);
-  float along = dot(vWP.xz, wd), across = dot(vWP.xz, pd);
-  float warp = n21(vWP.xz * 0.4) * 2.2 + n21(vWP.xz * 0.11) * 4.0;
-  float ph = along * 2.6 + warp;
-  float rip = cos(ph) * (0.16 + 0.1 * n21(vWP.xz * 0.9));
+  vec2 q = vWP.xz;
+  float along = dot(q, wd), across = dot(q, pd);
+  float warp = n21(q * 0.4) * 2.4 + n21(q * 0.11) * 6.0 + n21(q * 0.03 + 9.0) * 12.0;   // wander: a slow, large meander on top of the small one
+  float width = (n21(q * 0.05 + 21.0) - 0.5) * 1.5;                                        // thickness: a bias that fattens some bands and thins others
+  float ph = along * 2.2 + warp + 0.7 * sin(across * 0.09 + n21(q * 0.2) * 4.0);
+  float rip = clamp(cos(ph) + width, -1.0, 1.0) * (0.10 + 0.06 * n21(q * 0.9));
+  // a second, fainter set across the first, only in patches
+  float rip2 = cos(across * 3.6 + n21(q * 0.7) * 3.0) * 0.045 * smoothstep(0.42, 0.75, n21(q * 0.09 + 13.0));
   float tr2 = trailAt(vWP.xz);
   rip *= 1.0 - 0.85 * smoothstep(0.0, 0.5, tr2);                      // the ripples are smoothed out along a path
-  vec3 gw = vec3(wd.x, 0.0, wd.y) * rip;
+  vec3 gw = vec3(wd.x, 0.0, wd.y) * rip + vec3(pd.x, 0.0, pd.y) * rip2;
   vec2 tg = trailGrad(vWP.xz);                                        // and its edges catch the light
   gw += vec3(-tg.x, 0.0, -tg.y) * 1.3;
-  normal = normalize(normal + normalize((viewMatrix * vec4(gw, 0.0)).xyz) * 0.55);
+  normal = normalize(normal + (viewMatrix * vec4(gw, 0.0)).xyz);
 }`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 {

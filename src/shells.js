@@ -114,8 +114,9 @@ export class Shells {
   /** Fire the selected shell. Returns false if the tube is empty. */
   fire(ctx) {
     const t = this.type;
-    if (this.counts[t.id] <= 0) { sfx.dryFire(); this.game.hud.popup(`NO ${t.name} SHELLS`); return false; }
+    if (this.counts[t.id] <= 0) { sfx.dryFire(); this.game.log.say('warn', `You have no ${t.name.toLowerCase()} shells.`, { key: 'dry', throttle: 2 }); this.game.events?.emit('shell.dry', { id: t.id }); return false; }
     this.counts[t.id]--;
+    this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });
     const { camera, player, character, weapon } = ctx;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const ray = weapon.shotRay(camera, player, character, fwd);
@@ -167,7 +168,7 @@ export class Shells {
     });
     g.fx.slash(muzzle, end, blade);
     sfx.slice();
-    if (cuts) { g.hud.hitmarker(true); if (cuts >= 3) g.hud.popup(`×${cuts} SLICED`); }
+    if (cuts) { g.hud.hitmarker(true); g.events?.emit('shell.slice', { cuts }); }
     g.clappers?.spook(end);
   }
 
@@ -433,7 +434,7 @@ export class Shells {
     for (const c of g.clappers.list) {
       if (c.alive && (hit?.entity === c || c.pos.distanceTo(end) < M.radius + 0.4)) { g.clappers.stun(c, M.stun, this.glowOutline, this.xray); n++; }
     }
-    if (n) { g.hud.popup(`MARKED ×${n}`); g.hud.hitmarker(false); }
+    if (n) { g.events?.emit('shell.mark', { n }); g.hud.hitmarker(false); }
   }
 
   markEnt(ent) {

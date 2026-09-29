@@ -18,7 +18,7 @@ import { V3, lerp, smooth } from './authoring.js';
 //   surfHoist   hauling the sail up hand over hand (played by how far it is up)
 //   surfBrake   sail let out, weight back on the rear foot, hauling the sheet in to stop
 //   surfCrouch  the springs charging for a hop, and the landing
-//   surfAir     knees tucked for the air
+//   surfAir     the air: feet stay on the deck, knees bent
 // ---------------------------------------------------------------------------------------
 export function authorSurf(A, ch) {
   const ah = ch.ankleRest;
@@ -81,11 +81,13 @@ export function authorSurf(A, ch) {
     },
   });
 
+  // in the air the feet stay on the deck (the board goes where they go, as in an ollie): knees bent, a little more on the
+  // way up, weight easing back; the rest of the trick is the skiff's own turning
   A.clip('surfAir', {
     dur: 1.2, loop: true, base: 'idle',
     build(u) {
       const b = Math.sin(u * Math.PI * 2);
-      pose.call(this, { crouch: 0.02, lean: 8, twist: 20, look: 55, wide: 0.34, liftL: 0.3 + b * 0.015, liftR: 0.24 - b * 0.015, hl: V3(0.1, 1.16, 0.5), hr: V3(-0.14, 0.94, 0.44) });
+      pose.call(this, { crouch: 0.2 + b * 0.012, lean: 10, twist: 20, look: 55, wide: 0.4, hl: V3(0.1, 1.14, 0.5), hr: V3(-0.14, 0.92, 0.44) });
     },
   });
 }

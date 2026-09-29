@@ -22,6 +22,10 @@ credits: UAL Standard, CMU mocap, CC0).
   textures, no fast twinkle). Motion in the world should come from things actually moving.
 - The core movement is the gold standard: techs and arts never change it, and switching one off restores it exactly.
 
+## Feedback
+- **The log (`src/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating counters or kill-feed in the world or on the HUD; if something deserves a sentence, `tracking.js` writes it (plain third person, FFXI-style, a colour class per kind), and everything else is counted in the ledger (`src/stats.js`) for the achievements. A new feature emits an event (`game.events.emit`) and gets a rule in `tracking.js`; it does not call the log to celebrate. (A refusal at the point of use, "You have no bomb shells.", may `log.say` directly, with a `throttle`.) Event payloads must not use `name` or `t` (the bus's own).
+- Achievements are predicates over the ledger, never flags set by hooks (so they are retroactive); follow OSRS's tiers/types and FFXIV's categories (see the header of `src/achievements.js`).
+
 ## Scope
 - Raids belong to one room (THE SIEGE, `src/siege.js` and `src/raids.js`), not a global setting.
 - The Zone of Influence is, for now, simply the ground the player has explored. No "understanding" prompts.

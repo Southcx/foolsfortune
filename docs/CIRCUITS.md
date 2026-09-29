@@ -105,7 +105,7 @@ A 30 m drum tower (new construction; it wants a free 30 x 30 m footprint in the 
 - **Skill checks.** Speed at the top of the wallrun (min 8 m/s or the wall jump falls short: the gap is 85% of the
   8 m/s jump); latch budget; slam-slide keeping speed (gate at 12 m/s at the bottom of the chute).
 - **New pieces.** A curved wallrun surface (three facets: reuses `wallrun` unchanged if facets are 30°), a long
-  slope chute (exists in room 7 and 8, lengthen), a speed-gate reader on the finish (exists: `GATE` popup).
+  slope chute (exists in room 7 and 8, lengthen), a speed-gate reader on the finish (exists: the `Speed gate` log line).
 - **Reset design.** The tower is over one big reset floor with checkpoints at the top and bottom only, so a fall costs
   the run, but a fall from the descent is a short walk.
 - **Par.** Ascent 22 s gold / 28 s silver / 36 s bronze; descent 9 / 12 / 16 s; lap 32 / 42 / 55 s.
@@ -191,7 +191,7 @@ Gate    { at: [x, y, z], radius | zone: [x0,x1,z0,z1], order, route?: 'low' | 'h
 - **Data-driven**, in a `src/circuits.js` list, like `CHECKPOINTS`, instead of hand-written per room.
 - **Splits, medals, clean-run**: each gate records time and speed; a reset ends the "clean" flag; the finish scores a
   medal from `par`. (`Course.touch` is the model; it currently hard-codes the ring.)
-- **Speed-gated gates**: a gate with `minSpeed` shows the speed like the hub's gate popups; missing it does not fail
+- **Speed-gated gates**: a gate with `minSpeed` logs the speed like the hub's gate lines; missing it does not fail
   the run, it costs a second (a soft penalty, so the run continues).
 - **The ribbon**: the best run's path, stored as a sampled polyline (one point per 0.25 s; a few KB), drawn as a glow
   ribbon, or written into the trail map on the dunes. The cheap, useful ghost.

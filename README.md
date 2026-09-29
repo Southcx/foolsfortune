@@ -392,6 +392,28 @@ to the goals of whatever's still to learn, unlocks and saves; a tech asks
 `system.allows(id)` before it may start (`Tech.usable()`). New moves ship with an unlock rule, a
 variant and a lab station.
 
+## The log, the ledger and the achievements
+
+**The game has one place for text feedback: the log**, in the lower left, after Final Fantasy XI's chat window: a dark blue
+translucent window with a pale bevelled frame, white outlined text, and a colour for every kind of message (combat lines
+white, hurts soft red, gains yellow, moves cyan, surfing sea green, arts blue, the hand violet, circuits amber, records
+ice blue, achievements gold), so the colour says what happened before the words are read. Tabs after FFXIV's chat window (ALL, BATTLE,
+MOVE, EVENT, SYSTEM) each carry a filter and an unread mark; timestamps; repeats fold into one line ("You shatter 4 jars.");
+**PgUp / PgDn** scroll, **End** jumps to the newest, **[** and **]** change tab; the window settles to half strength when quiet. There
+are no pop-ups, toasts, banners or counters on the screen: what used to announce itself ("Chain!", "Clapped!") is counted quietly and,
+where it deserves a sentence, written in the plain voice of a combat log ("The clapperjar is cleaved in two.").
+
+Behind it is **the ledger** (`stats.js`), which counts everything: counters that only go up (time and distance by movement state, every
+move, every kind of pot and cause of death, shells and lachryma by kind and use, the hand, surfing, maps, circuits), personal bests with
+where and when (Old School RuneScape's hiscores rank a score and then the time it took), and *firsts* (its collection log: a slot by thing,
+not by source). `tracking.js` is the only place that turns events into counts and lines. It saves to the browser as it goes.
+
+**Achievements** (`achievements.js`, on the LEDGER shelf of the Codex, **B**) are predicates over the ledger, so they are retroactive: one added later
+completes at once for whoever has already done it. From OSRS: six tiers worth 1 to 6 points (Easy to Grandmaster), a type on every task
+(count, speed, perfection, mechanic, stamina, collection), a running points total that buys a standing (Sweeper to Fool's Fortune). From FFXIV:
+categories with sub-groups, a number behind every entry (so it reads 37/100 before it is done), hidden entries as ???, titles for some, and
+nothing missable. The RECORDS shelf is the hiscores page: lifetime totals, personal bests, and where the time went.
+
 ## What's in the room
 
 - **Ground floor**: shelves, workbenches, pottery wheels, slip barrels, a drying rack, a
@@ -473,12 +495,14 @@ runtime IK correction on the contact points.
 | `src/skiff.js`, `src/wake.js`, `src/surfclips.js` | the Surfer's boat (hull, sail, arrow), its Wind Waker wake, and the rider's authored clips |
 | `src/circuits.js`, `src/circuitrooms.js` | the lap-circuit runner (gates, splits, medals) and the halls of The Braid and The Spindle |
 | `src/trailmap.js`, `src/marks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
-| `src/rom.js`, `src/romdata.js` | range-of-motion limits applied after every pose (fingers, elbows, knees, wrists) |
+| `src/rom.js`, `src/romdata.js` | range-of-motion limits applied after every pose (the fingers; elbows and knees are held by per-state poles, `src/poles.js`, and a knee guard) |
 | `src/siege.js`, `src/raids.js` | the Siege room and the raids that only happen there |
 | `src/godmode.js`, `src/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
 | `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
 | `src/events.js` | the event bus everything reports to |
-| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (toasts, the Codex) |
+| `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
+| `src/poles.js` | knee pole targets per animation state (gait, crouch, air, slide) |
+| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (the Codex), `ledgerui.js` (its LEDGER and RECORDS shelves) |
 | `tools/stress.mjs`, `tools/stress.page.js` | the stress test (random-input fuzzing with invariants) |
 | `tools/learn_rom.mjs` | learns finger joint limits from the game's own clips into `src/romdata.js` |
 | `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage, `rigging.js` bars, poles, grates, beams) |

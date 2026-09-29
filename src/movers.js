@@ -548,7 +548,6 @@ export class Movers {
     sfx.lockOn(6);
     sfx.hitmarker();
     this.game.hud?.hitmarker(true);
-    this.game.hud?.popup(ev.drop > 5 ? `TARGET · ${ev.drop.toFixed(0)} m${ev.moving ? ' · MOVING' : ''}` : 'TARGET');
     return true;
   }
 

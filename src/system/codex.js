@@ -1,8 +1,8 @@
 import { ABILITIES, GOD_ARTS, BY_ID } from './skills.js';
-import { sfx } from '../audio.js';
+import { renderLedger, renderRecords } from './ledgerui.js';
 
 // ---------------------------------------------------------------------------
-// The System's face: the [SYSTEM] toasts and the Codex (B). The Codex sorts what you can
+// The System's face: the Codex (B). What is learned is announced in the log (tracking.js), not here. The Codex sorts what you can
 // learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
 // of the ones you don't (a hint, and a bar that only fills as you get closer), and which
 // variant is selected. Lab mode lends you everything. The Codex pauses the game while it's
@@ -10,12 +10,6 @@ import { sfx } from '../audio.js';
 // ---------------------------------------------------------------------------
 
 const CSS = `
-#sys-toasts { position: absolute; left: 50%; top: 84px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.sys-toast { font-size: 15px; letter-spacing: .1em; padding: 10px 18px 10px 14px; background: rgba(28,13,8,.86); border: 1px solid var(--accent); border-left-width: 5px;
-  text-shadow: 0 1px 0 #1c0d08; box-shadow: 0 0 22px rgba(255,178,122,.35); animation: systoast 5.2s ease-out forwards; max-width: 520px; text-align: left; }
-.sys-toast b { color: #fff1dc; font-weight: normal; } .sys-toast .k { color: var(--accent); margin-right: 8px; }
-.sys-toast small { display: block; font-size: 11px; letter-spacing: .06em; opacity: .75; margin-top: 3px; }
-@keyframes systoast { 0% { transform: translateY(-14px) scale(.96); opacity: 0; } 6% { transform: none; opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
 #codex { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.78); cursor: default; user-select: none; }
 #codex.open { display: flex; }
 #codex .cx { width: min(980px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow: auto; box-sizing: border-box; background: #2a140d; border: 1px solid rgba(255,178,122,.5);
@@ -75,29 +69,12 @@ export class Codex {
     const st = document.createElement('style');
     st.textContent = CSS;
     document.head.appendChild(st);
-    this.toasts = el('div');
-    this.toasts.id = 'sys-toasts';
-    document.getElementById('hud').appendChild(this.toasts);
     this.root = el('div');
     this.root.id = 'codex';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); });
     document.body.appendChild(this.root);
     this.sys.listeners.add(() => { if (this.open) this.render(); });
-    game.events?.on('system.unlock', (e) => {
-      if (this.sys.lab) return; // (Lab mode has everything: nothing to announce)
-      const a = BY_ID[e.ability];
-      this.toast(e.variant ? 'VARIANT LEARNED' : a.realm === 'god' ? 'GOD ART LEARNED' : 'MOVEMENT ART LEARNED', e.title.toUpperCase(),
-        e.variant ? `${a.name} · press B to choose it` : `${a.blurb.split('.')[0]}. (B: the Codex)`);
-      sfx.systemUnlock?.();
-    });
-  }
-
-  toast(kind, title, sub) {
-    const t = el('div', 'sys-toast', `<span class="k">[SYSTEM]</span>${kind} · <b>${title}</b>${sub ? `<small>${sub}</small>` : ''}`);
-    this.toasts.appendChild(t);
-    setTimeout(() => t.remove(), 5300);
-    while (this.toasts.children.length > 3) this.toasts.firstChild.remove();
   }
 
   toggle() { this.open ? this.close() : this.show(); }
@@ -134,12 +111,20 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS']]) {
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['ledger', 'LEDGER'], ['records', 'RECORDS']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
-      t.onclick = () => { this.shelf = id; this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
+      t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
+    if (this.shelf === 'ledger' || this.shelf === 'records') {
+      (this.shelf === 'ledger' ? renderLedger : renderRecords)(this, cx);
+      this.rows = {}; this.cardHost = null;
+      const foot = el('footer');
+      foot.appendChild(el('span', 'msg', 'counted quietly as you play · the log (lower left) says the rest'));
+      cx.appendChild(foot);
+      return;
+    }
     const body = el('div', 'body');
     const list = el('div', 'list');
     this.rows = {};

@@ -565,7 +565,7 @@ export class Course {
     if (this.cps[i].tech) {
       // a tech station: somewhere to come back to, no splits
       this.current = i; this.t = 0; this.running = true; this.lapT = null; this.lapRooms.clear();
-      this.game.hud.popup(`${this.cps[i].room} · ${this.cps[i].name.toUpperCase()}`);
+      this.game.events?.emit('course.station', { room: this.cps[i].room, title: this.cps[i].name });
       sfx.lockOn(2);
       return;
     }
@@ -577,7 +577,7 @@ export class Course {
       const key = `room${this.cps[prev].room}`, t = this.t;
       const pb = !(this.best[key] <= t);
       if (pb) this.best[key] = t;
-      g.hud.popup(`${this.cps[prev].room} · ${t.toFixed(2)}s${pb ? ' · BEST' : ` · best ${this.best[key].toFixed(2)}`}`);
+      g.events?.emit('course.split', { room: this.cps[prev].room, time: t, pb, best: this.best[key] });
       this.lapRooms.add(prev);
     } else this.lapRooms.clear();
     if (i === 0) {
@@ -586,7 +586,7 @@ export class Course {
         const lap = this.lapT;
         const pb = !(this.best.lap <= lap);
         if (pb) this.best.lap = lap;
-        g.hud.popup(`LAP ${lap.toFixed(2)}s${pb ? ' · BEST' : ''}`);
+        g.events?.emit('course.lap', { time: lap, pb });
       }
       this.lapT = 0;
       this.lapRooms.clear();
@@ -602,8 +602,6 @@ export class Course {
     const g = this.game, p = g.player, inp = g.input;
     const here = this.inBasement();
     if (this.el) this.el.style.display = here ? 'block' : 'none';
-    const stats = document.getElementById('stats');
-    if (stats) stats.style.visibility = here ? 'hidden' : 'visible'; // the shatter count means nothing down here
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
     if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
     if (inp.wasPressed('KeyH')) { this.toHub(); return; }
@@ -622,7 +620,7 @@ export class Course {
     for (const [[x0, x1, z0, z1], cpi, below = BASE_Y + 0.4] of this.pits) {
       if (feet.y < below && feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) {
         this.goTo(cpi, 'fizzle');
-        g.hud.popup('RESET');
+        g.events?.emit('course.reset', {});
         return;
       }
     }
@@ -636,7 +634,7 @@ export class Course {
       const side = gt.axis === 'x' ? feet.z : feet.x;
       const hy = feet.y - BASE_Y;
       if ((a - gt.at) * (b - gt.at) < 0 && side > gt.a0 && side < gt.a1 && hy > gt.y[0] - 0.5 && hy < gt.y[1]) {
-        g.hud.popup(`GATE ${Math.hypot(p.vel.x, p.vel.z).toFixed(1)} m/s`);
+        g.events?.emit('course.gate', { speed: Math.hypot(p.vel.x, p.vel.z) });
       }
     }
     this.prev.copy(feet);

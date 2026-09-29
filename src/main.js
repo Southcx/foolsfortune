@@ -55,6 +55,10 @@ import { Events } from './events.js';
 import { Movers } from './movers.js';
 import { System } from './system/system.js';
 import { Codex } from './system/codex.js';
+import { GameLog } from './gamelog.js';
+import { Stats } from './stats.js';
+import { Tracking } from './tracking.js';
+import { Achievements } from './achievements.js';
 
 const FIXED = 1 / 60;
 
@@ -99,18 +103,18 @@ async function main() {
   const events = new Events();
   const game = {
     scene, physics, fx, hud, camera, renderer, stats, events,
+    ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause) {
       events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
-      if (ent.def.target) { hud.onBroken(stats.broken, 0); return; }
+      if (ent.def.target) return;
       stats.broken++;
-      hud.onBroken(stats.broken);
-      if (stats.broken === stats.total) hud.popup('WORKSHOP CLEARED · T TO RESET');
+      if (stats.broken === stats.total) events.emit('room.cleared', { total: stats.total });
     },
-    onClapper(c, text = 'CLAPPED') {
+    onClapper(c, cause = 'shot') {
       stats.clappers = (stats.clappers || 0) + 1;
-      hud.popup(stats.clappers % 5 === 0 ? `${stats.clappers} CLAPPERS` : text);
+      events.emit('clapper.down', { cause, ally: !!c.ally, raider: !!c.raider });
     },
     onRepaired() {
       stats.total++;
@@ -131,6 +135,7 @@ async function main() {
     },
   };
 
+  game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   const breakables = new Breakables(scene, physics, fx, game);
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   const level = new Level(scene, physics, breakables);
@@ -145,7 +150,6 @@ async function main() {
     level.spawnDynamic();
     stats.broken = 0;
     stats.total = [...breakables.items].filter((e) => !e.def.target).length;
-    hud.broken = 0;
   };
   spawnRoom();
   game.breakables = breakables;
@@ -221,6 +225,7 @@ async function main() {
     game.shells?.clear();
     if (game.shells) for (const k of Object.keys(game.shells.counts)) game.shells.counts[k] = T.shells.start;
     game.lachryma?.reset();
+    events.emit('room.reset', {});
   };
 
   const gui = buildTuningPanel((group, key) => {
@@ -236,7 +241,7 @@ async function main() {
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
-    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => hud.popup('SETTINGS COPIED')),
+    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.')),
     resetRoom,
   });
   setOutlineThickness(T.visual.outline);
@@ -262,6 +267,10 @@ async function main() {
     carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
     carto.restoreAnchors();
   }
+  // what is counted and what is said about it, then the achievements over the counts
+  game.tracking = new Tracking(game);
+  game.achievements = new Achievements(game);
+  game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -422,6 +431,10 @@ async function main() {
     movers.render(acc / FIXED);
     movers.tick(dt);
     system.tick(dt);
+    game.ledger.tick(dt);
+    game.tracking.update(dt);
+    game.achievements.tick(dt);
+    game.log.tick(dt);
     game.cartography.update(dt);
 
     if (!godOn) techs.tick(dt);
@@ -513,7 +526,7 @@ async function main() {
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      shots: weapon.shots, hits: weapon.hits, total: stats.total, charge: weapon.charge,
+      charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
         + blinkPips(),
@@ -524,7 +537,7 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, manual: false };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false };
   window.__ready = true;
 }
 

@@ -264,7 +264,7 @@ export class Weapon {
           if (!this.chargeSound) this.chargeSound = sfx.chargeLoop();
           const was = this.charge;
           this.charge = Math.min(1, this.charge + dt / C.time);
-          if (was < 1 && this.charge >= 1) this.game.hud.popup('CHARGED');
+          if (was < 1 && this.charge >= 1) this.game.events?.emit('weapon.charged', {});
         } else if (this.charge === 0 && this.holdT - dt <= startAt) { sfx.fizzle(); this.game.hud.lachrymaPulse(false); }
       }
     } else if (this.holding) {

@@ -115,7 +115,6 @@ export class Slam extends Tech {
     P.landed = Math.max(P.landed, 14); // the heavy landing pose
     const hitT = g.movers?.hitTargetsNear(P.pos, 0.6, { cause: 'slam', drop });
     g.events?.emit('slam.impact', { height: drop, target: !!hitT, power });
-    if (!hitT) g.hud?.popup(drop > 6 ? `SLAM · ${drop.toFixed(1)} m` : 'SLAM');
   }
 
   ring(at, R) {

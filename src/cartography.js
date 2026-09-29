@@ -211,7 +211,7 @@ export class Cartography {
     const g = this.game, P = g.player, Z = T.zoi;
     if (this.pulseCool > 0) return false;
     const l = this.layerOf(P.pos.y);
-    if (!g.lachryma.spend(Z.pulseCost, 'survey')) { g.hud.popup('NOT ENOUGH LACHRYMA'); return false; }
+    if (!g.lachryma.spend(Z.pulseCost, 'survey')) return false;
     this.pulseCool = Z.pulseCooldown;
     const R = l.id === 'dunes' ? Z.pulseRadius * 3.2 : byGod ? Z.godPulseRadius : Z.pulseRadius;
     const origin = new THREE.Vector3(P.pos.x, P.pos.y + (byGod ? 1.0 : 1.3), P.pos.z);
@@ -249,7 +249,7 @@ export class Cartography {
       if (u >= 1 && s.i >= s.list.length) {
         this.pulses.splice(p, 1);
         this.ring.visible = this.pulses.length > 0;
-        if (s.gained > 0) g.hud.popup(`SURVEYED · ${s.gained} NEW`);
+        g.events?.emit('map.surveyed', { gained: s.gained, layer: s.l.id });
         this.checkRooms();
       }
     }
@@ -270,8 +270,7 @@ export class Cartography {
       a.cov = Math.min(1, known / Z.roomCells);
       if (a.cov >= 1) {
         a.done = true;
-        this.game.hud.popup(`${a.name} MAPPED`);
-        this.game.events?.emit('map.room', { id: a.tag, name: a.name });
+        this.game.events?.emit('map.room', { id: a.tag, place: a.name });
         this.dirty = true;
       }
     }

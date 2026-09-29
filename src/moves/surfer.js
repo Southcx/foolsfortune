@@ -131,7 +131,7 @@ export class Surfer extends Tech {
     let pump = 0;
     if (this.L < 0.4) this.pumpReady = true;
     if (this.L >= 0.999 && wasL < 0.999) {
-      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; g.hud.popup('PUMP'); sfx.hoist?.(); g.events?.emit('surf.pump', {}); }
+      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; sfx.hoist?.(); g.events?.emit('surf.pump', {}); }
       this.pumpFresh = false;
     }
     if (this.L < 0.5) this.pumpFresh = true;
@@ -240,10 +240,9 @@ export class Surfer extends Tech {
     if (Math.abs(near) >= 1 && off < 0.9) {
       const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
       this.v.addScaledVector(f, 3 + 2 * Math.abs(near));
-      g.hud.popup(Math.abs(near) >= 2 ? 'DOUBLE SPIN' : 'SPIN');
       g.events?.emit('surf.trick', { turns: Math.abs(near) });
       sfx.parry?.();
-    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.hud.popup('WOBBLE'); }
+    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.events?.emit('surf.wobble', { spin: Math.abs(this.spin) }); }
     this.spinRest = this.spin - near * TAU;
     this.spin = 0;
   }

@@ -117,7 +117,7 @@ export class Circuits {
     g.course.teleport(new THREE.Vector3(s.at[0] + (def.origin?.[0] || 0), B + s.at[1], s.at[2] + (def.origin?.[1] || 0)), s.yaw);
     g.course.running = false; g.course.current = -1; g.course.lapT = null;
     this.arm(def);
-    g.hud.popup(def.name);
+    g.events?.emit('circuit.enter', { id: def.id, title: def.name });
   }
 
   arm(def) {
@@ -169,7 +169,7 @@ export class Circuits {
       r.splits.push({ label: gate.label, t: r.t, v: speed, pen });
       const bestSp = this.best[def.id]?.splits?.[r.splits.length - 1];
       const delta = bestSp ? r.t + r.penalty - bestSp.t : null;
-      g.hud.popup(`${gate.label} · ${(r.t + r.penalty).toFixed(2)}s${delta !== null ? ` · ${delta >= 0 ? '+' : '−'}${Math.abs(delta).toFixed(2)}` : ''}${pen ? ' · TOO SLOW +1s' : ''}`);
+      g.events?.emit('circuit.gate', { id: def.id, label: gate.label, time: r.t + r.penalty, delta, slow: !!pen, speed });
       sfx.lockOn?.(2);
     }
     if (gate.route) r.routes.push(gate.route);
@@ -186,7 +186,7 @@ export class Circuits {
     const r = this.run, g = this.game;
     r.clean = false;
     r.penalty += 3;
-    g.hud.popup('FELL · +3s');
+    g.events?.emit('circuit.fall', { id: r.def.id });
     sfx.fizzle?.();
     g.course.teleport(r.respawn.v.clone(), r.respawn.yaw);
   }
@@ -205,8 +205,7 @@ export class Circuits {
       try { localStorage.setItem(STORE, JSON.stringify(this.best)); } catch { /* storage unavailable */ }
     } else if (r.clean && !prev.clean) { prev.clean = true; }
     this.showBeacons(null);
-    g.hud.popup(`${def.name} · ${total.toFixed(2)}s · ${r.medal}${r.clean ? ' · CLEAN' : ''}${r.pb ? ' · BEST' : ''}`);
-    g.events?.emit('circuit.finish', { id: def.id, time: total, medal: r.medal, clean: r.clean });
+    g.events?.emit('circuit.finish', { id: def.id, title: def.name, time: total, medal: r.medal, clean: r.clean, pb: r.pb, gates: r.splits.length, routes: r.routes.length });
     sfx.lockOn?.(3);
   }
 

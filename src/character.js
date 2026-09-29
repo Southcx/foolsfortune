@@ -1,4 +1,5 @@
 import { courierLimits } from './rom.js';
+import { kneeProfile } from './poles.js';
 import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
@@ -12,6 +13,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
 const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3();
+const _v5 = new THREE.Vector3(), _v6 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4();
 
@@ -656,6 +658,7 @@ export class Character {
 
     // ---- feet: stride warping and ground contact ----
     const planted = (1 - air) * (1 - mn) * (1 - da) * (1 - aw) * (1 - sl); // (a slide lies along the slope instead)
+    st.pole = kneeProfile({ air, sl, cr });
     if (!unit) this.footIK(dt, s, planted, (st.stride - 1) * gaitW, speed, gaitW); // (on a skiff the feet are where the clip puts them)
 
     s.techs?.afterPose(this, s);
@@ -721,13 +724,44 @@ export class Character {
     drop += st.reachDrop;
     if (drop > 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
     const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
+    const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion), rootUp = _v6.set(0, 1, 0).applyQuaternion(root.quaternion);
     for (const k of ['L', 'R']) {
       const leg = this.leg[k];
       const target = tgt[k];
       if (target.distanceToSquared(leg.foot.getWorldPosition(_v1)) < 1e-6) continue;
-      const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(fwd, 0.1);
+      // the knee bends toward the state's own pole (poles.js): forward, and never flared out
+      const PF = st.pole || { fwd: 0.1, out: 0, up: 0 };
+      const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(fwd, PF.fwd).addScaledVector(left, PF.out * (k === 'L' ? 1 : -1)).addScaledVector(rootUp, PF.up);
       const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
       this.solveLeg(leg, target, pole);
+      this.setWorldQuat(leg.foot, fq);
+      leg.foot.updateMatrixWorld(true);
+    }
+  }
+
+  /**
+   * The last look at the knees: a knee that has ended up further to the outside of the hip-to-foot line than the state allows
+   * (poles.js) is bent back in by re-solving the leg with its pole pulled across. Rig-independent: it measures where the knee
+   * is. `k` is how much of the pose is the body's own (0 when a tech has taken the body over: a ladder, a hang, the skiff).
+   */
+  guardKnees(k) {
+    const PF = this.st.pole;
+    if (!PF || k < 0.05) return;
+    const root = this.root;
+    const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion);
+    for (const side of ['L', 'R']) {
+      const leg = this.leg[side];
+      root.updateMatrixWorld(true);
+      const hip = leg.thigh.getWorldPosition(_v1), knee = leg.shin.getWorldPosition(_v2), foot = leg.foot.getWorldPosition(_v3);
+      const ab = _v4.subVectors(foot, hip), t = THREE.MathUtils.clamp(_v6.subVectors(knee, hip).dot(ab) / Math.max(1e-6, ab.lengthSq()), 0, 1);
+      const dev = _v6.copy(knee).sub(hip).addScaledVector(ab, -t); // (from the line to the knee)
+      const out = dev.dot(left) * (side === 'L' ? 1 : -1);
+      const over = out - PF.maxOut;
+      if (over <= 0.005) continue;
+      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+      const pole = knee.clone().addScaledVector(left, -(side === 'L' ? 1 : -1) * over * 1.6 * k);
+      const tgt = foot.clone();
+      this.solveLeg(leg, tgt, pole);
       this.setWorldQuat(leg.foot, fq);
       leg.foot.updateMatrixWorld(true);
     }
@@ -973,7 +1007,8 @@ export class Character {
     }
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
     o.techs?.hands(this, o);
-    this.limits.apply();
+    if ((o.techs?.override || 0) < 0.5) this.limits.apply(); // (a tech that owns the body, a ladder, a pole, has posed the hands to its own handholds)
+    if (!o.techs?.unitFrame?.()) this.guardKnees(1 - Math.min(1, o.techs?.override || 0));
     root.updateMatrixWorld(true);
   }
 

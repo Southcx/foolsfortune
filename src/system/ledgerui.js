@@ -1,0 +1,200 @@
+// ---------------------------------------------------------------------------------------
+// The Codex's two record shelves: LEDGER (the achievements) and RECORDS (everything counted). Drawn on demand
+// from the numbers in stats.js, never kept in step by hand.
+//
+// LEDGER follows the Achievements window of Final Fantasy XIV (categories down the side, a sub-group heading, points
+// and a bar on every entry, hidden entries as ???) with Old School RuneScape's Combat Achievements vocabulary: a tier
+// (Easy to Grandmaster) with its points, and a type (Count, Speed, Perfection, Mechanic, Stamina). RECORDS is a
+// Hiscores page: lifetime totals, then personal bests with where and when, then where the time went.
+// ---------------------------------------------------------------------------------------
+import { CATS, TIERS, TYPES, RANKS } from '../achievements.js';
+
+const CSS = `
+#codex .lg-head { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; margin-bottom: 10px; font-size: 12px; letter-spacing: .08em; }
+#codex .lg-head b { font-weight: normal; color: #fff1dc; font-size: 20px; letter-spacing: .04em; }
+#codex .lg-head small { display: block; opacity: .6; font-size: 10px; letter-spacing: .14em; }
+#codex .lg-body { display: grid; grid-template-columns: 190px 1fr; gap: 16px; }
+@media (max-width: 720px) { #codex .lg-body { grid-template-columns: 1fr; } }
+#codex .lg-cats { display: flex; flex-direction: column; gap: 4px; }
+#codex .lg-cat { padding: 7px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; font-size: 12px; letter-spacing: .1em; background: rgba(28,13,8,.35); }
+#codex .lg-cat.on { border-color: var(--accent); background: rgba(196,106,69,.3); }
+#codex .lg-cat span { float: right; opacity: .65; font-size: 11px; }
+#codex .lg-filter { display: flex; gap: 8px; margin: 8px 0 0; font-size: 11px; letter-spacing: .1em; }
+#codex .lg-filter i { font-style: normal; cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.3); border-radius: 3px; opacity: .6; }
+#codex .lg-filter i.on { opacity: 1; border-color: var(--accent); }
+#codex .lg-sub { font-size: 11px; letter-spacing: .24em; color: var(--accent); margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,178,122,.2); }
+#codex .lg-sub:first-child { margin-top: 0; }
+#codex .ach { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 6px 8px; margin-bottom: 4px; border: 1px solid rgba(255,178,122,.18); border-radius: 3px; background: rgba(28,13,8,.3); }
+#codex .ach.done { border-color: rgba(255,212,94,.5); background: rgba(196,106,69,.16); }
+#codex .ach .pt { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #1c0d08; background: #b9a58f; }
+#codex .ach .pt.t2 { background: #c9b26a; } #codex .ach .pt.t3 { background: #ffb27a; } #codex .ach .pt.t4 { background: #ff8a5c; } #codex .ach .pt.t5 { background: #e88ad0; } #codex .ach .pt.t6 { background: #9ff0ff; }
+#codex .ach:not(.done) .pt { opacity: .55; }
+#codex .ach .nm { font-size: 13px; letter-spacing: .06em; } #codex .ach.done .nm { color: #ffd45e; }
+#codex .ach .nm em { font-style: normal; font-size: 10px; opacity: .55; letter-spacing: .12em; margin-left: 8px; }
+#codex .ach .ds { font-size: 11px; opacity: .72; margin-top: 1px; }
+#codex .ach .bar { margin-top: 4px; }
+#codex .ach .nv { font-size: 11px; opacity: .8; text-align: right; min-width: 92px; font-variant-numeric: tabular-nums; }
+#codex .ach .nv small { display: block; opacity: .6; font-size: 10px; }
+#codex .rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+#codex .rec { border: 1px solid rgba(255,178,122,.25); border-radius: 4px; padding: 10px 12px; background: rgba(28,13,8,.3); }
+#codex .rec h4 { margin: 0 0 6px; font-weight: normal; font-size: 11px; letter-spacing: .24em; color: var(--accent); }
+#codex .rec .r { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; padding: 2px 0; border-bottom: 1px dotted rgba(255,178,122,.12); }
+#codex .rec .r span:first-child { opacity: .8; } #codex .rec .r b { font-weight: normal; color: #fff1dc; font-variant-numeric: tabular-nums; text-align: right; }
+#codex .rec .r small { opacity: .55; font-size: 10px; margin-left: 6px; }
+#codex .rec .bar { margin: 2px 0 5px; }
+`;
+
+let styled = false;
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
+const dur = (s) => (s >= 3600 ? `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min` : s >= 60 ? `${Math.floor(s / 60)} min ${Math.floor(s % 60)} s` : `${s.toFixed(1)} s`);
+const num = (n) => Math.round(n).toLocaleString('en-GB');
+const dist = (m) => (m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${Math.round(m)} m`);
+const at = (rec) => (rec ? `<small>${rec.at ? `${rec.at} · ` : ''}after ${dur(rec.t)}</small>` : '');
+
+function value(a, v) {
+  if (a.dir === 'down') return Number.isFinite(v) ? `${v.toFixed(2)} s` : '—';
+  const r = Math.min(v, a.goal);
+  const f = (x) => (a.unit === 'm' ? dist(x) : Number.isInteger(x) ? num(x) : x.toFixed(1));
+  return `${f(r)} / ${f(a.goal)}${a.unit && a.unit !== 'm' ? ` ${a.unit}` : ''}`;
+}
+
+export function ensureStyle() {
+  if (styled) return;
+  styled = true;
+  const st = document.createElement('style');
+  st.textContent = CSS;
+  document.head.appendChild(st);
+}
+
+export function renderLedger(codex, cx) {
+  ensureStyle();
+  const g = codex.game, A = g.achievements, L = g.ledger;
+  const head = el('div', 'lg-head');
+  const rank = A.rankName, next = RANKS.find(([p]) => p > A.points);
+  head.innerHTML = `<div><small>STANDING</small><b>${rank}</b></div><div><small>POINTS</small><b>${A.points}</b> / ${A.maxPoints}${next ? `<small>${next[0] - A.points} to ${next[1]}</small>` : ''}</div>`
+    + `<div><small>COMPLETE</small><b>${A.count()}</b> / ${A.list.length}</div><div><small>LOGGED</small><b>${L.firstCount()}</b><small>firsts</small></div>`
+    + `<div><small>TITLES</small>${A.titles.length ? A.titles.join(' · ') : '—'}</div>`;
+  cx.appendChild(head);
+  const body = el('div', 'lg-body');
+  const side = el('div');
+  const cats = el('div', 'lg-cats');
+  const all = [{ id: 'all', name: 'ALL' }, ...CATS];
+  codex.lcat ||= 'all'; codex.lshow ||= 'all';
+  for (const c of all) {
+    const list = c.id === 'all' ? A.list : A.list.filter((a) => a.cat === c.id);
+    const d = list.filter((a) => L.done[a.id]).length;
+    const row = el('div', `lg-cat${codex.lcat === c.id ? ' on' : ''}`, `${c.name}<span>${d}/${list.length}</span>`);
+    row.onclick = () => { codex.lcat = c.id; codex.render(); };
+    cats.appendChild(row);
+  }
+  side.appendChild(cats);
+  const fl = el('div', 'lg-filter');
+  for (const [id, name] of [['all', 'ALL'], ['todo', 'TO DO'], ['done', 'DONE']]) {
+    const i = el('i', codex.lshow === id ? 'on' : '', name);
+    i.onclick = () => { codex.lshow = id; codex.render(); };
+    fl.appendChild(i);
+  }
+  side.appendChild(fl);
+  body.appendChild(side);
+
+  const main = el('div');
+  const cat = CATS.find((c) => c.id === codex.lcat);
+  for (const c of cat ? [cat] : CATS) {
+    for (const sub of c.subs) {
+      const rows = A.list.filter((a) => a.cat === c.id && a.sub === sub)
+        .filter((a) => codex.lshow === 'all' || (codex.lshow === 'done') === !!L.done[a.id])
+        .sort((a, b) => a.tier - b.tier);
+      if (!rows.length) continue;
+      main.appendChild(el('div', 'lg-sub', `${cat ? '' : `${c.name} · `}${sub.toUpperCase()}`));
+      for (const a of rows) {
+        const done = !!L.done[a.id];
+        const [v, , f] = A.progress(a);
+        const hide = a.hidden && !done;
+        const T0 = TIERS[a.tier];
+        const row = el('div', `ach${done ? ' done' : ''}`,
+          `<span class="pt t${a.tier}" title="${T0.name}">${T0.pts}</span>`
+          + `<span><div class="nm">${hide ? '???' : a.name}<em>${TYPES[a.type].toUpperCase()}${a.title && !hide ? ` · TITLE: ${a.title.toUpperCase()}` : ''}</em></div>`
+          + `<div class="ds">${hide ? 'A hidden achievement.' : a.desc}</div>${done ? '' : `<div class="bar"><i style="width:${Math.round(f * 100)}%"></i></div>`}</span>`
+          + `<span class="nv">${done ? `DONE<small>after ${dur(L.done[a.id])}</small>` : hide ? '' : value(a, v)}</span>`);
+        main.appendChild(row);
+      }
+    }
+  }
+  body.appendChild(main);
+  cx.appendChild(body);
+}
+
+// ---- records: what is shown, table-driven (a new counter is one line)
+const TOTALS = [
+  ['Time played', (L) => dur(L.play)], ['Sessions', (L) => num(L.sessions)],
+  ['Distance travelled', (L) => dist(L.get('dist.total'))], ['Climbed', (L) => dist(L.get('dist.up'))], ['Fallen', (L) => dist(L.get('dist.down'))],
+  ['Jumps', (L) => `${num(L.get('move.jump'))} (${num(L.get('move.airjump'))} in the air)`], ['Falls out of the world', (L) => num(L.get('respawn.fall'))],
+  ['Pots broken', (L) => num(L.get('break.total'))], ['Clapperjars defeated', (L) => num(L.get('clapper.down'))], ['Workshops cleared', (L) => num(L.get('room.cleared'))],
+  ['Shots fired', (L) => `${num(L.get('shot.fired'))} · ${L.get('shot.fired') ? Math.round((100 * L.get('shot.hit')) / L.get('shot.fired')) : 0}% hit`],
+  ['Shells fired', (L) => num(L.get('shell.fire'))], ['Lachryma spent', (L) => num(L.get('lach.spent'))], ['Lachryma absorbed', (L) => num(L.get('lach.gain'))],
+  ['Blinks · slams · stomps', (L) => `${num(L.get('move.blink'))} · ${num(L.get('move.slam'))} · ${num(L.get('move.stomp'))}`],
+  ['Parries · kicks · throws', (L) => `${num(L.get('move.parry'))} · ${num(L.get('kick.hit'))} · ${num(L.get('move.throw'))}`],
+  ['Board time · distance', (L) => `${dur(L.get('time.surf'))} · ${dist(L.get('dist.state.surfer'))}`], ['Spins landed', (L) => num(L.get('surf.spins'))],
+  ['Time as the hand', (L) => dur(L.get('time.god'))], ['Grabs · throws · cuts', (L) => `${num(L.get('god.grab'))} · ${num(L.get('god.throw'))} · ${num(L.get('god.cuts'))}`],
+  ['Survey pulses · areas charted', (L) => `${num(L.get('map.pulse'))} · ${num(L.get('map.cells'))}`],
+  ['Circuits finished · laps', (L) => `${num(L.get('circuit.finish'))} · ${num(L.get('course.lap'))}`],
+];
+const RECORDS = [
+  ['Top speed on foot', 'speed.max', (v) => `${v.toFixed(1)} m/s`], ['Top speed on the board', 'speed.surf.max', (v) => `${v.toFixed(1)} m/s`],
+  ['Longest airtime', 'air.longest', (v) => `${v.toFixed(1)} s`], ['Longest fall', 'fall.max', (v) => `${Math.round(v)} m`],
+  ['Highest slam', 'slam.height', (v) => `${Math.round(v)} m`], ['Longest slide', 'slide.longest', (v) => `${Math.round(v)} m`],
+  ['Longest wall run', 'wallrun.longest', (v) => `${Math.round(v)} m`], ['Longest chain', 'chain.max', (v) => `${v}`],
+  ['Fastest workshop clear', 'room.clear.time', (v) => dur(v)], ['Fastest basement lap', 'course.lap.time', (v) => dur(v)],
+  ['Fastest trial', 'trial.time', (v) => dur(v)], ['Best surf spin', 'surf.spin.best', (v) => `${v} turns`],
+  ['Best sunder', 'god.cuts.best', (v) => `${v} at once`], ['Highest raid wave', 'god.wave.max', (v) => `${v}`],
+  ['Fastest throw', 'god.throw.speed', (v) => `${v.toFixed(1)} m/s`], ['Best slice', 'shell.slice.best', (v) => `${v} at once`],
+  ['Best mantle', 'mantle.height', (v) => `${v.toFixed(1)} m`], ['Fastest gate', 'course.gate.speed', (v) => `${v.toFixed(1)} m/s`],
+];
+
+export function renderRecords(codex, cx) {
+  ensureStyle();
+  const g = codex.game, L = g.ledger;
+  const grid = el('div', 'rec-grid');
+  const box = (title) => { const b = el('div', 'rec'); b.appendChild(el('h4', '', title)); grid.appendChild(b); return b; };
+  const row = (b, k, v, extra = '') => b.appendChild(el('div', 'r', `<span>${k}</span><b>${v}${extra}</b>`));
+
+  const t = box('LIFETIME');
+  for (const [k, f] of TOTALS) row(t, k, f(L));
+
+  const r = box('PERSONAL BESTS');
+  for (const [k, key, f] of RECORDS) { const rec = L.rec[key]; row(r, k, rec ? f(rec.v) : '—', at(rec)); }
+  const circ = [...(g.circuits?.defs?.values() || [])];
+  for (const d of circ) { const rec = L.rec[`circuit.${d.id}.time`]; row(r, d.name, rec ? dur(rec.v) : '—', at(rec)); }
+
+  // where the time went (OSRS keeps time-per-activity in its logs; the bars are shares of all the time counted)
+  const states = L.under('time.state.').sort((a, b) => b[1] - a[1]);
+  const tot = states.reduce((n, [, v]) => n + v, 0) || 1;
+  const ts = box('WHERE THE TIME WENT');
+  for (const [k, v] of states.slice(0, 14)) {
+    row(ts, k.slice(11), `${dur(v)} <small>${Math.round((100 * v) / tot)}%</small>`);
+    ts.appendChild(el('div', 'bar', `<i style="width:${Math.round((100 * v) / tot)}%"></i>`));
+  }
+  const areas = box('AREAS');
+  for (const [k, v] of L.under('time.area.').sort((a, b) => b[1] - a[1])) row(areas, k.slice(10), dur(v));
+
+  const groups = [
+    ['POTS BROKEN, BY KIND', 'break.kind.'], ['CLAPPERJARS, BY CAUSE', 'clapper.cause.'], ['SHELLS FIRED, BY KIND', 'shell.fire.'],
+    ['MOVEMENT ARTS, USES', 'tech.start.'], ['MOVES', 'move.'], ['LACHRYMA SPENT, BY USE', 'lach.spent.'],
+  ];
+  for (const [title, prefix] of groups) {
+    const list = L.under(prefix).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+    if (!list.length) continue;
+    const b = box(title);
+    for (const [k, v] of list.slice(0, 16)) row(b, k.slice(prefix.length).replaceAll('.', ' '), num(v));
+  }
+  cx.appendChild(grid);
+
+  const foot = el('div', 'lg-filter');
+  const wipe = el('i', '', 'ERASE THE LEDGER');
+  let armed = false;
+  wipe.onclick = () => {
+    if (!armed) { armed = true; wipe.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; wipe.textContent = 'ERASE THE LEDGER'; }, 3000); } else { L.reset(); g.achievements.rank = 0; codex.render(); }
+  };
+  foot.appendChild(wipe);
+  cx.appendChild(foot);
+}

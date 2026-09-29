@@ -1,7 +1,8 @@
 // A tiny event bus. Movement, techs, targets and the level report what happened
 // (`game.events.emit('slam.impact', { height: 52, target: true })`) and anything that cares
 // listens: the System (unlocks), the stress test, tests. Emitting never throws into the
-// caller, and the last few hundred events are kept for inspection.
+// caller, and the last few hundred events are kept for inspection. The payload's `name` and `t` are the
+// event's own (its name, and game seconds): a payload wanting to say a name or a time uses another key.
 
 export class Events {
   constructor() {

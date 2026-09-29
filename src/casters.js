@@ -183,7 +183,7 @@ export class Casters {
     const t = this.pick(ray.origin, ray.dir, T.weapon.range, 1.4);
     const end = t ? t.point : ray.origin.clone().addScaledVector(ray.dir, T.weapon.range);
     g.fx.tracer(muzzle, end);
-    if (!t || !this.pin(t)) { g.hud.popup('NOTHING TO ANCHOR'); sfx.fizzle(); }
+    if (!t || !this.pin(t)) { g.log.say('warn', 'There is nothing there to anchor.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
   }
 
   /** Pin a picked thing where it is. */
@@ -253,7 +253,7 @@ export class Casters {
     const t = this.pick(ray.origin, ray.dir, T.weapon.range, 1.0, (r) => r.clapper || r.ent?.type === 'breakable');
     const end = t ? t.point : ray.origin.clone().addScaledVector(ray.dir, T.weapon.range);
     g.fx.tracer(muzzle, end);
-    if (!t || !this.hatchAt(t)) { g.hud.popup('NOTHING TO HATCH'); sfx.fizzle(); }
+    if (!t || !this.hatchAt(t)) { g.log.say('warn', 'There is nothing there to hatch.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
   }
 
   /** A pot cracks and a clapperjar hatches; a clapperjar is turned. */
@@ -284,12 +284,11 @@ export class Casters {
     c.mat.color.set(0xf3d9a4);
     c.mat.emissive.set(0xc27414);
     c.mat.emissiveIntensity = 0.35;
-    g.hud.popup(born ? 'HATCHED' : 'TURNED');
     sfx.hatch();
     // (at most a handful of helpers: the oldest go home)
     const allies = g.clappers.list.filter((x) => x.alive && x.ally);
     while (allies.length > T.shells.hatch.maxAllies) g.clappers.hit(allies.shift(), allies[0]?.pos || c.pos, UP, 1, 'shot');
-    g.events?.emit('befriend', {});
+    g.events?.emit('befriend', { born });
   }
 
   update(dt) {
