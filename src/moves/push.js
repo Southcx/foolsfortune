@@ -104,6 +104,15 @@ export class Push extends Tech {
 
   faceYaw() { return this.a ? Math.atan2(-this.a.x, -this.a.z) : null; }
 
+  /** The pushing clip (leaning into it, knees bent), played forward as it goes away from us and backward pulling; still, it holds its first leaning frame. */
+  animate(ch, base, dt) {
+    const C = ch.clips, clip = C.clips.push;
+    if (!clip) return;
+    if (this.active) this.pt = (this.pt || 0) + (this.speed || 0) * dt * 0.7;
+    const t = ((this.pt || 0) % clip.dur + clip.dur) % clip.dur;
+    C.blend(base, C.sample('push', t, ch.P.tmp, true), this.w);
+  }
+
   hands(ch) {
     if (!this.active || this.w < 0.05 || !this.crate) return;
     const P = this.P, w = this.w, e = this.crate;

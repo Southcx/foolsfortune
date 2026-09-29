@@ -3,6 +3,7 @@ import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { GROUPS } from '../physics.js';
 import { T } from '../config.js';
+import { wallClimb, wallContacts } from '../authored.js';
 
 // Wall latch (a Movement Art): in the air beside any wall, hold C and you cling to it, feet against
 // the wall and one hand on it, the other free for the gun. WASD crawls along the wall (any
@@ -84,6 +85,7 @@ export class Latch extends Tech {
     const w = this.wallAround(P.pos, 0.85);
     if (!w) { P.vel.set(this.n.x * 1.5, Math.min(P.vel.y, 0), this.n.z * 1.5); this.cool = 0.3; return false; }
     this.n.lerp(w.n, Math.min(1, 12 * dt)).normalize();
+    this.wp = w.point.clone();
     // the budget runs while we cling; empty, we slide down and come off
     this.left -= dt;
     const out = this.left > 0;
@@ -108,41 +110,18 @@ export class Latch extends Tech {
 
   faceYaw() { return this.n ? Math.atan2(-this.n.x, -this.n.z) : null; }
 
-  animate(ch, base) {
-    const p = ch.clips.sample('jumpLoop', 0.35, ch.P.tmp);
-    ch.clips.blend(base, p, this.w);
+  /** Only the gun arm aims; the other hand keeps its hold on the wall. */
+  get aim() { return { arm: 'R', turn: 0.3 }; }
+
+  // ---- animation: the wall climb cycles (authored.js), stood still while clinging, slipping down when the budget's out ----
+  animate(ch, base, dt) {
+    const A = this.active && this.move;
+    wallClimb(this, ch, base, dt, this.active, A ? this.move.x : 0, A ? this.move.y : 0);
   }
 
   hands(ch) {
-    if (!this.active || this.w < 0.05) return;
-    const P = this.P, n = this.n;
-    const along = new THREE.Vector3(-n.z, 0, n.x);
-    const wall = (p, dy) => {
-      const o = P.renderPos.clone().add(new THREE.Vector3(0, dy, 0)).addScaledVector(p, 0);
-      const hit = P.physics.raycast({ x: o.x + n.x * 0.5, y: o.y, z: o.z + n.z * 0.5 }, n.clone().negate(), 1.2, P.collider, GROUPS.controllerQuery, solid);
-      return hit ? hit.point.clone().addScaledVector(n, 0.03) : o.addScaledVector(n, -0.4);
-    };
-    // the wall hand (the left; the right holds the gun when it's out, else both cling)
-    for (const side of ['L', 'R']) {
-      if (side === 'R' && ch.gunHeld) continue;
-      const sg = side === 'L' ? 1 : -1;
-      const reach = 1.55 + (side === 'L' ? 0.15 : 0) + Math.sin(this.phase * 3 + (side === 'L' ? 0 : Math.PI)) * 0.06 * Math.min(1, Math.hypot(this.move.x, this.move.y) / 2);
-      const q = ch.handQuat(ch.arm[side], new THREE.Vector3(0, 1, 0), n.clone().negate());
-      const p = wall(along, reach).addScaledVector(along, sg * 0.22);
-      p.sub(ch.arm[side].palmPt.clone().applyQuaternion(q));
-      ch.reachHand(side, p, q, this.w);
-    }
-    // both feet on the wall, knees out toward it
-    for (const side of ['L', 'R']) {
-      const sg = side === 'L' ? 1 : -1;
-      const leg = ch.leg[side];
-      const t = wall(along, 0.45 + (side === 'L' ? 0.2 : 0) + Math.sin(this.phase * 3 + (side === 'L' ? Math.PI : 0)) * 0.05).addScaledVector(along, sg * 0.14);
-      t.y += ch.ankleRest * 0.5;
-      const cur = leg.foot.getWorldPosition(new THREE.Vector3());
-      t.lerp(cur, 1 - this.w);
-      const pole = leg.thigh.getWorldPosition(new THREE.Vector3()).addScaledVector(n, -0.7);
-      ch.solveLeg(leg, t, pole);
-    }
+    if (!this.active || this.w < 0.05 || !this.wp) return;
+    wallContacts(this, ch, this.n, this.wp);
   }
 
   label() { return this.left > 0 ? 'LATCH' : 'LATCH · SLIPPING'; }

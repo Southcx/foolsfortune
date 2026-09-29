@@ -236,6 +236,22 @@ export class Carry extends Tech {
   // ---- animation: both hands under it ----
   animate() {}
 
+  /** The body under the load: a stoop to the pickup and a heave up (lift), leaning back a little
+   * under the weight (hold), and a lunge into the throw. */
+  afterPose(ch) {
+    if (!this.item || this.w < 0.02) return;
+    const st = this.state, k = st === 'lift' ? Math.min(1, this.st / LIFT) : st === 'throw' ? Math.min(1, this.st / THROW_AT) : st === 'put' ? Math.min(1, this.st / PUT) : 1;
+    let deg = -6; // (leaning back)
+    if (st === 'lift') deg = 16 * Math.sin(Math.PI * Math.min(1, k * 1.15)) - 6 * sm(k);
+    else if (st === 'throw') deg = -6 + 24 * sm(k);
+    else if (st === 'put') deg = -6 + 26 * Math.sin(Math.PI * k * 0.9);
+    this.lean = THREE.MathUtils.damp(this.lean ?? deg, deg, 20, 1 / 60);
+    const yaw = this.P.bodyYaw, left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const a = this.lean * Math.PI / 180 * this.w;
+    for (const [b, f] of [['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]]) ch.rotW(ch.bones[b], left, a * f);
+    ch.root.updateMatrixWorld(true);
+  }
+
   hands(ch) {
     if (!this.item || this.w < 0.02) return;
     const P = this.P, e = this.item, w = this.w;

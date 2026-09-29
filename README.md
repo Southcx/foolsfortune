@@ -24,18 +24,19 @@ npm run build      # static bundle in dist/
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
-| Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a hard landing) |
-| Z | pick up something small (hoisted overhead: fire throws, Z sets down) · hold Z at a heavy crate: W push, S pull · on the run, or with nothing in reach: kick (parry a projectile with the timing) |
+| Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a fall of 20 m or more) |
+| F | interact: pick up something small (hoisted overhead: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
+| V | kick (on the run, or standing; parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
 | B | the System's Codex: Movement Arts, variants, Lab mode, save code (pauses the game) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
-| F / middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
+| Middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
 | 1–7 / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek |
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
-| V | toggle first / third person |
+| Z | toggle first / third person |
 | Q | swap shoulder (third person) |
 | G | time trial (again to restart) |
 | R / H (basement) | back to the last checkpoint / to the hub |
@@ -116,7 +117,7 @@ measured against, so future spaces share one rubric.
 - slope ramps (10° to 55°; 46° is the steepest you can walk up)
 - a long-jump lane with 1 m ticks and the measured chain distances marked
 - a metrics board: live values from the tuning panel next to the measured chains
-- the index: eight pads that teleport to each room's checkpoint
+- the index: a console in the hub (F) that lists every room and teleports to its checkpoint, one entry per room
 
 **The ring** (16 m wide) is a loop of eight rooms, one skill each, with a checkpoint across every
 entrance and split times (and a lap time) between them:
@@ -168,7 +169,7 @@ lab and the torture bot use. Techs are *active* (one owns the movement step at a
 | Blink | E | a near-instant 5.5 m dodge along the move keys (or the view), sliding along anything in the way; leaves an afterimage, comes out with your momentum pointed where you blinked; 2 charges |
 | Slam | C in the air, looking down, 1.8 m+ up | straight down; the landing breaks pots nearby and throws the rest (and clapperjars). Then Space: slam jump, higher the further you fell (about 2 m from 5 m); hold C with a direction: slam slide, the fall turned into speed. (Looking ahead, C in the air stays the core's landing slide) |
 | Stomp | land on a pot or a clapperjar | it breaks under you and throws you up (+1.66 m), air jump refilled |
-| Roll | Shift while crouched; automatic out of a hard landing (about 9 m/s) | a low dash the way you steer (or face) with invulnerability frames at the start (`player.invuln`, ready for a damage system); out of a fall it also mitigates the landing and turns the fall into forward speed (above slide speed the core slides instead). Space out of the second half keeps the speed |
+| Roll | Shift while crouched; automatic only out of a fall of 20 m or more | a low dash the way you steer (or face) with invulnerability frames at the start (`player.invuln`, ready for a damage system); out of a fall it also mitigates the landing and turns the fall into forward speed (above slide speed the core slides instead). Space out of the second half keeps the speed |
 | Wall climb | jump into a wall head-on, W held | run up it for half a second; a ledge in reach is a mantle (4 m walls from the ground); Space kicks off. Off the ground only: after a wallrun the core's wall moves own the air |
 | Slip dive | hold C on slip | melt into liquid clay: a fast blob (10 m/s) through slip, crawling off it; climbs slip-coated walls, fits through 0.8 m gaps, Space launches out (higher than a jump, keeping the speed), let go of C to stand. Lachryma soaks back in meanwhile. The SLIP shell (8) paints floors and walls wet; burst slip barrels leave puddles |
 | Swim | deep water | float with your head out and paddle (Shift faster); C dives and you swim where you look; Space rises, and at the surface hops out; swim into an edge to climb out |
@@ -183,15 +184,14 @@ lab and the torture bot use. Techs are *active* (one owns the movement step at a
 | Kick / parry | Z on the run, or with nothing to lift | a leg swing that knocks pots (and cracks them), crates, clapperjars, and rings targets. The first 0.25 s is also a parry: kick a projectile coming at you and it goes back where you look (with a little help toward a target), and you are invulnerable for a beat |
 | Recoil jump | shoot down (steeper than ~20°) in the air | the gun's kick is real: up and back the way the barrel points, three shots a jump (a charged shot counts two), back on the ground; costs what a shot costs |
 
-**The tech lab** is through room 1's south door (or the LAB pad in the hub's index): a
-station per tech, each with a checkpoint (T1-T6, R returns to it) and an index of pads by
-the door. The pool (4.5 m deep, a 5 m dive tower, a wall to swim under, a ladder out), 6 and
+**The tech lab** is through room 1's south door (or the LAB entry in the hub's index): a
+station per tech, each with a checkpoint (T1-T6, R returns to it). The pool (4.5 m deep, a 5 m dive tower, a wall to swim under, a ladder out), 6 and
 8 m ladder towers (the 8 m one is the slam / roll platform over a field of pots), the slip
 lane (a 0.8 m gap only the blob fits, a slip-coated 6 m wall), a 9 m blink gap over a reset
 pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to climb.
 
 **The rigging and the hands** are two more wings, west of the lab (through its west door, or
-the R1-R4 / H1-H4 pads on the pool's deck). *The rigging* (`src/riglab.js`, built with the
+the index console's RIGGING / HANDS entries). *The rigging* (`src/riglab.js`, built with the
 `Rigging` class in `src/moves/rigging.js`: bars, poles, ropes, grates, beams): R1 a 2.7 m ledge to
 catch and shimmy with a shelf of targets behind you, and a 5.5 m pillar to latch up; R2 a pit
 crossed three ways at once, on two overhead bars a swing-jump apart, a 15 m zipline from a tower,
@@ -298,6 +298,38 @@ variant and a lab station.
   you're far away, eat baubles, stumble and bolt from near misses, hide behind big pots and
   peek out, and shatter from shots, slices, blasts, scalding and long falls.
 
+## Animation
+
+Motion comes from three places, in this order of preference: baked clips (Quaternius UAL Standard,
+retargeted to the Courier by `tools/bake_anims.mjs` into `src/assets/anims.bin`), clips authored
+once at startup from key poses (`src/authoring.js`, `src/authored.js`), and only then a light
+runtime IK correction on the contact points.
+
+- **Authored clips** are built on the Courier itself: for every frame the body is put in a base
+  pose, the hips and spine are placed, and each hand and foot is solved with two-bone IK onto a
+  contact taken from the level's geometry (ladder rung pitch and reach, a ledge's lip, a pole's
+  radius, a grate's face). The result is stored like any other clip. `warn.mjs`-style checks (the
+  builder logs `contacts out of reach` in the console) keep every contact within 2 cm. At runtime
+  a tech plays them **by distance**, not time: a ladder cycle is two rungs of climbing, a hang
+  shimmy is 0.4 m of travel, a pole cycle 0.9 m, so the limbs in stance stay planted while the body
+  moves past them, and going the other way is the same clip in reverse. Stopped, the cycle eases
+  to the nearest phase where every limb holds.
+- **Clips authored**: `ladderUp` / `ladderSlide`, `hangLedge` / `hangShimmy` / `hangBar` /
+  `hangBarGo`, `poleUp` / `poleSlide`, `grateSide` (the wall latch and grates reuse the ladder
+  cycle up and down, and blend to `grateSide` moving sideways; under a grate roof the hang bar
+  clips play).
+- **Aim profile**: a tech can say `get aim() { return { arm: 'R', turn: 0.3 } }`: only the gun
+  arm aims (arm IK) while the other hand keeps its hold and the torso hardly turns, so you can
+  shoot one-handed off a ladder, a ledge, a pole or a grate.
+- **Layers**: the base locomotion clip, then each tech's `animate` (a clip, weighted), the aim
+  layer (masked), stride warp and foot IK, the tech's `afterPose` (small body corrections: the
+  torso under a carried load, the lean of a kick, the body drawn in toward a ledge wall), and
+  last `hands`: the contact correction that puts palms and soles on the surface, capped at a few
+  centimetres so the clip's motion is what you see.
+- Push uses the UAL `push` clip; balance beams keep the locomotion clip with soft, bobbing arms.
+- `tools/bake_cmu.mjs` (with `tools/cmu_clips.json`) probes, finds loops in, and retargets BVH
+  files from the CMU database onto the Courier; use it to add real climbing or kicking clips.
+
 ## How it works
 
 | File | Role |
@@ -307,6 +339,8 @@ variant and a lab station.
 | `src/weapon.js` | firing, spread/bloom, hitscan, reload, holster timing, first-person gun pose |
 | `src/character.js` | the Courier: clip blending by movement state, pistol aim offset, gun socket, IK corrections |
 | `src/animator.js`, `src/anims.js` | pose buffers, clip sampling/blending, the baked clip pack decoder |
+| `src/authoring.js`, `src/authored.js` | the clip author (IK key poses baked into clips) and the ladder / hang / pole / grate clips |
+| `src/indexmenu.js` | the index console UI (one teleport per room) |
 | `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture |
 | `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions |
 | `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
@@ -401,7 +435,11 @@ produce NaNs; cutting a rope needs Rapier 0.21+ (0.14 panics on joint removal).
 ## Character assets
 
 Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1.0 -
-https://quaternius.com. Retargeted to the Courier; see **Animation** above.
+https://quaternius.com. Retargeted to the Courier; see **Animation** above. (Only the free
+Standard tiers are used; the paid full tiers are not included.) Motion capture: CMU Graphics Lab
+Motion Capture Database, free for research and games, no resale of the data itself
+(http://mocap.cs.cmu.edu), retargeted with `tools/bake_cmu.mjs` from the BVH conversion;
+`src/assets/anims_cmu.bin` is that exploratory pack (not loaded by the game yet).
 
 `tools/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
 `src/assets/courier.glb` and `src/assets/psygun.glb`, which are bundled into the JS build.

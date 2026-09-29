@@ -127,6 +127,8 @@ export class Techs {
   }
   /** The fire button belongs to something else for now (a throw): the weapon ignores it. */
   get fireBlocked() { return this.list.some((t) => t.passive && t.blocksFire); }
+  /** How the aim layer behaves during the active tech ({ arm: 'R'|'L'|null, turn: 0..1 }), or null for the full-body aim. */
+  aimProfile() { return this.active?.aim || null; }
   /** Both hands taken (a ladder, swimming, carrying something): the gun goes away. */
   get handsBusy() { return !!this.active?.handsBusy || this.list.some((t) => t.passive && t.busy); }
   /** Something for the HUD's movement readout. */

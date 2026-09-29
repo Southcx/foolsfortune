@@ -101,9 +101,11 @@ export class Balance extends Tech {
       if (s === 'R' && ch.gunHeld) continue;
       const sg = s === 'L' ? 1 : -1;
       const sh = ch.shoulder(s, new THREE.Vector3());
-      // arms out to the sides, tipping against the lean like a tightrope walker's
-      const p = sh.clone().addScaledVector(left, sg * 0.62).add(new THREE.Vector3(0, 0.02 - sg * this.lean * 0.18, 0)).addScaledVector(fwd, 0.08);
-      const q = ch.handQuat(ch.arm[s], left.clone().multiplyScalar(sg), new THREE.Vector3(0, -1, 0));
+      // arms out and a little down, elbows soft, tipping against the lean like a tightrope walker's;
+      // the hands ride a slow figure of eight of their own so nothing holds perfectly still
+      const bob = Math.sin(this.t * 2.3 + (s === 'L' ? 0 : 1.7)) * 0.03;
+      const p = sh.clone().addScaledVector(left, sg * 0.5).add(new THREE.Vector3(0, -0.13 - sg * this.lean * 0.2 + bob, 0)).addScaledVector(fwd, 0.1 + bob * 0.8);
+      const q = ch.handQuat(ch.arm[s], left.clone().multiplyScalar(sg).addScaledVector(fwd, 0.35).add(new THREE.Vector3(0, -0.25, 0)), new THREE.Vector3(0, -1, 0.2));
       p.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
       ch.reachHand(s, p, q, w * 0.9);
     }

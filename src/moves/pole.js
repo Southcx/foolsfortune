@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
+import { POLE } from '../authored.js';
 
 // Poles and ropes: walk (or jump) into one and you have it, arms and legs round it. W / S climb
 // (Shift faster), A / D swing round it, C lets you slide (fast) and Space jumps off, away from
@@ -49,6 +50,8 @@ export class Pole extends Tech {
     P.vel.set(0, Math.max(-3, Math.min(P.vel.y, 2)) * 0.3, 0);
     this.snap = 0;
     this.phase = 0;
+    this.cyc = 0.05;
+    this.slideW = 0;
     this.spin = 0;
     this.vy = 0;
     this.rushing = false;
@@ -107,37 +110,54 @@ export class Pole extends Tech {
 
   faceYaw() { return Math.atan2(-Math.sin(this.ang), -Math.cos(this.ang)); }
 
-  animate(ch, base) {
-    const p = ch.clips.sample('idle', 0.5, ch.P.tmp);
-    ch.clips.blend(base, p, this.w);
+  /** Only the gun arm aims; the other hand keeps its grip. */
+  get aim() { return { arm: 'R', turn: 0.3 }; }
+
+  // ---- animation: the authored climb, played by distance climbed ----
+  animate(ch, base, dt) {
+    const C = ch.clips;
+    const up = C.clips.poleUp;
+    if (this.active) {
+      // (going still, the cycle eases to the nearest phase where every limb holds the pole)
+      if (Math.abs(this.vy) < 0.15) {
+        const k = 0.05, want = Math.round((this.cyc - k) * 2) / 2 + k; // (phases 0.05 and 0.55)
+        this.cyc = THREE.MathUtils.damp(this.cyc, want, 6, dt);
+      } else this.cyc += this.vy * dt / POLE.cycle;
+    }
+    this.slideW = THREE.MathUtils.damp(this.slideW || 0, this.active && this.vy < -3 ? 1 : 0, 10, dt);
+    const pose = C.sample('poleUp', ((this.cyc % 1) + 1) % 1 * up.dur, ch.P.tmp, true);
+    if (this.slideW > 0.001) C.blend(pose, C.sample('poleSlide', ch.time, ch.P.tmp2), this.slideW);
+    C.blend(base, pose, this.w);
   }
 
+  /** A light contact correction: hands and feet onto the pole's surface, wherever the clip has them. */
   hands(ch) {
     if (!this.active || this.w < 0.05) return;
-    const P = this.P, pole = this.pole, w = this.w;
-    const out = new THREE.Vector3(Math.sin(this.ang), 0, Math.cos(this.ang));
-    const side = new THREE.Vector3(-out.z, 0, out.x); // (the body's left, facing the pole)
-    const y = P.renderPos.y;
-    const swing = Math.sin(this.phase * 5);
+    const pole = this.pole, w = this.w;
+    const a = new THREE.Vector3(), d = new THREE.Vector3();
+    const towards = (p, gap) => { // where the point p would sit gap off the pole's surface
+      this.rig.axisAt(pole, p.y, a);
+      d.set(p.x - a.x, 0, p.z - a.z);
+      const l = d.length() || 1;
+      return new THREE.Vector3(a.x, p.y, a.z).addScaledVector(d, (pole.r + gap) / l);
+    };
     for (const s of ['L', 'R']) {
-      const sg = s === 'L' ? 1 : -1;
-      // hands stacked on the pole, the pair trading places as it climbs
-      const up = 1.72 + (s === 'L' ? 0.16 : -0.18) + swing * 0.07 * (s === 'L' ? 1 : -1);
       if (!(s === 'R' && ch.gunHeld)) {
-        const at = this.rig.axisAt(pole, y + up, new THREE.Vector3()).addScaledVector(out, pole.r * 0.7).addScaledVector(side, sg * 0.05);
-        const q = ch.handQuat(ch.arm[s], new THREE.Vector3(0, 1, 0).addScaledVector(side, sg * 0.35), out.clone().negate());
-        at.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
-        ch.reachHand(s, at, q, w);
+        const arm = ch.arm[s];
+        const palm = arm.palmPt.clone().applyMatrix4(arm.hand.matrixWorld);
+        const want = towards(palm, 0);
+        const delta = want.sub(palm); if (delta.length() > 0.1) delta.setLength(0.1);
+        const q = arm.hand.getWorldQuaternion(new THREE.Quaternion());
+        ch.reachHand(s, arm.hand.getWorldPosition(new THREE.Vector3()).add(delta), q, w);
       }
-      // feet clamp it, one above the other
       const leg = ch.leg[s];
-      const fy = y + 0.42 + (s === 'L' ? 0.14 : -0.1) - swing * 0.06 * (s === 'L' ? 1 : -1);
-      const t = this.rig.axisAt(pole, fy, new THREE.Vector3()).addScaledVector(out, pole.r + 0.06).addScaledVector(side, sg * 0.09);
-      t.y = fy - ch.ankleRest * 0.3;
-      const cur = leg.foot.getWorldPosition(new THREE.Vector3());
-      t.lerp(cur, 1 - w);
-      const pl = leg.thigh.getWorldPosition(new THREE.Vector3()).addScaledVector(out, 0.7).addScaledVector(side, sg * 0.4);
-      ch.solveLeg(leg, t, pl);
+      const foot = leg.foot.getWorldPosition(new THREE.Vector3());
+      const want = towards(foot, 0.1); // (the ankle: the sole is a little nearer)
+      const delta = want.sub(foot); if (delta.length() > 0.1) delta.setLength(0.1);
+      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+      const knee = leg.shin.getWorldPosition(new THREE.Vector3());
+      ch.solveLeg(leg, foot.add(delta), knee);
+      ch.setWorldQuat(leg.foot, fq);
     }
   }
 

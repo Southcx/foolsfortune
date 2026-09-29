@@ -35,6 +35,10 @@ const WANT = {
   ClimbUp_1m: 'climb', Roll: 'roll', Swim_Fwd_Loop: 'swim', Swim_Idle_Loop: 'tread',
   Pistol_Idle_Loop: 'pistolIdle', Pistol_Aim_Neutral: 'aimMid', Pistol_Aim_Up: 'aimUp', Pistol_Aim_Down: 'aimDown',
   Pistol_Reload: 'reload',
+  // hands and bodies: carrying, pushing, throwing, blocking, knocked back
+  Push_Loop: 'push', OverhandThrow: 'throw', PickUp_Table: 'pickup', Walk_Carry_Loop: 'carryWalk', Sword_Block: 'block',
+  Interact: 'interact', Hit_Knockback: 'knockback', Punch_Cross: 'punchCross', Melee_Hook: 'meleeHook', Idle_Rail_Loop: 'railIdle',
+  Crouch_Idle_Loop_: 'unused',
 };
 
 const MAP = {

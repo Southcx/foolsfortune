@@ -3,13 +3,14 @@ import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { GROUPS } from '../physics.js';
 import { T } from '../config.js';
+import { HANG, wallClimb, wallContacts } from '../authored.js';
 
 // Grate climbing: walls and overhangs of openwork grating are climbed in any direction, for as
 // long as you like. On a wall W / S go up and down and A / D sideways; reaching the top edge
 // pulls you over it, and reaching an overhang above carries you onto it; on an overhang you hang
 // by your hands and WASD crawls along it (the way you look). C lets go, Space kicks off a wall
 // or hops off an overhang. Shift is a scramble (both hands: the gun goes away).
-const DROP = 2.05; // feet this far below an overhang's underside
+const DROP = HANG.drop + 0.09; // feet this far below an overhang's underside (the hands hold its lip: the authored hang is built for it)
 const DIRS = 8;
 
 export class Grate extends Tech {
@@ -131,7 +132,7 @@ export class Grate extends Tech {
         if (w) { this.n = w.n.clone(); setMode('wall'); } else { P.vel.set(P.vel.x, -1, P.vel.z); this.cool = 0.4; this.rushing = false; return false; }
       } else if (w && this.modeT > 0.8 && !this.basis && -(wish.x * w.n.x + wish.z * w.n.z) > 0.5 && w.dist < 0.6) { this.n = w.n.clone(); setMode('wall'); }
     }
-    if (this.mode === 'wall' && w) this.n.lerp(w.n, Math.min(1, 12 * dt)).normalize();
+    if (this.mode === 'wall' && w) { this.n.lerp(w.n, Math.min(1, 12 * dt)).normalize(); this.wp = w.point.clone(); }
     if (this.mode === 'ceil' && cl) this.cy = cl.y;
 
     if (this.mode === 'wall') {
@@ -144,6 +145,7 @@ export class Grate extends Tech {
       P.bodyYaw = Math.atan2(-n.x, -n.z);
       this.move = Math.hypot(vx, vy);
       this.phase += this.move * dt * 1.1;
+      this.vx = vx; this.vy = vy; // (along the wall to the left, and up)
       if (P.grounded && vy <= 0 && this.t > 0.25) { this.rushing = false; this.cool = 0.25; return false; }
       return true;
     }
@@ -153,7 +155,7 @@ export class Grate extends Tech {
       let d = P.yaw - this.basisAt; d = Math.atan2(Math.sin(d), Math.cos(d));
       if (Math.abs(d) < 0.5) yaw = this.basis; else this.basis = null;
     }
-    const f = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), r = new THREE.Vector3(-f.z, 0, f.x).negate();
+    const f = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)), r = new THREE.Vector3(-f.z, 0, f.x); // (the body's right)
     const v = new THREE.Vector3().addScaledVector(f, iz).addScaledVector(r, ix);
     if (v.lengthSq() > 1) v.normalize();
     v.multiplyScalar(sp);
@@ -173,41 +175,42 @@ export class Grate extends Tech {
 
   faceYaw() { return this.mode === 'wall' && this.n ? Math.atan2(-this.n.x, -this.n.z) : (this.faceY ?? this.P.yaw); }
 
-  animate(ch, base) {
-    const p = ch.clips.sample('jumpLoop', 0.35, ch.P.tmp);
-    ch.clips.blend(base, p, this.w);
+  /** How the aim layer behaves here: only the gun arm aims; the other hand keeps its hold. */
+  get aim() { return { arm: 'R', turn: 0.3 }; }
+
+  // ---- animation: the authored ladder / sideways-climb cycles on a wall, the bar cycles under a roof ----
+  animate(ch, base, dt) {
+    const C = ch.clips, A = this.active;
+    if (this.mode === 'wall') { wallClimb(this, ch, base, dt, A, A ? this.vx || 0 : 0, A ? this.vy || 0 : 0); return; }
+    // under a roof: hand over hand, whichever way you face
+    const f = this.faceY ?? this.P.yaw, mv = this.mv || new THREE.Vector3();
+    const vf = A ? mv.x * Math.sin(f) + mv.z * Math.cos(f) : 0;
+    const vl = A ? mv.x * Math.cos(f) - mv.z * Math.sin(f) : 0;
+    this.cf = (this.cf || 0) + vf * dt / HANG.barCycle;
+    this.cl = (this.cl || 0) + vl * dt / HANG.shimmyCycle;
+    const idle = C.sample('hangBar', ch.time, ch.P.tmp);
+    const wf = Math.min(1, Math.abs(vf) / 1.2), wl = Math.min(1, Math.abs(vl) / 1.2);
+    this.wf = THREE.MathUtils.damp(this.wf || 0, wf, 10, dt);
+    this.wl = THREE.MathUtils.damp(this.wl || 0, wl, 10, dt);
+    const wrap = (x) => ((x % 1) + 1) % 1;
+    if (this.wf > 0.001) C.blend(idle, C.sample('hangBarGo', wrap(this.cf) * C.clips.hangBarGo.dur, ch.P.tmp2, true), this.wf);
+    if (this.wl > 0.001) C.blend(idle, C.sample('hangShimmy', wrap(this.cl) * C.clips.hangShimmy.dur, ch.P.tmp2, true), this.wl * (1 - this.wf * 0.5));
+    C.blend(base, idle, this.w);
   }
 
+  /** A light contact correction: hands and feet onto the grating, whatever the clip has them at. */
   hands(ch) {
     if (!this.active || this.w < 0.05) return;
-    const P = this.P, w = this.w, ph = this.phase * 3;
-    const y = P.renderPos.y;
-    const on = this.mode === 'wall' ? this.n : null;
+    const w = this.w;
+    if (this.mode === 'wall') { if (this.wp) wallContacts(this, ch, this.n, this.wp); return; }
+    if (this.cy == null) return;
     for (const s of ['L', 'R']) {
-      const sg = s === 'L' ? 1 : -1, alt = Math.sin(ph + (s === 'L' ? 0 : Math.PI));
-      if (!(s === 'R' && ch.gunHeld)) {
-        let p, q;
-        if (on) {
-          const along = new THREE.Vector3(-on.z, 0, on.x);
-          p = P.renderPos.clone().addScaledVector(on, -0.42).addScaledVector(along, sg * 0.24).setY(y + 1.6 + alt * 0.1);
-          q = ch.handQuat(ch.arm[s], new THREE.Vector3(0, 1, 0), on.clone().negate());
-        } else {
-          const fy = this.faceY ?? P.yaw;
-          const face = new THREE.Vector3(Math.sin(fy), 0, Math.cos(fy)), right = new THREE.Vector3(face.z, 0, -face.x);
-          p = P.renderPos.clone().addScaledVector(right, -sg * 0.22).addScaledVector(face, alt * 0.14 * Math.min(1, (this.move || 0))).setY(this.cy - 0.09);
-          q = ch.handQuat(ch.arm[s], face, new THREE.Vector3(0, -1, 0));
-        }
-        p.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
-        ch.reachHand(s, p, q, w);
-      }
-      if (on) { // feet on the grate
-        const along = new THREE.Vector3(-on.z, 0, on.x);
-        const leg = ch.leg[s];
-        const t = P.renderPos.clone().addScaledVector(on, -0.42).addScaledVector(along, sg * 0.14).setY(y + 0.35 - alt * 0.12 + (s === 'L' ? 0.1 : 0));
-        t.y += ch.ankleRest * 0.5;
-        t.lerp(leg.foot.getWorldPosition(new THREE.Vector3()), 1 - w);
-        ch.solveLeg(leg, t, leg.thigh.getWorldPosition(new THREE.Vector3()).addScaledVector(on, -0.7));
-      }
+      if (s === 'R' && ch.gunHeld) continue;
+      const arm = ch.arm[s];
+      const palm = arm.palmPt.clone().applyMatrix4(arm.hand.matrixWorld);
+      const dy = THREE.MathUtils.clamp(this.cy - 0.09 - palm.y, -0.08, 0.08);
+      const q = arm.hand.getWorldQuaternion(new THREE.Quaternion());
+      ch.reachHand(s, arm.hand.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, dy, 0)), q, w);
     }
   }
 

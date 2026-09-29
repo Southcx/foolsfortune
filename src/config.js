@@ -244,7 +244,7 @@ export const DEFAULTS = {
     wallclimb: { enabled: true, window: 0.8, reach: 0.45, maxAngle: 40, minSpeed: 1.2, maxFall: 3, speed: 6.5, time: 0.5, steps: 7, kickOut: 5, kickUp: 5.5 }, // jump into a wall, W held
     slip: { enabled: true, speed: 10, accel: 45, dryCrawl: 1.4, climbSpeed: 6, jump: 8.4, keepSpeed: 10, regen: 12, coverLife: 30 }, // C on slip
     swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 7.4, exitPush: 2.2 }, // water
-    ladder: { enabled: true, speed: 2.6, fast: 4.2, slide: 7, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder
+    ladder: { enabled: true, speed: 1.1, fast: 2.2, slide: 6, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder
     hang: { enabled: true, reach: 0.5, minTop: 1.92, maxTop: 2.95, handTol: 0.5, maxRise: 8, maxFall: 9, grace: 0.5, shimmy: 1.8, brachiate: 2.6, kickOut: 4.5, kickUp: 5, barReach: 0.45, barKick: 3.5, zipSpeed: 9, zipAccel: 5 }, // W at a ledge just above mantle height; an overhead bar; a cable
     latch: { enabled: true, reach: 0.55, budget: 2.2, speed: 2.4, kickOut: 5, kickUp: 5.5, slide: 1.6 }, // C in the air beside a wall
     pole: { enabled: true, speed: 2.6, ropeSpeed: 1.9, slide: 7, spin: 2.2, kickOut: 4.5, kickUp: 5 }, // walk into a pole or a rope

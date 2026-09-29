@@ -2,13 +2,17 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
+import { LADDER } from '../authored.js';
 
-// Ladders: walk (or jump) into one and you're on it. W / S climb (Shift faster),
-// C slides down, Space kicks off backwards; the gun stays out while you climb at a walk
-// (aim and fire one-handed), and goes away for a fast climb or a slide, and climbing past the top steps off onto
-// whatever's up there. The body is posed by IK alone: each hand and foot holds a
-// rung and moves up two when the body has climbed past it, so the limbs alternate
-// the way a real climb does.
+// Ladders: walk (or jump) into one and you're on it. W / S climb (Shift faster), C slides down,
+// Space kicks off backwards, and climbing past the top steps off onto whatever's up there.
+// The body plays the authored `ladderUp` cycle (authored.js): two rungs of climbing per cycle,
+// hands and feet a half-cycle apart, driven by the height climbed rather than by time, so the
+// limbs in stance stay on their rungs and going down is the same cycle in reverse. Stopped, the
+// body settles onto the nearest height where all four limbs hold a rung. The gun stays out at a
+// walk (the right arm aims it, one-handed; the left keeps climbing).
+const TAU = 0.05; // the phases where all four limbs hold: 0.05 and 0.55 of a cycle
+
 export class Ladder extends Tech {
   constructor(mgr) {
     super(mgr, 'ladder');
@@ -16,11 +20,14 @@ export class Ladder extends Tech {
     this.blendIn = 14;
     this.rushing = false; // (fast climbs and slides take both hands; the gun goes away, and comes back)
     this.cool = 0;
-    this.limbs = null;
+    this.slideW = 0;
+    this.vy = 0;
   }
 
   get ladders() { return this.game.ladders; }
   get handsBusy() { return this.rushing; }
+  /** How the aim layer behaves here: only the gun arm aims, and the torso hardly turns from the ladder. */
+  get aim() { return { arm: 'R', turn: 0.3 }; }
 
   tick(dt) { this.cool -= dt; }
 
@@ -37,27 +44,20 @@ export class Ladder extends Tech {
     return true;
   }
 
+  /** The body height at which the climb cycle is at phase 0 (a left-hand rung grip). */
+  yAlign() { return this.l.y0 + this.cfg.rung - LADDER.handTop; }
+
+  phase(y) { const c = 2 * this.cfg.rung; return ((((y - this.yAlign()) / c) % 1) + 1) % 1; }
+
   start() {
-    const P = this.P, l = this.l;
+    const P = this.P;
     P.endCore();
     P.setShape('stand');
     P.vel.set(0, 0, 0);
     this.snap = 0;
-    this.phase = 0;
-    const rung = this.cfg.rung;
-    // grab the rungs nearest where the limbs are now
-    const r = (y) => Math.round((y - l.y0) / rung);
-    const y = P.pos.y;
-    // a real climb is contralateral: the right hand and the left foot come up together, then the
-    // left hand and the right foot. So the two hands sit a rung apart (and the feet too), the
-    // lower hand with the opposite side's lower foot; each hops two rungs when the body has
-    // climbed past it, and the pairs alternate every rung (starting them all on one rung was
-    // the bunny hop)
-    const R = r(y + 1.5), F = r(y + 0.2);
-    this.limbs = {
-      handL: { r: R, from: null, t: 1 }, handR: { r: R - 1, from: null, t: 1 },
-      footL: { r: F, from: null, t: 1 }, footR: { r: F + 1, from: null, t: 1 },
-    };
+    this.vy = 0;
+    this.slideW = 0;
+    this.moving = 0;
     sfx.rung();
   }
 
@@ -70,86 +70,60 @@ export class Ladder extends Tech {
       P.vel.set(out.x, c.kickUp, out.z);
       P.grounded = false;
       this.cool = 0.4;
+      this.rushing = false;
       sfx.airJump();
       return false;
     }
     const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
-    let vy = iz * (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight') ? c.fast : c.speed);
-    if (inp.isDown('KeyC')) vy = -c.slide;
-    this.rushing = inp.isDown('KeyC') || (iz !== 0 && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight')));
+    const fast = inp.isDown('ShiftLeft') || inp.isDown('ShiftRight');
+    let vy = iz * (fast ? c.fast : c.speed);
+    const sliding = inp.isDown('KeyC');
+    if (sliding) vy = -c.slide;
+    this.rushing = sliding || (iz !== 0 && fast);
+    if (iz === 0 && !sliding) {
+      // settle onto the nearest height where every limb holds a rung
+      const p = c.rung, y = P.pos.y - this.yAlign();
+      const rest = (Math.round((y - TAU * 2 * p) / p)) * p + TAU * 2 * p;
+      vy = THREE.MathUtils.clamp((rest - y) * 9, -1.2, 1.2);
+    }
+    this.vy = THREE.MathUtils.damp(this.vy, vy, sliding ? 5 : 14, dt);
     // hold the ladder line
-    const want = new THREE.Vector3(l.x, 0, l.z).addScaledVector(l.n, 0.42);
+    const want = new THREE.Vector3(l.x, 0, l.z).addScaledVector(l.n, LADDER.standoff);
     this.snap = Math.min(1, this.snap + dt * 8);
-    P.vel.set((want.x - P.pos.x) * 12 * this.snap, vy, (want.z - P.pos.z) * 12 * this.snap);
+    P.vel.set((want.x - P.pos.x) * 12 * this.snap, this.vy, (want.z - P.pos.z) * 12 * this.snap);
     P.move(dt);
     P.bodyYaw = Math.atan2(-l.n.x, -l.n.z);
-    this.phase += Math.abs(vy) * dt;
+    this.sliding = sliding;
     // off the top: step over onto the platform
     if (iz > 0 && P.pos.y > l.y1 - 1.05) {
       const to = new THREE.Vector3(l.x, l.y1 + 0.02, l.z).addScaledVector(l.n, -0.55);
       if (P.fits(to, true)) {
         P.mantle = { from: P.pos.clone(), to, t: 0, dur: M.mantleTime * 1.1, exit: 1.5, edge: new THREE.Vector3(l.x, l.y1, l.z), right: new THREE.Vector3(l.n.z, 0, -l.n.x) };
         P.bodyYaw = Math.atan2(-l.n.x, -l.n.z);
+        this.rushing = false;
         sfx.mantle();
         return false;
       }
     }
     // off the bottom
-    if (iz < 0 && P.grounded) { this.cool = 0.3; return false; }
-    if (vy < 0 && P.grounded && inp.isDown('KeyC')) { this.cool = 0.3; return false; }
+    if (iz < 0 && P.grounded) { this.cool = 0.3; this.rushing = false; return false; }
+    if (this.vy < 0 && P.grounded && sliding) { this.cool = 0.3; this.rushing = false; return false; }
     return true;
   }
 
-  end() { this.limbs = null; this.rushing = false; }
+  end() { this.rushing = false; this.sliding = false; }
 
   faceYaw() { return Math.atan2(-this.l.n.x, -this.l.n.z); }
 
-  // ---- animation: IK every limb onto a rung ----
-  animate(ch, base) {
-    // a neutral body to hang the IK off: the idle pose, arms up
-    const p = ch.clips.sample('idle', 0.5, ch.P.tmp);
-    ch.clips.blend(base, p, this.w);
-  }
-
-  hands(ch) {
-    if (!this.limbs || !this.active) return;
-    const P = this.P, l = this.l, rung = this.cfg.rung, w = this.w;
-    const along = new THREE.Vector3(-l.n.z, 0, l.n.x); // (the character's left, facing the ladder)
-    const face = new THREE.Vector3(l.x, 0, l.z).addScaledVector(l.n, 0.1);
-    const y = P.renderPos.y;
-    const reach = { handL: [1.05, 1.95], handR: [1.05, 1.95], footL: [0.0, 0.8], footR: [0.0, 0.8] };
-    const H = (r) => l.y0 + r * rung;
-    for (const k of Object.keys(this.limbs)) {
-      const L = this.limbs[k];
-      const [lo, hi] = reach[k];
-      const top = Math.floor((l.y1 - l.y0) / rung) - 1;
-      // climbed past it: move up two rungs (or down two)
-      if (H(L.r) - y < lo && L.r + 2 <= top) { L.from = H(L.r); L.r += 2; L.t = 0; if (k.startsWith('hand')) sfx.rung(); }
-      else if (H(L.r) - y > hi && L.r - 2 >= 1) { L.from = H(L.r); L.r -= 2; L.t = 0; }
-      L.t = Math.min(1, L.t + 0.14);
-    }
-    for (const side of ['L', 'R']) {
-      const sg = side === 'L' ? 1 : -1;
-      const hL = this.limbs['hand' + side];
-      if (!(side === 'R' && ch.gunHeld)) {
-        const hy = hL.t < 1 && hL.from != null ? THREE.MathUtils.lerp(hL.from, H(hL.r), hL.t) : H(hL.r);
-        const lift = hL.t < 1 ? Math.sin(Math.PI * hL.t) * 0.1 : 0;
-        const q = ch.handQuat(ch.arm[side], new THREE.Vector3(0, 1, 0).addScaledVector(l.n, -0.6), l.n.clone().negate());
-        const p = face.clone().addScaledVector(along, sg * 0.2).setY(hy + 0.02).addScaledVector(l.n, 0.02 + lift);
-        p.sub(ch.arm[side].palmPt.clone().applyQuaternion(q));
-        ch.reachHand(side, p, q, w);
-      }
-      // feet on the rungs (IK the legs here too: the hands pass is the last word on the pose)
-      const fL = this.limbs['foot' + side];
-      const fy = fL.t < 1 && fL.from != null ? THREE.MathUtils.lerp(fL.from, H(fL.r), fL.t) : H(fL.r);
-      const lift = fL.t < 1 ? Math.sin(Math.PI * fL.t) * 0.12 : 0;
-      const leg = ch.leg[side];
-      const target = face.clone().addScaledVector(along, sg * 0.12).setY(fy + ch.ankleRest).addScaledVector(l.n, 0.05 + lift);
-      const cur = leg.foot.getWorldPosition(new THREE.Vector3());
-      target.lerp(cur, 1 - w);
-      const pole = leg.thigh.getWorldPosition(new THREE.Vector3()).addScaledVector(l.n, -0.6).add(new THREE.Vector3(0, -0.2, 0));
-      ch.solveLeg(leg, target, pole);
-    }
+  // ---- animation: the authored cycle, by height climbed ----
+  animate(ch, base, dt) {
+    const C = ch.clips, P = this.P;
+    const up = C.clips.ladderUp;
+    const ph = this.phase(P.renderPos.y);
+    this.slideW = THREE.MathUtils.damp(this.slideW, this.active && this.sliding ? 1 : 0, 10, dt);
+    const pose = C.sample('ladderUp', ph * up.dur, ch.P.tmp, true);
+    if (this.slideW > 0.001) C.blend(pose, C.sample('ladderSlide', ch.time, ch.P.tmp2), this.slideW);
+    C.blend(base, pose, this.w);
   }
 
   label() { return 'LADDER'; }

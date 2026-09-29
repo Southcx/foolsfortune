@@ -145,6 +145,23 @@ export class Kick extends Tech {
 
   reset() { this.state = 'idle'; this.st = 0; }
 
+  /** The body around the kick: the torso leans back and twists away as the leg comes through, and settles after. */
+  afterPose(ch) {
+    if (this.w < 0.02 || this.state !== 'kick') return;
+    const P = this.P, t = this.st;
+    let k;
+    if (t < WIND) k = sm(t / WIND) * 0.3;
+    else if (t < ACTIVE_TO) k = 0.3 + 0.7 * sm((t - WIND) / (ACTIVE_TO - WIND));
+    else k = 1 - sm(Math.min(1, (t - ACTIVE_TO) / (DONE - ACTIVE_TO)));
+    const yaw = P.bodyYaw, left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)), up = new THREE.Vector3(0, 1, 0);
+    const a = k * this.w;
+    for (const [b, f] of [['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]]) {
+      ch.rotW(ch.bones[b], left, -a * 0.22 * f); // (back)
+      ch.rotW(ch.bones[b], up, a * 0.3 * f); // (the right side comes round)
+    }
+    ch.root.updateMatrixWorld(true);
+  }
+
   // ---- pose: the right leg through a kick (over whatever the body is doing) ----
   hands(ch) {
     if (this.w < 0.02 || this.state !== 'kick') return;

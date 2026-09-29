@@ -3,6 +3,7 @@ import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
 import { GROUPS } from '../physics.js';
+import { HANG } from '../authored.js';
 
 // Hanging: a body move (always yours). Airborne beside a ledge just above mantle height, or
 // under an overhead bar, and you catch it with both hands and hang. A / D shimmy along a ledge
@@ -10,7 +11,8 @@ import { GROUPS } from '../physics.js';
 // (a bar: swings you out along it). A slanted cable is a zipline: it takes you down, hanging. Hanging leaves a hand free: the gun stays out and you can
 // aim and fire one-handed while you hang.
 const UP = new THREE.Vector3(0, 1, 0);
-const DROP = 2.05; // feet this far below the grip: the hands just reach
+const DROP = HANG.drop; // feet this far below the grip (the authored hang clips are built for it)
+const CAPSULE_WALL = 0.34; // the capsule hangs this far from the ledge's face; the body is drawn HANG.wall from it
 const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 
 export class Hang extends Tech {
@@ -198,30 +200,66 @@ export class Hang extends Tech {
 
   faceYaw() { return this.face ? Math.atan2(this.face.x, this.face.z) : null; }
 
-  // ---- pose: a dangling body (the jump-loop legs), both hands on the grip ----
-  animate(ch, base) {
-    const p = ch.clips.sample('jumpLoop', 0.35, ch.P.tmp);
-    ch.clips.blend(base, p, this.w);
+  /** How the aim layer behaves here: only the gun arm aims (the other hand keeps its hold). */
+  get aim() { return { arm: 'R', turn: 0.3 }; }
+
+  // ---- pose: the authored hang clips, played by distance along the grip ----
+  animate(ch, base, dt) {
+    const C = ch.clips, g = this.grip;
+    if (!g) return;
+    const bar = g.kind === 'bar';
+    const move = bar ? (g.bar.zip ? 0 : 1) : 1;
+    const L = bar ? HANG.barCycle : HANG.shimmyCycle;
+    // (the clip runs by distance: forward along the shimmy's left / the bar's length, backward the other way)
+    const dist = bar ? this.shim * (g.bar.zip ? 0 : 1) * (this.face.dot(g.along) >= 0 ? 1 : -1) : this.shim;
+    this.cyc = ((this.cyc || 0) + dist * dt / L) % 1;
+    const idle = C.sample(bar ? 'hangBar' : 'hangLedge', ch.time, ch.P.tmp);
+    this.mv = THREE.MathUtils.damp(this.mv || 0, Math.min(1, Math.abs(this.shim) / (bar ? 1.4 : 1.0)) * move, 10, dt);
+    if (this.mv > 0.001) {
+      const name = bar ? 'hangBarGo' : 'hangShimmy';
+      const go = C.sample(name, (((this.cyc % 1) + 1) % 1) * C.clips[name].dur, ch.P.tmp2, true);
+      C.blend(idle, go, this.mv);
+    }
+    C.blend(base, idle, this.w);
   }
 
+  /** The capsule hangs a little further from the wall than the clip's body does: draw the body in. */
+  afterPose(ch) {
+    const g = this.grip;
+    if (!g || g.kind !== 'ledge' || this.w < 0.01) return;
+    ch.root.position.addScaledVector(this.face, (CAPSULE_WALL - HANG.wall) * this.w);
+    ch.root.updateMatrixWorld(true);
+  }
+
+  /** A light contact correction: the palms onto the ledge top / bar, whatever the clip's drift. */
   hands(ch) {
     if (!this.active || !this.grip || this.w < 0.05) return;
-    const g = this.grip, P = this.P;
-    const face = this.face.clone(), right = new THREE.Vector3(face.z, 0, -face.x); // the body's right
-    let center;
-    if (g.kind === 'ledge') center = g.edge.clone().addScaledVector(g.n, -0.06);
-    else center = g.bar.a.clone().addScaledVector(g.along, g.s);
-    if (g.kind === 'bar' && g.bar.zip) this.phase = 0;
-    // the body hangs a little behind the grip while it moves; hands alternate as it shimmies
+    const g = this.grip;
+    const face = this.face;
+    const _p = new THREE.Vector3();
     for (const side of ['L', 'R']) {
       if (side === 'R' && ch.gunHeld) continue; // (the gun hand stays on the gun: hang one-handed)
-      const sg = side === 'L' ? -1 : 1;
-      const alt = Math.sin(this.phase * Math.PI * 2 + (side === 'L' ? 0 : Math.PI)) * 0.08 * Math.min(1, Math.abs(this.shim));
-      const q = ch.handQuat(ch.arm[side], face, new THREE.Vector3(0, -1, 0));
-      const p = center.clone().addScaledVector(right, sg * 0.22 + (g.kind === 'bar' ? 0 : alt)).addScaledVector(face, g.kind === 'bar' ? 0 : 0.06);
-      if (g.kind === 'bar') p.addScaledVector(face, alt);
-      p.sub(ch.arm[side].palmPt.clone().applyQuaternion(q)).add(new THREE.Vector3(0, 0.03, 0));
-      ch.reachHand(side, p, q, this.w);
+      const arm = ch.arm[side];
+      const q = arm.hand.getWorldQuaternion(new THREE.Quaternion());
+      const palm = arm.palmPt.clone().applyMatrix4(arm.hand.matrixWorld);
+      const want = palm.clone();
+      if (g.kind === 'ledge') {
+        want.y = g.topY;
+        // the fingers over the lip, no further than that
+        const d = want.clone().sub(g.edge).dot(face);
+        want.addScaledVector(face, THREE.MathUtils.clamp(HANG.over - d, -0.05, 0.05));
+      } else {
+        const at = g.bar.a.clone().addScaledVector(g.along, g.s);
+        want.y = at.y;
+        // (on the bar's line: sideways offset removed)
+        const off = want.clone().sub(at); off.y = 0;
+        const perp = off.addScaledVector(g.along, -off.dot(g.along));
+        want.sub(perp);
+      }
+      const delta = want.sub(palm);
+      if (delta.length() > 0.08) delta.setLength(0.08);
+      const wrist = arm.hand.getWorldPosition(new THREE.Vector3()).add(delta);
+      ch.reachHand(side, wrist, q, this.w);
     }
   }
 

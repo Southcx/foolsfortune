@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
 import { Clips, Track } from './animator.js';
+import { authorAll } from './authored.js';
 
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
@@ -238,6 +239,13 @@ export class Character {
     this.driven = C.bones.map((n) => B[n]);
     this.P = { base: C.pose(), tmp: C.pose(), tmp2: C.pose(), air: C.pose(), up: C.pose(), up2: C.pose() };
     this.MASK_UPPER = C.mask({ spine001: 0.3, spine002: 0.65, spine003: 1, spine004: 0.6, head: 0.5, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
+    // (one arm and the head: for the moves that hold the body to something with the other hand)
+    this.MASK_ARM = {};
+    for (const s of ['L', 'R']) {
+      const t = { head: 0.35, spine004: 0.25 };
+      for (const n of C.bones) if (n.endsWith(s) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) t[n] = 1;
+      this.MASK_ARM[s] = C.mask(t);
+    }
     this.airTrack = new Track(C, new Set(['jumpLoop', 'flipLoop']));
     this.slideTrack = new Track(C, new Set(['slideLoop']));
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
@@ -262,6 +270,7 @@ export class Character {
     this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, landW: 0, landT: 9, dip: 0, dipV: 0, wasFooted: true, sliding: false, yawOff: 0 };
     this.airT = 0;
     this.resetPose();
+    authorAll(this); // (clips the libraries lack: built once here, from key poses solved on this very skeleton)
   }
 
   /**
@@ -585,6 +594,7 @@ export class Character {
     if (Math.abs((s.gunHand || 0) - st.hand) < dt / T.weapon.swapTime) st.hand = s.gunHand || 0;
     // ---- pistol on the upper body: an aim offset (down / level / up) ----
     const wU = s.upper || 0;
+    const prof = s.techs?.aimProfile?.() || null;
     if (wU > 0.001) {
       const up = C.sample('aimMid', 0, P.up);
       const pk = clamp(s.aimPitch / (A.aimRange * DEG), -1, 1);
@@ -593,7 +603,7 @@ export class Character {
       if (s.reload >= 0) C.blend(up, C.sample('reload', s.reload * C.clips.reload.dur, P.up2, false), smooth(0, 0.12, s.reload) * (1 - smooth(0.85, 1, s.reload)));
       // gun in the left hand: the same aim, mirrored
       if (st.hand > 0.001) C.blend(up, this.mirrorPose(up, P.up2), smooth(0.2, 0.8, st.hand));
-      C.blend(base, up, wU, this.MASK_UPPER, 0);
+      C.blend(base, up, wU, prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
     }
     // movement techs blend their own poses in (swim, roll, climb...)
     s.techs?.animate(this, base, dt, s);
@@ -625,7 +635,7 @@ export class Character {
     }
     // aim: the spine twists toward the camera's yaw when the body lags it; the head does the looking otherwise
     const cw = s.combat ?? 0;
-    st.yawOff = damp(st.yawOff, s.aimYawOffset * cw, 18, dt);
+    st.yawOff = damp(st.yawOff, s.aimYawOffset * cw * (prof?.turn ?? 1), 18, dt);
     for (const [b, w] of [[B.spine001, 0.25], [B.spine002, 0.3], [B.spine003, 0.45]]) this.rotW(b, upW, st.yawOff * w);
     const rightW = _v4.set(-1, 0, 0).applyQuaternion(root.quaternion);
     // air dash: pitch the whole body into the dash, about the hips
@@ -827,7 +837,7 @@ export class Character {
     const drawPole = shR.clone().add(C(-0.5, -0.25, -0.35)); // elbow out and back
 
     // 1) turn the chest so the barrel lines up with the crosshair
-    const wAim = (o.upper || 0) * (inHand ? 1 : 0) * (o.reloading ? 0.3 : 1) * (1 - (o.fw || 0));
+    const wAim = (o.upper || 0) * (inHand ? 1 : 0) * (o.reloading ? 0.3 : 1) * (1 - (o.fw || 0)) * (o.aimTurn ?? 1);
     if (wAim > 0.01 && o.aimPoint) {
       for (let it = 0; it < 2; it++) {
         this.heldGun(hs, Mg).decompose(gp, gq, _v4);
@@ -842,6 +852,21 @@ export class Character {
         const k = wAim * (ang > lim ? lim / ang : 1);
         this.turnW(B.spine003, new THREE.Quaternion().slerp(q, k));
         root.updateMatrixWorld(true);
+      }
+    }
+
+    // 1b) pinned to something (a ladder, a ledge): the gun arm alone swings to the aim, the torso stays
+    if (o.aimArm === 'R' && inHand && (o.fw || 0) < 0.5 && o.aimPoint) {
+      const k = smooth(HOLD, 1, o.drawT) * (o.upper || 0);
+      if (k > 0.02) {
+        const sh = this.shoulder('R', new THREE.Vector3());
+        const dir = o.aimPoint.clone().sub(sh).normalize();
+        const pos = sh.clone().addScaledVector(dir, 0.5).addScaledVector(UP, -0.06);
+        const x = dir.clone(), y = UP.clone().addScaledVector(dir, -UP.dot(dir)).normalize();
+        const G = new THREE.Matrix4().makeBasis(x, y, new THREE.Vector3().crossVectors(x, y));
+        G.setPosition(pos);
+        this.handFromGun(G, 'R', hp, hq);
+        this.reachHand('R', hp, hq, k);
       }
     }
 
@@ -886,7 +911,7 @@ export class Character {
     }
     // the support hand: on the grip when aiming, off it for reloads and contacts
     const supSide = hs < 0.5 ? 'L' : 'R';
-    let wL = Math.max(o.upper || 0, fwG) * (inHand ? smooth(HOLD, 1, o.drawT) : 0) * Math.abs(1 - 2 * hs);
+    let wL = Math.max(o.upper || 0, fwG) * (inHand ? smooth(HOLD, 1, o.drawT) : 0) * Math.abs(1 - 2 * hs) * (o.aimArm ? 0 : 1); // (one-handed: the other hand is holding on)
     if (o.reloading && fwG < 0.5) wL = 0; // the reload clip drives it
     let contactL = 0, contactR = 0;
     // wall: the wall-side hand flat on the wall, a little ahead (unless it's holding the gun)
