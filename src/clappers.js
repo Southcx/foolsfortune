@@ -20,6 +20,7 @@ import { sfx } from './audio.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const RADIUS = 0.2, HALF = 0.12;
+const _box = new THREE.Box3();
 const CLAPPER_GROUPS = groups(G.CRITTER, 0xffff);
 const QUERY = groups(0xffff, G.STATIC | G.PROP | G.PLAYER | G.CRITTER);
 const STATIC_ONLY = groups(0xffff, G.STATIC);
@@ -533,7 +534,21 @@ export class Clappers {
       c.root.position.y += c.hop;
       c.root.rotation.set(0, c.heading + (c.state === 'celebrate' ? c.twirl * c.twirl * Math.PI * 2 : 0), 0);
       if (c.state === 'stunned') { c.root.rotation.z = Math.sin(c.t * 6) * 0.18; c.root.rotation.x = Math.cos(c.t * 5) * 0.12; }
-      if (c.state === 'knocked' || c.pulledT > 0) c.root.rotation.x = c.spin;
+      if (c.state === 'knocked' || c.pulledT > 0) {
+        // tumbling about the body's centre, not its feet (about the feet, a flip swings the body through the floor);
+        // on the ground it rights itself to the nearest upright
+        if (c.grounded) c.spin = THREE.MathUtils.damp(c.spin, Math.round(c.spin / (Math.PI * 2)) * Math.PI * 2, 10, dt);
+        c.root.rotation.x = c.spin;
+        const hc = (HALF + RADIUS) * T.clappers.scale;
+        c.root.position.y += hc * (1 - Math.cos(c.spin));
+        c.root.position.z -= hc * Math.sin(c.spin);
+        // (and never below the floor it's on, whatever way up it is)
+        if (Math.abs(Math.sin(c.spin / 2)) > 0.04) {
+          c.root.updateMatrixWorld(true);
+          const low = _box.setFromObject(c.root).min.y;
+          if (low < c.pos.y - 0.01) c.root.position.y += c.pos.y - 0.01 - low;
+        }
+      }
       c.root.scale.setScalar(T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045));
       c.stars.visible = c.state === 'stunned';
       if (c.stars.visible) c.stars.children.forEach((st, i) => { const a = st.userData.a + c.t * 5; st.position.set(Math.cos(a) * 0.2, Math.sin(c.t * 7 + i) * 0.03, Math.sin(a) * 0.2); st.rotation.y += dt * 8; });

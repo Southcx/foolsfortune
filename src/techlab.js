@@ -135,9 +135,9 @@ export function buildTechLab(L, env) {
     blk(P.x0, P.x1, -P.depth, -0.02, P.z0 - 0.02, P.z0 + 0.01, C.dark, solid);
     strip(S, [(P.x0 + P.x1) / 2, B + 0.01, P.z1 - 0.04], [P.x1 - P.x0, 0.02, 0.08]);
     label(S, 'BLINK', [24, B + 0.02, -48.5], { width: 1.6, sub: '9 m · sprint jump, E mid-air' });
-    // wall climb: a 4 m wall in the far corner
+    // a 4 m wall in the far corner (a latch or an edge hang gets you up it)
     blk(28, 36, 0, 4, -72, -66, C.mid);
-    label(S, 'CLIMB 4 m', [32, B + 0.02, -64], { width: 1.8, sub: 'jump into it, W held' });
+    label(S, 'WALL 4 m', [32, B + 0.02, -64], { width: 1.8, sub: 'C beside it in the air: latch' });
     // stomp stairs: pots on pillars, each a bounce above the last, up onto the 4 m wall
     for (const [x, h] of STOMP_STEPS) blk(x - 0.35, x + 0.35, 0, h, -69.85, -69.15, C.wood);
     label(S, 'STOMP', [20, B + 0.02, -67.5], { rotY: -Math.PI / 2, width: 1.4, sub: 'pot to pot, up' });

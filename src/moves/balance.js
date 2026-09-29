@@ -109,6 +109,23 @@ export class Balance extends Tech {
       p.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
       ch.reachHand(s, p, q, w * 0.9);
     }
+    // the feet on the beam's line, one nearly in front of the other (a stride wide as the boots)
+    const b = this.beam;
+    if (!b) return;
+    const perp = new THREE.Vector3(-b.dir.z, 0, b.dir.x);
+    for (const s of ['L', 'R']) {
+      const leg = ch.leg[s], sg = s === 'L' ? 1 : -1;
+      const foot = leg.foot.getWorldPosition(new THREE.Vector3());
+      const off = _v.set(foot.x - b.a.x, 0, foot.z - b.a.z).dot(perp);
+      const shift = sg * 0.04 * perp.dot(left) - off * 0.92;
+      if (Math.abs(shift) < 0.005) continue;
+      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+      const knee = leg.shin.getWorldPosition(new THREE.Vector3());
+      const to = foot.clone().addScaledVector(perp, shift * w);
+      knee.addScaledVector(perp, shift * w * 0.5);
+      ch.solveLeg(leg, to, knee.addScaledVector(fwd, 0.2));
+      ch.setWorldQuat(leg.foot, fq);
+    }
   }
 
   label() { return 'BALANCE'; }

@@ -170,7 +170,6 @@ lab and the torture bot use. Techs are *active* (one owns the movement step at a
 | Slam | C in the air, looking down, 1.8 m+ up | straight down; the landing breaks pots nearby and throws the rest (and clapperjars). Then Space: slam jump, higher the further you fell (about 2 m from 5 m); hold C with a direction: slam slide, the fall turned into speed. (Looking ahead, C in the air stays the core's landing slide) |
 | Stomp | land on a pot or a clapperjar | it breaks under you and throws you up (+1.66 m), air jump refilled |
 | Roll | Shift while crouched; automatic only out of a fall of 20 m or more | a low dash the way you steer (or face) with invulnerability frames at the start (`player.invuln`, ready for a damage system); out of a fall it also mitigates the landing and turns the fall into forward speed (above slide speed the core slides instead). Space out of the second half keeps the speed |
-| Wall climb | jump into a wall head-on, W held | run up it for half a second; a ledge in reach is a mantle (4 m walls from the ground); Space kicks off. Off the ground only: after a wallrun the core's wall moves own the air |
 | Slip dive | hold C on slip | melt into liquid clay: a fast blob (10 m/s) through slip, crawling off it; climbs slip-coated walls, fits through 0.8 m gaps, Space launches out (higher than a jump, keeping the speed), let go of C to stand. Lachryma soaks back in meanwhile. The SLIP shell (8) paints floors and walls wet; burst slip barrels leave puddles |
 | Swim | deep water | float with your head out and paddle (Shift faster); C dives and you swim where you look; Space rises, and at the surface hops out; swim into an edge to climb out |
 | Ladder | walk (or jump) into one | W / S climb (Shift faster), C slides down, Space kicks off, climbing past the top steps off; the limbs climb contralateral (right hand with left foot, a rung apart) and each hops two rungs when the body has passed it. The gun stays out at a walk (one hand climbs, one shoots); a fast climb or a slide stows it |
@@ -260,7 +259,6 @@ you get closer), and which variant is selected. The game pauses while it's open.
 | Slam | 3 drops of 12 m or more | **Quake** (40 slams): a wider shockwave; **Super Slam** (slam onto a *moving* target from 50 m up: the kiln stack's carts): a huge double ring, a taller slam jump |
 | Roll | 5 hard landings | **Tumble** (15 rolls): rolls from lower falls, faster, longer invulnerable |
 | Stomp | 25 pots broken | **Spring** (three stomps in a row): a higher bounce |
-| Wall climb | 8 wallruns and 4 wall jumps | **Scale** (20 climbs): faster and higher |
 | Slip dive | 6 slip-shell splats | **Tide** (90 seconds under the slip): faster, higher launch |
 | Wall latch | 6 ledge and bar hangs | **Iron Grip** (15 latches): longer, faster |
 | Kick & parry | 15 pots broken | **Counter** (4 parries): a wider parry window, thrown back harder, longer invulnerable |

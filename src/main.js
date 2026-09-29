@@ -17,6 +17,7 @@ import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import animsB64 from './assets/anims.bin?b64';
+import cmuB64 from './assets/anims_cmu.bin?b64';
 import { decodeAnims } from './anims.js';
 import { Clappers } from './clappers.js';
 import { LachrymaPool, Baubles } from './lachryma.js';
@@ -28,7 +29,6 @@ import { Blink } from './moves/blink.js';
 import { Slam } from './moves/slam.js';
 import { Stomp } from './moves/stomp.js';
 import { Roll } from './moves/roll.js';
-import { WallClimb } from './moves/wallclimb.js';
 import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { SlipDive } from './moves/slip.js';
@@ -149,7 +149,9 @@ async function main() {
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
   clappers.spawnAll();
-  const character = new Character(scene, charG, gunG, decodeAnims(animsB64));
+  const clipPack = decodeAnims(animsB64);
+  Object.assign(clipPack.clips, decodeAnims(cmuB64).clips); // (mocap: the soccer kick)
+  const character = new Character(scene, charG, gunG, clipPack);
   character.onFootstep = () => sfx.footstep();
   game.character = character;
 
@@ -164,7 +166,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, WallClimb, Stomp, Balance, Carry, Kick, Recoil]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil]) techs.add(new T0(techs));
   env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;

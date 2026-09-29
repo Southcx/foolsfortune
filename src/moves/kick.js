@@ -15,6 +15,7 @@ export class Kick extends Tech {
   constructor(mgr) {
     super(mgr, 'kick');
     this.passive = true;
+    this.blendIn = 30;
     this.state = 'idle';
     this.st = 0;
     this.hit = new Set();
@@ -38,6 +39,7 @@ export class Kick extends Tech {
       this.hit.clear();
       this.hitAny = false;
       this.parried = false;
+      this.clip = Math.random() < 0.5 ? 'kick_a' : 'kick_b';
       this.fwd = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
       sfx.whoosh();
       g.events?.emit('kick.swing', {});
@@ -145,40 +147,20 @@ export class Kick extends Tech {
 
   reset() { this.state = 'idle'; this.st = 0; }
 
-  /** The body around the kick: the torso leans back and twists away as the leg comes through, and settles after. */
-  afterPose(ch) {
-    if (this.w < 0.02 || this.state !== 'kick') return;
-    const P = this.P, t = this.st;
-    let k;
-    if (t < WIND) k = sm(t / WIND) * 0.3;
-    else if (t < ACTIVE_TO) k = 0.3 + 0.7 * sm((t - WIND) / (ACTIVE_TO - WIND));
-    else k = 1 - sm(Math.min(1, (t - ACTIVE_TO) / (DONE - ACTIVE_TO)));
-    const yaw = P.bodyYaw, left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)), up = new THREE.Vector3(0, 1, 0);
-    const a = k * this.w;
-    for (const [b, f] of [['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]]) {
-      ch.rotW(ch.bones[b], left, -a * 0.22 * f); // (back)
-      ch.rotW(ch.bones[b], up, a * 0.3 * f); // (the right side comes round)
-    }
-    ch.root.updateMatrixWorld(true);
-  }
-
-  // ---- pose: the right leg through a kick (over whatever the body is doing) ----
-  hands(ch) {
-    if (this.w < 0.02 || this.state !== 'kick') return;
-    const P = this.P, w = this.w, t = this.st;
-    const leg = ch.leg.R;
-    let k;
-    if (t < WIND) k = sm(t / WIND) * -0.35; // draw the knee up and back
-    else if (t < ACTIVE_TO) k = -0.35 + 1.35 * sm((t - WIND) / (ACTIVE_TO - WIND - 0.1));
-    else k = 1 - sm(Math.min(1, (t - ACTIVE_TO) / (DONE - ACTIVE_TO)));
-    k = THREE.MathUtils.clamp(k, -0.4, 1);
-    const fwd = new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
-    const rest = leg.foot.getWorldPosition(new THREE.Vector3());
-    const hip = leg.thigh.getWorldPosition(new THREE.Vector3());
-    const target = hip.clone().addScaledVector(fwd, 0.95 * k).add(new THREE.Vector3(0, -0.95 + 0.85 * Math.max(0, k) + 0.35 * Math.max(0, -k), 0));
-    target.lerp(rest, 1 - w);
-    const pole = hip.clone().addScaledVector(fwd, 0.9).add(new THREE.Vector3(0, 0.3, 0));
-    ch.solveLeg(leg, target, pole);
+  /**
+   * The body plays a soccer kick (CMU mocap, retargeted: tools/cmu_clips.json kick_a / kick_b),
+   * its timeline squeezed onto the strike's: the draw back over the wind-up, the swing up to the
+   * moment the foot lands, the follow-through and recovery after.
+   */
+  animate(ch, base) {
+    if (this.w < 0.005 || this.state !== 'kick') return;
+    const C = ch.clips, name = this.clip || 'kick_a', clip = C.clips[name];
+    if (!clip) return;
+    const t = this.st;
+    const K = [[0, 0.05], [WIND, 0.3], [0.19, 0.5], [ACTIVE_TO, 0.62], [DONE, 0.98]]; // (strike time, clip phase)
+    let u = K[K.length - 1][1];
+    for (let i = 1; i < K.length; i++) if (t <= K[i][0]) { const [a, b] = [K[i - 1], K[i]]; u = a[1] + (b[1] - a[1]) * (t - a[0]) / (b[0] - a[0]); break; }
+    C.blend(base, C.sample(name, u * clip.dur, ch.P.tmp, false), this.w);
   }
 
   label() { return 'KICK'; }

@@ -226,6 +226,15 @@ export class Hang extends Tech {
   /** The capsule hangs a little further from the wall than the clip's body does: draw the body in. */
   afterPose(ch) {
     const g = this.grip;
+    if (g && g.kind === 'bar' && g.bar.zip && this.w > 0.01) {
+      // riding a cable: the legs stream out behind, the body leans into the ride
+      const k = Math.min(1, this.shim / 7) * this.w;
+      const yaw = Math.atan2(this.face.x, this.face.z), left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+      for (const t of ['thighL', 'thighR']) if (ch.bones[t]) ch.rotW(ch.bones[t], left, -0.5 * k);
+      for (const [b, f] of [['spine001', 0.5], ['spine002', 0.5]]) ch.rotW(ch.bones[b], left, 0.12 * k * f);
+      ch.root.updateMatrixWorld(true);
+      return;
+    }
     if (!g || g.kind !== 'ledge' || this.w < 0.01) return;
     ch.root.position.addScaledVector(this.face, (CAPSULE_WALL - HANG.wall) * this.w);
     ch.root.updateMatrixWorld(true);

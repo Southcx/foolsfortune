@@ -241,7 +241,6 @@ export const DEFAULTS = {
     slam: { enabled: true, lookDown: 30, minHeight: 1.8, speed: 24, steer: 3, radius: 3.2, breakFrac: 0.45, velocity: 9, window: 0.3, jumpMult: 1.15, jumpPerMetre: 0.06, jumpMax: 1.9, slidePerMetre: 0.35 }, // C in the air, looking down
     stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar
     roll: { enabled: true, minDrop: 20, time: 0.5, speed: 8.5, speedPerFall: 0.25, iframes: 0.32, cooldown: 0.7, clipFrom: 0.3, clipTo: 1.0 }, // Shift while crouched; automatic out of a fall of 20 m or more
-    wallclimb: { enabled: true, window: 0.8, reach: 0.45, maxAngle: 40, minSpeed: 1.2, maxFall: 3, speed: 6.5, time: 0.5, steps: 7, kickOut: 5, kickUp: 5.5 }, // jump into a wall, W held
     slip: { enabled: true, speed: 10, accel: 45, dryCrawl: 1.4, climbSpeed: 6, jump: 8.4, keepSpeed: 10, regen: 12, coverLife: 30 }, // C on slip
     swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 7.4, exitPush: 2.2 }, // water
     ladder: { enabled: true, speed: 1.1, fast: 2.2, slide: 6, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder

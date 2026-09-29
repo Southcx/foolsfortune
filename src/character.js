@@ -6,6 +6,7 @@ import { authorAll } from './authored.js';
 
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
+const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -774,6 +775,19 @@ export class Character {
       arm.upper.updateMatrixWorld(true);
       pole.copy(S).add(_v3.set(-arm.side * 0.45, -0.35, 0).applyQuaternion(cq));
     }
+    // the shoulder's ball joint: what the arm can't reach, the shoulder gives (up to STRETCH), the way
+    // a posed figure's shoulder is pushed toward the reach
+    if (!(shift > 0 && this.fpCam)) {
+      const S = arm.upper.getWorldPosition(new THREE.Vector3());
+      const d = S.distanceTo(target), L = (arm.a + arm.b) * 0.96;
+      if (d > L) {
+        const give = Math.min(d - L, STRETCH);
+        const sh = target.clone().sub(S).normalize().multiplyScalar(give);
+        arm.upper.parent.getWorldQuaternion(_q1).invert();
+        arm.upper.position.add(sh.applyQuaternion(_q1));
+        arm.upper.updateMatrixWorld(true);
+      }
+    }
     this.solve2(arm.upper, arm.fore, arm.hand, arm.a, arm.b, target, pole);
     this.setWorldQuat(arm.hand, hq.slerp(quat, w));
     arm.hand.updateMatrixWorld(true);
@@ -861,7 +875,7 @@ export class Character {
       if (k > 0.02) {
         const sh = this.shoulder('R', new THREE.Vector3());
         const dir = o.aimPoint.clone().sub(sh).normalize();
-        const pos = sh.clone().addScaledVector(dir, 0.5).addScaledVector(UP, -0.06);
+        const pos = sh.clone().addScaledVector(dir, 0.66).addScaledVector(UP, -0.05); // (arm out straight: the shoulder gives what the arm can't)
         const x = dir.clone(), y = UP.clone().addScaledVector(dir, -UP.dot(dir)).normalize();
         const G = new THREE.Matrix4().makeBasis(x, y, new THREE.Vector3().crossVectors(x, y));
         G.setPosition(pos);

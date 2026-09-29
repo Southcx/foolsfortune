@@ -70,16 +70,6 @@ export const ABILITIES = [
     ],
   },
   {
-    id: 'wallclimb', key: 'W→', name: 'Wall Climb', glyph: '⇑', tech: 'wallclimb', input: 'jump into a wall, W held', station: 'T5',
-    blurb: 'Run up a wall a few steps, then kick off. Once a jump, and never after a wallrun.',
-    hint: 'Spend time on walls: wallruns, and the jumps off them.',
-    goals: [count('wallrun.end', 8, 'wallruns', (e) => e.dur >= 0.3), count('jump', 4, 'wall jumps', (e) => e.kind === 'wall')],
-    variants: [
-      { id: 'scale', name: 'Scale', blurb: 'Faster up the wall, and higher on the kick.', cfg: { speed: 8, time: 0.6, kickUp: 6.8 },
-        hint: 'Climb until the wall gives in.', goals: [count('tech.end', 20, 'climbs', (e) => e.id === 'wallclimb')] },
-    ],
-  },
-  {
     id: 'slip', key: 'C', name: 'Slip Dive', glyph: '≈', tech: 'slip', input: 'C on slip', station: 'T4',
     blurb: 'Melt into liquid clay and move fast through it: up walls, under gaps, launched out with a jump. Lachryma soaks back in while you are under.',
     hint: 'Paint the world with the slip shell first.',

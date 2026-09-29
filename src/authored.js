@@ -10,7 +10,7 @@ import { Author, V3, lerp, smooth, tri } from './authoring.js';
 const DEG = Math.PI / 180;
 
 /** Where the ladder's rungs sit relative to the body: the rung centres are this far in front of the feet. */
-export const LADDER = { standoff: 0.42, handX: 0.2, footX: 0.12, handTop: 1.66 };
+export const LADDER = { standoff: 0.42, handX: 0.2, footX: 0.12, handTop: 1.86 };
 
 /** Hanging: the palms are this high above the feet (the body hangs from its hands), and a ledge's face is this far in front of the body. */
 export const HANG = { drop: 1.66, wall: 0.24, handX: 0.22, over: 0.05, shimmyCycle: 0.4, barCycle: 0.6 };
@@ -54,7 +54,7 @@ function ladder(A, ch) {
     const sway = Math.sin(ph * Math.PI * 2); // + when the left hand / right foot are planted high
     // the hips: closer to the ladder, a little lower on the planted side, swaying toward the
     // planted foot, and rising through each push
-    this.hips(-sway * 0.025, -0.05 + Math.abs(Math.sin(ph * Math.PI * 2 + 0.6)) * 0.02, 0.22);
+    this.hips(-sway * 0.025, -0.04 + Math.abs(Math.sin(ph * Math.PI * 2 + 0.6)) * 0.02, 0.24);
     // spine: lean in, twist the shoulders toward the reaching hand
     this.chain([['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]], 'x', 12);
     this.chain([['spine001', 0.2], ['spine002', 0.3], ['spine003', 0.5]], 'y', -sway * 7);
@@ -205,7 +205,7 @@ function hang(A, ch) {
 // ---------------------------------------------------------------------------------------
 function pole(A, ch) {
   const { axis, r, cycle } = POLE, p = cycle / 2;
-  const STANCE = 0.6, HAND_TOP = 1.68, FOOT_TOP = 0.78;
+  const STANCE = 0.6, HAND_TOP = 1.94, FOOT_TOP = 0.9;
   const surf = axis - r;
   const limb = (ph, off) => {
     const s = (((ph - off) % 1) + 1) % 1;
@@ -228,8 +228,8 @@ function pole(A, ch) {
     dur: 1.2, loop: true, base: 'idle',
     build(u) {
       const sway = Math.sin(u * Math.PI * 2);
-      this.hips(0, -0.14 + Math.abs(sway) * 0.02, 0.17);
-      this.chain([['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]], 'x', 14);
+      this.hips(0, -0.05 + Math.abs(sway) * 0.02, 0.15);
+      this.chain([['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]], 'x', 8);
       this.chain([['spine001', 0.2], ['spine002', 0.3], ['spine003', 0.5]], 'y', -sway * 6);
       this.chain([['spine004', 0.5], ['head', 0.5]], 'x', -26);
       this.turn('spine', 'z', sway * 2);
@@ -248,7 +248,7 @@ function pole(A, ch) {
       this.chain([['spine004', 0.5], ['head', 0.5]], 'x', -22);
       for (const side of ['L', 'R']) {
         const sg = side === 'L' ? 1 : -1, hi = side === 'L' ? 0.04 : -0.02;
-        handAt.call(this, side, { h: hi, swing: 0 }, 1.66);
+        handAt.call(this, side, { h: hi, swing: 0 }, 1.9);
         footAt.call(this, side, { h: sg * 0.04 + Math.sin(u * 6.28 + sg) * 0.01, swing: 0 }, 0.5);
       }
     },
