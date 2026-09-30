@@ -3,8 +3,9 @@
 // achievements and the Codex can all ask it things without pulling in any models.
 //
 // The design is the loot box's, worked out in the open (see the header of chests.js for the sources):
-//  - FIVE TIERS, common to prismatic, each with a colour every player already knows the order of (grey, green, blue, purple, and then
-//    something past gold). A chest is its tier from the moment it is seen; the Tithe's sealed chest is not, and finds out at the end.
+//  - FIVE TIERS, common to prismatic, climbing the game's own terracotta ladder (pale bisque, terracotta, brick, oxblood: the clay
+//    darkening and reddening as it is fired harder), and then the one past it, black and iridescent, the look of Lachryma itself.
+//    A chest is its tier from the moment it is seen; the Tithe's sealed chest is not, and finds out at the end.
 //  - The odds are published (below), and a PITY counter for each of the three upper tiers turns a bad run into a certainty: after
 //    `pity.rare` pulls with nothing at rare or better, the next is at least rare, and so on up. The counters are in the ledger
 //    (`tithe.since.rare|epic|prismatic`) and shown on the console by lamps, not numbers.
@@ -12,10 +13,10 @@
 // ---------------------------------------------------------------------------------------
 
 export const TIERS = [
-  { id: 'common',    name: 'common',    rgb: 0xe0cba8, glow: 0xffd9a0, cubes: [4, 9],     curioP: 0.06, weight: 60 },
-  { id: 'fine',      name: 'fine',      rgb: 0x62e39a, glow: 0x8affc0, cubes: [14, 26],   curioP: 0.16, weight: 26 },
-  { id: 'rare',      name: 'rare',      rgb: 0x4f9eff, glow: 0x8cc8ff, cubes: [40, 70],   curioP: 0.4,  weight: 10.5 },
-  { id: 'epic',      name: 'epic',      rgb: 0xb26bff, glow: 0xd6a4ff, cubes: [120, 200], curioP: 0.8,  weight: 3 },
+  { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: [4, 9],     curioP: 0.06, weight: 60 },
+  { id: 'fine',      name: 'fine',      rgb: 0xe58a52, glow: 0xffb27a, cubes: [14, 26],   curioP: 0.16, weight: 26 },
+  { id: 'rare',      name: 'rare',      rgb: 0xd0432a, glow: 0xff7a58, cubes: [40, 70],   curioP: 0.4,  weight: 10.5 },
+  { id: 'epic',      name: 'epic',      rgb: 0x9c2432, glow: 0xff5a6a, cubes: [120, 200], curioP: 0.8,  weight: 3 },
   { id: 'prismatic', name: 'prismatic', rgb: 0xffffff, glow: 0xffffff, cubes: [400, 700], curioP: 1.0,  weight: 0.5, rainbow: true },
 ];
 export const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;

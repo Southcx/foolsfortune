@@ -26,17 +26,18 @@ import { mergeStatic } from './render/merge.js';
 
 export const CHEST = { W: 1.0, D: 0.64, H: 0.42, R: 0.32, SCALE: [0.86, 0.95, 1.05, 1.15, 1.26], OPEN: 1.95, STOP: 2.3 };
 
-// what each tier is made of
+// what each tier is made of: the terracotta ladder, bisque to oxblood (treasure.js), bound in darker clay or pale bronze; the
+// prismatic one is the black iridescent of Lachryma
 const LOOK = [
-  { wood: 0x8a5a3a, band: 0x54545c, trim: 0x6a6a72 },
-  { wood: 0x2f7a68, band: 0xd9a441, trim: 0xe8c060 },
-  { wood: 0x1d3f96, band: 0xc8d6ea, trim: 0xe6eefc },
-  { wood: 0x261340, band: 0xf0c040, trim: 0xffdc70 },
+  { wood: 0xd2ad84, band: 0x7a4a32, trim: 0x9a6446 },
+  { wood: 0xc46a45, band: 0x5a2418, trim: 0xe0a070 },
+  { wood: 0x8f3422, band: 0xe8b98c, trim: 0xf6dcc0 },
+  { wood: 0x4a1616, band: 0xdca468, trim: 0xf2cf98 },
   { wood: 0x040306, band: 0xffffff, trim: 0xffffff },
 ];
 
 // the Tithe's sealed chest: no colour of any tier, so that nothing about it says what it is
-const SEALED = { wood: 0x24242e, band: 0xe6e6f0, trim: 0xffffff, glow: 0xe8e8ff };
+const SEALED = { wood: 0x2a1a16, band: 0xd8c8b8, trim: 0xf3e6d8, glow: 0xfff0e6 };
 
 const rbox = (w, h, d, r = 0.02) => new RoundedBoxGeometry(w, h, d, 2, r);
 

@@ -406,6 +406,14 @@ class Sfx {
     this.tone(t, 0.12, { f0: 180, f1: 360, type: 'sine', gain: 0.3, dest: d });
   }
 
+  /** The trial's gong, struck: a bronze bloom with a long shimmering tail. */
+  gong() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.9);
+    for (const [f, g] of [[98, 0.6], [147, 0.35], [233, 0.22], [311, 0.14], [467, 0.08]]) this.tone(t, 2.6, { f0: f * 1.02, f1: f, type: 'sine', gain: g, dest: d });
+    this.noise(t, 0.12, { type: 'bandpass', f0: 1800, q: 1.5, gain: 0.4, dest: d });
+  }
+
   /** Bumping the dunes' invisible barrier: a soft glassy bloom (a low swell and a high shimmer). */
   barrier(power = 1) {
     if (!this.ok() || !this.allow('barrier', 6)) return;

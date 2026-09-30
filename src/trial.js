@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import { T, PALETTE } from './config.js';
 import { makeGlowOutline, addOutline } from './outline.js';
 import { sfx } from './audio.js';
+import { zoneOf } from './render/zones.js';
 
 // ---------------------------------------------------------------------------
-// Time trial: G starts. The room resets, shells and Lachryma are topped up,
+// Time trial: the gong by the workshop's door starts it (F at it: the chevron marks it). The room resets, shells and Lachryma are topped up,
 // and a dozen glowing trial jars appear around both floors. Break them all.
 // Deliberately forgiving: the jars glow through walls, an arrow points at the
 // nearest one, quick double-breaks shave time off, and the medals are generous.
@@ -27,6 +28,8 @@ const COURSE = [
   [6.5, 8.1, 8], // gallery pedestal
 ];
 const STORE = 'foolsfortune.trial.best';
+// the gong that starts it (a thing in the room, not a key: every game in a room is begun from something in that room)
+const GONG = new THREE.Vector3(-2.6, 0, -12.6);
 const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
 
 export class Trial {
@@ -47,6 +50,29 @@ export class Trial {
       big: document.getElementById('trialbig'),
       arrow: document.getElementById('trialarrow'),
     };
+    this.buildGong();
+    game.interact?.add('trial', (P) => {
+      const d = Math.hypot(P.pos.x - GONG.x, P.pos.z - GONG.z);
+      return d < 2.2 && Math.abs(P.pos.y - GONG.y) < 1 && !this.running ? { pos: GONG.clone().setY(GONG.y + 2.15), d } : null;
+    });
+  }
+
+  /** A bronze gong on a timber frame, and its striker: struck (F) it starts the trial. */
+  buildGong() {
+    const S = this.game.scene, g = (this.gong = new THREE.Group());
+    const wood = new THREE.MeshStandardMaterial({ color: PALETTE.wood, roughness: 0.85, flatShading: true });
+    const bronze = new THREE.MeshStandardMaterial({ color: 0xc9923e, roughness: 0.35, metalness: 0.7, flatShading: true });
+    for (const x of [-0.55, 0.55]) { const post = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.7, 0.1), wood); post.position.set(x, 0.85, 0); g.add(post); }
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.1, 0.12), wood); bar.position.y = 1.7; g.add(bar);
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.08, 0.5), wood); foot.position.y = 0.04; g.add(foot);
+    this.disc = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.04, 16), bronze);
+    this.disc.rotation.x = Math.PI / 2; this.disc.position.y = 1.15; g.add(this.disc);
+    const boss = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), bronze); boss.position.set(0, 1.15, 0.03); g.add(boss);
+    for (const m of g.children) { m.castShadow = true; addOutline(m); }
+    g.position.copy(GONG);
+    g.rotation.y = Math.PI * 0.85; // (facing the way in)
+    S.add(g);
+    this.swing = 0;
   }
 
   get running() { return this.state === 'countdown' || this.state === 'run'; }
@@ -150,8 +176,12 @@ export class Trial {
   }
 
   update(dt) {
-    const g = this.game;
-    if (g.input.wasPressed('KeyG')) { this.start(); return; }
+    const g = this.game, P = g.player;
+    // the gong: struck with F (when it is the thing the chevron is on), it swings and starts the trial
+    if (g.interact?.cur?.id === 'trial' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); this.swing = 1; sfx.gong?.() ?? sfx.clonk?.(1); this.start(); return; }
+    if (this.swing > 0) { this.swing = Math.max(0, this.swing - dt * 0.7); this.disc.rotation.z = Math.sin(this.swing * 18) * 0.25 * this.swing; }
+    // a trial belongs to its room: leave the workshop and it is called off (and its board with it)
+    if (this.state !== 'off' && zoneOf(P.pos) !== 'workshop') { this.abort(); this.el.big.style.display = 'none'; return; }
     this.bigT -= dt;
     if (this.bigT <= 0 && this.el.big.style.display !== 'none') this.el.big.style.display = 'none';
     if (this.state === 'off') return;

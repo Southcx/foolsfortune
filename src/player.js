@@ -506,6 +506,8 @@ export class Player {
 
     // falling/jumping at a ledge while pushing forward: pull up onto it
     if (!this.grounded && !this.wallrun && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin, this.vel.y)) return;
+    // walking or running into a low wall (above what the feet step up by themselves): step over it without stopping
+    if (this.grounded && !jumped && !this.sliding && iz > 0 && hs > 0.8 && this.tryMantle(M.stepHeight - 0.02, 0, true)) return;
 
     // slides and dashes bowl clapperjars over; otherwise they just jostle
     this.critters(hv);
@@ -785,8 +787,12 @@ export class Player {
   }
 
   // ---- mantle ---------------------------------------------------------------------
-  /** A ledge in front between minH and mantleMax above the feet, with room to stand? */
-  tryMantle(minH, vy = 0) {
+  /**
+   * A ledge in front between minH and mantleMax above the feet, with room to stand? A wall no taller than stepOverMax (0.55 m) over
+   * the floor at its foot is a STEP-OVER: a quick hop up that keeps the Courier's speed (Mirror's Edge's and Uncharted's low vault: a
+   * knee-high wall should never stop a run), and a jump pressed during it leaves from the top at once. stepOnly: only a step-over.
+   */
+  tryMantle(minH, vy = 0, stepOnly = false) {
     const M = T.movement;
     const f = this.forward(new THREE.Vector3());
     const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
@@ -800,6 +806,11 @@ export class Player {
     if (!down || down.normal.y < 0.7) return false;
     const h = down.point.y - P.y;
     if (h < minH || h > M.mantleMax) return false;
+    // how tall the wall is over the floor at its foot (not over the feet: in the air the feet may be anywhere)
+    const foot = this.physics.raycast({ x: P.x + f.x * (wall.distance - 0.15), y: down.point.y - 0.05, z: P.z + f.z * (wall.distance - 0.15) }, { x: 0, y: -1, z: 0 }, 3, this.collider, GROUPS.controllerQuery, solid);
+    const wallH = foot ? down.point.y - foot.point.y : h;
+    const step = wallH <= (M.stepOverMax ?? 0.55) + 0.01 && h <= (M.stepOverMax ?? 0.55) + 0.25;
+    if (stepOnly && !step) return false;
     // a ledge the jump will clear anyway isn't a mantle (hop over hurdles at speed)
     if (vy > 0 && h < (vy * vy) / (2 * M.gravity) - 0.15) return false;
     // room to crouch on the ledge (a thin lip against a wall doesn't count), and over our own head for the climb
@@ -809,6 +820,12 @@ export class Player {
     const speed = hlen(this.vel);
     this.mantle = { from: P.clone(), to, t: 0, dur: M.mantleTime * THREE.MathUtils.lerp(0.75, 1.1, h / M.mantleMax), exit: Math.max(2.5, speed * 0.6),
       edge: new THREE.Vector3(P.x + f.x * wall.distance, down.point.y, P.z + f.z * wall.distance), right: this.right(new THREE.Vector3()) };
+    if (step) {
+      // a step-over: over in a fifth of a second, and out at the speed it came in at (never slower than a walk)
+      Object.assign(this.mantle, { step: true, dur: THREE.MathUtils.lerp(0.14, 0.22, Math.max(0, h) / 0.8), exit: Math.max(M.walkSpeed, speed) });
+      to.addScaledVector(f, 0.25);
+      if (!this.fits(to, true)) to.addScaledVector(f, -0.25);
+    }
     // a ledge on a moving platform: the goal rides along
     const mover = down.entity?.type === 'mover' ? down.entity.mover : null;
     if (mover) Object.assign(this.mantle, { mover, toL: mover.toLocal(to), edgeL: mover.toLocal(this.mantle.edge) });
@@ -819,8 +836,9 @@ export class Player {
     this.vel.set(0, 0, 0);
     this.jumpBuf = 0;
     this.coyote = 0;
-    sfx.mantle();
-    this.ev('mantle', { height: h });
+    this.mantle.jumpHeld = this.input.isDown('Space'); // (a held jump is not a new one: only a fresh press chains out of it)
+    if (step) sfx.footstep?.(0); else sfx.mantle();
+    this.ev('mantle', { height: h, step });
     return true;
   }
 
@@ -832,6 +850,12 @@ export class Player {
       m.mover.toWorld(m.edgeL, m.edge); m.edge.add(m.mover.displacement(m.edge, _v));
     }
     m.t += dt / m.dur;
+    // a fresh jump press is never lost: from a step-over it leaves at once, from a mantle once the body is up (it is kept till then)
+    const sp = this.input.isDown('Space');
+    if (m.jumpHeld === undefined) m.jumpHeld = sp; // (a mantle begun by another move: whatever is held then is not a press)
+    if (sp && !m.jumpHeld && m.t > (m.step ? 0.35 : 0.45)) m.jumpQueued = true;
+    m.jumpHeld = sp;
+    if (m.step && m.jumpQueued) m.t = Math.max(m.t, 1);
     const k = Math.min(1, m.t);
     const ky = 1 - (1 - k) * (1 - k); // up first...
     const kx = k * k; // ...then over
@@ -851,6 +875,11 @@ export class Player {
       if (!this.canStand()) this.setLow(true);
       const f = this.forward(new THREE.Vector3());
       this.vel.set(f.x * m.exit, 0, f.z * m.exit); // come out of it still moving
+      if (m.jumpQueued && this.canStand()) {
+        // the jump that was asked for: off the top, with the speed kept
+        this.vel.y = T.movement.jumpVelocity; this.grounded = false; this.coyote = 0; this.jumpBuf = 0; this.jumpHeldLast = true;
+        this.ev('jump', { kind: m.step ? 'vault' : 'mantle', speed: m.exit });
+      }
     }
   }
 

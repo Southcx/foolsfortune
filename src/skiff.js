@@ -6,13 +6,16 @@ import { addOutline } from './outline.js';
 // THE SKIFF: the Solar Skiff's body. A small hovering boat with a lug sail, after the King of Red
 // Lions in The Wind Waker: a hull with a raised, curled prow and a figurehead, one mast, a yellow
 // boom that swings out to leeward of the wind, a single billowing cel-cream sail with a painted
-// emblem, and a yellow arrow floating by the stern that shows which way the wind goes. The rider
+// emblem, and a long pennant streaming from the masthead that shows which way the wind goes. The rider
 // holds a sheet (a rope) from the boom's end, so the hands never have to follow a moving boom.
 //
 // What was taken from Wind Waker's boat, from its screenshots and write-ups: the sail is opaque cloth
 // with one crease and a belly, not a glowing sheet; the boom's angle is set by the wind against the
 // heading (out wide running before it, close in on the wind); when the sail is up it billows and when
-// it is not it is a small bundle on the boom; the wind arrow is in the world, beside the boat.
+// it is not it is a small bundle on the boom; the wind is shown in the world, not on the screen. (Wind Waker's own
+// wind arrow floated beside the boat; here it is the masthead pennant that sailors actually read, a swallowtail ribbon
+// whose ripple is all in its vertex shader: it streams straight and flutters fast in a strong wind, droops and lazes
+// in a light one.)
 //
 // Built as one Group in its own frame (+Z bow, +X to the left, Y up, origin at the deck), so the
 // whole skiff, and the rider standing on it, are moved and turned with one quaternion.
@@ -57,13 +60,13 @@ export class Skiff {
     this.buildHull();
     this.buildRig();
     this.buildRope();
-    this.buildArrow(scene);
+    this.buildPennant(scene);
     this.group.visible = false;
     scene.add(this.group);
     this.side = 1; this.boomAngle = 0.5;
   }
 
-  set visible(v) { this.group.visible = v; this.arrow.visible = v; this.rope.visible = v; }
+  set visible(v) { this.group.visible = v; this.pennant.visible = v; this.rope.visible = v; }
 
   // ------------------------------------------------------------------ the hull
   buildHull() {
@@ -209,26 +212,54 @@ export class Skiff {
     P.needsUpdate = true;
   }
 
-  // ------------------------------------------------------------------ the wind arrow
-  buildArrow(scene) {
-    const s = new THREE.Shape();
-    s.moveTo(0.55, 0); s.lineTo(0.12, 0.3); s.lineTo(0.12, 0.11); s.lineTo(-0.5, 0.11); s.lineTo(-0.5, -0.11); s.lineTo(0.12, -0.11); s.lineTo(0.12, -0.3); s.closePath();
-    const g = new THREE.ExtrudeGeometry(s, { depth: 0.05, bevelEnabled: false });
-    g.rotateX(-Math.PI / 2); // (lies flat, pointing along +X)
-    g.translate(0, -0.025, 0);
-    this.arrow = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xffd23f, emissive: 0xffa800, emissiveIntensity: 0.55, roughness: 0.5, flatShading: true }));
-    addOutline(this.arrow);
-    this.arrow.visible = false;
-    scene.add(this.arrow);
+  // ------------------------------------------------------------------ the pennant (the wind, shown)
+  buildPennant(scene) {
+    const len = 1.9, h = 0.26;
+    const g = new THREE.PlaneGeometry(len, h, 20, 2);
+    g.translate(len / 2, 0, 0); // (from the mast, x 0, out to the tail, x len)
+    // a swallowtail: the middle of the last few columns drawn back into a notch
+    const P = g.attributes.position;
+    for (let i = 0; i < P.count; i++) {
+      const x = P.getX(i), y = P.getY(i);
+      if (Math.abs(y) < 1e-4 && x > len * 0.84) P.setX(i, len * 0.84 + (x - len * 0.84) * 0.15);
+    }
+    this.pennantU = { uTime: { value: 0 }, uStr: { value: 0.6 }, uLen: { value: len } };
+    const mat = new THREE.MeshStandardMaterial({ color: 0xc2432b, emissive: 0x6a1a10, emissiveIntensity: 0.25, roughness: 0.8, side: THREE.DoubleSide });
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, this.pennantU);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uStr; uniform float uLen;')
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+{
+  float u = clamp(position.x / uLen, 0.0, 1.0);                     // 0 at the mast .. 1 at the tail
+  transformed.y *= 1.0 - 0.75 * u;                                   // it narrows to the tail
+  float spd = 3.0 + 7.0 * uStr;                                      // a strong wind: quick, tight ripples
+  float ph = position.x * (2.6 + 1.6 * uStr) - uTime * spd;
+  float amp = (0.07 + 0.16 * uStr) * u;
+  transformed.z += sin(ph) * amp + sin(ph * 0.53 + 1.7) * amp * 0.5;  // the flutter, travelling down its length
+  transformed.y += sin(ph * 0.8 + 0.6) * amp * 0.35 - u * u * 0.55 * (1.0 - uStr); // a little lift, and a droop in a light wind
+}`)
+        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+{
+  float u = clamp(position.x / uLen, 0.0, 1.0), ph = position.x * (2.6 + 1.6 * uStr) - uTime * (3.0 + 7.0 * uStr);
+  objectNormal = normalize(vec3(-cos(ph) * (0.07 + 0.16 * uStr) * u * 2.6, 0.0, 1.0));   // (the slope of the ripple, for its shading)
+}`);
+    };
+    this.pennant = new THREE.Mesh(g, mat);
+    this.pennant.frustumCulled = false;
+    this.pennant.visible = false;
+    this.pennant.castShadow = true;
+    scene.add(this.pennant);
   }
 
-  /** Place the arrow beside the stern, pointing where the wind goes (dir: unit vector in x, z), bobbing a little. */
-  placeArrow(pos, dir, strength, t) {
-    this.arrow.position.copy(pos);
-    this.arrow.position.y += Math.sin(t * 1.8) * 0.05;
-    this.arrow.rotation.set(0, Math.atan2(-dir.y, dir.x), 0); // (dir.y is z)
-    const k = 0.75 + 0.5 * strength;
-    this.arrow.scale.set(k, 1, k);
+  /** The pennant at the masthead, streaming where the wind goes (dir: unit vector in x, z; strength 0..1+), t seconds. */
+  placePennant(dir, strength, t) {
+    const { mast } = SKIFF;
+    this.group.updateMatrixWorld();
+    this.pennant.position.set(0, mast.h + 0.02, mast.z).applyMatrix4(this.group.matrixWorld);
+    this.pennant.rotation.set(0, Math.atan2(-dir.y, dir.x), 0); // (dir.y is z)
+    this.pennantU.uTime.value = t;
+    this.pennantU.uStr.value = THREE.MathUtils.clamp(strength, 0, 1.2);
   }
 
   // ------------------------------------------------------------------ per frame

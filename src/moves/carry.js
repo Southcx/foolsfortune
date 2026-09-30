@@ -75,7 +75,8 @@ export class Carry extends Tech {
     this.trackFlying(dt);
     if (!this.item) {
       if (this.state !== 'idle') { this.st += dt; if (this.st > 0.4) this.state = 'idle'; }
-      if (P.peekLatch('KeyF') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding) {
+      const other = this.game.interact?.cur; // (F is for whatever the chevron is on: a gong or a chest nearer than the pot is theirs)
+      if (P.peekLatch('KeyF') && this.state === 'idle' && !this.mgr.active && P.grounded && !P.mantle && !P.sliding && !(other && (other.id === 'trial' || other.id === 'chest'))) {
         const e = this.find();
         if (e) { P.latch('KeyF'); this.begin(e); }
       }
@@ -108,6 +109,11 @@ export class Carry extends Tech {
     const P = this.P, body = e.body;
     this.item = e;
     this.state = 'lift';
+    // the grip, worked out once for this thing: the widest place low on it (the hands cup it from below its belly, so that
+    // held overhead it clears the head; never on a neck)
+    let gf = 0.2, gw = this.widthAt(e, gf);
+    for (const f of [0.12, 0.16, 0.24, 0.28]) { const r = this.widthAt(e, f); if (r > gw + 0.005) { gw = r; gf = f; } }
+    this.grip = { f: gf, w: gw };
     this.st = 0;
     const t = body.translation(), r = body.rotation();
     this.from = { p: new THREE.Vector3(t.x, t.y, t.z), q: new THREE.Quaternion(r.x, r.y, r.z, r.w) };
@@ -126,7 +132,10 @@ export class Carry extends Tech {
     const P = this.P, e = this.item, h = this.size(e);
     const yaw = P.bodyYaw;
     const upright = _q.setFromAxisAngle(UP, yaw);
-    const hold = new THREE.Vector3(base.x, base.y + 1.84 + h / 2 + Math.sin(this.bob) * 0.02, base.z);
+    // (over the head, held at its grip with the arms up: the grip at 2.02 m, wherever the head is: it comes down with a crouch)
+    const grip = this.grip || { f: 0.2 };
+    const c0 = this.originUp(e); // (a pot's origin is its foot; a crate's its middle)
+    const hold = new THREE.Vector3(base.x, base.y + 2.02 - 0.4 * (P.crouchBlend || 0) - h * grip.f + c0 + Math.sin(this.bob) * 0.02, base.z);
     const p = new THREE.Vector3(), q = new THREE.Quaternion();
     if (this.state === 'lift') {
       const k = sm(Math.min(1, this.st / LIFT));
@@ -142,7 +151,7 @@ export class Carry extends Tech {
       const k = sm(Math.min(1, this.st / PUT));
       const fwd = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
       const floor = this.floorAt(base.x + fwd.x * 0.85, base.z + fwd.z * 0.85, base.y);
-      const to = new THREE.Vector3(base.x + fwd.x * 0.85, floor + h / 2 + 0.03, base.z + fwd.z * 0.85);
+      const to = new THREE.Vector3(base.x + fwd.x * 0.85, floor + this.originUp(e) + 0.03, base.z + fwd.z * 0.85);
       p.lerpVectors(this.putFrom || hold, to, k);
       q.copy(upright);
     } else { p.copy(hold); q.copy(upright); }
@@ -181,6 +190,7 @@ export class Carry extends Tech {
     e.body.setLinvel(v, true);
     e.body.setAngvel({ x: (Math.random() - 0.5) * 6, y: (Math.random() - 0.5) * 3, z: (Math.random() - 0.5) * 6 }, true);
     e.thrownT = 0;
+    this.game.breakables?.instigate(e, 'courier'); // (whatever it breaks is the Courier's doing)
     this.flying.push({ e, prev: v.length(), t: 0 });
     this.item = null;
     this.fireHold = 0.35;
@@ -252,6 +262,24 @@ export class Carry extends Tech {
     ch.root.updateMatrixWorld(true);
   }
 
+  /** How far its origin is above its foot: a pot is built up from its foot, a crate about its middle. */
+  originUp(e) { return e.P?.pts ? 0 : this.size(e) / 2; }
+
+  /** How wide the thing is at a height (0 its foot .. 1 its top): a pot's own profile there, a crate's half width. */
+  widthAt(e, f) {
+    const pts = e.P?.pts;
+    if (!pts) return this.halfW(e);
+    const y = f * e.P.height;
+    for (let i = 1; i < pts.length; i++) if (pts[i].y >= y) { const a = pts[i - 1], b = pts[i], t = (y - a.y) / Math.max(1e-6, b.y - a.y); return a.x + (b.x - a.x) * t; }
+    return pts[pts.length - 1].x;
+  }
+
+  /**
+   * Both hands on it, open, palms flat against its sides and fingers up, the way a thing is held over the head (Link's lift; the
+   * UAL clips have no two-handed overhead carry, so this is the light IK correction CLAUDE.md allows: a hand closed on a surface).
+   * Where they go is worked out for each thing from its own shape (begin: the widest place low on it, and its width there), so a
+   * squat jar and a tall amphora are each cupped where they swell.
+   */
   hands(ch) {
     if (!this.item || this.w < 0.02) return;
     const P = this.P, e = this.item, w = this.w;
@@ -260,17 +288,22 @@ export class Carry extends Tech {
     e.mesh.position.copy(pose.p);
     e.mesh.quaternion.copy(pose.q);
     e.mesh.updateMatrixWorld(true);
-    const half = this.halfW(e) + 0.02, h = this.size(e);
-    const side = new THREE.Vector3(1, 0, 0).applyQuaternion(pose.q);
+    const h = this.size(e), gf = this.grip.f, gw = this.grip.w;
     const left = new THREE.Vector3(Math.cos(P.bodyYaw), 0, -Math.sin(P.bodyYaw));
+    const fwd = new THREE.Vector3(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
+    const base = pose.p.clone().addScaledVector(UP, h * gf - this.originUp(e)); // (the grip, from its origin)
     for (const s of ['L', 'R']) {
       const sg = s === 'L' ? 1 : -1;
-      // under the lower sides of it, palms up and in
-      const at = pose.p.clone().addScaledVector(left, sg * half).addScaledVector(UP, -h / 2 + 0.1);
       const inward = left.clone().multiplyScalar(-sg);
-      const q = ch.handQuat(ch.arm[s], inward.clone().multiplyScalar(0.7).addScaledVector(UP, 0.6), UP.clone().multiplyScalar(0.8).add(inward.clone().multiplyScalar(0.4)));
+      // palm against its side, fingers up and a little forward over its shoulder
+      const fingers = UP.clone().multiplyScalar(0.8).addScaledVector(fwd, 0.25).addScaledVector(inward, 0.3).normalize(); // (curving in with the pot)
+      const q = ch.handQuat(ch.arm[s], fingers, inward);
+      const at = base.clone().addScaledVector(left, sg * (gw + 0.015)).addScaledVector(fwd, -0.02);
       at.sub(ch.arm[s].palmPt.clone().applyQuaternion(q));
       ch.reachHand(s, at, q, w);
+      // open: the fingers straight (the clip's fist let go), curled just enough to follow its curve
+      const curl = THREE.MathUtils.clamp(0.12 / Math.max(0.08, gw), 0.15, 0.6);
+      for (const f of ch.arm[s].fingers) f.quaternion.slerp(ch.rest.get(f).q, w * (1 - curl * 0.5));
     }
   }
 

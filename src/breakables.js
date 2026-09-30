@@ -12,6 +12,8 @@ import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, u
 
 export { PROFILES };
 
+// (the causes that can only be the Courier's doing: the tools, the moves, the shells)
+const COURIER_CAUSES = new Set(['shot', 'sliced', 'slam', 'bomb', 'charged', 'homing', 'well', 'kick', 'throw', 'stomp', 'cut', 'cleave', 'caster']);
 const potMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true });
 // crack stages: hp fraction thresholds, and how much easier a knock breaks the pot at each stage
 const CRACK_AT = [0.8, 0.5, 0.25];
@@ -229,10 +231,25 @@ export class Breakables {
     return ent;
   }
 
-  damage(ent, amount, point, dir, power = 1, quiet = false) {
+  // ---- who did it -------------------------------------------------------------
+  // Every break is someone's: the COURIER's (a shot, a blade, a kick, a throw, a slam: anything the player did, and anything knocked
+  // into something by what the player did, for a few seconds after), a CLAPPERJAR's (one walking into a pot, or throwing one), or the
+  // ENVIRONMENT's (a pot that fell off a shelf by itself, a mortar's shell, a pot that rolled into another). The log says whose it
+  // was, and only the Courier's count toward the Courier's records (tracking.js).
+  instigate(ent, who) { if (ent && who) { ent.by = who; ent.byT = this.clock; } }
+  /** Who is behind this entity moving now: its last instigator, while that is recent. */
+  instigatorOf(ent) {
+    if (!ent) return null;
+    if (ent.type === 'player') return 'courier';
+    if (ent.type === 'clapper') return 'clapperjar';
+    return ent.by && this.clock - (ent.byT || 0) < 5 ? ent.by : null;
+  }
+
+  damage(ent, amount, point, dir, power = 1, quiet = false, who = 'courier') {
     if (!ent.alive) return false;
+    this.instigate(ent, who);
     ent.hp -= amount;
-    if (ent.hp <= 0) { this.shatter(ent, point, dir, power); return true; }
+    if (ent.hp <= 0) { this.shatter(ent, point, dir, power, 'shot', who); return true; }
     this.crack(ent, point, quiet);
     if (quiet) return false;
     this.physics.kick(ent.body, _v.copy(dir).multiplyScalar(T.weapon.impulse), point);
@@ -278,12 +295,12 @@ export class Breakables {
     this.physics.removeBody(ent.body);
     this.scene.remove(ent.mesh);
     if (ent.rope) this.kickRope(ent.rope, dir || new THREE.Vector3(0, 1, 0), 1);
-    this.game.onBroken(ent, cause);
+    this.game.onBroken(ent, cause, 'courier'); // (only a blade slices)
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
     this.onGone(ent, new THREE.Vector3(t.x, t.y, t.z));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0), cause === 'sliced' ? 0.6 : 1);
-    if (ent.def.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center));
+    if (ent.def.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center, { who: 'courier' }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     return center;
@@ -479,9 +496,11 @@ export class Breakables {
     this.spawnPiece(h, h.center.clone(), new THREE.Quaternion(), v, new THREE.Vector3().randomDirection().multiplyScalar(3));
   }
 
-  shatter(ent, hitPoint, dir, power = 1, cause = 'shot') {
+  shatter(ent, hitPoint, dir, power = 1, cause = 'shot', who = null) {
     if (!ent.alive) return;
     ent.alive = false;
+    who = who || (COURIER_CAUSES.has(cause) ? 'courier' : this.instigatorOf(ent) || 'environment');
+    ent.by = who;
     this.items.delete(ent); this.release(ent);
 
     const body = ent.body;
@@ -498,7 +517,7 @@ export class Breakables {
     this.scene.remove(ent.mesh);
 
     const center = this.burst(P, ent.color, bodyPos, bodyRot, linVel, angVel, hitPoint, dir, power, ent.size);
-    this.game.onBroken(ent, cause);
+    this.game.onBroken(ent, cause, who);
 
     // the rope loses its weight and takes the hit: whip the lower links along the shot
     if (ent.rope) this.kickRope(ent.rope, dir || new THREE.Vector3(0, 1, 0), power);
@@ -508,7 +527,7 @@ export class Breakables {
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0));
-    if (ent.def.ember) this.fx.after(0.03, () => this.explode(center));
+    if (ent.def.ember) this.fx.after(0.03, () => this.explode(center, { who }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
   }
 
@@ -664,7 +683,8 @@ export class Breakables {
   }
 
   /** Radial blast: chain-breaks pots inside `breakFrac` of the radius, shoves the rest. */
-  explode(center, { radius = T.explosion.radius, breakFrac = 0.75, velocity = T.explosion.velocity, fx = true, cause = 'explosion' } = {}) {
+  explode(center, { radius = T.explosion.radius, breakFrac = 0.75, velocity = T.explosion.velocity, fx = true, cause = 'explosion', who = null } = {}) {
+    who = who || (COURIER_CAUSES.has(cause) ? 'courier' : 'environment');
     const R = radius;
     if (fx) {
       this.fx.explosion(center, R);
@@ -677,9 +697,10 @@ export class Breakables {
       if (d < R * breakFrac) {
         const dir = _v.clone().sub(center).normalize();
         const hp = _v.clone();
-        this.fx.after(T.explosion.chainDelay * (d / R) * 3 + Math.random() * 0.03, () => this.shatter(ent, hp, dir, 1.4, cause));
+        this.fx.after(T.explosion.chainDelay * (d / R) * 3 + Math.random() * 0.03, () => this.shatter(ent, hp, dir, 1.4, cause, who));
       } else if (d < R) {
         this.push(ent.body, center, R, velocity);
+        this.instigate(ent, who);
       }
     }
     for (const s of this.shards) this.push(s.body, center, R, velocity);
@@ -725,7 +746,8 @@ export class Breakables {
       if (dir.lengthSq() < 0.01) dir.set(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z).multiplyScalar(e === e1 ? -1 : 1);
       const p = e.body.translation();
       const hp = new THREE.Vector3(p.x, p.y, p.z).addScaledVector(dir.clone().normalize(), e.size * 0.4);
-      this.fx.after(0, () => this.shatter(e, hp, dir.normalize().multiplyScalar(0.4), Math.min(1.2, rel / 8), 'impact'));
+      const who = this.instigatorOf(o) || this.instigatorOf(e); // (what hit it, and who set that going; or who set this going)
+      this.fx.after(0, () => this.shatter(e, hp, dir.normalize().multiplyScalar(0.4), Math.min(1.2, rel / 8), 'impact', who));
     }
   }
 
@@ -760,6 +782,7 @@ export class Breakables {
   }
 
   update(dt) {
+    this.clock = (this.clock || 0) + dt;
     this.ropeDraw.update();
     for (const ent of this.items) {
       this.rest(ent);

@@ -255,7 +255,7 @@ export class Chests {
     const g = this.game, rig = c.rig, S = rig.scale;
     rig.poke({ squash: -14, lid: 4 });
     sfx.chestLand?.(S);
-    this.ringBurst(_a.copy(rig.root.position).setY(c.floor + 0.05), c.sealed ? 0xe8e8ff : TIERS[c.tier].rgb, 2.6, 0.6, true);
+    this.ringBurst(_a.copy(rig.root.position).setY(c.floor + 0.05), c.sealed ? 0xfff0e6 : TIERS[c.tier].rgb, 2.6, 0.6, true);
     g.fx.impact?.(_a.copy(rig.root.position).setY(c.floor), _up, { sparks: 8, dust: 14 });
     const d = g.player.pos.distanceTo(rig.root.position);
     g.player.shake = Math.max(g.player.shake, 0.4 / (1 + d * 0.25));

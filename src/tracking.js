@@ -71,6 +71,14 @@ export class Tracking {
     // ---- breaking
     on('break', (e) => {
       if (e.target) { L.inc('target.break'); return; }
+      // (whose doing it was: only the Courier's are the Courier's records; the rest are said as what they were)
+      if (e.by && e.by !== 'courier') {
+        L.inc(`break.by.${e.by}`);
+        const who = e.by === 'clapperjar' ? 'A clapperjar shatters' : null;
+        if (who) log.say('other', `${who} the ${e.kind}.`, { key: `brc.${e.kind}`, win: 0.9, fmt: (n) => `${who} ${plural(n, e.kind)}.` });
+        else log.say('other', `The ${e.kind} breaks.`, { key: `bre.${e.kind}`, win: 0.9, fmt: (n) => n > 1 ? `${plural(n, e.kind)[0].toUpperCase()}${plural(n, e.kind).slice(1)} break.` : `The ${e.kind} breaks.` });
+        return;
+      }
       L.inc('break.total'); L.inc(`break.kind.${e.kind}`); L.inc(`break.cause.${e.cause || 'shot'}`);
       const c = this.chain;
       c.n = e.t - c.t < 0.45 ? c.n + 1 : 1; c.t = e.t;

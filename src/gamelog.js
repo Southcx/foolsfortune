@@ -35,6 +35,7 @@ export const CLASSES = {
   ach: { color: '#ffd45e', tab: 'EVENT' },
   angle: { color: '#9fd3d6', tab: 'BATTLE' },
   loot: { color: '#ffd98a', tab: 'BATTLE' },
+  other: { color: '#c9b09f', tab: 'BATTLE' }, // (what others did: a clapperjar, the world itself)
 };
 const TABS = ['ALL', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
 
@@ -53,6 +54,11 @@ const CSS = `
 #chatlog .ln { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,.6); word-wrap: break-word; }
 #chatlog .ts { color: #a98572; font-size: 10.5px; margin-right: 6px; }
 #chatlog .ln.ach { font-weight: bold; }
+#chatlog .min { margin-left: auto; padding: 0 8px 2px; color: #e8c3a8; border: 1px solid #9a5a44; border-bottom: none; border-radius: 3px 3px 0 0; cursor: pointer; pointer-events: auto; font-size: 12px; line-height: 14px; text-shadow: 1px 1px 0 #000; background: rgba(28,13,8,.4); }
+#chatlog .min.new { color: #ffd67e; border-color: #ffd67e; }
+#chatlog .min:hover { background: rgba(196,106,69,.4); color: #fff1e0; }
+#chatlog.mini { height: auto; }
+#chatlog.mini .body, #chatlog.mini .foot { display: none; }
 #chatlog .foot { padding: 1px 8px 2px; font-size: 9.5px; color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
 `;
 
@@ -71,12 +77,17 @@ export class GameLog {
     this.quiet = new Map();
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'chatlog';
-    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}</div><div class="body"></div><div class="foot"><span>PGUP / PGDN · [ ] TAB</span><span class="n"></span></div>`;
+    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="foot"><span>PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
     (document.getElementById('hud') || document.body).appendChild(root);
     this.root = root;
     this.body = root.querySelector('.body');
     this.tabEls = [...root.querySelectorAll('.tab')];
     this.foot = root.querySelector('.n');
+    // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
+    this.minEl = root.querySelector('.min');
+    this.minEl.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); this.setMini(!this.mini); });
+    let m = false; try { m = localStorage.getItem('foolsfortune.log.mini') === '1'; } catch { /* storage unavailable */ }
+    this.setMini(m);
     this.setTab(0);
     addEventListener('keydown', (e) => this.key(e));
   }
@@ -88,11 +99,20 @@ export class GameLog {
     if (e.code === 'PageUp') { this.body.scrollTop -= this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
     else if (e.code === 'PageDown') { this.body.scrollTop += this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
     else if (e.code === 'End') { this.body.scrollTop = this.body.scrollHeight; this.wake(); }
+    else if (e.code === 'Backslash') this.setMini(!this.mini);
     else if (e.code === 'BracketRight') this.setTab((this.tab + 1) % TABS.length);
     else if (e.code === 'BracketLeft') this.setTab((this.tab + TABS.length - 1) % TABS.length);
   }
 
   wake() { this.idleT = 0; this.root.classList.remove('idle'); }
+
+  setMini(v) {
+    this.mini = v;
+    this.root.classList.toggle('mini', v);
+    this.minEl.textContent = v ? '+' : '–';
+    try { localStorage.setItem('foolsfortune.log.mini', v ? '1' : '0'); } catch { /* storage unavailable */ }
+    if (!v) { this.minEl.classList.remove('new'); this.body.scrollTop = this.body.scrollHeight; this.wake(); }
+  }
 
   shows(cls, tab = this.tab) { return tab === 0 || (CLASSES[cls]?.tab || 'SYSTEM') === TABS[tab]; }
 
@@ -150,6 +170,7 @@ export class GameLog {
   afterSay(l) {
     const tab = TABS.indexOf(CLASSES[l.cls]?.tab || 'SYSTEM');
     if (tab !== this.tab && this.tab !== 0) { this.unread.add(tab); this.tabEls[tab]?.classList.add('new'); }
+    if (this.mini) this.minEl.classList.add('new'); // (folded away: the button lights up)
     this.wake();
   }
 

@@ -318,7 +318,14 @@ export class GodMode {
   /** The turnable isometric camera: pans, turns in eighths, zooms; ceilings cut away. */
   updateView(dt) {
     const g = this.game, input = g.input, C = this.cam;
-    C.yaw += wrapPi(C.yawT - C.yaw) * (1 - Math.exp(-9 * dt));
+    // turning the view turns it about the Pneuka jar, not about wherever the view happens to be looking: the focus swings round the
+    // jar by the same angle, so the jar keeps its place on the screen and the room wheels round it
+    const dyaw = wrapPi(C.yawT - C.yaw) * (1 - Math.exp(-9 * dt));
+    C.yaw += dyaw;
+    if (dyaw && this.vessel) {
+      const V = this.vessel.pos, ox = C.focus.x - V.x, oz = C.focus.z - V.z, c = Math.cos(dyaw), s = Math.sin(dyaw);
+      C.focus.x = V.x + ox * c + oz * s; C.focus.z = V.z - ox * s + oz * c;
+    }
     C.dist = THREE.MathUtils.damp(C.dist, C.distT, 8, dt);
     // pan: keys and the screen edges, in the view's own directions
     let px = 0, pz = 0;

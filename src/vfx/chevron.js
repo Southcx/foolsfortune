@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE CHEVRON: the marker that hangs over what can be used when you are close enough to use it. Two inverted pentagonal prisms,
+// THE CHEVRON: the marker that hangs over what can be used when you are close enough to use it. Two inverted pentagonal pyramids,
 // one nested in the other, the outer wide, tall and translucent and the inner small and brighter, turning against each other and
-// bobbing; drawn through everything (a marker has to be found) with a bright edge on each. It pops in with a little overshoot and
+// bobbing, each coming to a point at the bottom (it points at the thing); drawn through everything (a marker has to be found) with a bright edge on each. It pops in with a little overshoot and
 // eases from target to target rather than jumping.
 //
 // Prior art: the floating crystal of The Sims' Plumbob and the down-pointing arrow over the thing you can act on in Zelda, Persona
@@ -14,15 +14,16 @@ export class Chevron {
     this.group = new THREE.Group();
     this.group.visible = false;
     const mk = (rt, rb, h, opacity, c) => {
-      const geo = new THREE.CylinderGeometry(rt, rb, h, 5, 1, false); // (wide at the top, narrow at the bottom: inverted)
+      const geo = new THREE.CylinderGeometry(rt, rb, h, 5, 1, false); // (wide at the top, to a point at the bottom: inverted)
       const fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false }));
       const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: hot, transparent: true, opacity: Math.min(1, opacity + 0.35), depthTest: false, fog: false }));
       const g = new THREE.Group(); g.add(fill, edges);
       fill.renderOrder = 40; edges.renderOrder = 41;
       return g;
     };
-    this.outer = mk(0.27, 0.06, 0.4, 0.26, color);
-    this.inner = mk(0.15, 0.035, 0.25, 0.6, hot);
+    this.outer = mk(0.27, 0, 0.46, 0.26, color);
+    this.inner = mk(0.15, 0, 0.27, 0.6, hot);
+    this.inner.position.y = 0.06; // (its point just above the outer's)
     this.group.add(this.outer, this.inner);
     scene.add(this.group);
     this.t = 0; this.k = 0; this.want = 0; this.pos = new THREE.Vector3(); this.has = false;
@@ -49,6 +50,6 @@ export class Chevron {
     this.group.scale.setScalar(Math.max(0.001, s));
     this.outer.rotation.y += dt * 1.1;
     this.inner.rotation.y -= dt * 1.8;
-    this.inner.position.y = 0.02 * Math.sin(this.t * 3.1 + 1);
+    this.inner.position.y = 0.06 + 0.02 * Math.sin(this.t * 3.1 + 1);
   }
 }

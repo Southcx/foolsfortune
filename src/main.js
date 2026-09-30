@@ -132,9 +132,9 @@ async function main() {
     scene, physics, fx, hud, camera, renderer, stats, events,
     ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
-    onBroken(ent, cause) {
+    onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
-      events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause });
+      events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause, by });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;

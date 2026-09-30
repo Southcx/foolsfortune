@@ -56,6 +56,7 @@ export const DEFAULTS = {
     critterPush: 0.2, // share of a clapperjar overlap that moves you (the rest moves them)
     // mantle: push into a ledge while jumping or falling
     mantleMin: 0.45,
+    stepOverMax: 0.55, // a wall this tall or less (over the floor at its foot) is stepped over on the run, keeping the speed
     mantleJumpMin: 0.75, // on the ground, a jump into a ledge at least this tall becomes a mantle
     mantleMax: 1.9,
     mantleReach: 0.55,

@@ -296,9 +296,9 @@ export class Surfer extends Tech {
     this.unit = this.unit || { pos: new THREE.Vector3(), quat: new THREE.Quaternion() };
     this.unit.pos.set(0, SKIFF.deck, SKIFF.rider.z).applyQuaternion(unitQ).add(this.skiff.group.position);
     this.unit.quat.copy(unitQ).multiply(qFace);
-    // the wind arrow beside the stern, and the wake from the bow
+    // the pennant at the masthead (the wind, shown), and the wake from the bow
     const right = _v3.set(-f.z, 0, f.x);
-    this.skiff.placeArrow(_v.copy(pos).addScaledVector(f, -1.9).addScaledVector(right, 1.5).setY(D.heightAt(pos.x, pos.z) + 1.5), W.dir, W.speed / 10, this.time);
+    this.skiff.placePennant(W.dir, W.speed / 10, this.time);
     const bow = _v.copy(pos).addScaledVector(f, SKIFF.half + 0.2);
     this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air, glow: this.boosting, ground: (x, z) => D.rideHeight(x, z) });
   }

@@ -110,7 +110,7 @@ export function withFade(material, key) {
   float disEdge = 0.0;
   if (uDissolve > 0.001) {
     float hgt = clamp((vDisW.y - uDisBase.x) / uDisBase.y, 0.0, 1.0);
-    float blk = fract(sin(dot(floor(vDisW * 16.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float blk = fract(sin(dot(floor(vDisW * 11.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
     float v = hgt * 0.72 + blk * 0.28;                 // (0..1: the top and the unlucky blocks go first)
     float cut = 1.0 - uDissolve * 1.05;
     if (v > cut) discard;

@@ -124,6 +124,9 @@ const DEFAULT_MAT = (kind) => PROFILES[kind].mat || 'earthenware';
 export function prepProfile(kind, scale, overrides = {}) {
   const def = PROFILES[kind];
   const pts = def.pts.map(([r, h]) => new THREE.Vector2(r * scale, h * scale));
+  // a foot to stand on: the base is flat (y 0) and at least 45% of the widest radius across, so a pot put down stays put
+  const rWide = Math.max(...pts.map((p) => p.x));
+  pts[0].y = 0; pts[0].x = Math.max(pts[0].x, rWide * 0.45);
   const cum = [0];
   for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
   const rMax = Math.max(...pts.map((p) => p.x));
@@ -132,7 +135,9 @@ export function prepProfile(kind, scale, overrides = {}) {
   const flameH = def.flame ? def.flame.amp * height : 0;
   return {
     kind, def, pts, cum, len: cum[cum.length - 1], rMax: rMax * (1 + (def.lobes?.amp || 0) + (def.flame?.flare || 0)),
-    height, fullHeight: height + flameH, th: def.th * Math.sqrt(scale), segs: def.segs, mat, M: MATERIALS[mat],
+    height, fullHeight: height + flameH, th: def.th * Math.sqrt(scale), mat, M: MATERIALS[mat],
+    // (a small pot needs fewer sides to read as round: fewer facets where they would be a few centimetres wide; lobed ones keep theirs)
+    segs: def.lobes || def.flame ? def.segs : Math.max(6, Math.round(def.segs * THREE.MathUtils.clamp(rWide / 0.22, 0.65, 1))),
     lobes: def.lobes, twist: def.twist || 0, flame: def.flame, pattern: def.pattern || [],
   };
 }
@@ -221,13 +226,27 @@ function ringUs(P, spacing) {
   return us;
 }
 
-function ringSpacing(P) {
-  return Math.min((2 * Math.PI * P.rMax) / P.segs * 0.85, P.pattern.length ? 0.035 + P.height * 0.03 : 1);
+/**
+ * The rings the intact mesh is built on: the profile's own points (where the silhouette turns), and a ring between two of them only
+ * where the span is long for the pot's width. (It used to be a ring every few centimetres wherever a pattern was painted: most of a
+ * pot's triangles were there to carry the paint. A pattern is now coloured onto the facets there are.) A twisted pot keeps a ring
+ * in each span so the twist still reads.
+ */
+function meshUs(P) {
+  if (P._us) return P._us;
+  const facet = (2 * Math.PI * P.rMax) / P.segs;
+  const us = [0];
+  for (let i = 1; i < P.cum.length; i++) {
+    const a = P.cum[i - 1], b = P.cum[i];
+    const n = Math.max(P.twist ? 2 : 1, Math.round((b - a) / (facet * 1.8)));
+    for (let k = 1; k <= n; k++) us.push(a + ((b - a) * k) / n);
+  }
+  return (P._us = us);
 }
 
 /** The (ring, segment) grid the intact mesh is built on (for points exactly on its facets). */
 export function surfaceGrid(P) {
-  return { us: ringUs(P, ringSpacing(P)), S: P.segs };
+  return { us: meshUs(P), S: P.segs };
 }
 
 /**
@@ -267,10 +286,14 @@ export function locateOnPot(P, p) {
   return { u: best, ang };
 }
 
-/** Non-indexed, per-face coloured geometry (flat lowpoly look, crisp patterns). */
+/**
+ * Non-indexed, per-face coloured geometry (flat lowpoly look). The inside wall is only built where it can be seen: all of it in an
+ * open pot (a bowl, a plate, a cup), and just the lip of a pot with a neck, over a dark disc (you cannot see further down a jar's
+ * mouth than that, and the shards are built from the profile, not from this mesh).
+ */
 export function buildPotGeometry(P, baseColor) {
   const S = P.segs;
-  const us = ringUs(P, ringSpacing(P));
+  const us = meshUs(P);
   const R = us.length;
   const outer = [], inner = [];
   for (const u of us) {
@@ -292,22 +315,31 @@ export function buildPotGeometry(P, baseColor) {
     for (let k = 0; k < 3; k++) col.push(c.r, c.g, c.b);
   };
   const V = (arr, i, j) => arr[i * S + ((j + S) % S)];
+  const open = P.pts[P.pts.length - 1].x >= P.rMax * 0.85; // (the mouth is the width: a bowl, a cup, a plate; you see all of the inside)
+  const inFrom = open ? 0 : Math.max(0, R - 2); // (a neck: only the lip's span)
   for (let i = 0; i < R - 1; i++) {
     for (let j = 0; j < S; j++) {
       const a = V(outer, i, j), b = V(outer, i, j + 1), cc = V(outer, i + 1, j + 1), d = V(outer, i + 1, j);
       tri(a, d, cc, false); tri(a, cc, b, false);
+      if (i < inFrom) continue;
       const ia = V(inner, i, j), ib = V(inner, i, j + 1), ic = V(inner, i + 1, j + 1), id = V(inner, i + 1, j);
       tri(ia, ic, id, true); tri(ia, ib, ic, true);
     }
+  }
+  if (!open) { // the dark down the neck
+    const dc = new THREE.Vector3(0, inner[inFrom * S].y, 0), dark = innerCol.clone().multiplyScalar(0.35), save = innerCol.clone();
+    innerCol.copy(dark);
+    for (let j = 0; j < S; j++) tri(dc, V(inner, inFrom, j + 1), V(inner, inFrom, j), true);
+    innerCol.copy(save);
   }
   for (let j = 0; j < S; j++) { // rim
     const a = V(outer, R - 1, j), b = V(outer, R - 1, j + 1), ia = V(inner, R - 1, j), ib = V(inner, R - 1, j + 1);
     tri(a, b, ib, false); tri(a, ib, ia, false);
   }
   const bc = new THREE.Vector3(0, 0, 0), ic = new THREE.Vector3(0, P.th, 0);
-  for (let j = 0; j < S; j++) { // base caps
+  for (let j = 0; j < S; j++) { // base caps (the inside floor only where the inside is seen)
     tri(bc, V(outer, 0, j), V(outer, 0, j + 1), false);
-    tri(ic, V(inner, 0, j + 1), V(inner, 0, j), true);
+    if (open) tri(ic, V(inner, 0, j + 1), V(inner, 0, j), true);
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));

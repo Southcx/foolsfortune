@@ -160,7 +160,7 @@ export class Sondelass extends Tech {
     if (!this.socketR && ch) this.computeSocket(ch);
     const wpn = g.weapon;
     if (this.enabled && inp.enabled) {
-      const busy = !!this.mgr.active?.handsBusy;
+      const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item; // (both hands are on what is being carried, too)
       if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('sondelass')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; } // (both hands taken: it goes away, and comes back)
