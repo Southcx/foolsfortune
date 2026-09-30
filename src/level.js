@@ -7,6 +7,8 @@ import { buildCircuitRooms } from './circuitrooms.js';
 import { buildWeir, spawnWeir } from './angling/weir.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { zoneOf } from './render/zones.js';
+const _center = new THREE.Vector3();
 import { RAPIER, GROUPS } from './physics.js';
 import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
@@ -54,8 +56,12 @@ export class Level {
   }
 
   addGeo(geo, color, outline = true, shadow = true) {
-    const k = `${color}_${outline}_${shadow}`;
-    if (!this.batches.has(k)) this.batches.set(k, { color, outline, shadow, geos: [] });
+    // merged by look, and by place: one batch per zone and 64 m cell (see render/zones.js), so that a room out of sight is not drawn and
+    // the camera's frustum can still drop the parts of a large one behind it
+    if (!geo.boundingBox) geo.computeBoundingBox();
+    const c = geo.boundingBox.getCenter(_center), zone = zoneOf(c);
+    const k = `${color}_${outline}_${shadow}_${zone}_${Math.floor(c.x / 64)}_${Math.floor(c.z / 64)}`;
+    if (!this.batches.has(k)) this.batches.set(k, { color, outline, shadow, zone, geos: [] });
     this.batches.get(k).geos.push(geo.index ? geo.toNonIndexed() : geo);
   }
 
@@ -95,9 +101,10 @@ export class Level {
   }
 
   finalizeStatic() {
-    for (const { color, outline, shadow, geos } of this.batches.values()) {
+    for (const { color, outline, shadow, zone, geos } of this.batches.values()) {
       const merged = mergeGeometries(geos.map((g) => { g.deleteAttribute('uv'); return g; }), false);
       const m = new THREE.Mesh(merged, this.mat(color));
+      m.userData.zone = zone;
       m.receiveShadow = true;
       m.castShadow = shadow;
       if (outline) addOutline(m);

@@ -3,6 +3,8 @@ import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { RAPIER, GROUPS, G, groups } from './physics.js';
 import { T, PALETTE } from './config.js';
 import { addOutline, ensureSmoothNormals } from './outline.js';
+import { PropBatch, InstancePool } from './render/propbatch.js';
+import { zoneOf } from './render/zones.js';
 import { sfx } from './audio.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
 import { crackPaths, randomPaths, setCracks } from './cracks.js';
@@ -52,6 +54,8 @@ export class Breakables {
     this.fx = fx;
     this.game = game;
     this.items = new Set();
+    this.batch = new PropBatch(scene); // (pots at rest, drawn together)
+    this.ropeDraw = new InstancePool(scene, ropeGeo, ropeMat); // (every rope segment in one draw)
     this.shards = [];
     this.debris = new Set(); // non-breakable dynamic props (crates, bricks) for explosions
     this.ropes = new Set();
@@ -168,6 +172,7 @@ export class Breakables {
       mesh.scale.set(1, segLen * 1.05, 1);
       mesh.castShadow = true;
       this.scene.add(mesh);
+      this.ropeDraw.add(mesh);
       this.physics.markLink(body);
       const seg = { body, col, mesh, index: i };
       seg.sync = this.physics.addSynced(body, mesh);
@@ -266,7 +271,7 @@ export class Breakables {
   /** Remove an intact breakable and run its on-break side effects (not the shards). */
   retire(ent, cause, dir, point) {
     ent.alive = false;
-    this.items.delete(ent);
+    this.items.delete(ent); this.release(ent);
     const t = ent.body.translation();
     const center = new THREE.Vector3(t.x, t.y + ent.P.height * 0.45, t.z);
     this.physics.removeSynced(ent.sync);
@@ -477,7 +482,7 @@ export class Breakables {
   shatter(ent, hitPoint, dir, power = 1, cause = 'shot') {
     if (!ent.alive) return;
     ent.alive = false;
-    this.items.delete(ent);
+    this.items.delete(ent); this.release(ent);
 
     const body = ent.body;
     const bt = body.translation(), br = body.rotation();
@@ -537,7 +542,7 @@ export class Breakables {
   removeQuiet(ent) {
     if (!ent.alive || ent.rope) return;
     ent.alive = false;
-    this.items.delete(ent);
+    this.items.delete(ent); this.release(ent);
     this.physics.removeSynced(ent.sync);
     this.physics.removeBody(ent.body);
     this.scene.remove(ent.mesh);
@@ -739,8 +744,25 @@ export class Breakables {
     }
   }
 
+  /** A pot at rest is drawn by the prop batch; anything that happens to it hands it back (render/propbatch.js). */
+  rest(ent) {
+    const b = ent.body, m = ent.mesh;
+    const still = ent.alive && ent.popIn === undefined && !ent.rope && b.isValid() && b.isDynamic() && b.isSleeping() && m.parent === this.scene && m.children.length === 1;
+    if (ent.parked) { if (!still || this.batch.stale(ent.parked)) { this.batch.unpark(ent.parked); ent.parked = null; ent.restT = 0; } return; }
+    if (!still) { ent.restT = 0; return; }
+    if ((ent.restT = (ent.restT || 0) + 1) > 20) ent.parked = this.batch.park(m, zoneOf(m.position));
+  }
+
+  /** The pot is gone: take it out of the batch for good. */
+  release(ent) {
+    if (ent.parked) { this.batch.unpark(ent.parked); ent.parked = null; }
+    this.batch.forget(ent.mesh.geometry);
+  }
+
   update(dt) {
+    this.ropeDraw.update();
     for (const ent of this.items) {
+      this.rest(ent);
       if (ent.popIn !== undefined) {
         ent.popIn = Math.min(1, ent.popIn + dt * 4);
         const t = ent.popIn;
@@ -782,6 +804,7 @@ export class Breakables {
   clear() {
     for (const r of [...this.ropes]) this.removeRope(r);
     for (const ent of this.items) {
+      this.release(ent);
       this.physics.removeSynced(ent.sync);
       this.physics.removeBody(ent.body);
       this.scene.remove(ent.mesh);

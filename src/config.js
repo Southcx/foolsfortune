@@ -315,6 +315,12 @@ export const DEFAULTS = {
     sun: 3.2,
     fog: 0.018,
     shadows: true,
+    // the console look (render/present.js): the scene drawn at a fixed number of lines and scaled up to the window
+    resolution: 'ps2', // 'ps2' (480 lines) | '540' | '720' | 'native'
+    upscale: 'bilinear', // 'bilinear' | 'pixel'
+    smooth: true, // smooth (Gouraud) shading; false: faceted
+    shadowRes: 1024,
+    lightSlots: 8, // point lights lit at once (render/lightbudget.js)
   },
   audio: {
     volume: 0.7,

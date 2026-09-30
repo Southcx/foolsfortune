@@ -31,7 +31,7 @@ export class Kick extends Tech {
     this.cool -= dt;
     if (this.state === 'idle') {
       if (!P.peekLatch('KeyV') || this.cool > 0 || P.sliding || P.mantle || P.freeze) return;
-      if ((g.weapon?.drawT ?? 0) > 0.25 || this.mgr.toolOut) return; // (no kicking with a weapon out: V is the Sondelass's guard, and nothing with the Psygun)
+      if ((g.belt ? !g.belt.allows('kick') : (g.weapon?.drawT ?? 0) > 0.25) || this.mgr.toolOut) return; // (no kicking with a weapon out: V is the Sondelass's guard, and nothing with the Psygun)
       const carry = this.mgr.get('carry');
       if (carry?.item || carry?.state !== 'idle') return; // (your hands are full)
       if (this.mgr.active && !['balance', 'blink'].includes(this.mgr.active.id)) return;

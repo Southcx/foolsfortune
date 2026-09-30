@@ -3,6 +3,8 @@ import { T, DEFAULTS, saveTuning, resetTuning } from './config.js';
 
 // Slider ranges for the live tuning panel (Tab). Anything not listed gets an
 // automatic range around its default.
+// settings that are one of a few words
+const CHOICES = { mode: ['release', 'press'], resolution: ['ps2', '540', '720', 'native'], upscale: ['bilinear', 'pixel'] };
 const RANGES = {
   'movement.maxSlope': [10, 70, 1],
   'movement.dashCharges': [0, 5, 1],
@@ -31,6 +33,8 @@ const RANGES = {
   'clappers.count': [0, 12, 1],
   'clappers.upstairs': [0, 8, 1],
   'visual.fog': [0, 0.06, 0.001],
+  'visual.shadowRes': [256, 2048, 256],
+  'visual.lightSlots': [2, 16, 1],
   'audio.volume': [0, 1.5, 0.01],
 };
 
@@ -45,7 +49,7 @@ export function buildTuningPanel(onChange, actions) {
       const v = defs[key];
       let c;
       if (typeof v === 'object') { const sub = folder.addFolder(key); sub.close(); addKeys(sub, obj[key], v, `${prefix}.${key}`); continue; }
-      if (typeof v === 'string') { c = folder.add(obj, key, key === 'mode' ? ['release', 'press'] : undefined); c.onChange(() => { saveTuning(); onChange(group, key); }); continue; }
+      if (typeof v === 'string') { c = folder.add(obj, key, CHOICES[key]); c.onChange(() => { saveTuning(); onChange(group, key); }); continue; }
       if (typeof v === 'boolean') c = folder.add(obj, key);
       else {
         const r = RANGES[`${prefix}.${key}`];

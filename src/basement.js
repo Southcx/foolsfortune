@@ -94,6 +94,7 @@ export function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opa
   const m = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 160 / 512),
     new THREE.MeshBasicMaterial({ map: labelTexture(text, sub), transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
   m.renderOrder = 2;
+  m.userData.maxDist = Math.max(22, width * 11); // (unreadable further off: not drawn, render/zones.js)
   // (flat labels sit a hair higher: 2 cm z-fought with the floor at a low grazing angle)
   if (!vertical) pos = [pos[0], pos[1] + 0.02, pos[2]];
   m.position.set(...pos);

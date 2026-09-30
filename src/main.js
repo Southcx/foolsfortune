@@ -76,16 +76,25 @@ import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
 import { Chests, ChestTech } from './chests.js';
 import { Rave } from './vfx/rave.js';
+import { Zones } from './render/zones.js';
+import { LightBudget } from './render/lightbudget.js';
+import { Presentation } from './render/present.js';
+import { ToolBelt, psygunTool, sondelassTool } from './tools/belt.js';
 
 const FIXED = 1 / 60;
 
+// boot timings: window.__boot (ms at each stage since the page began), for profiling the load
+const BOOT = (window.__boot = []);
+const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
+
 async function main() {
+  mark('main');
   loadTuning();
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = T.visual.shadows;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap; // (filtered, not softened: a console's one shadow; see render/present.js)
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = T.visual.exposure;
   document.body.prepend(renderer.domElement);
@@ -103,7 +112,7 @@ async function main() {
   // down the atrium onto the ground floor
   sun.position.set(4, 30, -5);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(T.visual.shadowRes || 1024, T.visual.shadowRes || 1024);
   const sc = sun.shadow.camera;
   sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 5; sc.far = 50;
   sun.shadow.bias = -0.0004;
@@ -112,6 +121,7 @@ async function main() {
 
   const physics = new Physics();
   await physics.init();
+  mark('physics');
   const fx = new FX(scene);
   fx.pixelRatio = renderer.getPixelRatio();
   const hud = new Hud();
@@ -153,6 +163,7 @@ async function main() {
     },
   };
 
+  game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
   game.time = new TimeScale(game); // (who slows the world, and by how much: see timescale.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
@@ -161,13 +172,16 @@ async function main() {
   game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
   game.pulse = new PsychicPulse(game); // (a sounding: a sphere of light from a point)
   const breakables = new Breakables(scene, physics, fx, game);
+  mark('services');
   game.sky = await new Sky(game).load(); // (the painted sky: the dunes' dome, the water's reflection, the gloss on the cubes)
   game.cubes = new Cubes(game); // (condensed Lachryma: the currency; loose ones are real bodies)
   game.mood = new Mood(game); // (the room's lights, borrowed by a ceremony: see mood.js)
   game.chests = new Chests(game); // (treasure chests, the Tithe and how they open: see chests.js)
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js)
   game.chests.rave.warm(renderer, camera);
+  mark('sky');
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
+  mark('dunes');
   const level = new Level(scene, physics, breakables);
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
@@ -176,6 +190,7 @@ async function main() {
   level.env = env;
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   level.build();
+  mark('level');
   const spawnRoom = () => {
     level.spawnDynamic();
     stats.broken = 0;
@@ -184,6 +199,7 @@ async function main() {
   spawnRoom();
   game.breakables = breakables;
 
+  mark('spawn');
   const loader = new GLTFLoader();
   const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
   const [charG, gunG, clapG, handG, jarG] = await Promise.all([
@@ -193,12 +209,15 @@ async function main() {
     loader.parseAsync(bytes(handB64), ''),
     loader.parseAsync(bytes(jarB64), ''),
   ]);
+  mark('gltf');
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
   clappers.spawnAll();
   const clipPack = decodeAnims(animsB64);
   Object.assign(clipPack.clips, decodeAnims(cmuB64).clips); // (mocap: the soccer kick)
+  mark('clappers+anims');
   const character = new Character(scene, charG, gunG, clipPack);
+  mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
 
@@ -215,6 +234,10 @@ async function main() {
   const techs = new Techs(player, game);
   for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass]) techs.add(new T0(techs));
   env.lobbers.game = game;
+  // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
+  game.belt = new ToolBelt(game);
+  game.belt.add(psygunTool(weapon));
+  game.belt.add(sondelassTool(techs.get('sondelass')));
   player.techs = techs;
   game.techs = techs;
   const codex = new Codex(game);
@@ -230,7 +253,9 @@ async function main() {
   hud.buildShells(SHELL_TYPES);
   game.input = input;
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
+  mark('techs+ui');
   const god = new GodMode(game, renderer, handG, jarG);
+  mark('god');
   game.god = god;
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
@@ -296,6 +321,7 @@ async function main() {
     if (key === 'exposure' || group === '*') renderer.toneMappingExposure = T.visual.exposure;
     if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
     if (key === 'shadows' || group === '*') { sun.castShadow = T.visual.shadows; }
+    if (['resolution', 'upscale', 'smooth', 'shadowRes'].includes(key) || group === '*') game.present?.apply();
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
@@ -306,7 +332,9 @@ async function main() {
   game.resetRoom = resetRoom;
   const trial = new Trial(game);
   game.trial = trial;
+  mark('misc');
   const course = new Course(game);
+  mark('course');
   game.course = course;
   game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
   course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
@@ -326,6 +354,7 @@ async function main() {
     carto.restoreAnchors();
   }
   // what is counted and what is said about it, then the achievements over the counts
+  mark('circuits+carto');
   game.weir = new Weir(game); // (the Sondelass's own room: the tide and the shoals)
   stockTreasury(game); // (a chest of each tier on the Weir's plinths, and the Tithe's console)
   {
@@ -339,6 +368,10 @@ async function main() {
   }
   game.tracking = new Tracking(game);
   game.achievements = new Achievements(game);
+  mark('weir+treasure+ach');
+  game.lights = new LightBudget(game, { slots: T.visual.lightSlots ?? 8 }); // (every lamp in the world, lit eight at a time: render/lightbudget.js)
+  game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
+  game.present.apply();
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
 
   // --- overlay / pointer lock -----------------------------------------------
@@ -365,9 +398,15 @@ async function main() {
   addEventListener('resize', () => {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-  });
+  }); // (the render size itself is the Presentation's: render/present.js)
 
+  // warm the shaders while the loading screen is still up: every room's materials at once (zones off for it), so the first frame and
+  // the first teleport do not stall on the driver compiling them (KHR_parallel_shader_compile lets the browser do it off the main thread)
+  for (let i = 0; i < 22; i++) breakables.update(0); // (the pots at rest go into their batches first: those are shaders too)
+  game.zones.enabled = false; game.zones.update(1);
+  try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  game.zones.enabled = true; game.zones.t = 0;
+  mark('shaders');
   document.getElementById('loading').remove();
 
   // --- errors: shown on screen (once each) instead of a silent freeze ------------
@@ -404,6 +443,7 @@ async function main() {
     try {
       tick(dt);
       renderer.render(scene, window.__debugCam || camera);
+      if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
     } catch (e) {
       reportError(e); // keep the loop alive and say what broke instead of freezing
@@ -617,13 +657,17 @@ async function main() {
     });
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
+    game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)
+    game.lights.update(game.rawDt); // (and the lamps that light it: after everything has set its own)
+    game.present.update(game.rawDt); // (new things shaded to match)
     input.endFrame();
   }
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level) };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  mark('ready');
   window.__ready = true;
 }
 

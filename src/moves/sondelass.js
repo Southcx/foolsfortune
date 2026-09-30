@@ -161,7 +161,7 @@ export class Sondelass extends Tech {
     const wpn = g.weapon;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy;
-      if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy) this.drawTarget = this.drawTarget > 0 ? 0 : 1;
+      if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('sondelass')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; } // (both hands taken: it goes away, and comes back)
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
@@ -171,7 +171,7 @@ export class Sondelass extends Tech {
     } else if (this.drawTarget > 0 && !inp.enabled) { /* paused: stay as we are */ }
     if (!this.enabled || g.god?.controlling) this.drawTarget = 0;
     // the Psygun holsters first, then this is drawn (and the reverse)
-    const gunAway = !wpn || wpn.drawT < 0.02;
+    const gunAway = g.belt ? g.belt.mayDraw(g.belt.get('sondelass')) : !wpn || wpn.drawT < 0.02; // (the belt: the hands are free of every other tool)
     const step = dt / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
     if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);

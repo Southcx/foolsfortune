@@ -38,35 +38,36 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const HOT = new THREE.Color(0xffa25a), GLOW = new THREE.Color(0xe0673a), COOL = new THREE.Color(PALETTE.dark);
 const SLIP = new THREE.Color(PALETTE.pale), SLIP_DRY = new THREE.Color(PALETTE.mid);
 
+/** A splat of slip: soft circles summed and thresholded (metaballs), so the blobs run together at their edges. */
 function blobTexture(seed) {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d');
   let s = seed * 9301 + 49297;
   const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
-  g.fillStyle = '#fff';
-  g.beginPath(); g.arc(64, 64, 34, 0, Math.PI * 2); g.fill();
-  for (let i = 0; i < 14; i++) {
-    const a = rnd() * Math.PI * 2, r = 24 + rnd() * 30, rr = 5 + rnd() * 14;
-    g.beginPath(); g.arc(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, rr, 0, Math.PI * 2); g.fill();
-  }
-  // soften: blur the hard-edged blob into a second canvas, then use luminance as alpha
-  const c2 = document.createElement('canvas');
-  c2.width = c2.height = 128;
-  const g2 = c2.getContext('2d');
-  g2.filter = 'blur(5px)';
-  g2.drawImage(c, 0, 0);
-  const d = g2.getImageData(0, 0, 128, 128);
+  g.globalCompositeOperation = 'lighter';
+  const ball = (x, y, r) => {
+    const gr = g.createRadialGradient(x, y, 0, x, y, r * 1.5);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.6, 'rgba(255,255,255,0.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(x - r * 1.5, y - r * 1.5, r * 3, r * 3);
+  };
+  ball(64, 64, 34);
+  for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, r = 24 + rnd() * 30, rr = 5 + rnd() * 14; ball(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, rr); }
+  const d = g.getImageData(0, 0, 128, 128);
   for (let i = 0; i < d.data.length; i += 4) {
     const a = d.data[i] / 255;
-    d.data[i + 3] = Math.round(255 * THREE.MathUtils.smoothstep(a, 0.25, 0.75));
+    d.data[i + 3] = Math.round(255 * THREE.MathUtils.smoothstep(a, 0.3, 0.7));
     d.data[i] = d.data[i + 1] = d.data[i + 2] = 255;
   }
-  g2.putImageData(d, 0, 0);
-  return new THREE.CanvasTexture(c2);
+  g.globalCompositeOperation = 'source-over';
+  g.putImageData(d, 0, 0);
+  return new THREE.CanvasTexture(c);
 }
 
 export class Shells {
+  /** The four splat textures, drawn the first time a slip shell lands rather than at boot. */
+  get blobTex() { return (this._blobTex ||= [0, 1, 2, 3].map(blobTexture)); }
+
   constructor(game) {
     this.game = game;
     this.selected = 0;
@@ -78,7 +79,7 @@ export class Shells {
     this.splats = [];
     this.pools = [];
     this.marked = new Set();
-    this.blobTex = [0, 1, 2, 3].map(blobTexture);
+    this._blobTex = null; // (made on first use: see the getter)
     this.glowOutline = makeGlowOutline(PALETTE.hot, 0.014);
     this.xray = makeGlowOutline(PALETTE.glow, 0.004, true);
 

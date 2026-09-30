@@ -18,14 +18,26 @@ credits: UAL Standard, CMU mocap, CC0).
   finger hinges for the Courier are learned from the clips (`tools/learn_rom.mjs`).
 
 ## Feel and comfort
-- Nothing that scrolls, shimmers or flickers at a variable rate across large parts of the screen (no time-scrolled
-  textures, no fast twinkle). Motion in the world should come from things actually moving.
+- Nothing that shimmers or flickers at a variable rate across large parts of the screen (the rule came from a bad bug
+  in the sand, not from any sensitivity: textures used the way sixth-generation games used them are welcome, including
+  a scrolled texture where that is the honest way to show something moving). Motion in the world should still come from
+  things actually moving where it can.
 - The core movement is the gold standard: techs and arts never change it, and switching one off restores it exactly.
 
 ## Feedback
 - **The log (`src/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating counters or kill-feed in the world or on the HUD; if something deserves a sentence, `tracking.js` writes it (plain third person, FFXI-style, a colour class per kind), and everything else is counted in the ledger (`src/stats.js`) for the achievements. A new feature emits an event (`game.events.emit`) and gets a rule in `tracking.js`; it does not call the log to celebrate. (A refusal at the point of use, "You have no bomb shells.", may `log.say` directly, with a `throttle`.) Event payloads must not use `name` or `t` (the bus's own).
 - **Marks in the world are not text.** A glyph pop (`src/vfx/glyphs.js`: a `!`, `!!!`, `?` over the thing it is about), the interact chevron (`src/interact.js`), the lock-on reticle, the letterbox bars and the fish portrait (`src/vfx/cinema.js`, `portrait.js`) are how the game *shows* something: they sit on the thing, carry no words or numbers, and are diegetic wherever they can be (a line that glows with its load beats a gauge). Anything that needs a sentence still goes to the log.
 - Achievements are predicates over the ledger, never flags set by hooks (so they are retroactive); follow OSRS's tiers/types and FFXIV's categories (see the header of `src/achievements.js`).
+
+## Performance and the look
+- The target is a sixth-generation console (PS2 / GameCube): the scene is drawn at 480 lines and upscaled bilinearly,
+  smooth shading, one sun shadow. Keep it so (`src/render/present.js`).
+- Every new room is a zone in `src/render/zones.js` (only the zone the camera is in, and what it can see, is drawn).
+  Static geometry goes through `level.box`/`addGeo` (merged per zone). Lamps are plain `PointLight`s: the light budget
+  (`src/render/lightbudget.js`) lends eight real lights to the nearest; never add lights that bypass it.
+- Many copies of a prop: park them in a prop batch or an instance pool (`src/render/propbatch.js`); a model made of many
+  static primitives: `mergeStatic` (`src/render/merge.js`). Measure before and after (`window.__boot`, renderer.info).
+- A new psychic tool goes on the belt (`src/tools/belt.js`), and anything that asks "is a tool out?" asks the belt.
 
 ## Scope
 - Raids belong to one room (THE SIEGE, `src/siege.js` and `src/raids.js`), not a global setting.

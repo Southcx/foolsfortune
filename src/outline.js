@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PALETTE, T } from './config.js';
+import { weld } from './render/weld.js';
 
 // Inverted-hull outlines, same trick as the Solidify+Outline setup in the .blend.
 // A back-face-only copy of the mesh is pushed out along a *smoothed* normal so
@@ -41,23 +42,14 @@ export const OUTLINE_MAT = makeOutlineMaterial();
 export function ensureSmoothNormals(geometry) {
   if (geometry.attributes.smoothNormal) return geometry;
   if (!geometry.attributes.normal) geometry.computeVertexNormals();
-  const pos = geometry.attributes.position;
-  const nrm = geometry.attributes.normal;
-  const map = new Map();
-  const key = (i) => `${Math.round(pos.getX(i) * 1e4)},${Math.round(pos.getY(i) * 1e4)},${Math.round(pos.getZ(i) * 1e4)}`;
-  const acc = [];
-  for (let i = 0; i < pos.count; i++) {
-    const k = key(i);
-    let a = map.get(k);
-    if (!a) { a = [0, 0, 0]; map.set(k, a); }
-    a[0] += nrm.getX(i); a[1] += nrm.getY(i); a[2] += nrm.getZ(i);
-    acc.push(a);
-  }
-  const out = new Float32Array(pos.count * 3);
-  for (let i = 0; i < pos.count; i++) {
-    const a = acc[i];
-    const l = Math.hypot(a[0], a[1], a[2]) || 1;
-    out[i * 3] = a[0] / l; out[i * 3 + 1] = a[1] / l; out[i * 3 + 2] = a[2] / l;
+  const pos = geometry.attributes.position, nrm = geometry.attributes.normal;
+  const { rep } = weld(pos); // (integer spatial hash: render/weld.js)
+  const n = pos.count, acc = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const r = rep[i] * 3; acc[r] += nrm.getX(i); acc[r + 1] += nrm.getY(i); acc[r + 2] += nrm.getZ(i); }
+  const out = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const r = rep[i] * 3, x = acc[r], y = acc[r + 1], z = acc[r + 2], l = Math.hypot(x, y, z) || 1;
+    out[i * 3] = x / l; out[i * 3 + 1] = y / l; out[i * 3 + 2] = z / l;
   }
   geometry.setAttribute('smoothNormal', new THREE.BufferAttribute(out, 3));
   return geometry;

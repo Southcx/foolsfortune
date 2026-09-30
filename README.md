@@ -125,6 +125,25 @@ Prior art (also in the module headers): the loot box and the gacha pull (Overwat
 
 The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The vault of the Weir has an oculus that shows the painted sky.
 
+## Performance, and the console look
+
+The world is one scene with every room in it (the workshop and its basement, the circuits and the Weir three kilometres out, the dunes four hundred metres down). Four services keep that cheap, in the manner of the sixth-generation consoles the game takes its look from (`src/render/`):
+
+| | What it does | Before → after (workshop, same view) |
+| --- | --- | --- |
+| **Light budget** (`lightbudget.js`) | Every `PointLight` stays an ordinary object its owner moves and dims, but only the eight that matter most near the camera light anything; they are copied onto eight pooled lights each frame (a lamp coming into the budget fades up). three.js compiles the light count into every shader, so this also stops rebuilds. | 63 lights in every pixel's shader → 8 |
+| **Zones** (`zones.js`) | The world is split into places (workshop, basement, circuits, Weir, dunes). Only the place the camera is in, and what can be seen from it (the basement through the hole in the workshop floor, when the hole is on screen), is drawn; its lamps alone are candidates for the budget. The static level is merged per zone and per 64 m cell (`level.js`), so a merged mesh no longer spans the world, and floor labels are not drawn beyond reading distance. | static meshes 1.6 km across → per room |
+| **Prop batches** (`propbatch.js`) | A pot whose body is asleep is drawn inside a `BatchedMesh` (one per material and zone, plus one for the outlines) and its own mesh is hidden; the moment anything happens to it (it wakes, is carried, cracked, scaled, broken) it gets its mesh back. Rope segments are one `InstancedMesh`. | ~700 draws of pots and ropes → a handful |
+| **Merge** (`merge.js`) | A model built from primitives (a chest) has its static parts baked into one mesh per look inside each moving group. | a chest: ~80 draws → ~25 |
+
+Draw calls went from 1345 to about 650 in the workshop, 360 to 150 in the hub and 600 to 160 in the lab; a frame of the workshop costs a twenty-eighth of what it did on the software renderer the tests run on. Loading: every shader is compiled behind the loading screen (so the first frame and the first teleport do not stall), vertex welding for outlines and smooth shading uses an integer spatial hash instead of string keys (`weld.js`), and textures that are only needed later are made on first use. `window.__boot` holds the time at each stage of loading.
+
+**The picture** (`present.js`, settings under Tab › visual): the scene is drawn at **480 lines** (the PS2's 448, the GameCube's 480) and scaled up to the window with a **bilinear** filter, as a console's frame was by the television; the HUD and the log are HTML over it and stay sharp. `resolution` can be `ps2`, `540`, `720` or `native`; `upscale` `bilinear` or `pixel` (nearest neighbour). **Smooth shading** (`smooth`) is on: every flat-shaded material is drawn with smooth (Gouraud) normals, and triangle-soup meshes such as the pots get creased normals (smooth across their curves, hard at the rim and the base, at 50°). One sun shadow at 1024 (`shadowRes`), filtered, not softened.
+
+## The tool belt
+
+The Courier's psychic tools share one set of rules (`src/tools/belt.js`): seven places on the belt, one tool in the hands at a time, drawing one puts the other away first and the new one comes out only once the hands are free, and while a tool is out it says what it takes (the mouse, the number keys) and what it allows (the kick, first person). Two are on it: **the Psygun** (X) and **the Sondelass** (Q). Everything that asks "is a tool out?" asks the belt, so a new tool is its own module, an entry in the belt and nothing else.
+
 ## The god hand (~)
 
 Press **~** on solid ground and the Courier turns into a **Pneuka jar**, an immobile vessel
@@ -539,6 +558,8 @@ runtime IK correction on the contact points.
 | `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
 | `src/angling/` | angling: species, fish meshes and minds, lure, line, fight, angler (the rod form), the Weir room (and its treasury), gauges |
+| `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, and the presentation (resolution, upscale, smooth shading, shadow) |
+| `src/tools/belt.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun and the Sondelass on it) |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
 | `src/timescale.js`, `src/lockon.js`, `src/parry.js`, `src/hideui.js`, `src/sky.js`, `src/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |

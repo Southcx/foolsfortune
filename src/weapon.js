@@ -112,7 +112,8 @@ export class Weapon {
     if (blocked && rawInput.isDown('Mouse0')) this.fireGate = true;
     if (!rawInput.isDown('Mouse0')) this.fireGate = false;
     if (blocked && (this.holding || this.charge > 0)) this.cancelCharge(); // (picked something up mid-charge)
-    const toolOut = !!player.techs?.toolOut; // (the Sondelass is out: the Psygun stays on the back, and the mouse is its)
+    const belt = this.game.belt;
+    const toolOut = belt ? belt.others(belt.get('psygun')) : !!player.techs?.toolOut; // (another tool is out: the Psygun stays on the back, and the mouse is that tool's)
     if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); }
     const input = toolOut ? deadInput(rawInput) : blocked || this.fireGate ? gatedInput(rawInput) : rawInput;
     this.updateHolster(dt, input, player);

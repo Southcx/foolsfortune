@@ -22,6 +22,7 @@ import { addOutline } from './outline.js';
 import { TIERS } from './treasure.js';
 import { oilMaterial } from './cubes.js';
 import { Beam } from './vfx/beam.js';
+import { mergeStatic } from './render/merge.js';
 
 export const CHEST = { W: 1.0, D: 0.64, H: 0.42, R: 0.32, SCALE: [0.86, 0.95, 1.05, 1.15, 1.26], OPEN: 1.95, STOP: 2.3 };
 
@@ -59,7 +60,7 @@ export class ChestRig {
     const wood = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78 });
     const lidMat = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78, side: THREE.DoubleSide });
     const metal = tier === 4 ? null : std(L.band, { roughness: 0.36, metalness: 0.75, side: THREE.DoubleSide });
-    const bandMat = () => { if (tier !== 4) return metal; const m = track(new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); this.prism.push(m); return m; };
+    const bandMat = () => { if (tier !== 4) return metal; const m = track(new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); m.userData.noMerge = true; this.prism.push(m); return m; }; // (each band its own hue: not merged)
     const add = (parent, geo, mat, x = 0, y = 0, z = 0, outline = true) => {
       track(geo);
       const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
@@ -145,6 +146,9 @@ export class ChestRig {
     this.onLand = null; this.onClack = null;
     this.setGlow(0);
     this.apply();
+    // the parts that never move against each other are baked into one mesh per look (render/merge.js): ~80 draws become ~20
+    mergeStatic(this.body, { keep: new Set([this.keyhole, this.floorGlow]) });
+    mergeStatic(this.lid);
   }
 
   /** The heap of cubes inside, and a few of the tier's own gems in it. */
