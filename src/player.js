@@ -6,6 +6,7 @@ import { sfx } from './audio.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
+const _shotM = new THREE.Matrix4(), _shotQ = new THREE.Quaternion(), _shotR = new THREE.Quaternion(), _shotUp = new THREE.Vector3(0, 1, 0), _shotZ = new THREE.Vector3(0, 0, 1);
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
 const LOW_HALF = 0.375; // crouched / sliding: 1.35 m (the posed body, hair included, fits under 1.5 m)
 const BLOB_HALF = 0.05; // slip form (a tech): 0.7 m, through gaps nothing else fits
@@ -72,6 +73,7 @@ export class Player {
     this.mantle = null; // { from, to, t }
     this.wallrun = null; // { n, side, t, lost, handle }
     this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
+    this.camShot = null; // (a scripted camera blended over this one: see vfx/cinema.js)
     this.lookScale = { lock: 1, blade: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
     this.wallCd = 0;
     this.lastWall = -1;
@@ -160,7 +162,7 @@ export class Player {
 
   look(dt, adsT) {
     const inp = this.input;
-    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade;
+    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.shot ?? 1);
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;
@@ -983,6 +985,16 @@ export class Player {
     const speedFov = THREE.MathUtils.clamp((hs - M.walkSpeed) / (M.maxSpeed - M.walkSpeed), 0, 1) * C.speedFov;
     this.sprintFov = THREE.MathUtils.damp(this.sprintFov || 0, speedFov, 6, dt);
     cam.fov = baseFov + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0) + cf.fov;
+    // a scripted shot (a ceremony's camera): blended over the one above
+    const cs = this.camShot;
+    if (cs && cs.k > 0.001) {
+      const k = cs.k * cs.k * (3 - 2 * cs.k);
+      _shotM.lookAt(cs.pos, cs.look, _shotUp);
+      _shotQ.setFromRotationMatrix(_shotM).multiply(_shotR.setFromAxisAngle(_shotZ, cs.roll));
+      cam.position.lerp(cs.pos, k);
+      cam.quaternion.slerp(_shotQ, k);
+      cam.fov += cs.fov * k;
+    }
     cam.updateProjectionMatrix();
     cam.updateMatrixWorld();
     this.fpWeight = 1 - tb;

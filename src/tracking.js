@@ -26,9 +26,11 @@
 import { sfx } from './audio.js';
 import { BY_ID } from './system/skills.js';
 import { BY_SPECIES, ASPECTS } from './angling/species.js';
+import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
 
 const CLAP_LINE = {
@@ -350,6 +352,34 @@ export class Tracking {
     on('angle.landed', (e) => L.inc('fish.lachryma', e.baubles));
     on('angle.tide', (e) => { L.inc('angle.tide'); L.inc(`angle.tide.${e.phase}`); if (e.near) log.say('angle', `The tide is ${e.phase === 'low' ? 'at its lowest' : e.phase === 'high' ? 'at the full' : e.phase}.`); });
     on('angle.legend', () => log.say('god', 'Something vast turns over in the Well.'));
+
+
+    // ---- treasure (src/chests.js, ceremony.js, cubes.js): chests in five tiers, the cubes they hold, the curios, the Tithe
+    // (the tier's colour is the line's colour: what kind of thing it was is read before the words are)
+    const tone = (t) => hex(t === 4 ? 0xfff2c8 : TIERS[t].rgb);
+    on('chest.open', (e) => {
+      const t = TIERS[e.tier];
+      L.inc('chest.open'); L.inc(`chest.open.${t.id}`); if (e.sealed) L.inc('chest.open.sealed'); if (e.kind === 'near') L.inc('chest.near');
+      L.hi('chest.cubes.max', e.cubes, { at: this.where() });
+      if (e.id && !L.has(`chest.${e.id}`)) L.first(`chest.${e.id}`);
+      log.say('loot', e.sealed ? `The sealed chest was ${an(t.name)} chest!` : `You open the ${t.name} chest.`, { tone: tone(e.tier) });
+      log.say('loot', `It holds ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' });
+      if (e.sealed && e.kind === 'near') log.say('loot', 'So close to something better.', { tone: '#c9b48a' });
+      if (e.tier === 4) log.say('ach', 'The lights go out. The chest has a great deal to say.', {});
+    });
+    on('cube.earn', (e) => { L.inc(`cube.src.${e.why}`, e.n); });
+    on('cube.spend', (e) => { L.inc(`cube.use.${e.why}`, e.n); });
+    on('cube.spill', (e) => { L.inc(`cube.spill.${e.from}`, e.n); if (e.from === 'zandatsu') log.say('loot', `The core condenses into ${plural(e.n, 'Lachryma cube')}.`, { key: 'zcube', win: 1.2, fmt: () => 'The cores condense into cubes.' }); });
+    on('curio.get', (e) => {
+      const c = CURIO_BY_ID[e.id], t = TIERS[c.tier];
+      if (e.dupe) { L.inc('curio.dupe'); log.say('loot', `You already have the ${c.name}. It condenses into cubes.`, { tone: tone(c.tier) }); return; }
+      L.inc('curio.total'); L.inc(`curio.tier.${t.id}`);
+      log.say('loot', `You obtain the ${c.name}!`, { tone: tone(c.tier) });
+      if (L.first(`curio.first.${e.id}`)) log.say('record', `Logged: the ${c.name}. ${c.blurb}`);
+    });
+    on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
+    on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
+    on('rave.start', () => L.inc('rave.count'));
 
     // ---- the System: what has been learned
     on('system.unlock', (e) => {

@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------------------
 import { CATS, TIERS, TYPES, RANKS } from '../achievements.js';
 import { SPECIES, ASPECTS, TIDES } from '../angling/species.js';
+import { TIERS as CHEST_TIERS, CURIOS, TITHE, hex as tierHex } from '../treasure.js';
 
 const CSS = `
 #codex .lg-head { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; margin-bottom: 10px; font-size: 12px; letter-spacing: .08em; }
@@ -243,6 +244,45 @@ export function renderAngling(codex, cx) {
     const cm = L.best(`fish.cm.${sp.id}`), kg = L.best(`fish.kg.${sp.id}`);
     card.appendChild(el('p', '', `<span style="color:var(--accent)">BEST</span> · ${Math.round(cm)} cm · ${kg ? kg.toFixed(2) : '—'} kg <span style="opacity:.6">(kinds run ${sp.size[0]}–${sp.size[1]} cm)</span>`));
   }
+  body.appendChild(card);
+  cx.appendChild(body);
+}
+
+/** CURIOS: the twenty things a chest can hold, by tier; a silhouette until you have it. The Tithe's odds are here too, in the open. */
+export function renderCurios(codex, cx) {
+  ensureStyle();
+  const g = codex.game, L = g.ledger;
+  codex.csel ||= CURIOS[0].id;
+  const own = (c) => L.get(`curio.${c.id}`) > 0;
+  const head = el('div', 'lg-head');
+  head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
+    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.pulls'))}</b></div>`
+    + `<div><small>BIGGEST CHEST</small><b>${L.best('chest.cubes.max') ? num(L.best('chest.cubes.max')) : '—'}</b></div>`;
+  cx.appendChild(head);
+  const body = el('div', 'body');
+  const list = el('div', 'list');
+  for (const t of CHEST_TIERS) {
+    list.appendChild(el('div', 'lg-sub', `${t.name.toUpperCase()} <span style="opacity:.6;float:right;letter-spacing:.06em">${CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t) && own(c)).length}/4</span>`));
+    for (const c of CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t))) {
+      const has = own(c);
+      const row = el('div', `row${has ? '' : ' locked'}${codex.csel === c.id ? ' sel' : ''}`,
+        `<span class="g" style="color:${has ? tierHex(t.rgb) : 'inherit'}">${has ? c.glyph : '?'}</span><span class="t"><b>${has ? c.name.toUpperCase() : '· · ·'}</b><s>${has ? `${L.get(`curio.${c.id}`)} held` : 'not yet found'}</s></span>`);
+      row.onclick = () => { codex.csel = c.id; codex.render(); };
+      list.appendChild(row);
+    }
+  }
+  body.appendChild(list);
+  const c = CURIOS.find((x) => x.id === codex.csel), has = own(c), t = CHEST_TIERS[c.tier];
+  const card = el('div', 'card');
+  card.appendChild(el('h3', '', has ? c.name.toUpperCase() : '· · ·'));
+  card.appendChild(el('div', 'in', `${t.name.toUpperCase()} CURIO${has ? ` · ${L.get(`curio.${c.id}`)} HELD` : ''}`));
+  card.appendChild(el('p', has ? '' : 'hint', has ? c.blurb : `Found in ${t.name} chests${c.tier >= 3 ? ', and rarely' : ''}. A copy you already have is condensed into cubes.`));
+  // the odds, in the open: what a sealed chest from the Tithe can be, and what the pity guarantees
+  const tot = CHEST_TIERS.reduce((a, x) => a + x.weight, 0);
+  const odds = el('div');
+  odds.innerHTML = `<div class="in">THE TITHE · ${TITHE.cost} CUBES A PULL</div>` + CHEST_TIERS.map((x, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span style="width:88px;color:${tierHex(x.rgb)}">${x.name}</span><span class="bar" style="flex:1;margin:0"><i style="width:${Math.max(2, Math.round(x.weight / tot * 100))}%"></i></span><span style="width:92px;text-align:right;opacity:.8">${(x.weight / tot * 100).toFixed(1)}% · ${x.cubes[0]}–${x.cubes[1]}</span></div>`).join('')
+    + `<p class="hint" style="margin-top:8px">Pity: ${TITHE.pity.rare} pulls without a rare or better guarantee one; ${TITHE.pity.epic} an epic; ${TITHE.pity.prismatic} a prismatic. Kept count: ${g.chests ? `rare ${g.chests.since().rare}/${TITHE.pity.rare}, epic ${g.chests.since().epic}/${TITHE.pity.epic}, prismatic ${g.chests.since().prismatic}/${TITHE.pity.prismatic}` : '—'}. Chest chance of holding a curio: ${CHEST_TIERS.map((x) => `${x.name} ${Math.round(x.curioP * 100)}%`).join(' · ')}.</p>`;
+  card.appendChild(odds);
   body.appendChild(card);
   cx.appendChild(body);
 }

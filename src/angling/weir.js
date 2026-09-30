@@ -38,6 +38,10 @@ export function inWeir(p, pad = 0) {
   return p.x > WEIR_BOX.x0 - pad && p.x < WEIR_BOX.x1 + pad && p.z > WEIR_BOX.z0 - pad && p.z < WEIR_BOX.z1 + pad && p.y > B - 12 && p.y < B + WEIR_BOX.H + 2;
 }
 
+/** The treasury on the north deck: five plinths (one chest of each tier, common to prismatic), the Tithe's console and the dais its sealed chests land on. */
+export const TREASURY = { z: 45.6, plinths: [46.2, 49.6, 53.0, 56.4, 59.8], top: 0.55, tithe: { x: 42.4, z: 45.9 }, dais: { x: 37.6, z: 43.6 } };
+export const WEIR_FLOOR = B;
+
 export const POOLS = [
   { id: 'shallows', name: 'THE SHALLOWS', ...S0, surface: B + SURF, bottom: B - 6, maxDepth: 6,
     depthAt: (x, z) => (inR(R3, x, z) ? 6 : inR(R2, x, z) ? 4.2 : inR(R1, x, z) ? 2 : 0.55), species: SPECIES.filter((s) => !s.legend).map((s) => s.id), cap: 13 },
@@ -94,12 +98,17 @@ export function buildWeir(L, env) {
   for (let i = 0; i < 6; i++) blk(3.5, 5.5, 0, 0.8, 13 + i * 4, 15 + i * 4, C.mid);
   blk(8, 10.5, 0, 6, 30, 32.5, C.wall);
   blk(8, 12.5, 5.6, 6, 30, 34.5, C.dark);
+  // the treasury: five plinths, the Tithe's console and its dais
+  for (const x of TREASURY.plinths) { blk(x - 0.75, x + 0.75, 0, TREASURY.top, TREASURY.z - 0.55, TREASURY.z + 0.55, C.mid); blk(x - 0.85, x + 0.85, TREASURY.top, TREASURY.top + 0.06, TREASURY.z - 0.65, TREASURY.z + 0.65, C.dark); }
+  { const { x, z } = TREASURY.tithe; blk(x - 0.55, x + 0.55, 0, 1.06, z - 0.32, z + 0.32, C.wall); blk(x - 0.62, x + 0.62, 1.06, 1.12, z - 0.4, z + 0.4, C.dark); }
+  { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, 0, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
   // the well's rim, and a stair of stones down to the water
   blk(52.6, 53, 0, 0.35, 18.6, 29.4, C.wall, solid); blk(62, 62.4, 0, 0.35, 18.6, 29.4, C.wall, solid);
   blk(52.6, 62.4, 0, 0.35, 18.6, 19, C.wall, solid); blk(52.6, 62.4, 0, 0.35, 29, 29.4, C.wall, solid);
   // lights
   const light = (x, y, z, i = 22, col = 0xffa066, far = 44) => { const l = new THREE.PointLight(col, i, far, 1.05); l.position.set(WOX + x, B + y, WOZ + z); S.add(l); return l; };
   for (const [x, z] of [[6, 6], [58, 6], [6, 42], [58, 42], [32, 6], [32, 42]]) light(x, 10, z, 20);
+  light(53, 4.5, 43.5, 14, 0xffa870, 26); light(40, 4.5, 43.5, 10, 0xb9a0ff, 22); // (the treasury and the Tithe)
   light(24, -0.2, 24, 8, 0x66c4c8, 20); light(40, -0.2, 24, 8, 0x66c4c8, 20); light(57, 0.5, 24, 6, 0x8a6ad0, 14);
   // words
   const T = (t, x, z, o = {}) => label(S, t, [WOX + x, B + 0.02, WOZ + z], { rotY: Math.PI, ...o });
@@ -107,7 +116,17 @@ export function buildWeir(L, env) {
   T('PIER', 32, 11.2, { width: 1.1, sub: 'hold LMB · release to cast' });
   T('THE YARD', 8, 11, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
   T('THE WELL', 57.5, 15.5, { width: 2, sub: 'deep things · the top of the tide' });
+  ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
+  T('THE TREASURY', 53, 41.6, { width: 3, sub: 'F open · they come back' });
+  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2, sub: 'F · 25 cubes · a sealed chest lands on the dais' });
   T('HOOK', 23, 9, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
+}
+
+/** Chests on the plinths (they close again after a while), and the Tithe's console brought alive. */
+export function stockTreasury(game) {
+  const V = (x, y, z) => new THREE.Vector3(WOX + x, B + y, WOZ + z);
+  TREASURY.plinths.forEach((x, tier) => game.chests.spawn(tier, V(x, TREASURY.top + 0.06, TREASURY.z), { yaw: Math.PI, id: `weir.${tier}`, respawn: 30, floor: B }));
+  game.chests.setTithe({ pos: V(TREASURY.tithe.x, 0, TREASURY.tithe.z), yaw: Math.PI, dais: V(TREASURY.dais.x, 0.16, TREASURY.dais.z) });
 }
 
 export function spawnWeir(Bk, level) {

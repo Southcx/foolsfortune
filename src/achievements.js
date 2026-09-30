@@ -22,6 +22,7 @@ import { SHELL_TYPES } from './shells.js';
 import { PROFILES } from './pottery.js';
 import { SPECIES, ASPECTS, TIDES } from './angling/species.js';
 import { T } from './config.js';
+import { TIERS as CHEST_TIERS, CURIOS } from './treasure.js';
 import { sfx } from './audio.js';
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -33,6 +34,7 @@ export const CATS = [
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
+  { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
@@ -255,6 +257,40 @@ export function buildAchievements(game) {
   H('hk11', 'sond', 'Grapnel', 4, 'mechanic', 'Faster Than the Rope', 'Let go of the line at 26 m/s.', 'grapple.fling.speed', 26, { unit: 'm/s' });
   C('hk12', 'sond', 'Grapnel', 2, 'count', 'Sling', 'Let go of a catch and send it flying 10 times.', 'hook.fling', 10);
   C('hk13', 'sond', 'Grapnel', 1, 'count', 'Brought to Hand', 'Bring 25 loose things to you on the line.', 'hook.pull', 25);
+
+
+  // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
+  const ownedCurios = (L) => CURIOS.filter((c) => L.get(`curio.${c.id}`) > 0).length;
+  C('tc1', 'treasure', 'Chests', 1, 'count', 'First Hinge', 'Open a chest.', 'chest.open', 1);
+  C('tc2', 'treasure', 'Chests', 2, 'count', 'Lid Lifter', 'Open 10 chests.', 'chest.open', 10);
+  C('tc3', 'treasure', 'Chests', 3, 'count', 'Chest Chaser', 'Open 50 chests.', 'chest.open', 50);
+  C('tc4', 'treasure', 'Chests', 4, 'endure', 'Hoarder\'s Hands', 'Open 200 chests.', 'chest.open', 200);
+  C('tc5', 'treasure', 'Chests', 1, 'collect', 'Fine Fortune', 'Open a fine chest.', 'chest.open.fine', 1);
+  C('tc6', 'treasure', 'Chests', 2, 'collect', 'Rare Rummage', 'Open a rare chest.', 'chest.open.rare', 1);
+  C('tc7', 'treasure', 'Chests', 4, 'collect', 'Epic Epiphany', 'Open an epic chest.', 'chest.open.epic', 1);
+  C('tc8', 'treasure', 'Chests', 5, 'collect', 'Prismatic Paradise', 'Open a prismatic chest, and stay for the whole show.', 'chest.open.prismatic', 1, { hidden: true });
+  F('tc9', 'treasure', 'Chests', 4, 'collect', 'Every Tier', 'Open a chest of every tier.', (L) => CHEST_TIERS.filter((t) => L.get(`chest.open.${t.id}`) > 0).length, CHEST_TIERS.length);
+  C('tc10', 'treasure', 'Chests', 2, 'mechanic', 'So Close', 'Watch a sealed chest climb past what it turns out to be.', 'chest.near', 1, { hidden: true });
+  C('tc11', 'treasure', 'Chests', 3, 'mechanic', 'From on High', 'Have a chest fall out of the air.', 'chest.drop', 1);
+  C('tc12', 'treasure', 'Chests', 4, 'count', 'Encore', 'Open 5 prismatic chests.', 'chest.open.prismatic', 5, { hidden: true });
+  C('tu1', 'treasure', 'Cubes', 1, 'count', 'Pocket Change', 'Gather 100 Lachryma cubes.', 'cube.earned', 100);
+  C('tu2', 'treasure', 'Cubes', 2, 'count', 'A Purse', 'Gather 1,000 Lachryma cubes.', 'cube.earned', 1000);
+  C('tu3', 'treasure', 'Cubes', 3, 'count', 'Cubic Consequence', 'Gather 10,000 Lachryma cubes.', 'cube.earned', 10000);
+  C('tu4', 'treasure', 'Cubes', 5, 'endure', 'Dragon\'s Dozen', 'Gather 100,000 Lachryma cubes.', 'cube.earned', 100000, { title: 'Hoarder' });
+  C('tu5', 'treasure', 'Cubes', 2, 'count', 'Spender', 'Spend 500 cubes.', 'cube.spent', 500);
+  H('tu6', 'treasure', 'Cubes', 3, 'mechanic', 'A Fat Chest', 'Open a chest with 400 cubes in it.', 'chest.cubes.max', 400);
+  C('td1', 'treasure', 'The Tithe', 1, 'count', 'A Coin in the Slot', 'Pay the Tithe.', 'tithe.count', 1);
+  C('td2', 'treasure', 'The Tithe', 2, 'count', 'Regular Donor', 'Pay the Tithe 10 times.', 'tithe.count', 10);
+  C('td3', 'treasure', 'The Tithe', 3, 'endure', 'Devout', 'Pay the Tithe 50 times.', 'tithe.count', 50);
+  C('td4', 'treasure', 'The Tithe', 5, 'endure', 'Compulsion', 'Pay the Tithe 200 times.', 'tithe.count', 200, { title: 'Devout' });
+  C('td5', 'treasure', 'The Tithe', 3, 'mechanic', 'Beyond the Pity', 'Land an epic or better from the Tithe.', 'tithe.tier.epic', 1);
+  C('td6', 'treasure', 'The Tithe', 5, 'mechanic', 'The Long Shot', 'Land a prismatic chest from the Tithe.', 'tithe.tier.prismatic', 1, { hidden: true });
+  F('cu1', 'treasure', 'Curios', 1, 'collect', 'A Shelf', 'Own 3 curios.', ownedCurios, 3);
+  F('cu2', 'treasure', 'Curios', 2, 'collect', 'A Cabinet', 'Own 8 curios.', ownedCurios, 8);
+  F('cu3', 'treasure', 'Curios', 4, 'collect', 'A Wunderkammer', 'Own 14 curios.', ownedCurios, 14);
+  F('cu4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Own every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
+  CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Own all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && L.get(`curio.${c.id}`) > 0).length, 4, { hidden: i === 4 }));
+  C('cu5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio you already own (it condenses into cubes).', 'curio.dupe', 1);
 
   // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)
   C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);

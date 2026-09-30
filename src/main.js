@@ -62,7 +62,7 @@ import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
 import { Achievements } from './achievements.js';
-import { Weir } from './angling/weir.js';
+import { Weir, stockTreasury } from './angling/weir.js';
 import { TimeScale } from './timescale.js';
 import { Sky } from './sky.js';
 import { Interact } from './interact.js';
@@ -72,6 +72,10 @@ import { Glyphs } from './vfx/glyphs.js';
 import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
+import { Cubes } from './cubes.js';
+import { Mood } from './mood.js';
+import { Chests, ChestTech } from './chests.js';
+import { Rave } from './vfx/rave.js';
 
 const FIXED = 1 / 60;
 
@@ -158,6 +162,11 @@ async function main() {
   game.pulse = new PsychicPulse(game); // (a sounding: a sphere of light from a point)
   const breakables = new Breakables(scene, physics, fx, game);
   game.sky = await new Sky(game).load(); // (the painted sky: the dunes' dome, the water's reflection, the gloss on the cubes)
+  game.cubes = new Cubes(game); // (condensed Lachryma: the currency; loose ones are real bodies)
+  game.mood = new Mood(game); // (the room's lights, borrowed by a ceremony: see mood.js)
+  game.chests = new Chests(game); // (treasure chests, the Tithe and how they open: see chests.js)
+  game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js)
+  game.chests.rave.warm(renderer, camera);
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   const level = new Level(scene, physics, breakables);
   game.level = level;
@@ -204,7 +213,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass]) techs.add(new T0(techs));
   env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;
@@ -242,6 +251,7 @@ async function main() {
       const r = tool.hookshot.probe();
       return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
     });
+    game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d } : null; });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
@@ -268,6 +278,8 @@ async function main() {
     game.clappers?.spawnAll();
     game.baubles?.clear();
     game.lobbers?.clear();
+    game.cubes?.clear();
+    game.chests?.reset();
     game.shells?.clear();
     if (game.shells) for (const k of Object.keys(game.shells.counts)) game.shells.counts[k] = T.shells.start;
     game.lachryma?.reset();
@@ -315,6 +327,16 @@ async function main() {
   }
   // what is counted and what is said about it, then the achievements over the counts
   game.weir = new Weir(game); // (the Sondelass's own room: the tide and the shoals)
+  stockTreasury(game); // (a chest of each tier on the Weir's plinths, and the Tithe's console)
+  {
+    // a common chest in the hub, off to one side of where you arrive, on whatever floor is there; a rare one on a dune, half in the sand
+    // (the hub's floor is flat; a ray here would see nothing yet, the physics world has not stepped)
+    const hub = course.hubSpawn.v;
+    game.chests.spawn(0, new THREE.Vector3(hub.x + 5, hub.y, hub.z + 3), { yaw: Math.atan2(-5, -3), id: 'hub.1' });
+    const dn = game.dunes.spawnPoint();
+    const cx = dn.x + 14, cz = dn.z + 9;
+    game.chests.spawn(2, new THREE.Vector3(cx, game.dunes.heightAt(cx, cz) - 0.12, cz), { yaw: Math.atan2(dn.x - cx, dn.z - cz), id: 'dunes.1' });
+  }
   game.tracking = new Tracking(game);
   game.achievements = new Achievements(game);
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
@@ -443,6 +465,7 @@ async function main() {
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
+    game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
     if (input.wasPressed('F2')) game.ui.cycle();
@@ -559,6 +582,8 @@ async function main() {
     level.updateFeatures?.(dt, game);
     course.update(dt);
     game.circuits.update(dt);
+    game.cubes.update(dt);
+    game.chests.update(dt);
     game.weir.update(dt);
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
@@ -591,6 +616,7 @@ async function main() {
         + blinkPips(),
     });
 
+    game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     input.endFrame();
   }
   requestAnimationFrame(frame);

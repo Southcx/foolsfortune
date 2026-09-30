@@ -34,6 +34,7 @@ export const CLASSES = {
   record: { color: '#a8d3c9', tab: 'EVENT' },
   ach: { color: '#ffd45e', tab: 'EVENT' },
   angle: { color: '#9fd3d6', tab: 'BATTLE' },
+  loot: { color: '#ffd98a', tab: 'BATTLE' },
 };
 const TABS = ['ALL', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
 
