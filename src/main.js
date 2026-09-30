@@ -62,6 +62,12 @@ import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
 import { Achievements } from './achievements.js';
 import { Weir } from './angling/weir.js';
+import { TimeScale } from './timescale.js';
+import { Sky } from './sky.js';
+import { Interact } from './interact.js';
+import { Glyphs } from './vfx/glyphs.js';
+import { Cinema } from './vfx/cinema.js';
+import { Portrait } from './vfx/portrait.js';
 
 const FIXED = 1 / 60;
 
@@ -138,8 +144,13 @@ async function main() {
     },
   };
 
+  game.time = new TimeScale(game); // (who slows the world, and by how much: see timescale.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
+  game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
+  game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
+  game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
   const breakables = new Breakables(scene, physics, fx, game);
+  game.sky = await new Sky(game).load(); // (the painted sky: the dunes' dome, the water's reflection, the gloss on the cubes)
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   const level = new Level(scene, physics, breakables);
   game.level = level;
@@ -205,6 +216,23 @@ async function main() {
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   const god = new GodMode(game, renderer, handG, jarG);
   game.god = god;
+  // what the chevron points at: anything F would act on from here
+  game.interact = new Interact(game);
+  {
+    const carry = techs.get('carry'), push = techs.get('push');
+    const spot = (e) => { const t = e.body.translation(); return new THREE.Vector3(t.x, t.y + (carry.size(e) * 0.5 + 0.5), t.z).setX(t.x); };
+    const idle = () => !techs.active && player.grounded && !player.mantle && !player.sliding && !game.god?.controlling;
+    game.interact.add('carry', () => {
+      if (!carry?.usable() || carry.item || carry.state !== 'idle' || !idle()) return null;
+      const e = carry.find(); if (!e) return null;
+      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos) };
+    });
+    game.interact.add('push', () => {
+      if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
+      const e = push.canGrab(); if (!e) return null;
+      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos) };
+    });
+  }
 
   // physics debug lines (F3)
   const dbgGeo = new THREE.BufferGeometry();
@@ -255,7 +283,7 @@ async function main() {
   game.course = course;
   game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
   course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  // psychic cartography: the map and compass, and the named places in them
+  // Mind Mapping: the map and compass, and the named places in them
   const carto = game.cartography;
   carto.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   {
@@ -339,6 +367,7 @@ async function main() {
     try {
       tick(dt);
       renderer.render(scene, window.__debugCam || camera);
+      game.portrait.render();
     } catch (e) {
       reportError(e); // keep the loop alive and say what broke instead of freezing
     }
@@ -385,6 +414,8 @@ async function main() {
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
+    game.rawDt = dt;
+    dt *= game.time.update(dt); // (everything below runs in game time; the player's own blade is read in real seconds)
     simTime += dt;
     const now = simTime * 1000;
 
@@ -431,6 +462,8 @@ async function main() {
       steps++;
     }
     if (steps === 4) acc = 0;
+    game.alpha = acc / FIXED; // (how far between the last step and the next this frame is: what the visuals interpolate by)
+    if (!godOn) player.renderPos.lerpVectors(player.prevPos, player.pos, game.alpha); // (before the techs place their meshes: the camera's own lerp comes later in the frame)
     physics.sync();
     movers.render(acc / FIXED);
     movers.tick(dt);
@@ -440,6 +473,10 @@ async function main() {
     game.achievements.tick(dt);
     game.log.tick(dt);
     game.cartography.update(dt);
+    game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
+    game.glyphs.update(dt);
+    game.portrait.update(game.rawDt, game.angler?.fightView?.());
+    game.interact.update(game.rawDt);
 
     if (!godOn) techs.tick(dt);
     env.water.update(dt);

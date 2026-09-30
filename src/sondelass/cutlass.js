@@ -22,7 +22,7 @@ const STROKES = [
 ];
 const HEAVY = { clip: 'swordAtk', dur: 1.05, hit: [0.36, 0.62], chain: [], dmg: 2.6, lunge: 9.5, power: 2.6 };
 const DMG = 62;
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3();
 
 /** Distance from point p to the segment ab. */
 function segDist(a, b, p) {
@@ -111,7 +111,7 @@ export class Cutlass {
     if (struck) {
       sfx.cutHit(s.dmg);
       P.shake = Math.max(P.shake, 0.12 * s.dmg);
-      g.fx.slash?.(_a.clone(), _b.clone(), BLADE_LEN);
+      g.fx.slash?.(_a.clone(), _b.clone(), _up);
     }
   }
 

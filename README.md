@@ -146,7 +146,7 @@ Lachryma (regenerating a little faster while you are the hand). Pick with **1–
 They live in the Codex (**B**) on a second shelf beside the Movement Arts, with variants, and
 their numbers are in `T.arts`. Code: `src/godarts.js`.
 
-## The Zone of Influence and psychic cartography
+## The Zone of Influence and Mind Mapping
 
 Arts work only where you have **been**: the Zone of Influence is, for now, simply the ground you have explored (there are
 no "understanding" prompts; outside it the ground just doesn't answer, and the ring under the hand shows it). Every layer

@@ -3,7 +3,7 @@ import { T, PALETTE } from './config.js';
 import { sfx } from './audio.js';
 
 // ---------------------------------------------------------------------------------------
-// PSYCHIC CARTOGRAPHY. The world is mapped in cells (2 m indoors, 8 m out on the dunes), one
+// MIND MAPPING (psychic cartography). The world is mapped in cells (2 m indoors, 8 m out on the dunes), one
 // grid per LAYER (the dunes, the basement, the ground floor, the upper floor). Every cell holds
 // how well the courier KNOWS it, k in 0..1, and whether it is wall:
 //
@@ -329,7 +329,7 @@ export class Cartography {
     this.dial = document.createElement('canvas');
     this.dial.width = this.dial.height = 300;
     this.dialCtx = this.dial.getContext('2d');
-    this.dEl = { brg: el('div', 'brg'), rm: el('div', 'rm'), wp: el('div', 'wp'), hint: el('div', 'hint', 'M map · N survey') };
+    this.dEl = { brg: el('div', 'brg'), rm: el('div', 'rm'), wp: el('div', 'wp'), hint: el('div', 'hint', 'M mind map · N survey') };
     box.append(this.dial, this.dEl.brg, this.dEl.rm, this.dEl.wp, this.dEl.hint);
     document.getElementById('hud').appendChild(box);
     this.compassEl = box;
@@ -418,7 +418,7 @@ export class Cartography {
     root.appendChild(this.canvas);
     this.mctx = this.canvas.getContext('2d');
     const bar = el('div', 'bar');
-    bar.appendChild(el('h2', '', 'THE MAP · psychic cartography'));
+    bar.appendChild(el('h2', '', 'MIND MAPPING'));
     this.layerBtns = {};
     for (const l of LAYERS) {
       const b = el('button', '', l.name);

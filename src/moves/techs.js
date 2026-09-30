@@ -128,6 +128,8 @@ export class Techs {
   /** The fire button belongs to something else for now (a throw): the weapon ignores it. */
   /** A tool (the Sondelass) is out: the Psygun stays away and ignores the mouse. */
   get toolOut() { return this.list.some((t) => t.toolOut); }
+  /** A fight has the movement keys (WASD, jump, sprint): the Courier stands and braces. */
+  get moveLock() { return this.list.some((t) => t.moveLock); }
   /** Something wants the body turned to the aim (a swing, a cast, a fight). */
   get stance() { return this.list.some((t) => t.stance); }
   get fireBlocked() { return !!this.active?.blocksFire || this.list.some((t) => t.passive && t.blocksFire); }

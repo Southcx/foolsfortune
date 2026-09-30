@@ -89,6 +89,7 @@ export class Surfer extends Tech {
     P.endCore?.();
     P.setShape('stand');
     this.heading = P.yaw;
+    this.hPrev = this.heading; this.spinPrev = 0; this.rollPrev = 0;
     this.v.set(P.vel.x, 0, P.vel.z);
     this.air = true; this.spin = 0; this.spinRest = 0; this.airT = 0;
     this.L = this.v.length() > 6 ? 0.6 : 0; // (mounted on the move, the sail is already out; from a stand it is furled)
@@ -117,6 +118,8 @@ export class Surfer extends Tech {
     const g = this.game, P = this.P, c = this.cfg, inp = P.input, D = this.dunes, W = D.wind;
     if (!D.active) { this.want = false; return false; }
     if (P.latch('KeyY')) { this.want = false; return false; }
+    // (what the frame interpolates from: the body is drawn between the last step and this one, like the camera is)
+    this.hPrev = this.heading; this.spinPrev = this.spin; this.rollPrev = this.roll;
     const steerIn = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
     const hoistKey = inp.isDown('KeyW'), furlKey = inp.isDown('KeyS');
     const flare = inp.isDown('ShiftLeft') || inp.isDown('ShiftRight');
@@ -260,9 +263,13 @@ export class Surfer extends Tech {
     // the sand under it (smoothed, so the skiff settles onto a slope rather than snapping to each facet)
     this.nS.lerp(this.air ? UP : this.n, 1 - Math.exp(-dt * (this.air ? 3 : 10))).normalize();
     const pos = P.renderPos;
+    // (heading, spin and roll change in the 60 Hz step; the skiff and the rider are drawn between steps, the way the camera and the wake are)
+    const al = this.game.alpha ?? 1;
+    const hv0 = this.hPrev + wrap(this.heading - this.hPrev) * al, hv = hv0, rv = this.rollPrev + (this.roll - this.rollPrev) * al;
+    const sv = this.spinPrev + (this.spin - this.spinPrev) * al + this.spinRest;
     // ---- the wind and the sail: boom to leeward, wider with the wind behind; it fills or it luffs
     const W = D.wind, wgo = _v.set(W.dir.x, 0, W.dir.y);
-    const f = _v2.set(Math.sin(this.heading), 0, Math.cos(this.heading));
+    const f = _v2.set(Math.sin(hv0), 0, Math.cos(hv0));
     const lateral = wgo.dot(_v3.set(-f.z, 0, f.x)); // (+: the wind pushes to the boat's right)
     if (Math.abs(lateral) > 0.12) this.boomSign = lateral > 0 ? 1 : -1;
     const cosA = clamp(wgo.dot(f), -1, 1), ang = Math.acos(cosA); // 0: running before it, pi: into it
@@ -272,10 +279,11 @@ export class Surfer extends Tech {
     this.fill = damp(this.fill, this.L * (this.L > 0.7 ? 1 : 0.6) * (0.25 + 0.75 * fill), 4, dt);
     this.skiff.set({ sail: this.L, side: -Math.sign(this.boom || 1), fill: this.fill, boom: this.boom, glow: this.boosting, t: this.time, speed: this.speed });
     // ---- one quaternion for the whole unit: heading, then the slope, then the lean and the pitch, with the spin about its own up
-    qA.setFromAxisAngle(UP, this.heading + this.spin + this.spinRest);
+    // (heading, spin and roll change in the 60 Hz step; the skiff and the rider are drawn between steps, the way the camera and the wake are)
+    qA.setFromAxisAngle(UP, hv + sv);
     qB.setFromUnitVectors(UP, this.nS);
     const unitQ = qB.multiply(qA);
-    qC.setFromAxisAngle(Z, this.roll + Math.sin(this.time * 30) * 0.02 * this.landDip);
+    qC.setFromAxisAngle(Z, rv + Math.sin(this.time * 30) * 0.02 * this.landDip);
     unitQ.multiply(qC);
     qC.setFromAxisAngle(X, this.air ? -clamp(P.vel.y * 0.035, -0.45, 0.45) : 0);
     unitQ.multiply(qC);

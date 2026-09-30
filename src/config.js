@@ -145,7 +145,7 @@ export const DEFAULTS = {
     clapperDrop: 6, // baubles inside every clapperjar
     markedDrop: 2, // baubles from a marked pot
   },
-  // psychic cartography and the Zone of Influence: see cartography.js
+  // Mind Mapping and the Zone of Influence: see cartography.js
   zoi: {
     tiers: [0.08, 0.45, 0.85], // knowledge that makes a cell sensed / charted / understood
     baseRadius: 6, baseTier: 2, // around the vessel, always charted

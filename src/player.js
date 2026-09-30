@@ -71,6 +71,7 @@ export class Player {
     this.crouching = false;
     this.mantle = null; // { from, to, t }
     this.wallrun = null; // { n, side, t, lost, handle }
+    this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
     this.wallCd = 0;
     this.lastWall = -1;
     this.airJumps = 0;
@@ -163,7 +164,7 @@ export class Player {
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;
 
-    if (inp.wasPressed('KeyZ')) this.view = this.fp ? 'tp' : 'fp';
+    if (inp.wasPressed('KeyZ') && !this.techs?.toolOut) this.view = this.fp ? 'tp' : 'fp'; // (the Sondelass has no first person, and Z is its lock-on)
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step
     if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
@@ -330,10 +331,15 @@ export class Player {
     if (this.shape === 'blob') this.setShape(this.canStand() ? 'stand' : 'low'); // (a tech left us small)
     if (this.freeze) { this.jumpBuf = this.slideBuf = this.dashBuf = 0; this.jumpHeldLast = true; } // trial countdown
     const live = this.freeze ? 0 : 1;
+    // a fight on the line (or anything else that takes the movement keys for its own use): the keys steer the fight, not the feet.
+    // Crouch is left alone (it is the brace), and what the body was doing carries on with what it had.
+    const locked = this.techs?.moveLock ? 1 : 0;
+    if (locked) { this.jumpBuf = this.slideBuf = this.dashBuf = 0; this.jumpHeldLast = true; }
+    const liveMove = live * (1 - locked);
 
     const f = this.forward(_v), r = this.right(_v2);
-    const ix = live * ((inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0));
-    const iz = live * ((inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0));
+    const ix = liveMove * ((inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0));
+    const iz = liveMove * ((inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0));
     const wish = new THREE.Vector3().addScaledVector(f, iz).addScaledVector(r, ix);
     if (wish.lengthSq() > 1) wish.normalize();
     const wishDir = wish.clone();
@@ -341,7 +347,7 @@ export class Player {
     const hv = new THREE.Vector3(this.vel.x, 0, this.vel.z);
     const hs = hv.length();
     const crouchKey = live && inp.isDown('KeyC');
-    const sprintKey = live && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight')) && !this.techs?.noSprint;
+    const sprintKey = liveMove && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight')) && !this.techs?.noSprint;
     this.walking = live && (inp.isDown('AltLeft') || inp.isDown('AltRight')); // hold to walk
 
     // ---- slide: crouch while moving fast on the ground ----
@@ -373,7 +379,7 @@ export class Player {
     // ---- jumps: ground (with coyote time), wall jump, air jump ----
     let jumped = false;
     this.coyote = this.grounded ? M.coyoteTime : this.coyote - dt;
-    this.jumpBuf = live && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
+    this.jumpBuf = liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
     this.jumpHeldLast = inp.isDown('Space');
     if (this.grounded) { this.airJumps = M.airJumps; this.dashCharges = M.dashCharges; }
     if (this.jumpBuf > 0) {
@@ -922,12 +928,13 @@ export class Player {
     this.wallBlend = THREE.MathUtils.damp(this.wallBlend, this.wallrun ? this.wallrun.side : 0, 10, dt);
 
     const sh = this.shake * this.shake;
-    const pitch = this.pitch + this.punch.x + (Math.random() - 0.5) * sh * 0.02;
-    const yaw = this.yaw + this.punch.y + (Math.random() - 0.5) * sh * 0.02;
+    const cf = this.camFx; // (what a cinematic asks of the camera: see vfx/cinema.js; all zero/one when nothing does)
+    const pitch = this.pitch + this.punch.x + cf.pitch + (Math.random() - 0.5) * sh * 0.02;
+    const yaw = this.yaw + this.punch.y + cf.yaw + (Math.random() - 0.5) * sh * 0.02;
     const cam = this.camera;
     // camera roll: tilt away from the wall while wallrunning, a touch into slides
     const rollWant = this.wallBlend * M.wallrunTilt * DEG * (1 - 0.6 * tb) + this.slideBlend * 4 * DEG * (1 - tb);
-    this.roll = rollWant;
+    this.roll = rollWant + cf.roll;
     cam.rotation.set(pitch, yaw + Math.PI, this.roll + (Math.random() - 0.5) * sh * 0.01, 'YXZ');
     cam.updateMatrixWorld();
 
@@ -958,7 +965,7 @@ export class Player {
     const drop = this.slideBlend * 0.55 + this.crouchBlend * 0.35;
     pivot.y += C.tpPivotHeight - drop;
     this.techs?.camera(fpPos, pivot, dt);
-    const dist = THREE.MathUtils.lerp(C.tpDistance, C.tpAdsDistance, adsT);
+    const dist = THREE.MathUtils.lerp(C.tpDistance, C.tpAdsDistance, adsT) * cf.dist;
     const shoulder = THREE.MathUtils.lerp(C.tpShoulder, C.tpAdsShoulder, adsT) * this.shoulderBlend;
     const off = new THREE.Vector3().addScaledVector(right, shoulder).addScaledVector(camUp, C.tpLift).addScaledVector(fwd, -dist);
     const offLen = off.length();
@@ -974,7 +981,7 @@ export class Player {
     // speed widens the view a little (sprint, slides, wallruns, big hops)
     const speedFov = THREE.MathUtils.clamp((hs - M.walkSpeed) / (M.maxSpeed - M.walkSpeed), 0, 1) * C.speedFov;
     this.sprintFov = THREE.MathUtils.damp(this.sprintFov || 0, speedFov, 6, dt);
-    cam.fov = baseFov + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0);
+    cam.fov = baseFov + this.fovPunch + this.sprintFov - 4 * (this.chargeLevel || 0) + cf.fov;
     cam.updateProjectionMatrix();
     cam.updateMatrixWorld();
     this.fpWeight = 1 - tb;

@@ -71,7 +71,8 @@ export class Dunes {
     // the values the workshop is lit with (blended back to when you leave)
     const sc = game.scene;
     this.home = { bg: sc.background.clone(), fog: sc.fog.color.clone(), fogD: sc.fog.density, hemiSky: lights.hemi.color.clone(), hemiGnd: lights.hemi.groundColor.clone(), hemiI: lights.hemi.intensity, ambI: lights.amb.intensity, sunC: lights.sun.color.clone(), sunI: lights.sun.intensity };
-    this.away = { bg: new THREE.Color(0xf0b98a), fog: new THREE.Color(0xe6a47c), fogD: 0.0042, hemiSky: new THREE.Color(0xffd7a8), hemiGnd: new THREE.Color(0x9a4a4c), hemiI: 1.9, ambI: 0.25, sunC: new THREE.Color(0xffc98a), sunI: 3.4 };
+    this.away = { bg: game.sky.horizon.clone(), fog: new THREE.Color(0xe6a47c).lerp(game.sky.horizon, 0.7), fogD: 0.0042, // (the far haze is the painting's own horizon)
+       hemiSky: new THREE.Color(0xffd7a8), hemiGnd: new THREE.Color(0x9a4a4c), hemiI: 1.9, ambI: 0.25, sunC: new THREE.Color(0xffc98a), sunI: 3.4 };
     this.sunDir = new THREE.Vector3(-0.55, 0.3, -0.78).normalize();
   }
 
@@ -207,35 +208,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   // ------------------------------------------------------------------ sky
   buildSky() {
     const g = this.game;
-    const mat = new THREE.ShaderMaterial({
-      side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() }, uTime: { value: 0 } },
-      vertexShader: 'varying vec3 vD; void main() { vD = normalize(position); vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9999; }',
-      fragmentShader: `varying vec3 vD; uniform vec3 uSun; uniform float uTime;
-float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }
-void main() {
-  vec3 d = normalize(vD);
-  float h = d.y;
-  vec3 hor = vec3(1.0, 0.72, 0.50), low = vec3(0.93, 0.50, 0.44), mid = vec3(0.42, 0.42, 0.58), top = vec3(0.10, 0.20, 0.36);
-  vec3 c = mix(hor, low, smoothstep(0.0, 0.12, h));
-  c = mix(c, mid, smoothstep(0.08, 0.42, h));
-  c = mix(c, top, smoothstep(0.35, 0.95, h));
-  float sd = max(dot(d, normalize(uSun)), 0.0);
-  c += vec3(1.0, 0.82, 0.5) * (pow(sd, 900.0) * 6.0 + pow(sd, 40.0) * 0.55 + pow(sd, 6.0) * 0.28);
-  // long streaks of cloud
-  vec2 cp = d.xz / (0.25 + max(h, 0.0) + 0.3) * 2.4;
-  float cl = smoothstep(0.55, 0.9, n21(vec2(cp.x * 0.7 + uTime * 0.01, cp.y * 3.5)) * n21(cp * 1.7 + 4.0) * 1.9) * smoothstep(0.0, 0.25, h) * (1.0 - smoothstep(0.5, 0.8, h));
-  c = mix(c, vec3(1.0, 0.75, 0.62), cl * 0.55);
-  // stars, high up
-  float st = step(0.9982, h21(floor(d.xz / (0.004 + 0.0) * 0.6 + d.y * 300.0))) * smoothstep(0.5, 0.9, h);
-  c += vec3(st) * 0.7;
-  // below the horizon: haze
-  c = mix(c, vec3(0.93, 0.62, 0.48), smoothstep(0.0, -0.25, h));
-  gl_FragColor = vec4(c, 1.0);
-}`,
-    });
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(800, 32, 16), mat);
+    // the painting the game's maker drew (sky.js), with the sun laid over it
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(800, 32, 16), g.sky.domeMaterial(new THREE.Vector3(-0.55, 0.3, -0.78)));
     dome.frustumCulled = false; dome.renderOrder = -10;
     g.scene.add(dome);
     this.sky = dome;
@@ -341,7 +315,6 @@ void main() {
     this.wind.speed = 8 * this.wind.gust;
     this.uniforms.uTime.value = this.t;
     this.sky.position.copy(cam.position);
-    this.sky.material.uniforms.uTime.value = this.t;
     this.beam.material.opacity = 0.13 + 0.05 * Math.sin(this.t * 0.7);
     // the light: a low gold sun, its shadow following the player
     const k = this.mix, A = this.away, H = this.home, sc = g.scene;

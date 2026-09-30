@@ -1,0 +1,54 @@
+// ---------------------------------------------------------------------------------------
+// THE CHEVRON: the marker that hangs over what can be used when you are close enough to use it. Two inverted pentagonal prisms,
+// one nested in the other, the outer wide, tall and translucent and the inner small and brighter, turning against each other and
+// bobbing; drawn through everything (a marker has to be found) with a bright edge on each. It pops in with a little overshoot and
+// eases from target to target rather than jumping.
+//
+// Prior art: the floating crystal of The Sims' Plumbob and the down-pointing arrow over the thing you can act on in Zelda, Persona
+// and every action-RPG since; the two-layer, counter-rotating build is what keeps it alive while it is doing nothing.
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+
+export class Chevron {
+  constructor(scene, { color = 0xffb27a, hot = 0xfff1dc } = {}) {
+    this.group = new THREE.Group();
+    this.group.visible = false;
+    const mk = (rt, rb, h, opacity, c) => {
+      const geo = new THREE.CylinderGeometry(rt, rb, h, 5, 1, false); // (wide at the top, narrow at the bottom: inverted)
+      const fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: hot, transparent: true, opacity: Math.min(1, opacity + 0.35), depthTest: false, fog: false }));
+      const g = new THREE.Group(); g.add(fill, edges);
+      fill.renderOrder = 40; edges.renderOrder = 41;
+      return g;
+    };
+    this.outer = mk(0.27, 0.06, 0.4, 0.26, color);
+    this.inner = mk(0.15, 0.035, 0.25, 0.6, hot);
+    this.group.add(this.outer, this.inner);
+    scene.add(this.group);
+    this.t = 0; this.k = 0; this.want = 0; this.pos = new THREE.Vector3(); this.has = false;
+  }
+
+  /** Aim at a world point (or null to fade out). */
+  target(p) {
+    if (!p) { this.want = 0; return; }
+    if (!this.has || this.k < 0.05) this.pos.copy(p); // (a fresh appearance snaps to the thing, then follows)
+    this.tp = p; this.want = 1; this.has = true;
+  }
+
+  update(dt) {
+    this.t += dt;
+    const up = this.want > this.k;
+    this.k = THREE.MathUtils.clamp(this.k + (up ? dt * 6 : -dt * 5), 0, 1);
+    if (this.k <= 0) { this.group.visible = false; this.has = false; return; }
+    if (this.tp) this.pos.lerp(this.tp, 1 - Math.exp(-dt * 14));
+    this.group.visible = true;
+    // pop in with an overshoot
+    const u = this.k, s = u < 1 ? (u * (1.3 - 0.3 * u) * 1.15) : 1;
+    this.group.position.copy(this.pos);
+    this.group.position.y += 0.05 * Math.sin(this.t * 2.6);
+    this.group.scale.setScalar(Math.max(0.001, s));
+    this.outer.rotation.y += dt * 1.1;
+    this.inner.rotation.y -= dt * 1.8;
+    this.inner.position.y = 0.02 * Math.sin(this.t * 3.1 + 1);
+  }
+}

@@ -17,7 +17,9 @@ class Sfx {
     this.master.gain.value = T.audio.volume;
     const comp = this.ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.ratio.value = 6;
-    this.master.connect(comp).connect(this.ctx.destination);
+    // (the master bus runs through a low-pass that closes as time slows: see timescale.js)
+    this.slowLp = this.ctx.createBiquadFilter(); this.slowLp.type = 'lowpass'; this.slowLp.frequency.value = 22000; this.slowLp.Q.value = 0.5;
+    this.master.connect(comp).connect(this.slowLp).connect(this.ctx.destination);
     // cheap room reverb
     this.verb = this.ctx.createConvolver();
     this.verb.buffer = this.impulse(1.4, 3.2);
@@ -25,6 +27,15 @@ class Sfx {
     this.verbSend.gain.value = 0.22;
     this.verbSend.connect(this.verb).connect(this.master);
     this.noiseBuf = this.makeNoise(2);
+  }
+
+  /** Time has slowed to `s` (1 = normal): muffle the world in proportion. */
+  setSlow(s) {
+    if (!this.slowLp) return;
+    const f = 22000 * Math.pow(Math.max(0.03, Math.min(1, s)), 1.25);
+    if (Math.abs(f - (this._slowF ?? 22000)) < 40) return;
+    this._slowF = f;
+    this.slowLp.frequency.setTargetAtTime(Math.max(300, f), this.ctx.currentTime, 0.05);
   }
 
   setVolume(v) { if (this.master) this.master.gain.value = v; }
