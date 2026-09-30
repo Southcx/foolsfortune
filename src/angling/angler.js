@@ -4,6 +4,9 @@
 // out as far as the charge allows. The lure floats and the entities of the water come to it, or don't. While waiting: tap LMB to
 // twitch it (a jig that fish notice), hold RMB to sink it, the wheel to set its depth (it HOLDS the depth it is left at), hold LMB
 // to reel it home, middle click to sound: a psychic ping, a sphere of light that leaves the lure and lights what it passes.
+// What is tied on is a LURE (lures.js; 9 and 0 change it while the line is in): each has a taste of its own that the fish come to
+// or don't, and any curio the Courier holds can be tied on. The aspect (4 to 8) is what a sounding pushes into the lure, and every
+// sounding stirs every fish in that water, the nearer the more.
 // A fish that has noticed the lure gets a "!" over it, probes it (small dips), and then bites: a "!!!" over the lure, a hard dip and
 // a ring of light. Press LMB inside the window to set the hook.
 //
@@ -28,6 +31,7 @@ import { FishingLine } from './line.js';
 import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
 import { aspectStrip } from './ui.js';
+import { lureList, attraction, tasteOf } from './lures.js';
 import { ASPECTS, BY_SPECIES, TIDES } from './species.js';
 import { GROUPS } from '../physics.js';
 import { sfx } from '../audio.js';
@@ -36,6 +40,8 @@ const COST = 10, SOUND_COST = 5;
 /** The default sounding: how far it reaches (m) and how long it takes to get there (s). */
 export const PING_R = 54, PING_LIFE = 2.0;
 const ASPECT_KEYS = ['Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'];
+/** A sounding's stir falls off with distance from where it went off (metres at which it is half as strong). */
+const STIR_HALF = 16;
 const G = 9.81;
 const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _t = new THREE.Vector3(), _e = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _w = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
@@ -57,6 +63,7 @@ export class Angler {
     const g = (this.game = tool.game);
     g.angler = this;
     this.aspect = 0;
+    this.lureId = 'bob';
     this.state = 'idle'; // idle | charge | swing | wait | fight | catch
     this.power = 0; this.castT = 0; this.castPhase = 'none'; this.castW = 0; this.launched = false;
     this.pressT = -1; this.reeling = false; this.sinking = false; this.twitchCool = 0; this.soundCool = 0; this.soundT = 0;
@@ -111,7 +118,17 @@ export class Angler {
   emit(name, data) { this.game.events?.emit(name, data); }
   bend() { return this.bendX; }
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
-  stripHtml() { return aspectStrip(this.aspect); }
+  stripHtml() { return aspectStrip(this.aspect, this.lureDef()); }
+  /** The lure tied on now (lures.js). */
+  lureDef() { const L = lureList(this.game.ledger); return L.find((l) => l.id === this.lureId) || L[0]; }
+  /** Tie on the next (or previous) lure the Courier has. Not while one is out: it is on the line. */
+  cycleLure(d) {
+    if (this.lure?.active) return;
+    const L = lureList(this.game.ledger), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
+    this.lureId = L[(i + d + L.length) % L.length].id;
+    this.tool.renderStrip(); sfx.plink(3);
+    this.emit('angle.lure', { lure: this.lureId });
+  }
   castPose(C, out) {
     if (this.castW <= 0.02) return null;
     C.sample('swordC', Math.min(1.9, this.castT), out, false);
@@ -187,6 +204,8 @@ export class Angler {
     let depthNudge = 0;
     if (held && this.state !== 'fight' && this.state !== 'catch') {
       ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(i); });
+      if (inp.wasPressed('Digit9')) this.cycleLure(-1);
+      if (inp.wasPressed('Digit0')) this.cycleLure(1);
       if (inp.wheel) {
         if (this.lure.inWater) depthNudge = inp.wheel > 0 ? 0.5 : -0.5;
         else this.setAspect((this.aspect + (inp.wheel > 0 ? 1 : ASPECTS.length - 1)) % ASPECTS.length);
@@ -273,11 +292,12 @@ export class Angler {
       // the mind goes out: a little jitter on a full charge
       const to = a.point.clone();
       if (this.finalPower > 0.92) to.x += (Math.random() - 0.5) * 1.6, to.z += (Math.random() - 0.5) * 1.6;
+      this.lure.item = this.lureDef();
       this.lure.cast(_t, to, this.aspect);
       this.lure.echo = this.echo && this.echo.t > 0 ? this.echo.id : null;
       if (this.lure.echo) { this.emit('angle.mooch', { echo: this.lure.echo }); this.echo = null; }
       this.castDist = _t.distanceTo(to);
-      this.emit('angle.cast', { power: this.finalPower, dist: this.castDist, aspect: ASPECTS[this.aspect].id, water: a.water });
+      this.emit('angle.cast', { power: this.finalPower, dist: this.castDist, aspect: ASPECTS[this.aspect].id, water: a.water, lure: this.lureId });
     }
     if (this.castT >= 0.78) { this.state = 'wait'; this.castPhase = 'recover'; this.waitT = 0; this.tool.renderStrip(); }
   }
@@ -314,9 +334,20 @@ export class Angler {
     this.weir.sound.src.copy(src); this.weir.sound.id++; this.weir.sound.r = 0.01;
     const y = this.lure.pool?.surface ?? this.weir.poolAt(src.x, src.z)?.surface ?? null; // (where the shell meets the water it draws a ring on it)
     g.pulse.emit(src, PING_R, this.aspectColor, { life: PING_LIFE, surfaceY: y });
+    // the active lure: the aspect is pushed into it for a while, and the whole of that water is stirred (the nearer, the more)
+    if (this.lure.active) this.lure.push(this.aspect);
+    const pool = this.lure.pool || this.weir.poolAt(src.x, src.z);
+    const taste = tasteOf(this.lure.active ? this.lure.item : this.lureDef(), this.lure.active ? this.lure.boost : null);
+    let stirred = 0;
+    if (pool) for (const f of this.weir.fish) {
+      if (f.pool !== pool) continue;
+      const d = f.pos.distanceTo(src), fall = 1 / (1 + (d / STIR_HALF) ** 2);
+      const k = fall * Math.min(1, 0.35 + attraction(taste, f.sp));
+      f.stir(k); if (k > 0.2) stirred++;
+    }
     this.tremble = Math.max(this.tremble, 0.35);
     sfx.sounding();
-    this.emit('angle.sound', {});
+    this.emit('angle.sound', { stirred });
   }
 
   /** The wave has reached a fish: it opens a blip and is known for a few seconds (the reticle will read its mind). */

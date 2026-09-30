@@ -16,6 +16,10 @@ import * as THREE from 'three';
 import { buildFish } from './fishmesh.js';
 import { sizeClass, weightOf, BY_SPECIES } from './species.js';
 
+// (bites come sooner than they used to: the time a fish spends circling the lure, scaled)
+const INSPECT = 0.55;
+// (and they sense a lure from further off than they did: the pond is bigger, and a lure's taste carries)
+const SENSE = 1.6;
 const _v = new THREE.Vector3();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -108,10 +112,11 @@ export class Fish {
     const sp = this.sp;
     // the echo of a fish just landed: what eats it is drawn to it whatever the aspect (and the deepest of them will come to nothing else)
     if (sp.needsEcho && !(lure.echo && BY_SPECIES[lure.echo]?.tier >= 3)) return 0;
-    const aff = Math.max(sp.aff[lure.aspect], lure.echo && sp.mooch?.includes(lure.echo) ? 0.8 : 0);
+    // (the lure's taste against this species' own: lures.js; the echo of a fish just landed draws what eats it)
+    const aff = Math.max(lure.tasteFor ? Math.min(1.2, lure.tasteFor(sp)) : sp.aff[lure.aspect], lure.echo && sp.mooch?.includes(lure.echo) ? 0.8 : 0);
     if (aff < 0.12) return 0;
     const dist = _v.copy(lure.pos).sub(this.pos).length();
-    const range = sp.sense * (lure.twitch > 0 ? 1.5 : 1);
+    const range = sp.sense * SENSE * (lure.twitch > 0 ? 1.5 : 1);
     if (dist > range) return 0;
     const ld = this.pool.surface - lure.pos.y;
     const gap = Math.max(0, sp.depth[0] - 0.7 - ld, ld - (sp.depth[1] + 0.7));
@@ -120,9 +125,17 @@ export class Fish {
     return aff * depthF * speedF * (1 - dist / range * 0.6) * (lure.twitch > 0 ? 1.8 : 1);
   }
 
+  /** A sounding has passed through the water: interest (k: its strength here, after the falloff, times how much it wants the lure). */
+  stir(k) {
+    if (this.state === 'hooked' || this.dying) return;
+    this.cool = Math.min(this.cool, 1.5 * (1 - k)); // (it forgets being frightened)
+    if (this.state === 'flee' && k > 0.35) { this.state = 'roam'; this.wp = null; }
+    if (this.state === 'roam') this.curious = Math.min(0.98, this.curious + k * 0.8);
+  }
+
   spook(why = 'spook') {
     if (this.state === 'flee' || this.state === 'hooked') return;
-    this.state = 'flee'; this.timer = rnd(2, 4); this.cool = rnd(8, 16); this.curious = 0; this.probes = 0;
+    this.state = 'flee'; this.timer = rnd(1.5, 3); this.cool = rnd(5, 10); this.curious = 0; this.probes = 0;
     this.heading += Math.PI + rnd(-0.7, 0.7);
     this.why = why;
   }
@@ -150,11 +163,22 @@ export class Fish {
     switch (this.state) {
       case 'roam': {
         this.timer -= dt;
-        if (!this.wp || this.pos.distanceTo(this.wp) < 1.3) { if (this.timer < 0) { this.pickWaypoint(); this.timer = rnd(0.5, 3.5); } else this.speed = THREE.MathUtils.damp(this.speed, 0.15, 2, dt); }
+        if (!this.wp || this.pos.distanceTo(this.wp) < 1.3) {
+          if (this.timer < 0) {
+            this.pickWaypoint(); this.timer = rnd(0.5, 3.5);
+            // a lure it likes draws it from across the water (the passive pull): its wandering leans toward where the lure is
+            if (lure && lure.inWater && this.cool <= 0 && lure.tasteFor && Math.random() < 0.6 * Math.min(1, lure.tasteFor(this.sp))) {
+              const P = this.pool, a = Math.random() * Math.PI * 2, r = 2 + Math.random() * 4;
+              const x = THREE.MathUtils.clamp(lure.pos.x + Math.cos(a) * r, P.x0 + 1, P.x1 - 1), z = THREE.MathUtils.clamp(lure.pos.z + Math.sin(a) * r, P.z0 + 1, P.z1 - 1);
+              const floor = P.depthAt(x, z), d = Math.min(this.pickDepth(), floor - 0.3);
+              if (d > 0.25 && floor >= this.sp.depth[0] + 0.2) this.wp = new THREE.Vector3(x, P.surface - d, z);
+            }
+          } else this.speed = THREE.MathUtils.damp(this.speed, 0.15, 2, dt);
+        }
         if (this.wp) this.steer(dt, this.wp, this.base);
         if (this.cool <= 0 && lure) {
           const it = this.interest(lure);
-          this.curious += it * dt * (0.35 + this.sp.tier * 0.05) * (this.sp.legend ? 0.5 : 1);
+          this.curious += it * dt * (0.7 + this.sp.tier * 0.05) * (this.sp.legend ? 0.5 : 1);
           if (it <= 0) this.curious = Math.max(0, this.curious - dt * 0.15);
           if (this.curious >= 1) { this.state = 'stalk'; this.curious = 0; lure.attention++; this.wp = null; ctx.onNotice?.(this); }
         } else this.curious = Math.max(0, this.curious - dt * 0.2);
@@ -165,7 +189,7 @@ export class Fish {
         const to = _v.copy(lure.pos);
         this.steer(dt, to, this.base * 1.6, 2.2);
         if (this.pos.distanceTo(lure.pos) < 1.4 + this.length * 0.4) {
-          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]); this.probes = 0; this.probeT = this.probeTotal = rnd(0.6, 1.4); this.orbit = Math.random() < 0.5 ? 1 : -1;
+          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]) * INSPECT; this.probes = 0; this.probeT = this.probeTotal = rnd(0.45, 1.0); this.orbit = Math.random() < 0.5 ? 1 : -1;
         }
         break;
       }
@@ -182,13 +206,13 @@ export class Fish {
         if (this.probeT <= 0) {
           const n = this.sp.bite.length;
           const kind = this.sp.bite[Math.min(this.probes, n - 1)];
-          if (this.probes >= n - 1 && this.timer <= this.sp.inspect[1] * 0.85) {
+          if (this.probes >= n - 1 && this.timer <= this.sp.inspect[1] * INSPECT * 0.85) {
             // the committing bite
             this.state = 'bite'; this.window = this.sp.window * (kind === 'gulp' ? 1.15 : 1); this.biteKind = kind; this.windowT = 0;
             ctx.onBite?.(this, kind);
           } else {
             this.probes++;
-            this.probeT = this.probeTotal = rnd(0.7, 1.9) * (this.sp.body === 'minnow' ? 0.4 : 1);
+            this.probeT = this.probeTotal = rnd(0.45, 1.2) * (this.sp.body === 'minnow' ? 0.5 : 1);
             ctx.onProbe?.(this, kind === 'gulp' ? 'tug' : 'nibble');
             if (Math.random() < this.sp.shy * 0.12 * (lure.twitch > 0 ? 0.3 : 1)) { this.spook('shy'); lure.attention--; }
           }

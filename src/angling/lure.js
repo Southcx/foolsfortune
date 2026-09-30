@@ -11,6 +11,7 @@
 // `twitch` is the jig's memory (a hop that fish notice for a couple of seconds); `dip` is the spring the bites press on.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { LURES, tasteOf, attraction } from './lures.js';
 import { ASPECTS } from './species.js';
 import { sfx } from '../audio.js';
 
@@ -56,6 +57,9 @@ export class Lure {
     this.pos = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.prev = new THREE.Vector3();
     this.aspect = 0; this.depth = 0; this.depthT = 0; this.pref = 0;
     this.echo = null;
+    this.item = LURES[0]; // (what is tied on: lures.js; its taste is what the fish come to)
+    this.boost = [0, 0, 0, 0, 0]; // (what the soundings have pushed into it: fades)
+    this._taste = [0, 0, 0, 0, 0];
     this.speed = 0; this.twitch = 0; this.dip = 0; this.dipV = 0; this.attention = 0; this.claimed = false;
     this.pool = null; this.ground = 0;
     const g = (this.group = new THREE.Group());
@@ -105,8 +109,14 @@ export class Lure {
     this.vel.y += 0.5 * G * this.T;
     this.target = to.clone();
     this.t = 0; this.depth = 0; this.depthT = 0; this.attention = 0; this.claimed = false; this.twitch = 0; this.dip = 0; this.dipV = 0;
+    this.boost.fill(0);
     this.group.visible = true;
   }
+
+  /** How much a species wants this lure now: its taste and the soundings' push, against the species' own (lures.js). */
+  tasteFor(sp) { return attraction(tasteOf(this.item, this.boost, this._taste), sp); }
+  /** A sounding: the aspect pushed into the lure for a while. */
+  push(aspect, k = 0.9) { this.boost[aspect] = Math.min(1.2, this.boost[aspect] + k); }
 
   retrieve() { this.state = 'none'; this.group.visible = false; this.claimed = false; this.plumb.visible = false; this.plumbRing.visible = false; }
 
@@ -119,6 +129,7 @@ export class Lure {
   update(dt, ctx) {
     if (this.state === 'none') return;
     this.twitch = Math.max(0, this.twitch - dt);
+    for (let i = 0; i < 5; i++) this.boost[i] *= Math.exp(-dt / 7); // (a sounding's push lasts some seconds)
     // the dip spring
     this.dipV += (-90 * this.dip - 11 * this.dipV) * dt;
     this.dip += this.dipV * dt;

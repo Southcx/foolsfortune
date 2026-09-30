@@ -307,13 +307,14 @@ export class Tracking {
     const asp = (id) => ASPECTS.find((a) => a.id === id)?.name.toLowerCase() || id;
     on('angle.charge', () => L.inc('angle.charge'));
     on('angle.cast', (e) => {
-      L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); L.hi('angle.cast.dist', e.dist, { at: this.where() });
+      L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); if (e.lure) { L.inc(`angle.lure.${e.lure}`); if (e.lure.startsWith('curio.')) L.inc('angle.lure.curio'); } L.hi('angle.cast.dist', e.dist, { at: this.where() });
       log.say('angle', e.water ? `You cast your lure. It carries a mask of ${asp(e.aspect)}.` : 'You cast your lure. It lands on dry ground.', { key: 'cast', throttle: 0.5 });
     });
     on('lure.land', (e) => L.inc(e.water ? 'lure.land.water' : 'lure.land.ground'));
     on('angle.retrieve', () => { L.inc('angle.retrieve'); log.say('angle', 'You reel in the lure.', { key: 'ret', throttle: 1 }); });
     on('angle.twitch', () => { L.inc('angle.twitch'); log.say('angle', 'You twitch the lure.', { key: 'twitch', win: 4, fmt: (n) => `You twitch the lure (×${n}).` }); });
-    on('angle.sound', () => { L.inc('angle.sound'); log.say('angle', 'You send a sounding into the water.', { key: 'sound', throttle: 2 }); });
+    on('angle.sound', (e) => { L.inc('angle.sound'); log.say('angle', e.stirred ? `You send a sounding into the water. ${e.stirred === 1 ? 'Something stirs.' : 'Things stir.'}` : 'You send a sounding into the water.', { key: 'sound', throttle: 2 }); });
+    on('angle.lure', () => L.inc('angle.lure.change'));
     on('angle.nibble', (e) => { L.inc('angle.nibble'); log.say('angle', 'Something nibbles at the lure.', { key: 'nib', win: 5, fmt: () => 'Something nibbles at the lure.' }); });
     on('angle.bite', (e) => {
       L.inc('angle.bite'); L.inc(`angle.bite.${e.kind}`);
