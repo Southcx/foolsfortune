@@ -3,7 +3,7 @@ import { PALETTE } from './config.js';
 import { addOutline } from './outline.js';
 
 // ---------------------------------------------------------------------------------------
-// THE SKIFF: the Solar Surfer's body. A small hovering boat with a lug sail, after the King of Red
+// THE SKIFF: the Solar Skiff's body. A small hovering boat with a lug sail, after the King of Red
 // Lions in The Wind Waker: a hull with a raised, curled prow and a figurehead, one mast, a yellow
 // boom that swings out to leeward of the wind, a single billowing cel-cream sail with a painted
 // emblem, and a yellow arrow floating by the stern that shows which way the wind goes. The rider

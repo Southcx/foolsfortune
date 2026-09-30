@@ -3,9 +3,9 @@ import { PALETTE } from './config.js';
 import { BASE_Y, label, strip } from './basement.js';
 
 // ---------------------------------------------------------------------------
-// The tech lab: an annex south of basement room 1 (through its south door) with a
-// station for each movement tech (src/moves/). Stations have checkpoints (R
-// returns to the last one); the hub's index console lists the lab as one room.
+// The tech lab: the middle wing of THE MOVEMENT LAB, south of the course's start (through its south door), with a
+// station for each movement tech (src/moves/). Stations have checkpoints (R returns to the last one); the hub's index
+// console lists the whole lab, all five wings, as one room.
 //
 //   POOL     x -34..-22   4.5 m deep; dive tower, a wall to swim under, ladder out
 //   LADDERS  x -18..-8    6 m tower; 8 m tower = the slam / roll platform
@@ -17,6 +17,9 @@ import { BASE_Y, label, strip } from './basement.js';
 // ---------------------------------------------------------------------------
 
 export const LAB = { x0: -36, x1: 36, z0: -72, z1: -36.5 };
+// THE MOVEMENT LAB is one hall of five wings in a row (the hands, the rigging, this tech lab, the clockwork mill, the kiln stack), open
+// to each other through wide arches: [z from, z to, height] in each shared wall, sized to miss the stations that stand against it
+export const ARCHES = { hands: [-55.5, -37, 9], rigging: [-54.5, -37, 9], mill: [-51.5, -37, 9], kiln: [-62, -40, 9] };
 const H = 13.5, Wt = 0.5; // (BASE_Y is read inside the functions: basement.js imports this module too)
 export const POOL = { x0: -34, x1: -22, z0: -70, z1: -50, bottom: -4.5, surface: -0.35 };
 export const BLINK_PIT = { x0: 18, x1: 36, z0: -61, z1: -52, depth: 3 };
@@ -56,14 +59,14 @@ export function buildTechLab(L, env) {
   }
   const solid = { outline: false, shadow: false };
   blk(x0 - 0.5, x1 + 0.5, H, H + 0.5, z0 - 0.5, z1, C.deep, solid); // ceiling
-  // (the west wall has a door to the rigging)
-  blk(x0 - Wt, x0, 0, H, z0 - 0.5, -49, C.wall, solid);
-  blk(x0 - Wt, x0, 0, H, -45, z1, C.wall, solid);
-  blk(x0 - Wt, x0, 4, H, -49, -45, C.wall, solid);
-  // (the east wall has a door to the clockwork mill)
-  blk(x1, x1 + Wt, 0, H, z0 - 0.5, -49, C.wall, solid);
-  blk(x1, x1 + Wt, 0, H, -45, z1, C.wall, solid);
-  blk(x1, x1 + Wt, 4, H, -49, -45, C.wall, solid);
+  // (the side walls are arches: the lab is one hall, see ARCHES)
+  const arch = (x, [d0, d1, dh]) => {
+    blk(x, x + Wt, 0, H, z0 - 0.5, d0, C.wall, solid);
+    blk(x, x + Wt, 0, H, d1, z1, C.wall, solid);
+    blk(x, x + Wt, dh, H, d0, d1, C.wall, solid);
+  };
+  arch(x0 - Wt, ARCHES.rigging);
+  arch(x1, ARCHES.mill);
   blk(x0 - 0.5, x1 + 0.5, 0, H, z0 - Wt, z0, C.wall, solid);
   for (const p of [[-24, 9, -54], [4, 9, -54], [26, 9, -54]]) {
     const l = new THREE.PointLight(0xffa066, 30, 40, 1.1);

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 // ---------------------------------------------------------------------------------------
-// GROUND MARKS: what the Courier and the Solar Surfer leave on a soft surface. It writes into a
+// GROUND MARKS: what the Courier and the Solar Skiff leave on a soft surface. It writes into a
 // TrailMap (the fading path the ground shader shows) and throws a little spray (fx.alpha). It
 // knows nothing about sand: a `surface` says what colour the spray is and how much of it there is,
 // so snow, ash or a wet floor are one descriptor away.
@@ -74,7 +74,7 @@ export class SandMarks {
     }
   }
 
-  // ---- on the Solar Surfer: a soft wash under the hull and a fine score down the middle (the bubbles and the white wake are wake.js)
+  // ---- on the Solar Skiff: a soft wash under the hull and a fine score down the middle (the bubbles and the white wake are wake.js)
   board(dt, s, dx, dz, moved) {
     const T = this.trail, P = this.game.player, speed = moved / Math.max(dt, 1e-4);
     if (moved < 1e-4) return;

@@ -406,6 +406,15 @@ class Sfx {
     this.tone(t, 0.12, { f0: 180, f1: 360, type: 'sine', gain: 0.3, dest: d });
   }
 
+  /** Bumping the dunes' invisible barrier: a soft glassy bloom (a low swell and a high shimmer). */
+  barrier(power = 1) {
+    if (!this.ok() || !this.allow('barrier', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.22 + 0.2 * Math.min(1, power), 0.8);
+    this.tone(t, 0.45, { f0: 240, f1: 150, type: 'sine', gain: 0.6, dest: d });
+    this.tone(t, 0.3, { f0: 1480, f1: 1320, type: 'sine', gain: 0.12, dest: d });
+    this.noise(t, 0.35, { type: 'bandpass', f0: 3800, f1: 2400, q: 6, gain: 0.35, attack: 0.02, dest: d });
+  }
+
   wallTouch() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.3, 0.2);

@@ -281,7 +281,7 @@ export const DEFAULTS = {
     sondelass: { enabled: true }, // Q: the telescoping rod / cutlass / grapnel (src/moves/sondelass.js)
     grapple: { reelMax: 26, reelAccel: 70, payV: 6, pump: 9, drag: 0.05, stop: 1.6, maxSpeed: 30, maxLen: 46, reelCost: 2 }, // the line of the grapnel (src/moves/grapple.js, src/sondelass/hookshot.js): reel, pay out, pump, let go
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
-    surfer: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Surfer, in the dunes: Y stows / summons
+    surfer: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Skiff, in the dunes: Y stows / summons
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {

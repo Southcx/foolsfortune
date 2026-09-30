@@ -6,126 +6,116 @@ import { setHaloTexture } from './fishmesh.js';
 import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
 import { Ripples } from './lure.js';
 import { sfx } from '../audio.js';
-import { Beam } from '../vfx/beam.js';
+import { mergeStatic } from '../render/merge.js';
+import { RAPIER, GROUPS } from '../physics.js';
+import { addOutline } from '../outline.js';
 
 // ---------------------------------------------------------------------------------------
-// THE WEIR: the Sondelass's own room, built for testing everything it does. A vaulted hall of still water, far out in the
-// basement's layer (x 3000, z 400), teleport-only from the hub's index.
+// THE WEIR: the Sondelass's own place, built for testing everything it does. It used to be a vaulted hall far out in the basement's
+// layer; now it is the OASIS at the heart of the dunes (dunes.js): a pond on a flat of packed sand, open to the sky, the skiff drawn
+// up on the beach. The pond and the well are cut into the dunes' height field; what is built round them is here. All positions are
+// in the oasis's frame: metres from its centre, and up from the packed sand (the plateau).
 //
-//   THE SHALLOWS  36 x 28 m, four terraces down: a wading shelf (0.55 m), a mid terrace (2 m), a deep bowl (4.2 m) and a trench
-//                 (6 m) with an islet standing in it. The species keep to their depth bands, so where you cast decides what comes.
-//   THE PIER      a plank pier out over the shelf to the mid terrace; the place to stand and cast from.
-//   THE WELL      a 9.5 m shaft to the east, where the deep things live, and, at the top of the tide, the one that has no name.
+//   THE SHALLOWS  a pond 48 x 32 m, four terraces down: a wading shelf (0.55 m), a mid terrace (2 m), a deep bowl (4.2 m) and a trench
+//                 (6 m) with a stone pillar standing in it. The species keep to their depth bands, so where you cast decides what comes.
+//   THE PIER      a plank pier from the south beach out over the shelf to the mid terrace; the place to stand and cast from.
+//   THE WELL      a stone shaft 9.5 m deep to the east, full of liquid Lachryma, where the deep things live, and, at the top of the
+//                 tide, the one that has no name.
 //   THE YARD      a row of pots on plinths on the west side for the cutlass, and a tall pillar with a ledge for the hook.
-//   THE TALLY     the north wall's board of every kind you have landed (a silhouette until you have), how many, the biggest.
-//   THE LAMP      hangs over the water and shows the tide (low, rising, high, falling: 80 s each); which of the entities are
-//                 about depends on it (species.js).
-//   HOOK RINGS    on the ceiling beams over the water: what the grapnel is for.
+//   THE TALLY     a stone board on the north beach of every kind you have landed (a silhouette until you have), how many, the biggest.
+//   THE PERGOLA   timber beams over the water on posts, hook rings hanging from them (what the grapnel is for), and the tide lamp:
+//                 it shows the tide (low, rising, high, falling: 80 s each); which of the entities are about depends on it (species.js).
+//   THE TREASURY  five plinths on the north beach (a chest of each tier), the Tithe's console and its dais.
+//   and palms round the flat, reeds at the water's edge.
 // ---------------------------------------------------------------------------------------
-// (basement.js's BASE_Y, restated: basement.js imports this file for the room's spawn, so importing it back would be a cycle)
-const B = -14;
-export const WOX = 3000, WOZ = 400;
-export const WEIR_BOX = { x0: WOX, x1: WOX + 64, z0: WOZ, z1: WOZ + 48, H: 16 };
-export const WEIR_SPAWN = { pos: [WOX + 32, 0.02, WOZ + 4], yaw: 0 };
-const S0 = { x0: WOX + 14, x1: WOX + 50, z0: WOZ + 10, z1: WOZ + 38 };
-const R1 = { x0: WOX + 17, x1: WOX + 47, z0: WOZ + 13, z1: WOZ + 35 };
-const R2 = { x0: WOX + 21, x1: WOX + 43, z0: WOZ + 16, z1: WOZ + 32 };
-const R3 = { x0: WOX + 27, x1: WOX + 37, z0: WOZ + 19, z1: WOZ + 29 };
-const inR = (r, x, z) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1;
-const SURF = -0.45, WSURF = -0.5;
+import { DUNE, OASIS, POND, WELL, pondDepth } from '../dunes.js';
 
-/** Is a world point inside the hall? */
+// the oasis's frame, in the world
+export const OX = DUNE.x + OASIS.x, OY = DUNE.y + OASIS.y, OZ = DUNE.z + OASIS.z;
+const B = OY; // (the builders below were written for a floor at B; the packed sand is that floor now)
+export const WEIR_SPAWN = { pos: [OX + OASIS.x - 3, OY, OZ + POND.z - POND.rz - 7], yaw: 0 }; // (the dunes' spawn point: dunes.js)
+const RIM = { x0: WELL.x0 - 0.5, x1: WELL.x1 + 0.5, z0: WELL.z0 - 0.5, z1: WELL.z1 + 0.5 };
+
+/** Is a world point at the oasis? */
 export function inWeir(p, pad = 0) {
-  return p.x > WEIR_BOX.x0 - pad && p.x < WEIR_BOX.x1 + pad && p.z > WEIR_BOX.z0 - pad && p.z < WEIR_BOX.z1 + pad && p.y > B - 12 && p.y < B + WEIR_BOX.H + 2;
+  return Math.hypot(p.x - OX, p.z - OZ) < OASIS.flat + pad && p.y > OY - 16 && p.y < OY + 30;
 }
 
-/** The treasury on the north deck: five plinths (one chest of each tier, common to prismatic), the Tithe's console and the dais its sealed chests land on. */
-export const TREASURY = { z: 45.6, plinths: [46.2, 49.6, 53.0, 56.4, 59.8], top: 0.55, tithe: { x: 42.4, z: 45.9 }, dais: { x: 37.6, z: 43.6 } };
+/** The treasury on the north beach: five plinths (one chest of each tier, common to prismatic), the Tithe's console and the dais its sealed chests land on. */
+export const TREASURY = { z: 30, plinths: [-6.8, -3.4, 0, 3.4, 6.8], top: 0.55, tithe: { x: -11, z: 30.3 }, dais: { x: -15.5, z: 28 } };
 export const WEIR_FLOOR = B;
 
+const pondD = (x, z) => Math.max(0, pondDepth(x - DUNE.x, z - DUNE.z));
 export const POOLS = [
-  { id: 'shallows', name: 'THE SHALLOWS', ...S0, surface: B + SURF, bottom: B - 6, maxDepth: 6,
-    depthAt: (x, z) => (inR(R3, x, z) ? 6 : inR(R2, x, z) ? 4.2 : inR(R1, x, z) ? 2 : 0.55), species: SPECIES.filter((s) => !s.legend).map((s) => s.id), cap: 13 },
-  { id: 'well', name: 'THE WELL', x0: WOX + 53, x1: WOX + 62, z0: WOZ + 19, z1: WOZ + 29, surface: B + WSURF, bottom: B - 9.5, maxDepth: 9.5,
-    depthAt: () => 9.5, species: ['dread', 'hush', 'hunger', 'lachryma'], cap: 3 },
+  { id: 'shallows', name: 'THE SHALLOWS', x0: OX + POND.x - 25, x1: OX + POND.x + 25, z0: OZ + POND.z - 17.5, z1: OZ + POND.z + 17.5, surface: DUNE.y + POND.surface, bottom: DUNE.y + POND.surface - 6, maxDepth: 6,
+    depthAt: pondD, species: SPECIES.filter((s) => !s.legend).map((s) => s.id), cap: 13 },
+  { id: 'well', name: 'THE WELL', x0: DUNE.x + WELL.x0, x1: DUNE.x + WELL.x1, z0: DUNE.z + WELL.z0, z1: DUNE.z + WELL.z1, surface: DUNE.y + WELL.surface, bottom: DUNE.y + WELL.surface - WELL.depth, maxDepth: WELL.depth,
+    depthAt: () => WELL.depth, species: ['dread', 'hush', 'hunger', 'lachryma'], cap: 3 },
 ];
 
 export function buildWeir(L, env) {
   const C = PALETTE, S = L.scene;
   const blk = (x0, x1, y0, y1, z0, z1, color = C.mid, opts = {}) =>
-    L.box([WOX + (x0 + x1) / 2, B + (y0 + y1) / 2, WOZ + (z0 + z1) / 2], [x1 - x0, y1 - y0, z1 - z0], color, opts);
+    L.box([OX + (x0 + x1) / 2, B + (y0 + y1) / 2, OZ + (z0 + z1) / 2], [x1 - x0, y1 - y0, z1 - z0], color, opts);
   const solid = { outline: false, shadow: false };
-  const TEAL = 0x2d5a5c, TEAL2 = 0x3f7f86;
-  // the deck, around the pool and the well (thick, so the basins can be cut into them)
-  const deck = (x0, x1, z0, z1) => blk(x0, x1, -10, 0, z0, z1, C.floor);
-  deck(-1, 65, -1, 10); deck(-1, 65, 38, 49); deck(-1, 14, 10, 38); deck(50, 53, 10, 38); deck(62, 65, 10, 38); deck(53, 62, 10, 19); deck(53, 62, 29, 38);
-  // the shallows: a bowl of terraces (each a solid, its top the bottom there)
-  const local = (r) => [r.x0 - WOX, r.x1 - WOX, r.z0 - WOZ, r.z1 - WOZ];
-  const [s0, s1, s2, s3] = local(S0), [a0, a1, a2, a3] = local(R1), [b0, b1, b2, b3] = local(R2), [c0, c1, c2, c3] = local(R3);
-  blk(s0, s1, -10, -6, s2, s3, TEAL, solid);
-  const ring = (o, i, top, color) => { // (the ring between two rects, up to `top`)
-    blk(o[0], o[1], -10, top, o[2], i[2], color, solid); blk(o[0], o[1], -10, top, i[3], o[3], color, solid);
-    blk(o[0], i[0], -10, top, i[2], i[3], color, solid); blk(i[1], o[1], -10, top, i[2], i[3], color, solid);
-  };
-  ring([s0, s1, s2, s3], [a0, a1, a2, a3], -1.0, C.wall);
-  ring([a0, a1, a2, a3], [b0, b1, b2, b3], -2.45, TEAL2);
-  ring([b0, b1, b2, b3], [c0, c1, c2, c3], -4.65, TEAL);
-  blk(53 - 0.0, 62, -10, -9.5, 19, 29, TEAL, solid); // the well's floor
-  env.water.add({ x0: S0.x0, x1: S0.x1, z0: S0.z0, z1: S0.z1, surface: B + SURF, bottom: B - 6, depthAt: (x, z) => (inR(R3, x, z) ? 6 : inR(R2, x, z) ? 4.2 : inR(R1, x, z) ? 2 : 0.55) });
-  env.water.add({ x0: WOX + 53, x1: WOX + 62, z0: WOZ + 19, z1: WOZ + 29, surface: B + WSURF, bottom: B - 9.5, kind: 'lachryma' }); // (the Well is filled with liquid Lachryma)
-  // walls and ceiling
-  const H = WEIR_BOX.H;
-  blk(-1, 0, -10, H, -1, 49, C.wall, solid); blk(64, 65, -10, H, -1, 49, C.wall, solid);
-  blk(-1, 65, -10, H, -1, 0, C.wall, solid); blk(-1, 65, -10, H, 48, 49, C.wall, solid);
-  blk(-1, 65, H, H + 0.6, -1, 49, C.deep, solid);
-  // beams across the ceiling, and the rings that hang from them
-  for (let x = 6; x < 64; x += 8) blk(x - 0.35, x + 0.35, H - 1.6, H, 0, 48, C.dark, solid);
+  const STONE = 0xc9a07a, TIMBER = 0x7a4a30;
+  const [pool, well] = POOLS;
+  env.water.add({ x0: pool.x0, x1: pool.x1, z0: pool.z0, z1: pool.z1, surface: pool.surface, bottom: pool.bottom, depthAt: pondD });
+  env.water.add({ x0: well.x0, x1: well.x1, z0: well.z0, z1: well.z1, surface: well.surface, bottom: well.bottom, kind: 'lachryma' }); // (the Well is filled with liquid Lachryma)
+  // ---- the well: a stone shaft, its floor, a rim, and flagstones round it over the dug-out sand
+  const wb = WELL.surface - OASIS.y - WELL.depth; // (its floor, in the oasis frame)
+  blk(RIM.x0, RIM.x1, wb - 0.5, wb, RIM.z0, RIM.z1, C.dark, solid);
+  blk(RIM.x0, WELL.x0, wb, 0.35, RIM.z0, RIM.z1, STONE, solid); blk(WELL.x1, RIM.x1, wb, 0.35, RIM.z0, RIM.z1, STONE, solid);
+  blk(WELL.x0, WELL.x1, wb, 0.35, RIM.z0, WELL.z0, STONE, solid); blk(WELL.x0, WELL.x1, wb, 0.35, WELL.z1, RIM.z1, STONE, solid);
+  const F = 3.6; // (the flagstones reach past where the sand was dug)
+  blk(RIM.x0 - F, RIM.x1 + F, -0.3, 0.06, RIM.z0 - F, RIM.z0, STONE, { outline: false }); blk(RIM.x0 - F, RIM.x1 + F, -0.3, 0.06, RIM.z1, RIM.z1 + F, STONE, { outline: false });
+  blk(RIM.x0 - F, RIM.x0, -0.3, 0.06, RIM.z0, RIM.z1, STONE, { outline: false }); blk(RIM.x1, RIM.x1 + F, -0.3, 0.06, RIM.z0, RIM.z1, STONE, { outline: false });
+  // ---- the pier, its posts and lanterns (out from the south beach over the shelf)
+  const pz0 = POND.z - POND.rz - 3.5, pz1 = POND.z - 4;
+  blk(-2, 2, -0.16, 0, pz0, pz1, C.wood);
+  for (let z = pz0 + 2; z <= pz1; z += 4) { blk(-1.9, -1.5, -7, 0, z - 0.2, z + 0.2, TIMBER, solid); blk(1.5, 1.9, -7, 0, z - 0.2, z + 0.2, TIMBER, solid); }
+  for (const z of [pz0 + 2, pz0 + 8, pz1 - 0.5]) for (const x of [-1.7, 1.7]) { blk(x - 0.05, x + 0.05, 0, 1.2, z - 0.05, z + 0.05, C.dark, solid); const l = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({ color: C.hot })); l.position.set(OX + x, B + 1.3, OZ + z); S.add(l); }
+  // ---- the stone pillar in the trench (a ledge on top to hook to)
+  blk(POND.x - 1.5, POND.x + 1.5, -7, 0.15, POND.z - 1.5, POND.z + 1.5, STONE);
+  blk(POND.x - 0.5, POND.x + 0.5, 0.15, 7, POND.z - 0.5, POND.z + 0.5, C.mid);
+  blk(POND.x - 1.2, POND.x + 1.2, 7, 7.3, POND.z - 1.2, POND.z + 1.2, C.dark);
+  // ---- the pergola: posts, two long beams over the water and three across, the rings that hang from them
+  const top = 10.5, zs = [POND.z - 7, POND.z + 7], xs = [-22, -8, 8, 22];
+  for (const z of zs) for (const x of xs) blk(x - 0.3, x + 0.3, -7, top, z - 0.3, z + 0.3, TIMBER);
+  for (const z of zs) blk(-23.5, 23.5, top - 0.7, top, z - 0.35, z + 0.35, TIMBER);
+  for (const x of [-8, 0, 8]) blk(x - 0.3, x + 0.3, top - 1.2, top - 0.7, zs[0] - 1, zs[1] + 1, TIMBER);
   const ringMat = new THREE.MeshBasicMaterial({ color: C.glow });
-  for (const [x, z] of [[14, 14], [14, 32], [26, 12], [38, 12], [26, 34], [38, 34], [50, 14], [50, 32], [32, 24]]) {
+  for (const z of zs) for (const x of [-18, -12, 4, 14]) {
     const r = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 6, 20), ringMat);
-    r.position.set(WOX + x, B + H - 2.4, WOZ + z); r.rotation.x = Math.PI / 2; S.add(r);
-    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.8, 4), new THREE.MeshBasicMaterial({ color: C.dark }));
-    chain.position.set(WOX + x, B + H - 1.9, WOZ + z); S.add(chain);
+    r.position.set(OX + x, B + top - 1.9, OZ + z); r.rotation.x = Math.PI / 2; S.add(r);
+    const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 4), new THREE.MeshBasicMaterial({ color: C.dark }));
+    chain.position.set(OX + x, B + top - 1.25, OZ + z); S.add(chain);
   }
-  // the pier, its posts and lanterns
-  blk(30, 34, -0.16, 0, 10, 26, C.wood);
-  for (let z = 12; z <= 26; z += 4) { blk(30.1, 30.5, -2.4, 0, z - 0.2, z + 0.2, C.dark, solid); blk(33.5, 33.9, -2.4, 0, z - 0.2, z + 0.2, C.dark, solid); }
-  for (const z of [12, 18, 24]) for (const x of [30.3, 33.7]) { blk(x - 0.05, x + 0.05, 0, 1.2, z - 0.05, z + 0.05, C.dark, solid); const l = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), new THREE.MeshBasicMaterial({ color: C.hot })); l.position.set(WOX + x, B + 1.3, WOZ + z); S.add(l); }
-  // the islet in the trench, with a pillar to hook to
-  blk(30.5, 33.5, -6, 0.15, 22.5, 25.5, C.wall);
-  blk(31.5, 32.5, 0.15, 7, 23.5, 24.5, C.mid);
-  blk(30.8, 33.2, 7, 7.3, 22.8, 25.2, C.dark);
-  // the yard: plinths for the pots, and a tall pillar with a ledge
-  for (let i = 0; i < 6; i++) blk(3.5, 5.5, 0, 0.8, 13 + i * 4, 15 + i * 4, C.mid);
-  blk(8, 10.5, 0, 6, 30, 32.5, C.wall);
-  blk(8, 12.5, 5.6, 6, 30, 34.5, C.dark);
-  // the treasury: five plinths, the Tithe's console and its dais
+  // ---- the yard (west): plinths for the pots, and a tall pillar with a ledge
+  for (let i = 0; i < 6; i++) blk(-37, -35, 0, 0.8, -7 + i * 4, -5 + i * 4, C.mid);
+  blk(-32.5, -30, 0, 6, 19, 21.5, STONE);
+  blk(-32.5, -28, 5.6, 6, 19, 23.5, C.dark);
+  // ---- the treasury: five plinths, the Tithe's console and its dais
   for (const x of TREASURY.plinths) { blk(x - 0.75, x + 0.75, 0, TREASURY.top, TREASURY.z - 0.55, TREASURY.z + 0.55, C.mid); blk(x - 0.85, x + 0.85, TREASURY.top, TREASURY.top + 0.06, TREASURY.z - 0.65, TREASURY.z + 0.65, C.dark); }
-  { const { x, z } = TREASURY.tithe; blk(x - 0.55, x + 0.55, 0, 1.06, z - 0.32, z + 0.32, C.wall); blk(x - 0.62, x + 0.62, 1.06, 1.12, z - 0.4, z + 0.4, C.dark); }
-  { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, 0, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
-  // the well's rim, and a stair of stones down to the water
-  blk(52.6, 53, 0, 0.35, 18.6, 29.4, C.wall, solid); blk(62, 62.4, 0, 0.35, 18.6, 29.4, C.wall, solid);
-  blk(52.6, 62.4, 0, 0.35, 18.6, 19, C.wall, solid); blk(52.6, 62.4, 0, 0.35, 29, 29.4, C.wall, solid);
-  // lights
-  const light = (x, y, z, i = 22, col = 0xffa066, far = 44) => { const l = new THREE.PointLight(col, i, far, 1.05); l.position.set(WOX + x, B + y, WOZ + z); S.add(l); return l; };
-  for (const [x, z] of [[6, 6], [58, 6], [6, 42], [58, 42], [32, 6], [32, 42]]) light(x, 10, z, 20);
-  light(53, 4.5, 43.5, 14, 0xffa870, 26); light(40, 4.5, 43.5, 10, 0xb9a0ff, 22); // (the treasury and the Tithe)
-  light(24, -0.2, 24, 8, 0x66c4c8, 20); light(40, -0.2, 24, 8, 0x66c4c8, 20); light(57, 0.5, 24, 6, 0x8a6ad0, 14);
+  { const { x, z } = TREASURY.tithe; blk(x - 0.55, x + 0.55, 0, 1.06, z - 0.32, z + 0.32, STONE); blk(x - 0.62, x + 0.62, 1.06, 1.12, z - 0.4, z + 0.4, C.dark); }
+  { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, -0.2, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
+  // ---- the tally's stone (the board itself is drawn on it: Weir.buildBoard)
+  blk(9.4, 22.6, -0.5, 6.1, 31.1, 31.7, STONE);
   // words
-  const T = (t, x, z, o = {}) => label(S, t, [WOX + x, B + 0.02, WOZ + z], { rotY: Math.PI, ...o });
-  T('THE WEIR', 32, 7.5, { width: 3.2, sub: 'Q draw · 2 the rod · 4-8 aspect · hold LMB cast · MMB sound' });
-  T('PIER', 32, 11.2, { width: 1.1, sub: 'hold LMB · release to cast' });
-  T('THE YARD', 8, 11, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
-  T('THE WELL', 57.5, 15.5, { width: 2, sub: 'deep things · the top of the tide' });
+  const T = (t, x, z, o = {}) => label(S, t, [OX + x, B + 0.02 + (o.y || 0), OZ + z], { rotY: Math.PI, ...o });
+  T('THE WEIR', -3, pz0 - 3.2, { width: 3.2, sub: 'Q draw · 2 the rod · 4-8 aspect · hold LMB cast · MMB sound' });
+  T('PIER', 0, pz0 + 0.8, { width: 1.1, sub: 'hold LMB · release to cast', y: -0.02 });
+  T('THE YARD', -33, -10, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
+  T('THE WELL', (WELL.x0 + WELL.x1) / 2, RIM.z0 - 2.2, { width: 2, sub: 'deep things · the top of the tide', y: 0.06 });
   ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
-  T('THE TREASURY', 53, 41.6, { width: 3, sub: 'F open · they come back' });
+  T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3, sub: 'F open · they come back' });
   T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2, sub: 'F · 25 cubes · a sealed chest lands on the dais' });
-  T('HOOK', 23, 9, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
+  T('HOOK', -12, pz0 - 1, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
 }
 
 /** Chests on the plinths (they close again after a while), and the Tithe's console brought alive. */
 export function stockTreasury(game) {
-  const V = (x, y, z) => new THREE.Vector3(WOX + x, B + y, WOZ + z);
+  const V = (x, y, z) => new THREE.Vector3(OX + x, B + y, OZ + z);
   TREASURY.plinths.forEach((x, tier) => game.chests.spawn(tier, V(x, TREASURY.top + 0.06, TREASURY.z), { yaw: Math.PI, id: `weir.${tier}`, respawn: 30, floor: B }));
   game.chests.setTithe({ pos: V(TREASURY.tithe.x, 0, TREASURY.tithe.z), yaw: Math.PI, dais: V(TREASURY.dais.x, 0.16, TREASURY.dais.z) });
 }
@@ -133,8 +123,8 @@ export function stockTreasury(game) {
 export function spawnWeir(Bk, level) {
   const C = PALETTE;
   const kinds = ['jar', 'amphora', 'pitcher', 'melon', 'jar', 'amphora'];
-  for (let i = 0; i < 6; i++) Bk.spawn({ kind: kinds[i], pos: [WOX + 4.5, B + 0.8 + 0.002, WOZ + 14 + i * 4], color: i % 2 ? C.potLight : C.pot, respawn: 6 });
-  for (const [x, z, s] of [[9, 16, 1.0], [11, 20, 1.0], [9, 24, 0.9]]) level.crate([WOX + x, B + s / 2, WOZ + z], s);
+  for (let i = 0; i < 6; i++) Bk.spawn({ kind: kinds[i], pos: [OX - 36, B + 0.8 + 0.002, OZ - 6 + i * 4], color: i % 2 ? C.potLight : C.pot, respawn: 6 });
+  for (const [x, z, s] of [[-31, -4, 1.0], [-30, 0, 1.0], [-31, 4, 0.9]]) level.crate([OX + x, B + s / 2, OZ + z], s);
 }
 
 // ---------------------------------------------------------------------------------------
@@ -153,37 +143,33 @@ export class Weir {
     this.legendSeen = -1;
     // the lamp over the water: shows the tide
     const g = (this.lamp = new THREE.Group());
-    g.position.set(WOX + 32, B + 11.5, WOZ + 24);
+    this.lampY = B + 8.3; // (it hangs from the pergola's middle beam, over the pillar)
+    g.position.set(OX + POND.x, this.lampY, OZ + POND.z);
     this.lampMat = new THREE.MeshBasicMaterial({ color: 0xffb27a });
     g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 1), this.lampMat));
     for (const r of [0.9, 1.3]) { const t = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 4, 30), new THREE.MeshBasicMaterial({ color: 0xffe0c0 })); t.rotation.x = Math.PI / 2 + (r > 1 ? 0.4 : 0); g.add(t); this.lampRings = this.lampRings || []; this.lampRings.push(t); }
-    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 4, 4), new THREE.MeshBasicMaterial({ color: PALETTE.dark }));
-    rod.position.y = 2.6; g.add(rod);
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 2, 4), new THREE.MeshBasicMaterial({ color: PALETTE.dark }));
+    rod.position.y = 1.6; g.add(rod);
     this.lampLight = new THREE.PointLight(0xffb27a, 26, 60, 1.1);
     g.add(this.lampLight);
     game.scene.add(g);
-    // the reeds: the only thing in the room that moves for no reason but the wind
+    // the reeds at the water's edge: the only thing here that moves for no reason but the wind
     this.reeds = [];
     const reedMat = new THREE.MeshStandardMaterial({ color: 0x5a7a4a, roughness: 0.9, flatShading: true });
     const cone = new THREE.ConeGeometry(0.05, 1, 4); cone.translate(0, 0.5, 0);
-    for (let i = 0; i < 34; i++) {
-      const west = i % 2 === 0;
-      const x = west ? WOX + 14.5 + Math.random() * 1.6 : WOX + 20 + Math.random() * 20, z = west ? WOZ + 11 + Math.random() * 26 : WOZ + 10.4 + Math.random() * 0.8;
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    for (let i = 0, tries = 0; i < 46 && tries < 2000; tries++) {
+      const a = rnd() * Math.PI * 2, rr = 0.85 + rnd() * 0.3;
+      const x = OX + POND.x + Math.cos(a) * POND.rx * rr, z = OZ + POND.z + Math.sin(a) * POND.rz * rr;
+      const d = pondDepth(x - DUNE.x, z - DUNE.z);
+      if (d < 0.05 || d > 0.5 || (Math.abs(x - OX) < 2.6 && z < OZ + POND.z)) continue; // (in the shallows, and not on the pier's line)
       const m = new THREE.Mesh(cone, reedMat);
-      const h = 1.2 + Math.random() * 1.1;
-      m.scale.set(1, h, 1); m.position.set(x, B - 0.9, z); m.userData.p = Math.random() * 6;
-      game.scene.add(m); this.reeds.push(m);
+      const h = 1.2 + rnd() * 1.1;
+      m.scale.set(1, h, 1); m.position.set(x, DUNE.y + POND.surface - d, z); m.userData.p = rnd() * 6;
+      game.scene.add(m); this.reeds.push(m); i++;
     }
-    // an oculus in the vault over the water: the painted sky, and a shaft of its light down onto the pool
-    {
-      const cx = WOX + 32, cz = WOZ + 24, y = B + WEIR_BOX.H - 0.03;
-      const disc = new THREE.Mesh(new THREE.CircleGeometry(4.2, 40), game.sky.windowMaterial(new THREE.Vector3(0.35, 0.9, -0.25)));
-      disc.rotation.x = Math.PI / 2; disc.position.set(cx, y, cz); disc.renderOrder = 1; game.scene.add(disc);
-      const rim = new THREE.Mesh(new THREE.TorusGeometry(4.25, 0.12, 6, 48), new THREE.MeshBasicMaterial({ color: PALETTE.dark })); rim.rotation.x = Math.PI / 2; rim.position.set(cx, y, cz); game.scene.add(rim);
-      this.shaft = new Beam(game.scene, { radius: 4.0, height: WEIR_BOX.H + 0.5, color: 0xffe6b0, foot: 1.0, additive: true });
-      this.shaft.mesh.scale.y = -1; this.shaft.mesh.position.set(cx, y, cz); this.shaft.mesh.renderOrder = 5;
-      this.shaft.set(0xffe6b0, 0.07, 1.05);
-    }
+    // palms round the flat, and the skiff's mooring post
+    buildPalms(game);
     // a board of what has been landed
     this.board = this.buildBoard();
   }
@@ -192,12 +178,12 @@ export class Weir {
   poolAt(x, z) { for (const p of this.pools) if (x > p.x0 && x < p.x1 && z > p.z0 && z < p.z1) return p; return null; }
   get tideDef() { return TIDES[this.tide]; }
 
-  // ---- the tally board (on the north wall)
+  // ---- the tally board (on its stone on the north beach)
   buildBoard() {
     const c = document.createElement('canvas'); c.width = 1400; c.height = 620;
     const tex = new THREE.CanvasTexture(c);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(12, 12 * 620 / 1400), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-    m.position.set(WOX + 32, B + 6.2, WOZ + 47.45); m.rotation.y = Math.PI;
+    m.position.set(OX + 16, B + 3.2, OZ + 31.07); m.rotation.y = Math.PI; // (on the tally's stone, facing the water)
     this.game.scene.add(m);
     return { c, tex, v: -1, m };
   }
@@ -280,7 +266,7 @@ export class Weir {
     this.lampMat.color.lerp(new THREE.Color(td.lamp), Math.min(1, dt * 1.5));
     this.lampLight.color.copy(this.lampMat.color);
     this.lampLight.intensity = 16 + 12 * [0.2, 0.7, 1, 0.55][this.tide];
-    this.lamp.position.y = B + 11.5 + [0, 0.5, 1.0, 0.5][this.tide] * 0.9;
+    this.lamp.position.y = this.lampY + [0, 0.5, 1.0, 0.5][this.tide] * 0.9;
     this.lampRings.forEach((r, i) => { r.rotation.z += dt * (0.3 + i * 0.2); });
     if (!near) return;
     for (const r of this.reeds) r.rotation.z = Math.sin(this.t * 0.8 + r.userData.p) * 0.09;
@@ -318,4 +304,59 @@ export class Weir {
 
   /** Called when the player leaves: the fish are put away, the lure retrieved. */
   reset() { for (const f of [...this.fish]) this.remove(f); }
+}
+
+/**
+ * Palms round the oasis: a curved trunk of stacked segments and a crown of drooping fronds, built from primitives and baked into
+ * one mesh per material (render/merge.js); each trunk a collider. Low-poly in the manner of the era's palms (Final Fantasy X's
+ * Besaid, Wind Waker's Outset): a few flat-shaded planes read as a crown at any distance.
+ */
+function buildPalms(game) {
+  const S = game.scene, W = game.physics.world;
+  const group = new THREE.Group();
+  const bark = new THREE.MeshStandardMaterial({ color: 0x8a5a3c, roughness: 0.95, flatShading: true });
+  const leaf = new THREE.MeshStandardMaterial({ color: 0x6f8a3a, roughness: 0.9, flatShading: true, side: THREE.DoubleSide });
+  const leafDark = new THREE.MeshStandardMaterial({ color: 0x55702e, roughness: 0.9, flatShading: true, side: THREE.DoubleSide });
+  // a frond: a long thin diamond, bent down along its length
+  const frond = new THREE.BufferGeometry();
+  {
+    const P = [], n = 5, len = 3.4;
+    for (let k = 0; k < n; k++) {
+      const t0 = k / n, t1 = (k + 1) / n, w0 = Math.sin(t0 * Math.PI) * 0.55, w1 = Math.sin(t1 * Math.PI) * 0.55;
+      const y0 = -t0 * t0 * 1.6, y1 = -t1 * t1 * 1.6, x0 = t0 * len, x1 = t1 * len;
+      P.push(x0, y0, -w0, x1, y1, -w1, x0, y0 + 0.08, 0, x0, y0 + 0.08, 0, x1, y1, -w1, x1, y1 + 0.08, 0);
+      P.push(x0, y0 + 0.08, 0, x1, y1 + 0.08, 0, x0, y0, w0, x0, y0, w0, x1, y1 + 0.08, 0, x1, y1, w1);
+    }
+    frond.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
+    frond.computeVertexNormals();
+  }
+  const spots = [[-26, -14], [-30, 8], [-22, 26], [-40, -22], [24, -16], [28, 22], [44, -8], [46, 18], [-6, 40], [12, 42], [-44, 30], [36, 36], [-16, -30], [20, -34]];
+  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (const [lx, lz] of spots) {
+    const x = OX + lx, z = OZ + lz, y = game.dunes.heightAt(x, z);
+    const h = 6 + rnd() * 3.5, lean = (rnd() - 0.5) * 0.5, yaw = rnd() * Math.PI * 2, segs = 5;
+    const dir = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw));
+    let p = new THREE.Vector3(x, y - 0.3, z);
+    for (let k = 0; k < segs; k++) {
+      const t = (k + 1) / segs, bend = lean * t * t * 2.2;
+      const q = p.clone().addScaledVector(new THREE.Vector3(0, 1, 0), h / segs).addScaledVector(dir, bend);
+      const seg = new THREE.Mesh(new THREE.CylinderGeometry(0.24 - 0.02 * k, 0.28 - 0.02 * k, p.distanceTo(q) + 0.05, 6), bark);
+      seg.position.copy(p).lerp(q, 0.5);
+      seg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), q.clone().sub(p).normalize());
+      seg.castShadow = true; group.add(seg);
+      p = q;
+    }
+    for (let f = 0; f < 8; f++) {
+      const m = new THREE.Mesh(frond, f % 2 ? leaf : leafDark);
+      m.position.copy(p);
+      m.rotation.set(0, (f / 8) * Math.PI * 2 + rnd() * 0.4, 0.25 + rnd() * 0.35, 'YZX');
+      m.castShadow = true; group.add(m);
+    }
+    const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y + h / 2, z));
+    W.createCollider(RAPIER.ColliderDesc.cylinder(h / 2, 0.3).setCollisionGroups(GROUPS.static), b);
+  }
+  for (const m of group.children) if (m.material === bark) addOutline(m);
+  mergeStatic(group);
+  S.add(group);
+  return group;
 }

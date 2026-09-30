@@ -1,9 +1,10 @@
 import { sfx } from './audio.js';
 
 // ---------------------------------------------------------------------------
-// The index: the console in the hub's first room. Stand at it, press F, and pick a room; one
-// teleport per room (the rooms' own stations are checkpoints: R takes you back to the last one).
-// Like the Codex it pauses the game while it's open.
+// The index: the console in the hub. Stand at it, press F, and pick a room; one teleport per room
+// (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
+// calibration numbers: the live movement values and the measured chains every space is sized from
+// (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
 // ---------------------------------------------------------------------------
 
 const CSS = `
@@ -24,13 +25,19 @@ const CSS = `
 #indexmenu .room .n { font-size: 18px; width: 34px; text-align: center; color: var(--accent); }
 #indexmenu .room b { display: block; font-weight: normal; letter-spacing: .08em; font-size: 13px; }
 #indexmenu .room s { text-decoration: none; display: block; font-size: 10px; opacity: .65; }
+#indexmenu .cal { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; font-size: 11px; }
+@media (max-width: 560px) { #indexmenu .cal { grid-template-columns: 1fr; } }
+#indexmenu .cal div { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dotted rgba(255,178,122,.15); padding: 2px 0; }
+#indexmenu .cal span { opacity: .7; }
+#indexmenu .cal b { font-weight: normal; color: #fff1dc; white-space: nowrap; }
 `;
 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 
 export class IndexMenu {
-  /** rooms: [{ id, tag, name, blurb, group }], go(id) teleports. */
-  constructor(game, rooms, go) {
+  /** rooms: [{ id, tag, name, blurb, group }], go(id) teleports, calibration() -> { live: [[k, v]], chains: [[k, v]] }. */
+  constructor(game, rooms, go, calibration = null) {
+    this.calibration = calibration;
     this.game = game;
     this.rooms = rooms;
     this.go = go;
@@ -96,5 +103,14 @@ export class IndexMenu {
       row.onmouseenter = () => { this.sel = i; };
       grid.appendChild(row);
     });
+    const cal = this.calibration?.();
+    if (cal) {
+      for (const [title, rows] of [['CALIBRATION · LIVE (from the tuning panel)', cal.live], ['CALIBRATION · MEASURED CHAINS (default tuning)', cal.chains]]) {
+        im.appendChild(el('div', 'grp', title));
+        const g = el('div', 'cal');
+        for (const [k, v] of rows) g.appendChild(el('div', '', `<span>${k}</span><b>${v}</b>`));
+        im.appendChild(g);
+      }
+    }
   }
 }

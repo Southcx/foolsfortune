@@ -10,7 +10,17 @@ import { GROUPS } from '../physics.js';
 // Space launches you out (higher than a jump, keeping the speed); let go of C to
 // stand back up. Lachryma soaks back in while you're under. Paint more with the
 // SLIP shell.
+//
+// The way in and out is shown, not cut: going under, the body squashes toward the floor and dissolves from the head down (a blocky
+// dissolve with a glowing edge: outline.js) while the blob swells up out of the splash (0.3 s); coming out, the blob sinks back and
+// the body is built up from the feet as it springs to its height with a little overshoot (0.32 s). The physics changes shape at
+// once (the momentum is never held up by the show): only the picture takes its time. Prior art: Splatoon's squid form (the swap is
+// near-instant, the squash and the splash sell it) and the dissolve-in of the era's teleports (Kingdom Hearts, Phantasy Star Online).
 const UP = new THREE.Vector3(0, 1, 0);
+const MELT = 0.3, RISE = 0.32;
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+const easeIn = (t) => t * t * t, easeOut = (t) => 1 - (1 - t) ** 3;
+const easeOutBack = (t) => { const c = 1.9; return 1 + (c + 1) * (t - 1) ** 3 + c * (t - 1) ** 2; };
 
 export class SlipDive extends Tech {
   constructor(mgr) {
@@ -52,7 +62,7 @@ export class SlipDive extends Tech {
     P.vel.set(hv.x, 0, hv.z); // a slide keeps its speed going in
     this.mode = 'floor';
     this.normal.copy(UP);
-    this.game.character.setHidden(true);
+    this.melt = 0; this.rise = null; // (the body melts down over MELT seconds: tick)
     this.blob.visible = true;
     sfx.slipDive();
     this.splash(P.pos, 1.2);
@@ -135,8 +145,11 @@ export class SlipDive extends Tech {
   end() {
     const P = this.P;
     if (P.shape === 'blob') P.setShape(P.fits(P.pos, false) ? 'stand' : 'low');
-    this.game.character.setHidden(false);
-    this.blob.visible = false;
+    // the rise: the body comes back squashed and dissolved, and is built up from the feet (tick runs it after the tech has ended)
+    const ch = this.game.character;
+    ch.setHidden(false);
+    this.rise = 0; this.melt = null;
+    this.body(1, 0.35, 1.3);
     sfx.slipSurface();
     this.splash(P.pos, 1);
   }
@@ -156,11 +169,35 @@ export class SlipDive extends Tech {
     }
   }
 
+  /** The body's share of the show: dissolved k (0..1), squashed to sy with its width spread to sxz, standing where it stands. */
+  body(k, sy, sxz) {
+    const ch = this.game.character;
+    ch.setDissolve(k, this.P.renderPos.y, 1.9);
+    ch.root.scale.set(sxz, sy, sxz);
+  }
+
   // the blob: a glossy clay swell riding the surface, stretched along its motion
   tick(dt) {
-    if (!this.active) return;
-    const P = this.P, b = this.blob;
-    b.visible = P.fpWeight < 0.5; // (in first person you're looking out of it)
+    const P = this.P, b = this.blob, ch = this.game.character;
+    let grow = 1;
+    if (this.rise !== null && this.rise !== undefined) {
+      // coming out: the blob sinks away in the first moment, the body springs up (easeOutBack: a little past its height, and back)
+      this.rise += dt;
+      const k = clamp01(this.rise / RISE);
+      this.body(1 - easeOut(k), 0.35 + 0.65 * easeOutBack(k), 1.3 - 0.3 * easeOut(k));
+      grow = 1 - clamp01(this.rise / 0.14);
+      if (k >= 1) { this.rise = null; this.body(0, 1, 1); b.visible = false; return; }
+      if (grow <= 0) { b.visible = false; return; }
+    } else if (!this.active) return;
+    else if (this.melt !== null && this.melt !== undefined) {
+      // going under: the body squashes and dissolves from the head down (slow, then all at once), the blob swells out of it
+      this.melt += dt;
+      const k = clamp01(this.melt / MELT);
+      this.body(Math.min(1, k * k * 1.15), 1 - 0.65 * easeIn(k), 1 + 0.35 * easeIn(k));
+      grow = easeOutBack(clamp01((this.melt - 0.08) / 0.22));
+      if (k >= 1) { this.melt = null; ch.setHidden(true); this.body(0, 1, 1); }
+    }
+    b.visible = P.fpWeight < 0.5 && grow > 0.01; // (in first person you're looking out of it)
     const n = this.normal;
     const v = P.vel.clone();
     const sp = v.length();
@@ -173,10 +210,10 @@ export class SlipDive extends Tech {
     const stretch = 1 + Math.min(0.8, sp * 0.06);
     const h = 0.13 + Math.sin(this.wob) * 0.02;
     const center = P.renderPos.clone().add(new THREE.Vector3(0, this.mode === 'wall' ? 0.35 : 0, 0)).addScaledVector(n, this.mode === 'wall' ? -0.18 : 0.03);
-    b.matrix.makeBasis(side.multiplyScalar(0.34 / Math.sqrt(stretch)), n.clone().multiplyScalar(h), fwd.multiplyScalar(0.34 * stretch)).setPosition(center);
+    b.matrix.makeBasis(side.multiplyScalar(0.34 / Math.sqrt(stretch) * grow), n.clone().multiplyScalar(h * grow), fwd.multiplyScalar(0.34 * stretch * grow)).setPosition(center);
     // a wake of ripples
     this.trailT -= dt;
-    if (sp > 1 && this.trailT <= 0 && this.game.fx) {
+    if (this.active && sp > 1 && this.trailT <= 0 && this.game.fx) {
       this.trailT = 0.05;
       this.game.fx.alpha.emit({ pos: center.clone().addScaledVector(n, 0.05), vel: n.clone().multiplyScalar(0.3), life: 0.5, size: 0.12, sizeEnd: 0.4, color: new THREE.Color(PALETTE.pale), alpha: 0.35, drag: 3 });
       sfx.slipSwim();

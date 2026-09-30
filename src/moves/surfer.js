@@ -6,7 +6,7 @@ import { Skiff, SKIFF } from '../skiff.js';
 import { Wake } from '../wake.js';
 
 // ---------------------------------------------------------------------------------------
-// THE SOLAR SURFER, after the King of Red Lions in The Wind Waker, with a little acrobatics on top.
+// THE SOLAR SKIFF (Solar Skiffing), after the King of Red Lions in The Wind Waker, with a little acrobatics on top.
 //
 // How Wind Waker sails, and what was taken (see also skiff.js and wake.js):
 //   - The boat is driven by the wind alone. A tailwind is fastest; against the wind it is slow and
@@ -160,8 +160,8 @@ export class Surfer extends Tech {
     if (Math.abs(vl) < 0.02 && !this.air) vl = 0;
 
     // ---- slopes: gravity along the ground
-    const gy = D.heightAt(P.pos.x, P.pos.z);
-    D.normalAt(P.pos.x, P.pos.z, this.n);
+    const gy = D.rideHeight(P.pos.x, P.pos.z); // (the sand, or the oasis's water over it: the skiff skims the pond)
+    if (gy > D.heightAt(P.pos.x, P.pos.z) + 0.01) this.n.copy(UP); else D.normalAt(P.pos.x, P.pos.z, this.n);
     if (!this.air) {
       const gt = _v3.set(0, -T.physics.gravity, 0);
       gt.addScaledVector(this.n, -gt.dot(this.n));
@@ -212,7 +212,7 @@ export class Surfer extends Tech {
       if (this.v.length() > 8) { sfx.thunk?.(1.2, 3); g.fx?.impact?.(P.pos.clone().setY(P.pos.y), UP, { sparks: 8, dust: 12 }); P.shake = Math.max(P.shake, 0.25); }
       this.v.copy(moved).multiplyScalar(0.8);
     }
-    const gy2 = D.heightAt(P.pos.x, P.pos.z);
+    const gy2 = D.rideHeight(P.pos.x, P.pos.z);
     if (P.pos.y < gy2 + 0.35) { P.pos.y = gy2 + 0.35; if (P.vel.y < 0) P.vel.y = 0; }
     P.grounded = !this.air;
     P.bodyYaw = this.heading;
@@ -300,7 +300,7 @@ export class Surfer extends Tech {
     const right = _v3.set(-f.z, 0, f.x);
     this.skiff.placeArrow(_v.copy(pos).addScaledVector(f, -1.9).addScaledVector(right, 1.5).setY(D.heightAt(pos.x, pos.z) + 1.5), W.dir, W.speed / 10, this.time);
     const bow = _v.copy(pos).addScaledVector(f, SKIFF.half + 0.2);
-    this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air, glow: this.boosting, ground: (x, z) => D.heightAt(x, z) });
+    this.wake.update(dt, { bow, fwd: f, right, speed: this.speed, air: this.air, glow: this.boosting, ground: (x, z) => D.rideHeight(x, z) });
   }
 
   // ------------------------------------------------------------------ the rider (authored clips, blended by what the board does)

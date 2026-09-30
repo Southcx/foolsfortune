@@ -769,7 +769,8 @@ export class Breakables {
         ent.mesh.scale.setScalar(1 + 2.7 * Math.pow(t - 1, 3) + 1.7 * Math.pow(t - 1, 2)); // easeOutBack
         if (t >= 1) { ent.mesh.scale.setScalar(1); delete ent.popIn; }
       }
-      if (ent.mesh.position.y < -20) this.shatter(ent, null, null, 0.1);
+      // (fallen out of the world: well below where it was put. Not a fixed height: the dunes and their oasis are 400 m down)
+      if (ent.mesh.position.y < ent.def.pos[1] - 40) this.shatter(ent, null, null, 0.1, 'fall');
     }
     for (const r of this.ropes) {
       if (!r.cut) continue;

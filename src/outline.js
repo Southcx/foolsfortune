@@ -84,19 +84,39 @@ export const OUTLINE_MAT_CHAR = withFade(makeOutlineMaterial(), 'ol-char');
 // Screen-door fade for the player character when the 3rd-person camera is
 // squeezed against a wall (dithered discard keeps it opaque/sortable).
 export const fadeUniform = { value: 1 };
+// The DISSOLVE (the Courier melting into slip and rising out of it: moves/slip.js): 0 whole .. 1 gone. It eats the body from the top
+// down in coarse blocks of world space (the era's dissolve: a blocky noise threshold, not a smooth fade), with a glowing edge where it
+// is eating; run backwards, the body is built up from the feet. uDisBase = (the feet's world height, the body's height).
+export const dissolveUniform = { value: 0 };
+export const dissolveBaseUniform = { value: new THREE.Vector2(0, 1.8) };
 export function withFade(material, key) {
   const prev = material.onBeforeCompile;
   material.onBeforeCompile = (shader, r) => {
     prev?.call(material, shader, r);
     shader.uniforms.uFade = fadeUniform;
+    shader.uniforms.uDissolve = dissolveUniform;
+    shader.uniforms.uDisBase = dissolveBaseUniform;
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vDisW;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvDisW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     shader.fragmentShader = shader.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform float uFade;')
+      .replace('#include <common>', '#include <common>\nuniform float uFade; uniform float uDissolve; uniform vec2 uDisBase; varying vec3 vDisW;')
       .replace('void main() {', `void main() {
   if (uFade < 0.999) {
     vec2 c = floor(mod(gl_FragCoord.xy, 4.0));
     float b = mod(c.x * 8.0 + c.y * 4.0 + mod(c.x + c.y * 2.0, 4.0) * 1.0, 16.0) / 16.0;
     if (uFade <= b) discard;
-  }`);
+  }
+  float disEdge = 0.0;
+  if (uDissolve > 0.001) {
+    float hgt = clamp((vDisW.y - uDisBase.x) / uDisBase.y, 0.0, 1.0);
+    float blk = fract(sin(dot(floor(vDisW * 16.0), vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float v = hgt * 0.72 + blk * 0.28;                 // (0..1: the top and the unlucky blocks go first)
+    float cut = 1.0 - uDissolve * 1.05;
+    if (v > cut) discard;
+    disEdge = 1.0 - smoothstep(0.0, 0.06, cut - v);
+  }`)
+      .replace('#include <dithering_fragment>', '#include <dithering_fragment>\n  gl_FragColor.rgb = mix(gl_FragColor.rgb, vec3(1.0, 0.93, 0.8) * 1.6, disEdge);');
   };
   const prevKey = material.customProgramCacheKey?.bind(material);
   material.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fade-${key}`;

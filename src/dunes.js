@@ -4,22 +4,40 @@ import { SandMarks, SAND } from './marks.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { T, PALETTE } from './config.js';
 import { addOutline } from './outline.js';
+import { ChunkTerrain } from './render/terrain.js';
+import { mergeStatic } from './render/merge.js';
+import { CloudLayer } from './vfx/clouds.js';
+import { Barrier } from './barrier.js';
 
 // ---------------------------------------------------------------------------------------
 // THE DUNES: a layer far below the workshop, a sand sea in the manner of Journey: long
 // sweeping dunes with sharp crests and steep lee faces, glinting sand, a low gold sun in a
-// teal-to-rose sky, half-buried ruins and a pale spire in the distance to sail toward. It is
-// crossed on the Solar Surfer (moves/surfer.js), a sail-board that catches the wind.
+// teal-to-rose sky, half-buried ruins and a pale spire in the distance to sail toward, and at
+// its heart an oasis: a pond on a flat of packed sand, with the Weir built round it
+// (angling/weir.js). It is crossed on the Solar Skiff (moves/surfer.js), a sail-board that
+// catches the wind: Solar Skiffing. Nothing walls it in: the sand runs on to high dunes on the
+// horizon, and the edge is an invisible barrier (barrier.js) that shows itself only where you
+// touch it. A layer of cloud drifts downwind across the painted sky (vfx/clouds.js).
 //
 // The ground is one height function (heightAt) that the mesh, the collider, the board's hover
-// and the particles all read, so they can never disagree. It lies at ORIGIN, well away from the
+// and the particles all read, so they can never disagree. It is drawn in chunks with levels of
+// detail (render/terrain.js), one draw call, sampled every 2.5 m inside the barrier. It lies at ORIGIN, well away from the
 // lab's rooms (in x and z as well as in y) so nothing there can trigger on it.
 // ---------------------------------------------------------------------------------------
-export const DUNE = { x: 2000, y: -420, z: 0, size: 640, res: 321, layerBelow: -150 };
-const HALF = DUNE.size / 2;
+export const DUNE = { x: 2000, y: -420, z: 0, half: 520, step: 2.5, outer: 900, layerBelow: -150 };
 const WIND_AT = 0.55; // (radians) the way the wind blows toward, on average
+/** The edge of the world down here: an invisible wall round the sand at this radius (see Barrier). */
+export const BARRIER = 480;
 
-const hash = (x, z) => { const s = Math.sin(x * 127.1 + z * 311.7) * 43758.5453; return s - Math.floor(s); };
+// THE OASIS: the middle of the sea is a flat of packed sand round a pond, and the Weir (angling/weir.js) is built on it. All in the
+// dunes' local frame (metres from the centre, heights above the layer's floor). The pond and the well are cut into the height field
+// itself, so the sand, the board's hover and the swimming all agree about where the water is.
+export const OASIS = { x: 0, z: 0, y: 12, flat: 64, blend: 70 };
+export const POND = { x: 0, z: 6, rx: 22, rz: 15, surface: OASIS.y - 0.45 };
+export const WELL = { x0: 29.5, x1: 38.5, z0: 1, z1: 11, surface: OASIS.y - 0.5, depth: 9.5 };
+
+// (an integer hash: the noise below is sampled a few hundred thousand times when the field is built)
+const hash = (x, z) => { let h = (Math.imul(x, 374761393) + Math.imul(z, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 const smooth = (t) => t * t * (3 - 2 * t);
 function vnoise(x, z) {
   const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz;
@@ -37,6 +55,28 @@ function duneProfile(f) {
   return 1 - smooth(Math.min(1, t * 1.05));
 }
 
+/** The pond's shape: 1 on its shore, less inside (an ellipse with a wandering edge). */
+function pondQ(x, z) {
+  const dx = (x - POND.x) / POND.rx, dz = (z - POND.z) / POND.rz, a = Math.atan2(dz, dx);
+  return Math.hypot(dx, dz) * (1 + 0.06 * Math.sin(3 * a + 1) + 0.04 * Math.sin(5 * a + 2.2));
+}
+/** How deep the pond is at local x, z (metres below its surface; <= 0 on dry ground). Four terraces: the species keep to them. */
+export function pondDepth(x, z) {
+  const q = pondQ(x, z);
+  if (q >= 1) return -(q - 1) * 2.4;
+  const S = (a, b) => sstep(a, b, 1 - q) ; // (0 at the shore side, 1 past it)
+  return 0.55 * S(0, 0.08) + 1.45 * S(0.26, 0.32) + 2.2 * S(0.48, 0.54) + 1.8 * S(0.7, 0.75);
+}
+const inWell = (x, z, m = 0) => x > WELL.x0 - m && x < WELL.x1 + m && z > WELL.z0 - m && z < WELL.z1 + m;
+
+/** The oasis ground (packed sand round the pond, the pond's bed, the well's shaft) at local x, z. */
+function oasisGround(x, z) {
+  if (inWell(x, z, 1.2)) return WELL.surface - WELL.depth - 1.5; // (the shaft is built in stone: the sand is dug out from under it)
+  const r = Math.hypot(x - OASIS.x, z - OASIS.z);
+  const lap = (fbm(x * 0.05 + 40, z * 0.05, 2) - 0.43) * 0.8 * sstep(34, OASIS.flat, r); // (it ripples a little toward the edge)
+  return Math.min(OASIS.y + lap, POND.surface - pondDepth(x, z));
+}
+
 /** Local ground height (metres above the layer's floor) at local x, z (origin at the centre). */
 export function localHeight(x, z) {
   const wx = Math.cos(WIND_AT), wz = Math.sin(WIND_AT);
@@ -44,15 +84,19 @@ export function localHeight(x, z) {
   const pz = z + (fbm(x * 0.004, z * 0.004 + 37, 3) - 0.43) * 130;
   const s = (px * wx + pz * wz) / 112 + (fbm(px * 0.006 + 3, pz * 0.006 + 9, 3) - 0.43) * 3.4;
   const amp = 6 + 13 * fbm(px * 0.0032 + 5, pz * 0.0032 - 2, 2);
-  const r0 = Math.hypot(x, z);
-  const calm = 0.38 + 0.62 * sstep(14, 70, r0); // (a gentler basin where you arrive)
+  const r0 = Math.hypot(x - OASIS.x, z - OASIS.z);
+  const calm = 0.38 + 0.62 * sstep(OASIS.flat, OASIS.flat + 90, r0); // (gentler dunes round the oasis)
   let h = duneProfile(s - Math.floor(s)) * amp * calm;
   const s2 = (px * -wz + pz * wx) / 46 + (fbm(px * 0.011, pz * 0.011, 2) - 0.43) * 2.4;
   h += duneProfile(s2 - Math.floor(s2)) * 2.4 * sstep(0.35, 0.65, fbm(px * 0.005 + 20, pz * 0.005, 2)) * calm;
   h += (fbm(px * 0.0022, pz * 0.0022 + 7, 3) - 0.43) * 22;
-  const edge = sstep(215, 305, Math.hypot(x, z)); // a bowl of mountains round the sea
-  h += edge * edge * 150 + edge * 30;
-  return h + 14;
+  // (no wall of mountains any more: the sea runs on past the barrier, and far off, out of reach, it rises into high dunes that close
+  // the horizon)
+  const far = sstep(BARRIER + 90, DUNE.outer, Math.hypot(x, z));
+  h += far * far * 90;
+  h += 14;
+  const w = 1 - sstep(OASIS.flat, OASIS.flat + OASIS.blend, r0);
+  return w > 0 ? h + (oasisGround(x, z) - h) * w : h;
 }
 
 export class Dunes {
@@ -67,6 +111,7 @@ export class Dunes {
     this.buildTerrain();
     this.buildSky();
     this.buildRuins();
+    this.barrier = new Barrier(game, { center: new THREE.Vector3(DUNE.x, 0, DUNE.z), radius: BARRIER, y0: DUNE.y - 20, y1: DUNE.y + 260 });
     this.setVisible(false);
     // the values the workshop is lit with (blended back to when you leave)
     const sc = game.scene;
@@ -78,7 +123,7 @@ export class Dunes {
 
   get center() { return new THREE.Vector3(DUNE.x, DUNE.y, DUNE.z); }
   /** Is the player down here? */
-  get active() { const p = this.game.player.pos; return Math.abs(p.x - DUNE.x) < 340 && Math.abs(p.z - DUNE.z) < 340 && p.y < DUNE.layerBelow; }
+  get active() { const p = this.game.player.pos; return Math.hypot(p.x - DUNE.x, p.z - DUNE.z) < BARRIER + 40 && p.y < DUNE.layerBelow; }
 
   /** World height of the sand at world x, z. */
   heightAt(x, z) { return DUNE.y + localHeight(x - DUNE.x, z - DUNE.z); }
@@ -89,45 +134,24 @@ export class Dunes {
     return out.set(-hx / (2 * e), 1, -hz / (2 * e)).normalize();
   }
 
+  /** Where you arrive: the oasis's south shore, at the foot of the pier, looking out over the water (yaw 0: north). */
   spawnPoint() {
-    const x = DUNE.x + 6, z = DUNE.z + 4;
-    return new THREE.Vector3(x, this.heightAt(x, z) + 1.6, z);
+    const x = DUNE.x + OASIS.x - 3, z = DUNE.z + POND.z - POND.rz - 7;
+    return new THREE.Vector3(x, this.heightAt(x, z) + 0.05, z);
+  }
+  /** The height a board rides at: the sand, or the water where there is water over it (the skiff skims the pond). */
+  rideHeight(x, z) {
+    const h = this.heightAt(x, z), lx = x - DUNE.x, lz = z - DUNE.z;
+    if (Math.abs(lx - POND.x) < POND.rx * 1.3 && Math.abs(lz - POND.z) < POND.rz * 1.3 && pondDepth(lx, lz) > 0) return Math.max(h, DUNE.y + POND.surface);
+    if (lx > WELL.x0 && lx < WELL.x1 && lz > WELL.z0 && lz < WELL.z1) return Math.max(h, DUNE.y + WELL.surface);
+    return h;
   }
 
   // ------------------------------------------------------------------ terrain
   buildTerrain() {
-    const g = this.game, N = DUNE.res, step = DUNE.size / (N - 1);
-    const heights = new Float32Array(N * N);
-    const pos = new Float32Array(N * N * 3), nor = new Float32Array(N * N * 3);
-    let hmin = 1e9;
-    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-      const x = -HALF + i * step, z = -HALF + j * step;
-      const y = localHeight(x, z);
-      hmin = Math.min(hmin, y);
-      pos[(j * N + i) * 3] = x; pos[(j * N + i) * 3 + 1] = y; pos[(j * N + i) * 3 + 2] = z;
-      heights[i * N + j] = y; // (column-major: rows run along x)
-    }
-    // normals from the height field itself
-    const hAt = (i, j) => pos[(Math.min(N - 1, Math.max(0, j)) * N + Math.min(N - 1, Math.max(0, i))) * 3 + 1];
-    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-      const nx = hAt(i - 1, j) - hAt(i + 1, j), nz = hAt(i, j - 1) - hAt(i, j + 1), ny = 2 * step;
-      const l = Math.hypot(nx, ny, nz);
-      const o = (j * N + i) * 3;
-      nor[o] = nx / l; nor[o + 1] = ny / l; nor[o + 2] = nz / l;
-    }
-    const idx = new Uint32Array((N - 1) * (N - 1) * 6);
-    let k = 0;
-    for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) {
-      const a = j * N + i, b = a + 1, c = a + N, d = c + 1;
-      idx[k++] = a; idx[k++] = c; idx[k++] = b; idx[k++] = b; idx[k++] = c; idx[k++] = d;
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-    geo.setIndex(new THREE.BufferAttribute(idx, 1));
-    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 40, 0), DUNE.size);
-    geo.boundingBox = new THREE.Box3(new THREE.Vector3(-HALF, -10, -HALF), new THREE.Vector3(HALF, 240, HALF));
-    this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() } };
+    const g = this.game;
+    this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() },
+      uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) } };
     const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
@@ -138,7 +162,7 @@ export class Dunes {
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
 varying vec3 vWP; varying vec3 vWN;
-uniform float uTime; uniform vec2 uWind; uniform vec3 uSun;
+uniform float uTime; uniform vec2 uWind; uniform vec3 uSun; uniform vec4 uOasis;
 ${TRAIL_GLSL}
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }`)
@@ -161,6 +185,14 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   c *= 0.95 + 0.1 * mott;
   float grain = h21(floor(p * 15.0));
   c *= 1.0 + (grain - 0.5) * 0.06 * (1.0 - smoothstep(10.0, 38.0, dist));
+  // the oasis: sand darkened by the water at the shore, the bed under it, and grass in patches on the flat round it
+  float ro = length(p - uOasis.xy), above = vWP.y - uOasis.w;
+  float wet = (1.0 - smoothstep(0.1, 0.9, above)) * (1.0 - smoothstep(uOasis.z * 0.8, uOasis.z, ro));
+  c = mix(c, c * vec3(0.62, 0.52, 0.48), wet * 0.8);
+  float grass = (1.0 - smoothstep(uOasis.z * 0.55, uOasis.z * 0.95, ro)) * smoothstep(0.18, 0.4, above) * smoothstep(0.85, 0.96, nW.y);
+  grass *= smoothstep(0.42, 0.56, n21(p * 0.08 + 5.0) * 0.65 + n21(p * 0.35) * 0.35 + (1.0 - smoothstep(0.0, 20.0, ro - 26.0)) * 0.3);
+  vec3 gc = mix(vec3(0.42, 0.5, 0.24), vec3(0.58, 0.6, 0.3), n21(p * 0.7));
+  c = mix(c, gc, grass * 0.85);
   diffuseColor.rgb = c;
 }`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
@@ -192,15 +224,16 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16);
 }`);
     };
-    const mesh = new THREE.Mesh(geo, mat);
+    // the field: chunks with levels of detail (render/terrain.js), sampled once from the one height function
+    const TR = (this.chunks = new ChunkTerrain({ height: localHeight, half: DUNE.half, step: DUNE.step, chunk: 32, outer: DUNE.outer, outerStep: 20, material: mat }));
+    const mesh = TR.mesh;
     mesh.position.set(DUNE.x, DUNE.y, DUNE.z);
     mesh.receiveShadow = true;
-    mesh.frustumCulled = false;
     g.scene.add(mesh);
     this.terrain = mesh;
-    // the collider: a height field, at the same place
+    // the collider: a height field of the same samples, at the same place (the ring beyond the barrier needs none)
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(DUNE.x, DUNE.y, DUNE.z));
-    const cd = RAPIER.ColliderDesc.heightfield(N - 1, N - 1, heights, { x: DUNE.size, y: 1, z: DUNE.size }).setFriction(0.9).setCollisionGroups(GROUPS.static);
+    const cd = RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: DUNE.half * 2, y: 1, z: DUNE.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static);
     g.physics.world.createCollider(cd, body);
     this.body = body;
   }
@@ -213,6 +246,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     dome.frustumCulled = false; dome.renderOrder = -10;
     g.scene.add(dome);
     this.sky = dome;
+    // and the one thing in it that moves: a layer of cloud going downwind (vfx/clouds.js)
+    this.clouds = new CloudLayer(g.scene, { sun: new THREE.Vector3(-0.55, 0.3, -0.78) });
   }
 
   // ------------------------------------------------------------------ ruins and the spire
@@ -235,9 +270,11 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     };
     const UPV = new THREE.Vector3(0, 1, 0);
     const place = (rx, rz) => { const x = DUNE.x + rx, z = DUNE.z + rz; return new THREE.Vector3(x, this.heightAt(x, z), z); };
+    // (twice the sea: twice as far out, four times the ground, so about twice as many of each; none on the oasis, none past the barrier)
+    const R0 = OASIS.flat + 40, R1 = BARRIER - 25;
     // obelisks with a glowing band, standing or leaning, sunk into the sand
-    for (let i = 0; i < 16; i++) {
-      const a = rnd() * Math.PI * 2, r = 45 + rnd() * 170;
+    for (let i = 0; i < 30; i++) {
+      const a = rnd() * Math.PI * 2, r = R0 + rnd() * (R1 - R0);
       const p = place(Math.cos(a) * r, Math.sin(a) * r);
       const h = 7 + rnd() * 12, w = 1.3 + rnd() * 1.0;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.28, rnd() * 6.28, (rnd() - 0.5) * 0.28));
@@ -252,8 +289,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       solid(m, [w / 2, h / 2, w / 2], c, q);
     }
     // arches: two pillars and a lintel
-    for (let i = 0; i < 7; i++) {
-      const a = rnd() * Math.PI * 2, r = 60 + rnd() * 150;
+    for (let i = 0; i < 13; i++) {
+      const a = rnd() * Math.PI * 2, r = R0 + 10 + rnd() * (R1 - R0 - 10);
       const p = place(Math.cos(a) * r, Math.sin(a) * r), yaw = rnd() * 6.28;
       const gap = 5 + rnd() * 3, h = 7 + rnd() * 3, w = 1.6;
       const q = new THREE.Quaternion().setFromAxisAngle(UPV, yaw);
@@ -267,8 +304,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       solid(new THREE.Mesh(new THREE.BoxGeometry(gap + w * 1.6, 1.3, w * 1.2), dark), [(gap + w * 1.6) / 2, 0.65, w * 0.6], new THREE.Vector3(p.x, my + h - 0.6, p.z), q);
     }
     // broken columns half sunk in the sand
-    for (let i = 0; i < 26; i++) {
-      const a = rnd() * Math.PI * 2, r = 25 + rnd() * 215;
+    for (let i = 0; i < 48; i++) {
+      const a = rnd() * Math.PI * 2, r = R0 - 20 + rnd() * (R1 - R0 + 20);
       const p = place(Math.cos(a) * r, Math.sin(a) * r);
       const h = 2.5 + rnd() * 4.5, w = 0.9 + rnd() * 0.7;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.9, rnd() * 6.28, (rnd() - 0.5) * 0.9));
@@ -276,7 +313,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       solid(new THREE.Mesh(new THREE.CylinderGeometry(w * 0.8, w, h, 8), rnd() < 0.5 ? clay : dark), [w * 0.8, h / 2, w * 0.8], c, q);
     }
     // the spire: a pale needle far off, with a beam of light, to sail toward
-    const sp = place(-215, -195);
+    const sp = place(-300, -270);
     const spire = new THREE.Mesh(new THREE.CylinderGeometry(3, 16, 150, 6), new THREE.MeshStandardMaterial({ color: 0xf6d9b8, roughness: 0.8, flatShading: true }));
     spire.position.set(sp.x, sp.y + 65, sp.z);
     spire.castShadow = true;
@@ -289,10 +326,15 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     const sb = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(sp.x, sp.y + 65, sp.z));
     W.createCollider(RAPIER.ColliderDesc.cylinder(75, 9).setCollisionGroups(GROUPS.static), sb);
     this.spire = sp;
+    // the ruins never move: their parts are baked into one mesh per look (render/merge.js): a dozen draws for the whole sea
+    this.group.updateMatrixWorld(true);
+    for (const m of [...this.group.children]) for (const k of [...m.children]) if (!k.userData.isOutline) { this.group.attach(k); if (!k.material.isMeshBasicMaterial) addOutline(k); }
+    this.beam.name = 'beam'; // (kept apart: its light breathes)
+    mergeStatic(this.group);
   }
 
   setVisible(v) {
-    this.terrain.visible = this.sky.visible = this.group.visible = v;
+    this.terrain.visible = this.sky.visible = this.group.visible = this.clouds.visible = v;
   }
 
   // ------------------------------------------------------------------ per frame
@@ -300,8 +342,11 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     const g = this.game, cam = g.camera, L = this.lights;
     this.t += dt;
     // where the camera is decides the light
-    const inside = Math.abs(cam.position.x - DUNE.x) < 400 && Math.abs(cam.position.z - DUNE.z) < 400;
+    const inside = Math.hypot(cam.position.x - DUNE.x, cam.position.z - DUNE.z) < DUNE.outer && cam.position.y < DUNE.layerBelow;
     this.mix = THREE.MathUtils.damp(this.mix, inside ? 1 : 0, 3, dt);
+    // (the open sea is drawn further than a room: the camera's far plane opens out down here, and the fog closes it)
+    const far = THREE.MathUtils.lerp(200, 420, this.mix);
+    if (Math.abs(cam.far - far) > 1) { cam.far = far; cam.updateProjectionMatrix(); }
     if (this.mix < 0.002) {
       this.mix = 0; if (this.terrain.visible) this.setVisible(false);
       if (this.shadowed) { const sh = L.sun.shadow.camera, s = this.saved; sh.left = s.l; sh.right = s.r; sh.top = s.t; sh.bottom = s.b; sh.near = s.n; sh.far = s.f; sh.updateProjectionMatrix(); this.shadowed = false; }
@@ -315,6 +360,9 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     this.wind.speed = 8 * this.wind.gust;
     this.uniforms.uTime.value = this.t;
     this.sky.position.copy(cam.position);
+    this.clouds.update(dt, cam.position, this.wind.dir, this.wind.speed);
+    this.chunks.update(cam.position.x - DUNE.x, cam.position.z - DUNE.z);
+    if (this.active) this.barrier.update(dt);
     this.beam.material.opacity = 0.13 + 0.05 * Math.sin(this.t * 0.7);
     // the light: a low gold sun, its shadow following the player
     const k = this.mix, A = this.away, H = this.home, sc = g.scene;

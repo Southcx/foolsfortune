@@ -17,11 +17,12 @@ import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 //   references every future space is measured against: a step/mantle ladder,
 //   clearance gates, slope ramps, a long-jump lane with the measured chain
 //   distances marked, a metrics board, and the index: a console (F) that lists the
-//   rooms, one teleport each. Drop in through the hole in the ground floor's
+//   rooms, one teleport each, and the calibration numbers. Drop in through the hole in the ground floor's
 //   south-east corner; the geyser beside the landing fires you back up.
 //
-//   RING (16 m wide, around the hub): eight rooms in a loop, one movement
-//   skill each, a checkpoint at every entrance and split times between them.
+//   THE COURSE (16 m wide, around the hub): one room, a loop of eight stations,
+//   one movement skill each (they were eight rooms behind dividers: now it is one
+//   space you can read end to end), a checkpoint at every station and split times.
 //     1 S   run, slide, hop       floor: slots (1.5 m) and hurdles, speed gates
 //     2 SE  mantle                blocks 1.4 / 2.4 / 3.0 m up to the platforms
 //     3 E   gaps                  3.5 m sprint jump, 5.5 m double, 7.5 m jump + dash
@@ -30,8 +31,12 @@ import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 //     6 NW  climb                 2.8 m (jump + mantle), 3.4 m (double + mantle)
 //     7 W   speed                 slide ramp to top speed, 7 m gap
 //     8 SW  low                   slide chute, 1.5 m tunnel, back to 1
-//   Rooms 3-7 are over a reset floor: touch it and you're back at the room's
+//   Stations 3-7 are over a reset floor: touch it and you're back at the station's
 //   checkpoint. R respawns at the last checkpoint, H returns to the hub.
+//
+//   THE MOVEMENT LAB (south, through the course's south door): one hall of five
+//   wings open to each other through arches (techlab.js ARCHES): the hands, the
+//   rigging, the techs, the clockwork mill and the kiln stack. One Index entry.
 //
 // Distances are sized at ~85% of what the controller measured at default
 // tuning (see RUBRIC), so a clean human input makes them.
@@ -163,14 +168,8 @@ export function buildBasement(L, W, D) {
   // hub walls: one door to room 1
   wallZ(-HUB, -HUB, HUB, [[-2, 2, 0, 3.5]]);
   wallZ(HUB, -HUB, HUB); wallX(-HUB, -HUB, HUB); wallX(HUB, -HUB, HUB);
-  // ring dividers (corner | side), with the openings the route uses
-  wallX(HUB, -OUT, -HUB, [[-35.5, -21]]); // 1 | 2
-  wallZ(-HUB, HUB, OUT, [[21.5, 35.5]]); // 2 | 3
-  wallZ(HUB, HUB, OUT, [[21.5, 35.5]]); // 3 | 4
-  wallX(HUB, HUB, OUT, [[21, 35.5]]); // 4 | 5
-  wallX(-HUB, HUB, OUT, [[21, 35.5]]); // 5 | 6
-  wallZ(HUB, -OUT, -HUB, [[-35.5, -21.5]]); // 6 | 7
-  wallZ(-HUB, -OUT, -HUB, [[-35.5, -21.5]]); // 7 | 8
+  // (the ring was eight rooms behind dividers; it is one room now, THE COURSE, with eight stations round it. The one wall kept is
+  // the low station's: it makes the tunnel the only way through from the chute to the start)
   wallX(-HUB, -OUT, -HUB, [[-35.5, -31.5, 0, 4]]); // 8 | 1 (only the tunnel mouth)
 
   // 2 m measuring grid on floors that aren't reset floors
@@ -371,7 +370,7 @@ export class Course {
     this.handN = this.rigN + RIG_CPS.length;
     this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below]), ...RIG_PITS.map(([r, i, below]) => [r, i + this.rigN, BASE_Y + below])];
     this.millSpawn = { v: new THREE.Vector3(39, BASE_Y, -47.2), yaw: Math.PI / 2 };
-    this.weirSpawn = { v: new THREE.Vector3(WEIR_SPAWN.pos[0], BASE_Y + WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2]), yaw: WEIR_SPAWN.yaw };
+    this.weirSpawn = { v: new THREE.Vector3(...WEIR_SPAWN.pos), yaw: WEIR_SPAWN.yaw }; // (the Weir is the dunes' oasis now)
     this.siegeSpawn = { v: new THREE.Vector3(SIEGE_SPAWN.pos[0], BASE_Y + SIEGE_SPAWN.pos[1], SIEGE_SPAWN.pos[2]), yaw: SIEGE_SPAWN.yaw };
     this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
     this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
@@ -397,28 +396,34 @@ export class Course {
     this.refreshBoard();
   }
 
-  refreshBoard() {
-    const M = T.movement, g = this.board.c.getContext('2d');
+  /** The calibration numbers (the board's, and the Index's panel): live values from the tuning, and the measured chains. */
+  calibration() {
+    const M = T.movement;
     const v = M.jumpVelocity, G = M.gravity;
     const air = (2 * v) / G, h = (v * v) / (2 * G), h2 = h + ((v * M.airJumpMult) ** 2) / (2 * G);
+    return {
+      live: [
+        ['walk / sprint / crouch', `${M.walkSpeed} / ${M.sprintSpeed} / ${M.crouchSpeed} m/s`],
+        ['slide boost / top speed', `${M.slideSpeed} / ${M.maxSpeed} m/s`],
+        ['wallrun speed / time', `${M.wallrunSpeed} m/s / ${M.wallrunMaxTime} s`],
+        ['jump height / double', `${h.toFixed(2)} / ${h2.toFixed(2)} m`],
+        ['sprint jump (flat)', `${(M.sprintSpeed * air).toFixed(2)} m`],
+        ['step / mantle / jump+mantle', `${M.stepHeight} / ${M.mantleMax} / ${(h + M.mantleMax).toFixed(2)} m`],
+        ['stand / crouch height', '1.7 / 1.35 m'],
+        ['dash', `${M.dashSpeed} m/s, ${M.dashCost} Lachryma`],
+      ],
+      chains: RUBRIC.map(([k, d]) => [k, `${d} m`]),
+    };
+  }
+
+  refreshBoard() {
+    const g = this.board.c.getContext('2d'), { live, chains } = this.calibration();
     g.clearRect(0, 0, 1024, 640);
     g.fillStyle = 'rgba(28,13,8,0.82)';
     g.fillRect(0, 0, 1024, 640);
     g.strokeStyle = '#ffb27a'; g.lineWidth = 3; g.strokeRect(6, 6, 1012, 628);
     g.fillStyle = '#ffb27a'; g.font = 'bold 40px ui-monospace, Menlo, Consolas, monospace';
     g.fillText('METRICS', 30, 58);
-    g.font = '24px ui-monospace, Menlo, Consolas, monospace';
-    g.fillStyle = '#fbe3cf';
-    const live = [
-      ['walk / sprint / crouch', `${M.walkSpeed} / ${M.sprintSpeed} / ${M.crouchSpeed} m/s`],
-      ['slide boost / top speed', `${M.slideSpeed} / ${M.maxSpeed} m/s`],
-      ['wallrun speed / time', `${M.wallrunSpeed} m/s / ${M.wallrunMaxTime} s`],
-      ['jump height / double', `${h.toFixed(2)} / ${h2.toFixed(2)} m`],
-      ['sprint jump (flat)', `${(M.sprintSpeed * air).toFixed(2)} m`],
-      ['step / mantle / jump+mantle', `${M.stepHeight} / ${M.mantleMax} / ${(h + M.mantleMax).toFixed(2)} m`],
-      ['stand / crouch height', '1.7 / 1.35 m'],
-      ['dash', `${M.dashSpeed} m/s, ${M.dashCost} Lachryma`],
-    ];
     g.fillStyle = '#ffb27a'; g.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace';
     g.fillText('LIVE (from the tuning panel)', 30, 104);
     g.font = '23px ui-monospace, Menlo, Consolas, monospace';
@@ -426,10 +431,10 @@ export class Course {
     g.fillStyle = '#ffb27a'; g.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace';
     g.fillText('MEASURED CHAINS (default tuning)', 30, 424);
     g.font = '21px ui-monospace, Menlo, Consolas, monospace';
-    RUBRIC.forEach(([k, d], i) => {
+    chains.forEach(([k, d], i) => {
       const col = i % 2, row = Math.floor(i / 2);
       g.fillStyle = '#e8ab86'; g.fillText(k, 30 + col * 500, 458 + row * 32);
-      g.fillStyle = '#fff1dc'; g.fillText(`${d} m`, 30 + col * 500 + 380, 458 + row * 32);
+      g.fillStyle = '#fff1dc'; g.fillText(d, 30 + col * 500 + 380, 458 + row * 32);
     });
     this.board.tex.needsUpdate = true;
   }
@@ -438,24 +443,18 @@ export class Course {
   // each (the stations inside a room are checkpoints: R goes back to the last one you touched)
   buildConsole() {
     const S = this.game.scene, B = BASE_Y, cx = 0, cz = -6;
-    // the rooms the menu lists
-    const ring = this.cps.slice(0, this.ringN);
-    const ringBlurb = ['speed gates, slots and hurdles', 'mantle 1.4 / 2.4 / 3.0 m', 'gaps of 3.5 / 5.5 / 7.5 m', 'wallrun and wall jump', 'zigzag between panels', 'climb 2.8 / 3.4 m', 'a slide ramp and a 7 m gap', 'a slide chute and a low tunnel'];
+    // the rooms the menu lists (the course's eight stations and the lab's five wings are one room each: R and the rings inside them do
+    // the rest)
     this.rooms = [
-      ...ring.map((cp, i) => ({ id: `r${i}`, code: `Digit${i + 1}`, tag: `${i + 1}`, name: cp.name, blurb: ringBlurb[i], group: 'THE RING', cp: i })),
-      { id: 'lab', code: 'KeyL', tag: 'L', name: 'TECH LAB', blurb: 'pool · ladders · slam · slip · blink · stomp · climb', group: 'MOVEMENT TECHS', spawn: 'lab' },
-      { id: 'mill', code: 'KeyM', tag: 'M', name: 'CLOCKWORK MILL', blurb: 'moving ground: cogs, lifts, a ferris wheel', group: 'MOVEMENT TECHS', spawn: 'mill' },
-      { id: 'kiln', code: 'KeyK', tag: 'K', name: 'KILN STACK', blurb: 'a 57 m well, a freight lift, a ladder', group: 'MOVEMENT TECHS', cp: this.cps.findIndex((c) => c.room === 'K1') },
-      { id: 'rig', code: 'KeyR', tag: 'R', name: 'THE RIGGING', blurb: 'hang · latch · bars · cable · beams · grates · poles · ropes', group: 'MOVEMENT TECHS', cp: this.rigN },
-      { id: 'hands', code: 'KeyH', tag: 'H', name: 'THE HANDS', blurb: 'lift · throw · push · kick · parry · recoil', group: 'MOVEMENT TECHS', cp: this.handN },
+      { id: 'course', code: 'Digit1', tag: '1', name: 'THE COURSE', blurb: 'one loop, eight stations: run · mantle · gaps · wallrun · zigzag · climb · speed · low · splits and laps', group: 'THE HUB', cp: 0 },
+      { id: 'lab', code: 'KeyL', tag: 'L', name: 'THE MOVEMENT LAB', blurb: 'one hall, five wings: the hands · the rigging · the techs · the clockwork mill · the kiln stack', group: 'THE HUB', spawn: 'lab' },
       { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
-      { id: 'weir', code: 'KeyW', tag: 'W', name: 'THE WEIR', blurb: 'the Sondelass: cast, sound, hook and land the entities of the water · a cutlass yard · rings to hook', group: 'THE SONDELASS', spawn: 'weir' },
-      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'a sand sea far below · the Solar Surfer (Y stows it)', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
     ];
-    this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id));
+    this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
     this.game.indexMenu = this.menu;
     this.console = { x: cx, z: cz };
     // the console: a pedestal with a lit face, on a glowing ring
@@ -497,25 +496,19 @@ export class Course {
     sfx.geyser();
   }
 
-  /** The open layer: the sand sea. You arrive on the Solar Surfer. */
+  /** The open layer: the sand sea. You arrive on foot at the oasis, by the pier (Y brings the Solar Skiff). */
   toDunes() {
     const D = this.game.dunes;
     this.game.player.killY = D.center.y - 90; // (before the next step: it is far below the world's end)
-    this.teleport(D.spawnPoint(), Math.PI * 0.75);
+    this.teleport(D.spawnPoint(), 0);
     this.running = false;
     this.current = -1;
     this.lapT = null;
-    this.game.player.techs?.get?.('surfer')?.mount();
     sfx.geyser();
   }
 
-  toWeir() {
-    this.teleport(this.weirSpawn.v, this.weirSpawn.yaw);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
+  /** The Weir is the dunes' oasis: the same arrival. */
+  toWeir() { this.toDunes(); }
 
   toSiege() {
     this.teleport(this.siegeSpawn.v, this.siegeSpawn.yaw);
@@ -542,6 +535,9 @@ export class Course {
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();
+    const hs = p.techs?.get?.('sondelass')?.hookshot; // (a line out does not come along: it would drag the Courier back across the world)
+    if (hs?.att) hs.release('stow');
+    hs?.cancel?.();
     this.game.character?.setHidden(false);
     p.airJumps = T.movement.airJumps; p.dashCharges = T.movement.dashCharges; p.slideBoostCd = 0;
     p.place();
@@ -616,7 +612,7 @@ export class Course {
     const here = this.inBasement();
     if (this.el) this.el.style.display = here ? 'block' : 'none';
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
-    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else if (inWeir(p.pos)) this.toWeir(); else this.respawn(); return; }
+    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
     if (inp.wasPressed('KeyH')) { this.toHub(); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
@@ -659,8 +655,9 @@ export class Course {
       this.el.innerHTML = cp && this.running
         ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
         : inSiege(p.pos) ? 'THE SIEGE · ~ the hand · raids come here · R back to the dais · H hub'
-        : inWeir(p.pos) ? 'THE WEIR · Q the Sondelass · 1 cutlass · 2 rod · 3 hook · R back to the entrance · H hub'
-        : g.dunes.active ? 'DUNES · W hoist the sail · S furl and brake · A D steer · Space hop · Shift flare · Y board · H hub'
+        : g.techs?.active?.id === 'surfer' ? 'SOLAR SKIFFING · W hoist the sail · S furl and brake · A D steer · Space hop · Shift flare · Y step off · H hub'
+        : inWeir(p.pos) ? 'THE WEIR · Q the Sondelass · 1 cutlass · 2 rod · 3 hook · Y the skiff · R back to the pier · H hub'
+        : g.dunes.active ? 'THE DUNES · Y the Solar Skiff · R back to the oasis · H hub'
         : 'HUB · F at the console: pick a room · R checkpoint · H hub';
     }
   }

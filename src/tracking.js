@@ -179,11 +179,12 @@ export class Tracking {
     on('hatch', () => { L.inc('cast.hatch'); log.say('art', 'You hatch a clapperjar.', { key: 'hatch', win: 1.5 }); });
     on('befriend', (e) => { L.inc('cast.befriend'); if (!e.born) log.say('art', 'The clapperjar is turned to your side.', { key: 'turn', win: 1.5 }); });
 
-    // ---- the Solar Surfer
-    on('surf.start', () => { L.inc('surf.start'); log.say('surf', 'The Solar Surfer unfurls.', { key: 'sst', throttle: 3 }); });
+    // ---- the Solar Skiff
+    on('dunes.barrier', () => L.inc('dunes.barrier')); // (the edge of the sea touched: counted, not said)
+    on('surf.start', () => { L.inc('surf.start'); log.say('surf', 'The Solar Skiff unfurls.', { key: 'sst', throttle: 3 }); });
     on('surf.pump', () => L.inc('surf.pump'));
     on('surf.hop', () => L.inc('surf.hop'));
-    on('surf.tick', (e) => { const r = L.hi('speed.surf.max', e.speed, { at: this.where() }); this.note('speed.surf.max', r, `Your top surfing speed is now ${fx(e.speed, 1)} m/s.`, 14, e.speed); });
+    on('surf.tick', (e) => { const r = L.hi('speed.surf.max', e.speed, { at: this.where() }); this.note('speed.surf.max', r, `Your top skiffing speed is now ${fx(e.speed, 1)} m/s.`, 14, e.speed); });
     on('surf.trick', (e) => {
       const n = Math.round(e.turns);
       L.inc('surf.trick'); L.inc('surf.spins', n); L.hi('surf.spin.best', n);

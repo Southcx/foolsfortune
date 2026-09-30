@@ -30,7 +30,7 @@ export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', me
 export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
-  { id: 'surf', name: 'SURFING', subs: ['The Board', 'Tricks'] },
+  { id: 'surf', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
@@ -162,16 +162,16 @@ export function buildAchievements(game) {
   F('ar4', 'move', 'The Arts', 5, 'collect', 'Every Variant', 'Learn every variant of every movement art.', () => ABILITIES.reduce((n, a) => n + a.variants.filter((v) => sys.unlocked(`${a.id}.${v.id}`)).length, 0), ABILITIES.reduce((n, a) => n + a.variants.length, 0));
 
   // ---------------------------------------------------------------- SURFING
-  C('sf1', 'surf', 'The Board', 1, 'count', 'Board Rider', 'Unfurl the Solar Surfer.', 'surf.start', 1);
-  F('sf2', 'surf', 'The Board', 2, 'endure', 'Sea Legs', 'Surf for 5 minutes in all.', (L) => L.get('time.surf') / 60, 5, { unit: 'min' });
-  F('sf3', 'surf', 'The Board', 3, 'endure', 'Dune Dweller', 'Surf for 30 minutes in all.', (L) => L.get('time.surf') / 60, 30, { unit: 'min' });
-  F('sf4', 'surf', 'The Board', 5, 'endure', 'Endless Summer', 'Surf for 3 hours in all.', (L) => L.get('time.surf') / 3600, 3, { unit: 'h', title: 'Sandsailor' });
-  C('sfd1', 'surf', 'The Board', 2, 'count', 'Sail a Kilometre', 'Surf 1 km.', 'dist.state.surfer', 1000, { unit: 'm' });
-  C('sfd2', 'surf', 'The Board', 4, 'endure', 'Across the Sea', 'Surf 25 km.', 'dist.state.surfer', 25000, { unit: 'm' });
+  C('sf1', 'surf', 'The Board', 1, 'count', 'Board Rider', 'Unfurl the Solar Skiff.', 'surf.start', 1);
+  F('sf2', 'surf', 'The Board', 2, 'endure', 'Sea Legs', 'Skiff for 5 minutes in all.', (L) => L.get('time.surf') / 60, 5, { unit: 'min' });
+  F('sf3', 'surf', 'The Board', 3, 'endure', 'Dune Dweller', 'Skiff for 30 minutes in all.', (L) => L.get('time.surf') / 60, 30, { unit: 'min' });
+  F('sf4', 'surf', 'The Board', 5, 'endure', 'Endless Summer', 'Skiff for 3 hours in all.', (L) => L.get('time.surf') / 3600, 3, { unit: 'h', title: 'Sandsailor' });
+  C('sfd1', 'surf', 'The Board', 2, 'count', 'Sail a Kilometre', 'Skiff 1 km.', 'dist.state.surfer', 1000, { unit: 'm' });
+  C('sfd2', 'surf', 'The Board', 4, 'endure', 'Across the Sea', 'Skiff 25 km.', 'dist.state.surfer', 25000, { unit: 'm' });
   C('sfp', 'surf', 'The Board', 2, 'mechanic', 'In Time with the Wind', 'Pump the board 100 times.', 'surf.pump', 100);
-  H('sfs1', 'surf', 'The Board', 2, 'mechanic', 'Full Sail', 'Surf at 15 m/s.', 'speed.surf.max', 15, { unit: 'm/s' });
-  H('sfs2', 'surf', 'The Board', 3, 'mechanic', 'Trade Winds', 'Surf at 20 m/s.', 'speed.surf.max', 20, { unit: 'm/s' });
-  H('sfs3', 'surf', 'The Board', 5, 'mechanic', 'Storm Front', 'Surf at 26 m/s.', 'speed.surf.max', 26, { unit: 'm/s', title: 'Stormrider' });
+  H('sfs1', 'surf', 'The Board', 2, 'mechanic', 'Full Sail', 'Skiff at 15 m/s.', 'speed.surf.max', 15, { unit: 'm/s' });
+  H('sfs2', 'surf', 'The Board', 3, 'mechanic', 'Trade Winds', 'Skiff at 20 m/s.', 'speed.surf.max', 20, { unit: 'm/s' });
+  H('sfs3', 'surf', 'The Board', 5, 'mechanic', 'Storm Front', 'Skiff at 26 m/s.', 'speed.surf.max', 26, { unit: 'm/s', title: 'Stormrider' });
   C('sft1', 'surf', 'Tricks', 1, 'count', 'Ollie', 'Hop 25 times on the board.', 'surf.hop', 25);
   C('sft2', 'surf', 'Tricks', 2, 'mechanic', 'Spinner', 'Land 10 spins.', 'surf.trick', 10);
   C('sft3', 'surf', 'Tricks', 4, 'mechanic', 'Whirlwind', 'Land 100 spins.', 'surf.trick', 100);

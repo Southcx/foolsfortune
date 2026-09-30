@@ -206,11 +206,13 @@ export class Sondelass extends Tech {
     this.strip.classList.toggle('on', this.drawT > 0.02);
     const shells = document.getElementById('shells');
     if (shells) shells.style.display = this.drawT > 0.02 ? 'none' : '';
-    this.model.group.visible = this.drawT > 0.001 || this.stowedVisible();
+    // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
+    const ch2 = this.game.character;
+    this.model.group.visible = !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible());
   }
 
   /** The tool is always on the back unless it is in the hand. */
-  stowedVisible() { return this.enabled && !this.game.god?.controlling; }
+  stowedVisible() { return this.enabled && !this.game.god?.active; }
 
   // ---------------------------------------------------------------- HUD
   renderStrip() {

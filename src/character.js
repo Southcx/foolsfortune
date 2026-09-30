@@ -2,7 +2,7 @@ import { courierLimits } from './rom.js';
 import { kneeProfile } from './poles.js';
 import * as THREE from 'three';
 import { T, PALETTE, DEG } from './config.js';
-import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform } from './outline.js';
+import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform, dissolveUniform, dissolveBaseUniform } from './outline.js';
 import { Clips, Track } from './animator.js';
 import { authorAll } from './authored.js';
 
@@ -158,6 +158,10 @@ export class Character {
   }
 
   setFade(f) { fadeUniform.value = f; }
+
+  /** The dissolve (outline.js): 0 whole .. 1 gone, eaten from the top of a body standing at feetY (a melt into slip, a rise out). */
+  setDissolve(k, feetY = this.root.position.y, height = 1.9) { dissolveUniform.value = k; dissolveBaseUniform.value.set(feetY, height); }
+  get dissolve() { return dissolveUniform.value; }
 
   /** Hide the body and gun (a tech that turns the Courier into something else). */
   setHidden(h) {
@@ -628,7 +632,7 @@ export class Character {
     st.slopeP = damp(st.slopeP || 0, sp, 12, dt);
     st.slopeR = damp(st.slopeR || 0, sr, 12, dt);
     root.rotation.set(st.slopeP, s.yaw, -wr * A.wallLean * DEG + lean + st.slopeR);
-    // a body that is part of something (the Solar Surfer's skiff) is placed in that thing's frame instead: one rigid unit
+    // a body that is part of something (the Solar Skiff's skiff) is placed in that thing's frame instead: one rigid unit
     const unit = s.techs?.unitFrame?.() || null;
     if (unit) { root.position.copy(unit.pos); root.quaternion.copy(unit.quat); }
     root.updateMatrixWorld(true);

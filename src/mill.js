@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { PALETTE } from './config.js';
 import { BASE_Y, label, strip } from './basement.js';
+import { ARCHES } from './techlab.js';
 import { gearGeometry, BRASS, STONE } from './movers.js';
 import { addOutline } from './outline.js';
 
 // ---------------------------------------------------------------------------
-// The clockwork mill: a wing east of the tech lab (through the lab's east door, or the
-// MILL pad in the hub), and the kiln stack beyond it. Everything that moves is a Mover
+// The clockwork mill: a wing of THE MOVEMENT LAB east of the tech lab (through its east
+// arch), and the kiln stack beyond it. Everything that moves is a Mover
 // (src/movers.js): riders are carried, and keep the platform's speed when they leave it.
 //
 //   COG WALK    x 41..62    a chasm crossed on four meshing cogs (each carries you round)
@@ -84,7 +85,7 @@ export function buildMill(L, env) {
       blk(x, x + Wt, 0, H, d1, R.z1, C.wall, solid);
       blk(x, x + Wt, dh, H, d0, d1, C.wall, solid);
     };
-    sideWall(R.x0 - Wt, doorWest);
+    if (doorWest !== false) sideWall(R.x0 - Wt, doorWest); // (false: the wall is the next wing's)
     sideWall(R.x1, doorEast);
     for (const p of lights) {
       const l = new THREE.PointLight(0xffa066, p[3] ?? 30, 42, 1.1);
@@ -95,7 +96,7 @@ export function buildMill(L, env) {
 
   // ============================== the mill hall ==============================
   floor(MILL, [CHASM]);
-  shell(MILL, { doorEast: [-58, -54, 4], lights: [[48, 9, -54], [72, 9, -54], [92, 9, -54], [72, 9, -42, 24]] });
+  shell(MILL, { doorWest: false, doorEast: ARCHES.kiln, lights: [[48, 9, -54], [72, 9, -54], [92, 9, -54], [72, 9, -42, 24]] });
   label(S, 'CLOCKWORK MILL', [40, B + 0.02, -43], { rotY: -Math.PI / 2, width: 3.2, sub: 'moving ground · you keep its speed' });
 
   // ---- COG WALK: a chasm, four meshing cogs ----
@@ -285,7 +286,7 @@ export function buildMill(L, env) {
   {
     const K = KILN, P = STACK;
     floor(K, [P]);
-    shell(K, { doorWest: [-58, -54, 4], lights: [[116, 9, -57, 40], [111, -10, -57, 70], [111, -30, -57, 80], [111, -50, -57, 90]] });
+    shell(K, { doorWest: false, lights: [[116, 9, -57, 40], [111, -10, -57, 70], [111, -30, -57, 80], [111, -50, -57, 90]] });
     // the well: walls from the bottom up, a parapet on three sides, a brink to the west
     blk(P.x0 - 0.5, P.x0 + 0.01, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });
     blk(P.x1 - 0.01, P.x1 + 0.5, P.bottom, -0.02, P.z0 - 0.5, P.z1 + 0.5, C.dark, { outline: false });

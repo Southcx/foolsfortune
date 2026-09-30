@@ -27,7 +27,7 @@
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
-    out.push({ name: 'dunes', dunes: true }, { name: 'dunes 2', dunes: true }, { name: 'siege', siege: true }, { name: 'weir', weir: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes skiff', dunes: true, mount: true }, { name: 'dunes edge', dunes: true, edge: true }, { name: 'edge skiff', dunes: true, edge: true, mount: true }, { name: 'siege', siege: true }, { name: 'weir', weir: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -50,7 +50,14 @@
       if (!placed) g.course.teleport(new g.THREE.Vector3(m.cur.p.x + 0.6, m.cur.p.y + 0.9, m.cur.p.z), 0);
     } else if (s.cp !== undefined) g.course.goTo(s.cp, 'dash');
     else if (s.hub) g.course.toHub();
-    else if (s.dunes) g.course.toDunes();
+    else if (s.dunes) {
+      g.course.toDunes();
+      if (s.edge) { // (a few metres inside the barrier, facing it: the fuzz runs into the wall)
+        const D = g.game.dunes, a = rnd() * Math.PI * 2, r = 470, x = D.center.x + Math.cos(a) * r, z = D.center.z + Math.sin(a) * r;
+        g.course.teleport(new g.THREE.Vector3(x, D.heightAt(x, z) + 0.05, z), Math.atan2(Math.cos(a), Math.sin(a)));
+      }
+      if (s.mount) g.techs.get?.('surfer')?.mount();
+    }
     else if (s.siege) g.course.toSiege();
     else if (s.weir) g.course.toWeir();
     else if (s.circuit) g.game.circuits.enter(s.circuit);

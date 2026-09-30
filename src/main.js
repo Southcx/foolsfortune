@@ -363,7 +363,7 @@ async function main() {
     const hub = course.hubSpawn.v;
     game.chests.spawn(0, new THREE.Vector3(hub.x + 5, hub.y, hub.z + 3), { yaw: Math.atan2(-5, -3), id: 'hub.1' });
     const dn = game.dunes.spawnPoint();
-    const cx = dn.x + 14, cz = dn.z + 9;
+    const cx = dn.x + 66, cz = dn.z - 40; // (out past the oasis, on the first of the dunes)
     game.chests.spawn(2, new THREE.Vector3(cx, game.dunes.heightAt(cx, cz) - 0.12, cz), { yaw: Math.atan2(dn.x - cx, dn.z - cz), id: 'dunes.1' });
   }
   game.tracking = new Tracking(game);

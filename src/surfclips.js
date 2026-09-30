@@ -1,7 +1,7 @@
 import { V3, lerp, smooth } from './authoring.js';
 
 // ---------------------------------------------------------------------------------------
-// THE SURFER'S OWN ANIMATIONS. Nothing in the free libraries stands a body sideways on a sailing
+// THE SKIFF RIDER'S OWN ANIMATIONS. Nothing in the free libraries stands a body sideways on a sailing
 // board (UAL and CMU have no sailing, surfing or skiff clips; the nearest, a crouch and a slide, read as
 // a duck-walk on a deck), so these are authored, once at startup, with the same key-pose author the
 // ladder and the rest use (authoring.js): the IK is solved here, offline of play, against the

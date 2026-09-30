@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { PALETTE } from './config.js';
 import { BASE_Y, label, strip } from './basement.js';
+import { ARCHES } from './techlab.js';
 
 // ---------------------------------------------------------------------------
-// Two wings west of the tech lab (through the lab's west door, or the hub's index console):
+// Two wings of THE MOVEMENT LAB, west of the tech lab (through its west arch):
 //
 //   THE RIGGING  x -70..-36.5   things to hang from, climb and walk on
 //     R1 HANG      a 2.7 m ledge to catch and shimmy along (with a shooting shelf behind you),
@@ -118,7 +119,7 @@ export function buildRigLab(L, env) {
 
   // ============================== THE RIGGING ==============================
   floor(RIG, [RIG_PIT, GRATE_PIT]);
-  shell(RIG, { west: true, doorWest: [-49, -45, 4], lights: [[-50, 10, -58], [-56, 10, -44], [-42, 10, -64, 30]] });
+  shell(RIG, { west: true, doorWest: ARCHES.hands, lights: [[-50, 10, -58], [-56, 10, -44], [-42, 10, -64, 30]] });
   label(S, 'THE RIGGING', [-39.6, B + 0.02, -42.5], { rotY: Math.PI / 2, width: 3, sub: 'hang · climb · balance · slide' });
   label(S, 'THE HANDS', [-73, B + 0.02, -47], { rotY: -Math.PI / 2, width: 2.4, sub: 'lift · push · kick · parry' });
   strip(S, [-70.3, B + 4.02, -47], [0.1, 0.06, 4.2]);
