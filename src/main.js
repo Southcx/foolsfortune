@@ -35,6 +35,7 @@ import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { Surfer } from './moves/surfer.js';
 import { Sondelass } from './moves/sondelass.js';
+import { SoulBrush } from './moves/soulbrush.js';
 import { Grapple } from './moves/grapple.js';
 import { Launch } from './moves/launch.js';
 import { Circuits } from './circuits.js';
@@ -79,7 +80,7 @@ import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
 import { Presentation } from './render/present.js';
-import { ToolBelt, psygunTool, sondelassTool } from './tools/belt.js';
+import { ToolBelt, psygunTool, sondelassTool, soulBrushTool } from './tools/belt.js';
 
 const FIXED = 1 / 60;
 
@@ -232,12 +233,13 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
   game.belt.add(psygunTool(weapon));
   game.belt.add(sondelassTool(techs.get('sondelass')));
+  game.belt.add(soulBrushTool(techs.get('soulbrush')));
   player.techs = techs;
   game.techs = techs;
   const codex = new Codex(game);

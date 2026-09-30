@@ -356,7 +356,7 @@ export class ChestTech extends Tech {
   start() {
     const P = this.P, g = this.game;
     P.latch('KeyF'); P.endCore(); P.vel.set(0, 0, 0);
-    const so = g.techs.get('sondelass'); if (so && so.drawTarget) so.drawTarget = 0; // (the tool is put away for it)
+    for (const t of g.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow(); // (the tool in the hands is put away for it)
     this.cer = g.chests.begin(this.tgt);
   }
   update(dt) {

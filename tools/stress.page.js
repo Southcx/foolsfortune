@@ -143,6 +143,14 @@
         else if (r < 0.95) inp.pressed.add('Mouse1');
         else inp.wheel += (rnd() - 0.5) * 400;
       }
+      // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
+      if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
+      const brush = g.techs.get('soulbrush');
+      if (brush?.celestial.active) {
+        inp.dx += (rnd() - 0.5) * 60; inp.dy += (rnd() - 0.5) * 60;
+        if (rnd() < 0.06) { if (inp.down.has('Mouse0')) inp.down.delete('Mouse0'); else inp.down.add('Mouse0'); }
+        if (rnd() < 0.01) inp.down.delete('Mouse2');
+      }
       g.tick(1 / 60);
       if (god.state !== 'off') { if (god.state === 'on' || god.state === 'in') { sink.ticks++; continue; } }
       // taps last one step

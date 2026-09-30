@@ -74,7 +74,7 @@ export class Player {
     this.wallrun = null; // { n, side, t, lost, handle }
     this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
     this.camShot = null; // (a scripted camera blended over this one: see vfx/cinema.js)
-    this.lookScale = { lock: 1, blade: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
+    this.lookScale = { lock: 1, blade: 1, brush: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
     this.wallCd = 0;
     this.lastWall = -1;
     this.airJumps = 0;
@@ -162,7 +162,7 @@ export class Player {
 
   look(dt, adsT) {
     const inp = this.input;
-    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.shot ?? 1);
+    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.shot ?? 1);
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;

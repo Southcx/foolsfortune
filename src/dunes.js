@@ -356,6 +356,9 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   }
 
   /** A ruin taken apart (breakables.js removeAny): out of the batch, out of the world. */
+  /** A gust: the wind swings round to blow toward `dir` (Vector2, x/z) for `dur` seconds, stronger, then back (the Galestorm). */
+  gust(dir, dur = 10) { this.gustA = Math.atan2(dir.y, dir.x); this.gustDur = dur; this.gustT = dur; }
+
   removeProp(e) {
     if (e.parked) { this.batch.unpark(e.parked); e.parked = null; }
     this.game.scene.remove(e.mesh);
@@ -383,9 +386,18 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     }
     if (!this.terrain.visible) this.setVisible(true);
     // the wind wanders
-    const dirA = WIND_AT + Math.sin(this.t * 0.02) * 0.08; // (a steady wind, as at sea: it is shown, not guessed at)
+    let dirA = WIND_AT + Math.sin(this.t * 0.02) * 0.08; // (a steady wind, as at sea: it is shown, not guessed at)
+    // (a gust called up by the Soul Brush's Galestorm: the wind swings round to it, holds, and swings back)
+    let gk = 0;
+    if (this.gustT > 0) {
+      this.gustT -= dt;
+      gk = Math.min(1, (this.gustDur - this.gustT) / 1.2, this.gustT / 2.5);
+      gk = gk * gk * (3 - 2 * gk);
+      let d = this.gustA - dirA; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+      dirA += d * gk;
+    }
     this.wind.dir.set(Math.cos(dirA), Math.sin(dirA));
-    this.wind.gust = 1 + 0.08 * Math.sin(this.t * 0.25);
+    this.wind.gust = (1 + 0.08 * Math.sin(this.t * 0.25)) * (1 + 0.5 * gk);
     this.wind.speed = 8 * this.wind.gust;
     this.uniforms.uTime.value = this.t;
     this.sky.position.copy(cam.position);

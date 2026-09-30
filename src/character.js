@@ -592,7 +592,11 @@ export class Character {
     if (st.sliding) {
       sT.update(dt);
       if (sT.cur === 'slideStart' && sT.t > 0.7) sT.play('slideLoop', 0.2, 0.2);
-      C.blend(base, sT.sample(P.tmp), sl);
+      // (a tool in the hand may slide its own way: the Soul Brush's brush slide. Its pose takes the slide's place, by its weight)
+      const alt = s.techs?.slidePose?.(this, dt, s);
+      const pose = sT.sample(P.tmp);
+      if (alt) C.blend(pose, alt.pose, alt.w);
+      C.blend(base, pose, sl);
     }
     // ---- air dash: stretched out like the jump's take-off ----
     if (da > 0.001) C.blend(base, C.sample('jumpStart', A.dashFrame, P.tmp, false), da);

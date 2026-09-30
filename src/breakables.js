@@ -14,7 +14,7 @@ import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, u
 export { PROFILES };
 
 // (the causes that can only be the Courier's doing: the tools, the moves, the shells)
-const COURIER_CAUSES = new Set(['shot', 'sliced', 'slam', 'bomb', 'charged', 'homing', 'well', 'kick', 'throw', 'stomp', 'cut', 'cleave', 'caster']);
+const COURIER_CAUSES = new Set(['shot', 'sliced', 'slam', 'bomb', 'charged', 'homing', 'well', 'kick', 'throw', 'stomp', 'cut', 'cleave', 'caster', 'bashed', 'bolt', 'plunged', 'rend']);
 const potMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true });
 // crack stages: hp fraction thresholds, and how much easier a knock breaks the pot at each stage
 const CRACK_AT = [0.8, 0.5, 0.25];

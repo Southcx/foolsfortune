@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { T } from './config.js';
 import { Author, V3, lerp, smooth, tri } from './authoring.js';
 import { authorSurf } from './surfclips.js';
+import { authorBrush } from './brush/clips.js';
 
 // The authored clips (see authoring.js): what the free libraries don't have. Body space: root at
 // the feet, facing +Z, Y up, the character's left is +X. Each clip is built from the geometry
@@ -28,6 +29,7 @@ export function authorAll(ch) {
   pole(A, ch);
   grate(A, ch);
   authorSurf(A, ch);
+  authorBrush(A, ch);
 }
 
 // ---------------------------------------------------------------------------------------

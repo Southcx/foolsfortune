@@ -33,6 +33,7 @@ export const CATS = [
   { id: 'surf', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
+  { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
@@ -61,7 +62,7 @@ const F = (id, cat, sub, tier, type, name, desc, cur, n, o = {}) => add({ id, ca
 export function buildAchievements(game) {
   tiers.length = 0;
   const kinds = Object.keys(PROFILES).length;
-  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing'];
+  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing', 'bashed', 'brushed', 'rend', 'bolt', 'plunged'];
   const sys = game.system;
 
   // ---------------------------------------------------------------- BREAKING
@@ -88,7 +89,7 @@ export function buildAchievements(game) {
   C('clh', 'break', 'Clapperjars', 3, 'mechanic', 'Hunted', 'Hunt down 10 clapperjars with seeking shells.', 'clapper.cause.homing', 10);
   C('clr', 'break', 'Clapperjars', 3, 'mechanic', 'Off the Wall', 'Take 10 clapperjars with banked shots.', 'clapper.cause.ricochet', 10);
   C('cle', 'break', 'Clapperjars', 3, 'mechanic', 'Vapour Trail', 'Vaporise 10 clapperjars with charged shots.', 'clapper.cause.charged', 10);
-  F('cla', 'break', 'Clapperjars', 4, 'collect', 'Every Way to Go', 'Defeat a clapperjar in every way there is.', (L) => L.under('clapper.cause.').filter(([, v]) => v > 0).length, CAUSES.length);
+  F('cla', 'break', 'Clapperjars', 4, 'collect', 'Every Way to Go', 'Defeat a clapperjar in every way there is.', (L) => CAUSES.filter((c) => L.get(`clapper.cause.${c}`) > 0).length, CAUSES.length);
   C('sh1', 'break', 'Shells', 1, 'count', 'Loaded', 'Fire 100 shells.', 'shell.fire', 100);
   C('sh2', 'break', 'Shells', 3, 'count', 'Ordnance', 'Fire 1,000 shells.', 'shell.fire', 1000);
   C('sh3', 'break', 'Shells', 5, 'endure', 'Arsenal', 'Fire 10,000 shells.', 'shell.fire', 10000);
@@ -258,6 +259,24 @@ export function buildAchievements(game) {
   C('hk12', 'sond', 'Grapnel', 2, 'count', 'Sling', 'Let go of a catch and send it flying 10 times.', 'hook.fling', 10);
   C('hk13', 'sond', 'Grapnel', 1, 'count', 'Brought to Hand', 'Bring 25 loose things to you on the line.', 'hook.pull', 25);
 
+
+  // ---------------------------------------------------------------- THE SOUL BRUSH (moves/soulbrush.js, brush/)
+  C('br1', 'brush', 'The Club', 1, 'count', 'Heavy Hair', 'Swing the Soul Brush 50 times.', 'brush.swing', 50);
+  C('br2', 'brush', 'The Club', 2, 'mechanic', 'Batter Up', 'Bat 25 clapperjars away with the brush.', 'brush.bat', 25);
+  C('br3', 'brush', 'The Club', 2, 'mechanic', 'Bring It Down', 'Slam the brush down 10 times.', 'brush.slam', 10);
+  C('br4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
+  C('br5', 'brush', 'The Club', 3, 'endure', 'Clubbed', 'Bash 25 clapperjars to pieces with the brush.', 'clapper.cause.bashed', 25);
+  C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Slip', 'Brush slide 25 times.', 'brush.slide', 25);
+  C('bs2', 'brush', 'The Slide', 3, 'endure', 'Slip Trailer', 'Paint 1 km of slip with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
+  H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m of slip in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
+  C('bc1', 'brush', 'The Canvas', 1, 'count', 'The World Is Paper', 'Open the Celestial Brush 10 times.', 'brush.canvas', 10);
+  C('bc2', 'brush', 'The Canvas', 2, 'mechanic', 'Two Hands at Once', 'Have 10 drawings of more than one stroke read.', 'brush.read.multi', 10);
+  F('bc3', 'brush', 'The Canvas', 3, 'collect', 'Every Stroke Known', 'Draw every technique the brush knows.', (L) => ['rend', 'mend', 'ember', 'gale', 'bolt', 'rise', 'plunge', 'solace'].filter((t) => L.get(`brush.tech.${t}`) > 0).length, 8);
+  H('bc4', 'brush', 'The Canvas', 3, 'mechanic', 'A Full Page', 'Make four drawings in one breath of the Celestial Brush.', 'brush.drawings.best', 4);
+  C('bc5', 'brush', 'The Canvas', 4, 'endure', 'Calligrapher', 'Have 250 drawings read.', 'brush.read', 250);
+  C('bg1', 'brush', 'Sigils', 1, 'count', 'Lifted', 'Lift 50 sigils from clapperjars.', 'sigil.pop', 50);
+  C('bg2', 'brush', 'Sigils', 2, 'count', 'Unwritten', 'Unwrite 25 clapperjars.', 'sigil.cleared', 25);
+  H('bg3', 'brush', 'Sigils', 4, 'mechanic', 'One Word for All', 'Unwrite 4 clapperjars with a single mark.', 'sigil.cleared.best', 4);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
   const ownedCurios = (L) => CURIOS.filter((c) => L.get(`curio.${c.id}`) > 0).length;

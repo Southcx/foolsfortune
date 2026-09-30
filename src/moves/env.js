@@ -108,9 +108,11 @@ export class SlipField {
     return r;
   }
 
-  addDisc(c, n, r, life) {
+  /** A splat that dries: wet (diveable) for `life` seconds, but not until it is `delay` seconds old (the Soul Brush's fresh trail
+   *  under a sliding Courier must not pull her under the moment it is laid). */
+  addDisc(c, n, r, life, delay = 0) {
     if (this.discs.length > 400) this.discs.shift();
-    this.discs.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0 });
+    this.discs.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0, delay });
   }
 
   update(dt) {
@@ -135,7 +137,7 @@ export class SlipField {
       return r.n;
     }
     for (const c of this.discs) {
-      if (n && c.n.dot(n) < 0.7) continue;
+      if (c.age < c.delay || (n && c.n.dot(n) < 0.7)) continue;
       const d = new THREE.Vector3().subVectors(p, c.c);
       const h = d.dot(c.n);
       if (h < -0.15 || h > depth) continue;

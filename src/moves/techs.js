@@ -144,6 +144,11 @@ export class Techs {
   }
   /** A rigid frame that carries the whole body (the Solar Skiff's skiff): { pos, quat }, or null. */
   unitFrame() { return this.active?.unit || null; }
+  /** The slide's pose, when a tool in the hand slides its own way ({ pose, w }), or null for the core's. */
+  slidePose(ch, dt, s) {
+    for (const t of this.list) if (t.passive && t.engaged && t.slidePose) { const r = t.slidePose(ch, dt, s); if (r) return r; }
+    return null;
+  }
   /** Where the body must face (a ladder faces its ladder, a kick its target), or null. */
   faceYaw() {
     const v = this.active?.faceYaw?.();

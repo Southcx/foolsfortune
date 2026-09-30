@@ -37,7 +37,21 @@ const CLAP_LINE = {
   shot: 'The clapperjar is defeated.', sliced: 'The clapperjar is cleaved in two.', cooked: 'The clapperjar is baked to a crisp.',
   splat: 'The clapperjar splats.', well: 'The clapperjar is crushed.', explosion: 'The clapperjar is blown apart.',
   charged: 'The clapperjar is vaporised.', ricochet: 'The clapperjar is defeated by a banked shot.', homing: 'The clapperjar is hunted down.',
+  bashed: 'The clapperjar is bashed to pieces.', slam: 'The clapperjar is flattened.', brushed: 'The clapperjar is unwritten.', rend: 'The clapperjar is rent in two.',
+  bolt: 'The clapperjar is struck by lightning.', plunged: 'The clapperjar is driven into the ground.',
 };
+const BRUSH_LINE = {
+  rend: (n) => (n ? `Your brush cuts through ${plural(n, 'thing')}.` : 'Your brush cuts the air.'),
+  mend: (n) => `Your brush makes ${plural(n, 'thing')} whole.`,
+  ember: () => 'A bomb of ink takes shape where you drew it.',
+  gale: (n) => (n ? `A gale answers your brush and scatters ${plural(n, 'thing')}.` : 'A gale answers your brush.'),
+  bolt: (n) => (n ? `Lightning answers your brush and strikes ${plural(n, 'thing')}.` : 'Lightning answers your brush.'),
+  rise: (n) => (n ? 'Your brush throws it upward.' : 'Your brush lifts you.'),
+  plunge: (n) => (n ? 'Your brush drives it down.' : 'Your brush drives you down.'),
+  solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'The vessel is soothed.'),
+  wash: () => 'You lay slip across the world.',
+};
+const BRUSH_NAME = { rend: 'Rend', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', rise: 'Rise', plunge: 'Plunge', solace: 'Solace', wash: 'wash' };
 const MEDAL = { GOLD: 'gold', SILVER: 'silver', BRONZE: 'bronze' };
 
 export class Tracking {
@@ -258,6 +272,46 @@ export class Tracking {
     });
 
 
+    // ---- the Soul Brush: the club, the brush slide, the Celestial Brush, the sigils (src/moves/soulbrush.js, src/brush/)
+    on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
+    on('brush.stow', () => L.inc('brush.stow'));
+    on('brush.swing', (e) => { L.inc('brush.swing'); if (e.slam) L.inc(e.air ? 'brush.slam.dive' : 'brush.slam.swing'); });
+    on('brush.flick', () => L.inc('brush.flick'));
+    on('brush.hit', (e) => {
+      L.inc('brush.hit'); L.inc(`brush.hit.${e.what}`);
+      if (e.bat) { L.inc('brush.bat'); log.say('battle', 'You bat the clapperjar away.', { key: 'bbat', win: 1, fmt: (n) => `You bat ${plural(n, 'clapperjar')} away.` }); }
+      else if (e.what === 'pot') log.say('battle', 'You club the pot.', { key: 'bpot', win: 0.9, fmt: (n) => `You club ${plural(n, 'pot')}.` });
+    });
+    on('brush.slam', (e) => {
+      L.inc('brush.slam'); L.hi('brush.slam.power', e.power); if (e.air) L.inc('brush.slam.air');
+      if (e.big) { first('brush.slam', 'Logged: your first brush slam.'); log.say('battle', e.air ? 'You come down with the brush, and the ground answers.' : 'You bring the brush down.', { key: 'bslam', throttle: 1.5 }); }
+    });
+    on('brush.slide', (e) => {
+      if (e.phase !== 'end') return;
+      L.inc('brush.slide'); L.inc('brush.slide.dist', e.dist); L.hi('brush.slide.best', e.dist, { at: this.where() });
+      first('brush.slide', 'Logged: your first brush slide.');
+      if (e.dist >= 8) log.say('move', `You paint ${Math.round(e.dist)} m of slip behind you.`, { key: 'bslide', throttle: 2 });
+    });
+    on('brush.canvas', (e) => {
+      if (!e.open) { L.hi('brush.drawings.best', e.drawings); return; }
+      L.inc('brush.canvas');
+      first('brush.canvas', 'Logged: your first time at the Celestial Brush.');
+      log.say('info', 'The world stills, and becomes paper.', { key: 'bcanvas', throttle: 6 });
+    });
+    on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
+    on('brush.miss', () => L.inc('brush.miss'));
+    on('brush.glyph', (e) => {
+      L.inc(`brush.tech.${e.technique}`); L.inc('brush.tech');
+      if (e.technique !== 'wash') first(`brush.tech.${e.technique}`, `Logged: your first ${BRUSH_NAME[e.technique]}.`);
+      const line = BRUSH_LINE[e.technique];
+      if (line) log.say('battle', line(e.n), { key: `bt.${e.technique}`, throttle: 0.8 });
+    });
+    on('sigil.pop', (e) => {
+      L.inc('sigil.pop', e.popped); L.inc(`sigil.pop.${e.sigil}`, e.popped);
+      if (e.cleared) { L.inc('sigil.cleared', e.cleared); L.hi('sigil.cleared.best', e.cleared); first('sigil.cleared', 'Logged: your first clapperjar unwritten.'); }
+      log.say('battle', e.cleared ? `You unwrite ${plural(e.cleared, 'clapperjar')}.` : `Your mark lifts ${plural(e.popped, 'sigil')}.`, { key: 'sigil', win: 0.6 });
+    });
+
     // ---- the Sondelass: the tool, the cutlass, the grapnel (src/moves/sondelass.js)
     on('sondelass.draw', () => { L.inc('sondelass.draw'); log.say('info', 'You draw the Sondelass.', { key: 'sdraw', throttle: 2 }); });
     on('sondelass.stow', () => L.inc('sondelass.stow'));
@@ -438,6 +492,7 @@ export class Tracking {
     if (g.techs?.active?.id === 'surfer') L.inc('time.surf', dt);
     if (g.circuits?.active) L.inc('time.circuit', dt);
     const so = g.techs?.get('sondelass');
+    if (g.techs?.get('soulbrush')?.toolOut) L.inc('time.soulbrush', dt);
     if (so?.toolOut) { L.inc('time.sondelass', dt); if (so.form === 'rod') L.inc('time.rod', dt); if (so.angler?.state && so.angler.state !== 'idle') L.inc('time.angling', dt); if (so.angler?.state === 'fight') L.inc('time.fight', dt); }
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 

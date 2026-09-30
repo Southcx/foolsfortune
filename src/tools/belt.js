@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
-// THE TOOL BELT: the Courier's psychic tools, and the one set of rules for them. There will be seven; two exist (the Psygun and the
-// Sondelass). Every tool is worn somewhere on the body (a holster), drawn into the hands by its own key, and while it is out it owns
+// THE TOOL BELT: the Courier's psychic tools, and the one set of rules for them. There will be seven; three exist (the Psygun, the
+// Sondelass and the Soul Brush). Every tool is worn somewhere on the body (a holster), drawn into the hands by its own key, and while it is out it owns
 // what it owns: the mouse, the number keys, the V key. Only one is in the hands at a time: drawing one first puts the other away, and
 // the new one comes out only once the old one is back in its place. Anything that asks "is a tool out?" (the kick, first person, the
 // HUD, the ledger) asks the belt, not a particular tool, so a new tool is one file and one line here, not a hunt through the game.
 //
-// A tool is anything with this shape (an adapter when the tool is older than the belt, as both of these are):
+// A tool is anything with this shape (an adapter, as all three are):
 //
 //   { id, name, key,            'psygun', 'THE PSYGUN', 'KeyX'  (the key that draws / stows it: the tool reads it itself)
 //     slot,                     where it is worn: 'back' | 'hip' | 'chest' | 'wrist' | ...
@@ -56,7 +56,7 @@ export class ToolBelt {
 }
 
 // ---------------------------------------------------------------------------------------
-// The two tools that were made before the belt, as belt tools.
+// The tools, as belt tools.
 // ---------------------------------------------------------------------------------------
 export const psygunTool = (weapon) => ({
   id: 'psygun', name: 'THE PSYGUN', key: 'KeyX', slot: 'back',
@@ -72,4 +72,12 @@ export const sondelassTool = (tech) => ({
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
   rules: { mouse: true, digits: true, kick: false, firstPerson: false }, // (V is its guard; it has no first person)
+});
+
+export const soulBrushTool = (tech) => ({
+  id: 'soulbrush', name: 'THE SOUL BRUSH', key: 'KeyG', slot: 'hip',
+  get drawT() { return tech.drawT; },
+  get wants() { return tech.drawTarget > 0; },
+  stow() { tech.drawTarget = 0; },
+  rules: { mouse: true, digits: false, kick: false, firstPerson: false }, // (the canvas and the slide are third person's)
 });

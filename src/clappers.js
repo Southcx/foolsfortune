@@ -28,7 +28,7 @@ const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const _v = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 const GOLD = new THREE.Color(0xf2b24a);
-const DEATH_TEXT = { shot: 'CLAPPED', sliced: 'SLICED', cooked: 'COOKED', splat: 'SPLAT', well: 'CRUSHED', explosion: 'KABOOM', charged: 'VAPORISED', ricochet: 'BANKED', homing: 'HUNTED' };
+// (how a clapperjar was undone, said to the ledger and the log as the cause itself: shot, sliced, cooked, bashed, brushed ...)
 
 export class Clappers {
   constructor(game, gltf) {
@@ -739,7 +739,7 @@ export class Clappers {
     const n = Math.round((T.lachryma.clapperDrop + c.stash) * (c.marked || c.state === 'stunned' ? 2 : 1));
     game.baubles?.spawn(c.pos.clone().setY(c.pos.y + 0.35), n);
     game.fx.embers(c.pos.clone().setY(c.pos.y + 0.3), 12);
-    game.onClapper?.(c, DEATH_TEXT[cause] || 'CLAPPED');
+    game.onClapper?.(c, cause || 'shot');
     this.list = this.list.filter((x) => x !== c);
     const floor = c.floor;
     game.fx.after(T.clappers.respawn, () => {

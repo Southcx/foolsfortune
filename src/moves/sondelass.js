@@ -2,11 +2,13 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { Track } from '../animator.js';
 import { sfx } from '../audio.js';
-import { T, DEG } from '../config.js';
+import { T } from '../config.js';
 import { SondelassModel } from '../sondelass/model.js';
 import { Cutlass } from '../sondelass/cutlass.js';
 import { Hookshot } from '../sondelass/hookshot.js';
 import { Angler } from '../angling/angler.js';
+import { measureGrip, handFromTool } from '../tools/grip.js';
+import { drawHands } from '../tools/draw.js';
 
 // ---------------------------------------------------------------------------------------
 // THE SONDELASS: a telescoping instrument that is a fishing rod, a cutlass and a grapple hook, worn on the Courier's back
@@ -32,7 +34,7 @@ import { Angler } from '../angling/angler.js';
 // ---------------------------------------------------------------------------------------
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
-const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
+const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();
 
 export const FORMS = [
   { id: 'cutlass', name: 'CUTLASS', glyph: '⚔', ext: 0, blade: 1 },
@@ -103,54 +105,19 @@ export class Sondelass extends Tech {
     this.renderStrip();
   }
 
-  // ---------------------------------------------------------------- sockets (measured from the UAL sword pose)
+  // ---------------------------------------------------------------- sockets (measured from the UAL sword pose: tools/grip.js)
   computeSocket(ch) {
-    const B = ch.bones, C = ch.clips;
-    const saveP = ch.root.position.clone(), saveQ = ch.root.quaternion.clone();
-    ch.root.position.set(0, 0, 0); ch.root.quaternion.identity();
-    const frame = (mirror) => {
-      ch.resetPose();
-      const pose = C.sample('torchIdle', 0, ch.P.tmp);
-      ch.applyPose(mirror ? ch.mirrorPose(pose, ch.P.tmp2) : pose);
-      ch.root.updateMatrixWorld(true);
-      const s = mirror ? 'L' : 'R', arm = ch.arm[s];
-      const hand = arm.hand, hm = hand.matrixWorld.clone();
-      const hq = hand.getWorldQuaternion(new THREE.Quaternion()), hp = hand.getWorldPosition(new THREE.Vector3());
-      const fing = B[`f_middle01${s}`].getWorldPosition(new THREE.Vector3()).sub(hp).normalize();
-      const pn = arm.palmLocal.clone().applyQuaternion(hq);
-      let X = new THREE.Vector3().crossVectors(fing, pn).normalize();
-      if (X.z + X.y * 0.5 < 0) X.negate(); // (the blade lies forward and up in the ready stance, either hand)
-      const Z = pn.clone().addScaledVector(X, -pn.dot(X)).normalize();
-      if (mirror) Z.negate(); // (the left palm faces the tool from the other side)
-      const Y = new THREE.Vector3().crossVectors(Z, X).normalize();
-      const origin = arm.palmPt.clone().applyMatrix4(hm).addScaledVector(pn, 0.03);
-      const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(origin);
-      return hm.invert().multiply(G);
-    };
-    this.socketR = frame(false);
-    this.socketRInv = this.socketR.clone().invert();
-    this.socketL = frame(true);
-    this.socketLInv = this.socketL.clone().invert();
-    ch.resetPose();
-    ch.root.position.copy(saveP); ch.root.quaternion.copy(saveQ);
-    ch.root.updateMatrixWorld(true);
+    const g = (this.grip = measureGrip(ch));
+    this.socketR = g.R; this.socketRInv = g.RInv; this.socketL = g.L; this.socketLInv = g.LInv;
     // the stowed place: beside the Psygun on the back, above it and parallel (barrel and tip to the character's left, the reel out the back)
     if (!ch.holsterLocal) ch.computeHolster();
-    const g = T.weapon.holster;
     const off = new THREE.Matrix4().makeBasis(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, -1), new THREE.Vector3(0, 1, 0));
     off.setPosition(new THREE.Vector3(-0.34, -0.13, 0.04).multiplyScalar(T.weapon.gunScale).add(new THREE.Vector3(0.16, 0.115, -0.02)));
     this.holsterLocal = ch.holsterLocal.clone().multiply(off);
-    void g;
   }
 
   /** A hand's world pose for the tool at world matrix M, the hand taking the tool at `x` along it (and `yo`/`zo` off it). */
-  handFromTool(M, side, out, xo = 0, yo = 0, zo = 0, quatOut = null) {
-    _m2.copy(side === 'R' ? this.socketRInv : this.socketLInv);
-    _m1.makeTranslation(xo, yo, zo);
-    _m1.premultiply(M).multiply(_m2);
-    _m1.decompose(out, quatOut || _q2, _v3);
-    return out;
-  }
+  handFromTool(M, side, out, xo = 0, yo = 0, zo = 0, quatOut = null) { return handFromTool(this.grip, M, side, out, xo, yo, zo, quatOut); }
 
   // ---------------------------------------------------------------- per frame
   tick(dt) {
@@ -249,42 +216,13 @@ export class Sondelass extends Tech {
   hands(ch, o) {
     if (!this.socketR) return;
     const B = ch.bones, root = ch.root, model = this.model, drawT = this.drawT;
-    const C = (x, y, z) => new THREE.Vector3(x, y, z).applyQuaternion(root.quaternion);
     root.updateMatrixWorld(true);
     const holster = _m1.multiplyMatrices(B.spine.matrixWorld, this.holsterLocal).clone();
-    const inHand = drawT > HOLD;
-    const reachW = inHand ? 0 : smooth(0, HOLD, drawT);
-    const whipU = inHand ? smooth(HOLD, 1, drawT) : 0;
     const M = new THREE.Matrix4();
     const hp = new THREE.Vector3(), hq = new THREE.Quaternion();
-    if (drawT > 0.001 && drawT < 1) {
-      // the reach back (the shoulders turn back to help, as the Psygun's draw does)
-      const twist = inHand ? Math.sin(Math.PI * Math.min(1, whipU * 1.3)) * 0.6 + (1 - whipU) * 0.4 : reachW;
-      if (twist > 0.001) {
-        const upW = _v1.set(0, 1, 0);
-        ch.rotW(B.spine001, upW, -T.weapon.drawTwist * DEG * 0.5 * twist);
-        ch.rotW(B.spine003, upW, -T.weapon.drawTwist * DEG * 0.5 * twist);
-        ch.rotW(B.spine001, C(-1, 0, 0), -8 * DEG * twist);
-        root.updateMatrixWorld(true);
-      }
-    }
-    const shR = ch.shoulder('R', new THREE.Vector3());
-    const drawPole = shR.clone().add(C(-0.5, -0.25, -0.35));
-    if (reachW > 0.001) {
-      this.handFromTool(holster, 'R', hp, 0, 0, 0, hq);
-      ch.reachHand('R', hp, hq, reachW, 0, drawPole);
-      M.copy(holster);
-    } else if (inHand && whipU < 1) {
-      const gpos = new THREE.Vector3(), gquat = new THREE.Quaternion();
-      this.handFromTool(holster, 'R', gpos, 0, 0, 0, gquat);
-      const apos = B.handR.getWorldPosition(new THREE.Vector3()), aquat = B.handR.getWorldQuaternion(new THREE.Quaternion());
-      const side = root.position.clone().add(C(-0.5, 1.05, -0.05));
-      const u = whipU, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
-      const p = gpos.multiplyScalar(a).addScaledVector(side, b).addScaledVector(apos, c);
-      const q = gquat.slerp(aquat, smooth(0.15, 0.85, u));
-      ch.reachHand('R', p, q, 1, 0, drawPole.lerp(B.forearmR.getWorldPosition(new THREE.Vector3()).add(_v1.set(0, -0.12, 0)), u));
-      M.multiplyMatrices(B.handR.matrixWorld, this.socketR);
-    } else if (inHand) {
+    // the reach back, the grab and the whip round (tools/draw.js); once it is in the hand, the clip's own hand carries it
+    const phase = drawHands(ch, this.grip, holster, drawT, { hold: HOLD, twist: -T.weapon.drawTwist * 0.5, lean: 8, out: M });
+    if (phase === 'held') {
       // in the hand: the hook's aim swings the arm; otherwise the clip's own hand carries it
       const aimW = this.hookshot.aimBlend;
       if (aimW > 0.01 && this.hookshot.aimDir) {
@@ -313,13 +251,11 @@ export class Sondelass extends Tech {
         this.handFromTool(M, 'L', hp, knob.x, knob.y, knob.z, hq);
         ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       }
-    } else {
-      M.copy(holster);
     }
     // place the tool
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);
     // a rod tip tremble / flick goes on top of the hand's own pose
-    if (this.form === 'rod' && this.angler && inHand) {
+    if (this.form === 'rod' && this.angler && drawT > HOLD) {
       const off = this.angler.flick();
       if (off) model.group.quaternion.multiply(_q1.setFromAxisAngle(_v1.set(0, 0, 1), off));
     }
