@@ -1,33 +1,27 @@
 import * as THREE from 'three';
 import { PALETTE } from '../config.js';
+import { makeWaterMaterial, waterGeometry } from '../vfx/water.js';
 
 // Level features the environmental techs read: water volumes, ladders, and slip
 // (liquid clay) coverage on floors and walls.
 
-/** Axis-aligned water: { x0, x1, z0, z1, bottom, surface }. */
+/**
+ * Axis-aligned water: { x0, x1, z0, z1, bottom, surface, kind?: 'water' | 'lachryma', depthAt?(x, z) }. What it looks like is vfx/water.js's (banded, translucent,
+ * with the painted sky in it); what it does to a swimmer is swim.js's, which reads only the volumes.
+ */
 export class Water {
-  constructor(scene) {
-    this.scene = scene;
+  constructor(scene, sky = null) {
+    this.scene = scene; this.sky = sky;
     this.volumes = [];
     this.time = 0;
-    this.mat = new THREE.MeshStandardMaterial({
-      color: 0x3f7f86, roughness: 0.15, metalness: 0.1, transparent: true, opacity: 0.62, depthWrite: false, side: THREE.DoubleSide,
-    });
-    this.mat.onBeforeCompile = (sh) => {
-      sh.uniforms.uTime = this.uTime = { value: 0 };
-      sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>',
-        `#include <begin_vertex>
-         vec4 wp = modelMatrix * vec4(position, 1.0);
-         transformed.z += 0.035 * sin(wp.x * 1.3 + uTime * 1.7) + 0.03 * sin(wp.z * 1.7 - uTime * 1.3);`);
-    };
+    this.mats = {};
   }
 
   add(v) {
     this.volumes.push(v);
-    const w = v.x1 - v.x0, d = v.z1 - v.z0;
-    const g = new THREE.PlaneGeometry(w, d, Math.ceil(w * 2), Math.ceil(d * 2));
-    const m = new THREE.Mesh(g, this.mat);
-    m.rotation.x = -Math.PI / 2;
+    const kind = v.kind || 'water';
+    const mat = (this.mats[kind] ||= makeWaterMaterial(this.sky, kind));
+    const m = new THREE.Mesh(waterGeometry(v), mat);
     m.position.set((v.x0 + v.x1) / 2, v.surface, (v.z0 + v.z1) / 2);
     m.renderOrder = 2;
     this.scene.add(m);
@@ -42,7 +36,7 @@ export class Water {
 
   update(dt) {
     this.time += dt;
-    if (this.uTime) this.uTime.value = this.time;
+    for (const m of Object.values(this.mats)) m.uniforms.uTime.value = this.time;
   }
 }
 

@@ -25,7 +25,7 @@ npm run build      # static bundle in dist/
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
 | Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a fall of 20 m or more) |
-| F | interact: pick up something small (hoisted overhead: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
+| F | interact: **open a chest** / feed the Tithe (the chevron marks what F would act on) · pick up something small (hoisted overhead: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
 | V | kick (on the run, or standing; parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
 | B | the System's Codex: Movement Arts, variants, Lab mode, save code (pauses the game) |
@@ -39,12 +39,15 @@ npm run build      # static bundle in dist/
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
 | Z | toggle first / third person |
-| Q | draw / stow the Sondelass (the Psygun goes away first); 1 / 2 / 3 while it is out: cutlass / rod / hook |
+| Q | draw / stow the Sondelass (the Psygun goes away first); 1 / 2 / 3 while it is out: cutlass / rod / hook (4–8 the lure's aspect) |
+| Z / middle click (cutlass) | lock on to a target (Zelda-style: the camera and the blade hold it); a flick of the mouse changes target |
+| V (cutlass out) | guard: a raised blade turns a projectile aside, and a well-timed one sends it back |
 | O | swap shoulder (third person) |
 | G | time trial (again to restart) |
 | R / H (basement) | back to the last checkpoint / to the hub |
 | T | reset the room |
 | Tab | tuning panel (frees the mouse) |
+| F2 | hide the interface (cycle: everything / the frame of a shot only / nothing but the picture), for a clean screenshot |
 | F3 | physics debug wireframe |
 
 ## Tuning
@@ -103,6 +106,24 @@ A telescoping instrument worn on the back, parallel to the Psygun, drawn the sam
 **Angling** (`src/angling/`) is played in **THE WEIR** (hub index, W): a vaulted hall of still water with a pier, a four-terrace basin, a 9.5 m well, a cutlass yard, hook rings on the ceiling beams, a tide lamp and the Tally board. The lure is the Courier's own mind projected (a ghost of her mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
 
 Prior art (also in the module headers): FFXIV (the graded bite, hook sets, tides as fishing windows, the Fish Guide, mooching), FFXI (fish stamina and its pull, arrows), Zelda: Twilight Princess (aim, cast, work the lure) and the Hookshot, Stardew Valley (the band), Red Dead 2 (reel, lean, give line), Dredge (what is in the water is wrong), Monster Hunter (form switching, the telegraphed hit), Animal Crossing (the shadow in the water). The animation is CC0: the Universal Animation Library's sword clips carry the tool with no IK (its socket is measured from the sword pose), and the cast is `Sword_Regular_C` held at its raised frame while a cast charges.
+
+## Treasure: chests, cubes, curios and the Tithe
+
+**Chests** come in five tiers, common, fine, rare, epic and prismatic (the colours every loot game has taught: cream, green, blue, purple, and then something past gold). Each is a rig, not a mesh (`src/chestmodel.js`): a squash spring on the body (volume-preserving squash and stretch), a hop, and a lid on a hinge with its own spring that can rattle, be thrown open and bounce off its stop. The higher the tier, the more of the chest there is: green paint and brass; blue lacquer and a gem; black-violet and gold with a crest and shards that circle it; and the prismatic one is black glass with a film of oil on it, bands that run through a spectrum, two rings and a ring of cubes. Waiting chests call to you now and then (a crouch, a hop, a rattle). **F** by one opens it.
+
+**The opening** (`src/ceremony.js`) is a script of beats: the camera cuts to a low three-quarter shot and the bars come in (`cinema.shot`); the chest rattles harder and faster while light leaks from its seam, a beam of light stands on it and the room dims (`src/mood.js`); one frame of held time, a last squash, and the lid is thrown off with the body stretching, a flash, a ring, stars and confetti, a camera punch and a moment of slow motion; the cubes fountain out one at a time (each pop climbs in pitch); a **curio** rises out of the chest and is held up in a beam (a duplicate is condensed into cubes in front of you); the bars go and the cubes on the floor are drawn to you in a run whose pitch climbs. Every beat is louder than the tier below it. F / Space / click after the burst hurries the rest. **A prismatic chest is a micro blacklight rave** (`src/vfx/rave.js`, 124 bpm, about seven seconds): the room goes near-black and violet, eight coloured beams sweep the chest, a mirror ball lowers and throws forty specks of light onto whatever the room really has, neon splatter fades in on the walls, a ring of light leaves the floor on each beat, the cubes glow, and the camera cuts four times on the bar lines; then the lights come back. Nothing strobes.
+
+**Lachryma cubes** (`src/cubes.js`) are what Lachryma is when it is condensed: small rounded black cubes with an oil-slick film whose colour follows the angle you look at it from. They are the currency, one instanced mesh with a rigid body each, so they fall, clack (a glass tick), pile up and are drawn to you after a moment. The balance is the ledger's (`cube.earned` minus `cube.spent`); a zandatsu takes a few out of a clapperjar.
+
+**The Tithe** is a console on the north deck of THE WEIR beside five plinths with a chest of each tier (they shut again after 30 s). Pay 25 cubes and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
+
+**Curios** are twenty small collectibles, four to a tier, each with a procedural model (a whistling whelk, a glass gull, a storm in a stoppered jar, a kaleidoscope koi...). The Codex's CURIOS shelf shows what you hold, the odds and the pity counts. The log writes the sentences (the line is coloured by the tier); nothing in the world carries text but the floor labels of the treasury.
+
+Prior art (also in the module headers): the loot box and the gacha pull (Overwatch's boxes, Genshin and Fire Emblem Heroes' reveals, published odds and pity counters, the near miss of a slot machine), "Juice it or lose it" and Vlambeer's screenshake talk (squash and stretch, anticipation, hit-stop), Diablo's and Borderlands' gold and rarity beams, Mario's coin chime, thin-film iridescence, and the blacklight parties, mirror balls and Rez.
+
+## Water
+
+The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The vault of the Weir has an oculus that shows the painted sky.
 
 ## The god hand (~)
 
@@ -517,7 +538,10 @@ runtime IK correction on the contact points.
 | `src/events.js` | the event bus everything reports to |
 | `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
-| `src/angling/` | angling: species, fish meshes and minds, lure, line, fight, angler (the rod form), the Weir room, gauges |
+| `src/angling/` | angling: species, fish meshes and minds, lure, line, fight, angler (the rod form), the Weir room (and its treasury), gauges |
+| `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
+| `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
+| `src/timescale.js`, `src/lockon.js`, `src/parry.js`, `src/hideui.js`, `src/sky.js`, `src/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |
 | `src/poles.js` | knee pole targets per animation state (gait, crouch, air, slide) |
 | `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (the Codex), `ledgerui.js` (its LEDGER and RECORDS shelves) |
 | `tools/stress.mjs`, `tools/stress.page.js` | the stress test (random-input fuzzing with invariants) |

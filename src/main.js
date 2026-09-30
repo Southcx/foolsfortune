@@ -172,7 +172,7 @@ async function main() {
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
-  const env = { water: new Water(scene), ladders: new Ladders(scene), slip: new SlipField(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
+  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   level.build();

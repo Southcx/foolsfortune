@@ -69,6 +69,25 @@ export class Sky {
     return out.setRGB(this.px[o] / 255, this.px[o + 1] / 255, this.px[o + 2] / 255, THREE.SRGBColorSpace);
   }
 
+  /** A window onto the painting: a flat surface (an oculus in a ceiling) that shows the sky in whatever direction the eye looks through it. */
+  windowMaterial(sunDir) {
+    return new THREE.ShaderMaterial({
+      side: THREE.DoubleSide, depthWrite: false, fog: false, toneMapped: false,
+      uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() } },
+      vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+      fragmentShader: `varying vec3 vP; uniform vec3 uSun; uniform sampler2D uSky;
+${SKY_GLSL}
+void main() {
+  vec3 d = normalize(vP - cameraPosition); d.y = abs(d.y) * 0.9 + 0.1;
+  vec3 c = texture2D(uSky, skyUv(normalize(d))).rgb * 1.4;
+  float sd = max(dot(normalize(d), normalize(uSun)), 0.0);
+  c += vec3(1.0, 0.78, 0.46) * (pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14);
+  gl_FragColor = vec4(c, 1.0);
+  #include <colorspace_fragment>
+}`,
+    });
+  }
+
   /** The dome's material: the painting, with the sun laid over it. */
   domeMaterial(sunDir) {
     return new THREE.ShaderMaterial({

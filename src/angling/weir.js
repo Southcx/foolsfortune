@@ -6,6 +6,7 @@ import { setHaloTexture } from './fishmesh.js';
 import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
 import { Ripples } from './lure.js';
 import { sfx } from '../audio.js';
+import { Beam } from '../vfx/beam.js';
 
 // ---------------------------------------------------------------------------------------
 // THE WEIR: the Sondelass's own room, built for testing everything it does. A vaulted hall of still water, far out in the
@@ -70,8 +71,8 @@ export function buildWeir(L, env) {
   ring([a0, a1, a2, a3], [b0, b1, b2, b3], -2.45, TEAL2);
   ring([b0, b1, b2, b3], [c0, c1, c2, c3], -4.65, TEAL);
   blk(53 - 0.0, 62, -10, -9.5, 19, 29, TEAL, solid); // the well's floor
-  env.water.add({ x0: S0.x0, x1: S0.x1, z0: S0.z0, z1: S0.z1, surface: B + SURF, bottom: B - 6 });
-  env.water.add({ x0: WOX + 53, x1: WOX + 62, z0: WOZ + 19, z1: WOZ + 29, surface: B + WSURF, bottom: B - 9.5 });
+  env.water.add({ x0: S0.x0, x1: S0.x1, z0: S0.z0, z1: S0.z1, surface: B + SURF, bottom: B - 6, depthAt: (x, z) => (inR(R3, x, z) ? 6 : inR(R2, x, z) ? 4.2 : inR(R1, x, z) ? 2 : 0.55) });
+  env.water.add({ x0: WOX + 53, x1: WOX + 62, z0: WOZ + 19, z1: WOZ + 29, surface: B + WSURF, bottom: B - 9.5, kind: 'lachryma' }); // (the Well is filled with liquid Lachryma)
   // walls and ceiling
   const H = WEIR_BOX.H;
   blk(-1, 0, -10, H, -1, 49, C.wall, solid); blk(64, 65, -10, H, -1, 49, C.wall, solid);
@@ -172,6 +173,16 @@ export class Weir {
       const h = 1.2 + Math.random() * 1.1;
       m.scale.set(1, h, 1); m.position.set(x, B - 0.9, z); m.userData.p = Math.random() * 6;
       game.scene.add(m); this.reeds.push(m);
+    }
+    // an oculus in the vault over the water: the painted sky, and a shaft of its light down onto the pool
+    {
+      const cx = WOX + 32, cz = WOZ + 24, y = B + WEIR_BOX.H - 0.03;
+      const disc = new THREE.Mesh(new THREE.CircleGeometry(4.2, 40), game.sky.windowMaterial(new THREE.Vector3(0.35, 0.9, -0.25)));
+      disc.rotation.x = Math.PI / 2; disc.position.set(cx, y, cz); disc.renderOrder = 1; game.scene.add(disc);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(4.25, 0.12, 6, 48), new THREE.MeshBasicMaterial({ color: PALETTE.dark })); rim.rotation.x = Math.PI / 2; rim.position.set(cx, y, cz); game.scene.add(rim);
+      this.shaft = new Beam(game.scene, { radius: 4.0, height: WEIR_BOX.H + 0.5, color: 0xffe6b0, foot: 1.0, additive: true });
+      this.shaft.mesh.scale.y = -1; this.shaft.mesh.position.set(cx, y, cz); this.shaft.mesh.renderOrder = 5;
+      this.shaft.set(0xffe6b0, 0.07, 1.05);
     }
     // a board of what has been landed
     this.board = this.buildBoard();
