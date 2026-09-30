@@ -180,7 +180,7 @@ export const DEFAULTS = {
     groove: { speed: 16, lift: 2.4, radius: 6.5, duration: 9, hop: 3.4 },
     anchor: { duration: 12 },
     hatch: { maxAllies: 5 },
-    slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160 },
+    slicer: { pierce: 10, separate: 1.4, carry: 1.5, pieceLife: 25, maxPieces: 160, width: 4.2, speed: 46, range: 40 }, // (the Cleave: shells.js)
     push: { range: 10, angle: 32, velocity: 13, selfKnock: 3 },
     well: { speed: 20, gravity: 3, maxFlight: 1.6, duration: 3.2, radius: 6.5, pull: 26, swirl: 9, playerPull: 5, popRadius: 3.4, popVelocity: 11,
       // debris crushed at the core (zone grows by compressGrow over the well's life, at most

@@ -8,6 +8,7 @@ import { zoneOf } from './render/zones.js';
 import { sfx } from './audio.js';
 import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, keyOf, MATERIALS, DECOR } from './pottery.js';
 import { crackPaths, randomPaths, setCracks } from './cracks.js';
+import { hasTag, unregister } from './tags.js';
 import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from './slicing.js';
 
 export { PROFILES };
@@ -348,8 +349,10 @@ export class Breakables {
     return true;
   }
 
+  /** Can a blade cut it (tags.js: 'sliceable'), and is it still there to cut? */
   isSliceable(ent) {
-    return ent && ((ent.type === 'breakable' && ent.alive) || ent.type === 'slice' || ent.type === 'shard' || (ent.type === 'prop' && ent.sliceable));
+    if (!ent || !hasTag(ent, 'sliceable') || ent.type === 'clapper') return false;
+    return ent.type === 'breakable' ? ent.alive : !!ent.body?.isValid?.() && !!ent.mesh;
   }
 
   /** Cut `ent` with a world-space plane. Returns the new pieces, or null. */
@@ -456,7 +459,7 @@ export class Breakables {
       if (i >= 0) this.shards.splice(i, 1);
       return this.removeShard(ent);
     }
-    if (ent.type === 'prop') { ent.owner?.removeProp(ent); }
+    if (ent.type === 'prop') { unregister(ent); ent.owner?.removeProp(ent); }
   }
 
   /** A plain shot into a sliced piece: crumble it into a few convex chunks. */

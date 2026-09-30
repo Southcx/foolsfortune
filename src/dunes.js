@@ -8,6 +8,10 @@ import { ChunkTerrain } from './render/terrain.js';
 import { mergeStatic } from './render/merge.js';
 import { CloudLayer } from './vfx/clouds.js';
 import { Barrier } from './barrier.js';
+import { PropBatch } from './render/propbatch.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { tag, register } from './tags.js';
+import { MATERIALS } from './pottery.js';
 
 // ---------------------------------------------------------------------------------------
 // THE DUNES: a layer far below the workshop, a sand sea in the manner of Journey: long
@@ -268,6 +272,26 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(pos.x, pos.y, pos.z).setRotation(quat));
       W.createCollider(RAPIER.ColliderDesc.cuboid(...halfExtents).setCollisionGroups(GROUPS.static).setFriction(0.9), b);
     };
+    // the obelisks and the broken columns are STATIC SLICEABLE props (tags.js): one mesh each, in one batch (render/propbatch.js) so
+    // they draw as one, with a fixed collider; the Cleave or a blade takes one out of the batch and cuts it into loose pieces
+    this.batch = new PropBatch(S);
+    const stoneMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true });
+    const painted = (geo, color) => { const g2 = geo.index ? geo.toNonIndexed() : geo; const c = new THREE.Color(color), n = g2.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g2.setAttribute('color', new THREE.BufferAttribute(a, 3)); for (const k of Object.keys(g2.attributes)) if (k !== 'position' && k !== 'normal' && k !== 'color') g2.deleteAttribute(k); return g2; };
+    const sliceable = (geo, halfExtents, pos, quat, baseColor, collider = null) => {
+      const mesh = new THREE.Mesh(geo, stoneMat);
+      mesh.castShadow = mesh.receiveShadow = true;
+      addOutline(mesh);
+      mesh.position.copy(pos); mesh.quaternion.copy(quat);
+      S.add(mesh);
+      const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(pos.x, pos.y, pos.z).setRotation(quat));
+      const col = W.createCollider((collider || RAPIER.ColliderDesc.cuboid(...halfExtents)).setCollisionGroups(GROUPS.static).setFriction(0.9), b);
+      const ent = tag({ type: 'prop', body: b, mesh, owner: this, baseColor: new THREE.Color(baseColor), M: MATERIALS.stoneware, kind: 'ruin' }, 'sliceable', 'static');
+      g.physics.register(col, ent);
+      register(ent);
+      mesh.updateMatrixWorld();
+      ent.parked = this.batch.park(mesh, 'dunes');
+      return ent;
+    };
     const UPV = new THREE.Vector3(0, 1, 0);
     const place = (rx, rz) => { const x = DUNE.x + rx, z = DUNE.z + rz; return new THREE.Vector3(x, this.heightAt(x, z), z); };
     // (twice the sea: twice as far out, four times the ground, so about twice as many of each; none on the oasis, none past the barrier)
@@ -278,15 +302,12 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       const p = place(Math.cos(a) * r, Math.sin(a) * r);
       const h = 7 + rnd() * 12, w = 1.3 + rnd() * 1.0;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.28, rnd() * 6.28, (rnd() - 0.5) * 0.28));
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), clay);
-      const band = new THREE.Mesh(new THREE.BoxGeometry(w * 1.02, 0.25, w * 1.02), glow);
-      band.position.y = h * 0.22;
-      m.add(band);
-      const cap = new THREE.Mesh(new THREE.ConeGeometry(w * 0.72, w * 1.1, 4), dark);
-      cap.position.y = h / 2 + w * 0.5; cap.rotation.y = Math.PI / 4;
-      m.add(cap);
+      // (one geometry: the shaft, its glowing band and its cap, painted in vertex colours, so a cut goes through all of it)
+      const band = painted(new THREE.BoxGeometry(w * 1.02, 0.25, w * 1.02).translate(0, h * 0.22, 0), 0xffd696);
+      const cap = painted(new THREE.ConeGeometry(w * 0.72, w * 1.1, 4).rotateY(Math.PI / 4).translate(0, h / 2 + w * 0.5, 0), 0x8a4a3a);
+      const geo = mergeGeometries([painted(new THREE.BoxGeometry(w, h, w), 0xd9906a), band, cap]);
       const c = p.clone().addScaledVector(UPV.clone().applyQuaternion(q), h / 2 - 2.2);
-      solid(m, [w / 2, h / 2, w / 2], c, q);
+      sliceable(geo, [w / 2, h / 2, w / 2], c, q, 0xd9906a);
     }
     // arches: two pillars and a lintel
     for (let i = 0; i < 13; i++) {
@@ -310,7 +331,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       const h = 2.5 + rnd() * 4.5, w = 0.9 + rnd() * 0.7;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.9, rnd() * 6.28, (rnd() - 0.5) * 0.9));
       const c = p.clone().addScaledVector(UPV.clone().applyQuaternion(q), h / 2 - 1.0);
-      solid(new THREE.Mesh(new THREE.CylinderGeometry(w * 0.8, w, h, 8), rnd() < 0.5 ? clay : dark), [w * 0.8, h / 2, w * 0.8], c, q);
+      const col = rnd() < 0.5 ? 0xd9906a : 0x8a4a3a;
+      sliceable(painted(new THREE.CylinderGeometry(w * 0.8, w, h, 8), col), null, c, q, col, RAPIER.ColliderDesc.cylinder(h / 2, w * 0.9));
     }
     // the spire: a pale needle far off, with a beam of light, to sail toward
     const sp = place(-300, -270);
@@ -331,6 +353,13 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     for (const m of [...this.group.children]) for (const k of [...m.children]) if (!k.userData.isOutline) { this.group.attach(k); if (!k.material.isMeshBasicMaterial) addOutline(k); }
     this.beam.name = 'beam'; // (kept apart: its light breathes)
     mergeStatic(this.group);
+  }
+
+  /** A ruin taken apart (breakables.js removeAny): out of the batch, out of the world. */
+  removeProp(e) {
+    if (e.parked) { this.batch.unpark(e.parked); e.parked = null; }
+    this.game.scene.remove(e.mesh);
+    this.game.physics.removeBody(e.body);
   }
 
   setVisible(v) {

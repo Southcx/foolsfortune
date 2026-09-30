@@ -6,10 +6,11 @@ import { makeGlowOutline, addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { Specials } from './specials.js';
 import { Casters } from './casters.js';
+import { hasTag, registered } from './tags.js';
 
 // ---------------------------------------------------------------------------
 // Shells: special rounds for the psygun, fired with F / middle mouse.
-//   slicer  – a planar blade along the shot; cuts pots, shards, crates in two
+//   slicer  – THE CLEAVE: a line of light that flies out level (or upright: press 1 again) and cuts everything it passes through
 //   push    – a cone of force from the muzzle
 //   well    – a lobbed singularity that drags everything in, then pops
 //   mark    – stuns critters and marks things (marked things drop Lachryma)
@@ -18,7 +19,7 @@ import { Casters } from './casters.js';
 //   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
 // ---------------------------------------------------------------------------
 export const SHELL_TYPES = [
-  { id: 'slicer', name: 'SLICE', glyph: '╱' },
+  { id: 'slicer', name: 'CLEAVE', glyph: '═' }, // (the id is the old one: the ledger's counts are kept under it)
   { id: 'push', name: 'PUSH', glyph: '⟫' },
   { id: 'well', name: 'WELL', glyph: '◉' },
   { id: 'mark', name: 'MARK', glyph: '✳' },
@@ -97,10 +98,17 @@ export class Shells {
 
   get type() { return SHELL_TYPES[this.selected]; }
   select(i) {
-    if (i < 0 || i >= SHELL_TYPES.length || i === this.selected) return;
+    if (i < 0 || i >= SHELL_TYPES.length) return;
+    if (i === this.selected) {
+      // the Cleave's key again turns its line (level / upright), as the plasma cutter's alt-fire turns its three beams
+      if (SHELL_TYPES[i].id === 'slicer') { this.cleaveUpright = !this.cleaveUpright; sfx.click(); this.cleaveGlyph(); }
+      return;
+    }
     this.selected = i;
     sfx.click();
   }
+  /** The Cleave's slot shows which way its line lies. */
+  cleaveGlyph() { const el = this.game.hud?.slots?.[SHELL_TYPES.findIndex((t) => t.id === 'slicer')]?.querySelector('i'); if (el) el.textContent = this.cleaveUpright ? '║' : '═'; }
   cycle(d) { this.select((this.selected + d + SHELL_TYPES.length) % SHELL_TYPES.length); }
   refill(n = T.shells.refill) {
     let got = 0;
@@ -152,25 +160,103 @@ export class Shells {
     return { end: end || origin.clone().addScaledVector(dir, T.weapon.range), normal };
   }
 
-  // ---- SLICER --------------------------------------------------------------
+  // ---- THE CLEAVE ---------------------------------------------------------
+  // A line of light, four metres wide, that flies out from the muzzle along the aim, level or upright, and cuts in two everything it
+  // passes through: pots, crates, the sliced halves of either, clapperjars, and anything in the world tagged sliceable (tags.js: the
+  // dunes' ruined columns). It is stopped by what is not. The plane of the cut is the plane the line sweeps.
+  // Prior art: Dead Space's plasma cutter (a line of three beams, turned from level to upright by its alt-fire, made for cutting
+  // limbs: aim the line across the thing), and the thrown sword-beams of Zelda (a cut that travels).
   slicer({ camera, ray, muzzle }) {
-    const g = this.game;
-    const angles = [0, 90, 45, -45];
-    const ang = angles[this.bladeIdx++ % angles.length] * DEG;
-    const fwd = ray.dir;
-    const blade = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).applyAxisAngle(fwd, ang);
-    const plane = planeFrom(new THREE.Vector3().crossVectors(fwd, blade), ray.origin);
-    let cuts = 0;
-    const { end } = this.pierce(ray.origin, fwd, T.shells.slicer.pierce, (ent, hit, skip) => {
-      if (ent.type === 'clapper') { g.clappers.hit(ent, hit.point, fwd, 1.2, 'sliced'); cuts++; return; }
-      if (ent.type === 'rope') { g.breakables.cutRope(ent.rope, ent.index, hit.point, fwd); return; }
-      const pieces = g.breakables.slice(ent, plane, fwd);
-      if (pieces) { cuts++; for (const pc of pieces) skip.add(pc.body.collider(0).handle); } // don't re-cut this shot's own halves
+    const g = this.game, C = T.shells.slicer;
+    const fwd = ray.dir.clone().normalize();
+    const along = new THREE.Vector3(this.cleaveUpright ? 0 : 1, this.cleaveUpright ? 1 : 0, 0).applyQuaternion(camera.quaternion);
+    along.addScaledVector(fwd, -along.dot(fwd)).normalize();
+    const n = new THREE.Vector3().crossVectors(fwd, along).normalize();
+    // how far it can go: to the first thing in its path that it cannot cut
+    const hit = g.physics.raycast(ray.origin, fwd, C.range, g.player.collider, undefined, (c) => {
+      const e = g.physics.entityOf(c); const b = c.parent();
+      return !c.isSensor() && !(e && (hasTag(e, 'sliceable') || e.type === 'clapper')) && !b?.isDynamic();
     });
-    g.fx.slash(muzzle, end, blade);
+    const range = hit ? hit.distance : C.range;
+    const mesh = this.cleaveMesh();
+    const cl = { o: ray.origin.clone(), fwd, along, n, plane: planeFrom(n, ray.origin), d: 0, range, done: new Set(), cuts: 0, mesh, from: muzzle.clone() };
+    this.cleaves ||= [];
+    this.cleaves.push(cl);
     sfx.slice();
-    if (cuts) { g.hud.hitmarker(true); g.events?.emit('shell.slice', { cuts }); }
-    g.clappers?.spook(end);
+    g.clappers?.spook(ray.origin.clone().addScaledVector(fwd, range));
+  }
+
+  /** The line's look: a bright bar across the flight with a node at each end and one in the middle (the cutter's three beams). */
+  cleaveMesh() {
+    const g = new THREE.Group();
+    const W = T.shells.slicer.width;
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+    const bar = new THREE.Mesh(new THREE.PlaneGeometry(W, 0.07), mat); g.add(bar);
+    const core = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.98, 0.022), new THREE.MeshBasicMaterial({ color: 0xfff4e6, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    core.position.z = 0.001; g.add(core);
+    for (const x of [-W / 2, 0, W / 2]) { const d = new THREE.Mesh(new THREE.CircleGeometry(0.09, 10), mat); d.position.x = x; g.add(d); }
+    for (const m of g.children) m.renderOrder = 8;
+    g.userData.zoneFree = true;
+    this.game.scene.add(g);
+    return g;
+  }
+
+  /** Fly the lines: sweep each step's slab of space and cut what is in it. */
+  updateCleaves(dt) {
+    if (!this.cleaves?.length) return;
+    const g = this.game, B = g.breakables, C = T.shells.slicer;
+    const _c = new THREE.Vector3(), _s = new THREE.Sphere();
+    for (let i = this.cleaves.length - 1; i >= 0; i--) {
+      const cl = this.cleaves[i];
+      const d0 = cl.d, d1 = Math.min(cl.range, cl.d + C.speed * dt);
+      cl.d = d1;
+      const W2 = C.width / 2;
+      // what is in the slab between d0 and d1 (a sphere round each thing: its centre within reach of the line, the plane through it)
+      const test = (ent, center, r) => {
+        _c.copy(center).sub(cl.o);
+        const s = _c.dot(cl.fwd);
+        if (s < d0 - r || s > d1 + r) return false;
+        if (Math.abs(_c.dot(cl.along)) > W2 + r * 0.5) return false;
+        return Math.abs(_c.dot(cl.n)) < r * 0.85;
+      };
+      const sphereOf = (ent) => {
+        const m = ent.mesh;
+        if (!m?.geometry) return null;
+        if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere();
+        m.updateMatrixWorld();
+        return _s.copy(m.geometry.boundingSphere).applyMatrix4(m.matrixWorld);
+      };
+      const cut = (ent) => {
+        if (cl.done.has(ent)) return;
+        const sp = sphereOf(ent);
+        if (!sp || !test(ent, sp.center, sp.radius)) return;
+        cl.done.add(ent);
+        const pieces = B.slice(ent, cl.plane, cl.fwd);
+        if (pieces) { cl.cuts++; for (const pc of pieces) cl.done.add(pc); g.events?.emit('cleave.cut', { what: ent.kind || ent.type }); }
+      };
+      for (const ent of [...B.items]) if (!ent.def?.hang) cut(ent);
+      for (const ent of [...B.slices]) cut(ent);
+      for (const ent of [...(g.level?.dynamic || [])]) if (hasTag(ent, 'sliceable')) cut(ent);
+      for (const ent of registered('sliceable')) cut(ent);
+      for (const c of g.clappers?.list || []) {
+        if (cl.done.has(c) || !c.alive) continue;
+        if (test(c, c.pos.clone().setY(c.pos.y + 0.4), 0.55)) { cl.done.add(c); g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), cl.fwd, 1.2, 'sliced'); cl.cuts++; }
+      }
+      // the line, where it has got to
+      const at = cl.o.clone().addScaledVector(cl.fwd, d1);
+      const m = cl.mesh;
+      m.position.copy(at);
+      m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(cl.along, cl.n, cl.fwd));
+      const k = d1 / Math.max(1, cl.range);
+      m.children.forEach((c) => { c.material.opacity = 0.9 * (1 - k * k * 0.6); });
+      if (d1 >= cl.range) {
+        g.scene.remove(m);
+        m.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); });
+        this.cleaves.splice(i, 1);
+        g.fx.impact?.(at, cl.fwd.clone().negate(), { sparks: 10, dust: 6 });
+        if (cl.cuts) { g.hud.hitmarker(true); g.events?.emit('shell.slice', { cuts: cl.cuts }); }
+      }
+    }
   }
 
   ricochet(ctx) { this.specials.ricochet(ctx); }
@@ -649,6 +735,7 @@ export class Shells {
     }
     this.glowOutline.opacity = 0.55 + 0.3 * Math.sin(now * 6);
     this.xray.opacity = 0.18 + 0.08 * Math.sin(now * 6);
+    this.updateCleaves(dt);
     this.specials.update(dt);
     this.casters.update(dt);
   }

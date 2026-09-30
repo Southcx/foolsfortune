@@ -1,3 +1,4 @@
+import { tag } from './tags.js';
 import { buildBasement, groundFloor, spawnBasement, inHole, HOLE, BASE_Y } from './basement.js';
 import { buildTechLab, spawnTechLab } from './techlab.js';
 import { buildMill } from './mill.js';
@@ -702,8 +703,7 @@ export class Level {
     const col = this.physics.world.createCollider(cd.setFriction(0.8).setCollisionGroups(GROUPS.prop), body);
     mesh.position.set(...pos);
     this.scene.add(mesh);
-    const ent = this.breakables.addDebris(body, mesh);
-    ent.sliceable = true;
+    const ent = tag(this.breakables.addDebris(body, mesh), 'sliceable', 'pushable');
     ent.owner = this;
     ent.baseColor = mesh.material.color.clone();
     ent.sync = this.physics.addSynced(body, mesh);

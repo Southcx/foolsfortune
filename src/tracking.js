@@ -109,7 +109,7 @@ export class Tracking {
     on('shell.fire', (e) => { L.inc(`shell.fire.${e.id}`); L.inc('shell.fire'); if (e.air) L.inc('shell.air'); first(`shell.${e.id}`, `Logged: your first ${e.id} shell.`); });
     on('shell.dry', () => L.inc('shell.dry'));
     on('shell.refill', (e) => { L.inc('shell.refill'); L.inc('shell.received', e.got); log.say('gain', `You receive ${plural(e.got, 'shell')}.`, { key: 'refill', win: 4 }); });
-    on('shell.slice', (e) => { L.inc('shell.slice.cuts', e.cuts); L.hi('shell.slice.best', e.cuts); if (e.cuts >= 3) log.say('battle', `Your slicer shell cleaves through ${e.cuts} targets.`); });
+    on('shell.slice', (e) => { L.inc('shell.slice.cuts', e.cuts); L.hi('shell.slice.best', e.cuts); if (e.cuts >= 3) log.say('battle', `Your cleave cuts through ${e.cuts} things.`); });
     on('shell.mark', (e) => { L.inc('shell.mark.targets', e.n); L.hi('shell.mark.best', e.n); log.say('battle', `You mark ${plural(e.n, 'target')}.`, { key: 'mark', win: 1 }); });
     on('shell.bank', (e) => { L.inc('shell.bank'); L.hi('shell.bank.best', e.bounces); log.say('battle', `Your bank shot ricochets ${e.bounces} times before it lands.`); });
     on('target.hit', (e) => {
@@ -189,6 +189,7 @@ export class Tracking {
 
     // ---- the Solar Skiff
     on('dunes.barrier', () => L.inc('dunes.barrier')); // (the edge of the sea touched: counted, not said)
+    on('cleave.cut', (e) => { L.inc('cleave.cut'); if (e.what === 'ruin') L.inc('cleave.ruin'); });
     on('surf.start', () => { L.inc('surf.start'); log.say('surf', 'The Solar Skiff unfurls.', { key: 'sst', throttle: 3 }); });
     on('surf.pump', () => L.inc('surf.pump'));
     on('surf.hop', () => L.inc('surf.hop'));
