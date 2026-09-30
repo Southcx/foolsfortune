@@ -27,6 +27,8 @@ credits: UAL Standard, CMU mocap, CC0).
 ## Feedback
 - **The log (`src/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating counters or kill-feed in the world or on the HUD; if something deserves a sentence, `tracking.js` writes it (plain third person, FFXI-style, a colour class per kind), and everything else is counted in the ledger (`src/stats.js`) for the achievements. A new feature emits an event (`game.events.emit`) and gets a rule in `tracking.js`; it does not call the log to celebrate. (A refusal at the point of use, "You have no bomb shells.", may `log.say` directly, with a `throttle`.) Event payloads must not use `name` or `t` (the bus's own).
 - **Marks in the world are not text.** A glyph pop (`src/vfx/glyphs.js`: a `!`, `!!!`, `?` over the thing it is about), the interact chevron (`src/interact.js`), the lock-on reticle, the letterbox bars and the fish portrait (`src/vfx/cinema.js`, `portrait.js`) are how the game *shows* something: they sit on the thing, carry no words or numbers, and are diegetic wherever they can be (a line that glows with its load beats a gauge). Anything that needs a sentence still goes to the log.
+- Events that report an outcome say who caused it (`by`: `courier` | `clapperjar` | `environment`, see `src/breakables.js`); only the
+  Courier's count toward the Courier's records, and the log says the others as what they were.
 - Achievements are predicates over the ledger, never flags set by hooks (so they are retroactive); follow OSRS's tiers/types and FFXIV's categories (see the header of `src/achievements.js`).
 
 ## Performance and the look
@@ -38,9 +40,13 @@ credits: UAL Standard, CMU mocap, CC0).
 - Many copies of a prop: park them in a prop batch or an instance pool (`src/render/propbatch.js`); a model made of many
   static primitives: `mergeStatic` (`src/render/merge.js`). Measure before and after (`window.__boot`, renderer.info).
 - A new psychic tool goes on the belt (`src/tools/belt.js`), and anything that asks "is a tool out?" asks the belt.
+- What a tool may do to a thing is a tag on the thing (`src/tags.js`: sliceable, breakable, liftable, pushable, static); a tool asks
+  `hasTag`, never the entity's kind. Static things a sweeping tool must find are registered there.
 
 ## Scope
 - Raids belong to one room (THE SIEGE, `src/siege.js` and `src/raids.js`), not a global setting.
+- Every trial or minigame is begun from something in its own room (F at a gong, a console), never a global key, and its interface
+  goes away when you leave the room.
 - The Zone of Influence is, for now, simply the ground the player has explored. No "understanding" prompts.
 - The testing tool is the *stress test* (`tools/stress.mjs`), random-input fuzzing with invariants, not a bot with a grudge.
 

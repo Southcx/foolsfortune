@@ -19,13 +19,14 @@ npm run build      # static bundle in dist/
 | Input | Action |
 | --- | --- |
 | WASD / Shift | move / sprint (any direction but backwards) |
-| Space / again in the air | jump / double jump (into a ledge: mantle) |
+| Space / again in the air | jump / double jump (into a ledge: mantle; a jump pressed during a mantle leaves from the top) |
+| run into a low wall | a wall up to 0.55 m is **stepped over** without breaking stride |
 | Space by a wall, holding W | wallrun; Space again to wall jump |
 | C | crouch; while running, slide (jump out of it to keep the speed) |
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
 | Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a fall of 20 m or more) |
-| F | interact: **open a chest** / feed the Tithe (the chevron marks what F would act on) · pick up something small (hoisted overhead: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
+| F | interact (the chevron marks what F would act on): **open a chest** / feed the Tithe · strike the **gong** by the workshop door to start the time trial · pick up something small (hoisted overhead in both open hands: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
 | V | kick (on the run, or standing; parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
 | B | the System's Codex: Movement Arts, variants, Lab mode, save code (pauses the game) |
@@ -33,22 +34,22 @@ npm run build      # static bundle in dist/
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
 | Hold left click | charge the psygun (from cold, no round fired first); release for a piercing beam |
 | Middle click | fire the selected shell (seek: hold to paint targets, release to fire) |
-| 1–9, 0, − / mouse wheel | pick a shell: slice, push, well, mark, bomb, bank, seek, slip, groove, anchor, hatch |
+| 1–9, 0, − / mouse wheel | pick a shell: cleave, push, well, mark, bomb, bank, seek, slip, groove, anchor, hatch (1 again turns the Cleave level / upright) |
 | M / N | the map / a survey pulse (charts the ground around you) |
 | ~ | **the god hand**: the Courier becomes a jar and you become a hand (see below); ~ again to come back |
 | Right click (hold) | aim down sights |
 | X | holster / draw (firing, aiming or a shell draws it; third person puts it away after 5 s out of combat) |
 | Z | toggle first / third person |
-| Q | draw / stow the Sondelass (the Psygun goes away first); 1 / 2 / 3 while it is out: cutlass / rod / hook (4–8 the lure's aspect) |
+| Q | draw / stow the Sondelass (the Psygun goes away first; not while carrying); 1 / 2 / 3 while it is out: cutlass / rod / hook (rod: 4–8 the aspect a sounding pushes, 9 / 0 the lure) |
 | Z / middle click (cutlass) | lock on to a target (Zelda-style: the camera and the blade hold it); a flick of the mouse changes target |
 | V (cutlass out) | guard: a raised blade turns a projectile aside, and a well-timed one sends it back |
 | O | swap shoulder (third person) |
-| G | time trial (again to restart) |
 | R / H (basement) | back to the last checkpoint / to the hub |
 | T | reset the room |
 | Tab | tuning panel (frees the mouse) |
 | F2 | hide the interface (cycle: everything / the frame of a shot only / nothing but the picture), for a clean screenshot |
 | F3 | physics debug wireframe |
+| \\ | fold the log away to its tabs (or its – button); again to open it |
 
 ## Tuning
 
@@ -81,7 +82,7 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 
 | Shell | Effect |
 | --- | --- |
-| Slice | a blade plane along the shot cuts pots, shards, crates and earlier slices cleanly in two; pierces a whole row |
+| Cleave | a four-metre line of light flies out along the aim, **level or upright** (press its key again to turn it), and cuts in two everything it sweeps: pots, crates, sliced halves, clapperjars, and anything in the world tagged *sliceable* (the dunes' obelisks and columns). Dead Space's plasma cutter was the model |
 | Push | a cone of force: shelves get swept, clapperjars go flying |
 | Well | a lobbed singularity that drags everything into orbit for 3 s, then pops; debris that reaches the core is crushed, and every few pieces condense into a Lachryma bauble |
 | Mark | stuns clapperjars (dizzy stars) and marks pots in a radius; marked things glow through walls, take double damage and drop Lachryma |
@@ -101,21 +102,21 @@ A telescoping instrument worn on the back, parallel to the Psygun, drawn the sam
 | --- | --- |
 | **Cutlass** | LMB a three-stroke combo (a buffered press inside the chain window continues it, the third is the overhead), RMB a lunge. The blade is swept along its length against pots and clapperjars during each stroke's hit window. |
 | **Hook** | LMB fires the grapnel along the aim (2 Lachryma). Solid ground draws you to it at 27 m/s (jump cuts the line and keeps the momentum; a ledge's lip mantles), something loose is yanked to you. RMB holds the arm out on the aim. |
-| **Rod** | Wheel picks the lure's **aspect** (dread, wonder, grief, hunger, mirth). Hold LMB to charge a cast, release to throw (it lands where the crosshair points, out as far as the charge allows). Then: tap LMB to twitch the lure; hold RMB to sink it; hold LMB to reel it home; middle click to **sound** (a psychic ping that lights up every entity in reach). |
+| **Rod** | **9 / 0** change the **lure** (six made ones, and any curio you hold); **4–8** (or the wheel) pick the **aspect** (dread, wonder, grief, hunger, mirth) a sounding pushes into it. Hold LMB to charge a cast, release to throw. Then: tap LMB to twitch the lure; hold RMB to sink it; hold LMB to reel it home; middle click to **sound** (a psychic ping that lights up every entity in reach, pushes the aspect into the lure for a while, and stirs every fish in that water, the nearer the more). |
 
-**Angling** (`src/angling/`) is played in **THE WEIR** (hub index, W): a vaulted hall of still water with a pier, a four-terrace basin, a 9.5 m well, a cutlass yard, hook rings on the ceiling beams, a tide lamp and the Tally board. The lure is the Courier's own mind projected (a ghost of her mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
+**Angling** (`src/angling/`) is played at **THE WEIR**, the oasis at the heart of the dunes (hub index, D): a pond of four terraces cut into the sand, a pier from the south beach, a 9.5 m stone well of liquid Lachryma, a cutlass yard, a timber pergola over the water with hook rings and the tide lamp, the Tally stone, palms and reeds. **Lures** (`lures.js`) are things you own: each has a *taste* over the five aspects and each species answers to its own (the passive lure, which draws fish from across the water); every curio you hold can be tied on, stronger the rarer it is; and a sounding pushes the chosen aspect into the lure and stirs the whole pond (the active lure). Bites come in seconds. The lure's body is the Courier's own mind projected (a ghost of her mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
 
 Prior art (also in the module headers): FFXIV (the graded bite, hook sets, tides as fishing windows, the Fish Guide, mooching), FFXI (fish stamina and its pull, arrows), Zelda: Twilight Princess (aim, cast, work the lure) and the Hookshot, Stardew Valley (the band), Red Dead 2 (reel, lean, give line), Dredge (what is in the water is wrong), Monster Hunter (form switching, the telegraphed hit), Animal Crossing (the shadow in the water). The animation is CC0: the Universal Animation Library's sword clips carry the tool with no IK (its socket is measured from the sword pose), and the cast is `Sword_Regular_C` held at its raised frame while a cast charges.
 
 ## Treasure: chests, cubes, curios and the Tithe
 
-**Chests** come in five tiers, common, fine, rare, epic and prismatic (the colours every loot game has taught: cream, green, blue, purple, and then something past gold). Each is a rig, not a mesh (`src/chestmodel.js`): a squash spring on the body (volume-preserving squash and stretch), a hop, and a lid on a hinge with its own spring that can rattle, be thrown open and bounce off its stop. The higher the tier, the more of the chest there is: green paint and brass; blue lacquer and a gem; black-violet and gold with a crest and shards that circle it; and the prismatic one is black glass with a film of oil on it, bands that run through a spectrum, two rings and a ring of cubes. Waiting chests call to you now and then (a crouch, a hop, a rattle). **F** by one opens it.
+**Chests** come in five tiers, common, fine, rare, epic and prismatic, climbing the game's terracotta ladder (pale bisque, terracotta, brick, oxblood) and then past it to the black iridescence of Lachryma. Each is a rig, not a mesh (`src/chestmodel.js`): a squash spring on the body (volume-preserving squash and stretch), a hop, and a lid on a hinge with its own spring that can rattle, be thrown open and bounce off its stop. The higher the tier, the more of the chest there is: terracotta bound in dark clay; brick with pale bronze and a gem; oxblood and gold with a crest and shards that circle it; and the prismatic one is black glass with a film of oil on it, bands that run through a spectrum, two rings and a ring of cubes. Waiting chests call to you now and then (a crouch, a hop, a rattle). **F** by one opens it.
 
 **The opening** (`src/ceremony.js`) is a script of beats: the camera cuts to a low three-quarter shot and the bars come in (`cinema.shot`); the chest rattles harder and faster while light leaks from its seam, a beam of light stands on it and the room dims (`src/mood.js`); one frame of held time, a last squash, and the lid is thrown off with the body stretching, a flash, a ring, stars and confetti, a camera punch and a moment of slow motion; the cubes fountain out one at a time (each pop climbs in pitch); a **curio** rises out of the chest and is held up in a beam (a duplicate is condensed into cubes in front of you); the bars go and the cubes on the floor are drawn to you in a run whose pitch climbs. Every beat is louder than the tier below it. F / Space / click after the burst hurries the rest. **A prismatic chest is a micro blacklight rave** (`src/vfx/rave.js`, 124 bpm, about seven seconds): the room goes near-black and violet, eight coloured beams sweep the chest, a mirror ball lowers and throws forty specks of light onto whatever the room really has, neon splatter fades in on the walls, a ring of light leaves the floor on each beat, the cubes glow, and the camera cuts four times on the bar lines; then the lights come back. Nothing strobes.
 
 **Lachryma cubes** (`src/cubes.js`) are what Lachryma is when it is condensed: small rounded black cubes with an oil-slick film whose colour follows the angle you look at it from. They are the currency, one instanced mesh with a rigid body each, so they fall, clack (a glass tick), pile up and are drawn to you after a moment. The balance is the ledger's (`cube.earned` minus `cube.spent`); a zandatsu takes a few out of a clapperjar.
 
-**The Tithe** is a console on the north deck of THE WEIR beside five plinths with a chest of each tier (they shut again after 30 s). Pay 25 cubes and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
+**The Tithe** is a console on the north beach of THE WEIR beside five plinths with a chest of each tier (they shut again after 30 s). Pay 25 cubes and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
 
 **Curios** are twenty small collectibles, four to a tier, each with a procedural model (a whistling whelk, a glass gull, a storm in a stoppered jar, a kaleidoscope koi...). The Codex's CURIOS shelf shows what you hold, the odds and the pity counts. The log writes the sentences (the line is coloured by the tier); nothing in the world carries text but the floor labels of the treasury.
 
@@ -123,16 +124,16 @@ Prior art (also in the module headers): the loot box and the gacha pull (Overwat
 
 ## Water
 
-The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The vault of the Weir has an oculus that shows the painted sky.
+The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The Solar Skiff skims the oasis's water as it does the sand.
 
 ## Performance, and the console look
 
-The world is one scene with every room in it (the workshop and its basement, the circuits and the Weir three kilometres out, the dunes four hundred metres down). Four services keep that cheap, in the manner of the sixth-generation consoles the game takes its look from (`src/render/`):
+The world is one scene with every room in it (the workshop and its basement, the circuits three kilometres out, the dunes and their oasis four hundred metres down). Four services keep that cheap, in the manner of the sixth-generation consoles the game takes its look from (`src/render/`):
 
 | | What it does | Before → after (workshop, same view) |
 | --- | --- | --- |
 | **Light budget** (`lightbudget.js`) | Every `PointLight` stays an ordinary object its owner moves and dims, but only the eight that matter most near the camera light anything; they are copied onto eight pooled lights each frame (a lamp coming into the budget fades up). three.js compiles the light count into every shader, so this also stops rebuilds. | 63 lights in every pixel's shader → 8 |
-| **Zones** (`zones.js`) | The world is split into places (workshop, basement, circuits, Weir, dunes). Only the place the camera is in, and what can be seen from it (the basement through the hole in the workshop floor, when the hole is on screen), is drawn; its lamps alone are candidates for the budget. The static level is merged per zone and per 64 m cell (`level.js`), so a merged mesh no longer spans the world, and floor labels are not drawn beyond reading distance. | static meshes 1.6 km across → per room |
+| **Zones** (`zones.js`) | The world is split into places (workshop, basement, circuits, dunes). Only the place the camera is in, and what can be seen from it (the basement through the hole in the workshop floor, when the hole is on screen), is drawn; its lamps alone are candidates for the budget. The static level is merged per zone and per 64 m cell (`level.js`), so a merged mesh no longer spans the world, and floor labels are not drawn beyond reading distance. | static meshes 1.6 km across → per room |
 | **Prop batches** (`propbatch.js`) | A pot whose body is asleep is drawn inside a `BatchedMesh` (one per material and zone, plus one for the outlines) and its own mesh is hidden; the moment anything happens to it (it wakes, is carried, cracked, scaled, broken) it gets its mesh back. Rope segments are one `InstancedMesh`. | ~700 draws of pots and ropes → a handful |
 | **Merge** (`merge.js`) | A model built from primitives (a chest) has its static parts baked into one mesh per look inside each moving group. | a chest: ~80 draws → ~25 |
 
@@ -208,12 +209,18 @@ south of the lab with cover, pots and crates, and a dais), and nowhere else: the
 hand can be learned in peace. `src/raids.js` sends the attackers; `src/siege.js` is the room; the vessel itself only
 knows how to be hurt (`src/godmode.js`).
 
-## The dunes and the Solar Surfer
+## The dunes, the oasis, and Solar Skiffing
 
-Far below the workshop there is an open layer: a sand sea in a bowl of mountains, low gold sun, half-buried ruins and a
-pale spire with a beam of light to sail toward. Take the index console (**F** in the hub) to **THE DUNES**, or come back
-any time with **H**. You arrive standing on the **Solar Surfer**: a small hovering skiff with a lug sail, modelled on the
-King of Red Lions in *The Wind Waker*, with a little acrobatics on top.
+Far below the workshop there is an open layer: a sand sea (twice the size it was: a kilometre across inside its edge), low gold sun,
+half-buried ruins, a pale spire with a beam of light to sail toward, and at its heart **an oasis**: a pond on a flat of packed sand with
+palms and grass round it, where the Weir now stands (see the Sondelass). Nothing walls the sea in any more: the dunes run on to high
+dunes on the horizon, and the edge is an **invisible barrier** (`src/barrier.js`) that shows itself only where you run into it, a ring
+of light spreading on the curve of the air with a glassy lattice and a soft note. A layer of **cloud** drifts downwind across the painted
+sky (`src/vfx/clouds.js`: a noise texture scrolled across a flat sky-plane mapping, carried on a low-poly shell inside the dome). The
+ground is drawn in chunks with levels of detail, one draw call (`src/render/terrain.js`: geomipmapping with skirts), and the camera sees
+further down here than in a room (420 m, with the fog closing it). Take the index console (**F** in the hub) to **THE DUNES**, or come
+back any time with **H**. You arrive on foot at the oasis, by the pier; **Y** brings the **Solar Skiff**: a small hovering skiff with a
+lug sail, modelled on the King of Red Lions in *The Wind Waker*, with a little acrobatics on top. Riding it is **Solar Skiffing**.
 
 | Key | Action |
 | --- | --- |
@@ -223,10 +230,10 @@ King of Red Lions in *The Wind Waker*, with a little acrobatics on top.
 | Space | hold to crouch the springs, release to hop; in the air A / D spin the whole skiff, rider and all: land a whole turn for a boost |
 | Shift | solar flare: the emblem blazes, top speed and acceleration jump, for Lachryma |
 | Y | stow / summon the board |
-| R | start again at the arrival basin |
+| R | start again at the oasis |
 
-The psygun is stowed and cannot be fired while you ride. The boat is driven by the wind alone (a yellow arrow floats by the
-stern and shows where it goes): a tailwind is fastest, into the wind is slow but never a stall, and with the sail furled you
+The psygun is stowed and cannot be fired while you ride. The boat is driven by the wind alone (a swallowtail pennant streams from
+the masthead and shows where it goes: it flutters fast and straight in a strong wind and droops in a light one, all in its vertex shader): a tailwind is fastest, into the wind is slow but never a stall, and with the sail furled you
 can sit perfectly still. The boom swings out to leeward and the cloth bellies or luffs. The wake is drawn as Wind Waker draws it: crisp white bubbles at the bow,
 two thin white lines opening into a V behind, and a paler band between them (built from geometry laid down where the boat went and
 faded by age, with nothing scrolling); on top of that the sand keeps its own fading trail and footprints.
@@ -235,7 +242,7 @@ The skiff and the rider are **one rigid unit** (one quaternion for heading, slop
 body in the skiff's frame), and the rider is animated by clips authored for it (`src/surfclips.js`: idle, ride, hoist, brake,
 crouch, air; blended by what the board is doing) rather than solved onto the deck. Prior art and what was taken is in the headers of
 `src/moves/surfer.js` (Wind Waker's sailing: wind and speed, the sail you manage, pumping), `src/skiff.js` (the boat's rigging and
-the wind arrow), `src/wake.js` (bow bubbles and the V), `src/trailmap.js` and `src/marks.js` (Journey's trails, render-to-texture trail maps).
+the pennant), `src/wake.js` (bow bubbles and the V), `src/trailmap.js` and `src/marks.js` (Journey's trails, render-to-texture trail maps).
 Tuning is `T.tech.surfer`.
 
 ## Lap circuits
@@ -251,7 +258,7 @@ medal from the par times. **R** restarts, **H** leaves.
 | **The Mill Race** (C) | the clockwork mill in one loop: the cogs, the millstone, then a fork (the belts under the gates, or the lifts, the gantry and the shuttle), the ferris wheel to its deck, back west and up the steam to the ledge, and drop to the start. The split table shows which fork you took. Par 62 / 80 / 105 s |
 | **The Spindle** (P) | up through a chain of skills: a slot to slide under, a 3.5 m gap, a 12 m wallrun, a latch up a 4.2 m pillar, a hang and pull-up, a 3.0 m mantle, a 7.6 m dash gap, the steam to the top; then a long 19 degree chute (arrive fast) and a last 6 m gap. Par 48 / 64 / 88 s |
 
-*The Sandbar* (a surfing slalom in the dunes) waits until the Solar Surfer's design is settled.
+*The Sandbar* (a slalom in the dunes) waits until the Solar Skiff's design is settled.
 
 ## Moving around
 
@@ -287,12 +294,14 @@ measured against, so future spaces share one rubric.
 - slope ramps (10° to 55°; 46° is the steepest you can walk up)
 - a long-jump lane with 1 m ticks and the measured chain distances marked
 - a metrics board: live values from the tuning panel next to the measured chains
-- the index: a console in the hub (F) that lists every room and teleports to its checkpoint, one entry per room
+- the index: a console in the hub (F) that lists the rooms (one entry each: THE COURSE, THE MOVEMENT LAB, the lap circuits, the Siege,
+  the dunes) and, under them, the **calibration numbers**: the live values from the tuning and the measured chains (the board's)
 
-**The ring** (16 m wide) is a loop of eight rooms, one skill each, with a checkpoint across every
-entrance and split times (and a lap time) between them:
+**The course** (16 m wide, round the hub) is one room: a loop of eight stations, one skill each (they were eight rooms behind
+dividers; the only wall kept is the one that makes the low tunnel the way through), with a checkpoint at every station and
+split times (and a lap time) between them:
 
-| Room | Skill | What's in it |
+| Station | Skill | What's in it |
 | --- | --- | --- |
 | 1 S | run / slide / hop | 1.5 m slots to slide under, 0.6 and 0.7 m hurdles, two speed gates |
 | 2 SE | mantle | 1.4, 2.4 and 3.0 m blocks up to the platforms |
@@ -303,7 +312,11 @@ entrance and split times (and a lap time) between them:
 | 7 W | speed | slide a 17° ramp to top speed, jump a 7 m gap at the bottom |
 | 8 SW | low | slide chute into a 1.5 m tunnel, back to room 1 |
 
-Rooms 3 to 7 are over a reset floor: touch it and you're back at the room's checkpoint.
+Stations 3 to 7 are over a reset floor: touch it and you're back at the station's checkpoint.
+
+**The movement lab** (south of the course) is one hall of five wings open to each other through wide arches: the hands (crates,
+throw, parry, recoil), the rigging (hang, bars, cable, beams, grates, poles), the tech lab (pool, ladders, slam, slip, blink, stomp,
+climb), the clockwork mill and the kiln stack. One entry in the index; its stations are checkpoints.
 **R** returns to the last checkpoint, **H** to the hub. Teleports refill Lachryma.
 
 **The rubric.** Distances were measured by simulating the controller at default tuning
@@ -531,11 +544,12 @@ runtime IK correction on the contact points.
 | `src/animator.js`, `src/anims.js` | pose buffers, clip sampling/blending, the baked clip pack decoder |
 | `src/authoring.js`, `src/authored.js` | the clip author (IK key poses baked into clips) and the ladder / hang / pole / grate clips |
 | `src/indexmenu.js` | the index console UI (one teleport per room) |
-| `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture |
-| `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions |
+| `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture. A pot is built on its profile's own points (no extra rings to carry painted bands: a jar is ~130 triangles, an urn ~220), with an inside wall only where it can be seen and a flat foot at least 45% of its width so it stands still |
+| `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions; who each break was (the Courier, a clapperjar, the environment: only the Courier's are the Courier's records) |
+| `src/tags.js` | what a thing in the world is for the physics and the tools (sliceable, breakable, liftable, pushable, static): defaults per kind, per-thing tags, and a registry of static things a sweeping tool can find |
 | `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
 | `src/lachryma.js` | the Lachryma energy pool + collectable baubles |
-| `src/shells.js` | shell inventory and the first five shell effects, projectiles, molten/slip fluid |
+| `src/shells.js` | shell inventory and the first five shell effects (the Cleave's travelling line among them), projectiles, molten/slip fluid |
 | `src/specials.js` | ricochet and homing shells, lock-on reticles |
 | `src/cracks.js` | crack paths on pot surfaces, kintsugi gold seams |
 | `src/trial.js` | the time trial |
@@ -546,7 +560,8 @@ runtime IK correction on the contact points.
 | `src/lobber.js` | clay mortars that throw balls to parry |
 | `src/godarts.js` | the five God Arts, the radial wheel, the art bar |
 | `src/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
-| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (terrain, sky, ruins, wind) and the Solar Surfer's ride |
+| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (the height field with the oasis cut in, sky, ruins, wind) and Solar Skiffing |
+| `src/render/terrain.js`, `src/barrier.js`, `src/vfx/clouds.js` | chunked LOD terrain (one draw call, skirts), the invisible edge that shows where it is touched, the drifting cloud layer |
 | `src/skiff.js`, `src/wake.js`, `src/surfclips.js` | the Surfer's boat (hull, sail, arrow), its Wind Waker wake, and the rider's authored clips |
 | `src/circuits.js`, `src/circuitrooms.js` | the lap-circuit runner (gates, splits, medals) and the halls of The Braid and The Spindle |
 | `src/trailmap.js`, `src/marks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
@@ -557,7 +572,7 @@ runtime IK correction on the contact points.
 | `src/events.js` | the event bus everything reports to |
 | `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
-| `src/angling/` | angling: species, fish meshes and minds, lure, line, fight, angler (the rod form), the Weir room (and its treasury), gauges |
+| `src/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
 | `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, and the presentation (resolution, upscale, smooth shading, shadow) |
 | `src/tools/belt.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun and the Sondelass on it) |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
