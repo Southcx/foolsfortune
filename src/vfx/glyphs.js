@@ -10,6 +10,7 @@
 // not a HUD message, and the log stays the only place the game *says* anything.
 //
 //   game.glyphs.pop('bang3', position, { color: 0xffd76a, size: 1, burst: true, follow: () => vec })
+//   const g = game.glyphs.pop('bang3', pos, { hold: 1.2 })    a mark that stays for a window (and shakes harder as it closes) until g.close()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -76,7 +77,7 @@ export class Glyphs {
     this.ringTex = game.fx.haloTexture;
   }
 
-  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false } = {}) {
+  pop(kind, pos, { color = 0xffd76a, size = 0.6, life = 1.1, float = 0.7, burst = false, follow = null, ring = false, hold = 0 } = {}) {
     const K = KINDS[kind] || KINDS.bang1, g = this.game;
     const mk = (map, blending) => new THREE.Sprite(new THREE.SpriteMaterial({ map, color, transparent: true, depthTest: false, depthWrite: false, blending, fog: false }));
     const main = mk(tex(kind), THREE.NormalBlending);
@@ -85,8 +86,10 @@ export class Glyphs {
     g.scene.add(main);
     if (burst) { parts.burst = mk(tex('burst'), THREE.AdditiveBlending); parts.burst.renderOrder = 29; g.scene.add(parts.burst); }
     if (ring) { parts.ring = mk(this.ringTex, THREE.AdditiveBlending); parts.ring.renderOrder = 28; g.scene.add(parts.ring); }
-    this.list.push({ K, parts, pos: pos.clone(), follow, t: 0, life, size, float, aspect: K.aspect, seed: Math.random() * 6 });
-    return this.list[this.list.length - 1];
+    const q = { K, parts, pos: pos.clone(), follow, t: 0, life: hold > 0 ? hold + 0.25 : life, hold, size, float, aspect: K.aspect, seed: Math.random() * 6 };
+    q.close = () => { q.life = Math.min(q.life, q.t + 0.25); q.hold = 0; q.closing = true; };
+    this.list.push(q);
+    return q;
   }
 
   update(dt) {
@@ -99,12 +102,15 @@ export class Glyphs {
       if (q.follow) q.pos.copy(q.follow());
       const d = cam.distanceTo(q.pos);
       const worldK = q.size * (0.7 + 0.075 * d); // (farther ones are larger, so that they still read)
-      const pop = ease.pop(Math.min(1, q.t / 0.28));
-      const wob = Math.sin(q.t * 16 + q.seed) * 0.13 * Math.max(0, 1 - q.t / 0.7);
+      const held = q.hold > 0 && !q.closing && q.t < q.hold;
+      const urg = held ? Math.min(1, q.t / q.hold) : 0; // (how far through the window it is)
+      const pop = ease.pop(Math.min(1, q.t / 0.28)) * (held ? 1 + 0.07 * Math.sin(q.t * (9 + 22 * urg)) * (0.3 + urg) : 1);
+      const wob = held ? Math.sin(q.t * (14 + 30 * urg) + q.seed) * (0.04 + 0.13 * urg) : Math.sin(q.t * 16 + q.seed) * 0.13 * Math.max(0, 1 - q.t / 0.7);
       const squash = 1 + 0.32 * Math.max(0, 1 - q.t / 0.22) * Math.cos(q.t * 45); // (a fast squash and stretch as it pops)
-      const fade = u > 0.72 ? 1 - (u - 0.72) / 0.28 : 1;
+      const fade = q.closing || q.hold > 0 ? THREE.MathUtils.clamp((q.life - q.t) / 0.25, 0, 1) : u > 0.72 ? 1 - (u - 0.72) / 0.28 : 1;
       const m = q.parts.main;
-      m.position.copy(q.pos); m.position.y += q.float * (1 - Math.pow(1 - Math.min(1, q.t / 0.5), 2)) + (u > 0.72 ? (u - 0.72) * q.float : 0);
+      const rise = held || q.closing ? 0 : (u > 0.72 ? (u - 0.72) * q.float : 0);
+      m.position.copy(q.pos); m.position.y += q.float * (1 - Math.pow(1 - Math.min(1, q.t / 0.5), 2)) + rise;
       m.scale.set(worldK * q.aspect * pop / squash, worldK * pop * squash, 1);
       m.material.rotation = wob; m.material.opacity = fade;
       if (q.parts.burst) {

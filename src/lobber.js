@@ -97,7 +97,7 @@ export class Lobbers {
       g.god.hitVessel(T.god.ballDamage, new THREE.Vector3(v.x, 0, v.z).normalize().negate(), 'ball');
       done = true;
     } else if (!b.reflected && !g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.7 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.9) {
-      if (P.invulnerable) { g.events?.emit('lob.dodged', {}); }
+      if (P.invulnerable || P.guarding) { g.events?.emit('lob.dodged', {}); } // (a raised blade turns it: the guard's own check usually gets there first)
       else {
         const dir = new THREE.Vector3(v.x, 0, v.z).normalize();
         P.impulse(dir.multiplyScalar(6).setY(3), 'lobber');

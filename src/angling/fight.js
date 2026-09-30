@@ -1,25 +1,35 @@
 // ---------------------------------------------------------------------------------------
-// THE FIGHT: what happens between setting the hook and landing the fish, as a small model with three numbers and three hands.
+// THE FIGHT: what happens between setting the hook and landing the fish, as a small model with three numbers and a pair of hands.
 //
-//   tension   how hard the line is loaded (0..1.25). Over 1 for long enough and it snaps; near nothing for long enough and the
+//   tension   how hard the line is loaded (0..1.3). Over 1 for long enough and it snaps; near nothing for long enough and the
 //             hook slips. The sweet band, 0.34 to 0.78, is where the fish tires.
-//   stamina   the fish's, 1 to 0, worn down only while the tension sits in the sweet band (and faster when you lean the
-//             right way). Below half it can be brought in; at nothing it is spent.
-//   dist      how much line is out to it. Reeling brings it in, its runs take it out.
-//   The hands: LMB reels (adds load); RMB gives line (takes load off, lets it run); the camera's yaw counters a pull to one side
-//   (lean the rod away from where it is trying to go); crouching braces the body (the fish drags you less, the pull tells less).
+//   stamina   the fish's, 1 to 0, worn down only while the tension sits in the sweet band (and faster when you answer it well).
+//             Below half it can be brought in; at nothing it is spent.
+//   dist      how much line is out to it. Reeling and hauling bring it in, its runs take it out.
+//
+//   THE HANDS (the Courier cannot walk while a fish is on: the keys are the rod's):
+//     LMB   reel: takes up line, loads it.                      RMB   give line: takes the load off and lets it run.
+//     A / D lean the rod against a run (away from the way it is going: the reticle shows the way, a beat ahead).
+//     S     haul: heave the rod back against a dive or a heavy run (and pump the fish in a little).
+//     W     bow: lower the rod to a leap, so the line is not snapped when it comes down; a light give of the load in general.
+//     C     brace (crouch): plant your feet; it drags you less, and a thrash tells less.
+//   Every segment of the fish's script asks for one of these (its `need`); answering it takes 55% off its pull, and an answered
+//   pull wears the fish faster. Nothing else is asked for: a rest is for reeling.
 //
 // The fish's own script is a chain of short segments picked by its STYLE (species.js): a rest, a run, a sweep, a thrash with a
-// half second's warning, a leap that leaves the water and comes down hard. Each has a pull and a side.
+// half second's warning, a leap that leaves the water and comes down hard. Each has a pull and a side. The NEXT segment is chosen
+// ahead of time (`next`), and the reticle (reticle.js) shows it while the current one runs out: that is the precognition.
 //
 // Prior art, and what was taken:
 //  - Final Fantasy XI's fishing: the fish's stamina bar that the fight wears down, and a pull in a direction (its arrows) that must
 //    be answered, or the rod and line are lost.
+//  - Real fishing's own techniques, which are the answers: lean the rod against a run ("turn its head"), pump and reel (haul the
+//    rod up, reel as you lower it), bow to a leaping fish (drop the tip so the line has slack when it falls back).
 //  - Red Dead Redemption 2 / Zelda: Twilight Princess: tension against a snap threshold, lean the rod against the run, give line to
 //    the big pulls, reel when it tires: the rhythm of reel, rest, reel.
 //  - Stardew Valley's fishing bar: a band to keep something in, the fish moves and you follow it; here the band is the tension
 //    and the fish moves it.
-//  - Monster Hunter: a telegraph before the heavy hit (the thrash's warning), so that a good player is never surprised.
+//  - Monster Hunter and Hades: a telegraph before the heavy hit, so that a good player is never surprised.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -28,6 +38,10 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const cl = THREE.MathUtils.clamp;
 export const BAND = [0.34, 0.78];
+/** How far ahead of a change the reticle shows it (seconds). */
+export const LOOK = 1.4;
+/** What each kind of segment asks of the hands: lean (A/D against the pull), haul (S), bow (W), brace (C), or nothing (reel). */
+export const NEED = { swim: 'lean', flick: 'lean', run: 'lean', sweep: 'lean', heave: 'haul', sound: 'haul', dive: 'haul', leap: 'bow', breach: 'bow', splash: 'bow', thrash: 'brace', coil: null, rest: null, sulk: null, spent: null };
 
 export class Fight {
   constructor(fish, p0, ctx) {
@@ -38,22 +52,23 @@ export class Fight {
     this.bearing = Math.atan2(dx, dz);
     this.dist = Math.max(3, Math.hypot(dx, dz));
     this.maxLine = ctx.maxLine;
-    this.seg = null; this.warned = false; this.phase = 0; this.spent = false;
+    this.seg = null; this.next = null; this.warned = false; this.phase = 0; this.spent = false;
     this.sizeK = cl((fish.cm - this.sp.size[0]) / Math.max(1, this.sp.size[1] - this.sp.size[0]), 0, 1);
     this.power = cl(this.sp.pull * (0.8 + 0.4 * this.sizeK) * 1.25, 0.3, 1.25);
     this.depth = ctx.pool.surface - fish.pos.y;
-    this.side = 0; this.pull = 0; this.relief = 0; this.lean = 0;
+    this.side = 0; this.pull = 0; this.relief = 0; this.leanS = 0; this.answered = false;
     this.airborne = 0;
     this.stats = { peak: 0, bandT: 0, slackMax: 0, thrashes: 0, dodged: 0, maxOver: 0 };
     this.outBurst = 0;
-    this.nextSeg();
+    this.adopt();
   }
 
   // ---- the fish's script
-  nextSeg() {
-    const s = this.sp, st = s.style, last = this.seg?.kind;
+  /** Choose a segment to follow one of kind `last` (with side `lastSide`). */
+  pick(last, lastSide = 0) {
+    const s = this.sp, st = s.style;
     const side = () => (Math.random() < 0.5 ? -1 : 1);
-    const S = (kind, dur, pull, sd = 0, o = {}) => ({ kind, t: dur, dur, pull, side: sd, ...o });
+    const S = (kind, dur, pull, sd = 0, o = {}) => ({ kind, t: dur, dur, pull, side: sd, need: NEED[kind] ?? null, ...o });
     const lowStam = this.stamina < 0.34;
     let g;
     if (this.stamina <= 0.03) g = S('spent', 9, 0.06, 0);
@@ -65,7 +80,7 @@ export class Fight {
         else { g = S('coil', rnd(1.4, 2.6), 0.32, side()); }
         break;
       case 'run': g = last === 'run' ? S('rest', rnd(1.2, 2), 0.2) : S('run', rnd(2, 3.6), 1.0, side()); break;
-      case 'sweep': g = S('sweep', rnd(0.9, 1.5), 0.85, last === 'sweep' && this.seg ? -this.seg.side : side()); break;
+      case 'sweep': g = S('sweep', rnd(0.9, 1.5), 0.85, last === 'sweep' && lastSide ? -lastSide : side()); break;
       case 'leap': g = last === 'dive' ? S('leap', 0.85, 0, 0, { air: true }) : last === 'leap' ? S('splash', 0.4, 1.1, side()) : S('dive', rnd(1.2, 2), 0.7, side()); break;
       case 'anchor': g = last === 'heave' ? S('sulk', rnd(0.8, 1.6), 0.25) : S('heave', rnd(2.6, 5), 1.0, 0); break;
       case 'legend': {
@@ -78,16 +93,28 @@ export class Fight {
       default: g = S('swim', 2, 0.6, side());
     }
     if (lowStam && g.kind !== 'spent' && g.pull > 0.5) g.pull *= 0.7 + 0.3 * (this.stamina / 0.34);
-    this.seg = g; this.warned = false; this.hit = false;
-    this.ctx.onEvent?.('seg', g);
+    return g;
   }
 
-  /** input: { reel, give, brace, yaw, player: Vector3 }. Returns the result when it ends: 'snap' | 'slip' | 'spool' | 'land' | null. */
+  /** The next segment begins (it was chosen ahead of time, so that the reticle could show it), and another is chosen. */
+  adopt() {
+    const prev = this.seg;
+    if (this.stamina <= 0.03 && this.next?.kind !== 'spent') this.next = this.pick(prev?.kind, prev?.side);
+    this.seg = this.next || this.pick(prev?.kind, prev?.side);
+    this.next = this.pick(this.seg.kind, this.seg.side);
+    this.warned = false; this.hit = false;
+    this.ctx.onEvent?.('seg', this.seg);
+  }
+
+  /**
+   * input: { reel, give, brace, lean (-1 A .. 1 D), haul (S), ease (W), pullDir (which way the pull goes on the screen: -1, 0, 1), player: Vector3 }.
+   * Returns the result when it ends: 'snap' | 'slip' | 'spool' | 'land' | null.
+   */
   update(dt, input) {
     this.t += dt;
     const s = this.seg, sp = this.sp;
     s.t -= dt;
-    if (s.t <= 0) this.nextSeg();
+    if (s.t <= 0) this.adopt();
     const g = this.seg;
     this.side = g.side;
     let pull = g.pull * this.power;
@@ -99,16 +126,20 @@ export class Fight {
     if (g.air) { pull = 0; this.airborne = g.t > 0 ? Math.sin(Math.PI * (1 - g.t / g.dur)) : 0; if (!this.leapAnnounced) { this.leapAnnounced = true; this.ctx.onEvent?.(g.huge ? 'breach' : 'leap', g); } } else { this.airborne = 0; this.leapAnnounced = false; }
     if (g.kind === 'splash' && !this.splashed) { this.splashed = true; this.ctx.onEvent?.('splash', g); }
     if (g.kind !== 'splash') this.splashed = false;
-    // leaning against the pull
-    const lean = wrap(input.yaw - this.bearing);
-    const ideal = -g.side * 0.45;
-    let relief = 1 - cl(Math.abs(lean - ideal) / 0.6, 0, 1);
-    if (input.brace) relief = Math.min(1, relief + 0.2);
-    this.lean = lean; this.relief = relief; this.pull = pull;
+    // what the hands are answering: the segment's need
+    this.leanS = THREE.MathUtils.damp(this.leanS, input.lean ?? 0, 9, dt);
+    let counter = 0.5;
+    if (g.need === 'lean') counter = cl(0.3 + 0.7 * (-this.leanS * (input.pullDir ?? 0)), 0, 1);
+    else if (g.need === 'haul') counter = input.haul ? 1 : 0.25;
+    else if (g.need === 'bow') counter = input.ease ? 1 : 0.25;
+    else if (g.need === 'brace') counter = input.brace ? 1 : 0.2;
+    if (input.brace && g.need !== 'brace') counter = Math.min(1, counter + 0.12);
+    const relief = counter;
+    this.relief = relief; this.pull = pull; this.answered = counter > 0.75 && !!g.need;
     // the line
-    let target = pull * (1 - 0.55 * relief) + (input.reel ? 0.3 : 0) - (input.give ? 0.5 : 0);
-    if (thrashHit) target = 1.3 * (input.reel ? 1 : input.give ? 0.55 : 0.85);
-    if (g.kind === 'splash') target = 0.95 * (input.reel ? 1.15 : input.give ? 0.6 : 0.95);
+    let target = pull * (1 - 0.55 * relief) + (input.reel ? 0.3 : 0) - (input.give ? 0.5 : 0) + (input.haul ? 0.18 : 0) - (input.ease ? 0.14 : 0);
+    if (thrashHit) target = 1.3 * (input.reel ? 1 : input.give ? 0.55 : 0.85) * (input.brace ? 0.8 : 1) * (input.ease ? 0.92 : 1);
+    if (g.kind === 'splash') target = 0.95 * (input.reel ? 1.15 : input.give ? 0.6 : 0.95) * (input.ease ? 0.85 : 1);
     if (this.forceSlack) target = 0;
     this.tension += (target - this.tension) * Math.min(1, dt * (target > this.tension ? 8 : 4.5));
     this.tension = cl(this.tension, 0, 1.3);
@@ -125,7 +156,8 @@ export class Fight {
     if (g.kind === 'sound') out += 1.6;
     if (input.give) out += 1.3;
     out += this.outBurst; this.outBurst = Math.max(0, this.outBurst - dt * 2);
-    let inn = input.reel ? (2.4 + 3 * tired) * (1 - 0.8 * cl(pull, 0, 1) * this.stamina) : 0;
+    const held = 1 - 0.8 * cl(pull, 0, 1) * this.stamina;
+    let inn = (input.reel ? (2.4 + 3 * tired) * held : 0) + (input.haul ? (1.2 + 1.2 * tired) * held : 0);
     if (g.air) inn = input.reel ? 2 : 0;
     this.dist = cl(this.dist + (out - inn) * dt, 0.6, this.maxLine + 2);
     // the fish's bearing (it pulls across, and turns at the pool's edge)

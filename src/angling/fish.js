@@ -48,6 +48,15 @@ export class Fish {
   get alive() { return !this.dead; }
   get length() { return this.mesh.length; }
 
+  /** What it is about to do, for the reticle (only ever shown on a fish that has been sounded): null, or { kind: 'probe' | 'bite', lock 0..1 }. */
+  get intent() {
+    if (this.state === 'stalk') return { kind: 'probe', lock: 0.15 };
+    if (this.state === 'bite') return { kind: 'bite', lock: 1 };
+    if (this.state !== 'inspect') return null;
+    const n = this.sp.bite.length, last = this.probes >= n - 1 && this.timer <= this.sp.inspect[1] * 0.85 + 0.6;
+    return { kind: last ? 'bite' : 'probe', lock: THREE.MathUtils.clamp(1 - this.probeT / Math.max(0.3, this.probeTotal || 1), 0, 1) * (last ? 1 : 0.8) };
+  }
+
   /** A depth to swim at: inside the band, above the floor. */
   pickDepth() {
     const b = this.sp.depth;
@@ -124,7 +133,10 @@ export class Fish {
     this.cool -= dt;
     if (this.state !== 'hooked') {
       this.glowT = Math.max(this.glowT - dt, 0);
-      if (sound > 0 && _v.copy(ctx.sourcePos).sub(this.pos).length() < sound) this.glowT = 4.5;
+      if (sound > 0 && _v.copy(ctx.sourcePos).sub(this.pos).length() < sound) {
+        this.glowT = 4.5;
+        if (this.pingId !== ctx.pingId) { this.pingId = ctx.pingId; ctx.onPing?.(this); } // (the wave has reached it: once per sounding)
+      }
     }
     // appearing, and going when the tide turns
     if (this.dying) this.fade = Math.max(0, this.fade - dt * 0.5);
@@ -144,7 +156,7 @@ export class Fish {
           const it = this.interest(lure);
           this.curious += it * dt * (0.35 + this.sp.tier * 0.05) * (this.sp.legend ? 0.5 : 1);
           if (it <= 0) this.curious = Math.max(0, this.curious - dt * 0.15);
-          if (this.curious >= 1) { this.state = 'stalk'; this.curious = 0; lure.attention++; this.wp = null; }
+          if (this.curious >= 1) { this.state = 'stalk'; this.curious = 0; lure.attention++; this.wp = null; ctx.onNotice?.(this); }
         } else this.curious = Math.max(0, this.curious - dt * 0.2);
         break;
       }
@@ -153,7 +165,7 @@ export class Fish {
         const to = _v.copy(lure.pos);
         this.steer(dt, to, this.base * 1.6, 2.2);
         if (this.pos.distanceTo(lure.pos) < 1.4 + this.length * 0.4) {
-          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]); this.probes = 0; this.probeT = rnd(0.6, 1.4); this.orbit = Math.random() < 0.5 ? 1 : -1;
+          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]); this.probes = 0; this.probeT = this.probeTotal = rnd(0.6, 1.4); this.orbit = Math.random() < 0.5 ? 1 : -1;
         }
         break;
       }
@@ -176,7 +188,7 @@ export class Fish {
             ctx.onBite?.(this, kind);
           } else {
             this.probes++;
-            this.probeT = rnd(0.7, 1.9) * (this.sp.body === 'minnow' ? 0.4 : 1);
+            this.probeT = this.probeTotal = rnd(0.7, 1.9) * (this.sp.body === 'minnow' ? 0.4 : 1);
             ctx.onProbe?.(this, kind === 'gulp' ? 'tug' : 'nibble');
             if (Math.random() < this.sp.shy * 0.12 * (lure.twitch > 0 ? 0.3 : 1)) { this.spook('shy'); lure.attention--; }
           }

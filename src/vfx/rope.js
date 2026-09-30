@@ -34,7 +34,11 @@ export class Rope {
     this.geo = new THREE.BufferGeometry();
     this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.geo.setIndex(idx);
-    this.mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide });
+    // (a twist in the strands: bands that spiral along it, fixed to the rope, so it reads as rope and not as a beam)
+    const col = new Float32Array(nv * 3);
+    for (let i = 0; i < n; i++) for (let k = 0; k < sides; k++) { const v = ((i * 0.5 + (k / sides) * 2) % 2) < 1 ? 1 : 0.66; const o = (i * sides + k) * 3; col[o] = col[o + 1] = col[o + 2] = v; }
+    this.geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    this.mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, vertexColors: true });
     this.mesh = new THREE.Mesh(this.geo, this.mat);
     this.mesh.frustumCulled = false; this.mesh.renderOrder = 5;
     this.mesh.visible = false;
@@ -115,6 +119,8 @@ export class Rope {
         p.addScaledVector(_u, Math.cos(ph) * env).addScaledVector(_w, Math.sin(ph) * env);
       }
     }
+    // (a rope is the same width on the screen wherever it is: its radius grows with the distance from the camera when one is given)
+    this.cam = opts.cam || null; this.pxScale = opts.px ?? 0; this.rMin = opts.rMin ?? this.radius; this.rMax = opts.rMax ?? this.radius * 6;
     const r = opts.radius ?? this.radius;
     this.build(this.pos, this.geo, r);
     this.mesh.visible = true;
@@ -135,7 +141,7 @@ export class Rope {
       if (i === 0) { _n.set(0, 1, 0); if (Math.abs(_t.y) > 0.95) _n.set(1, 0, 0); }
       _n.addScaledVector(_t, -_n.dot(_t)).normalize();
       _b.crossVectors(_t, _n);
-      const rr = r * (i === 0 || i === n - 1 ? 0.8 : 1);
+      const rr = (this.cam ? THREE.MathUtils.clamp(this.cam.distanceTo(P[i]) * this.pxScale, this.rMin, this.rMax) * (r / this.radius) : r) * (i === 0 || i === n - 1 ? 0.8 : 1);
       for (let k = 0; k < sides; k++) {
         const a = (k / sides) * Math.PI * 2, c = Math.cos(a) * rr, s = Math.sin(a) * rr;
         const o = (i * sides + k) * 3;

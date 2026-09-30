@@ -4,7 +4,8 @@
 // entities are drawn to. Also the ripples: rings of light spread on the water for a splash, a nibble, a bite.
 //
 //   air     thrown along an arc to where the cast was aimed (a ballistic lob solved for the flight time)
-//   float   on the surface at depth 0; sinks toward `depthT` (RMB), rises when let go
+//   float   on the surface until it sinks toward `depthT` (RMB sinks it, the wheel sets it, reeling raises it); it HOLDS the depth it is
+//           left at (it does not float back up: fighting buoyancy to keep a depth was no fun), and remembers it for the next cast (`pref`)
 //   reel    drawn to the rod (LMB held) at reel speed
 //   ground  it landed on something that is not water: it lies there, and nothing will bite
 // `twitch` is the jig's memory (a hop that fish notice for a couple of seconds); `dip` is the spring the bites press on.
@@ -53,7 +54,7 @@ export class Lure {
     this.ripples = ripples;
     this.state = 'none';
     this.pos = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.prev = new THREE.Vector3();
-    this.aspect = 0; this.depth = 0; this.depthT = 0;
+    this.aspect = 0; this.depth = 0; this.depthT = 0; this.pref = 0;
     this.echo = null;
     this.speed = 0; this.twitch = 0; this.dip = 0; this.dipV = 0; this.attention = 0; this.claimed = false;
     this.pool = null; this.ground = 0;
@@ -70,6 +71,14 @@ export class Lure {
     this.halo.scale.setScalar(0.75);
     g.add(this.halo);
     game.scene.add(g);
+    // the plumb line: a thread of light from the lure up to the surface, so that its depth can be read where it is
+    this.plumbGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 1, 0)]);
+    this.plumb = new THREE.Line(this.plumbGeo, new THREE.LineBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.plumb.frustumCulled = false; this.plumb.visible = false; this.plumb.renderOrder = 4;
+    game.scene.add(this.plumb);
+    this.plumbRing = new THREE.Mesh(new THREE.RingGeometry(0.16, 0.2, 20).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.plumbRing.visible = false; this.plumbRing.renderOrder = 4;
+    game.scene.add(this.plumbRing);
     this.moteT = 0;
   }
 
@@ -82,6 +91,7 @@ export class Lure {
     const c = new THREE.Color(ASPECTS[a].color);
     this.skin.emissive.copy(c);
     this.halo.material.color.copy(c);
+    this.plumb.material.color.copy(c); this.plumbRing.material.color.copy(c);
   }
 
   /** Throw from `from` to land at `to` (the flight's time follows the distance). */
@@ -98,7 +108,7 @@ export class Lure {
     this.group.visible = true;
   }
 
-  retrieve() { this.state = 'none'; this.group.visible = false; this.claimed = false; }
+  retrieve() { this.state = 'none'; this.group.visible = false; this.claimed = false; this.plumb.visible = false; this.plumbRing.visible = false; }
 
   /** The bites: a spring pressed down. */
   nudge(k) { this.dipV -= k * 9; }
@@ -130,11 +140,13 @@ export class Lure {
         // out of the pool: onto the deck it goes
         if (!ctx.poolAt(this.pos.x, this.pos.z)) { this.state = 'ground'; this.pool = null; this.pos.y = (ctx.ground?.(this.pos.x, this.pos.z, this.pos.y + 1) ?? this.pos.y - 0.4) + 0.1; return; }
       }
-      if (ctx.sinking) this.depthT = Math.min((P?.maxDepth ?? 8) - 0.4, this.depthT + 0.95 * dt);
-      else if (!ctx.reeling) this.depthT = Math.max(0, this.depthT - 1.3 * dt);
+      // (the depth is only ever changed on purpose: it sinks while asked to, is set by the wheel, and rises as it is reeled in)
+      const asked = (ctx.sinking ? 1.15 * dt : 0) + (ctx.depthNudge || 0);
+      if (asked) { this.depthT += asked; }
       const floor = P ? P.depthAt(this.pos.x, this.pos.z) - 0.25 : 1;
-      this.depthT = Math.min(this.depthT, Math.max(0, floor));
-      this.depth += (this.depthT - this.depth) * Math.min(1, dt * 4);
+      this.depthT = THREE.MathUtils.clamp(this.depthT, 0, Math.min((P?.maxDepth ?? 8) - 0.4, Math.max(0, floor)));
+      if (asked && !ctx.reeling) this.pref = this.depthT; // (what it will sink to, next cast)
+      this.depth += THREE.MathUtils.clamp((this.depthT - this.depth) * 4 * dt, -2.8 * dt, 2.8 * dt); // (eased, and never faster than it can sink)
       this.pos.y = (P ? P.surface : this.pos.y) - this.depth + (this.depth < 0.15 ? Math.sin(performance.now() * 0.0018 + this.pos.x) * 0.012 : 0);
     } else if (this.state === 'ground') {
       if (ctx.reeling) {
@@ -154,6 +166,16 @@ export class Lure {
     if (ctx.player) g.rotation.y = Math.atan2(ctx.player.x - this.pos.x, ctx.player.z - this.pos.z);
     const pulse = 0.8 + 0.2 * Math.sin(performance.now() * 0.004);
     this.halo.scale.setScalar((0.6 + 0.12 * this.attention) * pulse * (this.state === 'ground' ? 0.5 : 1));
+    // the plumb line, when it is down in the water
+    const under = this.inWater && this.pool && this.depth > 0.25;
+    this.plumb.visible = this.plumbRing.visible = !!under;
+    if (under) {
+      const p = this.plumbGeo.attributes.position, sy = this.pool.surface;
+      p.setXYZ(0, this.pos.x, this.pos.y, this.pos.z); p.setXYZ(1, this.pos.x, sy, this.pos.z); p.needsUpdate = true;
+      this.plumb.material.opacity = 0.18 + 0.3 * Math.min(1, this.depth / 3);
+      this.plumbRing.position.set(this.pos.x, sy + 0.03, this.pos.z);
+      this.plumbRing.scale.setScalar(0.8 + 0.25 * Math.min(1, this.depth / 4));
+    }
     // a few motes rising from it (the projected mind, unravelling a little)
     this.moteT -= dt;
     if (this.moteT <= 0 && this.state !== 'air') {
@@ -167,7 +189,7 @@ export class Lure {
     const pool = ctx.poolAt(this.pos.x, this.pos.z);
     if (pool && this.pos.y <= pool.surface + 0.4) {
       this.pool = pool; this.state = 'float'; this.pos.y = pool.surface;
-      this.depth = 0; this.depthT = 0; this.dipV = -3;
+      this.depth = 0; this.depthT = Math.min(this.pref, Math.max(0, pool.depthAt(this.pos.x, this.pos.z) - 0.25), pool.maxDepth - 0.4); this.dipV = -3;
       this.ripples.ring(this.pos.x, pool.surface, this.pos.z, 1.7, this.color, 1.6);
       this.ripples.ring(this.pos.x, pool.surface, this.pos.z, 0.8, 0xffffff, 0.9);
       sfx.splash(0.6); sfx.plink(0);

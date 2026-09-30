@@ -779,6 +779,60 @@ class Sfx {
     this.tone(t, 0.4, { f0: 2400, f1: 2380, type: 'triangle', gain: 0.15, dest: d });
     this.noise(t, 0.06, { f0: 3500, f1: 1200, gain: 0.6, dest: d });
   }
+  /** The line let go: a snap of slack and the grapnel's chain rattling home. */
+  hookRelease() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.3);
+    this.noise(t, 0.09, { type: 'bandpass', f0: 2600, f1: 900, q: 1.2, gain: 0.5, attack: 0.004, dest: d });
+    this.tone(t + 0.02, 0.18, { f0: 900, f1: 260, type: 'triangle', gain: 0.1, dest: d });
+  }
+  /** The Stinger: a whip of air and a thin ring of steel, going out. */
+  stinger() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.7, 0.25);
+    this.noise(t, 0.26, { type: 'bandpass', f0: 700, f1: 7000, q: 0.9, gain: 0.7, attack: 0.01, dest: d });
+    this.tone(t, 0.22, { f0: 260, f1: 1900, type: 'sawtooth', gain: 0.12, dest: d });
+    this.tone(t + 0.06, 0.5, { f0: 3100, f1: 3060, type: 'triangle', gain: 0.1, dest: d });
+  }
+  /** Blade mode: the world lets its breath out (a low swell and a thin ring). */
+  bladeIn() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.8, 0.5);
+    this.tone(t, 0.55, { f0: 110, f1: 38, gain: 0.7, dest: d });
+    this.noise(t, 0.5, { type: 'lowpass', f0: 900, f1: 120, gain: 0.5, attack: 0.02, dest: d });
+    this.tone(t + 0.02, 0.9, { f0: 2600, f1: 2580, type: 'triangle', gain: 0.08, dest: d });
+  }
+  /** ... and takes it back. */
+  bladeOut() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.3);
+    this.tone(t, 0.25, { f0: 60, f1: 260, gain: 0.5, dest: d });
+    this.noise(t, 0.22, { type: 'highpass', f0: 800, f1: 4000, gain: 0.35, attack: 0.03, dest: d });
+  }
+  /** Zandatsu: a boom, three cuts of glass, and a chime that hangs. */
+  zandatsu() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(1.0, 0.7);
+    this.tone(t, 0.9, { f0: 62, f1: 30, gain: 0.9, dest: d });
+    this.noise(t, 0.1, { type: 'bandpass', f0: 2400, f1: 900, q: 0.8, gain: 0.9, dest: d });
+    for (let i = 0; i < 3; i++) this.noise(t + 0.07 * i, 0.09, { type: 'highpass', f0: 3000, f1: 8000, gain: 0.7, attack: 0.002, dest: d });
+    [2093, 2637, 3136, 4186].forEach((f, i) => this.tone(t + 0.22 + i * 0.05, 1.3, { f0: f, f1: f * 0.998, type: 'triangle', gain: 0.1, dest: d }));
+  }
+  /** The blade coming up to guard: a short shing. */
+  guardUp() {
+    if (!this.ok() || !this.allow('guardUp', 6)) return;
+    const t = this.ctx.currentTime, d = this.out(0.4, 0.2);
+    this.noise(t, 0.09, { type: 'highpass', f0: 4200, f1: 7000, gain: 0.5, attack: 0.004, dest: d });
+    this.tone(t, 0.2, { f0: 1900, f1: 2100, type: 'triangle', gain: 0.07, dest: d });
+  }
+  /** Something turned aside on the blade. */
+  guardBlock() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 0.3);
+    this.tone(t, 0.14, { f0: 1300, f1: 880, type: 'square', gain: 0.1, dest: d });
+    this.noise(t, 0.07, { type: 'bandpass', f0: 3200, f1: 2000, q: 1.5, gain: 0.7, attack: 0.002, dest: d });
+    this.tone(t, 0.5, { f0: 2350, f1: 2320, type: 'triangle', gain: 0.09, dest: d });
+  }
   /** Being drawn along the line (a rising whine, called each frame; rate limited). */
   zipWhine(v = 1) {
     if (!this.ok() || !this.allow('zip', 12)) return;

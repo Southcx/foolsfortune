@@ -232,15 +232,29 @@ export function buildAchievements(game) {
   C('cu4', 'sond', 'Cutlass', 3, 'endure', 'A Field of Stubble', 'Cut 500 things with the cutlass.', 'cut.hit', 500);
   C('cu5', 'sond', 'Cutlass', 2, 'mechanic', 'Three-Stroke', 'Finish the three-stroke combination 25 times.', 'cut.combo', 25);
   C('cu6', 'sond', 'Cutlass', 4, 'perfect', 'Unbroken String', 'Finish the three-stroke combination 200 times.', 'cut.combo', 200);
-  C('cu7', 'sond', 'Cutlass', 2, 'mechanic', 'Lunge', 'Use the lunge 25 times.', 'cut.heavy', 25);
+  C('cu7', 'sond', 'Cutlass', 2, 'mechanic', 'Stinger', 'Drive the Stinger 25 times.', 'cut.stinger', 25);
   C('cu8', 'sond', 'Cutlass', 3, 'mechanic', 'Clapperjar Bane, Blade', 'Cut down 25 clapperjars with the cutlass.', 'cut.hit.clapper', 25);
+  C('cu9', 'sond', 'Cutlass', 1, 'count', 'Time Slows', 'Enter Blade Mode 10 times.', 'blade.enter', 10);
+  C('cu10', 'sond', 'Cutlass', 3, 'endure', 'Chunks', 'Cut 200 pieces in Blade Mode.', 'blade.pieces', 200);
+  C('cu11', 'sond', 'Cutlass', 3, 'mechanic', 'Zandatsu', 'Cut a clapperjar along its own line and take its core.', 'blade.zandatsu', 1);
+  C('cu12', 'sond', 'Cutlass', 4, 'endure', 'A Field of Cores', 'Zandatsu 25 clapperjars.', 'blade.zandatsu', 25);
+  C('cu13', 'sond', 'Cutlass', 1, 'count', 'In the Sights', 'Lock on 25 times.', 'lock.on', 25);
+  C('cu14', 'sond', 'Cutlass', 2, 'mechanic', 'Turned Aside', 'Turn 10 shots aside on the blade.', 'guard.block', 10);
+  C('cu15', 'sond', 'Cutlass', 3, 'perfect', 'Parry', 'Parry 10 shots.', 'move.parry', 10);
+  H('cu16', 'sond', 'Cutlass', 3, 'mechanic', 'A Long Held Breath', 'Cut 8 times in a single breath of Blade Mode.', 'blade.cuts.best', 8);
   C('hk1', 'sond', 'Grapnel', 1, 'count', 'Bite and Pull', 'Throw the grapnel 25 times.', 'hook.fire', 25);
   C('hk2', 'sond', 'Grapnel', 2, 'count', 'Drawn In', 'Be drawn to an anchor 25 times.', 'zip.arrive', 25);
   C('hk3', 'sond', 'Grapnel', 4, 'endure', 'Spider', 'Be drawn to an anchor 250 times.', 'zip.arrive', 250);
   C('hk4', 'sond', 'Grapnel', 3, 'endure', 'A Long Line', 'Travel 1 km on the grapnel line.', 'zip.dist', 1000, { unit: 'm' });
   H('hk5', 'sond', 'Grapnel', 3, 'mechanic', 'Across the Hall', 'Be drawn 30 m by a single throw.', 'zip.longest', 30, { unit: 'm' });
   C('hk6', 'sond', 'Grapnel', 2, 'count', 'Fetch', 'Yank 25 loose things toward you.', 'hook.pull', 25);
-  C('hk7', 'sond', 'Grapnel', 2, 'mechanic', 'Cut Loose', 'Let go of the line mid-pull 10 times.', 'zip.cancel', 10);
+  C('hk7', 'sond', 'Grapnel', 2, 'mechanic', 'Cut Loose', 'Leap from the line 10 times.', 'zip.cancel', 10);
+  F('hk8', 'sond', 'Grapnel', 2, 'endure', 'Terracotta Tarzan', 'Spend a minute in all on the end of the line, swinging or hanging.', (L) => L.get('grapple.swing.time') / 60, 1, { unit: 'min' });
+  F('hk9', 'sond', 'Grapnel', 4, 'endure', 'Ninja Courier', 'Spend ten minutes in all on the end of the line.', (L) => L.get('grapple.swing.time') / 60, 10, { unit: 'min' });
+  H('hk10', 'sond', 'Grapnel', 3, 'mechanic', 'Slingshot', 'Let go of the line at 18 m/s.', 'grapple.fling.speed', 18, { unit: 'm/s' });
+  H('hk11', 'sond', 'Grapnel', 4, 'mechanic', 'Faster Than the Rope', 'Let go of the line at 26 m/s.', 'grapple.fling.speed', 26, { unit: 'm/s' });
+  C('hk12', 'sond', 'Grapnel', 2, 'count', 'Sling', 'Let go of a catch and send it flying 10 times.', 'hook.fling', 10);
+  C('hk13', 'sond', 'Grapnel', 1, 'count', 'Brought to Hand', 'Bring 25 loose things to you on the line.', 'hook.pull', 25);
 
   // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)
   C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);
@@ -257,6 +271,8 @@ export function buildAchievements(game) {
   C('ab3', 'angle', 'The Bite', 2, 'mechanic', 'A Gulp', 'Answer a gulp: the heaviest bite.', 'angle.bite.gulp', 1);
   C('ab4', 'angle', 'The Bite', 3, 'perfect', 'Perfect Timing', 'Set the hook perfectly 10 times.', 'angle.hookset.perfect', 10);
   C('ab5', 'angle', 'The Bite', 4, 'perfect', 'A Steady Hand', 'Set the hook perfectly 100 times.', 'angle.hookset.perfect', 100);
+  C('ab7', 'angle', 'The Bite', 2, 'count', 'Sonar', 'Light up 50 fish with soundings.', 'angle.reveal', 50);
+  C('ab8', 'angle', 'The Bite', 1, 'count', 'Noticed', 'Have 25 fish notice the lure.', 'angle.notice', 25);
   C('ab6', 'angle', 'The Bite', 1, 'count', 'Stripped Bare', 'Let a fish take the bait and get away.', 'angle.miss', 1, { hidden: true });
   F('af1', 'angle', 'The Fight', 2, 'endure', 'Fighting Fit', 'Spend 5 minutes fighting fish.', (L) => L.get('fish.fight.time') / 60, 5, { unit: 'min' });
   F('af2', 'angle', 'The Fight', 4, 'endure', 'An Hour on the Line', 'Spend an hour fighting fish.', (L) => L.get('fish.fight.time') / 3600, 1, { unit: 'h' });
@@ -266,6 +282,7 @@ export function buildAchievements(game) {
   C('af6', 'angle', 'The Fight', 2, 'mechanic', 'Stand Firm', 'Land 10 fish while braced (crouched).', 'fish.braced', 10);
   C('af7', 'angle', 'The Fight', 3, 'mechanic', 'Ease Off', 'Ride out 25 thrashes and land the fish.', 'fish.thrashes', 25);
   S('af8', 'angle', 'The Fight', 3, 'Quick Work', 'Land a fish in 8 seconds or less.', 'fish.fight.shortest', 8);
+  C('af11', 'angle', 'The Fight', 3, 'perfect', 'Well Read', 'Land 10 fish while answering nine tenths of what they asked of you: lean, haul, bow, brace.', 'fish.wellread', 10);
   C('af9', 'angle', 'The Fight', 1, 'count', 'Snapped', 'Have the line snap.', 'angle.escape.snap', 1, { hidden: true });
   C('af10', 'angle', 'The Fight', 2, 'count', 'Running on Empty', 'Lose the lure because the mind ran out.', 'angle.mindgone', 1, { hidden: true });
   C('ac1', 'angle', 'The Catch', 1, 'count', 'First Fish', 'Land a fish.', 'fish.total', 1);

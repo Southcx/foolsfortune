@@ -15,9 +15,11 @@ import { Angler } from '../angling/angler.js';
 // with it out; it owns only the right arm's pose while it is drawn, and puts the Psygun away.
 //
 //   Q     draw / stow (the Psygun goes away first; X also stows it)           1 / 2 / 3   CUTLASS / ROD / HOOK
-//   CUTLASS  LMB a three-stroke combo · RMB a lunge
-//   ROD      hold LMB to charge a cast, release to throw · wheel picks the lure's aspect · RMB sounds · LMB reels
-//   HOOK     LMB fires the grapnel: solid ground draws you to it, a loose thing is yanked to you
+//   CUTLASS  LMB a three-stroke combo · RMB tap: the Stinger · RMB hold: Blade Mode · Z / MMB lock on · V hold: guard, in time: parry
+//   ROD      hold LMB to charge a cast, release to throw · 4-8 / wheel: the lure's aspect · wheel (lure out): its depth · RMB sinks it · MMB sounds
+//            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
+//   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),
+//            hold RMB to pay out, tap RMB to let go, Space to jump off it; A/D/W/S pump a swing (moves/grapple.js)
 //
 // Prior art, and what was taken:
 //  - Animation: the tool is glued to the animated hand (a socket measured from the CC0 Universal Animation Library's own sword
@@ -84,9 +86,11 @@ export class Sondelass extends Tech {
   get toolOut() { return this.drawTarget > 0 || this.drawT > 0.02; }
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
+  /** The movement keys are the rod's while a fish is on the line (Angler.locksMove): the body stays, the keys fight the fish. */
+  get moveLock() { return this.toolOut && !!this.angler?.locksMove; }
   /** Facing the aim (a swing, a cast, the fight, the hook). */
   get stance() { return this.toolOut && (this.cutlass.busy || this.hookshot.aiming || !!this.angler?.stance); }
-  get slow() { return this.toolOut && (this.angler?.casting ? 0.5 : 1); }
+  get slow() { return this.toolOut && (this.angler?.casting ? 0.5 : this.cutlass.guardOn ? 0.55 : 1); }
   get formDef() { return FORMS.find((f) => f.id === this.form); }
   get game() { return this.mgr.game; }
 
@@ -151,6 +155,7 @@ export class Sondelass extends Tech {
   // ---------------------------------------------------------------- per frame
   tick(dt) {
     super.tick?.(dt);
+    this.dt = dt;
     const P = this.P, g = this.game, inp = P.input, ch = g.character;
     if (!this.socketR && ch) this.computeSocket(ch);
     const wpn = g.weapon;
@@ -170,6 +175,7 @@ export class Sondelass extends Tech {
     const step = dt / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
     if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
+    if (this.drawTarget === 0 && this.hookshot.att) this.hookshot.release('stow'); // (put away with a line out: it comes away)
     if (this.drawT > 0.02 && !this.wasOut) { sfx.toolDraw(); this.wasOut = true; this.game.events?.emit('sondelass.draw', {}); this.renderStrip(); }
     if (this.drawT <= 0.02 && this.wasOut) {
       this.wasOut = false; sfx.holster?.(); this.cutlass.cancel(); this.hookshot.cancel(); this.angler?.stow();
@@ -222,7 +228,7 @@ export class Sondelass extends Tech {
       this.track.play('torchIdle', 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose();
     }
-    const layerW = this.w * smooth(HOLD, 1, this.drawT);
+    const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
     if (layerW <= 0.001) return;
     const tr = this.track;
     const want = this.form === 'cutlass' ? 'swordIdle' : 'torchIdle';
@@ -290,8 +296,14 @@ export class Sondelass extends Tech {
         ch.reachHand('R', hp, hq, aimW);
       }
       // the free hand on the reel, cranking (or at the foregrip of the rod while it holds a fish)
-      this.leftW = THREE.MathUtils.damp(this.leftW, this.angler?.leftHand ?? 0, 10, 1 / 60);
+      const hookLeft = this.form === 'hook' && this.hookshot.att ? 1 : 0; // (hanging or swinging: the free hand takes the shaft)
+      this.leftW = THREE.MathUtils.damp(this.leftW, Math.max(this.angler?.leftHand ?? 0, hookLeft), 10, 1 / 60);
       M.multiplyMatrices(B.handR.matrixWorld, this.socketR);
+      if (this.leftW > 0.01 && this.form === 'hook') {
+        model.group.matrixWorld.copy(M);
+        this.handFromTool(M, 'L', hp, 0.55, 0.0, 0.0, hq);
+        ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
+      }
       if (this.leftW > 0.01 && this.form === 'rod') {
         model.group.matrixWorld.copy(M); // (the crank's place in the world for the left hand)
         const a = model.spin;
@@ -311,11 +323,13 @@ export class Sondelass extends Tech {
     }
     model.group.updateMatrixWorld(true);
     ch.root.updateMatrixWorld(true);
+    this.cutlass.afterHands(this.dt || 1 / 60); // (the blade is where it is for this frame: its ribbon and the afterimages)
   }
 
   // ---------------------------------------------------------------- the world's side of it
   fixed(dt) {
     this.angler?.fixed(dt);
+    this.hookshot.fixed(dt);
   }
 
   /** Where the tool's tip is (world). */

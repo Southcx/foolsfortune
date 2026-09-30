@@ -1,3 +1,4 @@
+import { deflect } from '../parry.js';
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../audio.js';
@@ -105,44 +106,11 @@ export class Kick extends Tech {
     }
   }
 
-  /** A projectile coming in near the strike: send it back where we're looking. */
+  /** A projectile coming in near the strike: send it back where we're looking (the rule is parry.js's, shared with the blade). */
   tryParry() {
-    const P = this.P, c = this.cfg, g = this.game;
-    const at = this.center();
-    for (const pr of g.projectiles || []) {
-      const b = pr.body;
-      if (!b?.isValid?.() || pr.parried) continue;
-      const t = b.translation(), v = b.linvel();
-      const sp = Math.hypot(v.x, v.y, v.z);
-      if (sp < c.parrySpeed) continue;
-      const d = Math.hypot(t.x - at.x, t.y - at.y, t.z - at.z);
-      if (d > c.parryRadius) continue;
-      // (coming toward us)
-      if ((v.x * (P.pos.x - t.x) + v.z * (P.pos.z - t.z)) <= 0) continue;
-      const out = P.lookDir(new THREE.Vector3());
-      const speed = Math.max(sp * 1.25, c.parryOut);
-      let v2 = out.clone().multiplyScalar(speed);
-      // (a little help: a target close to where you're looking gets the ball, dropping with gravity taken into account)
-      const from = new THREE.Vector3(t.x, t.y, t.z);
-      let bestA = c.parryAssist;
-      for (const m of g.movers?.list || []) {
-        if (!m.target) continue;
-        const to = m.cur.p.clone().sub(from), d = to.length();
-        const a = Math.acos(THREE.MathUtils.clamp(to.clone().normalize().dot(out), -1, 1));
-        if (a < bestA) { bestA = a; const flight = d / speed; v2 = to.divideScalar(flight); v2.y += 0.5 * 9.81 * flight; }
-      }
-      b.setLinvel(v2, true);
-      pr.parried = true;
-      pr.reflected = true;
-      this.parried = true;
-      P.invuln = Math.max(P.invuln, c.parryIframes);
-      P.shake = Math.max(P.shake, 0.3);
-      P.fovPunch = Math.max(P.fovPunch || 0, 5);
-      g.fx?.shockwave?.(new THREE.Vector3(t.x, t.y, t.z), 1.4);
-      sfx.parry();
-      g.events?.emit('parry', { speed: sp });
-      return;
-    }
+    const c = this.cfg;
+    const pr = deflect(this.game, { at: this.center(), radius: c.parryRadius, speedMin: c.parrySpeed, outMin: c.parryOut, assist: c.parryAssist, iframes: c.parryIframes, by: 'kick' });
+    if (pr) this.parried = true;
   }
 
   reset() { this.state = 'idle'; this.st = 0; }

@@ -18,6 +18,8 @@ const CSS = `
 #cinema .bar { position: absolute; left: 0; right: 0; height: 0; background: #0b0402; box-shadow: 0 0 0 1px rgba(255,178,122,.0); }
 #cinema .bar.top { top: 0; border-bottom: 1px solid rgba(255,178,122,.35); }
 #cinema .bar.bot { bottom: 0; border-top: 1px solid rgba(255,178,122,.35); }
+body #compass, body #speed, body #course, body #locks, body #crosshair, body #toolstrip { transition: opacity .4s; }
+body.cine #compass, body.cine #speed, body.cine #course, body.cine #locks, body.cine #crosshair, body.cine #toolstrip { opacity: 0 !important; }
 #cinema .strain { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 46%, rgba(120,20,8,.55) 100%); }
 `;
 
@@ -52,6 +54,8 @@ export class Cinema {
     const P = this.game.player.camFx;
     P.yaw = c.yaw; P.pitch = c.pitch; P.dist = c.dist; P.fov = c.fov; P.roll = c.roll;
     this.k = D(this.k, bars, bars > this.k ? 5 : 4, dt);
+    const cine = this.k > 0.3;
+    if (cine !== this.cine) { this.cine = cine; document.body.classList.toggle('cine', cine); } // (what is not part of the shot steps out of it)
     const h = this.k * 11.5;
     this.top.style.height = this.bot.style.height = `${h < 0.02 ? 0 : h}vh`;
     this.strainK = D(this.strainK, this.strain, 8, dt);

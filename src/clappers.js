@@ -721,7 +721,8 @@ export class Clappers {
     }
   }
 
-  hit(c, point, dir, power = 1, cause = 'shot') {
+  /** `custom`, if given, comes apart the jar in place of the usual burst of shards (a zandatsu cuts it into chunks instead). */
+  hit(c, point, dir, power = 1, cause = 'shot', custom = null) {
     if (!c.alive) return;
     c.alive = false;
     this.dropJob(c);
@@ -733,7 +734,7 @@ export class Clappers {
     const P = prepProfile('clapper', s);
     const rot = new THREE.Quaternion().setFromAxisAngle(UP, c.heading);
     const vel = new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)).multiplyScalar(c.speed).add(c.kv);
-    game.breakables.burst(P, new THREE.Color(PALETTE.mid), c.pos.clone(), rot, vel, new THREE.Vector3(), point, dir, power * 1.2, P.fullHeight);
+    if (custom) custom(); else game.breakables.burst(P, new THREE.Color(PALETTE.mid), c.pos.clone(), rot, vel, new THREE.Vector3(), point, dir, power * 1.2, P.fullHeight);
     // the juicy part: Lachryma baubles
     const n = Math.round((T.lachryma.clapperDrop + c.stash) * (c.marked || c.state === 'stunned' ? 2 : 1));
     game.baubles?.spawn(c.pos.clone().setY(c.pos.y + 0.35), n);

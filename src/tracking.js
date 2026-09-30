@@ -255,19 +255,40 @@ export class Tracking {
       first(`sondelass.${e.form}`, `Logged: your first time using the Sondelass as a ${e.form === 'hook' ? 'grapnel' : e.form}.`);
     });
     on('cut.swing', (e) => { L.inc('cut.swing'); if (e.n >= 2) { L.inc('cut.combo'); log.say('battle', 'You finish a three-stroke combination.', { key: 'combo', throttle: 1.5 }); } });
-    on('cut.heavy', () => { L.inc('cut.heavy'); L.inc('cut.swing'); });
+    on('cut.stinger', (e) => { L.inc('cut.stinger'); L.inc('cut.swing'); if (e.locked) L.inc('cut.stinger.locked'); first('cut.stinger', 'Logged: your first Stinger.'); log.say('battle', 'You drive the Stinger.', { key: 'sting', throttle: 1.5 }); });
+    on('blade.enter', () => { L.inc('blade.enter'); first('blade', 'Logged: your first time in Blade Mode.'); log.say('battle', 'The world slows to the edge of your blade.', { key: 'blade', throttle: 4 }); });
+    on('blade.cut', (e) => { L.inc('blade.cut'); if (e.pieces) L.inc('blade.pieces', e.pieces); });
+    on('blade.zandatsu', () => { L.inc('blade.zandatsu'); first('zandatsu', 'Logged: your first zandatsu.'); log.say('battle', 'Zandatsu: you cut the clapperjar apart and take its core.', { key: 'zan', throttle: 2 }); });
+    on('blade.exit', (e) => { L.hi('blade.cuts.best', e.cuts); });
+    on('lock.on', () => { L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); });
+    on('guard.up', () => L.inc('guard.up'));
+    on('guard.block', () => { L.inc('guard.block'); log.say('battle', 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
     on('cut.hit', (e) => {
       L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
       const w = e.what === 'clapper' ? 'clapperjar' : 'pot';
       log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
     });
     on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });
-    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You yank the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} toward you.`, { key: 'hpull', win: 1.2 }); });
+    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} to you.`, { key: 'hpull', win: 1.2 }); });
+    on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} flies.`, { key: 'hfling', win: 1.2 }); });
+    on('grapple.attach', (e) => {
+      L.inc('grapple.attach'); L.inc(`grapple.attach.${e.kind}`);
+      log.say('move', e.kind === 'anchor' ? 'The grapnel bites. The line goes taut.' : `The grapnel bites into ${e.what === 'clapper' ? 'a clapperjar' : e.what === 'breakable' ? 'a pot' : 'something loose'}.`, { key: 'gatt', throttle: 1.2 });
+    });
+    on('grapple.release', (e) => {
+      L.inc(`grapple.release.${e.how}`);
+      if (e.how === 'tap' || e.how === 'snag' || e.how === 'far') log.say('move', e.how === 'snag' ? 'The line catches on a corner and comes away.' : e.how === 'far' ? 'The line runs out and comes away.' : 'You let go of the line.', { key: 'grel', throttle: 1.2 });
+    });
+    on('grapple.swing', (e) => {
+      if (e.phase !== 'end') return;
+      L.inc('grapple.swing.n'); L.inc('grapple.swing.time', e.t); L.hi('grapple.swing.peak', e.peak, { at: this.where() });
+    });
+    on('grapple.fling', (e) => { L.inc('grapple.fling'); L.hi('grapple.fling.speed', e.speed); });
     on('zip.start', (e) => { L.inc('zip.start'); L.inc('zip.dist', e.dist); L.hi('zip.longest', e.dist); });
     on('zip.end', (e) => {
       L.inc(`zip.${e.how}`);
       if (e.how === 'arrive') log.say('move', 'The line draws you to the anchor.', { key: 'zip', throttle: 1.5 });
-      else log.say('move', 'You cut the line and let go.', { key: 'zip', throttle: 1.5 });
+      else log.say('move', 'You leap from the line.', { key: 'zip', throttle: 1.5 });
     });
 
     // ---- angling (src/angling/): the counts, and the FFXI/FFXIV-style lines of a fishing log
@@ -291,7 +312,9 @@ export class Tracking {
       log.say('angle', e.quality === 'perfect' ? 'You set the hook perfectly!' : e.quality === 'early' ? 'You set the hook, a little early.' : 'You set the hook, just in time.');
     });
     on('angle.miss', () => { L.inc('angle.miss'); log.say('warn', 'The lure comes away bare. Whatever it was has gone.'); });
-    on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Ease off!', { key: 'awarn', throttle: 4 }));
+    on('angle.reveal', () => L.inc('angle.reveal'));
+    on('angle.notice', () => L.inc('angle.notice'));
+    on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Brace!', { key: 'awarn', throttle: 4 }));
     on('angle.thrash', () => L.inc('angle.thrash'));
     on('angle.bolt', () => { L.inc('angle.bolt'); log.say('angle', 'It bolts at the last moment!', { key: 'bolt', throttle: 3 }); });
     on('angle.breach', () => { L.inc('angle.breach'); log.say('god', 'The water tears open: something enormous breaches!', { key: 'breach', throttle: 4 }); });
@@ -310,7 +333,7 @@ export class Tracking {
       const sp = BY_SPECIES[e.species];
       L.inc('fish.total'); L.inc(`fish.sp.${e.species}`); L.inc(`fish.cls.${e.cls}`); L.inc(`fish.aspect.${e.aspect}`); L.inc(`fish.tide.${e.tide}`); L.inc(`fish.hookset.${e.quality}`);
       L.inc('fish.kg', e.kg); L.inc('fish.cm', e.cm); L.inc('fish.fight.time', e.dur); L.inc(`fish.tier.${sp.tier}`);
-      if (e.brace) L.inc('fish.braced'); if (e.peak < 0.9 && e.slackMax < 0.6) L.inc('fish.clean'); if (e.gave < 0.05) L.inc('fish.nogive');
+      if (e.brace) L.inc('fish.braced'); if (e.peak < 0.9 && e.slackMax < 0.6) L.inc('fish.clean'); if (e.ans >= 0.8) L.inc('fish.wellread'); if (e.gave < 0.05) L.inc('fish.nogive');
       if (e.thrashes) L.inc('fish.thrashes', e.thrashes); if (e.legend) L.inc('fish.legend');
       const r = L.hi(`fish.cm.${e.species}`, e.cm, { at: e.tide }); L.hi(`fish.kg.${e.species}`, e.kg);
       L.hi('fish.fight.longest', e.dur); L.lo('fish.fight.shortest', e.dur); L.hi('fish.depth.max', e.depth); L.hi('fish.kg.max', e.kg); L.hi('fish.cm.max', e.cm);
@@ -389,7 +412,7 @@ export class Tracking {
       }
       (this.prev ||= at.clone()).copy(at);
       const sp = Math.hypot(P.vel.x, P.vel.z);
-      if (sp > 5 && s !== 'surfer' && s !== 'zip' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
+      if (sp > 5 && s !== 'surfer' && s !== 'grapple' && s !== 'launch' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
       L.hi('speed.any.max', Math.hypot(P.vel.x, P.vel.z, P.vel.y));
     } else this.prev = null;
 

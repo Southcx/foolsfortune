@@ -35,7 +35,8 @@ import { Swim } from './moves/swim.js';
 import { Ladder } from './moves/ladder.js';
 import { Surfer } from './moves/surfer.js';
 import { Sondelass } from './moves/sondelass.js';
-import { Zip } from './moves/zip.js';
+import { Grapple } from './moves/grapple.js';
+import { Launch } from './moves/launch.js';
 import { Circuits } from './circuits.js';
 import { SlipDive } from './moves/slip.js';
 import { Hang } from './moves/hang.js';
@@ -65,9 +66,12 @@ import { Weir } from './angling/weir.js';
 import { TimeScale } from './timescale.js';
 import { Sky } from './sky.js';
 import { Interact } from './interact.js';
+import { LockOn } from './lockon.js';
+import { HideUI } from './hideui.js';
 import { Glyphs } from './vfx/glyphs.js';
 import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
+import { PsychicPulse } from './vfx/pulse.js';
 
 const FIXED = 1 / 60;
 
@@ -115,6 +119,7 @@ async function main() {
     ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause) {
+      if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
       events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
@@ -146,9 +151,11 @@ async function main() {
 
   game.time = new TimeScale(game); // (who slows the world, and by how much: see timescale.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
+  game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
   game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
+  game.pulse = new PsychicPulse(game); // (a sounding: a sphere of light from a point)
   const breakables = new Breakables(scene, physics, fx, game);
   game.sky = await new Sky(game).load(); // (the painted sky: the dunes' dome, the water's reflection, the gloss on the cubes)
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
@@ -197,7 +204,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Zip, Sondelass]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass]) techs.add(new T0(techs));
   env.lobbers.game = game;
   player.techs = techs;
   game.techs = techs;
@@ -216,6 +223,7 @@ async function main() {
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   const god = new GodMode(game, renderer, handG, jarG);
   game.god = god;
+  game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
   {
@@ -226,6 +234,13 @@ async function main() {
       if (!carry?.usable() || carry.item || carry.state !== 'idle' || !idle()) return null;
       const e = carry.find(); if (!e) return null;
       const p = spot(e); return { pos: p, d: p.distanceTo(player.pos) };
+    });
+    // where the grapnel would bite, while the hook is out and nothing is on the line
+    game.interact.add('grapple', () => {
+      const tool = techs.get('sondelass');
+      if (!tool?.held || tool.form !== 'hook' || tool.hookshot.busy) return null;
+      const r = tool.hookshot.probe();
+      return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
     });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
@@ -430,6 +445,7 @@ async function main() {
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
+    if (input.wasPressed('F2')) game.ui.cycle();
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
     trial.update(dt);
@@ -475,10 +491,11 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
+    game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
 
-    if (!godOn) techs.tick(dt);
+    if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
@@ -579,7 +596,8 @@ async function main() {
   requestAnimationFrame(frame);
 
   // handle for automated tests / console tinkering
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false };
+  window.__hideUI = (level) => game.ui.set(level);
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level) };
   window.__ready = true;
 }
 

@@ -1,42 +1,60 @@
-// The fishing line: a thin polyline from the rod's tip to whatever is on the other end, hanging in a curve when it is slack and
-// pulling straight (with a tremble) when it is loaded. Drawn as a Line (the width of a hair on purpose), tinted toward the
-// aspect's colour when taut.
+// ---------------------------------------------------------------------------------------
+// THE FISHING LINE: a real rope (vfx/rope.js: a Verlet chain from the rod's tip to whatever is on the other end), and the fight's
+// gauge. It hangs in a curve when there is slack (the curve is the slack) and pulls straight when it is loaded; it is the colour of
+// the load. Dull cream when it is limp, then, through the sweet band where a fish tires, the lure's own aspect colour with a soft
+// glow along it, then amber as it nears its limit and red-hot over it, with a hum you can see. In the air it leaves the rod coiled
+// and uncoils along the cast, the way a rope pays out of a harpoon gun.
+//
+//   line.set(tip, end, { tension, aspect (hex), helix, cam (the camera's position: the line is one width on the screen) })      line.hide()
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { Rope } from '../vfx/rope.js';
+import { BAND } from './fight.js';
 
-const N = 30;
-const _c = new THREE.Color();
+const AMBER = new THREE.Color(0xff9a3c), HOT = new THREE.Color(0xff3a2a);
+const _c = new THREE.Color(), _g = new THREE.Color();
+const sm = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
 export class FishingLine {
-  constructor(scene) {
-    this.pts = Array.from({ length: N }, () => new THREE.Vector3());
-    this.geo = new THREE.BufferGeometry().setFromPoints(this.pts);
-    this.mat = new THREE.LineBasicMaterial({ color: 0xf3e6d2, transparent: true, opacity: 0.9 });
-    this.line = new THREE.Line(this.geo, this.mat);
-    this.line.frustumCulled = false; this.line.visible = false; this.line.renderOrder = 5;
-    scene.add(this.line);
-    this.slack = 0.3;
+  /** opts: { radius (the rope's, at close range), color (its slack colour), n (its links) }: the grapnel's line is the same rope, thicker. */
+  constructor(scene, { radius = 0.011, color = 0xd8c7b4, n = 36 } = {}) {
+    this.rope = new Rope(scene, { n, sides: 4, radius, color });
+    this.baseR = radius;
+    this.slackCol = new THREE.Color(color);
+    this.sag = 0.3;
+    this.load = 0; // the eased tension
   }
-  hide() { this.line.visible = false; }
-  /** tension 0..1, the sag follows what is left over. `air` lines arc lightly. */
-  set(tip, end, tension, time, color = null) {
-    this.line.visible = true;
-    const len = tip.distanceTo(end);
-    const sag = THREE.MathUtils.clamp((1 - tension) * (0.05 + len * 0.045), 0.02, 3.2);
-    this.slack = THREE.MathUtils.damp(this.slack, sag, 8, 1 / 60);
-    for (let i = 0; i < N; i++) {
-      const t = i / (N - 1);
-      const p = this.pts[i].lerpVectors(tip, end, t);
-      p.y -= this.slack * 4 * t * (1 - t);
-      if (tension > 0.55) { // a taut line hums
-        const k = Math.sin(t * Math.PI) * (tension - 0.55) * 0.05;
-        p.x += Math.sin(time * 60 + t * 9) * k; p.y += Math.cos(time * 53 + t * 7) * k;
-      }
-    }
-    const pos = this.geo.attributes.position;
-    for (let i = 0; i < N; i++) pos.setXYZ(i, this.pts[i].x, this.pts[i].y, this.pts[i].z);
-    pos.needsUpdate = true;
-    this.geo.computeBoundingSphere();
-    if (color != null) this.mat.color.setHex(0xf3e6d2).lerp(_c.setHex(color), Math.max(0, tension - 0.5));
-    else this.mat.color.setHex(0xf3e6d2);
+  get visible() { return this.rope.visible; }
+  hide() { this.rope.hide(); }
+
+  /** o: { tension 0..1.3, aspect (hex), helix 0..1, camDist, dt, time } */
+  set(tip, end, o = {}) {
+    const dt = o.dt ?? 1 / 60, tension = o.tension ?? 0.2;
+    const dist = tip.distanceTo(end);
+    this.load = THREE.MathUtils.damp(this.load, tension, 10, dt);
+    const T = this.load;
+    // how much line there is beyond the straight: (8/3) s^2 / d for a sag of s
+    const sag = THREE.MathUtils.clamp((1 - Math.min(1, T)) * (0.05 + dist * 0.045), 0.0, 3.2);
+    this.sag = THREE.MathUtils.damp(this.sag, sag, 8, dt);
+    const length = dist + (o.slack ?? (8 / 3) * this.sag * this.sag / Math.max(1, dist)); // (the slack the caller knows, or the sag it is asked to show)
+    // the colour of the load
+    const asp = _c.set(o.aspect ?? 0xffb27a);
+    const inBand = sm(BAND[0] - 0.1, BAND[0] + 0.08, T) * (1 - sm(BAND[1] - 0.04, BAND[1] + 0.12, T));
+    const warm = sm(BAND[1] - 0.02, 0.98, T), hot = sm(0.98, 1.12, T);
+    _g.copy(this.slackCol).lerp(asp.clone().lerp(new THREE.Color(0xffffff), 0.25), inBand).lerp(AMBER, warm).lerp(HOT, hot);
+    this.rope.setColor(_g);
+    const glowK = Math.max(inBand * 0.55, warm * 0.75, hot);
+    const hum = T > 0.9 ? (T - 0.9) * 0.05 : 0; // (over the limit it shivers)
+    const helix = o.helix ?? 0;
+    const cd = o.camDist ?? 6;
+    this.rope.update(dt, tip, end, {
+      length, gravity: 9.5, damp: 0.98, iter: 7,
+      helix, helixR: 0.3, coils: Math.max(2, Math.min(length / 0.85, this.rope.n / 6.5)), // (a coil needs enough links to look like a coil)
+      glow: _g, taut: glowK, cam: o.cam, px: 0.0034 * (this.baseR / 0.011), rMin: this.baseR * 0.85, rMax: this.baseR * 5.5,
+      radius: THREE.MathUtils.clamp(cd * 0.0034 * (this.baseR / 0.011), this.baseR * 0.85, this.baseR * 5.5),
+    });
+    if (hum > 0) this.rope.mesh.position.set(Math.sin((o.time ?? 0) * 70) * hum, Math.cos((o.time ?? 0) * 61) * hum, 0);
+    else this.rope.mesh.position.set(0, 0, 0);
+    this.rope.glow.position.copy(this.rope.mesh.position);
   }
 }

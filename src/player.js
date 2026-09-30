@@ -72,6 +72,7 @@ export class Player {
     this.mantle = null; // { from, to, t }
     this.wallrun = null; // { n, side, t, lost, handle }
     this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
+    this.lookScale = { lock: 1, blade: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
     this.wallCd = 0;
     this.lastWall = -1;
     this.airJumps = 0;
@@ -159,7 +160,7 @@ export class Player {
 
   look(dt, adsT) {
     const inp = this.input;
-    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT);
+    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade;
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;
@@ -353,7 +354,7 @@ export class Player {
     // ---- slide: crouch while moving fast on the ground ----
     // Starts above slideMinSpeed, or from a sprint that's still spinning up (so a
     // quick sprint-crouch never falls into a plain crouch). The boost is on a cooldown.
-    const wantSlide = this.slideBuf > 0 || (crouchKey && this.landT > 0);
+    const wantSlide = !locked && (this.slideBuf > 0 || (crouchKey && this.landT > 0)); // (a brace is not a slide)
     const fast = hs > M.slideMinSpeed || (sprintKey && hs > M.walkSpeed * 0.8);
     if (!this.sliding && wantSlide && this.grounded && fast && this.slideCd <= 0) {
       this.sliding = true;

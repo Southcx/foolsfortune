@@ -103,11 +103,11 @@ export function buildWeir(L, env) {
   light(24, -0.2, 24, 8, 0x66c4c8, 20); light(40, -0.2, 24, 8, 0x66c4c8, 20); light(57, 0.5, 24, 6, 0x8a6ad0, 14);
   // words
   const T = (t, x, z, o = {}) => label(S, t, [WOX + x, B + 0.02, WOZ + z], { rotY: Math.PI, ...o });
-  T('THE WEIR', 32, 7.5, { width: 3.2, sub: 'Q draw · 2 the rod · wheel: aspect · hold LMB cast' });
+  T('THE WEIR', 32, 7.5, { width: 3.2, sub: 'Q draw · 2 the rod · 4-8 aspect · hold LMB cast · MMB sound' });
   T('PIER', 32, 11.2, { width: 1.1, sub: 'hold LMB · release to cast' });
   T('THE YARD', 8, 11, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
   T('THE WELL', 57.5, 15.5, { width: 2, sub: 'deep things · the top of the tide' });
-  T('HOOK', 23, 9, { width: 1.1, sub: '3 the hook · look up · LMB' });
+  T('HOOK', 23, 9, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
 }
 
 export function spawnWeir(Bk, level) {
@@ -129,7 +129,7 @@ export class Weir {
     this.ripples = new Ripples(game.scene, 16);
     this.fish = []; // all of them
     this.hooks = null; // set by the Angler: { lure(), callbacks }
-    this.sound = { r: 0, src: new THREE.Vector3() };
+    this.sound = { r: 0, src: new THREE.Vector3(), id: 0 }; // (r: how far the sounding has reached; id: which sounding)
     this.legendSeen = -1;
     // the lamp over the water: shows the tide
     const g = (this.lamp = new THREE.Group());
@@ -266,8 +266,8 @@ export class Weir {
     const hooks = this.hooks;
     const ctx = {
       lure: hooks?.lure() || null, tide: this.tide, near: true,
-      sound: this.sound.r, sourcePos: this.sound.src, camera: g.camera,
-      onProbe: hooks?.onProbe, onBite: hooks?.onBite, onMiss: hooks?.onMiss, onSpook: hooks?.onSpook,
+      sound: this.sound.r, sourcePos: this.sound.src, camera: g.camera, pingId: this.sound.id,
+      onProbe: hooks?.onProbe, onBite: hooks?.onBite, onMiss: hooks?.onMiss, onSpook: hooks?.onSpook, onNotice: hooks?.onNotice, onPing: hooks?.onPing,
     };
     for (const f of [...this.fish]) {
       if (f.pool && ctx.lure && ctx.lure.pool && ctx.lure.pool !== f.pool) { ctx.lure = null; }
