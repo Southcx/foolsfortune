@@ -29,7 +29,7 @@ npm run build      # static bundle in dist/
 | F | interact (the chevron marks what F would act on): **open a chest** / feed the Tithe · strike the **gong** by the workshop door to start the time trial · pick up something small (hoisted overhead in both open hands: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
 | V | kick (on the run, or standing; parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
-| B | the System's Codex: Movement Arts, variants, Lab mode, the System's VOICE switch, save code (pauses the game) |
+| B | the System's Codex: Movement Arts, variants, Lab mode, the VOICE and MUSIC switches, save code (pauses the game) |
 | P | the **Pneuka Box**: what she carries (28 slots) and what she wears (the lure, the belt); with the Veritome drawn, its bank opens beside it (pauses the game) |
 | Mouse | look |
 | Left click | fire (semi-auto, one shot per click, inputs are buffered) |
@@ -164,7 +164,15 @@ The Courier's innate storage: what she carries while she is out and about (`src/
 
 ## The System's voice
 
-The few things that matter are also **said aloud**, in the flat, helpful manner of an isekai System (*That Time I Got Reincarnated as a Slime*'s Great Sage: "Notice. ..."): achievements and titles, a skill or art learned, a rank risen, a creature's **analysis** progressed or complete (the bestiary), a rank S card bound, the Pneuka Box full, a prismatic chest, a legendary catch (`src/system/voice.js`). It is the browser's own speech (the Web Speech API: nothing downloaded), with the clearest English voice the machine has, a little slower and lower than the default. The log still writes every line; the voice only speaks the rare ones, drops a line repeated too soon, and never queues more than a few. **VOICE** in the Codex header turns it on or off.
+The few things that matter are also **said aloud**, in the flat, helpful manner of an isekai System (*That Time I Got Reincarnated as a Slime*'s Great Sage: "Notice. ..."): achievements and titles, a skill or art learned, a rank risen, a creature's **analysis** progressed or complete (the bestiary), a rank S card bound, the Pneuka Box full, a prismatic chest, a legendary catch (`src/system/voice.js`). The log still writes every line; the voice only speaks the rare ones, after a soft two-note chime (a notice rises, a warning falls), and the music dips under it. **VOICE** in the Codex header turns it on or off.
+
+The voice is **the game's own**, synthesized from first principles (`src/system/speech/`), the way DECtalk and MITalk spoke: a glottal pulse (KLGLOTT88) and breath noise through a cascade of formant resonators with a nasal pole-zero pair, a parallel branch for the hiss of fricatives and the bursts of stops, Klatt's phoneme targets and duration rules, and a falling "hat" intonation. Words come from a pronouncing dictionary built from the game's own vocabulary out of the **CMU Pronouncing Dictionary** (Copyright (C) 1993-2015 Carnegie Mellon University, BSD licence, its notice kept in `lexicon.data.js`; `node tools/build_lexicon.mjs` rebuilds it), the game's coined words by hand (Pneuka, Veritome, clapperjar, kintsugi...), and the NRL letter-to-sound rules for anything else. It sounds the same in every browser. Its settings were tuned against an offline speech recognizer (Vosk), with espeak-ng as the yardstick: it is a robot's voice, on purpose, but a legible one.
+
+## The music
+
+A theme plays where a room has one (`src/music/`): a score as data, played live by synthesized instruments scheduled ahead of the audio clock. **MUSIC** in the Codex header turns it on or off.
+
+- **The Dunes: "Mirage of the Still Water"** (`music/dunes.js`). Spacey JRPG desert jazz at 84 bpm, swung: the melody in **D# minor pentatonic blues** (D# F# G# A A# C#, the A the blue note) over minor ninths, a lydian B maj7#11, C#13, an altered A#7#9 and, in the bridge, the Neapolitan E maj7#11. Intro, A, A', B, A'', a tag, then round again from A. Vibraphone on the A sections, a ney (the desert's reed flute) on the bridge, an FM Rhodes comping, an upright in two and walking in the bridge, brushes and ride, a darbuka and a finger cymbal, a high pad, all in a long hall with a dotted-eighth echo (`music/player.js`).
 
 ## Treasure: chests, cubes, curios and the Tithe
 
@@ -636,7 +644,8 @@ runtime IK correction on the contact points.
 | `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
 | `src/moves/veritome.js`, `src/veritome/` | the Veritome: the book and its open hold (shared with the Survey), the lens and its viewfinder, the subjects and the photograph's score, the film and the darkroom, the bestiary, the Book (the bank: designated pages, free slots, ranks and limits, Condense) and its card catalogue, the Codex shelf |
 | `src/pneuka/` | the Pneuka Box: the item registry, the box's rules (slots, the line, store / take out), things on the ground, item icons rendered from the models, the window (P) |
-| `src/system/voice.js` | the System's voice: Web Speech lines for achievements, skills, analyses, rare cards, a full box |
+| `src/system/voice.js`, `src/system/speech/` | the System's voice: its rules, and the game's own formant speech synthesizer (lexicon from CMUdict + NRL rules, Klatt-style cascade/parallel synthesis) |
+| `src/music/` | the music: the scores (the Dunes' theme) and the player (synthesized band, lookahead scheduling, ducking) |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |

@@ -110,9 +110,17 @@ export class Codex {
     const V = this.game.voice;
     if (V) {
       const vo = el('div', `lab${V.settings.on ? ' on' : ''}`, 'VOICE <i></i>');
-      vo.title = V.synth ? `The System speaks what matters most${V.voice ? ` (${V.voice.name})` : ''}` : 'This browser has no speech';
+      vo.title = 'The System speaks what matters most, in its own synthesized voice';
       vo.onclick = () => { V.set({ on: !V.settings.on }); if (V.settings.on) V.say('Confirmed. The System will speak.', { key: 'voice.on', throttle: 0 }); this.render(); };
       head.appendChild(vo);
+    }
+    // the music (music/player.js): on or off, kept in the browser
+    const M = this.game.music;
+    if (M) {
+      const mu = el('div', `lab${M.on ? ' on' : ''}`, 'MUSIC <i></i>');
+      mu.title = 'The rooms that have a theme play it (the Dunes: "Mirage of the Still Water")';
+      mu.onclick = () => { M.setOn(!M.on); this.render(); };
+      head.appendChild(mu);
     }
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();

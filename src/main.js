@@ -64,6 +64,8 @@ import { PneukaBox } from './pneuka/box.js';
 import { PneukaUI } from './pneuka/ui.js';
 import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
+import { MusicPlayer } from './music/player.js';
+import { DUNES } from './music/dunes.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -256,6 +258,8 @@ async function main() {
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (system/voice.js)
   game.voice = new SystemVoice(game);
+  // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
+  game.music = new MusicPlayer(sfx);
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
@@ -577,6 +581,7 @@ async function main() {
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
+    game.music.follow(game.dunes?.active && !game.chests?.rave?.active && !game.god?.active ? DUNES : null);
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
