@@ -4,7 +4,7 @@
 // everything (a build opening up), pump the synths and the bass against the kick (the sidechain of every drop since the 2000s), and
 // fall silent for a beat before the drop. The score is data: per bar it says what plays; the arranger says when.
 //
-//   score = { title, bpm, arrange: true, loopFrom, sections: [{ id, bars, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
+//   score = { title, bpm, arrange: true, loopFrom, sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
 //   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
@@ -44,7 +44,7 @@ export class Arranger {
   /** The sidechain: the synths and the bass dip under each kick of a section that pumps. */
   kicked(t) {
     if (!this.pumpOn) return;
-    const g = this.pumpG.gain; g.setValueAtTime(1, t - 0.002); g.linearRampToValueAtTime(0.28, t + 0.01); g.setTargetAtTime(1, t + 0.04, this.spb * 0.22);
+    const g = this.pumpG.gain; g.setValueAtTime(1, t - 0.002); g.linearRampToValueAtTime(this.score?.pumpDepth ?? 0.5, t + 0.01); g.setTargetAtTime(1, t + 0.04, this.spb * 0.22);
   }
 
   play(score) {
@@ -52,7 +52,8 @@ export class Arranger {
     this.score = score; this.build();
     const ctx = this.ctx;
     this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, 0.8);
-    this.alive = true; this.next = ctx.currentTime + 0.15; this.section = 0; this.bar = 0;
+    this.alive = true; this.next = ctx.currentTime + 0.15; this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
+    this.spb = 60 / (score.sections[0].bpm || score.bpm);
     this.timer = setInterval(() => this.run(), 50);
     this.run();
     return true;
@@ -65,6 +66,7 @@ export class Arranger {
     setTimeout(() => { try { bus.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800);
   }
   follow(score) {
+    if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)
     if (score && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.2); else this.play(score); }
     else if (!score && this.alive) this.stop(2);
   }
@@ -78,31 +80,44 @@ export class Arranger {
   run() {
     if (!this.alive) return;
     const ctx = this.ctx;
+    if (this.ended && ctx.currentTime > this.endAt) { this.finished = this.score; this.stop(0.3); this.onEnd?.(this.score); return; }
     if (this.next < ctx.currentTime - 0.2) this.next = ctx.currentTime + 0.1;
     while (this.next < ctx.currentTime + 0.6) this.step();
   }
   /** Lay out one bar at `this.next` (also used to render offline, bar after bar). */
   step() {
-    const S = this.score, sec = S.sections[this.section], t0 = this.next, spb = this.spb;
+    const S = this.score, t0 = this.next;
+    if (this.ended) { this.next += 1; return; }
+    const sec = S.sections[this.section];
+    // (a section may have its own tempo and its own bar: a movement at 75 bpm, another in 5/4)
+    const spb = this.spb = 60 / (sec.bpm || S.bpm), beats = sec.beats || S.beats || 4;
     if (this.bar === 0) {
       this.pumpOn = !!sec.pump;
       const f = this.sweep.frequency;
       f.cancelScheduledValues(t0);
-      if (sec.sweep) { f.setValueAtTime(sec.sweep[0], t0); f.exponentialRampToValueAtTime(sec.sweep[1], t0 + sec.bars * 4 * spb - 0.05); }
+      if (sec.sweep) { f.setValueAtTime(sec.sweep[0], t0); f.exponentialRampToValueAtTime(sec.sweep[1], t0 + sec.bars * beats * spb - 0.05); }
       else f.setValueAtTime(18000, t0);
       if (!sec.pump) { this.pumpG.gain.cancelScheduledValues(t0); this.pumpG.gain.setValueAtTime(1, t0); }
     }
-    for (const e of sec.bar(this.bar)) this.play1(e, t0);
-    this.next += spb * 4;
-    if (++this.bar >= sec.bars) { this.bar = 0; this.section++; if (this.section >= S.sections.length) this.section = S.loopFrom ?? 0; }
+    for (const e of sec.bar(this.bar)) this.play1(e, t0, sec.gain ?? 1);
+    this.next += spb * beats;
+    if (++this.bar >= sec.bars) {
+      this.bar = 0; this.section++;
+      if (this.section >= S.sections.length) {
+        // (a score with no loop plays once: a fanfare, a jingle)
+        if (S.loopFrom === null) { this.ended = true; this.endAt = this.next + (S.tail ?? 3); }
+        else this.section = S.loopFrom ?? 0;
+      }
+    }
   }
-  play1(e, t0) {
+  // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
+  play1(e, t0, gain = 1) {
     const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * 0.008), d = (e.d || 1) * this.spb;
     try {
-      if (HITS.has(e.i)) B[e.i](t, e.v ?? 0.6, e.o);
-      else if (e.i === 'riser' || e.i === 'breath') B[e.i](t, d, e.v ?? 0.3);
-      else if (e.i === 'bell') B.bell(t, e.n, e.v ?? 0.5);
-      else B[e.i](t, d, e.n, e.v ?? 0.5, e.o || {});
+      if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
+      else if (e.i === 'riser' || e.i === 'breath') B[e.i](t, d, (e.v ?? 0.3) * gain);
+      else if (e.i === 'bell') B.bell(t, e.n, (e.v ?? 0.5) * gain);
+      else B[e.i](t, d, e.n, (e.v ?? 0.5) * gain, e.o || {});
     } catch (err) { console.warn('music', e.i, err); }
   }
 }

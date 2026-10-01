@@ -1,143 +1,182 @@
 // ---------------------------------------------------------------------------------------
-// "FOOL'S FORTUNE": the main theme. Two ways of hearing the same few notes, East and West, taking turns and then playing at once.
+// "FOOL'S FORTUNE": the main theme, in five movements. Everything about it is five.
 //
-// THE LEITMOTIF, the Fool's step: A - B - C, and a leap up to E (a step off the edge of the cliff, the Fool's card). What follows
-// the leap says which world it is in:
-//   EAST  F - E - C - B   the Japanese In scale on E (E F A B C): the half step down from F to E is its sigh. The shakuhachi and
-//                          the koto speak it; the harmony is a drone of A and E (the open fifth of the gagaku sho).
-//   WEST  D - C - B - G   the Guidonian hexachord (ut re mi fa sol la): the harmonica and the brass speak it, over i - VI - III - VII
-//                          (Am F C G), the progression of a thousand anthems. In the breakdown the hexachord "mutates" to its soft
-//                          form (molle, on F: the B goes flat), as Guido's singers changed hexachords mid-melody: Dm Bb F C, the
-//                          same tune lifted into a softer light; the second build climbs the hard hexachord (durum, on G) to E,
-//                          the dominant, and drops.
-// The two scales meet on A, C, E and F, so either can take the tune from the other mid-phrase.
+//   THE NOTES. E and G: E the fifth letter, G the fifth degree (of C, the plain hexachord's ut). E minor and G major are one key
+//   seen from two sides, and the two worlds of the game live in them:
+//     EAST  the minyo pentatonic, E G A B D: five notes, Japan's folk scale. The shakuhachi and the koto.
+//     WEST  the hard hexachord, G A B C D E (ut re mi fa sol la): it starts on G and ends on E. Strings, flute, brass, harmonica.
+//   THE FIVE (the leitmotif, after Kondo: short enough to hum, shaped to be re-voiced anywhere): E D B A G, the pentatonic
+//   falling five steps; its answer climbs G A B D E. Played East (no D#, no F#: a B7sus4 under it) or West (the leading tones
+//   D# and F#, a B7 that pulls home), as a fanfare, as a jingle (music/jingles.js), as a lullaby.
+//   THE BARS. Phrases of five bars and ten; a movement in 5/4 (three and two, the way Take Five walks); a five-chord cycle
+//   (Em C G D B7: i, VI, III, VII and the V that turns it round); the run up five notes to the octave.
 //
-// FORM (140 bpm; the drops are half-time): INTRO 8 (the shakuhachi alone, a drone, wind) | EAST 8 (koto ostinato, taiko, the flute
-// develops the motif) | WEST 8 (harmonica and horns, the backbeat) | BUILD 8 (the snare roll, the riser, a filter opening, a brass
-// swell, the In flute holding E and bending; a breath in) | DROP 16 (half-time kit and taiko, sub and growl, supersaws pumped
-// against the kick, the electric guitar wailing the motif, the shakuhachi answering it) | BREAKDOWN 8 (the soft hexachord: a
-// harmonica and koto duet) | BUILD 8 (a brass fanfare up the hard hexachord, a taiko roll) | DROP 16 (everything, and the brass) |
-// OUTRO 8 (the shakuhachi says the motif once more; a bell). Then round again from EAST. About two and a half minutes a time.
+// THE MOVEMENTS (about 3:45 a time round, then again from II):
+//   I    WIND      75 bpm. A piano alone, arpeggios under the melody: the A phrase (Em Em/D Cmaj7 B7 ...: a falling bass, the
+//                  lament). To Zanarkand's room: one instrument, the tune and its harmony, nothing else.
+//   II   PATH      100 bpm in 5/4. A koto ostinato in threes and twos; the shakuhachi takes the A phrase (East: minyo), then the
+//                  flute and the strings the B phrase (West: G major, the hexachord). Path of the Wind's walk: an ostinato that
+//                  never stops under a melody that is in no hurry.
+//   III  WILD      125 bpm. The five-chord cycle; a 16th-note koto, taiko under a light kit (the kick is round and short: it sits
+//                  under the drums of the world, it does not lead), the shakuhachi calls the Five and the brass answers it,
+//                  then the harmonica; Wozwald's forest, wood and air and a pulse. Then a BUILD of ten bars: the strings climb the
+//                  hexachord, a snare and a taiko roll, everything opening through a filter, a breath.
+//   IV   FORTUNE   the climax. The B phrase and the A phrase in the whole band (strings, brass, flute, guitar, the shakuhachi in
+//                  the counter-line), and the tag that ends it climbs to E5 and LEAPS THE OCTAVE to E6, everything striking
+//                  with it: the slam. The E6 sings over the last bars as they fall.
+//   V    RETURN    75 bpm. The piano again, the flute; the last chord is E major (the Picardy third), and the celesta plays the
+//                  Five's answer up to the octave.
 //
-// Prior art: Crywolf's "Datura" (the shape: an aching intro, a long tension build, a drop that opens like a flower), the main themes
-// of Final Fantasy and Kingdom Hearts (a motif that comes back in every arrangement), Okami's and Ghost of Tsushima's scores (Japanese
-// instruments and scales inside a modern orchestra), Guido of Arezzo's hand (the hexachords, their mutation), and breath as the line:
-// a flute, a reed, a horn.
+// Prior art: Joe Hisaishi (Path of the Wind's ostinato and its patience, the falling-bass lament of his minor themes, the piano
+// as the voice), Nobuo Uematsu's To Zanarkand (the solo piano, a melody that says everything in eight bars), Koji Kondo (the
+// leitmotif: a few notes that come back as a fanfare, a jingle, a lullaby, in every arrangement), Yuu Miyashita's Wozwald
+// (acoustic and ethnic colour over a modern pulse, the build), Guido of Arezzo (the hexachords), Dave Brubeck (5/4).
 // ---------------------------------------------------------------------------------------
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
+
+// the chords: a voicing (strings, pads), the bass, an arpeggio (the piano's eighths)
 const CH = {
-  Am: { root: 33, saw: [69, 72, 76], low: [57, 60, 64] }, F: { root: 29, saw: [65, 69, 72], low: [53, 57, 60] },
-  C: { root: 36, saw: [67, 72, 76], low: [55, 60, 64] }, G: { root: 31, saw: [67, 71, 74], low: [55, 59, 62] },
-  E: { root: 28, saw: [68, 71, 76], low: [56, 59, 64] }, Dm: { root: 38, saw: [69, 74, 77], low: [57, 62, 65] },
-  Bb: { root: 34, saw: [70, 74, 77], low: [58, 62, 65] },
+  Em: { r: 40, v: [52, 59, 64, 67], arp: [40, 47, 52, 55, 59, 55, 52, 47] },
+  EmD: { r: 38, v: [50, 59, 64, 67], arp: [38, 47, 52, 55, 59, 55, 52, 47] },
+  Cmaj7: { r: 36, v: [48, 55, 59, 64], arp: [36, 43, 48, 52, 55, 59, 55, 52] },
+  B7: { r: 35, v: [47, 54, 57, 63], arp: [35, 42, 47, 51, 54, 57, 54, 51] },
+  Bsus: { r: 35, v: [47, 52, 57, 59], arp: [35, 42, 47, 52, 54, 57, 54, 52] }, // (B7sus4: no D#, the East's dominant)
+  Am7: { r: 33, v: [45, 52, 55, 60], arp: [33, 40, 45, 48, 52, 55, 52, 48] },
+  G: { r: 31, v: [43, 50, 55, 59], arp: [31, 38, 43, 47, 50, 55, 50, 47] },
+  DFs: { r: 42, v: [50, 54, 57, 62], arp: [42, 50, 54, 57, 62, 57, 54, 50] },
+  C: { r: 36, v: [48, 52, 55, 60], arp: [36, 43, 48, 52, 55, 60, 55, 52] },
+  GB: { r: 35, v: [47, 50, 55, 59], arp: [35, 43, 47, 50, 55, 59, 55, 50] },
+  Am: { r: 33, v: [45, 52, 57, 60], arp: [33, 40, 45, 48, 52, 57, 52, 48] },
+  D: { r: 38, v: [50, 54, 57, 62], arp: [38, 45, 50, 54, 57, 62, 57, 54] },
+  Dsus: { r: 38, v: [50, 55, 57, 62], arp: [38, 45, 50, 55, 57, 62, 57, 55] },
+  EM: { r: 40, v: [52, 59, 64, 68], arp: [40, 47, 52, 56, 59, 64, 59, 56] }, // (E major: the Picardy third)
 };
-const SONG = ['Am', 'F', 'C', 'G'];
-const MOLLE = ['Dm', 'Bb', 'F', 'C'];
-// the koto's ostinato in the In scale (E F A B C), two bars
-const OST = [[57, 64, 65, 69, 71, 69, 65, 64], [57, 64, 65, 72, 71, 69, 65, 64]];
 
-// ---- the tunes: per bar, [beat, beats, midi, options]
-const SHAKU_INTRO = [[], [[0, 2, 69], [2, 1, 71], [3, 1, 72]], [[0, 3.5, 76, { bend: 1 }]], [[0, 1, 77], [1, 1, 76], [2, 1, 72], [3, 1, 71]], [[0, 4, 69]], [], [[0, 1.5, 76], [1.5, 0.5, 77], [2, 1, 76], [3, 1, 72]], [[0, 2, 71], [2, 2, 69]]];
-const SHAKU_EAST = [[[0, 1, 69], [1, 1, 71], [2, 2, 72]], [[0, 2, 76], [2, 1, 77], [3, 1, 76]], [[0, 1.5, 72], [1.5, 0.5, 71], [2, 2, 69]], [[3, 1, 71]],
-  [[0, 1, 72], [1, 1, 76], [2, 2, 77]], [[0, 2, 81], [2, 1, 77], [3, 1, 76]], [[0, 1, 72], [1, 1, 71], [2, 1, 69], [3, 1, 65]], [[0, 4, 64, { bend: 1 }]]];
-const HARP_WEST = [[[0, 1, 69], [1, 1, 71], [2, 1, 72, { blue: true }], [3, 1, 76]], [[0, 1.5, 74], [1.5, 0.5, 72], [2, 2, 69]], [[0, 1, 67], [1, 1, 69], [2, 1, 72], [3, 1, 74]], [[0, 3, 71, { bend: -1 }], [3, 1, 67]],
-  [[0, 1, 69], [1, 1, 71], [2, 1, 72], [3, 1, 76]], [[0, 2, 77], [2, 1, 76], [3, 1, 74]], [[0, 1, 76], [1, 1, 74], [2, 1, 72], [3, 1, 71]], [[0, 2, 74], [2, 1, 71], [3, 1, 67]]];
-const GUITAR = [[[0, 1.5, 69], [1.5, 0.5, 71], [2, 1, 72], [3, 1, 76]], [[0, 3, 77, { from: -2 }], [3, 1, 76]], [[0, 1, 79], [1, 1, 76], [2, 1, 72], [3, 1, 74]], [[0, 2, 71, { vib: 0.03 }], [2, 2, 67]],
-  [[0, 1.5, 69], [1.5, 0.5, 71], [2, 1, 72], [3, 1, 76]], [[0, 2, 81, { from: -2 }], [2, 1, 79], [3, 1, 77]], [[0, 1, 76], [1, 1, 79], [2, 2, 84, { bend: 2, bendAt: 0.4 }]], [[0, 3, 83, { vib: 0.035 }], [3, 1, 79]],
-  [[0, 1.5, 69], [1.5, 0.5, 71], [2, 1, 72], [3, 1, 76]], [[0, 3, 77, { from: -2 }], [3, 1, 76]], [[0, 1, 79], [1, 1, 76], [2, 1, 72], [3, 1, 74]], [[0, 2, 71, { vib: 0.03 }], [2, 2, 67]],
-  [[0, 1.5, 69], [1.5, 0.5, 71], [2, 1, 72], [3, 1, 76]], [[0, 2, 81, { from: -2 }], [2, 1, 79], [3, 1, 77]], [[0, 2, 84, { from: -1 }], [2, 1, 83], [3, 1, 79]], [[0, 4, 76, { bend: 2, bendAt: 0.35, vib: 0.03 }]]];
-const ANSWER = [[2, 0.5, 77], [2.5, 0.5, 76], [3, 0.5, 72], [3.5, 0.5, 71]]; // (the In answer: F E C B)
-const HARP_MOLLE = [[[0, 1, 74], [1, 1, 77], [2, 1, 79], [3, 1, 81]], [[0, 2, 82], [2, 1, 81], [3, 1, 77]], [[0, 1, 77], [1, 1, 79], [2, 2, 81]], [[0, 3, 79], [3, 1, 77]]];
-const KOTO_MOLLE = [[62, 65, 69, 72, 76, 72, 69, 65], [58, 62, 65, 69, 70, 69, 65, 62], [53, 60, 65, 69, 72, 69, 65, 60], [48, 55, 60, 64, 67, 64, 60, 55]];
+// THE A PHRASE (E minor; it opens with the Five: E D B .. G) and THE B PHRASE (G major, up the hexachord): per bar, [beat, beats, midi]
+const A = [
+  [[0, 1.5, 76], [1.5, 0.5, 74], [2, 1, 71], [3, 1, 67]],
+  [[0, 3, 69], [3, 1, 71]],
+  [[0, 1.5, 67], [1.5, 0.5, 69], [2, 1, 71], [3, 1, 76]],
+  [[0, 2, 75], [2, 2, 71]],
+  [[0, 1.5, 76], [1.5, 0.5, 74], [2, 1, 71], [3, 1, 67]],
+  [[0, 1, 69], [1, 1, 71], [2, 1, 74], [3, 1, 76]],
+  [[0, 2, 79], [2, 1, 78], [3, 1, 76]],
+  [[0, 2, 78], [2, 1, 75], [3, 1, 71]],
+];
+const A_CH = ['Em', 'EmD', 'Cmaj7', 'B7', 'Em', 'EmD', 'Am7', 'B7'];
+// (the same phrase in the East: the minyo pentatonic, no leading tones, a suspended dominant)
+const A_EAST = A.map((b, i) => (i === 3 ? [[0, 2, 74], [2, 2, 71]] : i === 6 ? [[0, 2, 79], [2, 1, 76], [3, 1, 74]] : i === 7 ? [[0, 2, 76], [2, 1, 74], [3, 1, 71]] : b));
+const A_CH_EAST = ['Em', 'EmD', 'Cmaj7', 'Bsus', 'Em', 'EmD', 'Am7', 'Bsus'];
+const B = [
+  [[0, 1, 71], [1, 1, 74], [2, 2, 79]],
+  [[0, 1.5, 78], [1.5, 0.5, 76], [2, 2, 74]],
+  [[0, 1, 76], [1, 1, 79], [2, 2, 83]],
+  [[0, 2, 81], [2, 1, 79], [3, 1, 76]],
+  [[0, 1, 74], [1, 1, 76], [2, 1, 79], [3, 1, 81]],
+  [[0, 2, 83], [2, 1, 81], [3, 1, 79]],
+  [[0, 3, 81], [3, 1, 74]],
+  [[0, 2, 78], [2, 2, 81]],
+];
+const B_CH = ['G', 'DFs', 'Em', 'C', 'GB', 'Am', 'Dsus', 'D'];
+// the Five and its answer, as a motif to call and answer with
+const FIVE = [[0, 1.5, 76], [1.5, 0.5, 74], [2, 1, 71], [3, 0.5, 69], [3.5, 0.5, 67]];
+const ANSWER = [[0, 0.5, 67], [0.5, 0.5, 69], [1, 0.5, 71], [1.5, 0.5, 74], [2, 2, 76]];
+// the climax's tag: up to E5, and the octave leap to E6 (the slam)
+const TAG = [[[0, 1, 76], [1, 1, 79], [2, 2, 83]], [[0, 1, 81], [1, 1, 78], [2, 2, 74]], [[0, 1, 75], [1, 1, 78], [2, 1, 83], [3, 1, 81]], [[0, 1, 76], [1, 3, 88]]];
+const TAG_CH = ['C', 'D', 'B7', 'Em'];
+const FALL = [[[0, 4, 88]], [[0, 2, 84], [2, 2, 83]], [[0, 2, 81], [2, 2, 78]], [[0, 4, 76]], [[0, 4, 76]]];
+const FALL_CH = ['Em', 'C', 'D', 'Em', 'Em'];
+const CYCLE = ['Em', 'C', 'G', 'D', 'B7']; // (the five-chord cycle of the WILD)
 
-const tune = (inst, bars, v, extra = {}) => (i) => (bars[i] || []).map(([b, d, n, o]) => E(inst, b, d, n, v, { ...extra, ...o }));
-const ost = (i, v, pat = OST) => pat[i % pat.length].map((n, k) => E('koto', k * 0.5, 0.5, n, v * (k % 2 ? 0.8 : 1), { pan: k % 2 ? 0.35 : 0.15 }));
+// helpers: a tune as events; a 4/4 bar stretched to 5/4 (its last note held a beat longer); the piano's arpeggio
+const tune = (inst, bar, v, o = {}, shift = 0) => (bar || []).map(([b, d, n, oo]) => E(inst, b, d, n + shift, v, { ...o, ...oo }));
+const five = (bar) => (bar || []).map((x, k, a) => (k === a.length - 1 ? [x[0], x[1] + 1, x[2], x[3]] : x));
+const arp = (c, v, beats = 4) => CH[c].arp.slice(0, beats * 2).map((n, k) => E('piano', k * 0.5, 1.2, n, v * (k === 0 ? 1.2 : k % 2 ? 0.75 : 0.9), { pedal: 0.4 }));
+const pad = (c, v, d = 4, o = {}) => [E('strings', 0, d, CH[c].v, v, { attack: 0.6, bright: 1800, ...o })];
 
 export const FORTUNE = {
-  title: "Fool's Fortune", bpm: 140, arrange: true, loopFrom: 1,
+  title: "Fool's Fortune", bpm: 125, arrange: true, loopFrom: 1, pumpDepth: 0.55,
   sections: [
-    { id: 'intro', bars: 8, bar: (i) => [
-      ...(i === 0 ? [E('pad', 0, 32, [45, 52, 57], 0.22, { cutoff: 900 }), E('breath', 0, 16, null, 0.08)] : []),
-      ...(i === 4 ? [E('breath', 0, 16, null, 0.07)] : []),
-      E('koto', 0, 2, [76, 81][i % 2], 0.18, { press: false }), E('koto', 2.5, 1.5, [69, 72, 71, 77][i % 4], 0.14, { press: false }),
-      ...tune('shakuhachi', SHAKU_INTRO, 0.55)(i),
-      ...(i === 3 ? [E('taiko', 0, 1, null, 0.45)] : []), ...(i === 7 ? [E('taiko', 0, 1, null, 0.55), E('taiko', 2, 1, null, 0.75)] : []),
-    ] },
-    { id: 'east', bars: 8, bar: (i) => [
-      ...(i === 0 ? [E('pad', 0, 32, [45, 52, 57], 0.15, { cutoff: 1100 })] : []),
-      ...ost(i, 0.24), E('sub', 0, 4, 33, 0.34),
-      E('kick', 0, 1, null, 0.55), E('taiko', 0, 1, null, 0.32), E('taiko', 2.5, 1, null, 0.2, { size: 0.8 }),
-      ...[0.5, 1.5, 2.5, 3.5, 1, 3].map((b) => E('shaker', b, 0.25, null, b % 1 ? 0.18 : 0.1)),
-      ...tune('shakuhachi', SHAKU_EAST, 0.6)(i),
-    ] },
-    { id: 'west', bars: 8, bar: (i) => { const c = CH[SONG[i % 4]]; return [
-      ...c.low.map((n, k) => E('brass', 0, 4, n, 0.15, { pan: (k - 1) * 0.3 })),
-      ...ost(i, 0.1), E('sub', 0, 4, c.root, 0.38),
-      E('kick', 0, 1, null, 0.6), E('kick', 2.5, 1, null, 0.45), E('snare', 1, 1, null, 0.34), E('snare', 3, 1, null, 0.4),
-      ...[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((b) => E('hat', b, 0.25, null, b % 1 ? 0.12 : 0.2)),
-      ...tune('harmonica', HARP_WEST, 0.55)(i),
-    ]; } },
-    { id: 'build', bars: 8, sweep: [1000, 16000], bar: (i) => { const ch = ['Am', 'F', 'C', 'G', 'Am', 'F', 'G', 'E'][i], c = CH[ch]; const ev = [];
-      const step = [1, 1, 0.5, 0.5, 0.25, 0.25, 0.125, 0.125][i];
-      for (let b = 0; b < (i === 7 ? 2 : 4); b += step) ev.push(E('snare', b, step, null, 0.2 + (i * 4 + b) / 32 * 0.6, { tone: 190 + i * 22 + b * 6 }));
-      if (i < 7) for (let b = 0; b < 4; b += 0.5) ev.push(E('supersaw', b, 0.4, c.saw, 0.16 + i * 0.02, { cutoff: 900 + i * 600 }));
-      if (i < 7) ev.push(E('sub', 0, 4, c.root, 0.45));
-      if (i >= 4 && i < 7) for (let b = 0; b < 4; b += 1) ev.push(E('kick', b, 1, null, 0.75));
-      if (i === 0) ev.push(E('riser', 0, 30, null, 0.35));
-      if (i < 4) ev.push(...tune('harmonica', HARP_WEST, 0.5)(i));
-      if (i === 4) ev.push(E('shakuhachi', 0, 14, 76, 0.6, { bend: 2 }));
-      if (i >= 6) ev.push(...c.low.map((n) => E('brass', 0, i === 7 ? 2 : 4, n + 12, 0.32)));
-      if (i === 7) ev.push(E('breath', 2, 2, null, 0.5));
-      return ev; } },
-    { id: 'drop', bars: 16, pump: true, bar: (i) => drop(i, false) },
-    { id: 'breakdown', bars: 8, bar: (i) => { const c = CH[MOLLE[i % 4]], ev = [E('pad', 0, 4, c.low.map((n) => n + 12), 0.2, { cutoff: 1800 }), E('sub', 0, 4, c.root, 0.3)];
-      if (i < 4) ev.push(...tune('harmonica', HARP_MOLLE, 0.6)(i), ...ost(i, 0.12, KOTO_MOLLE));
-      else { ev.push(...ost(i, 0.34, KOTO_MOLLE)); ev.push(...tune('shakuhachi', [[[0, 4, 69]], [[0, 4, 65]], [[0, 2, 69], [2, 2, 72]], [[0, 4, 67]]], 0.45)(i - 4)); }
-      if (i >= 4) for (let b = 0; b < 4; b += 0.5) ev.push(E('hat', b, 0.25, null, 0.08 + (b % 1 ? 0 : 0.05)));
-      if (i === 0) ev.push(E('bell', 0, 1, 74, 0.35));
-      return ev; } },
-    { id: 'build2', bars: 8, sweep: [900, 16000], bar: (i) => { const ch = ['Dm', 'Bb', 'F', 'C', 'Am', 'F', 'G', 'E'][i], c = CH[ch]; const ev = [];
-      const step = [1, 1, 0.5, 0.5, 0.25, 0.25, 0.125, 0.125][i];
-      for (let b = 0; b < (i === 7 ? 2 : 4); b += step) ev.push(E('snare', b, step, null, 0.2 + (i * 4 + b) / 32 * 0.6, { tone: 200 + i * 22 + b * 6 }));
-      if (i >= 4) for (let b = 0; b < (i === 7 ? 2 : 4); b += i >= 6 ? 0.25 : 0.5) ev.push(E('taiko', b, 0.5, null, 0.3 + i * 0.05, { size: 0.9 }));
-      if (i < 7) for (let b = 0; b < 4; b += 0.5) ev.push(E('supersaw', b, 0.4, c.saw, 0.16 + i * 0.02, { cutoff: 900 + i * 600 }));
-      if (i < 7) ev.push(E('sub', 0, 4, c.root, 0.45));
-      if (i === 0) ev.push(E('riser', 0, 30, null, 0.38));
-      if (i < 4) ev.push(...ost(i, 0.2, KOTO_MOLLE));
-      // the fanfare: up the hard hexachord, ut re mi fa sol la on G, to the E
-      if (i === 4) ev.push(...[67, 69, 71, 72].map((n, k) => E('brass', k, 1, n, 0.42, { stab: false })), ...[67, 69, 71, 72].map((n, k) => E('brass', k, 1, n - 12, 0.3)));
-      if (i === 5) ev.push(E('brass', 0, 2, 74, 0.45), E('brass', 2, 2, 76, 0.48), E('brass', 0, 4, 62, 0.3));
-      if (i === 6) ev.push(...CH.G.low.map((n) => E('brass', 0, 4, n + 12, 0.36)), E('brass', 0, 4, 76, 0.5));
-      if (i === 7) { ev.push(...CH.E.low.map((n) => E('brass', 0, 2, n + 12, 0.4)), E('brass', 0, 2, 76, 0.5), E('breath', 2, 2, null, 0.55)); }
-      return ev; } },
-    { id: 'drop2', bars: 16, pump: true, bar: (i) => drop(i, true) },
-    { id: 'outro', bars: 8, bar: (i) => { const c = CH[SONG[i % 4]], ev = [E('pad', 0, 4, c.low, 0.18, { cutoff: 1000 })];
-      if (i < 7) ev.push(...[0, 1, 2, 3].map((b, k) => E('koto', b, 1, c.low[k % 3] + 12, 0.18)));
-      ev.push(...tune('shakuhachi', [[], [], [[0, 2, 69], [2, 1, 71], [3, 1, 72]], [[0, 4, 76, { bend: 1 }]], [[0, 1, 77], [1, 1, 76], [2, 1, 72], [3, 1, 71]], [[0, 4, 69]], [], []], 0.55)(i));
-      if (i === 7) ev.push(E('taiko', 0, 1, null, 0.6), E('bell', 0, 1, 69, 0.5), E('bell', 0.5, 1, 76, 0.35));
-      return ev; } },
+    // I. WIND: the piano alone
+    { id: 'wind', bars: 10, bpm: 75, bar: (i) => {
+      if (i < 8) return [...arp(A_CH[i], 0.3), ...tune('piano', A[i], 0.5, { pedal: 0.3 }, 12), ...(i >= 4 ? pad(A_CH[i], 0.06) : [])];
+      if (i === 8) return [...arp('Em', 0.28), E('piano', 0, 4, 88, 0.45, { pedal: 1 }), E('celesta', 2, 1, 88, 0.25), ...pad('Em', 0.07)];
+      return [E('breath', 0, 4, null, 0.06), ...pad('Em', 0.08, 5, { attack: 2 }), ...[76, 79, 81, 83, 88].map((n, k) => E('celesta', 2 + k * 0.4, 1, n, 0.28))];
+    } },
+    // II. PATH, in 5/4: the koto's three-and-two; the shakuhachi takes A (East), the flute and strings take B (West)
+    { id: 'path', bars: 15, bpm: 100, beats: 5, bar: (i) => {
+      const c = i < 2 ? 'Em' : i < 10 ? A_CH_EAST[i - 2] : B_CH[i - 10], t = CH[c].v.map((n) => n + 12);
+      const pat = [t[0], t[1], t[2], t[1], t[2], t[3], t[0], t[2], t[1], t[2]];
+      const ev = pat.map((n, k) => E(i < 10 ? 'koto' : 'marimba', k * 0.5, 0.5, n, (k === 0 || k === 6 ? 0.3 : 0.2), { pan: k < 6 ? 0.25 : -0.25, press: false }));
+      if (i >= 10) ev.push(...pat.filter((_, k) => k % 2 === 0).map((n, k) => E('pizz', k, 0.5, n - 12, 0.2)));
+      ev.push(E('strings', 0, 5, CH[c].r + 12, 0.12, { attack: 0.4, bright: 1200 }), E('taiko', 0, 1, null, 0.36), E('taiko', 3, 1, null, 0.22, { size: 0.8 }));
+      for (let b = 0.5; b < 5; b += 1) ev.push(E('shaker', b, 0.5, null, 0.08));
+      if (i >= 2 && i < 10) ev.push(...tune('shakuhachi', five(A_EAST[i - 2]), 0.55));
+      if (i >= 10) ev.push(...tune('flute', five(B[i - 10]), 0.5), ...tune('strings', five(B[i - 10]), 0.12, { attack: 0.15, bright: 2400 }, -12), ...pad(c, 0.07, 5));
+      if (i === 14) for (let b = 3; b < 5; b += 0.25) ev.push(E('taiko', b, 0.25, null, 0.15 + (b - 3) * 0.15, { size: 0.9 }));
+      return ev;
+    } },
+    // III. WILD: the five-chord cycle, wood and air and a pulse; the Five called and answered
+    { id: 'wild', bars: 25, bpm: 125, gain: 1.5, bar: (i) => {
+      const p = Math.floor(i / 5), c = CYCLE[i % 5], C = CH[c], t = (c === 'B7' ? [59, 66, 71, 75] : C.v.map((n) => n + 12));
+      const ev = [];
+      [0, 1, 2, 1, 3, 2, 1, 2, 0, 1, 2, 1, 3, 2, 3, 2].forEach((k, j) => ev.push(E('koto', j * 0.25, 0.25, t[k], j % 4 === 0 ? 0.2 : 0.12, { press: false, pan: j % 2 ? 0.3 : -0.1 })));
+      for (let b = 0; b < 4; b += 0.5) ev.push(E('pizz', b, 0.5, C.r + 12, b % 1 ? 0.14 : 0.22));
+      for (let b = 0.5; b < 4; b += 1) ev.push(E('shaker', b, 0.5, null, 0.08));
+      ev.push(E('taiko', 0, 1, null, 0.42), E('taiko', 3.5, 0.5, null, 0.22, { size: 0.8 }));
+      if (p >= 1) ev.push(E('strings', 0, 4, C.r + 12, 0.12, { attack: 0.12, bright: 900 }), E('sub', 0, 4, C.r, 0.16), E('kick', 0, 1, null, 0.3), E('kick', 2.5, 1, null, 0.2));
+      if (p >= 2) { ev.push(E('clap', 1, 1, null, 0.28), E('clap', 3, 1, null, 0.32)); for (let b = 0; b < 4; b += 0.25) ev.push(E('hat', b, 0.25, null, b % 1 ? 0.04 : 0.08)); }
+      if (p >= 3) for (let b = 0; b < 4; b += 1) ev.push(E('marimba', b + 0.5, 0.5, t[(b + i) % 4] + 12, 0.14));
+      // the Five, called (East) and answered (West)
+      if (p === 1) { if (i % 2 === 1) ev.push(...tune('shakuhachi', FIVE, 0.55)); else if (i !== 5) ev.push(...tune('brass', ANSWER, 0.3)); if (i === 9) ev.push(...tune('brass', ANSWER, 0.3)); }
+      if (p === 2) ev.push(...tune('strings', [A[0], A[2], B[0], B[1], A[3]][i % 5], 0.2, { attack: 0.08, bright: 3000 }), ...tune('flute', [A[0], A[2], B[0], B[1], A[3]][i % 5], 0.35));
+      if (p === 3) { if (i % 2 === 1) ev.push(...tune('shakuhachi', FIVE, 0.55)); else ev.push(...tune('harmonica', [B[0], B[2], B[4]][(i - 15) / 2 | 0] || B[0], 0.5)); if (i === 19) ev.push(E('harmonica', 0, 4, 78, 0.35, { bend: -1 })); }
+      if (p === 4) ev.push(...tune('strings', [A[4], A[5], A[6], B[6], A[3]][i % 5], 0.22, { attack: 0.06, bright: 3400 }), ...tune('shakuhachi', [A_EAST[4], A_EAST[5], A_EAST[6], B[6], A_EAST[3]][i % 5], 0.4), ...pad(c, 0.08));
+      return ev;
+    } },
+    // the BUILD: ten bars; the strings climb the hexachord (ut re mi fa sol la on G), the rolls, the filter opening, a breath
+    { id: 'build', bars: 10, bpm: 125, gain: 1.5, sweep: [900, 16000], bar: (i) => {
+      const c = ['Em', 'C', 'G', 'D', 'Em', 'C', 'G', 'D', 'B7', 'B7'][i], C = CH[c], ev = [];
+      const step = i < 2 ? 1 : i < 5 ? 0.5 : i < 8 ? 0.25 : 0.125;
+      for (let b = 0; b < (i === 9 ? 2 : 4); b += step) ev.push(E('snare', b, step, null, 0.12 + (i * 4 + b) / 40 * 0.5, { tone: 180 + i * 18 + b * 5 }));
+      if (i >= 7) for (let b = 0; b < (i === 9 ? 2 : 4); b += i >= 8 ? 0.25 : 0.5) ev.push(E('taiko', b, 0.5, null, 0.22 + (i - 7) * 0.08, { size: 0.9 }));
+      if (i < 9) { ev.push(E('strings', 0, 4, C.r + 12, 0.12, { attack: 0.1, bright: 900 }), E('sub', 0, 4, C.r, 0.16), E('kick', 0, 1, null, 0.28)); for (let b = 0; b < 4; b += 0.5) ev.push(E('pizz', b, 0.5, C.r + 12, 0.18)); }
+      if (i === 0) ev.push(E('riser', 0, 38, null, 0.3));
+      // the hexachord climbing, a note a beat, octave after octave
+      const HEX = [67, 69, 71, 72, 74, 76];
+      if (i < 8) for (let b = 0; b < 4; b++) { const k = i * 4 + b; ev.push(E('strings', b, 1, HEX[k % 6] + 12 * Math.floor(k / 6) - 12, 0.16 + i * 0.015, { attack: 0.05, bright: 3200 })); }
+      if (i >= 8) ev.push(...C.v.map((n) => E('brass', 0, i === 9 ? 2 : 4, n + 12, 0.3)), E('strings', 0, i === 9 ? 2 : 4, [75, 78, 83], 0.2, { attack: 0.3 }));
+      if (i === 6) ev.push(E('shakuhachi', 0, 12, 76, 0.5, { bend: 2 }));
+      if (i === 9) ev.push(E('breath', 2, 2, null, 0.4));
+      return ev;
+    } },
+    // IV. FORTUNE: B, then A, in the whole band; the tag climbs and leaps the octave; the E6 sings over the fall
+    { id: 'fortune', bars: 25, bpm: 125, pump: true, gain: 1.6, bar: (i) => {
+      const part = i < 8 ? 'B' : i < 16 ? 'A' : i < 20 ? 'TAG' : 'FALL', k = part === 'B' ? i : part === 'A' ? i - 8 : part === 'TAG' ? i - 16 : i - 20;
+      const c = part === 'B' ? B_CH[k] : part === 'A' ? A_CH[k] : part === 'TAG' ? TAG_CH[k] : FALL_CH[k], C = CH[c];
+      const mel = part === 'B' ? B[k] : part === 'A' ? A[k] : part === 'TAG' ? TAG[k] : FALL[k];
+      const ev = [];
+      if (i === 0 || i === 8 || i === 16) ev.push(E('impact', 0, 1, null, i === 0 ? 0.6 : 0.4));
+      // the slam: E5 to E6 on beat two of the last tag bar, everything at once
+      if (part === 'TAG' && k === 3) ev.push(E('impact', 1, 1, null, 0.8), E('crash', 1, 1, null, 0.6), ...CH.Em.v.map((n) => E('brass', 1, 3, n + 12, 0.42)), E('taiko', 1, 1, null, 0.8));
+      // the melody: strings in octaves, flute above, brass below, the guitar singing it, the shakuhachi in the counter-line
+      ev.push(...tune('strings', mel, 0.24, { attack: 0.05, bright: 3800 }), ...tune('strings', mel, 0.16, { attack: 0.05, bright: 2600 }, -12));
+      ev.push(...tune('flute', mel, 0.32), ...tune('brass', mel, 0.2, {}, -12), ...tune('guitar', mel, 0.42, { vib: 0.025 }));
+      if (part !== 'FALL') ev.push(E('shakuhachi', 0, 4, C.v[3] + 12, 0.28, { scoop: 0 }));
+      // the harmony and the ground
+      ev.push(...pad(c, 0.16), E('supersaw', 0, 4, C.v.slice(1).map((n) => n + 12), 0.12, { cutoff: 3600 }), E('strings', 0, 4, [C.r + 12, C.r + 24], 0.14, { attack: 0.08, bright: 1100 }), E('sub', 0, 4, C.r, 0.22));
+      if (part !== 'FALL' || k === 0) {
+        ev.push(E('kick', 0, 1, null, 0.34), E('kick', 2, 1, null, 0.28), E('snare', 1, 1, null, 0.36), E('snare', 3, 1, null, 0.4), E('taiko', 0, 1, null, 0.45), E('taiko', 1.5, 0.5, null, 0.26, { size: 0.8 }), E('taiko', 3.5, 0.5, null, 0.26, { size: 0.8 }));
+        for (let b = 0; b < 4; b += 0.5) ev.push(E('hat', b, 0.25, null, b % 1 ? 0.07 : 0.11));
+        if (i >= 8) ev.push(...C.v.slice(1).map((n) => E('brass', 0, 0.5, n + 12, 0.24, { stab: true })), ...C.v.slice(1).map((n) => E('brass', 2.5, 0.5, n + 12, 0.2, { stab: true })));
+      } else { ev.push(E('taiko', 0, 1, null, 0.35 - k * 0.05)); for (let b = 0; b < 4; b++) ev.push(E('piano', b, 1, C.arp[b * 2] + 12, 0.25)); }
+      return ev;
+    } },
+    // V. RETURN: the piano and the flute; E major at the end, and the Five's answer up to the octave on the celesta
+    { id: 'return', bars: 10, bpm: 75, bar: (i) => {
+      if (i < 8) return [...arp(A_CH[i], 0.26), ...tune(i < 4 ? 'flute' : 'piano', A[i], i < 4 ? 0.42 : 0.45, { pedal: 0.3 }, i < 4 ? 0 : 12), ...(i >= 4 ? pad(A_CH[i], 0.05) : [])];
+      if (i === 8) return [...arp('EM', 0.28), E('flute', 0, 4, 76, 0.4), ...pad('EM', 0.08)];
+      return [E('piano', 0, 4, 28, 0.35, { pedal: 2 }), E('piano', 0, 4, 40, 0.3, { pedal: 2 }), ...[76, 80, 81, 83, 88].map((n, k) => E('celesta', k * 0.5, 1, n, 0.28)), E('bell', 3, 1, 76, 0.3), ...pad('EM', 0.06, 4, { attack: 1 })];
+    } },
   ],
 };
-
-// the drops: half-time kit with the taiko inside it, sub and growl, the supersaws, the guitar wailing the motif, the flute answering
-function drop(i, second) {
-  const c = CH[SONG[i % 4]], ev = [];
-  if (i === 0) ev.push(E('impact', 0, 1, null, 0.8));
-  if (i === 8) ev.push(E('crash', 0, 1, null, 0.45));
-  ev.push(E('kick', 0, 1, null, 1), E('kick', 2.75, 1, null, 0.8), E('clap', 2, 1, null, 0.72), E('snare', 2, 1, null, 0.6));
-  if (i % 2) ev.push(E('kick', 1.5, 1, null, 0.6));
-  ev.push(E('taiko', 0, 1, null, 0.62), E('taiko', 1.5, 1, null, 0.38, { size: 0.8 }), E('taiko', 3.5, 1, null, 0.32, { size: 0.7 }));
-  for (let b = 0; b < 4; b += 0.5) ev.push(E('hat', b, 0.25, null, b % 1 ? 0.14 : 0.22));
-  if (i % 4 === 3) for (let b = 3; b < 4; b += 0.125) ev.push(E('hat', b, 0.125, null, 0.12 + (b - 3) * 0.2));
-  ev.push(E('sub', 0, 4, c.root, 0.82));
-  ev.push(E('growl', 0, 1.5, c.root + 12, 0.44, { rate: 4.67 }), E('growl', 2, 0.75, c.root + 12, 0.4, { rate: 9.33 }), E('growl', 3, 1, c.root + 24, 0.34, { rate: 4.67 }));
-  ev.push(E('supersaw', 0, 4, c.saw, 0.34, { cutoff: second ? 5600 : 4600 }));
-  const g = GUITAR[i] || [];
-  for (const [b, d, n, o] of g) ev.push(E('guitar', b, d, second && i >= 8 && n < 80 ? n + 12 : n, 0.62, o || {}));
-  if (i % 4 === 3) ev.push(...ANSWER.map(([b, d, n]) => E('shakuhachi', b, d, n, 0.55, { scoop: 0 })));
-  if (second) {
-    for (const b of [0, 1.5]) ev.push(...c.low.map((n) => E('brass', b, 0.5, n + 12, 0.42, { stab: true })));
-    if (i < 8) ev.push(E('harmonica', 0, 4, c.saw[1], 0.34));
-  }
-  return ev;
-}

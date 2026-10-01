@@ -4,11 +4,17 @@
 // with a line of notes on each track: what it is made of and where it lives. /music <track> in the chat line does the same.
 // ---------------------------------------------------------------------------------------
 import { FORTUNE } from './fortune.js';
+import { FOOLS_STEP } from './foolsstep.js';
 import { DUNES } from './dunes.js';
+import { FANFARE, FOUND, REST } from './jingles.js';
 
 export const TRACKS = [
-  { id: 'fortune', score: FORTUNE, title: "Fool's Fortune", where: 'the main theme · the title', notes: 'A minor, 140 bpm. The Fool\'s step (A B C, and a leap to E) heard two ways: the In scale on E (shakuhachi, koto, taiko) and the Guidonian hexachord (harmonica, brass), taking turns, then at once: a build, a breath, a drop with a wailing guitar. The hexachord mutates to its soft form in the breakdown.' },
+  { id: 'fortune', score: FORTUNE, title: "Fool's Fortune", where: 'the main theme · the title', notes: 'E minor and G major, in five movements (Wind, Path, Wild, Fortune, Return; 75, 100 in 5/4, 125 bpm). The Five (E D B A G, the minyo pentatonic falling) and its answer (G A B D E, climbing the hard hexachord); a piano alone, a koto walking in fives, a forest pulse, a build up the hexachord, the whole band and an octave leap to E6, and home to E major.' },
+  { id: 'fanfare', score: FANFARE, title: 'Fanfare of the Five', where: 'a jingle · a battle won, a trial cleared', notes: 'The answer (G A B D E) in the brass as a pickup, up to G, then B, and home.' },
+  { id: 'found', score: FOUND, title: 'Found', where: 'a jingle · something precious found', notes: 'The answer run up to E6 on the celesta and the flute, a bell on top.' },
+  { id: 'rest', score: REST, title: 'A Place to Rest', where: 'a jingle · a rest, a save', notes: 'The Five slowly on the piano in G major, the flute answering.' },
   { id: 'dunes', score: DUNES, title: 'Mirage of the Still Water', where: 'the Dunes', notes: 'D# minor pentatonic blues, 84 bpm swung. Vibes and a ney over Rhodes, brushes and a darbuka: a lounge at the oasis.' },
+  { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
 ];
 export const TRACK = Object.fromEntries(TRACKS.map((t) => [t.id, t]));
 

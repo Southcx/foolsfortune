@@ -181,12 +181,83 @@ export class Band {
     }
   }
 
+  // ---- the concert hall: piano, strings, flute, pizzicato, celesta, marimba (Hisaishi's and Uematsu's rooms)
+  /** A piano: six partials a string, slightly stretched (a real string's stiffness), two strings a note beating gently, the high
+   *  partials dying first, a felt hammer's knock; the damper falls when the note is let go. */
+  piano(t, dur, m, v = 0.5, { pan = 0, pedal = 0 } = {}) {
+    const c = this.ctx, f = hz(m), B = 0.00035, T = Math.min(6, 2.8 * Math.sqrt(262 / f)), off = t + dur + pedal;
+    const o = this.out(this.bus.dry, 0.34, { verb: 0.45, pan: pan || Math.max(-0.5, Math.min(0.5, (m - 60) / 50)) });
+    const lp = this.filt('lowpass', Math.min(12000, 1800 + v * 7000 + f * 2)); lp.connect(o);
+    const end = off + 0.25;
+    for (let n = 1; n <= 6; n++) {
+      const fn = n * f * Math.sqrt(1 + B * n * n);
+      if (fn > 14000) break;
+      const a = Math.pow(n, -1.25) * (n === 1 ? 1 : 0.35 + v * 0.65), tau = T / (1 + (n - 1) * 0.7);
+      for (const d of [1, 1.0007]) {
+        const g = c.createGain(); g.connect(lp);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v * 0.5, t + 0.003);
+        g.gain.setTargetAtTime(0.0001, t + 0.003, tau); g.gain.setTargetAtTime(0.0001, off, 0.06);
+        this.osc('sine', fn * d, t, end, g);
+      }
+    }
+    const hg = c.createGain(); hg.gain.setValueAtTime(v * 0.25, t); hg.gain.exponentialRampToValueAtTime(0.0001, t + 0.03); hg.connect(o);
+    const hl = this.filt('bandpass', Math.min(4000, f * 3), 1.5); this.noise(t, t + 0.04, hl); hl.connect(hg);
+  }
+  /** A string section: three bows a note (detuned saws), a soft attack, the vibrato arriving late, a gentle filter. */
+  strings(t, dur, m, v = 0.4, { pan = 0, attack = 0.25, bright = 2600, spic = false } = {}) {
+    const notes = Array.isArray(m) ? m : [m], c = this.ctx, g = c.createGain();
+    const end = this.env(g, t, spic ? 0.015 : attack, v, spic ? Math.min(dur, 0.12) : dur, spic ? 0.12 : 0.45);
+    const o = this.out(this.bus.dry, 0.05, { verb: 0.55, pan });
+    const lp = this.filt('lowpass', bright, 0.5); g.connect(lp).connect(o);
+    for (const n of notes) {
+      const f = hz(n);
+      for (const [d, p] of [[0.996, -0.3], [1, 0], [1.005, 0.3]]) {
+        const pn = c.createStereoPanner(); pn.pan.value = p; pn.connect(g);
+        const x = this.osc('sawtooth', f * d, t, end, pn);
+        this.vib(x, t, f * d, 0.006, 5.3 + d, Math.min(0.4, dur * 0.3), end);
+      }
+    }
+  }
+  /** A concert flute: purer than the shakuhachi (a sine and a breath of its octave), a little breath, a singer's vibrato. */
+  flute(t, dur, m, v = 0.5, { pan = -0.1 } = {}) {
+    const c = this.ctx, f = hz(m), g = c.createGain(), end = this.env(g, t, 0.05, v, dur, 0.18);
+    const o = this.out(this.bus.dry, 0.32, { verb: 0.5, echo: 0.12, pan }); g.connect(o);
+    for (const [r, a] of [[1, 1], [2, 0.18], [3, 0.04]]) {
+      const og = c.createGain(); og.gain.value = a; og.connect(g);
+      const x = this.osc('sine', f * r, t, end, og);
+      this.vib(x, t, f * r, 0.008, 5, Math.min(0.35, dur * 0.4), end);
+    }
+    const bg = c.createGain(), bp = this.filt('bandpass', f * 2, 2); bg.gain.setValueAtTime(v * 0.25, t); bg.gain.exponentialRampToValueAtTime(v * 0.05, t + 0.15);
+    bg.gain.setValueAtTime(v * 0.05, t + dur); bg.gain.exponentialRampToValueAtTime(0.0001, end); this.noise(t, end, bp); bp.connect(bg).connect(o);
+  }
+  pizz(t, dur, m, v = 0.5, { pan = 0 } = {}) {
+    const c = this.ctx, f = hz(m), g = c.createGain(), o = this.out(this.bus.dry, 0.22, { verb: 0.35, pan });
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+    const lp = this.filt('lowpass', Math.min(5000, f * 5)); g.connect(lp).connect(o);
+    this.osc('triangle', f, t, t + 0.4, g); this.osc('sine', f * 2, t, t + 0.2, g);
+  }
+  celesta(t, dur, m, v = 0.4) {
+    const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.2, { verb: 0.55, echo: 0.2 });
+    for (const [r, a, d] of [[1, 1, 1.4], [4, 0.25, 0.4], [10, 0.06, 0.15]]) {
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      g.connect(o); this.osc('sine', f * r, t, t + d, g);
+    }
+  }
+  marimba(t, dur, m, v = 0.5, { pan = 0 } = {}) {
+    const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.26, { verb: 0.3, pan });
+    for (const [r, a, d] of [[1, 1, 0.5], [3.93, 0.3, 0.12], [9.2, 0.08, 0.05]]) {
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + d * Math.sqrt(440 / f));
+      g.connect(o); this.osc('sine', f * r, t, t + d * Math.sqrt(440 / f) + 0.05, g);
+    }
+  }
+
   // ---- the kit
   kick(t, v = 1) {
-    const c = this.ctx, g = c.createGain(), o = this.out(this.bus.dry, 0.75);
-    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.42); g.connect(o);
-    const x = this.osc('sine', 160, t, t + 0.45, g); x.frequency.exponentialRampToValueAtTime(44, t + 0.12);
-    const k = c.createGain(); k.gain.setValueAtTime(v * 0.5, t); k.gain.exponentialRampToValueAtTime(0.0001, t + 0.015); k.connect(o);
+    // (rounder and shorter than a club kick: it sits under the taiko and the strings, it does not lead)
+    const c = this.ctx, g = c.createGain(), o = this.out(this.bus.dry, 0.48);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3); g.connect(o);
+    const x = this.osc('sine', 130, t, t + 0.32, g); x.frequency.exponentialRampToValueAtTime(48, t + 0.1);
+    const k = c.createGain(); k.gain.setValueAtTime(v * 0.22, t); k.gain.exponentialRampToValueAtTime(0.0001, t + 0.012); k.connect(o);
     this.osc('square', 1800, t, t + 0.02, k);
     this.bus.kicked?.(t);
   }

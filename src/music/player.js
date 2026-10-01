@@ -30,6 +30,7 @@ export class MusicPlayer {
     try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) this.on = !!s.on; } catch { /* default: on */ }
     // the scores that build and drop (the main theme) are played by the arranger (music/arranger.js); this player keeps the Dunes'
     this.arr = new Arranger(sfx);
+    this.arr.onEnd = (sc) => { if (this.pick === sc) this.pick = null; }; // (a jingle chosen in the sound test plays once)
     this.pick = null; // (a track chosen in the sound test, played over whatever the place would play, until stopped)
   }
   setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) { this.stop(1); this.arr.stop(1); } }
@@ -38,6 +39,7 @@ export class MusicPlayer {
   /** Per frame: the theme for where she is (or none), started and stopped with a fade. */
   follow(score) {
     score = this.pick || score;
+    if (this.arr.finished && this.arr.finished !== score) this.arr.finished = null;
     if (this.on && score?.arrange) { if (this.alive) this.stop(1.2); this.arr.follow(score); return; }
     this.arr.follow(null);
     const want = this.on && score;
