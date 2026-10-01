@@ -335,6 +335,27 @@ export class Tracking {
     });
     on('npc.say', (e) => { L.inc('npc.lines'); L.inc(`npc.mood.${e.mood || 'calm'}`); const n = this.game.folk?.byId[e.npc]; log.say('npc', `${n?.name || 'Someone'} : ${e.line}`); });
     on('npc.choose', (e) => log.say('say', `Courier : ${e.text}`));
+    // the slip jellies (jelly/slipjelly.js): what they do to her and what she does to them; a blow by anything else is said as what it was
+    on('jelly.notice', () => { L.inc('jelly.noticed'); log.say('battle', 'A slip jelly turns toward you.', { key: 'jnot', throttle: 4 }); });
+    on('jelly.hit', (e) => { if (e.by === 'courier') { L.inc('jelly.hit'); L.inc(`jelly.hit.${e.cause}`); } });
+    on('jelly.strike', (e) => { L.inc('jelly.struck'); L.inc(`jelly.struck.${e.move}`); log.say('warn', e.move === 'lunge' ? 'The slip jelly throws itself at you.' : 'The slip jelly spits slip at you.', { key: `jstr.${e.move}`, throttle: 1.5 }); });
+    on('jelly.cancel', (e) => { L.inc('jelly.cancelled'); L.inc(`jelly.cancelled.${e.why}`); if (e.why === 'staggered') log.say('battle', 'Your blow breaks the slip jelly\'s wind-up.', { key: 'jcan', throttle: 1 }); });
+    on('jelly.burst', (e) => {
+      if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'You burst the slip jelly.', { key: 'jbur', win: 1, fmt: (n) => `You burst ${plural(n, 'slip jelly').replace('jellys', 'jellies')}.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle in a while.'); }
+      else log.say('other', 'The slip jelly bursts.', { key: 'jbur2', throttle: 1 });
+    });
+    // the Veritome's Flash (veritome/flash.js): a mind opened, and what was typed into it
+    const DID = { halt: 'halts', slow: 'slows', sleep: 'falls asleep', forget: 'forgets you', flee: 'turns for home', soft: 'softens', calm: 'grows calm', melt: 'melts into a puddle', cancel: 'stops what it was doing' };
+    on('flash.open', (e) => { L.inc('flash.open'); log.say('battle', `You flash the ${e.kind === 'slipjelly' ? 'slip jelly' : 'creature'}. Its mind lies open for ${e.seconds} seconds: type into it.`, { key: 'flo', throttle: 0.5 }); first('flash', 'Logged: your first Flash. Type a phrase whole and press Enter; the longer the phrase, the stronger. /flash sets how long a mind stays open.'); });
+    on('flash.cast', (e) => {
+      L.inc('flash.cast'); L.inc(`flash.verb.${e.verb}`); L.inc(`flash.tier.${e.tier}`); L.inc('flash.chars', e.chars);
+      const who = e.kind === 'slipjelly' ? 'The slip jelly' : 'It';
+      log.say('battle', e.took ? `${who} ${DID[e.verb] || 'obeys'}.` : `${who} does not answer to that just now.`, {});
+    });
+    on('flash.miss', () => L.inc('flash.miss'));
+    on('flash.close', (e) => { if (e.why === 'time' || e.why === 'spent') log.say('other', 'The mind closes.', { key: 'flc', throttle: 1 }); });
+    on('flash.window', (e) => log.say('system', `The Flash holds a mind open for ${e.seconds} seconds.`));
+    on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
     on('emote', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });

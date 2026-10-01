@@ -79,6 +79,9 @@ export class Cinema {
     if (cine !== this.cine) { this.cine = cine; document.body.classList.toggle('cine', cine); } // (what is not part of the shot steps out of it)
     const h = this.k * 11.5;
     this.top.style.height = this.bot.style.height = `${h < 0.02 ? 0 : h}vh`;
+    // (what stays on screen in a shot, the log above all, which carries what is said, rides inside the picture, not under the bars)
+    const hv = h < 0.02 ? 0 : Math.round(h * 10) / 10;
+    if (hv !== this.hv) { this.hv = hv; document.documentElement.style.setProperty('--cine', `${hv}vh`); }
     this.strainK = D(this.strainK, this.strain, 8, dt);
     this.vig.style.opacity = this.strainK < 0.01 ? 0 : (this.strainK * this.strainK).toFixed(3);
   }

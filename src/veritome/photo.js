@@ -19,7 +19,7 @@
 import * as THREE from 'three';
 import { SUBJECTS } from './subjects.js';
 
-const POSE = { infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
+const POSE = { wind: 60, chase: 20, sleep: 30, melt: 30, infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
 const _v = new THREE.Vector3(), _f = new THREE.Vector3();
 
 export const starsOf = (score) => (score >= 230 ? 4 : score >= 170 ? 3 : score >= 110 ? 2 : 1);

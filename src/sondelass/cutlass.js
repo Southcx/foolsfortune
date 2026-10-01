@@ -174,6 +174,14 @@ export class Cutlass {
       g.clappers.hit(c, _p.clone(), dir.clone(), s.power, 'sliced');
       g.events?.emit('cut.hit', { what: 'clapper', combo: this.combo });
     }
+    for (const c of g.creatures?.near(P.pos, 4) || []) {
+      if (this.hit.has(c)) continue;
+      c.center(_p);
+      if (segDist(_a, _b, _p) > c.radius + 0.45) continue;
+      this.hit.add(c); struck++;
+      g.creatures.strike(c, _p.clone(), dir.clone(), 1.4 * s.power, 'sliced');
+      g.events?.emit('cut.hit', { what: c.kind, combo: this.combo });
+    }
     if (struck) this.impact(s.dmg, _a, _b);
   }
 
@@ -238,6 +246,14 @@ export class Cutlass {
       g.clappers.hit(c, _p.clone(), dir.clone(), STING.power, 'sliced');
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7));
       g.events?.emit('cut.hit', { what: 'clapper', combo: 'stinger' });
+    }
+    for (const c of g.creatures?.near(_c.copy(from).lerp(to, 0.5), from.distanceTo(to) * 0.5 + 1) || []) {
+      if (this.stHit.has(c)) continue;
+      c.center(_p);
+      if (segDist(from, to, _p) > STING.radius + c.radius) continue;
+      this.stHit.add(c); struck++;
+      g.creatures.strike(c, _p.clone(), dir.clone(), 2.2 * STING.power, 'sliced');
+      g.events?.emit('cut.hit', { what: c.kind, combo: 'stinger' });
     }
     if (struck) g.time.pulse('stinger', 0.04, 0.1, { release: 0.2 });
     // afterimages: the body left behind at intervals, fading

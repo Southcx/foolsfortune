@@ -1,3 +1,4 @@
+import { setBitmapText } from './ui/bitmapfont.js';
 import { T } from './config.js';
 
 import { SHELL_KEYS } from './shells.js';
@@ -44,7 +45,9 @@ export class Hud {
     this.el.shells.appendChild(this.hand); this.handAt = -1;
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '' }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true }) {
+    // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
+    if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
     // speedometer (with a short peak hold, for tuning movement)
     this.peakT = (this.peakT || 0) - dt;
     if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
@@ -69,7 +72,7 @@ export class Hud {
       this.el.lachFill.style.width = `${(pool.available / pool.max) * 100}%`;
       this.el.lachRes.style.width = `${(pool.reserved / pool.max) * 100}%`;
       this.el.lachRes.style.left = `${(pool.available / pool.max) * 100}%`;
-      this.el.lachNum.textContent = Math.floor(pool.available);
+      setBitmapText(this.el.lachNum, Math.floor(pool.available)); // (the maker's bitmap font, where the size never changes: ui/bitmapfont.js)
       this.el.lach.classList.toggle('low', pool.available < 12);
     }
     if (shells && this.slots) {

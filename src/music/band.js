@@ -311,4 +311,110 @@ export class Band {
     const x = this.osc('sine', 70, t, t + 1.6, g); x.frequency.exponentialRampToValueAtTime(28, t + 1.2);
     this.crash(t, 0.5);
   }
+
+  // ---- the jazz room (for the black-key theme, music/lachryma.js, and the battle): after the Dunes' band (music/player.js)
+  /** An electric piano: FM, the modulator's index falling as the note dies (the bark, then the bell), a tine on top. */
+  rhodes(t, dur, m, v = 0.4, { pan = -0.15 } = {}) {
+    const c = this.ctx, f = hz(m), d = Math.min(3.2, dur + 0.7), o = this.out(this.bus.dry, 0.55, { verb: 0.25, pan });
+    const g = c.createGain(); this.env(g, t, 0.006, v, 0.02, d); g.connect(o);
+    const car = this.osc('sine', f, t, t + d + 0.1, g);
+    const mod = c.createOscillator(), mg = c.createGain(); mod.frequency.value = f;
+    mg.gain.setValueAtTime(f * 2.0 * (0.5 + v), t); mg.gain.exponentialRampToValueAtTime(f * 0.2, t + 0.9);
+    mod.connect(mg).connect(car.frequency); mod.start(t); mod.stop(t + d + 0.1);
+    const tg = c.createGain(); this.env(tg, t, 0.002, v * 0.16, 0.01, 0.12); tg.connect(o); this.osc('sine', f * 7.1, t, t + 0.2, tg);
+  }
+  /** A vibraphone: two partials and the motor's tremolo. */
+  vibes(t, dur, m, v = 0.4, { pan = 0.25 } = {}) {
+    const c = this.ctx, f = hz(m), d = Math.max(1.2, dur + 1.2), o = this.out(this.bus.dry, 0.4, { verb: 0.35, echo: 0.15, pan });
+    const trem = c.createGain(); trem.connect(o);
+    const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 5.2; lg.gain.value = 0.25; l.connect(lg).connect(trem.gain); l.start(t); l.stop(t + d + 0.2);
+    const a = c.createGain(); this.env(a, t, 0.003, v, 0.01, d); a.connect(trem); this.osc('sine', f, t, t + d + 0.1, a);
+    const b = c.createGain(); this.env(b, t, 0.002, v * 0.22, 0.01, 0.35); b.connect(trem); this.osc('sine', f * 4, t, t + 0.5, b);
+  }
+  /** The upright bass: a plucked string, its brightness gone before its body. */
+  upright(t, dur, m, v = 0.5) {
+    const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.6);
+    const lp = this.filt('lowpass', 900, 1.2); lp.frequency.setValueAtTime(1000, t); lp.frequency.exponentialRampToValueAtTime(240, t + 0.25);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.005);
+    g.gain.exponentialRampToValueAtTime(v * 0.35, t + 0.3); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.12);
+    lp.connect(g).connect(o);
+    const x = this.osc('triangle', f, t, t + dur + 0.2, lp); this.osc('sine', f, t, t + dur + 0.2, lp);
+    x.frequency.setValueAtTime(f * 1.02, t); x.frequency.exponentialRampToValueAtTime(f, t + 0.03);
+  }
+  ride(t, v = 0.3) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.16, { verb: 0.3, pan: 0.3 }), g = c.createGain(), hp = this.filt('highpass', 6500);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55); g.connect(o); hp.connect(g);
+    for (const r of [1, 1.342, 1.2312, 1.6532, 1.9523, 2.1523]) this.osc('square', 320 * r, t, t + 0.6, hp);
+  }
+  /** A brush swept on the snare (a soft, slow-attack hiss). */
+  brush(t, v = 0.3) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.3, { pan: -0.1 }), g = c.createGain(), bp = this.filt('bandpass', 3200, 0.7);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28); g.connect(o);
+    this.noise(t, t + 0.3, bp); bp.connect(g);
+  }
+  /** A soprano saxophone: a reed (a saw) through the horn's formants, breath, a scoop into the note and a vibrato that comes late. */
+  sax(t, dur, m, v = 0.45, { bend = 0, pan = 0.05 } = {}) {
+    const c = this.ctx, f = hz(m), end = t + dur, o = this.out(this.bus.dry, 0.32, { verb: 0.3, echo: 0.18, pan });
+    const g = c.createGain(); this.env(g, t, 0.05, v, dur, 0.18);
+    const f1 = this.filt('bandpass', 1100, 1.6), f2 = this.filt('bandpass', 2600, 2.2), lp = this.filt('lowpass', Math.min(9000, f * 6), 0.8);
+    const mix = c.createGain(); f1.connect(mix); f2.connect(mix); mix.connect(lp).connect(g).connect(o);
+    const r = this.osc('sawtooth', f, t, end + 0.2, f1); r.connect(f2);
+    r.frequency.setValueAtTime(f * 0.96, t); r.frequency.exponentialRampToValueAtTime(f, t + 0.07);
+    if (bend) r.frequency.exponentialRampToValueAtTime(f * Math.pow(2, bend / 12), end);
+    if (dur > 0.45) this.vib(r, t, f, 0.011, 5.4, Math.min(0.35, dur * 0.4), end + 0.2);
+    const bg = c.createGain(); this.env(bg, t, 0.04, v * 0.12, dur * 0.6, 0.2); bg.connect(o);
+    const bb = this.filt('bandpass', f * 3, 3); this.noise(t, end + 0.2, bb); bb.connect(bg);
+  }
+  /** Voices humming, or singing "aah" (open): a buzz through two vowel formants, several voices a little apart. */
+  hum(t, dur, notes, v = 0.3, { open = false, attack = 0.25, pan = 0 } = {}) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.3, { verb: 0.45, pan });
+    const [a1, a2] = open ? [750, 1150] : [300, 870]; // ("aah" / "mm-oo")
+    const f1 = this.filt('bandpass', a1, 3), f2 = this.filt('bandpass', a2, 5), g = c.createGain();
+    this.env(g, t, attack, v, dur, 0.5); f1.connect(g); f2.connect(g); g.connect(o);
+    for (const m of [].concat(notes)) for (const det of [-9, 4, 11]) {
+      const x = this.osc('sawtooth', hz(m), t, t + dur + 0.6, f1); x.connect(f2); x.detune.value = det;
+      this.vib(x, t, hz(m), 0.006, 4.6 + det * 0.05, 0.4, t + dur + 0.6);
+    }
+  }
+  /** The work hammer: iron on iron (a clang of inharmonic partials) over a dull thud. */
+  hammer(t, v = 0.6, { pan = 0.15 } = {}) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.35, { verb: 0.35, pan });
+    const g = c.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1); g.connect(o);
+    for (const [r, k] of [[1, 1], [2.76, 0.5], [5.4, 0.3], [8.93, 0.15]]) { const gg = c.createGain(); gg.gain.value = k; gg.connect(g); this.osc('sine', 330 * r, t, t + 1.2, gg); }
+    const th = c.createGain(); th.gain.setValueAtTime(v * 0.9, t); th.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); th.connect(o);
+    const x = this.osc('sine', 120, t, t + 0.2, th); x.frequency.exponentialRampToValueAtTime(55, t + 0.15);
+    const ng = c.createGain(); ng.gain.setValueAtTime(v * 0.5, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); ng.connect(o);
+    const bp = this.filt('bandpass', 3000, 1); this.noise(t, t + 0.06, bp); bp.connect(ng);
+  }
+  /** A foot on a wooden floor, and the breath that comes with the swing ("huh"). */
+  stomp(t, v = 0.6) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.5, { verb: 0.2 }), g = c.createGain();
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); g.connect(o);
+    const x = this.osc('sine', 90, t, t + 0.3, g); x.frequency.exponentialRampToValueAtTime(45, t + 0.2);
+    const lp = this.filt('lowpass', 600); this.noise(t, t + 0.12, lp); lp.connect(g);
+  }
+  huh(t, v = 0.3) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.35, { verb: 0.3 }), g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22); g.connect(o);
+    const f1 = this.filt('bandpass', 600, 2), f2 = this.filt('bandpass', 1100, 3); this.noise(t, t + 0.25, f1, 0.7); this.noise(t, t + 0.25, f2, 0.7); f1.connect(g); f2.connect(g);
+  }
+  /** A washboard scraped (the rhythm section of a work song with no drums). */
+  scrape(t, v = 0.25) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.2, { pan: -0.35 }), g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.015); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); g.connect(o);
+    const bp = this.filt('bandpass', 4200, 4); this.noise(t, t + 0.1, bp, 1.6); bp.connect(g);
+  }
+  /** Bongos (the battle's hands, after Tank!): a tuned skin, high or low. */
+  bongo(t, v = 0.5, { hi = true } = {}) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.35, { pan: hi ? 0.35 : 0.2, verb: 0.15 }), g = c.createGain(), f = hi ? 420 : 300;
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); g.connect(o);
+    const x = this.osc('sine', f * 1.3, t, t + 0.2, g); x.frequency.exponentialRampToValueAtTime(f, t + 0.03);
+    const ng = c.createGain(); ng.gain.setValueAtTime(v * 0.4, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.02); ng.connect(o);
+    const bp = this.filt('bandpass', 2500, 1.5); this.noise(t, t + 0.03, bp); bp.connect(ng);
+  }
+  timbale(t, v = 0.5) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.3, { pan: -0.25, verb: 0.25 }), g = c.createGain();
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35); g.connect(o);
+    for (const r of [1, 1.58, 2.2]) this.osc('triangle', 560 * r, t, t + 0.4, g);
+  }
 }

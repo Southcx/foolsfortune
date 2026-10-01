@@ -27,7 +27,9 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4( posi
 const DOWN = `
 uniform sampler2D tSrc; uniform vec2 uTexel; uniform float uThresh, uKnee; uniform bool uFirst; varying vec2 vUv;
 // (a pixel some shader left NaN or infinite would spread through the blurs into black blocks: each tap is made safe first)
-vec3 safe( vec3 c ) { return ( any( isnan( c ) ) || any( isinf( c ) ) ) ? vec3( 0.0 ) : clamp( c, 0.0, 64.0 ); }
+// (a range test, not isnan(): a compiler may assume there are no NaNs and fold isnan() away; a comparison with NaN is always false)
+bool sound( vec3 c ) { return all( greaterThanEqual( c, vec3( -1e4 ) ) ) && all( lessThanEqual( c, vec3( 1e4 ) ) ); }
+vec3 safe( vec3 c ) { return sound( c ) ? clamp( c, 0.0, 64.0 ) : vec3( 0.0 ); }
 vec3 tap( vec2 o ) { return safe( texture2D( tSrc, vUv + uTexel * o ).rgb ); }
 void main() {
 	vec3 c = ( tap( vec2( -1.0, -1.0 ) ) + tap( vec2( 1.0, -1.0 ) ) + tap( vec2( -1.0, 1.0 ) ) + tap( vec2( 1.0, 1.0 ) ) ) * 0.25;
@@ -49,10 +51,25 @@ void main() {
 }`;
 // the composite: the frame, the glow over it, the tone curve, the screen's colour space, the grade
 const COMP = `
-uniform sampler2D tScene, tA, tB; uniform float uGlow, uGrade; varying vec2 vUv;
+uniform sampler2D tScene, tA, tB; uniform float uGlow, uGrade; uniform vec2 uTexel; varying vec2 vUv;
+bool bad( vec3 c ) { return !( all( greaterThanEqual( c, vec3( -1e4 ) ) ) && all( lessThanEqual( c, vec3( 1e4 ) ) ) ); }
 void main() {
 	vec3 c = texture2D( tScene, vUv ).rgb;
-	if ( any( isnan( c ) ) || any( isinf( c ) ) ) c = vec3( 0.0 );
+	// (a pixel some shader left NaN takes a sound neighbour's colour: shown black, a run of them along a thin ring read as a dotted
+	// black ring in the sky. The blurs are guarded separately, above.)
+	if ( bad( c ) ) {
+		// (rings of eight taps, one to five pixels out, until one ring finds sound pixels: a thin line of NaN is a few pixels wide)
+		vec3 n = vec3( 0.0 ); float k = 0.0;
+		for ( int r = 1; r <= 5; r++ ) {
+			for ( int i = 0; i < 8; i++ ) {
+				float a = float( i ) * 0.7853982;
+				vec3 s = texture2D( tScene, vUv + vec2( cos( a ), sin( a ) ) * float( r ) * uTexel ).rgb;
+				if ( !bad( s ) ) { n += s; k += 1.0; }
+			}
+			if ( k > 0.0 ) break;
+		}
+		c = k > 0.0 ? n / k : vec3( 0.0 );
+	}
 	c += ( texture2D( tA, vUv ).rgb * 0.6 + texture2D( tB, vUv ).rgb * 0.55 ) * uGlow;
 	gl_FragColor = vec4( c, 1.0 );
 	#include <tonemapping_fragment>
@@ -78,7 +95,7 @@ export class Glow {
     const mk = (frag, uniforms, toneMapped = false) => new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false, toneMapped });
     this.down = mk(DOWN, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uThresh: { value: 2.0 }, uKnee: { value: 0.9 }, uFirst: { value: false } });
     this.blur = mk(BLUR, { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } });
-    this.comp = mk(COMP, { tScene: { value: null }, tA: { value: null }, tB: { value: null }, uGlow: { value: 0.5 }, uGrade: { value: 1 } }, true);
+    this.comp = mk(COMP, { tScene: { value: null }, tA: { value: null }, tB: { value: null }, uGlow: { value: 0.5 }, uGrade: { value: 1 }, uTexel: { value: new THREE.Vector2() } }, true);
     this.size = new THREE.Vector2();
   }
   get on() { return (T.visual.glow ?? 0) > 0 || (T.visual.grade ?? 0) > 0; }
@@ -89,6 +106,7 @@ export class Glow {
     const s = this.r.getDrawingBufferSize(this.size), w = Math.max(1, s.x), h = Math.max(1, s.y);
     if (this.scene.width === w && this.scene.height === h) return;
     this.scene.setSize(w, h);
+    this.comp.uniforms.uTexel.value.set(1 / Math.max(1, w), 1 / Math.max(1, h));
     this.half.setSize(Math.max(1, w >> 1), Math.max(1, h >> 1));
     for (const t of this.q) t.setSize(Math.max(1, w >> 2), Math.max(1, h >> 2));
     for (const t of this.e) t.setSize(Math.max(1, w >> 3), Math.max(1, h >> 3));

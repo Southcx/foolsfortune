@@ -26,6 +26,12 @@ const inDunes = (g) => !!g.dunes?.active;
 export const ENGAGED = new Set(['taunt', 'flee', 'stumble', 'hide', 'cower', 'scalded', 'knocked', 'stunned', 'raid', 'guard']);
 
 export const SUBJECTS = {
+  slipjelly: { name: 'slip jelly', find: (g) => (g.jellies?.list || []).filter((c) => c.alive).map((c) => {
+    const states = new Set([c.state]);
+    if (c.air) states.add('air');
+    for (const k of c.status?.keys() || []) states.add(k);
+    return { pos: c.pos.clone().setY(c.pos.y + 0.75), r: 0.8, ref: c, states, aware: !!c.aggro, engaged: c.aggro && ['chase', 'wind', 'recover'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
+  }) },
   clapper: { name: 'clapperjar', find: (g) => (g.clappers?.list || []).filter((c) => c.alive).map((c) => {
     const st = new Set([c.state]);
     if (!c.grounded || c.state === 'knocked') st.add('air');

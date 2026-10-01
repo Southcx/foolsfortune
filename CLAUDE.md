@@ -44,6 +44,9 @@ credits: UAL Standard, CMU mocap, CC0).
 - A new psychic tool goes on the belt (`src/tools/belt.js`), and anything that asks "is a tool out?" asks the belt.
 - What a tool may do to a thing is a tag on the thing (`src/tags.js`: sliceable, breakable, liftable, pushable, static); a tool asks
   `hasTag`, never the entity's kind. Static things a sweeping tool must find are registered there.
+- A creature that can be hurt is tagged `hurtable` and registered with `game.creatures` (`src/creatures.js`); a weapon calls
+  `creatures.strike`, never the creature's own module. Conditions (halt, slow, sleep...) are statuses applied there, and the creature
+  decides what each means for it. A feature that wants the chat line's typing borrows it as a mode (`log.setMode`).
 
 ## Scope
 - Raids belong to one room (THE SIEGE, `src/siege.js` and `src/raids.js`), not a global setting.

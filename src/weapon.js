@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { hasTag } from './tags.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { T, DEG, PALETTE } from './config.js';
 import { GUN_POINTS } from './character.js';
@@ -71,6 +72,8 @@ export class Weapon {
   }
 
   get drawn() { return this.drawT >= 1; }
+  /** Out and up: drawn, and the arm raised to aim (first person is always up). */
+  raised(player) { return this.drawn && (this.combatBlend > 0.85 || player.fpWeight > 0.5); }
   // the draw in two beats: the hand snaps to the hip (drawT < 0.45), then the gun comes up
   get held() { return smooth(0.45, 1, this.drawT); }
 
@@ -156,7 +159,8 @@ export class Weapon {
     this.sway.x = THREE.MathUtils.damp(this.sway.x, THREE.MathUtils.clamp(-(player.lookDX || 0) * 0.0006, -0.04, 0.04) * sw, 10, dt);
     this.sway.y = THREE.MathUtils.damp(this.sway.y, THREE.MathUtils.clamp((player.lookDY || 0) * 0.0006, -0.04, 0.04) * sw, 10, dt);
 
-    const combat = player.fp || this.adsT > 0 || this.cooldown > -0.4 || this.reloading || player.inCombat;
+    // (a shot asked for raises the gun: it leaves once the gun is up, not from the hip or a lowered arm)
+    const combat = player.fp || this.adsT > 0 || this.cooldown > -0.4 || this.reloading || player.inCombat || this.wantShell || this.buffer > 0 || this.releaseCharged || this.charge > 0;
     // critically damped spring: eases in and out instead of starting at full speed
     const cw = combat ? 16 : 7;
     this.combatV = (this.combatV || 0) + ((combat ? 1 : 0) - this.combatBlend) * cw * cw * dt - 2 * cw * (this.combatV || 0) * dt;
@@ -315,14 +319,14 @@ export class Weapon {
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
     if (this.wantShell) {
-      if (this.cooldown > 0 || !this.drawn) return; // held until the gun is ready (and out)
+      if (this.cooldown > 0 || !this.raised(player)) return; // held until the gun is out and up
       this.wantShell = false;
       this.game.shells.fire({ camera, player, character, weapon: this });
       this.cooldown = T.weapon.fireInterval * 1.5;
       return;
     }
-    if (this.releaseCharged) { this.fireCharged(camera, player, character); return; }
-    if (this.buffer > 0 && !this.drawn) { this.buffer = Math.max(this.buffer, 0.05); return; } // quick-draw: fires once it's out
+    if (this.releaseCharged) { if (this.raised(player)) this.fireCharged(camera, player, character); return; }
+    if (this.buffer > 0 && !this.raised(player)) { this.buffer = Math.max(this.buffer, 0.05); return; } // quick-draw: fires once it's out and up
     if (this.buffer <= 0 || this.cooldown > 0) return;
     if (this.reloading) return;
     this.buffer = 0;
@@ -392,12 +396,13 @@ export class Weapon {
       const ent = hit.entity;
       end = hit.point; lastNormal = hit.normal;
       const body = hit.collider.parent();
-      const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper');
+      const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper' && !hasTag(ent, 'hurtable'));
       if (ent?.type === 'mover' && ent.mover.target) ent.mover.hit({ cause: 'shot' });
       if (solid || i === C.pierce) { game.fx.impact(hit.point, hit.normal, { sparks: 14, dust: 12, decal: true }); break; }
       if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p, hit.point, dir, 1.3 + 0.5 * p); }
       else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
       else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6, 'charged'); }
+      else if (hasTag(ent, 'hurtable')) { hits++; game.creatures.strike(ent, hit.point, dir, 1.6 + 1.4 * p, 'charged'); }
       else if (ent.type === 'slice') { hits++; game.breakables.crumble(ent, hit.point, dir); }
       else game.physics.kick(body, dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point);
     }
@@ -432,6 +437,13 @@ export class Weapon {
     if (ent?.type === 'rope') {
       game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
       game.hud.hitmarker(false);
+      return;
+    }
+    if (hasTag(ent, 'hurtable')) { // (a creature: it decides what a shot means: creatures.js)
+      this.hits++;
+      game.creatures.strike(ent, hit.point, dir, 1, 'shot');
+      game.hud.hitmarker(!ent.alive);
+      sfx.hitmarker();
       return;
     }
     if (ent?.type === 'clapper') {

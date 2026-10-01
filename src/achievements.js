@@ -38,6 +38,7 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Folk'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
@@ -398,6 +399,17 @@ export function buildAchievements(game) {
   C('dp2', 'angle', 'The Deep', 6, 'endure', 'The Drowned Lachryma', 'Land the Drowned Lachryma.', 'fish.legend', 1, { hidden: true, title: 'Drowned King' });
   C('dp3', 'angle', 'The Deep', 3, 'count', 'Tides Turned', 'Watch the tide turn 20 times.', 'angle.tide', 20);
 
+  // ---------------------------------------------------------------- BATTLE (jelly/slipjelly.js; the Veritome's Flash: veritome/flash.js)
+  C('jl1', 'battle', 'Slip Jellies', 1, 'count', 'Pop!', 'Burst a slip jelly.', 'jelly.burst', 1);
+  C('jl2', 'battle', 'Slip Jellies', 2, 'count', 'Jelly Season', 'Burst 25 slip jellies.', 'jelly.burst', 25);
+  C('jl3', 'battle', 'Slip Jellies', 4, 'endure', 'Slipmonger', 'Burst 150 slip jellies.', 'jelly.burst', 150, { title: 'Slipmonger' });
+  C('jl4', 'battle', 'Slip Jellies', 2, 'mechanic', 'Not Today', 'Break a slip jelly\'s wind-up with a heavy blow.', 'jelly.cancelled.staggered', 1);
+  F('jl5', 'battle', 'Slip Jellies', 2, 'collect', 'Every Way There Is', 'Burst slip jellies three different ways (a shot, a blade, a club...).', (L) => L.under('jelly.burst.').filter(([, v]) => v > 0).length, 3);
+  C('fl1', 'battle', 'Reprogramming', 1, 'count', 'Open Mind', 'Flash a creature with the Veritome at full charge, and open its mind.', 'flash.open', 1);
+  C('fl2', 'battle', 'Reprogramming', 2, 'count', 'Root Access', 'Type 25 commands into opened minds.', 'flash.cast', 25);
+  C('fl3', 'battle', 'Reprogramming', 3, 'mechanic', 'Verbose', 'Run a command in its longest phrasing.', 'flash.tier.3', 1);
+  F('fl4', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Run eight different commands.', (L) => L.under('flash.verb.').filter(([, v]) => v > 0).length, 8);
+  C('fl5', 'battle', 'Reprogramming', 2, 'mechanic', 'Not So Fast', 'Stop a slip jelly\'s wind-up by typing it to stop.', 'jelly.cancelled.typed', 1);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
   // the clay folk and the chat line (npc/, chat.js, emotes.js)

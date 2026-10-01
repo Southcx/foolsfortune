@@ -43,7 +43,7 @@ export const CLASSES = {
 const TABS = ['ALL', 'CHAT', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
 
 const CSS = `
-#chatlog { position: absolute; left: 12px; bottom: 12px; width: min(40vw, 580px); height: clamp(170px, 26vh, 300px); box-sizing: border-box; display: flex; flex-direction: column;
+#chatlog { position: absolute; left: 12px; bottom: calc(12px + var(--cine, 0vh)); width: min(40vw, 580px); height: clamp(170px, 26vh, 300px); box-sizing: border-box; display: flex; flex-direction: column;
   background: linear-gradient(180deg, rgba(70,34,23,.80), rgba(36,17,11,.90)); border: 2px solid #b3735a; border-radius: 4px;
   box-shadow: inset 0 0 0 1px #5d3123, inset 0 0 18px rgba(20,6,2,.55), 0 0 0 1px #1c0d08; pointer-events: none; transition: opacity .6s;
   font-family: var(--f-sys); letter-spacing: 0; }
@@ -62,6 +62,8 @@ const CSS = `
 #chatlog .min:hover { background: rgba(196,106,69,.4); color: #fff1e0; }
 #chatlog.mini { height: auto; }
 #chatlog.mini .body, #chatlog.mini .foot { display: none; }
+#chatlog .prog { display: none; margin: 0 4px 3px; padding: 4px 8px; border: 1px solid rgba(var(--jsel), .8); border-radius: 3px; background: rgba(8,4,2,.72); font: 14px/1.35 var(--f-sys); color: #cdb8a8; }
+#chatlog.moded .prog { display: block; }
 #chatlog .line { display: none; align-items: center; gap: 6px; margin: 0 4px 2px; padding: 2px 6px; border: 1px solid rgba(var(--jsel), .8); border-radius: 3px;
   background: rgba(8,3,1,.55); pointer-events: auto; }
 #chatlog.typing .line { display: flex; }
@@ -87,7 +89,7 @@ export class GameLog {
     this.quiet = new Map();
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'chatlog';
-    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="line"><b>›</b><input maxlength="200" spellcheck="false" autocomplete="off" placeholder="say something, or /help"></div><div class="foot"><span>ENTER CHAT · / COMMAND · PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
+    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="prog"></div><div class="line"><b>›</b><input maxlength="200" spellcheck="false" autocomplete="off" placeholder="say something, or /help"></div><div class="foot"><span>ENTER CHAT · / COMMAND · PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
     (document.getElementById('hud') || document.body).appendChild(root);
     this.root = root;
     this.body = root.querySelector('.body');
@@ -105,6 +107,9 @@ export class GameLog {
     this.history = []; this.hi = -1; this.typing = false;
     this.field.addEventListener('keydown', (e) => {
       e.stopPropagation();
+      // (a mode borrows the line: what is typed goes to it, Enter keeps the line open, Esc ends the mode: veritome/flash.js)
+      if (this.mode && (e.code === 'Enter' || e.code === 'NumpadEnter')) { e.preventDefault(); const v = this.field.value; this.field.value = ''; this.mode.onSend?.(v); this.mode?.onInput?.(''); return; }
+      if (this.mode && e.code === 'Escape') { e.preventDefault(); this.mode.onEscape?.(); return; }
       if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); const v = this.field.value; this.close(); this.send(v); }
       else if (e.code === 'Escape') { e.preventDefault(); this.closedAt = performance.now(); this.close(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
@@ -114,7 +119,9 @@ export class GameLog {
         this.field.value = this.hi < 0 ? '' : this.history[this.history.length - 1 - this.hi];
       }
     });
-    this.field.addEventListener('blur', () => { if (this.typing) setTimeout(() => { if (document.activeElement !== this.field) this.close(); }, 0); });
+    this.field.addEventListener('input', () => this.mode?.onInput?.(this.field.value));
+    this.field.addEventListener('blur', () => { if (this.typing) setTimeout(() => { if (document.activeElement === this.field) return; if (this.mode) this.field.focus({ preventScroll: true }); else this.close(); }, 0); });
+    this.prog = root.querySelector('.prog'); this.prompt = root.querySelector('.line b');
   }
 
   /** Open the chat line (with `prefix` already typed). */
@@ -140,6 +147,14 @@ export class GameLog {
     if (this.history[this.history.length - 1] !== t) this.history.push(t);
     if (this.history.length > 50) this.history.shift();
     this.onSend?.(t);
+  }
+  /** Lend the chat line to something that reads typing (a mode: { prompt, onInput(text), onSend(text), onEscape() }); null gives it back.
+   *  The mode's own lines are drawn in the panel above the line (log.prog). */
+  setMode(mode) {
+    this.mode = mode || null;
+    this.prompt.textContent = mode?.prompt || '›';
+    this.root.classList.toggle('moded', !!mode);
+    if (mode) this.open(''); else { this.prog.replaceChildren(); this.close(); this.closedAt = performance.now(); }
   }
   /** Typing, or just stopped with Esc (which also lets the mouse go: that is not a pause). */
   get busy() { return this.typing || performance.now() - (this.closedAt || 0) < 500; }

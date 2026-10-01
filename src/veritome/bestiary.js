@@ -61,12 +61,24 @@ function fishFacts(sp) {
   ];
 }
 
-export const CREATURES = { clapper: CLAPPER };
+const JELLY = {
+  name: 'Slip Jelly', glyph: '◒',
+  blurb: 'A mind jelly: an egg of Lachryma over a skirt of four toes, gliding on its own slip in the dunes past the Weir. Something thinks in its middle.',
+  facts: [
+    { id: 'seen', when: () => true, text: 'A slip jelly: it glides on slip it makes itself, and the trail it leaves is wet enough to dive into.' },
+    { id: 'notice', when: st('chase'), battle: true, text: 'It notices her at fifteen paces and closes to four, circling, waiting for its moment. Lead it far from home and it gives up.' },
+    { id: 'lunge', when: st('wind'), battle: true, text: 'It sinks down and quivers before it lunges, and throws itself where she stood. Step aside as it leaves the ground, or break the wind-up with a heavy blow.' },
+    { id: 'air', when: st('air'), battle: true, text: 'In the air it has no say in where it lands.' },
+    { id: 'sleep', when: st('sleep', 'halt', 'melt'), battle: true, text: 'Its mind can be opened. Flashed at full charge, it takes what the Courier types into it for a while (the Veritome\'s Flash).' },
+    { id: 'idle', when: st('idle', 'wander'), text: 'Left alone, it breathes, and drifts about its puddle like a thought.' },
+  ],
+};
+export const CREATURES = { clapper: CLAPPER, slipjelly: JELLY };
 for (const sp of SPECIES) CREATURES[`fish.${sp.id}`] = { name: sp.name, glyph: '❧', blurb: sp.blurb, fish: sp.id, tier: sp.tier, legend: !!sp.legend, facts: fishFacts(sp) };
 export const CREATURE_IDS = Object.keys(CREATURES);
 
 /** Which creature a photographed subject is (or null: a pot is not a creature). */
-export const creatureOf = (s) => (s.kind === 'clapper' ? 'clapper' : s.kind === 'fish' && s.sub ? `fish.${s.sub}` : null);
+export const creatureOf = (s) => (s.kind === 'clapper' ? 'clapper' : s.kind === 'slipjelly' ? 'slipjelly' : s.kind === 'fish' && s.sub ? `fish.${s.sub}` : null);
 
 /** The understanding a number of known facts (of so many) is. */
 export const tierOf = (n, of) => (n <= 0 ? 0 : n >= of ? 4 : n >= Math.ceil(of * 2 / 3) ? 3 : n >= 3 ? 2 : 1);

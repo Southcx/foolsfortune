@@ -105,6 +105,16 @@ export const RIGIFY = {
   'thumb03*': { hinge: [0.22, -0.18, -0.96], min: -0.15, max: 1.7, cone: 0.3 },
 };
 
+// The clapperjar's (clappers.js): generous, a ball of clay with a lid and two stubs, but the lid does not fold back into the body and
+// the arms do not turn inside out, whatever the idle acts and the clip ask (the bone frames are Blender's: the lid hinges about X).
+export const CLAPPER_ROM = {
+  head: { hinge: [1, 0, 0], min: -1.25, max: 0.35, cone: 1.45 },
+  upper_armL: { hinge: [0, 0, 1], min: -2.5, max: 2.5, cone: 1.4 },
+  upper_armR: { hinge: [0, 0, 1], min: -2.5, max: 2.5, cone: 1.4 },
+  forearmL: { hinge: [0, 0, 1], min: -1.6, max: 1.6, cone: 0.9 },
+  forearmR: { hinge: [0, 0, 1], min: -1.6, max: 1.6, cone: 0.9 },
+};
+
 /**
  * The Courier's limits: the human envelope above (RIGIFY), with each finger and thumb joint's real hinge and
  * observed range taken from the game's own clips (romdata.js, from tools/learn_rom.mjs) where it is narrower.

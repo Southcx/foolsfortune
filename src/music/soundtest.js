@@ -4,12 +4,18 @@
 // with a line of notes on each track: what it is made of and where it lives. /music <track> in the chat line does the same.
 // ---------------------------------------------------------------------------------------
 import { FORTUNE } from './fortune.js';
+import { LACHRYMA } from './lachryma.js';
+import { BATTLE } from './battle.js';
+import { WORKSHOP } from './workshop.js';
 import { FOOLS_STEP } from './foolsstep.js';
 import { DUNES } from './dunes.js';
 import { FANFARE, FOUND, REST } from './jingles.js';
 
 export const TRACKS = [
-  { id: 'fortune', score: FORTUNE, title: "Fool's Fortune", where: 'the main theme · the title', notes: 'E minor and G major, in five movements (Wind, Path, Wild, Fortune, Return; 75, 100 in 5/4, 125 bpm). The Five (E D B A G, the minyo pentatonic falling) and its answer (G A B D E, climbing the hard hexachord); a piano alone, a koto walking in fives, a forest pulse, a build up the hexachord, the whole band and an octave leap to E6, and home to E major.' },
+  { id: 'lachryma', score: LACHRYMA, title: 'Lachryma', where: 'the main theme · the title', notes: 'E flat minor pentatonic: the five black keys, black like the Lachryma. Space-fantasy jazz, 100 bpm swung: minor ninths and a B major seven with a raised eleventh, a Rhodes and an upright, brushes and the ride, the Five on the vibraphone, a soprano sax and a choir; six sections, and the Leap at the end, E flat to E flat.' },
+  { id: 'battle', score: BATTLE, title: 'Five Against Fate', where: 'the battle · while something is after her', notes: 'Big-band jazz on the black keys at 150: the Five falling in the bass and never stopping, brass on the off-beats, bongos and a timbale over the ride, a soprano sax solo, the brass shouting the Five in sixteenths, a break. After Tank!.' },
+  { id: 'workshop', score: WORKSHOP, title: 'The Workshop', where: 'the workshop', notes: 'A work song in the twelve bars of the blues in E, 75 bpm: a hammer on one and a foot on three, a breath before each blow, a washboard; a voice hums the call and the voices answer, then a harmonica and a slide guitar.' },
+  { id: 'fortune', score: FORTUNE, title: "Fool's Fortune", where: 'the five movements (the second draft of the main theme)', notes: 'E minor and G major, in five movements (Wind, Path, Wild, Fortune, Return; 75, 100 in 5/4, 125 bpm). The Five (E D B A G, the minyo pentatonic falling) and its answer (G A B D E, climbing the hard hexachord); a piano alone, a koto walking in fives, a forest pulse, a build up the hexachord, the whole band and an octave leap to E6, and home to E major.' },
   { id: 'fanfare', score: FANFARE, title: 'Fanfare of the Five', where: 'a jingle · a battle won, a trial cleared', notes: 'The answer (G A B D E) in the brass as a pickup, up to G, then B, and home.' },
   { id: 'found', score: FOUND, title: 'Found', where: 'a jingle · something precious found', notes: 'The answer run up to E6 on the celesta and the flute, a bell on top.' },
   { id: 'rest', score: REST, title: 'A Place to Rest', where: 'a jingle · a rest, a save', notes: 'The Five slowly on the piano in G major, the flute answering.' },

@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
-const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko']);
+const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale']);
 
 export class Arranger {
   constructor(sfx) { this.sfx = sfx; this.alive = false; this.score = null; this.volume = 0.34; }

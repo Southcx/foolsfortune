@@ -28,6 +28,9 @@ Five is the game's number, and the music keeps it.
   five notes to the octave; five movements for the main theme and, one day, for the final battle.
 - **The tempo ladder** (multiples of 5 and 25): 75 (rest, sorrow, the piano), 100 (walking, the field), 125 (the wild, battle),
   150 (danger, the chase).
+- **The black keys**: E flat minor pentatonic is the five black keys of the piano (E flat G flat A flat B flat D flat): five notes, black like
+  the Lachryma, and E and G in shadow (E flat, G flat). The main theme (*Lachryma*) and the battle live there; the Dunes' theme was already
+  on D sharp, the same key, so the desert and the main theme are kin. The Five plays on them as well as on the white keys.
 - **The map of keys**: the regions are a circle of fifths out from E: the workshop in E and G, the dunes on D# (the leading tone of
   E: the desert always waiting to come home), the high places in B (the fifth above), the deep places in A (the fifth below), the
   Lachryma's own in F (a half step above home: the tear).
@@ -54,7 +57,8 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 
 | Cue | When | Tempo / key | Palette | Motifs | Status |
 | --- | --- | --- | --- | --- | --- |
-| Fool's Fortune (main theme) | title, pause | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
+| Lachryma (main theme) | title, pause | 100 swung, E flat minor pentatonic (the black keys) | Rhodes, upright, brushes and ride, vibes, soprano sax, choir | Five, Answer, Leap (E flat to E flat) | **made** |
+| Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
 | Game over | | 75, E minor | piano, one note at a time | the Five, falling and not finishing | |
@@ -65,7 +69,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Cue | Where | Tempo / key | Palette | Motifs | Status |
 | --- | --- | --- | --- | --- | --- |
 | Mirage of the Still Water | the Dunes | 84 swung, D# minor pentatonic blues | vibes, ney, Rhodes, brushes, darbuka | (to be woven in: the Five, on D#) | **made** |
-| The Workshop | home: the kiln, Saggar | 100, G major | marimba, pizzicato, clarinet, koto | Answer; Saggar's hexachord | |
+| The Workshop | home: the kiln, Saggar | 75, the blues in E | a work song: hammer, foot, breath, washboard; hummed calls and sung answers; harmonica, slide guitar, upright | the Five in the calls | **made** |
 | The Weir by night | the oasis after dark | 75, B minor (a fifth up) | shakuhachi, harp, crickets | the Five, high and slow | |
 | The Field | walking between places | 100 in 5/4, E minor / G | the Path movement grown into its own piece | Five, Answer | *sketch: movement II* |
 | The Basement | the lab, tinkering | 125, A minor (a fifth down) | koto ostinato, plucked synth, clock ticks | the Five in diminution | |
@@ -77,7 +81,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 
 | Cue | When | Tempo / key | Palette | Motifs | Status |
 | --- | --- | --- | --- | --- | --- |
-| Battle | a fight | 150, E minor | taiko, strings ostinato, brass stabs, guitar | Five in diminution (sixteenths) | |
+| Battle (*Five Against Fate*) | a fight | 150, E flat minor | big band: a walking riff, brass stabs and shouts, bongos and timbale, ride, a soprano sax solo, taiko | the Five in the bass (eighths) and the brass (sixteenths) | **made** |
 | Clapperjar mischief | the jars, clapping | 125, G major | woodblocks, pizzicato, clay lids, kazoo | Answer, mocked | |
 | Boss | a great enemy | 150, E minor and F | everything, low | Tear inside the Five | |
 | The chase | running | 150 | snare, strings | the Leap, over and over, never landing | |
@@ -100,7 +104,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Cue | When | Notes | Status |
 | --- | --- | --- | --- |
 | Fanfare of the Five | a battle won, a trial cleared | the Answer as a pickup, up to G, B, home | **made** |
-| Found | something precious found | the Answer run up to E6, a bell | **made** |
+| Found | something precious found | the Answer run up to E6, a bell (the maker's favourite of the three: the model for the rest) | **made** |
 | A Place to Rest | a rest, a save | the Five on the piano in G, the flute answering | **made** |
 | Skill acquired | the System grants an art | the System's chime, then the Answer in bells | |
 | Achievement | the ledger's rule met | the chime and a rising fifth | (the voice's chime exists) |
@@ -130,6 +134,9 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   a verse, a jingle is about a verse's.
 
 ## 6. Next
+
+0. (Round 34) Hear *Lachryma*, *The Workshop* and *Five Against Fate*; the battle plays while a slip jelly is after her, the work song in the
+   workshop, *Lachryma* on the title.
 
 1. Hear the new main theme; adjust (the balance, the guitar, the 5/4).
 2. The Workshop (home) and the Battle: the two cues heard most.

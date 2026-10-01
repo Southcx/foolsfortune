@@ -41,7 +41,7 @@ const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const clamp = THREE.MathUtils.clamp;
 
 const CSS = `
-#godarts { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: none; gap: 8px; }
+#godarts { position: absolute; left: 50%; bottom: calc(20px + var(--cine, 0vh)); transform: translateX(-50%); display: none; gap: 8px; }
 #godarts .slot { width: 84px; height: 62px; box-sizing: border-box; border: 1px solid var(--jmid); background: linear-gradient(180deg, rgba(var(--jtop), .72), rgba(var(--jbot), .86)); border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 2px 4px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .78; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
 #godarts .slot i { font-style: normal; font-size: 22px; line-height: 1; }
 #godarts .slot span { font: 600 10px var(--f-title); letter-spacing: .1em; margin-top: 4px; }

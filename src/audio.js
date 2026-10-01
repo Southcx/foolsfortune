@@ -518,6 +518,36 @@ class Sfx {
     this.tone(t, 0.04, { f0: 700, f1: 500, type: 'triangle', gain: 0.3, dest: d });
   }
 
+  // ---- the slip jelly (jelly/slipjelly.js): wet, rubbery, a little musical (it is a mind jelly)
+  jellySquelch(dist = 5, k = 1) {
+    if (!this.ok() || !this.allow('jsq', 12)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5 * k / (0.5 + dist * 0.1), 0.25), f = 260 + Math.random() * 80;
+    this.tone(t, 0.16, { f0: f * 1.6, f1: f * 0.7, type: 'sine', gain: 0.55, dest: d });
+    this.noise(t, 0.12, { type: 'bandpass', f0: 900, f1: 300, q: 3, gain: 0.45, dest: d });
+  }
+  jellyWind(dist = 5, dur = 0.8) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.35 / (0.5 + dist * 0.1), 0.3);
+    // (a swell, not a strike: the jelly drawing itself in before it springs)
+    const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(420, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + dur * 0.9); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+    o.connect(g).connect(d); o.start(t); o.stop(t + dur + 0.1);
+  }
+  jellyLand(dist = 5) {
+    if (!this.ok() || !this.allow('jland', 8)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.1), 0.35);
+    this.tone(t, 0.22, { f0: 180, f1: 60, type: 'sine', gain: 0.8, dest: d });
+    this.noise(t, 0.2, { type: 'lowpass', f0: 1200, f1: 200, gain: 0.5, dest: d });
+  }
+  jellyPop(dist = 5) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.7 / (0.5 + dist * 0.1), 0.6);
+    this.tone(t, 0.08, { f0: 900, f1: 1800, type: 'sine', gain: 0.6, dest: d });
+    this.noise(t + 0.02, 0.4, { type: 'bandpass', f0: 1400, f1: 250, q: 1.5, gain: 0.7, dest: d });
+    [523, 659, 784].forEach((f, i) => this.tone(t + 0.06 + i * 0.05, 0.25, { f0: f * 1.5, f1: f * 1.5, type: 'sine', gain: 0.12, dest: d })); // (a little chime: it was a mind)
+  }
+
   gulp(dist = 5) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.4 / (0.5 + dist * 0.1), 0.2);

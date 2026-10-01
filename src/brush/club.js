@@ -211,6 +211,14 @@ export class Club {
       }
       g.events?.emit('brush.hit', { what: 'pot', n: this.n });
     }
+    for (const c of g.creatures?.near(P.pos, 4) || []) {
+      if (this.hit.has(c)) continue;
+      c.center(_p);
+      if (segDist(_a, _b, _p) > HEAD_R + c.radius) continue;
+      this.hit.add(c); struck++;
+      g.creatures.strike(c, _p.clone(), dir.clone(), 1.2 * b.power, 'bashed');
+      g.events?.emit('brush.hit', { what: c.kind, n: this.n });
+    }
     // the loose pieces: batted about
     for (const list of [g.breakables.slices, g.breakables.shards]) for (const s of list || []) {
       if (!s.body?.isValid?.() || this.hit.has(s)) continue;

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { hasTag } from '../tags.js';
 import { Tech } from './techs.js';
 import { Track } from '../animator.js';
 import { sfx } from '../audio.js';
@@ -164,7 +165,10 @@ export class Veritome extends Tech {
   }
 
   /** Can a charged shot hold this clapperjar? Only one aware of her and in the thick of it with her. */
-  holdable(c) { return c.alive && !c.ally && ENGAGED.has(c.state) && !!this.game.clappers?.canSeePlayer?.(c); }
+  holdable(c) {
+    if (c.type === 'creature') return c.alive && hasTag(c, 'programmable'); // (a mind can be flashed whatever it is doing: veritome/flash.js)
+    return c.alive && !c.ally && ENGAGED.has(c.state) && !!this.game.clappers?.canSeePlayer?.(c);
+  }
 
   lensUpdate(raw, inp) {
     const g = this.game;
@@ -179,9 +183,9 @@ export class Veritome extends Tech {
     // the capture circle: an engaged creature held in it charges the shot (Fatal Frame)
     const cam = g.camera, eye = cam.getWorldPosition(_v.set(0, 0, 0)).clone();
     let best = null, bd = Infinity;
-    for (const c of g.clappers?.list || []) {
+    for (const c of [...(g.clappers?.list || []), ...(g.creatures?.list || [])]) {
       if (!c.alive || c.ally) continue;
-      const p = c.pos.clone().setY(c.pos.y + 0.35), d = p.distanceTo(eye);
+      const p = c.type === 'creature' ? c.center(new THREE.Vector3()) : c.pos.clone().setY(c.pos.y + 0.35), d = p.distanceTo(eye);
       if (d > CAPTURE.range) continue;
       const n = p.clone().project(cam);
       if (n.z > 1) continue;
@@ -190,7 +194,7 @@ export class Veritome extends Tech {
     }
     if (best && best === this.target) this.charge = Math.min(1, this.charge + raw / CAPTURE.time);
     else { this.target = best; this.charge = Math.max(0, this.charge - raw * 2); }
-    this.chance = !!(best && this.charge >= 1 && (!best.grounded || best.state === 'knocked' || best.state === 'taunt' || best.state === 'raid'));
+    this.chance = !!(best && this.charge >= 1 && (best.type === 'creature' ? best.air || best.state === 'wind' : !best.grounded || best.state === 'knocked' || best.state === 'taunt' || best.state === 'raid'));
     if (inp.wasPressed('Mouse0') && this.shotCool <= 0) this.shutter();
   }
 
@@ -201,7 +205,10 @@ export class Veritome extends Tech {
     const report = scorePhoto(g, g.camera);
     // a full charge holds an engaged creature to what is real; at the shutter chance, longer
     let held = null;
-    if (this.target && this.charge >= 1 && this.holdable(this.target)) {
+    if (this.target?.type === 'creature' && this.charge >= 1 && this.holdable(this.target)) {
+      // THE FLASH: a mind at full charge is opened, and what she types it does (veritome/flash.js)
+      if (g.flash?.open(this.target, this.chance ? 1 : 0.6)) { held = 'flash'; g.lachryma.gain(3, 'photo'); }
+    } else if (this.target && this.charge >= 1 && this.holdable(this.target)) {
       const c = this.target;
       g.clappers.stun(c, this.chance ? CAPTURE.chance : CAPTURE.hold, g.shells.glowOutline, g.shells.xray);
       held = this.chance ? 'chance' : 'held';

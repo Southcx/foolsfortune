@@ -66,7 +66,9 @@ import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
 import { MusicPlayer } from './music/player.js';
 import { DUNES } from './music/dunes.js';
-import { FORTUNE } from './music/fortune.js';
+import { LACHRYMA } from './music/lachryma.js';
+import { BATTLE } from './music/battle.js';
+import { WORKSHOP } from './music/workshop.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -88,6 +90,11 @@ import { Emote } from './moves/emote.js';
 import { Chat } from './chat.js';
 import { Talk } from './moves/talk.js';
 import { Folk } from './npc/folk.js';
+import { Creatures } from './creatures.js';
+import { Flash } from './veritome/flash.js';
+import { SlipJellies } from './jelly/slipjelly.js';
+import { WEIR_SPAWN } from './angling/weir.js';
+import jellyB64 from './assets/slipjelly.glb?b64';
 import { Dialogue } from './npc/dialogue.js';
 import { placePeople } from './npc/people.js';
 import { Rave } from './vfx/rave.js';
@@ -416,6 +423,10 @@ async function main() {
   game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
   game.present.apply();
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
+  // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (jelly/slipjelly.js)
+  game.creatures = new Creatures(game);
+  game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
+  for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -425,6 +436,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.flash = new Flash(game); // (the Veritome's Flash: a creature's program opened in the chat line)
   game.log.onSend = (t) => game.chat.run(t);
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
@@ -615,12 +627,16 @@ async function main() {
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
     game.folk?.update(dt); game.dialogue?.update(game.rawDt);
+    game.creatures.update(dt); game.jellies.update(dt); game.flash.update(game.rawDt);
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
     // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
-    game.music.follow(overlayUp() ? FORTUNE : game.dunes?.active && !game.chests?.rave?.active && !game.god?.active ? DUNES : null);
+    // the music: the main theme on the title (and the pause); the battle while something is after her; the Dunes' theme in the
+    // dunes, the work song in the workshop; a sound-test pick over any of them
+    const fighting = !overlayUp() && game.jellies?.list.some((c) => c.alive && c.aggro && Math.hypot(c.pos.x - player.pos.x, c.pos.z - player.pos.z) < 24);
+    game.music.follow(overlayUp() ? LACHRYMA : game.chests?.rave?.active || game.god?.active ? null : fighting ? BATTLE : game.dunes?.active ? DUNES : game.zones?.current === 'workshop' ? WORKSHOP : null);
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
@@ -714,7 +730,7 @@ async function main() {
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      charge: weapon.charge,
+      charge: weapon.charge, gunOut: weapon.drawT > 0.05 || weapon.wantShell,
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
         + blinkPips(),
