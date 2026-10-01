@@ -60,6 +60,10 @@ import { Events } from './events.js';
 import { Movers } from './movers.js';
 import { System } from './system/system.js';
 import { Codex } from './system/codex.js';
+import { PneukaBox } from './pneuka/box.js';
+import { PneukaUI } from './pneuka/ui.js';
+import { GroundItems } from './pneuka/ground.js';
+import { SystemVoice } from './system/voice.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -244,10 +248,18 @@ async function main() {
   game.belt.add(veritomeTool(techs.get('veritome')));
   player.techs = techs;
   game.techs = techs;
+  // the Pneuka Box: what she carries (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
+  game.ground = new GroundItems(game);
+  game.pneuka = new PneukaBox(game);
+  if (game.veritome) game.pneuka.migrate(game.veritome.book);
+  game.pneukaUI = new PneukaUI(game);
+  game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  // the System's voice: the few things that matter, said aloud (system/voice.js)
+  game.voice = new SystemVoice(game);
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -280,6 +292,7 @@ async function main() {
       const r = tool.hookshot.probe();
       return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
     });
+    game.interact.add('item', () => (game.god?.controlling ? null : game.ground.nearest(player))); // (what lies on the ground: F picks it up)
     game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d, ref: t.chest || t.kind } : null; });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
@@ -506,7 +519,8 @@ async function main() {
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
       else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
-    if (input.wasPressed('KeyB') && input.enabled) game.codex.toggle();
+    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open) game.codex.toggle();
+    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling) game.pneukaUI.toggle();
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
@@ -562,6 +576,7 @@ async function main() {
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
+    game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
@@ -671,7 +686,7 @@ async function main() {
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
   window.__ready = true;
 }

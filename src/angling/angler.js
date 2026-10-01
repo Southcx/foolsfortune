@@ -63,7 +63,7 @@ export class Angler {
     const g = (this.game = tool.game);
     g.angler = this;
     this.aspect = 0;
-    this.lureId = 'bob';
+    this.ownLure = 'bob'; // (without a Pneuka Box: the lure is the angler's own)
     this.state = 'idle'; // idle | charge | swing | wait | fight | catch
     this.power = 0; this.castT = 0; this.castPhase = 'none'; this.castW = 0; this.launched = false;
     this.pressT = -1; this.reeling = false; this.sinking = false; this.twitchCool = 0; this.soundCool = 0; this.soundT = 0;
@@ -119,12 +119,15 @@ export class Angler {
   bend() { return this.bendX; }
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
   stripHtml() { return aspectStrip(this.aspect, this.lureDef()); }
+  /** The lure on the line is what the Pneuka Box says is worn there (pneuka/box.js). */
+  get lureId() { return this.game.pneuka?.lure ?? this.ownLure; }
+  set lureId(id) { if (this.game.pneuka) this.game.pneuka.tie(id); else this.ownLure = id; }
   /** The lure tied on now (lures.js). */
-  lureDef() { const L = lureList(this.game.ledger, this.game.veritome?.book); return L.find((l) => l.id === this.lureId) || L[0]; }
+  lureDef() { const L = lureList(this.game.ledger, this.game.pneuka); return L.find((l) => l.id === this.lureId) || L[0]; }
   /** Tie on the next (or previous) lure the Courier has. Not while one is out: it is on the line. */
   cycleLure(d) {
     if (this.lure?.active) return;
-    const L = lureList(this.game.ledger, this.game.veritome?.book), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
+    const L = lureList(this.game.ledger, this.game.pneuka), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
     this.lureId = L[(i + d + L.length) % L.length].id;
     this.tool.renderStrip(); sfx.plink(3);
     this.emit('angle.lure', { lure: this.lureId });

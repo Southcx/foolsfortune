@@ -7,8 +7,8 @@
 // for a while, on top of its own taste (it fades over some seconds), and the wave of it stirs EVERY fish in that water, more the nearer
 // it passes (falloff with distance), whatever it was doing. A ping burns Lachryma, and so does reeling: the cost is the choice.
 //
-// Any CURIO the Courier holds AS THE THING ITSELF can be tied on too (a curio is kept in the Veritome as a card: it has to be GAINED,
-// made the thing itself, before it can be tied to a line: veritome/book.js). A curio is an object that has had a life, and it carries the feelings of it: its
+// Any CURIO the Courier carries in her Pneuka Box can be tied on too (pneuka/box.js: P, then click it; or 9 / 0 while the line is in).
+// One kept in the Veritome is a card, and has to be taken out into the box first. A curio is an object that has had a life, and it carries the feelings of it: its
 // taste is written below from what it is (a knot no one could undo is grief and dread; a bell always a little flat of the last time is
 // mirth and grief), and the rarer it is the stronger it pulls. Curios are never lost with a line: the mind lets go, the thing comes home.
 //
@@ -16,7 +16,7 @@
 // Stardew Valley's bait and tackle (a lure changes what comes, not whether the game is fair), and Dredge's aberrant catches (what you
 // fish with says something about you).
 //
-//   LURES   lureList(ledger, book) -> the lures owned now (made ones, then curios held as things)   tasteOf(lure, boost) -> [5]   attraction(taste, sp) -> 0..~1.3
+//   LURES   lureList(ledger, box) -> the lures to hand now (the made ones, the curio on the line, the curios in the Pneuka Box)   tasteOf(lure, boost) -> [5]   attraction(taste, sp) -> 0..~1.3
 // ---------------------------------------------------------------------------------------
 import { CURIOS, CURIO_BY_ID } from '../treasure.js';
 
@@ -40,13 +40,13 @@ const CURIO_TASTE = {
 };
 const TIER_PULL = [1.1, 1.2, 1.3, 1.45, 1.6];
 
-/** The lures the Courier has now: the six made ones, then every curio held as the thing itself (a curio's lure is the curio). */
-export function lureList(ledger, book = null) {
+/** The lures to hand: the six made ones, then every curio on the line or in the Pneuka Box (a curio's lure is the curio). */
+export function lureList(ledger, box = null) {
   const out = [...LURES];
-  for (const c of CURIOS) if (book ? book.item(`curio.${c.id}`) > 0 : ledger?.get(`curio.${c.id}`) > 0) out.push({ id: `curio.${c.id}`, name: c.name.toUpperCase(), glyph: c.glyph, taste: CURIO_TASTE[c.id] || [0.4, 0.4, 0.4, 0.4, 0.4], pull: TIER_PULL[c.tier], curio: c.id, blurb: c.blurb });
+  for (const c of CURIOS) if (box ? box.lure === `curio.${c.id}` || box.count(`curio.${c.id}`) > 0 : ledger?.get(`curio.${c.id}`) > 0) out.push({ id: `curio.${c.id}`, name: c.name.toUpperCase(), glyph: c.glyph, taste: CURIO_TASTE[c.id] || [0.4, 0.4, 0.4, 0.4, 0.4], pull: TIER_PULL[c.tier], curio: c.id, blurb: c.blurb });
   return out;
 }
-export const lureById = (id, ledger, book) => lureList(ledger, book).find((l) => l.id === id) || LURES[0];
+export const lureById = (id, ledger, box) => lureList(ledger, box).find((l) => l.id === id) || LURES[0];
 export const isCurio = (id) => id?.startsWith('curio.') && !!CURIO_BY_ID[id.slice(6)];
 
 /** A lure's taste now: its own, and what the soundings have pushed into it (boost: [5], fading). */

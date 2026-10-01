@@ -10,7 +10,6 @@ import { scorePhoto, serial } from '../veritome/photo.js';
 import { kindOf, appraise } from '../veritome/darkroom.js';
 import { ENGAGED } from '../veritome/subjects.js';
 import { Viewfinder } from '../veritome/viewfinder.js';
-import { LooseCards } from '../veritome/loose.js';
 import { bookFrame, holdBook } from '../veritome/hold.js';
 import { measureGrip } from '../tools/grip.js';
 import { drawHands } from '../tools/draw.js';
@@ -32,13 +31,13 @@ import { TIDES, TIDE_LEN } from '../angling/species.js';
 //    (it is stunned), longer at the SHUTTER CHANCE (it is in the air, or clapping at her). An unaware creature cannot be held: it is
 //    photographed candidly, which is how its habits are learned. (Fatal Frame's Camera Obscura, made gentler: it never kills.)
 //  - THE TRUTH. A photograph undoes whatever the Soul Brush wrote on what it shows (the photograph is of the thing as it is).
-//  - THE BOOK (veritome/book.js). Drawing the Veritome opens it, and every loose card circling her (a curio fresh from a chest) is
-//    bound into its page. The binder, the film, the bestiary and the Compendium are the Codex's VERITOME shelf (B): the Codex is the
-//    Veritome's own pages.
+//  - THE BOOK (veritome/book.js), the Courier's bank. While it is held open, the Pneuka Box (P: pneuka/box.js) opens beside it, and
+//    things are stored in it as cards or taken out as things. The binder, the film, the bestiary and the Compendium are the Codex's
+//    VERITOME shelf (B): the Codex is the Veritome's own pages.
 //  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: she reads the ground off it.
 //
-//   J      draw / stow (opening the Book binds loose cards)     RMB (hold)  the lens: LMB the shutter, wheel the zoom
-//   B      the Codex: the binder (Gain, Condense), the film (appraise), the bestiary, the Compendium
+//   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     P (while it is out)  the box and the bank
+//   B      the Codex: the binder (Take out, Condense), the film (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -59,7 +58,6 @@ export class Veritome extends Tech {
     this.model.group.visible = false;
     g.scene.add(this.model.group);
     this.book = new Book(g);
-    this.loose = new LooseCards(g);
     this.vf = new Viewfinder();
     this.lens = false; this.lensK = 0; this.zoom = 0.25; this.prevView = null;
     this.charge = 0; this.target = null; this.chance = false;
@@ -114,10 +112,8 @@ export class Veritome extends Tech {
     const step = dt / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
     if (this.drawTarget > this.drawT && free) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
-    if (this.drawT > 0.02 && !this.wasOut) { this.wasOut = true; sfx.toolDraw(); g.events?.emit('veritome.draw', { loose: this.book.loose.length }); this.book.bind(); }
+    if (this.drawT > 0.02 && !this.wasOut) { this.wasOut = true; sfx.toolDraw(); g.events?.emit('veritome.draw', {}); }
     if (this.drawT <= 0.02 && this.wasOut) { this.wasOut = false; sfx.holster?.(); this.lower(); g.events?.emit('veritome.stow', {}); }
-    // the Codex is the Book's own pages: opening it opens the Book
-    if (g.codex?.open && this.book.loose.length) this.book.bind();
     this.shotCool -= raw;
     if (this.held && inp.enabled && !g.codex?.open) {
       const wantLens = inp.isDown('Mouse2');
@@ -132,7 +128,7 @@ export class Veritome extends Tech {
     this.readT = Math.max(0, this.readT - dt);
     this.readW = THREE.MathUtils.damp(this.readW, this.readT > 0 && !this.toolOut && !P.fp ? 1 : 0, this.readT > 0 ? 9 : 6, dt);
     if (this.readW < 0.002) this.readW = 0;
-    this.book.tick(dt);
+    this.book.tick();
     // the cover's instruments keep the tide and the heading
     const W = g.weir;
     const tide = W ? (W.tide + (W.tideT || 0) / TIDE_LEN) / TIDES.length : (performance.now() / 320000) % 1;
@@ -145,8 +141,6 @@ export class Veritome extends Tech {
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
     else if (shells && this.wasShellsHidden) shells.style.display = '';
     this.wasShellsHidden = this.drawT > 0.02;
-    // loose cards circle her; bound ones fly into the book (or to the hip, where it hangs)
-    this.loose.update(dt, this.book, this.model.group.getWorldPosition(_v));
     const ch2 = g.character;
     this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6;
   }

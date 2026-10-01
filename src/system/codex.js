@@ -106,6 +106,14 @@ export class Codex {
     lab.title = 'Everything unlocked: for testing and for showing the game off';
     lab.onclick = () => s.setLab(!s.lab);
     head.appendChild(lab);
+    // the System's voice (system/voice.js): on or off, kept in the browser
+    const V = this.game.voice;
+    if (V) {
+      const vo = el('div', `lab${V.settings.on ? ' on' : ''}`, 'VOICE <i></i>');
+      vo.title = V.synth ? `The System speaks what matters most${V.voice ? ` (${V.voice.name})` : ''}` : 'This browser has no speech';
+      vo.onclick = () => { V.set({ on: !V.settings.on }); if (V.settings.on) V.say('Confirmed. The System will speak.', { key: 'voice.on', throttle: 0 }); this.render(); };
+      head.appendChild(vo);
+    }
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();
     head.appendChild(x);

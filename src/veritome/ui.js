@@ -3,15 +3,15 @@
 // system), and this shelf is the Book itself, in four pages:
 //
 //  - THE BINDER: every designated page, by section, numbered (Greed Island's binder). A filled page shows its card, its rank and how
-//    many copies of its limit the Book holds; GAIN makes a card with an item form into the thing itself, CONDENSE turns a spare into
-//    cubes. An empty page shows the Book's back and only its riddle. Above it: pages filled, free slots used, things held as items,
-//    and the cards still loose (open the Book to bind them).
+//    many copies of its limit the Book holds; TAKE OUT puts a card with an item form into the Pneuka Box as the thing itself (with
+//    the Veritome drawn), CONDENSE turns a spare into cubes. An empty page shows the Book's back and only its riddle. Above it: pages
+//    filled, free slots used, what is in the Pneuka Box, the film.
 //  - THE FILM: the plates not yet appraised, with APPRAISE ALL (or a chosen few) and DISCARD. Appraising is a step of its own, done
 //    in a batch: the report lists each plate with its stars and what it gave (an entry, a fact, a card), Pokémon Snap's way.
 //  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD) and the facts known, the battle ones marked.
 //  - THE COMPENDIUM: the best photograph of every kind of thing, with its stars (the Hyrule Compendium).
 //
-// Prior art: Greed Island's binder (numbered designated slots, free slots, ranks and limits, Gain), Pokémon Snap's report and album,
+// Prior art: Greed Island's binder (numbered designated slots, free slots, ranks and limits), OSRS's bank, Pokémon Snap's report and album,
 // Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
 // ---------------------------------------------------------------------------------------
 import { CARDS, CARD, SECTIONS, FREE_SLOTS, WORTH, cardArt } from './cards.js';
@@ -59,8 +59,8 @@ export function renderVeritome(codex, cx) {
   if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; }
   const g = codex.game, V = g.veritome, B = V?.book;
   if (!B) { cx.appendChild(el('p', '', 'The Veritome is not here.')); return; }
-  const items = Object.values(B.items).reduce((a, n) => a + n, 0);
-  cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span><span>HELD AS THINGS ${items}</span><span>FILM ${B.film.plates.length} / ${ROLL}</span>${B.loose.length ? `<span style="color:#ffd98a">LOOSE CARDS ${B.loose.length}</span>` : ''}`));
+  const box = g.pneuka;
+  cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span>${box ? `<span>PNEUKA BOX ${box.used} / ${box.slots.length} (P)</span>` : ''}<span>FILM ${B.film.plates.length} / ${ROLL}</span>`));
   const pages = el('div', 'vtpages');
   codex.vtPage ||= 'binder';
   for (const [id, name] of [['binder', 'THE BINDER'], ['film', `THE FILM${B.film.plates.length ? ` (${B.film.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM']]) {
@@ -81,7 +81,7 @@ function binder(codex, cx, g, B) {
     left.appendChild(el('div', 'sec', `${S.name} · ${B.filledIn(S.id)} / ${list.length}`));
     const grid = el('div', 'binder');
     for (const A of list) {
-      const n = B.count(A.id), seen = B.known(A.id), it = B.item(A.id);
+      const n = B.count(A.id), seen = B.known(A.id), it = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
       const slot = el('div', `slot${n ? '' : seen ? ' seen' : ' empty'}${codex.vtSel === A.id ? ' sel' : ''}`);
       const c = document.createElement('canvas'); c.width = 120; c.height = 200;
       c.getContext('2d').drawImage(cardArt(A.id, 120, 200, { back: !n && !seen }), 0, 0);
@@ -104,10 +104,12 @@ function binder(codex, cx, g, B) {
   det.appendChild(el('h3', '', n || seen ? A.name.toUpperCase() : '· · ·'));
   if (n || seen) det.appendChild(el('p', '', A.lore));
   det.appendChild(el('p', 'hint', A.section === 'arcana' ? `Sitting: ${A.hint}.` : `Comes from: ${A.hint}.`));
-  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise the film.' : A.section === 'curio' ? 'Open chests; bind the card it comes as (J) within a minute.' : 'Photograph it well (three stars, as the main subject), then appraise the film.'));
-  if (B.item(A.id)) det.appendChild(el('p', '', `<span style="color:#9be36a">HELD AS THE THING ITSELF</span> · ${B.item(A.id)}${A.section === 'curio' ? ' (it can be tied on as a lure)' : ''}`));
+  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise the film.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the film.'));
+  const carried = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
+  if (carried) det.appendChild(el('p', '', `<span style="color:#9be36a">CARRIED</span> · ${carried} in the Pneuka Box${g.pneuka.lure === A.id ? ', on the line' : ''} (P)`));
   const btns = el('div', 'btns');
-  if (A.form === 'item') btns.appendChild(button(`GAIN${n ? '' : ' (none)'}`, () => { if (B.gain(A.id)) codex.render(); }, !n, n === 1 ? 'the page empties: the card becomes the thing itself, for good' : 'a copy becomes the thing itself, for good'));
+  const held = !!g.veritome?.held;
+  if (A.form === 'item') btns.appendChild(button('TAKE OUT', () => { if (g.pneuka?.withdraw(A.id)) codex.render(); }, !n || !held || !g.pneuka?.free, !held ? 'draw the Veritome (J) to take things out of it' : 'a copy becomes the thing itself, in the Pneuka Box'));
   btns.appendChild(button(`CONDENSE (${WORTH[A.rank]} cubes)`, () => { if (B.condense(A.id)) codex.render(); }, B.spares(A.id) < 1, 'a spare copy, condensed into Lachryma cubes'));
   det.appendChild(btns);
   if (A.form !== 'item') det.appendChild(el('p', 'hint', 'A picture of something known: it has no item form, and stays a card.'));

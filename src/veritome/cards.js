@@ -6,9 +6,9 @@
 //    photographed), the Curios (things found in chests), the Creatures (portraits good enough to be a card, as Wind Waker's Carlov
 //    makes a figurine of whoever is in a good pictograph). A page with its card in it is FILLED; the Book's completion is its pages.
 //  - RANK (SS, S, A to H) is how hard a card is to come by; LIMIT is how many copies of it the Book may hold (the page, and spares).
-//  - FORM. A card with an item form ('item') can be GAINED: taken out of the Book and made into the thing itself (a curio in the
-//    hand, tied on as a lure). As in Greed Island that is one way: a gained thing is no longer a card. A card with no item form is a
-//    picture of something known (an Arcana, a creature): it is only ever a card.
+//  - FORM. A card with an item form ('item') is a thing kept: it is STORED from the Pneuka Box (pneuka/box.js) and TAKEN OUT into it
+//    again, the Book being the bank. A card with no item form is a picture of something known (an Arcana, a creature): it is only
+//    ever a card.
 //  - WORTH: what a spare copy condenses into, in Lachryma cubes (Greed Island's shops buy cards; here the Book condenses them).
 //
 // New sections go on the end of the numbering (the .hack-style "offline MMO" layers to come will add theirs), so a page's number is
@@ -29,7 +29,7 @@ const FISH_RANK = ['G', 'E', 'D', 'B', 'A', 'SS'], FISH_LIMIT = [3, 3, 3, 2, 1, 
 
 export const SECTIONS = [
   { id: 'arcana', name: 'THE MAJOR ARCANA', blurb: 'Truths of the workshop, photographed. Each page is a riddle until its sitting is caught on film and appraised.' },
-  { id: 'curio', name: 'CURIOS', blurb: 'Things with a life behind them, found in chests. A curio comes out of a chest as a card: open the Book (J) within a minute and it is bound, or it becomes the thing itself.' },
+  { id: 'curio', name: 'CURIOS', blurb: 'Things with a life behind them, found in chests. A curio goes into the Pneuka Box (P); stored in the Veritome it is a card here.' },
   { id: 'creature', name: 'CREATURES', blurb: 'A portrait good enough to be a card: a creature as the main subject of a photograph of three stars or more.' },
 ];
 

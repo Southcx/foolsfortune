@@ -11,8 +11,8 @@
 //              flashes, a ring goes out, stars and confetti fly, the camera punches in and the world runs slow for a moment.
 //   FOUNTAIN   the cubes come out a few at a time (each with a pop that climbs in pitch), bounce, and pile.
 //   REVEAL     a curio (some of the time; always, at the top) rises out of the chest and is held up in a beam, spinning, in a close
-//              shot. It goes to her as a card, loose until the Book is opened (veritome/book.js); one the Book cannot
-//              hold is condensed into cubes in front of you.
+//              shot. It goes into her Pneuka Box (pneuka/box.js; at her feet if the box is full); one more than its
+//              card's limit is condensed into cubes in front of you.
 //   SETTLE     the bars go, the camera comes back, and the cubes on the floor are drawn to you in a run whose pitch climbs.
 //
 // Prior art, from the loot-box and gacha canon:
@@ -32,6 +32,7 @@ import { sfx } from './audio.js';
 import { TIERS, CURIOS, CURIO_BY_ID, curiosOf, cubesIn } from './treasure.js';
 import { CHEST } from './chestmodel.js';
 import { buildCurio } from './curiomodel.js';
+import { CARD } from './veritome/cards.js';
 
 const D = THREE.MathUtils.damp, lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
 const easeOut = (x) => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
@@ -81,9 +82,10 @@ export class Ceremony {
       const list = fresh.length && Math.random() < 0.85 ? fresh : pool; // (a little help toward the ones you lack)
       this.curioId = list[Math.floor(Math.random() * list.length)].id;
     }
-    // (a copy the Book cannot take, at its limit or with no free slot, is condensed into cubes on the spot)
-    const book = game.veritome?.book;
-    this.dupe = !!this.curioId && (book ? !book.canTake(`curio.${this.curioId}`) : owned(this.curioId));
+    // (one more than the Courier may have of it, in her box, on her line, in her Book and on the ground together, is condensed into
+    // cubes on the spot: the card's limit)
+    const box = game.pneuka, lim = CARD[`curio.${this.curioId}`]?.limit ?? 1;
+    this.dupe = !!this.curioId && (box ? box.held(`curio.${this.curioId}`) >= lim : owned(this.curioId));
     // the roulette (a sealed chest only)
     this.rl = this.sealed ? rouletteSeq(this.T) : null;
     if (this.rl) {
@@ -343,8 +345,7 @@ export class Ceremony {
     if (this.holdT > this.plan.curio || (this.skipped && this.holdT > 0.35)) this.enter('collect');
   }
 
-  // ---- COLLECT: it goes to her as a card, loose until she opens the Book (or, if the Book cannot hold another, it is condensed into
-  //      cubes on the spot)
+  // ---- COLLECT: it goes into her Pneuka Box (or, if she has as many as its limit already, it is condensed into cubes on the spot)
   p_collect(dt) {
     const g = this.g;
     this.curioUpdate(dt);
@@ -354,7 +355,7 @@ export class Ceremony {
       g.glyphs.pop('star', at, { color: TIERS[this.T].rgb, size: 0.4, burst: true, life: 0.8 });
       if (this.dupe) { g.cubes.burst(at, DUPE_VALUE[this.T], { count: Math.min(30, 6 + this.T * 6), stagger: 0.4, up: 3.5, from: 'dupe' }); sfx.chestBurst(0); }
       else sfx.cubeGet(9);
-      if (!this.dupe) { g.ledger.inc(`curio.${this.curioId}`); g.veritome?.book.out(`curio.${this.curioId}`, 'chest'); } // (found: the ledger's; it comes as a loose card, for the Book)
+      if (!this.dupe) { g.ledger.inc(`curio.${this.curioId}`); g.pneuka?.add(`curio.${this.curioId}`, 'chest'); } // (found: the ledger's; the thing goes into her Pneuka Box)
       g.events.emit('curio.get', { id: this.curioId, tier: this.T, dupe: this.dupe, from: 'chest' });
       this.curio.dispose(); this.curio = null;
       this.curioHalo.parent?.remove(this.curioHalo); this.curioHalo.material.dispose(); this.curioHalo = null;

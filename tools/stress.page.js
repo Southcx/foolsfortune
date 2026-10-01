@@ -143,8 +143,10 @@
         else if (r < 0.95) inp.pressed.add('Mouse1');
         else inp.wheel += (rnd() - 0.5) * 400;
       }
-      // the Veritome: draw it now and then (J); raise the lens and expose plates; now and then appraise the roll, gain or condense a
-      // card, or have a curio come loose (as a chest gives one); the Survey (N) borrows the open hold
+      // (the Book's cards, or none)
+      const B0 = (g) => g.game.veritome?.book.cards || {};
+      // the Veritome: draw it now and then (J); raise the lens and expose plates; now and then appraise the roll or condense a card;
+      // the Pneuka Box: things come into it (as a chest gives them), are dropped, stored, taken out, tied on; the Survey (N)
       if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyJ');
       if (!god.controlling && rnd() < 0.001) inp.pressed.add('KeyN');
       const book = g.techs.get('veritome');
@@ -157,10 +159,20 @@
       }
       if (book && rnd() < 0.002) {
         const B = book.book, r = rnd(), ids = Object.keys(B.cards);
-        if (r < 0.4 && B.film.plates.length) book.appraise();
-        else if (r < 0.6) B.out(`curio.${['whelk', 'gull', 'pearl', 'skull', 'koi'][Math.floor(rnd() * 5)]}`, 'stress');
-        else if (r < 0.8 && ids.length) B.gain(ids[Math.floor(rnd() * ids.length)]);
+        if (r < 0.5 && B.film.plates.length) book.appraise();
         else if (ids.length) B.condense(ids[Math.floor(rnd() * ids.length)]);
+      }
+      const box = g.game.pneuka;
+      if (box && rnd() < 0.006) {
+        const r = rnd(), full = box.slots.map((s, i) => (s ? i : -1)).filter((i) => i >= 0), any = full[Math.floor(rnd() * full.length)];
+        if (r < 0.35) box.add(`curio.${['whelk', 'gull', 'pearl', 'skull', 'koi', 'bell', 'storm'][Math.floor(rnd() * 7)]}`, 'stress');
+        else if (r < 0.45 && full.length) box.drop(any);
+        else if (r < 0.6 && full.length) box.store(any);
+        else if (r < 0.7) { const c = Object.keys(B0(g)).filter((k) => k.startsWith('curio.')); if (c.length) box.withdraw(c[Math.floor(rnd() * c.length)]); }
+        else if (r < 0.8 && full.length) box.tieOn(any);
+        else if (r < 0.88) box.tieMade(['bob', 'eye', 'fly'][Math.floor(rnd() * 3)]);
+        else if (r < 0.94 && full.length > 1) box.swap(any, full[0]);
+        else { const n = g.game.ground.nearest(P); if (n) g.game.ground.pick(n.ref); }
       }
       if (book?.pending) book.afterRender(null); // (the shot develops: a test drive has no frame of its own)
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush

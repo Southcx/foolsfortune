@@ -342,7 +342,7 @@ export class ChestTech extends Tech {
   canStart() {
     const P = this.P, g = this.game;
     if (!g.chests || !P.peekLatch('KeyF') || !P.grounded || P.mantle || P.sliding || P.wallrun) return false;
-    if (g.techs.get('carry')?.item || g.god?.controlling) return false;
+    if (g.techs.get('carry')?.item || g.god?.controlling || g.interact?.cur?.id === 'item') return false;
     const tgt = g.chests.find();
     if (!tgt) return false;
     if (tgt.kind === 'tithe') {

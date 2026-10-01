@@ -301,7 +301,9 @@ export function buildAchievements(game) {
   C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Fill eleven Arcana pages.', 'card.pages.arcana', 11);
   C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Fill all twenty-two Arcana pages.', 'card.pages.arcana', 22, { title: 'the Fool Who Read the World' });
   C('vb4', 'veritome', 'The Book', 3, 'collect', 'Portraitist', 'Bind five creature cards.', 'card.pages.creature', 5);
-  C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Gain', 'Make a card into the thing itself.', 'card.gain', 1);
+  C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Banked', 'Store something in the Veritome from the Pneuka Box.', 'item.store', 1);
+  C('vb7', 'veritome', 'The Book', 1, 'mechanic', 'Something Old', 'Tie a curio on as a lure.', 'lure.tie.curio', 1);
+  C('vb8', 'veritome', 'The Book', 2, 'mechanic', 'Overburdened', 'Fill all twenty-eight slots of the Pneuka Box.', 'pneuka.filled', 1);
   C('vb6', 'veritome', 'The Book', 2, 'mechanic', 'Condensed', 'Condense a spare card into cubes.', 'card.condense', 1);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
@@ -485,7 +487,7 @@ export class Achievements {
     }
     if (!this.silent) {
       const r = this.rankIndex();
-      if (r > this.rank) { this.game.log?.say('ach', `You are now known as a ${RANKS[r][1]}.`); this.rank = r; }
+      if (r > this.rank) { this.game.log?.say('ach', `You are now known as a ${RANKS[r][1]}.`); this.rank = r; this.game.events?.emit('rank.up', { rank: RANKS[r][1] }); }
     } else this.rank = this.rankIndex();
   }
 
@@ -493,7 +495,7 @@ export class Achievements {
     const T0 = TIERS[a.tier];
     this.game.log?.say('ach', `Achievement complete (${T0.name}, ${T0.pts} ${T0.pts === 1 ? 'pt' : 'pts'}): ${a.name}.`);
     if (a.title) this.game.log?.say('ach', `You have earned the title "${a.title}".`);
-    this.game.events?.emit('achievement', { id: a.id, tier: a.tier, points: T0.pts });
+    this.game.events?.emit('achievement', { id: a.id, tier: a.tier, points: T0.pts, title: a.title || null, ach: a.name });
     sfx.systemUnlock?.();
   }
 }

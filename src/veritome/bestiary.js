@@ -68,6 +68,9 @@ export const CREATURE_IDS = Object.keys(CREATURES);
 /** Which creature a photographed subject is (or null: a pot is not a creature). */
 export const creatureOf = (s) => (s.kind === 'clapper' ? 'clapper' : s.kind === 'fish' && s.sub ? `fish.${s.sub}` : null);
 
+/** The understanding a number of known facts (of so many) is. */
+export const tierOf = (n, of) => (n <= 0 ? 0 : n >= of ? 4 : n >= Math.ceil(of * 2 / 3) ? 3 : n >= 3 ? 2 : 1);
+
 export class Bestiary {
   /** `state`: the Book's saved { [creature]: [fact ids] } (kept by reference: the Book saves it). */
   constructor(state = {}) { this.known = state; }
@@ -92,7 +95,7 @@ export class Bestiary {
 
   understanding(id) {
     const C = CREATURES[id], n = this.known[id]?.length || 0, of = C ? C.facts.length : 0;
-    const tier = n === 0 ? 0 : n >= of ? 4 : n >= Math.ceil(of * 2 / 3) ? 3 : n >= 3 ? 2 : 1;
+    const tier = tierOf(n, of);
     return { n, of, tier, name: TIERS[tier], k: of ? n / of : 0 };
   }
 }

@@ -31,6 +31,8 @@ import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 const fx = (v, d = 2) => Number(v).toFixed(d);
 import { CARD as VCARD } from './veritome/cards.js';
 import { CREATURES } from './veritome/bestiary.js';
+import { itemOf } from './pneuka/items.js';
+import { LURES } from './angling/lures.js';
 import { SUBJECTS } from './veritome/subjects.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
@@ -280,7 +282,7 @@ export class Tracking {
     // ---- the Veritome: the film, the darkroom, the bestiary, the Book (src/moves/veritome.js, src/veritome/)
     const CARD = (id) => VCARD[id]?.name || id;
     const subj = (k) => (k === 'nothing' ? null : k === 'sky' ? 'the open sky' : k === 'sun' ? 'the sun' : SUBJECTS[k]?.name ? an(SUBJECTS[k].name) : k);
-    on('veritome.draw', (e) => { L.inc('veritome.draw'); log.say('info', e.loose ? 'You open the Veritome, and the loose cards go to their pages.' : 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
+    on('veritome.draw', () => { L.inc('veritome.draw'); log.say('info', 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
     on('veritome.lens', () => L.inc('veritome.lens'));
     on('photo.take', (e) => {
       L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
@@ -312,12 +314,21 @@ export class Tracking {
       log.say('gain', e.page ? `${CARD(e.card)} is bound into page ${VCARD[e.card]?.page} of the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} goes into a free slot.`, { key: `cget.${e.card}`, throttle: 1 });
     });
     on('card.drift', (e) => { L.inc('card.drift'); log.say('info', e.from === 'time' ? `${CARD(e.card)} was never bound, and is gone.` : `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }); });
-    on('card.out', (e) => { L.inc('card.out'); log.say('loot', `The ${CARD(e.card)} comes to you as a card. Open the Book (J) within a minute to bind it.`, { tone: '#ffd98a' }); });
-    on('card.bind', (e) => L.inc('card.bound', e.n));
-    on('card.gain', (e) => {
-      L.inc('card.gain'); L.inc(`card.gained.${e.card}`);
-      log.say('loot', e.from === 'time' ? `The ${CARD(e.card)} card was not bound in time, and becomes the ${CARD(e.card)} itself.` : `Gain: the ${CARD(e.card)} card becomes the ${CARD(e.card)} itself.`, { tone: '#9be36a' });
+    // ---- the Pneuka Box: what she carries (src/pneuka/)
+    const ITEM = (id) => itemOf(id)?.name || CARD(id);
+    on('item.get', (e) => {
+      L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
+      if (e.used >= 28) L.inc('pneuka.filled');
+      if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
+      else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
+      first('pneuka', 'Logged: your first thing in the Pneuka Box. P opens it: left click uses, right click lists the rest.');
     });
+    on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
+    on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
+    on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));
+    on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)} in the Veritome.`, { key: 'istore', fmt: (n) => `You store ${n} things in the Veritome.` }); });
+    on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of the Veritome.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of the Veritome.` }); });
+    on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });
     on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 
     // ---- the Soul Brush: the club, the brush slide, the Celestial Brush, the sigils (src/moves/soulbrush.js, src/brush/)
