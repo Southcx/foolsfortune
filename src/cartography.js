@@ -122,6 +122,12 @@ export class Cartography {
     return false;
   }
 
+  /** A point seen in a photograph (the Veritome): its cell, and those round it, are charted. */
+  chartAt(p) {
+    const l = this.layerOf(p.y), [ix, iz] = this.cellIndex(l, p.x, p.z);
+    for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) this.learn(l, ix + dx, iz + dz, dx || dz ? 0.3 : 0.5, false, p.y);
+  }
+
   // ------------------------------------------------------------------ anchors (named places)
   addAnchor(name, tag, pos, layerId = null) {
     const l = layerId ? LAYER_BY_ID[layerId] : this.layerOf(pos.y);
@@ -531,6 +537,18 @@ export class Cartography {
       c.fillStyle = 'rgba(251,227,207,.9)';
       c.fillText(a.name, sx, sy - 9);
     }
+    // the photographs (the Veritome's): a small brass frame where each was taken, turned the way the lens looked, brighter for more stars
+    for (const p of this.game.veritome?.book.pins || []) {
+      if (this.layerOf(p.y).id !== l.id) continue;
+      const sx = (p.x - V.x) * V.scale, sy = (p.z - V.z) * V.scale;
+      c.save(); c.translate(sx, sy); c.rotate(Math.PI - p.yaw);
+      c.globalAlpha = 0.45 + 0.15 * (p.stars || 0);
+      c.strokeStyle = '#e7c46a'; c.lineWidth = 1.5; c.strokeRect(-5, -4, 10, 8);
+      c.beginPath(); c.arc(0, 0, 2.2, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.moveTo(-3, -4); c.lineTo(0, -9); c.lineTo(3, -4); c.stroke();
+      c.restore();
+    }
+    c.globalAlpha = 1;
     // the waypoint
     if (this.waypoint && this.waypoint.layer === l.id) {
       const sx = (this.waypoint.x - V.x) * V.scale, sy = (this.waypoint.z - V.z) * V.scale;

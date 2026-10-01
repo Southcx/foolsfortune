@@ -32,6 +32,10 @@ import { DUNE, OASIS, POND, WELL, pondDepth } from '../dunes.js';
 
 // the oasis's frame, in the world
 export const OX = DUNE.x + OASIS.x, OY = DUNE.y + OASIS.y, OZ = DUNE.z + OASIS.z;
+/** Where the palms stand round the oasis flat (oasis frame, x / z): the Veritome photographs them too. */
+export const PALM_SPOTS = [[-26, -14], [-30, 8], [-22, 26], [-40, -22], [24, -16], [28, 22], [44, -8], [46, 18], [-6, 40], [12, 42], [-44, 30], [36, 36], [-16, -30], [20, -34]];
+/** The tally's stone (world). */
+export const TALLY_AT = [OX + 16, OY + 2.2, OZ + 31];
 const B = OY; // (the builders below were written for a floor at B; the packed sand is that floor now)
 export const WEIR_SPAWN = { pos: [OX + OASIS.x - 3, OY, OZ + POND.z - POND.rz - 7], yaw: 0 }; // (the dunes' spawn point: dunes.js)
 const RIM = { x0: WELL.x0 - 0.5, x1: WELL.x1 + 0.5, z0: WELL.z0 - 0.5, z1: WELL.z1 + 0.5 };
@@ -330,7 +334,7 @@ function buildPalms(game) {
     frond.setAttribute('position', new THREE.Float32BufferAttribute(P, 3));
     frond.computeVertexNormals();
   }
-  const spots = [[-26, -14], [-30, 8], [-22, 26], [-40, -22], [24, -16], [28, 22], [44, -8], [46, 18], [-6, 40], [12, 42], [-44, 30], [36, 36], [-16, -30], [20, -34]];
+  const spots = PALM_SPOTS;
   let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (const [lx, lz] of spots) {
     const x = OX + lx, z = OZ + lz, y = game.dunes.heightAt(x, z);

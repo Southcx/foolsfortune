@@ -74,7 +74,7 @@ export class Player {
     this.wallrun = null; // { n, side, t, lost, handle }
     this.camFx = { yaw: 0, pitch: 0, dist: 1, fov: 0, roll: 0 };
     this.camShot = null; // (a scripted camera blended over this one: see vfx/cinema.js)
-    this.lookScale = { lock: 1, blade: 1, brush: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
+    this.lookScale = { lock: 1, blade: 1, brush: 1, lens: 1 }; // (how much of the mouse the camera gets: a lock-on quiets it, blade mode gives it to the blade)
     this.wallCd = 0;
     this.lastWall = -1;
     this.airJumps = 0;
@@ -162,12 +162,12 @@ export class Player {
 
   look(dt, adsT) {
     const inp = this.input;
-    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.shot ?? 1);
+    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.lens ?? 1) * (this.lookScale.shot ?? 1);
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;
 
-    if (inp.wasPressed('KeyZ') && !this.techs?.toolOut && (this.game?.belt?.allows('firstPerson') ?? true)) this.view = this.fp ? 'tp' : 'fp'; // (the Sondelass has no first person, and Z is its lock-on)
+    if (inp.wasPressed('KeyZ') && (this.game?.belt?.allows('firstPerson') ?? true)) this.view = this.fp ? 'tp' : 'fp'; // (every tool has its first person; lock-on is the middle button)
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step
     if (inp.wasPressed('KeyC')) this.slideBuf = T.movement.slideBuffer;
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
@@ -1024,6 +1024,8 @@ export class Player {
       cam.quaternion.slerp(_shotQ, k);
       cam.fov += cs.fov * k;
     }
+    // the Veritome's lens: its zoom, eased in
+    if (this.lens?.k > 0) cam.fov = THREE.MathUtils.lerp(cam.fov, this.lens.fov, this.lens.k);
     cam.updateProjectionMatrix();
     cam.updateMatrixWorld();
     this.fpWeight = 1 - tb;

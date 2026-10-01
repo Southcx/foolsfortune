@@ -203,6 +203,7 @@ export class Clappers {
 
   canSeePlayer(c) {
     const p = this.game.player;
+    if (p.unseen > 0) return false; // (the Moon: the Courier is not to be seen)
     const eye = c.pos.clone().setY(c.pos.y + 0.5);
     const chest = p.renderPos.clone().setY(p.renderPos.y + 1.2);
     const d = chest.clone().sub(eye);

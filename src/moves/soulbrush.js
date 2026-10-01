@@ -12,6 +12,8 @@ import { Sigils } from '../brush/sigils.js';
 import { PaintPath } from '../vfx/paintpath.js';
 import { measureGrip, handFromTool } from '../tools/grip.js';
 import { drawHands } from '../tools/draw.js';
+import { fpToolMatrix } from '../tools/viewmodel.js';
+import { tickInscriptions, clearInscriptions } from '../brush/inscribe.js';
 
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH: the third of the Courier's psychic tools, a calligrapher's brush the size of a club, worn at the left hip like a
@@ -110,12 +112,11 @@ export class SoulBrush extends Tech {
       this.club.cancel(); this.celestial.exit('stow'); this.rmbT = -1;
       g.events?.emit('brush.stow', {});
     }
-    if (this.drawT > 0.02 && P.fp) P.view = 'tp';
     // the brush's own inputs, once it is in the hand
     if (this.held && inp.enabled) {
       if (this.celestial.active) this.celestial.update(raw, inp);
       else {
-        if (inp.wasPressed('KeyZ') || inp.wasPressed('Mouse1')) g.lock?.toggle();
+        if (inp.wasPressed('Mouse1')) g.lock?.toggle();
         // RMB: a tap flicks, a hold opens the canvas
         if (inp.wasPressed('Mouse2') && !this.club.busy) this.rmbT = 0;
         if (this.rmbT >= 0) {
@@ -132,6 +133,7 @@ export class SoulBrush extends Tech {
     } else if (this.celestial.active) this.celestial.exit('stow');
     this.canvas.update(raw);
     this.techniques.update(dt);
+    tickInscriptions(g, dt);
     this.sigils.update(dt, this.drawT > 0.5);
     this.slideTick(dt);
     this.paint.update(dt);
@@ -174,7 +176,8 @@ export class SoulBrush extends Tech {
       this.sliding = false; this.paint.gap();
       g.events?.emit('brush.slide', { phase: 'end', dist: +this.slideDist.toFixed(1), secs: +this.slideT.toFixed(2) });
     }
-    this.slideW = THREE.MathUtils.damp(this.slideW, this.sliding ? 1 : 0, this.sliding ? 14 : 9, dt);
+    // (in first person the body faces the view: the slide keeps its core look, and the brush paints just behind her)
+    this.slideW = THREE.MathUtils.damp(this.slideW, this.sliding && !P.fp ? 1 : 0, this.sliding ? 14 : 9, dt);
     if (!this.sliding) return;
     this.slideT += dt;
     const hs = Math.hypot(P.vel.x, P.vel.z);
@@ -184,7 +187,7 @@ export class SoulBrush extends Tech {
       this.slideYaw += wrap(want - this.slideYaw) * (1 - Math.exp(-dt * 14));
     }
     // paint: under the bristles, every few tens of centimetres
-    const tip = this.model.tipWorld(_v1);
+    const tip = P.fp ? _v1.set(P.pos.x - P.vel.x / (hs || 1) * 0.9, P.pos.y + 0.3, P.pos.z - P.vel.z / (hs || 1) * 0.9) : this.model.tipWorld(_v1);
     const down = g.physics.raycast(_v2.copy(tip).setY(Math.max(tip.y, P.pos.y) + 0.5), _v3.set(0, -1, 0), 1.4, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     if (!down || down.normal.y < 0.5) { this.paint.gap(); this.lastDab = null; return; }
     const d = this.lastDab ? this.lastDab.distanceTo(down.point) : Infinity;
@@ -245,15 +248,23 @@ export class SoulBrush extends Tech {
       const target = P.renderPos.clone().addScaledVector(back, 1.05).addScaledVector(new THREE.Vector3(Math.sin(this.slideYaw), 0, Math.cos(this.slideYaw)), -0.15);
       const down = this.game.physics.raycast(target.clone().setY(P.renderPos.y + 0.6), new THREE.Vector3(0, -1, 0), 1.6, P.collider, undefined, (c) => !c.isSensor());
       target.y = (down ? down.point.y : P.renderPos.y) + 0.06;
-      const X = target.sub(o).normalize();
+      const X = target.sub(o);
       const Z = new THREE.Vector3().setFromMatrixColumn(M, 2);
-      Z.addScaledVector(X, -Z.dot(X)).normalize();
-      const Y = new THREE.Vector3().crossVectors(Z, X);
-      const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(o);
-      handFromTool(this.grip, G, 'R', hp, 0, 0, 0, hq);
-      ch.reachHand('R', hp, hq, this.slideW);
-      M.multiplyMatrices(B.handR.matrixWorld, this.grip.R);
+      // (only when the haft has a direction and the palm is not along it: a degenerate frame is a NaN, and a NaN in a bone ends up in the world)
+      if (X.lengthSq() > 1e-4) {
+        X.normalize();
+        Z.addScaledVector(X, -Z.dot(X));
+        if (Z.lengthSq() > 1e-4) {
+          Z.normalize();
+          const Y = new THREE.Vector3().crossVectors(Z, X);
+          const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(o);
+          handFromTool(this.grip, G, 'R', hp, 0, 0, 0, hq);
+          if (Number.isFinite(hp.x + hp.y + hp.z + hq.x + hq.w)) { ch.reachHand('R', hp, hq, this.slideW); M.multiplyMatrices(B.handR.matrixWorld, this.grip.R); }
+        }
+      }
     }
+    if (this.P.fp && this.drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, this.drawT / 0.6), ...this.club.fpArc() }, M);
+    if (!M.elements.every(Number.isFinite)) M.copy(holster); // (never a NaN placed in the world)
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);
     // the hair lags: a spring on the head's motion in the brush's own frame (and drags flat in the slide)
     model.group.updateMatrixWorld(true);
@@ -261,13 +272,18 @@ export class SoulBrush extends Tech {
     _q1.copy(model.group.quaternion).invert();
     const lv = _v1.copy(v).applyQuaternion(_q1);
     const ty = THREE.MathUtils.clamp(lv.y * 0.05, -0.7, 0.7) + (this.sliding ? 0.45 : 0), tz = THREE.MathUtils.clamp(-lv.z * 0.05, -0.7, 0.7);
-    this.lagVy += ((ty - this.lagY) * 160 - this.lagVy * 14) * dt; this.lagY += this.lagVy * dt;
-    this.lagVz += ((tz - this.lagZ) * 160 - this.lagVz * 14) * dt; this.lagZ += this.lagVz * dt;
+    // (a stiff spring: stepped in small pieces, semi-implicitly, so a long frame cannot make it ring up and blow out to NaN)
+    for (let left = Math.min(dt, 0.1); left > 1e-5; left -= 1 / 120) {
+      const h = Math.min(left, 1 / 120);
+      this.lagVy += ((ty - this.lagY) * 160 - this.lagVy * 14) * h; this.lagY += this.lagVy * h;
+      this.lagVz += ((tz - this.lagZ) * 160 - this.lagVz * 14) * h; this.lagZ += this.lagVz * h;
+    }
+    if (!Number.isFinite(this.lagY + this.lagZ + this.lagVy + this.lagVz)) this.lagY = this.lagZ = this.lagVy = this.lagVz = 0;
     model.setBend(this.lagY, this.lagZ);
     model.group.updateMatrixWorld(true);
     this.club.afterHands(dt);
   }
 
   fixed() {}
-  reset() { this.club.cancel(); this.celestial.exit('reset'); this.techniques.clear(); this.paint.clear(); this.sigils.clear(); }
+  reset() { this.club.cancel(); this.celestial.exit('reset'); this.techniques.clear(); this.paint.clear(); this.sigils.clear(); clearInscriptions(this.game); }
 }

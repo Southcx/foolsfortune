@@ -94,12 +94,22 @@ export class Sigils {
     }
   }
 
+  /** Every queue near a point loses its front mark (Death, a card): an emptied one unwrites its jar. */
+  dropFront(at, r) {
+    let n = 0;
+    for (const [c, e] of [...this.on]) if (c.pos.distanceTo(at) < r && e.keys.length) { if (this.pop(e.keys[0], c).popped) n++; }
+    return n;
+  }
+
+  /** Does any queue in view start with this mark? */
+  heads(key) { for (const e of this.on.values()) if (e.k > 0.5 && e.keys[0] === key) return true; return false; }
+
   /** A mark was drawn: it comes off the front of every queue it heads (in range, shown). */
-  pop(key) {
+  pop(key, only = null) {
     const g = this.game, P = g.player;
     let popped = 0, cleared = 0;
     for (const [c, e] of [...this.on]) {
-      if (e.k < 0.5 || e.keys[0] !== key) continue;
+      if ((only && c !== only) || (!only && e.k < 0.5) || e.keys[0] !== key) continue;
       e.keys.shift();
       const s = e.sprites.shift();
       this.bursts.push({ s, t: 0 });

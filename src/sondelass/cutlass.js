@@ -31,6 +31,7 @@ import { BLADE_LEN } from './model.js';
 import { Trail } from '../vfx/trail.js';
 import { BladeMode } from './blade.js';
 import { deflect, guard } from '../parry.js';
+import { arcAt } from '../tools/viewmodel.js';
 
 const STROKES = [
   { clip: 'swordA', dur: 0.43, hit: [0.14, 0.32], chain: [0.26, 0.75], dmg: 1.0, lunge: 3.2, power: 1.2, trail: [0.06, 0.42] },
@@ -117,7 +118,7 @@ export class Cutlass {
     this.stCool -= dt;
     // the blade is read in real seconds: what the world is doing does not change how fast she cuts
     if (this.blade.active || this.blade.k > 0) { this.blade.update(dt, inp); if (this.blade.active) return; }
-    if (inp.wasPressed('KeyZ') || inp.wasPressed('Mouse1')) g.lock.toggle();
+    if (inp.wasPressed('Mouse1')) g.lock.toggle();
     this.guardUpdate(dt, inp);
     // RMB: a tap is the stinger, a hold is blade mode
     if (inp.wasPressed('Mouse2') && !this.stroke && !this.stinging && !this.guardOn) this.rmbT = 0;
@@ -161,7 +162,7 @@ export class Cutlass {
       if (_p.distanceToSquared(P.pos) > 36) continue;
       if (segDist(_a, _b, _p) > 0.22 + ent.P.rMax * 0.9) continue;
       this.hit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * s.dmg, _p.clone(), dir.clone(), s.power);
+      g.breakables.damage(ent, DMG * s.dmg * (g.veritome?.mult('melee') ?? 1), _p.clone(), dir.clone(), s.power);
       g.events?.emit('cut.hit', { what: 'pot', combo: this.combo });
     }
     for (const c of [...g.clappers.list]) {
@@ -225,7 +226,7 @@ export class Cutlass {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (segDist(from, to, _p) > STING.radius * 0.5 + ent.P.rMax) continue;
       this.stHit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power);
+      g.breakables.damage(ent, DMG * STING.dmg * (g.veritome?.mult('melee') ?? 1), _p.clone(), dir.clone(), STING.power);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7));
       g.events?.emit('cut.hit', { what: 'pot', combo: 'stinger' });
     }
@@ -291,6 +292,15 @@ export class Cutlass {
       if (k <= 0) { this.game.scene.remove(gh.obj); gh.obj.traverse((o) => o.geometry?.dispose()); gh.mat.dispose(); this.ghosts.splice(i, 1); continue; }
       gh.mat.opacity = 0.3 * k * k;
     }
+  }
+
+  /** The first-person arc for what is playing: { arc, u } (tools/viewmodel.js). */
+  fpArc() {
+    if (this.blade.active) return this.blade.swing > 0 ? { arc: this.blade.swingKind % 2 ? 'l2r' : 'r2l', u: 1 - this.blade.swing } : { arc: 'raise', u: 0.4 };
+    if (this.guardW > 0.02) return { arc: 'raise', u: 0.5 * this.guardW };
+    const s = this.stroke;
+    if (!s) return null;
+    return { arc: ['r2l', 'l2r', 'over'][this.n] || 'r2l', u: arcAt(this.t, s.hit, s.dur) };
   }
 
   /** The clip layer: { pose, w } while a stroke, the guard or a blade-mode cut is playing. */

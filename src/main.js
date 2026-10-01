@@ -36,6 +36,7 @@ import { Ladder } from './moves/ladder.js';
 import { Surfer } from './moves/surfer.js';
 import { Sondelass } from './moves/sondelass.js';
 import { SoulBrush } from './moves/soulbrush.js';
+import { Veritome } from './moves/veritome.js';
 import { Grapple } from './moves/grapple.js';
 import { Launch } from './moves/launch.js';
 import { Circuits } from './circuits.js';
@@ -80,7 +81,7 @@ import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
 import { Presentation } from './render/present.js';
-import { ToolBelt, psygunTool, sondelassTool, soulBrushTool } from './tools/belt.js';
+import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
 
 const FIXED = 1 / 60;
 
@@ -233,13 +234,14 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
   game.belt.add(psygunTool(weapon));
   game.belt.add(sondelassTool(techs.get('sondelass')));
   game.belt.add(soulBrushTool(techs.get('soulbrush')));
+  game.belt.add(veritomeTool(techs.get('veritome')));
   player.techs = techs;
   game.techs = techs;
   const codex = new Codex(game);
@@ -269,7 +271,7 @@ async function main() {
     game.interact.add('carry', () => {
       if (!carry?.usable() || carry.item || carry.state !== 'idle' || !idle()) return null;
       const e = carry.find(); if (!e) return null;
-      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos) };
+      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos), ref: e };
     });
     // where the grapnel would bite, while the hook is out and nothing is on the line
     game.interact.add('grapple', () => {
@@ -278,11 +280,11 @@ async function main() {
       const r = tool.hookshot.probe();
       return r ? { pos: r.point.clone().addScaledVector(r.normal, 0.45), d: 99 } : null;
     });
-    game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d } : null; });
+    game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d, ref: t.chest || t.kind } : null; });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
-      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos) };
+      const p = spot(e); return { pos: p, d: p.distanceTo(player.pos), ref: e };
     });
   }
 
@@ -445,6 +447,7 @@ async function main() {
     try {
       tick(dt);
       renderer.render(scene, window.__debugCam || camera);
+      game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
     } catch (e) {

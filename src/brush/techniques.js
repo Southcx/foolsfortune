@@ -1,44 +1,43 @@
 // ---------------------------------------------------------------------------------------
-// BRUSH TECHNIQUES: what a drawing on the Celestial Brush's canvas does to the world. The canvas is the screen, so a drawing is read
-// against the view it was drawn over: a line through a thing on the screen cuts that thing, a circle round a thing on the screen holds
-// that thing, a mark over a thing acts on that thing (a ray from the eye through the mark), and a mark over nothing acts on the
-// Courier. Each is planned the moment it is recognised (what it will touch, what it costs) and RUN when the brush is put down and time
-// comes back, as in Okami, where the painting takes when the brush lifts. Every drawing that is also a Magic Cat Academy mark
-// (a stroke across or down, a V, a caret, a bolt) takes that mark off the clapperjars' sigil queues too (sigils.js).
+// BRUSH TECHNIQUES: what a drawing on the Celestial Brush's canvas does to the world. The Soul Brush ALTERS things rather than hurting
+// them: most drawings write a property onto what they were drawn over (inscribe.js), and what happens next is the world's doing.
+// The canvas is the screen, so a drawing is read against the view it was drawn over: a line acts on everything it crosses on the
+// screen, a circle on everything inside it, a mark on everything under it; a mark over nothing acts on the Courier. Each is planned
+// the moment it is recognised (what it will touch, what it costs) and RUN when the brush is put down and time comes back, as in Okami,
+// where the painting takes when the brush lifts. Every drawing that is also a Magic Cat Academy mark (a stroke across or down, a V,
+// a caret, a bolt) takes that mark off the clapperjars' sigil queues too (sigils.js).
 //
-//   line    REND       Okami's Power Slash: a cut along the line, through everything it crosses on the screen (a plane through the eye
-//                      and the line: the same mesh slicer as the Cleave shell and blade mode). Sliceable things come apart; jars break.
-//   circle  MEND       Okami's Rejuvenation and Bloom: what is inside the circle is made whole: cracked pots are mended with gold,
-//                      wrecks rebuilt where they fell, and a clapperjar held in it is befriended (the Caster's hatch, casters.js).
-//   bomb    EMBER      Okami's Cherry Bomb (a circle and a fuse from inside it out): a bomb of ink where it was drawn, a second's fuse.
-//   spiral  GALE       Okami's Galestorm: a gust the way the spiral ended up going. It throws what is loose, carries the Courier
-//                      a little in the air, and in the dunes the wind itself turns to blow that way for a while (the skiff sails on it).
-//   bolt    BOLT       Magic Cat Academy's lightning, Okami's Thunderstorm: a strike where it is drawn. Jars are stunned, pots burst.
-//   caret   RISE       up: what is under it is thrown up; drawn over nothing, the Courier is.
-//   vee     PLUNGE     down: what is under it is driven down; over nothing, the Courier dives (or, on the ground, bursts slip about her).
-//   heart   SOLACE     Magic Cat Academy's heart: every clapperjar in view forgets itself and dances; the god-hand's vessel is soothed.
-//   (other) WASH       a drawing that is none of these is laid on the world as slip, where the strokes pass over surfaces (Splatoon's
-//                      ink on anything, Okami's brush on the world itself). It costs by the length laid.
+//   —  across   STILL     what it crosses is held where it is (a pot in mid-air is a step); a clapperjar is rooted
+//   |  down     BOUNCE    what it crosses springs back from whatever it meets
+//   circle      MEND      Okami's Rejuvenation and Bloom: cracked pots mended with gold, wrecks rebuilt, a clapperjar in it befriended
+//   bomb        EMBER     Okami's Cherry Bomb, as a property: the pots in it become ember pots (they burst when broken)
+//   spiral      GALE      Okami's Galestorm: a gust the way the spiral ended; in the dunes the wind itself turns that way for a while
+//   bolt        BOLT      Magic Cat Academy's lightning: a strike that stuns the clapperjars near it (and only cracks what it hits)
+//   ^  caret    LIGHT     what is under it floats (a tenth of its gravity); over nothing, the Courier is lifted
+//   V  vee      HEAVY     what is under it is five times as heavy; over nothing, the Courier dives (on the ground: a burst of slip)
+//   heart       SOLACE    Magic Cat Academy's heart: every clapperjar in view forgets itself and dances; the god-hand's vessel is soothed
+//   (other)     WASH      laid on the world as slip, where the strokes pass over surfaces (Splatoon's ink on anything)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../audio.js';
-import { planeFrom } from '../slicing.js';
 import { registered, hasTag } from '../tags.js';
 import { inside } from './gesture.js';
 import { SIGIL_OF } from './sigils.js';
+import { inscribe } from './inscribe.js';
 
 export const TECHNIQUES = {
-  line: { id: 'rend', name: 'REND', cost: 3 },
+  still: { id: 'still', name: 'STILL', cost: 4 },
+  bounce: { id: 'bounce', name: 'BOUNCE', cost: 3 },
   circle: { id: 'mend', name: 'MEND', cost: 5 },
-  bomb: { id: 'ember', name: 'EMBER', cost: 6 },
+  bomb: { id: 'ember', name: 'EMBER', cost: 4 },
   spiral: { id: 'gale', name: 'GALE', cost: 5 },
-  bolt: { id: 'bolt', name: 'BOLT', cost: 7 },
-  caret: { id: 'rise', name: 'RISE', cost: 3 },
-  vee: { id: 'plunge', name: 'PLUNGE', cost: 3 },
+  bolt: { id: 'bolt', name: 'BOLT', cost: 6 },
+  caret: { id: 'light', name: 'LIGHT', cost: 3 },
+  vee: { id: 'heavy', name: 'HEAVY', cost: 3 },
   heart: { id: 'solace', name: 'SOLACE', cost: 6 },
 };
 /** The ink's tint when a drawing takes (the canvas's flash), by technique. */
-export const TINT = { rend: '#fff1dc', mend: '#f2c35a', ember: '#ff7a3a', gale: '#bfe6e0', bolt: '#d8c6ff', rise: '#f6e6c8', plunge: '#e8ab86', solace: '#ff9ab0', wash: '#e8ab86' };
+export const TINT = { still: '#bfe6ff', bounce: '#9fe8a0', mend: '#f2c35a', ember: '#ff7a3a', gale: '#bfe6e0', bolt: '#d8c6ff', light: '#fff1c0', heavy: '#a07ad8', solace: '#ff9ab0', wash: '#e8ab86' };
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _s = new THREE.Sphere();
 const UP = new THREE.Vector3(0, 1, 0);
@@ -57,7 +56,7 @@ function toScreen(v, p) {
   const z = _v.dot(v.fwd);
   if (z < 0.2) return null;
   _w.copy(p).project(v.cam);
-  return { x: (_w.x + 1) / 2 * v.W, y: (1 - _w.y) / 2 * v.H, z };
+  return { x: ((_w.x + 1) / 2) * v.W, y: ((1 - _w.y) / 2) * v.H, z };
 }
 /** A world radius as screen pixels at depth z. */
 const pxOf = (v, r, z) => (r * v.H) / (2 * z * Math.tan((v.cam.fov * Math.PI) / 360));
@@ -77,23 +76,25 @@ function things(g) {
     const t = ent.body.translation();
     out.push({ kind: 'pot', ent, pos: new THREE.Vector3(t.x, t.y + ent.P.height * 0.45, t.z), r: ent.P.rMax });
   }
-  for (const ent of [...B.slices, ...(g.level?.dynamic || []).filter((e) => hasTag(e, 'sliceable')), ...registered('sliceable')]) {
+  const seen = new Set();
+  for (const ent of [...B.slices, ...(g.level?.dynamic || []).filter((e) => hasTag(e, 'pushable') || hasTag(e, 'liftable')), ...registered('liftable')]) {
+    if (seen.has(ent) || !ent.body?.isValid?.()) continue;
+    seen.add(ent);
     const sp = sphereOf(ent);
     if (sp) out.push({ kind: 'piece', ent, pos: sp.center.clone(), r: sp.radius });
   }
   for (const c of g.clappers?.list || []) if (c.alive) out.push({ kind: 'clapper', ent: c, pos: c.pos.clone().setY(c.pos.y + 0.35), r: 0.45 });
   return out;
 }
-/** The things whose picture lies within `pad` px (and their own size) of a screen point, nearest the point first. */
-function under(g, v, x, y, pad = 50, max = 40) {
+/** The things a test on the screen picks out (within 30 m), nearest first. */
+function picked(g, v, test, max = 30) {
   const out = [];
   for (const t of things(g)) {
     const s = toScreen(v, t.pos);
     if (!s || s.z > max) continue;
-    const d = Math.hypot(s.x - x, s.y - y);
-    if (d <= pad + pxOf(v, t.r, s.z)) out.push({ ...t, d, z: s.z });
+    if (test(s, pxOf(v, t.r, s.z))) out.push({ ...t, z: s.z });
   }
-  return out.sort((a, b) => a.d - b.d);
+  return out.sort((a, b) => a.z - b.z);
 }
 /** The first solid surface under a screen point. */
 function cast(g, v, x, y, max = 40, staticOnly = false) {
@@ -102,11 +103,12 @@ function cast(g, v, x, y, max = 40, staticOnly = false) {
   return { ...r, hit };
 }
 const segDist = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy; const t = l2 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2)) : 0; return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy); };
+const inBox = (box, pad) => (s, r) => s.x > box.x0 - pad - r && s.x < box.x1 + pad + r && s.y > box.y0 - pad - r && s.y < box.y1 + pad + r;
 
 export class BrushTechniques {
   constructor(tool) {
     this.tool = tool;
-    this.live = []; // things with a life of their own (a lit bomb, a bolt's afterglow)
+    this.live = []; // things with a life of their own (a bolt's afterglow)
     this.plungeWatch = false;
   }
   get game() { return this.tool.game; }
@@ -114,10 +116,14 @@ export class BrushTechniques {
   /** A recognised drawing (or null: a wash) -> a plan { id, cost, empty, run() } for it, read against the view it was drawn over. */
   plan(rec, v) {
     if (!rec) return this.wash(v);
-    const def = TECHNIQUES[rec.name];
+    const key = rec.name === 'line' ? (rec.sigil === '|' ? 'bounce' : 'still') : rec.name;
+    const def = TECHNIQUES[key];
+    if (!def) return null;
     const p = this[def.id](rec, v);
     if (!p) return null;
     const sigil = rec.sigil ? SIGIL_OF[rec.sigil] : null;
+    // (a sigil mark is never empty: it is still a mark, even over nothing the brush can alter)
+    if (p.empty && sigil && this.tool.sigils.heads(sigil)) { p.empty = false; p.run = () => 0; }
     const run = p.run;
     p.run = () => {
       const n = run() ?? 0;
@@ -128,34 +134,34 @@ export class BrushTechniques {
     return { id: def.id, name: def.name, cost: p.empty ? 0 : def.cost, ...p };
   }
 
-  // ---------------------------------------------------------------- the techniques
-  rend(rec, v) {
-    const g = this.game, s0 = rec.strokes[0], a = s0[0], b = s0[s0.length - 1];
-    const A = ray(v, a.x, a.y), Bq = ray(v, b.x, b.y);
-    const n = new THREE.Vector3().crossVectors(A.d, Bq.d).normalize();
-    const plane = planeFrom(n, v.eye);
-    const cutDir = Bq.d.clone().sub(A.d).normalize();
-    const hits = [];
-    for (const t of things(g)) {
-      const s = toScreen(v, t.pos);
-      if (!s || s.z > 30) continue;
-      if (segDist(s, a, b) <= 18 + pxOf(v, t.r, s.z) * 0.8) hits.push({ ...t, z: s.z });
+  /** Write a property onto everything in a list (clapperjars answer in their own way: `jar`). */
+  writeAll(list, prop, jar) {
+    const g = this.game;
+    let n = 0;
+    for (const t of list) {
+      if (t.kind === 'clapper') { if (t.ent.alive && jar) { jar(t.ent); n++; } continue; }
+      if (inscribe(g, t.ent, prop)) { n++; g.breakables.instigate?.(t.ent, 'courier'); }
     }
-    const depth = hits.length ? Math.min(...hits.map((h) => h.z)) : 6;
-    return {
-      run: () => {
-        let n2 = 0;
-        for (const h of hits) {
-          if (h.kind === 'clapper') { if (h.ent.alive) { g.clappers.hit(h.ent, h.ent.pos.clone().setY(h.ent.pos.y + 0.35), cutDir, 1.6, 'rend'); n2++; } continue; }
-          if (g.breakables.slice(h.ent, plane, cutDir)) n2++;
-        }
-        const pa = v.eye.clone().addScaledVector(A.d, depth), pb = v.eye.clone().addScaledVector(Bq.d, depth);
-        g.fx.slash(pa, pb, n);
-        sfx.brushRend?.();
-        this.tool.P.shake = Math.max(this.tool.P.shake, 0.15);
-        return n2;
-      },
-    };
+    return n;
+  }
+
+  // ---------------------------------------------------------------- the techniques
+  /** A line: everything it crosses on the screen. */
+  crossed(rec, v) {
+    const s0 = rec.strokes[0], a = s0[0], b = s0[s0.length - 1];
+    return picked(this.game, v, (s, r) => segDist(s, a, b) <= 16 + r * 0.8);
+  }
+
+  still(rec, v) {
+    const g = this.game, hits = this.crossed(rec, v);
+    if (!hits.length) return { empty: true, run: () => 0 };
+    return { run: () => { sfx.inkDab?.(1); return this.writeAll(hits, 'still', (c) => g.clappers.stun(c, 4, g.shells.glowOutline, g.shells.xray)); } };
+  }
+
+  bounce(rec, v) {
+    const hits = this.crossed(rec, v).filter((t) => t.kind !== 'clapper');
+    if (!hits.length) return { empty: true, run: () => 0 };
+    return { run: () => { sfx.rise?.(); return this.writeAll(hits, 'bounce'); } };
   }
 
   mend(rec, v) {
@@ -178,18 +184,10 @@ export class BrushTechniques {
   }
 
   ember(rec, v) {
-    const g = this.game, c = cast(g, v, rec.center.x, rec.center.y, 30);
-    const at = c.hit ? c.hit.point.clone().addScaledVector(c.hit.normal, 0.25) : c.o.clone().addScaledVector(c.d, 9);
-    return {
-      run: () => {
-        const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.24, 1), new THREE.MeshStandardMaterial({ color: 0x17111a, roughness: 0.2, metalness: 0.3, emissive: 0x6a3aa8, emissiveIntensity: 0.4, flatShading: true }));
-        m.position.copy(at);
-        g.scene.add(m);
-        sfx.fuse?.();
-        this.live.push({ kind: 'bomb', m, t: 0, fuse: 1.1 });
-        return 1;
-      },
-    };
+    const g = this.game, R = rec.radius || rec.size / 2;
+    const hits = picked(g, v, (s, r) => Math.hypot(s.x - rec.center.x, s.y - rec.center.y) <= R + r * 0.6).filter((t) => t.kind === 'pot' || t.kind === 'clapper');
+    if (!hits.length) return { empty: true, run: () => 0 };
+    return { run: () => { sfx.fuse?.(); return this.writeAll(hits, 'ember', (c) => g.clappers.scald(c, 0.45)); } };
   }
 
   gale(rec, v) {
@@ -204,17 +202,23 @@ export class BrushTechniques {
         const P = this.tool.P, from = P.pos.clone().setY(P.pos.y + 1.1);
         let n = 0;
         const reach = 16, cone = Math.cos(0.75);
+        const kicks = [];
         g.physics.world.forEachRigidBody((b) => {
           if (!b.isDynamic() || g.physics.links.has(b.handle)) return;
           const t = b.translation(); _v.set(t.x - from.x, t.y - from.y, t.z - from.z);
           const d = _v.length(); if (d > reach || d < 0.1 || _v.normalize().dot(dir) < cone) return;
+          kicks.push([b, d]);
+        });
+        // (the kicks after the walk, not inside it: nothing calls back into the world while the world is iterating)
+        for (const [b, d] of kicks) {
+          if (!b.isValid()) continue;
           const ent = b.numColliders() ? g.physics.entityOf(b.collider(0)) : null;
-          if (ent?.type === 'player') return;
-          g.breakables.instigate(ent, 'courier'); // (what it throws and breaks is hers)
-          const k = 11 * strength * (1 - d / reach * 0.6) * b.mass();
+          if (ent?.type === 'player') continue;
+          g.breakables.instigate(ent, 'courier');
+          const k = 11 * strength * (1 - (d / reach) * 0.6) * b.mass();
           g.physics.kick(b, { x: dir.x * k, y: (dir.y + 0.35) * k, z: dir.z * k });
           n++;
-        });
+        }
         for (const c of g.clappers?.list || []) {
           _v.subVectors(c.pos, from); const d = _v.length();
           if (!c.alive || d > reach || _v.normalize().dot(dir) < cone) continue;
@@ -232,20 +236,18 @@ export class BrushTechniques {
   bolt(rec, v) {
     const g = this.game, c = cast(g, v, rec.center.x, rec.center.y, 45);
     const at = c.hit ? c.hit.point.clone() : c.o.clone().addScaledVector(c.d, 14);
-    const normal = c.hit ? c.hit.normal.clone() : UP.clone();
     return {
       run: () => {
         let n = 0;
         this.lightning(at);
         for (const cl of g.clappers?.list || []) if (cl.alive && cl.pos.distanceTo(at) < 3.5) { g.clappers.stun(cl, 3.5, g.shells.glowOutline, g.shells.xray); n++; }
+        // (the brush is no hammer of the gods: what the bolt strikes is cracked, not broken)
         for (const e of [...g.breakables.items]) {
           if (!e.alive || e.def?.trial) continue;
-          const t = e.body.translation(), p = new THREE.Vector3(t.x, t.y + 0.3, t.z), d = p.distanceTo(at);
-          if (d < 1.8) { g.breakables.shatter(e, p, p.clone().sub(at).setY(0.5).normalize(), 1.3, 'bolt', 'courier'); n++; }
-          else if (d < 3.6) g.breakables.damage(e, 40, p, p.clone().sub(at).normalize(), 0.8, false, 'courier');
+          const t = e.body.translation(), p = new THREE.Vector3(t.x, t.y + 0.3, t.z);
+          if (p.distanceTo(at) < 1.6 && e.hp > 25) g.breakables.damage(e, 20, p, p.clone().sub(at).normalize(), 0.5, false, 'courier');
         }
-        if (c.hit && !c.hit.collider.parent()?.isDynamic()) g.shells?.addSplat(at, normal, 1.1, false);
-        this.tool.P.shake = Math.max(this.tool.P.shake, 0.35);
+        this.tool.P.shake = Math.max(this.tool.P.shake, 0.3);
         sfx.thunder?.(g.listenerDistance?.(at) ?? 0);
         return n;
       },
@@ -268,38 +270,29 @@ export class BrushTechniques {
     for (let i = 0; i < 30; i++) g.fx.add.emit({ pos: at, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 5).setY(Math.random() * 5), life: 0.3 + Math.random() * 0.3, size: 0.05, sizeEnd: 0.01, color: c, drag: 2, twinkle: 30 });
   }
 
-  rise(rec, v) {
-    const g = this.game, t = under(g, v, rec.center.x, rec.center.y, 45)[0];
+  /** What a mark (^ or V) was drawn over: everything in its box, or nothing (then it is the Courier's). */
+  under(rec, v) { return picked(this.game, v, inBox(rec.box, 12)); }
+
+  light(rec, v) {
+    const g = this.game, hits = this.under(rec, v);
     return {
       run: () => {
         const P = this.tool.P;
-        if (t) {
-          if (t.kind === 'clapper') { if (t.ent.alive) g.clappers.knock(t.ent, new THREE.Vector3(0, 12, 0)); }
-          else if (t.ent.body?.isValid?.() && t.ent.body.isDynamic()) { g.breakables.instigate(t.ent, 'courier'); g.physics.kick(t.ent.body, { x: 0, y: 9 * t.ent.body.mass(), z: 0 }); }
-          this.puff(t.pos);
-        } else {
-          P.vel.y = Math.max(P.vel.y, 0);
-          P.impulse(new THREE.Vector3(0, 11, 0), 'rise');
-          this.puff(P.pos);
-        }
-        sfx.rise?.();
-        return t ? 1 : 0;
+        if (hits.length) { const n = this.writeAll(hits, 'light', (c) => g.clappers.knock(c, new THREE.Vector3(0, 9, 0))); this.puff(hits[0].pos); sfx.rise?.(); return n; }
+        P.vel.y = Math.max(P.vel.y, 0);
+        P.impulse(new THREE.Vector3(0, 11, 0), 'rise');
+        this.puff(P.pos); sfx.rise?.();
+        return 0;
       },
     };
   }
 
-  plunge(rec, v) {
-    const g = this.game, t = under(g, v, rec.center.x, rec.center.y, 45)[0];
+  heavy(rec, v) {
+    const g = this.game, hits = this.under(rec, v);
     return {
       run: () => {
         const P = this.tool.P;
-        if (t) {
-          if (t.kind === 'clapper') { if (t.ent.alive) { if (!t.ent.grounded) g.clappers.knock(t.ent, new THREE.Vector3(0, -20, 0)); else g.clappers.hit(t.ent, t.pos, new THREE.Vector3(0, -1, 0), 1.2, 'plunged'); } }
-          else if (t.kind === 'pot' && t.ent.alive) g.breakables.shatter(t.ent, t.pos, new THREE.Vector3(0, -1, 0), 1.2, 'plunged', 'courier');
-          else if (t.ent.body?.isValid?.() && t.ent.body.isDynamic()) { g.breakables.instigate(t.ent, 'courier'); g.physics.kick(t.ent.body, { x: 0, y: -12 * t.ent.body.mass(), z: 0 }); }
-          sfx.brushSlam?.(0.6);
-          return 1;
-        }
+        if (hits.length) { const n = this.writeAll(hits, 'heavy', (c) => { g.clappers.knock(c, new THREE.Vector3(0, -12, 0)); g.clappers.stun(c, 1.5, g.shells.glowOutline, g.shells.xray); }); sfx.brushSlam?.(0.5); return n; }
         if (!P.grounded) { P.vel.y = Math.min(P.vel.y, -24); this.plungeWatch = true; }
         else this.splash(P.pos, 1);
         sfx.brushSlam?.(0.8);
@@ -332,9 +325,9 @@ export class BrushTechniques {
     const g = this.game, strokes = this.tool.canvas.pending(), dabs = [];
     for (const s of strokes) {
       let acc = 0, first = true;
-      for (let i = 1; i < s.length; i++) {
+      for (let i = 1; i < s.length && dabs.length < 160; i++) {
         acc += Math.hypot(s[i].x - s[i - 1].x, s[i].y - s[i - 1].y);
-        if (acc < 14 && i < s.length - 1) continue;
+        if (acc < 16 && i < s.length - 1) continue;
         acc = 0;
         const c = cast(g, v, s[i].x, s[i].y, 35, true);
         if (!c.hit) { first = true; continue; }
@@ -370,7 +363,7 @@ export class BrushTechniques {
     const g = this.game, c = new THREE.Color(0xf6e6c8);
     for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; g.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.1), vel: new THREE.Vector3(Math.cos(a) * 3, 2.5 + Math.random() * 2, Math.sin(a) * 3), life: 0.5, size: 0.12, sizeEnd: 0.5, color: c, alpha: 0.35, drag: 4 }); }
   }
-  /** Slip bursts out round a point on the ground. */
+  /** Slip bursts out round a point on the ground (it shoves; it does not break). */
   splash(at, k = 1) {
     const g = this.game, P = this.tool.P;
     const down = g.physics.raycast(at.clone().setY(at.y + 0.4), new THREE.Vector3(0, -1, 0), 2, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
@@ -387,25 +380,14 @@ export class BrushTechniques {
     for (let i = this.live.length - 1; i >= 0; i--) {
       const q = this.live[i];
       q.t += dt;
-      if (q.kind === 'bomb') {
-        q.m.rotation.y += dt * 3;
-        const k = q.t / q.fuse;
-        q.m.scale.setScalar(1 + 0.25 * k + 0.08 * Math.sin(q.t * 30) * k);
-        if (Math.random() < 0.6) g.fx.add.emit({ pos: q.m.position.clone().add(new THREE.Vector3(0, 0.28, 0)), vel: new THREE.Vector3((Math.random() - 0.5) * 2, 2, (Math.random() - 0.5) * 2), life: 0.25, size: 0.04, sizeEnd: 0.01, color: new THREE.Color(0xffb27a), drag: 2 });
-        if (k >= 1) {
-          g.scene.remove(q.m); q.m.geometry.dispose(); q.m.material.dispose(); this.live.splice(i, 1);
-          g.breakables.explode(q.m.position.clone(), { radius: 3.4, cause: 'bomb', who: 'courier' });
-        }
-      } else if (q.kind === 'bolt') {
-        const k = q.t / 0.28;
-        if (k >= 1) { for (const l of q.parts) { g.scene.remove(l); l.geometry.dispose(); l.material.dispose(); } this.live.splice(i, 1); continue; }
-        q.parts[0].material.opacity = 1 - k; q.parts[1].material.opacity = 0.6 * (1 - k);
-      }
+      const k = q.t / 0.28;
+      if (k >= 1) { for (const l of q.parts) { g.scene.remove(l); l.geometry.dispose(); l.material.dispose(); } this.live.splice(i, 1); continue; }
+      q.parts[0].material.opacity = 1 - k; q.parts[1].material.opacity = 0.6 * (1 - k);
     }
   }
 
   clear() {
-    for (const q of this.live) { for (const o of q.parts || [q.m]) { this.game.scene.remove(o); o.geometry?.dispose(); o.material?.dispose(); } }
+    for (const q of this.live) for (const o of q.parts) { this.game.scene.remove(o); o.geometry?.dispose(); o.material?.dispose(); }
     this.live.length = 0; this.plungeWatch = false;
   }
 }

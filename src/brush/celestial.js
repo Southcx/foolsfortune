@@ -75,6 +75,7 @@ export class Celestial {
       if (d > 0) {
         this.drew += d;
         if (g.lachryma.drain(d * INK_PER_PX, 'brush') < d * INK_PER_PX * 0.5) { cv.lift(); this.dry(); }
+        else if (cv.stroke?.length > 600) { cv.lift(); this.restT = 0; } // (a stroke that goes on and on is ended: it is read as it is)
       }
       this.restT = -1;
     } else if (cv.drawing) { cv.lift(); this.restT = 0; }

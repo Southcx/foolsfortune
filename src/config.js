@@ -280,6 +280,7 @@ export const DEFAULTS = {
     carry: { enabled: true, reach: 1.15, slow: 0.72, maxSize: 1.35, maxMass: 30, speed: 14 }, // F at a small thing: hoist it; fire throws
     push: { enabled: true, speed: 1.5, pullSpeed: 1.3 }, // hold F at a heavy crate
     sondelass: { enabled: true }, // Q: the telescoping rod / cutlass / grapnel (src/moves/sondelass.js)
+    veritome: { enabled: true }, // J: the Veritome: camera, Compendium, the Book of Major Arcana (src/moves/veritome.js, src/veritome/)
     soulbrush: { enabled: true }, // G: the Soul Brush: club, brush slide, Celestial Brush (src/moves/soulbrush.js, src/brush/)
     grapple: { reelMax: 26, reelAccel: 70, payV: 6, pump: 9, drag: 0.05, stop: 1.6, maxSpeed: 30, maxLen: 46, reelCost: 2 }, // the line of the grapnel (src/moves/grapple.js, src/sondelass/hookshot.js): reel, pay out, pump, let go
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V

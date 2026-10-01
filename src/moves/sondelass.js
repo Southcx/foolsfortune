@@ -9,6 +9,7 @@ import { Hookshot } from '../sondelass/hookshot.js';
 import { Angler } from '../angling/angler.js';
 import { measureGrip, handFromTool } from '../tools/grip.js';
 import { drawHands } from '../tools/draw.js';
+import { fpToolMatrix } from '../tools/viewmodel.js';
 
 // ---------------------------------------------------------------------------------------
 // THE SONDELASS: a telescoping instrument that is a fishing rod, a cutlass and a grapple hook, worn on the Courier's back
@@ -148,7 +149,6 @@ export class Sondelass extends Tech {
       this.wasOut = false; sfx.holster?.(); this.cutlass.cancel(); this.hookshot.cancel(); this.angler?.stow();
       this.game.events?.emit('sondelass.stow', {}); this.renderStrip();
     }
-    if (this.drawT > 0.02 && P.fp) P.view = 'tp'; // (third person only while it is out)
     const held = this.held;
     // the forms: the sections slide, the blade comes out
     const fd = this.formDef;
@@ -252,6 +252,8 @@ export class Sondelass extends Tech {
         ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       }
     }
+    // in first person: in the view, swung along the stroke's arc (tools/viewmodel.js)
+    if (this.P.fp && drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, drawT / 0.6), ...(this.form === 'cutlass' ? this.cutlass.fpArc() : this.angler?.casting ? { arc: 'raise', u: 0.6 } : null) }, M);
     // place the tool
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);
     // a rod tip tremble / flick goes on top of the hand's own pose

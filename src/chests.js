@@ -198,7 +198,8 @@ export class Chests {
   /** Pay (already taken) and roll: a sealed chest of a tier nobody can see falls onto the dais. */
   summon() {
     const g = this.game, L = g.ledger;
-    const tier = rollTier(this.since());
+    let tier = rollTier(this.since());
+    if (g.veritome?.takeLuck() && tier < TIERS.length - 1) { tier++; g.events?.emit('card.luck', { tier: TIERS[tier].id }); } // (the Fool, the Wheel)
     const n = L.get('tithe.pulls') + 1;
     L.inc('tithe.pulls'); L.inc(`tithe.tier.${TIERS[tier].id}`);
     if (tier >= 2) L.hi('tithe.last.rare', n);

@@ -1172,18 +1172,12 @@ class Sfx {
     this.tone(t, 0.4, { f0: 220, f1: 150, type: 'triangle', gain: 0.08, dest: d });
   }
   /** A drawing takes: a struck bell, pitched by what it is. */
-  glyphTake(id = 'rend') {
+  glyphTake(id = 'still') {
     if (!this.ok()) return;
-    const P = { rend: 880, mend: 659, ember: 523, gale: 784, bolt: 988, rise: 1047, plunge: 440, solace: 698, wash: 587 };
+    const P = { still: 880, bounce: 932, mend: 659, ember: 523, gale: 784, bolt: 988, light: 1047, heavy: 440, solace: 698, wash: 587 };
     const f = P[id] || 660, t = this.ctx.currentTime, d = this.out(0.6, 1);
     this.tone(t, 1.3, { f0: f, f1: f * 0.998, type: 'sine', gain: 0.3, dest: d });
     this.tone(t, 0.9, { f0: f * 2.01, f1: f * 2, type: 'triangle', gain: 0.07, dest: d });
-  }
-  brushRend() {
-    if (!this.ok()) return;
-    const t = this.ctx.currentTime, d = this.out(0.8, 0.5);
-    this.noise(t, 0.2, { type: 'highpass', f0: 2500, f1: 7000, gain: 0.6, attack: 0.005, dest: d });
-    this.tone(t, 0.5, { f0: 2400, f1: 2300, type: 'triangle', gain: 0.12, dest: d });
   }
   brushMend() {
     if (!this.ok()) return;
@@ -1219,6 +1213,50 @@ class Sfx {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.6, 1);
     [587, 740, 880, 740, 988].forEach((f, i) => this.tone(t + i * 0.1, 0.5, { f0: f, f1: f, type: 'triangle', gain: 0.12, dest: d }));
+  }
+
+  // ---- the Veritome (src/moves/veritome.js, src/veritome/) ----
+  /** The lens comes up: a brass click and a short wind. */
+  lensUp() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.2);
+    this.noise(t, 0.04, { type: 'highpass', f0: 4000, f1: 2500, gain: 0.5, dest: d });
+    this.tone(t + 0.03, 0.15, { f0: 1800, f1: 2400, type: 'triangle', gain: 0.08, dest: d });
+  }
+  /** The shutter: a mechanical clack, the curtain, and the wind-on. */
+  shutter() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.8, 0.3);
+    this.noise(t, 0.03, { type: 'bandpass', f0: 3000, f1: 2000, q: 1.5, gain: 0.9, dest: d });
+    this.noise(t + 0.05, 0.03, { type: 'bandpass', f0: 2200, f1: 1500, q: 1.5, gain: 0.7, dest: d });
+    this.noise(t + 0.12, 0.25, { type: 'bandpass', f0: 600, f1: 1500, q: 3, gain: 0.25, attack: 0.02, dest: d });
+  }
+  /** A card bound into the Book (a page filled rings higher). */
+  cardGet(page = false) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.6, 1);
+    const f = page ? [659, 880, 1319] : [784, 988];
+    f.forEach((x, i) => this.tone(t + i * 0.09, 0.9, { f0: x, f1: x, type: 'sine', gain: 0.16, dest: d }));
+  }
+  /** A card drawn from the Book: a page turned. */
+  cardDraw() {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.4);
+    this.noise(t, 0.18, { type: 'bandpass', f0: 2600, f1: 4200, q: 0.9, gain: 0.35, attack: 0.02, dest: d });
+  }
+  /** A card played: its seal's note, struck. */
+  cardPlay(seal = 'sun') {
+    if (!this.ok()) return;
+    const f = { sun: 523, moon: 440, star: 698 }[seal] || 523, t = this.ctx.currentTime, d = this.out(0.7, 1);
+    this.noise(t, 0.12, { type: 'bandpass', f0: 3000, f1: 6000, q: 1, gain: 0.3, dest: d });
+    this.tone(t, 1.4, { f0: f, f1: f, type: 'triangle', gain: 0.22, dest: d });
+    this.tone(t + 0.05, 1.2, { f0: f * 1.5, f1: f * 1.5, type: 'sine', gain: 0.1, dest: d });
+  }
+  /** The clasp spent: a chord, fuller the more kinds of seal it held. */
+  astrodyne(kinds = 1) {
+    if (!this.ok()) return;
+    const t = this.ctx.currentTime, d = this.out(0.8, 1);
+    [392, 494, 587, 784].slice(0, 1 + kinds).forEach((f, i) => this.tone(t + i * 0.06, 1.8, { f0: f, f1: f, type: 'sine', gain: 0.18, dest: d }));
   }
 }
 

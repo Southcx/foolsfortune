@@ -54,15 +54,19 @@ export class Carry extends Tech {
   /** The thing in front of us we could lift (or a heavy crate to grab, with `heavy`). */
   find(heavy = false) {
     const P = this.P, fx = Math.sin(P.yaw), fz = Math.cos(P.yaw);
+    // (what the chevron is already on keeps it, within a little more reach and a wider cone, unless another is clearly nearer:
+    //  without this the marker flips between two pots, or on and off at the edge of the cone, as the camera turns)
+    const cur = this.game.interact?.cur?.ref;
     let best = null, bd = 1e9;
     for (const e of this.candidates()) {
       if (heavy ? (e.carry !== 'heavy' || !e.body?.isDynamic?.()) : !this.liftable(e)) continue;
       const t = e.body.translation();
       const dx = t.x - P.pos.x, dz = t.z - P.pos.z, dy = t.y - P.pos.y;
       const half = this.halfW(e);
-      const d = Math.hypot(dx, dz) - half;
+      const sticky = e === cur;
+      const d = Math.hypot(dx, dz) - half - (sticky ? 0.35 : 0);
       if (d > this.cfg.reach || dy < -0.5 || dy > 1.6) continue;
-      if ((dx * fx + dz * fz) / (Math.hypot(dx, dz) || 1) < 0.55) continue;
+      if ((dx * fx + dz * fz) / (Math.hypot(dx, dz) || 1) < (sticky ? 0.3 : 0.55)) continue;
       if (d < bd) { bd = d; best = e; }
     }
     return best;

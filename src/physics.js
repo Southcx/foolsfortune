@@ -23,6 +23,13 @@ export const GROUPS = {
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();
 
+// Rapier is Rust: a NaN or an infinity handed to it (an impulse, a ray) is a panic inside the wasm ("unreachable"), and after a panic
+// every call into the world fails ("recursive use of an object"). Every way in from the game is checked here, and a bad value is
+// dropped and reported once, rather than taking the world down.
+const finite3 = (v) => Number.isFinite(v.x) && Number.isFinite(v.y) && Number.isFinite(v.z);
+const warned = new Set();
+const badInput = (what) => { if (!warned.has(what)) { warned.add(what); console.warn(`physics: a non-finite ${what} was refused`, new Error().stack); } };
+
 export class Physics {
   async init() {
     await RAPIER.init();
@@ -58,6 +65,7 @@ export class Physics {
    * silently lost. Links get the equivalent force for one physics step instead.
    */
   kick(body, imp, point) {
+    if (!finite3(imp) || (point && !finite3(point))) return badInput('kick'); // (a NaN in the world panics Rapier and poisons every call after it)
     if (this.links.has(body.handle)) {
       this.pendingForces.push({ body, f: { x: imp.x / this.dt, y: imp.y / this.dt, z: imp.z / this.dt } });
       body.wakeUp();
@@ -98,6 +106,7 @@ export class Physics {
 
   /** Ray query returning { collider, point, normal, distance, entity } or null. */
   raycast(origin, dir, maxDist, excludeCollider, filterGroups, predicate) {
+    if (!finite3(origin) || !finite3(dir) || !Number.isFinite(maxDist)) { badInput('raycast'); return null; }
     const ray = new RAPIER.Ray(origin, dir);
     const hit = this.world.castRayAndGetNormal(ray, maxDist, true, undefined, filterGroups, excludeCollider, undefined, predicate);
     if (!hit) return null;

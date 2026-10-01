@@ -42,7 +42,8 @@ npm run build      # static bundle in dist/
 | Z | toggle first / third person |
 | Q | draw / stow the Sondelass (the Psygun goes away first; not while carrying); 1 / 2 / 3 while it is out: cutlass / rod / hook (rod: 4–8 the aspect a sounding pushes, 9 / 0 the lure) |
 | G | draw / stow the Soul Brush (worn at the left hip, drawn across the body); with it out: LMB the club (hold for the slam), RMB tap a flick of slip, RMB hold the Celestial Brush (LMB draws), C at speed the brush slide |
-| Z / middle click (cutlass) | lock on to a target (Zelda-style: the camera and the blade hold it); a flick of the mouse changes target |
+| J | draw / stow the Veritome (on a chain at the right hip); with it out: RMB hold the lens (LMB the shutter, wheel the zoom); lens down, LMB draws a card and LMB again plays it, middle click redraws |
+| Middle click (cutlass, brush) | lock on to a target (Zelda-style: the camera and the blade hold it); a flick of the mouse changes target. Z is always first / third person: every tool has a first person (`tools/viewmodel.js`) |
 | V (cutlass out) | guard: a raised blade turns a projectile aside, and a well-timed one sends it back |
 | O | swap shoulder (third person) |
 | R / H (basement) | back to the last checkpoint / to the hub |
@@ -115,24 +116,35 @@ A calligrapher's brush the size of a club, worn at the left hip like a sword in 
 
 | Part | From | What it does |
 | --- | --- | --- |
-| **The club** (`brush/club.js`) | Splatoon's Inkbrush, Zelda's hammer and spin charge | LMB: three heavy blows (the UAL sword clips at four fifths speed). The light blows **bat** clapperjars away; the overhead, or a blow on one already flying, breaks it. Every swing **flicks** slip off the bristles along the swing. Hold LMB: the brush goes up and gathers; let go to **slam** (a ring that breaks what is near and throws the rest, a pool of slip; in the air she comes down with it). RMB tap: a flick at range. |
+| **The club** (`brush/club.js`) | Splatoon's Inkbrush, Zelda's hammer and spin charge | LMB: three heavy blows (the UAL sword clips at four fifths speed). It is a poor way to break things (a pot takes several blows): the light blows **bat** clapperjars away, the overhead, or a blow on one already flying, leaves it reeling. Every swing **flicks** slip off the bristles along the swing. Hold LMB: the brush goes up and gathers; let go to **slam** (a ring that throws what is near, a pool of slip; in the air she comes down with it). RMB tap: a flick at range. |
 | **The brush slide** | Splatoon's Inkbrush dash and ink-swim | With the brush out, the core slide is the same slide (the movement is untouched), but she rides it sideways and low with the brush trailing on the ground (an authored clip, `brush/clips.js`: nothing in the free libraries does it), and it paints a **stroke of slip** behind her (`vfx/paintpath.js`). Once it has settled (half a second) it is wet enough to dive into: C on her own trail melts her into it. |
-| **The Celestial Brush** (`brush/celestial.js`, `canvas.js`, `gesture.js`, `techniques.js`) | Okami | Hold RMB: time all but stops, the screen goes to sepia paper, and LMB draws in ink. A drawing is read when the hand rests and may take **several strokes in any order** (the $P point-cloud recognizer for the outlines, and geometric features for lines, circles, spirals and the bomb); several drawings can be made in one breath, and when RMB is let go they all take, in order. The paper and the ink cost Lachryma. |
+| **The Celestial Brush** (`brush/celestial.js`, `canvas.js`, `gesture.js`, `techniques.js`) | Okami | Hold RMB: time all but stops, the screen goes to sepia paper, and LMB draws in ink. A drawing is read when the hand rests and may take **several strokes** (the **Penny Pincher** recognizer, Taranta and LaViola 2015: resampled direction vectors scored by dot product against templates generated for the ways a hand draws each shape, a tenth of a millisecond a drawing; plain geometry first for closed loops, spirals and the bomb; decoy templates so a triangle or a cross is not a circle); several drawings can be made in one breath, and when RMB is let go they all take, in order. Each drawing is painted once into its own layer as it is drawn, so a long drawing costs no more to show than a short one. The paper and the ink cost Lachryma. |
 | **Sigils** (`brush/sigils.js`) | Magic Cat Academy | While the brush is out, clapperjars near her carry a queue of brushed marks (a stroke across, a stroke down, V, ^, a bolt; raiders three). Drawing a mark lifts it off the front of every queue it heads, all at once; an emptied queue unwrites the jar. |
 
-What the Celestial Brush knows (the reference scroll at the canvas's edge shows the shapes):
+What the Celestial Brush knows (the reference scroll at the canvas's edge shows the shapes). The brush **alters things rather than hurting them**: most drawings write a PROPERTY onto what they are drawn over (`brush/inscribe.js`: the body's type, mass, gravity, bounce, and the tags every tool asks), for a while, and wear a small brushed seal while they last; what happens next is the world's doing.
 
 | Drawing | Technique | |
 | --- | --- | --- |
-| a line | **Rend** | cuts everything the line crosses on the screen (the Cleave's and Blade Mode's mesh slicer, on a plane through the eye); a line across or down is also a sigil |
+| a stroke across | **Still** | what it crosses on the screen is held where it is (a pot in mid-air is a step); a clapperjar is rooted; also a sigil |
+| a stroke down | **Bounce** | what it crosses springs back from whatever it meets; also a sigil |
 | a circle | **Mend** | round a cracked pot mends it with gold, round a wreck rebuilds it, round a clapperjar befriends it |
-| a circle and a fuse out of it | **Ember** | Okami's Cherry Bomb: a bomb of ink where it was drawn |
+| a circle and a fuse out of it | **Ember** | Okami's Cherry Bomb, as a property: the pots in it become ember pots (they burst when broken) |
 | a spiral | **Gale** | a gust the way the spiral ended: throws what is loose, carries her in the air, and in the dunes turns the wind itself (the skiff sails on it) |
-| a lightning bolt (or a Z) | **Bolt** | a strike where it was drawn: jars stunned, pots burst; also a sigil |
-| ^ | **Rise** | over a thing, throws it up; over nothing, lifts her; also a sigil |
-| V | **Plunge** | over a thing, drives it down; over nothing, dives her down (or bursts slip about her on the ground); also a sigil |
+| a lightning bolt (or a Z) | **Bolt** | a strike where it was drawn: clapperjars near it stunned, what it hits only cracked; also a sigil |
+| ^ | **Light** | what is under it floats (a tenth of its gravity); over nothing, lifts her; also a sigil |
+| V | **Heavy** | what is under it is five times as heavy and falls hard; over nothing, dives her down (or bursts slip about her on the ground); also a sigil |
 | a heart | **Solace** | every clapperjar in view forgets itself and dances; the god-hand's vessel is soothed |
 | anything else | a wash | laid on the world as slip where the strokes pass over surfaces |
+
+## The Veritome (J)
+
+A grimoire with a clock set in its cover, on a chain at the right hip (`src/moves/veritome.js`, `src/veritome/`): a camera to ground the Courier against what is not real, and a book whose cards project the rules of her own reality. Built over the Codex and the map.
+
+| Part | From | What it does |
+| --- | --- | --- |
+| **The lens** (`viewfinder.js`, `photo.js`, `subjects.js`) | Pokémon Snap, Fatal Frame, the Sheikah Slate, Dead Rising | Hold RMB: the view goes through the clock's glass (first person; the wheel zooms), framed in brass with a compass tape, a sextant's arc, the tide clock and focus brackets on whatever is worth a photograph. LMB is the shutter. A photograph is scored as Snap scores one (size, pose, technique, more than one of a kind) and the best of each of nineteen kinds of thing goes into the **Compendium**; it is pinned on the map where it was taken, and what it saw is charted. It is the **truth** of a thing: what the Soul Brush wrote on what it shows is undone. And it is Fatal Frame's camera: a clapperjar held in the capture circle fills the ring; a full shot holds it to the real (stunned and marked), and a full shot at the **shutter chance** (while it is in the air, or rushing at her) takes it whole. |
+| **The Book** (`book.js`, `arcana.js`, `ui.js`) | Greed Island (Hunter x Hunter) | Twenty-two designated pages, one for each card of the **Major Arcana** (0, The Fool, to XXI, The World), and twelve free slots for spare copies; each card has a rank (SS to H) and a limit. A card is bound by photographing its **sitting** (The Fool is a clapperjar caught in the air; The Hanged Man a pot hanging by its cord; The Tower the kiln from its foot; The Sun the sun itself, in the dunes): the sitting must be what the photograph is of. The Codex's VERITOME shelf is the binder (an empty page shows only its riddle) and the Compendium; a spare copy can be **gained** from it into the hand. |
+| **The reading** (`effects.js`) | Final Fantasy XIV's Astrologian | Lens down: LMB **draws** a card the Book knows (three charges), LMB again **plays** it, middle click redraws once. Each card is a rule laid over the world for a while (The Magician: nothing costs Lachryma; The Emperor: everything near held still; The Hanged Man: loose things fall upward; The Moon: the clapperjars cannot see her; Justice: what is thrown at her goes back; Death: cracked pots come apart and every jar loses a sigil...). Each leaves its seal (sun, moon, star) in the clasp; three seals are an **Astrodyne**, stronger the more kinds it held. |
 
 ## Treasure: chests, cubes, curios and the Tithe
 
@@ -169,7 +181,7 @@ Draw calls went from 1345 to about 650 in the workshop, 360 to 150 in the hub an
 
 ## The tool belt
 
-The Courier's psychic tools share one set of rules (`src/tools/belt.js`): seven places on the belt, one tool in the hands at a time, drawing one puts the other away first and the new one comes out only once the hands are free, and while a tool is out it says what it takes (the mouse, the number keys) and what it allows (the kick, first person). Three are on it: **the Psygun** (X), **the Sondelass** (Q) and **the Soul Brush** (G). Tools share their pieces: where a tool sits in the hand is measured from the animation (`tools/grip.js`), and the reach, grab and whip of a draw is one module (`tools/draw.js`). Everything that asks "is a tool out?" asks the belt, so a new tool is its own module, an entry in the belt and nothing else.
+The Courier's psychic tools share one set of rules (`src/tools/belt.js`): seven places on the belt, one tool in the hands at a time, drawing one puts the other away first and the new one comes out only once the hands are free, and while a tool is out it says what it takes (the mouse, the number keys) and what it allows (the kick, first person). Four are on it: **the Psygun** (X), **the Sondelass** (Q), **the Soul Brush** (G) and **the Veritome** (J). Tools share their pieces: where a tool sits in the hand is measured from the animation (`tools/grip.js`), and the reach, grab and whip of a draw is one module (`tools/draw.js`). Everything that asks "is a tool out?" asks the belt, so a new tool is its own module, an entry in the belt and nothing else.
 
 ## The god hand (~)
 
@@ -600,8 +612,10 @@ runtime IK correction on the contact points.
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
 | `src/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
 | `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, and the presentation (resolution, upscale, smooth shading, shadow) |
-| `src/tools/belt.js`, `src/tools/grip.js`, `src/tools/draw.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun, the Sondelass and the Soul Brush on it); the grip socket measured from a clip; the draw |
-| `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, gesture recognizer, techniques), the sigils, and paint laid on the world |
+| `src/tools/belt.js`, `src/tools/grip.js`, `src/tools/draw.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun, the Sondelass, the Soul Brush and the Veritome on it); the grip socket measured from a clip; the draw |
+| `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
+| `src/moves/veritome.js`, `src/veritome/` | the Veritome: the book, the lens and its viewfinder, the subjects and the photograph's score, the Book's binder and hand, the 22 Major Arcana and their effects, the Codex shelf |
+| `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
 | `src/timescale.js`, `src/lockon.js`, `src/parry.js`, `src/hideui.js`, `src/sky.js`, `src/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |

@@ -40,6 +40,15 @@ export class LockOn {
     return out.set(b.x, b.y + (t.ref.P?.height ?? 0.5) * 0.45, b.z);
   }
   point(out) { return this.target ? this.pointOf(this.target, out) : null; }
+  /** Where the target is DRAWN this frame (between physics steps, as its model is): what the reticle and the camera follow, so
+   *  neither steps at the physics rate against a smoothly drawn jar. */
+  shownOf(t, out) {
+    const a = this.game.alpha ?? 1;
+    if (t.type === 'clapper') { const c = t.ref; out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.hop || 0) + 0.35); }
+    const m = t.ref.mesh;
+    if (m) { m.updateMatrixWorld(); out.setFromMatrixPosition(m.matrixWorld); return out.setY(out.y + (t.ref.P?.height ?? 0.5) * 0.45); }
+    return this.pointOf(t, out);
+  }
   alive(t) { return !!t && t.ref.alive !== false && (t.type !== 'clapper' || !t.ref.ally); }
 
   /** Everything that could be locked to, near the Courier. */
@@ -136,6 +145,7 @@ export class LockOn {
     this.losT -= dt;
     if (this.losT <= 0) { this.losT = 0.15; this.blocked = this.clear(_a) ? 0 : this.blocked + 0.15; if (this.blocked > 1.2) { this.release('lost'); this.reticle.update(dt, g.camera); return; } }
     // the camera does the work: it keeps the target in the middle, a little from above; the mouse is quiet
+    this.shownOf(t, _a);
     if (this.assist) {
       const eye = _b.set(P.renderPos.x, P.renderPos.y + 1.3, P.renderPos.z);
       const to = _f.copy(_a).sub(eye);

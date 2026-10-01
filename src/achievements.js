@@ -34,6 +34,7 @@ export const CATS = [
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
+  { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Compendium', 'The Book', 'The Reading'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
@@ -62,7 +63,7 @@ const F = (id, cat, sub, tier, type, name, desc, cur, n, o = {}) => add({ id, ca
 export function buildAchievements(game) {
   tiers.length = 0;
   const kinds = Object.keys(PROFILES).length;
-  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing', 'bashed', 'brushed', 'rend', 'bolt', 'plunged'];
+  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing', 'brushed', 'captured'];
   const sys = game.system;
 
   // ---------------------------------------------------------------- BREAKING
@@ -265,18 +266,38 @@ export function buildAchievements(game) {
   C('br2', 'brush', 'The Club', 2, 'mechanic', 'Batter Up', 'Bat 25 clapperjars away with the brush.', 'brush.bat', 25);
   C('br3', 'brush', 'The Club', 2, 'mechanic', 'Bring It Down', 'Slam the brush down 10 times.', 'brush.slam', 10);
   C('br4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
-  C('br5', 'brush', 'The Club', 3, 'endure', 'Clubbed', 'Bash 25 clapperjars to pieces with the brush.', 'clapper.cause.bashed', 25);
+  C('br5', 'brush', 'The Club', 3, 'endure', 'Seeing Stars', 'Leave 25 clapperjars reeling with the overhead blow.', 'brush.stun', 25);
   C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Slip', 'Brush slide 25 times.', 'brush.slide', 25);
   C('bs2', 'brush', 'The Slide', 3, 'endure', 'Slip Trailer', 'Paint 1 km of slip with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
   H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m of slip in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
   C('bc1', 'brush', 'The Canvas', 1, 'count', 'The World Is Paper', 'Open the Celestial Brush 10 times.', 'brush.canvas', 10);
   C('bc2', 'brush', 'The Canvas', 2, 'mechanic', 'Two Hands at Once', 'Have 10 drawings of more than one stroke read.', 'brush.read.multi', 10);
-  F('bc3', 'brush', 'The Canvas', 3, 'collect', 'Every Stroke Known', 'Draw every technique the brush knows.', (L) => ['rend', 'mend', 'ember', 'gale', 'bolt', 'rise', 'plunge', 'solace'].filter((t) => L.get(`brush.tech.${t}`) > 0).length, 8);
+  F('bc3', 'brush', 'The Canvas', 3, 'collect', 'Every Stroke Known', 'Draw every technique the brush knows.', (L) => ['still', 'bounce', 'mend', 'ember', 'gale', 'bolt', 'light', 'heavy', 'solace'].filter((t) => L.get(`brush.tech.${t}`) > 0).length, 9);
   H('bc4', 'brush', 'The Canvas', 3, 'mechanic', 'A Full Page', 'Make four drawings in one breath of the Celestial Brush.', 'brush.drawings.best', 4);
   C('bc5', 'brush', 'The Canvas', 4, 'endure', 'Calligrapher', 'Have 250 drawings read.', 'brush.read', 250);
   C('bg1', 'brush', 'Sigils', 1, 'count', 'Lifted', 'Lift 50 sigils from clapperjars.', 'sigil.pop', 50);
   C('bg2', 'brush', 'Sigils', 2, 'count', 'Unwritten', 'Unwrite 25 clapperjars.', 'sigil.cleared', 25);
+  C('bi1', 'brush', 'The Canvas', 2, 'count', 'Rewritten', 'Write 50 properties onto things.', 'inscribe', 50);
+  C('bi2', 'brush', 'The Canvas', 3, 'mechanic', 'A Step in the Air', 'Hold 10 things still with the brush.', 'inscribe.still', 10);
   H('bg3', 'brush', 'Sigils', 4, 'mechanic', 'One Word for All', 'Unwrite 4 clapperjars with a single mark.', 'sigil.cleared.best', 4);
+
+  // ---------------------------------------------------------------- THE VERITOME (moves/veritome.js, veritome/)
+  C('vl1', 'veritome', 'The Lens', 1, 'count', 'Say Cheese', 'Take 25 photographs.', 'photo.take', 25);
+  C('vl2', 'veritome', 'The Lens', 3, 'endure', 'Shutterbug', 'Take 500 photographs.', 'photo.take', 500);
+  H('vl3', 'veritome', 'The Lens', 2, 'mechanic', 'Four Stars', 'Take a four-star photograph.', 'photo.stars.best', 4);
+  C('vl4', 'veritome', 'The Lens', 3, 'mechanic', 'Held to the Real', 'Hold 10 clapperjars with a fully charged shot.', 'photo.held', 10);
+  C('vl5', 'veritome', 'The Lens', 4, 'mechanic', 'Shutter Chance', 'Take 5 clapperjars whole at the shutter chance.', 'photo.captured', 5);
+  F('vc1', 'veritome', 'The Compendium', 2, 'collect', 'Field Notes', 'Photograph 8 kinds of thing.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 8);
+  F('vc2', 'veritome', 'The Compendium', 4, 'collect', 'The Whole Compendium', 'Photograph every kind of thing there is.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 19);
+  H('vc3', 'veritome', 'The Compendium', 3, 'mechanic', 'A Full Frame', 'Photograph five kinds of thing in one frame.', 'photo.kinds.best', 5);
+  C('vb1', 'veritome', 'The Book', 1, 'count', 'Bound', 'Bind your first card into the Book.', 'card.pages', 1);
+  C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Fill eleven pages of the Book.', 'card.pages', 11);
+  C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Fill all twenty-two pages of the Book.', 'card.pages', 22, { title: 'the Fool Who Read the World' });
+  C('vr1', 'veritome', 'The Reading', 1, 'count', 'A Reading', 'Play 10 cards.', 'card.play', 10);
+  C('vr2', 'veritome', 'The Reading', 3, 'endure', 'Cartomancer', 'Play 200 cards.', 'card.play', 200);
+  C('vr3', 'veritome', 'The Reading', 2, 'mechanic', 'Astrodyne', 'Spend a clasp of three seals.', 'card.astrodyne', 1);
+  C('vr4', 'veritome', 'The Reading', 3, 'mechanic', 'Three Lights', 'Spend a clasp of three different seals.', 'card.astrodyne.3', 1);
+  C('vr5', 'veritome', 'The Reading', 2, 'mechanic', "Fool's Fortune", 'Have a card turn a chest a tier higher.', 'card.luck', 1);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
   const ownedCurios = (L) => CURIOS.filter((c) => L.get(`curio.${c.id}`) > 0).length;

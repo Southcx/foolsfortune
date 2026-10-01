@@ -143,6 +143,18 @@
         else if (r < 0.95) inp.pressed.add('Mouse1');
         else inp.wheel += (rnd() - 0.5) * 400;
       }
+      // the Veritome: draw it now and then (J); raise the lens and take photographs; draw and play cards
+      if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyJ');
+      const book = g.techs.get('veritome');
+      if (book?.held && rnd() < 0.04) {
+        const r = rnd();
+        if (r < 0.3) { inp.pressed.add('Mouse2'); inp.down.add('Mouse2'); }
+        else if (r < 0.5) inp.down.delete('Mouse2');
+        else if (r < 0.85) { inp.pressed.add('Mouse0'); inp.down.add('Mouse0'); }
+        else inp.pressed.add('Mouse1');
+        if (rnd() < 0.05) { book.book.lastGive = {}; book.book.give(['magician', 'lovers', 'emperor', 'hanged', 'devil', 'tower', 'moon', 'sun', 'judgement', 'world', 'temperance', 'wheel'][Math.floor(rnd() * 12)], 'stress'); }
+      }
+      if (book?.pending) book.afterRender(null); // (the shot develops: a test drive has no frame of its own)
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
       if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
       const brush = g.techs.get('soulbrush');

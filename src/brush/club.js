@@ -2,13 +2,13 @@
 // THE CLUB: the Soul Brush as a melee weapon. Where the cutlass is quick and cuts, the brush is heavy and hits: a hammer with a head of
 // wet hair. Its blows are slower than a blade's (the same CC0 Universal Animation Library sword clips, played at four fifths of their
 // speed, so the weight is in the timing and not in new poses), they BAT what they meet rather than cut it (a clapperjar struck by the
-// light blows is sent flying; the third, overhead blow, or a blow on one already in the air, breaks it), and every swing FLICKS slip
+// light blows is sent flying; the third, overhead blow, or a blow on one already in the air, leaves it reeling), and every swing FLICKS slip
 // off the bristles in the direction the head was going, which splats where it lands and is wet enough to dive into.
 //
 //   LMB        a three-blow combo (the third an overhead that strikes the ground)
 //   LMB held   after the blow, the brush goes up and back and gathers (Zelda's spin-attack charge): let go to bring it down,
-//              the harder the longer it was held. On the ground: a SLAM, a ring that breaks what is near and throws the rest, a pool of
-//              slip where it struck. In the air: she goes down with it, and it strikes where she lands.
+//              the harder the longer it was held. On the ground: a SLAM, a ring that throws what is near (what breaks, breaks where it
+//              lands), a pool of slip where it struck. In the air: she goes down with it, and it strikes where she lands.
 //
 // Prior art, and what was taken:
 //  - Splatoon's Inkbrush and Octobrush: the flick. A swing throws a fan of ink along the swing, the brush's only ranged reach.
@@ -20,6 +20,7 @@
 import * as THREE from 'three';
 import { sfx } from '../audio.js';
 import { hasTag } from '../tags.js';
+import { arcAt } from '../tools/viewmodel.js';
 
 // clip time (the clip's own seconds): the hit window, the chain window; `rate` slows the clip for the brush's weight
 const BLOWS = [
@@ -28,7 +29,7 @@ const BLOWS = [
   { clip: 'swordC', dur: 0.95, rate: 0.85, hit: [0.46, 0.7], chain: [], dmg: 1.8, lunge: 4, power: 2.0, bat: false, ground: 0.56 },
 ];
 const SLAM = { clip: 'swordC', raised: 0.24, from: 0.26, dur: 0.95, rate: 1.3, strike: 0.56, hold: 0.32, full: 1.1, cost: 4, radius: 2.4 };
-const DMG = 70, HEAD_R = 0.3;
+const DMG = 30, HEAD_R = 0.3; // (a pot takes a few blows: the brush alters things; it is a poor way to break them)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3();
 
 function segDist(a, b, p) {
@@ -144,7 +145,22 @@ export class Club {
     const down = g.physics.raycast(_a.copy(_p).setY(Math.max(_p.y, P.pos.y) + 0.6), _b.set(0, -1, 0), 2.6, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     const at = down ? down.point.clone() : _p.clone().setY(P.pos.y);
     const R = SLAM.radius * power * (big ? 1 : 0.7);
-    g.breakables.explode(at.clone().setY(at.y + 0.3), { radius: R, breakFrac: big ? 0.55 : 0.35, velocity: 7 * power, fx: false, cause, who: 'courier' });
+    // a shove, not a blast: what is near is thrown, and what breaks is broken by where it lands
+    const c0 = at.clone().setY(at.y + 0.3), B = g.breakables;
+    for (const ent of [...B.items]) {
+      if (!ent.alive || ent.def?.trial || ent.def?.hang) continue;
+      const t = ent.body.translation();
+      if (_a.set(t.x, t.y, t.z).distanceTo(c0) > R) continue;
+      B.instigate(ent, 'courier'); B.push(ent.body, c0, R, 7 * power);
+    }
+    for (const s of [...B.slices, ...B.debris]) if (s.body?.isValid?.()) B.push(s.body, c0, R, 7 * power);
+    for (const cl of [...g.clappers.list]) {
+      if (!cl.alive) continue;
+      const d = cl.pos.distanceTo(c0);
+      if (d > R * 1.3) continue;
+      g.clappers.knock(cl, cl.pos.clone().sub(c0).setY(0).normalize().multiplyScalar(7 * power * (1 - d / (R * 1.3))).setY(4 + 2 * power));
+      if (big && d < R * 0.6) g.clappers.stun(cl, 2.5, g.shells.glowOutline, g.shells.xray);
+    }
     g.techs?.get('slam')?.ring(at, R);
     if (down) g.shells?.addPool(down.point, down.normal, true);
     const n = big ? 22 : 10;
@@ -187,7 +203,7 @@ export class Club {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (_p.distanceToSquared(P.pos) > 36 || segDist(_a, _b, _p) > HEAD_R + ent.P.rMax * 0.9) continue;
       this.hit.add(ent); struck++;
-      const amt = DMG * b.dmg;
+      const amt = DMG * b.dmg * (g.veritome?.mult('melee') ?? 1); // (Strength, a card in play)
       if (hasTag(ent, 'breakable') && ent.hp - amt <= 0) g.breakables.shatter(ent, _p.clone(), dir.clone(), b.power, 'bashed', 'courier');
       else {
         g.breakables.damage(ent, amt, _p.clone(), dir.clone(), b.power, false, 'courier');
@@ -212,7 +228,7 @@ export class Club {
       this.hit.add(c); struck++;
       // a light blow bats it away; the overhead, or a blow on one already flying (a juggle), breaks it
       if (b.bat && c.state !== 'knocked') { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(9 * b.power).setY(4.5)); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, bat: true }); }
-      else { g.clappers.hit(c, _p.clone(), dir.clone(), b.power, 'bashed'); g.events?.emit('brush.hit', { what: 'clapper', n: this.n }); }
+      else { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(11 * b.power).setY(6)); g.clappers.stun(c, 2.5, g.shells.glowOutline, g.shells.xray); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, stun: true }); }
     }
     if (struck) this.impact(b.dmg);
   }
@@ -230,9 +246,19 @@ export class Club {
   afterHands(dt) {
     const m = this.tool.model;
     m.tipWorld(_p);
-    if (this.hasPrev && dt > 1e-4) this.tipVel.subVectors(_p, this.tipPrev).divideScalar(dt);
+    if (this.hasPrev && dt > 1e-4) this.tipVel.subVectors(_p, this.tipPrev).divideScalar(dt).clampLength(0, 60);
     else this.tipVel.set(0, 0, 0);
+    if (!Number.isFinite(this.tipVel.x + this.tipVel.y + this.tipVel.z)) this.tipVel.set(0, 0, 0);
     this.tipPrev.copy(_p); this.hasPrev = true;
+  }
+
+  /** The first-person arc for what is playing: { arc, u } (tools/viewmodel.js). */
+  fpArc() {
+    if (this.charge >= 0) return { arc: 'raise', u: Math.min(1, this.charge * 4) };
+    if (this.slam) return { arc: 'over', u: arcAt(this.slam.t, [0.42, SLAM.strike], SLAM.dur) };
+    const b = this.blow;
+    if (!b) return null;
+    return { arc: ['r2l', 'l2r', 'over'][this.n] || 'r2l', u: arcAt(this.t, b.hit, b.dur) };
   }
 
   /** The clip layer ({ pose, w }) while a blow, the charge or the slam is playing. */

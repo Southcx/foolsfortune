@@ -2,20 +2,23 @@
 // GESTURES: what a drawing on the canvas of the Soul Brush is. Strokes go in (screen points, one array per stroke, in the order they
 // were drawn); a name comes out (or null), with what the technique needs to know about where and how it was drawn.
 //
-// Two layers, because the shapes are of two kinds:
-//  - FEATURES for the shapes that are about geometry, not outline: a LINE (straight: its angle says which sigil it is), a CIRCLE
-//    (one closed turn), a SPIRAL or LOOP (more than a turn and a half of winding: Okami's Galestorm, whose loop blows the way it was
-//    drawn), and the BOMB (a closed loop and a stroke that runs from inside it to outside: Okami's Cherry Bomb, "an upside-down Q").
-//  - THE $P POINT-CLOUD RECOGNIZER (Vatavu, Anthony and Wobbrock, "Gestures as Point Clouds", ICMI 2012) for the rest: the V, the
-//    caret, the lightning bolt and the heart (Magic Cat Academy's sigils, Google's Halloween 2016 Doodle). $P treats a drawing as an
-//    unordered cloud of points, so it does not care how many strokes it took, which way they went or in which order: a heart in one
-//    stroke or two, a bolt drawn up or down, all match the same template. Clouds are resampled to 32 points, scaled to a unit box and
-//    centred; the distance is the greedy weighted cloud match of the paper. Templates are made here from a few parametric points.
+// The matcher is PENNY PINCHER (Taranta and LaViola, "Penny Pincher: a blazing fast, highly accurate $-family recognizer", Graphics
+// Interface 2015): the drawing is resampled to a few evenly spaced points, each step between them becomes a unit vector, and a
+// template's score is the mean of the dot products of its vectors with the drawing's. No rotation search, no scaling, no point
+// matching: one pass of dot products per template, so a few hundred templates cost less than drawing a frame. It is not rotation or
+// direction invariant, which is what a sigil wants (a stroke across is not a stroke down); the ways a hand actually draws each shape
+// (either direction, a few slants, the usual starting points, one stroke or two in either order) are generated as templates here.
+// Strokes are joined end to start in the order drawn (the pen's travel between them is part of the path), as the paper does.
 //
-//   recognize(strokes) -> { name, dist, sigil, center, box, size, dir, angle, start, end, points } | null     (screen pixels, y down)
+// A few shapes are answered by plain geometry first, because it is cheaper still and more forgiving than any template:
+//  - the BOMB (Okami's Cherry Bomb): two strokes, a closed loop and a stroke from inside it to outside;
+//  - a SPIRAL (Okami's Galestorm): more than about a turn and a quarter of winding, with a radius that changes along the way;
+//  - a CLOSED LOOP: one turn that comes back to where it began. No sharp corners: a CIRCLE; one or two: the HEART (point and notch).
+//
+//   recognize(strokes) -> { name, score, sigil, center, box, size, dir, start, end, points, strokes, poly? } | null   (screen px, y down)
 //   names: 'line' | 'circle' | 'spiral' | 'bomb' | 'vee' | 'caret' | 'bolt' | 'heart'     sigils: '—' '|' 'V' '^' 'ϟ' (or null)
 // ---------------------------------------------------------------------------------------
-const N = 32;
+const N = 24; // points a drawing is resampled to (N - 1 vectors)
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const pathLen = (pts) => { let l = 0; for (let i = 1; i < pts.length; i++) l += dist(pts[i - 1], pts[i]); return l; };
@@ -24,12 +27,11 @@ function bbox(pts) {
   for (const p of pts) { if (p.x < x0) x0 = p.x; if (p.y < y0) y0 = p.y; if (p.x > x1) x1 = p.x; if (p.y > y1) y1 = p.y; }
   return { x0, y0, x1, y1, w: x1 - x0, h: y1 - y0, cx: (x0 + x1) / 2, cy: (y0 + y1) / 2 };
 }
-/** A stroke as a hand meant it: evenly spaced by arc length (n points) and lightly smoothed, so a mouse's jitter and uneven sampling
- *  do not read as turning or as length. The features below are measured on this. */
-function tidy(s, n = 40) {
+/** n points evenly spaced along a path by arc length. */
+function resample(s, n) {
   const L = pathLen(s);
-  if (L < 1e-3) return s.slice();
-  const step = L / (n - 1), out = [{ ...s[0] }];
+  if (L < 1e-3) return Array.from({ length: n }, () => ({ x: s[0].x, y: s[0].y }));
+  const step = L / (n - 1), out = [{ x: s[0].x, y: s[0].y }];
   let D = 0;
   for (let i = 1; i < s.length && out.length < n; i++) {
     let a = s[i - 1];
@@ -38,23 +40,35 @@ function tidy(s, n = 40) {
     while (D + d >= step && out.length < n) { const t = (step - D) / d; const q = { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) }; out.push(q); a = q; d = dist(a, b); D = 0; }
     D += d;
   }
-  while (out.length < n) out.push({ ...s[s.length - 1] });
-  return out.map((p, i) => (i === 0 || i === out.length - 1 ? p : { x: (out[i - 1].x + p.x * 2 + out[i + 1].x) / 4, y: (out[i - 1].y + p.y * 2 + out[i + 1].y) / 4 }));
+  while (out.length < n) out.push({ x: s[s.length - 1].x, y: s[s.length - 1].y });
+  return out;
 }
-/** Total signed turning of a (tidied) stroke, in turns (a circle is ~1, a spiral 2+). A cusp (a turn back on itself) is not winding. */
+/** A stroke as a hand meant it: resampled and lightly smoothed (the features below are measured on this). */
+function tidy(s, n = 40) {
+  const r = resample(s, n);
+  return r.map((p, i) => (i === 0 || i === r.length - 1 ? p : { x: (r[i - 1].x + p.x * 2 + r[i + 1].x) / 4, y: (r[i - 1].y + p.y * 2 + r[i + 1].y) / 4 }));
+}
+/** Penny Pincher's form of a path: the unit vectors between N evenly spaced points. */
+function vectors(path) {
+  const r = resample(path, N), v = new Float32Array((N - 1) * 2);
+  for (let i = 1; i < N; i++) { const dx = r[i].x - r[i - 1].x, dy = r[i].y - r[i - 1].y, l = Math.hypot(dx, dy) || 1; v[(i - 1) * 2] = dx / l; v[(i - 1) * 2 + 1] = dy / l; }
+  return v;
+}
+const score = (a, b) => { let s = 0; for (let i = 0; i < a.length; i += 2) s += a[i] * b[i] + a[i + 1] * b[i + 1]; return s / (N - 1); };
+
+/** Total signed turning of a (tidied) stroke, in turns (a circle is ~1, a spiral more). A cusp (a turn back on itself) is not winding. */
 function winding(pts) {
   let a = 0, prev = null;
   for (let i = 1; i < pts.length; i++) {
-    const d = { x: pts[i].x - pts[i - 1].x, y: pts[i].y - pts[i - 1].y };
-    if (Math.hypot(d.x, d.y) < 1e-3) continue;
-    const ang = Math.atan2(d.y, d.x);
+    const dx = pts[i].x - pts[i - 1].x, dy = pts[i].y - pts[i - 1].y;
+    if (Math.hypot(dx, dy) < 1e-3) continue;
+    const ang = Math.atan2(dy, dx);
     if (prev !== null) { let da = ang - prev; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI; if (Math.abs(da) < 2.2) a += da; }
     prev = ang;
   }
   return a / (2 * Math.PI);
 }
-/** The corners of a stroke: where it turns sharply (more than ~70 degrees over a few samples), as a count, and whether the join of
- *  its two ends is one (for a closed stroke). A circle has none; a heart has two, its point and its notch; a triangle three. */
+/** Sharp corners (more than ~70 degrees over a few samples), counting the meeting of the two ends of a closed stroke as one. */
 function corners(s) {
   const t = tidy(s, 48), n = t.length, k = 3, ang = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const turn = (a, b, c) => { let d = ang(b, c) - ang(a, b); while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return Math.abs(d); };
@@ -62,26 +76,18 @@ function corners(s) {
   for (let i = k; i < n - k; i++) { const sharp = turn(t[i - k], t[i], t[i + k]) > 1.2; if (sharp && !run) count++; run = sharp; }
   // the join: cut an overshoot at the point that comes nearest the start again, then see if the ends meet at an angle
   let j = n - 1, jd = Infinity;
-  for (let i = Math.floor(n * 0.7); i < n; i++) { const d = Math.hypot(t[i].x - t[0].x, t[i].y - t[0].y); if (d < jd) { jd = d; j = i; } }
-  const join = turn(t[j - k], t[j], t[k]) > 1.2 && turn(t[j - k], t[0], t[k]) > 1.2;
-  return { count: count + (join ? 1 : 0), join };
+  for (let i = Math.floor(n * 0.7); i < n; i++) { const d = dist(t[i], t[0]); if (d < jd) { jd = d; j = i; } }
+  const joint = turn(t[j - k], t[j], t[k]) > 1.2 && turn(t[j - k], t[0], t[k]) > 1.2;
+  return count + (joint ? 1 : 0);
 }
-/** Strokes that meet end to end, as the one path they make (a circle drawn in two halves, a heart in its two sides), or null. */
-function chain(strokes, tol) {
-  let path = strokes[0].slice();
-  const rest = strokes.slice(1);
-  while (rest.length) {
-    const a = path[0], b = path[path.length - 1];
-    let k = -1, how = 0;
-    for (let i = 0; i < rest.length && k < 0; i++) {
-      const s = rest[i], s0 = s[0], s1 = s[s.length - 1];
-      if (dist(b, s0) < tol) { k = i; how = 0; } else if (dist(b, s1) < tol) { k = i; how = 1; } else if (dist(a, s1) < tol) { k = i; how = 2; } else if (dist(a, s0) < tol) { k = i; how = 3; }
-    }
-    if (k < 0) return null;
-    const s = rest.splice(k, 1)[0];
-    path = how === 0 ? path.concat(s) : how === 1 ? path.concat(s.slice().reverse()) : how === 2 ? s.concat(path) : s.slice().reverse().concat(path);
-  }
-  return path;
+/** A closed loop: about one turn (or a little more), and it comes back to where it began. */
+function closedLoop(s) {
+  const t = tidy(s), b = bbox(t), sz = Math.max(b.w, b.h), n = t.length, w = Math.abs(winding(t));
+  if (sz < 12 || w < 0.72 || w > 1.5 || Math.min(b.w, b.h) < sz * 0.3) return false;
+  let gap = Infinity;
+  for (let i = 0; i < n * 0.4; i++) gap = Math.min(gap, dist(t[i], t[n - 1]));
+  for (let j = Math.floor(n * 0.6); j < n; j++) gap = Math.min(gap, dist(t[0], t[j]));
+  return gap < sz * 0.32;
 }
 /** Is a point inside a polygon (a closed stroke)? */
 export function inside(p, poly) {
@@ -93,77 +99,55 @@ export function inside(p, poly) {
   return c;
 }
 
-// ---- $P -------------------------------------------------------------------------------
-function resample(strokes, n = N) {
-  const pts = [];
-  for (let s = 0; s < strokes.length; s++) for (const p of strokes[s]) pts.push({ x: p.x, y: p.y, s });
-  let total = 0; for (const st of strokes) total += pathLen(st);
-  const step = total / (n - 1) || 1;
-  const out = [{ ...pts[0] }];
-  let D = 0;
-  for (let i = 1; i < pts.length; i++) {
-    if (pts[i].s !== pts[i - 1].s) continue; // (no length between strokes)
-    let a = pts[i - 1];
-    const b = pts[i];
-    let d = dist(a, b);
-    while (D + d >= step && out.length < n) {
-      const t = (step - D) / d;
-      const q = { x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y), s: b.s };
-      out.push(q);
-      a = q; d = dist(a, b); D = 0;
-    }
-    D += d;
-  }
-  while (out.length < n) out.push({ ...pts[pts.length - 1] });
-  return out;
-}
-function normalize(pts) {
-  const b = bbox(pts), sz = Math.max(b.w, b.h) || 1;
-  let cx = 0, cy = 0;
-  const q = pts.map((p) => ({ x: (p.x - b.x0) / sz, y: (p.y - b.y0) / sz }));
-  for (const p of q) { cx += p.x; cy += p.y; }
-  cx /= q.length; cy /= q.length;
-  return q.map((p) => ({ x: p.x - cx, y: p.y - cy }));
-}
-function cloudDistance(pts, tmpl, start) {
-  const n = pts.length, matched = new Uint8Array(n);
-  let sum = 0, i = start;
-  do {
-    let min = Infinity, idx = -1;
-    for (let j = 0; j < n; j++) if (!matched[j]) { const d = dist(pts[i], tmpl[j]); if (d < min) { min = d; idx = j; } }
-    matched[idx] = 1;
-    sum += (1 - ((i - start + n) % n) / n) * min;
-    i = (i + 1) % n;
-  } while (i !== start);
-  return sum;
-}
-function greedyMatch(pts, tmpl) {
-  const n = pts.length, step = Math.floor(Math.pow(n, 0.5));
-  let min = Infinity;
-  for (let i = 0; i < n; i += step) min = Math.min(min, cloudDistance(pts, tmpl, i), cloudDistance(tmpl, pts, i));
-  return min;
-}
+// ---- the templates: each shape the ways it is drawn -----------------------------------------
+const P = (...xy) => { const s = []; for (let i = 0; i < xy.length; i += 2) s.push({ x: xy[i], y: xy[i + 1] }); return s; };
+const rot = (s, a, cx = 0.5, cy = 0.5) => s.map((p) => ({ x: cx + (p.x - cx) * Math.cos(a) - (p.y - cy) * Math.sin(a), y: cy + (p.x - cx) * Math.sin(a) + (p.y - cy) * Math.cos(a) }));
+const scaleXY = (s, sx, sy) => s.map((p) => ({ x: 0.5 + (p.x - 0.5) * sx, y: 0.5 + (p.y - 0.5) * sy }));
+const mirror = (s) => s.map((p) => ({ x: 1 - p.x, y: p.y }));
+const rev = (s) => s.slice().reverse();
+const join = (...strokes) => strokes.flat();
+const arc = (a0, a1, n = 40, r = 0.5) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + ((a1 - a0) * i) / n; return { x: 0.5 + r * Math.cos(a), y: 0.5 + r * Math.sin(a) }; });
+const heartCurve = (from, to) => Array.from({ length: 41 }, (_, i) => { const t = from + ((to - from) * i) / 40; return { x: 0.5 + (16 * Math.sin(t) ** 3) / 34, y: 0.5 - (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 34 }; });
 
-// ---- the templates (screen coordinates: y down) -------------------------------------------
-const poly = (...xy) => { const s = []; for (let i = 0; i < xy.length; i += 2) s.push({ x: xy[i], y: xy[i + 1] }); return s; };
-const dense = (stroke, per = 12) => { const out = []; for (let i = 1; i < stroke.length; i++) for (let k = 0; k < per; k++) { const t = k / per; out.push({ x: stroke[i - 1].x + (stroke[i].x - stroke[i - 1].x) * t, y: stroke[i - 1].y + (stroke[i].y - stroke[i - 1].y) * t }); } out.push(stroke[stroke.length - 1]); return out; };
-const heartCurve = (from, to) => { const s = []; for (let i = 0; i <= 40; i++) { const t = from + ((to - from) * i) / 40; s.push({ x: 16 * Math.sin(t) ** 3, y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) }); } return s; };
-const TEMPLATES = [
-  ['vee', [dense(poly(0, 0, 0.5, 1, 1, 0))]],
-  ['vee', [dense(poly(0, 0, 0.5, 1)), dense(poly(0.5, 1, 1, 0))]],
-  ['caret', [dense(poly(0, 1, 0.5, 0, 1, 1))]],
-  ['bolt', [dense(poly(0.65, 0, 0.3, 0.5, 0.7, 0.5, 0.35, 1))]],
-  ['bolt', [dense(poly(0.35, 0, 0.7, 0.5, 0.3, 0.5, 0.65, 1))]],
-  ['bolt', [dense(poly(0, 0, 1, 0, 0, 1, 1, 1))]], // (a Z will do)
-  ['bolt', [dense(poly(0, 0.1, 0.45, 0.55, 0.5, 0.35, 1, 0.9))]], // (a lightning flash drawn sideways)
-  ['heart', [heartCurve(0, Math.PI * 2)]],
-  ['heart', [heartCurve(0, Math.PI), heartCurve(Math.PI * 2, Math.PI)]],
-].map(([name, strokes]) => ({ name, cloud: normalize(resample(strokes)) }));
+function buildTemplates() {
+  const T = [];
+  const add = (name, path) => T.push({ name, v: vectors(path) });
+  const both = (name, s) => { add(name, s); add(name, rev(s)); };
+  for (const a of [-0.14, 0, 0.14]) { both('hline', rot(P(0, 0.5, 1, 0.5), a)); both('vline', rot(P(0.5, 0, 0.5, 1), a)); }
+  for (const a of [Math.PI / 4, -Math.PI / 4]) for (const d of [-0.12, 0, 0.12]) both('dline', rot(P(0, 0.5, 1, 0.5), a + d)); // (a slant: a line, but no sigil)
+  // DECOYS: shapes that are none of these, so that what only looks a little like a circle (a triangle, a cross) is not taken for one
+  for (let k = 0; k < 3; k++) for (const s0 of [P(0.5, 0, 1, 0.9, 0, 0.9, 0.5, 0), P(0, 0, 1, 0, 1, 1, 0, 1, 0, 0)]) { const s1 = rot(s0, (k / 3) * Math.PI * 2); both('-', s1); }
+  for (const s0 of [join(P(0, 0.5, 1, 0.5), P(0.5, 0, 0.5, 1)), join(P(0.5, 0, 0.5, 1), P(0, 0.5, 1, 0.5)), join(P(0, 0, 1, 1), P(1, 0, 0, 1)), join(P(1, 0, 0, 1), P(0, 0, 1, 1))]) both('-', s0);
+  for (const a of [-0.25, 0, 0.25]) {
+    for (const w of [1, 0.7]) { both('caret', rot(scaleXY(P(0, 1, 0.5, 0, 1, 1), w, 1), a)); both('vee', rot(scaleXY(P(0, 0, 0.5, 1, 1, 0), w, 1), a)); }
+    // two strokes, in either order (the pen's travel between them is part of the path)
+    add('vee', rot(join(P(0, 0, 0.5, 1), P(1, 0, 0.5, 1)), a)); add('vee', rot(join(P(1, 0, 0.5, 1), P(0, 0, 0.5, 1)), a));
+    add('caret', rot(join(P(0, 1, 0.5, 0), P(1, 1, 0.5, 0)), a)); add('caret', rot(join(P(1, 1, 0.5, 0), P(0, 1, 0.5, 0)), a));
+  }
+  // the lightning bolt, the way Magic Cat Academy and every comic draws it, and the plain zigzag a hand makes in a hurry
+  const bolts = [P(0.65, 0, 0.3, 0.5, 0.7, 0.5, 0.35, 1), P(0.7, 0, 0.25, 0.55, 0.75, 0.45, 0.3, 1), P(0.75, 0, 0.3, 0.45, 0.7, 0.55, 0.25, 1),
+    P(0.6, 0, 0.4, 0.5, 0.6, 0.5, 0.4, 1), P(1, 0, 0, 0.4, 1, 0.6, 0, 1), P(0.8, 0, 0.2, 0.45, 0.8, 0.55, 0.3, 1),
+    P(0, 0, 1, 0, 0, 1, 1, 1), P(0, 0, 1, 0.33, 0, 0.66, 1, 1), P(0.3, 0, 0.7, 0.33, 0.3, 0.66, 0.7, 1)];
+  for (const b of bolts) for (const a of [-0.25, 0, 0.25]) for (const s of [b, mirror(b)]) for (const sx of [1, 0.6]) both('bolt', rot(scaleXY(s, sx, 1), a));
+  // closed shapes, from wherever the hand starts, either way round
+  for (let k = 0; k < 8; k++) { const a0 = (k / 8) * Math.PI * 2; add('circle', arc(a0, a0 + Math.PI * 2.08)); add('circle', arc(a0, a0 - Math.PI * 2.08)); }
+  for (const [a, b] of [[0, Math.PI * 2], [Math.PI, Math.PI * 3]]) { add('heart', heartCurve(a, b)); add('heart', heartCurve(b, a)); }
+  add('heart', join(heartCurve(0, Math.PI), heartCurve(Math.PI * 2, Math.PI))); add('heart', join(heartCurve(Math.PI * 2, Math.PI), heartCurve(0, Math.PI)));
+  add('heart', join(heartCurve(Math.PI, 0), heartCurve(Math.PI, Math.PI * 2)));
+  // spirals: in or out, either way round, a turn and a half to three
+  for (const turns of [1.6, 2.2, 3]) for (const dirn of [1, -1]) for (let k = 0; k < 4; k++) {
+    const a0 = (k / 4) * Math.PI * 2, s = Array.from({ length: 61 }, (_, i) => { const u = i / 60, a = a0 + dirn * u * turns * Math.PI * 2, r = 0.5 - 0.42 * u; return { x: 0.5 + r * Math.cos(a), y: 0.5 + r * Math.sin(a) }; });
+    add('spiral', s); add('spiral', rev(s));
+  }
+  return T;
+}
+const TEMPLATES = buildTemplates();
 
 // ---- recognize ----------------------------------------------------------------------------
-const SIGIL = { vee: 'V', caret: '^', bolt: 'ϟ' };
+const SIGIL = { hline: '—', vline: '|', vee: 'V', caret: '^', bolt: 'ϟ' };
+const ACCEPT = 0.72, MARGIN = 0.02;
 
-export function recognize(strokes, { maxDist = 0.6 } = {}) {
+export function recognize(strokes) {
   strokes = strokes.filter((s) => s.length >= 2);
   if (!strokes.length) return null;
   const all = strokes.flat();
@@ -172,69 +156,61 @@ export function recognize(strokes, { maxDist = 0.6 } = {}) {
   if (total < 24 || size < 14) return null;
   const first = strokes[0], last = strokes[strokes.length - 1];
   const info = { box, size, center: { x: box.cx, y: box.cy }, start: { ...first[0] }, end: { ...last[last.length - 1] }, points: all, strokes };
-  // a closed loop: about one turn, and it comes back to where it began (an overshoot past the start is still closed)
-  const closedLoop = (s) => {
-    const t = tidy(s), b = bbox(t), sz = Math.max(b.w, b.h), n = t.length, w = Math.abs(winding(t));
-    if (sz < 12 || w < 0.75 || w > 1.45 || Math.min(b.w, b.h) < sz * 0.35) return false;
-    let gap = Infinity;
-    for (let i = 0; i < n * 0.4; i++) gap = Math.min(gap, dist(t[i], t[n - 1]));
-    for (let j = Math.floor(n * 0.6); j < n; j++) gap = Math.min(gap, dist(t[0], t[j]));
-    return gap < sz * 0.3;
-  };
 
-  // the bomb: a closed loop, and a stroke from inside it to outside (either order)
+  // the bomb: a closed loop, and a fairly straight stroke from inside it to outside (either order)
   if (strokes.length === 2) {
     for (const [loop, fuse] of [[strokes[0], strokes[1]], [strokes[1], strokes[0]]]) {
       if (!closedLoop(loop)) continue;
       const lb = bbox(loop), a = fuse[0], b = fuse[fuse.length - 1];
-      const straight = dist(a, b) / (pathLen(tidy(fuse)) || 1) > 0.75;
+      const straight = dist(a, b) / (pathLen(tidy(fuse)) || 1) > 0.7;
       const ins = (p) => inside(p, loop) || dist(p, { x: lb.cx, y: lb.cy }) < Math.max(lb.w, lb.h) * 0.35;
       if (straight && ins(a) !== ins(b)) {
         const c = { x: lb.cx, y: lb.cy }, o = ins(a) ? b : a;
-        return { ...info, name: 'bomb', dist: 0, sigil: null, center: c, radius: Math.max(lb.w, lb.h) / 2, dir: { x: o.x - c.x, y: o.y - c.y } };
+        return { ...info, name: 'bomb', score: 1, sigil: null, center: c, radius: Math.max(lb.w, lb.h) / 2, dir: { x: o.x - c.x, y: o.y - c.y } };
       }
     }
   }
-  // strokes that join end to end are read as the one path they make (after the bomb, whose strokes must not join)
-  const one = strokes.length === 1 ? strokes[0] : chain(strokes, size * 0.15);
-  if (one) {
-    const s = one, t = tidy(one), L = pathLen(t), chord = dist(t[0], t[t.length - 1]);
-    // a line: straight, and long enough to mean it
-    if (chord / L > 0.9 && chord > 30) {
-      const ang = Math.atan2(s[s.length - 1].y - s[0].y, s[s.length - 1].x - s[0].x);
-      const a = Math.abs(((ang % Math.PI) + Math.PI) % Math.PI); // (0 .. pi: a line has no way round)
-      const sigil = a < 0.4 || a > Math.PI - 0.4 ? '—' : Math.abs(a - Math.PI / 2) < 0.4 ? '|' : null;
-      return { ...info, name: 'line', dist: 0, sigil, angle: ang, dir: { x: Math.cos(ang), y: Math.sin(ang) } };
+  const path = strokes.length === 1 ? strokes[0] : join(...strokes);
+  // geometry first, for the shapes it reads better than any template
+  if (strokes.length === 1) {
+    const s = strokes[0], t = tidy(s), w = winding(t);
+    const b = bbox(t), c = { x: b.cx, y: b.cy }, n = t.length;
+    const r0 = (dist(t[0], c) + dist(t[1], c)) / 2, r1 = (dist(t[n - 1], c) + dist(t[n - 2], c)) / 2;
+    const spiralish = Math.abs(w) >= 1.25 && Math.abs(r0 - r1) > Math.max(b.w, b.h) * 0.18;
+    if ((spiralish || Math.abs(w) >= 1.6) && corners(s) < 2) {
+      const a = t[Math.max(0, n - 5)], z = t[n - 1];
+      return { ...info, name: 'spiral', score: 1, sigil: null, turns: w, dir: { x: z.x - a.x, y: z.y - a.y } };
     }
-    const w = winding(t);
-    // a spiral or a loop: more than a turn and a half (the way it ends up going is the way the wind blows)
-    if (Math.abs(w) >= 1.45 && corners(s).count < 2) {
-      const n = t.length, a = t[Math.max(0, n - 5)], b = t[n - 1];
-      return { ...info, name: 'spiral', dist: 0, sigil: null, turns: w, dir: { x: b.x - a.x, y: b.y - a.y } };
-    }
-    // one closed turn: a circle if it has no corners, the heart if it has its two (the point and the notch)
     if (closedLoop(s)) {
-      const c = corners(s).count;
-      if (c === 0) return { ...info, name: 'circle', dist: 0, sigil: null, radius: size / 2, poly: s };
-      if (c <= 2) return { ...info, name: 'heart', dist: 0, sigil: null };
+      const k = corners(s);
+      if (k === 0) return { ...info, name: 'circle', score: 1, sigil: null, radius: size / 2, poly: s };
+      if (k <= 2) return { ...info, name: 'heart', score: 1, sigil: null };
     }
   }
-  // the rest: $P against the templates
-  const cloud = normalize(resample(strokes));
-  let best = null, bd = Infinity;
-  for (const T of TEMPLATES) { const d = greedyMatch(cloud, T.cloud); if (d < bd) { bd = d; best = T.name; } }
-  if (!best || bd > maxDist) return null;
-  return { ...info, name: best, dist: bd, sigil: SIGIL[best] || null };
+  // Penny Pincher over the templates: the best, if it is good enough and clear of the best of any other shape
+  const v = vectors(path), bestOf = new Map();
+  for (const T of TEMPLATES) { const sc = score(v, T.v); if (sc > (bestOf.get(T.name) ?? -Infinity)) bestOf.set(T.name, sc); }
+  const ranked = [...bestOf].sort((a, b) => b[1] - a[1]);
+  const [name, bs] = ranked[0], second = ranked[1]?.[1] ?? -1;
+  if (bs < ACCEPT || bs - second < MARGIN || name === '-') return null;
+  if (name === 'hline' || name === 'vline' || name === 'dline') {
+    const a = all[0], z = path[path.length - 1], ang = Math.atan2(z.y - a.y, z.x - a.x);
+    return { ...info, name: 'line', score: bs, sigil: SIGIL[name] || null, angle: ang, dir: { x: Math.cos(ang), y: Math.sin(ang) } };
+  }
+  if (name === 'circle') return { ...info, name, score: bs, sigil: null, radius: size / 2, poly: path };
+  if (name === 'spiral') { const t = tidy(path), n = t.length; return { ...info, name, score: bs, sigil: null, dir: { x: t[n - 1].x - t[n - 5].x, y: t[n - 1].y - t[n - 5].y } }; }
+  return { ...info, name, score: bs, sigil: SIGIL[name] || null };
 }
 
 /** Pictograms of the shapes, for the reference scroll at the canvas's edge: [name, strokes (unit box, y down)]. */
 export const PICTOGRAMS = [
-  ['line', [poly(0.1, 0.5, 0.9, 0.5)]],
-  ['circle', [Array.from({ length: 25 }, (_, i) => ({ x: 0.5 + 0.4 * Math.cos((i / 24) * Math.PI * 2), y: 0.5 + 0.4 * Math.sin((i / 24) * Math.PI * 2) }))]],
-  ['bomb', [Array.from({ length: 25 }, (_, i) => ({ x: 0.42 + 0.3 * Math.cos((i / 24) * Math.PI * 2), y: 0.42 + 0.3 * Math.sin((i / 24) * Math.PI * 2) })), poly(0.45, 0.45, 0.95, 0.95)]],
+  ['hline', [P(0.1, 0.5, 0.9, 0.5)]],
+  ['vline', [P(0.5, 0.1, 0.5, 0.9)]],
+  ['circle', [arc(0, Math.PI * 2, 24, 0.4)]],
+  ['bomb', [arc(0, Math.PI * 2, 24, 0.3).map((p) => ({ x: p.x - 0.08, y: p.y - 0.08 })), P(0.45, 0.45, 0.95, 0.95)]],
   ['spiral', [Array.from({ length: 50 }, (_, i) => { const t = (i / 49) * Math.PI * 4.2, r = 0.44 - (i / 49) * 0.36; return { x: 0.5 + r * Math.cos(t), y: 0.5 + r * Math.sin(t) }; })]],
-  ['bolt', [poly(0.62, 0.05, 0.3, 0.5, 0.68, 0.5, 0.36, 0.95)]],
-  ['caret', [poly(0.1, 0.85, 0.5, 0.15, 0.9, 0.85)]],
-  ['vee', [poly(0.1, 0.15, 0.5, 0.85, 0.9, 0.15)]],
-  ['heart', [heartCurve(0, Math.PI * 2).map((p) => ({ x: 0.5 + p.x / 38, y: 0.46 + p.y / 38 }))]],
+  ['bolt', [P(0.62, 0.05, 0.3, 0.5, 0.68, 0.5, 0.36, 0.95)]],
+  ['caret', [P(0.1, 0.85, 0.5, 0.15, 0.9, 0.85)]],
+  ['vee', [P(0.1, 0.15, 0.5, 0.85, 0.9, 0.15)]],
+  ['heart', [heartCurve(0, Math.PI * 2).map((p) => ({ x: 0.5 + (p.x - 0.5) * 0.9, y: 0.46 + (p.y - 0.5) * 0.9 }))]],
 ];

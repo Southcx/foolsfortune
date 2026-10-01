@@ -14,7 +14,7 @@ import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, u
 export { PROFILES };
 
 // (the causes that can only be the Courier's doing: the tools, the moves, the shells)
-const COURIER_CAUSES = new Set(['shot', 'sliced', 'slam', 'bomb', 'charged', 'homing', 'well', 'kick', 'throw', 'stomp', 'cut', 'cleave', 'caster', 'bashed', 'bolt', 'plunged', 'rend']);
+const COURIER_CAUSES = new Set(['shot', 'sliced', 'slam', 'bomb', 'charged', 'homing', 'well', 'kick', 'throw', 'stomp', 'cut', 'cleave', 'caster', 'bashed', 'bolt', 'plunged', 'rend', 'death']);
 const potMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true });
 // crack stages: hp fraction thresholds, and how much easier a knock breaks the pot at each stage
 const CRACK_AT = [0.8, 0.5, 0.25];
@@ -301,7 +301,7 @@ export class Breakables {
     this.onGone(ent, new THREE.Vector3(t.x, t.y, t.z));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0), cause === 'sliced' ? 0.6 : 1);
-    if (ent.def.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center, { who: 'courier' }));
+    if (ent.def.ember || ent.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center, { who: 'courier' }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     return center;
@@ -530,7 +530,7 @@ export class Breakables {
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0));
-    if (ent.def.ember) this.fx.after(0.03, () => this.explode(center, { who }));
+    if (ent.def.ember || ent.ember) this.fx.after(0.03, () => this.explode(center, { who }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
   }
 

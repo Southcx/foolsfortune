@@ -29,6 +29,8 @@ import { BY_SPECIES, ASPECTS } from './angling/species.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
+import { ARCANA_BY_ID } from './veritome/arcana.js';
+import { SUBJECTS } from './veritome/subjects.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -39,19 +41,21 @@ const CLAP_LINE = {
   charged: 'The clapperjar is vaporised.', ricochet: 'The clapperjar is defeated by a banked shot.', homing: 'The clapperjar is hunted down.',
   bashed: 'The clapperjar is bashed to pieces.', slam: 'The clapperjar is flattened.', brushed: 'The clapperjar is unwritten.', rend: 'The clapperjar is rent in two.',
   bolt: 'The clapperjar is struck by lightning.', plunged: 'The clapperjar is driven into the ground.',
+  captured: 'The clapperjar is captured in a photograph.', judged: 'The raider is judged, and unwritten.',
 };
 const BRUSH_LINE = {
-  rend: (n) => (n ? `Your brush cuts through ${plural(n, 'thing')}.` : 'Your brush cuts the air.'),
+  still: (n) => `Your brush holds ${n === 1 ? 'it' : plural(n, 'thing')} still.`,
+  bounce: (n) => `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} spring.`,
   mend: (n) => `Your brush makes ${plural(n, 'thing')} whole.`,
-  ember: () => 'A bomb of ink takes shape where you drew it.',
+  ember: (n) => `Your brush sets ${n === 1 ? 'an ember' : `${n} embers`} smouldering.`,
   gale: (n) => (n ? `A gale answers your brush and scatters ${plural(n, 'thing')}.` : 'A gale answers your brush.'),
-  bolt: (n) => (n ? `Lightning answers your brush and strikes ${plural(n, 'thing')}.` : 'Lightning answers your brush.'),
-  rise: (n) => (n ? 'Your brush throws it upward.' : 'Your brush lifts you.'),
-  plunge: (n) => (n ? 'Your brush drives it down.' : 'Your brush drives you down.'),
+  bolt: (n) => (n ? `Lightning answers your brush and stuns ${plural(n, 'clapperjar')}.` : 'Lightning answers your brush.'),
+  light: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} light.` : 'Your brush lifts you.'),
+  heavy: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} heavy.` : 'Your brush drives you down.'),
   solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'The vessel is soothed.'),
   wash: () => 'You lay slip across the world.',
 };
-const BRUSH_NAME = { rend: 'Rend', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', rise: 'Rise', plunge: 'Plunge', solace: 'Solace', wash: 'wash' };
+const BRUSH_NAME = { still: 'Still', bounce: 'Bounce', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', light: 'Light', heavy: 'Heavy', solace: 'Solace', wash: 'wash' };
 const MEDAL = { GOLD: 'gold', SILVER: 'silver', BRONZE: 'bronze' };
 
 export class Tracking {
@@ -272,6 +276,38 @@ export class Tracking {
     });
 
 
+    // ---- the Veritome: photographs, the Book, the cards (src/moves/veritome.js, src/veritome/)
+    const CARD = (id) => ARCANA_BY_ID[id]?.name.replace(/^THE /, 'The ').toLowerCase().replace(/(^|\s)\w/g, (m) => m.toUpperCase()) || id;
+    on('veritome.draw', () => { L.inc('veritome.draw'); log.say('info', 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
+    on('veritome.lens', () => L.inc('veritome.lens'));
+    on('photo.take', (e) => {
+      L.inc('photo.take'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds);
+      first('photo', 'Logged: your first photograph.');
+      if (e.fatal === 'held') { L.inc('photo.held'); log.say('battle', 'The photograph holds the clapperjar to what is real.', { key: 'phheld', throttle: 1 }); }
+      if (e.fatal === 'captured') { L.inc('photo.captured'); first('photo.captured', 'Logged: a clapperjar taken whole at the shutter chance.'); }
+      if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
+      const what = e.kind === 'nothing' ? null : e.kind === 'sky' ? 'the open sky' : e.kind === 'sun' ? 'the sun' : (SUBJECTS[e.kind]?.name ? `${'aeiou'.includes(SUBJECTS[e.kind].name[0]) ? 'an' : 'a'} ${SUBJECTS[e.kind].name}` : e.kind);
+      log.say('info', what ? `You photograph ${what} (${'★'.repeat(e.stars || 1)}).` : 'You photograph nothing in particular.', { key: 'photo', throttle: 0.4 });
+    });
+    on('card.get', (e) => {
+      L.inc('card.get'); L.inc(`card.got.${e.card}`); if (e.page) L.inc('card.pages');
+      log.say('gain', e.page ? `${CARD(e.card)} is bound into the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} is bound into the Book.`, { key: `cget.${e.card}`, throttle: 1 });
+      if (e.page) first(`card.${e.card}`, `Logged: ${CARD(e.card)}, page ${ARCANA_BY_ID[e.card].roman}.`);
+    });
+    on('card.drift', (e) => log.say('info', `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }));
+    on('card.draw', (e) => { L.inc('card.draw'); log.say('info', `You draw ${CARD(e.card)}.`, { key: 'cdraw', throttle: 0.3 }); });
+    on('card.redraw', (e) => { L.inc('card.redraw'); log.say('info', `You draw again: ${CARD(e.card)}.`, { key: 'cdraw', throttle: 0.3 }); });
+    on('card.gain', (e) => { L.inc('card.gain'); log.say('info', `Gain: ${CARD(e.card)} is taken from the Book into your hand.`, { key: 'cgain', throttle: 0.3 }); });
+    on('card.play', (e) => {
+      L.inc('card.play'); L.inc(`card.play.${e.card}`); L.inc(`card.seal.${e.seal}`);
+      first('card.play', 'Logged: your first card played.');
+      log.say('battle', `You play ${CARD(e.card)}. ${ARCANA_BY_ID[e.card]?.effect || ''}`, { key: 'cplay', throttle: 0.2 });
+    });
+    on('card.echo', (e) => log.say('battle', `The wheel turns to ${CARD(e.card)}.`, { key: 'cecho', throttle: 0.2 }));
+    on('card.fade', (e) => log.say('other', `${CARD(e.card)} fades.`, { key: `cfade.${e.card}`, throttle: 1 }));
+    on('card.luck', (e) => { L.inc('card.luck'); log.say('gain', `Fortune turns: the chest comes up ${e.tier}.`, { key: 'cluck', throttle: 1 }); });
+    on('card.astrodyne', (e) => { L.inc('card.astrodyne'); L.inc(`card.astrodyne.${e.kinds}`); log.say('battle', e.kinds >= 3 ? 'Astrodyne: three seals, and the mind blazes.' : e.kinds === 2 ? 'Astrodyne: two seals, and the mind quickens.' : 'Astrodyne: the clasp is spent.', { key: 'cdyne', throttle: 0.5 }); });
+
     // ---- the Soul Brush: the club, the brush slide, the Celestial Brush, the sigils (src/moves/soulbrush.js, src/brush/)
     on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
     on('brush.stow', () => L.inc('brush.stow'));
@@ -279,6 +315,7 @@ export class Tracking {
     on('brush.flick', () => L.inc('brush.flick'));
     on('brush.hit', (e) => {
       L.inc('brush.hit'); L.inc(`brush.hit.${e.what}`);
+      if (e.stun) L.inc('brush.stun');
       if (e.bat) { L.inc('brush.bat'); log.say('battle', 'You bat the clapperjar away.', { key: 'bbat', win: 1, fmt: (n) => `You bat ${plural(n, 'clapperjar')} away.` }); }
       else if (e.what === 'pot') log.say('battle', 'You club the pot.', { key: 'bpot', win: 0.9, fmt: (n) => `You club ${plural(n, 'pot')}.` });
     });
@@ -300,6 +337,7 @@ export class Tracking {
     });
     on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
     on('brush.miss', () => L.inc('brush.miss'));
+    on('inscribe', (e) => { L.inc('inscribe'); L.inc(`inscribe.${e.prop}`); });
     on('brush.glyph', (e) => {
       L.inc(`brush.tech.${e.technique}`); L.inc('brush.tech');
       if (e.technique !== 'wash') first(`brush.tech.${e.technique}`, `Logged: your first ${BRUSH_NAME[e.technique]}.`);
@@ -493,6 +531,7 @@ export class Tracking {
     if (g.circuits?.active) L.inc('time.circuit', dt);
     const so = g.techs?.get('sondelass');
     if (g.techs?.get('soulbrush')?.toolOut) L.inc('time.soulbrush', dt);
+    if (g.techs?.get('veritome')?.toolOut) L.inc('time.veritome', dt);
     if (so?.toolOut) { L.inc('time.sondelass', dt); if (so.form === 'rod') L.inc('time.rod', dt); if (so.angler?.state && so.angler.state !== 'idle') L.inc('time.angling', dt); if (so.angler?.state === 'fight') L.inc('time.fight', dt); }
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
