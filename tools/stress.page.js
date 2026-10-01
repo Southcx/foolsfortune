@@ -143,8 +143,10 @@
         else if (r < 0.95) inp.pressed.add('Mouse1');
         else inp.wheel += (rnd() - 0.5) * 400;
       }
-      // the Veritome: draw it now and then (J); raise the lens and take photographs; draw and play cards
+      // the Veritome: draw it now and then (J); raise the lens and expose plates; now and then appraise the roll, gain or condense a
+      // card, or have a curio come loose (as a chest gives one); the Survey (N) borrows the open hold
       if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyJ');
+      if (!god.controlling && rnd() < 0.001) inp.pressed.add('KeyN');
       const book = g.techs.get('veritome');
       if (book?.held && rnd() < 0.04) {
         const r = rnd();
@@ -152,7 +154,13 @@
         else if (r < 0.5) inp.down.delete('Mouse2');
         else if (r < 0.85) { inp.pressed.add('Mouse0'); inp.down.add('Mouse0'); }
         else inp.pressed.add('Mouse1');
-        if (rnd() < 0.05) { book.book.lastGive = {}; book.book.give(['magician', 'lovers', 'emperor', 'hanged', 'devil', 'tower', 'moon', 'sun', 'judgement', 'world', 'temperance', 'wheel'][Math.floor(rnd() * 12)], 'stress'); }
+      }
+      if (book && rnd() < 0.002) {
+        const B = book.book, r = rnd(), ids = Object.keys(B.cards);
+        if (r < 0.4 && B.film.plates.length) book.appraise();
+        else if (r < 0.6) B.out(`curio.${['whelk', 'gull', 'pearl', 'skull', 'koi'][Math.floor(rnd() * 5)]}`, 'stress');
+        else if (r < 0.8 && ids.length) B.gain(ids[Math.floor(rnd() * ids.length)]);
+        else if (ids.length) B.condense(ids[Math.floor(rnd() * ids.length)]);
       }
       if (book?.pending) book.afterRender(null); // (the shot develops: a test drive has no frame of its own)
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush

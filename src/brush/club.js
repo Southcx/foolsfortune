@@ -203,7 +203,7 @@ export class Club {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (_p.distanceToSquared(P.pos) > 36 || segDist(_a, _b, _p) > HEAD_R + ent.P.rMax * 0.9) continue;
       this.hit.add(ent); struck++;
-      const amt = DMG * b.dmg * (g.veritome?.mult('melee') ?? 1); // (Strength, a card in play)
+      const amt = DMG * b.dmg;
       if (hasTag(ent, 'breakable') && ent.hp - amt <= 0) g.breakables.shatter(ent, _p.clone(), dir.clone(), b.power, 'bashed', 'courier');
       else {
         g.breakables.damage(ent, amt, _p.clone(), dir.clone(), b.power, false, 'courier');

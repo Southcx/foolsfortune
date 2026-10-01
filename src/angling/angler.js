@@ -120,11 +120,11 @@ export class Angler {
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
   stripHtml() { return aspectStrip(this.aspect, this.lureDef()); }
   /** The lure tied on now (lures.js). */
-  lureDef() { const L = lureList(this.game.ledger); return L.find((l) => l.id === this.lureId) || L[0]; }
+  lureDef() { const L = lureList(this.game.ledger, this.game.veritome?.book); return L.find((l) => l.id === this.lureId) || L[0]; }
   /** Tie on the next (or previous) lure the Courier has. Not while one is out: it is on the line. */
   cycleLure(d) {
     if (this.lure?.active) return;
-    const L = lureList(this.game.ledger), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
+    const L = lureList(this.game.ledger, this.game.veritome?.book), i = Math.max(0, L.findIndex((l) => l.id === this.lureId));
     this.lureId = L[(i + d + L.length) % L.length].id;
     this.tool.renderStrip(); sfx.plink(3);
     this.emit('angle.lure', { lure: this.lureId });

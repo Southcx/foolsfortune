@@ -239,8 +239,10 @@ export function renderAngling(codex, cx) {
     const aff = el('div');
     aff.innerHTML = `<div class="in">DRAWN TO</div>` + sp.aff.map((a, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span style="width:88px;color:${hex(ASPECTS[i].color)}">${ASPECTS[i].glyph} ${ASPECTS[i].name}</span><span class="bar" style="flex:1;margin:0"><i style="width:${Math.round(a * 100)}%"></i></span></div>`).join('');
     card.appendChild(aff);
-    const known = n >= 3;
-    card.appendChild(el('p', '', `<span style="color:var(--accent)">LIVES</span> · ${known ? `${sp.depth[0]}–${sp.depth[1]} m down` : '? (land it three times)'}<br><span style="color:var(--accent)">COMES</span> · ${known ? sp.tides.map((t) => TIDES[t].name).join(', ') : '?'}<br><span style="color:var(--accent)">FIGHTS</span> · ${known ? ({ drift: 'in slow swimming turns', dart: 'in quick flicks', thrash: 'in coils and thrashes: ease off at the tremble', run: 'in long runs: give it line', sweep: 'side to side: follow it', leap: 'leaping clear, and landing hard', anchor: 'by being immovable: reel steadily', legend: 'in phases: it changes as it tires' })[sp.style] : '?'}`));
+    // (landed three times, or photographed at it: the Veritome's bestiary knows its habits)
+    const Bs = g.veritome?.book.bestiary, saw = (f) => !!Bs?.knows(`fish.${sp.id}`, f);
+    const known = n >= 3, lives = known || saw('lives'), fights = known || saw('fights');
+    card.appendChild(el('p', '', `<span style="color:var(--accent)">LIVES</span> · ${lives ? `${sp.depth[0]}–${sp.depth[1]} m down` : '? (land it three times, or photograph it swimming)'}<br><span style="color:var(--accent)">COMES</span> · ${lives ? sp.tides.map((t) => TIDES[t].name).join(', ') : '?'}<br><span style="color:var(--accent)">FIGHTS</span> · ${fights ? ({ drift: 'in slow swimming turns', dart: 'in quick flicks', thrash: 'in coils and thrashes: ease off at the tremble', run: 'in long runs: give it line', sweep: 'side to side: follow it', leap: 'leaping clear, and landing hard', anchor: 'by being immovable: reel steadily', legend: 'in phases: it changes as it tires' })[sp.style] : '?'}`));
     const cm = L.best(`fish.cm.${sp.id}`), kg = L.best(`fish.kg.${sp.id}`);
     card.appendChild(el('p', '', `<span style="color:var(--accent)">BEST</span> · ${Math.round(cm)} cm · ${kg ? kg.toFixed(2) : '—'} kg <span style="opacity:.6">(kinds run ${sp.size[0]}–${sp.size[1]} cm)</span>`));
   }
@@ -253,7 +255,8 @@ export function renderCurios(codex, cx) {
   ensureStyle();
   const g = codex.game, L = g.ledger;
   codex.csel ||= CURIOS[0].id;
-  const own = (c) => L.get(`curio.${c.id}`) > 0;
+  const own = (c) => L.get(`curio.${c.id}`) > 0; // (found, ever: the ledger's)
+  const B = g.veritome?.book, held = (c) => (B ? `${B.count(`curio.${c.id}`)} in the Book${B.item(`curio.${c.id}`) ? ` · ${B.item(`curio.${c.id}`)} held` : ''}` : `${L.get(`curio.${c.id}`)} held`);
   const head = el('div', 'lg-head');
   head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
     + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.pulls'))}</b></div>`
@@ -266,7 +269,7 @@ export function renderCurios(codex, cx) {
     for (const c of CURIOS.filter((c) => c.tier === CHEST_TIERS.indexOf(t))) {
       const has = own(c);
       const row = el('div', `row${has ? '' : ' locked'}${codex.csel === c.id ? ' sel' : ''}`,
-        `<span class="g" style="color:${has ? tierHex(t.rgb) : 'inherit'}">${has ? c.glyph : '?'}</span><span class="t"><b>${has ? c.name.toUpperCase() : '· · ·'}</b><s>${has ? `${L.get(`curio.${c.id}`)} held` : 'not yet found'}</s></span>`);
+        `<span class="g" style="color:${has ? tierHex(t.rgb) : 'inherit'}">${has ? c.glyph : '?'}</span><span class="t"><b>${has ? c.name.toUpperCase() : '· · ·'}</b><s>${has ? held(c) : 'not yet found'}</s></span>`);
       row.onclick = () => { codex.csel = c.id; codex.render(); };
       list.appendChild(row);
     }
@@ -275,8 +278,8 @@ export function renderCurios(codex, cx) {
   const c = CURIOS.find((x) => x.id === codex.csel), has = own(c), t = CHEST_TIERS[c.tier];
   const card = el('div', 'card');
   card.appendChild(el('h3', '', has ? c.name.toUpperCase() : '· · ·'));
-  card.appendChild(el('div', 'in', `${t.name.toUpperCase()} CURIO${has ? ` · ${L.get(`curio.${c.id}`)} HELD` : ''}`));
-  card.appendChild(el('p', has ? '' : 'hint', has ? c.blurb : `Found in ${t.name} chests${c.tier >= 3 ? ', and rarely' : ''}. A copy you already have is condensed into cubes.`));
+  card.appendChild(el('div', 'in', `${t.name.toUpperCase()} CURIO${has ? ` · ${held(c).toUpperCase()}` : ''}`));
+  card.appendChild(el('p', has ? '' : 'hint', has ? c.blurb : `Found in ${t.name} chests${c.tier >= 3 ? ', and rarely' : ''}. A copy the Book cannot hold is condensed into cubes.`));
   // the odds, in the open: what a sealed chest from the Tithe can be, and what the pity guarantees
   const tot = CHEST_TIERS.reduce((a, x) => a + x.weight, 0);
   const odds = el('div');

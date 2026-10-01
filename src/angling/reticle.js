@@ -15,6 +15,7 @@
 //   r.hide()      r.update(dt, camera)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { backOut } from '../vfx/chevron.js';
 
 const V = `varying vec2 vUv; uniform float uSize;
 void main() {
@@ -99,7 +100,7 @@ export class Reticle {
   update(dt, camera) {
     this.live = (this.live ?? 0) - dt;
     if (this.live <= 0) this.want = 0;
-    this.k = THREE.MathUtils.clamp(this.k + (this.want > this.k ? dt * 7 : -dt * 6), 0, 1);
+    this.k = this.want > this.k ? Math.min(this.want, this.k + dt * 7) : Math.max(this.want, this.k - dt * 6); // (to want, and no further)
     if (this.k <= 0) { this.mesh.visible = false; this.iconLast = -1; return; }
     this.mesh.visible = true;
     this.flash = Math.max(0, this.flash - dt * 3.2);
@@ -109,7 +110,7 @@ export class Reticle {
     this.uni.uSize.value = Math.max(this.size ?? 1, d * 0.075) * (0.5 + 0.5 * this.k);
     this.uni.uLock.value = this.lockS; this.uni.uFlash.value = this.flash;
     this.uni.uAlpha.value = this.k;
-    const u = this.k, pop = u < 1 ? u * (1.25 - 0.25 * u) * 1.08 : 1;
+    const pop = backOut(this.k);
     this.uni.uPop.value = Math.max(0.1, pop);
   }
 }

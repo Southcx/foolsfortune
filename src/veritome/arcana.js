@@ -1,116 +1,74 @@
 // ---------------------------------------------------------------------------------------
-// THE MAJOR ARCANA: the cards of the Veritome, its first deck. Twenty-two, numbered 0 to XXI as the tarot numbers them, each with:
+// THE MAJOR ARCANA: the first section of the Book's designated pages (cards.js). Twenty-two, numbered 0 to XXI as the tarot numbers
+// them. They are not spells: the Veritome reads the world, it does not rewrite it, so an Arcana card is a picture of a truth the
+// Courier has SEEN, earned by photographing its SITTING (what the tarot says the card is: the Fool is the one who leaps, the Hanged
+// Man hangs, the Tower is struck) and appraising the photograph in the darkroom (darkroom.js). Each card has:
 //
-//   seal     sun | moon | star       Final Fantasy XIV's Astrologian: what playing it adds to the clasp (three seals, an Astrodyne)
 //   rank     SS S A B C D E F G H     Greed Island's card ranks (Hunter x Hunter): how hard the card is to come by
-//   limit    copies the Book can hold (its page, and spares in the free slots)
-//   sitting  the photograph that earns a copy: a subject (veritome/subjects.js) in a state, photographed well enough
-//   effect   what playing it does to the rules of the Courier's reality (veritome/effects.js), and for how long
+//   limit    copies the Book may hold (its page, and spares in the free slots)
+//   sitting  the photograph that earns a copy: a subject (subjects.js) in a state, photographed well enough
+//   hint     the sitting as a riddle, shown on the empty page
+//   lore     what is written on the page once the card is bound: the reading, in the Courier's hand
 //
-// The sittings are what the tarot says each card is (the Fool is the one who leaps; the Hanged Man hangs; the Tower is struck), found
-// in what the world already has, so the camera is a way of reading the world and the Book is what was read.
-// The art is drawn here, on a canvas: a gold line emblem on deep indigo, the numeral at the head, no words (a card is a picture).
+// The emblems are drawn here (cards.js frames them): a gold line on deep indigo, no words (a card is a picture).
 // ---------------------------------------------------------------------------------------
-export const SEALS = { sun: { glyph: '☉', color: '#ffcf6a' }, moon: { glyph: '☾', color: '#bfd2ff' }, star: { glyph: '✶', color: '#f6b8ff' } };
-export const RANKS = ['SS', 'S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
+export const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 
 // sitting: { subject, state?, stars (at least), n (at least that many of it in the frame) }; or a special: { sky } { sun } { kinds: n }
 export const ARCANA = [
-  { id: 'fool', name: 'THE FOOL', seal: 'star', rank: 'C', limit: 3, sitting: { subject: 'clapper', state: 'air', stars: 1 }, hint: 'one who has leapt, caught in the air',
-    effect: 'Fortune favours the next chest you summon: it comes up a tier higher.', dur: 0 },
-  { id: 'magician', name: 'THE MAGICIAN', seal: 'sun', rank: 'B', limit: 3, sitting: { subject: 'clapper', state: 'mend', stars: 1 }, hint: 'hands at work, making a broken thing whole',
-    effect: 'For ten seconds nothing you do costs Lachryma.', dur: 10 },
-  { id: 'priestess', name: 'THE HIGH PRIESTESS', seal: 'moon', rank: 'B', limit: 3, sitting: { subject: 'well', stars: 2 }, hint: 'the deep water that keeps its secrets',
-    effect: 'A survey pulse that costs nothing, and every pot and clapperjar near you seen through the walls.', dur: 20 },
-  { id: 'empress', name: 'THE EMPRESS', seal: 'star', rank: 'C', limit: 3, sitting: { subject: 'palm', stars: 2 }, hint: 'what grows, green, where nothing should',
-    effect: 'The mind refills four times as fast for thirty seconds.', dur: 30 },
-  { id: 'emperor', name: 'THE EMPEROR', seal: 'sun', rank: 'B', limit: 2, sitting: { subject: 'chest', stars: 2 }, hint: 'a treasury, closed and kept',
-    effect: 'Order: every loose thing near you is held still, and the clapperjars stand to attention.', dur: 10 },
-  { id: 'hierophant', name: 'THE HIEROPHANT', seal: 'moon', rank: 'B', limit: 2, sitting: { subject: 'gong', stars: 2 }, hint: 'the bell that calls the faithful',
-    effect: 'The two clapperjars nearest you are converted: they follow you.', dur: 0 },
-  { id: 'lovers', name: 'THE LOVERS', seal: 'star', rank: 'C', limit: 3, sitting: { subject: 'clapper', n: 2, stars: 1 }, hint: 'two of a kind in one frame',
-    effect: 'Every clapperjar near you dances, and the mind is a little refilled.', dur: 8 },
-  { id: 'chariot', name: 'THE CHARIOT', seal: 'sun', rank: 'B', limit: 3, sitting: { subject: 'skiff', stars: 1 }, hint: 'a vessel that rides the wind',
-    effect: 'You run a quarter faster for twenty seconds.', dur: 20 },
-  { id: 'strength', name: 'STRENGTH', seal: 'sun', rank: 'B', limit: 3, sitting: { subject: 'pot', state: 'heavy', stars: 1 }, hint: 'a weight that should not be lifted',
-    effect: 'Your blows (blade, brush, boot) land twice as hard for twenty seconds.', dur: 20 },
-  { id: 'hermit', name: 'THE HERMIT', seal: 'moon', rank: 'C', limit: 3, sitting: { subject: 'lantern', stars: 1 }, hint: 'a light kept alone',
-    effect: 'A lantern goes with you for forty-five seconds, and the ground near you is charted.', dur: 45 },
-  { id: 'wheel', name: 'WHEEL OF FORTUNE', seal: 'star', rank: 'A', limit: 2, sitting: { subject: 'cog', stars: 2 }, hint: 'a wheel that turns of itself',
-    effect: 'Spin: the effect of another card, chosen by the wheel; and the next chest comes up a tier higher.', dur: 0 },
-  { id: 'justice', name: 'JUSTICE', seal: 'moon', rank: 'A', limit: 2, sitting: { subject: 'tally', stars: 2 }, hint: 'the stone where every catch is counted',
-    effect: 'For fifteen seconds whatever is thrown at you is sent back the way it came.', dur: 15 },
-  { id: 'hanged', name: 'THE HANGED MAN', seal: 'moon', rank: 'B', limit: 3, sitting: { subject: 'hanging', stars: 1 }, hint: 'one who hangs by a cord',
-    effect: 'For four seconds the loose things near you fall upward.', dur: 4 },
-  { id: 'death', name: 'DEATH', seal: 'moon', rank: 'A', limit: 2, sitting: { subject: 'shards', stars: 1 }, hint: 'a thing in the moment of its ending',
-    effect: 'Every cracked pot near you comes apart, and every clapperjar near you loses a sigil.', dur: 0 },
-  { id: 'temperance', name: 'TEMPERANCE', seal: 'star', rank: 'B', limit: 3, sitting: { subject: 'water', stars: 2 }, hint: 'still water, poured from one vessel to another',
-    effect: 'The world goes at two thirds of its pace for eight seconds, and the mind costs half.', dur: 8 },
-  { id: 'devil', name: 'THE DEVIL', seal: 'sun', rank: 'A', limit: 2, sitting: { subject: 'clapper', state: 'greed', stars: 2 }, hint: 'one who hoards more than it can carry',
-    effect: 'Every loose bauble comes to you, and the clapperjars near you are drawn in.', dur: 3 },
-  { id: 'tower', name: 'THE TOWER', seal: 'sun', rank: 'S', limit: 1, sitting: { subject: 'tower', stars: 2 }, hint: 'the tallest thing, from its foot',
-    effect: 'Lightning strikes where you look, and everything near it is thrown up.', dur: 0 },
-  { id: 'star', name: 'THE STAR', seal: 'star', rank: 'S', limit: 1, sitting: { sky: true }, hint: 'nothing but the open sky',
-    effect: 'Hope: the mind is filled, and refills half again as fast for thirty seconds.', dur: 30 },
-  { id: 'moon', name: 'THE MOON', seal: 'moon', rank: 'A', limit: 2, sitting: { subject: 'pond', stars: 2 }, hint: 'a reflection in the oasis',
-    effect: 'For fifteen seconds the clapperjars cannot see you, and the room goes dark.', dur: 15 },
-  { id: 'sun', name: 'THE SUN', seal: 'sun', rank: 'S', limit: 1, sitting: { sun: true }, hint: 'the sun itself, in the dunes',
-    effect: 'Radiance: every clapperjar in sight is dazzled, all slip dries at once, and the mind is warmed.', dur: 0 },
-  { id: 'judgement', name: 'JUDGEMENT', seal: 'star', rank: 'A', limit: 2, sitting: { subject: 'wreck', stars: 1 }, hint: 'the place where something broke',
-    effect: 'Every wreck near you rises again, and every raider near you is unwritten.', dur: 0 },
-  { id: 'world', name: 'THE WORLD', seal: 'star', rank: 'SS', limit: 1, sitting: { kinds: 5 }, hint: 'five kinds of thing in a single frame',
-    effect: 'Completion: every card in play begins again, a free survey, the mind refilled, and the clasp filled with every seal.', dur: 0 },
+  { id: 'fool', name: 'The Fool', rank: 'C', limit: 3, sitting: { subject: 'clapper', state: 'air', stars: 1 }, hint: 'one who has leapt, caught in the air',
+    lore: 'Every journey in this book begins with a step off something. The jars take it without looking; so, it seems, did I.' },
+  { id: 'magician', name: 'The Magician', rank: 'B', limit: 3, sitting: { subject: 'clapper', state: 'mend', stars: 1 }, hint: 'hands at work, making a broken thing whole',
+    lore: 'Will, made into gold along a crack. It mends what I break, and the mended thing is worth more than it was.' },
+  { id: 'priestess', name: 'The High Priestess', rank: 'B', limit: 3, sitting: { subject: 'well', stars: 2 }, hint: 'the deep water that keeps its secrets',
+    lore: 'What is known and not said. The well goes further down than the dunes go up.' },
+  { id: 'empress', name: 'The Empress', rank: 'C', limit: 3, sitting: { subject: 'palm', stars: 2 }, hint: 'what grows, green, where nothing should',
+    lore: 'Abundance where there ought to be none. The palms drink from somewhere.' },
+  { id: 'emperor', name: 'The Emperor', rank: 'B', limit: 2, sitting: { subject: 'chest', stars: 2 }, hint: 'a treasury, closed and kept',
+    lore: 'Order, and the keeping of things. Everything worth having in this place is shut in something.' },
+  { id: 'hierophant', name: 'The Hierophant', rank: 'B', limit: 2, sitting: { subject: 'gong', stars: 2 }, hint: 'the bell that calls the faithful',
+    lore: 'The rite and the rule. Strike it and the room keeps time with you.' },
+  { id: 'lovers', name: 'The Lovers', rank: 'C', limit: 3, sitting: { subject: 'clapper', n: 2, stars: 1 }, hint: 'two of a kind in one frame',
+    lore: 'A choice made by two. They are never far from one another, and never quite together.' },
+  { id: 'chariot', name: 'The Chariot', rank: 'B', limit: 3, sitting: { subject: 'skiff', stars: 1 }, hint: 'a vessel that rides the wind',
+    lore: 'Will steering the wind. The skiff goes where the sail and I agree.' },
+  { id: 'strength', name: 'Strength', rank: 'B', limit: 3, sitting: { subject: 'pot', state: 'heavy', stars: 1 }, hint: 'a weight that should not be lifted',
+    lore: 'Not the lifting: the knowing what not to lift. A word made it heavy; a photograph made it honest again.' },
+  { id: 'hermit', name: 'The Hermit', rank: 'C', limit: 3, sitting: { subject: 'lantern', stars: 1 }, hint: 'a light kept alone',
+    lore: 'One light, carried inward. Every lantern here hangs where someone once needed to see.' },
+  { id: 'wheel', name: 'Wheel of Fortune', rank: 'A', limit: 2, sitting: { subject: 'cog', stars: 2 }, hint: 'a wheel that turns of itself',
+    lore: 'What goes round. Nobody winds the mill; it turns because it has always turned.' },
+  { id: 'justice', name: 'Justice', rank: 'A', limit: 2, sitting: { subject: 'tally', stars: 2 }, hint: 'the stone where every catch is counted',
+    lore: 'The account kept. The tally does not forget a fish, and neither, now, does the Book.' },
+  { id: 'hanged', name: 'The Hanged Man', rank: 'B', limit: 3, sitting: { subject: 'hanging', stars: 1 }, hint: 'one who hangs by a cord',
+    lore: 'A pause, upside down, that sees further than standing would.' },
+  { id: 'death', name: 'Death', rank: 'A', limit: 2, sitting: { subject: 'shards', stars: 1 }, hint: 'a thing in the moment of its ending',
+    lore: 'An ending caught in the act. Nothing here stays broken for long; the jars see to that.' },
+  { id: 'temperance', name: 'Temperance', rank: 'B', limit: 3, sitting: { subject: 'water', stars: 2 }, hint: 'still water, poured from one vessel to another',
+    lore: 'The middle way, poured. Water in this place is always on its way somewhere else.' },
+  { id: 'devil', name: 'The Devil', rank: 'A', limit: 2, sitting: { subject: 'clapper', state: 'greed', stars: 2 }, hint: 'one who hoards more than it can carry',
+    lore: 'Wanting, swallowed whole. The fat ones are fat with what I dropped.' },
+  { id: 'tower', name: 'The Tower', rank: 'S', limit: 1, sitting: { subject: 'tower', stars: 2 }, hint: 'the tallest thing, from its foot',
+    lore: 'The thing built too high, seen from where it will fall. The kiln is where the jars come from.' },
+  { id: 'star', name: 'The Star', rank: 'S', limit: 1, sitting: { sky: true }, hint: 'nothing but the open sky',
+    lore: 'Hope, with nothing in the way. The sky here is painted, and it is still the sky.' },
+  { id: 'moon', name: 'The Moon', rank: 'A', limit: 2, sitting: { subject: 'pond', stars: 2 }, hint: 'a reflection in the oasis',
+    lore: 'What is seen twice, once wrongly. The oasis shows a sky the dunes do not have.' },
+  { id: 'sun', name: 'The Sun', rank: 'S', limit: 1, sitting: { sun: true }, hint: 'the sun itself, in the dunes',
+    lore: 'The plain truth, too bright to look at for long. I looked anyway; the Book has it now.' },
+  { id: 'judgement', name: 'Judgement', rank: 'A', limit: 2, sitting: { subject: 'wreck', stars: 1 }, hint: 'the place where something broke',
+    lore: 'The call to rise again. Every wreck is waiting for a jar to come and say so.' },
+  { id: 'world', name: 'The World', rank: 'SS', limit: 1, sitting: { kinds: 5 }, hint: 'five kinds of thing in a single frame',
+    lore: 'Completion: the whole of it, held still at once. The last page of the first section, and the first proof the Book can hold a world.' },
 ].map((a, i) => ({ ...a, num: i, roman: ROMAN[i] }));
 export const ARCANA_BY_ID = Object.fromEntries(ARCANA.map((a) => [a.id, a]));
 
-// ---- the art ------------------------------------------------------------------------------------
-const CACHE = new Map();
-/** A card face (a canvas, w x h), drawn once and kept. `back`: the card's back instead. */
-export function cardArt(id, w = 120, h = 200, back = false) {
-  const key = `${id}|${w}|${h}|${back}`;
-  if (CACHE.has(key)) return CACHE.get(key);
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d'), A = ARCANA_BY_ID[id];
-  const gold = '#e7c46a', ink = '#1b1430';
-  // the field and the border
-  const grad = g.createLinearGradient(0, 0, 0, h); grad.addColorStop(0, '#2b2050'); grad.addColorStop(1, '#14102a');
-  g.fillStyle = grad; roundRect(g, 1, 1, w - 2, h - 2, w * 0.07); g.fill();
-  g.strokeStyle = gold; g.lineWidth = Math.max(1.5, w * 0.025); roundRect(g, w * 0.05, w * 0.05, w * 0.9, h - w * 0.1, w * 0.05); g.stroke();
-  g.lineWidth = 1; roundRect(g, w * 0.09, w * 0.09, w * 0.82, h - w * 0.18, w * 0.04); g.stroke();
-  if (back || !A) {
-    // the back: a clock face and a lens, the Veritome's own cover
-    const cx = w / 2, cy = h / 2, R = w * 0.3;
-    g.strokeStyle = gold; g.lineWidth = w * 0.02;
-    g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
-    for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; g.beginPath(); g.moveTo(cx + Math.cos(a) * R * 0.82, cy + Math.sin(a) * R * 0.82); g.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); g.stroke(); }
-    g.beginPath(); g.arc(cx, cy, R * 0.35, 0, Math.PI * 2); g.fillStyle = 'rgba(160,190,255,.35)'; g.fill(); g.stroke();
-    for (const [a, l] of [[-1.2, 0.6], [0.4, 0.8]]) { g.beginPath(); g.moveTo(cx, cy); g.lineTo(cx + Math.cos(a) * R * l, cy + Math.sin(a) * R * l); g.stroke(); }
-    CACHE.set(key, c); return c;
-  }
-  // the numeral at the head
-  g.fillStyle = gold; g.font = `${Math.round(w * 0.13)}px Georgia, 'Times New Roman', serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(A.roman, w / 2, w * 0.2);
-  // the emblem, in a square in the middle (unit coordinates: 0..1 across that square)
-  const S = w * 0.7, ox = (w - S) / 2, oy = h * 0.3;
-  g.save(); g.translate(ox, oy); g.scale(S, S);
-  g.strokeStyle = gold; g.fillStyle = gold; g.lineWidth = 0.035; g.lineCap = 'round'; g.lineJoin = 'round';
-  (EMBLEM[id] || (() => {}))(g);
-  g.restore();
-  // the seal at the foot
-  const se = SEALS[A.seal];
-  g.fillStyle = se.color; g.font = `${Math.round(w * 0.16)}px serif`;
-  g.fillText(se.glyph, w / 2, h - w * 0.2);
-  g.fillStyle = ink;
-  CACHE.set(key, c);
-  return c;
-}
-
+// ---- the emblems: drawn in a unit square (0..1 across), gold line on the card's field ------------------
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 const L = (g, ...p) => { g.beginPath(); g.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1]); g.stroke(); };
 const C = (g, x, y, r, fill = false, a0 = 0, a1 = Math.PI * 2) => { g.beginPath(); g.arc(x, y, r, a0, a1); fill ? g.fill() : g.stroke(); };
 const star = (g, x, y, r, n = 8, k = 0.4) => { g.beginPath(); for (let i = 0; i < n * 2; i++) { const a = (i / (n * 2)) * Math.PI * 2 - Math.PI / 2, rr = i % 2 ? r * k : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill(); };
-const EMBLEM = {
+export const EMBLEM = {
   fool: (g) => { L(g, 0.05, 0.85, 0.55, 0.85); C(g, 0.68, 0.45, 0.14); L(g, 0.68, 0.59, 0.62, 0.85); L(g, 0.55, 0.62, 0.85, 0.7); star(g, 0.25, 0.25, 0.08, 5); },
   magician: (g) => { g.beginPath(); for (let i = 0; i <= 60; i++) { const t = (i / 60) * Math.PI * 2; g.lineTo(0.5 + 0.28 * Math.sin(t), 0.3 + 0.12 * Math.sin(t) * Math.cos(t)); } g.stroke(); L(g, 0.5, 0.45, 0.5, 0.95); C(g, 0.5, 0.45, 0.05, true); },
   priestess: (g) => { L(g, 0.2, 0.1, 0.2, 0.95); L(g, 0.8, 0.1, 0.8, 0.95); C(g, 0.5, 0.45, 0.17, false, 0.6, 5.7); C(g, 0.56, 0.45, 0.13, false, 0.9, 5.4); },

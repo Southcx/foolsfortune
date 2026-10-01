@@ -8,12 +8,18 @@
 // Prior art: Pokémon Snap (size, pose and technique, the same-species bonus, the report after each shot), Dead Rising's PP for a
 // photograph by its genre, and Fatal Frame's camera, whose shot is better the nearer and the more centred the subject is.
 //
+// A photograph is kept on the film (film.js) as its SERIAL form: what was in it, as it was at the shutter, with no live references, so
+// the darkroom (darkroom.js) can appraise it whenever the Courier gets round to it (Dark Cloud 2 and Wind Waker keep the picture, not
+// the moment).
+//
 //   scorePhoto(game, camera) -> { subjects: [...], best, stars, kinds, sky, sun }     (best: { kind, ref, score, stars, states })
+//   serial(report) -> { subjects: [{ kind, sub, states: [..], score, stars, frac, aware, engaged }], stars, kinds, sky, sun }
+//   sits(report or serial, sitting) -> bool
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SUBJECTS } from './subjects.js';
 
-const POSE = { air: 60, dance: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
+const POSE = { infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
 const _v = new THREE.Vector3(), _f = new THREE.Vector3();
 
 export const starsOf = (score) => (score >= 230 ? 4 : score >= 170 ? 3 : score >= 110 ? 2 : 1);
@@ -44,7 +50,7 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
       let pose = 0;
       for (const st of s.states) pose = Math.max(pose, POSE[st] || 0);
       if (s.from === 'below' && fwd.y < 0.2) pose -= 60; // (a tower is taken from its foot, looking up)
-      out.push({ kind, ref: s.ref, states: s.states, size, centre, facing, pose, z, frac, ndc: { x: ndc.x, y: ndc.y }, score: 0 });
+      out.push({ kind, ref: s.ref, sub: s.sub || null, aware: !!s.aware, engaged: !!s.engaged, states: s.states, size, centre, facing, pose, z, frac, ndc: { x: ndc.x, y: ndc.y }, score: 0 });
     }
   }
   const counts = {};
@@ -64,11 +70,21 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
 
 /** Does a photograph satisfy a card's sitting? (arcana.js) The sitting must be what the photograph is OF: one of its main subjects
  *  (scored near the best in the frame), not something caught at the edge; the World wants five kinds, each photographed well. */
+const has = (states, st) => (states.has ? states.has(st) : states.includes(st));
+
+/** A photograph as the film keeps it: what was in it, as it was, and nothing live. */
+export function serial(r) {
+  return {
+    subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), aware: !!s.aware, engaged: !!s.engaged })),
+    stars: r.stars, kinds: r.kinds, sky: !!r.sky, sun: !!r.sun,
+  };
+}
+
 export function sits(report, sitting) {
   if (sitting.sky) return report.sky;
   if (sitting.sun) return report.sun;
-  const top = report.best?.score ?? 0;
+  const top = report.subjects[0]?.score ?? 0;
   if (sitting.kinds) return new Set(report.subjects.filter((s) => s.stars >= 2).map((s) => s.kind)).size >= sitting.kinds;
-  const of = report.subjects.filter((s) => s.kind === sitting.subject && (!sitting.state || s.states.has(sitting.state)) && s.score >= top * 0.8 && s.stars >= (sitting.stars || 1));
+  const of = report.subjects.filter((s) => s.kind === sitting.subject && (!sitting.state || has(s.states, sitting.state)) && s.score >= top * 0.8 && s.stars >= (sitting.stars || 1));
   return of.length >= (sitting.n || 1);
 }

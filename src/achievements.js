@@ -34,7 +34,7 @@ export const CATS = [
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
-  { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Compendium', 'The Book', 'The Reading'] },
+  { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
@@ -63,7 +63,7 @@ const F = (id, cat, sub, tier, type, name, desc, cur, n, o = {}) => add({ id, ca
 export function buildAchievements(game) {
   tiers.length = 0;
   const kinds = Object.keys(PROFILES).length;
-  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing', 'brushed', 'captured'];
+  const CAUSES = ['shot', 'sliced', 'cooked', 'splat', 'well', 'explosion', 'charged', 'ricochet', 'homing', 'brushed'];
   const sys = game.system;
 
   // ---------------------------------------------------------------- BREAKING
@@ -284,20 +284,25 @@ export function buildAchievements(game) {
   // ---------------------------------------------------------------- THE VERITOME (moves/veritome.js, veritome/)
   C('vl1', 'veritome', 'The Lens', 1, 'count', 'Say Cheese', 'Take 25 photographs.', 'photo.take', 25);
   C('vl2', 'veritome', 'The Lens', 3, 'endure', 'Shutterbug', 'Take 500 photographs.', 'photo.take', 500);
-  H('vl3', 'veritome', 'The Lens', 2, 'mechanic', 'Four Stars', 'Take a four-star photograph.', 'photo.stars.best', 4);
   C('vl4', 'veritome', 'The Lens', 3, 'mechanic', 'Held to the Real', 'Hold 10 clapperjars with a fully charged shot.', 'photo.held', 10);
-  C('vl5', 'veritome', 'The Lens', 4, 'mechanic', 'Shutter Chance', 'Take 5 clapperjars whole at the shutter chance.', 'photo.captured', 5);
-  F('vc1', 'veritome', 'The Compendium', 2, 'collect', 'Field Notes', 'Photograph 8 kinds of thing.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 8);
-  F('vc2', 'veritome', 'The Compendium', 4, 'collect', 'The Whole Compendium', 'Photograph every kind of thing there is.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 19);
-  H('vc3', 'veritome', 'The Compendium', 3, 'mechanic', 'A Full Frame', 'Photograph five kinds of thing in one frame.', 'photo.kinds.best', 5);
+  C('vl5', 'veritome', 'The Lens', 4, 'mechanic', 'Shutter Chance', 'Hold 5 clapperjars at the shutter chance.', 'photo.chance', 5);
+  C('vd1', 'veritome', 'The Darkroom', 1, 'count', 'Developing', 'Appraise a roll of film.', 'darkroom.batches', 1);
+  H('vd2', 'veritome', 'The Darkroom', 2, 'mechanic', 'A Full Roll', 'Appraise twenty-four photographs at once.', 'darkroom.batch.best', 24);
+  H('vl3', 'veritome', 'The Darkroom', 2, 'mechanic', 'Four Stars', 'Appraise a four-star photograph.', 'photo.stars.best', 4);
+  H('vc3', 'veritome', 'The Darkroom', 3, 'mechanic', 'A Full Frame', 'Appraise a photograph of five kinds of thing.', 'photo.kinds.best', 5);
+  F('vc1', 'veritome', 'The Darkroom', 2, 'collect', 'Field Notes', 'Enter 8 kinds of thing in the Compendium.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 8);
+  F('vc2', 'veritome', 'The Darkroom', 4, 'collect', 'The Whole Compendium', 'Enter every kind of thing in the Compendium.', (L) => L.under('photo.kind.').filter(([k, v]) => v > 0 && !k.endsWith('nothing')).length, 20);
+  C('vs1', 'veritome', 'The Bestiary', 1, 'count', 'Naturalist', 'Learn 5 facts about the creatures of the workshop.', 'bestiary.facts', 5);
+  C('vs2', 'veritome', 'The Bestiary', 3, 'collect', 'Know Thy Enemy', 'Learn 10 battle facts.', 'bestiary.battle', 10);
+  C('vs3', 'veritome', 'The Bestiary', 3, 'mechanic', 'Infighting', 'Photograph a turned clapperjar setting on a raider.', 'bestiary.fact.clapper.infight', 1, { hidden: true });
+  C('vs4', 'veritome', 'The Bestiary', 4, 'collect', 'Understood', 'Understand the clapperjar: every fact.', 'bestiary.u.clapper', 4, { title: 'the Naturalist' });
+  F('vs5', 'veritome', 'The Bestiary', 4, 'collect', 'Under the Surface', 'Study five kinds of fish.', (L) => L.under('bestiary.u.fish.').filter(([, v]) => v >= 3).length, 5);
   C('vb1', 'veritome', 'The Book', 1, 'count', 'Bound', 'Bind your first card into the Book.', 'card.pages', 1);
-  C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Fill eleven pages of the Book.', 'card.pages', 11);
-  C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Fill all twenty-two pages of the Book.', 'card.pages', 22, { title: 'the Fool Who Read the World' });
-  C('vr1', 'veritome', 'The Reading', 1, 'count', 'A Reading', 'Play 10 cards.', 'card.play', 10);
-  C('vr2', 'veritome', 'The Reading', 3, 'endure', 'Cartomancer', 'Play 200 cards.', 'card.play', 200);
-  C('vr3', 'veritome', 'The Reading', 2, 'mechanic', 'Astrodyne', 'Spend a clasp of three seals.', 'card.astrodyne', 1);
-  C('vr4', 'veritome', 'The Reading', 3, 'mechanic', 'Three Lights', 'Spend a clasp of three different seals.', 'card.astrodyne.3', 1);
-  C('vr5', 'veritome', 'The Reading', 2, 'mechanic', "Fool's Fortune", 'Have a card turn a chest a tier higher.', 'card.luck', 1);
+  C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Fill eleven Arcana pages.', 'card.pages.arcana', 11);
+  C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Fill all twenty-two Arcana pages.', 'card.pages.arcana', 22, { title: 'the Fool Who Read the World' });
+  C('vb4', 'veritome', 'The Book', 3, 'collect', 'Portraitist', 'Bind five creature cards.', 'card.pages.creature', 5);
+  C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Gain', 'Make a card into the thing itself.', 'card.gain', 1);
+  C('vb6', 'veritome', 'The Book', 2, 'mechanic', 'Condensed', 'Condense a spare card into cubes.', 'card.condense', 1);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
   const ownedCurios = (L) => CURIOS.filter((c) => L.get(`curio.${c.id}`) > 0).length;
@@ -328,9 +333,9 @@ export function buildAchievements(game) {
   F('cu1', 'treasure', 'Curios', 1, 'collect', 'A Shelf', 'Own 3 curios.', ownedCurios, 3);
   F('cu2', 'treasure', 'Curios', 2, 'collect', 'A Cabinet', 'Own 8 curios.', ownedCurios, 8);
   F('cu3', 'treasure', 'Curios', 4, 'collect', 'A Wunderkammer', 'Own 14 curios.', ownedCurios, 14);
-  F('cu4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Own every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
-  CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Own all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && L.get(`curio.${c.id}`) > 0).length, 4, { hidden: i === 4 }));
-  C('cu5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio you already own (it condenses into cubes).', 'curio.dupe', 1);
+  F('cu4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Find every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
+  CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Find all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && L.get(`curio.${c.id}`) > 0).length, 4, { hidden: i === 4 }));
+  C('cu5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio the Book cannot hold (it condenses into cubes).', 'curio.dupe', 1);
 
   // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)
   C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);

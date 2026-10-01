@@ -79,7 +79,7 @@ export class Kick extends Tech {
       if (!near(t, (e.size || 0.3) * 0.35)) continue;
       this.hit.add(e); n++;
       const p = new THREE.Vector3(t.x, t.y, t.z);
-      g.breakables.damage(e, c.damage * (g.veritome?.mult('melee') ?? 1), p, dir, 1.2);
+      g.breakables.damage(e, c.damage, p, dir, 1.2);
       if (e.alive) shove(e.body, e.body.mass());
     }
     for (const e of g.level?.dynamic || []) {

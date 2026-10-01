@@ -29,7 +29,8 @@ import { BY_SPECIES, ASPECTS } from './angling/species.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
-import { ARCANA_BY_ID } from './veritome/arcana.js';
+import { CARD as VCARD } from './veritome/cards.js';
+import { CREATURES } from './veritome/bestiary.js';
 import { SUBJECTS } from './veritome/subjects.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
@@ -41,7 +42,7 @@ const CLAP_LINE = {
   charged: 'The clapperjar is vaporised.', ricochet: 'The clapperjar is defeated by a banked shot.', homing: 'The clapperjar is hunted down.',
   bashed: 'The clapperjar is bashed to pieces.', slam: 'The clapperjar is flattened.', brushed: 'The clapperjar is unwritten.', rend: 'The clapperjar is rent in two.',
   bolt: 'The clapperjar is struck by lightning.', plunged: 'The clapperjar is driven into the ground.',
-  captured: 'The clapperjar is captured in a photograph.', judged: 'The raider is judged, and unwritten.',
+  judged: 'The raider is judged, and unwritten.',
 };
 const BRUSH_LINE = {
   still: (n) => `Your brush holds ${n === 1 ? 'it' : plural(n, 'thing')} still.`,
@@ -276,37 +277,48 @@ export class Tracking {
     });
 
 
-    // ---- the Veritome: photographs, the Book, the cards (src/moves/veritome.js, src/veritome/)
-    const CARD = (id) => ARCANA_BY_ID[id]?.name.replace(/^THE /, 'The ').toLowerCase().replace(/(^|\s)\w/g, (m) => m.toUpperCase()) || id;
-    on('veritome.draw', () => { L.inc('veritome.draw'); log.say('info', 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
+    // ---- the Veritome: the film, the darkroom, the bestiary, the Book (src/moves/veritome.js, src/veritome/)
+    const CARD = (id) => VCARD[id]?.name || id;
+    const subj = (k) => (k === 'nothing' ? null : k === 'sky' ? 'the open sky' : k === 'sun' ? 'the sun' : SUBJECTS[k]?.name ? an(SUBJECTS[k].name) : k);
+    on('veritome.draw', (e) => { L.inc('veritome.draw'); log.say('info', e.loose ? 'You open the Veritome, and the loose cards go to their pages.' : 'You open the Veritome.', { key: 'vdraw', throttle: 2 }); });
     on('veritome.lens', () => L.inc('veritome.lens'));
     on('photo.take', (e) => {
-      L.inc('photo.take'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds);
-      first('photo', 'Logged: your first photograph.');
-      if (e.fatal === 'held') { L.inc('photo.held'); log.say('battle', 'The photograph holds the clapperjar to what is real.', { key: 'phheld', throttle: 1 }); }
-      if (e.fatal === 'captured') { L.inc('photo.captured'); first('photo.captured', 'Logged: a clapperjar taken whole at the shutter chance.'); }
+      L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
+      first('photo', 'Logged: your first photograph. It waits on the film to be appraised (B, the Veritome).');
+      if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! The photograph holds the clapperjar fast to what is real.' : 'The photograph holds the clapperjar to what is real.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
-      const what = e.kind === 'nothing' ? null : e.kind === 'sky' ? 'the open sky' : e.kind === 'sun' ? 'the sun' : (SUBJECTS[e.kind]?.name ? `${'aeiou'.includes(SUBJECTS[e.kind].name[0]) ? 'an' : 'a'} ${SUBJECTS[e.kind].name}` : e.kind);
-      log.say('info', what ? `You photograph ${what} (${'★'.repeat(e.stars || 1)}).` : 'You photograph nothing in particular.', { key: 'photo', throttle: 0.4 });
+      if (e.left === 0) log.say('info', 'That was the last plate on the roll.', { key: 'filmlast', throttle: 5 });
+    });
+    on('photo.discard', (e) => L.inc('photo.discard', e.n));
+    on('photo.appraise', (e) => {
+      L.inc('photo.appraised'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds);
+      if (e.entry && subj(e.kind)) log.say('record', `New in the Compendium: ${subj(e.kind)} (${'★'.repeat(e.stars || 1)}).`);
+    });
+    on('darkroom.develop', (e) => {
+      L.inc('darkroom.batches'); L.hi('darkroom.batch.best', e.n);
+      first('darkroom', 'Logged: your first roll appraised.');
+      log.say('info', `You appraise ${plural(e.n, 'photograph')}: ${plural(e.entries, 'new entry').replace('entrys', 'entries')}, ${plural(e.facts, 'fact')}, ${plural(e.cards, 'card')}.`, {});
+    });
+    on('bestiary.fact', (e) => {
+      L.inc('bestiary.facts'); L.inc(`bestiary.fact.${e.creature}`); L.inc(`bestiary.fact.${e.creature}.${e.fact}`); if (e.battle) L.inc('bestiary.battle');
+      const C = CREATURES[e.creature], b = g.veritome?.book.bestiary, u = b?.understanding(e.creature);
+      if (u && u.tier > L.get(`bestiary.u.${e.creature}`)) L.inc(`bestiary.u.${e.creature}`, u.tier - L.get(`bestiary.u.${e.creature}`)); // (the understanding reached, 1-4)
+      log.say(e.battle ? 'battle' : 'record', `Bestiary, ${C?.name || e.creature}: ${C?.facts.find((f) => f.id === e.fact)?.text || e.fact}`, {});
+      if (u && u.tier >= 2 && L.first(`bestiary.${e.creature}.${u.tier}`)) log.say('ach', `You have ${u.name.toLowerCase()} the ${C.name.toLowerCase()}.`, {});
     });
     on('card.get', (e) => {
-      L.inc('card.get'); L.inc(`card.got.${e.card}`); if (e.page) L.inc('card.pages');
-      log.say('gain', e.page ? `${CARD(e.card)} is bound into the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} is bound into the Book.`, { key: `cget.${e.card}`, throttle: 1 });
-      if (e.page) first(`card.${e.card}`, `Logged: ${CARD(e.card)}, page ${ARCANA_BY_ID[e.card].roman}.`);
+      L.inc('card.get'); L.inc(`card.got.${e.card}`);
+      if (e.first) { L.inc('card.pages'); L.inc(`card.pages.${e.section}`); }
+      log.say('gain', e.page ? `${CARD(e.card)} is bound into page ${VCARD[e.card]?.page} of the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} goes into a free slot.`, { key: `cget.${e.card}`, throttle: 1 });
     });
-    on('card.drift', (e) => log.say('info', `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }));
-    on('card.draw', (e) => { L.inc('card.draw'); log.say('info', `You draw ${CARD(e.card)}.`, { key: 'cdraw', throttle: 0.3 }); });
-    on('card.redraw', (e) => { L.inc('card.redraw'); log.say('info', `You draw again: ${CARD(e.card)}.`, { key: 'cdraw', throttle: 0.3 }); });
-    on('card.gain', (e) => { L.inc('card.gain'); log.say('info', `Gain: ${CARD(e.card)} is taken from the Book into your hand.`, { key: 'cgain', throttle: 0.3 }); });
-    on('card.play', (e) => {
-      L.inc('card.play'); L.inc(`card.play.${e.card}`); L.inc(`card.seal.${e.seal}`);
-      first('card.play', 'Logged: your first card played.');
-      log.say('battle', `You play ${CARD(e.card)}. ${ARCANA_BY_ID[e.card]?.effect || ''}`, { key: 'cplay', throttle: 0.2 });
+    on('card.drift', (e) => { L.inc('card.drift'); log.say('info', e.from === 'time' ? `${CARD(e.card)} was never bound, and is gone.` : `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }); });
+    on('card.out', (e) => { L.inc('card.out'); log.say('loot', `The ${CARD(e.card)} comes to you as a card. Open the Book (J) within a minute to bind it.`, { tone: '#ffd98a' }); });
+    on('card.bind', (e) => L.inc('card.bound', e.n));
+    on('card.gain', (e) => {
+      L.inc('card.gain'); L.inc(`card.gained.${e.card}`);
+      log.say('loot', e.from === 'time' ? `The ${CARD(e.card)} card was not bound in time, and becomes the ${CARD(e.card)} itself.` : `Gain: the ${CARD(e.card)} card becomes the ${CARD(e.card)} itself.`, { tone: '#9be36a' });
     });
-    on('card.echo', (e) => log.say('battle', `The wheel turns to ${CARD(e.card)}.`, { key: 'cecho', throttle: 0.2 }));
-    on('card.fade', (e) => log.say('other', `${CARD(e.card)} fades.`, { key: `cfade.${e.card}`, throttle: 1 }));
-    on('card.luck', (e) => { L.inc('card.luck'); log.say('gain', `Fortune turns: the chest comes up ${e.tier}.`, { key: 'cluck', throttle: 1 }); });
-    on('card.astrodyne', (e) => { L.inc('card.astrodyne'); L.inc(`card.astrodyne.${e.kinds}`); log.say('battle', e.kinds >= 3 ? 'Astrodyne: three seals, and the mind blazes.' : e.kinds === 2 ? 'Astrodyne: two seals, and the mind quickens.' : 'Astrodyne: the clasp is spent.', { key: 'cdyne', throttle: 0.5 }); });
+    on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 
     // ---- the Soul Brush: the club, the brush slide, the Celestial Brush, the sigils (src/moves/soulbrush.js, src/brush/)
     on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
@@ -475,9 +487,9 @@ export class Tracking {
     on('cube.spill', (e) => { L.inc(`cube.spill.${e.from}`, e.n); if (e.from === 'zandatsu') log.say('loot', `The core condenses into ${plural(e.n, 'Lachryma cube')}.`, { key: 'zcube', win: 1.2, fmt: () => 'The cores condense into cubes.' }); });
     on('curio.get', (e) => {
       const c = CURIO_BY_ID[e.id], t = TIERS[c.tier];
-      if (e.dupe) { L.inc('curio.dupe'); log.say('loot', `You already have the ${c.name}. It condenses into cubes.`, { tone: tone(c.tier) }); return; }
+      if (e.dupe) { L.inc('curio.dupe'); log.say('loot', `The Book can hold no more of the ${c.name}. It condenses into cubes.`, { tone: tone(c.tier) }); return; }
       L.inc('curio.total'); L.inc(`curio.tier.${t.id}`);
-      log.say('loot', `You obtain the ${c.name}!`, { tone: tone(c.tier) });
+      log.say('loot', `You find the ${c.name}!`, { tone: tone(c.tier) });
       if (L.first(`curio.first.${e.id}`)) log.say('record', `Logged: the ${c.name}. ${c.blurb}`);
     });
     on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });

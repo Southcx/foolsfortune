@@ -9,6 +9,9 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
+/** Ease-out-back: 0 -> 1 with a small overshoot, continuous at both ends. */
+export const backOut = (u, c = 1.4) => 1 + (c + 1) * (u - 1) ** 3 + c * (u - 1) ** 2;
+
 export class Chevron {
   constructor(scene, { color = 0xffb27a, hot = 0xfff1dc } = {}) {
     this.group = new THREE.Group();
@@ -38,13 +41,13 @@ export class Chevron {
 
   update(dt) {
     this.t += dt;
-    const up = this.want > this.k;
-    this.k = THREE.MathUtils.clamp(this.k + (up ? dt * 6 : -dt * 5), 0, 1);
+    // (k walks to want and stops there: stepping past it and back made the pop scale flip every frame, the old jitter)
+    this.k = this.want > this.k ? Math.min(this.want, this.k + dt * 6) : Math.max(this.want, this.k - dt * 5);
     if (this.k <= 0) { this.group.visible = false; this.has = false; return; }
     if (this.tp) this.pos.lerp(this.tp, 1 - Math.exp(-dt * 14));
     this.group.visible = true;
-    // pop in with an overshoot
-    const u = this.k, s = u < 1 ? (u * (1.3 - 0.3 * u) * 1.15) : 1;
+    // pop in with an overshoot (ease-out-back: it lands on exactly 1, no step at the end)
+    const s = backOut(this.k);
     this.group.position.copy(this.pos);
     this.group.position.y += 0.05 * Math.sin(this.t * 2.6);
     this.group.scale.setScalar(Math.max(0.001, s));

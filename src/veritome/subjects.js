@@ -4,10 +4,15 @@
 // heavy). A photograph is scored over the subjects in its frame (photo.js); the Compendium keeps the best photograph of each kind;
 // a card's sitting is a subject in a state (arcana.js).
 //
+// A creature (a clapperjar, a fish) also says whether it is AWARE of the Courier (it can see her) and ENGAGED with her (it is taunting,
+// fleeing, cowering, scalded, knocked: in the thick of it with her). Only an aware, engaged creature can be held by a charged shot
+// (Fatal Frame's ghosts are photographed while they come at you); an unaware one is photographed candidly, and a candid photograph is
+// how its habits are learned (bestiary.js).
+//
 // Prior art: the Hyrule Compendium of Breath of the Wild (photograph a thing and it is entered; the photograph is the entry), and
 // Pokémon Snap's subjects, which are scored for what they are doing as much as for being in the frame.
 //
-//   SUBJECTS[id] = { name, find(game) -> [{ pos, r, ref, states: Set }] }
+//   SUBJECTS[id] = { name, find(game) -> [{ pos, r, ref, states: Set, sub?, aware?, engaged? }] }     (sub: a fish's species)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DUNE, POND, WELL } from '../dunes.js';
@@ -17,6 +22,8 @@ import { inscribed } from '../brush/inscribe.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 const inDunes = (g) => !!g.dunes?.active;
+/** What a clapperjar is doing when it is in the thick of it with the Courier (a charged shot can hold it then). */
+export const ENGAGED = new Set(['taunt', 'flee', 'stumble', 'hide', 'cower', 'scalded', 'knocked', 'stunned', 'raid', 'guard']);
 
 export const SUBJECTS = {
   clapper: { name: 'clapperjar', find: (g) => (g.clappers?.list || []).filter((c) => c.alive).map((c) => {
@@ -25,7 +32,18 @@ export const SUBJECTS = {
     if ((c.stash || 0) >= 3 || c.raider) st.add('greed');
     if (c.raider) st.add('raider');
     if (c.ally) st.add('ally');
-    return { pos: c.pos.clone().setY(c.pos.y + 0.35), r: 0.45, ref: c, states: st, facing: new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)) };
+    if (c.state === 'mendGo') st.add('mend');
+    // infighting: a turned jar on a raider's heels, or a raider it has just knocked down
+    if ((c.state === 'guard' && c.chasing?.alive && c.chasing.pos.distanceTo(c.pos) < 2.5) || (c.raider && c.state === 'knocked' && (c.raiderStunned || 0) > 0)) st.add('infight');
+    const aware = !!g.clappers?.canSeePlayer?.(c), engaged = aware && ENGAGED.has(c.state);
+    if (aware) st.add('aware');
+    return { pos: c.pos.clone().setY(c.pos.y + 0.35), r: 0.45, ref: c, states: st, aware, engaged, facing: new THREE.Vector3(Math.sin(c.heading), 0, Math.cos(c.heading)) };
+  }) },
+  fish: { name: 'fish', find: (g) => (g.weir?.fish || []).filter((f) => f.alive && !f.dying && f.mesh?.group?.visible !== false && f.mesh.group.scale.x > 0.4).map((f) => {
+    const st = new Set([f.state]);
+    if (g.angler?.fight?.fish === f) st.add('fight');
+    if (f.pos.y > (f.pool?.surface ?? -1e9)) st.add('air');
+    return { pos: f.pos.clone(), r: Math.max(0.2, f.length * 0.5), ref: f, sub: f.sp.id, states: st, aware: f.state === 'flee', engaged: false, facing: new THREE.Vector3(Math.sin(f.heading), 0, Math.cos(f.heading)) };
   }) },
   pot: { name: 'pot', find: (g) => [...(g.breakables?.items || [])].filter((e) => e.alive && !e.def?.lantern && !e.def?.trial).map((e) => {
     const t = e.body.translation(), st = new Set([e.kind, ...inscribed(e)]);

@@ -1,182 +1,174 @@
 // ---------------------------------------------------------------------------------------
-// THE BOOK: the Veritome's binder and the cards in it. Its rules are Greed Island's (Hunter x Hunter), at the scale of a prototype:
+// THE BOOK: the Veritome's binder, and so the Courier's inventory. Its rules are Greed Island's (Hunter x Hunter), made formal:
 //
-//  - DESIGNATED PAGES, one for each of the twenty-two Major Arcana, numbered 0 to XXI. The first copy of a card fills its page; that
-//    page is never emptied (a card on its page is what the Book KNOWS).
-//  - FREE SLOTS: twelve, shared, for the spare copies. A card has a LIMIT (the most copies of it the Book may hold, page included) and a
-//    RANK (SS to H, how hard it is to come by). A copy that does not fit drifts away.
-//  - GAIN: a spare copy is taken out of the Book and made real (into the hand), as Greed Island's "Gain" turns a card into its thing.
+//  - Every card has a DESIGNATED PAGE (cards.js). The first copy fills it; spare copies go into the FREE SLOTS (twenty, shared).
+//    A card's LIMIT is the most copies the Book may hold. A copy that does not fit DRIFTS away (it is gone).
+//  - A card OUT of the Book (a curio fresh from a chest) is LOOSE: it circles the Courier (loose.js). Opening the Book (J, or the
+//    Codex, which is the Book's own pages) binds every loose card that fits. A loose card with an item form that is not bound within
+//    a minute becomes its item, as Greed Island's cards do.
+//  - GAIN takes a card out and makes it the thing itself (an ITEM: a curio in the hand, which the angler can tie on). One way.
+//  - CONDENSE turns a spare copy into Lachryma cubes by its rank (the shop buying a card).
 //
-// And its play is the Astrologian's (Final Fantasy XIV):
+// The Book also keeps the rest of what the Veritome knows, so it is saved in one place: the film (film.js), the Compendium (the best
+// photograph of each kind of thing), the map pins (where photographs were taken), and the bestiary's facts (bestiary.js).
+// It is kept in the browser beside the map; the ledger is told everything through events (tracking.js), so achievements stay
+// predicates over the ledger.
 //
-//  - DRAW: a card the Book knows comes to the hand at random (it costs a little of the mind; three charges, each back in eighteen
-//    seconds). REDRAW: once a draw, a different one. PLAY: its effect (effects.js) and its SEAL (sun, moon or star) into the clasp.
-//  - THE CLASP holds three seals. When it is full it is spent at once as an ASTRODYNE, stronger the more kinds of seal it holds:
-//    one kind a little of the mind back; two, the mind refilling twice as fast for a while; three, that and the mind filled, a lighter
-//    step and every card in play lasting half as long again.
-//
-// Cards come from photographs (veritome.js, photo.js): a photograph that satisfies a card's sitting is a copy of it (once a minute for
-// each card). The Book is kept in the browser with the map (it is the Courier's own), and its numbers go to the ledger.
-//
-//   book.has(id) / count(id) / spares(id) / give(id) / draw() / redraw() / play() / gain(id) / tick(dt)     book.hand    book.seals
+//   book.count(id) has(id) spares(id) freeUsed canTake(id) known(id) item(id)    book.give(id, from) -> bool    book.out(id, from)
+//   book.bind() -> n    book.gain(id) -> bool    book.condense(id) -> cubes    book.tick(dt)    book.filled / CARDS.length
 // ---------------------------------------------------------------------------------------
-import { ARCANA, ARCANA_BY_ID } from './arcana.js';
-import { EFFECTS } from './effects.js';
+import { CARDS, CARD, FREE_SLOTS, WORTH } from './cards.js';
+import { CURIOS } from '../treasure.js';
+import { Film } from './film.js';
+import { Bestiary } from './bestiary.js';
 import { sfx } from '../audio.js';
 
-const KEY = 'foolsfortune.veritome.v1';
-export const FREE_SLOTS = 12;
-const CHARGES = 3, RECHARGE = 18, DRAW_COST = 4, GIVE_COOL = 60;
+const KEY = 'foolsfortune.veritome.v2', OLD = 'foolsfortune.veritome.v1';
+export const LOOSE_TIME = 60;
+export { FREE_SLOTS };
 
 export class Book {
   constructor(game) {
     this.game = game;
-    this.cards = {}; // id -> copies held (page + spares)
-    this.photos = {}; // subject kind -> { score, stars, thumb, at }
-    this.pins = []; // where photographs were taken: { x, y, z, yaw, kind, stars }
-    this.hand = null; this.redrawn = false;
-    this.charges = CHARGES; this.rechargeT = 0;
-    this.seals = [];
-    this.active = []; // effects in play: { id, t, dur, state }
-    this.luck = 0; this.mults = {}; this.speed = {};
-    this.lastGive = {};
+    this.cards = {};   // card id -> copies in the Book (its page, then spares)
+    this.seen = {};    // card id -> true once it has ever been bound (its page shows its face from then on)
+    this.items = {};   // card id -> how many of it are held as the thing itself (gained)
+    this.loose = [];   // cards out of the Book: { id, t (seconds left), from }
+    this.photos = {};  // the Compendium: subject kind -> { score, stars, thumb, at }
+    this.pins = [];    // where photographs were taken: { x, y, z, yaw, kind, stars }
+    this.plates = [];  // the film's plates (film.js)
+    this.facts = {};   // the bestiary's known facts (bestiary.js)
+    this.migrated = {};
     this.load();
+    this.film = new Film(this.plates);
+    this.bestiary = new Bestiary(this.facts);
   }
-  get P() { return this.game.player; }
 
-  // ---------------------------------------------------------------- the binder
+  // ---------------------------------------------------------------- what the Book holds
   count(id) { return this.cards[id] || 0; }
   has(id) { return this.count(id) > 0; }
   spares(id) { return Math.max(0, this.count(id) - 1); }
+  known(id) { return !!this.seen[id]; }
+  item(id) { return this.items[id] || 0; }
   get freeUsed() { let n = 0; for (const id in this.cards) n += this.spares(id); return n; }
-  get known() { return ARCANA.filter((a) => this.has(a.id)); }
+  get filled() { let n = 0; for (const c of CARDS) if (this.has(c.id)) n++; return n; }
+  filledIn(section) { return CARDS.filter((c) => c.section === section && this.has(c.id)).length; }
+  /** Would another copy fit? (under its limit, and in a free slot if its page is taken) */
+  canTake(id) { const A = CARD[id], n = this.count(id); return !!A && n < A.limit && (n === 0 || this.freeUsed < FREE_SLOTS); }
 
-  /** A copy of a card (from a photograph). False if it drifts away (the Book is full of it, or the free slots are). */
-  give(id, why = 'photo') {
-    const A = ARCANA_BY_ID[id], now = performance.now() / 1000;
+  /** A copy into the Book. False if it drifts away (the limit, or the free slots, are full). */
+  give(id, from = 'photo') {
+    const A = CARD[id];
     if (!A) return false;
-    if (why === 'photo' && now - (this.lastGive[id] ?? -1e9) < GIVE_COOL) return false; // (a card's sitting gives once a minute)
-    this.lastGive[id] = now;
+    if (!this.canTake(id)) { this.game.events?.emit('card.drift', { card: id, from }); return false; }
     const n = this.count(id);
-    if (n >= A.limit || (n >= 1 && this.freeUsed >= FREE_SLOTS)) { this.game.events?.emit('card.drift', { card: id }); return false; }
     this.cards[id] = n + 1;
+    const first = !this.seen[id];
+    this.seen[id] = true;
     this.save();
-    this.game.events?.emit('card.get', { card: id, page: n === 0, rank: A.rank });
+    this.game.events?.emit('card.get', { card: id, page: n === 0, first, rank: A.rank, section: A.section, from });
     sfx.cardGet?.(n === 0);
     return true;
   }
 
-  // ---------------------------------------------------------------- the hand: draw, redraw, gain, play
-  draw() {
-    const g = this.game;
-    if (this.hand || !this.known.length) return false;
-    if (this.charges < 1) { g.log?.say('info', 'The Book will not open again so soon.', { key: 'bookcool', throttle: 2 }); return false; }
-    if (!g.lachryma.spend(DRAW_COST, 'draw')) { sfx.fizzle?.(); return false; }
-    this.charges--;
-    const pool = this.known;
-    this.hand = pool[Math.floor(Math.random() * pool.length)].id;
-    this.redrawn = false;
-    sfx.cardDraw?.();
-    g.events?.emit('card.draw', { card: this.hand });
-    return true;
+  /** A card that comes to the Courier outside the Book (a curio from a chest): it is loose until the Book is opened. */
+  out(id, from = 'chest') {
+    if (!CARD[id]) return;
+    this.loose.push({ id, t: LOOSE_TIME, from });
+    this.save();
+    this.game.events?.emit('card.out', { card: id, from });
   }
-  redraw() {
-    if (!this.hand || this.redrawn) return false;
-    const pool = this.known.filter((a) => a.id !== this.hand);
-    if (!pool.length) return false;
-    this.hand = pool[Math.floor(Math.random() * pool.length)].id;
-    this.redrawn = true;
-    sfx.cardDraw?.();
-    this.game.events?.emit('card.redraw', { card: this.hand });
-    return true;
+
+  /** The Book is opened: every loose card that fits is bound. */
+  bind() {
+    let n = 0;
+    for (let i = 0; i < this.loose.length; i++) {
+      const L = this.loose[i];
+      if (!this.canTake(L.id)) continue;
+      this.loose.splice(i--, 1);
+      if (this.give(L.id, 'bind')) n++;
+    }
+    if (n) this.game.events?.emit('card.bind', { n });
+    return n;
   }
-  /** Gain: a spare copy out of the Book and into the hand (the copy is used up). */
-  gain(id) {
-    if (this.spares(id) < 1) return false;
+
+  /** Gain: a copy out of the Book, made the thing itself. Only a card with an item form. */
+  gain(id, from = 'book') {
+    const A = CARD[id];
+    if (!A || A.form !== 'item' || !this.has(id)) return false;
     this.cards[id]--;
-    this.hand = id; this.redrawn = true;
+    if (!this.cards[id]) delete this.cards[id];
+    this.items[id] = this.item(id) + 1;
     this.save();
     sfx.cardDraw?.();
-    this.game.events?.emit('card.gain', { card: id });
-    return true;
-  }
-  play() {
-    const id = this.hand;
-    if (!id) return false;
-    this.hand = null;
-    const A = ARCANA_BY_ID[id];
-    this.begin(id);
-    this.seals.push(A.seal);
-    sfx.cardPlay?.(A.seal);
-    this.game.events?.emit('card.play', { card: id, seal: A.seal });
-    if (this.seals.length >= 3) this.astrodyne();
+    this.game.events?.emit('card.gain', { card: id, from });
     return true;
   }
 
-  /** Put an effect in play (a card's, or the Wheel's echo of another's). */
-  begin(id, { echo = false } = {}) {
-    const A = ARCANA_BY_ID[id], E = EFFECTS[id];
-    if (!E) return;
-    const prev = this.active.find((a) => a.id === id);
-    if (prev) { prev.t = 0; return; }
-    const ctx = { game: this.game, P: this.P, book: this };
-    let state = {};
-    try { state = E.start?.(ctx) || {}; } catch (e) { console.warn('card', id, e); }
-    if (A.dur > 0) this.active.push({ id, t: 0, dur: A.dur, state });
-    if (echo) this.game.events?.emit('card.echo', { card: id });
+  /** Condense a spare copy into cubes (by its rank). */
+  condense(id) {
+    const A = CARD[id];
+    if (!A || this.spares(id) < 1) return 0;
+    this.cards[id]--;
+    const worth = WORTH[A.rank] || 10;
+    this.game.cubes?.earn(worth, 'condense');
+    this.save();
+    this.game.events?.emit('card.condense', { card: id, cubes: worth });
+    return worth;
   }
-
-  /** The clasp is full: it is spent, stronger the more kinds of seal it held. */
-  astrodyne() {
-    const g = this.game, kinds = new Set(this.seals).size;
-    this.seals = [];
-    g.lachryma.gain(10, 'astrodyne');
-    if (kinds >= 2) this.timed('astrodyne', 15, () => g.lachryma.addModifier('astrodyne', { regenMult: 2 }), () => g.lachryma.removeModifier('astrodyne'));
-    if (kinds >= 3) {
-      g.lachryma.gain(g.lachryma.max, 'astrodyne');
-      this.timed('astrodyne.step', 15, () => { this.speed.astrodyne = 1.1; }, () => { delete this.speed.astrodyne; });
-      for (const a of this.active) a.dur += A_DUR(a) * 0.5;
-    }
-    sfx.astrodyne?.(kinds);
-    g.events?.emit('card.astrodyne', { kinds });
-  }
-  /** A small timed rule of the Book's own (the Astrodyne's): on now, off after `dur`. */
-  timed(id, dur, on, off) {
-    const prev = this.active.find((a) => a.id === id);
-    if (prev) { prev.t = 0; return; }
-    on();
-    this.active.push({ id, t: 0, dur, state: {}, off });
-  }
-
-  /** What the cards in play make of a thing (Strength: 'melee' x2). */
-  mult(what) { return this.mults[what] ?? 1; }
-  get speedMult() { let m = 1; for (const k in this.speed) m *= this.speed[k]; return m; }
 
   tick(dt) {
-    if (this.charges < CHARGES) { this.rechargeT += dt; if (this.rechargeT >= RECHARGE) { this.rechargeT = 0; this.charges++; } }
-    const ctx = { game: this.game, P: this.P, book: this };
-    for (let i = this.active.length - 1; i >= 0; i--) {
-      const a = this.active[i];
-      a.t += dt;
-      const E = EFFECTS[a.id];
-      if (a.t < a.dur) { try { E?.tick?.(ctx, dt, a.state); } catch (e) { console.warn('card', a.id, e); } continue; }
-      this.active.splice(i, 1);
-      try { if (a.off) a.off(); else E?.end?.(ctx, a.state); } catch (e) { console.warn('card', a.id, e); }
-      if (!a.off) this.game.events?.emit('card.fade', { card: a.id });
+    if (!this.migrated.curio && this.game.ledger) this.migrateCurios();
+    for (let i = this.loose.length - 1; i >= 0; i--) {
+      const L = this.loose[i];
+      L.t -= dt;
+      if (L.t > 0) continue;
+      this.loose.splice(i, 1);
+      const A = CARD[L.id];
+      if (A?.form === 'item') { this.items[L.id] = this.item(L.id) + 1; this.game.events?.emit('card.gain', { card: L.id, from: 'time' }); }
+      else this.game.events?.emit('card.drift', { card: L.id, from: 'time' });
+      this.save();
     }
   }
-  clearEffects() { for (const a of [...this.active]) { a.t = a.dur; } this.tick(0); }
+
+  /** Curios found before the Book kept them (the ledger counted them) are bound onto their pages, once. */
+  migrateCurios() {
+    const Lg = this.game.ledger;
+    for (const c of CURIOS) {
+      const id = `curio.${c.id}`;
+      if (Lg.get(`curio.${c.id}`) > 0 && !this.seen[id] && !this.item(id)) { this.cards[id] = 1; this.seen[id] = true; }
+    }
+    this.migrated.curio = true;
+    this.save();
+  }
 
   // ---------------------------------------------------------------- kept in the browser
   save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ cards: this.cards, photos: this.photos, pins: this.pins.slice(-60) })); } catch { /* storage full or unavailable: the Book still works this session */ }
+    const plates = this.plates.slice(-40);
+    const s = { cards: this.cards, seen: this.seen, items: this.items, loose: this.loose, photos: this.photos, pins: this.pins.slice(-60), plates, facts: this.facts, migrated: this.migrated };
+    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {
+      // (storage full: keep everything but the pictures on the film)
+      try { localStorage.setItem(KEY, JSON.stringify({ ...s, plates: plates.map((p) => ({ ...p, thumb: null })) })); } catch { /* unavailable: the Book still works this session */ }
+    }
   }
   load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) { this.cards = s.cards || {}; this.photos = s.photos || {}; this.pins = s.pins || []; }
+      if (s) {
+        Object.assign(this, { cards: s.cards || {}, seen: s.seen || {}, items: s.items || {}, loose: s.loose || [], photos: s.photos || {}, pins: s.pins || [], plates: s.plates || [], facts: s.facts || {}, migrated: s.migrated || {} });
+        return;
+      }
+      // the first Book (the Arcana only, kept under their bare names): its cards and photographs carry over
+      const o = JSON.parse(localStorage.getItem(OLD) || 'null');
+      if (o) {
+        for (const [k, n] of Object.entries(o.cards || {})) if (CARD[`arcana.${k}`] && n > 0) { this.cards[`arcana.${k}`] = Math.min(n, CARD[`arcana.${k}`].limit); this.seen[`arcana.${k}`] = true; }
+        this.photos = o.photos || {}; this.pins = o.pins || [];
+      }
     } catch { /* nothing kept */ }
   }
-  erase() { this.cards = {}; this.photos = {}; this.pins = []; this.hand = null; this.seals = []; this.save(); }
+  erase() {
+    for (const k of ['cards', 'seen', 'items', 'photos', 'facts', 'migrated']) for (const id in this[k]) delete this[k][id];
+    this.loose.length = 0; this.pins.length = 0; this.plates.length = 0;
+    this.save();
+  }
 }
-const A_DUR = (a) => ARCANA_BY_ID[a.id]?.dur || a.dur;

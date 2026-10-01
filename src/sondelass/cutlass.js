@@ -162,7 +162,7 @@ export class Cutlass {
       if (_p.distanceToSquared(P.pos) > 36) continue;
       if (segDist(_a, _b, _p) > 0.22 + ent.P.rMax * 0.9) continue;
       this.hit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * s.dmg * (g.veritome?.mult('melee') ?? 1), _p.clone(), dir.clone(), s.power);
+      g.breakables.damage(ent, DMG * s.dmg, _p.clone(), dir.clone(), s.power);
       g.events?.emit('cut.hit', { what: 'pot', combo: this.combo });
     }
     for (const c of [...g.clappers.list]) {
@@ -226,7 +226,7 @@ export class Cutlass {
       _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
       if (segDist(from, to, _p) > STING.radius * 0.5 + ent.P.rMax) continue;
       this.stHit.add(ent); struck++;
-      g.breakables.damage(ent, DMG * STING.dmg * (g.veritome?.mult('melee') ?? 1), _p.clone(), dir.clone(), STING.power);
+      g.breakables.damage(ent, DMG * STING.dmg, _p.clone(), dir.clone(), STING.power);
       this.impact(STING.dmg, _c.copy(_p).addScaledVector(dir, -0.7), _e.copy(_p).addScaledVector(dir, 0.7));
       g.events?.emit('cut.hit', { what: 'pot', combo: 'stinger' });
     }

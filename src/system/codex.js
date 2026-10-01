@@ -100,8 +100,8 @@ export class Codex {
     r.appendChild(cx);
 
     const head = el('header');
-    head.appendChild(el('h2', '', 'THE SYSTEM'));
-    head.appendChild(el('span', 'sub', 'arts are learned by doing · B to close'));
+    head.appendChild(el('h2', '', 'THE CODEX'));
+    head.appendChild(el('span', 'sub', 'the Veritome\'s own pages · arts are learned by doing · B to close'));
     const lab = el('div', `lab${s.lab ? ' on' : ''}`, 'LAB MODE <i></i>');
     lab.title = 'Everything unlocked: for testing and for showing the game off';
     lab.onclick = () => s.setLab(!s.lab);

@@ -1238,25 +1238,18 @@ class Sfx {
     const f = page ? [659, 880, 1319] : [784, 988];
     f.forEach((x, i) => this.tone(t + i * 0.09, 0.9, { f0: x, f1: x, type: 'sine', gain: 0.16, dest: d }));
   }
-  /** A card drawn from the Book: a page turned. */
+  /** A card out of the Book, or a page turned. */
   cardDraw() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.5, 0.4);
     this.noise(t, 0.18, { type: 'bandpass', f0: 2600, f1: 4200, q: 0.9, gain: 0.35, attack: 0.02, dest: d });
   }
-  /** A card played: its seal's note, struck. */
-  cardPlay(seal = 'sun') {
+  /** The darkroom: the plates come up out of the developer, one soft note each, climbing. */
+  develop(n = 1) {
     if (!this.ok()) return;
-    const f = { sun: 523, moon: 440, star: 698 }[seal] || 523, t = this.ctx.currentTime, d = this.out(0.7, 1);
-    this.noise(t, 0.12, { type: 'bandpass', f0: 3000, f1: 6000, q: 1, gain: 0.3, dest: d });
-    this.tone(t, 1.4, { f0: f, f1: f, type: 'triangle', gain: 0.22, dest: d });
-    this.tone(t + 0.05, 1.2, { f0: f * 1.5, f1: f * 1.5, type: 'sine', gain: 0.1, dest: d });
-  }
-  /** The clasp spent: a chord, fuller the more kinds of seal it held. */
-  astrodyne(kinds = 1) {
-    if (!this.ok()) return;
-    const t = this.ctx.currentTime, d = this.out(0.8, 1);
-    [392, 494, 587, 784].slice(0, 1 + kinds).forEach((f, i) => this.tone(t + i * 0.06, 1.8, { f0: f, f1: f, type: 'sine', gain: 0.18, dest: d }));
+    const t = this.ctx.currentTime, d = this.out(0.6, 1);
+    this.noise(t, 0.5, { type: 'lowpass', f0: 900, f1: 400, gain: 0.18, attack: 0.08, dest: d });
+    [523, 659, 784, 1047].slice(0, Math.min(4, 1 + Math.floor(n / 6))).forEach((f, i) => this.tone(t + 0.15 + i * 0.11, 1.1, { f0: f, f1: f, type: 'sine', gain: 0.12, dest: d }));
   }
 }
 
