@@ -26,9 +26,11 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4( posi
 // down: average 4 bilinear taps a texel apart (a 4 x 4 area), and on the first step keep only what is above the threshold
 const DOWN = `
 uniform sampler2D tSrc; uniform vec2 uTexel; uniform float uThresh, uKnee; uniform bool uFirst; varying vec2 vUv;
+// (a pixel some shader left NaN or infinite would spread through the blurs into black blocks: each tap is made safe first)
+vec3 safe( vec3 c ) { return ( any( isnan( c ) ) || any( isinf( c ) ) ) ? vec3( 0.0 ) : clamp( c, 0.0, 64.0 ); }
+vec3 tap( vec2 o ) { return safe( texture2D( tSrc, vUv + uTexel * o ).rgb ); }
 void main() {
-	vec3 c = ( texture2D( tSrc, vUv + uTexel * vec2( -1.0, -1.0 ) ).rgb + texture2D( tSrc, vUv + uTexel * vec2( 1.0, -1.0 ) ).rgb
-		+ texture2D( tSrc, vUv + uTexel * vec2( -1.0, 1.0 ) ).rgb + texture2D( tSrc, vUv + uTexel * vec2( 1.0, 1.0 ) ).rgb ) * 0.25;
+	vec3 c = ( tap( vec2( -1.0, -1.0 ) ) + tap( vec2( 1.0, -1.0 ) ) + tap( vec2( -1.0, 1.0 ) ) + tap( vec2( 1.0, 1.0 ) ) ) * 0.25;
 	if ( uFirst ) {
 		float l = max( c.r, max( c.g, c.b ) );
 		float s = clamp( l - uThresh + uKnee, 0.0, 2.0 * uKnee ); s = s * s / ( 4.0 * uKnee + 1e-4 );
@@ -50,6 +52,7 @@ const COMP = `
 uniform sampler2D tScene, tA, tB; uniform float uGlow, uGrade; varying vec2 vUv;
 void main() {
 	vec3 c = texture2D( tScene, vUv ).rgb;
+	if ( any( isnan( c ) ) || any( isinf( c ) ) ) c = vec3( 0.0 );
 	c += ( texture2D( tA, vUv ).rgb * 0.6 + texture2D( tB, vUv ).rgb * 0.55 ) * uGlow;
 	gl_FragColor = vec4( c, 1.0 );
 	#include <tonemapping_fragment>

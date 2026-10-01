@@ -53,6 +53,8 @@ npm run build      # static bundle in dist/
 | F2 | hide the interface (cycle: everything / the frame of a shot only / nothing but the picture), for a clean screenshot |
 | F3 | physics debug wireframe |
 | \\ | fold the log away to its tabs (or its – button); again to open it |
+| Enter / / | the **chat line** in the log: say something, or a command (`/help`, `/sit`, `/dance`, `/wave`, `/em ...`, `/music fortune`); Enter sends, Esc puts it away, ↑ ↓ go back through what was sent |
+| F at one of the clay folk | **talk** (F, Space, Enter or a click: finish the line, then turn the page; W / S or 1–4 and F to choose) |
 
 ## Tuning
 
@@ -170,9 +172,23 @@ The voice is **the game's own**, synthesized from first principles (`src/system/
 
 ## The music
 
-A theme plays where a room has one (`src/music/`): a score as data, played live by synthesized instruments scheduled ahead of the audio clock. **MUSIC** in the Codex header turns it on or off.
+A theme plays where a room has one (`src/music/`): a score as data, played live by synthesized instruments scheduled ahead of the audio clock. **MUSIC** in the Codex header turns it on or off; **SOUND TEST** in the Codex plays any track everywhere until it is stopped (or `/music fortune`, `/music dunes`, `/music stop`).
+
+- **The main theme: "Fool's Fortune"** (`music/fortune.js`, played by `music/arranger.js` on `music/band.js`), on the title (and the pause). A minor, 140 bpm, about two and a half minutes. Its leitmotif is **the Fool's step**: A, B, C and a leap up to E, and what follows the leap says which world it is in: the **East** answers F E C B in the Japanese **In scale** on E (shakuhachi with its scoop and breath, a koto ostinato, taiko, a drone of A and E), the **West** answers D C B G in the **Guidonian hexachord** (a jazz harmonica and brass over Am F C G). They take turns (an East verse, a West verse), a build (a snare roll, a riser, the whole mix opening through a filter, the flute holding E and bending, a breath drawn in) and a drop (half-time drums with the taiko inside them, sub and a wobbling growl, supersaws pumped against the kick, an **electric guitar wailing the motif** and the shakuhachi answering it). In the breakdown the hexachord **mutates** to its soft form (Dm Bb F C), as Guido's singers changed hexachords mid-melody; the second build climbs the hard hexachord (ut re mi fa sol la on G) to E in the brass, and the second drop has everything. Breath is life: the tunes are blown (flute, reed, horn); the synths are a thin film over them. Prior art: Crywolf's "Datura" for the shape, the Final Fantasy and Kingdom Hearts main themes for a motif that comes back in every arrangement, Okami and Ghost of Tsushima for Japanese instruments in a modern score.
 
 - **The Dunes: "Mirage of the Still Water"** (`music/dunes.js`). Spacey JRPG desert jazz at 84 bpm, swung: the melody in **D# minor pentatonic blues** (D# F# G# A A# C#, the A the blue note) over minor ninths, a lydian B maj7#11, C#13, an altered A#7#9 and, in the bridge, the Neapolitan E maj7#11. Intro, A, A', B, A'', a tag, then round again from A. Vibraphone on the A sections, a ney (the desert's reed flute) on the bridge, an FM Rhodes comping, an upright in two and walking in the bridge, brushes and ride, a darbuka and a finger cymbal, a high pad, all in a long hall with a dotted-eighth echo (`music/player.js`).
+
+## The chat line and emotes
+
+The log (`gamelog.js`) takes typing: **Enter** opens a line at its foot (**/** opens it with the slash typed), Enter sends, Esc puts it away, the arrow keys go back through what was sent. Plain words are said aloud (`Courier : hello`, in the new CHAT tab); a slash is a command (`chat.js`, a table any feature adds its own to with `chat.add`): `/help`, the **emotes** `/sit` `/dance` `/talk` `/kneel` `/nod` `/no` `/fold` `/wave` `/faint` (each a Universal Animation Library clip baked onto the Courier: sitting goes in, holds and stands up; a faint stays down until she moves; moving ends any of them: `emotes.js`, `moves/emote.js`), `/em <words>` for an emote of your own, `/where`, `/clear`, `/voice`, `/music`, `/window`. The clay folk notice: wave at one and it hops for joy; faint in front of one and it jumps. Prior art: Final Fantasy XI's and XIV's chat line and emotes.
+
+## The clay folk
+
+Four people live in the game now (`src/npc/`), clay folk: clapperjars grown up and glazed, each with a hat that says what it does. **Mistress Saggar** keeps the kiln (the workshop, by the kiln: celadon, an oxblood headscarf), **Pip** is her apprentice, hiding in the basement hub (raw bisque, a cap), **Old Grog** fishes the Weir from the pier (tenmoku, a straw hat), **Raku** keeps the Weir's treasury beside the Tithe (crackled raku with a copper lustre, a fez). F talks.
+
+- **The dialogue box** (`npc/dialogue.js`): the bars come in, the camera finds a two-shot from the side, the HUD steps away, and a window opens with the speaker's name on a tab. The words come a letter at a time at a pace that is part of what is said (quicker in fear and anger, slower in sorrow and awe, a beat at a comma, a breath at a full stop), and **the letters move with the feeling**: fear trembles and shakes, anger throbs red, sorrow sinks, joy bobs, awe shimmers in the Lachryma's colours, confusion wobbles, a whisper is small; a shouted word is big and lands with a pop. Choices are the Courier's words (the glove points; W/S or a number, and F). Every finished line is also written to the log (FFXI's `Name : words`), and the folk know what you have done: Saggar counts the pots you broke, Pip the clapperjars, Grog your catch, Raku your cubes (`npc/talks.js`).
+- **Clayese** (`npc/clayese.js`): the folk's voice, Animal Crossing's idea made of bells and clay. Each letter as it appears is a struck note on the speaker's own scale (the folk of the East speak in the In and Yo pentatonics, of the West in the Guidonian hexachord): vowels ring like a handbell, consonants clink like a lid set down on its jar, s and f breathe, m and n hum; a question rises, a statement falls, a shouted word leaps, and the mood moves it all (fear trembles high and quick, anger clanks low and loud, sorrow falls slowly).
+- **The body answers** (`npc/folk.js`): every line's mood plays on the folk the way the treasure chests show theirs. Joy hops and squashes with warm sparks and a note, fear shivers and crouches with the lid chattering and sweat flicking off, anger puffs up and glows red with steam from under the lid, sorrow droops and sways with tears falling, surprise jumps and pops its lid, awe rises in drifting Lachryma motes, confusion tilts with motes circling; the lid lifts on every syllable. The big moments burst (`{burst}`): a ring of particles, a glyph, the camera's vignette, the room's light flinching red or blue.
 
 ## Treasure: chests, cubes, curios and the Tithe
 
@@ -648,13 +664,15 @@ runtime IK correction on the contact points.
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
 | `src/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
 | `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, the presentation (resolution, upscale, smooth shading, shadow), the cel ramp and rim (`toon.js`) and the glow and grade (`glow.js`) |
-| `src/ui/theme.js` | the windows' kit: the fonts, the nine-slice frame, the glove, the unfolding, the menu sounds, the window colours |
+| `src/ui/theme.js` | the windows' kit: the fonts, the nine-slice frame, the gloves, the unfolding, the menu sounds, the window colours |
+| `src/chat.js`, `src/emotes.js`, `src/moves/emote.js` | the chat line's commands, the emotes and the tech that plays them |
+| `src/npc/` | the clay folk: who they are and where they stand (`people.js`), their bodies and feelings (`folk.js`), their voice (`clayese.js`), the dialogue box (`dialogue.js`) and what they say (`talks.js`); `moves/talk.js` holds the Courier while they talk |
 | `src/tools/belt.js`, `src/tools/grip.js`, `src/tools/draw.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun, the Sondelass, the Soul Brush and the Veritome on it); the grip socket measured from a clip; the draw |
 | `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
 | `src/moves/veritome.js`, `src/veritome/` | the Veritome: the book and its open hold (shared with the Survey), the lens and its viewfinder, the subjects and the photograph's score, the film and the darkroom, the bestiary, the Book (the bank: designated pages, free slots, ranks and limits, Condense) and its card catalogue, the Codex shelf |
 | `src/pneuka/` | the Pneuka Box: the item registry, the box's rules (slots, the line, store / take out), things on the ground, item icons rendered from the models, the window (P) |
 | `src/system/voice.js`, `src/system/speech/` | the System's voice: its rules, and the game's own formant speech synthesizer (lexicon from CMUdict + NRL rules, Klatt-style cascade/parallel synthesis) |
-| `src/music/` | the music: the scores (the Dunes' theme) and the player (synthesized band, lookahead scheduling, ducking) |
+| `src/music/` | the music: the scores (the Dunes' theme, the main theme), the players (the Dunes' band; the arranger with its band for music that builds and drops), the sound test |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
@@ -738,6 +756,8 @@ stay stiff under heavy pots. The links are sensors because contacts on multibody
 produce NaNs; cutting a rope needs Rapier 0.21+ (0.14 panics on joint removal).
 
 ## Character assets
+
+The white gloves of the interface (`src/assets/ui/`: pointing, the mouse's pointer, the fist) were drawn by the game's maker.
 
 Fonts (SIL Open Font License 1.1, bundled in `src/assets/fonts/`, Latin subsets from Google Fonts): **M PLUS Rounded 1c** (The M+ Project / Coji Morishita), **Cinzel** and **Cinzel Decorative** (Natanael Gama), **IM Fell English** (Igino Marini, after the Fell types), **DotGothic16** (Fontworks Inc.).
 

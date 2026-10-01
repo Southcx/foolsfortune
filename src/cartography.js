@@ -48,7 +48,7 @@ const CSS = `
 #mapui .bar { position: absolute; left: 0; right: 0; top: 0; display: flex; gap: 10px; align-items: center; padding: 12px 18px; background: linear-gradient(rgba(20,9,6,.95), rgba(20,9,6,0)); pointer-events: none; }
 #mapui .bar > * { pointer-events: auto; }
 #mapui h2 { margin: 0; font-size: 18px; letter-spacing: .24em; color: var(--accent); font-weight: normal; flex: 1; }
-#mapui button { font: inherit; color: var(--ink); background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); padding: 5px 12px; border-radius: 3px; cursor: pointer; letter-spacing: .1em; }
+#mapui button { font: inherit; color: var(--ink); background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); padding: 5px 12px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); letter-spacing: .1em; }
 #mapui button.on { background: rgba(var(--jsel),.45); border-color: var(--accent); }
 #mapui button:hover { background: rgba(var(--jsel),.35); }
 #mapui .side { position: absolute; left: 18px; bottom: 16px; padding: 10px 14px; background: rgba(28,13,8,.82); border: 1px solid rgba(255,178,122,.3); border-radius: 4px; max-width: 320px; line-height: 1.6; cursor: default; }

@@ -18,6 +18,7 @@ export class Input {
     el.addEventListener('auxclick', (e) => e.preventDefault());
 
     addEventListener('keydown', (e) => {
+      const tag = e.target?.tagName; if (tag === 'INPUT' || tag === 'TEXTAREA') return; // (typing in a field: the chat line, a save code)
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
       this.down.add(e.code);

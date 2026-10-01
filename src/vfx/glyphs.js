@@ -46,7 +46,19 @@ function burstCanvas() {
   return c;
 }
 
+// the vein of anger (the manga mark: four bulging strokes about a cross), drawn rather than written
+function veinCanvas() {
+  const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d'); g.translate(s / 2, s / 2); g.lineCap = 'round';
+  const stroke = (w, col) => {
+    g.strokeStyle = col; g.lineWidth = w;
+    for (let i = 0; i < 4; i++) { g.save(); g.rotate(i * Math.PI / 2); g.beginPath(); g.moveTo(22, -78); g.quadraticCurveTo(26, -26, 78, -22); g.stroke(); g.restore(); }
+  };
+  stroke(46, '#150806'); stroke(26, '#ffffff'); stroke(14, '#ff3b2a');
+  return c;
+}
 const KINDS = {
+  vein: { draw: veinCanvas, w: 256, h: 256, aspect: 1 },
   bang1: { text: '!', w: 256, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1 },
   bang2: { text: '!!', w: 384, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1.5 },
   bang3: { text: '!!!', w: 512, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 2 },
@@ -59,7 +71,7 @@ const KINDS = {
 const tex = (kind) => {
   if (CACHE.has(kind)) return CACHE.get(kind);
   const K = KINDS[kind];
-  const t = new THREE.CanvasTexture(kind === 'burst' ? burstCanvas() : glyphCanvas(K.text, K.w, K.h, K.font));
+  const t = new THREE.CanvasTexture(kind === 'burst' ? burstCanvas() : K.draw ? K.draw() : glyphCanvas(K.text, K.w, K.h, K.font));
   t.colorSpace = THREE.SRGBColorSpace;
   CACHE.set(kind, t);
   return t;

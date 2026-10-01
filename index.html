@@ -27,7 +27,7 @@
     #charge.full .arc { stroke: #fff1dc; animation: pulse .25s infinite alternate; }
     @keyframes pulse { to { stroke-width: 4; } }
     /* the HUD wears the windows' frame (src/ui/theme.js): a status plate, a palette of shells, the System's numerals */
-    #lachryma { position: absolute; right: 18px; bottom: 80px; width: 284px; box-sizing: border-box; padding: 2px 6px 4px; border: 12px solid transparent;
+    #lachryma { position: absolute; right: 18px; bottom: 94px; width: 284px; box-sizing: border-box; padding: 2px 6px 4px; border: 12px solid transparent;
       border-image: var(--jframe) 14 / 12px / 0 stretch; border-radius: 8px; background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .84)) border-box;
       text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
     #lachryma .lab { font: 600 12px var(--f-title); letter-spacing: .2em; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; color: var(--accent); }
@@ -52,7 +52,7 @@
     #shells .slot b { position: absolute; top: 1px; right: 4px; font: 12px var(--f-sys); color: var(--accent); font-weight: normal; }
     #shells .slot.sel { opacity: 1; border-color: var(--jhi); background: linear-gradient(180deg, rgba(var(--jsel), .75), rgba(var(--jbot), .9)); transform: translateY(-4px);
       box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 0 10px rgba(255,210,150,.35); }
-    #shells .hand { position: absolute; top: -33px; left: 0; width: 24px; height: 32px; background-size: 24px 32px; image-rendering: pixelated; pointer-events: none;
+    #shells .hand { position: absolute; top: -46px; left: 0; width: 48px; height: 48px; background: var(--jglove-down) 0 0 / 48px 48px no-repeat; image-rendering: pixelated; pointer-events: none;
       filter: drop-shadow(1px 2px 0 rgba(8,3,1,.6)); transition: transform .06s steps(2); animation: jbob .5s steps(1) infinite; }
     @keyframes jbob { 50% { translate: 0 2px; } }
     #shells .slot.empty { opacity: .3; }
@@ -61,15 +61,15 @@
     #speed { position: absolute; left: 16px; bottom: calc(clamp(170px, 26vh, 300px) + 20px); font: 500 11px var(--f-ui); letter-spacing: .08em; opacity: .8; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
     #speed b { font: 16px var(--f-sys); color: #fff1dc; font-weight: normal; }
     #speed i { font-style: normal; color: var(--accent); }
-    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(28,13,8,.55); z-index: 10; cursor: pointer; }
+    #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(28,13,8,.55); z-index: 10; cursor: var(--jcur-pointer, pointer); }
     #overlay .card { background: var(--panel); border: 1px solid rgba(255,178,122,.35); padding: 22px 26px 0; max-width: 640px; width: calc(100% - 32px); box-sizing: border-box;
       max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,178,122,.5) transparent; }
     #overlay .card table { font-size: 12px; line-height: 1.3; }
     #overlay details { margin-top: 10px; font-size: 12px; }
-    #overlay summary { cursor: pointer; color: var(--accent); opacity: .9; line-height: 1.4; padding: 4px 0; }
+    #overlay summary { cursor: var(--jcur-pointer, pointer); color: var(--accent); opacity: .9; line-height: 1.4; padding: 4px 0; }
     #overlay details table { margin-top: 6px; }
     #overlay .go { position: sticky; bottom: 0; margin: 12px -26px 0; padding: 14px 0 12px; background: linear-gradient(rgba(var(--jbot), 0), rgba(var(--jbot), .97) 35%); }
-    #overlay .go .opt { cursor: pointer; font: 600 17px var(--f-title); letter-spacing: .34em; color: #fff1dc; padding: 2px 6px 2px 12px; }
+    #overlay .go .opt { cursor: var(--jcur-pointer, pointer); font: 600 17px var(--f-title); letter-spacing: .34em; color: #fff1dc; padding: 2px 6px 2px 12px; }
     #overlay { flex-direction: column; gap: 6px; background: radial-gradient(ellipse at 50% 38%, rgba(28,13,8,.3), rgba(10,4,2,.86)); }
     #overlay .card { cursor: default; max-height: calc(100% - 170px); }
     #overlay .logo { text-align: center; pointer-events: none; line-height: 1; }

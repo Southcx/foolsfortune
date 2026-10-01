@@ -36,8 +36,11 @@ export const CLASSES = {
   angle: { color: '#9fd3d6', tab: 'BATTLE' },
   loot: { color: '#ffd98a', tab: 'BATTLE' },
   other: { color: '#c9b09f', tab: 'BATTLE' }, // (what others did: a clapperjar, the world itself)
+  say: { color: '#ffffff', tab: 'CHAT' }, // (said aloud: the Courier's chat line, and the clay folk's words)
+  emote: { color: '#f2c6e6', tab: 'CHAT' },
+  npc: { color: '#e6f0ff', tab: 'CHAT' },
 };
-const TABS = ['ALL', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
+const TABS = ['ALL', 'CHAT', 'BATTLE', 'MOVE', 'EVENT', 'SYSTEM'];
 
 const CSS = `
 #chatlog { position: absolute; left: 12px; bottom: 12px; width: min(40vw, 580px); height: clamp(170px, 26vh, 300px); box-sizing: border-box; display: flex; flex-direction: column;
@@ -54,11 +57,18 @@ const CSS = `
 #chatlog .ln { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,.6); word-wrap: break-word; }
 #chatlog .ts { color: #a98572; margin-right: 8px; }
 #chatlog .ln.ach { color: #ffd45e; }
-#chatlog .min { margin-left: auto; padding: 0 8px 2px; color: #e8c3a8; border: 1px solid #9a5a44; border-bottom: none; border-radius: 3px 3px 0 0; cursor: pointer; pointer-events: auto; font-size: 12px; line-height: 14px; text-shadow: 1px 1px 0 #000; background: rgba(28,13,8,.4); }
+#chatlog .min { margin-left: auto; padding: 0 8px 2px; color: #e8c3a8; border: 1px solid #9a5a44; border-bottom: none; border-radius: 3px 3px 0 0; cursor: var(--jcur-pointer, pointer); pointer-events: auto; font-size: 12px; line-height: 14px; text-shadow: 1px 1px 0 #000; background: rgba(28,13,8,.4); }
 #chatlog .min.new { color: #ffd67e; border-color: #ffd67e; }
 #chatlog .min:hover { background: rgba(196,106,69,.4); color: #fff1e0; }
 #chatlog.mini { height: auto; }
 #chatlog.mini .body, #chatlog.mini .foot { display: none; }
+#chatlog .line { display: none; align-items: center; gap: 6px; margin: 0 4px 2px; padding: 2px 6px; border: 1px solid rgba(var(--jsel), .8); border-radius: 3px;
+  background: rgba(8,3,1,.55); pointer-events: auto; }
+#chatlog.typing .line { display: flex; }
+#chatlog .line b { font: 16px var(--f-sys); color: var(--accent); font-weight: normal; }
+#chatlog .line input { flex: 1; min-width: 0; background: none; border: none; outline: none; color: #fff; font: 16px var(--f-sys); caret-color: #ffd98a; padding: 0;
+  text-shadow: 1px 1px 0 #000; user-select: text; }
+#chatlog.typing { opacity: 1 !important; }
 #chatlog .foot { padding: 1px 6px 0; font: 500 9.5px var(--f-ui); color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
 `;
 
@@ -77,7 +87,7 @@ export class GameLog {
     this.quiet = new Map();
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'chatlog';
-    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="foot"><span>PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
+    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="line"><b>›</b><input maxlength="200" spellcheck="false" autocomplete="off" placeholder="say something, or /help"></div><div class="foot"><span>ENTER CHAT · / COMMAND · PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
     (document.getElementById('hud') || document.body).appendChild(root);
     this.root = root;
     this.body = root.querySelector('.body');
@@ -90,12 +100,58 @@ export class GameLog {
     this.setMini(m);
     this.setTab(0);
     addEventListener('keydown', (e) => this.key(e));
+    // the chat line (chat.js runs what is sent)
+    this.field = root.querySelector('.line input');
+    this.history = []; this.hi = -1; this.typing = false;
+    this.field.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); const v = this.field.value; this.close(); this.send(v); }
+      else if (e.code === 'Escape') { e.preventDefault(); this.closedAt = performance.now(); this.close(); }
+      else if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+        e.preventDefault();
+        if (!this.history.length) return;
+        this.hi = e.code === 'ArrowUp' ? Math.min(this.history.length - 1, this.hi + 1) : Math.max(-1, this.hi - 1);
+        this.field.value = this.hi < 0 ? '' : this.history[this.history.length - 1 - this.hi];
+      }
+    });
+    this.field.addEventListener('blur', () => { if (this.typing) setTimeout(() => { if (document.activeElement !== this.field) this.close(); }, 0); });
   }
+
+  /** Open the chat line (with `prefix` already typed). */
+  open(prefix = '') {
+    if (this.mini) this.setMini(false);
+    this.typing = true; this.hi = -1;
+    this.root.classList.add('typing');
+    this.field.value = prefix;
+    this.field.focus({ preventScroll: true });
+    this.game.input?.down.clear(); // (the keys held as it opened are let go: the Courier stops)
+    this.body.scrollTop = this.body.scrollHeight;
+    this.wake();
+  }
+  close() {
+    if (!this.typing) return;
+    this.typing = false;
+    this.root.classList.remove('typing');
+    this.field.blur();
+  }
+  send(text) {
+    const t = String(text || '').trim();
+    if (!t) return;
+    if (this.history[this.history.length - 1] !== t) this.history.push(t);
+    if (this.history.length > 50) this.history.shift();
+    this.onSend?.(t);
+  }
+  /** Typing, or just stopped with Esc (which also lets the mouse go: that is not a pause). */
+  get busy() { return this.typing || performance.now() - (this.closedAt || 0) < 500; }
+  clear() { this.lines.length = 0; this.last = null; this.body.replaceChildren(); }
 
   key(e) {
     if (!this.game.input?.enabled || e.repeat && e.code !== 'PageUp' && e.code !== 'PageDown') return;
     const tag = document.activeElement?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if ((e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Slash') && !e.repeat && (this.canOpen?.() ?? true)) {
+      e.preventDefault(); this.open(e.code === 'Slash' ? '/' : ''); return;
+    }
     if (e.code === 'PageUp') { this.body.scrollTop -= this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
     else if (e.code === 'PageDown') { this.body.scrollTop += this.body.clientHeight * 0.8; this.wake(); e.preventDefault(); }
     else if (e.code === 'End') { this.body.scrollTop = this.body.scrollHeight; this.wake(); }

@@ -34,6 +34,7 @@ import { CREATURES } from './veritome/bestiary.js';
 import { itemOf } from './pneuka/items.js';
 import { LURES } from './angling/lures.js';
 import { SUBJECTS } from './veritome/subjects.js';
+import { EMOTES } from './emotes.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -181,7 +182,7 @@ export class Tracking {
     on('updraft.enter', () => L.inc('updraft.enter'));
 
     // ---- the movement arts
-    on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
+    on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); if (e.id !== 'emote' && e.id !== 'talk') first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
     on('tech.end', (e) => { L.inc(`time.tech.${e.id}`, e.dur || 0); L.hi(`tech.longest.${e.id}`, e.dur || 0); });
     on('blink', () => L.inc('move.blink'));
     on('slam.impact', (e) => {
@@ -323,6 +324,18 @@ export class Tracking {
       else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
       first('pneuka', 'Logged: your first thing in the Pneuka Box. P opens it: left click uses, right click lists the rest.');
     });
+    // the chat line and the emotes (chat.js, emotes.js): said in the CHAT tab, FFXI's way ("Name : words")
+    on('chat.say', (e) => { L.inc('chat.say'); log.say('say', `Courier : ${e.text}`); });
+    on('chat.emote', (e) => { L.inc('chat.emote'); log.say('emote', `The Courier ${e.text.replace(/[.!?]?$/, (m) => m || '.')}`); });
+    // the clay folk (npc/): who was met, and every finished line of what they said (FFXI's "Name : words")
+    on('npc.talk', (e) => {
+      L.inc('npc.talk'); L.inc(`npc.talk.${e.npc}`);
+      const n = this.game.folk?.byId[e.npc];
+      if (e.first && n) log.say('explore', `You meet ${n.name}, ${n.def.title}.`);
+    });
+    on('npc.say', (e) => { L.inc('npc.lines'); L.inc(`npc.mood.${e.mood || 'calm'}`); const n = this.game.folk?.byId[e.npc]; log.say('npc', `${n?.name || 'Someone'} : ${e.line}`); });
+    on('npc.choose', (e) => log.say('say', `Courier : ${e.text}`));
+    on('emote', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
     on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));

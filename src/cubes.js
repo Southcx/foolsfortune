@@ -27,11 +27,11 @@ const MAX = 320, SIZE = 0.14;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Vector3();
 
 const CSS = `
-#cubes { position: absolute; right: 24px; bottom: 122px; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none; }
+#cubes { position: absolute; right: 30px; bottom: 166px; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none; }
 #cubes.on { opacity: 1; transform: none; }
 #cubes i { display: block; width: 15px; height: 15px; background: linear-gradient(135deg, #100b18 0%, #2a1a3a 42%, #0c0812 100%); border: 1px solid transparent; border-radius: 3px;
   background-clip: padding-box; box-shadow: 0 0 0 1px rgba(160,120,255,.55), 0 0 8px rgba(120,220,255,.35), inset 0 0 6px rgba(255,120,220,.35); transform: rotate(45deg) scale(.82); }
-#cubes b { font-weight: normal; font-size: 16px; color: var(--ink); font-variant-numeric: tabular-nums; }
+#cubes b { font: 16px var(--f-sys); color: #fff1dc; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
 #cubes.pop i { animation: cubepop .42s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes cubepop { 0% { transform: rotate(45deg) scale(.82); } 22% { transform: rotate(45deg) scale(.6, 1.15); } 55% { transform: rotate(45deg) scale(1.3, .8); } 100% { transform: rotate(45deg) scale(.82); } }
 `;

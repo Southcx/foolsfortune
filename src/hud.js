@@ -1,7 +1,6 @@
 import { T } from './config.js';
 
 import { SHELL_KEYS } from './shells.js';
-import { gloveURL } from './ui/theme.js';
 
 export class Hud {
   constructor() {
@@ -41,7 +40,7 @@ export class Hud {
     this.el.shells.innerHTML = types.map((t, i) => `<div class="slot" data-i="${i}"><u>${SHELL_KEYS[i] || ''}</u><i>${t.glyph}</i><span>${t.name}</span><b></b></div>`).join('');
     this.slots = [...this.el.shells.querySelectorAll('.slot')];
     // the glove over the chosen shell, pointing down at it (as a JRPG's command palette points at its choice)
-    this.hand = document.createElement('div'); this.hand.className = 'hand'; this.hand.style.backgroundImage = `url(${gloveURL(true)})`;
+    this.hand = document.createElement('div'); this.hand.className = 'hand'; // (its picture is the theme's turned glove: --jglove-down)
     this.el.shells.appendChild(this.hand); this.handAt = -1;
   }
 
@@ -81,7 +80,7 @@ export class Hud {
         el.querySelector('b').textContent = shells.counts[t.id];
       });
       const sel = this.slots[shells.selected];
-      if (sel && this.handAt !== shells.selected) { this.handAt = shells.selected; this.hand.style.transform = `translateX(${sel.offsetLeft + sel.offsetWidth / 2 - 12}px)`; }
+      if (sel && this.handAt !== shells.selected) { this.handAt = shells.selected; this.hand.style.transform = `translateX(${sel.offsetLeft + sel.offsetWidth / 2 - 33}px)`; } // (the turned glove's tip is at 33 of 48)
     }
     this.el.reload.style.opacity = reloadT >= 0 ? 1 : 0;
     this.el.reloadFill.style.width = `${Math.max(0, reloadT) * 100}%`;

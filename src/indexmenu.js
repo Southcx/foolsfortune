@@ -15,12 +15,12 @@ const CSS = `
 #indexmenu header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; }
 #indexmenu h2 { margin: 0; font-size: 20px; letter-spacing: .22em; color: var(--accent); font-weight: normal; }
 #indexmenu header .sub { opacity: .65; font-size: 12px; letter-spacing: .08em; flex: 1; }
-#indexmenu .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
+#indexmenu .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #indexmenu .x:hover { background: rgba(var(--jsel),.35); }
 #indexmenu .grp { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 14px 0 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,178,122,.2); }
 #indexmenu .rooms { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
 @media (max-width: 560px) { #indexmenu .rooms { grid-template-columns: 1fr; } }
-#indexmenu .room { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; background: rgba(28,13,8,.35); }
+#indexmenu .room { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: var(--jcur-pointer, pointer); background: rgba(28,13,8,.35); }
 #indexmenu .room:hover, #indexmenu .room.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #indexmenu .room .n { font-size: 18px; width: 34px; text-align: center; color: var(--accent); }
 #indexmenu .room b { display: block; font-weight: normal; letter-spacing: .08em; font-size: 13px; }

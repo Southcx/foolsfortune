@@ -43,6 +43,10 @@ const WANT = {
   Sword_Heavy_Combo: 'swordHeavy', Sword_Dash: 'swordDash', Sword_Regular_A_Rec: 'swordARec', Sword_Regular_B_Rec: 'swordBRec',
   Spell_Simple_Enter: 'castEnter', Spell_Simple_Idle_Loop: 'castIdle', Spell_Simple_Shoot: 'castShoot', Spell_Simple_Exit: 'castExit',
   Idle_Torch_Loop: 'torchIdle', Punch_Jab: 'punchJab', Consume: 'consume', Farm_Watering: 'watering', Hit_Chest: 'hitChest',
+  // emotes (the chatbox's /sit, /dance...: src/emotes.js) and conversation (an NPC's talk, the Courier's)
+  Sitting_Enter: 'sitEnter', Sitting_Idle_Loop: 'sitIdle', Sitting_Exit: 'sitExit', Sitting_Talking_Loop: 'sitTalk', Dance_Loop: 'dance',
+  Idle_Talking_Loop: 'talk', Fixing_Kneeling: 'kneel', Yes: 'nod', Idle_No_Loop: 'shakeHead', Idle_FoldArms_Loop: 'foldArms',
+  Idle_Rail_Call: 'call', Death01: 'faint', LayToIdle: 'getUp', Chest_Open: 'chestOpen',
   Crouch_Idle_Loop_: 'unused',
 };
 

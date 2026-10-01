@@ -175,6 +175,12 @@
         else { const n = g.game.ground.nearest(P); if (n) g.game.ground.pick(n.ref); }
       }
       if (book?.pending) book.afterRender(null); // (the shot develops: a test drive has no frame of its own)
+      // the chat line and the emotes (a command now and then; moving ends an emote); the clay folk: talk to one when near, and
+      // press through what it says (F / Space / a number for a choice), or walk off mid-sentence
+      const gg = g.game;
+      if (gg.chat && rnd() < 0.003) gg.chat.run(['/sit', '/dance', '/wave', '/faint', '/nod', '/no', '/fold', '/talk', '/kneel', '/em trips over a pot', 'hello', '/where', '/stand', '/help sit', '/nonsense'][Math.floor(rnd() * 15)]);
+      if (gg.folk && !gg.dialogue?.open && rnd() < 0.002) { const near = gg.folk.list.filter((f) => f.pos.distanceTo(P.pos) < 60), n = near[Math.floor(rnd() * near.length)]; if (n) P.pos.set(n.pos.x + Math.sin(n.yaw) * 1.8, n.pos.y + 0.05, n.pos.z + Math.cos(n.yaw) * 1.8); P.prevPos?.copy(P.pos); if (n) inp.pressed.add('KeyF'); }
+      if (gg.dialogue?.open && rnd() < 0.08) inp.pressed.add(['KeyF', 'Space', 'Enter', 'Digit1', 'Digit2', 'KeyS'][Math.floor(rnd() * 6)]);
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
       if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
       const brush = g.techs.get('soulbrush');
@@ -191,6 +197,8 @@
       // ---- invariants ----
       const v = P.vel, p = P.pos;
       if (!Number.isFinite(p.x + p.y + p.z + v.x + v.y + v.z)) { sink.violation('finite', P, label); break; }
+      sink.talkStuck = g.techs.active?.id === 'talk' && !g.game.dialogue?.open ? (sink.talkStuck || 0) + 1 : 0; // (it ends on the next fixed step)
+      if (sink.talkStuck > 3) sink.violation('talk-stuck', P, label);
       const hs = Math.hypot(v.x, v.z);
       // (a blink is 5.5 m in 0.09 s: 60 m/s by design; the platforms add their own speed)
       if (g.techs.active?.id !== 'blink' && (hs > 45 || Math.abs(v.y) > 90)) sink.violation('speed', P, `${label} hs=${hs.toFixed(1)} vy=${v.y.toFixed(1)}`);

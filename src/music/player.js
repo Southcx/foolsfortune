@@ -17,6 +17,8 @@
 //
 //   const m = new MusicPlayer(sfx)   m.follow(score | null) (per frame)   m.play(score)   m.stop(fade)   m.duck(seconds)   m.setOn(on)
 // ---------------------------------------------------------------------------------------
+import { Arranger } from './arranger.js';
+
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const KEY = 'foolsfortune.music.v1';
 
@@ -26,10 +28,18 @@ export class MusicPlayer {
     this.score = null; this.alive = false; this.volume = 0.32;
     this.on = true;
     try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) this.on = !!s.on; } catch { /* default: on */ }
+    // the scores that build and drop (the main theme) are played by the arranger (music/arranger.js); this player keeps the Dunes'
+    this.arr = new Arranger(sfx);
+    this.pick = null; // (a track chosen in the sound test, played over whatever the place would play, until stopped)
   }
-  setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) this.stop(1); }
+  setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) { this.stop(1); this.arr.stop(1); } }
+  /** What is playing now (either player's score), or null. */
+  get current() { return this.arr.alive ? this.arr.score : this.alive ? this.score : null; }
   /** Per frame: the theme for where she is (or none), started and stopped with a fade. */
   follow(score) {
+    score = this.pick || score;
+    if (this.on && score?.arrange) { if (this.alive) this.stop(1.2); this.arr.follow(score); return; }
+    this.arr.follow(null);
     const want = this.on && score;
     if (want && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.5); else this.play(score); }
     else if (!want && this.alive) this.stop(2.5);
@@ -84,6 +94,7 @@ export class MusicPlayer {
   setVolume(v) { this.volume = v; if (this.alive) this.bus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.3); }
   /** Lower the music for a while (the System is speaking). */
   duck(sec = 2) {
+    this.arr.duck(sec);
     if (!this.alive) return;
     const t = this.ctx.currentTime, g = this.duckG.gain;
     g.cancelScheduledValues(t); g.setTargetAtTime(0.35, t, 0.08); g.setTargetAtTime(1, t + sec, 0.5);

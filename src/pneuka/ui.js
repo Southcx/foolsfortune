@@ -27,7 +27,7 @@ const CSS = `
 #pneuka header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
 #pneuka h2 { margin: 0; font-size: 18px; letter-spacing: .22em; color: var(--accent, #ffb27a); font-weight: normal; }
 #pneuka header .sub { opacity: .6; font-size: 11px; letter-spacing: .08em; flex: 1; }
-#pneuka .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 11px; letter-spacing: .1em; }
+#pneuka .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 11px; letter-spacing: .1em; }
 #pneuka .x:hover { background: rgba(var(--jsel),.35); }
 #pneuka .hover { height: 18px; font-size: 12px; margin: 0 0 8px; color: #fff1dc; }
 #pneuka .hover b { color: #ffd98a; font-weight: normal; }
@@ -36,7 +36,7 @@ const CSS = `
 #pneuka .pane h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: .22em; color: #e7c46a; font-weight: normal; display: flex; justify-content: space-between; gap: 12px; }
 #pneuka .grid { display: grid; grid-template-columns: repeat(4, 52px); gap: 5px; }
 #pneuka .bank .grid { grid-template-columns: repeat(5, 52px); }
-#pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); position: relative; cursor: pointer; }
+#pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); position: relative; cursor: var(--jcur-pointer, pointer); }
 #pneuka .slot:hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
 #pneuka .slot.drag { opacity: .4; } #pneuka .slot.over { border-color: #ffd98a; }
 #pneuka .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
@@ -59,11 +59,11 @@ const CSS = `
 #pneuka .belt div.on { border-color: #ffd98a; } #pneuka .belt div.none { opacity: .35; }
 #pneuka .belt s { text-decoration: none; opacity: .6; }
 #pneuka .bank { width: 310px; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
-#pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: pointer; }
+#pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
 #pneuka footer { margin-top: 10px; font-size: 10px; letter-spacing: .08em; opacity: .55; }
 #pneuka .menu { position: fixed; z-index: 10; background: #1a0c07; border: 1px solid rgba(255,178,122,.6); font-size: 12px; min-width: 150px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
-#pneuka .menu div { padding: 4px 10px; cursor: pointer; } #pneuka .menu div:hover { background: rgba(var(--jsel),.45); }
+#pneuka .menu div { padding: 4px 10px; cursor: var(--jcur-pointer, pointer); } #pneuka .menu div:hover { background: rgba(var(--jsel),.45); }
 #pneuka .menu .h { color: #e7c46a; cursor: default; font-size: 10px; letter-spacing: .14em; border-bottom: 1px solid rgba(255,178,122,.25); } #pneuka .menu .h:hover { background: none; }
 #pneuka .menu b { color: #ffd98a; font-weight: normal; }
 `;

@@ -1,6 +1,7 @@
 import { ABILITIES, GOD_ARTS, BY_ID } from './skills.js';
 import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledgerui.js';
 import { renderVeritome } from '../veritome/ui.js';
+import { renderSoundTest } from '../music/soundtest.js';
 
 // ---------------------------------------------------------------------------
 // The System's face: the Codex (B). What is learned is announced in the log (tracking.js), not here. The Codex sorts what you can
@@ -19,19 +20,19 @@ const CSS = `
 #codex h2 { margin: 0; font-size: 20px; letter-spacing: .22em; color: var(--accent); font-weight: normal; }
 #codex header .sub { opacity: .65; font-size: 11px; letter-spacing: .08em; flex: 1 0 100%; order: 9; margin-top: -6px; }
 #codex header h2 { flex: 1; }
-#codex .lab { display: flex; gap: 8px; align-items: center; font-size: 12px; letter-spacing: .12em; cursor: pointer; padding: 4px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; }
+#codex .lab { display: flex; gap: 8px; align-items: center; font-size: 12px; letter-spacing: .12em; cursor: var(--jcur-pointer, pointer); padding: 4px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; }
 #codex .lab i { width: 26px; height: 12px; border-radius: 6px; background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); position: relative; }
 #codex .lab i::after { content: ''; position: absolute; left: 1px; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transition: left .12s; }
 #codex .lab.on { border-color: var(--accent); background: rgba(var(--jsel),.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
 #codex .lab u { text-decoration: none; color: #fff1dc; min-width: 66px; display: inline-block; }
-#codex .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
+#codex .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #codex .x:hover, #codex button:hover { background: rgba(var(--jsel),.35); }
 #codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; gap: 22px; }
-#codex .shelf .tab { cursor: pointer; opacity: .5; padding-bottom: 3px; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
+#codex .shelf .tab { cursor: var(--jcur-pointer, pointer); opacity: .5; padding-bottom: 3px; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
-#codex .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; background: rgba(28,13,8,.35); }
+#codex .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: var(--jcur-pointer, pointer); background: rgba(28,13,8,.35); }
 #codex .row.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .row .g { font-size: 22px; width: 28px; text-align: center; }
 #codex .row .t { flex: 1; min-width: 0; } #codex .row .t b { display: block; font-weight: normal; letter-spacing: .08em; font-size: 13px; }
@@ -45,9 +46,9 @@ const CSS = `
 #codex .card p { margin: 0 0 12px; opacity: .85; font-size: 13px; line-height: 1.5; }
 #codex .card .hint { font-style: italic; opacity: .75; }
 #codex .btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
-#codex button { font: inherit; font-size: 12px; letter-spacing: .1em; color: var(--ink); background: rgba(28,13,8,.7); border: 1px solid rgba(255,178,122,.5); padding: 6px 12px; border-radius: 3px; cursor: pointer; }
+#codex button { font: inherit; font-size: 12px; letter-spacing: .1em; color: var(--ink); background: rgba(28,13,8,.7); border: 1px solid rgba(255,178,122,.5); padding: 6px 12px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #codex .vars { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-#codex .var { display: flex; gap: 10px; align-items: flex-start; padding: 7px 9px; border: 1px solid rgba(255,178,122,.22); border-radius: 3px; cursor: pointer; }
+#codex .var { display: flex; gap: 10px; align-items: flex-start; padding: 7px 9px; border: 1px solid rgba(255,178,122,.22); border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #codex .var.sel { border-color: var(--accent); background: rgba(var(--jsel),.25); }
 #codex .var.locked { opacity: .55; cursor: default; }
 #codex .var .r { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--accent); margin-top: 2px; flex: none; }
@@ -138,14 +139,14 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['ledger', 'LEDGER'], ['records', 'RECORDS']]) {
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
-    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome') {
-      (this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : renderRecords)(this, cx);
+    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'sound') {
+      (this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;
       const foot = el('footer');
       foot.appendChild(el('span', 'msg', 'counted quietly as you play · the log (lower left) says the rest'));

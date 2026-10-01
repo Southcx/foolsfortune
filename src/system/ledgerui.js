@@ -18,11 +18,11 @@ const CSS = `
 #codex .lg-body { display: grid; grid-template-columns: 190px 1fr; gap: 16px; }
 @media (max-width: 720px) { #codex .lg-body { grid-template-columns: 1fr; } }
 #codex .lg-cats { display: flex; flex-direction: column; gap: 4px; }
-#codex .lg-cat { padding: 7px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; font-size: 12px; letter-spacing: .1em; background: rgba(28,13,8,.35); }
+#codex .lg-cat { padding: 7px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: var(--jcur-pointer, pointer); font-size: 12px; letter-spacing: .1em; background: rgba(28,13,8,.35); }
 #codex .lg-cat.on { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .lg-cat span { float: right; opacity: .65; font-size: 11px; }
 #codex .lg-filter { display: flex; gap: 8px; margin: 8px 0 0; font-size: 11px; letter-spacing: .1em; }
-#codex .lg-filter i { font-style: normal; cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.3); border-radius: 3px; opacity: .6; }
+#codex .lg-filter i { font-style: normal; cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.3); border-radius: 3px; opacity: .6; }
 #codex .lg-filter i.on { opacity: 1; border-color: var(--accent); }
 #codex .lg-sub { font-size: 11px; letter-spacing: .24em; color: var(--accent); margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,178,122,.2); }
 #codex .lg-sub:first-child { margin-top: 0; }

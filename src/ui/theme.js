@@ -28,6 +28,9 @@ import fTitle from '../assets/fonts/cinzel.woff2?b64';
 import fDeco from '../assets/fonts/cinzeldeco.woff2?b64';
 import fLore from '../assets/fonts/fellitalic.woff2?b64';
 import fSys from '../assets/fonts/dotgothic16.woff2?b64';
+import gPoint from '../assets/ui/glove_point.png?b64';
+import gCursor from '../assets/ui/glove_cursor.png?b64';
+import gGrab from '../assets/ui/glove_grab.png?b64';
 
 export const FONT = {
   ui: `'M PLUS Rounded 1c', 'Hiragino Maru Gothic ProN', 'Arial Rounded MT Bold', system-ui, sans-serif`,
@@ -63,31 +66,18 @@ ${gem(5, 5, t.lo)}${gem(35, 5, t.lo)}${gem(5, 35, t.lo)}${gem(35, 35, t.lo)}</sv
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(s)}")`;
 }
 
-// the glove: a white glove pointing right, 16 x 12, drawn at twice its size with no smoothing
-const GLOVE = [
-  '....XXXX........',
-  '...XWWWWX.......',
-  'XXXWWWWWWXXXXXX.',
-  'XSWWWWWWWWWWWWWX',
-  'XSWWWWWWWXXXXXX.',
-  'XSWWWWWWWWWX....',
-  'XSWWWWWWWXX.....',
-  'XSWWWWWWWWWX....',
-  'XSWWWWWWWXX.....',
-  'XSSWWWWWWWX.....',
-  'XXXSSSSSXX......',
-  '...XXXXX........',
-];
-/** The glove as a data URL: pointing right, or (down) turned to point at the thing below it. */
-export function gloveURL(down = false) {
-  const c = document.createElement('canvas'); c.width = down ? 12 : 16; c.height = down ? 16 : 12;
-  const x = c.getContext('2d'), col = { X: '#1c0d08', W: '#fffaf0', S: '#cbb7a4' };
-  GLOVE.forEach((r, y) => [...r].forEach((ch, i) => { if (col[ch]) { x.fillStyle = col[ch]; x.fillRect(down ? 11 - y : i, down ? i : y, 1, 1); } }));
-  return c.toDataURL();
-}
+// the gloves (drawn by the game's maker, 48 x 48): pointing (the menu's cursor, beside the option), the mouse's own pointer over a
+// window (its fingertip at 14, 11), and the fist while a button is held or a thing is dragged
+export const GLOVES = {
+  point: `data:image/png;base64,${gPoint}`,
+  cursor: `data:image/png;base64,${gCursor}`,
+  grab: `data:image/png;base64,${gGrab}`,
+};
+/** The pointing glove as a data URL; (down) turned a quarter to point at the thing below it (needs the image decoded: see install). */
+export function gloveURL(down = false) { return down ? (theme.gloveDown || GLOVES.point) : GLOVES.point; }
 
 // the windows the kit dresses (the menus build their own boxes; these selectors find them): [panel, its root]
-export const WINDOWS = ['#codex .cx', '#indexmenu .im', '#pneuka .px', '#pneuka .menu', '#overlay .card', '#mapui .side', '#mapui .legend', '#chatlog'];
+export const WINDOWS = ['#codex .cx', '#indexmenu .im', '#pneuka .px', '#pneuka .menu', '#overlay .card', '#mapui .side', '#mapui .legend', '#chatlog', '#dialogue .dw'];
 const W = (suffix = '') => WINDOWS.map((s) => `html body ${s}${suffix}`).join(',\n');
 
 const CSS = () => `
@@ -116,8 +106,12 @@ ${W(' .hint')}, ${W(' .lore')}, ${W(' .card p em')} { font-family: var(--f-lore)
 @keyframes junfold { from { transform: scaleY(.04); opacity: .6; } 60% { transform: scaleY(1.02); opacity: 1; } to { transform: none; } }
 .junfold :is(${WINDOWS.join(',')}) { animation: junfold .11s cubic-bezier(.2,.8,.3,1) both; }
 /* the glove */
-#jglove { position: fixed; left: 0; top: 0; width: 32px; height: 24px; z-index: 40; pointer-events: none; display: none; image-rendering: pixelated;
-  background-size: 32px 24px; filter: drop-shadow(1px 2px 0 rgba(8,3,1,.6)); }
+#jglove { position: fixed; left: 0; top: 0; width: 48px; height: 48px; z-index: 40; pointer-events: none; display: none; image-rendering: pixelated;
+  background-size: 48px 48px; filter: drop-shadow(1px 2px 0 rgba(8,3,1,.45)); }
+/* the mouse's own glove over the windows (the menus' clickable things say var(--jcur-pointer)), and the fist while held */
+:root { --jcur: url(${GLOVES.cursor}) 14 11, default; --jcur-pointer: url(${GLOVES.cursor}) 14 11, pointer; --jcur-grab: url(${GLOVES.grab}) 17 14, grabbing; }
+${W()}, #overlay, #codex, #pneuka, #indexmenu { cursor: var(--jcur); }
+html.jgrab, html.jgrab * { cursor: var(--jcur-grab) !important; }
 #jglove.on { display: block; }
 `;
 
@@ -129,11 +123,23 @@ class Theme {
   }
   install() {
     const st = document.createElement('style'); st.id = 'jtheme'; st.textContent = CSS(); document.head.appendChild(st);
-    this.glove = document.createElement('div'); this.glove.id = 'jglove'; this.glove.style.backgroundImage = `url(${gloveURL()})`;
+    this.glove = document.createElement('div'); this.glove.id = 'jglove'; this.glove.style.backgroundImage = `url(${GLOVES.point})`;
+    // the glove turned to point down (the HUD's palette), made once the picture is decoded
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = c.height = 48; const x = c.getContext('2d');
+      x.translate(48, 0); x.rotate(Math.PI / 2); x.drawImage(img, 0, 0);
+      this.gloveDown = c.toDataURL(); document.documentElement.style.setProperty('--jglove-down', `url(${this.gloveDown})`);
+    };
+    img.src = GLOVES.point;
+    // the fist: while a button is held over a window
+    addEventListener('pointerdown', (e) => { if (e.target instanceof Element && e.target.closest(`${WINDOWS.join(',')}, #overlay`)) document.documentElement.classList.add('jgrab'); }, true);
+    addEventListener('pointerup', () => document.documentElement.classList.remove('jgrab'), true);
+    addEventListener('dragend', () => document.documentElement.classList.remove('jgrab'), true);
     document.body.appendChild(this.glove);
     this.apply();
     // the glove follows the mouse to the thing it would click, and the keyboard to the thing it chose
-    addEventListener('pointermove', (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.kb = false; this.aim(this.optionAt(e.target), true); }, { passive: true });
+    addEventListener('pointermove', (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; this.kb = false; if (!document.documentElement.classList.contains('jgrab')) this.aim(this.optionAt(e.target), true); }, { passive: true });
     addEventListener('keydown', (e) => { if (/^Arrow|^Tab$/.test(e.code)) { this.kb = true; requestAnimationFrame(() => this.aim(this.chosen(), true)); } }, true);
     addEventListener('click', (e) => { const o = this.optionAt(e.target); if (o && !o.matches(':disabled')) sfx.menuOk?.(); }, true);
   }
@@ -175,7 +181,7 @@ class Theme {
     for (let x = e; x && x !== document.body; x = x.parentElement) {
       if (x.matches(WINDOWS.join(','))) break;
       const cs = getComputedStyle(x);
-      if (cs.cursor === 'pointer' && x.tagName !== 'TEXTAREA') o = x; else if (o) break;
+      if (/pointer$/.test(cs.cursor) && x.tagName !== 'TEXTAREA') o = x; else if (o) break;
     }
     return o;
   }
@@ -199,7 +205,7 @@ class Theme {
     if (!o || !o.offsetParent) { this.glove.classList.remove('on'); this.target = null; return; }
     const r = o.getBoundingClientRect();
     const bob = Math.floor(now / 250) % 2 ? 2 : 0; // (a stepped bob, four times a second, as the glove always has)
-    const x = Math.max(2, Math.round(r.left - 30 - bob)), y = Math.round(r.top + Math.min(r.height, 40) / 2 - 12);
+    const x = Math.max(2, Math.round(r.left - 46 - bob)), y = Math.round(r.top + Math.min(r.height, 40) / 2 - 25); // (the tip is at 42, 14 of 48)
     this.glove.style.transform = `translate(${x}px, ${y}px)`;
     this.raf = requestAnimationFrame(this.follow);
   };

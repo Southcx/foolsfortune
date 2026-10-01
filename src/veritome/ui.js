@@ -23,10 +23,10 @@ const CSS = `
 #codex .vt { display: grid; grid-template-columns: 1fr 270px; gap: 16px; }
 @media (max-width: 760px) { #codex .vt { grid-template-columns: 1fr; } }
 #codex .vtpages { display: flex; gap: 16px; margin: 0 0 10px; font-size: 11px; letter-spacing: .18em; }
-#codex .vtpages span { cursor: pointer; opacity: .55; } #codex .vtpages span.on { opacity: 1; color: #e7c46a; border-bottom: 1px solid #e7c46a; }
+#codex .vtpages span { cursor: var(--jcur-pointer, pointer); opacity: .55; } #codex .vtpages span.on { opacity: 1; color: #e7c46a; border-bottom: 1px solid #e7c46a; }
 #codex .vt .sec { font-size: 10px; letter-spacing: .2em; opacity: .75; margin: 10px 0 6px; }
 #codex .vt .binder { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 7px; }
-#codex .vt .slot { position: relative; cursor: pointer; border-radius: 5px; padding: 2px; border: 1px solid transparent; }
+#codex .vt .slot { position: relative; cursor: var(--jcur-pointer, pointer); border-radius: 5px; padding: 2px; border: 1px solid transparent; }
 #codex .vt .slot.sel { border-color: var(--accent); background: rgba(var(--jsel),.25); }
 #codex .vt .slot canvas { width: 100%; display: block; border-radius: 4px; }
 #codex .vt .slot.empty canvas { opacity: .32; filter: grayscale(.7); }
@@ -38,7 +38,7 @@ const CSS = `
 #codex .vt .detail h3 { margin: 6px 0 4px; }
 #codex .vt .detail canvas { width: 110px; display: block; margin: 4px 0 8px; border-radius: 5px; }
 #codex .vt .comp, #codex .vt .roll { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
-#codex .vt .ph { border: 1px solid rgba(255,178,122,.25); border-radius: 3px; padding: 4px; background: rgba(28,13,8,.35); font-size: 10px; letter-spacing: .06em; cursor: pointer; }
+#codex .vt .ph { border: 1px solid rgba(255,178,122,.25); border-radius: 3px; padding: 4px; background: rgba(28,13,8,.35); font-size: 10px; letter-spacing: .06em; cursor: var(--jcur-pointer, pointer); }
 #codex .vt .ph.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .vt .ph i { display: block; aspect-ratio: 192 / 120; background: rgba(20,9,6,.8) center / cover no-repeat; border: 3px solid #f1dfba; margin-bottom: 3px; }
 #codex .vt .ph.none i { border-color: rgba(241,223,186,.2); }

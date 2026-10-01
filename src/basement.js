@@ -637,7 +637,7 @@ export class Course {
     // the index console
     const cs = this.console, nearConsole = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - cs.x, feet.z - cs.z) < 2.3;
     this.consoleDisc.material.opacity = nearConsole ? 0.55 : 0.22;
-    if (nearConsole && inp.wasPressed('KeyF')) { this.menu.show(); return; }
+    if (nearConsole && inp.wasPressed('KeyF') && this.game.interact?.cur?.id !== 'npc') { this.menu.show(); return; }
     // speed gates
     for (const gt of this.gates) {
       const a = gt.axis === 'x' ? this.prev.x : this.prev.z, b = gt.axis === 'x' ? feet.x : feet.z;

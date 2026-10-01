@@ -38,7 +38,7 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Folk'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -400,6 +400,12 @@ export function buildAchievements(game) {
 
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
+  // the clay folk and the chat line (npc/, chat.js, emotes.js)
+  C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
+  F('fk2', 'explore', 'Folk', 2, 'collect', 'Everyone\'s Acquaintance', 'Speak with all four of the clay folk.', (L) => ['saggar', 'pip', 'grog', 'raku'].filter((k) => L.get(`npc.talk.${k}`) > 0).length, 4);
+  C('fk3', 'explore', 'Folk', 2, 'count', 'Good Listener', 'Hear the clay folk out: 60 lines.', 'npc.lines', 60);
+  F('fk4', 'explore', 'Folk', 3, 'mechanic', 'The Whole Range', 'Hear a folk in five different moods.', (L) => L.under('npc.mood.').filter(([k, v]) => v > 0 && k !== 'npc.mood.calm').length, 5);
+  F('fk5', 'explore', 'Folk', 1, 'collect', 'Body Language', 'Use five different emotes (/help lists them).', (L) => L.under('emote.').filter(([k, v]) => v > 0 && k !== 'emote.total').length, 5);
   C('ex2', 'explore', 'Charting', 2, 'count', 'Surveyor', 'Send out 25 survey pulses.', 'map.pulse', 25);
   C('ex3', 'explore', 'Charting', 4, 'endure', 'Cartographer', 'Send out 250 survey pulses.', 'map.pulse', 250);
   C('ex4', 'explore', 'Charting', 2, 'count', 'Ink on the Map', 'Chart 500 areas.', 'map.cells', 500);

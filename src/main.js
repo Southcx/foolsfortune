@@ -66,6 +66,7 @@ import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
 import { MusicPlayer } from './music/player.js';
 import { DUNES } from './music/dunes.js';
+import { FORTUNE } from './music/fortune.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -83,6 +84,12 @@ import { PsychicPulse } from './vfx/pulse.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
 import { Chests, ChestTech } from './chests.js';
+import { Emote } from './moves/emote.js';
+import { Chat } from './chat.js';
+import { Talk } from './moves/talk.js';
+import { Folk } from './npc/folk.js';
+import { Dialogue } from './npc/dialogue.js';
+import { placePeople } from './npc/people.js';
 import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
@@ -247,7 +254,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -270,7 +277,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.log?.busy);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -305,6 +312,13 @@ async function main() {
     });
     game.interact.add('item', () => (game.god?.controlling ? null : game.ground.nearest(player))); // (what lies on the ground: F picks it up)
     game.interact.add('chest', () => { const t = game.chests.find(); return t ? { pos: t.pos, d: t.d, ref: t.chest || t.kind } : null; });
+    // the clay folk: F to talk (npc/folk.js, npc/dialogue.js)
+    game.interact.add('npc', () => {
+      if (!game.folk || game.dialogue?.open || !idle()) return null;
+      const n = game.folk.near(player); if (!n) return null;
+      const p = game.folk.head(n).add(new THREE.Vector3(0, 0.55 * n.scale, 0));
+      return { pos: p, d: Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z) - 0.3, ref: n.id };
+    });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
@@ -401,14 +415,23 @@ async function main() {
   game.lights = new LightBudget(game, { slots: T.visual.lightSlots ?? 8 }); // (every lamp in the world, lit eight at a time: render/lightbudget.js)
   game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
   game.present.apply();
-  for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui']) theme.watch(document.getElementById(id));
+  // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
+  game.folk = new Folk(game, clapG);
+  placePeople(game, game.folk);
+  game.dialogue = new Dialogue(game);
+  for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui', 'dialogue']) theme.watch(document.getElementById(id));
   theme.watch(document.getElementById('overlay'), { sound: false, point: '.go .opt' }); // (the title: the glove waits at BEGIN)
   theme.aim(document.querySelector('#overlay .go .opt'));
   game.theme = theme;
+  // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
+  game.chat = new Chat(game);
+  game.log.onSend = (t) => game.chat.run(t);
+  game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
+  const overlayUp = () => overlay.style.display !== 'none' && !window.__game?.manual;
   let guiOpen = false;
   const start = () => {
     sfx.unlock();
@@ -591,11 +614,13 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt);
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
-    game.music.follow(game.dunes?.active && !game.chests?.rave?.active && !game.god?.active ? DUNES : null);
+    // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
+    game.music.follow(overlayUp() ? FORTUNE : game.dunes?.active && !game.chests?.rave?.active && !game.god?.active ? DUNES : null);
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
