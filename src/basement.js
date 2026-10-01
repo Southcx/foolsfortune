@@ -3,6 +3,7 @@ import { WEIR_SPAWN, inWeir } from './angling/weir.js';
 import * as THREE from 'three';
 import { PALETTE, T } from './config.js';
 import { sfx } from './audio.js';
+import { FONT } from './ui/theme.js';
 import { TECH_CPS, TECH_PITS } from './techlab.js';
 import { MILL_CPS, MILL_PITS } from './mill.js';
 import { IndexMenu } from './indexmenu.js';
@@ -83,9 +84,9 @@ function labelTexture(text, sub) {
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   // (the last argument squeezes a long line to fit the tablet instead of clipping it)
-  g.font = 'bold 76px ui-monospace, Menlo, Consolas, monospace';
+  g.font = `700 70px ${FONT.title}`;
   g.fillText(text, 256, sub ? 58 : 80, 490);
-  if (sub) { g.font = '36px ui-monospace, Menlo, Consolas, monospace'; g.fillText(sub, 256, 126, 496); }
+  if (sub) { g.font = `500 34px ${FONT.ui}`; g.fillText(sub, 256, 126, 496); }
   const t = new THREE.CanvasTexture(c);
   t.anisotropy = 8;
   return t;
@@ -422,15 +423,15 @@ export class Course {
     g.fillStyle = 'rgba(28,13,8,0.82)';
     g.fillRect(0, 0, 1024, 640);
     g.strokeStyle = '#ffb27a'; g.lineWidth = 3; g.strokeRect(6, 6, 1012, 628);
-    g.fillStyle = '#ffb27a'; g.font = 'bold 40px ui-monospace, Menlo, Consolas, monospace';
+    g.fillStyle = '#ffb27a'; g.font = `700 38px ${FONT.title}`;
     g.fillText('METRICS', 30, 58);
-    g.fillStyle = '#ffb27a'; g.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace';
+    g.fillStyle = '#ffb27a'; g.font = `700 25px ${FONT.title}`;
     g.fillText('LIVE (from the tuning panel)', 30, 104);
-    g.font = '23px ui-monospace, Menlo, Consolas, monospace';
+    g.font = `23px ${FONT.sys}`;
     live.forEach(([k, val], i) => { g.fillStyle = '#e8ab86'; g.fillText(k, 30, 140 + i * 31); g.fillStyle = '#fff1dc'; g.fillText(val, 470, 140 + i * 31); });
-    g.fillStyle = '#ffb27a'; g.font = 'bold 26px ui-monospace, Menlo, Consolas, monospace';
+    g.fillStyle = '#ffb27a'; g.font = `700 25px ${FONT.title}`;
     g.fillText('MEASURED CHAINS (default tuning)', 30, 424);
-    g.font = '21px ui-monospace, Menlo, Consolas, monospace';
+    g.font = `21px ${FONT.sys}`;
     chains.forEach(([k, d], i) => {
       const col = i % 2, row = Math.floor(i / 2);
       g.fillStyle = '#e8ab86'; g.fillText(k, 30 + col * 500, 458 + row * 32);

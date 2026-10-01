@@ -87,6 +87,9 @@ import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
 import { Presentation } from './render/present.js';
+import { installTheme, fontsReady, theme } from './ui/theme.js';
+import { installToon, setToon } from './render/toon.js';
+import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
 
 const FIXED = 1 / 60;
@@ -98,6 +101,9 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 async function main() {
   mark('main');
   loadTuning();
+  installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
+  installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
+  await fontsReady();
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
@@ -174,6 +180,7 @@ async function main() {
   game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
   game.time = new TimeScale(game); // (who slows the world, and by how much: see timescale.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
+  game.post = new Glow(renderer);
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
@@ -340,6 +347,7 @@ async function main() {
 
     if (key === 'outline' || group === '*') setOutlineThickness(T.visual.outline);
     if (key === 'exposure' || group === '*') renderer.toneMappingExposure = T.visual.exposure;
+    if (key === 'toon' || group === '*') setToon(T.visual.toon ?? 1, scene);
     if (key === 'fog' || group === '*') scene.fog.density = T.visual.fog;
     if (key === 'shadows' || group === '*') { sun.castShadow = T.visual.shadows; }
     if (['resolution', 'upscale', 'smooth', 'shadowRes'].includes(key) || group === '*') game.present?.apply();
@@ -393,6 +401,10 @@ async function main() {
   game.lights = new LightBudget(game, { slots: T.visual.lightSlots ?? 8 }); // (every lamp in the world, lit eight at a time: render/lightbudget.js)
   game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
   game.present.apply();
+  for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui']) theme.watch(document.getElementById(id));
+  theme.watch(document.getElementById('overlay'), { sound: false, point: '.go .opt' }); // (the title: the glove waits at BEGIN)
+  theme.aim(document.querySelector('#overlay .go .opt'));
+  game.theme = theme;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
 
   // --- overlay / pointer lock -----------------------------------------------
@@ -425,7 +437,9 @@ async function main() {
   // the first teleport do not stall on the driver compiling them (KHR_parallel_shader_compile lets the browser do it off the main thread)
   for (let i = 0; i < 22; i++) breakables.update(0); // (the pots at rest go into their batches first: those are shaders too)
   game.zones.enabled = false; game.zones.update(1);
+  game.post.resize(); renderer.setRenderTarget(game.post.target); // (compiled for the buffer the frame is drawn into)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
   document.getElementById('loading').remove();
@@ -463,7 +477,7 @@ async function main() {
     if (window.__game?.manual) return;
     try {
       tick(dt);
-      renderer.render(scene, window.__debugCam || camera);
+      game.post.render(scene, window.__debugCam || camera); // (the PS2 glow and the grade over the frame: render/glow.js)
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
@@ -691,7 +705,7 @@ async function main() {
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
   window.__ready = true;
 }

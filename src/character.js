@@ -1,6 +1,7 @@
 import { courierLimits } from './rom.js';
 import { kneeProfile } from './poles.js';
 import * as THREE from 'three';
+import { addRim } from './render/toon.js';
 import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform, dissolveUniform, dissolveBaseUniform } from './outline.js';
 import { Clips, Track } from './animator.js';
@@ -75,6 +76,7 @@ export class Character {
         const m = (MATS[name] || MATS.CourierEnergy)();
         m.onBeforeCompile = applyFpHide;
         m.customProgramCacheKey = () => `fphide-${key}`;
+        if (!m.transparent) addRim(m); // (the thin Lachryma rim: render/toon.js)
         byMat.set(key, withFade(m, key));
       }
       o.material = byMat.get(key);

@@ -238,6 +238,32 @@ class Sfx {
     this.tone(t, 0.03, { f0: 2200, f1: 1800, type: 'square', gain: 0.1, dest: d });
   }
 
+  // the menus' four sounds (ui/theme.js), after the JRPG's: a dry tick as the glove moves, a bright two-note confirm, a falling
+  // back, and a soft unfolding as a window opens. Short (the confirm is under 50 ms to its peak) and quiet: they are heard a lot.
+  menuMove() {
+    if (!this.ok() || !this.allow('menuMove', 30)) return;
+    const t = this.ctx.currentTime, d = this.out(0.22, 0.05);
+    this.tone(t, 0.035, { f0: 1760, f1: 1700, type: 'triangle', gain: 0.35, dest: d });
+  }
+  menuOk() {
+    if (!this.ok() || !this.allow('menuOk', 20)) return;
+    const t = this.ctx.currentTime, d = this.out(0.22, 0.15);
+    this.tone(t, 0.05, { f0: 1319, type: 'triangle', gain: 0.4, dest: d });
+    this.tone(t + 0.045, 0.09, { f0: 1976, type: 'triangle', gain: 0.35, dest: d });
+  }
+  menuBack() {
+    if (!this.ok() || !this.allow('menuBack', 10)) return;
+    const t = this.ctx.currentTime, d = this.out(0.2, 0.1);
+    this.tone(t, 0.05, { f0: 1175, type: 'triangle', gain: 0.35, dest: d });
+    this.tone(t + 0.045, 0.08, { f0: 784, type: 'triangle', gain: 0.3, dest: d });
+  }
+  menuOpen() {
+    if (!this.ok() || !this.allow('menuOpen', 8)) return;
+    const t = this.ctx.currentTime, d = this.out(0.16, 0.35);
+    this.noise(t, 0.12, { type: 'bandpass', f0: 900, f1: 3200, q: 1.2, gain: 0.5, attack: 0.03, dest: d });
+    this.tone(t + 0.02, 0.16, { f0: 988, f1: 1480, type: 'sine', gain: 0.25, dest: d });
+  }
+
   fizzle() {
     if (!this.ok() || !this.allow('fizzle', 6)) return;
     const t = this.ctx.currentTime, d = this.out(0.35, 0.1);

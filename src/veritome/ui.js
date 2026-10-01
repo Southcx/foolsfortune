@@ -27,7 +27,7 @@ const CSS = `
 #codex .vt .sec { font-size: 10px; letter-spacing: .2em; opacity: .75; margin: 10px 0 6px; }
 #codex .vt .binder { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 7px; }
 #codex .vt .slot { position: relative; cursor: pointer; border-radius: 5px; padding: 2px; border: 1px solid transparent; }
-#codex .vt .slot.sel { border-color: var(--accent); background: rgba(196,106,69,.25); }
+#codex .vt .slot.sel { border-color: var(--accent); background: rgba(var(--jsel),.25); }
 #codex .vt .slot canvas { width: 100%; display: block; border-radius: 4px; }
 #codex .vt .slot.empty canvas { opacity: .32; filter: grayscale(.7); }
 #codex .vt .slot.seen canvas { opacity: .6; filter: grayscale(.4); }
@@ -39,7 +39,7 @@ const CSS = `
 #codex .vt .detail canvas { width: 110px; display: block; margin: 4px 0 8px; border-radius: 5px; }
 #codex .vt .comp, #codex .vt .roll { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
 #codex .vt .ph { border: 1px solid rgba(255,178,122,.25); border-radius: 3px; padding: 4px; background: rgba(28,13,8,.35); font-size: 10px; letter-spacing: .06em; cursor: pointer; }
-#codex .vt .ph.sel { border-color: var(--accent); background: rgba(196,106,69,.3); }
+#codex .vt .ph.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .vt .ph i { display: block; aspect-ratio: 192 / 120; background: rgba(20,9,6,.8) center / cover no-repeat; border: 3px solid #f1dfba; margin-bottom: 3px; }
 #codex .vt .ph.none i { border-color: rgba(241,223,186,.2); }
 #codex .vt .ph span { color: #e7c46a; }

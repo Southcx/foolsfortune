@@ -6,6 +6,7 @@ import { setHaloTexture } from './fishmesh.js';
 import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
 import { Ripples } from './lure.js';
 import { sfx } from '../audio.js';
+import { FONT } from '../ui/theme.js';
 import { mergeStatic } from '../render/merge.js';
 import { RAPIER, GROUPS } from '../physics.js';
 import { addOutline } from '../outline.js';
@@ -197,9 +198,9 @@ export class Weir {
     g.clearRect(0, 0, b.c.width, b.c.height);
     g.fillStyle = 'rgba(28,13,8,.86)'; g.fillRect(0, 0, b.c.width, b.c.height);
     g.strokeStyle = '#ffb27a'; g.lineWidth = 5; g.strokeRect(8, 8, b.c.width - 16, b.c.height - 16);
-    g.fillStyle = '#ffb27a'; g.font = '46px ui-monospace, monospace'; g.textAlign = 'left';
+    g.fillStyle = '#ffb27a'; g.font = `700 42px ${FONT.title}`; g.textAlign = 'left';
     g.fillText('THE TALLY', 40, 68);
-    g.fillStyle = '#fbe3cf'; g.font = '26px ui-monospace, monospace'; g.textAlign = 'right';
+    g.fillStyle = '#fbe3cf'; g.font = `26px ${FONT.sys}`; g.textAlign = 'right';
     g.fillText(`${L.get('fish.total')} landed · ${L.under('fish.sp.').filter(([, v]) => v > 0).length}/${SPECIES.length} kinds`, b.c.width - 40, 66);
     SPECIES.forEach((sp, i) => {
       const col = i % 5, row = Math.floor(i / 5), x = 40 + col * 270, y = 110 + row * 250;
@@ -208,9 +209,9 @@ export class Weir {
       g.fillStyle = n ? `#${sp.color.toString(16).padStart(6, '0')}` : '#3b1c13';
       g.beginPath(); g.ellipse(x + 125, y + 78, 62 + (sp.size[1] > 200 ? 10 : 0), 26, 0, 0, Math.PI * 2); g.fill();
       g.beginPath(); g.moveTo(x + 185, y + 78); g.lineTo(x + 225, y + 48); g.lineTo(x + 225, y + 108); g.closePath(); g.fill();
-      g.fillStyle = '#fbe3cf'; g.font = '25px ui-monospace, monospace'; g.textAlign = 'center';
+      g.fillStyle = '#fbe3cf'; g.font = `500 24px ${FONT.ui}`; g.textAlign = 'center';
       g.fillText(n ? sp.name.toUpperCase() : '? ? ?', x + 125, y + 150);
-      g.font = '22px ui-monospace, monospace'; g.fillStyle = '#ffb27a';
+      g.font = `22px ${FONT.sys}`; g.fillStyle = '#ffb27a';
       g.fillText(n ? `${n} · best ${Math.round(cm)} cm` : 'not yet landed', x + 125, y + 190);
     });
     b.tex.needsUpdate = true;

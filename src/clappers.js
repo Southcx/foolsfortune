@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { addRim } from './render/toon.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { RAPIER, G, groups } from './physics.js';
 import { T, PALETTE, DEG } from './config.js';
@@ -43,7 +44,7 @@ export class Clappers {
     this.ctrl.enableAutostep(0.12, 0.1, false);
     // the Courier's terracotta (her armour's colour); each clapper gets its own copy so a fresh one
     // can glow from the kiln and cool
-    this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true });
+    this.mat = addRim(new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true }), 0.8); // (a thin rim: render/toon.js)
     this.hot = new THREE.Color(0xffe2a0); // white-hot clay
     this.ember = new THREE.Color(0xff5a14);
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });

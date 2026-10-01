@@ -28,7 +28,7 @@ const CSS = `
 #pneuka h2 { margin: 0; font-size: 18px; letter-spacing: .22em; color: var(--accent, #ffb27a); font-weight: normal; }
 #pneuka header .sub { opacity: .6; font-size: 11px; letter-spacing: .08em; flex: 1; }
 #pneuka .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 11px; letter-spacing: .1em; }
-#pneuka .x:hover { background: rgba(196,106,69,.35); }
+#pneuka .x:hover { background: rgba(var(--jsel),.35); }
 #pneuka .hover { height: 18px; font-size: 12px; margin: 0 0 8px; color: #fff1dc; }
 #pneuka .hover b { color: #ffd98a; font-weight: normal; }
 #pneuka .cols { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
@@ -60,10 +60,10 @@ const CSS = `
 #pneuka .belt s { text-decoration: none; opacity: .6; }
 #pneuka .bank { width: 310px; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
 #pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: pointer; }
-#pneuka button:hover { background: rgba(196,106,69,.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
+#pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
 #pneuka footer { margin-top: 10px; font-size: 10px; letter-spacing: .08em; opacity: .55; }
 #pneuka .menu { position: fixed; z-index: 10; background: #1a0c07; border: 1px solid rgba(255,178,122,.6); font-size: 12px; min-width: 150px; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
-#pneuka .menu div { padding: 4px 10px; cursor: pointer; } #pneuka .menu div:hover { background: rgba(196,106,69,.45); }
+#pneuka .menu div { padding: 4px 10px; cursor: pointer; } #pneuka .menu div:hover { background: rgba(var(--jsel),.45); }
 #pneuka .menu .h { color: #e7c46a; cursor: default; font-size: 10px; letter-spacing: .14em; border-bottom: 1px solid rgba(255,178,122,.25); } #pneuka .menu .h:hover { background: none; }
 #pneuka .menu b { color: #ffd98a; font-weight: normal; }
 `;

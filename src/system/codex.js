@@ -17,20 +17,22 @@ const CSS = `
   box-shadow: 0 0 0 4px rgba(28,13,8,.7), 0 20px 60px rgba(0,0,0,.6); padding: 18px 22px 16px; }
 #codex header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
 #codex h2 { margin: 0; font-size: 20px; letter-spacing: .22em; color: var(--accent); font-weight: normal; }
-#codex header .sub { opacity: .65; font-size: 12px; letter-spacing: .08em; flex: 1; }
+#codex header .sub { opacity: .65; font-size: 11px; letter-spacing: .08em; flex: 1 0 100%; order: 9; margin-top: -6px; }
+#codex header h2 { flex: 1; }
 #codex .lab { display: flex; gap: 8px; align-items: center; font-size: 12px; letter-spacing: .12em; cursor: pointer; padding: 4px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; }
 #codex .lab i { width: 26px; height: 12px; border-radius: 6px; background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); position: relative; }
 #codex .lab i::after { content: ''; position: absolute; left: 1px; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transition: left .12s; }
-#codex .lab.on { border-color: var(--accent); background: rgba(196,106,69,.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
+#codex .lab.on { border-color: var(--accent); background: rgba(var(--jsel),.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
+#codex .lab u { text-decoration: none; color: #fff1dc; min-width: 66px; display: inline-block; }
 #codex .x { cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
-#codex .x:hover, #codex button:hover { background: rgba(196,106,69,.35); }
+#codex .x:hover, #codex button:hover { background: rgba(var(--jsel),.35); }
 #codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; gap: 22px; }
 #codex .shelf .tab { cursor: pointer; opacity: .5; padding-bottom: 3px; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
 #codex .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; background: rgba(28,13,8,.35); }
-#codex .row.sel { border-color: var(--accent); background: rgba(196,106,69,.3); }
+#codex .row.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .row .g { font-size: 22px; width: 28px; text-align: center; }
 #codex .row .t { flex: 1; min-width: 0; } #codex .row .t b { display: block; font-weight: normal; letter-spacing: .08em; font-size: 13px; }
 #codex .row .t s { text-decoration: none; display: block; font-size: 10px; opacity: .6; }
@@ -46,7 +48,7 @@ const CSS = `
 #codex button { font: inherit; font-size: 12px; letter-spacing: .1em; color: var(--ink); background: rgba(28,13,8,.7); border: 1px solid rgba(255,178,122,.5); padding: 6px 12px; border-radius: 3px; cursor: pointer; }
 #codex .vars { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
 #codex .var { display: flex; gap: 10px; align-items: flex-start; padding: 7px 9px; border: 1px solid rgba(255,178,122,.22); border-radius: 3px; cursor: pointer; }
-#codex .var.sel { border-color: var(--accent); background: rgba(196,106,69,.25); }
+#codex .var.sel { border-color: var(--accent); background: rgba(var(--jsel),.25); }
 #codex .var.locked { opacity: .55; cursor: default; }
 #codex .var .r { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--accent); margin-top: 2px; flex: none; }
 #codex .var.sel .r { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
@@ -121,6 +123,14 @@ export class Codex {
       mu.title = 'The rooms that have a theme play it (the Dunes: "Mirage of the Still Water")';
       mu.onclick = () => { M.setOn(!M.on); this.render(); };
       head.appendChild(mu);
+    }
+    // the window colour (ui/theme.js), as Final Fantasy's config always offered: a click for the next
+    const TH = this.game.theme;
+    if (TH) {
+      const wc = el('div', 'lab wcol', `WINDOW <u>${TH.name}</u>`);
+      wc.title = 'The colour of every window: Kiln, Oxblood, Midnight, Verdigris, Umber';
+      wc.onclick = () => { TH.next(); this.render(); };
+      head.appendChild(wc);
     }
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();

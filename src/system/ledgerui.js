@@ -19,7 +19,7 @@ const CSS = `
 @media (max-width: 720px) { #codex .lg-body { grid-template-columns: 1fr; } }
 #codex .lg-cats { display: flex; flex-direction: column; gap: 4px; }
 #codex .lg-cat { padding: 7px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: pointer; font-size: 12px; letter-spacing: .1em; background: rgba(28,13,8,.35); }
-#codex .lg-cat.on { border-color: var(--accent); background: rgba(196,106,69,.3); }
+#codex .lg-cat.on { border-color: var(--accent); background: rgba(var(--jsel),.3); }
 #codex .lg-cat span { float: right; opacity: .65; font-size: 11px; }
 #codex .lg-filter { display: flex; gap: 8px; margin: 8px 0 0; font-size: 11px; letter-spacing: .1em; }
 #codex .lg-filter i { font-style: normal; cursor: pointer; padding: 2px 8px; border: 1px solid rgba(255,178,122,.3); border-radius: 3px; opacity: .6; }
@@ -27,7 +27,7 @@ const CSS = `
 #codex .lg-sub { font-size: 11px; letter-spacing: .24em; color: var(--accent); margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,178,122,.2); }
 #codex .lg-sub:first-child { margin-top: 0; }
 #codex .ach { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 6px 8px; margin-bottom: 4px; border: 1px solid rgba(255,178,122,.18); border-radius: 3px; background: rgba(28,13,8,.3); }
-#codex .ach.done { border-color: rgba(255,212,94,.5); background: rgba(196,106,69,.16); }
+#codex .ach.done { border-color: rgba(255,212,94,.5); background: rgba(var(--jsel),.16); }
 #codex .ach .pt { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #1c0d08; background: #b9a58f; }
 #codex .ach .pt.t2 { background: #c9b26a; } #codex .ach .pt.t3 { background: #ffb27a; } #codex .ach .pt.t4 { background: #ff8a5c; } #codex .ach .pt.t5 { background: #e88ad0; } #codex .ach .pt.t6 { background: #9ff0ff; }
 #codex .ach:not(.done) .pt { opacity: .55; }

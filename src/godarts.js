@@ -42,22 +42,22 @@ const clamp = THREE.MathUtils.clamp;
 
 const CSS = `
 #godarts { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); display: none; gap: 8px; }
-#godarts .slot { width: 84px; height: 62px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.3); background: rgba(28,13,8,.55); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .72; }
+#godarts .slot { width: 84px; height: 62px; box-sizing: border-box; border: 1px solid var(--jmid); background: linear-gradient(180deg, rgba(var(--jtop), .72), rgba(var(--jbot), .86)); border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 2px 4px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .78; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
 #godarts .slot i { font-style: normal; font-size: 22px; line-height: 1; }
-#godarts .slot span { font-size: 9px; letter-spacing: .1em; margin-top: 4px; }
-#godarts .slot b { position: absolute; top: 3px; left: 6px; font-size: 10px; color: var(--accent); font-weight: normal; }
+#godarts .slot span { font: 600 10px var(--f-title); letter-spacing: .1em; margin-top: 4px; }
+#godarts .slot b { position: absolute; top: 2px; left: 6px; font: 12px var(--f-sys); color: var(--accent); font-weight: normal; }
 #godarts .slot u { position: absolute; top: 3px; right: 6px; font-size: 9px; text-decoration: none; letter-spacing: 1px; color: rgba(255,178,122,.55); }
-#godarts .slot.sel { opacity: 1; border-color: var(--accent); background: rgba(196,106,69,.4); transform: translateY(-5px); }
+#godarts .slot.sel { opacity: 1; border-color: var(--jhi); background: linear-gradient(180deg, rgba(var(--jsel), .75), rgba(var(--jbot), .9)); transform: translateY(-5px); }
 #godarts .slot.no { opacity: .35; }
 #godarts .slot.out { border-color: #ff5a3a; }
-#godtip { position: fixed; z-index: 5; pointer-events: none; display: none; padding: 4px 9px; font: 11px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .08em; background: rgba(28,13,8,.86); border: 1px solid rgba(255,178,122,.5); border-radius: 3px; color: #fbe3cf; transform: translate(18px, 14px); white-space: nowrap; }
+#godtip { position: fixed; z-index: 5; pointer-events: none; display: none; padding: 4px 9px; font: 12px/1.4 var(--f-ui); letter-spacing: .08em; background: rgba(28,13,8,.86); border: 1px solid rgba(255,178,122,.5); border-radius: 3px; color: #fbe3cf; transform: translate(18px, 14px); white-space: nowrap; }
 #godtip.bad { border-color: #ff5a3a; color: #ffb9a8; }
 #godwheel { position: fixed; z-index: 6; pointer-events: none; display: none; width: 340px; height: 340px; margin: -170px 0 0 -170px; }
 #godwheel svg { width: 100%; height: 100%; overflow: visible; }
 #godwheel .w { fill: rgba(28,13,8,.82); stroke: rgba(255,178,122,.45); stroke-width: 1.5; }
 #godwheel .w.sel { fill: rgba(196,106,69,.7); stroke: #ffe0c0; }
 #godwheel .w.lock { fill: rgba(28,13,8,.6); }
-#godwheel text { fill: #fbe3cf; font: 11px ui-monospace, Menlo, monospace; letter-spacing: .1em; text-anchor: middle; }
+#godwheel text { fill: #fbe3cf; font: 600 12px var(--f-title); letter-spacing: .1em; text-anchor: middle; }
 #godwheel text.g { font-size: 26px; }
 #godwheel text.s { font-size: 9px; opacity: .7; }
 #godwheel .hub { fill: rgba(28,13,8,.9); stroke: rgba(255,178,122,.6); stroke-width: 1.5; }

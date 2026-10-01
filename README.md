@@ -207,6 +207,14 @@ Draw calls went from 1345 to about 650 in the workshop, 360 to 150 in the hub an
 
 **The picture** (`present.js`, settings under Tab › visual): the scene is drawn at **480 lines** (the PS2's 448, the GameCube's 480) and scaled up to the window with a **bilinear** filter, as a console's frame was by the television; the HUD and the log are HTML over it and stay sharp. `resolution` can be `ps2`, `540`, `720` or `native`; `upscale` `bilinear` or `pixel` (nearest neighbour). **Smooth shading** (`smooth`) is on: every flat-shaded material is drawn with smooth (Gouraud) normals, and triangle-soup meshes such as the pots get creased normals (smooth across their curves, hard at the rim and the base, at 50°). One sun shadow at 1024 (`shadowRes`), filtered, not softened.
 
+**The light** (`toon.js`, `glow.js`): every lit material's sun and lamp light goes through a **soft cel ramp** (Level-5's look in Dark Cloud 2 and Rogue Galaxy: an evenly lit side, an evenly shadowed side, a soft terminator and a thin middle band; the sky's fill untouched), made by one change to three.js's own lighting chunks so no material needs code of its own (`toon`, 0 to 1). The Courier and the clapperjars wear a **thin Lachryma rim**, a band at the silhouette in thin-film colours. Over the frame, the **PS2 glow**: what is brighter than white (lamps, the kiln, sunlit sand) is thresholded with a soft knee, taken down to a quarter and an eighth, blurred and laid back (`glow`, 0 is off), then a light **grade** (`grade`) leans the deepest shadows to indigo and the brightest light to the kiln's warmth. All three are under Tab › visual.
+
+## The look of the windows
+
+Every menu (the Codex, the Pneuka Box, the Index, Mind Mapping, the log, the title) wears one kit (`src/ui/theme.js`), after the JRPG's: a gradient-filled window inside a **nine-slice frame** (a bevelled double rule, a Lachryma gem at each corner), a **white glove** that points at whatever the mouse is over (or the arrow keys chose) and bobs four times a second, a window that **unfolds** from a line in a tenth of a second, and four small sounds (move, confirm, back, open). The **window colour** is yours, as Final Fantasy's config always offered: the Codex header's WINDOW cycles Kiln, Oxblood, Midnight, Verdigris and Umber (kept in the browser). The HUD wears it too: the Lachryma gauge is a framed plate, the shells a palette with the glove over the chosen one, the compass a bevelled ring.
+
+**The letters**, each with one job: **M PLUS Rounded 1c** for the windows (the rounded gothic of the era's Japanese menus), **Cinzel** for titles and tabs (and the signs in the world), **IM Fell English** italic for lore and hints, and **DotGothic16** for the System: the log and the HUD's numerals, drawn at its own 16 px cell so it stays crisp. All four are SIL Open Font Licence (credits below), bundled with the game.
+
 ## The tool belt
 
 The Courier's psychic tools share one set of rules (`src/tools/belt.js`): seven places on the belt, one tool in the hands at a time, drawing one puts the other away first and the new one comes out only once the hands are free, and while a tool is out it says what it takes (the mouse, the number keys) and what it allows (the kick, first person). Four are on it: **the Psygun** (X), **the Sondelass** (Q), **the Soul Brush** (G) and **the Veritome** (J). Tools share their pieces: where a tool sits in the hand is measured from the animation (`tools/grip.js`), and the reach, grab and whip of a draw is one module (`tools/draw.js`). Everything that asks "is a tool out?" asks the belt, so a new tool is its own module, an entry in the belt and nothing else.
@@ -639,7 +647,8 @@ runtime IK correction on the contact points.
 | `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
 | `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
 | `src/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
-| `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, and the presentation (resolution, upscale, smooth shading, shadow) |
+| `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, vertex welding, the presentation (resolution, upscale, smooth shading, shadow), the cel ramp and rim (`toon.js`) and the glow and grade (`glow.js`) |
+| `src/ui/theme.js` | the windows' kit: the fonts, the nine-slice frame, the glove, the unfolding, the menu sounds, the window colours |
 | `src/tools/belt.js`, `src/tools/grip.js`, `src/tools/draw.js` | the tool belt: the contract and the rules for the seven psychic tools (the Psygun, the Sondelass, the Soul Brush and the Veritome on it); the grip socket measured from a clip; the draw |
 | `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
 | `src/moves/veritome.js`, `src/veritome/` | the Veritome: the book and its open hold (shared with the Survey), the lens and its viewfinder, the subjects and the photograph's score, the film and the darkroom, the bestiary, the Book (the bank: designated pages, free slots, ranks and limits, Condense) and its card catalogue, the Codex shelf |
@@ -729,6 +738,9 @@ stay stiff under heavy pots. The links are sensors because contacts on multibody
 produce NaNs; cutting a rope needs Rapier 0.21+ (0.14 panics on joint removal).
 
 ## Character assets
+
+Fonts (SIL Open Font License 1.1, bundled in `src/assets/fonts/`, Latin subsets from Google Fonts): **M PLUS Rounded 1c** (The M+ Project / Coji Morishita), **Cinzel** and **Cinzel Decorative** (Natanael Gama), **IM Fell English** (Igino Marini, after the Fell types), **DotGothic16** (Fontworks Inc.).
+
 
 Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1.0 -
 https://quaternius.com. Retargeted to the Courier; see **Animation** above. (Only the free

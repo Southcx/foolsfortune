@@ -36,6 +36,9 @@ const RANGES = {
   'visual.fog': [0, 0.06, 0.001],
   'visual.shadowRes': [256, 2048, 256],
   'visual.lightSlots': [2, 16, 1],
+  'visual.toon': [0, 1, 0.05],
+  'visual.glow': [0, 1.5, 0.05],
+  'visual.grade': [0, 1, 0.05],
   'audio.volume': [0, 1.5, 0.01],
 };
 

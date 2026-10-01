@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { T, PALETTE } from './config.js';
 import { sfx } from './audio.js';
+import { FONT, THEMES, theme } from './ui/theme.js';
 
 // ---------------------------------------------------------------------------------------
 // MIND MAPPING (psychic cartography). The world is mapped in cells (2 m indoors, 8 m out on the dunes), one
@@ -36,8 +37,9 @@ const staticOnly = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 const CSS = `
 #compass { position: absolute; right: 24px; top: 18px; width: 150px; text-align: center; pointer-events: none; font-size: 10px; letter-spacing: .12em; }
 #compass canvas { width: 150px; height: 150px; display: block; }
-#compass .brg { font-size: 15px; color: #fff1dc; letter-spacing: .08em; margin-top: -2px; font-variant-numeric: tabular-nums; }
-#compass .rm { opacity: .8; margin-top: 2px; text-transform: uppercase; }
+#compass { text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
+#compass .brg { font: 16px var(--f-sys); color: #fff1dc; letter-spacing: .04em; margin-top: 0; }
+#compass .rm { opacity: .9; margin-top: 2px; text-transform: uppercase; font: 600 10px var(--f-title); letter-spacing: .14em; }
 #compass .wp { color: var(--accent); margin-top: 2px; min-height: 12px; }
 #compass .hint { opacity: .5; margin-top: 3px; }
 #mapui { position: fixed; inset: 0; z-index: 9; display: none; background: rgba(20,9,6,.9); cursor: grab; user-select: none; font-size: 12px; letter-spacing: .08em; }
@@ -47,8 +49,8 @@ const CSS = `
 #mapui .bar > * { pointer-events: auto; }
 #mapui h2 { margin: 0; font-size: 18px; letter-spacing: .24em; color: var(--accent); font-weight: normal; flex: 1; }
 #mapui button { font: inherit; color: var(--ink); background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); padding: 5px 12px; border-radius: 3px; cursor: pointer; letter-spacing: .1em; }
-#mapui button.on { background: rgba(196,106,69,.45); border-color: var(--accent); }
-#mapui button:hover { background: rgba(196,106,69,.35); }
+#mapui button.on { background: rgba(var(--jsel),.45); border-color: var(--accent); }
+#mapui button:hover { background: rgba(var(--jsel),.35); }
 #mapui .side { position: absolute; left: 18px; bottom: 16px; padding: 10px 14px; background: rgba(28,13,8,.82); border: 1px solid rgba(255,178,122,.3); border-radius: 4px; max-width: 320px; line-height: 1.6; cursor: default; }
 #mapui .side b { color: #fff1dc; font-weight: normal; }
 #mapui .side .bar2 { display: inline-block; width: 70px; height: 5px; background: rgba(28,13,8,.9); border: 1px solid rgba(255,178,122,.3); margin: 0 8px; vertical-align: middle; }
@@ -374,10 +376,11 @@ export class Cartography {
     c.rotate((this.headYaw ?? 0) - Math.PI); // (the way you face is up)
     this.paint(c, l, P.pos.x, P.pos.z, scale, S, { cellsOnly: true });
     c.restore();
-    // the ring, the cardinals, the you
-    c.strokeStyle = 'rgba(255,178,122,.55)'; c.lineWidth = 3;
-    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke();
-    c.font = 'bold 22px ui-monospace, Menlo, monospace'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    // the ring (the windows' bevel, ui/theme.js: dark, light to mid, dark), the cardinals, the you
+    const TH = THEMES[theme.id], ring = (w, st, rr = r) => { c.strokeStyle = st; c.lineWidth = w; c.beginPath(); c.arc(cx, cy, rr, 0, Math.PI * 2); c.stroke(); };
+    const bev = c.createLinearGradient(cx - r, cy - r, cx + r, cy + r); bev.addColorStop(0, TH.hi); bev.addColorStop(1, TH.mid);
+    ring(10, TH.lo, r + 2); ring(5, bev, r + 2); ring(1.5, TH.lo, r - 1.5);
+    c.font = `600 22px ${FONT.title}`; c.textAlign = 'center'; c.textBaseline = 'middle';
     for (const [ch, ang] of [['N', 0], ['E', 90], ['S', 180], ['W', 270]]) {
       const a = (ang - brg) * Math.PI / 180;
       c.fillStyle = ch === 'N' ? '#ff9a6a' : 'rgba(251,227,207,.8)';
@@ -525,7 +528,7 @@ export class Cartography {
     c.translate(W / 2, H / 2);
     this.paint(c, l, V.x, V.z, V.scale, W, { halfW: W / 2, halfH: H / 2 });
     // named places
-    c.font = '12px ui-monospace, Menlo, monospace'; c.textAlign = 'center';
+    c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
     for (const a of this.anchors) {
       if (a.layer !== l.id) continue;
       const cell = this.cell(l, Math.floor(a.x / l.cell), Math.floor(a.z / l.cell));

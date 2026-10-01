@@ -26,29 +26,40 @@
     #charge .arc { stroke: var(--accent); stroke-dasharray: 100; stroke-dashoffset: 100; }
     #charge.full .arc { stroke: #fff1dc; animation: pulse .25s infinite alternate; }
     @keyframes pulse { to { stroke-width: 4; } }
-    #lachryma { position: absolute; right: 24px; bottom: 76px; width: 260px; }
-    #lachryma .lab { font-size: 11px; letter-spacing: .2em; opacity: .8; display: flex; justify-content: space-between; margin-bottom: 4px; }
-    #lachryma .num { font-size: 16px; letter-spacing: 0; color: var(--ink); opacity: 1; font-variant-numeric: tabular-nums; }
-    #lachryma .bar { position: relative; height: 10px; background: rgba(28,13,8,.6); border: 1px solid rgba(255,178,122,.35); border-radius: 6px; overflow: hidden; }
-    #lachryma .fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, #f3c9a8, #fff1dc); box-shadow: 0 0 10px #ffb27a; transition: width .12s; }
+    /* the HUD wears the windows' frame (src/ui/theme.js): a status plate, a palette of shells, the System's numerals */
+    #lachryma { position: absolute; right: 18px; bottom: 80px; width: 284px; box-sizing: border-box; padding: 2px 6px 4px; border: 12px solid transparent;
+      border-image: var(--jframe) 14 / 12px / 0 stretch; border-radius: 8px; background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .84)) border-box;
+      text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
+    #lachryma .lab { font: 600 12px var(--f-title); letter-spacing: .2em; display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; color: var(--accent); }
+    #lachryma .num { font: 16px var(--f-sys); letter-spacing: 0; color: #fff1dc; }
+    #lachryma .bar { position: relative; height: 9px; background: linear-gradient(180deg, #0c0503, #2a140d); border: 1px solid rgba(0,0,0,.7); border-radius: 2px; overflow: hidden;
+      box-shadow: 0 1px 0 rgba(255,241,220,.18), inset 0 1px 2px rgba(0,0,0,.8); }
+    #lachryma .fill { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(180deg, #fffaf0 0 38%, #f3cfa9 40%, #d9986a); box-shadow: 0 0 8px rgba(255,178,122,.8); transition: width .12s; }
+    #lachryma .fill::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, #9ff7ea, #b48cff, #ff9ad5, #ffd27a); opacity: .9; }
     #lachryma .res { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #ffb27a 0 4px, #c46a45 4px 8px); opacity: .9; }
     #lachryma.low .fill { background: #c46a45; box-shadow: none; }
     #lachryma.gain .bar { animation: lgain .35s ease-out; }
     #lachryma.deny .bar { animation: ldeny .3s; border-color: #ff7a4a; }
     @keyframes lgain { 0% { box-shadow: 0 0 0 #fff1dc; } 30% { box-shadow: 0 0 16px #fff1dc; transform: scaleY(1.4); } 100% { box-shadow: 0 0 0 #fff1dc; } }
     @keyframes ldeny { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
-    #shells { position: absolute; right: 24px; bottom: 20px; display: flex; gap: 6px; }
-    #shells .slot { width: 46px; height: 46px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.3); background: rgba(28,13,8,.45); border-radius: 4px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .7; }
-    #shells .slot i { font-style: normal; font-size: 16px; line-height: 1; }
-    #shells .slot span { font-size: 8px; letter-spacing: .08em; margin-top: 3px; }
-    #shells .slot b { position: absolute; top: 2px; right: 4px; font-size: 10px; color: var(--accent); }
-    #shells .slot.sel { opacity: 1; border-color: var(--accent); background: rgba(196,106,69,.35); transform: translateY(-4px); }
+    #shells { position: absolute; right: 18px; bottom: 18px; display: flex; gap: 5px; }
+    #shells .slot { width: 48px; height: 50px; box-sizing: border-box; border: 1px solid var(--jmid); background: linear-gradient(180deg, rgba(var(--jtop), .7), rgba(var(--jbot), .85)); border-radius: 5px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 2px 4px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .78;
+      text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
+    #shells .slot i { font-style: normal; font-size: 17px; line-height: 1; margin-top: 4px; }
+    #shells .slot span { font: 700 7.5px var(--f-ui); letter-spacing: .04em; margin-top: 4px; white-space: nowrap; max-width: 44px; overflow: hidden; }
+    #shells .slot u { position: absolute; top: 1px; left: 4px; font: 12px var(--f-sys); text-decoration: none; opacity: .7; }
+    #shells .slot b { position: absolute; top: 1px; right: 4px; font: 12px var(--f-sys); color: var(--accent); font-weight: normal; }
+    #shells .slot.sel { opacity: 1; border-color: var(--jhi); background: linear-gradient(180deg, rgba(var(--jsel), .75), rgba(var(--jbot), .9)); transform: translateY(-4px);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.55), 0 0 10px rgba(255,210,150,.35); }
+    #shells .hand { position: absolute; top: -33px; left: 0; width: 24px; height: 32px; background-size: 24px 32px; image-rendering: pixelated; pointer-events: none;
+      filter: drop-shadow(1px 2px 0 rgba(8,3,1,.6)); transition: transform .06s steps(2); animation: jbob .5s steps(1) infinite; }
+    @keyframes jbob { 50% { translate: 0 2px; } }
     #shells .slot.empty { opacity: .3; }
     #reloadbar { position: absolute; left: 50%; top: calc(50% + 40px); width: 80px; height: 3px; transform: translateX(-50%); background: rgba(28,13,8,.6); opacity: 0; }
     #reloadbar i { display: block; height: 100%; width: 0; background: var(--accent); }
-    #speed { position: absolute; left: 14px; bottom: calc(clamp(150px, 23vh, 260px) + 22px); font-size: 11px; letter-spacing: .08em; opacity: .75; font-variant-numeric: tabular-nums; }
-    #speed b { font-size: 20px; color: #fff1dc; font-weight: normal; }
+    #speed { position: absolute; left: 16px; bottom: calc(clamp(170px, 26vh, 300px) + 20px); font: 500 11px var(--f-ui); letter-spacing: .08em; opacity: .8; text-shadow: 1px 1px 0 rgba(8,3,1,.8); }
+    #speed b { font: 16px var(--f-sys); color: #fff1dc; font-weight: normal; }
     #speed i { font-style: normal; color: var(--accent); }
     #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(28,13,8,.55); z-index: 10; cursor: pointer; }
     #overlay .card { background: var(--panel); border: 1px solid rgba(255,178,122,.35); padding: 22px 26px 0; max-width: 640px; width: calc(100% - 32px); box-sizing: border-box;
@@ -57,8 +68,17 @@
     #overlay details { margin-top: 10px; font-size: 12px; }
     #overlay summary { cursor: pointer; color: var(--accent); opacity: .9; line-height: 1.4; padding: 4px 0; }
     #overlay details table { margin-top: 6px; }
-    #overlay .go { position: sticky; bottom: 0; margin: 12px -26px 0; padding: 12px 0; background: rgba(42,20,13,.96); border-top: 1px solid rgba(255,178,122,.25); }
-    #overlay h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: .08em; color: var(--accent); }
+    #overlay .go { position: sticky; bottom: 0; margin: 12px -26px 0; padding: 14px 0 12px; background: linear-gradient(rgba(var(--jbot), 0), rgba(var(--jbot), .97) 35%); }
+    #overlay .go .opt { cursor: pointer; font: 600 17px var(--f-title); letter-spacing: .34em; color: #fff1dc; padding: 2px 6px 2px 12px; }
+    #overlay { flex-direction: column; gap: 6px; background: radial-gradient(ellipse at 50% 38%, rgba(28,13,8,.3), rgba(10,4,2,.86)); }
+    #overlay .card { cursor: default; max-height: calc(100% - 170px); }
+    #overlay .logo { text-align: center; pointer-events: none; line-height: 1; }
+    #overlay .logo small { font: italic 19px var(--f-lore); color: var(--ink); opacity: .85; }
+    #overlay .logo b { display: block; font: 700 clamp(40px, 6.2vw, 76px)/1.05 var(--f-deco); padding: 0 .1em;
+      background: linear-gradient(180deg, #fff7dc 0%, #ffd98a 44%, #b8742f 52%, #ffe2a6 72%, #fff3d0 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 3px 0 #1c0d08) drop-shadow(0 0 16px rgba(255,178,122,.45)); }
+    #overlay .logo span { display: block; font: 600 14px var(--f-title); letter-spacing: .5em; color: var(--accent); margin-top: 4px; text-shadow: 1px 1px 0 #1c0d08; }
+    #overlay h1 { margin: 0 0 4px; font-size: 20px; letter-spacing: .24em; color: var(--accent); font-weight: 600; }
     #overlay p { margin: 0 0 16px; opacity: .8; }
     #overlay table { border-collapse: collapse; width: 100%; font-size: 13px; }
     #overlay td { padding: 3px 0; } #overlay td:first-child { color: var(--accent); width: 42%; }
@@ -66,7 +86,7 @@
     #overlay .warn { color: var(--accent); margin-top: 10px; font-size: 12px; display: none; }
     @keyframes blink { 50% { opacity: .45 } }
     #locks { position: absolute; inset: 0; overflow: hidden; }
-    #course { position: absolute; left: 24px; top: 18px; font-size: 13px; letter-spacing: .06em; background: rgba(28,13,8,.45); padding: 5px 10px;
+    #course { position: absolute; left: 24px; top: 18px; font: 16px var(--f-sys); letter-spacing: .06em; background: rgba(28,13,8,.45); padding: 5px 10px;
       border-radius: 3px; display: none; font-variant-numeric: tabular-nums; }
     #course b { color: #fff1dc; font-size: 16px; font-weight: normal; }
     .lock { position: absolute; left: 0; top: 0; width: 0; height: 0; --s: 60px; --ra: 45deg; --rb: 45deg; }
@@ -80,17 +100,17 @@
     @keyframes lburst { to { opacity: 0; scale: 1.9; } }
     #trial { position: absolute; left: 50%; top: 48px; transform: translateX(-50%); text-align: center; display: none; }
     #trial .row { display: flex; gap: 14px; align-items: baseline; justify-content: center; }
-    #trial .time { font-size: 30px; color: #fff1dc; letter-spacing: .06em; text-shadow: 0 2px 0 #1c0d08; font-variant-numeric: tabular-nums; }
-    #trial .count { font-size: 16px; color: var(--accent); }
+    #trial .time { font: 32px var(--f-sys); color: #fff1dc; letter-spacing: .06em; text-shadow: 0 2px 0 #1c0d08; font-variant-numeric: tabular-nums; }
+    #trial .count { font: 16px var(--f-sys); color: var(--accent); }
     #trial .medals { font-size: 10px; letter-spacing: .12em; opacity: .7; margin-top: 2px; }
-    #trialbig { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); font-size: 64px; color: #fff1dc; text-align: center;
+    #trialbig { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); font: 700 64px var(--f-deco); color: #fff1dc; text-align: center;
       letter-spacing: .08em; text-shadow: 0 3px 0 #1c0d08, 0 0 24px rgba(255,178,122,.6); display: none; }
     #trialbig small { display: block; font-size: 16px; letter-spacing: .2em; color: var(--accent); margin-top: 8px; line-height: 1.6; }
     #trialarrow { position: absolute; left: 0; top: 0; width: 0; height: 0; display: none; }
     #trialarrow::before { content: ''; position: absolute; left: -9px; top: -9px; width: 0; height: 0; }
     #trialarrow.edge::before { border-left: 18px solid #ffb27a; border-top: 9px solid transparent; border-bottom: 9px solid transparent; filter: drop-shadow(0 0 4px #ffb27a); }
     #trialarrow.over::before { left: -6px; top: -14px; border-top: 10px solid #fff1dc; border-left: 6px solid transparent; border-right: 6px solid transparent; }
-    #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: .2em; z-index: 11; background: var(--bg); }
+    #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; letter-spacing: .3em; z-index: 11; background: var(--bg); font-family: Georgia, serif; }
   </style>
 </head>
 <body>
@@ -110,8 +130,9 @@
     <div id="shells"></div>
   </div>
   <div id="overlay">
+    <div class="logo"><small>a sixth-generation sandbox</small><b>Fool's Fortune</b><span>The Clay Workshop</span></div>
     <div class="card">
-      <h1>CLAY WORKSHOP</h1>
+      <h1>CONTROLS</h1>
       <p>Mechanics sandbox. Break every pot. Needs a keyboard and mouse.</p>
       <table>
         <tr><td>WASD / Shift</td><td>move / sprint (any direction but back)</td></tr>
@@ -163,7 +184,7 @@
         <tr><td>Shoot down in the air</td><td>recoil jump (three shots a jump)</td></tr>
       </table>
       </details>
-      <div class="go">CLICK TO PLAY</div>
+      <div class="go"><span class="opt">BEGIN</span></div>
       <div class="warn" id="lockwarn">Pointer lock unavailable here: look follows the cursor instead.</div>
     </div>
   </div>

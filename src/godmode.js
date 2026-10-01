@@ -36,7 +36,7 @@ const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow
 const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 const CSS = `
-#god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #fbe3cf; z-index: 4; }
+#god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 var(--f-ui); color: #fbe3cf; z-index: 4; }
 #god .vessel { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); width: min(420px, 60vw); text-align: center; letter-spacing: .08em; }
 #god .vessel .bar { height: 10px; margin-top: 4px; border: 1px solid rgba(255,178,122,.5); background: rgba(28,13,8,.55); border-radius: 2px; overflow: hidden; }
 #god .vessel .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
