@@ -133,10 +133,7 @@ export class Codex {
       wc.onclick = () => { TH.next(); this.render(); };
       head.appendChild(wc);
     }
-    const q = el('div', 'q', ''); q.title = 'The commands of the chat line (/help)';
-    q.onclick = () => { this.close(); this.game.chat?.run('/help'); };
-    head.appendChild(q);
-    const x = el('div', 'x', 'CLOSE'); x.title = 'Close';
+    const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();
     head.appendChild(x);
     cx.appendChild(head);

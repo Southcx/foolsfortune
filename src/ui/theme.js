@@ -21,7 +21,6 @@
 //   theme.set('midnight')         the window colour (kept in the browser);  THEMES lists them
 //   theme.watch(root)             a menu's root: its 'open' class unfolds its window and plays the open / back sounds
 // ---------------------------------------------------------------------------------------
-import { installPieces, paintPieces } from './palette.js';
 import { sfx } from '../audio.js';
 import fUi from '../assets/fonts/mplusround500.woff2?b64';
 import fUiBold from '../assets/fonts/mplusround800.woff2?b64';
@@ -155,7 +154,6 @@ class Theme {
   apply() {
     const t = THEMES[this.id], r = document.documentElement.style;
     r.setProperty('--jtop', t.top); r.setProperty('--jbot', t.bot); r.setProperty('--jsel', t.sel); r.setProperty('--jhi', t.hi); r.setProperty('--jmid', t.mid); r.setProperty('--jframe', frameSVG(t));
-    installPieces(); paintPieces(t); // (the maker's grey pieces, in this colour: ui/palette.js)
   }
 
   /** A menu's root: when it gains 'open' its window unfolds (and the open sound plays); when it loses it, the back sound. */

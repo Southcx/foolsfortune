@@ -63,7 +63,7 @@ function fishFacts(sp) {
 
 const JELLY = {
   name: 'Slip Jelly', glyph: '◒',
-  blurb: 'A mind jelly: an egg of Lachryma over a skirt of four toes, gliding on its own slip in the dunes past the Weir. Something thinks in its middle.',
+  blurb: 'A mind jelly: an egg of sloppy wet sand over a skirt of four toes, always melting, gliding on its own slip in the dunes past the Weir. Something thinks in its middle.',
   facts: [
     { id: 'seen', when: () => true, text: 'A slip jelly: it glides on slip it makes itself, and the trail it leaves is wet enough to dive into.' },
     { id: 'notice', when: st('chase'), battle: true, text: 'It notices her at fifteen paces and closes to four, circling, waiting for its moment. Lead it far from home and it gives up.' },

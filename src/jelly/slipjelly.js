@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// THE SLIP JELLY: the first creature that fights back. A mind jelly (the maker's model, Figment_MindJelly: an egg of translucent
-// Lachryma over a skirt of four toes) that lives in the dunes past the Weir. It glides on its own slip, leaving a wet trail you can
+// THE SLIP JELLY: the first creature that fights back. A mind jelly (the maker's model, Figment_MindJelly: an egg of sloppy wet
+// sand over a skirt of four toes, always melting: deform.js's melt) that lives in the dunes past the Weir. It glides on its own slip, leaving a wet trail you can
 // dive into (the Slip dive), notices the Courier, closes in, and attacks with two moves whose wind-ups are its whole body:
 //   LUNGE   it sinks down and quivers (0.8 s, a rising swell), then throws itself in an arc at where she stands; landing near her
 //           knocks her flat back and spills a pool of slip
@@ -27,7 +27,7 @@ import { PaintPath } from '../vfx/paintpath.js';
 import { JellyDeform } from './deform.js';
 
 const H = 1.5, R = 0.5;
-const COL = 0x9d72ff, CORE = 0xfff0fb, COLD = new THREE.Color(0.65, 0.9, 1);
+const COL = 0xffffff, CORE = 0xfff0fb, COLD = new THREE.Color(0.65, 0.9, 1);
 export const JELLY = {
   hp: 8, sight: 15, leash: 26, speed: 2.1, wander: 0.7, keep: 4.2,
   lunge: { wind: 0.8, reach: 8, flight: 0.8, hit: 1.4, push: 8, lift: 4.5, drain: 8, cd: [2.2, 3.4] },
@@ -36,6 +36,7 @@ export const JELLY = {
 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _acc = new THREE.Vector2();
+const _want = new THREE.Vector3(); // (the brain's own: never shared with the scratch vectors above, which the attacks and the ground probe reuse)
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 export class SlipJellies {
@@ -45,24 +46,26 @@ export class SlipJellies {
     // (the mesh as it stands in the file, its node's turn and scale baked in: the shader reads heights in metres)
     gltf.scene.updateMatrixWorld(true);
     gltf.scene.traverse((o) => { if (o.isMesh && !this.geo) { this.geo = o.geometry.clone().applyMatrix4(o.matrixWorld); this.geo.computeVertexNormals(); } });
-    this.trail = new PaintPath(game.scene, { wet: 0xd9c8ff, dry: 0x8f78c8, life: 18, max: 500 });
+    this.trail = new PaintPath(game.scene, { wet: 0x7d5f3e, dry: 0xb3905f, life: 18, max: 500 });
     this.globs = [];
     this.globGeo = new THREE.IcosahedronGeometry(0.16, 1);
-    this.globMat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.2, emissive: 0x2a1458, transparent: true, opacity: 0.85 });
+    this.globMat = new THREE.MeshStandardMaterial({ color: 0x8a6a45, roughness: 0.3 });
     this.list = [];
   }
 
   spawn(home, { yaw = Math.random() * 6.28 } = {}) {
     const g = this.game;
-    const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.16, metalness: 0, transparent: true, opacity: 0.88, emissive: 0x3b1a7a, emissiveIntensity: 1 });
-    addRim(mat, 1.2);
-    const deform = new JellyDeform(mat, H);
+    // (sand, wet and sliding: the colour and the gloss are the melt's, deform.js; the material's colour only tints it)
+    const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.7, metalness: 0, emissive: 0x000000, emissiveIntensity: 1 });
+    addRim(mat, 0.5);
+    const deform = new JellyDeform(mat, H, { melt: true });
     const root = new THREE.Group();
     const body = new THREE.Mesh(this.geo, mat);
     body.castShadow = true; body.renderOrder = 2;
     // the mind inside: a soft light that shows through, and moves with the body's middle
     const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), new THREE.MeshBasicMaterial({ color: CORE, transparent: true, opacity: 0.95 }));
     core.position.y = H * 0.55;
+    core.visible = false; // (sand hides the mind it carries)
     root.add(body, core);
     root.position.copy(home); root.rotation.y = yaw;
     g.scene.add(root);
@@ -72,7 +75,7 @@ export class SlipJellies {
     const c = {
       type: 'creature', kind: 'slipjelly', name: 'Slip Jelly', root, body, core, mat, deform, rb, col,
       home: home.clone(), pos: home.clone(), prevPos: home.clone(), vel: new THREE.Vector3(), vy: 0, yaw, radius: R, height: H,
-      alive: true, hp: JELLY.hp, state: 'idle', t: rnd(0.5, 2), cd: rnd(1, 2), aggro: false, target: null, air: false,
+      alive: true, hp: JELLY.hp, ignoreT: 0, state: 'idle', t: rnd(0.5, 2), cd: rnd(1, 2), aggro: false, target: null, air: false,
       groundY: null, groundT: 0, trailT: 0, hurtT: 0, flash: 0, deadT: 0, lastHitBy: null, spawned: 0, verbs: JELLY_VERBS,
       center: (out) => out.copy(c.pos).setY(c.pos.y + H * 0.55),
       hurt: (p, dir, power, cause, by) => this.hurt(c, p, dir, power, cause, by),
@@ -112,7 +115,7 @@ export class SlipJellies {
     const away = _b.copy(dir).setY(0); if (away.lengthSq() < 1e-4) away.set(0, 0, 1); away.normalize();
     const lean = new THREE.Vector2(away.x, away.z).rotateAround(new THREE.Vector2(), c.root.rotation.y);
     c.deform.kick(-1.6 * power, lean.multiplyScalar(2.4 * power), 0.12 + 0.05 * power);
-    if (!st(c, 'halt') && !st(c, 'melt')) c.vel.addScaledVector(away, 2.2 * power);
+    if (!st(c, 'halt') && !st(c, 'melt')) c.vel.addScaledVector(away, Math.min(2.5, 0.8 * power)); // (a shove, soaked up by its own slip)
     if (c.state === 'wind' && power >= 1.5) this.cancel(c, 'staggered'); // (a heavy blow breaks a wind-up)
     if (by === 'courier' && !st(c, 'forget')) c.aggro = true;
     sfx.jellySquelch(g.listenerDistance(c.pos), Math.min(1.5, 0.7 + power * 0.3));
@@ -193,14 +196,18 @@ export class SlipJellies {
     const fromHome = Math.hypot(c.pos.x - c.home.x, c.pos.z - c.home.z);
     const forget = st(c, 'forget'), flee = st(c, 'flee'), calm = st(c, 'calm');
     // noticing: in sight, near enough, and not made to forget
-    if (!c.aggro && !forget && d < JELLY.sight && Math.abs(P.y - c.pos.y) < 6 && !g.god?.active) {
+    // noticing: in sight, within its ground (a jelly that has just given up does not notice again for a while: no flip-flopping at the
+    // edge of its leash), and not made to forget
+    c.ignoreT -= dt;
+    const pHome = Math.hypot(P.x - c.home.x, P.z - c.home.z);
+    if (!c.aggro && !forget && c.ignoreT <= 0 && d < JELLY.sight && pHome < JELLY.leash - 2 && Math.abs(P.y - c.pos.y) < 6 && !g.god?.active) {
       c.aggro = true;
       g.glyphs?.pop('bang1', this.head(c), { color: 0xffd76a, size: 0.55, life: 1.0, follow: () => this.head(c) });
       D.kick(4, null, 0.15); sfx.jellySquelch(g.listenerDistance(c.pos), 0.6);
       g.events?.emit('jelly.notice', {});
     }
-    if (c.aggro && (forget || fromHome > JELLY.leash || d > JELLY.sight * 1.8) && !flee) { c.aggro = false; c.state = 'return'; }
-    const want = _a.set(0, 0, 0);
+    if (c.aggro && (forget || fromHome > JELLY.leash || pHome > JELLY.leash + 4 || d > JELLY.sight * 1.8) && !flee) { c.aggro = false; c.state = 'return'; c.ignoreT = 6; }
+    const want = _want.set(0, 0, 0);
     switch (c.state) {
       case 'sleep': case 'melt': break;
       case 'idle': case 'wander': case 'return': {
@@ -300,7 +307,7 @@ export class SlipJellies {
       }
     } else {
       c.pos.y += (c.groundY - c.pos.y) * Math.min(1, dt * 12);
-      if (!c.air) c.vel.multiplyScalar(Math.max(0, 1 - dt * 1.2));
+      if (!c.air) c.vel.multiplyScalar(Math.max(0, 1 - dt * 3));
     }
     // its slip, laid as it glides
     c.trailT -= dt;
@@ -381,7 +388,7 @@ export class SlipJellies {
     // colour: a flash when struck, cold and pale when halted, dim asleep
     c.flash = Math.max(0, c.flash - dt * 4);
     const halt = st(c, 'halt'), cold = halt ? 1 : 0, dim = c.state === 'sleep' ? 0.5 : 1;
-    c.mat.emissive.setRGB(0.16 * dim + c.flash * 0.9 + cold * 0.1, 0.08 * dim + c.flash * 0.8 + cold * 0.3, 0.34 * dim + c.flash * 0.9 + cold * 0.5);
+    c.mat.emissive.setRGB(c.flash * 0.6 + cold * 0.05, c.flash * 0.5 + cold * 0.15, c.flash * 0.4 + cold * 0.3); void dim;
     c.mat.color.setHex(COL).lerp(COLD, cold * 0.6);
     c.core.material.color.setHex(CORE).multiplyScalar(dim);
   }

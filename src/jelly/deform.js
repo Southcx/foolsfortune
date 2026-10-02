@@ -14,12 +14,20 @@
 //
 //   const d = new JellyDeform(material, height)   d.kick(squashV, leanV2, wobble)   d.dent(localPoint, depth)   d.update(dt, accel2)
 //   d.target.squash = 0.8  (where the squash spring rests: a crouch, a sleep, a puddle)
+//
+// THE MELT (optional, { melt: true }): the surface of a creature of sloppy wet sand, sliding down it forever. A pattern of wet and dry
+// sand laid round the body (on a circle, so it has no seam) and scrolled slowly down it, about six centimetres a second: tall wet
+// streaks that run toward the foot, wetter and darker low down, glossy where wet and matte where dry, a coarse grain that does not
+// move. A scrolled pattern is the honest way to show a surface that is always running (the sixth generation's waterfalls and lava,
+// Wind Waker's and Ocarina of Time's scrolled textures), and it is slow and soft, so it never shimmers.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 export class JellyDeform {
-  constructor(material, height) {
+  constructor(material, height, { melt = false } = {}) {
+    this.melt = melt;
     this.u = {
+      uTime: { value: 0 },
       uSq: { value: 1 }, uLean: { value: new THREE.Vector2() }, uWob: { value: 0 }, uPh: { value: 0 },
       uDent: { value: new THREE.Vector4(0, 0, 0, 0) }, uH: { value: height },
     };
@@ -33,8 +41,9 @@ export class JellyDeform {
       Object.assign(sh.uniforms, u);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', `#include <common>
-uniform float uSq, uWob, uPh, uH; uniform vec2 uLean; uniform vec4 uDent;`)
+uniform float uSq, uWob, uPh, uH; uniform vec2 uLean; uniform vec4 uDent; varying vec3 vJP;`)
         .replace('#include <begin_vertex>', `#include <begin_vertex>
+vJP = position;
 {
 	float h = clamp( position.y / uH, 0.0, 1.0 );
 	float s = max( uSq, 0.15 );
@@ -46,8 +55,32 @@ uniform float uSq, uWob, uPh, uH; uniform vec2 uLean; uniform vec4 uDent;`)
 	float dd = length( position - uDent.xyz );
 	transformed -= objectNormal * uDent.w * exp( -dd * dd * 7.0 );
 }`);
+      if (melt) sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', `#include <common>
+uniform float uTime, uH; varying vec3 vJP;
+float jh( vec3 p ) { return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 ); }
+float jn( vec3 p ) {
+	vec3 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
+	return mix( mix( mix( jh( i ), jh( i + vec3( 1, 0, 0 ) ), f.x ), mix( jh( i + vec3( 0, 1, 0 ) ), jh( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+	            mix( mix( jh( i + vec3( 0, 0, 1 ) ), jh( i + vec3( 1, 0, 1 ) ), f.x ), mix( jh( i + vec3( 0, 1, 1 ) ), jh( i + vec3( 1, 1, 1 ) ), f.x ), f.y ), f.z );
+}`)
+        .replace('#include <color_fragment>', `#include <color_fragment>
+float jWet;
+{
+	// round the body (a circle: no seam), up it, and scrolled down it
+	float a = atan( vJP.x, vJP.z ), h = clamp( vJP.y / uH, 0.0, 1.0 );
+	vec2 ring = vec2( cos( a ), sin( a ) );
+	float run = vJP.y * 2.2 + uTime * 0.13;
+	float streak = jn( vec3( ring * 2.6, run * 0.35 ) ) * 0.65 + jn( vec3( ring * 6.0, run * 0.9 ) ) * 0.35;
+	jWet = smoothstep( 0.5, 0.78, streak + 0.28 * ( 1.0 - h ) );
+	float grain = jn( vec3( ring * 14.0, vJP.y * 16.0 ) );
+	vec3 dry = vec3( 0.80, 0.65, 0.44 ), wet = vec3( 0.47, 0.35, 0.22 );
+	diffuseColor.rgb *= mix( dry, wet, jWet ) * ( 0.9 + 0.18 * grain ); // (the material's colour tints it: white is plain sand)
+}`)
+        .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+roughnessFactor = mix( 0.92, 0.22, jWet );`);
     };
-    material.customProgramCacheKey = () => 'jelly';
+    material.customProgramCacheKey = () => (melt ? 'jelly-melt' : 'jelly');
   }
   /** A push: on the squash spring's speed, the lean spring's speed, and the wobble. */
   kick(squashV = 0, leanV = null, wobble = 0) {
@@ -69,6 +102,7 @@ uniform float uSq, uWob, uPh, uH; uniform vec2 uLean; uniform vec4 uDent;`)
     this.wob *= Math.exp(-K.wobDecay * dt); this.ph += dt * K.wobRate;
     this.dentK *= Math.exp(-6 * dt);
     const u = this.u;
+    u.uTime.value += dt; // (the melt runs on the creature's own time: a halted jelly stops running too)
     u.uSq.value = this.sq; u.uLean.value.copy(this.lean); u.uWob.value = this.wob; u.uPh.value = this.ph; u.uDent.value.w = this.dentK;
   }
   /** Hold still (a halt): nothing moves until it is let go. */
