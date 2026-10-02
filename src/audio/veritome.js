@@ -40,4 +40,13 @@ export class VeritomeSounds {
     this.noise(t, 0.5, { type: 'lowpass', f0: 900, f1: 400, gain: 0.18, attack: 0.08, dest: d });
     [523, 659, 784, 1047].slice(0, Math.min(4, 1 + Math.floor(n / 6))).forEach((f, i) => this.tone(t + 0.15 + i * 0.11, 1.1, { f0: f, f1: f, type: 'sine', gain: 0.12, dest: d }));
   }
+
+  /** A fresh roll threaded and wound on: the advance lever's ratchet (six quick clicks) and the back snapping shut. */
+  filmWind() {
+    if (!this.ok() || !this.allow('filmWind', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.2);
+    for (let i = 0; i < 6; i++) this.noise(t + i * 0.045, 0.012, { type: 'bandpass', f0: 3400 + i * 120, q: 10, gain: 0.7, dest: d });
+    this.tone(t + 0.36, 0.06, { f0: 420, f1: 260, type: 'triangle', gain: 0.3, dest: d });
+    this.noise(t + 0.36, 0.03, { type: 'bandpass', f0: 2000, q: 3, gain: 0.5, dest: d });
+  }
 }

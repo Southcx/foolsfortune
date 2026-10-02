@@ -73,6 +73,7 @@ import { MusicPlayer } from './music/player.js';
 import { LACHRYMA } from './music/lachryma.js';
 import { chooseMusic, chooseTitleMusic } from './music/choose.js';
 import { Clayese, hearHaggling } from './npc/clayese.js';
+import { hearEvents } from './audio/cues.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -351,6 +352,7 @@ async function main() {
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
   game.music = new MusicPlayer(sfx);
   hearHaggling(game, new Clayese(sfx), PEOPLE.find((p) => p.id === 'raku').voice); // (Raku's voice for the shop's bargaining: npc/clayese.js)
+  hearEvents(game, sfx); // (the sounds events make: audio/cues.js)
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };

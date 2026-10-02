@@ -1,5 +1,6 @@
 // A sound bank of the one mixer (audio.js): the shop. Cubes set down on the counter (one, a few, a heap), a purchase, a refusal, the
 // kiln firing a glaze, a shelf restocked.
+// (shopBuy, shopSell: shop/shops.js; kilnFire: vessel/vessel.js)
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
 // Prior art: the shops of the era's games (Animal Crossing's register and Nook's "yes, yes", the rupee counter that rolls and
@@ -30,6 +31,18 @@ export class ShopSounds {
     }
   }
 
+  /** A sale: cubes counted into your hand (a quick climbing run of glassy ticks) and a soft low bell under the last. */
+  shopSell() {
+    if (!this.ok() || !this.allow('shopSell', 4)) return;
+    const t = this.ctx.currentTime, d = this.out(0.2, 0.45);
+    [0, 2, 4, 7, 9].forEach((st, i) => {
+      const f = 1318 * Math.pow(2, st / 12), tt = t + i * 0.055;
+      this.tone(tt, 0.14, { f0: f, f1: f, gain: 0.32, dest: d });
+      this.noise(tt, 0.01, { type: 'highpass', f0: 6500, gain: 0.15, dest: d });
+    });
+    for (const [r, a] of [[1, 0.3], [2.76, 0.08]]) this.tone(t + 0.28, 0.9 / r, { f0: 659 * r, f1: 659 * r, gain: a, dest: d });
+  }
+
   /** A refusal: a soft wooden knock and two muted notes falling a minor third (not a buzzer: the shop is polite). */
   shopRefuse() {
     if (!this.ok() || !this.allow('shopRefuse', 4)) return;
@@ -40,8 +53,9 @@ export class ShopSounds {
     this.tone(t + 0.2, 0.25, { f0: 440, f1: 430, type: 'triangle', gain: 0.16, dest: d });
   }
 
-  /** The kiln firing a glaze: the burner's roar swelling for `roar` seconds and dying, then the glaze crazing as it cools (pings). */
-  kilnFire(roar = 3) {
+  /** The kiln firing a glaze: the burner's roar swelling for `roar` seconds and dying, then the glaze crazing as it cools (pings,
+   *  a long tick-tick that thins out: the vessel glows and cools over about 2.6 s, vessel/vessel.js). */
+  kilnFire(roar = 1.2) {
     if (!this.ok() || !this.allow('kiln', 0.5)) return;
     const c = this.ctx, t = c.currentTime, d = this.out(0.3, 0.5), R = Math.max(1, roar);
     const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.8, t + 0.6);
@@ -51,8 +65,8 @@ export class ShopSounds {
     const flick = c.createOscillator(), fg = c.createGain(); flick.frequency.value = 7; fg.gain.value = 120; flick.connect(fg).connect(lp.frequency); // (the flame's flutter)
     src.connect(lp).connect(g); src.start(t); src.stop(t + R + 1.3); flick.start(t); flick.stop(t + R + 1.3);
     this.tone(t, R + 1, { f0: 55, f1: 50, type: 'sine', gain: 0.18, dest: d }); // (the burner's body)
-    for (let i = 0; i < 9; i++) { // (cooling: the glaze crazes, a ping and then another, further apart)
-      const tt = t + R + 1 + Math.pow(i, 1.4) * 0.35 + Math.random() * 0.2, f = 3200 + Math.random() * 2800;
+    for (let i = 0; i < 14; i++) { // (cooling: the glaze crazes, a ping and then another, further apart)
+      const tt = t + R + 0.3 + Math.pow(i, 1.5) * 0.12 + Math.random() * 0.06, f = 3200 + Math.random() * 2800;
       this.tone(tt, 0.12, { f0: f, f1: f * 0.995, gain: 0.09, dest: d });
       this.noise(tt, 0.01, { type: 'highpass', f0: 6000, gain: 0.15, dest: d });
     }

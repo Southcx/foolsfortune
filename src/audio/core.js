@@ -61,8 +61,8 @@ export class Sfx {
   // rate limiter so 200 shards landing at once don't melt the mixer
   allow(key, perSec) {
     const now = performance.now();
-    const last = this.limits.get(key) || 0;
-    if (now - last < 1000 / perSec) return false;
+    const last = this.limits.get(key); // (never played is not "played at time zero": the first one always sounds)
+    if (last !== undefined && now - last < 1000 / perSec) return false;
     this.limits.set(key, now);
     return true;
   }
