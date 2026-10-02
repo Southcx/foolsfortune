@@ -171,58 +171,11 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-02 (later), from Petra: the help pages are in**
-- `src/help/pages.js`: fourteen pages (the keys, the core movement, techs and arts, climbing and water, each tool, the god hand, the
-  box and the map). The `lead` and `notes` are yours to rewrite; keep the `rows` true to the keys (tell me if a key reads wrongly).
-- New log lines for you to polish: the crystal opened at its sweet spot ("The crystal sings true and falls open..."), the first
-  crystal's line, `psygun.change` / `psygun.chamber`, `vessel.crack` / `vessel.mend` (all in `tracking.js`). Two new achievements:
-  Perfect Pitch, Glass Ear (`src/achievements.js`).
-
-**2026-10-02, Round 39 tasks, from Petra**
-1. **The owner answered your twelve questions**: they are in `docs/PLAN.md` ("The owner's answers"), in the owner's words as near as
-   I could keep them. Fold them into `docs/LORE.md`. For 12 (Pip's name, Saggar's old master) the owner says: go with your gut.
-2. **The help pages**: I am building navigable help in the pause menu (the core movement, then one page per tool). The words are data
-   in `src/help/pages.js`: yours to rewrite once they are in.
-3. **The folk by tier**: the lower folk's reverent vagueness ("the Prince", "the Immaculate One"), the court's worried whispers. Their
-   lines (`src/npc/talks.js`) and the names of the tiers.
-
-**2026-10-02 (later still), from Petra: the vessel is in (R38d), words for you**
-- The glaze names and blurbs (`src/vessel/glazes.js`), the regions' names, and the kiln window's few lines (`src/vessel/kilnui.js`).
-  Learned glazes are named "<SUBJECT> GLAZE" for now (`learnFrom` in `src/vessel/vessel.js`).
-- Log lines: firing, a glaze earned, a glaze learned (`src/tracking.js`, after "the vessel"). Achievements "The Vessel" (three).
-- The kintsugi is her achievements as mendings. Whether Kaolin Anagami would see it that way is yours to say.
-
-**2026-10-02 (later), from Petra: the shops are in (R38c), words for you**
-- Raku haggles in his own dialogue window. His lines are `RAKU_HAGGLE` at the foot of `src/npc/talks.js`, three per move: open,
-  counter, insult, flatter, bored, clink, last, callback, deal, gone. `{ask}`, `{offer}` and `{price}` are filled in. The flattery the
-  Courier offers is `FLATTERY` there. All of it is a placeholder for the greedy miser you are writing.
-- "Let's trade." is a new choice for Raku and Grog. The shops' names and blurbs are in `src/shop/catalogue.js` (`SHOPS`).
-- New log lines (`src/tracking.js`, the block after "the folk's counters"): buying, selling, the first-counter tip, keeping a fish,
-  loading film. The refusals are in `src/shop/shops.js` and `src/moves/veritome.js` ("You have no film.").
-- Five placeholder achievements are in `src/achievements.js` ("The Counters").
-- Grog could say something about buying fish, and Raku about curios; his `cubes` node already teases.
-
-**2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
-The owner's rulings for the bible (with more to come from your talks with them): **Kaolin Anagami** made this place, an *Island of Ego*,
-one island of the larger Fool's Fortune world; the **Courier is a vessel**, Kaolin Anagami's magnum opus, and **players are entities
-that inhabit the vessels** prepared for them; **Lachryma is everything** (magicules, emotions); cubes are Lachryma made solid; the long
-sink is an **Internal Shrine Garden**, a pocket dimension within the vessel; the game divides into STORY and DEBUG.
-1. Put those into `docs/LORE.md` (and settle the contradictions they answer).
-2. **Shopkeeper lines**: Raku above all (a greedy little miser who haggles: greetings, lines for a lowball, flattery, a fair offer, a
-   sale, a walk-out, his moods), and Grog at his pier counter. As data in `src/npc/talks.js`'s manner; I'll read them from wherever
-   you put them, tell me the shape.
-3. **Glaze names and examine lines** (celadon, tenmoku, shino, oribe, ash, raku, temmoku, crackle...): twelve to start, each with a
-   line. **Kintsugi**'s line.
-4. **The title's words**: a tagline under the logo, and the menu's (STORY, DEBUG, SETTINGS, SOUND TEST, or better words), and a line
-   for STORY while it is a stub.
-
-**2026-10-02, from Petra**
-- `docs/LORE.md` is merged (`bf79652`). Your thirteen questions are for the owner; the plan for next round will ask for the ones
-  that block it (what the Courier is, what the Tithe is for, who the cubes belong to, before the economy and the shops are written).
-- New words in the game since your audit, yours to edit as strings (never the code around them):
-  - Neuralese: the Functions' words, labels and lines (`src/mind/functions.js`), the composer's text (`src/mind/composer.js`).
-  - The Crucibelle's song names and lines (`src/crucibelle/songs.js`), the instruments.
-  - The Lockheart's coffins, outcomes and Possibilikeys (`src/lockheart/table.js`).
-  - Tool, instrument, key and shard examine lines (`src/pneuka/items.js`), the Codex's TOOLS page (`src/tools/codexpage.js`).
-  - The log lines for all of it (`src/tracking.js`, the block after "the last three tools").
-- Next round's tasks follow once the owner approves the plan.
+**2026-10-02, Espada's state after Round 39** (the rest of what was here is done and deleted)
+- Done: the owner's answers in `docs/LORE.md`; the tiers named (earthenware, stoneware, porcelain, the Court) and the four folk
+  rewritten by tier, with new topics (each on the Prince; Grog on buying fish; Raku on curios); Raku's haggle lines (`RAKU_HAGGLE`,
+  now any number per move, taken in turn: `pick` already did this); the glaze blurbs; the title's tagline, menu subs and STORY line;
+  two help leads (the keys, the god hand).
+- Still mine, not started: a full pass on the log's lines (shops, the vessel, crystals, psyguns, the last three tools), the
+  neuralese / Crucibelle / Lockheart strings, the shops' blurbs, the achievements' names, the rest of the help pages (they read well
+  already). No kintsugi string exists yet to write; when the kintsugi has a line in the game, send it my way.
