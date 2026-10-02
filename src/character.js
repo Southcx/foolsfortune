@@ -8,6 +8,7 @@ import { Clips, Track } from './animator.js';
 import { authorAll } from './authored.js';
 import armorB64 from './assets/courier/courier_armor.png?b64';
 import maskB64 from './assets/courier/courier_mask.png?b64';
+import { dressFiligree } from './vfx/filigree.js';
 
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
@@ -94,6 +95,7 @@ export class Character {
         m.customProgramCacheKey = () => `fphide-${key}`;
         if (!m.transparent) addRim(m); // (the thin Lachryma rim: render/toon.js)
         byMat.set(key, withFade(m, key));
+        if (name === 'Courier_Armor' && !this.filigree) this.filigree = dressFiligree(byMat.get(key)); // (the maker's line masks: vfx/filigree.js)
       }
       o.material = byMat.get(key);
       tagFpHide(o, isArmor);
