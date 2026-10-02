@@ -31,26 +31,33 @@ brightness**, never by a digit.
   armour (`source_assets/courier_filigree_*.png`) could be the most diegetic gauge of all: her armour's filigree lights with
   her Lachryma (a line that glows with its load beats a gauge). *Waiting on the owner: what the three masks are for.*
 
-## 3. The Mind is wireframe
+## 3. The Mind is black labradorite, and drawn in lines
 
-Psychic technology, the System, sensing, targeting, reprogramming: drawn as **lines, not surfaces**. One-pixel (at 480 lines)
-additive lines in the mind's indigo-violet (`PAL.mind`: `#7650b8` to `#d2c3f4`), with a hot near-white on the edges that matter.
-A wireframe **bursts in once** (grows from a point or closes from wide), then **holds or turns at a constant rate**; it fades out;
-it never blinks or pulses at a variable rate. Low-poly on purpose (under ~40 segments: an icosphere, a dome, a ring of ticks).
+Mental energy, focus and psychic technology (the System, sensing, targeting, reprogramming) are Lachryma's **black, iridescent,
+ultraviolet** face, after the owner's own Lachryma shaders, whose main influence was **labradorite**: a near-black stone with a
+flash of colour (its schiller) that comes up when it is turned, mostly blue and ultramarine, sometimes peacock, green, gold or copper,
+edged in violet. One module draws it: `vfx/labradorite.js`.
 
-Prior art: Vagrant Story's battle sphere (a wire sphere bursts out of Ashley; its radius is the weapon's reach and what is inside
-lights), Parasite Eve's range dome (a low-poly wire dome stands around Aya while she chooses), Elemental Gearbolt's closing
-frames (a box shrinks around what is about to fire: the closing is the warning and the timer), Rez's mind-space (wireframe is
-the inside of a network; lock squares count to eight without numerals), Zone of the Enders' ring radar on the body.
+- **Lines** (wireframes, reticles, edges) are the schiller itself, **very softly rainbow**: the stone's palette leaned toward a pale
+  ultraviolet, its hue a function of where the line is and where it is seen from. Additive, one pixel at 480 lines.
+- **Surfaces** (a marker's body, a dome, the Courier's filigree) are **ink with the schiller coming up through it** at the turn of
+  the surface, in broad bands that move with the eye like oil on water.
+- **Motion**: a wireframe bursts in once (grows from a point or closes from wide), then holds or turns at a constant rate; its
+  colours move only with the eye and a slow constant drift. Nothing blinks or pulses at a variable rate. Low-poly on purpose
+  (under ~40 segments: an icosphere, a dome, a ring of ticks).
 
-- Follows it: the chevron's bright edges, the god-art ghost box (`godarts.js`), Reprogram's lattice (indigo).
-- To decide: the chevron and the lock-on reticle are warm/gold today. Either they stay gold (they are *yours*: see 4) or the
-  chevron becomes Mind (it is the System telling you what F would do). Proposal: the chevron becomes Mind; the lock-on stays gold.
+Prior art: labradorite and spectrolite; the thin-film (oil, soap) shaders; Vagrant Story's battle sphere (a wire sphere bursts out of
+Ashley; its radius is the weapon's reach and what is inside lights), Parasite Eve's range dome (a low-poly wire dome stands around
+Aya while she chooses), Elemental Gearbolt's closing frames (a box shrinks around what is about to fire: the closing is the warning
+and the timer), Rez's mind-space (lock squares count to eight without numerals), Zone of the Enders' ring radar on the body.
+
+- Follows it: the chevron (`vfx/chevron.js`), the lock-on reticle and the angler's brackets (`angling/reticle.js`), the sounding
+  pulse (`vfx/pulse.js`), the god-art ghost box's edges (`godarts.js`), and the 3D HUD below.
 
 ## 4. Gold is yours
 
-Gold (`PAL.gold`) means a thing is yours, won, or locked by you: the lock-on, a reward, an achievement's line in the log, a chest's
-rarity. Kept off passive marks so that it keeps its meaning.
+Gold (`PAL.gold`) means a thing is yours or won: a reward, an achievement's line in the log, a chest's rarity, kintsugi. Kept off
+passive marks so that it keeps its meaning. (Targeting is the Mind's, not gold: see 3.)
 
 ## 5. Reach is a volume on the body; state is a frame on the target
 
@@ -112,5 +119,4 @@ Jak told worlds apart by palette. Proposed families (the walls / the floor / one
 ## Not yet decided
 
 - The three filigree masks (see 2).
-- Whether the chevron joins the Mind (see 3).
 - Which of the 3D HUD elements to build first (proposal: the Lachryma ring, then the reach dome).

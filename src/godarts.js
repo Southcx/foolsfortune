@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mindLineMaterial } from './vfx/labradorite.js';
 import { T, PALETTE } from './config.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { addOutline } from './outline.js';
@@ -189,7 +190,7 @@ export class GodArts {
     this.bladeLine.renderOrder = 9; this.bladeLine.visible = false; this.bladeLine.frustumCulled = false;
     this.ghost = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat(0xffc65c, 0.16));
     this.ghost.renderOrder = 8; this.ghost.visible = false;
-    this.ghostEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color: 0xffe0a0 }));
+    this.ghostEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), mindLineMaterial({ depthTest: true, bright: 1.2 })); // (the Mind's wireframe: vfx/labradorite.js)
     this.ghost.add(this.ghostEdges);
     g.scene.add(this.blade, this.bladeLine, this.ghost);
     this.clay = new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.85, flatShading: true });

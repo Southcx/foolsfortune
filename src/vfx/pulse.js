@@ -10,10 +10,13 @@
 //   game.pulse.emit(pos, radius, color, { life })     game.pulse.blip(pos, color, size)     game.pulse.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 
-const SHELL_V = 'varying vec3 vN, vV, vP; void main() { vP = position; vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }';
+const SHELL_V = 'varying vec3 vN, vV, vP, vW; void main() { vP = position; vW = (modelMatrix * vec4(position, 1.0)).xyz; vN = normalize(normalMatrix * normal); vec4 mv = modelViewMatrix * vec4(position, 1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }';
+// (a sounding is the Mind's: the shell is labradorite, leaning to the colour of whatever sent it out)
 const SHELL_F = `uniform vec3 uColor; uniform float uA;
-varying vec3 vN, vV, vP;
+varying vec3 vN, vV, vP, vW;
+${LAB_GLSL}
 void main() {
   float ndv = abs(dot(normalize(vN), normalize(vV)));
   float rim = pow(1.0 - ndv, 1.7);
@@ -24,7 +27,8 @@ void main() {
   float grid = max(1.0 - smoothstep(0.0, w * 2.2, lat), 1.0 - smoothstep(0.0, w * 2.2 / max(0.35, sqrt(1.0 - p.y * p.y)), lon));
   // (seen from inside, as the Courier mostly does, the rim is thin: the lattice carries the shell then)
   float a = uA * (0.06 + 0.9 * rim + grid * (0.15 + 0.35 * (1.0 - ndv)));
-  gl_FragColor = vec4(uColor * (0.75 + 0.8 * rim), a);
+  vec3 c = mix(labSoft(labPhase(vW, normalize(cameraPosition - vW))), uColor, 0.45);
+  gl_FragColor = vec4(c * (0.75 + 0.8 * rim), a);
 }`;
 
 export class PsychicPulse {
@@ -41,7 +45,7 @@ export class PsychicPulse {
   /** A pulse from `pos`: grows to `radius` over `life`, easing out. */
   emit(pos, radius, color = 0xffb27a, { life = 1.9, depthTest = true, surfaceY = null } = {}) {
     const mat = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: new THREE.Color(color) }, uA: { value: 1 } },
+      uniforms: { uColor: { value: new THREE.Color(color) }, uA: { value: 1 }, uMindT: mindTime },
       vertexShader: SHELL_V, fragmentShader: SHELL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, fog: false, depthTest,
     });
     const shell = new THREE.Mesh(this.shellGeo, mat);
@@ -75,6 +79,7 @@ export class PsychicPulse {
 
   update(dt) {
     const cam = this.game.camera;
+    if (this.pulses.length) mindTick();
     for (let i = this.pulses.length - 1; i >= 0; i--) {
       const p = this.pulses[i];
       p.t += dt;
