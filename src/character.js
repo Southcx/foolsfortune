@@ -6,6 +6,8 @@ import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform, dissolveUniform, dissolveBaseUniform } from './outline.js';
 import { Clips, Track } from './animator.js';
 import { authorAll } from './authored.js';
+import armorB64 from './assets/courier/courier_armor.png?b64';
+import maskB64 from './assets/courier/courier_mask.png?b64';
 
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
@@ -18,12 +20,26 @@ const _v5 = new THREE.Vector3(), _v6 = new THREE.Vector3();
 const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const _m1 = new THREE.Matrix4();
 
+// The maker's paintings of the armour and the mask (source_assets/courier_armor.png, courier_mask.png). In Blender they were drawn
+// unlit (an emission shader), the light painted in; here they take the game's light, and the same painting glows back a share of
+// itself (PAINT_LIGHT) so its painted values hold in the shadowed side of the cel ramp instead of sinking to black.
+const PAINT_LIGHT = 0.45;
+function painting(b64) {
+  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.flipY = false; // (glTF's UV convention)
+  t.anisotropy = 4;
+  return t;
+}
+let PAINT = null;
+const paint = () => (PAINT ||= { armor: painting(armorB64), mask: painting(maskB64) });
+const painted = (map) => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0.0 });
+
 const MATS = {
-  Courier_Armor: () => new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.65, metalness: 0.05, flatShading: true }),
+  Courier_Armor: () => painted(paint().armor),
   CourierEnergy: () => new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.4, emissive: PALETTE.glow, emissiveIntensity: 0.18 }),
   CourierEnergyShell: () => new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3, transparent: true, opacity: 0.22, depthWrite: false }),
-  // the mask is armour too (it used to be near-black)
-  CourierMask: () => new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.65, metalness: 0.05, flatShading: true }),
+  CourierMask: () => painted(paint().mask),
 };
 const OUTLINED = new Set(['Courier_Armor', 'CourierMask', 'Kiritohair']);
 
