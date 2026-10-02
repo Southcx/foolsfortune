@@ -110,7 +110,11 @@ export class Grapple extends Tech {
     // where she actually is now (a wall may have stopped her short): still inside the rope?
     this.chest(_c);
     const fix = _t.subVectors(_c, A), fl = fix.length();
-    if (fl > h.L + 0.08) { P.pos.addScaledVector(fix, -(fl - h.L) / fl); P.body?.setNextKinematicTranslation?.(P.pos); }
+    // (pulled back in only where she fits: an anchor low on the floor ahead would otherwise draw her down through it)
+    if (fl > h.L + 0.08) {
+      _p.copy(P.pos).addScaledVector(fix, -(fl - h.L) / fl);
+      if (P.fits?.(_p, P.shape) ?? true) { P.pos.copy(_p); P.body?.setNextKinematicTranslation?.(P.pos); }
+    }
     // facing and the pose
     const sp = P.vel.length();
     this.peak = Math.max(this.peak, sp);

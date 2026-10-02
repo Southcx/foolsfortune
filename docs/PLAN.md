@@ -36,6 +36,7 @@ fittings and Saggar's and Pip's shops planned for R39 move to R40.
 ## The round
 
 ### Petra (Main)
+_Landed, all ten (a to j), on the default branch; the art, sound and words each needs are in `docs/HANDOFFS.md`._
 - **a. Keys.** R (reset) and H (to the hub) move into the Tab panel's DEBUG section (with T's room reset), freeing R and H.
 - **b. The pause menu.** The Esc card's controls rewritten to what is true now, and **navigable help pages**: one for the core
   movement and one per tool (what it is, its keys, what it does), so a change can be looked up. The pages are data
