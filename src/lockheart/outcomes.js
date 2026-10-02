@@ -12,6 +12,7 @@
 import * as THREE from 'three';
 import { REL } from '../ai/index.js';
 import { sfx } from '../audio.js';
+import { ECON } from '../econ/table.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -30,7 +31,7 @@ export const OUTCOME_FX = {
     return Math.round(took);
   },
   spill(g, at, { power }) { g.baubles?.spawn(at.clone().setY(at.y + 0.3), Math.round(6 + 6 * power), { spread: 1.2, up: 4 }); return Math.round(6 + 6 * power); },
-  cubes(g, at, { power }) { const w = Math.round(18 * power); g.cubes?.burst?.(at.clone().setY(at.y + 0.4), w, { count: 6 + Math.round(4 * power), up: 5, from: 'lockheart' }); return w; },
+  cubes(g, at, { power }) { const w = Math.round(ECON.lockheart.cubes * power); g.cubes?.burst?.(at.clone().setY(at.y + 0.4), w, { count: 6 + Math.round(4 * power), up: 5, from: 'lockheart' }); return w; },
   mend(g, at, { power }) {
     g.lachryma.gain(g.lachryma.max, 'lockheart');
     g.lachryma.addModifier('mend', { regenMult: 2 + power, regenDelayMult: 0.3 });

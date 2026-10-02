@@ -26,6 +26,7 @@
 //  - The camera language of a reveal: cut close, hold, push in on the pay-off, and pull back to show the size of the pile.
 // None of it says a word: the light, the movement and the sound do it, and the log (tracking.js) writes the sentence.
 // ---------------------------------------------------------------------------------------
+import { ECON } from './econ/table.js';
 import * as THREE from 'three';
 import { GROUPS } from './physics.js';
 import { sfx } from './audio.js';
@@ -47,7 +48,7 @@ const PLAN = [
   { charge: 2.2,  dim: 0.55, hit: 0.13, fountain: 1.9, spark: 150, rings: 4, stars: 5, slow: 0.7, curio: 2.2, shake: 0.6,  punch: 14 },
   { charge: 2.9,  dim: 0.6,  hit: 0.16, fountain: 2.6, spark: 230, rings: 5, stars: 7, slow: 0.2,  curio: 2.4, shake: 0.7, punch: 16 },
 ];
-const DUPE_VALUE = [12, 35, 100, 280, 900];
+const DUPE_VALUE = ECON.dupe; // (econ/table.js)
 
 /** The roulette's colours, in order, for a sealed chest that will turn out to be tier T (a list of tier indices). */
 export function rouletteSeq(T, rnd = Math.random) {

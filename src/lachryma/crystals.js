@@ -20,6 +20,7 @@ import { RAPIER, GROUPS } from '../physics.js';
 import { tag, register } from '../tags.js';
 import { sfx } from '../audio.js';
 import { DUNE, BARRIER, OASIS } from '../dunes.js';
+import { ECON } from '../econ/table.js';
 
 const REGROW = 180, GROW = 6;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
@@ -128,7 +129,7 @@ export class Crystals {
     g.events?.emit('crystal.strike', { by, tool, ringing });
     if (e.hp <= 0) {
       // the last blow: it breaks open (cubes; a shard if it rang; sometimes a key: luck lives in the crystal too)
-      const worth = Math.round((8 + e.size * 10) * k);
+      const worth = Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k);
       g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }

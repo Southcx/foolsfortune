@@ -21,6 +21,7 @@
 // undone into Lachryma, liquid and solid, drawn to the Courier (vfx/dissolve.js). A creature that cannot be cut at all (not
 // 'sliceable') always resists.
 // ---------------------------------------------------------------------------------------
+import { ECON } from '../econ/table.js';
 import * as THREE from 'three';
 import { planeFrom } from '../slicing.js';
 import { sfx } from '../audio.js';
@@ -299,7 +300,7 @@ export class BladeMode {
     // the core: what a jar is full of, taken
     this.queue.push({ t: 0.32, fn: () => {
       g.baubles?.spawn(at.clone(), 10 + c.stash);
-      g.cubes?.burst?.(at.clone(), 3 + Math.min(6, c.stash), { from: 'zandatsu' });
+      g.cubes?.burst?.(at.clone(), ECON.jelly.core + Math.min(6, c.stash), { from: 'zandatsu' });
       g.lachryma.gain?.(28);
       g.glyphs.pop('star', at.clone().setY(at.y + 0.5), { color: 0xffd76a, size: 1.0, burst: true, ring: true, life: 1.6 });
       g.fx.embers?.(at.clone(), 24);

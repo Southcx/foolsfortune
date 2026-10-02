@@ -22,6 +22,7 @@
 //   diag.mode (0 off, 1 panel, 2 panel + lines + minds)   diag.cycle()   diag.report() -> text
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { econLine } from '../econ/economy.js';
 
 const N = 240;
 const CSS = `
@@ -138,6 +139,7 @@ export class Diag {
         + `\n<span class="k">draws</span> ${c.calls}  <span class="k">tris</span> ${(c.tris / 1000).toFixed(0)}k  <span class="k">programs</span> ${c.programs}  <span class="k">geo</span> ${c.geos}  <span class="k">tex</span> ${c.tex}${heap}`
         + `\n<span class="k">zone</span> ${g.zones?.current ?? '-'} (${[...(g.zones?.visible || [])].join(',')})  <span class="k">lamps</span> ${L.lit ?? '-'}/${L.lamps ?? '-'}`
         + `\n<span class="k">alive</span> bodies ${n.bodies}  shards ${n.shards}+${n.chips}  particles ${n.particles}  creatures ${n.creatures}  pots ${n.pots}`
+        + (g.ledger ? `\n<span class="k">econ</span> ${econLine(g.ledger).text}` : '')
         + `\n<span class="k">F3 cycles · F4 copies a report</span>`;
       this.spk.innerHTML = this.spikes.slice(-4).reverse().map((s) => `<span class="bad">spike ${s.ms.toFixed(0)} ms</span> ${((performance.now() - s.at) / 1000).toFixed(0)}s ago: ${s.why} <span class="k">(${s.ph})</span>`).join('\n');
     }
@@ -208,6 +210,7 @@ export class Diag {
       `draws ${c.calls}  tris ${c.tris}  programs ${c.programs}  geometries ${c.geos}  textures ${c.tex}  heap ${c.heap ? (c.heap / 1e6).toFixed(0) + ' MB' : 'n/a'}`,
       `zone ${g.zones?.current} visible ${[...(g.zones?.visible || [])].join(',')}  lamps ${L.lit}/${L.lamps}`,
       `alive: ${Object.entries(n).map(([k, v]) => `${k} ${v}`).join(', ')}`,
+      `economy: ${g.ledger ? econLine(g.ledger).text : 'n/a'}`,
       `where: ${g.player.pos.toArray().map((v) => v.toFixed(1)).join(', ')}  settings: ${JSON.stringify(g.T?.visual || {})}`,
       `spikes (newest last):`,
       ...this.spikes.slice(-12).map((sp) => `  ${sp.ms.toFixed(0)} ms (cpu ${sp.cpu.toFixed(0)}), ${((performance.now() - sp.at) / 1000).toFixed(1)} s ago: ${sp.why} [${sp.ph}]`),

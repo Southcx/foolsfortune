@@ -116,6 +116,7 @@ import { Mirages } from './crucibelle/mirage.js';
 import { Signatures, standardSignatures } from './signatures.js';
 import { Spirits } from './spirits.js';
 import { Crystals } from './lachryma/crystals.js';
+import { installEconomy } from './econ/economy.js';
 import { TitleScene } from './title/scene.js';
 import { TitleUI } from './title/ui.js';
 import { Diag } from './debug/diag.js';
@@ -490,6 +491,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  installEconomy(game); // (/grant, for the DEBUG profile)
   game.macros = new MacroBook(); // (what she has composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
@@ -857,7 +859,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
 }
 

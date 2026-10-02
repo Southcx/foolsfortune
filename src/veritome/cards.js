@@ -17,11 +17,12 @@
 //   CARDS (in page order)   CARD[id]   SECTIONS   RANKS   WORTH[rank]   cardArt(id, w, h, { back }) -> canvas (drawn once, cached)
 // ---------------------------------------------------------------------------------------
 import { ARCANA, EMBLEM } from './arcana.js';
+import { ECON } from '../econ/table.js';
 import { CURIOS, TIERS as CHEST_TIERS } from '../treasure.js';
 import { CREATURES } from './bestiary.js';
 
 export const RANKS = ['SS', 'S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-export const WORTH = { SS: 1200, S: 600, A: 260, B: 120, C: 70, D: 45, E: 30, F: 20, G: 12, H: 6 };
+export const WORTH = ECON.condense; // (econ/table.js: the rebalance of R38 cut it to about a quarter at the top)
 export const FREE_SLOTS = 20;
 
 const CURIO_RANK = ['F', 'D', 'B', 'A', 'S'], CURIO_LIMIT = [3, 3, 2, 1, 1];
