@@ -21,7 +21,7 @@ const STROKE = { still: 'a stroke across', bounce: 'a stroke down', circle: 'a c
 export const PAGES = [
   {
     id: 'keys', title: 'THE KEYS', src: 'main.js',
-    lead: 'Mechanics sandbox. Break every pot. Needs a keyboard and mouse. Each tool has its own page; this is everything at a glance.',
+    lead: 'The workshop on Anagami Island, as a sandbox: break every pot. Needs a keyboard and mouse. Each tool has its own page; this is everything at a glance.',
     rows: [
       ['W A S D · Shift', 'move · sprint (any way but back)'],
       ['Space', 'jump; again in the air, the double jump'],
@@ -182,7 +182,7 @@ export const PAGES = [
   },
   {
     id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godmode.js, godarts.js',
-    lead: 'The Courier becomes a jar, and you become a hand over the world. The hand has God Arts instead of tools, and they work only in the Zone of Influence (the ground she has explored).',
+    lead: 'The Courier settles back into the Pneuka Jar she really is, and you, the player inside her, become a hand over the world. The hand has God Arts instead of tools, and they work only in the Zone of Influence (the ground she has explored).',
     rows: () => [
       ['~', 'become the hand; again to come back'],
       ['LMB · hold RMB · 1 – 5', 'use the art · the art wheel · pick an art'],
