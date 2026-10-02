@@ -104,13 +104,33 @@ export class Push extends Tech {
 
   faceYaw() { return this.a ? Math.atan2(-this.a.x, -this.a.z) : null; }
 
-  /** The pushing clip (leaning into it, knees bent), played forward as it goes away from us and backward pulling; still, it holds its first leaning frame. */
+  /** Pushing: the pushing clip (UAL Push_Loop: leaning into it, knees bent), played on as it goes; still, it holds its first leaning
+   *  frame. Pulling: the walk backwards under the pushing clip's arms (the hands stay on the crate), the body leaning back against
+   *  it (afterPose): pulling is not pushing played in reverse, which leaned her into a crate she was walking away from. */
   animate(ch, base, dt) {
     const C = ch.clips, clip = C.clips.push;
     if (!clip) return;
-    if (this.active) this.pt = (this.pt || 0) + (this.speed || 0) * dt * 0.7;
+    if (this.active) this.pt = (this.pt || 0) + Math.abs(this.speed || 0) * dt * 0.7;
+    this.pullK = THREE.MathUtils.damp(this.pullK || 0, (this.speed || 0) < -0.05 ? 1 : 0, 8, dt);
     const t = ((this.pt || 0) % clip.dur + clip.dur) % clip.dur;
-    C.blend(base, C.sample('push', t, ch.P.tmp, true), this.w);
+    const pushT = (this.speed || 0) >= 0 ? t : 0;
+    C.blend(base, C.sample('push', pushT, ch.P.tmp, true), this.w * (1 - this.pullK));
+    if (this.pullK > 0.001) {
+      // (the walk run backwards: its cycle at the pace she is backing; the arms the push's, reaching for the crate)
+      C.blend(base, C.sample('walk', -(this.pt || 0) * 1.1, ch.P.tmp, true), this.w * this.pullK);
+      this.armMask ||= C.mask(Object.fromEntries(C.bones.filter((n) => /^(upper_arm|forearm|hand|f_|thumb)/.test(n)).map((n) => [n, 1])));
+      C.blend(base, C.sample('push', 0.15, ch.P.tmp, true), this.w * this.pullK, this.armMask);
+    }
+  }
+
+  /** Leaning back against the pull (a small correction on the spine over the clips, not the pose of the action). */
+  afterPose(ch) {
+    const k = (this.pullK || 0) * this.w;
+    if (k < 0.01) return;
+    const yaw = this.P.bodyYaw, left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+    const a = -0.22 * k; // (about 12 degrees back, spread up the spine)
+    for (const [b, f] of [['spine001', 0.4], ['spine002', 0.35], ['spine003', 0.25]]) ch.rotW(ch.bones[b], left, a * f);
+    ch.root.updateMatrixWorld(true);
   }
 
   hands(ch) {

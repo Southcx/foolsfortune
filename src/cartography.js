@@ -337,7 +337,7 @@ export class Cartography {
     this.dial = document.createElement('canvas');
     this.dial.width = this.dial.height = 300;
     this.dialCtx = this.dial.getContext('2d');
-    this.dEl = { brg: el('div', 'brg'), rm: el('div', 'rm'), wp: el('div', 'wp'), hint: el('div', 'hint', 'M mind map · N survey') };
+    this.dEl = { brg: el('div', 'brg'), rm: el('div', 'rm'), wp: el('div', 'wp'), hint: el('div', 'hint', '') }; // (no key help on the HUD: the Codex and the log say it)
     box.append(this.dial, this.dEl.brg, this.dEl.rm, this.dEl.wp, this.dEl.hint);
     document.getElementById('hud').appendChild(box);
     this.compassEl = box;
@@ -360,7 +360,8 @@ export class Cartography {
       const d = Math.hypot(this.waypoint.x - P.pos.x, this.waypoint.z - P.pos.z);
       this.dEl.wp.textContent = `◆ ${d < 1000 ? Math.round(d) : (d / 1000).toFixed(1) + 'k'} m`;
     } else this.dEl.wp.textContent = this.waypoint ? `◆ on another layer (${LAYER_BY_ID[this.waypoint.layer].name.toLowerCase()})` : '';
-    this.compassEl.style.display = g.god?.controlling ? 'none' : '';
+    // (the wire compass (vfx/wirecompass.js) is the compass while it is up: the dial steps aside for it; the map is still M)
+    this.compassEl.style.display = g.god?.controlling || g.wireCompass?.visible ? 'none' : '';
     if (this.compassEl.style.display !== 'none') this.drawDial(P, l, brg);
   }
 

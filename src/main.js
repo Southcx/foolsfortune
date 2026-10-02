@@ -88,6 +88,9 @@ import { Glyphs } from './vfx/glyphs.js';
 import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
+import { Filigree, HURT } from './vfx/filigree.js';
+import { HudRing } from './vfx/hudring.js';
+import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
 import { Chests, ChestTech } from './chests.js';
@@ -359,6 +362,10 @@ async function main() {
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.log?.busy);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
+  if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in her)
+  game.hudRing = new HudRing(game); // (her Lachryma and what has noticed her, on the ground at her feet)
+  // (a blow taken: she flinches, character.js; the hurting impulses are the filigree's list)
+  game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);
@@ -858,7 +865,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); diag.end('fx');
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
     diag.update(game.rawDt);
@@ -869,8 +876,10 @@ async function main() {
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
-      , blink: blinkState(),
+      , blink: blinkState(), debug: diag.mode > 0,
     });
+    game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
+    (game.wireCompass ||= new WireCompass(game)).update(dt);
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

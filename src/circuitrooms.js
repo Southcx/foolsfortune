@@ -90,8 +90,8 @@ export function buildCircuitRooms(L, env) {
     }
     for (const x of [8, 25, 42, 59]) light(ox + x, 10, oz - 9, 10), light(ox + x, 10, oz + 9, 10);
     label(S, 'THE BRAID', [ox + 1.5, B + 0.02, oz - 11.5], { rotY: -H, width: 3, sub: 'three lines · change at any junction' });
-    label(S, 'BEAMS', [ox + 1.5, B + 0.02, oz - 8.6], { rotY: -H, width: 1.4, sub: 'walk · Shift trots and wobbles' });
-    label(S, 'BARS', [ox + 1.5, B + 0.02, oz + 1.6], { rotY: -H, width: 1.2, sub: 'jump up · W / S along · Space swings' });
+    label(S, 'BEAMS', [ox + 1.5, B + 0.02, oz - 8.6], { rotY: -H, width: 1.4, help: 'On a beam, walk; Shift trots, and wobbles.' });
+    label(S, 'BARS', [ox + 1.5, B + 0.02, oz + 1.6], { rotY: -H, width: 1.2, help: 'Jump up to a bar; W and S move along it and Space swings off.' });
     label(S, 'BLINKS', [ox + 1.5, B + 0.02, oz + 8.6], { rotY: -H, width: 1.4, sub: 'islands: blink or double jump' });
     // segment s runs from junction s (its far edge) to junction s + 1: 14 m of pit
     const beamW = [0.3, 0.2, 0.3, 0.2];

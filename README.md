@@ -26,7 +26,7 @@ npm run build      # static bundle in dist/
 | Shift in the air | air-dash (costs Lachryma, one per airtime) |
 | Hold Alt | walk |
 | Shift while crouched | roll: a dodge, invulnerable for its first third (also automatic out of a fall of 20 m or more) |
-| F | interact (the chevron marks what F would act on): **open a chest** / feed the Tithe · strike the **gong** by the workshop door to start the time trial · pick up something small (hoisted overhead in both open hands: fire throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
+| F | interact (the chevron marks what F would act on): **open a chest** / feed the Tithe · strike the **gong** by the workshop door to start the time trial · pick up something small (lifted to the chest in both hands: fire throws it two-handed over the head, F sets it down) · hold F at a heavy crate: W push, S pull · at the index console (basement hub): pick a room to teleport to |
 | V | kick (on the run, or standing; parry a projectile with the timing) |
 | E | blink (a learned ability, see The System) |
 | B | the System's Codex: Movement Arts, variants, Lab mode, the VOICE and MUSIC switches, save code (pauses the game) |
@@ -893,7 +893,7 @@ https://quaternius.com. Retargeted to the Courier; see **Animation** above. (Onl
 Standard tiers are used; the paid full tiers are not included.) Motion capture: CMU Graphics Lab
 Motion Capture Database, free for research and games, no resale of the data itself
 (http://mocap.cs.cmu.edu), retargeted with `tools/bake_cmu.mjs` from the BVH conversion;
-`src/assets/anims_cmu.bin` is that exploratory pack (not loaded by the game yet).
+`src/assets/anims_cmu.bin` is that pack (loaded and merged with the UAL clips: the kick is from it).
 
 `tools/export_godmode.py` exports the god-mode assets (`source_assets/courier_godhand.blend`, a rigged hand, and `courier_pneuka.blend`, the jar) to `src/assets/godhand.glb` / `pneuka.glb`.
 

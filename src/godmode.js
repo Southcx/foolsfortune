@@ -178,7 +178,7 @@ export class GodMode {
     const el = document.createElement('div');
     el.id = 'god';
     el.innerHTML = `<div class="vessel"><div class="name">PNEUKA VESSEL <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
-      <div class="hint">LMB use the art · hold RMB: the art wheel (or 1-5) · N survey · Q/E turn · wheel zoom · WASD pan · M map · ~ back to the Courier</div>`;
+      <div class="hint" style="display:none"></div>`; // (the keys are said once by the log on taking the hand: room.help 'hand' -> tracking.js)
     document.body.appendChild(el);
     this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub') };
   }
@@ -230,6 +230,7 @@ export class GodMode {
     sfx.godIn();
     g.fx.explosion?.(P.pos.clone().setY(P.pos.y + 0.9), 0.7);
     g.events?.emit('god.enter', {});
+    g.events?.emit('room.help', { room: 'hand' });
   }
 
   exit() {

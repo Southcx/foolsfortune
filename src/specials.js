@@ -3,6 +3,7 @@ import { hasTag } from './tags.js';
 import { T, DEG, PALETTE } from './config.js';
 import { sfx } from './audio.js';
 import { GROUPS } from './physics.js';
+import { LockSquares } from './vfx/wiremarks.js';
 
 // ---------------------------------------------------------------------------
 // Ricochet + homing shells (the Shells class dispatches to these).
@@ -39,8 +40,8 @@ export class Specials {
     this.painting = false;
     this.progress = new Map(); // ent -> 0..1 lock progress while painting
     this.locks = []; // ents, in lock order
-    this.reticles = new Map(); // ent -> { el, t, locked, idx }
-    this.layer = document.getElementById('locks');
+    this.reticles = new Map(); // ent -> { mark, t, locked }
+    this.bursting = []; // (marks bursting off a hit, until they are done)
 
     // ricochet ADS preview: where the first bounce goes
     const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
@@ -325,17 +326,13 @@ export class Specials {
     if (ent && (ent.type === 'breakable' || ent.type === 'clapper' || hasTag(ent, 'hurtable'))) { g.hud.hitmarker(!ent.alive); sfx.hitmarker(); }
   }
 
-  // ---- lock-on reticles (DOM) --------------------------------------------------------
-  // Two squares spin in opposite directions and shrink onto the target; when they
-  // coincide (as one diamond) the lock snaps on.
+  // ---- lock-on reticles: Rez's lock squares, in the world (vfx/wiremarks.js) -------------------------------------------------
+  // Two squares spin in opposite directions and shrink onto the target; when they coincide (as one diamond) the lock snaps on. The
+  // ORDER of a lock is how many squares are nested in its mark, never a digit (docs/LOOK.md 6).
   reticle(ent) {
     let r = this.reticles.get(ent);
     if (!r) {
-      const el = document.createElement('div');
-      el.className = 'lock';
-      el.innerHTML = '<i class="a"></i><i class="b"></i><span></span>';
-      this.layer?.appendChild(el);
-      r = { el, t: 0, locked: false, idx: 0, firing: false, out: 0 };
+      r = { mark: new LockSquares(this.game.scene), t: 0, locked: false, firing: false, out: 0 };
       this.reticles.set(ent, r);
     }
     return r;
@@ -345,15 +342,10 @@ export class Specials {
     const r = this.reticles.get(ent);
     if (!r) return;
     this.reticles.delete(ent);
-    if (hitIt) {
-      r.el.classList.add('burst');
-      setTimeout(() => r.el.remove(), 250);
-    } else r.el.remove();
+    if (hitIt) { r.mark.burst(); this.bursting.push(r.mark); } else r.mark.dispose();
   }
 
   updateReticles(dt, camera) {
-    if (!this.layer) return;
-    const w = window.innerWidth, h = window.innerHeight;
     const wanted = new Set([...this.progress.keys(), ...this.locks, ...this.seekers.map((s) => s.target).filter(Boolean)]);
     for (const ent of [...this.reticles.keys()]) if (!wanted.has(ent)) this.dropReticle(ent);
     for (const ent of wanted) {
@@ -362,26 +354,17 @@ export class Specials {
       const lockedIdx = this.locks.indexOf(ent);
       const locked = lockedIdx >= 0 || r.firing;
       const p = locked ? 1 : this.progress.get(ent) || 0;
-      if (locked && !r.locked) { r.locked = true; r.el.classList.add('locked'); r.el.querySelector('span').textContent = lockedIdx >= 0 ? lockedIdx + 1 : ''; }
+      if (locked && !r.locked) { r.locked = true; r.order = lockedIdx >= 0 ? lockedIdx + 1 : 1; }
       r.t += dt;
-      _ndc.copy(aimPoint(ent, _v)).project(camera);
-      const behind = _ndc.z > 1;
-      const x = (_ndc.x * 0.5 + 0.5) * w, y = (-_ndc.y * 0.5 + 0.5) * h;
       const e = ease(p);
-      const size = THREE.MathUtils.lerp(96, 30, e) * (locked ? 1 + 0.12 * Math.sin(r.t * 18) * Math.exp(-r.t * 3) : 1);
-      const spin = (1 - e) * 180;
-      const idle = locked ? r.t * 90 : 0; // once locked, the pair turns together
-      r.el.style.display = behind ? 'none' : '';
-      r.el.style.transform = `translate(${x}px, ${y}px)`;
-      r.el.style.setProperty('--s', `${size}px`);
-      r.el.style.setProperty('--ra', `${45 + spin + idle}deg`);
-      r.el.style.setProperty('--rb', `${45 - spin + idle}deg`);
-      r.el.style.opacity = locked ? 1 : 0.35 + 0.65 * e;
+      const size = THREE.MathUtils.lerp(48, 15, e) * (locked ? 1 + 0.12 * Math.sin(r.t * 18) * Math.exp(-r.t * 3) : 1);
+      r.mark.set({ pos: aimPoint(ent, _v), px: size, spin: (1 - e) * Math.PI, locked, order: r.order || 0, alpha: locked ? 1 : 0.35 + 0.65 * e });
+      r.mark.update(dt, camera);
       if (!locked) r.t = 0;
     }
+    for (let i = this.bursting.length - 1; i >= 0; i--) if (!this.bursting[i].update(dt, camera)) { this.bursting[i].dispose(); this.bursting.splice(i, 1); }
   }
 
-  // ---- per-frame -----------------------------------------------------------------
   fixedUpdate(dt) { this.stepSeekers(dt); }
 
   update(dt) {
@@ -399,5 +382,7 @@ export class Specials {
     this.seekers = [];
     this.cancelPaint();
     for (const ent of [...this.reticles.keys()]) this.dropReticle(ent);
+    for (const m of this.bursting) m.dispose();
+    this.bursting.length = 0;
   }
 }

@@ -96,7 +96,18 @@ function labelTexture(text, sub) {
  * Text on a surface. Flat labels read upright walking toward -z at rotY 0
  * (+x at -PI/2, -x at PI/2, +z at PI). Vertical ones face +z at rotY 0.
  */
-export function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 0.8, vertical = false } = {}) {
+// what a sign would have said about the keys: said once by the log when she comes up to the sign, never painted on it (CLAUDE.md:
+// marks in the world are not text; docs/LOOK.md 7). `signHelp(game, pos)` asks, every frame, from the course's update.
+export const SIGN_HELP = [];
+export function signHelp(game, p) {
+  for (const h of SIGN_HELP) {
+    if (h.said) continue;
+    if ((h.x - p.x) ** 2 + (h.z - p.z) ** 2 < 12 && Math.abs(h.y - p.y) < 3) { h.said = true; game.events?.emit('sign.help', { sign: h.sign, help: h.help }); }
+  }
+}
+
+export function label(scene, text, pos, { rotY = 0, width = 2.2, sub = null, opacity = 0.8, vertical = false, help = null } = {}) {
+  if (help) SIGN_HELP.push({ x: pos[0], y: pos[1], z: pos[2], sign: text, help, said: false });
   const m = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 160 / 512),
     new THREE.MeshBasicMaterial({ map: labelTexture(text, sub), transparent: true, opacity, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
   m.renderOrder = 2;
@@ -382,6 +393,7 @@ export class Course {
     ];
     this.prev = new THREE.Vector3();
     this.el = document.getElementById('course');
+    if (this.el) { this.el.style.display = 'none'; this.elShown = false; } // (shown only while a station is run)
     this.buildConsole();
     this.buildBoard();
   }
@@ -472,8 +484,8 @@ export class Course {
     this.consoleDisc = disc;
     const body = this.game.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(cx, B + 0.55, cz));
     this.game.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.8, 0.55, 0.4).setCollisionGroups(GROUPS.static), body);
-    label(S, 'INDEX', [cx, B + 0.72, cz - 0.41], { rotY: Math.PI, width: 1.4, vertical: true, sub: 'F · pick a room' });
-    label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true, sub: 'F at the console · R checkpoint · H hub' });
+    label(S, 'INDEX', [cx, B + 0.72, cz - 0.41], { rotY: Math.PI, width: 1.4, vertical: true }); // (a sign names a place; what the keys do is the log's to say: room.help)
+    label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true });
   }
 
   goRoom(id) {
@@ -649,17 +661,18 @@ export class Course {
     }
     this.prev.copy(feet);
 
-    if (this.el && g.circuits?.active) this.el.style.display = 'none';
-    else if (this.el) {
-      const cp = this.cps[this.current];
-      const best = cp && this.best[`room${cp.room}`];
-      this.el.innerHTML = cp && this.running
-        ? `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`
-        : inSiege(p.pos) ? 'THE SIEGE · ~ the hand · raids come here · R back to the dais · H hub'
-        : g.techs?.active?.id === 'surfer' ? 'SOLAR SKIFFING · W hoist the sail · S furl and brake · A D steer · Space hop · Shift flare · Y step off · H hub'
-        : inWeir(p.pos) ? 'THE WEIR · Q the Sondelass · 1 cutlass · 2 rod · 3 hook · Y the skiff · R back to the pier · H hub'
-        : g.dunes.active ? 'THE DUNES · Y the Solar Skiff · R back to the oasis · H hub'
-        : 'HUB · F at the console: pick a room · R checkpoint · H hub';
+    // the banner is the course's own: the station and its clock while a station is being run. What the keys do in each place is said
+    // once by the log on arriving there (room.help -> tracking.js), not kept on the screen (CLAUDE.md, Feedback; docs/LOOK.md 7)
+    const cp = this.cps[this.current], running = !!(cp && this.running && !g.circuits?.active);
+    const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'surfer' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
+    if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
+    signHelp(g, p.pos);
+    if (this.el) {
+      if (running !== this.elShown) { this.elShown = running; this.el.style.display = running ? '' : 'none'; }
+      if (running) {
+        const best = this.best[`room${cp.room}`];
+        this.el.innerHTML = `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`;
+      }
     }
   }
 }

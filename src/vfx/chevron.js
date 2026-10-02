@@ -6,26 +6,30 @@
 //
 // Prior art: the floating crystal of The Sims' Plumbob and the down-pointing arrow over the thing you can act on in Zelda, Persona
 // and every action-RPG since; the two-layer, counter-rotating build is what keeps it alive while it is doing nothing.
+//
+// It is the System telling you what F would do, so it is drawn as the Mind is (vfx/labradorite.js, docs/LOOK.md): the outer a
+// shell of black labradorite with the schiller coming up at its turn, the inner a glassy flash of it, the edges softly rainbow.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { mindLineMaterial, mindFillMaterial, mindTick } from './labradorite.js';
 
 /** Ease-out-back: 0 -> 1 with a small overshoot, continuous at both ends. */
 export const backOut = (u, c = 1.4) => 1 + (c + 1) * (u - 1) ** 3 + c * (u - 1) ** 2;
 
 export class Chevron {
-  constructor(scene, { color = 0xffb27a, hot = 0xfff1dc } = {}) {
+  constructor(scene) {
     this.group = new THREE.Group();
     this.group.visible = false;
-    const mk = (rt, rb, h, opacity, c) => {
+    const mk = (rt, rb, h, opacity, ink) => {
       const geo = new THREE.CylinderGeometry(rt, rb, h, 5, 1, false); // (wide at the top, to a point at the bottom: inverted)
-      const fill = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false }));
-      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: hot, transparent: true, opacity: Math.min(1, opacity + 0.35), depthTest: false, fog: false }));
+      const fill = new THREE.Mesh(geo, mindFillMaterial({ opacity, ink }));
+      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), mindLineMaterial({ opacity: Math.min(1, opacity + 0.4), bright: 1.1 }));
       const g = new THREE.Group(); g.add(fill, edges);
       fill.renderOrder = 40; edges.renderOrder = 41;
       return g;
     };
-    this.outer = mk(0.27, 0, 0.46, 0.26, color);
-    this.inner = mk(0.15, 0, 0.27, 0.6, hot);
+    this.outer = mk(0.27, 0, 0.46, 0.6, 1);
+    this.inner = mk(0.15, 0, 0.27, 0.55, 0);
     this.inner.position.y = 0.06; // (its point just above the outer's)
     this.group.add(this.outer, this.inner);
     scene.add(this.group);
@@ -41,6 +45,7 @@ export class Chevron {
 
   update(dt) {
     this.t += dt;
+    mindTick();
     // (k walks to want and stops there: stepping past it and back made the pop scale flip every frame, the old jitter)
     this.k = this.want > this.k ? Math.min(this.want, this.k + dt * 6) : Math.max(this.want, this.k - dt * 5);
     if (this.k <= 0) { this.group.visible = false; this.has = false; return; }

@@ -253,6 +253,21 @@ export class Tracking {
     on('course.lap', (e) => { L.inc('course.lap'); const r = L.lo('course.lap.time', e.time); log.say('circuit', `Lap complete: ${fx(e.time)} s${e.pb || r === 'beat' ? ' — a new best' : ''}.`); });
     on('course.reset', () => L.inc('course.reset'));
     on('course.gate', (e) => { L.inc('course.gate'); L.hi('course.gate.speed', e.speed); log.say('circuit', `Speed gate: ${fx(e.speed, 1)} m/s.`, { key: 'gate', win: 0.8 }); });
+    // what the keys do in a place, said once a session on first arriving there (it used to sit on the screen as a banner)
+    const HELP = {
+      hub: 'The index console picks a room (F at it). R returns you to the last checkpoint; H, to the hub.',
+      siege: 'THE SIEGE: ~ raises the hand. Raids come here. R returns you to the dais; H, to the hub.',
+      skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, Y steps off.',
+      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). Y brings the skiff; R returns you to the pier.',
+      dunes: 'THE DUNES: Y brings the Solar Skiff. R returns you to the oasis; H, to the hub.',
+      hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
+    };
+    const helped = new Set();
+    on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
+    // the room she walks into, said as she enters it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
+    const entered = new Map();
+    on('place.enter', (e) => { const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); });
+    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.`); });
     on('circuit.gate', (e) => {
       L.inc('circuit.gate');

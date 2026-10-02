@@ -1,7 +1,7 @@
 """Export the Courier .blend into web-ready GLBs.
 
 Usage:  python3 tools/export_courier.py path/to/courier_base_rigged.blend
-Needs the `bpy` module (pip install bpy==4.5.*) or run inside Blender:
+Needs the `bpy` module (pip install bpy==5.0.1; run as `python3 -I` so user site-packages stay out of its way) or run inside Blender:
     blender -b courier.blend -P tools/export_courier.py -- courier.blend
 
 Produces:

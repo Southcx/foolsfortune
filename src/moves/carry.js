@@ -4,12 +4,24 @@ import { RAPIER, GROUPS, G, groups } from '../physics.js';
 import { sfx } from '../audio.js';
 
 // Pick up and throw (a body move: it's yours from the start). F, facing something small
-// (a pot, a small crate): you crouch, take it in both hands and hoist it over your head, the way
-// Link does. You walk with it slowly, no sprint and no gun. F again sets it down; the fire button
-// throws it, along where you look. Pots shatter where they land, and hit what they hit.
+// (a pot, a small crate): you stoop, take it in both hands and lift it to your chest. You walk with
+// it slowly, no sprint and no gun. F again sets it down; the fire button throws it, two-handed over
+// the head, along where you look. Pots shatter where they land, and hit what they hit.
+//
+// The motion is UAL's (CC0), modified (CLAUDE.md: find a clip, blend it in; author only when nothing fits): the lift and the
+// set-down are Chest_Open (a stoop and a rise with the hands low), the hold is Walk_Carry_Loop's arms over the walk, the throw is
+// OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
+// swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT), which are the
+// game's feel and do not change. IK only closes the palms on the pot's sides.
 const UP = new THREE.Vector3(0, 1, 0);
 const CARRIED = groups(G.PROP, 0); // touches nothing while it's in your hands
 const LIFT = 0.55, THROW_AT = 0.17, THROW_END = 0.32, PUT = 0.34;
+// where in each clip the move's beats fall (seconds of the clip): the lift's lowest reach and the top of its rise; the throw's
+// wind-up, its release and how far its follow-through runs
+const LIFT_CLIP = { from: 0.12, low: 0.55, to: 0.95 };
+const THROW_CLIP = { from: 0.1, release: 0.31, to: 0.78 };
+// the hold, in the body's frame (metres): the palms of the carrying clip are about this high and this far forward
+const HOLD = { up: 1.0, fwd: 0.16 };
 const sm = (u) => u * u * (3 - 2 * u);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 
@@ -30,7 +42,7 @@ export class Carry extends Tech {
   get busy() { return !!this.item; }
   /** The fire button is the throw button while it's in your hands (and a moment after). */
   get blocksFire() { return !!this.item || this.state === 'throw' || this.fireHold > 0; }
-  get engaged() { return !!this.item; }
+  get engaged() { return !!this.item || this.state === 'throw'; } // (the throw's follow-through plays on after the pot is gone)
   get speedMult() { return this.item ? this.cfg.slow : 1; }
   get noSprint() { return !!this.item; }
 
@@ -136,10 +148,13 @@ export class Carry extends Tech {
     const P = this.P, e = this.item, h = this.size(e);
     const yaw = P.bodyYaw;
     const upright = _q.setFromAxisAngle(UP, yaw);
-    // (over the head, held at its grip with the arms up: the grip at 2.02 m, wherever the head is: it comes down with a crouch)
-    const grip = this.grip || { f: 0.2 };
+    // (at the chest, held at its grip between the carrying clip's palms, in front of her by as much as it is wide: it comes down
+    //  with a crouch)
+    const grip = this.grip || { f: 0.2, w: 0.2 };
     const c0 = this.originUp(e); // (a pot's origin is its foot; a crate's its middle)
-    const hold = new THREE.Vector3(base.x, base.y + 2.02 - 0.4 * (P.crouchBlend || 0) - h * grip.f + c0 + Math.sin(this.bob) * 0.02, base.z);
+    const fw = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    const hold = new THREE.Vector3(base.x, base.y + HOLD.up - 0.35 * (P.crouchBlend || 0) - h * grip.f + c0 + Math.sin(this.bob) * 0.015, base.z)
+      .addScaledVector(fw, HOLD.fwd + (grip.w || 0.2));
     const p = new THREE.Vector3(), q = new THREE.Quaternion();
     if (this.state === 'lift') {
       const k = sm(Math.min(1, this.st / LIFT));
@@ -181,6 +196,7 @@ export class Carry extends Tech {
     const P = this.P, e = this.item, c = this.cfg;
     this.released = true;
     const pose = this.pose(P.pos, null);
+    if (this.shown) { pose.p.copy(this.shown); this.shown = null; } // (from where the throw's hands have it, not where the hold had it)
     // (the ray to where we're looking: aim at what the crosshair lands on)
     const look = P.lookDir(new THREE.Vector3());
     const mass = e.body.mass();
@@ -247,23 +263,41 @@ export class Carry extends Tech {
     }
   }
 
-  // ---- animation: both hands under it ----
-  animate() {}
+  // ---- animation: the clips (UAL, modified: see the top), both hands on it ----
+  /** A one-armed clip made two-handed: the reaching arm's mirror given to the other (`to`: the side that is given it). */
+  twoHanded(ch, name, t, to) {
+    const C = ch.clips, Pp = ch.P;
+    if (!this.mirrorMask) {
+      this.mirrorMask = {};
+      for (const side of ['L', 'R']) { const tb = {}; for (const n of C.bones) if (n.endsWith(side) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) tb[n] = 1; this.mirrorMask[side] = C.mask(tb); }
+    }
+    C.sample(name, t, Pp.tmp, false);
+    ch.mirrorPose(Pp.tmp, Pp.tmp2);
+    return C.blend(Pp.tmp, Pp.tmp2, 1, this.mirrorMask[to]);
+  }
 
-  /** The body under the load: a stoop to the pickup and a heave up (lift), leaning back a little
-   * under the weight (hold), and a lunge into the throw. */
-  afterPose(ch) {
-    if (!this.item || this.w < 0.02) return;
-    const st = this.state, k = st === 'lift' ? Math.min(1, this.st / LIFT) : st === 'throw' ? Math.min(1, this.st / THROW_AT) : st === 'put' ? Math.min(1, this.st / PUT) : 1;
-    let deg = -6; // (leaning back)
-    if (st === 'lift') deg = 16 * Math.sin(Math.PI * Math.min(1, k * 1.15)) - 6 * sm(k);
-    else if (st === 'throw') deg = -6 + 24 * sm(k);
-    else if (st === 'put') deg = -6 + 26 * Math.sin(Math.PI * k * 0.9);
-    this.lean = THREE.MathUtils.damp(this.lean ?? deg, deg, 20, 1 / 60);
-    const yaw = this.P.bodyYaw, left = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
-    const a = this.lean * Math.PI / 180 * this.w;
-    for (const [b, f] of [['spine001', 0.34], ['spine002', 0.33], ['spine003', 0.33]]) ch.rotW(ch.bones[b], left, a * f);
-    ch.root.updateMatrixWorld(true);
+  animate(ch, base, dt) {
+    const C = ch.clips;
+    if (!C.clips.chestOpen || !C.clips.carryWalk || !C.clips.throw) return;
+    const st = this.state;
+    if (st === 'lift') {
+      // stoop to it (to the clip's lowest reach a little before halfway), then rise with it
+      const k = Math.min(1, this.st / LIFT), L = LIFT_CLIP;
+      const t = k < 0.45 ? L.from + (L.low - L.from) * sm(k / 0.45) : L.low + (L.to - L.low) * sm((k - 0.45) / 0.55);
+      C.blend(base, this.twoHanded(ch, 'chestOpen', t, 'R'), this.w);
+    } else if (st === 'put') {
+      const k = Math.min(1, this.st / PUT), L = LIFT_CLIP; // (the lift backwards: down from the chest to the low reach)
+      C.blend(base, this.twoHanded(ch, 'chestOpen', L.to + (L.low - L.to) * sm(k), 'R'), this.w);
+    } else if (st === 'throw') {
+      // two hands back over the head and through: the wind-up to the release by THROW_AT, the follow-through after
+      const T0 = THROW_CLIP, s2 = this.st;
+      const t = s2 < THROW_AT ? T0.from + (T0.release - T0.from) * (s2 / THROW_AT) : T0.release + (T0.to - T0.release) * Math.min(1, (s2 - THROW_AT) / (THROW_END - THROW_AT + 0.12));
+      C.blend(base, this.twoHanded(ch, 'throw', t, 'L'), this.w, ch.MASK_UPPER);
+    } else if (this.item) {
+      // the hold: the carrying clip's arms over whatever the legs are doing (its own walk would skate against hers)
+      this.ht = (this.ht || 0) + dt * (0.5 + Math.hypot(this.P.vel.x, this.P.vel.z) * 0.35);
+      C.blend(base, C.sample('carryWalk', this.ht, ch.P.tmp, true), this.w, ch.MASK_UPPER);
+    }
   }
 
   /** How far its origin is above its foot: a pot is built up from its foot, a crate about its middle. */
@@ -279,8 +313,8 @@ export class Carry extends Tech {
   }
 
   /**
-   * Both hands on it, open, palms flat against its sides and fingers up, the way a thing is held over the head (Link's lift; the
-   * UAL clips have no two-handed overhead carry, so this is the light IK correction CLAUDE.md allows: a hand closed on a surface).
+   * Both hands on it, open, palms flat against its sides and fingers up: the carrying clip has the arms there, and this is the light
+   * IK correction CLAUDE.md allows (a hand closed on a surface) that sets the palms to its width.
    * Where they go is worked out for each thing from its own shape (begin: the widest place low on it, and its width there), so a
    * squat jar and a tall amphora are each cupped where they swell.
    */
@@ -288,6 +322,17 @@ export class Carry extends Tech {
     if (!this.item || this.w < 0.02) return;
     const P = this.P, e = this.item, w = this.w;
     const pose = this.pose(P.renderPos, { p: new THREE.Vector3(), q: new THREE.Quaternion() });
+    if (this.state === 'throw') {
+      // through the throw it rides between the clip's hands, its grip where the palms are (no IK: the clip throws it)
+      const mid = new THREE.Vector3();
+      for (const sd of ['L', 'R']) mid.add(ch.arm[sd].palmPt.clone().applyMatrix4(ch.arm[sd].hand.matrixWorld));
+      mid.multiplyScalar(0.5);
+      const at = mid.addScaledVector(UP, -(this.size(e) * this.grip.f - this.originUp(e)));
+      e.mesh.position.copy(at); e.mesh.quaternion.copy(pose.q); e.mesh.updateMatrixWorld(true);
+      (this.shown ||= new THREE.Vector3()).copy(at);
+      return;
+    }
+    this.shown = null;
     // (the mesh rides the interpolated body, not last step's physics pose)
     e.mesh.position.copy(pose.p);
     e.mesh.quaternion.copy(pose.q);

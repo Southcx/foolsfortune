@@ -7,6 +7,7 @@ import { buildSiege, spawnSiege } from './siege.js';
 import { buildCircuitRooms } from './circuitrooms.js';
 import { buildWeir, spawnWeir } from './angling/weir.js';
 import * as THREE from 'three';
+import { dress } from './vfx/surfaces.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { zoneOf } from './render/zones.js';
 const _center = new THREE.Vector3();
@@ -61,7 +62,8 @@ export class Level {
   }
 
   mat(color, emissive) {
-    return new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 });
+    // (dressed with what its colour is made of: plaster, tiles, planks; vfx/surfaces.js)
+    return dress(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 }), color);
   }
 
   addGeo(geo, color, outline = true, shadow = true) {

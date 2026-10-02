@@ -63,8 +63,13 @@ export class Vessel {
     for (const r of Object.keys(REGIONS)) {
       const m = ch.regionMats[r], g = this.glaze(look[r]) || GLAZES[DEFAULT_LOOK[r]];
       if (!m) continue;
-      m.color.setHex(g.color); m.roughness = g.rough; m.metalness = g.metal;
-      if (m.emissive) { m.emissive.setHex(g.glow ? PALETTE.glow : 0x000000); m.emissiveIntensity = g.glow || 0; }
+      // (what the model was made with is kept: the starting glaze on a painted part is the maker's painting itself, untouched, and any
+      //  other glaze tints the painting and leaves its glow, so the paint holds in the shade: character.js PAINT_LIGHT)
+      const base = (m.userData.base ||= { color: m.color.getHex(), rough: m.roughness, metal: m.metalness, em: m.emissive?.getHex() ?? 0, emI: m.emissiveIntensity ?? 0 });
+      const own = !!m.map && g.id === DEFAULT_LOOK[r];
+      m.color.setHex(own ? base.color : g.color); m.roughness = own ? base.rough : g.rough; m.metalness = own ? base.metal : g.metal;
+      m.userData.rest = m.map ? { em: own ? base.em : g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
+      if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
       m.userData.glaze = g;
       if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, this.kinU); m.userData.kin = true; }
     }
@@ -127,9 +132,10 @@ export class Vessel {
       const k = this.fireT / 2.6; // 1 white-hot .. 0 cooled
       for (const ch of this.dressed) for (const r of Object.keys(REGIONS)) {
         const m = ch.regionMats?.[r], g = m?.userData.glaze;
-        if (!m?.emissive || !g) continue;
-        _c.setHex(0xff6a20).lerp(new THREE.Color(g.glow ? PALETTE.glow : 0x000000), 1 - k);
-        m.emissive.copy(_c); m.emissiveIntensity = Math.max(g.glow || 0, 1.4 * k * k);
+        const rest = m?.userData.rest;
+        if (!m?.emissive || !g || !rest) continue;
+        _c.setHex(0xff6a20).lerp(new THREE.Color(rest.em), 1 - k);
+        m.emissive.copy(_c); m.emissiveIntensity = Math.max(rest.emI, 1.4 * k * k);
       }
     }
   }

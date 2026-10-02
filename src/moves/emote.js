@@ -43,7 +43,12 @@ export class Emote extends Tech {
     this.set(E.enter ? 'enter' : E.loop ? 'loop' : 'once');
     g.events.emit('emote', { emote: this.cur, by: 'courier' });
   }
-  set(phase) { this.phase = phase; this.ct = 0; }
+  set(phase) {
+    // (the phase it leaves is held where it was and faded out under the new one: a sit left halfway does not snap to the exit's start)
+    if (this.cur && this.phase && this.phase !== 'done') { const n = this.clipOf(); if (n) this.prev = { name: n, t: this.phase === 'loop' ? this.ct % this.dur(n) : Math.min(this.ct, this.dur(n) - 0.001), loop: this.phase === 'loop', f: 0 }; }
+    else this.prev = null;
+    this.phase = phase; this.ct = 0;
+  }
   clipOf() {
     const E = EMOTES[this.cur];
     return this.phase === 'enter' ? E.enter : this.phase === 'loop' ? E.loop : this.phase === 'exit' ? E.exit : E.once;
@@ -67,11 +72,20 @@ export class Emote extends Tech {
     else if (this.phase === 'exit' && this.ct >= d) return false;
     return this.phase !== 'done';
   }
-  end() { this.game.events.emit('emote.end', { emote: this.cur, by: 'courier' }); this.cur = null; this.phase = null; }
-  animate(ch, base) {
+  end() { this.game.events.emit('emote.end', { emote: this.cur, by: 'courier' }); this.cur = null; this.phase = null; this.prev = null; }
+  animate(ch, base, dt = 1 / 60) {
     if (!this.cur || this.phase === 'done') return;
     const C = ch.clips, name = this.clipOf(), d = this.dur(name);
     const t = this.phase === 'loop' ? this.ct % d : Math.min(this.ct, d - 0.001);
+    const pv = this.prev;
+    if (pv) {
+      pv.f = Math.min(1, pv.f + dt / 0.22);
+      C.blend(base, C.sample(pv.name, pv.t, ch.P.tmp, pv.loop), this.w);
+      const f = pv.f * pv.f * (3 - 2 * pv.f);
+      C.blend(base, C.sample(name, t, ch.P.tmp, this.phase === 'loop'), this.w * f);
+      if (pv.f >= 1) this.prev = null;
+      return;
+    }
     C.blend(base, C.sample(name, t, ch.P.tmp, this.phase === 'loop'), this.w);
   }
   faceYaw() { return this.cur ? this.yaw : null; }
