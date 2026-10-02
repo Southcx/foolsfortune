@@ -85,7 +85,7 @@ export const veritomeTool = (tech) => ({
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
   get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: false, kick: false, firstPerson: true },
+  rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (1 is its flash: veritome/flash.js)
 });
 
 export const soulBrushTool = (tech) => ({

@@ -169,7 +169,7 @@ export class Veritome extends Tech {
 
   /** Can a charged shot hold this clapperjar? Only one aware of her and in the thick of it with her. */
   holdable(c) {
-    if (c.type === 'creature') return c.alive && hasTag(c, 'programmable'); // (a mind can be flashed whatever it is doing: veritome/flash.js)
+    if (c.type === 'creature') return c.alive && hasTag(c, 'programmable'); // (a mind can be held in the lens whatever it is doing)
     return c.alive && !c.ally && ENGAGED.has(c.state) && !!this.game.clappers?.canSeePlayer?.(c);
   }
 
@@ -209,8 +209,8 @@ export class Veritome extends Tech {
     // a full charge holds an engaged creature to what is real; at the shutter chance, longer
     let held = null;
     if (this.target?.type === 'creature' && this.charge >= 1 && this.holdable(this.target)) {
-      // THE FLASH: a mind at full charge is opened, and what she types it does (veritome/flash.js)
-      if (g.flash?.open(this.target, this.chance ? 1 : 0.6)) { held = 'flash'; g.lachryma.gain(3, 'photo'); }
+      // (a creature held in the lens at full charge reels from it a little: its stun meter fills (stun.js); the flash proper is 1)
+      if (g.stun?.add(this.target, this.chance ? 0.7 : 0.45, { by: 'courier', cause: 'photo' }) !== undefined) { held = 'held'; g.lachryma.gain(3, 'photo'); }
     } else if (this.target && this.charge >= 1 && this.holdable(this.target)) {
       const c = this.target;
       g.clappers.stun(c, this.chance ? CAPTURE.chance : CAPTURE.hold, g.shells.glowOutline, g.shells.xray);

@@ -86,10 +86,12 @@ export class Ladders {
  * (discs: slip shells, burst barrels).
  */
 export class SlipField {
-  constructor(scene) {
+  constructor(scene, game = null) {
     this.scene = scene;
     this.rects = [];
     this.discs = [];
+    // (wet slip is water to anything made of sand and water: ai/ecology.js)
+    game?.ai?.eco.provide('slip', (pos, range) => this.discs.filter((d) => d.age > d.delay && d.life - d.age > 4 && d.r > 0.7 && d.n.y > 0.7 && d.c.distanceTo(pos) < range).slice(0, 6).map((d) => ({ pos: d.c, radius: d.r, ref: d })));
     this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.25, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2, emissive: PALETTE.pale, emissiveIntensity: 0.08 });
   }
 

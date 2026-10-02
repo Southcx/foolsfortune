@@ -5,6 +5,8 @@
 //   lean     the top displaced by an offset, growing with the square of the height: the base stays on the ground, the top lags
 //   wobble   a ripple travelling up the body, its size decaying (a hit, a landing, a fright)
 //   dent     a dimple pushed in along the normal around a point (where it was struck), springing back out
+//   feet     the skirt of toes at the foot: a wave runs round it while the body moves, each toe lifting and reaching in its turn (a
+//            walk with no legs), its size the speed (`d.feet`, 0..1, set each frame)
 // Normals are left as they were (a jelly forgives it), so the lighting stays smooth.
 //
 // Prior art: squash and stretch, the first of Disney's twelve principles (Thomas & Johnston, The Illusion of Life), done the way the
@@ -13,13 +15,15 @@
 // damped harmonic spring of every "juicy" game feel talk (Jan Willem Nijman, Martin Jonasson & Petri Purho, "Juice it or lose it").
 //
 //   const d = new JellyDeform(material, height)   d.kick(squashV, leanV2, wobble)   d.dent(localPoint, depth)   d.update(dt, accel2)
-//   d.target.squash = 0.8  (where the squash spring rests: a crouch, a sleep, a puddle)
+//   d.target.squash = 0.8  (where the squash spring rests: a crouch, a sleep, a puddle)     d.feet = 0..1   d.wet = 0..1
 //
 // THE MELT (optional, { melt: true }): the surface of a creature of sloppy wet sand, sliding down it forever. A pattern of wet and dry
 // sand laid round the body (on a circle, so it has no seam) and scrolled slowly down it, about six centimetres a second: tall wet
 // streaks that run toward the foot, wetter and darker low down, glossy where wet and matte where dry, a coarse grain that does not
 // move. A scrolled pattern is the honest way to show a surface that is always running (the sixth generation's waterfalls and lava,
-// Wind Waker's and Ocarina of Time's scrolled textures), and it is slow and soft, so it never shimmers.
+// Wind Waker's and Ocarina of Time's scrolled textures), and it is slow and soft, so it never shimmers. How WET it is (`d.wet`, 0..1:
+// a creature that has been away from water too long) sets how much of it runs, how dark and glossy the wet is, and how fast it slides:
+// a dry one is pale, matte and nearly still.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -30,7 +34,9 @@ export class JellyDeform {
       uTime: { value: 0 },
       uSq: { value: 1 }, uLean: { value: new THREE.Vector2() }, uWob: { value: 0 }, uPh: { value: 0 },
       uDent: { value: new THREE.Vector4(0, 0, 0, 0) }, uH: { value: height },
+      uFoot: { value: 0 }, uFootPh: { value: 0 }, uWet: { value: 1 }, uFlow: { value: 0 },
     };
+    this.feet = 0; this.footPh = 0; this.wet = 1;
     this.sq = 1; this.sqV = 0;
     this.lean = new THREE.Vector2(); this.leanV = new THREE.Vector2();
     this.wob = 0; this.ph = 0; this.dentK = 0;
@@ -41,7 +47,7 @@ export class JellyDeform {
       Object.assign(sh.uniforms, u);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', `#include <common>
-uniform float uSq, uWob, uPh, uH; uniform vec2 uLean; uniform vec4 uDent; varying vec3 vJP;`)
+uniform float uSq, uWob, uPh, uH, uFoot, uFootPh; uniform vec2 uLean; uniform vec4 uDent; varying vec3 vJP;`)
         .replace('#include <begin_vertex>', `#include <begin_vertex>
 vJP = position;
 {
@@ -52,12 +58,16 @@ vJP = position;
 	transformed.y *= s;
 	transformed.xz *= 1.0 + uWob * sin( uPh - h * 5.5 ) * ( 0.25 + h );
 	transformed.xz += uLean * h * h;
+	// the toes: a wave round the skirt, each lifting and reaching out in its turn
+	float low = 1.0 - smoothstep( 0.0, 0.3, h ), ta = atan( position.x, position.z ) * 4.0 - uFootPh;
+	transformed.y += uFoot * low * max( 0.0, sin( ta ) ) * 0.11 * uH;
+	transformed.xz *= 1.0 + uFoot * low * sin( ta + 1.2 ) * 0.14;
 	float dd = length( position - uDent.xyz );
 	transformed -= objectNormal * uDent.w * exp( -dd * dd * 7.0 );
 }`);
       if (melt) sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-uniform float uTime, uH; varying vec3 vJP;
+uniform float uTime, uH, uWet, uFlow; varying vec3 vJP;
 float jh( vec3 p ) { return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 ); }
 float jn( vec3 p ) {
 	vec3 i = floor( p ), f = fract( p ); f = f * f * ( 3.0 - 2.0 * f );
@@ -70,17 +80,17 @@ float jWet;
 	// round the body (a circle: no seam), up it, and scrolled down it
 	float a = atan( vJP.x, vJP.z ), h = clamp( vJP.y / uH, 0.0, 1.0 );
 	vec2 ring = vec2( cos( a ), sin( a ) );
-	float run = vJP.y * 2.2 + uTime * 0.13;
+	float run = vJP.y * 2.2 + uFlow;
 	float streak = jn( vec3( ring * 2.6, run * 0.35 ) ) * 0.65 + jn( vec3( ring * 6.0, run * 0.9 ) ) * 0.35;
-	jWet = smoothstep( 0.5, 0.78, streak + 0.28 * ( 1.0 - h ) );
+	jWet = smoothstep( 0.5, 0.78, streak + 0.28 * ( 1.0 - h ) - 0.35 * ( 1.0 - uWet ) ) * mix( 0.35, 1.0, uWet );
 	float grain = jn( vec3( ring * 14.0, vJP.y * 16.0 ) );
-	vec3 dry = vec3( 0.80, 0.65, 0.44 ), wet = vec3( 0.47, 0.35, 0.22 );
+	vec3 dry = mix( vec3( 0.90, 0.78, 0.58 ), vec3( 0.80, 0.65, 0.44 ), uWet ), wet = vec3( 0.47, 0.35, 0.22 );
 	diffuseColor.rgb *= mix( dry, wet, jWet ) * ( 0.9 + 0.18 * grain ); // (the material's colour tints it: white is plain sand)
 }`)
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 roughnessFactor = mix( 0.92, 0.22, jWet );`);
     };
-    material.customProgramCacheKey = () => (melt ? 'jelly-melt' : 'jelly');
+    material.customProgramCacheKey = () => (melt ? 'jelly-melt2' : 'jelly2');
   }
   /** A push: on the squash spring's speed, the lean spring's speed, and the wobble. */
   kick(squashV = 0, leanV = null, wobble = 0) {
@@ -103,7 +113,10 @@ roughnessFactor = mix( 0.92, 0.22, jWet );`);
     this.dentK *= Math.exp(-6 * dt);
     const u = this.u;
     u.uTime.value += dt; // (the melt runs on the creature's own time: a halted jelly stops running too)
+    u.uFlow.value += dt * 0.13 * (0.25 + 0.75 * this.wet); // (and slower the drier it is: a speed integrated here, so a change never jumps it)
+    this.footPh += dt * (4 + 7 * this.feet);
     u.uSq.value = this.sq; u.uLean.value.copy(this.lean); u.uWob.value = this.wob; u.uPh.value = this.ph; u.uDent.value.w = this.dentK;
+    u.uFoot.value = this.feet; u.uFootPh.value = this.footPh; u.uWet.value = this.wet;
   }
   /** Hold still (a halt): nothing moves until it is let go. */
   freeze() { this.sqV = 0; this.leanV.set(0, 0); }

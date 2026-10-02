@@ -38,6 +38,8 @@
     #lachryma .fill::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: linear-gradient(90deg, #9ff7ea, #b48cff, #ff9ad5, #ffd27a); opacity: .9; }
     #lachryma .res { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #ffb27a 0 4px, #c46a45 4px 8px); opacity: .9; }
     #lachryma.low .fill { background: #c46a45; box-shadow: none; }
+    #lachryma .bar.pxbar { height: auto; background: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; display: flex; justify-content: center; }
+    #lachryma .num canvas { display: inline-block; vertical-align: middle; }
     #lachryma.gain .bar { animation: lgain .35s ease-out; }
     #lachryma.deny .bar { animation: ldeny .3s; border-color: #ff7a4a; }
     @keyframes lgain { 0% { box-shadow: 0 0 0 #fff1dc; } 30% { box-shadow: 0 0 16px #fff1dc; transform: scaleY(1.4); } 100% { box-shadow: 0 0 0 #fff1dc; } }

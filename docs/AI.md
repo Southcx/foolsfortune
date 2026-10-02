@@ -1,0 +1,174 @@
+# Creatures: the AI parts
+
+How the things that live in Fool's Fortune think, and how to make the next one. Everything here is built once and shared: a new
+creature is a body (how it moves and is hurt) and a mind made of these parts with its own wants and actions, not new machinery.
+
+The slip jelly (`src/jelly/`) is the first creature built this way and the worked example throughout.
+
+---
+
+## 1. The picture
+
+```
+            the world                                    the creature
+  ┌──────────────────────────┐        ┌─────────────────────────────────────────────┐
+  │ STIMULI  (ai/stimuli.js) │──hear──▶ SENSES (ai/senses.js) ──write──▶ MEMORY      │
+  │  shots, blasts, calls,   │        │   sight cone + LOS, feel,      (ai/memory.js)│
+  │  cries, deaths, food     │──see───▶   hearing                     facts, places│
+  │                          │        │                                      │       │
+  │ ECOLOGY  (ai/ecology.js) │◀─find──│ DRIVES (ai/drives.js)            ┌───▼──────┐│
+  │  affordances: water,     │        │   thirst, hunger, rest, social,  │ REASONER ││
+  │  food, shade, den, prey, │        │   fear, curiosity  ──────────────▶ (utility)││
+  │  shiny; relations table  │        │                                  └───┬──────┘│
+  └──────────────────────────┘        │  ACTIONS (the creature's mind.js)◀───┘ picks  │
+                                      │   each tick: STEERING (ai/steer.js) → c.want   │
+                                      │   and the BODY's moves (slipjelly.js)          │
+                                      └─────────────────────────────────────────────┘
+       STATUSES (creatures.js) and STUN (stun.js) act on the body and are actions' gates; REPROGRAM (veritome/) writes into all of it
+```
+
+One `Brain` (ai/brain.js) owns a creature's senses, memory, drives and reasoner, and runs the loop:
+
+1. **Sense** a few times a second: look at the Courier and the creatures near it, listen to new stimuli; write into memory.
+2. **Want**: drives rise on their own clocks, faster or slower as the moment asks (`mods`).
+3. **Decide**: the reasoner scores every action from what the creature knows and wants; the best one runs (with a little momentum
+   for the one already running, so it finishes what it starts).
+4. **Act** every frame: the running action steers (`c.want`, a velocity) and asks the body for moves (wind up, lunge, call, eat).
+
+## 2. The parts
+
+### Stimuli (`src/ai/stimuli.js`): the world's noises
+Anything that could be noticed without being seen puts a stimulus on the bus: a kind, a place, how far it carries, how strong, who
+made it, and (optionally) who it is ABOUT and where they were.
+
+| kind | made by | what minds make of it |
+| --- | --- | --- |
+| `noise` | a shot (22 m), a charged shot (32 m), a blast (18 + 6r m), a pot breaking, a heavy landing | an interest to look into; a startle for the timid |
+| `light` | the Veritome's flash, a blast's glare | (the flash dazzles directly) |
+| `alarm` | a creature's call to its kin, *about* what it saw | its kin learn of that thing, and where |
+| `pain` | a creature hurt, *about* whoever did it | kin get a grudge against the culprit; a little fear |
+| `death` | a creature burst, *about* whoever did it | kin: fear, a grudge, a place to mourn and then avoid |
+| `food` | baubles spilled | an interest |
+| `shiny`, `scent` | (reserved: cubes lying about, trails) | |
+
+Add one where it happens: `game.ai?.stimuli.emit('noise', pos, { radius: 20, strength: 1, by: 'courier', source: entity })`.
+Listeners keep the bus's sequence number, so each stimulus is heard once.
+
+### Senses (`src/ai/senses.js`): finding out
+`new Senses(game, { sight, fov, feel, hear, eye, onHear })`. Sight is a cone with line-of-sight rays (cast at most every `every`
+seconds per thing); awareness builds over time, faster the nearer, the more central, and the more CONSPICUOUS the thing (the brain
+rates the Courier: running and fighting are loud, crouching is quiet, a body melted into slip is invisible). Within `feel` it knows a
+thing is there whichever way it faces. `onHear(stim, reach)` is the kind's own reaction to what it heard (the jelly's: kin's pain and
+death). `dazzle(t)` blinds it for a while.
+
+### Memory (`src/ai/memory.js`): what it believes
+Facts about things (last place, awareness 0..1, threat, grudge), interests (heard but not seen), places (where it ate, where kin
+burst). Awareness ebbs after `hold` seconds unseen; threat and grudge fade far more slowly. `AWARE.SUSPECT` (0.35) is the "?",
+`AWARE.ALERT` (1) the "!". A mind acts on memory, never on the world: it can lose you behind a dune and go to where you were.
+
+### Drives (`src/ai/drives.js`): what it wants
+`new Drives({ thirst: { rise: 1/260, start: [0.05, 0.35] }, fear: { fall: 1/14 }, ... }, traits)`. Each 0..1, rising (or falling) on
+its own clock; `tick(dt, mods)` scales the rates for the moment; `sat`, `add`, `set`. TRAITS (`rollTraits({ bold: [0.7, 1.35] })`)
+make individuals: a drive spec can name the trait that scales its rate.
+
+### Utility (`src/ai/utility.js`): choosing
+An action is data:
+
+```js
+{ id: 'drink', weight: 1,                                   // its band: 1 living, ~2 survival, 3+ orders and statuses
+  when: (x) => !!look(x, 'water', 80),                      // a hard gate
+  consider: [(x) => curve.logistic(0.5, 8)(x.drives.get('thirst'))],   // each 0..1, multiplied (with IAUS compensation)
+  cooldown: 4, lock: (x) => false, urgent: false,
+  enter(x) {}, tick(x, dt) { return 'run' | 'done' | 'fail'; }, exit(x, why) {} }
+```
+
+Response curves: `curve.linear`, `power`, `logistic`, `fall`, `bell`, `step`, `floor(lo, f)`; inputs normalized with `norm(x, lo, hi)`.
+The running action is compared with a 1.25x momentum; `lock` keeps an attack from being interrupted except by an `urgent` action.
+
+### Steering (`src/ai/steer.js`): moving
+Reynolds' behaviours as plain functions writing a desired velocity: `seek`, `arrive`, `flee`, `pursue`, `evade`, `wander`, `orbit`,
+`separate`, `cohere`, `align`, `contain`, `avoid` (three whisker rays through a `probe` the body supplies), and `blend` (weighted,
+capped). An action blends what it needs into `c.want`; the body eases its velocity toward it.
+
+### Ecology (`src/ai/ecology.js`): the world as it is to a creature
+**Affordances**: `eco.offer({ kind, pos, radius })` for standing ones (the Weir offers water round the pond and shade under every
+palm), `eco.provide(kind, (pos, range) => [...])` for ones that come and go (baubles: `food`; loose cubes: `shiny`; wet slip:
+`slip`; the shallows' fish: `prey`; each jelly's home: `den`). An item may carry `take(who)` (eat it: false if it is already gone) and
+`alive()`. A mind asks `eco.find('water', pos, range)` and never knows what a pond is.
+
+**Relations**: the table of what each kind is to each other kind (`kin`, `prey`, `threat`, `rival`, `curious`, `neutral`), with an
+individual's own exceptions on top (`c.rel`, a Map by kind or by thing). Reprogramming writes exceptions: a jelly made to take the
+Courier for kin, or to take its own kind for rivals.
+
+### Brain (`src/ai/brain.js`): the parts put together
+`new Brain(game, c, { senses, memory, drives, actions, think: 0.2, near: 50, far: 140, mods })`. Level of detail: within `near` it
+thinks every `think` seconds; within `far` at 2.5x that; beyond, it does not look or think, only its drives tick (an off-screen
+creature costs a few additions). `signal()` thinks again at once; `force(id)` starts an action; `describe()` is its line on F3.
+
+### Around the minds
+- **Statuses** (`src/creatures.js`): halt, slow, sleep, forget, flee, soft, calm, melt, stun: timed, applied by anything, decided
+  by the creature. In a mind they are the top-weighted actions (asleep, stunned, melted, sent home) and gates on the rest (calm: no
+  attacks).
+- **Stun** (`src/stun.js`): a poise meter on every stunnable thing (creatures and clapperjars); the Veritome's flash fills it; full,
+  the thing is stunned and VULNERABLE (`game.stun.vulnerable(t)`): the zandatsu and reprogramming work on it, blows land harder.
+  Dizzy stars show the meter and the stun (`vfx/dizzy.js`).
+- **Reprogramming** (`src/veritome/reprogram.js`): a stunned mind opened with the middle button; its MACROS are data: a status, an
+  ORDER its mind carries out (`c.macro = { id: 'fetch', until }`, read by an action), or a relation (`kin`, `turn`).
+- **The blade** (`src/sondelass/blade.js`): a creature resists a cut while it is itself (the ward glyph), and comes apart into
+  Lachryma under a zandatsu when it is not (`vfx/dissolve.js`).
+
+## 3. The slip jelly, as an example
+
+`src/jelly/mind.js` is the whole of its mind:
+
+- **Drives**: thirst (it is sand held together by water: it dries as it moves and spends slip; dry, it is pale and matte and its melt
+  runs slow), hunger (Lachryma: baubles, cubes, fish, and the Courier's own, drained by a lunge), rest, social, fear, curiosity.
+  Traits: bold (also its poise), greedy, lazy, social.
+- **Actions**: stunned / asleep / melted / sent home (statuses); fetch, follow (orders); watch, hunt (with its lunge and spit, and a
+  call to its kin first); flee; drink, forage, fish, rest, huddle, play, mourn, investigate, go home, wander, idle.
+- **Its reactions** (`heard`): a kin's cry or death frightens it and turns it against the culprit (unless the culprit is its own
+  kind, or the victim is one it was written to protect), and marks the place; a loud noise close by startles the timid.
+- **Its ecology**: the oasis's water, the palms' shade, baubles and cubes to eat (it carries your swallowed money until it bursts),
+  fish in the shallows, its kin, its den.
+
+What comes out of it: jellies that drift to the water when they dry, nap in the shade, huddle and play; that notice you, call their
+kin, and hunt you when they are hungry or you have hurt one of them; that mourn where one burst and avoid the place after; that steal
+your Lachryma; and that, reprogrammed, follow you, fetch for you, or turn on each other.
+
+## 4. Making a new creature
+
+1. **The body** (`src/<kind>/<kind>.js`): spawn its model and collider; the creature contract (`creatures.js`: `type: 'creature'`,
+   `kind`, `pos`, `radius`, `height`, `alive`, `hurt`, `knock`, `center`, `head`, `vanish`, `macros`, `poise`, `stunFor`); tag it
+   (`hurtable`, `programmable`, `sliceable` as it is); register it (`game.creatures.add`, `game.physics.register`); give it moves the
+   mind can ask for, and let it move toward `c.want` each frame. Emit stimuli where it hurts, dies and calls.
+2. **The mind** (`src/<kind>/mind.js`): its drive spec and traits, its actions (copy the jelly's living actions and change the
+   numbers: most of them are generic), its `mods` and `heard`.
+3. **Its place in the ecology**: add its row to the relations table (`ai/ecology.js`), and offer or provide what it offers others
+   (a den, itself as prey).
+4. **Wire it**: one `Brain` per individual (`game.ai.add(brain)`), an update in main.js; tracking rules for its events (`tracking.js`);
+   its line in the stress test's invariants.
+
+## 5. Next (the long road)
+
+What the parts are ready for, roughly in order:
+
+- **More kinds that meet**: a second creature in the dunes that preys on jellies (the table already has the slot), a grazer the
+  jellies follow, birds that scatter at a shot. Every relation in the table is a story the player can watch.
+- **Clapperjars on the parts**: the workshop's jars keep their own module for now (`clappers.js`); their wants (bauble-greed, mischief,
+  napping, mending) map onto drives and actions directly, and they already offer and eat baubles.
+- **Time of day**: a world clock as a drive modifier (sleep at night, drink at dawn), the Weir's tide already turns.
+- **Squads**: shared memory between kin (a pack's blackboard), roles (one calls, two flank), formations from `separate`/`cohere`.
+- **Scent**: trails as `scent` stimuli that a tracker follows (the jellies' slip trails are already laid as paths).
+- **Population**: dens with capacity, young that grow, reforming tied to a den's health (a puddle that is soaked up does not reform).
+- **Learning**: memory that outlives a reform (a jelly that was reprogrammed remembers the Courier as kin; one she burst remembers).
+- **Debugging**: F3 lists every mind near her (its action, score, drives and focus); the stress test checks no mind goes without an
+  action, no drive leaves 0..1, no stun outlasts its time.
+
+## 6. Prior art
+
+Dave Mark's *Behavioral Mathematics for Game AI* and the Infinite Axis Utility System (with Kevin Dill); The Sims' motives and
+smart objects (Will Wright, Don Hopkins); Rain World's creature relationships and off-screen simulation (Joar Jakobsson, James
+Primate); Monster Hunter's ecology (hunger, nests, turf wars); Halo 2's knowledge model and sense-think-act loop (Damian Isla);
+Thief's and Metal Gear Solid's awareness levels and sound propagation (Tom Leonard, "Building an AI Sensory System"); Craig Reynolds'
+steering behaviours and boids; the blackboard of the behaviour-tree engines; and, for the stun and the reprogramming, Monster Hunter's
+KO and flash pods, Sekiro's posture, Fatal Frame's Camera Obscura, The Typing of the Dead and NieR: Automata's hacking.

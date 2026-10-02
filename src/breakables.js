@@ -609,6 +609,7 @@ export class Breakables {
 
     this.fx.shatterBurst(center, Math.max(0.5, size * 2), dirN, M);
     sfx.shatter(Math.max(0.4, size * 2.2), this.game.listenerDistance(center), M.sound);
+    this.game.ai?.stimuli.emit('noise', center, { radius: 10 + size * 8, strength: 0.8 }); // (a pot breaking is heard: ai/stimuli.js)
     return center;
   }
 

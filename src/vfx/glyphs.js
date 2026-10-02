@@ -4,6 +4,7 @@
 // has to be answered. The glyph is squashed and stretched as it pops (it overshoots, wobbles, settles and rises), with a burst of
 // spikes and a ring behind it for the ones that matter. Tinted per use (the lure's aspect), always with a heavy dark outline.
 //
+// (and the WARD, a ring barred across: something refused what was done to it: a blade turned aside)
 // Prior art: the exclamation mark over the head of every alerted enemy from Metal Gear Solid onward, Animal Crossing's and FFXIV's
 // bite indicators (the number of marks is the weight of the bite: ! !! !!!), and the comic-book onomatopoeia the pop's timing is
 // borrowed from (a fast overshoot, a wobble, a held beat, a rise and a fade). It is text in the world, on the thing it is about; it is
@@ -57,8 +58,17 @@ function veinCanvas() {
   stroke(46, '#150806'); stroke(26, '#ffffff'); stroke(14, '#ff3b2a');
   return c;
 }
+// the ward (a ring with a bar across it, the "no" of every sign): a blow or a blade a mind refused (sondelass/blade.js)
+function wardCanvas() {
+  const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
+  const g = c.getContext('2d'); g.translate(s / 2, s / 2); g.lineCap = 'round';
+  const draw = (w, col) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.arc(0, 0, 82, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.moveTo(-58, 58); g.lineTo(58, -58); g.stroke(); };
+  draw(44, '#150806'); draw(26, '#ffffff'); draw(14, '#bfe3ff');
+  return c;
+}
 const KINDS = {
   vein: { draw: veinCanvas, w: 256, h: 256, aspect: 1 },
+  ward: { draw: wardCanvas, w: 256, h: 256, aspect: 1 },
   bang1: { text: '!', w: 256, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1 },
   bang2: { text: '!!', w: 384, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1.5 },
   bang3: { text: '!!!', w: 512, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 2 },

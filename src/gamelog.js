@@ -107,7 +107,7 @@ export class GameLog {
     this.history = []; this.hi = -1; this.typing = false;
     this.field.addEventListener('keydown', (e) => {
       e.stopPropagation();
-      // (a mode borrows the line: what is typed goes to it, Enter keeps the line open, Esc ends the mode: veritome/flash.js)
+      // (a mode borrows the line: what is typed goes to it, Enter keeps the line open, Esc ends the mode)
       if (this.mode && (e.code === 'Enter' || e.code === 'NumpadEnter')) { e.preventDefault(); const v = this.field.value; this.field.value = ''; this.mode.onSend?.(v); this.mode?.onInput?.(''); return; }
       if (this.mode && e.code === 'Escape') { e.preventDefault(); this.mode.onEscape?.(); return; }
       if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); const v = this.field.value; this.close(); this.send(v); }

@@ -179,6 +179,19 @@ export class Weir {
     game.scene.add(this.reedBed);
     // palms round the flat, and the skiff's mooring post
     buildPalms(game);
+    // what the oasis offers a creature (ai/ecology.js): water in the shallows all round the pond, shade under every palm, and the fish
+    // that come up into the shallows, for anything quick enough
+    const eco = game.ai?.eco;
+    if (eco) {
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * Math.PI * 2, x = OX + POND.x + Math.cos(a) * POND.rx * 0.95, z = OZ + POND.z + Math.sin(a) * POND.rz * 0.95;
+        eco.offer({ kind: 'water', pos: new THREE.Vector3(x, DUNE.y + POND.surface, z), radius: 2.2 });
+      }
+      for (const [lx, lz] of PALM_SPOTS) eco.offer({ kind: 'shade', pos: new THREE.Vector3(OX + lx, game.dunes.heightAt(OX + lx, OZ + lz), OZ + lz), radius: 2.6 });
+      const shallows = this.pools.find((p) => p.id === 'shallows');
+      eco.provide('prey', (pos, range) => (shallows?.fish || []).filter((f) => !f.dying && f.state !== 'hooked' && f.state !== 'bite' && f.pos.y > shallows.surface - 1.1 && f.pos.distanceTo(pos) < range)
+        .map((f) => ({ pos: f.pos, ref: f, kind: 'fish', gone: () => f.dying || !this.fish.includes(f), take: () => { if (f.dying || !this.fish.includes(f)) return false; this.remove(f); return true; } })));
+    }
     // a board of what has been landed
     this.board = this.buildBoard();
   }

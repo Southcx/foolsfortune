@@ -15,11 +15,17 @@
 //  - The plane through the target that contains the view ray and the line's direction, so the cut on the screen is exactly the line
 //    on the screen: it appears edge-on as a line, and slices like a sheet.
 //  - Fruit Ninja's chained cuts, and Superhot's time that only moves when you do (the blade is read in real seconds: `game.rawDt`).
+// A CREATURE (creatures.js) is a mind, and a mind sees a blade coming: while it is itself, every cut is RESISTED (a ward, a ring barred
+// across, flashes where the blade met it, and the blade rings off). Stunned (stun.js), asleep, held or melted, it is open: a cut lands
+// in full, and its own bright line shows as a clapperjar's does; cut along that and the zandatsu takes it apart, and the pieces come
+// undone into Lachryma, liquid and solid, drawn to the Courier (vfx/dissolve.js). A creature that cannot be cut at all (not
+// 'sliceable') always resists.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { planeFrom } from '../slicing.js';
 import { sfx } from '../audio.js';
 import { PALETTE, T } from '../config.js';
+import { hasTag } from '../tags.js';
 
 const SLOW = 0.05, DRAIN = 4, ENTER_MIN = 8, ZAN_TOL = 0.24, REACH = 1.6;
 const _r = new THREE.Vector3(), _u = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _p = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
@@ -98,7 +104,7 @@ export class BladeMode {
     this.target = t || null;
     if (t) {
       g.lock.pointOf(t, this.pt);
-      this.size = t.type === 'clapper' ? 0.5 : Math.max(0.35, (t.ref.P?.height ?? 0.6) * 0.7);
+      this.size = t.type === 'clapper' ? 0.5 : t.type === 'creature' ? (t.ref.height ?? 1) * 0.45 : Math.max(0.35, (t.ref.P?.height ?? 0.6) * 0.7);
       if (this.weakFor !== t.ref) { this.weakFor = t.ref; this.weak = (Math.random() - 0.5) * Math.PI * 0.8; } // (its line: a different angle for each)
     } else {
       // nothing locked: the line goes through where the crosshair points, a few metres out
@@ -159,8 +165,22 @@ export class BladeMode {
     };
     const len = this.size * 3.4 + 1.2;
     show(this.guide, this.ang, len, 0.9);
-    if (this.target?.type === 'clapper') show(this.zline, this.weak, len * 0.8, 0.7 + 0.25 * Math.sin(performance.now() * 0.004));
+    if (this.target?.type === 'clapper' || this.open(this.target)) show(this.zline, this.weak, len * 0.8, 0.7 + 0.25 * Math.sin(performance.now() * 0.004));
     else this.zline.visible = false;
+  }
+
+  /** A creature open to the blade: one that can be cut, and is in no state to see it coming (stun.js). */
+  open(t) { return t?.type === 'creature' && hasTag(t.ref, 'sliceable') && !!this.game.stun?.vulnerable(t.ref); }
+
+  /** The blade turned aside: a ward flashes where it met the creature, and it rings off. Nothing is cut. */
+  resist(c, at, dir) {
+    const g = this.game;
+    g.glyphs?.pop('ward', at.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true });
+    g.fx?.impact?.(at.clone(), dir.clone().negate(), { sparks: 10, dust: 0 });
+    sfx.parry?.();
+    this.P.shake = Math.max(this.P.shake, 0.2);
+    c.mem?.see(g.player, 'courier', g.player.pos, 1); c.brain?.signal(); // (and it knows what tried)
+    g.events?.emit('blade.resist', { kind: c.kind, why: hasTag(c, 'sliceable') ? 'aware' : 'uncuttable' });
   }
 
   // ---------------------------------------------------------------- the cut
@@ -169,7 +189,8 @@ export class BladeMode {
     if (!this.target && !g.breakables.items.size) return;
     const line = B.line(this.ang, _c.set(0, 0, 0)).clone(), nrm = new THREE.Vector3().crossVectors(line, B.view).normalize();
     const plane = planeFrom(nrm, this.pt);
-    const isZan = this.target?.type === 'clapper' && Math.abs(wrapPi(this.ang - this.weak)) < ZAN_TOL;
+    const onLine = Math.abs(wrapPi(this.ang - this.weak)) < ZAN_TOL;
+    const isZan = (this.target?.type === 'clapper' || this.open(this.target)) && onLine;
     this.cuts++;
     this.swing = 1; this.swingKind = (this.swingKind + 1) % 3;
     g.time.pulse('cut', 0.012, 0.09, { release: 0.25 });
@@ -178,7 +199,8 @@ export class BladeMode {
     sfx.slice();
     this.P.shake = Math.max(this.P.shake, 0.1);
     let pieces = 0;
-    if (isZan) pieces += this.zandatsu(this.target.ref, line, nrm, B.view);
+    if (isZan && this.target.type === 'creature') pieces += this.zandatsuCreature(this.target.ref, line, nrm, B.view);
+    else if (isZan) pieces += this.zandatsu(this.target.ref, line, nrm, B.view);
     else pieces += this.slicePlane(plane, line);
     g.events?.emit('blade.cut', { pieces, zandatsu: isZan });
   }
@@ -199,6 +221,14 @@ export class BladeMode {
       const out = B.slice(ent, plane, dir);
       if (out?.length) n += out.length;
     }
+    // (a creature the plane goes through: cut if it is open to it, the blade turned aside if not)
+    for (const c of [...(g.creatures?.list || [])]) {
+      if (!c.alive) continue;
+      c.center(_p);
+      if (_p.distanceTo(this.pt) > this.size * 2.4 + 0.8 || Math.abs(plane.n.dot(_p) - plane.d) > (c.radius ?? 0.5) + 0.2) continue;
+      if (this.open({ type: 'creature', ref: c })) { g.creatures.strike(c, _p.clone(), dir, 3, 'sliced', 'courier'); n += 1; }
+      else this.resist(c, _p.clone().addScaledVector(plane.n, 0), dir);
+    }
     // (a clapper the line goes through, cut off the line: it falls apart in two)
     for (const c of [...g.clappers.list]) {
       if (!c.alive) continue;
@@ -208,6 +238,32 @@ export class BladeMode {
       n += 2;
     }
     return n;
+  }
+
+  /** A creature cut along its own line while it is open: three cuts, a beat apart, and its pieces come undone into Lachryma. */
+  zandatsuCreature(c, line, nrm, view) {
+    const g = this.game;
+    this.zan++;
+    const at = c.center(new THREE.Vector3());
+    g.time.pulse('zandatsu', 0.008, 0.5, { release: 0.7 });
+    this.hold = 1.3;
+    g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8 });
+    this.queue.push({ t: 1.1, fn: () => g.cinema.free('zandatsu') });
+    sfx.zandatsu?.();
+    // its body as it stands, in the world (the deformer's shape is the shader's: the cut is of the rest shape, which is near enough)
+    c.root.updateMatrixWorld(true);
+    const geo = c.body.geometry.clone().applyMatrix4(c.body.matrixWorld);
+    const planes = [0, Math.PI / 3, -Math.PI / 3].map((da) => { const l = _u.copy(line).applyAxisAngle(view, da).clone(); return planeFrom(new THREE.Vector3().crossVectors(l, view).normalize(), at); });
+    planes.forEach((pl, i) => this.queue.push({ t: 0.07 * i, fn: () => { const l = _u.copy(line).applyAxisAngle(view, [0, Math.PI / 3, -Math.PI / 3][i]).clone(); g.fx.slash?.(at.clone().addScaledVector(l, -1), at.clone().addScaledVector(l, 1), l); } }));
+    this.queue.push({ t: 0.16, fn: () => {
+      c.vanish?.('courier', 'zandatsu'); // (gone from the world without a burst: its body is the pieces now)
+      g.dissolve?.cut(geo, planes, { centre: at, color: 0xd9b48a, worth: 8 + (c.stash || 0), mp: 10 });
+      c.stash = 0;
+      g.lachryma.gain?.(18);
+      g.glyphs.pop('star', at.clone().setY(at.y + 0.6), { color: 0xd9c8ff, size: 1.0, burst: true, ring: true, life: 1.6 });
+    } });
+    g.events?.emit('creature.zandatsu', { kind: c.kind, by: 'courier' });
+    return 6;
   }
 
   /** The clapperjar cut along its own line: three cuts, the jar into chunks, the core taken. */

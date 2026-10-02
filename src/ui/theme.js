@@ -205,11 +205,35 @@ class Theme {
     if (!o || !o.offsetParent) { this.glove.classList.remove('on'); this.target = null; return; }
     const r = o.getBoundingClientRect();
     const bob = Math.floor(now / 250) % 2 ? 2 : 0; // (a stepped bob, four times a second, as the glove always has)
-    const x = Math.max(2, Math.round(r.left - 46 - bob)), y = Math.round(r.top + Math.min(r.height, 40) / 2 - 25); // (the tip is at 42, 14 of 48)
+    const tip = this.tip || [42, 14]; // (where its fingertip is on the picture: the 48 px glove's, or the pixel glove's at its scale)
+    const x = Math.max(2, Math.round(r.left - tip[0] - 4 - bob)), y = Math.round(r.top + Math.min(r.height, 40) / 2 - tip[1]);
     this.glove.style.transform = `translate(${x}px, ${y}px)`;
     this.raf = requestAnimationFrame(this.follow);
   };
 }
+
+/** The maker's pixel gloves (ui/pixel.js), drawn at 1x and scaled by a whole number, in place of the 48 px ones: the mouse's pointer
+ *  and fist over the windows, the menu's pointing glove beside the chosen option, and the same turned to point down (the dialogue's
+ *  "more", the shells' hand). Done again when the window's size changes the scale. */
+Theme.prototype.pixelGloves = function (px) {
+  const apply = () => {
+    const s = px.scale(), dpr = window.devicePixelRatio || 1, root = document.documentElement.style;
+    root.setProperty('--jcur', px.cursor('glove_point', 'clay', 6, 1, 'default'));
+    root.setProperty('--jcur-pointer', px.cursor('glove_point', 'clay', 6, 1, 'pointer'));
+    root.setProperty('--jcur-grab', px.cursor('glove_grab', 'clay', 15, 13, 'grabbing'));
+    const src = px.art('glove_left', 'clay'), w = src.width * s, h = src.height * s;
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(src, 0, 0, w, h);
+    const css = (w / dpr).toFixed(2);
+    this.glove.style.backgroundImage = `url(${c.toDataURL()})`; this.glove.style.width = this.glove.style.height = `${css}px`; this.glove.style.backgroundSize = `${css}px ${css}px`;
+    this.tip = [(31 * s) / dpr, (15 * s) / dpr];
+    const d = document.createElement('canvas'); d.width = h; d.height = w;
+    const x = d.getContext('2d'); x.imageSmoothingEnabled = false; x.translate(h, 0); x.rotate(Math.PI / 2); x.drawImage(c, 0, 0);
+    this.gloveDown = d.toDataURL(); root.setProperty('--jglove-down', `url(${this.gloveDown})`);
+  };
+  apply();
+  addEventListener('resize', apply);
+};
 
 export const theme = new Theme();
 export function installTheme() { theme.install(); return theme; }

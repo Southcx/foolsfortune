@@ -111,7 +111,16 @@ export class LachrymaPool {
 // ---------------------------------------------------------------------------
 // Baubles: gummy, glowing drops of Lachryma. They bounce with a jelly squash,
 // settle and wobble, get pulled toward the courier, then get absorbed.
+//
+// OXIDIZING: a bauble is Lachryma freshly come out of clay: pale cream and glowing. Left lying in the air it turns: from a few seconds
+// on, the cream darkens through amber to what liquid Lachryma always is (near-black with the oil film over it: the Well, the cubes,
+// vfx/water.js), and a while after that the drop runs into the ground and is gone. One shader for every stage: OX.steps materials share
+// it and a bauble takes the next as it turns, so nothing is ever recompiled. A bauble can be born turned (`spawn(..., { ox: 1 })`: the
+// Lachryma a zandatsu lets out is liquid already).
+// Prior art: the pickups that fade before they vanish (the blinking hearts and rupees of Zelda, Kingdom Hearts' orbs that dim), made a
+// change of matter rather than a blink (the comfort rule: nothing flickers).
 // ---------------------------------------------------------------------------
+const OX = { start: 7, full: 22, melt: 38, gone: 40.5, steps: 8 };
 const PICKUP = 32;
 const BAUBLE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER);
 const UP = new THREE.Vector3(0, 1, 0);
@@ -123,21 +132,25 @@ export class Baubles {
     this.game = game;
     this.list = [];
     this.geo = new THREE.IcosahedronGeometry(1, 2);
-    this.mat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, emissive: PALETTE.glow, emissiveIntensity: 0.45, roughness: 0.18, metalness: 0 });
+    this.stages = Array.from({ length: OX.steps }, (_, i) => oxMaterial(i / (OX.steps - 1)));
+    this.mat = this.stages[0];
     this.coreMat = new THREE.MeshBasicMaterial({ color: 0xfff6ea });
     this.glint = new THREE.SphereGeometry(1, 8, 6);
     game.physics.collisionHandlers.push((h1, h2) => this.onCollision(h1, h2));
+    // (what lies loose on the ground is food for anything that eats Lachryma: ai/ecology.js)
+    game.ai?.eco.provide('food', (pos, range) => this.near(pos, range).map((b) => ({ pos: b.root.position, ref: b, what: 'bauble', alive: () => this.list.includes(b) && b.state === 'loose', take: () => this.steal(b) })));
   }
 
   /** Pop `n` baubles out of `pos` in a little fountain. */
-  spawn(pos, n = 5, { value = T.lachryma.baubleValue, spread = 1, up = 3.5 } = {}) {
+  spawn(pos, n = 5, { value = T.lachryma.baubleValue, spread = 1, up = 3.5, ox = 0 } = {}) {
+    this.game.ai?.stimuli.emit('food', pos, { radius: 14, strength: 0.6 });
     for (let i = 0; i < n; i++) {
       const v = new THREE.Vector3((Math.random() - 0.5) * 3 * spread, up * (0.7 + Math.random() * 0.6), (Math.random() - 0.5) * 3 * spread);
-      this.spawnOne(pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.15, 0.1 + Math.random() * 0.1, (Math.random() - 0.5) * 0.15)), v, value);
+      this.spawnOne(pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.15, 0.1 + Math.random() * 0.1, (Math.random() - 0.5) * 0.15)), v, value, ox);
     }
   }
 
-  spawnOne(pos, vel, value) {
+  spawnOne(pos, vel, value, ox = 0) {
     const g = this.game, w = g.physics.world;
     const r = T.lachryma.baubleRadius * (0.85 + Math.random() * 0.3);
     const body = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pos.x, pos.y, pos.z)
@@ -145,7 +158,8 @@ export class Baubles {
     const col = w.createCollider(RAPIER.ColliderDesc.ball(r).setDensity(400).setRestitution(T.lachryma.bounce)
       .setFriction(0.9).setCollisionGroups(BAUBLE_GROUPS).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS), body);
     const root = new THREE.Group();
-    const mesh = new THREE.Mesh(this.geo, this.mat);
+    const step = Math.round(ox * (OX.steps - 1));
+    const mesh = new THREE.Mesh(this.geo, this.stages[step]);
     mesh.scale.setScalar(r);
     mesh.castShadow = true;
     const core = new THREE.Mesh(this.glint, this.coreMat);
@@ -156,7 +170,7 @@ export class Baubles {
     root.position.copy(pos);
     g.scene.add(root);
     const b = {
-      type: 'bauble', body, col, root, mesh, r, value, age: 0, state: 'loose',
+      type: 'bauble', body, col, root, mesh, r, value, age: ox > 0 ? OX.start + ox * (OX.full - OX.start) : 0, ox, step, state: 'loose',
       squash: 0, squashV: 0, axis: new THREE.Vector3(0, 1, 0), wob: Math.random() * 10, lastVel: vel.clone(),
     };
     g.physics.register(col, b);
@@ -189,7 +203,10 @@ export class Baubles {
         const t = b.body.translation(), lv = b.body.linvel();
         b.root.position.set(t.x, t.y, t.z);
         b.lastVel.set(lv.x, lv.y, lv.z);
-        if (t.y < -5) { this.remove(i); continue; }
+        if ((t.y < -5 && t.y > -150) || t.y < -600) { this.remove(i); continue; } // (fell out of a room; the dunes, far below, are a floor of their own)
+        // it turns, as it lies: cream to the black of liquid Lachryma, and at last it runs into the ground
+        if (b.age > OX.start && b.ox < 1) { b.ox = Math.min(1, (b.age - OX.start) / (OX.full - OX.start)); const s = Math.round(b.ox * (OX.steps - 1)); if (s !== b.step) { b.step = s; b.mesh.material = this.stages[s]; } }
+        if (b.age > OX.gone) { this.remove(i); continue; }
         // magnet: once close enough (and a moment after spawning), fly to the courier
         const d = b.root.position.distanceTo(chest);
         if (b.age > L.magnetDelay && d < L.magnetRadius && !b.claimed) this.beginAbsorb(b);
@@ -219,7 +236,8 @@ export class Baubles {
       const s = b.squash + breathe;
       _q.setFromUnitVectors(UP, b.axis.lengthSq() > 0 ? b.axis.clone().normalize() : UP);
       b.mesh.quaternion.copy(_q);
-      b.mesh.scale.set(b.r * (1 - s * 0.6), b.r * (1 + s), b.r * (1 - s * 0.6));
+      const sink = b.state === 'loose' && b.age > OX.melt ? Math.max(0, 1 - (b.age - OX.melt) / (OX.gone - OX.melt)) : 1; // (running into the ground: flatter, smaller)
+      b.mesh.scale.set(b.r * (1 - s * 0.6) * (0.6 + 0.4 * sink) * Math.sqrt(sink), b.r * (1 + s) * sink * sink, b.r * (1 - s * 0.6) * (0.6 + 0.4 * sink) * Math.sqrt(sink));
       if (b.state === 'loose' && settle) b.mesh.position.y = Math.abs(Math.sin(b.wob * 2)) * 0.012;
     }
   }
@@ -272,4 +290,28 @@ export class Baubles {
   }
 
   clear() { for (let i = this.list.length - 1; i >= 0; i--) this.remove(i); }
+}
+
+/** A bauble's look at oxidation k (0 fresh cream and glowing .. 1 liquid Lachryma: near-black, the oil film on it). */
+function oxMaterial(k) {
+  const cream = new THREE.Color(PALETTE.cream), glow = new THREE.Color(PALETTE.glow);
+  const e = Math.pow(k, 0.8);
+  const m = new THREE.MeshPhysicalMaterial({
+    color: cream.clone().lerp(new THREE.Color(0x05040a), e), emissive: glow.clone().lerp(new THREE.Color(0x2a1450), k), emissiveIntensity: 0.45 * (1 - k) + 0.04,
+    roughness: 0.18 + 0.04 * k, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05,
+  });
+  const uOil = { value: 1.25 * k * k };
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uOil = uOil;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+uniform float uOil;
+vec3 oxFilm(float t) { t = fract(t) * 4.0; vec3 a = vec3(0.30, 0.06, 0.70), b = vec3(0.04, 0.55, 0.75), c = vec3(0.95, 0.72, 0.18), d = vec3(0.85, 0.10, 0.50);
+  return t < 1.0 ? mix(a, b, smoothstep(0.0, 1.0, t)) : t < 2.0 ? mix(b, c, smoothstep(1.0, 2.0, t)) : t < 3.0 ? mix(c, d, smoothstep(2.0, 3.0, t)) : mix(d, a, smoothstep(3.0, 4.0, t)); }`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+{ float ndv = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0); float fres = pow(1.0 - ndv, 2.2);
+  totalEmissiveRadiance += oxFilm(fres * 0.8 + normal.y * 0.2) * (0.03 + 1.5 * fres) * uOil; }`);
+  };
+  m.customProgramCacheKey = () => 'bauble-ox';
+  return m;
 }

@@ -16,6 +16,8 @@ const base64Assets = () => ({
 
 export default defineConfig({
   base: './',
+  // (each build's own id: progress belongs to the build it was earned in, src/progress.js)
+  define: { __BUILD__: JSON.stringify(Date.now().toString(36)) },
   plugins: [base64Assets()],
   build: {
     target: 'es2022',

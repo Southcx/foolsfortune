@@ -79,6 +79,9 @@ export class Cubes {
     this.list = [];
     this.queue = [];
     this.combo = 0; this.comboT = 0; this.shown = -1; this.popT = 0;
+    // (a cube left lying is a bright thing to anything that eats Lachryma: it may be swallowed, and carried until it bursts: ai/ecology.js)
+    game.ai?.eco.provide('shiny', (pos, range) => this.list.filter((c) => c.state === 'loose' && c.age > 1.5 && c.pos.distanceTo(pos) < range).slice(0, 6)
+      .map((c) => ({ pos: c.pos, ref: c, what: 'cube', alive: () => this.list.includes(c) && c.state === 'loose', take: (who) => { const w = this.steal(c); if (!w) return false; if (who) who.stash = (who.stash || 0) + w; return true; } })));
     this.geo = new RoundedBoxGeometry(SIZE, SIZE, SIZE, 3, 0.02);
     this.seeds = new Float32Array(MAX);
     this.geo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(this.seeds, 1).setUsage(THREE.DynamicDrawUsage));
@@ -205,6 +208,8 @@ export class Cubes {
     g.fx.absorbSparkle?.(c.pos.clone());
     this.list.splice(i, 1);
   }
+  /** Something else swallowed it (a jelly): gone from the floor, its worth with whatever took it. */
+  steal(c) { const i = this.list.indexOf(c); if (i < 0 || c.state !== 'loose') return 0; this.game.physics.removeBody(c.body); this.list.splice(i, 1); return c.worth; }
   absorbNow(c) { const i = this.list.indexOf(c); if (i >= 0) { if (c.state === 'loose') this.game.physics.removeBody(c.body); this.earn(c.worth, 'overflow'); this.list.splice(i, 1); } }
   drop(i) { const c = this.list[i]; if (c.state === 'loose') this.game.physics.removeBody(c.body); this.earn(c.worth, 'recovered'); this.list.splice(i, 1); }
   /** Everything on the floor is taken (a reset must not cost anyone what a chest gave). */

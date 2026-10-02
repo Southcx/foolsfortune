@@ -181,15 +181,20 @@
       if (gg.chat && rnd() < 0.003) gg.chat.run(['/sit', '/dance', '/wave', '/faint', '/nod', '/no', '/fold', '/talk', '/kneel', '/em trips over a pot', 'hello', '/where', '/stand', '/help sit', '/nonsense'][Math.floor(rnd() * 15)]);
       if (gg.folk && !gg.dialogue?.open && rnd() < 0.002) { const near = gg.folk.list.filter((f) => f.pos.distanceTo(P.pos) < 60), n = near[Math.floor(rnd() * near.length)]; if (n) P.pos.set(n.pos.x + Math.sin(n.yaw) * 1.8, n.pos.y + 0.05, n.pos.z + Math.cos(n.yaw) * 1.8); P.prevPos?.copy(P.pos); if (n) inp.pressed.add('KeyF'); }
       if (gg.dialogue?.open && rnd() < 0.08) inp.pressed.add(['KeyF', 'Space', 'Enter', 'Digit1', 'Digit2', 'KeyS'][Math.floor(rnd() * 6)]);
-      // the slip jellies and the Veritome's Flash: strike one when near, flash one and type into it (a phrase whole, a typo, nonsense), or Esc
+      // the slip jellies, the stun and reprogramming: strike one when near, stun one (as the flash would), open its mind and type into
+      // it (the line whole, a wrong key, nonsense), or Esc; now and then a cut in blade mode's way (resisted, or a zandatsu when it is down)
       const J = gg.jellies?.list.filter((c) => c.alive && c.pos.distanceTo(P.pos) < 80) || [];
       if (J.length && rnd() < 0.01) { const c = J[Math.floor(rnd() * J.length)]; gg.creatures.strike(c, c.center(new g.THREE.Vector3()), new g.THREE.Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize(), 0.5 + rnd() * 2, 'shot'); }
-      if (J.length && !gg.flash?.active && rnd() < 0.004) gg.flash.open(J[Math.floor(rnd() * J.length)], rnd());
-      if (gg.flash?.active && rnd() < 0.05) {
-        const q = gg.flash.cur, L = q.lines[Math.floor(rnd() * q.lines.length)], ph = L.phrases[Math.floor(rnd() * 3)];
-        const r = rnd();
-        if (r < 0.6) { gg.flash.input(ph.slice(0, 2)); gg.flash.send(ph); } else if (r < 0.8) { gg.flash.input('qz'); gg.flash.send('qzx'); } else if (r < 0.9) gg.flash.close('closed'); else gg.log.mode?.onEscape?.();
+      if (J.length && rnd() < 0.006) gg.stun.add(J[Math.floor(rnd() * J.length)], 0.3 + rnd() * 0.8, { by: 'courier', cause: 'flash' });
+      if (J.length && !gg.reprogram.open && rnd() < 0.004) { const c = J.find((x) => gg.stun.stunned(x)); if (c) gg.reprogram.start(c); }
+      if (gg.reprogram.open && rnd() < 0.06) {
+        const R = gg.reprogram, r = rnd();
+        if (R.phase === 'choose') R.choose(Math.floor(rnd() * 6));
+        else if (r < 0.5) { R.field.value = R.line.slice(0, R.typed.length + 1 + Math.floor(rnd() * 3)); R.typing(); }
+        else if (r < 0.7) { R.field.value = R.typed + 'q'; R.typing(); }
+        else if (r < 0.8) R.close('closed');
       }
+      if (J.length && rnd() < 0.002) { const bm = g.techs.get('sondelass')?.cutlass?.blade, c = J[Math.floor(rnd() * J.length)]; if (bm) { const p = c.center(new g.THREE.Vector3()); bm.pt.copy(p); bm.size = 0.7; if (gg.stun.stunned(c) && rnd() < 0.5) bm.zandatsuCreature(c, new g.THREE.Vector3(1, 0, 0), new g.THREE.Vector3(0, 0, 1), new g.THREE.Vector3(0, 0, -1)); else bm.slicePlane({ n: new g.THREE.Vector3(1, 0, 0), d: p.x }, new g.THREE.Vector3(1, 0, 0)); } }
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
       if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
       const brush = g.techs.get('soulbrush');
@@ -208,10 +213,16 @@
       if (!Number.isFinite(p.x + p.y + p.z + v.x + v.y + v.z)) { sink.violation('finite', P, label); break; }
       sink.talkStuck = g.techs.active?.id === 'talk' && !g.game.dialogue?.open ? (sink.talkStuck || 0) + 1 : 0; // (it ends on the next fixed step)
       if (sink.talkStuck > 3) sink.violation('talk-stuck', P, label);
-      // a mind is never held open past its window, the chat line always comes back, and no jelly leaves the world
-      if (gg.flash?.cur && gg.flash.cur.t < -1) sink.violation('flash-stuck', P, label);
-      if (!gg.flash?.active && gg.log?.mode) sink.violation('log-mode-stuck', P, label);
-      for (const c of gg.jellies?.list || []) if (!Number.isFinite(c.pos.x + c.pos.y + c.pos.z + c.deform.sq)) { sink.violation('jelly-finite', P, label); break; }
+      // a mind is never held open past its time, the chat line is no one's, no jelly leaves the world, every mind is doing something it
+      // can say, and no stun outlasts its time (stun.js) unless a window holds it
+      if (gg.reprogram?.open && gg.reprogram.phase === 'type' && gg.reprogram.t < -1) sink.violation('reprogram-stuck', P, label);
+      if (gg.log?.mode) sink.violation('log-mode-stuck', P, label);
+      for (const c of gg.jellies?.list || []) {
+        if (!Number.isFinite(c.pos.x + c.pos.y + c.pos.z + c.deform.sq)) { sink.violation('jelly-finite', P, label); break; }
+        if (c.alive && c.brain.lod !== 'far' && !c.brain.action && c.brain.now > 2) { sink.violation('mind-idle', P, label); break; }
+        if (c.alive && Object.values(c.drives.v).some((v) => !Number.isFinite(v) || v < 0 || v > 1)) { sink.violation('drives-range', P, label); break; }
+        const s = c.status?.get('stun'); if (s && s.t > 30) { sink.violation('stun-forever', P, label); break; }
+      }
       const hs = Math.hypot(v.x, v.z);
       // (a blink is 5.5 m in 0.09 s: 60 m/s by design; the platforms add their own speed)
       if (g.techs.active?.id !== 'blink' && (hs > 45 || Math.abs(v.y) > 90)) sink.violation('speed', P, `${label} hs=${hs.toFixed(1)} vy=${v.y.toFixed(1)}`);

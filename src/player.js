@@ -34,6 +34,7 @@ const hlen = (v) => Math.hypot(v.x, v.z);
  */
 export class Player {
   constructor(physics, camera, input) {
+    this.isPlayer = true; this.kind = 'courier'; // (what she is to the creatures: ai/ecology.js)
     this.physics = physics;
     this.camera = camera;
     this.input = input;

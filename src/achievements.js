@@ -399,17 +399,19 @@ export function buildAchievements(game) {
   C('dp2', 'angle', 'The Deep', 6, 'endure', 'The Drowned Lachryma', 'Land the Drowned Lachryma.', 'fish.legend', 1, { hidden: true, title: 'Drowned King' });
   C('dp3', 'angle', 'The Deep', 3, 'count', 'Tides Turned', 'Watch the tide turn 20 times.', 'angle.tide', 20);
 
-  // ---------------------------------------------------------------- BATTLE (jelly/slipjelly.js; the Veritome's Flash: veritome/flash.js)
+  // ---------------------------------------------------------------- BATTLE (jelly/slipjelly.js; stun.js; the Veritome's flash and reprogramming: veritome/)
   C('jl1', 'battle', 'Slip Jellies', 1, 'count', 'Pop!', 'Burst a slip jelly.', 'jelly.burst', 1);
   C('jl2', 'battle', 'Slip Jellies', 2, 'count', 'Jelly Season', 'Burst 25 slip jellies.', 'jelly.burst', 25);
   C('jl3', 'battle', 'Slip Jellies', 4, 'endure', 'Slipmonger', 'Burst 150 slip jellies.', 'jelly.burst', 150, { title: 'Slipmonger' });
   C('jl4', 'battle', 'Slip Jellies', 2, 'mechanic', 'Not Today', 'Break a slip jelly\'s wind-up with a heavy blow.', 'jelly.cancelled.staggered', 1);
   F('jl5', 'battle', 'Slip Jellies', 2, 'collect', 'Every Way There Is', 'Burst slip jellies three different ways (a shot, a blade, a club...).', (L) => L.under('jelly.burst.').filter(([, v]) => v > 0).length, 3);
-  C('fl1', 'battle', 'Reprogramming', 1, 'count', 'Open Mind', 'Flash a creature with the Veritome at full charge, and open its mind.', 'flash.open', 1);
-  C('fl2', 'battle', 'Reprogramming', 2, 'count', 'Root Access', 'Type 25 commands into opened minds.', 'flash.cast', 25);
-  C('fl3', 'battle', 'Reprogramming', 3, 'mechanic', 'Verbose', 'Run a command in its longest phrasing.', 'flash.tier.3', 1);
-  F('fl4', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Run eight different commands.', (L) => L.under('flash.verb.').filter(([, v]) => v > 0).length, 8);
-  C('fl5', 'battle', 'Reprogramming', 2, 'mechanic', 'Not So Fast', 'Stop a slip jelly\'s wind-up by typing it to stop.', 'jelly.cancelled.typed', 1);
+  C('fl1', 'battle', 'Reprogramming', 1, 'count', 'Lights Out', 'Stun a creature with the Veritome\'s flash.', 'stun.cause.flash', 1);
+  C('fl2', 'battle', 'Reprogramming', 1, 'count', 'Open Mind', 'Open a stunned creature\'s mind with the middle button.', 'reprogram.open', 1);
+  C('fl3', 'battle', 'Reprogramming', 2, 'count', 'Root Access', 'Rewrite 15 minds.', 'reprogram.run', 15);
+  C('fl4', 'battle', 'Reprogramming', 3, 'mechanic', 'Clean Compile', 'Type a macro\'s line without a single wrong key.', 'reprogram.clean', 1);
+  F('fl5', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Run eight different macros.', (L) => L.under('reprogram.macro.').filter(([, v]) => v > 0).length, 8);
+  C('fl6', 'battle', 'Reprogramming', 2, 'mechanic', 'Good Jelly', 'Make a slip jelly take you for its own kind.', 'reprogram.macro.kin', 1);
+  C('fl7', 'battle', 'Reprogramming', 3, 'mechanic', 'Dissolution', 'Take a stunned creature apart with the zandatsu.', 'zandatsu.creature', 1);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
   // the clay folk and the chat line (npc/, chat.js, emotes.js)

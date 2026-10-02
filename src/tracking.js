@@ -341,20 +341,40 @@ export class Tracking {
     on('jelly.strike', (e) => { L.inc('jelly.struck'); L.inc(`jelly.struck.${e.move}`); log.say('warn', e.move === 'lunge' ? 'The slip jelly throws itself at you.' : 'The slip jelly spits slip at you.', { key: `jstr.${e.move}`, throttle: 1.5 }); });
     on('jelly.cancel', (e) => { L.inc('jelly.cancelled'); L.inc(`jelly.cancelled.${e.why}`); if (e.why === 'staggered') log.say('battle', 'Your blow breaks the slip jelly\'s wind-up.', { key: 'jcan', throttle: 1 }); });
     on('jelly.burst', (e) => {
+      if (e.by === 'courier' && e.cause === 'zandatsu') { L.inc('jelly.burst'); L.inc('jelly.burst.zandatsu'); return; } // (said by creature.zandatsu)
       if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'You burst the slip jelly.', { key: 'jbur', win: 1, fmt: (n) => `You burst ${plural(n, 'slip jelly').replace('jellys', 'jellies')}.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle in a while.'); }
       else log.say('other', 'The slip jelly bursts.', { key: 'jbur2', throttle: 1 });
     });
-    // the Veritome's Flash (veritome/flash.js): a mind opened, and what was typed into it
-    const DID = { halt: 'halts', slow: 'slows', sleep: 'falls asleep', forget: 'forgets you', flee: 'turns for home', soft: 'softens', calm: 'grows calm', melt: 'melts into a puddle', cancel: 'stops what it was doing' };
-    on('flash.open', (e) => { L.inc('flash.open'); log.say('battle', `You flash the ${e.kind === 'slipjelly' ? 'slip jelly' : 'creature'}. Its mind lies open for ${e.seconds} seconds: type into it.`, { key: 'flo', throttle: 0.5 }); first('flash', 'Logged: your first Flash. Type a phrase whole and press Enter; the longer the phrase, the stronger. /flash sets how long a mind stays open.'); });
-    on('flash.cast', (e) => {
-      L.inc('flash.cast'); L.inc(`flash.verb.${e.verb}`); L.inc(`flash.tier.${e.tier}`); L.inc('flash.chars', e.chars);
-      const who = e.kind === 'slipjelly' ? 'The slip jelly' : 'It';
-      log.say('battle', e.took ? `${who} ${DID[e.verb] || 'obeys'}.` : `${who} does not answer to that just now.`, {});
+    // their lives, said when they are near enough to see (jelly/mind.js): what they eat, what they catch, what they bring, whom they fight
+    const seen = () => { const P = this.game.player.pos; return this.game.jellies?.list.some((c) => c.alive && c.pos.distanceTo(P) < 30); };
+    on('jelly.eat', (e) => { L.inc('jelly.ate'); if (seen()) log.say('other', e.what === 'cube' ? 'A slip jelly swallows a cube of Lachryma.' : 'A slip jelly swallows a bauble of Lachryma.', { key: 'jeat', throttle: 8 }); });
+    on('jelly.fish', () => { L.inc('jelly.fished'); if (seen()) log.say('other', 'A slip jelly snatches a fish from the shallows.', { key: 'jfish', throttle: 10 }); });
+    on('jelly.fetch', () => { L.inc('jelly.fetched'); log.say('battle', 'The slip jelly brings you Lachryma.', { key: 'jfetch', throttle: 2 }); });
+    on('jelly.brawl', () => { L.inc('jelly.brawl'); if (seen()) log.say('other', 'Slip jellies fight among themselves.', { key: 'jbrawl', throttle: 6 }); });
+    // the stun (stun.js) and the Veritome's flash (veritome/flash.js): a mind knocked out of itself
+    const KIND = (k) => (k === 'slipjelly' ? 'slip jelly' : k === 'clapperjar' ? 'clapperjar' : 'creature');
+    on('flash.fire', (e) => { L.inc('flash.fire'); L.inc('flash.hits', e.hits); if (e.lens) L.inc('flash.lens'); });
+    on('stun.build', (e) => { if (e.by === 'courier') L.inc(`stun.build.${e.cause}`); });
+    on('creature.stun', (e) => {
+      if (e.by !== 'courier') return;
+      L.inc('stun'); L.inc(`stun.${e.kind}`); L.inc(`stun.cause.${e.cause}`);
+      log.say('battle', `The ${KIND(e.kind)} reels, stars wheeling round its head.`, { key: 'stun', throttle: 1 });
+      first('stun', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass.');
     });
-    on('flash.miss', () => L.inc('flash.miss'));
-    on('flash.close', (e) => { if (e.why === 'time' || e.why === 'spent') log.say('other', 'The mind closes.', { key: 'flc', throttle: 1 }); });
-    on('flash.window', (e) => log.say('system', `The Flash holds a mind open for ${e.seconds} seconds.`));
+    // reprogramming (veritome/reprogram.js): a stunned mind opened, and the line typed into it
+    const RAN = { halt: 'freezes where it stands', sleep: 'falls asleep', calm: 'grows calm', forget: 'forgets you', home: 'turns for home', soften: 'goes soft',
+      melt: 'melts into a puddle', kin: 'takes you for its own kind', fetch: 'goes to fetch you Lachryma', turn: 'turns on its own kind' };
+    on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
+    on('reprogram.run', (e) => {
+      L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');
+      log.say('battle', `You rewrite the ${KIND(e.kind)}. It ${RAN[e.macro] || 'obeys'}.`, {});
+    });
+    on('reprogram.miss', () => L.inc('reprogram.miss'));
+    on('reprogram.close', (e) => { if (e.why === 'time') { L.inc('reprogram.lost'); log.say('warn', `The ${KIND(e.kind)}'s mind snaps shut on you.`, {}); } });
+    on('reprogram.wear', (e) => log.say('other', `What you wrote into the ${KIND(e.kind)} wears off.`, { key: 'rpw', throttle: 2 }));
+    // the Sondelass against a mind (sondelass/blade.js)
+    on('blade.resist', (e) => { L.inc('blade.resisted'); log.say('battle', `The ${KIND(e.kind)} turns your blade aside${e.why === 'uncuttable' ? ': it cannot be cut' : ': stun it first'}.`, { key: 'bres', throttle: 2 }); });
+    on('creature.zandatsu', (e) => { L.inc('zandatsu.creature'); L.inc(`zandatsu.${e.kind}`); log.say('battle', `You take the ${KIND(e.kind)} apart. It comes undone into Lachryma.`, {}); });
     on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
     on('emote', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });

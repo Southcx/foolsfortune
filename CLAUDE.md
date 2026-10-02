@@ -29,7 +29,7 @@ credits: UAL Standard, CMU mocap, CC0).
 - **Marks in the world are not text.** A glyph pop (`src/vfx/glyphs.js`: a `!`, `!!!`, `?` over the thing it is about), the interact chevron (`src/interact.js`), the lock-on reticle, the letterbox bars and the fish portrait (`src/vfx/cinema.js`, `portrait.js`) are how the game *shows* something: they sit on the thing, carry no words or numbers, and are diegetic wherever they can be (a line that glows with its load beats a gauge). Anything that needs a sentence still goes to the log.
 - **The dialogue box is the one window of words in the world**, and only because the player opened it (F at one of the clay folk, `src/npc/`); every finished line is also written to the log (`npc.say`). The folk show feeling with their bodies, particles and glyph marks (`src/npc/folk.js`), never with floating text. Their lines are data (`src/npc/talks.js`).
 - **The log takes typing** (the chat line): a feature that wants a command adds it to the table (`game.chat.add`, `src/chat.js`); what the command does is still reported by an event and a rule in `tracking.js`.
-- Events that report an outcome say who caused it (`by`: `courier` | `clapperjar` | `environment`, see `src/breakables.js`); only the
+- Events that report an outcome say who caused it (`by`: `courier` | `clapperjar` | `creature` | `environment`, see `src/breakables.js`); only the
   Courier's count toward the Courier's records, and the log says the others as what they were.
 - Achievements are predicates over the ledger, never flags set by hooks (so they are retroactive); follow OSRS's tiers/types and FFXIV's categories (see the header of `src/achievements.js`).
 
@@ -41,12 +41,21 @@ credits: UAL Standard, CMU mocap, CC0).
   (`src/render/lightbudget.js`) lends eight real lights to the nearest; never add lights that bypass it.
 - Many copies of a prop: park them in a prop batch or an instance pool (`src/render/propbatch.js`); a model made of many
   static primitives: `mergeStatic` (`src/render/merge.js`). Measure before and after (`window.__boot`, renderer.info).
+- An articulated model that rests most of the time (a tool on the belt, a chest) is drawn through a rest bake (`src/render/restbake.js`).
+- The maker's pixel art is used at 1x, palette-swapped, then scaled by a whole number, never resampled (`src/ui/pixel.js`).
 - A new psychic tool goes on the belt (`src/tools/belt.js`), and anything that asks "is a tool out?" asks the belt.
 - What a tool may do to a thing is a tag on the thing (`src/tags.js`: sliceable, breakable, liftable, pushable, static); a tool asks
   `hasTag`, never the entity's kind. Static things a sweeping tool must find are registered there.
 - A creature that can be hurt is tagged `hurtable` and registered with `game.creatures` (`src/creatures.js`); a weapon calls
   `creatures.strike`, never the creature's own module. Conditions (halt, slow, sleep...) are statuses applied there, and the creature
   decides what each means for it. A feature that wants the chat line's typing borrows it as a mode (`log.setMode`).
+- "If we only have to build it once, we build it once." A creature's mind is assembled from the parts in `src/ai/` (utility reasoner,
+  drives, stimuli, senses, memory, steering, ecology, Brain), documented in `docs/AI.md`; a new creature is a body module and a mind
+  module of data and small functions, and anything it needs that another creature could use becomes a part there (and a line in the doc).
+  Anything that makes a sound, light or smell a creature should notice emits a stimulus (`game.ai.stimuli.emit`); what the place offers
+  (water, shade, food) is an ecology offer or provider, never a creature's own list.
+- Stunning goes through `src/stun.js` (`game.stun.add`); an ability a thinking opponent would refuse (zandatsu, reprogramming) asks
+  `stun.vulnerable(target)`, and when it refuses it shows the resist mark (`blade.resist`), never nothing.
 
 ## Scope
 - Raids belong to one room (THE SIEGE, `src/siege.js` and `src/raids.js`), not a global setting.
@@ -54,6 +63,8 @@ credits: UAL Standard, CMU mocap, CC0).
   goes away when you leave the room.
 - The Zone of Influence is, for now, simply the ground the player has explored. No "understanding" prompts.
 - The testing tool is the *stress test* (`tools/stress.mjs`), random-input fuzzing with invariants, not a bot with a grudge.
+- Progress (unlocks, the Codex, the ledger and achievements) is reset on every new build (`src/progress.js`); the achievements are
+  placeholders. Settings are kept.
 
 ## Git and publishing
 - Develop on the branch the task names; commit with the trailers the session gives; no pull request unless asked.

@@ -2,8 +2,9 @@
 // CREATURES: the things in the world that live, fight and can be hurt, other than the clapperjars (which came first and keep their own
 // module). A creature is a plain object with a small contract, so a weapon asks the creature to be hurt and does not know what it is:
 //
-//   { type: 'creature', kind, name, pos, radius, height, alive, tags: Set('hurtable', 'programmable', ...),
-//     hurt(point, dir, power, cause, by), knock(vel), center(out) }
+//   { type: 'creature', kind, name, pos, radius, height, alive, tags: Set('hurtable', 'programmable', 'sliceable', ...),
+//     hurt(point, dir, power, cause, by, from), knock(vel), center(out), head(), vanish(by, cause) (gone without a death of its own:
+//     a zandatsu's dissolve), macros (what reprogramming may write into it: veritome/reprogram.js), poise, stunFor (stun.js) }
 //
 // and every creature carries STATUSES, timed conditions anything may put on it (the Veritome's reprogramming, a shell, a trap):
 //
@@ -11,6 +12,7 @@
 //   sleep   it sinks down and does nothing until hit or the time runs out      forget  it loses whoever it was after, and wanders
 //   flee    it goes away from the Courier                                      soft    it takes double from every blow
 //   calm    it will not attack, though it still follows                        melt    it pools into a harmless puddle
+//   stun    it is knocked out of itself (stun.js): it sways where it stands, and what a mind would refuse works on it
 //
 // A status is a time left and a strength; `st(c, name)` is what a creature's brain reads. Applying one again keeps the longer.
 //
@@ -18,11 +20,11 @@
 // each a timer on the target rather than a change to its code, and the "damageable" interface of most engines (Unreal's TakeDamage,
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
-//   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by)   .apply(c, status, dur, k)   st(c, status)
+//   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?)   .apply(c, status, dur, k)   st(c, status)
 // ---------------------------------------------------------------------------------------
 import { hasTag } from './tags.js';
 
-export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt'];
+export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun'];
 
 /** How much of a status a creature has right now (0 when none). */
 export const st = (c, name) => { const s = c?.status?.get(name); return s && s.t > 0 ? s.k : 0; };
@@ -46,9 +48,9 @@ export class Creatures {
     return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
   }
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
-  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier') {
+  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
-    c.hurt(point, dir, power * (st(c, 'soft') ? 2 : 1), cause, by);
+    c.hurt(point, dir, power * (st(c, 'soft') ? 2 : 1), cause, by, from); // (`from`: the thing that struck, when it is not the Courier)
     return true;
   }
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */

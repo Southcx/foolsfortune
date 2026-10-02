@@ -1,6 +1,7 @@
 import { T } from './config.js';
 
 import { SHELL_KEYS } from './shells.js';
+import { Lachrimeter } from './ui/lachrimeter.js';
 
 export class Hud {
   constructor() {
@@ -29,7 +30,30 @@ export class Hud {
     this.el.hit.classList.toggle('kill', !!kill);
   }
 
+  /** The maker's pixel Lachrimeter (ui/lachrimeter.js) in place of the drawn bar, and the count in the maker's font. */
+  pixelate(px) {
+    this.px = px;
+    const bar = this.el.lach.querySelector('.bar');
+    bar.classList.add('pxbar'); bar.innerHTML = '';
+    // (the gauge one step smaller than the windows' buttons, a HUD and not a menu; as long as the panel is wide, in whole art pixels)
+    const build = () => {
+      const s = px.scale(), k = Math.max(1, s - 1) / s, dpr = window.devicePixelRatio || 1;
+      const inner = Math.max(120, (this.el.lach.clientWidth || 284) - 40);
+      const W = Math.floor((inner * dpr) / Math.max(1, Math.round(s * k)));
+      if (this.meter?.W === W && this.meter.el.__k === k) return;
+      const old = this.meter;
+      this.meter = new Lachrimeter(px, { width: W, k });
+      if (old) old.el.replaceWith(this.meter.el); else bar.appendChild(this.meter.el);
+    };
+    build();
+    addEventListener('resize', build);
+    this.el.lachNum.textContent = '';
+    this.numCv = px.show(px.text('0', 'clay'), { k: this.meter.el.__k });
+    this.el.lachNum.appendChild(this.numCv);
+  }
+
   lachrymaPulse(ok) {
+    if (ok) this.meter?.bead();
     const el = this.el.lach;
     el.classList.remove('gain', 'deny');
     void el.offsetWidth; // restart the animation
@@ -67,7 +91,12 @@ export class Hud {
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
 
-    if (pool) {
+    if (pool && this.meter) {
+      this.meter.set(pool.available, pool.reserved, pool.max); this.meter.update(dt);
+      const n = String(Math.floor(pool.available));
+      if (n !== this.numShown) { this.numShown = n; this.px.swap(this.numCv, this.px.text(n, pool.available < 12 ? 'gold' : 'clay')); }
+      this.el.lach.classList.toggle('low', pool.available < 12);
+    } else if (pool) {
       this.el.lachFill.style.width = `${(pool.available / pool.max) * 100}%`;
       this.el.lachRes.style.width = `${(pool.reserved / pool.max) * 100}%`;
       this.el.lachRes.style.left = `${(pool.available / pool.max) * 100}%`;

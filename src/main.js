@@ -91,7 +91,12 @@ import { Chat } from './chat.js';
 import { Talk } from './moves/talk.js';
 import { Folk } from './npc/folk.js';
 import { Creatures } from './creatures.js';
+import { AI } from './ai/index.js';
+import { Stun } from './stun.js';
+import { resetOnNewBuild } from './progress.js';
+import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './veritome/flash.js';
+import { Reprogram } from './veritome/reprogram.js';
 import { SlipJellies } from './jelly/slipjelly.js';
 import { WEIR_SPAWN } from './angling/weir.js';
 import jellyB64 from './assets/slipjelly.glb?b64';
@@ -102,6 +107,7 @@ import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
 import { Presentation } from './render/present.js';
 import { installTheme, fontsReady, theme } from './ui/theme.js';
+import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
@@ -137,6 +143,7 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 
 async function main() {
   mark('main');
+  const freshBuild = resetOnNewBuild(); // (a new build starts its progress afresh: progress.js)
   loadTuning();
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
@@ -176,6 +183,11 @@ async function main() {
   const fx = new FX(scene);
   fx.pixelRatio = renderer.getPixelRatio();
   const hud = new Hud();
+  // the maker's pixel art (ui/pixel.js): drawn at 1x, recoloured, scaled by a whole number: the gloves, the Lachrimeter, the windows' buttons
+  { const st = document.createElement('style'); st.textContent = PX_CSS; document.head.appendChild(st); }
+  await px.load();
+  theme.pixelGloves(px);
+  hud.pixelate(px);
 
   const stats = { broken: 0, total: 0 };
   const events = new Events();
@@ -200,6 +212,8 @@ async function main() {
     },
     onExplosion(center, R) {
       game.god?.explosion(center, R);
+      game.ai?.stimuli.emit('noise', center, { radius: 18 + R * 6, strength: 1.5, by: 'courier' }); // (a blast is heard far off: ai/stimuli.js)
+      game.ai?.stimuli.emit('light', center, { radius: 10 + R * 3, strength: 1, by: 'courier' });
       if (game.god?.active) return; // (the Courier is a jar just now)
       const pc = player.pos.clone(); pc.y += 0.9;
       const d = pc.distanceTo(center);
@@ -220,6 +234,8 @@ async function main() {
   game.post = new Glow(renderer);
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
+  game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
+  game.px = px; // (the maker's pixel art, for any window that wants it: ui/pixel.js)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
   game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
   game.pulse = new PsychicPulse(game); // (a sounding: a sphere of light from a point)
@@ -238,7 +254,7 @@ async function main() {
   game.level = level;
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
-  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
+  const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   level.build();
@@ -362,6 +378,9 @@ async function main() {
   dbg.frustumCulled = false;
   dbg.visible = false;
   scene.add(dbg);
+  const aiDbg = document.createElement('pre'); // (and, with them, what the creatures near her are thinking)
+  aiDbg.style.cssText = 'position:fixed;left:8px;top:120px;z-index:20;margin:0;padding:6px 8px;background:rgba(20,8,6,.72);color:#ffe0c0;font:11px/1.35 ui-monospace,monospace;pointer-events:none;display:none;white-space:pre';
+  document.body.appendChild(aiDbg);
 
   const resetRoom = () => {
     game.trial?.abort();
@@ -448,6 +467,8 @@ async function main() {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (jelly/slipjelly.js)
   game.creatures = new Creatures(game);
+  game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
+  game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
   game.folk = new Folk(game, clapG);
@@ -459,10 +480,12 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
-  game.flash = new Flash(game); // (the Veritome's Flash: a creature's program opened in the chat line)
+  game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
+  game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
+  if (freshBuild) game.log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -480,7 +503,7 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !god.active) { overlay.style.display = 'flex'; input.enabled = false; }
+    if (!locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open) { overlay.style.display = 'flex'; input.enabled = false; }
   };
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)
@@ -491,7 +514,7 @@ async function main() {
     overlay.style.display = 'flex'; input.enabled = false;
   });
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !god.active) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -626,6 +649,7 @@ async function main() {
     else {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
+      game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: veritome/reprogram.js)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
@@ -664,7 +688,7 @@ async function main() {
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
     game.folk?.update(dt); game.dialogue?.update(game.rawDt);
-    game.creatures.update(dt); game.jellies.update(dt); game.flash.update(game.rawDt);
+    game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt);
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
@@ -672,7 +696,7 @@ async function main() {
     // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
     // the music: the main theme on the title (and the pause); the battle while something is after her; the Dunes' theme in the
     // dunes, the work song in the workshop; a sound-test pick over any of them
-    const fighting = !overlayUp() && game.jellies?.list.some((c) => c.alive && c.aggro && Math.hypot(c.pos.x - player.pos.x, c.pos.z - player.pos.z) < 24);
+    const fighting = !overlayUp() && !!game.jellies?.hunting(24);
     game.music.follow(overlayUp() ? LACHRYMA : game.chests?.rave?.active || game.god?.active ? null : fighting ? BATTLE : game.dunes?.active ? DUNES : game.zones?.current === 'workshop' ? WORKSHOP : null);
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
@@ -758,6 +782,8 @@ async function main() {
     fx.update(dt, camera);
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
+    aiDbg.style.display = dbg.visible ? 'block' : 'none';
+    if (dbg.visible && clock.frame % 10 === 0) aiDbg.textContent = game.ai.describe().join('\n'); // (the minds near her: ai/brain.js's describe)
     if (dbg.visible) {
       const { vertices, colors } = physics.world.debugRender();
       dbgGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));

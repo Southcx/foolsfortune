@@ -548,6 +548,18 @@ class Sfx {
     [523, 659, 784].forEach((f, i) => this.tone(t + 0.06 + i * 0.05, 0.25, { f0: f * 1.5, f1: f * 1.5, type: 'sine', gain: 0.12, dest: d })); // (a little chime: it was a mind)
   }
 
+  /** A rainstick turned over: a rush of fine sand, and through it a cascade of tiny beads, thick at first and thinning out (a slip
+   *  jelly's body coming apart; a zandatsu's pieces coming undone). `len` stretches it. */
+  rainstick(dist = 5, len = 1) {
+    if (!this.ok() || !this.allow('rainstick', 3)) return;
+    const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.1), 0.6), dur = 1.5 * len;
+    this.noise(t, dur, { type: 'bandpass', f0: 2400, f1: 5600, q: 0.8, gain: 0.2, attack: 0.22, dest: d }); // (the rush)
+    for (let i = 0; i < 46; i++) {
+      const u = Math.pow(Math.random(), 1.7), f = 2600 + Math.random() * 5400; // (more early: the cascade thins)
+      this.noise(t + 0.04 + u * dur, 0.012 + Math.random() * 0.02, { type: 'bandpass', f0: f, f1: f * 0.88, q: 7, gain: (0.18 + 0.2 * Math.random()) * (1 - u * 0.75), dest: d });
+    }
+  }
+
   gulp(dist = 5) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.4 / (0.5 + dist * 0.1), 0.2);

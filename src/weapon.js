@@ -361,6 +361,7 @@ export class Weapon {
     game.fx.muzzleFlash(muzzle, gunFwd);
     sfx.gunshot();
     game.events?.emit('shot', { dir: dir.clone(), charged: false, air: !player.grounded });
+    game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: ai/stimuli.js)
 
     if (hit) this.applyHit(hit, dir);
     game.clappers?.spook(end);
@@ -421,6 +422,7 @@ export class Weapon {
     game.clappers?.spook(end, 3);
     sfx.chargedShot(p);
     game.events?.emit('shot', { dir: dir.clone(), charged: true, air: !player.grounded });
+    game.ai?.stimuli.emit('noise', player.pos, { radius: 32, strength: 1.3, by: 'courier', source: player });
 
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * C.kick * p;
     player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);

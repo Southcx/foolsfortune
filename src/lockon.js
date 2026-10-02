@@ -36,6 +36,7 @@ export class LockOn {
   /** The middle of a thing (world). */
   pointOf(t, out) {
     if (t.type === 'clapper') return out.copy(t.ref.pos).setY(t.ref.pos.y + 0.35);
+    if (t.type === 'creature') return t.ref.center(out); // (a creature: creatures.js)
     const b = t.ref.body.translation();
     return out.set(b.x, b.y + (t.ref.P?.height ?? 0.5) * 0.45, b.z);
   }
@@ -45,6 +46,7 @@ export class LockOn {
   shownOf(t, out) {
     const a = this.game.alpha ?? 1;
     if (t.type === 'clapper') { const c = t.ref; out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.hop || 0) + 0.35); }
+    if (t.type === 'creature') { const c = t.ref; out.lerpVectors(c.prevPos || c.pos, c.pos, a); return out.setY(out.y + (c.height ?? 1) * 0.55); }
     const m = t.ref.mesh;
     if (m) { m.updateMatrixWorld(); out.setFromMatrixPosition(m.matrixWorld); return out.setY(out.y + (t.ref.P?.height ?? 0.5) * 0.45); }
     return this.pointOf(t, out);
@@ -55,6 +57,7 @@ export class LockOn {
   candidates() {
     const g = this.game, P = g.player, out = [], p = P.pos;
     for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceToSquared(p) < KEEP * KEEP) out.push({ type: 'clapper', ref: c });
+    for (const c of g.creatures?.list || []) if (c.alive && c.pos.distanceToSquared(p) < KEEP * KEEP && Math.abs(c.pos.y - p.y) < 8) out.push({ type: 'creature', ref: c });
     for (const e of g.breakables?.items || []) {
       if (!e.alive || e.def?.trial || !e.body) continue;
       const t = e.body.translation();
@@ -158,7 +161,7 @@ export class LockOn {
     // a hard flick moves the lock
     if (this.flickCool <= 0 && Math.abs(inp.dx) > 90 && P.lookScale.blade !== 0) { this.flickCool = 0.45; this.cycle(inp.dx > 0 ? 1 : -1); }
     if (inp.wheel && this.flickCool <= 0) { this.flickCool = 0.3; this.cycle(inp.wheel > 0 ? 1 : -1); }
-    const r = t.type === 'clapper' ? 0.6 : Math.max(0.5, (t.ref.P?.rMax ?? 0.3) * 2.2);
+    const r = t.type === 'clapper' ? 0.6 : t.type === 'creature' ? Math.max(0.6, (t.ref.radius ?? 0.5) * 1.6) : Math.max(0.5, (t.ref.P?.rMax ?? 0.3) * 2.2);
     this.reticle.set({ pos: _a, size: r, color: GOLD, icon: 'none', lock: 1, stam: 0 });
     this.reticle.update(dt, g.camera);
   }
