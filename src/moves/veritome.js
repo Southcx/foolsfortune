@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RestBake } from '../render/restbake.js';
 import { hasTag } from '../tags.js';
 import { Tech } from './techs.js';
 import { Track } from '../animator.js';
@@ -57,6 +58,7 @@ export class Veritome extends Tech {
     g.veritome = this;
     this.model = new VeritomeModel();
     this.model.group.visible = false;
+    this.rest = new RestBake(this.model.group); // (shut on the hip, its boards and brass are a handful of draws; the clock and the needle stay live)
     g.scene.add(this.model.group);
     this.book = new Book(g);
     this.vf = new Viewfinder();
@@ -144,6 +146,7 @@ export class Veritome extends Tech {
     this.wasShellsHidden = this.drawT > 0.02;
     const ch2 = g.character;
     this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6;
+    this.rest.update(dt, this.drawT === 0 && this.lensK < 0.001, `${Math.round(this.model.open * 1e3)}`);
   }
 
   // ---------------------------------------------------------------- the lens

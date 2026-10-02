@@ -25,6 +25,7 @@ import { TIERS, TITHE, rollTier } from './treasure.js';
 import { Beam } from './vfx/beam.js';
 import { Ceremony } from './ceremony.js';
 import { sfx } from './audio.js';
+const _lamp = new THREE.Color();
 
 const easeOut = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0);
@@ -161,17 +162,21 @@ export class Chests {
     const g = this.game;
     const front = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
     this.tithe = { pos: pos.clone(), yaw, dais: dais.clone(), front, mark: pos.clone().addScaledVector(front, 1.0), slot: pos.clone().setY(pos.y + 1.06), lamps: [] };
-    // the pity lamps: three rows of ten on the console's face (rare, epic, prismatic)
+    // the pity lamps: three rows of ten on the console's face (rare, epic, prismatic): one instanced draw, a colour each
     const geo = new THREE.BoxGeometry(0.055, 0.045, 0.02);
     const side = new THREE.Vector3(front.z, 0, -front.x);
+    const lm = (this.tithe.lampMesh = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }), 30));
+    const at = new THREE.Object3D(), off = new THREE.Color(0x1a1216);
     [2, 3, 4].forEach((tier, row) => {
       for (let i = 0; i < 10; i++) {
-        const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x1a1216, toneMapped: false }));
-        m.position.copy(pos).addScaledVector(front, 0.315).addScaledVector(side, (i - 4.5) * 0.075); m.position.y = pos.y + 0.42 + row * 0.2;
-        m.rotation.y = yaw; g.scene.add(m);
-        this.tithe.lamps.push({ m, tier, i, on: false });
+        at.position.copy(pos).addScaledVector(front, 0.315).addScaledVector(side, (i - 4.5) * 0.075); at.position.y = pos.y + 0.42 + row * 0.2;
+        at.rotation.set(0, yaw, 0); at.updateMatrix();
+        const k = this.tithe.lamps.length;
+        lm.setMatrixAt(k, at.matrix); lm.setColorAt(k, off);
+        this.tithe.lamps.push({ k, tier, i, on: false });
       }
     });
+    lm.computeBoundingSphere(); g.scene.add(lm);
     this.tithe.slotMat = new THREE.MeshBasicMaterial({ color: 0x6a4cff, toneMapped: false });
     const slot = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.02, 0.05), this.tithe.slotMat);
     slot.position.copy(this.tithe.slot).addScaledVector(front, 0.05); slot.rotation.y = yaw; g.scene.add(slot);
@@ -191,7 +196,7 @@ export class Chests {
     for (const l of t.lamps) {
       const key = l.tier === 2 ? 'rare' : l.tier === 3 ? 'epic' : 'prismatic';
       const need = TITHE.pity[key], on = (l.i + 1) <= Math.floor((s[key] / need) * 10 + 1e-6) || (s[key] + 1 >= need);
-      if (on !== l.on || l.fresh) { l.on = on; l.fresh = false; l.m.material.color.set(on ? TIERS[l.tier].rgb : 0x1a1216); }
+      if (on !== l.on || l.fresh) { l.on = on; l.fresh = false; t.lampMesh.setColorAt(l.k, _lamp.set(on ? TIERS[l.tier].rgb : 0x1a1216)); t.lampMesh.instanceColor.needsUpdate = true; }
     }
   }
 

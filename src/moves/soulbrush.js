@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RestBake } from '../render/restbake.js';
 import { Tech } from './techs.js';
 import { Track } from '../animator.js';
 import { sfx } from '../audio.js';
@@ -52,6 +53,7 @@ export class SoulBrush extends Tech {
     const g = mgr.game;
     this.model = new BrushModel();
     this.model.group.visible = false;
+    this.rest = new RestBake(this.model.group); // (at rest on the hip, one mesh a material: render/restbake.js)
     g.scene.add(this.model.group);
     this.club = new Club(this);
     this.canvas = new BrushCanvas();
@@ -142,6 +144,7 @@ export class SoulBrush extends Tech {
     this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
     const ch2 = g.character;
     this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active;
+    { const m = this.model; this.rest.update(raw, this.drawT === 0 && !this.sliding, `${Math.round(m.bendY * 100)}|${Math.round(m.bendZ * 100)}|${Math.round(m.ink * 100)}`); }
     const shells = document.getElementById('shells');
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
     else if (shells && this.wasShellsHidden) shells.style.display = '';

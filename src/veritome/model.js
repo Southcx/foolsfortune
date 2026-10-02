@@ -62,12 +62,12 @@ export class VeritomeModel {
     const clock = (this.clock = new THREE.Group()); clock.position.set(0, 0.02, 0); inst.add(clock);
     add(new THREE.TorusGeometry(0.052, 0.008, 6, 20), M.brass, clock);
     add(new THREE.CylinderGeometry(0.05, 0.05, 0.004, 20).rotateX(Math.PI / 2), M.face, clock, false);
-    this.hands = [0.038, 0.026].map((l, i) => { const hh = new THREE.Group(); hh.position.z = 0.004; clock.add(hh); const m = add(new THREE.BoxGeometry(0.004 + i * 0.002, l, 0.002), M.dark, hh, false); m.position.y = l / 2; return hh; });
+    this.hands = [0.038, 0.026].map((l, i) => { const hh = new THREE.Group(); hh.position.z = 0.004; hh.userData.noBake = true; clock.add(hh); const m = add(new THREE.BoxGeometry(0.004 + i * 0.002, l, 0.002), M.dark, hh, false); m.position.y = l / 2; return hh; });
     // a compass rose below it, a sextant's arc above, a spirit level along the foot
     const rose = new THREE.Group(); rose.position.set(-0.05, -0.095, 0); inst.add(rose);
     add(new THREE.TorusGeometry(0.022, 0.004, 5, 14), M.brass, rose, false);
     for (let i = 0; i < 4; i++) { const p = add(new THREE.ConeGeometry(0.006, 0.03, 4).rotateZ(-Math.PI / 2), M.brass, rose, false); p.rotation.z = (i * Math.PI) / 2; p.position.set(Math.cos((i * Math.PI) / 2) * 0.016, Math.sin((i * Math.PI) / 2) * 0.016, 0.002); }
-    this.needle = new THREE.Group(); this.needle.position.z = 0.004; rose.add(this.needle);
+    this.needle = new THREE.Group(); this.needle.position.z = 0.004; this.needle.userData.noBake = true; rose.add(this.needle);
     add(new THREE.BoxGeometry(0.003, 0.034, 0.002), M.dark, this.needle, false);
     add(new THREE.TorusGeometry(0.075, 0.004, 4, 18, Math.PI * 0.5).rotateZ(Math.PI * 0.25), M.brass, inst, false).position.set(0, 0.02, 0);
     add(new THREE.BoxGeometry(0.06, 0.012, 0.008), M.brass, inst, false).position.set(0.045, -0.1, 0);

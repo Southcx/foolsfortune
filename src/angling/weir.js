@@ -30,6 +30,7 @@ import { addOutline } from '../outline.js';
 //   and palms round the flat, reeds at the water's edge.
 // ---------------------------------------------------------------------------------------
 import { DUNE, OASIS, POND, WELL, pondDepth } from '../dunes.js';
+const _rm = new THREE.Matrix4(), _rq = new THREE.Quaternion(), _rs = new THREE.Vector3(), _re = new THREE.Euler();
 
 // the oasis's frame, in the world
 export const OX = DUNE.x + OASIS.x, OY = DUNE.y + OASIS.y, OZ = DUNE.z + OASIS.z;
@@ -158,7 +159,8 @@ export class Weir {
     this.lampLight = new THREE.PointLight(0xffb27a, 26, 60, 1.1);
     g.add(this.lampLight);
     game.scene.add(g);
-    // the reeds at the water's edge: the only thing here that moves for no reason but the wind
+    // the reeds at the water's edge: the only thing here that moves for no reason but the wind (one instanced draw for the bed of them:
+    // forty-six meshes were forty-six draws, render/propbatch.js's rule for many copies of a prop)
     this.reeds = [];
     const reedMat = new THREE.MeshStandardMaterial({ color: 0x5a7a4a, roughness: 0.9, flatShading: true });
     const cone = new THREE.ConeGeometry(0.05, 1, 4); cone.translate(0, 0.5, 0);
@@ -168,15 +170,24 @@ export class Weir {
       const x = OX + POND.x + Math.cos(a) * POND.rx * rr, z = OZ + POND.z + Math.sin(a) * POND.rz * rr;
       const d = pondDepth(x - DUNE.x, z - DUNE.z);
       if (d < 0.05 || d > 0.5 || (Math.abs(x - OX) < 2.6 && z < OZ + POND.z)) continue; // (in the shallows, and not on the pier's line)
-      const m = new THREE.Mesh(cone, reedMat);
       const h = 1.2 + rnd() * 1.1;
-      m.scale.set(1, h, 1); m.position.set(x, DUNE.y + POND.surface - d, z); m.userData.p = rnd() * 6;
-      game.scene.add(m); this.reeds.push(m); i++;
+      this.reeds.push({ pos: new THREE.Vector3(x, DUNE.y + POND.surface - d, z), h, p: rnd() * 6 }); i++;
     }
+    this.reedBed = new THREE.InstancedMesh(cone, reedMat, this.reeds.length);
+    this.reedBed.userData.zone = 'dunes';
+    this.swayReeds(0);
+    game.scene.add(this.reedBed);
     // palms round the flat, and the skiff's mooring post
     buildPalms(game);
     // a board of what has been landed
     this.board = this.buildBoard();
+  }
+
+  swayReeds(t) {
+    const M = this.reedBed, m = _rm, q = _rq, s = _rs, e = _re;
+    this.reeds.forEach((r, i) => { e.set(0, 0, Math.sin(t * 0.8 + r.p) * 0.09); s.set(1, r.h, 1); M.setMatrixAt(i, m.compose(r.pos, q.setFromEuler(e), s)); });
+    M.instanceMatrix.needsUpdate = true;
+    if (!M.boundingSphere) M.computeBoundingSphere();
   }
 
   get near() { const p = this.game.player.pos; return inWeir(p, 8) || !!this.hooks?.lure()?.active; }
@@ -274,7 +285,7 @@ export class Weir {
     this.lamp.position.y = this.lampY + [0, 0.5, 1.0, 0.5][this.tide] * 0.9;
     this.lampRings.forEach((r, i) => { r.rotation.z += dt * (0.3 + i * 0.2); });
     if (!near) return;
-    for (const r of this.reeds) r.rotation.z = Math.sin(this.t * 0.8 + r.userData.p) * 0.09;
+    this.swayReeds(this.t);
     // shoals
     this.spawnT -= dt;
     if (this.spawnT <= 0) {

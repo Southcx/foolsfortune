@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RestBake } from '../render/restbake.js';
 import { Tech } from './techs.js';
 import { Track } from '../animator.js';
 import { sfx } from '../audio.js';
@@ -69,6 +70,7 @@ export class Sondelass extends Tech {
     this.wasOut = false;
     this.model = new SondelassModel();
     this.model.group.visible = false;
+    this.rest = new RestBake(this.model.group); // (on the back, its forty parts are drawn as a handful: render/restbake.js)
     mgr.game.scene.add(this.model.group);
     this.aimW = 0; // the arm swinging to an aim (the hook)
     this.leftW = 0; // the free hand on the reel
@@ -176,6 +178,7 @@ export class Sondelass extends Tech {
     // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
     const ch2 = this.game.character;
     this.model.group.visible = !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible());
+    this.rest.update(dt, this.drawT === 0, `${Math.round(m.ext * 1e3)}|${Math.round(m.bend * 1e3)}|${Math.round(m.bladeOut * 1e3)}|${m.hookOn}|${Math.round(m.spin * 100)}`);
   }
 
   /** The tool is always on the back unless it is in the hand. */

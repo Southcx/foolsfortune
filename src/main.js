@@ -105,8 +105,26 @@ import { installTheme, fontsReady, theme } from './ui/theme.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
+import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
+
+/** Draw everything once, everywhere, into a postage stamp, before the first frame. Compiling a shader is not the whole of a first draw:
+ *  three.js uploads a geometry's buffers and a texture the first time something using them is drawn, and the browser's GL layer
+ *  (ANGLE over D3D or Metal) builds its pipeline for each new mix of program, vertex layout and target then too. Left to the game,
+ *  that happens the first time a thing comes into view: a hitch every time the camera swings round onto something new (the dunes, the
+ *  Weir). Drawn here with culling off, into a 16-pixel target of the same format as the frame, it costs one long frame behind the
+ *  loading screen instead. */
+function primeDraw(renderer, scene, camera, like) {
+  const t0 = performance.now(), culled = [];
+  scene.traverse((o) => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+  const rt = like.clone(); rt.setSize(16, 16);
+  renderer.shadowMap.needsUpdate = true; // (the casters too, through the sun's shadow pass)
+  try { renderer.setRenderTarget(rt); renderer.render(scene, camera); } catch (e) { console.warn('prime draw', e); }
+  for (const o of culled) o.frustumCulled = true;
+  rt.dispose();
+  window.__primeMs = Math.round(performance.now() - t0);
+}
 
 // boot timings: window.__boot (ms at each stage since the page began), for profiling the load
 const BOOT = (window.__boot = []);
@@ -480,11 +498,13 @@ async function main() {
   // the first teleport do not stall on the driver compiling them (KHR_parallel_shader_compile lets the browser do it off the main thread)
   for (let i = 0; i < 22; i++) breakables.update(0); // (the pots at rest go into their batches first: those are shaders too)
   game.zones.enabled = false; game.zones.update(1);
+  window.__shadowTrim = trimShadows(scene, 0.06); // (casters smaller than a texel of the sun's shadow: render/shadowtrim.js)
   game.post.resize(); renderer.setRenderTarget(game.post.target); // (compiled for the buffer the frame is drawn into)
   // (an empty frame first: compile() reads the clipping state the last render left, and the God Hand's cutaway plane is always installed,
   // so without it every program was compiled for no planes here and again, for one, on the first real frame)
   renderer.render(new THREE.Scene(), camera);
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');

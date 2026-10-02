@@ -23,6 +23,7 @@ import { TIERS } from './treasure.js';
 import { oilMaterial } from './cubes.js';
 import { Beam } from './vfx/beam.js';
 import { mergeStatic } from './render/merge.js';
+import { RestBake } from './render/restbake.js';
 
 export const CHEST = { W: 1.0, D: 0.64, H: 0.42, R: 0.32, SCALE: [0.86, 0.95, 1.05, 1.15, 1.26], OPEN: 1.95, STOP: 2.3 };
 
@@ -40,6 +41,23 @@ const LOOK = [
 const SEALED = { wood: 0x2a1a16, band: 0xd8c8b8, trim: 0xf3e6d8, glow: 0xfff0e6 };
 
 const rbox = (w, h, d, r = 0.02) => new RoundedBoxGeometry(w, h, d, 2, r);
+
+/** The bands of the prismatic chest: the hue runs round the spectrum, each band (its step in the vertex colour's red) behind the last. */
+function prismMaterial() {
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true });
+  const hue = (m.userData.hue = { value: 0 });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uHue = hue;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', `#include <common>
+uniform float uHue;
+vec3 jHsl( float h, float s, float l ) { vec3 k = clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 ); return l + s * ( k - 0.5 ) * ( 1.0 - abs( 2.0 * l - 1.0 ) ); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>
+diffuseColor.rgb = jHsl( fract( uHue + vColor.r ), 0.85, 0.6 ); // (as Color.setHSL did it, in the working (linear) space)`);
+  };
+  m.customProgramCacheKey = () => 'chest-prism';
+  return m;
+}
 
 export class ChestRig {
   constructor(tier, { sky = null, halo = null, sealed = false } = {}) {
@@ -61,9 +79,14 @@ export class ChestRig {
     const wood = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78 });
     const lidMat = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78, side: THREE.DoubleSide });
     const metal = tier === 4 ? null : std(L.band, { roughness: 0.36, metalness: 0.75, side: THREE.DoubleSide });
-    const bandMat = () => { if (tier !== 4) return metal; const m = track(new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })); m.userData.noMerge = true; this.prism.push(m); return m; }; // (each band its own hue: not merged)
+    // (the prismatic chest's bands each run through the spectrum a step behind the last: one material for them all, each band's step
+    // carried in its vertex colour's red, so they merge into one draw like any other part)
+    this.prismMat = tier === 4 ? track(prismMaterial()) : null;
+    let bands = 0;
+    const bandMat = () => (tier !== 4 ? metal : this.prismMat);
     const add = (parent, geo, mat, x = 0, y = 0, z = 0, outline = true) => {
       track(geo);
+      if (mat && mat === this.prismMat) { const n = geo.attributes.position.count, c = new Float32Array(n * 3), k = (bands++ * 0.09) % 1; for (let i = 0; i < n; i++) c[i * 3] = k; geo.setAttribute('color', new THREE.BufferAttribute(c, 3)); }
       const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true;
       parent.add(m); if (outline) addOutline(m);
       return m;
@@ -150,7 +173,19 @@ export class ChestRig {
     // the parts that never move against each other are baked into one mesh per look (render/merge.js): ~80 draws become ~20
     mergeStatic(this.body, { keep: new Set([this.keyhole, this.floorGlow]) });
     mergeStatic(this.lid);
+    // (the lights that are out most of the time: three.js draws a transparent mesh at opacity 0 all the same, so they are switched off
+    // while they are dark, ten-odd draws a chest)
+    const dim = new Set([this.seamMat, this.floorGlow.material, this.pool.material, this.halo.material]);
+    this.fades = [];
+    this.root.traverse((o) => { if (dim.has(o.material)) { this.fades.push(o); o.userData.noBake = true; } });
+    this.unlit();
+    // and at rest (lid shut, standing still) the whole chest is a handful of draws (render/restbake.js); what moves on its own stays live
+    if (this.orbit) this.orbit.userData.noBake = true;
+    for (const r of this.rings) r.userData.noBake = true;
+    if (this.pillar?.mesh) this.pillar.mesh.userData.noBake = true;
+    this.rest = new RestBake(this.root, { settle: 0.4 });
   }
+  unlit() { for (const o of this.fades) o.visible = o.material.opacity > 0.004; }
 
   /** The heap of cubes inside, and a few of the tier's own gems in it. */
   buildMound(tier, sky, add) {
@@ -213,23 +248,25 @@ export class ChestRig {
     if (this.lidA < 0) { this.lidA = 0; if (this.lidV < -0.8) this.onClack?.(-this.lidV, false); this.lidV *= -0.3; }
     this.seamMat.opacity = Math.min(1, this.glow * 1.2) * (1 - Math.min(1, this.lidA * 3));
     this.apply();
-    if (!near) return;
+    this.rest.update(dt, !this.busy && !this.open && !this.later.length && this.glow < 0.004, `${Math.round(this.sy * 1e3)}|${Math.round(this.hy * 1e3)}|${Math.round(this.lidA * 1e3)}`);
+    if (!near) { this.unlit(); return; }
     // the tier's own life
     const L = { glow: this.glowColor };
     const breathe = 0.78 + 0.22 * Math.sin(t * 1.5 + this.hue * 6);
     // (the aura is a sprite: a camera close to it would be looking through a fog, so it thins as the eye comes in)
     const shy = THREE.MathUtils.smoothstep(camDist, 0.9, 3.2);
     this.halo.material.opacity = Math.min(0.5, (this.baseOpacity * (this.open ? 0.5 : 1) + this.lit * 0.4 + this.glow * 0.3) * breathe) * shy;
-    if (this.pillar) this.pillar.set(this.prism.length ? null : L.glow, this.open ? 0.05 : 0.1 + this.glow * 0.5, 1 + this.glow * 0.6);
+    if (this.pillar) this.pillar.set(this.prismMat ? null : L.glow, this.open ? 0.05 : 0.1 + this.glow * 0.5, 1 + this.glow * 0.6);
     for (const m of this.pulse) m.color.setHex(L.glow).multiplyScalar(0.75 + 0.5 * Math.abs(Math.sin(t * 1.3 + this.hue * 5)));
     if (this.orbit) {
       this.orbit.rotation.y += dt * (0.5 + this.glow * 3);
       for (const c of this.orbit.children) c.position.y = Math.sin(t * 1.2 + c.userData.p * 1.7) * 0.14;
     }
     for (const r of this.rings) r.rotation.z += dt * r.userData.spin * (1 + this.glow * 4);
-    if (this.prism.length) {
+    if (this.prismMat) {
       this.hue = (this.hue + dt * 0.06) % 1;
       this.prism.forEach((m, i) => m.color.setHSL((this.hue + i * 0.09) % 1, 0.85, 0.6));
+      if (this.prismMat) this.prismMat.userData.hue.value = this.hue;
       this.halo.material.color.setHSL((this.hue + 0.3) % 1, 0.8, 0.6);
       if (this.pillar) this.pillar.uniforms.uColor.value.setHSL((this.hue + 0.3) % 1, 0.8, 0.6);
       if (this.oil) this.oil.uni.uHue.value = this.hue;
@@ -239,6 +276,7 @@ export class ChestRig {
       this.callT -= dt;
       if (this.callT <= 0) { this.callT = [11, 9, 7, 5.5, 4.5][this.tier] + Math.random() * 4; this.call(); }
     }
+    this.unlit();
   }
 
   /** The chest calling for attention: a crouch, a leap, a rattle on the way down. */
@@ -247,6 +285,7 @@ export class ChestRig {
   dispose() {
     this.root.parent?.remove(this.root);
     this.pillar?.dispose?.();
+    this.rest?.dispose();
     for (const g of this.geos) g.dispose?.();
     for (const m of this.mats) m.dispose?.();
   }
