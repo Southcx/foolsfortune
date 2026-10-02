@@ -12,7 +12,8 @@
 // Prior art: Old School RuneScape's inventory and equipment tabs (the 4 x 7 grid, left click / right click menus, "Use X -> Y" in the
 // hover line, worn items in their places), its bank (Deposit inventory), and the Codex's own look in this game.
 // ---------------------------------------------------------------------------------------
-import { SLOTS } from './box.js';
+import { SLOTS, FITTINGS } from './box.js';
+import { oddsOf, rates, OUTCOMES, HEARTS } from '../lockheart/table.js';
 import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
 import { CARDS, CARD, WORTH } from '../veritome/cards.js';
@@ -55,6 +56,13 @@ const CSS = `
 #pneuka .belt div { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; border: 1px solid rgba(255,178,122,.15); border-radius: 3px; background: rgba(40,18,10,.5); }
 #pneuka .belt div.on { border-color: #ffd98a; } #pneuka .belt div.none { opacity: .35; }
 #pneuka .belt s { text-decoration: none; opacity: .6; }
+#pneuka .fits { display: flex; gap: 6px; align-items: center; margin: 2px 0 8px; }
+#pneuka .fits .slot { width: 44px; height: 44px; }
+#pneuka .fits .t { font-size: 11px; line-height: 1.3; margin-left: 4px; }
+#pneuka .fits .t s { text-decoration: none; opacity: .65; font-size: 9px; letter-spacing: .1em; display: block; }
+#pneuka .odds { display: flex; height: 8px; border-radius: 2px; overflow: hidden; margin: 2px 0 2px; border: 1px solid rgba(255,178,122,.25); }
+#pneuka .odds i { display: block; height: 100%; }
+#pneuka .oddsl { font-size: 9px; letter-spacing: .06em; opacity: .8; margin-bottom: 8px; line-height: 1.4; }
 #pneuka .bank { width: 310px; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
 #pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
@@ -91,6 +99,9 @@ export class PneukaUI {
     if (it.kind === 'tool') out.push({ label: 'Wear', run: () => box.wear(slot) });
     if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
+    const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
+    if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
+    if (it.id === 'mat.shard' && this.game.lockheart) out.push({ label: 'Feed to the Lockheart', run: () => box.feed(slot) });
     out.push({ label: 'Drop', run: () => box.drop(slot) });
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;
@@ -165,7 +176,7 @@ export class PneukaUI {
 
   equipPane() {
     const g = this.game, box = this.box, pane = el('div', 'pane equip');
-    pane.appendChild(el('h4', '', '<span>WORN</span><span>the line · the tools</span>'));
+    pane.appendChild(el('h4', '', '<span>WORN</span><span>the line · the fittings · the tools</span>'));
     // the lure on the Sondelass' line: one, or a bare hook
     const cur = box.lure ? itemOf(box.lure) : null;
     const lure = (box.lure && lureList(g.ledger, box).find((l) => l.id === box.lure)) || BARE;
@@ -181,6 +192,33 @@ export class PneukaUI {
     const taste = tasteOf(lure), tg = el('div', 'taste');
     ASPECTS.forEach((a, k) => { tg.appendChild(el('span', '', a.name)); tg.appendChild(el('span', '', `<i style="width:${Math.round(Math.min(1, taste[k] / 1.6) * 100)}%;color:${hex(a.color)}"></i>`)); });
     pane.appendChild(tg);
+    // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if she has those tools at all
+    for (const [socket, F] of Object.entries(FITTINGS)) {
+      if (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool)) continue;
+      const cur = box.fitted(socket), row = el('div', 'fits');
+      for (let i = 0; i < F.max; i++) {
+        const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');
+        d.onmouseenter = () => this.say(it ? `Take <b>${it.name}</b> off (into the box)` : `${F.put}: click one in the box.`);
+        d.onmouseleave = () => this.say('&nbsp;');
+        d.onclick = () => { if (it) { box.fitOff(socket, i); this.render(); } };
+        d.oncontextmenu = (e) => { e.preventDefault(); if (it) this.menu(e, it.name, [{ label: 'Take off', run: () => box.fitOff(socket, i) }, { label: 'Examine', run: () => box.examine(id) }]); };
+        row.appendChild(d);
+      }
+      const names = cur.map((id) => itemOf(id)?.name).filter(Boolean);
+      row.appendChild(el('div', 't', `<s>${F.label}</s>${names.length ? names.join(' · ') : F.none}`));
+      pane.appendChild(row);
+      if (socket === 'keys') {
+        // the odds the Lockheart has now: its coffin with these keys, in order (lockheart/table.js)
+        const heart = box.fitted('heart')[0];
+        if (heart) {
+          const { table, mods } = oddsOf(heart, cur), R = rates(table), bar = el('div', 'odds');
+          for (const r of R) { const i = el('i'); i.style.width = `${(r.p * 100).toFixed(2)}%`; i.style.background = hex(OUTCOMES[r.id].color); i.title = OUTCOMES[r.id].label; bar.appendChild(i); }
+          pane.appendChild(bar);
+          const extra = [mods.spins > 1 ? `${mods.spins} spins` : '', mods.reach > 1 ? `reach x${mods.reach}` : '', mods.echo ? `echo x${mods.echo}` : ''].filter(Boolean).join(' · ');
+          pane.appendChild(el('div', 'oddsl', `${R.slice().reverse().map((r) => `<b style="color:${hex(OUTCOMES[r.id].color)}">${OUTCOMES[r.id].label}</b> ${r.p >= 0.1 ? Math.round(r.p * 100) : (r.p * 100).toFixed(1)}%`).join(' · ')}${extra ? ` · ${extra}` : ''} · it opens full at ${HEARTS[heart].fill}`));
+        }
+      }
+    }
     // the tools: worn in the places on her body (tools/belt.js); the rest are in the box
     pane.appendChild(el('h4', '', '<span>THE TOOLS</span><span>worn · drawn with its key</span>'));
     const belt = el('div', 'belt'), B = g.belt, inHand = B?.inHand;

@@ -125,6 +125,12 @@ in its time.
   is its quality, which scales how long, how deep and how surely it takes (`mind/macros.js` `runMacro`). A new creature gets every
   Function its mind has the parts for; an action it does not have is refused, and the log says so. A new behaviour that a creature
   shows (and the bestiary can photograph) is a new Function: a row in `FUNCTIONS` with its `learn` test.
+- **Allies and decoys**: a creature on her side is `ally` (`src/spirits.js`: a smoke spirit is a slip jelly's body and mind with the
+  kind `spirit` in the relations table: kin to her, rival to the wild jellies, as they are to it); her blows pass through it
+  (`creatures.strike`), and the statuses `haste` (its body and mind run faster) and `empower` (its blows land harder) are a rally's. A
+  DECOY (`game.ai.decoys`: the Crucibelle's mirage) is anything put up to be seen as what it is not: every Brain's watch list includes
+  it, with its `kind` (a Courier of smoke has the kind `courier`), so a mind takes it for that and acts on it with no code of its own;
+  `P.veiledT` hides her for a moment.
 - **The blade** (`src/sondelass/blade.js`): a creature resists a cut while it is itself (the ward glyph), and comes apart into
   Lachryma under a zandatsu when it is not (`vfx/dissolve.js`).
 

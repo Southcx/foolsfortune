@@ -49,11 +49,13 @@ export class Brain {
   watchList() {
     const g = this.game, P = g.player, c = this.c, out = this._watch || (this._watch = []);
     out.length = 0;
-    const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active;
+    const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active || (P.veiledT ?? 0) > 0; // (veiled: a song's mirage, moves/crucibelle.js)
     const sp = Math.hypot(P.vel?.x || 0, P.vel?.z || 0);
     const loud = (P.sliding ? 1.2 : P.crouching ? 0.45 : sp > 5 ? 1.35 : sp > 0.5 ? 0.9 : 0.55) * (g.belt?.inHand ? 1.15 : 1);
     out.push({ ent: P, kind: 'courier', pos: P.pos, vel: P.vel, loud, height: 1.7, hidden });
     for (const o of g.creatures?.near(c.pos, this.watchR) || []) if (o !== c) out.push({ ent: o, kind: o.kind, pos: o.pos, vel: o.vel, loud: o.loud ?? 1, height: o.height });
+    // DECOYS: anything put up to be seen as something it is not (a Courier of smoke: the Crucibelle's mirage); a mind takes it for its kind
+    for (const d of g.ai?.decoys || []) if (d.alive && Math.hypot(d.pos.x - c.pos.x, d.pos.z - c.pos.z) < this.watchR) out.push({ ent: d, kind: d.kind, pos: d.pos, vel: d.vel, loud: d.loud ?? 1.4, height: d.height ?? 1.7 });
     return out;
   }
 
@@ -61,7 +63,9 @@ export class Brain {
     const P = this.game.player, c = this.c;
     this.now += dt; this.mem.tick(dt);
     const d = Math.hypot(P.pos.x - c.pos.x, P.pos.z - c.pos.z) + Math.abs(P.pos.y - c.pos.y) * 0.5;
+    const was = this.lod;
     this.lod = d < this.near ? 'near' : d < this.far ? 'mid' : 'far';
+    if (was === 'far' && this.lod !== 'far') this.wake = true; // (a mind coming back into range thinks at once: it has been asleep to the world)
     this.drives?.tick(dt, this.mods?.(this.ctx) || undefined);
     // relations written into it (a reprogrammed mind: c.rel with c.relUntil) wear off in their time
     if (c.relUntil) for (const [k, t] of c.relUntil) if (this.now >= t) { c.rel?.delete(k); c.relUntil.delete(k); this.game.events?.emit('reprogram.wear', { macro: 'rel', kind: c.kind }); }

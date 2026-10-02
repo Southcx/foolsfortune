@@ -414,6 +414,19 @@ export function buildAchievements(game) {
   C('fl8', 'battle', 'Reprogramming', 2, 'collect', 'Fluent', 'Learn ten Functions of neuralese.', 'mind.learn', 10);
   C('fl9', 'battle', 'Reprogramming', 4, 'perfection', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
   C('fl7', 'battle', 'Reprogramming', 3, 'mechanic', 'Dissolution', 'Take a stunned creature apart with the zandatsu.', 'zandatsu.creature', 1);
+  // the last three tools (moves/dreamvane.js, crucibelle.js, lockheart.js)
+  C('dv1', 'explore', 'The Dreamvane', 1, 'count', 'Divining', 'Dowse something out with the Dreamvane.', 'dowse.find', 1);
+  C('dv2', 'explore', 'The Dreamvane', 2, 'count', 'Prospector', 'Break open five crystal formations.', 'crystal.harvest', 5);
+  C('dv3', 'explore', 'The Dreamvane', 2, 'mechanic', 'Resonance', 'Break a crystal open while your tuning fork rings in it.', 'crystal.harvest.ringing', 1);
+  C('dv4', 'explore', 'The Dreamvane', 3, 'mechanic', 'Under the Sand', 'Bring veiled crystal up out of the sand.', 'crystal.reveal', 1);
+  C('cb1', 'battle', 'The Crucibelle', 1, 'count', 'First Verse', 'Play a song on the Crucibelle.', 'song.play', 1);
+  F('cb2', 'battle', 'The Crucibelle', 2, 'collect', 'Songbook', 'Play all five songs.', (L) => ['reveal', 'mirage', 'rally', 'lull', 'summon'].filter((k) => L.get(`song.${k}`) > 0).length, 5);
+  C('cb3', 'battle', 'The Crucibelle', 3, 'perfection', 'Fever Pitch', 'Play a song in full fever.', 'song.fever', 1);
+  C('cb4', 'battle', 'The Crucibelle', 2, 'count', 'Roadies', 'Call up ten smoke spirits.', 'spirit.summon', 10);
+  C('lh1', 'battle', 'The Lockheart', 1, 'count', 'Pull', 'Open a Lockheart.', 'lockheart.open', 1);
+  C('lh2', 'battle', 'The Lockheart', 3, 'perfection', 'Jackpot', 'Let a slip nuke out of a Lockheart.', 'lockheart.out.nuke', 1);
+  C('lh3', 'battle', 'The Lockheart', 2, 'mechanic', 'House Rules', 'Open a Lockheart with three keys on its ring.', 'lockheart.three', 1);
+  C('lh4', 'battle', 'The Lockheart', 2, 'count', 'Hoover', 'Fill a Lockheart with five hundred Lachryma.', 'lockheart.fed', 500);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
   // the clay folk and the chat line (npc/, chat.js, emotes.js)

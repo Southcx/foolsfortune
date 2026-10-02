@@ -143,7 +143,7 @@ export class SoulBrush extends Tech {
     const ink = this.celestial.active ? 1 : this.club.charge >= 0 ? Math.min(1, this.club.charge / 1.1) : 0;
     this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
     const ch2 = g.character;
-    this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active;
+    this.model.group.visible = this.enabled && g.belt?.isWorn('soulbrush') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active; // (in the box: not on her)
     { const m = this.model; this.rest.update(raw, this.drawT === 0 && !this.sliding, `${Math.round(m.bendY * 100)}|${Math.round(m.bendZ * 100)}|${Math.round(m.ink * 100)}`); }
     const shells = document.getElementById('shells');
     if (shells && this.drawT > 0.02) shells.style.display = 'none';

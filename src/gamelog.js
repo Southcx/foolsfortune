@@ -35,6 +35,9 @@ export const CLASSES = {
   ach: { color: '#ffd45e', tab: 'EVENT' },
   angle: { color: '#9fd3d6', tab: 'BATTLE' },
   loot: { color: '#ffd98a', tab: 'BATTLE' },
+  song: { color: '#c9b6ff', tab: 'BATTLE' }, // (the Crucibelle's songs)
+  luck: { color: '#ff9ad5', tab: 'BATTLE' }, // (what came out of a Lockheart)
+  find: { color: '#cdb8f2', tab: 'EVENT' }, // (the Dreamvane: what it found, what the pick gave)
   other: { color: '#c9b09f', tab: 'BATTLE' }, // (what others did: a clapperjar, the world itself)
   say: { color: '#ffffff', tab: 'CHAT' }, // (said aloud: the Courier's chat line, and the clay folk's words)
   emote: { color: '#f2c6e6', tab: 'CHAT' },

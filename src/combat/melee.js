@@ -21,9 +21,11 @@
 //   const tr = measureSwing(character, 'swordA')   tr.strike [t0, t1]   tr.at(t) -> { ang, reach, y }
 //   sweep(game, P, yaw, tr, tPrev, t, { reach, hit(kind, ent, point) })   (once a frame while the stroke plays)
 //   const m = magnet(game, P, dir, { range, cone })  -> { pos, kind, ent, dist } | null
-//   targets(game, centre, R) -> [{ kind: 'pot'|'clapper'|'creature', ent, pos, r }]
+//   targets(game, centre, R) -> [{ kind: 'pot'|'clapper'|'creature'|'thing', ent, pos, r }]   ('thing': anything registered 'struckable',
+//   tags.js, which has `struck(point, dir, power, by, tool)`: a crystal; a tool that strikes calls it and need know nothing more)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { registered } from '../tags.js';
 
 const FPS = 120;
 const _h = new THREE.Vector3(), _f = new THREE.Vector3(), _t = new THREE.Vector3(), _p = new THREE.Vector3();
@@ -87,7 +89,8 @@ export function targets(g, centre, R) {
     if (!c.alive || c.pos.distanceToSquared(centre) > R2 + 4) continue;
     out.push({ kind: 'clapper', ent: c, pos: c.pos.clone().setY(c.pos.y + 0.35), r: 0.4 });
   }
-  for (const c of g.creatures?.near(centre, R) || []) out.push({ kind: 'creature', ent: c, pos: c.center(new THREE.Vector3()), r: c.radius || 0.5 });
+  for (const ent of registered('struckable')) { const p = ent.pos; if ((p.x - centre.x) ** 2 + (p.z - centre.z) ** 2 < R2) out.push({ kind: 'thing', ent, pos: p, r: ent.r || 0.5 }); } // (a crystal: lachryma/crystals.js)
+  for (const c of g.creatures?.near(centre, R) || []) if (!c.ally) out.push({ kind: 'creature', ent: c, pos: c.center(new THREE.Vector3()), r: c.radius || 0.5 });
   return out;
 }
 

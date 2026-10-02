@@ -170,7 +170,7 @@
         else if (r < 0.6 && full.length) box.store(any);
         else if (r < 0.7) { const c = Object.keys(B0(g)).filter((k) => k.startsWith('curio.')); if (c.length) box.withdraw(c[Math.floor(rnd() * c.length)]); }
         else if (r < 0.8 && full.length) box.tieOn(any);
-        else if (r < 0.88) box.tieMade(['bob', 'eye', 'fly'][Math.floor(rnd() * 3)]);
+        else if (r < 0.88) { if (rnd() < 0.5) box.tie(['lure.bob', 'lure.eye', 'lure.fly'][Math.floor(rnd() * 3)]); else if (full.length) box.fitOn(any); }
         else if (r < 0.94 && full.length > 1) box.swap(any, full[0]);
         else { const n = g.game.ground.nearest(P); if (n) g.game.ground.pick(n.ref); }
       }
@@ -197,6 +197,11 @@
       if (J.length && rnd() < 0.002) { const bm = g.techs.get('sondelass')?.cutlass?.blade, c = J[Math.floor(rnd() * J.length)]; if (bm) { const p = c.center(new g.THREE.Vector3()); bm.pt.copy(p); bm.size = 0.7; if (gg.stun.stunned(c) && rnd() < 0.5) bm.zandatsuCreature(c, new g.THREE.Vector3(1, 0, 0), new g.THREE.Vector3(0, 0, 1), new g.THREE.Vector3(0, 0, -1)); else bm.slicePlane({ n: new g.THREE.Vector3(1, 0, 0), d: p.x }, new g.THREE.Vector3(1, 0, 0)); } }
       // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
       if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
+      // the last three tools: put on and taken off through the box, drawn, played (K the Dreamvane, U the Crucibelle, I the Lockheart)
+      if (rnd() < 0.002 && gg.pneuka) { const id = ['tool.dreamvane', 'tool.crucibelle', 'tool.lockheart'][Math.floor(rnd() * 3)], i = gg.pneuka.slots.findIndex((s) => s?.id === id); if (i >= 0) gg.pneuka.wear(i); }
+      if (!god.controlling && rnd() < 0.004) inp.pressed.add(['KeyK', 'KeyU', 'KeyI'][Math.floor(rnd() * 3)]);
+      if (gg.belt?.inHand && ['crucibelle'].includes(gg.belt.inHand.id) && rnd() < 0.08) inp.pressed.add('Digit' + (1 + Math.floor(rnd() * 5)));
+      if (gg.lockheart && rnd() < 0.002) { gg.lockheart.charge = 80; const i = gg.pneuka?.slots.findIndex((s) => s?.id?.startsWith('key.')); if (i >= 0) gg.pneuka.fitOn(i); }
       const brush = g.techs.get('soulbrush');
       if (brush?.celestial.active) {
         inp.dx += (rnd() - 0.5) * 60; inp.dy += (rnd() - 0.5) * 60;
@@ -219,10 +224,17 @@
       if (gg.log?.mode) sink.violation('log-mode-stuck', P, label);
       for (const c of gg.jellies?.list || []) {
         if (!Number.isFinite(c.pos.x + c.pos.y + c.pos.z + c.deform.sq)) { sink.violation('jelly-finite', P, label); break; }
-        if (c.alive && c.brain.lod !== 'far' && !c.brain.action && c.brain.now > 2) { sink.violation('mind-idle', P, label); break; }
+        if (c.alive && c.brain.lod !== 'far' && !c.brain.action && c.brain.now > 2) { sink.violation('mind-idle', P, label + ' ' + JSON.stringify({ st: [...c.status.keys()], dir: c.brain.directive?.action?.id, sc: c.brain.reasoner.actions.map((a) => a.id + ':' + (+c.brain.reasoner.score(a, c.brain.ctx)).toFixed(2) + (c.brain.cool.get(a.id) > c.brain.now ? 'c' : '')).join(' '), drives: c.drives.v, spirit: !!c.spirit })); break; }
         if (c.alive && Object.values(c.drives.v).some((v) => !Number.isFinite(v) || v < 0 || v > 1)) { sink.violation('drives-range', P, label); break; }
         const s = c.status?.get('stun'); if (s && s.t > 30) { sink.violation('stun-forever', P, label); break; }
+        if (c.spirit && c.alive && !(c.spirit.life <= c.spirit.max + 1e-6)) { sink.violation('spirit-life', P, label); break; }
       }
+      // the last three tools: the fork comes home, a spirit cap holds, the Lockheart's charge stays in range, no decoy outlives its time
+      { const V = g.techs.get('dreamvane'); if (V && V.fork.state !== 'heel' && V.fork.t > 12) sink.violation('fork-lost', P, label); }
+      if ((gg.spirits?.list.length || 0) > (gg.spirits?.max || 4)) sink.violation('spirits-over', P, label);
+      if (gg.lockheart && !(gg.lockheart.charge >= 0 && gg.lockheart.charge <= gg.lockheart.cap)) sink.violation('lockheart-charge', P, label);
+      if ((gg.ai?.decoys || []).some((d) => d.t > d.max + 0.1)) sink.violation('decoy-stuck', P, label);
+      { const V = g.techs.get('dreamvane'), C = g.techs.get('crucibelle'), H = g.techs.get('lockheart'); for (const T of [V, C, H]) if (T && T.drawTarget > 0 && !gg.belt.isWorn(T.id)) { sink.violation('unworn-drawn:' + T.id, P, label); break; } }
       const hs = Math.hypot(v.x, v.z);
       // (a blink is 5.5 m in 0.09 s: 60 m/s by design; the platforms add their own speed)
       if (g.techs.active?.id !== 'blink' && (hs > 45 || Math.abs(v.y) > 90)) sink.violation('speed', P, `${label} hs=${hs.toFixed(1)} vy=${v.y.toFixed(1)}`);

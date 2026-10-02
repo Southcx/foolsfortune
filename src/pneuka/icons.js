@@ -12,6 +12,7 @@
 import * as THREE from 'three';
 import { buildCurio } from '../curiomodel.js';
 import { buildLure } from '../angling/luremodels.js';
+import { buildThing } from './thingmodels.js';
 import { itemOf } from './items.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
@@ -75,10 +76,11 @@ function modelOf(game, it) {
     if (TOOL_TURN[it.tool]) c.rotation.set(...TOOL_TURN[it.tool]);
     return { group: g, dispose() {} };
   }
+  if (['instrument', 'heart', 'key', 'material'].includes(it.kind)) return buildThing(it.id);
   return null;
 }
 // (how each tool is turned for its picture: lying across the slot, the way OSRS lays a sword diagonally)
-const TOOL_TURN = { psygun: [0, Math.PI / 2, 0.3], sondelass: [0, 0, 0.75], soulbrush: [0, 0, 0.75], veritome: [0.3, 0.6, 0] };
+const TOOL_TURN = { psygun: [0, Math.PI / 2, 0.3], sondelass: [0, 0, 0.75], soulbrush: [0, 0, 0.75], veritome: [0.3, 0.6, 0], dreamvane: [0, 0, 0.8], crucibelle: [0.2, 0.5, 0], lockheart: [0.2, 0.5, 0] };
 
 function glyphIcon(it) {
   const c = document.createElement('canvas'); c.width = c.height = S;

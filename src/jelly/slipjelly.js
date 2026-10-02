@@ -62,13 +62,15 @@ export class SlipJellies {
     this.list = [];
     this.mind = jellyMind(this);
     // its den, as the ecology knows it (each jelly's home: ai/ecology.js)
-    game.ai?.eco.provide('den', (pos, range) => this.list.filter((c) => c.home.distanceTo(pos) < range).map((c) => ({ pos: c.home, ref: c, radius: 1.5 })));
+    game.ai?.eco.provide('den', (pos, range) => this.list.filter((c) => !c.spirit && c.home.distanceTo(pos) < range).map((c) => ({ pos: c.home, ref: c, radius: 1.5 })));
   }
 
-  spawn(home, { yaw = Math.random() * 6.28 } = {}) {
+  spawn(home, { yaw = Math.random() * 6.28, spirit = null } = {}) {
     const g = this.game, M = this.mind;
     // (sand, wet and sliding: the colour and the gloss are the melt's, deform.js; the material's colour only tints it)
     const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.7, metalness: 0, emissive: 0x000000, emissiveIntensity: 1 });
+    // (a SPIRIT (spirits.js) is a jelly of smoke: the same body and the same mind, lit from inside, a little see-through)
+    if (spirit) { mat.transparent = true; mat.opacity = 0.74; mat.depthWrite = true; }
     addRim(mat, 0.5);
     const deform = new JellyDeform(mat, H, { melt: true });
     const root = new THREE.Group();
@@ -82,7 +84,7 @@ export class SlipJellies {
     const col = w.createCollider(RAPIER.ColliderDesc.capsule(H * 0.5 - R * 0.85, R * 0.85).setCollisionGroups(groups(G.CRITTER, 0xffff)), rb);
     const traits = rollTraits(M.traits);
     const c = {
-      type: 'creature', kind: 'slipjelly', name: 'Slip Jelly', id: NEXT++, root, body, mat, deform, rb, col,
+      type: 'creature', kind: spirit ? 'spirit' : 'slipjelly', name: spirit ? 'Smoke Spirit' : 'Slip Jelly', id: NEXT++, root, body, mat, deform, rb, col, spirit, ally: !!spirit,
       home: home.clone(), pos: home.clone(), prevPos: home.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), vy: 0, yaw, radius: R, height: H,
       alive: true, hp: JELLY.hp, poise: JELLY.poise * (traits.bold ?? 1), stunFor: JELLY.stunFor, air: false, groundY: null, groundT: 0, trailT: 0,
       hurtT: 0, flash: 0, deadT: 0, lastHitBy: null, pose: 'idle', face: null, attack: null, traits, rel: new Map(), macro: null, loud: 1,
@@ -103,7 +105,8 @@ export class SlipJellies {
     // what it is doing, in a word, for whoever looks (the Veritome's photograph reads it: veritome/subjects.js, the bestiary's facts):
     // its wind-up, the hunt, or the action its mind is running
     Object.defineProperty(c, 'state', { get: () => (c.attack?.phase === 'wind' ? 'wind' : c.brain?.action?.hunt ? 'chase' : ({ 'go home': 'home', 'sent home': 'home' })[c.brain?.action?.id] || c.brain?.action?.id || 'idle') });
-    tag(c, 'hurtable', 'programmable', 'creature', 'sliceable');
+    if (spirit) { c.hp = JELLY.hp * (spirit.power ?? 1); c.poise = 99; tag(c, 'hurtable', 'creature'); }
+    else tag(c, 'hurtable', 'programmable', 'creature', 'sliceable');
     g.physics.register(col, c);
     g.creatures.add(c);
     g.ai?.add(c.brain);
@@ -163,12 +166,13 @@ export class SlipJellies {
     c.brain.end('burst');
     g.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: culprit, aboutPos: culprit?.pos, ttl: 2 });
     c.burstBy = { dir: dir.clone(), by, cause };
-    g.events?.emit('jelly.burst', { by, cause });
+    g.events?.emit(c.spirit ? 'spirit.fade' : 'jelly.burst', { by, cause });
     c.status.clear();
   }
   pop(c) {
     const g = this.game, { dir, by } = c.burstBy;
     c.root.visible = false;
+    if (c.spirit) { this.smoke(c); return; }
     const at = c.pos.clone().setY(c.pos.y + 0.7);
     sfx.jellyPop(g.listenerDistance(at));
     sfx.rainstick?.(g.listenerDistance(at));
@@ -196,8 +200,24 @@ export class SlipJellies {
     c.col.setEnabled(false); c.root.visible = false;
     c.brain.end('gone');
     this.game.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: by === 'courier' ? this.game.player : null, aboutPos: this.game.player.pos, ttl: 2 });
-    this.game.events?.emit('jelly.burst', { by, cause });
+    this.game.events?.emit(c.spirit ? 'spirit.fade' : 'jelly.burst', { by, cause });
+    if (c.spirit) this.smoke(c);
     c.status.clear();
+  }
+  /** A spirit gone back into smoke (its time up, or struck down): a puff, and nothing left behind. */
+  smoke(c) {
+    const g = this.game, at = c.pos.clone().setY(c.pos.y + 0.6);
+    if (g.fx?.alpha?.emit) for (let i = 0; i < 28; i++) g.fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(rnd(-0.4, 0.4), rnd(-0.3, 0.5), rnd(-0.4, 0.4))), vel: new THREE.Vector3(rnd(-0.8, 0.8), rnd(0.6, 2.2), rnd(-0.8, 0.8)), life: rnd(1.2, 2.2), size: 0.25, sizeEnd: 0.9, color: new THREE.Color(0x8f7fc0), alpha: 0.4, drag: 1.4, gravity: -0.6 });
+    sfx.jellyPop?.(g.listenerDistance(at) * 1.6);
+  }
+  /** Gone for good (a spirit: it does not form again). */
+  dispose(c) {
+    const g = this.game;
+    g.scene.remove(c.root); c.mat.dispose();
+    try { g.physics.removeBody(c.rb); } catch { /* already gone */ }
+    g.creatures.remove(c); g.ai?.remove(c.brain);
+    this.trail.gap(c);
+    const i = this.list.indexOf(c); if (i >= 0) this.list.splice(i, 1);
   }
 
   cancel(c, why = 'cancelled') {
@@ -228,7 +248,7 @@ export class SlipJellies {
   // ---------------------------------------------------------------- per frame
   update(dt) {
     const g = this.game, P = g.player;
-    for (const c of this.list) {
+    for (const c of this.list.slice()) { // (a copy: a spirit that goes back to smoke leaves the list)
       if (!c.alive) {
         if (c.dying != null) {
           c.dying -= dt; c.deform.update(dt, null); c.root.position.copy(c.pos);
@@ -236,15 +256,17 @@ export class SlipJellies {
           continue;
         }
         c.deadT += dt;
+        if (c.spirit) { if (c.deadT > 0.5) this.dispose(c); continue; }
         if (c.deadT > JELLY.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 10) this.reform(c);
         continue;
       }
+      if (c.spirit && (c.spirit.life -= dt) <= 0) { this.vanish(c, 'environment', 'faded'); continue; } // (its time is up: back into smoke)
       // (far from the Courier, it rests where it is: its mind keeps its wants ticking and no more (brain.js's level of detail))
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;
       if (far) { c.brain.update(dt); continue; }
       if (c.groundY == null) { const y = this.ground(c, c.pos.x, c.pos.z); if (y == null) continue; c.groundY = y; c.pos.y = y; c.home.y = y; }
       const halt = st(c, 'halt'), slow = st(c, 'slow');
-      const k = halt ? 0 : slow ? 0.35 : 1, dtk = dt * k;
+      const k = (halt ? 0 : slow ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k; // (haste: a song's rally, moves/crucibelle.js)
       c.prevPos.copy(c.pos);
       c.want.set(0, 0, 0); c.face = null;
       if (dtk > 0) { c.brain.update(dtk); this.attackTick(c, dtk); }
@@ -378,8 +400,9 @@ export class SlipJellies {
       const took = g.lachryma?.drain?.(move === 'lunge' ? S.drain : 4, 'jelly') ?? 0;
       if (took > 0) c.drives.sat('hunger', 0.04 * took); // (it fed on her: a hungry jelly is a dangerous one)
       g.events?.emit('jelly.strike', { move, by: 'environment' });
+    } else if (foe.decoy) { foe.struck?.(); // (a Courier of smoke: struck, it is gone: crucibelle/mirage.js)
     } else if (foe.type === 'creature') {
-      g.creatures.strike(foe, foe.center(new THREE.Vector3()), v.clone().normalize(), S.dmg, move, 'creature', c);
+      g.creatures.strike(foe, foe.center(new THREE.Vector3()), v.clone().normalize(), S.dmg * (1 + st(c, 'empower')) * (c.spirit?.power ?? 1), move, 'creature', c);
       foe.knock?.(v.clone().setLength(S.push * 0.4).setY(move === 'lunge' ? 2 : 0.5));
       g.events?.emit('jelly.brawl', { move, by: 'creature' });
     }

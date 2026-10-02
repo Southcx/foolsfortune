@@ -110,7 +110,14 @@ import { installTheme, fontsReady, theme } from './ui/theme.js';
 import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
-import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
+import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
+import { Dreamvane } from './moves/dreamvane.js';
+import { Crucibelle } from './moves/crucibelle.js';
+import { Lockheart } from './moves/lockheart.js';
+import { Mirages } from './crucibelle/mirage.js';
+import { Signatures, standardSignatures } from './signatures.js';
+import { Spirits } from './spirits.js';
+import { Crystals } from './lachryma/crystals.js';
 import { Diag } from './debug/diag.js';
 import { MacroBook } from './mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
@@ -237,6 +244,7 @@ async function main() {
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
+  game.signatures = new Signatures(game); standardSignatures(game); // (where Lachryma is, for whatever senses it: signatures.js)
   game.px = px; // (the maker's pixel art, for any window that wants it: ui/pixel.js)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
   game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
@@ -302,7 +310,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -310,6 +318,9 @@ async function main() {
   game.belt.add(sondelassTool(techs.get('sondelass')));
   game.belt.add(soulBrushTool(techs.get('soulbrush')));
   game.belt.add(veritomeTool(techs.get('veritome')));
+  game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
+  game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
+  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
   player.techs = techs;
   game.techs = techs;
   // the Pneuka Box: what she carries (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
@@ -467,6 +478,9 @@ async function main() {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
+  game.mirage = new Mirages(game); // (Couriers of smoke that minds take for her: the Crucibelle's mirage)
+  game.spirits = new Spirits(game); // (smoke spirits on her side: the Crucibelle's and the Lockheart's: spirits.js)
+  game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: lachryma/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -772,6 +786,7 @@ async function main() {
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);
+    game.crystals?.update(dt);
     const dm = game.dunes.mix; // (in the dunes the sun is a real one)
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);

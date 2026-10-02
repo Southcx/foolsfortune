@@ -178,7 +178,7 @@ export class Sondelass extends Tech {
     if (shells) shells.style.display = this.drawT > 0.02 ? 'none' : '';
     // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
     const ch2 = this.game.character;
-    this.model.group.visible = !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible());
+    this.model.group.visible = g.belt?.isWorn('sondelass') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible()); // (in the box: not on her)
     this.rest.update(dt, this.drawT === 0, `${Math.round(m.ext * 1e3)}|${Math.round(m.bend * 1e3)}|${Math.round(m.bladeOut * 1e3)}|${m.hookOn}|${Math.round(m.spin * 100)}`);
   }
 

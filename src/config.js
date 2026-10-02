@@ -284,6 +284,9 @@ export const DEFAULTS = {
     sondelass: { enabled: true }, // Q: the telescoping rod / cutlass / grapnel (src/moves/sondelass.js)
     veritome: { enabled: true }, // J: the Veritome: camera, Compendium, the Book of Major Arcana (src/moves/veritome.js, src/veritome/)
     soulbrush: { enabled: true }, // G: the Soul Brush: club, brush slide, Celestial Brush (src/moves/soulbrush.js, src/brush/)
+    dreamvane: { enabled: true }, // K: the Dreamvane: dowsing, the pick, the tuning fork (src/moves/dreamvane.js, src/dreamvane/)
+    crucibelle: { enabled: true }, // U: the Crucibelle: five notes, songs, fever (src/moves/crucibelle.js, src/crucibelle/)
+    lockheart: { enabled: true }, // I: the Lockheart: drinks spare Lachryma, opened with Possibilikeys (src/moves/lockheart.js, src/lockheart/)
     grapple: { reelMax: 26, reelAccel: 70, payV: 6, pump: 9, drag: 0.05, stop: 1.6, maxSpeed: 30, maxLen: 46, reelCost: 2 }, // the line of the grapnel (src/moves/grapple.js, src/sondelass/hookshot.js): reel, pay out, pump, let go
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
     surfer: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Skiff, in the dunes: Y stows / summons

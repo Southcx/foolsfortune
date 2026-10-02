@@ -146,7 +146,7 @@ export class Veritome extends Tech {
     else if (shells && this.wasShellsHidden) shells.style.display = '';
     this.wasShellsHidden = this.drawT > 0.02;
     const ch2 = g.character;
-    this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6;
+    this.model.group.visible = this.enabled && g.belt?.isWorn('veritome') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6; // (in the box: not on her)
     this.rest.update(dt, this.drawT === 0 && this.lensK < 0.001, `${Math.round(this.model.open * 1e3)}`);
   }
 

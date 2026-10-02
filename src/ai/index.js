@@ -26,6 +26,7 @@ export class AI {
     this.stimuli = new Stimuli(game);
     this.eco = new Ecology(game);
     this.brains = new Set();
+    this.decoys = []; // (things put up to be seen as what they are not: brain.js watchList, the Crucibelle's mirage)
   }
   add(b) { this.brains.add(b); return b; }
   remove(b) { this.brains.delete(b); }

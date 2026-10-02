@@ -217,6 +217,7 @@ export class Club {
       reach: REACH, seen: this.hit,
       hit: (kind, ent, at, dir) => {
         struck++;
+        if (kind === 'thing') { ent.struck?.(at, dir, b.power, 'courier', 'club'); return; }
         if (kind === 'pot') {
           const amt = DMG * b.dmg;
           if (hasTag(ent, 'breakable') && ent.hp - amt <= 0) g.breakables.shatter(ent, at, dir, b.power, 'bashed', 'courier');

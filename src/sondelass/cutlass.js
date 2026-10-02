@@ -163,6 +163,7 @@ export class Cutlass {
       reach: REACH, seen: this.hit,
       hit: (kind, ent, at, dir) => {
         struck++;
+        if (kind === 'thing') { ent.struck?.(at, dir, s.power, 'courier', 'cutlass'); return; }
         if (kind === 'pot') { g.breakables.damage(ent, DMG * s.dmg, at, dir, s.power); g.events?.emit('cut.hit', { what: 'pot', combo: this.combo }); }
         else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, s.power, 'sliced'); g.events?.emit('cut.hit', { what: 'clapper', combo: this.combo }); }
         else { g.creatures.strike(ent, at, dir, 1.4 * s.power, 'sliced'); g.events?.emit('cut.hit', { what: ent.kind, combo: this.combo }); }
