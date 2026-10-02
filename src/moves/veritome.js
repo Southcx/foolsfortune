@@ -140,7 +140,7 @@ export class Veritome extends Tech {
     this.model.setHeading(P.yaw);
     this.model.setOpen(Math.max(smooth(HOLD, 1, this.drawT), smooth(0.2, 0.9, this.readW)));
     this.model.setGlow(this.lens ? 0.4 + 0.6 * this.charge : 0);
-    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, film: { left: this.film.left, roll: ROLL } });
+    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, film: { left: Math.min(this.film.left, this.book.shots || (this.game.pneuka?.count('mat.film') ? ROLL : 0)), roll: ROLL } });
     const shells = document.getElementById('shells'); // (the Psygun's shells are not the book's)
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
     else if (shells && this.wasShellsHidden) shells.style.display = '';
@@ -205,6 +205,8 @@ export class Veritome extends Tech {
   shutter() {
     const g = this.game, P = this.P;
     if (this.film.full) { sfx.fizzle?.(); g.log?.say('info', 'The roll is full. Appraise it in the Book (B).', { key: 'filmfull', throttle: 3 }); this.shotCool = 0.4; return; }
+    if (!this.book.loadFilm()) { sfx.fizzle?.(); g.log?.say('warn', 'You have no film. (Old Grog sells it on the pier.)', { key: 'nofilm', throttle: 3 }); this.shotCool = 0.4; return; }
+    this.book.useShot();
     this.shotCool = 0.6;
     const report = scorePhoto(g, g.camera);
     // a full charge holds an engaged creature to what is real; at the shutter chance, longer

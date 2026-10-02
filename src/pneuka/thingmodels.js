@@ -121,7 +121,19 @@ function shard() {
   return h;
 }
 
+/** A roll of film: a brass canister, its spool ends, and a tongue of film out of the lip. */
+function film() {
+  const can = mat(0x2a2420, { roughness: 0.4 }), brass = brassM(), strip = mat(0x6a4a2a, { roughness: 0.3, side: THREE.DoubleSide });
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.036, 12), can);
+  const a = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.048, 8), brass);
+  const lip = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.0165, 0.004, 12), brass); lip.position.y = 0.017;
+  const tongue = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 0.026), strip); tongue.position.set(0.026, -0.002, 0); tongue.rotation.y = Math.PI / 2 - 0.25;
+  const h = holder([body, a, lip, tongue], [can, brass, strip]); h.group.rotation.set(0.35, 0.4, 0.25);
+  return h;
+}
+
 export function buildThing(id) {
+  if (id === 'mat.film') return film();
   if (id.startsWith('key.')) return key(id);
   if (id.startsWith('inst.')) return instrument(id);
   if (id.startsWith('heart.')) { const c = buildCoffin(id); c.group.rotation.set(0.25, 0.45, 0.1); return c; }

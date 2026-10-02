@@ -237,7 +237,7 @@ export class PneukaBox {
     const belt = this.game.belt;
     if (belt) for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.count(`tool.${t.id}`)) this.add(`tool.${t.id}`, 'start');
     // (for the tools after the first four: the other coffins, the three instruments, and a handful of keys to begin with)
-    for (const id of ['heart.gambler', 'heart.shepherd', 'inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.invert', 'key.twin', 'key.even']) this.add(id, 'start');
+    for (const id of ['heart.gambler', 'heart.shepherd', 'inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.invert', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
     this.save();
   }
 }

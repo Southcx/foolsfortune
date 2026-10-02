@@ -269,6 +269,27 @@ Three tools measure it:
 - `node tools/economy.mjs` plays four profiles (fighter, miner, photographer, treasury camper) against the table, before and after.
 - **`/grant [n]`** adds cubes to the purse for testing, in **DEBUG** only.
 
+## The shops: Raku's treasury and Old Grog's pier (`src/shop/`)
+
+Talk to the keeper (F) and say **"Let's trade."** to open their counter.
+
+- The shelf is on the left: each good with its picture, its price and the stock left as a row of beads. A click buys one.
+- Her Pneuka Box is on the right: each thing the keeper would buy is lit with the price. A click sells it.
+- Prices follow the stock (OSRS): a shelf bought short is dearer, a keeper flooded with something pays less, and both drift back in time.
+
+**Raku** sells Possibilikeys and coffins for the Lockheart, marked up 45%, and buys curios. He **haggles**: right click a good, or press HAGGLE, and his dialogue window opens on the price. She can:
+
+- offer one of three prices;
+- flatter his fez (twice; the third time he sees through it);
+- clink cubes on the counter (he warms, but now he knows she can pay);
+- walk away.
+
+His body shows his mood. Lowballs make him sulk and lose patience. He never sells at a loss, and when his patience runs out he names a last price.
+
+**Old Grog** sells film and lures at fair prices and buys fish. A landed fish is now kept whole in the box, to be sold on the pier. Film runs out: a roll is 24 exposures, and the next roll is loaded from the box.
+
+Prior art: OSRS's shops (stock, price movement, restock, a trade bought at full and the rest at a cut), Recettear and Moonlighter (the price as a conversation), Potion Craft's and Mount & Blade's haggling (flattery and walking away as moves), and Animal Crossing's shopkeepers.
+
 ## Water
 
 The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The Solar Skiff skims the oasis's water as it does the sand.
@@ -758,6 +779,7 @@ runtime IK correction on the contact points.
 | `src/progress.js` | progress cleared on each new build (settings kept) |
 | `src/music/` | the music: the scores (the main theme on the black keys, the battle, the workshop, the five-movement draft, the first draft, the jingles, the Dunes' theme), the players (the Dunes' band; the arranger with its band, per-section tempo and metre, scores that play once), the sound test |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
+| `src/shop/catalogue.js`, `src/shop/shops.js`, `src/shop/haggle.js`, `src/shop/ui.js` | what each keeper sells and buys and what a thing is worth; stock, prices, restock, buying and selling; Raku's haggle (pure logic; his words are in `npc/talks.js`); the counter's window |
 | `src/econ/table.js`, `src/econ/economy.js`, `tools/economy.mjs`, `docs/ECONOMY.md` | the economy's one table (faucets, drains, prices in minutes); the F3 econ line, `minutes()` and `/grant`; the simulator; the map and the reasons |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |

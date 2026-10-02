@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE ECONOMY, MEASURED: what the cubes are doing this session, read from the ledger (src/stats.js), never counted twice. Every cube
 // that comes out of something is a `cube.spill` (cubes.js: chest, dupe, jelly, zandatsu, crystal, lockheart), condensing a card is a
-// `cube.earn` with why `condense`, and every cube spent is a `cube.use.<why>` (tithe, and the shops to come). From those, cubes an hour
+// `cube.earn` with why `condense` (and selling to the folk, why `sell`), and every cube spent is a `cube.use.<why>` (tithe, and the shops to come). From those, cubes an hour
 // by source and by drain, beside what the table (econ/table.js) says play should earn, so a faucet that runs away shows at once on the
 // F3 panel; tools/economy.mjs simulates the same table offline.
 //
@@ -26,7 +26,7 @@ export function rates(L) {
     if (k.startsWith(SPILL)) by.push([k.slice(SPILL.length), v / hours]);
     else if (k.startsWith(USE)) drains.push([k.slice(USE.length), v / hours]);
   }
-  if (s['cube.src.condense']) by.push(['condense', s['cube.src.condense'] / hours]);
+  for (const why of ['condense', 'sell']) if (s[`cube.src.${why}`]) by.push([why, s[`cube.src.${why}`] / hours]);
   by.sort((a, b) => b[1] - a[1]); drains.sort((a, b) => b[1] - a[1]);
   const inPerH = by.reduce((a, [, v]) => a + v, 0), outPerH = drains.reduce((a, [, v]) => a + v, 0);
   return { hours, inPerH, outPerH, net: inPerH - outPerH, by, drains, granted: s['cube.src.grant'] || 0, target: ECON.perMinute * 60 };

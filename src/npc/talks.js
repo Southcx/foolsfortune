@@ -92,6 +92,7 @@ export const TALKS = {
         { text: "What's in the water?", go: 'fish' },
         { text: 'Why so sad?', go: 'sad' },
         { text: 'Any advice?', go: 'advice' },
+        { text: "Let's trade.", do: (g) => g.shops?.open('grog'), go: null },
         { text: 'Goodbye.', go: 'bye' },
       ] },
       fish: { lines: [
@@ -121,6 +122,7 @@ export const TALKS = {
       ], next: 'menu' },
       again: { lines: [{ mood: 'sly', text: 'Ah, my {gold}favourite{/} customer!' }], next: 'menu' },
       menu: { lines: [], choices: [
+        { text: "Let's trade.", do: (g) => g.shops?.open('raku'), go: null },
         { text: "What's the Tithe?", go: 'tithe' },
         { text: 'How many cubes have I got?', go: 'cubes' },
         { text: 'Your glaze is lovely.', go: 'flatter' },
@@ -140,6 +142,44 @@ export const TALKS = {
         { mood: 'joy', text: "That's where the {lach}crackle{/} comes from. {p:0.3}{small}It hurt a lot, actually.{/} But look at me {gold}shine{/}!" },
       ], next: 'menu' },
       bye: { lines: [{ mood: 'sly', text: 'Come back {gold}richer{/}!' }] },
+
+      // THE HAGGLE (shop/haggle.js keeps the numbers; shops.js the deal): his answer to what she last did, then what she can do next
+      haggle: {
+        lines: [{ mood: (g) => hagMood(g), text: (g) => hagLine(g) }],
+        choices: [
+          ...[0, 1, 2].map((i) => ({ when: (g) => !H(g)?.done && g.shops.hagOffers().length > i, text: (g) => `Offer ${g.shops.hagOffers()[i]} cubes.`, do: (g) => g.shops.hagOffer(i), go: 'haggle' })),
+          { when: (g) => !H(g)?.done && H(g).flattered < 3, text: (g) => FLATTERY[Math.min(2, H(g).flattered)], do: (g) => g.shops.hagFlatter(), go: 'haggle' },
+          { when: (g) => !H(g)?.done && !H(g).clinked && g.cubes.balance >= H(g).ask, text: 'Clink a few cubes on the counter.', do: (g) => g.shops.hagClink(), go: 'haggle' },
+          { when: (g) => H(g)?.done === 'last' && g.cubes.balance >= H(g).ask, text: (g) => `Pay ${H(g).ask}.`, do: (g) => g.shops.hagAccept(), go: 'haggle' },
+          { when: (g) => H(g)?.done === 'deal', text: 'Shake on it.', do: (g) => g.shops.hagClose(), go: null },
+          { when: (g) => H(g) && H(g).done !== 'deal', text: (g) => (H(g).done === 'last' ? 'Leave it.' : 'Walk away.'), do: (g) => (H(g).done === 'last' ? g.shops.hagDrop() : g.shops.hagWalk()), go: (g) => (g.shops.hag ? 'haggle' : 'hagbye') },
+        ],
+      },
+      hagbye: { lines: [{ mood: 'sad', text: (g) => pick(RAKU_HAGGLE.gone, g) }] },
     },
   },
+};
+
+// ---------------------------------------------------------------------------------------
+// RAKU HAGGLES: what he says to each move (placeholders for Espada: docs/HANDOFFS.md). {ask} is his price now, {offer} hers.
+// The mood of each line is his (shop/haggle.js moodOf), so his body shows it while he says it.
+const H = (g) => g.shops?.hag?.h;
+const pick = (pool, g) => {
+  const h = H(g), t = pool[(h?.said || 0) % pool.length];
+  return t.replace(/\{ask\}/g, `{gold}${h?.ask ?? ''}{/}`).replace(/\{offer\}/g, `{gold}${h?.last ?? ''}{/}`).replace(/\{price\}/g, `{gold}${h?.price ?? ''}{/}`);
+};
+const hagMood = (g) => g.shops?.hagMood?.() || 'sly';
+const hagLine = (g) => { const h = H(g); return h ? pick(RAKU_HAGGLE[h.step] || RAKU_HAGGLE.counter, g) : '…'; };
+const FLATTERY = ['That fez is magnificent.', 'Your crackle catches the light beautifully.', 'Has anyone told you that you shine?'];
+export const RAKU_HAGGLE = {
+  open: ['For you? {ask} cubes. {p:0.3}{small}A bargain, really.{/}', 'Ah, a {lach}discerning{/} eye! {ask} cubes, and I\'m robbing myself.', '{ask}. {p:0.4}{slow}And not a cube less.{/} {p:0.3}{small}Probably.{/}'],
+  counter: ['{offer}? {p:0.3}{wobble}Ha!{/} {ask}, and that\'s me being {gold}generous{/}.', 'Mm. {p:0.4}{ask}. {small}You drive a hard bargain.{/}', 'I could go to {ask}. {p:0.3}{slow}Could.{/}'],
+  insult: ['{big}{offer}?!{/}{burst} {p:0.3}{shake}Are you trying to {hot}ruin{/} me?{/}', '{hot}{offer}!{/} {p:0.3}I\'ve had better offers from the {wave}fish{/}.{burst}', 'Out. {p:0.5}{small}No, stay. But that was rude.{/}'],
+  flatter: ['Oh, {bounce}stop{/}. {p:0.3}{small}Don\'t stop.{/}', 'It {gold}is{/} a fine fez, isn\'t it? {p:0.3}{wave}Red-hot, then sawdust!{/}', 'Flattery! {p:0.3}{small}It works, you know.{/} {ask}, for you.'],
+  bored: ['{slow}Yes, yes, I shine.{/} {p:0.4}{ask}.', 'Compliments don\'t pay for keys, Courier.', 'You said that already. {p:0.3}{ask}.'],
+  clink: ['{big}Ooh.{/}{burst} {p:0.3}{lach}That sound.{/} {p:0.4}Well. {ask}, then.', 'Cubes on the counter! {wave}Now we\'re talking.{/}', '{slow}Mmm.{/} {p:0.3}Put them a little closer.'],
+  last: ['{ask}. {p:0.4}{slow}My last word.{/}', 'That\'s it, I\'m tired. {ask} or nothing.', 'Enough! {ask}. {p:0.3}{small}Final. Really final.{/}'],
+  callback: ['{big}Wait!{/}{burst} {p:0.3}{ask}. Just for you. {p:0.3}{small}Don\'t tell anyone.{/}', 'Oh, come back, come back! {ask}!', '{shake}Fine!{/} {ask}, you {hot}bandit{/}.'],
+  deal: ['{burst}{bounce}Done!{/} {price} cubes. {p:0.3}{small}Pleasure, as always.{/}', 'A deal! {price}. {p:0.3}{wave}Lovely, lovely.{/}', '{price}. {p:0.4}{slow}I\'ll weep later.{/}'],
+  gone: ['{slow}Fine.{/} {p:0.4}Go. {small}I didn\'t want to sell it anyway.{/}', 'Off you go, then. {p:0.4}{small}Cheapskate.{/}', 'Your loss! {p:0.5}{slow}Mostly.{/}'],
 };

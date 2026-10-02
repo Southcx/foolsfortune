@@ -636,6 +636,7 @@ export class Angler {
       this.release();
       this.line.hide();
       this.emit('angle.landed', { species: f.sp.id, baubles: n });
+      g.pneuka?.add(`fish.${f.sp.id}`, 'catch'); // (kept whole, to be sold to Old Grog: shop/catalogue.js)
     }
   }
 

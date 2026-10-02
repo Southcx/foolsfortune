@@ -16,7 +16,7 @@ The numbers live in one table, `src/econ/table.js` (`ECON`). Change them there a
 Every price is named in minutes: `minutes(n)` in `src/econ/economy.js` turns n minutes into cubes.
 
 - A sealed chest from the Tithe costs **6 minutes** (48 cubes).
-- The shops (R38c) will price in minutes too: a lure is a few minutes, a glaze an evening.
+- The shops price in minutes too: a roll of film is a minute and a half, a lure five minutes, a twin key ten. A glaze will be about fifteen.
 
 No activity should pay more than about **1.5×** the aim. The one exception is luck: a prismatic chest is meant to feel like a windfall.
 
@@ -26,11 +26,12 @@ No activity should pay more than about **1.5×** the aim. The one exception is l
  FAUCETS (cubes into the world)                         DRAINS (cubes out)
  ───────────────────────────────                         ─────────────────
  slip jelly burst ........ ECON.jelly.burst  ─┐      ┌─► the Tithe ........... ECON.tithe.cost
- zandatsu core ........... ECON.jelly.core    │      ├─► shops (R38c) ........ minutes(n) a thing
+ zandatsu core ........... ECON.jelly.core    │      ├─► shops ............... ECON.goods (minutes)
  crystal harvest ......... ECON.crystal       ├─►  ──┤      Raku haggles; Grog buys fish back (a faucet too)
  chests (world, treasury). ECON.chest         │ cubes├─► glazes, firing (R38d)
  a curio she has, again .. ECON.dupe          │      └─► the Shrine Garden (later: the long sink)
  condensing a spare card . ECON.condense      │
+ selling to the folk ..... ECON.fish, .curio  │
  Lockheart CUBES ......... ECON.lockheart  ───┘
  /grant (DEBUG only, not counted as income)
 ```
@@ -51,7 +52,31 @@ From `node tools/economy.mjs`, which uses the table and the assumed rates of pla
 | fighter (jellies, zandatsu) | 608 | 608 | 1.27 |
 | miner (the dune sea's 18 crystal formations) | 1,389 | 694 | 1.45 |
 | photographer (spare cards condensed) | 667 | 430 | 0.90 |
+| angler (fish sold to Old Grog) | 0 | 475 | 0.99 |
 | treasury camper (the Weir's five plinths) | 94,980 | 586 | 1.22 |
+
+The photographer row is after film: a roll costs 12 cubes. It earns 430 an hour without film and 310 with it.
+
+## The shops (R38c, `src/shop/`)
+
+There are two counters, opened from the keeper's talk ("Let's trade."):
+
+- **Raku's treasury** sells Possibilikeys and coffins at a 45% markup, and haggles. He buys curios (his trade, at `ECON.curio`, a little over what the curio's spare card condenses for), and keys and coffins at half their worth.
+- **Old Grog's pier** sells film and lures at their worth, and buys fish (his trade: `ECON.fish` by tier) and lures at half.
+
+How prices move (`ECON.shop`, after OSRS):
+
+- Each unit a shelf is short of its stock makes it 10% dearer.
+- Each unit a keeper has already bought takes 7% off what they pay, down to a quarter of the worth.
+- Every 90 seconds, each shelf and each glut moves one unit back toward normal.
+
+**The haggle** (`src/shop/haggle.js`): Raku asks his list price and never goes below his floor (the worth plus 2%). Simulated, the moves end like this:
+
+- An offer at the low end of what is put to her sulks him into holding at list.
+- Steady fair offers, flattery or walking away while he is pleased end about 18–20% under list.
+
+**Selling to the folk replaces condensing** as the way to turn things into cubes. A landed fish is now a thing in the box (it used to come apart into Lachryma only). Film is now a thing too: a roll is 24 exposures, and the next is loaded from the box.
+
 
 **The Tithe** returned 227% of what it took before R38 and returns 78% after, with its pity and its dupes counted. The curio is the rest of the prize.
 

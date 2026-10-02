@@ -22,7 +22,8 @@
 // letter-by-letter speech with its emphasis (the big shaking words, the pauses), Undertale's and Paper Mario's per-word effects
 // (shaking text for fear, wavy text for whimsy), Persona's name tab, and Dark Cloud 2's over-the-shoulder conversation camera.
 //
-//   game.dialogue.begin(npc)       game.dialogue.update(dt)       game.dialogue.open
+//   game.dialogue.begin(npc, node?)  game.dialogue.update(dt)       game.dialogue.open
+//   (a line's text and mood, and a choice's text, may be functions of the game; a choice's `do(game, dialogue)` runs before its `go`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TALKS } from './talks.js';
@@ -119,7 +120,7 @@ export class Dialogue {
   }
 
   /** Begin talking with a folk. */
-  begin(npc) {
+  begin(npc, at = null) {
     const g = this.game, T = TALKS[npc.id];
     if (!T || this.open) return false;
     this.npc = npc; this.talk = T; this.open = true; this.vars = {}; this.age = 0; this.opts = null;
@@ -130,7 +131,7 @@ export class Dialogue {
     this.root.classList.add('open');
     this.el.name.innerHTML = `${npc.name}${npc.def.title ? `<s>${npc.def.title}</s>` : ''}`;
     g.events.emit('npc.talk', { npc: npc.id, first: !met });
-    this.go(met ? (T.again || T.start) : T.start);
+    this.go(at || (met ? (T.again || T.start) : T.start));
     return true;
   }
   end() {
@@ -155,7 +156,7 @@ export class Dialogue {
     if (!L) { this.afterLines(); return; }
     const text = typeof L.text === 'function' ? L.text(g, this) : L.text;
     this.cur = L;
-    this.mood = L.mood || 'calm';
+    this.mood = (typeof L.mood === 'function' ? L.mood(g, this) : L.mood) || 'calm';
     g.folk.setMood(this.npc, this.mood, L.k ?? 0.85);
     const base = MOOD_CLASS[this.mood] ? [MOOD_CLASS[this.mood]] : [];
     this.toks = parse(text, base); this.ti = 0; this.wait = 0.12; this.typed = false; this.plain = plain(text);
@@ -171,7 +172,7 @@ export class Dialogue {
       const opts = N.choices.filter((c) => !c.when || c.when(g));
       this.opts = opts; this.sel = 0;
       this.el.choices.replaceChildren(...opts.map((c, i) => {
-        const d = document.createElement('div'); d.className = `opt${i === 0 ? ' sel' : ''}`; d.innerHTML = `<b>${i + 1}</b>${c.text}`;
+        const d = document.createElement('div'); d.className = `opt${i === 0 ? ' sel' : ''}`; d.innerHTML = `<b>${i + 1}</b>${this.say(c)}`;
         d.addEventListener('mouseenter', () => this.pick(i, false));
         d.addEventListener('mousedown', (e) => { e.stopPropagation(); this.pick(i, false); this.choose(); });
         return d;
@@ -182,6 +183,8 @@ export class Dialogue {
     }
     this.go(N.next);
   }
+  /** A choice's words (a string, or a function of the game: a price, a count). */
+  say(c) { return typeof c.text === 'function' ? c.text(this.game, this) : c.text; }
   pick(i, sound = true) {
     if (!this.opts) return;
     this.sel = (i + this.opts.length) % this.opts.length;
@@ -191,11 +194,11 @@ export class Dialogue {
   choose() {
     const c = this.opts?.[this.sel]; if (!c) return;
     sfx.menuOk?.();
-    this.game.events.emit('npc.choose', { npc: this.npc.id, text: c.text.replace(/<[^>]+>/g, '') });
+    this.game.events.emit('npc.choose', { npc: this.npc.id, text: this.say(c).replace(/<[^>]+>/g, '') });
     this.opts = null; this.el.choices.replaceChildren(); this.root.classList.remove('ask');
     this.game.theme?.aim(null);
     c.do?.(this.game, this);
-    this.go(c.go);
+    this.go(typeof c.go === 'function' ? c.go(this.game, this) : c.go);
   }
   /** F / Space / Enter / click: finish the line, or turn the page. */
   advance() {

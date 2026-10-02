@@ -11,6 +11,14 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-02 (later), from Petra: the shops are in (R38c)**
+- Hooks waiting for sounds, all called with `?.` so they are silent until you add them to `sfx`: `sfx.shopBuy()` and
+  `sfx.shopSell()` (`src/shop/shops.js`; a `cubeGet` plays under them for now).
+- Raku's haggle: every move emits `shop.haggle` `{ shop, item, step, mood, ask }`. The `step` is open, counter, insult, flatter, bored,
+  clink, last, callback, deal or gone; the `mood` is a folk mood (joy, sly, anger, sad, confused, awe). His voice already follows the
+  mood through clayese. A sting on `deal` and `insult`, or a counter-top clink on `clink`, would sell it.
+- Film now runs out: `film.load` fires when a fresh roll is threaded (a winding click would suit).
+
 **2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
 1. **The title cue.** For THE FOOL'S PRECIPICE (PLAN.md, piece 1): an intro as the logo is fired, a loop that the giant game pieces
    move to (it must carry `root` and run on the arranger, so `MusicPlayer.grid()` gives its beat: the pieces step on the bar), and
@@ -45,6 +53,14 @@ lines to the owner. Petra reviews, merges and publishes.
 - Next round's tasks follow once the owner approves the plan.
 
 ## Calissa (Art)
+
+**2026-10-02 (later), from Petra: the shops are in (R38c)**
+- New things with prerendered icons: the ROLL OF FILM (`film()` in `src/pneuka/thingmodels.js`), and the fourteen fish as box items
+  (their icon is the fish's own ghost mesh, `buildFish`, which reads a little faint in a slot; an icon pose or a solid variant is yours).
+- The shop window (`src/shop/ui.js`, `#shop .px`) copies the Pneuka Box window's look and is in the window kit's `WINDOWS`.
+- The plan wants the goods **on shelves in the world**. Raku has no counter yet (he stands by the Tithe) and Grog none on the pier. A
+  counter and a shelf for each, with the goods on it, as one prop batch per shop (`src/render/propbatch.js`), would make them real;
+  tell me where they stand and I will hang the F on them.
 
 **2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
 The owner's ruling: the Courier is a **vessel**, the magnum opus of Kaolin Anagami; customization decorates the vessel as a pot is
@@ -81,6 +97,16 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02 (later), from Petra: the shops are in (R38c), words for you**
+- Raku haggles in his own dialogue window. His lines are `RAKU_HAGGLE` at the foot of `src/npc/talks.js`, three per move: open,
+  counter, insult, flatter, bored, clink, last, callback, deal, gone. `{ask}`, `{offer}` and `{price}` are filled in. The flattery the
+  Courier offers is `FLATTERY` there. All of it is a placeholder for the greedy miser you are writing.
+- "Let's trade." is a new choice for Raku and Grog. The shops' names and blurbs are in `src/shop/catalogue.js` (`SHOPS`).
+- New log lines (`src/tracking.js`, the block after "the folk's counters"): buying, selling, the first-counter tip, keeping a fish,
+  loading film. The refusals are in `src/shop/shops.js` and `src/moves/veritome.js` ("You have no film.").
+- Five placeholder achievements are in `src/achievements.js` ("The Counters").
+- Grog could say something about buying fish, and Raku about curios; his `cubes` node already teases.
 
 **2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
 The owner's rulings for the bible (with more to come from your talks with them): **Kaolin Anagami** made this place, an *Island of Ego*,

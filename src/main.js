@@ -61,6 +61,8 @@ import { Movers } from './movers.js';
 import { System } from './system/system.js';
 import { Codex } from './system/codex.js';
 import { PneukaBox } from './pneuka/box.js';
+import { Shops } from './shop/shops.js';
+import { ShopUI } from './shop/ui.js';
 import { PneukaUI } from './pneuka/ui.js';
 import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
@@ -333,6 +335,10 @@ async function main() {
   game.belt.tick(); game.pneuka.seed(); // (a new Courier: the four tools worn, the rest and the made lures in the box)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
+  game.shops = new Shops(game);
+  game.shopUI = new ShopUI(game);
+  game.shopUI.onClose = () => { if (input.enabled && !game.god?.active && !game.dialogue?.open) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (system/voice.js)
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
@@ -340,7 +346,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.log?.busy);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.log?.busy);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   const baubles = new Baubles(game);
@@ -740,7 +746,7 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
