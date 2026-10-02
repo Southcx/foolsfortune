@@ -84,13 +84,21 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   draws: zones, the light budget, the 480-line present), and publishing the playable build.
 - **Wanda** (wands), Audio, `claude/friendly-knuth-vbv82r`, session `session_01TJWi6AnZAQ8uug5yMgzhHW`: `src/audio.js` (and the `src/audio/` it is being split into),
   `src/music/`, `src/system/voice.js` and `src/system/speech/`, `src/npc/clayese.js`, `docs/OST.md`, `docs/voice_recording.md`.
-- **Calissa** (cups), Art, session `session_01XGT2M7FzmmweYqpDur2os6` (branch: added once known): what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
+- **Calissa** (cups), Art, `claude/calissa-art-cups`, session `session_01XGT2M7FzmmweYqpDur2os6`: what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
   models and the animation pipeline (`source_assets/`, `src/assets/`, `tools/export_*.py`, `tools/bake_*.mjs`). The maker's pixel
   art is the maker's.
-- **Espada** (swords), Lore, session `session_019tYzG4KGZQbYBAi8eQD9hi` (branch: added once known): `docs/LORE.md` (the series bible: people, places, history, names,
+- **Espada** (swords), Lore, `claude/espada-lore`, session `session_019tYzG4KGZQbYBAi8eQD9hi`: `docs/LORE.md` (the series bible: people, places, history, names,
   tone) and the folk's lines (`src/npc/talks.js`); the words inside other divisions' files (arcana riddles, bestiary and item
   text, the log's phrasing in `tracking.js`) are its to edit as strings only, never their code.
 - A feature that needs a sound it does not have calls an existing `sfx` method or adds a one-line placeholder and says so to the
   owner; Wanda builds the real sound. The same goes for art (Calissa) and words (Espada). Another division's files are changed by
   asking it (through the owner, or the remote `send_message` tool with the owner's OK), not by editing them.
 - A message between divisions is for a handoff or a question, not a chat: reply once, and never just to acknowledge.
+- **How work lands.** The owner sets the direction and approves; Petra plans the next round and hands each division its tasks (through
+  the owner, or `send_message` with the owner's OK). The divisions work at the same time, each on its own branch. A division is done
+  when it has (1) merged the latest default branch into its branch and fixed what that broke, (2) built (`npm run build`) and, if it
+  touched code, run the stress test (`node tools/stress.mjs`), (3) pushed, and (4) told the owner in a few lines what changed, what to
+  try, and any handoffs. Petra then reviews and merges it into the default branch and publishes; no one else merges into it or
+  publishes. Petra's review: it builds, nothing another file calls has gone missing, no other division's work is overwritten, the stress
+  test is no worse, and the changed part works when driven headless. What fails goes back to its division with the reason; Petra does
+  not edit another division's files to make a merge pass.
