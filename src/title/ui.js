@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE TITLE'S WORDS: the logo over THE FOOL'S PRECIPICE (title/scene.js), "PRESS START", and, once she has stepped off the hill, the menu:
 // STORY, DEBUG, SETTINGS, SOUND TEST (the owner's split: STORY is the game to come, DEBUG the sandbox as it is, every tool and room).
-// Keys or the mouse; the glove points at the choice (ui/theme.js). The words here are placeholders for Espada's (docs/HANDOFFS.md) and
+// Keys or the mouse; the glove points at the choice (ui/theme.js). The first press wakes the sound if the browser
+// kept it asleep (so the title's loop plays under the scene: Wanda's note), and the next one starts. The words here are placeholders for Espada's (docs/HANDOFFS.md) and
 // the logo for Calissa's clay letters.
 //
 // Prior art: the PS2 title (PRESS START, then a short vertical menu over a living scene: Kingdom Hearts, Okami), and Persona 5's menus
@@ -55,7 +56,16 @@ export class TitleUI {
   }
   get menuOn() { return this.el.classList.contains('menuon'); }
 
-  start() { if (this.started) return; this.started = true; sfx.unlock?.(); sfx.menuOk?.(); this.onStart?.(); }
+  /** The first press only wakes the sound, if the browser had it asleep, so the title's loop plays under the scene; the next starts. */
+  wake() {
+    if (this.woke) return false;
+    this.woke = true;
+    const asleep = !sfx.ctx || sfx.ctx.state !== 'running';
+    sfx.unlock?.();
+    if (asleep) { this.el.classList.add('awake'); return true; }
+    return false;
+  }
+  start() { if (this.started) return; if (this.wake()) return; this.started = true; sfx.unlock?.(); sfx.menuOk?.(); this.onStart?.(); }
 
   /** The menu, once she has stepped off. */
   showMenu(page = 'main') {

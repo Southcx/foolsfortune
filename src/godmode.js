@@ -621,9 +621,14 @@ export class GodMode {
 
   placeHand(dt) {
     const H = this.hand, C = this.cam;
-    // fingers away from the camera, tipped down; the palm faces the ground
-    // (and turned a little to the right of the view, so the fingers read from the side rather than end-on)
-    const f = _v.set(-Math.sin(C.yaw), 0, -Math.cos(C.yaw)).applyAxisAngle(UP, -0.85);
+    // the fingers point out along the line from the Pneuka Jar, the wrist back toward it (the owner's note: the hand reaches out of the
+    // jar), tipped down, the palm to the ground. Over the jar itself, where that line has no direction, it faces away from the camera.
+    const V = this.vessel?.pos, rx = V ? this.handPos.x - V.x : 0, rz = V ? this.handPos.z - V.z : 0, rd = Math.hypot(rx, rz);
+    const camYaw = Math.atan2(-Math.sin(C.yaw), -Math.cos(C.yaw)) - 0.85;
+    const radial = Math.atan2(rx, rz), w = THREE.MathUtils.smoothstep(rd, 0.4, 1.6);
+    const want = camYaw + wrapPi(radial - camYaw) * w;
+    this.handYaw = this.handYaw == null ? want : this.handYaw + wrapPi(want - this.handYaw) * (1 - Math.exp(-10 * dt));
+    const f = _v.set(Math.sin(this.handYaw), 0, Math.cos(this.handYaw));
     const fingers = f.clone().multiplyScalar(Math.cos(0.4)).addScaledVector(DOWN, Math.sin(0.4)).normalize();
     const palm = UP.clone().addScaledVector(fingers, -UP.dot(fingers)).negate().normalize(); // (down and toward the camera)
     const z = palm.clone().negate(); // the model's +Z (its back)

@@ -69,6 +69,9 @@ export function buildTuningPanel(onChange, actions) {
   const act = gui.addFolder('actions');
   act.add(actions, 'copyJSON').name('Copy settings JSON');
   act.add(actions, 'resetRoom').name('Reset room (T)');
+  // (what R and H used to do in the basement: moved here to free the keys)
+  if (actions.respawn) act.add(actions, 'respawn').name('Back to the last checkpoint');
+  if (actions.toHub) act.add(actions, 'toHub').name('Teleport to the hub');
   act.add({ reset: () => { resetTuning(); gui.controllersRecursive().forEach((c) => c.updateDisplay()); onChange('*', '*'); } }, 'reset').name('Restore defaults');
   gui.hide();
   return gui;

@@ -33,7 +33,7 @@ import { RIG_CPS, HAND_CPS, RIG_PITS } from './riglab.js';
 //     7 W   speed                 slide ramp to top speed, 7 m gap
 //     8 SW  low                   slide chute, 1.5 m tunnel, back to 1
 //   Stations 3-7 are over a reset floor: touch it and you're back at the station's
-//   checkpoint. R respawns at the last checkpoint, H returns to the hub.
+//   checkpoint. The Tab panel's actions go back to the last checkpoint or to the hub (they were R and H).
 //
 //   THE MOVEMENT LAB (south, through the course's south door): one hall of five
 //   wings open to each other through arches (techlab.js ARCHES): the hands, the
@@ -453,7 +453,7 @@ export class Course {
   }
 
   // the index: one console in the hub's first room. F at it opens a menu of the rooms; one teleport
-  // each (the stations inside a room are checkpoints: R goes back to the last one you touched)
+  // each (the stations inside a room are checkpoints: the Tab panel goes back to the last one you touched)
   buildConsole() {
     const S = this.game.scene, B = BASE_Y, cx = 0, cz = -6;
     // the rooms the menu lists (the course's eight stations and the lab's five wings are one room each: R and the rings inside them do
@@ -620,13 +620,17 @@ export class Course {
     sfx.lockOn(2);
   }
 
+  /** Back to the last checkpoint (or the start of a circuit, the dunes, the siege): the Tab panel's action (it was R). */
+  respawnHere() {
+    const g = this.game, p = g.player;
+    if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
+  }
+
   update(dt) {
     const g = this.game, p = g.player, inp = g.input;
     const here = this.inBasement();
     if (this.el) this.el.style.display = here ? 'block' : 'none';
     if (!here) { this.running = false; this.prev.copy(p.pos); return; }
-    if (inp.wasPressed('KeyR')) { if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn(); return; }
-    if (inp.wasPressed('KeyH')) { this.toHub(); return; }
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
 

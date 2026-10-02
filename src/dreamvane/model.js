@@ -13,6 +13,8 @@
 import * as THREE from 'three';
 import { addOutline } from '../outline.js';
 
+// (the crook with its dreamcatcher, and the tuning fork, at two and a half times their first size: the owner's note on v40)
+export const HOOK = 2.5, FORK = 2.5;
 const WOOD = 0x4a2f22, WOOD2 = 0x6a4430, STEEL = 0xe6e8ee, BRASS = 0xd9b048, WEB = 0xe8d7b6, FEATHER = 0xb49be6;
 
 export class DreamvaneModel {
@@ -28,12 +30,13 @@ export class DreamvaneModel {
     // wraps of leather where the hands go, and brass bands
     g.add(X(0.16, 0.024, 0.024, wood2, -0.08)); g.add(X(0.14, 0.024, 0.024, wood2, -0.38));
     for (const at of [0.12, 0.62, 0.97]) g.add(X(0.018, 0.023, 0.023, brass, at, 8));
-    // the crook: the staff bent back on itself at the top (a half torus, then a short drop)
-    const crook = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.016, 6, 14, Math.PI * 1.15), wood);
-    crook.position.set(1.0, 0.11, 0); crook.rotation.z = -Math.PI / 2 - 0.08; g.add(crook);
-    const drop = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.012, 0.09, 6), wood); drop.position.set(0.95, 0.225, 0); drop.rotation.z = 0.15; g.add(drop);
-    // the dreamcatcher, hung in the crook on a pin: a hoop, a web, a bead, feathers (its own group: it turns)
-    const dc = (this.catcher = new THREE.Group()); dc.position.set(1.0, 0.11, 0); g.add(dc);
+    // the crook: the staff bent back on itself at the top (a half torus, then a short drop), HOOK times the first size (the owner's
+    // note: two and a half times bigger), the wood as thick as the staff's
+    const crook = new THREE.Mesh(new THREE.TorusGeometry(0.11 * HOOK, 0.018, 6, 18, Math.PI * 1.15), wood);
+    crook.position.set(1.0, 0.11 * HOOK, 0); crook.rotation.z = -Math.PI / 2 - 0.08; g.add(crook);
+    const drop = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.013, 0.09 * HOOK, 6), wood); drop.position.set(1.0 - 0.05 * HOOK, 0.225 * HOOK, 0); drop.rotation.z = 0.15; g.add(drop);
+    // the dreamcatcher, hung in the crook on a pin: a hoop, a web, a bead, feathers (its own group: it turns), as much bigger
+    const dc = (this.catcher = new THREE.Group()); dc.position.set(1.0, 0.11 * HOOK, 0); dc.scale.setScalar(HOOK); g.add(dc);
     const hoop = new THREE.Mesh(new THREE.TorusGeometry(0.075, 0.006, 5, 18), brass); dc.add(hoop);
     const web = new THREE.Group(); dc.add(web);
     for (let i = 0; i < 6; i++) { const s = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.002, 0.002), this.webMat); s.rotation.z = (i / 6) * Math.PI; web.add(s); }
@@ -51,7 +54,7 @@ export class DreamvaneModel {
     const adze = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.14, 0.07), steel); adze.position.set(-0.02, -0.09, 0); adze.rotation.z = -0.18; pick.add(adze);
     const edge = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.02, 0.08), steel); edge.position.set(-0.04, -0.165, 0); pick.add(edge);
     // the tuning fork at the heel (its own group: it comes out)
-    this.fork = this.makeFork(steel, brass); this.fork.position.set(-0.42, 0, 0); g.add(this.fork);
+    this.fork = this.makeFork(steel, brass); this.fork.position.set(-0.42, 0, 0); this.fork.scale.setScalar(FORK); g.add(this.fork);
     this.forkMats = { steel, brass };
     for (const o of [...g.children]) if (o.isMesh) addOutline(o);
     this.glow = 0;
@@ -66,7 +69,7 @@ export class DreamvaneModel {
     return f;
   }
   /** A fork to throw (a copy of the one in the heel, the same look), its point toward its own -X. */
-  forkMesh() { const f = this.makeFork(this.forkMats.steel, this.forkMats.brass); f.traverse((o) => { if (o.isMesh) o.castShadow = true; }); return f; }
+  forkMesh() { const f = this.makeFork(this.forkMats.steel, this.forkMats.brass); f.scale.setScalar(FORK); f.traverse((o) => { if (o.isMesh) o.castShadow = true; }); return f; }
 
   /** The needle: the catcher turned toward what it hears (in the staff's frame: yaw about the staff, pitch across it), its web lit. */
   setDowse(yaw, pitch, glow) {
@@ -76,6 +79,6 @@ export class DreamvaneModel {
     this.beadMat.emissiveIntensity = 0.4 + 2.2 * glow;
   }
   setFork(inHeel) { this.fork.visible = inHeel; }
-  headWorld(out = new THREE.Vector3()) { return out.set(1.0, 0.11, 0).applyMatrix4(this.group.matrixWorld); }
+  headWorld(out = new THREE.Vector3()) { return out.set(1.0, 0.11 * HOOK, 0).applyMatrix4(this.group.matrixWorld); }
   pickWorld(out = new THREE.Vector3()) { return out.set(0.83, 0.26, 0).applyMatrix4(this.group.matrixWorld); }
 }

@@ -458,6 +458,8 @@ async function main() {
   }, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.')),
     resetRoom,
+    respawn: () => game.course?.respawnHere?.(), // (was R in the basement)
+    toHub: () => game.course?.toHub(), // (was H)
   });
   setOutlineThickness(T.visual.outline);
   game.resetRoom = resetRoom;
@@ -769,7 +771,6 @@ async function main() {
     game.log.tick(dt);
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
-    game.glyphs.update(dt);
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
@@ -866,6 +867,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); diag.end('fx');
+    game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
     diag.update(game.rawDt);

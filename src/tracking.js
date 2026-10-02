@@ -255,11 +255,11 @@ export class Tracking {
     on('course.gate', (e) => { L.inc('course.gate'); L.hi('course.gate.speed', e.speed); log.say('circuit', `Speed gate: ${fx(e.speed, 1)} m/s.`, { key: 'gate', win: 0.8 }); });
     // what the keys do in a place, said once a session on first arriving there (it used to sit on the screen as a banner)
     const HELP = {
-      hub: 'The index console picks a room (F at it). R returns you to the last checkpoint; H, to the hub.',
-      siege: 'THE SIEGE: ~ raises the hand. Raids come here. R returns you to the dais; H, to the hub.',
+      hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
+      siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, Y steps off.',
-      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). Y brings the skiff; R returns you to the pier.',
-      dunes: 'THE DUNES: Y brings the Solar Skiff. R returns you to the oasis; H, to the hub.',
+      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). Y brings the skiff.',
+      dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
     const helped = new Set();

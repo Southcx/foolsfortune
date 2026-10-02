@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { HeldTool } from '../tools/heldtool.js';
-import { DreamvaneModel } from '../dreamvane/model.js';
+import { DreamvaneModel, FORK as FORK_SIZE } from '../dreamvane/model.js';
 import { measureSwing, sweep, magnet } from '../combat/melee.js';
 import { G, groups } from '../physics.js';
 import { sfx } from '../audio.js';
@@ -240,7 +240,8 @@ export class Dreamvane extends HeldTool {
   stick(hit, dir) {
     const g = this.game, F = this.fork, e = hit.entity;
     F.state = 'stuck'; F.ring = FORK.ring; F.beat = 0.2; F.ent = e || null;
-    F.pos.copy(hit.point).addScaledVector(dir, 0.08);
+    // (the tines bite a little way in and the rest stands out of it: the fork reaches 0.245 down its -X, times its size)
+    F.pos.copy(hit.point).addScaledVector(dir, -(0.245 - 0.09) * FORK_SIZE);
     F.mesh.quaternion.setFromUnitVectors(_b.set(-1, 0, 0), dir);
     let what = 'ground';
     if (e?.type === 'crystal') { g.crystals?.ring(e, FORK.ring); what = 'crystal'; }
