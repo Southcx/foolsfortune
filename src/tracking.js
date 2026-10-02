@@ -260,6 +260,7 @@ export class Tracking {
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, Y steps off.',
       weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). Y brings the skiff; R returns you to the pier.',
       dunes: 'THE DUNES: Y brings the Solar Skiff. R returns you to the oasis; H, to the hub.',
+      hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
     const helped = new Set();
     on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));

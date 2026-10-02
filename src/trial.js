@@ -121,7 +121,7 @@ export class Trial {
     this.state = 'countdown';
     this.el.box.style.display = 'block';
     { // (on the start line: a few metres before her eyes, the way she faces)
-      const f = new THREE.Vector3(-Math.sin(P.yaw), 0, -Math.cos(P.yaw));
+      const f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
       this.rings.start(P.pos.clone().addScaledVector(f, 3.2).setY(P.pos.y + 1.5), 3);
     }
     g.events?.emit('trial.start', {});
