@@ -722,7 +722,8 @@ async function main() {
     }
     if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open) game.codex.toggle();
     if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling) game.pneukaUI.toggle();
-    if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
+    // (the survey is the Dreamvane's now, MMB with it drawn: moves/dreamvane.js; N stays the god hand's, which has no tools)
+    if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
@@ -885,7 +886,8 @@ async function main() {
       , blink: blinkState(), debug: diag.mode > 0,
     });
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
-    (game.wireCompass ||= new WireCompass(game)).update(dt);
+    (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane'); // (the compass is the Dreamvane's: worn, it shows)
+    game.wireCompass.update(dt);
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

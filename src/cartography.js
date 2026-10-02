@@ -11,7 +11,7 @@ import { FONT, THEMES, theme } from './ui/theme.js';
 //   0    unknown                        (nothing works there)
 //   1    SENSED    k >= .08              walking past it: the hand can lift things there
 //   2    CHARTED   k >= .45              lingering nearby (passive knowledge stops at .5)
-//   3    UNDERSTOOD k >= .85             only a SURVEY does this: a psychic pulse (N) that sees
+//   3    UNDERSTOOD k >= .85             only a SURVEY does this: a psychic pulse (the Dreamvane's MMB; N in the hand) that sees
 //                                        everything in line of sight, out to 14 m (20 from the jar)
 //
 // The ZONE OF INFLUENCE is where the god arts may be used: each art needs a tier of knowledge of
@@ -442,7 +442,7 @@ export class Cartography {
     root.appendChild(bar);
     this.side = el('div', 'side');
     root.appendChild(this.side);
-    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · N surveys</span>'));
+    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB)</span>'));
     document.body.appendChild(root);
     this.root = root;
     root.addEventListener('mousedown', (e) => { e.stopPropagation(); this.drag = { x: e.clientX, y: e.clientY, moved: 0, button: e.button }; root.style.cursor = 'grabbing'; });

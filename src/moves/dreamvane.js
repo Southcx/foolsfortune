@@ -22,14 +22,18 @@ import { sfx } from '../audio.js';
 //    goes). In the ground, it rings on its own: a sound every creature near goes to look at (a lure: ai/stimuli.js). Tap again and it
 //    comes back to the heel (the Leviathan Axe's recall), or it comes back when it has rung out.
 //
+//  - THE SURVEY (MMB): the heel struck into the ground, and the Mind's ring goes out from her: what is in sight is understood (Mind
+//    Mapping's pulse: cartography.js; it was N). The compass across the top of the view is the Dreamvane's too: it shows while it is worn.
+//
 //   K      draw / stow (X, Q, G, J draw theirs instead)          RMB hold  dowse (the wheel: attune)          RMB tap  throw / recall the fork
-//   LMB    the pick
+//   LMB    the pick                                                MMB       the survey
 //
 // Prior art: Skyward Sword's dowsing, Pikmin's and Death Stranding's scanners (a sense that points, not a map that shows), the
 // pickaxe of every mining game (Minecraft, Deep Rock Galactic), God of War's Leviathan Axe (thrown, stuck, recalled), and the tuning
 // fork itself (struck, it sets what it touches ringing at its pitch).
 // ---------------------------------------------------------------------------------------
 const PICK = { clip: 'swordC', from: 0.25, to: 1.3 }; // (UAL Sword_Regular_C: the overhead brought down to the ground, measured: its strike 0.6-0.7 s)
+const SURVEY = { clip: 'swordC', from: 0.45, strike: 0.32, dur: 0.75 }; // (the heel struck down: the pick's downstroke for now)
 const TAP = 0.16, RANGE = 70, FORK = { speed: 34, gravity: 6, ring: 7, back: 28, reach: 60, life: 2.2 };
 const ATTUNE = [
   { id: 'any', kinds: null, color: 0xe8d7b6 },
@@ -55,19 +59,20 @@ export class Dreamvane extends HeldTool {
     this.mount();
     this.mgr.game.dreamvane = this;
     this.rmbT = -1; this.dowsing = false; this.att = 0; this.glow = 0; this.tickT = 0; this.found = new WeakSet(); this.charted = new WeakSet();
-    this.swing = null; this.throwT = -1;
+    this.swing = null; this.throwT = -1; this.surveyT = -1;
     this.fork = { state: 'heel', mesh: null, pos: new THREE.Vector3(), vel: new THREE.Vector3(), t: 0, ring: 0, ent: null, off: new THREE.Vector3(), beat: 0 };
     this.needle = { yaw: 0, pitch: 0 };
   }
   get busy() { return !!this.swing || this.throwT >= 0; }
   get slow() { return this.toolOut && (this.dowsing || this.swing) ? 0.7 : 1; }
 
-  onStow() { this.dowsing = false; this.swing = null; this.throwT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  onStow() { this.dowsing = false; this.swing = null; this.throwT = -1; this.surveyT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
 
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
     const g = this.game;
-    if (inp.wasPressed('Mouse0') && !this.swing && this.throwT < 0) this.startSwing();
+    if (inp.wasPressed('Mouse0') && !this.swing && this.throwT < 0 && this.surveyT < 0) this.startSwing();
+    if (inp.wasPressed('Mouse1') && !this.swing && this.throwT < 0 && this.surveyT < 0) this.startSurvey();
     if (inp.wasPressed('Mouse2')) this.rmbT = 0;
     if (this.rmbT >= 0) {
       this.rmbT += raw;
@@ -80,9 +85,26 @@ export class Dreamvane extends HeldTool {
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
     this.swingTick(dt);
+    this.surveyTick(dt);
     if (this.throwT >= 0) { this.throwT += dt; if (this.throwT > 0.75) this.throwT = -1; }
     this.forkTick(dt);
     this.dowseTick(raw);
+  }
+
+  // ---------------------------------------------------------------- the survey (MMB): Mind Mapping's pulse, the Dreamvane's now
+  /** The heel struck into the ground: at the blow the Mind's ring goes out from her (cartography.js survey: what is in sight is
+   *  understood). A placeholder motion (the pick's downstroke) until Calissa's own. */
+  startSurvey() { this.surveyT = 0; this.surveyed = false; this.P.bodyYaw = this.P.yaw; this.game.events?.emit('dreamvane.survey', {}); }
+  surveyTick(dt) {
+    if (this.surveyT < 0) return;
+    this.surveyT += dt;
+    if (!this.surveyed && this.surveyT >= SURVEY.strike) {
+      this.surveyed = true;
+      const ok = this.game.cartography?.survey(false);
+      if (!ok) { sfx.fizzle?.(); this.game.log?.say('warn', 'The Mind will not answer yet (the survey is resting, or there is too little Lachryma).', { key: 'survey.no', throttle: 3 }); }
+      else { this.game.fx?.impact?.(this.P.pos.clone(), new THREE.Vector3(0, 1, 0), { sparks: 4, dust: 3 }); this.P.shake = Math.max(this.P.shake || 0, 0.15); }
+    }
+    if (this.surveyT > SURVEY.dur) this.surveyT = -1;
   }
 
   // ---------------------------------------------------------------- dowsing
@@ -257,6 +279,7 @@ export class Dreamvane extends HeldTool {
   pose(C, out) {
     const s = this.swing;
     if (s) { C.sample(PICK.clip, s.t, out, false); return { pose: out, w: Math.min(1, (s.t - PICK.from) / 0.08) * (1 - smooth(s.dur - 0.3, s.dur, s.t)) }; }
+    if (this.surveyT >= 0) { C.sample(SURVEY.clip, SURVEY.from + this.surveyT * 1.1, out, false); return { pose: out, w: Math.min(1, this.surveyT / 0.08) * (1 - smooth(SURVEY.dur - 0.25, SURVEY.dur, this.surveyT)) }; }
     if (this.throwT >= 0) { C.sample('throw', 0.15 + this.throwT * 1.1, out, false); return { pose: out, w: Math.min(1, this.throwT / 0.05) * (1 - smooth(0.5, 0.75, this.throwT)) }; }
     return null;
   }

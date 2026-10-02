@@ -420,12 +420,14 @@ export class Tracking {
     on('dowse.attune', () => L.inc('dowse.attune'));
     on('dreamvane.swing', () => L.inc('dreamvane.swing'));
     on('dreamvane.unearth', (e) => { L.inc('crystal.unearth', e.n); });
-    on('crystal.reveal', (e) => { if (e.by === 'courier') L.inc('crystal.reveal'); log.say('find', e.how === 'pick' ? 'Crystal rises out of the sand where the pick went in.' : 'Crystal rises out of the sand at the song.', { key: 'xrev', throttle: 1 }); first('crystal', 'Logged: your first crystal. Lachryma set hard: the Dreamvane\'s pick takes it a blow at a time, and its fork, rung into it first, doubles what it gives.'); });
+    on('crystal.reveal', (e) => { if (e.by === 'courier') L.inc('crystal.reveal'); log.say('find', e.how === 'pick' ? 'Crystal rises out of the sand where the pick went in.' : 'Crystal rises out of the sand at the song.', { key: 'xrev', throttle: 1 }); first('crystal', 'Logged: your first crystal. Lachryma set hard: the Dreamvane\'s pick takes it a blow at a time, and its fork, rung into it first, doubles what it gives and sounds the note it is set in. Struck where it answers in that note, it opens all at once.'); });
     on('crystal.strike', (e) => { if (e.by === 'courier') L.inc('crystal.strike'); if (e.ringing) L.inc('crystal.strike.ringing'); });
+    on('crystal.ref', () => L.inc('crystal.ref'));
     on('crystal.harvest', (e) => {
       if (e.by !== 'courier') return;
       L.inc('crystal.harvest'); if (e.ringing) L.inc('crystal.harvest.ringing'); if (e.shard) L.inc('crystal.shard'); if (e.key) L.inc('crystal.key');
-      log.say('find', `The crystal breaks open${e.ringing ? ', ringing,' : ''} and gives up ${plural(e.worth, 'cube')}${e.shard ? ' and a shard of itself' : ''}${e.key ? `, and inside it, ${an(ITEM(e.key))}` : ''}.`, {});
+      if (e.nature) L.inc(`crystal.harvest.${e.nature}`); if (e.sweet) { L.inc('crystal.sweet'); if (e.nature) L.inc(`crystal.sweet.${e.nature}`); }
+      log.say('find', `The crystal ${e.sweet ? 'sings true and falls' : 'breaks'} open${e.ringing ? ', ringing,' : ''} and gives up ${plural(e.worth, 'cube')}${e.shard ? ' and a shard of itself' : ''}${e.key ? `, and inside it, ${an(ITEM(e.key))}` : ''}.`, {});
     });
     on('fork.throw', () => L.inc('fork.throw'));
     on('fork.stick', (e) => { L.inc('fork.stick'); L.inc(`fork.stick.${e.what}`); if (e.what === 'creature') log.say('battle', 'Your tuning fork sinks into it, ringing.', { key: 'fstick', throttle: 2 }); });

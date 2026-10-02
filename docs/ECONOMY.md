@@ -50,12 +50,14 @@ From `node tools/economy.mjs`, which uses the table and the assumed rates of pla
 | profile | before R38 | after R38 | × aim |
 |---|---:|---:|---:|
 | fighter (jellies, zandatsu) | 608 | 608 | 1.27 |
-| miner (the dune sea's 18 crystal formations) | 1,389 | 694 | 1.45 |
+| miner (the dune sea's 18 crystal formations, tuned by ear: R39) | 1,389 | 834 | 1.74 |
 | photographer (spare cards condensed) | 667 | 430 | 0.90 |
 | angler (fish sold to Old Grog) | 0 | 475 | 0.99 |
 | treasury camper (the Weir's five plinths) | 94,980 | 586 | 1.22 |
 
 The photographer row is after film: a roll costs 12 cubes. It earns 430 an hour without film and 310 with it.
+
+From R39 the miner earns by ear (`src/lachryma/tuning.js`). A formation broken open by plain strikes pays a share of its worth by its nature: dense 0.6, fragile 0.5 (`ECON.crystal.kind`). One opened at its sweet spot pays many times over: dense ×2, fragile ×6 (`ECON.crystal.sweet`). The row assumes a quarter of the formations are fragile, and that she finds the spot on 40% of the dense ones (ten strikes to try) and 15% of the fragile ones (three). A miner who never listens earns about 400 an hour (0.83 × aim).
 
 ## The shops (R38c, `src/shop/`)
 

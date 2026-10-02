@@ -429,6 +429,8 @@ export function buildAchievements(game) {
   C('dv2', 'explore', 'The Dreamvane', 2, 'count', 'Prospector', 'Break open five crystal formations.', 'crystal.harvest', 5);
   C('dv3', 'explore', 'The Dreamvane', 2, 'mechanic', 'Resonance', 'Break a crystal open while your tuning fork rings in it.', 'crystal.harvest.ringing', 1);
   C('dv4', 'explore', 'The Dreamvane', 3, 'mechanic', 'Under the Sand', 'Bring veiled crystal up out of the sand.', 'crystal.reveal', 1);
+  C('dv5', 'explore', 'The Dreamvane', 2, 'mechanic', 'Perfect Pitch', 'Open a crystal formation at its sweet spot.', 'crystal.sweet', 1);
+  C('dv6', 'explore', 'The Dreamvane', 3, 'mechanic', 'Glass Ear', 'Open a fragile crystal at its sweet spot.', 'crystal.sweet.fragile', 1);
   C('cb1', 'battle', 'The Crucibelle', 1, 'count', 'First Verse', 'Play a song on the Crucibelle.', 'song.play', 1);
   F('cb2', 'battle', 'The Crucibelle', 2, 'collect', 'Songbook', 'Play all five songs.', (L) => ['reveal', 'mirage', 'rally', 'lull', 'summon'].filter((k) => L.get(`song.${k}`) > 0).length, 5);
   C('cb3', 'battle', 'The Crucibelle', 3, 'perfection', 'Fever Pitch', 'Play a song in full fever.', 'song.fever', 1);

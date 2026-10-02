@@ -4,7 +4,9 @@
 // song, or the Dreamvane's pick struck where the vane says), and they are HARVESTED: struck with a pick they give up Lachryma a blow at
 // a time (baubles, and cubes when the formation breaks), and struck while a tuning fork RINGS in them (the Dreamvane's fork) they give
 // twice as much and a shard of crystal besides (an item: it feeds the Lockheart). Any other blade or club only chips them. A spent
-// formation is stubs; a few minutes and it has grown back.
+// formation is stubs; a few minutes and it has grown back. Each is TUNED (lachryma/tuning.js): a key and a sweet spot, found by ear
+// (the fork gives the reference, each strike a note: its pitch from the height struck, its wavering from the way round); found, it
+// opens and pays many times over. Dense formations take many strikes, fragile ones few.
 //
 // One InstancedMesh for every spire of every formation: one draw for the whole sea; a formation's spires shrink as it is worked and
 // glow while it rings (a steady slow pulse, never a flicker).
@@ -21,7 +23,15 @@ import { tag, register } from '../tags.js';
 import { sfx } from '../audio.js';
 import { DUNE, BARRIER, OASIS } from '../dunes.js';
 import { ECON } from '../econ/table.js';
+import { tuneFor, readStrike, refNote } from './tuning.js';
 
+/** A plain tone (two, `beat` hertz apart, so it wavers) until Wanda's crystal voices land (docs/HANDOFFS.md). */
+function placeholderTone(midi, beat, dur, gain) {
+  if (!sfx.ok?.() || !sfx.tone) return;
+  const t = sfx.ctx.currentTime, f = 440 * 2 ** ((midi - 69) / 12), dest = sfx.master;
+  sfx.tone(t, dur, { f0: f, gain, dest, type: 'triangle' });
+  if (beat > 0.05) sfx.tone(t, dur, { f0: f + beat, gain: gain * 0.9, dest, type: 'triangle' });
+}
 const REGROW = 180, GROW = 6;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
 const BASE = new THREE.Color(0xcdb8f2), RING = new THREE.Color(0xfff1d6), SPENT = new THREE.Color(0x5d4a7a);
@@ -66,9 +76,9 @@ export class Crystals {
       const body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(sp.x, y + h * 0.4, sp.z));
       const col = W.createCollider(RAPIER.ColliderDesc.cylinder(h * 0.4, r * 0.75).setCollisionGroups(GROUPS.static).setFriction(0.6), body);
       const e = tag({ type: 'crystal', kind: 'crystal', pos: pos.clone().setY(y + h * 0.35), ground: pos, r, h, size: sp.size, body, col,
-        hp: 3 + Math.round(sp.size * 2), maxHp: 0, veiled: sp.veiled, rise: sp.veiled ? 0 : 1, ringT: 0, regrowT: 0, spires: [],
+        hp: 0, maxHp: 0, tune: tuneFor(rnd, sp.size), veiled: sp.veiled, rise: sp.veiled ? 0 : 1, ringT: 0, regrowT: 0, spires: [],
         struck: (p, dir, power, by, tool) => this.struck(e, p, dir, power, by, tool) }, 'struckable', 'harvestable', 'static');
-      e.maxHp = e.hp;
+      e.hp = e.maxHp = e.tune.kind === 'dense' ? 6 + Math.round(sp.size * 3) : 2 + Math.round(sp.size); // (dense: many strikes; fragile: few)
       if (e.veiled) col.setEnabled(false);
       g.physics.register(col, e);
       register(e);
@@ -108,7 +118,23 @@ export class Crystals {
   }
 
   /** A tuning fork struck into it: it rings for `secs` (a pick's blow now gives twice, and a shard). */
-  ring(e, secs = 6) { if (e.hp > 0 && !e.veiled) e.ringT = Math.max(e.ringT, secs); }
+  ring(e, secs = 6) {
+    if (e.hp <= 0 || e.veiled) return;
+    e.ringT = Math.max(e.ringT, secs);
+    // the reference: the sweet spot's own note, held while the fork rings (Wanda's sfx.crystalRef; a plain tone until then)
+    const ref = refNote(e.tune);
+    if (sfx.crystalRef) sfx.crystalRef(ref); else placeholderTone(ref, 0, 3.5, 0.14);
+    this.game.events?.emit('crystal.ref', { note: ref });
+  }
+
+  /** How high on a formation she aims (0 its foot .. 1 its top): where her look passes its axis. */
+  aimHeight(e) {
+    const cam = this.game.camera, d = _p.set(0, 0, -1).applyQuaternion(cam.quaternion), o = cam.position;
+    const hx = e.ground.x - o.x, hz = e.ground.z - o.z, hd = Math.hypot(d.x, d.z) || 1e-3;
+    const t = (hx * d.x + hz * d.z) / (hd * hd); // (along the look, to its nearest pass by the axis, in plan)
+    const y = o.y + d.y * Math.max(0, t);
+    return Math.max(0, Math.min(1, (y - e.ground.y) / (e.h * 0.9)));
+  }
 
   struck(e, p, dir, power, by, tool) {
     const g = this.game;
@@ -120,22 +146,29 @@ export class Crystals {
       g.log?.say('info', 'The crystal rings, and holds. A pick would take it.', { key: 'xtal.chip', throttle: 8 });
       return false;
     }
-    const ringing = e.ringT > 0, k = ringing ? 2 : 1;
-    e.hp = Math.max(0, e.hp - Math.max(1, Math.round(power)));
-    g.baubles?.spawn(p.clone().setY(p.y + 0.2), 2 * k, { spread: 0.7, up: 3.2 });
-    g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 8, dust: 2 });
-    sfx.cubeClack?.(1); sfx.chime?.(ringing ? 1 : 0.5);
+    const ringing = e.ringT > 0, k = ringing ? 2 : 1, T = e.tune;
+    // where the blow fell, by ear (lachryma/tuning.js): her bearing round the formation, and the height she aimed at on it
+    const th = Math.atan2(g.player.pos.x - e.ground.x, g.player.pos.z - e.ground.z), u = this.aimHeight(e);
+    const R = readStrike(T, th, u);
+    e.hp = R.sweet ? 0 : Math.max(0, e.hp - 1);
+    const last = e.hp <= 0;
+    g.baubles?.spawn(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2 });
+    g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6 + Math.round(R.near * 14), dust: 2 });
+    sfx.cubeClack?.(1);
+    if (sfx.crystalStrike) sfx.crystalStrike(R.midi, R.beat, { dense: T.kind === 'dense', last }); else placeholderTone(R.midi, R.beat, T.kind === 'dense' ? 1.1 : 1.8, 0.16);
     g.ai?.stimuli.emit('noise', p, { radius: 18, strength: 0.6, by, source: e });
-    g.events?.emit('crystal.strike', { by, tool, ringing });
-    if (e.hp <= 0) {
-      // the last blow: it breaks open (cubes; a shard if it rang; sometimes a key: luck lives in the crystal too)
-      const worth = Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k);
+    g.events?.emit('crystal.strike', { by, tool, ringing, pos: [p.x, p.y, p.z], near: R.near, pitchOff: R.deg, beat: R.beat, sweet: R.sweet, nature: T.kind });
+    if (last) {
+      // it opens: at its sweet spot many times over, else as its nature pays (cubes; a shard if it rang; sometimes a key)
+      if (R.sweet) { if (sfx.crystalSweet) sfx.crystalSweet(R.midi); else { placeholderTone(R.midi, 0, 2.5, 0.2); placeholderTone(R.midi + 7, 0, 2.5, 0.12); placeholderTone(R.midi + 12, 0, 2.5, 0.1); } }
+      const worth = Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k * (R.sweet ? ECON.crystal.sweet[T.kind] : ECON.crystal.kind[T.kind]));
       g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
       if (g.pneuka && Math.random() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
       e.regrowT = REGROW + GROW; e.ringT = 0;
-      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shard, key });
+      T.spot = { th: Math.random() * Math.PI * 2, u: 0.25 + Math.random() * 0.5 }; // (it grows back with its spot somewhere new)
+      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shard, key, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
     return true;

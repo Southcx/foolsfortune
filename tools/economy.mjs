@@ -29,7 +29,8 @@ const OLD = {
 // how an hour of each kind of play goes (assumptions: see the header)
 const PLAY = {
   fighter: { jellies: 1.2, zandatsu: 0.25, stash: 1.5 },       // a minute: jellies burst, cores taken, cubes a jelly had swallowed
-  miner: { crystals: 18, size: 1.0, ring: 0.5, walk: 70 },      // the formations, their mean size, share rung by the fork, s between them
+  miner: { crystals: 18, size: 1.0, ring: 0.5, walk: 70,       // the formations, their mean size, share rung by the fork, s between them
+    fragile: 0.25, sweet: { dense: 0.4, fragile: 0.15 } },     // (R39) the share of them fragile, and how often she opens each kind at its sweet spot
   photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
   treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
   angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog
@@ -40,7 +41,11 @@ const perHour = (E) => {
   const out = {};
   const f = PLAY.fighter;
   out.fighter = 60 * (f.jellies * (E.jelly.burst + f.stash) + f.zandatsu * (E.jelly.core + f.stash));
-  const m = PLAY.miner, worth = (E.crystal.base + m.size * E.crystal.perSize) * (1 + m.ring);
+  const m = PLAY.miner, C = E.crystal;
+  // (from R39 a formation pays by its nature, and many times over at its sweet spot: lachryma/tuning.js)
+  const by = (kind) => (1 - m.sweet[kind]) * C.kind[kind] + m.sweet[kind] * C.sweet[kind];
+  const ear = C.kind ? (1 - m.fragile) * by('dense') + m.fragile * by('fragile') : 1;
+  const worth = (C.base + m.size * C.perSize) * (1 + m.ring) * ear;
   const cycle = Math.max(m.crystals * m.walk, 186); // (a formation regrows in 186 s, crystals.js; the round is the walk)
   out.miner = 3600 / cycle * m.crystals * worth;
   const p = PLAY.photographer;
