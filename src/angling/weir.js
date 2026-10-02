@@ -10,6 +10,8 @@ import { FONT } from '../ui/theme.js';
 import { mergeStatic } from '../render/merge.js';
 import { RAPIER, GROUPS } from '../physics.js';
 import { addOutline } from '../outline.js';
+import { TITHE } from '../treasure.js';
+import { ECON } from '../econ/table.js';
 
 // ---------------------------------------------------------------------------------------
 // THE WEIR: the Sondelass's own place, built for testing everything it does. It used to be a vaulted hall far out in the basement's
@@ -115,14 +117,14 @@ export function buildWeir(L, env) {
   T('THE WELL', (WELL.x0 + WELL.x1) / 2, RIM.z0 - 2.2, { width: 2, sub: 'deep things · the top of the tide', y: 0.06 });
   ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
   T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3, sub: 'F open · they come back' });
-  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2, sub: 'F · 25 cubes · a sealed chest lands on the dais' });
+  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2, sub: `F · ${TITHE.cost} cubes · a sealed chest lands on the dais` });
   T('HOOK', -12, pz0 - 1, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
 }
 
 /** Chests on the plinths (they close again after a while), and the Tithe's console brought alive. */
 export function stockTreasury(game) {
   const V = (x, y, z) => new THREE.Vector3(OX + x, B + y, OZ + z);
-  TREASURY.plinths.forEach((x, tier) => game.chests.spawn(tier, V(x, TREASURY.top + 0.06, TREASURY.z), { yaw: Math.PI, id: `weir.${tier}`, respawn: 30, floor: B }));
+  TREASURY.plinths.forEach((x, tier) => game.chests.spawn(tier, V(x, TREASURY.top + 0.06, TREASURY.z), { yaw: Math.PI, id: `weir.${tier}`, respawn: () => (game.mode === 'debug' ? ECON.treasury.debug : ECON.treasury.respawn[tier]), floor: B }));
   game.chests.setTithe({ pos: V(TREASURY.tithe.x, 0, TREASURY.tithe.z), yaw: Math.PI, dais: V(TREASURY.dais.x, 0.16, TREASURY.dais.z) });
 }
 

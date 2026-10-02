@@ -24,6 +24,7 @@
 // you, and leaves what it was made of when it bursts), Splatoon's ink trails (its slip is terrain you can use), and the telegraphed
 // attack of every action game since Zelda: the wind-up is long, readable, and the body itself is the warning.
 // ---------------------------------------------------------------------------------------
+import { ECON } from '../econ/table.js';
 import * as THREE from 'three';
 import { RAPIER, G, groups } from '../physics.js';
 import { addRim } from '../render/toon.js';
@@ -189,7 +190,7 @@ export class SlipJellies {
     g.shells?.addSplat?.(c.pos.clone().setY(c.pos.y + 0.02), UP, 2.6, true);
     g.slip?.addDisc(c.pos.clone(), UP, 1.6, 20);
     // (its Lachryma: what it was, and whatever it had swallowed of hers, back on the sand whoever burst it)
-    if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? 6 : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
+    if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? ECON.jelly.burst : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
     c.stash = 0;
     g.glyphs?.pop('star', at.clone().setY(at.y + 0.4), { color: 0xd9c8ff, size: 0.5, life: 0.9, burst: true });
   }

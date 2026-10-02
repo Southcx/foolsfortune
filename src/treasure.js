@@ -11,18 +11,19 @@
 //    (`tithe.since.rare|epic|prismatic`) and shown on the console by lamps, not numbers.
 //  - Twenty CURIOS, four to a tier, drawn from the chest's own tier; one you already have is condensed into cubes instead.
 // ---------------------------------------------------------------------------------------
+import { ECON } from './econ/table.js';
 
 export const TIERS = [
-  { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: [4, 9],     curioP: 0.06, weight: 60 },
-  { id: 'fine',      name: 'fine',      rgb: 0xe58a52, glow: 0xffb27a, cubes: [14, 26],   curioP: 0.16, weight: 26 },
-  { id: 'rare',      name: 'rare',      rgb: 0xd0432a, glow: 0xff7a58, cubes: [40, 70],   curioP: 0.4,  weight: 10.5 },
-  { id: 'epic',      name: 'epic',      rgb: 0x9c2432, glow: 0xff5a6a, cubes: [120, 200], curioP: 0.8,  weight: 3 },
-  { id: 'prismatic', name: 'prismatic', rgb: 0xffffff, glow: 0xffffff, cubes: [400, 700], curioP: 1.0,  weight: 0.5, rainbow: true },
+  { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: ECON.chest[0],     curioP: 0.06, weight: 60 },
+  { id: 'fine',      name: 'fine',      rgb: 0xe58a52, glow: 0xffb27a, cubes: ECON.chest[1],   curioP: 0.16, weight: 26 },
+  { id: 'rare',      name: 'rare',      rgb: 0xd0432a, glow: 0xff7a58, cubes: ECON.chest[2],   curioP: 0.4,  weight: 10.5 },
+  { id: 'epic',      name: 'epic',      rgb: 0x9c2432, glow: 0xff5a6a, cubes: ECON.chest[3], curioP: 0.8,  weight: 3 },
+  { id: 'prismatic', name: 'prismatic', rgb: 0xffffff, glow: 0xffffff, cubes: ECON.chest[4], curioP: 1.0,  weight: 0.5, rainbow: true },
 ];
 export const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 
 /** The price of a sealed chest, in cubes, and how many pulls without a tier make the next one certain. */
-export const TITHE = { cost: 25, pity: { rare: 10, epic: 40, prismatic: 100 } };
+export const TITHE = { cost: ECON.tithe.cost, pity: { rare: 10, epic: 40, prismatic: 100 } }; // (its price: econ/table.js)
 
 /** The odds as they stand once pity is counted: the tier a pull lands on (a number 0-4), from three counters and a random number. */
 export function rollTier(since, r = Math.random()) {

@@ -1,0 +1,75 @@
+// ---------------------------------------------------------------------------------------
+// THE ECONOMY SIMULATOR: four ways to spend an hour (the FIGHTER, the MINER, the PHOTOGRAPHER, the GAMBLER) played against the same
+// table the game reads (src/econ/table.js, src/treasure.js), before and after the R38 rebalance, so a change to a number is seen as
+// cubes an hour before it is played. The rates of play (how many jellies a minute a fighter bursts, how often a roll of film is
+// developed) are assumptions, written out in PLAY below and measured against the F3 panel's econ line (src/econ/economy.js) as the
+// game is played: when the two disagree, fix PLAY here, then the table.
+//
+// Prior art: Machinations (Dormans & Adams: an economy run as a diagram before it is played), and the spreadsheets every live game
+// keeps of "gold per hour by activity" (OSRS's money-making guide is the players' own: a wiki table of activities by gp/h).
+//
+//   node tools/economy.mjs            the table: cubes an hour by profile, before and after, and the Tithe's expected return
+// ---------------------------------------------------------------------------------------
+import { ECON } from '../src/econ/table.js';
+import { TIERS, rollTier, curiosOf } from '../src/treasure.js';
+
+// the numbers as they stood before R38 (git: src/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
+const OLD = {
+  perMinute: ECON.perMinute,
+  jelly: { burst: 6, core: 3 },
+  crystal: { base: 8, perSize: 10 },
+  condense: { SS: 1200, S: 600, A: 260, B: 120, C: 70, D: 45, E: 30, F: 20, G: 12, H: 6 },
+  dupe: [12, 35, 100, 280, 900],
+  lockheart: { cubes: 18 },
+  tithe: { cost: 25 },
+  chest: [[4, 9], [14, 26], [40, 70], [120, 200], [400, 700]],
+  treasury: { respawn: [30, 30, 30, 30, 30], debug: 30 },
+};
+
+// how an hour of each kind of play goes (assumptions: see the header)
+const PLAY = {
+  fighter: { jellies: 1.2, zandatsu: 0.25, stash: 1.5 },       // a minute: jellies burst, cores taken, cubes a jelly had swallowed
+  miner: { crystals: 18, size: 1.0, ring: 0.5, walk: 70 },      // the formations, their mean size, share rung by the fork, s between them
+  photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
+  treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
+};
+
+const mean = ([a, b]) => (a + b) / 2;
+const perHour = (E) => {
+  const out = {};
+  const f = PLAY.fighter;
+  out.fighter = 60 * (f.jellies * (E.jelly.burst + f.stash) + f.zandatsu * (E.jelly.core + f.stash));
+  const m = PLAY.miner, worth = (E.crystal.base + m.size * E.crystal.perSize) * (1 + m.ring);
+  const cycle = Math.max(m.crystals * m.walk, 186); // (a formation regrows in 186 s, crystals.js; the round is the walk)
+  out.miner = 3600 / cycle * m.crystals * worth;
+  const p = PLAY.photographer;
+  out.photographer = 60 / p.rollMin * p.spares.reduce((a, [r, n]) => a + n * E.condense[r], 0);
+  out.treasury = TIERS.reduce((a, t, i) => a + 3600 / Math.max(E.treasury.respawn[i], 20) * mean(E.chest[i]), 0);
+  return out;
+};
+
+/** The Tithe, pulled n times with its pity and its dupes: what comes back for each cube put in. */
+function tithe(E, n = 200000) {
+  const since = { rare: 0, epic: 0, prismatic: 0 }, owned = new Set();
+  let back = 0;
+  for (let i = 0; i < n; i++) {
+    const t = rollTier(since);
+    since.rare = t >= 2 ? 0 : since.rare + 1; since.epic = t >= 3 ? 0 : since.epic + 1; since.prismatic = t >= 4 ? 0 : since.prismatic + 1;
+    const [a, b] = E.chest[t]; back += Math.round(a + (b - a) * Math.random());
+    if (Math.random() < TIERS[t].curioP) {
+      const pool = curiosOf(t), c = pool[Math.floor(Math.random() * pool.length)].id;
+      if (owned.has(c)) back += E.dupe[t]; else owned.add(c);
+    }
+  }
+  return back / (n * E.tithe.cost);
+}
+
+const aim = ECON.perMinute * 60;
+const before = perHour(OLD), after = perHour(ECON);
+const pad = (s, n) => String(s).padEnd(n), num = (v) => Math.round(v).toLocaleString('en').padStart(9);
+console.log(`cubes an hour (aim ${aim}: ${ECON.perMinute} a minute of ordinary play)\n`);
+console.log(`${pad('profile', 14)}${'before'.padStart(9)}${'after'.padStart(9)}   x aim`);
+for (const k of Object.keys(after)) console.log(`${pad(k, 14)}${num(before[k])}${num(after[k])}   ${(after[k] / aim).toFixed(2)}`);
+const tb = tithe(OLD), ta = tithe(ECON);
+console.log(`\nthe Tithe returns ${(tb * 100).toFixed(0)}% of what it takes before, ${(ta * 100).toFixed(0)}% after (pity and dupes counted; the curio is the rest of the prize)`);
+console.log(`a gambler with an hour's fighting (${Math.round(after.fighter)}) pulls ${Math.floor(after.fighter / ECON.tithe.cost)} sealed chests and keeps ~${Math.round(after.fighter * ta)} cubes of it`);

@@ -249,11 +249,25 @@ Four people live in the game now (`src/npc/`), clay folk: clapperjars grown up a
 
 **Lachryma cubes** (`src/cubes.js`) are what Lachryma is when it is condensed: small rounded black cubes with an oil-slick film whose colour follows the angle you look at it from. They are the currency, one instanced mesh with a rigid body each, so they fall, clack (a glass tick), pile up and are drawn to you after a moment. The balance is the ledger's (`cube.earned` minus `cube.spent`); a zandatsu takes a few out of a clapperjar.
 
-**The Tithe** is a console on the north beach of THE WEIR beside five plinths with a chest of each tier (they shut again after 30 s). Pay 25 cubes and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
+**The Tithe** is a console on the north beach of THE WEIR beside five plinths with a chest of each tier (they shut again after 4 minutes for a common up to 2 h 40 for the prismatic; 30 s in DEBUG). Pay 48 cubes (six minutes' play) and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
 
 **Curios** are twenty small collectibles, four to a tier, each with a procedural model (a whistling whelk, a glass gull, a storm in a stoppered jar, a kaleidoscope koi...). The Codex's CURIOS shelf shows what you hold, the odds and the pity counts. The log writes the sentences (the line is coloured by the tier); nothing in the world carries text but the floor labels of the treasury.
 
 Prior art (also in the module headers): the loot box and the gacha pull (Overwatch's boxes, Genshin and Fire Emblem Heroes' reveals, published odds and pity counters, the near miss of a slot machine), "Juice it or lose it" and Vlambeer's screenshake talk (squash and stretch, anticipation, hit-stop), Diablo's and Borderlands' gold and rarity beams, Mario's coin chime, thin-film iridescence, and the blacklight parties, mirror balls and Rez.
+
+## The economy (`src/econ/`, `docs/ECONOMY.md`)
+
+Every number that lets cubes into the world or takes them out is in one table, `src/econ/table.js`. Prices are named in **minutes of play** (`ECON.perMinute`, 8 cubes a minute). `docs/ECONOMY.md` has the flow map, the targets and the reasons for the R38 rebalance:
+
+- the treasury's half-minute chests (about 95,000 cubes an hour) now shut again for minutes to hours;
+- the Tithe had been paying back 227% once its pity and dupes were counted; it now pays back 78%;
+- condensing is cut to about a quarter at the top.
+
+Three tools measure it:
+
+- **F3**'s `econ` line shows cubes an hour in and out this session, by source, against the aim.
+- `node tools/economy.mjs` plays four profiles (fighter, miner, photographer, treasury camper) against the table, before and after.
+- **`/grant [n]`** adds cubes to the purse for testing, in **DEBUG** only.
 
 ## Water
 
@@ -744,6 +758,7 @@ runtime IK correction on the contact points.
 | `src/progress.js` | progress cleared on each new build (settings kept) |
 | `src/music/` | the music: the scores (the main theme on the black keys, the battle, the workshop, the five-movement draft, the first draft, the jingles, the Dunes' theme), the players (the Dunes' band; the arranger with its band, per-section tempo and metre, scores that play once), the sound test |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
+| `src/econ/table.js`, `src/econ/economy.js`, `tools/economy.mjs`, `docs/ECONOMY.md` | the economy's one table (faucets, drains, prices in minutes); the F3 econ line, `minutes()` and `/grant`; the simulator; the map and the reasons |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
 | `src/timescale.js`, `src/lockon.js`, `src/parry.js`, `src/hideui.js`, `src/sky.js`, `src/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |

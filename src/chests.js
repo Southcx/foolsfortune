@@ -4,7 +4,8 @@
 // itself, beat by beat, is ceremony.js, the models are chestmodel.js and curiomodel.js, the numbers are treasure.js, and the cubes
 // that come out are cubes.js.
 //
-//   game.chests.spawn(tier, pos, { yaw, id, respawn, floor })     a chest standing there (`respawn` s after it has been opened, it shuts again)
+//   game.chests.spawn(tier, pos, { yaw, id, respawn, floor })     a chest standing there (`respawn` s after it has been opened, it shuts again;
+//                                                                  a function is asked each time: the treasury's depends on the mode)
 //   game.chests.drop(tier, pos, { yaw })                            a chest that falls out of the air and lands (a legendary catch pays in these)
 //   game.chests.setTithe({ pos, yaw, dais })                        the console and the dais of the Tithe (the room builds the stone; this brings it alive)
 //
@@ -240,7 +241,8 @@ export class Chests {
         root.y = f.y;
       }
       if (near || c.busy) rig.update(dt, this.t, true, g.camera.position.distanceTo(root)); else rig.update(dt, this.t, false);
-      if (c.state === 'open' && c.respawn && !c.busy && this.t - c.openedAt > c.respawn) this.reopen(c);
+      const rs = typeof c.respawn === 'function' ? c.respawn() : c.respawn;
+      if (c.state === 'open' && rs && !c.busy && this.t - c.openedAt > rs) this.reopen(c);
       else if (c.state === 'open' && !c.respawn && !c.busy && (c.from === 'tithe' ? 7 : c.from === 'catch' ? 90 : 0) && this.t - c.openedAt > (c.from === 'tithe' ? 7 : 90)) this.remove(c);
     }
     if (this.t - (this.pipT || 0) > 1) { this.pipT = this.t; this.pips(); }
