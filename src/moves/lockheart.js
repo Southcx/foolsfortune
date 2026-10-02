@@ -38,7 +38,7 @@ export class Lockheart extends HeldTool {
       // on its chain at the breastbone (the chest bone: it moves with her breathing), hanging
       worn: { at: [0, 1.3, 0.14], along: [0, -1, 0.12], out: [0, 0, 1], bone: 'spine003' },
       draw: { twist: 4, lean: 4, via: [-0.25, 1.3, 0.4] },
-      idle: 'torchIdle', idles: ['torchIdle', 'idle'], grip: 'torchIdle',
+      idle: 'stance:lockheart', idles: ['stance:lockheart', 'idle'], grip: 'torchIdle', // (its own stance: anim/stances.js)
     });
     this.model = { group: new THREE.Group() };
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));

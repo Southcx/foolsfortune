@@ -116,7 +116,7 @@ export class Cutlass {
     sfx.slash(false);
     this.combo = n + 1;
     g.events?.emit('cut.swing', { n });
-    this.tool.track?.play('swordIdle', 0, 0.2);
+    this.tool.track?.play(this.tool.track.c.clips['stance:cutlass'] ? 'stance:cutlass' : 'swordIdle', 0, 0.2);
   }
 
   update(dt, inp) {

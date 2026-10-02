@@ -74,7 +74,7 @@ export class Hud {
     this.el.shells.appendChild(this.hand); this.handAt = -1;
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null, debug = false }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null, debug = false, combat = true }) {
     // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
     if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
     // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
@@ -102,7 +102,7 @@ export class Hud {
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
 
     if (this.beads) {
-      const on = !!blink;
+      const on = !!blink && combat; // (the charges are a fight's: shown in combat only, game.combat)
       if (on !== this.beadsOn) { this.beadsOn = on; this.beads.el.style.display = on ? '' : 'none'; }
       if (on) { this.beads.set(blink.n, blink.max, blink.fill); this.beads.update(dt); }
     }

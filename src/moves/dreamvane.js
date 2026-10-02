@@ -53,7 +53,7 @@ export class Dreamvane extends HeldTool {
       // across the back, the crook up over the right shoulder, the heel down by the left hip (a staff slung on a strap)
       worn: { at: [0.1, 1.05, -0.2], along: [-0.55, 1, -0.05], out: [0, 0, -1] },
       draw: { twist: -18, lean: 8, via: [-0.45, 1.25, 0.1], pole: [-0.5, -0.25, -0.35] },
-      idle: 'swordIdle', grip: 'torchIdle', drawK: 1.2,
+      idle: 'stance:dreamvane', idles: ['stance:dreamvane', 'idle'], grip: 'torchIdle', drawK: 1.2, // (her pilgrim's stance: anim/stances.js)
     });
     this.model = new DreamvaneModel();
     this.mount();
@@ -283,8 +283,9 @@ export class Dreamvane extends HeldTool {
     if (this.throwT >= 0) { C.sample('throw', 0.15 + this.throwT * 1.1, out, false); return { pose: out, w: Math.min(1, this.throwT / 0.05) * (1 - smooth(0.5, 0.75, this.throwT)) }; }
     return null;
   }
-  /** The left hand low on the staff, below the right (a two-handed hold), but not while it throws. */
-  second() { return this.throwT >= 0 ? null : { x: -0.3 }; }
+  /** The left hand high on the staff, above the right (the owner's note: the upper portion of the haft), but not while it throws;
+   *  through a swing, low on it, where the pick's two-handed blow wants it. */
+  second() { return this.throwT >= 0 ? null : this.swing || this.surveyT >= 0 ? { x: -0.3 } : { x: 0.3 }; }
   fpArc() { const s = this.swing; return s ? { arc: 'over', u: Math.min(1, (s.t - PICK.from) / (s.dur - PICK.from)) } : { lift: this.dowsing ? 0.08 : 0 }; }
   restSig() { return `${this.fork.state}`; }
 }
