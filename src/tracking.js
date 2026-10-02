@@ -324,6 +324,7 @@ export class Tracking {
       if (e.used >= 28) L.inc('pneuka.filled');
       if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
       else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
+      else if (e.from === 'catch') log.say('loot', `You keep the ${ITEM(e.item)} in your Pneuka Box. (Old Grog buys fish.)`, { key: 'fishkeep', fmt: (n) => `You keep ${n} fish in your Pneuka Box.` });
       first('pneuka', 'Logged: your first thing in the Pneuka Box. P opens it: left click uses, right click lists the rest.');
     });
     // the chat line and the emotes (chat.js, emotes.js): said in the CHAT tab, FFXI's way ("Name : words")
@@ -619,6 +620,29 @@ export class Tracking {
       log.say('loot', `You find the ${c.name}!`, { tone: tone(c.tier) });
       if (L.first(`curio.first.${e.id}`)) log.say('record', `Logged: the ${c.name}. ${c.blurb}`);
     });
+    // the folk's counters (shop/): what is bought and sold is said; a haggle's words are Raku's own (npc.say), so it is only counted
+    const SHOPNAME = (id) => ({ raku: 'Raku', grog: 'Old Grog' })[id] || 'The keeper';
+    on('shop.open', (e) => { L.inc('shop.open'); L.inc(`shop.open.${e.shop}`); first('shop', 'Logged: a counter. Click a good to buy it, a thing in your box to sell it. Prices climb as a shelf empties and fall back in time.'); });
+    on('shop.buy', (e) => {
+      L.inc('shop.bought'); L.inc(`shop.bought.${e.shop}`); L.inc('shop.spent', e.price);
+      if (e.haggled) { L.inc('haggle.won'); L.inc('haggle.saved', Math.max(0, Math.round(e.worth * 1.45) - e.price)); }
+      log.say('loot', `You buy the ${ITEM(e.item)} from ${SHOPNAME(e.shop)} for ${plural(e.price, 'cube')}.`, { tone: '#ffd98a', key: `buy.${e.item}`, fmt: (n) => `You buy ${n} ${ITEM(e.item)} from ${SHOPNAME(e.shop)}.` });
+    });
+    on('shop.sell', (e) => {
+      L.inc('shop.sold'); L.inc(`shop.sold.${e.shop}`); L.inc('shop.earned', e.price); if (itemOf(e.item)?.kind === 'fish') L.inc('fish.sold');
+      log.say('loot', `${SHOPNAME(e.shop)} buys the ${ITEM(e.item)} for ${plural(e.price, 'cube')}.`, { tone: '#ffd98a', key: `sell.${e.shop}`, win: 1.5, fmt: (n) => `${SHOPNAME(e.shop)} buys ${n} things from you.` });
+    });
+    on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
+    on('film.load', (e) => { L.inc('film.rolls'); log.say('info', `You load a fresh roll of film.${e.left ? ` (${e.left} more in your box)` : ' It is your last.'}`, {}); });
+    // the vessel (vessel/): the kiln station, firings, glazes earned and learned
+    on('kiln.open', () => { L.inc('kiln.open'); first('kiln', 'Logged: the kiln. Choose a glaze for each part of the vessel, see it on her, and fire it on.'); });
+    on('vessel.fire', (e) => {
+      L.inc('vessel.fired'); L.inc('vessel.fire.cubes', e.cost);
+      const names = [...new Set(Object.values(e.look))].map((id) => this.game.vessel?.glaze(id)?.name || id);
+      log.say('gain', `The kiln takes ${plural(e.cost, 'cube')} and fires the vessel in ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`, { tone: '#ffb27a' });
+    });
+    on('glaze.earn', (e) => { L.inc('glaze.earned'); log.say('record', `A new glaze is yours: ${this.game.vessel?.glaze(e.glaze)?.name || e.glaze}. (the kiln, in the workshop)`); });
+    on('glaze.learn', (e) => { L.inc('glaze.learned'); log.say('gain', `The Veritome learns a glaze from the photograph: ${this.game.vessel?.glaze(e.glaze)?.name || 'a new colour'}.`, { tone: '#ffb27a' }); });
     on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
     on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
     on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });

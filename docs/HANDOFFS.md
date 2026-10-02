@@ -35,10 +35,31 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
-(Round 38's four tasks and the six placeholder sounds are done: notes deleted. The Crucibelle's voices stay open: the wider band in
-`src/music/world.js` has a harp, a sitar, a steel pan and more if you want them for its instruments.)
+(Round 38's tasks, the six placeholder sounds and the later notes (the kiln's timing, `shopSell`, the haggle's stings and the
+counter clink, the film winding on `film.load`) are done: notes deleted. The Crucibelle's voices stay open: the wider band in
+`src/music/world.js` has a harp, a sitar, a steel pan and more if you want them for its instruments. Leaning the workshop's music in
+at the kiln (`kiln.open`, `kiln.close`) is for a later round.)
 
 ## Calissa (Art)
+
+**2026-10-02 (later still), from Petra: the vessel is in (R38d)**
+- I split the Courier's materials into the four glaze regions myself (`regionOf` in `src/character.js`: the armour, the armour's
+  energy inlays and the stones as TRIM, the mask, the hair; the Lachryma core is untouched). If your region work cuts them
+  differently, `regionMats` is the one place to change.
+- The twelve glazes' colours are in `src/vessel/glazes.js`. Please look them over on her (the kiln, in the workshop). A crackle
+  texture for raku, oribe's pooling and jun's opalescence would make them more than flat colours.
+- Kintsugi is a shader patch (`src/vessel/kintsugi.js`, Worley cracks in bind-pose space). The gold is subtle on white glazes, and
+  the crack scale (`uKinScale`) and width are yours to tune.
+- The kiln station's shot is fixed in front of the kiln's mouth (`SPOT`, `CAM` in `src/moves/kiln.js`). The plate stands that flank
+  the mouth were the reason for the high angle.
+
+**2026-10-02 (later), from Petra: the shops are in (R38c)**
+- New things with prerendered icons: the ROLL OF FILM (`film()` in `src/pneuka/thingmodels.js`), and the fourteen fish as box items
+  (their icon is the fish's own ghost mesh, `buildFish`, which reads a little faint in a slot; an icon pose or a solid variant is yours).
+- The shop window (`src/shop/ui.js`, `#shop .px`) copies the Pneuka Box window's look and is in the window kit's `WINDOWS`.
+- The plan wants the goods **on shelves in the world**. Raku has no counter yet (he stands by the Tithe) and Grog none on the pier. A
+  counter and a shelf for each, with the goods on it, as one prop batch per shop (`src/render/propbatch.js`), would make them real;
+  tell me where they stand and I will hang the F on them.
 
 **2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
 The owner's ruling: the Courier is a **vessel**, the magnum opus of Kaolin Anagami; customization decorates the vessel as a pot is
@@ -75,6 +96,22 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02 (later still), from Petra: the vessel is in (R38d), words for you**
+- The glaze names and blurbs (`src/vessel/glazes.js`), the regions' names, and the kiln window's few lines (`src/vessel/kilnui.js`).
+  Learned glazes are named "<SUBJECT> GLAZE" for now (`learnFrom` in `src/vessel/vessel.js`).
+- Log lines: firing, a glaze earned, a glaze learned (`src/tracking.js`, after "the vessel"). Achievements "The Vessel" (three).
+- The kintsugi is her achievements as mendings. Whether Kaolin Anagami would see it that way is yours to say.
+
+**2026-10-02 (later), from Petra: the shops are in (R38c), words for you**
+- Raku haggles in his own dialogue window. His lines are `RAKU_HAGGLE` at the foot of `src/npc/talks.js`, three per move: open,
+  counter, insult, flatter, bored, clink, last, callback, deal, gone. `{ask}`, `{offer}` and `{price}` are filled in. The flattery the
+  Courier offers is `FLATTERY` there. All of it is a placeholder for the greedy miser you are writing.
+- "Let's trade." is a new choice for Raku and Grog. The shops' names and blurbs are in `src/shop/catalogue.js` (`SHOPS`).
+- New log lines (`src/tracking.js`, the block after "the folk's counters"): buying, selling, the first-counter tip, keeping a fish,
+  loading film. The refusals are in `src/shop/shops.js` and `src/moves/veritome.js` ("You have no film.").
+- Five placeholder achievements are in `src/achievements.js` ("The Counters").
+- Grog could say something about buying fish, and Raku about curios; his `cubes` node already teases.
 
 **2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
 The owner's rulings for the bible (with more to come from your talks with them): **Kaolin Anagami** made this place, an *Island of Ego*,

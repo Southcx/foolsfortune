@@ -26,6 +26,14 @@ const MATS = {
   CourierMask: () => new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.65, metalness: 0.05, flatShading: true }),
 };
 const OUTLINED = new Set(['Courier_Armor', 'CourierMask', 'Kiritohair']);
+/** Which glaze region a mesh of the Courier is (vessel/glazes.js REGIONS), or null (the Lachryma of her body is never glazed). */
+function regionOf(o, matName, isArmor) {
+  if (isArmor) return matName === 'Courier_Armor' ? 'body' : 'trim';
+  if (o.name === 'Courier_Mask') return 'mask';
+  if (o.name === 'Kiritohair') return 'hair';
+  if (o.name === 'Courier_Stones') return 'trim';
+  return null;
+}
 
 export const GUN_POINTS = {
   // in gun-model units (multiply by gunScale for metres); +X barrel, +Y up, +Z right
@@ -68,16 +76,20 @@ export class Character {
     const byMat = new Map();
     const meshes = [];
     this.model.traverse((o) => { if (o.isMesh) meshes.push(o); });
+    // a material for each region a glaze can be laid on (vessel/glazes.js: body, trim, mask, hair), the rest by what it is made of
+    this.regionMats = {};
     for (const o of meshes) {
       const name = o.material.name;
       const isArmor = o.parent?.name === 'Courier_Armor';
-      const key = isArmor ? `${name}_armor` : name;
+      const region = regionOf(o, name, isArmor);
+      const key = region ? `region.${region}` : isArmor ? `${name}_armor` : name;
       if (!byMat.has(key)) {
         const m = (MATS[name] || MATS.CourierEnergy)();
         m.onBeforeCompile = applyFpHide;
         m.customProgramCacheKey = () => `fphide-${key}`;
         if (!m.transparent) addRim(m); // (the thin Lachryma rim: render/toon.js)
         byMat.set(key, withFade(m, key));
+        if (region) this.regionMats[region] = m;
       }
       o.material = byMat.get(key);
       tagFpHide(o, isArmor);

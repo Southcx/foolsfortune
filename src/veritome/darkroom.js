@@ -51,6 +51,9 @@ export function appraise(game, book, plates) {
     out.results.push(r);
   }
   book.save();
+  // the best-coloured good plate of the roll teaches the kiln a glaze (vessel/vessel.js: one a roll, if it is a colour it does not know)
+  const vivid = out.results.filter((r) => r.stars >= 3 && r.plate.swatch).sort((a, b) => b.stars - a.stars)[0];
+  if (vivid) game.vessel?.learnFrom(vivid.plate.swatch, vivid.kind || 'thing');
   sfx.develop?.(plates.length);
   ev?.emit('darkroom.develop', { n: plates.length, entries: out.entries, facts: out.facts, cards: out.cards, best: out.best });
   return out;

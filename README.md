@@ -269,6 +269,45 @@ Three tools measure it:
 - `node tools/economy.mjs` plays four profiles (fighter, miner, photographer, treasury camper) against the table, before and after.
 - **`/grant [n]`** adds cubes to the purse for testing, in **DEBUG** only.
 
+## The vessel: glazes, kintsugi and the kiln (`src/vessel/`)
+
+The Courier is a vessel, Kaolin Anagami's magnum opus, and she is decorated as a pot is.
+
+**Glazes.** A glaze can go on each of four regions: the armour of her body, its trim and stones, her mask, and her hair. The Lachryma of her body is never glazed. The twelve glazes are real ones: terracotta, bisque, shino, celadon, tenmoku, raku, oribe, oxblood, jun, nuka, a copper lustre, and a Lachryma black. She gets them three ways:
+
+- three are hers from the start;
+- the rest are **earned** by achievements (celadon for the first fish, tenmoku for selling fish, raku for haggling Raku down, Lachryma black for a prismatic from the Tithe...);
+- the Veritome **learns** a glaze from the most vivid good photograph of each developed roll.
+
+**The kiln station.** Press F at the mouth of the workshop's kiln. She steps into its glow and the camera becomes a turntable (drag, or A / D, to turn her). A tab for each region shows the glazes she has; a click tries one on her at once. **FIRE** keeps the look, costs 16 cubes (two minutes' play), and the body glows kiln-orange and cools into it. Leaving without firing takes the look off again.
+
+**Kintsugi.** Her armour and mask carry a net of fine cracks laid out in her body's own space. The cracks fill with gold, a cell at a time, as achievements are earned.
+
+The title's Courier wears the same look.
+
+Prior art: the glaze families of East Asian ceramics, FFXIV's glamour and dyes, Animal Crossing's Able Sisters, Dark Cloud 2's ideas from photographs, the turntable of PS2-era character screens, kintsugi, and Worley's cellular noise for the crack net.
+
+## The shops: Raku's treasury and Old Grog's pier (`src/shop/`)
+
+Talk to the keeper (F) and say **"Let's trade."** to open their counter.
+
+- The shelf is on the left: each good with its picture, its price and the stock left as a row of beads. A click buys one.
+- Her Pneuka Box is on the right: each thing the keeper would buy is lit with the price. A click sells it.
+- Prices follow the stock (OSRS): a shelf bought short is dearer, a keeper flooded with something pays less, and both drift back in time.
+
+**Raku** sells Possibilikeys and coffins for the Lockheart, marked up 45%, and buys curios. He **haggles**: right click a good, or press HAGGLE, and his dialogue window opens on the price. She can:
+
+- offer one of three prices;
+- flatter his fez (twice; the third time he sees through it);
+- clink cubes on the counter (he warms, but now he knows she can pay);
+- walk away.
+
+His body shows his mood. Lowballs make him sulk and lose patience. He never sells at a loss, and when his patience runs out he names a last price.
+
+**Old Grog** sells film and lures at fair prices and buys fish. A landed fish is now kept whole in the box, to be sold on the pier. Film runs out: a roll is 24 exposures, and the next roll is loaded from the box.
+
+Prior art: OSRS's shops (stock, price movement, restock, a trade bought at full and the rest at a cut), Recettear and Moonlighter (the price as a conversation), Potion Craft's and Mount & Blade's haggling (flattery and walking away as moves), and Animal Crossing's shopkeepers.
+
 ## Water
 
 The pools (`src/vfx/water.js`) are drawn in the manner of the sixth generation's water (Final Fantasy X and X-2, Skies of Arcadia): a flat, translucent, cel-banded surface whose colour is chosen by the pool's depth (a depth per vertex: pale turquoise over the shelf, teal, then marine blue in the trench, hard edges between), the painted skybox reflected in it and posterised, a toon glint, and foam at the shore and on a few crests. All its motion is geometry (a few sines lift the plane); nothing scrolls. The Weir's Well holds **liquid Lachryma**: the same plane made heavy, near-black, slow, with the cubes' own oil-slick film and an iridescent meniscus. The Solar Skiff skims the oasis's water as it does the sand.
@@ -758,6 +797,8 @@ runtime IK correction on the contact points.
 | `src/progress.js` | progress cleared on each new build (settings kept) |
 | `src/music/` | the music: the scores (the main theme on the black keys, the battle, the workshop, the five-movement draft, the first draft, the jingles, the Dunes' theme), the players (the Dunes' band; the arranger with its band, per-section tempo and metre, scores that play once), the sound test |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
+| `src/vessel/glazes.js`, `src/vessel/vessel.js`, `src/vessel/kintsugi.js`, `src/vessel/kilnui.js`, `src/moves/kiln.js` | the regions and the twelve glazes; her look, the glazes she has, firing, learning from photographs, dressing any Courier model; the gold seams (a shader patch); the kiln's window; the kiln station (the turntable) |
+| `src/shop/catalogue.js`, `src/shop/shops.js`, `src/shop/haggle.js`, `src/shop/ui.js` | what each keeper sells and buys and what a thing is worth; stock, prices, restock, buying and selling; Raku's haggle (pure logic; his words are in `npc/talks.js`); the counter's window |
 | `src/econ/table.js`, `src/econ/economy.js`, `tools/economy.mjs`, `docs/ECONOMY.md` | the economy's one table (faucets, drains, prices in minutes); the F3 econ line, `minutes()` and `/grant`; the simulator; the map and the reasons |
 | `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
 | `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |

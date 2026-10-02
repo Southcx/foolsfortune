@@ -35,8 +35,29 @@ export const ECON = {
   /** A Lockheart's CUBES outcome, per unit of power (1 full .. 2 brimming). */
   lockheart: { cubes: 12 },
 
+  /** A landed fish, sold to Old Grog, by its tier (0 none .. 5 the legend): at about one catch every two and a half minutes, about
+   *  the aim (a fish is not condensed: a shop buys it, so an angler's living is a walk to the pier). */
+  fish: [0, 10, 18, 40, 90, 400],
+  /** A curio sold to Raku, by its tier: a little over what its spare card condenses for (selling to the folk is the better way). */
+  curio: [16, 32, 70, 120, 220],
+
   // ---- the drains (cubes out)
   /** The Tithe: a sealed chest for six minutes' play (was 25, and with its pity and its dupes it paid back 229% of what it took: a
    *  faucet dressed as a drain). Now about three quarters comes back in cubes, and the curio is the prize (tools/economy.mjs). */
   tithe: { cost: 48 },
+  /** A firing at the kiln (a new look fired onto the vessel: vessel/vessel.js), in minutes of play. */
+  firing: 2,
+  /** What the folk ask, in minutes of play (shop/catalogue.js turns them into cubes); see docs/ECONOMY.md. */
+  goods: {
+    'mat.film': 1.5,                                           // a roll of film: 24 exposures
+    lure: 5,                                                   // a made lure, to replace one sold or lost
+    'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 8, 'key.twin': 10, 'key.wide': 8, 'key.echo': 12,
+    'heart.gambler': 20, 'heart.shepherd': 20,
+  },
+  /** How a shop's prices move with its stock (OSRS): each one short of its stock dearer by `dear`, each extra one it has bought
+   *  cheaper to sell by `glut` (never under `floor` of worth); one unit drifts back toward the base every `restock` seconds. A shop
+   *  pays `buys` of an item's worth when it is not its trade (Raku will take a fish, grudgingly). */
+  shop: { dear: 0.1, glut: 0.07, floor: 0.25, restock: 90, buys: 0.5 },
+  /** The haggle (shop/haggle.js): Raku's list price over the worth, and the least he will take over it (he never sells at a loss). */
+  haggle: { list: 1.45, floor: 1.02 },
 };

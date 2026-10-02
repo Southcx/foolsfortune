@@ -14,6 +14,8 @@ import { buildCurio } from '../curiomodel.js';
 import { buildLure } from '../angling/luremodels.js';
 import { buildThing } from './thingmodels.js';
 import { itemOf } from './items.js';
+import { SPECIES } from '../angling/species.js';
+import { buildFish } from '../angling/fishmesh.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
 
@@ -77,6 +79,12 @@ function modelOf(game, it) {
     return { group: g, dispose() {} };
   }
   if (['instrument', 'heart', 'key', 'material'].includes(it.kind)) return buildThing(it.id);
+  if (it.kind === 'fish') {
+    const sp = SPECIES.find((x) => x.id === it.key); if (!sp) return null;
+    const f = buildFish(sp, (sp.size[0] + sp.size[1]) / 2), g = new THREE.Group();
+    g.add(f.group); f.group.rotation.set(0.2, 0.6, 0.35);
+    return { group: g, dispose() { f.dispose?.(); } };
+  }
   return null;
 }
 // (how each tool is turned for its picture: lying across the slot, the way OSRS lays a sword diagonally)

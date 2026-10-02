@@ -3,16 +3,17 @@
 // (what OSRS's Examine says), what it can be used for, and which card it becomes when it is stored in the Veritome (cards.js: an item
 // and its card share an id, so a curio is 'curio.whelk' in the hand and on the page alike).
 //
-// The items are the twenty curios, the six made lures, the seven psychic tools, and what the last three take (instruments, coffins,
-// keys, shards); a new kind of item is a new entry here and nothing
+// The items are the twenty curios, the six made lures, the seven psychic tools, what the last three take (instruments, coffins,
+// keys, shards), the fish she lands and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material', name, glyph, color, tier, examine, card, lure, tool, place, stack }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish', name, glyph, color, tier, examine, card, lure, tool, place, stack }      itemOf(id)
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../treasure.js';
 import { LURES } from '../angling/lures.js';
 import { HEARTS, KEYS } from '../lockheart/table.js';
 import { INSTRUMENTS } from '../crucibelle/songs.js';
+import { SPECIES } from '../angling/species.js';
 
 export const ITEMS = {};
 for (const c of CURIOS) {
@@ -43,6 +44,9 @@ for (const T of TOOL_ITEMS) {
 for (const [id, I] of Object.entries(INSTRUMENTS)) if (id !== 'bell') ITEMS[id] = { id, kind: 'instrument', key: id.slice(5), name: I.name, glyph: '♪', color: I.color, tier: 1, examine: I.does, card: null, lure: false, stack: false };
 for (const [id, H] of Object.entries(HEARTS)) ITEMS[id] = { id, kind: 'heart', key: id.slice(6), name: H.name, glyph: '⚰', color: H.trim, tier: 2, examine: H.examine, card: null, lure: false, stack: false };
 for (const [id, K] of Object.entries(KEYS)) ITEMS[id] = { id, kind: 'key', key: id.slice(4), name: K.name, glyph: '⚷', color: K.color, tier: id === 'key.brass' ? 0 : 2, examine: `A Possibilikey. ${K.does}`, card: null, lure: false, stack: false };
+ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL OF FILM', glyph: '◫', color: 0xe0c070, tier: 0, examine: 'Twenty-four plates for the Veritome, wound on a brass spool. Loaded by itself when the last roll runs out.', card: null, lure: false, stack: false };
+// a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: shop/catalogue.js)
+for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

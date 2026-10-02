@@ -32,6 +32,7 @@ const PLAY = {
   miner: { crystals: 18, size: 1.0, ring: 0.5, walk: 70 },      // the formations, their mean size, share rung by the fork, s between them
   photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
   treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
+  angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog
 };
 
 const mean = ([a, b]) => (a + b) / 2;
@@ -43,7 +44,9 @@ const perHour = (E) => {
   const cycle = Math.max(m.crystals * m.walk, 186); // (a formation regrows in 186 s, crystals.js; the round is the walk)
   out.miner = 3600 / cycle * m.crystals * worth;
   const p = PLAY.photographer;
-  out.photographer = 60 / p.rollMin * p.spares.reduce((a, [r, n]) => a + n * E.condense[r], 0);
+  out.photographer = 60 / p.rollMin * (p.spares.reduce((a, [r, n]) => a + n * E.condense[r], 0) - (E.goods ? E.goods['mat.film'] * E.perMinute : 0)); // (less a roll of film each, from R38)
+  const a = PLAY.angler;
+  out.angler = E.fish ? 60 / a.catchMin * a.mix.reduce((s, p, t) => s + p * E.fish[t], 0) : 0; // (before R38 a fish came apart into Lachryma: no cubes)
   out.treasury = TIERS.reduce((a, t, i) => a + 3600 / Math.max(E.treasury.respawn[i], 20) * mean(E.chest[i]), 0);
   return out;
 };

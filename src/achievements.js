@@ -263,11 +263,11 @@ export function buildAchievements(game) {
 
 
   // ---------------------------------------------------------------- THE SOUL BRUSH (moves/soulbrush.js, brush/)
-  C('br1', 'brush', 'The Club', 1, 'count', 'Heavy Hair', 'Swing the Soul Brush 50 times.', 'brush.swing', 50);
-  C('br2', 'brush', 'The Club', 2, 'mechanic', 'Batter Up', 'Bat 25 clapperjars away with the brush.', 'brush.bat', 25);
-  C('br3', 'brush', 'The Club', 2, 'mechanic', 'Bring It Down', 'Slam the brush down 10 times.', 'brush.slam', 10);
-  C('br4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
-  C('br5', 'brush', 'The Club', 3, 'endure', 'Seeing Stars', 'Leave 25 clapperjars reeling with the overhead blow.', 'brush.stun', 25);
+  C('bk1', 'brush', 'The Club', 1, 'count', 'Heavy Hair', 'Swing the Soul Brush 50 times.', 'brush.swing', 50);
+  C('bk2', 'brush', 'The Club', 2, 'mechanic', 'Batter Up', 'Bat 25 clapperjars away with the brush.', 'brush.bat', 25);
+  C('bk3', 'brush', 'The Club', 2, 'mechanic', 'Bring It Down', 'Slam the brush down 10 times.', 'brush.slam', 10);
+  C('bk4', 'brush', 'The Club', 3, 'mechanic', 'From a Height', 'Come down out of the air with the brush 10 times.', 'brush.slam.air', 10);
+  C('bk5', 'brush', 'The Club', 3, 'endure', 'Seeing Stars', 'Leave 25 clapperjars reeling with the overhead blow.', 'brush.stun', 25);
   C('bs1', 'brush', 'The Slide', 1, 'count', 'A Stroke of Slip', 'Brush slide 25 times.', 'brush.slide', 25);
   C('bs2', 'brush', 'The Slide', 3, 'endure', 'Slip Trailer', 'Paint 1 km of slip with brush slides.', 'brush.slide.dist', 1000, { unit: 'm' });
   H('bs3', 'brush', 'The Slide', 3, 'mechanic', 'One Long Stroke', 'Paint 20 m of slip in a single brush slide.', 'brush.slide.best', 20, { unit: 'm' });
@@ -333,12 +333,22 @@ export function buildAchievements(game) {
   C('td4', 'treasure', 'The Tithe', 5, 'endure', 'Compulsion', 'Pay the Tithe 200 times.', 'tithe.count', 200, { title: 'Devout' });
   C('td5', 'treasure', 'The Tithe', 3, 'mechanic', 'Beyond the Pity', 'Land an epic or better from the Tithe.', 'tithe.tier.epic', 1);
   C('td6', 'treasure', 'The Tithe', 5, 'mechanic', 'The Long Shot', 'Land a prismatic chest from the Tithe.', 'tithe.tier.prismatic', 1, { hidden: true });
-  F('cu1', 'treasure', 'Curios', 1, 'collect', 'A Shelf', 'Own 3 curios.', ownedCurios, 3);
-  F('cu2', 'treasure', 'Curios', 2, 'collect', 'A Cabinet', 'Own 8 curios.', ownedCurios, 8);
-  F('cu3', 'treasure', 'Curios', 4, 'collect', 'A Wunderkammer', 'Own 14 curios.', ownedCurios, 14);
-  F('cu4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Find every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
+  // the vessel (vessel/): fired at the kiln, glazes learned from photographs, gold in the seams
+  C('vf1', 'treasure', 'The Vessel', 1, 'count', 'First Firing', 'Fire a new look onto the vessel at the kiln.', 'vessel.fired', 1);
+  C('vf2', 'treasure', 'The Vessel', 2, 'collect', 'An Eye for Colour', 'Learn 3 glazes from photographs.', 'glaze.learned', 3);
+  F('vf3', 'treasure', 'The Vessel', 4, 'collect', 'Golden Repair', 'Have half the seams of the vessel filled with gold.', () => Math.round((game.vessel?.kinShare() || 0) * 100), 50);
+  // the folk's counters (shop/): buying, selling, and talking Raku down
+  C('sp1', 'treasure', 'The Counters', 1, 'count', 'Window Shopping', 'Buy something from one of the folk.', 'shop.bought', 1);
+  C('sp2', 'treasure', 'The Counters', 2, 'count', 'Fishmonger', "Sell 10 fish to Old Grog.", 'fish.sold', 10);
+  C('sp3', 'treasure', 'The Counters', 2, 'mechanic', 'Talked Down', 'Haggle Raku down and shake on it.', 'haggle.won', 1);
+  C('sp4', 'treasure', 'The Counters', 3, 'endure', 'His Worst Customer', 'Save 200 cubes haggling with Raku.', 'haggle.saved', 200);
+  C('sp5', 'treasure', 'The Counters', 2, 'mechanic', 'Not That Fez Again', 'Flatter Raku until he sees through it.', 'haggle.bored', 1, { hidden: true });
+  F('cr1', 'treasure', 'Curios', 1, 'collect', 'A Shelf', 'Own 3 curios.', ownedCurios, 3);
+  F('cr2', 'treasure', 'Curios', 2, 'collect', 'A Cabinet', 'Own 8 curios.', ownedCurios, 8);
+  F('cr3', 'treasure', 'Curios', 4, 'collect', 'A Wunderkammer', 'Own 14 curios.', ownedCurios, 14);
+  F('cr4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Find every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
   CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Find all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && L.get(`curio.${c.id}`) > 0).length, 4, { hidden: i === 4 }));
-  C('cu5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio the Book cannot hold (it condenses into cubes).', 'curio.dupe', 1);
+  C('cr5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio the Book cannot hold (it condenses into cubes).', 'curio.dupe', 1);
 
   // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)
   C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);
