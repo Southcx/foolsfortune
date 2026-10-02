@@ -30,6 +30,7 @@ import { crackMat, goldMat, ribbonGeometry } from './cracks.js';
 const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;
+const CLIP_OFF = 1e5; // (the cutaway, put away: far overhead)
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 const ease = (t) => t * t * (3 - 2 * t);
 const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
@@ -53,7 +54,11 @@ export class GodMode {
     this.state = 'off'; // off | in | on | out
     this.t = 0;
     this.cam = { yaw: Math.PI * 0.25, yawT: Math.PI * 0.25, dist: T.god.dist, distT: T.god.dist, focus: new THREE.Vector3(), groundY: 0, from: null, shake: 0 };
-    this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e5);
+    // (the cutaway plane is the renderer's always, and far overhead when the hand is not out: the number of clipping planes is part of
+    // every shader's program, so setting it only on entering recompiled every material in sight, a long stall. Set once, before the
+    // warm-up, nothing recompiles, and a plane a hundred kilometres up costs one comparison a pixel.)
+    this.clipPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), CLIP_OFF);
+    renderer.clippingPlanes = [this.clipPlane];
     this.cursor = { point: new THREE.Vector3(), normal: UP.clone(), hit: null, ok: false, far: false, ray: { origin: new THREE.Vector3(), dir: new THREE.Vector3() }, over: null };
     this.grab = null;
     this.thrown = [];
@@ -243,7 +248,7 @@ export class GodMode {
     g.hud.el.cross && (g.hud.el.cross.style.display = '');
     this.restoreUi();
     this.el.root.style.display = 'none';
-    this.renderer.clippingPlanes = [];
+    this.clipPlane.constant = CLIP_OFF;
     if (g.input.enabled) g.input.requestLock();
     sfx.godOut();
     g.events?.emit('god.exit', {});
@@ -265,7 +270,7 @@ export class GodMode {
     this.arts.cancel(); this.arts.closeWheel(false);
     this.restoreUi();
     this.el.root.style.display = 'none';
-    this.renderer.clippingPlanes = [];
+    this.clipPlane.constant = CLIP_OFF;
   }
 
   /** Back to the psygun's HUD. */
@@ -293,7 +298,7 @@ export class GodMode {
     if (this.state === 'in') {
       const k = Math.min(1, this.t / 1.2);
       // the courier steps out of the world; the jar stands up in her place
-      if (this.t > 0.3 && !g.character.hidden) g.character.setHidden(true);
+      if (this.t > 0.3 && !g.character.hidden) { g.character.setHidden(true); g.belt?.hideWorn(); } // (her tools go with her: their ticks do not run now)
       const jk = Math.max(0, (this.t - 0.25) / 0.6);
       V.group.scale.setScalar(Math.max(0.001, easeOutBack(Math.min(1, jk))));
       if (k >= 1) this.state = 'on';
@@ -353,7 +358,6 @@ export class GodMode {
     if (hit) C.groundY = THREE.MathUtils.damp(C.groundY, hit.point.y, 6, dt);
     C.focus.y = C.groundY;
     this.clipPlane.constant = C.groundY + (g.dunes?.active ? 400 : T.god.clipAbove); // (no ceilings on the open layer)
-    this.renderer.clippingPlanes = [this.clipPlane];
   }
 
   /** Called every frame after the normal camera has been placed: the iso camera, and the blends into and out of it. */
@@ -383,7 +387,7 @@ export class GodMode {
       const V = this.vessel;
       V.group.scale.setScalar(V.alive ? Math.max(0.001, 1 - ease(Math.min(1, this.t / 0.4))) : 0.001);
       if (this.t > 0.4) V.group.visible = false;
-      if (e >= 1) { this.state = 'off'; this.renderer.clippingPlanes = []; V.group.visible = false; }
+      if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; }
     } else {
       cam.position.copy(pos);
       cam.quaternion.copy(quat);

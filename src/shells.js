@@ -589,11 +589,15 @@ export class Shells {
       d.vel.multiplyScalar(Math.exp(-0.4 * dt));
       const step = d.vel.clone().multiplyScalar(dt);
       const len = step.length();
-      const hit = len > 1e-5 ? g.physics.raycast(d.pos, step.clone().divideScalar(len), len + d.r, g.player.collider, undefined, (c) => !c.isSensor()) : null;
+      // (slip passes through the creatures, a burst jelly's own body among them (its capsule stays in the query tree until the next step,
+      // and a ray from inside it stops where it starts, with no normal: the splats that stood on end in mid-air))
+      const hit = len > 1e-5 ? g.physics.raycast(d.pos, step.clone().divideScalar(len), len + d.r, g.player.collider, undefined, (c) => !c.isSensor() && c.isEnabled() && !(d.slip && g.physics.entityOf(c)?.type === 'creature')) : null;
       if (hit || d.age > d.life) {
         if (hit) {
           const ent = hit.entity;
-          if (!hit.collider.parent()?.isDynamic()) this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
+          // (a splat is laid only on the world: fixed ground and walls, with a real normal; never on a body that moves)
+          const body = hit.collider.parent();
+          if ((!body || body.isFixed()) && hit.normal.lengthSq() > 0.5 && hit.distance > 1e-4) this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
           if (!d.slip && ent?.type === 'breakable') g.breakables.damage(ent, T.shells.bomb.dropletDamage, hit.point, d.vel.clone().normalize(), 0.5);
           if (!d.slip && ent?.type === 'clapper') g.clappers.scald(ent, 0.4);
           // splash: sometimes spit two smaller droplets

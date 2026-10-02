@@ -12,13 +12,15 @@
 //     drawT,                    0..1, how far out it is (0 in its holster, 1 in the hands)
 //     wants,                    true while it has been asked to come out (it may still be waiting for the hands to be free)
 //     stow(),                   put it away (the belt calls this on the others when one is drawn)
+//     model,                    the worn model (an Object3D), or none (the psygun's is the body's: character.setHidden hides it)
 //     rules: { mouse, digits, kick, firstPerson } }   while out: takes the mouse / takes 1-9 / allows the kick / allows first person
 //
 // Prior art: the item belts of Zelda (one item per button, one in the hands, a draw and put-away animation that gates the next), and the
 // weapon wheels of Ratchet & Clank and Devil May Cry (a small fixed set of very different tools behind one shared contract).
 //
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
-//   game.belt.allows('kick')   game.belt.others(tool)
+//   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
+//   has become something else and her tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
 export const BELT_SIZE = 7;
 
@@ -53,6 +55,8 @@ export class ToolBelt {
     for (const t of this.tools) if (t.drawT > 0.25 && !t.rules[rule]) return false;
     return true;
   }
+  /** Out of sight, every one (each tool shows itself again from its own tick, once it runs). */
+  hideWorn() { for (const t of this.tools) if (t.model) t.model.visible = false; }
 }
 
 // ---------------------------------------------------------------------------------------
@@ -71,6 +75,7 @@ export const sondelassTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  get model() { return tech.model?.group; },
   rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (V is its guard)
 });
 
@@ -79,6 +84,7 @@ export const veritomeTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  get model() { return tech.model?.group; },
   rules: { mouse: true, digits: false, kick: false, firstPerson: true },
 });
 
@@ -87,5 +93,6 @@ export const soulBrushTool = (tech) => ({
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
+  get model() { return tech.model?.group; },
   rules: { mouse: true, digits: false, kick: false, firstPerson: true },
 });

@@ -117,6 +117,7 @@ export class Clappers {
     stars.position.y = 0.72;
     stars.visible = false;
     root.add(model, stars);
+    root.position.copy(pos); // (where it stands from its first frame: added at the origin, it showed in the middle of the room until its first update)
     game.scene.add(root);
 
     const mixer = new THREE.AnimationMixer(model);

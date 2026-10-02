@@ -46,7 +46,7 @@ export class SlipJellies {
     // (the mesh as it stands in the file, its node's turn and scale baked in: the shader reads heights in metres)
     gltf.scene.updateMatrixWorld(true);
     gltf.scene.traverse((o) => { if (o.isMesh && !this.geo) { this.geo = o.geometry.clone().applyMatrix4(o.matrixWorld); this.geo.computeVertexNormals(); } });
-    this.trail = new PaintPath(game.scene, { wet: 0x7d5f3e, dry: 0xb3905f, life: 18, max: 500 });
+    this.trail = new PaintPath(game.scene, { wet: 0x7d5f3e, dry: 0xb3905f, life: 10, max: 240 });
     this.globs = [];
     this.globGeo = new THREE.IcosahedronGeometry(0.16, 1);
     this.globMat = new THREE.MeshStandardMaterial({ color: 0x8a6a45, roughness: 0.3 });
@@ -314,9 +314,9 @@ export class SlipJellies {
     if (!c.air && c.trailT <= 0 && c.vel.lengthSq() > 0.15) {
       c.trailT = JELLY.trailEvery;
       const at = _a.set(c.pos.x, c.groundY + 0.015, c.pos.z);
-      this.trail.add(at, UP, _b.copy(c.vel).normalize(), 0.7);
+      this.trail.add(at, UP, _b.copy(c.vel).normalize(), 0.7, c); // (each jelly its own stroke: two near each other never join)
       g.slip?.addDisc(at, UP, 0.42, 14, 0.4);
-    } else if (c.vel.lengthSq() <= 0.15) this.trail.gap();
+    } else if (c.vel.lengthSq() <= 0.15) this.trail.gap(c);
     c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z });
     void P;
   }

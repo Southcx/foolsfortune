@@ -444,12 +444,12 @@ async function main() {
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
   const overlayUp = () => overlay.style.display !== 'none' && !window.__game?.manual;
-  let guiOpen = false;
+  let guiOpen = false, started = false;
   const start = () => {
     sfx.unlock();
     overlay.style.display = 'none';
-    input.enabled = true;
-    input.requestLock();
+    input.enabled = true; started = true;
+    if (!god.active) input.requestLock(); // (the hand has a free cursor)
   };
   overlay.addEventListener('click', start);
   input.onLockChange = (locked) => {
@@ -459,6 +459,14 @@ async function main() {
     }
     if (!locked && !guiOpen && !modalOpen() && !god.active) { overlay.style.display = 'flex'; input.enabled = false; }
   };
+  // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
+  // wheel, if it is open, closes first)
+  addEventListener('keydown', (e) => {
+    if (e.code !== 'Escape' || e.repeat || !god.active || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
+    e.preventDefault();
+    if (god.arts.wheelOpen) { god.arts.closeWheel(false); return; }
+    overlay.style.display = 'flex'; input.enabled = false;
+  });
   renderer.domElement.addEventListener('click', () => {
     if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !god.active) input.requestLock();
   });
@@ -473,6 +481,9 @@ async function main() {
   for (let i = 0; i < 22; i++) breakables.update(0); // (the pots at rest go into their batches first: those are shaders too)
   game.zones.enabled = false; game.zones.update(1);
   game.post.resize(); renderer.setRenderTarget(game.post.target); // (compiled for the buffer the frame is drawn into)
+  // (an empty frame first: compile() reads the clipping state the last render left, and the God Hand's cutaway plane is always installed,
+  // so without it every program was compiled for no planes here and again, for one, on the first real frame)
+  renderer.render(new THREE.Scene(), camera);
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
@@ -577,6 +588,7 @@ async function main() {
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen()) game.cartography.survey(god.controlling);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
+    if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     if (input.wasPressed('KeyT')) resetRoom();
     if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
@@ -730,7 +742,7 @@ async function main() {
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      charge: weapon.charge, gunOut: weapon.drawT > 0.05 || weapon.wantShell,
+      charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
         + blinkPips(),

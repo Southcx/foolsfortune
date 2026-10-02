@@ -10,7 +10,7 @@
 // register: this is only the picture.)
 //
 //   const p = new PaintPath(scene, { wet: 0xe8ab86, dry: 0xb4603f, life: 14 })
-//   p.add(point, normal, dir, width)   a sample (the stroke continues from the last one)      p.gap()   the stroke ends
+//   p.add(point, normal, dir, width, stroke?)   a sample (its stroke continues from its last one)      p.gap(stroke?)   the stroke ends
 //   p.update(dt)   every frame                 p.clear()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -42,8 +42,8 @@ function bristleTexture() {
 export class PaintPath {
   constructor(scene, { wet = 0xe8ab86, dry = 0xb4603f, life = 14, max = 700, lift = 0.014 } = {}) {
     this.life = life; this.max = max; this.lift = lift;
-    this.s = []; // { p, side, age, brk, v, w }
-    this.brk = true; this.v = 0;
+    this.s = []; // { p, side, age, prev, next, v, w, dead, vi }
+    this.strokes = new Map(); // (each painter's stroke: its last sample, whether it was broken off)
     const nv = max * 2;
     this.pos = new Float32Array(nv * 3); this.uv = new Float32Array(nv * 2); this.age = new Float32Array(nv);
     this.idx = new Uint16Array(max * 6);
@@ -72,40 +72,45 @@ export class PaintPath {
     scene.add(this.mesh);
   }
 
-  /** A sample: the stroke goes on from the last one (unless it was broken off by `gap`). */
-  add(point, normal, dir, width) {
+  /** A sample: the stroke goes on from its last one (unless it was broken off by `gap`). Several painters can share one path, each with
+   *  its own `stroke` key (a creature, a brush): a stroke joins only its own samples, never another painter's. */
+  add(point, normal, dir, width, stroke = '_') {
     const side = new THREE.Vector3().crossVectors(normal, dir);
     if (side.lengthSq() < 1e-6) side.set(1, 0, 0); else side.normalize();
-    const last = this.s[this.s.length - 1];
-    if (!this.brk && last) this.v += last.p.distanceTo(point) / Math.max(0.4, width * 1.6);
-    else this.v = Math.random();
-    this.s.push({ p: point.clone().addScaledVector(normal, this.lift), side, w: width, age: 0, brk: this.brk, v: this.v });
-    this.brk = false;
-    if (this.s.length > this.max) this.s.shift();
+    const S = this.stroke(stroke), last = S.brk ? null : S.last;
+    S.v = last && !last.dead ? S.v + last.p.distanceTo(point) / Math.max(0.4, width * 1.6) : Math.random();
+    const q = { p: point.clone().addScaledVector(normal, this.lift), side, w: width, age: 0, prev: last && !last.dead ? last : null, next: false, v: S.v, dead: false, vi: -1 };
+    if (q.prev) q.prev.next = true;
+    this.s.push(q); S.last = q; S.brk = false;
+    if (this.s.length > this.max) this.s.shift().dead = true;
     this.dirty = true;
   }
-  gap() { this.brk = true; }
+  stroke(key) { let S = this.strokes.get(key); if (!S) this.strokes.set(key, (S = { last: null, brk: true, v: 0 })); return S; }
+  gap(stroke = '_') { this.stroke(stroke).brk = true; }
 
   update(dt) {
     const s = this.s;
     let drop = 0;
     for (const q of s) { q.age += dt / this.life; if (q.age >= 1) drop++; }
-    if (drop) { s.splice(0, drop); if (s.length) s[0].brk = true; }
+    if (drop) for (const q of s.splice(0, drop)) q.dead = true;
     this.mesh.visible = s.length > 1;
     if (!this.mesh.visible) return;
-    // (rebuilt every frame: the ages change; a few hundred quads at most)
+    // (rebuilt every frame: the ages change; a few hundred quads at most). Each sample is a pair of vertices; a quad joins it to the
+    // sample before it in its own stroke.
     let n = 0, k = 0;
     for (let i = 0; i < s.length; i++) {
-      const q = s[i], nxt = s[i + 1];
+      const q = s[i];
       // the stroke tapers in at its start and out at its end (a brush lifted, not cut)
-      const startK = q.brk ? 0.35 : 1, endK = !nxt || nxt.brk ? 0.45 : 1;
+      const startK = !q.prev || q.prev.dead ? 0.35 : 1, endK = q.next ? 1 : 0.45;
       const hw = q.w * 0.5 * Math.min(startK, endK);
       const o = n * 3;
       this.pos[o] = q.p.x + q.side.x * hw; this.pos[o + 1] = q.p.y + q.side.y * hw; this.pos[o + 2] = q.p.z + q.side.z * hw;
       this.pos[o + 3] = q.p.x - q.side.x * hw; this.pos[o + 4] = q.p.y - q.side.y * hw; this.pos[o + 5] = q.p.z - q.side.z * hw;
       this.uv[n * 2] = 0; this.uv[n * 2 + 1] = q.v; this.uv[n * 2 + 2] = 1; this.uv[n * 2 + 3] = q.v;
       this.age[n] = this.age[n + 1] = q.age;
-      if (nxt && !nxt.brk) { this.idx[k++] = n; this.idx[k++] = n + 1; this.idx[k++] = n + 2; this.idx[k++] = n + 1; this.idx[k++] = n + 3; this.idx[k++] = n + 2; }
+      q.vi = n;
+      const p = q.prev;
+      if (p && !p.dead && p.vi >= 0) { const a = p.vi; this.idx[k++] = a; this.idx[k++] = a + 1; this.idx[k++] = n; this.idx[k++] = a + 1; this.idx[k++] = n + 1; this.idx[k++] = n; }
       n += 2;
     }
     const g = this.geo;
@@ -113,5 +118,5 @@ export class PaintPath {
     g.attributes.position.needsUpdate = true; g.attributes.uv.needsUpdate = true; g.attributes.age.needsUpdate = true; g.index.needsUpdate = true;
   }
 
-  clear() { this.s.length = 0; this.brk = true; this.mesh.visible = false; }
+  clear() { for (const q of this.s) q.dead = true; this.s.length = 0; this.strokes.clear(); this.mesh.visible = false; }
 }
