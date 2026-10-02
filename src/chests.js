@@ -269,7 +269,7 @@ export class Chests {
     g.events.emit('chest.land', { tier: c.tier, sealed: c.sealed });
   }
 
-  /** Room reset (T): the chests that were dropped from the sky go; placed ones stay as they are. */
+  /** Room reset (the Tab panel): the chests that were dropped from the sky go; placed ones stay as they are. */
   reset() {
     for (let i = this.list.length - 1; i >= 0; i--) {
       const c = this.list[i];

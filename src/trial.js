@@ -128,7 +128,7 @@ export class Trial {
     sfx.lockOn(1);
   }
 
-  /** Room reset from elsewhere (T): drop the trial. */
+  /** Room reset from elsewhere (the Tab panel): drop the trial. */
   abort() {
     if (this.starting || this.state === 'off') return;
     this.state = 'off';

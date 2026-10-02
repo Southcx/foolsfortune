@@ -8,6 +8,7 @@ import { Level } from './level.js';
 import { Character } from './character.js';
 import { Input } from './input.js';
 import { Player } from './player.js';
+import { HelpMenu } from './help/menu.js';
 import { Weapon } from './weapon.js';
 import { Hud } from './hud.js';
 import { buildTuningPanel } from './tuning.js';
@@ -548,6 +549,7 @@ async function main() {
     if (!god.active) input.requestLock(); // (the hand has a free cursor)
   };
   overlay.addEventListener('click', start);
+  game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause card's pages: help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
@@ -728,7 +730,7 @@ async function main() {
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
     if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
-    if (input.wasPressed('KeyT')) resetRoom();
+    // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();
     if (input.wasPressed('F2')) game.ui.cycle();
     if (guiOpen) { input.dx = 0; input.dy = 0; }

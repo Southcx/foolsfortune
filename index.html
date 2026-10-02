@@ -66,7 +66,7 @@
     #speed b { font: 16px var(--f-sys); color: #fff1dc; font-weight: normal; }
     #speed i { font-style: normal; color: var(--accent); }
     #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(28,13,8,.55); z-index: 10; cursor: var(--jcur-pointer, pointer); }
-    #overlay .card { background: var(--panel); border: 1px solid rgba(255,178,122,.35); padding: 22px 26px 0; max-width: 640px; width: calc(100% - 32px); box-sizing: border-box;
+    #overlay .card { background: var(--panel); border: 1px solid rgba(255,178,122,.35); padding: 22px 26px 0; max-width: 820px; width: calc(100% - 32px); box-sizing: border-box;
       max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(255,178,122,.5) transparent; }
     #overlay .card table { font-size: 12px; line-height: 1.3; }
     #overlay details { margin-top: 10px; font-size: 12px; }
@@ -136,58 +136,7 @@
   <div id="overlay">
     <div class="logo"><small>a sixth-generation sandbox</small><b>Fool's Fortune</b><span>The Clay Workshop</span></div>
     <div class="card">
-      <h1>CONTROLS</h1>
-      <p>Mechanics sandbox. Break every pot. Needs a keyboard and mouse.</p>
-      <table>
-        <tr><td>WASD / Shift</td><td>move / sprint (any direction but back)</td></tr>
-        <tr><td>Space / again in the air</td><td>jump / double jump (into a ledge: mantle)</td></tr>
-        <tr><td>Space by a wall, hold W</td><td>wallrun; Space again to wall jump</td></tr>
-        <tr><td>C</td><td>crouch / slide when running (C + Space: slide-hop)</td></tr>
-        <tr><td>Shift in the air</td><td>air-dash (Lachryma)</td></tr>
-        <tr><td>Hold Alt</td><td>walk</td></tr>
-        <tr><td>B</td><td>the System: Movement Arts are learned by doing (the Codex: variants, LAB MODE)</td></tr>
-        <tr><td>Hole in the SE corner</td><td>basement movement lab (geyser back up)</td></tr>
-        <tr><td>F at the console (basement hub)</td><td>the index: pick a room to teleport to (one per room)</td></tr>
-        <tr><td>R / H (basement)</td><td>back to last checkpoint / to the hub</td></tr>
-        <tr><td>Mouse</td><td>look</td></tr>
-        <tr><td>Left click</td><td>fire (semi-auto)</td></tr>
-        <tr><td>Hold left click</td><td>charge (Lachryma), release to fire a piercing beam</td></tr>
-        <tr><td>Right click (hold)</td><td>aim down sights</td></tr>
-        <tr><td>Middle click</td><td>fire the selected shell (seek: hold to paint targets, release)</td></tr>
-        <tr><td>1–9, 0, − / wheel</td><td>pick shell: slice, push, well, mark, bomb, bank, seek, slip, groove, anchor, hatch</td></tr>
-        <tr><td>~</td><td>the god hand: the Courier becomes a jar, you become a hand (LMB use the God Art, RMB the art wheel / 1-5, Q/E turn, wheel zoom, WASD pan; ~ returns)</td></tr>
-        <tr><td>M / N</td><td>Mind Mapping (the map) / a survey pulse: what you have mapped is your Zone of Influence, where God Arts work</td></tr>
-        <tr><td>Y (dunes)</td><td>stow / summon the Solar Surfer: W hoist the sail, S furl and brake, A D steer, Shift flare, Space hop</td></tr>
-        <tr><td>Glowing floor ring</td><td>Lachryma geyser up to the gallery</td></tr>
-        <tr><td>X</td><td>holster / draw (firing or aiming draws it)</td></tr>
-        <tr><td>Z</td><td>toggle 1st / 3rd person</td></tr>
-        <tr><td>O</td><td>swap shoulder (3rd person)</td></tr>
-        <tr><td>Q</td><td>the Sondelass: 1 / 2 / 3 cutlass, rod, hook; middle click locks on</td></tr>
-        <tr><td>G</td><td>the Soul Brush: LMB the club (hold: slam); RMB hold the Celestial Brush, LMB draws; C at speed the brush slide</td></tr>
-        <tr><td>J</td><td>the Veritome, held open: RMB hold the lens, LMB expose a plate, wheel zoom · B, VERITOME: appraise the film, the binder, the bestiary</td></tr>
-        <tr><td>P</td><td>the Pneuka Box: what you carry and wear (left click uses, right click lists the rest); with the Veritome drawn, its bank opens beside it</td></tr>
-        <tr><td>F at the gong</td><td>time trial: break the 12 glowing jars</td></tr>
-        <tr><td>T</td><td>reset room</td></tr>
-        <tr><td>Tab</td><td>tuning panel (frees the mouse)</td></tr>
-        <tr><td>F3</td><td>physics debug lines</td></tr>
-      </table>
-      <details><summary>Movement techs and arts · basement › room 1 › south door: TECH LAB (west door: THE RIGGING › THE HANDS · east door: CLOCKWORK MILL › KILN STACK)</summary>
-      <table>
-        <tr><td>E</td><td>blink: a dodge along the move keys (2 charges)</td></tr>
-        <tr><td>C in the air, looking down</td><td>ground slam; then Space: slam jump, hold C: slam slide</td></tr>
-        <tr><td>Shift while crouched</td><td>roll: a dodge with a beat of invulnerability (also automatic out of a fall of 20 m or more)</td></tr>
-        <tr><td>Land on a pot / clapperjar</td><td>stomp bounce</td></tr>
-        <tr><td>Hold C on slip</td><td>slip dive: fast, climbs slip walls, Space launches out (8: SLIP shell paints it)</td></tr>
-        <tr><td>Deep water</td><td>swim: C dive, Space up / hop out, Shift faster</td></tr>
-        <tr><td>Walk into a ladder</td><td>climb: W/S, Shift fast, C slide, Space kick off (the gun stays out at a walk)</td></tr>
-        <tr><td>Jump at a ledge (W) / bar / cable</td><td>hang: A/D shimmy, W pull up, S/W along a bar, C drop, Space kick off; a slanted cable is a zipline</td></tr>
-        <tr><td>C in the air by a wall</td><td>wall latch: cling a couple of seconds, WASD crawl, Space kick off</td></tr>
-        <tr><td>Walk into a pole / rope / grate</td><td>climb it: W/S, A/D round a pole, Shift fast, C slides, Space jumps off; under a grate ceiling, crawl any way</td></tr>
-        <tr><td>F</td><td>interact: pick up a small thing (hoisted overhead; click throws, F sets down) · hold F at a heavy crate: W push, S pull · at the index console: pick a room</td></tr>
-        <tr><td>V</td><td>kick (on the run, or standing; time it on a projectile: parry)</td></tr>
-        <tr><td>Shoot down in the air</td><td>recoil jump (three shots a jump)</td></tr>
-      </table>
-      </details>
+      <div id="help"></div><!-- (the pages: src/help/pages.js, drawn by src/help/menu.js) -->
       <div class="go"><span class="opt">BEGIN</span></div>
       <div class="warn" id="lockwarn">Pointer lock unavailable here: look follows the cursor instead.</div>
     </div>

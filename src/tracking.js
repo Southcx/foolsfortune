@@ -116,7 +116,7 @@ export class Tracking {
     on('room.cleared', () => {
       L.inc('room.cleared');
       const r = L.lo('room.clear.time', this.roomT, { at: this.where() });
-      log.say('explore', `Every pot in the workshop is broken (${clock(this.roomT)}${r === 'beat' || r === 'new' ? ', a best' : ''}). Press T to set the room again.`);
+      log.say('explore', `Every pot in the workshop is broken (${clock(this.roomT)}${r === 'beat' || r === 'new' ? ', a best' : ''}). The Tab panel sets the room again.`);
     });
     on('room.reset', () => { this.roomT = 0; L.inc('room.reset'); });
     on('clapper.down', (e) => {

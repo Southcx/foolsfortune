@@ -39,6 +39,17 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-02 (later), from Petra: Round 39's hooks are in**
+- The crystals call `sfx.crystalRef(midi)`, `sfx.crystalStrike(midi, beat, { dense, last })` and `sfx.crystalSweet(midi)` exactly as
+  asked (`src/lachryma/crystals.js`; `src/lachryma/tuning.js` says how the notes are chosen: the key's major scale, a step per seventh of
+  the formation's height, `beat` 0..8 Hz). Until yours land, a placeholder pair of triangle tones `beat` Hz apart plays.
+- The vessel calls `sfx.vesselCrack(k, region)` and `sfx.vesselMend(region)` (`src/vessel/damage.js`; region is one of `mask`,
+  `torso`, `armL`, `armR`, `legL`, `legR`).
+- The survey is the Dreamvane's (MMB): it emits `dreamvane.survey` as the heel goes up, and the old survey sounds still play at the
+  blow (`cartography.survey`). The swing's sound is yours, from your cues table.
+- New events you may want in the cues: `crystal.ref`, `combat.start` / `combat.end` (`src/combat.js`: one signal for "in a fight",
+  e.g. for the battle music), `psygun.change`, `psygun.chamber`.
+
 **2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40)
 1. **The crystals, tuned by ear** (PLAN.md f, the heart of the round). Each formation gets a **key** (a chromatic root, MIDI) and a
    **sweet spot** on its surface. I will call, from `src/lachryma/crystals.js`:
@@ -61,6 +72,19 @@ counter clink, the film winding on `film.load`) are done: notes deleted. The Cru
 at the kiln (`kiln.open`, `kiln.close`) is for a later round.)
 
 ## Calissa (Art)
+
+**2026-10-02 (later), from Petra: Round 39's hooks are in**
+- `game.combat` (`src/combat.js`): `engaged`, `heat` (0..1), events `combat.start` / `combat.end`. For the ring and the beads.
+- `crystal.strike` carries `{ by, tool, ringing, pos, near, pitchOff, beat, sweet, nature: 'dense' | 'fragile' }`; `crystal.harvest`
+  adds `sweet` and `nature`. Each formation's nature is `e.tune.kind` (lachryma/tuning.js) if the art wants dense and fragile to look
+  different (they should: dense stony, fragile glassy).
+- The survey motion: `SURVEY` in `src/moves/dreamvane.js` samples the pick's clip (`swordC`) as a placeholder; give me a clip name
+  and its strike time and I will swap it in.
+- Placeholder shell casings: `shell(id)` in `src/pneuka/thingmodels.js` (a casing, a band of the type's colour). The kinds of psygun
+  are `src/psygun/kinds.js`.
+- The damage cracks: `uDmg[6]` and the `aRegion` attribute in `src/vessel/kintsugi.js` (dark seams with a Lachryma core, on the
+  kintsugi net); refine the look there or tell me what you want changed.
+- The keys on the charm: `charmKeys()` in `src/moves/lockheart.js` (one `buildThing` per fitted key, alternating sides).
 
 **2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40). Merge the latest default branch
 first: R38 and my resolution of `character.js` are in it.
@@ -146,6 +170,13 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02 (later), from Petra: the help pages are in**
+- `src/help/pages.js`: fourteen pages (the keys, the core movement, techs and arts, climbing and water, each tool, the god hand, the
+  box and the map). The `lead` and `notes` are yours to rewrite; keep the `rows` true to the keys (tell me if a key reads wrongly).
+- New log lines for you to polish: the crystal opened at its sweet spot ("The crystal sings true and falls open..."), the first
+  crystal's line, `psygun.change` / `psygun.chamber`, `vessel.crack` / `vessel.mend` (all in `tracking.js`). Two new achievements:
+  Perfect Pitch, Glass Ear (`src/achievements.js`).
 
 **2026-10-02, Round 39 tasks, from Petra**
 1. **The owner answered your twelve questions**: they are in `docs/PLAN.md` ("The owner's answers"), in the owner's words as near as
