@@ -5,11 +5,12 @@
 // clapperjars sent back to the kiln, fish landed, cubes saved). `start` is the first meeting, `again` every one after.
 //
 // Who they are is docs/LORE.md: every folk is a fragment of Kaolin Anagami, the ego this island is, and knows it. The finer the pot,
-// the bigger its share of him, and the tier sets how it speaks of the Prince of Clay (his main avatar): the stoneware folk in awe
-// ("the Prince", "the Immaculate One"), the porcelain by his inventions and his tomfoolery, the Court in worried whispers.
+// the bigger its share of him (and the finer its shape), and the tier sets how it speaks of the Prince of Clay (his main avatar): the
+// stoneware folk in awe and by hearsay ("the Prince", "the Immaculate One"), the porcelain by his inventions and his tomfoolery, the
+// Court in worried whispers. The higher tiers wait for their models (docs/LORE.md).
 //
 // The folk (npc/people.js says where they stand):
-//   MISTRESS SAGGAR   the Court. Keeper of the kiln; the Prince taught her. Warm, proud, shouts about pots, worries about him. Hexachord.
+//   MISTRESS SAGGAR   stoneware. Head maid of a workshop facility, keeper of its kiln; knows the Prince by hearsay. Warm, proud, loud. Hexachord.
 //   RAKU              porcelain. Treasurer of the Weir, a greedy little miser who haggles. Vain of his crackle. The soft hexachord.
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
@@ -25,7 +26,7 @@ export const TALKS = {
       hello: { lines: [
         { mood: 'surprise', text: 'Oh! {big}Courier!{/} {p:0.3}{mood:joy}Come in, come in, mind the {wave}slip{/} on the floor.' },
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
-        { mood: 'sly', text: "You too. {p:0.4}He fired you in her himself, you know. {p:0.3}{small}Wouldn't let any of us near the door.{/}" },
+        { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her himself, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
       again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }], next: 'menu' },
       menu: { lines: [], choices: [
@@ -36,9 +37,9 @@ export const TALKS = {
         { text: 'Goodbye.', go: 'bye' },
       ] },
       jars: { lines: [
-        { mood: 'calm', text: "The clapperjars? Earthenware. {p:0.3}Little crumbs of him, fresh-baked, too small to hold a thought for long. The kiln makes them when she's {gold}too full{/}." },
+        { mood: 'calm', text: "The clapperjars? Earthenware. {p:0.3}The hive's little workers, fresh-baked, too small to hold a thought for long. The kiln makes them when she's {gold}too full{/}." },
         { when: (g) => L(g, 'clapper.down') > 0, mood: 'anger', k: 1, text: (g) => `And YOU have knocked {hot}{big}${L(g, 'clapper.down')}{/}{/} of my little ones to bits! {burst}{quake:0.3}` },
-        { when: (g) => L(g, 'clapper.down') > 0, mood: 'calm', text: '{p:0.3}…Oh, he won\'t miss them. {small}He hardly notices the little ones.{/}' },
+        { when: (g) => L(g, 'clapper.down') > 0, mood: 'calm', text: '{p:0.3}…Oh, there\'s always more. {small}The Prince never misses the little ones, they say.{/}' },
         { when: (g) => L(g, 'clapper.down') === 0, mood: 'joy', text: "And you've not hurt a single one. {wave}Good.{/}" },
         { mood: 'sad', text: "They come back, mind. The slip runs home and she bakes them again. {p:0.4}{slow}That's the whole trouble with clay.{/}" },
       ], next: 'menu' },
@@ -47,19 +48,19 @@ export const TALKS = {
         { when: (g) => L(g, 'break.total') > 0 && L(g, 'break.total') < 50, mood: 'sly', text: (g) => `Only {gold}${L(g, 'break.total')}{/}? I've seen apprentices break more before breakfast.` },
         { when: (g) => L(g, 'break.total') >= 50, mood: 'anger', k: 1, text: (g) => `{shake}{big}${L(g, 'break.total')} POTS.{/}{/} {p:0.4}Do you know how long a pot takes to {hot}throw{/}, to {hot}dry{/}, to {hot}fire{/}?{burst}{quake:0.35}` },
         { when: (g) => L(g, 'break.total') >= 50, mood: 'calm', text: '{p:0.3}…Oh, never mind. Pots grow back. {small}I just like to shout about it.{/}' },
-        { mood: 'whisper', text: "Only leave the fine ones be. {p:0.4}He has favourites. {p:0.3}{small}And he sulks.{/}" },
+        { mood: 'whisper', text: "Only leave the fine ones be. {p:0.4}They say he has favourites. {p:0.3}{small}And that he sulks.{/}" },
       ], next: 'menu' },
       lach: { lines: [
-        { mood: 'awe', text: 'Lachryma… {slow}the tears of the world{/}, my old master calls it. Black as a kiln at midnight, and every colour at once when the light finds it.' },
+        { mood: 'awe', text: 'Lachryma… {slow}the tears of the world{/}, the old mistress of this kiln called it. Black as a kiln at midnight, and every colour at once when the light finds it.' },
         { mood: 'whisper', text: "It's in everything. The clay, the slip, me. {p:0.4}Let too much of it into a pot and the pot goes {cold}strange{/}. {p:0.4}{slow}Then it goes wrong.{/}" },
         { mood: 'calm', text: "You can stand it. {p:0.3}That's what you're for. {p:0.4}{small}The rest of us had better not try.{/}" },
         { mood: 'fear', text: "And when there's too much of it in one place… {p:0.3}the chests go {cold}{big}prismatic{/}{/}. {burst}{p:0.3}I don't go near those." },
       ], next: 'menu' },
       prince: { lines: [
-        { mood: 'calm', text: 'My old master. {p:0.4}{slow}He taught me the kiln{/}, back when I was the only one of us who could stand the heat.' },
-        { mood: 'confused', text: "Now he's up on that thumb inventing again. Last week, a teapot that pours {wobble}upwards{/}. {glyph:ask}{p:0.3}What for? {p:0.3}{small}He didn't say. He never says.{/}" },
-        { mood: 'whisper', text: "Between us, I worry. {p:0.4}He makes and makes and never rests, and what's made too fast cracks in the firing." },
-        { mood: 'sad', text: '{p:0.3}I tell him so. {p:0.4}{slow}He laughs.{/} {p:0.4}{small}Somebody has to tell him.{/}' },
+        { mood: 'awe', text: 'The {lach}Immaculate One{/}? {p:0.4}{slow}I\'ve never been in a room with him.{/} All my years at this kiln, and never once.' },
+        { mood: 'calm', text: "His work comes down the hill, though. A cup of his passed through my kiln once, for a second firing. {p:0.4}{small}I didn't sleep for a week.{/}" },
+        { mood: 'sad', text: 'You look at a thing like that and you think, why do I bother. {p:0.5}{slow}And then you fire the next pot anyway.{/}' },
+        { mood: 'joy', text: "{p:0.3}That's the whole trick of it, Courier. {p:0.4}{small}The next pot.{/}" },
       ], next: 'menu' },
       bye: { lines: [{ mood: 'joy', text: 'Off you go, then. {wave}Mind the slip!{/}' }] },
     },
@@ -126,6 +127,7 @@ export const TALKS = {
       sad: { lines: [
         { mood: 'sad', text: 'Sad? {p:0.7}{slow}No… just old.{/} The clay forgets things, when it\'s fired twice.' },
         { mood: 'sad', text: 'There was a town here once. {p:0.4}Jars and jugs and big round-bellied pots, all talking at once. {p:0.6}{slow}Now there\'s me, and the fish, and the wind.{/}' },
+        { mood: 'fear', text: 'Too near the Well, they were. {p:0.5}{slow}It got into them.{/} {p:0.6}{small}Some of them are still out there. You\'ll have met them.{/}' },
         { mood: 'awe', text: '{p:0.4}But you came. {p:0.3}{lach}Maybe the town\'s coming back.{/}' },
       ], next: 'menu' },
       advice: { lines: [

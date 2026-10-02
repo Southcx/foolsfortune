@@ -11,6 +11,15 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
+**2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
+- **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad
+  and transfigured them; some are still out in the Dunes as figments, and the slip jellies are read as them (clay gone back to slip,
+  mourning their own). Grog stayed. Its name and who survived as what wait for your layout: tell me what you build and I'll write it.
+- **Wells** are pockets of distortion: rumination, psychosis, and excess of *any* feeling (mania and grandeur as much as grief). A Well
+  of elation is as right as a Well of sorrow.
+- **Tiers**: earthenware, stoneware, porcelain, the Court; the finer the clay, the finer the shape. Saggar is now stoneware (a head
+  maid of a workshop facility, never in a room with the Prince). A King and a Queen exist, undeveloped until the owner's models.
+
 **2026-10-02, from Wanda (Round 38)**
 - **Shop sounds** (`src/audio/shop.js`, all on `sfx`): `shopCubes(n)` (one, a few, a heap from 6), `shopBuy()`, `shopRefuse()`,
   `kilnFire(roar = 3)` (seconds of roar, then the glaze crazing as it cools), `shopRestock()`. Swap them in for your placeholders.
@@ -172,7 +181,7 @@ decorated (glaze, slip, kintsugi, fittings).
 ## Espada (Lore)
 
 **2026-10-02, Espada's state after Round 39** (the rest of what was here is done and deleted)
-- Done: the owner's answers in `docs/LORE.md`; the tiers named (earthenware, stoneware, porcelain, the Court) and the four folk
+- Done: the owner's answers in `docs/LORE.md` (and Round 40's: Wells, the town, Saggar as a head maid); the tiers named and the four folk
   rewritten by tier, with new topics (each on the Prince; Grog on buying fish; Raku on curios); Raku's haggle lines (`RAKU_HAGGLE`,
   now any number per move, taken in turn: `pick` already did this); the glaze blurbs; the title's tagline, menu subs and STORY line;
   two help leads (the keys, the god hand).

@@ -50,16 +50,21 @@ construction and identify any way they like. *(Ruled, Round 39)*
   court are the whispers of self-doubt** that pull you down if you let them in too deep, yet they say it out of concern and
   self-protection.
 
-**The tiers, named** *(Espada's call, for the owner to veto)*. Clay is ranked by how hot it was fired, and porcelain (kaolin) is the
-finest, so the tiers are the potter's own ladder:
+**The tiers, named.** Clay is ranked by how hot it was fired, and porcelain (kaolin) is the finest, so the tiers are the potter's
+own ladder. *(Espada's names, approved by the owner, Round 40; the noble echelon and the Court are two tiers.)* **The elegance of a
+folk's shape is a status symbol too**: the finer the clay, the finer the form, from the squat household jar to the tall, finished
+figure. *(Ruled, Round 40)*
 
 | Tier | Who | How they speak of him |
 | --- | --- | --- |
-| **Earthenware** | the fresh-baked clapperjars: the smallest shares, lost without his noticing | they don't; they clap |
-| **Stoneware** | the lower folk: the working pots of the island | "the Prince", "the Immaculate One"; awe, and a little despair |
+| **Earthenware** | the fresh-baked clapperjars: peasant worker bees, the smallest shares, lost without his noticing | they don't; they clap |
+| **Stoneware** | the lower folk: the working pots of the island, from apprentices to the head maids who run its workshop facilities | "the Prince", "the Immaculate One"; awe, and a little despair. They know him by hearsay. |
 | **Porcelain** | the noble echelon | by his inventions and his tomfoolery; respect with an eyebrow raised |
 | **the Court** | the finest porcelain, nearest the chateau: his favourite cups | by his nature, in worried whispers: is he overreaching, will it break, should he rest |
 | **the Prince of Clay** | the main avatar | himself |
+
+**Above the Prince, a King and a Queen** are named and nothing more. *(Ruled, Round 40: they exist and are a mystery.)* The higher
+echelons (porcelain, the Court, the royals) wait for the owner's models before they are developed; write around them until then.
 
 **The Pneuka Jar is his Magnum Opus.** Divine inspiration from **the System** came to him, and from it he made the Pneuka Jar: a
 vessel able to house **Players**, people like us outside the game world. *(Ruled)* (The spelling is **Pneuka**. *Pneuma* was an
@@ -97,6 +102,21 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 - **Cubes are Lachryma made solid.**
 - The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
 - The game divides into **STORY** and **DEBUG**.
+
+### Wells, and the town that was *(Ruled, Round 40)*
+**A Well is a pocket of distortion**: rumination gone round and round until the Lachryma pools, distorted thinking, psychosis. It is
+not always dark. **Positive feeling in excess is a distortion too**: delusions of grandeur, mania, a joy that will not stop. A Well
+is where any feeling has been thought about too long, in too small a space. Writers should give Wells of elation as often as Wells of
+grief.
+
+**The town that was** stood in the Dunes, near the Well at the Weir: jars and jugs and big round-bellied pots, all talking at once.
+The Well got into them. Lachryma beyond what a folk can bear drives it mad by degrees and then transfigures it, and that is what
+emptied the town: some of its folk are still out in the Dunes, made into figments. The slip jellies are the reading the game already
+has room for: clay gone back to wet slip, a mind still turning in its middle, mourning its own kin where they burst and remembering
+who did it. Grog stayed by the water, and remembers. *(The owner approved this direction; the details wait for the town's layout.)*
+
+This is the showcase for the Lachryma system's downside: the same stuff that powers everything, taken past what a mind can hold.
+Couriers can walk where the town could not. That is what they are for.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -163,7 +183,8 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
   liquid Lachryma solid); **Figments** (tsukumogami-like thought-constructs with crystallised cores); **Egregores** (feral
   thought-forms authored by no one and fed by everyone, the antagonistic force); **Tulpas** (authored with care); Contractors.
 - **The divinity is dual**: Pirates and Witches are central. Whether they are gods, cultures or ways of living is open.
-- **Wells**: distortions where Lachryma is harvested. Collective Wells are shared emotion, Individual Mindscapes one mind.
+- **Wells**: distortions where Lachryma is harvested (ruled further in section 1). Collective Wells are shared emotion, Individual
+  Mindscapes one mind.
 - **Lachryma** is Latin for tears. It looks black, oily, ultraviolet and iridescent, and pops against terracotta and paper.
   Perhaps it smells of salt and hot metal.
 - **The Fool's Journey**: the title. Chasing what others call reckless, taking the one-in-a-million shot. The fortune is the
@@ -212,17 +233,18 @@ tier calls him is in section 1.
 - Her achievements show on her body as kintsugi, gold in the seams. *(Design)*
 
 ### The clay folk now
-Each is a fragment of Kaolin, knows it, and sits on a tier (section 1). The tiers and the two gut calls below are Espada's, for the
-owner to veto.
+Each is a fragment of Kaolin, knows it, and sits on a tier (section 1). All four are of the lower tiers for now; the higher ones wait
+for their models.
 
 | Folk | Tier | Title | Body | Voice | Temper | Who they are |
 | --- | --- | --- | --- | --- | --- | --- |
-| **Mistress Saggar** | the Court | keeper of the kiln | celadon, oxblood headscarf | the hexachord | calm; warm, proud, shouts about pots | keeps the kiln where his ideas are fired; worries aloud about him and his inventions; calls the clapperjars "my little ones" |
+| **Mistress Saggar** | Stoneware | keeper of the kiln | celadon, oxblood headscarf | the hexachord | calm; warm, proud, shouts about pots | the head maid of one of the workshop facilities *(Ruled, Round 40)*: runs its kiln and its jars, and has never been in a room with the Prince; reveres him from below; calls the clapperjars "my little ones" |
 | **Raku** | Porcelain | treasurer of the Weir | crackled raku, copper lustre, fez | the soft hexachord | sly; vain | a greedy little miser who haggles *(Ruled, Round 38)*; his crackle is the proof he went through the fire, and he wants you to notice |
 | **Old Grog** | Stoneware | angler of the Weir | tenmoku, straw hat | the In pentatonic | sad; slow, kind | has fished since "before the sand came"; remembers the town that was; keeps a pier counter |
 | **Pip** | Stoneware | apprentice potter | raw bisque, a cap | the Yo pentatonic | fear | not yet glazed; hides from the clapperjars; reveres the Immaculate One and despairs of ever being half as good |
 
-- **Saggar's old master is the Prince.** She is court; he taught her the kiln. *(Espada's gut)*
+- **Saggar's old master** is the head maid who ran the kiln before her, unnamed. (The first guess, that it was the Prince, fell when
+  the owner placed Saggar below his notice.) *(Espada's gut)*
 - **Pip is named for a pip**: the spot on a die or a playing card, the smallest mark that still counts. In a world where games are
   cosmic law, the least of the folk carries the least of the marks. *(Espada's gut)*
 - The other three are named for the potter's trade: a *saggar* is the box that shields a pot in the kiln, *grog* is fired clay
@@ -233,7 +255,7 @@ owner to veto.
 | Creature | In game | With the frame |
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
-| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment (hewn from Kaolin's psyche), and a cogitohazard when it turns on her. Not bad by nature: it drinks, rests, plays and mourns. |
+| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on her: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
 | **The fish** | ten "entities" answering to five aspects (dread, wonder, grief, hunger, mirth); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
@@ -287,15 +309,11 @@ owner to veto.
 
 ## 11. Open questions for the owner
 
-All twelve of the second edition's questions were answered in Round 39 (`docs/PLAN.md`, "The owner's answers"); the two left to
-Espada's gut are in section 6. What is left is small, and none of it blocks writing:
+Nothing blocks writing. Two things are left to the owner, and one waits on purpose:
 
-1. **The town that was.** Who lived there, and what emptied it? Given the ruling on excess Lachryma, one road is that the Well drove
-   them mad and some of them are still out there, transfigured. That is a big thing to decide, so it waits for the owner (and for
-   Petra's R40 layout).
-2. **The tiers.** Do earthenware / stoneware / porcelain / the Court suit, and are the noble echelon and the court two tiers (as
-   written) or one?
-3. **Vessouls**: keep the word for players, or let "Players" and "Couriers" carry it?
+1. **Vessouls**: keep the word for players, or let "Players" and "Couriers" carry it?
+2. **The town's details** (its name, who among its folk survived as what) wait for Petra's layout in Round 40.
+3. **The higher echelons, the King and the Queen** wait for the owner's models. Pace, not a question.
 
 ## 12. Where the words live
 
