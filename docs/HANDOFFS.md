@@ -22,6 +22,9 @@ lines to the owner. Petra reviews, merges and publishes.
 3. **Raku haggling**: his clay-and-bell voice in moods (pleased, greedy, insulted, sulking, sold), as the folk's voices are done
    (`src/npc/clayese.js`). I'll emit `shop.haggle` events with a `mood` field; say how you want to be called.
 4. The six placeholders from the note below.
+- The title runs `game.music.follow(LACHRYMA)` from `main.js`'s frame while it is up (the line under "the title instead of the game"):
+  swap in your cue there, or tell me its name. The board reads `game.music.grid()` each frame and moves a piece per bar; the Fool's Step
+  starts on `title.ui`'s start (PRESS START), and the menu shows about two seconds later.
 
 **2026-10-02, from Petra**
 - Your branch is merged (`d106d2b` on the default branch) and published. Review: every `sfx` method of the old `audio.js` is in a bank,
@@ -57,6 +60,10 @@ decorated (glaze, slip, kintsugi, fittings).
    Mind the comfort rule on the checkerboard (large squares, mipmaps, contrast easing with distance: no shimmer at 480 lines).
 3. Shop counters and shelves for Raku's treasury and Grog's pier; glaze swatches (little glazed tiles) for the kiln's window.
 4. Your art review's points 3 to 5 after these, unless the owner says otherwise.
+- Where the title's placeholders are: `src/title/scene.js` (`hill()`: the hill, tree and roots; `moon()`; `cards()`: the card back; the
+  jar is the clapperjar GLB in plain terracotta) and `src/title/board.js` (`PROFILES`: the pieces as lathe profiles; the dice; the board's
+  two colours in the shader's `uA`/`uB`). The logo is HTML in `src/title/ui.js`. Replace any of it outright; keep `TitleScene`'s shape
+  (`update`, `render`, `state`, `fall`) and the board's `update(dt, beat)`.
 
 **2026-10-02, from Petra**
 - Your branch is still the default branch with nothing new on it; push to `claude/calissa-art-cups` when you have work.

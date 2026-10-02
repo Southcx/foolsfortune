@@ -118,6 +118,8 @@ import { Mirages } from './crucibelle/mirage.js';
 import { Signatures, standardSignatures } from './signatures.js';
 import { Spirits } from './spirits.js';
 import { Crystals } from './lachryma/crystals.js';
+import { TitleScene } from './title/scene.js';
+import { TitleUI } from './title/ui.js';
 import { Diag } from './debug/diag.js';
 import { MacroBook } from './mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
@@ -509,7 +511,37 @@ async function main() {
     if (!god.active) input.requestLock(); // (the hand has a free cursor)
   };
   overlay.addEventListener('click', start);
+  // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
+  const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
+  const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
+  const title = (game.title = { active: true, scene: titleScene, ui: null, mode: null });
+  overlay.style.display = 'none';
+  game.ui.want('title', true); // (the HUD steps out while the title is up: hideui.js)
+  const endTitle = (quiet = false) => {
+    if (!title.active) return;
+    title.active = false; title.ui?.close(); game.ui.want('title', false);
+    if (!quiet) {
+      // (from the dark of the dive into the world)
+      const f = document.createElement('div'); f.style.cssText = 'position:fixed;inset:0;background:#0b0614;z-index:12;pointer-events:none;transition:opacity .8s';
+      document.body.appendChild(f); requestAnimationFrame(() => { f.style.opacity = '0'; }); setTimeout(() => f.remove(), 900);
+      input.enabled = true; started = true;
+      if (!god.active && !input.locked) input.requestLock();
+      game.events.emit('title.enter', { mode: title.mode });
+    }
+  };
+  title.ui = new TitleUI(game, {
+    onStart: () => titleScene.go(),
+    onChoose: (mode) => {
+      title.mode = mode;
+      system.setLab(mode === 'debug'); // (DEBUG is the sandbox: every art in the lab; STORY learns them by doing)
+      game.mode = mode;
+      input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
+      titleScene.dive(() => endTitle());
+    },
+  });
+  titleScene.onMenu = () => title.ui.showMenu();
   input.onLockChange = (locked) => {
+    if (title.active) return; // (the title owns the screen: no pause card over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';
       return;
@@ -582,6 +614,12 @@ async function main() {
     if (window.__game?.manual) return;
     try {
       diag.frameStart();
+      if (game.title?.active) { // (the title instead of the game: the world waits, built, behind it)
+        game.title.scene.update(dt); game.music.follow(LACHRYMA);
+        if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
+        game.title.scene.render(); input.endFrame(); diag.frameEnd();
+        return;
+      }
       diag.begin('sim'); tick(dt); diag.end('sim');
       diag.begin('draw'); game.post.render(scene, window.__debugCam || camera); diag.end('draw'); // (the PS2 glow and the grade over the frame: render/glow.js)
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
@@ -823,6 +861,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
 }
 

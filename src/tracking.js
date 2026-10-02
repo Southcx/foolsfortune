@@ -438,6 +438,8 @@ export class Tracking {
         spirit: `${e.n > 1 ? `${e.n} smoke spirits climb` : 'A smoke spirit climbs'} out of it.`, chest: 'A chest falls out of the air.', nuke: `SLIP NUKE.${e.n ? ` ${plural(e.n, 'thing')} drown in it.` : ''}` };
       log.say(e.rank >= 4 ? 'ach' : 'luck', O[e.outcome] || e.outcome, { tone: e.rank >= 4 ? '#ff5ad0' : undefined });
     });
+    // the title (title/): which game was chosen (the words are Espada's to set: docs/HANDOFFS.md)
+    on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); log.say('system', e.mode === 'story' ? 'STORY is not written yet: the island waits for it. The workshop is open in the meantime, and the arts are learned by doing.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.', {}); });
     on('item.fit', (e) => { L.inc('item.fit'); log.say('info', e.socket === 'keys' ? `You put ${an(ITEM(e.item).toLowerCase())} on the Lockheart's ring.` : e.socket === 'heart' ? `You hang ${ITEM(e.item).toLowerCase()} on the Lockheart's chain.` : `You fit the ${ITEM(e.item).toLowerCase()} to the Crucibelle.`, { key: `ifit.${e.item}`, throttle: 0.2 }); });
     on('item.unfit', (e) => log.say('info', `You take the ${ITEM(e.item).toLowerCase()} off, into your Pneuka Box.`, { key: 'iunfit', throttle: 0.2 }));
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });

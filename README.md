@@ -161,6 +161,17 @@ A grimoire held **open in both hands**, the way a tablet is held to take a pictu
 | **The bestiary** (`bestiary.js`) | Pokémon Snap's behaviours, Monster Hunter's Hunter's Notes, the Pokédex | Every creature (the clapperjar, each fish) has facts learned from photographs of it doing something: a jar asleep (what wakes it), foraging, mending in gold, taunting (how far it sees), cowering behind a pot, falling, dancing, set upon by one of its own (**infighting**); a fish swimming (its depth and tides), circling a lure (what it is drawn to), biting, fighting. The useful ones are marked **in battle**. Its **understanding** (glimpsed, observed, studied, understood) is what other systems read: the Angling shelf shows a fish's habits as soon as they are photographed, and an understood creature is one the Soul Brush will later be able to paint a likeness of. |
 | **The Book** (`book.js`, `cards.js`, `arcana.js`, `ui.js`) | Greed Island (Hunter x Hunter), OSRS's bank | The **bank**: long-term, stacked, by card. **Designated pages**, numbered, in sections: 000-021 the **Major Arcana** (truths photographed: each page a riddle until its sitting is caught), 022-041 the **Curios**, 042- the **Creatures** (portraits). Twenty **free slots** for spare copies; a card has a **rank** (SS to H) and a **limit** (the most copies the Book holds). Things come and go through the **Pneuka Box** (below): stored from it as cards, taken out into it as things, only while the Veritome is drawn. **Condense** turns a spare into cubes by its rank. Arcana and creature cards are pictures of something known: they come straight from the darkroom and have no item form. |
 
+## The title: THE FOOL'S PRECIPICE
+
+The game opens on a live scene, not a card (`src/title/`; the brief and the owner's references: `docs/PLAN.md`, `docs/ref/`). The
+Courier sits on the lip of a crooked hill under a twisted tree, a clapperjar beside her like the Fool's dog; below, a checkerboard sea
+bends down into a slow whirlpool (log-polar squares, box-filtered so they cannot shimmer at 480 lines: `title/board.js`), and its giant
+pieces **play on the beat** of the music (a move a bar, a die tumbling on the downbeat); tarot cards fall like leaves under a spiral
+moon. **Press start** and she takes **the Fool's Step** off the edge; the menu comes in while she falls (**STORY**, still to be written;
+**DEBUG**, the sandbox with every art in the lab; **SETTINGS**; **SOUND TEST**), and a choice dives after her into the spiral and the
+world. The title has its own Courier (the same model and clips) and is drawn instead of the game, so nothing runs behind it. Its art
+(Calissa), cue (Wanda) and words (Espada) are placeholders being replaced (`docs/HANDOFFS.md`).
+
 ## The Dreamvane (K), the Crucibelle (U) and the Lockheart (I)
 
 Three tools that share what they work on: **Lachryma**. Anything made of it or holding it gives off a **signature** (`src/signatures.js`: a bauble, a cube, a shut chest, a clapperjar, a jelly with something swallowed, a crystal formation, a spirit), and each of the three takes it a different way. All three are in the Codex (TOOLS).
