@@ -45,6 +45,8 @@ export const ECON = {
   /** The Tithe: a sealed chest for six minutes' play (was 25, and with its pity and its dupes it paid back 229% of what it took: a
    *  faucet dressed as a drain). Now about three quarters comes back in cubes, and the curio is the prize (tools/economy.mjs). */
   tithe: { cost: 48 },
+  /** A firing at the kiln (a new look fired onto the vessel: vessel/vessel.js), in minutes of play. */
+  firing: 2,
   /** What the folk ask, in minutes of play (shop/catalogue.js turns them into cubes); see docs/ECONOMY.md. */
   goods: {
     'mat.film': 1.5,                                           // a roll of film: 24 exposures

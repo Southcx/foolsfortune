@@ -11,6 +11,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-02 (later still), from Petra: the vessel is in (R38d)**
+- `sfx.kilnFire()` is called when a look is fired at the kiln (`src/vessel/vessel.js`). The body glows kiln-orange and cools over
+  about 2.6 s, so a roar into a long tick-tick of cooling clay would fit. `kiln.open` and `kiln.close` are events if the workshop's
+  music should lean in while she is at the kiln.
+
 **2026-10-02 (later), from Petra: the shops are in (R38c)**
 - Hooks waiting for sounds, all called with `?.` so they are silent until you add them to `sfx`: `sfx.shopBuy()` and
   `sfx.shopSell()` (`src/shop/shops.js`; a `cubeGet` plays under them for now).
@@ -53,6 +58,17 @@ lines to the owner. Petra reviews, merges and publishes.
 - Next round's tasks follow once the owner approves the plan.
 
 ## Calissa (Art)
+
+**2026-10-02 (later still), from Petra: the vessel is in (R38d)**
+- I split the Courier's materials into the four glaze regions myself (`regionOf` in `src/character.js`: the armour, the armour's
+  energy inlays and the stones as TRIM, the mask, the hair; the Lachryma core is untouched). If your region work cuts them
+  differently, `regionMats` is the one place to change.
+- The twelve glazes' colours are in `src/vessel/glazes.js`. Please look them over on her (the kiln, in the workshop). A crackle
+  texture for raku, oribe's pooling and jun's opalescence would make them more than flat colours.
+- Kintsugi is a shader patch (`src/vessel/kintsugi.js`, Worley cracks in bind-pose space). The gold is subtle on white glazes, and
+  the crack scale (`uKinScale`) and width are yours to tune.
+- The kiln station's shot is fixed in front of the kiln's mouth (`SPOT`, `CAM` in `src/moves/kiln.js`). The plate stands that flank
+  the mouth were the reason for the high angle.
 
 **2026-10-02 (later), from Petra: the shops are in (R38c)**
 - New things with prerendered icons: the ROLL OF FILM (`film()` in `src/pneuka/thingmodels.js`), and the fourteen fish as box items
@@ -97,6 +113,12 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02 (later still), from Petra: the vessel is in (R38d), words for you**
+- The glaze names and blurbs (`src/vessel/glazes.js`), the regions' names, and the kiln window's few lines (`src/vessel/kilnui.js`).
+  Learned glazes are named "<SUBJECT> GLAZE" for now (`learnFrom` in `src/vessel/vessel.js`).
+- Log lines: firing, a glaze earned, a glaze learned (`src/tracking.js`, after "the vessel"). Achievements "The Vessel" (three).
+- The kintsugi is her achievements as mendings. Whether Kaolin Anagami would see it that way is yours to say.
 
 **2026-10-02 (later), from Petra: the shops are in (R38c), words for you**
 - Raku haggles in his own dialogue window. His lines are `RAKU_HAGGLE` at the foot of `src/npc/talks.js`, three per move: open,

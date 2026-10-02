@@ -247,10 +247,11 @@ export class Veritome extends Tech {
         const sw = A.w, sh = sw * (120 / 192), sy = A.y + (A.h - sh) / 2;
         c.getContext('2d').drawImage(canvas, A.x, sy, sw, sh, 0, 0, 192, 120);
         thumb = c.toDataURL('image/jpeg', 0.72);
+        q.swatch = swatchOf(c); // (its strongest colour: a good plate teaches the kiln a glaze, vessel/vessel.js)
       } catch { thumb = null; }
     }
     this.vf.flash(thumb);
-    const { held, unwritten, kind, ...plate } = q;
+    const { held, unwritten, kind, ...plate } = q; // (plate.swatch rides along)
     this.film.expose({ ...plate, thumb, held });
     this.book.save();
     if (thumb) this.model.setPhoto(thumb);
@@ -309,4 +310,20 @@ export class Veritome extends Tech {
 
   fixed() {}
   reset() { this.lower(); this.readT = 0; }
+}
+
+/** The strongest colour in the middle of a picture: the most vivid of a grid of samples, averaged with those near it in hue. */
+function swatchOf(c) {
+  try {
+    const d = c.getContext('2d').getImageData(48, 30, 96, 60).data, pts = [];
+    for (let y = 2; y < 60; y += 6) for (let x = 2; x < 96; x += 6) {
+      const i = (y * 96 + x) * 4, r = d[i], g = d[i + 1], b = d[i + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+      const s = mx ? (mx - mn) / mx : 0, h = mx === mn ? 0 : mx === r ? ((g - b) / (mx - mn) + 6) % 6 : mx === g ? (b - r) / (mx - mn) + 2 : (r - g) / (mx - mn) + 4;
+      pts.push({ r, g, b, s, v: mx / 255, h: h / 6 });
+    }
+    const best = pts.reduce((a, p) => (p.s * p.v > a.s * a.v ? p : a), pts[0]);
+    const near = pts.filter((p) => Math.min(Math.abs(p.h - best.h), 1 - Math.abs(p.h - best.h)) < 0.05 && p.s > best.s * 0.6);
+    const n = near.length || 1;
+    return [Math.round(near.reduce((a, p) => a + p.r, 0) / n), Math.round(near.reduce((a, p) => a + p.g, 0) / n), Math.round(near.reduce((a, p) => a + p.b, 0) / n)];
+  } catch { return null; }
 }

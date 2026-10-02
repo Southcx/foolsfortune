@@ -61,6 +61,9 @@ import { Movers } from './movers.js';
 import { System } from './system/system.js';
 import { Codex } from './system/codex.js';
 import { PneukaBox } from './pneuka/box.js';
+import { Vessel } from './vessel/vessel.js';
+import { KilnUI } from './vessel/kilnui.js';
+import { Kiln, KILN_AT } from './moves/kiln.js';
 import { Shops } from './shop/shops.js';
 import { ShopUI } from './shop/ui.js';
 import { PneukaUI } from './pneuka/ui.js';
@@ -303,6 +306,9 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
+  // the vessel she is: its glazes and its kintsugi, on her (vessel/: fired at the kiln in the workshop, moves/kiln.js)
+  game.vessel = new Vessel(game);
+  game.vessel.dress(character);
 
   const input = new Input(renderer.domElement);
   const player = new Player(physics, camera, input);
@@ -315,7 +321,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -339,6 +345,8 @@ async function main() {
   game.shops = new Shops(game);
   game.shopUI = new ShopUI(game);
   game.shopUI.onClose = () => { if (input.enabled && !game.god?.active && !game.dialogue?.open) input.requestLock(); };
+  game.kilnUI = new KilnUI(game);
+  game.kilnUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (system/voice.js)
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
@@ -387,6 +395,12 @@ async function main() {
       const n = game.folk.near(player); if (!n) return null;
       const p = game.folk.head(n).add(new THREE.Vector3(0, 0.55 * n.scale, 0));
       return { pos: p, d: Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z) - 0.3, ref: n.id };
+    });
+    // the kiln station: F at the kiln's mouth (moves/kiln.js)
+    game.interact.add('kiln', () => {
+      if (game.dialogue?.open || game.kilnUI?.open || !idle()) return null;
+      const d = Math.hypot(KILN_AT.x - player.pos.x, KILN_AT.z - player.pos.z);
+      return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
@@ -522,12 +536,13 @@ async function main() {
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
+  game.vessel.dress(titleScene.ch); // (she wears on the hill what she wears in the world)
   const title = (game.title = { active: true, scene: titleScene, ui: null, mode: null });
   overlay.style.display = 'none';
   game.ui.want('title', true); // (the HUD steps out while the title is up: hideui.js)
   const endTitle = (quiet = false) => {
     if (!title.active) return;
-    title.active = false; title.ui?.close(); game.ui.want('title', false);
+    title.active = false; title.ui?.close(); game.ui.want('title', false); game.vessel.dressed.delete(titleScene.ch);
     if (!quiet) {
       // (from the dark of the dive into the world)
       const f = document.createElement('div'); f.style.cssText = 'position:fixed;inset:0;background:#0b0614;z-index:12;pointer-events:none;transition:opacity .8s';
@@ -746,7 +761,7 @@ async function main() {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());

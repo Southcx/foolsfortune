@@ -14,7 +14,7 @@ export const BUILD = typeof __BUILD__ !== 'undefined' ? __BUILD__ : 'dev';
 const KEY = 'foolsfortune.build';
 // what is progress (cleared), by key prefix; anything else (settings) is kept
 const PROGRESS = ['foolsfortune.system', 'foolsfortune.stats', 'foolsfortune.veritome', 'foolsfortune.pneuka', 'foolsfortune.map', 'foolsfortune.ground',
-  'foolsfortune.course', 'foolsfortune.circuits', 'foolsfortune.trial', 'foolsfortune.flash', 'foolsfortune.shops'];
+  'foolsfortune.course', 'foolsfortune.circuits', 'foolsfortune.trial', 'foolsfortune.flash', 'foolsfortune.shops', 'foolsfortune.vessel'];
 
 export function resetOnNewBuild() {
   try {

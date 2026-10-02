@@ -634,6 +634,15 @@ export class Tracking {
     });
     on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
     on('film.load', (e) => { L.inc('film.rolls'); log.say('info', `You load a fresh roll of film.${e.left ? ` (${e.left} more in your box)` : ' It is your last.'}`, {}); });
+    // the vessel (vessel/): the kiln station, firings, glazes earned and learned
+    on('kiln.open', () => { L.inc('kiln.open'); first('kiln', 'Logged: the kiln. Choose a glaze for each part of the vessel, see it on her, and fire it on.'); });
+    on('vessel.fire', (e) => {
+      L.inc('vessel.fired'); L.inc('vessel.fire.cubes', e.cost);
+      const names = [...new Set(Object.values(e.look))].map((id) => this.game.vessel?.glaze(id)?.name || id);
+      log.say('gain', `The kiln takes ${plural(e.cost, 'cube')} and fires the vessel in ${names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : names[0]}.`, { tone: '#ffb27a' });
+    });
+    on('glaze.earn', (e) => { L.inc('glaze.earned'); log.say('record', `A new glaze is yours: ${this.game.vessel?.glaze(e.glaze)?.name || e.glaze}. (the kiln, in the workshop)`); });
+    on('glaze.learn', (e) => { L.inc('glaze.learned'); log.say('gain', `The Veritome learns a glaze from the photograph: ${this.game.vessel?.glaze(e.glaze)?.name || 'a new colour'}.`, { tone: '#ffb27a' }); });
     on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
     on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
     on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
