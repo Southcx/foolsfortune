@@ -22,6 +22,21 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
+1. **The title cue.** For THE FOOL'S PRECIPICE (PLAN.md, piece 1): an intro as the logo is fired, a loop that the giant game pieces
+   move to (it must carry `root` and run on the arranger, so `MusicPlayer.grid()` gives its beat: the pieces step on the bar), and
+   **the Fool's Step**, a one-shot for the moment she steps off the hill into the menu. Your call whether it grows from "The Fool's
+   Step" draft, the Five, or something new; the brief is "about to set out on an adventure".
+2. **Shop sounds**: cubes set down on a counter (a few, a heap), a purchase, a refusal, the kiln firing a glaze (a roar and a cooling
+   tick), a shelf restocked. Placeholders of mine will call `sfx.cubeClack`, `sfx.menuOk` and `sfx.fizzle` until yours exist: tell me
+   the method names and I'll switch.
+3. **Raku haggling**: his clay-and-bell voice in moods (pleased, greedy, insulted, sulking, sold), as the folk's voices are done
+   (`src/npc/clayese.js`). I'll emit `shop.haggle` events with a `mood` field; say how you want to be called.
+4. The six placeholders from the note below.
+- The title runs `game.music.follow(LACHRYMA)` from `main.js`'s frame while it is up (the line under "the title instead of the game"):
+  swap in your cue there, or tell me its name. The board reads `game.music.grid()` each frame and moves a piece per bar; the Fool's Step
+  starts on `title.ui`'s start (PRESS START), and the menu shows about two seconds later.
+
 **2026-10-02, from Petra**
 - Your branch is merged (`d106d2b` on the default branch) and published. Review: every `sfx` method of the old `audio.js` is in a bank,
   every call site resolves, it builds, the headless drive and the stress test are as before. A clean split.
@@ -42,6 +57,25 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Calissa (Art)
 
+**2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
+The owner's ruling: the Courier is a **vessel**, the magnum opus of Kaolin Anagami; customization decorates the vessel as a pot is
+decorated (glaze, slip, kintsugi, fittings).
+1. **First: the Courier made ready to decorate.** Colour regions the code can recolour one by one (body, mask, hair, trim, and room for
+   more: vertex colours or a region mask, your call, tell me which), and a clean UV area on the mask for a painted slip pattern. With
+   it, your art review's texture and palette fixes (points 1 and 2), since they touch the same model.
+2. **The title's art: THE FOOL'S PRECIPICE** (PLAN.md, piece 1; the owner's references are `docs/ref/title_fool_card.png` and
+   `docs/ref/title_checker_vortex.webp`, both the owner's own work): the crooked hill and its tree, the giant game pieces (pawn, rook,
+   star-crowned king, a die), the checkerboard sea bending up into a spiral, the spiral moon with a face, falling tarot cards, the clay
+   logo. A sitting pose and a standing pose for the Courier on the lip of the hill (UAL `sitIdle`/`sitExit` exist: check them first).
+   I'll build the scene and its motion with placeholders and swap yours in; send pieces as you have them (GLBs in `src/assets/`).
+   Mind the comfort rule on the checkerboard (large squares, mipmaps, contrast easing with distance: no shimmer at 480 lines).
+3. Shop counters and shelves for Raku's treasury and Grog's pier; glaze swatches (little glazed tiles) for the kiln's window.
+4. Your art review's points 3 to 5 after these, unless the owner says otherwise.
+- Where the title's placeholders are: `src/title/scene.js` (`hill()`: the hill, tree and roots; `moon()`; `cards()`: the card back; the
+  jar is the clapperjar GLB in plain terracotta) and `src/title/board.js` (`PROFILES`: the pieces as lathe profiles; the dice; the board's
+  two colours in the shader's `uA`/`uB`). The logo is HTML in `src/title/ui.js`. Replace any of it outright; keep `TitleScene`'s shape
+  (`update`, `render`, `state`, `fall`) and the board's `update(dt, beat)`.
+
 **2026-10-02, from Petra**
 - Your branch is still the default branch with nothing new on it; push to `claude/calissa-art-cups` when you have work.
 - The owner has seen your five-point art review; prioritising it is part of the next round's plan (the Courier model matters to the
@@ -58,6 +92,20 @@ lines to the owner. Petra reviews, merges and publishes.
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
+The owner's rulings for the bible (with more to come from your talks with them): **Kaolin Anagami** made this place, an *Island of Ego*,
+one island of the larger Fool's Fortune world; the **Courier is a vessel**, Kaolin Anagami's magnum opus, and **players are entities
+that inhabit the vessels** prepared for them; **Lachryma is everything** (magicules, emotions); cubes are Lachryma made solid; the long
+sink is an **Internal Shrine Garden**, a pocket dimension within the vessel; the game divides into STORY and DEBUG.
+1. Put those into `docs/LORE.md` (and settle the contradictions they answer).
+2. **Shopkeeper lines**: Raku above all (a greedy little miser who haggles: greetings, lines for a lowball, flattery, a fair offer, a
+   sale, a walk-out, his moods), and Grog at his pier counter. As data in `src/npc/talks.js`'s manner; I'll read them from wherever
+   you put them, tell me the shape.
+3. **Glaze names and examine lines** (celadon, tenmoku, shino, oribe, ash, raku, temmoku, crackle...): twelve to start, each with a
+   line. **Kintsugi**'s line.
+4. **The title's words**: a tagline under the logo, and the menu's (STORY, DEBUG, SETTINGS, SOUND TEST, or better words), and a line
+   for STORY while it is a stub.
 
 **2026-10-02, from Petra**
 - `docs/LORE.md` is merged (`bf79652`). Your thirteen questions are for the owner; the plan for next round will ask for the ones
