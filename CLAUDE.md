@@ -68,4 +68,16 @@ credits: UAL Standard, CMU mocap, CC0).
 
 ## Git and publishing
 - Develop on the branch the task names; commit with the trailers the session gives; no pull request unless asked.
-- The playable build is republished to the same artifact URL after `npm run build`.
+- The playable build is republished to the same artifact URL after `npm run build`, by the main thread only (so one build never
+  overwrites another).
+
+## Threads
+Several Claude sessions work on this repo at once, each in its own container on its own branch; the owner merges them into the
+default branch (`claude/fps-third-person-demo-8zp2kx`). Start from the latest default branch, keep merges small and frequent, and
+stay inside your own files; a small edit to a shared hub (`main.js`, `tracking.js`, this file) is fine.
+- **Main** (`claude/fps-third-person-demo-8zp2kx`): everything not listed below, and publishing the playable build.
+- **Audio** (`claude/friendly-knuth-vbv82r`): `src/audio.js` (and the `src/audio/` it is being split into), `src/music/`,
+  `src/system/voice.js` and `src/system/speech/`, `src/npc/clayese.js`, `docs/OST.md`, `docs/voice_recording.md`.
+- A feature that needs a sound it does not have calls an existing `sfx` method or adds a one-line placeholder and says so to the
+  owner; the Audio thread builds the real sound. Another thread's files are changed by asking it (through the owner, or the
+  remote `send_message` tool with the owner's OK), not by editing them.
