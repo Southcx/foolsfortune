@@ -94,6 +94,8 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   owner; Wanda builds the real sound. The same goes for art (Calissa) and words (Espada). Another division's files are changed by
   asking it (through the owner, or the remote `send_message` tool with the owner's OK), not by editing them.
 - A message between divisions is for a handoff or a question, not a chat: reply once, and never just to acknowledge.
+- **Handoffs** between divisions are written in `docs/HANDOFFS.md` (a section each, newest first; delete a note in your branch when it
+  is done). Read your section at the start of every round.
 - **How work lands.** The owner sets the direction and approves; Petra plans the next round and hands each division its tasks (through
   the owner, or `send_message` with the owner's OK). The divisions work at the same time, each on its own branch. A division is done
   when it has (1) merged the latest default branch into its branch and fixed what that broke, (2) built (`npm run build`) and, if it
