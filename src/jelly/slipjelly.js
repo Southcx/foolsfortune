@@ -400,7 +400,7 @@ export class SlipJellies {
       P.shake = Math.max(P.shake || 0, 0.5);
       const took = g.lachryma?.drain?.(move === 'lunge' ? S.drain : 4, 'jelly') ?? 0;
       if (took > 0) c.drives.sat('hunger', 0.04 * took); // (it fed on her: a hungry jelly is a dangerous one)
-      g.events?.emit('jelly.strike', { move, by: 'environment' });
+      g.events?.emit('jelly.strike', { move, by: 'environment', from: [c.pos.x, c.pos.y, c.pos.z] });
     } else if (foe.decoy) { foe.struck?.(); // (a Courier of smoke: struck, it is gone: crucibelle/mirage.js)
     } else if (foe.type === 'creature') {
       g.creatures.strike(foe, foe.center(new THREE.Vector3()), v.clone().normalize(), S.dmg * (1 + st(c, 'empower')) * (c.spirit?.power ?? 1), move, 'creature', c);

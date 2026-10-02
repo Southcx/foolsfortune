@@ -232,7 +232,8 @@ export class Player {
   impulse(v, why = 'push') {
     this.vel.add(v);
     if (v.y > 0.5) { this.grounded = false; this.coyote = 0; }
-    this.ev('impulse', { why, mag: v.length() });
+    const mag = v.length();
+    this.ev('impulse', { why, mag, dir: mag > 1e-4 ? [v.x / mag, v.y / mag, v.z / mag] : null });
   }
 
   // ---- capsule height ------------------------------------------------------------

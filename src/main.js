@@ -61,6 +61,8 @@ import { Movers } from './movers.js';
 import { System } from './system/system.js';
 import { Codex } from './system/codex.js';
 import { PneukaBox } from './pneuka/box.js';
+import { VesselDamage } from './vessel/damage.js';
+import { Combat } from './combat.js';
 import { Vessel } from './vessel/vessel.js';
 import { KilnUI } from './vessel/kilnui.js';
 import { Kiln, KILN_AT } from './moves/kiln.js';
@@ -312,6 +314,8 @@ async function main() {
   // the vessel she is: its glazes and its kintsugi, on her (vessel/: fired at the kiln in the workshop, moves/kiln.js)
   game.vessel = new Vessel(game);
   game.vessel.dress(character);
+  game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks her where it lands; the cracks mend: vessel/damage.js)
+  game.combat = new Combat(game); // (is she fighting? one signal for the HUD ring and the rest: combat.js)
 
   const input = new Input(renderer.domElement);
   const player = new Player(physics, camera, input);
@@ -771,7 +775,7 @@ async function main() {
     game.log.tick(dt);
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.combat?.update(dt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());

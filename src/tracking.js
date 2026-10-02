@@ -649,6 +649,10 @@ export class Tracking {
     });
     on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
     on('film.load', (e) => { L.inc('film.rolls'); log.say('info', `You load a fresh roll of film.${e.left ? ` (${e.left} more in your box)` : ' It is your last.'}`, {}); });
+    // the vessel's damage (vessel/damage.js): a blow cracks her where it lands; the cracks mend
+    const PART = { mask: 'your mask', torso: 'your body', armL: 'your left arm', armR: 'your right arm', legL: 'your left leg', legR: 'your right leg' };
+    on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
+    on('vessel.mend', (e) => { L.inc('vessel.mends'); log.say('info', `${(PART[e.region] || 'The crack').replace(/^y/, 'Y')} mends.`, { key: 'mend', win: 2, fmt: (n) => `${n} cracks mend.` }); });
     // the vessel (vessel/): the kiln station, firings, glazes earned and learned
     on('kiln.open', () => { L.inc('kiln.open'); first('kiln', 'Logged: the kiln. Choose a glaze for each part of the vessel, see it on her, and fire it on.'); });
     on('vessel.fire', (e) => {

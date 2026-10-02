@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
 import { addKintsugi, kintsugiUniforms } from './kintsugi.js';
+import { tagRegions } from './damage.js';
 import { ECON } from '../econ/table.js';
 import { PALETTE } from '../config.js';
 import { sfx } from '../audio.js';
@@ -59,6 +60,7 @@ export class Vessel {
    *  the kintsugi. */
   dress(ch, look = this.look) {
     if (!ch?.regionMats) return;
+    if (!this.dressed.has(ch)) tagRegions(ch); // (each vertex told its hit region, for the cracks: vessel/damage.js)
     this.dressed.add(ch);
     for (const r of Object.keys(REGIONS)) {
       const m = ch.regionMats[r], g = this.glaze(look[r]) || GLAZES[DEFAULT_LOOK[r]];
