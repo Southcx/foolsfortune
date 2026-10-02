@@ -79,7 +79,7 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   draws: zones, the light budget, the 480-line present), and publishing the playable build.
 - **Wanda** (wands), Audio, `claude/friendly-knuth-vbv82r`, session `session_01TJWi6AnZAQ8uug5yMgzhHW`: `src/audio.js` (and the `src/audio/` it is being split into),
   `src/music/`, `src/system/voice.js` and `src/system/speech/`, `src/npc/clayese.js`, `docs/OST.md`, `docs/voice_recording.md`.
-- **Calissa** (cups), Art, runs in Cowork on the owner's machine (no session to message; branch: added on its first push): what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
+- **Calissa** (cups), Art, session `session_01XGT2M7FzmmweYqpDur2os6` (branch: added once known): what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
   models and the animation pipeline (`source_assets/`, `src/assets/`, `tools/export_*.py`, `tools/bake_*.mjs`). The maker's pixel
   art is the maker's.
 - **Espada** (swords), Lore, session `session_019tYzG4KGZQbYBAi8eQD9hi` (branch: added once known): `docs/LORE.md` (the series bible: people, places, history, names,
