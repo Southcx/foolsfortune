@@ -12,6 +12,7 @@
 //   econLine(ledger) -> a short text line for the F3 panel
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
+import { PSYGUNS } from '../psygun/kinds.js';
 
 /** A price named in minutes of ordinary play. */
 export const minutes = (n) => Math.round(n * ECON.perMinute);
@@ -44,6 +45,16 @@ export function econLine(L) {
 /** The DEBUG profile's purse: `/grant [n]` puts n cubes (500 if unsaid) in her balance, so a shop or a Tithe can be tested without
  *  farming. STORY refuses it (the owner's split: STORY earns everything). Reported by an event and a rule in tracking.js. */
 export function installEconomy(game) {
+  // (DEBUG: carry another kind of psygun: psygun/kinds.js)
+  game.chat?.add('psygun', {
+    help: `DEBUG only: /psygun ${Object.keys(PSYGUNS).map((k) => k.slice(7)).join(' | ')} (another kind of psygun: its chambers and capacities)`,
+    run: ([v]) => {
+      if (game.mode !== 'debug') { game.log.say('warn', 'The System grants nothing outside DEBUG.', { key: 'grant.no', throttle: 2 }); return; }
+      const id = `psygun.${(v || '').toLowerCase()}`;
+      if (!PSYGUNS[id]) { game.log.say('warn', `There is no psygun "${v || ''}". (${Object.keys(PSYGUNS).map((k) => k.slice(7)).join(', ')})`, { key: 'psy.no', throttle: 1 }); return; }
+      game.shells?.setGun(id);
+    },
+  });
   game.chat?.add('grant', {
     help: 'DEBUG only: /grant [n] puts n Lachryma cubes in your purse (500 if unsaid)',
     run: ([v]) => {

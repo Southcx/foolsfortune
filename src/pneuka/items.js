@@ -14,6 +14,8 @@ import { LURES } from '../angling/lures.js';
 import { HEARTS, KEYS } from '../lockheart/table.js';
 import { INSTRUMENTS } from '../crucibelle/songs.js';
 import { SPECIES } from '../angling/species.js';
+import { SHELL_TYPES } from '../shells.js';
+import { typeNo } from '../psygun/kinds.js';
 
 export const ITEMS = {};
 for (const c of CURIOS) {
@@ -47,6 +49,8 @@ for (const [id, K] of Object.entries(KEYS)) ITEMS[id] = { id, kind: 'key', key: 
 ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL OF FILM', glyph: '◫', color: 0xe0c070, tier: 0, examine: 'Twenty-four plates for the Veritome, wound on a brass spool. Loaded by itself when the last roll runs out.', card: null, lure: false, stack: 99 };
 // a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: shop/catalogue.js)
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
+// the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
+for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

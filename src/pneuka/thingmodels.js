@@ -132,8 +132,21 @@ function film() {
   return h;
 }
 
+/** A caster shell (a placeholder: Calissa's models come): a brass case, a band of the shell's colour and its number stamped as notches. */
+const SHELL_COLOR = { slicer: 0xffe0c0, push: 0x9ad0ff, well: 0x8a6ad0, mark: 0xffd76a, bomb: 0xd0432a, ricochet: 0xb8f2a6, homing: 0xff9ad5, slip: 0xb3905f, groove: 0xffb27a, anchor: 0x6a8aa0, hatch: 0x9be36a };
+function shell(id) {
+  const t = id.slice(6), brass = brassM(), band = mat(SHELL_COLOR[t] ?? 0xcccccc, { emissive: SHELL_COLOR[t] ?? 0, emissiveIntensity: 0.25 }), dark = mat(0x2a1a14);
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.05, 10), brass);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.014, 10), band); ring.position.y = 0.012;
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.011, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2), band); cap.position.y = 0.025;
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.013, 0.004, 10), dark); rim.position.y = -0.025;
+  const h = holder([body, ring, cap, rim], [brass, band, dark]); h.group.rotation.set(0.5, 0.3, -0.6);
+  return h;
+}
+
 export function buildThing(id) {
   if (id === 'mat.film') return film();
+  if (id.startsWith('shell.')) return shell(id);
   if (id.startsWith('key.')) return key(id);
   if (id.startsWith('inst.')) return instrument(id);
   if (id.startsWith('heart.')) { const c = buildCoffin(id); c.group.rotation.set(0.25, 0.45, 0.1); return c; }

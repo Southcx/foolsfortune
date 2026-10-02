@@ -20,6 +20,7 @@ import { CARDS, CARD, WORTH } from '../veritome/cards.js';
 import { lureList, tasteOf, BARE } from '../angling/lures.js';
 import { PLACES } from '../tools/belt.js';
 import { ASPECTS } from '../angling/species.js';
+import { SHELL_TYPES } from '../shells.js';
 
 const CSS = `
 #pneuka { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.6); cursor: default; user-select: none; }
@@ -218,6 +219,23 @@ export class PneukaUI {
           pane.appendChild(el('div', 'oddsl', `${R.slice().reverse().map((r) => `<b style="color:${hex(OUTCOMES[r.id].color)}">${OUTCOMES[r.id].label}</b> ${r.p >= 0.1 ? Math.round(r.p * 100) : (r.p * 100).toFixed(1)}%`).join(' · ')}${extra ? ` · ${extra}` : ''} · it opens full at ${HEARTS[heart].fill}`));
         }
       }
+    }
+    // the psygun's chambers (psygun/kinds.js): which caster shells it carries, and how many of each it holds; a click on a chamber turns
+    // it to the next shell not chambered, a right click lists them all
+    const S = g.shells;
+    if (S && (g.belt?.isWorn('psygun') || box.held('tool.psygun'))) {
+      const row = el('div', 'fits');
+      S.chambers.forEach((id, i) => {
+        const T0 = SHELL_TYPES.find((t) => t.id === id), d = el('div', 'slot', `${this.icon(`shell.${id}`)}<span class="n">${i + 1}</span>`);
+        d.onmouseenter = () => this.say(`Chamber ${i + 1}: <b>${T0.no} ${T0.name}</b>, ${S.counts[id]} of ${S.max(id)} · click: the next shell · right click: choose`);
+        d.onmouseleave = () => this.say('&nbsp;');
+        const free = () => SHELL_TYPES.filter((t) => !S.chambers.includes(t.id));
+        d.onclick = () => { const f = free(); if (f.length) { const k = SHELL_TYPES.indexOf(T0); const next = f.find((t) => SHELL_TYPES.indexOf(t) > k) || f[0]; S.chamber(i, next.id); this.render(); } };
+        d.oncontextmenu = (e) => { e.preventDefault(); this.menu(e, '', SHELL_TYPES.map((t) => ({ label: `${t.no} ${t.name}${S.chambers.includes(t.id) ? ' (chambered)' : ''}`, run: () => S.chamber(i, t.id) }))); };
+        row.appendChild(d);
+      });
+      row.appendChild(el('div', 't', `<s>${S.gun.name} · ${S.gun.chambers} CHAMBERS</s>${S.types.map((t) => t.no.replace('TYPE-', '')).join(' · ')}`));
+      pane.appendChild(row);
     }
     // the tools: worn in the places on her body (tools/belt.js); the rest are in the box
     pane.appendChild(el('h4', '', '<span>THE TOOLS</span><span>worn · drawn with its key</span>'));

@@ -1,3 +1,4 @@
+import { PSYGUNS, DEFAULT_PSYGUN, capacityOf, typeNo } from './psygun/kinds.js';
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from './physics.js';
 import { T, DEG, PALETTE } from './config.js';
@@ -18,6 +19,7 @@ import { hasTag, registered } from './tags.js';
 //   ricochet, homing – see specials.js
 //   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
 // ---------------------------------------------------------------------------
+// (each has a number, TYPE-00 to TYPE-10, by its place here: psygun/kinds.js typeNo; which a psygun carries is its chambers)
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'CLEAVE', glyph: '═' }, // (the id is the old one: the ledger's counts are kept under it)
   { id: 'push', name: 'PUSH', glyph: '⟫' },
@@ -32,6 +34,8 @@ export const SHELL_TYPES = [
   { id: 'hatch', name: 'HATCH', glyph: '❦' },
 ];
 export const SHELL_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-'];
+SHELL_TYPES.forEach((t, i) => { t.no = typeNo(i); });
+const GUN_KEY = 'foolsfortune.psygun.v1';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
@@ -73,6 +77,8 @@ export class Shells {
     this.game = game;
     this.selected = 0;
     this.counts = Object.fromEntries(SHELL_TYPES.map((t) => [t.id, T.shells.start]));
+    // the psygun she carries (psygun/kinds.js): its chambers (which shell types are loaded) and how many of each it holds
+    this.loadGun();
     this.bladeIdx = 0;
     this.projectiles = [];
     this.wells = [];
@@ -96,25 +102,63 @@ export class Shells {
     this.casters = new Casters(this);
   }
 
-  get type() { return SHELL_TYPES[this.selected]; }
+  /** The shell types in the chambers, in order (what 1, 2, 3... pick; the HUD's slots). */
+  get types() { return this.chambers.map((id) => SHELL_TYPES.find((t) => t.id === id)).filter(Boolean); }
+  get type() { return this.types[this.selected] || this.types[0]; }
+  /** How many of a type this psygun holds. */
+  max(id) { return capacityOf(this.gun, id); }
+
+  // ---------------------------------------------------------------- the psygun and its chambers (psygun/kinds.js)
+  loadGun() {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(GUN_KEY) || 'null'); } catch { /* none kept */ }
+    this.setGun(s?.gun && PSYGUNS[s.gun] ? s.gun : DEFAULT_PSYGUN, s?.chambers, true);
+  }
+  saveGun() { try { localStorage.setItem(GUN_KEY, JSON.stringify({ gun: this.gun.id, chambers: this.chambers })); } catch { /* this session only */ } }
+  /** Carry another psygun: its own chambers (the loadout given, or its own), each type's count cut to what it holds. */
+  setGun(id, chambers = null, quiet = false) {
+    const G = PSYGUNS[id]; if (!G) return false;
+    this.gun = G;
+    const want = (chambers || G.loadout).filter((t, i, a) => SHELL_TYPES.some((x) => x.id === t) && a.indexOf(t) === i).slice(0, G.chambers);
+    for (const t of G.loadout) if (want.length < G.chambers && !want.includes(t)) want.push(t);
+    this.chambers = want;
+    for (const t of SHELL_TYPES) this.counts[t.id] = Math.min(this.counts[t.id] ?? 0, this.max(t.id));
+    this.selected = Math.min(this.selected, this.chambers.length - 1);
+    this.saveGun();
+    this.game.hud?.buildShells?.(this.types);
+    if (!quiet) this.game.events?.emit('psygun.change', { gun: id, chambers: [...this.chambers] });
+    return true;
+  }
+  /** Put a shell type into a chamber (a type already chambered swaps places with it). */
+  chamber(i, typeId) {
+    if (i < 0 || i >= this.chambers.length || !SHELL_TYPES.some((t) => t.id === typeId)) return false;
+    const at = this.chambers.indexOf(typeId);
+    if (at >= 0) this.chambers[at] = this.chambers[i];
+    this.chambers[i] = typeId;
+    this.saveGun();
+    this.game.hud?.buildShells?.(this.types);
+    this.game.events?.emit('psygun.chamber', { chamber: i, shell: typeId });
+    return true;
+  }
+
   select(i) {
-    if (i < 0 || i >= SHELL_TYPES.length) return;
+    if (i < 0 || i >= this.types.length) return;
     if (i === this.selected) {
       // the Cleave's key again turns its line (level / upright), as the plasma cutter's alt-fire turns its three beams
-      if (SHELL_TYPES[i].id === 'slicer') { this.cleaveUpright = !this.cleaveUpright; sfx.click(); this.cleaveGlyph(); }
+      if (this.types[i].id === 'slicer') { this.cleaveUpright = !this.cleaveUpright; sfx.click(); this.cleaveGlyph(); }
       return;
     }
     this.selected = i;
     sfx.click();
   }
   /** The Cleave's slot shows which way its line lies. */
-  cleaveGlyph() { const el = this.game.hud?.slots?.[SHELL_TYPES.findIndex((t) => t.id === 'slicer')]?.querySelector('i'); if (el) el.textContent = this.cleaveUpright ? '║' : '═'; }
-  cycle(d) { this.select((this.selected + d + SHELL_TYPES.length) % SHELL_TYPES.length); }
+  cleaveGlyph() { const el = this.game.hud?.slots?.[this.types.findIndex((t) => t.id === 'slicer')]?.querySelector('i'); if (el) el.textContent = this.cleaveUpright ? '║' : '═'; }
+  cycle(d) { const n = this.types.length; this.select((this.selected + d + n) % n); }
   refill(n = T.shells.refill) {
     let got = 0;
     for (const t of SHELL_TYPES) {
       const before = this.counts[t.id];
-      this.counts[t.id] = Math.min(T.shells.max, before + n);
+      this.counts[t.id] = Math.min(this.max(t.id), before + n);
       got += this.counts[t.id] - before;
     }
     return got;

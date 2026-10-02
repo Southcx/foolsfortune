@@ -374,7 +374,7 @@ async function main() {
   game.baubles = baubles;
   const shells = new Shells(game);
   game.shells = shells;
-  hud.buildShells(SHELL_TYPES);
+  hud.buildShells(shells.types); // (the chambers of the psygun she carries: psygun/kinds.js)
   game.input = input;
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   mark('techs+ui');
@@ -877,7 +877,7 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
+      spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: shells.types, selected: shells.selected, counts: shells.counts },
       reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),

@@ -23,6 +23,8 @@
 //   circuit.<id>.*             runs, finish, clean, fall, gates, medal.<gold|silver|bronze>
 //   records (hi/lo)            speed.max, speed.surf.max, air.longest, fall.max, slam.height, chain.max, ...
 // ---------------------------------------------------------------------------------------
+import { PSYGUNS } from './psygun/kinds.js';
+import { SHELL_TYPES } from './shells.js';
 import { sfx } from './audio.js';
 import { BY_ID } from './system/skills.js';
 import { BY_SPECIES, ASPECTS } from './angling/species.js';
@@ -649,6 +651,9 @@ export class Tracking {
     });
     on('shop.haggle', (e) => { L.inc(`haggle.${e.step}`); if (e.step === 'open') L.inc('haggle.start'); });
     on('film.load', (e) => { L.inc('film.rolls'); log.say('info', `You load a fresh roll of film.${e.left ? ` (${e.left} more in your box)` : ' It is your last.'}`, {}); });
+    // the psygun's kind and its chambers (psygun/kinds.js)
+    on('psygun.change', (e) => { L.inc('psygun.change'); log.say('system', `You carry ${PSYGUNS[e.gun]?.name || 'another psygun'}: ${PSYGUNS[e.gun]?.chambers ?? '?'} chambers.`); });
+    on('psygun.chamber', (e) => { L.inc('psygun.chamber'); const i = SHELL_TYPES.findIndex((t) => t.id === e.shell); log.say('info', `Chamber ${e.chamber + 1} takes ${SHELL_TYPES[i]?.no || ''} ${SHELL_TYPES[i]?.name || ''}.`, { key: 'chamber', win: 1.2, fmt: (n) => `${n} chambers loaded.` }); });
     // the vessel's damage (vessel/damage.js): a blow cracks her where it lands; the cracks mend
     const PART = { mask: 'your mask', torso: 'your body', armL: 'your left arm', armR: 'your right arm', legL: 'your left leg', legR: 'your right leg' };
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
