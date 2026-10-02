@@ -37,7 +37,29 @@ personality, mannerisms, proclivities and philosophy. He is **playful, experimen
 of a brat, and wholly devoted to the act of creation.** In the concept art he stands tall and symmetrical, eyes lowered, with a
 faint smile, under a headpiece that reads as crown, top hat and kiln chimney at once, with molten drip glaze just under its rim.
 He lives in a chateau on the thumb of the hand tower. *(Ruled: who he is and what he is like. Owner's notes: the look and the
-chateau.)*
+chateau.)* **He is "he", femboy-coded**: Lloyd de Saloum (*Dainana Ouji*) meets Tet (*No Game No Life*). *(Ruled, Round 39)*
+
+**The folk know what they are**, and they are a **pseudo-hivemind**. Losing fresh-baked clapperjars costs the Prince nothing; break
+too many of the higher court and he gets more than a little annoyed ("Hey, that was my favourite cup!"). The fragments are unisex by
+construction and identify any way they like. *(Ruled, Round 39)*
+
+**What the folk call him depends on their tier.** *(Ruled, Round 39)*
+- **The lower folk** use vague, reverent honorifics: "the Prince", "the Immaculate One". They are the feeling of looking at an artist
+  so far beyond you it hardly seems worth trying, and real wonder at it ("so good you throw up a stank face").
+- **The noble echelon and the court** still respect him, but speak of him by his nature: his inventions and his tomfoolery. **The
+  court are the whispers of self-doubt** that pull you down if you let them in too deep, yet they say it out of concern and
+  self-protection.
+
+**The tiers, named** *(Espada's call, for the owner to veto)*. Clay is ranked by how hot it was fired, and porcelain (kaolin) is the
+finest, so the tiers are the potter's own ladder:
+
+| Tier | Who | How they speak of him |
+| --- | --- | --- |
+| **Earthenware** | the fresh-baked clapperjars: the smallest shares, lost without his noticing | they don't; they clap |
+| **Stoneware** | the lower folk: the working pots of the island | "the Prince", "the Immaculate One"; awe, and a little despair |
+| **Porcelain** | the noble echelon | by his inventions and his tomfoolery; respect with an eyebrow raised |
+| **the Court** | the finest porcelain, nearest the chateau: his favourite cups | by his nature, in worried whispers: is he overreaching, will it break, should he rest |
+| **the Prince of Clay** | the main avatar | himself |
 
 **The Pneuka Jar is his Magnum Opus.** Divine inspiration from **the System** came to him, and from it he made the Pneuka Jar: a
 vessel able to house **Players**, people like us outside the game world. *(Ruled)* (The spelling is **Pneuka**. *Pneuma* was an
@@ -51,6 +73,24 @@ early mix-up.)
 - carrying goods and services across the Emocean, which is itself dangerous. *(Ruled)*
 
 **Couriers are less affected by excess Lachryma**, by default. Too much Lachryma does harm, and Couriers resist it best. *(Ruled)*
+
+**The world is a snowglobe.** The Emocean is the *atmosphere* of pure Lachryma outside each island. What holds an island apart from
+it is the force of its owner's Will (Kaolin's here; every Island of Ego has an owner). *(Ruled, Round 39)*
+
+**Anagami Island** is this Island of Ego: a **5 x 5 grid** of chunks, with Kaolin's plateau (the concept art) in the centre cell
+and **the Dunes surrounding the rocky outcrop** of his main island. Grog's town that was lies out there. *(Ruled, Round 39)*
+
+**Many Couriers.** Every player is a Courier. An NPC can become one, but it is very risky: no one survives long in the open Emocean's
+unfiltered Lachryma without becoming a **Contractor** with a **Tulpa**. *(Ruled, Round 39)*
+
+**Excess Lachryma** drives anyone who is not a Courier progressively mad, and too much exposure transfigures them into a figment
+monster: mercury poisoning meets Mr Hyde's potion. *(Ruled, Round 39)*
+
+**Cogitohazard** is the umbrella word for environmental Lachryma dangers and maliciously aligned Figments. **Figments** are hewn from
+an Island of Ego's own psyche; **Egregores** are spawned from the Emocean. Neither is good or bad by nature. *(Ruled, Round 39)*
+
+**The System** is the game's code made a voice: all of us making the game, keeping things running for the sake of a fun experience.
+Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and rarely, and never jokes.
 
 **From Round 38** (passed on by Petra in `docs/HANDOFFS.md`, from the owner) *(Ruled)*:
 - **Lachryma is everything**: the stuff of magic and of emotion alike.
@@ -153,51 +193,55 @@ Habits the text already has, kept until the owner says otherwise.
 | --- | --- | --- |
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
-| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Open.** Nothing in the frame or the art has a desert. |
+| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
-| **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; she steps off. | The Fool's Step. Where it is (the island's edge, the Emocean) is open. |
+| **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; she steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
 ## 6. People
 
 ### Kaolin Anagami and the Prince of Clay
-See section 1. Two faces, one ego: the island is Kaolin Anagami, and the Prince of Clay is his main avatar on it. *(Ruled)* Whether
-the folk call the Prince "Kaolin" is open.
+See section 1. Two faces, one ego: the island is Kaolin Anagami, and the Prince of Clay is his main avatar on it. *(Ruled)* What each
+tier calls him is in section 1.
 
 ### The Courier
-- The Pneuka Jar in humanoid form, the Prince's magnum opus, inhabited by a Player. *(Ruled)*
+- The Pneuka Jar in humanoid form, the Prince's magnum opus, inhabited by a Player. Every player is a Courier. *(Ruled)*
 - **She / her.** *(In game, everywhere)*
 - Wears a mask (the vessel has a MASK region, "the face it shows"). *(Design)*
 - Carries the psychic tools on her belt: seven, four made (the Psygun, the Sondelass, the Soul Brush, the Veritome; the Dreamvane,
   the Crucibelle, the Lockheart to come). In the owner's notes each tool is a genre and a domain. *(In game / Owner's notes)*
 - Her achievements show on her body as kintsugi, gold in the seams. *(Design)*
 
-### The clay folk now (provisional)
-Their lines were written before the frame. Each is now a fragment of Kaolin, but which part of him each holds is open.
+### The clay folk now
+Each is a fragment of Kaolin, knows it, and sits on a tier (section 1). The tiers and the two gut calls below are Espada's, for the
+owner to veto.
 
-| Folk | Title | Body | Voice | Temper | In game |
-| --- | --- | --- | --- | --- | --- |
-| **Mistress Saggar** | keeper of the kiln | celadon, oxblood headscarf | the hexachord | calm; warm, proud, shouts about pots | keeps the kiln; calls the clapperjars "my little ones"; her "old master" called Lachryma "the tears of the world" |
-| **Pip** | apprentice potter | raw bisque, a cap | the Yo pentatonic | fear | hides from the clapperjars; wants to be a potter |
-| **Old Grog** | angler of the Weir | tenmoku, straw hat | the In pentatonic | sad; slow, kind | has fished since "before the sand came"; remembers a lost town; now keeps a pier counter |
-| **Raku** | treasurer of the Weir | crackled raku, copper lustre, fez | the soft hexachord | sly; vain | runs the Tithe; now haggles at his counter as a greedy little miser *(Ruled, Round 38)* |
+| Folk | Tier | Title | Body | Voice | Temper | Who they are |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Mistress Saggar** | the Court | keeper of the kiln | celadon, oxblood headscarf | the hexachord | calm; warm, proud, shouts about pots | keeps the kiln where his ideas are fired; worries aloud about him and his inventions; calls the clapperjars "my little ones" |
+| **Raku** | Porcelain | treasurer of the Weir | crackled raku, copper lustre, fez | the soft hexachord | sly; vain | a greedy little miser who haggles *(Ruled, Round 38)*; his crackle is the proof he went through the fire, and he wants you to notice |
+| **Old Grog** | Stoneware | angler of the Weir | tenmoku, straw hat | the In pentatonic | sad; slow, kind | has fished since "before the sand came"; remembers the town that was; keeps a pier counter |
+| **Pip** | Stoneware | apprentice potter | raw bisque, a cap | the Yo pentatonic | fear | not yet glazed; hides from the clapperjars; reveres the Immaculate One and despairs of ever being half as good |
 
-Three are named for the potter's trade: a *saggar* is the box that shields a pot in the kiln, *grog* is fired clay crushed back into
-new clay, *raku* is a firing. Pip is not.
+- **Saggar's old master is the Prince.** She is court; he taught her the kiln. *(Espada's gut)*
+- **Pip is named for a pip**: the spot on a die or a playing card, the smallest mark that still counts. In a world where games are
+  cosmic law, the least of the folk carries the least of the marks. *(Espada's gut)*
+- The other three are named for the potter's trade: a *saggar* is the box that shields a pot in the kiln, *grog* is fired clay
+  crushed back into new clay, *raku* is a firing.
 
 ## 7. Creatures
 
 | Creature | In game | With the frame |
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
-| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | Open: a Figment? a cogitohazard? |
+| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment (hewn from Kaolin's psyche), and a cogitohazard when it turns on her. Not bad by nature: it drinks, rests, plays and mourns. |
 | **The fish** | ten "entities" answering to five aspects (dread, wonder, grief, hunger, mirth); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
 
 - **Lachryma**: everything (ruled). Forms in game: baubles (cream, oxidising to black), liquid (black, oil-film), cubes (solid, the
   currency). The owner's notes: liquid is volatile mana, solid is currency and crafting, refined is Soul Alchemy's fuel.
-- **The System**: the source of the divine inspiration behind the Pneuka Jar *(Ruled)*. In game it announces skills, titles,
-  analyses and warnings.
+- **The System**: the game's code made a voice, and the source of the inspiration behind the Pneuka Jar *(Ruled)*. In game it
+  announces skills, titles, analyses and warnings.
 - **Slip**: liquid clay; on the island, Kaolin's essence *(Owner's notes)*. The Soul Brush writes with it.
 - **Kintsugi**: breakage mended in gold, a scar made beautiful.
 - **Chests, curios, lures, tools, standings**: as in the game (`src/treasure.js`, `src/angling/lures.js`, `src/pneuka/items.js`,
@@ -210,10 +254,14 @@ new clay, *raku* is a firing. Pip is not.
 | the Emocean | the Astral Ocean | the old name |
 | an Island of Ego, Islands of Ego | | |
 | Kaolin Anagami | | the island, and the ego |
-| the Prince of Clay | | the owner's notes also say "the Clay Prince": **pick one** |
+| the Prince of Clay | the Clay Prince | to the stoneware folk, "the Prince" or "the Immaculate One" |
+| Anagami Island | | the island's name on the map; Kaolin Anagami is its owner and its ego |
+| earthenware, stoneware, porcelain, the Court | | the folk's tiers (lower case but for the Court) |
+| a Figment, an Egregore, a cogitohazard | | Figments from an island's psyche, Egregores from the Emocean; cogitohazard covers both and the hazards of raw Lachryma |
+| a Contractor, a Tulpa | | |
 | the Pneuka Jar, a Pneuka jar, the Pneuka Box | Pneuma | |
 | the Courier, Couriers | | she |
-| Players | | the owner's notes also say *Vessouls* (open) |
+| Players | | the owner's notes also say *Vessouls* (open, not urgent) |
 | cogitohazard | | |
 | Lachryma (capital in prose) | Lacrima, Lachrima | the HUD's *Lachrimeter* and the log's lower case are open |
 | clapperjar; slip jelly | clapper jar | |
@@ -227,44 +275,27 @@ new clay, *raku* is a firing. Pip is not.
 | --- | --- | --- |
 | 1 | "The workshop": one room, or the whole world | **Settled**: the island, which is Kaolin |
 | 2 | Four origins of Lachryma | **Settled**: one, emotional and cognitive output |
-| 3 | Folk pronouns (OST "his", code "it") | open |
-| 4 | Are the folk grown clapperjars? | **Settled in substance**: all are fragments of Kaolin; the jars are the smallest shares. Whether a jar can grow into a folk is open. |
+| 3 | Folk pronouns (OST "his", code "it") | **Settled**: the Prince is he; the folk are unisex and choose. Write around pronouns unless a folk has chosen. |
+| 4 | Are the folk grown clapperjars? | **Settled**: all are fragments of Kaolin; the jars are the earthenware tier |
 | 5 | Prismatic chests: too much Lachryma, or a 0.5% roll | **Reframed**: "prismatic" is the Chaos end of the Stoic/Prismatic spectrum in the owner's notes; the chests can keep the word |
 | 6 | Lachryma black, baubles cream | **Settled**: the cream is the pot people's gummy centre; Lachryma is the black |
 | 7 | *Lachrimeter* spelling; lower-case "lachryma" in the log | open (spelling) |
 | 8 | Drowned Lachryma "it" but title "Drowned King" | open (minor) |
 | 9 | Jars "sent back to the kiln" or "undone into Lachryma" | **Settled**: both; their slip flows home |
-| 10 | **New**: a desert "far below the workshop" on a floating island | open (question 1 below) |
-| 11 | **New**: the Courier is the Prince's magnum opus, but the Courier is generic and one per player | open (question 3) |
+| 10 | A desert "far below the workshop" on a floating island | **Settled**: the Dunes surround Kaolin's outcrop. "Far below" is now just the way down from the plateau. |
+| 11 | The Courier is the Prince's magnum opus, yet there is one per player | **Settled**: many Couriers; the Pneuka Jar is the opus, every Courier one of them |
 
 ## 11. Open questions for the owner
 
-### Answered by the frame
-Of the first edition's thirteen questions, **six are answered** (what the world is, who the Courier is, who the god hand is, East
-and West, the folk as clapperjars, the tarot and the five), **three in part** (what Lachryma is: answered, but whose it is and what the
-Tithe pays into are not; what the System is: the giver of inspiration, but still a mystery; Saggar's old master: very likely the
-Prince, to confirm), and **four not at all** (the dunes and the lost town, folk pronouns, the Spire, Pip's name).
+All twelve of the second edition's questions were answered in Round 39 (`docs/PLAN.md`, "The owner's answers"); the two left to
+Espada's gut are in section 6. What is left is small, and none of it blocks writing:
 
-### Open now, the ones that block writing first
-1. **Where are the dunes?** The desert, the Weir and its well, the tides and the Spire: are they on Kaolin's island (below the
-   workshop, in a Well, inside the hand?), the first piece of the Emocean, or another island? Grog's lost town and the sea that
-   went away hang on this.
-2. **Do the folk know what they are?** Does Saggar know she is a piece of Kaolin? Does any folk know the Prince is him?
-3. **One Courier or many?** The Pneuka Jar is *the* magnum opus; are all Couriers made by the Prince, copies of the first, or made
-   elsewhere later? Is "Courier" a kind (what the jar becomes) or a trade (a guild, a job)?
-4. **The Prince and Kaolin, in speech.** Is the avatar called the Prince of Clay, the Clay Prince, Kaolin, or all three by
-   different folk?
-5. **Which part of Kaolin is each folk?** Kept open: a rule for it (one feeling each? one habit each?) would let me rewrite the
-   four and write the rest of the line-up.
-6. **What is a cogitohazard, to a writer?** The owner's Egregores and Figments, something else, or the umbrella word for both? Is
-   the slip jelly one?
-7. **What does excess Lachryma do** to those who are not Couriers? (The kiln making clapperjars when it is "too full" and the chests
-   going prismatic would be the island's symptoms.)
-8. **What is the System?** A god, the game itself, one of the dual divinities, or none of these? Does it speak to anyone but Couriers?
-9. **Folk pronouns**: is the Prince "he", and do his fragments share it, or each choose?
-10. **Does breaking a pot hurt Kaolin?** The game breaks a great many. (The owner's own open question about masterpieces.)
-11. **The title's precipice**: is the hill on Kaolin's island, and is stepping off it the Courier going out into the Emocean?
-12. **Pip's name**, and **Saggar's old master** (the Prince?).
+1. **The town that was.** Who lived there, and what emptied it? Given the ruling on excess Lachryma, one road is that the Well drove
+   them mad and some of them are still out there, transfigured. That is a big thing to decide, so it waits for the owner (and for
+   Petra's R40 layout).
+2. **The tiers.** Do earthenware / stoneware / porcelain / the Court suit, and are the noble echelon and the court two tiers (as
+   written) or one?
+3. **Vessouls**: keep the word for players, or let "Players" and "Couriers" carry it?
 
 ## 12. Where the words live
 
