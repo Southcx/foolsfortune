@@ -79,12 +79,12 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   draws: zones, the light budget, the 480-line present), and publishing the playable build.
 - **Wanda** (wands), Audio, `claude/friendly-knuth-vbv82r`: `src/audio.js` (and the `src/audio/` it is being split into),
   `src/music/`, `src/system/voice.js` and `src/system/speech/`, `src/npc/clayese.js`, `docs/OST.md`, `docs/voice_recording.md`.
-- **Calissa** (cups), Art (branch: added on her first commit): what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
+- **Calissa** (cups), Art (branch: added on its first commit): what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
   models and the animation pipeline (`source_assets/`, `src/assets/`, `tools/export_*.py`, `tools/bake_*.mjs`). The maker's pixel
   art is the maker's.
-- **Espada** (swords), Lore (branch: added on her first commit): `docs/LORE.md` (the series bible: people, places, history, names,
+- **Espada** (swords), Lore (branch: added on its first commit): `docs/LORE.md` (the series bible: people, places, history, names,
   tone) and the folk's lines (`src/npc/talks.js`); the words inside other divisions' files (arcana riddles, bestiary and item
-  text, the log's phrasing in `tracking.js`) are hers to edit as strings only, never their code.
+  text, the log's phrasing in `tracking.js`) are its to edit as strings only, never their code.
 - A feature that needs a sound it does not have calls an existing `sfx` method or adds a one-line placeholder and says so to the
   owner; Wanda builds the real sound. The same goes for art (Calissa) and words (Espada). Another division's files are changed by
   asking it (through the owner, or the remote `send_message` tool with the owner's OK), not by editing them.
