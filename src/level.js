@@ -52,6 +52,14 @@ export class Level {
     this.fixedBody = physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
   }
 
+  /** One material per colour for the loose props (crates, bricks): shared, so that resting ones fall into the same prop batch. */
+  propMat(color, vertexColors = false) {
+    const k = `${color}|${vertexColors}`;
+    this._propMats ??= new Map();
+    if (!this._propMats.has(k)) { const m = this.mat(color); m.vertexColors = vertexColors; this._propMats.set(k, m); }
+    return this._propMats.get(k);
+  }
+
   mat(color, emissive) {
     return new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 });
   }
@@ -681,9 +689,13 @@ export class Level {
 
   /** A wooden crate: up to 0.9 m it can be picked up; bigger ones are heavy (push and pull). */
   crate(pos, s) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(s, s, s), this.mat(PALETTE.wood));
-    const band = new THREE.Mesh(new THREE.BoxGeometry(s * 1.02, s * 0.14, s * 1.02), this.mat(PALETTE.dark));
-    mesh.add(band);
+    // the box and its iron band in one geometry (the band's darkness a vertex colour over the wood), so a crate at rest is one
+    // instance of the prop batch (render/propbatch.js) and not three draws
+    const wood = new THREE.Color(PALETTE.wood), dark = new THREE.Color(PALETTE.dark);
+    const paint = (g, c) => { g = g.toNonIndexed(); const n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); g.setAttribute('color', new THREE.BufferAttribute(a, 3)); g.deleteAttribute('uv'); return g; };
+    const k = new THREE.Color(Math.min(1, dark.r / Math.max(wood.r, 1e-3)), Math.min(1, dark.g / Math.max(wood.g, 1e-3)), Math.min(1, dark.b / Math.max(wood.b, 1e-3)));
+    const geo = mergeGeometries([paint(new THREE.BoxGeometry(s, s, s), new THREE.Color(1, 1, 1)), paint(new THREE.BoxGeometry(s * 1.02, s * 0.14, s * 1.02), k)]);
+    const mesh = new THREE.Mesh(geo, this.propMat(PALETTE.wood, true));
     mesh.castShadow = mesh.receiveShadow = true;
     addOutline(mesh);
     const ent = this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setDensity(40));
@@ -692,7 +704,7 @@ export class Level {
   }
 
   brick(pos, size) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), this.mat(PALETTE.mid));
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), this.propMat(PALETTE.mid));
     mesh.castShadow = mesh.receiveShadow = true;
     addOutline(mesh);
     this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2).setDensity(600));
@@ -713,6 +725,7 @@ export class Level {
   }
 
   removeProp(e) {
+    if (e.parked) { this.breakables.batch.unpark(e.parked); e.parked = null; }
     const i = this.dynamic.indexOf(e);
     if (i >= 0) this.dynamic.splice(i, 1);
     this.physics.removeSynced(e.sync);
@@ -723,6 +736,7 @@ export class Level {
 
   clearDynamic() {
     for (const e of this.dynamic) {
+      if (e.parked) { this.breakables.batch.unpark(e.parked); e.parked = null; }
       this.physics.removeSynced(e.sync);
       this.physics.removeBody(e.body);
       this.scene.remove(e.mesh);

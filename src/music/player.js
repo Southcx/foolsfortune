@@ -46,6 +46,15 @@ export class MusicPlayer {
     if (want && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.5); else this.play(score); }
     else if (!want && this.alive) this.stop(2.5);
   }
+  /** The beat to play along with (the Crucibelle plays in time and in tune with what is playing: moves/crucibelle.js): a bar's start
+   *  on the audio clock, seconds a beat, beats a bar, and the key (the root's MIDI note: every theme here is a minor pentatonic one, or
+   *  near enough; E flat unless the score says). Null when nothing plays. */
+  grid() {
+    const A = this.arr;
+    if (A.alive && !A.ended && A.score) { const sec = A.score.sections[A.section]; return { t0: A.next, spb: A.spb, beats: sec?.beats || A.score.beats || 4, root: A.score.root ?? 63, swing: 0.5 }; }
+    if (this.alive && this.score) return { t0: this.next, spb: this.spb, beats: 4, root: this.score.root ?? 63, swing: this.score.swing ?? 0.5 };
+    return null;
+  }
   get ctx() { return this.sfx.ctx; }
   get playing() { return this.alive; }
 

@@ -50,6 +50,7 @@ export class Creatures {
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
   strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
+    if (c.ally && by === 'courier') return false; // (her own: a spirit she called up is not struck by her)
     c.hurt(point, dir, power * (st(c, 'soft') ? 2 : 1), cause, by, from); // (`from`: the thing that struck, when it is not the Courier)
     return true;
   }

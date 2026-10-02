@@ -105,7 +105,7 @@ export class Veritome extends Tech {
     if (!this.grip && ch) this.computeSocket(ch);
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
-      if (inp.wasPressed('KeyJ') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('veritome')); }
+      if (inp.wasPressed('KeyJ') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('veritome') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('veritome')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; }
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
@@ -125,6 +125,7 @@ export class Veritome extends Tech {
       if (this.lens) this.lensUpdate(raw, inp);
     } else if (this.lens) this.lower();
     this.lensK = THREE.MathUtils.damp(this.lensK, this.lens ? 1 : 0, 14, raw);
+    this.game.ui?.want('lens', this.lens && this.toolOut); // (the lens up: the picture is the whole screen, the HUD steps out: hideui.js)
     P.lens = this.lensK > 0.001 ? { k: this.lensK, fov: THREE.MathUtils.lerp(ZOOM.wide, ZOOM.tight, this.zoom) } : null;
     P.lookScale.lens = this.lens ? THREE.MathUtils.lerp(0.9, 0.3, this.zoom) : 1;
     // the Survey's read: the same open hold, for a moment
@@ -145,7 +146,7 @@ export class Veritome extends Tech {
     else if (shells && this.wasShellsHidden) shells.style.display = '';
     this.wasShellsHidden = this.drawT > 0.02;
     const ch2 = g.character;
-    this.model.group.visible = this.enabled && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6;
+    this.model.group.visible = this.enabled && g.belt?.isWorn('veritome') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6; // (in the box: not on her)
     this.rest.update(dt, this.drawT === 0 && this.lensK < 0.001, `${Math.round(this.model.open * 1e3)}`);
   }
 

@@ -110,7 +110,16 @@ import { installTheme, fontsReady, theme } from './ui/theme.js';
 import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
-import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
+import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
+import { Dreamvane } from './moves/dreamvane.js';
+import { Crucibelle } from './moves/crucibelle.js';
+import { Lockheart } from './moves/lockheart.js';
+import { Mirages } from './crucibelle/mirage.js';
+import { Signatures, standardSignatures } from './signatures.js';
+import { Spirits } from './spirits.js';
+import { Crystals } from './lachryma/crystals.js';
+import { Diag } from './debug/diag.js';
+import { MacroBook } from './mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
@@ -235,6 +244,7 @@ async function main() {
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
+  game.signatures = new Signatures(game); standardSignatures(game); // (where Lachryma is, for whatever senses it: signatures.js)
   game.px = px; // (the maker's pixel art, for any window that wants it: ui/pixel.js)
   game.cinema = new Cinema(game); // (bars, a composition for the camera, a vignette)
   game.portrait = new Portrait(game); // (the cut-in window of a fish on the line)
@@ -300,7 +310,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome]) techs.add(new T0(techs));
+  for (const T0 of [Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -308,12 +318,16 @@ async function main() {
   game.belt.add(sondelassTool(techs.get('sondelass')));
   game.belt.add(soulBrushTool(techs.get('soulbrush')));
   game.belt.add(veritomeTool(techs.get('veritome')));
+  game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
+  game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
+  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
   player.techs = techs;
   game.techs = techs;
   // the Pneuka Box: what she carries (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
+  game.belt.tick(); game.pneuka.seed(); // (a new Courier: the four tools worn, the rest and the made lures in the box)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (system/voice.js)
@@ -372,15 +386,8 @@ async function main() {
     });
   }
 
-  // physics debug lines (F3)
-  const dbgGeo = new THREE.BufferGeometry();
-  const dbg = new THREE.LineSegments(dbgGeo, new THREE.LineBasicMaterial({ vertexColors: true }));
-  dbg.frustumCulled = false;
-  dbg.visible = false;
-  scene.add(dbg);
-  const aiDbg = document.createElement('pre'); // (and, with them, what the creatures near her are thinking)
-  aiDbg.style.cssText = 'position:fixed;left:8px;top:120px;z-index:20;margin:0;padding:6px 8px;background:rgba(20,8,6,.72);color:#ffe0c0;font:11px/1.35 ui-monospace,monospace;pointer-events:none;display:none;white-space:pre';
-  document.body.appendChild(aiDbg);
+  // diagnostics (F3: the perf panel; again: with the physics lines near her and the creatures' minds; F4 copies a report): debug/diag.js
+  const diag = (game.diag = new Diag(game, renderer));
 
   const resetRoom = () => {
     game.trial?.abort();
@@ -471,6 +478,9 @@ async function main() {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
+  game.mirage = new Mirages(game); // (Couriers of smoke that minds take for her: the Crucibelle's mirage)
+  game.spirits = new Spirits(game); // (smoke spirits on her side: the Crucibelle's and the Lockheart's: spirits.js)
+  game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: lachryma/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -480,6 +490,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.macros = new MacroBook(); // (what she has composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
@@ -570,11 +581,13 @@ async function main() {
     last = now;
     if (window.__game?.manual) return;
     try {
-      tick(dt);
-      game.post.render(scene, window.__debugCam || camera); // (the PS2 glow and the grade over the frame: render/glow.js)
+      diag.frameStart();
+      diag.begin('sim'); tick(dt); diag.end('sim');
+      diag.begin('draw'); game.post.render(scene, window.__debugCam || camera); diag.end('draw'); // (the PS2 glow and the grade over the frame: render/glow.js)
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
+      diag.frameEnd();
     } catch (e) {
       reportError(e); // keep the loop alive and say what broke instead of freezing
     }
@@ -611,11 +624,11 @@ async function main() {
   let lastWall = null;
   let lastLedge = null;
 
-  // blink charges on the movement readout (while any are spent)
-  const blinkPips = () => {
+  // the Blink's charges for the HUD's beads (ui/beads.js): how many, of how many, and how far the next has come back
+  const blinkState = () => {
     const b = techs.get('blink');
-    if (!b?.enabled || b.charges >= b.cfg.charges) return '';
-    return ` · E ${'●'.repeat(b.charges)}${'○'.repeat(Math.max(0, b.cfg.charges - b.charges))}`;
+    if (!b?.enabled) return null;
+    return { n: b.charges, max: b.cfg.charges, fill: b.charges < b.cfg.charges ? THREE.MathUtils.clamp(b.recharge / b.cfg.recharge, 0, 1) : 0 };
   };
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
@@ -639,7 +652,7 @@ async function main() {
     if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     if (input.wasPressed('KeyT')) resetRoom();
-    if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
+    if (input.wasPressed('F3')) diag.cycle();
     if (input.wasPressed('F2')) game.ui.cycle();
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
@@ -668,7 +681,7 @@ async function main() {
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
-      physics.step(FIXED);
+      diag.begin('physics'); physics.step(FIXED); diag.end('physics');
       movers.post(FIXED);
       acc -= FIXED;
       steps++;
@@ -688,11 +701,13 @@ async function main() {
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
     game.folk?.update(dt); game.dialogue?.update(game.rawDt);
-    game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt);
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
+    game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
+    if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: mind/macros.js)
     // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
     // the music: the main theme on the title (and the pause); the battle while something is after her; the Dunes' theme in the
     // dunes, the work song in the workshop; a sound-test pick over any of them
@@ -717,6 +732,7 @@ async function main() {
       const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
       lastHeading = heading;
       const held = weapon.held;
+      diag.begin('anim');
       character.animate(dt, {
         pos: player.renderPos,
         yaw: player.bodyYaw,
@@ -748,13 +764,14 @@ async function main() {
       player.headRel = character.headRel;
       weapon.fpPose(dt, camera, player, character);
       character.poseHands(handContext());
+      diag.end('anim');
       weapon.tryFire(camera, player, character);
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     } else player.renderPos.copy(player.pos);
     god.applyCamera(dt);
     weapon.updateDebris(dt);
 
-    breakables.update(dt);
+    diag.begin('props'); breakables.update(dt); diag.end('props');
     clappers.update(dt, acc / FIXED);
     shells.update(dt);
     baubles.update(dt);
@@ -769,6 +786,7 @@ async function main() {
     // underground: no sun through the ground (it would light the lab outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);
+    game.crystals?.update(dt);
     const dm = game.dunes.mix; // (in the dunes the sun is a real one)
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
@@ -779,16 +797,10 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    fx.update(dt, camera);
+    diag.begin('fx'); fx.update(dt, camera); diag.end('fx');
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
-    aiDbg.style.display = dbg.visible ? 'block' : 'none';
-    if (dbg.visible && clock.frame % 10 === 0) aiDbg.textContent = game.ai.describe().join('\n'); // (the minds near her: ai/brain.js's describe)
-    if (dbg.visible) {
-      const { vertices, colors } = physics.world.debugRender();
-      dbgGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-      dbgGeo.setAttribute('color', new THREE.BufferAttribute(colors, 4));
-    }
+    diag.update(game.rawDt);
 
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
@@ -796,7 +808,7 @@ async function main() {
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
-        + blinkPips(),
+      , blink: blinkState(),
     });
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)

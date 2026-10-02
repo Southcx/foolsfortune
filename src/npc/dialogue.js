@@ -47,7 +47,7 @@ body.talking #hud { opacity: 0; transition: opacity .2s; }
 #dialogue .text .w { display: inline-block; white-space: pre; }
 #dialogue .c { display: inline-block; animation: cin .14s cubic-bezier(.2,1.6,.4,1) both; }
 @keyframes cin { from { opacity: 0; transform: translateY(5px) scale(.6); } }
-#dialogue .more { position: absolute; right: 16px; bottom: 6px; width: 36px; height: 36px; background: var(--jglove-down) 0 0 / 36px 36px no-repeat; image-rendering: pixelated;
+#dialogue .more { position: absolute; right: 16px; bottom: 6px; width: 32px; height: 32px; background: var(--jglove-down) 0 0 / 32px 32px no-repeat; image-rendering: pixelated;
   opacity: 0; animation: jbob .5s steps(1) infinite; filter: drop-shadow(1px 2px 0 rgba(8,3,1,.5)); }
 #dialogue.done .more { opacity: 1; }
 #dialogue .choices { display: none; flex-direction: column; gap: 4px; margin-top: 6px; padding-left: 44px; }

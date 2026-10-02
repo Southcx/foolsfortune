@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what she wears. Left, the box: twenty-eight slots, four across. Right,
-// the equipment: the lure on the line (and the six made lures, the tackle she always has) and the tool belt (what is on it, where it
-// is worn, its key). While the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked,
+// the equipment: the one lure on the line, and the tools worn in their places on her body (two across the back, one at each hip, one at
+// the neck: a click takes one off into the box; a tool in the box is worn with a click). While the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked,
 // each taken out with a click, and STORE ALL to empty the box into it.
 //
 // How it is used, as OSRS's inventory is: a LEFT CLICK does the obvious thing (with the Book open, store it; otherwise tie a curio
@@ -12,11 +12,13 @@
 // Prior art: Old School RuneScape's inventory and equipment tabs (the 4 x 7 grid, left click / right click menus, "Use X -> Y" in the
 // hover line, worn items in their places), its bank (Deposit inventory), and the Codex's own look in this game.
 // ---------------------------------------------------------------------------------------
-import { SLOTS } from './box.js';
+import { SLOTS, FITTINGS } from './box.js';
+import { oddsOf, rates, OUTCOMES, HEARTS } from '../lockheart/table.js';
 import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
 import { CARDS, CARD, WORTH } from '../veritome/cards.js';
-import { LURES, lureList, tasteOf } from '../angling/lures.js';
+import { lureList, tasteOf, BARE } from '../angling/lures.js';
+import { PLACES } from '../tools/belt.js';
 import { ASPECTS } from '../angling/species.js';
 
 const CSS = `
@@ -50,14 +52,17 @@ const CSS = `
 #pneuka .lure .t s { text-decoration: none; opacity: .65; font-size: 10px; letter-spacing: .1em; display: block; }
 #pneuka .taste { display: grid; grid-template-columns: 54px 1fr; gap: 2px 6px; font-size: 9px; letter-spacing: .08em; margin: 4px 0 8px; align-items: center; }
 #pneuka .taste i { display: block; height: 5px; border-radius: 2px; background: currentColor; }
-#pneuka .tackle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-bottom: 12px; }
-#pneuka .tackle .slot { width: auto; height: 34px; }
-#pneuka .tackle .slot.on { border-color: #ffd98a; background: rgba(120,60,30,.8); }
-#pneuka .tackle .slot .g { font-size: 16px; }
 #pneuka .belt { display: grid; grid-template-columns: 1fr; gap: 4px; }
 #pneuka .belt div { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; border: 1px solid rgba(255,178,122,.15); border-radius: 3px; background: rgba(40,18,10,.5); }
 #pneuka .belt div.on { border-color: #ffd98a; } #pneuka .belt div.none { opacity: .35; }
 #pneuka .belt s { text-decoration: none; opacity: .6; }
+#pneuka .fits { display: flex; gap: 6px; align-items: center; margin: 2px 0 8px; }
+#pneuka .fits .slot { width: 44px; height: 44px; }
+#pneuka .fits .t { font-size: 11px; line-height: 1.3; margin-left: 4px; }
+#pneuka .fits .t s { text-decoration: none; opacity: .65; font-size: 9px; letter-spacing: .1em; display: block; }
+#pneuka .odds { display: flex; height: 8px; border-radius: 2px; overflow: hidden; margin: 2px 0 2px; border: 1px solid rgba(255,178,122,.25); }
+#pneuka .odds i { display: block; height: 100%; }
+#pneuka .oddsl { font-size: 9px; letter-spacing: .06em; opacity: .8; margin-bottom: 8px; line-height: 1.4; }
 #pneuka .bank { width: 310px; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
 #pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
@@ -91,8 +96,12 @@ export class PneukaUI {
     const box = this.box, s = box.slots[slot], it = s && itemOf(s.id);
     if (!it) return [];
     const out = [];
-    if (box.bankOpen) out.push({ label: 'Store', run: () => box.store(slot) });
+    if (it.kind === 'tool') out.push({ label: 'Wear', run: () => box.wear(slot) });
+    if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
+    const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
+    if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
+    if (it.id === 'mat.shard' && this.game.lockheart) out.push({ label: 'Feed to the Lockheart', run: () => box.feed(slot) });
     out.push({ label: 'Drop', run: () => box.drop(slot) });
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;
@@ -167,38 +176,66 @@ export class PneukaUI {
 
   equipPane() {
     const g = this.game, box = this.box, pane = el('div', 'pane equip');
-    pane.appendChild(el('h4', '', '<span>WORN</span><span>the line · the belt</span>'));
-    // the lure on the Sondelass' line
-    const lure = lureList(g.ledger, box).find((l) => l.id === box.lure) || LURES[0], cur = itemOf(box.lure);
+    pane.appendChild(el('h4', '', '<span>WORN</span><span>the line · the fittings · the tools</span>'));
+    // the lure on the Sondelass' line: one, or a bare hook
+    const cur = box.lure ? itemOf(box.lure) : null;
+    const lure = (box.lure && lureList(g.ledger, box).find((l) => l.id === box.lure)) || BARE;
     const row = el('div', 'lure');
-    const s = el('div', 'slot', cur ? this.icon(box.lure) : `<span class="g">${lure.glyph}</span>`);
-    s.onmouseenter = () => this.say(cur ? `Untie <b>${cur.name}</b>` : `<b>${lure.name}</b> is on the line`);
+    const s = el('div', `slot${cur ? '' : ' empty'}`, cur ? this.icon(box.lure) : '');
+    s.onmouseenter = () => this.say(cur ? `Untie <b>${cur.name}</b> (into the box)` : 'Nothing is tied on. Click a lure (or a curio) in the box to tie it on.');
     s.onmouseleave = () => this.say('&nbsp;');
     s.onclick = () => { if (cur) { box.untie(); this.render(); } };
     s.oncontextmenu = (e) => { e.preventDefault(); if (cur) this.menu(e, cur.name, [{ label: 'Untie', run: () => box.untie() }, { label: 'Examine', run: () => box.examine(box.lure) }]); };
     row.appendChild(s);
-    row.appendChild(el('div', 't', `<s>THE LURE · ON THE SONDELASS' LINE</s>${cur ? cur.name : lure.name}<s style="margin-top:3px">${cur ? 'a curio: its life is its taste' : 'one of the made lures'}</s>`));
+    row.appendChild(el('div', 't', `<s>THE LURE · ON THE SONDELASS' LINE</s>${cur ? cur.name : lure.name}<s style="margin-top:3px">${!cur ? 'tie one on from the box' : cur.kind === 'curio' ? 'a curio: its life is its taste' : 'one of the made lures'}</s>`));
     pane.appendChild(row);
     const taste = tasteOf(lure), tg = el('div', 'taste');
     ASPECTS.forEach((a, k) => { tg.appendChild(el('span', '', a.name)); tg.appendChild(el('span', '', `<i style="width:${Math.round(Math.min(1, taste[k] / 1.6) * 100)}%;color:${hex(a.color)}"></i>`)); });
     pane.appendChild(tg);
-    // the tackle: the made lures, always to hand
-    const tk = el('div', 'tackle');
-    for (const L of LURES) {
-      const d = el('div', `slot${box.lure === L.id ? ' on' : ''}`, `<span class="g">${L.glyph}</span>`);
-      d.onmouseenter = () => this.say(`Tie on <b>${L.name}</b> · ${L.blurb}`);
-      d.onmouseleave = () => this.say('&nbsp;');
-      d.onclick = () => { box.tieMade(L.id); this.render(); };
-      tk.appendChild(d);
+    // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if she has those tools at all
+    for (const [socket, F] of Object.entries(FITTINGS)) {
+      if (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool)) continue;
+      const cur = box.fitted(socket), row = el('div', 'fits');
+      for (let i = 0; i < F.max; i++) {
+        const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');
+        d.onmouseenter = () => this.say(it ? `Take <b>${it.name}</b> off (into the box)` : `${F.put}: click one in the box.`);
+        d.onmouseleave = () => this.say('&nbsp;');
+        d.onclick = () => { if (it) { box.fitOff(socket, i); this.render(); } };
+        d.oncontextmenu = (e) => { e.preventDefault(); if (it) this.menu(e, it.name, [{ label: 'Take off', run: () => box.fitOff(socket, i) }, { label: 'Examine', run: () => box.examine(id) }]); };
+        row.appendChild(d);
+      }
+      const names = cur.map((id) => itemOf(id)?.name).filter(Boolean);
+      row.appendChild(el('div', 't', `<s>${F.label}</s>${names.length ? names.join(' · ') : F.none}`));
+      pane.appendChild(row);
+      if (socket === 'keys') {
+        // the odds the Lockheart has now: its coffin with these keys, in order (lockheart/table.js)
+        const heart = box.fitted('heart')[0];
+        if (heart) {
+          const { table, mods } = oddsOf(heart, cur), R = rates(table), bar = el('div', 'odds');
+          for (const r of R) { const i = el('i'); i.style.width = `${(r.p * 100).toFixed(2)}%`; i.style.background = hex(OUTCOMES[r.id].color); i.title = OUTCOMES[r.id].label; bar.appendChild(i); }
+          pane.appendChild(bar);
+          const extra = [mods.spins > 1 ? `${mods.spins} spins` : '', mods.reach > 1 ? `reach x${mods.reach}` : '', mods.echo ? `echo x${mods.echo}` : ''].filter(Boolean).join(' · ');
+          pane.appendChild(el('div', 'oddsl', `${R.slice().reverse().map((r) => `<b style="color:${hex(OUTCOMES[r.id].color)}">${OUTCOMES[r.id].label}</b> ${r.p >= 0.1 ? Math.round(r.p * 100) : (r.p * 100).toFixed(1)}%`).join(' · ')}${extra ? ` · ${extra}` : ''} · it opens full at ${HEARTS[heart].fill}`));
+        }
+      }
     }
-    pane.appendChild(el('h4', '', '<span>THE TACKLE</span><span>made lures</span>'));
-    pane.appendChild(tk);
-    // the belt
-    pane.appendChild(el('h4', '', '<span>THE BELT</span><span>drawn with its key</span>'));
-    const belt = el('div', 'belt'), tools = g.belt?.tools || [], inHand = g.belt?.inHand;
-    for (let i = 0; i < 7; i++) {
-      const t = tools[i];
-      belt.appendChild(el('div', t ? (t === inHand ? 'on' : '') : 'none', t ? `<span>${t.name}</span><s>${t.slot === 'back' ? 'across the back' : 'at the hip'} · ${t.key.replace('Key', '')}</s>` : '<span>· · ·</span><s>a place for a tool to come</s>'));
+    // the tools: worn in the places on her body (tools/belt.js); the rest are in the box
+    pane.appendChild(el('h4', '', '<span>THE TOOLS</span><span>worn · drawn with its key</span>'));
+    const belt = el('div', 'belt'), B = g.belt, inHand = B?.inHand;
+    const WHERE = { back: 'across the back', hip: 'at the hip', neck: 'at the neck' };
+    for (const [place, n] of Object.entries(PLACES)) {
+      const there = B ? B.inPlace(place) : [];
+      for (let i = 0; i < n; i++) {
+        const t = there[i];
+        const d = el('div', t ? (t === inHand ? 'on' : '') : 'none', t ? `<span>${t.name}</span><s>${WHERE[place]} · ${t.key.replace('Key', '')}</s>` : `<span>· · ·</span><s>a place ${WHERE[place]}</s>`);
+        if (t) {
+          d.style.cursor = 'var(--jcur-pointer, pointer)';
+          d.onmouseenter = () => this.say(`Take off <b>${t.name}</b> (into the box)`);
+          d.onmouseleave = () => this.say('&nbsp;');
+          d.onclick = () => { box.takeOff(t.id); this.render(); };
+        }
+        belt.appendChild(d);
+      }
     }
     pane.appendChild(belt);
     return pane;

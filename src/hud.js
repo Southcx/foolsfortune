@@ -2,6 +2,7 @@ import { T } from './config.js';
 
 import { SHELL_KEYS } from './shells.js';
 import { Lachrimeter } from './ui/lachrimeter.js';
+import { ChargeBeads } from './ui/beads.js';
 
 export class Hud {
   constructor() {
@@ -50,6 +51,12 @@ export class Hud {
     this.el.lachNum.textContent = '';
     this.numCv = px.show(px.text('0', 'clay'), { k: this.meter.el.__k });
     this.el.lachNum.appendChild(this.numCv);
+    // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while she has it
+    this.beads = new ChargeBeads(px, { k: this.meter.el.__k, max: 3 });
+    this.el.lachNum.before(this.beads.el);
+    // the cubes (cubes.js's readout) live in the panel, under the tube, and not over its frame
+    const cubes = document.getElementById('cubes');
+    if (cubes) this.el.lach.appendChild(cubes);
   }
 
   lachrymaPulse(ok) {
@@ -68,7 +75,7 @@ export class Hud {
     this.el.shells.appendChild(this.hand); this.handAt = -1;
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null }) {
     // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
     if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
     // speedometer (with a short peak hold, for tuning movement)
@@ -91,6 +98,11 @@ export class Hud {
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
 
+    if (this.beads) {
+      const on = !!blink;
+      if (on !== this.beadsOn) { this.beadsOn = on; this.beads.el.style.display = on ? '' : 'none'; }
+      if (on) { this.beads.set(blink.n, blink.max, blink.fill); this.beads.update(dt); }
+    }
     if (pool && this.meter) {
       this.meter.set(pool.available, pool.reserved, pool.max); this.meter.update(dt);
       const n = String(Math.floor(pool.available));
@@ -111,7 +123,7 @@ export class Hud {
         el.querySelector('b').textContent = shells.counts[t.id];
       });
       const sel = this.slots[shells.selected];
-      if (sel && this.handAt !== shells.selected) { this.handAt = shells.selected; this.hand.style.transform = `translateX(${sel.offsetLeft + sel.offsetWidth / 2 - 33}px)`; } // (the turned glove's tip is at 33 of 48)
+      if (sel && this.handAt !== shells.selected) { this.handAt = shells.selected; this.hand.style.transform = `translateX(${sel.offsetLeft + sel.offsetWidth / 2 - 26}px)`; } // (the turned glove's tip is at 26 of 32)
     }
     this.el.reload.style.opacity = reloadT >= 0 ? 1 : 0;
     this.el.reloadFill.style.width = `${Math.max(0, reloadT) * 100}%`;

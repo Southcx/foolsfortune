@@ -114,8 +114,11 @@ export class Memory {
   }
 
   forget(ent) { this.facts.delete(ent); }
-  /** Forget everything at once (a reprogrammed mind, a creature formed anew). */
-  wipe() { this.facts.clear(); this.interests.length = 0; }
+  /** Forget everything at once (a creature formed anew), or everything about one kind of thing (a reprogrammed mind: 'courier'). */
+  wipe(kind = null) {
+    if (!kind) { this.facts.clear(); this.interests.length = 0; return; }
+    for (const [e, f] of this.facts) if (f.kind === kind) this.facts.delete(e);
+  }
 
   tick(dt) {
     this.now += dt;

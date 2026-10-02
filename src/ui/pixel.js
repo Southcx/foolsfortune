@@ -157,8 +157,8 @@ class PixelKit {
   }
 
   /** A glove as a CSS cursor value at the integer scale (hotspot in art pixels). */
-  cursor(name, pal = 'clay', hx = 0, hy = 0, fallback = 'default') {
-    const src = this.art(name, pal), s = Math.max(1, Math.min(3, this.scale())); // (browsers cap a cursor at 128 px)
+  cursor(name, pal = 'clay', hx = 0, hy = 0, fallback = 'default', at = null) {
+    const src = this.art(name, pal), s = at ?? Math.max(1, Math.min(3, this.scale())); // (browsers cap a cursor at 128 px; `at` a fixed scale: 1 is native)
     const c = document.createElement('canvas'); c.width = src.width * s; c.height = src.height * s;
     const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(src, 0, 0, c.width, c.height);
     return `url(${c.toDataURL()}) ${hx * s} ${hy * s}, ${fallback}`;

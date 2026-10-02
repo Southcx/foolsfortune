@@ -7,6 +7,7 @@
 //   game.cinema.frame('fight', { bars: 1, fov: -14, dist: 0.78, yaw: 0.3, pitch: -0.05, roll: 0.02 })
 //   game.cinema.free('fight')          game.cinema.strain = 0..1
 //   game.cinema.shot('open', { pos, look, fov: -6, roll: 0, bars: 1, ease: 3 })     a camera of its own: a place and a point to look at
+//   game.cinema.frame('cut', { ..., ttl: 1.1 })   a frame that lets itself go after ttl real seconds
 //   game.cinema.unshot('open')         (the shot's pos/look are read every frame: move them and the camera moves; set pos and it is a cut)
 //
 // Prior art: the Wind Waker's Z-target letterbox and the way Zelda frames a boss (bars in, camera on the thing), Shadow of the
@@ -57,6 +58,9 @@ export class Cinema {
 
   update(dt) {
     let bars = 0, spec = null, shot = null;
+    // (a frame with a `ttl` lets itself go after that many real seconds, whatever becomes of whoever asked for it)
+    const raw = this.game.rawDt ?? dt;
+    for (const [id, r] of this.reqs) if (r.ttl != null && (r.ttl -= raw) <= 0) this.reqs.delete(id);
     for (const r of this.reqs.values()) { bars = Math.max(bars, r.bars); spec = r; }
     for (const r of this.shots.values()) { bars = Math.max(bars, r.bars); shot = r; }
     const ease = spec?.ease ?? 5, c = this.cam, D = THREE.MathUtils.damp;

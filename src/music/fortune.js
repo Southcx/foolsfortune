@@ -95,7 +95,7 @@ const arp = (c, v, beats = 4) => CH[c].arp.slice(0, beats * 2).map((n, k) => E('
 const pad = (c, v, d = 4, o = {}) => [E('strings', 0, d, CH[c].v, v, { attack: 0.6, bright: 1800, ...o })];
 
 export const FORTUNE = {
-  title: "Fool's Fortune", bpm: 125, arrange: true, loopFrom: 1, pumpDepth: 0.55,
+  title: "Fool's Fortune", root: 64, bpm: 125, arrange: true, loopFrom: 1, pumpDepth: 0.55,
   sections: [
     // I. WIND: the piano alone
     { id: 'wind', bars: 10, bpm: 75, bar: (i) => {

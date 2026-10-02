@@ -3,6 +3,8 @@ import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { RAPIER, GROUPS, G, groups } from './physics.js';
 import { T, PALETTE } from './config.js';
 import { addOutline, ensureSmoothNormals } from './outline.js';
+import { ShardBatch } from './render/shardbatch.js';
+const _down = new THREE.Vector3(0, -1, 0), _fq = new THREE.Quaternion(), _fa = new THREE.Vector3();
 import { PropBatch, InstancePool } from './render/propbatch.js';
 import { zoneOf } from './render/zones.js';
 import { sfx } from './audio.js';
@@ -60,6 +62,9 @@ export class Breakables {
     this.batch = new PropBatch(scene); // (pots at rest, drawn together)
     this.ropeDraw = new InstancePool(scene, ropeGeo, ropeMat); // (every rope segment in one draw)
     this.shards = [];
+    this.flyers = []; // the chips without bodies (spawnShard)
+    // every loose shard in one draw per look (render/shardbatch.js): slots reserved once, filled when a pot breaks
+    this.shardBatch = { earth: new ShardBatch(scene, shardMat, { slots: T.shatter.maxShards + T.shatter.maxFlyers, verts: 192 }), glass: new ShardBatch(scene, glazeMat, { slots: 160, verts: 192 }) };
     this.debris = new Set(); // non-breakable dynamic props (crates, bricks) for explosions
     this.ropes = new Set();
     this.slices = [];
@@ -636,10 +641,6 @@ export class Breakables {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
 
-    const flat = safeHullPoints(local, 0.004);
-    const cd = flat && RAPIER.ColliderDesc.convexHull(flat);
-    if (!cd) { geo.dispose(); return; }
-
     const worldC = c.clone().applyQuaternion(bodyRot).add(bodyPos);
     const r = worldC.clone().sub(bodyPos);
     const vel = linVel.clone().add(new THREE.Vector3().crossVectors(angVel, r));
@@ -650,6 +651,25 @@ export class Breakables {
     vel.addScaledVector(radial, T.shatter.radialBurst * power * heavy * (0.6 + Math.random() * 0.8));
     vel.addScaledVector(dirN, T.shatter.bulletPush * power * heavy * (0.25 + nearHit) * (0.5 + Math.random()));
     vel.y += T.shatter.upBias * power * Math.random();
+
+    // a small chip has no body: it flies, bounces and settles on the floor found under it, drawn in the shard batch (the debris
+    // particle of every engine since Red Faction: only the pieces big enough to matter are simulated)
+    if (!geo.boundingSphere) geo.computeBoundingSphere();
+    if (geo.boundingSphere.radius < T.shatter.flyR && !T.shatter.shardOutlines) {
+      const sb = this.shardBatch[M.sound === 'glass' ? 'glass' : 'earth'];
+      const proxy = new THREE.Object3D(); proxy.position.copy(worldC); proxy.quaternion.copy(bodyRot);
+      const slot = sb.take(geo, proxy);
+      geo.dispose();
+      if (slot == null) return;
+      const down = this.physics.raycast(worldC, _down, 6, undefined, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic());
+      const spin = new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * Math.random());
+      this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * 0.6 * (0.8 + Math.random() * 0.4), rest: false });
+      while (this.flyers.length > T.shatter.maxFlyers) { const f = this.flyers.shift(); f.sb.give(f.slot); }
+      return;
+    }
+    const flat = safeHullPoints(local, 0.004);
+    const cd = flat && RAPIER.ColliderDesc.convexHull(flat);
+    if (!cd) { geo.dispose(); return; }
 
     const body = this.physics.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
@@ -666,13 +686,20 @@ export class Breakables {
         .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),
       body,
     );
-    const mesh = new THREE.Mesh(geo, M.sound === 'glass' ? glazeMat : shardMat);
-    mesh.castShadow = true;
-    if (T.shatter.shardOutlines) addOutline(mesh);
-    mesh.position.copy(worldC);
-    mesh.quaternion.copy(bodyRot);
-    this.scene.add(mesh);
-    const ent = { type: 'shard', body, mesh, age: 0, life: T.shatter.shardLife * (0.8 + Math.random() * 0.4), sound: M.sound, M, baseColor: color };
+    // drawn by the shard batch (its `mesh` a stand-in the body moves); a piece too big for a slot is a mesh of its own
+    const sb = this.shardBatch[M.sound === 'glass' ? 'glass' : 'earth'];
+    let mesh = new THREE.Object3D();
+    mesh.position.copy(worldC); mesh.quaternion.copy(bodyRot);
+    const slot = T.shatter.shardOutlines ? null : sb.take(geo, mesh);
+    if (slot == null) {
+      mesh = new THREE.Mesh(geo, M.sound === 'glass' ? glazeMat : shardMat);
+      mesh.castShadow = true;
+      if (T.shatter.shardOutlines) addOutline(mesh);
+      mesh.position.copy(worldC);
+      mesh.quaternion.copy(bodyRot);
+      this.scene.add(mesh);
+    } else geo.dispose(); // (its data is in the batch now)
+    const ent = { type: 'shard', body, mesh, slot, sb: slot == null ? null : sb, age: 0, life: T.shatter.shardLife * (0.8 + Math.random() * 0.4), sound: M.sound, M, baseColor: color };
     ent.sync = this.physics.addSynced(body, mesh);
     this.physics.register(col, ent);
     this.shards.push(ent);
@@ -682,8 +709,9 @@ export class Breakables {
   removeShard(s) {
     this.physics.removeSynced(s.sync);
     this.physics.removeBody(s.body);
+    if (s.sb) { s.sb.give(s.slot); s.sb = null; return; }
     this.scene.remove(s.mesh);
-    s.mesh.geometry.dispose();
+    s.mesh.geometry?.dispose();
   }
 
   /** Radial blast: chain-breaks pots inside `breakFrac` of the radius, shoves the rest. */
@@ -779,6 +807,53 @@ export class Breakables {
     if ((ent.restT = (ent.restT || 0) + 1) > 20) ent.parked = this.batch.park(m, zoneOf(m.position));
   }
 
+  /** The chips with no body: gravity, a bounce on the floor under them, a tumble that dies away, a shrink at the end. */
+  updateFlyers(dt) {
+    const g = T.physics.gravity, q = _fq;
+    for (let i = this.flyers.length - 1; i >= 0; i--) {
+      const f = this.flyers[i], m = f.mesh;
+      f.age += dt;
+      const fade = f.life - f.age;
+      if (fade <= 0) { f.sb.give(f.slot); this.flyers.splice(i, 1); continue; }
+      if (!f.rest) {
+        f.vel.y -= g * dt;
+        m.position.addScaledVector(f.vel, dt);
+        const sp = f.spin.length();
+        if (sp > 1e-3) { q.setFromAxisAngle(_fa.copy(f.spin).divideScalar(sp), sp * dt); m.quaternion.premultiply(q); }
+        const fl = f.floor + f.r * 0.45;
+        if (m.position.y < fl) {
+          m.position.y = fl;
+          if (f.vel.y < -0.6) { f.vel.y *= -0.3; f.vel.x *= 0.55; f.vel.z *= 0.55; f.spin.multiplyScalar(0.5); }
+          else { f.rest = true; }
+        }
+        if (m.position.y < f.floor - 1) f.age = f.life; // (fell past where it should have landed: off a ledge, gone)
+      }
+      if (fade < 0.6) m.scale.setScalar(Math.max(0.01, fade / 0.6));
+    }
+  }
+
+  /** A pot that has nearly stopped is put to sleep. Rapier's own thresholds are tight, and a round-bottomed jar on a shelf, or a stack
+   *  of plates, can rock and shiver for ever: never asleep, so never batched (three draws a frame instead of none) and always simulated.
+   *  Anything that touches it wakes it again, as before. (The "sleep threshold" every engine tunes, PhysX's and Havok's, made a little
+   *  looser for props that only need to look still.) */
+  settle(ent, dt) {
+    const b = ent.body;
+    if (!ent.alive || ent.rope || !b.isValid() || !b.isDynamic() || b.isSleeping()) { ent.slowT = 0; return; }
+    const v = b.linvel(), w = b.angvel();
+    const slow = v.x * v.x + v.y * v.y + v.z * v.z < 0.36 && w.x * w.x + w.y * w.y + w.z * w.z < 20;
+    ent.slowT = slow ? (ent.slowT || 0) + dt : 0;
+    if (ent.slowT > 1.2 && !ent.held && !ent.grabbed) { b.sleep(); ent.slowT = 0; }
+  }
+
+  /** A loose prop (a crate, a brick) at rest is drawn by the prop batch too, until something moves it. */
+  restProp(ent) {
+    const b = ent.body, m = ent.mesh;
+    const still = b.isValid() && b.isDynamic() && b.isSleeping() && m.parent === this.scene && m.isMesh && m.children.length <= 1 && !ent.held;
+    if (ent.parked) { if (!still || this.batch.stale(ent.parked)) { this.batch.unpark(ent.parked); ent.parked = null; ent.restT = 0; } return; }
+    if (!still) { ent.restT = 0; return; }
+    if ((ent.restT = (ent.restT || 0) + 1) > 20) ent.parked = this.batch.park(m, zoneOf(m.position));
+  }
+
   /** The pot is gone: take it out of the batch for good. */
   release(ent) {
     if (ent.parked) { this.batch.unpark(ent.parked); ent.parked = null; }
@@ -788,7 +863,9 @@ export class Breakables {
   update(dt) {
     this.clock = (this.clock || 0) + dt;
     this.ropeDraw.update();
+    for (const ent of this.debris) if (ent.owner?.dynamic) this.restProp(ent);
     for (const ent of this.items) {
+      this.settle(ent, dt);
       this.rest(ent);
       if (ent.popIn !== undefined) {
         ent.popIn = Math.min(1, ent.popIn + dt * 4);
@@ -827,6 +904,8 @@ export class Breakables {
         if (fade <= 0) { this.removeShard(s); this.shards.splice(i, 1); }
       }
     }
+    this.updateFlyers(dt);
+    this.shardBatch.earth.update(); this.shardBatch.glass.update();
   }
 
   clear() {
@@ -841,6 +920,8 @@ export class Breakables {
     this.wrecks = [];
     for (const s of this.shards) this.removeShard(s);
     this.shards.length = 0;
+    for (const f of this.flyers) f.sb.give(f.slot);
+    this.flyers.length = 0;
     for (const sl of [...this.slices]) this.removeSlice(sl);
   }
 }

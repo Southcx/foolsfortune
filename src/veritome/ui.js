@@ -10,6 +10,7 @@
 //    in a batch: the report lists each plate with its stars and what it gave (an entry, a fact, a card), Pokémon Snap's way.
 //  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD) and the facts known, the battle ones marked.
 //  - THE COMPENDIUM: the best photograph of every kind of thing, with its stars (the Hyrule Compendium).
+//  - THE MIND: the macros, composed on the lattice from the Functions learned (mind/composer.js), said to stunned minds (reprogram.js).
 //
 // Prior art: Greed Island's binder (numbered designated slots, free slots, ranks and limits), OSRS's bank, Pokémon Snap's report and album,
 // Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
@@ -18,6 +19,7 @@ import { CARDS, CARD, SECTIONS, FREE_SLOTS, WORTH, cardArt } from './cards.js';
 import { ROLL } from './film.js';
 import { CREATURES, CREATURE_IDS } from './bestiary.js';
 import { SUBJECTS } from './subjects.js';
+import { renderMind } from '../mind/composer.js';
 
 const CSS = `
 #codex .vt { display: grid; grid-template-columns: 1fr 270px; gap: 16px; }
@@ -63,13 +65,13 @@ export function renderVeritome(codex, cx) {
   cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span>${box ? `<span>PNEUKA BOX ${box.used} / ${box.slots.length} (P)</span>` : ''}<span>FILM ${B.film.plates.length} / ${ROLL}</span>`));
   const pages = el('div', 'vtpages');
   codex.vtPage ||= 'binder';
-  for (const [id, name] of [['binder', 'THE BINDER'], ['film', `THE FILM${B.film.plates.length ? ` (${B.film.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM']]) {
+  for (const [id, name] of [['binder', 'THE BINDER'], ['film', `THE FILM${B.film.plates.length ? ` (${B.film.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM'], ['mind', 'THE MIND']]) {
     const s = el('span', codex.vtPage === id ? 'on' : '', name);
     s.onclick = () => { codex.vtPage = id; codex.render(); };
     pages.appendChild(s);
   }
   cx.appendChild(pages);
-  ({ binder, film, bestiary, compendium })[codex.vtPage](codex, cx, g, B);
+  ({ binder, film, bestiary, compendium, mind: (cd, c2, gg) => renderMind(cd, c2, gg) })[codex.vtPage](codex, cx, g, B);
 }
 
 // ---------------------------------------------------------------- the binder

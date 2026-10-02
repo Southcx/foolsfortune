@@ -43,7 +43,12 @@ credits: UAL Standard, CMU mocap, CC0).
   static primitives: `mergeStatic` (`src/render/merge.js`). Measure before and after (`window.__boot`, renderer.info).
 - An articulated model that rests most of the time (a tool on the belt, a chest) is drawn through a rest bake (`src/render/restbake.js`).
 - The maker's pixel art is used at 1x, palette-swapped, then scaled by a whole number, never resampled (`src/ui/pixel.js`).
-- A new psychic tool goes on the belt (`src/tools/belt.js`), and anything that asks "is a tool out?" asks the belt.
+- A new psychic tool goes on the belt (`src/tools/belt.js`), built on `src/tools/heldtool.js` (the draw, stow, key, second hand and rest
+  bake once), and anything that asks "is a tool out?" asks the belt. What fits into a tool (a lure, an instrument, keys) is a fitting in
+  the Pneuka Box (`FITTINGS` in `src/pneuka/box.js`), never its own inventory.
+- Anything made of Lachryma or holding it gives off a signature (`src/signatures.js`); a tool that senses or drinks Lachryma asks there.
+- An ally creature (a spirit: `src/spirits.js`) is `ally` and the Courier's blows pass through it (`creatures.strike`); a decoy a mind should
+  see goes in `game.ai.decoys`.
 - What a tool may do to a thing is a tag on the thing (`src/tags.js`: sliceable, breakable, liftable, pushable, static); a tool asks
   `hasTag`, never the entity's kind. Static things a sweeping tool must find are registered there.
 - A creature that can be hurt is tagged `hurtable` and registered with `game.creatures` (`src/creatures.js`); a weapon calls

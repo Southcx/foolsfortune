@@ -73,7 +73,7 @@ export class BladeMode {
 
   enter() {
     const g = this.game, P = this.P;
-    this.active = true; this.cuts = 0; this.zan = 0; this.queue.length = 0;
+    this.active = true; this.cuts = 0; this.zan = 0;
     this.cursor.set(1, 0.001); this.ang = 0;
     g.time.slow('blade', SLOW);
     P.lookScale.blade = 0;
@@ -117,6 +117,8 @@ export class BladeMode {
   // ---------------------------------------------------------------- the frame (real time: `raw` seconds)
   update(dt, inp) {
     const g = this.game, P = this.P, raw = g.rawDt || dt;
+    // the queued cuts of a zandatsu (and the frame's release), in real time: they play out even if blade mode is let go meanwhile
+    for (let i = this.queue.length - 1; i >= 0; i--) { const q = this.queue[i]; q.t -= raw; if (q.t <= 0) { this.queue.splice(i, 1); q.fn(); } }
     if (!this.active) {
       this.k = Math.max(0, this.k - raw * 6);
       this.guide.visible = this.zline.visible = this.k > 0.02;
@@ -137,8 +139,6 @@ export class BladeMode {
     if (this.hold > 0) { /* (the cinematic holds where it was) */ }
     else if (!this.target || !g.lock.alive(this.target) || this.target.ref !== g.lock.target?.ref) { if (!g.lock.active) g.lock.acquire(); this.pickTarget(); } else g.lock.pointOf(this.target, this.pt);
     this.placeGuide();
-    // the queued cuts of a zandatsu, in real time
-    for (let i = this.queue.length - 1; i >= 0; i--) { const q = this.queue[i]; q.t -= raw; if (q.t <= 0) { this.queue.splice(i, 1); q.fn(); } }
     this.swing = Math.max(0, this.swing - raw * 3.2);
     if (inp.wasPressed('Mouse0')) this.doCut();
   }
@@ -247,8 +247,7 @@ export class BladeMode {
     const at = c.center(new THREE.Vector3());
     g.time.pulse('zandatsu', 0.008, 0.5, { release: 0.7 });
     this.hold = 1.3;
-    g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8 });
-    this.queue.push({ t: 1.1, fn: () => g.cinema.free('zandatsu') });
+    g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8, ttl: 1.1 });
     sfx.zandatsu?.();
     // its body as it stands, in the world (the deformer's shape is the shader's: the cut is of the rest shape, which is near enough)
     c.root.updateMatrixWorld(true);
@@ -274,8 +273,7 @@ export class BladeMode {
     const s = T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045);
     g.time.pulse('zandatsu', 0.008, 0.5, { release: 0.7 });
     this.hold = 1.3; // (the frame stays on the jar for the moment: no new target until it has been seen to fall)
-    g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8 }); // (a long lens on the jar: the cut, close)
-    this.queue.push({ t: 1.1, fn: () => g.cinema.free('zandatsu') });
+    g.cinema.frame('zandatsu', { bars: 1, yaw: 0.12, pitch: 0.03, dist: 0.95, fov: -22, roll: 0.02, ease: 8, ttl: 1.1 }); // (a long lens on the jar: the cut, close)
     sfx.zandatsu?.();
     // the jar becomes a jar's worth of clay, sliceable, and is cut three times, a beat apart
     g.clappers.hit(c, at.clone(), line, 1.0, 'sliced', () => {

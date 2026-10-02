@@ -31,6 +31,8 @@ import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 const fx = (v, d = 2) => Number(v).toFixed(d);
 import { CARD as VCARD } from './veritome/cards.js';
 import { CREATURES } from './veritome/bestiary.js';
+import { FUNCTIONS } from './mind/functions.js';
+import { SONGS } from './crucibelle/songs.js';
 import { itemOf } from './pneuka/items.js';
 import { LURES } from './angling/lures.js';
 import { SUBJECTS } from './veritome/subjects.js';
@@ -362,13 +364,19 @@ export class Tracking {
       first('stun', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass.');
     });
     // reprogramming (veritome/reprogram.js): a stunned mind opened, and the line typed into it
-    const RAN = { halt: 'freezes where it stands', sleep: 'falls asleep', calm: 'grows calm', forget: 'forgets you', home: 'turns for home', soften: 'goes soft',
-      melt: 'melts into a puddle', kin: 'takes you for its own kind', fetch: 'goes to fetch you Lachryma', turn: 'turns on its own kind' };
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     on('reprogram.run', (e) => {
       L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');
-      log.say('battle', `You rewrite the ${KIND(e.kind)}. It ${RAN[e.macro] || 'obeys'}.`, {});
+      for (const f of e.effects || []) L.inc(`reprogram.fn.${f}`);
+      L.hi('reprogram.q', Math.round((e.q || 0) * 100));
+      const did = (e.effects || []).filter((f) => !(e.refused || []).includes(f)).map((f) => FUNCTIONS[f]?.label.toLowerCase()).filter(Boolean);
+      log.say('battle', `You say ${e.macro.replace(/-/g, ' ')} into the ${KIND(e.kind)}'s mind. It ${did.length ? `takes it: ${did.join(', ')}` : 'hears it, and has no way to do it'}.`, {});
+      if ((e.refused || []).length) log.say('warn', `Its mind has nothing that answers to ${e.refused.map((f) => FUNCTIONS[f]?.word).join(', ')}.`, { key: 'rpref', throttle: 1 });
     });
+    on('reprogram.reject', (e) => { L.inc('reprogram.reject'); log.say('warn', `The ${KIND(e.kind)}'s mind throws ${e.macro.replace(/-/g, ' ')} off, and wakes. (A better-made macro takes better hold.)`, {}); });
+    // the Functions (mind/functions.js): learned by seeing them done
+    on('mind.learn', (e) => { L.inc('mind.learn'); log.say('ach', `You have learned the neuralese ${FUNCTIONS[e.fn]?.word}: ${FUNCTIONS[e.fn]?.does.toLowerCase().replace(/\.$/, '')} (the Codex: VERITOME, THE MIND).`, {}); });
+    on('mind.place', () => L.inc('mind.place'));
     on('reprogram.miss', () => L.inc('reprogram.miss'));
     on('reprogram.close', (e) => { if (e.why === 'time') { L.inc('reprogram.lost'); log.say('warn', `The ${KIND(e.kind)}'s mind snaps shut on you.`, {}); } });
     on('reprogram.wear', (e) => log.say('other', `What you wrote into the ${KIND(e.kind)} wears off.`, { key: 'rpw', throttle: 2 }));
@@ -382,6 +390,56 @@ export class Tracking {
     on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));
     on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)} in the Veritome.`, { key: 'istore', fmt: (n) => `You store ${n} things in the Veritome.` }); });
     on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of the Veritome.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of the Veritome.` }); });
+    on('lure.untie', (e) => { L.inc('lure.untie'); log.say('info', `You untie the ${ITEM(e.lure)} and put it in your Pneuka Box.`, { key: 'luntie', throttle: 0.2 }); });
+    // the tools: worn in their places, or carried (tools/belt.js)
+    const TOOLNAME = (t) => ({ psygun: 'Psygun', sondelass: 'Sondelass', soulbrush: 'Soul Brush', veritome: 'Veritome', dreamvane: 'Dreamvane', crucibelle: 'Crucibelle', lockheart: 'Lockheart' }[t] || t);
+    const WHERE = { psygun: 'across your back', sondelass: 'across your back', dreamvane: 'across your back', soulbrush: 'at your hip', veritome: 'at your hip', crucibelle: 'at your hip', lockheart: 'at your neck' };
+    on('tool.wear', (e) => { L.inc('tool.wear'); L.inc(`tool.wear.${e.tool}`); log.say('info', `You wear the ${TOOLNAME(e.tool)} ${WHERE[e.tool] || ''}${e.off ? `, and put the ${TOOLNAME(e.off)} in your Pneuka Box` : ''}.`, { key: 'twear', throttle: 0.2 }); });
+    on('tool.off', (e) => { L.inc('tool.off'); log.say('info', `You put the ${TOOLNAME(e.tool)} in your Pneuka Box.`, { key: 'toff', throttle: 0.2 }); });
+    // the last three tools (moves/dreamvane.js, crucibelle.js, lockheart.js): what they find, sing and let out
+    const KINDNAME = { crystal: 'crystal', chest: 'a chest', creature: 'something alive', clapper: 'a clapperjar', spirit: 'a spirit', bauble: 'loose Lachryma', liquid: 'liquid Lachryma', cube: 'a cube' };
+    on('dowse.find', (e) => { L.inc('dowse.find'); L.inc(`dowse.find.${e.kind}`); log.say('find', `The Dreamvane leans hard toward ${e.kind === 'crystal' ? (e.veiled ? 'crystal under the sand' : 'crystal') : KINDNAME[e.kind] || 'something'}, ${e.dist} paces off.`, { key: 'dfind', throttle: 2 }); });
+    on('dowse.attune', () => L.inc('dowse.attune'));
+    on('dreamvane.swing', () => L.inc('dreamvane.swing'));
+    on('dreamvane.unearth', (e) => { L.inc('crystal.unearth', e.n); });
+    on('crystal.reveal', (e) => { if (e.by === 'courier') L.inc('crystal.reveal'); log.say('find', e.how === 'pick' ? 'Crystal rises out of the sand where the pick went in.' : 'Crystal rises out of the sand at the song.', { key: 'xrev', throttle: 1 }); first('crystal', 'Logged: your first crystal. Lachryma set hard: the Dreamvane\'s pick takes it a blow at a time, and its fork, rung into it first, doubles what it gives.'); });
+    on('crystal.strike', (e) => { if (e.by === 'courier') L.inc('crystal.strike'); if (e.ringing) L.inc('crystal.strike.ringing'); });
+    on('crystal.harvest', (e) => {
+      if (e.by !== 'courier') return;
+      L.inc('crystal.harvest'); if (e.ringing) L.inc('crystal.harvest.ringing'); if (e.shard) L.inc('crystal.shard'); if (e.key) L.inc('crystal.key');
+      log.say('find', `The crystal breaks open${e.ringing ? ', ringing,' : ''} and gives up ${plural(e.worth, 'cube')}${e.shard ? ' and a shard of itself' : ''}${e.key ? `, and inside it, ${an(ITEM(e.key))}` : ''}.`, {});
+    });
+    on('fork.throw', () => L.inc('fork.throw'));
+    on('fork.stick', (e) => { L.inc('fork.stick'); L.inc(`fork.stick.${e.what}`); if (e.what === 'creature') log.say('battle', 'Your tuning fork sinks into it, ringing.', { key: 'fstick', throttle: 2 }); });
+    on('fork.drain', () => L.inc('fork.drain'));
+    on('fork.catch', () => L.inc('fork.catch'));
+    on('crucibelle.note', (e) => { L.inc('bell.note'); if (e.onBeat) L.inc('bell.onbeat'); });
+    on('crucibelle.fever', () => { L.inc('bell.fever'); log.say('song', 'The Crucibelle burns with fever.', { key: 'fever', throttle: 6 }); });
+    on('crucibelle.toll', (e) => { L.inc('bell.toll'); if (e.onBeat) L.inc('bell.toll.onbeat'); });
+    on('song.play', (e) => {
+      L.inc('song.play'); L.inc(`song.${e.song}`); if (e.fever >= 1) L.inc('song.fever'); L.hi('song.power', Math.round(e.power * 100));
+      const S = { reveal: (n) => (n ? `What was hidden is shown: ${plural(n, 'thing')} light up.` : 'Nothing near is hidden.'), mirage: () => 'A Courier of smoke stands where you stood.', rally: (n) => (n ? `${n === 1 ? 'Your ally takes' : `${n} allies take`} heart.` : 'Your Lachryma quickens.'), lull: (n) => (n ? `${plural(n, 'thing')} fall${n === 1 ? 's' : ''} asleep.` : 'Nothing near is listening.'), summon: (n) => (n > 1 ? `${n} smoke spirits stand up out of the bell.` : 'A smoke spirit stands up out of the bell.') };
+      log.say('song', `You play ${SONGS[e.song]?.name.toLowerCase().replace(/^the /, 'the ') || e.song}${e.fever >= 1 ? ' in fever' : ''}. ${S[e.song]?.(e.n) || ''}`, {});
+    });
+    on('mirage.raise', () => L.inc('mirage.raise'));
+    on('spirit.summon', (e) => { L.inc('spirit.summon'); L.inc(`spirit.summon.${e.from}`); first('spirit', 'Logged: your first spirit. It is yours for a while: it follows you and fights what is against you, and your blows pass through it.'); });
+    on('spirit.fade', (e) => { L.inc('spirit.fade'); if (e.cause !== 'faded') log.say('other', 'A smoke spirit is struck back into smoke.', { key: 'sfade', throttle: 2 }); });
+    on('lockheart.feed', (e) => { L.inc('lockheart.fed', e.amount); L.inc(`lockheart.fed.${e.from}`, e.amount); if (e.from === 'shard') log.say('luck', 'The Lockheart drinks the shard whole.', {}); });
+    on('lockheart.full', (e) => log.say('luck', `The ${ITEM(e.heart).replace(/^THE /, '').toLowerCase()} is full: a key will open it.`, { key: 'lhfull', throttle: 10 }));
+    on('lockheart.drain', () => L.inc('lockheart.drain'));
+    on('lockheart.open', (e) => {
+      L.inc('lockheart.open'); L.inc(`lockheart.open.${e.heart}`); for (const k of e.keys) L.inc(`lockheart.key.${k}`); if (e.keys.length >= 3) L.inc('lockheart.three');
+      log.say('luck', `You turn ${e.keys.map((k) => an(ITEM(k).toLowerCase())).join(', then ')} in the Lockheart${e.power >= 1.9 ? ', brimming,' : ''} and it opens.`, {});
+    });
+    on('lockheart.outcome', (e) => {
+      L.inc(`lockheart.out.${e.outcome}`); L.hi('lockheart.rank', e.rank);
+      const O = { dud: 'Nothing comes out of it but a moth.', bite: 'It bites back, and drinks from you.', spill: 'Lachryma spills out of it.', cubes: `${plural(e.n, 'cube')} pour out of it.`, mend: 'Your Lachryma comes flooding back.',
+        daze: `A ring of light goes out of it${e.n ? `: ${plural(e.n, 'thing')} reel` : ''}.`, hush: `A hush goes out of it${e.n ? `: ${plural(e.n, 'thing')} fall asleep` : ''}.`, kin: `${e.n ? `${plural(e.n, 'creature')} take` : 'Nothing near takes'} you for kin.`,
+        spirit: `${e.n > 1 ? `${e.n} smoke spirits climb` : 'A smoke spirit climbs'} out of it.`, chest: 'A chest falls out of the air.', nuke: `SLIP NUKE.${e.n ? ` ${plural(e.n, 'thing')} drown in it.` : ''}` };
+      log.say(e.rank >= 4 ? 'ach' : 'luck', O[e.outcome] || e.outcome, { tone: e.rank >= 4 ? '#ff5ad0' : undefined });
+    });
+    on('item.fit', (e) => { L.inc('item.fit'); log.say('info', e.socket === 'keys' ? `You put ${an(ITEM(e.item).toLowerCase())} on the Lockheart's ring.` : e.socket === 'heart' ? `You hang ${ITEM(e.item).toLowerCase()} on the Lockheart's chain.` : `You fit the ${ITEM(e.item).toLowerCase()} to the Crucibelle.`, { key: `ifit.${e.item}`, throttle: 0.2 }); });
+    on('item.unfit', (e) => log.say('info', `You take the ${ITEM(e.item).toLowerCase()} off, into your Pneuka Box.`, { key: 'iunfit', throttle: 0.2 }));
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });
     on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 
@@ -450,8 +508,10 @@ export class Tracking {
       log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
     });
     on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });
-    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} to you.`, { key: 'hpull', win: 1.2 }); });
-    on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} flies.`, { key: 'hfling', win: 1.2 }); });
+    const hooked = (w) => (w === 'clapper' ? 'clapperjar' : w === 'breakable' ? 'pot' : w === 'slipjelly' ? 'slip jelly' : 'prop');
+    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${hooked(e.what)} to you.`, { key: 'hpull', win: 1.2 }); });
+    on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${hooked(e.what)} flies.`, { key: 'hfling', win: 1.2 }); });
+    on('hook.creature', (e) => { L.inc('hook.creature'); L.inc(`hook.creature.${e.kind}`); log.say('battle', `The grapnel bites into the ${hooked(e.kind)}. It reels.`, { key: 'hcre', win: 1.2 }); });
     on('grapple.attach', (e) => {
       L.inc('grapple.attach'); L.inc(`grapple.attach.${e.kind}`);
       log.say('move', e.kind === 'anchor' ? 'The grapnel bites. The line goes taut.' : `The grapnel bites into ${e.what === 'clapper' ? 'a clapperjar' : e.what === 'breakable' ? 'a pot' : 'something loose'}.`, { key: 'gatt', throttle: 1.2 });

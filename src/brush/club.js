@@ -21,14 +21,20 @@ import * as THREE from 'three';
 import { sfx } from '../audio.js';
 import { hasTag } from '../tags.js';
 import { arcAt } from '../tools/viewmodel.js';
+import { BRUSH } from './model.js';
+import { measureSwing, sweep as sweepArc, magnet } from '../combat/melee.js';
 
 // clip time (the clip's own seconds): the hit window, the chain window; `rate` slows the clip for the brush's weight
+// (when the head can hurt is measured from each clip: melee.js; `hit` here is only when the flick of slip leaves the bristles)
 const BLOWS = [
-  { clip: 'swordA', dur: 0.43, rate: 0.8, hit: [0.13, 0.32], chain: [0.24, 0.75], dmg: 1.0, lunge: 2.6, power: 1.4, bat: true },
-  { clip: 'swordB', dur: 0.53, rate: 0.8, hit: [0.11, 0.34], chain: [0.28, 0.8], dmg: 1.1, lunge: 2.6, power: 1.5, bat: true },
-  { clip: 'swordC', dur: 0.95, rate: 0.85, hit: [0.46, 0.7], chain: [], dmg: 1.8, lunge: 4, power: 2.0, bat: false, ground: 0.56 },
+  { clip: 'swordA', dur: 0.43, rate: 0.8, hit: [0.2, 0.3], chain: [0.22, 0.43], rec: 'swordARec', dmg: 1.0, lunge: 2.6, power: 1.4, bat: true },
+  { clip: 'swordB', dur: 0.53, rate: 0.8, hit: [0.2, 0.3], chain: [0.24, 0.53], rec: 'swordBRec', dmg: 1.1, lunge: 2.6, power: 1.5, bat: true },
+  { clip: 'swordC', dur: 1.3, rate: 0.85, hit: [0.6, 0.7], chain: [], dmg: 1.8, lunge: 4, power: 2.0, bat: false, ground: 0.67, fade: 0.45 },
 ];
-const SLAM = { clip: 'swordC', raised: 0.24, from: 0.26, dur: 0.95, rate: 1.3, strike: 0.56, hold: 0.32, full: 1.1, cost: 4, radius: 2.4 };
+// the slam: Regular_C's overhead, held at the top (the head up behind her, 0.55 s into the clip) and brought down (it crosses in front
+// of her at 0.67)
+const SLAM = { clip: 'swordC', raised: 0.55, from: 0.56, dur: 1.2, rate: 1.3, strike: 0.67, hold: 0.32, full: 1.1, cost: 4, radius: 2.4, reach: 1.45 };
+const REACH = BRUSH.tip - BRUSH.ferrule + 0.45; // (the head is further out than a sword's tip, and some forgiveness)
 const DMG = 30, HEAD_R = 0.3; // (a pot takes a few blows: the brush alters things; it is a poor way to break them)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3();
 
@@ -52,9 +58,9 @@ export class Club {
   get game() { return this.tool.game; }
   get P() { return this.tool.P; }
   get busy() { return !!this.blow || this.charge >= 0 || !!this.slam; }
-  get playing() { return this.busy; }
+  get playing() { return this.busy || !!this.rec; }
 
-  cancel() { this.blow = null; this.charge = -1; this.slam = null; this.buffer = 0; }
+  cancel() { this.blow = null; this.rec = null; this.charge = -1; this.slam = null; this.buffer = 0; }
 
   aimDir(out) {
     const g = this.game, P = this.P;
@@ -69,10 +75,13 @@ export class Club {
   // ---------------------------------------------------------------- blows
   start(n) {
     const P = this.P, g = this.game, def = BLOWS[n];
-    this.blow = def; this.t = 0; this.n = n; this.hit.clear(); this.buffer = 0; this.flicked = false; this.held = 0;
+    this.blow = def; this.t = 0; this.tPrev = 0; this.n = n; this.hit.clear(); this.buffer = 0; this.flicked = false; this.held = 0; this.rec = null;
+    def.track ??= measureSwing(g.character, def.clip);
     const f = this.aimDir(_a);
-    P.bodyYaw = Math.atan2(f.x, f.z);
     let lunge = def.lunge * (P.grounded ? 1 : 0.4);
+    const m = !g.lock?.active && magnet(g, P, f, { range: 4.4, cone: 1.0 }); // (drawn to the best thing in front of her: melee.js)
+    if (m) { f.set(m.pos.x - P.pos.x, 0, m.pos.z - P.pos.z).normalize(); lunge = Math.min(lunge, Math.max(0, m.dist - m.r - 1.2) * 3); }
+    P.bodyYaw = Math.atan2(f.x, f.z);
     if (g.lock?.active) { g.lock.point(_e); lunge = Math.min(lunge, Math.max(0, _e.distanceTo(P.pos) - 1.5) * 3); }
     P.impulse(_b.copy(f).multiplyScalar(lunge), 'brush');
     sfx.brushSwing?.(n === 2 ? 1.4 : 1);
@@ -82,6 +91,7 @@ export class Club {
   update(dt, inp) {
     const P = this.P;
     this.idle += dt;
+    if (this.rec) { const r = this.rec; r.t += dt * (Math.hypot(P.vel.x, P.vel.z) > 2 ? 2.2 : 1); if (r.t >= r.dur) this.rec = null; }
     if (this.slam) return this.slamUpdate(dt);
     if (this.charge >= 0) {
       this.charge += dt;
@@ -95,17 +105,17 @@ export class Club {
       return;
     }
     const b = this.blow;
-    this.t += dt * b.rate;
+    this.tPrev = this.t; this.t += dt * b.rate;
     this.held = inp.isDown('Mouse0') ? this.held + dt : -1;
     if (inp.wasPressed('Mouse0')) this.buffer = 0.35;
     this.buffer -= dt;
     if (!this.flicked && this.t >= b.hit[0]) { this.flicked = true; this.flick(1); }
-    if (this.t >= b.hit[0] && this.t <= b.hit[1]) this.sweep(b);
+    this.sweep(b);
     if (b.ground && !this.struckGround && this.t >= b.ground) { this.struckGround = true; if (P.grounded) this.strike(0.45, 'bashed'); }
     // held through the blow: it goes up, and gathers
     if (this.held >= SLAM.hold && this.t >= (b.hit[1] + b.dur) / 2 - 0.1) { this.blow = null; this.charge = 0; this.struckGround = false; sfx.brushCharge?.(); return; }
     if (b.chain.length && this.buffer > 0 && this.t >= b.chain[0] && this.t <= b.chain[1]) { this.struckGround = false; this.start(this.n + 1); return; }
-    if (this.t >= b.dur) { this.blow = null; this.idle = 0; this.struckGround = false; }
+    if (this.t >= b.dur) { this.blow = null; this.idle = 0; this.struckGround = false; if (b.rec) this.rec = { clip: b.rec, t: 0, dur: 0.75 }; }
   }
 
   /** Let go of a charge: it comes down. */
@@ -115,6 +125,7 @@ export class Club {
     this.charge = -1;
     if (k < 0.25 || !g.lachryma.spend(SLAM.cost, 'brushslam')) { this.idle = 0; sfx.fizzle?.(); return; }
     const air = !P.grounded;
+    const f = this.aimDir(_b); P.bodyYaw = Math.atan2(f.x, f.z); // (it comes down where she is looking, or on what she is locked to)
     this.slam = { t: SLAM.from, power: 0.6 + 0.8 * k, air, struck: false, wait: 0 };
     if (air) { P.vel.y = Math.min(P.vel.y, -16); P.impulse(_a.set(0, -6, 0), 'brush'); }
     this.flicked = false;
@@ -142,6 +153,10 @@ export class Club {
     const g = this.game, P = this.P, m = this.tool.model;
     m.group.updateMatrixWorld(true);
     m.headWorld(_p);
+    // where it strikes: in FRONT of her, at the brush's reach, the way she faces. (The overhead clip is a sword's: the brush, longer and
+    // held further down, can be anywhere at the frame of the strike, often over her shoulder, so its head only says how far, never where.)
+    const fwd = _e.set(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
+    _p.set(P.pos.x, _p.y, P.pos.z).addScaledVector(fwd, SLAM.reach);
     const down = g.physics.raycast(_a.copy(_p).setY(Math.max(_p.y, P.pos.y) + 0.6), _b.set(0, -1, 0), 2.6, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     const at = down ? down.point.clone() : _p.clone().setY(P.pos.y);
     const R = SLAM.radius * power * (big ? 1 : 0.7);
@@ -190,35 +205,40 @@ export class Club {
     }
   }
 
-  /** The head through everything near it. */
+  /** The head through everything it swept since the last frame (a sector measured from the clip: melee.js), and the loose pieces it
+   *  passes through (by its segment: they are small and many). */
   sweep(b) {
     const g = this.game, m = this.tool.model, P = this.P;
     m.group.updateMatrixWorld(true);
     m.headSegment(_a, _b);
-    const dir = this.tipVel.lengthSq() > 1 ? this.tipVel.clone().normalize() : P.lookDir(new THREE.Vector3());
+    const fallback = this.tipVel.lengthSq() > 1 ? this.tipVel.clone().normalize() : P.lookDir(new THREE.Vector3());
     let struck = 0;
-    for (const ent of [...g.breakables.items]) {
-      if (!ent.alive || this.hit.has(ent) || ent.def?.trial) continue;
-      const t = ent.body.translation();
-      _p.set(t.x, t.y + ent.P.height * 0.45, t.z);
-      if (_p.distanceToSquared(P.pos) > 36 || segDist(_a, _b, _p) > HEAD_R + ent.P.rMax * 0.9) continue;
-      this.hit.add(ent); struck++;
-      const amt = DMG * b.dmg;
-      if (hasTag(ent, 'breakable') && ent.hp - amt <= 0) g.breakables.shatter(ent, _p.clone(), dir.clone(), b.power, 'bashed', 'courier');
-      else {
-        g.breakables.damage(ent, amt, _p.clone(), dir.clone(), b.power, false, 'courier');
-        if (ent.alive && hasTag(ent, 'pushable')) g.physics.kick(ent.body, dir.clone().setY(Math.max(0.35, dir.y)).multiplyScalar(ent.body.mass() * 4.5 * b.power));
-      }
-      g.events?.emit('brush.hit', { what: 'pot', n: this.n });
-    }
-    for (const c of g.creatures?.near(P.pos, 4) || []) {
-      if (this.hit.has(c)) continue;
-      c.center(_p);
-      if (segDist(_a, _b, _p) > HEAD_R + c.radius) continue;
-      this.hit.add(c); struck++;
-      g.creatures.strike(c, _p.clone(), dir.clone(), 1.2 * b.power, 'bashed');
-      g.events?.emit('brush.hit', { what: c.kind, n: this.n });
-    }
+    sweepArc(g, P, P.bodyYaw, b.track, this.tPrev, this.t, {
+      reach: REACH, seen: this.hit,
+      hit: (kind, ent, at, dir) => {
+        struck++;
+        if (kind === 'thing') { ent.struck?.(at, dir, b.power, 'courier', 'club'); return; }
+        if (kind === 'pot') {
+          const amt = DMG * b.dmg;
+          if (hasTag(ent, 'breakable') && ent.hp - amt <= 0) g.breakables.shatter(ent, at, dir, b.power, 'bashed', 'courier');
+          else {
+            g.breakables.damage(ent, amt, at, dir, b.power, false, 'courier');
+            if (ent.alive && hasTag(ent, 'pushable')) g.physics.kick(ent.body, dir.clone().setY(Math.max(0.35, dir.y)).multiplyScalar(ent.body.mass() * 4.5 * b.power));
+          }
+          g.events?.emit('brush.hit', { what: 'pot', n: this.n });
+        } else if (kind === 'creature') {
+          g.creatures.strike(ent, at, dir, 1.2 * b.power, 'bashed');
+          g.events?.emit('brush.hit', { what: ent.kind, n: this.n });
+        } else {
+          const c = ent;
+          if (c.ally) { struck--; return; }
+          // a light blow bats it away; the overhead, or a blow on one already flying (a juggle), breaks it
+          if (b.bat && c.state !== 'knocked') { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(9 * b.power).setY(4.5)); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, bat: true }); }
+          else { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(11 * b.power).setY(6)); g.clappers.stun(c, 2.5, g.shells.glowOutline, g.shells.xray); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, stun: true }); }
+        }
+      },
+    });
+    const dir = fallback;
     // the loose pieces: batted about
     for (const list of [g.breakables.slices, g.breakables.shards]) for (const s of list || []) {
       if (!s.body?.isValid?.() || this.hit.has(s)) continue;
@@ -228,15 +248,6 @@ export class Club {
       this.hit.add(s);
       g.breakables.instigate(s, 'courier');
       g.physics.kick(s.body, dir.clone().setY(Math.max(0.4, dir.y)).multiplyScalar(s.body.mass() * 6 * b.power));
-    }
-    for (const c of [...g.clappers.list]) {
-      if (!c.alive || this.hit.has(c) || c.ally) continue;
-      _p.copy(c.pos).y += 0.35;
-      if (_p.distanceToSquared(P.pos) > 36 || segDist(_a, _b, _p) > HEAD_R + 0.45) continue;
-      this.hit.add(c); struck++;
-      // a light blow bats it away; the overhead, or a blow on one already flying (a juggle), breaks it
-      if (b.bat && c.state !== 'knocked') { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(9 * b.power).setY(4.5)); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, bat: true }); }
-      else { g.clappers.knock(c, dir.clone().setY(0).normalize().multiplyScalar(11 * b.power).setY(6)); g.clappers.stun(c, 2.5, g.shells.glowOutline, g.shells.xray); g.events?.emit('brush.hit', { what: 'clapper', n: this.n, stun: true }); }
     }
     if (struck) this.impact(b.dmg);
   }
@@ -278,9 +289,14 @@ export class Club {
     }
     if (this.slam) { C.sample(SLAM.clip, this.slam.t, out, false); return { pose: out, w: 1 - THREE.MathUtils.smoothstep(this.slam.t, SLAM.dur - 0.2, SLAM.dur) }; }
     const b = this.blow;
-    if (!b) return null;
+    if (!b) {
+      const r = this.rec; // (the combo stopped: the recovery clip brings the brush back, and lets go as she moves off)
+      if (!r) return null;
+      C.sample(r.clip, r.t, out, false);
+      return { pose: out, w: 1 - THREE.MathUtils.smoothstep(r.t, r.dur - 0.3, r.dur) };
+    }
     C.sample(b.clip, this.t, out, false);
-    const w = Math.min(1, this.t / 0.06) * (1 - THREE.MathUtils.smoothstep(this.t, b.dur - 0.2, b.dur));
+    const w = Math.min(1, this.t / 0.05) * (b.fade ? 1 - THREE.MathUtils.smoothstep(this.t, b.dur - b.fade, b.dur) : 1);
     return { pose: out, w };
   }
 }

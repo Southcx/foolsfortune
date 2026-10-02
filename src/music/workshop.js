@@ -41,7 +41,7 @@ const work = (v, scrape = true) => {
 };
 
 export const WORKSHOP = {
-  title: 'The Workshop', bpm: 75, arrange: true, loopFrom: 1, pumpDepth: 1,
+  title: 'The Workshop', root: 64, bpm: 75, arrange: true, loopFrom: 1, pumpDepth: 1,
   sections: [
     { id: 'dawn', bars: 4, gain: 1, bar: (i) => {
       const ev = work(0.6 + i * 0.1, i >= 2);

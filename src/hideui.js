@@ -7,7 +7,7 @@
 //   2  nothing at all but the picture
 // Menus that were opened on purpose (the Codex, the map, the index) are never hidden; the error box is never hidden either.
 //
-//   game.ui.cycle()      game.ui.set(0 | 1 | 2)      window.__game.hideUI(level)   (for tests and screenshots)
+//   game.ui.cycle()      game.ui.set(0 | 1 | 2)      game.ui.want(id, on)   window.__game.hideUI(level)   (for tests and screenshots)
 // ---------------------------------------------------------------------------------------
 const HUD = '#hud, #circuit, #godtip, #godwheel, #god, .lil-gui';
 const FRAME = '#cinema, #portrait';
@@ -22,9 +22,21 @@ export class HideUI {
   }
   set(level) {
     this.level = ((level % 3) + 3) % 3;
-    document.body.classList.toggle('ui1', this.level === 1);
-    document.body.classList.toggle('ui2', this.level === 2);
+    this.apply();
     return this.level;
+  }
+  /** A feature that wants the HUD out of the way while it is on (the Veritome's lens raised: the picture is the whole screen). It is
+   *  hidden as at level 1 while any want it, and comes back as the player had it. */
+  want(id, on) {
+    this.wants ??= new Set();
+    if (on === this.wants.has(id)) return;
+    if (on) this.wants.add(id); else this.wants.delete(id);
+    this.apply();
+  }
+  apply() {
+    const eff = this.wants?.size ? Math.max(this.level, 1) : this.level;
+    document.body.classList.toggle('ui1', eff === 1);
+    document.body.classList.toggle('ui2', eff === 2);
   }
   cycle() { return this.set(this.level + 1); }
 }

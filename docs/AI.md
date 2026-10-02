@@ -104,6 +104,10 @@ Courier for kin, or to take its own kind for rivals.
 `new Brain(game, c, { senses, memory, drives, actions, think: 0.2, near: 50, far: 140, mods })`. Level of detail: within `near` it
 thinks every `think` seconds; within `far` at 2.5x that; beyond, it does not look or think, only its drives tick (an off-screen
 creature costs a few additions). `signal()` thinks again at once; `force(id)` starts an action; `describe()` is its line on F3.
+`direct(id, secs)` gives it a DIRECTIVE: for that long (its own time, so a halted mind's directive waits), that action is what it
+does, without asking its `when`, unless an urgent action of weight 5 or more (stunned, asleep, melted) takes it; false if its mind
+has no such action. A relation written into `c.rel` with an expiry in `c.relUntil` (a Map, by the same key) is taken back by the Brain
+in its time.
 
 ### Around the minds
 - **Statuses** (`src/creatures.js`): halt, slow, sleep, forget, flee, soft, calm, melt, stun: timed, applied by anything, decided
@@ -112,8 +116,21 @@ creature costs a few additions). `signal()` thinks again at once; `force(id)` st
 - **Stun** (`src/stun.js`): a poise meter on every stunnable thing (creatures and clapperjars); the Veritome's flash fills it; full,
   the thing is stunned and VULNERABLE (`game.stun.vulnerable(t)`): the zandatsu and reprogramming work on it, blows land harder.
   Dizzy stars show the meter and the stun (`vfx/dizzy.js`).
-- **Reprogramming** (`src/veritome/reprogram.js`): a stunned mind opened with the middle button; its MACROS are data: a status, an
-  ORDER its mind carries out (`c.macro = { id: 'fetch', until }`, read by an action), or a relation (`kin`, `turn`).
+- **Reprogramming** (`src/veritome/reprogram.js`, `src/mind/`): a stunned mind opened with the middle button and told a MACRO the
+  Courier composed in the Codex (VERITOME, THE MIND). A macro is FUNCTIONS (`mind/functions.js`), the words of NEURALESE, each exactly
+  one of these parts: an action (`brain.direct`), a status (`creatures.apply`), a relation (`c.rel` + `c.relUntil`), a drive pushed
+  (`drives.set`), a memory wiped (`mem.wipe(kind)`), or a modifier of the one before (LON longer, DEO deeper). Functions are learned
+  from the ledger (a bestiary fact photographed teaches the action: you can only ask a mind for what you have seen a mind do). The
+  macro is composed on a 7x5 lattice (`mind/lattice.js`: shaped pieces routed from the core to the mouth), and how well it is fitted
+  is its quality, which scales how long, how deep and how surely it takes (`mind/macros.js` `runMacro`). A new creature gets every
+  Function its mind has the parts for; an action it does not have is refused, and the log says so. A new behaviour that a creature
+  shows (and the bestiary can photograph) is a new Function: a row in `FUNCTIONS` with its `learn` test.
+- **Allies and decoys**: a creature on her side is `ally` (`src/spirits.js`: a smoke spirit is a slip jelly's body and mind with the
+  kind `spirit` in the relations table: kin to her, rival to the wild jellies, as they are to it); her blows pass through it
+  (`creatures.strike`), and the statuses `haste` (its body and mind run faster) and `empower` (its blows land harder) are a rally's. A
+  DECOY (`game.ai.decoys`: the Crucibelle's mirage) is anything put up to be seen as what it is not: every Brain's watch list includes
+  it, with its `kind` (a Courier of smoke has the kind `courier`), so a mind takes it for that and acts on it with no code of its own;
+  `P.veiledT` hides her for a moment.
 - **The blade** (`src/sondelass/blade.js`): a creature resists a cut while it is itself (the ward glyph), and comes apart into
   Lachryma under a zandatsu when it is not (`vfx/dissolve.js`).
 

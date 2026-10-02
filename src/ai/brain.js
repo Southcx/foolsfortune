@@ -11,6 +11,7 @@
 //   b.update(dt)        every frame (it decides how often to think, and how much, by how far it is from the Courier: below)
 //   b.signal()          think again at once (it was hurt, a status landed, a macro was typed into it)
 //   b.force(id, why)    start that action now, whatever it scores (a reprogrammed order; it still ends as actions end)
+//   b.direct(id, secs)  a DIRECTIVE: that action, for so long (a reprogrammed mind: mind/macros.js)
 //   b.describe()        one line for the F3 panel: what it is doing, what it wants, who it is watching
 //
 // LEVEL OF DETAIL: near the Courier (within `near` metres) it thinks five times a second; further off (within `far`) twice; beyond
@@ -48,11 +49,13 @@ export class Brain {
   watchList() {
     const g = this.game, P = g.player, c = this.c, out = this._watch || (this._watch = []);
     out.length = 0;
-    const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active;
+    const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active || (P.veiledT ?? 0) > 0; // (veiled: a song's mirage, moves/crucibelle.js)
     const sp = Math.hypot(P.vel?.x || 0, P.vel?.z || 0);
     const loud = (P.sliding ? 1.2 : P.crouching ? 0.45 : sp > 5 ? 1.35 : sp > 0.5 ? 0.9 : 0.55) * (g.belt?.inHand ? 1.15 : 1);
     out.push({ ent: P, kind: 'courier', pos: P.pos, vel: P.vel, loud, height: 1.7, hidden });
     for (const o of g.creatures?.near(c.pos, this.watchR) || []) if (o !== c) out.push({ ent: o, kind: o.kind, pos: o.pos, vel: o.vel, loud: o.loud ?? 1, height: o.height });
+    // DECOYS: anything put up to be seen as something it is not (a Courier of smoke: the Crucibelle's mirage); a mind takes it for its kind
+    for (const d of g.ai?.decoys || []) if (d.alive && Math.hypot(d.pos.x - c.pos.x, d.pos.z - c.pos.z) < this.watchR) out.push({ ent: d, kind: d.kind, pos: d.pos, vel: d.vel, loud: d.loud ?? 1.4, height: d.height ?? 1.7 });
     return out;
   }
 
@@ -60,8 +63,12 @@ export class Brain {
     const P = this.game.player, c = this.c;
     this.now += dt; this.mem.tick(dt);
     const d = Math.hypot(P.pos.x - c.pos.x, P.pos.z - c.pos.z) + Math.abs(P.pos.y - c.pos.y) * 0.5;
+    const was = this.lod;
     this.lod = d < this.near ? 'near' : d < this.far ? 'mid' : 'far';
+    if (was === 'far' && this.lod !== 'far') this.wake = true; // (a mind coming back into range thinks at once: it has been asleep to the world)
     this.drives?.tick(dt, this.mods?.(this.ctx) || undefined);
+    // relations written into it (a reprogrammed mind: c.rel with c.relUntil) wear off in their time
+    if (c.relUntil) for (const [k, t] of c.relUntil) if (this.now >= t) { c.rel?.delete(k); c.relUntil.delete(k); this.game.events?.emit('reprogram.wear', { macro: 'rel', kind: c.kind }); }
     if (this.lod === 'far') { this.acc = 0; return; }
     this.acc += dt; this.thinkT -= dt;
     if (this.thinkT <= 0 || this.wake) {
@@ -79,7 +86,26 @@ export class Brain {
   decide() {
     const { action, score } = this.reasoner.choose(this.ctx);
     this.score = score;
+    // a DIRECTIVE (a reprogrammed mind, mind/macros.js): for its time, that action is what it does, unless something urgent takes it
+    // (stunned, asleep, melted: the urgent actions of weight 5 and up are the body's, not the mind's, and win)
+    const d = this.directive;
+    if (d && this.now < d.until && !(action?.urgent && (action.weight ?? 1) >= 5)) {
+      if (d.action !== this.action) this.start(d.action, 'directive');
+      this.score = 9;
+      return;
+    }
+    if (d && this.now >= d.until) this.directive = null;
     if (action && action !== this.action) this.start(action, 'chose');
+  }
+
+  /** Make an action what it does for `secs` (its own `when` is not asked: it was told). False if its mind has no such action. */
+  direct(id, secs) {
+    const a = this.reasoner.actions.find((x) => x.id === id);
+    if (!a) return false;
+    this.directive = { action: a, until: this.now + secs };
+    this.cool.delete(id);
+    this.wake = true;
+    return true;
   }
 
   start(a, why) {
@@ -106,6 +132,6 @@ export class Brain {
 
   describe() {
     const f = this.mem.focus();
-    return `${this.action?.id ?? '-'} ${this.score.toFixed(2)} [${this.lod}] | ${this.drives ?? ''} | ${f ? `${f.kind} ${f.aware.toFixed(2)}${f.threat > 0.05 ? ` t${f.threat.toFixed(2)}` : ''}` : 'nothing'}`;
+    return `${this.action?.id ?? '-'}${this.directive ? '*' : ''} ${this.score.toFixed(2)} [${this.lod}] | ${this.drives ?? ''} | ${f ? `${f.kind} ${f.aware.toFixed(2)}${f.threat > 0.05 ? ` t${f.threat.toFixed(2)}` : ''}` : 'nothing'}`;
   }
 }

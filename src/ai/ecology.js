@@ -27,7 +27,9 @@ export const REL = { KIN: 'kin', PREY: 'prey', THREAT: 'threat', RIVAL: 'rival',
 
 /** The kinds' standing relations (a row is how the first kind sees each other kind). Unlisted pairs are neutral. */
 const TABLE = {
-  slipjelly: { slipjelly: REL.KIN, courier: REL.PREY, fish: REL.PREY, clapperjar: REL.CURIOUS },
+  slipjelly: { slipjelly: REL.KIN, courier: REL.PREY, fish: REL.PREY, clapperjar: REL.CURIOUS, spirit: REL.RIVAL },
+  // a smoke spirit (spirits.js: the Crucibelle's and the Lockheart's): the Courier's, and against whatever is against her
+  spirit: { spirit: REL.KIN, courier: REL.KIN, slipjelly: REL.RIVAL },
   clapperjar: { clapperjar: REL.KIN, courier: REL.CURIOUS, slipjelly: REL.THREAT },
 };
 

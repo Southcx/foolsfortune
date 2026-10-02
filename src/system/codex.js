@@ -1,6 +1,7 @@
 import { ABILITIES, GOD_ARTS, BY_ID } from './skills.js';
 import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledgerui.js';
 import { renderVeritome } from '../veritome/ui.js';
+import { renderTools } from '../tools/codexpage.js';
 import { renderSoundTest } from '../music/soundtest.js';
 
 // ---------------------------------------------------------------------------
@@ -139,14 +140,14 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['sound', 'SOUND TEST']]) {
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
-    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'sound') {
-      (this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
+    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound') {
+      (this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;
       const foot = el('footer');
       foot.appendChild(el('span', 'msg', 'counted quietly as you play · the log (lower left) says the rest'));

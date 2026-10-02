@@ -22,7 +22,8 @@
 // point in front of you, held, and let go with the motion of your aim).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { GROUPS } from '../physics.js';
+import { GROUPS, G, groups } from '../physics.js';
+const HOOKABLE = groups(0xffff, G.STATIC | G.PROP | G.CRITTER); // (what the grapnel can bite: the world, the loose things, the creatures)
 import { sfx } from '../audio.js';
 import { T } from '../config.js';
 import { FishingLine } from '../angling/line.js';
@@ -74,13 +75,14 @@ export class Hookshot {
     const g = this.game, P = this.tool.P;
     g.camera.getWorldPosition(_o);
     P.lookDir(_d);
-    const hit = g.physics.raycast(_o, _d, RANGE, P.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
+    const hit = g.physics.raycast(_o, _d, RANGE, P.collider, HOOKABLE, (c) => !c.isSensor());
     if (!hit) return null;
     const ent = hit.entity, body = hit.collider.parent();
     const dyn = !!body?.isDynamic?.();
     const catchable = dyn && (ent?.type === 'clapper' || ent?.type === 'breakable' || ent?.type === 'slice' || ent?.type === 'shard' || !ent || !!ent.carry || ent?.type === 'prop');
     let kind = 'anchor';
     if (ent?.type === 'clapper') kind = 'pull';
+    else if (ent?.type === 'creature' && ent.alive) kind = ent.heavy ? 'anchor' : 'pull'; // (a creature on the line: dragged to her)
     else if (catchable) kind = (body.mass?.() ?? 1) <= HEAVY ? 'pull' : 'anchor';
     return { point: hit.point.clone(), normal: hit.normal.clone(), ent, body, kind };
   }
@@ -167,9 +169,12 @@ export class Hookshot {
     this.grap.updateMatrixWorld(true);
     // how much line there is beyond the straight, and what it is carrying
     const dist = tip.distanceTo(end);
-    const slack = Math.max(0, (this.L - CHEST) - dist);
-    const taut = THREE.MathUtils.clamp(1 - slack / (0.35 + dist * 0.04), 0, 1);
-    const load = a.mode === 'pull' ? (this.reeling ? 0.9 : 0.35) : Math.min(1, P.vel.length() / 14 + (this.reeling ? 0.5 : 0));
+    let slack = Math.max(0, (this.L - CHEST) - dist);
+    let taut = THREE.MathUtils.clamp(1 - slack / (0.35 + dist * 0.04), 0, 1);
+    let load = a.mode === 'pull' ? (this.reeling ? 0.9 : 0.35) : Math.min(1, P.vel.length() / 14 + (this.reeling ? 0.5 : 0));
+    // her weight on it (hanging, swinging, reeling, or walked to the end of it): the line is straight and loaded, and there is no spare
+    // line beyond the straight: what was paid out past the bite is taken in the moment it bites (the reel's ratchet)
+    if (a.mode === 'anchor' && (!P.grounded || this.reeling || this.chest(_c).distanceTo(end) >= this.L - 0.15)) { slack = 0; taut = 1; load = Math.max(load, 0.75); }
     const helix = Math.max(0, 1 - this.latchT * 3.2); // (the last of the coils runs out as it goes taut)
     this.line.set(tip, end, { tension: 0.1 + taut * (0.25 + 0.6 * load), slack, aspect: LOAD, helix: helix * 0.7, cam: cam.position, dt, time: performance.now() / 1000 });
   }
@@ -177,6 +182,7 @@ export class Hookshot {
   /** Where the line is fast: the anchor, or the catch's own hitch (it moves). */
   attachPoint(out) {
     const a = this.att;
+    if (a.ent?.type === 'creature') return a.ent.center(out);
     if (a.mode === 'pull' && a.body && a.body.isValid?.() !== false && a.ent?.alive !== false) {
       const t = a.body.translation(), r = a.body.rotation();
       return out.copy(a.local).applyQuaternion(_q.set(r.x, r.y, r.z, r.w)).add(_s.set(t.x, t.y, t.z));
@@ -200,8 +206,17 @@ export class Hookshot {
     if (r.kind === 'anchor') {
       this.att = { mode: 'anchor', point: r.point.clone(), normal: r.normal.clone(), ent: r.ent, body: r.body };
     } else {
-      const body = r.body;
+      const creature = r.ent?.type === 'creature';
+      const body = creature ? null : r.body;
       let local = new THREE.Vector3();
+      if (creature) {
+        // the bite stings, and staggers it: a thinking thing caught on a hook is knocked out of what it was doing (stun.js)
+        const dir = _d.copy(r.point).sub(_c).normalize().clone();
+        g.creatures.strike(r.ent, r.point.clone(), dir, 0.5, 'hooked');
+        g.stun?.add(r.ent, 0.35, { by: 'courier', cause: 'hook' });
+        r.ent.cancel?.('hooked');
+        g.events?.emit('hook.creature', { kind: r.ent.kind, by: 'courier' });
+      }
       if (body) {
         const t = body.translation(), q = body.rotation();
         local.copy(r.point).sub(_s.set(t.x, t.y, t.z)).applyQuaternion(_q.set(q.x, q.y, q.z, q.w).invert());
@@ -222,15 +237,16 @@ export class Hookshot {
       if (how === 'tap' || how === 'flung') {
         // let go with the motion of the aim: what she was sweeping the catch through
         const body = a.body;
+        if (a.ent?.type === 'creature' && a.ent.alive) a.ent.knock?.(this.destVel.clone().clampLength(0, 14).setY(3)); // (flung)
         if (body) {
           const v = this.destVel.clone().clampLength(0, 18);
           const lv = body.linvel();
           body.setLinvel({ x: lv.x * 0.3 + v.x, y: lv.y * 0.3 + v.y + 1, z: lv.z * 0.3 + v.z }, true);
           body.wakeUp?.();
         }
-        if (this.hold) g.events?.emit('hook.fling', { what: a.ent?.type || 'prop', speed: this.destVel.length() });
+        if (this.hold) g.events?.emit('hook.fling', { what: a.ent?.type === 'creature' ? a.ent.kind : a.ent?.type || 'prop', speed: this.destVel.length() });
       }
-      if (how === 'delivered') g.events?.emit('hook.pull', { what: a.ent?.type || 'prop', dist: a.dist0 || 0 });
+      if (how === 'delivered') g.events?.emit('hook.pull', { what: a.ent?.type === 'creature' ? a.ent.kind : a.ent?.type || 'prop', dist: a.dist0 || 0 });
     }
     this.phase = this.flying ? 'back' : 'idle';
     if (this.flying) this.phase = 'back';
@@ -306,7 +322,12 @@ export class Hookshot {
       const cap = (5 + 13 * THREE.MathUtils.clamp(1 - mass / HEAVY, 0.1, 1)) * (0.4 + 0.6 * Math.min(1, this.reelV / 12));
       const want = toD.multiplyScalar(Math.min(cap, dd * 9) / Math.max(dd, 1e-4));
       this.travel += want.length() * dt;
-      if (ent?.type === 'clapper') {
+      if (ent?.type === 'creature') {
+        // dragged: its own steering overruled while the line is in (and lifted off the ground a little if she is above it)
+        const k = Math.min(1, 10 * dt);
+        if (ent.vel) { ent.vel.x += (want.x - ent.vel.x) * k; ent.vel.z += (want.z - ent.vel.z) * k; }
+        if (want.y > 2 && !ent.air) { ent.vy = Math.min(want.y, 4); ent.air = true; }
+      } else if (ent?.type === 'clapper') {
         ent.kv?.addScaledVector(want.multiplyScalar(1), 0.6);
         ent.state = 'stunned'; ent.timer = Math.max(ent.timer || 0, 0.6);
       } else if (body) {

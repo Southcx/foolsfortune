@@ -16,6 +16,7 @@
 //   game.lights = new LightBudget(game, { slots: 8 });   game.lights.update(rawDt)   (after everything has set its lights, before the draw)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { zoneOf } from './zones.js';
 
 const _p = new THREE.Vector3();
 
@@ -69,6 +70,9 @@ export class LightBudget {
       if (l.intensity <= 0.001 || !this.shown(l)) continue;
       l.getWorldPosition(_p);
       if (zones && !zones.visibleAt(_p)) continue;
+      // a lamp lights only its own room: it casts no shadow, so a lamp in another room (the basement, seen through the hole in the
+      // workshop's floor) would light this one through its floor. Only the lamps of the room the camera is in are lent a light.
+      if (zones?.enabled && zones.current != null) { const z = zoneOf(_p); if (z !== null && z !== zones.current) continue; }
       const range = l.distance > 0 ? l.distance : 40, d = _p.distanceTo(cam);
       if (d > range + 30) continue;
       const f = Math.max(4, range * 0.45);
