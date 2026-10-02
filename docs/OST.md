@@ -75,7 +75,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
 | Four Suits and a Fool | the sound test | 100, E minor, home to E major | piano (the Fool), taiko and pizzicato (Petra), shakuhachi (Wanda), koto (Espada), celesta and strings (Calissa) | Five, Answer | **made** |
-| The Fool's Precipice | the title, while she sits on the edge | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
+| The Fool's Precipice | the title, while she sits on the edge (from the first key or click) | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
 | The Fall | the title's menu | 100, E minor, through a low-pass | piano, pad, vibes, harp | the Five, slowly | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
 | Game over | | 75, E minor | piano, one note at a time | the Five, falling and not finishing | |
@@ -171,6 +171,9 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
   at the seam against the music's own step at that moment (equal is seamless). Delivered as FLAC: MP3 pads its ends with silence.
 - The wider band also has a harp, a wordless voice (a vocalise through formants) and a theremin (`music/world.js`).
+- **Sounds the ear has to read** (the crystals, `audio/crystal.js`) keep their partials near-harmonic and the fundamental strong, so the
+  pitch is heard true (a free bar's 2.32 and 4.25 made it ambiguous, to a pitch detector and to the ear); beating is two tones `beat`
+  Hz apart. Checked by measuring: the pitch of each strike against the note asked, the envelope's wobble against `beat`.
 
 ## 6. Next
 

@@ -24,9 +24,11 @@ import { TreasureSounds } from './audio/treasure.js';
 import { BrushSounds } from './audio/brush.js';
 import { VeritomeSounds } from './audio/veritome.js';
 import { ShopSounds } from './audio/shop.js';
+import { CrystalSounds } from './audio/crystal.js';
+import { VesselSounds } from './audio/vessel.js';
 
 const BANK_OF = (Sfx.bankOf ||= {}); // (which bank each sound came from, kept on the class so a reloaded audio.js sees it)
-for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds]) {
+for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds, CrystalSounds, VesselSounds]) {
   for (const key of Object.getOwnPropertyNames(Bank.prototype)) {
     if (key === 'constructor') continue;
     const had = BANK_OF[key]; // (the same bank again is a reload, not a clash)

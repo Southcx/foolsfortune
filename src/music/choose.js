@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // WHAT PLAYS WHERE: the one place that says which cue the game is in (main.js asks it every frame and hands the answer to
 // MusicPlayer.follow). In order: the main theme over the title and the pause; nothing while a chest's rave or the God Hand has the
-// floor; the battle while something is after her; the dive under the water (the Shallows, the Deep below a few metres or in the
+// floor; the battle while she is in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
 // Well's Lachryma); a shanty on the Solar Skiff (the next work song each time the sail goes up); the Dunes' theme in the dunes; the work song in the workshop.
 // A dive waits a moment before it takes over (and before it lets go), so a duck under the surface does not cut the place's music.
 //
@@ -27,7 +27,7 @@ const WORK_SONGS = [SHANTY, ROLL_THE_MOON]; // (the skiff's: a new one each time
 export function chooseMusic(game, { overlay = false } = {}) {
   if (overlay) return LACHRYMA;
   if (game.chests?.rave?.active || game.god?.active) return null;
-  if (game.jellies?.hunting(24)) return BATTLE;
+  if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE; // (combat.js: from a notice to a few seconds after the last threat)
   // the dive (with a dwell either way)
   const now = performance.now() / 1000, dt = Math.min(0.25, now - (S.last || now)); S.last = now;
   const swim = game.techs?.get('swim'), under = !!(swim?.active && swim.under);
