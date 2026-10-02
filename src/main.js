@@ -66,7 +66,8 @@ import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
 import { MusicPlayer } from './music/player.js';
 import { LACHRYMA } from './music/lachryma.js';
-import { chooseMusic } from './music/choose.js';
+import { chooseMusic, chooseTitleMusic } from './music/choose.js';
+import { Clayese, hearHaggling } from './npc/clayese.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -99,7 +100,7 @@ import { SlipJellies } from './jelly/slipjelly.js';
 import { WEIR_SPAWN } from './angling/weir.js';
 import jellyB64 from './assets/slipjelly.glb?b64';
 import { Dialogue } from './npc/dialogue.js';
-import { placePeople } from './npc/people.js';
+import { placePeople, PEOPLE } from './npc/people.js';
 import { Rave } from './vfx/rave.js';
 import { Zones } from './render/zones.js';
 import { LightBudget } from './render/lightbudget.js';
@@ -335,6 +336,7 @@ async function main() {
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
   game.music = new MusicPlayer(sfx);
+  hearHaggling(game, new Clayese(sfx), PEOPLE.find((p) => p.id === 'raku').voice); // (Raku's voice for the shop's bargaining: npc/clayese.js)
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
@@ -615,7 +617,7 @@ async function main() {
     try {
       diag.frameStart();
       if (game.title?.active) { // (the title instead of the game: the world waits, built, behind it)
-        game.title.scene.update(dt); game.music.follow(LACHRYMA);
+        game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
         game.title.scene.render(); input.endFrame(); diag.frameEnd();
         return;

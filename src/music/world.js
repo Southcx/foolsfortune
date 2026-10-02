@@ -17,10 +17,15 @@
 //   MOOG        the fusion bass: a saw and a square through a resonant ladder low-pass that snaps open and closes (the Minimoog)
 //   BUBBLE      a bubble rising: a damped sine whose pitch climbs as it goes
 //   WHALE       a song in the deep: a slow glide from one note to another through a hollow resonance, long and far away
+//   HARP        a plucked gut string: bright at the pluck, mellowing as it rings; `gliss` runs a scale up or down in a breath
+//   VOICE       a wordless sung voice (a vocalise): a glottal buzz through three vowel formants, a glide into the note, a singer's
+//               vibrato arriving late; the siren's
+//   THEREMIN    a sine played in the air: no attack, a slide between notes, a wide quick vibrato; the witch's, and every flying saucer's
 //
 // Prior art: C. V. Raman on the jawari's buzz (1921); the tabla's harmonic overtones and the bayan's pressed glide (Raman, and every
 // tabla primer); Rossing's acoustics of the Trinidad steelpan (the tuned octave and twelfth); the accordion's musette tuning; the
-// violin's body modes (the Helmholtz bow-string, the A0 and B1 resonances); Moog's ladder filter; Minnaert and van den Doel on the
+// violin's body modes (the Helmholtz bow-string, the A0 and B1 resonances); Moog's ladder filter; Klatt's formant synthesis and Debussy's wordless sirens (Nocturnes); Clara Rockmore's theremin and
+// Herrmann's (The Day the Earth Stood Still); Minnaert and van den Doel on the
 // sound of a bubble (a sine that rises as it decays); the humpback's song.
 //
 //   import { WorldBand } from './world.js'   (band.js mixes it in: B.sitar(t, dur, midi, vel, { meend, to }) ...)
@@ -175,6 +180,38 @@ export class WorldBand {
       const og = c.createGain(); og.gain.value = a; og.connect(g);
       const x = this.osc(type, hz(n), t, end, og);
       if (bend) { x.frequency.setValueAtTime(hz(n), t + dur * 0.3); x.frequency.exponentialRampToValueAtTime(hz(n + bend), t + dur * 0.3 + 0.15); }
+    }
+  }
+  /** A harp: a plucked string, a pluck's brightness falling away, a long ring. */
+  harp(t, dur, m, v = 0.4, { pan = 0 } = {}) {
+    const c = this.ctx, f = hz(m), d = Math.min(4, 1.2 + dur), o = this.out(this.bus.dry, 0.22, { verb: 0.55, echo: 0.1, pan: pan || Math.max(-0.5, Math.min(0.5, (m - 64) / 40)) });
+    const lp = this.filt('lowpass', Math.min(9000, f * 8), 0.6); lp.frequency.setValueAtTime(Math.min(9000, f * 8), t); lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 2), t + 0.6);
+    lp.connect(o);
+    for (const [type, r, a] of [['triangle', 1, 1], ['sine', 2, 0.35], ['sine', 3, 0.12]]) {
+      const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v * a, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + d / r);
+      g.connect(lp); this.osc(type, f * r, t, t + d / r + 0.05, g);
+    }
+  }
+  /** A wordless voice: a buzz through the vowel's formants (a, o, u, i), a glide from `from` semitones, vibrato that comes in late. */
+  voice(t, dur, m, v = 0.35, { vowel = 'a', from = 0, glide = 0.25, pan = 0, vib = 0.016 } = {}) {
+    const c = this.ctx, f = hz(m), g = c.createGain(), end = this.env(g, t, Math.min(0.18, dur * 0.3), v, dur, 0.3);
+    const o = this.out(this.bus.dry, 0.5, { verb: 0.6, echo: 0.25, pan });
+    const F = { a: [850, 1200, 2900], o: [500, 850, 2800], u: [350, 750, 2700], i: [320, 2600, 3200] }[vowel] || [850, 1200, 2900];
+    for (const [k, fc] of F.entries()) { const bp = this.filt('bandpass', fc, [6, 9, 12][k]), bg = c.createGain(); bg.gain.value = [1, 0.5, 0.25][k]; g.connect(bp).connect(bg).connect(o); }
+    const x = this.osc('sawtooth', f * Math.pow(2, from / 12), t, end, g);
+    if (from) x.frequency.exponentialRampToValueAtTime(f, t + glide);
+    this.vib(x, t, f, vib, 5.4, Math.min(0.5, dur * 0.4), end);
+    const bg = c.createGain(); this.env(bg, t, 0.08, v * 0.05, dur, 0.3); bg.connect(o); const bp = this.filt('bandpass', 3000, 1); this.noise(t, end, bp); bp.connect(bg); // (the breath)
+  }
+  /** A theremin: a sine with a little of its octave, sliding in from `from` semitones, a wide quick vibrato, no attack to speak of. */
+  theremin(t, dur, m, v = 0.3, { from = 0, glide = 0.18, pan = 0.2, vib = 0.022 } = {}) {
+    const c = this.ctx, f = hz(m), g = c.createGain(), end = this.env(g, t, 0.09, v, dur, 0.25);
+    const o = this.out(this.bus.dry, 0.32, { verb: 0.5, echo: 0.3, pan });
+    const h = c.createGain(); h.gain.value = 0.18; h.connect(g); g.connect(o);
+    for (const [r, dest] of [[1, g], [2, h]]) {
+      const x = this.osc('sine', f * r * Math.pow(2, from / 12), t, end, dest);
+      if (from) x.frequency.exponentialRampToValueAtTime(f * r, t + glide);
+      this.vib(x, t, f * r, vib, 6.2, 0.15, end);
     }
   }
 }

@@ -51,7 +51,7 @@ Short enough to hum, each can be played East or West, slow or fast, major or min
 | --- | --- | --- | --- |
 | **The Five** | E D B A G (falling) | the game itself; fortune, the world | the main theme (every movement), the rest jingle |
 | **The Answer** | G A B D E (climbing) | hope, discovery, a thing done | the fanfare, the found jingle, the build, the coda's celesta |
-| **The Leap** | E5 to E6 | the moment everything turns (the Fool steps off the cliff) | the main theme's climax; to be saved for the game's biggest moments |
+| **The Leap** | E5 to E6 | the moment everything turns (the Fool steps off the cliff) | the main theme's climax; *The Fool's Step* (PRESS START: the step off the cliff itself); otherwise saved for the game's biggest moments |
 | **The Tear** | F to E (the In scale's half step), over an A minor or an F | Lachryma, loss, the uncanny | the first draft's East answer; for Lachryma places and sorrow |
 | **The Fool's Step** | A B C, leap to E | the Courier (the first draft's motif, kept as hers) | to be: the Courier's theme |
 | **The System's chime** | G to D (a rising fifth) and E to B (a falling fourth) | the System: notice, warning | the voice's chimes (`system/voice.js`) |
@@ -60,6 +60,8 @@ Short enough to hum, each can be played East or West, slow or fast, major or min
 | **Wanda's spark** | G D C# D A (up a fifth, the Lydian sigh, a leap) | wands: fire, breath, the music | *Kindling* |
 | **Espada's edge** | E F G# B, then C cut down to B (the draw and the cut) | swords: air, the word, the lore | *The Edge of the Word* |
 | **Calissa's pour** | B G# E, C# E (a major arpeggio tumbling in 3+3+2, a hop up) | cups: water, beauty, the look | *Overflowing*, *The Shallows* |
+| **The siren's call** | down from C6 onto E5, then F E (the Tear) | the sea's lure | *Song of the Siren* |
+| **The hex** | E A# B G F# (up the tritone, then a shrug) | the witch's | *Hex and Kettle* |
 
 ## 3. The cues
 
@@ -69,10 +71,12 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 
 | Cue | When | Tempo / key | Palette | Motifs | Status |
 | --- | --- | --- | --- | --- | --- |
-| Lachryma (main theme) | title, pause | 100 swung, E flat minor pentatonic (the black keys) | Rhodes, upright, brushes and ride, vibes, soprano sax, choir | Five, Answer, Leap (E flat to E flat) | **made** |
+| Lachryma (main theme) | the pause | 100 swung, E flat minor pentatonic (the black keys) | Rhodes, upright, brushes and ride, vibes, soprano sax, choir | Five, Answer, Leap (E flat to E flat) | **made** |
 | Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
 | Four Suits and a Fool | the sound test | 100, E minor, home to E major | piano (the Fool), taiko and pizzicato (Petra), shakuhachi (Wanda), koto (Espada), celesta and strings (Calissa) | Five, Answer | **made** |
+| The Fool's Precipice | the title, while she sits on the edge | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
+| The Fall | the title's menu | 100, E minor, through a low-pass | piano, pad, vibes, harp | the Five, slowly | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
 | Game over | | 75, E minor | piano, one note at a time | the Five, falling and not finishing | |
 | Ending | the credits | the main theme's five movements, reorchestrated, ending with the Leap | everything | all of them | |
@@ -90,6 +94,8 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | The Siege | the raid arena | 150, E minor | taiko ensemble, brass, guitar | Five as a war cry | |
 | Solar Skiffing | sailing the dunes | 125, B major | strings, flute, a sail of synth pads | Answer, Leap at the crest of a dune | |
 | Haul Away the Fortune | the Solar Skiff (a shanty) | 6/8 (198 in eighths), E Dorian | concertina, crew voices, fiddle, bodhrán, stomps, harmonica | Five and Answer as the refrain | **made** |
+| Roll the Moon Down | the Solar Skiff (a halyard shanty; the skiff takes the next work song each time the sail goes up) | 88, G Mixolydian | harmonica calls, crew answers, stomps and grunts on the pull, fiddle, concertina | the moon (the title's) | **made** |
+| Leave Her, Lachryma | the end of a voyage (a forebitter) | 3/4 at 84, E minor | fiddle, concertina, upright, crew humming, harp, a wordless voice, harmonica | the Tear at the chorus's end | **made** (sound test) |
 | The Shallows | under the water, in the light | 76, E Lydian | Rhodes in eighths, pad, bubbles, vibes, flute, steel pan | Calissa's pour, at half speed | **made** |
 | The Deep | far under, and in the Well's Lachryma | 54, the In scale on E | tanpura, whales, a sonar bell, a far choir, a heartbeat, phased chord | the Tear | **made** |
 
@@ -118,12 +124,15 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Kindling | Wanda (wands) | 144 in 5/4, G Lydian | saxophone, Rhodes, Moog, phased guitar, ride, pad, vibes | Wanda's spark; the Answer | **made** |
 | The Edge of the Word | Espada (swords) | 60 / 92 / 112, Bhairav on E | sitar, tanpura, tabla, fiddle, upright | Espada's edge; the Tear | **made** |
 | Overflowing | Calissa (cups) | 116, E major | steel pan, marimba, upright, bongos, shaker, timbale, horns | Calissa's pour; the Answer | **made** |
+| Song of the Siren | the sea's lure (for a siren, a drowned place, the Well's call) | 6/8 at 132, E Phrygian | wordless voices, harp, waves, low strings, phased guitar, a whale | the siren's call; the Tear | **made** (sound test) |
+| Hex and Kettle | the witch's (for a witch, a fortune-teller, the Lockheart's coffins) | 7/8 (2+2+3) at 220, Hungarian minor on E | theremin, pizzicato, Moog, tabla, bubbles, fiddle, a humming choir | the hex | **made** (sound test) |
 
 ### V. Jingles and the System
 
 | Cue | When | Notes | Status |
 | --- | --- | --- | --- |
 | Fanfare of the Five | a battle won, a trial cleared | the Answer as a pickup, up to G, B, home | **made** |
+| The Fool's Step | PRESS START: she steps off the hill | the Fool's Step in the brass, then the Leap; the harp falls after her | **made** |
 | Found | something precious found | the Answer run up to E6, a bell (the maker's favourite of the three: the model for the rest) | **made** |
 | A Place to Rest | a rest, a save | the Five on the piano in G, the flute answering | **made** |
 | Skill acquired | the System grants an art | the System's chime, then the Answer in bells | |
@@ -158,6 +167,10 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   under every pluck (a high-pass after the buzz took it out).
 - What plays where is one short list, highest first (`music/choose.js`): the title, a fight, a dive (Shallows, Deep), the skiff, the
   dunes, the workshop. A dive waits a moment before taking over and before letting go.
+- **Loops are rendered seamless** (`tools/render_score.mjs ... loop`): the looping part twice round, the second kept to the sample, the
+  first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
+  at the seam against the music's own step at that moment (equal is seamless). Delivered as FLAC: MP3 pads its ends with silence.
+- The wider band also has a harp, a wordless voice (a vocalise through formants) and a theremin (`music/world.js`).
 
 ## 6. Next
 
@@ -171,3 +184,5 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 5. (The fusion round) Hear the four suits' themes, the shanty (on the skiff) and the dives (swim under; deeper than about 4.5 m, or in the
    Well, is the Deep). Then: the suits' motifs into the jingles and the folk's themes; the Crucibelle's four voices
    (docs/HANDOFFS.md); the six tool sounds left as placeholders.
+6. (Round 38) Hear the title (the loop, PRESS START, the menu's fall), the shanties on the skiff, the Siren and the Witch. Places for
+   the Siren and the Witch when the game grows them; *Leave Her, Lachryma* wants the end of a voyage.

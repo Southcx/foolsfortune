@@ -11,6 +11,19 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
+**2026-10-02, from Wanda (Round 38)**
+- **Shop sounds** (`src/audio/shop.js`, all on `sfx`): `shopCubes(n)` (one, a few, a heap from 6), `shopBuy()`, `shopRefuse()`,
+  `kilnFire(roar = 3)` (seconds of roar, then the glaze crazing as it cools), `shopRestock()`. Swap them in for your placeholders.
+- **Raku haggling**: emit `shop.haggle` with `{ mood: 'pleased' | 'greedy' | 'insulted' | 'sulking' | 'sold', dist? }` and Raku answers in
+  his own voice (`hearHaggling` in `src/npc/clayese.js`, hooked once in `main.js` beside the music). `sold` brings `shopBuy()` with it.
+- **The title's music**: `main.js`'s title frame now follows `chooseTitleMusic(game)` (`src/music/choose.js`): THE FOOL'S PRECIPICE
+  (`src/music/title.js`, root 64, on the arranger: the board's `grid()` steps on its bar) while the scene is `idle`, THE FOOL'S STEP when
+  it goes to `step`, THE FALL under the menu. Driven headless: loop, PRESS START, step, fall, no errors.
+- **One for you**: the title loop can only sound once the browser lets audio start, and `title.ui` unlocks it on PRESS START, so most
+  players will hear the Fool's Step first and never the title loop. Unlocking on the first key, click or touch anywhere on the title
+  (before PRESS START) would let the loop play under the scene.
+- The six tool sounds (`chime`, `fork`, `dowse`, `hoover`, `wheelTick`, `coffin`) are made; same names and arguments.
+
 **2026-10-02, from Wanda**
 - `main.js` no longer chooses the music itself: the line that did is now `game.music.follow(chooseMusic(game, { overlay: overlayUp() }))`
   and the list lives in `src/music/choose.js` (the title, a fight, a dive, the skiff, the dunes, the workshop). New places that want
@@ -22,38 +35,8 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
-**2026-10-02, Round 38 tasks, from Petra** (the plan: `docs/PLAN.md`, approved by the owner)
-1. **The title cue.** For THE FOOL'S PRECIPICE (PLAN.md, piece 1): an intro as the logo is fired, a loop that the giant game pieces
-   move to (it must carry `root` and run on the arranger, so `MusicPlayer.grid()` gives its beat: the pieces step on the bar), and
-   **the Fool's Step**, a one-shot for the moment she steps off the hill into the menu. Your call whether it grows from "The Fool's
-   Step" draft, the Five, or something new; the brief is "about to set out on an adventure".
-2. **Shop sounds**: cubes set down on a counter (a few, a heap), a purchase, a refusal, the kiln firing a glaze (a roar and a cooling
-   tick), a shelf restocked. Placeholders of mine will call `sfx.cubeClack`, `sfx.menuOk` and `sfx.fizzle` until yours exist: tell me
-   the method names and I'll switch.
-3. **Raku haggling**: his clay-and-bell voice in moods (pleased, greedy, insulted, sulking, sold), as the folk's voices are done
-   (`src/npc/clayese.js`). I'll emit `shop.haggle` events with a `mood` field; say how you want to be called.
-4. The six placeholders from the note below.
-- The title runs `game.music.follow(LACHRYMA)` from `main.js`'s frame while it is up (the line under "the title instead of the game"):
-  swap in your cue there, or tell me its name. The board reads `game.music.grid()` each frame and moves a piece per bar; the Fool's Step
-  starts on `title.ui`'s start (PRESS START), and the menu shows about two seconds later.
-
-**2026-10-02, from Petra**
-- Your branch is merged (`d106d2b` on the default branch) and published. Review: every `sfx` method of the old `audio.js` is in a bank,
-  every call site resolves, it builds, the headless drive and the stress test are as before. A clean split.
-- Placeholders of mine for you to make properly (all in the banks now):
-  - `chime(v)`: a crystal struck or rising.
-  - `fork(v)`: the Dreamvane's tuning fork ringing (struck into crystal, a creature or the ground; rings for about seven seconds).
-  - `dowse(k)`: the dowsing tick; it repeats faster and should rise as `k` (0..1) rises: Skyward Sword's dowsing.
-  - `hoover(k)`: the Lockheart drawing in Lachryma.
-  - `wheelTick(k)`: the Lockheart's roulette passing a sector (`k`: how fast it still turns).
-  - `coffin(open)`: a little coffin's lid, opening or shutting, a key in it.
-- The Crucibelle (`src/moves/crucibelle.js`) builds its own `Band` (`src/music/band.js`) and plays `bell`, `flute`, `celesta` and
-  `guitar` on it: those are the bell alone, the clay ocarina, the kalimba and the spirit lute (`src/crucibelle/songs.js`
-  `INSTRUMENTS`). The toll is `band.bell` at the root less an octave. If you rename or change those Band methods, tell me and I follow.
-  Better voices for the four are very welcome; you may also give the Crucibelle a voice table of its own in `src/music/`.
-- `MusicPlayer.grid()` returns `{ t0, spb, beats, root, swing }` for what is playing: the Crucibelle plays the minor pentatonic of
-  `root` on that grid. New scores should carry `root` (MIDI; 63 E flat is the default, Workshop and Fortune are 64).
-- Next round's tasks follow once the owner approves the plan.
+(Round 38's four tasks and the six placeholder sounds are done: notes deleted. The Crucibelle's voices stay open: the wider band in
+`src/music/world.js` has a harp, a sitar, a steel pan and more if you want them for its instruments.)
 
 ## Calissa (Art)
 

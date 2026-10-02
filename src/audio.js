@@ -23,11 +23,15 @@ import { AnglingSounds } from './audio/angling.js';
 import { TreasureSounds } from './audio/treasure.js';
 import { BrushSounds } from './audio/brush.js';
 import { VeritomeSounds } from './audio/veritome.js';
+import { ShopSounds } from './audio/shop.js';
 
-for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds]) {
+const BANK_OF = (Sfx.bankOf ||= {}); // (which bank each sound came from, kept on the class so a reloaded audio.js sees it)
+for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds]) {
   for (const key of Object.getOwnPropertyNames(Bank.prototype)) {
     if (key === 'constructor') continue;
-    if (Object.prototype.hasOwnProperty.call(Sfx.prototype, key)) console.error(`audio: two banks define sfx.${key} (${Bank.name})`);
+    const had = BANK_OF[key]; // (the same bank again is a reload, not a clash)
+    if (had && had !== Bank.name || (!had && Object.prototype.hasOwnProperty.call(Sfx.prototype, key))) console.error(`audio: two banks define sfx.${key} (${had || 'the mixer'}, ${Bank.name})`);
+    BANK_OF[key] = Bank.name;
     Object.defineProperty(Sfx.prototype, key, Object.getOwnPropertyDescriptor(Bank.prototype, key));
   }
 }

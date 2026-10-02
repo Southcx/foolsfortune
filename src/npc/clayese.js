@@ -17,6 +17,9 @@
 // era's JRPG text boxes. The partials of a bell (1, 2.76, 5.40) are a struck bar's / handbell's, the clay modes measured by ear.
 //
 //   const v = new Clayese(sfx)    v.blip(letter, voice, { mood, emph, end, pos })    (voice: { base: midi, scale: 'in'|'yo'|'hexa'|..., bell, clay })
+//   v.gesture(text, voice, { mood, end })   a short sound with no box (a chuckle, a huff), spoken a letter at a time
+//   v.haggle(mood, voice)                   a shopkeeper's reaction: pleased, greedy, insulted, sulking, sold (HAGGLE)
+//   hearHaggling(game, v)                   Raku answers every 'shop.haggle' event ({ mood, dist? }) in his own voice
 // ---------------------------------------------------------------------------------------
 export const SCALES = {
   in: [0, 1, 5, 7, 8], // Miyako-bushi / In: the sombre Japanese pentatonic
@@ -103,4 +106,41 @@ export class Clayese {
     }
     this.n++;
   }
+
+  /** A sound with no words in a box: `text` spoken a letter at a time (a chuckle, a huff, a sigh), shaped as a sentence is. */
+  gesture(text, voice, { mood = 'calm', end = null, emph = 0, gap = 0.075, dist = 3, gain = 1 } = {}) {
+    const S = this.sfx;
+    if (!S.ok?.()) return;
+    const M = moodOf(mood), letters = [...text].filter((ch) => /[a-z]/i.test(ch)), t0 = S.ctx.currentTime + 0.01;
+    let t = t0;
+    [...text].forEach((ch) => {
+      if (ch === '-' || ch === ' ') { t += gap * 1.6 / M.speed; return; } // (a breath between the parts: heh - heh)
+      if (!/[a-z]/i.test(ch)) return;
+      const k = letters.indexOf(ch);
+      this.blip(ch, voice, { mood, end, emph: ch === ch.toUpperCase() ? 1 : emph, pos: letters.length > 1 ? k / (letters.length - 1) : 1, dist, gain, at: t });
+      t += gap / M.speed;
+    });
+  }
+  /** A shopkeeper haggling: a gesture for each turn of the bargain (HAGGLE), with the counter's coins where they belong. */
+  haggle(mood, voice, { dist = 3 } = {}) {
+    const H = HAGGLE[mood];
+    if (!H) return;
+    this.gesture(H.text, voice, { mood: H.mood, end: H.end, gap: H.gap ?? 0.075, dist });
+    if (mood === 'greedy') this.sfx.cubeClack?.(1, dist);
+    if (mood === 'sold') setTimeout(() => this.sfx.shopBuy?.(), 380);
+  }
+}
+
+// the turns of a bargain, as the clay folk's moods (MOOD) say them: the letters are only sounds
+export const HAGGLE = {
+  pleased: { text: 'oh-ooh', mood: 'joy', end: '!' }, // (a rising "ooh": the offer is good)
+  greedy: { text: 'heh-heh-heh', mood: 'sly', end: null, gap: 0.06 }, // (the sly chuckle, a coin turned over)
+  insulted: { text: 'HMPH', mood: 'anger', end: '!' }, // (low, loud, clanking)
+  sulking: { text: 'mmm-nnh', mood: 'sad', end: '.', gap: 0.11 }, // (falling, slow)
+  sold: { text: 'da-DONE', mood: 'surprise', end: '!' }, // (a leap up, and the deal's bell)
+};
+
+/** Raku answers the shop's bargaining (each 'shop.haggle' event: { mood: 'pleased'|'greedy'|'insulted'|'sulking'|'sold', dist? }). */
+export function hearHaggling(game, clayese, voice) {
+  return game.events.on('shop.haggle', (e) => clayese.haggle(e.mood, voice, { dist: e.dist ?? 3 }));
 }

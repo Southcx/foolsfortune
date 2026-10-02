@@ -16,7 +16,7 @@ import { Band } from './band.js';
 const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble']);
 
 export class Arranger {
-  constructor(sfx) { this.sfx = sfx; this.alive = false; this.score = null; this.volume = 0.34; }
+  constructor(sfx) { this.sfx = sfx; this.alive = false; this.score = null; this.volume = 0.34; this.jitter = 0.008; } // (jitter: a player's few ms early or late; 0 for a loop render)
   get ctx() { return this.sfx.ctx; }
 
   build() {
@@ -112,7 +112,7 @@ export class Arranger {
   }
   // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
   play1(e, t0, gain = 1) {
-    const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * 0.008), d = (e.d || 1) * this.spb;
+    const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
       else if (e.i === 'riser' || e.i === 'breath') B[e.i](t, d, (e.v ?? 0.3) * gain);
