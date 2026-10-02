@@ -10,6 +10,7 @@ import { WORKSHOP } from './workshop.js';
 import { FOOLS_STEP } from './foolsstep.js';
 import { DUNES } from './dunes.js';
 import { FANFARE, FOUND, REST } from './jingles.js';
+import { SUITS } from './suits.js';
 
 export const TRACKS = [
   { id: 'lachryma', score: LACHRYMA, title: 'Lachryma', where: 'the main theme · the title', notes: 'E flat minor pentatonic: the five black keys, black like the Lachryma. Space-fantasy jazz, 100 bpm swung: minor ninths and a B major seven with a raised eleventh, a Rhodes and an upright, brushes and the ride, the Five on the vibraphone, a soprano sax and a choir; six sections, and the Leap at the end, E flat to E flat.' },
@@ -20,6 +21,7 @@ export const TRACKS = [
   { id: 'found', score: FOUND, title: 'Found', where: 'a jingle · something precious found', notes: 'The answer run up to E6 on the celesta and the flute, a bell on top.' },
   { id: 'rest', score: REST, title: 'A Place to Rest', where: 'a jingle · a rest, a save', notes: 'The Five slowly on the piano in G major, the flute answering.' },
   { id: 'dunes', score: DUNES, title: 'Mirage of the Still Water', where: 'the Dunes', notes: 'D# minor pentatonic blues, 84 bpm swung. Vibes and a ney over Rhodes, brushes and a darbuka: a lounge at the oasis.' },
+  { id: 'suits', score: SUITS, title: 'Four Suits and a Fool', where: 'for the day the makers became five', notes: 'E minor, 100 bpm, five sections of five bars over Em C G D B7. A piano alone plays the Five for the Fool; then each suit comes in on its own instrument, in the order they woke: Petra (pentacles) a taiko and a pizzicato bass walking the Five, Wanda (wands) the shakuhachi climbing the Answer, Espada (swords) the koto running down the Five after each call, Calissa (cups) the celesta pouring over the strings. The four play the Fool\'s tune together and turn home to E major.' },
   { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
 ];
 export const TRACK = Object.fromEntries(TRACKS.map((t) => [t.id, t]));

@@ -60,6 +60,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Lachryma (main theme) | title, pause | 100 swung, E flat minor pentatonic (the black keys) | Rhodes, upright, brushes and ride, vibes, soprano sax, choir | Five, Answer, Leap (E flat to E flat) | **made** |
 | Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
+| Four Suits and a Fool | the sound test | 100, E minor, home to E major | piano (the Fool), taiko and pizzicato (Petra), shakuhachi (Wanda), koto (Espada), celesta and strings (Calissa) | Five, Answer | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
 | Game over | | 75, E minor | piano, one note at a time | the Five, falling and not finishing | |
 | Ending | the credits | the main theme's five movements, reorchestrated, ending with the Leap | everything | all of them | |
