@@ -116,12 +116,17 @@ const FIXED = 1 / 60;
  *  Weir). Drawn here with culling off, into a 16-pixel target of the same format as the frame, it costs one long frame behind the
  *  loading screen instead. */
 function primeDraw(renderer, scene, camera, like) {
-  const t0 = performance.now(), culled = [];
+  const t0 = performance.now(), culled = [], shown = [];
   scene.traverse((o) => { if ((o.isMesh || o.isPoints || o.isLine || o.isSprite) && o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+  // (and what waits hidden for its moment: the God Hand, its jar and veil, a tool in its holster. Not a zone's objects (their `visible`
+  // is a combination: render/zones.js) nor a light (the budget's proxies say false whatever they are told))
+  scene.traverse((o) => { if (!o.visible && !o.isLight && !o.isScene && !o.userData.zoneInstalled) shown.push(o); });
+  for (const o of shown) o.visible = true;
   const rt = like.clone(); rt.setSize(16, 16);
   renderer.shadowMap.needsUpdate = true; // (the casters too, through the sun's shadow pass)
   try { renderer.setRenderTarget(rt); renderer.render(scene, camera); } catch (e) { console.warn('prime draw', e); }
   for (const o of culled) o.frustumCulled = true;
+  for (const o of shown) o.visible = false;
   rt.dispose();
   window.__primeMs = Math.round(performance.now() - t0);
 }
