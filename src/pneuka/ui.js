@@ -154,7 +154,7 @@ export class PneukaUI {
     pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${box.free} free</span>`));
     const grid = el('div', 'grid');
     box.slots.forEach((s, i) => {
-      const it = s && itemOf(s.id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(s.id) : '');
+      const it = s && itemOf(s.id), d = el('div', `slot${it ? '' : ' empty'}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
       if (it) {
         d.draggable = true;
         const acts = () => this.actions(i);
@@ -194,7 +194,7 @@ export class PneukaUI {
     pane.appendChild(tg);
     // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if she has those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
-      if (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool)) continue;
+      if (F.hidden || (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
       const cur = box.fitted(socket), row = el('div', 'fits');
       for (let i = 0; i < F.max; i++) {
         const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');
@@ -227,7 +227,9 @@ export class PneukaUI {
       const there = B ? B.inPlace(place) : [];
       for (let i = 0; i < n; i++) {
         const t = there[i];
-        const d = el('div', t ? (t === inHand ? 'on' : '') : 'none', t ? `<span>${t.name}</span><s>${WHERE[place]} · ${t.key.replace('Key', '')}</s>` : `<span>· · ·</span><s>a place ${WHERE[place]}</s>`);
+        // (the Lockheart is named for the coffin it is: the plain one, the gambler's, the shepherd's)
+        const name = t?.id === 'lockheart' ? (itemOf(box.fitted('heart')[0])?.name || t.name) : t?.name;
+        const d = el('div', t ? (t === inHand ? 'on' : '') : 'none', t ? `<span>${name}</span><s>${WHERE[place]} · ${t.key.replace('Key', '')}</s>` : `<span>· · ·</span><s>a place ${WHERE[place]}</s>`);
         if (t) {
           d.style.cursor = 'var(--jcur-pointer, pointer)';
           d.onmouseenter = () => this.say(`Take off <b>${t.name}</b> (into the box)`);

@@ -42,6 +42,7 @@ const CSS = `
 #shop .slot.can { cursor: var(--jcur-pointer, pointer); border-color: rgba(255,217,138,.55); } #shop .slot.can:hover { background: rgba(80,36,20,.8); border-color: #ffd98a; }
 #shop .slot.no img { opacity: .35; filter: grayscale(.7); }
 #shop .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
+#shop .slot .n { position: absolute; left: 3px; top: 1px; font-size: 11px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
 #shop .slot .v { position: absolute; right: 3px; bottom: 1px; font-size: 10px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
 #shop button { font: inherit; font-size: 10px; letter-spacing: .12em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 3px 7px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); margin-top: 3px; }
 #shop button:hover { background: rgba(var(--jsel),.55); }
@@ -101,7 +102,7 @@ export class ShopUI {
     const grid = el('div', 'grid');
     box.slots.forEach((s, i) => {
       const it = s && itemOf(s.id), v = it ? S.offer(this.shop, s.id) : 0;
-      const d = el('div', `slot${it ? (v ? ' can' : ' no') : ''}`, it ? `${this.icon(s.id)}${v ? `<span class="v">${v}</span>` : ''}` : '');
+      const d = el('div', `slot${it ? (v ? ' can' : ' no') : ''}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}${v ? `<span class="v">${v}</span>` : ''}` : '');
       if (it) {
         d.onmouseenter = () => this.say(v ? `Sell <b>${it.name}</b> for <b>${v}</b> cubes${v < worthOf(s.id) ? ` <span style="opacity:.6">(it is worth ${worthOf(s.id)})</span>` : ''}` : `${keeper} will not buy <b>${it.name}</b>.`);
         d.onmouseleave = () => this.say('&nbsp;');

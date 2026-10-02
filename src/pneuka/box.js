@@ -3,13 +3,14 @@
 // found in a chest or taken out of the Veritome comes here first; what is worn is worn from here; and what is to be kept for good is
 // stored from here into the Veritome, which is the bank (long-term, stacked, by card: veritome/book.js).
 //
-//  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home). A thing that will not fit falls at
-//    her feet (ground.js) and is picked up again with F.
+//  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
+//    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at her feet (ground.js) and is
+//    picked up again with F.
 //  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
 //    untying puts it back), and the TOOLS: worn in their places on her body (tools/belt.js), or carried here as things. A tool in the box
 //    is WORN from here (into its place: what was there comes off into the box), and a worn one TAKEN OFF into it.
 //  - FITTINGS, the same way for the tools after: the INSTRUMENT in the Crucibelle (one), the COFFIN on the Lockheart's chain (one: it
-//    is the wheel), and the POSSIBILIKEYS on its ring (up to three, in order: used up when it is opened). FITTINGS says which.
+//    is the wheel), and the POSSIBILIKEYS on its ring (up to four, in order: used up when it is opened; keys stack in the box). FITTINGS says which.
 //  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
 //    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
 //
@@ -32,8 +33,9 @@ export const SLOTS = 28;
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
 export const FITTINGS = {
   instrument: { kind: 'instrument', max: 1, tool: 'crucibelle', label: 'THE INSTRUMENT · IN THE CRUCIBELLE', put: 'Fit to the Crucibelle', none: 'the bell alone' },
-  heart: { kind: 'heart', max: 1, tool: 'lockheart', label: "THE COFFIN · ON THE LOCKHEART'S CHAIN", put: 'Hang on the Lockheart', none: 'no coffin: it cannot be opened' },
-  keys: { kind: 'key', max: 3, tool: 'lockheart', label: 'THE KEYRING · POSSIBILIKEYS, IN ORDER', put: 'Put on the keyring', none: 'no key: it cannot be opened' },
+  // (the coffin IS the Lockheart: which one she wears at the neck, so it has no slot of its own in the window: the owner's note)
+  heart: { kind: 'heart', max: 1, tool: 'lockheart', label: 'THE LOCKHEART', put: 'Wear as the Lockheart', none: 'no coffin: it cannot be opened', hidden: true },
+  keys: { kind: 'key', max: 4, tool: 'lockheart', label: "THE KEYRING · ON THE LOCKHEART'S CHARM, IN ORDER", put: 'Put on the keyring', none: 'no key: it cannot be opened' },
 };
 const SOCKET_OF = Object.fromEntries(Object.entries(FITTINGS).map(([k, F]) => [F.kind, k]));
 const KEY = 'foolsfortune.pneuka.v1';
@@ -52,7 +54,18 @@ export class PneukaBox {
   get bankOpen() { return !!this.game.veritome?.held; }
   get free() { return this.slots.filter((s) => !s).length; }
   get used() { return SLOTS - this.free; }
-  count(id) { return this.slots.filter((s) => s?.id === id).length; }
+  count(id) { return this.slots.reduce((n, s) => n + (s?.id === id ? s.n || 1 : 0), 0); }
+  /** Room for one more of this (a free slot, or a stack of it not yet full). */
+  room(id) { const it = itemOf(id); return this.free > 0 || (!!it?.stack && this.slots.some((s) => s?.id === id && (s.n || 1) < it.stack)); }
+  /** One of a thing into the box without a word (a stack of it first, if it stacks): the slot, or -1 if there is no room. */
+  put(id) {
+    const it = itemOf(id);
+    if (it?.stack) { const i = this.slots.findIndex((s) => s?.id === id && (s.n || 1) < it.stack); if (i >= 0) { this.slots[i].n = (this.slots[i].n || 1) + 1; return i; } }
+    const i = this.slots.findIndex((s) => !s);
+    if (i < 0) return -1;
+    this.slots[i] = { id };
+    return i;
+  }
   /** Every copy of a thing the Courier has: in the box, on the line, in the Book, on the ground. */
   held(id) { return this.count(id) + (this.lure === id ? 1 : 0) + Object.values(this.fit).reduce((n, a) => n + a.filter((x) => x === id).length, 0) + (this.book?.count(id) || 0) + (this.game.ground?.count(id) || 0); }
   emit(k, e) { this.game.events?.emit(k, e); }
@@ -60,19 +73,19 @@ export class PneukaBox {
   /** A thing into the box (the first free slot). If there is no room it falls at her feet. */
   add(id, from = 'pickup') {
     if (!itemOf(id)) return -1;
-    const i = this.slots.findIndex((s) => !s);
+    const i = this.put(id);
     if (i < 0) {
       const P = this.game.player;
       this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { from });
       this.emit('item.full', { item: id, from });
       return -1;
     }
-    this.slots[i] = { id };
     this.save();
     this.emit('item.get', { item: id, from, slot: i, used: this.used });
     return i;
   }
-  take(slot) { const s = this.slots[slot]; this.slots[slot] = null; this.save(); return s?.id || null; }
+  /** One thing out of a slot (one of a stack: the rest stay). */
+  take(slot) { const s = this.slots[slot]; if (!s) return null; if ((s.n || 1) > 1) s.n--; else this.slots[slot] = null; this.save(); return s.id; }
   swap(a, b) { if (a === b) return; [this.slots[a], this.slots[b]] = [this.slots[b], this.slots[a]]; this.save(); }
 
   /** Drop: on the ground at her feet. */
@@ -95,7 +108,7 @@ export class PneukaBox {
     const card = itemOf(s.id)?.card;
     if (!card || !CARD[card]) { this.refuse('That has no page in the Veritome.', 'nopage'); return false; }
     if (!B.canTake(card)) { this.refuse(`The Veritome can hold no more of the ${itemOf(s.id).name}.`, `full.${card}`); return false; }
-    this.slots[slot] = null;
+    this.take(slot);
     B.give(card, 'store');
     this.save();
     sfx.cardDraw?.();
@@ -133,8 +146,8 @@ export class PneukaBox {
   /** Untie the lure into the box (the line is bare until another is tied on). */
   untie() {
     if (!this.lure) return false;
-    if (!this.free) { this.refuse('There is no room in your Pneuka Box for what is on the line.', 'boxfull'); return false; }
-    this.slots[this.slots.findIndex((s) => !s)] = { id: this.lure };
+    if (!this.room(this.lure)) { this.refuse('There is no room in your Pneuka Box for what is on the line.', 'boxfull'); return false; }
+    this.put(this.lure);
     const id = this.lure;
     this.lure = null;
     this.save();
@@ -146,15 +159,16 @@ export class PneukaBox {
 
   // ---------------------------------------------------------------- the fittings (an instrument, a coffin, keys)
   fitted(socket) { return this.fit[socket] || []; }
-  /** Fit a thing from the box into its tool: a single fitting swaps with what was there; the keyring takes up to three. */
+  /** Fit a thing from the box into its tool: a single fitting swaps with what was there; the keyring takes up to four. */
   fitOn(slot) {
     const s = this.slots[slot], it = s && itemOf(s.id), socket = it && SOCKET_OF[it.kind];
     if (!socket) return false;
     const F = FITTINGS[socket], cur = this.fit[socket];
     if (cur.length >= F.max) {
-      if (F.max > 1) { this.refuse('The keyring holds three keys.', 'ringfull'); return false; }
-      this.slots[slot] = { id: cur[0] }; cur.length = 0;
-    } else this.slots[slot] = null;
+      if (F.max > 1) { this.refuse('The keyring holds four keys.', 'ringfull'); return false; }
+      if ((s.n || 1) > 1) { if (!this.room(cur[0])) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; } s.n--; this.put(cur[0]); } else this.slots[slot] = { id: cur[0] };
+      cur.length = 0;
+    } else this.take(slot);
     cur.push(s.id);
     this.save(); sfx.click?.();
     this.emit('item.fit', { item: s.id, socket });
@@ -163,9 +177,9 @@ export class PneukaBox {
   fitOff(socket, i = 0) {
     const cur = this.fit[socket], id = cur?.[i];
     if (!id) return false;
-    if (!this.free) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
+    if (!this.room(id)) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
     cur.splice(i, 1);
-    this.slots[this.slots.findIndex((x) => !x)] = { id };
+    this.put(id);
     this.save();
     this.emit('item.unfit', { item: id, socket });
     return true;
@@ -176,7 +190,7 @@ export class PneukaBox {
   feed(slot) {
     const s = this.slots[slot], L = this.game.lockheart;
     if (s?.id !== 'mat.shard' || !L) return false;
-    this.slots[slot] = null; this.save();
+    this.take(slot);
     L.feed(L.cap * 0.45, 'shard');
     return true;
   }
@@ -213,7 +227,7 @@ export class PneukaBox {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
-      this.slots = Array.from({ length: SLOTS }, (_, i) => (s.slots?.[i]?.id && itemOf(s.slots[i].id) ? { id: s.slots[i].id } : null));
+      this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return it ? (it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }) : null; });
       this.lure = s.lure === undefined ? 'lure.bob' : s.lure && itemOf(s.lure) ? s.lure : itemOf(`lure.${s.lure}`) ? `lure.${s.lure}` : null;
       this.seeded = !!s.seeded;
       if (s.fit) for (const k of Object.keys(this.fit)) this.fit[k] = (s.fit[k] || []).filter((id) => itemOf(id)).slice(0, FITTINGS[k].max);

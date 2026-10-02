@@ -61,7 +61,7 @@ export class GroundItems {
   pick(e) {
     const box = this.game.pneuka, i = this.list.indexOf(e);
     if (!box || i < 0) return false;
-    if (!box.free) { box.refuse('Your Pneuka Box is full.', 'boxfull'); return false; }
+    if (!box.room(e.id)) { box.refuse('Your Pneuka Box is full.', 'boxfull'); return false; }
     this.remove(i);
     box.add(e.id, 'ground');
     sfx.cubeGet?.(6);

@@ -73,7 +73,7 @@ export class Shops {
   buy(shop, id, { price = null, haggled = false } = {}) {
     const g = this.game, box = g.pneuka, cost = price ?? this.price(shop, id);
     if (cost == null) { this.refuse('There are none left.', 'none'); return false; }
-    if (!box?.free) { this.refuse('Your Pneuka Box is full.', 'full'); return false; }
+    if (!box?.room(id)) { this.refuse('Your Pneuka Box is full.', 'full'); return false; }
     if (!g.cubes.spend(cost, `shop.${shop}`)) { this.refuse(`You cannot afford it. (${cost} cubes)`, 'poor'); return false; }
     this.state[shop].stock[id] = Math.max(0, this.stockOf(shop, id) - 1);
     box.add(id, 'shop');

@@ -52,7 +52,7 @@ export const KEYS = {
   'key.wide':   { name: 'WIDE KEY', color: 0x8ad0b0, does: 'Whatever comes out reaches twice as far.', mods: (m) => { m.reach *= 2; } },
   'key.echo':   { name: 'ECHO KEY', color: 0xb49be6, does: 'Whatever comes out happens again, a moment later.', mods: (m) => { m.echo += 1; } },
 };
-export const MAX_KEYS = 3;
+export const MAX_KEYS = 4;
 
 /** The odds a heart has with these keys on the ring (in order), and what is done to what comes out. */
 export function oddsOf(heartId, keyIds = []) {

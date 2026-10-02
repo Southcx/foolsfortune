@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { HeldTool } from '../tools/heldtool.js';
-import { buildCoffin } from '../pneuka/thingmodels.js';
+import { buildCoffin, buildThing } from '../pneuka/thingmodels.js';
 import { HEARTS, OUTCOMES, oddsOf, rates, spin } from '../lockheart/table.js';
 import { OUTCOME_FX } from '../lockheart/outcomes.js';
 import { Wheel } from '../lockheart/wheel.js';
@@ -15,7 +15,7 @@ import { sfx } from '../audio.js';
 //    and held out, LMB held HOOVERS: loose Lachryma in front of her is drawn in (baubles; liquid ones, turned dark, count double: what
 //    has been let go of is what it is for), and a mind laid low (stunned, asleep, melted: stun.js) has its Lachryma drawn out of it
 //    (Luigi's Mansion's Poltergust). A crystal shard fed to it from the Pneuka Box fills it nearly half.
-//  - IT OPENS: RMB, when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to three, in
+//  - IT OPENS: RMB, when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to four, in
 //    order). The keys are turned and used up; the coffin's table, changed by the keys (lockheart/table.js), is put up as a wheel over
 //    it (lockheart/wheel.js) and spun; what it lands on comes out (lockheart/outcomes.js), as hard as the coffin was full (twice full:
 //    twice as hard). A TWIN key spins it twice, an ECHO key has it happen again, a WIDE key reaches twice as far.
@@ -72,6 +72,25 @@ export class Lockheart extends HeldTool {
     return this.cof;
   }
 
+  /** The keys on the keyring, strung on the charm either side of the coffin (the owner's note), rebuilt when the ring changes. */
+  charmKeys() {
+    const ids = this.game.pneuka?.fitted('keys') || [], sig = ids.join(',');
+    if (this.keySig === sig) return;
+    for (const k of this.keyMeshes || []) { this.model.group.remove(k.group); k.dispose(); }
+    this.keyMeshes = [];
+    ids.forEach((id, i) => {
+      const k = buildThing(id); if (!k) return;
+      const side = i % 2 ? -1 : 1, row = Math.floor(i / 2);
+      // (on the bail above the coffin, hanging down along the tool's +X, splayed out to either side)
+      k.group.rotation.set(0, 0, -Math.PI / 2 + side * (0.35 + 0.12 * row));
+      k.group.position.set(0.09 + 0.02 * row, 0, side * (0.035 + 0.022 * row));
+      k.group.scale.setScalar(1.1);
+      this.model.group.add(k.group); this.keyMeshes.push(k);
+    });
+    this.keySig = sig;
+    this.rest?.wake();
+  }
+
   /** Lachryma into the coffin (overflow, a hoovered bauble, a shard). */
   feed(n, from = 'overflow') {
     if (n <= 0 || !this.worn) return 0;
@@ -95,7 +114,7 @@ export class Lockheart extends HeldTool {
 
   open() {
     const g = this.game, box = g.pneuka;
-    if (!this.heart) { sfx.fizzle?.(); g.log?.say('warn', 'There is no coffin on the Lockheart\'s chain (the Pneuka Box).', { key: 'lh.noheart', throttle: 3 }); return; }
+    if (!this.heart) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart has no coffin (wear one from the Pneuka Box).', { key: 'lh.noheart', throttle: 3 }); return; }
     const keys = box.fitted('keys');
     if (!keys.length) { sfx.fizzle?.(); g.log?.say('warn', 'There is no Possibilikey on the ring (the Pneuka Box).', { key: 'lh.nokey', throttle: 3 }); return; }
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
@@ -135,7 +154,7 @@ export class Lockheart extends HeldTool {
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
     const g = this.game;
-    this.coffin();
+    this.coffin(); this.charmKeys();
     // (the overflow: hooked once the pool exists)
     if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart') this.feed(e.amount * 0.8, 'overflow'); }); }
     this.hooverW = THREE.MathUtils.damp(this.hooverW, this.hoovering && this.held ? 1 : 0, 10, dt);
