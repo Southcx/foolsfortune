@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { T, PALETTE } from './config.js';
+import { GpuParticles } from './vfx/gpuparticles.js';
 
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -38,78 +39,8 @@ function discTexture() {
   return t;
 }
 
-// Generic GPU point particles (soft round sprites). One additive pool, one alpha pool.
-class ParticlePool {
-  constructor(scene, max, additive, tex = null) {
-    this.max = max;
-    this.p = [];
-    this.geo = new THREE.BufferGeometry();
-    this.pos = new Float32Array(max * 3);
-    this.col = new Float32Array(max * 4);
-    this.size = new Float32Array(max);
-    this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
-    this.geo.setAttribute('color', new THREE.BufferAttribute(this.col, 4).setUsage(THREE.DynamicDrawUsage));
-    this.geo.setAttribute('size', new THREE.BufferAttribute(this.size, 1).setUsage(THREE.DynamicDrawUsage));
-    this.mat = new THREE.ShaderMaterial({
-      uniforms: { map: { value: tex || radialTexture() }, scale: { value: 600 } },
-      vertexShader: `
-        attribute float size; attribute vec4 color; varying vec4 vColor; uniform float scale;
-        void main(){ vColor = color; vec4 mv = modelViewMatrix * vec4(position,1.0);
-          gl_PointSize = size * scale / -mv.z; gl_Position = projectionMatrix * mv; }`,
-      fragmentShader: `
-        uniform sampler2D map; varying vec4 vColor;
-        void main(){ vec4 t = texture2D(map, gl_PointCoord); gl_FragColor = vec4(vColor.rgb, vColor.a * t.a); }`,
-      transparent: true,
-      depthWrite: false,
-      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
-    });
-    this.points = new THREE.Points(this.geo, this.mat);
-    this.points.frustumCulled = false;
-    this.points.renderOrder = additive ? 3 : 2;
-    scene.add(this.points);
-  }
-
-  emit(o) {
-    if (this.p.length >= this.max) this.p.shift();
-    this.p.push({
-      x: o.pos.x, y: o.pos.y, z: o.pos.z,
-      vx: o.vel?.x || 0, vy: o.vel?.y || 0, vz: o.vel?.z || 0,
-      life: o.life, age: 0, s0: o.size, s1: o.sizeEnd ?? o.size,
-      c: o.color, a: o.alpha ?? 1, drag: o.drag ?? 1, grav: o.gravity ?? 0,
-      // the floor it settles on (the ground floor, or the basement's: not always y = 0)
-      fl: o.floor ?? (o.pos.y < -2 ? BASE_FLOOR + 0.02 : 0.02),
-      tw: o.twinkle || 0, seed: Math.random() * 100,
-    });
-  }
-
-  update(dt) {
-    const arr = this.p;
-    let w = 0;
-    for (let i = 0; i < arr.length; i++) {
-      const q = arr[i];
-      q.age += dt;
-      if (q.age >= q.life) continue;
-      const k = Math.exp(-q.drag * dt);
-      q.vx *= k; q.vy = q.vy * k - q.grav * dt; q.vz *= k;
-      q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt;
-      if (q.y < q.fl) { q.y = q.fl; q.vy *= -0.3; }
-      arr[w++] = q;
-    }
-    arr.length = w;
-    for (let i = 0; i < w; i++) {
-      const q = arr[i], t = q.age / q.life;
-      this.pos[i * 3] = q.x; this.pos[i * 3 + 1] = q.y; this.pos[i * 3 + 2] = q.z;
-      this.col[i * 4] = q.c.r; this.col[i * 4 + 1] = q.c.g; this.col[i * 4 + 2] = q.c.b;
-      this.col[i * 4 + 3] = q.a * (1 - t) * Math.min(1, t * 12 + 0.3);
-      this.size[i] = (q.s0 + (q.s1 - q.s0) * t) * (q.tw ? 0.35 + 0.65 * Math.abs(Math.sin(q.age * q.tw + q.seed)) : 1);
-    }
-    this.geo.setDrawRange(0, w);
-    this.geo.attributes.position.needsUpdate = true;
-    this.geo.attributes.color.needsUpdate = true;
-    this.geo.attributes.size.needsUpdate = true;
-  }
-}
-
+// Point particles (soft round sprites): one additive pool, one alpha pool, one of crisp bubbles. Simulated on the GPU from the moment
+// they are emitted (vfx/gpuparticles.js): tens of thousands cost what a handful did.
 // Tiny ballistic clay chips (instanced, no physics engine cost)
 class Chips {
   constructor(scene, max = 400) {
@@ -152,9 +83,9 @@ class Chips {
 export class FX {
   constructor(scene) {
     this.scene = scene;
-    this.add = new ParticlePool(scene, 1500, true);
-    this.alpha = new ParticlePool(scene, 1500, false);
-    this.foam = new ParticlePool(scene, 900, false, discTexture()); // (crisp bubbles: bow spray, wakes)
+    this.add = new GpuParticles(scene, { max: 16384, additive: true, map: radialTexture() });
+    this.alpha = new GpuParticles(scene, { max: 16384, additive: false, map: radialTexture() });
+    this.foam = new GpuParticles(scene, { max: 8192, additive: false, map: discTexture() }); // (crisp bubbles: bow spray, wakes)
     this.chips = new Chips(scene);
     this.tracers = [];
     this.trails = [];
@@ -541,7 +472,6 @@ export class FX {
     const h = window.innerHeight;
     const fov = camera.fov * Math.PI / 180;
     const scale = (h / (2 * Math.tan(fov / 2))) * (this.pixelRatio || 1);
-    this.add.mat.uniforms.scale.value = scale;
-    this.alpha.mat.uniforms.scale.value = scale;
+    this.add.scale = scale; this.alpha.scale = scale; this.foam.scale = scale;
   }
 }

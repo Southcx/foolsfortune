@@ -450,8 +450,10 @@ export class Tracking {
       log.say('battle', `You slash the ${w}.`, { key: `cut.${w}`, win: 0.9, fmt: (n) => `You slash ${plural(n, w)}.` });
     });
     on('hook.fire', (e) => { L.inc('hook.fire'); L.inc(`hook.${e.kind}`); if (e.kind === 'miss') log.say('info', 'The grapnel finds nothing.', { key: 'hmiss', throttle: 2 }); });
-    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} to you.`, { key: 'hpull', win: 1.2 }); });
-    on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${e.what === 'clapper' ? 'clapperjar' : e.what === 'breakable' ? 'pot' : 'prop'} flies.`, { key: 'hfling', win: 1.2 }); });
+    const hooked = (w) => (w === 'clapper' ? 'clapperjar' : w === 'breakable' ? 'pot' : w === 'slipjelly' ? 'slip jelly' : 'prop');
+    on('hook.pull', (e) => { L.inc('hook.pull'); L.inc(`hook.pull.${e.what}`); L.hi('hook.pull.dist', e.dist); log.say('battle', `You bring the ${hooked(e.what)} to you.`, { key: 'hpull', win: 1.2 }); });
+    on('hook.fling', (e) => { L.inc('hook.fling'); L.hi('hook.fling.speed', e.speed); log.say('battle', `You let go, and the ${hooked(e.what)} flies.`, { key: 'hfling', win: 1.2 }); });
+    on('hook.creature', (e) => { L.inc('hook.creature'); L.inc(`hook.creature.${e.kind}`); log.say('battle', `The grapnel bites into the ${hooked(e.kind)}. It reels.`, { key: 'hcre', win: 1.2 }); });
     on('grapple.attach', (e) => {
       L.inc('grapple.attach'); L.inc(`grapple.attach.${e.kind}`);
       log.say('move', e.kind === 'anchor' ? 'The grapnel bites. The line goes taut.' : `The grapnel bites into ${e.what === 'clapper' ? 'a clapperjar' : e.what === 'breakable' ? 'a pot' : 'something loose'}.`, { key: 'gatt', throttle: 1.2 });

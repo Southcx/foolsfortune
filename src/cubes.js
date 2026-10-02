@@ -28,6 +28,7 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vect
 
 const CSS = `
 #cubes { position: absolute; right: 30px; bottom: calc(166px + var(--cine, 0vh)); display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; pointer-events: none; }
+#lachryma #cubes { position: static; justify-content: flex-end; margin: 4px 2px 0 0; transform: none; height: 18px; }
 #cubes.on { opacity: 1; transform: none; }
 #cubes i { display: block; width: 15px; height: 15px; background: linear-gradient(135deg, #100b18 0%, #2a1a3a 42%, #0c0812 100%); border: 1px solid transparent; border-radius: 3px;
   background-clip: padding-box; box-shadow: 0 0 0 1px rgba(160,120,255,.55), 0 0 8px rgba(120,220,255,.35), inset 0 0 6px rgba(255,120,220,.35); transform: rotate(45deg) scale(.82); }
@@ -96,7 +97,7 @@ export class Cubes {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const el = (this.el = document.createElement('div')); el.id = 'cubes';
     el.innerHTML = '<i></i><b>0</b>';
-    (document.getElementById('hud') || document.body).appendChild(el);
+    (document.getElementById('lachryma') || document.getElementById('hud') || document.body).appendChild(el); // (in the Lachryma panel, under the tube)
     this.num = el.querySelector('b');
   }
 

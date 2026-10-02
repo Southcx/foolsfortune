@@ -111,6 +111,7 @@ import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
+import { Diag } from './debug/diag.js';
 import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
@@ -372,15 +373,8 @@ async function main() {
     });
   }
 
-  // physics debug lines (F3)
-  const dbgGeo = new THREE.BufferGeometry();
-  const dbg = new THREE.LineSegments(dbgGeo, new THREE.LineBasicMaterial({ vertexColors: true }));
-  dbg.frustumCulled = false;
-  dbg.visible = false;
-  scene.add(dbg);
-  const aiDbg = document.createElement('pre'); // (and, with them, what the creatures near her are thinking)
-  aiDbg.style.cssText = 'position:fixed;left:8px;top:120px;z-index:20;margin:0;padding:6px 8px;background:rgba(20,8,6,.72);color:#ffe0c0;font:11px/1.35 ui-monospace,monospace;pointer-events:none;display:none;white-space:pre';
-  document.body.appendChild(aiDbg);
+  // diagnostics (F3: the perf panel; again: with the physics lines near her and the creatures' minds; F4 copies a report): debug/diag.js
+  const diag = (game.diag = new Diag(game, renderer));
 
   const resetRoom = () => {
     game.trial?.abort();
@@ -570,11 +564,13 @@ async function main() {
     last = now;
     if (window.__game?.manual) return;
     try {
-      tick(dt);
-      game.post.render(scene, window.__debugCam || camera); // (the PS2 glow and the grade over the frame: render/glow.js)
+      diag.frameStart();
+      diag.begin('sim'); tick(dt); diag.end('sim');
+      diag.begin('draw'); game.post.render(scene, window.__debugCam || camera); diag.end('draw'); // (the PS2 glow and the grade over the frame: render/glow.js)
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
+      diag.frameEnd();
     } catch (e) {
       reportError(e); // keep the loop alive and say what broke instead of freezing
     }
@@ -611,11 +607,11 @@ async function main() {
   let lastWall = null;
   let lastLedge = null;
 
-  // blink charges on the movement readout (while any are spent)
-  const blinkPips = () => {
+  // the Blink's charges for the HUD's beads (ui/beads.js): how many, of how many, and how far the next has come back
+  const blinkState = () => {
     const b = techs.get('blink');
-    if (!b?.enabled || b.charges >= b.cfg.charges) return '';
-    return ` · E ${'●'.repeat(b.charges)}${'○'.repeat(Math.max(0, b.cfg.charges - b.charges))}`;
+    if (!b?.enabled) return null;
+    return { n: b.charges, max: b.cfg.charges, fill: b.charges < b.cfg.charges ? THREE.MathUtils.clamp(b.recharge / b.cfg.recharge, 0, 1) : 0 };
   };
 
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
@@ -639,7 +635,7 @@ async function main() {
     if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     if (input.wasPressed('KeyT')) resetRoom();
-    if (input.wasPressed('F3')) dbg.visible = !dbg.visible;
+    if (input.wasPressed('F3')) diag.cycle();
     if (input.wasPressed('F2')) game.ui.cycle();
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
@@ -668,7 +664,7 @@ async function main() {
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
-      physics.step(FIXED);
+      diag.begin('physics'); physics.step(FIXED); diag.end('physics');
       movers.post(FIXED);
       acc -= FIXED;
       steps++;
@@ -688,7 +684,7 @@ async function main() {
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.glyphs.update(dt);
     game.folk?.update(dt); game.dialogue?.update(game.rawDt);
-    game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt);
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
@@ -717,6 +713,7 @@ async function main() {
       const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
       lastHeading = heading;
       const held = weapon.held;
+      diag.begin('anim');
       character.animate(dt, {
         pos: player.renderPos,
         yaw: player.bodyYaw,
@@ -748,13 +745,14 @@ async function main() {
       player.headRel = character.headRel;
       weapon.fpPose(dt, camera, player, character);
       character.poseHands(handContext());
+      diag.end('anim');
       weapon.tryFire(camera, player, character);
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     } else player.renderPos.copy(player.pos);
     god.applyCamera(dt);
     weapon.updateDebris(dt);
 
-    breakables.update(dt);
+    diag.begin('props'); breakables.update(dt); diag.end('props');
     clappers.update(dt, acc / FIXED);
     shells.update(dt);
     baubles.update(dt);
@@ -779,16 +777,10 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    fx.update(dt, camera);
+    diag.begin('fx'); fx.update(dt, camera); diag.end('fx');
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
-    aiDbg.style.display = dbg.visible ? 'block' : 'none';
-    if (dbg.visible && clock.frame % 10 === 0) aiDbg.textContent = game.ai.describe().join('\n'); // (the minds near her: ai/brain.js's describe)
-    if (dbg.visible) {
-      const { vertices, colors } = physics.world.debugRender();
-      dbgGeo.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-      dbgGeo.setAttribute('color', new THREE.BufferAttribute(colors, 4));
-    }
+    diag.update(game.rawDt);
 
     hud.update(dt, {
       spreadDeg: weapon.spreadDeg(player), fov: camera.fov, pool: lachryma, shells: { types: SHELL_TYPES, selected: shells.selected, counts: shells.counts },
@@ -796,7 +788,7 @@ async function main() {
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
-        + blinkPips(),
+      , blink: blinkState(),
     });
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)

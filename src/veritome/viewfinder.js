@@ -23,7 +23,10 @@ const CSS = `
 #viewfinder { position: fixed; inset: 0; pointer-events: none; z-index: 30; opacity: 0; transition: opacity .12s; }
 #viewfinder.on { opacity: 1; }
 #viewfinder canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-#viewfinder .flash { position: absolute; inset: 0; background: #fff8e6; opacity: 0; }
+/* the shutter is a blink: two lids of ink close over the picture and open again (no flash: the lens takes what light there is) */
+#viewfinder .lid { position: absolute; left: -5%; right: -5%; height: 0; background: #140a06; box-shadow: 0 0 18px 6px rgba(20,10,6,.85); }
+#viewfinder .lid.top { top: 0; border-radius: 0 0 50% 50% / 0 0 34% 34%; }
+#viewfinder .lid.bot { bottom: 0; border-radius: 50% 50% 0 0 / 34% 34% 0 0; }
 #viewfinder .dev { position: absolute; left: 50%; top: 50%; width: 200px; height: 125px; margin: -62px 0 0 -100px; border: 6px solid #f1dfba; box-shadow: 0 6px 24px rgba(0,0,0,.5);
   background-size: cover; background-position: center; opacity: 0; }
 `;
@@ -33,10 +36,10 @@ export class Viewfinder {
   constructor() {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const el = (this.el = document.createElement('div')); el.id = 'viewfinder';
-    el.innerHTML = '<canvas></canvas><div class="dev"></div><div class="flash"></div>';
+    el.innerHTML = '<canvas></canvas><div class="dev"></div><div class="lid top"></div><div class="lid bot"></div>';
     document.body.appendChild(el);
     this.cv = el.querySelector('canvas'); this.g = this.cv.getContext('2d');
-    this.flashEl = el.querySelector('.flash'); this.devEl = el.querySelector('.dev');
+    this.lidT = el.querySelector('.lid.top'); this.lidB = el.querySelector('.lid.bot'); this.devEl = el.querySelector('.dev');
     this.on = false; this.flashT = 1; this.devT = 1;
   }
   show(on) { this.on = on; this.el.classList.toggle('on', on); }
@@ -50,8 +53,13 @@ export class Viewfinder {
 
   /** One frame (real seconds). */
   draw(dt, s) {
-    this.flashT = Math.min(1, this.flashT + dt / 0.18);
-    this.flashEl.style.opacity = String(0.85 * (1 - this.flashT) ** 2);
+    // the blink: shut in a twentieth of a second, open in a tenth (an eye's own: quick down, slower up), and the plate is filed away as
+    // the lids part, as if what the eye just held were put by into the book
+    this.flashT = Math.min(1, this.flashT + dt / 0.17);
+    const f = this.flashT, shut = f < 0.3 ? f / 0.3 : f < 0.42 ? 1 : 1 - (f - 0.42) / 0.58;
+    const h = `${(54 * (1 - (1 - shut) * (1 - shut))).toFixed(1)}%`;
+    if (h !== this.lidH) { this.lidH = h; this.lidT.style.height = h; this.lidB.style.height = h; }
+    if (f < 0.42) this.devT = Math.min(this.devT, 0); // (the plate waits behind the lids)
     this.devT = Math.min(1, this.devT + dt / 1.1);
     const u = this.devT;
     this.devEl.style.opacity = String(u < 1 ? Math.min(1, u * 6) * (1 - Math.max(0, (u - 0.6) / 0.4)) : 0);

@@ -125,6 +125,7 @@ export class Veritome extends Tech {
       if (this.lens) this.lensUpdate(raw, inp);
     } else if (this.lens) this.lower();
     this.lensK = THREE.MathUtils.damp(this.lensK, this.lens ? 1 : 0, 14, raw);
+    this.game.ui?.want('lens', this.lens && this.toolOut); // (the lens up: the picture is the whole screen, the HUD steps out: hideui.js)
     P.lens = this.lensK > 0.001 ? { k: this.lensK, fov: THREE.MathUtils.lerp(ZOOM.wide, ZOOM.tight, this.zoom) } : null;
     P.lookScale.lens = this.lens ? THREE.MathUtils.lerp(0.9, 0.3, this.zoom) : 1;
     // the Survey's read: the same open hold, for a moment
