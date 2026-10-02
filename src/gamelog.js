@@ -75,6 +75,7 @@ const CSS = `
   text-shadow: 1px 1px 0 #000; user-select: text; }
 #chatlog.typing { opacity: 1 !important; }
 #chatlog .foot { padding: 1px 6px 0; font: 500 9.5px var(--f-ui); color: #94705e; letter-spacing: .1em; text-shadow: 1px 1px 0 #000; display: flex; justify-content: space-between; }
+#chatlog .foot .keys { visibility: hidden; } #chatlog.typing .foot .keys { visibility: visible; } /* (the keys are said while the line is open, not always: docs/LOOK.md 7) */
 `;
 
 const pad = (n) => String(n).padStart(2, '0');
@@ -92,7 +93,7 @@ export class GameLog {
     this.quiet = new Map();
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = document.createElement('div'); root.id = 'chatlog';
-    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="prog"></div><div class="line"><b>›</b><input maxlength="200" spellcheck="false" autocomplete="off" placeholder="say something, or /help"></div><div class="foot"><span>ENTER CHAT · / COMMAND · PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
+    root.innerHTML = `<div class="tabs">${TABS.map((t, i) => `<div class="tab" data-i="${i}">${t}</div>`).join('')}<div class="min" title="minimise (\\)">–</div></div><div class="body"></div><div class="prog"></div><div class="line"><b>›</b><input maxlength="200" spellcheck="false" autocomplete="off" placeholder="say something, or /help"></div><div class="foot"><span class="keys">ENTER CHAT · / COMMAND · PGUP / PGDN · [ ] TAB · \\ HIDE</span><span class="n"></span></div>`;
     (document.getElementById('hud') || document.body).appendChild(root);
     this.root = root;
     this.body = root.querySelector('.body');

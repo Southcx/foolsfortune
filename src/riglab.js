@@ -130,7 +130,7 @@ export function buildRigLab(L, env) {
     strip(S, [-54.5, B + 2.71, -40.02], [11, 0.03, 0.05]);
     blk(-56, -48, 2.2, 2.35, -37.6, -36.5, C.dark); // (a shelf on the south wall: the targets to shoot while you hang)
     blk(-47, -43, 0, 5.5, -43, -39, C.mid);
-    label(S, 'HANG', [-54.5, B + 0.02, -45.5], { width: 1.8, sub: 'jump at the ledge, W held · A/D · W up' });
+    label(S, 'HANG', [-54.5, B + 0.02, -45.5], { width: 1.8, help: 'Jump at a ledge with W held to hang; A and D shimmy, W climbs up.' });
     label(S, '2.7 m', [-54.5, B + 1.3, -39.98], { rotY: Math.PI, width: 1.2, vertical: true, sub: 'aim behind you' });
     label(S, 'LATCH', [-45, B + 0.02, -45], { width: 1.5, sub: 'C beside a wall, in the air' });
     label(S, '5.5 m', [-45, B + 2.7, -39.02], { rotY: Math.PI, width: 1, vertical: true });
@@ -155,8 +155,8 @@ export function buildRigLab(L, env) {
     // two balance beams, flush with the platforms
     R.addBeam(L, [-52, B + 1.2, -63], [-67, B + 1.2, -63], { width: 0.3 });
     R.addBeam(L, [-52, B + 1.2, -65.5], [-67, B + 1.2, -65.5], { width: 0.2, color: C.pot });
-    label(S, 'BARS', [-49, B + 1.22, -57.6], { rotY: -Math.PI / 2, width: 1.2, sub: 'jump up, W / S along · Space swings' });
-    label(S, 'BEAMS', [-49, B + 1.22, -63.9], { rotY: -Math.PI / 2, width: 1.3, sub: '0.3 m and 0.2 m · Shift trots' });
+    label(S, 'BARS', [-49, B + 1.22, -57.6], { rotY: -Math.PI / 2, width: 1.2, help: 'Jump up to a bar; W and S move along it and Space swings off.' });
+    label(S, 'BEAMS', [-49, B + 1.22, -63.9], { rotY: -Math.PI / 2, width: 1.3, sub: '0.3 m and 0.2 m', help: 'On a beam, Shift trots.' });
     label(S, 'CABLE', [-50, B + 6.42, -66.6], { rotY: Math.PI, width: 1.3, sub: 'jump at it, ride it down' });
     label(S, 'CABLES', [-48, B + 1.22, -69], { rotY: -Math.PI / 2, width: 1.5, sub: 'ladder up the tower' });
   }
@@ -173,7 +173,7 @@ export function buildRigLab(L, env) {
     R.addGrate(L, { c: [-61, B + 8.75, -47], n: [0, -1, 0], w: 10, h: 6 });
     // (the roof hangs from the ceiling on rods)
     for (const x of [-65, -61, -57]) for (const z of [-49.5, -44.5]) rod(x, z, 8.8, H, 0.05);
-    label(S, 'GRATES', [-57, B + 0.02, -50.4], { rotY: -Math.PI / 2, width: 1.4, sub: 'walk into it · any way · C drops' });
+    label(S, 'GRATES', [-57, B + 0.02, -50.4], { rotY: -Math.PI / 2, width: 1.4, help: 'Walk into a grate to cling to it, any way up; C lets go.' });
     label(S, '8.6 m', [-56.1, B + 4, -51.2], { rotY: 0, width: 1, vertical: true, sub: 'up, then overhead' });
   }
 
@@ -187,9 +187,9 @@ export function buildRigLab(L, env) {
     g.position.set(-43.4, B + 10.7, -60);
     S.add(g);
     for (const dx of [-1.6, 1.6]) rod(-43.4 + dx, -60, 10.9, H, 0.06);
-    label(S, 'POLES', [-45, B + 0.02, -57.5], { width: 1.6, sub: 'walk into one · C slides' });
+    label(S, 'POLES', [-45, B + 0.02, -57.5], { width: 1.6, help: 'Walk into a pole to climb it; C slides down.' });
     label(S, 'POLE', [-43.4, B + 0.02, -70], { width: 1, sub: 'jump from the tower' });
-    label(S, 'ROPE', [-43.4, B + 0.02, -62.4], { rotY: Math.PI, width: 1, sub: 'Space leaps off' });
+    label(S, 'ROPE', [-43.4, B + 0.02, -62.4], { rotY: Math.PI, width: 1, help: 'On a rope, Space leaps off.' });
     label(S, '8.5 m', [-39, B + 8.52, -57.4], { rotY: Math.PI, width: 1, vertical: false });
   }
 
@@ -200,7 +200,7 @@ export function buildRigLab(L, env) {
   // ---- H1: crates ----
   {
     blk(-98, -88, 0, 3.2, -46, -40, C.mid);
-    label(S, 'CRATES', [-78, B + 0.02, -37.8], { rotY: Math.PI, width: 1.8, sub: 'hold Z: W pushes · S pulls' });
+    label(S, 'CRATES', [-78, B + 0.02, -37.8], { rotY: Math.PI, width: 1.8, help: 'Hold Z at a crate: W pushes and S pulls.' });
     label(S, '3.2 m', [-88.02, B + 1.9, -43], { rotY: Math.PI / 2, width: 1, vertical: true, sub: 'stack up to it' });
     label(S, 'LIFT', [-80, B + 0.02, -39.2], { rotY: Math.PI, width: 1.2, sub: 'Z at a small one' });
   }

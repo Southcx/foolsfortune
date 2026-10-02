@@ -48,9 +48,7 @@ export class Hud {
     };
     build();
     addEventListener('resize', build);
-    this.el.lachNum.textContent = '';
-    this.numCv = px.show(px.text('0', 'clay'), { k: this.meter.el.__k });
-    this.el.lachNum.appendChild(this.numCv);
+    this.el.lachNum.textContent = ''; // (no count beside the tube: the tube is the count, docs/LOOK.md 2)
     // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while she has it
     this.beads = new ChargeBeads(px, { k: this.meter.el.__k, max: 3 });
     this.el.lachNum.before(this.beads.el);
@@ -61,6 +59,7 @@ export class Hud {
 
   lachrymaPulse(ok) {
     if (ok) this.meter?.bead();
+    this.quietT = 0;
     const el = this.el.lach;
     el.classList.remove('gain', 'deny');
     void el.offsetWidth; // restart the animation
@@ -75,13 +74,17 @@ export class Hud {
     this.el.shells.appendChild(this.hand); this.handAt = -1;
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null }) {
+  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, pool, shells, speed = 0, move = '', gunOut = true, blink = null, debug = false }) {
     // (the shells are the Psygun's: their palette is shown while it is out, and steps away when it is put up)
     if (gunOut !== this.gunOut) { this.gunOut = gunOut; this.el.shells?.classList.toggle('stowed', !gunOut); }
-    // speedometer (with a short peak hold, for tuning movement)
-    this.peakT = (this.peakT || 0) - dt;
-    if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
-    this.el.speed.innerHTML = `<b>${speed.toFixed(1)}</b> m/s · peak ${this.peak.toFixed(1)} ${move ? `<i>${move}</i>` : ''}`;
+    // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
+    // not the HUD's to show (CLAUDE.md, Feedback; docs/LOOK.md 6)
+    if (debug !== this.debugShown) { this.debugShown = debug; this.el.speed.style.display = debug ? '' : 'none'; }
+    if (debug) {
+      this.peakT = (this.peakT || 0) - dt;
+      if (speed > (this.peak || 0) || this.peakT <= 0) { this.peak = speed; this.peakT = 1.5; }
+      this.el.speed.innerHTML = `<b>${speed.toFixed(1)}</b> m/s · peak ${this.peak.toFixed(1)} ${move ? `<i>${move}</i>` : ''}`;
+    }
     const h = window.innerHeight;
     const px = Math.tan((spreadDeg * Math.PI) / 180) / Math.tan((fov * Math.PI) / 360) * (h / 2);
     const gap = 4 + px;
@@ -105,9 +108,13 @@ export class Hud {
     }
     if (pool && this.meter) {
       this.meter.set(pool.available, pool.reserved, pool.max); this.meter.update(dt);
-      const n = String(Math.floor(pool.available));
-      if (n !== this.numShown) { this.numShown = n; this.px.swap(this.numCv, this.px.text(n, pool.available < 12 ? 'gold' : 'clay')); }
       this.el.lach.classList.toggle('low', pool.available < 12);
+      // the panel is there when the Lachryma is doing something (not full, held for a charge, just moved) and steps back when it is
+      // full and still: the ring at her feet (vfx/hudring.js) is the always-on gauge
+      if (Math.abs(pool.available - (this.lastAvail ?? -1)) > 0.01 || pool.reserved > 0) { this.lastAvail = pool.available; this.quietT = 0; }
+      this.quietT = (this.quietT || 0) + dt;
+      const show = pool.available < pool.max - 0.5 || this.quietT < 4 || this.lach?.forced;
+      if (show !== this.lachShown) { this.lachShown = show; this.el.lach.style.transition = 'opacity .6s'; this.el.lach.style.opacity = show ? '' : '0'; }
     } else if (pool) {
       this.el.lachFill.style.width = `${(pool.available / pool.max) * 100}%`;
       this.el.lachRes.style.width = `${(pool.reserved / pool.max) * 100}%`;

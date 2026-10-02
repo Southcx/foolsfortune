@@ -3,6 +3,7 @@ import { T, PALETTE } from './config.js';
 import { makeGlowOutline, addOutline } from './outline.js';
 import { sfx } from './audio.js';
 import { zoneOf } from './render/zones.js';
+import { CountRings } from './vfx/wiremarks.js';
 
 // ---------------------------------------------------------------------------
 // Time trial: the gong by the workshop's door starts it (F at it: the chevron marks it). The room resets, shells and Lachryma are topped up,
@@ -41,6 +42,8 @@ export class Trial {
     this.best = null;
     try { this.best = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch { /* storage unavailable */ }
     this.glow = makeGlowOutline(PALETTE.hot, 0.012);
+    // the count is rings on the start line that close one by one, and a ring that bursts on GO (no digits: docs/LOOK.md 6, 7)
+    this.rings = new CountRings(game.scene);
     this.xray = makeGlowOutline(PALETTE.glow, 0.005, true);
     this.el = {
       box: document.getElementById('trial'),
@@ -117,7 +120,10 @@ export class Trial {
     this.countdown = 3;
     this.state = 'countdown';
     this.el.box.style.display = 'block';
-    this.showBig('3');
+    { // (on the start line: a few metres before her eyes, the way she faces)
+      const f = new THREE.Vector3(-Math.sin(P.yaw), 0, -Math.cos(P.yaw));
+      this.rings.start(P.pos.clone().addScaledVector(f, 3.2).setY(P.pos.y + 1.5), 3);
+    }
     g.events?.emit('trial.start', {});
     sfx.lockOn(1);
   }
@@ -127,6 +133,7 @@ export class Trial {
     if (this.starting || this.state === 'off') return;
     this.state = 'off';
     this.clearJars();
+    this.rings.stop();
     this.el.box.style.display = 'none';
     this.el.arrow.style.display = 'none';
     this.game.player.freeze = false;
@@ -163,7 +170,7 @@ export class Trial {
       try { localStorage.setItem(STORE, JSON.stringify(time)); } catch { /* storage unavailable */ }
     }
     this.state = 'done';
-    this.showBig(fmt(time), 6);
+    // (the time is the log's to say: trial.finish -> tracking.js; the board keeps it)
     this.game.events?.emit('trial.finish', { time, medal, pb, jars: this.jars.length });
     sfx.mended(1);
     this.el.arrow.style.display = 'none';
@@ -182,6 +189,7 @@ export class Trial {
     if (this.swing > 0) { this.swing = Math.max(0, this.swing - dt * 0.7); this.disc.rotation.z = Math.sin(this.swing * 18) * 0.25 * this.swing; }
     // a trial belongs to its room: leave the workshop and it is called off (and its board with it)
     if (this.state !== 'off' && zoneOf(P.pos) !== 'workshop') { this.abort(); this.el.big.style.display = 'none'; return; }
+    this.rings.update(dt, g.camera);
     this.bigT -= dt;
     if (this.bigT <= 0 && this.el.big.style.display !== 'none') this.el.big.style.display = 'none';
     if (this.state === 'off') return;
@@ -191,8 +199,11 @@ export class Trial {
       this.countdown -= dt;
       g.weapon.cooldown = Math.max(g.weapon.cooldown, 0.05);
       const now = Math.ceil(this.countdown);
-      if (now !== before && now > 0) { this.showBig(String(now)); sfx.lockTick(); }
-      if (this.countdown <= 0) { this.state = 'run'; this.showBig('GO!', 0.7); sfx.lockOn(6); }
+      if (now !== before && now > 0) { this.rings.tick(); sfx.lockTick(); }
+      if (this.countdown <= 0) {
+        this.state = 'run'; this.rings.go(); sfx.lockOn(6);
+        g.glyphs?.pop('bang1', this.rings.group.position.clone(), { size: 0.7, burst: true, ring: true });
+      }
     } else if (this.state === 'run') this.t += dt;
 
     const M = T.trial;

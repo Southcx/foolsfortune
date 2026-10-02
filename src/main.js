@@ -84,6 +84,8 @@ import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
 import { Filigree } from './vfx/filigree.js';
+import { HudRing } from './vfx/hudring.js';
+import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
 import { Chests, ChestTech } from './chests.js';
@@ -342,6 +344,7 @@ async function main() {
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in her)
+  game.hudRing = new HudRing(game); // (her Lachryma and what has noticed her, on the ground at her feet)
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);
@@ -810,8 +813,10 @@ async function main() {
       charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
-      , blink: blinkState(),
+      , blink: blinkState(), debug: diag.mode > 0,
     });
+    game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
+    (game.wireCompass ||= new WireCompass(game)).update(dt);
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

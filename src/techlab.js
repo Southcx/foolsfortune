@@ -74,7 +74,7 @@ export function buildTechLab(L, env) {
     S.add(l);
   }
   label(S, 'TECH LAB', [0, B + 0.02, -39.5], { width: 3.2, sub: 'movement techs' });
-  label(S, 'THE SYSTEM', [0, B + 0.02, -42.2], { width: 2.6, sub: 'B · skills are learned by doing · LAB MODE lends them all' });
+  label(S, 'THE SYSTEM', [0, B + 0.02, -42.2], { width: 2.6, sub: 'skills are learned by doing', help: 'B opens the Codex; LAB MODE there lends every skill.' });
   label(S, 'MILL', [33.6, B + 0.02, -47], { rotY: -Math.PI / 2, width: 1.6, sub: 'clockwork · moving ground' });
   strip(S, [35.9, B + 4.02, -47], [0.1, 0.06, 4.2]);
   label(S, 'RIGGING', [-33.6, B + 0.02, -47], { rotY: Math.PI / 2, width: 1.8, sub: 'hang · climb · balance' });
@@ -96,7 +96,7 @@ export function buildTechLab(L, env) {
     env.ladders.add({ x: -28, z: -47, y0: B, y1: B + 5, n: new THREE.Vector3(0, 0, 1) });
     // out of the pool: a ladder on the south wall of the far half
     env.ladders.add({ x: -28, z: P.z0, y0: B + P.bottom, y1: B, n: new THREE.Vector3(0, 0, 1) });
-    label(S, 'POOL', [-28, B + 0.02, -44], { width: 1.8, sub: 'dive · swim under the wall · C down, Space up' });
+    label(S, 'POOL', [-28, B + 0.02, -44], { width: 1.8, sub: 'dive · swim under the wall', help: 'Underwater, C dives and Space rises.' });
     label(S, '5 m', [-28, B + 5.02, -48.3], { width: 1, sub: 'dive' });
   }
 
@@ -106,10 +106,10 @@ export function buildTechLab(L, env) {
     env.ladders.add({ x: -16, z: -54, y0: B, y1: B + 6, n: new THREE.Vector3(0, 0, 1) });
     blk(-18, -8, 0, 8, -72, -66, C.mid);
     env.ladders.add({ x: -16, z: -66, y0: B, y1: B + 8, n: new THREE.Vector3(0, 0, 1) });
-    label(S, 'LADDERS', [-13, B + 0.02, -51], { width: 2, sub: 'W/S climb · Shift fast · C slide · Space kick off' });
+    label(S, 'LADDERS', [-13, B + 0.02, -51], { width: 2, help: 'On a ladder, W and S climb, Shift climbs fast, C slides down and Space kicks off.' });
     label(S, '6 m', [-16, B + 6.02, -56], { width: 1 });
     // the slam field below the 8 m edge (pots come back)
-    label(S, 'SLAM · ROLL', [-11, B + 8.02, -67.5], { width: 2.2, sub: 'C in the air · hold C to land in a roll' });
+    label(S, 'SLAM · ROLL', [-11, B + 8.02, -67.5], { width: 2.2, help: 'C in the air slams; hold C to land in a roll.' });
     strip(S, [-13, B + 8.01, -66.05], [10, 0.02, 0.08]);
   }
 
@@ -125,7 +125,7 @@ export function buildTechLab(L, env) {
     // the slip wall: 6 m up onto a platform
     blk(0, 8, 0, 6, -72, -68, C.pot);
     env.slip.addRect(new THREE.Vector3(4, B + 3, -67.99), new THREE.Vector3(0, 0, 1), X, 2, 3);
-    label(S, 'SLIP', [4, B + 0.02, -45.5], { width: 1.6, sub: 'hold C to dive · Space out · 8: SLIP shells' });
+    label(S, 'SLIP', [4, B + 0.02, -45.5], { width: 1.6, help: 'Hold C to dive into slip and Space to come out; 8 loads SLIP shells.' });
     label(S, '0.8 m', [4, B + 1.4, -54.75], { rotY: Math.PI, width: 1, vertical: true, sub: 'blob only' });
     label(S, '6 m', [4, B + 6.02, -70], { width: 1 });
   }

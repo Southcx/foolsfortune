@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mindLineMaterial } from './vfx/labradorite.js';
+import { ReachDome } from './vfx/wiremarks.js';
 import { T, PALETTE } from './config.js';
 import { RAPIER, GROUPS } from './physics.js';
 import { addOutline } from './outline.js';
@@ -156,7 +157,7 @@ export class GodArts {
     if (commit && this.wheelPick >= 0) this.select(this.wheelPick);
   }
 
-  showBar(on) { this.bar.style.display = on ? 'flex' : 'none'; }
+  showBar(on) { this.bar.style.display = on ? 'flex' : 'none'; if (!on) this.dome?.hide(); }
 
   /** Per frame: the bar (which art, what the cursor's ground allows) and the tooltip at the cursor. */
   updateUi(dt) {
@@ -174,10 +175,12 @@ export class GodArts {
     else if (this.live) msg = this.live.tip || '';
     else if (K.far) { msg = 'OUT OF REACH'; bad = true; }
     // (no prompts about what the hand does or does not "understand": the ground outside your zone of influence just does not answer, and the ring shows it)
-    this.tip.style.display = this.wheelOpen || !input.enabled ? 'none' : 'block';
-    this.tip.textContent = msg;
-    this.tip.classList.toggle('bad', bad);
-    this.tip.style.left = `${input.mx}px`; this.tip.style.top = `${input.my}px`;
+    // No words at the cursor (CLAUDE.md, Feedback; docs/LOOK.md 5): how far the hand reaches is the dome standing round the vessel
+    // (vfx/wiremarks.js), the cursor's ring turns when it is past it, and an unlearned art is greyed on the bar. (msg and bad are
+    // kept for the diagnostics.)
+    this.tipMsg = msg; this.tipBad = bad;
+    this.tip.style.display = 'none';
+    this.dome.show(this.god.vessel.pos, T.god.range);
   }
 
   // ------------------------------------------------------------------ fx
@@ -192,6 +195,7 @@ export class GodArts {
     this.ghost.renderOrder = 8; this.ghost.visible = false;
     this.ghostEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), mindLineMaterial({ depthTest: true, bright: 1.2 })); // (the Mind's wireframe: vfx/labradorite.js)
     this.ghost.add(this.ghostEdges);
+    this.dome = new ReachDome(g.scene); // (how far the hand reaches, while it is up)
     g.scene.add(this.blade, this.bladeLine, this.ghost);
     this.clay = new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.85, flatShading: true });
     this.clayBand = new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.9, flatShading: true });
