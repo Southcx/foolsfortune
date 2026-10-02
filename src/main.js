@@ -83,7 +83,7 @@ import { Glyphs } from './vfx/glyphs.js';
 import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
-import { Filigree } from './vfx/filigree.js';
+import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
@@ -345,6 +345,8 @@ async function main() {
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in her)
   game.hudRing = new HudRing(game); // (her Lachryma and what has noticed her, on the ground at her feet)
+  // (a blow taken: she flinches, character.js; the hurting impulses are the filigree's list)
+  game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);

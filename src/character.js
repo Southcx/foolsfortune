@@ -184,6 +184,9 @@ export class Character {
   get dissolve() { return dissolveUniform.value; }
 
   /** Hide the body and gun (a tech that turns the Courier into something else). */
+  /** A blow taken (k 0..1): the upper body flinches (Hit_Chest) over whatever is playing. */
+  flinch(k = 1) { this.st.hitT = 0; this.st.hitW = Math.min(1, 0.5 + 0.5 * k); }
+
   setHidden(h) {
     if (h === !!this.hidden) return;
     this.hidden = h;
@@ -577,10 +580,21 @@ export class Character {
     st.lastPhi = ph;
 
     // ---- landing ----
-    if (s.landed) { st.landW = clamp(s.landed / 7, 0.3, 1); st.landT = A.landFrom; st.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14; }
+    if (s.landed) {
+      st.landW = clamp(s.landed / 7, 0.3, 1); st.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14;
+      // (out of the tuck flip, the flip's own landing (UAL NinjaJump_Land): it comes down from the tuck; else the jump's)
+      const flip = C.clips.flipLand && (this.airTrack.cur === 'flipLoop' || this.airTrack.cur === 'flipStart');
+      st.landClip = flip ? 'flipLand' : 'jumpLand'; st.landT = flip ? 0.2 : A.landFrom;
+    }
     st.landT += dt;
-    const landW = st.landW * (1 - smooth(0.12, 0.5, st.landT)) * (1 - 0.7 * clamp(gs / s.walkSpeed, 0, 1)) * (footed ? 1 : 0);
-    if (landW > 0.001) C.blend(base, C.sample('jumpLand', st.landT, P.tmp, false), landW);
+    const landW = st.landW * (1 - smooth(0.12, 0.5, st.landT - (st.landClip === 'flipLand' ? 0.1 : 0))) * (1 - 0.7 * clamp(gs / s.walkSpeed, 0, 1)) * (footed ? 1 : 0);
+    if (landW > 0.001) C.blend(base, C.sample(st.landClip || 'jumpLand', st.landT, P.tmp, false), landW);
+    // ---- a blow taken: a flinch of the upper body (UAL Hit_Chest), over whatever she is doing ----
+    if (st.hitT !== undefined && st.hitT < 0.45 && C.clips.hitChest) {
+      st.hitT += dt;
+      const hw = st.hitW * (1 - smooth(0.22, 0.45, st.hitT)) * smooth(0, 0.04, st.hitT);
+      if (hw > 0.001) C.blend(base, C.sample('hitChest', 0.05 + st.hitT * 0.75, P.tmp, false), hw, this.MASK_UPPER);
+    }
     st.dipV += (-180 * st.dip - 22 * st.dipV) * dt;
     st.dip += st.dipV * dt;
 
@@ -609,6 +623,16 @@ export class Character {
       st.sliding = true;
     }
     if (sl < 0.02 && st.sliding) { st.sliding = false; st.slideEnd = this.time; }
+    // ---- out of a slide on her feet: the slide's own way up (UAL Slide_Exit), bridging the slide's fade into the run ----
+    if (st.sliding && sl < (st.slPrev ?? 0) - 1e-4 && st.exitT === undefined) st.exitT = 0;
+    if (sl > (st.slPrev ?? 0) + 1e-4) st.exitT = undefined; // (back into it)
+    st.slPrev = sl;
+    if (st.exitT !== undefined && C.clips.slideExit) {
+      st.exitT += dt;
+      const ew = (1 - sl) * (1 - smooth(0.12, 0.4, st.exitT)) * (footed ? 1 : 0) * 0.9;
+      if (ew > 0.001) C.blend(base, C.sample('slideExit', 0.18 + st.exitT * 0.9, P.tmp, false), ew);
+      if (st.exitT > 0.4) st.exitT = undefined;
+    }
     if (st.sliding) {
       sT.update(dt);
       if (sT.cur === 'slideStart' && sT.t > 0.7) sT.play('slideLoop', 0.2, 0.2);
@@ -1008,6 +1032,21 @@ export class Character {
       const p = o.wallPoint.clone().addScaledVector(n, 0.02).sub(this.arm[wallSide].palmPt.clone().applyQuaternion(q));
       this.reachHand(wallSide, p, q, wallW);
       if (wallSide === 'L') contactL = wallW; else contactR = wallW;
+      // and the wall-side foot, while the run's cycle has it down, set on the wall (a light correction: a sole put on the surface it
+      // is near, never more than a hand's breadth away; the sprint cycle is what moves the legs)
+      const leg = this.leg[wallSide], ck = smooth(0.45, 0.8, st.contact?.[wallSide] ?? 0) * st.aw * (o.wallPoint ? 1 : 0);
+      if (ck > 0.01) {
+        leg.foot.updateMatrixWorld(true);
+        const F = leg.foot.getWorldPosition(_v1), off = _v2.subVectors(F, o.wallPoint).dot(n) - 0.07;
+        if (Math.abs(off) < 0.22) {
+          const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
+          const tgt = F.clone().addScaledVector(n, -off * ck);
+          const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(n, 0.25).addScaledVector(fwd, 0.1);
+          this.solveLeg(leg, tgt, pole);
+          this.setWorldQuat(leg.foot, fq);
+          leg.foot.updateMatrixWorld(true);
+        }
+      }
     }
     // ledge: both hands plant on the lip during the first part of the vault
     const ledgeW = (o.ledge ? st.mn : 0) * (1 - smooth(0.45, 0.75, o.mantleT ?? 1));
@@ -1036,8 +1075,10 @@ export class Character {
     }
     this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
     o.techs?.hands(this, o);
-    if ((o.techs?.override || 0) < 0.5) this.limits.apply(); // (a tech that owns the body, a ladder, a pole, has posed the hands to its own handholds)
     if (!o.techs?.unitFrame?.()) this.guardKnees(1 - Math.min(1, o.techs?.override || 0));
+    // (the limits last, after the knee guard: CLAUDE.md. A tech that owns the body, a ladder, a pole, has posed the hands to its own
+    //  handholds, and keeps them)
+    if ((o.techs?.override || 0) < 0.5) this.limits.apply();
     root.updateMatrixWorld(true);
   }
 

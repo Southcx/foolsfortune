@@ -24,6 +24,7 @@ import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { addOutline } from '../outline.js';
 import { addRim } from '../render/toon.js';
+import { JointLimits, CLAPPER_ROM } from '../rom.js';
 import { RAPIER, GROUPS, G, groups } from '../physics.js';
 import { PALETTE } from '../config.js';
 import { Clayese } from './clayese.js';
@@ -103,12 +104,15 @@ export class Folk {
     const mq = model.getWorldQuaternion(new THREE.Quaternion()).invert();
     const restInv = (b) => (b ? b.getWorldQuaternion(new THREE.Quaternion()).premultiply(mq).invert() : null);
     const bones = { body: bone('body'), head, eyes, armL: bone('upper_armL'), armR: bone('upper_armR'), foreL: bone('forearmL'), foreR: bone('forearmR') };
+    // (their joints' limits, applied last, as the clapperjars' are: the folk wear the same rig; rom.js)
+    const rom = new JointLimits();
+    for (const [name, spec] of Object.entries(CLAPPER_ROM)) { const bn = bone(name); if (bn) rom.add(bn, bn.quaternion.clone(), spec); }
     const s = def.scale ?? 1.9;
     // a solid post so she walks round it, not through (a static collider: shots and tools pass it by as part of the room)
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(p.x, p.y + 0.35 * s / 1.9, p.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.cylinder(0.35 * s / 1.9, 0.26 * s / 1.9).setCollisionGroups(GROUPS.static), body);
     const n = {
-      def, id: def.id, name: def.name, root, model, mixer, mat, bones, pos: p, yaw: def.yaw || 0, scale: s,
+      def, id: def.id, name: def.name, root, model, mixer, mat, bones, rom, pos: p, yaw: def.yaw || 0, scale: s,
       inv: { head: restInv(head), body: restInv(bones.body), L: restInv(bones.armL), R: restInv(bones.armR) },
       mood: def.temper || 'calm', k: 0.35, kTarget: 0.35, t: Math.random() * 10, look: 0, lidT: 0, lidA: 0, blinkT: 2, hopV: 0, hopY: 0,
       vfxT: 0, talking: false, p: Object.fromEntries(POSE.map((k) => [k, 0])), glaze: new THREE.Color(def.glaze), voice: def.voice || { base: 74, scale: 'yo', bell: 0.7, clay: 0.5 },
@@ -229,6 +233,7 @@ export class Folk {
       if (p.armIn) { arm(b.armL, n.inv.L, -p.armIn * 0.6); arm(b.armR, n.inv.R, p.armIn * 0.6); }
       if (p.armOut) { arm(b.armL, n.inv.L, 0.9 * p.armOut + Math.sin(n.t * 18) * 0.15); arm(b.armR, n.inv.R, -0.9 * p.armOut - Math.sin(n.t * 18) * 0.15); }
       if (p.armDown) { arm(b.armL, n.inv.L, -0.5 * p.armDown); arm(b.armR, n.inv.R, 0.5 * p.armDown); }
+      n.rom.apply(); // (every posed joint through its limits, last)
       // eyes: blink, and their size says the feeling (wide in awe, narrowed in anger)
       n.blinkT -= dt; if (n.blinkT < 0) n.blinkT = 2 + Math.random() * 4;
       if (b.eyes) b.eyes.scale.set(1, (n.blinkT < 0.1 ? 0.15 : 1) * p.eyes, 1);

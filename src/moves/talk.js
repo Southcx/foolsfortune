@@ -4,6 +4,10 @@ import { Tech } from './techs.js';
 // TALKING (a tech that holds the body while a conversation lasts): F at one of the clay folk (npc/folk.js) begins the dialogue
 // (npc/dialogue.js); the Courier stands, turns to the speaker and puts away what was in her hands, and the step is hers until the
 // talk ends. Nothing about the core movement changes: when the talk is over, the core is exactly as it was.
+//
+// She answers with her body, from UAL's clips (CC0) over the upper body: when she says something (a choice is made) she talks
+// (Idle_Talking_Loop); as each line of theirs begins she nods to the glad and the calm (Yes), shakes her head at the muddled
+// (Idle_No_Loop), and folds her arms at the sly (Idle_FoldArms_Loop); otherwise she listens, still.
 // ---------------------------------------------------------------------------
 export class Talk extends Tech {
   constructor(mgr) { super(mgr, 'talk'); this.blendIn = 8; }
@@ -31,6 +35,24 @@ export class Talk extends Tech {
     P.vel.set(0, -2, 0); P.move(dt);
     return true;
   }
-  end() { if (this.game.dialogue.open) this.game.dialogue.end(); this.npc = null; }
+  end() { if (this.game.dialogue.open) this.game.dialogue.end(); this.npc = null; this.react = null; this.lastLine = null; }
+
+  /** What she does with her body: a reaction (clip, seconds, how long, how much), played over the upper body and eased. */
+  animate(ch, base, dt) {
+    const D = this.game.dialogue, C = ch.clips;
+    if (!D?.open) return;
+    if (!this.heard) { this.heard = true; this.game.events.on('npc.choose', () => { this.react = { clip: 'talk', t: 0, dur: 1.6, k: 0.85 }; }); }
+    if (D.cur && D.cur !== this.lastLine) {
+      this.lastLine = D.cur;
+      const m = D.mood, clip = { joy: 'nod', calm: 'nod', awe: 'nod', confused: 'shakeHead', sly: 'foldArms' }[m];
+      if (clip && (!this.react || this.react.clip !== 'talk')) this.react = { clip, t: 0, dur: clip === 'foldArms' ? 2.4 : 1.1, k: clip === 'nod' ? 0.6 : 0.7 };
+    }
+    const r = this.react;
+    if (!r || !C.clips[r.clip]) return;
+    r.t += dt;
+    if (r.t >= r.dur) { this.react = null; return; }
+    const e = Math.min(1, r.t / 0.18) * Math.min(1, (r.dur - r.t) / 0.3);
+    C.blend(base, C.sample(r.clip, r.t, ch.P.tmp, true), this.w * r.k * e * e * (3 - 2 * e), ch.MASK_UPPER);
+  }
   faceYaw() { const n = this.npc; if (!n) return null; const P = this.P; return Math.atan2(n.pos.x - P.pos.x, n.pos.z - P.pos.z); }
 }

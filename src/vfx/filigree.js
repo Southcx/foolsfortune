@@ -73,7 +73,7 @@ export function dressFiligree(material) {
   return uniforms;
 }
 
-const HURT = new Set(['jelly', 'lobber', 'explosion']); // (an impulse that was a blow: player.impulse's why)
+export const HURT = new Set(['jelly', 'lobber', 'explosion']); // (an impulse that was a blow: player.impulse's why)
 
 export class Filigree {
   constructor(game, uniforms) {
