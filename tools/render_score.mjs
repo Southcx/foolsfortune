@@ -23,7 +23,9 @@ const r = await p.evaluate(async ({ mod, name }) => {
   sfx.noiseBuf = sfx.makeNoise(2); sfx.ok = () => true;
   const A = new Arranger(sfx); A.score = S; A.build(); A.bus.gain.value = A.volume; A.next = 0.1; A.section = 0; A.bar = 0; A.ended = false;
   const marks = []; let guard = 0;
-  while (!A.ended && guard++ < 1000) { if (A.bar === 0) marks.push([S.sections[A.section].id, A.next]); A.step(); }
+  // (one pass through the sections: a score that loops is rendered once round, and its tail rings out)
+  const total = S.sections.reduce((n, s) => n + s.bars, 0);
+  while (!A.ended && guard++ < total) { if (A.bar === 0) marks.push([S.sections[A.section].id, A.next]); A.step(); }
   const buf = await ctx.startRendering();
   const L = buf.getChannelData(0), R = buf.getChannelData(1);
   const lvl = (a, z) => { let s = 0, pk = 0; const i0 = Math.floor(a * sr), i1 = Math.min(L.length, Math.floor(z * sr)); for (let i = i0; i < i1; i++) { s += L[i] * L[i] + R[i] * R[i]; pk = Math.max(pk, Math.abs(L[i]), Math.abs(R[i])); } return [+(10 * Math.log10(s / (2 * (i1 - i0)))).toFixed(1), +(20 * Math.log10(pk)).toFixed(1)]; };

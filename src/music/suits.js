@@ -31,7 +31,7 @@ const walk = (k, v) => {
 const drum = (v) => [E('taiko', 0, 1, null, v, { size: 1.1 }), E('taiko', 2.5, 1, null, v * 0.55, { size: 0.9 })];
 
 export const SUITS = {
-  title: 'Four Suits and a Fool', bpm: 100, arrange: true, loopFrom: null, tail: 5,
+  title: 'Four Suits and a Fool', root: 64, bpm: 100, arrange: true, loopFrom: null, tail: 5,
   sections: [
     // THE FOOL: a piano alone
     { id: 'fool', bars: 5, gain: 1.5, bar: (k) => [...roll(k, 0.2), E('piano', 0, 4, FIVE[k], 0.4, { pedal: 0.4 }), ...(k === 4 ? [E('piano', 3, 1, 66, 0.22, { pedal: 0.4 })] : [])] },

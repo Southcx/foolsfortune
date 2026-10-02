@@ -24,6 +24,14 @@ Five is the game's number, and the music keeps it.
   - **WEST**: the **hexachords** of Guido's hand: the hard (durum) G A B C D E, which begins on G and ends on E; the soft (molle) on F
     with its B flat, for tenderness and memory; the plain (naturale) on C. Strings, flute, brass, harmonica, piano, the guitar.
   - They meet on E G A B D: either can take the tune from the other mid-phrase.
+- **The wider world** (the fusion: the game's sound is psychedelic space jazz, esoteric, from everywhere at once). Around the two
+  languages, four more voices, one for each suit, and the Five can be said in all of them (`music/world.js`, the wider band):
+  - **THE SUBCONTINENT** (swords, Espada): the sitar and its jawari's buzz, the tanpura's drone, the tabla; the raga (Bhairav, whose
+    F to E is the Tear) and its forms (alap, jor, gat, jhala, the tihai).
+  - **THE ISLANDS** (cups, Calissa): the steel pan, the marimba, calypso's three-three-two; water and sun.
+  - **THE AMERICAS** (pentacles and wands, Petra and Wanda): the blues (the electric guitar, the harmonica, the stomp), and jazz out
+    in space (the saxophone, the Rhodes, the Moog, a phased guitar, 5/4).
+  - **THE SEA** (everyone's): the concertina, the fiddle, the bodhrán, the crew's voices: the shanty.
 - **The shapes.** Phrases of five bars and of ten; a five-chord cycle (Em C G D B7); 5/4 for walking music (three and two); runs of
   five notes to the octave; five movements for the main theme and, one day, for the final battle.
 - **The tempo ladder** (multiples of 5 and 25): 75 (rest, sorrow, the piano), 100 (walking, the field), 125 (the wild, battle),
@@ -48,6 +56,10 @@ Short enough to hum, each can be played East or West, slow or fast, major or min
 | **The Fool's Step** | A B C, leap to E | the Courier (the first draft's motif, kept as hers) | to be: the Courier's theme |
 | **The System's chime** | G to D (a rising fifth) and E to B (a falling fourth) | the System: notice, warning | the voice's chimes (`system/voice.js`) |
 | **The folk** | each speaker's own scale (Clayese, `npc/clayese.js`) | the clay folk | their voices; their themes will be built on the same scales |
+| **Petra's riff** | E E G E A (the A bent toward B flat), low | pentacles: earth, the builder, Main | *Stone and Coin* (`music/motifs.js`) |
+| **Wanda's spark** | G D C# D A (up a fifth, the Lydian sigh, a leap) | wands: fire, breath, the music | *Kindling* |
+| **Espada's edge** | E F G# B, then C cut down to B (the draw and the cut) | swords: air, the word, the lore | *The Edge of the Word* |
+| **Calissa's pour** | B G# E, C# E (a major arpeggio tumbling in 3+3+2, a hop up) | cups: water, beauty, the look | *Overflowing*, *The Shallows* |
 
 ## 3. The cues
 
@@ -77,6 +89,9 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | The Kiln's Heart | a dungeon of fire and clay | 125, F (the Tear's key) | taiko, low brass, clay percussion | Tear | |
 | The Siege | the raid arena | 150, E minor | taiko ensemble, brass, guitar | Five as a war cry | |
 | Solar Skiffing | sailing the dunes | 125, B major | strings, flute, a sail of synth pads | Answer, Leap at the crest of a dune | |
+| Haul Away the Fortune | the Solar Skiff (a shanty) | 6/8 (198 in eighths), E Dorian | concertina, crew voices, fiddle, bodhrán, stomps, harmonica | Five and Answer as the refrain | **made** |
+| The Shallows | under the water, in the light | 76, E Lydian | Rhodes in eighths, pad, bubbles, vibes, flute, steel pan | Calissa's pour, at half speed | **made** |
+| The Deep | far under, and in the Well's Lachryma | 54, the In scale on E | tanpura, whales, a sonar bell, a far choir, a heartbeat, phased chord | the Tear | **made** |
 
 ### III. Conflict
 
@@ -99,6 +114,10 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Raku | the treasurer | 100, the soft hexachord on F | harpsichord, muted trumpet | his soft hexachord, crooked | |
 | Sorrow | a loss | 75, E minor | piano, then strings | Tear, then the Five | |
 | Resolve | the turn | 100, G major | brass chorale | Answer, Leap | |
+| Stone and Coin | Petra (pentacles) | 92, the blues in E | electric guitar, harmonica, upright, kit, stomp, shaker, hammer | Petra's riff; the Five in the bridge | **made** |
+| Kindling | Wanda (wands) | 144 in 5/4, G Lydian | saxophone, Rhodes, Moog, phased guitar, ride, pad, vibes | Wanda's spark; the Answer | **made** |
+| The Edge of the Word | Espada (swords) | 60 / 92 / 112, Bhairav on E | sitar, tanpura, tabla, fiddle, upright | Espada's edge; the Tear | **made** |
+| Overflowing | Calissa (cups) | 116, E major | steel pan, marimba, upright, bongos, shaker, timbale, horns | Calissa's pour; the Answer | **made** |
 
 ### V. Jingles and the System
 
@@ -124,7 +143,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 
 ## 5. Production notes
 
-- Everything is synthesized when it is played (`music/band.js`); nothing is recorded. The instruments are physical models in spirit:
+- Everything is synthesized when it is played (`music/band.js`, and the wider band in `music/world.js`); nothing is recorded. The instruments are physical models in spirit:
   breath for the winds, a dying string for the koto and the piano, a skin for the taiko.
 - **The kick is round and short**: it sits under the drums of the world (taiko first), it never leads.
 - **The bass is bowed and plucked, not a drone**: cellos and basses (and pizzicato) carry the bass line; a sine sub sits quietly
@@ -133,6 +152,12 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 - **Each section has a level** (`gain` in a score's section), so a climax stands above a verse without every note being rewritten.
 - A cue is checked by rendering it offline and measuring its loudness section by section: a climax is about twice the loudness of
   a verse, a jingle is about a verse's.
+- `tools/render_score.mjs` renders a score offline (one pass, its tail) and prints each section's level. References measured with it
+  (dB RMS): a jingle or a quiet opening about -31, a theme's body -24 to -29, the battle -17 to -23. Keep the energy below 120 Hz
+  under about 45% of the whole: the sitar's first render was at 55%, the jawari's uneven clipper leaving an offset and a rumble
+  under every pluck (a high-pass after the buzz took it out).
+- What plays where is one short list, highest first (`music/choose.js`): the title, a fight, a dive (Shallows, Deep), the skiff, the
+  dunes, the workshop. A dive waits a moment before taking over and before letting go.
 
 ## 6. Next
 
@@ -143,3 +168,6 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 2. The Workshop (home) and the Battle: the two cues heard most.
 3. The System's skill and achievement jingles, made from its chime and the Answer.
 4. The arranger: jumps at the next bar, and layers.
+5. (The fusion round) Hear the four suits' themes, the shanty (on the skiff) and the dives (swim under; deeper than about 4.5 m, or in the
+   Well, is the Deep). Then: the suits' motifs into the jingles and the folk's themes; the Crucibelle's four voices
+   (docs/HANDOFFS.md); the six tool sounds left as placeholders.

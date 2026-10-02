@@ -22,6 +22,8 @@
 //
 //   const B = new Band(ctx, { dry, pump, verb, echo })      B.koto(t, dur, midi, vel)  ...  (dur in seconds)
 // ---------------------------------------------------------------------------------------
+import { WorldBand } from './world.js';
+
 export const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 export class Band {
@@ -418,3 +420,6 @@ export class Band {
     for (const r of [1, 1.58, 2.2]) this.osc('triangle', 560 * r, t, t + 0.4, g);
   }
 }
+
+// the wider band (music/world.js): the sitar, the steel pan, the concertina and the rest, played like the band's own
+for (const key of Object.getOwnPropertyNames(WorldBand.prototype)) if (key !== 'constructor') Band.prototype[key] = WorldBand.prototype[key];

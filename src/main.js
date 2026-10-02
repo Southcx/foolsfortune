@@ -65,10 +65,8 @@ import { PneukaUI } from './pneuka/ui.js';
 import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './system/voice.js';
 import { MusicPlayer } from './music/player.js';
-import { DUNES } from './music/dunes.js';
 import { LACHRYMA } from './music/lachryma.js';
-import { BATTLE } from './music/battle.js';
-import { WORKSHOP } from './music/workshop.js';
+import { chooseMusic } from './music/choose.js';
 import { GameLog } from './gamelog.js';
 import { Stats } from './stats.js';
 import { Tracking } from './tracking.js';
@@ -708,11 +706,9 @@ async function main() {
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
     game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
     if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: mind/macros.js)
-    // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
-    // the music: the main theme on the title (and the pause); the battle while something is after her; the Dunes' theme in the
-    // dunes, the work song in the workshop; a sound-test pick over any of them
-    const fighting = !overlayUp() && !!game.jellies?.hunting(24);
-    game.music.follow(overlayUp() ? LACHRYMA : game.chests?.rave?.active || game.god?.active ? null : fighting ? BATTLE : game.dunes?.active ? DUNES : game.zones?.current === 'workshop' ? WORKSHOP : null);
+    // the music: what the place calls for (the title, a fight, a dive, the skiff, the dunes, the workshop: music/choose.js); a
+    // sound-test pick plays over any of it
+    game.music.follow(chooseMusic(game, { overlay: overlayUp() }));
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);

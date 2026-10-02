@@ -11,6 +11,12 @@ import { FOOLS_STEP } from './foolsstep.js';
 import { DUNES } from './dunes.js';
 import { FANFARE, FOUND, REST } from './jingles.js';
 import { SUITS } from './suits.js';
+import { PETRA } from './petra.js';
+import { WANDA } from './wanda.js';
+import { ESPADA } from './espada.js';
+import { CALISSA } from './calissa.js';
+import { SHANTY } from './shanty.js';
+import { SHALLOWS, DEEP } from './dive.js';
 
 export const TRACKS = [
   { id: 'lachryma', score: LACHRYMA, title: 'Lachryma', where: 'the main theme · the title', notes: 'E flat minor pentatonic: the five black keys, black like the Lachryma. Space-fantasy jazz, 100 bpm swung: minor ninths and a B major seven with a raised eleventh, a Rhodes and an upright, brushes and the ride, the Five on the vibraphone, a soprano sax and a choir; six sections, and the Leap at the end, E flat to E flat.' },
@@ -22,6 +28,13 @@ export const TRACKS = [
   { id: 'rest', score: REST, title: 'A Place to Rest', where: 'a jingle · a rest, a save', notes: 'The Five slowly on the piano in G major, the flute answering.' },
   { id: 'dunes', score: DUNES, title: 'Mirage of the Still Water', where: 'the Dunes', notes: 'D# minor pentatonic blues, 84 bpm swung. Vibes and a ney over Rhodes, brushes and a darbuka: a lounge at the oasis.' },
   { id: 'suits', score: SUITS, title: 'Four Suits and a Fool', where: 'for the day the makers became five', notes: 'E minor, 100 bpm, five sections of five bars over Em C G D B7. A piano alone plays the Five for the Fool; then each suit comes in on its own instrument, in the order they woke: Petra (pentacles) a taiko and a pizzicato bass walking the Five, Wanda (wands) the shakuhachi climbing the Answer, Espada (swords) the koto running down the Five after each call, Calissa (cups) the celesta pouring over the strings. The four play the Fool\'s tune together and turn home to E major.' },
+  { id: 'shanty', score: SHANTY, title: 'Haul Away the Fortune', where: 'the Solar Skiff', notes: 'A shanty in 6/8, E Dorian: a concertina sings the call, the crew answers with the Five falling and the Answer rising, a grunt on every heave; bodhrán and stomping feet; a fiddle takes a jig round, and the last chorus has the harmonica on the tune and the fiddle a third above.' },
+  { id: 'shallows', score: SHALLOWS, title: 'The Shallows', where: 'under the water, near the light', notes: 'E Lydian, 76 bpm: a Rhodes rolling in eighths, a pad, bubbles; the vibraphone sings Calissa\'s pour slowed to half speed (the water is the cups\'), then a flute, the steel pan glinting. After Dire, Dire Docks.' },
+  { id: 'deep', score: DEEP, title: 'The Deep', where: 'far under the water, and in the Well', notes: 'The In scale at 54 bpm: a tanpura drone, whales calling across it, a sonar\'s bell, a choir far off singing the Tear, a slow heartbeat, a phased chord that swells and goes.' },
+  { id: 'petra', score: PETRA, title: 'Stone and Coin', where: "Petra's theme · pentacles, earth", notes: 'Desert blues-rock in E at 92: the riff (E E G E A, the A bent toward the blue note) on an electric guitar over a stomp and a shaker of coins; twelve bars answered by the harmonica, then by the guitar itself; a stop-time bridge where the guitar sings the Five alone.' },
+  { id: 'wanda', score: WANDA, title: 'Kindling', where: "Wanda's theme · wands, fire", notes: 'Space jazz in 5/4, G Lydian: the spark (up a fifth, the Lydian sigh, a leap: G D C# D A) on the saxophone over a Rhodes vamp in three and two, a Moog bass, a phased guitar and the ride; the guitar takes the spark at half speed in the burn, and the head comes back in fourths. After Take Five.' },
+  { id: 'espada', score: ESPADA, title: 'The Edge of the Word', where: "Espada's theme · swords, the word", notes: 'A raga on Bhairav (E F G# A B C D#) with a tanpura drone: the alap, the jor, the gat over teental where the sitar draws the motif (E F G# B, the cut from C to B), the fiddle answering an octave up, and a jhala that ends with a tihai, the motif three times landing on the one. After Shakti.' },
+  { id: 'calissa', score: CALISSA, title: 'Overflowing', where: "Calissa's theme · cups, water", notes: 'Calypso in E at 116: the pour (B G# E, C# E: a major arpeggio tumbling in three, three and two, and a hop back up) on the steel pan, marimba chucking the off-beats, the tresillo on the upright, bongos, shaker and timbale; the bridge climbs the Answer and the horns stab the last verse.' },
   { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
 ];
 export const TRACK = Object.fromEntries(TRACKS.map((t) => [t.id, t]));
