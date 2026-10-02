@@ -39,12 +39,49 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40)
+1. **The crystals, tuned by ear** (PLAN.md f, the heart of the round). Each formation gets a **key** (a chromatic root, MIDI) and a
+   **sweet spot** on its surface. I will call, from `src/lachryma/crystals.js`:
+   - `sfx.crystalRef(midi)`: the tuning fork rung against it, the reference tone (the sweet spot's own note), rings a few seconds.
+   - `sfx.crystalStrike(midi, beat, { dense, last })`: a pick strike. `midi` is the note it sounds (above the spot is sharp, below is
+     flat, in steps of the formation's key: `midi` may be fractional only if you want glide); `beat` is the beating in Hz (0 = pure,
+     up to ~8 = a fast wobble) that tells how far round the formation she is from the spot; `dense` (a stony formation, many strikes)
+     or not (fragile, glassy, few); `last` when it is the formation's final strike before it breaks.
+   - `sfx.crystalSweet(midi)`: the spot found, a big consonant bloom (the yield is many times over).
+   Placeholders of mine will play `chime`/`tone` until yours land; tell me if you want the arguments shaped differently.
+2. **The survey ping** moves from N to the Dreamvane (an ability of the tool, with its own motion): the old `sfx.survey*` sounds are
+   kept; a new swing-and-sound for it (a struck fork thrown into the ground, the Mind's ring going out) is welcome.
+3. **The vessel's damage**: a crack when a blow lands (by region: the mask, the body, a limb) and a slow mend as it heals. I will call
+   `sfx.vesselCrack(k, region)` and `sfx.vesselMend(region)`.
+4. Your note on the title loop: I am unlocking audio on the first key, click or touch anywhere on the title this round.
+
 (Round 38's tasks, the six placeholder sounds and the later notes (the kiln's timing, `shopSell`, the haggle's stings and the
 counter clink, the film winding on `film.load`) are done: notes deleted. The Crucibelle's voices stay open: the wider band in
 `src/music/world.js` has a harp, a sitar, a steel pan and more if you want them for its instruments. Leaning the workshop's music in
 at the kiln (`kiln.open`, `kiln.close`) is for a later round.)
 
 ## Calissa (Art)
+
+**2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40). Merge the latest default branch
+first: R38 and my resolution of `character.js` are in it.
+1. **The HUD ring and the ability charges step out of sight outside combat**, and come back for it. I am adding `game.combat`
+   (`engaged` true/false, `heat` 0..1 easing down after the last blow or the last hunter's notice); read it in `vfx/hudring.js` and the
+   bead charges. The owner likes the ring as the place for status: think of what else it could carry (the vessel's damage, a held
+   breath, a status like slow or sleep) and propose it.
+2. **The Dreamvane's own animation suite** (the owner: "the idle is broken, the left arm should be on the upper portion of the haft"):
+   idle with the left hand high on the haft, the swing and the pick strike, the fork throw, and a motion for the **survey ping**, which
+   becomes a Dreamvane ability this round (I wire the ability; its motion is yours: tell me the clip name). Its hook and fork become
+   2.5 times bigger (I am scaling `src/dreamvane/model.js`; pose the hands to the new size).
+3. **The Crucibelle's playing**: the body and hands making each note, and more visual feedback that she is jamming (the owner loved the
+   effect the Fool's Fortune leitmotif made). I am fixing the notes that zip in from off-screen.
+4. **The crystal formations' art pass**: their base colour the sand's, a Lachryma outline and sheen to show they are active, much more
+   varied and dynamic shapes (one InstancedMesh today in `src/lachryma/crystals.js`: variants are fine), and **particles on a strike
+   that back up the tone-seeking** (I will emit `crystal.strike` with `{ pos, near (0..1, how close to the sweet spot), pitchOff, beat,
+   sweet }`).
+5. **Caster shell models**, numbered Type-00, Type-01... (the five shells now; `src/shells.js`'s list). Placeholders of mine come first.
+6. **The keys on the Lockheart's charm**, strung either side of it, and the **damage cracks** on the vessel (I build the regions and the
+   healing; the crack's look is yours to refine).
+7. The compass ring moves into the Dreamvane's kit (shown while it is worn); `vfx/wirecompass.js` stays yours, I will only gate it.
 
 **2026-10-02, from Petra: your branch is merged (with R38), two things from it**
 - The armour and mask are the maker's paintings now, and the vessel's glazes are laid on the same materials. I kept your look as
@@ -109,6 +146,14 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-02, Round 39 tasks, from Petra**
+1. **The owner answered your twelve questions**: they are in `docs/PLAN.md` ("The owner's answers"), in the owner's words as near as
+   I could keep them. Fold them into `docs/LORE.md`. For 12 (Pip's name, Saggar's old master) the owner says: go with your gut.
+2. **The help pages**: I am building navigable help in the pause menu (the core movement, then one page per tool). The words are data
+   in `src/help/pages.js`: yours to rewrite once they are in.
+3. **The folk by tier**: the lower folk's reverent vagueness ("the Prince", "the Immaculate One"), the court's worried whispers. Their
+   lines (`src/npc/talks.js`) and the names of the tiers.
 
 **2026-10-02 (later still), from Petra: the vessel is in (R38d), words for you**
 - The glaze names and blurbs (`src/vessel/glazes.js`), the regions' names, and the kiln window's few lines (`src/vessel/kilnui.js`).

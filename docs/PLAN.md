@@ -1,108 +1,82 @@
-# The plan: Round 38, "What We Want, Buy and Wear"
+# The plan: Round 39, "Tune It by Ear"
 
-Approved by the owner on 2026-10-02. Kept by Petra. Each division's tasks are in `docs/HANDOFFS.md`. This page holds the decisions and
-the reasons, so a task can be checked against them.
+The owner's notes on v40 (2026-10-02), turned into one round. Kept by Petra. Each division's tasks are in `docs/HANDOFFS.md`; this page
+holds the decisions and the reasons, so a task can be checked against them. Round 38's plan is in `docs/plans/R38.md`. The slips,
+fittings and Saggar's and Pip's shops planned for R39 move to R40.
 
-## The decisions (the owner's)
+## The owner's answers (the lore; Espada folds them into `docs/LORE.md`)
 
-1. **The Courier is a vessel**, the magnum opus of **Kaolin Anagami**, who made this place (an *Island of Ego*, one island of the
-   larger Fool's Fortune world). **Players are entities that inhabit the vessels** Kaolin Anagami prepared for them. Customization is
-   the decoration of the vessel: it is clay, glazed and fired.
-2. **Lachryma is everything**: the stuff of the world, of feeling and of power (Tensura's magicules, Log Horizon's emotions). **One
-   currency**: cubes, which are Lachryma made solid. Liquid Lachryma is energy. No premium currency.
-3. **Raku haggles**, and is a greedy little miser about it.
-4. **Start, then a menu, then the world.** The game divides into **STORY** and **DEBUG** (the sandbox as it is now: lab mode, the
-   index, every tool). Story is a stub this round; its shape comes from the owner's talks with Espada.
-5. **Rebuilding "the town that was"** at the Weir is a good test of economic treadmills (a later round). The **long-term sink** is an
-   **Internal Shrine Garden**: a pocket dimension *within* the Courier vessel, invested in over the whole game. (The god hand's
-   Pneuka jar is the vessel seen from outside: the way in is likely there.)
-6. **Progress keeps resetting every build.** A personal save and a debug profile come when the systems are all in place. For testing
-   the economy: `/grant` in DEBUG.
-7. Later (not this round): travel between islands, Kingdom Hearts 2's gummi ship made voxel, with Skies of Arcadia's exploration.
+1. **The world is a snowglobe.** The **Emocean** is the atmosphere of pure Lachryma outside it; the force of an owner's Will (Kaolin's,
+   and other Islands of Ego's owners') is what holds an island apart from it. **The Dunes surround the rocky outcrop of Kaolin's main
+   island.** **Anagami Island** (this Island of Ego) is laid out on a **5 x 5 chunk grid**, Kaolin's plateau (the concept art) in the
+   centre cell. (Petra: the world layout for R40, with the town that was.)
+2. **The folk know what they are.**
+3. **Many Couriers.** Every player is a Courier. NPCs can become Couriers, but it is very risky: no one survives long in the open
+   Emocean's unfiltered Lachryma without becoming a **Contractor** with a **Tulpa**.
+4. **What the folk call him.** The lower folk use vague, reverent honorifics ("the Prince", "the Immaculate One"): they are the feeling
+   of looking at an artist so much better than you that it hardly seems worth trying, and real wonder at it ("so good you throw up a
+   stank face"). Up the tiers, the noble echelon and the **court** still respect him, but speak of him by his nature: his inventions
+   and his tomfoolery. The court are the whispers of self-doubt that pull you down if you let them in too deep, but they are said out of
+   concern and self-protection.
+5. (Which part of Kaolin each folk is: answered by 4.)
+6. **Cogitohazard** is the umbrella word for environmental Lachryma dangers and maliciously aligned Figments. **Figments** are entities
+   hewn from an Island of Ego's own psyche; **Egregores** are spawned from the Emocean. Neither is good or bad by nature.
+7. **Excess Lachryma**, to anyone not a Courier, drives them progressively mad and transfigures them into a figment monster if the
+   exposure is too high: mercury poisoning meets the potion that makes Mr Hyde.
+8. **The System** is the game's code made a voice: all of us making the game, keeping things running, for the sake of a fun experience.
+   Call it a god if you like.
+9. **The Prince is he, femboy-coded** (Lloyd de Saloum of *Dainana Ouji* meets Tet of *No Game No Life*). The fragments are unisex by
+   construction and identify any way they like.
+10. **Breaking pots**: a pseudo-hivemind. Losing fresh-baked clapperjars doesn't hurt him; off too many of the higher court and he gets
+    (more than) a little annoyed ("Hey, that was my favourite cup!").
+11. **The title is not a place.** It is a metaphorical marker of where the story has got to, and it should change a little as things
+    happen. (A note for later: it waits on the story and on graphics work.)
+12. **Pip's name and Saggar's old master**: Espada goes with the gut.
 
-## The finding
+## The round
 
-Cubes come from everywhere (jellies, the zandatsu, crystals, chests, duplicates, the Lockheart, and condensing cards: up to 1,200 for
-one SS card) and go almost nowhere: the Tithe is 25 a pull and pays back about 22 on average before curios and duplicates. Money with
-nothing to want. Shops, customization and the economy are one project: things worth wanting, and cubes the way to them.
+### Petra (Main)
+- **a. Keys.** R (reset) and H (to the hub) move into the Tab panel's DEBUG section (with T's room reset), freeing R and H.
+- **b. The pause menu.** The Esc card's controls rewritten to what is true now, and **navigable help pages**: one for the core
+  movement and one per tool (what it is, its keys, what it does), so a change can be looked up. The pages are data
+  (`src/help/`), Espada's to word.
+- **c. The Lockheart.** It is one thing: the Lockheart is the coffin, so the separate coffin slot goes (the coffins become Lockheart
+  variants you wear, one at the neck). The keyring has **four** slots; **keys stack to 99** (the Pneuka Box learns stacks). The keys
+  hang on the charm, either side of it.
+- **d. The Psygun.** Psyguns as a kind: each has a number of **chambers** and a **capacity per caster-shell type**. Caster shells are
+  numbered (**Type-00**, Type-01...) and are things with models (placeholders from me, real ones from Calissa).
+- **e. The Dreamvane takes the Mind's instruments.** The survey ping (Mind Mapping's N) becomes a Dreamvane ability with its own
+  motion, and the compass ring is part of its kit (shown while it is worn). Its hook and tuning fork are 2.5 times bigger.
+- **f. The crystals, tuned by ear** (prior art: Skyward Sword's dowsing, the Zelda ocarina's relative pitch, Morrowind's lockpicking
+  by feel, *Rhythm Heaven*'s ear training). Each formation has a **key** and a **sweet spot** on its surface. Ring it with the fork
+  for the reference tone; each strike of the pick sounds a note: **height sets the pitch** (above the spot is sharp, below is flat, in
+  steps of the key), and **the way round sets the beating** (a wobble that slows and goes pure as you face the spot). Find it and the
+  yield is many times over. **Dense** formations take many strikes for a modest yield; **fragile** ones take only a few and pay out
+  wildly. Every strike says how close it was in sound and in particles; nothing is written.
+- **g. The god hand** turns so its wrist points back along the line to the Pneuka Jar.
+- **h. The Crucibelle's notes** zip in from the same place off-screen: a spawn-at-origin bug, as the clapperjars had.
+- **i. The vessel takes damage where it is struck.** Hit regions on the Courier (the mask, the torso, each arm and leg: a collider on
+  each), and **cracks where the blow landed that heal fully in time**. (The gold kintsugi stays: it is what she has earned, and it is
+  kept distinct from damage.)
+- **j. "In combat"** as one signal (`game.combat`): what is after her, what she has struck lately. The HUD ring reads it.
 
-## The four pieces
+### Calissa (Art)
+The HUD ring and the ability charges stepping out of sight outside combat (and the ring growing into the place that shows status); the
+Dreamvane's own animation suite (the left hand on the upper haft at rest, the swing, the fork, the survey ping); the Crucibelle's
+playing (the body and hands making the notes, more visual feedback that she is jamming); the crystal formations' art pass (their albedo
+the sand's, a Lachryma outline and sheen to show they are alive, varied and dynamic shapes, particles on a strike that say how close it
+was); caster shell models; the damage cracks' look; how a glaze sits on a painting.
 
-### 1. The title screen: THE FOOL'S PRECIPICE
+### Wanda (Audio)
+The crystals' sound (each formation's key, the fork's reference tone, a strike's pitch and beating, the sweet spot's reward, a
+fragile formation's last strikes); the survey ping's new sound on the Dreamvane; a crack and a mend for the vessel's damage.
 
-From the owner's references (`docs/ref/title_fool_card.png`, `docs/ref/title_checker_vortex.webp`): not the workshop, but the feeling
-of being about to set out.
-
-- **The scene** (a live render on the game's own engine, at 480 lines like everything else): the Courier, in the player's own glaze,
-  sits on the lip of a crooked hill (the Fool's cliff), legs over the edge, a clapperjar beside her like the Fool's dog. Beyond and
-  below, a **checkerboard sea** bends up into a slow spiral (the vortex). **Giant game pieces** stand in it at every distance: pawns,
-  a rook, a star-crowned king, a die. Tarot cards fall like leaves; a spiral moon with a face hangs above; Lachryma motes rise.
-- **Better than a still: the board plays itself.** The giant pieces make moves **on the beat** of the title music (the beat grid the
-  Crucibelle already uses: `MusicPlayer.grid()`): a pawn steps a square every bar, a die tumbles on the downbeat, the king turns at the
-  phrase. The game is already being played around her.
-- **The logo**: clay letters that are fired and glazed as the cue builds.
-- **Press start**: **the Fool's Step**. She stands, the jar yaps, she steps off the edge, and the camera follows her down toward the
-  board as the menu comes in (STORY, DEBUG, SETTINGS, SOUND TEST). A choice, and the spiral takes the screen into the world, with no
-  cut, because everything is already loaded.
-- **Comfort** (CLAUDE.md): a checkerboard at 480 lines shimmers if it is small and moving. Large squares, mipmapped, contrast eased off
-  with distance, motion slow and steady; motion from things really moving.
-- Prior art: the tarot's Fool (the step off the cliff, the dog), Kingdom Hearts' titles (a world drifting behind the menu), Wind
-  Waker's living title, Persona 5's menus on the beat, Alice in Wonderland's chessboard, Kirby's and Mario's board worlds.
-
-### 2. Courier customization: the vessel, decorated as a pot is
-
-| | What | How it is got |
-| --- | --- | --- |
-| **Glaze** | colour, per region (body, mask, hair, trim): a palette swap | bought, photographed (the Veritome learns a colour from a photo), earned |
-| **Slip** | a pattern on the mask, painted with the Soul Brush's own canvas | the player's own design (next round) |
-| **Kintsugi** | gold seams that spread as achievements are earned | earned only, never bought |
-| **Fittings** | parts: mask shapes, a cap, a scarf | bought or found (next round; needs art) |
-
-At the kiln: F to sit, an orbiting camera, the "firing" applies it. Prior art: FFXIV's glamour (looks apart from power), Animal
-Crossing's Able Sisters, Splatoon's gear, Jet Set Radio's graffiti editor, Dark Cloud 2's inventions from photographs.
-
-### 3. Shops: four counters, four tempers, one system
-
-- **Raku** (the treasury): Possibilikeys, Tithe pulls, coffins; buys curios. **Haggles**: a short minigame of reading a greedy miser's
-  mood (he warms to flattery and to cubes on the counter, sulks at lowballs, and never sells at a loss).
-- **Grog** (the pier): lures, film; buys fish.
-- **Saggar** (the kiln): glazes and firing; buys shards. (Next round with slips and fittings.)
-- **Pip**: seconds and oddments, stock that turns over daily. (Next round.)
-- Prices move with stock (OSRS: buy a shop out and its price climbs; it restocks over time). Selling to the folk replaces condensing
-  cards as the way to turn things into cubes.
-- Shops are in the world: the goods on shelves, F at the counter opens the window.
-- Prior art: OSRS's shops, Recettear and Moonlighter (prices and haggling), Wind Waker's Beedle, Animal Crossing's Nook's Cranny.
-
-### 4. The economy: drawn, measured, tuned
-
-- `docs/ECONOMY.md`: every source, drain, converter and loop (Dormans and Adams, *Machinations*), and targets in minutes of play
-  (a glaze about fifteen minutes; a fitting about an hour).
-- Measured: cubes an hour by source in the F3 panel (the ledger already counts every cube), and `tools/economy.mjs` simulating four
-  players (a fighter, an angler, a collector, a gambler).
-- Rebalanced: condense values down, the Tithe a little below even (the pity is the bargain), duplicates and the Lockheart's cubes to
-  match.
-
-## The shared parts (built once)
-
-One catalogue (every item has a price and a sell value; glazes, slips and fittings are items); one counter (shops and the kiln share an
-F point and the window kit); the ledger as the telemetry (and kintsugi reads it, as the achievements do); the title reuses the vessel's
-glaze and the music's beat grid.
-
-## Who does what (all at once)
-
-- **Petra**: the title scene system (the board that plays itself, the Fool's Step, the menu, STORY / DEBUG); the economy map,
-  measurement and rebalance; the shop system with Raku (haggling) and Grog; glazes, kintsugi and the kiln station; reviews, merges,
-  publishes.
-- **Calissa**: the Courier made ready to decorate (colour regions, a mask area for slip), alongside the texture and palette fixes from
-  the art review; the title's art (the hill and tree, the giant pieces, the board, the moon, the logo, the Courier's sitting and
-  standing poses); counters and shelves; glaze swatches.
-- **Wanda**: the title cue (an intro, a loop the board can move to, and the Fool's Step); shop sounds (cubes on the counter, the kiln
-  firing); Raku's haggling moods in clay-and-bell; the six placeholder sounds handed over.
-- **Espada**: Kaolin Anagami and the vessels into the bible (with the owner); shopkeeper lines (Raku the miser most of all); glaze
-  names and examine lines; the title's tagline and the menu's words.
+### Espada (Lore)
+The twelve answers into `docs/LORE.md`; the help pages' words; the folk's lines by tier (the lower folk's reverent vagueness, the
+court's worried whispers); Pip's name and Saggar's master.
 
 ## Next rounds
 
-- **R39**: slips (painted with the Brush), fittings, Saggar's and Pip's shops, selling to all four folk, STORY's first steps.
-- **R40**: the town that was (the treadmill test); the Internal Shrine Garden begins.
-- Later: the islands, and the ship between them.
+- **R40**: Anagami Island laid out on its 5 x 5 chunks (Kaolin's plateau in the middle, the Dunes around), the town that was (the
+  treadmill test), slips, fittings, Saggar's and Pip's shops, selling to all four folk, STORY's first steps.
+- Later: the Internal Shrine Garden; the title changing with the story; the islands and the ship between them.
