@@ -31,6 +31,7 @@ import { TIERS, CURIO_BY_ID, TITHE, hex } from './treasure.js';
 const fx = (v, d = 2) => Number(v).toFixed(d);
 import { CARD as VCARD } from './veritome/cards.js';
 import { CREATURES } from './veritome/bestiary.js';
+import { FUNCTIONS } from './mind/functions.js';
 import { itemOf } from './pneuka/items.js';
 import { LURES } from './angling/lures.js';
 import { SUBJECTS } from './veritome/subjects.js';
@@ -362,13 +363,19 @@ export class Tracking {
       first('stun', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass.');
     });
     // reprogramming (veritome/reprogram.js): a stunned mind opened, and the line typed into it
-    const RAN = { halt: 'freezes where it stands', sleep: 'falls asleep', calm: 'grows calm', forget: 'forgets you', home: 'turns for home', soften: 'goes soft',
-      melt: 'melts into a puddle', kin: 'takes you for its own kind', fetch: 'goes to fetch you Lachryma', turn: 'turns on its own kind' };
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     on('reprogram.run', (e) => {
       L.inc('reprogram.run'); L.inc(`reprogram.macro.${e.macro}`); L.inc('reprogram.chars', e.chars); if (!e.misses) L.inc('reprogram.clean');
-      log.say('battle', `You rewrite the ${KIND(e.kind)}. It ${RAN[e.macro] || 'obeys'}.`, {});
+      for (const f of e.effects || []) L.inc(`reprogram.fn.${f}`);
+      L.hi('reprogram.q', Math.round((e.q || 0) * 100));
+      const did = (e.effects || []).filter((f) => !(e.refused || []).includes(f)).map((f) => FUNCTIONS[f]?.label.toLowerCase()).filter(Boolean);
+      log.say('battle', `You say ${e.macro.replace(/-/g, ' ')} into the ${KIND(e.kind)}'s mind. It ${did.length ? `takes it: ${did.join(', ')}` : 'hears it, and has no way to do it'}.`, {});
+      if ((e.refused || []).length) log.say('warn', `Its mind has nothing that answers to ${e.refused.map((f) => FUNCTIONS[f]?.word).join(', ')}.`, { key: 'rpref', throttle: 1 });
     });
+    on('reprogram.reject', (e) => { L.inc('reprogram.reject'); log.say('warn', `The ${KIND(e.kind)}'s mind throws ${e.macro.replace(/-/g, ' ')} off, and wakes. (A better-made macro takes better hold.)`, {}); });
+    // the Functions (mind/functions.js): learned by seeing them done
+    on('mind.learn', (e) => { L.inc('mind.learn'); log.say('ach', `You have learned the neuralese ${FUNCTIONS[e.fn]?.word}: ${FUNCTIONS[e.fn]?.does.toLowerCase().replace(/\.$/, '')} (the Codex: VERITOME, THE MIND).`, {}); });
+    on('mind.place', () => L.inc('mind.place'));
     on('reprogram.miss', () => L.inc('reprogram.miss'));
     on('reprogram.close', (e) => { if (e.why === 'time') { L.inc('reprogram.lost'); log.say('warn', `The ${KIND(e.kind)}'s mind snaps shut on you.`, {}); } });
     on('reprogram.wear', (e) => log.say('other', `What you wrote into the ${KIND(e.kind)} wears off.`, { key: 'rpw', throttle: 2 }));
@@ -382,6 +389,12 @@ export class Tracking {
     on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));
     on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)} in the Veritome.`, { key: 'istore', fmt: (n) => `You store ${n} things in the Veritome.` }); });
     on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of the Veritome.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of the Veritome.` }); });
+    on('lure.untie', (e) => { L.inc('lure.untie'); log.say('info', `You untie the ${ITEM(e.lure)} and put it in your Pneuka Box.`, { key: 'luntie', throttle: 0.2 }); });
+    // the tools: worn in their places, or carried (tools/belt.js)
+    const TOOLNAME = (t) => ({ psygun: 'Psygun', sondelass: 'Sondelass', soulbrush: 'Soul Brush', veritome: 'Veritome', dreamvane: 'Dreamvane', crucibelle: 'Crucibelle', lockheart: 'Lockheart' }[t] || t);
+    const WHERE = { psygun: 'across your back', sondelass: 'across your back', dreamvane: 'across your back', soulbrush: 'at your hip', veritome: 'at your hip', crucibelle: 'at your hip', lockheart: 'at your neck' };
+    on('tool.wear', (e) => { L.inc('tool.wear'); L.inc(`tool.wear.${e.tool}`); log.say('info', `You wear the ${TOOLNAME(e.tool)} ${WHERE[e.tool] || ''}${e.off ? `, and put the ${TOOLNAME(e.off)} in your Pneuka Box` : ''}.`, { key: 'twear', throttle: 0.2 }); });
+    on('tool.off', (e) => { L.inc('tool.off'); log.say('info', `You put the ${TOOLNAME(e.tool)} in your Pneuka Box.`, { key: 'toff', throttle: 0.2 }); });
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });
     on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 

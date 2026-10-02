@@ -409,8 +409,10 @@ export function buildAchievements(game) {
   C('fl2', 'battle', 'Reprogramming', 1, 'count', 'Open Mind', 'Open a stunned creature\'s mind with the middle button.', 'reprogram.open', 1);
   C('fl3', 'battle', 'Reprogramming', 2, 'count', 'Root Access', 'Rewrite 15 minds.', 'reprogram.run', 15);
   C('fl4', 'battle', 'Reprogramming', 3, 'mechanic', 'Clean Compile', 'Type a macro\'s line without a single wrong key.', 'reprogram.clean', 1);
-  F('fl5', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Run eight different macros.', (L) => L.under('reprogram.macro.').filter(([, v]) => v > 0).length, 8);
-  C('fl6', 'battle', 'Reprogramming', 2, 'mechanic', 'Good Jelly', 'Make a slip jelly take you for its own kind.', 'reprogram.macro.kin', 1);
+  F('fl5', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Say eight different Functions into minds.', (L) => L.under('reprogram.fn.').filter(([, v]) => v > 0).length, 8);
+  C('fl6', 'battle', 'Reprogramming', 2, 'mechanic', 'Good Jelly', 'Make a slip jelly take you for its own kind.', 'reprogram.fn.ami', 1);
+  C('fl8', 'battle', 'Reprogramming', 2, 'collect', 'Fluent', 'Learn ten Functions of neuralese.', 'mind.learn', 10);
+  C('fl9', 'battle', 'Reprogramming', 4, 'perfection', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
   C('fl7', 'battle', 'Reprogramming', 3, 'mechanic', 'Dissolution', 'Take a stunned creature apart with the zandatsu.', 'zandatsu.creature', 1);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);

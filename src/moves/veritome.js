@@ -105,7 +105,7 @@ export class Veritome extends Tech {
     if (!this.grip && ch) this.computeSocket(ch);
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
-      if (inp.wasPressed('KeyJ') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('veritome')); }
+      if (inp.wasPressed('KeyJ') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('veritome') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('veritome')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; }
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }

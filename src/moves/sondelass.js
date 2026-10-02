@@ -11,6 +11,7 @@ import { Angler } from '../angling/angler.js';
 import { measureGrip, handFromTool } from '../tools/grip.js';
 import { drawHands } from '../tools/draw.js';
 import { fpToolMatrix } from '../tools/viewmodel.js';
+import { buildLure } from '../angling/luremodels.js';
 
 // ---------------------------------------------------------------------------------------
 // THE SONDELASS: a telescoping instrument that is a fishing rod, a cutlass and a grapple hook, worn on the Courier's back
@@ -131,7 +132,7 @@ export class Sondelass extends Tech {
     const wpn = g.weapon;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item; // (both hands are on what is being carried, too)
-      if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('sondelass')); }
+      if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('sondelass') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('sondelass')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; } // (both hands taken: it goes away, and comes back)
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
@@ -212,7 +213,10 @@ export class Sondelass extends Tech {
     if (cl) C.blend(layer, cl.pose, cl.w);
     const cast = this.angler?.castPose(C, this.P2);
     if (cast) C.blend(layer, cast.pose, cast.w);
-    C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
+    // (the grapnel is a one-handed thing: in hook form the stance is the right arm's, and the left hangs with her walk, unless it is on the
+    // line; the rod and the cutlass take both)
+    if (!this.MASK_HOOK) { this.MASK_HOOK = Float32Array.from(ch.MASK_UPPER); C.bones.forEach((b, i) => { if (/L$/.test(b) && /arm|hand|f_|thumb/.test(b)) this.MASK_HOOK[i] = 0; }); }
+    C.blend(base, layer, layerW, this.form === 'hook' && !this.hookshot.att ? this.MASK_HOOK : ch.MASK_UPPER, 0);
   }
 
   // ---------------------------------------------------------------- hands: the draw, the hook's aim, the reel, and where the tool ends up
@@ -255,6 +259,8 @@ export class Sondelass extends Tech {
         ch.reachHand('L', hp, hq, this.leftW, 0, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       }
     }
+    // the rod out and nothing cast: the free hand holds what is tied on (luremodels.js), the way an angler holds the lure before a cast
+    this.heldLurePose(ch, phase === 'held' && this.form === 'rod' && !this.angler?.lure?.active && this.leftW < 0.3 && !this.P.fp);
     // in first person: in the view, swung along the stroke's arc (tools/viewmodel.js)
     if (this.P.fp && drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, drawT / 0.6), ...(this.form === 'cutlass' ? this.cutlass.fpArc() : this.angler?.casting ? { arc: 'raise', u: 0.6 } : null) }, M);
     // place the tool
@@ -267,6 +273,23 @@ export class Sondelass extends Tech {
     model.group.updateMatrixWorld(true);
     ch.root.updateMatrixWorld(true);
     this.cutlass.afterHands(this.dt || 1 / 60); // (the blade is where it is for this frame: its ribbon and the afterimages)
+  }
+
+  /** The lure on the line, in her left hand (rod out, nothing cast): rebuilt when another is tied on. */
+  heldLurePose(ch, on) {
+    const id = this.game.pneuka?.lure ?? 'lure.bob';
+    const want = on && id && !id.startsWith('curio.') ? id : null;
+    if (want !== this.heldLureId) {
+      if (this.heldLure) { this.heldLure.group.removeFromParent(); this.heldLure.dispose(); this.heldLure = null; }
+      this.heldLureId = want;
+      if (want) { this.heldLure = buildLure(want); this.game.scene.add(this.heldLure.group); }
+    }
+    if (!this.heldLure) return;
+    const B = ch.bones, g = this.heldLure.group;
+    B.handL.updateWorldMatrix(true, false);
+    g.position.set(0.02, 0.09, 0.03).applyMatrix4(B.handL.matrixWorld); // (between the fingers and the thumb)
+    B.handL.getWorldQuaternion(g.quaternion);
+    g.scale.setScalar(1.6); // (a little larger than life: it has to read at a third-person distance)
   }
 
   // ---------------------------------------------------------------- the world's side of it

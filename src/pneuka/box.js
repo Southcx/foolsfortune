@@ -5,8 +5,9 @@
 //
 //  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home). A thing that will not fit falls at
 //    her feet (ground.js) and is picked up again with F.
-//  - EQUIPMENT: the LURE on the Sondelass' line (one of the six made lures she always has, or a curio from the box: tying a curio on
-//    takes it out of its slot, and untying puts it back), and the tool belt, which is shown here but changed by drawing tools.
+//  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
+//    untying puts it back), and the TOOLS: worn in their places on her body (tools/belt.js), or carried here as things. A tool in the box
+//    is WORN from here (into its place: what was there comes off into the box), and a worn one TAKEN OFF into it.
 //  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
 //    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
 //
@@ -15,7 +16,8 @@
 // things in their places beside the inventory), and Greed Island's Book for what the bank is.
 //
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
-//   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.tieMade(id) / box.untie()
+//   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
+//   box.wear(slot) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
 import { itemOf } from './items.js';
@@ -30,7 +32,8 @@ export class PneukaBox {
   constructor(game) {
     this.game = game;
     this.slots = new Array(SLOTS).fill(null); // { id }
-    this.lure = 'bob';
+    this.lure = 'lure.bob';
+    this.fresh = false;
     this.load();
   }
   get book() { return this.game.veritome?.book || null; }
@@ -104,46 +107,67 @@ export class PneukaBox {
     return true;
   }
 
-  // ---------------------------------------------------------------- the line
-  /** Tie a curio from the box onto the line (what was tied on goes back into its slot). */
+  // ---------------------------------------------------------------- the line (one lure on it, or none)
+  /** Tie a lure from the box onto the line (a made lure or a curio); what was tied on goes back into the box, into the slot it came from. */
   tieOn(slot) {
     const s = this.slots[slot];
     if (!s || !itemOf(s.id)?.lure) return false;
     const prev = this.lure;
-    this.slots[slot] = itemOf(prev) ? { id: prev } : null;
+    this.slots[slot] = prev && itemOf(prev) ? { id: prev } : null;
     this.lure = s.id;
     this.save();
-    this.emit('lure.tie', { lure: s.id, curio: true });
+    this.emit('lure.tie', { lure: s.id, curio: itemOf(s.id).kind === 'curio' });
     return true;
   }
-  /** Tie on one of the made lures (a curio on the line goes back into the box, if there is room). */
-  tieMade(id) {
-    if (!LURES.some((l) => l.id === id) || this.lure === id) return false;
-    if (itemOf(this.lure)) {
-      if (!this.free) { this.refuse('There is no room in your Pneuka Box for what is on the line.', 'boxfull'); return false; }
-      this.slots[this.slots.findIndex((s) => !s)] = { id: this.lure };
-    }
-    this.lure = id;
+  /** Untie the lure into the box (the line is bare until another is tied on). */
+  untie() {
+    if (!this.lure) return false;
+    if (!this.free) { this.refuse('There is no room in your Pneuka Box for what is on the line.', 'boxfull'); return false; }
+    this.slots[this.slots.findIndex((s) => !s)] = { id: this.lure };
+    const id = this.lure;
+    this.lure = null;
     this.save();
-    this.emit('lure.tie', { lure: id, curio: false });
+    this.emit('lure.untie', { lure: id });
     return true;
   }
-  untie() { return itemOf(this.lure) ? this.tieMade('bob') : false; }
-  /** Tie on whatever has this id (a made lure, or a curio in the box): what the angler's 9 / 0 call. */
-  tie(id) { if (LURES.some((l) => l.id === id)) return this.tieMade(id); const i = this.slots.findIndex((s) => s?.id === id); return i >= 0 ? this.tieOn(i) : false; }
+  /** Tie on whatever has this id, from the box: what the angler's 9 / 0 call. */
+  tie(id) { if (!id || id === this.lure) return false; const i = this.slots.findIndex((s) => s?.id === id); return i >= 0 ? this.tieOn(i) : false; }
+
+  // ---------------------------------------------------------------- the tools (worn on the belt, or carried here)
+  /** Put a tool from the box on: into its place on her body (tools/belt.js); whatever was in that place comes off into this slot. */
+  wear(slot) {
+    const s = this.slots[slot], it = s && itemOf(s.id), belt = this.game.belt;
+    if (!it || it.kind !== 'tool' || !belt) return false;
+    const off = belt.wear(it.tool);
+    if (off === false) { this.refuse(`There is no place to wear ${it.name.toLowerCase().replace('the ', 'the ')}.`, 'noplace'); return false; }
+    this.slots[slot] = off ? { id: `tool.${off}` } : null;
+    this.save();
+    return true;
+  }
+  /** Take a worn tool off into the box. */
+  takeOff(tool) {
+    const belt = this.game.belt;
+    if (!belt?.isWorn(tool)) return false;
+    if (!this.free) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
+    belt.takeOff(tool);
+    this.slots[this.slots.findIndex((s) => !s)] = { id: `tool.${tool}` };
+    this.save();
+    return true;
+  }
 
   refuse(text, key) { this.game.log?.say('warn', text, { key: `pk.${key}`, throttle: 2 }); sfx.fizzle?.(); }
 
   // ---------------------------------------------------------------- kept in the browser
   save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots, lure: this.lure })); } catch { /* unavailable: it still works this session */ }
+    try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots, lure: this.lure, seeded: this.seeded })); } catch { /* unavailable: it still works this session */ }
   }
   load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
       this.slots = Array.from({ length: SLOTS }, (_, i) => (s.slots?.[i]?.id && itemOf(s.slots[i].id) ? { id: s.slots[i].id } : null));
-      this.lure = s.lure || 'bob';
+      this.lure = s.lure === undefined ? 'lure.bob' : s.lure && itemOf(s.lure) ? s.lure : itemOf(`lure.${s.lure}`) ? `lure.${s.lure}` : null;
+      this.seeded = !!s.seeded;
     } catch { /* nothing kept */ }
   }
   /** Things the Book used to hold as things (gained curios, loose cards: before the box) come into the box, once. */
@@ -155,5 +179,14 @@ export class PneukaBox {
     for (const id of owed) if (itemOf(id)) this.add(id, 'migrate');
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
-  erase() { this.slots.fill(null); this.lure = 'bob'; this.save(); }
+  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.seeded = false; this.seed(); }
+  /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools she is not wearing. */
+  seed() {
+    if (this.seeded) return;
+    this.seeded = true;
+    for (const L of LURES) if (L.id !== this.lure && !this.count(L.id)) this.add(L.id, 'start');
+    const belt = this.game.belt;
+    if (belt) for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.count(`tool.${t.id}`)) this.add(`tool.${t.id}`, 'start');
+    this.save();
+  }
 }

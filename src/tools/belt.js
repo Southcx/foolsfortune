@@ -18,16 +18,72 @@
 // Prior art: the item belts of Zelda (one item per button, one in the hands, a draw and put-away animation that gates the next), and the
 // weapon wheels of Ratchet & Clank and Devil May Cry (a small fixed set of very different tools behind one shared contract).
 //
+// WORN or CARRIED: a tool is worn in a PLACE on her body (two across the back, one at each hip, one at the neck: PLACES) and drawn with
+// its key, or carried in the Pneuka Box as a thing (pneuka/items.js) and not to hand. Seven tools and five places: what she takes out is
+// a choice, Resident Evil's and Zelda's inventory made a matter of where on the body a thing can go (the box puts them on and off).
+//
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
+//   game.belt.isWorn(id)   game.belt.wear(id) / takeOff(id) (the box calls these)   game.belt.ready(id) (a key pressed: true, or says why not)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
 //   has become something else and her tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
 export const BELT_SIZE = 7;
+/** The places on her body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
+export const PLACES = { back: 2, hip: 2, neck: 1 };
+const KEY = 'foolsfortune.pneuka.belt'; // (progress: cleared with the box on a new build, progress.js)
 
 export class ToolBelt {
   constructor(game) {
     this.game = game;
     this.tools = [];
+    this.worn = null; // Set of tool ids, or null until the first load (then: the four she starts with)
+    try { const w = JSON.parse(localStorage.getItem(KEY) || 'null'); if (Array.isArray(w)) this.worn = new Set(w); } catch { /* nothing kept */ }
+  }
+  save() { try { localStorage.setItem(KEY, JSON.stringify([...this.worn])); } catch { /* this session only */ } }
+
+  /** Is this tool worn (and so drawn with its key), or in the box? */
+  isWorn(id) { return !this.worn || this.worn.has(id); }
+  /** The tools worn in a place. */
+  inPlace(place) { return this.tools.filter((t) => t.slot === place && this.isWorn(t.id)); }
+  /** Put a tool on: into a free place of its kind, or in place of the one there longest. Returns the id taken off to make room, null if
+   *  there was room, or false if it cannot be worn at all. */
+  wear(id) {
+    const t = this.get(id);
+    if (!t || !PLACES[t.slot]) return false;
+    if (this.isWorn(id)) return null;
+    const there = this.inPlace(t.slot);
+    let off = null;
+    if (there.length >= PLACES[t.slot]) { off = there[0].id; this.takeOff(off); }
+    this.worn.add(id); this.save();
+    this.game.events?.emit('tool.wear', { tool: id, off });
+    return off;
+  }
+  takeOff(id) {
+    const t = this.get(id);
+    if (!t || !this.worn.has(id)) return false;
+    if (t.drawT > 0 || t.wants) t.stow();
+    this.worn.delete(id); this.save();
+    if (t.model) t.model.visible = false;
+    this.game.events?.emit('tool.off', { tool: id });
+    return true;
+  }
+  /** A tool's key was pressed: may it come out? (worn: yes; in the box: no, and she says why) */
+  ready(id) {
+    if (this.isWorn(id)) return true;
+    const t = this.get(id);
+    this.game.log?.say('warn', `${(t?.name || 'That tool').replace(/^THE /, 'The ').replace(/\B[A-Z]+/g, (m) => m.toLowerCase())} is in your Pneuka Box (P).`, { key: `belt.${id}`, throttle: 2 });
+    return false;
+  }
+  /** Once a frame: what is not worn stays put away and out of sight (the Psygun's is part of her body: the character hides it). */
+  tick() {
+    if (!this.worn) { this.worn = new Set(this.tools.filter((t) => t.start !== false).map((t) => t.id)); this.save(); }
+    for (const t of this.tools) {
+      if (this.worn.has(t.id)) continue;
+      if (t.drawT > 0 || t.wants) t.stow();
+      if (t.model && t.model.visible) t.model.visible = false;
+    }
+    const ch = this.game.character;
+    if (ch) { const off = !this.isWorn('psygun'); if (off !== ch.gunOff) { ch.gunOff = off; ch.gun.visible = !off && !ch.hidden; } }
   }
 
   add(tool) {

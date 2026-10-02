@@ -22,12 +22,12 @@ import { CURIOS, CURIO_BY_ID } from '../treasure.js';
 
 // (dread, wonder, grief, hunger, mirth)
 export const LURES = [
-  { id: 'bob',   name: 'CLAY BOB',     glyph: '●', taste: [0.3, 0.3, 0.3, 0.3, 0.3], blurb: 'A pellet of the workshop\'s own clay. A little of everything; nothing much of anything.' },
-  { id: 'eye',   name: 'BLACK EYE',    glyph: '◐', taste: [0.95, 0.15, 0.35, 0.2, 0.0], blurb: 'A glazed bead, black all the way through. It looks back.' },
-  { id: 'fly',   name: 'STAR FLY',     glyph: '✦', taste: [0.05, 0.95, 0.2, 0.1, 0.4], blurb: 'Gold thread on a hook, tied to look like something seen once through a telescope.' },
-  { id: 'tear',  name: 'TEAR BEAD',    glyph: '☂', taste: [0.25, 0.1, 0.95, 0.1, 0.0], blurb: 'Fired from the clay of a broken jar that someone kept anyway.' },
-  { id: 'spoon', name: 'EMBER SPOON',  glyph: '◍', taste: [0.1, 0.2, 0.05, 0.95, 0.35], blurb: 'A bent spoon still warm from the kiln. Everything down there is hungry.' },
-  { id: 'bell',  name: 'TIN CHIME',    glyph: '♪', taste: [0.0, 0.4, 0.05, 0.25, 0.95], blurb: 'A chime the size of a fingernail. It rings under water, very small.' },
+  { id: 'lure.bob', key: 'bob',   name: 'CLAY BOB',     glyph: '●', taste: [0.3, 0.3, 0.3, 0.3, 0.3], blurb: 'A pellet of the workshop\'s own clay. A little of everything; nothing much of anything.' },
+  { id: 'lure.eye', key: 'eye',   name: 'BLACK EYE',    glyph: '◐', taste: [0.95, 0.15, 0.35, 0.2, 0.0], blurb: 'A glazed bead, black all the way through. It looks back.' },
+  { id: 'lure.fly', key: 'fly',   name: 'STAR FLY',     glyph: '✦', taste: [0.05, 0.95, 0.2, 0.1, 0.4], blurb: 'Gold thread on a hook, tied to look like something seen once through a telescope.' },
+  { id: 'lure.tear', key: 'tear',  name: 'TEAR BEAD',    glyph: '☂', taste: [0.25, 0.1, 0.95, 0.1, 0.0], blurb: 'Fired from the clay of a broken jar that someone kept anyway.' },
+  { id: 'lure.spoon', key: 'spoon', name: 'EMBER SPOON',  glyph: '◍', taste: [0.1, 0.2, 0.05, 0.95, 0.35], blurb: 'A bent spoon still warm from the kiln. Everything down there is hungry.' },
+  { id: 'lure.bell', key: 'bell',  name: 'TIN CHIME',    glyph: '♪', taste: [0.0, 0.4, 0.05, 0.25, 0.95], blurb: 'A chime the size of a fingernail. It rings under water, very small.' },
 ];
 
 // what each curio remembers (its taste); the tier sets how strongly it pulls
@@ -40,13 +40,17 @@ const CURIO_TASTE = {
 };
 const TIER_PULL = [1.1, 1.2, 1.3, 1.45, 1.6];
 
-/** The lures to hand: the six made ones, then every curio on the line or in the Pneuka Box (a curio's lure is the curio). */
+/** Nothing tied on: a bare hook (it still sinks, and a hungry thing may take it). */
+export const BARE = { id: null, key: 'bare', name: 'A BARE HOOK', glyph: '?', taste: [0.12, 0.12, 0.12, 0.2, 0.12], blurb: 'Nothing is tied on the line.' };
+
+/** The lures to hand: the made ones she has (on the line or in the Pneuka Box: they are things now, pneuka/items.js), then every
+ *  curio on the line or in the box (a curio's lure is the curio). Without a box, all six made ones. */
 export function lureList(ledger, box = null) {
-  const out = [...LURES];
+  const out = box ? LURES.filter((L) => box.lure === L.id || box.count(L.id) > 0) : [...LURES];
   for (const c of CURIOS) if (box ? box.lure === `curio.${c.id}` || box.count(`curio.${c.id}`) > 0 : ledger?.get(`curio.${c.id}`) > 0) out.push({ id: `curio.${c.id}`, name: c.name.toUpperCase(), glyph: c.glyph, taste: CURIO_TASTE[c.id] || [0.4, 0.4, 0.4, 0.4, 0.4], pull: TIER_PULL[c.tier], curio: c.id, blurb: c.blurb });
   return out;
 }
-export const lureById = (id, ledger, box) => lureList(ledger, box).find((l) => l.id === id) || LURES[0];
+export const lureById = (id, ledger, box) => (id ? lureList(ledger, box).find((l) => l.id === id) || LURES.find((l) => l.id === id) : null) || BARE;
 export const isCurio = (id) => id?.startsWith('curio.') && !!CURIO_BY_ID[id.slice(6)];
 
 /** A lure's taste now: its own, and what the soundings have pushed into it (boost: [5], fading). */

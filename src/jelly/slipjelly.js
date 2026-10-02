@@ -100,6 +100,9 @@ export class SlipJellies {
     c.drives = new Drives(M.drives, traits);
     c.brain = new Brain(g, c, { senses, memory: mem, drives: c.drives, actions: M.actions, think: 0.2, near: 50, far: 140, mods: (ctx) => M.mods(ctx) });
     c.mem = mem;
+    // what it is doing, in a word, for whoever looks (the Veritome's photograph reads it: veritome/subjects.js, the bestiary's facts):
+    // its wind-up, the hunt, or the action its mind is running
+    Object.defineProperty(c, 'state', { get: () => (c.attack?.phase === 'wind' ? 'wind' : c.brain?.action?.hunt ? 'chase' : ({ 'go home': 'home', 'sent home': 'home' })[c.brain?.action?.id] || c.brain?.action?.id || 'idle') });
     tag(c, 'hurtable', 'programmable', 'creature', 'sliceable');
     g.physics.register(col, c);
     g.creatures.add(c);

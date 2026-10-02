@@ -11,6 +11,7 @@
 //   b.update(dt)        every frame (it decides how often to think, and how much, by how far it is from the Courier: below)
 //   b.signal()          think again at once (it was hurt, a status landed, a macro was typed into it)
 //   b.force(id, why)    start that action now, whatever it scores (a reprogrammed order; it still ends as actions end)
+//   b.direct(id, secs)  a DIRECTIVE: that action, for so long (a reprogrammed mind: mind/macros.js)
 //   b.describe()        one line for the F3 panel: what it is doing, what it wants, who it is watching
 //
 // LEVEL OF DETAIL: near the Courier (within `near` metres) it thinks five times a second; further off (within `far`) twice; beyond
@@ -62,6 +63,8 @@ export class Brain {
     const d = Math.hypot(P.pos.x - c.pos.x, P.pos.z - c.pos.z) + Math.abs(P.pos.y - c.pos.y) * 0.5;
     this.lod = d < this.near ? 'near' : d < this.far ? 'mid' : 'far';
     this.drives?.tick(dt, this.mods?.(this.ctx) || undefined);
+    // relations written into it (a reprogrammed mind: c.rel with c.relUntil) wear off in their time
+    if (c.relUntil) for (const [k, t] of c.relUntil) if (this.now >= t) { c.rel?.delete(k); c.relUntil.delete(k); this.game.events?.emit('reprogram.wear', { macro: 'rel', kind: c.kind }); }
     if (this.lod === 'far') { this.acc = 0; return; }
     this.acc += dt; this.thinkT -= dt;
     if (this.thinkT <= 0 || this.wake) {
@@ -79,7 +82,26 @@ export class Brain {
   decide() {
     const { action, score } = this.reasoner.choose(this.ctx);
     this.score = score;
+    // a DIRECTIVE (a reprogrammed mind, mind/macros.js): for its time, that action is what it does, unless something urgent takes it
+    // (stunned, asleep, melted: the urgent actions of weight 5 and up are the body's, not the mind's, and win)
+    const d = this.directive;
+    if (d && this.now < d.until && !(action?.urgent && (action.weight ?? 1) >= 5)) {
+      if (d.action !== this.action) this.start(d.action, 'directive');
+      this.score = 9;
+      return;
+    }
+    if (d && this.now >= d.until) this.directive = null;
     if (action && action !== this.action) this.start(action, 'chose');
+  }
+
+  /** Make an action what it does for `secs` (its own `when` is not asked: it was told). False if its mind has no such action. */
+  direct(id, secs) {
+    const a = this.reasoner.actions.find((x) => x.id === id);
+    if (!a) return false;
+    this.directive = { action: a, until: this.now + secs };
+    this.cool.delete(id);
+    this.wake = true;
+    return true;
   }
 
   start(a, why) {
@@ -106,6 +128,6 @@ export class Brain {
 
   describe() {
     const f = this.mem.focus();
-    return `${this.action?.id ?? '-'} ${this.score.toFixed(2)} [${this.lod}] | ${this.drives ?? ''} | ${f ? `${f.kind} ${f.aware.toFixed(2)}${f.threat > 0.05 ? ` t${f.threat.toFixed(2)}` : ''}` : 'nothing'}`;
+    return `${this.action?.id ?? '-'}${this.directive ? '*' : ''} ${this.score.toFixed(2)} [${this.lod}] | ${this.drives ?? ''} | ${f ? `${f.kind} ${f.aware.toFixed(2)}${f.threat > 0.05 ? ` t${f.threat.toFixed(2)}` : ''}` : 'nothing'}`;
   }
 }

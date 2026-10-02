@@ -170,7 +170,7 @@ export class Character {
     if (h === !!this.hidden) return;
     this.hidden = h;
     this.root.visible = !h;
-    this.gun.visible = !h;
+    this.gun.visible = !h && !this.gunOff; // (gunOff: the Psygun is not worn, it is in the Pneuka Box: tools/belt.js)
   }
 
   /** A frozen copy of the posed body, in world space (afterimages). */

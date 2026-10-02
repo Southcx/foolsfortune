@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// ITEM ICONS: the picture of a thing in its slot. Each is the thing's own model (curiomodel.js), rendered once, small, from a three-
+// ITEM ICONS: the picture of a thing in its slot. Each is the thing's own model (a curio's, a lure's, a tool's), rendered once, small, from a three-
 // quarter view under a warm key light and kept as an image: the slot shows the curio itself, outline and all, not a symbol for it.
 // Rendered on first need (the box's window opening), with the game's own renderer into a little target and read back; if that fails
 // the slot falls back to the curio's glyph in its tier's colour.
@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { buildCurio } from '../curiomodel.js';
+import { buildLure } from '../angling/luremodels.js';
 import { itemOf } from './items.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
@@ -27,12 +28,13 @@ export function itemIcon(game, id) {
 
 function render(game, it) {
   const r = game.renderer;
-  if (!r || it?.kind !== 'curio') return null;
+  if (!r || !it) return null;
+  const m = modelOf(game, it);
+  if (!m) return null;
   const scene = new THREE.Scene();
   scene.add(new THREE.HemisphereLight(0xfff1dc, 0x3a2216, 1.8));
   const key = new THREE.DirectionalLight(0xffe6c8, 2.4); key.position.set(1.2, 2, 1.6); scene.add(key);
   const rim = new THREE.DirectionalLight(0xffb27a, 1.2); rim.position.set(-1.5, 0.6, -1.2); scene.add(rim);
-  const m = buildCurio(it.key, { sky: game.sky?.env });
   scene.add(m.group);
   m.group.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(m.group), c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()).length();
@@ -57,6 +59,26 @@ function render(game, it) {
   const g = out.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(big, 0, 0, S, S);
   return out.toDataURL('image/png');
 }
+
+/** The thing's own model, to be rendered: a curio's, a lure's (angling/luremodels.js), or a tool's (a copy of what she wears). */
+function modelOf(game, it) {
+  if (it.kind === 'curio') return buildCurio(it.key, { sky: game.sky?.env });
+  if (it.kind === 'lure') { const L = buildLure(it.key); L.group.rotation.set(0.25, 0.5, 0.15); return L; }
+  if (it.kind === 'tool') {
+    const src = it.tool === 'psygun' ? game.character?.gunModel : game.belt?.get(it.tool)?.model;
+    if (!src) return null;
+    const g = new THREE.Group(), c = src.clone(true);
+    c.position.set(0, 0, 0); c.quaternion.identity(); c.scale.setScalar(1); c.visible = true;
+    // (a resting tool's parts are on a layer no camera draws and its bake is shown instead, render/restbake.js: the parts, not the bake)
+    c.traverse((o) => { o.layers.set(0); if (o.name === 'restbake') o.visible = false; });
+    g.add(c);
+    if (TOOL_TURN[it.tool]) c.rotation.set(...TOOL_TURN[it.tool]);
+    return { group: g, dispose() {} };
+  }
+  return null;
+}
+// (how each tool is turned for its picture: lying across the slot, the way OSRS lays a sword diagonally)
+const TOOL_TURN = { psygun: [0, Math.PI / 2, 0.3], sondelass: [0, 0, 0.75], soulbrush: [0, 0, 0.75], veritome: [0.3, 0.6, 0] };
 
 function glyphIcon(it) {
   const c = document.createElement('canvas'); c.width = c.height = S;

@@ -98,7 +98,7 @@ export class SoulBrush extends Tech {
     const raw = g.rawDt || dt;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
-      if (inp.wasPressed('KeyG') && !g.god?.controlling && !busy) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('soulbrush')); }
+      if (inp.wasPressed('KeyG') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('soulbrush') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('soulbrush')); }
       if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; }
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }

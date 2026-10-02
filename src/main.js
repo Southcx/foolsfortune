@@ -112,6 +112,7 @@ import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool } from './tools/belt.js';
 import { Diag } from './debug/diag.js';
+import { MacroBook } from './mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
@@ -315,6 +316,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
+  game.belt.tick(); game.pneuka.seed(); // (a new Courier: the four tools worn, the rest and the made lures in the box)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (system/voice.js)
@@ -474,6 +476,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.macros = new MacroBook(); // (what she has composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
@@ -689,6 +692,8 @@ async function main() {
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
+    game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
+    if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: mind/macros.js)
     // the music: the main theme on the title (and the pause), the Dunes' theme in the dunes, a sound-test pick over either
     // the music: the main theme on the title (and the pause); the battle while something is after her; the Dunes' theme in the
     // dunes, the work song in the workshop; a sound-test pick over any of them
