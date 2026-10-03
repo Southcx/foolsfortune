@@ -47,7 +47,7 @@ effect; the effect is tuned apart from the move).
 
 ## Cinematics as data (sequences)
 
-A cinematic event (the Lockheart's opening now; the chest ceremony next) is a **sequence** in `src/cine/sequences.js`, played by name:
+A cinematic event (the Lockheart's opening, a chest's opening: `lockheart.opening`, `chest.open`) is a **sequence** in `src/cine/sequences.js`, played by name:
 
 ```js
 const seq = game.cine.play('lockheart.opening', { anchors: { courier: () => pos, coffin: () => cof }, yaw });
@@ -58,7 +58,8 @@ seq.stop();                    // the data says WHAT happens inside it
 A sequence is **segments** (one per beat), each a small timeline of **tracks**: `camera` (keys of `{ at: anchor, off: [right, up,
 forward] }` for where it stands and what it looks at, `fov`, `roll`, `cut`; `offs` gives one framing per repeat, a cut per key),
 `fx` (an effect from the library at an anchor; `until` holds it to a later segment, `follow` keeps it on a moving anchor), `bars`,
-`time`, `mood`, `sound`, `cue`. Offsets are in the anchors' own frame, so a sequence plays the same wherever it happens; the camera is
+`time`, `mood`, `sound`, `cue`. A segment with `len` stretches to the length the game gives the beat (a chest's charge is
+longer the higher its tier). Offsets are in the anchors' own frame, so a sequence plays the same wherever it happens; the camera is
 kept out of walls (`shotclear.js`).
 
 **Directing one, by eye:** `/lab` -> CINEMA. Pick a segment: it plays on the stage with its anchors stood in (from `preview`), the

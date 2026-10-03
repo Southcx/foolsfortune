@@ -67,4 +67,54 @@ export const SEQUENCES = {
       },
     },
   },
+  // A chest's opening (ceremony.js): the ceremony's own beats (approach, charge, burst, fountain, reveal, settle) say when; this says where
+  // the camera is. `chest` is the chest's foot (z: the way it faces), `curio` where a curio is held up, `above` a point over the lid the
+  // camera is kept clear of walls from. Charge, fountain and reveal are stretched to the tier's length (`len`). Effects added here play
+  // in the tier's colour (`tint: 'ctx'`); the circle, shock and helix are vfx/chestfx.js's.
+  'chest.open': {
+    preview: { chest: [0, 0, 0], curio: [0, 1.85, 0], above: [0, 1.1, 0], courier: [0, 0, 1.1] },
+    order: [['approach', 0.42], ['charge', 1.6], ['burst', 0.3], ['fountain', 1.5], ['reveal', 1.9], ['settle', 1.0]],
+    start: 'approach',
+    ease: 3,
+    clearFrom: { at: 'above' },
+    segments: {
+      approach: {
+        camera: [
+          { t: 0, pos: { at: 'chest', off: [-3.2, 1.4, 2.05] }, look: { at: 'chest', off: [0, 0.4, 0] }, fov: 0 },
+          { t: 0.42, pos: { at: 'chest', off: [-2.78, 1.2, 1.78] }, look: { at: 'chest', off: [0, 0.45, 0] }, fov: -4 },
+        ],
+      },
+      charge: {
+        len: 1,
+        camera: [
+          { t: 0, pos: { at: 'chest', off: [-2.78, 1.2, 1.78] }, look: { at: 'chest', off: [0, 0.45, 0] }, fov: -4 },
+          { t: 0.5, pos: { at: 'chest', off: [-2.13, 0.98, 1.49] }, look: { at: 'chest', off: [0, 0.45, 0] }, fov: -8.5 },
+          { t: 1, pos: { at: 'chest', off: [-1.99, 0.75, 1.51] }, look: { at: 'chest', off: [0, 0.45, 0] }, fov: -13 },
+        ],
+      },
+      burst: {
+        camera: [
+          { t: 0, pos: { at: 'chest', off: [-1.99, 0.75, 1.51] }, look: { at: 'chest', off: [0, 0.45, 0] }, fov: -13 },
+          { t: 0.06, pos: { at: 'chest', off: [-1.75, 0.78, 1.25] }, look: { at: 'chest', off: [0, 0.5, 0] }, fov: -14, cut: true },
+          { t: 0.3, pos: { at: 'chest', off: [-1.91, 0.8, 1.37] }, look: { at: 'chest', off: [0, 0.55, 0] }, fov: -10 },
+        ],
+      },
+      fountain: {
+        len: 1,
+        camera: [
+          { t: 0, pos: { at: 'chest', off: [-1.91, 0.8, 1.37] }, look: { at: 'chest', off: [0, 0.55, 0] }, fov: -10 },
+          { t: 0.5, pos: { at: 'chest', off: [-3.12, 1.76, 2.0] }, look: { at: 'chest', off: [0, 0.55, 0] }, fov: -4 },
+          { t: 1, pos: { at: 'chest', off: [-3.48, 1.9, 1.77] }, look: { at: 'chest', off: [0, 0.55, 0] }, fov: -3 },
+        ],
+      },
+      reveal: {
+        len: 2,
+        camera: [
+          { t: 0, pos: { at: 'curio', off: [-2.2, -0.25, 1.57] }, look: { at: 'curio', off: [0, 0, 0] }, fov: -9 },
+          { t: 2, pos: { at: 'curio', off: [-1.92, -0.2, 1.52] }, look: { at: 'curio', off: [0, 0, 0] }, fov: -11 },
+        ],
+      },
+      settle: {}, // (no camera: the player's comes back)
+    },
+  },
 };

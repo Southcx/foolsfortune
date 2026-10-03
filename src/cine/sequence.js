@@ -16,7 +16,9 @@
 //            until this one ends, `follow` keeps it on its anchor as it moves
 //   bars     { t, k }    the letterbox (cinema.js)          time   { t, scale }  the world's speed (1 normal, 0.05 nearly held)
 //   mood     { t, dim, tint }  the room darkened (mood.js)   sound  { t, sfx, args }   cue  { t, cue }  the game's own beat, called back
-// Times are in real seconds from the segment's start.
+// Times are in real seconds from the segment's start. A segment with `len` is stretched to the length the game gives it
+// (`h.go('charge', { len: 2.2 })`: a beat whose length is the game's, a chest's charge by tier), its keys keeping their places in it.
+// `ease` (on a segment, or the sequence) is how fast the camera blends in from the player's and back out (cinema.js).
 //
 // Prior art: Unity's Timeline and Unreal's Sequencer (tracks of keys on one clock: camera cuts, animation, particles, events),
 // Final Fantasy X's and Kingdom Hearts' scripted summons (a camera per beat, the beats driven by the battle), and the anchors of
@@ -121,7 +123,7 @@ export class Cine {
     const g = this.game, seg = h.seg;
     h.t += raw;
     if (!seg) return;
-    const t = h.t;
+    const t = seg.len && h.ctx.len ? (h.t * seg.len) / h.ctx.len : h.t;
     // one-shot keys, fired once as the clock passes them
     const once = (track, fn) => (seg[track] || []).forEach((k, i) => { const key = `${track}${i}`; if (t >= k.t && !h.fired.has(key)) { h.fired.add(key); fn(k); } });
     once('fx', (k) => {
@@ -143,9 +145,9 @@ export class Cine {
     // the camera
     const cam = cameraAt(seg, t, h.anchors, h.yaw, h.cam ||= { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0, roll: 0 }, h.ctx.i ?? 0);
     if (cam) {
-      const target = resolve(seg.clearFrom || { at: 'courier', off: [0, 1.2, 0] }, h.anchors, h.yaw, _b);
+      const target = resolve(seg.clearFrom || h.def.clearFrom || { at: 'courier', off: [0, 1.2, 0] }, h.anchors, h.yaw, _b);
       const pos = h.def.clear === false ? cam.pos : clearShot(g, target, cam.pos, _a.copy(cam.pos));
-      g.cinema?.shot(h.id, { pos, look: cam.look, fov: cam.fov, roll: cam.roll, bars: seg.bars ?? h.def.bars ?? 1, ease: seg.ease ?? 30 });
+      g.cinema?.shot(h.id, { pos, look: cam.look, fov: cam.fov, roll: cam.roll, bars: seg.bars ?? h.def.bars ?? 1, ease: seg.ease ?? h.def.ease ?? 30 });
     } else g.cinema?.unshot(h.id); // (a segment with no camera gives the camera back)
   }
 }

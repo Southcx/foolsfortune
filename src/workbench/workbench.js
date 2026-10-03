@@ -414,8 +414,9 @@ export class Workbench {
     for (const [k, p] of Object.entries(def.preview || { courier: [0, 0, 0] })) {
       A[k] = new THREE.Vector3(...p);
       if (k === 'courier') { this.figure.position.set(p[0], p[1] + 0.85, p[2]); continue; }
-      const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.18), new THREE.MeshBasicMaterial({ color: 0xffd76a, wireframe: true }));
-      m.position.copy(A[k]); this.anchorObjs.add(m);
+      const box = k === 'chest'; // (a chest stands in as its box; any other anchor as a marker)
+      const m = new THREE.Mesh(box ? new THREE.BoxGeometry(0.8, 0.62, 0.56) : new THREE.OctahedronGeometry(0.18), new THREE.MeshBasicMaterial({ color: 0xffd76a, wireframe: true }));
+      m.position.copy(A[k]); if (box) m.position.y += 0.31; this.anchorObjs.add(m);
     }
     A.origin = new THREE.Vector3();
     return A;

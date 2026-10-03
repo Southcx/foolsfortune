@@ -23,6 +23,9 @@ lines to the owner. Petra reviews, merges and publishes.
     replace them). It now plays its camera, slow time, mood and effects from a sequence (`game.cine.play('lockheart.opening')`,
     data in `src/cine/sequences.js`): the code says when each beat comes (`seq.go('key')`, `'ascend'`, `'wheel'`, `'land'`, `'back'`)
     and skips its own camera, time and mood while the sequence is there. Without `game.cine` it behaves as before.
+  - `src/ceremony.js`: the same for a chest's opening: with `game.cine` the camera is the `chest.open` sequence (`seq.go(phase, { len })`
+    from `enter`, charge, fountain and reveal stretched to the tier's lengths); `shot()` steps aside. The mood, time, beam and light stay
+    yours. Faithful to your numbers (compared frame by frame).
   - `src/main.js`: `game.vfx`, `game.cine`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
 - A `material` tag on things (`tags.js`: clay, crystal, jelly, wood, metal, stone) would let `vfx.hit` stop guessing from the kind.
 
