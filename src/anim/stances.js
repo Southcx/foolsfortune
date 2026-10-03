@@ -71,14 +71,9 @@ export const STANCES = {
     rot: [['spine', 'y', 10], ['spine002', 'x', -4], ['handR', 'x', -100], ['handR', 'z', 18], ['head', 'x', -6], ['head', 'z', -5]],
     reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at her shoulder; the other on her hip)
   },
-  // THE SONDELASS, CUTLASS (R40, redone): en garde. The sword arm out in front at the chest, the point toward the foe, the body turned
-  // a little sideways behind it, the free hand raised up and back for balance, clear of the blade. Over the UAL sword idle, so the
-  // fingers and the breathing are the clip's. (The rod and the hook use the UAL torch idle as it is: the rod held up.)
-  cutlass: {
-    base: 'swordIdle', exaggerate: 1.1,
-    rot: [['spine', 'y', -14], ['head', 'y', 12]],
-    reach: [['R', [-0.22, 1.02, 0.44], [-0.6, 0.85, -0.1]], ['L', [0.44, 1.5, -0.3], [0.62, 1.1, -0.42]]],
-  },
+  // (THE SONDELASS: no stance of its own. The cutlass is held in the UAL sword idle as captured, the rod in the torch idle: a real
+  //  sword-ready stance reads better than any offset laid over it (R40: the en garde tried here crossed the blade over the waist and
+  //  put the off-hand fist before the face).)
 };
 
 const AX = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
