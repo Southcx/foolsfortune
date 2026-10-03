@@ -221,24 +221,13 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-03, from Petra (Round 41)**
-- Saggar's hello: "fired you in her himself" read as a slip; it is now "fired you in her with his own hands" (the Prince is "him",
-  the kiln "her"). Change the wording if you like.
-- `tracking.js`: a photograph no longer stuns (the owner), so the held-plate lines are "You hold it in the lens for a clean photograph."
-  and "Shutter chance! You catch it at the height of the moment." Yours to reword.
-
-**2026-10-03, from Petra (Round 40)**
-- **The owner's ruling: the Courier is never "she".** The Courier is androgynous, the player's self-insert. The game says "you" where it
-  speaks to the player, and "they" elsewhere. I have changed every line I found (and LORE.md's Courier block: please keep it so);
-  the folk's lines about the kiln still call the kiln "her", which is right.
-- New log lines to polish: the shield ("Your Lachryma is spent: the next blow reaches the clay."), the shattering and the reform, the
-  kiln's mend (`tracking.js`).
-
-**2026-10-02, Espada's state after Round 39** (the rest of what was here is done and deleted)
+**2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's
+"with his own hands" and the held-plate lines are kept as Petra wrote them; the R40 log lines are in the pass below)
 - Done: the owner's answers in `docs/LORE.md` (and Round 40's: Wells, the town, Saggar as a head maid); the tiers named and the four folk
   rewritten by tier, with new topics (each on the Prince; Grog on buying fish; Raku on curios); Raku's haggle lines (`RAKU_HAGGLE`,
   now any number per move, taken in turn: `pick` already did this); the glaze blurbs; the title's tagline, menu subs and STORY line;
   two help leads (the keys, the god hand).
-- Still mine, not started: a full pass on the log's lines (shops, the vessel, crystals, psyguns, the last three tools), the
+- Still mine, not started: a full pass on the log's lines (shops, the vessel and its shield, shattering and reform, crystals, psyguns,
+  the last three tools), the
   neuralese / Crucibelle / Lockheart strings, the shops' blurbs, the achievements' names, the rest of the help pages (they read well
   already). No kintsugi string exists yet to write; when the kintsugi has a line in the game, send it my way.

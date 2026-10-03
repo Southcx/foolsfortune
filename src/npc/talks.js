@@ -207,7 +207,7 @@ export const TALKS = {
 };
 
 // ---------------------------------------------------------------------------------------
-// RAKU HAGGLES: what he says to each move (shop/haggle.js names the moves). {ask} is his price now, {offer} hers, {price} the deal.
+// RAKU HAGGLES: what he says to each move (shop/haggle.js names the moves). {ask} is his price now, {offer} theirs (the Courier's), {price} the deal.
 // Any number of lines to a move: they are taken in turn. The mood of each line is his (shop/haggle.js moodOf), so his body shows it.
 // He is a greedy little miser of the porcelain tier: vain of his crackle, in love with the sound of cubes, wounded by every discount.
 const H = (g) => g.shops?.hag?.h;
