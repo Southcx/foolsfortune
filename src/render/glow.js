@@ -16,6 +16,7 @@
 // Rogue Galaxy), the dual-filter and the soft-knee threshold of the later engines (Kawase, Unity's bloom) for steadiness.
 //
 //   const post = new Glow(renderer)    post.render(scene, camera)    (T.visual.glow: strength, 0 = off; T.visual.grade: 0..1)
+//   post.accum = { amt: 0..0.95, zoom, spin }   the frame accumulation (feedback blur): amt 0 is off
 //   post.target                        the buffer to compile shaders against (it renders without the tone curve)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -81,6 +82,18 @@ void main() {
 	gl_FragColor.rgb = d;
 }`;
 
+// FRAME ACCUMULATION (R40): the PS2's feedback blur. The frame before is kept, drawn back a hair larger and turned (the frame buffer
+// fed back into itself, as Silent Hill 2, MGS2 and Burnout smeared a dream, a death or speed), and the new frame laid over it: what
+// moves leaves a trail streaming out from the middle. Off (amount 0) it costs nothing. Used for the vessel's shattering (vessel/death.js).
+const ACC = `
+uniform sampler2D tCur, tPrev; uniform float uAmt, uZoom, uSpin; varying vec2 vUv;
+void main() {
+	vec2 q = vUv - 0.5; float cs = cos( uSpin ), sn = sin( uSpin );
+	q = mat2( cs, -sn, sn, cs ) * q * ( 1.0 - uZoom );
+	vec3 prev = texture2D( tPrev, q + 0.5 ).rgb, cur = texture2D( tCur, vUv ).rgb;
+	gl_FragColor = vec4( max( cur, mix( cur, prev, uAmt ) ), 1.0 );
+}`;
+
 const rt = (o = {}) => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false, ...o });
 
 export class Glow {
@@ -96,6 +109,9 @@ export class Glow {
     this.down = mk(DOWN, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uThresh: { value: 2.0 }, uKnee: { value: 0.9 }, uFirst: { value: false } });
     this.blur = mk(BLUR, { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } });
     this.comp = mk(COMP, { tScene: { value: null }, tA: { value: null }, tB: { value: null }, uGlow: { value: 0.5 }, uGrade: { value: 1 }, uTexel: { value: new THREE.Vector2() } }, true);
+    this.acc = [rt(), rt()]; this.accW = 0; this.accFresh = true;
+    this.accMat = mk(ACC, { tCur: { value: null }, tPrev: { value: null }, uAmt: { value: 0 }, uZoom: { value: 0 }, uSpin: { value: 0 } });
+    this.accum = { amt: 0, zoom: 0.01, spin: 0 }; // (set by whoever wants the smear: amt 0 is off)
     this.size = new THREE.Vector2();
   }
   get on() { return (T.visual.glow ?? 0) > 0 || (T.visual.grade ?? 0) > 0; }
@@ -106,6 +122,8 @@ export class Glow {
     const s = this.r.getDrawingBufferSize(this.size), w = Math.max(1, s.x), h = Math.max(1, s.y);
     if (this.scene.width === w && this.scene.height === h) return;
     this.scene.setSize(w, h);
+    for (const t of this.acc) t.setSize(w, h);
+    this.accFresh = true;
     this.comp.uniforms.uTexel.value.set(1 / Math.max(1, w), 1 / Math.max(1, h));
     this.half.setSize(Math.max(1, w >> 1), Math.max(1, h >> 1));
     for (const t of this.q) t.setSize(Math.max(1, w >> 2), Math.max(1, h >> 2));
@@ -129,11 +147,20 @@ export class Glow {
     const prev = r.getRenderTarget(), auto = r.autoClear;
     r.setRenderTarget(this.scene); r.autoClear = true;
     r.render(scene, camera);
-    this.downTo(this.scene, this.half, true);
+    // the feedback blur, when asked for: the frame laid over the last one, fed back
+    let src = this.scene;
+    const A = this.accum;
+    if (A.amt > 0.001) {
+      const m = this.accMat.uniforms, out = this.acc[this.accW], prev = this.acc[1 - this.accW];
+      m.tCur.value = this.scene.texture; m.tPrev.value = prev.texture; m.uAmt.value = this.accFresh ? 0 : A.amt; m.uZoom.value = A.zoom; m.uSpin.value = A.spin;
+      this.pass(this.accMat, out);
+      src = out; this.accW = 1 - this.accW; this.accFresh = false;
+    } else this.accFresh = true;
+    this.downTo(src, this.half, true);
     this.downTo(this.half, this.q[0]); this.blurIn(this.q);
     this.downTo(this.q[0], this.e[0]); this.blurIn(this.e);
     const u = this.comp.uniforms;
-    u.tScene.value = this.scene.texture; u.tA.value = this.q[0].texture; u.tB.value = this.e[0].texture;
+    u.tScene.value = src.texture; u.tA.value = this.q[0].texture; u.tB.value = this.e[0].texture;
     u.uGlow.value = T.visual.glow ?? 0; u.uGrade.value = T.visual.grade ?? 0;
     this.pass(this.comp, prev);
     r.autoClear = auto;

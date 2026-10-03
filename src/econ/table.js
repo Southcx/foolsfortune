@@ -50,6 +50,8 @@ export const ECON = {
   tithe: { cost: 48 },
   /** A firing at the kiln (a new look fired onto the vessel: vessel/vessel.js), in minutes of play. */
   firing: 2,
+  /** Refiring the vessel's cracks at the kiln (R40), in minutes of play for a vessel at the edge of shattering (less for fewer cracks). */
+  refire: 1.5,
   /** What the folk ask, in minutes of play (shop/catalogue.js turns them into cubes); see docs/ECONOMY.md. */
   goods: {
     'mat.film': 1.5,                                           // a roll of film: 24 exposures

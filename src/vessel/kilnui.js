@@ -10,6 +10,7 @@
 //
 //   const ui = new KilnUI(game)   ui.show()   ui.hide()   ui.render()   ui.open   ui.look (the preview)   ui.spin (turn, -1..1)
 // ---------------------------------------------------------------------------------------
+import { ECON } from '../econ/table.js';
 import { REGIONS } from './glazes.js';
 
 const CSS = `
@@ -105,7 +106,19 @@ export class KilnUI {
     const fire = el('button', '', `FIRE · ${V.cost} CUBES`); fire.disabled = same;
     fire.onclick = () => { if (V.fire(this.look)) this.render(); };
     const leave = el('button', '', 'LEAVE (Esc)'); leave.onclick = () => this.onLeave?.();
-    row.appendChild(fire); row.appendChild(leave);
+    row.appendChild(fire);
+    // the cracks refired at once (R40: they mend slowly on their own: vessel/damage.js), for cubes as many as they are deep
+    const D = g.vesselDamage, worn = D?.worn || 0;
+    if (worn > 0.001) {
+      const cost = Math.max(1, Math.round(worn * ECON.refire * ECON.perMinute));
+      const mend = el('button', '', `MEND · ${cost} CUBES`);
+      mend.onclick = () => {
+        if (!g.cubes?.spend(cost, 'refire')) { g.log?.say('warn', `Mending the cracks costs ${cost} cubes.`, { key: 'kiln.poormend', throttle: 2 }); return; }
+        D.mendAll(); V.fireT = 1.4; g.events?.emit('vessel.refire', { cost, by: 'courier' }); this.render();
+      };
+      row.appendChild(mend);
+    }
+    row.appendChild(leave);
     px.appendChild(row);
     px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn her · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));
     this.root.appendChild(px);

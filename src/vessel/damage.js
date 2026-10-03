@@ -1,5 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE VESSEL'S DAMAGE: a blow cracks her where it lands, and the cracks mend in time. The Courier carries six HIT REGIONS (the mask,
+// THE VESSEL'S DAMAGE: the Lachryma pool is the shield and takes a blow first (Halo's regenerating shield: it fills again on its own);
+// what it cannot pay for cracks the clay where the blow lands, and the cracks mend, slowly, or at once at the kiln for cubes. A blow on
+// clay cracked through shatters the vessel (vessel/death.js). The Courier carries six HIT REGIONS (the mask,
 // the torso, each arm, each leg), each a few capsules riding her bones (the HITBOXES: geometric, not physics bodies, so they never touch
 // how she moves). A blow is resolved to the region it struck: by the point, when the blow has one (a lob's shell), or by the line from
 // where it came (a jelly's lunge comes from the jelly) to her middle, first capsule it meets. That region's CRACK rises; after a few
@@ -19,7 +21,10 @@ import { HURT } from '../vfx/filigree.js';
 import { sfx } from '../audio.js';
 
 export const REGIONS = ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'];
-const MEND_AFTER = 3, MEND_RATE = 0.08; // (seconds of quiet before a region mends, and how much of it mends a second: ~12 s from full)
+const MEND_AFTER = 6, MEND_RATE = 0.025; // (seconds of quiet before a region mends, and how much of it mends a second: ~40 s from full;
+//                                          the kiln mends it at once, for cubes: vessel.mend / kilnui.js)
+const SHIELD = 35; // (Lachryma a full blow (k = 1) costs the pool, Halo's shield: the pool takes the blow first, the clay only what is left)
+const BREAK_AT = 3.6; // (the vessel shatters when a blow lands on a region already cracked through, or the cracks together pass this)
 
 /** The region a bone belongs to (the Courier's rig: three.js drops the dots from the names: 'upper_arm.L' is 'upper_armL'). */
 export function regionOfBone(name = '') {
@@ -117,7 +122,15 @@ export class VesselDamage {
 
   /** A blow on her: resolved to a region, that region cracked by `k` (0..1). */
   hit({ point = null, from = null, dir = null, k = 0.5, why = 'blow', by = 'environment' } = {}) {
-    if (!this.boxes) return -1;
+    if (!this.boxes || this.game.death?.active) return -1;
+    // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
+    const pool = this.game.lachryma;
+    if (pool) {
+      const cost = k * SHIELD, had = pool.value;
+      if (had >= cost) { pool.drain(cost, 'shield'); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
+      if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
+      k *= 1 - had / cost;
+    }
     const P = this.P, mid = new THREE.Vector3(P.pos.x, P.pos.y + 1.0, P.pos.z);
     let region = 1;
     if (point) region = this.boxes.nearest(point).region;
@@ -128,12 +141,26 @@ export class VesselDamage {
       region = this.boxes.raycast(o, mid.clone().sub(o).normalize()).region;
     }
     const was = this.crack[region];
+    // a blow on clay already cracked through, or one that takes the cracks past what a vessel holds: it shatters (vessel/death.js)
+    const sum = this.crack.reduce((a, c) => a + c, 0) + k * 0.65;
+    if (was >= 0.95 || sum >= BREAK_AT) { this.game.death?.begin({ why, by, region: REGIONS[region] }); return region; }
     this.crack[region] = Math.min(1, was + k * 0.65);
     this.quiet[region] = 0;
     sfx.vesselCrack?.(this.crack[region], REGIONS[region]); // (Wanda's: docs/HANDOFFS.md)
     this.game.events?.emit('vessel.crack', { region: REGIONS[region], k: +this.crack[region].toFixed(2), why, by });
     return region;
   }
+
+  /** Mended at once (the kiln's refiring, or made whole again after shattering): every region, or the one named. */
+  mendAll(quiet = false) {
+    for (let i = 0; i < this.crack.length; i++) {
+      if (this.crack[i] <= 0) continue;
+      this.crack[i] = 0;
+      if (!quiet) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
+    }
+  }
+  /** How cracked the vessel is, 0 (whole) .. 1 (at the edge of shattering). */
+  get worn() { return Math.min(1, this.crack.reduce((a, c) => a + c, 0) / BREAK_AT); }
 
   update(dt) {
     for (let i = 0; i < this.crack.length; i++) {
