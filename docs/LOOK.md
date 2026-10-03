@@ -105,26 +105,27 @@ Hunter's animations are. In practice:
 - **Anticipation and follow-through on actions**, timed to the game's own beats (a move's timings are its feel and do not change:
   the clip is time-warped onto them, as the carry is).
 
-## Effect meshes: made in Mesh Create, kept where the owner can change them
+## Effect meshes: made in Blender
 
-Effect meshes (rings, ribbons, helices, flares, slashes) are made in TakayuStudio's **Mesh Create**
-(https://gameanimation.info/mesh-create/), a free browser tool, and kept in the repo as its own project files:
+Effect meshes (rings, ribbons, helices, flares, pillars, domes) live in **one Blender file**, `source_assets/vfx/effects.blend`, one
+object each in its **FX** collection; the object's name is the name the game asks for (`vfx/library.js`). Open it, change a shape,
+paint its vertex alpha, swap its texture; the texture scroll previews in the viewport (press play: the Mapping node is driven by the
+frame). How it flows in the game is on the object, **Custom Properties**: `fx_speedU`, `fx_speedV` (tiles a second), `fx_blend`
+(`additive` | `alpha`), `fx_side` (`double` | `front`). Then:
 
-- `source_assets/meshflow/<name>.meshflow`: the project. In Mesh Create, **Open** (開く) reads it; change the shape, deformers, UV
-  scroll, painted alpha or texture by hand; **Save** (保存) writes it back. Commit the file.
-- `src/assets/vfx/<name>.glb`: what the game loads. `node tools/meshflow.mjs` bakes every project through Mesh Create's own GLB export
-  (headless). Or export it yourself from the tool: **Export → GLB**, saved over the file of the same name: the same result.
-- `source_assets/meshflow/tex/`: the textures the starting projects were made with (drawn by `tools/meshflow.mjs`'s recipes).
+    python3 -I tools/export_vfx.py            (every FX object -> src/assets/vfx/<name>.glb; or inside Blender: -P tools/export_vfx.py)
 
-In the game, `src/vfx/meshfx.js` draws a baked mesh as the tool previews it (the texture flowing at the project's U/V speeds, its vertex
-colour and alpha, its blend) and adds what the game wants: a tint per use, the Mind's labradorite, a fade. Where each is played is a
-module of its own (`src/vfx/chestfx.js`: a chest's opening). What is in now:
+Any GLB in `src/assets/vfx/` is in the game by its file name, with no code to touch; any PNG in `src/assets/vfx/tex/` is a texture
+a `decal` layer can wear (the two spell circles the owner's wife drew are `circle_lotus` and `circle_swirl`).
 
-| Mesh | Shape (Mesh Create) | Where |
-| --- | --- | --- |
-| `chest_circle` | Ring, a band of runes, turning | under a chest as it charges; flares on the burst |
-| `chest_shock` | Flare, a low band thrown outward | the burst, wider the higher the tier |
-| `chest_helix` | Twin Helix, tapering up, flowing up | round the chest through the fountain, round the curio on the reveal |
+Mesh Create (https://gameanimation.info/mesh-create/) stays as a sketchbook: `node tools/meshflow.mjs --author` roughs a shape out
+headless from a recipe and bakes it to `source_assets/meshflow/baked/`; `python3 -I tools/export_vfx.py --import <that.glb>` brings
+it into the .blend, where it is finished.
+
+| Mesh | Where |
+| --- | --- |
+| `chest_circle`, `chest_shock`, `chest_helix` | a chest's opening (`vfx/chestfx.js`) |
+| `ult_vortex`, `ult_pillar`, `ult_helix`, `ult_crown`, `ult_dome` | the Lockheart's opening (`ult.*` in the library) |
 
 ## Proposed persistent 3D HUD (the Mind's layer, in the world)
 

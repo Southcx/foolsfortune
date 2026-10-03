@@ -1,4 +1,8 @@
-// MESHFLOW: the effect meshes, made in TakayuStudio's Mesh Create (https://gameanimation.info/mesh-create/, a free browser tool for
+// MESHFLOW (a sketchbook, not the source): the effect meshes' SOURCE is Blender (source_assets/vfx/effects.blend, exported by
+// tools/export_vfx.py). This drives TakayuStudio's Mesh Create headless to rough out new shapes quickly; its bakes go to
+// source_assets/meshflow/baked/ and are brought into the .blend with `python3 -I tools/export_vfx.py --import <glb>`.
+//
+// The effect meshes, made in TakayuStudio's Mesh Create (https://gameanimation.info/mesh-create/, a free browser tool for
 // effect meshes: ribbons, slashes, rings, helices, flares, with deformers, UV scrolling and painted vertex alpha), kept in the repo as
 // Mesh Create's own project files so that anyone can open one in the tool, change it by hand, save it, and bake it again.
 //
@@ -19,7 +23,7 @@ import fs from 'fs';
 import path from 'path';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const SRC = path.join(ROOT, 'source_assets/meshflow'), TEX = path.join(SRC, 'tex'), OUT = path.join(ROOT, 'src/assets/vfx');
+const SRC = path.join(ROOT, 'source_assets/meshflow'), TEX = path.join(SRC, 'tex'), OUT = path.join(SRC, 'baked'); // (not the game's: Blender is the source)
 const URL_ = 'https://gameanimation.info/mesh-create/';
 const args = process.argv.slice(2);
 const flag = (k) => args.includes(k);
