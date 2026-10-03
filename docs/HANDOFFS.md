@@ -11,6 +11,19 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
+**2026-10-03, from Calissa: the VFX system, and four small edits in your files**
+- One VFX system now (docs/VFX.md): game code plays effects by name (`game.vfx.play(name, ctx)`), the looks are data in
+  `src/vfx/library.js`. A new effect never needs code; please call it rather than building particles in a module.
+- Small edits in your files, all one line or close:
+  - `src/creatures.js` `strike()`, `src/breakables.js` `damage()`, `src/clappers.js` `hit()`: each calls `game.vfx?.hit({ kind, cause,
+    point, dir, power, kill })`, which plays `hit.<blunt|slash|shot>.<material>[.kill]`. `breakables.damage` has no cause, so its hits
+    read `ent.lastCause` (unset: blunt); if you set it where a blow begins, pots will show slash and shot hits too.
+  - `src/lockheart/ultimate.js`: the opening plays `ult.*` effects; and a bug fix in the ascent's camera (pos and the look's `around()`
+    shared one vector: the crane sat inside the Courier). The canvas circles hide when `game.vfx` exists (the owner's wife's circles
+    replace them).
+  - `src/main.js`: `game.vfx`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
+- A `material` tag on things (`tags.js`: clay, crystal, jelly, wood, metal, stone) would let `vfx.hit` stop guessing from the kind.
+
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
 - **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad
   and transfigured them; some are still out in the Dunes as figments, and the slip jellies are read as them (clay gone back to slip,

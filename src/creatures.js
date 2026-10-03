@@ -52,6 +52,7 @@ export class Creatures {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && by === 'courier') return false; // (their own: a spirit they called up is not struck by them)
     c.hurt(point, dir, power * (st(c, 'soft') ? 2 : 1), cause, by, from); // (`from`: the thing that struck, when it is not the Courier)
+    this.game.vfx?.hit({ kind: c.kind, cause, point, dir, power, kill: !c.alive }); // (what the blow looks like: vfx/library.js 'hit.*')
     return true;
   }
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */

@@ -97,6 +97,7 @@ import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
 import { ChestFx } from './vfx/chestfx.js';
 import { Vfx } from './vfx/vfx.js';
+import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
@@ -374,6 +375,7 @@ async function main() {
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
+  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game); // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
@@ -549,6 +551,8 @@ async function main() {
     game.vfx.play(name, { pos: P.pos.clone().addScaledVector(f, 2).setY(P.pos.y + 1), dir: f.clone().negate(), tint: tint ? parseInt(tint.replace('#', ''), 16) : 0xffd76a, floor: P.pos.y });
     game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
   } });
+  game.workbench = new Workbench(game);
+  game.chat.add('lab', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', aliases: ['workbench'], run: () => game.workbench.toggle() });
   game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
     const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
     const T = await import('./lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
@@ -677,6 +681,7 @@ async function main() {
     if (window.__game?.manual) return;
     try {
       diag.frameStart();
+      if (game.workbench?.open) { game.workbench.frame(dt); input.endFrame(); diag.frameEnd(); return; } // (the workbench instead of the world: workbench/)
       if (game.title?.active) { // (the title instead of the game: the world waits, built, behind it)
         game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);

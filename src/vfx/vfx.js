@@ -68,6 +68,11 @@ const LAB = [0x6638d1, 0x384cf2, 0x2480fa, 0x1ab2db, 0x38c78c, 0xebc252, 0xe0754
 const rnd = (v, ctx) => (Array.isArray(v) ? v[0] + Math.random() * (v[1] - v[0]) : typeof v === 'string' ? ctx[v] ?? 0 : v ?? 0);
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 const UP = new THREE.Vector3(0, 1, 0);
+// (how a cause is struck, and what a kind is made of: the hit's name is built from them)
+const SLASH = /cut|slice|slash|cleave|rend|sunder|blade|zandatsu|stinger/;
+const SHOT = /shot|charged|ricochet|homing|bolt|spark|slicer/;
+const MATERIAL = { pot: 'clay', jar: 'clay', urn: 'clay', vase: 'clay', lantern: 'clay', pitcher: 'clay', bowl: 'clay', clapper: 'clay', crate: 'wood', slipjelly: 'jelly', jelly: 'jelly', crystal: 'crystal' };
+const TOOL_TINT = { blunt: 0xffd76a, slash: 0xfff1dc, shot: 0xffb27a };
 
 function color(v, ctx) {
   if (v === undefined || v === null) return 0xffffff;
@@ -125,6 +130,16 @@ export class Vfx {
     for (const L of this.layersOf(R.def)) h.layers.push({ L, started: false, acc: 0, mesh: null });
     this.live.push(h);
     return h;
+  }
+
+  /** A blow landed: its effect from what struck (the cause) and what was struck (its kind), most particular first:
+   *  hit.<blunt|slash|shot>.<clay|crystal|jelly|...>.kill -> ... -> hit. Called by creatures.strike, breakables.damage, clappers.hit. */
+  hit({ kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint }) {
+    if (!point) return null;
+    const tool = SLASH.test(cause) ? 'slash' : SHOT.test(cause) ? 'shot' : 'blunt';
+    const mat = MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
+    const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;
+    return this.play(name, { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 });
   }
 
   update(raw) {

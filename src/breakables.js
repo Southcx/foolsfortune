@@ -258,6 +258,7 @@ export class Breakables {
     if (!ent.alive) return false;
     this.instigate(ent, who);
     ent.hp -= amount;
+    if (!quiet && point && dir) this.game.vfx?.hit({ kind: ent.kind, cause: ent.lastCause || 'blow', point, dir, power, kill: ent.hp <= 0 }); // (vfx/library.js 'hit.*')
     if (ent.hp <= 0) { this.shatter(ent, point, dir, power, 'shot', who); return true; }
     this.crack(ent, point, quiet);
     if (quiet) return false;

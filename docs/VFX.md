@@ -31,15 +31,24 @@ Prior art: Unreal's Niagara and Unity's VFX Graph (an effect is emitters, a modu
 XIV's `.avfx` (effects named by use, layered: particles, models, lights, screen), fighting games' hit tables (a move names its hit
 effect; the effect is tuned apart from the move).
 
-## What is built (this round)
+## What is built
 
 | Piece | File | |
 | --- | --- | --- |
 | Shaped GPU particles | `src/vfx/sprites.js` | 16 shapes in one atlas; turn and spin, velocity stretch, colour and alpha over life, pop-in, twinkle; stateless on the GPU |
-| The player | `src/vfx/vfx.js` | `play(name, ctx)`, handles for held effects, the layer types above |
-| The library | `src/vfx/library.js` | `hit` family (blunt, slash x clay, crystal, jelly), `poof`, the Lockheart opening (`ult.*`) |
-| Effect meshes | `src/vfx/meshfx.js`, `source_assets/meshflow/`, `tools/meshflow.mjs` | made in Mesh Create; every baked GLB is picked up by name |
-| Directing from the game | chat: `/vfx <name> [tint]`, `/vfx` (the list), `/opening` | play any effect in front of the Courier; play the whole Lockheart opening without keys |
+| The player | `src/vfx/vfx.js` | `play(name, ctx)`, handles for held effects, `hit({ kind, cause, point, dir, power, kill })`, the layer types (now with `decal`) |
+| The library | `src/vfx/library.js` | `hit` family (blunt, slash, shot x clay, crystal, jelly, and `.kill`), `poof`, `chest.sigil`, the Lockheart opening (`ult.*`) |
+| Effect meshes | `source_assets/vfx/effects.blend` -> `tools/export_vfx.py` -> `src/assets/vfx/*.glb` | made in **Blender** (docs/LOOK.md); every GLB is picked up by name |
+| Decal textures | `src/assets/vfx/tex/*.png` | the spell circles the owner's wife drew (`circle_lotus`, `circle_swirl`), and any picture a decal should wear |
+| Combat | `creatures.strike`, `breakables.damage`, `clappers.hit` | every blow plays `hit.<tool>.<material>[.kill]` |
+| **The workbench** | `src/workbench/workbench.js`, chat **`/lab`** | the game's own studio: EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
+| Chat | `/vfx <name> [tint]`, `/vfx`, `/opening`, `/lab` | |
+
+## Sacred geometry (the owner's direction)
+
+Geometric mandalas, the lotus of life and the rest of sacred geometry are part of the design language: circles of power are drawn
+ones (hand-inked, black on white, made alpha), layered at different sizes, turning against each other. New circles go in
+`src/assets/vfx/tex/` (any PNG, black ink on white or white on transparent) and are worn by a `decal` layer.
 
 ## The Lockheart's opening (the gold standard)
 
@@ -62,7 +71,6 @@ shockwaves, a hundred and forty streaks, stars, petals, a ring of smoke, lingeri
    - a **kill** adds a pop of the creature's own colour and a few of its own pieces (the dissolve already does this for zandatsu).
 3. **Trails and swings** (`vfx/trail.js` exists) join the library as a layer type, so a tool's swing and its hit are directed together.
 4. **Status auras** (slow, sleep, burn...) as held effects on the creature (`creature.status` events).
-5. **A VFX lab page** (`/dev/vfxlab.html`): every effect on a loop, a scrub bar, the library hot-reloaded, so the owner can direct by
-   looking.
+5. ~~A VFX lab~~: built into the game as the workbench (`/lab`).
 6. **Budgets**: a cap on live sprites and on screen-weight per second (flash, shake, hitstop) so a busy fight stays legible and within
    the comfort rule (no flicker: a flash is one wash, never repeated fast).

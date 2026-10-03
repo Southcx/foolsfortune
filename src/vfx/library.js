@@ -18,8 +18,7 @@ export const LIBRARY = {
     L({ type: 'sprites', count: 1, shape: 'core', size: [0.55, 0.65], sizeEnd: 0.1, life: 0.12, color: 'white', alpha: 1, alphaEnd: 0, rot: 0 }),
     L({ type: 'sprites', count: 1, shape: 'star4', size: 0.9, sizeEnd: 0.2, life: 0.16, color: 'tint', colorEnd: 'white', grow: 60 }),
     L({ type: 'sprites', count: [7, 10], shape: 'streak', dir: 'cone', cone: 55, speed: [5, 11], size: [0.14, 0.22], sizeEnd: 0.03, life: [0.14, 0.26], drag: 7, stretch: 1.6, color: 'white', colorEnd: 'tint' }),
-    L({ type: 'hitstop', dur: 0.045 }),
-    L({ type: 'shake', k: 0.12 }),
+    // (no hitstop or shake here: the weapons give their own weight; an effect that wants more adds it)
   ] },
   // a blunt blow: a ring knocked out flat, and dust
   'hit.blunt': { extends: 'hit', layers: [
@@ -30,6 +29,33 @@ export const LIBRARY = {
   'hit.slash': { extends: 'hit', layers: [
     L({ type: 'sprites', count: 1, shape: 'crescent', size: 1.1, sizeEnd: 1.5, life: 0.16, color: 'tint', colorEnd: 'white', spin: 6 }),
     L({ type: 'sprites', count: [8, 12], shape: 'glint', dir: 'cone', cone: 85, speed: [2, 5], size: [0.2, 0.35], sizeEnd: 0, life: [0.2, 0.35], drag: 5, color: 'white', twinkle: 30 }),
+  ] },
+  // a shot: smaller, a ring stood along the shot, sparks back off the surface
+  'hit.shot': { extends: 'hit', layers: [
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.15, sizeEnd: 0.8, life: 0.16, color: 'tint', rot: 0 }),
+  ] },
+  'hit.shot.clay': { extends: 'hit.shot', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'chip', dir: 'cone', cone: 50, speed: [2, 5], size: [0.05, 0.09], life: [0.5, 0.8], gravity: 14, color: [0xb4603f, 0xc46a45], alphaEnd: 0.8, spin: [-14, 14], floor: 'ground' }),
+    L({ type: 'sprites', pool: 'alpha', count: 3, shape: 'puff', dir: 'cone', cone: 40, speed: [0.5, 1.2], size: 0.25, sizeEnd: 0.55, life: 0.45, drag: 3, color: 0xd9b89a, alpha: 0.5 }),
+  ] },
+  'hit.shot.crystal': { extends: 'hit.shot', layers: [
+    L({ type: 'sprites', count: [5, 8], shape: 'shard', dir: 'cone', cone: 60, speed: [3, 6], size: [0.1, 0.16], sizeEnd: 0.04, life: [0.4, 0.6], gravity: 8, color: 'lab', spin: [-10, 10] }),
+  ] },
+  'hit.shot.jelly': { extends: 'hit.blunt.jelly' },
+  // a kill: what it was made of bursts, and a few stars of its colour go up (a finishing beat on top of its own death)
+  'hit.blunt.clay.kill': { extends: 'hit.blunt.clay', layers: [
+    L({ type: 'sprites', count: 6, shape: 'star4', dir: 'cone', axis: 'up', cone: 60, speed: [2, 4], size: [0.2, 0.3], sizeEnd: 0, life: [0.5, 0.8], drag: 2, gravity: 3, color: ['gold', 'white'], twinkle: 18 }),
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.4, sizeEnd: 2.2, life: 0.3, color: 'gold' }),
+  ] },
+  'hit.slash.clay.kill': { extends: 'hit.slash.clay', layers: [
+    L({ type: 'sprites', count: 6, shape: 'star4', dir: 'cone', axis: 'up', cone: 60, speed: [2, 4], size: [0.2, 0.3], sizeEnd: 0, life: [0.5, 0.8], drag: 2, gravity: 3, color: ['gold', 'white'], twinkle: 18 }),
+  ] },
+  'hit.shot.clay.kill': { extends: 'hit.shot.clay', layers: [
+    L({ type: 'sprites', count: 5, shape: 'star4', dir: 'cone', axis: 'up', cone: 60, speed: [2, 4], size: [0.18, 0.26], sizeEnd: 0, life: [0.5, 0.8], drag: 2, gravity: 3, color: ['gold', 'white'], twinkle: 18 }),
+  ] },
+  'hit.blunt.jelly.kill': { extends: 'hit.blunt.jelly', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 14, shape: 'bubble', spawn: 'sphere', r: 0.5, dir: 'out', speed: [1, 3], size: [0.12, 0.28], sizeEnd: 0.35, life: [0.7, 1.2], drag: 1.5, gravity: -1, color: 0xbfe8ff, alpha: 0.9 }),
+    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.4, sizeEnd: 2.6, life: 0.35, color: 0x8fd0ff }),
   ] },
   // what clay gives up: chips of it, falling, and a puff of its dust
   'hit.blunt.clay': { extends: 'hit.blunt', layers: [
