@@ -13,6 +13,7 @@
 // starts). Layer types:
 //   sprites   shaped particles (vfx/sprites.js): a burst (`count`) or a stream (`rate` a second, for `dur`)
 //   mesh      an effect mesh from Mesh Create (vfx/meshfx.js), with its scale, fade and turn over its life
+//   decal     a picture laid on the ground (or stood to the camera), turning: the spell circles (src/assets/vfx/tex/)
 //   flash     the screen washes to a colour and back (capped: a flash, never a flicker)
 //   light     a lamp that blooms and fades (one of a few, the light budget lends them as it lends any lamp)
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
@@ -35,6 +36,31 @@ import { Sprites } from './sprites.js';
 import { meshFx } from './meshfx.js';
 import { LIBRARY } from './library.js';
 import { sfx } from '../audio.js';
+import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+
+// the textures a decal can wear (src/assets/vfx/tex/*.png, by file name: the spell circles the owner's wife drew among them)
+const TEX_SRC = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/tex/*.png', { query: '?b64', import: 'default', eager: true }))
+  .map(([f, b64]) => [f.split('/').pop().replace(/\.png$/, ''), b64]));
+const TEX = {};
+export function vfxTexture(name) {
+  if (TEX[name]) return TEX[name];
+  if (!TEX_SRC[name]) return null;
+  const t = new THREE.TextureLoader().load(`data:image/png;base64,${TEX_SRC[name]}`);
+  t.colorSpace = THREE.NoColorSpace; t.anisotropy = 8; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter;
+  return (TEX[name] = t);
+}
+export const vfxTextureNames = () => Object.keys(TEX_SRC);
+const DECAL_V = 'varying vec2 vUv; varying vec3 vW; void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
+const DECAL_F = `uniform sampler2D uMap; uniform vec3 uTint; uniform float uK, uLab, uGlow;
+varying vec2 vUv; varying vec3 vW;
+${LAB_GLSL}
+void main() {
+  float a = texture2D(uMap, vUv).a * uK;
+  if (a < 0.003) discard;
+  vec3 c = mix(uTint, labSoft(labPhase(vW, normalize(cameraPosition - vW)) + length(vUv - 0.5) * 1.5) * 1.3, uLab) * uGlow;
+  gl_FragColor = vec4(c * a, a);
+}`;
+let _quad = null;
 
 const NAMED = { gold: 0xffd76a, lach: 0xb49be6, white: 0xffffff, ember: 0xff9a5c, blue: 0x7fb2ff, ink: 0x140c1e };
 // (the labradorite's flash, as hex: the stone's palette in vfx/labradorite.js, for particles that take one colour each)
@@ -135,7 +161,7 @@ export class Vfx {
       }
       return false;
     }
-    if (L.type === 'mesh' && s.mesh) {
+    if ((L.type === 'mesh' || L.type === 'decal') && s.mesh) {
       const m = s.mesh;
       if (held) {
         s.fade = h.stopped ? Math.max(0, (s.fade ?? 0) - raw * (L.out ?? 2)) : THREE.MathUtils.damp(s.fade ?? 0, 1, L.in ?? 6, raw); // (in: eased; out: a steady fade, gone in 1/out s)
@@ -157,6 +183,16 @@ export class Vfx {
     switch (L.type) {
       case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P))); break;
       case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), lab: L.lab ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
+      case 'decal': {
+        const map = vfxTexture(L.tex); if (!map) break;
+        const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLab: { value: L.lab ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
+        const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
+        const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat);
+        m.renderOrder = L.order ?? 4; m.frustumCulled = false; m.userData.moodExempt = true; m.visible = false;
+        g.scene.add(m);
+        s.mesh = { group: m, u, set: (k) => { u.uK.value = Math.max(0, k); m.visible = k > 0.002; }, update: () => mindTick(), dispose: () => { m.parent?.remove(m); mat.dispose(); } };
+        break;
+      }
       case 'flash': { _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, (L.k ?? 0.5) * Math.min(1.4, P)); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
       case 'light': {
         const S = this.lights.reduce((m, x) => ((x.dur - x.t) < (m.dur - m.t) ? x : m));
@@ -178,8 +214,15 @@ export class Vfx {
     const sc = curve(L.scale, t) * (h.ctx.scale ?? 1) * (L.powerScale ? Math.sqrt(P) : 1);
     m.group.position.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0]));
     if (Array.isArray(L.stretch)) m.group.scale.set(sc * L.stretch[0], sc * curve(L.stretch[1], t), sc * L.stretch[2]); else m.group.scale.setScalar(sc);
-    m.group.rotation.y = (L.rot ?? 0) + (L.spin ?? 0) * h.t;
-    if (L.face === 'dir') m.group.quaternion.setFromUnitVectors(UP, h.dir); // (a ring stood up along the blow)
+    if ((L.tint ?? 'tint') === 'tint' && h.ctx.tint !== undefined) m.u.uTint.value.set(color('tint', h.ctx)); // (a held effect follows its caller's colour)
+    if (L.type === 'decal') { // (flat on the ground by default, turning about its centre; or stood facing the camera)
+      if (L.face === 'camera') { m.group.quaternion.copy(this.game.camera.quaternion); m.group.rotateZ((L.rot ?? 0) + (L.spin ?? 0) * h.t); }
+      else m.group.rotation.set(-Math.PI / 2, 0, (L.rot ?? 0) + (L.spin ?? 0) * h.t);
+      m.group.scale.set(sc, sc, sc);
+    } else {
+      m.group.rotation.y = (L.rot ?? 0) + (L.spin ?? 0) * h.t;
+      if (L.face === 'dir') m.group.quaternion.setFromUnitVectors(UP, h.dir); // (a ring stood up along the blow)
+    }
     m.set(curve(L.k ?? [[0, 1], [1, 0]], t) * k * (L.kmul ?? 1));
   }
 

@@ -61,10 +61,21 @@ export const LIBRARY = {
     L({ type: 'sprites', count: 5, shape: 'star4', dir: 'sphere', speed: [1.5, 3], size: [0.14, 0.2], sizeEnd: 0, life: [0.4, 0.6], drag: 3, color: 'tint', twinkle: 20 }),
   ] },
 
+  // =============================================================================================== CHESTS (vfx/chestfx.js)
+  // the circle under a chest as it charges (held: its strength is the charge), the whirling mandala
+  'chest.sigil': { layers: [
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 2.4, tint: 'tint', lab: 0.1, glow: 1.5, spin: 0.8, offset: [0, 0.04, 0], in: 5, out: 2.5 }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 3.4, tint: 'tint', lab: 0.25, glow: 1.0, spin: -0.3, offset: [0, 0.035, 0], in: 4, out: 2.5 }),
+  ] },
+
   // =============================================================================================== THE LOCKHEART'S OPENING
   // (lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle
   'ult.invoke': { layers: [
+    // the circles the owner's wife drew (source_assets/circles/): the lotus mandala under the Courier, the whirling one inside it
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 7, tint: 'gold', lab: 0.15, glow: 0.7, spin: 0.22, offset: [0, 0.05, 0], in: 2.2, out: 2 }),
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 4.2, tint: 'lach', lab: 0.85, glow: 0.8, spin: -0.7, offset: [0, 0.07, 0], in: 1.6, out: 2 }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 2, tint: 'white', lab: 0.4, glow: 0.6, spin: 1.4, offset: [0, 0.09, 0], in: 1.2, out: 2 }),
     L({ type: 'mesh', mesh: 'ult_vortex', dur: Infinity, scale: 1.25, tint: 'lach', lab: 0.6, opacity: 1.3, spin: -0.9, offset: [0, 0.06, 0], in: 2, out: 3 }),
     L({ type: 'sprites', rate: 70, dur: Infinity, shape: 'soft', spawn: 'ring', r: [3.5, 6.5], dir: 'in', speed: [3, 5], size: [0.08, 0.14], sizeEnd: 0.02, life: [0.8, 1.2], color: ['lab', 'gold', 'lach'], offset: [0, 0.3, 0] }),
     L({ type: 'sprites', rate: 40, dur: Infinity, shape: 'sparkle', spawn: 'ring', r: [2.6, 3.2], dir: 'up', speed: [1, 2.5], size: [0.16, 0.28], sizeEnd: 0, life: [0.8, 1.4], color: 'gold', twinkle: 16 }),
@@ -111,6 +122,8 @@ export const LIBRARY = {
   ] },
   // the wheel lands: everything at once
   'ult.land': { layers: [
+    L({ type: 'decal', tex: 'circle_lotus', dur: 1.4, scale: [[0, 3], [1, 18]], k: [[0, 1.6], [0.4, 1], [1, 0]], tint: 'gold', lab: 0.3, spin: 0.6, offset: [0, -0.9, 0] }),
+    L({ type: 'decal', tex: 'circle_swirl', dur: 1.0, face: 'camera', scale: [[0, 1], [1, 9]], k: [[0, 1.4], [1, 0]], tint: 'lach', lab: 0.9, spin: -2 }),
     L({ type: 'flash', color: 0xfff6e0, k: 0.85, dur: 0.6 }),
     L({ type: 'hitstop', dur: 0.14, scale: 0.02 }),
     L({ type: 'shake', k: 0.75 }),

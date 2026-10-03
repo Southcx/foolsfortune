@@ -70,7 +70,7 @@ export class Ultimate {
     this.nKeys = keys.length;
     // the keys, off the charm: they wheel round the coffin, then go into it
     this.keys = keys.map((id, i) => { const k = buildThing(id); if (!k) return null; k.group.scale.setScalar(2.4); g.scene.add(k.group); return { k, i, a: (i / Math.max(1, keys.length)) * Math.PI * 2, gone: false }; }).filter(Boolean);
-    this.circle.visible = this.circle2.visible = true;
+    this.circle.visible = this.circle2.visible = !g.vfx; // (with the VFX system, the circles are the owner's wife's: 'ult.invoke')
     this.fx = { invoke: g.vfx?.play('ult.invoke', { pos: this.at }) };
     g.mood?.set('ult', { dim: 0.72, tint: 0x160a2e, tintK: 0.8, ease: 5 });
     g.music?.duck?.(12, 0.12);

@@ -87,6 +87,11 @@ export class ChestFx {
     }
     this.circleK = THREE.MathUtils.damp(this.circleK, circleWant, circleWant > this.circleK ? 8 : 3, raw);
     this.helixK = THREE.MathUtils.damp(this.helixK, helixWant, helixWant > this.helixK ? 5 : 2.5, raw);
+    // the mandala under it (vfx/library.js 'chest.sigil'), held while the circle is up, as strong as it is, in its colour
+    if (this.circleK > 0.01 && C) {
+      if (!this.sigil?.alive || this.sigil.stopped) this.sigil = g.vfx?.play('chest.sigil', { pos: this.circle.group.position, tint: this.circle.u.uTint.value.getHex() });
+      if (this.sigil) { this.sigil.pos.copy(this.circle.group.position); this.sigil.ctx.tint = this.circle.u.uTint.value.getHex(); this.sigil.k = Math.min(1.4, this.circleK); this.sigil.ctx.scale = this.circle.group.scale.x; }
+    } else if (this.sigil) { this.sigil.stop(); this.sigil = null; }
     this.circle.set(this.circleK < 0.01 ? 0 : this.circleK);
     this.helix.set(this.helixK < 0.01 ? 0 : this.helixK);
     this.circle.update(raw); this.shock.update(raw); this.helix.update(raw);
