@@ -109,6 +109,16 @@ export class Ceremony {
     game.events.emit('chest.start', { tier: this.T, sealed: this.sealed });
     // the camera starts from where the player's is and settles into the shot
     this.cam = { dist: 3.8, h: 1.4, phi: 1.0, look: 0.4, fov: 0, roll: 0 };
+    // (with the sequences there, the camera is data: cine/sequences.js 'chest.open', directed in the workbench; the beats stay here)
+    if (game.cine) {
+      const above = new THREE.Vector3();
+      this.seq = game.cine.play('chest.open', { id: 'chest', yaw: chest.yaw, anchors: {
+        chest: () => this.chest.rig.root.position,
+        curio: () => this.curioAt || this.c,
+        above: () => above.copy(this.chest.rig.root.position).setY(this.chest.rig.root.position.y + 0.62 * this.chest.rig.scale + 0.35),
+      } });
+      this.seq.go('approach', { tint: TIERS[this.T].rgb });
+    }
     this.shot();
   }
 
@@ -134,6 +144,7 @@ export class Ceremony {
 
   // ---------------------------------------------------------------- the camera: a place, and a point to look at (eased in real seconds)
   shot(rate = 3) {
+    if (this.seq) return;
     const g = this.g, c = this.cam;
     _a.copy(this.c).addScaledVector(this.front, c.dist * Math.cos(c.phi)).addScaledVector(this.side, c.dist * Math.sin(c.phi)); _a.y = this.base + c.h;
     _b.copy(this.c); _b.y = this.base + c.look;
@@ -367,6 +378,7 @@ export class Ceremony {
   // ---- SETTLE: the camera comes back, and the cubes come to them
   p_settle(dt, raw) {
     const g = this.g;
+    if (this.seq && this.seq.segName !== 'settle') this.seq.go('settle'); // (the watchdog's way here skips enter)
     if (!this.settled) { this.settled = true; g.cinema.unshot('chest'); if (!this.chests.rave?.active) g.mood.free('chest'); g.time.free('chest'); this.beam.set(null, 0, 1); }
     this.flash = 0; this.light.intensity = D(this.light.intensity, 0, 6, raw);
     this.chest.rig.setGlow(D(this.chest.rig.glow, 0.22, 3, raw));
@@ -379,6 +391,8 @@ export class Ceremony {
   // ---------------------------------------------------------------- moving between beats
   enter(phase) {
     this.phase = phase; this.pt = 0;
+    const len = { charge: this.chargeLen, fountain: this.plan.fountain, reveal: this.plan.curio + 0.5 }[phase];
+    if (phase !== 'collect') this.seq?.go(phase, { tint: TIERS[this.T].rgb, len });
     if (phase === 'charge') {
       this.knockT = 0.15;
       sfx.chestCharge(this.chargeLen, this.sealed ? Math.min(2, Math.max(...this.rl.seq)) : this.T);
@@ -406,6 +420,7 @@ export class Ceremony {
   // ---------------------------------------------------------------- the end (or an abort): leave nothing behind
   finish() {
     const g = this.g, chest = this.chest;
+    this.seq?.stop(); this.seq = null;
     g.cinema.unshot('chest'); g.mood.free('chest'); g.time.free('chest');
     this.beam.set(null, 0, 1); this.light.intensity = 0;
     if (this.curio) { this.curio.dispose(); this.curio = null; }

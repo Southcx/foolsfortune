@@ -95,6 +95,11 @@ import { Portrait } from './vfx/portrait.js';
 import { PsychicPulse } from './vfx/pulse.js';
 import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
+import { ChestFx } from './vfx/chestfx.js';
+import { Vfx } from './vfx/vfx.js';
+import { Auras } from './vfx/auras.js';
+import { Cine, applyCineOverrides } from './cine/sequence.js';
+import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
@@ -329,6 +334,11 @@ async function main() {
   // the System (what you've learned) is up before the techs, which ask it whether they may start
   const system = new System(game);
   game.system = system;
+  // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js; before the tools, which ask it for their swings)
+  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
+  game.vfx = new Vfx(game);
+  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
+  game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   const weapon = new Weapon(game);
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
@@ -538,6 +548,23 @@ async function main() {
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
+  // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
+  game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
+    const P = game.player;
+    if (!name) { game.events.emit('vfx.list', { names: game.vfx.names() }); return; }
+    const f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
+    game.vfx.play(name, { pos: P.pos.clone().addScaledVector(f, 2).setY(P.pos.y + 1), dir: f.clone().negate(), tint: tint ? parseInt(tint.replace('#', ''), 16) : 0xffd76a, floor: P.pos.y });
+    game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
+  } });
+  game.workbench = new Workbench(game);
+  game.chat.add('lab', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', aliases: ['workbench'], run: () => game.workbench.toggle() });
+  game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
+    const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
+    const T = await import('./lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
+    const { table, mods } = T.oddsOf('heart.plain', ['key.brass']);
+    lh.queue = [{ id: T.spin(table), R: T.rates(table), power: 1.5, mods, heart: 'heart.plain', keys, i: 0 }];
+    game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
+  } });
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
   if (freshBuild) game.log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
@@ -659,6 +686,7 @@ async function main() {
     if (window.__game?.manual) return;
     try {
       diag.frameStart();
+      if (game.workbench?.open) { game.workbench.frame(dt); input.endFrame(); diag.frameEnd(); return; } // (the workbench instead of the world: workbench/)
       if (game.title?.active) { // (the title instead of the game: the world waits, built, behind it)
         game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
@@ -892,6 +920,10 @@ async function main() {
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
     });
+    game.auras.update();
+    game.vfx.update(game.rawDt || dt);
+    game.cine.update(game.rawDt || dt);
+    (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane'); // (the compass is the Dreamvane's: worn, it shows)
     game.wireCompass.update(dt);

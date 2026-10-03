@@ -105,6 +105,28 @@ Hunter's animations are. In practice:
 - **Anticipation and follow-through on actions**, timed to the game's own beats (a move's timings are its feel and do not change:
   the clip is time-warped onto them, as the carry is).
 
+## Effect meshes: made in Blender
+
+Effect meshes (rings, ribbons, helices, flares, pillars, domes) live in **one Blender file**, `source_assets/vfx/effects.blend`, one
+object each in its **FX** collection; the object's name is the name the game asks for (`vfx/library.js`). Open it, change a shape,
+paint its vertex alpha, swap its texture; the texture scroll previews in the viewport (press play: the Mapping node is driven by the
+frame). How it flows in the game is on the object, **Custom Properties**: `fx_speedU`, `fx_speedV` (tiles a second), `fx_blend`
+(`additive` | `alpha`), `fx_side` (`double` | `front`). Then:
+
+    python3 -I tools/export_vfx.py            (every FX object -> src/assets/vfx/<name>.glb; or inside Blender: -P tools/export_vfx.py)
+
+Any GLB in `src/assets/vfx/` is in the game by its file name, with no code to touch; any PNG in `src/assets/vfx/tex/` is a texture
+a `decal` layer can wear (the two spell circles the owner's wife drew are `circle_lotus` and `circle_swirl`).
+
+Mesh Create (https://gameanimation.info/mesh-create/) stays as a sketchbook: `node tools/meshflow.mjs --author` roughs a shape out
+headless from a recipe and bakes it to `source_assets/meshflow/baked/`; `python3 -I tools/export_vfx.py --import <that.glb>` brings
+it into the .blend, where it is finished.
+
+| Mesh | Where |
+| --- | --- |
+| `chest_circle`, `chest_shock`, `chest_helix` | a chest's opening (`vfx/chestfx.js`) |
+| `ult_vortex`, `ult_pillar`, `ult_helix`, `ult_crown`, `ult_dome` | the Lockheart's opening (`ult.*` in the library) |
+
 ## Proposed persistent 3D HUD (the Mind's layer, in the world)
 
 | Element | Replaces / joins | Prior art |

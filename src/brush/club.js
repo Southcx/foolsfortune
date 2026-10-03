@@ -50,6 +50,8 @@ export class Club {
     this.tool = tool;
     this.blow = null; this.t = 0; this.n = -1; this.buffer = 0; this.idle = 9;
     this.hit = new Set();
+    // (the head's arc through the air on a blow: its look is vfx/library.js 'swing.brush')
+    tool.game?.vfx?.swing('swing.brush').follow((a, b) => { const B = this.blow; if (!B || this.t < B.hit[0] - 0.12 || this.t > B.hit[1] + 0.08) return false; this.tool.model.headSegment(a, b); return true; });
     this.charge = -1; // -1: not charging; else seconds held up
     this.slam = null; // { t, power, air, struck }
     this.flicked = false;

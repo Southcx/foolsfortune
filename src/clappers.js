@@ -791,6 +791,7 @@ export class Clappers {
   hit(c, point, dir, power = 1, cause = 'shot', custom = null) {
     if (!c.alive) return;
     c.alive = false;
+    if (point) this.game.vfx?.hit({ ent: c, kind: 'clapper', cause, point, dir, power, kill: true }); // (vfx/library.js 'hit.*')
     this.dropJob(c);
     const game = this.game;
     const s = T.clappers.scale * (1 + Math.min(8, c.stash) * 0.045);

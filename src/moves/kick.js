@@ -21,6 +21,8 @@ export class Kick extends Tech {
     this.st = 0;
     this.hit = new Set();
     this.cool = 0;
+    // (the foot's arc, shin to toe, on both legs: the one that kicks is the one that leaves a ribbon. Its look: vfx/library.js 'swing.kick')
+    for (const s of ['R', 'L']) this.game.vfx?.swing('swing.kick').follow((a, b) => { const B = this.game.character?.bones; if (this.state !== 'kick' || this.st < WIND - 0.04 || this.st > ACTIVE_TO + 0.04 || !B) return false; B[`shin${s}`].getWorldPosition(a); B[`toe${s}`].getWorldPosition(b); a.lerp(b, 0.45); return true; });
   }
 
   get engaged() { return this.state === 'kick'; }
