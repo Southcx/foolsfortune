@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // IN COMBAT: one signal for "is she fighting?", so everything that should only be there in a fight (the HUD ring and the ability
-// charges, the battle music, a status worth showing) asks one place. HEAT rises to full the moment a blow is struck, by her or at her,
+// charges, the battle music, a status worth showing) asks one place. HEAT rises to full the moment a blow is struck, by her (at something alive) or at her,
 // or a hunter notices her, and holds while anything is still hunting her; then it eases away over a few seconds. ENGAGED is heat
 // above a hair. The edges are events (`combat.start`, `combat.end`) for whoever wants them; nothing is said in the log.
 //
@@ -11,12 +11,14 @@
 // ---------------------------------------------------------------------------------------
 const STRUCK = ['cut.hit', 'brush.hit', 'jelly.hit', 'jelly.strike', 'jelly.notice', 'throw.hit', 'lob.hit', 'clapper.down', 'creature.stun', 'shell.hit', 'vessel.crack'];
 const HOLD = 5, FADE = 3; // (seconds at full after the last blow, then seconds to ease away)
+// (a blow on a thing is not a fight: breaking the workshop's pots must not bring up the battle music or the fight's HUD)
+const INERT = new Set(['pot', 'crate', 'barrel', 'jar', 'chest', 'prop', 'crystal', 'curio']);
 
 export class Combat {
   constructor(game) {
     this.game = game;
     this.heat = 0; this.since = 99; this.engaged = false;
-    for (const k of STRUCK) game.events?.on(k, (e) => { if (e?.by !== 'clapperjar' || k === 'jelly.strike') this.poke(); });
+    for (const k of STRUCK) game.events?.on(k, (e) => { if (INERT.has(e?.what) || INERT.has(e?.kind)) return; if (e?.by !== 'clapperjar' || k === 'jelly.strike') this.poke(); });
   }
   /** Something that is a fight happened just now. */
   poke(k = 1) { this.since = 0; this.heat = Math.max(this.heat, k); }
