@@ -41,8 +41,34 @@ effect; the effect is tuned apart from the move).
 | Effect meshes | `source_assets/vfx/effects.blend` -> `tools/export_vfx.py` -> `src/assets/vfx/*.glb` | made in **Blender** (docs/LOOK.md); every GLB is picked up by name |
 | Decal textures | `src/assets/vfx/tex/*.png` | the spell circles the owner's wife drew (`circle_lotus`, `circle_swirl`), and any picture a decal should wear |
 | Combat | `creatures.strike`, `breakables.damage`, `clappers.hit` | every blow plays `hit.<tool>.<material>[.kill]` |
-| **The workbench** | `src/workbench/workbench.js`, chat **`/lab`** | the game's own studio: EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
+| **The workbench** | `src/workbench/workbench.js`, chat **`/lab`** | the game's own studio: CINEMA (the sequences, below), EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
+| **Sequences** | `src/cine/sequence.js`, `src/cine/sequences.js` | cinematic events as data: camera keys, effects, bars, slow time, mood, sounds and cues on a timeline per segment, played by name (`game.cine.play`) |
 | Chat | `/vfx <name> [tint]`, `/vfx`, `/opening`, `/lab` | |
+
+## Cinematics as data (sequences)
+
+A cinematic event (the Lockheart's opening now; the chest ceremony next) is a **sequence** in `src/cine/sequences.js`, played by name:
+
+```js
+const seq = game.cine.play('lockheart.opening', { anchors: { courier: () => pos, coffin: () => cof }, yaw });
+seq.go('key', { tint, i });   // the game says WHEN a beat comes (how many keys, when the wheel lands)
+seq.stop();                    // the data says WHAT happens inside it
+```
+
+A sequence is **segments** (one per beat), each a small timeline of **tracks**: `camera` (keys of `{ at: anchor, off: [right, up,
+forward] }` for where it stands and what it looks at, `fov`, `roll`, `cut`; `offs` gives one framing per repeat, a cut per key),
+`fx` (an effect from the library at an anchor; `until` holds it to a later segment, `follow` keeps it on a moving anchor), `bars`,
+`time`, `mood`, `sound`, `cue`. Offsets are in the anchors' own frame, so a sequence plays the same wherever it happens; the camera is
+kept out of walls (`shotclear.js`).
+
+**Directing one, by eye:** `/lab` -> CINEMA. Pick a segment: it plays on the stage with its anchors stood in (from `preview`), the
+camera's path drawn in blue (cuts in red). VIEW: SHOT looks through the sequence's camera; VIEW: ORBIT walks round it. Scrub to a time,
+frame the shot with the orbit camera and KEY THIS VIEW (or REMOVE KEY); edit any track in the JSON. APPLY plays it here and in the
+world (kept in this browser), PLAY ALL strings the segments as the game does (`order`), COPY SEQUENCE puts it on the clipboard for
+`cine/sequences.js`, REVERT goes back to the file.
+
+Prior art: Unity's Timeline and Unreal's Sequencer (tracks of keys on one clock), Final Fantasy X's and Kingdom Hearts' summons (a
+camera per beat, the beats driven by the battle), Source's choreographed scenes (authored relative to the actors).
 
 ## Sacred geometry (the owner's direction)
 

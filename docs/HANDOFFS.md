@@ -20,8 +20,10 @@ lines to the owner. Petra reviews, merges and publishes.
     read `ent.lastCause` (unset: blunt); if you set it where a blow begins, pots will show slash and shot hits too.
   - `src/lockheart/ultimate.js`: the opening plays `ult.*` effects; and a bug fix in the ascent's camera (pos and the look's `around()`
     shared one vector: the crane sat inside the Courier). The canvas circles hide when `game.vfx` exists (the owner's wife's circles
-    replace them).
-  - `src/main.js`: `game.vfx`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
+    replace them). It now plays its camera, slow time, mood and effects from a sequence (`game.cine.play('lockheart.opening')`,
+    data in `src/cine/sequences.js`): the code says when each beat comes (`seq.go('key')`, `'ascend'`, `'wheel'`, `'land'`, `'back'`)
+    and skips its own camera, time and mood while the sequence is there. Without `game.cine` it behaves as before.
+  - `src/main.js`: `game.vfx`, `game.cine`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
 - A `material` tag on things (`tags.js`: clay, crystal, jelly, wood, metal, stone) would let `vfx.hit` stop guessing from the kind.
 
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**

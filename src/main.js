@@ -97,6 +97,7 @@ import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
 import { ChestFx } from './vfx/chestfx.js';
 import { Vfx } from './vfx/vfx.js';
+import { Cine, applyCineOverrides } from './cine/sequence.js';
 import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
@@ -376,7 +377,8 @@ async function main() {
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
-  game.vfx = new Vfx(game); // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js)
+  game.vfx = new Vfx(game);
+  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js) // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
@@ -916,6 +918,7 @@ async function main() {
       , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
     });
     game.vfx.update(game.rawDt || dt);
+    game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane'); // (the compass is the Dreamvane's: worn, it shows)

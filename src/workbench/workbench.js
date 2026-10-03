@@ -11,6 +11,10 @@
 //              counts (vertices, triangles, materials, bones) and a 1.7 m figure for scale; a rigged model plays its own clips, and the
 //              Courier plays every clip of the game's clip pack
 //   TEXTURES   the effect textures, the spell circles and the sprite atlas, shown on the stage
+//   CINEMA     every cinematic sequence (cine/sequences.js), segment by segment, on the stage with its anchors stood in: played, or
+//              all its segments strung as the game strings them; scrubbed; seen through its own camera or from outside with its
+//              camera's path drawn; its data edited live (Apply: here and in the world); and KEY THIS VIEW sets a camera key from
+//              where the workbench's camera is, at the scrub's time
 //
 // Prior art: the engine editor's asset browser and its preview pane (Unity's inspector preview, Unreal's Niagara and static-mesh
 // editors: an effect or a mesh on a turntable, its stats beside it), the "sound test" and "model viewer" of the sixth generation's
@@ -23,6 +27,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Vfx, vfxTexture, vfxTextureNames } from '../vfx/vfx.js';
 import { LIBRARY } from '../vfx/library.js';
+import { Cine, cameraAt, resolve, offsetOf, PRISTINE_SEQUENCES, CINE_STORE } from '../cine/sequence.js';
+import { SEQUENCES } from '../cine/sequences.js';
 import { atlas } from '../vfx/sprites.js';
 import { ITEMS } from '../pneuka/items.js';
 import { buildThing } from '../pneuka/thingmodels.js';
@@ -103,7 +109,7 @@ export class Workbench {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const root = (this.root = document.createElement('div')); root.id = 'workbench'; root.style.display = 'none';
     root.innerHTML = `<div class="wb">
-      <div class="tabs"><b data-t="effects">EFFECTS</b><b data-t="models">MODELS</b><b data-t="textures">TEXTURES</b><b class="x" title="close (Esc)">×</b></div>
+      <div class="tabs"><b data-t="effects">EFFECTS</b><b data-t="models">MODELS</b><b data-t="textures">TEXTURES</b><b data-t="cinema">CINEMA</b><b class="x" title="close (Esc)">×</b></div>
       <input type="search" placeholder="search">
       <div class="list"></div>
       <div class="pane"></div>
@@ -117,7 +123,7 @@ export class Workbench {
     addEventListener('keydown', (e) => {
       if (!this.open) return;
       if (e.code === 'Escape') { this.toggle(false); e.preventDefault(); }
-      if (e.code === 'Space' && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') { this.play(); e.preventDefault(); }
+      if (e.code === 'Space' && document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') { if (this.tab === 'cinema') this.cineAct('play'); else this.play(); e.preventDefault(); }
     }, true);
     this.game.theme?.watch?.(root);
   }
@@ -141,7 +147,9 @@ export class Workbench {
     this.clearHolder(); this.stopHeld();
     this.figure.visible = true;
     this.pane.innerHTML = '';
+    this.cineClear?.();
     if (tab === 'effects') this.effectsPane();
+    else if (tab === 'cinema') this.cinemaPane();
     else if (tab === 'models') this.modelsPane();
     else this.texturesPane();
     this.list();
@@ -149,6 +157,7 @@ export class Workbench {
 
   // ------------------------------------------------------------------ the list (whatever the tab lists)
   entries() {
+    if (this.tab === 'cinema') return Object.entries(SEQUENCES).flatMap(([n, d]) => Object.keys(d.segments || {}).map((sg) => ({ id: `${n}|${sg}`, grp: n, label: sg })));
     if (this.tab === 'effects') return Object.keys(LIBRARY).sort().map((n) => ({ id: n, grp: n.split('.')[0], label: n }));
     if (this.tab === 'textures') return [...vfxTextureNames().map((n) => ({ id: `tex:${n}`, grp: 'effect textures', label: n })), { id: 'atlas', grp: 'sprites', label: 'the sprite atlas' }];
     const out = [];
@@ -176,6 +185,7 @@ export class Workbench {
     this.listEl.querySelectorAll('div[data-id]').forEach((d) => d.classList.toggle('on', d.dataset.id === id));
     if (this.tab === 'effects') { this.loadEffect(id); this.play(); }
     else if (this.tab === 'models') this.loadModel(id);
+    else if (this.tab === 'cinema') this.loadSegment(id);
     else this.loadTexture(id);
   }
 
@@ -365,6 +375,166 @@ export class Workbench {
     this.controls.target.set(0, 1.6, 0); this.camera.position.set(0, 1.6, 4.2); this.controls.update();
   }
 
+  // ------------------------------------------------------------------ CINEMA
+  cineStage() {
+    if (this.cine) return;
+    const shim = { vfx: this.vfx, physics: null, time: null, mood: null, cinema: { shot: (id, sp) => { this.shotSpec = sp; }, unshot: () => { this.shotSpec = null; }, frame() {}, free() {} } };
+    this.cine = new Cine(shim); this.cine.sequences = SEQUENCES;
+    this.shotCam = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.05, 400);
+    this.anchorObjs = new THREE.Group(); this.scene.add(this.anchorObjs);
+    this.pathLine = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x7fb2ff })); this.pathLine.frustumCulled = false; this.scene.add(this.pathLine);
+    this.keyMarks = new THREE.Group(); this.scene.add(this.keyMarks);
+  }
+
+  cinemaPane() {
+    this.cineStage();
+    this.cv = this.cv || { view: 'orbit', path: true, playing: false, all: false };
+    const C = this.cv;
+    this.pane.innerHTML = `
+      <div class="row"><button data-a="play">PLAY ␣</button><button data-a="all">PLAY ALL</button><button data-a="pause">PAUSE</button><button data-a="view">VIEW: ${C.view.toUpperCase()}</button><button data-a="path">PATH ${C.path ? 'ON' : 'OFF'}</button></div>
+      <div class="ctl"><span>time</span><input type="range" min="0" max="3" step="0.01" value="0" data-k="scrub"><output>0.00</output></div>
+      <div class="row"><button data-a="key">KEY THIS VIEW</button><button data-a="unkey">REMOVE KEY</button></div>
+      <textarea spellcheck="false" placeholder="pick a segment"></textarea>
+      <div class="row"><button data-a="apply">APPLY</button><button data-a="revert">REVERT</button><button data-a="copy">COPY SEQUENCE</button></div>
+      <div class="note"></div>`;
+    this.pane.style.cssText = 'display:flex;flex-direction:column;flex:1 1 55%;min-height:0';
+    this.edit = this.pane.querySelector('textarea'); this.note = this.pane.querySelector('.note');
+    this.scrub = this.pane.querySelector('input[data-k=scrub]'); this.scrubOut = this.scrub.nextElementSibling;
+    this.scrub.addEventListener('input', () => { C.playing = false; this.seek(+this.scrub.value); });
+    this.pane.querySelectorAll('button[data-a]').forEach((b) => b.addEventListener('click', () => this.cineAct(b.dataset.a, b)));
+    this.figure.visible = true;
+  }
+
+  cineClear() { if (this.cineH) { this.cineH.stop(); this.cineH = null; } this.stopHeld(); if (this.pathLine) this.pathLine.visible = false; if (this.keyMarks) this.keyMarks.clear(); this.anchorObjs?.clear(); this.shotSpec = null; }
+
+  /** The anchors of the sequence, stood in on the stage (from its `preview`). */
+  stageAnchors(def) {
+    this.anchorObjs.clear();
+    const A = {};
+    for (const [k, p] of Object.entries(def.preview || { courier: [0, 0, 0] })) {
+      A[k] = new THREE.Vector3(...p);
+      if (k === 'courier') { this.figure.position.set(p[0], p[1] + 0.85, p[2]); continue; }
+      const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.18), new THREE.MeshBasicMaterial({ color: 0xffd76a, wireframe: true }));
+      m.position.copy(A[k]); this.anchorObjs.add(m);
+    }
+    A.origin = new THREE.Vector3();
+    return A;
+  }
+
+  loadSegment(id) {
+    const [seq, seg] = id.split('|');
+    this.cseq = seq; this.cseg = seg;
+    const def = SEQUENCES[seq], S = def?.segments?.[seg];
+    if (!S) return;
+    this.cAnchors = this.stageAnchors(def);
+    this.edit.value = JSON.stringify(S, null, 1);
+    const len = this.segLen(S);
+    this.scrub.max = String(len.toFixed(2));
+    const edited = JSON.parse(localStorage.getItem(CINE_STORE) || '{}')[seq];
+    this.say(edited ? 'this sequence is edited here (kept in this browser): REVERT puts the file\'s back' : '');
+    this.drawPath();
+    this.cineStart(seg);
+    this.cv.playing = true;
+  }
+
+  segLen(S) { let m = 0.5; for (const tr of ['camera', 'fx', 'bars', 'time', 'mood', 'sound', 'cue']) for (const k of S[tr] || []) m = Math.max(m, (k.t || 0) + (tr === 'fx' ? 1.2 : 0)); return Math.min(m, 30); }
+
+  cineStart(seg, ctx = {}) {
+    this.stopHeld();
+    if (!this.cineH || this.cineH.stopped || this.cineH.name !== this.cseq) {
+      this.cineH?.stop();
+      this.cineH = this.cine.play(this.cseq, { anchors: this.cAnchors, yaw: 0, start: seg });
+    }
+    this.cineH.go(seg, { tint: 0xd9b048, i: this.keyI || 0, ...ctx });
+  }
+
+  /** To a time in the segment: the camera only (effects play when it plays). */
+  seek(t) {
+    if (!this.cineH) return;
+    this.cineH.t = t; this.scrubOut.textContent = t.toFixed(2);
+    const S = SEQUENCES[this.cseq]?.segments?.[this.cseg];
+    const cam = cameraAt(S, t, this.cAnchors, 0, undefined, this.keyI || 0);
+    this.shotSpec = cam ? { pos: cam.pos, look: cam.look, fov: cam.fov, roll: cam.roll } : null;
+  }
+
+  cineAct(a, btn) {
+    const C = this.cv;
+    if (a === 'play' && this.cseg) { this.cineStart(this.cseg); C.playing = true; C.all = false; }
+    else if (a === 'all' && this.cseq) { C.all = true; C.playing = true; this.allI = 0; this.allN = 0; this.keyI = 0; const o = SEQUENCES[this.cseq].order || []; if (o[0]) { this.cseg = o[0][0]; this.allT = 0; this.cineStart(this.cseg); } }
+    else if (a === 'pause') C.playing = !C.playing;
+    else if (a === 'view') { C.view = C.view === 'orbit' ? 'shot' : 'orbit'; btn.textContent = `VIEW: ${C.view.toUpperCase()}`; }
+    else if (a === 'path') { C.path = !C.path; btn.textContent = `PATH ${C.path ? 'ON' : 'OFF'}`; this.drawPath(); }
+    else if (a === 'key' || a === 'unkey') this.keyView(a === 'unkey');
+    else if (a === 'apply') {
+      try {
+        const S = JSON.parse(this.edit.value);
+        SEQUENCES[this.cseq].segments[this.cseg] = S;
+        const o = JSON.parse(localStorage.getItem(CINE_STORE) || '{}'); o[this.cseq] = SEQUENCES[this.cseq]; localStorage.setItem(CINE_STORE, JSON.stringify(o));
+        this.say('applied: here and in the world (kept in this browser)'); this.drawPath(); this.scrub.max = String(this.segLen(S).toFixed(2)); this.cineStart(this.cseg); C.playing = true;
+      } catch (e) { this.say(`not applied: ${e.message}`); }
+    } else if (a === 'revert' && this.cseq) {
+      const o = JSON.parse(localStorage.getItem(CINE_STORE) || '{}'); delete o[this.cseq]; localStorage.setItem(CINE_STORE, JSON.stringify(o));
+      SEQUENCES[this.cseq] = JSON.parse(JSON.stringify(PRISTINE_SEQUENCES[this.cseq]));
+      this.loadSegment(`${this.cseq}|${this.cseg}`); this.say('reverted to the file');
+    } else if (a === 'copy' && this.cseq) this.copy(`  '${this.cseq}': ${JSON.stringify(SEQUENCES[this.cseq], null, 1)},\n`, 'copied: paste it into cine/sequences.js');
+  }
+
+  /** A camera key at the scrub's time from where the workbench's camera is (or the key there removed). */
+  keyView(remove) {
+    const S = SEQUENCES[this.cseq]?.segments?.[this.cseg];
+    if (!S) return;
+    const t = +(+this.scrub.value).toFixed(2), K = (S.camera ||= []);
+    const at = K.findIndex((k) => Math.abs(k.t - t) < 0.05);
+    if (remove) { if (at >= 0) K.splice(at, 1); }
+    else {
+      const prev = K[at >= 0 ? at : Math.max(0, K.findIndex((k) => k.t > t) - 1)] || {};
+      const posAt = prev.pos?.at || 'courier', lookAt = prev.look?.at || 'courier';
+      const key = { t, pos: { at: posAt, off: offsetOf(this.camera.position, this.cAnchors[posAt], 0) }, look: { at: lookAt, off: offsetOf(this.controls.target, this.cAnchors[lookAt], 0) }, fov: prev.fov ?? 0, roll: prev.roll ?? 0 };
+      if (at >= 0) K[at] = key; else { K.push(key); K.sort((a, b) => a.t - b.t); }
+    }
+    this.edit.value = JSON.stringify(S, null, 1);
+    this.drawPath(); this.seek(t);
+    this.say(remove ? 'key removed (APPLY keeps it)' : `keyed at ${t.toFixed(2)} s (APPLY keeps it)`);
+  }
+
+  drawPath() {
+    this.keyMarks.clear(); this.pathLine.visible = false;
+    if (!this.cv?.path || !this.cseq) return;
+    const S = SEQUENCES[this.cseq]?.segments?.[this.cseg];
+    if (!S?.camera?.length) return;
+    const pts = [], len = this.segLen(S);
+    for (let i = 0; i <= 60; i++) { const c = cameraAt(S, (i / 60) * len, this.cAnchors, 0, undefined, this.keyI || 0); if (c) pts.push(c.pos.clone()); }
+    this.pathLine.geometry.dispose(); this.pathLine.geometry = new THREE.BufferGeometry().setFromPoints(pts); this.pathLine.visible = true;
+    for (const k of S.camera) {
+      const p = resolve(k.pos, this.cAnchors, 0, new THREE.Vector3(), this.keyI || 0), l = resolve(k.look, this.cAnchors, 0, new THREE.Vector3(), this.keyI || 0);
+      const m = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.25, 4), new THREE.MeshBasicMaterial({ color: k.cut ? 0xff7a6a : 0x7fb2ff, wireframe: true }));
+      m.position.copy(p); m.lookAt(l); m.rotateX(-Math.PI / 2); this.keyMarks.add(m);
+    }
+  }
+
+  cineFrame(raw) {
+    const C = this.cv;
+    if (!this.cineH || !C) return;
+    if (C.playing) {
+      this.cine.update(raw);
+      this.scrub.value = String(this.cineH.t); this.scrubOut.textContent = this.cineH.t.toFixed(2);
+      if (C.all) { // (the segments as the game strings them)
+        const o = SEQUENCES[this.cseq].order || [], cur = o[this.allI];
+        this.allT += raw;
+        if (cur && this.allT >= cur[1]) {
+          this.allT = 0; this.allN++;
+          if (cur[2] && this.allN < cur[2]) { this.keyI = this.allN; this.cineH.go(cur[0], { tint: [0xd9b048, 0xe8a0c8, 0xb49be6, 0xf2f2e6][this.allN % 4], i: this.allN }); }
+          else { this.allI++; this.allN = 0; this.keyI = 0; const nx = o[this.allI]; if (nx) { this.cseg = nx[0]; this.cineH.go(nx[0], { tint: 0xd9b048, i: 0 }); } else { C.playing = false; C.all = false; } }
+        }
+      } else if (this.cineH.t > this.segLen(SEQUENCES[this.cseq].segments[this.cseg]) + 0.6) this.cineStart(this.cseg); // (on a loop)
+    }
+    const sp = this.shotSpec;
+    if (sp && this.shotCam) {
+      this.shotCam.position.copy(sp.pos); this.shotCam.up.set(0, 1, 0); this.shotCam.lookAt(sp.look); this.shotCam.rotateZ(sp.roll || 0);
+      this.shotCam.fov = 45 + (sp.fov || 0); this.shotCam.aspect = innerWidth / innerHeight; this.shotCam.updateProjectionMatrix();
+    }
+  }
+
   // ------------------------------------------------------------------ every frame while open
   frame(dt) {
     const g = this.game, raw = dt;
@@ -383,6 +553,7 @@ export class Workbench {
       this.packBones.forEach((b, i) => b?.quaternion.fromArray(pose.q, i * 4));
       if (this.packHip) this.packHip.position.fromArray(pose.p);
     }
-    g.post.render(this.scene, this.camera);
+    if (this.tab === 'cinema') this.cineFrame(raw);
+    g.post.render(this.scene, this.tab === 'cinema' && this.cv?.view === 'shot' && this.shotCam ? this.shotCam : this.camera);
   }
 }
