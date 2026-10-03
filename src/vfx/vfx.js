@@ -33,6 +33,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sprites } from './sprites.js';
+import { hasTag } from '../tags.js';
 import { Trail } from './trail.js';
 import { meshFx } from './meshfx.js';
 import { LIBRARY } from './library.js';
@@ -72,6 +73,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 // (how a cause is struck, and what a kind is made of: the hit's name is built from them)
 const SLASH = /cut|slice|slash|cleave|rend|sunder|blade|zandatsu|stinger/;
 const SHOT = /shot|charged|ricochet|homing|bolt|spark|slicer/;
+export const MATERIALS = ['clay', 'crystal', 'jelly', 'wood', 'stone', 'metal']; // (the material tags a hit reads: tags.js)
 const MATERIAL = { pot: 'clay', jar: 'clay', urn: 'clay', vase: 'clay', lantern: 'clay', pitcher: 'clay', bowl: 'clay', clapper: 'clay', crate: 'wood', slipjelly: 'jelly', jelly: 'jelly', crystal: 'crystal' };
 const TOOL_TINT = { blunt: 0xffd76a, slash: 0xfff1dc, shot: 0xffb27a };
 
@@ -152,6 +154,7 @@ export class Vfx {
    *  tip, a wide afterglow behind), and its `sprites` layers with `perM` are shed along the way, so many per metre the tip travels
    *  (`along: 'tip'` at the tip, `'blade'` anywhere on it), carrying some of its speed (`inherit`).
    *    const sw = game.vfx.swing('swing.cutlass', { tint, tip })   sw.push(base, tip)   sw.gap()   sw.power = 2   sw.setColors(a, b)
+   *    game.vfx.swing('swing.brush').follow((a, b) => striking && (model.headSegment(a, b), true))   (or it asks, every frame)
    *  `update` is the player's (a tool need not call it). Prior art: Soul Calibur's and DMC's ribbons, Monster Hunter's weapon trails
    *  with their sparks, Kingdom Hearts' keyblade trail shedding motes. */
   swing(name, ctx = {}) {
@@ -184,6 +187,11 @@ export class Vfx {
     sw.gap = () => { for (const { t } of sw.trails) t.gap(); sw.last = null; };
     sw.setColors = (a, b) => { sw.ctx.tint = a; sw.ctx.tip = b; for (const { L, t } of sw.trails) t.setColors(color(L.color ?? 'tint', sw.ctx), color(L.tip ?? 'tip', sw.ctx) || 0xffffff); };
     sw.update = () => {}; // (the player's: see update)
+    // (or it follows on its own: `fn(a, b)` sets the two ends and returns true while the thing is striking, false between: a tool says
+    // once, where it is built, where its striking part is, and the player asks every frame, after the pose)
+    const FA = new THREE.Vector3(), FB = new THREE.Vector3();
+    sw.follow = (fn) => { sw.fn = fn; return sw; };
+    sw.tick = () => { if (!sw.fn) return; if (sw.fn(FA, FB)) sw.push(FA, FB); else if (sw.last) sw.gap(); };
     sw.clear = () => { for (const { t } of sw.trails) t.clear(); sw.last = null; };
     sw.stop = () => { sw.alive = false; for (const { t } of sw.trails) { t.mesh.parent?.remove(t.mesh); t.geo.dispose(); t.mat.dispose(); } this.swings = this.swings.filter((x) => x !== sw); };
     (this.swings ||= []).push(sw);
@@ -191,11 +199,13 @@ export class Vfx {
   }
 
   /** A blow landed: its effect from what struck (the cause) and what was struck (its kind), most particular first:
-   *  hit.<blunt|slash|shot>.<clay|crystal|jelly|...>.kill -> ... -> hit. Called by creatures.strike, breakables.damage, clappers.hit. */
-  hit({ kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint }) {
+   *  hit.<blunt|slash|shot>.<clay|crystal|jelly|...>.kill -> ... -> hit. Called by creatures.strike, breakables.damage, clappers.hit.
+   *  What it is made of is a TAG on the thing (tags.js: one of MATERIALS, BotW's "what it is made of, not what it is"); without one, a
+   *  guess from its kind. */
+  hit({ ent, kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint }) {
     if (!point) return null;
     const tool = SLASH.test(cause) ? 'slash' : SHOT.test(cause) ? 'shot' : 'blunt';
-    const mat = MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
+    const mat = (ent && MATERIALS.find((m) => hasTag(ent, m))) || MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
     const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;
     return this.play(name, { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 });
   }
@@ -209,7 +219,7 @@ export class Vfx {
       for (const s of h.layers) busy = this.step(h, s, raw) || busy;
       if (!busy) { for (const s of h.layers) s.mesh?.dispose(); this.live.splice(i, 1); h.alive = false; }
     }
-    for (const sw of this.swings || []) for (const { t } of sw.trails) t.update(raw);
+    for (const sw of this.swings || []) { sw.tick(); for (const { t } of sw.trails) t.update(raw); }
     this.add.update(raw); this.alpha.update(raw);
     for (const L of this.lights) {
       if (L.t >= L.dur) { L.l.intensity = 0; continue; }

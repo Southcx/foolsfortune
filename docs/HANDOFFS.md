@@ -31,7 +31,13 @@ lines to the owner. Petra reviews, merges and publishes.
     library.
   - `src/main.js`: `game.vfx` and `game.cine` are now made before the tools (they ask for their swings when built); `game.auras`.
   - `src/main.js`: `game.vfx`, `game.cine`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
-- A `material` tag on things (`tags.js`: clay, crystal, jelly, wood, metal, stone) would let `vfx.hit` stop guessing from the kind.
+- **Material tags, please (tags.js is yours).** `vfx.hit` now reads what a thing is made of from its tags: one of `clay`, `crystal`,
+  `jelly`, `wood`, `stone`, `metal` (`MATERIALS` in `src/vfx/vfx.js`), and only guesses from the kind when there is none. The looks for
+  all six exist (`hit.<blunt|slash|shot>.<material>` in the library). What is left is yours: the defaults in `DEFAULTS` (pots and
+  clapperjars `clay`, crates `wood`, shards and crystals `crystal`), and the things that have no default: the dunes' ruined columns
+  `stone`, gongs and metal props `metal`. The three call sites now pass the entity (`ent`) as well as its kind.
+- Swings on your tools, one line each where they are built: `dreamvane.js`, `brush/club.js`, `kick.js` call
+  `game.vfx.swing('swing.<tool>').follow((a, b) => striking && (set a, b; true))`; the looks are in the library.
 
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
 - **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad

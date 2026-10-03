@@ -78,6 +78,39 @@ export const LIBRARY = {
     L({ type: 'sprites', pool: 'alpha', count: [5, 8], shape: 'soft', dir: 'cone', cone: 70, speed: [2, 4], size: [0.1, 0.16], life: [0.5, 0.8], gravity: 12, color: 0x8fd0ff, alpha: 0.9, alphaEnd: 0.6, floor: 'ground' }),
   ] },
   'hit.slash.jelly': { extends: 'hit.blunt.jelly' },
+  // wood: splinters and sawdust; stone: grey chips and a dust cloud; metal: a shower of hot sparks and a clang ring
+  'hit.blunt.wood': { extends: 'hit.blunt', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [5, 8], shape: 'shard', dir: 'cone', cone: 60, speed: [2, 5], size: [0.06, 0.12], life: [0.5, 0.8], gravity: 12, color: [0x8a5a34, 0xb07a4a], alphaEnd: 0.8, spin: [-16, 16], floor: 'ground' }),
+    L({ type: 'sprites', pool: 'alpha', count: 4, shape: 'puff', dir: 'cone', cone: 70, speed: [0.4, 1], size: 0.22, sizeEnd: 0.5, life: 0.5, drag: 3, color: 0xd9b88a, alpha: 0.45 }),
+  ] },
+  'hit.slash.wood': { extends: 'hit.slash', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [6, 9], shape: 'shard', dir: 'cone', cone: 80, speed: [2, 5], size: [0.05, 0.1], life: [0.5, 0.8], gravity: 12, color: [0xc8955c, 0xe0b880], alphaEnd: 0.8, spin: [-16, 16], floor: 'ground' }),
+  ] },
+  'hit.shot.wood': { extends: 'hit.shot', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'shard', dir: 'cone', cone: 45, speed: [2, 4], size: [0.04, 0.08], life: [0.4, 0.7], gravity: 12, color: [0x8a5a34, 0xb07a4a], spin: [-16, 16], floor: 'ground' }),
+  ] },
+  'hit.blunt.stone': { extends: 'hit.blunt', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [6, 9], shape: 'chip', dir: 'cone', cone: 60, speed: [2, 5], size: [0.04, 0.08], life: [0.5, 0.8], gravity: 14, color: [0x8e8680, 0xb0a89e], alphaEnd: 0.8, spin: [-14, 14], floor: 'ground' }),
+    L({ type: 'sprites', pool: 'alpha', count: [5, 7], shape: 'puff', dir: 'cone', cone: 80, speed: [0.5, 1.4], size: [0.3, 0.4], sizeEnd: 0.9, life: [0.6, 0.9], drag: 3, gravity: -0.3, color: 0xc8beb4, alpha: 0.5, spin: [-1, 1] }),
+  ] },
+  'hit.slash.stone': { extends: 'hit.slash', layers: [
+    L({ type: 'sprites', count: [6, 9], shape: 'streak', dir: 'cone', cone: 70, speed: [4, 8], size: [0.06, 0.1], sizeEnd: 0.01, life: [0.15, 0.3], stretch: 1.5, gravity: 8, color: 'white', colorEnd: 'ember' }),
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'chip', dir: 'cone', cone: 60, speed: [2, 4], size: [0.03, 0.06], life: [0.5, 0.8], gravity: 14, color: [0x8e8680, 0xb0a89e], spin: [-14, 14], floor: 'ground' }),
+  ] },
+  'hit.shot.stone': { extends: 'hit.shot', layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'chip', dir: 'cone', cone: 45, speed: [2, 4], size: [0.03, 0.06], life: [0.4, 0.7], gravity: 14, color: [0x8e8680, 0xb0a89e], spin: [-14, 14], floor: 'ground' }),
+    L({ type: 'sprites', pool: 'alpha', count: 3, shape: 'puff', dir: 'cone', cone: 40, speed: [0.4, 1], size: 0.22, sizeEnd: 0.5, life: 0.5, drag: 3, color: 0xc8beb4, alpha: 0.45 }),
+  ] },
+  'hit.blunt.metal': { extends: 'hit.blunt', layers: [
+    L({ type: 'sprites', count: [14, 20], shape: 'streak', dir: 'cone', cone: 70, speed: [4, 10], size: [0.05, 0.09], sizeEnd: 0.01, life: [0.25, 0.5], stretch: 1.8, gravity: 10, drag: 1, color: 'white', colorEnd: 'ember', floor: 'ground' }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.1, life: 0.25, color: 'white', rot: 0 }),
+  ] },
+  'hit.slash.metal': { extends: 'hit.slash', layers: [
+    L({ type: 'sprites', count: [16, 24], shape: 'streak', dir: 'cone', cone: 85, speed: [5, 11], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.25, 0.5], stretch: 2, gravity: 10, drag: 1, color: 'white', colorEnd: 'gold', floor: 'ground' }),
+  ] },
+  'hit.shot.metal': { extends: 'hit.shot', layers: [
+    L({ type: 'sprites', count: [8, 12], shape: 'streak', dir: 'cone', cone: 55, speed: [4, 9], size: [0.04, 0.07], sizeEnd: 0.01, life: [0.2, 0.4], stretch: 1.8, gravity: 10, color: 'white', colorEnd: 'ember', floor: 'ground' }),
+  ] },
 
   // =============================================================================================== POOFS
   // =============================================================================================== AURAS (held, on a creature: vfx/auras.js)
@@ -132,6 +165,24 @@ export const LIBRARY = {
     L({ type: 'sprites', perM: 6, along: 'tip', shape: 'glint', size: [0.1, 0.18], sizeEnd: 0, life: [0.2, 0.35], color: 'tip', twinkle: 30, inherit: 0.15, drag: 4 }),
     L({ type: 'sprites', perM: 5, along: 'blade', shape: 'streak', dir: 'sphere', speed: [0.4, 1.2], size: [0.06, 0.1], sizeEnd: 0.01, life: [0.25, 0.5], stretch: 1.2, color: 'tint', colorEnd: 'ember', inherit: 0.25, drag: 3, gravity: 3 }),
     L({ type: 'sprites', perM: 2, along: 'blade', shape: 'sparkle', speed: [0.1, 0.4], size: [0.08, 0.13], sizeEnd: 0, life: [0.4, 0.7], color: ['lach', 'gold'], twinkle: 12, gravity: -0.6, drag: 2 }),
+  ] },
+  // the Dreamvane's pick brought down overhead: a heavy arc of Lachryma, gold at the head, stone chips and glints thrown off it
+  'swing.dreamvane': { layers: [
+    L({ type: 'trail', life: 0.4, span: [0.1, 1], color: 'lach', tip: 'gold', fade: 2.4, core: 0.4, k: 0.55 }),
+    L({ type: 'trail', life: 0.16, span: [0.85, 1.05], color: 'gold', tip: 'white', core: 2.5, fade: 1.2 }),
+    L({ type: 'sprites', perM: 4, along: 'tip', shape: 'glint', size: [0.1, 0.16], sizeEnd: 0, life: [0.2, 0.35], color: 'gold', twinkle: 24, inherit: 0.1, drag: 4 }),
+    L({ type: 'sprites', perM: 3, along: 'tip', pool: 'alpha', shape: 'chip', speed: [0.3, 0.9], size: [0.03, 0.05], life: [0.4, 0.7], color: [0x9a8e8a, 0xc8b8a8], gravity: 9, spin: [-12, 12], inherit: 0.3, floor: 'ground' }),
+  ] },
+  // the Soul Brush's club: a warm wet arc of slip, a pale edge, droplets flung off the bristles
+  'swing.brush': { layers: [
+    L({ type: 'trail', life: 0.3, span: [0.3, 1], color: 0xc47a55, tip: 0xf2d8c0, fade: 2.2, core: 0.3, k: 0.45 }),
+    L({ type: 'trail', life: 0.12, span: [0.85, 1.02], color: 0xf2e6d8, tip: 'white', core: 1.5, fade: 1.2, k: 0.8 }),
+    L({ type: 'sprites', perM: 6, along: 'tip', pool: 'alpha', shape: 'soft', speed: [0.4, 1.4], size: [0.04, 0.07], sizeEnd: 0.03, life: [0.4, 0.7], color: [0xd9a07a, 0xc47a55], alpha: 0.9, alphaEnd: 0.6, gravity: 9, inherit: 0.35, floor: 'ground' }),
+  ] },
+  // a kick: a short pale arc and a puff of dust off the toe (a kick is quick: the ribbon is too)
+  'swing.kick': { layers: [
+    L({ type: 'trail', life: 0.2, color: 0xffc890, tip: 'white', fade: 1.8, core: 1.2, k: 0.85 }),
+    L({ type: 'sprites', perM: 2.5, along: 'tip', pool: 'alpha', shape: 'puff', speed: [0.1, 0.4], size: [0.12, 0.18], sizeEnd: 0.35, life: [0.35, 0.5], color: 0xe8d2be, alpha: 0.35, drag: 3 }),
   ] },
   // a thing gone in a puff: smoke that swells and lifts, a ring, a few stars (cartoon's disappearance)
   poof: { layers: [

@@ -60,6 +60,8 @@ export class Dreamvane extends HeldTool {
     this.mgr.game.dreamvane = this;
     this.rmbT = -1; this.dowsing = false; this.att = 0; this.glow = 0; this.tickT = 0; this.found = new WeakSet(); this.charted = new WeakSet();
     this.swing = null; this.throwT = -1; this.surveyT = -1;
+    // (the pick's arc through the air while it comes down: its look is vfx/library.js 'swing.dreamvane')
+    this.mgr.game.vfx?.swing('swing.dreamvane').follow((a, b) => { const s = this.swing; if (!s || s.t < 0.45 || s.t > 0.78) return false; const M = this.model.group.matrixWorld; a.set(0.4, 0, 0).applyMatrix4(M); this.model.headWorld(b); return true; });
     this.fork = { state: 'heel', mesh: null, pos: new THREE.Vector3(), vel: new THREE.Vector3(), t: 0, ring: 0, ent: null, off: new THREE.Vector3(), beat: 0 };
     this.needle = { yaw: 0, pitch: 0 };
   }
