@@ -8,6 +8,9 @@
 //                 on after it, paler
 //   THE FRAME     the band is held between two fine labradorite lines (the Mind's: vfx/labradorite.js)
 //   THE BEADS     the Blink's charges, as beads of Lachryma set in the frame before the band begins (an empty socket when spent)
+//   BLOWS         a blow taken shows on the ring the way it came from, across the whole band: a flash of labradorite when the
+//                 shield (the Lachryma) paid for it, a pale, jagged crack when it got through to the clay; it fades over a few seconds
+//                 (the hit-direction indicator of every shooter since Halo, laid on the ground at their feet instead of the screen)
 //   THREAT ARCS   outside the frame, an arc toward each creature that has noticed them, as wide as it is aware of them, cool (blue) far
 //                 off and hot (copper) close: Zone of the Enders' ring radar on the frame itself
 //
@@ -24,6 +27,8 @@ import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 
 const MAX_THREATS = 6;
+const MAX_BLOWS = 4;
+const HURT_WHY = new Set(['jelly', 'lobber', 'explosion']);
 const RADIUS = 0.85; // metres, the ring's outer edge
 
 const V = /* glsl */`
@@ -39,6 +44,7 @@ varying vec2 vP; varying vec3 vW;
 uniform float uFill, uRes, uAlpha, uStart, uSign;
 uniform vec3 uBeads;                  // count, max, the next one's fill
 uniform vec4 uThreat[${MAX_THREATS}];  // angle, half-width, heat (0 far .. 1 close), alpha
+uniform vec4 uBlow[${MAX_BLOWS}];      // angle, half-width, kind (0 the shield took it, 1 the clay cracked), strength
 ${LAB_GLSL}
 float band(float r, float a, float b) { float w = fwidth(r) * 1.2; return smoothstep(a - w, a + w, r) * (1.0 - smoothstep(b - w, b + w, r)); }
 float line(float r, float at) { float w = fwidth(r); return 1.0 - smoothstep(0.4 * w, 1.6 * w, abs(r - at)); }
@@ -88,6 +94,24 @@ void main() {
     vec3 hot = mix(labradorite(0.3), labradorite(0.93), t.z);
     col = mix(col, vec4(hot * (1.0 + 0.5 * t.z), 1.0), arc * t.w);
   }
+  // the blows taken, the way each came from: across the band and the frame
+  for (int i = 0; i < ${MAX_BLOWS}; i++) {
+    vec4 b = uBlow[i];
+    if (b.w <= 0.0) continue;
+    float da = abs(mod(a - b.x + 3.1415927, 6.2831853) - 3.1415927);
+    float wedge = (1.0 - smoothstep(b.y * 0.55, b.y, da)) * band(r, 0.64, 0.99);
+    if (wedge <= 0.0) continue;
+    vec4 bc;
+    if (b.z < 0.5) {
+      bc = vec4(labradorite(ph + 0.2) * 1.3, 0.9); // (the shield: the stone's flash)
+    } else {
+      // the clay: a jagged pale crack down the middle of the wedge, dark either side of it
+      float jag = abs(da / b.y - 0.15 * sin(r * 61.0) - 0.1 * sin(r * 23.0 + 1.3));
+      float crack = 1.0 - smoothstep(0.05, 0.14, jag);
+      bc = mix(vec4(labLin(vec3(0.16, 0.05, 0.04)), 0.7), vec4(labLin(vec3(1.0, 0.94, 0.86)) * 1.5, 1.0), crack);
+    }
+    col = mix(col, bc, wedge * b.w);
+  }
   gl_FragColor = vec4(col.rgb, col.a * uAlpha);
 }`;
 
@@ -100,6 +124,7 @@ export class HudRing {
     this.u = {
       uFill: { value: 1 }, uRes: { value: 0 }, uAlpha: { value: 0 }, uStart: { value: 0 }, uSign: { value: 1 },
       uBeads: { value: new THREE.Vector3(0, 0, 0) }, uThreat: { value: threats }, uMindT: mindTime,
+      uBlow: { value: Array.from({ length: MAX_BLOWS }, () => new THREE.Vector4()) },
     };
     this.mesh = new THREE.Mesh(new THREE.RingGeometry(0.55, 1.0, 96, 1), new THREE.ShaderMaterial({
       uniforms: this.u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, fog: false,
@@ -112,11 +137,32 @@ export class HudRing {
     this.visible = true;
     this.fill = 1; this.res = 0; this.alpha = 0; this.busy = 0; this.last = -1;
     this.threats = threats.map(() => ({ a: 0, w: 0, heat: 0, k: 0 }));
+    // the blows: the vessel says whether the shield took it or the clay cracked (vessel/damage.js, which hears the blow first), and
+    // the blow itself says where it came from (a jelly's place, or the way an impulse pushed: it came from the other side)
+    this.blows = Array.from({ length: MAX_BLOWS }, () => ({ a: 0, kind: 0, k: 0 }));
+    this.lastKind = 0; this.lastKindT = -9;
+    const E = game.events;
+    E?.on('vessel.shield', () => { this.lastKind = 0; this.lastKindT = E.time; });
+    E?.on('vessel.shieldbreak', () => { this.lastKind = 1; this.lastKindT = E.time; });
+    E?.on('vessel.crack', () => { this.lastKind = 1; this.lastKindT = E.time; });
+    E?.on('jelly.strike', (e) => { if (e.from) this.blow(Math.atan2(e.from[2] - game.player.pos.z, e.from[0] - game.player.pos.x), e.move === 'lunge' ? 1 : 0.7); });
+    E?.on('impulse', (e) => { if (HURT_WHY.has(e.why) && e.why !== 'jelly' && e.dir) this.blow(Math.atan2(-e.dir[2], -e.dir[0]), Math.min(1, 0.5 + (e.mag || 0) / 16)); });
+  }
+
+  /** A blow from the world angle `a` (atan2(z, x) round the Courier), of strength k. */
+  blow(a, k = 1) {
+    const kind = this.game.events && this.game.events.time - this.lastKindT < 0.05 ? this.lastKind : 0;
+    let s = this.blows.find((b) => b.k <= 0.02) || this.blows.reduce((m, b) => (b.k < m.k ? b : m));
+    Object.assign(s, { a, kind, k: Math.max(0.6, k) });
   }
 
   update(dt, { blink = null } = {}) {
     const g = this.game, P = g.player, pool = g.lachryma, cam = g.camera;
     mindTick();
+    this.blows.forEach((b, i) => {
+      b.k = Math.max(0, b.k - dt / (b.kind ? 3.2 : 1.8)); // (a crack lingers longer than a parried blow)
+      this.u.uBlow.value[i].set(b.a, b.kind ? 0.42 : 0.5, b.kind, b.k * b.k);
+    });
     const show = this.visible && !(P.fpWeight > 0.5) && !g.god?.controlling;
     // the pool, eased (it is liquid)
     const fill = pool ? pool.available / pool.max : 1, res = pool ? pool.reserved / pool.max : 0;
