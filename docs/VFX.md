@@ -42,6 +42,9 @@ effect; the effect is tuned apart from the move).
 | Decal textures | `src/assets/vfx/tex/*.png` | the spell circles the owner's wife drew (`circle_lotus`, `circle_swirl`), and any picture a decal should wear |
 | Combat | `creatures.strike`, `breakables.damage`, `clappers.hit` | every blow plays `hit.<tool>.<material>[.kill]` |
 | **The workbench** | `src/workbench/workbench.js`, chat **`/lab`** | the game's own studio: CINEMA (the sequences, below), EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
+| **Swings** | `vfx.swing(name)`, library `swing.*` | a held look for anything that sweeps: `trail` layers (ribbons between the two ends, `span` along them: a wide body, a hot edge at the tip) and `sprites` with `perM` (shed per metre the tip travels). The cutlass wears `swing.cutlass`; previewed in the workbench on a slash |
+| **Status auras** | `src/vfx/auras.js`, library `aura.*` | every creature's statuses shown round it while they last (`aura.<status>[.<kind>]`): sleep, halt, slow, melt, calm, soft, haste, empower, forget; quiet, sized to the creature, fading as the status runs out |
+| **Budgets** | `BUDGETS` in `src/vfx/vfx.js` | what a second of combat may spend: particles, flash, shake, hitstop (token buckets). A busy fight thins out instead of washing white; a cinematic (`ctx.cine`, set by the sequences) is outside them, and the workbench shows effects whole |
 | **Sequences** | `src/cine/sequence.js`, `src/cine/sequences.js` | cinematic events as data: camera keys, effects, bars, slow time, mood, sounds and cues on a timeline per segment, played by name (`game.cine.play`) |
 | Chat | `/vfx <name> [tint]`, `/vfx`, `/opening`, `/lab` | |
 
@@ -96,8 +99,7 @@ shockwaves, a hundred and forty streaks, stars, petals, a ring of smoke, lingeri
    - **gold** sparks: a weak point or a critical; **labradorite**: the Mind (stun, reprogram); **grey dull puff, no star**: it did
      nothing (armoured); a **ward ring**: refused (the existing resist mark);
    - a **kill** adds a pop of the creature's own colour and a few of its own pieces (the dissolve already does this for zandatsu).
-3. **Trails and swings** (`vfx/trail.js` exists) join the library as a layer type, so a tool's swing and its hit are directed together.
-4. **Status auras** (slow, sleep, burn...) as held effects on the creature (`creature.status` events).
+3. ~~Trails and swings~~: built (`vfx.swing`, `swing.*`). Next: the other tools' swings (Dreamvane, brush, kick) ask for theirs.
+4. ~~Status auras~~: built (`vfx/auras.js`, `aura.*`).
 5. ~~A VFX lab~~: built into the game as the workbench (`/lab`).
-6. **Budgets**: a cap on live sprites and on screen-weight per second (flash, shake, hitstop) so a busy fight stays legible and within
-   the comfort rule (no flicker: a flash is one wash, never repeated fast).
+6. ~~Budgets~~: built (`BUDGETS`, vfx.js).

@@ -80,6 +80,59 @@ export const LIBRARY = {
   'hit.slash.jelly': { extends: 'hit.blunt.jelly' },
 
   // =============================================================================================== POOFS
+  // =============================================================================================== AURAS (held, on a creature: vfx/auras.js)
+  // a status, shown round whatever has it, as long as it has it (`aura.<status>`, or `aura.<status>.<kind>` for one creature's own).
+  // Centred on the creature, offsets and sizes in its height (feet: [0, -0.5, 0], head: [0, 0.5, 0]); quiet: an aura is read at a
+  // glance across a fight, never a show of its own.
+  'aura.sleep': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 2.5, shape: 'bubble', offset: [0.15, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.25, 0.45], size: [0.07, 0.13], sizeEnd: 0.16, life: [1.4, 2], color: 0xd9c8ff, alpha: 0.85, alphaEnd: 0, drag: 0.6 }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.5, shape: 'soft', offset: [0, 0.3, 0], spawn: 'sphere', r: 0.5, speed: [0.05, 0.15], size: [0.12, 0.2], life: [1.2, 1.8], color: 0x7fb2ff, alpha: 0.35, gravity: -0.1 }),
+  ] },
+  'aura.halt': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 8, shape: 'diamond', spawn: 'shell', r: 0.55, size: [0.09, 0.16], sizeEnd: 0, life: [0.6, 1], color: [0xbfe6ff, 'white'], twinkle: 9, spin: [-2, 2] }),
+    L({ type: 'sprites', dur: Infinity, rate: 0.9, shape: 'ringthin', offset: [0, -0.48, 0], size: 0.3, sizeEnd: 1.3, life: 1.1, color: 0xbfe6ff, alpha: 0.7, rot: 0 }),
+  ] },
+  'aura.slow': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 1.1, shape: 'ringthin', offset: [0, -0.48, 0], size: 0.25, sizeEnd: 1.1, life: 1.4, color: 'blue', alpha: 0.6, rot: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 3, shape: 'soft', spawn: 'sphere', r: 0.5, speed: [0.05, 0.1], size: [0.06, 0.1], life: [1, 1.6], color: 'blue', alpha: 0.5, gravity: 0.25 }),
+  ] },
+  'aura.melt': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 6, pool: 'alpha', shape: 'soft', offset: [0, 0.1, 0], spawn: 'sphere', r: 0.4, size: [0.06, 0.11], sizeEnd: 0.03, life: [0.5, 0.9], color: [0xd9a07a, 0xc47a55], alpha: 0.85, alphaEnd: 0.4, gravity: 5, floor: 'ground' }),
+    L({ type: 'sprites', dur: Infinity, rate: 1, pool: 'alpha', shape: 'puff', offset: [0, 0.2, 0], spawn: 'sphere', r: 0.3, dir: 'up', speed: [0.1, 0.3], size: 0.25, sizeEnd: 0.6, life: 1.2, color: 0xe8d2be, alpha: 0.3 }),
+  ] },
+  'aura.calm': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 2, shape: 'petal', spawn: 'ring', r: 0.6, dir: 'swirl', lift: 0.3, speed: [0.3, 0.5], size: [0.07, 0.11], life: [1.4, 2], color: [0xb8e6c8, 0xf2d8e6], alpha: 0.85, spin: [-3, 3], gravity: 0.1 }),
+  ] },
+  'aura.soft': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 2, pool: 'alpha', shape: 'puff', spawn: 'sphere', r: 0.45, speed: [0.05, 0.15], size: [0.2, 0.3], sizeEnd: 0.45, life: [0.9, 1.3], color: 0xf2c8d8, alpha: 0.4, spin: [-1, 1] }),
+  ] },
+  'aura.haste': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 14, shape: 'streak', offset: [0, -0.5, 0], spawn: 'column', r: 0.45, height: 0.9, dir: 'up', speed: [1.5, 2.6], size: [0.07, 0.11], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 1.8, color: 'ember', colorEnd: 'gold' }),
+  ] },
+  'aura.empower': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 6, shape: 'sparkle', offset: [0, -0.5, 0], spawn: 'column', r: 0.5, height: 1, dir: 'up', speed: [0.4, 0.8], size: [0.07, 0.12], sizeEnd: 0, life: [0.7, 1.1], color: 'gold', twinkle: 10 }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'soft', size: [0.9, 1.1], sizeEnd: 1.3, life: 0.8, color: 'ember', alpha: 0.18 }),
+  ] },
+  'aura.forget': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'lab', alpha: 0.6, spin: [-3, 3] }),
+  ] },
+  // =============================================================================================== SWINGS (held: vfx.swing(name))
+  // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
+  // the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its hot end.
+  swing: { layers: [
+    L({ type: 'trail', life: 0.3, color: 'tint', tip: 'tip', fade: 1.6 }),
+    L({ type: 'trail', life: 0.12, span: [0.75, 1], color: 'white', tip: 'white', core: 2, fade: 1 }),
+    L({ type: 'sprites', perM: 4, along: 'tip', shape: 'glint', size: [0.07, 0.12], sizeEnd: 0, life: [0.18, 0.3], color: 'tip', twinkle: 30, inherit: 0.12, drag: 4 }),
+  ] },
+  // the Sondelass's cutlass: ember to warm white, an afterglow of Lachryma behind, embers off the edge, glints off the point
+  'swing.cutlass': { layers: [
+    L({ type: 'trail', life: 0.45, span: [0.2, 1], color: 'lach', tip: 0x8a5cf0, fade: 2.6, core: 0, k: 0.7 }),
+    L({ type: 'trail', life: 0.26, span: [0.15, 1], color: 'tint', tip: 'tip', fade: 2.2, core: 0.6, k: 0.42 }),
+    L({ type: 'trail', life: 0.2, span: [0.9, 1.02], color: 'gold', tip: 'white', core: 3, fade: 1.2 }),
+    L({ type: 'sprites', perM: 6, along: 'tip', shape: 'glint', size: [0.1, 0.18], sizeEnd: 0, life: [0.2, 0.35], color: 'tip', twinkle: 30, inherit: 0.15, drag: 4 }),
+    L({ type: 'sprites', perM: 5, along: 'blade', shape: 'streak', dir: 'sphere', speed: [0.4, 1.2], size: [0.06, 0.1], sizeEnd: 0.01, life: [0.25, 0.5], stretch: 1.2, color: 'tint', colorEnd: 'ember', inherit: 0.25, drag: 3, gravity: 3 }),
+    L({ type: 'sprites', perM: 2, along: 'blade', shape: 'sparkle', speed: [0.1, 0.4], size: [0.08, 0.13], sizeEnd: 0, life: [0.4, 0.7], color: ['lach', 'gold'], twinkle: 12, gravity: -0.6, drag: 2 }),
+  ] },
   // a thing gone in a puff: smoke that swells and lifts, a ring, a few stars (cartoon's disappearance)
   poof: { layers: [
     L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'puff', spawn: 'sphere', r: 0.25, dir: 'out', speed: [0.8, 1.8], size: [0.35, 0.5], sizeEnd: 0.9, life: [0.5, 0.8], drag: 3.5, gravity: -0.5, color: 0xf3e6d8, alpha: 0.8, spin: [-1.5, 1.5] }),

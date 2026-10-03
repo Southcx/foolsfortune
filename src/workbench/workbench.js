@@ -100,6 +100,7 @@ export class Workbench {
     this.shim = { scene: S, camera: this.camera, player: { shake: 0, pos: new THREE.Vector3() }, events: null, glyphs: null, time: null, post: null };
     this.vfx = new Vfx(this.shim);
     this.vfx.lib = LIBRARY; // (the same library as the world's: an edit here is an edit there)
+    for (const B of Object.values(this.vfx.budget)) B.v = B.cap = B.rate = 1e9; // (an effect is judged here whole: the budgets are the fight's)
     this.controls = new OrbitControls(this.camera, g.renderer.domElement);
     this.controls.target.set(0, 1, 0); this.controls.enableDamping = true; this.controls.update();
     this.ui();
@@ -253,12 +254,16 @@ export class Workbench {
 
   copy(text, msg) { navigator.clipboard?.writeText(text).then(() => this.say(msg), () => { this.edit.value = text; this.say('the clipboard refused: it is in the editor, select and copy it'); }); }
 
-  stopHeld() { for (const h of this.vfx?.live || []) h.stop?.(); }
+  stopHeld() { for (const h of this.vfx?.live || []) h.stop?.(); this.swingH?.stop(); this.swingH = null; }
 
   play() {
     if (this.tab !== 'effects' || !this.sel || !this.vfx) return;
     const F = this.fx, held = this.vfx.layersOf(LIBRARY[this.sel] || {}).some((L) => L.dur === Infinity);
     if (held) this.stopHeld();
+    if (this.vfx.layersOf(this.vfx.resolve(this.sel)?.def || {}).some((L) => L.type === 'trail')) { // (a swing: a blade swept through the air on the stage)
+      this.swingH?.stop(); this.swingH = this.vfx.swing(this.sel, { tint: parseInt(F.tint.slice(1), 16), power: F.power }); this.swingT = 0; this.loopT = 0;
+      return;
+    }
     const pos = new THREE.Vector3(0, F.target === 'air' ? 1.1 : 0.02, 0);
     this.vfx.play(this.sel, { pos, dir: new THREE.Vector3(1, 0.25, 0.4), normal: new THREE.Vector3(0, 1, 0), tint: parseInt(F.tint.slice(1), 16), power: F.power, floor: 0 });
     this.loopT = 0;
@@ -544,6 +549,12 @@ export class Workbench {
     if (this.tab === 'effects' && this.fx) {
       const sp = this.fx.speed;
       this.vfx.update(raw * sp);
+      if (this.swingH && this.swingT < 0.8) { // (a diagonal slash, 0.4 s across, high right to low left, facing the camera)
+        this.swingT += Math.min(raw, 1 / 30) * sp;
+        const u = this.swingT / 0.4, a = 2.4 - 3.4 * (u * u * (3 - 2 * u)), piv = new THREE.Vector3(0, 1.1, 0);
+        const d = new THREE.Vector3(Math.cos(a), Math.sin(a) * 0.8, Math.sin(a) * 0.6 + 0.3).normalize();
+        if (u <= 1) this.swingH.push(piv.clone().addScaledVector(d, 0.25), piv.clone().addScaledVector(d, 1.15)); else this.swingH.gap();
+      }
       if (this.fx.loop && this.sel) { this.loopT += raw * sp; if (this.loopT >= this.fx.every) this.play(); }
     } else this.vfx.update(raw);
     if (this.mv?.spin && this.model && this.tab === 'models') this.model.rotation.y += raw * 0.5;

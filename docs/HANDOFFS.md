@@ -26,6 +26,10 @@ lines to the owner. Petra reviews, merges and publishes.
   - `src/ceremony.js`: the same for a chest's opening: with `game.cine` the camera is the `chest.open` sequence (`seq.go(phase, { len })`
     from `enter`, charge, fountain and reveal stretched to the tier's lengths); `shot()` steps aside. The mood, time, beam and light stay
     yours. Faithful to your numbers (compared frame by frame).
+  - `src/sondelass/cutlass.js`: the ribbon is `game.vfx.swing('swing.cutlass')` (falls back to the plain Trail), and `trail.power` is
+    set per stroke (the third stroke and the stinger shed more). Another tool can have a swing the same way: one line, the look in the
+    library.
+  - `src/main.js`: `game.vfx` and `game.cine` are now made before the tools (they ask for their swings when built); `game.auras`.
   - `src/main.js`: `game.vfx`, `game.cine`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
 - A `material` tag on things (`tags.js`: clay, crystal, jelly, wood, metal, stone) would let `vfx.hit` stop guessing from the kind.
 

@@ -97,6 +97,7 @@ import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
 import { ChestFx } from './vfx/chestfx.js';
 import { Vfx } from './vfx/vfx.js';
+import { Auras } from './vfx/auras.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
 import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
@@ -333,6 +334,11 @@ async function main() {
   // the System (what you've learned) is up before the techs, which ask it whether they may start
   const system = new System(game);
   game.system = system;
+  // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js; before the tools, which ask it for their swings)
+  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
+  game.vfx = new Vfx(game);
+  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
+  game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   const weapon = new Weapon(game);
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
@@ -376,9 +382,6 @@ async function main() {
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
-  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
-  game.vfx = new Vfx(game);
-  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js) // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
@@ -917,6 +920,7 @@ async function main() {
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
     });
+    game.auras.update();
     game.vfx.update(game.rawDt || dt);
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)

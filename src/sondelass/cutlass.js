@@ -66,7 +66,7 @@ export class Cutlass {
     this.hit = new Set();
     this.combo = 0;
     const g = tool.game;
-    this.trail = new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 });
+    this.trail = g.vfx?.swing('swing.cutlass', { tint: 0xffb27a, tip: 0xfff1dc }) || new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 }); // (its look: vfx/library.js)
     this.blade = new BladeMode(this);
     this.rmbT = -1; // RMB down: how long (a tap is a stinger, a hold is blade mode)
     this.stinging = false; this.stCool = 0; this.stHit = new Set(); this.stPrev = new THREE.Vector3(); this.stDir = new THREE.Vector3(0, 0, 1); this.ghostT = 0;
@@ -288,6 +288,7 @@ export class Cutlass {
       this.trail.push(_a, _b);
     } else if (!swinging && !this.stinging) this.trail.gap();
     this.trail.setColors(this.stinging ? 0xffe0b0 : this.stroke && this.n === 2 ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc);
+    this.trail.power = this.stinging ? 1.5 : this.stroke && this.n === 2 ? 2.2 : 1; // (the third stroke and the stinger shed more)
     this.trail.update(dt);
     for (let i = this.ghosts.length - 1; i >= 0; i--) {
       const gh = this.ghosts[i];

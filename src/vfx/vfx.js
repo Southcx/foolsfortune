@@ -33,6 +33,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sprites } from './sprites.js';
+import { Trail } from './trail.js';
 import { meshFx } from './meshfx.js';
 import { LIBRARY } from './library.js';
 import { sfx } from '../audio.js';
@@ -79,6 +80,7 @@ function color(v, ctx) {
   if (v.isColor) return v.getHex();
   if (Array.isArray(v)) return color(v[Math.floor(Math.random() * v.length)], ctx);
   if (v === 'tint') return ctx.tint === undefined ? 0xffffff : color(ctx.tint, ctx);
+  if (v === 'tip') return ctx.tip === undefined ? color('tint', ctx) : color(ctx.tip, ctx); // (a swing's hot end)
   if (v === 'lab') return LAB[Math.floor(Math.random() * LAB.length)];
   if (typeof v === 'string') return NAMED[v] ?? 0xffffff;
   return v;
@@ -90,6 +92,18 @@ function curve(c, t) {
   for (let i = 1; i < c.length; i++) if (t <= c[i][0]) { const [t0, v0] = c[i - 1], [t1, v1] = c[i]; const u = (t - t0) / Math.max(1e-6, t1 - t0); return v0 + (v1 - v0) * u * u * (3 - 2 * u); }
   return c[c.length - 1][1];
 }
+
+/** A BUDGET: a bucket that fills at `rate` a second up to `cap`; asking for some gives back the part there is (0..1). Prior art: the
+ *  token bucket of network traffic shaping, and the particle and screen-effect budgets of every console engine (a fight full of hits
+ *  stays legible: the tenth flash in a second is a whisper, not a tenth wash). */
+class Budget {
+  constructor(rate, cap) { this.rate = rate; this.cap = cap; this.v = cap; }
+  fill(raw) { this.v = Math.min(this.cap, this.v + raw * this.rate); }
+  take(want) { if (want <= 0) return 1; const got = Math.min(want, Math.max(0, this.v)); this.v -= got; return got / want; }
+}
+// (what a second of combat may spend: particles, flash strength, shake strength, seconds of hitstop. A cinematic, which owns the screen,
+// is not counted: `ctx.cine`, set by the sequences.)
+export const BUDGETS = { sprites: [5000, 3500], flash: [0.9, 1.2], shake: [1.2, 1.0], hitstop: [0.22, 0.2] };
 
 export class Vfx {
   constructor(game) {
@@ -103,6 +117,7 @@ export class Vfx {
     this.flashEl.style.cssText = 'position:fixed;inset:0;opacity:0;pointer-events:none;z-index:9;mix-blend-mode:screen';
     document.body.appendChild(this.flashEl);
     this.flashK = 0; this.flashDecay = 2;
+    this.budget = Object.fromEntries(Object.entries(BUDGETS).map(([k, [r, c]]) => [k, new Budget(r, c)]));
     this.meshReady = false;
     meshFx.load().then(() => { this.meshReady = true; });
   }
@@ -132,6 +147,49 @@ export class Vfx {
     return h;
   }
 
+  /** A SWING: a held look for something that sweeps through the air (a blade, a fist, a thrown thing), built from the library like any
+   *  effect: its `trail` layers are ribbons between the two ends pushed each frame (`span` [from, to] along base->tip: a hot core near the
+   *  tip, a wide afterglow behind), and its `sprites` layers with `perM` are shed along the way, so many per metre the tip travels
+   *  (`along: 'tip'` at the tip, `'blade'` anywhere on it), carrying some of its speed (`inherit`).
+   *    const sw = game.vfx.swing('swing.cutlass', { tint, tip })   sw.push(base, tip)   sw.gap()   sw.power = 2   sw.setColors(a, b)
+   *  `update` is the player's (a tool need not call it). Prior art: Soul Calibur's and DMC's ribbons, Monster Hunter's weapon trails
+   *  with their sparks, Kingdom Hearts' keyblade trail shedding motes. */
+  swing(name, ctx = {}) {
+    const R = this.resolve(name), g = this.game;
+    const sw = { name, ctx: { power: 1, scale: 1, tint: 0xffffff, ...ctx }, trails: [], shed: [], last: null, lastB: null, power: 1, alive: true };
+    for (const L of R ? this.layersOf(R.def) : [{ type: 'trail' }]) {
+      if (L.type === 'trail') {
+        const t = new Trail(g.scene, { life: L.life ?? 0.3, max: L.max ?? 48, color: color(L.color ?? 'tint', sw.ctx), tip: color(L.tip ?? 'tip', sw.ctx) || 0xffffff, core: L.core ?? 1, fade: L.fade ?? 1.6, k: L.k ?? 1 });
+        sw.trails.push({ L, t });
+      } else if (L.type === 'sprites' && L.perM) sw.shed.push({ L, acc: 0 });
+    }
+    const A = new THREE.Vector3(), B = new THREE.Vector3(), V = new THREE.Vector3();
+    sw.push = (base, tip) => {
+      for (const { L, t } of sw.trails) { const sp = L.span || [0, 1]; t.push(A.lerpVectors(base, tip, sp[0]), B.lerpVectors(base, tip, sp[1])); }
+      if (sw.last && sw.shed.length) {
+        const d = sw.last.distanceTo(tip), raw = Math.max(1 / 240, g.rawDt || 1 / 60);
+        V.subVectors(tip, sw.last).divideScalar(raw);
+        for (const s of sw.shed) {
+          s.acc += d * s.L.perM * sw.power * (sw.ctx.power ?? 1);
+          while (s.acc >= 1) {
+            s.acc -= 1;
+            const u = Math.random(), w = s.L.along === 'blade' ? Math.random() : 1;
+            const p = A.lerpVectors(sw.lastB, sw.last, w).lerp(B.lerpVectors(base, tip, w), u);
+            this.emit({ pos: p, dir: V.lengthSq() > 1e-6 ? _b.copy(V).normalize() : UP, normal: UP, ctx: { ...sw.ctx, vel: V } }, s.L, 1);
+          }
+        }
+      }
+      (sw.last ||= new THREE.Vector3()).copy(tip); (sw.lastB ||= new THREE.Vector3()).copy(base);
+    };
+    sw.gap = () => { for (const { t } of sw.trails) t.gap(); sw.last = null; };
+    sw.setColors = (a, b) => { sw.ctx.tint = a; sw.ctx.tip = b; for (const { L, t } of sw.trails) t.setColors(color(L.color ?? 'tint', sw.ctx), color(L.tip ?? 'tip', sw.ctx) || 0xffffff); };
+    sw.update = () => {}; // (the player's: see update)
+    sw.clear = () => { for (const { t } of sw.trails) t.clear(); sw.last = null; };
+    sw.stop = () => { sw.alive = false; for (const { t } of sw.trails) { t.mesh.parent?.remove(t.mesh); t.geo.dispose(); t.mat.dispose(); } this.swings = this.swings.filter((x) => x !== sw); };
+    (this.swings ||= []).push(sw);
+    return sw;
+  }
+
   /** A blow landed: its effect from what struck (the cause) and what was struck (its kind), most particular first:
    *  hit.<blunt|slash|shot>.<clay|crystal|jelly|...>.kill -> ... -> hit. Called by creatures.strike, breakables.damage, clappers.hit. */
   hit({ kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint }) {
@@ -143,6 +201,7 @@ export class Vfx {
   }
 
   update(raw) {
+    for (const B of Object.values(this.budget)) B.fill(raw);
     for (let i = this.live.length - 1; i >= 0; i--) {
       const h = this.live[i];
       h.t += raw;
@@ -150,6 +209,7 @@ export class Vfx {
       for (const s of h.layers) busy = this.step(h, s, raw) || busy;
       if (!busy) { for (const s of h.layers) s.mesh?.dispose(); this.live.splice(i, 1); h.alive = false; }
     }
+    for (const sw of this.swings || []) for (const { t } of sw.trails) t.update(raw);
     this.add.update(raw); this.alpha.update(raw);
     for (const L of this.lights) {
       if (L.t >= L.dur) { L.l.intensity = 0; continue; }
@@ -193,6 +253,9 @@ export class Vfx {
     return false;
   }
 
+  /** How much of `want` the budget allows (all of it in a cinematic). */
+  spend(kind, want, ctx) { return ctx?.cine ? 1 : this.budget[kind].take(want); }
+
   start(h, s) {
     const L = s.L, ctx = h.ctx, g = this.game, P = ctx.power ?? 1;
     switch (L.type) {
@@ -208,15 +271,15 @@ export class Vfx {
         s.mesh = { group: m, u, set: (k) => { u.uK.value = Math.max(0, k); m.visible = k > 0.002; }, update: () => mindTick(), dispose: () => { m.parent?.remove(m); mat.dispose(); } };
         break;
       }
-      case 'flash': { _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, (L.k ?? 0.5) * Math.min(1.4, P)); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
+      case 'flash': { const k = (L.k ?? 0.5) * Math.min(1.4, P), f = this.spend('flash', k, ctx); if (f < 0.1) break; _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, k * f); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
       case 'light': {
         const S = this.lights.reduce((m, x) => ((x.dur - x.t) < (m.dur - m.t) ? x : m));
         S.l.color.set(color(L.color ?? 'tint', ctx)); S.l.distance = L.range ?? 10; S.k = (L.k ?? 30) * P; S.t = 0; S.dur = L.dur ?? 0.5;
         S.l.position.copy(h.pos).addScaledVector(UP, L.up ?? 0.5);
         break;
       }
-      case 'shake': g.player && (g.player.shake = Math.max(g.player.shake || 0, (L.k ?? 0.3) * Math.min(1.5, P))); break;
-      case 'hitstop': g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, (L.dur ?? 0.06) * Math.min(1.5, P), { release: L.release ?? 0.08 }); break;
+      case 'shake': { const k = (L.k ?? 0.3) * Math.min(1.5, P); g.player && (g.player.shake = Math.max(g.player.shake || 0, k * this.spend('shake', k, ctx))); break; }
+      case 'hitstop': { const d = (L.dur ?? 0.06) * Math.min(1.5, P) * this.spend('hitstop', (L.dur ?? 0.06) * Math.min(1.5, P), ctx); if (d > 0.012) g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, d, { release: L.release ?? 0.08 }); break; }
       case 'smear': if (g.post?.accum && !g.death?.active) { Object.assign(g.post.accum, { amt: L.amt ?? 0.6, zoom: L.zoom ?? 0.006, spin: L.spin ?? 0 }); this.smearAmt = L.amt ?? 0.6; this.smearT = this.smearDur = L.dur ?? 0.6; } break;
       case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false }); break;
       case 'sound': sfx[L.sfx]?.(...(L.args || [])); break;
@@ -242,16 +305,17 @@ export class Vfx {
   }
 
   emit(h, L, n) {
+    if (!h.ctx?.cine && n > 0) { const f = this.budget.sprites.take(n); n = f >= 1 ? n : Math.floor(n * f + Math.random()); } // (the particle budget: a busy second thins out)
     const ctx = h.ctx, P = ctx.power ?? 1, pool = L.pool === 'alpha' ? this.alpha : this.add, sz = (L.powerSize === false ? 1 : Math.sqrt(P)) * (ctx.scale ?? 1);
     for (let i = 0; i < n; i++) {
       // where it is born
       const sp = L.spawn || 'point', r = rnd(L.r ?? 0, ctx) * (ctx.scale ?? 1);
       _v.copy(h.pos);
-      if (L.offset) _v.add(_a.fromArray(L.offset));
+      if (L.offset) _v.addScaledVector(_a.fromArray(L.offset), ctx.scale ?? 1); // (in the effect's scale: an aura's 'feet' are its creature's)
       if (sp === 'sphere') _v.add(_a.randomDirection().multiplyScalar(r * Math.cbrt(Math.random())));
       else if (sp === 'shell') _v.add(_a.randomDirection().multiplyScalar(r));
       else if (sp === 'ring' || sp === 'disc') { const a = Math.random() * Math.PI * 2, rr = sp === 'ring' ? r : r * Math.sqrt(Math.random()); _v.x += Math.cos(a) * rr; _v.z += Math.sin(a) * rr; }
-      else if (sp === 'column') { const a = Math.random() * Math.PI * 2; _v.x += Math.cos(a) * r; _v.z += Math.sin(a) * r; _v.y += Math.random() * rnd(L.height ?? 2, ctx); }
+      else if (sp === 'column') { const a = Math.random() * Math.PI * 2; _v.x += Math.cos(a) * r; _v.z += Math.sin(a) * r; _v.y += Math.random() * rnd(L.height ?? 2, ctx) * (ctx.scale ?? 1); }
       // which way it goes
       const dm = L.dir || 'sphere', speed = rnd(L.speed ?? 0, ctx) * (L.powerSpeed ? Math.sqrt(P) : 1);
       if (dm === 'sphere') _d.randomDirection();

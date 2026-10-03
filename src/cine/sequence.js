@@ -128,7 +128,7 @@ export class Cine {
     const once = (track, fn) => (seg[track] || []).forEach((k, i) => { const key = `${track}${i}`; if (t >= k.t && !h.fired.has(key)) { h.fired.add(key); fn(k); } });
     once('fx', (k) => {
       const pos = resolve(k, h.anchors, h.yaw, new THREE.Vector3(), h.ctx.i ?? 0);
-      const fx = g.vfx?.play(k.fx, { pos, dir: _a.set(Math.sin(h.yaw), 0, Math.cos(h.yaw)), tint: k.tint === 'ctx' ? h.ctx.tint : k.tint ?? h.ctx.tint, power: k.power ?? h.ctx.power ?? 1 });
+      const fx = g.vfx?.play(k.fx, { pos, dir: _a.set(Math.sin(h.yaw), 0, Math.cos(h.yaw)), tint: k.tint === 'ctx' ? h.ctx.tint : k.tint ?? h.ctx.tint, power: k.power ?? h.ctx.power ?? 1, cine: true }); // (cine: a sequence owns the screen, outside the combat budgets)
       if (fx && (k.hold || k.until || k.follow)) h.held.push({ h: fx, k, until: k.until || null, end: k.hold ? t + k.hold : Infinity });
     });
     once('bars', (k) => g.cinema?.frame(h.id, { bars: k.k ?? 1, ease: k.ease ?? 5 }));
