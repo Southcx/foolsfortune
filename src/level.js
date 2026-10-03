@@ -692,7 +692,7 @@ export class Level {
     const mesh = new THREE.Mesh(geo, this.propMat(PALETTE.wood, true));
     mesh.castShadow = mesh.receiveShadow = true;
     addOutline(mesh);
-    const ent = this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setDensity(40));
+    const ent = this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(s / 2, s / 2, s / 2).setDensity(40), 'wood');
     ent.size = s; ent.half = [s / 2, s / 2, s / 2]; ent.carry = s <= 0.9 ? 'lift' : 'heavy';
     return ent;
   }
@@ -701,15 +701,15 @@ export class Level {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(...size), this.propMat(PALETTE.mid));
     mesh.castShadow = mesh.receiveShadow = true;
     addOutline(mesh);
-    this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2).setDensity(600));
+    this.dynProp(mesh, pos, RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2).setDensity(600), 'clay');
   }
 
-  dynProp(mesh, pos, cd) {
+  dynProp(mesh, pos, cd, material = 'wood') { // (`material`: what a blow finds it made of, tags.js / vfx/vfx.js MATERIALS)
     const body = this.physics.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(...pos).setSleeping(true).setAngularDamping(0.3));
     const col = this.physics.world.createCollider(cd.setFriction(0.8).setCollisionGroups(GROUPS.prop), body);
     mesh.position.set(...pos);
     this.scene.add(mesh);
-    const ent = tag(this.breakables.addDebris(body, mesh), 'sliceable', 'pushable');
+    const ent = tag(this.breakables.addDebris(body, mesh), 'sliceable', 'pushable', material);
     ent.owner = this;
     ent.baseColor = mesh.material.color.clone();
     ent.sync = this.physics.addSynced(body, mesh);

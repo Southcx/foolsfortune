@@ -19,12 +19,15 @@
 //
 //   tag(ent, 'sliceable', 'static')    untag(ent, 'liftable')    hasTag(ent, 'sliceable')    register(ent) / unregister(ent)    registered('sliceable')
 // ---------------------------------------------------------------------------------------
+// (and what a type is MADE OF, for the blow's look: one of clay, crystal, jelly, wood, stone, metal (vfx/vfx.js MATERIALS). A thing of
+//  another material says so with its own tag: the dunes' ruins are 'stone', a crate 'wood'.)
 const DEFAULTS = {
-  breakable: ['breakable', 'sliceable', 'liftable', 'pushable'],
+  breakable: ['breakable', 'sliceable', 'liftable', 'pushable', 'clay'],
   slice: ['sliceable', 'pushable'],
-  shard: ['sliceable', 'pushable'],
-  clapper: ['sliceable'],
+  shard: ['sliceable', 'pushable', 'crystal'],
+  clapper: ['sliceable', 'clay'],
   prop: ['pushable'],
+  crystal: ['crystal'],
 };
 
 export function tag(ent, ...names) {

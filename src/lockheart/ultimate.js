@@ -177,7 +177,7 @@ export class Ultimate {
     } else if (this.phase === 'ascend') {
       // a crane: from low in front round and up over their shoulder as the coffin climbs
       const u = Math.min(1, (t - keysEnd) / ASCEND), k = u * u * (3 - 2 * u);
-      pos = this.around(0.5 + k * 2.6, 4.4, 1.0 + k * 2.4).clone(); look = _l.copy(cof).lerp(this.around(0, 0, 1.2), 0.45); // (pos cloned: around() writes one shared vector, and the look's around() overwrote it, putting the crane inside the Courier) fov = 6 + 6 * k; roll = 0.05 * (1 - k); ease = 3;
+      pos = this.around(0.5 + k * 2.6, 4.4, 1.0 + k * 2.4).clone(); look = _l.copy(cof).lerp(this.around(0, 0, 1.2), 0.45); fov = 6 + 6 * k; roll = 0.05 * (1 - k); ease = 3; // (pos cloned: around() writes one shared vector, and the look's around() overwrote it, putting the crane inside the Courier)
     } else if (this.phase === 'wheel' || this.phase === 'landed') {
       // from behind and below, looking up past them at the wheel in the sky; drifting round
       const w = t - this.wheelT;

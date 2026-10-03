@@ -285,7 +285,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       S.add(mesh);
       const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(pos.x, pos.y, pos.z).setRotation(quat));
       const col = W.createCollider((collider || RAPIER.ColliderDesc.cuboid(...halfExtents)).setCollisionGroups(GROUPS.static).setFriction(0.9), b);
-      const ent = tag({ type: 'prop', body: b, mesh, owner: this, baseColor: new THREE.Color(baseColor), M: MATERIALS.stoneware, kind: 'ruin' }, 'sliceable', 'static');
+      const ent = tag({ type: 'prop', body: b, mesh, owner: this, baseColor: new THREE.Color(baseColor), M: MATERIALS.stoneware, kind: 'ruin' }, 'sliceable', 'static', 'stone');
       g.physics.register(col, ent);
       register(ent);
       mesh.updateMatrixWorld();
