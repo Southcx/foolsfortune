@@ -121,7 +121,7 @@ export class Sprites {
     this.attr = {};
     for (const n of NAMES) { const a = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4).setUsage(THREE.DynamicDrawUsage); g.setAttribute(n, a); this.attr[n] = a; }
     this.attr.aPos.array.fill(-1e9);
-    g.instanceCount = max;
+    g.instanceCount = 0; // (drawn only up to the highest slot ever used, and not at all once the last one has died: update)
     g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e9);
     this.mat = new THREE.ShaderMaterial({
       uniforms: { uAtlas: { value: atlas() }, uTime: { value: 0 }, uAdd: { value: additive ? 1 : 0 } },
@@ -134,6 +134,7 @@ export class Sprites {
     this.mesh.userData.moodExempt = true;
     scene.add(this.mesh);
     this.lo = Infinity; this.hi = -1;
+    this.used = 0; this.until = -1; this.mesh.visible = false;
   }
 
   emit(o) {
@@ -150,11 +151,16 @@ export class Sprites {
     Z[j] = o.floor ?? -1e9; Z[j + 1] = o.twinkle || 0; Z[j + 2] = Math.random() * 100; Z[j + 3] = o.grow || 0;
     if (i < this.lo) this.lo = i;
     if (i > this.hi) this.hi = i;
+    if (i + 1 > this.used) this.used = i + 1;
+    this.until = Math.max(this.until, P[j + 3] + V[j + 3]);
   }
 
   update(dt) {
     this.time += dt;
     this.mat.uniforms.uTime.value = this.time;
+    // (an idle pool costs nothing: hidden once its last particle's birth and life have passed; else drawn only as far as it was filled)
+    this.mesh.visible = this.time < this.until;
+    this.geo.instanceCount = this.used;
     if (this.hi < 0) return;
     for (const a of Object.values(this.attr)) { a.addUpdateRange(this.lo * 4, (this.hi - this.lo + 1) * 4); a.needsUpdate = true; }
     this.lo = Infinity; this.hi = -1;
