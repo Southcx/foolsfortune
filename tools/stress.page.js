@@ -216,7 +216,8 @@
       // ---- invariants ----
       const v = P.vel, p = P.pos;
       if (!Number.isFinite(p.x + p.y + p.z + v.x + v.y + v.z)) { sink.violation('finite', P, label); break; }
-      sink.talkStuck = g.techs.active?.id === 'talk' && !g.game.dialogue?.open ? (sink.talkStuck || 0) + 1 : 0; // (it ends on the next fixed step)
+      const paused = !!(g.game.shopUI?.open || g.game.codex?.open || g.game.pneukaUI?.open || g.game.indexMenu?.open || g.game.cartography?.open); // (a window that pauses the game: nothing steps, so the talk ends when it closes)
+      sink.talkStuck = g.techs.active?.id === 'talk' && !g.game.dialogue?.open && !paused ? (sink.talkStuck || 0) + 1 : 0; // (it ends on the next fixed step)
       if (sink.talkStuck > 3) sink.violation('talk-stuck', P, label);
       // a mind is never held open past its time, the chat line is no one's, no jelly leaves the world, every mind is doing something it
       // can say, and no stun outlasts its time (stun.js) unless a window holds it

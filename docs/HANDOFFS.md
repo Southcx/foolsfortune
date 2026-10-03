@@ -60,11 +60,30 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
+- New moments that want their own sounds (placeholders in use): the Courier SHATTERING (`courier.shatter`: now `vesselCrack` repeated
+  and `shatter(3, 1, 'porcelain')`), being made whole (`courier.reform`), the shield taking a blow and breaking (`vessel.shield`,
+  `vessel.shieldbreak`), the kiln's MEND (`vessel.refire`), and the Lockheart's OPENING, the ultimate (`lockheart.ultimate`, then
+  `lockheart.ultimate.end`; now `coffin`, `crystalStrike` per key, `geyser`, `crystalSweet` + `chestBurst(4)` on the landing). The
+  opening is the owner's "visual flex": it would love a cue of its own (an aeon's arrival).
+- The crystal sounds are louder (out gains 0.8 / 0.75 / 0.6) and the music ducks under them (`music.duck(sec, to)` takes a depth now).
+
 (Round 39's notes are done: deleted. The Crucibelle's voices stay open (the wider band in `src/music/world.js` has a harp, a sitar, a
 steel pan and more for its instruments), and leaning the workshop's music in at the kiln (`kiln.open`, `kiln.close`) is for a later
 round.)
 
 ## Calissa (Art)
+
+**2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
+- **Stances**: the owner had the Sondelass's and the Lockheart's scrapped. The cutlass is back on the UAL sword idle as captured (the
+  en garde tried crossed the blade and fisted the off-hand before the face), the rod on the torch idle; the Lockheart's is new (left hand
+  holding the coffin gingerly, `stance:lockheart`) and there is a channel (`stance:lockheartChannel`, FFXI's black magic cast). Stances
+  gained a `hold` option (one frame of the base held). The owner's rule for every pose test: take every other tool off first.
+- **The Lockheart's OPENING** (`lockheart/ultimate.js`) is the owner's chosen place for the visual flex: the circle, the helix, the
+  keys, the wheel in the sky. Yours to make richer (the circle's runes, the coffin's gold, the landing).
+- **The death** (`vessel/death.js`) and the PS2 frame accumulation (`render/glow.js` `post.accum`), and `fx.toneBurst` /
+  `fx.chipsOff` (a note made visible; music/tone.js `degreeColor`: the root gold, the Crucibelle's colours for the rest).
+- The filigree's channels now light with the psygun's charge (faint, then brighter) and not with plain shots (the owner's note).
 
 **2026-10-02 (later), from Petra: Round 39's hooks are in**
 - `game.combat` (`src/combat.js`): `engaged`, `heat` (0..1), events `combat.start` / `combat.end`. For the ring and the beads.
@@ -163,6 +182,13 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-03, from Petra (Round 40)**
+- **The owner's ruling: the Courier is never "she".** The Courier is androgynous, the player's self-insert. The game says "you" where it
+  speaks to the player, and "they" elsewhere. I have changed every line I found (and LORE.md's Courier block: please keep it so);
+  the folk's lines about the kiln still call the kiln "her", which is right.
+- New log lines to polish: the shield ("Your Lachryma is spent: the next blow reaches the clay."), the shattering and the reform, the
+  kiln's mend (`tracking.js`).
 
 **2026-10-02, Espada's state after Round 39** (the rest of what was here is done and deleted)
 - Done: the owner's answers in `docs/LORE.md` (and Round 40's: Wells, the town, Saggar as a head maid); the tiers named and the four folk
