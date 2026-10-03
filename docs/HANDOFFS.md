@@ -11,34 +11,6 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
-**2026-10-03, from Calissa: the VFX system, and four small edits in your files**
-- One VFX system now (docs/VFX.md): game code plays effects by name (`game.vfx.play(name, ctx)`), the looks are data in
-  `src/vfx/library.js`. A new effect never needs code; please call it rather than building particles in a module.
-- Small edits in your files, all one line or close:
-  - `src/creatures.js` `strike()`, `src/breakables.js` `damage()`, `src/clappers.js` `hit()`: each calls `game.vfx?.hit({ kind, cause,
-    point, dir, power, kill })`, which plays `hit.<blunt|slash|shot>.<material>[.kill]`. `breakables.damage` has no cause, so its hits
-    read `ent.lastCause` (unset: blunt); if you set it where a blow begins, pots will show slash and shot hits too.
-  - `src/lockheart/ultimate.js`: the opening plays `ult.*` effects; and a bug fix in the ascent's camera (pos and the look's `around()`
-    shared one vector: the crane sat inside the Courier). The canvas circles hide when `game.vfx` exists (the owner's wife's circles
-    replace them). It now plays its camera, slow time, mood and effects from a sequence (`game.cine.play('lockheart.opening')`,
-    data in `src/cine/sequences.js`): the code says when each beat comes (`seq.go('key')`, `'ascend'`, `'wheel'`, `'land'`, `'back'`)
-    and skips its own camera, time and mood while the sequence is there. Without `game.cine` it behaves as before.
-  - `src/ceremony.js`: the same for a chest's opening: with `game.cine` the camera is the `chest.open` sequence (`seq.go(phase, { len })`
-    from `enter`, charge, fountain and reveal stretched to the tier's lengths); `shot()` steps aside. The mood, time, beam and light stay
-    yours. Faithful to your numbers (compared frame by frame).
-  - `src/sondelass/cutlass.js`: the ribbon is `game.vfx.swing('swing.cutlass')` (falls back to the plain Trail), and `trail.power` is
-    set per stroke (the third stroke and the stinger shed more). Another tool can have a swing the same way: one line, the look in the
-    library.
-  - `src/main.js`: `game.vfx` and `game.cine` are now made before the tools (they ask for their swings when built); `game.auras`.
-  - `src/main.js`: `game.vfx`, `game.cine`, `game.workbench` (drawn instead of the world while open, like the title), chat `/vfx`, `/opening`, `/lab`.
-- **Material tags, please (tags.js is yours).** `vfx.hit` now reads what a thing is made of from its tags: one of `clay`, `crystal`,
-  `jelly`, `wood`, `stone`, `metal` (`MATERIALS` in `src/vfx/vfx.js`), and only guesses from the kind when there is none. The looks for
-  all six exist (`hit.<blunt|slash|shot>.<material>` in the library). What is left is yours: the defaults in `DEFAULTS` (pots and
-  clapperjars `clay`, crates `wood`, shards and crystals `crystal`), and the things that have no default: the dunes' ruined columns
-  `stone`, gongs and metal props `metal`. The three call sites now pass the entity (`ent`) as well as its kind.
-- Swings on your tools, one line each where they are built: `dreamvane.js`, `brush/club.js`, `kick.js` call
-  `game.vfx.swing('swing.<tool>').follow((a, b) => striking && (set a, b; true))`; the looks are in the library.
-
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
 - **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad
   and transfigured them; some are still out in the Dunes as figments, and the slip jellies are read as them (clay gone back to slip,

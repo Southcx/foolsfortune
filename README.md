@@ -800,6 +800,7 @@ runtime IK correction on the contact points.
 | `src/ai/` | the reusable parts of a creature's mind (`docs/AI.md`): utility reasoner and curves, drives and traits, stimuli, senses, memory, steering, ecology, the Brain that ties them |
 | `src/stun.js`, `src/vfx/dizzy.js` | stun for every kind of thing (poise, drain, immunity, vulnerable, hold) and its stars |
 | `src/veritome/flash.js`, `src/veritome/reprogram.js` | the Veritome's flash (dazzle and stun), and reprogramming a stunned mind (macros, typed) |
+| `src/vfx/vfx.js`, `src/vfx/library.js`, `src/vfx/sprites.js`, `src/vfx/auras.js`, `src/cine/`, `src/workbench/` (Calissa's, R42; `docs/VFX.md`) | one VFX system: effects played by name (`game.vfx.play`), their looks as data; every blow's hit by tool and by what the thing is made of (`hit.<blunt|slash|shot>.<material>`, the material a tag: `tags.js`); swings; status auras; cinematic events as data (sequences: the Lockheart's opening, a chest's opening); the workbench (`/lab`), the game's own studio for effects, models and cinematics; `/vfx <name>` plays one where you stand, `/opening` the Lockheart's opening without keys |
 | `src/vfx/dissolve.js` | a creature cut by a zandatsu, coming undone into baubles and cubes |
 | `src/ui/pixel.js`, `src/ui/lachrimeter.js` | the pixel kit (the maker's art, palette-swapped at 1x, integer-scaled; the jank font) and the Lachryma gauge made of it |
 | `src/progress.js` | progress cleared on each new build (settings kept) |
