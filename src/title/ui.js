@@ -42,10 +42,10 @@ export class TitleUI {
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     const el = (this.el = document.createElement('div')); el.id = 'title'; el.className = 'on';
     el.innerHTML = `<div class="vig"></div>
-      <div class="logo"><b>Fool's Fortune</b><span>every journey begins with a step off the edge</span></div>
+      <div class="logo"><b>Fool's Fortune</b><span>the fortune is in the leap</span></div>
       <div class="press">PRESS START</div>
       <div class="menu"></div>
-      <div class="fade"></div><div class="ver">THE ISLAND OF EGO · a work in progress</div>`;
+      <div class="fade"></div><div class="ver">ANAGAMI ISLAND · a work in progress</div>`;
     document.body.appendChild(el);
     this.menuEl = el.querySelector('.menu'); this.fadeEl = el.querySelector('.fade');
     this.items = []; this.hot = 0; this.page = 'main';
@@ -73,8 +73,8 @@ export class TitleUI {
     const g = this.game, music = g.music;
     const pages = {
       main: [
-        { id: 'story', label: 'STORY', sub: 'the island of ego (not yet written)' },
-        { id: 'debug', label: 'DEBUG', sub: 'the sandbox: every tool, every room' },
+        { id: 'story', label: 'STORY', sub: 'Anagami Island (not yet written)' },
+        { id: 'debug', label: 'DEBUG', sub: 'the workshop as it stands: every tool, every room' },
         { id: 'settings', label: 'SETTINGS', sub: 'music, voice, windows' },
         { id: 'sound', label: 'SOUND TEST', sub: 'the music, one piece at a time' },
       ],
