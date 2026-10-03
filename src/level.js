@@ -503,7 +503,7 @@ export class Level {
 
     // shelves
     for (const s of this.shelves) {
-      const n = 3 + Math.floor(Math.random() * 2);
+      const n = 2 + Math.floor(Math.random() * 2); // (R40: fewer: a workshop, not a warehouse)
       for (let i = 0; i < n; i++) {
         const zz = s.z - s.w / 2 + (s.w / n) * (i + 0.5) + rand(-0.1, 0.1);
         const low = s.y - (s.upper ? 7 : 0) < 1;
@@ -640,10 +640,10 @@ export class Level {
     for (const x of [-3, 3]) sculpt('endless', x, y + 0.2, 8.2, 1.05, { color: C.wood });
     // showroom tables: rows of porcelain (diamond dust)
     for (const x of [-6, 6]) {
-      for (let z = -13.1; z <= -7.9; z += 0.52) pot(pick(['cup', 'bottle', 'crown', 'twist', 'vase']), x + rand(-0.2, 0.2), y + 0.95, z, rand(0.8, 1.05));
+      for (let z = -12.9; z <= -7.9; z += 1.0) pot(pick(['cup', 'bottle', 'crown', 'twist', 'vase']), x + rand(-0.2, 0.2), y + 0.95, z, rand(0.8, 1.05));
     }
     // stepped pyramid stand
-    const tiers = [[1.35, 0.4, 10], [0.85, 0.8, 7], [0.3, 1.2, 3]];
+    const tiers = [[1.35, 0.4, 7], [0.85, 0.8, 4], [0.3, 1.2, 2]];
     for (const [r, h, n] of tiers) {
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2 + 0.3;
@@ -651,16 +651,8 @@ export class Level {
       }
     }
     B.spawn({ kind: 'ember', ember: true, pos: [0, y + 1.202, -11.5], scale: 0.8 });
-    // two teetering bowl towers by the atrium
-    for (const x of [-2.2, 2.2]) {
-      let h = y;
-      for (let i = 0; i < 9; i++) {
-        const plate = i % 2 === 0;
-        const P = prepProfile(plate ? 'plate' : 'bowl', plate ? 0.7 : 1);
-        B.spawn({ kind: plate ? 'plate' : 'bowl', pos: [x, h + 0.002, -7.7], scale: plate ? 0.7 : 1, color: pick(colors), yaw: 0 });
-        h += P.height + 0.003;
-      }
-    }
+    // (R40: the two teetering bowl towers by the atrium are gone: they fell on boot, down the atrium onto the ground floor's pots;
+    //  the workshop is quiet until the player breaks something)
     // west showcase
     big('tsubo', -6.8, -2.4, 1.0, undefined, y + 0.3);
     big('gourd', -5.6, -0.4, 1.2, undefined, y + 0.3);
@@ -668,8 +660,8 @@ export class Level {
     big('onion', -5.4, -2.6, 1.3, undefined, y + 0.3);
     // east: ember cluster near the upper kiln
     B.spawn({ kind: 'ember', ember: true, pos: [7.2, y + 0.002, 5.6], scale: 1.1 });
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
       pot(pick(['jar', 'amphora', 'pitcher', 'melon', 'stack']), 7.2 + Math.cos(a) * 1.1, y, 5.6 + Math.sin(a) * 1.1, rand(0.8, 1.1));
     }
     big('urn', 9.2, 13.8, 1.0, undefined, y);
