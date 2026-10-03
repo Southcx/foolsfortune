@@ -105,6 +105,27 @@ Hunter's animations are. In practice:
 - **Anticipation and follow-through on actions**, timed to the game's own beats (a move's timings are its feel and do not change:
   the clip is time-warped onto them, as the carry is).
 
+## Effect meshes: made in Mesh Create, kept where the owner can change them
+
+Effect meshes (rings, ribbons, helices, flares, slashes) are made in TakayuStudio's **Mesh Create**
+(https://gameanimation.info/mesh-create/), a free browser tool, and kept in the repo as its own project files:
+
+- `source_assets/meshflow/<name>.meshflow`: the project. In Mesh Create, **Open** (開く) reads it; change the shape, deformers, UV
+  scroll, painted alpha or texture by hand; **Save** (保存) writes it back. Commit the file.
+- `src/assets/vfx/<name>.glb`: what the game loads. `node tools/meshflow.mjs` bakes every project through Mesh Create's own GLB export
+  (headless). Or export it yourself from the tool: **Export → GLB**, saved over the file of the same name: the same result.
+- `source_assets/meshflow/tex/`: the textures the starting projects were made with (drawn by `tools/meshflow.mjs`'s recipes).
+
+In the game, `src/vfx/meshfx.js` draws a baked mesh as the tool previews it (the texture flowing at the project's U/V speeds, its vertex
+colour and alpha, its blend) and adds what the game wants: a tint per use, the Mind's labradorite, a fade. Where each is played is a
+module of its own (`src/vfx/chestfx.js`: a chest's opening). What is in now:
+
+| Mesh | Shape (Mesh Create) | Where |
+| --- | --- | --- |
+| `chest_circle` | Ring, a band of runes, turning | under a chest as it charges; flares on the burst |
+| `chest_shock` | Flare, a low band thrown outward | the burst, wider the higher the tier |
+| `chest_helix` | Twin Helix, tapering up, flowing up | round the chest through the fountain, round the curio on the reveal |
+
 ## Proposed persistent 3D HUD (the Mind's layer, in the world)
 
 | Element | Replaces / joins | Prior art |
