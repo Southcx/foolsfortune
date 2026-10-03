@@ -1,14 +1,14 @@
 // ---------------------------------------------------------------------------------------
-// THE RING AT HER FEET: the Courier's Lachryma and what has noticed her, drawn on the ground round her, in the world, with no words
+// THE RING AT HER FEET: the Courier's Lachryma and what has noticed them, drawn on the ground round them, in the world, with no words
 // and no numbers (docs/LOOK.md, the 3D HUD). It is the always-on gauge; the Lachrimeter panel steps forward only while the Lachryma
 // is moving (hud.js).
 //
 //   THE POOL      a band of Lachryma itself (matter, never line: near-black liquid with its oil-film sheen) filling the ring from the
-//                 near side (her body never hides it), clockwise on the screen, as far as she has it; what is held for a charge runs
+//                 near side (their body never hides it), clockwise on the screen, as far as they have it; what is held for a charge runs
 //                 on after it, paler
 //   THE FRAME     the band is held between two fine labradorite lines (the Mind's: vfx/labradorite.js)
 //   THE BEADS     the Blink's charges, as beads of Lachryma set in the frame before the band begins (an empty socket when spent)
-//   THREAT ARCS   outside the frame, an arc toward each creature that has noticed her, as wide as it is aware of her, cool (blue) far
+//   THREAT ARCS   outside the frame, an arc toward each creature that has noticed them, as wide as it is aware of them, cool (blue) far
 //                 off and hot (copper) close: Zone of the Enders' ring radar on the frame itself
 //
 // It is a fight's HUD: out of sight outside combat (game.combat), back as a fight begins; in one, it brightens while something is
@@ -49,7 +49,7 @@ void main() {
   vec3 view = normalize(cameraPosition - vW);
   float ph = labPhase(vW, view) + 0.15 * d;
   vec4 col = vec4(0.0);
-  // the band of Lachryma: liquid as far as she has it, paler for what is held, the empty rest barely there
+  // the band of Lachryma: liquid as far as they have it, paler for what is held, the empty rest barely there
   float b = band(r, 0.72, 0.84);
   if (b > 0.0) {
     float fw = fwidth(d) * 1.5;
@@ -124,7 +124,7 @@ export class HudRing {
     this.res += (res - this.res) * (1 - Math.exp(-dt * 10));
     if (Math.abs(fill - this.last) > 0.001 || res > 0) { this.last = fill; this.busy = 3; }
     this.busy = Math.max(0, this.busy - dt);
-    // what has noticed her: the creatures whose minds hold her (ai/memory.js), nearest first
+    // what has noticed them: the creatures whose minds hold them (ai/memory.js), nearest first
     const near = [];
     for (const c of g.creatures?.list || []) {
       if (!c.alive || c.ally) continue;
@@ -155,12 +155,12 @@ export class HudRing {
     this.alpha += (want - this.alpha) * (1 - Math.exp(-dt * (want > this.alpha ? 6 : 2)));
     this.mesh.visible = this.alpha > 0.01;
     if (!this.mesh.visible) return;
-    // where she stands, and which way is "up the screen" on the ground (the band starts at the far side and runs clockwise on screen)
+    // where they stand, and which way is "up the screen" on the ground (the band starts at the far side and runs clockwise on screen)
     this.mesh.position.set(P.renderPos.x, P.renderPos.y + 0.04, P.renderPos.z);
     cam.getWorldDirection(_f); _f.y = 0; if (_f.lengthSq() < 1e-6) _f.set(0, 0, -1); _f.normalize();
     _r.set(-_f.z, 0, _f.x); // (the camera's right, on the ground)
     const aF = Math.atan2(_f.z, _f.x), aR = Math.atan2(_r.z, _r.x);
-    this.u.uStart.value = aF + Math.PI; // (from the near side, which her body never hides, clockwise on the screen)
+    this.u.uStart.value = aF + Math.PI; // (from the near side, which their body never hides, clockwise on the screen)
     this.u.uSign.value = Math.sin(aR - aF) > 0 ? 1 : -1;
     this.u.uFill.value = this.fill; this.u.uRes.value = this.res;
     this.u.uBeads.value.set(blink ? blink.n : 0, blink ? blink.max : 0, blink ? blink.fill : 0);

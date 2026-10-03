@@ -57,14 +57,14 @@ _Landed, all ten (a to j), on the default branch; the art, sound and words each 
 - **g. The god hand** turns so its wrist points back along the line to the Pneuka Jar.
 - **h. The Crucibelle's notes** zip in from the same place off-screen: a spawn-at-origin bug, as the clapperjars had.
 - **i. The vessel takes damage where it is struck.** Hit regions on the Courier (the mask, the torso, each arm and leg: a collider on
-  each), and **cracks where the blow landed that heal fully in time**. (The gold kintsugi stays: it is what she has earned, and it is
+  each), and **cracks where the blow landed that heal fully in time**. (The gold kintsugi stays: it is what they have earned, and it is
   kept distinct from damage.)
-- **j. "In combat"** as one signal (`game.combat`): what is after her, what she has struck lately. The HUD ring reads it.
+- **j. "In combat"** as one signal (`game.combat`): what is after them, what they have struck lately. The HUD ring reads it.
 
 ### Calissa (Art)
 The HUD ring and the ability charges stepping out of sight outside combat (and the ring growing into the place that shows status); the
 Dreamvane's own animation suite (the left hand on the upper haft at rest, the swing, the fork, the survey ping); the Crucibelle's
-playing (the body and hands making the notes, more visual feedback that she is jamming); the crystal formations' art pass (their albedo
+playing (the body and hands making the notes, more visual feedback that they are jamming); the crystal formations' art pass (their albedo
 the sand's, a Lachryma outline and sheen to show they are alive, varied and dynamic shapes, particles on a strike that say how close it
 was); caster shell models; the damage cracks' look; how a glaze sits on a painting.
 

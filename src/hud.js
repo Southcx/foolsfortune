@@ -49,7 +49,7 @@ export class Hud {
     build();
     addEventListener('resize', build);
     this.el.lachNum.textContent = ''; // (no count beside the tube: the tube is the count, docs/LOOK.md 2)
-    // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while she has it
+    // the Blink's charges, as beads of Lachryma beside the count (ui/beads.js), shown while they have it
     this.beads = new ChargeBeads(px, { k: this.meter.el.__k, max: 3 });
     this.el.lachNum.before(this.beads.el);
     // the cubes (cubes.js's readout) live in the panel, under the tube, and not over its frame
@@ -110,7 +110,7 @@ export class Hud {
       this.meter.set(pool.available, pool.reserved, pool.max); this.meter.update(dt);
       this.el.lach.classList.toggle('low', pool.available < 12);
       // the panel is there when the Lachryma is doing something (not full, held for a charge, just moved) and steps back when it is
-      // full and still: the ring at her feet (vfx/hudring.js) is the always-on gauge
+      // full and still: the ring at their feet (vfx/hudring.js) is the always-on gauge
       if (Math.abs(pool.available - (this.lastAvail ?? -1)) > 0.01 || pool.reserved > 0) { this.lastAvail = pool.available; this.quietT = 0; }
       this.quietT = (this.quietT || 0) + dt;
       const show = pool.available < pool.max - 0.5 || this.quietT < 4 || this.lach?.forced;

@@ -29,7 +29,7 @@ No activity should pay more than about **1.5×** the aim. The one exception is l
  zandatsu core ........... ECON.jelly.core    │      ├─► shops ............... ECON.goods (minutes)
  crystal harvest ......... ECON.crystal       ├─►  ──┤      Raku haggles; Grog buys fish back (a faucet too)
  chests (world, treasury). ECON.chest         │ cubes├─► glazes, firing (R38d)
- a curio she has, again .. ECON.dupe          │      └─► the Shrine Garden (later: the long sink)
+ a curio they have, again .. ECON.dupe          │      └─► the Shrine Garden (later: the long sink)
  condensing a spare card . ECON.condense      │
  selling to the folk ..... ECON.fish, .curio  │
  Lockheart CUBES ......... ECON.lockheart  ───┘
@@ -57,7 +57,7 @@ From `node tools/economy.mjs`, which uses the table and the assumed rates of pla
 
 The photographer row is after film: a roll costs 12 cubes. It earns 430 an hour without film and 310 with it.
 
-From R39 the miner earns by ear (`src/lachryma/tuning.js`). A formation broken open by plain strikes pays a share of its worth by its nature: dense 0.6, fragile 0.5 (`ECON.crystal.kind`). One opened at its sweet spot pays many times over: dense ×2, fragile ×6 (`ECON.crystal.sweet`). The row assumes a quarter of the formations are fragile, and that she finds the spot on 40% of the dense ones (ten strikes to try) and 15% of the fragile ones (three). A miner who never listens earns about 400 an hour (0.83 × aim).
+From R39 the miner earns by ear (`src/lachryma/tuning.js`). A formation broken open by plain strikes pays a share of its worth by its nature: dense 0.6, fragile 0.5 (`ECON.crystal.kind`). One opened at its sweet spot pays many times over: dense ×2, fragile ×6 (`ECON.crystal.sweet`). The row assumes a quarter of the formations are fragile, and that they find the spot on 40% of the dense ones (ten strikes to try) and 15% of the fragile ones (three). A miner who never listens earns about 400 an hour (0.83 × aim).
 
 ## The shops (R38c, `src/shop/`)
 
@@ -74,7 +74,7 @@ How prices move (`ECON.shop`, after OSRS):
 
 **The haggle** (`src/shop/haggle.js`): Raku asks his list price and never goes below his floor (the worth plus 2%). Simulated, the moves end like this:
 
-- An offer at the low end of what is put to her sulks him into holding at list.
+- An offer at the low end of what is put to their sulks him into holding at list.
 - Steady fair offers, flattery or walking away while he is pleased end about 18–20% under list.
 
 **Selling to the folk replaces condensing** as the way to turn things into cubes. A landed fish is now a thing in the box (it used to come apart into Lachryma only). Film is now a thing too: a roll is 24 exposures, and the next is loaded from the box.
@@ -94,7 +94,7 @@ How prices move (`ECON.shop`, after OSRS):
 
 - **F3** (the diagnostics panel) has an `econ` line: cubes an hour in and out this session, the aim, the three biggest faucets and the two biggest drains. F4's copied report has the same line.
 - It reads the ledger only: `cube.spill.<from>` for everything that came out of something, `cube.src.condense`, and `cube.use.<why>` for every spend. A new faucet calls `cubes.burst(..., { from })` or `cubes.earn(n, why)`, and a new drain calls `cubes.spend(n, why)`. Nothing else is needed for it to show.
-- `/grant [n]` (DEBUG only) adds n cubes to her purse for testing a shop or the Tithe. It is listed apart from income.
+- `/grant [n]` (DEBUG only) adds n cubes to their purse for testing a shop or the Tithe. It is listed apart from income.
 - **When the panel and the simulator disagree**, fix the simulator's `PLAY` rates first (they are guesses), then the table.
 
 ## Prior art

@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
 // THE FOOL'S PRECIPICE: the title (docs/PLAN.md, piece 1; the owner's references in docs/ref/). Not the workshop: the moment before
-// setting out. The Courier sits on the lip of a crooked hill under a twisted tree, legs over the edge, a clapperjar at her side (the
+// setting out. The Courier sits on the lip of a crooked hill under a twisted tree, legs over the edge, a clapperjar at their side (the
 // Fool's little dog); below and beyond, a checkerboard sea bends down into a slow whirlpool, its giant pieces playing a game on the
 // beat (title/board.js); tarot cards fall like leaves, a spiral moon with a face hangs over it all, and motes of Lachryma rise.
 //
-// PRESS START, and she takes THE FOOL'S STEP: stands, and steps off the edge, and the camera goes down after her while the menu comes
-// in; she hangs in the fall, cards turning round her, until a choice is made; then the camera dives after her into the spiral and the
+// PRESS START, and they take THE FOOL'S STEP: stands, and steps off the edge, and the camera goes down after them while the menu comes
+// in; they hang in the fall, cards turning round them, until a choice is made; then the camera dives after them into the spiral and the
 // world is there (no load: it was built behind the title). It is drawn by the game's own renderer and its own post (the 480 lines, the
 // glow and the grade), with a Courier of its own (the same model and clips: character.js), so the game itself does not run behind it.
 //
@@ -22,7 +22,7 @@ import { Board } from './board.js';
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const OWN_BPM = 100;
-// where the board lies, from the hill (the hill's lip is the origin; she looks down -Z into the spiral)
+// where the board lies, from the hill (the hill's lip is the origin; they look down -Z into the spiral)
 const BOARD_AT = new THREE.Vector3(0, -34, -120);
 
 export class TitleScene {
@@ -35,12 +35,12 @@ export class TitleScene {
     this.sky(); this.moon(); this.hill(); this.lights();
     this.board = new Board(S); this.board.group.position.copy(BOARD_AT);
     this.cards(); this.motes();
-    // the Courier: a vessel of her own for the title (the same model and clips; posed straight from the UAL clips, no IK)
+    // the Courier: a vessel of their own for the title (the same model and clips; posed straight from the UAL clips, no IK)
     this.ch = new Character(S, charG, gunG, clipPack);
     this.ch.gun.visible = false; this.ch.gunOff = true;
     this.pose = this.ch.clips.pose();
     this.ch.root.rotation.y = Math.PI; // (facing out, down -Z, into the spiral)
-    // the Fool's little dog: a clapperjar, sitting by her
+    // the Fool's little dog: a clapperjar, sitting by them
     this.jar = clapG.scene.clone(true);
     this.jar.scale.setScalar(0.55); this.jar.position.set(-0.8, 0, -0.1); this.jar.rotation.y = Math.PI + 0.5;
     const clay = new THREE.MeshStandardMaterial({ color: 0xc8805a, roughness: 0.8, flatShading: true }); // (the jars are glazed at run time by clappers.js: here, plain terracotta)
@@ -90,7 +90,7 @@ export class TitleScene {
     const moss = new THREE.MeshStandardMaterial({ color: 0x3c4a3a, roughness: 1, flatShading: true });
     const bark = new THREE.MeshStandardMaterial({ color: 0x2c1c26, roughness: 0.95, flatShading: true });
     const leaf = new THREE.MeshStandardMaterial({ color: 0x3a2a48, roughness: 1, flatShading: true });
-    // the crooked hill: a spire leaning out over the board, twisted, its top a small flat lip (she sits at the origin, the lip at -Z)
+    // the crooked hill: a spire leaning out over the board, twisted, its top a small flat lip (they sit at the origin, the lip at -Z)
     const prof = []; for (let i = 0; i <= 14; i++) { const y = -i * 6; prof.push(new THREE.Vector2(1.6 + i * i * 0.09 + (i % 3) * 0.4, y)); }
     prof.unshift(new THREE.Vector2(0, 0.02)); prof.splice(1, 0, new THREE.Vector2(1.5, 0.02));
     const hg = new THREE.LatheGeometry(prof.reverse(), 9);
@@ -105,7 +105,7 @@ export class TitleScene {
     hg.computeVertexNormals();
     const h = new THREE.Mesh(hg, rock); h.position.set(0, 0, 0.6); S.add(h);
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.5, 0.25, 9), moss); cap.position.set(0, -0.08, 0.7); S.add(cap);
-    // the twisted tree behind her, arching over (the Fool card's tree)
+    // the twisted tree behind them, arching over (the Fool card's tree)
     const trunk = new THREE.CatmullRomCurve3([[-1.3, -0.2, 1.1], [-1.9, 1.6, 1.5], [-1.4, 3.4, 0.9], [-0.4, 4.6, 0.2], [0.9, 5.1, -0.9], [2.0, 4.6, -1.9]].map((p) => new THREE.Vector3(...p)));
     S.add(new THREE.Mesh(new THREE.TubeGeometry(trunk, 40, 0.26, 6, false), bark));
     for (const pts of [[[-1.4, 3.4, 0.9], [-2.6, 4.6, 0.3], [-3.4, 5.4, -0.4]], [[-0.4, 4.6, 0.2], [-0.6, 6.0, -0.6], [-1.2, 6.8, -1.4]], [[0.9, 5.1, -0.9], [1.6, 6.2, -0.7]]]) {
@@ -123,7 +123,7 @@ export class TitleScene {
     const S = this.scene;
     S.add(new THREE.HemisphereLight(0x9a8ac8, 0x2a1838, 1.1));
     const moon = new THREE.DirectionalLight(0xe6dcff, 2.2); moon.position.set(-360, 150, -260).normalize().multiplyScalar(50); S.add(moon);
-    const fill = new THREE.DirectionalLight(0xffb27a, 0.7); fill.position.set(6, 3, 8); S.add(fill); // (a warm rim from behind her: the world she is leaving)
+    const fill = new THREE.DirectionalLight(0xffb27a, 0.7); fill.position.set(6, 3, 8); S.add(fill); // (a warm rim from behind them: the world they are leaving)
   }
   cards() {
     // a tarot card's back (after the owner's: a mirrored pattern of moons and stars, plum and cream)
@@ -168,14 +168,14 @@ export class TitleScene {
   // ---------------------------------------------------------------- the states
   /** PRESS START: the Fool's Step. */
   go() { if (this.state !== 'idle') return; this.state = 'step'; this.st = 0; }
-  /** A choice made: the camera dives after her into the spiral; `done` when the world is to be shown. */
+  /** A choice made: the camera dives after them into the spiral; `done` when the world is to be shown. */
   dive(done) { this.state = 'dive'; this.st = 0; this.onDived = done; }
 
   update(dt) {
     this.t += dt; this.st += dt;
     const beat = this.beat();
     this.board.update(dt, beat);
-    // the cards fall like leaves; the motes rise; the jar breathes (it yaps when she stands)
+    // the cards fall like leaves; the motes rise; the jar breathes (it yaps when they stand)
     for (const k of this.cardList) {
       const m = k.mesh; k.sway += dt;
       m.position.y -= k.speed * dt * (this.state === 'menu' || this.state === 'step' ? 1.3 : 1);
@@ -219,17 +219,17 @@ export class TitleScene {
 
   cameraPath(dt) {
     const cam = this.camera, t = this.t;
-    // idle: behind her and to her right, above the lip, looking past her into the spiral; a slow breath of drift
+    // idle: behind them and to their right, above the lip, looking past them into the spiral; a slow breath of drift
     const idle = _v.set(3.0 + Math.sin(t * 0.13) * 0.35, 1.8 + Math.sin(t * 0.21) * 0.12, 3.8);
     const look = _w.set(-14, -6, -40);
     if (this.state === 'idle' || (this.state === 'step' && this.st < 1.4)) {
       cam.position.lerp(idle, 1 - Math.exp(-dt * 3));
     } else {
-      // after her, down
+      // after them, down
       const f = this.fall, k = this.state === 'dive' ? smooth(0, 1.1, this.st) : 0;
       const want = new THREE.Vector3(f.x + 2.6, f.y + 1.6, f.z + 4.8).lerp(new THREE.Vector3(BOARD_AT.x, BOARD_AT.y - 8, BOARD_AT.z), k * k);
       cam.position.lerp(want, 1 - Math.exp(-dt * (this.state === 'dive' ? 6 : 2.2)));
-      look.set(f.x - 3, f.y - 2.5, f.z - 12); // (her on the left, the menu on the right, the spiral below)
+      look.set(f.x - 3, f.y - 2.5, f.z - 12); // (them on the left, the menu on the right, the spiral below)
       if (this.state === 'dive') look.lerp(BOARD_AT, k);
       if (this.state === 'dive' && this.st > 1.15 && this.onDived) { const d = this.onDived; this.onDived = null; d(); }
     }

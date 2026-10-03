@@ -96,7 +96,7 @@ function labelTexture(text, sub) {
  * Text on a surface. Flat labels read upright walking toward -z at rotY 0
  * (+x at -PI/2, -x at PI/2, +z at PI). Vertical ones face +z at rotY 0.
  */
-// what a sign would have said about the keys: said once by the log when she comes up to the sign, never painted on it (CLAUDE.md:
+// what a sign would have said about the keys: said once by the log when they come up to the sign, never painted on it (CLAUDE.md:
 // marks in the world are not text; docs/LOOK.md 7). `signHelp(game, pos)` asks, every frame, from the course's update.
 export const SIGN_HELP = [];
 export function signHelp(game, p) {

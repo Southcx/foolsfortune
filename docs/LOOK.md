@@ -28,8 +28,8 @@ brightness**, never by a digit.
 
 - Follows it: the Lachrimeter, the beads, the cubes, the rim, the dissolve.
 - To change: the "100" beside the Lachrimeter (the tube already says it). The maker's three filigree masks for the Courier's
-  armour (`source_assets/courier_filigree_*.png`) could be the most diegetic gauge of all: her armour's filigree lights with
-  her Lachryma (a line that glows with its load beats a gauge). *Waiting on the owner: what the three masks are for.*
+  armour (`source_assets/courier_filigree_*.png`) could be the most diegetic gauge of all: their armour's filigree lights with
+  their Lachryma (a line that glows with its load beats a gauge). *Waiting on the owner: what the three masks are for.*
 
 ## 3. The Mind is black labradorite, and drawn in lines
 
@@ -48,7 +48,7 @@ edged in violet. One module draws it: `vfx/labradorite.js`.
 
 Prior art: labradorite and spectrolite; the thin-film (oil, soap) shaders; Vagrant Story's battle sphere (a wire sphere bursts out of
 Ashley; its radius is the weapon's reach and what is inside lights), Parasite Eve's range dome (a low-poly wire dome stands around
-Aya while she chooses), Elemental Gearbolt's closing frames (a box shrinks around what is about to fire: the closing is the warning
+Aya while they choose), Elemental Gearbolt's closing frames (a box shrinks around what is about to fire: the closing is the warning
 and the timer), Rez's mind-space (lock squares count to eight without numerals), Zone of the Enders' ring radar on the body.
 
 - Follows it: the chevron (`vfx/chevron.js`), the lock-on reticle and the angler's brackets (`angling/reticle.js`), the sounding
@@ -61,7 +61,7 @@ passive marks so that it keeps its meaning. (Targeting is the Mind's, not gold: 
 
 ## 5. Reach is a volume on the body; state is a frame on the target
 
-What the Courier can do is drawn **around her** (a dome, a ring at her feet); what a thing is doing is drawn **on it** (a closing
+What the Courier can do is drawn **around them** (a dome, a ring at their feet); what a thing is doing is drawn **on it** (a closing
 frame, a glyph, dizzy stars). Never a sentence for either.
 
 - To change: the god-art cursor tip ("OUT OF REACH", "not yet learned") becomes a reach dome that the cursor is inside or not.
@@ -111,7 +111,7 @@ Hunter's animations are. In practice:
 | --- | --- | --- |
 | **Lachryma ring** at the Courier's feet: a filled arc of the pool, a paler arc of the reserve, the blink charges as beads on it | the Lachrimeter panel's always-on space (the panel could appear only when it changes) | ZoE's ring radar, Dead Space's spine gauge (the gauge on the body) |
 | **Reach dome**: a low-poly wire hemisphere while an art or a weapon is readied | "OUT OF REACH" | Parasite Eve, Vagrant Story |
-| **Threat arcs**: an arc on the ring facing each creature aware of her, cool to hot by distance | nothing yet | ZoE, Metal Gear Solid's alert |
+| **Threat arcs**: an arc on the ring facing each creature aware of them, cool to hot by distance | nothing yet | ZoE, Metal Gear Solid's alert |
 | **Wire compass**: a tape of ticks at the horizon, the waypoint a wire diamond in the world | the compass block (the map stays on M) | Metroid Prime's visor, Skyrim's tape |
 | **Homing squares**: nested wire squares on each locked target, order by nesting | the digits | Rez |
 | **Trial rings**: rings off the gong for the count, a glyph on GO | the centre-screen countdown | Gearbolt's closing frames |

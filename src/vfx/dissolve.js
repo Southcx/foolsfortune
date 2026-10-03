@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // DISSOLVE: what a zandatsu leaves of a creature. Its body is cut along the blade's planes into pieces (the mesh slicer: slicing.js),
 // the pieces fly apart in the slow air, and in under a second each comes undone into Lachryma: LIQUID (baubles, already turned:
-// the drops that refill the Courier) and SOLID (cubes: her money), thrown out of it as it shrinks and darkens to nothing, and drawn to
-// her. Nothing of it is left lying about.
+// the drops that refill the Courier) and SOLID (cubes: their money), thrown out of it as it shrinks and darkens to nothing, and drawn to
+// them. Nothing of it is left lying about.
 //
 // Prior art: Kingdom Hearts' Heartless (a defeated one comes apart into dark mist and a fountain of HP and MP orbs and munny that fly
 // to Sora), Metal Gear Rising's zandatsu (the pieces in the slowed air), and the sixth generation's way of making a death a reward you

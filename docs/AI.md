@@ -125,12 +125,12 @@ in its time.
   is its quality, which scales how long, how deep and how surely it takes (`mind/macros.js` `runMacro`). A new creature gets every
   Function its mind has the parts for; an action it does not have is refused, and the log says so. A new behaviour that a creature
   shows (and the bestiary can photograph) is a new Function: a row in `FUNCTIONS` with its `learn` test.
-- **Allies and decoys**: a creature on her side is `ally` (`src/spirits.js`: a smoke spirit is a slip jelly's body and mind with the
-  kind `spirit` in the relations table: kin to her, rival to the wild jellies, as they are to it); her blows pass through it
+- **Allies and decoys**: a creature on their side is `ally` (`src/spirits.js`: a smoke spirit is a slip jelly's body and mind with the
+  kind `spirit` in the relations table: kin to them, rival to the wild jellies, as they are to it); their blows pass through it
   (`creatures.strike`), and the statuses `haste` (its body and mind run faster) and `empower` (its blows land harder) are a rally's. A
   DECOY (`game.ai.decoys`: the Crucibelle's mirage) is anything put up to be seen as what it is not: every Brain's watch list includes
   it, with its `kind` (a Courier of smoke has the kind `courier`), so a mind takes it for that and acts on it with no code of its own;
-  `P.veiledT` hides her for a moment.
+  `P.veiledT` hides them for a moment.
 - **The blade** (`src/sondelass/blade.js`): a creature resists a cut while it is itself (the ward glyph), and comes apart into
   Lachryma under a zandatsu when it is not (`vfx/dissolve.js`).
 
@@ -177,8 +177,8 @@ What the parts are ready for, roughly in order:
 - **Squads**: shared memory between kin (a pack's blackboard), roles (one calls, two flank), formations from `separate`/`cohere`.
 - **Scent**: trails as `scent` stimuli that a tracker follows (the jellies' slip trails are already laid as paths).
 - **Population**: dens with capacity, young that grow, reforming tied to a den's health (a puddle that is soaked up does not reform).
-- **Learning**: memory that outlives a reform (a jelly that was reprogrammed remembers the Courier as kin; one she burst remembers).
-- **Debugging**: F3 lists every mind near her (its action, score, drives and focus); the stress test checks no mind goes without an
+- **Learning**: memory that outlives a reform (a jelly that was reprogrammed remembers the Courier as kin; one they burst remembers).
+- **Debugging**: F3 lists every mind near them (its action, score, drives and focus); the stress test checks no mind goes without an
   action, no drive leaves 0..1, no stun outlasts its time.
 
 ## 6. Prior art

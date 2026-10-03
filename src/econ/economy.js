@@ -42,7 +42,7 @@ export function econLine(L) {
   return { r, text: `cubes/h in ${k(r.inPerH)} out ${k(r.outPerH)} (aim ${k(r.target)})${top ? `  ▲ ${top}` : ''}${out ? `  ▼ ${out}` : ''}${r.granted ? `  · granted ${k(r.granted)}` : ''}` };
 }
 
-/** The DEBUG profile's purse: `/grant [n]` puts n cubes (500 if unsaid) in her balance, so a shop or a Tithe can be tested without
+/** The DEBUG profile's purse: `/grant [n]` puts n cubes (500 if unsaid) in their balance, so a shop or a Tithe can be tested without
  *  farming. STORY refuses it (the owner's split: STORY earns everything). Reported by an event and a rule in tracking.js. */
 export function installEconomy(game) {
   // (DEBUG: carry another kind of psygun: psygun/kinds.js)

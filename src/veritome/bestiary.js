@@ -36,7 +36,7 @@ const CLAPPER = {
     { id: 'forage', when: st('forage'), battle: true, text: 'It eats loose Lachryma off the floor, and keeps every bauble it swallows: a fed jar breaks open richer.' },
     { id: 'celebrate', when: st('celebrate'), text: 'It twirls after it has swallowed something. It is very pleased with itself, briefly.' },
     { id: 'mend', when: st('mend'), battle: true, text: 'Kintsugi: it mends cracked pots and rebuilds wrecks with gold, but never with the Courier close. A pot it has mended pays more when broken.' },
-    { id: 'taunt', when: st('taunt'), battle: true, text: 'It claps at the Courier when it can see her (eight paces, never through a wall), and then runs.' },
+    { id: 'taunt', when: st('taunt'), battle: true, text: 'It claps at you when it can see you (eight paces, never through a wall), and then runs.' },
     { id: 'cower', when: st('cower', 'hide'), battle: true, text: 'Frightened, it runs for the biggest pot near and cowers behind it. Break the pot and it has nowhere left.' },
     { id: 'air', when: st('air'), battle: true, text: 'It is not made for falling: a long enough drop shatters it.' },
     { id: 'dance', when: st('dance'), text: 'It cannot help dancing to a Groove shell. Nobody has asked whether it enjoys it.' },
@@ -66,10 +66,10 @@ const JELLY = {
   blurb: 'A mind jelly: an egg of sloppy wet sand over a skirt of four toes, always melting, gliding on its own slip in the dunes past the Weir. Something thinks in its middle.',
   facts: [
     { id: 'seen', when: () => true, text: 'A slip jelly: it glides on slip it makes itself, and the trail it leaves is wet enough to dive into.' },
-    { id: 'notice', when: st('chase'), battle: true, text: 'It notices her at fifteen paces and closes to four, circling, waiting for its moment. Lead it far from home and it gives up.' },
-    { id: 'lunge', when: st('wind'), battle: true, text: 'It sinks down and quivers before it lunges, and throws itself where she stood. Step aside as it leaves the ground, or break the wind-up with a heavy blow.' },
+    { id: 'notice', when: st('chase'), battle: true, text: 'It notices you at fifteen paces and closes to four, circling, waiting for its moment. Lead it far from home and it gives up.' },
+    { id: 'lunge', when: st('wind'), battle: true, text: 'It sinks down and quivers before it lunges, and throws itself where you stood. Step aside as it leaves the ground, or break the wind-up with a heavy blow.' },
     { id: 'air', when: st('air'), battle: true, text: 'In the air it has no say in where it lands.' },
-    { id: 'sleep', when: st('sleep', 'halt', 'melt', 'stunned', 'stun'), battle: true, text: 'Its mind can be opened. Stunned (the Veritome\'s flash), it takes what the Courier says into it: the words of what she has seen it do.' },
+    { id: 'sleep', when: st('sleep', 'halt', 'melt', 'stunned', 'stun'), battle: true, text: 'Its mind can be opened. Stunned (the Veritome\'s flash), it takes what you say into it: the words of what you have seen it do.' },
     { id: 'idle', when: st('idle', 'wander'), text: 'Left alone, it breathes, and drifts about its puddle like a thought.' },
     // its life (src/jelly/mind.js): each a thing it does when no one is after it, and each a word its mind can be told (mind/functions.js)
     { id: 'drink', when: st('drink'), text: 'It goes to the pond\'s edge and drinks, the slip it is made of running thin as it does. Thirsty, it will cross the dunes for water.' },

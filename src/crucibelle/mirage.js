@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE MIRAGE: a Courier of smoke, put up where she stood by the Crucibelle's SONG OF SEEMING. It is a DECOY (ai/index.js `decoys`, read
-// by every mind's watch list: ai/brain.js): a creature that sees it takes it for her, and hunts it; struck, it comes apart into smoke.
-// It is drawn as smoke would be in her shape: a column, a head, shoulders, all of one violet that breathes, and smoke rising off it.
+// THE MIRAGE: a Courier of smoke, put up where they stood by the Crucibelle's SONG OF SEEMING. It is a DECOY (ai/index.js `decoys`, read
+// by every mind's watch list: ai/brain.js): a creature that sees it takes it for them, and hunts it; struck, it comes apart into smoke.
+// It is drawn as smoke would be in their shape: a column, a head, shoulders, all of one violet that breathes, and smoke rising off it.
 //
 // Prior art: the decoys of the stealth game (Metal Gear's, Dishonored's Shadow Walk), the illusions of the bard and the enchanter
 // (Mirror Image, Silent Image), and Patapon's and Pikmin's lesson that a thing seen is what a mind goes to.
@@ -39,7 +39,7 @@ export class Mirages {
       const k = Math.min(1, d.t / 0.6, (d.max - d.t) / 0.4);
       d.grp.scale.set(1, Math.max(0.01, k), 1);
       d.grp.rotation.y += dt * 0.6;
-      // it calls attention to itself, as she would (a footstep, a breath)
+      // it calls attention to itself, as they would (a footstep, a breath)
       if (d.beat <= 0) { d.beat = 0.9; g.ai?.stimuli.emit('noise', d.pos, { radius: 16, strength: 0.6, by: 'courier', source: d, ttl: 1 }); }
       if (g.fx?.alpha?.emit && Math.random() < dt * 14) g.fx.alpha.emit({ pos: d.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.3 + Math.random() * 1.5, (Math.random() - 0.5) * 0.5)), vel: new THREE.Vector3(0, 0.6 + Math.random(), 0), life: 1.2, size: 0.15, sizeEnd: 0.5, color: new THREE.Color(0x8f7fc0), alpha: 0.35, drag: 1, gravity: -0.3 });
       if (d.t <= 0) {

@@ -124,7 +124,7 @@ Couriers can walk where the town could not. That is what they are for.
 - **The four answers about where Lachryma comes from collapse into one.** It is emotional and cognitive output: the world's
   tears (the Emocean is a sea of them), the tide bringing it up "from somewhere deep" (the Emocean under the island), what the mind
   can spare (the Psygun), what the workshop weeps (Kaolin).
-- **Saggar's hint was true.** "Even you, I shouldn't wonder": the Courier did come out of the kiln. She is the Prince's opus.
+- **Saggar's hint was true.** "Even you, I shouldn't wonder": the Courier did come out of the kiln. They are the Prince's opus.
 - **The god hand** fits the owner's notes. A player can leave the vessel as a cursor, most likely a disembodied hand, and the
   Prince's own hand tower echoes it: two makers' hands. Becoming the Pneuka Jar while the hand works is the player stepping out of
   the humanoid form into the jar it really is.
@@ -216,7 +216,7 @@ Habits the text already has, kept until the owner says otherwise.
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
-| **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; she steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
+| **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
 ## 6. People
 
@@ -226,11 +226,11 @@ tier calls him is in section 1.
 
 ### The Courier
 - The Pneuka Jar in humanoid form, the Prince's magnum opus, inhabited by a Player. Every player is a Courier. *(Ruled)*
-- **She / her.** *(In game, everywhere)*
+- **They / them, or "you".** The Courier is the player's self-insert: androgynous by design (the model is not to change), never "she" or "he". Where the System speaks to the player it says "you"; elsewhere "they". *(Ruled by the owner, R40)*
 - Wears a mask (the vessel has a MASK region, "the face it shows"). *(Design)*
-- Carries the psychic tools on her belt: seven, four made (the Psygun, the Sondelass, the Soul Brush, the Veritome; the Dreamvane,
+- Carries the psychic tools on their belt: seven, four made (the Psygun, the Sondelass, the Soul Brush, the Veritome; the Dreamvane,
   the Crucibelle, the Lockheart to come). In the owner's notes each tool is a genre and a domain. *(In game / Owner's notes)*
-- Her achievements show on her body as kintsugi, gold in the seams. *(Design)*
+- Their achievements show on their body as kintsugi, gold in the seams. *(Design)*
 
 ### The clay folk now
 Each is a fragment of Kaolin, knows it, and sits on a tier (section 1). All four are of the lower tiers for now; the higher ones wait
@@ -255,7 +255,7 @@ for their models.
 | Creature | In game | With the frame |
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
-| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on her: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
+| **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on the Courier: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
 | **The fish** | ten "entities" answering to five aspects (dread, wonder, grief, hunger, mirth); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
@@ -282,7 +282,7 @@ for their models.
 | a Figment, an Egregore, a cogitohazard | | Figments from an island's psyche, Egregores from the Emocean; cogitohazard covers both and the hazards of raw Lachryma |
 | a Contractor, a Tulpa | | |
 | the Pneuka Jar, a Pneuka jar, the Pneuka Box | Pneuma | |
-| the Courier, Couriers | | she |
+| the Courier, Couriers | | they (to the player: you) |
 | Players | | the owner's notes also say *Vessouls* (open, not urgent) |
 | cogitohazard | | |
 | Lachryma (capital in prose) | Lacrima, Lachrima | the HUD's *Lachrimeter* and the log's lower case are open |

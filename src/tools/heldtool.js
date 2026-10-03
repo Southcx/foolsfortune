@@ -5,7 +5,7 @@
 //
 //   super(mgr, id, { key, worn: { at: [x, y, z], along: [x, y, z], out: [x, y, z], bone }, draw: { twist, lean, via, pole }, idle, grip })
 //     key     the key that draws and stows it (the belt's contract: tools/belt.js)
-//     worn    where it hangs, in body space at rest (+X her left, +Z forward): `at` the grip, `along` the haft, `out` the palm side;
+//     worn    where it hangs, in body space at rest (+X their left, +Z forward): `at` the grip, `along` the haft, `out` the palm side;
 //             `bone` the bone it rides (default the spine: a hip; 'spine003' the chest, for something on a chain at the neck)
 //     draw    the draw's reach and whip (tools/draw.js), the clip it is held in (`idle`, a UAL one-handed idle) and its grip clip
 //   this.model (with .group, in the tool frame of tools/grip.js), and any of:
@@ -147,7 +147,7 @@ export class HeldTool extends Tech {
 
   /** A point on the tool (tool frame) in the world, now. */
   toolPoint(x, y = 0, z = 0, out = new THREE.Vector3()) { return out.set(x, y, z).applyMatrix4(this.model.group.matrixWorld); }
-  /** Where she is looking, flat. */
+  /** Where they are looking, flat. */
   aimFlat(out = _v) { const P = this.P; return out.set(Math.sin(P.yaw), 0, Math.cos(P.yaw)); }
 
   fixed() {}

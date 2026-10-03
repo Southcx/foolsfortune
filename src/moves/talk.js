@@ -2,12 +2,12 @@ import { Tech } from './techs.js';
 
 // ---------------------------------------------------------------------------
 // TALKING (a tech that holds the body while a conversation lasts): F at one of the clay folk (npc/folk.js) begins the dialogue
-// (npc/dialogue.js); the Courier stands, turns to the speaker and puts away what was in her hands, and the step is hers until the
+// (npc/dialogue.js); the Courier stands, turns to the speaker and puts away what was in their hands, and the step is theirs until the
 // talk ends. Nothing about the core movement changes: when the talk is over, the core is exactly as it was.
 //
-// She answers with her body, from UAL's clips (CC0) over the upper body: when she says something (a choice is made) she talks
-// (Idle_Talking_Loop); as each line of theirs begins she nods to the glad and the calm (Yes), shakes her head at the muddled
-// (Idle_No_Loop), and folds her arms at the sly (Idle_FoldArms_Loop); otherwise she listens, still.
+// They answer with their body, from UAL's clips (CC0) over the upper body: when they say something (a choice is made) they talk
+// (Idle_Talking_Loop); as each line of theirs begins they nod to the glad and the calm (Yes), shakes their head at the muddled
+// (Idle_No_Loop), and folds their arms at the sly (Idle_FoldArms_Loop); otherwise they listen, still.
 // ---------------------------------------------------------------------------
 export class Talk extends Tech {
   constructor(mgr) { super(mgr, 'talk'); this.blendIn = 8; }
@@ -37,7 +37,7 @@ export class Talk extends Tech {
   }
   end() { if (this.game.dialogue.open) this.game.dialogue.end(); this.npc = null; this.react = null; this.lastLine = null; }
 
-  /** What she does with her body: a reaction (clip, seconds, how long, how much), played over the upper body and eased. */
+  /** What they do with their body: a reaction (clip, seconds, how long, how much), played over the upper body and eased. */
   animate(ch, base, dt) {
     const D = this.game.dialogue, C = ch.clips;
     if (!D?.open) return;

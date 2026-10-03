@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE DREAMVANE'S BODY: a shepherd's crook of dark wood, as long as she is tall, that is four things at once (the concept art):
+// THE DREAMVANE'S BODY: a shepherd's crook of dark wood, as long as they are tall, that is four things at once (the concept art):
 //   - the CROOK at its head, a hook of the staff bent back on itself;
 //   - the DREAMCATCHER hung in the crook: a hoop with a web strung across it and a bead at its heart, feathers below. It is the dowsing
 //     needle: it turns on its pin toward the Lachryma it hears, and its web glows with how loud (a line that glows with its load, not

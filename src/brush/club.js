@@ -8,7 +8,7 @@
 //   LMB        a three-blow combo (the third an overhead that strikes the ground)
 //   LMB held   after the blow, the brush goes up and back and gathers (Zelda's spin-attack charge): let go to bring it down,
 //              the harder the longer it was held. On the ground: a SLAM, a ring that throws what is near (what breaks, breaks where it
-//              lands), a pool of slip where it struck. In the air: she goes down with it, and it strikes where she lands.
+//              lands), a pool of slip where it struck. In the air: they go down with it, and it strikes where they land.
 //
 // Prior art, and what was taken:
 //  - Splatoon's Inkbrush and Octobrush: the flick. A swing throws a fan of ink along the swing, the brush's only ranged reach.
@@ -31,8 +31,8 @@ const BLOWS = [
   { clip: 'swordB', dur: 0.53, rate: 0.8, hit: [0.2, 0.3], chain: [0.24, 0.53], rec: 'swordBRec', dmg: 1.1, lunge: 2.6, power: 1.5, bat: true },
   { clip: 'swordC', dur: 1.3, rate: 0.85, hit: [0.6, 0.7], chain: [], dmg: 1.8, lunge: 4, power: 2.0, bat: false, ground: 0.67, fade: 0.45 },
 ];
-// the slam: Regular_C's overhead, held at the top (the head up behind her, 0.55 s into the clip) and brought down (it crosses in front
-// of her at 0.67)
+// the slam: Regular_C's overhead, held at the top (the head up behind them, 0.55 s into the clip) and brought down (it crosses in front
+// of them at 0.67)
 const SLAM = { clip: 'swordC', raised: 0.55, from: 0.56, dur: 1.2, rate: 1.3, strike: 0.67, hold: 0.32, full: 1.1, cost: 4, radius: 2.4, reach: 1.45 };
 const REACH = BRUSH.tip - BRUSH.ferrule + 0.45; // (the head is further out than a sword's tip, and some forgiveness)
 const DMG = 30, HEAD_R = 0.3; // (a pot takes a few blows: the brush alters things; it is a poor way to break them)
@@ -79,7 +79,7 @@ export class Club {
     def.track ??= measureSwing(g.character, def.clip);
     const f = this.aimDir(_a);
     let lunge = def.lunge * (P.grounded ? 1 : 0.4);
-    const m = !g.lock?.active && magnet(g, P, f, { range: 4.4, cone: 1.0 }); // (drawn to the best thing in front of her: melee.js)
+    const m = !g.lock?.active && magnet(g, P, f, { range: 4.4, cone: 1.0 }); // (drawn to the best thing in front of them: melee.js)
     if (m) { f.set(m.pos.x - P.pos.x, 0, m.pos.z - P.pos.z).normalize(); lunge = Math.min(lunge, Math.max(0, m.dist - m.r - 1.2) * 3); }
     P.bodyYaw = Math.atan2(f.x, f.z);
     if (g.lock?.active) { g.lock.point(_e); lunge = Math.min(lunge, Math.max(0, _e.distanceTo(P.pos) - 1.5) * 3); }
@@ -125,7 +125,7 @@ export class Club {
     this.charge = -1;
     if (k < 0.25 || !g.lachryma.spend(SLAM.cost, 'brushslam')) { this.idle = 0; sfx.fizzle?.(); return; }
     const air = !P.grounded;
-    const f = this.aimDir(_b); P.bodyYaw = Math.atan2(f.x, f.z); // (it comes down where she is looking, or on what she is locked to)
+    const f = this.aimDir(_b); P.bodyYaw = Math.atan2(f.x, f.z); // (it comes down where they are looking, or on what they are locked to)
     this.slam = { t: SLAM.from, power: 0.6 + 0.8 * k, air, struck: false, wait: 0 };
     if (air) { P.vel.y = Math.min(P.vel.y, -16); P.impulse(_a.set(0, -6, 0), 'brush'); }
     this.flicked = false;
@@ -136,7 +136,7 @@ export class Club {
   slamUpdate(dt) {
     const s = this.slam, P = this.P;
     if (s.air && !s.struck) {
-      // (it waits at the moment of striking until she lands)
+      // (it waits at the moment of striking until they land)
       s.t = Math.min(s.t + dt * SLAM.rate, SLAM.strike - 0.02);
       s.wait += dt;
       if (P.grounded || s.wait > 2.5) { s.t = SLAM.strike; s.struck = true; this.strike(s.power * (1 + Math.min(0.6, s.wait * 0.5)), 'slam', true); }
@@ -153,8 +153,8 @@ export class Club {
     const g = this.game, P = this.P, m = this.tool.model;
     m.group.updateMatrixWorld(true);
     m.headWorld(_p);
-    // where it strikes: in FRONT of her, at the brush's reach, the way she faces. (The overhead clip is a sword's: the brush, longer and
-    // held further down, can be anywhere at the frame of the strike, often over her shoulder, so its head only says how far, never where.)
+    // where it strikes: in FRONT of them, at the brush's reach, the way they face. (The overhead clip is a sword's: the brush, longer and
+    // held further down, can be anywhere at the frame of the strike, often over their shoulder, so its head only says how far, never where.)
     const fwd = _e.set(Math.sin(P.bodyYaw), 0, Math.cos(P.bodyYaw));
     _p.set(P.pos.x, _p.y, P.pos.z).addScaledVector(fwd, SLAM.reach);
     const down = g.physics.raycast(_a.copy(_p).setY(Math.max(_p.y, P.pos.y) + 0.6), _b.set(0, -1, 0), 2.6, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
@@ -290,7 +290,7 @@ export class Club {
     if (this.slam) { C.sample(SLAM.clip, this.slam.t, out, false); return { pose: out, w: 1 - THREE.MathUtils.smoothstep(this.slam.t, SLAM.dur - 0.2, SLAM.dur) }; }
     const b = this.blow;
     if (!b) {
-      const r = this.rec; // (the combo stopped: the recovery clip brings the brush back, and lets go as she moves off)
+      const r = this.rec; // (the combo stopped: the recovery clip brings the brush back, and lets go as they move off)
       if (!r) return null;
       C.sample(r.clip, r.t, out, false);
       return { pose: out, w: 1 - THREE.MathUtils.smoothstep(r.t, r.dur - 0.3, r.dur) };

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // PARRY: the one rule for turning a projectile away, shared by everything that can (the kick's foot, the cutlass's blade). A thing
-// coming in near the strike, fast enough, and toward the Courier is sent back where she is looking, a little faster than it came, with
-// a little help toward a target near the line (so that a good parry is a good shot); she is untouchable for a beat; the world takes a
+// coming in near the strike, fast enough, and toward the Courier is sent back where they are looking, a little faster than it came, with
+// a little help toward a target near the line (so that a good parry is a good shot); they are untouchable for a beat; the world takes a
 // breath. `guard` is its slower sibling: a projectile met by a raised blade that was not raised in time is only turned aside.
 //
 // Prior art: Zelda's shield-parry and the Deflect of Ocarina of Time's Mirror Shield (a timing window, a return), Sekiro's deflect

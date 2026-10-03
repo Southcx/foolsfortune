@@ -2,7 +2,7 @@
 // THE CLAY FOLK: the people of the workshop and the oasis. A folk is a clapperjar grown up and glazed: the same little jar body,
 // its lid for a head (and a mouth: the lid lifts and clinks on every syllable it speaks, in time with its voice, npc/clayese.js),
 // a glaze of its own and a hat that says what it does (the doc's "hats read faction"). It stands where it lives, turns its lid
-// toward the Courier when she comes near, and shows how it feels with its whole body, as the treasure chests show theirs:
+// toward the Courier when they come near, and shows how it feels with its whole body, as the treasure chests show theirs:
 //
 //   joy      hops and squashes, arms up, warm sparks and a note            fear     shivers, crouches, lid chattering, sweat flicking off
 //   anger    puffs up, throbs red, steam from under the lid, embers         sad      droops and sways, sinks, tears falling
@@ -108,7 +108,7 @@ export class Folk {
     const rom = new JointLimits();
     for (const [name, spec] of Object.entries(CLAPPER_ROM)) { const bn = bone(name); if (bn) rom.add(bn, bn.quaternion.clone(), spec); }
     const s = def.scale ?? 1.9;
-    // a solid post so she walks round it, not through (a static collider: shots and tools pass it by as part of the room)
+    // a solid post so they walk round it, not through (a static collider: shots and tools pass it by as part of the room)
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(p.x, p.y + 0.35 * s / 1.9, p.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.cylinder(0.35 * s / 1.9, 0.26 * s / 1.9).setCollisionGroups(GROUPS.static), body);
     const n = {
@@ -122,7 +122,7 @@ export class Folk {
     return n;
   }
 
-  /** The nearest folk the Courier could talk to (in reach, in front of her, on her level). */
+  /** The nearest folk the Courier could talk to (in reach, in front of them, on their level). */
   near(P, reach = 2.4) {
     let best = null, bd = reach;
     for (const n of this.list) {
@@ -217,7 +217,7 @@ export class Folk {
       // the lid: a syllable lifts it, fear rattles it, a surprise pops it
       n.lidT -= dt; if (n.lidT <= 0) n.lidA = THREE.MathUtils.damp(n.lidA, 0, 22, dt);
       const lid = Math.max(n.lidA, p.lid || 0);
-      // look at the Courier (when she is near), the confused shake of the lid on top
+      // look at the Courier (when they are near), the confused shake of the lid on top
       const dx = P.pos.x - n.pos.x, dz = P.pos.z - n.pos.z, near = Math.hypot(dx, dz) < 7;
       const want = near ? THREE.MathUtils.clamp(wrap(Math.atan2(dx, dz) - n.yaw), -1.1, 1.1) : Math.sin(n.t * 0.4) * 0.3;
       n.look = THREE.MathUtils.damp(n.look, want + (p.look2 || 0), 5, dt);

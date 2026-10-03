@@ -5,8 +5,8 @@ import { T } from '../config.js';
 // ---------------------------------------------------------------------------------------
 // LAUNCH: being carried by momentum the core movement would not allow. The core caps the Courier's horizontal speed (14 m/s, so that
 // every room can be measured against one number); a swing's release, a stinger's thrust and a blade-mode lunge all want more than
-// that for a moment. This tech owns the step for that moment and nothing else about her: gravity (scaled), a little drag, a little
-// steering, the controller for collisions; it gives the body back when the time is up, when she lands, or when a wall has taken the
+// that for a moment. This tech owns the step for that moment and nothing else about them: gravity (scaled), a little drag, a little
+// steering, the controller for collisions; it gives the body back when the time is up, when they land, or when a wall has taken the
 // speed. Whatever asked for it can watch each step (`onStep`) and hear when it ends (`onEnd`).
 //
 //   techs.get('launch').go(velocity, { time, gravity, drag, steer, until: 'time' | 'ground', endSpeed, yaw, clip, clipMap, onStep, onEnd, tag })
@@ -63,7 +63,7 @@ export class Launch extends Tech {
     P.vel.copy(v);
     P.move(dt);
     o.onStep?.(dt, this);
-    // a wall took the speed (or she is on the floor again): that is the end of it
+    // a wall took the speed (or they are on the floor again): that is the end of it
     const after = Math.hypot(P.vel.x, P.vel.z);
     const stopped = before > 6 && after < before * 0.35;
     if (o.until === 'time' ? this.t >= o.time : (this.t >= o.minAir && P.grounded) || this.t >= o.time) return this.finish();
@@ -85,7 +85,7 @@ export class Launch extends Tech {
     o?.onEnd?.(this);
   }
 
-  /** Facing: the way she is going (or a fixed heading, for a thrust). */
+  /** Facing: the way they are going (or a fixed heading, for a thrust). */
   faceYaw() {
     const o = this.o, P = this.P;
     if (!o || !o.face) return null;

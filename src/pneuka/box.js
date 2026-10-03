@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------------------
-// THE PNEUKA BOX: the Courier's innate storage, the space she carries with her (P). It is the transitory place: what is picked up,
+// THE PNEUKA BOX: the Courier's innate storage, the space they carry with them (P). It is the transitory place: what is picked up,
 // found in a chest or taken out of the Veritome comes here first; what is worn is worn from here; and what is to be kept for good is
 // stored from here into the Veritome, which is the bank (long-term, stacked, by card: veritome/book.js).
 //
 //  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
-//    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at her feet (ground.js) and is
+//    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at their feet (ground.js) and is
 //    picked up again with F.
 //  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
-//    untying puts it back), and the TOOLS: worn in their places on her body (tools/belt.js), or carried here as things. A tool in the box
+//    untying puts it back), and the TOOLS: worn in their places on their body (tools/belt.js), or carried here as things. A tool in the box
 //    is WORN from here (into its place: what was there comes off into the box), and a worn one TAKEN OFF into it.
 //  - FITTINGS, the same way for the tools after: the INSTRUMENT in the Crucibelle (one), the COFFIN on the Lockheart's chain (one: it
 //    is the wheel), and the POSSIBILIKEYS on its ring (up to four, in order: used up when it is opened; keys stack in the box). FITTINGS says which.
@@ -33,7 +33,7 @@ export const SLOTS = 28;
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
 export const FITTINGS = {
   instrument: { kind: 'instrument', max: 1, tool: 'crucibelle', label: 'THE INSTRUMENT · IN THE CRUCIBELLE', put: 'Fit to the Crucibelle', none: 'the bell alone' },
-  // (the coffin IS the Lockheart: which one she wears at the neck, so it has no slot of its own in the window: the owner's note)
+  // (the coffin IS the Lockheart: which one they wear at the neck, so it has no slot of its own in the window: the owner's note)
   heart: { kind: 'heart', max: 1, tool: 'lockheart', label: 'THE LOCKHEART', put: 'Wear as the Lockheart', none: 'no coffin: it cannot be opened', hidden: true },
   keys: { kind: 'key', max: 4, tool: 'lockheart', label: "THE KEYRING · ON THE LOCKHEART'S CHARM, IN ORDER", put: 'Put on the keyring', none: 'no key: it cannot be opened' },
 };
@@ -70,7 +70,7 @@ export class PneukaBox {
   held(id) { return this.count(id) + (this.lure === id ? 1 : 0) + Object.values(this.fit).reduce((n, a) => n + a.filter((x) => x === id).length, 0) + (this.book?.count(id) || 0) + (this.game.ground?.count(id) || 0); }
   emit(k, e) { this.game.events?.emit(k, e); }
 
-  /** A thing into the box (the first free slot). If there is no room it falls at her feet. */
+  /** A thing into the box (the first free slot). If there is no room it falls at their feet. */
   add(id, from = 'pickup') {
     if (!itemOf(id)) return -1;
     const i = this.put(id);
@@ -88,7 +88,7 @@ export class PneukaBox {
   take(slot) { const s = this.slots[slot]; if (!s) return null; if ((s.n || 1) > 1) s.n--; else this.slots[slot] = null; this.save(); return s.id; }
   swap(a, b) { if (a === b) return; [this.slots[a], this.slots[b]] = [this.slots[b], this.slots[a]]; this.save(); }
 
-  /** Drop: on the ground at her feet. */
+  /** Drop: on the ground at their feet. */
   drop(slot) {
     const id = this.take(slot);
     if (!id) return false;
@@ -196,7 +196,7 @@ export class PneukaBox {
   }
 
   // ---------------------------------------------------------------- the tools (worn on the belt, or carried here)
-  /** Put a tool from the box on: into its place on her body (tools/belt.js); whatever was in that place comes off into this slot. */
+  /** Put a tool from the box on: into its place on their body (tools/belt.js); whatever was in that place comes off into this slot. */
   wear(slot) {
     const s = this.slots[slot], it = s && itemOf(s.id), belt = this.game.belt;
     if (!it || it.kind !== 'tool' || !belt) return false;
@@ -243,7 +243,7 @@ export class PneukaBox {
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
   erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.seeded = false; this.seed(); }
-  /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools she is not wearing. */
+  /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools they are not wearing. */
   seed() {
     if (this.seeded) return;
     this.seeded = true;

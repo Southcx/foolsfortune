@@ -22,11 +22,11 @@ import { tickInscriptions, clearInscriptions } from '../brush/inscribe.js';
 //
 //  - a CLUB (brush/club.js): heavy blows that bat what they meet, a held charge and a slam; every swing flicks slip off the bristles
 //    (Splatoon's Inkbrush). LMB, and hold LMB.
-//  - the BRUSH SLIDE: with the brush out, the core slide (C at speed) is the same slide, as fast and as long, but she rides it
-//    sideways, low, the brush trailing behind her on the ground, and it paints a stroke of slip in her wake that she can dive into once
+//  - the BRUSH SLIDE: with the brush out, the core slide (C at speed) is the same slide, as fast and as long, but they ride it
+//    sideways, low, the brush trailing behind them on the ground, and it paints a stroke of slip in their wake that they can dive into once
 //    it has settled (Splatoon's Inkbrush dash and ink-swim; Jet Set Radio's tag-as-you-go). The core movement is untouched: only the
 //    picture and the paint are the brush's.
-//  - the CELESTIAL BRUSH (brush/celestial.js): hold RMB and the world stops and turns to paper; what she draws on it is read as a
+//  - the CELESTIAL BRUSH (brush/celestial.js): hold RMB and the world stops and turns to paper; what they draw on it is read as a
 //    shape ($P, multi-stroke: brush/gesture.js) and done to the world (brush/techniques.js, after Okami), and the marks over the
 //    clapperjars' heads are taken off by drawing them (brush/sigils.js, after Magic Cat Academy).
 //
@@ -77,7 +77,7 @@ export class SoulBrush extends Tech {
   // ---------------------------------------------------------------- where it is worn, and the grip
   computeSocket(ch) {
     this.grip = measureGrip(ch);
-    // worn at the left hip, the grip forward and the head back and down behind her, as a sword is worn in a sash (a cross-draw)
+    // worn at the left hip, the grip forward and the head back and down behind them, as a sword is worn in a sash (a cross-draw)
     const B = ch.bones;
     const saveP = ch.root.position.clone(), saveQ = ch.root.quaternion.clone();
     ch.root.position.set(0, 0, 0); ch.root.quaternion.identity();
@@ -143,7 +143,7 @@ export class SoulBrush extends Tech {
     const ink = this.celestial.active ? 1 : this.club.charge >= 0 ? Math.min(1, this.club.charge / 1.1) : 0;
     this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
     const ch2 = g.character;
-    this.model.group.visible = this.enabled && g.belt?.isWorn('soulbrush') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active; // (in the box: not on her)
+    this.model.group.visible = this.enabled && g.belt?.isWorn('soulbrush') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active; // (in the box: not on them)
     { const m = this.model; this.rest.update(raw, this.drawT === 0 && !this.sliding, `${Math.round(m.bendY * 100)}|${Math.round(m.bendZ * 100)}|${Math.round(m.ink * 100)}`); }
     const shells = document.getElementById('shells');
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
@@ -151,7 +151,7 @@ export class SoulBrush extends Tech {
     this.wasShellsHidden = this.drawT > 0.02;
   }
 
-  /** RMB tapped: a fan of slip flung ahead, where she is looking (Splatoon's brush flick, at range). */
+  /** RMB tapped: a fan of slip flung ahead, where they are looking (Splatoon's brush flick, at range). */
   flick() {
     const g = this.game, P = this.P;
     if (!g.lachryma.spend(1, 'brushflick')) { sfx.fizzle?.(); return; }
@@ -179,13 +179,13 @@ export class SoulBrush extends Tech {
       this.sliding = false; this.paint.gap();
       g.events?.emit('brush.slide', { phase: 'end', dist: +this.slideDist.toFixed(1), secs: +this.slideT.toFixed(2) });
     }
-    // (in first person the body faces the view: the slide keeps its core look, and the brush paints just behind her)
+    // (in first person the body faces the view: the slide keeps its core look, and the brush paints just behind them)
     this.slideW = THREE.MathUtils.damp(this.slideW, this.sliding && !P.fp ? 1 : 0, this.sliding ? 14 : 9, dt);
     if (!this.sliding) return;
     this.slideT += dt;
     const hs = Math.hypot(P.vel.x, P.vel.z);
     if (hs > 0.5) {
-      // sideways to the slide: her left (the lead foot) toward where she is going, the brush hand trailing
+      // sideways to the slide: their left (the lead foot) toward where they are going, the brush hand trailing
       const want = Math.atan2(P.vel.x, P.vel.z) - Math.PI / 2;
       this.slideYaw += wrap(want - this.slideYaw) * (1 - Math.exp(-dt * 14));
     }
@@ -222,7 +222,7 @@ export class SoulBrush extends Tech {
     const C = ch.clips;
     if (!this.track) {
       this.track = new Track(C, new Set(['stance:soulbrush', 'swordIdle', 'torchIdle', 'idle']));
-      this.track.play(C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle', 0, 0.01); // (the brush on her shoulder: anim/stances.js)
+      this.track.play(C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle', 0, 0.01); // (the brush on their shoulder: anim/stances.js)
       this.P1 = C.pose(); this.P2 = C.pose();
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.slideW);
@@ -244,7 +244,7 @@ export class SoulBrush extends Tech {
     const M = new THREE.Matrix4();
     const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: HOLD, twist: 22, lean: 12, via: [-0.35, 1.2, 0.45], pole: [-0.15, -0.35, 0.3], out: M });
     if (phase === 'held' && this.slideW > 0.01) {
-      // in the slide: the hand where the clip puts it, turned so the haft runs down to the ground behind her (a light correction)
+      // in the slide: the hand where the clip puts it, turned so the haft runs down to the ground behind them (a light correction)
       const P = this.P, hp = new THREE.Vector3(), hq = new THREE.Quaternion();
       const o = new THREE.Vector3().setFromMatrixPosition(M);
       const back = new THREE.Vector3(-Math.sin(this.slideYaw + Math.PI / 2), 0, -Math.cos(this.slideYaw + Math.PI / 2)); // (behind: against the slide)

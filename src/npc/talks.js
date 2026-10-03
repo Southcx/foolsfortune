@@ -189,7 +189,7 @@ export const TALKS = {
       ], next: 'menu' },
       bye: { lines: [{ mood: 'sly', text: 'Come back {gold}richer{/}!' }] },
 
-      // THE HAGGLE (shop/haggle.js keeps the numbers; shops.js the deal): his answer to what she last did, then what she can do next
+      // THE HAGGLE (shop/haggle.js keeps the numbers; shops.js the deal): his answer to what the Courier last did, then what they can do next
       haggle: {
         lines: [{ mood: (g) => hagMood(g), text: (g) => hagLine(g) }],
         choices: [

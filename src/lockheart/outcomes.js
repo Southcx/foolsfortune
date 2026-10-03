@@ -5,7 +5,7 @@
 // what came out (`lockheart.outcome`), and tracking.js says it.
 //
 // The SLIP NUKE is the jackpot and is made to look it: a column of slip thrown up and coming down over everything near (thousands of
-// GPU particles: vfx/gpuparticles.js), every creature against her in reach burst, every pot broken, the ground drowned in slip.
+// GPU particles: vfx/gpuparticles.js), every creature against them in reach burst, every pot broken, the ground drowned in slip.
 //
 //   OUTCOME_FX[id](game, at, { power, reach, by }) -> n (how many things it touched)
 // ---------------------------------------------------------------------------------------
@@ -91,7 +91,7 @@ export const OUTCOME_FX = {
     for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * R; g.shells?.addDroplet?.(at.clone().setY(at.y + 1), new THREE.Vector3(Math.cos(a) * r * 0.6, rnd(8, 14), Math.sin(a) * r * 0.6), rnd(0.05, 0.1), true); }
     // the ground drowned in it
     for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2, r = i === 0 ? 0 : rnd(0.3, 1) * R * 0.8; g.slip?.addDisc(at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.02, Math.sin(a) * r)), UP, rnd(1.6, 3.2), 24, rnd(0.6, 2)); }
-    // everything against her burst, every pot broken, every clapperjar flung
+    // everything against their burst, every pot broken, every clapperjar flung
     let n = 0;
     for (const c of foes(g, at, R)) { const d = c.pos.clone().sub(at).setY(0.5).normalize(); if (g.creatures.strike(c, c.center(new THREE.Vector3()), d, 99, 'nuke', by)) n++; }
     for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceTo(at) < R) { g.clappers.knock(c, c.pos.clone().sub(at).setY(0).normalize().multiplyScalar(14).setY(9)); g.clappers.stun(c, 5, g.shells.glowOutline, g.shells.xray); n++; }

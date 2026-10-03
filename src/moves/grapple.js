@@ -6,23 +6,23 @@ import { sfx } from '../audio.js';
 // ---------------------------------------------------------------------------------------
 // THE GRAPPLE: what the Courier does on the end of the Sondelass's line once the grapnel has bitten into something solid (the line,
 // its length and the reel are the hook's: sondelass/hookshot.js; this is the body). It replaces the old Zip, which took the Courier to
-// the anchor at a constant speed and had nothing more to say. Now she is a weight on a rope of a length she controls.
+// the anchor at a constant speed and had nothing more to say. Now they are a weight on a rope of a length they control.
 //
-//   hold LMB   reel in: the rope shortens (faster the longer it is held) and she is drawn to the anchor. Let go and she hangs.
+//   hold LMB   reel in: the rope shortens (faster the longer it is held) and they are drawn to the anchor. Let go and they hang.
 //   hold RMB   pay out: the rope lengthens.       tap RMB   let go of the line.
 //   A W S D    pump: steer the swing (air control, in the direction of the keys).
 //   Space      jump off, in the air: the momentum is kept, with a hop.
-//   She lands, and the rope goes slack: it pays itself out as she walks (a leash the length of the walk) and pulls tight again
-//   the moment her feet leave the ground: a jump from the ground under an anchor is a swing.
+//   They land, and the rope goes slack: it pays itself out as they walk (a leash the length of the walk) and pulls tight again
+//   the moment their feet leave the ground: a jump from the ground under an anchor is a swing.
 //
 // Prior art, and what was taken:
 //  - Worms' Ninja Rope: the rope's LENGTH is the control (shorten, lengthen), the swing is a pendulum you pump, jump lets go.
 //  - Spider-Man (PS4) and Just Cause: the release keeps the speed and adds a hop; shortening the rope on the way up the arc flings
 //    you (angular momentum: the tangential speed grows as the radius shrinks, so reeling in mid-swing speeds the swing up).
 //  - Attack on Titan's ODM gear and Tarzan: the swing is a pendulum on a taut line, hanging when it stops.
-// The body is a point mass at her chest on a rope: gravity and the pump move it, and if it would go farther from the anchor than the
-// rope is long it is put back on the sphere and the speed away from the anchor is taken out (position-based, so a wall she hits
-// takes the speed it takes). While she is on the ground with slack in the line the core movement runs as normal and this tech is idle.
+// The body is a point mass at their chest on a rope: gravity and the pump move it, and if it would go farther from the anchor than the
+// rope is long it is put back on the sphere and the speed away from the anchor is taken out (position-based, so a wall they hit
+// takes the speed it takes). While they are on the ground with slack in the line the core movement runs as normal and this tech is idle.
 // The hang and the swing are the CC0 hang-from-a-bar clip (the zipline's), leaned into the speed; the free hand closes on the line.
 // ---------------------------------------------------------------------------------------
 const UP = new THREE.Vector3(0, 1, 0);
@@ -72,7 +72,7 @@ export class Grapple extends Tech {
     const A = a.point;
     const to = _n.subVectors(A, c), dist = to.length();
     const dir = to.multiplyScalar(1 / Math.max(1e-6, dist));
-    // arrival: reeling brought her to the anchor
+    // arrival: reeling brought them to the anchor
     if (h.reeling && dist < C.stop) return this.arrive(dir);
     // let go: a jump in the air
     if (!P.grounded && P.latch('Space')) return this.jumpOff();
@@ -107,10 +107,10 @@ export class Grapple extends Tech {
     }
     P.vel.copy(v);
     P.move(dt);
-    // where she actually is now (a wall may have stopped her short): still inside the rope?
+    // where they actually is now (a wall may have stopped them short): still inside the rope?
     this.chest(_c);
     const fix = _t.subVectors(_c, A), fl = fix.length();
-    // (pulled back in only where she fits: an anchor low on the floor ahead would otherwise draw her down through it)
+    // (pulled back in only where they fit: an anchor low on the floor ahead would otherwise draw them down through it)
     if (fl > h.L + 0.08) {
       _p.copy(P.pos).addScaledVector(fix, -(fl - h.L) / fl);
       if (P.fits?.(_p, P.shape) ?? true) { P.pos.copy(_p); P.body?.setNextKinematicTranslation?.(P.pos); }
@@ -126,7 +126,7 @@ export class Grapple extends Tech {
     this.hangK = THREE.MathUtils.damp(this.hangK, taut && sp < 3.2 ? 1 : 0, 6, dt);
     this.speedK = THREE.MathUtils.damp(this.speedK, Math.min(1, sp / 16), 6, dt);
     if (sp > 6) sfx.zipWhine?.(Math.min(1, sp / 26) * 0.6);
-    // she lands with the line slack (or not reeling): the core takes over
+    // they land with the line slack (or not reeling): the core takes over
     if (P.grounded && !h.reeling && P.vel.y <= 0.5) return false;
     return true;
   }
@@ -143,7 +143,7 @@ export class Grapple extends Tech {
     return false;
   }
 
-  /** Space in the air: off the line with the speed, and a hop. Above the core's speed cap she is flung: carried by momentum until she lands. */
+  /** Space in the air: off the line with the speed, and a hop. Above the core's speed cap they are flung: carried by momentum until they land. */
   jumpOff() {
     const P = this.P, h = this.hook;
     const v = P.vel.clone().multiplyScalar(1.06);

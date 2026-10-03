@@ -19,19 +19,19 @@
 // weapon wheels of Ratchet & Clank and Devil May Cry (a small fixed set of very different tools behind one shared contract).
 //
 // (The last three are built on tools/heldtool.js and joined with `heldTool`: the Dreamvane (K, back), the Crucibelle (U, hip) and the
-// Lockheart (I, neck: the one place free, so she starts with it on).)
+// Lockheart (I, neck: the one place free, so they start with it on).)
 //
-// WORN or CARRIED: a tool is worn in a PLACE on her body (two across the back, one at each hip, one at the neck: PLACES) and drawn with
-// its key, or carried in the Pneuka Box as a thing (pneuka/items.js) and not to hand. Seven tools and five places: what she takes out is
+// WORN or CARRIED: a tool is worn in a PLACE on their body (two across the back, one at each hip, one at the neck: PLACES) and drawn with
+// its key, or carried in the Pneuka Box as a thing (pneuka/items.js) and not to hand. Seven tools and five places: what they take out is
 // a choice, Resident Evil's and Zelda's inventory made a matter of where on the body a thing can go (the box puts them on and off).
 //
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
 //   game.belt.isWorn(id)   game.belt.wear(id) / takeOff(id) (the box calls these)   game.belt.ready(id) (a key pressed: true, or says why not)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
-//   has become something else and her tools' own ticks are not running, the God Hand's jar)
+//   has become something else and their tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
 export const BELT_SIZE = 7;
-/** The places on her body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
+/** The places on their body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
 export const PLACES = { back: 2, hip: 2, neck: 1 };
 const KEY = 'foolsfortune.pneuka.belt'; // (progress: cleared with the box on a new build, progress.js)
 
@@ -39,7 +39,7 @@ export class ToolBelt {
   constructor(game) {
     this.game = game;
     this.tools = [];
-    this.worn = null; // Set of tool ids, or null until the first load (then: the four she starts with)
+    this.worn = null; // Set of tool ids, or null until the first load (then: the four they start with)
     try { const w = JSON.parse(localStorage.getItem(KEY) || 'null'); if (Array.isArray(w)) this.worn = new Set(w); } catch { /* nothing kept */ }
   }
   save() { try { localStorage.setItem(KEY, JSON.stringify([...this.worn])); } catch { /* this session only */ } }
@@ -70,14 +70,14 @@ export class ToolBelt {
     if (!quiet) this.game.events?.emit('tool.off', { tool: id });
     return true;
   }
-  /** A tool's key was pressed: may it come out? (worn: yes; in the box: no, and she says why) */
+  /** A tool's key was pressed: may it come out? (worn: yes; in the box: no, and they say why) */
   ready(id) {
     if (this.isWorn(id)) return true;
     const t = this.get(id);
     this.game.log?.say('warn', `${(t?.name || 'That tool').replace(/^THE /, 'The ').replace(/\B[A-Z]+/g, (m) => m.toLowerCase())} is in your Pneuka Box (P).`, { key: `belt.${id}`, throttle: 2 });
     return false;
   }
-  /** Once a frame: what is not worn stays put away and out of sight (the Psygun's is part of her body: the character hides it). */
+  /** Once a frame: what is not worn stays put away and out of sight (the Psygun's is part of their body: the character hides it). */
   tick() {
     if (!this.worn) { this.worn = new Set(this.tools.filter((t) => t.start !== false).map((t) => t.id)); this.save(); }
     for (const t of this.tools) {

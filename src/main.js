@@ -314,11 +314,11 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
-  // the vessel she is: its glazes and its kintsugi, on her (vessel/: fired at the kiln in the workshop, moves/kiln.js)
+  // the vessel they are: its glazes and its kintsugi, on them (vessel/: fired at the kiln in the workshop, moves/kiln.js)
   game.vessel = new Vessel(game);
   game.vessel.dress(character);
-  game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks her where it lands; the cracks mend: vessel/damage.js)
-  game.combat = new Combat(game); // (is she fighting? one signal for the HUD ring and the rest: combat.js)
+  game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks them where it lands; the cracks mend: vessel/damage.js)
+  game.combat = new Combat(game); // (are they fighting? one signal for the HUD ring and the rest: combat.js)
   game.ultimate = new Ultimate(game); // (the Lockheart opened with a key: the Courier's ultimate, lockheart/ultimate.js)
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: vessel/death.js)
 
@@ -346,7 +346,7 @@ async function main() {
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
   player.techs = techs;
   game.techs = techs;
-  // the Pneuka Box: what she carries (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
+  // the Pneuka Box: what they carry (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
@@ -371,15 +371,15 @@ async function main() {
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.log?.busy);
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
-  if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in her)
-  game.hudRing = new HudRing(game); // (her Lachryma and what has noticed her, on the ground at her feet)
-  // (a blow taken: she flinches, character.js; the hurting impulses are the filigree's list)
+  if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
+  game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
+  // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);
   game.shells = shells;
-  hud.buildShells(shells.types); // (the chambers of the psygun she carries: psygun/kinds.js)
+  hud.buildShells(shells.types); // (the chambers of the psygun they carry: psygun/kinds.js)
   game.input = input;
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   mark('techs+ui');
@@ -427,7 +427,7 @@ async function main() {
     });
   }
 
-  // diagnostics (F3: the perf panel; again: with the physics lines near her and the creatures' minds; F4 copies a report): debug/diag.js
+  // diagnostics (F3: the perf panel; again: with the physics lines near them and the creatures' minds; F4 copies a report): debug/diag.js
   const diag = (game.diag = new Diag(game, renderer));
 
   const resetRoom = () => {
@@ -521,8 +521,8 @@ async function main() {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
-  game.mirage = new Mirages(game); // (Couriers of smoke that minds take for her: the Crucibelle's mirage)
-  game.spirits = new Spirits(game); // (smoke spirits on her side: the Crucibelle's and the Lockheart's: spirits.js)
+  game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
+  game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: lachryma/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
@@ -534,7 +534,7 @@ async function main() {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   installEconomy(game); // (/grant, for the DEBUG profile)
-  game.macros = new MacroBook(); // (what she has composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
+  game.macros = new MacroBook(); // (what they have composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
@@ -557,7 +557,7 @@ async function main() {
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
-  game.vessel.dress(titleScene.ch); // (she wears on the hill what she wears in the world)
+  game.vessel.dress(titleScene.ch); // (they wear on the hill what they wear in the world)
   const title = (game.title = { active: true, scene: titleScene, ui: null, mode: null });
   overlay.style.display = 'none';
   game.ui.want('title', true); // (the HUD steps out while the title is up: hideui.js)
@@ -741,7 +741,7 @@ async function main() {
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
     trial.update(dt);
-    const godOn = god.controlling; // (the hand: the Courier is a jar, and none of her machinery runs)
+    const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
     if (godOn) god.update(dt);
     else {
       player.look(dt, weapon.adsEase || 0);
@@ -803,7 +803,7 @@ async function main() {
     if (!godOn) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);
-      // fade the courier out when the 3rd-person camera is pressed up against her
+      // fade the courier out when the 3rd-person camera is pressed up against them
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
       character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
       weapon.computeAimPoint(camera, player);

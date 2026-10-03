@@ -1,17 +1,17 @@
 // ---------------------------------------------------------------------------------------
-// THE FILIGREE: the Courier's armour shows what the Lachryma in her is doing. The maker drew three line masks over the armour's UVs
+// THE FILIGREE: the Courier's armour shows what the Lachryma in them is doing. The maker drew three line masks over the armour's UVs
 // (source_assets/courier_filigree_1..3.png, white lines on black, meant as shader masks); each is one thing Lachryma does in a vessel,
 // and each lights with its own magnitude:
 //
 //   ABSORPTION  (mask 1, the fine veins)     Lachryma coming in: the veins fill, the schiller running up them, and settle. At rest
-//                                            they hold a little of it, inked in black labradorite as deep as her pool is full: the
+//                                            they hold a little of it, inked in black labradorite as deep as their pool is full: the
 //                                            armour is the gauge (a line that glows with its load beats a gauge: CLAUDE.md)
 //   CHANNELLING (mask 2, the veins and nodes) Lachryma going out (the psygun's charge, a dash, an art, a tool drinking): it lights while
 //                                            it flows; the charge lights it faint at first and brighter as it builds (a plain shot: not at all)
 //   DAMAGE      (mask 3, the bold strokes)   a blow taken: the strokes flash pale and hot, and darken back slowly
 //
 // Drawn as the Mind and Lachryma are drawn (vfx/labradorite.js): ink with the schiller rising in it, its hue set by the angle of the
-// armour to the eye, so the lines turn colour as she turns. Every change is an envelope (a rise and an ease back), never a blink.
+// armour to the eye, so the lines turn colour as they turn. Every change is an envelope (a rise and an ease back), never a blink.
 //
 // Prior art: Tron's and Destiny's circuit lines on a suit (light along drawn channels as the power state), Dead Space's spine
 // gauge (the meter is on the body), Okami's brush-line glow, and kintsugi's gold in a crack (damage as a line that is shown, not hid).

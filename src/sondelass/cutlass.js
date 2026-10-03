@@ -4,13 +4,13 @@
 //   LMB       a three-stroke combo, from the Universal Animation Library's sword clips (CC0) over the upper body, so the legs keep
 //             running. A stroke has a wind-up, a window in which the blade can hurt what it passes through, and a window in which
 //             the next press chains; the third is the overhead one and cuts hardest. Each leaves a ribbon of light (trail.js).
-//   RMB tap   the STINGER: a committed thrust. She lunges six metres in a quarter of a second, blade first, the Sword_Dash clip
-//             for the whole body, and everything in the line is pierced and thrown. (moves/launch.js carries her past the core's
+//   RMB tap   the STINGER: a committed thrust. They lunge six metres in a quarter of a second, blade first, the Sword_Dash clip
+//             for the whole body, and everything in the line is pierced and thrown. (moves/launch.js carries them past the core's
 //             speed cap.) It costs a little of the mind.
 //   RMB hold  BLADE MODE (blade.js): time all but stops, the mouse turns a line of light through the target, LMB cuts along it.
 //   Z / MMB   lock on (lockon.js): the camera and the body hold the target, strokes and the stinger go toward it, A/D strafe it.
 //   V (hold)  GUARD: the blade comes up (the Sword_Block clip). Pressed in time (the first 0.28 s), a projectile that arrives is
-//             PARRIED: sent back where she looks (parry.js, the rule the kick shares); later, it is only turned aside. Moving with the
+//             PARRIED: sent back where they look (parry.js, the rule the kick shares); later, it is only turned aside. Moving with the
 //             guard up is slower, and the body faces the aim.
 //
 // Prior art, and what was taken:
@@ -34,7 +34,7 @@ import { deflect, guard } from '../parry.js';
 import { arcAt } from '../tools/viewmodel.js';
 import { measureSwing, sweep as sweepArc, magnet } from '../combat/melee.js';
 
-// (the clip time each stroke ends at, the chain window, and the clip that eases her back to guard if the combo stops there: UAL's
+// (the clip time each stroke ends at, the chain window, and the clip that eases them back to guard if the combo stops there: UAL's
 // Regular_A / _B each have a recovery, _A_Rec and _B_Rec. When the blade can hurt is not typed here: it is measured from the clip, melee.js)
 const STROKES = [
   { clip: 'swordA', dur: 0.43, chain: [0.24, 0.43], rec: 'swordARec', dmg: 1.0, lunge: 3.2, power: 1.2, trail: [0.14, 0.36] },
@@ -86,7 +86,7 @@ export class Cutlass {
   }
 
   // ---------------------------------------------------------------- aim
-  /** Where a stroke or a thrust goes: toward the lock, or where she is looking. */
+  /** Where a stroke or a thrust goes: toward the lock, or where they are looking. */
   aimDir(out, flat = true) {
     const g = this.game, P = this.tool.P;
     if (g.lock?.active) {
@@ -105,7 +105,7 @@ export class Cutlass {
     const P = this.tool.P, g = this.game;
     this.stroke = def; this.t = 0; this.tPrev = 0; this.n = n; this.hit.clear(); this.buffer = 0; this.rec = null;
     def.track ??= measureSwing(g.character, def.clip);
-    // toward the lock (or the aim, drawn to the best thing in front of her: melee.js magnet): the body turns to it, and steps into it
+    // toward the lock (or the aim, drawn to the best thing in front of them: melee.js magnet): the body turns to it, and steps into it
     const f = this.aimDir(_a);
     let lunge = def.lunge * (P.grounded ? 1 : 0.5);
     const m = !g.lock?.active && magnet(g, P, f, { range: 4.2, cone: 1.0 });
@@ -123,7 +123,7 @@ export class Cutlass {
     const P = this.tool.P, g = this.game, raw = g.rawDt || dt;
     this.idle += dt;
     this.stCool -= dt;
-    // the blade is read in real seconds: what the world is doing does not change how fast she cuts
+    // the blade is read in real seconds: what the world is doing does not change how fast they cut
     if (this.blade.active || this.blade.k > 0 || this.blade.queue.length) { this.blade.update(dt, inp); if (this.blade.active) return; }
     if (inp.wasPressed('Mouse1')) g.lock.toggle();
     this.guardUpdate(dt, inp);
@@ -187,7 +187,7 @@ export class Cutlass {
     if (!launch || P.techs.active) return;
     if (!g.lachryma.spend(STING.cost, 'stinger')) return;
     const dir = this.aimDir(new THREE.Vector3());
-    // toward the lock: no farther than the target (she stops a blade's length short of it)
+    // toward the lock: no farther than the target (they stop a blade's length short of it)
     let speed = STING.speed, time = STING.dash;
     if (g.lock?.active) { g.lock.point(_e); const d = Math.max(1.2, _e.distanceTo(P.pos) - 1.4); time = THREE.MathUtils.clamp(d / speed, 0.1, STING.dash); }
     this.stinging = true; this.stStopped = false; this.stHit.clear(); this.stDir.copy(dir); this.stPrev.copy(P.pos); this.ghostT = 0.06; // (the first afterimage waits: at the start it would sit on the body)
@@ -269,7 +269,7 @@ export class Cutlass {
     if (!this.guardOn) return;
     this.guardT += dt;
     P.bodyYaw = P.yaw;
-    // in front of her, at the blade
+    // in front of them, at the blade
     const f = P.lookDir(_a).setY(0).normalize();
     const at = _b.set(P.pos.x, P.pos.y + 1.1, P.pos.z).addScaledVector(f, 0.8);
     if (this.guardT <= PARRY_WIN) {
@@ -318,7 +318,7 @@ export class Cutlass {
     if (this.guardW > 0.02) { C.sample('block', 0.42, out, false); return { pose: out, w: this.guardW }; }
     const s = this.stroke;
     if (!s) {
-      // the combo stopped: the recovery clip brings the blade back to guard, and lets go as she moves off
+      // the combo stopped: the recovery clip brings the blade back to guard, and lets go as they move off
       const r = this.rec;
       if (!r) return null;
       C.sample(r.clip, r.t, out, false);

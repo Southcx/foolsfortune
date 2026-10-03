@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// STANCES: how she stands with each Lachryma tool out, so that a tool can be named from across a room by her silhouette alone. The
+// STANCES: how they stand with each Lachryma tool out, so that a tool can be named from across a room by their silhouette alone. The
 // owner's direction for the game's animation: exaggerated, whimsical and a little cartoonish, but grounded, as Monster Hunter's are
 // (every weapon its own idle you know at a glance: the hammer on the shoulder, the horn slung, the lance behind its shield).
 //
@@ -7,10 +7,10 @@
 // and the animator never knows the difference (CLAUDE.md: find a clip, blend it in; modify it rather than author one):
 //   base         the UAL idle it starts from (its breathing, its weight shift: the life is the clip's)
 //   overlay      [clip, bones (a pattern)]: those bones taken from another clip at the same moment of the loop (the hand that holds
-//                the tool from the clip whose fingers close on a haft, the rest of her from a freer idle)
+//                the tool from the clip whose fingers close on a haft, the rest of them from a freer idle)
 //   exaggerate   how much further each joint swings from its own average over the loop (1: as captured; 1.5: half again): the
 //                Disney principle, applied to a capture
-//   rot          [bone, axis, degrees] turns, in the body's frame (x her left, y up, z forward), applied in order, parents first:
+//   rot          [bone, axis, degrees] turns, in the body's frame (x their left, y up, z forward), applied in order, parents first:
 //                the pose of the stance, set on top of the clip's motion, the way a key pose is offset in a DCC's layer
 //   reach        [side, [x, y, z], [pole x, y, z]?]: where a hand is to be in the key pose (body frame, metres from the feet), its arm
 //                solved once here, at bake, as authored.js solves its key poses; the hand keeps its own turn, the clip's motion rides
@@ -28,8 +28,8 @@
 import * as THREE from 'three';
 
 export const STANCES = {
-  // THE DREAMVANE: a pilgrim with her crook. The staff stands upright at her right, the right hand at her chest and the left high on
-  // the haft above it (the dreamcatcher up over her head), weight sunk into the hips, the head cocked to listen to what it hears.
+  // THE DREAMVANE: a pilgrim with their crook. The staff stands upright at their right, the right hand at their chest and the left high on
+  // the haft above it (the dreamcatcher up over their head), weight sunk into the hips, the head cocked to listen to what it hears.
   dreamvane: {
     base: 'torchIdle', exaggerate: 1.35, drop: 0.03,
     rot: [
@@ -38,7 +38,7 @@ export const STANCES = {
       ['head', 'z', -9], ['head', 'x', 4],
     ],
   },
-  // THE CRUCIBELLE: the bell-ringer. The bell held up by her right ear, its mouth down, the elbow out; the other hand on her hip; her
+  // THE CRUCIBELLE: the bell-ringer. The bell held up by their right ear, its mouth down, the elbow out; the other hand on their hip; them
   // head tipped toward it, listening for the note it is about to give.
   crucibelle: {
     base: 'idle', overlay: [['torchIdle', '(upper_arm|forearm|hand|f_|thumb).*R$']], exaggerate: 1.4,
@@ -64,12 +64,12 @@ export const STANCES = {
     rot: [['spine002', 'x', 3], ['head', 'x', 4]],
     reach: [['L', [0.04, 1.27, 0.62], [0.6, 1.05, 0.2]], ['R', [-0.04, 1.27, 0.62], [-0.6, 1.05, 0.2]]],
   },
-  // THE SOUL BRUSH: Monster Hunter's hammer at rest. The great brush laid back over her right shoulder, the bristles up behind her,
-  // the other hand on her hip: a painter between strokes, at her ease, chin up.
+  // THE SOUL BRUSH: Monster Hunter's hammer at rest. The great brush laid back over their right shoulder, the bristles up behind them,
+  // the other hand on their hip: a painter between strokes, at their ease, chin up.
   soulbrush: {
     base: 'idle', overlay: [['swordIdle', '(upper_arm|forearm|hand|f_|thumb).*R$']], exaggerate: 1.4,
     rot: [['spine', 'y', 10], ['spine002', 'x', -4], ['handR', 'x', -100], ['handR', 'z', 18], ['head', 'x', -6], ['head', 'z', -5]],
-    reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at her shoulder; the other on her hip)
+    reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at their shoulder; the other on their hip)
   },
   // (THE SONDELASS: no stance of its own. The cutlass is held in the UAL sword idle as captured, the rod in the torch idle: a real
   //  sword-ready stance reads better than any offset laid over it (R40: the en garde tried here crossed the blade over the waist and

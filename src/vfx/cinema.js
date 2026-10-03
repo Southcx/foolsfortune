@@ -71,7 +71,7 @@ export class Cinema {
     c.roll = D(c.roll, spec ? spec.roll : 0, ease * 1.5, dt);
     const P = this.game.player.camFx;
     P.yaw = c.yaw; P.pitch = c.pitch; P.dist = c.dist; P.fov = c.fov; P.roll = c.roll;
-    // the scripted camera: the player's own is blended toward it (and back), and her mouse is not the camera's while it holds
+    // the scripted camera: the player's own is blended toward it (and back), and their mouse is not the camera's while it holds
     if (shot) this.lastShot = shot;
     this.sk = D(this.sk, shot ? 1 : 0, shot ? shot.ease : (this.lastShot?.ease ?? 3), dt);
     if (!shot && this.sk < 0.003) { this.sk = 0; this.lastShot = null; }

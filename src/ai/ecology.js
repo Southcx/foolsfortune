@@ -10,7 +10,7 @@
 // RELATIONS: what each kind of thing is to each other kind: KIN (stay near, answer their calls, mourn them), PREY (hunt it when
 // hungry), THREAT (keep away, flee when hurt), RIVAL (drive it off its ground), CURIOUS (go and look), NEUTRAL. A table by kind, with
 // an individual's own exceptions on top (`c.rel`, a Map from a kind or a particular thing to a relation): a jelly reprogrammed to take
-// the Courier for kin follows her and fights what she fights, without its kind changing its mind about her.
+// the Courier for kin follows them and fights what they fight, without its kind changing its mind about them.
 //
 //   eco.offer({ kind: 'water', pos, radius: 2 })   eco.provide('food', (pos, range) => [{ pos, ref, amount }])   eco.withdraw(o)
 //   eco.find('shade', pos, 30, { filter: (a) => ..., near: true })   eco.all('food', pos, 12)
@@ -28,7 +28,7 @@ export const REL = { KIN: 'kin', PREY: 'prey', THREAT: 'threat', RIVAL: 'rival',
 /** The kinds' standing relations (a row is how the first kind sees each other kind). Unlisted pairs are neutral. */
 const TABLE = {
   slipjelly: { slipjelly: REL.KIN, courier: REL.PREY, fish: REL.PREY, clapperjar: REL.CURIOUS, spirit: REL.RIVAL },
-  // a smoke spirit (spirits.js: the Crucibelle's and the Lockheart's): the Courier's, and against whatever is against her
+  // a smoke spirit (spirits.js: the Crucibelle's and the Lockheart's): the Courier's, and against whatever is against them
   spirit: { spirit: REL.KIN, courier: REL.KIN, slipjelly: REL.RIVAL },
   clapperjar: { clapperjar: REL.KIN, courier: REL.CURIOUS, slipjelly: REL.THREAT },
 };

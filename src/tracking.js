@@ -266,7 +266,7 @@ export class Tracking {
     };
     const helped = new Set();
     on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
-    // the room she walks into, said as she enters it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
+    // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
     on('place.enter', (e) => { const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); });
     on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
@@ -334,7 +334,7 @@ export class Tracking {
       log.say('gain', e.page ? `${CARD(e.card)} is bound into page ${VCARD[e.card]?.page} of the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} goes into a free slot.`, { key: `cget.${e.card}`, throttle: 1 });
     });
     on('card.drift', (e) => { L.inc('card.drift'); log.say('info', e.from === 'time' ? `${CARD(e.card)} was never bound, and is gone.` : `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }); });
-    // ---- the Pneuka Box: what she carries (src/pneuka/)
+    // ---- the Pneuka Box: what they carry (src/pneuka/)
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
       L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
@@ -355,7 +355,7 @@ export class Tracking {
     });
     on('npc.say', (e) => { L.inc('npc.lines'); L.inc(`npc.mood.${e.mood || 'calm'}`); const n = this.game.folk?.byId[e.npc]; log.say('npc', `${n?.name || 'Someone'} : ${e.line}`); });
     on('npc.choose', (e) => log.say('say', `Courier : ${e.text}`));
-    // the slip jellies (jelly/slipjelly.js): what they do to her and what she does to them; a blow by anything else is said as what it was
+    // the slip jellies (jelly/slipjelly.js): what they do to them and what they do to them; a blow by anything else is said as what it was
     on('jelly.notice', () => { L.inc('jelly.noticed'); log.say('battle', 'A slip jelly turns toward you.', { key: 'jnot', throttle: 4 }); });
     on('jelly.hit', (e) => { if (e.by === 'courier') { L.inc('jelly.hit'); L.inc(`jelly.hit.${e.cause}`); } });
     on('jelly.strike', (e) => { L.inc('jelly.struck'); L.inc(`jelly.struck.${e.move}`); log.say('warn', e.move === 'lunge' ? 'The slip jelly throws itself at you.' : 'The slip jelly spits slip at you.', { key: `jstr.${e.move}`, throttle: 1.5 }); });
@@ -656,7 +656,7 @@ export class Tracking {
     // the psygun's kind and its chambers (psygun/kinds.js)
     on('psygun.change', (e) => { L.inc('psygun.change'); log.say('system', `You carry ${PSYGUNS[e.gun]?.name || 'another psygun'}: ${PSYGUNS[e.gun]?.chambers ?? '?'} chambers.`); });
     on('psygun.chamber', (e) => { L.inc('psygun.chamber'); const i = SHELL_TYPES.findIndex((t) => t.id === e.shell); log.say('info', `Chamber ${e.chamber + 1} takes ${SHELL_TYPES[i]?.no || ''} ${SHELL_TYPES[i]?.name || ''}.`, { key: 'chamber', win: 1.2, fmt: (n) => `${n} chambers loaded.` }); });
-    // the vessel's damage (vessel/damage.js): a blow cracks her where it lands; the cracks mend
+    // the vessel's damage (vessel/damage.js): a blow cracks them where it lands; the cracks mend
     const PART = { mask: 'your mask', torso: 'your body', armL: 'your left arm', armR: 'your right arm', legL: 'your left leg', legR: 'your right leg' };
     // the shield and the shattering (vessel/damage.js, vessel/death.js)
     on('vessel.shield', () => L.inc('vessel.shield'));
@@ -667,7 +667,7 @@ export class Tracking {
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
     on('vessel.mend', (e) => { L.inc('vessel.mends'); log.say('info', `${(PART[e.region] || 'The crack').replace(/^y/, 'Y')} mends.`, { key: 'mend', win: 2, fmt: (n) => `${n} cracks mend.` }); });
     // the vessel (vessel/): the kiln station, firings, glazes earned and learned
-    on('kiln.open', () => { L.inc('kiln.open'); first('kiln', 'Logged: the kiln. Choose a glaze for each part of the vessel, see it on her, and fire it on.'); });
+    on('kiln.open', () => { L.inc('kiln.open'); first('kiln', 'Logged: the kiln. Choose a glaze for each part of the vessel, see it on you, and fire it on.'); });
     on('vessel.fire', (e) => {
       L.inc('vessel.fired'); L.inc('vessel.fire.cubes', e.cost);
       const names = [...new Set(Object.values(e.look))].map((id) => this.game.vessel?.glaze(id)?.name || id);

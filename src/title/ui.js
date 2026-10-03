@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TITLE'S WORDS: the logo over THE FOOL'S PRECIPICE (title/scene.js), "PRESS START", and, once she has stepped off the hill, the menu:
+// THE TITLE'S WORDS: the logo over THE FOOL'S PRECIPICE (title/scene.js), "PRESS START", and, once they have stepped off the hill, the menu:
 // STORY, DEBUG, SETTINGS, SOUND TEST (the owner's split: STORY is the game to come, DEBUG the sandbox as it is, every tool and room).
 // Keys or the mouse; the glove points at the choice (ui/theme.js). The first press wakes the sound if the browser
 // kept it asleep (so the title's loop plays under the scene: Wanda's note), and the next one starts. The words here are placeholders for Espada's (docs/HANDOFFS.md) and
@@ -67,7 +67,7 @@ export class TitleUI {
   }
   start() { if (this.started) return; if (this.wake()) return; this.started = true; sfx.unlock?.(); sfx.menuOk?.(); this.onStart?.(); }
 
-  /** The menu, once she has stepped off. */
+  /** The menu, once they have stepped off. */
   showMenu(page = 'main') {
     this.page = page;
     const g = this.game, music = g.music;

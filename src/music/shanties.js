@@ -54,7 +54,7 @@ export const ROLL_THE_MOON = {
   ],
 };
 
-// ---- leave her, lachryma
+// ---- leave them, lachryma
 const LH = {
   verse: { ch: ['Em', 'C', 'G', 'D', 'Em', 'Am', 'B7', 'Em'], mel: [
     [[0, 2, 71], [2, 1, 69]], [[0, 2, 67], [2, 1, 64]], [[0, 1, 67], [1, 1, 71], [2, 1, 74]], [[0, 3, 74]],

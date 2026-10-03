@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // KINTSUGI: gold in the seams of the vessel. A pot that has been broken and mended with lacquer and gold is worth more than it was, and
-// so is the Courier: her achievements are her mendings. Her armour and her mask carry a net of fine cracks over their whole surface,
-// laid out in her body's own space (the bind pose: the seams ride with her as she moves, never swim), and each crack is filled with gold
-// once enough has been earned. The more she has done, the more of the net is gold (vessel.js gives the share). Nothing moves or
+// so is the Courier: their achievements are their mendings. Their armour and their mask carry a net of fine cracks over their whole surface,
+// laid out in their body's own space (the bind pose: the seams ride with them as they move, never swim), and each crack is filled with gold
+// once enough has been earned. The more they have done, the more of the net is gold (vessel.js gives the share). Nothing moves or
 // flickers in it: a seam is there or it is not.
 //
 // The cracks are a cellular pattern (Worley's: the distance to the nearest point less the distance to the next, small along the edges

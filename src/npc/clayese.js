@@ -149,6 +149,6 @@ export function hearHaggling(game, clayese, voice) {
     const turn = HAGGLE[e.mood] ? e.mood : STEP[e.step] ?? (e.mood === 'anger' ? 'insulted' : e.mood === 'sad' ? 'sulking' : null);
     if (turn) clayese.haggle(turn, voice, { dist: e.dist ?? 3 });
     if (e.step === 'insult') clayese.sfx.shopRefuse?.(); // (the sting)
-    if (e.step === 'clink') clayese.sfx.shopCubes?.(3); // (her cubes on his counter)
+    if (e.step === 'clink') clayese.sfx.shopCubes?.(3); // (their cubes on his counter)
   });
 }

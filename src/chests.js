@@ -55,7 +55,7 @@ export class Chests {
     });
   }
 
-  /** True while a ceremony wants the cubes to lie where they fell (they are drawn to her when it lets go). */
+  /** True while a ceremony wants the cubes to lie where they fell (they are drawn to them when it lets go). */
   get locking() { return !!this.cur?.holdCubes; }
 
   // ---------------------------------------------------------------- placing them

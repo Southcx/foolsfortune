@@ -178,7 +178,7 @@ export class Sondelass extends Tech {
     if (shells) shells.style.display = this.drawT > 0.02 ? 'none' : '';
     // (it is worn: when the body is not drawn, melted into slip, blinked, handed over to the god-hand, neither is the tool)
     const ch2 = this.game.character;
-    this.model.group.visible = g.belt?.isWorn('sondelass') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible()); // (in the box: not on her)
+    this.model.group.visible = g.belt?.isWorn('sondelass') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && (this.drawT > 0.001 || this.stowedVisible()); // (in the box: not on them)
     this.rest.update(dt, this.drawT === 0, `${Math.round(m.ext * 1e3)}|${Math.round(m.bend * 1e3)}|${Math.round(m.bladeOut * 1e3)}|${m.hookOn}|${Math.round(m.spin * 100)}`);
   }
 
@@ -213,7 +213,7 @@ export class Sondelass extends Tech {
     if (cl) C.blend(layer, cl.pose, cl.w);
     const cast = this.angler?.castPose(C, this.P2);
     if (cast) C.blend(layer, cast.pose, cast.w);
-    // (the grapnel is a one-handed thing: in hook form the stance is the right arm's, and the left hangs with her walk, unless it is on the
+    // (the grapnel is a one-handed thing: in hook form the stance is the right arm's, and the left hangs with their walk, unless it is on the
     // line; the rod and the cutlass take both)
     if (!this.MASK_HOOK) { this.MASK_HOOK = Float32Array.from(ch.MASK_UPPER); C.bones.forEach((b, i) => { if (/L$/.test(b) && /arm|hand|f_|thumb/.test(b)) this.MASK_HOOK[i] = 0; }); }
     C.blend(base, layer, layerW, this.form === 'hook' && !this.hookshot.att ? this.MASK_HOOK : ch.MASK_UPPER, 0);
@@ -275,7 +275,7 @@ export class Sondelass extends Tech {
     this.cutlass.afterHands(this.dt || 1 / 60); // (the blade is where it is for this frame: its ribbon and the afterimages)
   }
 
-  /** The lure on the line, in her left hand (rod out, nothing cast): rebuilt when another is tied on. */
+  /** The lure on the line, in their left hand (rod out, nothing cast): rebuilt when another is tied on. */
   heldLurePose(ch, on) {
     const id = this.game.pneuka?.lure ?? 'lure.bob';
     const want = on && id && !id.startsWith('curio.') ? id : null;

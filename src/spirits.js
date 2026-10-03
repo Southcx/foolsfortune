@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // SPIRITS: what is called up out of smoke and Lachryma to stand with the Courier for a while: the Crucibelle's SUMMON song, a
 // Lockheart's luck. A spirit is a slip jelly made of smoke (jelly/slipjelly.js, `spawn(home, { spirit })`): the same body, the same mind
-// (jelly/mind.js), with a place of its own in the ecology (ai/ecology.js: `spirit`, which takes her for kin and the wild jellies for
-// rivals, as they take it), so everything it does it does by the parts every creature has: it follows her, it fights what is against
-// her, and a song's RALLY (status `haste`, `empower`) makes it quicker and harder. Her own blows pass through it (creatures.js: `ally`).
+// (jelly/mind.js), with a place of its own in the ecology (ai/ecology.js: `spirit`, which takes them for kin and the wild jellies for
+// rivals, as they take it), so everything it does it does by the parts every creature has: it follows them, it fights what is against
+// them, and a song's RALLY (status `haste`, `empower`) makes it quicker and harder. Their own blows pass through it (creatures.js: `ally`).
 // It lasts its time and goes back into smoke, or is struck down; it never forms again.
 //
 // Prior art: Patapon's army that the song commands, the summons of Final Fantasy made small and many, and the familiars of Hollow

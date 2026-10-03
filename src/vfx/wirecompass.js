@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
-// THE WIRE COMPASS: which way she faces and where the waypoint is, as a tape of ticks drawn in the Mind's lines across the top of
+// THE WIRE COMPASS: which way they face and where the waypoint is, as a tape of ticks drawn in the Mind's lines across the top of
 // the view, and a wire diamond standing over the waypoint in the world. No letters, no degrees, no metres (docs/LOOK.md 6): north is
 // the tall tick with a diamond on it, east, south and west the middling ones; the waypoint is a diamond on the tape at its bearing and
-// another over the place itself, drawn through walls, a fixed size on the screen. The map is still the map (M); the room she is in
-// is said by the log as she enters it (place.enter -> tracking.js).
+// another over the place itself, drawn through walls, a fixed size on the screen. The map is still the map (M); the room they are in
+// is said by the log as they enter it (place.enter -> tracking.js).
 //
 // The tape is a ring of ticks round the eye at the world's bearings, raised to sit near the top of the view whatever the pitch: a
 // visor's compass in perspective (it curves away at the ends and fades there), not a flat strip.
@@ -86,7 +86,7 @@ export class WireCompass {
     this.alpha += ((show ? 0.85 : 0) - this.alpha) * (1 - Math.exp(-dt * 5));
     const on = this.alpha > 0.01;
     this.tape.visible = this.wpTape.visible = this.wpWorld.visible = on;
-    // the room she is in, said once as she enters it (four times a second is often enough to ask)
+    // the room they are in, said once as they enter it (four times a second is often enough to ask)
     this.placeT -= dt;
     if (C && this.placeT <= 0) {
       this.placeT = 0.25;
@@ -101,7 +101,7 @@ export class WireCompass {
     const pitch = Math.asin(THREE.MathUtils.clamp(this.u.uFwd.value.y, -1, 1));
     const up = pitch + ((cam.fov * Math.PI) / 360) * RAISE * 2;
     this.tape.position.copy(cam.position).setY(cam.position.y + Math.tan(THREE.MathUtils.clamp(up, -1.3, 1.3)) * R);
-    // the waypoint, if it is on her layer
+    // the waypoint, if it is on their layer
     const wp = C?.waypoint, same = wp && C.layerOf(P.pos.y)?.id === wp.layer;
     this.wpA += ((same ? 1 : 0) - this.wpA) * (1 - Math.exp(-dt * 5));
     this.wpTape.visible = this.wpWorld.visible = this.wpA > 0.01;

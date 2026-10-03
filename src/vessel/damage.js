@@ -2,11 +2,11 @@
 // THE VESSEL'S DAMAGE: the Lachryma pool is the shield and takes a blow first (Halo's regenerating shield: it fills again on its own);
 // what it cannot pay for cracks the clay where the blow lands, and the cracks mend, slowly, or at once at the kiln for cubes. A blow on
 // clay cracked through shatters the vessel (vessel/death.js). The Courier carries six HIT REGIONS (the mask,
-// the torso, each arm, each leg), each a few capsules riding her bones (the HITBOXES: geometric, not physics bodies, so they never touch
-// how she moves). A blow is resolved to the region it struck: by the point, when the blow has one (a lob's shell), or by the line from
-// where it came (a jelly's lunge comes from the jelly) to her middle, first capsule it meets. That region's CRACK rises; after a few
-// quiet seconds it mends, cell by cell, until nothing is left. Nothing about how she moves changes (CLAUDE.md: the core is the gold
-// standard); the cracks are shown on her (vessel/kintsugi.js: the same net the gold seams use, dark, with Lachryma at the heart of
+// the torso, each arm, each leg), each a few capsules riding their bones (the HITBOXES: geometric, not physics bodies, so they never touch
+// how they move). A blow is resolved to the region it struck: by the point, when the blow has one (a lob's shell), or by the line from
+// where it came (a jelly's lunge comes from the jelly) to their middle, first capsule it meets. That region's CRACK rises; after a few
+// quiet seconds it mends, cell by cell, until nothing is left. Nothing about how they move changes (CLAUDE.md: the core is the gold
+// standard); the cracks are shown on them (vessel/kintsugi.js: the same net the gold seams use, dark, with Lachryma at the heart of
 // the line), and each crack and mend is an event (`vessel.crack`, `vessel.mend`) for the log, the ledger and the sounds.
 //
 // Prior art: locational damage of the hitbox kind (Soldier of Fortune's and Fallout's regions, Monster Hunter's breakable parts shown
@@ -35,7 +35,7 @@ export function regionOfBone(name = '') {
   return 1;
 }
 
-/** Each vertex of her armour and mask told its region (the bone that moves it most), once per geometry, for the cracks' shader. */
+/** Each vertex of their armour and mask told its region (the bone that moves it most), once per geometry, for the cracks' shader. */
 export function tagRegions(ch) {
   ch.model.traverse((o) => {
     if (!o.isSkinnedMesh || o.geometry.attributes.aRegion) return;
@@ -65,7 +65,7 @@ export class Hitboxes {
     this.ch = ch;
     this.caps = CAPS.filter(([, a, b]) => ch.bones[a] && (!b || ch.bones[b])).map(([region, a, b, r, len = 0]) => ({ region, a: ch.bones[a], b: b ? ch.bones[b] : null, r, len, p0: new THREE.Vector3(), p1: new THREE.Vector3() }));
   }
-  /** The capsules where her bones are now. */
+  /** The capsules where their bones are now. */
   refresh() {
     for (const c of this.caps) {
       c.a.getWorldPosition(c.p0);
@@ -114,13 +114,13 @@ export class VesselDamage {
     this.crack = new Float32Array(REGIONS.length);
     this.quiet = new Float32Array(REGIONS.length).fill(99);
     this.boxes = game.character ? new Hitboxes(game.character) : null;
-    // the blows: a jelly's (from where the jelly is), a lob's and an explosion's (from the way it pushed her)
+    // the blows: a jelly's (from where the jelly is), a lob's and an explosion's (from the way it pushed them)
     game.events?.on('jelly.strike', (e) => this.hit({ from: e.from ? new THREE.Vector3(...e.from) : null, k: e.move === 'lunge' ? 0.7 : 0.4, why: 'jelly', by: 'creature' }));
     game.events?.on('impulse', (e) => { if (HURT.has(e.why) && e.why !== 'jelly') this.hit({ dir: e.dir ? new THREE.Vector3(...e.dir) : null, k: Math.min(1, 0.3 + (e.mag || 0) / 18), why: e.why, by: 'environment' }); });
   }
   get P() { return this.game.player; }
 
-  /** A blow on her: resolved to a region, that region cracked by `k` (0..1). */
+  /** A blow on them: resolved to a region, that region cracked by `k` (0..1). */
   hit({ point = null, from = null, dir = null, k = 0.5, why = 'blow', by = 'environment' } = {}) {
     if (!this.boxes || this.game.death?.active) return -1;
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
@@ -135,7 +135,7 @@ export class VesselDamage {
     let region = 1;
     if (point) region = this.boxes.nearest(point).region;
     else {
-      // the line the blow came along: from the attacker toward her middle, or back along the push (its own vectors: the capsule tests
+      // the line the blow came along: from the attacker toward their middle, or back along the push (its own vectors: the capsule tests
       // use the module's scratch ones)
       const o = from ? from.clone().setY(Math.max(from.y + 0.4, P.pos.y + 0.3)) : mid.clone().addScaledVector(dir || new THREE.Vector3(0, 0, 1), -2.5);
       region = this.boxes.raycast(o, mid.clone().sub(o).normalize()).region;

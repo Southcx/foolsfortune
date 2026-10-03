@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // DIAGNOSTICS (F3): what a frame costs, and why a bad one was bad. F3 cycles: off · the PERF panel · the panel with the physics
-// lines (only what is near her) and what the creatures near her are thinking. F4 copies a plain-text report (the last ten seconds:
+// lines (only what is near them) and what the creatures near them are thinking. F4 copies a plain-text report (the last ten seconds:
 // the frame times, the worst frames and what changed in them, the counts) to the clipboard, ready to paste into a bug report.
 //
 // The panel: frames per second and the frame's milliseconds (median and the worst of the last second), the CPU's share split into
@@ -11,7 +11,7 @@
 // frame over twice the median: it is kept with what changed in it (programs compiled, geometries or textures made, the heap dropping: a
 // collection), since those are the usual causes of a hitch, and the last few are listed.
 //
-// The physics lines are Rapier's debug render, filtered to colliders within 30 m of her and never the terrain (a height field is
+// The physics lines are Rapier's debug render, filtered to colliders within 30 m of them and never the terrain (a height field is
 // hundreds of thousands of lines), refreshed ten times a second into one buffer that grows and is reused: the old way, every collider in
 // the world every frame into a new buffer, ran at five frames a second.
 //
@@ -166,7 +166,7 @@ export class Diag {
     };
   }
 
-  /** The physics lines (mode 2), near her only, a few times a second; and the minds near her. */
+  /** The physics lines (mode 2), near them only, a few times a second; and the minds near them. */
   update(dt) {
     if (this.mode !== 2) return;
     const g = this.game;

@@ -298,8 +298,8 @@ export class GodMode {
     this.t += dt;
     if (this.state === 'in') {
       const k = Math.min(1, this.t / 1.2);
-      // the courier steps out of the world; the jar stands up in her place
-      if (this.t > 0.3 && !g.character.hidden) { g.character.setHidden(true); g.belt?.hideWorn(); } // (her tools go with her: their ticks do not run now)
+      // the courier steps out of the world; the jar stands up in their place
+      if (this.t > 0.3 && !g.character.hidden) { g.character.setHidden(true); g.belt?.hideWorn(); } // (their tools go with them: their ticks do not run now)
       const jk = Math.max(0, (this.t - 0.25) / 0.6);
       V.group.scale.setScalar(Math.max(0.001, easeOutBack(Math.min(1, jk))));
       if (k >= 1) this.state = 'on';

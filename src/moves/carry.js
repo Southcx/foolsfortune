@@ -148,7 +148,7 @@ export class Carry extends Tech {
     const P = this.P, e = this.item, h = this.size(e);
     const yaw = P.bodyYaw;
     const upright = _q.setFromAxisAngle(UP, yaw);
-    // (at the chest, held at its grip between the carrying clip's palms, in front of her by as much as it is wide: it comes down
+    // (at the chest, held at its grip between the carrying clip's palms, in front of them by as much as it is wide: it comes down
     //  with a crouch)
     const grip = this.grip || { f: 0.2, w: 0.2 };
     const c0 = this.originUp(e); // (a pot's origin is its foot; a crate's its middle)
@@ -294,7 +294,7 @@ export class Carry extends Tech {
       const t = s2 < THROW_AT ? T0.from + (T0.release - T0.from) * (s2 / THROW_AT) : T0.release + (T0.to - T0.release) * Math.min(1, (s2 - THROW_AT) / (THROW_END - THROW_AT + 0.12));
       C.blend(base, this.twoHanded(ch, 'throw', t, 'L'), this.w, ch.MASK_UPPER);
     } else if (this.item) {
-      // the hold: the carrying clip's arms over whatever the legs are doing (its own walk would skate against hers)
+      // the hold: the carrying clip's arms over whatever the legs are doing (its own walk would skate against theirs)
       this.ht = (this.ht || 0) + dt * (0.5 + Math.hypot(this.P.vel.x, this.P.vel.z) * 0.35);
       C.blend(base, C.sample('carryWalk', this.ht, ch.P.tmp, true), this.w, ch.MASK_UPPER);
     }

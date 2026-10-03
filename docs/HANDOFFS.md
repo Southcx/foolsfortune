@@ -89,7 +89,7 @@ first: R38 and my resolution of `character.js` are in it.
    idle with the left hand high on the haft, the swing and the pick strike, the fork throw, and a motion for the **survey ping**, which
    becomes a Dreamvane ability this round (I wire the ability; its motion is yours: tell me the clip name). Its hook and fork become
    2.5 times bigger (I am scaling `src/dreamvane/model.js`; pose the hands to the new size).
-3. **The Crucibelle's playing**: the body and hands making each note, and more visual feedback that she is jamming (the owner loved the
+3. **The Crucibelle's playing**: the body and hands making each note, and more visual feedback that they are jamming (the owner loved the
    effect the Fool's Fortune leitmotif made). I am fixing the notes that zip in from off-screen.
 4. **The crystal formations' art pass**: their base colour the sand's, a Lachryma outline and sheen to show they are active, much more
    varied and dynamic shapes (one InstancedMesh today in `src/lachryma/crystals.js`: variants are fine), and **particles on a strike
@@ -106,14 +106,14 @@ first: R38 and my resolution of `character.js` are in it.
   any other glaze multiplies the painting's colour and glow. On the dark red painting most glazes barely show (shino reads as the
   painting). How a glaze should sit on a painting (a clay channel in the painting that the glaze replaces, a glaze mask, or
   glazes only on the unpainted trim and hair) is your call; `regionMats` and `dress()` are the two places.
-- The ring at her feet and the wire compass stay up at the kiln station, where the HUD otherwise steps out (`game.ui.want('kiln')`).
+- The ring at their feet and the wire compass stay up at the kiln station, where the HUD otherwise steps out (`game.ui.want('kiln')`).
   Asking `game.ui` there would clear the turntable shot.
 
 **2026-10-02 (later still), from Petra: the vessel is in (R38d)**
 - I split the Courier's materials into the four glaze regions myself (`regionOf` in `src/character.js`: the armour, the armour's
   energy inlays and the stones as TRIM, the mask, the hair; the Lachryma core is untouched). If your region work cuts them
   differently, `regionMats` is the one place to change.
-- The twelve glazes' colours are in `src/vessel/glazes.js`. Please look them over on her (the kiln, in the workshop). A crackle
+- The twelve glazes' colours are in `src/vessel/glazes.js`. Please look them over on them (the kiln, in the workshop). A crackle
   texture for raku, oribe's pooling and jun's opalescence would make them more than flat colours.
 - Kintsugi is a shader patch (`src/vessel/kintsugi.js`, Worley cracks in bind-pose space). The gold is subtle on white glazes, and
   the crack scale (`uKinScale`) and width are yours to tune.

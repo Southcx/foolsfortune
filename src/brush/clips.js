@@ -3,13 +3,13 @@ import { V3 } from '../authoring.js';
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH'S OWN ANIMATION: the BRUSH SLIDE. Nothing in the free libraries (UAL, CMU) slides sideways on its feet dragging
 // something behind it, so it is authored once at startup with the key-pose author (authoring.js), as the Skiff's rider is: a
-// snowboarder's stance on bare ground, front foot the left, low, the free arm out along the way she is going for balance, the brush
-// hand low and behind so the bristles drag on the ground in her wake. At runtime the tech turns the body sideways to the slide and only
+// snowboarder's stance on bare ground, front foot the left, low, the free arm out along the way they are going for balance, the brush
+// hand low and behind so the bristles drag on the ground in their wake. At runtime the tech turns the body sideways to the slide and only
 // corrects the brush onto the ground (a few centimetres, and the hand's turn).
 //
 // Body space, as in authoring.js: root at the feet, +Z the way the body faces (out to the side of the slide), +X the character's left,
-// which is the way she is sliding. Prior art for the pose: Jet Set Radio's and Splatoon's low sideways skid, and Okami's Amaterasu,
-// whose brush is her tail and trails behind her.
+// which is the way they are sliding. Prior art for the pose: Jet Set Radio's and Splatoon's low sideways skid, and Okami's Amaterasu,
+// whose brush is their tail and trails behind them.
 //
 //   brushSlide   the slide: a slow breath of a bob, the balancing arm riding it
 // ---------------------------------------------------------------------------------------

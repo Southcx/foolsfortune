@@ -3,11 +3,11 @@
 // tool coiled and uncoils along the flight (a helix that opens out and straightens, the way a rope pays out of a harpoon gun), and what
 // it bites decides what the line is for:
 //
-//   something solid    an ANCHOR. The line stays, taut, and the Courier is a weight on it (moves/grapple.js is her side: reel,
+//   something solid    an ANCHOR. The line stays, taut, and the Courier is a weight on it (moves/grapple.js is their side: reel,
 //                      hang, swing, let go).
-//   something loose    a CATCH. A pot, a crate, a clapperjar: the line stays, and holding LMB reels it toward her hand: the lighter
-//                      end of the rope is the one that moves, so anything under 60 kg comes to her and anything heavier is an anchor.
-//                      It is brought to a point in front of her chest and held there while LMB is held, and let go with a fling in
+//   something loose    a CATCH. A pot, a crate, a clapperjar: the line stays, and holding LMB reels it toward their hand: the lighter
+//                      end of the rope is the one that moves, so anything under 60 kg comes to them and anything heavier is an anchor.
+//                      It is brought to a point in front of their chest and held there while LMB is held, and let go with a fling in
 //                      the direction the aim was sweeping (tap RMB).
 //   nothing            the line is drawn back.
 //
@@ -82,7 +82,7 @@ export class Hookshot {
     const catchable = dyn && (ent?.type === 'clapper' || ent?.type === 'breakable' || ent?.type === 'slice' || ent?.type === 'shard' || !ent || !!ent.carry || ent?.type === 'prop');
     let kind = 'anchor';
     if (ent?.type === 'clapper') kind = 'pull';
-    else if (ent?.type === 'creature' && ent.alive) kind = ent.heavy ? 'anchor' : 'pull'; // (a creature on the line: dragged to her)
+    else if (ent?.type === 'creature' && ent.alive) kind = ent.heavy ? 'anchor' : 'pull'; // (a creature on the line: dragged to them)
     else if (catchable) kind = (body.mass?.() ?? 1) <= HEAVY ? 'pull' : 'anchor';
     return { point: hit.point.clone(), normal: hit.normal.clone(), ent, body, kind };
   }
@@ -172,7 +172,7 @@ export class Hookshot {
     let slack = Math.max(0, (this.L - CHEST) - dist);
     let taut = THREE.MathUtils.clamp(1 - slack / (0.35 + dist * 0.04), 0, 1);
     let load = a.mode === 'pull' ? (this.reeling ? 0.9 : 0.35) : Math.min(1, P.vel.length() / 14 + (this.reeling ? 0.5 : 0));
-    // her weight on it (hanging, swinging, reeling, or walked to the end of it): the line is straight and loaded, and there is no spare
+    // their weight on it (hanging, swinging, reeling, or walked to the end of it): the line is straight and loaded, and there is no spare
     // line beyond the straight: what was paid out past the bite is taken in the moment it bites (the reel's ratchet)
     if (a.mode === 'anchor' && (!P.grounded || this.reeling || this.chest(_c).distanceTo(end) >= this.L - 0.15)) { slack = 0; taut = 1; load = Math.max(load, 0.75); }
     const helix = Math.max(0, 1 - this.latchT * 3.2); // (the last of the coils runs out as it goes taut)
@@ -235,7 +235,7 @@ export class Hookshot {
     this.att = null; this.reeling = false; this.paying = false; this.reelV = 0;
     if (a.mode === 'pull') {
       if (how === 'tap' || how === 'flung') {
-        // let go with the motion of the aim: what she was sweeping the catch through
+        // let go with the motion of the aim: what they were sweeping the catch through
         const body = a.body;
         if (a.ent?.type === 'creature' && a.ent.alive) a.ent.knock?.(this.destVel.clone().clampLength(0, 14).setY(3)); // (flung)
         if (body) {
@@ -301,7 +301,7 @@ export class Hookshot {
     if (P.grounded && !this.reeling) this.L = Math.max(this.L, dist + 0.05); // (walking pays the line out: a leash the length of the walk)
   }
 
-  /** A catch: brought to a point in front of her chest and held while LMB is held. */
+  /** A catch: brought to a point in front of their chest and held while LMB is held. */
   fixedPull(dt, C) {
     const P = this.tool.P, a = this.att, g = this.game;
     const p = this.attachPoint(_e), body = a.body, ent = a.ent;
@@ -312,7 +312,7 @@ export class Hookshot {
     this.destVel.copy(dest).sub(this.destPrev).multiplyScalar(1 / Math.max(dt, 1e-4));
     this.destPrev.copy(dest);
     this.L = Math.max(1.2, Math.min(this.L + (this.paying ? 6 * dt : 0), dist + 0.2));
-    // reeled in and let go of, close by: it is hers (it drops where it is)
+    // reeled in and let go of, close by: it is theirs (it drops where it is)
     if (this.holdWas && !this.reeling && dist < 2.6) { this.holdWas = false; return this.release('delivered'); }
     this.holdWas = this.hold;
     if (this.reeling) {
@@ -323,7 +323,7 @@ export class Hookshot {
       const want = toD.multiplyScalar(Math.min(cap, dd * 9) / Math.max(dd, 1e-4));
       this.travel += want.length() * dt;
       if (ent?.type === 'creature') {
-        // dragged: its own steering overruled while the line is in (and lifted off the ground a little if she is above it)
+        // dragged: its own steering overruled while the line is in (and lifted off the ground a little if they are above it)
         const k = Math.min(1, 10 * dt);
         if (ent.vel) { ent.vel.x += (want.x - ent.vel.x) * k; ent.vel.z += (want.z - ent.vel.z) * k; }
         if (want.y > 2 && !ent.air) { ent.vy = Math.min(want.y, 4); ent.air = true; }
@@ -349,7 +349,7 @@ export class Hookshot {
         if (out > 0) body.setLinvel({ x: lv.x + _o.x * out * 0.8, y: lv.y + _o.y * out * 0.8, z: lv.z + _o.z * out * 0.8 }, true);
       }
     }
-    if (dist < 1.2 && !this.reeling) { /* it is at her feet, and not being held: leave it be */ }
+    if (dist < 1.2 && !this.reeling) { /* it is at their feet, and not being held: leave it be */ }
     void g;
   }
 }

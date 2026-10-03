@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE BOARD: the checkerboard sea of the title (THE FOOL'S PRECIPICE: docs/PLAN.md), bent down into a slow whirlpool and up again at its
 // rim, with giant game pieces standing on it that PLAY: on the beat of the music, one of them makes its move (a pawn steps a square, a
-// rook slides two, the king turns, a die tumbles), so the game is already being played when she sits down to watch it.
+// rook slides two, the king turns, a die tumbles), so the game is already being played when they sit down to watch it.
 //
 // The squares are LOG-POLAR: a square's width is a fixed fraction of its distance from the centre, so the board is the same pattern
 // all the way down the drain (an Escher spiral: "Smaller and Smaller", and the owner's own checker vortex, docs/ref/). The whole board

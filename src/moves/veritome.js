@@ -19,24 +19,24 @@ import { unwrite, inscribed } from '../brush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../angling/species.js';
 
 // ---------------------------------------------------------------------------------------
-// THE VERITOME (Veritas, and a tome of knowledge): the fourth of the Courier's psychic tools, and her inventory. A grimoire worn shut
+// THE VERITOME (Veritas, and a tome of knowledge): the fourth of the Courier's psychic tools, and their inventory. A grimoire worn shut
 // at the right hip, drawn and held OPEN in both hands (veritome/hold.js), the lens in its spine and its measuring instruments on the
-// cover. It is how she grounds herself against what is not real: it gathers information, it does not rewrite anything.
+// cover. It is how they ground themself against what is not real: it gathers information, it does not rewrite anything.
 //
 //  - THE LENS. RMB raises the open book before the eyes (first person; the wheel zooms) and LMB exposes a plate. A photograph is
 //    a PLATE on the film (veritome/film.js, twenty-four to a roll), stored as it was taken; nothing is judged at the shutter.
 //    The plates are APPRAISED later, as many at once as you like, in the darkroom (the Codex's VERITOME shelf: veritome/darkroom.js),
 //    where they become Compendium entries, bestiary facts (veritome/bestiary.js) and cards (the Arcana's sittings, creature portraits).
 //    That is Wind Waker's Picto Box and Dark Cloud 2's camera: go and look, then sit down with what you saw.
-//  - THE CAPTURE. A creature that is AWARE of her and ENGAGED with her (a clapperjar clapping at her, fleeing her, cowering, knocked
+//  - THE CAPTURE. A creature that is AWARE of them and ENGAGED with them (a clapperjar clapping at them, fleeing them, cowering, knocked
 //    about: veritome/subjects.js) and held in the capture circle charges the shot; a shot at full charge holds it to what is real
-//    (it is stunned), longer at the SHUTTER CHANCE (it is in the air, or clapping at her). An unaware creature cannot be held: it is
+//    (it is stunned), longer at the SHUTTER CHANCE (it is in the air, or clapping at them). An unaware creature cannot be held: it is
 //    photographed candidly, which is how its habits are learned. (Fatal Frame's Camera Obscura, made gentler: it never kills.)
 //  - THE TRUTH. A photograph undoes whatever the Soul Brush wrote on what it shows (the photograph is of the thing as it is).
 //  - THE BOOK (veritome/book.js), the Courier's bank. While it is held open, the Pneuka Box (P: pneuka/box.js) opens beside it, and
 //    things are stored in it as cards or taken out as things. The binder, the film, the bestiary and the Compendium are the Codex's
 //    VERITOME shelf (B): the Codex is the Veritome's own pages.
-//  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: she reads the ground off it.
+//  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: they read the ground off it.
 //
 //   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     P (while it is out)  the box and the bank
 //   B      the Codex: the binder (Take out, Condense), the film (appraise), the bestiary, the Compendium
@@ -146,7 +146,7 @@ export class Veritome extends Tech {
     else if (shells && this.wasShellsHidden) shells.style.display = '';
     this.wasShellsHidden = this.drawT > 0.02;
     const ch2 = g.character;
-    this.model.group.visible = this.enabled && g.belt?.isWorn('veritome') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6; // (in the box: not on her)
+    this.model.group.visible = this.enabled && g.belt?.isWorn('veritome') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active && this.lensK < 0.6; // (in the box: not on them)
     this.rest.update(dt, this.drawT === 0 && this.lensK < 0.001, `${Math.round(this.model.open * 1e3)}`);
   }
 
@@ -168,7 +168,7 @@ export class Veritome extends Tech {
     P.lookScale.lens = 1;
   }
 
-  /** Can a charged shot hold this clapperjar? Only one aware of her and in the thick of it with her. */
+  /** Can a charged shot hold this clapperjar? Only one aware of them and in the thick of it with them. */
   holdable(c) {
     if (c.type === 'creature') return c.alive && hasTag(c, 'programmable'); // (a mind can be held in the lens whatever it is doing)
     return c.alive && !c.ally && ENGAGED.has(c.state) && !!this.game.clappers?.canSeePlayer?.(c);
@@ -295,7 +295,7 @@ export class Veritome extends Tech {
         this.holdW = smooth(0.7, 1, this.drawT);
       } else this.holdW = 0;
     } else if (this.readW > 0) {
-      // the Survey's read: out of the hip and open before her for a moment
+      // the Survey's read: out of the hip and open before them for a moment
       bookFrame(ch, P, cam, { mode: 'read' }, _m2);
       holster.decompose(_p1, _q1, _s); _m2.decompose(_p2, _q2, _s);
       const k = smooth(0, 0.6, this.readW);

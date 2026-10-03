@@ -7,7 +7,7 @@
 // for a while, on top of its own taste (it fades over some seconds), and the wave of it stirs EVERY fish in that water, more the nearer
 // it passes (falloff with distance), whatever it was doing. A ping burns Lachryma, and so does reeling: the cost is the choice.
 //
-// Any CURIO the Courier carries in her Pneuka Box can be tied on too (pneuka/box.js: P, then click it; or 9 / 0 while the line is in).
+// Any CURIO the Courier carries in their Pneuka Box can be tied on too (pneuka/box.js: P, then click it; or 9 / 0 while the line is in).
 // One kept in the Veritome is a card, and has to be taken out into the box first. A curio is an object that has had a life, and it carries the feelings of it: its
 // taste is written below from what it is (a knot no one could undo is grief and dread; a bell always a little flat of the last time is
 // mirth and grief), and the rarer it is the stronger it pulls. Curios are never lost with a line: the mind lets go, the thing comes home.
@@ -43,7 +43,7 @@ const TIER_PULL = [1.1, 1.2, 1.3, 1.45, 1.6];
 /** Nothing tied on: a bare hook (it still sinks, and a hungry thing may take it). */
 export const BARE = { id: null, key: 'bare', name: 'A BARE HOOK', glyph: '?', taste: [0.12, 0.12, 0.12, 0.2, 0.12], blurb: 'Nothing is tied on the line.' };
 
-/** The lures to hand: the made ones she has (on the line or in the Pneuka Box: they are things now, pneuka/items.js), then every
+/** The lures to hand: the made ones they have (on the line or in the Pneuka Box: they are things now, pneuka/items.js), then every
  *  curio on the line or in the box (a curio's lure is the curio). Without a box, all six made ones. */
 export function lureList(ledger, box = null) {
   const out = box ? LURES.filter((L) => box.lure === L.id || box.count(L.id) > 0) : [...LURES];

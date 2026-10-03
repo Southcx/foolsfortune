@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // THE GLAZES: what the Courier's vessel can be dressed in. The Courier is a vessel (Kaolin Anagami's magnum opus: docs/LORE.md), and
-// she is decorated as a pot is: a GLAZE on each REGION of her (the armour of her body, its trim and stones, her mask, her hair), fired on
-// at the kiln (vessel/vessel.js, the kiln station: moves/kiln.js). The Lachryma of her body is never glazed. Data only.
+// they are decorated as a pot is: a GLAZE on each REGION of them (the armour of their body, its trim and stones, their mask, their hair), fired on
+// at the kiln (vessel/vessel.js, the kiln station: moves/kiln.js). The Lachryma of their body is never glazed. Data only.
 //
-// The glazes are the real ones, after the potters' own families (each named for what it is): terracotta and bisque (what she is
+// The glazes are the real ones, after the potters' own families (each named for what it is): terracotta and bisque (what they are
 // unglazed), shino's warm white, celadon's jade, tenmoku's iron black, oribe's copper green, raku's crackled white, oxblood (sang de
 // boeuf), jun's moon blue, nuka's rice-husk ash, a copper lustre, and one black with the sheen of Lachryma itself. Each is GOT a way:
-//   start        hers from the beginning
+//   start        theirs from the beginning
 //   ach          earned: an achievement (achievements.js) gives it, so it is retroactive like they are
 //   photo        learned: the Veritome learns a colour from a good photograph (vessel.js: learnFrom)
 //   shop         bought (Saggar's kiln: next round)
@@ -27,7 +27,7 @@ export const REGIONS = {
 
 const G = (id, name, color, rough, metal, blurb, got, glow = 0) => ({ id, name, color, rough, metal, glow, blurb, got });
 export const GLAZES = Object.fromEntries([
-  G('terracotta', 'TERRACOTTA', 0xb4603f, 0.65, 0.05, 'Red earthenware, unglazed: what the Prince fired her in.', { start: true }),
+  G('terracotta', 'TERRACOTTA', 0xb4603f, 0.65, 0.05, 'Red earthenware, unglazed: what the Prince fired you in.', { start: true }),
   G('bisque', 'BISQUE', 0xf3c9a8, 0.4, 0, 'Fired once and left pale, the way a pot waits for its glaze. Lachryma shows through it.', { start: true }, 0.18),
   G('shino', 'SHINO', 0xe9dccb, 0.7, 0, 'A thick white feldspar glaze, pitted, with a blush of orange where it ran thin.', { start: true }),
   G('celadon', 'CELADON', 0x86ad93, 0.25, 0.02, 'Jade-green, from a little iron fired without air. The glaze of Mistress Saggar.', { ach: 'ac1' }),
@@ -38,8 +38,8 @@ export const GLAZES = Object.fromEntries([
   G('jun', 'JUN', 0x7f9ccf, 0.3, 0.02, 'Moon blue, thick and opalescent, from a glaze that will not quite melt.', { ach: 'cl1' }),
   G('nuka', 'NUKA', 0xc7c0a8, 0.6, 0, 'Rice-husk ash: a milky, stony white. Humble, and it knows it.', { ach: 'br1' }),
   G('lustre', 'COPPER LUSTRE', 0xb87333, 0.3, 0.65, 'A film of copper smoked onto the glaze. It looks expensive. Raku says it is.', { ach: 'tu2' }),
-  G('lachryma', 'LACHRYMA BLACK', 0x15101c, 0.15, 0.3, 'Black, with the sheen of oil on water. A lesser pot would go mad in it; she can bear it.', { ach: 'td6' }),
+  G('lachryma', 'LACHRYMA BLACK', 0x15101c, 0.15, 0.3, 'Black, with the sheen of oil on water. A lesser pot would go mad in it; you can bear it.', { ach: 'td6' }),
 ].map((g) => [g.id, g]));
 
-/** How she is dressed until she fires anything else: as she was made. */
+/** How they are dressed until they fire anything else: as they were made. */
 export const DEFAULT_LOOK = { body: 'terracotta', trim: 'bisque', mask: 'terracotta', hair: 'bisque' };

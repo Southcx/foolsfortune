@@ -106,7 +106,7 @@ export class Push extends Tech {
 
   /** Pushing: the pushing clip (UAL Push_Loop: leaning into it, knees bent), played on as it goes; still, it holds its first leaning
    *  frame. Pulling: the walk backwards under the pushing clip's arms (the hands stay on the crate), the body leaning back against
-   *  it (afterPose): pulling is not pushing played in reverse, which leaned her into a crate she was walking away from. */
+   *  it (afterPose): pulling is not pushing played in reverse, which leaned them into a crate they were walking away from. */
   animate(ch, base, dt) {
     const C = ch.clips, clip = C.clips.push;
     if (!clip) return;
@@ -116,7 +116,7 @@ export class Push extends Tech {
     const pushT = (this.speed || 0) >= 0 ? t : 0;
     C.blend(base, C.sample('push', pushT, ch.P.tmp, true), this.w * (1 - this.pullK));
     if (this.pullK > 0.001) {
-      // (the walk run backwards: its cycle at the pace she is backing; the arms the push's, reaching for the crate)
+      // (the walk run backwards: its cycle at the pace they are backing; the arms the push's, reaching for the crate)
       C.blend(base, C.sample('walk', -(this.pt || 0) * 1.1, ch.P.tmp, true), this.w * this.pullK);
       this.armMask ||= C.mask(Object.fromEntries(C.bones.filter((n) => /^(upper_arm|forearm|hand|f_|thumb)/.test(n)).map((n) => [n, 1])));
       C.blend(base, C.sample('push', 0.15, ch.P.tmp, true), this.w * this.pullK, this.armMask);

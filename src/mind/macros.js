@@ -7,14 +7,14 @@
 //
 //   how long     each Function's base time x (0.5 + q)              x LON for each LON after it
 //   how deep     (0.6 + 0.6 q)                                      x DEO for each DEO after it (a status's strength; a drive's push)
-//   accepted     a mind takes it with chance 0.45 + 0.55 q (+ how deep, a little); a mind that throws it off wakes, and remembers her
+//   accepted     a mind takes it with chance 0.45 + 0.55 q (+ how deep, a little); a mind that throws it off wakes, and remembers them
 //
 // What a Function does is done through the parts of the mind, never round them (docs/AI.md):
 //   act     the Brain is given a DIRECTIVE: for so long, that action is what it does (unless something urgent takes it: a stun, a sleep)
 //   status  creatures.apply (halt, calm, sleep, melt: the creature decides what each means for it)
 //   rel     its own view of another: the Courier taken for kin, or its own kind taken for rivals, for so long (ai/ecology.js relation)
 //   drive   a drive pushed toward full (it will want water now: its own reasoning does the rest)
-//   mem     a memory wiped (what it knew of her)
+//   mem     a memory wiped (what it knew of them)
 // A new creature gets every Function its mind has the parts for: an action it does not have is refused, and the window says so.
 //
 //   const book = new MacroBook()   book.slots[i] (a Lattice)   book.compiled(i)   book.save()

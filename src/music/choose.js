@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // WHAT PLAYS WHERE: the one place that says which cue the game is in (main.js asks it every frame and hands the answer to
 // MusicPlayer.follow). In order: the main theme over the title and the pause; nothing while a chest's rave or the God Hand has the
-// floor; the battle while she is in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
+// floor; the battle while they are in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
 // Well's Lachryma); a shanty on the Solar Skiff (the next work song each time the sail goes up); the Dunes' theme in the dunes; the work song in the workshop.
 // A dive waits a moment before it takes over (and before it lets go), so a duck under the surface does not cut the place's music.
 //
@@ -48,7 +48,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   return null;
 }
 
-/** The title (music/title.js): its loop while she sits on the edge, the Fool's Step once when she goes, then the Fall under the menu. */
+/** The title (music/title.js): its loop while they sit on the edge, the Fool's Step once when they go, then the Fall under the menu. */
 export function chooseTitleMusic(game) {
   const state = game.title?.scene?.state ?? 'idle';
   if (state === 'idle') return TITLE;

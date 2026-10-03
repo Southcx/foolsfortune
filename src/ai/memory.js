@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // MEMORY: what a creature knows, which is not what is true. Its senses (senses.js) write here; its mind (brain.js) reads only from
-// here. So it can lose the Courier behind a dune and go to where she WAS; it can be sure of a thing it saw a moment ago and doubt one
+// here. So it can lose the Courier behind a dune and go to where they were; it can be sure of a thing it saw a moment ago and doubt one
 // it glimpsed; it can hold a grudge.
 //
 //   FACTS     one per thing it has perceived (the Courier, another creature): where it was last (and how it was moving), when it was

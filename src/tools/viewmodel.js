@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE VIEW MODEL: where a held tool is drawn in first person. The Courier's body is still drawn in first person, but her arms hang
+// THE VIEW MODEL: where a held tool is drawn in first person. The Courier's body is still drawn in first person, but their arms hang
 // below the view, so a blade or a brush held in the animated hand is out of sight. In first person a held tool is placed in the
 // camera's own frame instead: at rest low at the right of the view, pointing ahead and a little up and across, and swung along a
 // named ARC (a cut from right to left, its return, an overhead) whose fastest part falls in the blow's hit window. The hit tests

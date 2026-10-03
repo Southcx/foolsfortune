@@ -44,7 +44,7 @@ const MATS = {
   CourierMask: () => painted(paint().mask),
 };
 const OUTLINED = new Set(['Courier_Armor', 'CourierMask', 'Kiritohair']);
-/** Which glaze region a mesh of the Courier is (vessel/glazes.js REGIONS), or null (the Lachryma of her body is never glazed). */
+/** Which glaze region a mesh of the Courier is (vessel/glazes.js REGIONS), or null (the Lachryma of their body is never glazed). */
 function regionOf(o, matName, isArmor) {
   if (isArmor) return matName === 'Courier_Armor' ? 'body' : 'trim';
   if (o.name === 'Courier_Mask') return 'mask';
@@ -603,7 +603,7 @@ export class Character {
     st.landT += dt;
     const landW = st.landW * (1 - smooth(0.12, 0.5, st.landT - (st.landClip === 'flipLand' ? 0.1 : 0))) * (1 - 0.7 * clamp(gs / s.walkSpeed, 0, 1)) * (footed ? 1 : 0);
     if (landW > 0.001) C.blend(base, C.sample(st.landClip || 'jumpLand', st.landT, P.tmp, false), landW);
-    // ---- a blow taken: a flinch of the upper body (UAL Hit_Chest), over whatever she is doing ----
+    // ---- a blow taken: a flinch of the upper body (UAL Hit_Chest), over whatever they are doing ----
     if (st.hitT !== undefined && st.hitT < 0.45 && C.clips.hitChest) {
       st.hitT += dt;
       const hw = st.hitW * (1 - smooth(0.22, 0.45, st.hitT)) * smooth(0, 0.04, st.hitT);
@@ -637,7 +637,7 @@ export class Character {
       st.sliding = true;
     }
     if (sl < 0.02 && st.sliding) { st.sliding = false; st.slideEnd = this.time; }
-    // ---- out of a slide on her feet: the slide's own way up (UAL Slide_Exit), bridging the slide's fade into the run ----
+    // ---- out of a slide on their feet: the slide's own way up (UAL Slide_Exit), bridging the slide's fade into the run ----
     if (st.sliding && sl < (st.slPrev ?? 0) - 1e-4 && st.exitT === undefined) st.exitT = 0;
     if (sl > (st.slPrev ?? 0) + 1e-4) st.exitT = undefined; // (back into it)
     st.slPrev = sl;

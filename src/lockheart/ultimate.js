@@ -150,15 +150,15 @@ export class Ultimate {
       const d = 2.2 - t * 0.35;
       pos = this.around(0.5, d, 0.35); look = _l.copy(cof); fov = -6; roll = -0.06; ease = 6;
     } else if (this.phase === 'invoke') {
-      // a cut for each key, round her a quarter at a time
+      // a cut for each key, round them a quarter at a time
       const a = 0.5 + (this.cut + 1) * 1.6, d = 1.9;
       pos = this.around(a, d, 0.9 + (this.cut % 2) * 0.8); look = _l.copy(cof); fov = -10; roll = (this.cut % 2 ? 0.08 : -0.08); ease = 40;
     } else if (this.phase === 'ascend') {
-      // a crane: from low in front round and up over her shoulder as the coffin climbs
+      // a crane: from low in front round and up over their shoulder as the coffin climbs
       const u = Math.min(1, (t - keysEnd) / ASCEND), k = u * u * (3 - 2 * u);
       pos = this.around(0.5 + k * 2.6, 4.4, 1.0 + k * 2.4); look = _l.copy(cof).lerp(this.around(0, 0, 1.2), 0.45); fov = 6 + 6 * k; roll = 0.05 * (1 - k); ease = 3;
     } else if (this.phase === 'wheel' || this.phase === 'landed') {
-      // from behind and below, looking up past her at the wheel in the sky; drifting round
+      // from behind and below, looking up past them at the wheel in the sky; drifting round
       const w = t - this.wheelT;
       pos = this.around(Math.PI + 0.35 + w * 0.08, 2.4, 0.6); look = _l.copy(this.wheelPos || cof); fov = 8; roll = -0.03; ease = 3;
       if (this.phase === 'landed' && t - this.landT < 0.5) { pos = this.around(0.9, 4.5, 2.4); look = _l.copy(this.around(0, 0, 1)); fov = 14; ease = 40; } // (the impact, wide)
@@ -170,7 +170,7 @@ export class Ultimate {
     g.cinema?.shot('ult', { pos, look, fov, roll, bars: 1, ease });
   }
 
-  /** The next spin: the wheel put up in the sky above the coffin, enormous, facing the camera behind her. */
+  /** The next spin: the wheel put up in the sky above the coffin, enormous, facing the camera behind them. */
   spinNext() {
     const lh = this.lh, q = lh.queue[0];
     if (!q) return;

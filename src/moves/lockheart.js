@@ -9,10 +9,10 @@ import { sfx } from '../audio.js';
 
 // ---------------------------------------------------------------------------------------
 // THE LOCKHEART: the seventh of the Courier's psychic tools. A little coffin on a chain, worn at the neck (the one place there is: so
-// she starts with it on). It is weaponised luck.
+// they start with it on). It is weaponised luck.
 //
-//  - IT DRINKS: worn, it takes the Lachryma she cannot hold (what she gains over the top of her pool: lachryma.js 'overflow'). Drawn
-//    and held out, LMB held HOOVERS: loose Lachryma in front of her is drawn in (baubles; liquid ones, turned dark, count double: what
+//  - IT DRINKS: worn, it takes the Lachryma they cannot hold (what they gain over the top of their pool: lachryma.js 'overflow'). Drawn
+//    and held out, LMB held HOOVERS: loose Lachryma in front of them is drawn in (baubles; liquid ones, turned dark, count double: what
 //    has been let go of is what it is for), and a mind laid low (stunned, asleep, melted: stun.js) has its Lachryma drawn out of it
 //    (Luigi's Mansion's Poltergust). A crystal shard fed to it from the Pneuka Box fills it nearly half.
 //  - IT OPENS: RMB, when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to four, in
@@ -39,7 +39,7 @@ export class Lockheart extends HeldTool {
   constructor(mgr) {
     super(mgr, 'lockheart', {
       key: 'KeyI',
-      // on its chain at the breastbone (the chest bone: it moves with her breathing), hanging
+      // on its chain at the breastbone (the chest bone: it moves with their breathing), hanging
       worn: { at: [0, 1.3, 0.14], along: [0, -1, 0.12], out: [0, 0, 1], bone: 'spine003' },
       draw: { twist: 4, lean: 4, via: [-0.25, 1.3, 0.4] },
       idle: 'stance:lockheart', idles: ['stance:lockheart', 'idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: anim/stances.js; hands() below)
@@ -133,7 +133,7 @@ export class Lockheart extends HeldTool {
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, power: +power.toFixed(2), spins: mods.spins });
     if (g.ultimate) g.ultimate.begin(this); else this.next(); // (R40: the Courier's ultimate, a show the game stops for: lockheart/ultimate.js)
   }
-  /** The next spin in the queue: the wheel put up over the coffin, facing her. */
+  /** The next spin in the queue: the wheel put up over the coffin, facing them. */
   next(spec = null) {
     const q = this.queue[0];
     if (!q) return;
@@ -142,7 +142,7 @@ export class Lockheart extends HeldTool {
     const at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : P.pos.clone().setY(P.pos.y + 1.4);
     const f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw));
     const right = _a.set(Math.cos(P.yaw), 0, -Math.sin(P.yaw)).clone();
-    const pos = P.pos.clone().addScaledVector(f, 1.8).addScaledVector(right, -0.55).setY(P.pos.y + 2.25); // (above and to the side of her head, from behind her)
+    const pos = P.pos.clone().addScaledVector(f, 1.8).addScaledVector(right, -0.55).setY(P.pos.y + 2.25); // (above and to the side of their head, from behind them)
     const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
     this.wheel.spin(q.R, q.id, pos, face, () => this.land(q, at));
   }

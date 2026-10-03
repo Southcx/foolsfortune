@@ -17,7 +17,7 @@ export class CrucibelleModel {
     const bronze = new THREE.MeshStandardMaterial({ color: 0x6a4a2a, metalness: 0.65, roughness: 0.35, flatShading: true });
     const brass = new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.6, roughness: 0.3, flatShading: true });
     const dark = new THREE.MeshStandardMaterial({ color: 0x1a0f0a, roughness: 0.9, flatShading: true });
-    // the ring she holds it by (round the hand), the stem, the crown
+    // the ring they hold it by (round the hand), the stem, the crown
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.008, 5, 12), brass); ring.rotation.y = Math.PI / 2; g.add(ring);
     const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.09, 6), brass); stem.rotation.z = -Math.PI / 2; stem.position.x = 0.09; g.add(stem);
     // the bell: a lathe of a bell's profile, its mouth toward +X

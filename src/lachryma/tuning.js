@@ -2,10 +2,10 @@
 // CRYSTALS, TUNED BY EAR: each formation of crystal has a KEY (a note: the chromatic root it is set in) and a SWEET SPOT on its surface:
 // a height on it and a way round it. The surface is a stave wrapped round a column. Ring it with the tuning fork for the REFERENCE tone
 // (the sweet spot's own note). Each strike of the pick then sounds a NOTE:
-//   - HEIGHT sets the PITCH: where she aims her blow (high on the formation or low) is a step of the formation's scale above or below the
+//   - HEIGHT sets the PITCH: where they aim their blow (high on the formation or low) is a step of the formation's scale above or below the
 //     spot's note: above the spot is sharp of the reference, below is flat, so the ear says "higher" or "lower".
-//   - THE WAY ROUND sets the BEATING: from where she stands, the note wavers (two tones a few hertz apart) as fast as she is far round from
-//     the spot, and goes pure as she faces it; so the feet say "round further" or "here".
+//   - THE WAY ROUND sets the BEATING: from where they stand, the note wavers (two tones a few hertz apart) as fast as they are far round from
+//     the spot, and goes pure as they face it; so the feet say "round further" or "here".
 // A strike at the right height from the right side is the SWEET one: the formation opens and pays out many times over. DENSE formations
 // (the big stony ones) take many strikes and pay a modest yield; FRAGILE ones (small and glassy) take only a few before they break but pay
 // out wildly when found. Nothing is written: the notes, the beating and the particles (`crystal.strike` carries how near it was) say it.
@@ -35,7 +35,7 @@ function step(key, deg) {
 }
 export const refNote = (t) => t.key + 12;
 
-/** What a strike sounds at `th` (her bearing round the formation) and `u` (the height struck, 0 foot .. 1 top). */
+/** What a strike sounds at `th` (their bearing round the formation) and `u` (the height struck, 0 foot .. 1 top). */
 export function readStrike(t, th, u) {
   const deg = Math.max(-LINES, Math.min(LINES, Math.round((u - t.spot.u) * LINES)));
   const dth = Math.abs(wrap(th - t.spot.th));

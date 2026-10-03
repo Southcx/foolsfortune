@@ -3,8 +3,8 @@
 // Figment_MindJelly: an egg of sloppy wet sand over a skirt of four toes, always melting: deform.js's melt) that lives in the dunes
 // round the Weir. This file is its BODY: how it moves, strikes, is hurt, bursts and forms again. What it DOES is its mind
 // (jelly/mind.js), built from the AI parts every creature shares (src/ai/, docs/AI.md): it drinks at the oasis when it dries out,
-// eats the Lachryma it finds, rests in the palms' shade, keeps to its kin, calls them when it sees the Courier, hunts her when it is
-// hungry or she has hurt one of them, mourns where one burst, and flees when it is frightened enough.
+// eats the Lachryma it finds, rests in the palms' shade, keeps to its kin, calls them when it sees the Courier, hunts them when it is
+// hungry or they have hurt one of them, mourns where one burst, and flees when it is frightened enough.
 //
 // The body's moves, which the mind's actions ask for:
 //   GLIDE   it slides on its own slip toward where the mind wants it (`c.want`, a velocity), laying a wet trail you can dive into
@@ -189,7 +189,7 @@ export class SlipJellies {
     if (g.fx?.alpha?.emit) for (let i = 0; i < 14; i++) g.fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3(rnd(-1.5, 1.5), rnd(3, 6), rnd(-1.5, 1.5)), life: rnd(0.8, 1.4), size: 0.06, sizeEnd: 0.02, color: new THREE.Color(0xb3905f), alpha: 0.85, drag: 0.6, gravity: 9 });
     g.shells?.addSplat?.(c.pos.clone().setY(c.pos.y + 0.02), UP, 2.6, true);
     g.slip?.addDisc(c.pos.clone(), UP, 1.6, 20);
-    // (its Lachryma: what it was, and whatever it had swallowed of hers, back on the sand whoever burst it)
+    // (its Lachryma: what it was, and whatever it had swallowed of theirs, back on the sand whoever burst it)
     if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? ECON.jelly.burst : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
     c.stash = 0;
     g.glyphs?.pop('star', at.clone().setY(at.y + 0.4), { color: 0xd9c8ff, size: 0.5, life: 0.9, burst: true });
@@ -389,7 +389,7 @@ export class SlipJellies {
     }
   }
 
-  /** It lands a blow on its foe: the Courier (knocked flat, her Lachryma drained: it feeds on it) or another creature. */
+  /** It lands a blow on its foe: the Courier (knocked flat, their Lachryma drained: it feeds on it) or another creature. */
   strike(c, foe, move) {
     const g = this.game, P = g.player, S = move === 'lunge' ? JELLY.lunge : JELLY.spit;
     const v = _a.set(foe.pos.x - c.pos.x, 0, foe.pos.z - c.pos.z); if (v.lengthSq() < 1e-4) v.set(0, 0, 1);
@@ -399,7 +399,7 @@ export class SlipJellies {
       P.impulse(v.clone(), 'jelly');
       P.shake = Math.max(P.shake || 0, 0.5);
       const took = g.lachryma?.drain?.(move === 'lunge' ? S.drain : 4, 'jelly') ?? 0;
-      if (took > 0) c.drives.sat('hunger', 0.04 * took); // (it fed on her: a hungry jelly is a dangerous one)
+      if (took > 0) c.drives.sat('hunger', 0.04 * took); // (it fed on them: a hungry jelly is a dangerous one)
       g.events?.emit('jelly.strike', { move, by: 'environment', from: [c.pos.x, c.pos.y, c.pos.z] });
     } else if (foe.decoy) { foe.struck?.(); // (a Courier of smoke: struck, it is gone: crucibelle/mirage.js)
     } else if (foe.type === 'creature') {

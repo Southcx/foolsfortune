@@ -111,7 +111,7 @@ export class SlipField {
   }
 
   /** A splat that dries: wet (diveable) for `life` seconds, but not until it is `delay` seconds old (the Soul Brush's fresh trail
-   *  under a sliding Courier must not pull her under the moment it is laid). */
+   *  under a sliding Courier must not pull them under the moment it is laid). */
   addDisc(c, n, r, life, delay = 0) {
     if (this.discs.length > 400) this.discs.shift();
     this.discs.push({ c: c.clone(), n: n.clone().normalize(), r, life, age: 0, delay });

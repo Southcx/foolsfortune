@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// PROGRESS, PER BUILD: while the game is being made, what the Courier has earned belongs to the build she earned it in. Each build
+// PROGRESS, PER BUILD: while the game is being made, what the Courier has earned belongs to the build they earned it in. Each build
 // carries its own id (made when it is built: vite.config.js's __BUILD__); the first time a new one runs, everything that is progress
-// (the System's unlocks, the ledger and its achievements, the Veritome's film and Book, the Pneuka Box, the map she has walked, the
+// (the System's unlocks, the ledger and its achievements, the Veritome's film and Book, the Pneuka Box, the map they have walked, the
 // records of the circuits and the trial) is cleared, and the settings (the window colour, the voice, the music, the tuning, the log's
 // size) are kept. The achievements are placeholders, and a fresh start each build shows what a new player meets.
 //

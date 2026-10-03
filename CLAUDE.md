@@ -14,6 +14,8 @@ credits: UAL Standard, CMU mocap, CC0).
   blend it into the existing animation tree. Author a clip only when nothing fits.
 - Use IK as a light correction (setting a foot on a surface, closing a hand on a handle), never as the way to
   pose a whole action: it is hard to diagnose and, being visual, hard for the assistant to verify.
+- Test a tool's poses with every other tool taken off the Courier first (the owner's rule: a clear view of the one being judged), from
+  the front and the side.
 - Every posed joint passes through the range-of-motion limits (`src/rom.js`) last. New rigs get a spec there; the
   finger hinges for the Courier are learned from the clips (`tools/learn_rom.mjs`).
 
@@ -23,6 +25,11 @@ credits: UAL Standard, CMU mocap, CC0).
   a scrolled texture where that is the honest way to show something moving). Motion in the world should still come from
   things actually moving where it can.
 - The core movement is the gold standard: techs and arts never change it, and switching one off restores it exactly.
+
+## The Courier
+- **The Courier is androgynous, a self-insert for the player: never "she" or "he".** Where the game speaks to the player (the log, the
+  System, help pages, item text) it says "you"; in docs, comments and the folk's talk about the Courier, "they" (or "the Courier"). The
+  model is not to change.
 
 ## Feedback
 - **The log (`src/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating counters or kill-feed in the world or on the HUD; if something deserves a sentence, `tracking.js` writes it (plain third person, FFXI-style, a colour class per kind), and everything else is counted in the ledger (`src/stats.js`) for the achievements. A new feature emits an event (`game.events.emit`) and gets a rule in `tracking.js`; it does not call the log to celebrate. (A refusal at the point of use, "You have no bomb shells.", may `log.say` directly, with a `throttle`.) Event payloads must not use `name` or `t` (the bus's own).

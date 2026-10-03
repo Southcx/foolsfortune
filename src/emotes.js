@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // EMOTES: the Courier's body language, asked for in the chatbox (/sit, /dance, /wave...). Each is a clip from the Universal
 // Animation Library (CC0, baked onto the Courier by tools/bake_anims.mjs): some go in, hold and come out (sitting), some loop until
-// she moves (dancing, talking), some play once (a nod) and some play once and stay (a faint, held on the floor until she gets up).
+// they move (dancing, talking), some play once (a nod) and some play once and stay (a faint, held on the floor until they get up).
 // Moving (WASD, Space) ends any of them, through its way out if it has one.
 //
 // Prior art: Final Fantasy XI's and XIV's emotes (/sit, /wave, /dance, /bow, typed in the chat line, the motion and a line in the

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE KILN STATION'S WINDOW: what the Courier can fire onto her vessel, beside her as she turns in front of the kiln (moves/kiln.js
-// holds her and the camera). A tab for each region (the body, the trim, the mask, the hair), the glazes she has as swatches under it
-// (a click tries one on her at once), the gold in her seams, and FIRE, which costs cubes and keeps the look. The world is not paused:
-// she turns, the kiln breathes. Drag on the scene or use A / D (or the arrows) to turn her; Esc or LEAVE ends it and puts back what she
+// THE KILN STATION'S WINDOW: what the Courier can fire onto their vessel, beside them as they turn in front of the kiln (moves/kiln.js
+// holds them and the camera). A tab for each region (the body, the trim, the mask, the hair), the glazes they have as swatches under it
+// (a click tries one on them at once), the gold in their seams, and FIRE, which costs cubes and keeps the look. The world is not paused:
+// they turn, the kiln breathes. Drag on the scene or use A / D (or the arrows) to turn them; Esc or LEAVE ends it and puts back what they
 // wore if it was not fired.
 //
 // Prior art: FFXIV's glamour plate and dye window (a part, then a swatch, previewed on the character as it turns), the colour
@@ -75,7 +75,7 @@ export class KilnUI {
     this.root.replaceChildren();
     const px = el('div', 'px');
     px.appendChild(el('h2', '', 'THE KILN'));
-    px.appendChild(el('div', 'sub', 'Choose a glaze for each part of the vessel, see it on her, and fire it on.'));
+    px.appendChild(el('div', 'sub', 'Choose a glaze for each part of the vessel, see it on you, and fire it on.'));
     const tabs = el('div', 'tabs');
     for (const r of Object.values(REGIONS)) {
       const gz = V.glaze(this.look[r.id]);
@@ -120,7 +120,7 @@ export class KilnUI {
     }
     row.appendChild(leave);
     px.appendChild(row);
-    px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn her · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));
+    px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn the vessel · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));
     this.root.appendChild(px);
   }
 }

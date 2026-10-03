@@ -11,7 +11,7 @@
 //              flashes, a ring goes out, stars and confetti fly, the camera punches in and the world runs slow for a moment.
 //   FOUNTAIN   the cubes come out a few at a time (each with a pop that climbs in pitch), bounce, and pile.
 //   REVEAL     a curio (some of the time; always, at the top) rises out of the chest and is held up in a beam, spinning, in a close
-//              shot. It goes into her Pneuka Box (pneuka/box.js; at her feet if the box is full); one more than its
+//              shot. It goes into their Pneuka Box (pneuka/box.js; at their feet if the box is full); one more than its
 //              card's limit is condensed into cubes in front of you.
 //   SETTLE     the bars go, the camera comes back, and the cubes on the floor are drawn to you in a run whose pitch climbs.
 //
@@ -83,7 +83,7 @@ export class Ceremony {
       const list = fresh.length && Math.random() < 0.85 ? fresh : pool; // (a little help toward the ones you lack)
       this.curioId = list[Math.floor(Math.random() * list.length)].id;
     }
-    // (one more than the Courier may have of it, in her box, on her line, in her Book and on the ground together, is condensed into
+    // (one more than the Courier may have of it, in their box, on their line, in their Book and on the ground together, is condensed into
     // cubes on the spot: the card's limit)
     const box = game.pneuka, lim = CARD[`curio.${this.curioId}`]?.limit ?? 1;
     this.dupe = !!this.curioId && (box ? box.held(`curio.${this.curioId}`) >= lim : owned(this.curioId));
@@ -114,7 +114,7 @@ export class Ceremony {
 
   get holdCubes() { return this.phase !== 'settle' && this.phase !== 'end'; }
 
-  // ---------------------------------------------------------------- the fixed step: the Courier holds her mark
+  // ---------------------------------------------------------------- the fixed step: the Courier holds their mark
   fixed(dt) {
     const P = this.g.player, m = this.mark;
     const dx = m.x - P.pos.x, dz = m.z - P.pos.z, d = Math.hypot(dx, dz);
@@ -346,7 +346,7 @@ export class Ceremony {
     if (this.holdT > this.plan.curio || (this.skipped && this.holdT > 0.35)) this.enter('collect');
   }
 
-  // ---- COLLECT: it goes into her Pneuka Box (or, if she has as many as its limit already, it is condensed into cubes on the spot)
+  // ---- COLLECT: it goes into their Pneuka Box (or, if they have as many as its limit already, it is condensed into cubes on the spot)
   p_collect(dt) {
     const g = this.g;
     this.curioUpdate(dt);
@@ -356,7 +356,7 @@ export class Ceremony {
       g.glyphs.pop('star', at, { color: TIERS[this.T].rgb, size: 0.4, burst: true, life: 0.8 });
       if (this.dupe) { g.cubes.burst(at, DUPE_VALUE[this.T], { count: Math.min(30, 6 + this.T * 6), stagger: 0.4, up: 3.5, from: 'dupe' }); sfx.chestBurst(0); }
       else sfx.cubeGet(9);
-      if (!this.dupe) { g.ledger.inc(`curio.${this.curioId}`); g.pneuka?.add(`curio.${this.curioId}`, 'chest'); } // (found: the ledger's; the thing goes into her Pneuka Box)
+      if (!this.dupe) { g.ledger.inc(`curio.${this.curioId}`); g.pneuka?.add(`curio.${this.curioId}`, 'chest'); } // (found: the ledger's; the thing goes into their Pneuka Box)
       g.events.emit('curio.get', { id: this.curioId, tier: this.T, dupe: this.dupe, from: 'chest' });
       this.curio.dispose(); this.curio = null;
       this.curioHalo.parent?.remove(this.curioHalo); this.curioHalo.material.dispose(); this.curioHalo = null;
@@ -364,7 +364,7 @@ export class Ceremony {
     }
   }
 
-  // ---- SETTLE: the camera comes back, and the cubes come to her
+  // ---- SETTLE: the camera comes back, and the cubes come to them
   p_settle(dt, raw) {
     const g = this.g;
     if (!this.settled) { this.settled = true; g.cinema.unshot('chest'); if (!this.chests.rave?.active) g.mood.free('chest'); g.time.free('chest'); this.beam.set(null, 0, 1); }

@@ -17,7 +17,7 @@ export const PSYGUNS = {
   'psygun.first': {
     id: 'psygun.first', name: 'THE PSYGUN', chambers: 6, cap: 8, capacity: { bomb: 4, well: 4, anchor: 4 },
     loadout: ['slicer', 'push', 'well', 'mark', 'bomb', 'slip'],
-    blurb: 'The hand-cannon she woke with: six chambers, eight of a shell in each (four of the heavy ones).',
+    blurb: 'The hand-cannon you woke with: six chambers, eight of a shell in each (four of the heavy ones).',
   },
   'psygun.pepperbox': {
     id: 'psygun.pepperbox', name: 'THE PEPPERBOX', chambers: 11, cap: 3, capacity: {},

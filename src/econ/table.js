@@ -18,7 +18,7 @@ export const ECON = {
   perMinute: 8,
 
   // ---- the faucets (cubes into the world)
-  /** A slip jelly burst by her (plus whatever it had swallowed of hers); a zandatsu's core. */
+  /** A slip jelly burst by them (plus whatever it had swallowed of theirs); a zandatsu's core. */
   jelly: { burst: 6, core: 3 },
   /** A crystal formation broken open: base + size x perSize (twice if the fork rang in it). */
   crystal: { base: 3, perSize: 6, // (was 8 + 10: a round of the dune sea paid three times the aim)
@@ -27,7 +27,7 @@ export const ECON = {
     kind: { dense: 0.6, fragile: 0.5 }, sweet: { dense: 2, fragile: 6 } },
   /** Condensing a spare card, by its rank (was 1,200 for SS: a card is a collection first, money last). */
   condense: { SS: 320, S: 180, A: 100, B: 60, C: 40, D: 28, E: 20, F: 14, G: 9, H: 5 },
-  /** A curio a chest gave that she already had, condensed, by chest tier (common .. prismatic; was 12 / 35 / 100 / 280 / 900). */
+  /** A curio a chest gave that they already had, condensed, by chest tier (common .. prismatic; was 12 / 35 / 100 / 280 / 900). */
   dupe: [4, 12, 30, 80, 240],
   /** What a chest holds, by tier (common .. prismatic): a range, drawn once when it is opened (treasure.js cubesIn). */
   chest: [[4, 9], [14, 26], [40, 70], [120, 200], [400, 700]],

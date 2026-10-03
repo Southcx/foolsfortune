@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // SONG OF THE SIREN: a lullaby that wants you in the water. 6/8, rocking like a swell (132 in eighths), E Phrygian: the chords lean
 // between E minor and F major, and the F is the game's Tear, so the harmony itself sighs. A voice with no words slides down from high
-// C onto E (her call) and sings the Tear; a harp rolls under her, the waves breathe in and out, the strings hold a low chord. The
+// C onto E (their call) and sings the Tear; a harp rolls under them, the waves breathe in and out, the strings hold a low chord. The
 // second time a sister sings a third below, a phased guitar shimmers like light through water, and something very large calls far
-// off. It loops; she does not stop.
+// off. It loops; they do not stop.
 //
 // Prior art: Homer's sirens (the song no sailor can sail past), Debussy's "Sirènes" (Nocturnes: women's voices without words over
 // the sea), the Phrygian half step as allure and menace (Spain's, and every film's), Ocarina of Time's Serenade of Water.
@@ -13,7 +13,7 @@ const PHRYG = [52, 53, 55, 57, 59, 60, 62, 64, 65, 67, 69, 71, 72, 74, 76, 77, 7
 const below = (n) => PHRYG[Math.max(0, PHRYG.indexOf(n) - 2)] ?? n - 3;
 const CH = { Em: [52, 59, 64, 67, 71, 76], F: [53, 60, 65, 69, 72, 77], Am: [57, 64, 69, 72, 76, 81], G: [55, 62, 67, 71, 74, 79] };
 const PROG = ['Em', 'F', 'Em', 'F', 'Am', 'G', 'F', 'Em'];
-// her song: [beat (eighths), eighths, midi, options]
+// their song: [beat (eighths), eighths, midi, options]
 const SONG = [
   [[0, 6, 76, { from: 8, glide: 0.9 }]], // (the call: down from C6 onto E)
   [[0, 3, 77], [3, 3, 76]], // (the Tear)

@@ -32,10 +32,10 @@ export function bookFrame(ch, P, camera, { mode = 'read', k = 0, fp = false } = 
   }
   const yaw = P.bodyYaw ?? P.yaw;
   _f.set(Math.sin(yaw), 0, Math.cos(yaw));
-  _r.set(-Math.cos(yaw), 0, Math.sin(yaw)); // (her right)
+  _r.set(-Math.cos(yaw), 0, Math.sin(yaw)); // (their right)
   ch.chestPoint(_c);
   _p.copy(_c).addScaledVector(_f, lerp(0.36, 0.34, raise)).addScaledVector(UP, lerp(-0.16, 0.28, raise));
-  // the pages face her (+Z back toward her and up), the right half on her right
+  // the pages face them (+Z back toward them and up), the right half on their right
   _z.copy(_f).negate().addScaledVector(UP, lerp(0.95, 0.12, raise)).normalize();
   _x.copy(_r); _y.crossVectors(_z, _x).normalize(); _x.crossVectors(_y, _z);
   return out.makeBasis(_x, _y, _z).setPosition(_p);

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// IN COMBAT: one signal for "is she fighting?", so everything that should only be there in a fight (the HUD ring and the ability
-// charges, the battle music, a status worth showing) asks one place. HEAT rises to full the moment a blow is struck, by her (at something alive) or at her,
-// or a hunter notices her, and holds while anything is still hunting her; then it eases away over a few seconds. ENGAGED is heat
+// IN COMBAT: one signal for "are they fighting?", so everything that should only be there in a fight (the HUD ring and the ability
+// charges, the battle music, a status worth showing) asks one place. HEAT rises to full the moment a blow is struck, by them (at something alive) or at them,
+// or a hunter notices them, and holds while anything is still hunting them; then it eases away over a few seconds. ENGAGED is heat
 // above a hair. The edges are events (`combat.start`, `combat.end`) for whoever wants them; nothing is said in the log.
 //
 // Prior art: the "in combat" flag of every MMO (WoW's combat state that gates mounting and the UI, FFXIV's battle stance that brings
@@ -25,7 +25,7 @@ export class Combat {
 
   update(dt) {
     const g = this.game;
-    if (g.jellies?.hunting?.(24)) this.poke(); // (while something is after her, the fight holds)
+    if (g.jellies?.hunting?.(24)) this.poke(); // (while something is after them, the fight holds)
     this.since += dt;
     if (this.since > HOLD) this.heat = Math.max(0, this.heat - dt / FADE);
     const on = this.heat > 0.02;

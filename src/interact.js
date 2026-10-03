@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // INTERACT: what the Courier could use right now. Anything that can be acted on with F (lifting a pot, taking hold of a crate, the
-// index console, a chest) registers a source here: a function that says which one thing it would act on, if any, from where she is.
+// index console, a chest) registers a source here: a function that says which one thing it would act on, if any, from where they are.
 // The nearest of them gets the chevron (vfx/chevron.js). Nothing here acts: the modules act, on their own keys; this only points.
 //
 //   game.interact.add('carry', () => ({ pos: Vector3 (the marker's place), d: distance }) | null)

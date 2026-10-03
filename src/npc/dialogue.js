@@ -256,7 +256,7 @@ export class Dialogue {
     if (!this.open) return;
     const g = this.game, inp = g.input, n = this.npc, P = g.player;
     // the camera: a two-shot from the side, a little behind the Courier, the speaker nearer the middle (the folk stand lower than
-    // she does, so the lens comes down to them)
+    // they do, so the lens comes down to them)
     const h = g.folk.head(n), dx = h.x - P.pos.x, dz = h.z - P.pos.z, d = Math.hypot(dx, dz) || 1;
     const fx = dx / d, fz = dz / d, rx = -fz * this.side, rz = fx * this.side;
     const mx = P.pos.x + dx * 0.55, mz = P.pos.z + dz * 0.55;

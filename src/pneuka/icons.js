@@ -63,7 +63,7 @@ function render(game, it) {
   return out.toDataURL('image/png');
 }
 
-/** The thing's own model, to be rendered: a curio's, a lure's (angling/luremodels.js), or a tool's (a copy of what she wears). */
+/** The thing's own model, to be rendered: a curio's, a lure's (angling/luremodels.js), or a tool's (a copy of what they wear). */
 function modelOf(game, it) {
   if (it.kind === 'curio') return buildCurio(it.key, { sky: game.sky?.env });
   if (it.kind === 'lure') { const L = buildLure(it.key); L.group.rotation.set(0.25, 0.5, 0.15); return L; }

@@ -75,7 +75,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
 | Four Suits and a Fool | the sound test | 100, E minor, home to E major | piano (the Fool), taiko and pizzicato (Petra), shakuhachi (Wanda), koto (Espada), celesta and strings (Calissa) | Five, Answer | **made** |
-| The Fool's Precipice | the title, while she sits on the edge (from the first key or click) | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
+| The Fool's Precipice | the title, while the Courier sits on the edge (from the first key or click) | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
 | The Fall | the title's menu | 100, E minor, through a low-pass | piano, pad, vibes, harp | the Five, slowly | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
 | Game over | | 75, E minor | piano, one note at a time | the Five, falling and not finishing | |
@@ -132,7 +132,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Cue | When | Notes | Status |
 | --- | --- | --- | --- |
 | Fanfare of the Five | a battle won, a trial cleared | the Answer as a pickup, up to G, B, home | **made** |
-| The Fool's Step | PRESS START: she steps off the hill | the Fool's Step in the brass, then the Leap; the harp falls after her | **made** |
+| The Fool's Step | PRESS START: the Courier steps off the hill | the Fool's Step in the brass, then the Leap; the harp falls after them | **made** |
 | Found | something precious found | the Answer run up to E6, a bell (the maker's favourite of the three: the model for the rest) | **made** |
 | A Place to Rest | a rest, a save | the Five on the piano in G, the flute answering | **made** |
 | Skill acquired | the System grants an art | the System's chime, then the Answer in bells | |
@@ -177,7 +177,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 
 ## 6. Next
 
-0. (Round 34) Hear *Lachryma*, *The Workshop* and *Five Against Fate*; the battle plays while a slip jelly is after her, the work song in the
+0. (Round 34) Hear *Lachryma*, *The Workshop* and *Five Against Fate*; the battle plays while a slip jelly is after the Courier, the work song in the
    workshop, *Lachryma* on the title.
 
 1. Hear the new main theme; adjust (the balance, the guitar, the 5/4).

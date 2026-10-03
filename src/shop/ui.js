@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE SHOP'S WINDOW: a keeper's counter, opened from their talk ("Let's trade."). Left, the SHELF: each good with its picture, its price
 // and the stock left (a row of beads: no numbers in the world, but this is a window the player opened). Right, the Courier's PNEUKA BOX,
-// each thing she could sell lit with what the keeper would pay. A click buys or sells; at Raku's a right click (or the HAGGLE button
+// each thing they could sell lit with what the keeper would pay. A click buys or sells; at Raku's a right click (or the HAGGLE button
 // by the price) talks the price down instead (shop/haggle.js, in his own dialogue window). The line at the top says what a click
 // would do before it is clicked, as the box's window does. Esc, or walking away from the keeper, closes it.
 //
@@ -97,7 +97,7 @@ export class ShopUI {
     }
     shelf.appendChild(list); cols.appendChild(shelf);
 
-    // her box: what she could sell
+    // their box: what they could sell
     const inv = el('div', 'pane'); inv.appendChild(el('h4', '', `<span>YOUR PNEUKA BOX</span><span>click to sell</span>`));
     const grid = el('div', 'grid');
     box.slots.forEach((s, i) => {

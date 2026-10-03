@@ -3,15 +3,15 @@
 // club, the tools to come).
 //
 // A swing's clip is MEASURED once, the first time it is used: posed frame by frame (120 a second) on the Courier standing at the origin,
-// the tip of what is in her right hand followed round her body. That gives, for every moment of the clip, the ANGLE of the tip about her
+// the tip of what is in their right hand followed round their body. That gives, for every moment of the clip, the ANGLE of the tip about them
 // (0 straight ahead), its height and its reach, and its speed; the STRIKE is the stretch around the fastest moment (the part of a swing
 // that is a swing, and not its wind-up or its follow-through). While a stroke plays, everything inside the SECTOR the tip has swept since
 // the last frame (between last frame's angle and this frame's, out to the weapon's reach) is struck, once a stroke. A sector, not a
 // segment: a blade that crosses two hundred degrees in a tenth of a second (Sword_Regular_A does) jumps sixty degrees between two frames,
-// and a test of where the blade IS would miss everything in between. Height is forgiving (a pot at her feet and a jelly at her shoulder are
+// and a test of where the blade IS would miss everything in between. Height is forgiving (a pot at their feet and a jelly at their shoulder are
 // both in reach of a horizontal cut), as it is in every action game whose players are not measuring.
 //
-// MAGNETISM: a stroke started near something worth striking turns her to it and steps her in, to a blade's length from it (the soft lock of
+// MAGNETISM: a stroke started near something worth striking turns them to it and steps them in, to a blade's length from it (the soft lock of
 // God of War's and Arkham's combat: the player chooses roughly, the game makes it land). The lock (lockon.js), if it is on, wins.
 //
 // Prior art: Monster Hunter's and Dark Souls' hit windows (a slice of the clip, not all of it), the swept volumes of the fighting games
@@ -32,7 +32,7 @@ const _h = new THREE.Vector3(), _f = new THREE.Vector3(), _t = new THREE.Vector3
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const cache = new Map();
 
-/** The track of a swing clip: per-frame angle (unwrapped, radians, 0 ahead, + toward her left... the +x side), reach, height, speed. */
+/** The track of a swing clip: per-frame angle (unwrapped, radians, 0 ahead, + toward their left... the +x side), reach, height, speed. */
 export function measureSwing(character, clip, { tip = 0.9 } = {}) {
   const key = `${clip}|${tip}`;
   if (cache.has(key)) return cache.get(key);
@@ -51,7 +51,7 @@ export function measureSwing(character, clip, { tip = 0.9 } = {}) {
     B.handR.getWorldPosition(_h); B.forearmR.getWorldPosition(_f);
     _t.copy(_h).sub(_f).normalize().multiplyScalar(tip).add(_h);
     let a = Math.atan2(_t.x, _t.z);
-    if (i) a = last + wrap(a - last); // (unwrapped: a swing round her back keeps counting)
+    if (i) a = last + wrap(a - last); // (unwrapped: a swing round them back keeps counting)
     last = a;
     ang[i] = a; reach[i] = Math.hypot(_t.x, _t.z); y[i] = _t.y;
     speed[i] = prev ? _t.distanceTo(prev) * FPS : 0;
@@ -95,8 +95,8 @@ export function targets(g, centre, R) {
 }
 
 /**
- * Strike what the tip swept between clip times tPrev and t: the sector between the two angles (about her, facing `yaw`), out to the tip's
- * reach plus `reach` (the weapon's own length beyond the measured tip, and forgiveness), from her feet to above her head.
+ * Strike what the tip swept between clip times tPrev and t: the sector between the two angles (about them, facing `yaw`), out to the tip's
+ * reach plus `reach` (the weapon's own length beyond the measured tip, and forgiveness), from their feet to above their head.
  * Only inside the strike (padded a little each side). `hit(kind, ent, point, dir)` is called once per thing per stroke (`seen`).
  */
 export function sweep(g, P, yaw, tr, tPrev, t, { reach = 0.5, pad = 0.012, padAng = 0.18, seen, hit }) {
@@ -110,12 +110,12 @@ export function sweep(g, P, yaw, tr, tPrev, t, { reach = 0.5, pad = 0.012, padAn
     if (seen?.has(tg.ent)) continue;
     const dx = tg.pos.x - P.pos.x, dz = tg.pos.z - P.pos.z, d = Math.hypot(dx, dz);
     if (d > R + tg.r) continue;
-    // height: forgiving, but it follows the tip (an overhead coming over her head from behind does not reach the floor behind her)
+    // height: forgiving, but it follows the tip (an overhead coming over their head from behind does not reach the floor behind them)
     const dy = tg.pos.y - P.pos.y, yLo = Math.min(a.y, b.y), yHi = Math.max(a.y, b.y);
     if (dy + tg.r < yLo - 1.2 || dy - tg.r > yHi + 0.7) continue;
-    // its angle about her, relative to where she faces; and its angular half-width at that distance
+    // its angle about them, relative to where they face; and its angular half-width at that distance
     const rel = wrap(Math.atan2(dx, dz) - yaw), w = d > 1e-3 ? Math.asin(Math.min(1, tg.r / d)) : Math.PI;
-    if (d > 0.45 && Math.abs(wrap(rel - mid)) > half + w) continue; // (right up against her: always)
+    if (d > 0.45 && Math.abs(wrap(rel - mid)) > half + w) continue; // (right up against them: always)
     seen?.add(tg.ent);
     // the cut's direction: along the swing, at the thing
     const dir = _p.set(Math.cos(rel + yaw), 0, -Math.sin(rel + yaw)).multiplyScalar(Math.sign(b.ang - a.ang) || 1);
@@ -125,7 +125,7 @@ export function sweep(g, P, yaw, tr, tPrev, t, { reach = 0.5, pad = 0.012, padAn
   return n;
 }
 
-/** The thing a stroke started now should go to: in front of her within `range`, within `cone` of `dir`, creatures first. */
+/** The thing a stroke started now should go to: in front of them within `range`, within `cone` of `dir`, creatures first. */
 export function magnet(g, P, dir, { range = 4.2, cone = 1.0 } = {}) {
   let best = null, bs = -Infinity;
   const yaw = Math.atan2(dir.x, dir.z);

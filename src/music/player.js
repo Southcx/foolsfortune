@@ -36,7 +36,7 @@ export class MusicPlayer {
   setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) { this.stop(1); this.arr.stop(1); } }
   /** What is playing now (either player's score), or null. */
   get current() { return this.arr.alive ? this.arr.score : this.alive ? this.score : null; }
-  /** Per frame: the theme for where she is (or none), started and stopped with a fade. */
+  /** Per frame: the theme for where they are (or none), started and stopped with a fade. */
   follow(score) {
     score = this.pick || score;
     if (this.arr.finished && this.arr.finished !== score) this.arr.finished = null;

@@ -608,7 +608,7 @@ export class Angler {
     const P = this.P, C = this.caught, f = C.f, g = this.game;
     this.catchT += dt;
     const k = smooth(0, 0.9, this.catchT);
-    // drawn up out of the water and held before her
+    // drawn up out of the water and held before them
     const hold = _t.set(P.pos.x + Math.sin(P.yaw) * 1.6, P.pos.y + 1.7, P.pos.z + Math.cos(P.yaw) * 1.6);
     f.pos.lerpVectors(C.from, hold, k);
     f.pos.y += Math.sin(Math.PI * k) * 1.2;
@@ -708,7 +708,7 @@ export class Angler {
     const a = 2.6 * F.pull * (0.5 + F.sizeK) * (F.braced && (P.crouching) ? 0.35 : 1) * (1 - 0.5 * F.relief);
     if (a < 0.2) return;
     const dx = Math.sin(F.bearing), dz = Math.cos(F.bearing);
-    // (never into the water, and never off the deck: she is pulled toward the edge and stopped there)
+    // (never into the water, and never off the deck: they are pulled toward the edge and stopped there)
     const nx = P.pos.x + dx * 0.8, nz = P.pos.z + dz * 0.8;
     if (this.weir.poolAt(nx, nz)) return;
     P.vel.x += dx * a * dt; P.vel.z += dz * a * dt;

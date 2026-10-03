@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE VERITOME, the object: a thick book bound in red-brown leather, brass at its corners, held OPEN in both hands the way a tablet is
 // held to take a picture with its rear camera. The LENS is set in the SPINE: open, the spine faces away from the reader, so the lens
-// looks where she is looking while the pages face her (the left page carries the instruments in ink, the right shows the last
+// looks where they are looking while the pages face them (the left page carries the instruments in ink, the right shows the last
 // photograph). The measuring instruments are on the FRONT COVER: a clock that keeps the tide, a compass rose, a sextant's arc and a
 // spirit level. Shut, it hangs at the right hip, cover out.
 //

@@ -4,8 +4,8 @@
 // heavy). A photograph is scored over the subjects in its frame (photo.js); the Compendium keeps the best photograph of each kind;
 // a card's sitting is a subject in a state (arcana.js).
 //
-// A creature (a clapperjar, a fish) also says whether it is AWARE of the Courier (it can see her) and ENGAGED with her (it is taunting,
-// fleeing, cowering, scalded, knocked: in the thick of it with her). Only an aware, engaged creature can be held by a charged shot
+// A creature (a clapperjar, a fish) also says whether it is AWARE of the Courier (it can see them) and ENGAGED with them (it is taunting,
+// fleeing, cowering, scalded, knocked: in the thick of it with them). Only an aware, engaged creature can be held by a charged shot
 // (Fatal Frame's ghosts are photographed while they come at you); an unaware one is photographed candidly, and a candid photograph is
 // how its habits are learned (bestiary.js).
 //

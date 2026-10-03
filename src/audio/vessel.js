@@ -1,5 +1,5 @@
-// A sound bank of the one mixer (audio.js): the Courier's vessel, damaged and mended (vessel/damage.js). She is fired clay, glazed:
-// a blow cracks her glaze where it lands, and the cracks fill with gold as they heal (kintsugi).
+// A sound bank of the one mixer (audio.js): the Courier's vessel, damaged and mended (vessel/damage.js). They are fired clay, glazed:
+// a blow cracks their glaze where it lands, and the cracks fill with gold as they heal (kintsugi).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
 // Prior art: a glazed pot cracking (a sharp report, then the crazing ticking on through the glaze: the raku "ping" of the shop's

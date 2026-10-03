@@ -6,12 +6,12 @@
 // He asks his LIST price (the worth, marked up: econ/table.js) and will come down, but never below his FLOOR (just over the worth:
 // he never sells at a loss). What moves him is his MOOD (-1 sulking .. 1 delighted) and his PATIENCE (how many more offers he will
 // hear). The Courier can:
-//   OFFER a price (three are put to her: a lowball, a fair one, a near one). At or over his ask, a deal. Far under his floor, an
+//   OFFER a price (three are put to them: a lowball, a fair one, a near one). At or over his ask, a deal. Far under his floor, an
 //     insult: he sulks and loses patience. Otherwise he counters, coming down by more the better his mood, and may take an offer over
 //     his floor outright if he is pleased enough.
 //   FLATTER him (his glaze, his fez). Each time is worth less than the last, and the third time he sees through it.
-//   CLINK cubes on the counter: greed warms him, but now he knows she can pay, and his floor creeps up. Once.
-//   WALK AWAY. If he is in a good enough mood he calls her back with one last price; otherwise he lets her go.
+//   CLINK cubes on the counter: greed warms him, but now he knows they can pay, and his floor creeps up. Once.
+//   WALK AWAY. If he is in a good enough mood he calls them back with one last price; otherwise he lets them go.
 // When his patience runs out he names a last price and will not move again.
 //
 // Prior art: Recettear (the customer's tolerance as a hidden range, their face as the only reading of it, and the gain in reading
@@ -29,7 +29,7 @@ export function startHaggle({ worth, list, floor, purse = Infinity, rnd = Math.r
   return { worth, list: round(list), floor: round(floor), ask: round(list), purse, mood: 0, patience: 3 + (rnd() < 0.4 ? 1 : 0), flattered: 0, clinked: false, step: 'open', done: null, price: null, last: null, rnd, said: 0 };
 }
 
-/** The three prices put to her: a lowball, a fair one and a near one, under his ask (and within her purse if she can). */
+/** The three prices put to them: a lowball, a fair one and a near one, under his ask (and within their purse if they can). */
 export function offers(h) {
   const a = h.ask, f = h.floor;
   const xs = [round(f * 0.7), round((a + f) / 2 - (a - f) * 0.15), round(a - Math.max(1, (a - f) * 0.2))];
@@ -47,7 +47,7 @@ export function offer(h, x) {
   // over his floor and he is pleased: he may simply take it
   const take = x >= h.floor ? clamp(0.15 + 0.55 * Math.max(0, h.mood) + 0.3 * (x - h.floor) / Math.max(1, h.ask - h.floor), 0, 0.92) : 0;
   if (h.rnd() < take) return settle(h, x);
-  // otherwise he counters, coming down by more the happier he is (and never past his floor, nor below what she offered)
+  // otherwise he counters, coming down by more the happier he is (and never past his floor, nor below what they offered)
   const give = 0.2 + 0.35 * Math.max(0, h.mood + 0.3);
   h.ask = round(Math.max(h.floor, x + 1, h.ask - (h.ask - x) * give));
   h.mood = clamp(h.mood - 0.08, -1, 1);
@@ -67,7 +67,7 @@ export function clink(h) {
   if (h.done || h.clinked) return h;
   h.clinked = true; h.said++;
   h.mood = clamp(h.mood + 0.35, -1, 1);
-  h.floor = round(Math.min(h.ask, h.floor * 1.06)); // (he has seen she can pay)
+  h.floor = round(Math.min(h.ask, h.floor * 1.06)); // (he has seen you can pay)
   h.step = 'clink';
   return h;
 }

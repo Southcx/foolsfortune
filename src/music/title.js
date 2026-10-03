@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------------------
 // THE FOOL'S PRECIPICE: the title's three cues (docs/PLAN.md, piece 1; music/choose.js picks among them by the scene's state).
-//   TITLE      while she sits on the edge. An intro as the clay logo is fired (the kiln's roar rising, a strike, the glaze's glitter),
+//   TITLE      while they sit on the edge. An intro as the clay logo is fired (the kiln's roar rising, a strike, the glaze's glitter),
 //              then a loop at 100 (walking music: about to set out) in E minor that the board's giant pieces move to, a step a bar:
 //              piano rolling in eighths like a music box, brushes, an upright, the flute singing the Fool's Step (A B C and up to E,
 //              the Courier's motif); the second half, the four suits come by the edge one at a time, each with its motif on its own
-//              instrument (Petra's riff, Wanda's spark, Espada's edge, Calissa's pour), as the game plays itself around her
-//   THE_STEP   PRESS START: she stands, the jar yaps twice, the Fool's Step in the brass and then the Leap (E5 to E6), the motif kept
-//              for the moment everything turns: the Fool stepping off the cliff is what it was kept for. The harp falls after her.
-//   FALL       under the menu, while she falls slowly: the loop's harmony with no drums, through a closed low-pass (heard from inside
+//              instrument (Petra's riff, Wanda's spark, Espada's edge, Calissa's pour), as the game plays itself around them
+//   THE_STEP   PRESS START: they stand, the jar yaps twice, the Fool's Step in the brass and then the Leap (E5 to E6), the motif kept
+//              for the moment everything turns: the Fool stepping off the cliff is what it was kept for. The harp falls after them.
+//   FALL       under the menu, while they fall slowly: the loop's harmony with no drums, through a closed low-pass (heard from inside
 //              the fall), the Five on the vibraphone; the board keeps its beat
 //
 // Prior art: Yoko Shimomura's "Dearly Beloved" (Kingdom Hearts: a piano alone over a world drifting by), the tarot's Fool, Kondo's
@@ -74,7 +74,7 @@ export const THE_STEP = {
   title: "The Fool's Step", root: 64, bpm: 100, arrange: true, loopFrom: null, tail: 4,
   sections: [{ id: 'step', bars: 2, gain: 2.0, bar: (i) => (i === 0
     ? [
-      E('strings', 0, 4, [52, 59, 64], 0.12, { attack: 0.6 }), E('bongo', 0.5, 0.25, null, 0.35, { hi: true }), E('bongo', 0.75, 0.25, null, 0.4, { hi: true }), // (she stands; the jar yaps)
+      E('strings', 0, 4, [52, 59, 64], 0.12, { attack: 0.6 }), E('bongo', 0.5, 0.25, null, 0.35, { hi: true }), E('bongo', 0.75, 0.25, null, 0.4, { hi: true }), // (they stand; the jar yaps)
       ...[[1, 69], [1.5, 71], [2, 72]].flatMap(([b, n]) => [E('brass', b, 0.5, n, 0.36), E('flute', b, 0.5, n + 12, 0.3)]),
       E('brass', 2.5, 0.5, 76, 0.4), E('flute', 2.5, 0.5, 88, 0.3), E('riser', 1, 2, null, 0.18),
       // the Leap: E5 to E6, the moment everything turns

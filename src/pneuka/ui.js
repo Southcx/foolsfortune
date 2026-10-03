@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what she wears. Left, the box: twenty-eight slots, four across. Right,
-// the equipment: the one lure on the line, and the tools worn in their places on her body (two across the back, one at each hip, one at
+// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear. Left, the box: twenty-eight slots, four across. Right,
+// the equipment: the one lure on the line, and the tools worn in their places on their body (two across the back, one at each hip, one at
 // the neck: a click takes one off into the box; a tool in the box is worn with a click). While the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked,
 // each taken out with a click, and STORE ALL to empty the box into it.
 //
@@ -193,7 +193,7 @@ export class PneukaUI {
     const taste = tasteOf(lure), tg = el('div', 'taste');
     ASPECTS.forEach((a, k) => { tg.appendChild(el('span', '', a.name)); tg.appendChild(el('span', '', `<i style="width:${Math.round(Math.min(1, taste[k] / 1.6) * 100)}%;color:${hex(a.color)}"></i>`)); });
     pane.appendChild(tg);
-    // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if she has those tools at all
+    // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if they have those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
       if (F.hidden || (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
       const cur = box.fitted(socket), row = el('div', 'fits');
@@ -237,7 +237,7 @@ export class PneukaUI {
       row.appendChild(el('div', 't', `<s>${S.gun.name} · ${S.gun.chambers} CHAMBERS</s>${S.types.map((t) => t.no.replace('TYPE-', '')).join(' · ')}`));
       pane.appendChild(row);
     }
-    // the tools: worn in the places on her body (tools/belt.js); the rest are in the box
+    // the tools: worn in the places on their body (tools/belt.js); the rest are in the box
     pane.appendChild(el('h4', '', '<span>THE TOOLS</span><span>worn · drawn with its key</span>'));
     const belt = el('div', 'belt'), B = g.belt, inHand = B?.inHand;
     const WHERE = { back: 'across the back', hip: 'at the hip', neck: 'at the neck' };

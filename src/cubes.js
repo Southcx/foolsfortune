@@ -167,7 +167,7 @@ export class Cubes {
         const t = c.body.translation(), r = c.body.rotation(), lv = c.body.linvel();
         c.pos.set(t.x, t.y, t.z); c.quat.set(r.x, r.y, r.z, r.w); c.lastV = Math.hypot(lv.x, lv.y, lv.z);
         if (t.y < -60 || c.age > 120) { this.drop(i); continue; }
-        // once it has settled a moment, anything near enough is drawn to her
+        // once it has settled a moment, anything near enough is drawn to them
         const d = c.pos.distanceTo(chest);
         if (c.age > 0.9 && d < 7 && !g.chests?.locking) { c.state = 'absorb'; c.speed = 2.5; g.physics.removeBody(c.body); }
       } else {

@@ -59,7 +59,7 @@ export class Clappers {
     this.ctrl.setCharacterMass(8);
     this.ctrl.enableSnapToGround(0.2);
     this.ctrl.enableAutostep(0.12, 0.1, false);
-    // the Courier's terracotta (her armour's colour); each clapper gets its own copy so a fresh one
+    // the Courier's terracotta (their armour's colour); each clapper gets its own copy so a fresh one
     // can glow from the kiln and cool
     this.mat = addRim(new THREE.MeshStandardMaterial({ color: PALETTE.mid, roughness: 0.7, flatShading: true }), 0.8); // (a thin rim: render/toon.js)
     this.hot = new THREE.Color(0xffe2a0); // white-hot clay
@@ -638,7 +638,7 @@ export class Clappers {
         if (c.clapT > 0) { c.clapT -= dt; const ph = Math.sin(c.t * c.clapRate); lid = Math.max(0, ph) * 0.9; if (ph > 0.97 && !c.clapLatch) { c.clapLatch = true; } if (ph < 0 && c.clapLatch) { c.clapLatch = false; sfx.clap(this.game.listenerDistance(c.pos)); } }
         if (c.state === 'cower') lid = 0.25 + 0.15 * Math.max(0, Math.sin(c.t * 1.7)); // peeking out
         lid += A.lid;
-        // (it watches her, unless it is busy with itself: then it looks where its act looks)
+        // (it watches them, unless it is busy with itself: then it looks where its act looks)
         const wantLook = (['idle', 'taunt', 'cower', 'stunned'].includes(c.state)
           ? THREE.MathUtils.clamp(wrap(Math.atan2(player.x - c.pos.x, player.z - c.pos.z) - c.heading), -1.2, 1.2) : 0) * (1 - 0.85 * c.actW) + A.look;
         c.look = THREE.MathUtils.damp(c.look, c.state === 'stunned' ? Math.sin(c.t * 5) * 0.8 : wantLook, 6, dt);

@@ -6,7 +6,7 @@
 // words, letter for letter, before the time runs out (a wrong key costs time; a well-made macro gives more time). Typed whole, it runs
 // (mind/macros.js runMacro): each Function is done through the parts of the creature's mind (a directive to its Brain, a status, a relation,
 // a drive, a memory wiped), as strongly and as long as the macro is good, and the creature comes to, rewritten. A poorly made macro may be
-// thrown off (the mind wakes, and remembers). Run out of time and its mind snaps shut, the same. The world goes on while she types.
+// thrown off (the mind wakes, and remembers). Run out of time and its mind snaps shut, the same. The world goes on while they type.
 //
 // Prior art: The Typing of the Dead (a word to type, whole and quickly), NieR: Automata's hacking and Watch Dogs' profiler (a mind opened
 // for a moment and changed), Transistor's Functions and Turn() (abilities composed beforehand, run in the moment), Black & White's and
@@ -115,7 +115,7 @@ export class Reprogram {
     const g = this.game, px = g.px;
     this.open = true; this.c = c; this.phase = 'choose'; this.runT = null;
     g.px.swap(this.okCv, this.okUp);
-    // what it is offered: the macros she has composed (the Codex, VERITOME, THE MIND)
+    // what it is offered: the macros they have composed (the Codex, VERITOME, THE MIND)
     this.offer = (g.macros?.ready() || []).slice(0, SHOWN);
     px.swap(this.name, px.text((c.name || 'it').toUpperCase(), 'gold'));
     this.list.innerHTML = '';

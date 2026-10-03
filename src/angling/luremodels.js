@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // LURE MODELS: the six made lures as things (placeholders until the maker draws them): each a few primitives, flat-shaded like the rest
 // of the workshop, a hand's width long at most, with the ring a line is tied to. The same model is the slot's picture
-// (pneuka/icons.js renders it once), what the Courier holds in her free hand with the rod out (moves/sondelass.js), and what is on
+// (pneuka/icons.js renders it once), what the Courier holds in them free hand with the rod out (moves/sondelass.js), and what is on
 // the line.
 //
 //   bob    a pellet of the workshop's clay, banded, on a wire eye            eye    a black glazed bead with a pale ring: it looks back

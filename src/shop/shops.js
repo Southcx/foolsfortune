@@ -5,7 +5,7 @@
 // them, so the F3 econ line sees every shop) and the Pneuka Box. Every outcome is an event (`shop.buy`, `shop.sell`, `shop.haggle`)
 // and tracking.js says it; a refusal at the counter is said there and then, once.
 //
-// A shop is opened from its keeper's talk ("Let's trade.": npc/talks.js) and its window is shop/ui.js; it closes when she walks away
+// A shop is opened from its keeper's talk ("Let's trade.": npc/talks.js) and its window is shop/ui.js; it closes when they walk away
 // from the keeper. Raku's goods can be HAGGLED (shop/haggle.js): his talk opens on the 'haggle' node and its choices call here.
 //
 // Prior art: Old School RuneScape's general stores (the stock, the climbing price, the restock), and the same game's rule that a shop
@@ -45,7 +45,7 @@ export class Shops {
     if (n <= 0) return null;
     return Math.max(1, Math.round(worthOf(id) * D.markup * (1 + S.dear * Math.max(0, base - n))));
   }
-  /** What the shop pays her for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
+  /** What the shop pays them for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
   offer(shop, id) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
@@ -112,7 +112,7 @@ export class Shops {
       this.save();
       this.game.shopUI?.render();
     }
-    // the window goes when she leaves the counter (CLAUDE.md: an interface goes away when you leave)
+    // the window goes when they leave the counter (CLAUDE.md: an interface goes away when you leave)
     if (this.cur) {
       const n = this.game.folk?.byId[SHOPS[this.cur].keeper], P = this.game.player;
       if (!n || Math.hypot(n.pos.x - P.pos.x, n.pos.z - P.pos.z) > 6) this.close();
@@ -134,7 +134,7 @@ export class Shops {
     return true;
   }
   said(step) { const H = this.hag; if (H) this.game.events.emit('shop.haggle', { shop: H.shop, item: H.item, step: step || H.h.step, mood: moodOf(H.h), ask: H.h.ask, by: 'courier' }); }
-  /** The prices she can put to him (within her purse). */
+  /** The prices they can put to him (within their purse). */
   hagOffers() { const H = this.hag; if (!H || H.h.done) return []; const b = this.game.cubes.balance; return offers(H.h).filter((x) => x <= b); }
   hagOffer(i) { const H = this.hag; const x = this.hagOffers()[i]; if (H && x) { offer(H.h, x); this.said(); } }
   hagFlatter() { const H = this.hag; if (H) { flatter(H.h); this.said(); } }

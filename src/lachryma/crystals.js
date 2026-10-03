@@ -133,7 +133,7 @@ export class Crystals {
     this.game.events?.emit('crystal.ref', { note: ref });
   }
 
-  /** How high on a formation she aims (0 its foot .. 1 its top): where her look passes its axis. */
+  /** How high on a formation they aim (0 its foot .. 1 its top): where their look passes its axis. */
   aimHeight(e) {
     const cam = this.game.camera, d = _p.set(0, 0, -1).applyQuaternion(cam.quaternion), o = cam.position;
     const hx = e.ground.x - o.x, hz = e.ground.z - o.z, hd = Math.hypot(d.x, d.z) || 1e-3;
@@ -153,7 +153,7 @@ export class Crystals {
       return false;
     }
     const ringing = e.ringT > 0, k = ringing ? 2 : 1, T = e.tune;
-    // where the blow fell, by ear (lachryma/tuning.js): her bearing round the formation, and the height she aimed at on it
+    // where the blow fell, by ear (lachryma/tuning.js): their bearing round the formation, and the height they aimed at on it
     const th = Math.atan2(g.player.pos.x - e.ground.x, g.player.pos.z - e.ground.z), u = this.aimHeight(e);
     const R = readStrike(T, th, u);
     e.hp = R.sweet ? 0 : Math.max(0, e.hp - 1);

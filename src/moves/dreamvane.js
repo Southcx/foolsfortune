@@ -12,17 +12,17 @@ import { sfx } from '../audio.js';
 // things.
 //
 //  - DOWSE (hold RMB): the dreamcatcher turns on its pin toward the loudest Lachryma about, and its web lights and its bead ticks faster
-//    the more nearly she faces it and the nearer it is (Skyward Sword's dowsing: turn until it sings). The wheel ATTUNES it: to
+//    the more nearly they face it and the nearer it is (Skyward Sword's dowsing: turn until it sings). The wheel ATTUNES it: to
 //    anything, or only to crystal, to chests, to the living, to what lies loose. What it finds clearly is charted (the map).
 //  - THE PICK (LMB): a two-handed overhead blow (UAL Sword_Regular_C, the cutlass's finisher, measured: combat/melee.js). Crystal gives to it a blow at a time;
 //    pots and clapperjars and minds are struck as by any heavy thing. Struck into the sand where the vane says something is VEILED,
 //    the crystal under it rises.
-//  - THE FORK (tap RMB): thrown where she looks (UAL Throw), it sticks and RINGS. In a crystal, the crystal rings with it: the pick's
+//  - THE FORK (tap RMB): thrown where they look (UAL Throw), it sticks and RINGS. In a crystal, the crystal rings with it: the pick's
 //    blows give twice, and the last a shard. In a creature, the ringing shakes the Lachryma out of it (liquid baubles, and its poise
 //    goes). In the ground, it rings on its own: a sound every creature near goes to look at (a lure: ai/stimuli.js). Tap again and it
 //    comes back to the heel (the Leviathan Axe's recall), or it comes back when it has rung out.
 //
-//  - THE SURVEY (MMB): the heel struck into the ground, and the Mind's ring goes out from her: what is in sight is understood (Mind
+//  - THE SURVEY (MMB): the heel struck into the ground, and the Mind's ring goes out from them: what is in sight is understood (Mind
 //    Mapping's pulse: cartography.js; it was N). The compass across the top of the view is the Dreamvane's too: it shows while it is worn.
 //
 //   K      draw / stow (X, Q, G, J draw theirs instead)          RMB hold  dowse (the wheel: attune)          RMB tap  throw / recall the fork
@@ -53,7 +53,7 @@ export class Dreamvane extends HeldTool {
       // across the back, the crook up over the right shoulder, the heel down by the left hip (a staff slung on a strap)
       worn: { at: [0.1, 1.05, -0.2], along: [-0.55, 1, -0.05], out: [0, 0, -1] },
       draw: { twist: -18, lean: 8, via: [-0.45, 1.25, 0.1], pole: [-0.5, -0.25, -0.35] },
-      idle: 'stance:dreamvane', idles: ['stance:dreamvane', 'idle'], grip: 'torchIdle', drawK: 1.2, // (her pilgrim's stance: anim/stances.js)
+      idle: 'stance:dreamvane', idles: ['stance:dreamvane', 'idle'], grip: 'torchIdle', drawK: 1.2, // (their pilgrim's stance: anim/stances.js)
     });
     this.model = new DreamvaneModel();
     this.mount();
@@ -92,7 +92,7 @@ export class Dreamvane extends HeldTool {
   }
 
   // ---------------------------------------------------------------- the survey (MMB): Mind Mapping's pulse, the Dreamvane's now
-  /** The heel struck into the ground: at the blow the Mind's ring goes out from her (cartography.js survey: what is in sight is
+  /** The heel struck into the ground: at the blow the Mind's ring goes out from them (cartography.js survey: what is in sight is
    *  understood). A placeholder motion (the pick's downstroke) until Calissa's own. */
   startSurvey() { this.surveyT = 0; this.surveyed = false; this.P.bodyYaw = this.P.yaw; this.game.events?.emit('dreamvane.survey', {}); }
   surveyTick(dt) {
@@ -128,7 +128,7 @@ export class Dreamvane extends HeldTool {
         // found: clearly, and near enough to be worth it: once a thing, it is said, and charted
         if (glow > 0.7 && d < 45 && !this.found.has(target.ref)) { this.found.add(target.ref); g.events?.emit('dowse.find', { kind: target.kind, veiled: !!target.ref?.veiled, dist: Math.round(d) }); }
         if (glow > 0.5 && !this.charted.has(target.ref) && (target.kind === 'crystal' || target.kind === 'chest')) { this.charted.add(target.ref); g.cartography?.chartAt?.(target.pos); }
-        // a veiled crystal close under her: the sand over it shivers (a mark on the thing, not words)
+        // a veiled crystal close under them: the sand over it shivers (a mark on the thing, not words)
         if (target.ref?.veiled && d < 5 && glow > 0.5 && (this.markT = (this.markT || 0) - raw) <= 0) { this.markT = 2.5; g.glyphs?.pop('ask', target.ref.ground.clone().setY(target.ref.ground.y + 0.6), { color: 0xcdb8f2, size: 0.5, life: 1.2 }); }
       }
       // the tick: faster and higher as it sings (Skyward Sword)

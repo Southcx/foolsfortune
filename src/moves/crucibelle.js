@@ -8,8 +8,8 @@ import { sfx } from '../audio.js';
 
 // ---------------------------------------------------------------------------------------
 // THE CRUCIBELLE: the sixth of the Courier's psychic tools. A smoking bell held up like a lantern (crucibelle/model.js), worn at the hip.
-// It RECEIVES what is played into it and TRANSFORMS it: an amplifier for a musician, and the musician is her. A battle bard: everyone
-// she plays for burns brighter.
+// It RECEIVES what is played into it and TRANSFORMS it: an amplifier for a musician, and the musician is them. A battle bard: everyone
+// they play for burns brighter.
 //
 //  - FIVE NOTES (1 to 5): the minor pentatonic of whatever music is playing, in its key, so nothing played is wrong (the grid comes from
 //    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and they sound an octave up. The voice is the
@@ -19,8 +19,8 @@ import { sfx } from '../audio.js';
 //  - SONGS: a short motif played in order (crucibelle/songs.js: Ocarina of Time's songs) is TAKEN by the bell and comes out as more:
 //    THE SONG OF SEEING shows what is veiled (crystal rises: lachryma/crystals.js; every Lachryma signature marked), THE SONG OF
 //    SEEMING puts up a Courier of smoke that hunts are drawn to (crucibelle/mirage.js; a decoy every mind sees: ai/brain.js) and veils
-//    her a moment, THE RALLY makes her spirits and her kin quicker and harder (statuses haste and empower) and her Lachryma quick,
-//    THE LULLABY puts what is near and against her to sleep, THE CALL stands a smoke spirit up out of the bell (spirits.js).
+//    them a moment, THE RALLY makes their spirits and their kin quicker and harder (statuses haste and empower) and their Lachryma quick,
+//    THE LULLABY puts what is near and against them to sleep, THE CALL stands a smoke spirit up out of the bell (spirits.js).
 //  - TOLL (LMB): the bell struck: a ring of sound that staggers what is close in front (a little stun, a shove), and on the beat it
 //    counts for fever too (the drum to the songs' melody).
 //

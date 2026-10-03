@@ -4,7 +4,7 @@
 // and its card share an id, so a curio is 'curio.whelk' in the hand and on the page alike).
 //
 // The items are the twenty curios, the six made lures, the seven psychic tools, what the last three take (instruments, coffins,
-// keys, shards), the fish she lands and the film the Veritome uses; a new kind of item is a new entry here and nothing
+// keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
 //   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
@@ -24,11 +24,11 @@ for (const c of CURIOS) {
     examine: c.blurb, card: `curio.${c.id}`, lure: true, stack: false,
   };
 }
-// the made lures: things she carries, tied on the Sondelass' line one at a time (angling/lures.js has their tastes; luremodels.js their look)
+// the made lures: things they carry, tied on the Sondelass' line one at a time (angling/lures.js has their tastes; luremodels.js their look)
 for (const L of LURES) {
   ITEMS[L.id] = { id: L.id, kind: 'lure', key: L.key, name: L.name, glyph: L.glyph, color: 0xd9b48a, tier: 0, examine: L.blurb, card: null, lure: true, stack: false };
 }
-// the psychic tools: worn in a place on her body (tools/belt.js) or carried in the box; seven tools, and not enough places for all of them
+// the psychic tools: worn in a place on their body (tools/belt.js) or carried in the box; seven tools, and not enough places for all of them
 export const TOOL_ITEMS = [
   { tool: 'psygun', name: 'THE PSYGUN', place: 'back', examine: 'A hand-cannon that fires what the mind can spare. Worn across the back.' },
   { tool: 'sondelass', name: 'THE SONDELASS', place: 'back', examine: 'A telescoping thing of brass and line: cutlass, rod or grapnel. Worn across the back.' },

@@ -7,14 +7,14 @@
 //              spit. A dry jelly is pale and matte and its melt runs slow (deform.js); it goes to the oasis's shallows, or to wet slip,
 //              and soaks. Lure one far from water and it wilts.
 //   hunger     it feeds on Lachryma: baubles lying on the sand, a fish snatched from the shallows, and the Courier's own (a lunge that
-//              lands drains her, and feeds it). A hungry jelly is a bold one.
+//              lands drains them, and feeds it). A hungry jelly is a bold one.
 //   rest       it tires, chasing most of all, and settles in the palms' shade, or at home.
 //   social     alone it grows lonely; it goes to its kin and sits with them, and now and then they play (a game of hops).
 //   fear       a blow, a kin's death nearby, a blast close by: fear spikes and ebbs; enough and it flees, toward its kin and home.
 //   curiosity  it goes to look at what it heard (a shot over the dune, a call) and stares at what it half-saw.
 //
 // WHAT IT KNOWS (memory.js, written by its senses: sight 15 m in a wide arc, feel 2.6 m all round, and its hearing of stimuli)
-//   the Courier (how sure, where last, how dangerous she has been, and its grudge), other creatures, where kin burst (a place to mourn,
+//   the Courier (how sure, where last, how dangerous they have been, and its grudge), other creatures, where kin burst (a place to mourn,
 //   then avoid), things heard but not seen.
 //
 // WHAT IT DOES (each an action scored by the reasoner, utility.js; the best runs)
@@ -121,7 +121,7 @@ export function jellyMind(J) {
         if (goTo(x, P.pos, C.speed, 1) < 1.6) {
           facing(x, P.pos);
           const at = c.pos.clone().lerp(P.pos, 0.5).setY(c.pos.y + 0.6);
-          if (c.stash) { g.cubes?.burst?.(at, c.stash, { count: Math.min(8, c.stash), up: 2.5, from: 'jelly' }); c.stash = 0; } // (her money, given back)
+          if (c.stash) { g.cubes?.burst?.(at, c.stash, { count: Math.min(8, c.stash), up: 2.5, from: 'jelly' }); c.stash = 0; } // (their money, given back)
           else g.baubles?.spawn(at, 2 + b.carry * 2, { up: 2.5, spread: 0.6 });
           c.deform.kick(5, new THREE.Vector2(0, 1.2), 0.2);
           g.events?.emit('jelly.fetch', { by: 'courier' });
@@ -232,7 +232,7 @@ export function jellyMind(J) {
     when: (x) => !!(look(x, 'food', 22) || look(x, 'shiny', 16)),
     consider: [(x) => curve.floor(0.2, curve.power(1.3))(x.drives.get('hunger')), (x) => 1 - norm((look(x, 'food', 22) || look(x, 'shiny', 16))?.d ?? 99, 3, 22) * 0.7],
     cooldown: 1.5,
-    enter: (x) => { x.bb.f = look(x, 'food', 22) || look(x, 'shiny', 16); x.bb.t = 0; }, // (a bauble, or a cube of her money: it is all Lachryma to a jelly)
+    enter: (x) => { x.bb.f = look(x, 'food', 22) || look(x, 'shiny', 16); x.bb.t = 0; }, // (a bauble, or a cube of their money: it is all Lachryma to a jelly)
     tick: (x, dt) => {
       const c = x.c, f = x.bb.f; x.bb.t += dt;
       if (!f || x.bb.t > 15 || (f.alive && !f.alive())) return 'fail';

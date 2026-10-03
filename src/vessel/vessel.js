@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
-// THE VESSEL: the Courier dressed as a pot is. It keeps her LOOK (a glaze for each region: vessel/glazes.js), the glazes she has
-// (hers from the start, those her achievements have earned, and those the Veritome has learned from photographs), and her KINTSUGI
-// (vessel/kintsugi.js: gold in the seams, more of it the more she has done). `dress(character)` lays all of it on any Courier model:
-// the one she plays and the one on the title's hill alike.
+// THE VESSEL: the Courier dressed as a pot is. It keeps their LOOK (a glaze for each region: vessel/glazes.js), the glazes they have
+// (theirs from the start, those their achievements have earned, and those the Veritome has learned from photographs), and their KINTSUGI
+// (vessel/kintsugi.js: gold in the seams, more of it the more they have done). `dress(character)` lays all of it on any Courier model:
+// the one they play and the one on the title's hill alike.
 //
 // A look is FIRED at the kiln in the workshop (moves/kiln.js, the kiln station; its window is vessel/kilnui.js): a preview first, on
-// her, while she turns in front of the kiln's mouth; then the firing, which costs cubes (`ECON.firing`: a drain) and which the body
+// them, while they turn in front of the kiln's mouth; then the firing, which costs cubes (`ECON.firing`: a drain) and which the body
 // shows (it glows kiln-orange and cools into the new glaze). Every outcome is an event (`vessel.fire`, `glaze.earn`, `glaze.learn`)
 // and tracking.js says it.
 //
@@ -33,7 +33,7 @@ export class Vessel {
     this.game = game;
     this.look = { ...DEFAULT_LOOK };
     this.learned = []; // glazes learned from photographs: { id, name, color, rough, metal, glow, blurb, got: { photo } }
-    this.known = null; // glazes she has been told of (an earned one is said once)
+    this.known = null; // glazes they have been told of (an earned one is said once)
     this.dressed = new Set(); // the characters wearing it
     this.kinU = kintsugiUniforms();
     this.t = 0; this.fireT = 0;
@@ -41,7 +41,7 @@ export class Vessel {
   }
   get cost() { return Math.round(ECON.firing * ECON.perMinute); }
 
-  // ---------------------------------------------------------------- the glazes she has
+  // ---------------------------------------------------------------- the glazes they have
   glaze(id) { return GLAZES[id] || this.learned.find((g) => g.id === id) || null; }
   has(id) {
     const g = this.glaze(id);
@@ -56,7 +56,7 @@ export class Vessel {
   kinShare() { const n = this.game.achievements?.count?.() || 0; return n ? 1 - Math.exp(-n / 25) : 0; }
 
   // ---------------------------------------------------------------- on a body
-  /** Lay a look (hers, unless another is given) on a Courier model: each region's material takes its glaze; the armour and the mask carry
+  /** Lay a look (theirs, unless another is given) on a Courier model: each region's material takes its glaze; the armour and the mask carry
    *  the kintsugi. */
   dress(ch, look = this.look) {
     if (!ch?.regionMats) return;
@@ -76,12 +76,12 @@ export class Vessel {
       if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, this.kinU); m.userData.kin = true; }
     }
   }
-  /** Try a look on her (the kiln's preview: nothing is kept until it is fired). */
+  /** Try a look on them (the kiln's preview: nothing is kept until it is fired). */
   preview(look) { for (const ch of this.dressed) this.dress(ch, look); }
-  /** Back to what she wears. */
+  /** Back to what they wear. */
   revert() { this.preview(this.look); }
 
-  /** Fire a look on: it costs cubes; the body glows and cools into it. False if she cannot pay, or it is what she wears already. */
+  /** Fire a look on: it costs cubes; the body glows and cools into it. False if they cannot pay, or it is what they wear already. */
   fire(look) {
     const g = this.game, same = Object.keys(REGIONS).every((r) => look[r] === this.look[r]);
     if (same) { g.log?.say('warn', 'That is what the vessel wears already.', { key: 'kiln.same', throttle: 2 }); return false; }
@@ -97,7 +97,7 @@ export class Vessel {
   }
 
   // ---------------------------------------------------------------- learned from photographs (veritome/darkroom.js)
-  /** A colour the Veritome saw in a good photograph, learned as a glaze if it is a colour at all (not grey, not black) and not one she
+  /** A colour the Veritome saw in a good photograph, learned as a glaze if it is a colour at all (not grey, not black) and not one they
    *  has already. The oldest learned glaze goes when there are too many. */
   learnFrom(rgb, kind = 'thing') {
     _c.setRGB(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255, THREE.SRGBColorSpace).getHSL(_h);

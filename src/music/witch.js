@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // HEX AND KETTLE: the witch's. In seven (2+2+3, the lopsided Balkan step), 220 in eighths, on E's Hungarian minor (E F# G A# B C D#:
 // two augmented seconds, the scale of every fortune-teller's tent). The cauldron is a pizzicato ostinato and bubbles; a Moog creeps
-// E, E, D#; the tabla's slaps keep the seven. The theremin is her voice: the hex (E up the tritone to A#, B, then down G, F#: the
+// E, E, D#; the tabla's slaps keep the seven. The theremin is their voice: the hex (E up the tritone to A#, B, then down G, F#: the
 // devil's interval, then a shrug), sliding between its notes. The coven's turn: a fiddle takes the hex with the tritone sounded
 // against it (the devil's fiddle, tuned to it), a choir hums under, and the theremin swoops over them all. It loops.
 //

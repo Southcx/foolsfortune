@@ -8,7 +8,7 @@
 //    corner the clock (the tide, as the cover's hands keep it); along the foot the zoom, and the roll of film as a row of plates
 //    (an empty square for each plate still to be exposed: a full roll is no squares at all);
 //  - over each subject in frame a pair of focus brackets, darker for a better shot, in vermilion for a creature that is aware of
-//    the Courier and in the thick of it with her (only those can be held by a charged shot);
+//    the Courier and in the thick of it with them (only those can be held by a charged shot);
 //  - in the middle the capture circle, whose ring fills while such a creature is held in it (Fatal Frame's charge), white at the
 //    shutter chance; the stars the best subject would get; and the shutter's one flash, after which the photograph drops away into
 //    the book's corner (it goes on the film: film.js).

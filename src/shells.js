@@ -77,7 +77,7 @@ export class Shells {
     this.game = game;
     this.selected = 0;
     this.counts = Object.fromEntries(SHELL_TYPES.map((t) => [t.id, T.shells.start]));
-    // the psygun she carries (psygun/kinds.js): its chambers (which shell types are loaded) and how many of each it holds
+    // the psygun they carry (psygun/kinds.js): its chambers (which shell types are loaded) and how many of each it holds
     this.loadGun();
     this.bladeIdx = 0;
     this.projectiles = [];
