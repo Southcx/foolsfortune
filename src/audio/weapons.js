@@ -153,4 +153,22 @@ export class WeaponSounds {
     this.tone(t, 0.7, { f0: 90, f1: 28, gain: 1.2, dest: d });
     this.noise(t, 0.08, { type: 'highpass', f0: 2500, f1: 800, gain: 0.7, dest: d });
   }
+
+  /** A psygun changed for another kind (psygun.change): a heavy clack as it comes out, its cylinder spun (ratchet ticks slowing). */
+  gunSwap() {
+    if (!this.ok() || !this.allow('gunSwap', 3)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.2);
+    this.noise(t, 0.05, { type: 'bandpass', f0: 1400, q: 2, gain: 0.8, dest: d });
+    this.tone(t, 0.08, { f0: 380, f1: 240, type: 'square', gain: 0.08, dest: d });
+    for (let i = 0; i < 6; i++) this.noise(t + 0.12 + i * (0.035 + i * 0.012), 0.012, { type: 'bandpass', f0: 3600 - i * 150, q: 9, gain: 0.5 - i * 0.05, dest: d });
+  }
+
+  /** A shell seated in a chamber (psygun.chamber): a short slide and a firm click home. */
+  chamberClick() {
+    if (!this.ok() || !this.allow('chamberClick', 12)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.15);
+    this.noise(t, 0.05, { type: 'bandpass', f0: 2200, f1: 3200, q: 3, gain: 0.4, dest: d });
+    this.noise(t + 0.06, 0.015, { type: 'bandpass', f0: 4200, q: 8, gain: 0.8, dest: d });
+    this.tone(t + 0.06, 0.04, { f0: 900, f1: 600, type: 'triangle', gain: 0.1, dest: d });
+  }
 }

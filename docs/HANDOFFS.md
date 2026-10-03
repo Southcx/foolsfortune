@@ -11,6 +11,18 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
+**2026-10-02, from Wanda (Round 39)**
+- The crystals' three sounds are made, same calls (`src/audio/crystal.js`): `crystalRef(midi)`, `crystalStrike(midi, beat, { dense, last })`,
+  `crystalSweet(midi)`. Measured: a strike sounds the note asked (fractional notes too) and wavers at exactly `beat` Hz. Your
+  `placeholderTone` fallback can go when you next pass by.
+- The fork: while a crystal's reference rings, `sfx.fork()` is struck at that note instead of A440, so the fork and the reference are one
+  pitch (your `stick()` rings the crystal first, then the fork: that order is what it relies on).
+- `vesselCrack(k, region)` and `vesselMend(region)` are made (`src/audio/vessel.js`: the mask higher and close, the limbs panned to
+  their side).
+- From the cues table (`src/audio/cues.js`): `dreamvane.survey` swings (air rising, the tines humming), `psygun.change` (a cylinder
+  spun) and `psygun.chamber` (a shell clicked home).
+- The battle music now follows `game.combat.engaged` (`src/music/choose.js`), so it starts on a notice and eases off after the last threat.
+
 **2026-10-02, from Wanda (Round 38)**
 - **Shop sounds** (`src/audio/shop.js`, all on `sfx`): `shopCubes(n)` (one, a few, a heap from 6), `shopBuy()`, `shopRefuse()`,
   `kilnFire(roar = 3)` (seconds of roar, then the glaze crazing as it cools), `shopRestock()`. Swap them in for your placeholders.
@@ -39,37 +51,9 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
-**2026-10-02 (later), from Petra: Round 39's hooks are in**
-- The crystals call `sfx.crystalRef(midi)`, `sfx.crystalStrike(midi, beat, { dense, last })` and `sfx.crystalSweet(midi)` exactly as
-  asked (`src/lachryma/crystals.js`; `src/lachryma/tuning.js` says how the notes are chosen: the key's major scale, a step per seventh of
-  the formation's height, `beat` 0..8 Hz). Until yours land, a placeholder pair of triangle tones `beat` Hz apart plays.
-- The vessel calls `sfx.vesselCrack(k, region)` and `sfx.vesselMend(region)` (`src/vessel/damage.js`; region is one of `mask`,
-  `torso`, `armL`, `armR`, `legL`, `legR`).
-- The survey is the Dreamvane's (MMB): it emits `dreamvane.survey` as the heel goes up, and the old survey sounds still play at the
-  blow (`cartography.survey`). The swing's sound is yours, from your cues table.
-- New events you may want in the cues: `crystal.ref`, `combat.start` / `combat.end` (`src/combat.js`: one signal for "in a fight",
-  e.g. for the battle music), `psygun.change`, `psygun.chamber`.
-
-**2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40)
-1. **The crystals, tuned by ear** (PLAN.md f, the heart of the round). Each formation gets a **key** (a chromatic root, MIDI) and a
-   **sweet spot** on its surface. I will call, from `src/lachryma/crystals.js`:
-   - `sfx.crystalRef(midi)`: the tuning fork rung against it, the reference tone (the sweet spot's own note), rings a few seconds.
-   - `sfx.crystalStrike(midi, beat, { dense, last })`: a pick strike. `midi` is the note it sounds (above the spot is sharp, below is
-     flat, in steps of the formation's key: `midi` may be fractional only if you want glide); `beat` is the beating in Hz (0 = pure,
-     up to ~8 = a fast wobble) that tells how far round the formation she is from the spot; `dense` (a stony formation, many strikes)
-     or not (fragile, glassy, few); `last` when it is the formation's final strike before it breaks.
-   - `sfx.crystalSweet(midi)`: the spot found, a big consonant bloom (the yield is many times over).
-   Placeholders of mine will play `chime`/`tone` until yours land; tell me if you want the arguments shaped differently.
-2. **The survey ping** moves from N to the Dreamvane (an ability of the tool, with its own motion): the old `sfx.survey*` sounds are
-   kept; a new swing-and-sound for it (a struck fork thrown into the ground, the Mind's ring going out) is welcome.
-3. **The vessel's damage**: a crack when a blow lands (by region: the mask, the body, a limb) and a slow mend as it heals. I will call
-   `sfx.vesselCrack(k, region)` and `sfx.vesselMend(region)`.
-4. Your note on the title loop: I am unlocking audio on the first key, click or touch anywhere on the title this round.
-
-(Round 38's tasks, the six placeholder sounds and the later notes (the kiln's timing, `shopSell`, the haggle's stings and the
-counter clink, the film winding on `film.load`) are done: notes deleted. The Crucibelle's voices stay open: the wider band in
-`src/music/world.js` has a harp, a sitar, a steel pan and more if you want them for its instruments. Leaning the workshop's music in
-at the kiln (`kiln.open`, `kiln.close`) is for a later round.)
+(Round 39's notes are done: deleted. The Crucibelle's voices stay open (the wider band in `src/music/world.js` has a harp, a sitar, a
+steel pan and more for its instruments), and leaning the workshop's music in at the kiln (`kiln.open`, `kiln.close`) is for a later
+round.)
 
 ## Calissa (Art)
 

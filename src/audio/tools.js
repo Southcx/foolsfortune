@@ -19,17 +19,19 @@ export class ToolSounds {
     this.noise(t, 0.012, { type: 'highpass', f0: 6000, gain: 0.25, dest: d });
   }
 
-  /** The tuning fork: a pure A that lasts (about seven seconds), its clang (6.25 up) gone in a breath, a slow beat as it rings. */
+  /** The tuning fork: a pure A that lasts (about seven seconds), its clang (6.25 up) gone in a breath, a slow beat as it rings. While
+   *  a crystal's reference is ringing (crystalRef) the fork is struck at that note instead: the fork IS the reference, not an A against it. */
   fork(v = 1) {
     if (!this.ok() || !this.allow('fork', 3)) return;
     const c = this.ctx, t = c.currentTime, d = this.out(0.3 * v, 0.6);
+    const R = this.refPitch, f0 = R && t < R.until ? hz(R.midi) : 440;
     const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.34, t + 0.004);
     g.gain.setTargetAtTime(0.0001, t + 0.01, 2.2); g.connect(d);
     const trem = c.createGain(); trem.gain.value = 0.85; const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 1.6; lg.gain.value = 0.15;
     l.connect(lg).connect(trem.gain); trem.connect(g);
-    const o = c.createOscillator(); o.frequency.value = 440; o.connect(trem);
+    const o = c.createOscillator(); o.frequency.value = f0; o.connect(trem);
     o.start(t); o.stop(t + 7.5); l.start(t); l.stop(t + 7.5);
-    this.tone(t, 0.18, { f0: 2750, f1: 2745, gain: 0.12, dest: d }); // (the clang)
+    this.tone(t, 0.18, { f0: f0 * 6.25, f1: f0 * 6.24, gain: 0.12, dest: d }); // (the clang)
     this.noise(t, 0.02, { type: 'bandpass', f0: 3500, q: 2, gain: 0.3, dest: d }); // (the strike)
   }
 
@@ -77,5 +79,13 @@ export class ToolSounds {
       ring(t, 0.16);
       key(t + 0.3);
     }
+  }
+
+  /** The survey's swing (dreamvane.survey, as the heel goes up): air rising past the head of the vane, the fork's tines humming. */
+  surveySwing() {
+    if (!this.ok() || !this.allow('surveySwing', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.4);
+    this.noise(t, 0.45, { type: 'bandpass', f0: 500, f1: 1800, q: 1.4, gain: 0.5, attack: 0.25, dest: d });
+    this.tone(t + 0.1, 0.45, { f0: 440, f1: 880, gain: 0.06, dest: d });
   }
 }
