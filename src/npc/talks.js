@@ -26,7 +26,7 @@ export const TALKS = {
       hello: { lines: [
         { mood: 'surprise', text: 'Oh! {big}Courier!{/} {p:0.3}{mood:joy}Come in, come in, mind the {wave}slip{/} on the floor.' },
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
-        { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her himself, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
+        { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
       again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }], next: 'menu' },
       menu: { lines: [], choices: [

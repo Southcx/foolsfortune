@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE VESSEL: the Courier dressed as a pot is. It keeps their LOOK (a glaze for each region: vessel/glazes.js), the glazes they have
-// (theirs from the start, those their achievements have earned, and those the Veritome has learned from photographs), and their KINTSUGI
-// (vessel/kintsugi.js: gold in the seams, more of it the more they have done). `dress(character)` lays all of it on any Courier model:
+// (theirs from the start, those their achievements have earned, and those the Veritome has learned from photographs), and the net its
+// cracks run along (vessel/kintsugi.js; the cracks themselves are vessel/damage.js's, and mend). `dress(character)` lays all of it on any Courier model:
 // the one they play and the one on the title's hill alike.
 //
 // A look is FIRED at the kiln in the workshop (moves/kiln.js, the kiln station; its window is vessel/kilnui.js): a preview first, on
@@ -14,7 +14,7 @@
 // and the potter's firing itself.
 //
 //   const v = new Vessel(game)   v.dress(character)   v.owned() -> [glaze]   v.glaze(id)   v.preview(look)   v.fire(look) -> bool
-//   v.learnFrom([r, g, b], kind)   v.kinShare()   v.update(dt)   v.look   v.cost
+//   v.learnFrom([r, g, b], kind)   v.update(dt)   v.look   v.cost
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
@@ -51,9 +51,6 @@ export class Vessel {
     return !!this.bought?.[id];
   }
   owned() { return [...Object.values(GLAZES), ...this.learned].filter((g) => this.has(g.id)); }
-
-  /** The share of the kintsugi net that is gold: it grows quickly with the first achievements and slowly toward the whole. */
-  kinShare() { const n = this.game.achievements?.count?.() || 0; return n ? 1 - Math.exp(-n / 25) : 0; }
 
   // ---------------------------------------------------------------- on a body
   /** Lay a look (theirs, unless another is given) on a Courier model: each region's material takes its glaze; the armour and the mask carry
@@ -123,7 +120,6 @@ export class Vessel {
     this.t += dt;
     if (this.t > 1) {
       this.t = 0;
-      this.kinU.uKin.value = this.kinShare();
       // an achievement's glaze, said once when it is earned
       const now = this.owned().map((g) => g.id);
       if (!this.known) this.known = new Set(now);

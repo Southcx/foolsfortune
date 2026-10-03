@@ -28,7 +28,6 @@ const CSS = `
 #kiln .s:hover { border-color: #ffd98a; } #kiln .s.on { border-color: #fff1dc; box-shadow: 0 0 0 2px #ffd98a, inset -4px -6px 8px rgba(0,0,0,.35), inset 3px 4px 6px rgba(255,255,255,.25); }
 #kiln .s.metal { background-image: linear-gradient(135deg, rgba(255,255,255,.45), rgba(255,255,255,0) 45%); }
 #kiln .what { min-height: 46px; font-size: 12px; line-height: 1.4; } #kiln .what b { color: #ffd98a; font-weight: normal; letter-spacing: .08em; }
-#kiln .gold { font-size: 10px; letter-spacing: .1em; opacity: .75; margin: 6px 0 8px; } #kiln .gold i { display: block; height: 4px; margin-top: 4px; background: rgba(255,217,138,.15); border-radius: 2px; } #kiln .gold i b { display: block; height: 100%; background: #e9b44c; border-radius: 2px; }
 #kiln .row { display: flex; gap: 8px; } #kiln button { flex: 1; font: inherit; font-size: 11px; letter-spacing: .14em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 6px 8px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #kiln button:hover { background: rgba(var(--jsel),.55); } #kiln button:disabled { opacity: .4; cursor: default; }
 #kiln .hint { font-size: 10px; opacity: .5; margin-top: 8px; letter-spacing: .06em; }
@@ -99,8 +98,6 @@ export class KilnUI {
     px.appendChild(sw);
     sayGlaze(V.glaze(this.look[this.region]));
     px.appendChild(what);
-    const share = V.kinShare(), n = g.achievements?.count?.() || 0;
-    px.appendChild(el('div', 'gold', `GOLD IN THE SEAMS · ${n} mending${n === 1 ? '' : 's'}<i><b style="width:${Math.round(share * 100)}%"></b></i>`));
     const row = el('div', 'row');
     const same = Object.keys(REGIONS).every((r) => this.look[r] === V.look[r]);
     const fire = el('button', '', `FIRE · ${V.cost} CUBES`); fire.disabled = same;
@@ -108,16 +105,15 @@ export class KilnUI {
     const leave = el('button', '', 'LEAVE (Esc)'); leave.onclick = () => this.onLeave?.();
     row.appendChild(fire);
     // the cracks refired at once (R40: they mend slowly on their own: vessel/damage.js), for cubes as many as they are deep
-    const D = g.vesselDamage, worn = D?.worn || 0;
-    if (worn > 0.001) {
-      const cost = Math.max(1, Math.round(worn * ECON.refire * ECON.perMinute));
-      const mend = el('button', '', `MEND · ${cost} CUBES`);
-      mend.onclick = () => {
-        if (!g.cubes?.spend(cost, 'refire')) { g.log?.say('warn', `Mending the cracks costs ${cost} cubes.`, { key: 'kiln.poormend', throttle: 2 }); return; }
-        D.mendAll(); V.fireT = 1.4; g.events?.emit('vessel.refire', { cost, by: 'courier' }); this.render();
-      };
-      row.appendChild(mend);
-    }
+    const D = g.vesselDamage, worn = D?.worn || 0, cracked = worn > 0.001;
+    const cost = cracked ? Math.max(1, Math.round(worn * ECON.refire * ECON.perMinute)) : 0;
+    const mend = el('button', '', cracked ? `MEND · ${cost} CUBES` : 'MEND · WHOLE'); mend.disabled = !cracked; // (always there; greyed while there is nothing to mend)
+    mend.onclick = () => {
+      if (!cracked) return;
+      if (!g.cubes?.spend(cost, 'refire')) { g.log?.say('warn', `Mending the cracks costs ${cost} cubes.`, { key: 'kiln.poormend', throttle: 2 }); return; }
+      D.mendAll(); V.fireT = 1.4; g.events?.emit('vessel.refire', { cost, by: 'courier' }); this.render();
+    };
+    row.appendChild(mend);
     row.appendChild(leave);
     px.appendChild(row);
     px.appendChild(el('div', 'hint', `drag on the scene or A / D to turn the vessel · purse ${g.cubes?.balance ?? 0} cubes · more glazes come from achievements and from good photographs`));

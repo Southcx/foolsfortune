@@ -134,7 +134,7 @@ export class Diag {
       const n = this.counts();
       const heap = c.heap ? `  heap ${(c.heap / 1e6).toFixed(0)} MB` : '';
       this.txt.innerHTML = `<b>${fps.toFixed(0)} fps</b>  frame <span class="${cls(med)}">${med.toFixed(1)}</span> ms  worst/s <span class="${cls(worst)}">${worst.toFixed(1)}</span>`
-        + `\n<span class="k">cpu</span> ${this.cpu[this.i].toFixed(1)} ms  <span class="k">gpu</span> ${this.tq ? this.gpuMs.toFixed(1) + ' ms' : 'n/a'}`
+        + `\n<span class="k">cpu</span> ${this.cpu[this.i].toFixed(1)} ms  <span class="k">gpu</span> ${this.tq ? this.gpuMs.toFixed(1) + ' ms' : 'untimed'}`
         + `\n<span class="k">phases</span> ${ph}`
         + `\n<span class="k">draws</span> ${c.calls}  <span class="k">tris</span> ${(c.tris / 1000).toFixed(0)}k  <span class="k">programs</span> ${c.programs}  <span class="k">geo</span> ${c.geos}  <span class="k">tex</span> ${c.tex}${heap}`
         + `\n<span class="k">zone</span> ${g.zones?.current ?? '-'} (${[...(g.zones?.visible || [])].join(',')})  <span class="k">lamps</span> ${L.lit ?? '-'}/${L.lamps ?? '-'}`
@@ -205,7 +205,7 @@ export class Diag {
       `browser: ${navigator.userAgent}`,
       `gpu: ${this.gpuName()}  screen ${innerWidth}x${innerHeight} @${devicePixelRatio}  drawn at ${this.r.getDrawingBufferSize(new THREE.Vector2()).toArray().join('x')}`,
       `frame ms over the last ${N} frames: median ${pct(0.5)}  p90 ${pct(0.9)}  p99 ${pct(0.99)}  worst ${s[s.length - 1].toFixed(1)}`,
-      `cpu ${this.cpu[this.i].toFixed(1)} ms  gpu ${this.tq ? this.gpuMs.toFixed(1) + ' ms' : 'n/a'}`,
+      `cpu ${this.cpu[this.i].toFixed(1)} ms  gpu ${this.tq ? this.gpuMs.toFixed(1) + ' ms' : 'untimed (the drawing is on the GPU; this browser lends no timer for it: EXT_disjoint_timer_query)'}`,
       `phases (ms, smoothed): ${Object.entries(this.phases).map(([k, v]) => `${k} ${v.toFixed(2)}`).join(', ')}`,
       `draws ${c.calls}  tris ${c.tris}  programs ${c.programs}  geometries ${c.geos}  textures ${c.tex}  heap ${c.heap ? (c.heap / 1e6).toFixed(0) + ' MB' : 'n/a'}`,
       `zone ${g.zones?.current} visible ${[...(g.zones?.visible || [])].join(',')}  lamps ${L.lit}/${L.lamps}`,

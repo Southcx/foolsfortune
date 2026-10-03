@@ -97,6 +97,8 @@ export class GameLog {
     (document.getElementById('hud') || document.body).appendChild(root);
     this.root = root;
     this.body = root.querySelector('.body');
+    this.pinned = true; // (following the newest line; let go while they scroll back to read)
+    this.body.addEventListener('scroll', () => { this.pinned = this.body.scrollHeight - this.body.scrollTop - this.body.clientHeight < 40; }, { passive: true });
     this.tabEls = [...root.querySelectorAll('.tab')];
     this.foot = root.querySelector('.n');
     // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
@@ -233,10 +235,12 @@ export class GameLog {
     if (this.lines.length > this.max) this.lines.shift();
     this.last = l;
     if (this.shows(cls)) {
-      const near = this.body.scrollHeight - this.body.scrollTop - this.body.clientHeight < 40;
+      // (no reading of the window's scroll here: each read lays out the whole page again, and a burst of lines (cubes pouring in)
+      //  made a burst of layouts: the owner's spikes in the dunes (R41). Whether it follows the end is kept by its scroll event, and the
+      //  scroll to the end is done once a frame, in tick)
       this.body.appendChild(this.build(l));
       while (this.body.children.length > 140) this.body.firstChild.remove();
-      if (near) this.body.scrollTop = this.body.scrollHeight;
+      if (this.pinned !== false) this.toEnd = true;
     }
     this.afterSay(l);
     return l;
@@ -253,6 +257,7 @@ export class GameLog {
   tick(dt) {
     this.idleT += dt;
     if (this.idleT > 9) this.root.classList.add('idle');
-    if (this.foot) this.foot.textContent = `${this.lines.length} lines`;
+    if (this.toEnd) { this.toEnd = false; this.body.scrollTop = this.body.scrollHeight; }
+    if (this.foot && this.footN !== this.lines.length) { this.footN = this.lines.length; this.foot.textContent = `${this.lines.length} lines`; }
   }
 }

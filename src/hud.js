@@ -1,3 +1,4 @@
+import { restartClass } from './restart.js';
 import { T } from './config.js';
 
 import { SHELL_KEYS } from './shells.js';
@@ -60,10 +61,7 @@ export class Hud {
   lachrymaPulse(ok) {
     if (ok) this.meter?.bead();
     this.quietT = 0;
-    const el = this.el.lach;
-    el.classList.remove('gain', 'deny');
-    void el.offsetWidth; // restart the animation
-    el.classList.add(ok ? 'gain' : 'deny');
+    restartClass(this.el.lach, ok ? 'gain' : 'deny', ['gain', 'deny']); // (no forced layout: restart.js)
   }
 
   buildShells(types) {

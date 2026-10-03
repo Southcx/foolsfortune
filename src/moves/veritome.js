@@ -29,8 +29,8 @@ import { TIDES, TIDE_LEN } from '../angling/species.js';
 //    where they become Compendium entries, bestiary facts (veritome/bestiary.js) and cards (the Arcana's sittings, creature portraits).
 //    That is Wind Waker's Picto Box and Dark Cloud 2's camera: go and look, then sit down with what you saw.
 //  - THE CAPTURE. A creature that is AWARE of them and ENGAGED with them (a clapperjar clapping at them, fleeing them, cowering, knocked
-//    about: veritome/subjects.js) and held in the capture circle charges the shot; a shot at full charge holds it to what is real
-//    (it is stunned), longer at the SHUTTER CHANCE (it is in the air, or clapping at them). An unaware creature cannot be held: it is
+//    about: veritome/subjects.js) and held in the capture circle charges the shot; a shot at full charge is a held plate, better at
+//    the SHUTTER CHANCE (it is in the air, or clapping at them). A photograph never stuns (the Flash does, on its own key). An unaware creature cannot be held: it is
 //    photographed candidly, which is how its habits are learned. (Fatal Frame's Camera Obscura, made gentler: it never kills.)
 //  - THE TRUTH. A photograph undoes whatever the Soul Brush wrote on what it shows (the photograph is of the thing as it is).
 //  - THE BOOK (veritome/book.js), the Courier's bank. While it is held open, the Pneuka Box (P: pneuka/box.js) opens beside it, and
@@ -45,7 +45,7 @@ const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _v = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3();
 const ZOOM = { wide: 64, tight: 16 };
-const CAPTURE = { range: 18, time: 1.1, hold: 4, chance: 6.5 };
+const CAPTURE = { range: 18, time: 1.1 };
 // (the grip measures a tool along +X; the book's spine is its +Y)
 const SPINE_TO_GRIP = new THREE.Matrix4().makeRotationZ(-Math.PI / 2);
 
@@ -209,16 +209,12 @@ export class Veritome extends Tech {
     this.book.useShot();
     this.shotCool = 0.6;
     const report = scorePhoto(g, g.camera);
-    // a full charge holds an engaged creature to what is real; at the shutter chance, longer
+    // a full charge on an engaged creature is a good plate (held; at the shutter chance, better), and the lens drinks a little from it.
+    // (a photograph never stuns: that is the Flash's, on its own key)
     let held = null;
-    if (this.target?.type === 'creature' && this.charge >= 1 && this.holdable(this.target)) {
-      // (a creature held in the lens at full charge reels from it a little: its stun meter fills (stun.js); the flash proper is 1)
-      if (g.stun?.add(this.target, this.chance ? 0.7 : 0.45, { by: 'courier', cause: 'photo' }) !== undefined) { held = 'held'; g.lachryma.gain(3, 'photo'); }
-    } else if (this.target && this.charge >= 1 && this.holdable(this.target)) {
-      const c = this.target;
-      g.clappers.stun(c, this.chance ? CAPTURE.chance : CAPTURE.hold, g.shells.glowOutline, g.shells.xray);
-      held = this.chance ? 'chance' : 'held';
-      g.lachryma.gain(this.chance ? 5 : 3, 'photo');
+    if (this.target && this.charge >= 1 && this.holdable(this.target)) {
+      held = this.target.type !== 'creature' && this.chance ? 'chance' : 'held';
+      g.lachryma.gain(held === 'chance' ? 5 : 3, 'photo');
     }
     this.charge = 0; this.target = null;
     // the truth of a thing: what the brush wrote on what is in frame is undone

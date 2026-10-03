@@ -8,7 +8,7 @@
 //   game.cinema.free('fight')          game.cinema.strain = 0..1
 //   game.cinema.shot('open', { pos, look, fov: -6, roll: 0, bars: 1, ease: 3 })     a camera of its own: a place and a point to look at
 //   game.cinema.frame('cut', { ..., ttl: 1.1 })   a frame that lets itself go after ttl real seconds
-//   game.cinema.unshot('open')         (the shot's pos/look are read every frame: move them and the camera moves; set pos and it is a cut)
+//   game.cinema.unshot('open')   game.cinema.cut('open')   (cut: no ease back, for a scene that changed under the shot)         (the shot's pos/look are read every frame: move them and the camera moves; set pos and it is a cut)
 //
 // Prior art: the Wind Waker's Z-target letterbox and the way Zelda frames a boss (bars in, camera on the thing), Shadow of the
 // Colossus' grip camera, and every fishing minigame that has cut to a low, tight camera on the water for the fight (Zelda: Twilight
@@ -54,6 +54,8 @@ export class Cinema {
     return n;
   }
   unshot(id) { this.shots.delete(id); }
+  /** Let a shot go with a cut, not an ease back (the scene changed under it: a respawn, a teleport). */
+  cut(id) { this.shots.delete(id); if (!this.shots.size) { this.sk = 0; this.lastShot = null; this.game.player.camShot = null; } }
   get active() { return this.reqs.size > 0 || this.shots.size > 0; }
 
   update(dt) {
@@ -83,6 +85,8 @@ export class Cinema {
     if (cine !== this.cine) { this.cine = cine; document.body.classList.toggle('cine', cine); } // (what is not part of the shot steps out of it)
     const h = this.k * 11.5;
     this.top.style.height = this.bot.style.height = `${h < 0.02 ? 0 : h}vh`;
+    const shown = h >= 0.02; // (folded away, the bars are gone, their gold edge too: it was left as a line along the top and bottom of the screen)
+    if (shown !== this.barsShown) { this.barsShown = shown; this.top.style.display = this.bot.style.display = shown ? '' : 'none'; }
     // (what stays on screen in a shot, the log above all, which carries what is said, rides inside the picture, not under the bars)
     const hv = h < 0.02 ? 0 : Math.round(h * 10) / 10;
     if (hv !== this.hv) { this.hv = hv; document.documentElement.style.setProperty('--cine', `${hv}vh`); }

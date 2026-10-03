@@ -307,7 +307,7 @@ export class Tracking {
     on('photo.take', (e) => {
       L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
       first('photo', 'Logged: your first photograph. It waits on the film to be appraised (B, the Veritome).');
-      if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! The photograph holds the clapperjar fast to what is real.' : 'The photograph holds the clapperjar to what is real.', { key: 'phheld', throttle: 1 }); }
+      if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
       if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
       if (e.left === 0) log.say('info', 'That was the last plate on the roll.', { key: 'filmlast', throttle: 5 });
     });

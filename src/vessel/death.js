@@ -50,12 +50,15 @@ export class Death {
     if (t < BURST) {
       g.time?.slow('death', 0.18);
       if (Math.floor(t * 7) !== Math.floor((t - raw) * 7)) sfx.vesselCrack?.(Math.min(1, 0.4 + t), ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'][Math.floor(Math.random() * 6)]);
-    } else g.time?.slow('death', 0.45);
+    } else if (t < REFORM) g.time?.slow('death', 0.45); // (home again, the world runs at its own pace as the dark lifts)
     // the camera: in close, circling as it cracks; drawn up and back as it bursts
     const a = this.yaw + Math.PI + 0.6 + t * 0.35, r = t < BURST ? 2.4 - t * 0.5 : 1.8 + (t - BURST) * 2.2, h = t < BURST ? 1.2 : 1.2 + (t - BURST) * 1.6;
     _p.set(this.at.x + Math.sin(a) * r, this.at.y + h, this.at.z + Math.cos(a) * r);
-    clearShot(g, mid, _p); // (never inside a wall)
-    g.cinema?.shot('death', { pos: _p, look: mid, fov: t < BURST ? -10 + t * 4 : -4, bars: 1, ease: t < BURST ? 3 : 2, roll: t < BURST ? -0.04 * t : 0.04 });
+    // (only until the reform: a shot set after it would hold the camera at the place of death once the Courier is home)
+    if (t < REFORM) {
+      clearShot(g, mid, _p); // (never inside a wall)
+      g.cinema?.shot('death', { pos: _p, look: mid, fov: t < BURST ? -10 + t * 4 : -4, bars: 1, ease: t < BURST ? 3 : 2, roll: t < BURST ? -0.04 * t : 0.04 });
+    }
     // the smear: the frame fed back into itself, harder once it bursts
     if (post?.accum && t < REFORM) Object.assign(post.accum, t < BURST ? { amt: 0.45 * Math.min(1, t / 0.5), zoom: 0.004, spin: 0.002 } : { amt: 0.88, zoom: 0.012, spin: 0.006 });
     // it bursts
@@ -76,7 +79,7 @@ export class Death {
     this.fade.style.opacity = String(t < DARK ? 0 : t < REFORM ? (t - DARK) / (REFORM - DARK) : Math.max(0, 1 - (t - REFORM) / (END - REFORM)));
     if (!this.reformed && t >= REFORM) {
       this.reformed = true;
-      g.cinema?.unshot('death');
+      if (g.cinema?.cut) g.cinema.cut('death'); else g.cinema?.unshot('death'); // (a cut: the place changed under the shot, and an ease back would fly the camera across the island)
       if (post?.accum) post.accum.amt = 0;
       g.time?.free('death');
       D?.mendAll(true);
@@ -87,7 +90,7 @@ export class Death {
       this.want = false;
       g.events?.emit('courier.reform', { where: 'workshop' });
     }
-    if (t >= END) { this.active = false; this.fade.style.opacity = '0'; }
+    if (t >= END) { this.active = false; this.fade.style.opacity = '0'; g.cinema?.unshot('death'); g.time?.free('death'); }
   }
 }
 

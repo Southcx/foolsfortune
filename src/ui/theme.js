@@ -192,8 +192,10 @@ class Theme {
     if (o === this.target) return;
     this.target = o;
     if (o && sound && !o.matches(':disabled')) sfx.menuMove?.();
-    this.glove.classList.toggle('on', !!o);
-    if (o && !this.raf) this.raf = requestAnimationFrame(this.follow);
+    // (placed before it is shown: shown first, it would sit a frame at the corner of the page)
+    if (!o) { this.glove.classList.remove('on'); return; }
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.follow(performance.now());
   }
   follow = (now) => {
     this.raf = 0;
@@ -202,12 +204,14 @@ class Theme {
       const at = this.kb ? this.chosen() : document.elementFromPoint(this.mouse.x, this.mouse.y);
       o = this.target = this.kb ? at : this.optionAt(at);
     }
-    if (!o || !o.offsetParent) { this.glove.classList.remove('on'); this.target = null; return; }
-    const r = o.getBoundingClientRect();
+    const r = o?.offsetParent ? o.getBoundingClientRect() : null;
+    // (nothing to point at, or a thing with no size on the page (a folded window's option): no glove, rather than one at the corner)
+    if (!r || r.width < 1 || r.height < 1 || getComputedStyle(o).visibility === 'hidden') { this.glove.classList.remove('on'); this.target = null; return; }
     const bob = Math.floor(now / 250) % 2 ? 2 : 0; // (a stepped bob, four times a second, as the glove always has)
     const tip = this.tip || [42, 14]; // (where its fingertip is on the picture: the 48 px glove's, or the pixel glove's at its scale)
     const x = Math.max(2, Math.round(r.left - tip[0] - 4 - bob)), y = Math.round(r.top + Math.min(r.height, 40) / 2 - tip[1]);
     this.glove.style.transform = `translate(${x}px, ${y}px)`;
+    this.glove.classList.add('on');
     this.raf = requestAnimationFrame(this.follow);
   };
 }

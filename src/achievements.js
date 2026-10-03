@@ -333,10 +333,10 @@ export function buildAchievements(game) {
   C('td4', 'treasure', 'The Tithe', 5, 'endure', 'Compulsion', 'Pay the Tithe 200 times.', 'tithe.count', 200, { title: 'Devout' });
   C('td5', 'treasure', 'The Tithe', 3, 'mechanic', 'Beyond the Pity', 'Land an epic or better from the Tithe.', 'tithe.tier.epic', 1);
   C('td6', 'treasure', 'The Tithe', 5, 'mechanic', 'The Long Shot', 'Land a prismatic chest from the Tithe.', 'tithe.tier.prismatic', 1, { hidden: true });
-  // the vessel (vessel/): fired at the kiln, glazes learned from photographs, gold in the seams
+  // the vessel (vessel/): fired at the kiln, glazes learned from photographs, cracks mended
   C('vf1', 'treasure', 'The Vessel', 1, 'count', 'First Firing', 'Fire a new look onto the vessel at the kiln.', 'vessel.fired', 1);
   C('vf2', 'treasure', 'The Vessel', 2, 'collect', 'An Eye for Colour', 'Learn 3 glazes from photographs.', 'glaze.learned', 3);
-  F('vf3', 'treasure', 'The Vessel', 4, 'collect', 'Golden Repair', 'Have half the seams of the vessel filled with gold.', () => Math.round((game.vessel?.kinShare() || 0) * 100), 50);
+  C('vf3', 'treasure', 'The Vessel', 2, 'mechanic', 'Golden Repair', 'Have the kiln mend your cracks.', 'vessel.refire', 1);
   // the folk's counters (shop/): buying, selling, and talking Raku down
   C('sp1', 'treasure', 'The Counters', 1, 'count', 'Window Shopping', 'Buy something from one of the folk.', 'shop.bought', 1);
   C('sp2', 'treasure', 'The Counters', 2, 'count', 'Fishmonger', "Sell 10 fish to Old Grog.", 'fish.sold', 10);

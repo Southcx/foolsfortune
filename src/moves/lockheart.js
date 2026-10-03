@@ -68,7 +68,7 @@ export class Lockheart extends HeldTool {
     if (this.cof) { this.model.group.remove(this.cof.group); this.cof.dispose(); }
     this.cof = buildCoffin(id, 3.0); // (R40: twice the size it was)
     // (the coffin hangs below the bail along the tool's +X: its head toward the hand)
-    this.cof.group.rotation.z = -Math.PI / 2; this.cof.group.position.x = 0.22;
+    this.cof.group.rotation.z = Math.PI / 2; this.cof.group.position.x = 0.22; // (+π/2: its head, +Y, turned to -X, up at the bail (R41: -π/2 hung it head down))
     this.cof.group.traverse((o) => { if (o.isMesh && o.geometry.boundingSphere?.radius > 0.02) addOutline(o); });
     this.model.group.add(this.cof.group);
     this.coffinId = id;

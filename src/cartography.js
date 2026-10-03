@@ -110,12 +110,13 @@ export class Cartography {
   /** Raise a cell's knowledge (never lowers it). Returns true if it crossed into a new tier. */
   learn(l, ix, iz, k, wall, h) {
     const c = this.cell(l, ix, iz, true);
-    const before = Cartography.tierOfK(c.k);
+    const before = Cartography.tierOfK(c.k), hadWall = c.w, wasShown = c.k >= 0.05;
     if (k > c.k) c.k = Math.min(1, k);
     if (wall) c.w = 1;
     if (h !== undefined && !c.h) c.h = h;
     if (c.k > 0.02) this.dirty = true;
     const after = Cartography.tierOfK(c.k);
+    if (after !== before || c.w !== hadWall || (c.k >= 0.05) !== wasShown) this.known = (this.known || 0) + 1; // (what the dial draws changed: its key, below)
     if (after > before) {
       if (after >= 2 && before < 2) this.stats.charted++;
       if (after >= 3 && before < 3) this.stats.understood++;
@@ -362,7 +363,13 @@ export class Cartography {
     } else this.dEl.wp.textContent = this.waypoint ? `◆ on another layer (${LAYER_BY_ID[this.waypoint.layer].name.toLowerCase()})` : '';
     // (the wire compass (vfx/wirecompass.js) is the compass while it is up: the dial steps aside for it; the map is still M)
     this.compassEl.style.display = g.god?.controlling || g.wireCompass?.visible ? 'none' : '';
-    if (this.compassEl.style.display !== 'none') this.drawDial(P, l, brg);
+    if (this.compassEl.style.display !== 'none') {
+      // (drawn again only when what it shows has moved: half a degree of turn, a quarter metre of ground, another waypoint or window
+      //  colour, or more of the ground known. A canvas redrawn every frame for nothing waits on the GPU in some browsers (R41))
+      const q = (v, k) => Math.round(v / k);
+      const key = `${q(this.headYaw ?? 0, 0.009)}|${q(brg, 0.5)}|${q(P.pos.x, 0.25)}|${q(P.pos.z, 0.25)}|${l.id}|${this.waypoint ? `${this.waypoint.x},${this.waypoint.z},${this.waypoint.layer}` : ''}|${theme.id}|${this.known ?? ''}`;
+      if (key !== this.dialKey) { this.dialKey = key; this.drawDial(P, l, brg); }
+    }
   }
 
   drawDial(P, l, brg) {

@@ -74,6 +74,16 @@ round.)
 
 ## Calissa (Art)
 
+**2026-10-03, from Petra (Round 41, the owner's notes, done by Petra)**
+- `src/ui/theme.js`: the glove is placed before it is shown, and hides when what it points at has no size or is hidden (it sat a frame,
+  or for good, at the top-left corner). The title has no pointing glove now (the owner: it flickered against the mouse's own).
+- `src/vfx/cinema.js`: the letterbox bars are `display: none` while folded away (their gold edge was a 1 px line along the top and
+  bottom of the screen all the time).
+- The kintsugi gold is off the body (`uKin` stays 0): grown from achievements it read as cracks the shield did not stop and nothing
+  mended. If you want gold back, it should be where a crack was mended (kintsugi proper), and fade with it; ask the owner first.
+- `src/veritome/reprogram.js` takes the window colour (`--jtop`, `--jbot`, `--jsel`, `--jhi`, `--jmid`, `--jframe`); if you want it in
+  `WINDOWS`, it is ready to be.
+
 **2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
 - **Stances**: the owner had the Sondelass's and the Lockheart's scrapped. The cutlass is back on the UAL sword idle as captured (the
   en garde tried crossed the blade and fisted the off-hand before the face), the rod on the torch idle; the Lockheart's is new (left hand
@@ -182,6 +192,12 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-03, from Petra (Round 41)**
+- Saggar's hello: "fired you in her himself" read as a slip; it is now "fired you in her with his own hands" (the Prince is "him",
+  the kiln "her"). Change the wording if you like.
+- `tracking.js`: a photograph no longer stuns (the owner), so the held-plate lines are "You hold it in the lens for a clean photograph."
+  and "Shutter chance! You catch it at the height of the moment." Yours to reword.
 
 **2026-10-03, from Petra (Round 40)**
 - **The owner's ruling: the Courier is never "she".** The Courier is androgynous, the player's self-insert. The game says "you" where it

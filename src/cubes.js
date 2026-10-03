@@ -16,6 +16,7 @@
 //   game.cubes.burst(pos, worth, { count, spread, up, stagger })     a fountain of cubes worth `worth` in all
 //   game.cubes.balance   game.cubes.earn(n, why)   game.cubes.spend(n, why) -> true | false
 // ---------------------------------------------------------------------------------------
+import { restartClass } from './restart.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { RAPIER, G, groups } from './physics.js';
@@ -197,7 +198,7 @@ export class Cubes {
       const up = this.shown >= 0 && b > this.shown;
       this.shown = b; this.num.textContent = `${b}`;
       this.el.classList.toggle('on', b > 0);
-      if (up) { this.el.classList.remove('pop'); void this.el.offsetWidth; this.el.classList.add('pop'); }
+      if (up) restartClass(this.el, 'pop'); // (no forced layout: restart.js)
     }
   }
 

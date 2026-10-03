@@ -25,8 +25,10 @@ const BASE = 2.2, PER = 0.42; // (the time to type a macro: seconds, and seconds
 
 const CSS = `
 #reprogram { position: fixed; left: 50%; bottom: calc(18% + var(--cine, 0vh)); transform: translateX(-50%); z-index: 30; display: none; min-width: 360px; max-width: 92vw;
-  background: linear-gradient(180deg, #211638, #0f0a1e); border: 3px solid #563889; box-shadow: 0 0 0 3px #0a0612, 0 12px 30px rgba(0,0,0,.6), inset 0 0 0 1px #7650b8;
-  padding: 10px 12px 12px; color: #d2c3f4; cursor: var(--jcur, default); font-family: var(--f-ui, sans-serif); }
+  /* (the window colour the player chose: ui/theme.js's frame and fill, so it matches every other window) */
+  border-style: solid; border-width: 14px; border-color: transparent; border-image: var(--jframe) 14 / 14px / 0 stretch; border-radius: 9px;
+  background: linear-gradient(180deg, rgba(var(--jtop), .96), rgba(var(--jbot), .97)) border-box; box-shadow: 0 10px 30px rgba(0,0,0,.55); text-shadow: 1px 1px 0 rgba(8,3,1,.75);
+  padding: 2px 4px 4px; color: var(--jhi, #f1d2b0); cursor: var(--jcur, default); font-family: var(--f-ui, sans-serif); }
 #reprogram.on { display: block; animation: rpin .12s cubic-bezier(.2,.8,.3,1) both; }
 @keyframes rpin { from { transform: translateX(-50%) scaleY(.05); } to { transform: translateX(-50%); } }
 #reprogram .hd { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -35,17 +37,17 @@ const CSS = `
 #reprogram button { cursor: var(--jcur-pointer, pointer); }
 #reprogram .list { display: grid; gap: 4px; }
 #reprogram .m { all: unset; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 5px 8px; border: 1px solid transparent; cursor: var(--jcur-pointer, pointer); }
-#reprogram .m:hover, #reprogram .m.hot { background: rgba(118,80,184,.28); border-color: #7650b8; }
-#reprogram .m .does { font: italic 13px var(--f-lore, serif); color: #b49be6; }
+#reprogram .m:hover, #reprogram .m.hot { background: rgba(var(--jsel), .3); border-color: var(--jmid); }
+#reprogram .m .does { font: italic 13px var(--f-lore, serif); color: var(--jmid); filter: brightness(1.35); }
 #reprogram .m .w { display: flex; gap: 8px; align-items: center; }
 #reprogram .typing { display: none; }
 #reprogram.typing .list { display: none; }
 #reprogram.typing .typing { display: grid; gap: 8px; justify-items: center; }
-#reprogram .line { display: flex; align-items: center; min-height: 20px; padding: 6px 10px; background: #0a0612; border: 1px solid #432c6e; }
+#reprogram .line { display: flex; align-items: center; min-height: 20px; padding: 6px 10px; background: rgba(0,0,0,.35); border: 1px solid var(--jmid); }
 #reprogram .line.bad { border-color: #ff7a9a; }
-#reprogram .clock { width: 100%; height: 6px; background: #170f2a; border: 1px solid #432c6e; }
-#reprogram .clock i { display: block; height: 100%; background: #b49be6; }
-#reprogram .help { display: none; font: italic 13px var(--f-lore, serif); color: #b49be6; margin-top: 8px; max-width: 420px; }
+#reprogram .clock { width: 100%; height: 6px; background: rgba(0,0,0,.35); border: 1px solid var(--jmid); }
+#reprogram .clock i { display: block; height: 100%; background: var(--jhi); }
+#reprogram .help { display: none; font: italic 13px var(--f-lore, serif); color: var(--jmid); filter: brightness(1.35); margin-top: 8px; max-width: 420px; }
 #reprogram.helping .help { display: block; }
 #reprogram.verbose .m .does { white-space: normal; }
 #reprogram .does { max-width: 360px; }

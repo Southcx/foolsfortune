@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE TITLE'S WORDS: the logo over THE FOOL'S PRECIPICE (title/scene.js), "PRESS START", and, once they have stepped off the hill, the menu:
 // STORY, DEBUG, SETTINGS, SOUND TEST (the owner's split: STORY is the game to come, DEBUG the sandbox as it is, every tool and room).
-// Keys or the mouse; the glove points at the choice (ui/theme.js). The first press wakes the sound if the browser
+// Keys or the mouse; the choice is lit (no pointing glove here: the owner's call, it flickered against the mouse's own). The first press wakes the sound if the browser
 // kept it asleep (so the title's loop plays under the scene: Wanda's note), and the next one starts. The words here are placeholders for Espada's (docs/HANDOFFS.md) and
 // the logo for Calissa's clay letters.
 //
@@ -52,7 +52,7 @@ export class TitleUI {
     this.key = (e) => this.onKey(e);
     addEventListener('keydown', this.key, true);
     el.addEventListener('mousedown', (e) => { if (e.button === 0 && !this.menuOn) { e.preventDefault(); this.start(); } });
-    game.theme?.watch?.(el, { sound: false, point: '.menu .o' });
+    game.theme?.watch?.(el, { sound: false });
   }
   get menuOn() { return this.el.classList.contains('menuon'); }
 
@@ -100,7 +100,6 @@ export class TitleUI {
     this.hot = (i + this.items.length) % this.items.length;
     this.items.forEach((it, k) => it.d.classList.toggle('hot', k === this.hot));
     if (!quiet) sfx.menuMove?.();
-    this.game.theme?.aim?.(this.items[this.hot].d);
   }
   pick(i = this.hot) {
     const it = this.items[i], g = this.game;

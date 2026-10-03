@@ -4,6 +4,8 @@
 // laid out in their body's own space (the bind pose: the seams ride with them as they move, never swim), and each crack is filled with gold
 // once enough has been earned. The more they have done, the more of the net is gold (vessel.js gives the share). Nothing moves or
 // flickers in it: a seam is there or it is not.
+// (R41: the gold is not laid on the body for now (uKin stays 0): grown from achievements it read as cracks that never mended. Only
+// the blow's cracks below are drawn, and they mend.)
 //
 // The cracks are a cellular pattern (Worley's: the distance to the nearest point less the distance to the next, small along the edges
 // between cells), each cell lit by a hash of its own, so that the gold arrives a cell at a time and in no order. The gold is half a

@@ -368,7 +368,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.log?.busy);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open); // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
@@ -591,7 +591,7 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
+    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !god.active && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
   };
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)
@@ -602,7 +602,7 @@ async function main() {
     overlay.style.display = 'flex'; input.enabled = false;
   });
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !god.active && !game.reprogram?.open) input.requestLock();
   });
 
   addEventListener('resize', () => {

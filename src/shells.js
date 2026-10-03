@@ -47,7 +47,7 @@ const SLIP = new THREE.Color(PALETTE.pale), SLIP_DRY = new THREE.Color(PALETTE.m
 function blobTexture(seed) {
   const c = document.createElement('canvas');
   c.width = c.height = 128;
-  const g = c.getContext('2d');
+  const g = c.getContext('2d', { willReadFrequently: true }); // (a canvas kept on the CPU: read back from the GPU's, getImageData stalled the frame for seconds (R41, the owner's dunes spikes))
   let s = seed * 9301 + 49297;
   const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
   g.globalCompositeOperation = 'lighter';
@@ -70,7 +70,7 @@ function blobTexture(seed) {
 }
 
 export class Shells {
-  /** The four splat textures, drawn the first time a slip shell lands rather than at boot. */
+  /** The four splat textures: drawn once the game is idle after boot (or the first time a slip lands, if that is sooner). */
   get blobTex() { return (this._blobTex ||= [0, 1, 2, 3].map(blobTexture)); }
 
   constructor(game) {
@@ -86,7 +86,8 @@ export class Shells {
     this.splats = [];
     this.pools = [];
     this.marked = new Set();
-    this._blobTex = null; // (made on first use: see the getter)
+    this._blobTex = null; // (made when the game is idle after boot, or on first use: see the getter)
+    (window.requestIdleCallback || ((f) => setTimeout(f, 3000)))(() => this.blobTex);
     this.glowOutline = makeGlowOutline(PALETTE.hot, 0.014);
     this.xray = makeGlowOutline(PALETTE.glow, 0.004, true);
 
