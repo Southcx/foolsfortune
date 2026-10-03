@@ -41,7 +41,7 @@ export class Crucibelle extends HeldTool {
       // hung at the right hip by its crown ring, the mouth down
       worn: { at: [-0.24, 1.02, 0.1], along: [0.05, -1, 0.15], out: [-1, 0, 0] },
       draw: { twist: 10, lean: 6, via: [-0.4, 1.15, 0.35] },
-      idle: 'torchIdle', idles: ['torchIdle', 'idle'], grip: 'torchIdle',
+      idle: 'stance:crucibelle', idles: ['stance:crucibelle', 'idle'], grip: 'torchIdle', // (its own stance: anim/stances.js)
     });
     this.model = new CrucibelleModel();
     this.mount();

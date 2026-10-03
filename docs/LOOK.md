@@ -88,6 +88,23 @@ world and on the HUD there is only punctuation: a glyph (`!`, `?`, `…`), a che
 Large wireframe volumes are low alpha, depth-tested, and shown only while the player is choosing. Nothing large changes
 brightness at a variable rate. Motion in the world is things actually moving.
 
+## 9. Motion: exaggerated, whimsical, grounded
+
+The owner's direction for how things move: exaggerated movements, whimsical and a little cartoonish, but still grounded, as Monster
+Hunter's animations are. In practice:
+
+- **A silhouette per tool.** Every Lachryma tool has its own idle stance, known from across a room (`src/anim/stances.js`): the
+  Dreamvane a pilgrim's upright crook held high in both hands; the Soul Brush on the shoulder like Monster Hunter's hammer, the other
+  hand on the hip; the cutlass a fencer's low guard with the free hand up behind; the rod held out over the water; the Crucibelle a
+  handbell by the ear, head tipped to listen; the Lockheart held to the ear like a ticking watch; the Veritome read at the chest.
+- **Captured motion, pushed.** Clips come from the free libraries (UAL, CMU) and are modified, not replaced: their swing from their
+  own average is exaggerated (1.3 to 1.5 times), and a pose is laid over them. The weight and timing stay the capture's (grounded);
+  the shapes are pushed (cartoonish).
+- **Clear poses, clean arcs.** A stance has one strong line through the body and the tool; no limb crosses the face or passes
+  through the body; a held tool is held where its weight would want it.
+- **Anticipation and follow-through on actions**, timed to the game's own beats (a move's timings are its feel and do not change:
+  the clip is time-warped onto them, as the carry is).
+
 ## Proposed persistent 3D HUD (the Mind's layer, in the world)
 
 | Element | Replaces / joins | Prior art |

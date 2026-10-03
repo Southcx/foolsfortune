@@ -221,8 +221,8 @@ export class SoulBrush extends Tech {
   animate(ch, base, dt) {
     const C = ch.clips;
     if (!this.track) {
-      this.track = new Track(C, new Set(['swordIdle', 'torchIdle', 'idle']));
-      this.track.play('swordIdle', 0, 0.01);
+      this.track = new Track(C, new Set(['stance:soulbrush', 'swordIdle', 'torchIdle', 'idle']));
+      this.track.play(C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle', 0, 0.01); // (the brush on her shoulder: anim/stances.js)
       this.P1 = C.pose(); this.P2 = C.pose();
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.slideW);

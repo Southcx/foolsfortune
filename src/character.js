@@ -6,6 +6,7 @@ import { T, PALETTE, DEG } from './config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform, dissolveUniform, dissolveBaseUniform } from './outline.js';
 import { Clips, Track } from './animator.js';
 import { authorAll } from './authored.js';
+import { bakeStances } from './anim/stances.js';
 import armorB64 from './assets/courier/courier_armor.png?b64';
 import maskB64 from './assets/courier/courier_mask.png?b64';
 import { dressFiligree } from './vfx/filigree.js';
@@ -316,6 +317,7 @@ export class Character {
     this.airT = 0;
     this.resetPose();
     authorAll(this); // (clips the libraries lack: built once here, from key poses solved on this very skeleton)
+    bakeStances(this); // (each Lachryma tool's own idle: UAL idles modified, anim/stances.js)
   }
 
   /**

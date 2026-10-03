@@ -11,7 +11,8 @@
 //   THREAT ARCS   outside the frame, an arc toward each creature that has noticed her, as wide as it is aware of her, cool (blue) far
 //                 off and hot (copper) close: Zone of the Enders' ring radar on the frame itself
 //
-// It brightens while something is happening (the pool moving, a threat near) and sinks to a faint ring when all is full and still.
+// It is a fight's HUD: out of sight outside combat (game.combat), back as a fight begins; in one, it brightens while something is
+// happening (the pool moving, a threat near) and sinks to a fainter ring when all is full and still.
 // Everything in it moves by easing; nothing blinks.
 //
 // Prior art: Zone of the Enders' ring radar (round the mech, threat by direction and colour), Dead Space's spine gauge (the gauge on the
@@ -148,7 +149,9 @@ export class HudRing {
       this.u.uThreat.value[i].set(t.a, t.w, t.heat, t.k);
       if (t.k > 0.3) this.busy = Math.max(this.busy, 1);
     }
-    const want = show ? (this.busy > 0 || fill < 0.999 ? 0.95 : 0.45) : 0;
+    // (a fight's HUD: it steps out of sight outside combat and comes back for it, easing with the fight's heat: combat.js)
+    const heat = g.combat ? g.combat.heat : 1;
+    const want = show ? (this.busy > 0 || fill < 0.999 ? 0.95 : 0.6) * Math.min(1, heat * 1.5) : 0;
     this.alpha += (want - this.alpha) * (1 - Math.exp(-dt * (want > this.alpha ? 6 : 2)));
     this.mesh.visible = this.alpha > 0.01;
     if (!this.mesh.visible) return;
