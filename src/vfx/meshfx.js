@@ -16,11 +16,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
-import circleB64 from '../assets/vfx/chest_circle.glb?b64';
-import helixB64 from '../assets/vfx/chest_helix.glb?b64';
-import shockB64 from '../assets/vfx/chest_shock.glb?b64';
-
-const SOURCES = { chest_circle: circleB64, chest_helix: helixB64, chest_shock: shockB64 };
+// (every baked mesh in src/assets/vfx/, by its file name: a new one is in the game the moment it is baked)
+const SOURCES = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/*.glb', { query: '?b64', import: 'default', eager: true }))
+  .map(([f, b64]) => [f.split('/').pop().replace(/\.glb$/, ''), b64]));
 
 const V = /* glsl */`
 attribute vec4 color;

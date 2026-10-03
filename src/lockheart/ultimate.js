@@ -12,6 +12,10 @@
 // ultimates (the moment everyone watches), the gacha's own ceremony (the spin made a show), and Okami's brush gods arriving out of the
 // light. The feedback blur (render/glow.js) and the mood dimmer (mood.js) are shared with the death and the chests.
 //
+// Its effects are the game's gold standard for a cinematic event (the owner: "until it is almost garish and overbearing"), played
+// through the one VFX system (vfx/vfx.js) by name: 'ult.invoke' (the whirl and the motes, held), 'ult.key' (each key, in its colour),
+// 'ult.ascend', 'ult.pillar' and 'ult.crown' (held), 'ult.land'. Their looks are tuned in vfx/library.js, not here.
+//
 //   game.ultimate = new Ultimate(game)   .begin(lockheart)   .update(rawDt)   .active
 //   UltTech (moves/techs.js list): holds the body in the channel while it happens
 // ---------------------------------------------------------------------------------------
@@ -67,6 +71,7 @@ export class Ultimate {
     // the keys, off the charm: they wheel round the coffin, then go into it
     this.keys = keys.map((id, i) => { const k = buildThing(id); if (!k) return null; k.group.scale.setScalar(2.4); g.scene.add(k.group); return { k, i, a: (i / Math.max(1, keys.length)) * Math.PI * 2, gone: false }; }).filter(Boolean);
     this.circle.visible = this.circle2.visible = true;
+    this.fx = { invoke: g.vfx?.play('ult.invoke', { pos: this.at }) };
     g.mood?.set('ult', { dim: 0.72, tint: 0x160a2e, tintK: 0.8, ease: 5 });
     g.music?.duck?.(12, 0.12);
     sfx.coffin?.(true);
@@ -102,7 +107,7 @@ export class Ultimate {
       if (!K.gone && t >= plunge) {
         K.gone = true; g.scene.remove(K.k.group); K.k.dispose?.();
         const col = degreeColor(K.i);
-        fx?.toneBurst?.(cof.clone(), col, 1, 0.8 * comp);
+        if (g.vfx) g.vfx.play('ult.key', { pos: cof, tint: col }); else fx?.toneBurst?.(cof.clone(), col, 1, 0.8 * comp);
         if (sfx.crystalStrike) sfx.crystalStrike(72 + [0, 3, 5, 7, 10][K.i % 5], 0, {}); else sfx.chime?.(0.8);
         this.cut = K.i; // (a cut for each key)
         g.player.shake = Math.max(g.player.shake || 0, 0.12);
@@ -113,24 +118,27 @@ export class Ultimate {
       K.k.group.position.set(cof.x + Math.cos(a) * rr, cof.y + Math.sin(t * 3 + K.i) * 0.08, cof.z + Math.sin(a) * rr);
       K.k.group.rotation.set(t * 3, a, 0);
     }
-    // ---- the pillar: a double helix of Lachryma up out of the open coffin, and motes drawn in to it
-    if (fx?.add?.emit && this.phase !== 'back') {
-      const lift = t > keysEnd ? 1 : 0.35;
+    // ---- the held effects follow what they are about (vfx/library.js 'ult.*')
+    // (while the wheel turns the pillar and the crown step back, so the wheel, which is what the player is reading, stands clear)
+    const clear = this.phase === 'wheel' ? 0.22 : 1;
+    if (this.fx?.crown) { this.fx.crown.pos.copy(cof); this.fx.crown.k = THREE.MathUtils.damp(this.fx.crown.k, clear, 5, raw); }
+    if (this.fx?.pillar) { this.fx.pillar.pos.copy(this.at); this.fx.pillar.k = THREE.MathUtils.damp(this.fx.pillar.k, clear, 5, raw); }
+    if (!g.vfx && fx?.add?.emit && this.phase !== 'back') { // (without the VFX system: the old stream)
       for (let s = 0; s < 2; s++) {
         const a = t * 7 + s * Math.PI, r = 0.7 + 0.25 * Math.sin(t * 2);
         _l.set(this.at.x + Math.cos(a) * r, this.at.y + 0.1, this.at.z + Math.sin(a) * r);
-        fx.add.emit({ pos: _l, vel: new THREE.Vector3(-Math.sin(a) * 1.2 * comp, (3 + 5 * lift) * comp, Math.cos(a) * 1.2 * comp), life: 1.1 / comp, size: 0.09, sizeEnd: 0.02, color: s ? LACH : GOLD, alpha: 0.95, drag: 0, gravity: 0 });
-      }
-      if (Math.random() < 0.7) {
-        const p = this.around(Math.random() * Math.PI * 2, 3 + Math.random() * 3, 0.2 + Math.random() * 2.5).clone();
-        fx.add.emit({ pos: p, vel: cof.clone().sub(p).multiplyScalar(1.6 * comp), life: 0.6 / comp, size: 0.05, sizeEnd: 0.01, color: Math.random() < 0.5 ? BLUE : LACH, alpha: 0.9, drag: 0, gravity: 0 });
+        fx.add.emit({ pos: _l, vel: new THREE.Vector3(-Math.sin(a) * 1.2 * comp, 8 * comp, Math.cos(a) * 1.2 * comp), life: 1.1 / comp, size: 0.09, sizeEnd: 0.02, color: s ? LACH : GOLD, alpha: 0.95, drag: 0, gravity: 0 });
       }
     }
     // ---- the beats
-    if (this.phase === 'invoke' && t >= keysEnd) { this.phase = 'ascend'; sfx.geyser?.(); for (let i = 0; i < 4; i++) fx?.toneBurst?.(cof.clone().setY(cof.y + i * 0.6), i % 2 ? LACH : GOLD, 1, (1.2 + i * 0.4) * comp); } // (rings of light stacked up the pillar)
+    if (this.phase === 'invoke' && t >= keysEnd) {
+      this.phase = 'ascend'; sfx.geyser?.();
+      if (g.vfx) { g.vfx.play('ult.ascend', { pos: cof }); this.fx.pillar = g.vfx.play('ult.pillar', { pos: this.at }); this.fx.crown = g.vfx.play('ult.crown', { pos: cof }); }
+      else for (let i = 0; i < 4; i++) fx?.toneBurst?.(cof.clone().setY(cof.y + i * 0.6), i % 2 ? LACH : GOLD, 1, (1.2 + i * 0.4) * comp); // (rings of light stacked up the pillar)
+    }
     if (this.phase === 'ascend' && t >= ascendEnd) { this.phase = 'wheel'; this.wheelT = t; this.spinNext(); }
     if (this.phase === 'landed' && t - this.landT >= LAND_HOLD) {
-      if (lh.queue.length) { this.phase = 'wheel'; this.wheelT = t; this.spinNext(); } else { this.phase = 'back'; this.backT = t; g.time?.free('ult'); g.mood?.free('ult'); }
+      if (lh.queue.length) { this.phase = 'wheel'; this.wheelT = t; this.spinNext(); } else { this.phase = 'back'; this.backT = t; g.time?.free('ult'); g.mood?.free('ult'); this.stopFx(); }
     }
     if (this.phase === 'back' && t - this.backT >= BACK) this.finish();
     // ---- the smear after a landing, easing off
@@ -156,7 +164,7 @@ export class Ultimate {
     } else if (this.phase === 'ascend') {
       // a crane: from low in front round and up over their shoulder as the coffin climbs
       const u = Math.min(1, (t - keysEnd) / ASCEND), k = u * u * (3 - 2 * u);
-      pos = this.around(0.5 + k * 2.6, 4.4, 1.0 + k * 2.4); look = _l.copy(cof).lerp(this.around(0, 0, 1.2), 0.45); fov = 6 + 6 * k; roll = 0.05 * (1 - k); ease = 3;
+      pos = this.around(0.5 + k * 2.6, 4.4, 1.0 + k * 2.4).clone(); look = _l.copy(cof).lerp(this.around(0, 0, 1.2), 0.45); // (pos cloned: around() writes one shared vector, and the look's around() overwrote it, putting the crane inside the Courier) fov = 6 + 6 * k; roll = 0.05 * (1 - k); ease = 3;
     } else if (this.phase === 'wheel' || this.phase === 'landed') {
       // from behind and below, looking up past them at the wheel in the sky; drifting round
       const w = t - this.wheelT;
@@ -185,18 +193,24 @@ export class Ultimate {
   landed(q) {
     const g = this.game, fx = g.fx, c = this.around(0, 0, 1);
     this.phase = 'landed'; this.landT = this.t; this.spins++;
-    this.flashK = 0.85;
-    g.time?.free('ult'); g.time?.pulse?.('ult', 0.02, 0.14);
-    fx?.shockwave?.(c.clone(), 8);
-    fx?.toneBurst?.(c.clone(), GOLD, 1, 3.5); fx?.toneBurst?.(c.clone().setY(c.y + 0.4), LACH, 1, 2.6); fx?.toneBurst?.(c.clone().setY(c.y + 0.8), WHITE, 1, 1.6);
-    g.player.shake = Math.max(g.player.shake || 0, 0.7);
+    g.time?.free('ult');
+    if (g.vfx) g.vfx.play('ult.land', { pos: c }); // (flash, hitstop, shake, smear, lights, dome, shocks, sparks: vfx/library.js)
+    else {
+      this.flashK = 0.85; g.time?.pulse?.('ult', 0.02, 0.14);
+      fx?.shockwave?.(c.clone(), 8);
+      fx?.toneBurst?.(c.clone(), GOLD, 1, 3.5); fx?.toneBurst?.(c.clone().setY(c.y + 0.4), LACH, 1, 2.6); fx?.toneBurst?.(c.clone().setY(c.y + 0.8), WHITE, 1, 1.6);
+      g.player.shake = Math.max(g.player.shake || 0, 0.7);
+      if (g.post?.accum) Object.assign(g.post.accum, { amt: 0.75, zoom: 0.01, spin: 0.004 });
+      this.smearT = 0.9; // (the smear eases off in update)
+    }
     if (sfx.crystalSweet) sfx.crystalSweet(60); sfx.chestBurst?.(4);
-    if (g.post?.accum) Object.assign(g.post.accum, { amt: 0.75, zoom: 0.01, spin: 0.004 });
-    this.smearT = 0.9; // (the smear eases off in update)
   }
+
+  stopFx() { for (const h of Object.values(this.fx || {})) h?.stop?.(); this.fx = {}; }
 
   finish() {
     const g = this.game;
+    this.stopFx();
     this.active = false; this.want = false;
     this.circle.visible = this.circle2.visible = false;
     for (const K of this.keys) if (!K.gone) { g.scene.remove(K.k.group); K.k.dispose?.(); }

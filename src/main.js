@@ -96,6 +96,7 @@ import { PsychicPulse } from './vfx/pulse.js';
 import { Filigree, HURT } from './vfx/filigree.js';
 import { HudRing } from './vfx/hudring.js';
 import { ChestFx } from './vfx/chestfx.js';
+import { Vfx } from './vfx/vfx.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { Cubes } from './cubes.js';
 import { Mood } from './mood.js';
@@ -373,6 +374,7 @@ async function main() {
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
+  game.vfx = new Vfx(game); // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
@@ -539,6 +541,21 @@ async function main() {
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
+  // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
+  game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
+    const P = game.player;
+    if (!name) { game.events.emit('vfx.list', { names: game.vfx.names() }); return; }
+    const f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
+    game.vfx.play(name, { pos: P.pos.clone().addScaledVector(f, 2).setY(P.pos.y + 1), dir: f.clone().negate(), tint: tint ? parseInt(tint.replace('#', ''), 16) : 0xffd76a, floor: P.pos.y });
+    game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
+  } });
+  game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
+    const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
+    const T = await import('./lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
+    const { table, mods } = T.oddsOf('heart.plain', ['key.brass']);
+    lh.queue = [{ id: T.spin(table), R: T.rates(table), power: 1.5, mods, heart: 'heart.plain', keys, i: 0 }];
+    game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
+  } });
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
   game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
   if (freshBuild) game.log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
@@ -893,6 +910,7 @@ async function main() {
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
     });
+    game.vfx.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane'); // (the compass is the Dreamvane's: worn, it shows)

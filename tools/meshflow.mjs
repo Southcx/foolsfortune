@@ -51,6 +51,38 @@ const RECIPES = {
     set: { 'motion.speedU': 0, 'motion.speedV': 0.6, 'material.blend': 'additive', 'material.fadeV': 0.45 },
     tex: 'band',
   },
+  // THE LOCKHEART'S OPENING (lockheart/ultimate.js, the effects in vfx/library.js 'ult.*')
+  // the pillar of Lachryma that stands up out of the open coffin to the sky: an open cylinder, streaks flowing up it
+  ult_pillar: {
+    preset: 'cylinder', params: { radius: 0.85, height: 9, segU: 32, segV: 6 },
+    set: { 'motion.speedU': 0.05, 'motion.speedV': -1.4, 'uv.tileU': 3, 'uv.tileV': 2, 'material.blend': 'additive', 'material.fadeV': 0.35 },
+    tex: 'streak',
+  },
+  // a crown of flame round the coffin's mouth: the tool's jagged-edged ring, licking upward
+  ult_crown: {
+    preset: 'crown', params: { radius: 0.75, height: 1.2, count: 9, inner: 0.4, segU: 96, segV: 8 },
+    set: { 'motion.speedU': 0.15, 'motion.speedV': -1.1, 'uv.tileU': 3, 'material.blend': 'additive', 'material.fadeV': 0.2 },
+    tex: 'flame',
+  },
+  // the whirl on the ground under the circle: arms spiralling in to the Courier
+  ult_vortex: {
+    preset: 'vortex', params: { radius: 4.2, width: 0.9, turns: 2.2, inner: 0.1, segU: 160, segV: 4 },
+    set: { 'motion.speedU': 0, 'motion.speedV': 0.9, 'uv.tileV': 4, 'material.blend': 'additive', 'material.fadeU': 0.3 },
+    tex: 'streak',
+  },
+  // the great helix wound round the pillar: two ribbons, tall
+  ult_helix: {
+    preset: 'twinhelix', params: { radius: 1.5, height: 8, turns: 3.5, width: 0.42, segU: 192, segV: 4 },
+    mods: [['taper', { axis: 'y', amount: 0.35 }]],
+    set: { 'motion.speedU': 0, 'motion.speedV': -1.2, 'uv.tileV': 6, 'material.blend': 'additive', 'material.fadeV': 0.2, 'material.fadeU': 0.25 },
+    tex: 'streak',
+  },
+  // the dome of light that goes up from the landing: a hemisphere, banded, rising
+  ult_dome: {
+    preset: 'hemisphere', params: { radius: 1, segU: 48, segV: 16 },
+    set: { 'motion.speedU': 0, 'motion.speedV': 0.8, 'uv.tileU': 1, 'uv.tileV': 2, 'material.blend': 'additive', 'material.fadeV': 0.5 },
+    tex: 'band',
+  },
 };
 
 // the textures, drawn in the page (no canvas in Node), greyscale with alpha: the game tints them
@@ -87,6 +119,18 @@ const TEXTURES = {
       gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.3, `rgba(255,255,255,${0.4 + r() * 0.6})`); gr.addColorStop(1, 'rgba(255,255,255,0)');
       g.fillStyle = gr;
       for (const dy of [-N, 0, N]) g.fillRect(x - w / 2, y + dy, w, h); // (tiles in V)
+    }
+  },
+  flame: (g, N) => {
+    g.clearRect(0, 0, N, N);
+    // tongues of flame: tall soft shapes rising from the bottom (V = 0), tiling across U
+    let s = 5; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 18; i++) {
+      const x = r() * N, w = N * (0.05 + r() * 0.08), h = N * (0.4 + r() * 0.55);
+      const gr = g.createLinearGradient(0, N, 0, N - h);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.6, 'rgba(255,255,255,0.5)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr;
+      for (const dx of [-N, 0, N]) { g.beginPath(); g.moveTo(x + dx - w, N); g.quadraticCurveTo(x + dx - w * 0.6, N - h * 0.6, x + dx, N - h); g.quadraticCurveTo(x + dx + w * 0.6, N - h * 0.6, x + dx + w, N); g.fill(); }
     }
   },
   band: (g, N) => {
