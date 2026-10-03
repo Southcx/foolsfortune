@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { Tech } from '../moves/techs.js';
 import { sfx } from '../audio.js';
+import { clearShot } from '../shotclear.js';
 
 const CRACK = 1.15, BURST = 1.2, DARK = 2.7, REFORM = 3.6, END = 4.6; // (the beats, in real seconds)
 const LACH = 0xb49be6;
@@ -53,6 +54,7 @@ export class Death {
     // the camera: in close, circling as it cracks; drawn up and back as it bursts
     const a = this.yaw + Math.PI + 0.6 + t * 0.35, r = t < BURST ? 2.4 - t * 0.5 : 1.8 + (t - BURST) * 2.2, h = t < BURST ? 1.2 : 1.2 + (t - BURST) * 1.6;
     _p.set(this.at.x + Math.sin(a) * r, this.at.y + h, this.at.z + Math.cos(a) * r);
+    clearShot(g, mid, _p); // (never inside a wall)
     g.cinema?.shot('death', { pos: _p, look: mid, fov: t < BURST ? -10 + t * 4 : -4, bars: 1, ease: t < BURST ? 3 : 2, roll: t < BURST ? -0.04 * t : 0.04 });
     // the smear: the frame fed back into itself, harder once it bursts
     if (post?.accum && t < REFORM) Object.assign(post.accum, t < BURST ? { amt: 0.45 * Math.min(1, t / 0.5), zoom: 0.004, spin: 0.002 } : { amt: 0.88, zoom: 0.012, spin: 0.006 });

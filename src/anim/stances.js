@@ -16,6 +16,7 @@
 //                solved once here, at bake, as authored.js solves its key poses; the hand keeps its own turn, the clip's motion rides
 //                on top. For a hand that has to be somewhere exact (at an ear, on a hip), which turns alone get to only by guesswork
 //   drop         the hips lowered (metres): a wider, readier stance
+//   hold         0..1: one frame of the base held for the whole clip (a pose, not a loop)
 // The hand that holds the tool keeps the tool (the tool rides the hand: tools/grip.js); a second hand on it is the light IK a hand
 // closing on a haft is allowed.
 //
@@ -48,12 +49,20 @@ export const STANCES = {
       ['head', 'z', 12], ['head', 'y', -10],
     ],
   },
-  // THE LOCKHEART: the coffin held to her ear on its chain, the way a child listens to a pocket watch, the other hand cupped up
-  // under the elbow; she leans into it, as if something in it were ticking.
+  // THE LOCKHEART (R40, the owner's direction): the coffin held gingerly in the LEFT hand, in front of the chest, the head tipped down to
+  // it as to something that might wake; the right hand free, hanging as it hangs at rest.
   lockheart: {
-    base: 'idle', overlay: [['torchIdle', '(upper_arm|forearm|hand|f_|thumb).*R$']], exaggerate: 1.4,
-    rot: [['spine', 'z', 6], ['spine002', 'z', -8], ['head', 'z', 16], ['head', 'x', 6]],
-    reach: [['R', [-0.17, 1.52, 0.07], [-0.55, 1.2, -0.05]], ['L', [-0.2, 1.24, 0.14], [0.25, 1.0, 0.1]]], // (the right hand at her ear; the left cupped under that elbow)
+    base: 'idle', exaggerate: 1.15,
+    rot: [['head', 'x', 10], ['head', 'z', 7], ['spine003', 'x', 3]],
+    reach: [['L', [0.08, 1.2, 0.27], [0.45, 0.95, -0.1]]],
+  },
+  // THE LOCKHEART'S CHANNEL (R40): FFXI's black magic cast, the arms out in front and the hands joined, thumbs and fingers making an
+  // O; what it draws streams in through the O to the coffin floating behind it. One held frame of the push (its arms out), the hands
+  // brought together (over the upright idle: the push leaned the whole body into a shove).
+  lockheartChannel: {
+    base: 'idle', hold: 0.5,
+    rot: [['spine002', 'x', 3], ['head', 'x', 4]],
+    reach: [['L', [0.04, 1.27, 0.62], [0.6, 1.05, 0.2]], ['R', [-0.04, 1.27, 0.62], [-0.6, 1.05, 0.2]]],
   },
   // THE SOUL BRUSH: Monster Hunter's hammer at rest. The great brush laid back over her right shoulder, the bristles up behind her,
   // the other hand on her hip: a painter between strokes, at her ease, chin up.
@@ -62,19 +71,13 @@ export const STANCES = {
     rot: [['spine', 'y', 10], ['spine002', 'x', -4], ['handR', 'x', -100], ['handR', 'z', 18], ['head', 'x', -6], ['head', 'z', -5]],
     reach: [['R', [-0.2, 1.36, 0.14], [-0.45, 1.05, 0.1]], ['L', [0.2, 0.98, 0.0], [0.55, 1.1, -0.2]]], // (the brush hand at her shoulder; the other on her hip)
   },
-  // THE SONDELASS, CUTLASS: a fencer's guard, low and sideways. The blade forward and low, the body turned to put it toward the foe,
-  // the free hand up behind her for balance, as a duellist holds it.
+  // THE SONDELASS, CUTLASS (R40, redone): en garde. The sword arm out in front at the chest, the point toward the foe, the body turned
+  // a little sideways behind it, the free hand raised up and back for balance, clear of the blade. Over the UAL sword idle, so the
+  // fingers and the breathing are the clip's. (The rod and the hook use the UAL torch idle as it is: the rod held up.)
   cutlass: {
-    base: 'swordIdle', exaggerate: 1.45,
-    rot: [['spine', 'y', -22], ['spine002', 'x', 6], ['head', 'y', 18]],
-    reach: [['L', [0.38, 1.42, -0.22], [0.35, 1.05, -0.4]]],
-  },
-  // THE SONDELASS, ROD AND HOOK: an angler on the bank. The rod up and out over the water, the butt at her hip, leaning in to watch
-  // the line, the other hand loose at the reel.
-  rod: {
-    base: 'idle', overlay: [['torchIdle', '(upper_arm|forearm|hand|f_|thumb).*R$']], exaggerate: 1.35,
-    rot: [['spine002', 'x', 9], ['spine003', 'x', 4], ['handR', 'x', 25], ['head', 'x', 8]],
-    reach: [['R', [-0.18, 1.05, 0.3], [-0.5, 1.0, -0.1]], ['L', [-0.04, 0.98, 0.3], [0.4, 0.95, 0.0]]],
+    base: 'swordIdle', exaggerate: 1.1,
+    rot: [['spine', 'y', -14], ['head', 'y', 12]],
+    reach: [['R', [-0.22, 1.02, 0.44], [-0.6, 0.85, -0.1]], ['L', [0.44, 1.5, -0.3], [0.62, 1.1, -0.42]]],
   },
 };
 
@@ -100,6 +103,8 @@ export function bakeStances(ch, table = STANCES) {
     const src = C.clips[S.base];
     if (!src) continue;
     const n = src.n, q = new Float32Array(src.q), p = new Float32Array(src.p);
+    // (hold: one frame of the clip, the same for all of it: a pose held, not a loop)
+    if (S.hold !== undefined) { const nb4 = nb * 4, h = Math.round(S.hold * (n - 1)); for (let f = 0; f < n; f++) { q.copyWithin(f * nb4, h * nb4, (h + 1) * nb4); p.copyWithin(f * 3, h * 3, h * 3 + 3); } }
     for (const [clip, pattern] of S.overlay || []) {
       const o = C.clips[clip];
       if (!o) continue;

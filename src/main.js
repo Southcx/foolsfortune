@@ -10,6 +10,7 @@ import { Input } from './input.js';
 import { Player } from './player.js';
 import { HelpMenu } from './help/menu.js';
 import { Death, DeathTech } from './vessel/death.js';
+import { Ultimate, UltTech } from './lockheart/ultimate.js';
 import { Weapon } from './weapon.js';
 import { Hud } from './hud.js';
 import { buildTuningPanel } from './tuning.js';
@@ -318,6 +319,7 @@ async function main() {
   game.vessel.dress(character);
   game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks her where it lands; the cracks mend: vessel/damage.js)
   game.combat = new Combat(game); // (is she fighting? one signal for the HUD ring and the rest: combat.js)
+  game.ultimate = new Ultimate(game); // (the Lockheart opened with a key: the Courier's ultimate, lockheart/ultimate.js)
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: vessel/death.js)
 
   const input = new Input(renderer.domElement);
@@ -331,7 +333,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -780,7 +782,7 @@ async function main() {
     game.log.tick(dt);
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.combat?.update(dt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); game.jellies.update(dt); game.stun.update(dt); game.dissolve.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());

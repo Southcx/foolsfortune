@@ -197,14 +197,14 @@ export class Sondelass extends Tech {
   animate(ch, base, dt) {
     const C = ch.clips, P = ch.P;
     if (!this.track) {
-      this.track = new Track(C, new Set(['stance:cutlass', 'stance:rod', 'swordIdle', 'torchIdle', 'idle']));
-      this.track.play(C.clips['stance:rod'] ? 'stance:rod' : 'torchIdle', 0, 0.01);
+      this.track = new Track(C, new Set(['stance:cutlass', 'swordIdle', 'torchIdle', 'idle']));
+      this.track.play('torchIdle', 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose();
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
     if (layerW <= 0.001) return;
     const tr = this.track;
-    const want = C.clips['stance:cutlass'] ? (this.form === 'cutlass' ? 'stance:cutlass' : 'stance:rod') : (this.form === 'cutlass' ? 'swordIdle' : 'torchIdle'); // (its forms' own stances: anim/stances.js)
+    const want = this.form === 'cutlass' ? (C.clips['stance:cutlass'] ? 'stance:cutlass' : 'swordIdle') : 'torchIdle'; // (the cutlass en garde: anim/stances.js; the rod held up, as the UAL torch idle holds it)
     if (!this.cutlass.playing && !this.angler?.castClip && tr.cur !== want) tr.play(want, 0, 0.25);
     tr.update(dt);
     const layer = tr.sample(this.P1);

@@ -7,7 +7,7 @@
 // Prior art: the gacha banner's spin and the prize wheel of the game show (Wheel of Fortune), the slot reel's ease-out and its ticks,
 // and Persona's arcana roulette after a battle (the odds shown as you watch).
 //
-//   const w = new Wheel(scene)   w.spin(rates, chosenId, pos, face, onStop)   w.update(dt)   w.busy
+//   const w = new Wheel(scene)   w.spin(rates, chosenId, pos, face, onStop, size = 1)   w.update(dt)   w.busy
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OUTCOMES } from './table.js';
@@ -32,7 +32,8 @@ export class Wheel {
   get busy() { return this.t >= 0; }
 
   /** Lay the sectors out (best last, clockwise from the top), and spin to land on `chosen`. */
-  spin(rates, chosen, pos, face, onStop) {
+  spin(rates, chosen, pos, face, onStop, size = 1) {
+    this.size = size; // (the opening puts it up in the sky, enormous: lockheart/ultimate.js)
     for (const c of [...this.disc.children]) { c.geometry.dispose(); c.material.dispose(); this.disc.remove(c); }
     let a = 0, target = 0;
     for (const r of rates) {
@@ -58,11 +59,11 @@ export class Wheel {
     const u = Math.min(1, this.t / DUR), k = 1 - Math.pow(1 - u, 3.2); // (an ease-out: it slows into its stop)
     const ang = this.from + (this.to - this.from) * k;
     this.disc.rotation.z = ang;
-    this.group.scale.setScalar(Math.min(1, this.t / 0.18));
+    this.group.scale.setScalar(this.size * Math.min(1, this.t / 0.18));
     // a tick each time a sector's edge passes the pointer
     const turn = ang % (Math.PI * 2), edge = this.edges.findIndex((x) => x > turn);
     if (edge !== this.lastEdge) { this.lastEdge = edge; sfx.wheelTick?.(1 - u); }
     if (this.t >= DUR && !this.stopped) { this.stopped = true; this.onStop?.(); }
-    if (this.t >= DUR + HOLD) { this.group.scale.setScalar(Math.max(0.01, 1 - (this.t - DUR - HOLD) / 0.2)); if (this.t >= DUR + HOLD + 0.2) { this.t = -1; this.stopped = false; this.group.visible = false; } }
+    if (this.t >= DUR + HOLD) { this.group.scale.setScalar(this.size * Math.max(0.01, 1 - (this.t - DUR - HOLD) / 0.2)); if (this.t >= DUR + HOLD + 0.2) { this.t = -1; this.stopped = false; this.group.visible = false; } }
   }
 }

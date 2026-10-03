@@ -28,8 +28,12 @@ import { sfx } from '../audio.js';
 // Balatro's stacking modifiers, the reliquary and the mourning locket (a coffin on a chain that holds what is left of something), and
 // Persona's and Fire Emblem's "luck" as a number that is spent.
 // ---------------------------------------------------------------------------------------
+const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
 const CAP = 100, KEY = 'foolsfortune.pneuka.lockheart', HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
+const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
+const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _hm = new THREE.Matrix4(), _mb = new THREE.Matrix4();
+const smoothK = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 
 export class Lockheart extends HeldTool {
   constructor(mgr) {
@@ -38,7 +42,7 @@ export class Lockheart extends HeldTool {
       // on its chain at the breastbone (the chest bone: it moves with her breathing), hanging
       worn: { at: [0, 1.3, 0.14], along: [0, -1, 0.12], out: [0, 0, 1], bone: 'spine003' },
       draw: { twist: 4, lean: 4, via: [-0.25, 1.3, 0.4] },
-      idle: 'stance:lockheart', idles: ['stance:lockheart', 'idle'], grip: 'torchIdle', // (its own stance: anim/stances.js)
+      idle: 'stance:lockheart', idles: ['stance:lockheart', 'idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: anim/stances.js; hands() below)
     });
     this.model = { group: new THREE.Group() };
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));
@@ -62,9 +66,9 @@ export class Lockheart extends HeldTool {
     const id = this.heart || 'heart.plain';
     if (this.coffinId === id) return this.cof;
     if (this.cof) { this.model.group.remove(this.cof.group); this.cof.dispose(); }
-    this.cof = buildCoffin(id, 1.5);
+    this.cof = buildCoffin(id, 3.0); // (R40: twice the size it was)
     // (the coffin hangs below the bail along the tool's +X: its head toward the hand)
-    this.cof.group.rotation.z = -Math.PI / 2; this.cof.group.position.x = 0.17;
+    this.cof.group.rotation.z = -Math.PI / 2; this.cof.group.position.x = 0.22;
     this.cof.group.traverse((o) => { if (o.isMesh && o.geometry.boundingSphere?.radius > 0.02) addOutline(o); });
     this.model.group.add(this.cof.group);
     this.coffinId = id;
@@ -127,12 +131,13 @@ export class Lockheart extends HeldTool {
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, power: +power.toFixed(2), spins: mods.spins });
-    this.next();
+    if (g.ultimate) g.ultimate.begin(this); else this.next(); // (R40: the Courier's ultimate, a show the game stops for: lockheart/ultimate.js)
   }
   /** The next spin in the queue: the wheel put up over the coffin, facing her. */
-  next() {
+  next(spec = null) {
     const q = this.queue[0];
     if (!q) return;
+    if (spec) { const at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : this.P.pos.clone(); this.wheel.spin(q.R, q.id, spec.pos, spec.face, () => this.land(q, at), spec.size); return; }
     const g = this.game, P = this.P, cam = g.camera;
     const at = this.cof ? this.cof.group.getWorldPosition(_a).clone() : P.pos.clone().setY(P.pos.y + 1.4);
     const f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw));
@@ -147,6 +152,7 @@ export class Lockheart extends HeldTool {
     const place = P.pos.clone().addScaledVector(_b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw)), 1.2);
     const n = OUTCOME_FX[q.id]?.(g, place, { power: q.power, reach, by: 'courier' }) ?? 0;
     g.events?.emit('lockheart.outcome', { outcome: q.id, rank: OUTCOMES[q.id]?.rank ?? 0, power: +q.power.toFixed(2), n, heart: q.heart, spin: q.i + 1 });
+    if (g.ultimate?.active) { this.queue.shift(); g.ultimate.landed(q); for (let e = 0; e < q.mods.echo; e++) setTimeout(() => { if (!g.player) return; OUTCOME_FX[q.id]?.(g, g.player.pos.clone(), { power: q.power, reach, by: 'courier' }); g.events?.emit('lockheart.echo', { outcome: q.id }); }, ECHO_DELAY * 1000 * (e + 1)); return; }
     for (let e = 0; e < q.mods.echo; e++) setTimeout(() => { if (!g.player) return; OUTCOME_FX[q.id]?.(g, g.player.pos.clone(), { power: q.power, reach, by: 'courier' }); g.events?.emit('lockheart.echo', { outcome: q.id }); }, ECHO_DELAY * 1000 * (e + 1));
     setTimeout(() => { this.queue.shift(); if (this.queue.length) this.next(); else sfx.coffin?.(false); }, 1100);
   }
@@ -164,9 +170,15 @@ export class Lockheart extends HeldTool {
     const k = Math.min(1, this.charge / this.fill), C = this.cof;
     if (C) {
       C.inside.material.color.setRGB(0.3 + 0.7 * k, 0.2 + 0.7 * k, 0.15 + 0.6 * k);
-      const lidOpen = this.wheel.busy || this.queue.length ? 1.6 : this.hooverW > 0.05 ? 0.5 * this.hooverW : this.full ? 0.12 : 0;
+      const lidOpen = this.cine && this.cine.scale > 1.5 ? 2.2 : this.wheel.busy || this.queue.length ? 1.6 : this.hooverW > 0.05 ? 0.5 * this.hooverW : this.full ? 0.12 : 0;
       this.lidK = THREE.MathUtils.damp(this.lidK, lidOpen, 8, raw);
       C.lid.rotation.x = -this.lidK;
+    }
+    // during the opening the coffin burns gold from within (lockheart/ultimate.js): it is the light of the show, not a silhouette
+    const glow = this.cine ? 0.35 + 0.65 * Math.min(1, (this.cine.scale - 1) / 1.8) : 0;
+    if (C && (glow > 0 || this.glowWas)) {
+      C.group.traverse((o) => { const m = o.material; if (!o.isMesh || !m?.emissive) return; m.userData.em0 ??= { c: m.emissive.getHex(), k: m.emissiveIntensity }; if (glow > 0) { m.emissive.setHex(0xffc65c); m.emissiveIntensity = glow; } else { m.emissive.setHex(m.userData.em0.c); m.emissiveIntensity = m.userData.em0.k; } });
+      this.glowWas = glow > 0;
     }
     if ((this.saveT -= dt) <= 0) { this.saveT = 3; this.save(); }
   }
@@ -196,11 +208,14 @@ export class Lockheart extends HeldTool {
       }
     }
     // what it draws, seen going in: a cone of fine motes toward the coffin
-    const fx = g.fx?.alpha;
-    if (fx?.emit && Math.random() < dt * 40 * this.hooverW) {
+    // (R40: Lachryma-coloured, through the O of the joined hands: aimed at the ring first, then on into the coffin behind it)
+    const fx = g.fx?.add, ring = P.pos.clone().addScaledVector(f, 0.62).setY(P.pos.y + 1.27);
+    for (let n = 0; fx?.emit && n < 3; n++) {
+      if (Math.random() > dt * 30 * this.hooverW) continue;
       const a = (Math.random() - 0.5) * HOOVER.cone * 2, r = 2 + Math.random() * (HOOVER.range - 2);
-      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + Math.random() * 1.4);
-      fx.emit({ pos: p, vel: mouth.clone().sub(p).multiplyScalar(1.4), life: 0.7, size: 0.05, sizeEnd: 0.02, color: new THREE.Color(0xe8d7b6), alpha: 0.6, drag: 0, gravity: 0 });
+      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + Math.random() * 1.6);
+      const life = 0.55;
+      fx.emit({ pos: p, vel: ring.clone().sub(p).multiplyScalar(1 / life), life, size: 0.06, sizeEnd: 0.015, color: MOTE[n % 3], alpha: 0.85, drag: 0, gravity: 0 });
     }
   }
 
@@ -208,8 +223,36 @@ export class Lockheart extends HeldTool {
 
   // ---------------------------------------------------------------- animation
   pose(C, out) {
-    if (this.hooverW > 0.02) { C.sample('watering', 0.5, out, false); return { pose: out, w: this.hooverW * 0.8 }; }
+    // the channel (FFXI's black magic cast): the arms out and the hands joined in an O; the coffin floats behind it (hands())
+    const w = Math.max(this.hooverW, this.castW || 0);
+    if (w > 0.02) { C.sample(C.clips['stance:lockheartChannel'] ? 'stance:lockheartChannel' : 'watering', 0.5, out, false); return { pose: out, w }; }
     return null;
+  }
+
+  /** Where the coffin is (R40): on its chain at the chest when worn; drawn, dangling by its chain from the LEFT hand's fingers, held
+   *  gingerly (the right hand is free); channelling, out of the hand and floating just behind the O of the joined hands, its lid
+   *  toward them, so what it draws comes in through the O. (First person: the shared held placement.) */
+  hands(ch) {
+    const P = this.P;
+    if ((P.fp && !this.cine) || !this.holsterBone) return super.hands(ch);
+    ch.root.updateMatrixWorld(true);
+    const g = this.model.group, yaw = P.bodyYaw ?? P.yaw, t = performance.now() / 1000;
+    const f = _f.set(Math.sin(yaw), 0, Math.cos(yaw)), r = _r.set(-Math.cos(yaw), 0, Math.sin(yaw));
+    _hm.multiplyMatrices(this.holsterBone.matrixWorld, this.holsterLocal).decompose(_p0, _q0, _s0);
+    // tool +X down (it hangs from its bail), +Z forward
+    _x.set(0, -1, 0); _y.crossVectors(f, _x); _mb.makeBasis(_x, _y, f); _q1.setFromRotationMatrix(_mb);
+    ch.arm.L.hand.getWorldPosition(_p1).addScaledVector(f, 0.03).y -= 0.02;
+    _p1.y += Math.sin(t * 2.1) * 0.004; // (it sways a little on its chain)
+    // the channel's place: behind the O, at the chest
+    _p2.copy(P.pos).addScaledVector(f, 0.36).setY(P.pos.y + 1.5 + Math.sin(t * 3) * 0.015); // (the bail: the coffin hangs 0.22 below it, level with the O)
+    const k = smoothK(this.drawT), c = this.hooverW;
+    _p1.lerp(_p2, c);
+    g.position.copy(_p0).lerp(_p1, k); g.quaternion.copy(_q0).slerp(_q1, k); g.scale.copy(_s0);
+    // the opening (lockheart/ultimate.js) takes it: up over the head, growing, turning
+    const U = this.cine;
+    if (U) { g.position.copy(U.pos); g.scale.copy(_s0).multiplyScalar(U.scale); g.quaternion.multiplyQuaternions(_q.setFromAxisAngle(_x.set(0, 1, 0), U.spin), _q1); }
+    g.updateMatrixWorld(true);
+    this.placed?.(g.matrixWorld);
   }
   fpArc() { return { lift: this.wheel.busy ? 0.1 : 0 }; }
   restSig() { return `${this.coffinId}|${Math.round(this.lidK * 20)}|${Math.round(Math.min(1, this.charge / this.fill) * 20)}`; }
