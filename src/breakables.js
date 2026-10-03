@@ -132,6 +132,9 @@ export class Breakables {
       .setActiveEvents(RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS);
     const col = this.physics.world.createCollider(cd, body);
     col.setContactForceEventThreshold(body.mass() * 45);
+    // (Rapier wakes a body at the next step when a collider is attached to it: a pot set down at rest is put back to sleep after that
+    //  step (preStep, below), so it is parked in its prop batch at once instead of every pot in the room simulating for two seconds: R40)
+    const settle = !fixed && !def.hang && !def.popIn;
 
     const size = Math.max(P.fullHeight, P.rMax * 2);
     const gold = def.gold || 0;
@@ -140,7 +143,7 @@ export class Breakables {
       type: 'breakable', def, kind, P, mesh, body, col, alive: true,
       hp, maxHp: hp, crackStage: 0, gold,
       size, color: new THREE.Color(color), extras,
-      prevVel: new THREE.Vector3(),
+      prevVel: new THREE.Vector3(), sleepAfter: settle,
     };
     // rebuilt by a clapperjar: gold seams where it broke
     if (gold) setCracks(ent, { gold: randomPaths(P, 3 + gold * 2, size * 0.55) });
@@ -756,6 +759,7 @@ export class Breakables {
   // Record velocities before the physics step so impact breaks use pre-collision speed.
   preStep() {
     for (const ent of this.items) {
+      if (ent.sleepAfter) { if (ent.stepped) { ent.sleepAfter = false; ent.body.sleep(); } else ent.stepped = true; } // (after its first step: see spawn)
       if (ent.body.isSleeping()) { ent.prevVel.set(0, 0, 0); continue; }
       const v = ent.body.linvel();
       ent.prevVel.set(v.x, v.y, v.z);

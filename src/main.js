@@ -573,6 +573,7 @@ async function main() {
       game.events.emit('title.enter', { mode: title.mode });
     }
   };
+  title.end = endTitle; // (tests and the profiler skip the title: tools/ and the scratch harness)
   title.ui = new TitleUI(game, {
     onStart: () => titleScene.go(),
     onChoose: (mode) => {
