@@ -24,6 +24,7 @@ import { sfx } from '../audio.js';
 import { DUNE, BARRIER, OASIS } from '../dunes.js';
 import { ECON } from '../econ/table.js';
 import { tuneFor, readStrike, refNote } from './tuning.js';
+import { degreeColor } from '../music/tone.js';
 
 /** A plain tone (two, `beat` hertz apart, so it wavers) until Wanda's crystal voices land (docs/HANDOFFS.md). */
 function placeholderTone(midi, beat, dur, gain) {
@@ -94,7 +95,10 @@ export class Crystals {
 
   /** A spire's matrix: its formation's state (how much of it is left, how far it has risen from the sand). */
   place(s) {
-    const e = s.e, left = e.regrowT > 0 ? Math.min(1, 0.22 + 0.78 * Math.max(0, 1 - e.regrowT / GROW)) : 0.22 + 0.78 * (e.hp / e.maxHp);
+    // (the main spire stands whole until the formation gives: it is the stave being sounded, up and down, so it must not shrink
+    //  under the pick (owner's note, R40); the lesser spires about it are what the blows knock away)
+    const e = s.e, main = s === e.spires[0], whole = main ? (e.hp > 0 ? 1 : 0.22) : 0.22 + 0.78 * (e.hp / e.maxHp);
+    const left = e.regrowT > 0 ? Math.min(1, 0.22 + 0.78 * Math.max(0, 1 - e.regrowT / GROW)) : whole;
     const k = left * e.rise;
     _s.set(s.w, s.h * Math.max(0.001, k), s.w);
     _p.copy(e.ground).add(s.at).setY(e.ground.y + s.at.y - (1 - e.rise) * 0.4);
@@ -124,6 +128,8 @@ export class Crystals {
     // the reference: the sweet spot's own note, held while the fork rings (Wanda's sfx.crystalRef; a plain tone until then)
     const ref = refNote(e.tune);
     if (sfx.crystalRef) sfx.crystalRef(ref); else placeholderTone(ref, 0, 3.5, 0.14);
+    this.game.music?.duck?.(4, 0.15); // (the music steps back while it rings: the ear has work to do)
+    this.game.fx?.toneBurst?.(e.ground.clone().setY(e.ground.y + 0.3), degreeColor(0), 0.8, 1 + e.r * 0.5); // (the reference: gold, the root)
     this.game.events?.emit('crystal.ref', { note: ref });
   }
 
@@ -154,6 +160,11 @@ export class Crystals {
     const last = e.hp <= 0;
     g.baubles?.spawn(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2 });
     g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6 + Math.round(R.near * 14), dust: 2 });
+    // the note made visible at the height struck, in its colour (gold when true: music/tone.js), and chips knocked off the lesser spires
+    const at = e.ground.clone().setY(e.ground.y + u * e.h * 0.9);
+    g.fx?.toneBurst?.(at, degreeColor(R.deg), R.sweet ? 1 : 0.3 + 0.5 * R.near, 0.6 + e.r * 0.4);
+    g.fx?.chipsOff?.(p.clone(), dir.clone().negate(), R.sweet ? 14 : 5, 0.8 + e.size * 0.4);
+    g.music?.duck?.(R.sweet ? 3 : 1.6, 0.25);
     sfx.cubeClack?.(1);
     if (sfx.crystalStrike) sfx.crystalStrike(R.midi, R.beat, { dense: T.kind === 'dense', last }); else placeholderTone(R.midi, R.beat, T.kind === 'dense' ? 1.1 : 1.8, 0.16);
     g.ai?.stimuli.emit('noise', p, { radius: 18, strength: 0.6, by, source: e });

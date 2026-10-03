@@ -586,7 +586,7 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open) { overlay.style.display = 'flex'; input.enabled = false; }
+    if (!locked && !guiOpen && !modalOpen() && !god.active && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
   };
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)

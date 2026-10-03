@@ -6,7 +6,8 @@
 //   ABSORPTION  (mask 1, the fine veins)     Lachryma coming in: the veins fill, the schiller running up them, and settle. At rest
 //                                            they hold a little of it, inked in black labradorite as deep as her pool is full: the
 //                                            armour is the gauge (a line that glows with its load beats a gauge: CLAUDE.md)
-//   CHANNELLING (mask 2, the veins and nodes) Lachryma going out (a shot, a dash, an art, a tool drinking): it lights while it flows
+//   CHANNELLING (mask 2, the veins and nodes) Lachryma going out (the psygun's charge, a dash, an art, a tool drinking): it lights while
+//                                            it flows; the charge lights it faint at first and brighter as it builds (a plain shot: not at all)
 //   DAMAGE      (mask 3, the bold strokes)   a blow taken: the strokes flash pale and hot, and darken back slowly
 //
 // Drawn as the Mind and Lachryma are drawn (vfx/labradorite.js): ink with the schiller rising in it, its hue set by the angle of the
@@ -82,7 +83,8 @@ export class Filigree {
     this.abs = 0; this.chan = 0; this.dmg = 0; this.flow = 0; this.rest = 1;
     const pool = game.lachryma;
     pool?.on('gain', ({ amount }) => this.absorb(Math.min(1, 0.25 + amount / 25)));
-    pool?.on('spend', ({ amount }) => this.channel(Math.min(1, 0.3 + amount / 20)));
+    // (the psygun's plain shots and its charge do not flash it: the charge lights it, rising as it builds: update)
+    pool?.on('spend', ({ amount, tag }) => { if (!/^(shot|charge|beam)/.test(tag || '')) this.channel(Math.min(1, 0.3 + amount / 20)); });
     game.events?.on('impulse', ({ why, mag }) => { if (HURT.has(why)) this.hurt(Math.min(1, 0.45 + (mag || 0) / 20)); });
     game.events?.on('jelly.strike', () => this.hurt(1));
   }
@@ -98,6 +100,9 @@ export class Filigree {
     // a blow flashes and fades over two seconds
     this.abs = Math.max(0, this.abs - dt * 0.7);
     this.chan += (this.flow - this.chan) * (1 - Math.exp(-dt * (this.flow > this.chan ? 18 : 3)));
+    // the psygun's charge: the channels start faint and brighten as it builds (owner's note, R40), and ease back after the beam
+    const W = this.game.weapon, ch = W?.charge || 0;
+    if (ch > 0) this.flow = Math.max(this.flow, 0.12 + 0.88 * ch * ch);
     this.flow = Math.max(0, this.flow - dt * 4);
     this.dmg = Math.max(0, this.dmg - dt * 0.5);
     const pool = this.game.lachryma;

@@ -12,7 +12,7 @@ export class CrystalSounds {
    *  struck at this note too, while it rings: tools.js fork). */
   crystalRef(midi, secs = 6) {
     if (!this.ok()) return;
-    const c = this.ctx, t = c.currentTime, d = this.out(0.3, 0.6), f = hz(midi);
+    const c = this.ctx, t = c.currentTime, d = this.out(0.8, 0.6), f = hz(midi); // (R40: louder, the music ducked under it: crystals.js)
     this.refPitch = { midi, until: t + secs };
     for (const [r, a, len] of [[1, 0.34, 4.5], [1.0015, 0.12, 4], [2, 0.08, 2.5], [2.32, 0.05, 1.5], [4.25, 0.02, 0.8]]) {
       const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a, t + 0.18); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
@@ -24,7 +24,7 @@ export class CrystalSounds {
    *  a dense (stony) formation rings shorter and duller than a fragile (glassy) one; the last strike breaks it. */
   crystalStrike(midi, beat = 0, { dense = false, last = false } = {}) {
     if (!this.ok() || !this.allow('crystalStrike', 14)) return;
-    const t = this.ctx.currentTime, d = this.out(0.3, 0.5), f = hz(midi), len = dense ? 1.1 : 1.8;
+    const t = this.ctx.currentTime, d = this.out(0.75, 0.5), f = hz(midi), len = dense ? 1.1 : 1.8;
     this.noise(t, 0.015, { type: 'bandpass', f0: dense ? 2600 : 4200, q: 4, gain: 0.6, dest: d }); // (the pick)
     if (dense) this.tone(t, 0.09, { f0: 220, f1: 140, type: 'triangle', gain: 0.25, dest: d }); // (stone's knock)
     // (the partials kept nearly harmonic and the fundamental strong: the note has to be heard true, higher or lower; a free bar's 2.32
@@ -43,7 +43,7 @@ export class CrystalSounds {
   /** The sweet spot: a big consonant bloom on the note (the note, its fifth, its octave, its tenth), and a sparkle up its pentatonic. */
   crystalSweet(midi) {
     if (!this.ok()) return;
-    const c = this.ctx, t = c.currentTime, d = this.out(0.058, 0.8);
+    const c = this.ctx, t = c.currentTime, d = this.out(0.6, 0.8);
     [[0, 0.24], [7, 0.16], [12, 0.14], [16, 0.1], [24, 0.05]].forEach(([st, a], i) => {
       const f = hz(midi + st), g = c.createGain(); g.gain.setValueAtTime(0.0001, t + i * 0.03); g.gain.exponentialRampToValueAtTime(a, t + 0.12 + i * 0.03);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2); g.connect(d);

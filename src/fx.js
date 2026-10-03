@@ -216,6 +216,31 @@ export class FX {
     }
   }
 
+  /** A note made visible (R40): a ring of light the colour of the tone spreading out level from `center`, and motes rising, as many
+   *  as `k` (0..1: how true the note is) asks. The one picture of a sounded note wherever one sounds (the crystals' strikes, the
+   *  fork's reference): music/tone.js gives the colour. */
+  toneBurst(center, color, k = 0.5, radius = 1) {
+    const c = color.isColor ? color : new THREE.Color(color), hot = c.clone().lerp(new THREE.Color(0xffffff), 0.35);
+    const n = 18 + Math.round(k * 30);
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2, sp = (2.2 + k * 2.5) * radius;
+      this.add.emit({ pos: center, vel: new THREE.Vector3(Math.cos(a) * sp, 0.15, Math.sin(a) * sp), life: 0.55 + k * 0.35, size: 0.06 + k * 0.04, sizeEnd: 0.01,
+        color: i % 3 ? c : hot, alpha: 0.9, drag: 2.2, gravity: 0 });
+    }
+    for (let i = 0; i < 6 + Math.round(k * 14); i++) {
+      const v = new THREE.Vector3((Math.random() - 0.5) * 0.8, 1.2 + Math.random() * 1.6 * (0.5 + k), (Math.random() - 0.5) * 0.8);
+      this.add.emit({ pos: _v.copy(center).add(new THREE.Vector3().randomDirection().multiplyScalar(0.3 * radius)), vel: v, life: 1.1 + Math.random() * 0.8,
+        size: 0.05, sizeEnd: 0.015, color: c, alpha: 0.85, drag: 1.2, gravity: -0.3 });
+    }
+  }
+  /** Chips of something hard knocked off it (a crystal's shards). */
+  chipsOff(center, dir, n = 6, size = 1) {
+    for (let i = 0; i < n; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 3).addScaledVector(dir, 2).add(new THREE.Vector3(0, 2, 0));
+      this.chips.emit(center, v, (0.015 + Math.random() * 0.03) * size, 1.5 + Math.random() * 1.5);
+    }
+  }
+
   // Porcelain "diamond dust": twinkling specks seeded across the vanished pieces
   glitter(points, center, dir, color) {
     const bright = new THREE.Color(PALETTE.hot), tint = color.clone().lerp(new THREE.Color(0xffffff), 0.5);

@@ -15,7 +15,7 @@
 // Prior art: Chowning's FM synthesis and the DX7's E.PIANO; Chris Wilson's "A Tale of Two Clocks" (lookahead scheduling); the TR-808's
 // cymbal (six detuned square waves, filtered); swing as a long-short eighth (about 2:1).
 //
-//   const m = new MusicPlayer(sfx)   m.follow(score | null) (per frame)   m.play(score)   m.stop(fade)   m.duck(seconds)   m.setOn(on)
+//   const m = new MusicPlayer(sfx)   m.follow(score | null) (per frame)   m.play(score)   m.stop(fade)   m.duck(seconds, to = 0.35)   m.setOn(on)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from './arranger.js';
 
@@ -104,11 +104,11 @@ export class MusicPlayer {
   }
   setVolume(v) { this.volume = v; if (this.alive) this.bus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.3); }
   /** Lower the music for a while (the System is speaking). */
-  duck(sec = 2) {
+  duck(sec = 2, to = 0.35) {
     this.arr.duck(sec);
     if (!this.alive) return;
     const t = this.ctx.currentTime, g = this.duckG.gain;
-    g.cancelScheduledValues(t); g.setTargetAtTime(0.35, t, 0.08); g.setTargetAtTime(1, t + sec, 0.5);
+    g.cancelScheduledValues(t); g.setTargetAtTime(to, t, 0.08); g.setTargetAtTime(1, t + sec, 0.5);
   }
 
   // ---------------------------------------------------------------- the conductor: a bar at a time, ahead of the clock
