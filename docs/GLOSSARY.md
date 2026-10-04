@@ -1,0 +1,193 @@
+# The glossary
+
+One word, one meaning. A word in this file means only what it says here: in the code, the docs, the commits, the messages between
+divisions, and when the owner asks for something. If a request uses a word in a way this file does not, the word is clarified before
+anything is built. That is cheaper than building the wrong thing.
+
+How it works:
+
+1. **The code says what the game says.** An identifier uses the game's word (in its code form), or the code name given here. Where the
+   two differ for a reason (`clapper` for the clapperjar), the entry says so.
+2. **A new thing is named here first,** in the same commit that brings it, by the division that owns it. The words the player sees are
+   Espada's (and the owner's); the code names are Petra's to approve at the gate.
+3. **A homonym the game keeps on purpose is always qualified** (the list near the end).
+4. **Retired words are refused** by `npm run check` and at Petra's review (the table at the end says what to say instead).
+
+Entries: **term** (code name, where) is what it means. *Not:* what it must not be used for.
+
+---
+
+## The Courier
+
+- **the Courier** (`player`: the body's physics, `src/player.js`; `character`: the rig and its animation, `src/character.js`): the one
+  the player plays. Androgynous: "you" where the game speaks, "they" in docs and comments. *Not:* "the player" in anything the game says.
+- **vessel** (`game.vessel`, `game.vesselDamage`, `src/vessel/`): the Courier's clay body and what is done to it: its glazes, its cracks,
+  its shattering and reforming. *Not:* the god hand's jar.
+- **region**: one of the vessel's six hit regions (mask, torso, left and right arm, left and right leg), each with its own cracks.
+- **crack**: damage to the vessel, per region. It mends slowly on its own, or at once at the kiln (MEND). *Not:* a pot's cracks
+  ("pot cracks", below).
+- **shield**: the pool paying for a blow before the clay does (35 Lachryma a full blow). It is not a separate bar.
+- **shatter / reform** (`courier.shatter`, `courier.reform`, `src/vessel/death.js`): the Courier's death, and being made whole again in the
+  workshop.
+- **glaze** (`src/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks.
+- **kintsugi** (`src/vessel/kintsugi.js`): the net the cracks run along. Its gold is not drawn on the body for now (R41).
+- **the pool** (`game.lachryma`, `src/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
+  shield. "Lachryma" alone means the substance.
+
+## Lachryma and money
+
+- **Lachryma**: the substance (the Well's tears, condensed or liquid). Always capitalised.
+- **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
+- **cube** (`game.cubes`, `src/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
+- **crystal** (`src/lachryma/crystals.js`): a Lachryma crystal formation in the dunes, struck with the Dreamvane's pick and tuned by ear.
+  What it gives: cubes, and sometimes a **crystal shard** (`mat.shard`, always so called) or a Possibilikey.
+- **signature** (`src/signatures.js`): where Lachryma is, and how strongly. Tools that sense or drink Lachryma ask here.
+- **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
+
+## The tools
+
+- **tool** (`src/tools/`, the belt and the held-tool base): one of the Courier's psychic tools, worn on the belt: the psygun, the
+  Sondelass, the Soul Brush, the Veritome, the Dreamvane, the Crucibelle, the Lockheart. *Not:* a Node script (those are "scripts", in
+  `tools/` until the restructure moves them to `scripts/`).
+- **the belt** (`game.belt`, `src/tools/belt.js`): where tools are worn; anything that asks "is a tool out?" asks the belt.
+  **draw / stow**: take a tool in hand / put it back.
+- **fitting** (`FITTINGS`, `src/pneuka/box.js`): what fits into a tool (a lure, an instrument, the Lockheart's keys), kept in the Pneuka
+  Box. A tool never has an inventory of its own.
+- **the psygun** (`game.weapon`, `src/weapon.js`): the gun. A **shot** is one round fired (and only that: see "shot" below). A
+  **charge** winds up a piercing beam. A **shell** is a caster shell (`Type-00`...), a special round loaded in a **chamber**.
+- **the Sondelass** (`src/sondelass/`, `src/moves/sondelass.js`): the blade with three **forms**: the **cutlass** (with **blade mode**,
+  **zandatsu**, the **Stinger**, **guard**), the **rod** (angling: `src/angling/`), the **hook** (the grapnel; the **grapple** is what the
+  Courier does on its line).
+- **the Soul Brush** (`src/brush/`, `src/moves/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
+  (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
+- **the Veritome** (`src/veritome/`, `src/moves/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; the
+  **film**; the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
+  (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
+  creature), the **Major Arcana** (twenty-two designated cards).
+- **reprogramming** (`src/veritome/reprogram.js`, `src/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a
+  **lattice** of **Functions** on the Codex's **THE MIND** shelf, and spoken in **neuralese**.
+- **the Dreamvane** (`src/dreamvane/`, `src/moves/dreamvane.js`): **dowse** (the needle points at Lachryma), the **pick** (strikes
+  crystals), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around).
+- **the Crucibelle** (`src/crucibelle/`, `src/moves/crucibelle.js`): five **notes**, the **toll**, **songs** (note patterns with effects),
+  **fever**; the **mirage** (the Song of Seeming's decoy).
+- **the Lockheart** (`src/lockheart/`, `src/moves/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
+  (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
+  the **wheel** of odds; **the Opening** (its ultimate: `src/lockheart/ultimate.js`).
+- **ultimate**: the category, a tool's cinematic signature move. The Lockheart's is the Opening; no other tool has one yet.
+
+## Moving
+
+- **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
+  poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
+- **tech** (code only: `Tech`, `src/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
+  hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
+- **Movement Art** (`src/system/skills.js`): a tech the System teaches; a **variant** is one of its versions.
+- **the skiff / Solar Skiffing** (`src/moves/surfer.js`, `src/skiff.js`; code name after the move: `skiff`): the sand boat, and sailing it
+  in the dunes. *Retired:* "surfer".
+- **stance** (`src/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
+  mode, Celestial mode).
+
+## Places
+
+- **layer** (`LAYERS`, `src/cartography.js`): one level of the map: the upper floor, the ground floor, the basement, the dunes.
+- **room**: a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
+- **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
+  named in full (or ZoI).
+- **the Zone of Influence**: the ground the player has explored. Nothing more, for now.
+- **the workshop**: the ground and upper floors: the kiln, the folk, the pots, the gong.
+- **the basement**: below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
+- **the hub**: the basement's centre, where the Index stands ("back to the hub").
+- **the Index** (`src/indexmenu.js`): the console at the hub: F, and pick a room.
+- **the course**: the basement's loop of eight **stations** (checkpoints), with laps and splits.
+- **the movement lab**: the basement's hall of five wings (the hands, the rigging, the techs, the clockwork mill...). Only as this room's
+  name.
+- **lap circuit** (`src/circuits.js`): the Braid, the Mill Race, the Spindle.
+- **the siege** (`src/siege.js`, `src/raids.js`): the god hand's arena; raids happen there and nowhere else.
+- **the time trial** (`src/trial.js`): begun at the workshop's gong.
+- **the dunes**: the sand sea; **the oasis** at its heart, **the Weir** (its pools and pier), **the Well**, **the barrier** (the edge),
+  **the ruins** (columns and obelisks: stone).
+
+## Creatures and folk
+
+- **creature** (`game.creatures`, `src/creatures.js`): a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
+  `creatures.strike`.
+- **clapperjar** (code: `clapper`, `src/clappers.js`): the clapping pots. The code's shorter word is accepted.
+- **slip jelly** (`src/jelly/`), **spirit** (`src/spirits.js`: an ally, called up), **mirage** (a decoy).
+- **mind** (code: `Brain`, `src/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
+- **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt).
+- **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
+- **the folk** (code: `npc`, `src/npc/`): the clay people (Saggar, Raku, Old Grog, Pip). Only they speak in the dialogue box. The folk are
+  "he" and "she" as their lore says; only the Courier is "they".
+
+## Records and progression
+
+- **the System** (`src/system/system.js`): the voice in the game that teaches Movement Arts and keeps the save. Always capitalised.
+  *Not:* a game system in general (say "a system" in lower case, or name it).
+- **the Codex** (B, `src/system/codex.js`): the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+- **the ledger** (`src/stats.js`): every count the game keeps. **achievement** (`src/achievements.js`): a predicate over the ledger,
+  never a flag.
+- **the log** (`src/gamelog.js`, rules in `src/tracking.js`): the only text feedback; **the chat line** is its typing.
+- **build**: one published version of the game (v45...). Progress resets on every new build; settings are kept.
+
+## The god hand
+
+- **the god hand** (~, `src/godmode.js`): the mode where the Courier becomes a jar and you become a hand.
+- **the jar** (code name after the move: `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka jar the Courier becomes. It has
+  integrity, it shatters, it is reforged. *Not:* the vessel.
+- **God Arts** (`src/godarts.js`): the god hand's five arts.
+
+## Windows
+
+- **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
+- **the Pneuka Box** (P, `src/pneuka/`): the inventory (28 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
+  beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
+- **the map** (M): called **Mind Mapping** in the game (`src/cartography.js`).
+- **the tuning panel** (Tab, `src/tuning.js`): live sliders and actions (set the room again, last checkpoint, the hub).
+- **the workbench** (`/workbench`, `src/workbench/`): the studio for effects, models and sequences.
+- **the dialogue box** (`src/npc/dialogue.js`): the one window of words in the world.
+
+## What the game shows
+
+- **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
+  bars, the fish portrait.
+- **ground marks** (`src/marks.js`; after the move `groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
+  (`src/trailmap.js`) and the skiff's **wake** (`src/wake.js`).
+- **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
+  pools under the effects (`src/fx.js`, to be folded into `src/vfx/`).
+- **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
+- **shot**: a psygun shot, and only that. A scripted camera is a **camera shot** (`cinema.shot`); a photograph is a **plate**.
+
+## Engine and process words
+
+- **event** (`game.events`): a message on the bus, named `domain.verb`; its payload never uses `name` or `t`, and an outcome carries `by`.
+- **tag** (`src/tags.js`): what a tool may do to a thing (sliceable, breakable, liftable, pushable, static) and what it is made of (clay,
+  crystal, jelly, wood, stone, metal).
+- **service**: a `game.*` object every module may ask (time, mood, cinema, cine, vfx, events, creatures, belt, cubes...).
+- **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
+  cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
+- **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
+
+## Homonyms we keep on purpose (always qualify them)
+
+| word | its meanings | say |
+| --- | --- | --- |
+| mind | a creature's (`Brain`); THE MIND (the macro shelf); Mind Mapping (the map) | "a creature's mind", "THE MIND shelf", "the map" |
+| charge | the psygun's beam; the Lockheart's fill; the Veritome's capture | whose charge |
+| key | a keyboard key; a Possibilikey | "Possibilikey", always in full |
+| station | a course station (checkpoint); the kiln station | "course station", "kiln station" |
+| theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
+| card | a Veritome card; the tarot cards falling on the title | "card" is the Veritome's; the title's are scenery |
+| shard | a piece of a broken pot; a crystal shard (the item) | "crystal shard" in full |
+
+## Retired words
+
+| retired | say instead | where it still is (until the restructure renames it) |
+| --- | --- | --- |
+| surfer, Solar Surfer | the skiff, Solar Skiffing | `src/moves/surfer.js`, `T.tech.surfer`, events `surf.*` |
+| Lab mode | the all-arts switch (code `allArts`; its label is Espada's) | `system.lab`, `setLab`, the Codex |
+| the lab (for the basement) | the basement (or the movement lab, the room) | the map's layer name "THE LAB" |
+| vessel (for the god hand's jar) | the jar | `src/godmode.js`, events `vessel.hit` / `vessel.shatter` / `vessel.reforge` |
+| pause card | the pause menu | comments |
+| course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/basement.js`: the course and the room teleports in one class) |
+| /lab (the workbench's command) | /workbench | `src/main.js` |
+| torture test / bot | the stress test | (gone) |

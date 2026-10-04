@@ -164,7 +164,7 @@ export class Grapple extends Tech {
     // (ended by anything: a landing with slack keeps the line; anything else that took the step has cut it)
     const h = this.hook, act = this.mgr.active;
     if (h?.att && act && act !== this) h.release('taken');
-    this.game.events?.emit('grapple.swing', { phase: 'end', t: this.swingT, peak: this.peak });
+    this.game.events?.emit('grapple.swing', { phase: 'end', dur: this.swingT, peak: this.peak }); // (`dur`, not `t`: the bus stamps its own t over a payload's)
     this.hangK = 0;
   }
 

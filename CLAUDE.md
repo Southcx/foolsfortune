@@ -2,6 +2,14 @@
 
 These come from the project's owner and apply to every change.
 
+## Words and structure
+- **`docs/GLOSSARY.md` is binding**: one word, one meaning, in code, docs, commits and messages. Name a new thing there first, in the same
+  commit; a request that uses a word against the glossary is clarified before anything is built.
+- **`docs/ARCHITECTURE.md` is binding**: the layout, the import rules, the module contract (a header, one job, under 800 lines), the names,
+  the budgets and the gate. It is Petra's, and the gate enforces it.
+- **`npm run check`** is the machine half of the gate: it fails on new debt only (the baseline only falls). **`npm run perf`** measures a
+  frame against the last published build.
+
 ## Prior art first
 Before designing anything (a system, a shader, a movement feel, a UI), ask "has this been done before?" and look it
 up. Take the distilled design choices as the springboard, say what was taken and from where (in the module's header
@@ -123,11 +131,11 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   is done). Read your section at the start of every round.
 - **How work lands.** The owner sets the direction and approves; Petra plans the next round and hands each division its tasks (through
   the owner, or `send_message` with the owner's OK). The divisions work at the same time, each on its own branch. A division is done
-  when it has (1) merged the latest default branch into its branch and fixed what that broke, (2) built (`npm run build`) and, if it
-  touched code, run the stress test (`node tools/stress.mjs`), (3) pushed, and (4) told the owner in a few lines what changed, what to
+  when it has (1) merged the latest default branch into its branch and fixed what that broke, (2) built (`npm run build`), passed
+  `npm run check` and, if it touched code, run the stress test (`npm run stress`), (3) pushed, and (4) told the owner in a few lines what changed, what to
   try, and any handoffs. Petra then reviews and merges it into the default branch and publishes; no one else merges into it or
   publishes. Petra's review: it builds, nothing another file calls has gone missing, no other division's work is overwritten, the stress
   test is no worse, and the changed part works when driven headless; and, as the gate, that it reads well and fits (a small interface,
-  the house rules above, no one-off where a shared part exists or should), and that it costs what it is worth (draw calls, triangles,
-  tick and draw time, heap, measured against the last published build). What fails goes back to its division with the reason; Petra does
+  the house rules above, no one-off where a shared part exists or should), and that it costs what it is worth (`npm run perf`: draw calls, triangles,
+  tick and draw time, heap, against the last published build). The full gate is in `docs/ARCHITECTURE.md`. What fails goes back to its division with the reason; Petra does
   not edit another division's files to make a merge pass.

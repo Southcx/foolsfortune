@@ -547,7 +547,7 @@ export class Tracking {
     });
     on('grapple.swing', (e) => {
       if (e.phase !== 'end') return;
-      L.inc('grapple.swing.n'); L.inc('grapple.swing.time', e.t); L.hi('grapple.swing.peak', e.peak, { at: this.where() });
+      L.inc('grapple.swing.n'); L.inc('grapple.swing.time', e.dur || 0); L.hi('grapple.swing.peak', e.peak, { at: this.where() });
     });
     on('grapple.fling', (e) => { L.inc('grapple.fling'); L.hi('grapple.fling.speed', e.speed); });
     on('zip.start', (e) => { L.inc('zip.start'); L.inc('zip.dist', e.dist); L.hi('zip.longest', e.dist); });

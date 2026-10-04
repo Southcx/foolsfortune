@@ -1,0 +1,24 @@
+{
+ "when": "2026-10-04T02:31",
+ "build": "ref: refs/heads/claude/fps-third-person-demo-8zp2kx",
+ "workshop": {
+  "tick": 7.6,
+  "draw": 14.7,
+  "calls": 354,
+  "tris": 169742,
+  "programs": 95,
+  "geos": 1249,
+  "tex": 123
+ },
+ "dunes": {
+  "tick": 7.1,
+  "draw": 13.7,
+  "calls": 286,
+  "tris": 282810,
+  "programs": 98,
+  "geos": 1262,
+  "tex": 125
+ },
+ "heapMB": 234,
+ "bootS": 28
+}
