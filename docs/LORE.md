@@ -191,6 +191,43 @@ type applies its status. Where the game already has a status, its name is kept. 
 - **brittle** and not "crack": "crack" is the Courier's vessel damage in the glossary, and a status must not share its word.
 - **phantom** is shortened from "phantom pain", which reads heavier than the game's overtones want; the line keeps the idea.
 
+### Lachryma as crude *(Espada's ruling, R43, from the owner's question and Dovina's angles; the owner may veto any line)*
+
+The owner's question: what follows from a universe founded on an emotionally derived, cognitively radioactive super-material that
+behaves like petroleum? Set the initial condition and let the consequences fall:
+
+- **Crude Lachryma is fossil feeling.** Oil is ancient life pressed down over ages; liquid Lachryma is old emotion pressed down in the
+  collective unconscious. The deeper the crude, the older the feeling, until it is a feeling nobody remembers having.
+- **A Well is a well.** The owner's word already meant both: a pocket of rumination, and the place it is drilled. A Well pools where a
+  mind keeps going round the same thought.
+- **Drawing a Well down is working a feeling through.** Extraction depletes it, and a feeling worked through stops pooling: a Well
+  that runs dry is a mind that has healed. That is why Wells drift and why a Cogitomap goes stale (Dovina's half-life has its reason).
+  It is also the moral axis of the whole economy: harvesting helps an island, and a greedy driller would want the Well to keep filling.
+  Intent, not alignment, decides which one a Courier is.
+- **Grades, like crude's.** Lachryma carries the feeling it came from, so it grades by aspect (the five the angling already has:
+  dread, wonder, grief, hunger, mirth), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
+  makes hauling pay.
+- **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
+  Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
+  Lachryma is inert and safe to hold, which is why cubes are money.
+- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma solid, so the
+  currency is a refined product (a petrocurrency) and a Courier is a walking refinery. The Prince's magnum opus is, read this way, the
+  first safe container a soul could ride in through raw Lachryma: a jar, built to hold what would burn anyone else.
+- **Ships by trade.** Every era of ship sails the dream sea at once, and each class is a trade:
+  - a **sloop** is quick and light: couriers' errands, letters, a small cargo;
+  - a **frigate** escorts;
+  - a **galleon** carries treasure, which is to say refined cubes;
+  - a **destroyer** hunts Egregores (Letty Marque's trade, at its largest);
+  - a **tanker** carries crude, volatile and slow, double-hulled because it has to be.
+- **A spill is a cogitohazard.** Crude spilled on an island blooms Figments where it lands and drives the folk mad around it.
+- **The town that was is a boomtown that went bust.** A desert, a Well, folk drawn to it, then too much exposure, then a ghost town in
+  the Dunes with one old angler who stayed. The canon already had this shape; the crude names it.
+- **Petrostates, and the resource curse.** An island rich in Wells is an island that ruminates a great deal: **the richest islands are
+  the unhappiest minds.** That is the deepest undertone in the setting, safe for a child to meet and worth an adult's second look.
+  Cartels of Egos that hoard their Wells follow from it; their names are left blank until a story needs them.
+- **The Emocean is the crude sea itself**, the atmosphere every island holds back by Will. Every voyage is a trip across the one
+  substance that would drown you, in the one vessel built to carry you through it.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
