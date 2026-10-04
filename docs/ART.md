@@ -119,7 +119,7 @@ be made), **GENRE DEFAULT** (works, but is the look every game has; ours to repl
 | Things in the Pneuka Box, the lures | `src/pneuka/thingmodels.js`, `angling/luremodels.js` | PLACEHOLDER | small primitives |
 | The rooms (workshop, basement, dunes, the Weir) | `src/world/` | PLACEHOLDER (greybox) | room glazes deferred by the owner: historically accurate, restrained, via a texture atlas |
 | The Lockheart's wheel | `src/tools/lockheart/wheel.js` | PLACEHOLDER | plain shapes in CSS |
-| **Chest tier beams** (a colour per rarity) | `world/treasure/` | **GENRE DEFAULT** | every loot box has them; our idea: a glaze that changes as the chest charges (celadon cracking into raku, kintsugi gold flooding the seams at the top tier) |
+| Chest tiers | `vfx/chestglaze.js` | OURS (R45) | the chest is fired as it charges: celadon, crazing, raku, kintsugi gold; the beam per rarity is gone |
 | Hit stars and sparks (the plain `hit`) | `vfx/library.js` | GENRE DEFAULT (half) | the material and the damage look now speak over it; the star itself could become a kiln spark |
 
 **First, for the owner's own art:** the five tools, then the clay folk, then chests and curios, then the rooms' glaze atlas.

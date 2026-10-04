@@ -113,6 +113,7 @@ export class VesselDamage {
     this.game = game; this.vessel = vessel;
     this.crack = new Float32Array(REGIONS.length);
     this.quiet = new Float32Array(REGIONS.length).fill(99);
+    this.glow = new Float32Array(REGIONS.length); this.peak = new Float32Array(REGIONS.length); // (the mend's gold, and how far each region cracked: kintsugi.js)
     this.boxes = game.character ? new Hitboxes(game.character) : null;
     // the blows: a jelly's (from where the jelly is), a lob's and an explosion's (from the way it pushed them)
     game.events?.on('jelly.strike', (e) => this.hit({ from: e.from ? new THREE.Vector3(...e.from) : null, k: e.move === 'lunge' ? 0.7 : 0.4, why: 'jelly', by: 'creature' }));
@@ -145,7 +146,7 @@ export class VesselDamage {
     const sum = this.crack.reduce((a, c) => a + c, 0) + k * 0.65;
     if (was >= 0.95 || sum >= BREAK_AT) { this.game.death?.begin({ why, by, region: REGIONS[region] }); return region; }
     this.crack[region] = Math.min(1, was + k * 0.65);
-    this.quiet[region] = 0;
+    this.quiet[region] = 0; this.peak[region] = Math.max(this.peak[region], this.crack[region]);
     sfx.vesselCrack?.(this.crack[region], REGIONS[region]); // (Wanda's: docs/HANDOFFS.md)
     this.game.events?.emit('vessel.crack', { region: REGIONS[region], k: +this.crack[region].toFixed(2), why, by });
     return region;
@@ -155,7 +156,7 @@ export class VesselDamage {
   mendAll(quiet = false) {
     for (let i = 0; i < this.crack.length; i++) {
       if (this.crack[i] <= 0) continue;
-      this.crack[i] = 0;
+      this.crack[i] = 0; this.glow[i] = 1; // (mended at once: the gold flashes through every crack and fades)
       if (!quiet) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
     }
   }
@@ -170,7 +171,13 @@ export class VesselDamage {
         if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
       }
     }
-    const u = this.vessel?.kinU?.uDmg?.value;
-    if (u) for (let i = 0; i < this.crack.length; i++) u[i] = this.crack[i];
+    // the mend's gold: up while a region mends, then gone within a couple of seconds of its last crack closing (and gone if it is hit again)
+    for (let i = 0; i < this.crack.length; i++) {
+      const mending = this.crack[i] > 0 && this.quiet[i] > MEND_AFTER;
+      this.glow[i] = mending ? Math.min(1, this.glow[i] + dt * 2) : Math.max(0, this.glow[i] - dt * 0.6);
+      if (this.crack[i] === 0 && this.glow[i] === 0) this.peak[i] = 0;
+    }
+    const U = this.vessel?.kinU;
+    if (U?.uDmg) for (let i = 0; i < this.crack.length; i++) { U.uDmg.value[i] = this.crack[i]; U.uMend.value[i] = this.glow[i]; U.uPeak.value[i] = this.peak[i]; }
   }
 }

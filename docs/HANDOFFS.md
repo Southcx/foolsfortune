@@ -28,6 +28,18 @@ _Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (ph
 
 ## Petra (Main)
 
+**2026-10-04, from Calissa: the chest glaze and the mend's gold (the owner's yes, via Dovina's digest); small edits in your files**
+- **The chest glaze replaces the tier beams** (`src/vfx/chestglaze.js`): a chest is fired as it charges, celadon, then crazing, then raku,
+  then kintsugi gold flooding the seams (`glazeAt(tier)`: common 1 .. prismatic 4); kept once fired. `chestmodel.js`: the body and lid are
+  dressed, `rig.setGlaze(s)`, the glaze joins the rest bake's key, and the resting pillar (epic, prismatic) stays a faint marker and goes
+  dark in a ceremony instead of brightening. `ceremony.js`: `p_charge` drives the glaze (a sealed chest's wanders with the roulette),
+  `openNow` sets the tier's, and the tier-coloured beam calls are gone; the curio's reveal beam is one warm colour for every tier.
+  Driven headless: tiers 3 and 4 open through burst and fountain, `chest.open` fires, no errors. Open for the owner: drop the resting
+  pillar too?
+- **Kintsugi gold on the Courier, only while a crack mends** (`kintsugi.js`, `damage.js`): `uMend`/`uPeak` per region; the cells a mend
+  has just closed are gold, the newest brightest, and all of it fades within ~2 s of the region's last crack closing (or at once if hit
+  again). The kiln's instant mend flashes gold through every crack and fades.
+
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`: five phases (A: the numbers made true; B: damage types, mental state, EmO, statuses, Luck,
   achievements as the unlock, the domains; C: the Lockheart as the magic system; D: the livelihoods; E: the three layers). It is the
@@ -101,6 +113,10 @@ _Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (ph
   bubble, whale, phaseguitar), free for the Crucibelle's voices if you want them. Every new score carries `root`.
 
 ## Wanda (Audio)
+
+**2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
+- While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after
+  `vessel.mend`). A very subtle sizzle on it is yours to add; no event fires as a mend begins, so read `glow` or ask Petra for one.
 
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:

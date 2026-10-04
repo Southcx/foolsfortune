@@ -14,7 +14,7 @@
 // (rarity is legible from the silhouette and the light before the colour is: more parts, more glow, something that moves around it).
 //
 //   const rig = new ChestRig(tier, { sky, halo });   scene.add(rig.root);
-//   rig.poke({ squash: -6, hop: 3.4, lid: 4 });   rig.setOpen(true);   rig.update(dt, time, near);   rig.dispose();
+//   rig.poke({ squash: -6, hop: 3.4, lid: 4 });   rig.setOpen(true);   rig.setGlaze(stage);   rig.update(dt, time, near);   rig.dispose();
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -22,6 +22,7 @@ import { addOutline } from '../../render/outline.js';
 import { TIERS } from './treasure.js';
 import { oilMaterial } from './cubes.js';
 import { Beam } from '../../vfx/beam.js';
+import { dressChestGlaze, chestGlazeUniforms } from '../../vfx/chestglaze.js';
 import { mergeStatic } from '../../render/merge.js';
 import { RestBake } from '../../render/restbake.js';
 
@@ -78,6 +79,9 @@ export class ChestRig {
     if (this.oil) this.mats.push(this.oil.mat);
     const wood = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78 });
     const lidMat = this.oil ? this.oil.mat : std(L.wood, { roughness: 0.78, side: THREE.DoubleSide });
+    // (the glaze it is fired in as it charges, in place of a beam per tier: vfx/chestglaze.js; on the prismatic one's black glass only the gold)
+    this.glazeU = chestGlazeUniforms();
+    for (const m of new Set([wood, lidMat])) dressChestGlaze(m, this.glazeU, { goldOnly: tier === 4 });
     const metal = tier === 4 ? null : std(L.band, { roughness: 0.36, metalness: 0.75, side: THREE.DoubleSide });
     // (the prismatic chest's bands each run through the spectrum a step behind the last: one material for them all, each band's step
     // carried in its vertex colour's red, so they merge into one draw like any other part)
@@ -218,6 +222,8 @@ export class ChestRig {
     this.pool.material.opacity = k * 0.4;
     this.keyhole.material.color.setHex(this.glowColor).multiplyScalar(0.5 + k * 1.6);
   }
+  /** How far it is fired (vfx/chestglaze.js: 0 clay, 1 celadon, 2 crazed, 3 raku, 4 every seam gold); kept once fired. */
+  setGlaze(s) { this.glazeU.uGlaze.value = Math.max(0, s); }
   /** The colour of the glow (the roulette walks it through the tiers; a tier's own is the default). */
   setColor(c) {
     for (const m of [this.seamMat, this.floorGlow.material, this.pool.material]) m.color.set(c);
@@ -248,7 +254,7 @@ export class ChestRig {
     if (this.lidA < 0) { this.lidA = 0; if (this.lidV < -0.8) this.onClack?.(-this.lidV, false); this.lidV *= -0.3; }
     this.seamMat.opacity = Math.min(1, this.glow * 1.2) * (1 - Math.min(1, this.lidA * 3));
     this.apply();
-    this.rest.update(dt, !this.busy && !this.open && !this.later.length && this.glow < 0.004, `${Math.round(this.sy * 1e3)}|${Math.round(this.hy * 1e3)}|${Math.round(this.lidA * 1e3)}`);
+    this.rest.update(dt, !this.busy && !this.open && !this.later.length && this.glow < 0.004, `${Math.round(this.sy * 1e3)}|${Math.round(this.hy * 1e3)}|${Math.round(this.lidA * 1e3)}|${Math.round(this.glazeU.uGlaze.value * 100)}`);
     if (!near) { this.unlit(); return; }
     // the tier's own life
     const L = { glow: this.glowColor };
@@ -256,7 +262,7 @@ export class ChestRig {
     // (the aura is a sprite: a camera close to it would be looking through a fog, so it thins as the eye comes in)
     const shy = THREE.MathUtils.smoothstep(camDist, 0.9, 3.2);
     this.halo.material.opacity = Math.min(0.5, (this.baseOpacity * (this.open ? 0.5 : 1) + this.lit * 0.4 + this.glow * 0.3) * breathe) * shy;
-    if (this.pillar) this.pillar.set(this.prismMat ? null : L.glow, this.open ? 0.05 : 0.1 + this.glow * 0.5, 1 + this.glow * 0.6);
+    if (this.pillar) this.pillar.set(this.prismMat ? null : L.glow, this.open || this.busy ? 0 : 0.1, 1); // (a faint marker at rest; in a ceremony the glaze tells the tier, not a beam)
     for (const m of this.pulse) m.color.setHex(L.glow).multiplyScalar(0.75 + 0.5 * Math.abs(Math.sin(t * 1.3 + this.hue * 5)));
     if (this.orbit) {
       this.orbit.rotation.y += dt * (0.5 + this.glow * 3);
