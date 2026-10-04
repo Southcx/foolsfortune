@@ -523,9 +523,10 @@ for a hub and Bounties. Its systems are mined here; its combat model is not. Eac
   past the band it enrages, and Soothe lowers it. This is the bridge to catching and conversion: catch or harvest in the band.
 
 **Progression**
-- **Seven Vessoul skills**: Ouranurgy (displacement), Manifestation, Spellcasting (glyph weaving), Divination, Psychokinesis, Possession,
-  Alteration (adapt). The god hand's arts already map onto them: Telekinesis to Psychokinesis, Manifest to Manifestation, Swell and
-  Wring to Alteration, the survey to Divination. *Open: are these the "six (+1) domains"?*
+- **The six (+1) domains** (ruled, 2026-10-04): Ouranurgy (displacement), Manifestation, Divination, Psychokinesis, Possession and
+  Alteration, and **Spellscription** as the +1. Spellscription is the newer name for Spellcasting: transcribing a thing down, so it
+  covers the Soul Brush's glyphs and the Veritome's macros. The god hand's arts already map onto them: Telekinesis to Psychokinesis,
+  Manifest to Manifestation, Swell and Wring to Alteration, the survey to Divination.
 - **Skill levels to 99 by EXP, and "The World" at all seven maxed** (adapt): OSRS levels, in line with the Fool's Journey. *Adapt to
   the pillar*: EXP comes from doing the skill well (a clean strike, a perfect pitch, a typed macro), so practice and competence drive
   the level together.
@@ -549,11 +550,10 @@ for a hub and Bounties. Its systems are mined here; its combat model is not. Eac
   at ×0.8. This rate is the Lockheart's conversion mode.
 - **Defeat costs a share of the cubes** (hold): today "nothing is lost but the place".
 
-**Held: a different game, or later**
+**Later layers (not cut: they are the game's other layers, section 11)**
 - Contractors (twenty classes, one per Major Arcana; Gambits; affinity; permadeath; LLM personalities).
-- The Ship, Bounties, Psychic Storms.
-- The grid and the Metronome's beats. (The Crucibelle's beat is the one place a beat lives today. A global beat would touch the core
-  movement, which is the gold standard.)
+- The Ship, Bounties, Psychic Storms (the Astral Ocean is the Emocean now).
+- The grid and the Metronome's beats: a Well's tactical layer, never the core movement's (the gold standard).
 
 **Cut**
 - The post-battle report screen and level-up notifications: the log is the only text feedback.
@@ -561,3 +561,20 @@ for a hub and Bounties. Its systems are mined here; its combat model is not. Eac
 **Of note**
 - The seven Psy-Tool families map onto today's tools: Psyguns, the Psygun; Psycasters, the Sondelass; Dreamcatcher staves, the Dreamvane;
   Tomes, the Veritome; Bells, the Crucibelle; Paintbrushes, the Soul Brush. Clocks have no tool: the Lockheart took their place.
+
+---
+
+## 11. The three layers (ruled, 2026-10-04)
+
+Fool's Fortune is built in three layers of depth, each a genre, and the game is the weave between them:
+
+1. **Wells**: spontaneous dungeons on an Island of Ego. Exploration, cartography, and the tactical layer.
+2. **The island**: action combat outside the Wells (the game as it stands).
+3. **The Emocean**: travel between Islands of Ego, as node and stage-based rail-shooter combat (FTL's map, KH2's gummy ship).
+
+No player is asked to play one genre all the time; every player plays each some of the time. Prior art for one character across many
+activities: OSRS, FFXIV, Palworld, Aniimo. The repository is the vertical slice of all three.
+
+**The rule for the seams** (what decides whether the weave holds): one Courier, one purse, one ledger and one set of seven tools across
+all three layers. Each layer may add verbs, but none may have its own currency, levels or gear. KH2's gummy ship is the warning: its
+separate parts, building and progression are why players skipped it.

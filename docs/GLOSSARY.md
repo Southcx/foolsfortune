@@ -152,6 +152,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ledger** (`src/progress/stats.js`): every count the game keeps. **achievement** (`src/progress/achievements.js`): a predicate over the ledger,
   never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
+- **the domains** (six and one): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
+  Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
+  Veritome's macros). *Retired:* Spellcasting.
+- **the three layers**: a **Well** (a dungeon), **the island** (action outside the Wells), **the Emocean** (travel between islands)
+  (`docs/DESIGN.md`, section 11).
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`): the ledger's three kinds of entry: a number that
   only goes up, a best with when and where it was set, and the play time something first happened. A **funnel** is the firsts read in
   order (play time at the first art, fish, chest...): how fast a new player meets the game.
