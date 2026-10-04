@@ -5,7 +5,11 @@
 //
 //   wellRules({ on, L, log })     on(event, fn)   L: the ledger   log: the game log
 // ---------------------------------------------------------------------------------------
+import { itemOf } from '../../pneuka/items.js';
+
 const ORD = ['first', 'second', 'third', 'fourth', 'fifth'];
+const NAME = (id) => itemOf(id)?.name || id;
+const AN = (s) => (/^[AEIOU]/i.test(s) ? 'an' : 'a');
 
 export function wellRules({ on, L, log }) {
   on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); log.say('explore', 'You step down into the Great Dunemaw.'); });
@@ -19,6 +23,25 @@ export function wellRules({ on, L, log }) {
     if (!e.shattered) L.inc('well.out');
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
-    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? 'The Well keeps what you found down there.' : 'You climb back out of the Well.');
+    if (e.pay > 0) L.hi('well.pay.best', e.pay);
+    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? 'The Well keeps what you found down there.' : `You climb back out of the Well${e.pay > 0 ? `, ${e.pay} cubes the richer` : ''}.`);
+  });
+  on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
+  on('well.foe', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('well.foe'); L.hi('well.foe.cls', e.cls);
+    log.say('battle', 'The Great Slip Jelly bursts: the bottom of the Well is yours.');
+  });
+  on('well.find', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('well.find'); L.hi('well.find.tier', e.tier);
+    const n = NAME(e.item);
+    log.say('loot', `Where the jellies were lies ${AN(n)} ${n}. Climb out with it to keep it.`, { tone: '#ffd98a' });
+  });
+  on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' }); });
+  on('cogitomap.get', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth);
+    log.say('loot', 'You charted enough of it to draw a Cogitomap: the Well as it is today.', { tone: '#ffd98a' });
   });
 }

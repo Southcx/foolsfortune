@@ -11,6 +11,26 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: E1b is in (the Dunemaw's creatures, pay, haul, charting, Cogitomap)**
+- **Pay** is `wellPay(deepest, foes) x wellYield(fill)`, paid as `cubes.earn(pay, 'well')` on the way up only (0 when shattered). I used
+  `wellPay` and not `islandRun`'s pro rata: say if you meant the other. Three floors and the FOE at full fill pay 139.
+- **Fill** is kept per Well in `foolsfortune.wells` (progress: cleared each build): each run reads it refilled by the hours since the last
+  (`drawWell(fill, 0, h)`), runs at that fill, and leaves `drawWell(fill, 1, 0)` behind. `well.leave.fill` is the fill the run ran at.
+- **Creatures**: 1 + floor slip jellies (stand-ins for the Egregores, your ruling relayed) in shuffled rooms other than the way in, and on
+  the last floor a Great Slip Jelly (class 2: hp and poise x3, 1.6x the size) by the far pool. `well.foe { well, floor, cls }` when the
+  Courier bursts it; `foes` counts those.
+- **Materials**: one per floor once every jelly on it is down (`well.find { well, floor, item, tier }`), into the run's haul, handed over
+  up top as `mat.<kind>` with `makeMaterial(kind, seed + floor, tier)` in the slot's `data`. Kind: seeded from the day's seed and the floor
+  (the same for everyone that day). **Tier** = floor - 1, +1 on a hit of the deck `well.rare` (1 in 4), +1 if the floor's FOE fell to the
+  Courier, capped at 4. Your numbers to change.
+- **Charting**: the map's 'well' layer is cleared on each floor (they share their ground); leaving a floor emits `well.charted { well,
+  floor, charted }` (the share of its rooms' cells at CHARTED or better), and `well.floor` now carries `charted: null`. **Point Divination
+  EXP at `well.charted`**, not `well.floor`. The run's `charted` is the mean over the floors walked. Measured: four seconds standing in
+  each room's centre charts 0.27 of a floor; a survey pulse in each room, 0.91. So the Cogitomap (at 0.8) asks for the Dreamvane.
+- **Cogitomap**: the item `cogitomap`, its data `{ well, seed, day, charted, pay, worth: cogitomapWorth(pay, charted, 0), at }`, and
+  `cogitomap.get { well, charted, worth }`. Ledger keys: `well.foe`, `well.foe.cls`, `well.find`, `well.find.tier`, `well.floor.charted`,
+  `well.pay.best`, `cogitomap.get`, `cogitomap.worth`.
+
 **2026-10-04, from Petra: E1a is in (the Great Dunemaw)**
 - `well.enter { well, seed, day }`, `well.floor { well, floor, charted }`, `well.leave { well, floors, foes, pay, charted, shattered,
   fill }` are emitted as your contract has them, and tracking.js counts their keys (`well.enter`, `well.floor`, `well.depth`, `well.out`,
@@ -404,6 +424,10 @@ decorated (glaze, slip, kintsugi, fittings).
 **2026-10-04, from Petra: the Well's words, and one question of canon**
 - The log's lines (`src/feedback/tracking/wells.js`): "You step down into the Great Dunemaw.", "You go down to the second floor of the
   Well.", "You climb back out of the Well.", "The Well keeps what you found down there." Placeholders; yours to reword.
+- E1b's lines and items, all placeholders: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly
+  bursts: the bottom of the Well is yours.", "You climb back out of the Well, N cubes the richer.", "You charted enough of it to draw a
+  Cogitomap: the Well as it is today."; the items `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
+  PROVISION) and COGITOMAP, with their examine lines (`src/pneuka/items.js`), and the FOE's name, Great Slip Jelly.
 - Open: the Great Dunemaw is built as its own mouth out on the sand (Dovina's spec), apart from the Weir's Well at the oasis. If canon
   wants the Weir's Well to *be* the way into the Dunemaw, say so and I'll move the entrance.
 

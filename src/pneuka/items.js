@@ -7,7 +7,7 @@
 // keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
@@ -16,8 +16,11 @@ import { INSTRUMENTS } from '../tools/crucibelle/songs.js';
 import { SPECIES } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { typeNo } from '../tools/psygun/kinds.js';
+import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
 
 export const ITEMS = {};
+/** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
+function hueHex(h) { const S = 0.55, L = 0.6, a = S * Math.min(L, 1 - L); const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (L - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); }; return (f(0) << 16) | (f(8) << 8) | f(4); }
 for (const c of CURIOS) {
   ITEMS[`curio.${c.id}`] = {
     id: `curio.${c.id}`, kind: 'curio', key: c.id, name: c.name, glyph: c.glyph, color: TIERS[c.tier].rgb, tier: c.tier,
@@ -52,5 +55,17 @@ for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fi
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
 for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
+
+// what a Well gives (world/well/dunemaw.js): a material of each of the seven kinds (progress/econ/materials.js: each one carries its own
+// hue, saturation and path for the spirit press in its slot's `data`), and the Cogitomap, a map of a Well as it was that day (its `data`:
+// { well, seed, day, charted, pay, worth, at }). Names and examine lines are placeholders for Espada's.
+const MAT_NAMES = { eldritch: 'ELDRITCH ARTEFACT', arcane: 'ARCANE RELIC', finery: 'FINERY', mechanism: 'MECHANISM', edge: 'EDGE', art: 'ARTWORK', provision: 'PROVISION' };
+for (const k of Object.keys(MAT_KINDS)) {
+  const K = MAT_KINDS[k], hue = (K.hue[0] + K.hue[1]) / 2;
+  ITEMS[`mat.${k}`] = { id: `mat.${k}`, kind: 'material', key: k, name: MAT_NAMES[k] || k.toUpperCase(), glyph: '❖', color: hueHex(hue), tier: 0,
+    examine: `Something brought up out of a Well: one of the ${K.name}. A spirit press would know what to make of it.`, card: null, lure: false, stack: false };
+}
+ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
+  examine: 'A map of a Well as it was the day it was charted. A Well drifts, so it leads back into that day\'s Well alone, and is worth less as it ages.', card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

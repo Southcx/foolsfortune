@@ -44,7 +44,7 @@ const KEY = 'foolsfortune.pneuka.v1';
 export class PneukaBox {
   constructor(game) {
     this.game = game;
-    this.slots = new Array(SLOTS).fill(null); // { id, n?, uses? }
+    this.slots = new Array(SLOTS).fill(null); // { id, n?, uses?, data? } (a thing with uses or data of its own never stacks: a worn key, a Cogitomap)
     this.lure = 'lure.bob';
     this.fit = { instrument: [], heart: ['heart.plain'], keys: [] };
     this.uses = { instrument: [], heart: [0], keys: [] }; // (beside each fitting: how many times it has been turned)
@@ -58,14 +58,14 @@ export class PneukaBox {
   get used() { return SLOTS - this.free; }
   count(id) { return this.slots.reduce((n, s) => n + (s?.id === id ? s.n || 1 : 0), 0); }
   /** Room for one more of this (a free slot, or a stack of it not yet full). */
-  room(id, uses = 0) { const it = itemOf(id); return this.free > 0 || (!uses && !!it?.stack && this.slots.some((s) => s?.id === id && !s.uses && (s.n || 1) < it.stack)); }
+  room(id, uses = 0, data = null) { const it = itemOf(id); return this.free > 0 || (!uses && !data && !!it?.stack && this.slots.some((s) => s?.id === id && !s.uses && !s.data && (s.n || 1) < it.stack)); }
   /** One of a thing into the box without a word (a stack of it first, if it stacks and is fresh): the slot, or -1 if there is no room. */
-  put(id, uses = 0) {
+  put(id, uses = 0, data = null) {
     const it = itemOf(id);
-    if (it?.stack && !uses) { const i = this.slots.findIndex((s) => s?.id === id && !s.uses && (s.n || 1) < it.stack); if (i >= 0) { this.slots[i].n = (this.slots[i].n || 1) + 1; return i; } }
+    if (it?.stack && !uses && !data) { const i = this.slots.findIndex((s) => s?.id === id && !s.uses && !s.data && (s.n || 1) < it.stack); if (i >= 0) { this.slots[i].n = (this.slots[i].n || 1) + 1; return i; } }
     const i = this.slots.findIndex((s) => !s);
     if (i < 0) return -1;
-    this.slots[i] = uses ? { id, uses } : { id };
+    this.slots[i] = { id, ...(uses ? { uses } : {}), ...(data ? { data } : {}) };
     return i;
   }
   /** Every copy of a thing the Courier has: in the box, on the line, in the Book, on the ground. */
@@ -73,12 +73,12 @@ export class PneukaBox {
   emit(k, e) { this.game.events?.emit(k, e); }
 
   /** A thing into the box (the first free slot). If there is no room it falls at their feet. */
-  add(id, from = 'pickup', uses = 0) {
+  add(id, from = 'pickup', uses = 0, data = null) {
     if (!itemOf(id)) return -1;
-    const i = this.put(id, uses);
+    const i = this.put(id, uses, data);
     if (i < 0) {
       const P = this.game.player;
-      this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses });
+      this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses, data });
       this.emit('item.full', { item: id, from });
       return -1;
     }
@@ -92,10 +92,10 @@ export class PneukaBox {
 
   /** Drop: on the ground at their feet. */
   drop(slot) {
-    const uses = this.slots[slot]?.uses || 0, id = this.take(slot);
+    const uses = this.slots[slot]?.uses || 0, data = this.slots[slot]?.data || null, id = this.take(slot);
     if (!id) return false;
     const P = this.game.player;
-    this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses });
+    this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses, data });
     this.emit('item.drop', { item: id });
     return true;
   }
@@ -231,7 +231,7 @@ export class PneukaBox {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
-      this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return !it ? null : o.uses > 0 ? { id: o.id, uses: o.uses | 0 } : it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }; });
+      this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return !it ? null : o.uses > 0 || o.data ? { id: o.id, ...(o.uses > 0 ? { uses: o.uses | 0 } : {}), ...(o.data ? { data: o.data } : {}) } : it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }; });
       this.lure = s.lure === undefined ? 'lure.bob' : s.lure && itemOf(s.lure) ? s.lure : itemOf(`lure.${s.lure}`) ? `lure.${s.lure}` : null;
       this.seeded = !!s.seeded;
       if (s.fit) for (const k of Object.keys(this.fit)) {

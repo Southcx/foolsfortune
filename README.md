@@ -264,8 +264,11 @@ Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier.
 **The Great Dunemaw**, out on the sand north-west of the oasis: a dark pool turning in a ring of fallen stones (the Dreamvane hears it
 from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
 On every floor a pale pool is **the way up**, back out to the mouth with whatever you found, and a dark one is **the way down**, deeper.
-Shatter down there and you come to at the mouth, and the run's haul stays in the Well. (It is greybox for now: the creatures, the pay,
-the charting and the Cogitomap come next.)
+Shatter down there and you come to at the mouth, and the run's haul stays in the Well. Slip jellies hold every room but the first, one
+more each floor down, and a **Great Slip Jelly** (a FOE) keeps the bottom. Burst every jelly on a floor and something is left where they
+were: a **material** for the spirit press, rarer deeper. Up the way up you keep the haul and the run pays in cubes (more for depth and the
+FOE, less as the Well is drawn on: it fills again with rest). Chart four fifths of the floors you walk (the Dreamvane's survey does it;
+walking alone does not) and you also come up with a **Cogitomap**: the Well as it is today. (The rooms are greybox until Calissa dresses them.)
 
 **Solar Skiffing.** **Y** brings the **skiff**: a small hovering boat with a lug sail (after the King of Red Lions). W hoists the sail and
 it stays up; S lets it down and brakes, and hoisting again quickly is a **pump**; A / D steer; Space crouches and hops, and in the air A / D

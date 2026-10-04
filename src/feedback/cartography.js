@@ -318,6 +318,20 @@ export class Cartography {
     }
   }
 
+  /** Forget one layer's cells (a Well's floors are laid out afresh each day: world/well/dunemaw.js clears its layer on every run). */
+  clear(layerId) { this.cells[layerId]?.clear(); this.known = (this.known || 0) + 1; }
+  /** How much of the ground inside `rects` ([{ x0, z0, x1, z1 }], world metres) on a layer is CHARTED or better, 0..1. */
+  share(layerId, rects) {
+    const l = LAYER_BY_ID[layerId], t = T.zoi.tiers[1];
+    if (!l) return 0;
+    let n = 0, known = 0;
+    for (const r of rects) {
+      for (let ix = Math.floor(r.x0 / l.cell); ix < Math.ceil(r.x1 / l.cell); ix++) for (let iz = Math.floor(r.z0 / l.cell); iz < Math.ceil(r.z1 / l.cell); iz++) {
+        n++; const c = this.cell(l, ix, iz); if (c && c.k >= t) known++;
+      }
+    }
+    return n ? known / n : 0;
+  }
   /** Forget everything (a new game). */
   erase() {
     for (const l of LAYERS) this.cells[l.id].clear();
