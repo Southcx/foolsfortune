@@ -135,3 +135,12 @@ up its key. And EVEN is the big-game catch key (a Leviathan 5% → 28%), LOADED 
   875 good and 410 masterful.
 - Glaze prices follow desirability: the principles and a first placement are in ECONOMY.md, "The worth of a look". Calissa is expanding
   the kiln, and Espada and Calissa weigh in on what is most valuable.
+
+**Phases D and E, Dovina's data (2026-10-04, later, unwired):**
+- `src/progress/econ/materials.js`: the material kinds, paths, `press()` and `distance()`, for D1 and D2.
+- `src/progress/econ/livelihoods.js`: the pay for busking, commissions and pots, for D4 to D6.
+- `src/progress/econ/islands.js`: Well pay by depth, Cogitomap worth as the Well drifts, island demand on a slow clock with gluts, fuel,
+  hauling profit, for E1, E2, E4 and E5.
+
+The numbers are in `ECON`, and `scripts/economy.mjs` prints every row (ECONOMY.md, "The livelihoods"). The busking pay waits on Wanda's
+`rhythm.score` event; the rest waits on the systems that pay through them.

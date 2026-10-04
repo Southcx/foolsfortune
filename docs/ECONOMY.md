@@ -201,6 +201,21 @@ A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the 
 Cut: salvage (the deep Emocean leaves no wreckage), and spell scrolls (a caster shell is a spell, and the Lockheart's casting coffins fill
 the rest of that niche).
 
+**The numbers, simulated before anything is built** (`ECON.busk`, `.commission`, `.pot`, `.well`, `.cogitomap`, `.island`, `.emocean`;
+the pay rules are `src/progress/econ/livelihoods.js` and `islands.js`). Cubes an hour at poor / middling / masterful play:
+
+| livelihood | poor | middling | masterful |
+|---|---:|---:|---:|
+| busking | 0.42× | 0.75× | 1.27× |
+| commissions (Barracuda) | 0.91× | 1.05× | 1.25× |
+| throwing pots (stoneware) | 0.54× | 0.88× | 1.42× |
+| Well runs | 0.72× | 1.21× | 1.31× |
+| hauling | −0.46× (cargo lost) | 0.95× | 1.51× |
+
+Each livelihood pays more the better it is played, and none passes 1.5× the aim except hauling at its best, where the risk is the profit.
+A Cogitomap of a five-floor run is worth 79 cubes fresh, 39 after 20 hours, 10 after 60: the Well drifts, so maps are worth hauling
+while they are fresh.
+
 **Cogitomaps.** A Well is a Lachryma distortion, and it changes over time. A Cogitomap is a map of one Well as it was when it was charted,
 so it is **a ticket to a seeded run of that Well**: the same layout, the same rewards. The Courier charts it, and **Spellscription**
 copies a high-quality Cogitomap. Cogitomaps can be sold, traded, and hauled to the island that wants that Well.

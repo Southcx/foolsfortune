@@ -79,6 +79,31 @@ export const ECON = {
   /** The haggle (progress/shop/haggle.js): Raku's list price over the worth, and the least he will take over it (he never sells at a loss). */
   haggle: { list: 1.45, floor: 1.02 },
 
+  // ---- the livelihoods still to be built (docs/ECONOMY.md, "The livelihoods"; econ/livelihoods.js, econ/islands.js; simulated first)
+  /** BUSKING (the Crucibelle's rhythm mode, Wanda's): a song pays its length in minutes of play times the score's weight: steep, so
+   *  playing well pays (accuracy 1: 1.5x the aim; 0.7: about 0.8x; 0.4: 0.4x). The same song played again within the hour tires the
+   *  audience (`tire` a repeat), so a set pays more than a loop. */
+  busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7 },
+  /** COMMISSIONS by Figment class (Guppy .. Leviathan): minutes of play each pays, about the time an ordinary hunter takes, so a better
+   *  hunter, finishing sooner, earns more an hour; every `streakEvery`th in a row pays `streakMult` times (OSRS Slayer's points). Skipping
+   *  one breaks the streak. */
+  commission: { minutes: [3, 8, 20, 60, 180], streakEvery: 10, streakMult: 3 },
+  /** THROWING POTS: a pot pays `minutes` of play times its shape's accuracy weighed steeply (floor .. ceil, as the domains' SKILL), plus
+   *  its glaze's prestige in minutes (looks: a pot glazed in porcelain sells for more). */
+  pot: { minutes: 2.5, floor: 0.25, ceil: 1.5, power: 2, glaze: { earthenware: 0, stoneware: 0.5, porcelain: 1.5, court: 3 } },
+  /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
+   *  `foe` floors' worth. */
+  well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
+  /** A COGITOMAP: a ticket to a seeded run of a Well. Worth `share` of what that run pays, by how much of the Well it charts; the Well
+   *  drifts, so the map halves in worth every `halfLifeH` hours of play (old maps are cheap, fresh ones are worth hauling). */
+  cogitomap: { share: 0.3, halfLifeH: 20 },
+  /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
+   *  `hi`; every unit sold there gluts it by `glut`, recovering one unit a `recoverMin` minutes (as Grog's prices do). */
+  island: { lo: 0.6, hi: 1.6, periodDays: [3, 7], glut: 0.03, recoverMin: 6 },
+  /** THE EMOCEAN: a hop between islands burns `fuelMin` minutes of play in cubes a unit of distance (a drain: the travel layer spends
+   *  what the others earn); a stage failed loses `lose` of the cargo. */
+  emocean: { fuelMin: 1.5, lose: 0.25 },
+
   // ---- the mastery dividend (docs/ECONOMY.md, rule 6; not built yet: the simulator's numbers to aim at)
   /** An encounter whose ledger is complete pays on its own: `share` of what farming it by hand pays an hour, accruing for at most
    *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
