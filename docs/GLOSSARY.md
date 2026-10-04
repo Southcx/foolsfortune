@@ -290,7 +290,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
   a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
-  Queen: chaos, every feeling pegged high, its core hunger; her island **Entropolis**, a blacklight metroplex): two other Islands of Ego, and the
+  Queen: chaos, every feeling pegged high, its core hunger; her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
   Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 - **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.

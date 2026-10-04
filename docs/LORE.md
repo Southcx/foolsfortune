@@ -259,8 +259,17 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Her island: Entropolis** *(the owner, R57)*: *entropy* plus *polis*, the city, and her own name folded into one word, the
   way Kaolin Anagami is Anagami Island. A blacklight metroplex, sprawling and avant-garde. Skyscrapers tilt, magenta lightning runs down the streets like
   cracks, neon-green pools lie between the towers, a checkerboard hangs like a billboard. Over it all hang a magenta cloud and a dark
-  moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. At its foot, in the dark, a great
-  head with green eyes looks up (its meaning is left blank).
+  moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. What looks like a great head with
+  green eyes at its foot is not one *(the owner, R57)*: it is toxic green Lachryma seeping out of the city's sewers.
+- **Two cities, one over the other** *(the owner, R57)*. **Overground**: flashy hedonism, the party that never stops, every light on
+  and every feeling at full. **Underground**: twisted decay, where everything the party spends drains down, and the runoff seeps out
+  of the sewers and off the island's underside as toxic green Lachryma.
+- **Rave culture, good and bad** *(the owner, R57)*. Entropolis is the embodiment of rave culture, both halves of it. The good is
+  real: belonging, music, self-expression, strangers who look after each other on the floor. So is the bad: chasing the next high,
+  the comedown, the ones who burn out and sink to the underground. *(Espada's, for kid-safety)*: in the world the high is Lachryma
+  itself, raw feeling taken for the rush of it, so the game can tell the whole story without naming a drug. It is the Queen's core
+  feeling made into a city: hunger, always one more. The overground is what Letty's stories describe; the underground is what they
+  never mention, and the sewers are where the Leviathan-class horrors might feed (open).
 - **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
   city's grid and density, then the colours bleeding off everything, and then a wave that breaks the geometry itself. Player text
   never names a drug: the game shows it, as it shows the Queen's moods without clinical words. For the stories *(Espada's)*: Letty's
