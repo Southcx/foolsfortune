@@ -16,16 +16,15 @@
 //
 // The same net carries a blow's CRACKS (courier/vessel/damage.js): other cells of it, per hit region (`uDmg`, one value for each of the six
 // regions, read through each vertex's `aRegion`), dark lacquer with a thread of Lachryma at the heart of the line; they mend away cell by
-// cell. A crack that mends is drawn on a line the gold may one day fill; and while it mends, the cells it has just closed are GOLD
-// (`uMend`, `uPeak` per region: the owner's, R45), fading out entirely as the mend completes, so the gold is the act of mending, never a
-// scar left behind.
+// cell. While a region mends its cracks are GOLD (`uMend`, Petra's), and the cells it has just closed keep a trail of gold (`uTrail`,
+// `uPeak`) that fades out entirely as the mend completes (the owner's, R45): the gold is the act of mending, never a scar left behind.
 //
-//   addKintsugi(material, uniforms)    uniforms = kintsugiUniforms()  ({ uKin: share 0..1, uKinScale, uDmg, uMend, uPeak: Float32Array(6) each })
+//   addKintsugi(material, uniforms)    uniforms = kintsugiUniforms()  ({ uKin: share 0..1, uKinScale, uDmg, uMend, uTrail, uPeak: Float32Array(6) each })
 // ---------------------------------------------------------------------------------------
-export const kintsugiUniforms = () => ({ uKin: { value: 0 }, uKinScale: { value: 11 }, uDmg: { value: new Float32Array(6) }, uMend: { value: new Float32Array(6) }, uPeak: { value: new Float32Array(6) } });
+export const kintsugiUniforms = () => ({ uKin: { value: 0 }, uKinScale: { value: 11 }, uDmg: { value: new Float32Array(6) }, uMend: { value: new Float32Array(6) }, uTrail: { value: new Float32Array(6) }, uPeak: { value: new Float32Array(6) } });
 
 const FRAG_HEAD = /* glsl */`
-uniform float uKin; uniform float uKinScale; uniform float uDmg[6]; uniform float uMend[6]; uniform float uPeak[6]; varying vec3 vKin; varying float vRegion;
+uniform float uKin; uniform float uKinScale; uniform float uDmg[6]; uniform float uMend[6]; uniform float uTrail[6]; uniform float uPeak[6]; varying vec3 vKin; varying float vRegion;
 vec3 kinHash(vec3 p) { p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
 // the distance to the nearest edge between cells, and the nearest cell's own number
 float kinEdge(vec3 p, out float id) {
@@ -52,22 +51,21 @@ export function addKintsugi(m, uni) {
   float kinId; float kinE = kinEdge(vKin * uKinScale, kinId);
   float kSeam = uKin > 0.0 ? (1.0 - smoothstep(0.022, 0.05, kinE)) * step(kinId, uKin) : 0.0;
   // a blow's cracks (courier/vessel/damage.js): the same net, other cells, dark lacquer with Lachryma at the heart of the line, as wide as the
-  // region is hurt; they mend cell by cell as it heals
-  int kinR = int(clamp(vRegion + 0.5, 0.0, 5.0));
-  float dK = uDmg[kinR], dT = fract(kinId * 7.31 + 0.13);
+  // region is hurt; they mend cell by cell as it heals, and while they mend the line is gold (uMend: the lacquer's Lachryma gives way to it)
+  int dR = int(clamp(vRegion + 0.5, 0.0, 5.0)); float dK = uDmg[dR], dM = uMend[dR], dT = fract(kinId * 7.31 + 0.13);
   float dOn = dK > 0.0 ? step(dT, dK) : 0.0;
-  // the MEND: a cell that has just mended is gold for a moment (the cracks it closed were cracked, below the region's peak; the newest
-  // brightest), and all of it goes as the region's mend finishes (uMend falls to 0): kintsugi seen only while it happens
-  float gK = uMend[kinR];
-  float gSeam = gK > 0.0 ? gK * step(dK, dT) * step(dT, uPeak[kinR]) * mix(1.0, 0.35, smoothstep(0.0, 0.35, dT - dK)) * (1.0 - smoothstep(0.02, 0.05, kinE)) : 0.0;
-  kSeam = max(kSeam, gSeam);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.70, 0.27), kSeam);
   float dSeam = dOn * (1.0 - smoothstep(0.02 + 0.03 * dK, 0.05 + 0.05 * dK, kinE)) * (1.0 - kSeam);
   float dCore = dOn * (1.0 - smoothstep(0.0, 0.02, kinE)) * (1.0 - kSeam);
-  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.05, 0.03, 0.05), dSeam);`)
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n  roughnessFactor = mix(roughnessFactor, 0.28, kSeam);')
-      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n  metalnessFactor = mix(metalnessFactor, 0.55, kSeam);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3(0.93, 0.70, 0.27) * (0.32 * kSeam + 0.5 * gSeam) + vec3(0.62, 0.4, 1.0) * 0.9 * dCore * dK;');
+  diffuseColor.rgb = mix(diffuseColor.rgb, mix(vec3(0.05, 0.03, 0.05), vec3(0.93, 0.70, 0.27), dM), dSeam);
+  // and the TRAIL: a cell the mend has just closed stays gold a moment (below the region's peak: it was cracked; the newest brightest),
+  // all of it gone as the mend finishes (uTrail falls to 0): kintsugi seen only while it happens, never a scar left behind
+  float tK = uTrail[dR];
+  float tSeam = tK > 0.0 ? tK * step(dK, dT) * step(dT, uPeak[dR]) * mix(1.0, 0.35, smoothstep(0.0, 0.35, dT - dK)) * (1.0 - smoothstep(0.02, 0.05, kinE)) : 0.0;
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.70, 0.27), max(kSeam, tSeam));
+  float gSeam = max(max(kSeam, dSeam * dM), tSeam);`)
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n  roughnessFactor = mix(roughnessFactor, 0.28, gSeam);')
+      .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n  metalnessFactor = mix(metalnessFactor, 0.55, gSeam);')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3(0.93, 0.70, 0.27) * (0.32 * gSeam + 0.2 * tSeam) + vec3(0.62, 0.4, 1.0) * 0.9 * dCore * dK * (1.0 - dM);');
   };
   m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-kin`;
   m.needsUpdate = true;

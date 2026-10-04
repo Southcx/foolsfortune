@@ -210,7 +210,8 @@ A little coffin on a chain, worn at the neck from the start. Worn, it drinks the
 **hoovers** loose baubles and the Lachryma of a mind laid low. Full, and with a **Possibilikey** on its ring (up to four), the right button
 **opens** it: the Courier's ultimate, **the Opening**. The game stops for it, the keys plunge in, a **wheel** of odds stands in the sky (the
 coffin's table, changed by the keys: Inverted, Even, Loaded, Twin, Wide, Echo), and what it lands on comes out as hard as the coffin was
-full, from a spill of Lachryma to the slip nuke.
+full, from a spill of Lachryma to the slip nuke. A brass Possibilikey is spent in the turning; the others can be turned again, but each
+use makes it likelier to snap in the lock (about three openings on average).
 
 ## The god hand (~)
 

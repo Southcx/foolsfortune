@@ -15,6 +15,8 @@
 //
 //   REGIONS (names, in order)   regionOfBone(name)   new Hitboxes(character)  .nearest(point) .raycast(origin, dir) -> { region, t }
 //   new VesselDamage(game, vessel)   .hit({ point?, from?, dir?, k, why, by })   .update(dt)   .crack (Float32Array per region)
+//   .mend (Float32Array per region, 0..1: how far a mending region's cracks have turned to gold; the owner, 2026-10-04: gold where a
+//   crack mends, gone when the mend is done)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { HURT } from '../../vfx/filigree.js';
@@ -113,7 +115,8 @@ export class VesselDamage {
     this.game = game; this.vessel = vessel;
     this.crack = new Float32Array(REGIONS.length);
     this.quiet = new Float32Array(REGIONS.length).fill(99);
-    this.glow = new Float32Array(REGIONS.length); this.peak = new Float32Array(REGIONS.length); // (the mend's gold, and how far each region cracked: kintsugi.js)
+    this.mend = new Float32Array(REGIONS.length); // (the cracks gold while they mend: kintsugi.js uMend)
+    this.glow = new Float32Array(REGIONS.length); this.peak = new Float32Array(REGIONS.length); // (the trail of gold on the cells a mend has closed, and how far each region cracked: uTrail, uPeak)
     this.boxes = game.character ? new Hitboxes(game.character) : null;
     // the blows: a jelly's (from where the jelly is), a lob's and an explosion's (from the way it pushed them)
     game.events?.on('jelly.strike', (e) => this.hit({ from: e.from ? new THREE.Vector3(...e.from) : null, k: e.move === 'lunge' ? 0.7 : 0.4, why: 'jelly', by: 'creature' }));
@@ -170,14 +173,18 @@ export class VesselDamage {
         this.crack[i] = Math.max(0, this.crack[i] - MEND_RATE * dt);
         if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
       }
+      // the gold comes into the cracks over a second once they mend, and goes dark again if a blow lands first; the cells it fills go
+      // out one by one as the crack closes, so the last of the gold leaves with the last of the crack
+      const to = this.crack[i] > 0 && this.quiet[i] > MEND_AFTER ? 1 : 0;
+      this.mend[i] = to ? Math.min(1, this.mend[i] + dt) : this.crack[i] > 0 ? Math.max(0, this.mend[i] - dt * 3) : 0;
     }
-    // the mend's gold: up while a region mends, then gone within a couple of seconds of its last crack closing (and gone if it is hit again)
+    // the trail: the cells a mend has just closed stay gold, and all of it is gone within a couple of seconds of the last crack closing
     for (let i = 0; i < this.crack.length; i++) {
       const mending = this.crack[i] > 0 && this.quiet[i] > MEND_AFTER;
       this.glow[i] = mending ? Math.min(1, this.glow[i] + dt * 2) : Math.max(0, this.glow[i] - dt * 0.6);
       if (this.crack[i] === 0 && this.glow[i] === 0) this.peak[i] = 0;
     }
     const U = this.vessel?.kinU;
-    if (U?.uDmg) for (let i = 0; i < this.crack.length; i++) { U.uDmg.value[i] = this.crack[i]; U.uMend.value[i] = this.glow[i]; U.uPeak.value[i] = this.peak[i]; }
+    if (U?.uDmg) for (let i = 0; i < this.crack.length; i++) { U.uDmg.value[i] = this.crack[i]; U.uMend.value[i] = this.mend[i]; U.uTrail.value[i] = this.glow[i]; U.uPeak.value[i] = this.peak[i]; }
   }
 }

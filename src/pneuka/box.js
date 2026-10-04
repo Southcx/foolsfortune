@@ -10,7 +10,8 @@
 //    untying puts it back), and the TOOLS: worn in their places on their body (tools/belt.js), or carried here as things. A tool in the box
 //    is WORN from here (into its place: what was there comes off into the box), and a worn one TAKEN OFF into it.
 //  - FITTINGS, the same way for the tools after: the INSTRUMENT in the Crucibelle (one), the COFFIN on the Lockheart's chain (one: it
-//    is the wheel), and the POSSIBILIKEYS on its ring (up to four, in order: used up when it is opened; keys stack in the box). FITTINGS says which.
+//    is the wheel), and the POSSIBILIKEYS on its ring (up to four, in order: brass is spent when it is opened, any other has `uses` and breaks in time, lockheart/
+//    table.js keyBreaks; fresh keys stack in the box, a used one keeps its uses in a slot of its own, on the ground too). FITTINGS says which.
 //  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
 //    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
 //
@@ -21,7 +22,7 @@
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
 //   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
 //   box.wear(slot) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn)
-//   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i)     box.feed(slot) (a shard to the Lockheart)
+//   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
 import { itemOf } from './items.js';
@@ -43,9 +44,10 @@ const KEY = 'foolsfortune.pneuka.v1';
 export class PneukaBox {
   constructor(game) {
     this.game = game;
-    this.slots = new Array(SLOTS).fill(null); // { id }
+    this.slots = new Array(SLOTS).fill(null); // { id, n?, uses? }
     this.lure = 'lure.bob';
     this.fit = { instrument: [], heart: ['heart.plain'], keys: [] };
+    this.uses = { instrument: [], heart: [0], keys: [] }; // (beside each fitting: how many times it has been turned)
     this.fresh = false;
     this.load();
   }
@@ -56,14 +58,14 @@ export class PneukaBox {
   get used() { return SLOTS - this.free; }
   count(id) { return this.slots.reduce((n, s) => n + (s?.id === id ? s.n || 1 : 0), 0); }
   /** Room for one more of this (a free slot, or a stack of it not yet full). */
-  room(id) { const it = itemOf(id); return this.free > 0 || (!!it?.stack && this.slots.some((s) => s?.id === id && (s.n || 1) < it.stack)); }
-  /** One of a thing into the box without a word (a stack of it first, if it stacks): the slot, or -1 if there is no room. */
-  put(id) {
+  room(id, uses = 0) { const it = itemOf(id); return this.free > 0 || (!uses && !!it?.stack && this.slots.some((s) => s?.id === id && !s.uses && (s.n || 1) < it.stack)); }
+  /** One of a thing into the box without a word (a stack of it first, if it stacks and is fresh): the slot, or -1 if there is no room. */
+  put(id, uses = 0) {
     const it = itemOf(id);
-    if (it?.stack) { const i = this.slots.findIndex((s) => s?.id === id && (s.n || 1) < it.stack); if (i >= 0) { this.slots[i].n = (this.slots[i].n || 1) + 1; return i; } }
+    if (it?.stack && !uses) { const i = this.slots.findIndex((s) => s?.id === id && !s.uses && (s.n || 1) < it.stack); if (i >= 0) { this.slots[i].n = (this.slots[i].n || 1) + 1; return i; } }
     const i = this.slots.findIndex((s) => !s);
     if (i < 0) return -1;
-    this.slots[i] = { id };
+    this.slots[i] = uses ? { id, uses } : { id };
     return i;
   }
   /** Every copy of a thing the Courier has: in the box, on the line, in the Book, on the ground. */
@@ -71,12 +73,12 @@ export class PneukaBox {
   emit(k, e) { this.game.events?.emit(k, e); }
 
   /** A thing into the box (the first free slot). If there is no room it falls at their feet. */
-  add(id, from = 'pickup') {
+  add(id, from = 'pickup', uses = 0) {
     if (!itemOf(id)) return -1;
-    const i = this.put(id);
+    const i = this.put(id, uses);
     if (i < 0) {
       const P = this.game.player;
-      this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { from });
+      this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses });
       this.emit('item.full', { item: id, from });
       return -1;
     }
@@ -90,10 +92,10 @@ export class PneukaBox {
 
   /** Drop: on the ground at their feet. */
   drop(slot) {
-    const id = this.take(slot);
+    const uses = this.slots[slot]?.uses || 0, id = this.take(slot);
     if (!id) return false;
     const P = this.game.player;
-    this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { from: 'drop' });
+    this.game.ground?.drop(id, P.pos.clone().setY(P.pos.y + 0.05), { uses });
     this.emit('item.drop', { item: id });
     return true;
   }
@@ -163,29 +165,31 @@ export class PneukaBox {
   fitOn(slot) {
     const s = this.slots[slot], it = s && itemOf(s.id), socket = it && SOCKET_OF[it.kind];
     if (!socket) return false;
-    const F = FITTINGS[socket], cur = this.fit[socket];
+    const F = FITTINGS[socket], cur = this.fit[socket], U = this.uses[socket], uses = s.uses || 0;
     if (cur.length >= F.max) {
       if (F.max > 1) { this.refuse('The keyring holds four keys.', 'ringfull'); return false; }
-      if ((s.n || 1) > 1) { if (!this.room(cur[0])) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; } s.n--; this.put(cur[0]); } else this.slots[slot] = { id: cur[0] };
-      cur.length = 0;
+      if ((s.n || 1) > 1) { if (!this.room(cur[0], U[0])) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; } s.n--; this.put(cur[0], U[0]); } else this.slots[slot] = U[0] ? { id: cur[0], uses: U[0] } : { id: cur[0] };
+      cur.length = 0; U.length = 0;
     } else this.take(slot);
-    cur.push(s.id);
+    cur.push(s.id); U.push(uses);
     this.save(); sfx.click?.();
     this.emit('item.fit', { item: s.id, socket });
     return true;
   }
   fitOff(socket, i = 0) {
-    const cur = this.fit[socket], id = cur?.[i];
+    const cur = this.fit[socket], id = cur?.[i], uses = this.uses[socket][i] || 0;
     if (!id) return false;
-    if (!this.room(id)) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
-    cur.splice(i, 1);
-    this.put(id);
+    if (!this.room(id, uses)) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
+    cur.splice(i, 1); this.uses[socket].splice(i, 1);
+    this.put(id, uses);
     this.save();
     this.emit('item.unfit', { item: id, socket });
     return true;
   }
   /** A fitting spent (a key turned in the lock): gone. */
-  useUp(socket, i = 0) { const cur = this.fit[socket]; if (!cur?.[i]) return null; const id = cur.splice(i, 1)[0]; this.save(); return id; }
+  useUp(socket, i = 0) { const cur = this.fit[socket]; if (!cur?.[i]) return null; const id = cur.splice(i, 1)[0]; this.uses[socket].splice(i, 1); this.save(); return id; }
+  /** A fitting turned once more (a Possibilikey in the lock): how many times it has been, now. */
+  turn(socket, i = 0) { const U = this.uses[socket]; if (!this.fit[socket]?.[i]) return 0; U[i] = (U[i] || 0) + 1; this.save(); return U[i]; }
   /** A shard of crystal, fed to the Lockheart (it drinks it whole). */
   feed(slot) {
     const s = this.slots[slot], L = this.game.lockheart;
@@ -221,16 +225,19 @@ export class PneukaBox {
 
   // ---------------------------------------------------------------- kept in the browser
   save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots, lure: this.lure, fit: this.fit, seeded: this.seeded })); } catch { /* unavailable: it still works this session */ }
+    try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded })); } catch { /* unavailable: it still works this session */ }
   }
   load() {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
-      this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return it ? (it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }) : null; });
+      this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return !it ? null : o.uses > 0 ? { id: o.id, uses: o.uses | 0 } : it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }; });
       this.lure = s.lure === undefined ? 'lure.bob' : s.lure && itemOf(s.lure) ? s.lure : itemOf(`lure.${s.lure}`) ? `lure.${s.lure}` : null;
       this.seeded = !!s.seeded;
-      if (s.fit) for (const k of Object.keys(this.fit)) this.fit[k] = (s.fit[k] || []).filter((id) => itemOf(id)).slice(0, FITTINGS[k].max);
+      if (s.fit) for (const k of Object.keys(this.fit)) {
+        const ids = s.fit[k] || [], U = s.uses?.[k] || [], keep = ids.map((id, i) => [id, U[i] | 0]).filter(([id]) => itemOf(id)).slice(0, FITTINGS[k].max);
+        this.fit[k] = keep.map(([id]) => id); this.uses[k] = keep.map(([, u]) => u);
+      }
     } catch { /* nothing kept */ }
   }
   /** Things the Book used to hold as things (gained curios, loose cards: before the box) come into the box, once. */
@@ -242,7 +249,7 @@ export class PneukaBox {
     for (const id of owed) if (itemOf(id)) this.add(id, 'migrate');
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
-  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.seeded = false; this.seed(); }
+  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.uses = { instrument: [], heart: [0], keys: [] }; this.seeded = false; this.seed(); }
   /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools they are not wearing. */
   seed() {
     if (this.seeded) return;

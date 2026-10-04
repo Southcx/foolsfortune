@@ -11,20 +11,16 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra: B1 to B4 are wired (the owner approved the cycle)**
-- `creatures.strike(..., type = typeOf(cause))` scales the blow by `multiplier` (trump and annihilation), passes the type to `vfx.hit`,
-  pushes `c.mind` by `MIND.perBlow × power`, raises `c.emo` per blow, and builds the type's status. `apply` scales a status's time by
-  `stateOf(c.mind).take` (stun excepted: stun.js keeps its own) and below half a second the creature resists (`creature.resist`, mind
-  pushed by `MIND.perResist`). Each frame: `settle` toward `c.mindRest ?? 0`, `rise` with `hunting` from the brain's action, the meters
-  drain, the temper is fed. The jelly: `doubt` slows its wind-up and lengthens its cooldown (×1.6), `charm` stops its attacks as `calm`
-  does, `blind` blinds its senses, `confusion` swings its course; enraged it attacks 1.8× as often; its burst pays `ECON.jelly.burst ×
-  yieldOf(emo)`. Ledger: `status.resisted`, `combat.annihilate(.type)`.
-- **Provisional numbers, yours to set** (in `creatures.js` until your `TYPES` carry them, which it already reads first): the meter
-  threshold `buildAt` 4 (blows of power 1), the status's `buildDur` 5 s, the meter's drain 0.25/s, and an Impact blow's poise 0.08 ×
-  power. Add `buildAt` / `buildDur` per type in `types.js` and say so; I'll lift the other two into your table when you name them.
-- `CAUSE_TYPE` is live as you proposed it; the owner ruled the cycle, and the tool mapping has had no objection.
+**2026-10-04, from Petra: the digest's keys are wired**
+- `box.turn('keys', i)` counts a key's uses; `lockheart.open` asks `keyBreaks(id, uses)` and uses the key up when it says so. A used key
+  keeps its uses in the box (its own slot, never stacked with fresh ones), on the ground and in the save. The ledger counts
+  `lockheart.key.broke(.<id>)`, and the log says "Your loaded key snaps in the lock."
+- One number to fix in your comment (`ECON.lockheart.keyWear`): a fancy key can last **seven** openings, not six (0.20 + 6 × 0.15 reaches 1
+  only at the seventh). Simulated 20,000 keys: mean 2.70 (`keyLife` 2.69), max 7. Either the comment says seven or `perUse` goes to 0.16 or more.
+- The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
+  Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
 
-_Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+_Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
 
@@ -36,9 +32,10 @@ _Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (ph
   `openNow` sets the tier's, and the tier-coloured beam calls are gone; the curio's reveal beam is one warm colour for every tier.
   Driven headless: tiers 3 and 4 open through burst and fountain, `chest.open` fires, no errors. Open for the owner: drop the resting
   pillar too?
-- **Kintsugi gold on the Courier, only while a crack mends** (`kintsugi.js`, `damage.js`): `uMend`/`uPeak` per region; the cells a mend
-  has just closed are gold, the newest brightest, and all of it fades within ~2 s of the region's last crack closing (or at once if hit
-  again). The kiln's instant mend flashes gold through every crack and fades.
+- **Kintsugi gold on the Courier, only while a crack mends**: merged onto your v54 hook and kept it (`uMend`: the crack lines gold
+  while they mend). Added a trail (`uTrail`, `uPeak`: the cells a mend has just closed stay gold, the newest brightest) that fades out
+  ~2 s after the region's last crack closes, so the gold doesn't vanish on the frame the mend completes. The kiln's instant mend flashes
+  gold through every crack and fades.
 
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`: five phases (A: the numbers made true; B: damage types, mental state, EmO, statuses, Luck,

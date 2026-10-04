@@ -19,6 +19,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## The Courier
 
+- **the Vessoul** (the owner, 2026-10-04): the entity that stands for the player in the world, a soulspark from beyond. It takes several
+  forms, all one being, which is why they share a design language: **the god hand**, **the Pneuka Jar**, **the Courier**, and, on the
+  Emocean, **the ships**. The **Solar Skiff** is a limb of the Vessoul. *Not:* "the player" in player-facing text (the game says "you").
+- **ship** (the Emocean's rail-shooter layer): the Vessoul's sailing form between Islands of Ego, classed by real nomenclature: **sloop**,
+  **frigate**, **tanker**, **destroyer**, **galleon**. *Not:* the skiff.
 - **the Courier** (`player`: the body's physics, `src/courier/player.js`; `character`: the rig and its animation, `src/courier/character.js`): the one
   the player plays. Androgynous: "you" where the game speaks, "they" in docs and comments. *Not:* "the player" in anything the game says.
 - **vessel** (`game.vessel`, `game.vesselDamage`, `src/courier/vessel/`): the Courier's clay body and what is done to it: its glazes, its cracks,
@@ -91,6 +96,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **fever**; the **mirage** (the Song of Seeming's decoy).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
+  a Possibilikey's **uses** (the openings it has been turned in: brass is spent at the first, any other **breaks** with a chance that
+  rises with them, `keyBreaks`, the rule Dovina's `ECON.lockheart.keyWear`); a used one keeps its uses wherever it goes and never stacks
+  with fresh ones (*not* "worn": to wear is to put a tool on the belt);
   the **wheel** of odds; **the Opening** (its ultimate: `src/tools/lockheart/ultimate.js`).
 - **ultimate**: the category, a tool's cinematic signature move. The Lockheart's is the Opening; no other tool has one yet.
 

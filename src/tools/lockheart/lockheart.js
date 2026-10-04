@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
-import { HEARTS, OUTCOMES, oddsOf, rates, spin } from './table.js';
+import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks } from './table.js';
 import { OUTCOME_FX } from './outcomes.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
@@ -16,7 +16,7 @@ import { sfx } from '../../audio/sfx.js';
 //    has been let go of is what it is for), and a mind laid low (stunned, asleep, melted: stun.js) has its Lachryma drawn out of it
 //    (Luigi's Mansion's Poltergust). A crystal shard fed to it from the Pneuka Box fills it nearly half.
 //  - IT OPENS: RMB, when it is FULL (each coffin its own measure) and there is a POSSIBILIKEY on its ring (the box: up to four, in
-//    order). The keys are turned and used up; the coffin's table, changed by the keys (tools/lockheart/table.js), is put up as a wheel over
+//    order). The keys are turned: brass is spent, any other breaks in time (keyBreaks: a chance rising with its uses); the coffin's table, changed by the keys (tools/lockheart/table.js), is put up as a wheel over
 //    it (tools/lockheart/wheel.js) and spun; what it lands on comes out (tools/lockheart/outcomes.js), as hard as the coffin was full (twice full:
 //    twice as hard). A TWIN key spins it twice, an ECHO key has it happen again, a WIDE key reaches twice as far.
 //  - WHICH COFFIN is on the chain is which wheel: the plain one gives back what was put in, the gambler's almost never anything but
@@ -122,7 +122,9 @@ export class Lockheart extends HeldTool {
     const keys = box.fitted('keys');
     if (!keys.length) { sfx.fizzle?.(); g.log?.say('warn', 'There is no Possibilikey on the ring (the Pneuka Box).', { key: 'lh.nokey', throttle: 3 }); return; }
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
-    const used = [...keys]; for (let i = keys.length - 1; i >= 0; i--) box.useUp('keys', i);
+    // each key turned once more; brass is spent, any other breaks by its uses (table.js keyBreaks: the owner's ruling, 2026-10-04)
+    const used = [...keys], broke = [];
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i))) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
     const { table, mods } = oddsOf(this.heart, used);
     const power = Math.min(2, this.charge / this.fill);
     this.charge = 0; this.save();
@@ -130,7 +132,7 @@ export class Lockheart extends HeldTool {
     for (let s = 0; s < mods.spins; s++) draws.push(spin(table));
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, power: +power.toFixed(2), spins: mods.spins });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
     if (g.ultimate) g.ultimate.begin(this); else this.next(); // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
   /** The next spin in the queue: the wheel put up over the coffin, facing them. */
