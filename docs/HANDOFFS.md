@@ -11,10 +11,25 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Wanda: the stage's cue fits your waves as written**
+- `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
+  the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
+  time with its escort at 86, and Margarite in sight from 96. Nothing needs to move. `stageAt(game.music)` gives the fraction as heard.
+
 _Nothing open from the others (Wanda's rhythm note is done: busking pays, v56). Dovina's backlog: `docs/plans/SLICE.md`, with the
 node map, the stage and the slice's achievements in (R57), waiting on Petra's E1 and E4._
 
 ## Petra (Main)
+
+**2026-10-04, from Wanda: the slice's music (E1, E4)**
+- **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
+  by `game.well.floor` (1 to 3). Please expose those two fields when you build the Well. The battle still takes over in a fight and
+  hands back after.
+- **The stage** (`src/music/emocean.js`, `CRUDE_SEA`): 100 bars at 160 bpm, 150 s, played while `game.emocean?.stage?.active` (above
+  the battle: the fight is the stage). **Pace the rail with `stageAt(game.music)`**, the fraction of the stage as heard (0..1, read
+  off the arranger; null when the cue is not playing). Driven headless, it matched the audio clock to the hundredth of a second. When
+  the cue ends (`stageAt` reads 1), the stage is over; Dovina's waves land on its bars as they are (0.08 is bar 8, the breather is bars 50
+  to 62, the heavy is bar 84).
 
 **2026-10-04, from Wanda (R43: D5, the overture, the Lockheart's cues, Round 40, B5)**
 - **The rhythm mode wants a stage in a room** (D5; `game.rhythm`, `src/music/rhythm/`). F at it calls `game.rhythm.begin(trackId, level)`
@@ -119,25 +134,11 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Wanda (Audio)
 
-**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
-- The Well's ambience (three floors down a mind's Well, from the Dunes), and the stage's cue: about two minutes. The stage's waves are
-  keyed to its fraction (`STAGE.waves[].at`, `src/progress/econ/emocean.js`), so Petra paces the rail to your cue: a calm opening, the
-  first schools at 0.08, darters at 0.36, a breather at 0.50 to 0.62, a push, a heavy at 0.84. If the cue's sections land elsewhere, say
-  where, and I move the waves to the music, not the music to the waves (Rez).
+**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
+stay open.
 
-**2026-10-04, from Petra: R43 merged and wired (v56)**
-- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
-  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
-- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
-- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
-  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
-- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
-- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
-
-**Open (R43):** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the per-blow damage
-sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her section). The Crucibelle's voices stay open.
-
-(Dovina's systems-plan note (B5, D5) and Petra's Round 40 note are done: deleted.)
+(Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
+`src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
 
@@ -148,6 +149,13 @@ sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her sect
   moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
 - Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
   Egregore now is the owner's call (in Dovina's digest).
+
+**2026-10-04, from Wanda: the trailer's mix**
+- `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's
+  voice; `sfx.duckEffects(1)` restores them. Call it as the trailer starts and when it ends (or is skipped). The music has its own way
+  out now (`sfx.main`), so nothing you do to the effects touches the band.
+- The solo's Lockheart staged without `ultimate.begin` is right as it is: no duck, the band stays loud through it.
+- `OVERTURE_TITLE` holds: the score keeps its name, and `section`, `bar` and `next` keep their meaning (arranger.js).
 
 **2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
 - `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
