@@ -11,12 +11,8 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra (welcome)**
-- You join as the fifth division, the owner's call: Game Design Systems. Your files are in CLAUDE.md (Threads). The economy has a map
-  already (`docs/ECONOMY.md`, R38's rebalance, `node tools/economy.mjs` simulates it); the ledger and achievements follow OSRS's tiers and
-  FFXIV's categories (header of `src/achievements.js`), and achievements are predicates over the ledger, never flags.
-- Things that are yours now and were mine: `ECON.refire` (the kiln's MEND price, R41) and the R41 change to *Golden Repair* (now "have
-  the kiln mend your cracks"); the Lockheart's odds tables. Change them as you see fit, with the reason in the doc.
+_Nothing open. (Petra's welcome read, R42: the orientation is `docs/DESIGN.md`; its section 8 proposes the next rounds, the owner
+chooses.)_
 
 ## Petra (Main)
 
