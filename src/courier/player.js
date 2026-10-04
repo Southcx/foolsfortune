@@ -284,7 +284,7 @@ export class Player {
     if (this.mantle || this.freeze) return;
     const finite = Number.isFinite(this.pos.x + this.pos.y + this.pos.z + this.vel.x + this.vel.y + this.vel.z);
     if (!finite) {
-      this.pos.copy(this.safe.pos); this.vel.set(0, 0, 0); this.place();
+      this.pos.copy(this.safe.pos); this.vel.set(0, 0, 0); this.techs?.stop(); this.place();
       this.ev('courier.rescue', { kind: 'nan' });
       return;
     }
@@ -304,6 +304,7 @@ export class Player {
     }
     this.pos.copy(this.safe.pos);
     this.vel.set(0, 0, 0);
+    this.techs?.stop(); // (set down somewhere else: nothing held, a ladder, a ledge, the kiln, comes along to haul them back)
     this.setShape(this.safe.shape || 'stand');
     this.platform = null;
     this.place();

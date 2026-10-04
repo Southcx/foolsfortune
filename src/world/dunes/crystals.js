@@ -2,7 +2,7 @@
 // CRYSTALS: Lachryma that has set hard in the sand, in formations of six-sided spires. They are found (they give off a strong signature:
 // signatures.js, so the Dreamvane leans toward them), some lie VEILED under the sand until something shows them (the Crucibelle's Reveal
 // song, or the Dreamvane's pick struck where the vane says), and they are HARVESTED: struck with a pick they give up Lachryma a blow at
-// a time (baubles, and cubes when the formation breaks), and struck while a tuning fork RINGS in them (the Dreamvane's fork) they give
+// a time (baubles, and a shed of cubes that the break pays back: ECON.crystal), and struck while a tuning fork RINGS in them (the Dreamvane's fork) they give
 // twice as much and a shard of crystal besides (an item: it feeds the Lockheart). Any other blade or club only chips them. A spent
 // formation is stubs; a few minutes and it has grown back. Each is TUNED (world/dunes/crystaltuning.js): a key and a sweet spot, found by ear
 // (the fork gives the reference, each strike a note: its pitch from the height struck, its wavering from the way round); found, it
@@ -158,8 +158,13 @@ export class Crystals {
     const R = readStrike(T, th, u);
     e.hp = R.sweet ? 0 : Math.max(0, e.hp - 1);
     const last = e.hp <= 0;
-    // (solid Lachryma sheds solid pieces: cubes, the owner's ruling (R51); the count is Dovina's to tune, ECON)
-    g.cubes?.burst?.(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2, from: 'crystal' });
+    // the strike's baubles (the Lachryma refill: the tools' fuel); and, unless this blow opens it, a SHED of cubes (solid Lachryma sheds
+    // solid pieces: the owner's R51), which the break pays back out of its worth, so it pays the same however many blows it takes (ECON)
+    g.baubles?.spawn(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2 });
+    // (never past what a plain break would pay: a dense formation takes more blows than it is worth in cubes)
+    const plain = Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k * ECON.crystal.kind[T.kind]);
+    const n = last ? 0 : Math.min(ECON.crystal.shed * k, Math.max(0, plain - (e.shed || 0)));
+    if (n > 0) { e.shed = (e.shed || 0) + n; g.cubes?.burst?.(p.clone().setY(p.y + 0.2), n, { spread: 0.7, up: 3.2, from: 'crystal' }); }
     g.vfx?.play('crystal.strike', { pos: p.clone(), dir: dir.clone().negate(), power: R.sweet ? 1.6 : 0.8 + 0.6 * R.near });
     g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6 + Math.round(R.near * 14), dust: 2 });
     // the note made visible at the height struck, in its colour (gold when true: music/tone.js), and chips knocked off the lesser spires
@@ -174,14 +179,14 @@ export class Crystals {
     if (last) {
       // it opens: at its sweet spot many times over, else as its nature pays (cubes; a shard if it rang; sometimes a key)
       if (R.sweet) { if (sfx.crystalSweet) sfx.crystalSweet(R.midi); else { placeholderTone(R.midi, 0, 2.5, 0.2); placeholderTone(R.midi + 7, 0, 2.5, 0.12); placeholderTone(R.midi + 12, 0, 2.5, 0.1); } }
-      const worth = Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k * (R.sweet ? ECON.crystal.sweet[T.kind] : ECON.crystal.kind[T.kind]));
-      g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
+      const shed = e.shed || 0, worth = Math.max(0, Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k * (R.sweet ? ECON.crystal.sweet[T.kind] : ECON.crystal.kind[T.kind])) - shed);
+      if (worth > 0) g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
       if (g.pneuka && Math.random() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
       e.regrowT = REGROW + GROW; e.ringT = 0;
       T.spot = { th: Math.random() * Math.PI * 2, u: 0.25 + Math.random() * 0.5 }; // (it grows back with its spot somewhere new)
-      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shard, key, sweet: R.sweet, nature: T.kind });
+      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
     return true;
@@ -196,7 +201,7 @@ export class Crystals {
       if (e.rising) { e.rise = Math.min(1, e.rise + dt / 1.6); if (e.rise >= 1) e.rising = false; this.dirty(e); }
       if (e.regrowT > 0) {
         e.regrowT -= dt;
-        if (e.regrowT <= GROW) { if (e.hp <= 0) e.hp = e.maxHp; this.dirty(e); } // (grown back: whole again over its last seconds)
+        if (e.regrowT <= GROW) { if (e.hp <= 0) { e.hp = e.maxHp; e.shed = 0; } this.dirty(e); } // (grown back: whole again over its last seconds)
         if (e.regrowT <= 0) { e.regrowT = 0; this.dirty(e); }
         mats = true;
       }

@@ -89,6 +89,8 @@ export class Ladder extends Tech {
     this.vy = THREE.MathUtils.damp(this.vy, vy, sliding ? 5 : 14, dt);
     // hold the ladder line
     const want = new THREE.Vector3(l.x, 0, l.z).addScaledVector(l.n, LADDER.standoff);
+    // set down away from it (a rescue, a teleport): a ladder out of reach is not held, never hauled back to at speed
+    if (Math.hypot(want.x - P.pos.x, want.z - P.pos.z) > 1.5) { this.cool = 0.2; this.rushing = false; return false; }
     this.snap = Math.min(1, this.snap + dt * 8);
     P.vel.set((want.x - P.pos.x) * 12 * this.snap, this.vy, (want.z - P.pos.z) * 12 * this.snap);
     P.move(dt);

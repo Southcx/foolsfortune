@@ -27,6 +27,7 @@ export class Kiln extends Tech {
   canStart() {
     const P = this.P, g = this.game;
     if (!g.kilnUI || !g.vessel || g.interact?.cur?.id !== 'kiln' || !P.peekLatch('KeyF')) return false;
+    if (Math.hypot(SPOT.x - P.pos.x, SPOT.z - P.pos.z) > 4) return false; // (a stale interact: they are not at the kiln)
     return P.grounded && !P.mantle && !P.sliding && !g.god?.controlling && !g.techs.get('carry')?.item && !g.dialogue?.open;
   }
   start() {
@@ -44,6 +45,7 @@ export class Kiln extends Tech {
     if (this.done || !ui.open) return false;
     // they step into the kiln's mouth, then holds
     const dx = SPOT.x - P.pos.x, dz = SPOT.z - P.pos.z, far = Math.hypot(dx, dz);
+    if (far > 4) return false; // (opened from afar, or set down elsewhere: the kiln is not walked to at speed, it lets them go)
     P.vel.set(far > 0.05 ? dx * 5 : 0, -2, far > 0.05 ? dz * 5 : 0); P.move(dt);
     // the turntable: the camera stays in front of them and they turn (under the keys, or after a drag)
     this.face += ui.turn * 1.8 * (g.rawDt ?? dt) + ui.drag; ui.drag = 0;
