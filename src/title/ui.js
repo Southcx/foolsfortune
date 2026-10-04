@@ -73,7 +73,7 @@ export class TitleUI {
     const g = this.game, music = g.music;
     const pages = {
       main: [
-        { id: 'story', label: 'STORY', sub: 'Anagami Island (not yet written)' },
+        // STORY is off the menu until further notice (the owner, 2026-10-04: docs/DESIGN.md, section 8); its choice still works if restored
         { id: 'debug', label: 'DEBUG', sub: 'the workshop as it stands: every tool, every room' },
         { id: 'settings', label: 'SETTINGS', sub: 'music, voice, windows' },
         { id: 'sound', label: 'SOUND TEST', sub: 'the music, one piece at a time' },

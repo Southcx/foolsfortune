@@ -372,6 +372,9 @@ None of these is necessarily wrong. Each needs a sentence saying why it is what 
 These are the five changes that would most improve the game as a game, in the order I would do them. None is made yet: the owner
 chooses.
 
+**Ruled (the owner, 2026-10-04):** 1, 2, 3 and 5 go ahead, in that order. 4 is on hold with STORY itself: STORY is taken off the title
+menu until further notice, while the tools' identities are settled (below). No content push until then.
+
 ### 1. Make the numbers true (one round, small)
 
 **The change.**
@@ -414,7 +417,7 @@ ones should be the story the player tells.
 
 **How it is measured.** The curio curve section of the simulator, and the ledger's `curio.` firsts in play.
 
-### 4. A spine for STORY's first hours (design now, build with Petra and Espada)
+### 4. A spine for STORY's first hours (on hold, with STORY)
 
 **The change.** A first-session ladder the player can name at each step.
 - **The belt fills.** The Courier starts with the psygun and the Veritome. Each other tool is given by one of the folk for a task in
@@ -455,3 +458,28 @@ Kart's cups and Tony Hawk's gaps list reward mastery with standing and looks. FF
 
 *Later, once STORY has its spine: the Shrine Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
 rating), priced so that a committed player's surplus goes there for weeks.*
+
+---
+
+## 9. The pillar: every tool teaches a real skill (in discussion)
+
+The owner's thesis (2026-10-04): Fool's Fortune distils every genre, and each Lachryma tool teaches a skill that works outside the game.
+It is not a treadmill that only takes time. The Dreamvane is the model: a strike is judged against a reference tone, so mining by ear
+trains relative pitch. The rule this page holds every tool to is: **the skill is the verb**. The player gets better at the game by
+getting better at the real thing, and no number may do the skill for them. Prior art: *Rhythm Heaven* and *The Typing of the Dead* (the
+skill is the game), *Brain Age* and Gran Turismo's licences (a measured skill as the score). The cautionary tale is the "brain-training"
+genre, whose transfer claims did not hold up (the FTC's 2016 ruling on Lumosity). So the game teaches by play, and never says it is
+teaching.
+
+| Tool | The skill (draft) | Status |
+|---|---|---|
+| Psygun | aim; dynamic visual acuity | agreed |
+| Veritome | typing (reprogramming), reading behaviour, patience for the shot | agreed |
+| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | agreed |
+| Crucibelle | tempo, scales; chords (three keys at once) | agreed |
+| Lockheart | odds and expected value; and, proposed, catching critically stunned Figments | open |
+| Soul Brush | shape and/or colour theory | open |
+| Sondelass | not yet named | open |
+
+The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do, never do the
+skill for them.

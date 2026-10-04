@@ -39,7 +39,7 @@ The game opens on **THE FOOL'S PRECIPICE**, a live scene: the Courier on the lip
 Fool's dog, a checkerboard sea turning into a whirlpool below, its pieces moving on the beat. Press start and they step off the edge; the
 menu comes in while they fall:
 
-- **STORY**: the Movement Arts are learned by doing (still being written).
+- **STORY** is off the menu for now (the owner, 2026-10-04); when it returns, the Movement Arts are learned by doing.
 - **DEBUG**: the sandbox. The all-arts switch is on (every art lent), chests reopen in seconds, and `/grant` adds cubes.
 - **SETTINGS**, **SOUND TEST**.
 
