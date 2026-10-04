@@ -36,6 +36,9 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
   than at home after the sloop's fuel; a middling one is better sold at home. Skill decides whether the Well feeds the boat.
 - **Calissa dresses the slice** (the Well's kit, the sloop, the crude sea), in parallel with Petra's placeholders.
 - **Divination charts the course** between the islands: the reckoning, below.
+- **Get it all working first** (the owner, R57): the slice ships as specified here. The Wells and the Emocean are each a game of their
+  own, and their design gets a deep dive with the owner after the slice. Parked for it: the FOE as Etrian Odyssey's (a visible threat
+  that patrols and can be routed around, its route shown by Divination), not a big jelly waiting on the last floor.
 
 ## E1, the Well (Petra's room; Dovina's numbers)
 
