@@ -111,7 +111,7 @@ export class Vfx {
   constructor(game) {
     this.game = game;
     this.add = new Sprites(game.scene, { additive: true, max: 16384 });
-    this.alpha = new Sprites(game.scene, { additive: false, max: 8192 });
+    this.alpha = new Sprites(game.scene, { additive: false, max: 16384 }); // (the old particles' alpha and foam emit here too: Phase 2)
     this.live = [];
     this.lib = LIBRARY;
     this.lights = Array.from({ length: 3 }, () => { const l = new THREE.PointLight(0xffffff, 0, 10, 1.6); l.userData.moodExempt = true; game.scene.add(l); return { l, t: 0, dur: 0, k: 0 }; });

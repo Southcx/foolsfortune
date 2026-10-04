@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// SPRITES: the particle that has a shape. The old pools (vfx/gpuparticles.js) are soft round dots, which is all a particle could be;
+// SPRITES: the particle that has a shape. The old pools (now folded in) were soft round dots, which is all a particle could be;
 // a hit, a poof, a sparkle or a rune needs a SHAPE (a four-pointed star, a streak, a ring, a puff of smoke, a shard of clay), a turn and
 // a spin, a colour that changes over its life, and a spark that STRETCHES along the way it flies. Like the old pools it is stateless on
 // the GPU: written once when emitted, its whole life worked out in the vertex shader from those numbers (motion under drag and

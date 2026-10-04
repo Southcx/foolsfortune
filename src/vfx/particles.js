@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
-import { GpuParticles } from './gpuparticles.js';
 
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -25,22 +24,9 @@ function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,
 }
 
 /** A crisp white disc with a hair of soft edge: the cel-shaded "bubble" of foam and spray (Wind Waker's splash is made of these). */
-function discTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d');
-  g.fillStyle = 'rgba(255,255,255,1)';
-  g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2); g.fill();
-  const grd = g.createRadialGradient(32, 32, 26, 32, 32, 32);
-  grd.addColorStop(0, 'rgba(255,255,255,0.5)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 
 // Point particles (soft round sprites): one additive pool, one alpha pool, one of crisp bubbles. Simulated on the GPU from the moment
-// they are emitted (vfx/gpuparticles.js): tens of thousands cost what a handful did.
+// they are emitted (the VFX system's pools, vfx/sprites.js): tens of thousands cost what a handful did.
 // Tiny ballistic clay chips (instanced, no physics engine cost)
 class Chips {
   constructor(scene, max = 400) {
@@ -80,12 +66,26 @@ class Chips {
   }
 }
 
+/** One of the old pools, now an adapter onto the VFX system's (game.fx.vfx): same emit, same meaning, one set of particles. */
+function legacyPool(fx, pool, shape) {
+  return {
+    emit(o) {
+      const P = fx.vfx?.[pool]; if (!P) return; // (before the VFX system is up, at boot: nothing to draw yet)
+      const y = o.pos.y;
+      P.emit({ pos: o.pos, vel: o.vel, life: o.life || 0.5, size: o.size ?? 0.1, sizeEnd: o.sizeEnd, color: o.color ?? 0xffffff, alpha: o.alpha ?? 1, alphaEnd: 0,
+        drag: o.drag ?? 1, gravity: o.gravity ?? 0, twinkle: o.twinkle || 0, shape,
+        floor: o.floor ?? (y < BASE_FLOOR - 5 ? -1e9 : y < -2 ? BASE_FLOOR + 0.02 : 0.02) });
+    },
+    update() {}, set scale(v) { /* (world-sized quads now: nothing to scale) */ },
+  };
+}
+
 export class FX {
   constructor(scene) {
     this.scene = scene;
-    this.add = new GpuParticles(scene, { max: 16384, additive: true, map: radialTexture() });
-    this.alpha = new GpuParticles(scene, { max: 16384, additive: false, map: radialTexture() });
-    this.foam = new GpuParticles(scene, { max: 8192, additive: false, map: discTexture() }); // (crisp bubbles: bow spray, wakes)
+    // (the three pools are the VFX system's now, one set of particles for the whole game: Phase 2. Each is an adapter that keeps the old
+    //  emit's meaning: drag 1 unless said, the floor picked from the height, alpha fading out over the life, the foam's crisp disc)
+    this.add = legacyPool(this, 'add', 'soft'); this.alpha = legacyPool(this, 'alpha', 'soft'); this.foam = legacyPool(this, 'alpha', 'disc');
     this.chips = new Chips(scene);
     this.tracers = [];
     this.trails = [];
@@ -474,13 +474,6 @@ export class FX {
       if (!r.flat) r.ring.lookAt(camera.position);
       r.ring.material.opacity = (1 - t) * 0.9;
     }
-    this.add.update(dt);
-    this.alpha.update(dt);
-    this.foam.update(dt);
     this.chips.update(dt);
-    const h = window.innerHeight;
-    const fov = camera.fov * Math.PI / 180;
-    const scale = (h / (2 * Math.tan(fov / 2))) * (this.pixelRatio || 1);
-    this.add.scale = scale; this.alpha.scale = scale; this.foam.scale = scale;
   }
 }

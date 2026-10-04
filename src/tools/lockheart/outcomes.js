@@ -5,7 +5,7 @@
 // what came out (`lockheart.outcome`), and tracking.js says it.
 //
 // The SLIP NUKE is the jackpot and is made to look it: a column of slip thrown up and coming down over everything near (thousands of
-// GPU particles: vfx/gpuparticles.js), every creature against them in reach burst, every pot broken, the ground drowned in slip.
+// GPU particles: vfx/sprites.js), every creature against them in reach burst, every pot broken, the ground drowned in slip.
 //
 //   OUTCOME_FX[id](game, at, { power, reach, by }) -> n (how many things it touched)
 // ---------------------------------------------------------------------------------------
