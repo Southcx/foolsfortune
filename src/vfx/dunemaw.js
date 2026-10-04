@@ -11,7 +11,7 @@
 // schiller already on the Mind's marks (one stone, one meaning: the Mind's things are labradorite). The maw round it (Espada's reading of
 // the name): the sand drawn in, in darker streaks spiralling toward the pool.
 //
-//   const m = new DunemawMouth({ radius })   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
+//   const m = new DunemawMouth({ radius, maw })   (maw: the colour of what it draws in: the dunes' sand by default)   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
 //   (its own frame: centred on the sand's surface, Y up; Petra places it, its zone and its signature)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -43,20 +43,20 @@ void main() {
 }`;
 
 // the maw: the sand round it drawn in, darker streaks spiralling toward the pool and the sand sinking in its colour as it goes
-const MAW_F = `varying vec2 vP; uniform float uT, uOpen;
+const MAW_F = `varying vec2 vP; uniform float uT, uOpen; uniform vec3 uMaw;
 void main() {
   float r = length(vP); if (r < 1.0 || r > 1.9) discard;
   float a = atan(vP.y, vP.x);
   float streak = 0.5 + 0.5 * sin(a * 11.0 + log(r) * 14.0 + uT * 0.9);
   float pull = 1.0 - smoothstep(1.0, 1.9, r);
-  vec3 sand = vec3(0.42, 0.30, 0.18) * (0.55 + 0.45 * smoothstep(1.0, 1.6, r));
+  vec3 sand = uMaw * (0.55 + 0.45 * smoothstep(1.0, 1.6, r));
   gl_FragColor = vec4(sand * (0.7 + 0.3 * streak), pull * (0.35 + 0.4 * smoothstep(0.55, 0.9, streak)) * uOpen);
   #include <colorspace_fragment>
 }`;
 
 export class DunemawMouth {
-  constructor({ radius = 4.5, depth = 2.2 } = {}) {
-    this.u = { uT: { value: 0 }, uOpen: { value: 1 }, uDepth: { value: depth / radius }, uMindT: mindTime };
+  constructor({ radius = 4.5, depth = 2.2, maw = 0x6b4c2e } = {}) {
+    this.u = { uT: { value: 0 }, uOpen: { value: 1 }, uDepth: { value: depth / radius }, uMindT: mindTime, uMaw: { value: new THREE.Color(maw) } };
     const geo = new THREE.CircleGeometry(1, 64, 0, Math.PI * 2);
     // (rings of vertices, so the funnel can bend: a circle of one ring could not sink)
     const rings = new THREE.RingGeometry(0.001, 1, 64, 24); rings.rotateX(-Math.PI / 2);

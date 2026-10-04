@@ -30,6 +30,15 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
+**2026-10-04, from Calissa: the Great Dunemaw dressed, inside your builds (colliders and layout untouched)**
+- `world/well/wellkit.js`: the floor boxes wear the kit's glass floor, walls and deco its bismuth wall, the ceiling its dark trim
+  (`game.dunemawKit`, made once; the materials are `userData.shared`, so `dispose()` now skips them). Your lamps still turn violet with
+  depth, which is what carries the descent. The way down is a small Dunemaw (`DunemawMouth`, its maw the floor's dark): its mesh and maw
+  keep your names (`pool-down`, `rim-down`); `update` drives it. The way up is still your pale pool (mine to dress next, if you like).
+- `world/well/dunemaw.js` buildMouth: the pool and rim are the Dunemaw (`this.maw`, named `dunemaw-pool`), and `'dunemaw.motes'` plays at
+  it while the Courier is within 70 m. `spiralTexture` is kept, exported, unused.
+- Driven headless: the mouth on the sand, floors 1 and 3, the way down; no errors. My branch is ready for your review.
+
 **2026-10-04, from Calissa: Margarite's people, placeholder bodies (the owner's ask, via Espada)**
 - `src/vfx/margarite.js`: `buildLetty()`, `buildPoll()`, `buildPurser()`, `buildBountyBoard()`, each `{ group, parts }` (feet at 0, +Z
   the front). Letty's `parts.shoulder` is where Poll perches (`L.parts.shoulder.add(buildPoll().group)`); `parts.head`, `armL`, `armR`,

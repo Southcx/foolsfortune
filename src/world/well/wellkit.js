@@ -9,7 +9,7 @@
 // pillars, a ledge to mantle onto, plinths), Mystery Dungeon's and Tartarus's way of making a small kit read as many floors. The way in
 // (a pale pool: the way up, back out of the Well) and the way down (a dark one, turning) are pools of Lachryma on the floor.
 //
-// It is greybox in the house palette for now: the Well's look is Calissa's to dress (docs/HANDOFFS.md).
+// Dressed in the Great Dunemaw's kit (vfx/dunemawkit.js: bismuth walls, a glass floor over Lachryma) and its pool (vfx/dunemaw.js): Calissa's.
 //
 //   layoutFloor(seed, floor) -> { cells: [{ c, r, role, tpl, doors }], start, exit, links }      (pure: the same seed, the same floor)
 //   buildFloor(game, layout, origin, floor) -> { group, cells, arrive: { pos, yaw }, up, down, update(dt), dispose() }
@@ -21,6 +21,8 @@ import { PALETTE } from '../../core/config.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../../render/outline.js';
 import { seeded } from '../../core/rng.js';
+import { dunemawKit } from '../../vfx/dunemawkit.js';
+import { DunemawMouth } from '../../vfx/dunemaw.js';
 
 export const GRID = 3, CELL = 14, WALL_H = 5.5;
 const DOOR = 4, DOOR_H = 4, WT = 0.5, SLAB = 0.5;
@@ -113,7 +115,10 @@ export function buildFloor(game, layout, origin, floor = 1) {
   for (const [set, geos] of Object.entries(sets)) {
     if (!geos.length) continue;
     const merged = mergeGeometries(geos, false); for (const g of geos) g.dispose();
-    const m = new THREE.Mesh(merged, game.level.mat(COL[set]));
+    // the Great Dunemaw's kit (Calissa's: vfx/dunemawkit.js): bismuth walls and pillars whose terraces catch the light, the floor a pane of
+    // glass over liquid Lachryma, the ceiling the bismuth's dark metal; one set for every floor (shared: never disposed with a floor)
+    const K = (game.dunemawKit ||= (() => { const k = dunemawKit({ env: game.sky?.env }); for (const mm of [k.wall, k.floor, k.trim]) mm.userData.shared = true; return k; })());
+    const m = new THREE.Mesh(merged, set === 'floor' ? K.floor : set === 'ceil' ? K.trim : set === 'wall' || set === 'deco' ? K.wall : game.level.mat(COL[set]));
     m.receiveShadow = true; m.castShadow = set === 'deco';
     if (set !== 'ceil') addOutline(m);
     group.add(m);
@@ -121,9 +126,15 @@ export function buildFloor(game, layout, origin, floor = 1) {
   // the pools: the way up at the way in, the way down at the end of the path (none on the last floor: the bottom of the Well)
   const pool = (cell, kind) => {
     const { x, z } = at(cell), dark = kind === 'down';
-    const m = new THREE.Mesh(new THREE.CircleGeometry(1.4, 28), new THREE.MeshBasicMaterial({ color: dark ? 0x1a0f2a : 0xffe2b8, transparent: true, opacity: dark ? 0.95 : 0.8 }));
+    if (dark) { // (the way down: the Dunemaw again, small: black Lachryma turning, the dark of the floor drawn in round it)
+      const mouth = new DunemawMouth({ radius: 1.4, maw: 0x2a1a40 }); mouth.group.position.set(x, Y + 0.02, z);
+      mouth.mesh.name = 'pool-down'; mouth.maw.name = 'rim-down';
+      group.add(mouth.group);
+      return { pos: new THREE.Vector3(x, Y, z), mesh: mouth.mesh, rim: mouth.maw, mouth };
+    }
+    const m = new THREE.Mesh(new THREE.CircleGeometry(1.4, 28), new THREE.MeshBasicMaterial({ color: 0xffe2b8, transparent: true, opacity: 0.8 }));
     m.rotation.x = -Math.PI / 2; m.position.set(x, Y + 0.03, z); m.name = `pool-${kind}`;
-    const rim = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.75, 28), new THREE.MeshBasicMaterial({ color: dark ? 0x9a6bff : 0xffb27a, transparent: true, opacity: 0.7 }));
+    const rim = new THREE.Mesh(new THREE.RingGeometry(1.4, 1.75, 28), new THREE.MeshBasicMaterial({ color: 0xffb27a, transparent: true, opacity: 0.7 }));
     rim.rotation.x = -Math.PI / 2; rim.position.set(x, Y + 0.02, z); rim.name = `rim-${kind}`;
     group.add(m, rim);
     return { pos: new THREE.Vector3(x, Y, z), mesh: m, rim };
@@ -138,10 +149,10 @@ export function buildFloor(game, layout, origin, floor = 1) {
   return {
     group, arrive, up, down, floor,
     cells: layout.cells.map((c) => ({ ...at(c), c: c.c, r: c.r, role: c.role })),
-    update(dt) { t += dt; if (down) { down.mesh.rotation.z = t * 0.6; down.rim.material.opacity = 0.55 + 0.2 * Math.sin(t * 2); } up.rim.material.opacity = 0.6 + 0.15 * Math.sin(t * 1.3); },
+    update(dt) { t += dt; down?.mouth.update(t, 1); up.rim.material.opacity = 0.6 + 0.15 * Math.sin(t * 1.3); },
     dispose() {
       game.scene.remove(group);
-      group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => mm.dispose()); });
+      group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => { if (!mm.userData?.shared) mm.dispose(); }); }); // (the kit's materials are every floor's)
       W.removeRigidBody(body); // (and every collider on it)
     },
   };
