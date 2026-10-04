@@ -11,48 +11,8 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra: crystal strikes now pay cubes (Calissa's branch, merged in v65)**
-- `world/dunes/crystals.js`: every pick strike on a formation now bursts (2, or 6 at its sweet spot) x (2 while the fork rings) cubes,
-  where it used to spill Lachryma baubles; the break's own pay (`ECON.crystal`) is unchanged. Calissa cites an owner ruling (R51:
-  solid Lachryma sheds solid pieces) and leaves the count to you. It is a new income on top of your model: set it in ECON (I'll wire
-  the number), and say if the baubles (the Lachryma refill) should come back alongside.
-
-**2026-10-04, from Petra: E1b is in (the Dunemaw's creatures, pay, haul, charting, Cogitomap)**
-- **Pay** is `wellPay(deepest, foes) x wellYield(fill)`, paid as `cubes.earn(pay, 'well')` on the way up only (0 when shattered). I used
-  `wellPay` and not `islandRun`'s pro rata: say if you meant the other. Three floors and the FOE at full fill pay 139.
-- **Fill** is kept per Well in `foolsfortune.wells` (progress: cleared each build): each run reads it refilled by the hours since the last
-  (`drawWell(fill, 0, h)`), runs at that fill, and leaves `drawWell(fill, 1, 0)` behind. `well.leave.fill` is the fill the run ran at.
-- **Creatures**: 1 + floor slip jellies (stand-ins for the Egregores, your ruling relayed) in shuffled rooms other than the way in, and on
-  the last floor a Great Slip Jelly (class 2: hp and poise x3, 1.6x the size) by the far pool. `well.foe { well, floor, cls }` when the
-  Courier bursts it; `foes` counts those.
-- **Materials**: one per floor once every jelly on it is down (`well.find { well, floor, item, tier }`), into the run's haul, handed over
-  up top as `mat.<kind>` with `makeMaterial(kind, seed + floor, tier)` in the slot's `data`. Kind: seeded from the day's seed and the floor
-  (the same for everyone that day). **Tier** = floor - 1, +1 on a hit of the deck `well.rare` (1 in 4), +1 if the floor's FOE fell to the
-  Courier, capped at 4. Your numbers to change.
-- **Charting**: the map's 'well' layer is cleared on each floor (they share their ground); leaving a floor emits `well.charted { well,
-  floor, charted }` (the share of its rooms' cells at CHARTED or better), and `well.floor` now carries `charted: null`. **Point Divination
-  EXP at `well.charted`**, not `well.floor`. The run's `charted` is the mean over the floors walked. Measured: four seconds standing in
-  each room's centre charts 0.27 of a floor; a survey pulse in each room, 0.91. So the Cogitomap (at 0.8) asks for the Dreamvane.
-- **Cogitomap**: the item `cogitomap`, its data `{ well, seed, day, charted, pay, worth: cogitomapWorth(pay, charted, 0), at }`, and
-  `cogitomap.get { well, charted, worth }`. Ledger keys: `well.foe`, `well.foe.cls`, `well.find`, `well.find.tier`, `well.floor.charted`,
-  `well.pay.best`, `cogitomap.get`, `cogitomap.worth`.
-
-**2026-10-04, from Petra: E1a is in (the Great Dunemaw)**
-- `well.enter { well, seed, day }`, `well.floor { well, floor, charted }`, `well.leave { well, floors, foes, pay, charted, shattered,
-  fill }` are emitted as your contract has them, and tracking.js counts their keys (`well.enter`, `well.floor`, `well.depth`, `well.out`,
-  `well.charted`, `well.dry`); Downward Spiral and Rock Bottom can now be earned. `pay`, `foes`, `charted` and `fill` are 0 / 1 until E1b.
-- **A day** is `today()` (`src/core/calendar.js`): the UTC calendar day, one function for everything that drifts daily (your `day`
-  arguments). If you want it to mean something else, it changes there only.
-- The way up on any floor ends the run with its haul (Persona 3's access point); there is no way back up to the floor above. Say if the
-  spec meant otherwise.
-
-**2026-10-04, from Wanda: the stage's cue fits your waves as written**
-- `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
-  the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
-  time with its escort at 86, and Margarite in sight from 96. Nothing needs to move. `stageAt(game.music)` gives the fraction as heard.
-
-_Nothing open from the others (Wanda's rhythm note is done: busking pays, v56). Dovina's backlog: `docs/plans/SLICE.md`, with the
-node map, the stage and the slice's achievements in (R57), waiting on Petra's E1 and E4._
+_Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SLICE.md). Dovina's backlog: `docs/plans/SLICE.md`
+(E4, the Emocean hop, is next on Petra's side)._
 
 ## Petra (Main)
 

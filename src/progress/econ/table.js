@@ -21,10 +21,15 @@ export const ECON = {
   /** A slip jelly burst by them (plus whatever it had swallowed of theirs); a zandatsu's core. */
   jelly: { burst: 6, core: 3 },
   /** A crystal formation broken open: base + size x perSize (twice if the fork rang in it). */
-  crystal: { base: 3, perSize: 6, // (was 8 + 10: a round of the dune sea paid three times the aim)
+  crystal: { base: 2, perSize: 4.5, // (was 8 + 10: a round of the dune sea paid three times the aim; 3 + 6 until R57: still 1.74x)
     // tuned by ear (world/dunes/crystaltuning.js): a formation broken open by plain strikes pays this share by its nature; found at its sweet
     // spot, it pays this many times over (a dense formation forgives, a fragile one rewards the ear)
-    kind: { dense: 0.6, fragile: 0.5 }, sweet: { dense: 2, fragile: 6 } },
+    kind: { dense: 0.6, fragile: 0.5 }, sweet: { dense: 2, fragile: 6 },
+    // SHED (R57, on the owner's R51: solid Lachryma sheds solid pieces): every pick strike that does not open it sheds `shed` cubes (x2
+    // while the fork rings), and the break pays its worth LESS what was shed, never under 0. So a formation pays the same however many
+    // blows it took: mashing it never pays, finding the sweet spot (which opens it in one) still pays many times over. The strike's
+    // baubles (the Lachryma refill) shed alongside, as before: cubes are money, baubles are the tools' fuel, and a strike is both.
+    shed: 1 },
   /** Condensing a spare card, by its rank (was 1,200 for SS: a card is a collection first, money last). */
   condense: { SS: 320, S: 180, A: 100, B: 60, C: 40, D: 28, E: 20, F: 14, G: 9, H: 5 },
   /** A curio a chest gave that they already had, condensed, by chest tier (common .. prismatic; was 12 / 35 / 100 / 280 / 900). */
