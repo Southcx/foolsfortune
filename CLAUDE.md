@@ -84,11 +84,17 @@ credits: UAL Standard, CMU mocap, CC0).
   overwrites another).
 
 ## Threads
-Several Claude sessions work on this repo at once, each in its own container on its own branch, named loosely after the four suits;
+Several Claude sessions work on this repo at once, each in its own container on its own branch, named loosely after the four suits and,
+since R42, the trumps;
 the owner merges them into the default branch (`claude/fps-third-person-demo-8zp2kx`). Start from the latest default branch, keep
 merges small and frequent, and stay inside your own files; a small edit to a shared hub (`main.js`, `tracking.js`, this file) is fine.
 - **Petra** (pentacles), Main, `claude/fps-third-person-demo-8zp2kx`, session `session_01FV195xKEWMXYTm42tfejvJ`: everything not listed below, `src/render/` (how the game
   draws: zones, the light budget, the 480-line present), and publishing the playable build.
+- **Dovina** (the trumps), Game Design Systems, `claude/dovina-design`, session `DOVINA_SESSION`: the systems that say what play is worth and
+  where it leads: the economy (`src/econ/`, `tools/economy.mjs`, `docs/ECONOMY.md`), progression and unlocks (`src/system/system.js`,
+  `src/system/skills.js`), the ledger and the achievements (`src/stats.js`, `src/achievements.js`), prices and odds (`src/shop/catalogue.js`,
+  `src/lockheart/table.js`, `src/lockheart/outcomes.js`), and the design bible `docs/DESIGN.md` (the loops, the progression, the numbers and
+  why). The tuning of feel (movement, combat timings: `src/config.js`) stays Petra's: the core movement is the gold standard.
 - **Wanda** (wands), Audio, `claude/friendly-knuth-vbv82r`, session `session_01TJWi6AnZAQ8uug5yMgzhHW`: `src/audio.js` (and the `src/audio/` it is being split into),
   `src/music/`, `src/system/voice.js` and `src/system/speech/`, `src/npc/clayese.js`, `docs/OST.md`, `docs/voice_recording.md`.
 - **Calissa** (cups), Art, `claude/calissa-art-cups`, session `session_01XGT2M7FzmmweYqpDur2os6`: what the game draws: `src/vfx/`, `src/ui/`, `src/sky.js`, the
