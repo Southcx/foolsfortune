@@ -13,18 +13,38 @@
 //   flee    it goes away from the Courier                                      soft    it takes double from every blow
 //   calm    it will not attack, though it still follows                        melt    it pools into a harmless puddle
 //   stun    it is knocked out of itself (stun.js): it sways where it stands, and what a mind would refuse works on it
+//   doubt   (Ego's) it hesitates: slower to wind up, weaker when it does      charm   (Influence's) it will not attack, and warms to them
+//   blind   (Illusion's) it cannot see (its senses' blind)                     confusion  (Delirium's) it cannot keep a course
 //
 // A status is a time left and a strength; `st(c, name)` is what a creature's brain reads. Applying one again keeps the longer.
+//
+// THE FIGHT'S NUMBERS (docs/plans/SYSTEMS.md, B1 to B4; the data and the rules are Dovina's, in progress/combat/): every blow has a
+// DAMAGE TYPE (`type`, from its cause by default: progress/combat/types.js), worth more against the type it trumps and more again when
+// it annihilates; each type BUILDS its status on the target (a meter per type, emptied when the status lands; Impact's is the stun, fed
+// through stun.js). Every creature carries a MENTAL STATE (`mind`, -2 Stoic .. +2 Prismatic: progress/combat/mind.js), pushed toward
+// Prismatic by blows and back by a resisted status or by quiet, which scales how long a status holds it; and an EMOTIONAL OUTPUT (`emo`,
+// 0 .. 1: progress/combat/emo.js), raised by blows and by hunting, falling at rest, which its mind reads (an enraged one presses harder)
+// and its body shows (vfx/temper.js). A creature may declare its own `affinity` (a type) and `mindRest` (its nature's state).
 //
 // Prior art: the status ailments of the JRPG (Final Fantasy's Stop, Slow, Sleep, Confuse, Berserk; Dragon Quest's Sap for "soft"),
 // each a timer on the target rather than a change to its code, and the "damageable" interface of most engines (Unreal's TakeDamage,
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
-//   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?)   .apply(c, status, dur, k)   st(c, status)
+//   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
+//   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
 // ---------------------------------------------------------------------------------------
 import { hasTag } from '../core/tags.js';
+import { TYPES, typeOf, multiplier } from '../progress/combat/types.js';
+import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
+import { rise, enraged } from '../progress/combat/emo.js';
 
-export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun'];
+export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
+
+/** How a type's build-up becomes its status: the meter's threshold (in blows of power 1), how long the status holds, how fast the meter
+ *  drains, and how much of a full poise an Impact blow is worth. PROVISIONAL, until Dovina's TYPES carry `buildAt` / `buildDur`. */
+const BUILD = { at: 4, dur: 5, drainPerSec: 0.25, impactPoise: 0.08 };
+/** Statuses the mental state does not scale (stun.js keeps its own timing). */
+const UNSCALED = new Set(['stun']);
 
 /** How much of a status a creature has right now (0 when none). */
 export const st = (c, name) => { const s = c?.status?.get(name); return s && s.t > 0 ? s.k : 0; };
@@ -34,7 +54,7 @@ export class Creatures {
     this.game = game;
     this.list = [];
   }
-  add(c) { c.status ||= new Map(); this.list.push(c); return c; }
+  add(c) { c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; this.list.push(c); return c; }
   remove(c) { const i = this.list.indexOf(c); if (i >= 0) this.list.splice(i, 1); }
   /** The living creatures within r of p (horizontal and vertical both), nearest first. */
   near(p, r) {
@@ -48,16 +68,41 @@ export class Creatures {
     return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
   }
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
-  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null) {
+  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause)) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && by === 'courier') return false; // (their own: a spirit they called up is not struck by them)
-    c.hurt(point, dir, power * (st(c, 'soft') ? 2 : 1), cause, by, from); // (`from`: the thing that struck, when it is not the Courier)
-    this.game.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive }); // (what the blow looks like: vfx/library.js 'hit.*')
+    const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
+    const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
+    c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
+    g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
+    if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });
+    // the blow moves its mind and stirs it up, and builds its type's status
+    c.mind = pushed(c.mind, MIND.perBlow * power);
+    c.emo = rise(c.emo, power);
+    this.build(c, type, power * m.build, by, cause);
+    g.temper?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
     return true;
+  }
+  /** A type's build-up on a creature: Impact's feeds its poise (stun.js); the others fill a meter that, full, puts on their status. */
+  build(c, type, amount, by = 'courier', cause = 'shot') {
+    if (!c?.alive || !TYPES[type] || amount <= 0) return;
+    const take = stateOf(c.mind).take;
+    if (type === 'impact') { this.game.stun?.add(c, BUILD.impactPoise * amount * take, { by, cause }); return; }
+    const T = TYPES[type], at = T.buildAt ?? BUILD.at;
+    c.build[type] = (c.build[type] || 0) + amount * take;
+    if (c.build[type] >= at) { c.build[type] = 0; this.apply(c, T.builds, T.buildDur ?? BUILD.dur, 1, by); }
   }
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */
   apply(c, name, dur, k = 1, by = 'courier') {
     if (!c?.alive) return false;
+    if (!UNSCALED.has(name)) {
+      dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
+      if (dur < 0.5) { // (shrugged off: and it hardens)
+        c.mind = pushed(c.mind, MIND.perResist);
+        this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by });
+        return false;
+      }
+    }
     const s = c.status.get(name);
     if (s && s.t >= dur && s.k >= k) return false;
     c.status.set(name, { t: Math.max(dur, s?.t || 0), dur, k: Math.max(k, s?.k || 0) });
@@ -67,8 +112,15 @@ export class Creatures {
   }
   clearStatus(c, name) { c.status.delete(name); }
   update(dt) {
+    const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
+      if (!c.alive) continue;
+      // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
+      c.mind = settle(c.mind, dt, c.mindRest ?? 0);
+      c.emo = rise(c.emo, 0, dt, !!c.brain?.action?.hunt);
+      for (const t in c.build) c.build[t] = Math.max(0, c.build[t] - BUILD.drainPerSec * dt);
+      T?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
     }
   }
 }

@@ -40,6 +40,10 @@ sound, a heavy dark one a low, long one; the lawful damage types sound clean and
 | Illusion | chaotic, perceptual | the labradorite's flash | curls that turn, glints that never hold | perception slipping |
 | Delirium | chaotic, entropic | ink and violet-green | smoke rising, drips falling, bubbles | things coming apart |
 
+The status each type builds wears the same colour and motif (`aura.<status>`): **doubt** a lapis hex lattice standing round the
+head, **charm** rose ripples and petals, **blind** a band of labradorite glints turning across the face, **confusion** violet-green
+bubbles wandering and drips falling.
+
 Lawful is straight, crystalline, still; chaotic is curling, fluid, iridescent, never at rest.
 
 ## 3. Lachryma, in its three states

@@ -185,6 +185,23 @@ export const LIBRARY = {
   'aura.forget': { layers: [
     L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'labradorite', alpha: 0.6, spin: [-3, 3] }),
   ] },
+  // the four a damage type builds (progress/combat/types.js `builds`), each in its type's colour and motif (docs/ART.md: the damage types)
+  'aura.doubt': { layers: [ // ego: lapis hexes standing still round the head, a lattice that holds and will not close
+    L({ type: 'sprites', dur: Infinity, rate: 4, shape: 'hex', offset: [0, 0.35, 0], spawn: 'ring', r: 0.36, speed: 0, size: [0.14, 0.2], life: [1.2, 1.6], color: [0x3a6ae0, 0x6a96f0], alpha: 0.95, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 0.7, shape: 'ringthin', offset: [0, 0.5, 0], size: 0.45, sizeEnd: 0.5, life: 1.4, color: 0x2f5fd0, alpha: 0.5, alphaEnd: 0, rot: 0 }),
+  ] },
+  'aura.charm': { layers: [ // influence: rose ripples over the crown, warm petals drifting round
+    L({ type: 'sprites', dur: Infinity, rate: 1.2, shape: 'ripple', offset: [0, 0.55, 0], size: 0.15, sizeEnd: 0.8, life: 1, color: 0xf08aa8, colorEnd: 'gold', alpha: 0.85, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 4, shape: 'petal', offset: [0, 0.3, 0], spawn: 'ring', r: 0.5, dir: 'swirl', speed: [0.3, 0.5], size: [0.09, 0.13], life: [1.2, 1.8], color: [0xf4a6bc, 0xf2c86a], alpha: 0.9, spin: [-3, 3], gravity: 0.15 }),
+  ] },
+  'aura.blind': { layers: [ // illusion: a band of the labradorite's glints turning across the eyes, and an ink veil over them
+    L({ type: 'sprites', dur: Infinity, rate: 20, shape: 'glint', offset: [0, 0.42, 0], spawn: 'ring', r: 0.36, dir: 'swirl', lift: 0, speed: [0.6, 0.9], size: [0.12, 0.2], sizeEnd: 0, life: [0.4, 0.7], color: ['labradorite', 'white'], twinkle: 14 }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.5, pool: 'alpha', shape: 'swirl', offset: [0, 0.5, 0], spawn: 'sphere', r: 0.12, speed: [0.02, 0.06], size: [0.3, 0.4], sizeEnd: 0.5, life: [1, 1.4], color: 'ink', alpha: 0.45, alphaEnd: 0, spin: [-2, 2] }),
+  ] },
+  'aura.confusion': { layers: [ // delirium: violet-green bubbles wandering round the head, drips falling off it
+    L({ type: 'sprites', dur: Infinity, rate: 5, shape: 'bubble', offset: [0, 0.4, 0], spawn: 'ring', r: 0.3, dir: 'swirl', lift: 0.15, speed: [0.2, 0.45], size: [0.08, 0.13], sizeEnd: 0.17, life: [0.9, 1.4], color: [0x9a5ad0, 0x7ad08a], alpha: 0.85, alphaEnd: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 2, pool: 'alpha', shape: 'drip', offset: [0, 0.35, 0], spawn: 'sphere', r: 0.35, size: [0.05, 0.08], life: [0.6, 0.9], color: [0x6a3a90, 0x4a8a5a], alpha: 0.9, alphaEnd: 0.3, gravity: 3, floor: 'ground' }),
+  ] },
   // =============================================================================================== TEMPER (held, on a creature: vfx/temper.js)
   // a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own
   'temper.stoic': { layers: [ // dry: flakes of a fired surface falling, a little dust at the feet
