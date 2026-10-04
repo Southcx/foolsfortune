@@ -87,14 +87,14 @@ export class SystemVoice {
       lfo.connect(lg).connect(d.delayTime); pres.connect(d).connect(g).connect(p).connect(out);
       lfo.start(start); lfo.stop(start + buf.duration + 0.2);
     }
-    out.connect(sfx.master); out.connect(sfx.verbSend);
+    out.connect(sfx.main ?? sfx.master); out.connect(sfx.verbSend);
     src.start(start);
     this.game.music?.duck(chime + buf.duration + 0.3);
     return chime + buf.duration;
   }
   /** The two notes before a line: a notice rises a fifth, a warning falls a fourth. */
   chime(t, tone) {
-    const ctx = sfx.ctx, g = ctx.createGain(); g.connect(sfx.master); g.connect(sfx.verbSend);
+    const ctx = sfx.ctx, g = ctx.createGain(); g.connect(sfx.main ?? sfx.master); g.connect(sfx.verbSend);
     const notes = tone === 'warning' ? [659, 494] : [784, 1175];
     notes.forEach((f, i) => {
       const o = ctx.createOscillator(), e = ctx.createGain(); o.type = 'sine'; o.frequency.value = f;

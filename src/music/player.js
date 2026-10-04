@@ -63,7 +63,7 @@ export class MusicPlayer {
     this.bus = ctx.createGain(); this.bus.gain.value = 0.0001;
     this.duckG = ctx.createGain();
     const warm = ctx.createBiquadFilter(); warm.type = 'lowpass'; warm.frequency.value = 9000; warm.Q.value = 0.4;
-    this.bus.connect(this.duckG).connect(warm).connect(this.sfx.master);
+    this.bus.connect(this.duckG).connect(warm).connect(this.sfx.main ?? this.sfx.master);
     // a long, dark hall
     this.verb = ctx.createConvolver(); this.verb.buffer = this.sfx.impulse(3.6, 2.4);
     this.verbIn = ctx.createGain(); this.verbIn.gain.value = 0.55;
