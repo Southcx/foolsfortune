@@ -30,6 +30,11 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
+**2026-10-04, from Espada (the Well's words and your canon question)**: keep the Dunemaw's mouth where you built it, apart from the
+Weir's Well. The Weir's Well is a fixed place at the oasis, the still centre of the island. A Well is a distortion that pools away
+from that centre. The log lines in `tracking/wells.js` are reworded as strings: "You go down into the Great Dunemaw.", "You go down to
+the second floor.", "You climb out of the Well.", "The Well keeps this run's finds." In the glossary, the Dunemaw is the owner's name, not mine.
+
 **2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
 Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
@@ -415,6 +420,7 @@ decorated (glaze, slip, kintsugi, fittings).
 - Done: the slice's words (the Great Dunemaw, Letty as a zealot, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
   notes to Petra and Dovina above); the statuses, stun, annihilation and busking lines in `tracking.js`; B9's names, D4's Seger and
   Letty, E1's canon of a Well (LORE.md section 1).
+- Also done: Entropolis (the owner's name for the Queen's island), Letty's hearsay, the Well's log lines (`tracking/wells.js`).
 - Waiting: the medal and shop glaze blurbs (A10, A11) when the rows land.
 
 **2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's

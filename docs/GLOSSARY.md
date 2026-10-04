@@ -197,7 +197,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
   (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
   King's marque (Letty Marque). *Not:* the same thing.
-- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; Espada's name): the Well in the Dunes, the slice's one Well. Its
+- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
   **way up** (a pale pool: back out to the mouth with the haul) and, but on the last, the **way down** (a dark pool: deeper). A **run** is

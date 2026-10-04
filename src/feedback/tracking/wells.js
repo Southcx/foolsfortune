@@ -8,17 +8,17 @@
 const ORD = ['first', 'second', 'third', 'fourth', 'fifth'];
 
 export function wellRules({ on, L, log }) {
-  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); log.say('explore', 'You step down into the Great Dunemaw.'); });
+  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); log.say('explore', 'You go down into the Great Dunemaw.'); });
   on('well.floor', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
-    if (e.floor > 1) log.say('explore', `You go down to the ${ORD[e.floor - 1] || `${e.floor}th`} floor of the Well.`);
+    if (e.floor > 1) log.say('explore', `You go down to the ${ORD[e.floor - 1] || `${e.floor}th`} floor.`);
   });
   on('well.leave', (e) => {
     if (e.by !== 'courier') return;
     if (!e.shattered) L.inc('well.out');
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
-    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? 'The Well keeps what you found down there.' : 'You climb back out of the Well.');
+    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : 'You climb out of the Well.');
   });
 }
