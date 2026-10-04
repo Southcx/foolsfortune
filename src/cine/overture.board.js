@@ -34,7 +34,7 @@ export const PLACES = {
   kilnFront: () => ({ pos: V(0, 0, 8.9), yaw: Math.PI }),                                // (the kiln's own dressing spot: courier/moves/kiln.js)
   saggar: near(folk('saggar'), 2.0, 0.6),
   pip: near(folk('pip'), 1.8, -0.7),
-  wallrun: room(4), slide: room(1), mantle: room(2),
+  wallrun: room(4), slide: room(1), mantle: room(2), zigzag: room(5),
   hub: (g) => ({ pos: g.course.hubSpawn.v.clone(), yaw: g.course.hubSpawn.yaw }),
   hubFar: (g) => ({ pos: g.course.hubSpawn.v.clone().add(V(0, 0, 14)), yaw: Math.PI }),
   crystals: (g) => { const c = g.crystals?.list?.[0]; if (!c) return null; const d = g.dunes.spawnPoint(); const yaw = Math.atan2(c.ground.x - d.x, c.ground.z - d.z); const p = c.ground.clone().addScaledVector(V(Math.sin(yaw), 0, Math.cos(yaw)), -(c.r + 3)); p.y = g.dunes.heightAt(p.x, p.z); return { pos: p, yaw }; },
@@ -99,7 +99,7 @@ export const BOARD = [
   { t: 14.4, id: 'dunes', place: 'crystals', hold: ['KeyW'] },
   { t: 16.0, id: 'skiff', place: 'shore', enter(api) { const sk = api.game.techs.get('skiff'); sk?.mount?.(); api.after(() => { sk?.stow?.(); api.game.techs?.reset?.(); }); }, frame(api, u, s) { if (s > 0.3) api.hold('KeyW'); } },
   { t: 17.6, id: 'weir', place: 'pier', frame(api, u, s) { const g = api.game; if (s > 0.6 && !api.fish && g.weir?.fish?.length) { api.fish = true; const f = g.weir.fish.find((x) => x.sp) || g.weir.fish[0]; g.portrait?.show?.(f, 0xffd76a); api.after(() => g.portrait?.hide?.(true)); } if (s > 1.4 && api.fish && !api.fishOff) { api.fishOff = true; g.portrait?.hide?.(); } } },
-  { t: 19.2, id: 'basement', place: 'hub', hold: ['KeyW'], enter(api) { mood(api, { dim: 0.55, tint: 0x1a0c06, tintK: 0.4 }); } },
+  { t: 19.2, id: 'basement', place: 'zigzag', hold: ['KeyW'], enter(api) { mood(api, { dim: 0.55, tint: 0x1a0c06, tintK: 0.4 }); } },
   { t: 20.8, id: 'dive', place: 'well', enter(api) { mood(api, null); } },
   // ---- CLIMB: the six tools drawn, one a half bar, the Mind's ring round them, faster to the snare roll
   { t: 22.4, id: 'climb', place: 'hub', enter(api) { mood(api, { dim: 0.8, tint: 0x120a26, tintK: 0.8 }); },

@@ -240,6 +240,33 @@ Each livelihood pays more the better it is played, and none passes 1.5× the aim
 A Cogitomap of a five-floor run is worth 79 cubes fresh, 39 after 20 hours, 10 after 60: the Well drifts, so maps are worth hauling
 while they are fresh.
 
+**Crude** (`ECON.crude`, `.ships`, `.wellFill`; the canon is Espada's, `docs/LORE.md`, "Lachryma as crude"):
+- **Five grades.** Crude Lachryma comes graded by its aspect, from mirth (light, cheap, stable) to dread (the richest and the most
+  volatile), and each island wants its own grade.
+- **Only crude spills.** A failed stage with crude aboard spills with a chance set by the grade's volatility and the size of the cargo
+  (cubes never spill).
+- **The tanker** holds 60 units, is slow, and is double-hulled (its spills ×0.35).
+  - Its best run (dread, bought at the narrowest demand and sold at the widest, nothing failed) pays about 1.38× the aim, and a failed
+    stage turns a run into a loss.
+  - The sloop cannot profit from crude: it carries errands.
+  - The islands' demand swings between 0.75 and 1.35 (it was 0.6 to 1.6, which paid a perfect hauler 3×).
+- **A Well is drawn down as it is run.** Each run draws 12% of its fill, its yield is what is left (never under 15%), and it refills 3%
+  an hour while its mind ruminates. Drawn dry, the mind has healed.
+
+**The islands on the Law–Chaos line** (`ECON.islands`; the canon is `docs/LORE.md`, "The King and the Queen"; the owner: a stable
+mind is safer and less lucrative, a chaotic mind riskier and richer). Expected cubes an hour from a Well run, poor / middling /
+masterful, and the share of runs lost:
+
+| island | poor | middling | masterful | runs lost |
+|---|---:|---:|---:|---:|
+| Margarite (the King's: Law) | 0.61× | 0.63× | 0.71× | 9% / 6% / 5% |
+| Anagami Island (Kaolin's: Creation) | 0.57× | 1.02× | 1.15× | 20% / 15% / 12% |
+| Entra Polearis (the Queen's: Chaos) | 0.45× | 1.23× | 1.59× | 51% / 40% / 31% |
+
+Law pays steadiness and Chaos pays mastery. Entra's best is the one place a livelihood passes 1.5× the aim, and only for a masterful
+diver who still loses a third of their runs. Each island's Wells yield their own grades of crude (Margarite mirth and wonder, Entra
+grief and dread) and its commissions ask their own classes of Figment (Margarite Guppies and Barracudas, Entra up to Whales).
+
 **Cogitomaps.** A Well is a Lachryma distortion, and it changes over time. A Cogitomap is a map of one Well as it was when it was charted,
 so it is **a ticket to a seeded run of that Well**: the same layout, the same rewards. The Courier charts it, and **Spellscription**
 copies a high-quality Cogitomap. Cogitomaps can be sold, traded, and hauled to the island that wants that Well.

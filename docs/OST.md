@@ -75,6 +75,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Fool's Fortune (five movements) | the sound test | 75 / 100 (5/4) / 125, E minor, G | piano, shakuhachi, koto, strings, brass, guitar, taiko | Five, Answer, Leap | **made** |
 | The Fool's Step (first draft) | the sound test | 140, A minor | the same, with a drop | Fool's Step, Tear | **made** |
 | Four Suits and a Fool | the sound test | 100, E minor, home to E major | piano (the Fool), taiko and pizzicato (Petra), shakuhachi (Wanda), koto (Espada), celesta and strings (Calissa) | Five, Answer | **made** |
+| Fortune Favours the Fool (the overture) | the title's opening, before The Fool's Precipice (once a session); it hands on to it on the bar line | 150, E minor; the last bar at 100 (dotted quarters at 150 are its quarters) | a hair-metal band: double-tracked power chords, a screaming lead (pinch harmonics, tapping, twin leads), picked bass, a gated snare, toms, gang shouts; synth brass and a supersaw gloss; a choir in the last chorus | Fool's Step (the riff and the chorus), Five (the verse), Answer (the climb, the twin leads) | **made** (`music/overture.js`) |
 | The Fool's Precipice | the title, while the Courier sits on the edge (from the first key or click) | 100, E minor | the logo fired (a kiln's roar, a strike, glaze), piano rolling, brushes, upright, flute; the suits' instruments in turn | Fool's Step; the four suits' motifs | **made** (`music/title.js`; the board moves to its bar) |
 | The Fall | the title's menu | 100, E minor, through a low-pass | piano, pad, vibes, harp | the Five, slowly | **made** |
 | Prologue | the first moments | 75, E minor | piano and a bowed drone | Five, slowly, incomplete (it stops before the G) | |
@@ -108,6 +109,9 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Boss | a great enemy | 150, E minor and F | everything, low | Tear inside the Five | |
 | The chase | running | 150 | snare, strings | the Leap, over and over, never landing | |
 | The last battle | the end | five movements | everything | all of them, the Leap at last | |
+| Barely Bound | the Lockheart's Opening, a summoning coffin | 7/8 at 138, E (Phrygian over a pedal) | stamped strings on Em(maj7) and F over E, taiko, octatonic celesta, a choir on B and C, brass leaning F on E | Tear (the floor) | **made** (`music/lockheart.js`); lands on E major |
+| Spellwheel | the Lockheart's Opening, a casting coffin (the owner's "Magic") | 6/8, E Lydian | harp running up and down, flute, vibes, strings, shaker | | **made**; lands on a harp sweep and bells |
+| House Edge | the Lockheart's Opening, a conversion coffin | 176 swung, E minor | walking upright, ride, piano comping (Em9 A13 F#m7b5 B7alt), sax hook, muted brass stabs | | **made**; lands on the jackpot (E6/9, bells) |
 
 ### IV. People and feelings
 
@@ -165,7 +169,9 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   (dB RMS): a jingle or a quiet opening about -31, a theme's body -24 to -29, the battle -17 to -23. Keep the energy below 120 Hz
   under about 45% of the whole: the sitar's first render was at 55%, the jawari's uneven clipper leaving an offset and a rumble
   under every pluck (a high-pass after the buzz took it out).
-- What plays where is one short list, highest first (`music/choose.js`): the title, a fight, a dive (Shallows, Deep), the skiff, the
+- **A score can hand on** (`then`): when its sections run out, the next begins on the bar line on the same bus, nothing stopped (the
+  overture into the title). A cue that must land on a moment (the Lockheart's) cuts in at once (`lead`, `fadeIn`, `cut`).
+- What plays where is one short list, highest first (`music/choose.js`): the title, the Lockheart's Opening, a fight, a dive (Shallows, Deep), the skiff, the
   dunes, the workshop. A dive waits a moment before taking over and before letting go.
 - **Loops are rendered seamless** (`scripts/render_score.mjs ... loop`): the looping part twice round, the second kept to the sample, the
   first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
@@ -187,5 +193,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 5. (The fusion round) Hear the four suits' themes, the shanty (on the skiff) and the dives (swim under; deeper than about 4.5 m, or in the
    Well, is the Deep). Then: the suits' motifs into the jingles and the folk's themes; the Crucibelle's four voices
    (docs/HANDOFFS.md); the six tool sounds left as placeholders.
+7. (Round 43) Hear the overture over the title (it hands on to The Fool's Precipice), the Lockheart's Opening with each kind of coffin
+   (a summoning and a conversion coffin wait on their mechanics), and the rhythm mode (`/rhythm`, until a stage stands in a room).
 6. (Round 38) Hear the title (the loop, PRESS START, the menu's fall), the shanties on the skiff, the Siren and the Witch. Places for
    the Siren and the Witch when the game grows them; *Leave Her, Lachryma* wants the end of a voyage.

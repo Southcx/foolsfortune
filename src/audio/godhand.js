@@ -62,8 +62,8 @@ export class GodHandSounds {
     this.noise(t, 0.3, { type: 'bandpass', f0: 400, f1: 2400, q: 0.8, gain: 0.7, attack: 0.05, dest: d });
   }
 
-  // the vessel takes a blow: a cracked bell
-  vesselHit(size = 1) {
+  // the god hand's jar takes a blow: a cracked bell
+  jarHit(size = 1) {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.7, 0.6);
     this.tone(t, 0.6, { f0: 330, f1: 320, type: 'triangle', gain: 0.5, dest: d });
@@ -72,7 +72,7 @@ export class GodHandSounds {
     this.thump();
   }
 
-  // the vessel comes back together
+  // the jar comes back together
   reforge() {
     if (!this.ok()) return;
     const t = this.ctx.currentTime, d = this.out(0.6, 0.7);

@@ -61,7 +61,7 @@ export const TITLE = {
   sections: [
     // the logo fired: the kiln's roar rising under a low roll, then the strike and the glaze's glitter
     { id: 'kiln', bars: 2, gain: 1.3, bar: (i) => (i === 0
-      ? [E('riser', 0, 4, null, 0.22), E('breath', 2, 2, null, 0.3), ...[0, 1, 2, 3, 3.5].map((b, k) => E('taiko', b, 1, null, 0.15 + k * 0.08, { size: 1.2 })), E('strings', 0, 4, [40, 47], 0.08, { attack: 2 })]
+      ? [E('riser', 0, 4, null, 0.22), E('breath', 2, 2, null, 0.3), ...[0, 1, 2, 3, 3.5].map((b, k) => E('taiko', b, 1, null, 0.15 + k * 0.08, { size: 1.2 })), E('strings', 0, 4, [40, 47], 0.08, { attack: 2 }), E('crackle', 3.2, 1, null, 0.7, { dur: 0.48 })]
       : [E('impact', 0, 1, null, 0.4), E('taiko', 0, 1, null, 0.6, { size: 1.3 }), E('bell', 0, 1, 88, 0.3), E('strings', 0, 4, [52, 59, 64, 66, 71], 0.12, { attack: 0.05 }),
         ...[76, 79, 81, 83, 86, 88, 91].map((n, k) => E('celesta', 0.25 + k * 0.125, 0.5, n, 0.22)), E('piano', 0, 4, 40, 0.3, { pedal: 1 })]) },
     { id: 'edge', bars: 8, gain: 1.35, bar: (i) => [...roll(A_CH[i]), ...ground(A_CH[i], { v: i < 2 ? 0.6 : 1 }), ...line(A_MEL[i], 'flute', 0.38),

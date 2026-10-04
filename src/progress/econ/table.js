@@ -47,7 +47,7 @@ export const ECON = {
     jackpotCap: 0.25,
     // a Possibilikey other than brass is not used up: after each opening it breaks with a chance that starts at `start` and rises by
     // `perUse` with every use (the owner, 2026-10-04: "fancy keys can be reused but the chance for them to break goes up over time"),
-    // so a key lasts about three openings on average and never more than six. Brass opens it and is spent, as before.
+    // so a key lasts about 2.7 openings on average and never more than seven. Brass opens it and is spent, as before.
     keyWear: { start: 0.2, perUse: 0.15 } },
 
   /** A landed fish, sold to Old Grog, by its tier (0 none .. 5 the legend): at about one catch every two and a half minutes, about
@@ -104,10 +104,45 @@ export const ECON = {
   cogitomap: { share: 0.3, halfLifeH: 20 },
   /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
    *  `hi`; every unit sold there gluts it by `glut`, recovering one unit a `recoverMin` minutes (as Grog's prices do). */
-  island: { lo: 0.6, hi: 1.6, periodDays: [3, 7], glut: 0.03, recoverMin: 6 },
+  island: { lo: 0.75, hi: 1.35, periodDays: [3, 7], glut: 0.03, recoverMin: 6 }, // (was 0.6 to 1.6: the widest spread paid a perfect crude hauler 3x the aim)
   /** THE EMOCEAN: a hop between islands burns `fuelMin` minutes of play in cubes a unit of distance (a drain: the travel layer spends
    *  what the others earn); a stage failed loses `lose` of the cargo. */
   emocean: { fuelMin: 1.5, lose: 0.25 },
+  /** CRUDE LACHRYMA (docs/LORE.md, "Lachryma as crude"): fossil feeling, graded by its aspect as crude oil grades sweet or sour. Each
+   *  grade has a worth a unit (minutes of play: a tanker's hold of 60 is an hour's worth of grief) and a VOLATILITY: crude is unstable (cubes are inert and never spill), so a stage failed
+   *  with crude aboard spills with chance `spill` x volatility x sqrt(units / 10) (a full tanker risks more than a sloop's few casks),
+   *  and a spill is a cogitohazard where it lands. Each island wants its own grade (island demand, by grade). */
+  crude: { spill: 0.35, glut: 0.004, grades: { // (a crude market is deep: a unit sold gluts it far less than a cask of fish)
+    mirth:  { worth: 0.5, volatility: 0.5 },   // light and sweet: easy to carry, cheap
+    wonder: { worth: 0.75, volatility: 0.8 },
+    hunger: { worth: 0.75, volatility: 1 },
+    grief:  { worth: 1, volatility: 1.2 },   // heavy and sour
+    dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
+  } },
+  /** THE SHIPS (the Vessoul's Emocean forms, by trade: LORE.md): how much each holds, of what, how slow a hop is (x the hop's time),
+   *  and its `hull` (x the spill chance; 1 when unsaid). */
+  ships: {
+    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8 },  // errands and small cargo
+    frigate:   { hold: 6,  carries: ['goods'],          slow: 0.9 },  // escort
+    galleon:   { hold: 40, carries: ['cubes', 'goods'], slow: 1.3 },  // refined cubes: treasure
+    destroyer: { hold: 2,  carries: ['goods'],          slow: 0.7 },  // hunting Egregores
+    tanker:    { hold: 60, carries: ['crude'],          slow: 1.6, hull: 0.35 },  // crude: volatile, slow, double-hulled (spills x hull)
+  },
+  /** THE ISLANDS ON THE LAW-CHAOS LINE (docs/LORE.md, "The King and the Queen"; the owner, R43: "a stable mind is safer and less
+   *  lucrative, a chaotic mind riskier and richer"). Each island's Wells: `deeper` (how much richer each floor down is), `floors` (how
+   *  deep they run), `risk` (the chance a floor ends the run for a middling diver: a skilled one halves it, a masterful one quarters it),
+   *  `foes` (FOEs a run), the crude `grades` it yields, the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
+   *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entra Polearis
+   *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). */
+  islands: {
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, grades: ['mirth', 'wonder'],  classes: [0, 1] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    entra:     { name: 'Entra Polearis',  law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
+  },
+  /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
+   *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */
+  wellFill: { perRun: 0.12, floor: 0.15, refillPerH: 0.03 },
+
 
   // ---- the mastery dividend (docs/ECONOMY.md, rule 6; not built yet: the simulator's numbers to aim at)
   /** An encounter whose ledger is complete pays on its own: `share` of what farming it by hand pays an hour, accruing for at most
