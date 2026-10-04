@@ -8,7 +8,12 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
 **Status, 2026-10-04:**
 - **The island layer is in.** It has damage types, statuses, the mental state, EmO, busking, keys that wear, curio decks, and arts
   that unlock through achievements.
-- **No Well and no Emocean exist yet.**
+- **No Well and no Emocean exist yet.** Petra's estimate (R57): 4 to 6 rounds, one gated build each: E1a (the mouth, its zone, three
+  floors, the events, losing), E1b (jellies and the FOE, pay, materials, charting, the Cogitomap), E4a (the pier, the node map, the
+  sloop, the rail, fuel, the hold), E4b (the stage's enemies, pass and fail, Margarite's dock). Everything is built in placeholder
+  geometry first, so nothing waits on another division.
+- **Dovina's data is in** (R57): the node map and the stage (`src/progress/econ/emocean.js`), the EXP sources for a floor and a
+  stage (`domains.js`), and the slice's achievements (`achievements.js`, below). They read nothing yet, so they wait on the events.
 
 ## The loop the slice must play in about twenty minutes
 
@@ -50,6 +55,48 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
 
 **Measure:** a clean hop with a sloop of grief or dread should net a small profit (`crudeRun`); a failed stage should hurt. The F3 econ
 line shows `fuel` as a drain.
+
+## The node map and the stage (Dovina's, `src/progress/econ/emocean.js`; printed by `node scripts/economy.mjs`)
+
+- **Nodes:** one an island, at its place on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step of the line
+  (Anagami to Margarite is 4, King to Queen 8). Entra Polearis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
+  `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 120 s.
+- **The stage** is authored once (`STAGE.waves`, ten waves, 45 Figments) with its waves keyed to the fraction of the stage (0 .. 1), so
+  Petra paces the rail to Wanda's cue, not to seconds. Its shape is Star Fox 64's: a calm opening, schools that teach the gun, darters
+  that teach the dodge, a breather at 0.50 to 0.62, a mixed push, a heavy at 0.84 with an escort.
+- **Roles, not creatures:** each wave is a `school`, a `darter` or a `heavy`; the route fills each with a Figment class from its danger.
+  The Margarite run is Guppy schools, Barracuda darters and one Marlin; an Entra run is a class up throughout. `stagePlan(from, to, day)`
+  gives every wave with its class, count, formation and lane; the day moves the lanes, never the order or the counts.
+- **What it bears:** six hits (`STAGE.bears`; "shield" is the Courier's Lachryma pool, a different thing). Failing loses a quarter of the
+  cargo and may spill crude. A stage pays no cubes: the travel layer is a drain and a risk, and it pays at the other end.
+
+**A hole, said plainly:** on the slice's route the crude barely pays. A sloop of crude from Anagami to Margarite nets -10 to +1 cubes
+(with the sloop's light `burn` of 0.3: at the tanker's rate it lost 25 to 35). The spread is Entra to Margarite, and Entra is locked. So
+in the slice the hop must pay through **what comes up out of the Well** (the Cogitomap and the materials, sold at Margarite's dock) and
+**Letty's board**, and the crude market is the lesson that points to Entra. Selling a Cogitomap at Margarite's dock is the line that
+ties E1 to E4, which is the seam the slice exists to prove.
+
+## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
+
+| Event | Payload | Ledger (counters, records) |
+|---|---|---|
+| `well.enter` | `{ well, seed, day, by }` | `well.enter` |
+| `well.floor` | `{ well, floor, charted (0..1 of that floor), by }` | `well.floor`; record `well.depth` = floor |
+| `well.foe` | `{ well, cls, by }` | `well.foe` |
+| `well.leave` | `{ well, floors, foes, pay, charted (0..1 of the run), shattered, fill, by }` | `well.out` when not shattered; record `well.charted` = charted x 100; `well.dry` when `fill` reaches 0 |
+| `cogitomap.get` | `{ well, seed, day, charted, by }` | `cogitomap.get` |
+| `emocean.hop` | `{ from, to, ship, fuel, by }` | `emocean.hop`; `emocean.port.<to>` |
+| `emocean.stage` | `{ from, to, passed, hits, bears, downed, spawned, lost, spilled, by }` | `emocean.stage.passed`; `emocean.stage.clean` when hits is 0; `crude.spill` when spilled |
+| `crude.buy` | `{ island, grade, units, price, by }` | `crude.bought` (units) |
+| `crude.sell` | `{ island, grade, units, price, from, profit, by }` | `crude.sold.<island>` (units); record `crude.profit`; `crude.route.<from>.<island>` |
+
+Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`, `cogitomap`. EXP: `emocean.stage` is Ouranurgy and
+`well.floor` is Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
+unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
+
+**The slice's achievements** (in the game now, as placeholders at 0 until the events exist): EXPLORATION, The Wells: Down the Well,
+Rock Bottom, Face the FOE, Mapped Mind, Every Corner, Well Worn, A Well Healed (hidden). THE EMOCEAN, Sailing: Cast Off, Made Port, Not a
+Scratch, Ports of Call; Crude: In the Trade, Good Haul, Toxic Symbiosis (hidden), Slick (hidden).
 
 ## The seams to check before calling it done
 

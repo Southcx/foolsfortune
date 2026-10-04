@@ -46,9 +46,9 @@ console.log(`  a sample ledger (${Object.entries(sample).map(([k, v]) => `${v} $
 console.log(`\nthe domains: EXP to level 10 ${expAt(10).toLocaleString('en')}, to 50 ${expAt(50).toLocaleString('en')}, to 99 ${expAt(99).toLocaleString('en')} (v0.1's curve)`);
 console.log('  domain           sources (event: base)                                hours to 99: rote / middling / masterful');
 for (const d of Object.values(DOMAINS)) {
-  const src = SOURCES.filter((s) => s.domain === d.id), base = src.reduce((a, s) => a + s.base, 0) / Math.max(1, src.length);
+  const src = SOURCES.filter((s) => s.domain === d.id), ord = src.filter((s) => s.base != null), base = ord.reduce((a, s) => a + s.base, 0) / Math.max(1, ord.length);
   const hours = (q) => (expAt(99) / (PACE.actsPerMin * 60 * base * scaleOf(d.id) * skillWeight(q))).toFixed(0);
-  console.log(`  ${pad(d.name, 16)} ${pad(src.map((s) => `${s.event}: ${s.base}`).join(', '), 52)} ${hours(0)} / ${hours(0.5)} / ${hours(1)}`);
+  console.log(`  ${pad(d.name, 16)} ${pad(src.map((s) => `${s.event}: ${s.base ?? `${s.acts} acts`}`).join(', '), 52)} ${hours(0)} / ${hours(0.5)} / ${hours(1)}`);
 }
 console.log(`  (a level check: ${[1000, 50000, 500000].map((x) => `${x.toLocaleString('en')} EXP is level ${levelOf(x)}`).join(', ')})`);
 const world = (q) => (7 * expAt(99) / (PACE.actsPerMin * 60 * skillWeight(q) * (expAt(99) / (PACE.hours99 * 60 * PACE.actsPerMin * skillWeight(0.5))))).toFixed(0);

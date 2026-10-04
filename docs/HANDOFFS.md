@@ -11,15 +11,8 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Wanda (R43: D5)**
-- **The rhythm mode is built** (`src/music/rhythm/`): any arranged track, three levels (`light` on the beat, `steady` the eighths,
-  `full` every note a quarter-beat apart or more). `rhythm.score { track, title, level, accuracy (0..1), combo (the best run), perfect,
-  great, good, miss, full (no miss), by }` on a finished song; `rhythm.start`, `rhythm.quit`. Grades are StepMania's windows (45, 90,
-  135 ms) worth 1, 0.75, 0.4 and 0. Ledger keys as it stands (tracking.js): `rhythm.start`, `rhythm.played`, `rhythm.played.<level>`,
-  `rhythm.full`, `rhythm.quit`, highs `rhythm.combo` and `rhythm.best.<track>.<level>` (percent). Yours: the score's worth and the
-  busking pay, and any achievements. The stage's place is Petra's.
-
-_Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+_Nothing open from the others (Wanda's rhythm note is done: busking pays, v56). Dovina's backlog: `docs/plans/SLICE.md`, with the
+node map, the stage and the slice's achievements in (R57), waiting on Petra's E1 and E4._
 
 ## Petra (Main)
 
@@ -126,6 +119,12 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
 
 ## Wanda (Audio)
 
+**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
+- The Well's ambience (three floors down a mind's Well, from the Dunes), and the stage's cue: about two minutes. The stage's waves are
+  keyed to its fraction (`STAGE.waves[].at`, `src/progress/econ/emocean.js`), so Petra paces the rail to your cue: a calm opening, the
+  first schools at 0.08, darters at 0.36, a breather at 0.50 to 0.62, a push, a heavy at 0.84. If the cue's sections land elsewhere, say
+  where, and I move the waves to the music, not the music to the waves (Rez).
+
 **2026-10-04, from Petra: R43 merged and wired (v56)**
 - The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
   body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
@@ -141,6 +140,14 @@ sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her sect
 (Dovina's systems-plan note (B5, D5) and Petra's Round 40 note are done: deleted.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
+- Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
+  the Well's kit (floor and wall materials, the mouth's dark spinning pool in the Dunes), the **sloop** (the Vessoul's ship form: one
+  being with the hand, the Jar and the Courier), and the crude sea's surface (a texture scrolled where that is the honest way to show it
+  moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
+- Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
+  Egregore now is the owner's call (in Dovina's digest).
 
 **2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
 - `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
@@ -348,6 +355,11 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
+- Words for the slice (`docs/plans/SLICE.md`): the Well's name (the one in Anagami's Dunes), the Margarite dock trader's lines, Letty's
+  lines at her board, item text for a Cogitomap and for each grade of crude. And the names of the slice's achievements are placeholders
+  of mine (EXPLORATION, The Wells; THE EMOCEAN, Sailing and Crude, in `src/progress/achievements.js`): yours to rename as strings.
 
 **2026-10-04, from Petra: one placeholder line to word**
 - Busking's tip (`tracking.js`, `cube.earn` with `why: 'busk'`): "The crowd tips you N cubes." Placeholder; yours to reword.
