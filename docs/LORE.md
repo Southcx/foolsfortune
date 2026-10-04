@@ -302,7 +302,7 @@ His mother's clay and his father's fire.
 
 ### The lighthouse and the toxic symbiosis *(the owner, R43; the numbers are Dovina's, `docs/ECONOMY.md`)*
 
-**The lighthouse is a weapon.** Margarite's light is the one thing that keeps the deepest horrors of the Emocean, the **Leviathan-class
+**The lighthouse is a weapon, and a vigil.** Margarite's light is the one thing that keeps the deepest horrors of the Emocean, the **Leviathan-class
 Egregores**, at bay. It has to be fed, and it burns crude. If it goes out, they come.
 
 **So Chaos digs the crude up, and Law buys it.** Entra Polearis sells crude cheap: its Wells run deep with every feeling at full, and
@@ -311,10 +311,13 @@ King, and the hauler (a Courier, in a sloop or a tanker) lives in between. Letty
 under the King's marque and paid for by Margarite. The Queen's island breeds both the riches and the strays, and the King pays to have
 both brought home.
 
-**How it sits with Magnus.** He likes a thing where it belongs, and to him the Queen's overflow belongs in his lamp. **The light that
-keeps the whole sea safe is lit with her feelings.** He did not choose that; the Leviathans chose it for him. Law looks rigid because it
-is standing guard. The hourglass inside his lantern (the concept art): Law measures out feeling by the grain and burns it by the hour
-so that everyone else can sleep. He hunts what she breeds and buys what she spills, and he never says her name.
+**How it sits with Magnus.** *(The owner, R43.)* He does it out of love. He is managing Entra, and has been for so long that the love has
+calcified into something that no longer reads as love: duty, rules, a lamp kept lit on schedule. Nacre is exactly that, and the word
+was waiting: calcium laid down in layers, each one thin and loving, until the whole thing looks like a wall. **A lighthouse is a light
+left on for someone out at sea.** His keeps the Leviathan-class Egregores at bay, and it burns her overflow to do it, so that every ship
+crosses safely, and she does too. The hourglass inside his lantern (the concept art) measures out her feelings by the grain so that they
+never drown anyone, her least of all. He hunts what she breeds and buys what she spills, and he never says her name: it is the one thing
+he cannot say without the shell cracking.
 
 **How it sits with the Queen.** She lets things go; it is what chaos does. Her strays wander off and she does not call them back. That
 someone else gathers them up, pays for them and keeps the dark away with them is, to her, simply what the world is for.
@@ -322,7 +325,8 @@ someone else gathers them up, pays for them and keeps the dark away with them is
 **Why it is toxic, both ways.** Law needs Chaos's overflow for its fuel and for everyone's safety, so a calmer Queen would put out the
 King's light. Chaos needs Law to take what it cannot hold, so a King who stopped buying would leave the Queen drowning in her own Wells.
 Neither can afford for the other to get well, and their son lives in the middle of it. *For the stories:* the rigid depend on the mess
-they tidy, the messy depend on being tidied up after; growing up is noticing which one you are being, and choosing to be the oasis.
+they tidy, the messy depend on being tidied up after; love kept up long enough can harden until it no longer looks like love; growing
+up is noticing which one you are being, and choosing to be the oasis.
 
 **The middle** *(Espada's)*: the Prince's magnum opus, the Pneuka Jar, is the only vessel that carries crude safely and the only
 refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the middle (Dovina's table), and the
