@@ -30,6 +30,13 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
+**2026-10-04, from Wanda: the Well's pools are heard**
+- `well.floor` plays `sfx.poolDown(floor)` (the surface closing over, a gulp, bubbles streaming up; lower each floor) and `well.leave`
+  plays `sfx.poolUp()` (the muffle opening, a splash, the air; not when shattered), through `src/audio/cues.js`. The two
+  `sfx.geyser?.()` calls in `world/well/dunemaw.js` (the placeholders) can go: they now double.
+- Stress on v62 itself (without my change, two runs): 1 violation, a `hitch` on lift0 (#11, standing on a mover after a blink,
+  `mover.push`). Not audio; noted so it isn't charged to this push.
+
 **2026-10-04, from Wanda: the slice's music (E1, E4)**
 - **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
   by `game.well.floor` (1 to 3). Please expose those two fields when you build the Well. The battle still takes over in a fight and

@@ -1,4 +1,7 @@
-// A sound bank of the one mixer (audio/sfx.js): things in the world: shattered, struck, pushed, lifted and mended; the clapperjars' claps and taps; the gong, the barrier.
+// A sound bank of the one mixer (audio/sfx.js): things in the world: shattered, struck, pushed, lifted and mended; the clapperjars' claps and taps; the gong, the barrier;
+// a Well's pools taking the Courier down a floor or back up to the mouth (world/well/dunemaw.js, through audio/cues.js).
+// Prior art for the pools: going under in liquid (the high end closing over you, the gulp, bubbles streaming up past), and the
+// surfacing that undoes it (the muffle opening, a splash and the first breath): every dive in Ecco and Sonic, played as a door.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class WorldSounds {
   shatter(size = 1, dist = 5, kind = 'clay') {
@@ -195,5 +198,25 @@ export class WorldSounds {
     const t = this.ctx.currentTime, d = this.out(0.6 / (0.5 + dist * 0.1), 0.3);
     this.noise(t, 0.035, { type: 'bandpass', f0: 1800 + Math.random() * 600, q: 2.5, gain: 1, dest: d });
     this.tone(t, 0.04, { f0: 700, f1: 500, type: 'triangle', gain: 0.3, dest: d });
+  }
+
+  /** A Well's pool taking the Courier down to `floor` (1..3): the high end closes over them, a deep gulp, bubbles stream up past;
+   *  each floor deeper is a little lower and longer. */
+  poolDown(floor = 1) {
+    if (!this.ok() || !this.allow('poolDown', 2)) return;
+    const t = this.ctx.currentTime, k = Math.max(1, Math.min(3, floor)), low = Math.pow(0.85, k - 1), d = this.out(0.34, 0.6);
+    this.noise(t, 1.1 + 0.2 * k, { type: 'lowpass', f0: 3200, f1: 180 * low, q: 2, gain: 0.55, attack: 0.05, dest: d }); // (the surface closing over)
+    this.tone(t + 0.08, 0.45, { f0: 170 * low, f1: 55 * low, gain: 0.5, dest: d }); // (the gulp)
+    for (let i = 0; i < 7; i++) { const tt = t + 0.25 + i * 0.11 + Math.random() * 0.05, f = (500 + Math.random() * 400) * low; this.tone(tt, 0.08, { f0: f, f1: f * 1.9, gain: 0.12, dest: d }); }
+    this.tone(t + 0.3, 1.2 + 0.2 * k, { f0: 62 * low, f1: 50 * low, gain: 0.18, dest: d }); // (the pressure)
+  }
+  /** A Well's pool bringing the Courier back up to the mouth: the muffle opening as they rise, bubbles, a splash and the air. */
+  poolUp() {
+    if (!this.ok() || !this.allow('poolUp', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 0.6);
+    this.noise(t, 1.0, { type: 'lowpass', f0: 200, f1: 5000, q: 2, gain: 0.5, attack: 0.7, dest: d }); // (rising: the muffle opening)
+    for (let i = 0; i < 6; i++) { const tt = t + 0.1 + i * 0.12, f = 400 + i * 90; this.tone(tt, 0.08, { f0: f, f1: f * 2, gain: 0.1, dest: d }); }
+    this.noise(t + 0.95, 0.35, { type: 'bandpass', f0: 2600, f1: 1200, q: 0.8, gain: 0.6, dest: d }); // (the splash)
+    this.noise(t + 1.05, 0.6, { type: 'highpass', f0: 3000, f1: 6000, gain: 0.08, attack: 0.1, dest: d }); // (the air)
   }
 }
