@@ -155,26 +155,30 @@ hard: nothing gets in, nothing gets out), **Resolved**, **Balanced**, **Fluid**,
 rides chaos and bleeds easily). The prismatic chest takes its name from the same end of the scale.
 
 **The statuses each type builds** *(names and log lines: Espada's call; which ones are built, and their numbers, are Dovina's)*. Enough of one
-type applies its status. Where the game already has a status, its name is kept. The log lines are written for the creature in third
-person; `{c}` is the creature's name.
+type applies its status. Where the game already has a status, its name is kept. `{c}` is the creature's name.
 
-| Type | Status (player word) | Was in the v0.1 document | Log line when it lands | Log line when it wears off |
-| --- | --- | --- | --- | --- |
-| Impact | **stun** (kept) | stun | (kept: "The {c} reels, stars wheeling round its head.") | (kept) |
-| Impact | **slow** (kept) | slow | "The {c} slows, as if wading." | "The {c} picks up its feet again." |
-| Impact | **brittle** | armour break | "The {c} goes brittle. The next blow will tell." | "The {c} sets hard again." |
-| Ego | **doubt** | doubt | "The {c} doubts itself. Its blows land softer." | "The {c} remembers what it is." |
-| Ego | **calm** (kept, the reprogram's) | pacified | "The {c} calms, and forgets why it was fighting." | "The {c} remembers why it was fighting." |
-| Influence | **charm** | charm | "The {c} is charmed, and takes you for a friend." | "The {c} sees you clearly again." |
-| Influence | **taunt** | taunt | "The {c} is taunted, and comes for you." | "The {c} loses interest." |
-| Influence | **misled** | misdirect | "The {c} is misled, and loses track of you." | "The {c} finds you again." |
-| Illusion | **blind** | blind | "The {c} is blinded." | "The {c} can see again." |
-| Illusion | **phantom** | phantom pain | "The {c} flinches at a blow that never came." | "The {c} stops flinching at nothing." |
-| Delirium | **confusion** | confusion | "The {c} is confused, and forgets which way is which." | "The {c} finds its bearings." |
-| Delirium | **tear** | reality tear | "The world tears around the {c}, and Lachryma weeps through." | "The tear around the {c} closes." |
+| Type | Status (player word) | Was in the v0.1 document | Built |
+| --- | --- | --- | --- |
+| Impact | **stun** (kept) | stun | yes |
+| Impact | **slow** (kept) | slow | |
+| Impact | **brittle** | armour break | |
+| Ego | **doubt** | doubt | yes |
+| Ego | **calm** (kept, the reprogram's) | pacified | |
+| Influence | **charm** | charm | yes |
+| Influence | **taunt** | taunt | |
+| Influence | **misled** | misdirect | |
+| Illusion | **blind** | blind | yes |
+| Illusion | **phantom** | phantom pain | |
+| Delirium | **confusion** | confusion | yes |
+| Delirium | **tear** | reality tear | |
 
-- **Annihilation** (Impact against Delirium, the two ends meeting on a target already afflicted by the other): "Annihilation! Order and
-  chaos meet in the {c}." The word is the owner's, and it stays.
+**The log lines follow one pattern** (the robotic register, after FFXI's "The Goblin is paralyzed."), so no status needs a line of its own:
+- lands: "The {c} is afflicted with {status}." (the stun keeps its own: "The {c} is stunned.")
+- wears off: "The {c}'s {status} wears off."
+- resisted: "The {c} resists {status}." (in the game)
+
+- **Annihilation** (Impact against Delirium, the two ends meeting on a target already afflicted by the other): "Annihilation: Impact
+  meets Delirium on the {c}." (in the game). The word is the owner's, and it stays.
 - **tear** is a homonym on purpose: a tear in the world that weeps Lachryma, which is tears. For the glossary's table: say "a tear"
   (the status) and "Lachryma" (the substance), never "tears" for Lachryma in player text.
 - **brittle** and not "crack": "crack" is the Courier's vessel damage in the glossary, and a status must not share its word.

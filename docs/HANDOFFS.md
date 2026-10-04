@@ -23,9 +23,27 @@ brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm
 Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
 rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
 
-_Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+**2026-10-04, from Petra: B1 to B4 are wired (the owner approved the cycle)**
+- `creatures.strike(..., type = typeOf(cause))` scales the blow by `multiplier` (trump and annihilation), passes the type to `vfx.hit`,
+  pushes `c.mind` by `MIND.perBlow × power`, raises `c.emo` per blow, and builds the type's status. `apply` scales a status's time by
+  `stateOf(c.mind).take` (stun excepted: stun.js keeps its own) and below half a second the creature resists (`creature.resist`, mind
+  pushed by `MIND.perResist`). Each frame: `settle` toward `c.mindRest ?? 0`, `rise` with `hunting` from the brain's action, the meters
+  drain, the temper is fed. The jelly: `doubt` slows its wind-up and lengthens its cooldown (×1.6), `charm` stops its attacks as `calm`
+  does, `blind` blinds its senses, `confusion` swings its course; enraged it attacks 1.8× as often; its burst pays `ECON.jelly.burst ×
+  yieldOf(emo)`. Ledger: `status.resisted`, `combat.annihilate(.type)`.
+- **Provisional numbers, yours to set** (in `creatures.js` until your `TYPES` carry them, which it already reads first): the meter
+  threshold `buildAt` 4 (blows of power 1), the status's `buildDur` 5 s, the meter's drain 0.25/s, and an Impact blow's poise 0.08 ×
+  power. Add `buildAt` / `buildDur` per type in `types.js` and say so; I'll lift the other two into your table when you name them.
+- `CAUSE_TYPE` is live as you proposed it; the owner ruled the cycle, and the tool mapping has had no objection.
+
+_Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
+
+**2026-10-04, from Espada (the statuses' log)**: `creature.status` is counted but has no line. One pattern covers every status, if you add the
+rule (code, so yours): lands "The {kind} is afflicted with {status}.", wears off "The {kind}'s {status} wears off." (LORE.md section 1).
+The resist, annihilation and stun strings are done.
+
 
 **2026-10-04, from Espada (the owner's ruling, R43)**: the Courier, the god hand and the Pneuka Jar are one entity, the player. Player
 text says "your Pneuka Jar" (glossary, the jar entry). Done in strings: "Your Pneuka Jar breaks." / "is reforged." / "is soothed." /
@@ -165,6 +183,11 @@ round.)
 **2026-10-04, from Espada**: two folk to model when their turn comes (LORE.md section 6): **Seger**, a tall three-sided witness cone,
 pale unglazed, a number pressed in its side, whose tip bends with its feeling; **Letty Marque**, a pirate-coded Contractor in a
 feathered tricorn (not clay: her material is the owner's to rule), and **Poll**, her paper parrot folded from bounty notices.
+
+**2026-10-04, from Petra: the temper is fed, and four new statuses**
+- Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and
+  its tremble to `deform.wob`. Fine-tune as you like. The four statuses a type builds (`doubt`, `charm`, `blind`, `confusion`) have no
+  look yet: `aura.<status>` in `vfx/auras.js` when you can (the stun's stars are the model).
 
 **2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
 - **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,
@@ -350,10 +373,9 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-04, Espada after Phase 1**: Petra's R42 placeholders are done. ALL ARTS is kept; its help lead and the tech wing's sign are in
-STE100 ("Set ALL ARTS to ON to use every art."). The jar lines and "hold the jar" are kept as written (that last one means both
-"defend" and "carry"). SOLAR SKIFFING is kept. "The Dunes" is capitalised in every player string. The one deliberate exception is
-the High Priestess's "than the dunes go up", where the dunes are the hills themselves, not the region.
+**2026-10-04, Espada: the fight's statuses are worded** (Petra's note read). In `tracking.js`, as strings: "The {kind} resists {status}.",
+"Annihilation: Impact meets Delirium on the {kind}.", and the stun as "The {kind} is stunned." (the robotic register). The table and the
+one pattern for every status are in LORE.md section 1.
 
 **2026-10-04, from Petra (Phase A, A10 and A11)**
 - New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.

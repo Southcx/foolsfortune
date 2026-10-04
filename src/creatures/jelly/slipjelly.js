@@ -30,6 +30,7 @@ import { RAPIER, G, groups } from '../../core/physics.js';
 import { addRim } from '../../render/toon.js';
 import { tag } from '../../core/tags.js';
 import { st } from '../creatures.js';
+import { yieldOf } from '../../progress/combat/emo.js';
 import { sfx } from '../../audio/sfx.js';
 import { PaintPath } from '../../vfx/paintpath.js';
 import { JellyDeform } from './deform.js';
@@ -190,7 +191,7 @@ export class SlipJellies {
     g.shells?.addSplat?.(c.pos.clone().setY(c.pos.y + 0.02), UP, 2.6, true);
     g.slip?.addDisc(c.pos.clone(), UP, 1.6, 20);
     // (its Lachryma: what it was, and whatever it had swallowed of theirs, back on the sand whoever burst it)
-    if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? ECON.jelly.burst : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
+    if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? Math.round(ECON.jelly.burst * yieldOf(c.emo)) : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
     c.stash = 0;
     g.glyphs?.pop('star', at.clone().setY(at.y + 0.4), { color: 0xd9c8ff, size: 0.5, life: 0.9, burst: true });
   }
@@ -234,7 +235,8 @@ export class SlipJellies {
   onStatus(c, name) {
     const g = this.game, d = c.deform;
     if (name === 'halt') d.freeze();
-    if (['sleep', 'stun', 'melt', 'calm', 'forget', 'flee'].includes(name) && c.attack?.phase === 'wind') this.cancel(c, name === 'stun' ? 'stunned' : name);
+    if (['sleep', 'stun', 'melt', 'calm', 'forget', 'flee', 'charm', 'confusion'].includes(name) && c.attack?.phase === 'wind') this.cancel(c, name === 'stun' ? 'stunned' : name);
+    if (name === 'blind' && c.brain?.senses) c.brain.senses.blind = Math.max(c.brain.senses.blind, c.status.get('blind')?.t ?? 0); // (Illusion's: it cannot see)
     if (name === 'sleep') g.glyphs?.pop('dots', this.head(c), { color: 0xd9c8ff, size: 0.5, life: 1.4 });
     if (name === 'forget') { c.mem.wipe(); c.drives.set('fear', 0); }
     if (name === 'melt') d.kick(-2, null, 0.3);
@@ -281,7 +283,7 @@ export class SlipJellies {
   // ---------------------------------------------------------------- attacks (the mind starts them; the body carries them through)
   windUp(c, move, foe) {
     const g = this.game, W = JELLY[move];
-    c.attack = { move, foe, phase: 'wind', t: W.wind, hit: false };
+    c.attack = { move, foe, phase: 'wind', t: W.wind * (st(c, 'doubt') ? 1.6 : 1), hit: false }; // (doubt: it hesitates)
     c.vel.multiplyScalar(0.2);
     sfx.jellyWind(g.listenerDistance(c.pos), W.wind * (st(c, 'slow') ? 2.8 : 1));
     g.events?.emit('jelly.wind', { move });
@@ -335,6 +337,10 @@ export class SlipJellies {
     if (st(c, 'melt') || st(c, 'sleep') || st(c, 'stun')) c.vel.multiplyScalar(Math.max(0, 1 - dt * 6));
     if (A?.phase === 'wind') c.vel.multiplyScalar(Math.max(0, 1 - dt * 8));
     else if (!c.air && dt > 0) { // (it glides toward what its mind wants, on its slip)
+      if (st(c, 'confusion')) { // (confusion: it cannot keep a course; where it means to go swings about)
+        const a = 2.2 * Math.sin((g.events?.time ?? 0) * 1.7 + c.id * 1.3), cs = Math.cos(a), sn = Math.sin(a);
+        c.want.set(c.want.x * cs - c.want.z * sn, 0, c.want.x * sn + c.want.z * cs);
+      }
       const ax = c.want.x - c.vel.x, az = c.want.z - c.vel.z;
       c.vel.x += ax * Math.min(1, dt * 3); c.vel.z += az * Math.min(1, dt * 3);
     }
@@ -356,7 +362,7 @@ export class SlipJellies {
       c.vy -= 9.81 * dt; c.pos.y += c.vy * dt;
       if (c.pos.y <= c.groundY && c.vy < 0) this.land(c);
       // (on the way, it can hit its foe bodily: a lunge not stepped out of)
-      else if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm')) {
+      else if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm') && !st(c, 'charm')) {
         const F = A.foe.pos, fy = A.foe === g.player ? F.y + 0.9 : F.y + (A.foe.height ?? 1) * 0.5;
         if (Math.hypot(F.x - c.pos.x, F.z - c.pos.z) < 0.9 && Math.abs(fy - (c.pos.y + H * 0.5)) < 1.2) { A.hit = true; this.strike(c, A.foe, 'lunge'); }
       }
@@ -383,7 +389,7 @@ export class SlipJellies {
     sfx.jellyLand(g.listenerDistance(c.pos));
     g.shells?.addSplat?.(c.pos.clone().setY(c.groundY + 0.02), UP, 1.4, true);
     g.slip?.addDisc(c.pos.clone(), UP, 0.9, 16);
-    if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm')) {
+    if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm') && !st(c, 'charm')) {
       const F = A.foe.pos;
       if (Math.hypot(F.x - c.pos.x, F.z - c.pos.z) < JELLY.lunge.hit && Math.abs(F.y - c.pos.y) < 1.6) { A.hit = true; this.strike(c, A.foe, 'lunge'); }
     }
@@ -477,6 +483,8 @@ export class SlipJellies {
     c.flash = Math.max(0, c.flash - dt * 4);
     const cold = st(c, 'halt') ? 1 : 0;
     c.mat.emissive.setRGB(c.flash * 0.6 + cold * 0.05, c.flash * 0.5 + cold * 0.15, c.flash * 0.4 + cold * 0.3);
+    const tl = this.game.temper?.look(c); // (its agitation, shown with its body: vfx/temper.js)
+    if (tl) { c.mat.emissive.add(tl.glow); if (tl.tremble > 0.05) c.deform.wob = Math.max(c.deform.wob, 0.02 * tl.tremble); }
     c.mat.color.setHex(COL).lerp(COLD, cold * 0.6);
   }
 

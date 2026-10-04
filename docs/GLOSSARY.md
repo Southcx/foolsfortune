@@ -134,7 +134,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   word is accepted.
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
-- **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt).
+- **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt; and the four a damage type
+  builds: **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium); Impact's is the stun). **build-up**
+  (`creature.build[type]`): a type's meter toward its status. **annihilation**: Impact on a confused creature, or Delirium on a stunned one.
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
 - **damage type** (plan B1, Dovina's numbers): what a blow is made of, on the **Law–Chaos line**: **Impact** (lawful, physical), **Ego**
   (lawful, mental), **Influence** (neutral, social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic). Code: `type`,

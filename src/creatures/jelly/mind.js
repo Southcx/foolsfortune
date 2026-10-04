@@ -26,6 +26,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { st } from '../creatures.js';
+import { enraged } from '../../progress/combat/emo.js';
 import { AWARE, REL, kindOf, curve, norm, steer } from '../ai/index.js';
 
 const _w = new THREE.Vector3(), _s = new THREE.Vector3(), _k = new THREE.Vector3(), _o = new THREE.Vector3(), _t = new THREE.Vector3();
@@ -154,7 +155,7 @@ export function jellyMind(J) {
   });
   act({
     id: 'hunt', hunt: true, weight: 1.7,
-    when: (x) => !st(x.c, 'calm') && !st(x.c, 'forget') && !!foe(x) && distHome(x) < C.leash,
+    when: (x) => !st(x.c, 'calm') && !st(x.c, 'charm') && !st(x.c, 'forget') && !!foe(x) && distHome(x) < C.leash,
     consider: [(x) => curve.logistic(0.42, 9)(aggression(x, foe(x)))],
     cooldown: 3,
     lock: (x) => !!x.c.attack && x.c.attack.phase !== 'recover',
@@ -180,11 +181,12 @@ export function jellyMind(J) {
         steer.orbit(_o, c.pos, F, C.keep, c.id % 2 ? 1 : -1, 0.6 * Math.abs(Math.sin(x.now * 0.7 + c.id)));
         steer.separate(_s, c.pos, kinNear(x, 3), 2);
         steer.blend(c.want, [[_w, 1], [_o, 1], [_s, 1.3]], C.speed);
-        c.cd -= dt;
+        c.cd -= dt * (enraged(c.emo) ? 1.8 : 1); // (enraged: it presses harder: progress/combat/emo.js)
         const seen = x.now - f.seenAt < 0.6;
-        if (c.cd <= 0 && seen && !st(c, 'calm')) {
-          if (d < 7.5 && d > 1.5) { J.windUp(c, 'lunge', f.ent); c.cd = rnd(2.2, 3.4); }
-          else if (d > 4.5 && d < 13) { J.windUp(c, 'spit', f.ent); c.cd = rnd(2.6, 3.8); }
+        if (c.cd <= 0 && seen && !st(c, 'calm') && !st(c, 'charm')) {
+          const hold = st(c, 'doubt') ? 1.6 : 1; // (doubt: longer between attacks)
+          if (d < 7.5 && d > 1.5) { J.windUp(c, 'lunge', f.ent); c.cd = rnd(2.2, 3.4) * hold; }
+          else if (d > 4.5 && d < 13) { J.windUp(c, 'spit', f.ent); c.cd = rnd(2.6, 3.8) * hold; }
         }
       }
       x.drives.add('rest', dt / 90);

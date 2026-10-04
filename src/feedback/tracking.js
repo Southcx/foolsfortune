@@ -382,7 +382,7 @@ export class Tracking {
     on('creature.stun', (e) => {
       if (e.by !== 'courier') return;
       L.inc('stun'); L.inc(`stun.${e.kind}`); L.inc(`stun.cause.${e.cause}`);
-      log.say('battle', `The ${KIND(e.kind)} reels, stars wheeling round its head.`, { key: 'stun', throttle: 1 });
+      log.say('battle', `The ${KIND(e.kind)} is stunned.`, { key: 'stun', throttle: 1 });
       first('stun', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass.');
     });
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
@@ -406,6 +406,8 @@ export class Tracking {
     on('blade.resist', (e) => { L.inc('blade.resisted'); log.say('battle', `The ${KIND(e.kind)} turns your blade aside${e.why === 'uncuttable' ? ': it cannot be cut' : ': stun it first'}.`, { key: 'bres', throttle: 2 }); });
     on('creature.zandatsu', (e) => { L.inc('zandatsu.creature'); L.inc(`zandatsu.${e.kind}`); log.say('battle', `You take the ${KIND(e.kind)} apart. It comes undone into Lachryma.`, {}); });
     on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
+    on('creature.resist', (e) => { if (e.by === 'courier') { L.inc('status.resisted'); log.say('battle', `The ${KIND(e.kind)} resists ${e.status}.`, { key: 'resist', win: 1.5 }); } });
+    on('combat.annihilate', (e) => { if (e.by === 'courier') { L.inc('combat.annihilate'); L.inc(`combat.annihilate.${e.type}`); log.say('battle', `Annihilation: Impact meets Delirium on the ${KIND(e.kind)}.`, { key: 'annihilate', win: 1 }); } });
     on('emote.start', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
