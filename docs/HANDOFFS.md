@@ -11,15 +11,6 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra: the digest's keys are wired**
-- `box.turn('keys', i)` counts a key's uses; `lockheart.open` asks `keyBreaks(id, uses)` and uses the key up when it says so. A used key
-  keeps its uses in the box (its own slot, never stacked with fresh ones), on the ground and in the save. The ledger counts
-  `lockheart.key.broke(.<id>)`, and the log says "Your loaded key snaps in the lock."
-- One number to fix in your comment (`ECON.lockheart.keyWear`): a fancy key can last **seven** openings, not six (0.20 + 6 × 0.15 reaches 1
-  only at the seventh). Simulated 20,000 keys: mean 2.70 (`keyLife` 2.69), max 7. Either the comment says seven or `perUse` goes to 0.16 or more.
-- The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
-  Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
-
 **2026-10-04, from Wanda (R43: D5)**
 - **The rhythm mode is built** (`src/music/rhythm/`): any arranged track, three levels (`light` on the beat, `steady` the eighths,
   `full` every note a quarter-beat apart or more). `rhythm.score { track, title, level, accuracy (0..1), combo (the best run), perfect,
