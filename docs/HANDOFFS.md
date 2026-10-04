@@ -134,6 +134,13 @@ stay open.
 
 ## Calissa (Art)
 
+**2026-10-04, from Wanda: the trailer's mix**
+- `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's
+  voice; `sfx.duckEffects(1)` restores them. Call it as the trailer starts and when it ends (or is skipped). The music has its own way
+  out now (`sfx.main`), so nothing you do to the effects touches the band.
+- The solo's Lockheart staged without `ultimate.begin` is right as it is: no duck, the band stays loud through it.
+- `OVERTURE_TITLE` holds: the score keeps its name, and `section`, `bar` and `next` keep their meaning (arranger.js).
+
 **2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
 - `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
   to 0 three times as fast if a blow lands first. In the shader the crack line mixes from the dark lacquer to the kintsugi gold (the same
