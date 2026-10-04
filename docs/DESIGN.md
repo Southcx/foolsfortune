@@ -471,15 +471,29 @@ skill is the game), *Brain Age* and Gran Turismo's licences (a measured skill as
 genre, whose transfer claims did not hold up (the FTC's 2016 ruling on Lumosity). So the game teaches by play, and never says it is
 teaching.
 
-| Tool | The skill (draft) | Status |
+| Tool | The skill | Status |
 |---|---|---|
-| Psygun | aim; dynamic visual acuity | agreed |
-| Veritome | typing (reprogramming), reading behaviour, patience for the shot | agreed |
-| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | agreed |
-| Crucibelle | tempo, scales; chords (three keys at once) | agreed |
-| Lockheart | odds and expected value; and, proposed, catching critically stunned Figments | open |
-| Soul Brush | shape and/or colour theory | open |
-| Sondelass | not yet named | open |
+| Psygun | aim; dynamic visual acuity | ruled |
+| Veritome | typing (reprogramming), reading behaviour, patience for the shot | ruled |
+| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | ruled |
+| Crucibelle | tempo and melody: ten notes, 1–5 the lower register and 6–0 the upper, in the pentatonic of the music playing; every note has a colour as well as a sound. No chords (keyboard rollover). | ruled |
+| Sondelass | the platformer's movement tech: timing and momentum (the line's tension, the grapple's swing, the parry window) | ruled |
+| Soul Brush | shapes | ruled |
+| Lockheart | odds and expected value | ruled |
 
-The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do, never do the
-skill for them.
+**The Lockheart becomes the magic system (ruled in outline, 2026-10-04).** The coffin worn sets its mode:
+- **Casting**: the wheel of outcomes as it is now.
+- **Summoning**: catch a critically stunned Figment. Catching is a third choice on a stunned creature, beside zandatsu and reprogramming.
+  The wheel moves to the catch: the catch rate is the wheel, set by how cleanly the creature was stunned, and Possibilikeys augment it.
+  A key burned on a summon's release adds an effect. With several Figments inside, which one comes out is a gamble.
+- **Conversion**: liquid Lachryma (baubles) into solid (cubes); the keys set the risk and the yield.
+
+**Achievements are the main way skills are unlocked** (the owner's standing rule). Cosmetics are rewards for achievements, in quantity
+(the owner hunts glamour; FFXIV, GW2).
+
+**Soul Alchemy** (in the Shrine Garden) carries colour theory: fodder materials and curios have a hue and a saturation, and a spirit
+press (hopper, igniter, crucible: the owner's concept art) presses them to change the Courier's characteristics.
+
+**Still to define:** five damage types; a full suite of emotional statuses and what each does; the six (+1) domains, mostly for the
+god hand. The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do,
+never do the skill for them.
