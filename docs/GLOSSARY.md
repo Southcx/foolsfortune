@@ -288,10 +288,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Queen: chaos, every feeling pegged high, its core hunger; her island a blacklight metroplex): two other Islands of Ego, and the
   Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
-- **the Swallow**: the Well in Anagami's Dunes (the slice's Well; a *swallow hole* is a sinkhole). A Well, so it drifts. *Not:* the
-  Weir's Well, which is a place.
-- **the purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. A role, not
-  yet a name.
+- **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
+- **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
+  the name.
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 
 ## Homonyms we keep on purpose (always qualify them)

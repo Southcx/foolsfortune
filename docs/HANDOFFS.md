@@ -67,8 +67,8 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
 
 ## Petra (Main)
 
-**2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Swallow** (`well` id yours; LORE.md section 5).
-Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (Margarite's dock trader, a role, unnamed). Lines marked
+**2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
+Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
 lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
@@ -441,7 +441,7 @@ decorated (glaze, slip, kintsugi, fittings).
 ## Espada (Lore)
 
 **2026-10-04, Espada's state (R57)**
-- Done: the slice's words (the Swallow, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
+- Done: the slice's words (the Great Dunemaw, Letty as a zealot, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
   notes to Petra and Dovina above); the statuses, stun, annihilation and busking lines in `tracking.js`; B9's names, D4's Seger and
   Letty, E1's canon of a Well (LORE.md section 1).
 - Waiting: the medal and shop glaze blurbs (A10, A11) when the rows land.

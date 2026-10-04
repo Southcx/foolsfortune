@@ -15,9 +15,9 @@
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
 //   LETTY MARQUE      nacre, of Margarite (the King's island). A Contractor under the King's marque: the bounty board at Margarite's
-//                     dock. Brisk, a showboat. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
+//                     dock. A zealot on a mission, cheerful and certain: every aberrant a wrong thing to clear out. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
 //   THE PURSER        of Margarite. Buys crude, materials and Cogitomaps for the lamp, at the King's posted price; never haggles,
-//                     never names the Queen. Unnamed and unshaped until the owner casts them. Waits for a model.
+//                     never names the Queen. The role is the name. Waits for a model.
 // ---------------------------------------------------------------------------------------
 import { TITHE } from '../world/treasure/treasure.js';
 
@@ -209,59 +209,64 @@ export const TALKS = {
     },
   },
 
-  // LETTY MARQUE at her bounty board, Margarite's dock (docs/plans/SLICE.md, E4b; docs/LORE.md, section 6). She posts here because the
-  // King pays here; why she left Margarite stays blank.
+  // LETTY MARQUE at her bounty board, Margarite's dock (docs/plans/SLICE.md, E4b; docs/LORE.md, section 6). A true believer: the King's
+  // light holds the strays back, and she goes out to finish them. Never a villain; the world knows something she does not (LORE.md).
   letty: {
     start: 'hello', again: 'again',
     nodes: {
       hello: { lines: [
-        { mood: 'sly', text: "Letty Marque, licensed. {p:0.3}Marque with a Q-U-E, like the letter, not the target. {small}It's often both.{/}" },
-        { poll: true, mood: 'joy', text: '{big}{shake}CUBES! CUBES!{/}{/}' },
-        { mood: 'calm', text: "Don't mind Poll. {p:0.3}This is my board. {p:0.4}I don't live here. {small}I get paid here.{/}" },
+        { mood: 'joy', text: "Letty Marque, licensed! {p:0.3}Marque with a Q-U-E: the King's own letter. {p:0.3}{big}And I mean every word of it.{/}" },
+        { poll: true, mood: 'joy', text: '{big}{shake}HEAD COUNT! HEAD COUNT!{/}{/}' },
+        { mood: 'calm', text: 'This is my board. {p:0.3}Every notice on it is a wrong thing loose in the sea. {p:0.4}{hot}Not for long.{/}' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: "Still looking? {p:0.3}The board doesn't bite. {small}Most of what's on it does.{/}" }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: "Back for more? {bounce}Good!{/} {p:0.3}The sea won't clean itself." }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "What's on the board?", go: 'board' },
         { text: 'Who pays?', go: 'pays' },
         { text: 'What is that bird?', go: 'poll' },
         { text: 'Tell me about the King.', go: 'king' },
-        { text: 'Where are you from?', go: 'home' },
+        { text: 'Why are you out here?', go: 'why' },
+        { text: 'What do you make of me?', go: 'me' },
         { text: 'Goodbye.', go: 'bye' },
       ] },
       board: { lines: [
-        { mood: 'calm', text: "Strays. Egregores off the Emocean, and Figments that have slipped their island. {p:0.4}They nest where it's quiet." },
-        { mood: 'sly', text: 'Every notice has a name and a price. {p:0.3}You bring it in, I pay you out, {p:0.3}the King keeps his books tidy.' },
-        { poll: true, mood: 'joy', text: '{big}BRING IT IN!{/}' },
+        { mood: 'anger', text: 'Aberrants. {p:0.3}Egregores off the Emocean, and Figments that slipped their island and went {cold}wrong{/}.' },
+        { mood: 'calm', text: 'Every one of them is a crack in the world. {p:0.4}{hot}I close cracks.{/}' },
+        { mood: 'sly', text: 'Pick a notice. Bring it in. {p:0.3}I pay well, and the King pays better.' },
       ], next: 'menu' },
       pays: { lines: [
-        { mood: 'calm', text: "Margarite pays. {p:0.3}The King's purse, the King's marque, the King's strays. {p:0.5}{slow}Well.{/}" },
-        { mood: 'sly', text: "{small}The strays aren't his. He just pays for them.{/} {p:0.4}Don't ask me whose they are. {p:0.3}Ask the crude." },
+        { mood: 'joy', text: 'The King pays, the lamp is fed, and the sea is that much cleaner. {p:0.4}{gold}Everyone wins.{/} {p:0.3}{small}Except the strays.{/}' },
+        { mood: 'sly', text: "They aren't his, you know. {p:0.3}He just pays to have them put right. {p:0.4}Ask the crude where they come from." },
       ], next: 'menu' },
       poll: { lines: [
-        { mood: 'joy', text: 'Poll? {p:0.3}My Tulpa. Folded from every notice I ever closed. {p:0.4}Keeps the Emocean off me.' },
-        { mood: 'sly', text: '{small}Keeps count, too.{/}' },
-        { poll: true, mood: 'surprise', text: '{big}HEAD COUNT! HEAD COUNT!{/}' },
+        { mood: 'joy', text: 'Poll? {p:0.3}My Tulpa! Folded from every notice I ever closed. {p:0.4}Keeps the Emocean off me.' },
+        { mood: 'awe', text: '{slow}Every fold is one less wrong thing in the sea.{/}' },
+        { poll: true, mood: 'surprise', text: '{big}ONE LESS! ONE LESS!{/}' },
       ], next: 'menu' },
       king: { lines: [
-        { mood: 'calm', text: 'Old Magnus? {p:0.4}He likes a thing where it belongs. {p:0.3}{small}So do I. That\'s why I\'m out here.{/}' },
-        { mood: 'sad', text: 'He keeps the lamp lit. {p:0.4}{slow}Every night, every grain of the glass.{/} {p:0.3}Nobody remembers asking him to.' },
+        { mood: 'awe', text: 'King Magnus keeps the light. {p:0.4}{slow}Every night, every grain of the glass.{/}' },
+        { mood: 'anger', text: '{p:0.3}The light holds them back. {p:0.4}{hot}I go out and finish them.{/}' },
       ], next: 'menu' },
-      home: { lines: [
-        { mood: 'sad', text: "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/}" },
-        { mood: 'sly', text: '{p:0.4}Next question.' },
+      why: { lines: [
+        { mood: 'calm', text: "Margarite is safe. {p:0.4}Safe is a wall. {p:0.4}{slow}Walls hold things back. They don't end anything.{/}" },
+        { mood: 'joy', text: "{p:0.3}So I took the King's letter and went out where they breed. {p:0.3}{bounce}Best thing I ever did.{/}" },
       ], next: 'menu' },
-      bye: { lines: [{ mood: 'joy', text: 'Fair winds. {p:0.3}{small}Fair-ish.{/}' }] },
+      me: { lines: [
+        { mood: 'surprise', text: "You? {p:0.3}One of those jars that walks. {p:0.3}Full to the brim with Lachryma, and still yourself." },
+        { mood: 'sly', text: '{p:0.4}Good. Stay that way. {p:0.5}{small}I\'ll be watching.{/}' },
+      ], next: 'menu' },
+      bye: { lines: [{ mood: 'joy', text: 'Fair winds, and good hunting! {p:0.3}{small}Leave nothing wrong behind you.{/}' }] },
     },
   },
 
-  // THE PURSER at Margarite's dock (docs/plans/SLICE.md, E4b): the King's buyer. Margarite is Law, so the purser speaks by the book:
-  // a posted price, no haggling (the opposite of Raku). Like the King, the purser never says the Queen's name: "the far shore".
+  // THE PURSER at Margarite's dock (docs/plans/SLICE.md, E4b): the King's buyer. Margarite is Law, so the Purser speaks by the book:
+  // a posted price, no haggling (the opposite of Raku). Like the King, the Purser never says the Queen's name: "the far shore".
   purser: {
     start: 'hello', again: 'again',
     nodes: {
       hello: { lines: [
         { mood: 'calm', text: 'Margarite dock. {p:0.3}State your cargo.' },
-        { mood: 'calm', text: "I am the purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
+        { mood: 'calm', text: "I am the Purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
       ], next: 'menu' },
       again: { lines: [{ mood: 'calm', text: 'You again. {p:0.3}Punctual. {p:0.3}Good. Cargo?' }], next: 'menu' },
       menu: { lines: [], choices: [

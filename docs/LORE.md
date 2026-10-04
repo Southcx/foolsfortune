@@ -447,7 +447,7 @@ Kept until the owner says otherwise.
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
-| **The Swallow** *(Espada's name, R57; the owner may veto)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A *swallow hole* is a sinkhole that a stream runs into and vanishes: what goes down is not seen again, only felt. Kaolin is the boy who swallows his stress behind a joke, and it pools here, under the sand. The gold swallows wheeling round the island in the concept art are the same word on the bright side. Distinct from the Weir's Well (a place); the Swallow is a Well (a distortion), so it drifts. |
+| **The Great Dunemaw** *(the owner's name, R57)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
@@ -512,37 +512,31 @@ witnesses the island's work; the other brings in what has gone astray.
 **Letty Marque, Contractor** (bounties) *(not of Anagami Island)*
 - **The name.** A *letter of marque* was a licence to take prizes at sea: lawful bounty hunting. So Letty (letter) Marque: licensed;
   a *mark* (the target); a *marquee* (star billing, which she would like).
-- **Who she is.** The first outsider: a Contractor from Margarite, the King's island, alive in the open Emocean because she has a
-  Tulpa. She hunts under Magnus Ibrahim Manus's marque: a licence from the King to bring in what has gone astray.
-  Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction). She moors a small craft at the jetty on the island's
-  west edge (the concept art) and never stays long. "She" *(the owner, R43)*.
+- **Who she is: a zealot on a mission** *(the owner, R57)*. A true believer, gung-ho about clearing the Emocean of aberrants. The
+  first outsider: a Contractor from Margarite, the King's island, alive in the open Emocean because she has a Tulpa. She hunts under
+  Magnus Ibrahim Manus's marque, and she takes the King's letter more literally than the King does: he keeps the light lit to hold
+  the deep things back; she goes out to finish them. Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction).
+  "She" *(the owner, R43)*.
+- **Why she left** *(Espada's reading of the owner's mission, for the owner to veto)*: Margarite is safe, and safe is a wall. Walls
+  hold things back; they never end anything. So she took the letter and went out where the strays breed.
 - **What she is made of: nacre.** Mother-of-pearl, the owner's own motif for the moment Lachryma crystallises. She is shell-pale
-  with a rainbow film where the light catches her, harder than clay: she scratches where a pot would shatter.
-- **Her island: Margarite**, Magnus's (section 1). A pearl is a wound made beautiful, the sea's kintsugi, which is why the clay folk
-  find her strange and familiar at once. "Somewhere I'm not anymore" is true twice over: she left, and Margarite rides a whale, so it
-  is never where you left it. *Still blank, on purpose:* why she left.
-- **Poll, her Tulpa.** A paper parrot folded from old bounty notices. *Poll* is a parrot's name, a head count, and a tax per head. It
-  shouts rewards.
-- **The voice.** Brisk, a showboat, light on sea slang, quicker to a joke than to a confidence. For Wanda: she is the first voice not
-  made of clay.
-- **What she teaches.** Resilience: she has lost something to the Emocean, and she kept sailing it.
-- **Lines** (ready for `talks.js` once she moors):
-  - "Letty Marque, licensed. {p:0.3}Marque with a Q-U-E, like the letter, not the target. {small}It's often both.{/}"
-  - (Poll) "{big}CUBES! CUBES!{/}"
-  - (a bounty) "Strays. Egregores off the Emocean, and Figments that have slipped their island. {p:0.4}They nest where it's
-    quiet. {p:0.3}The King wants them brought in. You can help, for a cut."
-  - (on the King) "Old Magnus? {p:0.4}He likes a thing where it belongs. {p:0.3}{small}So do I. That's why I'm out here.{/}"
-  - (on the Courier) "You're one of those jars that walks. {p:0.3}Lucky you. The Emocean barely tastes you."
-  - (on the Prince) "Your Prince keeps a tidy island. {p:0.5}{slow}Tidy islands are the ones the Emocean notices first.{/}"
-  - (on her island) "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/} {p:0.4}Next question."
-  - (goodbye) "Fair winds. {p:0.3}{small}Fair-ish.{/}"
+  with a rainbow film where the light catches her, harder than clay: she scratches where a pot would shatter. Nacre is how a shell
+  answers grit: it coats the wrong thing until it is smooth and sealed away. That is her whole creed.
+- **Poll, her Tulpa.** A paper parrot folded from every bounty notice she ever closed: her tally, worn on her shoulder. *Poll* is a
+  parrot's name, a head count, and a tax per head. It shouts the count.
+- **The voice.** Fervent and cheerful, a showboat with total certainty: no doubt, no grey, every stray a "wrong thing" and every
+  bounty "one less". Kid-safe words for it: clear out, put right, close a crack, finish. For Wanda: she is the first voice not made of
+  clay, and the first that never wavers.
+- **The undertone** *(Espada's)*: the canon says no Figment or Egregore is good or evil by nature (section 1), and Letty is sure they
+  are. The slip jellies in the Dunes are, by the town's story, folk of the town that was. A bounty she posts may be somebody's
+  neighbour. She is never a villain (she does keep the sea safer); she is the lesson that certainty and being right are different
+  things. What a stray was, and whether she can learn it, stays open.
+- **At her board** (the slice): her lines are in `talks.js` (`letty`). She posts at Margarite's dock because the King pays there.
+  Poll's squawks are lines marked `poll: true`.
 
-- **At her board** (the slice): her lines are in `talks.js` (`letty`). She posts at Margarite's dock because the King pays there:
-  "I don't live here. I get paid here." That keeps *why she left* blank and still true. Poll's squawks are lines marked `poll: true`.
-
-**The purser** (Margarite's dock: crude, materials, Cogitomaps) *(a role, unnamed and unshaped until the owner casts them)*
+**The Purser** (Margarite's dock: crude, materials, Cogitomaps) *(the owner, R57: the role is the name, for the value it carries; unshaped until a model)*
 - **The word.** A ship's purser keeps the money; this one keeps the King's purse, and the Courier has one purse too.
-- **The voice.** Law: by the book, a posted price, no haggling (Raku's opposite). "State your cargo." Like the King, the purser never
+- **The voice.** Law: by the book, a posted price, no haggling (Raku's opposite). "State your cargo." Like the King, the Purser never
   says the Queen's name ("the far shore"), and points the Courier at the dread that comes from there: the slice's lesson that the
   crude route's money is out at Entra. On the Prince: "His Majesty asks after him. Not in so many words." Lines in `talks.js` (`purser`).
 
