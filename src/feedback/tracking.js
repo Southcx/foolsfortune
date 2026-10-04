@@ -267,8 +267,8 @@ export class Tracking {
     const helped = new Set();
     on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
     on('vfx.test', (e) => log.say('system', e.found ? `You play ${e.fx}.` : `There is no effect called ${e.fx}.`, { key: 'vfx', win: 0.5 }));
-    on('workbench.open', () => log.say('system', 'You open the workbench.', { key: 'wb', win: 0.5 }));
-    on('workbench.close', () => log.say('system', 'You close the workbench.', { key: 'wb', win: 0.5 }));
+    on('workbench.open', () => log.say('system', 'You open the workbench.', { key: 'wb.open', win: 0.5 }));
+    on('workbench.close', () => log.say('system', 'You close the workbench.', { key: 'wb.close', win: 0.5 }));
     on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
