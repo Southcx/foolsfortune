@@ -256,7 +256,8 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 **The Queen: Entra Polearis. Peak chaos, growth and abundance.**
 - **The name.** An exact anagram of *Astral Pioneer*, checked letter for letter. *Entra* leans towards entropy and "enter"; *Polearis*
   wears Polaris, the one fixed star sailors steer by, which is a fine joke for the queen of chaos.
-- **Her island:** a blacklight metroplex, sprawling and avant-garde. Skyscrapers tilt, magenta lightning runs down the streets like
+- **Her island: Entropolis** *(the owner, R57)*: *entropy* plus *polis*, the city, and her own name folded into one word, the
+  way Kaolin Anagami is Anagami Island. A blacklight metroplex, sprawling and avant-garde. Skyscrapers tilt, magenta lightning runs down the streets like
   cracks, neon-green pools lie between the towers, a checkerboard hangs like a billboard. Over it all hang a magenta cloud and a dark
   moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. At its foot, in the dark, a great
   head with green eyes looks up (its meaning is left blank).
@@ -270,7 +271,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 **What follows** *(Espada's, for the owner to veto)*
 - **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
 - **Risk and reward, ruled in outline** (the owner, R43): a stable mind is less lucrative and safer to mine; a chaotic mind is riskier
-  and richer. Margarite is the lighthouse, Entra Polearis the boomtown that never busts (yet).
+  and richer. Margarite is the lighthouse, Entropolis the boomtown that never busts (yet).
 - **Letty Marque is Magnus's** (the owner's suggestion, taken). A letter of marque was always issued by a sovereign: hers is the King's.
   She hunts bounties under his licence, and her pearl is his island.
 
@@ -279,7 +280,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 **The Prince of Clay is the son of the King and the Queen.** Kaolin Anagami grew up between Magnus Ibrahim Manus and Entra Polearis, and
 he is a cautionary tale about managing extreme parents.
 
-**The map is a circle.** Entra Polearis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
+**The map is a circle.** Entropolis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
 eating the ambient Emocean like wildfire. **The core feeling of chaos is hunger.** (It is one of the five aspects already: the Queen
 is its throne.) Magnus orbits with her, feeding off what she throws out and cleaning up after her, the two of them a binary circling
 the rim. **Kaolin is the centre: an oasis**, the still place between them. Anagami Island repeats the shape in miniature: an oasis at
@@ -305,7 +306,7 @@ His mother's clay and his father's fire.
 **The lighthouse is a weapon, and a vigil.** Margarite's light is the one thing that keeps the deepest horrors of the Emocean, the **Leviathan-class
 Egregores**, at bay. It has to be fed, and it burns crude. If it goes out, they come.
 
-**So Chaos digs the crude up, and Law buys it.** Entra Polearis sells crude cheap: its Wells run deep with every feeling at full, and
+**So Chaos digs the crude up, and Law buys it.** Entropolis sells crude cheap: its Wells run deep with every feeling at full, and
 abundance never values what it has too much of. Margarite buys it dear, because it must. The crude route runs from the Queen to the
 King, and the hauler (a Courier, in a sloop or a tanker) lives in between. Letty's bounties are mostly the Queen's strays, brought in
 under the King's marque and paid for by Margarite. The Queen's island breeds both the riches and the strays, and the King pays to have
@@ -529,9 +530,14 @@ witnesses the island's work; the other brings in what has gone astray.
   about the notices she is not allowed to post yet, and why nobody has sailed to the far shore to shut off the tap. Cheerful, never
   in doubt, never clipped: no staccato, no fragments for effect. Kid-safe words for it: clear out, put right, take the fight to them,
   finish. For Wanda: the first voice not made of clay, and the first that never wavers.
-- **Where she points** *(Espada's)*: at the Queen's island. The strays come from Entra Polearis, and the King only pays to have them
+- **Where she points** *(Espada's)*: at the Queen's island. The strays come from Entropolis, and the King only pays to have them
   put right; Letty wants the source dealt with. That is the escalation the King has spent his life avoiding, and it is why she is
   useful to him and dangerous to everyone. On the Courier: "Stay that way, won't you? I'd hate to have to put your notice on my board."
+- **She has never been there** *(the owner, R57)*. Her Entropolis is built from secondhand stories, like propaganda: the dock's tall
+  tales, each worse than the last, and the King's silence (he never says the Queen's name, and she reads that as proof). She paints
+  the great villain of the Emocean with total confidence and no first-hand look. Asked, she admits it ("Well, no. Not yet.") and does
+  not slow down. The Courier can go and see for themselves; she cannot yet. What they find there, against what she says, is the
+  lesson waiting in her story.
 - **The undertone** *(Espada's)*: the canon says no Figment or Egregore is good or evil by nature (section 1), and Letty is sure they
   are. The slip jellies in the Dunes are, by the town's story, folk of the town that was. A bounty she posts may be somebody's
   neighbour. She is never a villain (she does keep the sea safer); she is the lesson that certainty and being right are different
@@ -543,7 +549,7 @@ witnesses the island's work; the other brings in what has gone astray.
 - **The word.** A ship's purser keeps the money; this one keeps the King's purse, and the Courier has one purse too.
 - **The voice.** Law: by the book, a posted price, no haggling (Raku's opposite). "State your cargo." Like the King, the Purser never
   says the Queen's name ("the far shore"), and points the Courier at the dread that comes from there: the slice's lesson that the
-  crude route's money is out at Entra. On the Prince: "His Majesty asks after him. Not in so many words." Lines in `talks.js` (`purser`).
+  crude route's money is out at Entropolis. On the Prince: "His Majesty asks after him. Not in so many words." Lines in `talks.js` (`purser`).
 
 **Their log lines** (the robotic register; for the rules in `tracking.js` once the events exist):
 - "Commission accepted: 3 Guppy-class Figments." · "Commission: 2 of 3." · "Commission complete. Streak: 7." · "Commission streak

@@ -498,7 +498,7 @@ export function buildAchievements(game) {
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
-  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entra Polearis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
+  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
   C('oc4', 'emocean', 'Crude', 2, 'mechanic', 'Slick', 'Spill crude in the Emocean.', 'crude.spill', 1, { hidden: true });
 
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)

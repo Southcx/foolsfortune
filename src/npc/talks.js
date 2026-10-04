@@ -225,6 +225,7 @@ export const TALKS = {
         { text: 'Who pays?', go: 'pays' },
         { text: 'What is that bird?', go: 'poll' },
         { text: 'Tell me about the King.', go: 'king' },
+        { text: 'What is out on the far shore?', go: 'shore' },
         { text: 'Why are you out here?', go: 'why' },
         { text: 'What do you make of me?', go: 'me' },
         { text: 'Goodbye.', go: 'bye' },
@@ -244,6 +245,18 @@ export const TALKS = {
       king: { lines: [
         { mood: 'awe', text: "King Magnus keeps the light lit every night, every grain of the glass, and I'd follow him off the edge of the map, {p:0.4}but holding the line is all he ever does, {p:0.3}and a line you only ever hold is a line you're slowly losing." },
         { mood: 'anger', text: 'Give me a fleet of destroyers and one good season {p:0.3}and I would {hot}{big}take the fight to them{/}{/}, instead of waiting in the dark for them to come to us.' },
+      ], next: 'menu' },
+      // Entropolis, from hearsay: she has never been, and the far shore she paints is the dock's stories and the King's silence (LORE.md)
+      shore: { lines: [
+        { mood: 'anger', text: 'Entropolis! {p:0.3}A whole city that never sleeps, where the lights hum all night and every feeling runs at full boil, where every stray that ever crawled onto my board was hatched in the gutters, {p:0.3}{hot}and the Queen sits on top of it all and feeds it{/}.' },
+        { mood: 'sly', text: "Every sailor on this dock has a story about it, each one worse than the last, {p:0.3}and the King himself won't say her name, {p:0.4}which tells you everything you need to know." },
+      ], choices: [
+        { text: 'Have you been there?', go: 'been' },
+        { text: 'I see.', go: 'menu' },
+      ] },
+      been: { lines: [
+        { mood: 'surprise', text: 'Been there? {p:0.5}{small}Well, no. Not yet.{/}' },
+        { mood: 'joy', text: "{p:0.3}But you don't have to touch a fire to know it burns, and the day the King lets me sail, {p:0.3}{hot}I'll see it with my own eyes, and then I'll see it put out{/}." },
       ], next: 'menu' },
       why: { lines: [
         { mood: 'sad', text: "Margarite is the safest place in the whole Emocean, and I couldn't stand it: {p:0.3}all those walls and that patient light, and everyone waiting for the deep things to give up first, {p:0.4}{slow}as if they ever would.{/}" },
