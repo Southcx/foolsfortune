@@ -6,7 +6,7 @@
 // gravity, the closed form), so a burst of a thousand costs the writing and nothing after. It is drawn as instanced camera-facing quads
 // (a point sprite cannot turn or stretch).
 //
-// The shapes live in one atlas, drawn here at startup (4 x 4 cells of 128 px, greyscale with alpha: every use tints its own):
+// The shapes live in one atlas, drawn here at startup (8 x 4 cells of 128 px, greyscale with alpha: every use tints its own):
 //   soft  core  star4  sparkle  |  streak  ring  ringthin  puff  |  shard  diamond  glint  swirl  |  petal  crescent  chip  bubble
 //
 // Prior art: the sprite-sheet particle of every sixth-generation action game (Devil May Cry's and Kingdom Hearts' hit stars and
@@ -20,15 +20,15 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15 };
+export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20 };
 
 let _atlas = null;
 export function atlas() {
   if (_atlas) return _atlas;
-  const C = 128, c = document.createElement('canvas'); c.width = c.height = C * 4;
+  const C = 128, c = document.createElement('canvas'); c.width = C * 8; c.height = C * 4;
   const g = c.getContext('2d');
   let seed = 9; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const cell = (i, draw) => { g.save(); g.translate((i % 4) * C + C / 2, Math.floor(i / 4) * C + C / 2); draw(C / 2); g.restore(); };
+  const cell = (i, draw) => { g.save(); g.translate((i % 8) * C + C / 2, Math.floor(i / 8) * C + C / 2); draw(C / 2); g.restore(); };
   const radial = (R, stops) => { const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); for (const [t, a] of stops) gr.addColorStop(t, `rgba(255,255,255,${a})`); return gr; };
   const star = (R, n, inner, soft = 0) => { g.beginPath(); for (let k = 0; k < n * 2; k++) { const a = (k / (n * 2)) * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? R * inner : R; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); g.fill(); if (soft) { g.fillStyle = radial(R * soft, [[0, 0.9], [1, 0]]); g.fillRect(-R, -R, R * 2, R * 2); } };
   g.fillStyle = '#fff'; g.strokeStyle = '#fff';
@@ -48,6 +48,13 @@ export function atlas() {
   cell(SHAPES.crescent, (R) => { g.beginPath(); g.arc(0, 0, R * 0.85, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(R * 0.3, -R * 0.15, R * 0.75, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'source-over'; });
   cell(SHAPES.chip, (R) => { g.beginPath(); const n = 6; for (let k = 0; k < n; k++) { const a = (k / n) * Math.PI * 2 + r() * 0.5, rr = R * (0.45 + r() * 0.45); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); g.fill(); });
   cell(SHAPES.bubble, (R) => { g.lineWidth = R * 0.08; g.beginPath(); g.arc(0, 0, R * 0.8, 0, Math.PI * 2); g.stroke(); g.fillStyle = radial(R * 0.8, [[0, 0.05], [0.8, 0.15], [1, 0.4]]); g.beginPath(); g.arc(0, 0, R * 0.8, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(-R * 0.3, -R * 0.3, R * 0.14, 0, Math.PI * 2); g.fill(); });
+  // (the damage looks' motifs: lawful ones geometric and crystalline, chaotic ones fluid)
+  const hexPath = (rr) => { g.beginPath(); for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + Math.PI / 6; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } g.closePath(); };
+  cell(SHAPES.hex, (R) => { g.lineWidth = R * 0.1; hexPath(R * 0.85); g.stroke(); g.lineWidth = R * 0.05; g.globalAlpha = 0.7; hexPath(R * 0.5); g.stroke(); for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + Math.PI / 6; g.beginPath(); g.moveTo(Math.cos(a) * R * 0.5, Math.sin(a) * R * 0.5); g.lineTo(Math.cos(a) * R * 0.85, Math.sin(a) * R * 0.85); g.stroke(); } g.globalAlpha = 1; });
+  cell(SHAPES.facet, (R) => { g.beginPath(); g.moveTo(0, -R * 0.9); g.lineTo(R * 0.7, -R * 0.2); g.lineTo(R * 0.4, R * 0.85); g.lineTo(-R * 0.4, R * 0.85); g.lineTo(-R * 0.7, -R * 0.2); g.closePath(); g.fill(); g.globalCompositeOperation = 'destination-out'; g.globalAlpha = 0.45; g.beginPath(); g.moveTo(0, -R * 0.9); g.lineTo(R * 0.4, R * 0.85); g.lineTo(0, R * 0.1); g.closePath(); g.fill(); g.globalAlpha = 0.25; g.beginPath(); g.moveTo(-R * 0.7, -R * 0.2); g.lineTo(0, R * 0.1); g.lineTo(-R * 0.4, R * 0.85); g.closePath(); g.fill(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; });
+  cell(SHAPES.drip, (R) => { g.fillStyle = radial(R * 0.9, [[0, 1], [0.55, 0.85], [1, 0.0]]); g.beginPath(); g.moveTo(0, -R * 0.9); g.bezierCurveTo(R * 0.15, -R * 0.4, R * 0.55, R * 0.1, R * 0.5, R * 0.45); g.arc(0, R * 0.45, R * 0.5, 0, Math.PI); g.bezierCurveTo(-R * 0.55, R * 0.1, -R * 0.15, -R * 0.4, 0, -R * 0.9); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(-R * 0.18, R * 0.38, R * 0.1, 0, Math.PI * 2); g.fill(); });
+  cell(SHAPES.ripple, (R) => { g.lineWidth = R * 0.07; g.beginPath(); g.arc(0, 0, R * 0.88, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.6; g.lineWidth = R * 0.05; g.beginPath(); g.arc(0, 0, R * 0.62, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.3; g.beginPath(); g.arc(0, 0, R * 0.38, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; });
+  cell(SHAPES.disc, (R) => { g.beginPath(); g.arc(0, 0, R * 0.82, 0, Math.PI * 2); g.fill(); });
   _atlas = new THREE.CanvasTexture(c);
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
   return _atlas;
@@ -98,7 +105,7 @@ void main() {
   mv.xy += q;
   gl_Position = projectionMatrix * mv;
   float cell = aP2.z;
-  vUv = (vec2(mod(cell, 4.0), 3.0 - floor(cell / 4.0)) + uv) / 4.0;
+  vUv = (vec2(mod(cell, 8.0), 3.0 - floor(cell / 8.0)) + uv) / vec2(8.0, 4.0);
 }`;
 const FRAG = /* glsl */`
 uniform sampler2D uAtlas; uniform float uAdd;

@@ -10,6 +10,8 @@
 import { CATS, TIERS, TYPES, RANKS } from '../../progress/achievements.js';
 import { SPECIES, ASPECTS, TIDES } from '../../tools/sondelass/angling/species.js';
 import { TIERS as CHEST_TIERS, CURIOS, TITHE, hex as tierHex } from '../../world/treasure/treasure.js';
+import { consolidated } from '../../progress/econ/odds.js';
+import { ECON } from '../../progress/econ/table.js';
 
 const CSS = `
 #codex .lg-head { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; margin-bottom: 10px; font-size: 12px; letter-spacing: .08em; }
@@ -259,7 +261,7 @@ export function renderCurios(codex, cx) {
   const B = g.veritome?.book, box = g.pneuka, held = (c) => { const id = `curio.${c.id}`, k = box ? box.count(id) + (box.lure === id ? 1 : 0) : 0; return B ? `${B.count(id)} in the Book${k ? ` · ${k} carried` : ''}` : `${L.get(id)} held`; };
   const head = el('div', 'lg-head');
   head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
-    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.pulls'))}</b></div>`
+    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.count'))}</b></div>`
     + `<div><small>BIGGEST CHEST</small><b>${L.best('chest.cubes.max') ? num(L.best('chest.cubes.max')) : '—'}</b></div>`;
   cx.appendChild(head);
   const body = el('div', 'body');
@@ -280,11 +282,12 @@ export function renderCurios(codex, cx) {
   card.appendChild(el('h3', '', has ? c.name.toUpperCase() : '· · ·'));
   card.appendChild(el('div', 'in', `${t.name.toUpperCase()} CURIO${has ? ` · ${held(c).toUpperCase()}` : ''}`));
   card.appendChild(el('p', has ? '' : 'hint', has ? c.blurb : `Found in ${t.name} chests${c.tier >= 3 ? ', and rarely' : ''}. A copy the Book cannot hold is condensed into cubes.`));
-  // the odds, in the open: what a sealed chest from the Tithe can be, and what the pity guarantees
-  const tot = CHEST_TIERS.reduce((a, x) => a + x.weight, 0);
+  // the odds, in the open: what a sealed chest from the Tithe can be (the published weights), the rates as a player meets them with the
+  // pity counted (progress/econ/odds.js: Genshin's "consolidated probability"), and what the pity guarantees
+  const tot = CHEST_TIERS.reduce((a, x) => a + x.weight, 0), met = consolidated();
   const odds = el('div');
-  odds.innerHTML = `<div class="in">THE TITHE · ${TITHE.cost} CUBES A PULL</div>` + CHEST_TIERS.map((x, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span style="width:88px;color:${tierHex(x.rgb)}">${x.name}</span><span class="bar" style="flex:1;margin:0"><i style="width:${Math.max(2, Math.round(x.weight / tot * 100))}%"></i></span><span style="width:92px;text-align:right;opacity:.8">${(x.weight / tot * 100).toFixed(1)}% · ${x.cubes[0]}–${x.cubes[1]}</span></div>`).join('')
-    + `<p class="hint" style="margin-top:8px">Pity: ${TITHE.pity.rare} pulls without a rare or better guarantee one; ${TITHE.pity.epic} an epic; ${TITHE.pity.prismatic} a prismatic. Kept count: ${g.chests ? `rare ${g.chests.since().rare}/${TITHE.pity.rare}, epic ${g.chests.since().epic}/${TITHE.pity.epic}, prismatic ${g.chests.since().prismatic}/${TITHE.pity.prismatic}` : '—'}. Chest chance of holding a curio: ${CHEST_TIERS.map((x) => `${x.name} ${Math.round(x.curioP * 100)}%`).join(' · ')}.</p>`;
+  odds.innerHTML = `<div class="in">THE TITHE · ${TITHE.cost} CUBES A PULL · PUBLISHED · AS MET</div>` + CHEST_TIERS.map((x, i) => `<div style="display:flex;gap:8px;align-items:center;font-size:12px;margin:3px 0"><span style="width:88px;color:${tierHex(x.rgb)}">${x.name}</span><span class="bar" style="flex:1;margin:0"><i style="width:${Math.max(2, Math.round(met[i] * 100))}%"></i></span><span style="width:120px;text-align:right;opacity:.8">${(x.weight / tot * 100).toFixed(1)}% · ${(met[i] * 100).toFixed(1)}%</span></div>`).join('')
+    + `<p class="hint" style="margin-top:8px">Pity: ${TITHE.pity.rare} pulls without a rare or better guarantee one; ${TITHE.pity.epic} an epic (and that epic is a prismatic ${Math.round(TITHE.epicPrismatic * 100)}% of the time); ${TITHE.pity.prismatic} a prismatic. Kept count: ${g.chests ? `rare ${g.chests.since().rare}/${TITHE.pity.rare}, epic ${g.chests.since().epic}/${TITHE.pity.epic}, prismatic ${g.chests.since().prismatic}/${TITHE.pity.prismatic}` : '—'}. A chest holds a curio at least once in every ${CHEST_TIERS.map((x, i) => `${ECON.curioDeck[i]} ${x.name}`).join(', ')} chests, and each curio of a tier comes before any of them twice.</p>`;
   card.appendChild(odds);
   body.appendChild(card);
   cx.appendChild(body);

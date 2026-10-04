@@ -45,6 +45,10 @@ export const CATS = [
 ];
 
 // what the points buy: a standing, named in the manner of the studio's own trade (a title is the reward, as in FFXIV)
+// mastery is worth something (docs/DESIGN.md, section 8, proposal 5): gold on each circuit, the trial, the ring and the Siege each give a
+// title (and a glaze: courier/vessel/glazes.js maps them). Placeholder words: Espada's to set.
+const MEDAL_TITLES = { braid: 'Braidwalker', mill: 'Millwright', spindle: 'Spindlewise' };
+
 export const RANKS = [
   [0, 'Sweeper'], [10, 'Apprentice'], [30, 'Journeyman'], [70, 'Potter'], [130, 'Master Potter'], [220, 'Kiln Warden'], [340, 'Fool\'s Fortune'],
 ];
@@ -125,13 +129,13 @@ export function buildAchievements(game) {
   H('at1', 'move', 'Air', 2, 'endure', 'Hang Time', 'Stay airborne for 3 seconds.', 'air.longest', 3, { unit: 's' });
   H('at2', 'move', 'Air', 3, 'endure', 'Glider', 'Stay airborne for 5 seconds.', 'air.longest', 5, { unit: 's' });
   H('at3', 'move', 'Air', 5, 'endure', 'Float Like a Pot', 'Stay airborne for 9 seconds.', 'air.longest', 9, { unit: 's' });
-  H('fl1', 'move', 'Air', 2, 'mechanic', 'A Long Way Down', 'Fall 20 m.', 'fall.max', 20, { unit: 'm' });
-  H('fl2', 'move', 'Air', 3, 'mechanic', 'Terminal Velocity', 'Fall 40 m.', 'fall.max', 40, { unit: 'm' });
-  H('fl3', 'move', 'Air', 4, 'mechanic', 'Free Fall', 'Fall 60 m.', 'fall.max', 60, { unit: 'm' });
+  H('fa1', 'move', 'Air', 2, 'mechanic', 'A Long Way Down', 'Fall 20 m.', 'fall.max', 20, { unit: 'm' });
+  H('fa2', 'move', 'Air', 3, 'mechanic', 'Terminal Velocity', 'Fall 40 m.', 'fall.max', 40, { unit: 'm' });
+  H('fa3', 'move', 'Air', 4, 'mechanic', 'Free Fall', 'Fall 60 m.', 'fall.max', 60, { unit: 'm' });
   H('rl', 'move', 'Air', 4, 'mechanic', 'Landing Gear', 'Roll out of a 30 m fall.', 'roll.fall.height', 30, { unit: 'm' });
-  H('sp1', 'move', 'Ground', 2, 'mechanic', 'Getting Up to Speed', 'Reach 12 m/s.', 'speed.max', 12, { unit: 'm/s' });
-  H('sp2', 'move', 'Ground', 3, 'mechanic', 'Faster', 'Reach 16 m/s on foot.', 'speed.max', 16, { unit: 'm/s' });
-  H('sp3', 'move', 'Ground', 4, 'mechanic', 'Faster Still', 'Reach 22 m/s on foot.', 'speed.max', 22, { unit: 'm/s' });
+  H('sd1', 'move', 'Ground', 2, 'mechanic', 'Getting Up to Speed', 'Reach 12 m/s.', 'speed.max', 12, { unit: 'm/s' });
+  H('sd2', 'move', 'Ground', 3, 'mechanic', 'Faster', 'Reach 16 m/s on foot.', 'speed.max', 16, { unit: 'm/s' });
+  H('sd3', 'move', 'Ground', 4, 'mechanic', 'Faster Still', 'Reach 22 m/s on foot.', 'speed.max', 22, { unit: 'm/s' });
   H('sl1', 'move', 'Ground', 2, 'mechanic', 'Slippery', 'Slide 15 m in one go.', 'slide.longest', 15, { unit: 'm' });
   H('sl2', 'move', 'Ground', 3, 'mechanic', 'Long Slide', 'Slide 35 m in one go.', 'slide.longest', 35, { unit: 'm' });
   H('wr1', 'move', 'Ground', 2, 'mechanic', 'Wall Walker', 'Run along a wall for 20 m.', 'wallrun.longest', 20, { unit: 'm' });
@@ -197,7 +201,7 @@ export function buildAchievements(game) {
   F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
   C('gr1', 'hand', 'Raids', 2, 'count', 'Hold the Silo', 'Clear a raid wave.', 'god.wave', 1);
   H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
-  H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10);
+  H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10, { title: 'Silo Warden' });
   H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
   C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the jar shatter.', 'jar.shatter', 1, { hidden: true });
   C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the jar reforged 5 times.', 'jar.reforge', 5);
@@ -214,19 +218,19 @@ export function buildAchievements(game) {
     C(`c_${id}_c`, 'circuit', 'Laps', 2, 'perfect', `${def.name}: Clean`, `Finish ${def.name} without falling.`, `circuit.${id}.clean`, 1);
     C(`c_${id}_b`, 'circuit', 'Medals', 2, 'speed', `${def.name}: Bronze`, `Finish ${def.name} in ${P.bronze} s or less.`, `circuit.${id}.medal.bronze`, 1, { cur: (L) => L.get(`circuit.${id}.medal.bronze`) + L.get(`circuit.${id}.medal.silver`) + L.get(`circuit.${id}.medal.gold`) });
     C(`c_${id}_s`, 'circuit', 'Medals', 3, 'speed', `${def.name}: Silver`, `Finish ${def.name} in ${P.silver} s or less.`, `circuit.${id}.medal.silver`, 1, { cur: (L) => L.get(`circuit.${id}.medal.silver`) + L.get(`circuit.${id}.medal.gold`) });
-    C(`c_${id}_g`, 'circuit', 'Medals', 4, 'speed', `${def.name}: Gold`, `Finish ${def.name} in ${P.gold} s or less.`, `circuit.${id}.medal.gold`, 1);
+    C(`c_${id}_g`, 'circuit', 'Medals', 4, 'speed', `${def.name}: Gold`, `Finish ${def.name} in ${P.gold} s or less.`, `circuit.${id}.medal.gold`, 1, { title: MEDAL_TITLES[id] || `Gold of ${def.name.replace(/^THE /, 'the ').toLowerCase()}` });
     S(`c_${id}_p`, 'circuit', 'Medals', 5, `${def.name}: Flawless`, `Finish ${def.name} in ${P.gold} s or less without falling.`, `circuit.${id}.time.clean`, P.gold, { type: 'perfect' });
   }
   C('cx1', 'circuit', 'Laps', 3, 'endure', 'Lap Counter', 'Finish 50 circuits.', 'circuit.finish', 50);
   C('cx2', 'circuit', 'Medals', 5, 'perfect', 'Clean Gold, Thrice', 'Earn a gold medal without falling, three times.', 'circuit.goldclean', 3);
   C('cx3', 'circuit', 'Laps', 1, 'count', 'On the Course', 'Complete a lap of the basement ring.', 'course.lap', 1);
   C('cx4', 'circuit', 'Laps', 3, 'endure', 'Regular Lapper', 'Complete 25 laps of the basement ring.', 'course.lap', 25);
-  S('cx5', 'circuit', 'Laps', 4, 'Around the Ring', 'Complete a lap of the ring in under 90 seconds.', 'course.lap.time', 90);
+  S('cx5', 'circuit', 'Laps', 4, 'Around the Ring', 'Complete a lap of the ring in under 90 seconds.', 'course.lap.time', 90, { title: 'Ringrunner' });
   H('cx6', 'circuit', 'Laps', 3, 'mechanic', 'Through the Gate', 'Pass a speed gate at 14 m/s.', 'course.gate.speed', 14, { unit: 'm/s' });
   C('tr1', 'circuit', 'The Trial', 1, 'count', 'Lantern Lighter', 'Finish the lantern trial.', 'trial.finish', 1);
   C('tr2', 'circuit', 'The Trial', 2, 'speed', 'Trial Bronze', `Finish the trial in ${T.trial.bronze} s or less.`, 'trial.medal.bronze', 1, { cur: (L) => L.get('trial.medal.bronze') + L.get('trial.medal.silver') + L.get('trial.medal.gold') });
   C('tr3', 'circuit', 'The Trial', 3, 'speed', 'Trial Silver', `Finish the trial in ${T.trial.silver} s or less.`, 'trial.medal.silver', 1, { cur: (L) => L.get('trial.medal.silver') + L.get('trial.medal.gold') });
-  C('tr4', 'circuit', 'The Trial', 4, 'speed', 'Trial Gold', `Finish the trial in ${T.trial.gold} s or less.`, 'trial.medal.gold', 1);
+  C('tr4', 'circuit', 'The Trial', 4, 'speed', 'Trial Gold', `Finish the trial in ${T.trial.gold} s or less.`, 'trial.medal.gold', 1, { title: 'Lamplighter' });
   C('tr5', 'circuit', 'The Trial', 3, 'mechanic', 'Double Tap', 'Score 10 quick doubles in the trial.', 'trial.quick', 10);
   S('tr6', 'circuit', 'The Trial', 5, 'Sub-Minute', 'Finish the trial in under 60 seconds.', 'trial.time', 60);
 
@@ -479,6 +483,8 @@ export function buildAchievements(game) {
   F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
   F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
+  const seen = new Set();
+  for (const t of tiers) { if (seen.has(t.id)) console.error(`achievements: the id "${t.id}" is used twice (ledger.done is keyed by id)`); seen.add(t.id); }
   return tiers.slice();
 }
 

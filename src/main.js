@@ -98,6 +98,7 @@ import { HudRing } from './vfx/hudring.js';
 import { ChestFx } from './vfx/chestfx.js';
 import { Vfx } from './vfx/vfx.js';
 import { Auras } from './vfx/auras.js';
+import { Temper } from './vfx/temper.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
 import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
@@ -339,6 +340,7 @@ async function main() {
   game.vfx = new Vfx(game);
   applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
+  game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
   const weapon = new Weapon(game);
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
@@ -921,6 +923,7 @@ async function main() {
       , blink: blinkState(), debug: diag.mode > 0, combat: game.combat ? game.combat.engaged : true,
     });
     game.auras.update();
+    game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)

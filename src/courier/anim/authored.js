@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { Author, V3, lerp, smooth, tri } from './authoring.js';
-import { authorSurf } from '../skiff/clips.js';
+import { authorSkiff } from '../skiff/clips.js';
 import { authorBrush } from '../../tools/soulbrush/clips.js';
 
 // The authored clips (see authoring.js): what the free libraries don't have. Body space: root at
@@ -28,7 +28,7 @@ export function authorAll(ch) {
   hang(A, ch);
   pole(A, ch);
   grate(A, ch);
-  authorSurf(A, ch);
+  authorSkiff(A, ch);
   authorBrush(A, ch);
 }
 

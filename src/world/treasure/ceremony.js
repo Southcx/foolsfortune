@@ -27,6 +27,7 @@
 // None of it says a word: the light, the movement and the sound do it, and the log (tracking.js) writes the sentence.
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../../progress/econ/table.js';
+import { deckDraw, nextOfDeck } from '../../progress/econ/deck.js';
 import * as THREE from 'three';
 import { GROUPS } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
@@ -78,11 +79,9 @@ export class Ceremony {
     this.count = clamp(Math.round(this.worth / 3.2), 6, 150);
     const owned = (id) => game.ledger.get(`curio.${id}`) > 0;
     this.curioId = null;
-    if (Math.random() < TIERS[this.T].curioP) {
-      const pool = curiosOf(this.T), fresh = pool.filter((c) => !owned(c.id));
-      const list = fresh.length && Math.random() < 0.85 ? fresh : pool; // (a little help toward the ones you lack)
-      this.curioId = list[Math.floor(Math.random() * list.length)].id;
-    }
+    // a chest's curio is a deck (progress/econ/deck.js): one in every ECON.curioDeck[tier] chests of the tier, certain by then; and which
+    // curio is a deck of the tier's four: each one before any of them twice
+    if (deckDraw(game.ledger, `curio.deck.${this.T}`, ECON.curioDeck[this.T])) this.curioId = nextOfDeck(curiosOf(this.T), (c) => owned(c.id))?.id ?? null;
     // (one more than the Courier may have of it, in their box, on their line, in their Book and on the ground together, is condensed into
     // cubes on the spot: the card's limit)
     const box = game.pneuka, lim = CARD[`curio.${this.curioId}`]?.limit ?? 1;
