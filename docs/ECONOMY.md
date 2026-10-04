@@ -115,6 +115,11 @@ A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the 
    so checking in is rewarded and leaving it for a month is not. Prior art: OSRS's Kingdom of Miscellania (a quest's reward that pays
    while you are away, up to a cap), Monster Hunter's Argosy and Meowcenaries, Melvor Idle's mastery. Completionism is long-term gain, not
    just a green log. (This is the one exception to rule 1: the dividend is paid for play already done well.)
+   **The numbers** (`ECON.dividend`, simulated by `node scripts/economy.mjs`): a mastered encounter pays 5% of what farming it by hand pays
+   an hour, and fills in 8 hours. It pays only from one of the Shrine Garden's **3 slots**, so choosing which mastered encounters to work
+   is part of the game. For a player of two hours a day with every slot full, that is about 0.6× the aim on top of their play. Without
+   slots, every green log would be a faucet for good: 20 mastered encounters would pay 4× the aim, more than playing. The slots are the
+   cap, and a later Garden upgrade is the way to raise it, as a sink.
 
 | Livelihood | Tool, and the skill it trains | Pays | Status |
 |---|---|---|---|
