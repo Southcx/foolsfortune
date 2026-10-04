@@ -136,11 +136,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
 - **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt).
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
-- **damage type** (plan B1, Dovina's numbers): what a blow is made of, on the **Law–Chaos line**: **Impact** (lawful, physical), **Ego**
-  (lawful, mental), **Influence** (neutral, social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic). Code: `type`,
-  lower case (`'impact'` ... `'delirium'`).
-- **mental state** (plan B2): how solid a creature's mind is, Stoic, Resolved, Balanced, Fluid, Prismatic (a number from -2 to +2; the
-  lore's solid to liquid). **Emotional Output** (EmO, plan B4): a creature's agitation, 0 to 1; past its band it **enrages**.
+- **enrage** (`enraged(emo)`, `src/progress/combat/emo.js`): a creature past the top of its EmO band (from `EMO.enrage`); it shows in its
+  body (the temper), never in text.
 - **the folk** (code: `npc`, `src/npc/`): the clay people, all fragments of Kaolin Anagami, tiered earthenware (the clapperjars) < stoneware <
   porcelain < the Court. "The folk" in the game means the ones who speak (Saggar, Raku, Old Grog, Pip); only they speak in the dialogue
   box. Pronouns (R39): the Prince of Clay is "he"; every other folk is unisex by construction and goes by what the lore gives it (so far
@@ -214,7 +211,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
-  (`src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
+  (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
 - **shot**: a psygun shot, and only that. A scripted camera is a **camera shot** (`cinema.shot`); a photograph is a **plate**.
 
