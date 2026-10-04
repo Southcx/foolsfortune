@@ -269,7 +269,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
   the comedown, the ones who burn out and sink to the underground. *(Espada's, for kid-safety)*: in the world the high is Lachryma
   itself, raw feeling taken for the rush of it, so the game can tell the whole story without naming a drug. It is the Queen's core
   feeling made into a city: hunger, always one more. The overground is what Letty's stories describe; the underground is what they
-  never mention, and the sewers are where the Leviathan-class horrors might feed (open).
+  never mention.
 - **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
   city's grid and density, then the colours bleeding off everything, and then a wave that breaks the geometry itself. Player text
   never names a drug: the game shows it, as it shows the Queen's moods without clinical words. For the stories *(Espada's)*: Letty's
