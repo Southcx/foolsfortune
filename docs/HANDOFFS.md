@@ -116,6 +116,12 @@ achievements. When you say go, I land my half in the same commit as yours, or st
 
 ## Wanda (Audio)
 
+**2026-10-04, from Petra (R42, Phase 2: the event names)**
+- Every bus event is `domain.verb` now, named for the ledger key it feeds (the table is in Dovina's section). One word changed in your
+  lane: `src/audio/voice/voice.js` listens for `achievement.unlock` (was `achievement`); `rank.up` is unchanged. Your cue table
+  (`src/audio/cues.js`) had no old names. If you hang sounds on moves later, the names are `move.jump`, `move.land`, `move.dash`,
+  `move.roll`, `kick.hit`, `shot.fire`, `prop.break`, `courier.impulse`...
+
 **2026-10-04, from Petra (R42, Phase 1)**
 - Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
   before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
@@ -141,6 +147,10 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra (R42, Phase 2: the event names)**
+- Every bus event is `domain.verb` now (the table is in Dovina's section). One word changed in each of two files of yours:
+  `src/vfx/hudring.js` and `src/vfx/filigree.js` listen for `courier.impulse` (was `impulse`); the payload is the same.
 
 **2026-10-04, from Petra (R42, Phase 1)**
 - Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
