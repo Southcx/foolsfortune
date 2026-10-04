@@ -11,6 +11,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Espada (the slice's achievement names, R57)**: as strings, for your `achievements.js` (not on main yet, so not
+edited from my branch): wl1 Downward Spiral, wl2 Rock Bottom, wl3 Face It, wl4 Mind Map, wl5 Every Nook and Cranium, wl6 Bounce Back,
+wl7 A Well Healed; em1 Cast Off, em2 Weathered It, em3 Not a Scratch, em4 Ports of Call; oc1 Black Gold, oc2 Gusher, oc3 Toxic
+Symbiosis, oc4 Slick. Reasons in LORE.md section 8. On main I renamed lg3 to "Captain's Log" (it shared "Well Read" with af11).
+
 **2026-10-04, from Espada (canon for your numbers, R43)**: the King (Magnus Ibrahim Manus, island Margarite: Law, stable, safe,
 poor in Wells) and the Queen (Entra Polearis, a blacklight metroplex: chaos, rich, dangerous) are two more Islands of Ego, the two ends of
 the risk–reward line the owner approved. Bounties widened: a bounty is a named stray, an Egregore *or* an aberrant Figment, hunted under
@@ -61,6 +66,11 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
+
+**2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Swallow** (`well` id yours; LORE.md section 5).
+Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (Margarite's dock trader, a role, unnamed). Lines marked
+`poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
+lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
 **2026-10-04, from Espada (the statuses' log)**: `creature.status` is counted but has no line. One pattern covers every status, if you add the
 rule (code, so yours): lands "The {kind} is afflicted with {status}.", wears off "The {kind}'s {status} wears off." (LORE.md section 1).
@@ -430,30 +440,11 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-04, Espada**: Petra's busking placeholder is worded in the robotic register: "Busking tip: 12 cubes." (`tracking.js`).
-
-**2026-10-04, Espada: the fight's statuses are worded** (Petra's note read). In `tracking.js`, as strings: "The {kind} resists {status}.",
-"Annihilation: Impact meets Delirium on the {kind}.", and the stun as "The {kind} is stunned." (the robotic register). The table and the
-one pattern for every status are in LORE.md section 1.
-
-**2026-10-04, from Petra: one placeholder line to word**
-- Busking's tip (`tracking.js`, `cube.earn` with `why: 'busk'`): "The crowd tips you N cubes." Placeholder; yours to reword.
-
-**2026-10-04, from Petra: words for the fight's new statuses**
-- The four statuses a damage type builds are **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium).
-  Two placeholder lines in `tracking.js` are yours: a resisted status ("The {kind} shrugs it off.") and an annihilation ("The {kind}
-  comes apart at both ends of itself.").
-
-**2026-10-04, from Petra (Phase A, A10 and A11)**
-- New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.
-
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`. The new words are already in `docs/GLOSSARY.md`: the domains (Spellscription replaces
-  Spellcasting), the three layers, Cogitomap, livelihood, deck, mastery dividend. Yours, when they come up:
-  - **B9**: names and log lines for the new statuses (doubt, charm, blind, confusion...), the five mental states, the seven domains'
-    blurbs.
-  - **D4**: who gives the commissions by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), and their words.
-  - **E1, E2**: what a Well is in the canon (a Lachryma distortion that drifts over time, so a Cogitomap is a ticket to one as it was).
+**2026-10-04, Espada's state (R57)**
+- Done: the slice's words (the Swallow, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
+  notes to Petra and Dovina above); the statuses, stun, annihilation and busking lines in `tracking.js`; B9's names, D4's Seger and
+  Letty, E1's canon of a Well (LORE.md section 1).
+- Waiting: the medal and shop glaze blurbs (A10, A11) when the rows land.
 
 **2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's
 "with his own hands" and the held-plate lines are kept as Petra wrote them; the R40 log lines are in the pass below)

@@ -447,6 +447,7 @@ Kept until the owner says otherwise.
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
+| **The Swallow** *(Espada's name, R57; the owner may veto)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A *swallow hole* is a sinkhole that a stream runs into and vanishes: what goes down is not seen again, only felt. Kaolin is the boy who swallows his stress behind a joke, and it pools here, under the sand. The gold swallows wheeling round the island in the concept art are the same word on the bright side. Distinct from the Weir's Well (a place); the Swallow is a Well (a distortion), so it drifts. |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
@@ -536,6 +537,15 @@ witnesses the island's work; the other brings in what has gone astray.
   - (on her island) "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/} {p:0.4}Next question."
   - (goodbye) "Fair winds. {p:0.3}{small}Fair-ish.{/}"
 
+- **At her board** (the slice): her lines are in `talks.js` (`letty`). She posts at Margarite's dock because the King pays there:
+  "I don't live here. I get paid here." That keeps *why she left* blank and still true. Poll's squawks are lines marked `poll: true`.
+
+**The purser** (Margarite's dock: crude, materials, Cogitomaps) *(a role, unnamed and unshaped until the owner casts them)*
+- **The word.** A ship's purser keeps the money; this one keeps the King's purse, and the Courier has one purse too.
+- **The voice.** Law: by the book, a posted price, no haggling (Raku's opposite). "State your cargo." Like the King, the purser never
+  says the Queen's name ("the far shore"), and points the Courier at the dread that comes from there: the slice's lesson that the
+  crude route's money is out at Entra. On the Prince: "His Majesty asks after him. Not in so many words." Lines in `talks.js` (`purser`).
+
 **Their log lines** (the robotic register; for the rules in `tracking.js` once the events exist):
 - "Commission accepted: 3 Guppy-class Figments." · "Commission: 2 of 3." · "Commission complete. Streak: 7." · "Commission streak
   ended at 7."
@@ -559,6 +569,23 @@ witnesses the island's work; the other brings in what has gone astray.
 - **Kintsugi**: breakage mended in gold, a scar made beautiful.
 - **Chests, curios, lures, tools, standings**: as in the game (`src/world/treasure/treasure.js`, `src/tools/sondelass/angling/lures.js`, `src/pneuka/items.js`,
   `src/progress/achievements.js`). The curios are almost all of the sea: a fit for things fished out of the Emocean.
+
+### Words for the slice *(Espada's, R57; for `src/pneuka/items.js` when the items exist; names in player case, examine lines in STE)*
+| Item | Name | Examine |
+| --- | --- | --- |
+| Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
+| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
+| crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
+| crude, hunger | Cask of crude hunger | The cask feels empty, however full it is. |
+| crude, grief | Cask of crude grief | Heavy and sour. Carry it carefully. |
+| crude, dread | Cask of crude dread | The richest grade. The worst to spill. Do not shake it. |
+
+The crude unit is the **cask** (Dovina's table already says "a sloop's few casks"). The slice's achievements, renamed as strings (the
+Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed; Sailing: Cast Off,
+Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Symbiosis, Slick). Why: a Well is rumination, so going
+down is a spiral, the bottom is rock bottom, coming back up twenty times is bouncing back, and drawing one dry is healing it; a FOE is
+the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
+storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to

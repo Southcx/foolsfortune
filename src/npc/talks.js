@@ -14,6 +14,10 @@
 //   RAKU              porcelain. Treasurer of the Weir, a greedy little miser who haggles. Vain of his crackle. The soft hexachord.
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
+//   LETTY MARQUE      nacre, of Margarite (the King's island). A Contractor under the King's marque: the bounty board at Margarite's
+//                     dock. Brisk, a showboat. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
+//   THE PURSER        of Margarite. Buys crude, materials and Cogitomaps for the lamp, at the King's posted price; never haggles,
+//                     never names the Queen. Unnamed and unshaped until the owner casts them. Waits for a model.
 // ---------------------------------------------------------------------------------------
 import { TITHE } from '../world/treasure/treasure.js';
 
@@ -202,6 +206,92 @@ export const TALKS = {
         ],
       },
       hagbye: { lines: [{ mood: 'sad', text: (g) => pick(RAKU_HAGGLE.gone, g) }] },
+    },
+  },
+
+  // LETTY MARQUE at her bounty board, Margarite's dock (docs/plans/SLICE.md, E4b; docs/LORE.md, section 6). She posts here because the
+  // King pays here; why she left Margarite stays blank.
+  letty: {
+    start: 'hello', again: 'again',
+    nodes: {
+      hello: { lines: [
+        { mood: 'sly', text: "Letty Marque, licensed. {p:0.3}Marque with a Q-U-E, like the letter, not the target. {small}It's often both.{/}" },
+        { poll: true, mood: 'joy', text: '{big}{shake}CUBES! CUBES!{/}{/}' },
+        { mood: 'calm', text: "Don't mind Poll. {p:0.3}This is my board. {p:0.4}I don't live here. {small}I get paid here.{/}" },
+      ], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: "Still looking? {p:0.3}The board doesn't bite. {small}Most of what's on it does.{/}" }], next: 'menu' },
+      menu: { lines: [], choices: [
+        { text: "What's on the board?", go: 'board' },
+        { text: 'Who pays?', go: 'pays' },
+        { text: 'What is that bird?', go: 'poll' },
+        { text: 'Tell me about the King.', go: 'king' },
+        { text: 'Where are you from?', go: 'home' },
+        { text: 'Goodbye.', go: 'bye' },
+      ] },
+      board: { lines: [
+        { mood: 'calm', text: "Strays. Egregores off the Emocean, and Figments that have slipped their island. {p:0.4}They nest where it's quiet." },
+        { mood: 'sly', text: 'Every notice has a name and a price. {p:0.3}You bring it in, I pay you out, {p:0.3}the King keeps his books tidy.' },
+        { poll: true, mood: 'joy', text: '{big}BRING IT IN!{/}' },
+      ], next: 'menu' },
+      pays: { lines: [
+        { mood: 'calm', text: "Margarite pays. {p:0.3}The King's purse, the King's marque, the King's strays. {p:0.5}{slow}Well.{/}" },
+        { mood: 'sly', text: "{small}The strays aren't his. He just pays for them.{/} {p:0.4}Don't ask me whose they are. {p:0.3}Ask the crude." },
+      ], next: 'menu' },
+      poll: { lines: [
+        { mood: 'joy', text: 'Poll? {p:0.3}My Tulpa. Folded from every notice I ever closed. {p:0.4}Keeps the Emocean off me.' },
+        { mood: 'sly', text: '{small}Keeps count, too.{/}' },
+        { poll: true, mood: 'surprise', text: '{big}HEAD COUNT! HEAD COUNT!{/}' },
+      ], next: 'menu' },
+      king: { lines: [
+        { mood: 'calm', text: 'Old Magnus? {p:0.4}He likes a thing where it belongs. {p:0.3}{small}So do I. That\'s why I\'m out here.{/}' },
+        { mood: 'sad', text: 'He keeps the lamp lit. {p:0.4}{slow}Every night, every grain of the glass.{/} {p:0.3}Nobody remembers asking him to.' },
+      ], next: 'menu' },
+      home: { lines: [
+        { mood: 'sad', text: "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/}" },
+        { mood: 'sly', text: '{p:0.4}Next question.' },
+      ], next: 'menu' },
+      bye: { lines: [{ mood: 'joy', text: 'Fair winds. {p:0.3}{small}Fair-ish.{/}' }] },
+    },
+  },
+
+  // THE PURSER at Margarite's dock (docs/plans/SLICE.md, E4b): the King's buyer. Margarite is Law, so the purser speaks by the book:
+  // a posted price, no haggling (the opposite of Raku). Like the King, the purser never says the Queen's name: "the far shore".
+  purser: {
+    start: 'hello', again: 'again',
+    nodes: {
+      hello: { lines: [
+        { mood: 'calm', text: 'Margarite dock. {p:0.3}State your cargo.' },
+        { mood: 'calm', text: "I am the purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
+      ], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: 'You again. {p:0.3}Punctual. {p:0.3}Good. Cargo?' }], next: 'menu' },
+      menu: { lines: [], choices: [
+        { text: 'What do you buy?', go: 'buy' },
+        { text: 'Can we talk price?', go: 'price' },
+        { text: 'What is the lamp for?', go: 'lamp' },
+        { text: 'Where is the best crude?', go: 'shore' },
+        { text: 'Do you know the Prince?', go: 'prince' },
+        { text: 'Goodbye.', go: 'bye' },
+      ] },
+      buy: { lines: [
+        { mood: 'calm', text: 'Crude, by the cask. Materials, from the Wells. {p:0.3}And charts of the Wells, while they are fresh.' },
+        { mood: 'calm', text: 'A Well drifts. {p:0.4}{small}A chart of yesterday is worth less today.{/}' },
+      ], next: 'menu' },
+      price: { lines: [
+        { mood: 'confused', text: 'Talk? {glyph:ask}{p:0.4}The price is on the board. {p:0.3}The King sets it, by the hourglass, by the grain.' },
+        { mood: 'calm', text: '{p:0.3}Nobody haggles at Margarite. {p:0.4}{small}It saves a great deal of time.{/}' },
+      ], next: 'menu' },
+      lamp: { lines: [
+        { mood: 'awe', text: 'The lamp burns crude and keeps the deep things back. {p:0.5}It has never gone out.' },
+        { mood: 'calm', text: '{p:0.4}{slow}It is not going to go out on my watch.{/}' },
+      ], next: 'menu' },
+      shore: { lines: [
+        { mood: 'calm', text: "Anagami's crude is thin. {p:0.4}The heaviest grade, the dread, comes from further out." },
+        { mood: 'whisper', text: '{p:0.4}{slow}From the far shore.{/} {p:0.4}We pay well for it. {p:0.3}We do not say where it comes from.' },
+      ], next: 'menu' },
+      prince: { lines: [
+        { mood: 'calm', text: 'The Prince of Clay. {p:0.4}His Majesty asks after him. {p:0.5}{small}Not in so many words.{/}' },
+      ], next: 'menu' },
+      bye: { lines: [{ mood: 'calm', text: 'Fair tide. {p:0.3}The lamp sees you out.' }] },
     },
   },
 };

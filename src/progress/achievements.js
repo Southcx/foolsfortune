@@ -485,7 +485,7 @@ export function buildAchievements(game) {
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
   F('lg1', 'collect', 'Logged', 1, 'collect', 'Fresh Ledger', 'Log 10 firsts.', (L) => L.firstCount(), 10);
   F('lg2', 'collect', 'Logged', 2, 'collect', 'Getting Filled In', 'Log 30 firsts.', (L) => L.firstCount(), 30);
-  F('lg3', 'collect', 'Logged', 3, 'collect', 'Well Read', 'Log 60 firsts.', (L) => L.firstCount(), 60);
+  F('lg3', 'collect', 'Logged', 3, 'collect', "Captain's Log", 'Log 60 firsts.', (L) => L.firstCount(), 60);
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
   F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
