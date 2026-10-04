@@ -18,7 +18,7 @@ import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 import { buskPay, commissionPay, potPay } from '../src/progress/econ/livelihoods.js';
-import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell } from '../src/progress/econ/islands.js';
+import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
@@ -206,3 +206,12 @@ for (const ship of ['sloop', 'tanker']) for (const grade of Object.keys(ECON.cru
 let fill = 1; const fills = [];
 for (let r = 0; r < 8; r++) { fills.push(wellYield(fill).toFixed(2)); fill = drawWell(fill, 1, 0); }
 console.log(`a Well's yield over eight runs back to back: ${fills.join(' ')}; it refills ${ECON.wellFill.refillPerH * 100}% an hour (dry to full in ${Math.round(1 / ECON.wellFill.refillPerH)} hours)`);
+
+// the islands on the Law-Chaos line (LORE.md, "The King and the Queen"): a Well run's expected cubes an hour, at poor / middling /
+// masterful diving, and the chance a run ends with nothing; Law is safe and poor, Chaos rich and risky
+console.log(`\nthe islands' Wells, Law to Chaos: expected cubes an hour (poor / middling / masterful), and the chance a run is lost`);
+for (const [id, I] of Object.entries(ECON.islands)) {
+  const at = (q) => { const r = islandRun(id, q); return { h: r.pay * (1 - r.risk) * 60 / r.minutes, risk: r.risk }; };
+  const v = [0.4, 0.7, 1].map(at);
+  console.log(`${pad(I.name, 16)}${v.map((x) => num(x.h)).join('')}   ${v.map((x) => (x.h / aim).toFixed(2)).join(' / ')} x aim   lost ${v.map((x) => `${(x.risk * 100).toFixed(0)}%`).join(' / ')}`);
+}

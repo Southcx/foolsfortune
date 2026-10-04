@@ -128,6 +128,17 @@ export const ECON = {
     destroyer: { hold: 2,  carries: ['goods'],          slow: 0.7 },  // hunting Egregores
     tanker:    { hold: 60, carries: ['crude'],          slow: 1.6, hull: 0.35 },  // crude: volatile, slow, double-hulled (spills x hull)
   },
+  /** THE ISLANDS ON THE LAW-CHAOS LINE (docs/LORE.md, "The King and the Queen"; the owner, R43: "a stable mind is safer and less
+   *  lucrative, a chaotic mind riskier and richer"). Each island's Wells: `deeper` (how much richer each floor down is), `floors` (how
+   *  deep they run), `risk` (the chance a floor ends the run for a middling diver: a skilled one halves it, a masterful one quarters it),
+   *  `foes` (FOEs a run), the crude `grades` it yields, the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
+   *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entra Polearis
+   *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). */
+  islands: {
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, grades: ['mirth', 'wonder'],  classes: [0, 1] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    entra:     { name: 'Entra Polearis',  law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
+  },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
    *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */
   wellFill: { perRun: 0.12, floor: 0.15, refillPerH: 0.03 },
