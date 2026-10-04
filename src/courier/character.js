@@ -49,7 +49,8 @@ function regionOf(o, matName, isArmor) {
   if (isArmor) return matName === 'Courier_Armor' ? 'body' : 'trim';
   if (o.name === 'Courier_Mask') return 'mask';
   if (o.name === 'Kiritohair') return 'hair';
-  if (o.name === 'Courier_Stones') return 'trim';
+  if (o.name === 'Courier_Stones') return 'stones'; // (gems, not trim: the kiln sets stones in them, vfx/finish.js)
+  if (o.name === 'Courier_Skin_Core') return 'skin'; // (the Lachryma of the body: the kiln gives it tones, never a glaze)
   return null;
 }
 
@@ -94,7 +95,7 @@ export class Character {
     const byMat = new Map();
     const meshes = [];
     this.model.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    // a material for each region a glaze can be laid on (courier/vessel/glazes.js: body, trim, mask, hair), the rest by what it is made of
+    // a material for each region the kiln can finish (courier/vessel/glazes.js: body, trim, stones, mask, hair, skin), the rest by what it is made of
     this.regionMats = {};
     for (const o of meshes) {
       const name = o.material.name;

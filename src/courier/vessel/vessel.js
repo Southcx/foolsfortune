@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
+import { dressFinish } from '../../vfx/finish.js';
 import { addKintsugi, kintsugiUniforms } from './kintsugi.js';
 import { tagRegions } from './damage.js';
 import { ECON } from '../../progress/econ/table.js';
@@ -60,14 +61,28 @@ export class Vessel {
     if (!this.dressed.has(ch)) tagRegions(ch); // (each vertex told its hit region, for the cracks: courier/vessel/damage.js)
     this.dressed.add(ch);
     for (const r of Object.keys(REGIONS)) {
-      const m = ch.regionMats[r], g = this.glaze(look[r]) || GLAZES[DEFAULT_LOOK[r]];
+      const m = ch.regionMats[r];
+      let g = this.glaze(look[r]);
+      if (!g || !REGIONS[r].kinds.includes(g.kind || 'glaze')) g = GLAZES[DEFAULT_LOOK[r]]; // (a finish of the wrong kind for the part: its own)
       if (!m) continue;
-      // (what the model was made with is kept: the starting glaze on a painted part is the maker's painting itself, untouched, and any
-      //  other glaze tints the painting and leaves its glow, so the paint holds in the shade: character.js PAINT_LIGHT)
+      // (what the model was made with is kept: the starting finish of a painted part, or one marked `keep`, is the maker's own, untouched;
+      //  anything else is laid on by the part's finish shader, vfx/finish.js: a glaze takes the painting only as light and shade)
       const base = (m.userData.base ||= { color: m.color.getHex(), rough: m.roughness, metal: m.metalness, em: m.emissive?.getHex() ?? 0, emI: m.emissiveIntensity ?? 0 });
-      const own = !!m.map && g.id === DEFAULT_LOOK[r];
-      m.color.setHex(own ? base.color : g.color); m.roughness = own ? base.rough : g.rough; m.metalness = own ? base.metal : g.metal;
-      m.userData.rest = m.map ? { em: own ? base.em : g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
+      const own = g.keep || (!!m.map && g.id === DEFAULT_LOOK[r]);
+      const U = dressFinish(m, REGIONS[r].shader);
+      U.uFinOn.value = own ? 0 : 1;
+      if (own) {
+        m.color.setHex(base.color); m.roughness = base.rough; m.metalness = base.metal;
+        m.userData.rest = { em: base.em, emI: base.emI };
+      } else {
+        U.uFinA.value.setHex(g.color); U.uFinB.value.setHex(g.color2 ?? g.color);
+        const sh = REGIONS[r].shader, P = U.uFinP.value;
+        if (sh === 'glaze') P.set(m.map ? 2.0 : 0, lumaMean(m), 0, 0); // (how much of the painting's light and shade shows through)
+        else if (sh === 'hair') { const b = hairSpan(ch); P.set(g.kind === 'hair' ? g.p[0] : 0, b.h, g.kind === 'hair' ? g.p[2] : 0, b.y0); if (g.kind !== 'hair') U.uFinB.value.setHex(g.color); }
+        else P.set(...(g.p || [0, 0, 0, 0]));
+        m.color.setHex(0xffffff); m.roughness = g.rough; m.metalness = g.metal;
+        m.userData.rest = sh === 'glaze' && m.map ? { em: g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
+      }
       if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
       m.userData.glaze = g;
       if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, this.kinU); m.userData.kin = true; }
@@ -149,4 +164,26 @@ export class Vessel {
       for (const r of Object.keys(REGIONS)) if (s.look?.[r] && this.glaze(s.look[r])) this.look[r] = s.look[r];
     } catch { /* nothing kept */ }
   }
+}
+
+/** The mean lightness of a painted part's own texture (a glaze keeps the painting as light and shade around it), measured once. */
+function lumaMean(m) {
+  if (m.userData.lumaMean != null) return m.userData.lumaMean;
+  let v = 0.3;
+  try {
+    const img = m.map?.image, c = document.createElement('canvas'); c.width = c.height = 32;
+    const g = c.getContext('2d'); g.drawImage(img, 0, 0, 32, 32);
+    const d = g.getImageData(0, 0, 32, 32).data; let s = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 8) { s += (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255; n++; }
+    if (n) v = s / n;
+  } catch { /* no image to read: the default */ }
+  return (m.userData.lumaMean = v);
+}
+/** The hair's height in its own space (root at the top, tips at the bottom), for an ombre. */
+function hairSpan(ch) {
+  if (ch.userData?.hairSpan) return ch.userData.hairSpan;
+  let y0 = 0, h = 1;
+  ch.model?.traverse((o) => { if (o.isMesh && o.name === 'Kiritohair') { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox; y0 = b.min.y; h = b.max.y - b.min.y; } });
+  (ch.userData ||= {}).hairSpan = { y0, h };
+  return ch.userData.hairSpan;
 }
