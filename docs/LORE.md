@@ -401,6 +401,24 @@ hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnes
 - **Chests, curios, lures, tools, standings**: as in the game (`src/world/treasure/treasure.js`, `src/tools/sondelass/angling/lures.js`, `src/pneuka/items.js`,
   `src/progress/achievements.js`). The curios are almost all of the sea: a fit for things fished out of the Emocean.
 
+### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
+The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
+its own tier; what the tier above wears is aspired to.
+- **Common (Earthenware):** terracotta, bisque (Pip's: "not glazed yet, like its courage"), shino. And the **Lachryma skin**: a
+  Courier's own nature, theirs from the first firing.
+- **Stoneware, the workshops' own:** natural ash, kaki, salt, ame, nuka ("humble, and it knows it"), majolica (tin glaze on
+  earthenware: cheerful, never grand), and **tenmoku** (Old Grog's; a working tea-bowl glaze).
+- **Porcelain, the noble echelon:** cobalt (blue and white is porcelain's own signature), oribe, hare's fur, **celadon** (Saggar wears
+  it as a head maid's mark of rank, which is exactly why the stoneware folk envy it), **raku** and **copper lustre** (Raku's: worn to
+  look grander than raku ware ever was).
+- **The Court, his favourite cups:** **guan** (the word means "official", the court's own ware), **Ru** (made for an emperor's court:
+  fewer than a hundred pieces survive), jun, kinrande (gold brocade). Guan and Ru are the Court's own and should be earned only: a Court
+  glaze is given, never bought.
+- **The Prince's own, earned only:** **porcelain skin** (kaolin is his clay: wearing it is wearing him, and it belongs at the very top),
+  **yohen tenmoku** (*yohen* means "kiln change": a glaze born of the fire's own accident, the experimenter's prize; three bowls exist),
+  oil spot, oxblood (the hardest red, for the one devoted to the hardest making), and **Lachryma black** (no folk could bear it: only a
+  Courier wears it).
+
 ## 9. Names and spellings
 
 | Write | Not | Note |
