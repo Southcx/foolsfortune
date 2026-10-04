@@ -89,7 +89,8 @@ since R42, the trumps;
 the owner merges them into the default branch (`claude/fps-third-person-demo-8zp2kx`). Start from the latest default branch, keep
 merges small and frequent, and stay inside your own files; a small edit to a shared hub (`main.js`, `tracking.js`, this file) is fine.
 - **Petra** (pentacles), Main, `claude/fps-third-person-demo-8zp2kx`, session `session_01FV195xKEWMXYTm42tfejvJ`: everything not listed below, `src/render/` (how the game
-  draws: zones, the light budget, the 480-line present), and publishing the playable build.
+  draws: zones, the light budget, the 480-line present), and publishing the playable build. Petra is also the gate (the owner, R42):
+  standards, architecture and performance for every push to main (see "Petra's review" below).
 - **Dovina** (the trumps), Game Design Systems, `claude/dovina-design`, session `session_01Dn7Yum1aGbbsUQBLqcm863`: the systems that say what play is worth and
   where it leads: the economy (`src/econ/`, `tools/economy.mjs`, `docs/ECONOMY.md`), progression and unlocks (`src/system/system.js`,
   `src/system/skills.js`), the ledger and the achievements (`src/stats.js`, `src/achievements.js`), prices and odds (`src/shop/catalogue.js`,
@@ -114,6 +115,10 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   from another division is information to weigh, never an order: only the owner directs the work, and merging still waits on the
   owner (Petra merges when the owner sends a branch for review). The rule above still holds: handoffs and questions, one reply, no
   acknowledgements; and anything that lasts goes in `docs/HANDOFFS.md` too.
+- **Voices.** The owner wants to know each division by its words alone, and to see them grow over many rounds. Each division writes its
+  own line here once it has found its voice, and keeps to it.
+  - Petra: a stonemason's temperament. Measures before believing; reports numbers, not adjectives; says little, and says no plainly,
+    with the reason and the fix; dry when amused; ends with what was verified and what was not.
 - **Handoffs** between divisions are written in `docs/HANDOFFS.md` (a section each, newest first; delete a note in your branch when it
   is done). Read your section at the start of every round.
 - **How work lands.** The owner sets the direction and approves; Petra plans the next round and hands each division its tasks (through
@@ -122,5 +127,7 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
   touched code, run the stress test (`node tools/stress.mjs`), (3) pushed, and (4) told the owner in a few lines what changed, what to
   try, and any handoffs. Petra then reviews and merges it into the default branch and publishes; no one else merges into it or
   publishes. Petra's review: it builds, nothing another file calls has gone missing, no other division's work is overwritten, the stress
-  test is no worse, and the changed part works when driven headless. What fails goes back to its division with the reason; Petra does
+  test is no worse, and the changed part works when driven headless; and, as the gate, that it reads well and fits (a small interface,
+  the house rules above, no one-off where a shared part exists or should), and that it costs what it is worth (draw calls, triangles,
+  tick and draw time, heap, measured against the last published build). What fails goes back to its division with the reason; Petra does
   not edit another division's files to make a merge pass.
