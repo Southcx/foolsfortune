@@ -21,6 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
+const NONE = Object.freeze({ gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 }); // (an unregistered creature: nothing to add, nothing made)
 const _ember = new THREE.Color(0xff6a2a), _gold = new THREE.Color(0xffd76a);
 const ENRAGE = 0.85; // (the default when no enrage is handed in: EMO.enrage, progress/combat/emo.js)
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -43,7 +44,7 @@ export class Temper {
   /** What the body should add to itself this frame: its gloss, a glow for its emissive, and how much it trembles. */
   look(c) {
     const T = this.on.get(c);
-    if (!T) return { gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 };
+    if (!T) return NONE;
     const t = this.game.events?.time ?? performance.now() / 1000;
     const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= ENRAGE ? 1 : 0;
     const pulse = 0.5 + 0.5 * Math.sin(t * (3 + 9 * heat)); // (a breath that quickens)

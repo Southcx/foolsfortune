@@ -15,7 +15,7 @@ import { ECON } from '../src/progress/econ/table.js';
 import { TIERS, rollTier, curiosOf } from '../src/world/treasure/treasure.js';
 import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
-import { HEARTS, KEYS, OUTCOMES, oddsOf, rates } from '../src/tools/lockheart/table.js';
+import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
@@ -160,3 +160,14 @@ const src = readFileSync(new URL('../src/progress/achievements.js', import.meta.
 const tierOf = [...src.matchAll(/^\s*[CHSF]\((?:'[^']*'|`[^`]*`), '[a-z]+', '[^']+', ([1-6]),/gm)].map((m) => +m[1]);
 const byTier = [1, 2, 3, 4, 5, 6].map((t) => tierOf.filter((x) => x === t).length);
 console.log(`\nthe achievements: ${tierOf.length} written entries by tier (Easy .. Grandmaster): ${byTier.join(' / ')}; ${byTier.reduce((a, n, i) => a + n * (i + 1), 0)} points (the loops over circuits and species add more)`);
+
+// the Lockheart's conversion (not built: SYSTEMS.md C4): what a coffin of Lachryma turns into, by key, against what the key costs
+console.log(`\nconversion (not built): a coffin's Lachryma into cubes, expected cubes by key at power 1 (full) and 2 (brimming), and the key's list price`);
+for (const [k, outs] of Object.entries(CONVERT)) {
+  const ev = (power) => outs.reduce((a, [p, m]) => a + p * m, 0) * ECON.lockheart.cubes * power;
+  console.log(`${pad(k.slice(4), 10)}${ev(1).toFixed(1).padStart(7)}${ev(2).toFixed(1).padStart(7)}${String(keyPrice([k])).padStart(6)} for the key${ev(2) >= keyPrice([k]) ? '   (pays when brimming)' : ''}`);
+}
+
+// the catch (not built: SYSTEMS.md C2): the odds by Figment class, laid low cleanly and in the EmO band, by key
+console.log(`\nthe catch (not built): odds by class (Guppy .. Leviathan), cleanly stunned, in the EmO band; capped at ${CATCH.cap * 100}%`);
+for (const keys of [['key.brass'], ['key.loaded'], ['key.even'], ['key.twin']]) console.log(`${pad(keys[0].slice(4), 10)}${[0, 1, 2, 3, 4].map((c) => `${(catchOdds({ cls: c, keys }) * 100).toFixed(0)}%`.padStart(6)).join('')}`);

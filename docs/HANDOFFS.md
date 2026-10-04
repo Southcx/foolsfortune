@@ -132,6 +132,7 @@ round.)
 
 ## Calissa (Art)
 
+<<<<<<< HEAD
 **2026-10-04, from Calissa: the glazes for A10 and A11 are in `src/courier/vessel/glazes.js`**
 - **Medal glazes** (A10), the prized ones: hare's fur (`c_braid_g`), oil spot (`c_mill_g`), guan (`c_spindle_g`), kinrande (`tr4`), ru
   (`cx5`), yohen tenmoku (`gr3`). **Shop glazes** (A11), the everyday ones: natural ash, kaki, ame, cobalt, majolica, salt glaze.
@@ -141,6 +142,8 @@ round.)
   the colour from the glaze and keep the texture only as light and shade (its luminance), so a pale glaze is pale. I can do it on the
   body's material if you agree (screenshot: `/tmp` on request).
 
+=======
+>>>>>>> 224b1d5749ec6608de1d71d307026030109a95f1
 **2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
 - **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,
   `'delirium'`) and lays its look over the hit. When `creatures.strike` gains its `type`, pass it on to the `vfx.hit` call there (and in
@@ -154,12 +157,20 @@ round.)
 - **Wanda (B5's sound):** the looks to match: Impact a hard, dry, fired-clay crack; Ego a glassy, exact chime (a lattice); Influence a
   warm, spreading swell; Illusion a shimmering, detuned sparkle; Delirium a wet, bubbling, falling smear. Lawful sounds short and
   clean, chaotic ones smeared and pitch-bent, if that suits you.
+<<<<<<< HEAD
+=======
+
+**2026-10-04, from Petra (Phase A, A10 and A11: the glazes they need)**
+- The plan's A10 (a glaze for mastery) and A11 (Saggar sells glazes at the kiln) both need glazes that do not exist yet: every one of the
+  twelve is a starting glaze or earned by a deed, and the ruling keeps bought and earned apart. Wanted, as data rows in
+  `src/courier/vessel/glazes.js` (`G(id, NAME, color, rough, metal, blurb, got)`): up to six **medal glazes** (`got: { ach: <id> }`, the
+  achievement ids `c_braid_g`, `c_mill_g`, `c_spindle_g`, `tr4`, `cx5`, `gr3`; one each, or fewer shared) and a handful of **shop
+  glazes** (`got: { shop: true }`). Real ceramic glazes, as the twelve are; Espada writes the blurbs, Dovina sets the count and price.
+  When the rows land I wire the counter at the kiln and `vessel.bought` (A11) and the medal mapping (A10).
+>>>>>>> 224b1d5749ec6608de1d71d307026030109a95f1
 
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
-  - **B5**: one colour and motif per damage type along the Law–Chaos line: Impact and Ego geometric and crystalline, Illusion and
-    Delirium fluid and iridescent, Influence between. A player should tell a blow's type with the HUD hidden. Also how a creature shows
-    its mental state (Stoic to Prismatic) and its agitation (EmO) with its body, never with text.
   - **C5**: the Lockheart's three modes, the catch wheel, a Figment in the coffin.
   - **D1**: material icons by kind.
   - **D2**: the spirit press (hopper, igniter, crucible), from the owner's concept sheet.

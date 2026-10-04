@@ -12,7 +12,7 @@
 // (a price is a conversation with a character), and Animal Crossing's Nook's Cranny (a shop with a temper and a daily turnover).
 //
 //   SHOPS[id] = { id, keeper, name, sells: { itemId: stock }, buys: [kind], trade: [kind], markup, haggle }
-//   worthOf(itemId) -> cubes (what the thing is worth: the base of every price)    glazePrice() -> cubes
+//   worthOf(itemId) -> cubes (what the thing is worth: the base of every price)    glazePrice(bought) -> cubes
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
@@ -47,7 +47,7 @@ export const SHOPS = {
     id: 'saggar', keeper: 'saggar', name: "SAGGAR'S KILN",
     blurb: 'Glazes, fired onto you at the kiln. What is bought here is never what is earned.',
     // a glaze is not a thing in the box: it is learned at the kiln (courier/vessel/vessel.js `bought`), so the counter lists the glazes
-    // whose way is `shop` (courier/vessel/glazes.js) at glazePrice(), and nothing is bought back
+    // whose way is `shop` (courier/vessel/glazes.js) at glazePrice(how many are bought), and nothing is bought back
     sells: {}, glazes: true, trade: [], buys: [],
     markup: 1, haggle: false,
   },
@@ -60,8 +60,8 @@ export const SHOPS = {
   },
 };
 
-/** What a glaze costs at Saggar's kiln, in cubes (about fifteen minutes' play: docs/ECONOMY.md). */
-export const glazePrice = () => M(ECON.goods.glaze);
+/** What the next glaze costs at Saggar's kiln, in cubes, when `bought` have been bought already (ECON.glazeShop: dearer each time). */
+export const glazePrice = (bought = 0) => { const m = ECON.glazeShop.minutes; return M(m[Math.min(m.length - 1, Math.max(0, bought))]); };
 
 /** Every item a shop has on its shelf, with its base stock, in the order the shelf shows them. */
 export const shelfOf = (shop) => Object.entries(SHOPS[shop]?.sells || {}).filter(([id]) => ITEMS[id]);
