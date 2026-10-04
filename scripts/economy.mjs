@@ -15,7 +15,7 @@ import { ECON } from '../src/progress/econ/table.js';
 import { TIERS, rollTier, curiosOf } from '../src/world/treasure/treasure.js';
 import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
-import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates } from '../src/tools/lockheart/table.js';
+import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 import { buskPay, commissionPay, potPay } from '../src/progress/econ/livelihoods.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit } from '../src/progress/econ/islands.js';
@@ -172,10 +172,10 @@ const byTier = [1, 2, 3, 4, 5, 6].map((t) => tierOf.filter((x) => x === t).lengt
 console.log(`\nthe achievements: ${tierOf.length} written entries by tier (Easy .. Grandmaster): ${byTier.join(' / ')}; ${byTier.reduce((a, n, i) => a + n * (i + 1), 0)} points (the loops over circuits and species add more)`);
 
 // the Lockheart's conversion (not built: SYSTEMS.md C4): what a coffin of Lachryma turns into, by key, against what the key costs
-console.log(`\nconversion (not built): a coffin's Lachryma into cubes, expected cubes by key at power 1 (full) and 2 (brimming), and the key's list price`);
+console.log(`\nconversion (not built): expected cubes over a key's life (it lasts ${keyLife('key.loaded').toFixed(1)} openings on average; brass 1), at power 1 (full) and 2 (brimming), against the key's list price`);
 for (const [k, outs] of Object.entries(CONVERT)) {
-  const ev = (power) => outs.reduce((a, [p, m]) => a + p * m, 0) * ECON.lockheart.cubes * power;
-  console.log(`${pad(k.slice(4), 10)}${ev(1).toFixed(1).padStart(7)}${ev(2).toFixed(1).padStart(7)}${String(keyPrice([k])).padStart(6)} for the key${ev(2) >= keyPrice([k]) ? '   (pays when brimming)' : ''}`);
+  const ev = (power) => outs.reduce((a, [p, m]) => a + p * m, 0) * ECON.lockheart.cubes * power * keyLife(k);
+  console.log(`${pad(k.slice(4), 10)}${ev(1).toFixed(1).padStart(7)}${ev(2).toFixed(1).padStart(7)}${String(keyPrice([k])).padStart(6)} for the key${ev(2) >= keyPrice([k]) ? '   (pays when brimming)' : ''}${ev(1) >= keyPrice([k]) ? ' (pays when full)' : ''}`);
 }
 
 // the catch (not built: SYSTEMS.md C2): the odds by Figment class, laid low cleanly and in the EmO band, by key

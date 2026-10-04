@@ -7,7 +7,7 @@
 //
 //   node scripts/combat.mjs
 // ---------------------------------------------------------------------------------------
-import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, multiplier } from '../src/progress/combat/types.js';
+import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, BUILD, multiplier } from '../src/progress/combat/types.js';
 import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
@@ -21,6 +21,7 @@ for (const a of TYPE_IDS) console.log(pad(a, 11) + TYPE_IDS.map((t) => pad(multi
 const beaten = Object.fromEntries(TYPE_IDS.map((t) => [t, TYPE_IDS.filter((a) => TRUMPS[a] === t).length]));
 console.log(`each type is beaten by: ${TYPE_IDS.map((t) => `${t} ${beaten[t]}`).join(', ')} (a closed cycle has 1 each)`);
 console.log(`annihilation: impact on a ${TYPES.delirium.builds} target x${multiplier('impact', null, [TYPES.delirium.builds]).dmg}, delirium on a ${TYPES.impact.builds} target x${multiplier('delirium', null, [TYPES.impact.builds]).dmg}`);
+console.log(`build-up: ${TYPE_IDS.map((t) => (TYPES[t].poise ? `${t} ${TYPES[t].poise} of a poise a blow` : `${t} ${TYPES[t].builds} at ${TYPES[t].buildAt} blows for ${TYPES[t].buildDur} s`)).join(', ')}; meters drain ${BUILD.drainPerSec} a second`);
 const byType = {};
 for (const [c, t] of Object.entries(CAUSE_TYPE)) (byType[t] ||= []).push(c);
 console.log(`\nwhat the tools' causes deal (a proposal):\n${TYPE_IDS.map((t) => `  ${pad(t, 10)} ${(byType[t] || []).join(', ')}`).join('\n')}`);
