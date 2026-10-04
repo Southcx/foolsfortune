@@ -122,13 +122,20 @@ Calissa have weighed in):
    above its tier's average is under-priced and climbs a tier the next build; one no one buys is misplaced.
 9. **Looks only.** Nothing at the kiln changes a number in play.
 
-**A first placement** (scores from the four axes; for Espada and Calissa to correct):
+**The placement** (scores from the four axes, corrected by Espada from the canon: `docs/LORE.md` section 8, "The worth of a look").
+*The folk rank a glaze as they rank each other*: what a tier wears is common to it, and what the tier above wears is aspired to.
+
+Prestige sets the price of what is sold; how a look is got (from the start, earned, or bought: `got` in `glazes.js`) is separate. An
+achievement glaze has a prestige too, which says how much it is worth having.
 - **Body glazes.**
   - Earthenware: terracotta, bisque, shino.
-  - Stoneware: natural ash, kaki, salt, ame.
-  - Porcelain: majolica, cobalt, nuka, oribe.
-  - The Court: celadon, tenmoku, raku, hare's fur, copper lustre, jun.
-  - The Prince's own: oxblood, guan, oil spot, kinrande, Ru, yohen tenmoku, Lachryma black (the achievement and medal glazes).
+  - Stoneware: natural ash, kaki, salt, ame, majolica, nuka, tenmoku (Old Grog's working tea-bowl glaze).
+  - Porcelain: cobalt, oribe, celadon (Saggar's head-maid mark: what the stoneware folk envy), raku, copper lustre (Raku's, worn to look
+    grander), hare's fur.
+  - The Court: jun, kinrande. Guan ("official") and Ru (an emperor's court) are the Court's own, so they are **earned only**: a Court
+    glaze is given, never bought.
+  - The Prince's own: oxblood, oil spot, yohen tenmoku (the kiln's accident, the experimenter's prize), Lachryma black (no folk could
+    bear it; only a Courier wears it).
 - **Stones.**
   - Earthenware: the maker's stones, citrine, onyx.
   - Stoneware: amethyst, moonstone.
@@ -140,14 +147,21 @@ Calissa have weighed in):
   - Porcelain: copper, bisque to rose.
   - The Prince's own: ink to gold, oil slick.
 - **Skin.**
-  - Earthenware: Lachryma, moonlight.
+  - Earthenware: Lachryma (a Courier's own nature), moonlight.
   - Porcelain: ember, pearl.
   - The Court: obsidian.
-  - The Prince's own: porcelain (the Prince's own clay) and aurora.
+  - The Prince's own: porcelain (Kaolin, the Prince's own clay: wearing it is wearing him) and aurora.
 
-The earned looks need an achievement each, and those are written as they are placed (`docs/plans/SYSTEMS.md`, A10). With this
-placement, buying everything that is for sale costs about 13 hours of play (6,320 cubes) (`node scripts/economy.mjs` will print it once the rows are
-settled).
+What is for sale today, at these prices:
+
+| what | cubes |
+|---|---:|
+| five stoneware glazes and two stoneware stones (80 each) | 560 |
+| a porcelain glaze, two stones, two hairs and two skins (200 each) | 1,400 |
+| a Court stone and a Court skin (480 each) | 960 |
+| **all of it** | **2,920 (about 6 hours of play)** |
+
+The rest are earned. As Calissa adds rows, the sink grows with them.
 
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
