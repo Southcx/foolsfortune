@@ -14,10 +14,11 @@
 //    entries that read ??? until they are earned, TITLES as the reward for some, and the total as a running score.
 //  - Nothing is missable and nothing is timed out: it is all there to be filled in at whatever speed the player likes.
 //
-// A task is { id, cat, sub, tier, type, name, desc, cur(ledger, game) -> number, goal, dir: 'up' | 'down', unit, hidden, title }.
+// A task is { id, cat, sub, tier, type, name, desc, cur(ledger, game) -> number, goal, dir: 'up' | 'down', unit, hidden, title, unlocks }
+// (`unlocks`: the art or variant it teaches: the System reads it).
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
-import { BY_ID, ABILITIES, GOD_ARTS } from './skills.js';
+import { BY_ID, ABILITIES, GOD_ARTS, achOf, goalFracOf } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { PROFILES } from '../world/props/pottery.js';
 import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
@@ -199,6 +200,16 @@ export function buildAchievements(game) {
   H('gs4', 'hand', 'Arts', 5, 'mechanic', 'A Clean Sweep', 'Sunder 6 clapperjars with one stroke.', 'god.cuts.best', 6);
   C('gm1', 'hand', 'Arts', 2, 'count', 'Bricklayer', 'Manifest 10 walls.', 'god.manifest', 10);
   F('ga1', 'hand', 'Arts', 4, 'collect', 'Five Fingers', 'Learn all five God Arts.', () => GOD_ARTS.filter((a) => sys.unlocked(a.id) || a.basic).length, GOD_ARTS.length);
+  // the arts and their variants: each is the reward of an achievement, the one way skills are unlocked (the owner's rule: skills.js), its
+  // goals predicates over the ledger, so an art is retroactive like everything here; the System unlocks it when this is done (`unlocks`)
+  const artAch = (a, v, cat, sub) => {
+    const id = v ? `${a.id}.${v.id}` : a.id, goals = v ? v.goals : a.goals;
+    if (!goals.length) return; // (a basic art is yours from the start)
+    F(achOf(id), cat, sub, v ? 3 : 2, 'mechanic', v ? `${a.name}: ${v.name}` : a.name, `Learn ${v ? v.name : a.name}. ${(v || a).hint}`,
+      (L) => goals.reduce((n, g) => n + goalFracOf(L, g), 0), goals.length, { unlocks: id });
+  };
+  for (const a of ABILITIES) { artAch(a, null, 'move', 'The Arts'); for (const v of a.variants) artAch(a, v, 'move', 'The Arts'); }
+  for (const a of GOD_ARTS) { artAch(a, null, 'hand', 'Arts'); for (const v of a.variants) artAch(a, v, 'hand', 'Arts'); }
   C('gr1', 'hand', 'Raids', 2, 'count', 'Hold the Silo', 'Clear a raid wave.', 'god.wave', 1);
   H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
   H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10, { title: 'Silo Warden' });
@@ -502,12 +513,14 @@ export class Achievements {
     this.silent = false;
   }
 
-  count() { return this.list.filter((a) => this.L.done[a.id]).length; }
-  get points() { return this.list.reduce((n, a) => n + (this.L.done[a.id] ? TIERS[a.tier].pts : 0), 0); }
+  /** Done, and when (the play time it was done at, which can be 0: so ask `!== undefined`, never truthiness). */
+  done(id) { return this.L.done[id] !== undefined; }
+  count() { return this.list.filter((a) => this.done(a.id)).length; }
+  get points() { return this.list.reduce((n, a) => n + (this.done(a.id) ? TIERS[a.tier].pts : 0), 0); }
   get maxPoints() { return this.list.reduce((n, a) => n + TIERS[a.tier].pts, 0); }
   rankIndex() { let r = 0; RANKS.forEach(([p], i) => { if (this.points >= p) r = i; }); return r; }
   get rankName() { return RANKS[this.rankIndex()][1]; }
-  get titles() { return this.list.filter((a) => a.title && this.L.done[a.id]).map((a) => a.title); }
+  get titles() { return this.list.filter((a) => a.title && this.done(a.id)).map((a) => a.title); }
 
   /** [current, goal, fraction] for one task. */
   progress(a) {
@@ -531,7 +544,7 @@ export class Achievements {
     while (again && guard++ < 4) { // (the achievements-about-achievements can complete in a chain)
       again = false;
       for (const a of this.list) {
-        if (this.L.done[a.id] || !this.isDone(a)) continue;
+        if (this.done(a.id) || !this.isDone(a)) continue;
         this.L.done[a.id] = this.L.play;
         this.L.touch();
         again = true;
@@ -546,7 +559,7 @@ export class Achievements {
 
   announce(a) {
     const T0 = TIERS[a.tier];
-    this.game.events?.emit('achievement.unlock', { id: a.id, tier: a.tier, tierName: T0.name, points: T0.pts, title: a.title || null, ach: a.name, by: 'courier' }); // (the log's lines: tracking.js)
+    this.game.events?.emit('achievement.unlock', { id: a.id, tier: a.tier, tierName: T0.name, points: T0.pts, title: a.title || null, ach: a.name, unlocks: a.unlocks || null, by: 'courier' }); // (the log's lines: tracking.js)
     sfx.systemUnlock?.();
   }
 }

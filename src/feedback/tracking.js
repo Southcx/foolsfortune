@@ -250,6 +250,8 @@ export class Tracking {
     on('god.throw', (e) => { L.inc('god.throw'); L.hi('god.throw.speed', e.speed); });
     on('god.select', (e) => L.inc(`god.select.${e.id}`));
     on('god.sunder', (e) => { L.inc('god.sunder'); L.inc('god.cuts', e.cuts); L.hi('god.cuts.best', e.cuts); log.say('god', e.cuts ? `Your blade cleaves ${plural(e.cuts, 'clapperjar')}.` : 'The blade finds nothing.', { key: 'sund', win: 1 }); });
+    on('god.swell', () => L.inc('god.swell'));
+    on('god.wring', () => L.inc('god.wring'));
     on('god.manifest', (e) => { L.inc('god.manifest'); L.hi('god.manifest.len', e.len); log.say('god', 'You raise a wall of clay.', { key: 'mani', win: 1.5 }); });
     on('god.raid', (e) => { L.inc('god.raid'); L.hi('god.wave.max', e.wave); log.say('god', `Raid, wave ${e.wave}: ${plural(e.n, 'clapperjar')} approach.`); });
     on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} is cleared.`); });
@@ -472,6 +474,7 @@ export class Tracking {
     on('lockheart.open', (e) => {
       L.inc('lockheart.open'); L.inc(`lockheart.open.${e.heart}`); for (const k of e.keys) L.inc(`lockheart.key.${k}`); if (e.keys.length >= 3) L.inc('lockheart.three');
       log.say('luck', `You turn ${e.keys.map((k) => an(ITEM(k).toLowerCase())).join(', then ')} in the Lockheart${e.power >= 1.9 ? ', brimming,' : ''} and it opens.`, {});
+      for (const k of e.broke || []) { L.inc('lockheart.key.broke'); L.inc(`lockheart.key.broke.${k}`); log.say('luck', `Your ${ITEM(k).toLowerCase()} snaps in the lock.`, {}); }
     });
     on('lockheart.outcome', (e) => {
       L.inc(`lockheart.out.${e.outcome}`); L.hi('lockheart.rank', e.rank);

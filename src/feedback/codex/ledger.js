@@ -86,7 +86,7 @@ export function renderLedger(codex, cx) {
   codex.lcat ||= 'all'; codex.lshow ||= 'all';
   for (const c of all) {
     const list = c.id === 'all' ? A.list : A.list.filter((a) => a.cat === c.id);
-    const d = list.filter((a) => L.done[a.id]).length;
+    const d = list.filter((a) => L.done[a.id] !== undefined).length; // (done at play time 0 is 0)
     const row = el('div', `lg-cat${codex.lcat === c.id ? ' on' : ''}`, `${c.name}<span>${d}/${list.length}</span>`);
     row.onclick = () => { codex.lcat = c.id; codex.render(); };
     cats.appendChild(row);
@@ -106,12 +106,12 @@ export function renderLedger(codex, cx) {
   for (const c of cat ? [cat] : CATS) {
     for (const sub of c.subs) {
       const rows = A.list.filter((a) => a.cat === c.id && a.sub === sub)
-        .filter((a) => codex.lshow === 'all' || (codex.lshow === 'done') === !!L.done[a.id])
+        .filter((a) => codex.lshow === 'all' || (codex.lshow === 'done') === (L.done[a.id] !== undefined))
         .sort((a, b) => a.tier - b.tier);
       if (!rows.length) continue;
       main.appendChild(el('div', 'lg-sub', `${cat ? '' : `${c.name} · `}${sub.toUpperCase()}`));
       for (const a of rows) {
-        const done = !!L.done[a.id];
+        const done = L.done[a.id] !== undefined;
         const [v, , f] = A.progress(a);
         const hide = a.hidden && !done;
         const T0 = TIERS[a.tier];

@@ -44,7 +44,11 @@ export const ECON = {
   lockheart: { cubes: 12,
     // once the Possibilikeys have bent a table, no jackpot (an outcome of rank 4: the slip nuke) may be likelier than this (lockheart/
     // table.js oddsOf). Without it the INVERTED key turned the Gambler's 99 to 1 into 1 to 99: a jackpot bought with one key.
-    jackpotCap: 0.25 },
+    jackpotCap: 0.25,
+    // a Possibilikey other than brass is not used up: after each opening it breaks with a chance that starts at `start` and rises by
+    // `perUse` with every use (the owner, 2026-10-04: "fancy keys can be reused but the chance for them to break goes up over time"),
+    // so a key lasts about three openings on average and never more than six. Brass opens it and is spent, as before.
+    keyWear: { start: 0.2, perUse: 0.15 } },
 
   /** A landed fish, sold to Old Grog, by its tier (0 none .. 5 the legend): at about one catch every two and a half minutes, about
    *  the aim (a fish is not condensed: a shop buys it, so an angler's living is a walk to the pier). */
@@ -64,7 +68,8 @@ export const ECON = {
   goods: {
     'mat.film': 1.5,                                           // a roll of film: 24 exposures
     lure: 5,                                                   // a made lure, to replace one sold or lost
-    'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 8, 'key.twin': 10, 'key.wide': 8, 'key.echo': 12,
+    'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 6, 'key.twin': 10, 'key.wide': 8, 'key.echo': 6, // (loaded and echo, the
+    // conversion keys, were 8 and 12: the owner made them cheaper, 2026-10-04)
     'heart.gambler': 20, 'heart.shepherd': 20,
   },
   /** What a look costs at the kiln (a glaze, a stone, a hair, a skin), by its PRESTIGE: the folk's own clay ladder (docs/LORE.md), from

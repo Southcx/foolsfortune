@@ -11,6 +11,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Espada (canon for your numbers, R43)**: the King (Magnus Ibrahim Manus, island Margarite: Law, stable, safe,
+poor in Wells) and the Queen (Entra Polearis, a blacklight metroplex: chaos, rich, dangerous) are two more Islands of Ego, the two ends of
+the risk–reward line the owner approved. Bounties widened: a bounty is a named stray, an Egregore *or* an aberrant Figment, hunted under
+the King's marque (Letty is his). Commissions stay Figments by class (Seger).
+
 **2026-10-04, from Espada (D4)**: who gives them, cast (LORE.md section 6). **Commissions** (Figments, by class) come from **Seger, the
 Witness Cone** (a pyrometric cone that slumps when the work is done right; streaks are cones that have seen many firings). **Bounties**
 (Egregores, from the Emocean) come from **Letty Marque**, a visiting Contractor, with her Tulpa **Poll**. The split: the island's own
@@ -36,7 +41,16 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
   power. Add `buildAt` / `buildDur` per type in `types.js` and say so; I'll lift the other two into your table when you name them.
 - `CAUSE_TYPE` is live as you proposed it; the owner ruled the cycle, and the tool mapping has had no objection.
 
-_Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+**2026-10-04, from Petra: the digest's keys are wired**
+- `box.turn('keys', i)` counts a key's uses; `lockheart.open` asks `keyBreaks(id, uses)` and uses the key up when it says so. A used key
+  keeps its uses in the box (its own slot, never stacked with fresh ones), on the ground and in the save. The ledger counts
+  `lockheart.key.broke(.<id>)`, and the log says "Your loaded key snaps in the lock."
+- One number to fix in your comment (`ECON.lockheart.keyWear`): a fancy key can last **seven** openings, not six (0.20 + 6 × 0.15 reaches 1
+  only at the seventh). Simulated 20,000 keys: mean 2.70 (`keyLife` 2.69), max 7. Either the comment says seven or `perUse` goes to 0.16 or more.
+- The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
+  Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
+
+_Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
 
@@ -180,9 +194,20 @@ round.)
 
 ## Calissa (Art)
 
+**2026-10-04, from Espada**: the owner's concept art for the King and the Queen is in `docs/ref/` (`concept_king_magnus_margarite.png`,
+`concept_queen_entra_polearis.png`): their avatars (top left of each) and some of their Figments, read in LORE.md section 1. Letty
+Marque is the King's, so her palette sits with his (white, sage, deep green, gold).
+
 **2026-10-04, from Espada**: two folk to model when their turn comes (LORE.md section 6): **Seger**, a tall three-sided witness cone,
 pale unglazed, a number pressed in its side, whose tip bends with its feeling; **Letty Marque**, a pirate-coded Contractor in a
 feathered tricorn, made of nacre (shell-pale, a rainbow film where the light catches: LORE.md section 6), and **Poll**, her paper parrot folded from bounty notices.
+
+**2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
+- `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
+  to 0 three times as fast if a blow lands first. In the shader the crack line mixes from the dark lacquer to the kintsugi gold (the same
+  gold, metal and glow as `kSeam`) by `uMend`, and the Lachryma core fades by `1 - uMend`; the cells still drop out as `uDmg` falls, so the
+  last of the gold goes with the last of the crack (~40 s from a full crack). It is the plain version, to give you a working hook:
+  refine the look there (a shimmer, how the gold arrives) as you like; nothing else reads `uMend`.
 
 **2026-10-04, from Petra: the temper is fed, and four new statuses**
 - Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and

@@ -1,10 +1,13 @@
 import { T } from '../core/config.js';
-import { ALL_ARTS, BY_ID, BY_TECH } from './skills.js';
+import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
 
 // ---------------------------------------------------------------------------
-// The System: watches what you do (game.events) and teaches you things for it. It owns
-// which Movement Arts (and their variants) are unlocked, how far along each goal is, and
-// the all-arts switch (`lendAll`: every art lent, for testing and for showing the game off).
+// The System: teaches you things for what you do. Every art and variant is the reward of an
+// achievement (achievements.js: `art_<id>`, its goals predicates over the ledger: skills.js), so
+// the System counts nothing itself: it reads how far each goal has come from the ledger, and
+// unlocks an art once its achievement is done (retroactive, as every achievement is). It owns
+// which arts are unlocked, the variant chosen for each, and the all-arts switch (`lendAll`:
+// every art lent, for testing and for showing the game off).
 // It never touches the core movement: a tech asks `allows(id)` before it may start, and
 // reads its tuning through `cfgFor(id)`, which lays the chosen variant over T.tech[id].
 //
@@ -15,18 +18,15 @@ import { ALL_ARTS, BY_ID, BY_TECH } from './skills.js';
 const KEY = 'foolsfortune.system.v2'; // (v2: the all-arts switch is on by default)
 const VERSION = 2;
 
-const goalKey = (skill, i) => `${skill}#${i}`;
-
 export class System {
   constructor(game) {
     this.game = game;
-    this.state = { v: VERSION, lendAll: true, unlocked: {}, progress: {}, variant: {} };
-    this.chain = {}; // running chain state (not saved)
+    this.state = { v: VERSION, lendAll: true, unlocked: {}, variant: {} };
+    this.checkT = 0;
     this.proxies = new Map();
     this.dirty = 0;
     this.listeners = new Set(); // UI
     this.load();
-    game.events?.on('*', (e) => this.feed(e));
   }
 
   // ---- queries ----
@@ -75,11 +75,17 @@ export class System {
     return this.proxies.get(key);
   }
 
-  // ---- progress ----
+  // ---- progress (read from the ledger) ----
   /** [0..1] for one goal, or for a skill (the mean over its goals). */
-  goalFrac(skillId, i, g) { return Math.min(1, (this.state.progress[goalKey(skillId, i)] || 0) / g.n); }
-  skillFrac(id, goals) { return goals.reduce((s, g, i) => s + this.goalFrac(id, i, g), 0) / goals.length; }
-  goalValue(skillId, i) { return this.state.progress[goalKey(skillId, i)] || 0; }
+  goalFrac(skillId, i, g) { return goalFracOf(this.game.ledger, g); }
+  skillFrac(id, goals) { return goals.length ? goals.reduce((s, g, i) => s + this.goalFrac(id, i, g), 0) / goals.length : 1; }
+  goalValue(skillId, i) { const sk = this.skill(skillId); const g = sk?.goals[i]; return g ? (this.game.ledger?.get(g.key) || 0) : 0; }
+  /** An art or a variant by id ('blink', 'blink.rush'), with its goals. */
+  skill(id) {
+    const [aid, vid] = id.split('.'), a = BY_ID[aid];
+    if (!a) return null;
+    return vid ? { id, ability: a, variant: a.variants.find((v) => v.id === vid), goals: a.variants.find((v) => v.id === vid)?.goals || [] } : { id, ability: a, goals: a.goals };
+  }
 
   /** Everything still to learn right now: [{ id, goals }] (variants only once their ability is yours). */
   pending() {
@@ -92,35 +98,14 @@ export class System {
     return out;
   }
 
-  feed(e) {
-    if (e.name === 'system.unlock' || e.name === 'system.equip') return;
-    for (const sk of this.pending()) {
-      let all = true;
-      sk.goals.forEach((g, i) => {
-        const key = goalKey(sk.id, i);
-        if ((this.state.progress[key] || 0) < g.n) this.advance(sk.id, key, g, e);
-        if ((this.state.progress[key] || 0) < g.n) all = false;
-      });
-      if (all) this.unlock(sk.id, sk);
+  /** Unlock whatever's achievement is done (a variant once its ability is yours): run a few times a second, and at once on load. */
+  check() {
+    const done = this.game.ledger?.done || {};
+    let again = true;
+    while (again) { // (an ability unlocked this pass opens its variants to the next)
+      again = false;
+      for (const sk of this.pending()) if (done[achOf(sk.id)] !== undefined) { this.unlock(sk.id, sk); again = true; } // (done at play time 0 is 0)
     }
-  }
-
-  advance(skillId, key, g, e) {
-    const cur = this.state.progress[key] || 0;
-    const ok = (ev, when) => ev === e.name && (!when || when(e));
-    let next = cur;
-    if (g.type === 'count' || g.type === 'feat') { if (ok(g.event, g.when)) next = Math.min(g.n, cur + 1); }
-    else if (g.type === 'sum') { if (ok(g.event, g.when)) next = Math.min(g.n, cur + (Number(e[g.field]) || 0)); }
-    else if (g.type === 'chain') {
-      const st = (this.chain[key] ||= { i: 0, t: -99 });
-      const step = (i) => (typeof g.steps[i] === 'string' ? { event: g.steps[i] } : g.steps[i]);
-      if (st.i > 0 && e.t - st.t > g.within) st.i = 0;
-      if (ok(step(st.i).event, step(st.i).when)) {
-        st.i++; st.t = e.t;
-        if (st.i === g.steps.length) { st.i = 0; next = Math.min(g.n, cur + 1); }
-      } else if (ok(step(0).event, step(0).when)) { st.i = 1; st.t = e.t; }
-    }
-    if (next !== cur) { this.state.progress[key] = next; this.touch(); }
   }
 
   unlock(id, sk) {
@@ -149,8 +134,10 @@ export class System {
 
   changed() { for (const fn of this.listeners) fn(); }
 
-  /** Per frame: flush progress that changed a while ago. */
+  /** Per frame: unlock what the achievements have earned (twice a second), and flush what changed a while ago. */
   tick(dt) {
+    this.checkT -= dt;
+    if (this.checkT <= 0) { this.checkT = 0.5; this.check(); }
     if (this.dirty > 0) { this.dirty -= dt; if (this.dirty <= 0) this.save(); }
   }
 
@@ -169,13 +156,11 @@ export class System {
   adopt(raw) {
     const known = new Set();
     for (const a of ALL_ARTS) { known.add(a.id); for (const v of a.variants) known.add(`${a.id}.${v.id}`); }
-    const s = { v: VERSION, lendAll: (raw.lendAll ?? raw.lab) !== false, unlocked: {}, progress: {}, variant: {} };
+    const s = { v: VERSION, lendAll: (raw.lendAll ?? raw.lab) !== false, unlocked: {}, variant: {} };
     for (const k of Object.keys(raw.unlocked || {})) if (known.has(k) && raw.unlocked[k]) s.unlocked[k] = true;
-    for (const [k, v] of Object.entries(raw.progress || {})) if (Number.isFinite(v) && v >= 0) s.progress[k] = v;
     for (const [id, v] of Object.entries(raw.variant || {})) if (BY_ID[id] && (!v || s.unlocked[`${id}.${v}`])) s.variant[id] = v;
     this.state = s;
     this.proxies.clear();
-    this.chain = {};
   }
 
   reset() {

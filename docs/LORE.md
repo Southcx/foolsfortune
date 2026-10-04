@@ -63,8 +63,8 @@ figure. *(Ruled, Round 40)*
 | **the Court** | the finest porcelain, nearest the chateau: his favourite cups | by his nature, in worried whispers: is he overreaching, will it break, should he rest |
 | **the Prince of Clay** | the main avatar | himself |
 
-**Above the Prince, a King and a Queen** are named and nothing more. *(Ruled, Round 40: they exist and are a mystery.)* The higher
-echelons (porcelain, the Court, the royals) wait for the owner's models before they are developed; write around them until then.
+**The King and the Queen are two other Islands of Ego** *(ruled, R43)*: Magnus Ibrahim Manus and Entra Polearis (section 1, "The
+King and the Queen"). Porcelain and the Court still wait for the owner's models before they are developed.
 
 **The Pneuka Jar is his Magnum Opus.** Divine inspiration from **the System** came to him, and from it he made the Pneuka Jar: a
 vessel able to house **Players**, people like us outside the game world. *(Ruled)* (The spelling is **Pneuka**. *Pneuma* was an
@@ -223,10 +223,55 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
 - **The town that was is a boomtown that went bust.** A desert, a Well, folk drawn to it, then too much exposure, then a ghost town in
   the Dunes with one old angler who stayed. The canon already had this shape; the crude names it.
 - **Petrostates, and the resource curse.** An island rich in Wells is an island that ruminates a great deal: **the richest islands are
-  the unhappiest minds.** That is the deepest undertone in the setting, safe for a child to meet and worth an adult's second look.
+  the unhappiest minds.** *(The owner, R43: stable minds are safer and less lucrative, chaotic ones riskier and richer.)* That is
+  the deepest undertone in the setting, safe for a child to meet and worth an adult's second look.
   Cartels of Egos that hoard their Wells follow from it; their names are left blank until a story needs them.
 - **The Emocean is the crude sea itself**, the atmosphere every island holds back by Will. Every voyage is a trip across the one
   substance that would drown you, in the one vessel built to carry you through it.
+
+### The King and the Queen *(ruled by the owner, R43; concept art: `docs/ref/concept_king_magnus_margarite.png`,
+`docs/ref/concept_queen_entra_polearis.png`)*
+
+Two more Islands of Ego, at the two ends of the Law–Chaos line, with Kaolin Anagami (who lives for the act of creation) between them.
+The owner's arcana notes already had three factions, Law, Creation and Chaos; now each has an island.
+
+**The King: Magnus Ibrahim Manus, the great allfather. Pure iron Law.**
+- **The name, read three ways.** *Magnus*, great. *Ibrahim*, Abraham, "father of a multitude": the allfather. *Manus*, Latin for the
+  hand, and in Roman law the power of the head of a house. Put the first and last together and you get *magnum* and *manus*, the great
+  hand: a rhyme with the Prince's hand tower and the god hand. His initials, M. I. M., point at Mímir, who keeps the well of wisdom
+  for Odin, the Norse allfather. A well, again.
+- **His island: Margarite** (Greek *margarites*, a pearl). A sentinel lighthouse on the back of a cosmic whale. Nacre is Law's own
+  method: an oyster takes the grit that hurts it and coats it, layer on even layer, until it is smooth, harmless and beautiful. Order
+  built around the aberrant. The lighthouse guides ships across the crude sea, and it moves, because the whale swims.
+- **His avatar** (the concept art): an old admiral, white-bearded, in a captain's cap and a long coat trimmed in gold, a pipe in his
+  teeth, a fishing rod hung with a lantern lure, a gold pocket watch in his other hand. White, sage, deep green, gold, a little red.
+- **His Figments** (as drawn; names wait): a small capped sailor; a white-hooded rifleman with yellow eyes; a lamplighter in a wide hat
+  with a lantern and a pail; a great dark golem carrying a lamp and a weight like a hand-bell; and the whale.
+- **His island, as drawn:** the lighthouse rises from a ship's prow, its lantern an hourglass with a flame inside, its gallery floored
+  in black and white checks over a red-orange carpet, standing in a pale sea of mist and white coral.
+- **What he wants:** order. He hunts aberrant Figments hard, wherever they come from. He is the safe, stable, poor end of the economy:
+  a lawful mind keeps few Wells, and keeps them shallow.
+
+**The Queen: Entra Polearis. Peak chaos, growth and abundance.**
+- **The name.** An exact anagram of *Astral Pioneer*, checked letter for letter. *Entra* leans towards entropy and "enter"; *Polearis*
+  wears Polaris, the one fixed star sailors steer by, which is a fine joke for the queen of chaos.
+- **Her island:** a blacklight metroplex, sprawling and avant-garde. Skyscrapers tilt, magenta lightning runs down the streets like
+  cracks, neon-green pools lie between the towers, a checkerboard hangs like a billboard. Over it all hang a magenta cloud and a dark
+  moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. At its foot, in the dark, a great
+  head with green eyes looks up (its meaning is left blank).
+- **Her avatar** (the concept art): red hair, a witch's hat haloed by a dreamcatcher, glowing green eyes and smile, smoke with red eyes
+  coiling off her, and marionette strings running from her fingers to a small green puppet. Magenta, neon green, violet, red.
+- **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
+  wiry doll patterned in red; a mushroom-capped creature covered in eyes, dripping green; a tall faceless runner with a club; a small
+  hooded pyramid with eyes and red drips.
+- **What she wants:** more. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
+
+**What follows** *(Espada's, for the owner to veto)*
+- **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
+- **Risk and reward, ruled in outline** (the owner, R43): a stable mind is less lucrative and safer to mine; a chaotic mind is riskier
+  and richer. Margarite is the lighthouse, Entra Polearis the boomtown that never busts (yet).
+- **Letty Marque is Magnus's** (the owner's suggestion, taken). A letter of marque was always issued by a sovereign: hers is the King's.
+  She hunts bounties under his licence, and her pearl is his island.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -380,8 +425,9 @@ for their models.
 
 ### The livelihoods' cast *(Espada's casting, R43: the owner asked for one of each)*
 
-The split that makes them a pair: **a commission is a hunt for a Figment** (the island's own thoughts, from inside) and **a bounty is a
-hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnesses the island's work; the other brings in strays.
+The split that makes them a pair: **a commission is a hunt for a Figment by class** (the island's own thoughts, kept in proportion) and
+**a bounty is a hunt for a named stray** (an Egregore off the Emocean, or a Figment gone aberrant), under the King's marque. One
+witnesses the island's work; the other brings in what has gone astray.
 
 **Seger, the Witness Cone** (commissions; D4) *(stoneware)*
 - **The name.** Hermann Seger invented the pyrometric cone (1886). A *witness cone* stands in the kiln and slumps when the firing has
@@ -406,14 +452,15 @@ hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnes
 **Letty Marque, Contractor** (bounties) *(not of Anagami Island)*
 - **The name.** A *letter of marque* was a licence to take prizes at sea: lawful bounty hunting. So Letty (letter) Marque: licensed;
   a *mark* (the target); a *marquee* (star billing, which she would like).
-- **Who she is.** The first outsider: a Contractor from another Island of Ego, alive in the open Emocean because she has a Tulpa.
+- **Who she is.** The first outsider: a Contractor from Margarite, the King's island, alive in the open Emocean because she has a
+  Tulpa. She hunts under Magnus Ibrahim Manus's marque: a licence from the King to bring in what has gone astray.
   Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction). She moors a small craft at the jetty on the island's
   west edge (the concept art) and never stays long. "She" *(the owner, R43)*.
 - **What she is made of: nacre.** Mother-of-pearl, the owner's own motif for the moment Lachryma crystallises. She is shell-pale
   with a rainbow film where the light catches her, harder than clay: she scratches where a pot would shatter.
-- **Her island: Margarite** (Greek *margarites*, a pearl). An Island of Ego built the way a pearl is: layer on layer of nacre around
-  one grain of grit that hurt. A pearl is a wound made beautiful, the sea's kintsugi, which is why the clay folk find her strange and
-  familiar at once. *Still blank, on purpose:* what the grain was, and whether Margarite still holds. She left it; that much she says.
+- **Her island: Margarite**, Magnus's (section 1). A pearl is a wound made beautiful, the sea's kintsugi, which is why the clay folk
+  find her strange and familiar at once. "Somewhere I'm not anymore" is true twice over: she left, and Margarite rides a whale, so it
+  is never where you left it. *Still blank, on purpose:* why she left.
 - **Poll, her Tulpa.** A paper parrot folded from old bounty notices. *Poll* is a parrot's name, a head count, and a tax per head. It
   shouts rewards.
 - **The voice.** Brisk, a showboat, light on sea slang, quicker to a joke than to a confidence. For Wanda: she is the first voice not
@@ -422,8 +469,9 @@ hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnes
 - **Lines** (ready for `talks.js` once she moors):
   - "Letty Marque, licensed. {p:0.3}Marque with a Q-U-E, like the letter, not the target. {small}It's often both.{/}"
   - (Poll) "{big}CUBES! CUBES!{/}"
-  - (a bounty) "Egregores. Nobody wrote them, everybody fed them. {p:0.4}They drift in off the Emocean and nest where an island is
-    quiet. {p:0.3}I bring them in. You can help, for a cut."
+  - (a bounty) "Strays. Egregores off the Emocean, and Figments that have slipped their island. {p:0.4}They nest where it's
+    quiet. {p:0.3}The King wants them brought in. You can help, for a cut."
+  - (on the King) "Old Magnus? {p:0.4}He likes a thing where it belongs. {p:0.3}{small}So do I. That's why I'm out here.{/}"
   - (on the Courier) "You're one of those jars that walks. {p:0.3}Lucky you. The Emocean barely tastes you."
   - (on the Prince) "Your Prince keeps a tidy island. {p:0.5}{slow}Tidy islands are the ones the Emocean notices first.{/}"
   - (on her island) "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/} {p:0.4}Next question."
@@ -432,7 +480,7 @@ hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnes
 **Their log lines** (the robotic register; for the rules in `tracking.js` once the events exist):
 - "Commission accepted: 3 Guppy-class Figments." · "Commission: 2 of 3." · "Commission complete. Streak: 7." · "Commission streak
   ended at 7."
-- "Bounty accepted: one Egregore." · "Bounty claimed: 120 cubes." · "Bounty failed. The Egregore has left the island."
+- "Bounty accepted: one Egregore." · "Bounty accepted: one aberrant Figment." · "Bounty claimed: 120 cubes." · "Bounty failed. The target has left the island."
 
 ## 7. Creatures
 

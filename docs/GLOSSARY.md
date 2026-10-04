@@ -19,6 +19,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## The Courier
 
+- **the Vessoul** (the owner, 2026-10-04): the entity that stands for the player in the world, a soulspark from beyond. It takes several
+  forms, all one being, which is why they share a design language: **the god hand**, **the Pneuka Jar**, **the Courier**, and, on the
+  Emocean, **the ships**. The **Solar Skiff** is a limb of the Vessoul. *Not:* "the player" in player-facing text (the game says "you").
+- **ship** (the Emocean's rail-shooter layer): the Vessoul's sailing form between Islands of Ego, classed by real nomenclature: **sloop**,
+  **frigate**, **tanker**, **destroyer**, **galleon**. *Not:* the skiff.
 - **the Courier** (`player`: the body's physics, `src/courier/player.js`; `character`: the rig and its animation, `src/courier/character.js`): the one
   the player plays. Androgynous: "you" where the game speaks, "they" in docs and comments. *Not:* "the player" in anything the game says.
 - **vessel** (`game.vessel`, `game.vesselDamage`, `src/courier/vessel/`): the Courier's clay body and what is done to it: its glazes, its cracks,
@@ -90,6 +95,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **fever**; the **mirage** (the Song of Seeming's decoy).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
+  a Possibilikey's **uses** (the openings it has been turned in: brass is spent at the first, any other **breaks** with a chance that
+  rises with them, `keyBreaks`, the rule Dovina's `ECON.lockheart.keyWear`); a used one keeps its uses wherever it goes and never stacks
+  with fresh ones (*not* "worn": to wear is to put a tool on the belt);
   the **wheel** of odds; **the Opening** (its ultimate: `src/tools/lockheart/ultimate.js`).
 - **ultimate**: the category, a tool's cinematic signature move. The Lockheart's is the Opening; no other tool has one yet.
 
@@ -252,8 +260,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
 - **you**: the Vessoul (the Courier section), in every form one being. Player text says "you", and "your Pneuka Jar" for the body.
-- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (an Egregore hunt, given by **Letty Marque**,
-  a Contractor of nacre from the island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
+  a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
+- **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
+  Queen: chaos and abundance; her island a blacklight metroplex): two other Islands of Ego, at the two ends of the Law–Chaos line.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 
 ## Homonyms we keep on purpose (always qualify them)
