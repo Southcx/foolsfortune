@@ -90,22 +90,33 @@ How prices move (`ECON.shop`, after OSRS):
 - **Crystals.** A full round of the formations paid nearly three times the aim. Base 8 → 3, per size 10 → 6.
 - **The Lockheart's CUBES.** 18 → 12 per unit of power. It is a gamble on Lachryma, not a mint.
 
-## The vehicles (ruled with the owner, 2026-10-04; most are not built yet)
+## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
-A vehicle is a way of earning. **One Courier, one purse, one ledger, the same seven tools in every layer** (`docs/DESIGN.md`, section
-11). Four rules hold every vehicle:
+A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the same seven tools in every layer** (`docs/DESIGN.md`, section
+11). Six rules hold every livelihood:
 
 1. It trains the skill of the tool it rides on, and it **pays by the quality of play, not the time spent**: a clean strike pays more
    than a sloppy one. Nothing can be AFK'd.
-2. The vehicles **pay in different kinds**: cubes, materials, Figments, Cogitomaps and cosmetics. Most of these cannot be bought with
+2. The livelihoods **pay in different kinds**: cubes, materials, Figments, Cogitomaps and cosmetics. Most of these cannot be bought with
    cubes, so no single best "cubes an hour" swallows the rest (OSRS's money-making wiki is the warning).
 3. **Each island wants different things.** Every Island of Ego has its own demand: for kinds of material, for the classes of Figment,
    for particular Wells. So it pays to hop to the island whose Wells or Figments are worth most right now. Hauling is the glue: it turns
-   every other vehicle's yield into demand somewhere else (Sid Meier's Pirates!, EVE's regional markets). The Emocean leg is the risk:
+   every other livelihood's yield into demand somewhere else (Sid Meier's Pirates!, EVE's regional markets). The Emocean leg is the risk:
    cargo can be lost.
-4. **Gambling is never a vehicle.** The Tithe and the Lockheart's casting stay below a return of 1, always.
+4. **Gambling is never a livelihood.** The Tithe and the Lockheart's casting stay below a return of 1, always.
+5. **No needless grind: a 1-in-N drop comes within N tries.** Every rare drop is drawn from **a deck of N** (a shuffle bag), so the
+   item is certain by the Nth try and comes in about N/2 on average. Two ways were weighed. A deck of 100 for a "1 in 100" item: certain
+   by 100, mean 50.5. Plain 1% odds with a hard pity at 100: certain by 100, mean 63. The deck is chosen: it is fair from the first
+   draw, it suits a game of cards, and it is OSRS's "dry streak" made impossible. **The number published is the guarantee**, N. It
+   applies to every chance in the game that hands over an item (chests' curios, a Figment's drops, a fish's rarity, a crystal's
+   Possibilikey).
+6. **Mastery pays a dividend.** Complete everything the ledger holds for an encounter (a boss's achievements and collection slots, all
+   of them) and it becomes **passive income**: its drops come in on their own, at less than playing it by hand. It accrues up to a cap,
+   so checking in is rewarded and leaving it for a month is not. Prior art: OSRS's Kingdom of Miscellania (a quest's reward that pays
+   while you are away, up to a cap), Monster Hunter's Argosy and Meowcenaries, Melvor Idle's mastery. Completionism is long-term gain, not
+   just a green log. (This is the one exception to rule 1: the dividend is paid for play already done well.)
 
-| Vehicle | Tool, and the skill it trains | Pays | Status |
+| Livelihood | Tool, and the skill it trains | Pays | Status |
 |---|---|---|---|
 | Mining by ear | Dreamvane: relative pitch | cubes, crystal shards, Possibilikeys | live |
 | Angling | Sondelass: timing, the line's tension | fish (sold) | live |
