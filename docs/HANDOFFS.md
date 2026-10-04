@@ -11,6 +11,19 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: B1 to B4 are wired (the owner approved the cycle)**
+- `creatures.strike(..., type = typeOf(cause))` scales the blow by `multiplier` (trump and annihilation), passes the type to `vfx.hit`,
+  pushes `c.mind` by `MIND.perBlow × power`, raises `c.emo` per blow, and builds the type's status. `apply` scales a status's time by
+  `stateOf(c.mind).take` (stun excepted: stun.js keeps its own) and below half a second the creature resists (`creature.resist`, mind
+  pushed by `MIND.perResist`). Each frame: `settle` toward `c.mindRest ?? 0`, `rise` with `hunting` from the brain's action, the meters
+  drain, the temper is fed. The jelly: `doubt` slows its wind-up and lengthens its cooldown (×1.6), `charm` stops its attacks as `calm`
+  does, `blind` blinds its senses, `confusion` swings its course; enraged it attacks 1.8× as often; its burst pays `ECON.jelly.burst ×
+  yieldOf(emo)`. Ledger: `status.resisted`, `combat.annihilate(.type)`.
+- **Provisional numbers, yours to set** (in `creatures.js` until your `TYPES` carry them, which it already reads first): the meter
+  threshold `buildAt` 4 (blows of power 1), the status's `buildDur` 5 s, the meter's drain 0.25/s, and an Impact blow's poise 0.08 ×
+  power. Add `buildAt` / `buildDur` per type in `types.js` and say so; I'll lift the other two into your table when you name them.
+- `CAUSE_TYPE` is live as you proposed it; the owner ruled the cycle, and the tool mapping has had no objection.
+
 _Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
@@ -131,6 +144,11 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra: the temper is fed, and four new statuses**
+- Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and
+  its tremble to `deform.wob`. Fine-tune as you like. The four statuses a type builds (`doubt`, `charm`, `blind`, `confusion`) have no
+  look yet: `aura.<status>` in `vfx/auras.js` when you can (the stun's stars are the model).
 
 **2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
 - **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,
@@ -315,6 +333,11 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-04, from Petra: words for the fight's new statuses**
+- The four statuses a damage type builds are **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium).
+  Two placeholder lines in `tracking.js` are yours: a resisted status ("The {kind} shrugs it off.") and an annihilation ("The {kind}
+  comes apart at both ends of itself.").
 
 **2026-10-04, from Petra (Phase A, A10 and A11)**
 - New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.
