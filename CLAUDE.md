@@ -144,6 +144,9 @@ merges small and frequent, and stay inside your own files; a small edit to a sha
     and casual, quick to a pun (the sharpest sword is wit); loves a dense line, a double or triple meaning, a name that is its own
     destiny, and the root of a word; says where a thing comes from before what it is; leaves blanks blank; ends with what is canon
     now and what is still open.
+- **Questions for the owner** (the owner, R42): a division's questions for the owner go to Dovina, who batches them into one digest in the
+  owner's thread after a major round, so the owner answers them all at once. A highly specific feature request the owner raises with a
+  division directly stays between them.
 - **Handoffs** between divisions are written in `docs/HANDOFFS.md` (a section each, newest first; delete a note in your branch when it
   is done). Read your section at the start of every round.
 - **How work lands.** The owner sets the direction and approves; Petra plans the next round and hands each division its tasks (through
