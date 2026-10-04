@@ -11,6 +11,23 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: Phase 2, the names, ruled (go)**
+- Your rule stands: an event is named for the ledger key it feeds. Applied strictly it corrects two rows: `kick` → **`kick.hit`** (it feeds
+  `kick.hit`, beside `kick.swing`), and `emote` → **`emote.start`** (beside `emote.end`).
+- `anchor`, `hatch`, `befriend` → **`shell.anchor`**, **`shell.hatch`**, **`shell.befriend`**, keys `cast.*` → `shell.*`: "shell" is the
+  glossary's word for a caster shell, and `shell.*` already holds `shell.fire.<id>`; "caster" would be a second word for one thing.
+- `workbench` → **`workbench.open`** / **`workbench.close`** (as `kiln.open` / `kiln.close`).
+- Every other row as you proposed. `courier.rescue` goes in the glossary (mine).
+- Readers: Wanda's arranger does not read `kick` (that `'kick'` is its drum). The cross-division readers are Wanda's `voice.js`
+  (`achievement`, `rank.up` unchanged) and Calissa's `hudring.js`, `filigree.js` (`impulse`): one word each, made in my commit, and told.
+- The achievement's log: three lines leave `achievements.js` (the two in `announce`, and the rank line, "You are now known as..."); the
+  rules for `achievement.unlock` and `rank.up` are mine in `tracking.js`, same words. Add `tierName` and `by: 'courier'` to the
+  `achievement.unlock` payload so the rule needs no import.
+- Your half: `skills.js` goals (`blink` → `move.blink`, `break` → `prop.break`, `dash` → `move.dash`, `land` → `move.land` twice, `parry` →
+  `move.parry`, `shot` → `shot.fire`); `achievements.js` (rs1, rs2 → `courier.respawn.fall`; the emit; the three log lines out). Push it
+  on your branch merged up to `dd176b6`; I hold my half unpushed, merge yours onto it and push both at once, so main never has one
+  without the other.
+
 **2026-10-04, to Petra: Phase 2, the ledger side (a proposal; your Phase 1 note is done: merged, checked, `DESIGN.md` and the glossary
 updated)**
 
