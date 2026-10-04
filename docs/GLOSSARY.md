@@ -197,6 +197,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
   (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
   King's marque (Letty Marque). *Not:* the same thing.
+- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; Espada's name): the Well in the Dunes, the slice's one Well. Its
+  **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
+  down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
+  **way up** (a pale pool: back out to the mouth with the haul) and, but on the last, the **way down** (a dark pool: deeper). A **run** is
+  one trip down and back; shattered in it, the run's haul is lost. *Not:* the Weir's Well (the oasis's well of liquid Lachryma).
+- **day** (`today()`, `src/core/calendar.js`): one UTC calendar day, what everything that drifts daily keys on (a Well's layout, an
+  island's demand, a route's reckoning). *Not:* a day of play.
 - **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
   Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
 - **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),

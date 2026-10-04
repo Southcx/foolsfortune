@@ -16,7 +16,8 @@
 // rolling off-beat bass, the supersaw's lift, the breakdown and the build), drum and bass's two-step at 160, Panzer Dragoon's sea of
 // choirs, Star Fox's on-rails pacing (a breather before the last push), and this game's own motifs (the Answer, the Five, the Tear).
 //
-//   import { CRUDE_SEA, STAGE_BARS, stageAt } from './emocean.js'   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
+//   import { CRUDE_SEA, STAGE_BARS, stageAt, stageCue } from './emocean.js'   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
+//   stageCue(seconds) -> the cue played in that many seconds (the same hundred bars at another tempo: a sloop's 120 s is 200 bpm)
 //   when the cue is not playing (music/choose.js plays it while game.emocean.stage.active; the rail and the waves follow this)
 // ---------------------------------------------------------------------------------------
 import { MOTIF, quote } from './motifs.js';
@@ -77,9 +78,19 @@ export const CRUDE_SEA = {
 /** Where the stage is, as heard: the fraction of its hundred bars that have sounded (0..1), read off the arranger playing CRUDE_SEA, or null. */
 export function stageAt(music) {
   const A = music?.arr;
-  if (!A?.alive || A.score !== CRUDE_SEA) return null;
+  if (!A?.alive || (A.score !== CRUDE_SEA && A.score?.of !== CRUDE_SEA)) return null;
   if (A.ended) return 1;
-  let bars = A.bar; for (let k = 0; k < A.section; k++) bars += CRUDE_SEA.sections[k].bars; // (the next bar to be laid out, at A.next)
+  let bars = A.bar; for (let k = 0; k < A.section; k++) bars += A.score.sections[k].bars; // (the next bar to be laid out, at A.next)
   const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4);
   return Math.max(0, Math.min(1, (bars - ahead) / STAGE_BARS));
+}
+
+/** The cue fitted to a stage of `seconds` (hop()'s, by the ship): the same hundred bars at the tempo that fills it (made once a length,
+ *  so music/choose.js sees the same score every frame). 150 s is the cue as written; a quicker ship's is faster, a slower one's broader. */
+const FITTED = new Map();
+export function stageCue(seconds = 150) {
+  const bpm = Math.round(160 * 150 / Math.max(60, seconds));
+  if (bpm === 160) return CRUDE_SEA;
+  if (!FITTED.has(bpm)) FITTED.set(bpm, { ...CRUDE_SEA, bpm, of: CRUDE_SEA });
+  return FITTED.get(bpm);
 }

@@ -21,7 +21,7 @@ import { TITLE, THE_STEP, FALL } from './title.js';
 import { OVERTURE } from './overture.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 import { HEARTS } from '../tools/lockheart/table.js';
-import { CRUDE_SEA } from './emocean.js';
+import { stageCue } from './emocean.js';
 import { WELL_FLOORS } from './well.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -34,7 +34,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
   if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
-  if (game.emocean?.stage?.active) return CRUDE_SEA; // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
+  if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
   if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE;
   if (game.well?.active) return WELL_FLOORS[Math.max(0, Math.min(2, (game.well.floor || 1) - 1))]; // (a Well's floor: music/well.js) // (combat.js: from a notice to a few seconds after the last threat)
   // the dive (with a dwell either way)
