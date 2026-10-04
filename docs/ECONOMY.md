@@ -261,18 +261,18 @@ masterful, and the share of runs lost:
 |---|---:|---:|---:|---:|
 | Margarite (the King's: Law) | 0.61× | 0.63× | 0.71× | 9% / 6% / 5% |
 | Anagami Island (Kaolin's: Creation) | 0.57× | 1.02× | 1.15× | 20% / 15% / 12% |
-| Entra Polearis (the Queen's: Chaos) | 0.45× | 1.23× | 1.59× | 51% / 40% / 31% |
+| Entropolis (the Queen's: Chaos) | 0.45× | 1.23× | 1.59× | 51% / 40% / 31% |
 
-Law pays steadiness and Chaos pays mastery. Entra's best is the one place a livelihood passes 1.5× the aim, and only for a masterful
-diver who still loses a third of their runs. Each island's Wells yield their own grades of crude (Margarite mirth and wonder, Entra
-grief and dread) and its commissions ask their own classes of Figment (Margarite Guppies and Barracudas, Entra up to Whales).
+Law pays steadiness and Chaos pays mastery. Entropolis's best is the one place a livelihood passes 1.5× the aim, and only for a masterful
+diver who still loses a third of their runs. Each island's Wells yield their own grades of crude (Margarite mirth and wonder, Entropolis
+grief and dread) and its commissions ask their own classes of Figment (Margarite Guppies and Barracudas, Entropolis up to Whales).
 
 **The toxic symbiosis** (the owner, 2026-10-04). Chaos digs crude up and Law buys it, and the hauler lives in between:
-- **Each island prices crude at its own place in the demand band** (`ECON.islands[i].crude`): Entra Polearis low (it sells cheap),
+- **Each island prices crude at its own place in the demand band** (`ECON.islands[i].crude`): Entropolis low (it sells cheap),
   Margarite high (the King buys dear), Anagami in the middle, each swinging slowly about its place.
-- **The crude route runs Entra to Margarite.** A clean tanker run of dread, at a distance of 6, pays −0.73× to 1.09× the aim over a
+- **The crude route runs Entropolis to Margarite.** A clean tanker run of dread, at a distance of 6, pays −0.73× to 1.09× the aim over a
   fortnight: the two prices drift on their own clocks and the fuel eats a thin spread, so knowing *when* to sail is the skill.
-- **Bounties are the other half** (Letty Marque, under the King's marque). A named stray, mostly bred in Entra Polearis, brought in for
+- **Bounties are the other half** (Letty Marque, under the King's marque). A named stray, mostly bred in Entropolis, brought in for
   Margarite, pays 2.5× a commission of its class, less Letty's 20% (`ECON.bounty`; `bountyPay`): 48 cubes for a Guppy, 2,880 for a
   Leviathan.
 

@@ -8,7 +8,7 @@
 // Valley's quality stars (a better-made thing sells for more), Animal Crossing's busker (an audience tires of one song).
 //
 //   buskPay(minutes, accuracy, repeats) -> cubes      commissionPay(cls, streak) -> cubes      potPay(accuracy, prestige) -> cubes
-//   bountyPay(cls) -> cubes (a named stray, mostly out of Entra Polearis, paid by the King's marque, less Letty's cut)
+//   bountyPay(cls) -> cubes (a named stray, mostly out of Entropolis, paid by the King's marque, less Letty's cut)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 

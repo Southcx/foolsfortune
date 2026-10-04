@@ -56,7 +56,7 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
 
 | What | How | Hook |
 |---|---|---|
-| The node map | three nodes: Anagami, Margarite, Entra Polearis (the last can be locked in the slice); opened at the pier | `emocean.open` |
+| The node map | three nodes: Anagami, Margarite, Entropolis (the last can be locked in the slice); opened at the pier | `emocean.open` |
 | The ship | the Vessoul's ship form: a **sloop** (`ECON.ships.sloop`). The psygun is its gun, and the Solar Skiff's handling is the base of its feel (the core movement is untouched) | `ship.board { ship }` |
 | A stage | a rail shooter of about two minutes: Egregores and Figments in the crude sea; a stage failed is a hit that empties the shield, and loses cargo (`ECON.emocean.lose`; crude can spill: `spillChance`) | `emocean.stage { passed, by }` |
 | Fuel | paid at departure: `fuel(distance)` | `cubes.spend(n, 'fuel')` |
@@ -69,7 +69,7 @@ line shows `fuel` as a drain.
 ## The node map and the stage (Dovina's, `src/progress/econ/emocean.js`; printed by `node scripts/economy.mjs`)
 
 - **Nodes:** one an island, at its place on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step of the line
-  (Anagami to Margarite is 4, King to Queen 8). Entra Polearis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
+  (Anagami to Margarite is 4, King to Queen 8). Entropolis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
   `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 150 s, the length of Wanda's cue (Crude Sea: 100 bars of 1.5 s; every wave falls on a bar line, and
   `stageAt(game.music)` gives the fraction as heard). After the slice, when there is a second ship: a ship's tempo can be its feel (Wanda,
   `stageCue(seconds)`: a sloop at 1.25x turns the cue hardcore-fast, a galleon at 0.8x broad and stately; within 10% is transparent).
@@ -78,7 +78,7 @@ line shows `fuel` as a drain.
   Petra paces the rail to Wanda's cue, not to seconds. Its shape is Star Fox 64's: a calm opening, schools that teach the gun, darters
   that teach the dodge, a breather at 0.50 to 0.62, a mixed push, a heavy at 0.84 with an escort.
 - **Roles, not creatures:** each wave is a `school`, a `darter` or a `heavy`; the route fills each with a Figment class from its danger.
-  The Margarite run is Guppy schools, Barracuda darters and one Marlin; an Entra run is a class up throughout. `stagePlan(from, to, day)`
+  The Margarite run is Guppy schools, Barracuda darters and one Marlin; an Entropolis run is a class up throughout. `stagePlan(from, to, day)`
   gives every wave with its class, count, formation and lane; the day moves the lanes, never the order or the counts.
 - **What it bears:** six hits (`STAGE.bears`; "shield" is the Courier's Lachryma pool, a different thing). Failing loses a quarter of the
   cargo and may spill crude. A stage pays no cubes: the travel layer is a drain and a risk, and it pays at the other end.
@@ -87,13 +87,13 @@ line shows `fuel` as a drain.
   by surveying the sea from the pier before sailing (a Dreamvane survey over the water: Petra's verb; its quality `q` is how well it
   was dowsed) and by reading the waves under way. It buys knowledge, never numbers: each wave's lane is marked ahead of it by a glyph
   pop on the rail, `reckonLead(r)` seconds early (up to 3 s, two bars, at full reckoning). After the slice it is also the way to a new
-  node: a locked node opens for good once a route to it is reckoned to 0.6 from the pier (`opensNode`), so Entra Polearis is found by
+  node: a locked node opens for good once a route to it is reckoned to 0.6 from the pier (`opensNode`), so Entropolis is found by
   divining the way there. Divination EXP from `emocean.reckon` (`acts` 4).
 
 **A hole, said plainly:** on the slice's route the crude barely pays. A sloop of crude from Anagami to Margarite nets -10 to +1 cubes
-(with the sloop's light `burn` of 0.3: at the tanker's rate it lost 25 to 35). The spread is Entra to Margarite, and Entra is locked. So
+(with the sloop's light `burn` of 0.3: at the tanker's rate it lost 25 to 35). The spread is Entropolis to Margarite, and Entropolis is locked. So
 in the slice the hop must pay through **what comes up out of the Well** (the Cogitomap and the materials, sold at Margarite's dock) and
-**Letty's board**, and the crude market is the lesson that points to Entra. Selling a Cogitomap at Margarite's dock is the line that
+**Letty's board**, and the crude market is the lesson that points to Entropolis. Selling a Cogitomap at Margarite's dock is the line that
 ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser buys them).
 
 ## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
