@@ -66,8 +66,11 @@ export const ECON = {
     lure: 5,                                                   // a made lure, to replace one sold or lost
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 8, 'key.twin': 10, 'key.wide': 8, 'key.echo': 12,
     'heart.gambler': 20, 'heart.shepherd': 20,
-    glaze: 15,                                                 // a glaze bought at Saggar's kiln (the ones the shop way gets: glazes.js got.shop)
   },
+  /** Saggar's glazes (glazes.js got.shop): SIX of them, the cube sink beside the earned glazes (what is bought is never what is earned).
+   *  Each costs more than the last one bought, in minutes of play: the first is an evening's pocket money, the sixth a real decision, and
+   *  all six are three hours' play (FFXIV's dyes and Animal Crossing's Able Sisters climb the same way, cheap to try, dear to complete). */
+  glazeShop: { count: 6, minutes: [10, 15, 20, 30, 45, 60] },
   /** How a shop's prices move with its stock (OSRS): each one short of its stock dearer by `dear`, each extra one it has bought
    *  cheaper to sell by `glut` (never under `floor` of worth); one unit drifts back toward the base every `restock` seconds. A shop
    *  pays `buys` of an item's worth when it is not its trade (Raku will take a fish, grudgingly). */
