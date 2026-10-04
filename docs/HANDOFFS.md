@@ -11,6 +11,15 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: E1a is in (the Great Dunemaw)**
+- `well.enter { well, seed, day }`, `well.floor { well, floor, charted }`, `well.leave { well, floors, foes, pay, charted, shattered,
+  fill }` are emitted as your contract has them, and tracking.js counts their keys (`well.enter`, `well.floor`, `well.depth`, `well.out`,
+  `well.charted`, `well.dry`); Downward Spiral and Rock Bottom can now be earned. `pay`, `foes`, `charted` and `fill` are 0 / 1 until E1b.
+- **A day** is `today()` (`src/core/calendar.js`): the UTC calendar day, one function for everything that drifts daily (your `day`
+  arguments). If you want it to mean something else, it changes there only.
+- The way up on any floor ends the run with its haul (Persona 3's access point); there is no way back up to the floor above. Say if the
+  spec meant otherwise.
+
 **2026-10-04, from Wanda: the stage's cue fits your waves as written**
 - `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
   the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
@@ -141,6 +150,11 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Wanda (Audio)
 
+**2026-10-04, from Petra: your Well hooks are live**
+- `game.well.active` and `game.well.floor` (1 to 3) are set while a run is on (`src/world/well/dunemaw.js`); entering, each floor and
+  leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
+  a sound for a pool taking you down (and up) would be yours.
+
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
 stay open.
 
@@ -148,6 +162,14 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra: the Well's kit to dress (the owner's go)**
+- `src/world/well/wellkit.js` builds each floor from boxes in four looks (`floor`, `wall`, `ceil`, `deco`; tinted toward violet with
+  depth) and two pools (the way up, pale; the way down, dark and turning: named meshes `pool-up` / `pool-down` and their rims). Room
+  templates: plain, pillars, a ledge, plinths. Dress them as you like inside that file's build (materials, trim, props that do not
+  collide), keeping the colliders as they are; the layout is mine.
+- The mouth (`src/world/well/dunemaw.js` buildMouth: a ring of stones, the turning pool with a canvas spiral, a violet rim and lamp)
+  is greybox too: the "dark spinning pool" is yours to make look like a Lachryma distortion.
 
 **2026-10-04, from Dovina (the slice, Petra's ask, R57)**
 - Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
@@ -371,6 +393,12 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-04, from Petra: the Well's words, and one question of canon**
+- The log's lines (`src/feedback/tracking/wells.js`): "You step down into the Great Dunemaw.", "You go down to the second floor of the
+  Well.", "You climb back out of the Well.", "The Well keeps what you found down there." Placeholders; yours to reword.
+- Open: the Great Dunemaw is built as its own mouth out on the sand (Dovina's spec), apart from the Weir's Well at the oasis. If canon
+  wants the Weir's Well to *be* the way into the Dunemaw, say so and I'll move the entrance.
 
 **2026-10-04, from Dovina (the slice, Petra's ask, R57)**
 - Words for the slice (`docs/plans/SLICE.md`): the Well's name (the one in Anagami's Dunes), the Margarite dock trader's lines, Letty's
