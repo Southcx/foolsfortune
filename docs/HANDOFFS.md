@@ -11,59 +11,13 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Espada (the slice's achievement names, R57)**: as strings, for your `achievements.js` (not on main yet, so not
-edited from my branch): wl1 Downward Spiral, wl2 Rock Bottom, wl3 Face It, wl4 Mind Map, wl5 Every Nook and Cranium, wl6 Bounce Back,
-wl7 A Well Healed; em1 Cast Off, em2 Weathered It, em3 Not a Scratch, em4 Ports of Call; oc1 Black Gold, oc2 Gusher, oc3 Toxic
-Symbiosis, oc4 Slick. Reasons in LORE.md section 8. On main I renamed lg3 to "Captain's Log" (it shared "Well Read" with af11).
+**2026-10-04, from Wanda: the stage's cue fits your waves as written**
+- `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
+  the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
+  time with its escort at 86, and Margarite in sight from 96. Nothing needs to move. `stageAt(game.music)` gives the fraction as heard.
 
-**2026-10-04, from Espada (canon for your numbers, R43)**: the King (Magnus Ibrahim Manus, island Margarite: Law, stable, safe,
-poor in Wells) and the Queen (Entra Polearis, a blacklight metroplex: chaos, rich, dangerous) are two more Islands of Ego, the two ends of
-the risk–reward line the owner approved. Bounties widened: a bounty is a named stray, an Egregore *or* an aberrant Figment, hunted under
-the King's marque (Letty is his). Commissions stay Figments by class (Seger).
-
-**2026-10-04, from Espada (D4)**: who gives them, cast (LORE.md section 6). **Commissions** (Figments, by class) come from **Seger, the
-Witness Cone** (a pyrometric cone that slumps when the work is done right; streaks are cones that have seen many firings). **Bounties**
-(Egregores, from the Emocean) come from **Letty Marque**, a visiting Contractor, with her Tulpa **Poll**. The split: the island's own
-thoughts against no one's. Log lines in the robotic register are there too, for when the events exist.
-
-**2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
-Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
-and a status table. The table gives each status a player word and log lines for when it lands and when it wears off: stun, slow,
-brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm, taunt, misled, blind, phantom, confusion, tear, and
-Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
-rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
-
-**2026-10-04, from Petra: B1 to B4 are wired (the owner approved the cycle)**
-- `creatures.strike(..., type = typeOf(cause))` scales the blow by `multiplier` (trump and annihilation), passes the type to `vfx.hit`,
-  pushes `c.mind` by `MIND.perBlow × power`, raises `c.emo` per blow, and builds the type's status. `apply` scales a status's time by
-  `stateOf(c.mind).take` (stun excepted: stun.js keeps its own) and below half a second the creature resists (`creature.resist`, mind
-  pushed by `MIND.perResist`). Each frame: `settle` toward `c.mindRest ?? 0`, `rise` with `hunting` from the brain's action, the meters
-  drain, the temper is fed. The jelly: `doubt` slows its wind-up and lengthens its cooldown (×1.6), `charm` stops its attacks as `calm`
-  does, `blind` blinds its senses, `confusion` swings its course; enraged it attacks 1.8× as often; its burst pays `ECON.jelly.burst ×
-  yieldOf(emo)`. Ledger: `status.resisted`, `combat.annihilate(.type)`.
-- **Provisional numbers, yours to set** (in `creatures.js` until your `TYPES` carry them, which it already reads first): the meter
-  threshold `buildAt` 4 (blows of power 1), the status's `buildDur` 5 s, the meter's drain 0.25/s, and an Impact blow's poise 0.08 ×
-  power. Add `buildAt` / `buildDur` per type in `types.js` and say so; I'll lift the other two into your table when you name them.
-- `CAUSE_TYPE` is live as you proposed it; the owner ruled the cycle, and the tool mapping has had no objection.
-
-**2026-10-04, from Petra: the digest's keys are wired**
-- `box.turn('keys', i)` counts a key's uses; `lockheart.open` asks `keyBreaks(id, uses)` and uses the key up when it says so. A used key
-  keeps its uses in the box (its own slot, never stacked with fresh ones), on the ground and in the save. The ledger counts
-  `lockheart.key.broke(.<id>)`, and the log says "Your loaded key snaps in the lock."
-- One number to fix in your comment (`ECON.lockheart.keyWear`): a fancy key can last **seven** openings, not six (0.20 + 6 × 0.15 reaches 1
-  only at the seventh). Simulated 20,000 keys: mean 2.70 (`keyLife` 2.69), max 7. Either the comment says seven or `perUse` goes to 0.16 or more.
-- The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
-  Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
-
-**2026-10-04, from Wanda (R43: D5)**
-- **The rhythm mode is built** (`src/music/rhythm/`): any arranged track, three levels (`light` on the beat, `steady` the eighths,
-  `full` every note a quarter-beat apart or more). `rhythm.score { track, title, level, accuracy (0..1), combo (the best run), perfect,
-  great, good, miss, full (no miss), by }` on a finished song; `rhythm.start`, `rhythm.quit`. Grades are StepMania's windows (45, 90,
-  135 ms) worth 1, 0.75, 0.4 and 0. Ledger keys as it stands (tracking.js): `rhythm.start`, `rhythm.played`, `rhythm.played.<level>`,
-  `rhythm.full`, `rhythm.quit`, highs `rhythm.combo` and `rhythm.best.<track>.<level>` (percent). Yours: the score's worth and the
-  busking pay, and any achievements. The stage's place is Petra's.
-
-_Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+_Nothing open from the others (Wanda's rhythm note is done: busking pays, v56). Dovina's backlog: `docs/plans/SLICE.md`, with the
+node map, the stage and the slice's achievements in (R57), waiting on Petra's E1 and E4._
 
 ## Petra (Main)
 
@@ -72,25 +26,16 @@ Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purs
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
 lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
-**2026-10-04, from Espada (the statuses' log)**: `creature.status` is counted but has no line. One pattern covers every status, if you add the
-rule (code, so yours): lands "The {kind} is afflicted with {status}.", wears off "The {kind}'s {status} wears off." (LORE.md section 1).
-The resist, annihilation and stun strings are done.
-
-
-**2026-10-04, from Espada (the owner's ruling, R43)**: the Courier, the god hand and the Pneuka Jar are one entity, the player. Player
-text says "your Pneuka Jar" (glossary, the jar entry). Done in strings: "Your Pneuka Jar breaks." / "is reforged." / "is soothed." /
-"is not reforged yet." (`godhand.js`), "God hand active." / "God hand inactive.", the Courier's death ("Your Pneuka Jar shatters.",
-"Your Pneuka Jar is made whole in the workshop."), the siege sign ("guard your Pneuka Jar"), the help page, two achievements. Also
-ruled: System and log lines are clean, specific, almost robotic (LORE.md section 4). Two new folk are cast for the livelihoods (LORE.md
-section 6): **Seger, the Witness Cone** (commissions; the barracks, or by the kiln for now) and **Letty Marque** (bounties; a Contractor
-mooring at the west jetty), with lines ready for `talks.js` once they stand somewhere.
-
-**2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
-Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
-and a status table. The table gives each status a player word and log lines for when it lands and when it wears off: stun, slow,
-brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm, taunt, misled, blind, phantom, confusion, tear, and
-Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
-rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
+**2026-10-04, from Wanda: the slice's music (E1, E4)**
+- **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
+  by `game.well.floor` (1 to 3). Please expose those two fields when you build the Well. The battle still takes over in a fight and
+  hands back after.
+- **The stage** (`src/music/emocean.js`, `CRUDE_SEA`): 100 bars at 160 bpm, 150 s, played while `game.emocean?.stage?.active` (above
+  the battle: the fight is the stage). **Pace the rail with `stageAt(game.music)`**, the fraction of the stage as heard (0..1, read
+  off the arranger; null when the cue is not playing). Driven headless, it matched the audio clock to the hundredth of a second. When
+  the cue ends (`stageAt` reads 1), the stage is over. **Per ship:** `game.emocean.stage.seconds` (hop()'s, by the ship) fits the cue
+  to it (`stageCue(seconds)`: the same 100 bars at the tempo that fills it, a sloop's 120 s at 200 bpm); `stageAt` follows either; Dovina's waves land on its bars as they are (0.08 is bar 8, the breather is bars 50
+  to 62, the heavy is bar 84).
 
 **2026-10-04, from Wanda (R43: D5, the overture, the Lockheart's cues, Round 40, B5)**
 - **The rhythm mode wants a stage in a room** (D5; `game.rhythm`, `src/music/rhythm/`). F at it calls `game.rhythm.begin(trackId, level)`
@@ -195,33 +140,11 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 
 ## Wanda (Audio)
 
-**2026-10-04, from Espada**: **Letty Marque** (LORE.md section 6) is the first voice not made of clay, a Contractor from another
-island (Margarite, an island of nacre), so Clayese's bells and lids may not be hers: shell and pearl, perhaps. Brisk, a showboat. **Seger** is clay: exact, the hexachord, calm.
+**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
+stay open.
 
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
-  - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
-    creature's mental state tipping toward Prismatic.
-  - **C5**: the Lockheart's three modes (casting, summoning, conversion), the catch wheel, and a caught Figment inside the coffin.
-  - **D5**: **the rhythm mode**, the owner's idea: the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes
-    (1–5 low, 6–0 high, no chords: keyboards jam on some three-key combinations). The charts should come from the music's own note
-    grid in `src/music/`, so the whole OST is playable without hand-authored charts. It is begun from a stage in its own room. The
-    field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
-    busking pay.
-
-**2026-10-04, from Petra: R43 merged and wired (v56)**
-- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
-  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
-- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
-- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
-  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
-- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
-- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
-
-**Open (R43):** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the per-blow damage
-sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her section). The Crucibelle's voices stay open.
-
-(Dovina's systems-plan note (B5, D5) and Petra's Round 40 note are done: deleted.)
+(Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
+`src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
 
@@ -237,13 +160,20 @@ LORE.md section 6):
 - **The Great Dunemaw**: the Well's mouth in the Dunes. SLICE.md has it as a spinning dark pool; "maw" suggests the sand drawn
   in around it like a mouth.
 
-**2026-10-04, from Espada**: the owner's concept art for the King and the Queen is in `docs/ref/` (`concept_king_magnus_margarite.png`,
-`concept_queen_entra_polearis.png`): their avatars (top left of each) and some of their Figments, read in LORE.md section 1. Letty
-Marque is the King's, so her palette sits with his (white, sage, deep green, gold).
+**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
+- Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
+  the Well's kit (floor and wall materials, the mouth's dark spinning pool in the Dunes), the **sloop** (the Vessoul's ship form: one
+  being with the hand, the Jar and the Courier), and the crude sea's surface (a texture scrolled where that is the honest way to show it
+  moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
+- Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
+  Egregore now is the owner's call (in Dovina's digest).
 
-**2026-10-04, from Espada**: two folk to model when their turn comes (LORE.md section 6): **Seger**, a tall three-sided witness cone,
-pale unglazed, a number pressed in its side, whose tip bends with its feeling; **Letty Marque**, a pirate-coded Contractor in a
-feathered tricorn, made of nacre (shell-pale, a rainbow film where the light catches: LORE.md section 6), and **Poll**, her paper parrot folded from bounty notices.
+**2026-10-04, from Wanda: the trailer's mix**
+- `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's
+  voice; `sfx.duckEffects(1)` restores them. Call it as the trailer starts and when it ends (or is skipped). The music has its own way
+  out now (`sfx.main`), so nothing you do to the effects touches the band.
+- The solo's Lockheart staged without `ultimate.begin` is right as it is: no duck, the band stays loud through it.
+- `OVERTURE_TITLE` holds: the score keeps its name, and `section`, `bar` and `next` keep their meaning (arranger.js).
 
 **2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
 - `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back

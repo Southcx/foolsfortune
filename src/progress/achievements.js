@@ -37,10 +37,11 @@ export const CATS = [
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
-  { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
+  { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Lockheart'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Folk'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk'] },
+  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -445,7 +446,7 @@ export function buildAchievements(game) {
   F('fl5', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Say eight different Functions into minds.', (L) => L.under('reprogram.fn.').filter(([, v]) => v > 0).length, 8);
   C('fl6', 'battle', 'Reprogramming', 2, 'mechanic', 'Good Jelly', 'Make a slip jelly take you for its own kind.', 'reprogram.fn.ami', 1);
   C('fl8', 'battle', 'Reprogramming', 2, 'collect', 'Fluent', 'Learn ten Functions of neuralese.', 'mind.learn', 10);
-  C('fl9', 'battle', 'Reprogramming', 4, 'perfection', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
+  C('fl9', 'battle', 'Reprogramming', 4, 'perfect', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
   C('fl7', 'battle', 'Reprogramming', 3, 'mechanic', 'Dissolution', 'Take a stunned creature apart with the zandatsu.', 'zandatsu.creature', 1);
   // the last three tools (tools/dreamvane/dreamvane.js, crucibelle.js, lockheart.js)
   C('dv1', 'explore', 'The Dreamvane', 1, 'count', 'Divining', 'Dowse something out with the Dreamvane.', 'dowse.find', 1);
@@ -456,14 +457,22 @@ export function buildAchievements(game) {
   C('dv6', 'explore', 'The Dreamvane', 3, 'mechanic', 'Glass Ear', 'Open a fragile crystal at its sweet spot.', 'crystal.sweet.fragile', 1);
   C('cb1', 'battle', 'The Crucibelle', 1, 'count', 'First Verse', 'Play a song on the Crucibelle.', 'song.play', 1);
   F('cb2', 'battle', 'The Crucibelle', 2, 'collect', 'Songbook', 'Play all five songs.', (L) => ['reveal', 'mirage', 'rally', 'lull', 'summon'].filter((k) => L.get(`song.${k}`) > 0).length, 5);
-  C('cb3', 'battle', 'The Crucibelle', 3, 'perfection', 'Fever Pitch', 'Play a song in full fever.', 'song.fever', 1);
+  C('cb3', 'battle', 'The Crucibelle', 3, 'perfect', 'Fever Pitch', 'Play a song in full fever.', 'song.fever', 1);
   C('cb4', 'battle', 'The Crucibelle', 2, 'count', 'Roadies', 'Call up ten smoke spirits.', 'spirit.summon', 10);
   C('lh1', 'battle', 'The Lockheart', 1, 'count', 'Pull', 'Open a Lockheart.', 'lockheart.open', 1);
-  C('lh2', 'battle', 'The Lockheart', 3, 'perfection', 'Jackpot', 'Let a slip nuke out of a Lockheart.', 'lockheart.out.nuke', 1);
+  C('lh2', 'battle', 'The Lockheart', 3, 'perfect', 'Jackpot', 'Let a slip nuke out of a Lockheart.', 'lockheart.out.nuke', 1);
   C('lh3', 'battle', 'The Lockheart', 2, 'mechanic', 'House Rules', 'Open a Lockheart with three keys on its ring.', 'lockheart.three', 1);
   C('lh4', 'battle', 'The Lockheart', 2, 'count', 'Hoover', 'Fill a Lockheart with five hundred Lachryma.', 'lockheart.fed', 500);
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
+  // the Wells (docs/plans/SLICE.md, E1: placeholders until the Well is built; every key is counted by a rule in tracking.js)
+  C('wl1', 'explore', 'The Wells', 1, 'count', 'Downward Spiral', 'Go down into a Well.', 'well.enter', 1);
+  H('wl2', 'explore', 'The Wells', 2, 'count', 'Rock Bottom', 'Reach the third floor of a Well.', 'well.depth', 3);
+  C('wl3', 'explore', 'The Wells', 2, 'mechanic', 'Face It', 'Beat a FOE in a Well.', 'well.foe', 1);
+  C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
+  H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
+  C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
+  C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
   F('fk2', 'explore', 'Folk', 2, 'collect', 'Everyone\'s Acquaintance', 'Speak with all four of the clay folk.', (L) => ['saggar', 'pip', 'grog', 'raku'].filter((k) => L.get(`npc.talk.${k}`) > 0).length, 4);
@@ -481,6 +490,16 @@ export function buildAchievements(game) {
   F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
   F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the Dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
   F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the Dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+
+  // ---------------------------------------------------------------- THE EMOCEAN (docs/plans/SLICE.md, E4: placeholders until the hop is built)
+  C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
+  C('em2', 'emocean', 'Sailing', 2, 'count', 'Weathered It', 'Come through a stage of the Emocean.', 'emocean.stage.passed', 1);
+  C('em3', 'emocean', 'Sailing', 4, 'perfect', 'Not a Scratch', 'Sail a stage without being hit once.', 'emocean.stage.clean', 1);
+  F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
+  C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
+  H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
+  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entra Polearis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
+  C('oc4', 'emocean', 'Crude', 2, 'mechanic', 'Slick', 'Spill crude in the Emocean.', 'crude.spill', 1, { hidden: true });
 
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
   F('lg1', 'collect', 'Logged', 1, 'collect', 'Fresh Ledger', 'Log 10 firsts.', (L) => L.firstCount(), 10);
@@ -504,6 +523,9 @@ export function buildAchievements(game) {
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
   const seen = new Set();
   for (const t of tiers) { if (seen.has(t.id)) console.error(`achievements: the id "${t.id}" is used twice (ledger.done is keyed by id)`); seen.add(t.id); }
+  // the Codex lists a category by its subs, so a sub missing from CATS hid its achievements (the Dreamvane's and three more, until R57)
+  for (const t of tiers) if (!TYPES[t.type]) { console.error(`achievements: "${t.id}" has the unknown type "${t.type}"`); t.type = 'mechanic'; }
+  for (const t of tiers) { const c = CATS.find((x) => x.id === t.cat); if (c && !c.subs.includes(t.sub)) { console.error(`achievements: "${t.id}" is in the sub "${t.sub}", not in CATS`); c.subs.push(t.sub); } }
   return tiers.slice();
 }
 

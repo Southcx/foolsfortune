@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // WHAT PLAYS WHERE: the one place that says which cue the game is in (main.js asks it every frame and hands the answer to
 // MusicPlayer.follow). In order: the main theme over the title and the pause; nothing while a chest's rave, the God Hand or the rhythm
-// mode has the floor; the battle while they are in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
+// mode has the floor; a hop's stage on the Emocean; the battle; a Well's floor; the battle while they are in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
 // Well's Lachryma); a shanty on the Solar Skiff (the next work song each time the sail goes up); the Dunes' theme in the dunes; the work song in the workshop.
 // A dive waits a moment before it takes over (and before it lets go), so a duck under the surface does not cut the place's music.
 //
@@ -21,6 +21,8 @@ import { TITLE, THE_STEP, FALL } from './title.js';
 import { OVERTURE } from './overture.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 import { HEARTS } from '../tools/lockheart/table.js';
+import { stageCue } from './emocean.js';
+import { WELL_FLOORS } from './well.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
 const DEEP_IN = 4.5, DEEP_OUT = 3; // (metres below the surface: into the Deep, back to the Shallows)
@@ -32,7 +34,9 @@ export function chooseMusic(game, { overlay = false } = {}) {
   const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
   if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
-  if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE; // (combat.js: from a notice to a few seconds after the last threat)
+  if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
+  if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE;
+  if (game.well?.active) return WELL_FLOORS[Math.max(0, Math.min(2, (game.well.floor || 1) - 1))]; // (a Well's floor: music/well.js) // (combat.js: from a notice to a few seconds after the last threat)
   // the dive (with a dwell either way)
   const now = performance.now() / 1000, dt = Math.min(0.25, now - (S.last || now)); S.last = now;
   const swim = game.techs?.get('swim'), under = !!(swim?.active && swim.under);

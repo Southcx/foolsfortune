@@ -18,6 +18,7 @@ import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 import { buskPay, commissionPay, potPay, bountyPay } from '../src/progress/econ/livelihoods.js';
+import { NODES, CLASSES, hop, stagePlan, stageQuality } from '../src/progress/econ/emocean.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
@@ -224,3 +225,14 @@ const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
 console.log(`\nthe crude route, Entra Polearis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
 console.log(`bounties (a commission x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan (commissions ${[0, 1, 2, 3, 4].map((c) => commissionPay(c, 1)).join(' / ')})`);
 console.log(`a Well drifts daily: the dunes Well's seed on days 0, 1, 2: ${[0, 1, 2].map((d) => wellSeed('dunes', d)).join(', ')} (the same day, the same Well)`);
+
+console.log('\nTHE EMOCEAN\'S NODE MAP AND ITS STAGE (econ/emocean.js: one authored stage, its classes from the route\'s danger)');
+for (const [a, b] of [['anagami', 'margarite'], ['anagami', 'entra'], ['margarite', 'entra']]) {
+  const h = hop(a, b), was = NODES.entra.locked;
+  NODES.entra.locked = false; const h2 = hop(a, b), plan = stagePlan(a, b, 0); NODES.entra.locked = was;
+  const roles = {}; for (const w of plan) roles[w.role] = CLASSES[w.cls];
+  console.log(`  ${pad(`${a} - ${b}`, 22)} distance ${h2.distance}, fuel ${h2.fuel} cubes, ${h2.seconds} s in a sloop, danger ${h2.danger}: ${Object.entries(roles).map(([r, c]) => `${r} ${c}`).join(', ')}${h ? '' : ' (locked in the slice)'}`);
+}
+const plan0 = stagePlan('anagami', 'margarite', 0), plan1 = stagePlan('anagami', 'margarite', 1), spawned = plan0.reduce((a, w) => a + w.count, 0);
+console.log(`  a stage: ${plan0.length} waves, ${spawned} Figments; the lanes on day 0 / day 1: ${plan0.map((w) => w.lane).join(' ')} / ${plan1.map((w) => w.lane).join(' ')}`);
+console.log(`  how cleanly (Ouranurgy's quality): clean and thorough ${stageQuality({ hits: 0, downed: spawned, spawned })}, middling ${stageQuality({ hits: 3, downed: spawned / 2, spawned })}, scraped through ${stageQuality({ hits: 5, downed: 2, spawned }).toFixed(2)}`);

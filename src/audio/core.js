@@ -1,6 +1,9 @@
 // THE MIXER: the audio context and its buses, and the few primitives every sound is built from (a filtered burst of noise, a
 // gliding tone, a riser), a rate limiter, and the master's slow-time low-pass. The sounds themselves are in the banks beside this
 // file, mixed onto the Sfx by audio/sfx.js.
+// Two buses: `main` (the volume, the glue, the slow-time low-pass, out) and `master`, the sound effects' bus into it, which a scene can
+// lower under the music (`duckEffects`: a trailer, a cinematic). The music and the System's voice go to `main`, so they never duck.
+//   sfx.main (the music's way out)   sfx.master (the effects')   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore
 import { T } from '../core/config.js';
 
 export class Sfx {
@@ -14,13 +17,14 @@ export class Sfx {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     this.ctx = new AC();
-    this.master = this.ctx.createGain();
-    this.master.gain.value = T.audio.volume;
+    this.main = this.ctx.createGain();
+    this.main.gain.value = T.audio.volume;
+    this.master = this.ctx.createGain(); this.master.connect(this.main); // (the sound effects' bus)
     const comp = this.ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.ratio.value = 6;
     // (the master bus runs through a low-pass that closes as time slows: see core/time.js)
     this.slowLp = this.ctx.createBiquadFilter(); this.slowLp.type = 'lowpass'; this.slowLp.frequency.value = 22000; this.slowLp.Q.value = 0.5;
-    this.master.connect(comp).connect(this.slowLp).connect(this.ctx.destination);
+    this.main.connect(comp).connect(this.slowLp).connect(this.ctx.destination);
     // cheap room reverb
     this.verb = this.ctx.createConvolver();
     this.verb.buffer = this.impulse(1.4, 3.2);
@@ -39,7 +43,9 @@ export class Sfx {
     this.slowLp.frequency.setTargetAtTime(Math.max(300, f), this.ctx.currentTime, 0.05);
   }
 
-  setVolume(v) { if (this.master) this.master.gain.value = v; }
+  setVolume(v) { if (this.main) this.main.gain.value = v; }
+  /** The sound effects lowered to `to` (1 restores) over `fade` seconds, under the music and the voice (a trailer, a cinematic). */
+  duckEffects(to = 0.35, fade = 0.4) { if (this.master) this.master.gain.setTargetAtTime(Math.max(0.0001, to), this.ctx.currentTime, fade / 3); }
 
   makeNoise(sec) {
     const b = this.ctx.createBuffer(1, this.ctx.sampleRate * sec, this.ctx.sampleRate);
