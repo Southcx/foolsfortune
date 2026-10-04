@@ -99,7 +99,7 @@ export class Skiffing extends Tech {
     this.skiff.visible = true;
     this.wake.clear();
     this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
-    this.sfxLoop = sfx.surfLoop?.();
+    this.sfxLoop = sfx.skiffLoop?.();
     this.game.events?.emit('skiff.start', {});
   }
 
