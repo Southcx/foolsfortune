@@ -42,7 +42,7 @@ music video's habit of cutting on the accent, not the bar, when the band hits.
 | 0:17.6 | VERSE 6 | the Weir: the pier, the pools, a cast; a fish portrait cuts in for a beat | portrait.js |
 | 0:19.2 | VERSE 7 | the Basement: down the ladder into the dark, the lamps coming on one by one | the light budget, seen |
 | 0:20.8 | VERSE 8 | the Weir's Well: a dive, the surface closing over the camera | the last of the warm light |
-| 0:22.4 | CLIMB (half time) | the belt in close-up, black ground; the tools drawn one per half bar (0:22.4, 23.2, 24.0, 24.8, 25.6, 26.4): Veritome, Dreamvane, Crucibelle, Sondelass, Soul Brush, the Psygun | each a stance (stance system), each in its own light; the labradorite of the Mind runs under all of them |
+| 0:22.4 | CLIMB (half time) | the belt in close-up, black ground; the tools drawn one per half bar (0:22.4, 23.2, 24.0, 24.8, 25.6, 26.4): Veritome, Dreamvane, Crucibelle, Sondelass, Soul Brush, the Psygun | each a stance (stance system), each in its own light; the labradorite of the Mind runs under all of them; each draw lands on Wanda's stab, tom and hat (the toms step down bar by bar, so the draws climb) |
 | 0:27.2 | CLIMB, last bar | the snare roll: the six tools in a spinning ring round the Courier, faster, the riser climbing; white at the end | |
 | 0:28.8 | CHORUS 1 | IMPACT: a Soul Brush slam, bone and gold, crystal facets thrown straight | one damage type a bar, its colour and motif (ART.md, section 2), so the chorus teaches the cycle without a word |
 | 0:30.4 | CHORUS 2 | EGO: a lapis hex lattice opens on a jelly and holds; doubt's hexes round its head | |
@@ -74,7 +74,7 @@ music video's habit of cutting on the accent, not the bar, when the band hits.
 | 1:10.4 | ASCEND | the feel slows: the Courier walks to the precipice in the evening, left to right one last time | colours cooling |
 | 1:13.6 | ASCEND | the riser: they sit at the edge, the sky wide | |
 | 1:16.8 | HOLD | the last chord: the camera cranes up and back from them to the whole island in the Emocean | one shot, 2.4 s |
-| 1:19.2 | KILN | the logo in raw clay in a black kiln, the roar rising: it goes celadon, crazes, turns raku | the chest glaze, on the logo |
+| 1:19.2 | KILN | the logo in raw clay in a black kiln, the roar rising: it goes celadon, crazes, turns raku | the chest glaze, on the logo; the crazing rides Wanda's `crackle` (1:21.1 to 1:21.6, thick then thinning) |
 | 1:21.6 | THE STRIKE | the logo FIRED: kintsugi gold floods its cracks in one frame as the chord stops dead | the one frame the whole trailer climbs to |
 | 1:24.0 | TITLE | the music box: the title, the Courier on the edge | hands on to The Fool's Precipice |
 
