@@ -210,6 +210,12 @@ export const LIBRARY = {
     L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.12, color: 'white', colorEnd: 'tint' }),
     L({ type: 'sprites', count: [10, 14], shape: 'glint', spawn: 'line', r: 0.1, speed: [0.5, 2], size: [0.08, 0.14], sizeEnd: 0, life: [0.2, 0.4], drag: 4, color: 'tint', twinkle: 28 }),
   ] },
+  // a crystal formation struck with the pick: faceted shards of solid Lachryma knocked off, oxide-bright, and a hard glint
+  'crystal.strike': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.8, sizeEnd: 0.15, life: 0.14, color: 'white', colorEnd: 'lach', rot: 0 }),
+    L({ type: 'sprites', count: [8, 12], shape: 'facet', dir: 'cone', cone: 70, speed: [2.5, 6], size: [0.07, 0.13], sizeEnd: 0.03, life: [0.4, 0.7], gravity: 9, drag: 1, color: ['lach', 'labradorite', 'gold'], spin: [-10, 10], floor: 'ground' }),
+    L({ type: 'sprites', count: [6, 9], shape: 'glint', spawn: 'sphere', r: 0.25, speed: [0.5, 1.5], size: [0.1, 0.16], sizeEnd: 0, life: [0.25, 0.45], color: 'labradorite', twinkle: 24 }),
+  ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
   // the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its hot end.
