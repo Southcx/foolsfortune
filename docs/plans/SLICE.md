@@ -31,7 +31,7 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
 
 - **Jellies for now:** the stage is filled with jelly-class Figments (a mind module on the AI parts, the jelly's body); the Egregore's
   own body and mind come after the slice.
-- **The purser buys Cogitomaps** (`purserPrice`, `ECON.islands[id].maps`): Law wants its minds charted, so Margarite pays dear; an island
+- **The Purser buys Cogitomaps** (`purserPrice`, `ECON.islands[id].maps`): Law wants its minds charted, so Margarite pays dear; an island
   knows its own mind, so a map of Anagami's Well is worth little on Anagami. A good, fresh map nets about 20 cubes more at Margarite
   than at home after the sloop's fuel; a middling one is better sold at home. Skill decides whether the Well feeds the boat.
 - **Calissa dresses the slice** (the Well's kit, the sloop, the crude sea), in parallel with Petra's placeholders.
@@ -94,7 +94,7 @@ line shows `fuel` as a drain.
 (with the sloop's light `burn` of 0.3: at the tanker's rate it lost 25 to 35). The spread is Entra to Margarite, and Entra is locked. So
 in the slice the hop must pay through **what comes up out of the Well** (the Cogitomap and the materials, sold at Margarite's dock) and
 **Letty's board**, and the crude market is the lesson that points to Entra. Selling a Cogitomap at Margarite's dock is the line that
-ties E1 to E4, which is the seam the slice exists to prove (ruled: the purser buys them).
+ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser buys them).
 
 ## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
 
@@ -118,9 +118,9 @@ unchanged), weighed by how clean it was (`stageQuality`; the floor's charted sha
 
 **The slice's achievements** (in the game now, as placeholders at 0 until the events exist; names Espada's, LORE.md section 8):
 EXPLORATION, The Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden), and Cartographer's Cut (selling a Cogitomap
-to a purser: a placeholder name, R57).
+to the Purser: a placeholder name, R57).
 THE EMOCEAN, Sailing: Cast Off, Weathered It, Not a Scratch, Ports of Call, and Dead Reckoning (a placeholder name, R57); Crude: Black Gold, Gusher, Toxic Symbiosis (hidden), Slick
-(hidden). The Well in the Dunes is **the Swallow**; crude is counted in **casks**; the dock trader is **the purser**.
+(hidden). The Well in the Dunes is **the Great Dunemaw**; crude is counted in **casks**; the dock trader is **the Purser** (the role is the name).
 
 ## The seams to check before calling it done
 

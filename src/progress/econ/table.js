@@ -142,7 +142,7 @@ export const ECON = {
    *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). `crude` is where the island's price
    *  for crude sits inside the demand band (0 the bottom .. 1 the top, with its slow wave about it): Chaos digs it up and sells it
    *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entra to Margarite.
-   *  `maps` is the same for Cogitomaps (the owner, R57: the purser buys them): Law wants its minds charted and pays for it, Chaos
+   *  `maps` is the same for Cogitomaps (the owner, R57: the Purser buys them): Law wants its minds charted and pays for it, Chaos
    *  shrugs, and an island knows its own mind (a map of Anagami's Well is worth little on Anagami), so a good map is worth sailing to
    *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
   islands: {

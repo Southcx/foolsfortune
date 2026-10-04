@@ -600,7 +600,7 @@ separate parts, building and progression are why players skipped it.
 ## 13. Rulings of 2026-10-04, evening (R57: the slice)
 
 - **Jellies for now** in the Emocean's stage; the Egregore's body and mind after the slice.
-- **The purser buys Cogitomaps**, dearest on Margarite (Law wants its minds charted), cheapest on the island whose Well it maps (it
+- **The Purser buys Cogitomaps**, dearest on Margarite (Law wants its minds charted), cheapest on the island whose Well it maps (it
   knows its own mind). The map is what makes the first hop pay, and only a good map pays the trip: skill decides (`purserPrice`).
 - **Divination charts the course between the Islands of Ego** (the owner's steer). Taken from FTL's long-range scanners, Sunless Sea's
   zee charted by sailing it, and dead reckoning: a route's **reckoning** (0 .. 1, of a day) marks each wave's lane ahead on the rail and,

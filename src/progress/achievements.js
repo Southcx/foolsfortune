@@ -472,7 +472,7 @@ export function buildAchievements(game) {
   C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
   H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
   C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
-  C('wl8', 'explore', 'The Wells', 2, 'count', 'Cartographer\'s Cut', 'Sell a Cogitomap to a purser.', 'cogitomap.sold', 1);
+  C('wl8', 'explore', 'The Wells', 2, 'count', 'Cartographer\'s Cut', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
