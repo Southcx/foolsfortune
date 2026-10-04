@@ -209,6 +209,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
+  audit (ours, placeholder, genre default).
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
