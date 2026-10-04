@@ -95,6 +95,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **fever**; the **mirage** (the Song of Seeming's decoy).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
+  a Possibilikey's **uses** (the openings it has been turned in: brass is spent at the first, any other **breaks** with a chance that
+  rises with them, `keyBreaks`, the rule Dovina's `ECON.lockheart.keyWear`); a used one keeps its uses wherever it goes and never stacks
+  with fresh ones (*not* "worn": to wear is to put a tool on the belt);
   the **wheel** of odds; **the Opening** (its ultimate: `src/tools/lockheart/ultimate.js`).
 - **ultimate**: the category, a tool's cinematic signature move. The Lockheart's is the Opening; no other tool has one yet.
 
