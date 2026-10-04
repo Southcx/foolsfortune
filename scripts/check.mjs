@@ -69,7 +69,8 @@ for (const tool of fs.readdirSync(path.join(ROOT, 'scripts')).filter((x) => /\.m
 for (const f of files) if (!imported.has(f) && path.basename(f) !== 'main.js') add('module.orphan', f, 1, 'nothing imports it (dead code, or a missing import)');
 
 // ---- 2. the event bus (CLAUDE.md, Feedback): game events are `domain.verb`, and their payloads never carry `name` or `t`
-const EMIT = /\bevents\??\.emit\(\s*['"]([^'"]+)['"]\s*(?:,\s*\{([^}]*)\})?/g;
+// (`this.ev(...)` is the player's forwarder to the bus: courier/player.js)
+const EMIT = /\b(?:events\??\.emit|this\.ev)\(\s*['"]([^'"]+)['"]\s*(?:,\s*\{([^}]*)\})?/g;
 for (const [f, raw] of text) {
   const src = code(raw);
   for (const m of src.matchAll(EMIT)) {

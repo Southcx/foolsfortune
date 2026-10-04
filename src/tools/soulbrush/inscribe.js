@@ -107,7 +107,7 @@ export function inscribe(game, ent, prop, dur = PROPS[prop]?.dur ?? 12) {
   seal.renderOrder = 25;
   game.scene.add(seal);
   live.push({ ent, prop, t: 0, dur, undo, seal, off: live.filter((q) => q.ent === ent).length });
-  game.events?.emit('inscribe', { prop, what: ent.type === 'breakable' ? 'pot' : 'piece' });
+  game.events?.emit('brush.inscribe', { prop, what: ent.type === 'breakable' ? 'pot' : 'piece' });
   return true;
 }
 

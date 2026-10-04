@@ -145,8 +145,8 @@ before it landed), rewrote the README as a manual, and published. The renames th
 
 **Phase 2 (each in its own lane, the rounds after):** `tracking.js` split by domain and `main.js` split into boot stages (Petra); the
 course and the room teleports split into `world/basement/course.js` and `world/rooms.js` (Petra); the old particles folded into the VFX
-system so there is one (Calissa); `audio.js` split into `audio/` (Wanda, under way); the undotted events renamed with their ledger keys
-(Petra with Dovina); the in-game words the glossary retires (Espada).
+system so there is one (Calissa); `audio.js` split into `audio/` (Wanda, under way); the in-game words the glossary retires (Espada). Done (R42): the
+undotted events renamed, each for the ledger key it feeds (Petra with Dovina; the rule is under **event** in `docs/GLOSSARY.md`, the rules that hear them in `tracking.js`).
 
 ## The move map (Phase 1, a record: old paths on the left)
 

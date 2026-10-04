@@ -103,7 +103,7 @@ export class Kick extends Tech {
         this.hitAny = true;
         P.shake = Math.max(P.shake, 0.12);
         sfx.thunk?.(1, 3);
-        g.events?.emit('kick', { hits: n });
+        g.events?.emit('kick.hit', { hits: n });
       }
     }
   }

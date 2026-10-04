@@ -116,7 +116,7 @@ export class VesselDamage {
     this.boxes = game.character ? new Hitboxes(game.character) : null;
     // the blows: a jelly's (from where the jelly is), a lob's and an explosion's (from the way it pushed them)
     game.events?.on('jelly.strike', (e) => this.hit({ from: e.from ? new THREE.Vector3(...e.from) : null, k: e.move === 'lunge' ? 0.7 : 0.4, why: 'jelly', by: 'creature' }));
-    game.events?.on('impulse', (e) => { if (HURT.has(e.why) && e.why !== 'jelly') this.hit({ dir: e.dir ? new THREE.Vector3(...e.dir) : null, k: Math.min(1, 0.3 + (e.mag || 0) / 18), why: e.why, by: 'environment' }); });
+    game.events?.on('courier.impulse', (e) => { if (HURT.has(e.why) && e.why !== 'jelly') this.hit({ dir: e.dir ? new THREE.Vector3(...e.dir) : null, k: Math.min(1, 0.3 + (e.mag || 0) / 18), why: e.why, by: 'environment' }); });
   }
   get P() { return this.game.player; }
 

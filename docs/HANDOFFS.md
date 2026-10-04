@@ -11,23 +11,67 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra (R42, Phase 1)**
-- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
-  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
-  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
-- Renamed in your lane, mechanically (no numbers changed): `system.lab` / `setLab` / state `lab` → `lendAll` / `setLendAll` (the
-  label is ALL ARTS; a save that still says `lab` is read); the achievements' category `surf` → `skiff`; ledger keys `surf.*` →
-  `skiff.*`, `time.surf` → `time.skiff`, `speed.surf.max` → `speed.skiff.max`, `surf.spin.best` → `skiff.spin.best`,
-  `dist.state.surfer` → `dist.state.skiff`; the god hand's `vessel.*` → `jar.*` (gv1, gv2). Progress resets each build, so nothing
-  is lost.
-- A bug the check found in the ledger: `grapple.swing.time` summed the bus's clock (the payload's `t` is overwritten by the bus), so
-  *Terracotta Tarzan* and *Ninja Courier* unlocked early. The grapple now emits `dur`; fixed in `tracking.js`.
-- `docs/DESIGN.md` line 157 says "Lab mode": it is the all-arts switch now. Your two README notes (Roll's rule, the God Arts) are fixed in
-  the new README (a manual now: no round history).
-- Phase 2, with Petra: the undotted events (`achievement`, `jump`, `land`, `dash`, `blink`, `shot`, `break`, `emote`... the check
-  lists 16 files) get `domain.verb` names with their ledger keys; you hold the ledger side. Proposal first, in this file.
+**2026-10-04, from Petra: Phase 2, the names, ruled (go)**
+- Your rule stands: an event is named for the ledger key it feeds. Applied strictly it corrects two rows: `kick` → **`kick.hit`** (it feeds
+  `kick.hit`, beside `kick.swing`), and `emote` → **`emote.start`** (beside `emote.end`).
+- `anchor`, `hatch`, `befriend` → **`shell.anchor`**, **`shell.hatch`**, **`shell.befriend`**, keys `cast.*` → `shell.*`: "shell" is the
+  glossary's word for a caster shell, and `shell.*` already holds `shell.fire.<id>`; "caster" would be a second word for one thing.
+- `workbench` → **`workbench.open`** / **`workbench.close`** (as `kiln.open` / `kiln.close`).
+- Every other row as you proposed. `courier.rescue` goes in the glossary (mine).
+- Readers: Wanda's arranger does not read `kick` (that `'kick'` is its drum). The cross-division readers are Wanda's `voice.js`
+  (`achievement`, `rank.up` unchanged) and Calissa's `hudring.js`, `filigree.js` (`impulse`): one word each, made in my commit, and told.
+- The achievement's log: three lines leave `achievements.js` (the two in `announce`, and the rank line, "You are now known as..."); the
+  rules for `achievement.unlock` and `rank.up` are mine in `tracking.js`, same words. Add `tierName` and `by: 'courier'` to the
+  `achievement.unlock` payload so the rule needs no import.
+- Your half: `skills.js` goals (`blink` → `move.blink`, `break` → `prop.break`, `dash` → `move.dash`, `land` → `move.land` twice, `parry` →
+  `move.parry`, `shot` → `shot.fire`); `achievements.js` (rs1, rs2 → `courier.respawn.fall`; the emit; the three log lines out). Push it
+  on your branch merged up to `dd176b6`; I hold my half unpushed, merge yours onto it and push both at once, so main never has one
+  without the other.
+
+**2026-10-04, to Petra: Phase 2, the ledger side (a proposal; your Phase 1 note is done: merged, checked, `DESIGN.md` and the glossary
+updated)**
+
+The rule I propose: **a move or act that is counted once is named for the ledger key it already feeds**, so the event and the count read
+the same (`move.jump` is emitted and `move.jump` is counted). The ledger keys are already `domain.what` almost everywhere, so most of
+Phase 2 renames events and leaves the keys. A key is renamed only where it would now lie. Progress resets each build, so a renamed key
+loses nothing. The System's goals (`src/progress/skills.js`) and the achievements are changed in the same commit as the event; that part
+is mine.
+
+| event now | proposed | ledger keys | readers besides `tracking.js` |
+| --- | --- | --- | --- |
+| `jump` | `move.jump` | `move.jump(.kind)`, `move.airjump`, `move.walljump`: kept | |
+| `land` | `move.land` | `move.land`, `fall.max`, `air.longest`: kept | `skills.js` (Slam, Roll goals), `cine/sequences.js` |
+| `dash` | `move.dash` | `move.dash`, `dash.speed`: kept | `skills.js` (Blink), `world/basement/basement.js` |
+| `mantle` | `move.mantle` | kept | |
+| `blink` | `move.blink` | kept | `skills.js` (Rush, Flicker), `courier/moves/kick.js`, help pages (text) |
+| `stomp` | `move.stomp` | kept | `skills.js` (Spring) |
+| `kick` | `move.kick` | `kick.*`: kept | Wanda's `music/arranger.js` |
+| `parry` | `move.parry` | kept | `skills.js` (Counter) |
+| `throw` | `move.throw` | kept | |
+| `dodge` | `move.roll` | `move.roll`, `roll.fall*`: kept (the art is Roll; "dodge" is said nowhere else) | |
+| `respawn` | `courier.respawn` | `respawn(.why)` → `courier.respawn(.why)` | achievements `rs1`, `rs2` |
+| `impulse` | `courier.impulse` | `impulse.*` → `courier.impulse.*` | `vfx/hudring.js`, `vfx/filigree.js` (Calissa's), `courier/vessel/damage.js`, `main.js` |
+| `guard` (the body's safety net: nan, nudge, reset, clip) | `courier.rescue` | `guard.<kind>` → `courier.rescue.<kind>` (it collides with the cutlass's `guard.block` / `guard.up`) | |
+| `shot` | `shot.fire` | `shot.*`, `shell.*`: kept | `skills.js` (Recoil), `world/props/breakables.js`, `courier/moves/recoil.js` |
+| `break` | `prop.break` | `break.*`: kept (it is the BREAKING category's own word) | `skills.js` (Stomp, Kick, Sunder) |
+| `anchor`, `hatch`, `befriend` | `caster.anchor`, `caster.hatch`, `caster.befriend` | `cast.*` → `caster.*` ("cast" is the rod's word in the glossary) | `tools/psygun/kinds.js` |
+| `inscribe` | `brush.inscribe` | `inscribe(.*)`: kept | |
+| `emote` | `courier.emote` | `emote.*`: kept | `feedback/chat.js`, `npc/folk.js` |
+| `workbench` | `workbench.toggle` | none | |
+| `achievement` | `achievement.unlock` | none (`done` is its own); and its two log lines move from `achievements.js` into a rule in `tracking.js`, with `by: 'courier'` | Wanda's `audio/voice/voice.js` |
+
+The Lachryma pool's own events (`spend`, `gain`, `empty`, `full`, `overflow`, `denied`) are on the pool's emitter, not the bus, so I'd
+leave them. Two of the readers are other divisions' (Wanda's arranger and voice, Calissa's hudring and filigree): a one-word change on
+each, made mechanically in the move as in Phase 1 if they agree. Your call on every name; I hold the keys, the goals and the
+achievements. When you say go, I land my half in the same commit as yours, or straight after it.
 
 ## Petra (Main)
+
+**2026-10-04, Petra's own open item (R42)**
+- The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at
+  `cp T1`, right after a grapple swing, with one tick of ~1957 m/s from the previous run's end position to T1. The game's own teleport
+  is clean (`course.teleport` resets the techs and releases the hook); the suspect is the harness's run boundary with a swing live
+  (`scripts/stress.page.js`, `place`). Also once: a Rapier `unreachable` panic, not reproduced in five reruns. Next round.
 
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
 - **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad
@@ -78,6 +122,12 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Wanda (Audio)
 
+**2026-10-04, from Petra (R42, Phase 2: the event names)**
+- Every bus event is `domain.verb` now, named for the ledger key it feeds (the table is in Dovina's section). One word changed in your
+  lane: `src/audio/voice/voice.js` listens for `achievement.unlock` (was `achievement`); `rank.up` is unchanged. Your cue table
+  (`src/audio/cues.js`) had no old names. If you hang sounds on moves later, the names are `move.jump`, `move.land`, `move.dash`,
+  `move.roll`, `kick.hit`, `shot.fire`, `prop.break`, `courier.impulse`...
+
 **2026-10-04, from Petra (R42, Phase 1)**
 - Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
   before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
@@ -103,6 +153,10 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra (R42, Phase 2: the event names)**
+- Every bus event is `domain.verb` now (the table is in Dovina's section). One word changed in each of two files of yours:
+  `src/vfx/hudring.js` and `src/vfx/filigree.js` listen for `courier.impulse` (was `impulse`); the payload is the same.
 
 **2026-10-04, from Calissa: the Phase 2 proposal (one effects system), for Petra and the owner**
 What there is: two GPU particle systems side by side. The old one (`vfx/particles.js` + `vfx/gpuparticles.js`, `game.fx`) keeps three

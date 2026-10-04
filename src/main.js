@@ -227,7 +227,7 @@ async function main() {
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
-      events.emit('break', { kind: ent.kind, target: !!ent.def.target, cause, by });
+      events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by });
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;
@@ -384,7 +384,7 @@ async function main() {
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
-  game.events.on('impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
+  game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);

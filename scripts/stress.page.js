@@ -89,8 +89,8 @@
     };
     sink.hist = hist;
     // (a 'clip' is the controller's own miss caught and corrected inside the move: counted, not a failure)
-    const guardOff = g.events.on('guard', (e) => { if (e.kind === 'clip') sink.clips = (sink.clips || 0) + 1; else sink.violation('guard:' + e.kind, P, label); });
-    const respawnOff = g.events.on('respawn', (e) => { if (e.why !== 'pit' && e.why !== 'trial') sink.violation('respawn', P, label + ' ' + e.why); }); // (a trial's start puts her at its line: by design)
+    const guardOff = g.events.on('courier.rescue', (e) => { if (e.kind === 'clip') sink.clips = (sink.clips || 0) + 1; else sink.violation('guard:' + e.kind, P, label); });
+    const respawnOff = g.events.on('courier.respawn', (e) => { if (e.why !== 'pit' && e.why !== 'trial') sink.violation('courier.respawn', P, label + ' ' + e.why); }); // (a trial's start puts her at its line: by design)
     const techOff = g.events.on('tech.start', (e) => { sink.techs[e.id] = (sink.techs[e.id] || 0) + 1; });
     const evOff = g.events.on('*', (e) => { sink.events[e.name] = (sink.events[e.name] || 0) + 1; });
     for (let i = 0; i < ticks; i++) {

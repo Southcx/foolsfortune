@@ -11,7 +11,7 @@ export class Recoil extends Tech {
     super(mgr, 'recoil');
     this.passive = true;
     this.left = this.cfg.charges;
-    this.off = this.game.events?.on('shot', (e) => this.onShot(e));
+    this.off = this.game.events?.on('shot.fire', (e) => this.onShot(e));
   }
 
   get engaged() { return false; }
