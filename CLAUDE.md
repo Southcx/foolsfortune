@@ -90,7 +90,7 @@ the owner merges them into the default branch (`claude/fps-third-person-demo-8zp
 merges small and frequent, and stay inside your own files; a small edit to a shared hub (`main.js`, `tracking.js`, this file) is fine.
 - **Petra** (pentacles), Main, `claude/fps-third-person-demo-8zp2kx`, session `session_01FV195xKEWMXYTm42tfejvJ`: everything not listed below, `src/render/` (how the game
   draws: zones, the light budget, the 480-line present), and publishing the playable build.
-- **Dovina** (the trumps), Game Design Systems, `claude/dovina-design`, session `DOVINA_SESSION`: the systems that say what play is worth and
+- **Dovina** (the trumps), Game Design Systems, `claude/dovina-design`, session `session_01Dn7Yum1aGbbsUQBLqcm863`: the systems that say what play is worth and
   where it leads: the economy (`src/econ/`, `tools/economy.mjs`, `docs/ECONOMY.md`), progression and unlocks (`src/system/system.js`,
   `src/system/skills.js`), the ledger and the achievements (`src/stats.js`, `src/achievements.js`), prices and odds (`src/shop/catalogue.js`,
   `src/lockheart/table.js`, `src/lockheart/outcomes.js`), and the design bible `docs/DESIGN.md` (the loops, the progression, the numbers and
