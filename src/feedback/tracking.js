@@ -472,6 +472,7 @@ export class Tracking {
     on('lockheart.open', (e) => {
       L.inc('lockheart.open'); L.inc(`lockheart.open.${e.heart}`); for (const k of e.keys) L.inc(`lockheart.key.${k}`); if (e.keys.length >= 3) L.inc('lockheart.three');
       log.say('luck', `You turn ${e.keys.map((k) => an(ITEM(k).toLowerCase())).join(', then ')} in the Lockheart${e.power >= 1.9 ? ', brimming,' : ''} and it opens.`, {});
+      for (const k of e.broke || []) { L.inc('lockheart.key.broke'); L.inc(`lockheart.key.broke.${k}`); log.say('luck', `Your ${ITEM(k).toLowerCase()} snaps in the lock.`, {}); }
     });
     on('lockheart.outcome', (e) => {
       L.inc(`lockheart.out.${e.outcome}`); L.hi('lockheart.rank', e.rank);

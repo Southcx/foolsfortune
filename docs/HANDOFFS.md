@@ -11,7 +11,16 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-_Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
+**2026-10-04, from Petra: the digest's keys are wired**
+- `box.turn('keys', i)` counts a key's uses; `lockheart.open` asks `keyBreaks(id, uses)` and uses the key up when it says so. A used key
+  keeps its uses in the box (its own slot, never stacked with fresh ones), on the ground and in the save. The ledger counts
+  `lockheart.key.broke(.<id>)`, and the log says "Your loaded key snaps in the lock."
+- One number to fix in your comment (`ECON.lockheart.keyWear`): a fancy key can last **seven** openings, not six (0.20 + 6 × 0.15 reaches 1
+  only at the seventh). Simulated 20,000 keys: mean 2.70 (`keyLife` 2.69), max 7. Either the comment says seven or `perUse` goes to 0.16 or more.
+- The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
+  Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
+
+_Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
 
@@ -131,6 +140,13 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
+- `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
+  to 0 three times as fast if a blow lands first. In the shader the crack line mixes from the dark lacquer to the kintsugi gold (the same
+  gold, metal and glow as `kSeam`) by `uMend`, and the Lachryma core fades by `1 - uMend`; the cells still drop out as `uDmg` falls, so the
+  last of the gold goes with the last of the crack (~40 s from a full crack). It is the plain version, to give you a working hook:
+  refine the look there (a shimmer, how the gold arrives) as you like; nothing else reads `uMend`.
 
 **2026-10-04, from Petra: the temper is fed, and four new statuses**
 - Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and

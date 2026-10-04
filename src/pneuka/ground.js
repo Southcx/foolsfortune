@@ -7,7 +7,7 @@
 // Prior art: Old School RuneScape's ground items (a full inventory drops the loot at your feet; you pick it up when you have room),
 // and the turning pickups of Zelda and Kingdom Hearts that say "this is a thing" without a word.
 //
-//   const gi = new GroundItems(game)   gi.drop(id, pos)   gi.update(dt)   gi.nearest(P) -> { pos, d, ref } | null   gi.pick(ref)   gi.count(id)
+//   const gi = new GroundItems(game)   gi.drop(id, pos, { uses })   gi.update(dt)   gi.nearest(P) -> { pos, d, ref } | null   gi.pick(ref)   gi.count(id)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { buildCurio } from '../world/treasure/curiomodel.js';
@@ -24,12 +24,12 @@ export class GroundItems {
   }
   count(id) { return this.list.filter((g) => g.id === id).length; }
 
-  drop(id, pos, { save = true, scatter = true } = {}) {
+  drop(id, pos, { save = true, scatter = true, uses = 0 } = {}) {
     const it = itemOf(id), g = this.game;
     if (!it) return null;
     // (a little scatter, so a pile is a pile)
     const p = scatter ? pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0, (Math.random() - 0.5) * 0.5)) : pos.clone();
-    const e = { id, pos: p, t: Math.random() * 6, model: null, halo: null };
+    const e = { id, pos: p, t: Math.random() * 6, model: null, halo: null, uses }; // (uses: a Possibilikey's, kept)
     if (it.kind === 'curio') { e.model = buildCurio(it.key, { sky: g.sky?.env }); e.model.group.scale.setScalar(SCALE); g.scene.add(e.model.group); }
     e.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx?.haloTexture, color: it.color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.5 }));
     e.halo.scale.setScalar(0.7); e.halo.renderOrder = 6; g.scene.add(e.halo);
@@ -61,9 +61,9 @@ export class GroundItems {
   pick(e) {
     const box = this.game.pneuka, i = this.list.indexOf(e);
     if (!box || i < 0) return false;
-    if (!box.room(e.id)) { box.refuse('Your Pneuka Box is full.', 'boxfull'); return false; }
+    if (!box.room(e.id, e.uses)) { box.refuse('Your Pneuka Box is full.', 'boxfull'); return false; }
     this.remove(i);
-    box.add(e.id, 'ground');
+    box.add(e.id, 'ground', e.uses);
     sfx.cubeGet?.(6);
     return true;
   }
@@ -74,9 +74,9 @@ export class GroundItems {
     this.save();
   }
 
-  save() { try { localStorage.setItem(KEY, JSON.stringify(this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)] })))); } catch { /* unavailable */ } }
+  save() { try { localStorage.setItem(KEY, JSON.stringify(this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)], ...(e.uses ? { uses: e.uses } : {}) })))); } catch { /* unavailable */ } }
   load() {
-    try { for (const s of JSON.parse(localStorage.getItem(KEY) || '[]')) if (itemOf(s.id)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false }); } catch { /* nothing kept */ }
+    try { for (const s of JSON.parse(localStorage.getItem(KEY) || '[]')) if (itemOf(s.id)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false, uses: s.uses | 0 }); } catch { /* nothing kept */ }
   }
   clear() { while (this.list.length) this.remove(0); }
 }

@@ -34,15 +34,12 @@
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
 // ---------------------------------------------------------------------------------------
 import { hasTag } from '../core/tags.js';
-import { TYPES, typeOf, multiplier } from '../progress/combat/types.js';
+import { TYPES, BUILD, typeOf, multiplier } from '../progress/combat/types.js';
 import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
-/** How a type's build-up becomes its status: the meter's threshold (in blows of power 1), how long the status holds, how fast the meter
- *  drains, and how much of a full poise an Impact blow is worth. PROVISIONAL, until Dovina's TYPES carry `buildAt` / `buildDur`. */
-const BUILD = { at: 4, dur: 5, drainPerSec: 0.25, impactPoise: 0.08 };
 /** Statuses the mental state does not scale (stun.js keeps its own timing). */
 const UNSCALED = new Set(['stun']);
 
@@ -87,10 +84,10 @@ export class Creatures {
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = stateOf(c.mind).take;
-    if (type === 'impact') { this.game.stun?.add(c, BUILD.impactPoise * amount * take, { by, cause }); return; }
-    const T = TYPES[type], at = T.buildAt ?? BUILD.at;
+    if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
+    const T = TYPES[type];
     c.build[type] = (c.build[type] || 0) + amount * take;
-    if (c.build[type] >= at) { c.build[type] = 0; this.apply(c, T.builds, T.buildDur ?? BUILD.dur, 1, by); }
+    if (c.build[type] >= T.buildAt) { c.build[type] = 0; this.apply(c, T.builds, T.buildDur, 1, by); }
   }
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */
   apply(c, name, dur, k = 1, by = 'courier') {
