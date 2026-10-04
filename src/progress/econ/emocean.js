@@ -4,7 +4,8 @@
 //
 // THE NODE MAP. The Islands of Ego sit on the Law-Chaos line (ECON.islands[id].law, -2 .. +2), and a hop's distance is how far apart
 // they sit on it (`perLaw` units a step), so crossing from the King's island to the Queen's costs the most fuel. A node can be locked
-// (the slice locks Entra Polearis: SLICE.md). Fuel is `fuel(distance)` (islands.js) times the ship's `burn`; its `slow` stretches the stage's time.
+// (the slice locks Entra Polearis: SLICE.md). Fuel is `fuel(distance)` (islands.js) times the ship's `burn`. The stage runs
+// the length of its cue for every ship (the music is the clock: Wanda's Crude Sea is 100 bars of 1.5 s); `slow` is the simulator's haul time.
 //
 // A STAGE is one rail of about two minutes, authored once and paced to its cue (Wanda's), whose waves are keyed to the stage's
 // fraction (0 .. 1), not to seconds, so the rail can be stretched to the music. The waves are written by ROLE (a school that swims in
@@ -45,12 +46,13 @@ export function hop(from, to, ship = 'sloop') {
   const a = NODES[from], b = NODES[to];
   if (!a || !b || a === b || a.locked || b.locked) return null;
   const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {};
-  return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), seconds: Math.round(STAGE.seconds * (S.slow ?? 1)), danger: (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4 };
+  return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), seconds: STAGE.seconds, danger: (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4 };
 }
 
 /** The stage, authored once. `at` is the fraction of the stage a wave enters; `lane` -1 left, 0 ahead, 1 right (null: the day picks).
  *  Its shape is Star Fox's: a calm opening to learn the ship, schools that teach the gun, darters that teach the dodge, a breather, a
- *  mixed push, and a heavy at the end. 2 minutes at the sloop's pace (slow 0.8 of 150 s). */
+ *  mixed push, and a heavy at the end. 150 s, the length of its cue: every `at` falls on a bar line
+ *  of Wanda's Crude Sea (src/music/emocean.js: 100 bars of 1.5 s; the breather is bars 50 to 62, Margarite in sight from bar 96). */
 export const STAGE = {
   seconds: 150,
   bears: 6,
