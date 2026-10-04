@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // AURAS: what a status looks like on whatever has it. Each frame this reads every creature's statuses (creatures.js: sleep, halt,
-// slow, melt, calm, soft, haste, empower, forget...) and holds the library's look for each (`aura.<status>`, or `aura.<status>.<kind>`
+// slow, melt, calm, soft, haste, empower, forget, and the four the damage types build: doubt, charm, blind, confusion) and holds the library's look for each (`aura.<status>`, or `aura.<status>.<kind>`
 // for one creature's own), on the creature, sized to it, as strong as the status and fading out as it runs down. The creature's body
 // still decides what a status MEANS (a sleeping jelly sags); this is only the particles round it. A status with no look in the
 // library shows nothing here (stun has its own wheel of stars: vfx/dizzy.js).

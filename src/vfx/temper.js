@@ -21,7 +21,9 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
+const NONE = Object.freeze({ gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 }); // (an unregistered creature: nothing to add, nothing made)
 const _ember = new THREE.Color(0xff6a2a), _gold = new THREE.Color(0xffd76a);
+const ENRAGE = 0.85; // (the default when no enrage is handed in: EMO.enrage, progress/combat/emo.js)
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
 export class Temper {
@@ -42,9 +44,9 @@ export class Temper {
   /** What the body should add to itself this frame: its gloss, a glow for its emissive, and how much it trembles. */
   look(c) {
     const T = this.on.get(c);
-    if (!T) return { gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 };
+    if (!T) return NONE;
     const t = this.game.events?.time ?? performance.now() / 1000;
-    const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= 0.97 ? 1 : 0;
+    const heat = smooth(0.5, 1, T.emo), rage = T.enrage || T.emo >= ENRAGE ? 1 : 0;
     const pulse = 0.5 + 0.5 * Math.sin(t * (3 + 9 * heat)); // (a breath that quickens)
     T.glow.copy(_ember).multiplyScalar(0.25 * heat * (0.6 + 0.4 * pulse)).lerp(_gold, rage * 0.4 * pulse);
     return { gloss: (T.state + 2) / 4, glow: T.glow, tremble: Math.max(heat * 0.4, rage) };
@@ -67,7 +69,7 @@ export class Temper {
         'temper.stoic': smooth(1, 2, -T.state),
         'temper.prismatic': smooth(1, 2, T.state),
         'temper.agitated': smooth(0.5, 0.9, T.emo) * (T.enrage ? 0.4 : 1),
-        'temper.enraged': T.enrage || T.emo >= 0.97 ? 1 : 0,
+        'temper.enraged': T.enrage || T.emo >= ENRAGE ? 1 : 0,
       };
       for (const [name, k] of Object.entries(want)) {
         let h = T.held.get(name);

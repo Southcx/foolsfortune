@@ -185,6 +185,23 @@ export const LIBRARY = {
   'aura.forget': { layers: [
     L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'labradorite', alpha: 0.6, spin: [-3, 3] }),
   ] },
+  // the four a damage type builds (progress/combat/types.js `builds`), each in its type's colour and motif (docs/ART.md: the damage types)
+  'aura.doubt': { layers: [ // ego: lapis hexes standing still round the head, a lattice that holds and will not close
+    L({ type: 'sprites', dur: Infinity, rate: 4, shape: 'hex', offset: [0, 0.35, 0], spawn: 'ring', r: 0.36, speed: 0, size: [0.14, 0.2], life: [1.2, 1.6], color: [0x3a6ae0, 0x6a96f0], alpha: 0.95, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 0.7, shape: 'ringthin', offset: [0, 0.5, 0], size: 0.45, sizeEnd: 0.5, life: 1.4, color: 0x2f5fd0, alpha: 0.5, alphaEnd: 0, rot: 0 }),
+  ] },
+  'aura.charm': { layers: [ // influence: rose ripples over the crown, warm petals drifting round
+    L({ type: 'sprites', dur: Infinity, rate: 1.2, shape: 'ripple', offset: [0, 0.55, 0], size: 0.15, sizeEnd: 0.8, life: 1, color: 0xf08aa8, colorEnd: 'gold', alpha: 0.85, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 4, shape: 'petal', offset: [0, 0.3, 0], spawn: 'ring', r: 0.5, dir: 'swirl', speed: [0.3, 0.5], size: [0.09, 0.13], life: [1.2, 1.8], color: [0xf4a6bc, 0xf2c86a], alpha: 0.9, spin: [-3, 3], gravity: 0.15 }),
+  ] },
+  'aura.blind': { layers: [ // illusion: a band of the labradorite's glints turning across the eyes, and an ink veil over them
+    L({ type: 'sprites', dur: Infinity, rate: 20, shape: 'glint', offset: [0, 0.42, 0], spawn: 'ring', r: 0.36, dir: 'swirl', lift: 0, speed: [0.6, 0.9], size: [0.12, 0.2], sizeEnd: 0, life: [0.4, 0.7], color: ['labradorite', 'white'], twinkle: 14 }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.5, pool: 'alpha', shape: 'swirl', offset: [0, 0.5, 0], spawn: 'sphere', r: 0.12, speed: [0.02, 0.06], size: [0.3, 0.4], sizeEnd: 0.5, life: [1, 1.4], color: 'ink', alpha: 0.45, alphaEnd: 0, spin: [-2, 2] }),
+  ] },
+  'aura.confusion': { layers: [ // delirium: violet-green bubbles wandering round the head, drips falling off it
+    L({ type: 'sprites', dur: Infinity, rate: 5, shape: 'bubble', offset: [0, 0.4, 0], spawn: 'ring', r: 0.3, dir: 'swirl', lift: 0.15, speed: [0.2, 0.45], size: [0.08, 0.13], sizeEnd: 0.17, life: [0.9, 1.4], color: [0x9a5ad0, 0x7ad08a], alpha: 0.85, alphaEnd: 0 }),
+    L({ type: 'sprites', dur: Infinity, rate: 2, pool: 'alpha', shape: 'drip', offset: [0, 0.35, 0], spawn: 'sphere', r: 0.35, size: [0.05, 0.08], life: [0.6, 0.9], color: [0x6a3a90, 0x4a8a5a], alpha: 0.9, alphaEnd: 0.3, gravity: 3, floor: 'ground' }),
+  ] },
   // =============================================================================================== TEMPER (held, on a creature: vfx/temper.js)
   // a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own
   'temper.stoic': { layers: [ // dry: flakes of a fired surface falling, a little dust at the feet
@@ -202,6 +219,36 @@ export const LIBRARY = {
   'temper.enraged': { layers: [ // rage: sparks thrown off, hard red-gold rings pulsing out from it
     L({ type: 'sprites', dur: Infinity, rate: 16, shape: 'streak', spawn: 'shell', r: 0.4, dir: 'out', lift: 0.6, speed: [2, 4], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 1.6, gravity: 5, color: 'gold', colorEnd: 0xff3a1a }),
     L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ring', size: 0.4, sizeEnd: 1.4, life: 0.5, color: 0xff4a2a, colorEnd: 'gold', alphaEnd: 0, rot: 0 }),
+  ] },
+  // a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the
+  // stroke, a hot core at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line')
+  cut: { layers: [
+    L({ type: 'sprites', count: [14, 18], shape: 'streak', spawn: 'line', dir: 'line', speed: [0.6, 1.6], size: [0.12, 0.2], sizeEnd: 0.02, life: [0.14, 0.24], stretch: 2.2, drag: 6, color: 'white', colorEnd: 'tint' }),
+    L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.12, color: 'white', colorEnd: 'tint' }),
+    L({ type: 'sprites', count: [10, 14], shape: 'glint', spawn: 'line', r: 0.1, speed: [0.5, 2], size: [0.08, 0.14], sizeEnd: 0, life: [0.2, 0.4], drag: 4, color: 'tint', twinkle: 28 }),
+  ] },
+  // a crystal formation struck with the pick: faceted shards of solid Lachryma knocked off, oxide-bright, and a hard glint
+  'crystal.strike': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 0.8, sizeEnd: 0.15, life: 0.14, color: 'white', colorEnd: 'lach', rot: 0 }),
+    L({ type: 'sprites', count: [8, 12], shape: 'facet', dir: 'cone', cone: 70, speed: [2.5, 6], size: [0.07, 0.13], sizeEnd: 0.03, life: [0.4, 0.7], gravity: 9, drag: 1, color: ['lach', 'labradorite', 'gold'], spin: [-10, 10], floor: 'ground' }),
+    L({ type: 'sprites', count: [6, 9], shape: 'glint', spawn: 'sphere', r: 0.25, speed: [0.5, 1.5], size: [0.1, 0.16], sizeEnd: 0, life: [0.25, 0.45], color: 'labradorite', twinkle: 24 }),
+  ] },
+  // =============================================================================================== THE OLD BURSTS (Phase 2: folded in from vfx/particles.js)
+  // played by the old names through their shims, so every caller is unchanged and each can now be directed here. 'tint' is the
+  // caller's colour, 'tip' the hot one (PALETTE.hot); counts read the caller's own numbers (`sparks`, `dust`, `n`).
+  impact: { layers: [ // a shot or a knock on a hard thing: hot sparks off it, a puff of its dust (and chips: particles.js, step 3)
+    L({ type: 'sprites', count: 'sparks', shape: 'streak', dir: 'cone', axis: 'normal', cone: 70, speed: [4, 10], size: 0.05, sizeEnd: 0.01, life: [0.15, 0.35], stretch: 1.4, drag: 3, gravity: 9, color: 'tip', powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 'dust', shape: 'puff', dir: 'cone', axis: 'normal', cone: 60, speed: [1, 2.5], size: 0.08, sizeEnd: 0.5, life: [0.6, 1.2], drag: 3.5, gravity: -0.2, color: 'tint', alpha: 0.45, powerCount: false }),
+  ] },
+  embers: { layers: [ // what a lantern or a fire leaves in the air: embers rising, twinkling, falling back
+    L({ type: 'sprites', count: 'n', shape: 'soft', dir: 'sphere', speed: [1, 3.5], size: 0.05, sizeEnd: 0.015, life: [0.8, 2], drag: 1.2, gravity: 4, color: ['tip', 'tint'], twinkle: 12, powerCount: false, offset: [0, 0.1, 0] }),
+  ] },
+  absorb: { layers: [ // a thing taken into the Courier: a quick sparkle where it went
+    L({ type: 'sprites', count: 12, shape: 'glint', dir: 'sphere', speed: [1, 2.5], size: 0.06, sizeEnd: 0.008, life: [0.3, 0.5], drag: 3, color: ['tint', 'tip'], twinkle: 30, powerCount: false }),
+  ] },
+  implode: { layers: [ // something collapsing inward and bursting: a sphere of hot streaks and a flash of light
+    L({ type: 'sprites', count: 70, shape: 'streak', dir: 'sphere', speed: [3, 12], size: 0.06, sizeEnd: 0.01, life: [0.4, 0.8], stretch: 1.2, drag: 2.5, color: ['tip', 'tint'], twinkle: 20, powerCount: false }),
+    L({ type: 'light', color: 'tint', k: 90, range: 16, dur: 0.3, up: 0 }),
   ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
@@ -246,10 +293,42 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== CHESTS (vfx/chestfx.js)
-  // the circle under a chest as it charges (held: its strength is the charge), the whirling mandala
-  'chest.sigil': { layers: [
-    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 2.4, tint: 'tint', labradorite: 0.1, glow: 1.5, spin: 0.8, offset: [0, 0.04, 0], in: 5, out: 2.5 }),
-    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 3.4, tint: 'tint', labradorite: 0.25, glow: 1.0, spin: -0.3, offset: [0, 0.035, 0], in: 4, out: 2.5 }),
+  // (the circle and mandala under a charging chest are gone, the owner's, R45: the chest's glaze tells the charge, vfx/chestglaze.js)
+
+  // =============================================================================================== THE OVERTURE'S TRAILER (cine/overture.js)
+  // the CLIMB's ring: the Mind's labradorite wound round the Courier as the tools are drawn, faster and brighter to the snare roll
+  'overture.ring': { layers: [
+    L({ type: 'mesh', mesh: 'ult_vortex', dur: Infinity, scale: 0.55, tint: 'labradorite', labradorite: 0.9, opacity: 1.1, spin: 2.4, offset: [0, 0.1, 0], in: 4, out: 3 }),
+    L({ type: 'sprites', dur: Infinity, rate: 60, shape: 'streak', spawn: 'ring', r: 1.1, offset: [0, 0.6, 0], dir: 'swirl', lift: 0.25, speed: [3, 5], size: [0.06, 0.1], sizeEnd: 0.01, stretch: 2, life: [0.3, 0.5], color: ['labradorite', 'gold'] }),
+    L({ type: 'sprites', dur: Infinity, rate: 18, shape: 'sparkle', spawn: 'column', r: 1.0, height: 1.8, offset: [0, -0.4, 0], dir: 'up', speed: [0.6, 1.2], size: [0.1, 0.16], sizeEnd: 0, life: [0.5, 0.8], color: 'white', twinkle: 14 }),
+  ] },
+  // a tool drawn on the half bar: a flash of the Mind at the hand, a ring out
+  'overture.draw': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.6, life: 0.35, color: 'labradorite' }),
+    L({ type: 'sprites', count: 10, shape: 'glint', dir: 'sphere', speed: [1.5, 3], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.5], drag: 3, color: ['labradorite', 'white'], twinkle: 16 }),
+    L({ type: 'flash', size: 1.2, life: 0.12, color: 'white' }),
+  ] },
+  // the FUSE: the mend's gold breaking across the dark, a crack of light
+  'overture.crack': { layers: [
+    L({ type: 'sprites', count: 14, shape: 'streak', spawn: 'line', dir: 'line', speed: [0.2, 0.6], size: [0.04, 0.07], sizeEnd: 0, stretch: 2.5, life: [0.6, 1.0], color: 'gold' }),
+    L({ type: 'sprites', count: 6, shape: 'sparkle', spawn: 'line', size: [0.08, 0.14], sizeEnd: 0, life: [0.5, 0.9], color: ['gold', 'white'], twinkle: 12 }),
+  ] },
+
+  // =============================================================================================== THE EMOCEAN (the slice: docs/plans/SLICE.md)
+  // Divination's lane mark: where a wave will come, up to 3 s before it does (held; the caller raises its strength `k` from 0 to 1 as the
+  // wave nears). It must read at speed over the black crude: a column of the Mind's labradorite standing up out of the sea, a whirl
+  // laid on the surface, and rings going out on the beat of its approach. No words, no numbers (a mark, not a sign).
+  'lane.mark': { layers: [
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 3.2, tint: 'labradorite', labradorite: 0.9, glow: 1.4, spin: 1.6, offset: [0, 0.08, 0], in: 6, out: 4 }),
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 0.16, tint: 'labradorite', labradorite: 1, opacity: 1.3, spin: 1.2, offset: [0, 3.2, 0], in: 6, out: 4 }),
+    L({ type: 'sprites', dur: Infinity, rate: 50, shape: 'streak', spawn: 'disc', r: 0.8, dir: 'up', speed: [5, 8], size: [0.22, 0.34], sizeEnd: 0.04, stretch: 3, life: [0.6, 0.9], color: ['labradorite', 'white'] }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ringthin', offset: [0, 0.1, 0], size: 0.6, sizeEnd: 4.5, life: 0.8, color: 'labradorite', alpha: 0.8, rot: 0 }),
+  ] },
+
+  // the Great Dunemaw's mouth (vfx/dunemaw.js draws the pool): motes of the dunes' Lachryma drawn in toward it, and a breath of dark over it
+  'dunemaw.motes': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 24, shape: 'soft', spawn: 'ring', r: [5, 8], dir: 'in', speed: [1.2, 2.2], size: [0.06, 0.1], sizeEnd: 0.02, life: [2.2, 3.2], color: ['labradorite', 'gold'], offset: [0, 0.4, 0] }),
+    L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'swirl', spawn: 'disc', r: 2.5, dir: 'up', speed: [0.2, 0.5], size: [0.8, 1.2], sizeEnd: 2, life: [2, 3], color: 'ink', alpha: 0.3, alphaEnd: 0, spin: [-1, 1] }),
   ] },
 
   // =============================================================================================== THE LOCKHEART'S OPENING

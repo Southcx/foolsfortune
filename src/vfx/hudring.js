@@ -16,7 +16,8 @@
 //
 // It is a fight's HUD: out of sight outside combat (game.combat), back as a fight begins; in one, it brightens while something is
 // happening (the pool moving, a threat near) and sinks to a fainter ring when all is full and still.
-// Everything in it moves by easing; nothing blinks.
+// As a fight begins it COMES ONLINE (over the battle theme's change-over): the frame draws itself round behind a bright head, the
+// Lachryma pours into the band, the beads set one after another, and one pulse rings out. Everything in it moves by easing; nothing blinks.
 //
 // Prior art: Zone of the Enders' ring radar (round the mech, threat by direction and colour), Dead Space's spine gauge (the gauge on the
 // body), Metal Gear Solid's alert, and Parasite Eve's and Vagrant Story's floor-borne wireframes.
@@ -26,6 +27,7 @@
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 
+const ONLINE = 1.6; // (seconds to come online: the battle theme's change-over, music/player.js stops the last cue over 1.5 s)
 const MAX_THREATS = 6;
 const MAX_BLOWS = 4;
 const HURT_WHY = new Set(['jelly', 'lobber', 'explosion']);
@@ -41,7 +43,7 @@ void main() {
 
 const F = /* glsl */`
 varying vec2 vP; varying vec3 vW;
-uniform float uFill, uRes, uAlpha, uStart, uSign;
+uniform float uFill, uRes, uAlpha, uStart, uSign, uOnline; // (uOnline: 0..1 as it comes online for a fight, 1 when it is)
 uniform vec3 uBeads;                  // count, max, the next one's fill
 uniform vec4 uThreat[${MAX_THREATS}];  // angle, half-width, heat (0 far .. 1 close), alpha
 uniform vec4 uBlow[${MAX_BLOWS}];      // angle, half-width, kind (0 the shield took it, 1 the clay cracked), strength
@@ -55,19 +57,28 @@ void main() {
   vec3 view = normalize(cameraPosition - vW);
   float ph = labPhase(vW, view) + 0.15 * d;
   vec4 col = vec4(0.0);
+  float oF = clamp(uOnline / 0.6, 0.0, 1.0);                       // (coming online: the ring draws itself round, a bright head first)
+  float drawn = uOnline >= 1.0 ? 1.0 : 1.0 - smoothstep(oF - 0.015, oF, d);
   // the band of Lachryma: liquid as far as they have it, paler for what is held, the empty rest barely there
   float b = band(r, 0.72, 0.84);
   if (b > 0.0) {
     float fw = fwidth(d) * 1.5;
-    float liquid = 1.0 - smoothstep(uFill - fw, uFill + fw, d);
+    float pour = uOnline >= 1.0 ? 1.0 : 1.0 - pow(1.0 - clamp((uOnline - 0.25) / 0.6, 0.0, 1.0), 3.0); // (it pours in as it comes online)
+    float fillNow = min(uFill, pour);
+    float liquid = 1.0 - smoothstep(fillNow - fw, fillNow + fw, d);
     float held = (1.0 - smoothstep(uFill + uRes - fw, uFill + uRes + fw, d)) - liquid;
     vec3 oil = labInk(ph * 2.3 + r * 3.0, 0.22 + 0.4 * pow(1.0 - abs(view.y), 2.0)); // (near-black, the oil film in streaks)
     vec3 c = oil * liquid + mix(oil, labLin(vec3(0.8, 0.74, 0.86)), 0.6) * held + labLin(vec3(0.12, 0.1, 0.16)) * (1.0 - liquid - held);
-    col = vec4(c, b * (0.9 * liquid + 0.75 * held + 0.18 * (1.0 - liquid - held)));
+    col = vec4(c, b * (0.9 * liquid + 0.75 * held + 0.18 * (1.0 - liquid - held)) * drawn);
   }
   // the frame: two fine lines of the Mind
   float fr = max(line(r, 0.7), line(r, 0.86));
-  col = mix(col, vec4(labSoft(ph), 1.0), fr * 0.85);
+  float head = uOnline >= 1.0 ? 0.0 : exp(-pow((d - oF) * 40.0, 2.0)) * (1.0 - smoothstep(0.85, 1.0, oF));
+  col = mix(col, vec4(labSoft(ph), 1.0), fr * 0.85 * drawn);
+  col = mix(col, vec4(labSoft(ph + 0.3) * 1.6, 1.0), clamp(head * (fr + band(r, 0.68, 0.88) * 0.6), 0.0, 1.0));
+  // (and online: one pulse rings outward from the frame)
+  float pk = clamp((uOnline - 0.88) / 0.12, 0.0, 1.0);
+  if (uOnline < 1.0 && pk > 0.0) col = mix(col, vec4(labSoft(ph + 0.6), 1.0), line(r, 0.86 + 0.5 * pk) * (1.0 - pk) * 0.9);
   // the beads (the Blink's charges), just before the band begins, set in the frame
   for (int i = 0; i < 3; i++) {
     if (float(i) >= uBeads.y) break;
@@ -77,6 +88,7 @@ void main() {
     float rr = 0.075;
     float disc = 1.0 - smoothstep(rr - fwidth(dd), rr + fwidth(dd), dd);
     float have = float(i) < uBeads.x ? 1.0 : (float(i) < uBeads.x + 1.0 ? uBeads.z : 0.0);
+    disc *= uOnline >= 1.0 ? 1.0 : smoothstep(0.82 + 0.05 * float(i), 0.86 + 0.05 * float(i), uOnline); // (the beads set one after another)
     vec3 bead = labInk(ph + 0.4 + dd * 3.0, 0.5 + 0.5 * (1.0 - dd / rr));
     vec3 socket = labLin(vec3(0.16, 0.13, 0.2));
     // (a socket fills from the bottom as the charge comes back)
@@ -122,7 +134,7 @@ export class HudRing {
     this.game = game;
     const threats = Array.from({ length: MAX_THREATS }, () => new THREE.Vector4());
     this.u = {
-      uFill: { value: 1 }, uRes: { value: 0 }, uAlpha: { value: 0 }, uStart: { value: 0 }, uSign: { value: 1 },
+      uFill: { value: 1 }, uRes: { value: 0 }, uAlpha: { value: 0 }, uStart: { value: 0 }, uSign: { value: 1 }, uOnline: { value: 1 },
       uBeads: { value: new THREE.Vector3(0, 0, 0) }, uThreat: { value: threats }, uMindT: mindTime,
       uBlow: { value: Array.from({ length: MAX_BLOWS }, () => new THREE.Vector4()) },
     };
@@ -141,7 +153,9 @@ export class HudRing {
     // the blow itself says where it came from (a jelly's place, or the way an impulse pushed: it came from the other side)
     this.blows = Array.from({ length: MAX_BLOWS }, () => ({ a: 0, kind: 0, k: 0 }));
     this.lastKind = 0; this.lastKindT = -9;
+    this.online = 1;
     const E = game.events;
+    E?.on('combat.start', () => { this.online = 0; }); // (a fight begins: the ring comes online)
     E?.on('vessel.shield', () => { this.lastKind = 0; this.lastKindT = E.time; });
     E?.on('vessel.shieldbreak', () => { this.lastKind = 1; this.lastKindT = E.time; });
     E?.on('vessel.crack', () => { this.lastKind = 1; this.lastKindT = E.time; });
@@ -197,8 +211,10 @@ export class HudRing {
     }
     // (a fight's HUD: it steps out of sight outside combat and comes back for it, easing with the fight's heat: combat.js)
     const heat = g.combat ? g.combat.heat : 1;
-    const want = show ? (this.busy > 0 || fill < 0.999 ? 0.95 : 0.6) * Math.min(1, heat * 1.5) : 0;
-    this.alpha += (want - this.alpha) * (1 - Math.exp(-dt * (want > this.alpha ? 6 : 2)));
+    // (coming online for a fight: drawn round, poured, set, pulsed, over the battle theme's change-over, then as it was)
+    if (this.online < 1) this.online = Math.min(1, this.online + (g.rawDt || dt) / ONLINE);
+    const want = show ? (this.online < 1 ? 0.95 : (this.busy > 0 || fill < 0.999 ? 0.95 : 0.6) * Math.min(1, heat * 1.5)) : 0;
+    this.alpha += (want - this.alpha) * (1 - Math.exp(-dt * (this.online < 1 ? 14 : want > this.alpha ? 6 : 2)));
     this.mesh.visible = this.alpha > 0.01;
     if (!this.mesh.visible) return;
     // where they stand, and which way is "up the screen" on the ground (the band starts at the far side and runs clockwise on screen)
@@ -210,6 +226,6 @@ export class HudRing {
     this.u.uSign.value = Math.sin(aR - aF) > 0 ? 1 : -1;
     this.u.uFill.value = this.fill; this.u.uRes.value = this.res;
     this.u.uBeads.value.set(blink ? blink.n : 0, blink ? blink.max : 0, blink ? blink.fill : 0);
-    this.u.uAlpha.value = this.alpha;
+    this.u.uAlpha.value = this.alpha; this.u.uOnline.value = this.online;
   }
 }

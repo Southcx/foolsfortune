@@ -43,8 +43,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **shield**: the pool paying for a blow before the clay does (35 Lachryma a full blow). It is not a separate bar.
 - **shatter / made whole** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`): the Courier's death, and being made whole again in
   the workshop. Player text says "made whole" (or "re-formed"), never "reform", which reads as politics; the event keeps its code name.
-- **glaze** (`src/courier/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks.
-- **kintsugi** (`src/courier/vessel/kintsugi.js`): the net the cracks run along. Its gold is not drawn on the body for now (R41).
+- **glaze** (`src/courier/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks. A rare glaze also has a **kiln pattern** (`vfx/finish.js`): the mark its firing leaves, drawn the way the real one forms (yohen's stars, oil spot's silver, hare's fur's streaks, crackle, kinrande's leaf).
+- **kintsugi** (`src/courier/vessel/kintsugi.js`): the net the cracks run along. Its gold shows on the body only while a crack mends, and is gone when the mend completes (R45).
+- **chest glaze** (`src/vfx/chestglaze.js`): how a chest shows its tier as it charges, in place of a beam: celadon, crazing, raku, kintsugi gold.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
 
@@ -145,6 +146,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## Creatures and folk
 
+- **the Great Dunemaw** (the owner's name, R57; not "the Swallow"): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/dunemaw.js`) is a
+  spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Great Dunemaw's kit** (`src/vfx/dunemawkit.js`:
+  the bismuth wall, the glass floor over liquid Lachryma, the trim).
 - **creature** (`game.creatures`, `src/creatures/creatures.js`): a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **clapperjar** (code: `clapper`, `src/creatures/clappers.js`): the clapping pots, the folk's lowest tier (earthenware). The code's shorter
@@ -155,11 +159,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   builds: **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium); Impact's is the stun). **build-up**
   (`creature.build[type]`): a type's meter toward its status. **annihilation**: Impact on a confused creature, or Delirium on a stunned one.
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
-- **damage type** (plan B1, Dovina's numbers): what a blow is made of, on the **Law–Chaos line**: **Impact** (lawful, physical), **Ego**
-  (lawful, mental), **Influence** (neutral, social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic). Code: `type`,
-  lower case (`'impact'` ... `'delirium'`).
-- **mental state** (plan B2): how solid a creature's mind is, Stoic, Resolved, Balanced, Fluid, Prismatic (a number from -2 to +2; the
-  lore's solid to liquid). **Emotional Output** (EmO, plan B4): a creature's agitation, 0 to 1; past its band it **enrages**.
+- **enrage** (`enraged(emo)`, `src/progress/combat/emo.js`): a creature past the top of its EmO band (from `EMO.enrage`); it shows in its
+  body (the temper), never in text.
 - **the folk** (code: `npc`, `src/npc/`): the clay people, all fragments of Kaolin Anagami, tiered earthenware (the clapperjars) < stoneware <
   porcelain < the Court. "The folk" in the game means the ones who speak (Saggar, Raku, Old Grog, Pip); only they speak in the dialogue
   box. Pronouns (R39): the Prince of Clay is "he"; every other folk is unisex by construction and goes by what the lore gives it (so far
@@ -197,7 +198,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
   (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
   King's marque (Letty Marque). *Not:* the same thing.
-- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; Espada's name): the Well in the Dunes, the slice's one Well. Its
+- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
   **way up** (a pale pool: back out to the mouth with the haul) and, but on the last, the **way down** (a dark pool: deeper). A **run** is
@@ -236,7 +237,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **the god hand** (~, `src/godhand/godhand.js`): the mode where the Courier becomes a jar and you become a hand.
 - **the jar** (code name `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka Jar, the Courier's true form and the Prince's
-  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). It has integrity, it shatters, it is reforged. *Not:*
+  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). The Courier, the god hand and the jar are one
+  entity, the player (the owner, R43): player text says "your Pneuka Jar" ("Your Pneuka Jar breaks."), never "the jar". It has integrity, it shatters, it is reforged. *Not:*
   the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
 
@@ -258,10 +260,20 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+- **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
+  audit (ours, placeholder, genre default).
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
-  (`src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
+  (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
+- **lane mark** (`lane.mark` in the library): Divination's mark on the Emocean's rail where a wave will come, up to 3 s ahead: a column
+  of labradorite standing out of the crude, a whirl on the surface, rings on the beat of its approach (no words or numbers).
+- **the crude sea** (`src/vfx/crudesea.js`): the Emocean's surface where the ships sail, liquid Lachryma: black, its swells real, its
+  current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
+- **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
+  (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
+  anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.
+  A **still** (`src/ui/stills.js`): a frame of the trailer held as a sepia photograph on a stop-time hit (not a plate: nothing is taken).
 - **shot**: a psygun shot, and only that. A scripted camera is a **camera shot** (`cinema.shot`); a photograph is a **plate**.
 
 ## Engine and process words
@@ -304,7 +316,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
+- **you**: the Vessoul (the Courier section), in every form one being. Player text says "you", and "your Pneuka Jar" for the body.
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
+  a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
+- **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
+  Queen: chaos, every feeling pegged high, its core hunger; her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
+  Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
+- **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
+- **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
+  the name.
+- **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 
 ## Homonyms we keep on purpose (always qualify them)
 

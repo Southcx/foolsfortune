@@ -14,6 +14,10 @@
 //   RAKU              porcelain. Treasurer of the Weir, a greedy little miser who haggles. Vain of his crackle. The soft hexachord.
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
+//   LETTY MARQUE      nacre, of Margarite (the King's island). A Contractor under the King's marque: the bounty board at Margarite's
+//                     dock. A zealot on a mission and a war hawk itching for escalation: the King holds the line, she wants to take the fight out. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
+//   THE PURSER        of Margarite. Buys crude, materials and Cogitomaps for the lamp, at the King's posted price; never haggles,
+//                     never names the Queen. The role is the name. Waits for a model.
 // ---------------------------------------------------------------------------------------
 import { TITHE } from '../world/treasure/treasure.js';
 
@@ -105,7 +109,7 @@ export const TALKS = {
     start: 'hello', again: 'again',
     nodes: {
       hello: { lines: [
-        { mood: 'calm', text: '{slow}Mm.{/} {p:0.6}A visitor. Not many come this far into the dunes.' },
+        { mood: 'calm', text: '{slow}Mm.{/} {p:0.6}A visitor. Not many come this far into the Dunes.' },
         { mood: 'sad', text: "I've fished this pool since it was a {small}puddle{/}. Since before the sand came. {p:0.5}{slow}Since before the Weir was a weir.{/}" },
         { mood: 'awe', text: 'Do you see how the water holds the sky? {p:0.3}{slow}That\'s the Lachryma in it.{/} The tide brings it up from somewhere deep.' },
       ], next: 'menu' },
@@ -202,6 +206,108 @@ export const TALKS = {
         ],
       },
       hagbye: { lines: [{ mood: 'sad', text: (g) => pick(RAKU_HAGGLE.gone, g) }] },
+    },
+  },
+
+  // LETTY MARQUE at her bounty board, Margarite's dock (docs/plans/SLICE.md, E4b; docs/LORE.md, section 6). A true believer: the King's
+  // light holds the strays back, and she goes out to finish them. Never a villain; the world knows something she does not (LORE.md).
+  letty: {
+    start: 'hello', again: 'again',
+    nodes: {
+      hello: { lines: [
+        { mood: 'joy', text: "Letty Marque, licensed by the King's own letter, and that's marque with a Q-U-E, {p:0.3}though if you ask me it ought to be spelled with a few more teeth." },
+        { poll: true, mood: 'joy', text: '{big}{shake}HEAD COUNT! HEAD COUNT!{/}{/}' },
+        { mood: 'anger', text: "This is my board, and every notice on it is a wrong thing loose in the sea that ought to have been dealt with yesterday, {p:0.3}and if I had my way we'd be dealing with all of them {hot}today{/}." },
+      ], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: "There you are! {p:0.3}I was starting to think you'd gone soft on me, and the board has only grown since you left." }], next: 'menu' },
+      menu: { lines: [], choices: [
+        { text: "What's on the board?", go: 'board' },
+        { text: 'Who pays?', go: 'pays' },
+        { text: 'What is that bird?', go: 'poll' },
+        { text: 'Tell me about the King.', go: 'king' },
+        { text: 'What is out on the far shore?', go: 'shore' },
+        { text: 'Why are you out here?', go: 'why' },
+        { text: 'What do you make of me?', go: 'me' },
+        { text: 'Goodbye.', go: 'bye' },
+      ] },
+      board: { lines: [
+        { mood: 'anger', text: 'Aberrants: Egregores off the Emocean, and Figments that slipped their island and went {cold}wrong{/}. {p:0.4}The King posts the little ones, and I keep telling him that if we only ever chase the little ones, {hot}the big ones get bigger{/}.' },
+        { mood: 'sly', text: "Take a notice, bring it in and I'll pay you out, {p:0.3}and once you've cleared a few, come back and ask me about the ones I'm not allowed to post yet." },
+      ], next: 'menu' },
+      pays: { lines: [
+        { mood: 'calm', text: 'Margarite pays, the lamp gets fed and the sea gets a little cleaner, {p:0.3}which is fine as far as it goes, {p:0.4}{small}but a little cleaner was never the plan.{/}' },
+        { mood: 'anger', text: "They aren't his strays, you know; he just pays to have them put right. {p:0.4}Ask the crude where they come from, {p:0.3}and then ask yourself why nobody has sailed over there to {hot}shut off the tap{/}." },
+      ], next: 'menu' },
+      poll: { lines: [
+        { mood: 'joy', text: "Poll's my Tulpa, folded from every notice I ever closed, and it keeps the Emocean off me while I work, {p:0.3}though I'll admit I folded it bigger than it needed to be, {small}because I'm planning on a lot more paper.{/}" },
+        { poll: true, mood: 'surprise', text: '{big}MORE PAPER! MORE PAPER!{/}' },
+      ], next: 'menu' },
+      king: { lines: [
+        { mood: 'awe', text: "King Magnus keeps the light lit every night, every grain of the glass, and I'd follow him off the edge of the map, {p:0.4}but holding the line is all he ever does, {p:0.3}and a line you only ever hold is a line you're slowly losing." },
+        { mood: 'anger', text: 'Give me a fleet of destroyers and one good season {p:0.3}and I would {hot}{big}take the fight to them{/}{/}, instead of waiting in the dark for them to come to us.' },
+      ], next: 'menu' },
+      // Entropolis, from hearsay: she has never been, and the far shore she paints is the dock's stories and the King's silence (LORE.md)
+      shore: { lines: [
+        { mood: 'anger', text: 'Entropolis! {p:0.3}A whole city that never sleeps, where the lights hum all night and every feeling runs at full boil, where every stray that ever crawled onto my board was hatched in the gutters, {p:0.3}{hot}and the Queen sits on top of it all and feeds it{/}.' },
+        { mood: 'sly', text: "Every sailor on this dock has a story about it, each one worse than the last, {p:0.3}and the King himself won't say her name, {p:0.4}which tells you everything you need to know." },
+      ], choices: [
+        { text: 'Have you been there?', go: 'been' },
+        { text: 'I see.', go: 'menu' },
+      ] },
+      been: { lines: [
+        { mood: 'surprise', text: 'Been there? {p:0.5}{small}Well, no. Not yet.{/}' },
+        { mood: 'joy', text: "{p:0.3}But you don't have to touch a fire to know it burns, and the day the King lets me sail, {p:0.3}{hot}I'll see it with my own eyes, and then I'll see it put out{/}." },
+      ], next: 'menu' },
+      why: { lines: [
+        { mood: 'sad', text: "Margarite is the safest place in the whole Emocean, and I couldn't stand it: {p:0.3}all those walls and that patient light, and everyone waiting for the deep things to give up first, {p:0.4}{slow}as if they ever would.{/}" },
+        { mood: 'joy', text: "So I took the King's letter and went out where they breed, {p:0.3}and I haven't looked back once, {bounce}not once{/}." },
+      ], next: 'menu' },
+      me: { lines: [
+        { mood: 'surprise', text: "You're one of those jars that walks, full to the brim with Lachryma and somehow still yourself, {p:0.3}which makes you about the most useful thing I've seen all year." },
+        { mood: 'sly', text: "{p:0.4}Stay that way, won't you? {p:0.5}{small}I'd hate to have to put your notice on my board.{/}" },
+      ], next: 'menu' },
+      bye: { lines: [{ mood: 'joy', text: "Fair winds and good hunting, and if you see anything big out there, {p:0.3}{hot}don't you dare leave it for the lamp{/}." }] },
+    },
+  },
+
+  // THE PURSER at Margarite's dock (docs/plans/SLICE.md, E4b): the King's buyer. Margarite is Law, so the Purser speaks by the book:
+  // a posted price, no haggling (the opposite of Raku). Like the King, the Purser never says the Queen's name: "the far shore".
+  purser: {
+    start: 'hello', again: 'again',
+    nodes: {
+      hello: { lines: [
+        { mood: 'calm', text: 'Margarite dock. {p:0.3}State your cargo.' },
+        { mood: 'calm', text: "I am the Purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
+      ], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }], next: 'menu' },
+      menu: { lines: [], choices: [
+        { text: 'What do you buy?', go: 'buy' },
+        { text: 'Can we talk price?', go: 'price' },
+        { text: 'What is the lamp for?', go: 'lamp' },
+        { text: 'Where is the best crude?', go: 'shore' },
+        { text: 'Do you know the Prince?', go: 'prince' },
+        { text: 'Goodbye.', go: 'bye' },
+      ] },
+      buy: { lines: [
+        { mood: 'calm', text: 'Crude, by the cask. Materials, from the Wells. {p:0.3}And charts of the Wells, while they are fresh.' },
+        { mood: 'calm', text: 'A Well drifts. {p:0.4}{small}A chart of yesterday is worth less today.{/}' },
+      ], next: 'menu' },
+      price: { lines: [
+        { mood: 'confused', text: 'Talk? {glyph:ask}{p:0.4}The price is on the board. {p:0.3}The King sets it, by the hourglass, by the grain.' },
+        { mood: 'calm', text: '{p:0.3}Nobody haggles at Margarite. {p:0.4}{small}It saves a great deal of time.{/}' },
+      ], next: 'menu' },
+      lamp: { lines: [
+        { mood: 'awe', text: 'The lamp burns crude and keeps the deep things back. {p:0.5}It has never gone out.' },
+        { mood: 'calm', text: '{p:0.4}{slow}It is not going to go out on my watch.{/}' },
+      ], next: 'menu' },
+      shore: { lines: [
+        { mood: 'calm', text: "Anagami's crude is thin. {p:0.4}The heaviest grade, the dread, comes from further out." },
+        { mood: 'whisper', text: '{p:0.4}{slow}From the far shore.{/} {p:0.4}We pay well for it. {p:0.3}We do not say where it comes from.' },
+      ], next: 'menu' },
+      prince: { lines: [
+        { mood: 'calm', text: 'The Prince of Clay. {p:0.4}His Majesty asks after him. {p:0.5}{small}Not in so many words.{/}' },
+      ], next: 'menu' },
+      bye: { lines: [{ mood: 'calm', text: 'Fair tide. {p:0.3}The lamp sees you out.' }] },
     },
   },
 };

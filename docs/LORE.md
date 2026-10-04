@@ -34,7 +34,7 @@ finer its artistry, the bigger its share of him. *(Ruled)*
 
 **The Prince of Clay** is the most powerful of them, the main avatar of Kaolin Anagami and the truest picture of him: his
 personality, mannerisms, proclivities and philosophy. He is **playful, experimental, aloof, detached, witty, haughty, something
-of a brat, and wholly devoted to the act of creation.** In the concept art he stands tall and symmetrical, eyes lowered, with a
+of a brat, and wholly devoted to the act of creation.** Why he is so is in "The family", below. In the concept art he stands tall and symmetrical, eyes lowered, with a
 faint smile, under a headpiece that reads as crown, top hat and kiln chimney at once, with molten drip glaze just under its rim.
 He lives in a chateau on the thumb of the hand tower. *(Ruled: who he is and what he is like. Owner's notes: the look and the
 chateau.)* **He is "he", femboy-coded**: Lloyd de Saloum (*Dainana Ouji*) meets Tet (*No Game No Life*). *(Ruled, Round 39)*
@@ -63,8 +63,8 @@ figure. *(Ruled, Round 40)*
 | **the Court** | the finest porcelain, nearest the chateau: his favourite cups | by his nature, in worried whispers: is he overreaching, will it break, should he rest |
 | **the Prince of Clay** | the main avatar | himself |
 
-**Above the Prince, a King and a Queen** are named and nothing more. *(Ruled, Round 40: they exist and are a mystery.)* The higher
-echelons (porcelain, the Court, the royals) wait for the owner's models before they are developed; write around them until then.
+**The King and the Queen are two other Islands of Ego, and the Prince's parents** *(ruled, R43)*: Magnus Ibrahim Manus and Entra
+Polearis (section 1, "The King and the Queen" and "The family"). Porcelain and the Court still wait for the owner's models before they are developed.
 
 **The Pneuka Jar is his Magnum Opus.** Divine inspiration from **the System** came to him, and from it he made the Pneuka Jar: a
 vessel able to house **Players**, people like us outside the game world. *(Ruled)* (The spelling is **Pneuka**. *Pneuma* was an
@@ -103,6 +103,17 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 - The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
 - The game divides into **STORY** and **DEBUG**.
 
+**The Vessoul** *(Ruled, R43)*: the entity that stands for the player in the world, a soulspark from beyond in a vessel (*vessel* +
+*soul*, and the word keeps both). It is one being in several forms, which is why every form shares one design language:
+- **the Pneuka Jar**, its true form, the Prince's magnum opus;
+- **the Courier**, the jar in humanoid form, walking the island;
+- **the god hand**, the same will reaching out while the body rests as the jar;
+- **the ships** on the Emocean, classed by real nomenclature: sloop, frigate, tanker, destroyer, galleon.
+- **The Solar Skiff** is a limb of the Vessoul, not a vehicle it owns.
+
+There is no Courier the player "returns to". Player text says **"you"**, and **"your Pneuka Jar"** for the body ("Your Pneuka Jar
+breaks."), never "the jar", "the vessel" or "the player".
+
 ### Wells, and the town that was *(Ruled, Round 40)*
 **A Well is a pocket of distortion**: rumination gone round and round until the Lachryma pools, distorted thinking, psychosis. It is
 not always dark. **Positive feeling in excess is a distortion too**: delusions of grandeur, mania, a joy that will not stop. A Well
@@ -117,6 +128,224 @@ who did it. Grog stayed by the water, and remembers. *(The owner approved this d
 
 This is the showcase for the Lachryma system's downside: the same stuff that powers everything, taken past what a mind can hold.
 Couriers can walk where the town could not. That is what they are for.
+
+### The systems' canon *(Ruled by the owner, 2026-10-04; the numbers are Dovina's, `docs/DESIGN.md` sections 9 to 11)*
+
+**The three layers** go inward and outward from the same ego: **Wells** (in: a dungeon inside the island's own thinking), **the island**
+(the action outside them), **the Emocean** (out: travel between islands). One Courier, one purse, one ledger, one set of seven tools
+in all three.
+
+**A Well** is a Lachryma distortion that drifts over time, as rumination does: the same thought, never quite the same twice. A
+**Cogitomap** (*cogito*, "I think", plus a map: a map of a thought) is a Well charted as it was, and so a ticket to that run of it.
+Spellscription copies a good one. The Weir's Well is a place; a Well is a pocket of distortion (`docs/GLOSSARY.md` keeps them apart).
+
+**The seven domains** (six and one) are the skills of a psyche. Each has a one-line blurb for the Codex:
+
+| Domain | Root | Blurb |
+| --- | --- | --- |
+| **Ouranurgy** | Greek *ouranos* (sky, the heavens) + *ergon* (work): sky-work | The craft of where and when: moving a thing without crossing the space between. |
+| **Manifestation** | Latin *manifestus*, struck by the hand: made plain | Making a thing out of Lachryma, so that it is there to be touched. |
+| **Divination** | Latin *divinare*, to foresee, from *divus*, of the gods | Knowing before: what is hidden, what is next. |
+| **Psychokinesis** | Greek *psyche* (soul) + *kinesis* (motion) | Moving a thing with the mind instead of the hand. |
+| **Possession** | Latin *possidere*, to sit as master | A mind in another's seat: host a spirit (the East) or ride a mind (the West). |
+| **Alteration** | Latin *alter*, the other | Making a thing other than it was. |
+| **Spellscription** | to spell (to write a word letter by letter, and to cast) + Latin *scribere*, to write | Writing a thing down so that it holds: the Soul Brush's glyphs and the Veritome's macros. Neutral, and so the most dangerous. |
+
+**Figment classes** go by sea, from a thought you could hold in your hand to one that holds you: **Guppy, Barracuda, Marlin, Whale,
+Leviathan**. They are fish because the Emocean is a sea of tears, and a Figment is a feeling that grew fins.
+
+**The five damage types** run along a Law–Chaos line: **Impact** (lawful, physical), **Ego** (lawful, mental), **Influence** (neutral,
+social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic).
+
+**The five mental states** are the lore's solid–liquid motif as a scale: how open a mind is to statuses, good and bad. **Stoic** (fired
+hard: nothing gets in, nothing gets out), **Resolved**, **Balanced**, **Fluid**, **Prismatic** (wet as slip, every colour at once: it
+rides chaos and bleeds easily). The prismatic chest takes its name from the same end of the scale.
+
+**The statuses each type builds** *(names and log lines: Espada's call; which ones are built, and their numbers, are Dovina's)*. Enough of one
+type applies its status. Where the game already has a status, its name is kept. `{c}` is the creature's name.
+
+| Type | Status (player word) | Was in the v0.1 document | Built |
+| --- | --- | --- | --- |
+| Impact | **stun** (kept) | stun | yes |
+| Impact | **slow** (kept) | slow | |
+| Impact | **brittle** | armour break | |
+| Ego | **doubt** | doubt | yes |
+| Ego | **calm** (kept, the reprogram's) | pacified | |
+| Influence | **charm** | charm | yes |
+| Influence | **taunt** | taunt | |
+| Influence | **misled** | misdirect | |
+| Illusion | **blind** | blind | yes |
+| Illusion | **phantom** | phantom pain | |
+| Delirium | **confusion** | confusion | yes |
+| Delirium | **tear** | reality tear | |
+
+**The log lines follow one pattern** (the robotic register, after FFXI's "The Goblin is paralyzed."), so no status needs a line of its own:
+- lands: "The {c} is afflicted with {status}." (the stun keeps its own: "The {c} is stunned.")
+- wears off: "The {c}'s {status} wears off."
+- resisted: "The {c} resists {status}." (in the game)
+
+- **Annihilation** (Impact against Delirium, the two ends meeting on a target already afflicted by the other): "Annihilation: Impact
+  meets Delirium on the {c}." (in the game). The word is the owner's, and it stays.
+- **tear** is a homonym on purpose: a tear in the world that weeps Lachryma, which is tears. For the glossary's table: say "a tear"
+  (the status) and "Lachryma" (the substance), never "tears" for Lachryma in player text.
+- **brittle** and not "crack": "crack" is the Courier's vessel damage in the glossary, and a status must not share its word.
+- **phantom** is shortened from "phantom pain", which reads heavier than the game's overtones want; the line keeps the idea.
+
+### Lachryma as crude *(Espada's ruling, R43, from the owner's question and Dovina's angles; the owner may veto any line)*
+
+The owner's question: what follows from a universe founded on an emotionally derived, cognitively radioactive super-material that
+behaves like petroleum? Set the initial condition and let the consequences fall:
+
+- **Crude Lachryma is fossil feeling.** Oil is ancient life pressed down over ages; liquid Lachryma is old emotion pressed down in the
+  collective unconscious. The deeper the crude, the older the feeling, until it is a feeling nobody remembers having.
+- **A Well is a well.** The owner's word already meant both: a pocket of rumination, and the place it is drilled. A Well pools where a
+  mind keeps going round the same thought.
+- **Drawing a Well down is working a feeling through.** Extraction depletes it, and a feeling worked through stops pooling: a Well
+  that runs dry is a mind that has healed. That is why Wells drift and why a Cogitomap goes stale (Dovina's half-life has its reason).
+  It is also the moral axis of the whole economy: harvesting helps an island, and a greedy driller would want the Well to keep filling.
+  Intent, not alignment, decides which one a Courier is.
+- **Grades, like crude's.** Lachryma carries the feeling it came from, so it grades by aspect (the five the angling already has:
+  dread, wonder, grief, hunger, mirth), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
+  makes hauling pay.
+- **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
+  Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
+  Lachryma is inert and safe to hold, which is why cubes are money.
+- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma solid, so the
+  currency is a refined product (a petrocurrency) and a Courier is a walking refinery. The Prince's magnum opus is, read this way, the
+  first safe container a soul could ride in through raw Lachryma: a jar, built to hold what would burn anyone else.
+- **Ships by trade.** Every era of ship sails the dream sea at once, and each class is a trade:
+  - a **sloop** is quick and light: couriers' errands, letters, a small cargo;
+  - a **frigate** escorts;
+  - a **galleon** carries treasure, which is to say refined cubes;
+  - a **destroyer** hunts Egregores (Letty Marque's trade, at its largest);
+  - a **tanker** carries crude, volatile and slow, double-hulled because it has to be.
+- **A spill is a cogitohazard.** Crude spilled on an island blooms Figments where it lands and drives the folk mad around it.
+- **The town that was is a boomtown that went bust.** A desert, a Well, folk drawn to it, then too much exposure, then a ghost town in
+  the Dunes with one old angler who stayed. The canon already had this shape; the crude names it.
+- **Petrostates, and the resource curse.** An island rich in Wells is an island that ruminates a great deal: **the richest islands are
+  the unhappiest minds.** *(The owner, R43: stable minds are safer and less lucrative, chaotic ones riskier and richer.)* That is
+  the deepest undertone in the setting, safe for a child to meet and worth an adult's second look.
+  Cartels of Egos that hoard their Wells follow from it; their names are left blank until a story needs them.
+- **The Emocean is the crude sea itself**, the atmosphere every island holds back by Will. Every voyage is a trip across the one
+  substance that would drown you, in the one vessel built to carry you through it.
+
+### The King and the Queen *(ruled by the owner, R43; concept art: `docs/ref/concept_king_magnus_margarite.png`,
+`docs/ref/concept_queen_entra_polearis.png`)*
+
+Two more Islands of Ego, at the two ends of the Law–Chaos line, with Kaolin Anagami (who lives for the act of creation) between them.
+The owner's arcana notes already had three factions, Law, Creation and Chaos; now each has an island.
+
+**The King: Magnus Ibrahim Manus, the great allfather. Pure iron Law.**
+- **The name, read three ways.** *Magnus*, great. *Ibrahim*, Abraham, "father of a multitude": the allfather. *Manus*, Latin for the
+  hand, and in Roman law the power of the head of a house. Put the first and last together and you get *magnum* and *manus*, the great
+  hand: a rhyme with the Prince's hand tower and the god hand. His initials, M. I. M., point at Mímir, who keeps the well of wisdom
+  for Odin, the Norse allfather. A well, again.
+- **His island: Margarite** (Greek *margarites*, a pearl). A sentinel lighthouse on the back of a cosmic whale. Nacre is Law's own
+  method: an oyster takes the grit that hurts it and coats it, layer on even layer, until it is smooth, harmless and beautiful. Order
+  built around the aberrant. The lighthouse guides ships across the crude sea, and it moves, because the whale swims.
+- **His avatar** (the concept art): an old admiral, white-bearded, in a captain's cap and a long coat trimmed in gold, a pipe in his
+  teeth, a fishing rod hung with a lantern lure, a gold pocket watch in his other hand. White, sage, deep green, gold, a little red.
+- **His Figments** (as drawn; names wait): a small capped sailor; a white-hooded rifleman with yellow eyes; a lamplighter in a wide hat
+  with a lantern and a pail; a great dark golem carrying a lamp and a weight like a hand-bell; and the whale.
+- **His island, as drawn:** the lighthouse rises from a ship's prow, its lantern an hourglass with a flame inside, its gallery floored
+  in black and white checks over a red-orange carpet, standing in a pale sea of mist and white coral.
+- **What he wants:** order. His lighthouse keeps the Leviathan-class Egregores at bay ("The lighthouse", below). He hunts aberrant
+  Figments hard, wherever they come from. He is the safe, stable, poor end of the economy:
+  a lawful mind keeps few Wells, and keeps them shallow.
+
+**The Queen: Entra Polearis. Peak chaos, growth and abundance.**
+- **The name.** An exact anagram of *Astral Pioneer*, checked letter for letter. *Entra* leans towards entropy and "enter"; *Polearis*
+  wears Polaris, the one fixed star sailors steer by, which is a fine joke for the queen of chaos.
+- **Her island: Entropolis** *(the owner, R57)*: *entropy* plus *polis*, the city, and her own name folded into one word, the
+  way Kaolin Anagami is Anagami Island. A blacklight metroplex, sprawling and avant-garde. Skyscrapers tilt, magenta lightning runs down the streets like
+  cracks, neon-green pools lie between the towers, a checkerboard hangs like a billboard. Over it all hang a magenta cloud and a dark
+  moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. What looks like a great head with
+  green eyes at its foot is not one *(the owner, R57)*: it is toxic green Lachryma seeping out of the city's sewers.
+- **Two cities, one over the other** *(the owner, R57)*. **Overground**: flashy hedonism, the party that never stops, every light on
+  and every feeling at full. **Underground**: twisted decay, where everything the party spends drains down, and the runoff seeps out
+  of the sewers and off the island's underside as toxic green Lachryma.
+- **Rave culture, good and bad** *(the owner, R57)*. Entropolis is the embodiment of rave culture, both halves of it. The good is
+  real: belonging, music, self-expression, strangers who look after each other on the floor. So is the bad: chasing the next high,
+  the comedown, the ones who burn out and sink to the underground. *(Espada's, for kid-safety)*: in the world the high is Lachryma
+  itself, raw feeling taken for the rush of it, so the game can tell the whole story without naming a drug. It is the Queen's core
+  feeling made into a city: hunger, always one more. Letty's stories are propaganda, so they keep only the bad of both
+  halves (the gutters, the strays, the decay, the excess) and drop the good: the belonging, the music, the people who look after each
+  other. What she has never heard is that anyone there is happy.
+- **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
+  city's grid and density, then the colours bleeding off everything, and then a wave that breaks the geometry itself. Player text
+  never names a drug: the game shows it, as it shows the Queen's moods without clinical words. For the stories *(Espada's)*: Letty's
+  secondhand picture is right about how it looks and wrong about what it means.
+- **Her avatar** (the concept art): red hair, a witch's hat haloed by a dreamcatcher, glowing green eyes and smile, smoke with red eyes
+  coiling off her, and marionette strings running from her fingers to a small green puppet. Magenta, neon green, violet, red.
+- **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
+  wiry doll patterned in red; a mushroom-capped creature covered in eyes, dripping green; a tall faceless runner with a club; a small
+  hooded pyramid with eyes and red drips.
+- **What she wants:** more. The core feeling of chaos is hunger. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
+
+**What follows** *(Espada's, for the owner to veto)*
+- **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
+- **Risk and reward, ruled in outline** (the owner, R43): a stable mind is less lucrative and safer to mine; a chaotic mind is riskier
+  and richer. Margarite is the lighthouse, Entropolis the boomtown that never busts (yet).
+- **Letty Marque is Magnus's** (the owner's suggestion, taken). A letter of marque was always issued by a sovereign: hers is the King's.
+  She hunts bounties under his licence, and her pearl is his island.
+
+### The family *(ruled by the owner, R43)*
+
+**The Prince of Clay is the son of the King and the Queen.** Kaolin Anagami grew up between Magnus Ibrahim Manus and Entra Polearis, and
+he is a cautionary tale about managing extreme parents.
+
+**The map is a circle.** Entropolis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
+eating the ambient Emocean like wildfire. **The core feeling of chaos is hunger.** (It is one of the five aspects already: the Queen
+is its throne.) Magnus orbits with her, feeding off what she throws out and cleaning up after her, the two of them a binary circling
+the rim. **Kaolin is the centre: an oasis**, the still place between them. Anagami Island repeats the shape in miniature: an oasis at
+the heart of the Dunes, with Old Grog fishing at its edge.
+
+**The Queen is chaos, not only grief.** Every feeling at once, all of them pegged high: elation and fury and longing and dread, swinging
+without warning. (The owner's references are mania and emotional volatility. The game shows it and never names it: no clinical words
+in player text.)
+
+**The Prince, explained.** The aloofness, the detachment, the jokes, the haughty brat: that is the shield a child grows between a
+mother who overflows and a father who burns what overflows. Underneath he cares a great deal, and he is stressed, and there are cracks
+under the glaze. Kaolin is porcelain: clay fired hotter than any other until it turns fine, luminous, nearly translucent, and brittle.
+His mother's clay and his father's fire.
+- **Read this way** *(Espada's)*: the boy who grew up between a flood and a furnace built the one thing that could carry raw feeling
+  without breaking or burning. The Pneuka Jar is a child's answer to his parents.
+- The Court's worried whispers are the self-doubt he lets in too deep; Saggar's kiln wisdom ("what's made too fast cracks in the
+  firing") is about him, whether she knows it or not.
+- *For the stories:* never a villain parent and a victim child. Both parents love him in their own extreme ways, and the lesson is
+  in how he learns to hold himself together, and when he lets the Courier help.
+
+### The lighthouse and the toxic symbiosis *(the owner, R43; the numbers are Dovina's, `docs/ECONOMY.md`)*
+
+**The lighthouse is a weapon, and a vigil.** Margarite's light is the one thing that keeps the deepest horrors of the Emocean, the **Leviathan-class
+Egregores**, at bay. It has to be fed, and it burns crude. If it goes out, they come.
+
+**So Chaos digs the crude up, and Law buys it.** Entropolis sells crude cheap: its Wells run deep with every feeling at full, and
+abundance never values what it has too much of. Margarite buys it dear, because it must. The crude route runs from the Queen to the
+King, and the hauler (a Courier, in a sloop or a tanker) lives in between. Letty's bounties are mostly the Queen's strays, brought in
+under the King's marque and paid for by Margarite. The Queen's island breeds both the riches and the strays, and the King pays to have
+both brought home.
+
+**How it sits with Magnus.** *(The owner, R43.)* He does it out of love. He is managing Entra, and has been for so long that the love has
+calcified into something that no longer reads as love: duty, rules, a lamp kept lit on schedule. Nacre is exactly that, and the word
+was waiting: calcium laid down in layers, each one thin and loving, until the whole thing looks like a wall. **A lighthouse is a light
+left on for someone out at sea.** His keeps the Leviathan-class Egregores at bay, and it burns her overflow to do it, so that every ship
+crosses safely, and she does too. The hourglass inside his lantern (the concept art) measures out her feelings by the grain so that they
+never drown anyone, her least of all. He hunts what she breeds and buys what she spills, and he never says her name: it is the one thing
+he cannot say without the shell cracking.
+
+**How it sits with the Queen.** She lets things go; it is what chaos does. Her strays wander off and she does not call them back. That
+someone else gathers them up, pays for them and keeps the dark away with them is, to her, simply what the world is for.
+
+**Why it is toxic, both ways.** Law needs Chaos's overflow for its fuel and for everyone's safety, so a calmer Queen would put out the
+King's light. Chaos needs Law to take what it cannot hold, so a King who stopped buying would leave the Queen drowning in her own Wells.
+Neither can afford for the other to get well, and their son lives in the middle of it. *For the stories:* the rigid depend on the mess
+they tidy, the messy depend on being tidied up after; love kept up long enough can harden until it no longer looks like love; growing
+up is noticing which one you are being, and choosing to be the oasis.
+
+**The middle** *(Espada's)*: the Prince's magnum opus, the Pneuka Jar, is the only vessel that carries crude safely and the only
+refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the middle (Dovina's table), and the
+Prince sells to neither side: every Courier both of his parents need came out of his kiln.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -202,6 +431,9 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
 - **Worldbuilding sets initial conditions and lets the consequences follow.** Decide the rule (Lachryma past what a mind can bear
   transfigures it), then let the town, the jellies and Grog's grief fall out of it.
 - **Blanks stay blank.** Placeholder text is marked as placeholder, never polished into something that reads like canon.
+- **The System and the log speak clean, specific and almost robotic.** *(Ruled, R43)* Subject, verb, object, number: "Your Pneuka
+  Jar breaks." "God hand active." "Commission complete. Streak: 7." No exclamation marks, no flourish, no metaphor. The voice and the
+  wit live in the folk's talk, the item flavour and the Arcana, never in a status line.
 - **No fat, especially in the UI.** The game's interface text (menus, the kiln window, the help pages, the Codex, tool and item
   names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
   present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
@@ -230,6 +462,7 @@ Kept until the owner says otherwise.
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
+| **The Great Dunemaw** *(the owner's name, R57)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
@@ -265,6 +498,78 @@ for their models.
 - The other three are named for the potter's trade: a *saggar* is the box that shields a pot in the kiln, *grog* is fired clay
   crushed back into new clay, *raku* is a firing.
 
+### The livelihoods' cast *(Espada's casting, R43: the owner asked for one of each)*
+
+The split that makes them a pair: **a commission is a hunt for a Figment by class** (the island's own thoughts, kept in proportion) and
+**a bounty is a hunt for a named stray** (an Egregore off the Emocean, or a Figment gone aberrant), under the King's marque. One
+witnesses the island's work; the other brings in what has gone astray.
+
+**Seger, the Witness Cone** (commissions; D4) *(stoneware)*
+- **The name.** Hermann Seger invented the pyrometric cone (1886). A *witness cone* stands in the kiln and slumps when the firing has
+  reached its heat: it does not do the work, it certifies that the work was done. So: a witness (who sees), a cone (graded heat, as the
+  Figment classes are graded), and a commission (in a potter's world, work ordered, paid for and judged).
+- **The body.** Tall, narrow, three-sided, pale unglazed clay with a number pressed into its side. No hat: the tip is the hat. It
+  shows feeling by how far its tip bends: upright when unimpressed, slumped when the work was done right. (For Calissa, when its turn comes.)
+- **Where.** The pot-person barracks (the compendium's fourth stop); by the kiln until those are built.
+- **The voice.** Exact, a little smug about measurement, kind underneath. The hexachord; temper calm.
+- **What it teaches.** Persistence. A streak is a cone that has seen many firings and still stands; a broken streak starts at zero,
+  and Seger says so without cruelty.
+- **Lines** (ready for `talks.js` once Seger stands in the world):
+  - "Ah. The Courier. {p:0.4}I'm Seger. I stand in the fire and say when it's done."
+  - "Witnesses don't do the work. {p:0.3}{small}We only make sure it was done properly.{/}"
+  - (a commission) "Three Guppies, cleared from the Dunes. {p:0.3}I'll know if you cut corners. {small}I always slump a little when
+    someone does it right.{/}"
+  - (a streak) "Seven in a row. {p:0.4}A cone that has seen seven firings and still stands is either very good or very lucky."
+  - (a broken streak) "Broken. {p:0.4}Never mind. {slow}Every cone starts at zero.{/}"
+  - (on the Prince) "I've witnessed a thousand firings. {p:0.4}Not his. {p:0.3}{small}They say the cones in his kiln melt flat from
+    sheer admiration.{/}"
+
+**Letty Marque, Contractor** (bounties) *(not of Anagami Island)*
+- **The name.** A *letter of marque* was a licence to take prizes at sea: lawful bounty hunting. So Letty (letter) Marque: licensed;
+  a *mark* (the target); a *marquee* (star billing, which she would like).
+- **Who she is: a zealot on a mission** *(the owner, R57)*. A true believer, gung-ho about clearing the Emocean of aberrants. The
+  first outsider: a Contractor from Margarite, the King's island, alive in the open Emocean because she has a Tulpa. She hunts under
+  Magnus Ibrahim Manus's marque, and she takes the King's letter more literally than the King does: he keeps the light lit to hold
+  the deep things back; she goes out to finish them. Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction).
+  "She" *(the owner, R43)*.
+- **Why she left** *(Espada's reading of the owner's mission, for the owner to veto)*: Margarite is safe, and safe is a wall. Walls
+  hold things back; they never end anything. So she took the letter and went out where the strays breed.
+- **What she is made of: nacre.** Mother-of-pearl, the owner's own motif for the moment Lachryma crystallises. She is shell-pale
+  with a rainbow film where the light catches her, harder than clay: she scratches where a pot would shatter. Nacre is how a shell
+  answers grit: it coats the wrong thing until it is smooth and sealed away. That is her whole creed.
+- **Poll, her Tulpa.** A paper parrot folded from every bounty notice she ever closed: her tally, worn on her shoulder. *Poll* is a
+  parrot's name, a head count, and a tax per head. It shouts the count.
+- **The voice: a war hawk itching for escalation** *(the owner, R57)*. Long, rolling sentences that keep building, each clause a
+  step up the ladder: the little strays are not enough, the King's line is a slow retreat, give her a fleet and a season, ask her
+  about the notices she is not allowed to post yet, and why nobody has sailed to the far shore to shut off the tap. Cheerful, never
+  in doubt, never clipped: no staccato, no fragments for effect. Kid-safe words for it: clear out, put right, take the fight to them,
+  finish. For Wanda: the first voice not made of clay, and the first that never wavers.
+- **Where she points** *(Espada's)*: at the Queen's island. The strays come from Entropolis, and the King only pays to have them
+  put right; Letty wants the source dealt with. That is the escalation the King has spent his life avoiding, and it is why she is
+  useful to him and dangerous to everyone. On the Courier: "Stay that way, won't you? I'd hate to have to put your notice on my board."
+- **She has never been there** *(the owner, R57)*. Her Entropolis is built from secondhand stories, like propaganda: the dock's tall
+  tales, each worse than the last, and the King's silence (he never says the Queen's name, and she reads that as proof). She paints
+  the great villain of the Emocean with total confidence and no first-hand look. Asked, she admits it ("Well, no. Not yet.") and does
+  not slow down. The Courier can go and see for themselves; she cannot yet. What they find there, against what she says, is the
+  lesson waiting in her story.
+- **The undertone** *(Espada's)*: the canon says no Figment or Egregore is good or evil by nature (section 1), and Letty is sure they
+  are. The slip jellies in the Dunes are, by the town's story, folk of the town that was. A bounty she posts may be somebody's
+  neighbour. She is never a villain (she does keep the sea safer); she is the lesson that certainty and being right are different
+  things. What a stray was, and whether she can learn it, stays open.
+- **At her board** (the slice): her lines are in `talks.js` (`letty`). She posts at Margarite's dock because the King pays there.
+  Poll's squawks are lines marked `poll: true`.
+
+**The Purser** (Margarite's dock: crude, materials, Cogitomaps) *(the owner, R57: the role is the name, for the value it carries; unshaped until a model)*
+- **The word.** A ship's purser keeps the money; this one keeps the King's purse, and the Courier has one purse too.
+- **The voice.** Law: by the book, a posted price, no haggling (Raku's opposite). "State your cargo." Like the King, the Purser never
+  says the Queen's name ("the far shore"), and points the Courier at the dread that comes from there: the slice's lesson that the
+  crude route's money is out at Entropolis. On the Prince: "His Majesty asks after him. Not in so many words." Lines in `talks.js` (`purser`).
+
+**Their log lines** (the robotic register; for the rules in `tracking.js` once the events exist):
+- "Commission accepted: 3 Guppy-class Figments." · "Commission: 2 of 3." · "Commission complete. Streak: 7." · "Commission streak
+  ended at 7."
+- "Bounty accepted: one Egregore." · "Bounty accepted: one aberrant Figment." · "Bounty claimed: 120 cubes." · "Bounty failed. The target has left the island."
+
 ## 7. Creatures
 
 | Creature | In game | With the frame |
@@ -283,6 +588,41 @@ for their models.
 - **Kintsugi**: breakage mended in gold, a scar made beautiful.
 - **Chests, curios, lures, tools, standings**: as in the game (`src/world/treasure/treasure.js`, `src/tools/sondelass/angling/lures.js`, `src/pneuka/items.js`,
   `src/progress/achievements.js`). The curios are almost all of the sea: a fit for things fished out of the Emocean.
+
+### Words for the slice *(Espada's, R57; for `src/pneuka/items.js` when the items exist; names in player case, examine lines in STE)*
+| Item | Name | Examine |
+| --- | --- | --- |
+| Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
+| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
+| crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
+| crude, hunger | Cask of crude hunger | The cask feels empty, however full it is. |
+| crude, grief | Cask of crude grief | Heavy and sour. Carry it carefully. |
+| crude, dread | Cask of crude dread | The richest grade. The worst to spill. Do not shake it. |
+
+The crude unit is the **cask** (Dovina's table already says "a sloop's few casks"). The slice's achievements, renamed as strings (the
+Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed; Sailing: Cast Off,
+Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Symbiosis, Slick). Why: a Well is rumination, so going
+down is a spiral, the bottom is rock bottom, coming back up twenty times is bouncing back, and drawing one dry is healing it; a FOE is
+the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
+storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
+
+### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
+The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
+its own tier; what the tier above wears is aspired to.
+- **Common (Earthenware):** terracotta, bisque (Pip's: "not glazed yet, like its courage"), shino. And the **Lachryma skin**: a
+  Courier's own nature, theirs from the first firing.
+- **Stoneware, the workshops' own:** natural ash, kaki, salt, ame, nuka ("humble, and it knows it"), majolica (tin glaze on
+  earthenware: cheerful, never grand), and **tenmoku** (Old Grog's; a working tea-bowl glaze).
+- **Porcelain, the noble echelon:** cobalt (blue and white is porcelain's own signature), oribe, hare's fur, **celadon** (Saggar wears
+  it as a head maid's mark of rank, which is exactly why the stoneware folk envy it), **raku** and **copper lustre** (Raku's: worn to
+  look grander than raku ware ever was).
+- **The Court, his favourite cups:** **guan** (the word means "official", the court's own ware), **Ru** (made for an emperor's court:
+  fewer than a hundred pieces survive), jun, kinrande (gold brocade). Guan and Ru are the Court's own and should be earned only: a Court
+  glaze is given, never bought.
+- **The Prince's own, earned only:** **porcelain skin** (kaolin is his clay: wearing it is wearing him, and it belongs at the very top),
+  **yohen tenmoku** (*yohen* means "kiln change": a glaze born of the fire's own accident, the experimenter's prize; three bowls exist),
+  oil spot, oxblood (the hardest red, for the one devoted to the hardest making), and **Lachryma black** (no folk could bear it: only a
+  Courier wears it).
 
 ## 9. Names and spellings
 

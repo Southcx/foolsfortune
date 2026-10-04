@@ -36,6 +36,7 @@ import { seeded } from '../../core/rng.js';
 import { today } from '../../core/calendar.js';
 import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
+import { DunemawMouth } from '../../vfx/dunemaw.js';
 
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
@@ -74,11 +75,10 @@ export class Dunemaw {
       s.position.set(Math.cos(a) * 3.6, h / 2 - 0.15, Math.sin(a) * 3.6); s.rotation.y = -a + 0.2 * Math.sin(i * 3.1);
       grp.add(s);
     }
-    this.pool = new THREE.Mesh(new THREE.CircleGeometry(3, 40), new THREE.MeshBasicMaterial({ map: spiralTexture(), color: 0xffffff, transparent: true, opacity: 0.96 }));
-    this.pool.rotation.x = -Math.PI / 2; this.pool.position.y = 0.08; this.pool.name = 'dunemaw-pool';
-    this.rim = new THREE.Mesh(new THREE.RingGeometry(2.95, 3.35, 40), new THREE.MeshBasicMaterial({ color: 0x9a6bff, transparent: true, opacity: 0.6 }));
-    this.rim.rotation.x = -Math.PI / 2; this.rim.position.y = 0.06; this.rim.name = 'dunemaw-rim';
-    grp.add(this.pool, this.rim);
+    // the pool itself (Calissa's: vfx/dunemaw.js): black Lachryma swallowing the sand, the labradorite's arms turning in, the sand drawn in
+    // round it (the maw); it darkens what it covers. Motes of the dunes are drawn into it while it is in view.
+    this.maw = new DunemawMouth({ radius: 3 }); this.maw.group.name = 'dunemaw-pool';
+    grp.add(this.maw.group);
     const lamp = new THREE.PointLight(0x9a6bff, 10, 14, 1.4); lamp.position.set(0, 1.2, 0); grp.add(lamp);
     mergeStatic(grp); // (the stones are one draw: the pool and its rim are named, and turn)
     g.scene.add(grp);
@@ -207,7 +207,12 @@ export class Dunemaw {
   update(dt) {
     const g = this.game, P = g.player;
     this.t += dt;
-    if (this.mouth.visible) { this.pool.rotation.z = -this.t * 0.5; this.rim.material.opacity = 0.5 + 0.15 * Math.sin(this.t * 1.7); }
+    if (this.mouth.visible) {
+      this.maw.update(this.t, 1);
+      const near = P.pos.distanceTo(this.mouthPos) < 70;
+      if (near && !this.motes?.alive) this.motes = g.vfx?.play('dunemaw.motes', { pos: this.mouthPos.clone() });
+      else if (!near && this.motes) { this.motes.stop?.(); this.motes = null; }
+    }
     this.cur?.update(dt);
     if (this.run && this.cur) this.watch();
     // F at the mouth or a pool
@@ -222,8 +227,8 @@ export class Dunemaw {
   }
 }
 
-/** The mouth's pool: dark arms turning in on themselves (the pool turns; the texture does not scroll). */
-function spiralTexture() {
+/** (The greybox pool's spiral, kept for reference; the pool is vfx/dunemaw.js now.) */
+export function spiralTexture() {
   const S = 128, c = document.createElement('canvas'); c.width = c.height = S;
   const x = c.getContext('2d'), grd = x.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
   grd.addColorStop(0, '#05020a'); grd.addColorStop(0.7, '#1a0f2a'); grd.addColorStop(1, '#3a2350');

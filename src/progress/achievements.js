@@ -215,8 +215,8 @@ export function buildAchievements(game) {
   H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
   H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10, { title: 'Silo Warden' });
   H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
-  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the jar shatter.', 'jar.shatter', 1, { hidden: true });
-  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the jar reforged 5 times.', 'jar.reforge', 5);
+  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have your Pneuka Jar break.', 'jar.shatter', 1, { hidden: true });
+  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have your Pneuka Jar reforged 5 times.', 'jar.reforge', 5);
   F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 lachryma.', (L) => L.get('lach.spent'), 500);
   F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 lachryma.', (L) => L.get('lach.spent'), 10000);
   C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of lachryma.', 'lach.empty', 1);
@@ -489,8 +489,8 @@ export function buildAchievements(game) {
   F('pl2', 'explore', 'Places', 3, 'collect', 'Well Mapped', 'Chart 8 places.', (L) => L.firstCount('room.'), 8);
   F('pl3', 'explore', 'Places', 5, 'collect', 'Every Place', 'Chart every named place.', (L) => L.firstCount('room.'), game.cartography?.anchors?.length || 12);
   F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
-  F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
-  F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+  F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the Dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
+  F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the Dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
 
   // ---------------------------------------------------------------- THE EMOCEAN (docs/plans/SLICE.md, E4: placeholders until the hop is built)
   C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
@@ -506,7 +506,7 @@ export function buildAchievements(game) {
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
   F('lg1', 'collect', 'Logged', 1, 'collect', 'Fresh Ledger', 'Log 10 firsts.', (L) => L.firstCount(), 10);
   F('lg2', 'collect', 'Logged', 2, 'collect', 'Getting Filled In', 'Log 30 firsts.', (L) => L.firstCount(), 30);
-  F('lg3', 'collect', 'Logged', 3, 'collect', 'Well Read', 'Log 60 firsts.', (L) => L.firstCount(), 60);
+  F('lg3', 'collect', 'Logged', 3, 'collect', "Captain's Log", 'Log 60 firsts.', (L) => L.firstCount(), 60);
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
   F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);

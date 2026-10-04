@@ -3,8 +3,9 @@
 // from the loot-box and gacha canon, and every beat is louder than the tier below it:
 //
 //   APPROACH   the camera cuts to a low, close, three-quarter view and the bars come in; the chest notices you (a crouch, a knock).
-//   CHARGE     the chest rattles harder and faster (knocks that tighten), light leaks from the seam, a beam of light stands on it
-//              and the room dims; the riser climbs. A SEALED chest (the Tithe's) does not yet know what it is: its beam rolls
+//   CHARGE     the chest rattles harder and faster (knocks that tighten), light leaks from the seam, it is FIRED as it charges (its glaze
+//              climbs celadon, crazing, raku, kintsugi gold: vfx/chestglaze.js, in place of a beam per tier) and the room dims; the riser
+//              climbs. A SEALED chest (the Tithe's) does not yet know what it is: its light rolls
 //              through the five colours, slowing, ticking, and sometimes climbing past what it will land on (the near miss) or
 //              climbing to it in stumbles (the upgrade); it lands on its true colour and only then changes into that chest.
 //   BURST      one frame of nothing (hit-stop), a last squash, and then the lid is thrown off its hinge, the body stretches, the light
@@ -33,6 +34,7 @@ import { GROUPS } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
 import { TIERS, CURIOS, CURIO_BY_ID, curiosOf, cubesIn } from './treasure.js';
 import { CHEST } from './chestmodel.js';
+import { glazeAt } from '../../vfx/chestglaze.js';
 import { buildCurio } from './curiomodel.js';
 import { CARD } from '../../tools/veritome/cards.js';
 
@@ -208,9 +210,10 @@ export class Ceremony {
       sfx.chestKnock(k); rig.poke({ squash: -2.5 - 4 * k, lid: 2.5 + 7 * k, hop: k > 0.55 && Math.random() < 0.5 ? 0.9 + 1.6 * k : 0 });
       g.player.shake = Math.max(g.player.shake, 0.03 + 0.1 * k);
     }
-    // the beam, the light, the room
-    const w = 0.5 + 0.9 * kk + (this.stepPulse || 0) * 0.25;
-    this.beam.set(this.glowColor.getHex(), this.sealed ? 0.62 + 0.3 * kk : 0.22 + 0.5 * kk + (this.stepPulse || 0) * 0.15, w);
+    // the glaze, the light, the room (the chest is fired as it charges, in place of a beam per tier: vfx/chestglaze.js; a sealed chest's
+    // glaze wanders with the roulette, so it tells nothing until it lands)
+    this.glz = D(this.glz || 0, this.sealed ? glazeAt(this.steps[this.stepI ?? 0]?.tier ?? 0) * Math.min(1, kk * 3) : glazeAt(T) * kk, 9, dt);
+    rig.setGlaze(this.glz);
     this.light.color.copy(this.glowColor);
     this.light.intensity = (5 + 4 * T) * (0.15 + kk) * (1 + (this.stepPulse || 0) * 0.5);
     if (dim > 0) g.mood.set('chest', { dim: dim * kk, tint: this.glowColor.getHex(), tintK: 0.05 * kk, ease: 3 });
@@ -244,7 +247,7 @@ export class Ceremony {
     this.glowColor.set(TIERS[T].rgb); rig.setColor(TIERS[T].glow);
     // light, ring, beam
     this.light.color.set(TIERS[T].rgb); this.light.intensity = 45 + 25 * T; this.flash = 1;
-    this.beam.set(T === 4 ? null : TIERS[T].rgb, 0.85, 1.3);
+    rig.setGlaze(glazeAt(T)); // (fired: what it is, kept)
     chests.ringBurst(topV, TIERS[T].rgb, 2.6 + T * 0.9, 0.55, true);
     for (let i = 1; i < plan.rings; i++) this.later(i * 0.11, () => chests.ringBurst(topV, T === 4 ? _c.setHSL(Math.random(), 0.9, 0.65).getHex() : TIERS[T].rgb, 2.2 + i * 1.3, 0.6, i % 2 === 0));
     g.glyphs.pop('star', topV.clone().addScaledVector(this.front, 0.2), { color: T === 4 ? 0xffffff : TIERS[T].rgb, size: 0.7 + 0.1 * T, burst: true, ring: true, life: T === 4 ? 0.8 : 1.1 });
@@ -273,10 +276,9 @@ export class Ceremony {
     if (this.clip === 'hitChest' && this.clipT > 0.34) { this.clip = 'idle'; this.clipT = 0; }
     // slow motion for the first moments (a longer one for the better tiers)
     if (plan.slow > 0) { const s = 1 - plan.slow * 0.55 * (1 - clamp(this.pt / 0.9, 0, 1)); if (this.pt < 0.9) g.time.slow('chest', s); else g.time.free('chest'); }
-    // the light dies back, the beam thins
+    // the light dies back
     this.flash = Math.max(0, (this.flash ?? 0) - dt * 3.2);
     this.light.intensity = (45 + 25 * T) * this.flash * this.flash;
-    this.beam.set(T === 4 ? null : TIERS[T].rgb, 0.7 * (1 - k) + 0.2, 1.6 - 0.9 * k);
     rig.setGlow(lerp(1, 0.4, k));
     if (this.plan.dim > 0 && !this.chests.rave?.active) g.mood.set('chest', { dim: plan.dim * lerp(1, 0.4, k), tint: TIERS[T].rgb, tintK: 0.04, ease: 2 });
     // stars, thrown up now and then
@@ -331,7 +333,7 @@ export class Ceremony {
     // its light: a halo behind it, and a thin beam under it
     const h = this.curioHalo; h.position.copy(p); h.scale.setScalar(1.4 + 0.15 * Math.sin(this.curioT * 3)); h.material.opacity = 0.55 * (this.phase === 'collect' ? 1 - this.collectT * 2 : easeOut(u));
     if (this.phase === 'reveal') {
-      this.beam.set(T === 4 ? null : TIERS[T].rgb, 0.6, 0.55);
+      this.beam.set(0xfff0dc, 0.5, 0.45); // (the curio's own light: warm and the same for every tier; the tier is in the glaze)
       if (Math.random() < dt * 30) {
         const a = Math.random() * Math.PI * 2, r = 0.32 + Math.random() * 0.1;
         this.g.fx.add.emit({ pos: _b.set(p.x + Math.cos(a) * r, p.y - 0.1 + Math.random() * 0.25, p.z + Math.sin(a) * r), vel: _a.set(-Math.sin(a) * 1.3, 0.5, Math.cos(a) * 1.3), life: 0.9, size: 0.03, sizeEnd: 0.006, color: T === 4 ? _c.setHSL(Math.random(), 0.9, 0.65).clone() : new THREE.Color(TIERS[T].rgb), drag: 0.4, twinkle: 20, floor: -100 });

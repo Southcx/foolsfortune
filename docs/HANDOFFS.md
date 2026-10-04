@@ -11,6 +11,12 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: crystal strikes now pay cubes (Calissa's branch, merged in v65)**
+- `world/dunes/crystals.js`: every pick strike on a formation now bursts (2, or 6 at its sweet spot) x (2 while the fork rings) cubes,
+  where it used to spill Lachryma baubles; the break's own pay (`ECON.crystal`) is unchanged. Calissa cites an owner ruling (R51:
+  solid Lachryma sheds solid pieces) and leaves the count to you. It is a new income on top of your model: set it in ECON (I'll wire
+  the number), and say if the baubles (the Lachryma refill) should come back alongside.
+
 **2026-10-04, from Petra: E1b is in (the Dunemaw's creatures, pay, haul, charting, Cogitomap)**
 - **Pay** is `wellPay(deepest, foes) x wellYield(fill)`, paid as `cubes.earn(pay, 'well')` on the way up only (0 when shattered). I used
   `wellPay` and not `islandRun`'s pro rata: say if you meant the other. Three floors and the FOE at full fill pay 139.
@@ -50,12 +56,56 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
-**2026-10-04, from Wanda: the Well's pools are heard**
-- `well.floor` plays `sfx.poolDown(floor)` (the surface closing over, a gulp, bubbles streaming up; lower each floor) and `well.leave`
-  plays `sfx.poolUp()` (the muffle opening, a splash, the air; not when shattered), through `src/audio/cues.js`. The two
-  `sfx.geyser?.()` calls in `world/well/dunemaw.js` (the placeholders) can go: they now double.
-- Stress on v62 itself (without my change, two runs): 1 violation, a `hitch` on lift0 (#11, standing on a mover after a blink,
-  `mover.push`). Not audio; noted so it isn't charged to this push.
+**2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
+Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked
+`poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
+lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
+
+**2026-10-04, from Calissa: Margarite's people, placeholder bodies (the owner's ask, via Espada)**
+- `src/vfx/margarite.js`: `buildLetty()`, `buildPoll()`, `buildPurser()`, `buildBountyBoard()`, each `{ group, parts }` (feet at 0, +Z
+  the front). Letty's `parts.shoulder` is where Poll perches (`L.parts.shoulder.add(buildPoll().group)`); `parts.head`, `armL`, `armR`,
+  `body` are named for posing (a talking head bob, as the folk's). `nacre()` is exported for anything else of Margarite's.
+- They are not clapperjars, so the folk's body code (`npc/folk.js`) can't drive them as it is; they want a stand-in rig of their own,
+  or simply a bob and a turn toward the Courier for the slice. In the workbench (MODELS, Margarite's people).
+- The Dunemaw (the Well's mouth, `src/vfx/dunemaw.js`) now has its maw: the sand round it drawn in, in streaks.
+
+**2026-10-04, from Calissa: the slice's art, ready for your E1 and E4 (the owner's go, via Dovina)**
+- **The sloop** (`src/vfx/sloop.js`): `new Sloop({ env })`, `.group` (+Z the bow, origin at the waterline, ~7 m), per frame
+  `.set({ sail 0..1, heel, side ±1, glow 0..1, t })`; `.gunAt` is an Object3D on the bow for the psygun. In the workbench (MODELS, ships).
+- **The crude sea** (`src/vfx/crudesea.js`): `new CrudeSea({ env, size, cells, y })`, add `.mesh`; per frame `.update(t, camera.position)`
+  (the grid follows in whole cells); `.heightAt(x, z, t)` is the same swell sum, for the ship's bob and pitch; `.set({ calm, swell, film,
+  current })`: put `calm` up through the breather (0.50 to 0.62 of the stage). The sky over it is yours to choose; it wants dusk.
+- **The lane mark** (`vfx.play('lane.mark', { pos, scale })`): hold it from the warning to the wave and raise its `k` from 0 to 1 as the
+  wave nears; pass `scale` 3 to 5 at rail distances (30 m and more), it is read at speed.
+- **The Great Dunemaw's mouth** (`src/vfx/dunemaw.js`): `new DunemawMouth({ radius })`, add `.group` on the sand, per frame `.update(t, open)`;
+  play `'dunemaw.motes'` at it while it is open. Its depth is painted: a real funnel waits on the sand being cut there, if you want one.
+- **The Great Dunemaw's kit** (`src/vfx/dunemawkit.js`): `const K = dunemawKit({ env })`; give your `level.box` the materials `K.wall`,
+  `K.floor`, `K.trim` (one each for any number of boxes, so they merge per zone). The wall's terraces are in world space (a step every
+  0.6 m), so they run on unbroken across boxes. The floor drifts on the Mind's clock (`mindTick`).
+- All five are in the workbench (MODELS: ships, the slice). Measured headless; not yet seen in your rooms.
+
+**2026-10-04, from Calissa: the overture's trailer (the owner's yes); small edits in main.js, and what it drives of yours**
+- `main.js`: `game.overture = new Overture(game)`; in the frame, while the title is up and the trailer is in its world part, the world is
+  ticked and drawn under the title (`O.update; tick; follow(title music); post.render; O.afterRender`), and after the title's own update
+  `O.titleFrame(scene)` cranes its camera and fires the logo; the place's music in `tick` stands down while it plays; `/overture` added.
+- What it uses of yours, read-only or through your own calls: `course.cps` and the spawns, `player.killY` (lowered per place as
+  `toDunes` does, put back after), `god.enter`/`forceOff`, `chests.spawn`/`remove`, `jellies.spawn`/`vanish`/`dispose`, `creatures.apply`,
+  `vessel.preview`/`revert`, `techs.get('skiff')`, the belt's draws, `ledger` (snapshotted and put back), `log.say` (silenced while it plays),
+  and the title's DOM (`#title` hidden in the world part, `.logo` and `.press` held back until the strike).
+- Perf: counts unchanged; heap noisy (four runs 254-269 MB against 237-255 before it). Nothing is allocated before it plays.
+
+**2026-10-04, from Calissa: the chest glaze and the mend's gold (the owner's yes, via Dovina's digest); small edits in your files**
+- **The chest glaze replaces the tier beams** (`src/vfx/chestglaze.js`): a chest is fired as it charges, celadon, then crazing, then raku,
+  then kintsugi gold flooding the seams (`glazeAt(tier)`: common 1 .. prismatic 4); kept once fired. `chestmodel.js`: the body and lid are
+  dressed, `rig.setGlaze(s)`, the glaze joins the rest bake's key, and the resting pillar (epic, prismatic) stays a faint marker and goes
+  dark in a ceremony instead of brightening. `ceremony.js`: `p_charge` drives the glaze (a sealed chest's wanders with the roulette),
+  `openNow` sets the tier's, and the tier-coloured beam calls are gone; the curio's reveal beam is one warm colour for every tier.
+  Driven headless: tiers 3 and 4 open through burst and fountain, `chest.open` fires, no errors. The owner then dropped the resting
+  pillar (gone from `chestmodel.js`) and the circle and mandala under an opening chest (gone from `vfx/chestfx.js` and the library).
+- **Kintsugi gold on the Courier, only while a crack mends**: merged onto your v54 hook and kept it (`uMend`: the crack lines gold
+  while they mend). Added a trail (`uTrail`, `uPeak`: the cells a mend has just closed stay gold, the newest brightest) that fades out
+  ~2 s after the region's last crack closes, so the gold doesn't vanish on the frame the mend completes. The kiln's instant mend flashes
+  gold through every crack and fades.
 
 **2026-10-04, from Wanda: the slice's music (E1, E4)**
 - **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
@@ -182,6 +232,36 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
   a sound for a pool taking you down (and up) would be yours.
 
+**2026-10-04, from Calissa: the trailer follows your overture's clock**
+- `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
+  the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
+  change, tell me. `/overture` plays the sound test's track of that title. It is live on the title now that R43 is merged.
+- The world's own sounds are ducked under the band while it plays (`sfx.duckEffects(0.35)`, yours from d0dca7c; a no-op until it is merged).
+
+**2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
+- While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after
+  `vessel.mend`). A very subtle sizzle on it is yours to add; no event fires as a mend begins, so read `glow` or ask Petra for one.
+
+**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
+- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
+  - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
+    creature's mental state tipping toward Prismatic.
+  - **C5**: the Lockheart's three modes (casting, summoning, conversion), the catch wheel, and a caught Figment inside the coffin.
+  - **D5**: **the rhythm mode**, the owner's idea: the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes
+    (1–5 low, 6–0 high, no chords: keyboards jam on some three-key combinations). The charts should come from the music's own note
+    grid in `src/music/`, so the whole OST is playable without hand-authored charts. It is begun from a stage in its own room. The
+    field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
+    busking pay.
+
+**2026-10-04, from Petra: R43 merged and wired (v56)**
+- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
+  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
+- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
+- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
+  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
+- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
+- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
+
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
 stay open.
 
@@ -189,6 +269,18 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Espada (placeholder models for the slice, the owner's ask, R57)**: rough is fine, so the talks have bodies (`talks.js`;
+LORE.md section 6):
+- **Letty Marque**: nacre, shell-pale with a rainbow film, a feathered tricorn and a long coat with the King's letter in it.
+  Pirate-coded, the first figure not made of clay. Posture: leaning forward, itching to go.
+- **Poll**, her Tulpa: a paper parrot folded from closed bounty notices, a little too big for her shoulder ("I'm planning on a lot
+  more paper").
+- **The Purser**: the King's buyer at Margarite's dock, a figure of Law. The shape is open; my suggestion is shell or nacre like
+  Letty, but buttoned up, with a ledger and a small hourglass.
+- **The bounty board**: notices pinned to a board at the dock.
+- **The Great Dunemaw**: the Well's mouth in the Dunes. SLICE.md has it as a spinning dark pool; "maw" suggests the sand drawn
+  in around it like a mouth.
 
 **2026-10-04, from Petra: the Well's kit to dress (the owner's go)**
 - `src/world/well/wellkit.js` builds each floor from boxes in four looks (`floor`, `wall`, `ceil`, `deco`; tinted toward violet with
@@ -207,24 +299,22 @@ stay open.
   the slice. One more mark for the rail: the reckoning (Divination) marks each wave's lane ahead of it with a glyph pop on the rail
   (`reckonLead`, up to 3 s early), so a lane mark that reads at speed on the crude sea is wanted.
 
-**2026-10-04, from Wanda: the trailer's mix**
-- `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's
-  voice; `sfx.duckEffects(1)` restores them. Call it as the trailer starts and when it ends (or is skipped). The music has its own way
-  out now (`sfx.main`), so nothing you do to the effects touches the band.
-- The solo's Lockheart staged without `ultimate.begin` is right as it is: no duck, the band stays loud through it.
-- `OVERTURE_TITLE` holds: the score keeps its name, and `section`, `bar` and `next` keep their meaning (arranger.js).
-
-**2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
-- `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
-  to 0 three times as fast if a blow lands first. In the shader the crack line mixes from the dark lacquer to the kintsugi gold (the same
-  gold, metal and glow as `kSeam`) by `uMend`, and the Lachryma core fades by `1 - uMend`; the cells still drop out as `uDmg` falls, so the
-  last of the gold goes with the last of the crack (~40 s from a full crack). It is the plain version, to give you a working hook:
-  refine the look there (a shimmer, how the gold arrives) as you like; nothing else reads `uMend`.
+**2026-10-04, from Calissa: the kiln, expanded (the owner's direction); for Petra, Dovina and Espada**
+- **The stones are their own region** (`stones`: they were swept into the trim, so a trim glaze repainted them). Every region now names the
+  KINDS of finish it takes (`REGIONS[r].kinds`): glazes on the body, trim and mask; **gems** on the stones (real optics: ruby, sapphire,
+  emerald, amethyst, citrine, diamond's fire, opal's play of colour, moonstone's blue glow, onyx); **hair finishes** or a glaze on the hair
+  (satin, raven, copper, ashen, ink-to-gold and bisque-to-rose dips, oil slick); and **skin tones** for the Lachryma of the body (moonlight,
+  ember, porcelain, obsidian, pearl, aurora). One catalogue (`glazes.js`, a `kind` on each), one owned/fire/save path; the shaders are
+  `src/vfx/finish.js`.
+- **The body glazes read true** (the approved fix): a glaze's colour with the painting kept as light and shade, so guan is grey-green and
+  ru sky blue on the armour, not near black.
+- Petra: small edits in your files: `character.js` `regionOf` (stones, and `Courier_Skin_Core` as `skin`), `vessel.js` `dress` (drives the
+  finish uniforms; helpers `lumaMean`, `hairSpan`), `kilnui.js` (a region shows only its kinds; two-colour swatches).
+- Dovina: all the new gems, hair finishes and skin tones are `got: { start: true }` for the owner's playtest; which are earned, bought or
+  learned is yours.
+- Espada: their blurbs are placeholders, true to each stone and finish; yours to rewrite.
 
 **2026-10-04, from Wanda (R43)**
-- **The overture's storyboard** (the owner: "work with Calissa to storyboard an extended opening cinematic / in-game trailer"): the
-  cue sheet and a shot-by-shot proposal went to you by message. The music is `src/music/overture.js`, "Fortune Favours the Fool",
-  1:21.6 to the logo's strike. Ask for any re-cut of the music to the picture.
 - **The rhythm mode's highway is a placeholder** (`src/music/rhythm/highway.js`, a canvas over the scene): ten lanes in two hands of five,
   in DEGREE_COLOR, notes falling to a line that glows with the combo, a lane lit white on a perfect, its colour on a great, dim on a
   good, dark on a miss. No words or numbers, by the house rule. Its look is yours to remake (move it to `src/ui/` if you like); its
@@ -232,10 +322,14 @@ stay open.
 - B5's sound is built to your looks (`src/audio/damage.js`): Impact a dry fired-clay crack, Ego a glass chime in a fifth, Influence a
   warm swell panned across, Illusion a shimmer bent both ways and heard twice, Delirium a smear sliding down with bubbles.
 
-**2026-10-04, from Petra: the temper is fed, and four new statuses**
-- Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and
-  its tremble to `deform.wob`. Fine-tune as you like. The four statuses a type builds (`doubt`, `charm`, `blind`, `confusion`) have no
-  look yet: `aura.<status>` in `vfx/auras.js` when you can (the stun's stars are the model).
+**2026-10-04, from Calissa: the glazes for A10 and A11 are in `src/courier/vessel/glazes.js`**
+- **Medal glazes** (A10), the prized ones: hare's fur (`c_braid_g`), oil spot (`c_mill_g`), guan (`c_spindle_g`), kinrande (`tr4`), ru
+  (`cx5`), yohen tenmoku (`gr3`). **Shop glazes** (A11), the everyday ones: natural ash, kaki, ame, cobalt, majolica, salt glaze.
+  Six of each (Dovina's count: six shop glazes in rising price, `ECON.glazeShop`). Espada: the blurbs are placeholders (true to each glaze), yours to rewrite.
+- **A look problem, not new** (for Petra and the owner): `vessel.dress` multiplies a glaze's colour over the body armour's dark painted
+  texture, so on the body every glaze reads near black (guan, ru and oil spot look alike; hair and mask read fine). Proposed fix: take
+  the colour from the glaze and keep the texture only as light and shade (its luminance), so a pale glaze is pale. I can do it on the
+  body's material if you agree (screenshot: `/tmp` on request).
 
 **2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
 - **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,
@@ -251,14 +345,6 @@ stay open.
   warm, spreading swell; Illusion a shimmering, detuned sparkle; Delirium a wet, bubbling, falling smear. Lawful sounds short and
   clean, chaotic ones smeared and pitch-bent, if that suits you.
 
-**2026-10-04, from Petra (Phase A, A10 and A11: the glazes they need)**
-- The plan's A10 (a glaze for mastery) and A11 (Saggar sells glazes at the kiln) both need glazes that do not exist yet: every one of the
-  twelve is a starting glaze or earned by a deed, and the ruling keeps bought and earned apart. Wanted, as data rows in
-  `src/courier/vessel/glazes.js` (`G(id, NAME, color, rough, metal, blurb, got)`): up to six **medal glazes** (`got: { ach: <id> }`, the
-  achievement ids `c_braid_g`, `c_mill_g`, `c_spindle_g`, `tr4`, `cx5`, `gr3`; one each, or fewer shared) and a handful of **shop
-  glazes** (`got: { shop: true }`). Real ceramic glazes, as the twelve are; Espada writes the blurbs, Dovina sets the count and price.
-  When the rows land I wire the counter at the kiln and `vessel.bought` (A11) and the medal mapping (A10).
-
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
   - **C5**: the Lockheart's three modes, the catch wheel, a Figment in the coffin.
@@ -269,6 +355,12 @@ stay open.
 **2026-10-04, from Petra (R42, Phase 2: the event names)**
 - Every bus event is `domain.verb` now (the table is in Dovina's section). One word changed in each of two files of yours:
   `src/vfx/hudring.js` and `src/vfx/filigree.js` listen for `courier.impulse` (was `impulse`); the payload is the same.
+
+**2026-10-04, from Calissa: Phase 2 under way (the owner approved it)**
+- Step 1 done: one set of particles (the old pools are adapters onto the VFX system's; `vfx/gpuparticles.js` is gone; heap -8% vs v51).
+- Step 2 begun: `slash` (as `cut`), `impact`, `embers`, `absorbSparkle` (`absorb`) and `implode` are library looks behind their old
+  methods (no caller changed). Next: glitter, shatterBurst, markBurst, chargeTick; then step 3 (tracer, debris for the chips, decals,
+  the muzzle flash and explosion's lamp as VFX layers). Step 4 (callers to `game.vfx.play`) still waits on your OK, Petra.
 
 **2026-10-04, from Calissa: the Phase 2 proposal (one effects system), for Petra and the owner**
 What there is: two GPU particle systems side by side. The old one (`vfx/particles.js` + `vfx/gpuparticles.js`, `game.fx`) keeps three
@@ -421,51 +513,19 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-04, from Petra: the Well's words, and one question of canon**
-- The log's lines (`src/feedback/tracking/wells.js`): "You step down into the Great Dunemaw.", "You go down to the second floor of the
-  Well.", "You climb back out of the Well.", "The Well keeps what you found down there." Placeholders; yours to reword.
-- E1b's lines and items, all placeholders: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly
-  bursts: the bottom of the Well is yours.", "You climb back out of the Well, N cubes the richer.", "You charted enough of it to draw a
-  Cogitomap: the Well as it is today."; the items `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
-  PROVISION) and COGITOMAP, with their examine lines (`src/pneuka/items.js`), and the FOE's name, Great Slip Jelly.
-- Open: the Great Dunemaw is built as its own mouth out on the sand (Dovina's spec), apart from the Weir's Well at the oasis. If canon
-  wants the Weir's Well to *be* the way into the Dunemaw, say so and I'll move the entrance.
+**2026-10-04, from Petra: E1b's words (all placeholders, yours as strings)**
+- Lines in `tracking/wells.js`: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly bursts: the
+  bottom of the Well is yours.", "You climb out of the Well, N cubes the richer.", "You charted enough of it to draw a Cogitomap: the
+  Well as it is today."
+- Items (`src/pneuka/items.js`): the seven materials `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
+  PROVISION) and COGITOMAP, with their examine lines; and the FOE's name, Great Slip Jelly (`creatures/jelly/slipjelly.js`).
 
-**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
-- Words for the slice (`docs/plans/SLICE.md`): the Well's name (the one in Anagami's Dunes), the Margarite dock trader's lines, Letty's
-  lines at her board, item text for a Cogitomap and for each grade of crude. And the names of the slice's achievements are placeholders
-  of mine (EXPLORATION, The Wells; THE EMOCEAN, Sailing and Crude, in `src/progress/achievements.js`): yours to rename as strings.
-
-**2026-10-04, from Petra: one placeholder line to word**
-- Busking's tip (`tracking.js`, `cube.earn` with `why: 'busk'`): "The crowd tips you N cubes." Placeholder; yours to reword.
-
-**2026-10-04, from Petra: words for the fight's new statuses**
-- The four statuses a damage type builds are **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium).
-  Two placeholder lines in `tracking.js` are yours: a resisted status ("The {kind} shrugs it off.") and an annihilation ("The {kind}
-  comes apart at both ends of itself.").
-
-**2026-10-04, from Petra (Phase A, A10 and A11)**
-- New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.
-
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`. The new words are already in `docs/GLOSSARY.md`: the domains (Spellscription replaces
-  Spellcasting), the three layers, Cogitomap, livelihood, deck, mastery dividend. Yours, when they come up:
-  - **B9**: names and log lines for the new statuses (doubt, charm, blind, confusion...), the five mental states, the seven domains'
-    blurbs.
-  - **D4**: who gives the commissions by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), and their words.
-  - **E1, E2**: what a Well is in the canon (a Lachryma distortion that drifts over time, so a Cogitomap is a ticket to one as it was).
-
-**2026-10-04, from Petra (R42, Phase 1)**
-- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
-  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
-  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
-- Your glossary notes are folded in as written (Lachryma, the folk and their tiers and pronouns, the Weir's Well and a Well, the jar's
-  lore, the System, the Dunes capitalised, a World section that is yours, "made whole"). The README is a manual now; correct its words
-  freely, as strings.
-- In-game words that are placeholders for you: the switch's label (ALL ARTS; your ON / OFF is shown by its pill, as VOICE and MUSIC
-  are), the help page's lead ("the ALL ARTS switch lends them all") and the tech wing's sign; the god hand's lines now say "the jar"
-  ("The jar shatters!", "The jar is reforged.", "The jar is soothed.", "The jar is still being reforged.", the Siege's "hold the jar");
-  the help page SOLAR SKIFFING; the player text still saying "the dunes" in lower case.
+**2026-10-04, Espada's state (R57)**
+- Done: the slice's words (the Great Dunemaw, Letty as a zealot, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
+  notes to Petra and Dovina above); the statuses, stun, annihilation and busking lines in `tracking.js`; B9's names, D4's Seger and
+  Letty, E1's canon of a Well (LORE.md section 1).
+- Also done: Entropolis (the owner's name for the Queen's island), Letty's hearsay, the Well's log lines (`tracking/wells.js`).
+- Waiting: the medal and shop glaze blurbs (A10, A11) when the rows land.
 
 **2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's
 "with his own hands" and the held-plate lines are kept as Petra wrote them; the R40 log lines are in the pass below)

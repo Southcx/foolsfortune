@@ -35,7 +35,7 @@ import { sfx } from '../../audio/sfx.js';
 const PICK = { clip: 'swordC', from: 0.25, to: 1.3 }; // (UAL Sword_Regular_C: the overhead brought down to the ground, measured: its strike 0.6-0.7 s)
 const SURVEY = { clip: 'swordC', from: 0.45, strike: 0.32, dur: 0.75 }; // (the heel struck down: the pick's downstroke for now)
 const TAP = 0.16, RANGE = 70, FORK = { speed: 34, gravity: 6, ring: 7, back: 28, reach: 60, life: 2.2 };
-const ATTUNE = [
+export const ATTUNE = [ // (exported: the compass's vane layer wears each mode's colour and sigil, vfx/vanehud.js)
   { id: 'any', kinds: null, color: 0xe8d7b6 },
   { id: 'crystal', kinds: ['crystal'], color: 0xcdb8f2 },
   { id: 'chest', kinds: ['chest'], color: 0xffb27a },
