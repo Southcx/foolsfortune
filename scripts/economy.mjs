@@ -218,11 +218,11 @@ for (const [id, I] of Object.entries(ECON.islands)) {
 }
 
 // the toxic symbiosis (the owner, 2026-10-04): Chaos digs crude up and sells it cheap, Law buys it dear, and Letty brings in Chaos's strays
-// for the King. The crude route Entra Polearis -> Margarite by tanker, over a fortnight of days (a clean run, distance 6), and bounties
+// for the King. The crude route Entropolis -> Margarite by tanker, over a fortnight of days (a clean run, distance 6), and bounties
 const route = [];
 for (let d = 0; d < 14; d++) { const buy = demand('entra', 'dread', d), sell = demand('margarite', 'dread', d); route.push(crudeRun({ ship: 'tanker', grade: 'dread', buy, sell, distance: 6 })); }
 const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
-console.log(`\nthe crude route, Entra Polearis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
+console.log(`\nthe crude route, Entropolis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
 console.log(`bounties (a commission x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan (commissions ${[0, 1, 2, 3, 4].map((c) => commissionPay(c, 1)).join(' / ')})`);
 console.log(`a Well drifts daily: the dunes Well's seed on days 0, 1, 2: ${[0, 1, 2].map((d) => wellSeed('dunes', d)).join(', ')} (the same day, the same Well)`);
 
@@ -239,5 +239,5 @@ console.log(`  how cleanly (Ouranurgy's quality): clean and thorough ${stageQual
 console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)} / ${reckonLead(0.5)} / ${reckonLead(1)} s ahead at 0 / 0.5 / 1; a locked node opens at ${RECKON.open} reckoned from the pier`);
 { const run = islandRun('anagami', 0.5).pay, good = islandRun('anagami', 0.8).pay;
   for (const [label, w] of [['middling, 80% charted, fresh', cogitomapWorth(run, 0.8)], ['good, all charted, fresh', cogitomapWorth(good, 1)], ['good, 20 h old', cogitomapWorth(good, 1, 20)]])
-    console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entra ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
+    console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entropolis ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
   console.log(`  after the sloop's fuel (${hop('anagami', 'margarite').fuel}): a good fresh map nets about 20 more at Margarite than at home, a middling one is better sold at home (skill decides whether the Well feeds the boat)`); }

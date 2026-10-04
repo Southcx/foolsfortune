@@ -4,14 +4,14 @@
 //
 // THE NODE MAP. The Islands of Ego sit on the Law-Chaos line (ECON.islands[id].law, -2 .. +2), and a hop's distance is how far apart
 // they sit on it (`perLaw` units a step), so crossing from the King's island to the Queen's costs the most fuel. A node can be locked
-// (the slice locks Entra Polearis: SLICE.md). Fuel is `fuel(distance)` (islands.js) times the ship's `burn`. The stage runs
+// (the slice locks Entropolis: SLICE.md). Fuel is `fuel(distance)` (islands.js) times the ship's `burn`. The stage runs
 // the length of its cue for every ship (the music is the clock: Wanda's Crude Sea is 100 bars of 1.5 s); `slow` is the simulator's haul time.
 //
 // A STAGE is one rail of about two minutes, authored once and paced to its cue (Wanda's), whose waves are keyed to the stage's
 // fraction (0 .. 1), not to seconds, so the rail can be stretched to the music. The waves are written by ROLE (a school that swims in
 // a formation, a darter that cuts across the lanes, a heavy that sits ahead and soaks blows), and the route fills each role with a
 // Figment class from its DANGER: the mean of its ends' places on the line (toward Law calmer, toward Chaos worse, as the islands' Wells
-// are: ECON.islands), plus a quarter of the line it crosses (a long crossing goes further from any shore). So one authored stage serves every route: the Margarite run is Guppies and Barracudas with a Marlin at the end, an Entra run
+// are: ECON.islands), plus a quarter of the line it crosses (a long crossing goes further from any shore). So one authored stage serves every route: the Margarite run is Guppies and Barracudas with a Marlin at the end, an Entropolis run
 // Barracudas and Marlins with a Whale. The day's seed shifts which lane each wave comes from (the same route plays a little differently each day),
 // never the order or the counts (learnable, as an arcade stage is).
 //
@@ -25,7 +25,7 @@
 // each wave's lane is marked ahead of it (a glyph pop on the rail, `lead` seconds early, up to two bars at full reckoning), so the skill
 // is reading the sea, and the gun and the dodge are still the player's. The lanes drift with the day, so a reckoning is of a day, as a
 // Cogitomap is; the ledger keeps the best for the achievements. And a reckoning is the way to a node: a locked node opens for good once
-// a route to it from an open node has been reckoned to `open` at the pier (after the slice: Entra Polearis is found by divining the way
+// a route to it from an open node has been reckoned to `open` at the pier (after the slice: Entropolis is found by divining the way
 // there, so the Chaos end of the line is reached through Divination).
 //
 // Prior art: Star Fox 64 (two-minute rail stages with an authored wave order, a hit count and a medal for a clean run, a breather before
@@ -45,7 +45,7 @@ import { fuel } from './islands.js';
 /** The Figment classes (docs/ECONOMY.md, commissions), small to great. */
 export const CLASSES = ['Guppy', 'Barracuda', 'Marlin', 'Whale', 'Leviathan'];
 
-/** The node map: one node an island, where it sits on the line, and whether it can be reached yet (the slice: Entra waits). */
+/** The node map: one node an island, where it sits on the line, and whether it can be reached yet (the slice: Entropolis waits). */
 export const NODES = Object.fromEntries(Object.entries(ECON.islands).map(([id, isl]) => [id, { id, name: isl.name, law: isl.law, locked: id === 'entra' }]));
 
 /** Distance a step of the line (so Anagami to Margarite is 4, a crude run's distance in the simulator; King to Queen is 8). */
@@ -83,7 +83,7 @@ export const STAGE = {
 };
 
 /** Which class fills each role at a danger (-2 .. +2): a school is the small fry, a darter one class up, a heavy two. */
-const base = (danger) => Math.max(0, Math.round(danger / 2 + 0.5));   // Margarite run (-0.5): 0; King to Queen (+1) and Anagami-Entra (+1.5): 1
+const base = (danger) => Math.max(0, Math.round(danger / 2 + 0.5));   // Margarite run (-0.5): 0; King to Queen (+1) and Anagami-Entropolis (+1.5): 1
 export const ROLE_CLASS = {
   school: (d) => Math.min(4, base(d)),
   darter: (d) => Math.min(4, base(d) + 1),

@@ -604,7 +604,7 @@ separate parts, building and progression are why players skipped it.
   knows its own mind). The map is what makes the first hop pay, and only a good map pays the trip: skill decides (`purserPrice`).
 - **Divination charts the course between the Islands of Ego** (the owner's steer). Taken from FTL's long-range scanners, Sunless Sea's
   zee charted by sailing it, and dead reckoning: a route's **reckoning** (0 .. 1, of a day) marks each wave's lane ahead on the rail and,
-  after the slice, opens the way to a node not yet found (Entra Polearis). Knowledge, never numbers: the reckoning shows where the
+  after the slice, opens the way to a node not yet found (Entropolis). Knowledge, never numbers: the reckoning shows where the
   wave comes from, and the gun and the dodge stay the player's. `src/progress/econ/emocean.js`.
 - **The music is the stage's clock:** every stage runs its cue's 150 s; a tempo per ship (Wanda's `stageCue`) waits for a second ship.
 

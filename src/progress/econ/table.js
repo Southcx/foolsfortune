@@ -94,7 +94,7 @@ export const ECON = {
    *  one breaks the streak. */
   commission: { minutes: [3, 8, 20, 60, 180], streakEvery: 10, streakMult: 3 },
   /** BOUNTIES (Letty Marque's, under the King's marque: docs/LORE.md): a hunt for a named stray (an Egregore off the Emocean, or a
-   *  Figment gone aberrant), mostly out of Entra Polearis, paid for by Margarite. A bounty pays `mult` times a commission of the same
+   *  Figment gone aberrant), mostly out of Entropolis, paid for by Margarite. A bounty pays `mult` times a commission of the same
    *  class (it is a named target, far from home, and the hunt includes the trip), less `cut`, Letty's share. The owner, 2026-10-04:
    *  the Queen's island breeds the strays and the King's pays to have them brought in, a toxic symbiosis. */
   bounty: { mult: 2.5, cut: 0.2 },
@@ -138,10 +138,10 @@ export const ECON = {
    *  lucrative, a chaotic mind riskier and richer"). Each island's Wells: `deeper` (how much richer each floor down is), `floors` (how
    *  deep they run), `risk` (the chance a floor ends the run for a middling diver: a skilled one halves it, a masterful one quarters it),
    *  `foes` (FOEs a run), the crude `grades` it yields, the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
-   *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entra Polearis
+   *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entropolis
    *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). `crude` is where the island's price
    *  for crude sits inside the demand band (0 the bottom .. 1 the top, with its slow wave about it): Chaos digs it up and sells it
-   *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entra to Margarite.
+   *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entropolis to Margarite.
    *  `maps` is the same for Cogitomaps (the owner, R57: the Purser buys them): Law wants its minds charted and pays for it, Chaos
    *  shrugs, and an island knows its own mind (a map of Anagami's Well is worth little on Anagami), so a good map is worth sailing to
    *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */

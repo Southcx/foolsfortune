@@ -37,7 +37,7 @@ const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h
 export function demand(island, kind, day = 0, sold = 0) {
   const I = ECON.island, k = hash(`${island}:${kind}`), period = I.periodDays[0] + k * (I.periodDays[1] - I.periodDays[0]);
   let wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
-  // (crude: the island's own place in the band, the wave a narrow swing about it: Entra sells it cheap, Margarite buys it dear)
+  // (crude: the island's own place in the band, the wave a narrow swing about it: Entropolis sells it cheap, Margarite buys it dear)
   // (Cogitomaps likewise: Margarite buys them dear)
   const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : kind === 'cogitomap' ? ECON.islands[island]?.maps : undefined;
   if (centre !== undefined) wave = Math.max(0, Math.min(1, centre + (wave - 0.5) * 0.4));
