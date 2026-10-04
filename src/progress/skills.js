@@ -26,12 +26,12 @@ export const ABILITIES = [
     id: 'blink', key: 'E', name: 'Blink', glyph: '⟿', tech: 'blink', input: 'E', station: 'T5',
     blurb: 'A flash of a dodge along your move keys, leaving an afterimage. Two charges that come back on a timer.',
     hint: 'It comes to those who dash: the air dash, again and again.',
-    goals: [count('dash', 20, 'air dashes')],
+    goals: [count('move.dash', 20, 'air dashes')],
     variants: [
       { id: 'rush', name: 'Rush Blink', blurb: 'Further and faster: 8 m a blink, slower to recharge.', cfg: { distance: 8, recharge: 2.4 },
-        hint: 'Blink until it is a habit.', goals: [count('blink', 30, 'blinks')] },
+        hint: 'Blink until it is a habit.', goals: [count('move.blink', 30, 'blinks')] },
       { id: 'flicker', name: 'Flicker', blurb: 'Three short charges, quick to return: 4 m each.', cfg: { distance: 4, charges: 3, recharge: 1.1 },
-        hint: 'Two blinks so close together they are one.', goals: [chain(['blink', 'blink'], 0.9, 8, 'a blink right after a blink')] },
+        hint: 'Two blinks so close together they are one.', goals: [chain(['move.blink', 'move.blink'], 0.9, 8, 'a blink right after a blink')] },
     ],
   },
   {
@@ -39,7 +39,7 @@ export const ABILITIES = [
     blurb: 'Drive straight down. The landing throws out a shockwave; Space right after is a big jump, C with a direction turns the fall into a slide.',
     hint: 'Fall from a real height, and land hard. Three times.',
     follows: ['Space: slam jump', 'C + direction: slam slide'],
-    goals: [count('land', 3, 'drops of 12 m or more', (e) => e.drop >= 12)],
+    goals: [count('move.land', 3, 'drops of 12 m or more', (e) => e.drop >= 12)],
     variants: [
       { id: 'quake', name: 'Quake Slam', blurb: 'A wider, harder shockwave.', cfg: { radius: 4.8, velocity: 12, breakFrac: 0.6 },
         hint: 'Practice makes the ground tremble.', goals: [count('slam.impact', 40, 'slams')] },
@@ -53,7 +53,7 @@ export const ABILITIES = [
     id: 'roll', key: '⇧ crouched', name: 'Roll', glyph: '◌', tech: 'roll', input: 'Sprint (Shift) while crouched; automatic out of a fall of 20 m or more', station: 'T3',
     blurb: 'An evasive roll: press Sprint while crouched and you tumble the way you steer, invulnerable for the first third of it. It also happens by itself out of a fall of 20 m or more, where it mitigates the fall and turns it into speed. Jump out of the second half to keep the speed.',
     hint: 'Fall a long way, and land it. Three times.',
-    goals: [count('land', 3, 'drops of 20 m or more', (e) => e.drop >= 20)],
+    goals: [count('move.land', 3, 'drops of 20 m or more', (e) => e.drop >= 20)],
     variants: [
       { id: 'tumble', name: 'Tumble', blurb: 'Rolls out of falls of 12 m, carries more speed, and stays invulnerable a little longer.', cfg: { minDrop: 12, speed: 10, speedPerFall: 0.32, iframes: 0.42, cooldown: 0.5 },
         hint: 'Roll until it is second nature.', goals: [count('tech.end', 15, 'rolls', (e) => e.id === 'roll')] },
@@ -63,10 +63,10 @@ export const ABILITIES = [
     id: 'stomp', key: '↓', name: 'Stomp', glyph: '⇩', tech: 'stomp', input: 'land on a pot', station: 'T6',
     blurb: 'Come down on a pot from above: it shatters under you and throws you back up, air jump restored.',
     hint: 'Break a lot of pots. Some of them will teach you something.',
-    goals: [count('break', 25, 'pots broken')],
+    goals: [count('prop.break', 25, 'pots broken')],
     variants: [
       { id: 'spring', name: 'Spring Stomp', blurb: 'A higher bounce.', cfg: { bounce: 11 },
-        hint: 'A staircase of pots, one after another.', goals: [chain(['stomp', 'stomp', 'stomp'], 4, 1, 'three stomps in a row')] },
+        hint: 'A staircase of pots, one after another.', goals: [chain(['move.stomp', 'move.stomp', 'move.stomp'], 4, 1, 'three stomps in a row')] },
     ],
   },
   {
@@ -93,17 +93,17 @@ export const ABILITIES = [
     id: 'kick', key: 'V', name: 'Kick & Parry', glyph: '⇥', tech: 'kick', input: 'V', station: 'H3',
     blurb: 'A quick kick that knocks pots over, sends crates and clapperjars flying, and rings targets. Kick a projectile in its first moments and it is a parry: it goes back the way you look, and you cannot be hit for a beat.',
     hint: 'Break a great many pots. Feet first is fine.',
-    goals: [count('break', 15, 'pots broken')],
+    goals: [count('prop.break', 15, 'pots broken')],
     variants: [
       { id: 'counter', name: 'Counter', blurb: 'A wider parry window: it catches more, throws it back harder, and covers you longer.', cfg: { parryRadius: 2.7, parryOut: 16, parryIframes: 0.7, parrySpeed: 3.5 },
-        hint: 'Turn something back on whatever threw it.', goals: [count('parry', 4, 'parries')] },
+        hint: 'Turn something back on whatever threw it.', goals: [count('move.parry', 4, 'parries')] },
     ],
   },
   {
     id: 'recoil', key: 'Shot ↓', name: 'Recoil Jump', glyph: '⇧', tech: 'recoil', input: 'fire the gun, aimed down, in mid-air', station: 'H4',
     blurb: 'In the air, a shot aimed down kicks you up (and back the way the barrel points). Three shots a jump; a charged shot is worth two. A shot costs what a shot costs: Lachryma.',
     hint: 'Shoot from the air. Often.',
-    goals: [count('shot', 15, 'shots fired in mid-air', (e) => e.air)],
+    goals: [count('shot.fire', 15, 'shots fired in mid-air', (e) => e.air)],
     variants: [
       { id: 'boost', name: 'Boost', blurb: 'Every shot kicks harder, and one more of them a jump.', cfg: { kick: 6.6, chargedKick: 13, charges: 4 },
         hint: 'Kick yourself up, again and again.', goals: [count('recoil.jump', 25, 'recoil jumps')] },
@@ -132,7 +132,7 @@ export const GOD_ARTS = [
     realm: 'god', id: 'sunder', key: '2', name: 'Sunder', glyph: '╱', input: 'left click and drag across the ground',
     blurb: 'Draw a blade across the ground: everything it passes through, in the air above the line, is cut in two along that plane. A cut costs Lachryma, a little more for every extra thing it takes. Works on charted ground.',
     hint: 'Cut pots with the psygun\'s slice shell, again and again.',
-    goals: [count('break', 8, 'pots sliced', (e) => e.cause === 'sliced')],
+    goals: [count('prop.break', 8, 'pots sliced', (e) => e.cause === 'sliced')],
     variants: [
       { id: 'guillotine', name: 'Guillotine', blurb: 'A longer, taller blade.', cfg: { maxLen: 18, height: 4.8 },
         hint: 'Sunder until it is a habit.', goals: [count('god.sunder', 15, 'cuts')] },
