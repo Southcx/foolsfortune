@@ -120,6 +120,7 @@ export class Vfx {
     document.body.appendChild(this.flashEl);
     this.flashK = 0; this.flashDecay = 2;
     this.budget = Object.fromEntries(Object.entries(BUDGETS).map(([k, [r, c]]) => [k, new Budget(r, c)]));
+    if (game.fx) game.fx.vfx = this; // (the old particles hand their named bursts to the library as they are folded in: Phase 2)
     this.meshReady = false;
     meshFx.load().then(() => { this.meshReady = true; });
   }
@@ -327,11 +328,13 @@ export class Vfx {
       if (sp === 'sphere') _v.add(_a.randomDirection().multiplyScalar(r * Math.cbrt(Math.random())));
       else if (sp === 'shell') _v.add(_a.randomDirection().multiplyScalar(r));
       else if (sp === 'ring' || sp === 'disc') { const a = Math.random() * Math.PI * 2, rr = sp === 'ring' ? r : r * Math.sqrt(Math.random()); _v.x += Math.cos(a) * rr; _v.z += Math.sin(a) * rr; }
+      else if (sp === 'line' && ctx.from && ctx.to) { _v.lerpVectors(ctx.from, ctx.to, Math.random()); if (r) _v.add(_a.randomDirection().multiplyScalar(r * Math.random())); } // (along a cut: from -> to)
       else if (sp === 'column') { const a = Math.random() * Math.PI * 2; _v.x += Math.cos(a) * r; _v.z += Math.sin(a) * r; _v.y += Math.random() * rnd(L.height ?? 2, ctx) * (ctx.scale ?? 1); }
       // which way it goes
       const dm = L.dir || 'sphere', speed = rnd(L.speed ?? 0, ctx) * (L.powerSpeed ? Math.sqrt(P) : 1);
       if (dm === 'sphere') _d.randomDirection();
       else if (dm === 'up') _d.set(0, 1, 0);
+      else if (dm === 'line' && ctx.from && ctx.to) _d.subVectors(ctx.to, ctx.from).normalize().multiplyScalar(Math.random() < 0.5 ? 1 : -1);
       else if (dm === 'out') _d.subVectors(_v, h.pos).setY(L.lift ?? 0).normalize();
       else if (dm === 'in') _d.subVectors(h.pos, _v).normalize();
       else if (dm === 'swirl') { _b.subVectors(_v, h.pos).setY(0); _d.set(-_b.z, 0, _b.x).normalize().addScaledVector(UP, L.lift ?? 0.5).normalize(); }

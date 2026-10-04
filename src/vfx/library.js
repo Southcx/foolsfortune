@@ -203,6 +203,13 @@ export const LIBRARY = {
     L({ type: 'sprites', dur: Infinity, rate: 16, shape: 'streak', spawn: 'shell', r: 0.4, dir: 'out', lift: 0.6, speed: [2, 4], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 1.6, gravity: 5, color: 'gold', colorEnd: 0xff3a1a }),
     L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ring', size: 0.4, sizeEnd: 1.4, life: 0.5, color: 0xff4a2a, colorEnd: 'gold', alphaEnd: 0, rot: 0 }),
   ] },
+  // a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the
+  // stroke, a hot core at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line')
+  cut: { layers: [
+    L({ type: 'sprites', count: [14, 18], shape: 'streak', spawn: 'line', dir: 'line', speed: [0.6, 1.6], size: [0.12, 0.2], sizeEnd: 0.02, life: [0.14, 0.24], stretch: 2.2, drag: 6, color: 'white', colorEnd: 'tint' }),
+    L({ type: 'sprites', count: 1, shape: 'core', size: 0.5, sizeEnd: 0.1, life: 0.12, color: 'white', colorEnd: 'tint' }),
+    L({ type: 'sprites', count: [10, 14], shape: 'glint', spawn: 'line', r: 0.1, speed: [0.5, 2], size: [0.08, 0.14], sizeEnd: 0, life: [0.2, 0.4], drag: 4, color: 'tint', twinkle: 28 }),
+  ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
   // the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its hot end.

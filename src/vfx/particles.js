@@ -303,30 +303,14 @@ export class FX {
   }
 
   // Slicer: a thin white-hot blade plane along the shot that fades fast
+  /** A cut through the air, from -> to: the library's `cut` (a seam of light along the stroke, glints), played by the VFX system.
+   *  (It was a flat untextured quad, which tore on vertical strokes: `blade` squared against the stroke went to zero.) */
   slash(from, to, blade) {
-    const dir = new THREE.Vector3().subVectors(to, from);
-    const len = dir.length();
-    if (len < 0.05) return;
-    dir.divideScalar(len);
-    const geo = new THREE.PlaneGeometry(1, 1);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    // plane spans dir (length) x blade (width)
-    blade = blade.clone().addScaledVector(dir, -blade.dot(dir)).normalize();
-    const n = new THREE.Vector3().crossVectors(dir, blade).normalize();
-    m.matrix.makeBasis(dir, blade, n);
-    m.quaternion.setFromRotationMatrix(m.matrix);
-    m.position.copy(from).addScaledVector(dir, len / 2);
-    m.scale.set(len, 0.5, 1);
-    m.renderOrder = 6;
-    m.frustumCulled = false;
-    this.scene.add(m);
-    this.slashes.push({ m, age: 0, life: 0.22 });
-    const hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 50; i++) {
-      const p = from.clone().addScaledVector(dir, Math.random() * len).addScaledVector(blade, (Math.random() - 0.5) * 0.4);
-      this.add.emit({ pos: p, vel: blade.clone().multiplyScalar((Math.random() - 0.5) * 3), life: 0.25 + Math.random() * 0.25, size: 0.03, sizeEnd: 0.005, color: hot, drag: 3, twinkle: 30 });
-    }
+    if (from.distanceTo(to) < 0.05) return;
+    const mid = from.clone().lerp(to, 0.5);
+    this.vfx?.play('cut', { pos: mid, from: from.clone(), to: to.clone(), dir: blade, tint: PALETTE.hot });
   }
+
 
   // Force push: an expanding open cone of air
   pushWave(from, axis, range, angleDeg) {

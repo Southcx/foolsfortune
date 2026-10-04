@@ -56,6 +56,8 @@ export class Trail {
   setColors(base, tip) { this.uni.uBase.value.set(base); this.uni.uTip.value.set(tip); }
 
   push(a, b) {
+    const L = this.s[this.s.length - 1]; // (a blade held still, in a hitstop, adds nothing: identical samples would flood the ribbon)
+    if (L && !this.brk && L.a.distanceToSquared(a) < 1e-6 && L.b.distanceToSquared(b) < 1e-6) return;
     this.s.push({ a: a.clone(), b: b.clone(), age: 0, brk: this.brk });
     this.brk = false;
     if (this.s.length > this.max) this.s.shift();
