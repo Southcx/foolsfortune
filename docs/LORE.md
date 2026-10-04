@@ -261,6 +261,10 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
   cracks, neon-green pools lie between the towers, a checkerboard hangs like a billboard. Over it all hang a magenta cloud and a dark
   moon wearing a green blindfold with a heart on it. The island drips from beneath, as Kaolin's does. At its foot, in the dark, a great
   head with green eyes looks up (its meaning is left blank).
+- **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
+  city's grid and density, then the colours bleeding off everything, and then a wave that breaks the geometry itself. Player text
+  never names a drug: the game shows it, as it shows the Queen's moods without clinical words. For the stories *(Espada's)*: Letty's
+  secondhand picture is right about how it looks and wrong about what it means.
 - **Her avatar** (the concept art): red hair, a witch's hat haloed by a dreamcatcher, glowing green eyes and smile, smoke with red eyes
   coiling off her, and marionette strings running from her fingers to a small green puppet. Magenta, neon green, violet, red.
 - **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
