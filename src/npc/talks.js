@@ -15,7 +15,7 @@
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
 //   LETTY MARQUE      nacre, of Margarite (the King's island). A Contractor under the King's marque: the bounty board at Margarite's
-//                     dock. A zealot on a mission, cheerful and certain: every aberrant a wrong thing to clear out. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
+//                     dock. A zealot on a mission and a war hawk itching for escalation: the King holds the line, she wants to take the fight out. Her Tulpa POLL, a paper parrot, shouts (lines marked `poll: true`). Waits for her model.
 //   THE PURSER        of Margarite. Buys crude, materials and Cogitomaps for the lamp, at the King's posted price; never haggles,
 //                     never names the Queen. The role is the name. Waits for a model.
 // ---------------------------------------------------------------------------------------
@@ -215,11 +215,11 @@ export const TALKS = {
     start: 'hello', again: 'again',
     nodes: {
       hello: { lines: [
-        { mood: 'joy', text: "Letty Marque, licensed! {p:0.3}Marque with a Q-U-E: the King's own letter. {p:0.3}{big}And I mean every word of it.{/}" },
+        { mood: 'joy', text: "Letty Marque, licensed by the King's own letter, and that's marque with a Q-U-E, {p:0.3}though if you ask me it ought to be spelled with a few more teeth." },
         { poll: true, mood: 'joy', text: '{big}{shake}HEAD COUNT! HEAD COUNT!{/}{/}' },
-        { mood: 'calm', text: 'This is my board. {p:0.3}Every notice on it is a wrong thing loose in the sea. {p:0.4}{hot}Not for long.{/}' },
+        { mood: 'anger', text: "This is my board, and every notice on it is a wrong thing loose in the sea that ought to have been dealt with yesterday, {p:0.3}and if I had my way we'd be dealing with all of them {hot}today{/}." },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: "Back for more? {bounce}Good!{/} {p:0.3}The sea won't clean itself." }], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: "There you are! {p:0.3}I was starting to think you'd gone soft on me, and the board has only grown since you left." }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: "What's on the board?", go: 'board' },
         { text: 'Who pays?', go: 'pays' },
@@ -230,32 +230,30 @@ export const TALKS = {
         { text: 'Goodbye.', go: 'bye' },
       ] },
       board: { lines: [
-        { mood: 'anger', text: 'Aberrants. {p:0.3}Egregores off the Emocean, and Figments that slipped their island and went {cold}wrong{/}.' },
-        { mood: 'calm', text: 'Every one of them is a crack in the world. {p:0.4}{hot}I close cracks.{/}' },
-        { mood: 'sly', text: 'Pick a notice. Bring it in. {p:0.3}I pay well, and the King pays better.' },
+        { mood: 'anger', text: 'Aberrants: Egregores off the Emocean, and Figments that slipped their island and went {cold}wrong{/}. {p:0.4}The King posts the little ones, and I keep telling him that if we only ever chase the little ones, {hot}the big ones get bigger{/}.' },
+        { mood: 'sly', text: "Take a notice, bring it in and I'll pay you out, {p:0.3}and once you've cleared a few, come back and ask me about the ones I'm not allowed to post yet." },
       ], next: 'menu' },
       pays: { lines: [
-        { mood: 'joy', text: 'The King pays, the lamp is fed, and the sea is that much cleaner. {p:0.4}{gold}Everyone wins.{/} {p:0.3}{small}Except the strays.{/}' },
-        { mood: 'sly', text: "They aren't his, you know. {p:0.3}He just pays to have them put right. {p:0.4}Ask the crude where they come from." },
+        { mood: 'calm', text: 'Margarite pays, the lamp gets fed and the sea gets a little cleaner, {p:0.3}which is fine as far as it goes, {p:0.4}{small}but a little cleaner was never the plan.{/}' },
+        { mood: 'anger', text: "They aren't his strays, you know; he just pays to have them put right. {p:0.4}Ask the crude where they come from, {p:0.3}and then ask yourself why nobody has sailed over there to {hot}shut off the tap{/}." },
       ], next: 'menu' },
       poll: { lines: [
-        { mood: 'joy', text: 'Poll? {p:0.3}My Tulpa! Folded from every notice I ever closed. {p:0.4}Keeps the Emocean off me.' },
-        { mood: 'awe', text: '{slow}Every fold is one less wrong thing in the sea.{/}' },
-        { poll: true, mood: 'surprise', text: '{big}ONE LESS! ONE LESS!{/}' },
+        { mood: 'joy', text: "Poll's my Tulpa, folded from every notice I ever closed, and it keeps the Emocean off me while I work, {p:0.3}though I'll admit I folded it bigger than it needed to be, {small}because I'm planning on a lot more paper.{/}" },
+        { poll: true, mood: 'surprise', text: '{big}MORE PAPER! MORE PAPER!{/}' },
       ], next: 'menu' },
       king: { lines: [
-        { mood: 'awe', text: 'King Magnus keeps the light. {p:0.4}{slow}Every night, every grain of the glass.{/}' },
-        { mood: 'anger', text: '{p:0.3}The light holds them back. {p:0.4}{hot}I go out and finish them.{/}' },
+        { mood: 'awe', text: "King Magnus keeps the light lit every night, every grain of the glass, and I'd follow him off the edge of the map, {p:0.4}but holding the line is all he ever does, {p:0.3}and a line you only ever hold is a line you're slowly losing." },
+        { mood: 'anger', text: 'Give me a fleet of destroyers and one good season {p:0.3}and I would {hot}{big}take the fight to them{/}{/}, instead of waiting in the dark for them to come to us.' },
       ], next: 'menu' },
       why: { lines: [
-        { mood: 'calm', text: "Margarite is safe. {p:0.4}Safe is a wall. {p:0.4}{slow}Walls hold things back. They don't end anything.{/}" },
-        { mood: 'joy', text: "{p:0.3}So I took the King's letter and went out where they breed. {p:0.3}{bounce}Best thing I ever did.{/}" },
+        { mood: 'sad', text: "Margarite is the safest place in the whole Emocean, and I couldn't stand it: {p:0.3}all those walls and that patient light, and everyone waiting for the deep things to give up first, {p:0.4}{slow}as if they ever would.{/}" },
+        { mood: 'joy', text: "So I took the King's letter and went out where they breed, {p:0.3}and I haven't looked back once, {bounce}not once{/}." },
       ], next: 'menu' },
       me: { lines: [
-        { mood: 'surprise', text: "You? {p:0.3}One of those jars that walks. {p:0.3}Full to the brim with Lachryma, and still yourself." },
-        { mood: 'sly', text: '{p:0.4}Good. Stay that way. {p:0.5}{small}I\'ll be watching.{/}' },
+        { mood: 'surprise', text: "You're one of those jars that walks, full to the brim with Lachryma and somehow still yourself, {p:0.3}which makes you about the most useful thing I've seen all year." },
+        { mood: 'sly', text: "{p:0.4}Stay that way, won't you? {p:0.5}{small}I'd hate to have to put your notice on my board.{/}" },
       ], next: 'menu' },
-      bye: { lines: [{ mood: 'joy', text: 'Fair winds, and good hunting! {p:0.3}{small}Leave nothing wrong behind you.{/}' }] },
+      bye: { lines: [{ mood: 'joy', text: "Fair winds and good hunting, and if you see anything big out there, {p:0.3}{hot}don't you dare leave it for the lamp{/}." }] },
     },
   },
 
@@ -268,7 +266,7 @@ export const TALKS = {
         { mood: 'calm', text: 'Margarite dock. {p:0.3}State your cargo.' },
         { mood: 'calm', text: "I am the Purser. I buy for the lamp, at the lamp's price. {p:0.3}The price is posted. {p:0.3}{small}The price is always posted.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'calm', text: 'You again. {p:0.3}Punctual. {p:0.3}Good. Cargo?' }], next: 'menu' },
+      again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'What do you buy?', go: 'buy' },
         { text: 'Can we talk price?', go: 'price' },

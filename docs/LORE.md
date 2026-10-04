@@ -524,9 +524,14 @@ witnesses the island's work; the other brings in what has gone astray.
   answers grit: it coats the wrong thing until it is smooth and sealed away. That is her whole creed.
 - **Poll, her Tulpa.** A paper parrot folded from every bounty notice she ever closed: her tally, worn on her shoulder. *Poll* is a
   parrot's name, a head count, and a tax per head. It shouts the count.
-- **The voice.** Fervent and cheerful, a showboat with total certainty: no doubt, no grey, every stray a "wrong thing" and every
-  bounty "one less". Kid-safe words for it: clear out, put right, close a crack, finish. For Wanda: she is the first voice not made of
-  clay, and the first that never wavers.
+- **The voice: a war hawk itching for escalation** *(the owner, R57)*. Long, rolling sentences that keep building, each clause a
+  step up the ladder: the little strays are not enough, the King's line is a slow retreat, give her a fleet and a season, ask her
+  about the notices she is not allowed to post yet, and why nobody has sailed to the far shore to shut off the tap. Cheerful, never
+  in doubt, never clipped: no staccato, no fragments for effect. Kid-safe words for it: clear out, put right, take the fight to them,
+  finish. For Wanda: the first voice not made of clay, and the first that never wavers.
+- **Where she points** *(Espada's)*: at the Queen's island. The strays come from Entra Polearis, and the King only pays to have them
+  put right; Letty wants the source dealt with. That is the escalation the King has spent his life avoiding, and it is why she is
+  useful to him and dangerous to everyone. On the Courier: "Stay that way, won't you? I'd hate to have to put your notice on my board."
 - **The undertone** *(Espada's)*: the canon says no Figment or Egregore is good or evil by nature (section 1), and Letty is sure they
   are. The slip jellies in the Dunes are, by the town's story, folk of the town that was. A bounty she posts may be somebody's
   neighbour. She is never a villain (she does keep the sea safer); she is the lesson that certainty and being right are different
