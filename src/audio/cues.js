@@ -19,6 +19,7 @@ const RULES = {
   'courier.shatter': (s) => s.courierShatter?.(),
   'courier.reform': (s) => s.courierReform?.(),
   'vessel.refire': (s) => s.vesselRefire?.(),
+  'combat.annihilate': (s) => { s.damage?.('impact', 1); s.damage?.('delirium', 1); s.prismatic?.(1); }, // (the two ends of the line at once: audio/damage.js)
   'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
 };
 
