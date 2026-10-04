@@ -334,7 +334,7 @@ export class GodArts {
       const e = L.ent;
       if (e && (e.type === 'prop' || e.alive)) {
         if (L.id === 'swell') e.godScale = L.f; else { e.godTwist = L.tw; e.godLobe = L.lo; }
-        g.events?.emit(`god.${L.id}`, {});
+        g.events?.emit(L.id === 'swell' ? 'god.swell' : 'god.wring', {}); // (named in full, so a search for the event finds it)
         sfx.grab();
       }
     } else if (L.id === 'manifest') {
