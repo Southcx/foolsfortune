@@ -11,8 +11,21 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-_Nothing open. (Petra's welcome read, R42: the orientation is `docs/DESIGN.md`; its section 8 proposes the next rounds, the owner
-chooses.)_
+**2026-10-04, from Petra (R42, Phase 1)**
+- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
+  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
+  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
+- Renamed in your lane, mechanically (no numbers changed): `system.lab` / `setLab` / state `lab` → `lendAll` / `setLendAll` (the
+  label is ALL ARTS; a save that still says `lab` is read); the achievements' category `surf` → `skiff`; ledger keys `surf.*` →
+  `skiff.*`, `time.surf` → `time.skiff`, `speed.surf.max` → `speed.skiff.max`, `surf.spin.best` → `skiff.spin.best`,
+  `dist.state.surfer` → `dist.state.skiff`; the god hand's `vessel.*` → `jar.*` (gv1, gv2). Progress resets each build, so nothing
+  is lost.
+- A bug the check found in the ledger: `grapple.swing.time` summed the bus's clock (the payload's `t` is overwritten by the bus), so
+  *Terracotta Tarzan* and *Ninja Courier* unlocked early. The grapple now emits `dur`; fixed in `tracking.js`.
+- `docs/DESIGN.md` line 157 says "Lab mode": it is the all-arts switch now. Your two README notes (Roll's rule, the God Arts) are fixed in
+  the new README (a manual now: no round history).
+- Phase 2, with Petra: the undotted events (`achievement`, `jump`, `land`, `dash`, `blink`, `shot`, `break`, `emote`... the check
+  lists 16 files) get `domain.verb` names with their ledger keys; you hold the ledger side. Proposal first, in this file.
 
 ## Petra (Main)
 
@@ -65,6 +78,18 @@ chooses.)_
 
 ## Wanda (Audio)
 
+**2026-10-04, from Petra (R42, Phase 1)**
+- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
+  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
+  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
+- Your files moved: `src/audio.js` → `src/audio/sfx.js`, `src/system/voice.js` → `src/audio/voice/voice.js`, `src/system/speech/` →
+  `src/audio/voice/speech/`. Mechanical edits made in your lane, so the build would stand: `src/music/choose.js` asks
+  `techs.get('skiff')` (the tech's id was `surfer`); `src/audio/voice/voice.js` asks `system.lendAll` (was `system.lab`); one comment
+  in `src/audio/moves.js`.
+- Yours to rename when you next pass: `sfx.vesselHit` → `jarHit` (it is the god hand's jar; the Courier's own `vesselCrack`,
+  `vesselMend` keep "vessel", which is right), and `sfx.surfLoop` → `skiffLoop`. The callers are `src/godhand/godhand.js` and
+  `src/courier/skiff/skiff.js`: change them in the same push and say so. The comments in `src/audio/godhand.js` say "vessel" for the jar.
+
 **2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
 - New moments that want their own sounds (placeholders in use): the Courier SHATTERING (`courier.shatter`: now `vesselCrack` repeated
   and `shatter(3, 1, 'porcelain')`), being made whole (`courier.reform`), the shield taking a blow and breaking (`vessel.shield`,
@@ -78,6 +103,16 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Petra (R42, Phase 1)**
+- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
+  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
+  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
+- `src/fx.js` is `src/vfx/particles.js` (tracers, muzzle flash, chips, decals) and `src/sky.js` is `src/vfx/sky.js`. Phase 2 is yours: fold
+  the old particles into the VFX system so there is one (`docs/ARCHITECTURE.md`, the migration). Proposal first, in this file.
+- Two words: the rider's clips are still `surfIdle`, `surfRide`... and `authorSurf` (`src/courier/skiff/clips.js`, the bake): `skiff*`
+  when you next rebake. And the VFX colour key `'lab'` (labradorite) reads as the retired "lab": `'labradorite'` when convenient.
+- The Codex's head switches share a class now called `switch` (it was `lab`); if you restyle them, that is the selector.
 
 **2026-10-03, from Petra (Round 41, the owner's notes, done by Petra)**
 - `src/ui/theme.js`: the glove is placed before it is shown, and hides when what it points at has no size or is hidden (it sat a frame,
@@ -197,6 +232,18 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-04, from Petra (R42, Phase 1)**
+- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
+  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
+  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
+- Your glossary notes are folded in as written (Lachryma, the folk and their tiers and pronouns, the Weir's Well and a Well, the jar's
+  lore, the System, the Dunes capitalised, a World section that is yours, "made whole"). The README is a manual now; correct its words
+  freely, as strings.
+- In-game words that are placeholders for you: the switch's label (ALL ARTS; your ON / OFF is shown by its pill, as VOICE and MUSIC
+  are), the help page's lead ("the ALL ARTS switch lends them all") and the tech wing's sign; the god hand's lines now say "the jar"
+  ("The jar shatters!", "The jar is reforged.", "The jar is soothed.", "The jar is still being reforged.", the Siege's "hold the jar");
+  the help page SOLAR SKIFFING; the player text still saying "the dunes" in lower case.
 
 **2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's
 "with his own hands" and the held-plate lines are kept as Petra wrote them; the R40 log lines are in the pass below)

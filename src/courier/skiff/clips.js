@@ -7,7 +7,7 @@ import { V3, lerp, smooth } from '../anim/authoring.js';
 // ladder and the rest use (authoring.js): the IK is solved here, offline of play, against the
 // exact deck and rope the Skiff has, and stored as ordinary clips. At runtime nothing is solved: the
 // rider is a rigid part of the skiff (character.js places the root in the skiff's frame) and these are
-// blended by what the board is doing (surfer.js).
+// blended by what the board is doing (skiff.js).
 //
 // Body space, as in authoring.js: root at the feet, +Z is the way the rider faces (out over the
 // starboard side), +X is the rider's left, which is the way the bow points. The front foot is the left.

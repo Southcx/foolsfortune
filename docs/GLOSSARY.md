@@ -27,8 +27,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **crack**: damage to the vessel, per region. It mends slowly on its own, or at once at the kiln (MEND). *Not:* a pot's cracks
   ("pot cracks", below).
 - **shield**: the pool paying for a blow before the clay does (35 Lachryma a full blow). It is not a separate bar.
-- **shatter / reform** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`): the Courier's death, and being made whole again in the
-  workshop.
+- **shatter / made whole** (`courier.shatter`, `courier.reform`, `src/courier/vessel/death.js`): the Courier's death, and being made whole again in
+  the workshop. Player text says "made whole" (or "re-formed"), never "reform", which reads as politics; the event keeps its code name.
 - **glaze** (`src/courier/vessel/glazes.js`): a colour fired onto a region at the kiln. **FIRE** keeps a look, **MEND** refires the cracks.
 - **kintsugi** (`src/courier/vessel/kintsugi.js`): the net the cracks run along. Its gold is not drawn on the body for now (R41).
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
@@ -36,10 +36,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## Lachryma and money
 
-- **Lachryma**: the substance (the Well's tears, condensed or liquid). Always capitalised.
+- **Lachryma**: the substance of feeling and magic, condensed or liquid (`docs/LORE.md`, section 1: the Emocean is an atmosphere of it; cubes
+  are it made solid). Always capitalised.
 - **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
 - **cube** (`game.cubes`, `src/world/treasure/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
-- **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the dunes, struck with the Dreamvane's pick and tuned by ear.
+- **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear.
   What it gives: cubes, and sometimes a **crystal shard** (`mat.shard`, always so called) or a Possibilikey.
 - **signature** (`src/core/signatures.js`): where Lachryma is, and how strongly. Tools that sense or drink Lachryma ask here.
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
@@ -82,14 +83,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **Movement Art** (`src/progress/skills.js`): a tech the System teaches; a **variant** is one of its versions.
-- **the skiff / Solar Skiffing** (`src/courier/skiff/skiff.js`, `src/courier/skiff/boat.js`; code name after the move: `skiff`): the sand boat, and sailing it
-  in the dunes. *Retired:* "surfer".
+- **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
+  in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
 
 ## Places
 
-- **layer** (`LAYERS`, `src/feedback/cartography.js`): one level of the map: the upper floor, the ground floor, the basement, the dunes.
+- **layer** (`LAYERS`, `src/feedback/cartography.js`): one level of the map: the upper floor, the ground floor, the basement, the Dunes.
 - **room**: a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
   named in full (or ZoI).
@@ -104,26 +105,33 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **lap circuit** (`src/world/basement/circuits.js`): the Braid, the Mill Race, the Spindle.
 - **the siege** (`src/world/basement/siege.js`, `src/world/basement/raids.js`): the god hand's arena; raids happen there and nowhere else.
 - **the time trial** (`src/world/trial.js`): begun at the workshop's gong.
-- **the dunes**: the sand sea; **the oasis** at its heart, **the Weir** (its pools and pier), **the Well**, **the barrier** (the edge),
-  **the ruins** (columns and obelisks: stone).
+- **the Dunes** (code `dunes`): the sand sea, a region of Anagami Island, capitalised in player text like the Weir and the Well; **the oasis**
+  at its heart, **the Weir** (its pools and pier), **the Weir's Well** (of liquid Lachryma), **the barrier** (the edge), **the ruins**
+  (columns and obelisks: stone).
 
 ## Creatures and folk
 
 - **creature** (`game.creatures`, `src/creatures/creatures.js`): a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
-- **clapperjar** (code: `clapper`, `src/creatures/clappers.js`): the clapping pots. The code's shorter word is accepted.
+- **clapperjar** (code: `clapper`, `src/creatures/clappers.js`): the clapping pots, the folk's lowest tier (earthenware). The code's shorter
+  word is accepted.
 - **slip jelly** (`src/creatures/jelly/`), **spirit** (`src/creatures/spirits.js`: an ally, called up), **mirage** (a decoy).
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
 - **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt).
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
-- **the folk** (code: `npc`, `src/npc/`): the clay people (Saggar, Raku, Old Grog, Pip). Only they speak in the dialogue box. The folk are
-  "he" and "she" as their lore says; only the Courier is "they".
+- **the folk** (code: `npc`, `src/npc/`): the clay people, all fragments of Kaolin Anagami, tiered earthenware (the clapperjars) < stoneware <
+  porcelain < the Court. "The folk" in the game means the ones who speak (Saggar, Raku, Old Grog, Pip); only they speak in the dialogue
+  box. Pronouns (R39): the Prince of Clay is "he"; every other folk is unisex by construction and goes by what the lore gives it (so far
+  Mistress Saggar "she", Raku "he"; Grog and Pip unset: write around them). The Courier is always "they".
 
 ## Records and progression
 
-- **the System** (`src/progress/system.js`): the voice in the game that teaches Movement Arts and keeps the save. Always capitalised.
+- **the System** (`src/progress/system.js`): the game's code made a voice (R39); it teaches the Movement Arts and keeps the save. Always
+  capitalised.
   *Not:* a game system in general (say "a system" in lower case, or name it).
 - **the Codex** (B, `src/feedback/codex/codex.js`): the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+- **the all-arts switch** (code `system.lendAll`, `setLendAll`; in the Codex's head): lends every art without learning it (on in DEBUG,
+  off in STORY). Its label is ALL ARTS (ON / OFF). Nothing it lends is counted or announced. *Not:* "Lab mode".
 - **the ledger** (`src/progress/stats.js`): every count the game keeps. **achievement** (`src/progress/achievements.js`): a predicate over the ledger,
   never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
@@ -132,8 +140,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ## The god hand
 
 - **the god hand** (~, `src/godhand/godhand.js`): the mode where the Courier becomes a jar and you become a hand.
-- **the jar** (code name after the move: `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka jar the Courier becomes. It has
-  integrity, it shatters, it is reforged. *Not:* the vessel.
+- **the jar** (code name `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka Jar, the Courier's true form and the Prince's
+  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). It has integrity, it shatters, it is reforged. *Not:*
+  the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
 
 ## Windows
@@ -150,7 +159,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
   bars, the fish portrait.
-- **ground marks** (`src/world/ground/groundmarks.js`; after the move `groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
+- **ground marks** (`src/world/ground/groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
@@ -167,6 +176,18 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
 
+## The world (Espada's: `docs/LORE.md`, section 1)
+
+- **the Emocean**: the collective unconscious, a sea (an atmosphere) of pure Lachryma outside every island.
+- **an Island of Ego**: an island precipitated out of the Emocean where an identity is strong enough; its owner's Will holds it apart.
+- **Anagami Island**: this Island of Ego, a 5 x 5 grid of chunks. **Kaolin Anagami** is the island, and the ego it is.
+- **the Prince of Clay**: Kaolin Anagami's main avatar, the most powerful of the folk. "He".
+- **Couriers**: the Pneuka Jar in humanoid form; every player is one. They go out across the Emocean and resist excess Lachryma best.
+- **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
+- **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
+  authored by no one. Neither is good or evil by nature.
+- **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
+
 ## Homonyms we keep on purpose (always qualify them)
 
 | word | its meanings | say |
@@ -178,16 +199,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
 | card | a Veritome card; the tarot cards falling on the title | "card" is the Veritome's; the title's are scenery |
 | shard | a piece of a broken pot; a crystal shard (the item) | "crystal shard" in full |
+| Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
 
 ## Retired words
 
-| retired | say instead | where it still is (until the restructure renames it) |
+| retired | say instead | where it still is |
 | --- | --- | --- |
-| surfer, Solar Surfer | the skiff, Solar Skiffing | `src/courier/skiff/skiff.js`, `T.tech.surfer`, events `surf.*` |
-| Lab mode | the all-arts switch (code `allArts`; its label is Espada's) | `system.lab`, `setLab`, the Codex |
-| the lab (for the basement) | the basement (or the movement lab, the room) | the map's layer name "THE LAB" |
-| vessel (for the god hand's jar) | the jar | `src/godhand/godhand.js`, events `vessel.hit` / `vessel.shatter` / `vessel.reforge` |
-| pause card | the pause menu | comments |
+| surfer, Solar Surfer | the skiff, Solar Skiffing | (gone; Wanda's `sfx.surfLoop` and Calissa's clip names `surf*` are theirs to rename) |
+| Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
+| the lab (for the basement) | the basement (or the movement lab, the room) | (gone) |
+| vessel (for the god hand's jar) | the jar | Wanda's `sfx.vesselHit` (to be `jarHit`) |
+| pause card | the pause menu | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |
-| /lab (the workbench's command) | /workbench | `src/main.js` |
+| /lab (the workbench's command) | /workbench | (gone) |
 | torture test / bot | the stress test | (gone) |

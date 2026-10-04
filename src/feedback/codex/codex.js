@@ -8,7 +8,7 @@ import { renderSoundTest } from '../../music/soundtest.js';
 // The System's face: the Codex (B). What is learned is announced in the log (tracking.js), not here. The Codex sorts what you can
 // learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
 // of the ones you don't (a hint, and a bar that only fills as you get closer), and which
-// variant is selected. Lab mode lends you everything. The Codex pauses the game while it's
+// variant is selected. The all-arts switch lends you everything. The Codex pauses the game while it's
 // open. Fired-clay tablets, the same ink as the rest of the HUD.
 // ---------------------------------------------------------------------------
 
@@ -21,11 +21,11 @@ const CSS = `
 #codex h2 { margin: 0; font-size: 20px; letter-spacing: .22em; color: var(--accent); font-weight: normal; }
 #codex header .sub { opacity: .65; font-size: 11px; letter-spacing: .08em; flex: 1 0 100%; order: 9; margin-top: -6px; }
 #codex header h2 { flex: 1; }
-#codex .lab { display: flex; gap: 8px; align-items: center; font-size: 12px; letter-spacing: .12em; cursor: var(--jcur-pointer, pointer); padding: 4px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; }
-#codex .lab i { width: 26px; height: 12px; border-radius: 6px; background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); position: relative; }
-#codex .lab i::after { content: ''; position: absolute; left: 1px; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transition: left .12s; }
-#codex .lab.on { border-color: var(--accent); background: rgba(var(--jsel),.3); } #codex .lab.on i::after { left: 15px; background: #fff1dc; }
-#codex .lab u { text-decoration: none; color: #fff1dc; min-width: 66px; display: inline-block; }
+#codex .switch { display: flex; gap: 8px; align-items: center; font-size: 12px; letter-spacing: .12em; cursor: var(--jcur-pointer, pointer); padding: 4px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; }
+#codex .switch i { width: 26px; height: 12px; border-radius: 6px; background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); position: relative; }
+#codex .switch i::after { content: ''; position: absolute; left: 1px; top: 1px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); transition: left .12s; }
+#codex .switch.on { border-color: var(--accent); background: rgba(var(--jsel),.3); } #codex .switch.on i::after { left: 15px; background: #fff1dc; }
+#codex .switch u { text-decoration: none; color: #fff1dc; min-width: 66px; display: inline-block; }
 #codex .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 12px; letter-spacing: .1em; }
 #codex .x:hover, #codex button:hover { background: rgba(var(--jsel),.35); }
 #codex .shelf { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,178,122,.2); display: flex; gap: 22px; }
@@ -106,14 +106,14 @@ export class Codex {
     const head = el('header');
     head.appendChild(el('h2', '', 'THE CODEX'));
     head.appendChild(el('span', 'sub', 'the Veritome\'s own pages · arts are learned by doing · B to close'));
-    const lab = el('div', `lab${s.lab ? ' on' : ''}`, 'LAB MODE <i></i>');
-    lab.title = 'Everything unlocked: for testing and for showing the game off';
-    lab.onclick = () => s.setLab(!s.lab);
-    head.appendChild(lab);
+    const allArts = el('div', `switch allarts${s.lendAll ? ' on' : ''}`, 'ALL ARTS <i></i>');
+    allArts.title = 'Everything unlocked: for testing and for showing the game off';
+    allArts.onclick = () => s.setLendAll(!s.lendAll);
+    head.appendChild(allArts);
     // the System's voice (audio/voice/voice.js): on or off, kept in the browser
     const V = this.game.voice;
     if (V) {
-      const vo = el('div', `lab${V.settings.on ? ' on' : ''}`, 'VOICE <i></i>');
+      const vo = el('div', `switch${V.settings.on ? ' on' : ''}`, 'VOICE <i></i>');
       vo.title = 'The System speaks what matters most, in its own synthesized voice';
       vo.onclick = () => { V.set({ on: !V.settings.on }); if (V.settings.on) V.say('Confirmed. The System will speak.', { key: 'voice.on', throttle: 0 }); this.render(); };
       head.appendChild(vo);
@@ -121,7 +121,7 @@ export class Codex {
     // the music (music/player.js): on or off, kept in the browser
     const M = this.game.music;
     if (M) {
-      const mu = el('div', `lab${M.on ? ' on' : ''}`, 'MUSIC <i></i>');
+      const mu = el('div', `switch${M.on ? ' on' : ''}`, 'MUSIC <i></i>');
       mu.title = 'The rooms that have a theme play it (the Dunes: "Mirage of the Still Water")';
       mu.onclick = () => { M.setOn(!M.on); this.render(); };
       head.appendChild(mu);
@@ -129,7 +129,7 @@ export class Codex {
     // the window colour (ui/theme.js), as Final Fantasy's config always offered: a click for the next
     const TH = this.game.theme;
     if (TH) {
-      const wc = el('div', 'lab wcol', `WINDOW <u>${TH.name}</u>`);
+      const wc = el('div', 'switch wcol', `WINDOW <u>${TH.name}</u>`);
       wc.title = 'The colour of every window: Kiln, Oxblood, Midnight, Verdigris, Umber';
       wc.onclick = () => { TH.next(); this.render(); };
       head.appendChild(wc);

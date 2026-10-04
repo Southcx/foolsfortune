@@ -23,7 +23,7 @@ export const CLASSES = {
   info: { color: '#fff1e0', tab: 'SYSTEM' },
   warn: { color: '#ff9f80', tab: 'SYSTEM' },
   move: { color: '#e9c9a2', tab: 'MOVE' },
-  surf: { color: '#a9d6bd', tab: 'MOVE' },
+  skiff: { color: '#a9d6bd', tab: 'MOVE' },
   battle: { color: '#fff1e0', tab: 'BATTLE' },
   hurt: { color: '#ff8f7d', tab: 'BATTLE' },
   gain: { color: '#ffd67e', tab: 'BATTLE' },

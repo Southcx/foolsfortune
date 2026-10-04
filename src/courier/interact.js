@@ -26,7 +26,7 @@ export class Interact {
     if (this.throttle <= 0) {
       this.throttle = 0.08;
       let best = null, keep = null;
-      const hidden = g.god?.controlling || g.techs?.active?.id === 'surfer' || g.techs?.active?.id === 'swim' || g.codex?.open || g.cinema?.active; // (a shot that is framed has no markers in it)
+      const hidden = g.god?.controlling || g.techs?.active?.id === 'skiff' || g.techs?.active?.id === 'swim' || g.codex?.open || g.cinema?.active; // (a shot that is framed has no markers in it)
       if (!hidden) for (const s of this.sources) {
         let r = null;
         try { r = s.fn(P); } catch { r = null; }

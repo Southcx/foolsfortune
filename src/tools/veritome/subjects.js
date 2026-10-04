@@ -67,7 +67,7 @@ export const SUBJECTS = {
   gong: { name: 'gong', find: (g) => (g.trial?.gong ? [{ pos: g.trial.gong.getWorldPosition(V(0, 0, 0)).setY(g.trial.gong.position.y + 1.1), r: 0.85, ref: g.trial.gong, states: new Set() }] : []) },
   cog: { name: 'cog', find: (g) => (g.movers?.list || []).filter((m) => m instanceof Cog).map((m) => ({ pos: m.center.clone(), r: (m.R || 2) * 0.9, ref: m, states: new Set() })) },
   cart: { name: 'carriage', find: (g) => (g.movers?.list || []).filter((m) => m instanceof Shuttle).map((m) => ({ pos: m.group.getWorldPosition(new THREE.Vector3()), r: 1.2, ref: m, states: new Set() })) },
-  skiff: { name: 'skiff', find: (g) => { const s = g.techs?.get('surfer')?.skiff; return s?.group?.visible ? [{ pos: s.group.position.clone().setY(s.group.position.y + 1.2), r: 2.2, ref: s, states: new Set() }] : []; } },
+  skiff: { name: 'skiff', find: (g) => { const s = g.techs?.get('skiff')?.skiff; return s?.group?.visible ? [{ pos: s.group.position.clone().setY(s.group.position.y + 1.2), r: 2.2, ref: s, states: new Set() }] : []; } },
   tower: { name: 'kiln', find: () => [{ pos: V(0, 2.2, 12.6), r: 2.4, ref: 'kiln', states: new Set(), from: 'below' }] },
   palm: { name: 'palm', find: (g) => (inDunes(g) ? PALM_SPOTS.map(([x, z]) => ({ pos: V(OX + x, OY + 3.6, OZ + z), r: 2.2, ref: `palm${x},${z}`, states: new Set() })) : []) },
   well: { name: 'the well', find: (g) => (inDunes(g) ? [{ pos: V(DUNE.x + (WELL.x0 + WELL.x1) / 2, DUNE.y + WELL.surface, DUNE.z + (WELL.z0 + WELL.z1) / 2), r: 4, ref: 'well', states: new Set() }] : []) },

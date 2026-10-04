@@ -30,7 +30,7 @@ export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', me
 export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
-  { id: 'surf', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks'] },
+  { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
@@ -165,21 +165,21 @@ export function buildAchievements(game) {
   F('ar4', 'move', 'The Arts', 5, 'collect', 'Every Variant', 'Learn every variant of every movement art.', () => ABILITIES.reduce((n, a) => n + a.variants.filter((v) => sys.unlocked(`${a.id}.${v.id}`)).length, 0), ABILITIES.reduce((n, a) => n + a.variants.length, 0));
 
   // ---------------------------------------------------------------- SURFING
-  C('sf1', 'surf', 'The Board', 1, 'count', 'Board Rider', 'Unfurl the Solar Skiff.', 'surf.start', 1);
-  F('sf2', 'surf', 'The Board', 2, 'endure', 'Sea Legs', 'Skiff for 5 minutes in all.', (L) => L.get('time.surf') / 60, 5, { unit: 'min' });
-  F('sf3', 'surf', 'The Board', 3, 'endure', 'Dune Dweller', 'Skiff for 30 minutes in all.', (L) => L.get('time.surf') / 60, 30, { unit: 'min' });
-  F('sf4', 'surf', 'The Board', 5, 'endure', 'Endless Summer', 'Skiff for 3 hours in all.', (L) => L.get('time.surf') / 3600, 3, { unit: 'h', title: 'Sandsailor' });
-  C('sfd1', 'surf', 'The Board', 2, 'count', 'Sail a Kilometre', 'Skiff 1 km.', 'dist.state.surfer', 1000, { unit: 'm' });
-  C('sfd2', 'surf', 'The Board', 4, 'endure', 'Across the Sea', 'Skiff 25 km.', 'dist.state.surfer', 25000, { unit: 'm' });
-  C('sfp', 'surf', 'The Board', 2, 'mechanic', 'In Time with the Wind', 'Pump the board 100 times.', 'surf.pump', 100);
-  H('sfs1', 'surf', 'The Board', 2, 'mechanic', 'Full Sail', 'Skiff at 15 m/s.', 'speed.surf.max', 15, { unit: 'm/s' });
-  H('sfs2', 'surf', 'The Board', 3, 'mechanic', 'Trade Winds', 'Skiff at 20 m/s.', 'speed.surf.max', 20, { unit: 'm/s' });
-  H('sfs3', 'surf', 'The Board', 5, 'mechanic', 'Storm Front', 'Skiff at 26 m/s.', 'speed.surf.max', 26, { unit: 'm/s', title: 'Stormrider' });
-  C('sft1', 'surf', 'Tricks', 1, 'count', 'Ollie', 'Hop 25 times on the board.', 'surf.hop', 25);
-  C('sft2', 'surf', 'Tricks', 2, 'mechanic', 'Spinner', 'Land 10 spins.', 'surf.trick', 10);
-  C('sft3', 'surf', 'Tricks', 4, 'mechanic', 'Whirlwind', 'Land 100 spins.', 'surf.trick', 100);
-  H('sft4', 'surf', 'Tricks', 3, 'mechanic', 'Double Spin', 'Land a double spin.', 'surf.spin.best', 2);
-  H('sft5', 'surf', 'Tricks', 5, 'mechanic', 'Triple Spin', 'Land a triple spin.', 'surf.spin.best', 3, { hidden: true });
+  C('sf1', 'skiff', 'The Board', 1, 'count', 'Board Rider', 'Unfurl the Solar Skiff.', 'skiff.start', 1);
+  F('sf2', 'skiff', 'The Board', 2, 'endure', 'Sea Legs', 'Skiff for 5 minutes in all.', (L) => L.get('time.skiff') / 60, 5, { unit: 'min' });
+  F('sf3', 'skiff', 'The Board', 3, 'endure', 'Dune Dweller', 'Skiff for 30 minutes in all.', (L) => L.get('time.skiff') / 60, 30, { unit: 'min' });
+  F('sf4', 'skiff', 'The Board', 5, 'endure', 'Endless Summer', 'Skiff for 3 hours in all.', (L) => L.get('time.skiff') / 3600, 3, { unit: 'h', title: 'Sandsailor' });
+  C('sfd1', 'skiff', 'The Board', 2, 'count', 'Sail a Kilometre', 'Skiff 1 km.', 'dist.state.skiff', 1000, { unit: 'm' });
+  C('sfd2', 'skiff', 'The Board', 4, 'endure', 'Across the Sea', 'Skiff 25 km.', 'dist.state.skiff', 25000, { unit: 'm' });
+  C('sfp', 'skiff', 'The Board', 2, 'mechanic', 'In Time with the Wind', 'Pump the board 100 times.', 'skiff.pump', 100);
+  H('sfs1', 'skiff', 'The Board', 2, 'mechanic', 'Full Sail', 'Skiff at 15 m/s.', 'speed.skiff.max', 15, { unit: 'm/s' });
+  H('sfs2', 'skiff', 'The Board', 3, 'mechanic', 'Trade Winds', 'Skiff at 20 m/s.', 'speed.skiff.max', 20, { unit: 'm/s' });
+  H('sfs3', 'skiff', 'The Board', 5, 'mechanic', 'Storm Front', 'Skiff at 26 m/s.', 'speed.skiff.max', 26, { unit: 'm/s', title: 'Stormrider' });
+  C('sft1', 'skiff', 'Tricks', 1, 'count', 'Ollie', 'Hop 25 times on the board.', 'skiff.hop', 25);
+  C('sft2', 'skiff', 'Tricks', 2, 'mechanic', 'Spinner', 'Land 10 spins.', 'skiff.trick', 10);
+  C('sft3', 'skiff', 'Tricks', 4, 'mechanic', 'Whirlwind', 'Land 100 spins.', 'skiff.trick', 100);
+  H('sft4', 'skiff', 'Tricks', 3, 'mechanic', 'Double Spin', 'Land a double spin.', 'skiff.spin.best', 2);
+  H('sft5', 'skiff', 'Tricks', 5, 'mechanic', 'Triple Spin', 'Land a triple spin.', 'skiff.spin.best', 3, { hidden: true });
 
   // ---------------------------------------------------------------- THE HAND
   C('gd1', 'hand', 'Reach', 1, 'count', 'Take the Hand', 'Take the hand.', 'god.enter', 1);
@@ -199,8 +199,8 @@ export function buildAchievements(game) {
   H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
   H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10);
   H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
-  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the vessel shatter.', 'vessel.shatter', 1, { hidden: true });
-  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the vessel reforged 5 times.', 'vessel.reforge', 5);
+  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the jar shatter.', 'jar.shatter', 1, { hidden: true });
+  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the jar reforged 5 times.', 'jar.reforge', 5);
   F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 lachryma.', (L) => L.get('lach.spent'), 500);
   F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 lachryma.', (L) => L.get('lach.spent'), 10000);
   C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of lachryma.', 'lach.empty', 1);

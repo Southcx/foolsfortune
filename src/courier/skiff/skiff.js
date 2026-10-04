@@ -43,9 +43,9 @@ const polar = (c) => {
   return 1;
 };
 
-export class Surfer extends Tech {
+export class Skiffing extends Tech {
   constructor(mgr) {
-    super(mgr, 'surfer');
+    super(mgr, 'skiff');
     this.overrides = 1;
     this.blendIn = 9;
     this.want = false;
@@ -100,7 +100,7 @@ export class Surfer extends Tech {
     this.wake.clear();
     this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
     this.sfxLoop = sfx.surfLoop?.();
-    this.game.events?.emit('surf.start', {});
+    this.game.events?.emit('skiff.start', {});
   }
 
   end() {
@@ -134,7 +134,7 @@ export class Surfer extends Tech {
     let pump = 0;
     if (this.L < 0.4) this.pumpReady = true;
     if (this.L >= 0.999 && wasL < 0.999) {
-      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; sfx.hoist?.(); g.events?.emit('surf.pump', {}); }
+      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; sfx.hoist?.(); g.events?.emit('skiff.pump', {}); }
       this.pumpFresh = false;
     }
     if (this.L < 0.5) this.pumpFresh = true;
@@ -148,7 +148,7 @@ export class Surfer extends Tech {
     // ---- speed: the sail sets where the boat settles; it gets there by the sail's pull, coasts down otherwise
     this.boosting = Math.max(0, this.boosting - dt * 2.2);
     let target = c.cruise * this.L * windF, accel = c.accel * (0.45 + 0.55 * this.L);
-    if (flare && g.lachryma.drain(c.boostCost * dt, 'surf') > 0) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; }
+    if (flare && g.lachryma.drain(c.boostCost * dt, 'skiff') > 0) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; }
     else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting; accel = c.boostAccel * 0.6; }
     if (vf < target) vf = Math.min(target, vf + accel * dt);
     else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * dt);
@@ -184,7 +184,7 @@ export class Surfer extends Tech {
       this.v.addScaledVector(f, 1.2 + 2 * this.charge);
       this.air = true; this.spin = 0; this.airT = 0;
       sfx.airJump();
-      g.events?.emit('surf.hop', {});
+      g.events?.emit('skiff.hop', {});
     }
     if (!sp2) this.charge = Math.max(0, this.charge - dt * 4);
     this.spaceWas = sp2;
@@ -226,7 +226,7 @@ export class Surfer extends Tech {
     const wantRoll = clamp(this.steer * 0.42 * clamp(this.speed / 12, 0.15, 1), -0.5, 0.5) + (this.air ? 0 : clamp(-vl * 0.03, -0.2, 0.2));
     this.roll = damp(this.roll, wantRoll, 9, dt);
     if (this.sfxLoop) this.sfxLoop.set(clamp(this.speed / c.maxSpeed, 0, 1), this.boosting, this.air ? 1 : 0);
-    g.events?.emit('surf.tick', { speed: this.speed });
+    g.events?.emit('skiff.tick', { speed: this.speed });
     return true;
   }
 
@@ -243,9 +243,9 @@ export class Surfer extends Tech {
     if (Math.abs(near) >= 1 && off < 0.9) {
       const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
       this.v.addScaledVector(f, 3 + 2 * Math.abs(near));
-      g.events?.emit('surf.trick', { turns: Math.abs(near) });
+      g.events?.emit('skiff.trick', { turns: Math.abs(near) });
       sfx.parry?.();
-    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.events?.emit('surf.wobble', { spin: Math.abs(this.spin) }); }
+    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.events?.emit('skiff.wobble', { spin: Math.abs(this.spin) }); }
     this.spinRest = this.spin - near * TAU;
     this.spin = 0;
   }

@@ -94,7 +94,7 @@ export class Lobbers {
     // one that reaches us knocks us back
     if (!b.reflected && g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.6 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.4) {
       // (the Courier is a jar just now)
-      g.god.hitVessel(T.god.ballDamage, new THREE.Vector3(v.x, 0, v.z).normalize().negate(), 'ball');
+      g.god.hitJar(T.god.ballDamage, new THREE.Vector3(v.x, 0, v.z).normalize().negate(), 'ball');
       done = true;
     } else if (!b.reflected && !g.god?.active && Math.hypot(t.x - P.pos.x, t.z - P.pos.z) < 0.7 && t.y > P.pos.y - 0.1 && t.y < P.pos.y + 1.9) {
       if (P.invulnerable || P.guarding) { g.events?.emit('lob.dodged', {}); } // (a raised blade turns it: the guard's own check usually gets there first)

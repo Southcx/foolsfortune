@@ -135,8 +135,10 @@ before it landed), rewrote the README as a manual, and published. The renames th
 
 - the god hand's jar: `vessel` → `jar` in `godmode.js`, events `vessel.hit` / `vessel.shatter` / `vessel.reforge` → `jar.*`, their ledger
   keys and the log's lines
-- the skiff: `surfer` → `skiff` (the tech's id, `T.tech.surfer`, events `surf.*`, their ledger keys)
-- the all-arts switch: `system.lab` / `setLab` → `allArts` / `setAllArts`; the map's layer "THE LAB" → "THE BASEMENT"
+- the skiff: `surfer` → `skiff` (the tech's id, `T.tech.surfer`, events `surf.*`, their ledger keys, the log's class and the
+  achievements' category); the tech's class `Surfer` → `Skiffing` (the boat is `Skiff`)
+- the all-arts switch: `system.lab` / `setLab` → `lendAll` / `setLendAll` (not `allArts`: `ALL_ARTS` is the list of arts); the map's
+  layer "THE LAB" → "THE BASEMENT"; the workbench's command `/lab` → `/workbench`; "pause card" → the pause menu
 - `marks.js` → `groundmarks.js`, `cracks.js` → `potcracks.js`, `timescale.js` → `time.js`, `godmode.js` → `godhand.js`,
   `godarts.js` → `arts.js`, `fx.js` → `vfx/particles.js`
 - `tools/` (Node) → `scripts/`; `npm run stress`, `check`, `perf` keep their names

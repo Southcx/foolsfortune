@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE HELP PAGES: what the pause card (Esc) shows, as data: the keys first, then a page for the core movement, the techs and arts, the
+// THE HELP PAGES: what the pause menu (Esc) shows, as data: the keys first, then a page for the core movement, the techs and arts, the
 // climbing and the water, and one for each of the Courier's tools and modes. Each page is a TITLE, the KEY that draws the tool (if it
 // is one), a LEAD (what it is, in a sentence or two), ROWS of [keys, what they do], and NOTES (what is worth knowing beyond the keys).
 // The words are Espada's to edit as strings (CLAUDE.md: Threads); the rows must stay true to the code they describe (each page names its
@@ -32,7 +32,7 @@ export const PAGES = [
       ['X', 'the Psygun'],
       ['Q · G · J', 'the Sondelass · the Soul Brush · the Veritome'],
       ['K · U · I', 'the Dreamvane · the Crucibelle · the Lockheart'],
-      ['Y (the dunes)', 'the Solar Surfer'],
+      ['Y (the dunes)', 'Solar Skiffing'],
       ['~', 'the god hand'],
       ['B · P · M', 'the Codex · the Pneuka Box · Mind Mapping (the map)'],
       ['Enter · /', 'the chat line (a slash for commands: /help)'],
@@ -41,7 +41,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'move', title: 'THE CORE MOVEMENT', src: 'player.js',
+    id: 'move', title: 'THE CORE MOVEMENT', src: 'courier/player.js',
     lead: 'How you move when nothing else is asked of you. Every tech, art and tool leaves it as it is: switch one off and this is what is left.',
     rows: [
       ['W A S D', 'run; Shift to sprint, any way but straight back'],
@@ -55,8 +55,8 @@ export const PAGES = [
     notes: ['The hole in the south-east corner of the workshop drops to the basement movement lab, built to try all of it; the index console in its hub (F) takes you to any room.'],
   },
   {
-    id: 'techs', title: 'TECHS AND ARTS', src: 'moves/',
-    lead: 'The Movement Arts are learned by doing (the Codex, B: each art and its variants; LAB MODE has them all). They add to the core; they never change it.',
+    id: 'techs', title: 'TECHS AND ARTS', src: 'courier/moves/',
+    lead: 'The Movement Arts are learned by doing (the Codex, B: each art and its variants; the ALL ARTS switch lends them all). They add to the core; they never change it.',
     rows: [
       ['E', 'blink: a dodge along the move keys (two charges, the beads)'],
       ['C in the air, looking down', 'ground slam; then Space for the slam jump, or hold C for the slam slide'],
@@ -70,7 +70,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'climb', title: 'CLIMBING AND WATER', src: 'moves/ladder.js, hang.js, pole.js, grate.js, swim.js',
+    id: 'climb', title: 'CLIMBING AND WATER', src: 'courier/moves/ladder.js, hang.js, pole.js, grate.js, swim.js',
     lead: 'What you do when the world gives you something to hold, and when there is no floor.',
     rows: [
       ['walk into a ladder', 'climb: W S, Shift fast, C slide down, Space kick off (the gun stays out at a walk)'],
@@ -81,7 +81,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'psygun', title: 'THE PSYGUN', key: 'X', src: 'weapon.js, shells.js, psygun/kinds.js',
+    id: 'psygun', title: 'THE PSYGUN', key: 'X', src: 'tools/psygun/',
     lead: 'Your first tool, worn on the back. It fires Lachryma, and CASTER SHELLS: each a numbered type (TYPE-00 the Cleave to TYPE-10 the Hatch) held in a chamber.',
     rows: [
       ['X', 'draw or holster (firing or aiming draws it)'],
@@ -96,7 +96,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'sondelass', title: 'THE SONDELASS', key: 'Q', src: 'moves/sondelass.js, sondelass/',
+    id: 'sondelass', title: 'THE SONDELASS', key: 'Q', src: 'tools/sondelass/',
     lead: 'One instrument, three shapes: a cutlass, a rod and a hook, its sections sliding between them. Worn on the back.',
     rows: [
       ['Q · 1 2 3', 'draw or stow · CUTLASS, ROD, HOOK'],
@@ -109,7 +109,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'soulbrush', title: 'THE SOUL BRUSH', key: 'G', src: 'moves/soulbrush.js, brush/',
+    id: 'soulbrush', title: 'THE SOUL BRUSH', key: 'G', src: 'tools/soulbrush/',
     lead: 'A calligrapher\'s brush the size of a club, worn at the hip. It alters things rather than hurting them.',
     rows: [
       ['G', 'draw or stow'],
@@ -122,7 +122,7 @@ export const PAGES = [
     notes: () => [`What the Celestial Brush knows: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Anything else is laid on the world as slip.`],
   },
   {
-    id: 'veritome', title: 'THE VERITOME', key: 'J', src: 'moves/veritome.js, veritome/',
+    id: 'veritome', title: 'THE VERITOME', key: 'J', src: 'tools/veritome/',
     lead: 'A book that is a camera, held open in both hands. A photograph is the truth of a thing; the book is also your bank.',
     rows: [
       ['J', 'draw or stow'],
@@ -134,7 +134,7 @@ export const PAGES = [
     notes: ['The Codex (B, VERITOME) appraises the film, keeps the binder and the bestiary.'],
   },
   {
-    id: 'dreamvane', title: 'THE DREAMVANE', key: 'K', src: 'moves/dreamvane.js, lachryma/tuning.js',
+    id: 'dreamvane', title: 'THE DREAMVANE', key: 'K', src: 'tools/dreamvane/, world/dunes/crystaltuning.js',
     lead: 'A dowsing rod with a pick on its heel and a tuning fork in its crook. It finds Lachryma, takes crystal, and maps the ground; while it is worn, the compass rides at the top of the view.',
     rows: [
       ['K', 'draw or stow'],
@@ -149,7 +149,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'crucibelle', title: 'THE CRUCIBELLE', key: 'U', src: 'moves/crucibelle.js, crucibelle/',
+    id: 'crucibelle', title: 'THE CRUCIBELLE', key: 'U', src: 'tools/crucibelle/',
     lead: 'A smoking bell held up like a lantern: an amplifier, and the musician is you. Five notes, always in the key of what is playing.',
     rows: () => [
       ['U', 'draw or stow'],
@@ -160,7 +160,7 @@ export const PAGES = [
     notes: ['Notes on the beat build FEVER, which makes every song stronger and cheaper. What is fitted to the bell (the Pneuka Box) is its voice, and favours some songs.'],
   },
   {
-    id: 'lockheart', title: 'THE LOCKHEART', key: 'I', src: 'moves/lockheart.js, lockheart/',
+    id: 'lockheart', title: 'THE LOCKHEART', key: 'I', src: 'tools/lockheart/',
     lead: 'A little coffin on a chain at your neck: weaponised luck. It drinks the Lachryma you cannot hold, and opens when it is full.',
     rows: [
       ['I', 'draw or stow'],
@@ -170,7 +170,7 @@ export const PAGES = [
     notes: ['Up to four keys hang on its charm, used in order (the Pneuka Box: the keyring). Which coffin you wear is which wheel.'],
   },
   {
-    id: 'surfer', title: 'THE SOLAR SURFER', key: 'Y', src: 'moves/surfer.js',
+    id: 'skiff', title: 'SOLAR SKIFFING', key: 'Y', src: 'courier/skiff/skiff.js',
     lead: 'A skiff for the dune sea, sailed like a boat. The Psygun is stowed while you ride.',
     rows: [
       ['Y', 'summon or stow the board (in the dunes)'],
@@ -181,7 +181,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godmode.js, godarts.js',
+    id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godhand/',
     lead: 'The Courier settles back into the Pneuka Jar they really are, and you, the player inside them, become a hand over the world. The hand has God Arts instead of tools, and they work only in the Zone of Influence (the ground you have explored).',
     rows: () => [
       ['~', 'become the hand; again to come back'],
@@ -192,7 +192,7 @@ export const PAGES = [
     ],
   },
   {
-    id: 'mind', title: 'THE BOX, THE CODEX, THE MAP', src: 'pneuka/, codex.js, cartography.js, chat.js',
+    id: 'mind', title: 'THE BOX, THE CODEX, THE MAP', src: 'pneuka/, feedback/codex/, feedback/cartography.js, feedback/chat.js',
     lead: 'What you carry, what you know, and where you have been.',
     rows: [
       ['P', 'the Pneuka Box: what you carry and wear (left click uses, right click lists the rest); tools are worn to the belt from here'],

@@ -32,10 +32,10 @@ export class SandMarks {
     const g = this.game, P = g.player, cur = P.renderPos;
     if (!active) { this.have = false; return; }
     if (!this.have || cur.distanceToSquared(this.prev) > 36) { this.prev.copy(cur); this.have = true; this.walk = 0; if (this.trail) this.trail.clear(); return; }
-    const surfer = g.techs?.get('surfer');
-    const riding = !!surfer?.active;
+    const skiff = g.techs?.get('skiff');
+    const riding = !!skiff?.active;
     const dx = cur.x - this.prev.x, dz = cur.z - this.prev.z, moved = Math.hypot(dx, dz);
-    if (riding) this.board(dt, surfer, dx, dz, moved);
+    if (riding) this.board(dt, skiff, dx, dz, moved);
     else this.feet(dt, P, dx, dz, moved);
     if (!P.grounded) this.fall = Math.max(this.fall, -P.vel.y);
     this.wasGrounded = P.grounded;

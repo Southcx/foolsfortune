@@ -10,11 +10,11 @@ import { Raids } from '../world/basement/raids.js';
 import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
 
 // ---------------------------------------------------------------------------------------
-// THE GOD HAND (~). The Courier turns into a Pneuka jar, an immobile vessel, and you become
+// THE GOD HAND (~). The Courier turns into a Pneuka jar, an immobile jar, and you become
 // a disembodied hand: the camera pulls up into a turnable isometric view, the cursor is the hand,
 // and the game becomes a physics god game played over the same rooms.
 //
-//   the vessel     the jar stands where the Courier stood. It can be hurt: raiders (clapperjars
+//   the jar     the jar stands where the Courier stood. It can be hurt: raiders (clapperjars
 //                  come in waves, kamikaze), lobber balls, blasts, and whatever you throw at it
 //                  crack it; at zero it shatters and reforges, more gold-seamed, a few seconds
 //                  later. The hand can't roam further from it than its tether.
@@ -23,9 +23,9 @@ import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
 //   the view       Q / E turn it (a smooth eighth of a turn), the wheel zooms, WASD or the screen
 //                  edges pan. Ceilings and everything above head height are cut away.
 //   counters       grab a raider and throw it somewhere else, cut or blow it up, pin it (ANCHOR),
-//                  make it dance (GROOVE), turn it (HATCH: a turned clapperjar guards the vessel
+//                  make it dance (GROOVE), turn it (HATCH: a turned clapperjar guards the jar
 //                  and mends it). Clapperjars you hatch stay.
-// ~ again (once the vessel is whole) puts the Courier back where the jar stood.
+// ~ again (once the jar is whole) puts the Courier back where the jar stood.
 // ---------------------------------------------------------------------------------------
 const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
@@ -38,10 +38,10 @@ const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 const CSS = `
 #god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 var(--f-ui); color: #fbe3cf; z-index: 4; }
-#god .vessel { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); width: min(420px, 60vw); text-align: center; letter-spacing: .08em; }
-#god .vessel .bar { height: 10px; margin-top: 4px; border: 1px solid rgba(255,178,122,.5); background: rgba(28,13,8,.55); border-radius: 2px; overflow: hidden; }
-#god .vessel .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
-#god .vessel .sub { opacity: .75; font-size: 11px; margin-top: 3px; }
+#god .jar { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); width: min(420px, 60vw); text-align: center; letter-spacing: .08em; }
+#god .jar .bar { height: 10px; margin-top: 4px; border: 1px solid rgba(255,178,122,.5); background: rgba(28,13,8,.55); border-radius: 2px; overflow: hidden; }
+#god .jar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
+#god .jar .sub { opacity: .75; font-size: 11px; margin-top: 3px; }
 #god .hint { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); opacity: .75; font-size: 11px; letter-spacing: .05em; background: rgba(28,13,8,.4); padding: 4px 10px; border-radius: 3px; white-space: nowrap; }
 `;
 
@@ -65,9 +65,9 @@ export class GodMode {
     this.handPos = new THREE.Vector3(); // the hand's smoothed cursor point
     this.samples = []; // recent cursor points, for the throw
     this.castCool = 0;
-    this.vessel = { pos: new THREE.Vector3(), hp: T.god.vesselHp, max: T.god.vesselHp, alive: true, mendBy: null, scars: 0, reforgeT: 0, flash: 0, cracks: { dark: [], gold: [] } };
+    this.jar = { pos: new THREE.Vector3(), hp: T.god.jarHp, max: T.god.jarHp, alive: true, mendBy: null, scars: 0, reforgeT: 0, flash: 0, cracks: { dark: [], gold: [] } };
     this.buildHand(handGltf);
-    this.buildVessel(jarGltf);
+    this.buildJar(jarGltf);
     this.buildCursor();
     this.buildHud();
     this.arts = new GodArts(this);
@@ -122,8 +122,8 @@ export class GodMode {
     this.game.scene.add(root);
   }
 
-  buildVessel(gltf) {
-    const V = this.vessel;
+  buildJar(gltf) {
+    const V = this.jar;
     const group = new THREE.Group();
     group.name = 'PneukaJar';
     const model = gltf.scene;
@@ -160,7 +160,7 @@ export class GodMode {
     this.disc.renderOrder = 7;
     this.ring.visible = this.disc.visible = false;
     scene.add(this.ring, this.disc);
-    // the tether from the vessel to the hand: a string of glowing beads
+    // the tether from the jar to the hand: a string of glowing beads
     this.beads = [];
     for (let i = 0; i < 22; i++) {
       const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.game.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 }));
@@ -177,7 +177,7 @@ export class GodMode {
     document.head.appendChild(st);
     const el = document.createElement('div');
     el.id = 'god';
-    el.innerHTML = `<div class="vessel"><div class="name">PNEUKA VESSEL <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
+    el.innerHTML = `<div class="jar"><div class="name">PNEUKA JAR <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
       <div class="hint" style="display:none"></div>`; // (the keys are said once by the log on taking the hand: room.help 'hand' -> tracking.js)
     document.body.appendChild(el);
     this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub') };
@@ -191,16 +191,16 @@ export class GodMode {
 
   toggle() {
     if (this.state === 'off') {
-      if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'surfer' ? 'You cannot take the hand while riding the board.' : 'You need solid ground to take the hand.', { key: 'nogod', throttle: 3 }); return; }
+      if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'skiff' ? 'You cannot take the hand while riding the board.' : 'You need solid ground to take the hand.', { key: 'nogod', throttle: 3 }); return; }
       this.enter();
     } else if (this.state === 'on') {
-      if (!this.vessel.alive) { this.game.log.say('warn', 'The vessel is still being reforged.', { key: 'nogod', throttle: 3 }); return; }
+      if (!this.jar.alive) { this.game.log.say('warn', 'The jar is still being reforged.', { key: 'nogod', throttle: 3 }); return; }
       this.exit();
     }
   }
 
   enter() {
-    const g = this.game, P = g.player, V = this.vessel;
+    const g = this.game, P = g.player, V = this.jar;
     this.state = 'in'; this.active = true; this.t = 0;
     V.pos.copy(P.pos);
     V.group.position.copy(P.pos);
@@ -263,7 +263,7 @@ export class GodMode {
     for (const c of g.clappers.list) if (c.alive && c.raider) g.clappers.dismiss(c);
     this.state = 'off'; this.active = false;
     g.character.setHidden(false);
-    this.vessel.group.visible = false;
+    this.jar.group.visible = false;
     this.hand.root.visible = false;
     this.ring.visible = this.disc.visible = false;
     for (const b of this.beads) b.visible = false;
@@ -294,7 +294,7 @@ export class GodMode {
 
   // ------------------------------------------------------------------ per frame
   update(dt) {
-    const g = this.game, input = g.input, V = this.vessel;
+    const g = this.game, input = g.input, V = this.jar;
     this.t += dt;
     if (this.state === 'in') {
       const k = Math.min(1, this.t / 1.2);
@@ -308,7 +308,7 @@ export class GodMode {
     this.updateView(dt);
     this.updateCursor();
     if (this.t > 0.6) this.updateHand(dt);
-    this.updateVessel(dt);
+    this.updateJar(dt);
     this.raids.update(dt);
     this.updateHud(dt);
   }
@@ -328,8 +328,8 @@ export class GodMode {
     // jar by the same angle, so the jar keeps its place on the screen and the room wheels round it
     const dyaw = wrapPi(C.yawT - C.yaw) * (1 - Math.exp(-9 * dt));
     C.yaw += dyaw;
-    if (dyaw && this.vessel) {
-      const V = this.vessel.pos, ox = C.focus.x - V.x, oz = C.focus.z - V.z, c = Math.cos(dyaw), s = Math.sin(dyaw);
+    if (dyaw && this.jar) {
+      const V = this.jar.pos, ox = C.focus.x - V.x, oz = C.focus.z - V.z, c = Math.cos(dyaw), s = Math.sin(dyaw);
       C.focus.x = V.x + ox * c + oz * s; C.focus.z = V.z - ox * s + oz * c;
     }
     C.dist = THREE.MathUtils.damp(C.dist, C.distT, 8, dt);
@@ -351,7 +351,7 @@ export class GodMode {
       C.focus.addScaledVector(fwd, pz * sp).addScaledVector(right, px * sp);
     }
     // (on the tether)
-    const V = this.vessel;
+    const V = this.jar;
     const dx = C.focus.x - V.pos.x, dz = C.focus.z - V.pos.z, d = Math.hypot(dx, dz);
     if (d > T.god.range) { C.focus.x = V.pos.x + dx / d * T.god.range; C.focus.z = V.pos.z + dz / d * T.god.range; }
     // the floor under the focus: the view rides up and down stairs and between floors
@@ -385,7 +385,7 @@ export class GodMode {
       cam.position.copy(pos).lerp(pp, e);
       cam.quaternion.copy(quat).slerp(pq, e);
       cam.fov = THREE.MathUtils.lerp(fov, pf, e);
-      const V = this.vessel;
+      const V = this.jar;
       V.group.scale.setScalar(V.alive ? Math.max(0.001, 1 - ease(Math.min(1, this.t / 0.4))) : 0.001);
       if (this.t > 0.4) V.group.visible = false;
       if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; }
@@ -414,20 +414,20 @@ export class GodMode {
     const start = K.start = o.clone().addScaledVector(d, s);
     const hit = g.physics.raycast(start, d, 250, null, undefined, (c) => !c.isSensor());
     K.hit = hit;
-    K.over = hit?.entity?.type === 'player' ? 'vessel' : null;
+    K.over = hit?.entity?.type === 'player' ? 'jar' : null;
     if (hit) { K.point.copy(hit.point); K.normal.copy(hit.normal); }
     else {
       const t = (this.cam.focus.y - o.y) / (d.y || -1e-4);
       K.point.copy(o).addScaledVector(d, Math.max(1, t)); K.normal.copy(UP);
     }
-    const V = this.vessel;
+    const V = this.jar;
     K.far = Math.hypot(K.point.x - V.pos.x, K.point.z - V.pos.z) > T.god.range;
     K.ok = !K.far;
     K.tier = this.game.cartography.tierAt(K.point.x, K.point.y, K.point.z).tier; // (the Zone of Influence under the hand)
   }
 
   updateHand(dt) {
-    const g = this.game, input = g.input, K = this.cursor, H = this.hand, V = this.vessel;
+    const g = this.game, input = g.input, K = this.cursor, H = this.hand, V = this.jar;
     // ---- what's under the cursor
     const filter = (r) => !r.ent?.carried && !r.clapper?.job;
     this.hover = K.ok && !this.grab && K.start ? g.shells.casters.pick(K.start, K.ray.dir, 250, 0.55, filter) : null;
@@ -549,9 +549,9 @@ export class GodMode {
     if (!silent) { if (v.length() > 3) sfx.toss(Math.min(1, v.length() / 20)); g.events?.emit('god.throw', { speed: v.length() }); }
   }
 
-  /** Physics-step work: drag the held thing to the hand; chip the vessel with what's thrown at it. */
+  /** Physics-step work: drag the held thing to the hand; chip the jar with what's thrown at it. */
   fixed(dt) {
-    const g = this.game, V = this.vessel, gr = this.grab;
+    const g = this.game, V = this.jar, gr = this.grab;
     if (gr && gr.target) {
       const t = gr.t;
       // holding costs Lachryma, by weight; empty, the hand lets go
@@ -572,7 +572,7 @@ export class GodMode {
         b.wakeUp();
       } else this.grab = null;
     }
-    // what's been thrown at the vessel
+    // what's been thrown at the jar
     for (let i = this.thrown.length - 1; i >= 0; i--) {
       const th = this.thrown[i];
       th.t += dt;
@@ -581,7 +581,7 @@ export class GodMode {
       const p = th.body.translation(), v = th.body.linvel();
       const sp = Math.hypot(v.x, v.y, v.z);
       if (sp > 5 && Math.hypot(p.x - V.pos.x, p.z - V.pos.z) < 0.7 && p.y > V.pos.y - 0.1 && p.y < V.pos.y + 1.4) {
-        this.hitVessel(T.god.thrownDamage * Math.min(2, sp / 9), _v.set(-v.x, 0, -v.z).normalize().clone(), 'thrown');
+        this.hitJar(T.god.thrownDamage * Math.min(2, sp / 9), _v.set(-v.x, 0, -v.z).normalize().clone(), 'thrown');
         th.body.setLinvel({ x: -v.x * 0.4, y: Math.abs(v.y) * 0.3 + 1.5, z: -v.z * 0.4 }, true);
         this.thrown.splice(i, 1);
       }
@@ -623,7 +623,7 @@ export class GodMode {
     const H = this.hand, C = this.cam;
     // the fingers point out along the line from the Pneuka Jar, the wrist back toward it (the owner's note: the hand reaches out of the
     // jar), tipped down, the palm to the ground. Over the jar itself, where that line has no direction, it faces away from the camera.
-    const V = this.vessel?.pos, rx = V ? this.handPos.x - V.x : 0, rz = V ? this.handPos.z - V.z : 0, rd = Math.hypot(rx, rz);
+    const V = this.jar?.pos, rx = V ? this.handPos.x - V.x : 0, rz = V ? this.handPos.z - V.z : 0, rd = Math.hypot(rx, rz);
     const camYaw = Math.atan2(-Math.sin(C.yaw), -Math.cos(C.yaw)) - 0.85;
     const radial = Math.atan2(rx, rz), w = THREE.MathUtils.smoothstep(rd, 0.4, 1.6);
     const want = camYaw + wrapPi(radial - camYaw) * w;
@@ -648,7 +648,7 @@ export class GodMode {
   }
 
   placeReticle() {
-    const K = this.cursor, V = this.vessel, A = this.arts;
+    const K = this.cursor, V = this.jar, A = this.arts;
     let r = this.grab ? 0.5 : A.art.id === 'manifest' ? 0.9 : 0.6;
     let p = this.grab ? this.grab.target || K.point : K.point;
     let n = this.grab ? UP : K.normal;
@@ -675,7 +675,7 @@ export class GodMode {
   }
 
   placeTether(dt) {
-    const V = this.vessel, H = this.hand;
+    const V = this.jar, H = this.hand;
     const a = V.pos.clone().addScaledVector(UP, 1.3);
     const b = H.root.position.clone();
     const n = this.beads.length;
@@ -691,9 +691,9 @@ export class GodMode {
     }
   }
 
-  // ------------------------------------------------------------------ the vessel
-  hitVessel(amount, from, kind = 'raid') {
-    const V = this.vessel;
+  // ------------------------------------------------------------------ the jar
+  hitJar(amount, from, kind = 'raid') {
+    const V = this.jar;
     if (!V.alive || this.state !== 'on') return;
     V.hp = Math.max(0, V.hp - amount);
     V.flash = 1;
@@ -701,29 +701,29 @@ export class GodMode {
     this.addCrack(from, amount);
     sfx.vesselHit(Math.min(1.5, amount / 10));
     this.game.fx.impact?.(V.pos.clone().setY(V.pos.y + 0.7), UP, { sparks: 10, dust: 8 });
-    this.game.events?.emit('vessel.hit', { kind, amount });
+    this.game.events?.emit('jar.hit', { kind, amount });
     if (V.hp <= 0) this.shatter();
   }
 
   raidStrike(c) {
-    const V = this.vessel, g = this.game;
+    const V = this.jar, g = this.game;
     const dir = _v.set(c.pos.x - V.pos.x, 0, c.pos.z - V.pos.z).normalize().clone();
     sfx.clap(g.listenerDistance(c.pos));
     g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), dir.clone().negate(), 1.2, 'shot');
     c.raider = false;
-    this.hitVessel(T.god.raidDamage, dir, 'raid');
+    this.hitJar(T.god.raidDamage, dir, 'raid');
   }
 
   explosion(center, R) {
-    const V = this.vessel;
+    const V = this.jar;
     if (this.state !== 'on' || !V.alive) return;
     const d = V.pos.distanceTo(center);
     if (d > R * 1.1) return;
-    this.hitVessel(T.god.blastDamage * (1 - d / (R * 1.1)), _v.set(center.x - V.pos.x, 0, center.z - V.pos.z).normalize().clone(), 'blast');
+    this.hitJar(T.god.blastDamage * (1 - d / (R * 1.1)), _v.set(center.x - V.pos.x, 0, center.z - V.pos.z).normalize().clone(), 'blast');
   }
 
-  mendVessel(amount) {
-    const V = this.vessel;
+  mendJar(amount) {
+    const V = this.jar;
     if (!V.alive) return;
     V.hp = Math.min(V.max, V.hp + amount);
     V.mendBy = null;
@@ -741,7 +741,7 @@ export class GodMode {
   }
 
   shatter() {
-    const g = this.game, V = this.vessel;
+    const g = this.game, V = this.jar;
     V.alive = false; V.reforgeT = T.god.reforge; V.mendBy = null;
     V.group.visible = false;
     const at = V.pos.clone().setY(V.pos.y + 0.6);
@@ -750,11 +750,11 @@ export class GodMode {
     g.fx.impact?.(at, UP, { sparks: 24, dust: 20 });
     this.cam.shake = 1;
     for (const c of g.clappers.list) if (c.alive && c.raider) { c.raider = false; g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'shot'); }
-    g.events?.emit('vessel.shatter', {});
+    g.events?.emit('jar.shatter', {});
   }
 
-  updateVessel(dt) {
-    const g = this.game, V = this.vessel;
+  updateJar(dt) {
+    const g = this.game, V = this.jar;
     if (!V.alive) {
       V.reforgeT -= dt;
       if (V.reforgeT <= 0) {
@@ -766,7 +766,7 @@ export class GodMode {
         V.group.scale.setScalar(0.001);
         V.regrow = 0;
         sfx.reforge();
-        g.events?.emit('vessel.reforge', {});
+        g.events?.emit('jar.reforge', {});
       }
     } else if (V.regrow !== undefined) {
       V.regrow += dt;
@@ -788,7 +788,7 @@ export class GodMode {
 
   /** New cracks from the side it was hit on. */
   addCrack(from, amount) {
-    const V = this.vessel, body = this.jarBody;
+    const V = this.jar, body = this.jarBody;
     if (!body) return;
     const paths = [];
     const n = amount > 12 ? 2 : 1;
@@ -821,7 +821,7 @@ export class GodMode {
   }
 
   rebuildCracks() {
-    const V = this.vessel;
+    const V = this.jar;
     for (const key of ['dark', 'gold']) {
       const mk = `${key}Mesh`;
       if (V[mk]) { V.group.remove(V[mk]); V[mk].geometry.dispose(); V[mk] = null; }
@@ -834,7 +834,7 @@ export class GodMode {
 
   // ------------------------------------------------------------------ hud
   updateHud() {
-    const V = this.vessel;
+    const V = this.jar;
     const pct = Math.round((V.hp / V.max) * 100);
     this.el.fill.style.width = `${pct}%`;
     this.el.fill.style.background = pct > 40 ? '' : 'linear-gradient(90deg, #ff5a3a, #ffb27a)';

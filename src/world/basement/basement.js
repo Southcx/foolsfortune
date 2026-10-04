@@ -668,7 +668,7 @@ export class Course {
     // the banner is the course's own: the station and its clock while a station is being run. What the keys do in each place is said
     // once by the log on arriving there (room.help -> tracking.js), not kept on the screen (CLAUDE.md, Feedback; docs/LOOK.md 7)
     const cp = this.cps[this.current], running = !!(cp && this.running && !g.circuits?.active);
-    const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'surfer' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
+    const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'skiff' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
     if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
     signHelp(g, p.pos);
     if (this.el) {

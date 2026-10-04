@@ -15,7 +15,7 @@
 //   bolt        BOLT      Magic Cat Academy's lightning: a strike that stuns the clapperjars near it (and only cracks what it hits)
 //   ^  caret    LIGHT     what is under it floats (a tenth of its gravity); over nothing, the Courier is lifted
 //   V  vee      HEAVY     what is under it is five times as heavy; over nothing, the Courier dives (on the ground: a burst of slip)
-//   heart       SOLACE    Magic Cat Academy's heart: every clapperjar in view forgets itself and dances; the god-hand's vessel is soothed
+//   heart       SOLACE    Magic Cat Academy's heart: every clapperjar in view forgets itself and dances; the god hand's jar is soothed
 //   (other)     WASH      laid on the world as slip, where the strokes pass over surfaces (Splatoon's ink on anything)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -304,8 +304,8 @@ export class BrushTechniques {
   solace(rec, v) {
     const g = this.game;
     const jars = (g.clappers?.list || []).filter((c) => { if (!c.alive) return false; const s = toScreen(v, c.pos); return s && s.z < 18 && s.x > 0 && s.x < v.W && s.y > 0 && s.y < v.H; });
-    const vessel = g.god?.active && g.god.vessel?.alive ? g.god.vessel : null;
-    if (!jars.length && !vessel) return { empty: true, run: () => 0 };
+    const jar = g.god?.active && g.god.jar?.alive ? g.god.jar : null;
+    if (!jars.length && !jar) return { empty: true, run: () => 0 };
     return {
       run: () => {
         for (const c of jars) {
@@ -313,7 +313,7 @@ export class BrushTechniques {
           c.state = 'dance'; c.twirl = 0; c.timer = 6; c.clapT = 0.3; c.clapRate = 10;
           g.glyphs?.pop('note', c.pos.clone().setY(c.pos.y + 1.1), { color: 0xff9ab0, size: 0.45, life: 1.4 });
         }
-        if (vessel) vessel.hp = Math.min(vessel.max, vessel.hp + 25);
+        if (jar) jar.hp = Math.min(jar.max, jar.hp + 25);
         sfx.solace?.();
         return jars.length;
       },

@@ -39,7 +39,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
     S.deep = v?.kind === 'lachryma' || (S.deep ? depth > DEEP_OUT : depth > DEEP_IN);
     return S.deep ? DEEP : SHALLOWS;
   }
-  const riding = !!game.techs?.get('surfer')?.riding;
+  const riding = !!game.techs?.get('skiff')?.riding;
   if (riding && !S.riding) S.shanty = (S.shanty + 1) % WORK_SONGS.length;
   S.riding = riding;
   if (riding) return WORK_SONGS[S.shanty];

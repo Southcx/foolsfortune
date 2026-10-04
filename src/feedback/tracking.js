@@ -10,18 +10,18 @@
 // achievement, kept whether or not it is ever asked for) and Final Fantasy XI's log (one sentence per event, the
 // colour saying what kind).
 //
-// Keys (dotted, so they group; see the README's table):
-//   time.*      seconds        time.state.<sprint|slide|air|...>, time.tech.<id>, time.area.<workshop|basement|dunes>, time.god, time.surf
-//   dist.*      metres         dist.total, dist.state.<..>, dist.surf, dist.swim, dist.up, dist.down
+// Keys (dotted, so they group; the Codex shows them: feedback/codex/ledger.js):
+//   time.*      seconds        time.state.<sprint|slide|air|...>, time.tech.<id>, time.area.<workshop|basement|dunes>, time.god, time.skiff
+//   dist.*      metres         dist.total, dist.state.<..>, dist.swim, dist.up, dist.down
 //   move.*      counts         move.jump, move.airjump, move.walljump, move.dash, move.slide, move.wallrun, move.mantle, move.land, move.roll ...
 //   break.*     counts         break.total, break.kind.<kind>, break.cause.<cause>
 //   clapper.*   counts         clapper.down, clapper.cause.<cause>
 //   shot.*      counts         shot.fired, shot.hit, shot.charged, shot.air, shell.fire.<id>
 //   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty
 //   god.*       counts         god.enter, god.grab, god.throw, god.sunder, god.cuts, god.manifest, god.raid, god.wave
-//   surf.*      counts         surf.start, surf.pump, surf.hop, surf.trick, surf.spins, surf.wobble
+//   skiff.*     counts         skiff.start, skiff.pump, skiff.hop, skiff.trick, skiff.spins, skiff.wobble
 //   circuit.<id>.*             runs, finish, clean, fall, gates, medal.<gold|silver|bronze>
-//   records (hi/lo)            speed.max, speed.surf.max, air.longest, fall.max, slam.height, chain.max, ...
+//   records (hi/lo)            speed.max, speed.skiff.max, air.longest, fall.max, slam.height, chain.max, ...
 // ---------------------------------------------------------------------------------------
 import { PSYGUNS } from '../tools/psygun/kinds.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
@@ -60,7 +60,7 @@ const BRUSH_LINE = {
   bolt: (n) => (n ? `Lightning answers your brush and stuns ${plural(n, 'clapperjar')}.` : 'Lightning answers your brush.'),
   light: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} light.` : 'Your brush lifts you.'),
   heavy: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} heavy.` : 'Your brush drives you down.'),
-  solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'The vessel is soothed.'),
+  solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'The jar is soothed.'),
   wash: () => 'You lay slip across the world.',
 };
 const BRUSH_NAME = { still: 'Still', bounce: 'Bounce', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', light: 'Light', heavy: 'Heavy', solace: 'Solace', wash: 'wash' };
@@ -216,16 +216,16 @@ export class Tracking {
     // ---- the Solar Skiff
     on('dunes.barrier', () => L.inc('dunes.barrier')); // (the edge of the sea touched: counted, not said)
     on('cleave.cut', (e) => { L.inc('cleave.cut'); if (e.what === 'ruin') L.inc('cleave.ruin'); });
-    on('surf.start', () => { L.inc('surf.start'); log.say('surf', 'The Solar Skiff unfurls.', { key: 'sst', throttle: 3 }); });
-    on('surf.pump', () => L.inc('surf.pump'));
-    on('surf.hop', () => L.inc('surf.hop'));
-    on('surf.tick', (e) => { const r = L.hi('speed.surf.max', e.speed, { at: this.where() }); this.note('speed.surf.max', r, `Your top skiffing speed is now ${fx(e.speed, 1)} m/s.`, 14, e.speed); });
-    on('surf.trick', (e) => {
+    on('skiff.start', () => { L.inc('skiff.start'); log.say('skiff', 'The Solar Skiff unfurls.', { key: 'sst', throttle: 3 }); });
+    on('skiff.pump', () => L.inc('skiff.pump'));
+    on('skiff.hop', () => L.inc('skiff.hop'));
+    on('skiff.tick', (e) => { const r = L.hi('speed.skiff.max', e.speed, { at: this.where() }); this.note('speed.skiff.max', r, `Your top skiffing speed is now ${fx(e.speed, 1)} m/s.`, 14, e.speed); });
+    on('skiff.trick', (e) => {
       const n = Math.round(e.turns);
-      L.inc('surf.trick'); L.inc('surf.spins', n); L.hi('surf.spin.best', n);
-      log.say('surf', n >= 3 ? `You land a triple spin.` : n === 2 ? 'You land a double spin.' : 'You land a spin.', { key: 'spin', win: 1 });
+      L.inc('skiff.trick'); L.inc('skiff.spins', n); L.hi('skiff.spin.best', n);
+      log.say('skiff', n >= 3 ? `You land a triple spin.` : n === 2 ? 'You land a double spin.' : 'You land a spin.', { key: 'spin', win: 1 });
     });
-    on('surf.wobble', () => { L.inc('surf.wobble'); log.say('warn', 'You lose your balance on the board.', { key: 'wob', throttle: 3 }); });
+    on('skiff.wobble', () => { L.inc('skiff.wobble'); log.say('warn', 'You lose your balance on the board.', { key: 'wob', throttle: 3 }); });
 
     // ---- the hand
     on('god.enter', () => { L.inc('god.enter'); log.say('god', 'You take the hand.'); });
@@ -237,9 +237,9 @@ export class Tracking {
     on('god.manifest', (e) => { L.inc('god.manifest'); L.hi('god.manifest.len', e.len); log.say('god', 'You raise a wall of clay.', { key: 'mani', win: 1.5 }); });
     on('god.raid', (e) => { L.inc('god.raid'); L.hi('god.wave.max', e.wave); log.say('god', `Raid, wave ${e.wave}: ${plural(e.n, 'clapperjar')} approach.`); });
     on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} is cleared.`); });
-    on('vessel.hit', (e) => { L.inc('vessel.hit'); L.inc('vessel.damage', e.amount || 0); L.inc(`vessel.hit.${e.kind}`); });
-    on('vessel.shatter', () => { L.inc('vessel.shatter'); log.say('hurt', 'The vessel shatters!'); });
-    on('vessel.reforge', () => { L.inc('vessel.reforge'); log.say('god', 'The vessel is reforged.'); });
+    on('jar.hit', (e) => { L.inc('jar.hit'); L.inc('jar.damage', e.amount || 0); L.inc(`jar.hit.${e.kind}`); }); // (the god hand's jar: GLOSSARY)
+    on('jar.shatter', () => { L.inc('jar.shatter'); log.say('hurt', 'The jar shatters!'); });
+    on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'The jar is reforged.'); });
 
     // ---- maps
     on('map.pulse', (e) => { L.inc('map.pulse'); if (e.god) L.inc('map.pulse.god'); });
@@ -685,7 +685,7 @@ export class Tracking {
 
     // ---- the System: what has been learned
     on('system.unlock', (e) => {
-      if (g.system?.lab) return; // (Lab mode has everything: nothing to say)
+      if (g.system?.lendAll) return; // (the all-arts switch lends everything: nothing to say)
       const a = BY_ID[e.ability];
       L.inc(e.variant ? 'art.variant' : a.realm === 'god' ? 'art.god' : 'art.move');
       log.say('art', e.variant ? `You learn the ${e.title} variant of ${a.name}. (B: the Codex)` : `You learn ${a.realm === 'god' ? 'the god art' : 'the art of'} ${e.title}. (B: the Codex)`);
@@ -726,7 +726,7 @@ export class Tracking {
     L.inc(`time.state.${s}`, dt);
     L.inc(`time.area.${this.where().replace('the ', '').replace(/^a /, '')}`, dt);
     if (g.god?.controlling) L.inc('time.god', dt);
-    if (g.techs?.active?.id === 'surfer') L.inc('time.surf', dt);
+    if (g.techs?.active?.id === 'skiff') L.inc('time.skiff', dt);
     if (g.circuits?.active) L.inc('time.circuit', dt);
     const so = g.techs?.get('sondelass');
     if (g.techs?.get('soulbrush')?.toolOut) L.inc('time.soulbrush', dt);
@@ -746,7 +746,7 @@ export class Tracking {
       }
       (this.prev ||= at.clone()).copy(at);
       const sp = Math.hypot(P.vel.x, P.vel.z);
-      if (sp > 5 && s !== 'surfer' && s !== 'grapple' && s !== 'launch' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
+      if (sp > 5 && s !== 'skiff' && s !== 'grapple' && s !== 'launch' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
       L.hi('speed.any.max', Math.hypot(P.vel.x, P.vel.z, P.vel.y));
     } else this.prev = null;
 

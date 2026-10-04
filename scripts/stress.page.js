@@ -56,7 +56,7 @@
         const D = g.game.dunes, a = rnd() * Math.PI * 2, r = 470, x = D.center.x + Math.cos(a) * r, z = D.center.z + Math.sin(a) * r;
         g.course.teleport(new g.THREE.Vector3(x, D.heightAt(x, z) + 0.05, z), Math.atan2(Math.cos(a), Math.sin(a)));
       }
-      if (s.mount) g.techs.get?.('surfer')?.mount();
+      if (s.mount) g.techs.get?.('skiff')?.mount();
     }
     else if (s.siege) g.course.toSiege();
     else if (s.weir) g.course.toWeir();
@@ -296,8 +296,8 @@
 
   function run({ seed = 1, runs = 20, ticks = 900, only = null, trace = -1 } = {}) {
     const g = G(), rnd = mulberry(seed), sink = makeSink();
-    const wasLab = g.system?.lab;
-    g.system?.setLab(true); // (the System would otherwise keep the abilities locked away from the bot)
+    const wasLent = g.system?.lendAll;
+    g.system?.setLendAll(true); // (the System would otherwise keep the abilities locked away from the bot)
     const all = starts(g).filter((s) => !only || only.includes(s.name));
     for (let r = 0; r < runs; r++) {
       const s = all[Math.floor(rnd() * all.length)];
@@ -307,7 +307,7 @@
       if (r === trace) sink.traceOut = sink.tracing;
       sink.runs++;
     }
-    g.system?.setLab(!!wasLab);
+    g.system?.setLendAll(!!wasLent);
     return { seed, runs: sink.runs, ticks: sink.ticks, clips: sink.clips || 0, counts: sink.counts, techs: sink.techs, violations: sink.violations, notes: sink.notes.slice(0, 10), events: sink.events, trace: sink.traceOut };
   }
 

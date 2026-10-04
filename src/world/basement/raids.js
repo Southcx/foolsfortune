@@ -4,10 +4,10 @@ import { sfx } from '../../audio/sfx.js';
 import { inSiege } from './siege.js';
 
 // ---------------------------------------------------------------------------------------
-// RAIDS: waves of crimson clapperjars that make for the vessel while you are the god hand. They are
+// RAIDS: waves of crimson clapperjars that make for the jar while you are the god hand. They are
 // a mode of one room now, THE SIEGE (siege.js), and nothing else: outside it the timer does not run
 // and nothing spawns, so the hand can be used, learned and tested in peace. Kept apart from the
-// hand itself (godhand/godhand.js) on purpose: the vessel only knows how to be hurt (`hitVessel`,
+// hand itself (godhand/godhand.js) on purpose: the jar only knows how to be hurt (`hitJar`,
 // `raidStrike`), and this module only knows how to send the attackers, so raids can be reworked,
 // moved, or dropped without touching either.
 // ---------------------------------------------------------------------------------------
@@ -19,18 +19,18 @@ export class Raids {
     this.t = T.god.firstWave; this.wave = 0; this.alive = 0;
   }
 
-  /** Raids run only when the vessel stands in the Siege room. */
-  get here() { return inSiege(this.god.vessel.pos); }
+  /** Raids run only when the jar stands in the Siege room. */
+  get here() { return inSiege(this.god.jar.pos); }
 
   reset() { this.t = T.god.firstWave; this.wave = 0; this.alive = 0; }
 
   status() { return this.here ? `raid ${this.wave} · next in ${Math.max(0, Math.ceil(this.t))} s · ${this.alive} raiders · ` : ''; }
 
   update(dt) {
-    const g = this.game, god = this.god, V = god.vessel;
+    const g = this.game, god = this.god, V = god.jar;
     if (god.state !== 'on' || !V.alive) return;
     if (!this.here) {
-      // (anything still coming is called off; the clock starts over when the vessel is back here)
+      // (anything still coming is called off; the clock starts over when the jar is back here)
       if (this.alive > 0) for (const c of g.clappers.list) if (c.alive && c.raider) g.clappers.dismiss(c);
       this.alive = 0; this.t = T.god.firstWave; this.wave = 0;
       return;
@@ -43,7 +43,7 @@ export class Raids {
   }
 
   spawn() {
-    const g = this.game, V = this.god.vessel;
+    const g = this.game, V = this.god.jar;
     const n = Math.min(9, T.god.waveBase + this.wave * T.god.waveGrow);
     this.wave++;
     let made = 0;
@@ -71,9 +71,9 @@ export class Raids {
 
   cleared() {
     const g = this.game;
-    // a gift of Lachryma, and the vessel takes a breath
+    // a gift of Lachryma, and the jar takes a breath
     g.lachryma.gain(30, 'wave');
-    this.god.mendVessel(8);
+    this.god.mendJar(8);
     sfx.reforge();
     g.events?.emit('god.wave', { wave: this.wave });
   }

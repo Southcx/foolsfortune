@@ -36,7 +36,7 @@ import { Stomp } from './courier/moves/stomp.js';
 import { Roll } from './courier/moves/roll.js';
 import { Swim } from './courier/moves/swim.js';
 import { Ladder } from './courier/moves/ladder.js';
-import { Surfer } from './courier/skiff/skiff.js';
+import { Skiffing } from './courier/skiff/skiff.js';
 import { Sondelass } from './tools/sondelass/sondelass.js';
 import { SoulBrush } from './tools/soulbrush/soulbrush.js';
 import { Veritome } from './tools/veritome/veritome.js';
@@ -343,7 +343,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Surfer, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -557,7 +557,7 @@ async function main() {
     game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
   } });
   game.workbench = new Workbench(game);
-  game.chat.add('lab', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', aliases: ['workbench'], run: () => game.workbench.toggle() });
+  game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
     const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
     const T = await import('./tools/lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
@@ -580,7 +580,7 @@ async function main() {
     if (!god.active) input.requestLock(); // (the hand has a free cursor)
   };
   overlay.addEventListener('click', start);
-  game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause card's pages: help/)
+  game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
@@ -605,7 +605,7 @@ async function main() {
     onStart: () => titleScene.go(),
     onChoose: (mode) => {
       title.mode = mode;
-      system.setLab(mode === 'debug'); // (DEBUG is the sandbox: every art in the lab; STORY learns them by doing)
+      system.setLendAll(mode === 'debug'); // (DEBUG is the sandbox: every art lent; STORY learns them by doing)
       game.mode = mode;
       input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
       titleScene.dive(() => endTitle());
@@ -613,7 +613,7 @@ async function main() {
   });
   titleScene.onMenu = () => title.ui.showMenu();
   input.onLockChange = (locked) => {
-    if (title.active) return; // (the title owns the screen: no pause card over it)
+    if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';
       return;
@@ -761,7 +761,7 @@ async function main() {
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
-    if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause card)
+    if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();
@@ -892,7 +892,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    // underground: no sun through the ground (it would light the lab outside its shadow
+    // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);
     game.crystals?.update(dt);

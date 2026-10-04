@@ -4,7 +4,7 @@ import { ALL_ARTS, BY_ID, BY_TECH } from './skills.js';
 // ---------------------------------------------------------------------------
 // The System: watches what you do (game.events) and teaches you things for it. It owns
 // which Movement Arts (and their variants) are unlocked, how far along each goal is, and
-// Lab mode (everything unlocked, for testing and for showing the game off).
+// the all-arts switch (`lendAll`: every art lent, for testing and for showing the game off).
 // It never touches the core movement: a tech asks `allows(id)` before it may start, and
 // reads its tuning through `cfgFor(id)`, which lays the chosen variant over T.tech[id].
 //
@@ -12,7 +12,7 @@ import { ALL_ARTS, BY_ID, BY_TECH } from './skills.js';
 // browsers as a short code (export / import in the Codex).
 // ---------------------------------------------------------------------------
 
-const KEY = 'foolsfortune.system.v2'; // (v2: Lab mode is the default)
+const KEY = 'foolsfortune.system.v2'; // (v2: the all-arts switch is on by default)
 const VERSION = 2;
 
 const goalKey = (skill, i) => `${skill}#${i}`;
@@ -20,7 +20,7 @@ const goalKey = (skill, i) => `${skill}#${i}`;
 export class System {
   constructor(game) {
     this.game = game;
-    this.state = { v: VERSION, lab: true, unlocked: {}, progress: {}, variant: {} };
+    this.state = { v: VERSION, lendAll: true, unlocked: {}, progress: {}, variant: {} };
     this.chain = {}; // running chain state (not saved)
     this.proxies = new Map();
     this.dirty = 0;
@@ -30,9 +30,9 @@ export class System {
   }
 
   // ---- queries ----
-  get lab() { return !!this.state.lab; }
+  get lendAll() { return !!this.state.lendAll; }
   unlocked(id) { return !!this.state.unlocked[id]; }
-  has(id) { return this.lab || this.unlocked(id) || (!id.includes('.') && !!BY_ID[id]?.basic); }
+  has(id) { return this.lendAll || this.unlocked(id) || (!id.includes('.') && !!BY_ID[id]?.basic); }
   variantId(abilityId) { const v = this.state.variant[abilityId]; return v && this.has(`${abilityId}.${v}`) ? v : null; }
 
   /** How many arts plus variants you own. */
@@ -142,7 +142,7 @@ export class System {
     return true;
   }
 
-  setLab(on) { this.state.lab = !!on; this.touch(true); this.changed(); }
+  setLendAll(on) { this.state.lendAll = !!on; this.touch(true); this.changed(); }
 
   // ---- saving ----
   touch(now = false) { if (now) this.save(); else if (!(this.dirty > 0)) this.dirty = 3; }
@@ -169,7 +169,7 @@ export class System {
   adopt(raw) {
     const known = new Set();
     for (const a of ALL_ARTS) { known.add(a.id); for (const v of a.variants) known.add(`${a.id}.${v.id}`); }
-    const s = { v: VERSION, lab: raw.lab !== false, unlocked: {}, progress: {}, variant: {} };
+    const s = { v: VERSION, lendAll: (raw.lendAll ?? raw.lab) !== false, unlocked: {}, progress: {}, variant: {} };
     for (const k of Object.keys(raw.unlocked || {})) if (known.has(k) && raw.unlocked[k]) s.unlocked[k] = true;
     for (const [k, v] of Object.entries(raw.progress || {})) if (Number.isFinite(v) && v >= 0) s.progress[k] = v;
     for (const [id, v] of Object.entries(raw.variant || {})) if (BY_ID[id] && (!v || s.unlocked[`${id}.${v}`])) s.variant[id] = v;

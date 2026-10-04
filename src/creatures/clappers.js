@@ -347,13 +347,13 @@ export class Clappers {
           c.heading += dt * 2.4;
           if (c.timer <= 0) { c.state = 'idle'; c.timer = 0.3; }
           break;
-        case 'raid': { // a raider on its way to the god hand's vessel
+        case 'raid': { // a raider on its way to the god hand's jar
           const god = this.game.god;
-          if (!god?.active || !god.vessel.alive) { this.dismiss(c); break; }
+          if (!god?.active || !god.jar.alive) { this.dismiss(c); break; }
           wantSpeed = C.runSpeed * 1.15;
-          c.target = god.vessel.pos.clone().setY(c.pos.y);
-          const dx = god.vessel.pos.x - c.pos.x, dz = god.vessel.pos.z - c.pos.z, d = Math.hypot(dx, dz);
-          if (d < 0.95 && Math.abs(c.pos.y - god.vessel.pos.y) < 1.2) { god.raidStrike(c); break; }
+          c.target = god.jar.pos.clone().setY(c.pos.y);
+          const dx = god.jar.pos.x - c.pos.x, dz = god.jar.pos.z - c.pos.z, d = Math.hypot(dx, dz);
+          if (d < 0.95 && Math.abs(c.pos.y - god.jar.pos.y) < 1.2) { god.raidStrike(c); break; }
           // (blocked by something: sidestep for a moment)
           c.raidT = (c.raidT || 0) + dt;
           if (c.raidT > 1.2) { c.detour = c.pos.distanceTo(c.raidFrom || c.pos) < 0.6 ? (c.detour ? 0 : (Math.random() < 0.5 ? 1.2 : -1.2)) : 0; c.raidFrom = c.pos.clone(); c.raidT = 0; }
@@ -383,7 +383,7 @@ export class Clappers {
           break;
         default: break;
       }
-      if (!c.alive) continue; // (a raider that struck the vessel is gone)
+      if (!c.alive) continue; // (a raider that struck the jar is gone)
 
       let desired;
       if (physical) {
@@ -440,13 +440,13 @@ export class Clappers {
 
   decide(c) {
     const god = this.game.god;
-    if (c.ally && god?.active && god.vessel.alive) {
-      // a turned clapperjar: sees off the nearest raider, then tends the vessel, then keeps close to it
-      const r = this.list.find((x) => x.alive && x.raider && x.state === 'raid' && x.pos.distanceTo(god.vessel.pos) < 14 && !x.chased);
+    if (c.ally && god?.active && god.jar.alive) {
+      // a turned clapperjar: sees off the nearest raider, then tends the jar, then keeps close to it
+      const r = this.list.find((x) => x.alive && x.raider && x.state === 'raid' && x.pos.distanceTo(god.jar.pos) < 14 && !x.chased);
       if (r) { c.state = 'guard'; c.chasing = r; c.timer = 0; return; }
-      if (god.vessel.hp < god.vessel.max - 1 && !god.vessel.mendBy && this.takeJob(c)) return;
+      if (god.jar.hp < god.jar.max - 1 && !god.jar.mendBy && this.takeJob(c)) return;
       const a = Math.random() * Math.PI * 2, rad = 1.2 + Math.random() * 2.2;
-      c.target = god.vessel.pos.clone().add(new THREE.Vector3(Math.sin(a) * rad, 0, Math.cos(a) * rad)).setY(c.pos.y);
+      c.target = god.jar.pos.clone().add(new THREE.Vector3(Math.sin(a) * rad, 0, Math.cos(a) * rad)).setY(c.pos.y);
       c.state = 'run'; c.stuckT = 0; c.timer = 0;
       return;
     }
@@ -513,13 +513,13 @@ export class Clappers {
       if (Math.abs(t.y - f.y) > 0.3) continue;
       out.push({ kind: 'pot', ent, pos: new THREE.Vector3(t.x, t.y, t.z), r: ent.P.rMax });
     }
-    // the god hand's vessel, tended by the clapperjars it has turned
+    // the god hand's jar, tended by the clapperjars it has turned
     const god = this.game.god;
-    if (c.ally && god?.active && god.vessel.alive && god.vessel.hp < god.vessel.max - 1 && !god.vessel.mendBy) out.push({ kind: 'vessel', pos: god.vessel.pos.clone(), r: 0.5 });
+    if (c.ally && god?.active && god.jar.alive && god.jar.hp < god.jar.max - 1 && !god.jar.mendBy) out.push({ kind: 'jar', pos: god.jar.pos.clone(), r: 0.5 });
     return out;
   }
 
-  /** A raider gives up (the vessel is gone, or the hand has let go of it). */
+  /** A raider gives up (the jar is gone, or the hand has let go of it). */
   dismiss(c) {
     c.raider = false;
     this.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'shot');
@@ -528,7 +528,7 @@ export class Clappers {
   takeJob(c) {
     const C = T.clappers, player = this.game.player.renderPos;
     const cands = this.jobs(c)
-      .filter((j) => j.pos.distanceTo(c.pos) < C.mendRange && (j.kind === 'vessel' || j.pos.distanceTo(player) > C.mendShy))
+      .filter((j) => j.pos.distanceTo(c.pos) < C.mendRange && (j.kind === 'jar' || j.pos.distanceTo(player) > C.mendShy))
       .sort((a, b) => a.pos.distanceTo(c.pos) - b.pos.distanceTo(c.pos));
     for (const job of cands.slice(0, 4)) {
       // stand next to it, on our side
@@ -537,7 +537,7 @@ export class Clappers {
       const spot = job.pos.clone().addScaledVector(side.normalize(), job.r + 0.3);
       spot.y = this.floors[c.floor].y;
       if (!this.reachable(c, spot)) continue;
-      if (job.kind === 'wreck') job.w.claimed = c; else if (job.kind === 'vessel') this.game.god.vessel.mendBy = c; else job.ent.mendBy = c;
+      if (job.kind === 'wreck') job.w.claimed = c; else if (job.kind === 'jar') this.game.god.jar.mendBy = c; else job.ent.mendBy = c;
       c.job = job; c.target = spot; c.state = 'mendGo'; c.timer = 0; c.stuckT = 0;
       return true;
     }
@@ -546,7 +546,7 @@ export class Clappers {
 
   jobValid(c, job) {
     if (!job) return false;
-    if (job.kind === 'vessel') return !!this.game.god?.active && this.game.god.vessel.alive;
+    if (job.kind === 'jar') return !!this.game.god?.active && this.game.god.jar.alive;
     if (job.pos.distanceTo(this.game.player.renderPos) < T.clappers.mendShy * 0.6) return false; // too close for comfort
     return job.kind === 'wreck' ? this.game.breakables.wrecks.includes(job.w) : job.ent.alive;
   }
@@ -556,7 +556,7 @@ export class Clappers {
     if (!job) return;
     if (job.kind === 'wreck' && job.w.claimed === c) job.w.claimed = null;
     if (job.kind === 'pot' && job.ent.mendBy === c) job.ent.mendBy = null;
-    if (job.kind === 'vessel' && this.game.god?.vessel.mendBy === c) this.game.god.vessel.mendBy = null;
+    if (job.kind === 'jar' && this.game.god?.jar.mendBy === c) this.game.god.jar.mendBy = null;
     c.job = null;
   }
 
@@ -589,7 +589,7 @@ export class Clappers {
     const g = this.game, job = c.job;
     const d = g.listenerDistance(job.pos);
     if (job.kind === 'wreck') g.breakables.rebuild(job.w);
-    else if (job.kind === 'vessel') g.god.mendVessel(T.god.mendAmount ?? 16);
+    else if (job.kind === 'jar') g.god.mendJar(T.god.mendAmount ?? 16);
     else g.breakables.mend(job.ent);
     c.job = null;
     sfx.mended(d);

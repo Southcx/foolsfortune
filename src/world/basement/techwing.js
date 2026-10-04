@@ -74,7 +74,7 @@ export function buildTechLab(L, env) {
     S.add(l);
   }
   label(S, 'TECH LAB', [0, B + 0.02, -39.5], { width: 3.2, sub: 'movement techs' });
-  label(S, 'THE SYSTEM', [0, B + 0.02, -42.2], { width: 2.6, sub: 'skills are learned by doing', help: 'B opens the Codex; LAB MODE there lends every skill.' });
+  label(S, 'THE SYSTEM', [0, B + 0.02, -42.2], { width: 2.6, sub: 'skills are learned by doing', help: 'B opens the Codex; its ALL ARTS switch lends every art.' });
   label(S, 'MILL', [33.6, B + 0.02, -47], { rotY: -Math.PI / 2, width: 1.6, sub: 'clockwork · moving ground' });
   strip(S, [35.9, B + 4.02, -47], [0.1, 0.06, 4.2]);
   label(S, 'RIGGING', [-33.6, B + 0.02, -47], { rotY: Math.PI / 2, width: 1.8, sub: 'hang · climb · balance' });

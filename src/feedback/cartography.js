@@ -15,7 +15,7 @@ import { FONT, THEMES, theme } from '../ui/theme.js';
 //                                        everything in line of sight, out to 14 m (20 from the jar)
 //
 // The ZONE OF INFLUENCE is where the god arts may be used: each art needs a tier of knowledge of
-// the ground it is used on (see godhand/arts.js). Around the vessel there is always a small charted
+// the ground it is used on (see godhand/arts.js). Around the jar there is always a small charted
 // zone. The more of a place you have walked and surveyed, the more you can do in it, and the
 // higher its tier, the deeper the arts that work there.
 //
@@ -25,7 +25,7 @@ import { FONT, THEMES, theme } from '../ui/theme.js';
 export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
 const LAYERS = [
   { id: 'dunes', name: 'THE DUNES', below: -150, cell: 8, sight: 40 },
-  { id: 'basement', name: 'THE LAB', below: -3, cell: 2, sight: 7 },
+  { id: 'basement', name: 'THE BASEMENT', below: -3, cell: 2, sight: 7 },
   { id: 'ground', name: 'GROUND FLOOR', below: 2.6, cell: 2, sight: 7 },
   { id: 'upper', name: 'UPPER FLOOR', below: 1e9, cell: 2, sight: 7 },
 ];
@@ -93,16 +93,16 @@ export class Cartography {
   }
   static tierOfK(k) { const t = T.zoi.tiers; return k >= t[2] ? 3 : k >= t[1] ? 2 : k >= t[0] ? 1 : 0; }
 
-  /** What the courier knows about the ground at a point: { tier, k, base } (the vessel's own charted zone counts). */
+  /** What the courier knows about the ground at a point: { tier, k, base } (the god hand's jar charts its own zone). */
   tierAt(x, y, z) {
     const l = this.layerOf(y);
     const [ix, iz] = this.cellIndex(l, x, z);
     const c = this.cell(l, ix, iz);
     let tier = c ? Cartography.tierOfK(c.k) : 0;
     const g = this.game.god;
-    if (g?.active && g.vessel.alive) {
-      const d = Math.hypot(x - g.vessel.pos.x, z - g.vessel.pos.z);
-      if (d < T.zoi.baseRadius && Math.abs(y - g.vessel.pos.y) < 6) tier = Math.max(tier, T.zoi.baseTier);
+    if (g?.active && g.jar.alive) {
+      const d = Math.hypot(x - g.jar.pos.x, z - g.jar.pos.z);
+      if (d < T.zoi.baseRadius && Math.abs(y - g.jar.pos.y) < 6) tier = Math.max(tier, T.zoi.baseTier);
     }
     return { tier, k: c?.k || 0 };
   }
@@ -215,7 +215,7 @@ export class Cartography {
     g.scene.add(this.ring);
   }
 
-  /** A psychic pulse from the courier (or the vessel): everything in line of sight is understood. */
+  /** A psychic pulse from the courier (or the god hand's jar): everything in line of sight is understood. */
   survey(byGod = false) {
     const g = this.game, P = g.player, Z = T.zoi;
     if (this.pulseCool > 0) return false;
@@ -565,7 +565,7 @@ export class Cartography {
       const sx = (this.waypoint.x - V.x) * V.scale, sy = (this.waypoint.z - V.z) * V.scale;
       c.fillStyle = '#ffe0a0'; c.save(); c.translate(sx, sy); c.rotate(Math.PI / 4); c.fillRect(-6, -6, 12, 12); c.restore();
     }
-    // you (and the vessel's tether)
+    // you (and the jar's tether)
     if (this.layerOf(P.pos.y).id === l.id) {
       const sx = (P.pos.x - V.x) * V.scale, sy = (P.pos.z - V.z) * V.scale;
       c.save(); c.translate(sx, sy); c.rotate(Math.PI - (this.headYaw ?? P.yaw));

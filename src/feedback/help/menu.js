@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE HELP MENU: the pause card's pages (feedback/help/pages.js), drawn into the card (index.html #help): a list of the pages down the left, the
+// THE HELP MENU: the pause menu's pages (feedback/help/pages.js), drawn into the menu (index.html #help): a list of the pages down the left, the
 // open page on the right, and the arrow keys (or the page keys, or clicking the list) to turn them. Turning a page does not resume
 // the game: only BEGIN, or a click outside the card, does (main.js). The page last read is remembered on this machine.
 //
@@ -31,7 +31,7 @@ const CSS = `
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
 export class HelpMenu {
-  /** `root` is the card's #help; `isOpen()` says whether the pause card is up (the keys turn the pages only then). */
+  /** `root` is the menu's #help; `isOpen()` says whether the pause menu is up (the keys turn the pages only then). */
   constructor(root, isOpen = () => true) {
     this.root = root; this.isOpen = isOpen;
     let at = 0;

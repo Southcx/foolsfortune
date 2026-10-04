@@ -114,7 +114,7 @@ export class SystemVoice {
     });
     on('rank.up', (e) => this.say(`Notice. Your rank has risen. You are now known as a ${e.rank}.`, { key: 'rank' }));
     on('system.unlock', (e) => {
-      if (g.system?.lab) return;
+      if (g.system?.lendAll) return;
       const a = BY_ID[e.ability];
       this.say(e.variant ? `Notice. Variant acquired: ${e.title}.` : `Notice. ${a?.realm === 'god' ? 'God art' : 'Skill'} acquired: ${e.title}.`, { key: `skill.${e.ability}.${e.variant || ''}` });
     });
