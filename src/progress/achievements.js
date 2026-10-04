@@ -466,12 +466,12 @@ export function buildAchievements(game) {
   // ---------------------------------------------------------------- EXPLORATION
   C('ex1', 'explore', 'Charting', 1, 'count', 'First Pulse', 'Send out a survey pulse.', 'map.pulse', 1);
   // the Wells (docs/plans/SLICE.md, E1: placeholders until the Well is built; every key is counted by a rule in tracking.js)
-  C('wl1', 'explore', 'The Wells', 1, 'count', 'Down the Well', 'Go down into a Well.', 'well.enter', 1);
+  C('wl1', 'explore', 'The Wells', 1, 'count', 'Downward Spiral', 'Go down into a Well.', 'well.enter', 1);
   H('wl2', 'explore', 'The Wells', 2, 'count', 'Rock Bottom', 'Reach the third floor of a Well.', 'well.depth', 3);
-  C('wl3', 'explore', 'The Wells', 2, 'mechanic', 'Face the FOE', 'Beat a FOE in a Well.', 'well.foe', 1);
-  C('wl4', 'explore', 'The Wells', 2, 'count', 'Mapped Mind', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
-  H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Corner', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
-  C('wl6', 'explore', 'The Wells', 3, 'endure', 'Well Worn', 'Come back up out of 20 Wells.', 'well.out', 20);
+  C('wl3', 'explore', 'The Wells', 2, 'mechanic', 'Face It', 'Beat a FOE in a Well.', 'well.foe', 1);
+  C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
+  H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
+  C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
@@ -493,11 +493,11 @@ export function buildAchievements(game) {
 
   // ---------------------------------------------------------------- THE EMOCEAN (docs/plans/SLICE.md, E4: placeholders until the hop is built)
   C('em1', 'emocean', 'Sailing', 1, 'count', 'Cast Off', 'Sail from one Island of Ego to another.', 'emocean.hop', 1);
-  C('em2', 'emocean', 'Sailing', 2, 'count', 'Made Port', 'Come through a stage of the Emocean.', 'emocean.stage.passed', 1);
+  C('em2', 'emocean', 'Sailing', 2, 'count', 'Weathered It', 'Come through a stage of the Emocean.', 'emocean.stage.passed', 1);
   C('em3', 'emocean', 'Sailing', 4, 'perfect', 'Not a Scratch', 'Sail a stage without being hit once.', 'emocean.stage.clean', 1);
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
-  C('oc1', 'emocean', 'Crude', 1, 'count', 'In the Trade', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
-  H('oc2', 'emocean', 'Crude', 3, 'count', 'Good Haul', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
+  C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
+  H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
   C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entra Polearis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
   C('oc4', 'emocean', 'Crude', 2, 'mechanic', 'Slick', 'Spill crude in the Emocean.', 'crude.spill', 1, { hidden: true });
 

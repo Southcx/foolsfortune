@@ -94,9 +94,10 @@ Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`
 `well.floor` is Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
 unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
 
-**The slice's achievements** (in the game now, as placeholders at 0 until the events exist): EXPLORATION, The Wells: Down the Well,
-Rock Bottom, Face the FOE, Mapped Mind, Every Corner, Well Worn, A Well Healed (hidden). THE EMOCEAN, Sailing: Cast Off, Made Port, Not a
-Scratch, Ports of Call; Crude: In the Trade, Good Haul, Toxic Symbiosis (hidden), Slick (hidden).
+**The slice's achievements** (in the game now, as placeholders at 0 until the events exist; names Espada's, LORE.md section 8):
+EXPLORATION, The Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden).
+THE EMOCEAN, Sailing: Cast Off, Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Symbiosis (hidden), Slick
+(hidden). The Well in the Dunes is **the Swallow**; crude is counted in **casks**; the dock trader is **the purser**.
 
 ## The seams to check before calling it done
 
