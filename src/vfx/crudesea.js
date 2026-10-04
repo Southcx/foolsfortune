@@ -1,0 +1,117 @@
+// ---------------------------------------------------------------------------------------
+// THE CRUDE SEA: the surface of the Emocean where the ships sail (docs/plans/SLICE.md, E4; docs/GLOSSARY.md: crude, the Emocean). Crude is
+// liquid Lachryma, fossil feeling (docs/LORE.md): so the sea is Lachryma's liquid state as the art bible has it (docs/ART.md, section 3),
+// near-black with the oil film's sheen, heavy and slow, never water-blue.
+//
+//   THE SWELLS  real movement (CLAUDE.md: motion from things actually moving): four Gerstner waves displace the surface in the vertex
+//               shader, long and low as oil moves, and the same sum is on the CPU (`heightAt`) so a ship rides exactly what is drawn
+//   THE CURRENT a slow scrolled pattern of darker and lighter streaks along the current's way: the honest way to show a sheet of oil
+//               drifting (CLAUDE.md allows a scrolled texture where it is that)
+//   THE FILM    the oil film's colours where the surface turns from the eye (a fresnel, low in frequency, so it rolls with the swells and
+//               never shimmers); stronger in the calm
+//   THE CALM    `calm` (0..1) lays the swells down and lets the film bloom: the stage's breather (0.50 to 0.62 of it) is the sea's and the
+//               sky's to carry
+// The grid follows the camera in whole cells, and the waves are in the world's own space, so nothing swims under the eye; the swells'
+// height fades with distance before the grid's cells could alias them.
+//
+// Prior art: Tessendorf and the Gerstner wave sum of every game ocean since (GPU Gems 1, ch. 1: "Effective Water Simulation from
+// Physical Models"), Wind Waker's sea (cel bands, a few big shapes, a horizon that holds), the oil-slick thin-film colours already on
+// Lachryma (world/treasure/cubes.js oilMaterial), and Sunless Sea's black zee for the mood of a dark, sentient ocean.
+//
+//   const sea = new CrudeSea({ env })   scene.add(sea.mesh)   sea.update(t, camera.position)   sea.set({ calm, swell, film, current })
+//   (swell 0.38 by default: about a metre and a half crest to trough, a sloop's sea)
+//   sea.heightAt(x, z, t) -> y   (for a ship: its bob and its pitch)   sea.dispose()
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+
+const N = 4;
+// the waves: direction (radians), wavelength (m), steepness, speed scale (long, low swells, a cross-sea, and a short chop on top)
+const WAVES = [[0.2, 38, 0.32, 1], [1.1, 23, 0.26, 1], [-0.7, 14, 0.18, 1.1], [2.4, 7, 0.12, 1.2]];
+const G = 9.8;
+
+export class CrudeSea {
+  constructor({ env = null, size = 900, cells = 180, y = 0 } = {}) {
+    this.y = y; this.cell = size / cells; this.t = 0;
+    this.k = { calm: 0, swell: 0.38, film: 1, current: new THREE.Vector2(1, 0.25).normalize() };
+    const geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2);
+    const u = this.u = {
+      uT: { value: 0 }, uAmp: { value: 0.38 }, uFilm: { value: 1 }, uCalm: { value: 0 },
+      uCur: { value: this.k.current.clone() },
+      uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
+      uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)
+    };
+    const m = this.mat = new THREE.MeshStandardMaterial({ color: 0x07050b, roughness: 0.5, metalness: 0.12, envMap: env, envMapIntensity: 0.35 });
+    m.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, u);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+uniform float uT, uAmp, uCalm; uniform vec4 uW[${N}]; uniform float uC[${N}]; varying vec3 vSeaW; varying float vSeaH;
+vec3 seaGerstner(vec2 p, out vec3 n) {
+  vec3 d = vec3(0.0); vec3 nn = vec3(0.0, 1.0, 0.0);
+  float amp = uAmp * (1.0 - 0.85 * uCalm);
+  for (int i = 0; i < ${N}; i++) {
+    vec2 D = uW[i].xy; float k = uW[i].z, q = uW[i].w, A = q / k * amp;
+    float f = k * dot(D, p) - uC[i] * uT; float c = cos(f), s = sin(f);
+    d += vec3(D.x * A * c * q, A * s, D.y * A * c * q);
+    nn += vec3(-D.x * k * A * c, -q * k * A * s, -D.y * k * A * c);
+  }
+  n = normalize(nn); return d;
+}`)
+        .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
+vec3 seaN; vec4 seaWp = modelMatrix * vec4(position, 1.0);
+float seaFar = 1.0 - smoothstep(140.0, 380.0, length(seaWp.xz - cameraPosition.xz)); // (the swells lie down before the cells could alias them)
+vec3 seaD = seaGerstner(seaWp.xz, seaN) * seaFar;
+objectNormal = normalize(mix(vec3(0.0, 1.0, 0.0), seaN, seaFar));`)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+transformed += seaD; vSeaW = seaWp.xyz + seaD; vSeaH = seaD.y;`);
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', `#include <common>
+uniform float uT, uFilm, uCalm; uniform vec2 uCur; varying vec3 vSeaW; varying float vSeaH;
+float seaHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float seaNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(seaHash(i), seaHash(i + vec2(1, 0)), f.x), mix(seaHash(i + vec2(0, 1)), seaHash(i + vec2(1, 1)), f.x), f.y); }
+vec3 seaFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }`)
+        .replace('#include <color_fragment>', `#include <color_fragment>
+// the current: streaks drawn along the drift, scrolled (two scales, so it never reads as one repeating sheet)
+vec2 seaC = vec2(dot(vSeaW.xz, uCur), dot(vSeaW.xz, vec2(-uCur.y, uCur.x)));
+float seaStreak = seaNoise(vec2(seaC.x * 0.02 - uT * 0.05, seaC.y * 0.22)) * 0.6 + seaNoise(vec2(seaC.x * 0.05 - uT * 0.11, seaC.y * 0.5)) * 0.4;
+diffuseColor.rgb *= 0.7 + 0.6 * seaStreak;
+diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (the crests a shade warmer: crude is amber where it is thin)`)
+        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+{ vec3 V = normalize(vViewPosition); float fres = pow(1.0 - clamp(abs(dot(normalize(normal), V)), 0.0, 1.0), 3.0);
+  float film = (0.2 + 0.8 * fres) * uFilm * (0.4 + 0.6 * uCalm) * smoothstep(0.42, 0.78, seaStreak); // (in bands, along the streaks, black between)
+  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.5 + vSeaH * 0.1) * film * 0.16; }`);
+    };
+    m.customProgramCacheKey = () => 'crude-sea';
+    this.mesh = new THREE.Mesh(geo, m);
+    this.mesh.position.y = y; this.mesh.frustumCulled = false; this.mesh.receiveShadow = true;
+  }
+
+  /** Calm (0..1: the breather), swell (a multiplier), film (the sheen's strength), current (a direction in the xz plane). */
+  set({ calm, swell, film, current } = {}) {
+    if (calm !== undefined) this.k.calm = calm;
+    if (swell !== undefined) this.k.swell = swell;
+    if (film !== undefined) this.k.film = film;
+    if (current) this.k.current.copy(current).normalize();
+    this.u.uCalm.value = this.k.calm; this.u.uAmp.value = this.k.swell; this.u.uFilm.value = this.k.film; this.u.uCur.value.copy(this.k.current);
+  }
+
+  /** Per frame: the time, and the grid kept under the camera in whole cells (the waves are the world's: nothing swims). */
+  update(t, camPos) {
+    this.t = t; this.u.uT.value = t;
+    if (camPos) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
+  }
+
+  /** The surface's height at a point (the same sum as the shader's, near the eye): what a ship rides. */
+  heightAt(x, z, t = this.t) {
+    const amp = this.k.swell * (1 - 0.85 * this.k.calm);
+    let y = 0;
+    for (let i = 0; i < N; i++) {
+      const [a, L, q] = WAVES[i], k = (2 * Math.PI) / L, A = (q / k) * amp, c = this.u.uC.value[i];
+      y += A * Math.sin(k * (Math.cos(a) * x + Math.sin(a) * z) - c * t);
+    }
+    return this.y + y;
+  }
+
+  dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mat.dispose(); }
+}

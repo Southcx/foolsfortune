@@ -98,6 +98,15 @@ a pixel or two, so a far body never shimmers with them. Kinrande's ground is red
 The kiln also sets **gems** in the stones (ruby, sapphire, emerald, amethyst, citrine, diamond's fire, opal's play of colour,
 moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** for the Lachryma (`vfx/finish.js`); porcelain's is translucent, with warm light through its thin edges.
 
+## The slice: one being, two other states (R57)
+
+- **The sloop is the Pneuka Jar laid on its side**: the jar's silhouette turned on a lathe for the hull (its throwing rings round the
+  girth, its mouth the stern, lit with Lachryma), terracotta with kintsugi seams, the skiff's green mast and gold fittings, the lotus in
+  gold on the main. The Vessoul's forms are one hand's work.
+- **The crude sea is Lachryma liquid**: black, heavy, its swells real, its current a slow scroll, its film in bands, never water-blue.
+- **The Swallow is Lachryma's own place**, as the island is the clay's: walls of bismuth's stair (solid), a floor of glass over the
+  liquid (the labradorite moving under it), a mouth that is the Mind's stone swallowing the sand.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should

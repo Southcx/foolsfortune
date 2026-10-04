@@ -314,6 +314,23 @@ export const LIBRARY = {
     L({ type: 'sprites', count: 6, shape: 'sparkle', spawn: 'line', size: [0.08, 0.14], sizeEnd: 0, life: [0.5, 0.9], color: ['gold', 'white'], twinkle: 12 }),
   ] },
 
+  // =============================================================================================== THE EMOCEAN (the slice: docs/plans/SLICE.md)
+  // Divination's lane mark: where a wave will come, up to 3 s before it does (held; the caller raises its strength `k` from 0 to 1 as the
+  // wave nears). It must read at speed over the black crude: a column of the Mind's labradorite standing up out of the sea, a whirl
+  // laid on the surface, and rings going out on the beat of its approach. No words, no numbers (a mark, not a sign).
+  'lane.mark': { layers: [
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 3.2, tint: 'labradorite', labradorite: 0.9, glow: 1.4, spin: 1.6, offset: [0, 0.08, 0], in: 6, out: 4 }),
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 0.16, tint: 'labradorite', labradorite: 1, opacity: 1.3, spin: 1.2, offset: [0, 3.2, 0], in: 6, out: 4 }),
+    L({ type: 'sprites', dur: Infinity, rate: 50, shape: 'streak', spawn: 'disc', r: 0.8, dir: 'up', speed: [5, 8], size: [0.22, 0.34], sizeEnd: 0.04, stretch: 3, life: [0.6, 0.9], color: ['labradorite', 'white'] }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ringthin', offset: [0, 0.1, 0], size: 0.6, sizeEnd: 4.5, life: 0.8, color: 'labradorite', alpha: 0.8, rot: 0 }),
+  ] },
+
+  // the Swallow's mouth (vfx/swallow.js draws the pool): motes of the dunes' Lachryma drawn in toward it, and a breath of dark over it
+  'swallow.motes': { layers: [
+    L({ type: 'sprites', dur: Infinity, rate: 24, shape: 'soft', spawn: 'ring', r: [5, 8], dir: 'in', speed: [1.2, 2.2], size: [0.06, 0.1], sizeEnd: 0.02, life: [2.2, 3.2], color: ['labradorite', 'gold'], offset: [0, 0.4, 0] }),
+    L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'swirl', spawn: 'disc', r: 2.5, dir: 'up', speed: [0.2, 0.5], size: [0.8, 1.2], sizeEnd: 2, life: [2, 3], color: 'ink', alpha: 0.3, alphaEnd: 0, spin: [-1, 1] }),
+  ] },
+
   // =============================================================================================== THE LOCKHEART'S OPENING
   // (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle

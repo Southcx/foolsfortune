@@ -142,6 +142,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## Creatures and folk
 
+- **the Swallow** (the owner's name, R57): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/swallow.js`) is a
+  spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Swallow's kit** (`src/vfx/swallowkit.js`:
+  the bismuth wall, the glass floor over liquid Lachryma, the trim).
 - **creature** (`game.creatures`, `src/creatures/creatures.js`): a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.
 - **clapperjar** (code: `clapper`, `src/creatures/clappers.js`): the clapping pots, the folk's lowest tier (earthenware). The code's shorter
@@ -243,6 +246,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
+- **lane mark** (`lane.mark` in the library): Divination's mark on the Emocean's rail where a wave will come, up to 3 s ahead: a column
+  of labradorite standing out of the crude, a whirl on the surface, rings on the beat of its approach (no words or numbers).
+- **the crude sea** (`src/vfx/crudesea.js`): the Emocean's surface where the ships sail, liquid Lachryma: black, its swells real, its
+  current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
   anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.
