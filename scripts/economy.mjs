@@ -17,6 +17,9 @@ import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
+import { buskPay, commissionPay, potPay } from '../src/progress/econ/livelihoods.js';
+import { wellPay, cogitomapWorth, demand, fuel, haulProfit } from '../src/progress/econ/islands.js';
+import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
 const OLD = {
@@ -39,6 +42,13 @@ const PLAY = {
   photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
   treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
   angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog
+  // the livelihoods not built yet (ECONOMY.md): how an hour of each might go, at three levels of play (accuracy, or a well-made thing)
+  busker: { songMin: 3, set: 10 },                               // three-minute songs, a set of ten different ones before any repeat
+  slayer: { cls: 1, minutesEach: 8, speed: [1.3, 0.5] },        // Barracuda commissions, eight minutes each for an ordinary hunter; a
+                                                                 // hunter at accuracy a takes minutesEach x (speed[0] - speed[1] x a)
+  potter: { minutesEach: 3, prestige: 'stoneware' },             // a pot thrown, glazed and fired in three minutes
+  diver: { floors: 5, foes: 1, minutesPerFloor: 5 },             // a Well run: five floors, one FOE, five minutes a floor
+  hauler: { units: 12, worth: 30, distance: 4, hopMin: 12 },      // a hold of twelve things worth 30 each, four units away, twelve minutes a hop
   completionist: { playPerDay: 2, checkInEvery: 24, farmRate: 480, mastered: [1, 3, 5, 10, 20] }, // hours played a day, hours between
   // collections, what farming one encounter by hand pays an hour (the aim, until there are encounters), how many encounters are mastered
 };
@@ -171,3 +181,19 @@ for (const [k, outs] of Object.entries(CONVERT)) {
 // the catch (not built: SYSTEMS.md C2): the odds by Figment class, laid low cleanly and in the EmO band, by key
 console.log(`\nthe catch (not built): odds by class (Guppy .. Leviathan), cleanly stunned, in the EmO band; capped at ${CATCH.cap * 100}%`);
 for (const keys of [['key.brass'], ['key.loaded'], ['key.even'], ['key.twin']]) console.log(`${pad(keys[0].slice(4), 10)}${[0, 1, 2, 3, 4].map((c) => `${(catchOdds({ cls: c, keys }) * 100).toFixed(0)}%`.padStart(6)).join('')}`);
+
+// the livelihoods not built yet, at three levels of play: cubes an hour, against the aim (ECONOMY.md rule 1: pay by quality)
+console.log(`\nthe livelihoods not built yet (cubes an hour at poor / middling / masterful play; the aim is ${aim})`);
+const lv = (name, f) => { const v = [0.4, 0.7, 1].map(f); console.log(`${pad(name, 26)}${v.map((x) => num(x)).join('')}   ${v.map((x) => (x / aim).toFixed(2)).join(' / ')} x aim`); };
+{ const B = PLAY.busker, songs = 60 / B.songMin; lv('busking', (a) => { let v = 0; for (let i = 0; i < songs; i++) v += buskPay(B.songMin, a, Math.floor(i / B.set)); return v; }); }
+{ const S = PLAY.slayer; lv('commissions (Barracuda)', (a) => { const n = 60 / (S.minutesEach * (S.speed[0] - S.speed[1] * a)); let v = 0; for (let i = 1; i <= n; i++) v += commissionPay(S.cls, i); return v + (n % 1) * commissionPay(S.cls, 1); }); } // (a better hunter finishes sooner)
+{ const P = PLAY.potter; lv(`throwing pots (${P.prestige})`, (a) => (60 / P.minutesEach) * potPay(a, P.prestige)); }
+{ const D = PLAY.diver; lv('Well runs', (a) => { const floors = Math.round(D.floors * (0.6 + 0.4 * a)); return (60 / (floors * D.minutesPerFloor)) * wellPay(floors, a > 0.6 ? D.foes : 0); }); } // (a weaker diver turns back sooner)
+{ const H = PLAY.hauler; lv('hauling', (a) => (60 / H.hopMin) * haulProfit({ buy: 0.8, sell: 1 + 0.5 * a, units: H.units, worth: H.worth, distance: H.distance, failed: a < 0.5 ? 1 : 0 })); }
+const run = wellPay(PLAY.diver.floors, PLAY.diver.foes);
+console.log(`a Cogitomap of that run (${run} cubes), fully charted: ${cogitomapWorth(run, 1, 0)} fresh, ${cogitomapWorth(run, 1, 20)} after 20 hours, ${cogitomapWorth(run, 1, 60)} after 60; a hop's fuel at distance 4: ${fuel(4)}`);
+console.log(`island demand for edges over a week (multipliers, days 0..6): ${[0, 1, 2, 3, 4, 5, 6].map((d) => demand('anagami', 'edge', d).toFixed(2)).join(' ')}`);
+
+// the spirit press: how far one pressing of each kind walks the Courier's colour (the wheel's distance, 0..1)
+console.log(`\nthe spirit press: how far one material of each kind moves a colour (tier 0 / tier 4)`);
+console.log(KIND_IDS.map((k) => `${k} ${distance({ h: 20, s: 0.5 }, press({ h: 20, s: 0.5 }, [makeMaterial(k, 1, 0)]).colour).toFixed(2)} / ${distance({ h: 20, s: 0.5 }, press({ h: 20, s: 0.5 }, [makeMaterial(k, 1, 4)]).colour).toFixed(2)}`).join(', '));
