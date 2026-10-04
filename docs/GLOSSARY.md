@@ -167,6 +167,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **EmO**, Emotional Output (`src/progress/combat/emo.js`): a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal
   band, and it enrages past it.
 - **Luck** (`src/progress/luck.js`): the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
+- **material** (`src/progress/econ/materials.js`): what Soul Alchemy presses, of a broad **kind** (eldritch, arcane, finery, mechanism,
+  edge, art, provision), with a hue, a saturation and a **path** (the winding route it walks the Courier's colour). **The spirit press**
+  (hopper, igniter, crucible): where materials are pressed. *Not:* "mats" in player text.
+- **prestige** (of a look: `ECON.looks`): where a glaze, stone, hair or skin sits on the folk's clay ladder, Earthenware to the Prince's
+  own; it sets the price (`docs/ECONOMY.md`, "The worth of a look").
 - **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
   Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
 - **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),
@@ -179,6 +184,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`): the ledger's three kinds of entry: a number that
   only goes up, a best with when and where it was set, and the play time something first happened. A **funnel** is the firsts read in
   order (play time at the first art, fish, chest...): how fast a new player meets the game.
+- **chain** (of events; `chain.<what>` in the ledger, `chain()` among the arts' goals): the same event n times, each within a set time of
+  the last (`chain.blink2`: a blink within 0.9 s of a blink); it counts once and starts over. `chain.max` is the psygun's hit chain.
 - **tier** (of an achievement): Easy to Grandmaster, worth 1 to 6 **points**; **type**: count, speed, perfection, mechanic, stamina,
   collection (OSRS). The points buy a **standing** (Sweeper to Fool's Fortune); some achievements give a **title** (FFXIV).
 - **the loops**: what the player wants at three scales: **the moment** (seconds), **the session** (an evening), **the long run** (weeks)
