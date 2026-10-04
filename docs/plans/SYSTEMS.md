@@ -117,3 +117,13 @@ Lockheart header), A7, A9, A10 (the titles) and A11 (the prices and `SHOPS.sagga
 Influence > Delirium > Impact, annihilation, the cause → type table as a proposal), `mind.js` (the mental states), `emo.js` (EmO: yield
 band 0.35 to 0.75, enrage at 0.85, the catch factor), `src/progress/luck.js`. None is wired: `node scripts/combat.mjs` prints them all.
 The owner rules on the cycle and on which tool deals which type before Petra wires B1 to B4.
+`src/progress/domains.js` (B8's data): the seven domains, their EXP sources from today's events with a quality each (a crystal strike's
+nearness, a macro's misses, a photograph's stars, a throw's speed), v0.1's curve, and one PACE (99 in 300 hours of middling play in any
+domain; perfect play 200, sloppy 600). "The World" at that pace is about 2,100 hours: the owner sets the pace.
+
+**Phase C, Dovina's data (same night, unwired):** in `src/tools/lockheart/table.js`, `MODES` and `mode: 'casting'` on the three coffins
+(no new coffins until their mechanics exist: every HEARTS entry becomes an item); `CATCH` and `catchOdds()` (by Figment class, the
+stun's hold, the EmO band, the keys; capped at 95%; drawn from a deck); `CONVERT` (a full coffin is 12 cubes, a brimming one 24). The
+simulator prints both. **Two rulings for the owner:** conversion pays only with a brass key and a brimming coffin (LOADED and ECHO cost
+93 and 139 cubes for about 31 back: the keys are priced for casting), so either conversion keys are cheaper or a conversion does not use
+up its key. And EVEN is the big-game catch key (a Leviathan 5% → 28%), LOADED the small-game one.

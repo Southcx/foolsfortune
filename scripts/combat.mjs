@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE FIGHT'S NUMBERS, PRINTED: the phase B tables (docs/plans/SYSTEMS.md) laid out as a designer reads them before anything is wired:
 // the damage types' chart (the closed trump cycle, annihilation), what each tool's causes deal, the mental states' multipliers, the
-// EmO curve (yield, enrage, the catch) and Luck from a sample ledger. The companion of scripts/economy.mjs, for the fight.
+// EmO curve (yield, enrage, the catch), Luck from a sample ledger, and the domains' levels. The companion of scripts/economy.mjs, for the fight.
 //
 // Prior art: the type charts every Pokemon player keeps beside the game, and Machinations' habit of tuning on a table before playing.
 //
@@ -11,6 +11,7 @@ import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, multiplier } from '../src/progress
 import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
+import { DOMAINS, SOURCES, PACE, scaleOf, expAt, levelOf } from '../src/progress/domains.js';
 
 const pad = (s, n) => String(s).padEnd(n);
 
@@ -39,3 +40,13 @@ const sample = { 'chest.open.prismatic': 2, 'chest.open.epic': 6, 'chest.near': 
 const luck = luckOf({ get: (k) => sample[k] || 0 });
 console.log(`\nLuck: each unlikely event counts its surprise in bits (-log2 p): ${Object.entries(UNLIKELY).map(([k, p]) => `${k} ${(-Math.log2(p)).toFixed(1)}`).join(', ')}`);
 console.log(`  a sample ledger (${Object.entries(sample).map(([k, v]) => `${v} ${k}`).join(', ')}) is ${luck.bits.toFixed(0)} bits: Luck ${luck.level}`);
+
+// the domains: the EXP curve, and how long 99 takes at a steady pace of the domain's own acts (sloppy, middling, perfect)
+console.log(`\nthe domains: EXP to level 10 ${expAt(10).toLocaleString('en')}, to 50 ${expAt(50).toLocaleString('en')}, to 99 ${expAt(99).toLocaleString('en')} (v0.1's curve)`);
+console.log('  domain           sources (event: base)                                hours to 99 (PACE): sloppy / middling / perfect');
+for (const d of Object.values(DOMAINS)) {
+  const src = SOURCES.filter((s) => s.domain === d.id), base = src.reduce((a, s) => a + s.base, 0) / Math.max(1, src.length);
+  const hours = (q) => (expAt(99) / (PACE.actsPerMin * 60 * base * scaleOf(d.id) * (0.5 + q))).toFixed(0);
+  console.log(`  ${pad(d.name, 16)} ${pad(src.map((s) => `${s.event}: ${s.base}`).join(', '), 52)} ${hours(0)} / ${hours(0.5)} / ${hours(1)}`);
+}
+console.log(`  (a level check: ${[1000, 50000, 500000].map((x) => `${x.toLocaleString('en')} EXP is level ${levelOf(x)}`).join(', ')})`);

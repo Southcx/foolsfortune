@@ -90,6 +90,13 @@ How prices move (`ECON.shop`, after OSRS):
 - **Crystals.** A full round of the formations paid nearly three times the aim. Base 8 → 3, per size 10 → 6.
 - **The Lockheart's CUBES.** 18 → 12 per unit of power. It is a gamble on Lachryma, not a mint.
 
+## Saggar's glazes (the glamour sink)
+
+Six glazes are sold at the kiln (`ECON.glazeShop`), each dearer than the last one bought: 10, 15, 20, 30, 45 and 60 minutes of play
+(80 to 480 cubes; 1,440 for all six, three hours). The first is cheap enough to try on a whim; the last is a decision. They are never
+the glazes earned by achievements or learned from photographs: what is bought is never what is earned. The rows are Calissa's (the
+colours) and Espada's (the blurbs); the price is the table's.
+
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
 A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the same seven tools in every layer** (`docs/DESIGN.md`, section
