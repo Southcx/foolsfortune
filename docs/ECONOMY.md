@@ -129,17 +129,19 @@ Prestige sets the price of what is sold; how a look is got (from the start, earn
 achievement glaze has a prestige too, which says how much it is worth having.
 - **Body glazes.**
   - Earthenware: terracotta, bisque, shino.
-  - Stoneware: natural ash, kaki, salt, ame, majolica, nuka, tenmoku (Old Grog's working tea-bowl glaze).
+  - Stoneware: natural ash, kaki, salt, ame, majolica, nuka, tenmoku (Old Grog's working tea-bowl glaze). Majolica stays here: it is the purest white (Calissa), but tin glaze
+    on earthenware is never grand (Espada), and prestige is the canon's call.
   - Porcelain: cobalt, oribe, celadon (Saggar's head-maid mark: what the stoneware folk envy), raku, copper lustre (Raku's, worn to look
     grander), hare's fur.
   - The Court: jun, kinrande. Guan ("official") and Ru (an emperor's court) are the Court's own, so they are **earned only**: a Court
     glaze is given, never bought.
-  - The Prince's own: oxblood, oil spot, yohen tenmoku (the kiln's accident, the experimenter's prize), Lachryma black (no folk could
-    bear it; only a Courier wears it).
+  - The Court, earned: oil spot (a step below yohen once its silver blooms render; Calissa).
+  - The Prince's own: oxblood, yohen tenmoku (the kiln's accident, the experimenter's prize), Lachryma black (no folk could bear it;
+    only a Courier wears it).
 - **Stones.**
-  - Earthenware: the maker's stones, citrine, onyx.
-  - Stoneware: amethyst, moonstone.
-  - Porcelain: emerald, sapphire.
+  - Earthenware: the maker's stones, citrine.
+  - Stoneware: amethyst, onyx (the deepest black: an extreme, not free).
+  - Porcelain: emerald, sapphire, moonstone (its own glow).
   - The Court: ruby.
   - The Prince's own: diamond, opal.
 - **Hair.**
@@ -157,11 +159,18 @@ What is for sale today, at these prices:
 | what | cubes |
 |---|---:|
 | five stoneware glazes and two stoneware stones (80 each) | 560 |
-| a porcelain glaze, two stones, two hairs and two skins (200 each) | 1,400 |
+| a porcelain glaze, three stones, two hairs and two skins (200 each) | 1,600 |
 | a Court stone and a Court skin (480 each) | 960 |
-| **all of it** | **2,920 (about 6 hours of play)** |
+| **all of it** | **3,120 (about 6.5 hours of play)** |
 
 The rest are earned. As Calissa adds rows, the sink grows with them.
+
+**What the eye says** (Calissa): the shader-driven looks read most striking at 480 lines (opal's play, oil-slick hair, aurora, diamond's
+fire, Lachryma black's film, the metal of kinrande and copper lustre, moonstone's glow), and flat colours read weakest whatever their
+history. Several of the rarest glazes (yohen's stars, oil spot's blooms, hare's fur's streaks, guan's and raku's crackle) are still flat,
+so the top tier under-delivers until Calissa draws their patterns. Price follows the look once it is drawn: a top-tier look that does not
+yet read as rare is a debt on the art, not a reason to drop it. Moonlight's blue rim is the strongest free look on purpose: the hook that
+makes a new Courier open the kiln.
 
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
