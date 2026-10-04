@@ -155,6 +155,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the domains** (six and one): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
   Veritome's macros). *Retired:* Spellcasting.
+- **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
+  **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
+  carrying Delirium's status, or the reverse, hits much harder. *Not:* an element.
+- **mental state** (`src/progress/combat/mind.js`): how open a creature is to being moved: **Stoic**, **Resolved**, **Balanced**,
+  **Fluid**, **Prismatic** (solid to liquid). *Not:* mood (`npc.mood`, the folk's), nor EmO.
+- **EmO**, Emotional Output (`src/progress/combat/emo.js`): a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal
+  band, and it enrages past it.
+- **Luck** (`src/progress/luck.js`): the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
 - **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
   Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
 - **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),

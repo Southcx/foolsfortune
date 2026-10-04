@@ -31,12 +31,20 @@ export const ECON = {
   dupe: [4, 12, 30, 80, 240],
   /** What a chest holds, by tier (common .. prismatic): a range, drawn once when it is opened (treasure.js cubesIn). */
   chest: [[4, 9], [14, 26], [40, 70], [120, 200], [400, 700]],
+  /** Whether a chest of each tier (common .. prismatic) holds a curio is a DECK of this size (econ/deck.js: certain within N chests of
+   *  that tier, about (N+1)/2 on average), and which of its tier's four is a deck of the four (each before any twice). Set so the five
+   *  sets complete in the order of their rarity: through the Tithe, about 20 / 39 / 84 / 153 / 308 pulls (scripts/economy.mjs). (Was a
+   *  plain chance, 6 / 16 / 40 / 80 / 100%, and an 85% lean to the curios not yet held: the commons took longer than the rares.) */
+  curioDeck: [5, 4, 5, 2, 1],
   /** How long a chest on the treasury's plinths (the Weir) takes to shut again once opened, by tier, in seconds; DEBUG keeps the old
    *  half-minute so a ceremony can be watched again and again. (Was 30 s for all five: a prismatic every half-minute, ~1,600 cubes a
    *  minute for standing still, more than everything else in the game together.) */
   treasury: { respawn: [240, 900, 2400, 4800, 9600], debug: 30 },
   /** A Lockheart's CUBES outcome, per unit of power (1 full .. 2 brimming). */
-  lockheart: { cubes: 12 },
+  lockheart: { cubes: 12,
+    // once the Possibilikeys have bent a table, no jackpot (an outcome of rank 4: the slip nuke) may be likelier than this (lockheart/
+    // table.js oddsOf). Without it the INVERTED key turned the Gambler's 99 to 1 into 1 to 99: a jackpot bought with one key.
+    jackpotCap: 0.25 },
 
   /** A landed fish, sold to Old Grog, by its tier (0 none .. 5 the legend): at about one catch every two and a half minutes, about
    *  the aim (a fish is not condensed: a shop buys it, so an angler's living is a walk to the pier). */
@@ -58,6 +66,7 @@ export const ECON = {
     lure: 5,                                                   // a made lure, to replace one sold or lost
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 8, 'key.twin': 10, 'key.wide': 8, 'key.echo': 12,
     'heart.gambler': 20, 'heart.shepherd': 20,
+    glaze: 15,                                                 // a glaze bought at Saggar's kiln (the ones the shop way gets: glazes.js got.shop)
   },
   /** How a shop's prices move with its stock (OSRS): each one short of its stock dearer by `dear`, each extra one it has bought
    *  cheaper to sell by `glut` (never under `floor` of worth); one unit drifts back toward the base every `restock` seconds. A shop

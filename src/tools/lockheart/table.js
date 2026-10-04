@@ -3,7 +3,7 @@
 // tool (tools/lockheart/lockheart.js) spins it, the outcomes are done in tools/lockheart/outcomes.js, and the Codex and the box read it to say it.
 //
 // A LOCKHEART (the coffin on the chain; there are several, and the one fitted to the chain is the wheel) has a TABLE of outcomes with
-// weights. A POSSIBILIKEY opens it, and is used up; up to three may be on the ring, and each, in the order they were put on, does its
+// weights. A POSSIBILIKEY opens it, and is used up; up to four may be on the ring, and each, in the order they were put on, does its
 // work to the table (INVERT turns it upside down: the likeliest becomes the rarest, by rank, so 99 to 1 becomes 1 to 99) or to what
 // comes out (TWIN spins twice, WIDE reaches twice as far, ECHO happens again). How FULL the coffin was when it was opened is how hard it
 // comes out (a full coffin is a big bet: power 1; one filled twice over, 2).
@@ -12,8 +12,11 @@
 // and Balatro's jokers (modifiers that stack, in order, on the same roll), and the loot boxes they all come from, made a weapon.
 //
 //   OUTCOMES[id]    HEARTS[id] = { name, table: { outcome: weight }, fill, examine }    KEYS[id] = { name, does, table?(t), mods?(m) }
-//   oddsOf(heartId, keyIds) -> { table, mods }        rates(table) -> [{ id, p }]        spin(table) -> id
+//   oddsOf(heartId, keyIds) -> { table, mods }   (no jackpot likelier than ECON.lockheart.jackpotCap)
+//   rates(table) -> [{ id, p }]        spin(table) -> id
 // ---------------------------------------------------------------------------------------
+
+import { ECON } from '../../progress/econ/table.js';
 
 /** What can come out. `color` is its sector on the wheel; `rank` how good (0 a dud .. 4 a jackpot): the wheel is ordered by it. */
 export const OUTCOMES = {
@@ -59,8 +62,19 @@ export function oddsOf(heartId, keyIds = []) {
   const H = HEARTS[heartId] || HEARTS['heart.plain'];
   const table = { ...H.table }, mods = { spins: 1, reach: 1, echo: 0 };
   for (const id of keyIds) { const K = KEYS[id]; K?.table?.(table); K?.mods?.(mods); }
+  capJackpot(table);
   return { table, mods };
 }
+/** No jackpot (rank 4) likelier than ECON.lockheart.jackpotCap once the keys have done their work: the jackpots' weight is scaled
+ *  down together until they hold exactly the cap (the rest keep their shares). A table of nothing but jackpots is left alone. */
+function capJackpot(table) {
+  const cap = ECON.lockheart.jackpotCap, ids = Object.keys(table);
+  const J = ids.filter((k) => OUTCOMES[k]?.rank === 4).reduce((a, k) => a + table[k], 0), R = ids.reduce((a, k) => a + table[k], 0) - J;
+  if (!(J > 0 && R > 0) || J / (J + R) <= cap) return;
+  const f = (cap * R / (1 - cap)) / J;
+  for (const k of ids) if (OUTCOMES[k]?.rank === 4) table[k] *= f;
+}
+
 /** The table as chances (0..1), best last (the wheel's order). */
 export function rates(table) {
   const sum = Object.values(table).reduce((a, b) => a + b, 0) || 1;
