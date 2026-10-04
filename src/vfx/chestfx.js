@@ -59,7 +59,7 @@ export class ChestFx {
       c.group.position.set(at.x, chest.floor + 0.03, at.z);
       c.group.rotation.y = this.spin;
       c.group.scale.setScalar(S * (0.75 + 0.35 * Math.max(charge, ph === 'charge' ? 0 : 1)));
-      c.u.uTint.value.set(tint); c.u.uLab.value = prism ? 1 : 0.15;
+      c.u.uTint.value.set(tint); c.u.uLabradorite.value = prism ? 1 : 0.15;
       // the shock: once, from the burst
       const s = this.shock;
       if (this.shockT >= 0) {
@@ -70,7 +70,7 @@ export class ChestFx {
           const r = 1 - Math.pow(1 - u, 3);
           s.group.position.set(at.x, chest.floor + 0.18, at.z);
           s.group.scale.set(S * (0.6 + (2.2 + T * 0.7) * r), S * (1 - 0.6 * u), S * (0.6 + (2.2 + T * 0.7) * r));
-          s.u.uTint.value.set(prism ? 0xffffff : TIERS[T].rgb); s.u.uLab.value = prism ? 1 : 0.1;
+          s.u.uTint.value.set(prism ? 0xffffff : TIERS[T].rgb); s.u.uLabradorite.value = prism ? 1 : 0.1;
           s.set(1.6 * (1 - u) * (1 - u));
         }
       }
@@ -83,7 +83,7 @@ export class ChestFx {
       h.group.rotation.y -= raw * 1.6;
       h.group.scale.setScalar(S * (cur && ph !== 'fountain' ? 0.75 : 1));
       h.u.uTint.value.copy(_c.set(prism ? 0xffffff : TIERS[T].rgb).lerp(new THREE.Color(0xffffff), 0.25));
-      h.u.uLab.value = prism ? 1 : 0.35;
+      h.u.uLabradorite.value = prism ? 1 : 0.35;
     }
     this.circleK = THREE.MathUtils.damp(this.circleK, circleWant, circleWant > this.circleK ? 8 : 3, raw);
     this.helixK = THREE.MathUtils.damp(this.helixK, helixWant, helixWant > this.helixK ? 5 : 2.5, raw);

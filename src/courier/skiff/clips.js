@@ -13,14 +13,14 @@ import { V3, lerp, smooth } from '../anim/authoring.js';
 // starboard side), +X is the rider's left, which is the way the bow points. The front foot is the left.
 // The sheet (the rope from the boom) is held in front of the chest, left hand high, right hand low.
 //
-//   surfIdle    at rest: knees soft, weight even, a slow breath, looking along the bow
-//   surfRide    under way: lower, leaning back against the sail, arms out
-//   surfHoist   hauling the sail up hand over hand (played by how far it is up)
-//   surfBrake   sail let out, weight back on the rear foot, hauling the sheet in to stop
-//   surfCrouch  the springs charging for a hop, and the landing
-//   surfAir     the air: feet stay on the deck, knees bent
+//   skiffIdle    at rest: knees soft, weight even, a slow breath, looking along the bow
+//   skiffRide    under way: lower, leaning back against the sail, arms out
+//   skiffHoist   hauling the sail up hand over hand (played by how far it is up)
+//   skiffBrake   sail let out, weight back on the rear foot, hauling the sheet in to stop
+//   skiffCrouch  the springs charging for a hop, and the landing
+//   skiffAir     the air: feet stay on the deck, knees bent
 // ---------------------------------------------------------------------------------------
-export function authorSurf(A, ch) {
+export function authorSkiff(A, ch) {
   const ah = ch.ankleRest;
   /** One key pose. o: crouch (m, hips down), lean (deg, back), twist, look (deg toward the bow), wide, lift (m, both feet), hl / hr (palm positions). */
   const pose = function (o) {
@@ -44,9 +44,9 @@ export function authorSurf(A, ch) {
     const b = Math.sin(u * Math.PI * 2);
     pose.call(this, { crouch: 0.12 + b * 0.008, lean: 8 + b * 0.8, twist: 22, look: 60, wide: 0.38, hl: V3(0.1, 1.12 + b * 0.006, 0.36), hr: V3(-0.12, 0.88, 0.32) });
   };
-  A.clip('surfIdle', { dur: 2.6, loop: true, base: 'idle', build: idle });
+  A.clip('skiffIdle', { dur: 2.6, loop: true, base: 'idle', build: idle });
 
-  A.clip('surfRide', {
+  A.clip('skiffRide', {
     dur: 1.4, loop: true, base: 'idle',
     build(u) {
       const b = Math.sin(u * Math.PI * 2);
@@ -55,7 +55,7 @@ export function authorSurf(A, ch) {
   });
 
   // hauling the sail up: hand over hand on the halyard, a pull for each half cycle, the body sinking into each pull
-  A.clip('surfHoist', {
+  A.clip('skiffHoist', {
     dur: 1.0, loop: true, base: 'idle',
     build(u) {
       const h = (u * 2) % 1, e = smooth(0, 1, h), first = u < 0.5;
@@ -66,7 +66,7 @@ export function authorSurf(A, ch) {
     },
   });
 
-  A.clip('surfBrake', {
+  A.clip('skiffBrake', {
     dur: 1.0, loop: true, base: 'idle',
     build(u) {
       const b = Math.sin(u * Math.PI * 2);
@@ -74,7 +74,7 @@ export function authorSurf(A, ch) {
     },
   });
 
-  A.clip('surfCrouch', {
+  A.clip('skiffCrouch', {
     dur: 0.6, loop: true, base: 'idle',
     build() {
       pose.call(this, { crouch: 0.4, lean: -10, twist: 16, look: 50, wide: 0.46, hl: V3(0.16, 0.78, 0.44), hr: V3(-0.16, 0.64, 0.38) });
@@ -83,7 +83,7 @@ export function authorSurf(A, ch) {
 
   // in the air the feet stay on the deck (the board goes where they go, as in an ollie): knees bent, a little more on the
   // way up, weight easing back; the rest of the trick is the skiff's own turning
-  A.clip('surfAir', {
+  A.clip('skiffAir', {
     dur: 1.2, loop: true, base: 'idle',
     build(u) {
       const b = Math.sin(u * Math.PI * 2);

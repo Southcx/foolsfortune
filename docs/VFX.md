@@ -41,12 +41,12 @@ effect; the effect is tuned apart from the move).
 | Effect meshes | `source_assets/vfx/effects.blend` -> `scripts/export_vfx.py` -> `src/assets/vfx/*.glb` | made in **Blender** (docs/LOOK.md); every GLB is picked up by name |
 | Decal textures | `src/assets/vfx/tex/*.png` | the spell circles the owner's wife drew (`circle_lotus`, `circle_swirl`), and any picture a decal should wear |
 | Combat | `creatures.strike`, `breakables.damage`, `clappers.hit` | every blow plays `hit.<tool>.<material>[.kill]`; the material is a tag on the thing (`clay`, `crystal`, `jelly`, `wood`, `stone`, `metal`: `MATERIALS` in vfx.js), else guessed from its kind |
-| **The workbench** | `src/workbench/workbench.js`, chat **`/lab`** | the game's own studio: CINEMA (the sequences, below), EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
+| **The workbench** | `src/workbench/workbench.js`, chat **`/workbench`** | the game's own studio: CINEMA (the sequences, below), EFFECTS (play, loop, power, tint, speed; edit the data live and Apply: here and in the world, kept in the browser; Copy it back out), MODELS (every GLB, tool, thing and curio on a turntable: wireframe, normals, UV checker, counts, a 1.7 m figure; the Courier plays every clip of the game's pack), TEXTURES (the effect textures, the circles, the sprite atlas) |
 | **Swings** | `vfx.swing(name)`, library `swing.*` | a held look for anything that sweeps: `trail` layers (ribbons between the two ends, `span` along them: a wide body, a hot edge at the tip) and `sprites` with `perM` (shed per metre the tip travels). The cutlass, the Dreamvane's pick, the Soul Brush's club and the kick each wear theirs (`swing.cutlass`, `.dreamvane`, `.brush`, `.kick`); a tool says once where its striking part is (`swing(name).follow(fn)`); previewed in the workbench on a slash |
 | **Status auras** | `src/vfx/auras.js`, library `aura.*` | every creature's statuses shown round it while they last (`aura.<status>[.<kind>]`): sleep, halt, slow, melt, calm, soft, haste, empower, forget; quiet, sized to the creature, fading as the status runs out |
 | **Budgets** | `BUDGETS` in `src/vfx/vfx.js` | what a second of combat may spend: particles, flash, shake, hitstop (token buckets). A busy fight thins out instead of washing white; a cinematic (`ctx.cine`, set by the sequences) is outside them, and the workbench shows effects whole |
 | **Sequences** | `src/cine/sequence.js`, `src/cine/sequences.js` | cinematic events as data: camera keys, effects, bars, slow time, mood, sounds and cues on a timeline per segment, played by name (`game.cine.play`) |
-| Chat | `/vfx <name> [tint]`, `/vfx`, `/opening`, `/lab` | |
+| Chat | `/vfx <name> [tint]`, `/vfx`, `/opening`, `/workbench` | |
 
 ## Cinematics as data (sequences)
 
@@ -65,7 +65,7 @@ forward] }` for where it stands and what it looks at, `fov`, `roll`, `cut`; `off
 longer the higher its tier). Offsets are in the anchors' own frame, so a sequence plays the same wherever it happens; the camera is
 kept out of walls (`shotclear.js`).
 
-**Directing one, by eye:** `/lab` -> CINEMA. Pick a segment: it plays on the stage with its anchors stood in (from `preview`), the
+**Directing one, by eye:** `/workbench` -> CINEMA. Pick a segment: it plays on the stage with its anchors stood in (from `preview`), the
 camera's path drawn in blue (cuts in red). VIEW: SHOT looks through the sequence's camera; VIEW: ORBIT walks round it. Scrub to a time,
 frame the shot with the orbit camera and KEY THIS VIEW (or REMOVE KEY); edit any track in the JSON. APPLY plays it here and in the
 world (kept in this browser), PLAY ALL strings the segments as the game does (`order`), COPY SEQUENCE puts it on the clipboard for
@@ -101,5 +101,5 @@ shockwaves, a hundred and forty streaks, stars, petals, a ring of smoke, lingeri
    - a **kill** adds a pop of the creature's own colour and a few of its own pieces (the dissolve already does this for zandatsu).
 3. ~~Trails and swings~~: built (`vfx.swing`, `swing.*`), on every swung tool and the kick.
 4. ~~Status auras~~: built (`vfx/auras.js`, `aura.*`).
-5. ~~A VFX lab~~: built into the game as the workbench (`/lab`).
+5. ~~A VFX test bench~~: built into the game as the workbench (`/workbench`).
 6. ~~Budgets~~: built (`BUDGETS`, vfx.js).

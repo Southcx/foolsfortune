@@ -19,7 +19,7 @@
 //   shake     the camera's shake      hitstop  the world held a moment      smear  the PS2 frame feedback (render/glow.js)
 //   glyph     a mark (vfx/glyphs.js)   sound  an sfx method by name (audio: Wanda's)   fx  another effect, by name
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
-// hex, 'tint' (the caller's), 'lab' (a colour of the labradorite's flash) or 'gold' / 'lach' / 'white'. `power` (the context's)
+// hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash) or 'gold' / 'lach' / 'white'. `power` (the context's)
 // scales counts and sizes, so one effect serves a tap and a full-strength blow.
 //
 // An effect can `extends` another (its layers first, then these), so a family shares a base and each member adds its own: change
@@ -53,13 +53,13 @@ export function vfxTexture(name) {
 }
 export const vfxTextureNames = () => Object.keys(TEX_SRC);
 const DECAL_V = 'varying vec2 vUv; varying vec3 vW; void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
-const DECAL_F = `uniform sampler2D uMap; uniform vec3 uTint; uniform float uK, uLab, uGlow;
+const DECAL_F = `uniform sampler2D uMap; uniform vec3 uTint; uniform float uK, uLabradorite, uGlow;
 varying vec2 vUv; varying vec3 vW;
 ${LAB_GLSL}
 void main() {
   float a = texture2D(uMap, vUv).a * uK;
   if (a < 0.003) discard;
-  vec3 c = mix(uTint, labSoft(labPhase(vW, normalize(cameraPosition - vW)) + length(vUv - 0.5) * 1.5) * 1.3, uLab) * uGlow;
+  vec3 c = mix(uTint, labSoft(labPhase(vW, normalize(cameraPosition - vW)) + length(vUv - 0.5) * 1.5) * 1.3, uLabradorite) * uGlow;
   gl_FragColor = vec4(c * a, a);
 }`;
 let _quad = null;
@@ -83,7 +83,7 @@ function color(v, ctx) {
   if (Array.isArray(v)) return color(v[Math.floor(Math.random() * v.length)], ctx);
   if (v === 'tint') return ctx.tint === undefined ? 0xffffff : color(ctx.tint, ctx);
   if (v === 'tip') return ctx.tip === undefined ? color('tint', ctx) : color(ctx.tip, ctx); // (a swing's hot end)
-  if (v === 'lab') return LAB[Math.floor(Math.random() * LAB.length)];
+  if (v === 'labradorite') return LAB[Math.floor(Math.random() * LAB.length)];
   if (typeof v === 'string') return NAMED[v] ?? 0xffffff;
   return v;
 }
@@ -270,10 +270,10 @@ export class Vfx {
     const L = s.L, ctx = h.ctx, g = this.game, P = ctx.power ?? 1;
     switch (L.type) {
       case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P))); break;
-      case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), lab: L.lab ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
+      case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), labradorite: L.labradorite ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
-        const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLab: { value: L.lab ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
+        const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
         const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
         const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat);
         m.renderOrder = L.order ?? 4; m.frustumCulled = false; m.userData.moodExempt = true; m.visible = false;

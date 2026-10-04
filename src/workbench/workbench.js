@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE WORKBENCH: the game's own studio, inside the game. `/lab` (or `/workbench`) in the chat line puts the world aside and opens a
+// THE WORKBENCH: the game's own studio, inside the game. `/workbench` in the chat line puts the world aside and opens a
 // stage of its own, drawn by the game's renderer with the game's light and the PS2 glow, so what is seen here is what the game shows:
 //
 //   EFFECTS    every effect in the library (vfx/library.js), played on the stage, once or on a loop, at any power, tint and speed;
