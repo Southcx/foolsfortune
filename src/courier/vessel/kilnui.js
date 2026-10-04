@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE KILN STATION'S WINDOW: what the Courier can fire onto their vessel, beside them as they turn in front of the kiln (courier/moves/kiln.js
-// holds them and the camera). A tab for each region (the body, the trim, the mask, the hair), the glazes they have as swatches under it
+// holds them and the camera). A tab for each region (the body, the trim, the stones, the mask, the hair, the skin; each takes its own kinds of finish), the glazes they have as swatches under it
 // (a click tries one on them at once), the gold in their seams, and FIRE, which costs cubes and keeps the look. The world is not paused:
 // they turn, the kiln breathes. Drag on the scene or use A / D (or the arrows) to turn them; Esc or LEAVE ends it and puts back what they
 // wore if it was not fired.
@@ -74,7 +74,7 @@ export class KilnUI {
     this.root.replaceChildren();
     const px = el('div', 'px');
     px.appendChild(el('h2', '', 'THE KILN'));
-    px.appendChild(el('div', 'sub', 'Choose a glaze for each part of the vessel, see it on you, and fire it on.'));
+    px.appendChild(el('div', 'sub', 'Choose a finish for each part of the vessel (a glaze for the clay, gems for the stones, a tone for the Lachryma), see it on you, and fire it on.'));
     const tabs = el('div', 'tabs');
     for (const r of Object.values(REGIONS)) {
       const gz = V.glaze(this.look[r.id]);
@@ -86,9 +86,10 @@ export class KilnUI {
     const what = el('div', 'what');
     const sayGlaze = (gz) => { what.innerHTML = gz ? `<b>${gz.name}</b><br>${gz.blurb}` : `${REGIONS[this.region].blurb}`; };
     const sw = el('div', 'sw');
-    for (const gz of owned) {
-      const s = el('div', `s${this.look[this.region] === gz.id ? ' on' : ''}${gz.metal > 0.3 ? ' metal' : ''}`);
-      s.style.background = hex(gz.color);
+    const kinds = REGIONS[this.region].kinds || ['glaze'];
+    for (const gz of owned.filter((x) => kinds.includes(x.kind || 'glaze'))) { // (a region shows only what it takes: gems for the stones...)
+      const s = el('div', `s${this.look[this.region] === gz.id ? ' on' : ''}${gz.metal > 0.3 ? ' metal' : ''}${gz.kind && gz.kind !== 'glaze' ? ` k-${gz.kind}` : ''}`);
+      s.style.background = gz.color2 != null && gz.color2 !== gz.color ? `linear-gradient(135deg, ${hex(gz.color)} 45%, ${hex(gz.color2)})` : hex(gz.color);
       s.title = gz.name;
       s.onmouseenter = () => sayGlaze(gz);
       s.onmouseleave = () => sayGlaze(V.glaze(this.look[this.region]));

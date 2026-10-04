@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
-import { GpuParticles } from './gpuparticles.js';
 
 const _v = new THREE.Vector3();
 const _q = new THREE.Quaternion();
@@ -25,22 +24,9 @@ function radialTexture(inner = 'rgba(255,255,255,1)', outer = 'rgba(255,255,255,
 }
 
 /** A crisp white disc with a hair of soft edge: the cel-shaded "bubble" of foam and spray (Wind Waker's splash is made of these). */
-function discTexture() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d');
-  g.fillStyle = 'rgba(255,255,255,1)';
-  g.beginPath(); g.arc(32, 32, 28, 0, Math.PI * 2); g.fill();
-  const grd = g.createRadialGradient(32, 32, 26, 32, 32, 32);
-  grd.addColorStop(0, 'rgba(255,255,255,0.5)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
-}
 
 // Point particles (soft round sprites): one additive pool, one alpha pool, one of crisp bubbles. Simulated on the GPU from the moment
-// they are emitted (vfx/gpuparticles.js): tens of thousands cost what a handful did.
+// they are emitted (the VFX system's pools, vfx/sprites.js): tens of thousands cost what a handful did.
 // Tiny ballistic clay chips (instanced, no physics engine cost)
 class Chips {
   constructor(scene, max = 400) {
@@ -80,12 +66,26 @@ class Chips {
   }
 }
 
+/** One of the old pools, now an adapter onto the VFX system's (game.fx.vfx): same emit, same meaning, one set of particles. */
+function legacyPool(fx, pool, shape) {
+  return {
+    emit(o) {
+      const P = fx.vfx?.[pool]; if (!P) return; // (before the VFX system is up, at boot: nothing to draw yet)
+      const y = o.pos.y;
+      P.emit({ pos: o.pos, vel: o.vel, life: o.life || 0.5, size: o.size ?? 0.1, sizeEnd: o.sizeEnd, color: o.color ?? 0xffffff, alpha: o.alpha ?? 1, alphaEnd: 0,
+        drag: o.drag ?? 1, gravity: o.gravity ?? 0, twinkle: o.twinkle || 0, shape,
+        floor: o.floor ?? (y < BASE_FLOOR - 5 ? -1e9 : y < -2 ? BASE_FLOOR + 0.02 : 0.02) });
+    },
+    update() {}, set scale(v) { /* (world-sized quads now: nothing to scale) */ },
+  };
+}
+
 export class FX {
   constructor(scene) {
     this.scene = scene;
-    this.add = new GpuParticles(scene, { max: 16384, additive: true, map: radialTexture() });
-    this.alpha = new GpuParticles(scene, { max: 16384, additive: false, map: radialTexture() });
-    this.foam = new GpuParticles(scene, { max: 8192, additive: false, map: discTexture() }); // (crisp bubbles: bow spray, wakes)
+    // (the three pools are the VFX system's now, one set of particles for the whole game: Phase 2. Each is an adapter that keeps the old
+    //  emit's meaning: drag 1 unless said, the floor picked from the height, alpha fading out over the life, the foam's crisp disc)
+    this.add = legacyPool(this, 'add', 'soft'); this.alpha = legacyPool(this, 'alpha', 'soft'); this.foam = legacyPool(this, 'alpha', 'disc');
     this.chips = new Chips(scene);
     this.tracers = [];
     this.trails = [];
@@ -170,23 +170,16 @@ export class FX {
     }
   }
 
+  /** A knock on a hard thing: the library's `impact` (sparks and dust), the chips (step 3) and a decal if asked. */
   impact(point, normal, { color = PALETTE.pale, sparks = 6, dust = 6, decal = false } = {}) {
-    const c = new THREE.Color(color);
-    const hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < sparks; i++) {
-      const v = new THREE.Vector3().randomDirection().add(normal).normalize().multiplyScalar(4 + Math.random() * 6);
-      this.add.emit({ pos: point, vel: v, life: 0.15 + Math.random() * 0.2, size: 0.05, sizeEnd: 0.01, color: hot, drag: 3, gravity: 9 });
-    }
-    for (let i = 0; i < dust; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(0.6).add(_v.copy(normal).multiplyScalar(1 + Math.random() * 1.5));
-      this.alpha.emit({ pos: point, vel: v, life: 0.6 + Math.random() * 0.6, size: 0.08, sizeEnd: 0.5, color: c, alpha: 0.45, drag: 3.5, gravity: -0.2 });
-    }
+    this.vfx?.play('impact', { pos: point, normal, dir: normal, tint: color, tip: PALETTE.hot, sparks, dust });
     for (let i = 0; i < 4; i++) {
       const v = new THREE.Vector3().randomDirection().add(normal).multiplyScalar(2 + Math.random() * 2);
       this.chips.emit(point, v, 0.012 + Math.random() * 0.012, 1.5);
     }
     if (decal) this.decal(point, normal);
   }
+
 
   decal(point, normal) {
     const d = new THREE.Mesh(this.decalGeo, this.decalMat);
@@ -260,14 +253,9 @@ export class FX {
   }
 
   // Lantern cores spill glowing embers
-  embers(center, n = 24) {
-    const hot = new THREE.Color(PALETTE.hot), glow = new THREE.Color(PALETTE.glow);
-    for (let i = 0; i < n; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 2.5).add(new THREE.Vector3(0, 1, 0));
-      this.add.emit({ pos: center, vel: v, life: 0.8 + Math.random() * 1.2, size: 0.05, sizeEnd: 0.015, color: Math.random() < 0.5 ? hot : glow,
-        drag: 1.2, gravity: 4, twinkle: 12 });
-    }
-  }
+  /** Embers in the air: the library's `embers`. */
+  embers(center, n = 24) { this.vfx?.play('embers', { pos: center, tint: PALETTE.glow, tip: PALETTE.hot, n }); }
+
 
   // Charged shot: thick lingering beam + ring shockwave at the far end
   beam(from, to, power) {
@@ -303,30 +291,14 @@ export class FX {
   }
 
   // Slicer: a thin white-hot blade plane along the shot that fades fast
+  /** A cut through the air, from -> to: the library's `cut` (a seam of light along the stroke, glints), played by the VFX system.
+   *  (It was a flat untextured quad, which tore on vertical strokes: `blade` squared against the stroke went to zero.) */
   slash(from, to, blade) {
-    const dir = new THREE.Vector3().subVectors(to, from);
-    const len = dir.length();
-    if (len < 0.05) return;
-    dir.divideScalar(len);
-    const geo = new THREE.PlaneGeometry(1, 1);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-    // plane spans dir (length) x blade (width)
-    blade = blade.clone().addScaledVector(dir, -blade.dot(dir)).normalize();
-    const n = new THREE.Vector3().crossVectors(dir, blade).normalize();
-    m.matrix.makeBasis(dir, blade, n);
-    m.quaternion.setFromRotationMatrix(m.matrix);
-    m.position.copy(from).addScaledVector(dir, len / 2);
-    m.scale.set(len, 0.5, 1);
-    m.renderOrder = 6;
-    m.frustumCulled = false;
-    this.scene.add(m);
-    this.slashes.push({ m, age: 0, life: 0.22 });
-    const hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 50; i++) {
-      const p = from.clone().addScaledVector(dir, Math.random() * len).addScaledVector(blade, (Math.random() - 0.5) * 0.4);
-      this.add.emit({ pos: p, vel: blade.clone().multiplyScalar((Math.random() - 0.5) * 3), life: 0.25 + Math.random() * 0.25, size: 0.03, sizeEnd: 0.005, color: hot, drag: 3, twinkle: 30 });
-    }
+    if (from.distanceTo(to) < 0.05) return;
+    const mid = from.clone().lerp(to, 0.5);
+    this.vfx?.play('cut', { pos: mid, from: from.clone(), to: to.clone(), dir: blade, tint: PALETTE.hot });
   }
+
 
   // Force push: an expanding open cone of air
   pushWave(from, axis, range, angleDeg) {
@@ -348,16 +320,9 @@ export class FX {
   }
 
   // Gravity well collapse: particles rush in then burst
-  implode(center) {
-    const glow = new THREE.Color(PALETTE.glow), hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 70; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(3 + Math.random() * 9);
-      this.add.emit({ pos: center, vel: v, life: 0.4 + Math.random() * 0.4, size: 0.06, sizeEnd: 0.01, color: Math.random() < 0.5 ? hot : glow, drag: 2.5, twinkle: 20 });
-    }
-    this.boomLight.position.copy(center);
-    this.boomLight.intensity = 90;
-    this.boomT = 0.3;
-  }
+  /** A collapse and a burst: the library's `implode` (its light is one the light budget lends, as every VFX light is). */
+  implode(center) { this.vfx?.play('implode', { pos: center, tint: PALETTE.glow, tip: PALETTE.hot }); }
+
 
   // Mark shell: sigil ring on the surface + crackle
   markBurst(point, normal, radius) {
@@ -375,13 +340,9 @@ export class FX {
   }
 
   // Lachryma absorbed: a little starburst
-  absorbSparkle(p) {
-    const c = new THREE.Color(PALETTE.cream), h = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 12; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 1.5);
-      this.add.emit({ pos: p, vel: v, life: 0.3 + Math.random() * 0.2, size: 0.035, sizeEnd: 0.005, color: Math.random() < 0.5 ? c : h, drag: 3, twinkle: 30 });
-    }
-  }
+  /** A thing taken in: the library's `absorb`. */
+  absorbSparkle(p) { this.vfx?.play('absorb', { pos: p, tint: PALETTE.cream, tip: PALETTE.hot }); }
+
 
   // Charging: sparks spiral into the muzzle
   chargeTick(muzzle, level, dt) {
@@ -490,13 +451,6 @@ export class FX {
       if (!r.flat) r.ring.lookAt(camera.position);
       r.ring.material.opacity = (1 - t) * 0.9;
     }
-    this.add.update(dt);
-    this.alpha.update(dt);
-    this.foam.update(dt);
     this.chips.update(dt);
-    const h = window.innerHeight;
-    const fov = camera.fov * Math.PI / 180;
-    const scale = (h / (2 * Math.tan(fov / 2))) * (this.pixelRatio || 1);
-    this.add.scale = scale; this.alpha.scale = scale; this.foam.scale = scale;
   }
 }

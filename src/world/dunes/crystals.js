@@ -158,7 +158,9 @@ export class Crystals {
     const R = readStrike(T, th, u);
     e.hp = R.sweet ? 0 : Math.max(0, e.hp - 1);
     const last = e.hp <= 0;
-    g.baubles?.spawn(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2 });
+    // (solid Lachryma sheds solid pieces: cubes, the owner's ruling (R51); the count is Dovina's to tune, ECON)
+    g.cubes?.burst?.(p.clone().setY(p.y + 0.2), (R.sweet ? 6 : 2) * k, { spread: 0.7, up: 3.2, from: 'crystal' });
+    g.vfx?.play('crystal.strike', { pos: p.clone(), dir: dir.clone().negate(), power: R.sweet ? 1.6 : 0.8 + 0.6 * R.near });
     g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6 + Math.round(R.near * 14), dust: 2 });
     // the note made visible at the height struck, in its colour (gold when true: music/tone.js), and chips knocked off the lesser spires
     const at = e.ground.clone().setY(e.ground.y + u * e.h * 0.9);

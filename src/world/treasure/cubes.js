@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// LACHRYMA CUBES: what Lachryma becomes when it is condensed. Small black cubes with the sheen of oil on water: near-black, hard,
-// rounded at the edges, and iridescent: a thin film on the surface turns whatever it reflects (the painted sky, here) through the
+// LACHRYMA CUBES: what Lachryma becomes when it is condensed. Small hopper crystals, grown like bismuth (vfx/bismuth.js): stepped,
+// jagged, metallic, and iridescent: a thin film on the surface turns whatever it reflects (the painted sky, here) through the
 // colours at a glancing angle, so a cube in the hand is never one colour and never the same twice. They are the currency: chests are
 // full of them, a zandatsu takes them out of a clapperjar, the Tithe is paid in them. The balance is the ledger's (`cube.earned` minus
 // `cube.spent`): nothing here keeps a number of its own but the readout.
@@ -18,7 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import { restartClass } from '../../core/restart.js';
 import * as THREE from 'three';
-import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { hopperGeometry, bismuthMaterial } from '../../vfx/bismuth.js';
 import { RAPIER, G, groups } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
 
@@ -84,10 +84,10 @@ export class Cubes {
     // (a cube left lying is a bright thing to anything that eats Lachryma: it may be swallowed, and carried until it bursts: creatures/ai/ecology.js)
     game.ai?.eco.provide('shiny', (pos, range) => this.list.filter((c) => c.state === 'loose' && c.age > 1.5 && c.pos.distanceTo(pos) < range).slice(0, 6)
       .map((c) => ({ pos: c.pos, ref: c, what: 'cube', alive: () => this.list.includes(c) && c.state === 'loose', take: (who) => { const w = this.steal(c); if (!w) return false; if (who) who.stash = (who.stash || 0) + w; return true; } })));
-    this.geo = new RoundedBoxGeometry(SIZE, SIZE, SIZE, 3, 0.02);
+    this.geo = hopperGeometry(SIZE); // (bismuth: a stepped hopper crystal, vfx/bismuth.js)
     this.seeds = new Float32Array(MAX);
     this.geo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(this.seeds, 1).setUsage(THREE.DynamicDrawUsage));
-    const oil = oilMaterial({ env: game.sky?.env ?? null });
+    const oil = bismuthMaterial({ env: game.sky?.env ?? null });
     this.mat = oil.mat; this.uni = oil.uni;
     this.mesh = new THREE.InstancedMesh(this.geo, this.mat, MAX);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);

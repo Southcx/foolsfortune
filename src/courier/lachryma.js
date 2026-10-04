@@ -120,7 +120,7 @@ export class LachrymaPool {
 // Prior art: the pickups that fade before they vanish (the blinking hearts and rupees of Zelda, Kingdom Hearts' orbs that dim), made a
 // change of matter rather than a blink (the comfort rule: nothing flickers).
 // ---------------------------------------------------------------------------
-const OX = { start: 7, full: 22, melt: 38, gone: 40.5, steps: 8 };
+const OX = { start: 7, full: 22, melt: 38, gone: 40.5, steps: 64 }; // (steps: 64 shared looks, one program; at 8 the colour visibly stepped)
 const PICKUP = 32;
 const BAUBLE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | G.DEBRIS | G.CRITTER);
 const UP = new THREE.Vector3(0, 1, 0);

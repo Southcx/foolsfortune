@@ -104,6 +104,7 @@ import { Temper } from './vfx/temper.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
 import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
+import { VaneHud } from './vfx/vanehud.js';
 import { Cubes } from './world/treasure/cubes.js';
 import { Mood } from './core/mood.js';
 import { Chests, ChestTech } from './world/treasure/chests.js';
@@ -143,6 +144,9 @@ import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
 import { TitleScene } from './title/scene.js';
 import { TitleUI } from './title/ui.js';
+import { Overture } from './cine/overture.js';
+import { OVERTURE_TITLE } from './cine/overture.board.js';
+import { TRACKS as SOUNDTRACKS } from './music/soundtest.js';
 import { Diag } from './debug/diag.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
@@ -565,6 +569,11 @@ async function main() {
     game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
   } });
   game.workbench = new Workbench(game);
+  game.chat.add('overture', { help: "the overture's trailer, here and now (the music from the sound test when it has it)", run: () => {
+    const tr = SOUNDTRACKS.find((x) => x.score?.title === OVERTURE_TITLE);
+    if (tr && game.music) { if (!game.music.on) game.music.setOn(true); game.music.pick = tr.score; }
+    game.overture.start({ own: !tr });
+  } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
@@ -627,6 +636,7 @@ async function main() {
     },
   });
   titleScene.onMenu = () => title.ui.showMenu();
+  game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
   input.onLockChange = (locked) => {
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
@@ -702,14 +712,25 @@ async function main() {
     try {
       diag.frameStart();
       if (game.workbench?.open) { game.workbench.frame(dt); input.endFrame(); diag.frameEnd(); return; } // (the workbench instead of the world: workbench/)
+      const O = game.overture;
+      if (game.title?.active && O && !O.active && !O.seen && O.hearing()) O.start(); // (the overture's first note: its trailer, once a session)
+      if (game.title?.active && O?.world) { // (the trailer: the world run behind the title for it, the title's music kept)
+        O.update(dt); tick(dt); game.music.follow(chooseTitleMusic(game));
+        game.post.render(scene, camera); O.afterRender(renderer.domElement);
+        input.endFrame(); diag.frameEnd();
+        return;
+      }
       if (game.title?.active) { // (the title instead of the game: the world waits, built, behind it)
         game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
+        O?.update(dt); O?.titleFrame(game.title.scene); // (the overture's last bars: the crane and the logo fired)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
         game.title.scene.render(); input.endFrame(); diag.frameEnd();
         return;
       }
+      if (O?.active) O.update(dt); // (`/overture` in the world: its trailer on a clock of its own)
       diag.begin('sim'); tick(dt); diag.end('sim');
       diag.begin('draw'); game.post.render(scene, window.__debugCam || camera); diag.end('draw'); // (the PS2 glow and the grade over the frame: render/glow.js)
+      if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
@@ -836,7 +857,7 @@ async function main() {
     if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: tools/veritome/mind/macros.js)
     // the music: what the place calls for (the title, a fight, a dive, the skiff, the dunes, the workshop: music/choose.js); a
     // sound-test pick plays over any of it
-    game.music.follow(chooseMusic(game, { overlay: overlayUp() }));
+    if (!game.overture?.active) game.music.follow(chooseMusic(game, { overlay: overlayUp() })); // (the overture's trailer keeps the title's music)
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
@@ -944,6 +965,7 @@ async function main() {
     game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/LOOK.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane'); // (the compass is the Dreamvane's: worn, it shows)
     game.wireCompass.update(dt);
+    (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

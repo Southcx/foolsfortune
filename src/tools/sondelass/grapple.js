@@ -103,7 +103,7 @@ export class Grapple extends Tech {
     const d1 = _t.subVectors(p1, A), len = d1.length();
     if (len > h.L) {
       p1.copy(A).addScaledVector(d1, h.L / len);
-      v.copy(p1).sub(p0).multiplyScalar(1 / dt);
+      v.copy(p1).sub(p0).multiplyScalar(1 / dt).clampLength(0, C.maxSpeed); // (the correction is a velocity too: a reel under a wide swing could throw them past the cap)
     }
     P.vel.copy(v);
     P.move(dt);
