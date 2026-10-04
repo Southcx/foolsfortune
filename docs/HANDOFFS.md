@@ -169,8 +169,8 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 **2026-10-04, Petra's own open items (R57)**
 - The stress test's intermittent (`embedded`/`guard:nudge` at cp T1): 480 runs on one warm page and 7 fresh-page runs in a row were
   clean; it is rare and only on a fresh page. Still open.
-- A pre-existing hitch on the lift (`on lift0`): 4 violations in 24 lift-only fuzz runs, the same with and without the Well (R57).
-- The heap reading in `npm run perf` had no gc before it (±10 MB a run); fixed (`--expose-gc`, gc twice) and the baseline to re-record.
+- The lift hitch is fixed (v66: `player.move()`'s last retry lifts 4 cm, for a capsule on a moving platform's rounded edge; stress seed
+  1 clean). Its cousin, `embedded` against a lift's guide post (seen once, lift-only seed 1), did not come back; not shown fixed.
 
 **2026-10-04, Petra's own open item (R42)**
 - The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at

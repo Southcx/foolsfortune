@@ -540,12 +540,16 @@ export class Player {
       const first = { ...mv }, firstAir = !this.ctrl.computedGrounded();
       // (flat first; then a hair upward, for a capsule that has come to rest a few millionths inside
       // its margin - on a surface that just stopped moving, say - where only an upward
-      // component gets it going, and the hair is taken back off afterwards)
-      for (const lift of [0, 0.006]) {
+      // component gets it going, and the hair is taken back off afterwards; last, a few centimetres,
+      // for a capsule resting on the rounded edge of a platform that is moving: the edge's normal
+      // leans outward, so a step onto the platform reads as a step into it (the lift hitch). That
+      // rise is kept, not taken off (it could sink the capsule into a lip), and the floor snap
+      // sets them down again next frame.)
+      for (const lift of [0, 0.006, 0.04]) {
         this.ctrl.computeColliderMovement(this.collider, { x: want.x, y: Math.max(0, want.y) + lift, z: want.z }, ...opts);
         mv = this.ctrl.computedMovement();
         gotH = Math.hypot(mv.x, mv.z);
-        if (gotH >= wantH * 0.5) { if (lift) mv = { x: mv.x, y: Math.min(mv.y, Math.max(0, want.y)), z: mv.z }; break; }
+        if (gotH >= wantH * 0.5) { if (lift && lift < 0.01) mv = { x: mv.x, y: Math.min(mv.y, Math.max(0, want.y)), z: mv.z }; break; }
       }
       // (in the air the retry's flat move must not eat the fall: pressed into a wall while dropping
       // along it, the body used to hang there with its speed climbing)
