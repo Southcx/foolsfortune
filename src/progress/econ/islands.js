@@ -10,7 +10,7 @@
 //   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageH) -> cubes
 //   demand(island, kind, day, sold) -> multiplier      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
 //   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
-//   wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
+//   wellSeed(wellId, day) -> uint32 (the Well as it is that day: a Cogitomap carries it)      wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 
@@ -82,3 +82,7 @@ export function islandRun(island, skill = 0.5) {
   v += (skill > 0.6 ? I.foes : 0) * W.foe * W.perFloor * Math.pow(I.deeper, floors - 1);
   return { pay: M(v), minutes: floors * 5, risk: 1 - Math.pow(1 - perFloorRisk, floors) };
 }
+
+/** The seed of a Well on a given day of play: a Well is a distortion that drifts, so it is a new layout each day, and a Cogitomap that
+ *  carries `{ well, day }` is a ticket back to this one (docs/plans/SLICE.md). */
+export const wellSeed = (wellId, day = 0) => Math.floor(hash(`well:${wellId}:${Math.floor(day)}`) * 4294967296) >>> 0;

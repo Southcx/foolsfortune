@@ -18,7 +18,7 @@ import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 import { buskPay, commissionPay, potPay, bountyPay } from '../src/progress/econ/livelihoods.js';
-import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun } from '../src/progress/econ/islands.js';
+import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
@@ -223,3 +223,4 @@ for (let d = 0; d < 14; d++) { const buy = demand('entra', 'dread', d), sell = d
 const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
 console.log(`\nthe crude route, Entra Polearis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
 console.log(`bounties (a commission x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan (commissions ${[0, 1, 2, 3, 4].map((c) => commissionPay(c, 1)).join(' / ')})`);
+console.log(`a Well drifts daily: the dunes Well's seed on days 0, 1, 2: ${[0, 1, 2].map((d) => wellSeed('dunes', d)).join(', ')} (the same day, the same Well)`);
