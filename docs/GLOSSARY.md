@@ -155,6 +155,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the domains** (six and one): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
   Veritome's macros). *Retired:* Spellcasting.
+- **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
+  Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The vehicles").
+- **vehicle**: a way of earning (mining, angling, hauling, a commission...); *not* the Courier's vessel (`docs/ECONOMY.md`).
 - **the three layers**: a **Well** (a dungeon), **the island** (action outside the Wells), **the Emocean** (travel between islands)
   (`docs/DESIGN.md`, section 11).
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`): the ledger's three kinds of entry: a number that
