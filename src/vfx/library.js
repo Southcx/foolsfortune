@@ -113,6 +113,42 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== POOFS
+  // =============================================================================================== DAMAGE LOOKS (vfx.hit's `type`)
+  // what a blow is made of, laid over its hit (which says the tool and the material): one colour and one motif per damage type along the
+  // Law-Chaos line, so the type reads with the HUD hidden and without colour vision (each has its own shape and lightness, not only
+  // its hue). Lawful: geometric, crystalline, straight, still. Chaotic: fluid, iridescent, curling, never at rest. Prior art: Destiny's
+  // damage types (Arc's forks, Solar's flares, Void's spheres: a shape per colour), Persona's affinity icons, the elemental hit sparks
+  // of Monster Hunter; the colours follow docs/LOOK.md (lightness and saturation carry the feeling, the hue carries the world's meaning).
+  //   IMPACT     lawful, physical: bone and gold; crystal facets thrown straight out, a square flash, chips. Fired clay struck.
+  'damage.impact': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 1.05, sizeEnd: 0.2, life: 0.16, color: 0xf2e6c8, colorEnd: 'gold', rot: 0.785 }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.0, life: 0.18, color: 0xf2e6c8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: [7, 10], shape: 'facet', dir: 'cone', cone: 65, speed: [3, 7], size: [0.1, 0.16], sizeEnd: 0.03, life: [0.3, 0.45], drag: 4, gravity: 6, color: 0xf2e6c8, colorEnd: 'gold', spin: [-8, 8] }),
+  ] },
+  //   EGO        lawful, mental: lapis; a hex lattice that opens and holds still, diamonds in an exact ring. A mind made rigid.
+  'damage.ego': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'hex', size: 0.25, sizeEnd: 1.2, life: 0.3, color: 0xa8c0ff, colorEnd: 0x3a5fd9, alpha: 1, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: 1, shape: 'hex', size: 0.15, sizeEnd: 0.7, life: 0.36, delay: 0.05, color: 0x3a5fd9, rot: 0.5236 }),
+    L({ type: 'sprites', count: 6, shape: 'diamond', spawn: 'ring', r: 0.25, dir: 'out', lift: 0, speed: 2.4, size: 0.12, sizeEnd: 0.03, life: 0.3, drag: 6, color: 0xa8c0ff, colorEnd: 0x3a5fd9, rot: 0 }),
+  ] },
+  //   INFLUENCE  neutral, social: rose and warm gold; ripples spread slow and even, petals drift out. What spreads from one to many.
+  'damage.influence': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'ripple', size: 0.3, sizeEnd: 1.6, life: 0.55, color: 0xf2a0b8, colorEnd: 0xffd7a8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: 1, shape: 'ripple', size: 0.2, sizeEnd: 1.1, life: 0.55, delay: 0.12, color: 0xffd7a8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: [5, 7], shape: 'petal', dir: 'swirl', spawn: 'ring', r: 0.2, lift: 0.3, speed: [0.8, 1.4], size: [0.07, 0.1], life: [0.6, 0.9], drag: 2, color: [0xf2a0b8, 0xffd7a8], spin: [-4, 4] }),
+  ] },
+  //   ILLUSION   chaotic, perceptual: the labradorite's flash; curls that turn, glints that will not hold still, a doubled sparkle.
+  'damage.illusion': { layers: [
+    L({ type: 'sprites', count: [3, 4], shape: 'swirl', spawn: 'sphere', r: 0.2, speed: [0.3, 0.7], size: [0.25, 0.4], sizeEnd: 0.6, life: [0.4, 0.6], color: 'labradorite', alphaEnd: 0, spin: [-7, 7] }),
+    L({ type: 'sprites', count: [6, 9], shape: 'glint', spawn: 'sphere', r: 0.45, speed: [0.2, 0.6], size: [0.1, 0.18], sizeEnd: 0, life: [0.3, 0.6], color: 'labradorite', twinkle: 26 }),
+    L({ type: 'sprites', count: 2, shape: 'sparkle', spawn: 'shell', r: 0.18, size: 0.4, sizeEnd: 0.05, life: 0.22, color: 'labradorite' }),
+  ] },
+  //   DELIRIUM   chaotic, entropic: ink and a sick violet-green; smoke that curls up, drips that fall, bubbles that burst. Things coming apart.
+  'damage.delirium': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [3, 4], shape: 'puff', spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.3, 0.6], size: [0.3, 0.4], sizeEnd: 0.8, life: [0.6, 0.9], drag: 2, color: 0x2a1438, alpha: 0.6, spin: [-1.5, 1.5] }),
+    L({ type: 'sprites', count: [5, 7], shape: 'drip', spawn: 'sphere', r: 0.25, dir: 'cone', axis: 'up', cone: 70, speed: [0.5, 1.5], size: [0.06, 0.1], life: [0.5, 0.8], gravity: 7, color: [0xd04ac0, 0x8ae05a], colorEnd: 0x2a1438, floor: 'ground' }),
+    L({ type: 'sprites', count: [3, 5], shape: 'bubble', spawn: 'sphere', r: 0.3, dir: 'up', speed: [0.2, 0.5], size: [0.06, 0.1], sizeEnd: 0.14, life: [0.5, 0.8], color: [0xd04ac0, 0x8ae05a], alphaEnd: 0 }),
+  ] },
   // =============================================================================================== AURAS (held, on a creature: vfx/auras.js)
   // a status, shown round whatever has it, as long as it has it (`aura.<status>`, or `aura.<status>.<kind>` for one creature's own).
   // Centred on the creature, offsets and sizes in its height (feet: [0, -0.5, 0], head: [0, 0.5, 0]); quiet: an aura is read at a
@@ -148,6 +184,24 @@ export const LIBRARY = {
   ] },
   'aura.forget': { layers: [
     L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'labradorite', alpha: 0.6, spin: [-3, 3] }),
+  ] },
+  // =============================================================================================== TEMPER (held, on a creature: vfx/temper.js)
+  // a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own
+  'temper.stoic': { layers: [ // dry: flakes of a fired surface falling, a little dust at the feet
+    L({ type: 'sprites', dur: Infinity, rate: 2.5, pool: 'alpha', shape: 'facet', spawn: 'shell', r: 0.45, speed: [0.05, 0.15], size: [0.05, 0.08], life: [0.8, 1.2], gravity: 2, color: [0xc8beb0, 0xa89e90], alphaEnd: 0.6, spin: [-3, 3], floor: 'ground' }),
+    L({ type: 'sprites', dur: Infinity, rate: 0.8, pool: 'alpha', shape: 'puff', offset: [0, -0.48, 0], spawn: 'disc', r: 0.35, speed: [0.05, 0.15], dir: 'up', size: 0.2, sizeEnd: 0.45, life: 1.2, color: 0xd9cfc2, alpha: 0.35 }),
+  ] },
+  'temper.prismatic': { layers: [ // liquid: the surface runs with the labradorite's colours, drips fall from it
+    L({ type: 'sprites', dur: Infinity, rate: 7, shape: 'glint', spawn: 'shell', r: 0.48, speed: [0, 0.1], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.6], color: 'labradorite', twinkle: 18 }),
+    L({ type: 'sprites', dur: Infinity, rate: 2, shape: 'drip', spawn: 'shell', r: 0.4, speed: 0.05, size: [0.05, 0.08], life: [0.6, 0.9], gravity: 4, color: 'labradorite', floor: 'ground' }),
+  ] },
+  'temper.agitated': { layers: [ // heat: steam off the top, a shimmer of warm motes rising
+    L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'puff', offset: [0, 0.4, 0], spawn: 'disc', r: 0.25, dir: 'up', speed: [0.4, 0.8], size: [0.15, 0.22], sizeEnd: 0.5, life: [0.7, 1], drag: 1, color: 0xf2ece4, alpha: 0.4, spin: [-1, 1] }),
+    L({ type: 'sprites', dur: Infinity, rate: 6, shape: 'soft', spawn: 'shell', r: 0.45, dir: 'up', speed: [0.3, 0.6], size: [0.05, 0.08], sizeEnd: 0, life: [0.5, 0.8], color: 'ember', alpha: 0.8 }),
+  ] },
+  'temper.enraged': { layers: [ // rage: sparks thrown off, hard red-gold rings pulsing out from it
+    L({ type: 'sprites', dur: Infinity, rate: 16, shape: 'streak', spawn: 'shell', r: 0.4, dir: 'out', lift: 0.6, speed: [2, 4], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 1.6, gravity: 5, color: 'gold', colorEnd: 0xff3a1a }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ring', size: 0.4, sizeEnd: 1.4, life: 0.5, color: 0xff4a2a, colorEnd: 'gold', alphaEnd: 0, rot: 0 }),
   ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along

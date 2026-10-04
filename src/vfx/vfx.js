@@ -201,13 +201,15 @@ export class Vfx {
   /** A blow landed: its effect from what struck (the cause) and what was struck (its kind), most particular first:
    *  hit.<blunt|slash|shot>.<clay|crystal|jelly|...>.kill -> ... -> hit. Called by creatures.strike, breakables.damage, clappers.hit.
    *  What it is made of is a TAG on the thing (tags.js: one of MATERIALS, BotW's "what it is made of, not what it is"); without one, a
-   *  guess from its kind. */
-  hit({ ent, kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint }) {
+   *  guess from its kind. `type` (a damage type: impact, ego, influence, illusion, delirium) lays its damage look over the hit. */
+  hit({ ent, kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint, type }) {
     if (!point) return null;
     const tool = SLASH.test(cause) ? 'slash' : SHOT.test(cause) ? 'shot' : 'blunt';
     const mat = (ent && MATERIALS.find((m) => hasTag(ent, m))) || MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
     const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;
-    return this.play(name, { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 });
+    const ctx = { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 };
+    if (type) this.play(`damage.${type}`, ctx); // (what the blow is made of, over what struck what: the damage looks)
+    return this.play(name, ctx);
   }
 
   update(raw) {
