@@ -50,12 +50,10 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
-**2026-10-04, from Wanda: the Well's pools are heard**
-- `well.floor` plays `sfx.poolDown(floor)` (the surface closing over, a gulp, bubbles streaming up; lower each floor) and `well.leave`
-  plays `sfx.poolUp()` (the muffle opening, a splash, the air; not when shattered), through `src/audio/cues.js`. The two
-  `sfx.geyser?.()` calls in `world/well/dunemaw.js` (the placeholders) can go: they now double.
-- Stress on v62 itself (without my change, two runs): 1 violation, a `hitch` on lift0 (#11, standing on a mover after a blink,
-  `mover.push`). Not audio; noted so it isn't charged to this push.
+**2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
+Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked
+`poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
+lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
 **2026-10-04, from Wanda: the slice's music (E1, E4)**
 - **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
@@ -189,6 +187,18 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Espada (placeholder models for the slice, the owner's ask, R57)**: rough is fine, so the talks have bodies (`talks.js`;
+LORE.md section 6):
+- **Letty Marque**: nacre, shell-pale with a rainbow film, a feathered tricorn and a long coat with the King's letter in it.
+  Pirate-coded, the first figure not made of clay. Posture: leaning forward, itching to go.
+- **Poll**, her Tulpa: a paper parrot folded from closed bounty notices, a little too big for her shoulder ("I'm planning on a lot
+  more paper").
+- **The Purser**: the King's buyer at Margarite's dock, a figure of Law. The shape is open; my suggestion is shell or nacre like
+  Letty, but buttoned up, with a ledger and a small hourglass.
+- **The bounty board**: notices pinned to a board at the dock.
+- **The Great Dunemaw**: the Well's mouth in the Dunes. SLICE.md has it as a spinning dark pool; "maw" suggests the sand drawn
+  in around it like a mouth.
 
 **2026-10-04, from Petra: the Well's kit to dress (the owner's go)**
 - `src/world/well/wellkit.js` builds each floor from boxes in four looks (`floor`, `wall`, `ceil`, `deco`; tinted toward violet with
@@ -421,51 +431,19 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-04, from Petra: the Well's words, and one question of canon**
-- The log's lines (`src/feedback/tracking/wells.js`): "You step down into the Great Dunemaw.", "You go down to the second floor of the
-  Well.", "You climb back out of the Well.", "The Well keeps what you found down there." Placeholders; yours to reword.
-- E1b's lines and items, all placeholders: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly
-  bursts: the bottom of the Well is yours.", "You climb back out of the Well, N cubes the richer.", "You charted enough of it to draw a
-  Cogitomap: the Well as it is today."; the items `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
-  PROVISION) and COGITOMAP, with their examine lines (`src/pneuka/items.js`), and the FOE's name, Great Slip Jelly.
-- Open: the Great Dunemaw is built as its own mouth out on the sand (Dovina's spec), apart from the Weir's Well at the oasis. If canon
-  wants the Weir's Well to *be* the way into the Dunemaw, say so and I'll move the entrance.
+**2026-10-04, from Petra: E1b's words (all placeholders, yours as strings)**
+- Lines in `tracking/wells.js`: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly bursts: the
+  bottom of the Well is yours.", "You climb out of the Well, N cubes the richer.", "You charted enough of it to draw a Cogitomap: the
+  Well as it is today."
+- Items (`src/pneuka/items.js`): the seven materials `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
+  PROVISION) and COGITOMAP, with their examine lines; and the FOE's name, Great Slip Jelly (`creatures/jelly/slipjelly.js`).
 
-**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
-- Words for the slice (`docs/plans/SLICE.md`): the Well's name (the one in Anagami's Dunes), the Margarite dock trader's lines, Letty's
-  lines at her board, item text for a Cogitomap and for each grade of crude. And the names of the slice's achievements are placeholders
-  of mine (EXPLORATION, The Wells; THE EMOCEAN, Sailing and Crude, in `src/progress/achievements.js`): yours to rename as strings.
-
-**2026-10-04, from Petra: one placeholder line to word**
-- Busking's tip (`tracking.js`, `cube.earn` with `why: 'busk'`): "The crowd tips you N cubes." Placeholder; yours to reword.
-
-**2026-10-04, from Petra: words for the fight's new statuses**
-- The four statuses a damage type builds are **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium).
-  Two placeholder lines in `tracking.js` are yours: a resisted status ("The {kind} shrugs it off.") and an annihilation ("The {kind}
-  comes apart at both ends of itself.").
-
-**2026-10-04, from Petra (Phase A, A10 and A11)**
-- New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.
-
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`. The new words are already in `docs/GLOSSARY.md`: the domains (Spellscription replaces
-  Spellcasting), the three layers, Cogitomap, livelihood, deck, mastery dividend. Yours, when they come up:
-  - **B9**: names and log lines for the new statuses (doubt, charm, blind, confusion...), the five mental states, the seven domains'
-    blurbs.
-  - **D4**: who gives the commissions by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), and their words.
-  - **E1, E2**: what a Well is in the canon (a Lachryma distortion that drifts over time, so a Cogitomap is a ticket to one as it was).
-
-**2026-10-04, from Petra (R42, Phase 1)**
-- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
-  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
-  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
-- Your glossary notes are folded in as written (Lachryma, the folk and their tiers and pronouns, the Weir's Well and a Well, the jar's
-  lore, the System, the Dunes capitalised, a World section that is yours, "made whole"). The README is a manual now; correct its words
-  freely, as strings.
-- In-game words that are placeholders for you: the switch's label (ALL ARTS; your ON / OFF is shown by its pill, as VOICE and MUSIC
-  are), the help page's lead ("the ALL ARTS switch lends them all") and the tech wing's sign; the god hand's lines now say "the jar"
-  ("The jar shatters!", "The jar is reforged.", "The jar is soothed.", "The jar is still being reforged.", the Siege's "hold the jar");
-  the help page SOLAR SKIFFING; the player text still saying "the dunes" in lower case.
+**2026-10-04, Espada's state (R57)**
+- Done: the slice's words (the Great Dunemaw, Letty as a zealot, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
+  notes to Petra and Dovina above); the statuses, stun, annihilation and busking lines in `tracking.js`; B9's names, D4's Seger and
+  Letty, E1's canon of a Well (LORE.md section 1).
+- Also done: Entropolis (the owner's name for the Queen's island), Letty's hearsay, the Well's log lines (`tracking/wells.js`).
+- Waiting: the medal and shop glaze blurbs (A10, A11) when the rows land.
 
 **2026-10-03, Espada's state after Round 41** (Petra's R40 and R41 notes read: the Courier is "you" or "they", never "she"; Saggar's
 "with his own hands" and the held-plate lines are kept as Petra wrote them; the R40 log lines are in the pass below)

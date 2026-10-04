@@ -66,6 +66,6 @@ for (const k of Object.keys(MAT_KINDS)) {
     examine: `Something brought up out of a Well: one of the ${K.name}. A spirit press would know what to make of it.`, card: null, lure: false, stack: false };
 }
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
-  examine: 'A map of a Well as it was the day it was charted. A Well drifts, so it leads back into that day\'s Well alone, and is worth less as it ages.', card: null, lure: false, stack: false };
+  examine: 'A chart of one Well on one day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

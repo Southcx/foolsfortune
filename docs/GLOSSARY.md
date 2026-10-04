@@ -197,7 +197,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
   (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
   King's marque (Letty Marque). *Not:* the same thing.
-- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; Espada's name): the Well in the Dunes, the slice's one Well. Its
+- **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
   **way up** (a pale pool: back out to the mouth with the haul) and, but on the last, the **way down** (a dark pool: deeper). A **run** is
@@ -236,7 +236,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **the god hand** (~, `src/godhand/godhand.js`): the mode where the Courier becomes a jar and you become a hand.
 - **the jar** (code name `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka Jar, the Courier's true form and the Prince's
-  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). It has integrity, it shatters, it is reforged. *Not:*
+  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). The Courier, the god hand and the jar are one
+  entity, the player (the owner, R43): player text says "your Pneuka Jar" ("Your Pneuka Jar breaks."), never "the jar". It has integrity, it shatters, it is reforged. *Not:*
   the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
 
@@ -304,7 +305,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
+- **you**: the Vessoul (the Courier section), in every form one being. Player text says "you", and "your Pneuka Jar" for the body.
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
+  a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
+- **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
+  Queen: chaos, every feeling pegged high, its core hunger; her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
+  Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
+- **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
+- **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
+  the name.
+- **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 
 ## Homonyms we keep on purpose (always qualify them)
 
