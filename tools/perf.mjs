@@ -18,6 +18,7 @@ import fs from 'fs';
 import path from 'path';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
+import { execSync } from 'child_process';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const BASE = path.join(ROOT, 'tools', 'perf-baseline.json');
@@ -91,7 +92,7 @@ console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against t
 console.log(rows.join('\n'));
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
-  const build = (() => { try { return fs.readFileSync(path.join(ROOT, '.git', 'HEAD'), 'utf8').trim(); } catch { return '?'; } })();
+  const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
   fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...out }, null, 1) + '\n');
   console.log('baseline recorded');
 }
