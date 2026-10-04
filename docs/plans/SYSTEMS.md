@@ -112,3 +112,8 @@ EXP**. If that loop feels good small, the rest stacks.
 Each division has its items in its section of `docs/HANDOFFS.md`: Petra (A2, A4, A5, A6, A8, A10, A11, A12, and B's wiring), Calissa
 (B5, C5, D1, D2, D6), Wanda (B5, C5, D5), Espada (B9, D4, E1's words). Dovina's half of phase A landed the same night on `claude/dovina-design`: A1, A3, A4 (the numbers), A5 (`consolidated()`), A6 (the
 Lockheart header), A7, A9, A10 (the titles) and A11 (the prices and `SHOPS.saggar`). Petra's wiring is what remains of phase A.
+
+**Phase B, Dovina's data (same night):** `src/progress/combat/types.js` (the five types, the closed trump cycle Impact > Illusion > Ego >
+Influence > Delirium > Impact, annihilation, the cause → type table as a proposal), `mind.js` (the mental states), `emo.js` (EmO: yield
+band 0.35 to 0.75, enrage at 0.85, the catch factor), `src/progress/luck.js`. None is wired: `node scripts/combat.mjs` prints them all.
+The owner rules on the cycle and on which tool deals which type before Petra wires B1 to B4.
