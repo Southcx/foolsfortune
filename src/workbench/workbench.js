@@ -36,6 +36,7 @@ import { buildCurio } from '../world/treasure/curiomodel.js';
 import { CURIOS } from '../world/treasure/treasure.js';
 import { DreamvaneModel } from '../tools/dreamvane/model.js';
 import { CrucibelleModel } from '../tools/crucibelle/model.js';
+import { Sloop } from '../vfx/sloop.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -164,6 +165,7 @@ export class Workbench {
     const out = [];
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
+    out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
     for (const id of Object.keys(ITEMS).sort()) out.push({ id: `thing:${id}`, grp: 'things', label: ITEMS[id].name || id });
     for (const c of CURIOS) out.push({ id: `curio:${c.id}`, grp: 'curios', label: c.name || c.id });
     return out;
@@ -305,6 +307,7 @@ export class Workbench {
         obj = gl.scene; clips = gl.animations || [];
       } else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
       else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
+      else if (id === 'ship:sloop') obj = new Sloop().group;
       else if (id.startsWith('thing:')) obj = buildThing(id.slice(6))?.group;
       else if (id.startsWith('curio:')) obj = buildCurio(id.slice(6))?.group;
     } catch (e) { this.info.textContent = `could not build it: ${e.message}`; return; }
