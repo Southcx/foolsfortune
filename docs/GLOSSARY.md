@@ -300,10 +300,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 | retired | say instead | where it still is |
 | --- | --- | --- |
-| surfer, Solar Surfer | the skiff, Solar Skiffing | (gone; Wanda's `sfx.surfLoop` and Calissa's clip names `surf*` are theirs to rename) |
+| surfer, Solar Surfer | the skiff, Solar Skiffing | (gone: `sfx.skiffLoop` and the `skiff*` clips, R42) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | the lab (for the basement) | the basement (or the movement lab, the room) | (gone) |
-| vessel (for the god hand's jar) | the jar | Wanda's `sfx.vesselHit` (to be `jarHit`) |
+| vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | pause card | the pause menu | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |
 | /lab (the workbench's command) | /workbench | (gone) |
