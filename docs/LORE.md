@@ -273,6 +273,31 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Letty Marque is Magnus's** (the owner's suggestion, taken). A letter of marque was always issued by a sovereign: hers is the King's.
   She hunts bounties under his licence, and her pearl is his island.
 
+### The toxic symbiosis *(the owner's yes, R43; the numbers are Dovina's, `docs/ECONOMY.md`)*
+
+**Chaos digs the crude up, and Law buys it.** Entra Polearis sells crude cheap: its Wells run deep with grief and dread, and abundance
+never values what it has too much of. Margarite buys it dear. The crude route runs from the Queen to the King, and the hauler (a
+Courier, in a sloop or a tanker) lives in between. Letty's bounties are mostly the Queen's strays, brought in under the King's marque
+and paid for by Margarite. So the Queen's island breeds both the riches and the strays, and the King pays to have both brought home.
+
+**How it sits with Magnus.** He likes a thing where it belongs, and to him the Queen's sorrow belongs in his lamp. **The lighthouse
+that keeps every ship safe is lit with her grief.** That is the joke at the heart of Law, and he will not laugh at it: the light that
+shows the way through the crude sea burns the crude, and order is fuelled by the very mess it disapproves of. The hourglass inside his
+lantern (the concept art) says the rest: Law measures out sorrow by the grain and burns it by the hour. He hunts what she breeds and
+buys what she spills, and he never says her name.
+
+**How it sits with the Queen.** She lets things go; it is what chaos does. Her strays wander off and she does not call them back. That
+someone else gathers them up and pays for them is, to her, simply what the world is for.
+
+**Why it is toxic, both ways.** Law needs Chaos's grief for its fuel and its safety, so a calmer Queen would put out the King's light.
+Chaos needs Law to buy what it cannot hold, so a King who stopped buying would leave the Queen drowning in her own Wells. Neither can
+afford for the other to get well. *For the stories:* the rigid depend on the mess they tidy, and the messy depend on being tidied up
+after; growing up is noticing which one you are being.
+
+**The middle, which follows** *(Espada's)*: Kaolin Anagami lives for making, and his magnum opus is the Pneuka Jar, the only vessel that
+carries crude safely and the only refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the
+middle (Dovina's table), and the Prince sells to neither side, because every Courier both sides need came out of his kiln.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
