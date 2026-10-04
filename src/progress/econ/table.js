@@ -26,7 +26,8 @@ export const ECON = {
     // spot, it pays this many times over (a dense formation forgives, a fragile one rewards the ear)
     kind: { dense: 0.6, fragile: 0.5 }, sweet: { dense: 2, fragile: 6 },
     // SHED (R57, on the owner's R51: solid Lachryma sheds solid pieces): every pick strike that does not open it sheds `shed` cubes (x2
-    // while the fork rings), and the break pays its worth LESS what was shed, never under 0. So a formation pays the same however many
+    // while the fork rings) but never more than its plain worth less what is already shed (Petra's cap, v67: a dense formation's 8 to 10
+    // blows would otherwise shed 1.8x its worth), and the break pays its worth LESS what was shed. So a formation pays the same however many
     // blows it took: mashing it never pays, finding the sweet spot (which opens it in one) still pays many times over. The strike's
     // baubles (the Lachryma refill) shed alongside, as before: cubes are money, baubles are the tools' fuel, and a strike is both.
     shed: 1 },
