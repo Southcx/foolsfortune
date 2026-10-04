@@ -248,6 +248,23 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
 
+## Music (Wanda's: `src/music/`, `docs/OST.md`)
+
+- **score** (`src/music/*.js`): a piece of music written as data (sections of bars of events). **track**: a score as the sound test lists it
+  (`TRACKS`, `src/music/soundtest.js`). **cue**: the score a place or a moment calls for (`src/music/choose.js`).
+- **the arranger** (`src/music/arranger.js`): what plays a score a bar ahead of the audio clock. **the band** (`src/music/band.js`): its instruments.
+- **the overture** (`OVERTURE`, `src/music/overture.js`): the title's opening cue, a hair-metal JRPG opening that hands on, on the bar line,
+  into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
+- **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
+  (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
+- **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
+  room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
+- **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
+  of its ten keys (1 to 5 the low notes, 6 to 0 the high); the **backing** is the score with the charted notes taken out. *Not:* "chart"
+  alone (that is the map's: see the homonyms).
+- **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
+  chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
+
 ## The world (Espada's: `docs/LORE.md`, section 1)
 
 - **the Emocean**: the collective unconscious, a sea (an atmosphere) of pure Lachryma outside every island.
@@ -273,6 +290,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | shard | a piece of a broken pot; a crystal shard (the item) | "crystal shard" in full |
 | tier | a chest's (common .. prismatic); an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..) | "card rank", "outcome rank", "standing" |
+| chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
+| combo | the club's chain of blows (the Soul Brush); the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
 
 ## Retired words
