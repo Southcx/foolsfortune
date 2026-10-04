@@ -44,6 +44,23 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   What it gives: cubes, and sometimes a **crystal shard** (`mat.shard`, always so called) or a Possibilikey.
 - **signature** (`src/core/signatures.js`): where Lachryma is, and how strongly. Tools that sense or drink Lachryma ask here.
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
+- **the aim** (`ECON.perMinute` × 60): what ordinary play should earn in an hour (480 cubes). A source is judged as a multiple of it
+  ("× aim"); nothing but luck should pay more than 1.5×.
+- **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes; film:
+  cubes into plates). Machinations' word.
+- **profile** (`PLAY`, `scripts/economy.mjs`): one way of spending an hour (the fighter, the miner, the photographer, the angler, the
+  treasury camper), simulated against the table. A **mixed profile** is two played together.
+- **sink**: a drain the player chooses and that never fills (the glazes, later the Shrine Garden). **The long sink** is the one meant
+  to take a committed player's surplus for weeks. *Not:* any drain (the Tithe is a drain, not a sink).
+- **worth** (`worthOf`, `src/progress/shop/catalogue.js`): what a thing is worth in cubes, the base every price moves from. A shop's
+  **list** price is worth × its markup; Raku's **floor** is the least he takes.
+- **pity** (`TITHE.pity`, `src/world/treasure/treasure.js`): a counter that turns a run of bad pulls into a certainty (a rare in every
+  10 Tithe pulls, an epic in 40, a prismatic in 100). **Published odds** are the base weights; **consolidated odds** are the rates a
+  player actually meets with pity counted (`docs/DESIGN.md`, section 7).
+- **dupe**: a curio a chest gives that is already held to its card's limit; it is condensed into cubes instead (`ECON.dupe`). **Dupe
+  protection** is the bias toward curios not yet held.
+- **outcome** (`OUTCOMES`, `src/tools/lockheart/table.js`): what can come out of a Lockheart (dud to slip nuke), drawn from its coffin's
+  **table** of weights, bent by the Possibilikeys; **power** is how full the coffin was (1 to 2). The **jackpot** is the slip nuke.
 
 ## The tools
 
@@ -135,6 +152,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ledger** (`src/progress/stats.js`): every count the game keeps. **achievement** (`src/progress/achievements.js`): a predicate over the ledger,
   never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
+- **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`): the ledger's three kinds of entry: a number that
+  only goes up, a best with when and where it was set, and the play time something first happened. A **funnel** is the firsts read in
+  order (play time at the first art, fish, chest...): how fast a new player meets the game.
+- **tier** (of an achievement): Easy to Grandmaster, worth 1 to 6 **points**; **type**: count, speed, perfection, mechanic, stamina,
+  collection (OSRS). The points buy a **standing** (Sweeper to Fool's Fortune); some achievements give a **title** (FFXIV).
+- **the loops**: what the player wants at three scales: **the moment** (seconds), **the session** (an evening), **the long run** (weeks)
+  (`docs/DESIGN.md`, section 1).
 - **build**: one published version of the game (v45...). Progress resets on every new build; settings are kept.
 
 ## The god hand
@@ -199,6 +223,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | theme | the window colour (`ui/theme.js`); a piece of music | "window colour", "music theme" |
 | card | a Veritome card; the tarot cards falling on the title | "card" is the Veritome's; the title's are scenery |
 | shard | a piece of a broken pot; a crystal shard (the item) | "crystal shard" in full |
+| tier | a chest's (common .. prismatic); an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
+| rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..) | "card rank", "outcome rank", "standing" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
 
 ## Retired words
