@@ -5,14 +5,14 @@
 //
 // A shop is a keeper (one of the clay folk: npc/people.js), the goods on its shelf with how many it keeps (its STOCK), the kinds of
 // thing it will buy, and its manner: Raku marks everything up and HAGGLES (progress/shop/haggle.js), Old Grog asks what a thing is worth and
-// pays fair for fish. Saggar's kiln and Pip's oddments come next round (docs/PLAN.md).
+// pays fair for fish, and Saggar sells glazes at the kiln (the counter is Petra's to wire). Pip's oddments come later.
 //
 // Prior art: Old School RuneScape's shops (a stock per item, a price that climbs as the shelf empties and falls as you flood it, a
 // restock over time, and a shop that buys only its own trade at full value and anything else at a cut), Recettear and Moonlighter
 // (a price is a conversation with a character), and Animal Crossing's Nook's Cranny (a shop with a temper and a daily turnover).
 //
 //   SHOPS[id] = { id, keeper, name, sells: { itemId: stock }, buys: [kind], trade: [kind], markup, haggle }
-//   worthOf(itemId) -> cubes (what the thing is worth: the base of every price)
+//   worthOf(itemId) -> cubes (what the thing is worth: the base of every price)    glazePrice() -> cubes
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
@@ -43,6 +43,14 @@ export const SHOPS = {
     trade: ['curio'], buys: ['curio', 'key', 'heart'],
     markup: ECON.haggle.list, haggle: true,
   },
+  saggar: {
+    id: 'saggar', keeper: 'saggar', name: "SAGGAR'S KILN",
+    blurb: 'Glazes, fired onto you at the kiln. What is bought here is never what is earned.',
+    // a glaze is not a thing in the box: it is learned at the kiln (courier/vessel/vessel.js `bought`), so the counter lists the glazes
+    // whose way is `shop` (courier/vessel/glazes.js) at glazePrice(), and nothing is bought back
+    sells: {}, glazes: true, trade: [], buys: [],
+    markup: 1, haggle: false,
+  },
   grog: {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
     blurb: 'Film for the Veritome, and lures, if you have lost yours. Buys fish, and pays fair.',
@@ -51,6 +59,9 @@ export const SHOPS = {
     markup: 1, haggle: false,
   },
 };
+
+/** What a glaze costs at Saggar's kiln, in cubes (about fifteen minutes' play: docs/ECONOMY.md). */
+export const glazePrice = () => M(ECON.goods.glaze);
 
 /** Every item a shop has on its shelf, with its base stock, in the order the shelf shows them. */
 export const shelfOf = (shop) => Object.entries(SHOPS[shop]?.sells || {}).filter(([id]) => ITEMS[id]);

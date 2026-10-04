@@ -680,7 +680,7 @@ export class Tracking {
     on('glaze.earn', (e) => { L.inc('glaze.earned'); log.say('record', `A new glaze is yours: ${this.game.vessel?.glaze(e.glaze)?.name || e.glaze}. (the kiln, in the workshop)`); });
     on('glaze.learn', (e) => { L.inc('glaze.learned'); log.say('gain', `The Veritome learns a glaze from the photograph: ${this.game.vessel?.glaze(e.glaze)?.name || 'a new colour'}.`, { tone: '#ffb27a' }); });
     on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
-    on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
+    on('tithe.pull', () => { log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
     on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
     on('rave.start', () => L.inc('rave.count'));
 

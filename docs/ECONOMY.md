@@ -90,6 +90,69 @@ How prices move (`ECON.shop`, after OSRS):
 - **Crystals.** A full round of the formations paid nearly three times the aim. Base 8 → 3, per size 10 → 6.
 - **The Lockheart's CUBES.** 18 → 12 per unit of power. It is a gamble on Lachryma, not a mint.
 
+## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
+
+A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the same seven tools in every layer** (`docs/DESIGN.md`, section
+11). Six rules hold every livelihood:
+
+1. It trains the skill of the tool it rides on, and it **pays by the quality of play, not the time spent**: a clean strike pays more
+   than a sloppy one. Nothing can be AFK'd.
+2. The livelihoods **pay in different kinds**: cubes, materials, Figments, Cogitomaps and cosmetics. Most of these cannot be bought with
+   cubes, so no single best "cubes an hour" swallows the rest (OSRS's money-making wiki is the warning).
+3. **Each island wants different things.** Every Island of Ego has its own demand: for kinds of material, for the classes of Figment,
+   for particular Wells. So it pays to hop to the island whose Wells or Figments are worth most right now. Hauling is the glue: it turns
+   every other livelihood's yield into demand somewhere else (Sid Meier's Pirates!, EVE's regional markets). The Emocean leg is the risk:
+   cargo can be lost.
+4. **Gambling is never a livelihood.** The Tithe and the Lockheart's casting stay below a return of 1, always.
+5. **No needless grind: a 1-in-N drop comes within N tries.** Every rare drop is drawn from **a deck of N** (a shuffle bag), so the
+   item is certain by the Nth try and comes in about N/2 on average. Two ways were weighed. A deck of 100 for a "1 in 100" item: certain
+   by 100, mean 50.5. Plain 1% odds with a hard pity at 100: certain by 100, mean 63. The deck is chosen: it is fair from the first
+   draw, it suits a game of cards, and it is OSRS's "dry streak" made impossible. **The number published is the guarantee**, N. It
+   applies to every chance in the game that hands over an item (chests' curios, a Figment's drops, a fish's rarity, a crystal's
+   Possibilikey).
+6. **Mastery pays a dividend.** Complete everything the ledger holds for an encounter (a boss's achievements and collection slots, all
+   of them) and it becomes **passive income**: its drops come in on their own, at less than playing it by hand. It accrues up to a cap,
+   so checking in is rewarded and leaving it for a month is not. Prior art: OSRS's Kingdom of Miscellania (a quest's reward that pays
+   while you are away, up to a cap), Monster Hunter's Argosy and Meowcenaries, Melvor Idle's mastery. Completionism is long-term gain, not
+   just a green log. (This is the one exception to rule 1: the dividend is paid for play already done well.)
+   **The numbers** (`ECON.dividend`, simulated by `node scripts/economy.mjs`): a mastered encounter pays 5% of what farming it by hand pays
+   an hour, and fills in 8 hours. It pays only from one of the Shrine Garden's **3 slots**, so choosing which mastered encounters to work
+   is part of the game. For a player of two hours a day with every slot full, that is about 0.6× the aim on top of their play. Without
+   slots, every green log would be a faucet for good: 20 mastered encounters would pay 4× the aim, more than playing. The slots are the
+   cap, and a later Garden upgrade is the way to raise it, as a sink.
+
+| Livelihood | Tool, and the skill it trains | Pays | Status |
+|---|---|---|---|
+| Mining by ear | Dreamvane: relative pitch | cubes, crystal shards, Possibilikeys | live |
+| Angling | Sondelass: timing, the line's tension | fish (sold) | live |
+| Photography | Veritome: reading behaviour, patience | cards, bestiary facts | live |
+| Haggling | (the counter) | a better price | live |
+| Lockheart conversion | Lockheart: odds and yield | cubes from baubles; the keys set the risk | ruled |
+| Combat | every tool | materials (broad kinds), for Soul Alchemy | ruled |
+| Resolving Wells | every tool | the Well's rewards | ruled |
+| Cartography | Dreamvane and Veritome: spatial mapping | Cogitomaps (below) | ruled |
+| Caster shell crafting | Psygun | shells, from materials | ruled |
+| Hauling between islands | the Emocean leg | the price gap between islands | ruled |
+| Commissions | any | by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), streaks (OSRS Slayer, FFXIV leves) | ruled |
+| Ranching Figments | Lockheart (summoning) | caught Figments working the Shrine Garden (Palworld) | ruled |
+| Busking | Crucibelle: tempo, melody | tips by how true the playing is; the rhythm mode below | ruled |
+| Throwing pots | Soul Brush: shapes; the kiln: colour | pots, sold to the folk | ruled |
+| Foraging and the garden | (the Shrine Garden) | fodder materials on timers (OSRS herb runs) | ruled |
+
+Cut: salvage (the deep Emocean leaves no wreckage), and spell scrolls (a caster shell is a spell, and the Lockheart's casting coffins fill
+the rest of that niche).
+
+**Cogitomaps.** A Well is a Lachryma distortion, and it changes over time. A Cogitomap is a map of one Well as it was when it was charted,
+so it is **a ticket to a seeded run of that Well**: the same layout, the same rewards. The Courier charts it, and **Spellscription**
+copies a high-quality Cogitomap. Cogitomaps can be sold, traded, and hauled to the island that wants that Well.
+
+**Materials** come in broad kinds, so nobody hunts one item by name. Within a kind each material has a hue and a saturation and **a path**:
+pressed at the spirit press, it moves the Courier's colour along a winding, nonlinear route, not a straight hue shift (Potion Craft's
+map). Soul Alchemy is navigation: choosing and ordering materials to reach a colour.
+
+**The rhythm mode (proposed with Wanda):** the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes at a stage.
+Busking pays by its score. The charts could be drawn from the music's own note grid (`src/music/`) rather than authored by hand.
+
 ## Measuring it
 
 - **F3** (the diagnostics panel) has an `econ` line: cubes an hour in and out this session, the aim, the three biggest faucets and the two biggest drains. F4's copied report has the same line.
