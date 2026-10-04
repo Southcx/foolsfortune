@@ -167,9 +167,10 @@ The rest are earned. As Calissa adds rows, the sink grows with them.
 
 **What the eye says** (Calissa): the shader-driven looks read most striking at 480 lines (opal's play, oil-slick hair, aurora, diamond's
 fire, Lachryma black's film, the metal of kinrande and copper lustre, moonstone's glow), and flat colours read weakest whatever their
-history. Several of the rarest glazes (yohen's stars, oil spot's blooms, hare's fur's streaks, guan's and raku's crackle) are still flat,
-so the top tier under-delivers until Calissa draws their patterns. Price follows the look once it is drawn: a top-tier look that does not
-yet read as rare is a debt on the art, not a reason to drop it. Moonlight's blue rim is the strongest free look on purpose: the hook that
+history. The rarest glazes now draw their **kiln patterns** (Calissa, `claude/calissa-art-cups` 9462552): yohen's haloed stars, oil spot's
+silver blooms, hare's fur's streaks, guan's two-size crackle, raku's and Ru's crackle, kinrande's gold leaf on red, and porcelain skin's
+translucency. By eye, strongest first: yohen, kinrande, oil spot, guan, hare's fur, Ru. Ru is the quietest, rare by its story more than
+its surface, and that is the reason it is earned, not sold. Moonlight's blue rim is the strongest free look on purpose: the hook that
 makes a new Courier open the kiln.
 
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
