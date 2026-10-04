@@ -31,6 +31,8 @@ export class VesselSounds {
     if (P.pan) { const pn = c.createStereoPanner(); pn.pan.value = P.pan; pn.connect(d); dest = pn; }
     for (const [dt, f] of [[0, 1175], [0.12, 1568]]) for (const [r, a] of [[1, 0.2], [2.76, 0.05]]) this.tone(t + dt, 1.1 / r, { f0: f * r * P.f, f1: f * r * P.f, gain: a, dest });
     this.noise(t, 0.5, { type: 'bandpass', f0: 2500, f1: 5200, q: 3, gain: 0.08, attack: 0.15, dest }); // (the gold flowing)
+    this.noise(t + 0.1, 1.4, { type: 'highpass', f0: 6500, f1: 9000, gain: 0.03, attack: 0.25, dest }); // (a faint sizzle as the gold cools away: the owner's, kept VERY quiet)
+    for (let i = 0; i < 6; i++) this.noise(t + 0.2 + Math.random() * 1.1, 0.006, { type: 'bandpass', f0: 5000 + Math.random() * 3000, q: 6, gain: 0.05, dest });
   }
 
   /** The shield taking a blow (vessel.shield): the pool pays, a ward of Lachryma rings and settles; higher the fuller it still is. */

@@ -22,7 +22,7 @@ export const LANES = 10;
 export const KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0'];
 const SCALE = [0, 3, 5, 7, 10]; // (the Crucibelle's: tools/crucibelle/songs.js SCALE)
 const PERC = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape',
-  'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'riser', 'breath', 'bigkick', 'bigsnare', 'tom', 'gang']);
+  'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'riser', 'breath', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle']);
 const BED = new Set(['pad', 'strings', 'hum', 'sub', 'tanpura', 'supersaw', 'upright', 'moog', 'pizz', 'growl', 'chug', 'pick']); // (beds and basses: never the lead)
 export const LEVELS = { light: { grid: 1, gap: 1 }, steady: { grid: 0.5, gap: 0.5 }, full: { grid: 0, gap: 0.25 } };
 const COUNT_IN = 1; // (bars of count-in before the music: four clicks to find the beat)

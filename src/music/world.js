@@ -20,6 +20,7 @@
 //   HARP        a plucked gut string: bright at the pluck, mellowing as it rings; `gliss` runs a scale up or down in a breath
 //   VOICE       a wordless sung voice (a vocalise): a glottal buzz through three vowel formants, a glide into the note, a singer's
 //               vibrato arriving late; the siren's
+//   CRACKLE     a glaze crazing as it cools: dry ticks, thick at first and thinning, for `dur` seconds (the kiln's, in the title)
 //   THEREMIN    a sine played in the air: no attack, a slide between notes, a wide quick vibrato; the witch's, and every flying saucer's
 //
 // Prior art: C. V. Raman on the jawari's buzz (1921); the tabla's harmonic overtones and the bayan's pressed glide (Raman, and every
@@ -33,6 +34,15 @@
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 export class WorldBand {
+  /** A glaze crazing: dry, high ticks scattered over `dur` seconds, thinning as they go. */
+  crackle(t, v = 0.3, { dur = 0.5 } = {}) {
+    const o = this.out(this.bus.dry, 0.25, { verb: 0.2 });
+    for (let k = 0; k < 18; k++) {
+      const s = t + Math.pow(k / 18, 1.6) * dur, g = this.ctx.createGain(), a = v * (0.4 + Math.random() * 0.6);
+      g.gain.setValueAtTime(a, s); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.008); g.connect(o);
+      const bp = this.filt('bandpass', 3000 + Math.random() * 5000, 4); this.noise(s, s + 0.012, bp); bp.connect(g);
+    }
+  }
   /** The sitar: a pluck, the jawari's buzz sweeping down, the taraf behind; `to` (midi) with `meend` (0..1, when the bend starts). */
   sitar(t, dur, m, v = 0.5, { to = null, meend = 0.35, pan = 0.25, taraf = 0.5 } = {}) {
     const c = this.ctx, f = hz(m), d = Math.min(3.5, dur + 1.2), end = t + d;

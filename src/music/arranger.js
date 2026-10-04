@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
-const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang']);
+const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle']);
 
 export class Arranger {
   constructor(sfx) { this.sfx = sfx; this.alive = false; this.score = null; this.volume = 0.34; this.jitter = 0.008; } // (jitter: a player's few ms early or late; 0 for a loop render)

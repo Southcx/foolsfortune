@@ -9,7 +9,7 @@
 //
 // It is begun from a stage in a room (begin(track, level)), never a key; Esc ends it early. While it plays it has the digit keys (the
 // field's tools do not see them) and the place's music stands aside (music/choose.js). The field's Crucibelle stays improvisation.
-// What happened is an event: rhythm.start, rhythm.score { track, title, level, accuracy, combo, perfect, great, good, miss, full, by }
+// What happened is an event: rhythm.start, rhythm.score { track, title, level, minutes, accuracy, combo, perfect, great, good, miss, full, by }
 // (a finished song), rhythm.quit { track, title, level, by }.
 //
 // Prior art: StepMania and DDR (a chart per song, three levels of it), Guitar Hero and Rock Band (you play the lead; a miss drops it
@@ -64,7 +64,7 @@ export class Rhythm {
     removeEventListener('keydown', this.onKey, true);
     this.arr.stop(finished ? 2 : 0.6); this.highway.hide();
     const J = this.judge, ev = { track: this.T.id, title: this.T.title, level: this.level, by: 'courier' };
-    if (finished) this.game.events?.emit('rhythm.score', { ...ev, accuracy: J.accuracy, combo: J.best, ...J.counts, full: J.counts.miss === 0 });
+    if (finished) this.game.events?.emit('rhythm.score', { ...ev, minutes: +(this.chart.length / 60).toFixed(2), accuracy: J.accuracy, combo: J.best, ...J.counts, full: J.counts.miss === 0 });
     else this.game.events?.emit('rhythm.quit', ev);
   }
 
