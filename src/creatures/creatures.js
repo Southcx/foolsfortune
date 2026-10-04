@@ -37,6 +37,7 @@ import { hasTag } from '../core/tags.js';
 import { TYPES, BUILD, typeOf, multiplier } from '../progress/combat/types.js';
 import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
+import { sfx } from '../audio/sfx.js';
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -72,9 +73,10 @@ export class Creatures {
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
+    sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
     if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });
     // the blow moves its mind and stirs it up, and builds its type's status
-    c.mind = pushed(c.mind, MIND.perBlow * power);
+    c.mind = pushed(c.mind, MIND.perBlow * power); this.mindMoved(c, by);
     c.emo = rise(c.emo, power);
     this.build(c, type, power * m.build, by, cause);
     g.temper?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
@@ -95,7 +97,7 @@ export class Creatures {
     if (!UNSCALED.has(name)) {
       dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
       if (dur < 0.5) { // (shrugged off: and it hardens)
-        c.mind = pushed(c.mind, MIND.perResist);
+        c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by);
         this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by });
         return false;
       }
@@ -108,13 +110,21 @@ export class Creatures {
     return true;
   }
   clearStatus(c, name) { c.status.delete(name); }
+  /** A mind that has crossed into another state says so (`creature.mind`: the sound of it going Prismatic is Wanda's, by cues.js). */
+  mindMoved(c, by) {
+    const id = stateOf(c.mind).id;
+    if (c.mindState === undefined) { c.mindState = id; return; }
+    if (id === c.mindState) return;
+    c.mindState = id;
+    this.game.events?.emit('creature.mind', { kind: c.kind, state: id, by });
+  }
   update(dt) {
     const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
-      c.mind = settle(c.mind, dt, c.mindRest ?? 0);
+      c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');
       c.emo = rise(c.emo, 0, dt, !!c.brain?.action?.hunt);
       for (const t in c.build) c.build[t] = Math.max(0, c.build[t] - BUILD.drainPerSec * dt);
       T?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
