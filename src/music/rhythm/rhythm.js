@@ -25,7 +25,7 @@ import { Judge } from './judge.js';
 import { Highway } from './highway.js';
 import { sfx } from '../../audio/sfx.js';
 
-export const TRACKS = ALL.filter((T) => T.score.arrange);
+export const TRACKS = ALL.filter((T) => T.score.arrange && T.score.sections.reduce((n, x) => n + x.bars, 0) >= 4); // (a landing or a sting is too short to play)
 const KEY = 'foolsfortune.rhythm.v1';
 const SLACK = 0.15; // (a note is called missed this long after its window shuts: a press caught behind a slow frame is still judged on its own time)
 const LEAD_IN = 0.15; // (the arranger starts its first bar this far ahead of the clock: arranger.js play)

@@ -13,6 +13,13 @@ const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
   'psygun.chamber': (s) => s.chamberClick?.(),
+  // the vessel's moments (courier/vessel/: audio/vessel.js), over the cracks and the burst already played where they happen
+  'vessel.shield': (s, e) => s.vesselShield?.(e.left),
+  'vessel.shieldbreak': (s) => s.vesselShieldBreak?.(),
+  'courier.shatter': (s) => s.courierShatter?.(),
+  'courier.reform': (s) => s.courierReform?.(),
+  'vessel.refire': (s) => s.vesselRefire?.(),
+  'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
 };
 
 export function hearEvents(game, sfx) {

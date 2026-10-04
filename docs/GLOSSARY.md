@@ -236,6 +236,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **score** (`src/music/*.js`): a piece of music written as data (sections of bars of events). **track**: a score as the sound test lists it
   (`TRACKS`, `src/music/soundtest.js`). **cue**: the score a place or a moment calls for (`src/music/choose.js`).
 - **the arranger** (`src/music/arranger.js`): what plays a score a bar ahead of the audio clock. **the band** (`src/music/band.js`): its instruments.
+- **the overture** (`OVERTURE`, `src/music/overture.js`): the title's opening cue, a hair-metal JRPG opening that hands on, on the bar line,
+  into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
+- **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
+  (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one

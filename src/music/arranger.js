@@ -4,7 +4,8 @@
 // everything (a build opening up), pump the synths and the bass against the kick (the sidechain of every drop since the 2000s), and
 // fall silent for a beat before the drop. The score is data: per bar it says what plays; the arranger says when.
 //
-//   score = { title, bpm, arrange: true, loopFrom, sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
+//   score = { title, bpm, arrange: true, loopFrom, then?: score (played straight on into, at the bar line), lead?, fadeIn?, cut? (a cue that
+//   must land on a moment: its first bar this soon, its fade-in this short, what it replaces cut, not faded), sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
 //   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
@@ -13,7 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
-const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble']);
+const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang']);
 
 export class Arranger {
   constructor(sfx) { this.sfx = sfx; this.alive = false; this.score = null; this.volume = 0.34; this.jitter = 0.008; } // (jitter: a player's few ms early or late; 0 for a loop render)
@@ -35,7 +36,7 @@ export class Arranger {
     // the leads' echo: a dotted eighth, ping-ponged
     const ein = ctx.createGain(); ein.gain.value = 0.35;
     const dl = ctx.createDelay(2), dr = ctx.createDelay(2), fb = ctx.createGain(), elp = ctx.createBiquadFilter();
-    dl.delayTime.value = dr.delayTime.value = this.spb * 0.75; fb.gain.value = 0.33; elp.type = 'lowpass'; elp.frequency.value = 3000;
+    dl.delayTime.value = dr.delayTime.value = this.spb * 0.75; this.echo = [dl, dr]; fb.gain.value = 0.33; elp.type = 'lowpass'; elp.frequency.value = 3000;
     const pl = ctx.createStereoPanner(), pr = ctx.createStereoPanner(); pl.pan.value = -0.55; pr.pan.value = 0.55;
     ein.connect(dl); dl.connect(pl).connect(this.bus); dl.connect(dr); dr.connect(pr).connect(this.bus); dr.connect(elp).connect(fb).connect(dl);
     this.pumpG = pump;
@@ -51,8 +52,8 @@ export class Arranger {
     if (!this.sfx.ok?.() || this.alive) return false;
     this.score = score; this.build();
     const ctx = this.ctx;
-    this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, 0.8);
-    this.alive = true; this.next = this.started = ctx.currentTime + 0.15; this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
+    this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, score.fadeIn ?? 0.8);
+    this.alive = true; this.next = this.started = ctx.currentTime + (score.lead ?? 0.15); this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
     this.spb = 60 / (score.sections[0].bpm || score.bpm);
     this.timer = setInterval(() => this.run(), 50);
     this.run();
@@ -67,7 +68,7 @@ export class Arranger {
   }
   follow(score) {
     if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)
-    if (score && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.2); else this.play(score); }
+    if (score && (!this.alive || this.score !== score)) { if (this.alive) this.stop(score.cut ? 0.15 : 1.2); else this.play(score); }
     else if (!score && this.alive) this.stop(2);
   }
   duck(sec = 2) {
@@ -105,7 +106,10 @@ export class Arranger {
       this.bar = 0; this.section++;
       if (this.section >= S.sections.length) {
         // (a score with no loop plays once: a fanfare, a jingle)
-        if (S.loopFrom === null) { this.ended = true; this.endAt = this.next + (S.tail ?? 3); }
+        if (S.then) { // (a score that hands on: the next begins on the bar line, on the same bus, nothing stopped; the echo takes its tempo)
+          this.score = S.then; this.section = 0;
+          for (const d of this.echo) d.delayTime.setValueAtTime(60 / S.then.bpm * 0.75, this.next);
+        } else if (S.loopFrom === null) { this.ended = true; this.endAt = this.next + (S.tail ?? 3); }
         else this.section = S.loopFrom ?? 0;
       }
     }

@@ -8,7 +8,7 @@
 // Prior art: the "music state" of adaptive scores (iMUSE's priorities, Wwise's State groups): a short list, highest first.
 //
 //   import { chooseMusic, chooseTitleMusic } from './music/choose.js'    game.music.follow(chooseMusic(game, { overlay }))
-//   (on the title: game.music.follow(chooseTitleMusic(game)): the title's loop, the Fool's Step on PRESS START, the Fall under the menu)
+//   (on the title: game.music.follow(chooseTitleMusic(game)): the overture handing on to the title's loop, the Fool's Step on PRESS START, the Fall under the menu)
 // ---------------------------------------------------------------------------------------
 import { LACHRYMA } from './lachryma.js';
 import { BATTLE } from './battle.js';
@@ -18,14 +18,19 @@ import { SHANTY } from './shanty.js';
 import { ROLL_THE_MOON } from './shanties.js';
 import { SHALLOWS, DEEP } from './dive.js';
 import { TITLE, THE_STEP, FALL } from './title.js';
+import { OVERTURE } from './overture.js';
+import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
+import { HEARTS } from '../tools/lockheart/table.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
 const DEEP_IN = 4.5, DEEP_OUT = 3; // (metres below the surface: into the Deep, back to the Shallows)
-const S = { under: 0, up: 0, diving: false, deep: false, last: 0, riding: false, shanty: -1 };
+const S = { under: 0, up: 0, diving: false, deep: false, last: 0, riding: false, shanty: -1, overtured: false };
 const WORK_SONGS = [SHANTY, ROLL_THE_MOON]; // (the skiff's: a new one each time the sail goes up)
 
 export function chooseMusic(game, { overlay = false } = {}) {
   if (overlay) return LACHRYMA;
+  const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
+  if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
   if (game.combat ? game.combat.engaged : game.jellies?.hunting(24)) return BATTLE; // (combat.js: from a notice to a few seconds after the last threat)
   // the dive (with a dwell either way)
@@ -48,10 +53,14 @@ export function chooseMusic(game, { overlay = false } = {}) {
   return null;
 }
 
-/** The title (music/title.js): its loop while they sit on the edge, the Fool's Step once when they go, then the Fall under the menu. */
+/** The title (music/title.js): the overture, then its loop while they sit on the edge, the Fool's Step once when they go, then the Fall under the menu. */
 export function chooseTitleMusic(game) {
   const state = game.title?.scene?.state ?? 'idle';
-  if (state === 'idle') return TITLE;
+  if (state === 'idle') { // (the overture first, once a session: it hands on to the title's loop by itself, music/overture.js)
+    if (!S.overtured && game.music?.current === TITLE) S.overtured = true;
+    return S.overtured ? TITLE : OVERTURE;
+  }
+  S.overtured = true;
   if (state === 'step') return THE_STEP;
   return game.music?.current === THE_STEP ? THE_STEP : FALL; // (the step plays to its end, then the fall)
 }
