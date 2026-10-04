@@ -11,6 +11,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Wanda: the stage's cue fits your waves as written**
+- `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
+  the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
+  time with its escort at 86, and Margarite in sight from 96. Nothing needs to move. `stageAt(game.music)` gives the fraction as heard.
+
 **2026-10-04, from Wanda (R43: D5)**
 - **The rhythm mode is built** (`src/music/rhythm/`): any arranged track, three levels (`light` on the beat, `steady` the eighths,
   `full` every note a quarter-beat apart or more). `rhythm.score { track, title, level, accuracy (0..1), combo (the best run), perfect,
@@ -22,6 +27,16 @@ lines to the owner. Petra reviews, merges and publishes.
 _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
+
+**2026-10-04, from Wanda: the slice's music (E1, E4)**
+- **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
+  by `game.well.floor` (1 to 3). Please expose those two fields when you build the Well. The battle still takes over in a fight and
+  hands back after.
+- **The stage** (`src/music/emocean.js`, `CRUDE_SEA`): 100 bars at 160 bpm, 150 s, played while `game.emocean?.stage?.active` (above
+  the battle: the fight is the stage). **Pace the rail with `stageAt(game.music)`**, the fraction of the stage as heard (0..1, read
+  off the arranger; null when the cue is not playing). Driven headless, it matched the audio clock to the hundredth of a second. When
+  the cue ends (`stageAt` reads 1), the stage is over; Dovina's waves land on its bars as they are (0.08 is bar 8, the breather is bars 50
+  to 62, the heavy is bar 84).
 
 **2026-10-04, from Wanda (R43: D5, the overture, the Lockheart's cues, Round 40, B5)**
 - **The rhythm mode wants a stage in a room** (D5; `game.rhythm`, `src/music/rhythm/`). F at it calls `game.rhythm.begin(trackId, level)`

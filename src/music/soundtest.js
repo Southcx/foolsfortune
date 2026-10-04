@@ -22,6 +22,8 @@ import { ROLL_THE_MOON, LEAVE_HER } from './shanties.js';
 import { SIREN } from './siren.js';
 import { WITCH } from './witch.js';
 import { OVERTURE } from './overture.js';
+import { CRUDE_SEA } from './emocean.js';
+import { WELL_FLOORS } from './well.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 
 export const TRACKS = [
@@ -50,6 +52,10 @@ export const TRACKS = [
   { id: 'espada', score: ESPADA, title: 'The Edge of the Word', where: "Espada's theme · swords, the word", notes: 'A raga on Bhairav (E F G# A B C D#) with a tanpura drone: the alap, the jor, the gat over teental where the sitar draws the motif (E F G# B, the cut from C to B), the fiddle answering an octave up, and a jhala that ends with a tihai, the motif three times landing on the one. After Shakti.' },
   { id: 'calissa', score: CALISSA, title: 'Overflowing', where: "Calissa's theme · cups, water", notes: 'Calypso in E at 116: the pour (B G# E, C# E: a major arpeggio tumbling in three, three and two, and a hop back up) on the steel pan, marimba chucking the off-beats, the tresillo on the upright, bongos, shaker and timbale; the bridge climbs the Answer and the horns stab the last verse.' },
   { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
+  { id: 'crudesea', score: CRUDE_SEA, title: 'Crude Sea', where: 'a hop across the Emocean · the stage', notes: 'A trance groove under space jazz at 160, a hundred bars that are the stage: a calm launch, four on the floor for the first schools with the sax sailing the Answer, the supersaw opening on the pincer, a two-step break and the theremin swooping for the darters, a breather where the choir holds the Tear and the whale sings, the push, the heavy in half time with the Five in the low brass, and E major as Margarite comes into sight.' },
+  { id: 'well1', score: WELL_FLOORS[0], title: 'Surface Thoughts', where: "a mind's Well · the first floor", notes: 'A tanpura on E, drips of thought in the pentatonic, a breath, a far voice sinking from E to D.' },
+  { id: 'well2', score: WELL_FLOORS[1], title: 'Undertow', where: "a mind's Well · the second floor", notes: 'The Tear (F on E) held soft under the drone, a heartbeat, the whale gliding down, an octatonic celesta that will not resolve.' },
+  { id: 'well3', score: WELL_FLOORS[2], title: 'The Bottom of the Well', where: "a mind's Well · the FOE's floor", notes: 'A sub on E, a far taiko like something walking, strings holding E, F and B, the heartbeat quickening, a low choir.' },
   { id: 'bound', score: LOCK_CUES.summoning, title: 'Barely Bound', where: "the Lockheart's Opening · a summoning coffin", notes: 'Contained chaos in 7/8 at 138: strings stamping one chord with the accents moved round the bar (the Augurs), the floor turning between E and F (the Tear made into the ground), taiko, an octatonic glitter of keys, a choir on B and C. It lands on E major.' },
   { id: 'boundout', score: LOCK_LANDED.summoning, title: 'Barely Bound (let out)', where: "the Lockheart's Opening · the landing", notes: 'E major, all at once.' },
   { id: 'spellwheel', score: LOCK_CUES.casting, title: 'Spellwheel', where: "the Lockheart's Opening · a casting coffin", notes: 'Magic, flowing: 6/8 in E Lydian, the harp running up and down, a flute on long notes, the raised fourth the only thing not at rest.' },
