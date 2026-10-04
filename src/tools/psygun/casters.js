@@ -216,7 +216,7 @@ export class Casters {
     g.scene.add(rec.group);
     this.anchors.push(rec);
     sfx.anchor();
-    g.events?.emit('anchor', { clapper: !!t.clapper });
+    g.events?.emit('shell.anchor', { clapper: !!t.clapper });
     return true;
   }
 
@@ -273,7 +273,7 @@ export class Casters {
     if (c) this.befriend(c, true);
     g.fx.explosion?.(at, 0.6);
     sfx.hatch();
-    g.events?.emit('hatch', {});
+    g.events?.emit('shell.hatch', {});
     return true;
   }
 
@@ -288,7 +288,7 @@ export class Casters {
     // (at most a handful of helpers: the oldest go home)
     const allies = g.clappers.list.filter((x) => x.alive && x.ally);
     while (allies.length > T.shells.hatch.maxAllies) g.clappers.hit(allies.shift(), allies[0]?.pos || c.pos, UP, 1, 'shot');
-    g.events?.emit('befriend', { born });
+    g.events?.emit('shell.befriend', { born });
   }
 
   update(dt) {

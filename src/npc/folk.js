@@ -68,7 +68,7 @@ export class Folk {
     this.clips = Object.fromEntries((gltf?.animations || []).map((c) => [c.name.replace('clapper_', ''), c]));
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });
     // the folk answer the Courier's emotes (emotes.js): a wave gets a happy hop, a faint a fright
-    game.events?.on('emote', (e) => this.react(e.emote));
+    game.events?.on('emote.start', (e) => this.react(e.emote));
   }
 
   /** The nearest folk (in sight, not talking) answers an emote with a feeling for a moment. */

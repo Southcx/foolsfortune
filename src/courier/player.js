@@ -141,7 +141,7 @@ export class Player {
   markSafe() { this.safe.pos.copy(this.pos); this.safe.shape = this.shape; this.safe.t = 0; }
 
   respawn(why = 'fall') {
-    this.ev('respawn', { why });
+    this.ev('courier.respawn', { why });
     this.pos.copy(this.spawn);
     this.prevPos.copy(this.pos);
     this.vel.set(0, 0, 0);
@@ -233,7 +233,7 @@ export class Player {
     this.vel.add(v);
     if (v.y > 0.5) { this.grounded = false; this.coyote = 0; }
     const mag = v.length();
-    this.ev('impulse', { why, mag, dir: mag > 1e-4 ? [v.x / mag, v.y / mag, v.z / mag] : null });
+    this.ev('courier.impulse', { why, mag, dir: mag > 1e-4 ? [v.x / mag, v.y / mag, v.z / mag] : null });
   }
 
   // ---- capsule height ------------------------------------------------------------
@@ -285,7 +285,7 @@ export class Player {
     const finite = Number.isFinite(this.pos.x + this.pos.y + this.pos.z + this.vel.x + this.vel.y + this.vel.z);
     if (!finite) {
       this.pos.copy(this.safe.pos); this.vel.set(0, 0, 0); this.place();
-      this.ev('guard', { kind: 'nan' });
+      this.ev('courier.rescue', { kind: 'nan' });
       return;
     }
     if (this.vel.lengthSq() > 90 * 90) this.vel.setLength(90);
@@ -300,7 +300,7 @@ export class Player {
     const tries = [[0, 0.1, 0], [0, 0.25, 0], [0.15, 0, 0], [-0.15, 0, 0], [0, 0, 0.15], [0, 0, -0.15], [0, 0.5, 0], [0.3, 0, 0], [-0.3, 0, 0], [0, 0, 0.3], [0, 0, -0.3], [0, 1, 0]];
     for (const [x, y, z] of tries) {
       this.pos.set(at.x + x, at.y + y, at.z + z);
-      if (!this.embedded()) { this.place(); this.wedged = 0; this.ev('guard', { kind: 'nudge' }); return; }
+      if (!this.embedded()) { this.place(); this.wedged = 0; this.ev('courier.rescue', { kind: 'nudge' }); return; }
     }
     this.pos.copy(this.safe.pos);
     this.vel.set(0, 0, 0);
@@ -308,7 +308,7 @@ export class Player {
     this.platform = null;
     this.place();
     this.wedged = 0;
-    this.ev('guard', { kind: 'reset' });
+    this.ev('courier.rescue', { kind: 'reset' });
   }
 
   // ---- the fixed step -------------------------------------------------------------
@@ -391,13 +391,13 @@ export class Player {
       if (this.wallrun) {
         this.wallJump(hv, wishDir);
         jumped = true;
-        this.ev('jump', { kind: 'wall' });
+        this.ev('move.jump', { kind: 'wall' });
       } else if (this.coyote > 0) {
         if (iz > 0 && this.tryMantle(M.mantleJumpMin, M.jumpVelocity)) return;
         this.vel.y = M.jumpVelocity;
         this.coyote = 0;
         jumped = true;
-        this.ev('jump', { kind: this.sliding ? 'slide' : 'ground', speed: hs });
+        this.ev('move.jump', { kind: this.sliding ? 'slide' : 'ground', speed: hs });
         if (this.sliding) {
           this.ev('slide.end', { dur: this.slideT, dist: this.slideDist || 0, why: 'jump' });
           // slide-hop keeps (and slightly boosts) the momentum
@@ -414,7 +414,7 @@ export class Player {
         sfx.airJump();
         this.airJumpPulse = true; // (the animation reads and clears it)
         jumped = true;
-        this.ev('jump', { kind: 'air' });
+        this.ev('move.jump', { kind: 'air' });
       }
       if (jumped) { this.jumpBuf = 0; this.grounded = false; }
     }
@@ -490,7 +490,7 @@ export class Player {
         this.dashT = M.dashTime;
         this.fovPunch = Math.max(this.fovPunch, 7);
         sfx.dash();
-        this.ev('dash', { speed: hv.length() });
+        this.ev('move.dash', { speed: hv.length() });
         this.dashFx(d);
       } else {
         sfx.fizzle();
@@ -571,7 +571,7 @@ export class Player {
       if (this.techs) this.techs.onLand(fallSpeed, under);
       this.game?.movers?.onLand(fallSpeed, under, this.lastDrop);
       if (fallSpeed > 3 || this.airT > 0.25) {
-        this.ev('land', { fall: fallSpeed, drop: this.lastDrop, air: this.airT, speed: hlen(this.vel), onMover: !!this.platform });
+        this.ev('move.land', { fall: fallSpeed, drop: this.lastDrop, air: this.airT, speed: hlen(this.vel), onMover: !!this.platform });
         this.airPeak = this.pos.y;
       }
     }
@@ -614,7 +614,7 @@ export class Player {
           if (!this.embedded()) break;
           this.pos.set(px, py, pz);
         }
-        this.ev('guard', { kind: 'clip' });
+        this.ev('courier.rescue', { kind: 'clip' });
       } else this.pos.set(hx, hy, hz); // (already inside before: leave it to guard())
     }
 
@@ -840,7 +840,7 @@ export class Player {
     this.coyote = 0;
     this.mantle.jumpHeld = this.input.isDown('Space'); // (a held jump is not a new one: only a fresh press chains out of it)
     if (step) sfx.footstep?.(0); else sfx.mantle();
-    this.ev('mantle', { height: h, step });
+    this.ev('move.mantle', { height: h, step });
     return true;
   }
 
@@ -880,7 +880,7 @@ export class Player {
       if (m.jumpQueued && this.canStand()) {
         // the jump that was asked for: off the top, with the speed kept
         this.vel.y = T.movement.jumpVelocity; this.grounded = false; this.coyote = 0; this.jumpBuf = 0; this.jumpHeldLast = true;
-        this.ev('jump', { kind: m.step ? 'vault' : 'mantle', speed: m.exit });
+        this.ev('move.jump', { kind: m.step ? 'vault' : 'mantle', speed: m.exit });
       }
     }
   }

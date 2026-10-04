@@ -95,7 +95,7 @@ export class Tracking {
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };
 
     // ---- breaking
-    on('break', (e) => {
+    on('prop.break', (e) => {
       if (e.target) { L.inc('target.break'); return; }
       // (whose doing it was: only the Courier's are the Courier's records; the rest are said as what they were)
       if (e.by && e.by !== 'courier') {
@@ -130,7 +130,7 @@ export class Tracking {
     });
 
     // ---- the gun and its shells
-    on('shot', (e) => { L.inc('shot.fired'); if (e.charged) L.inc('shot.charged'); if (e.air) L.inc('shot.air'); });
+    on('shot.fire', (e) => { L.inc('shot.fired'); if (e.charged) L.inc('shot.charged'); if (e.air) L.inc('shot.air'); });
     on('weapon.charged', () => L.inc('shot.fullcharge'));
     on('shell.fire', (e) => { L.inc(`shell.fire.${e.id}`); L.inc('shell.fire'); if (e.air) L.inc('shell.air'); first(`shell.${e.id}`, `Logged: your first ${e.id} shell.`); });
     on('shell.dry', () => L.inc('shell.dry'));
@@ -163,24 +163,24 @@ export class Tracking {
     }
 
     // ---- ground movement (the player reports these)
-    on('jump', (e) => { L.inc('move.jump'); L.inc(`move.jump.${e.kind}`); if (e.kind === 'air') L.inc('move.airjump'); if (e.kind === 'wall') L.inc('move.walljump'); });
-    on('dash', (e) => { L.inc('move.dash'); L.hi('dash.speed', e.speed); });
+    on('move.jump', (e) => { L.inc('move.jump'); L.inc(`move.jump.${e.kind}`); if (e.kind === 'air') L.inc('move.airjump'); if (e.kind === 'wall') L.inc('move.walljump'); });
+    on('move.dash', (e) => { L.inc('move.dash'); L.hi('dash.speed', e.speed); });
     on('slide.start', () => L.inc('move.slide'));
     on('slide.end', (e) => { L.inc('slide.time', e.dur); L.inc('slide.dist', e.dist || 0); L.hi('slide.longest', e.dist || 0); L.hi('slide.longest.time', e.dur); });
     on('wallrun.start', () => L.inc('move.wallrun'));
     on('wallrun.end', (e) => { L.inc('wallrun.dist', e.dist || 0); L.hi('wallrun.longest', e.dist || 0); L.hi('wallrun.longest.time', e.dur); });
-    on('mantle', (e) => { L.inc('move.mantle'); L.hi('mantle.height', e.height); });
-    on('land', (e) => {
+    on('move.mantle', (e) => { L.inc('move.mantle'); L.hi('mantle.height', e.height); });
+    on('move.land', (e) => {
       L.inc('move.land');
       const drop = e.drop || 0;
       if (drop > 0.5) { const r = L.hi('fall.max', drop, { at: this.where() }); this.note('fall.max', r, `Your longest fall is now ${Math.round(drop)} m.`, 12, drop); }
       if (drop >= 10) log.say('move', `You land from a ${Math.round(drop)} m fall.`, { key: 'land', win: 1 });
       if (e.air > 0.3) { const r = L.hi('air.longest', e.air, { at: this.where() }); this.note('air.longest', r, `Your longest airtime is now ${fx(e.air, 1)} s.`, 2.5, e.air); }
     });
-    on('dodge', (e) => { L.inc('move.roll'); if (e.mitigated) { L.inc('roll.fall'); L.hi('roll.fall.height', e.fall || 0); log.say('move', 'You roll out of the fall.', { key: 'roll', win: 1.5 }); } });
-    on('impulse', (e) => { L.inc(`impulse.${e.why}`); });
-    on('respawn', (e) => { L.inc('respawn'); L.inc(`respawn.${e.why}`); });
-    on('guard', (e) => L.inc(`guard.${e.kind}`));
+    on('move.roll', (e) => { L.inc('move.roll'); if (e.mitigated) { L.inc('roll.fall'); L.hi('roll.fall.height', e.fall || 0); log.say('move', 'You roll out of the fall.', { key: 'roll', win: 1.5 }); } });
+    on('courier.impulse', (e) => { L.inc(`courier.impulse.${e.why}`); });
+    on('courier.respawn', (e) => { L.inc('courier.respawn'); L.inc(`courier.respawn.${e.why}`); });
+    on('courier.rescue', (e) => L.inc(`courier.rescue.${e.kind}`));
     on('mover.leave', (e) => { L.inc('move.mover.leave'); L.hi('mover.leave.speed', e.speed); });
     on('mover.push', () => L.inc('mover.push'));
     on('updraft.enter', () => L.inc('updraft.enter'));
@@ -188,7 +188,7 @@ export class Tracking {
     // ---- the movement arts
     on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); if (!['emote', 'talk', 'death', 'ultimate'].includes(e.id)) first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
     on('tech.end', (e) => { L.inc(`time.tech.${e.id}`, e.dur || 0); L.hi(`tech.longest.${e.id}`, e.dur || 0); });
-    on('blink', () => L.inc('move.blink'));
+    on('move.blink', () => L.inc('move.blink'));
     on('slam.impact', (e) => {
       L.inc('move.slam'); if (e.target) L.inc('slam.target');
       const r = L.hi('slam.height', e.height, { at: this.where() });
@@ -196,22 +196,22 @@ export class Tracking {
       if (!e.target && e.height > 6) log.say('move', `You slam into the ground from ${e.height.toFixed(0)} m.`, { key: 'slam', win: 1.2 });
       else if (e.target) log.say('battle', 'Your slam strikes the target.', { key: 'slamt', win: 1.2 });
     });
-    on('stomp', (e) => { L.inc('move.stomp'); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
+    on('move.stomp', (e) => { L.inc('move.stomp'); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
     on('kick.swing', () => L.inc('kick.swing'));
-    on('kick', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
-    on('parry', (e) => { L.inc('move.parry'); L.hi('parry.speed', e.speed); log.say('battle', 'You parry the shot.', { key: 'parry', win: 1 }); });
+    on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
+    on('move.parry', (e) => { L.inc('move.parry'); L.hi('parry.speed', e.speed); log.say('battle', 'You parry the shot.', { key: 'parry', win: 1 }); });
     on('recoil.jump', (e) => { L.inc('move.recoil'); if (e.charged) L.inc('recoil.charged'); L.hi('recoil.up', e.up); });
     for (const k of ['hang.start', 'hang.pullup', 'latch.start', 'pole.start', 'grate.start', 'balance.start', 'push.start', 'carry.lift', 'carry.put']) on(k, () => L.inc(`move.${k}`));
     on('push.move', (e) => L.inc('push.dist', e.dist));
-    on('throw', (e) => { L.inc('move.throw'); L.hi('throw.speed', e.speed); });
+    on('move.throw', (e) => { L.inc('move.throw'); L.hi('throw.speed', e.speed); });
     on('throw.hit', (e) => { L.inc('throw.hit'); L.inc(`throw.hit.${e.kind}`); });
     on('lob.fire', () => L.inc('lob.fire'));
     on('lob.dodged', () => { L.inc('lob.dodged'); log.say('move', 'You dodge the incoming lob.', { key: 'lob', win: 2 }); });
     on('lob.hit', () => { L.inc('lob.hit'); log.say('hurt', 'You are struck by a lob.', { key: 'lobh', win: 2 }); });
-    on('groove.open', () => L.inc('cast.groove'));
-    on('anchor', () => L.inc('cast.anchor'));
-    on('hatch', () => { L.inc('cast.hatch'); log.say('art', 'You hatch a clapperjar.', { key: 'hatch', win: 1.5 }); });
-    on('befriend', (e) => { L.inc('cast.befriend'); if (!e.born) log.say('art', 'The clapperjar is turned to your side.', { key: 'turn', win: 1.5 }); });
+    on('groove.open', () => L.inc('shell.groove'));
+    on('shell.anchor', () => L.inc('shell.anchor'));
+    on('shell.hatch', () => { L.inc('shell.hatch'); log.say('art', 'You hatch a clapperjar.', { key: 'hatch', win: 1.5 }); });
+    on('shell.befriend', (e) => { L.inc('shell.befriend'); if (!e.born) log.say('art', 'The clapperjar is turned to your side.', { key: 'turn', win: 1.5 }); });
 
     // ---- the Solar Skiff
     on('dunes.barrier', () => L.inc('dunes.barrier')); // (the edge of the sea touched: counted, not said)
@@ -267,7 +267,8 @@ export class Tracking {
     const helped = new Set();
     on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
     on('vfx.test', (e) => log.say('system', e.found ? `You play ${e.fx}.` : `There is no effect called ${e.fx}.`, { key: 'vfx', win: 0.5 }));
-    on('workbench', (e) => log.say('system', e.open ? 'You open the workbench.' : 'You close the workbench.', { key: 'wb', win: 0.5 }));
+    on('workbench.open', () => log.say('system', 'You open the workbench.', { key: 'wb', win: 0.5 }));
+    on('workbench.close', () => log.say('system', 'You close the workbench.', { key: 'wb', win: 0.5 }));
     on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
@@ -405,7 +406,7 @@ export class Tracking {
     on('blade.resist', (e) => { L.inc('blade.resisted'); log.say('battle', `The ${KIND(e.kind)} turns your blade aside${e.why === 'uncuttable' ? ': it cannot be cut' : ': stun it first'}.`, { key: 'bres', throttle: 2 }); });
     on('creature.zandatsu', (e) => { L.inc('zandatsu.creature'); L.inc(`zandatsu.${e.kind}`); log.say('battle', `You take the ${KIND(e.kind)} apart. It comes undone into Lachryma.`, {}); });
     on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
-    on('emote', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
+    on('emote.start', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
     on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));
@@ -497,7 +498,7 @@ export class Tracking {
     });
     on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
     on('brush.miss', () => L.inc('brush.miss'));
-    on('inscribe', (e) => { L.inc('inscribe'); L.inc(`inscribe.${e.prop}`); });
+    on('brush.inscribe', (e) => { L.inc('inscribe'); L.inc(`inscribe.${e.prop}`); });
     on('brush.glyph', (e) => {
       L.inc(`brush.tech.${e.technique}`); L.inc('brush.tech');
       if (e.technique !== 'wash') first(`brush.tech.${e.technique}`, `Logged: your first ${BRUSH_NAME[e.technique]}.`);
@@ -682,6 +683,13 @@ export class Tracking {
     on('tithe.pull', () => { L.inc('tithe.count'); log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
     on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
     on('rave.start', () => L.inc('rave.count'));
+
+    // ---- achievements and standing (achievements.js decides; the log says it here)
+    on('achievement.unlock', (e) => {
+      log.say('ach', `Achievement complete (${e.tierName}, ${e.points} ${e.points === 1 ? 'pt' : 'pts'}): ${e.ach}.`);
+      if (e.title) log.say('ach', `You have earned the title "${e.title}".`);
+    });
+    on('rank.up', (e) => log.say('ach', `You are now known as a ${e.rank}.`));
 
     // ---- the System: what has been learned
     on('system.unlock', (e) => {

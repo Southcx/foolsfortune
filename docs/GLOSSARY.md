@@ -193,6 +193,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ## Engine and process words
 
 - **event** (`game.events`): a message on the bus, named `domain.verb`; its payload never uses `name` or `t`, and an outcome carries `by`.
+  An event is named for the ledger key it feeds where it feeds one (`move.jump` is emitted and `move.jump` counted; R42).
+- **rescue** (`courier.rescue`, `Player.guard()`): the body's safety net taking it out of a bad state (`nan`, `nudge`, `reset`, `clip`),
+  counted by the stress test, never hidden. *Not:* the cutlass's guard (`guard.up`, `guard.block`).
 - **tag** (`src/core/tags.js`): what a tool may do to a thing (sliceable, breakable, liftable, pushable, static) and what it is made of (clay,
   crystal, jelly, wood, stone, metal).
 - **service**: a `game.*` object every module may ask (time, mood, cinema, cine, vfx, events, creatures, belt, cubes...).

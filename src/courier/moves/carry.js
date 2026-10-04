@@ -215,7 +215,7 @@ export class Carry extends Tech {
     this.item = null;
     this.fireHold = 0.35;
     sfx.airJump();
-    this.game.events?.emit('throw', { kind: e.kind || 'crate', speed: sp });
+    this.game.events?.emit('move.throw', { kind: e.kind || 'crate', speed: sp });
   }
 
   setDown() {
