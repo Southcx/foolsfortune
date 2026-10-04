@@ -54,6 +54,10 @@ _Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (ph
   `begin` now only takes the place's music out of the way, which is still right.
 - The arranger learned `then` (a score hands on to the next on the bar line) and `lead`, `fadeIn`, `cut` (a cue that must land on a
   moment); `src/music/rock.js` is the band's rock rig. Build, check, stress (below), driven headless.
+- **Perf, for the gate:** draw calls, triangles, tick and draw are unchanged. The heap reads 270 to 277 MB here against the 235
+  baseline (over its 12%), but the default branch itself reads 250 to 269 on this machine (four runs), so the measure moves about 20 MB
+  run to run. Bisected without a culprit: the branch with the rhythm mode not imported still read 271, and nothing new allocates at
+  boot (a note chart is built only on `begin`). It may cost about 10 MB, unexplained; please measure it on yours.
 
 **2026-10-04, from Wanda (R42)**
 - Merged Phase 1. Renamed, callers in the same push: `sfx.vesselHit` → `sfx.jarHit` (`src/godhand/godhand.js`), `sfx.surfLoop` →
