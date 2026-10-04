@@ -40,6 +40,15 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
   own, and their design gets a deep dive with the owner after the slice. Parked for it: the FOE as Etrian Odyssey's (a visible threat
   that patrols and can be routed around, its route shown by Divination), not a big jelly waiting on the last floor.
 
+**E1b rulings (Dovina, R57, on Petra's v64):**
+- **Pay is `wellPay(deepest, foes) x wellYield(fill)`**, kept: simpler than `islandRun` pro rata, and the same table. Three floors and
+  the FOE at full fill pay 139 cubes, which is the aim (1.0x) for a run of about 17 minutes; if timed runs come in much faster, the cut is
+  `ECON.well.perFloor`, nowhere else.
+- **Material tier = floor - 1, +1 on a hit of the deck `well.rare` (1 in 4), +1 if the FOE fell to the Courier, capped at 4**, kept:
+  depth and the FOE are both skill, and the deck keeps the luck honest (rule 5).
+- **Divination EXP is earned on `well.charted`** (a floor left, its charted share the quality): standing about charts 0.27 of a floor
+  (rote, 0.4x weight), a survey pulse a room 0.91 (about 4x). The Cogitomap needs the Dreamvane, as it should.
+
 ## E1, the Well (Petra's room; Dovina's numbers)
 
 | What | How | Hook |
@@ -116,7 +125,7 @@ ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser bu
 | `crude.sell` | `{ island, grade, units, price, from, profit, by }` | `crude.sold.<island>` (units); record `crude.profit`; `crude.route.<from>.<island>` |
 
 Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`, `cogitomap`. EXP: `emocean.stage` is Ouranurgy;
-`well.floor` and `emocean.reckon` are Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
+`well.charted` (a floor charted, on leaving it) and `emocean.reckon` are Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
 unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
 
 **The slice's achievements** (in the game now, as placeholders at 0 until the events exist; names Espada's, LORE.md section 8):

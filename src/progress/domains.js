@@ -55,7 +55,7 @@ export const SOURCES = [
   // layer pays EXP at the same rate a minute as the rest of play (a two-minute stage is 12 acts at PACE) and does not skew the scale
   { event: 'emocean.stage',   domain: 'ouranurgy',      acts: 12, quality: (e) => (e.by === 'courier' ? stageQuality(e) : null) },
   { event: 'emocean.reckon',  domain: 'divination',     acts: 4,  quality: (e) => (e.by === 'courier' && e.q != null ? q01(e.q) : null) },
-  { event: 'well.floor',      domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && e.charted != null ? q01(e.charted) : null) },
+  { event: 'well.charted',    domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && e.charted != null ? q01(e.charted) : null) },
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
