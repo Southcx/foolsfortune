@@ -259,7 +259,7 @@ export function renderCurios(codex, cx) {
   const B = g.veritome?.book, box = g.pneuka, held = (c) => { const id = `curio.${c.id}`, k = box ? box.count(id) + (box.lure === id ? 1 : 0) : 0; return B ? `${B.count(id)} in the Book${k ? ` · ${k} carried` : ''}` : `${L.get(id)} held`; };
   const head = el('div', 'lg-head');
   head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
-    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.pulls'))}</b></div>`
+    + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHES PAID</small><b>${num(L.get('tithe.count'))}</b></div>`
     + `<div><small>BIGGEST CHEST</small><b>${L.best('chest.cubes.max') ? num(L.best('chest.cubes.max')) : '—'}</b></div>`;
   cx.appendChild(head);
   const body = el('div', 'body');
