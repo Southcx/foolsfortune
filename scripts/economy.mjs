@@ -18,8 +18,8 @@ import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
 import { buskPay, commissionPay, potPay, bountyPay } from '../src/progress/econ/livelihoods.js';
-import { NODES, CLASSES, hop, stagePlan, stageQuality } from '../src/progress/econ/emocean.js';
-import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed } from '../src/progress/econ/islands.js';
+import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
+import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
@@ -236,3 +236,8 @@ for (const [a, b] of [['anagami', 'margarite'], ['anagami', 'entra'], ['margarit
 const plan0 = stagePlan('anagami', 'margarite', 0), plan1 = stagePlan('anagami', 'margarite', 1), spawned = plan0.reduce((a, w) => a + w.count, 0);
 console.log(`  a stage: ${plan0.length} waves, ${spawned} Figments; the lanes on day 0 / day 1: ${plan0.map((w) => w.lane).join(' ')} / ${plan1.map((w) => w.lane).join(' ')}`);
 console.log(`  how cleanly (Ouranurgy's quality): clean and thorough ${stageQuality({ hits: 0, downed: spawned, spawned })}, middling ${stageQuality({ hits: 3, downed: spawned / 2, spawned })}, scraped through ${stageQuality({ hits: 5, downed: 2, spawned }).toFixed(2)}`);
+console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)} / ${reckonLead(0.5)} / ${reckonLead(1)} s ahead at 0 / 0.5 / 1; a locked node opens at ${RECKON.open} reckoned from the pier`);
+{ const run = islandRun('anagami', 0.5).pay, good = islandRun('anagami', 0.8).pay;
+  for (const [label, w] of [['middling, 80% charted, fresh', cogitomapWorth(run, 0.8)], ['good, all charted, fresh', cogitomapWorth(good, 1)], ['good, 20 h old', cogitomapWorth(good, 1, 20)]])
+    console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entra ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
+  console.log(`  after the sloop's fuel (${hop('anagami', 'margarite').fuel}): a good fresh map nets about 20 more at Margarite than at home, a middling one is better sold at home (skill decides whether the Well feeds the boat)`); }

@@ -596,3 +596,15 @@ separate parts, building and progression are why players skipped it.
    are Espada's to write.
 5. **The STE100 trim** of the UI text comes after the systems plan.
 6. **The chests' beams** become a glaze that changes as the chest charges (Calissa's), touching Petra's ceremony.
+
+## 13. Rulings of 2026-10-04, evening (R57: the slice)
+
+- **Jellies for now** in the Emocean's stage; the Egregore's body and mind after the slice.
+- **The purser buys Cogitomaps**, dearest on Margarite (Law wants its minds charted), cheapest on the island whose Well it maps (it
+  knows its own mind). The map is what makes the first hop pay, and only a good map pays the trip: skill decides (`purserPrice`).
+- **Divination charts the course between the Islands of Ego** (the owner's steer). Taken from FTL's long-range scanners, Sunless Sea's
+  zee charted by sailing it, and dead reckoning: a route's **reckoning** (0 .. 1, of a day) marks each wave's lane ahead on the rail and,
+  after the slice, opens the way to a node not yet found (Entra Polearis). Knowledge, never numbers: the reckoning shows where the
+  wave comes from, and the gun and the dodge stay the player's. `src/progress/econ/emocean.js`.
+- **The music is the stage's clock:** every stage runs its cue's 150 s; a tempo per ship (Wanda's `stageCue`) waits for a second ship.
+
