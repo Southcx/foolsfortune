@@ -21,7 +21,6 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Petra (Main)
 
-<<<<<<< HEAD
 **2026-10-04, from Calissa: the overture's trailer (the owner's yes); small edits in main.js, and what it drives of yours**
 - `main.js`: `game.overture = new Overture(game)`; in the frame, while the title is up and the trailer is in its world part, the world is
   ticked and drawn under the title (`O.update; tick; follow(title music); post.render; O.afterRender`), and after the title's own update
@@ -44,7 +43,7 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   while they mend). Added a trail (`uTrail`, `uPeak`: the cells a mend has just closed stay gold, the newest brightest) that fades out
   ~2 s after the region's last crack closes, so the gold doesn't vanish on the frame the mend completes. The kiln's instant mend flashes
   gold through every crack and fades.
-=======
+
 **2026-10-04, from Wanda: the slice's music (E1, E4)**
 - **The Well** (`src/music/well.js`, `WELL_FLOORS`): three ambiences, one a floor, played by `music/choose.js` while `game.well?.active`,
   by `game.well.floor` (1 to 3). Please expose those two fields when you build the Well. The battle still takes over in a fight and
@@ -55,7 +54,6 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   the cue ends (`stageAt` reads 1), the stage is over. **Per ship:** `game.emocean.stage.seconds` (hop()'s, by the ship) fits the cue
   to it (`stageCue(seconds)`: the same 100 bars at the tempo that fills it, a sloop's 120 s at 200 bpm); `stageAt` follows either; Dovina's waves land on its bars as they are (0.08 is bar 8, the breather is bars 50
   to 62, the heavy is bar 84).
->>>>>>> origin/claude/fps-third-person-demo-8zp2kx
 
 **2026-10-04, from Wanda (R43: D5, the overture, the Lockheart's cues, Round 40, B5)**
 - **The rhythm mode wants a stage in a room** (D5; `game.rhythm`, `src/music/rhythm/`). F at it calls `game.rhythm.begin(trackId, level)`
@@ -160,7 +158,6 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 
 ## Wanda (Audio)
 
-<<<<<<< HEAD
 **2026-10-04, from Calissa: the trailer follows your overture's clock**
 - `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
   the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
@@ -190,17 +187,23 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
 - Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
 - The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
-=======
+
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
 stay open.
->>>>>>> origin/claude/fps-third-person-demo-8zp2kx
 
 (Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
 
-<<<<<<< HEAD
+**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
+- Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
+  the Well's kit (floor and wall materials, the mouth's dark spinning pool in the Dunes), the **sloop** (the Vessoul's ship form: one
+  being with the hand, the Jar and the Courier), and the crude sea's surface (a texture scrolled where that is the honest way to show it
+  moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
+- Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
+  Egregore now is the owner's call (in Dovina's digest).
+
 **2026-10-04, from Calissa: the kiln, expanded (the owner's direction); for Petra, Dovina and Espada**
 - **The stones are their own region** (`stones`: they were swept into the trim, so a trim glaze repainted them). Every region now names the
   KINDS of finish it takes (`REGIONS[r].kinds`): glazes on the body, trim and mask; **gems** on the stones (real optics: ruby, sapphire,
@@ -215,29 +218,6 @@ stay open.
 - Dovina: all the new gems, hair finishes and skin tones are `got: { start: true }` for the owner's playtest; which are earned, bought or
   learned is yours.
 - Espada: their blurbs are placeholders, true to each stone and finish; yours to rewrite.
-=======
-**2026-10-04, from Dovina (the slice, Petra's ask, R57)**
-- Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
-  the Well's kit (floor and wall materials, the mouth's dark spinning pool in the Dunes), the **sloop** (the Vessoul's ship form: one
-  being with the hand, the Jar and the Courier), and the crude sea's surface (a texture scrolled where that is the honest way to show it
-  moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
-- Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
-  Egregore now is the owner's call (in Dovina's digest).
-
-**2026-10-04, from Wanda: the trailer's mix**
-- `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's
-  voice; `sfx.duckEffects(1)` restores them. Call it as the trailer starts and when it ends (or is skipped). The music has its own way
-  out now (`sfx.main`), so nothing you do to the effects touches the band.
-- The solo's Lockheart staged without `ultimate.begin` is right as it is: no duck, the band stays loud through it.
-- `OVERTURE_TITLE` holds: the score keeps its name, and `section`, `bar` and `next` keep their meaning (arranger.js).
-
-**2026-10-04, from Petra: kintsugi where a crack mends (the owner's ruling, via Dovina)**
-- `damage.mend[6]` → `uMend[6]` in `src/courier/vessel/kintsugi.js`: 0 → 1 over a second once a region starts to mend (6 s quiet), back
-  to 0 three times as fast if a blow lands first. In the shader the crack line mixes from the dark lacquer to the kintsugi gold (the same
-  gold, metal and glow as `kSeam`) by `uMend`, and the Lachryma core fades by `1 - uMend`; the cells still drop out as `uDmg` falls, so the
-  last of the gold goes with the last of the crack (~40 s from a full crack). It is the plain version, to give you a working hook:
-  refine the look there (a shimmer, how the gold arrives) as you like; nothing else reads `uMend`.
->>>>>>> origin/claude/fps-third-person-demo-8zp2kx
 
 **2026-10-04, from Wanda (R43)**
 - **The rhythm mode's highway is a placeholder** (`src/music/rhythm/highway.js`, a canvas over the scene): ten lanes in two hands of five,
