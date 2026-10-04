@@ -24,6 +24,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Emocean, **the ships**. The **Solar Skiff** is a limb of the Vessoul. *Not:* "the player" in player-facing text (the game says "you").
 - **ship** (the Emocean's rail-shooter layer): the Vessoul's sailing form between Islands of Ego, classed by real nomenclature: **sloop**,
   **frigate**, **tanker**, **destroyer**, **galleon**. *Not:* the skiff.
+- **hop** (`hop()`, `src/progress/econ/emocean.js`): one crossing of the Emocean from one island to another, on the **node map** (one node
+  an island, at its place on the Law-Chaos line). It costs fuel (the ship's **burn** times the distance) and is sailed as one **stage**.
+- **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
+  `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
+  ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
 - **the Courier** (`player`: the body's physics, `src/courier/player.js`; `character`: the rig and its animation, `src/courier/character.js`): the one
   the player plays. Androgynous: "you" where the game speaks, "they" in docs and comments. *Not:* "the player" in anything the game says.
 - **vessel** (`game.vessel`, `game.vesselDamage`, `src/courier/vessel/`): the Courier's clay body and what is done to it: its glazes, its cracks,
@@ -183,6 +188,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   own; it sets the price (`docs/ECONOMY.md`, "The worth of a look").
 - **crude** (`ECON.crude`): liquid Lachryma as a cargo, fossil feeling (`docs/LORE.md`, "Lachryma as crude"); graded by aspect,
   **mirth**, **wonder**, **hunger**, **grief**, **dread**. Volatile, so it can **spill**; cubes cannot. *Not:* a bauble (the pool's drop).
+- **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
+  (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
+  King's marque (Letty Marque). *Not:* the same thing.
 - **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
   Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
 - **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),

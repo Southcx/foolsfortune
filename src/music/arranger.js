@@ -27,7 +27,7 @@ export class Arranger {
     this.duckG = ctx.createGain();
     this.sweep = ctx.createBiquadFilter(); this.sweep.type = 'lowpass'; this.sweep.frequency.value = 18000; this.sweep.Q.value = 0.9;
     const glue = ctx.createDynamicsCompressor(); glue.threshold.value = -16; glue.ratio.value = 3; glue.attack.value = 0.01; glue.release.value = 0.2;
-    this.bus.connect(this.sweep).connect(glue).connect(this.duckG).connect(this.sfx.master);
+    this.bus.connect(this.sweep).connect(glue).connect(this.duckG).connect(this.sfx.main ?? this.sfx.master); // (the music's own way out: it never ducks with the effects)
     const dry = ctx.createGain(); dry.connect(this.bus);
     const pump = ctx.createGain(); pump.connect(this.bus);
     const verb = ctx.createConvolver(); verb.buffer = this.sfx.impulse(3.2, 2.6);

@@ -93,6 +93,11 @@ export const ECON = {
    *  hunter, finishing sooner, earns more an hour; every `streakEvery`th in a row pays `streakMult` times (OSRS Slayer's points). Skipping
    *  one breaks the streak. */
   commission: { minutes: [3, 8, 20, 60, 180], streakEvery: 10, streakMult: 3 },
+  /** BOUNTIES (Letty Marque's, under the King's marque: docs/LORE.md): a hunt for a named stray (an Egregore off the Emocean, or a
+   *  Figment gone aberrant), mostly out of Entra Polearis, paid for by Margarite. A bounty pays `mult` times a commission of the same
+   *  class (it is a named target, far from home, and the hunt includes the trip), less `cut`, Letty's share. The owner, 2026-10-04:
+   *  the Queen's island breeds the strays and the King's pays to have them brought in, a toxic symbiosis. */
+  bounty: { mult: 2.5, cut: 0.2 },
   /** THROWING POTS: a pot pays `minutes` of play times its shape's accuracy weighed steeply (floor .. ceil, as the domains' SKILL), plus
    *  its glaze's prestige in minutes (looks: a pot glazed in porcelain sells for more). */
   pot: { minutes: 2.5, floor: 0.25, ceil: 1.5, power: 2, glaze: { earthenware: 0, stoneware: 0.5, porcelain: 1.5, court: 3 } },
@@ -120,9 +125,10 @@ export const ECON = {
     dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
   } },
   /** THE SHIPS (the Vessoul's Emocean forms, by trade: LORE.md): how much each holds, of what, how slow a hop is (x the hop's time),
-   *  and its `hull` (x the spill chance; 1 when unsaid). */
+   *  its `hull` (x the spill chance; 1 when unsaid), and its `burn` (x the hop's fuel; its `slow` when unsaid: a light hull burns little,
+   *  so a sloop's small hold still pays a short errand, R57: at the tanker's burn it lost 25-35 cubes a run). */
   ships: {
-    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8 },  // errands and small cargo
+    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8, burn: 0.3 },  // errands and small cargo
     frigate:   { hold: 6,  carries: ['goods'],          slow: 0.9 },  // escort
     galleon:   { hold: 40, carries: ['cubes', 'goods'], slow: 1.3 },  // refined cubes: treasure
     destroyer: { hold: 2,  carries: ['goods'],          slow: 0.7 },  // hunting Egregores
@@ -133,11 +139,13 @@ export const ECON = {
    *  deep they run), `risk` (the chance a floor ends the run for a middling diver: a skilled one halves it, a masterful one quarters it),
    *  `foes` (FOEs a run), the crude `grades` it yields, the Figment `classes` its commissions ask (Guppy .. Leviathan). Simulated:
    *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entra Polearis
-   *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). */
+   *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). `crude` is where the island's price
+   *  for crude sits inside the demand band (0 the bottom .. 1 the top, with its slow wave about it): Chaos digs it up and sells it
+   *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entra to Margarite. */
   islands: {
-    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, grades: ['mirth', 'wonder'],  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
-    entra:     { name: 'Entra Polearis',  law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, grades: ['mirth', 'wonder'],  classes: [0, 1] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    entra:     { name: 'Entra Polearis',  law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
    *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */

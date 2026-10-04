@@ -14,10 +14,11 @@
 // document v0.1 (the seven skills, the EXP curve floor(level^1.5 * 50 + 100) a level, "The World" ascension), Rhythm Heaven's and Gran
 // Turismo's graded results (how well, not only how often).
 //
-//   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base, quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
+//   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts, quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
 //   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
 //   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
 // ---------------------------------------------------------------------------------------
+import { stageQuality } from './econ/emocean.js';
 
 export const DOMAINS = {
   ouranurgy:      { id: 'ouranurgy',      name: 'Ouranurgy',      does: 'displacement: moving oneself and others through space' },
@@ -50,6 +51,10 @@ export const SOURCES = [
   { event: 'reprogram.run',   domain: 'spellscription', base: 14, quality: (e) => q01(1 - (e.misses || 0) / Math.max(1, (e.chars || 1) / 4)) },
   { event: 'brush.glyph',     domain: 'spellscription', base: 10, quality: (e) => q01((e.sigils || 0) / 3 + 0.4) },
   { event: 'sigil.pop',       domain: 'spellscription', base: 4,  quality: () => 0.5 },
+  // the slice's big acts (docs/plans/SLICE.md), counted in `acts`: as many of the domain's ordinary acts as the time they take, so a
+  // layer pays EXP at the same rate a minute as the rest of play (a two-minute stage is 12 acts at PACE) and does not skew the scale
+  { event: 'emocean.stage',   domain: 'ouranurgy',      acts: 12, quality: (e) => (e.by === 'courier' ? stageQuality(e) : null) },
+  { event: 'well.floor',      domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && e.charted != null ? q01(e.charted) : null) },
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
@@ -65,11 +70,18 @@ export function scaleOf(domain) {
   if (!SCALE) {
     SCALE = {};
     for (const d of Object.keys(DOMAINS)) {
-      const src = SOURCES.filter((x) => x.domain === d), avg = src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
+      const src = SOURCES.filter((x) => x.domain === d && x.base != null), avg = src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
       SCALE[d] = expAt(MAX_LEVEL) / (PACE.hours99 * 60 * PACE.actsPerMin * avg * skillWeight(0.5));
     }
   }
   return SCALE[domain] || 1;
+}
+
+/** A source's base: its own, or (a big act) `acts` times its domain's average ordinary base. */
+function baseOf(s) {
+  if (s.base != null) return s.base;
+  const src = SOURCES.filter((x) => x.domain === s.domain && x.base != null);
+  return s.acts * src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
 }
 
 /** The EXP an event is worth, by domain: base x the domain's scale x skillWeight(quality). A source whose quality is null does not count. */
@@ -79,7 +91,7 @@ export function expFor(e) {
     if (s.event !== e.name) continue;
     const q = s.quality(e);
     if (q == null) continue;
-    out.push([s.domain, Math.round(s.base * scaleOf(s.domain) * skillWeight(q))]);
+    out.push([s.domain, Math.round(baseOf(s) * scaleOf(s.domain) * skillWeight(q))]);
   }
   return out;
 }

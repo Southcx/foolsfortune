@@ -88,6 +88,8 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | --- | --- | --- | --- | --- | --- |
 | Mirage of the Still Water | the Dunes | 84 swung, D# minor pentatonic blues | vibes, ney, Rhodes, brushes, darbuka | (to be woven in: the Five, on D#) | **made** |
 | The Workshop | home: the kiln, Saggar | 75, the blues in E | a work song: hammer, foot, breath, washboard; hummed calls and sung answers; harmonica, slide guitar, upright | the Five in the calls | **made** |
+| Surface Thoughts, Undertow, The Bottom of the Well | a mind's Well, floors 1 to 3 | 60, E (a drone) | tanpura, drips of bells, breath, a far voice; then the Tear held under it, a heartbeat, the whale, an octatonic celesta; then a sub pedal, a far taiko, a string cluster (E, F, B), a low choir | Tear (floors 2 and 3) | **made** (`music/well.js`) |
+| Crude Sea | a hop across the Emocean (the stage; its rail is paced to it) | 160, E minor, 100 bars = 150 s | a trance groove under space jazz: four on the floor, a rolling Moog, a koto arpeggio, a supersaw, a two-step break, the growl, the theremin swooping; sax, brass, choir, whale | Answer (sailing), Tear (the breather), Five (the heavy) | **made** (`music/emocean.js`) |
 | The Weir by night | the oasis after dark | 75, B minor (a fifth up) | shakuhachi, harp, crickets | the Five, high and slow | |
 | The Field | walking between places | 100 in 5/4, E minor / G | the Path movement grown into its own piece | Five, Answer | *sketch: movement II* |
 | The Basement | the lab, tinkering | 125, A minor (a fifth down) | koto ostinato, plucked synth, clock ticks | the Five in diminution | |
