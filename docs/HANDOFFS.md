@@ -27,7 +27,7 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   `body` are named for posing (a talking head bob, as the folk's). `nacre()` is exported for anything else of Margarite's.
 - They are not clapperjars, so the folk's body code (`npc/folk.js`) can't drive them as it is; they want a stand-in rig of their own,
   or simply a bob and a turn toward the Courier for the slice. In the workbench (MODELS, Margarite's people).
-- The Dunemaw (the Well's mouth, `src/vfx/swallow.js`) now has its maw: the sand round it drawn in, in streaks.
+- The Dunemaw (the Well's mouth, `src/vfx/dunemaw.js`) now has its maw: the sand round it drawn in, in streaks.
 
 **2026-10-04, from Calissa: the slice's art, ready for your E1 and E4 (the owner's go, via Dovina)**
 - **The sloop** (`src/vfx/sloop.js`): `new Sloop({ env })`, `.group` (+Z the bow, origin at the waterline, ~7 m), per frame
@@ -37,9 +37,9 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
   current })`: put `calm` up through the breather (0.50 to 0.62 of the stage). The sky over it is yours to choose; it wants dusk.
 - **The lane mark** (`vfx.play('lane.mark', { pos, scale })`): hold it from the warning to the wave and raise its `k` from 0 to 1 as the
   wave nears; pass `scale` 3 to 5 at rail distances (30 m and more), it is read at speed.
-- **The Swallow's mouth** (`src/vfx/swallow.js`): `new SwallowMouth({ radius })`, add `.group` on the sand, per frame `.update(t, open)`;
-  play `'swallow.motes'` at it while it is open. Its depth is painted: a real funnel waits on the sand being cut there, if you want one.
-- **The Swallow's kit** (`src/vfx/swallowkit.js`): `const K = swallowKit({ env })`; give your `level.box` the materials `K.wall`,
+- **The Great Dunemaw's mouth** (`src/vfx/dunemaw.js`): `new DunemawMouth({ radius })`, add `.group` on the sand, per frame `.update(t, open)`;
+  play `'dunemaw.motes'` at it while it is open. Its depth is painted: a real funnel waits on the sand being cut there, if you want one.
+- **The Great Dunemaw's kit** (`src/vfx/dunemawkit.js`): `const K = dunemawKit({ env })`; give your `level.box` the materials `K.wall`,
   `K.floor`, `K.trim` (one each for any number of boxes, so they merge per zone). The wall's terraces are in world space (a step every
   0.6 m), so they run on unbroken across boxes. The floor drifts on the Mind's clock (`mindTick`).
 - All five are in the workbench (MODELS: ships, the slice). Measured headless; not yet seen in your rooms.

@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE SWALLOW'S MOUTH: where the Well in Anagami's Dunes opens (docs/plans/SLICE.md, E1: "a Lachryma distortion: a spinning dark pool, a
+// THE GREAT DUNEMAW'S MOUTH: where the Well in Anagami's Dunes opens (docs/plans/SLICE.md, E1: "a Lachryma distortion: a spinning dark pool, a
 // signature the Dreamvane can dowse"). Not water and not a hole: Lachryma swallowing the sand, so it is the Mind's stone made liquid
 // (vfx/labradorite.js): black ink in a funnel that sinks toward its eye, spiral arms of the labradorite's flash wound into it and
-// turning inward, an iridescent lip where it meets the sand, and motes drawn in off the dunes (the library's 'swallow.motes'). It
+// turning inward, an iridescent lip where it meets the sand, and motes drawn in off the dunes (the library's 'dunemaw.motes'). It
 // darkens what it covers (normal blending): an additive glow could not make a pool black. Its depth is painted (the arms tighten and
 // darken toward the eye), as the sand is not cut for it; a real funnel waits on the ground being opened there (Petra's).
 //
@@ -11,7 +11,7 @@
 // schiller already on the Mind's marks (one stone, one meaning: the Mind's things are labradorite). The maw round it (Espada's reading of
 // the name): the sand drawn in, in darker streaks spiralling toward the pool.
 //
-//   const m = new SwallowMouth({ radius })   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
+//   const m = new DunemawMouth({ radius })   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
 //   (its own frame: centred on the sand's surface, Y up; Petra places it, its zone and its signature)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -54,7 +54,7 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
-export class SwallowMouth {
+export class DunemawMouth {
   constructor({ radius = 4.5, depth = 2.2 } = {}) {
     this.u = { uT: { value: 0 }, uOpen: { value: 1 }, uDepth: { value: depth / radius }, uMindT: mindTime };
     const geo = new THREE.CircleGeometry(1, 64, 0, Math.PI * 2);

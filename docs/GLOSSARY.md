@@ -142,8 +142,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 ## Creatures and folk
 
-- **the Swallow** (the owner's name, R57): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/swallow.js`) is a
-  spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Swallow's kit** (`src/vfx/swallowkit.js`:
+- **the Great Dunemaw** (the owner's name, R57; not "the Swallow"): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/dunemaw.js`) is a
+  spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Great Dunemaw's kit** (`src/vfx/dunemawkit.js`:
   the bismuth wall, the glass floor over liquid Lachryma, the trim).
 - **creature** (`game.creatures`, `src/creatures/creatures.js`): a hurtable thing with a mind (a slip jelly, a spirit). A weapon calls
   `creatures.strike`.

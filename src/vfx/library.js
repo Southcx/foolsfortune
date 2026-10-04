@@ -325,8 +325,8 @@ export const LIBRARY = {
     L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ringthin', offset: [0, 0.1, 0], size: 0.6, sizeEnd: 4.5, life: 0.8, color: 'labradorite', alpha: 0.8, rot: 0 }),
   ] },
 
-  // the Swallow's mouth (vfx/swallow.js draws the pool): motes of the dunes' Lachryma drawn in toward it, and a breath of dark over it
-  'swallow.motes': { layers: [
+  // the Great Dunemaw's mouth (vfx/dunemaw.js draws the pool): motes of the dunes' Lachryma drawn in toward it, and a breath of dark over it
+  'dunemaw.motes': { layers: [
     L({ type: 'sprites', dur: Infinity, rate: 24, shape: 'soft', spawn: 'ring', r: [5, 8], dir: 'in', speed: [1.2, 2.2], size: [0.06, 0.1], sizeEnd: 0.02, life: [2.2, 3.2], color: ['labradorite', 'gold'], offset: [0, 0.4, 0] }),
     L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'swirl', spawn: 'disc', r: 2.5, dir: 'up', speed: [0.2, 0.5], size: [0.8, 1.2], sizeEnd: 2, life: [2, 3], color: 'ink', alpha: 0.3, alphaEnd: 0, spin: [-1, 1] }),
   ] },

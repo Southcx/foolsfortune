@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// THE SWALLOW'S KIT: what the Well's floors are made of (docs/plans/SLICE.md, E1: Petra lays the rooms with `level.box`; these are their
-// materials). The island is the clay's place; the Swallow is Lachryma's own, in its two other states (docs/ART.md, section 3):
+// THE GREAT DUNEMAW'S KIT: what the Well's floors are made of (docs/plans/SLICE.md, E1: Petra lays the rooms with `level.box`; these are their
+// materials). The island is the clay's place; the Great Dunemaw is Lachryma's own, in its two other states (docs/ART.md, section 3):
 //
 //   WALL   solid Lachryma: bismuth as architecture. The wall is a hopper crystal seen from inside: terraces stepping back as they rise,
 //          each terrace's oxide film its own colour (gold, magenta, blue, green: vfx/bismuth.js's run), dark metal between, in the
@@ -14,7 +14,7 @@
 // sixth generation (Metroid Prime's Phendrana, Final Fantasy X's Macalania: a material-led place, light from the walls), and the
 // labradorite already on the Mind's marks (one stone, one meaning).
 //
-//   const K = swallowKit({ env })   level.box(..., K.wall)   K.floor   K.trim   K.tick(t)   (once a frame, for the floor's drift)
+//   const K = dunemawKit({ env })   level.box(..., K.wall)   K.floor   K.trim   K.tick(t)   (once a frame, for the floor's drift)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
@@ -51,7 +51,7 @@ function wallMaterial(env) {
   normal = normalize(normal + upV * upright * (0.15 + 0.9 * (1.0 - f)));
 }`);
   };
-  m.customProgramCacheKey = () => 'swallow-wall';
+  m.customProgramCacheKey = () => 'dunemaw-wall';
   return m;
 }
 
@@ -72,11 +72,11 @@ function floorMaterial(env, u) {
   totalEmissiveRadiance += labSoft(ph) * band * (0.3 + 0.7 * down) * 0.3;
 }`);
   };
-  m.customProgramCacheKey = () => 'swallow-floor';
+  m.customProgramCacheKey = () => 'dunemaw-floor';
   return m;
 }
 
-export function swallowKit({ env = null } = {}) {
+export function dunemawKit({ env = null } = {}) {
   const u = { uMindT: mindTime };
   return {
     wall: wallMaterial(env),

@@ -38,8 +38,8 @@ import { DreamvaneModel } from '../tools/dreamvane/model.js';
 import { CrucibelleModel } from '../tools/crucibelle/model.js';
 import { Sloop } from '../vfx/sloop.js';
 import { CrudeSea } from '../vfx/crudesea.js';
-import { SwallowMouth } from '../vfx/swallow.js';
-import { swallowKit } from '../vfx/swallowkit.js';
+import { DunemawMouth } from '../vfx/dunemaw.js';
+import { dunemawKit } from '../vfx/dunemawkit.js';
 import { buildLetty, buildPoll, buildPurser, buildBountyBoard } from '../vfx/margarite.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
@@ -170,7 +170,7 @@ export class Workbench {
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
-    out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Swallow's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Swallow's kit (a corner)" });
+    out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
     out.push({ id: 'folk:letty', grp: "Margarite's people", label: 'Letty Marque (and Poll)' }, { id: 'folk:purser', grp: "Margarite's people", label: 'the Purser' }, { id: 'folk:board', grp: "Margarite's people", label: 'the bounty board' });
     for (const id of Object.keys(ITEMS).sort()) out.push({ id: `thing:${id}`, grp: 'things', label: ITEMS[id].name || id });
     for (const c of CURIOS) out.push({ id: `curio:${c.id}`, grp: 'curios', label: c.name || c.id });
@@ -318,9 +318,9 @@ export class Workbench {
       else if (id === 'folk:purser') obj = buildPurser().group;
       else if (id === 'folk:board') obj = buildBountyBoard().group;
       else if (id === 'slice:sea') { const sea = new CrudeSea({ size: 40, cells: 40 }); sea.update(4); obj = sea.mesh; }
-      else if (id === 'slice:mouth') { const m = new SwallowMouth({ radius: 2 }); m.update(3, 1); obj = m.group; }
+      else if (id === 'slice:mouth') { const m = new DunemawMouth({ radius: 2 }); m.update(3, 1); obj = m.group; }
       else if (id === 'slice:kit') { // (a corner of a floor: a pane of the floor, a wall, a plinth)
-        const K = swallowKit(), g = new THREE.Group(), box = (w, h, d, x, y, z, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); g.add(b); };
+        const K = dunemawKit(), g = new THREE.Group(), box = (w, h, d, x, y, z, m) => { const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); g.add(b); };
         box(4, 0.2, 4, 0, -0.1, 0, K.floor); box(4, 2.4, 0.3, 0, 1.2, -2, K.wall); box(0.3, 2.4, 4, -2, 1.2, 0, K.wall); box(0.8, 0.3, 0.8, 0.8, 0.15, 0.6, K.trim); obj = g;
       }
       else if (id.startsWith('thing:')) obj = buildThing(id.slice(6))?.group;
