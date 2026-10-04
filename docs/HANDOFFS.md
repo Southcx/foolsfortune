@@ -80,6 +80,12 @@ node map, the stage and the slice's achievements in (R57), waiting on Petra's E1
 - Phase B needs `creatures.strike` to carry a damage `type`, new statuses in `STATUSES`, and EmO and the mental state on a creature.
   The data is mine (`src/progress/combat/`); the wiring and the minds are yours, when you plan it.
 
+**2026-10-04, Petra's own open items (R57)**
+- The stress test's intermittent (`embedded`/`guard:nudge` at cp T1): 480 runs on one warm page and 7 fresh-page runs in a row were
+  clean; it is rare and only on a fresh page. Still open.
+- A pre-existing hitch on the lift (`on lift0`): 4 violations in 24 lift-only fuzz runs, the same with and without the Well (R57).
+- The heap reading in `npm run perf` had no gc before it (±10 MB a run); fixed (`--expose-gc`, gc twice) and the baseline to re-record.
+
 **2026-10-04, Petra's own open item (R42)**
 - The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at
   `cp T1`, right after a grapple swing, with one tick of ~1957 m/s from the previous run's end position to T1. The game's own teleport

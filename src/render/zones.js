@@ -11,7 +11,7 @@
 // Objects that follow the camera or are drawn in world space from the origin (particles, trails, ropes: `frustumCulled = false`), and
 // anything marked `userData.zoneFree`, are never hidden by zone.
 //
-//   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'dunes' | null        (pure, for builders)
+//   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'dunes' | 'well' | null        (pure, for builders)
 //   game.zones.update(dt)        game.zones.current        game.zones.visibleAt(pos)
 //   obj.userData.maxDist = 30      (also hidden beyond that distance from the camera: labels, small signage)
 // ---------------------------------------------------------------------------------------
@@ -33,6 +33,8 @@ export const ZONES = [
   { id: 'basement', test: (p) => p.y <= -1.2 && p.y > -150 && p.x > -250 && p.x < 450 && p.z > -300 && p.z < 200, sees: (c, cam) => (seesHole(c, cam, 12) ? ['workshop'] : []) }, // (a hole in the ceiling: only from near under it)
   { id: 'circuits', test: (p) => p.x > 2800 && p.x < 3300 && p.z > -300 && p.z <= 380 && p.y > -120 && p.y < 120 },
   { id: 'dunes', test: (p) => p.x > 1000 && p.x < 3000 && p.z > -1000 && p.z < 1000 && p.y < -150 },
+  // a Well's floor (world/well/dunemaw.js): built far west and deep, one floor at a time
+  { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
 ];
 const BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z]));
 
