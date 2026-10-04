@@ -8,8 +8,8 @@
 //
 //   renderTools(codex, cx)
 // ---------------------------------------------------------------------------------------
-import { SONGS, INSTRUMENTS, DEGREE_COLOR } from '../crucibelle/songs.js';
-import { HEARTS, KEYS, OUTCOMES, oddsOf, rates } from '../lockheart/table.js';
+import { SONGS, INSTRUMENTS, DEGREE_COLOR } from './crucibelle/songs.js';
+import { HEARTS, KEYS, OUTCOMES, oddsOf, rates } from './lockheart/table.js';
 
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };

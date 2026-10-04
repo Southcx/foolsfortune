@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { meshFx } from './meshfx.js';
-import { TIERS } from '../treasure.js';
+import { TIERS } from '../world/treasure/treasure.js';
 
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _c = new THREE.Color();

@@ -82,7 +82,7 @@ What it is now:
 - the circuits' medals and records;
 - the variants of every art.
 
-The long sink (the Internal Shrine Garden) is planned, not built. **Progress resets on every build** (`src/progress.js`). While the
+The long sink (the Internal Shrine Garden) is planned, not built. **Progress resets on every build** (`src/core/progress.js`). While the
 game is being made, the long run can be designed and measured (the ledger timestamps every first) but not lived.
 
 ---
@@ -102,7 +102,7 @@ means cubes into the world, "drain" cubes out, and "converter" one resource into
 | **Veritome** (J) | the lens, the Flash, reprogramming | the photographer's round; the darkroom | film (a converter: cubes to plates) | cards (the collection), bestiary facts, glazes, cubes by condensing |
 | **Dreamvane** (K) | dowse, pick, fork, survey | the miner's round in the dunes | Lachryma (survey 12) | crystal cubes (the biggest faucet), shards, Possibilikeys, the map |
 | **Crucibelle** (U) | notes on the beat, songs | support in a fight; reveals veiled crystal | Lachryma (8 to 24 a song) | sleep, decoys, spirits, sight |
-| **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `lockheart/table.js`) |
+| **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `tools/lockheart/table.js`) |
 | **God hand** (~, not on the belt) | the God Arts | THE SIEGE | Lachryma | defence of the vessel |
 
 **Lachryma** is the moment's resource: a pool of 100 that regenerates at 3.5/s after 2.2 s, and the shield. **Cubes** are the
@@ -146,7 +146,7 @@ The game has **no experience points and no levels**, and that is a decision wort
 goal lists, Breath of the Wild's discovery, OSRS's quest-locked unlocks), and power grows sideways, not up: the Lachryma pool never
 grows (`maxBonus` exists and nothing uses it).
 
-**The System's arts** (`src/system/skills.js`) are eight Movement Arts and five God Arts. Each has one to three variants, and each is
+**The System's arts** (`src/progress/skills.js`) are eight Movement Arts and five God Arts. Each has one to three variants, and each is
 earned by a goal over the event bus:
 - `count`: do it n times;
 - `feat`: do the hard thing once;
@@ -184,7 +184,7 @@ reaches the moment.
 
 ## 4. The economy, in brief
 
-`docs/ECONOMY.md` has the map, the profiles, the R38 rebalance and its reasons; `src/econ/table.js` has every number. In short:
+`docs/ECONOMY.md` has the map, the profiles, the R38 rebalance and its reasons; `src/progress/econ/table.js` has every number. In short:
 - **The unit is a minute of ordinary play:** 8 cubes, so the aim is 480 an hour. Every price is named in minutes.
 - **No activity should pay more than 1.5× the aim**, except luck.
 - **The faucets:** jellies, crystals, chests, dupes, condensing, selling to the folk, and the Lockheart's CUBES outcome.
@@ -195,10 +195,10 @@ reaches the moment.
   - later, the Shrine Garden (the long sink: OSRS's Construction, FFXIV's housing).
 - **The measuring tools:**
   - the F3 panel's `econ` line, which reads the ledger;
-  - `node tools/economy.mjs`, which simulates the table;
+  - `node scripts/economy.mjs`, which simulates the table;
   - `/grant`, in DEBUG.
 
-`node tools/economy.mjs` today:
+`node scripts/economy.mjs` today:
 
 | profile | cubes/h | × aim |
 |---|---:|---:|
@@ -214,7 +214,7 @@ The Tithe returns 78% of what it takes, in cubes.
 
 ## 5. The ledger and the achievements
 
-**The ledger** (`src/stats.js`) follows OSRS and FFXIV. It keeps:
+**The ledger** (`src/progress/stats.js`) follows OSRS and FFXIV. It keeps:
 - counters that only go up, kept for the lifetime and for the session;
 - records, each with when and where it was set;
 - firsts, timestamped in play time;
@@ -223,7 +223,7 @@ The Tithe returns 78% of what it takes, in cubes.
 `tracking.js` turns about 260 kinds of event into counts and log lines. This is the game's best piece of systems architecture: every
 question about play can be answered from it, and the achievements are retroactive by construction.
 
-**The achievements** (`src/achievements.js`):
+**The achievements** (`src/progress/achievements.js`):
 - 366 entries in 14 categories;
 - by tier: 67 Easy, 108 Medium, 100 Hard, 50 Elite, 28 Master, 4 Grandmaster (counted from the source);
 - six types: count, speed, perfection, mechanic, stamina, collection;
@@ -335,7 +335,7 @@ What this page adds, for the proposals in section 8:
   - But nothing, not even a glaze or a title, says a gold medal mattered.
 - **Small ones.**
   - The `chests.js` header still says the Tithe costs 25.
-  - The `lockheart/table.js` header says three keys; it is four.
+  - The `tools/lockheart/table.js` header says three keys; it is four.
   - The README's Roll is "5 hard landings"; the code asks 3 drops of 20 m.
   - The README's System table omits the God Arts.
   - The fish rank G is never used.
@@ -381,7 +381,7 @@ chooses.
 - Publish the consolidated Tithe odds, pity counted, in the Codex.
 - Count the Tithe in one ledger key.
 - Fix the stale headers.
-- Extend `tools/economy.mjs` with four new sections:
+- Extend `scripts/economy.mjs` with four new sections:
   - mixed profiles (angler plus treasury, miner plus jellies);
   - the Lockheart's expected value per opening, by coffin and keys;
   - the curio completion curve;

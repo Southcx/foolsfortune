@@ -12,7 +12,7 @@
 //   buildThing(id) -> { group, dispose } | null         buildCoffin(heartId) -> { group, lid, dispose }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { HEARTS, KEYS } from '../lockheart/table.js';
+import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.1, flatShading: true, ...o });
 const brassM = () => mat(0xd9b048, { metalness: 0.6, roughness: 0.35 });

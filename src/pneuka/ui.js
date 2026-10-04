@@ -13,14 +13,14 @@
 // hover line, worn items in their places), its bank (Deposit inventory), and the Codex's own look in this game.
 // ---------------------------------------------------------------------------------------
 import { SLOTS, FITTINGS } from './box.js';
-import { oddsOf, rates, OUTCOMES, HEARTS } from '../lockheart/table.js';
+import { oddsOf, rates, OUTCOMES, HEARTS } from '../tools/lockheart/table.js';
 import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
-import { CARDS, CARD, WORTH } from '../veritome/cards.js';
-import { lureList, tasteOf, BARE } from '../angling/lures.js';
+import { CARDS, CARD, WORTH } from '../tools/veritome/cards.js';
+import { lureList, tasteOf, BARE } from '../tools/sondelass/angling/lures.js';
 import { PLACES } from '../tools/belt.js';
-import { ASPECTS } from '../angling/species.js';
-import { SHELL_TYPES } from '../shells.js';
+import { ASPECTS } from '../tools/sondelass/angling/species.js';
+import { SHELL_TYPES } from '../tools/psygun/shells.js';
 
 const CSS = `
 #pneuka { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.6); cursor: default; user-select: none; }
@@ -209,7 +209,7 @@ export class PneukaUI {
       row.appendChild(el('div', 't', `<s>${F.label}</s>${names.length ? names.join(' · ') : F.none}`));
       pane.appendChild(row);
       if (socket === 'keys') {
-        // the odds the Lockheart has now: its coffin with these keys, in order (lockheart/table.js)
+        // the odds the Lockheart has now: its coffin with these keys, in order (tools/lockheart/table.js)
         const heart = box.fitted('heart')[0];
         if (heart) {
           const { table, mods } = oddsOf(heart, cur), R = rates(table), bar = el('div', 'odds');
@@ -220,7 +220,7 @@ export class PneukaUI {
         }
       }
     }
-    // the psygun's chambers (psygun/kinds.js): which caster shells it carries, and how many of each it holds; a click on a chamber turns
+    // the psygun's chambers (tools/psygun/kinds.js): which caster shells it carries, and how many of each it holds; a click on a chamber turns
     // it to the next shell not chambered, a right click lists them all
     const S = g.shells;
     if (S && (g.belt?.isWorn('psygun') || box.held('tool.psygun'))) {

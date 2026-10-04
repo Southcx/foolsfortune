@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the psygun and the guns: shots, reloads, the charge, lock-on and the seekers, casings, hits, explosions.
+// A sound bank of the one mixer (audio/sfx.js): the psygun and the guns: shots, reloads, the charge, lock-on and the seekers, casings, hits, explosions.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class WeaponSounds {
   gunshot() {

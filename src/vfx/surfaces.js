@@ -18,7 +18,7 @@
 //   SURFACE                    the table: colour -> { floor, wall, k } (k: how strongly the detail shows)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { PALETTE } from '../config.js';
+import { PALETTE } from '../core/config.js';
 
 const N = 128;            // texels a side
 const METRES = 2;         // one tile of the texture covers 2 m: 64 texels a metre, the era's density for a wall seen at a few metres

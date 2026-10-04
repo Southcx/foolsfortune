@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the Soul Brush (moves/soulbrush.js, brush/).
+// A sound bank of the one mixer (audio/sfx.js): the Soul Brush (tools/soulbrush/soulbrush.js, brush/).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class BrushSounds {
   /** A heavy swing: a low whoomp of air and the wet hiss of the hair. */

@@ -199,7 +199,7 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== THE LOCKHEART'S OPENING
-  // (lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
+  // (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle
   'ult.invoke': { layers: [
     // the circles the owner's wife drew (source_assets/circles/): the lotus mandala under the Courier, the whirling one inside it

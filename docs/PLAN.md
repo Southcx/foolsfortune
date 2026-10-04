@@ -40,7 +40,7 @@ _Landed, all ten (a to j), on the default branch; the art, sound and words each 
 - **a. Keys.** R (reset) and H (to the hub) move into the Tab panel's DEBUG section (with T's room reset), freeing R and H.
 - **b. The pause menu.** The Esc card's controls rewritten to what is true now, and **navigable help pages**: one for the core
   movement and one per tool (what it is, its keys, what it does), so a change can be looked up. The pages are data
-  (`src/help/`), Espada's to word.
+  (`src/feedback/help/`), Espada's to word.
 - **c. The Lockheart.** It is one thing: the Lockheart is the coffin, so the separate coffin slot goes (the coffins become Lockheart
   variants you wear, one at the neck). The keyring has **four** slots; **keys stack to 99** (the Pneuka Box learns stacks). The keys
   hang on the charm, either side of it.

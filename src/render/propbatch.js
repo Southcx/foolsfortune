@@ -15,7 +15,7 @@
 //   (the parked mesh is hidden through the same combined `visible` that zones use: render/zones.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { OUTLINE_MAT } from '../outline.js';
+import { OUTLINE_MAT } from './outline.js';
 import { Zones } from './zones.js';
 
 const gver = (g) => { let v = 0; for (const k in g.attributes) v += g.attributes[k].version; return v; };

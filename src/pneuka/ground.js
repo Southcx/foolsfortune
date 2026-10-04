@@ -10,9 +10,9 @@
 //   const gi = new GroundItems(game)   gi.drop(id, pos)   gi.update(dt)   gi.nearest(P) -> { pos, d, ref } | null   gi.pick(ref)   gi.count(id)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { buildCurio } from '../curiomodel.js';
+import { buildCurio } from '../world/treasure/curiomodel.js';
 import { itemOf } from './items.js';
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 
 const KEY = 'foolsfortune.ground.v1', REACH = 1.6, SCALE = 0.62;
 

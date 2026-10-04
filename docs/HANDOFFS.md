@@ -86,7 +86,7 @@ round.)
   bottom of the screen all the time).
 - The kintsugi gold is off the body (`uKin` stays 0): grown from achievements it read as cracks the shield did not stop and nothing
   mended. If you want gold back, it should be where a crack was mended (kintsugi proper), and fade with it; ask the owner first.
-- `src/veritome/reprogram.js` takes the window colour (`--jtop`, `--jbot`, `--jsel`, `--jhi`, `--jmid`, `--jframe`); if you want it in
+- `src/tools/veritome/reprogram.js` takes the window colour (`--jtop`, `--jbot`, `--jsel`, `--jhi`, `--jmid`, `--jframe`); if you want it in
   `WINDOWS`, it is ready to be.
 
 **2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
@@ -94,24 +94,24 @@ round.)
   en garde tried crossed the blade and fisted the off-hand before the face), the rod on the torch idle; the Lockheart's is new (left hand
   holding the coffin gingerly, `stance:lockheart`) and there is a channel (`stance:lockheartChannel`, FFXI's black magic cast). Stances
   gained a `hold` option (one frame of the base held). The owner's rule for every pose test: take every other tool off first.
-- **The Lockheart's OPENING** (`lockheart/ultimate.js`) is the owner's chosen place for the visual flex: the circle, the helix, the
+- **The Lockheart's OPENING** (`tools/lockheart/ultimate.js`) is the owner's chosen place for the visual flex: the circle, the helix, the
   keys, the wheel in the sky. Yours to make richer (the circle's runes, the coffin's gold, the landing).
-- **The death** (`vessel/death.js`) and the PS2 frame accumulation (`render/glow.js` `post.accum`), and `fx.toneBurst` /
+- **The death** (`courier/vessel/death.js`) and the PS2 frame accumulation (`render/glow.js` `post.accum`), and `fx.toneBurst` /
   `fx.chipsOff` (a note made visible; music/tone.js `degreeColor`: the root gold, the Crucibelle's colours for the rest).
 - The filigree's channels now light with the psygun's charge (faint, then brighter) and not with plain shots (the owner's note).
 
 **2026-10-02 (later), from Petra: Round 39's hooks are in**
-- `game.combat` (`src/combat.js`): `engaged`, `heat` (0..1), events `combat.start` / `combat.end`. For the ring and the beads.
+- `game.combat` (`src/core/combat.js`): `engaged`, `heat` (0..1), events `combat.start` / `combat.end`. For the ring and the beads.
 - `crystal.strike` carries `{ by, tool, ringing, pos, near, pitchOff, beat, sweet, nature: 'dense' | 'fragile' }`; `crystal.harvest`
-  adds `sweet` and `nature`. Each formation's nature is `e.tune.kind` (lachryma/tuning.js) if the art wants dense and fragile to look
+  adds `sweet` and `nature`. Each formation's nature is `e.tune.kind` (world/dunes/crystaltuning.js) if the art wants dense and fragile to look
   different (they should: dense stony, fragile glassy).
-- The survey motion: `SURVEY` in `src/moves/dreamvane.js` samples the pick's clip (`swordC`) as a placeholder; give me a clip name
+- The survey motion: `SURVEY` in `src/tools/dreamvane/dreamvane.js` samples the pick's clip (`swordC`) as a placeholder; give me a clip name
   and its strike time and I will swap it in.
 - Placeholder shell casings: `shell(id)` in `src/pneuka/thingmodels.js` (a casing, a band of the type's colour). The kinds of psygun
-  are `src/psygun/kinds.js`.
-- The damage cracks: `uDmg[6]` and the `aRegion` attribute in `src/vessel/kintsugi.js` (dark seams with a Lachryma core, on the
+  are `src/tools/psygun/kinds.js`.
+- The damage cracks: `uDmg[6]` and the `aRegion` attribute in `src/courier/vessel/kintsugi.js` (dark seams with a Lachryma core, on the
   kintsugi net); refine the look there or tell me what you want changed.
-- The keys on the charm: `charmKeys()` in `src/moves/lockheart.js` (one `buildThing` per fitted key, alternating sides).
+- The keys on the charm: `charmKeys()` in `src/tools/lockheart/lockheart.js` (one `buildThing` per fitted key, alternating sides).
 
 **2026-10-02, Round 39 tasks, from Petra** (the plan: `docs/PLAN.md`, from the owner's notes on v40). Merge the latest default branch
 first: R38 and my resolution of `character.js` are in it.
@@ -122,21 +122,21 @@ first: R38 and my resolution of `character.js` are in it.
 2. **The Dreamvane's own animation suite** (the owner: "the idle is broken, the left arm should be on the upper portion of the haft"):
    idle with the left hand high on the haft, the swing and the pick strike, the fork throw, and a motion for the **survey ping**, which
    becomes a Dreamvane ability this round (I wire the ability; its motion is yours: tell me the clip name). Its hook and fork become
-   2.5 times bigger (I am scaling `src/dreamvane/model.js`; pose the hands to the new size).
+   2.5 times bigger (I am scaling `src/tools/dreamvane/model.js`; pose the hands to the new size).
 3. **The Crucibelle's playing**: the body and hands making each note, and more visual feedback that they are jamming (the owner loved the
    effect the Fool's Fortune leitmotif made). I am fixing the notes that zip in from off-screen.
 4. **The crystal formations' art pass**: their base colour the sand's, a Lachryma outline and sheen to show they are active, much more
-   varied and dynamic shapes (one InstancedMesh today in `src/lachryma/crystals.js`: variants are fine), and **particles on a strike
+   varied and dynamic shapes (one InstancedMesh today in `src/world/dunes/crystals.js`: variants are fine), and **particles on a strike
    that back up the tone-seeking** (I will emit `crystal.strike` with `{ pos, near (0..1, how close to the sweet spot), pitchOff, beat,
    sweet }`).
-5. **Caster shell models**, numbered Type-00, Type-01... (the five shells now; `src/shells.js`'s list). Placeholders of mine come first.
+5. **Caster shell models**, numbered Type-00, Type-01... (the five shells now; `src/tools/psygun/shells.js`'s list). Placeholders of mine come first.
 6. **The keys on the Lockheart's charm**, strung either side of it, and the **damage cracks** on the vessel (I build the regions and the
    healing; the crack's look is yours to refine).
 7. The compass ring moves into the Dreamvane's kit (shown while it is worn); `vfx/wirecompass.js` stays yours, I will only gate it.
 
 **2026-10-02, from Petra: your branch is merged (with R38), two things from it**
 - The armour and mask are the maker's paintings now, and the vessel's glazes are laid on the same materials. I kept your look as
-  the default (the starting glaze on a painted part restores the painting exactly, `userData.base` in `src/vessel/vessel.js`), and
+  the default (the starting glaze on a painted part restores the painting exactly, `userData.base` in `src/courier/vessel/vessel.js`), and
   any other glaze multiplies the painting's colour and glow. On the dark red painting most glazes barely show (shino reads as the
   painting). How a glaze should sit on a painting (a clay channel in the painting that the glaze replaces, a glaze mask, or
   glazes only on the unpainted trim and hair) is your call; `regionMats` and `dress()` are the two places.
@@ -144,20 +144,20 @@ first: R38 and my resolution of `character.js` are in it.
   Asking `game.ui` there would clear the turntable shot.
 
 **2026-10-02 (later still), from Petra: the vessel is in (R38d)**
-- I split the Courier's materials into the four glaze regions myself (`regionOf` in `src/character.js`: the armour, the armour's
+- I split the Courier's materials into the four glaze regions myself (`regionOf` in `src/courier/character.js`: the armour, the armour's
   energy inlays and the stones as TRIM, the mask, the hair; the Lachryma core is untouched). If your region work cuts them
   differently, `regionMats` is the one place to change.
-- The twelve glazes' colours are in `src/vessel/glazes.js`. Please look them over on them (the kiln, in the workshop). A crackle
+- The twelve glazes' colours are in `src/courier/vessel/glazes.js`. Please look them over on them (the kiln, in the workshop). A crackle
   texture for raku, oribe's pooling and jun's opalescence would make them more than flat colours.
-- Kintsugi is a shader patch (`src/vessel/kintsugi.js`, Worley cracks in bind-pose space). The gold is subtle on white glazes, and
+- Kintsugi is a shader patch (`src/courier/vessel/kintsugi.js`, Worley cracks in bind-pose space). The gold is subtle on white glazes, and
   the crack scale (`uKinScale`) and width are yours to tune.
-- The kiln station's shot is fixed in front of the kiln's mouth (`SPOT`, `CAM` in `src/moves/kiln.js`). The plate stands that flank
+- The kiln station's shot is fixed in front of the kiln's mouth (`SPOT`, `CAM` in `src/courier/moves/kiln.js`). The plate stands that flank
   the mouth were the reason for the high angle.
 
 **2026-10-02 (later), from Petra: the shops are in (R38c)**
 - New things with prerendered icons: the ROLL OF FILM (`film()` in `src/pneuka/thingmodels.js`), and the fourteen fish as box items
   (their icon is the fish's own ghost mesh, `buildFish`, which reads a little faint in a slot; an icon pose or a solid variant is yours).
-- The shop window (`src/shop/ui.js`, `#shop .px`) copies the Pneuka Box window's look and is in the window kit's `WINDOWS`.
+- The shop window (`src/progress/shop/ui.js`, `#shop .px`) copies the Pneuka Box window's look and is in the window kit's `WINDOWS`.
 - The plan wants the goods **on shelves in the world**. Raku has no counter yet (he stands by the Tithe) and Grog none on the pier. A
   counter and a shelf for each, with the goods on it, as one prop batch per shop (`src/render/propbatch.js`), would make them real;
   tell me where they stand and I will hang the F on them.
@@ -186,13 +186,13 @@ decorated (glaze, slip, kintsugi, fittings).
 - The owner has seen your five-point art review; prioritising it is part of the next round's plan (the Courier model matters to the
   customization work, so expect it near the top).
 - Placeholders of mine that are art, yours to replace (the code reads `model.group` and a few named parts: keep those names or tell me):
-  - The three new tools: `src/dreamvane/model.js` (crook, dreamcatcher `catcher` that turns, pick, the `fork` that comes out),
-    `src/crucibelle/model.js` (bell, five `vents` lit per note, `ember`, `clapper`), the Lockheart's coffin (`buildCoffin` in
+  - The three new tools: `src/tools/dreamvane/model.js` (crook, dreamcatcher `catcher` that turns, pick, the `fork` that comes out),
+    `src/tools/crucibelle/model.js` (bell, five `vents` lit per note, `ember`, `clapper`), the Lockheart's coffin (`buildCoffin` in
     `src/pneuka/thingmodels.js`: `lid` hinged at the head, `inside` glow).
-  - Small things with prerendered icons (`src/pneuka/thingmodels.js`, `src/angling/luremodels.js`): Possibilikeys, instruments,
+  - Small things with prerendered icons (`src/pneuka/thingmodels.js`, `src/tools/sondelass/angling/luremodels.js`): Possibilikeys, instruments,
     coffins, the crystal shard, the six lures.
-  - Crystal formations in the dunes (`src/lachryma/crystals.js`: one InstancedMesh of a six-sided spire).
-  - The Lockheart's roulette (`src/lockheart/wheel.js`) and the Mind's lattice page (`src/mind/composer.js`) are plain shapes in CSS
+  - Crystal formations in the dunes (`src/world/dunes/crystals.js`: one InstancedMesh of a six-sided spire).
+  - The Lockheart's roulette (`src/tools/lockheart/wheel.js`) and the Mind's lattice page (`src/tools/veritome/mind/composer.js`) are plain shapes in CSS
     and flat colour.
 - Next round's tasks follow once the owner approves the plan.
 

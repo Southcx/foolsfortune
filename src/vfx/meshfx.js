@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// MESH FX: effect meshes made in Mesh Create (tools/meshflow.mjs: TakayuStudio's browser tool, its projects kept in
+// MESH FX: effect meshes made in Mesh Create (scripts/meshflow.mjs: TakayuStudio's browser tool, its projects kept in
 // source_assets/meshflow/ so the owner can open one, change it by hand and save it), drawn in the game the way the tool previews them:
 // the texture scrolled at the project's U/V speeds, multiplied by its painted vertex colour and alpha, blended as the project says
 // (additive, alpha), and tinted here. On top, what the game's own look wants: a tint per use (a chest's rarity colour), the Mind's

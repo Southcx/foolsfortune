@@ -9,13 +9,13 @@
 //
 //   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
-import { CURIOS, TIERS } from '../treasure.js';
-import { LURES } from '../angling/lures.js';
-import { HEARTS, KEYS } from '../lockheart/table.js';
-import { INSTRUMENTS } from '../crucibelle/songs.js';
-import { SPECIES } from '../angling/species.js';
-import { SHELL_TYPES } from '../shells.js';
-import { typeNo } from '../psygun/kinds.js';
+import { CURIOS, TIERS } from '../world/treasure/treasure.js';
+import { LURES } from '../tools/sondelass/angling/lures.js';
+import { HEARTS, KEYS } from '../tools/lockheart/table.js';
+import { INSTRUMENTS } from '../tools/crucibelle/songs.js';
+import { SPECIES } from '../tools/sondelass/angling/species.js';
+import { SHELL_TYPES } from '../tools/psygun/shells.js';
+import { typeNo } from '../tools/psygun/kinds.js';
 
 export const ITEMS = {};
 for (const c of CURIOS) {
@@ -24,7 +24,7 @@ for (const c of CURIOS) {
     examine: c.blurb, card: `curio.${c.id}`, lure: true, stack: false,
   };
 }
-// the made lures: things they carry, tied on the Sondelass' line one at a time (angling/lures.js has their tastes; luremodels.js their look)
+// the made lures: things they carry, tied on the Sondelass' line one at a time (tools/sondelass/angling/lures.js has their tastes; luremodels.js their look)
 for (const L of LURES) {
   ITEMS[L.id] = { id: L.id, kind: 'lure', key: L.key, name: L.name, glyph: L.glyph, color: 0xd9b48a, tier: 0, examine: L.blurb, card: null, lure: true, stack: false };
 }
@@ -41,13 +41,13 @@ export const TOOL_ITEMS = [
 for (const T of TOOL_ITEMS) {
   ITEMS[`tool.${T.tool}`] = { id: `tool.${T.tool}`, kind: 'tool', key: T.tool, tool: T.tool, place: T.place, name: T.name, glyph: '⚒', color: 0xffb27a, tier: 0, examine: T.examine, card: null, lure: false, stack: false };
 }
-// the Crucibelle's instruments (one fitted to the bell: crucibelle/songs.js), the Lockheart's coffins (one on the chain) and the
-// Possibilikeys that open them (up to four on the ring, used up: lockheart/table.js), and the shard a ringing crystal gives
+// the Crucibelle's instruments (one fitted to the bell: tools/crucibelle/songs.js), the Lockheart's coffins (one on the chain) and the
+// Possibilikeys that open them (up to four on the ring, used up: tools/lockheart/table.js), and the shard a ringing crystal gives
 for (const [id, I] of Object.entries(INSTRUMENTS)) if (id !== 'bell') ITEMS[id] = { id, kind: 'instrument', key: id.slice(5), name: I.name, glyph: '♪', color: I.color, tier: 1, examine: I.does, card: null, lure: false, stack: false };
 for (const [id, H] of Object.entries(HEARTS)) ITEMS[id] = { id, kind: 'heart', key: id.slice(6), name: H.name, glyph: '⚰', color: H.trim, tier: 2, examine: H.examine, card: null, lure: false, stack: false };
 for (const [id, K] of Object.entries(KEYS)) ITEMS[id] = { id, kind: 'key', key: id.slice(4), name: K.name, glyph: '⚷', color: K.color, tier: id === 'key.brass' ? 0 : 2, examine: `A Possibilikey. ${K.does}`, card: null, lure: false, stack: 99 }; // (keys stack: the owner's note)
 ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL OF FILM', glyph: '◫', color: 0xe0c070, tier: 0, examine: 'Twenty-four plates for the Veritome, wound on a brass spool. Loaded by itself when the last roll runs out.', card: null, lure: false, stack: 99 };
-// a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: shop/catalogue.js)
+// a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: progress/shop/catalogue.js)
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
 for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };

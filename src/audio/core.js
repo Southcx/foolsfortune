@@ -1,7 +1,7 @@
 // THE MIXER: the audio context and its buses, and the few primitives every sound is built from (a filtered burst of noise, a
 // gliding tone, a riser), a rate limiter, and the master's slow-time low-pass. The sounds themselves are in the banks beside this
-// file, mixed onto the Sfx by audio.js.
-import { T } from '../config.js';
+// file, mixed onto the Sfx by audio/sfx.js.
+import { T } from '../core/config.js';
 
 export class Sfx {
   constructor() {
@@ -18,7 +18,7 @@ export class Sfx {
     this.master.gain.value = T.audio.volume;
     const comp = this.ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.ratio.value = 6;
-    // (the master bus runs through a low-pass that closes as time slows: see timescale.js)
+    // (the master bus runs through a low-pass that closes as time slows: see core/time.js)
     this.slowLp = this.ctx.createBiquadFilter(); this.slowLp.type = 'lowpass'; this.slowLp.frequency.value = 22000; this.slowLp.Q.value = 0.5;
     this.master.connect(comp).connect(this.slowLp).connect(this.ctx.destination);
     // cheap room reverb

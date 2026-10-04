@@ -3,8 +3,8 @@
 // its hat is what it does; its voice is a register and a scale (npc/clayese.js), its temper the feeling it wears when no one is
 // talking to it (Pip is always a little afraid, Old Grog a little sad, Raku a little sly).
 // ---------------------------------------------------------------------------------------
-import { BASE_Y } from '../basement.js';
-import { WEIR_SPAWN } from '../angling/weir.js';
+import { BASE_Y } from '../world/basement/basement.js';
+import { WEIR_SPAWN } from '../tools/sondelass/angling/weir.js';
 
 export const PEOPLE = [
   {

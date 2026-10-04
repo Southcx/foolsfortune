@@ -22,7 +22,7 @@
 //   diag.mode (0 off, 1 panel, 2 panel + lines + minds)   diag.cycle()   diag.report() -> text
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { econLine } from '../econ/economy.js';
+import { econLine } from '../progress/econ/economy.js';
 
 const N = 240;
 const CSS = `

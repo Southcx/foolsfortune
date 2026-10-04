@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): things in the world: shattered, struck, pushed, lifted and mended; the clapperjars' claps and taps; the gong, the barrier.
+// A sound bank of the one mixer (audio/sfx.js): things in the world: shattered, struck, pushed, lifted and mended; the clapperjars' claps and taps; the gong, the barrier.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class WorldSounds {
   shatter(size = 1, dist = 5, kind = 'clay') {

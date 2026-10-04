@@ -52,7 +52,7 @@ npm run build      # static bundle in dist/
 | V (cutlass out) | guard: a raised blade turns a projectile aside, and a well-timed one sends it back |
 | O | swap shoulder (third person) |
 | Tab | tuning panel (frees the mouse); its ACTIONS: set the room again, back to the last checkpoint, teleport to the hub (these were T, R and H) |
-| Esc | the pause card: **the help pages** (the keys, the core movement, techs and arts, climbing and water, a page for each tool; ← → or the list turns them: `src/help/`) |
+| Esc | the pause card: **the help pages** (the keys, the core movement, techs and arts, climbing and water, a page for each tool; ← → or the list turns them: `src/feedback/help/`) |
 | F2 | hide the interface (cycle: everything / the frame of a shot only / nothing but the picture), for a clean screenshot |
 | F3 | physics debug wireframe, and what the creatures near them are thinking |
 | \\ | fold the log away to its tabs (or its – button); again to open it |
@@ -61,7 +61,7 @@ npm run build      # static bundle in dist/
 
 ## Tuning
 
-Every number that affects feel is in `src/config.js`, and the **Tab** panel edits them live.
+Every number that affects feel is in `src/core/config.js`, and the **Tab** panel edits them live.
 Changes persist in your browser's local storage. Use **Copy settings JSON** to share a
 tuned set, and paste it back into `DEFAULTS` to make it the new baseline.
 
@@ -78,9 +78,9 @@ winds up (refunded if you let go too early). It trickles back slowly, and the re
 pots. They bounce, settle and wobble, then fly to you when you get close. Clapperjars will
 eat baubles you leave lying around, and grow fatter (and juicier) for it. A bauble left lying **oxidizes**: after a few seconds
 the cream darkens, step by step, through amber to the near-black and oil-film sheen of liquid Lachryma (the Well's, the cubes'), and
-then it sinks into the floor and is gone (`OX` in `src/lachryma.js`). The baubles a dissolving creature throws out are already turned.
+then it sinks into the floor and is gone (`OX` in `src/courier/lachryma.js`). The baubles a dissolving creature throws out are already turned.
 
-`src/lachryma.js` has the pool as a standalone class meant to be shared by future mechanics:
+`src/courier/lachryma.js` has the pool as a standalone class meant to be shared by future mechanics:
 costs looked up by tag, stacking modifiers (cost multipliers per tag, regen, max bonus),
 reservations for wind-ups, all-or-nothing `spend()` and partial `drain()`, and events
 (`change`, `spend`, `gain`, `empty`, `full`, `overflow`, `denied`).
@@ -90,7 +90,7 @@ reservations for wind-ups, all-or-nothing `spend()` and partial `drain()`, and e
 Special rounds loaded one at a time (the support hand racks each one). Refill at the glowing
 **reliquaries** (one per floor).
 
-**Caster shells and psyguns** (`src/psygun/kinds.js`, R39). Every shell type has a number, TYPE-00 (the Cleave) to TYPE-10 (the Hatch), and a psygun is how many **chambers** it has (how many types it carries at once) and how deep each one is (its **capacity**, with the heavy shells held fewer). THE PSYGUN they wake with has six chambers of eight (four of the bomb, the well and the anchor); THE PEPPERBOX has eleven of three; THE LONG TUBE three of sixteen. Which shell sits in each chamber is chosen in the Pneuka Box, under the psygun (left click: the next type; right click: all of them). In DEBUG, `/psygun pepperbox` changes guns. The shells are things too (`shell.<type>`, a placeholder casing banded in the type's colour).
+**Caster shells and psyguns** (`src/tools/psygun/kinds.js`, R39). Every shell type has a number, TYPE-00 (the Cleave) to TYPE-10 (the Hatch), and a psygun is how many **chambers** it has (how many types it carries at once) and how deep each one is (its **capacity**, with the heavy shells held fewer). THE PSYGUN they wake with has six chambers of eight (four of the bomb, the well and the anchor); THE PEPPERBOX has eleven of three; THE LONG TUBE three of sixteen. Which shell sits in each chamber is chosen in the Pneuka Box, under the psygun (left click: the next type; right click: all of them). In DEBUG, `/psygun pepperbox` changes guns. The shells are things too (`shell.<type>`, a placeholder casing banded in the type's colour).
 
 | Shell | Effect |
 | --- | --- |
@@ -108,7 +108,7 @@ Special rounds loaded one at a time (the support hand racks each one). Refill at
 
 ## The Sondelass (Q)
 
-A telescoping instrument worn on the back, parallel to the Psygun, drawn the same way: **a fishing rod, a cutlass and a grapple hook**, and the first melee tool. It is a passive tech (`src/moves/sondelass.js`): you run, jump and slide with it out; it only owns the right arm and puts the Psygun away. **1 / 2 / 3** change form (the sections slide in and out); the mouse is the tool's while it is out.
+A telescoping instrument worn on the back, parallel to the Psygun, drawn the same way: **a fishing rod, a cutlass and a grapple hook**, and the first melee tool. It is a passive tech (`src/tools/sondelass/sondelass.js`): you run, jump and slide with it out; it only owns the right arm and puts the Psygun away. **1 / 2 / 3** change form (the sections slide in and out); the mouse is the tool's while it is out.
 
 | Form | Controls |
 | --- | --- |
@@ -116,22 +116,22 @@ A telescoping instrument worn on the back, parallel to the Psygun, drawn the sam
 | **Hook** | LMB fires the grapnel along the aim (2 Lachryma). Solid ground draws you to it at 27 m/s (jump cuts the line and keeps the momentum; a ledge's lip mantles), something loose is yanked to you. RMB holds the arm out on the aim. |
 | **Rod** | **9 / 0** change the **lure** (six made ones, and any curio you hold); **4–8** (or the wheel) pick the **aspect** (dread, wonder, grief, hunger, mirth) a sounding pushes into it. Hold LMB to charge a cast, release to throw. Then: tap LMB to twitch the lure; hold RMB to sink it; hold LMB to reel it home; middle click to **sound** (a psychic ping that lights up every entity in reach, pushes the aspect into the lure for a while, and stirs every fish in that water, the nearer the more). |
 
-**Angling** (`src/angling/`) is played at **THE WEIR**, the oasis at the heart of the dunes (hub index, D): a pond of four terraces cut into the sand, a pier from the south beach, a 9.5 m stone well of liquid Lachryma, a cutlass yard, a timber pergola over the water with hook rings and the tide lamp, the Tally stone, palms and reeds. **Lures** (`lures.js`) are things you own: each has a *taste* over the five aspects and each species answers to its own (the passive lure, which draws fish from across the water); every curio you hold can be tied on, stronger the rarer it is; and a sounding pushes the chosen aspect into the lure and stirs the whole pond (the active lure). Bites come in seconds. The lure's body is the Courier's own mind projected (a ghost of their mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
+**Angling** (`src/tools/sondelass/angling/`) is played at **THE WEIR**, the oasis at the heart of the dunes (hub index, D): a pond of four terraces cut into the sand, a pier from the south beach, a 9.5 m stone well of liquid Lachryma, a cutlass yard, a timber pergola over the water with hook rings and the tide lamp, the Tally stone, palms and reeds. **Lures** (`lures.js`) are things you own: each has a *taste* over the five aspects and each species answers to its own (the passive lure, which draws fish from across the water); every curio you hold can be tied on, stronger the rarer it is; and a sounding pushes the chosen aspect into the lure and stirs the whole pond (the active lure). Bites come in seconds. The lure's body is the Courier's own mind projected (a ghost of their mask); casting reserves Lachryma and the fight drains it; a landed fish comes apart into baubles. Ten entities (`species.js`), each with an aspect it likes, a depth band, tides it comes at, a way of biting (a nibble, a tug, a gulp: the last probe is the bite you answer, press LMB inside the window; the middle of the window is a *perfect* hook set) and a way of fighting (drift, dart, thrash with a half-second warning, run, sweep, leap, anchor). **The fight** (`fight.js`) is a tension gauge with a sweet band (the fish tires only while the needle sits in it), the fish's stamina, and the line out: LMB reels, RMB gives line, lean the camera against its pull (the arrow on screen), crouch to brace. Over the limit too long and the line snaps; slack too long and the hook slips. A fish just landed leaves an **echo** on the next cast (FFXIV's mooching): predators come to the echo of what they eat, and the Drowned Lachryma, who comes to the Well at the top of the tide, comes to nothing less than the echo of something large. The Codex's ANGLING shelf is the bestiary, filling in as you land more of each.
 
 Prior art (also in the module headers): FFXIV (the graded bite, hook sets, tides as fishing windows, the Fish Guide, mooching), FFXI (fish stamina and its pull, arrows), Zelda: Twilight Princess (aim, cast, work the lure) and the Hookshot, Stardew Valley (the band), Red Dead 2 (reel, lean, give line), Dredge (what is in the water is wrong), Monster Hunter (form switching, the telegraphed hit), Animal Crossing (the shadow in the water). The animation is CC0: the Universal Animation Library's sword clips carry the tool with no IK (its socket is measured from the sword pose), and the cast is `Sword_Regular_C` held at its raised frame while a cast charges.
 
 ## The Soul Brush (G)
 
-A calligrapher's brush the size of a club, worn at the left hip like a sword in a sash and drawn across the body (`src/moves/soulbrush.js`, `src/brush/`). Its bristles are soaked in **slip**, and its ink, on the Celestial Brush's paper, is **Lachryma**. Drawn from three games, one part each:
+A calligrapher's brush the size of a club, worn at the left hip like a sword in a sash and drawn across the body (`src/tools/soulbrush/soulbrush.js`, `src/tools/soulbrush/`). Its bristles are soaked in **slip**, and its ink, on the Celestial Brush's paper, is **Lachryma**. Drawn from three games, one part each:
 
 | Part | From | What it does |
 | --- | --- | --- |
-| **The club** (`brush/club.js`) | Splatoon's Inkbrush, Zelda's hammer and spin charge | LMB: three heavy blows (the UAL sword clips at four fifths speed). It is a poor way to break things (a pot takes several blows): the light blows **bat** clapperjars away, the overhead, or a blow on one already flying, leaves it reeling. Every swing **flicks** slip off the bristles along the swing. Hold LMB: the brush goes up and gathers; let go to **slam** (a ring that throws what is near, a pool of slip; in the air they come down with it). RMB tap: a flick at range. |
-| **The brush slide** | Splatoon's Inkbrush dash and ink-swim | With the brush out, the core slide is the same slide (the movement is untouched), but they ride it sideways and low with the brush trailing on the ground (an authored clip, `brush/clips.js`: nothing in the free libraries does it), and it paints a **stroke of slip** behind them (`vfx/paintpath.js`). Once it has settled (half a second) it is wet enough to dive into: C on their own trail melts them into it. |
-| **The Celestial Brush** (`brush/celestial.js`, `canvas.js`, `gesture.js`, `techniques.js`) | Okami | Hold RMB: time all but stops, the screen goes to sepia paper, and LMB draws in ink. A drawing is read when the hand rests and may take **several strokes** (the **Penny Pincher** recognizer, Taranta and LaViola 2015: resampled direction vectors scored by dot product against templates generated for the ways a hand draws each shape, a tenth of a millisecond a drawing; plain geometry first for closed loops, spirals and the bomb; decoy templates so a triangle or a cross is not a circle); several drawings can be made in one breath, and when RMB is let go they all take, in order. Each drawing is painted once into its own layer as it is drawn, so a long drawing costs no more to show than a short one. The paper and the ink cost Lachryma. |
-| **Sigils** (`brush/sigils.js`) | Magic Cat Academy | While the brush is out, clapperjars near them carry a queue of brushed marks (a stroke across, a stroke down, V, ^, a bolt; raiders three). Drawing a mark lifts it off the front of every queue it heads, all at once; an emptied queue unwrites the jar. |
+| **The club** (`tools/soulbrush/club.js`) | Splatoon's Inkbrush, Zelda's hammer and spin charge | LMB: three heavy blows (the UAL sword clips at four fifths speed). It is a poor way to break things (a pot takes several blows): the light blows **bat** clapperjars away, the overhead, or a blow on one already flying, leaves it reeling. Every swing **flicks** slip off the bristles along the swing. Hold LMB: the brush goes up and gathers; let go to **slam** (a ring that throws what is near, a pool of slip; in the air they come down with it). RMB tap: a flick at range. |
+| **The brush slide** | Splatoon's Inkbrush dash and ink-swim | With the brush out, the core slide is the same slide (the movement is untouched), but they ride it sideways and low with the brush trailing on the ground (an authored clip, `tools/soulbrush/clips.js`: nothing in the free libraries does it), and it paints a **stroke of slip** behind them (`vfx/paintpath.js`). Once it has settled (half a second) it is wet enough to dive into: C on their own trail melts them into it. |
+| **The Celestial Brush** (`tools/soulbrush/celestial.js`, `canvas.js`, `gesture.js`, `techniques.js`) | Okami | Hold RMB: time all but stops, the screen goes to sepia paper, and LMB draws in ink. A drawing is read when the hand rests and may take **several strokes** (the **Penny Pincher** recognizer, Taranta and LaViola 2015: resampled direction vectors scored by dot product against templates generated for the ways a hand draws each shape, a tenth of a millisecond a drawing; plain geometry first for closed loops, spirals and the bomb; decoy templates so a triangle or a cross is not a circle); several drawings can be made in one breath, and when RMB is let go they all take, in order. Each drawing is painted once into its own layer as it is drawn, so a long drawing costs no more to show than a short one. The paper and the ink cost Lachryma. |
+| **Sigils** (`tools/soulbrush/sigils.js`) | Magic Cat Academy | While the brush is out, clapperjars near them carry a queue of brushed marks (a stroke across, a stroke down, V, ^, a bolt; raiders three). Drawing a mark lifts it off the front of every queue it heads, all at once; an emptied queue unwrites the jar. |
 
-What the Celestial Brush knows (the reference scroll at the canvas's edge shows the shapes). The brush **alters things rather than hurting them**: most drawings write a PROPERTY onto what they are drawn over (`brush/inscribe.js`: the body's type, mass, gravity, bounce, and the tags every tool asks), for a while, and wear a small brushed seal while they last; what happens next is the world's doing.
+What the Celestial Brush knows (the reference scroll at the canvas's edge shows the shapes). The brush **alters things rather than hurting them**: most drawings write a PROPERTY onto what they are drawn over (`tools/soulbrush/inscribe.js`: the body's type, mass, gravity, bounce, and the tags every tool asks), for a while, and wear a small brushed seal while they last; what happens next is the world's doing.
 
 | Drawing | Technique | |
 | --- | --- | --- |
@@ -148,7 +148,7 @@ What the Celestial Brush knows (the reference scroll at the canvas's edge shows 
 
 ## The Veritome (J)
 
-A grimoire held **open in both hands**, the way a tablet is held to take a picture with its rear camera: the **lens is in the spine** (open, the spine faces away from the reader), the measuring instruments are on the front cover (a clock that keeps the tide, a compass rose, a sextant's arc, a spirit level), and the pages face the Courier (the left in ink, the right showing the last photograph). Shut, it hangs at the right hip (`src/moves/veritome.js`, `src/veritome/`). It gathers information; it does not rewrite anything. And it is the Courier's **inventory**: everything they keep is a card in it, and the Codex is its own pages.
+A grimoire held **open in both hands**, the way a tablet is held to take a picture with its rear camera: the **lens is in the spine** (open, the spine faces away from the reader), the measuring instruments are on the front cover (a clock that keeps the tide, a compass rose, a sextant's arc, a spirit level), and the pages face the Courier (the left in ink, the right showing the last photograph). Shut, it hangs at the right hip (`src/tools/veritome/veritome.js`, `src/tools/veritome/`). It gathers information; it does not rewrite anything. And it is the Courier's **inventory**: everything they keep is a card in it, and the Codex is its own pages.
 
 | Part | From | What it does |
 | --- | --- | --- |
@@ -156,7 +156,7 @@ A grimoire held **open in both hands**, the way a tablet is held to take a pictu
 | **The lens** (`viewfinder.js`, `photo.js`, `subjects.js`) | Pokémon Snap, Fatal Frame, Wind Waker's Picto Box, the Sheikah Slate | Hold RMB: the book comes up before the eyes and the view is the picture on its pages, framed in parchment with the instruments drawn in the margins (a compass tape, a sextant's arc, the tide clock, the zoom, and the roll of film as a row of plates). Focus brackets sit on whatever is worth a photograph, in vermilion on a creature that is aware of them and engaged with them. LMB exposes a plate. What a photograph sees is charted and pinned on the map; what the Soul Brush wrote on it is undone. |
 | **The capture** (`subjects.js`) | Fatal Frame, made gentler | Only a creature that is **aware** of them and **engaged** (a clapperjar clapping at them, fleeing them, cowering, knocked about) can be held: kept in the capture circle it charges the shot, and a full shot is a held plate, better at the **shutter chance** (in the air, or clapping at them). A photograph never stuns (R41, the owner's call): stunning is the **Flash**'s (1), on its own key. An unaware creature is photographed **candidly**, and candid photographs are how its habits are learned. Nothing is killed by a photograph. |
 | **The Flash** (`flash.js`) | Fatal Frame's full-charge shot, Luigi's Mansion's Strobulb, Monster Hunter's flash pod | **1** with the book out (not the shutter: it takes no picture). A cone of white light leaps from the lens (a narrower, longer beam with the lens raised): everything with eyes in it is **dazzled** (it sees nothing for a moment and a wind-up breaks off) and its **stun meter** fills, more the nearer and the more central it is. It costs Lachryma, and the lens needs a second between flashes. Three good flashes put a slip jelly down. |
-| **Reprogram** (`reprogram.js`, `src/mind/`) | The Typing of the Dead, NieR: Automata's hacking, Transistor's Functions, Opus Magnum and SpaceChem, Tunic's runes | Walk up to a **stunned** mind and press the **middle button**: its mind opens on the **macros** you have composed and offers them as **neuralese**: words of an invented language, each with its rune (`STIL LON`, `SIVA`, `AMI TALO`). Choose one and type its words before the time runs out; typed whole it runs, and a poorly made macro may be thrown off (the mind wakes, and remembers). A macro is composed in the Codex (VERITOME, **THE MIND**) on a **lattice**, a 7x5 grid: **Functions** are shaped pieces (a bar, an L, an S, a block, a wire, a turn) that turn and mirror, and the signal must run from the mind's **core** (left) through them to its **mouth** (right). How well it is fitted is its **quality** (does it reach the mouth, how short the route, how little is left over), and quality is strength: how long each Function lasts, how deep it takes, how likely the mind is to accept it. Each Function **is** one of the AI's own parts (`docs/AI.md`): an action the Brain is directed to do (drink, rest, forage, fish, huddle, play, flee, go home, mourn, fetch, follow), a status (halt, calm, sleep, melt), a relation (take them for kin, turn on its own kind), a drive stirred (thirst, hunger), a memory wiped, or a modifier of the one before (LON longer, DEO deeper). Functions are **learned by observing**: photograph a slip jelly drinking, appraise it, and the bestiary's fact teaches SIVA (you can only ask a mind for what you have seen a mind do); a few are learned by deeds (stunning, bursting, reprogramming, a brawl seen). |
+| **Reprogram** (`reprogram.js`, `src/tools/veritome/mind/`) | The Typing of the Dead, NieR: Automata's hacking, Transistor's Functions, Opus Magnum and SpaceChem, Tunic's runes | Walk up to a **stunned** mind and press the **middle button**: its mind opens on the **macros** you have composed and offers them as **neuralese**: words of an invented language, each with its rune (`STIL LON`, `SIVA`, `AMI TALO`). Choose one and type its words before the time runs out; typed whole it runs, and a poorly made macro may be thrown off (the mind wakes, and remembers). A macro is composed in the Codex (VERITOME, **THE MIND**) on a **lattice**, a 7x5 grid: **Functions** are shaped pieces (a bar, an L, an S, a block, a wire, a turn) that turn and mirror, and the signal must run from the mind's **core** (left) through them to its **mouth** (right). How well it is fitted is its **quality** (does it reach the mouth, how short the route, how little is left over), and quality is strength: how long each Function lasts, how deep it takes, how likely the mind is to accept it. Each Function **is** one of the AI's own parts (`docs/AI.md`): an action the Brain is directed to do (drink, rest, forage, fish, huddle, play, flee, go home, mourn, fetch, follow), a status (halt, calm, sleep, melt), a relation (take them for kin, turn on its own kind), a drive stirred (thirst, hunger), a memory wiped, or a modifier of the one before (LON longer, DEO deeper). Functions are **learned by observing**: photograph a slip jelly drinking, appraise it, and the bestiary's fact teaches SIVA (you can only ask a mind for what you have seen a mind do); a few are learned by deeds (stunning, bursting, reprogramming, a brawl seen). |
 | **The film** (`film.js`) | Wind Waker's Picto Box, Dark Cloud 2's camera, Pokémon Snap's film | Every shutter is a **plate**: the picture and what was in it, as it was, kept unjudged. Twenty-four to a roll; when it is full the shutter will not close until some are appraised or thrown out. |
 | **The darkroom** (`darkroom.js`) | Pokémon Snap's report, Dark Cloud 2's scoops, Wind Waker's Carlov | Appraising is a step of its own, done in a batch from the Codex (VERITOME, THE FILM: **APPRAISE ALL**, or a chosen few). Each plate: the **Compendium** keeps the best photograph of every kind of thing; the **bestiary** learns what each creature in it was doing; the **Book** is given a card for every Arcana whose sitting it is, and a **creature card** for a creature that is the main subject of a plate of three stars or more. The report lists each plate with its stars and what it gave. |
 | **The bestiary** (`bestiary.js`) | Pokémon Snap's behaviours, Monster Hunter's Hunter's Notes, the Pokédex | Every creature (the clapperjar, each fish) has facts learned from photographs of it doing something: a jar asleep (what wakes it), foraging, mending in gold, taunting (how far it sees), cowering behind a pot, falling, dancing, set upon by one of its own (**infighting**); a fish swimming (its depth and tides), circling a lure (what it is drawn to), biting, fighting. The useful ones are marked **in battle**. Its **understanding** (glimpsed, observed, studied, understood) is what other systems read: the Angling shelf shows a fish's habits as soon as they are photographed, and an understood creature is one the Soul Brush will later be able to paint a likeness of. |
@@ -175,27 +175,27 @@ world. The title has its own Courier (the same model and clips) and is drawn ins
 
 ## The Dreamvane (K), the Crucibelle (U) and the Lockheart (I)
 
-Three tools that share what they work on: **Lachryma**. Anything made of it or holding it gives off a **signature** (`src/signatures.js`: a bauble, a cube, a shut chest, a clapperjar, a jelly with something swallowed, a crystal formation, a spirit), and each of the three takes it a different way. All three are in the Codex (TOOLS).
+Three tools that share what they work on: **Lachryma**. Anything made of it or holding it gives off a **signature** (`src/core/signatures.js`: a bauble, a cube, a shut chest, a clapperjar, a jelly with something swallowed, a crystal formation, a spirit), and each of the three takes it a different way. All three are in the Codex (TOOLS).
 
 | Tool | From | What it does |
 | --- | --- | --- |
-| **The Dreamvane** (`moves/dreamvane.js`, `dreamvane/model.js`) | Skyward Sword's dowsing, the pickaxe of every mining game, God of War's Leviathan Axe | A shepherd's crook with a dreamcatcher hung in it, a pick across it and a tuning fork in its heel. **Dowse** (hold RMB): the dreamcatcher turns on its pin toward the loudest signature, its web lights and its bead ticks faster the more nearly they face it; the wheel **attunes** it (anything, crystal, chests, the living, what lies loose); what it finds clearly is charted. **The pick** (LMB, UAL's overhead, measured): **crystal formations** in the sand (`lachryma/crystals.js`, one instanced mesh for the sea) give Lachryma a blow at a time and cubes when they break; struck where the vane points at nothing visible, it brings **veiled** crystal up out of the sand. **The fork** (tap RMB): thrown, it sticks and **rings**: in crystal the pick takes twice and a **shard** (it feeds the Lockheart) and sometimes a Possibilikey, and the fork sounds the formation's **reference note**; in a creature it shakes the Lachryma out of it as liquid baubles and its poise goes; in the ground it rings on its own, a sound every creature near comes to look at (a lure). Tap again and it flies back to the heel. **Tuned by ear** (`lachryma/tuning.js`, R39): every formation has a key and a **sweet spot** (a height on it and a way round it). Each blow of the pick sounds a note: aimed above the spot it is sharp of the reference, below it flat (a step of the key's scale for each seventh of the height), and from the wrong side it **wavers** (two tones beating up to 8 Hz apart), going still as they come round. A blow at the right height from the right side opens the formation at once and pays many times over: **dense** formations (big, stony) take many blows and pay ×2 at the spot; **fragile** ones (small, glassy) break in a few and pay ×6 (`ECON.crystal`). **The survey** (MMB): the heel struck down, and the Mind's ring goes out from them (what was N). |
-| **The Crucibelle** (`moves/crucibelle.js`, `crucibelle/`) | Ocarina of Time's songs, Patapon's fever, Crypt of the NecroDancer and Hi-Fi Rush, Brütal Legend, the pentatonic scale | A smoking bell held up like a lantern: it takes what is played into it and makes it more. **1–5** are the five notes of the **minor pentatonic of whatever music is playing**, in its key (`music/player.js` grid), so nothing played is wrong; RMB held, an octave up. Notes **on the beat** build **fever** (the ember in the bell, the smoke out of it), and fever makes songs stronger and cheaper. A **song** is a motif: **Seeing** (5 3 1) raises veiled crystal and marks every signature near; **Seeming** (2 4 2 4) puts up a Courier of smoke that hunting minds take for them (a **decoy** every mind sees, `crucibelle/mirage.js`) and veils them; **the Rally** (1 3 5) makes their spirits and kin quicker and harder (statuses `haste`, `empower`) and their Lachryma quick; **the Lullaby** (5 4 3 2 1) puts what is against them to sleep; **the Call** (1 1 5 5) stands a **smoke spirit** up out of the bell. LMB **tolls** it: a ring of sound that staggers what is close. The **instrument** fitted in the box is its voice and its school (the clay ocarina for seeing and seeming, the kalimba for rallying and lulling, the spirit lute for calling). |
-| **The Lockheart** (`moves/lockheart.js`, `lockheart/`) | the gacha banner, Luigi's Mansion's Poltergust, Slay the Spire's and Balatro's stacking modifiers, the mourning locket | A little coffin on a chain. Worn, it **drinks the overflow** (Lachryma gained over the top of their pool). Drawn, LMB held **hoovers**: loose baubles are drawn in (liquid ones count double), and a mind laid low (stunned, asleep) has its Lachryma drawn out of it. A shard from the Dreamvane fills it nearly half. Full, and with a **Possibilikey** on its ring (up to four, in order, from the box, strung on its charm either side of the coffin), RMB **opens** it: the keys are used up, its **table** (the coffin on the chain is the wheel: the plain one, the gambler's 99 duds to 1 slip nuke, the shepherd's for the flock) changed by the keys (**Inverted**: the likeliest becomes the rarest, so the gambler's is 99 slip nukes; **Even**, **Loaded**, **Twin**: two spins, **Wide**: twice the reach, **Echo**: it happens again) is put up as a **wheel** over it and spun, and what it lands on comes out as hard as the coffin was full: a spill of Lachryma, cubes, mending, a ring of light that stuns, a hush, kinship, spirits, a falling chest, a bite back, or the **slip nuke** (thousands of particles of slip thrown up over everything near; every foe in reach burst, every pot broken). |
-| **The Opening** (`lockheart/ultimate.js`, R40) | Final Fantasy X's aeon summons, Kingdom Hearts' summons, Persona's All-Out Attack | A Lockheart opened with a Possibilikey is the Courier's **ultimate**, and the game stops for it: the world held almost still and dark, a circle of light drawn on the ground, the keys wheeling round the coffin and plunging in (each a note and a colour), the coffin rising over the Courier's head and burning gold in a double helix of Lachryma, the wheel of odds put up enormous in the sky, and the landing in flash, shockwave and smear. Every beat has its own camera (kept out of walls: `shotclear.js`). Drawn, the Lockheart (twice its old size) dangles from the left hand by its chain; channelling (LMB) is FFXI's black magic cast, the arms out and the hands joined in an O, Lachryma streaming in through it to the coffin behind. |
+| **The Dreamvane** (`tools/dreamvane/dreamvane.js`, `tools/dreamvane/model.js`) | Skyward Sword's dowsing, the pickaxe of every mining game, God of War's Leviathan Axe | A shepherd's crook with a dreamcatcher hung in it, a pick across it and a tuning fork in its heel. **Dowse** (hold RMB): the dreamcatcher turns on its pin toward the loudest signature, its web lights and its bead ticks faster the more nearly they face it; the wheel **attunes** it (anything, crystal, chests, the living, what lies loose); what it finds clearly is charted. **The pick** (LMB, UAL's overhead, measured): **crystal formations** in the sand (`world/dunes/crystals.js`, one instanced mesh for the sea) give Lachryma a blow at a time and cubes when they break; struck where the vane points at nothing visible, it brings **veiled** crystal up out of the sand. **The fork** (tap RMB): thrown, it sticks and **rings**: in crystal the pick takes twice and a **shard** (it feeds the Lockheart) and sometimes a Possibilikey, and the fork sounds the formation's **reference note**; in a creature it shakes the Lachryma out of it as liquid baubles and its poise goes; in the ground it rings on its own, a sound every creature near comes to look at (a lure). Tap again and it flies back to the heel. **Tuned by ear** (`world/dunes/crystaltuning.js`, R39): every formation has a key and a **sweet spot** (a height on it and a way round it). Each blow of the pick sounds a note: aimed above the spot it is sharp of the reference, below it flat (a step of the key's scale for each seventh of the height), and from the wrong side it **wavers** (two tones beating up to 8 Hz apart), going still as they come round. A blow at the right height from the right side opens the formation at once and pays many times over: **dense** formations (big, stony) take many blows and pay ×2 at the spot; **fragile** ones (small, glassy) break in a few and pay ×6 (`ECON.crystal`). **The survey** (MMB): the heel struck down, and the Mind's ring goes out from them (what was N). |
+| **The Crucibelle** (`tools/crucibelle/crucibelle.js`, `crucibelle/`) | Ocarina of Time's songs, Patapon's fever, Crypt of the NecroDancer and Hi-Fi Rush, Brütal Legend, the pentatonic scale | A smoking bell held up like a lantern: it takes what is played into it and makes it more. **1–5** are the five notes of the **minor pentatonic of whatever music is playing**, in its key (`music/player.js` grid), so nothing played is wrong; RMB held, an octave up. Notes **on the beat** build **fever** (the ember in the bell, the smoke out of it), and fever makes songs stronger and cheaper. A **song** is a motif: **Seeing** (5 3 1) raises veiled crystal and marks every signature near; **Seeming** (2 4 2 4) puts up a Courier of smoke that hunting minds take for them (a **decoy** every mind sees, `tools/crucibelle/mirage.js`) and veils them; **the Rally** (1 3 5) makes their spirits and kin quicker and harder (statuses `haste`, `empower`) and their Lachryma quick; **the Lullaby** (5 4 3 2 1) puts what is against them to sleep; **the Call** (1 1 5 5) stands a **smoke spirit** up out of the bell. LMB **tolls** it: a ring of sound that staggers what is close. The **instrument** fitted in the box is its voice and its school (the clay ocarina for seeing and seeming, the kalimba for rallying and lulling, the spirit lute for calling). |
+| **The Lockheart** (`tools/lockheart/lockheart.js`, `lockheart/`) | the gacha banner, Luigi's Mansion's Poltergust, Slay the Spire's and Balatro's stacking modifiers, the mourning locket | A little coffin on a chain. Worn, it **drinks the overflow** (Lachryma gained over the top of their pool). Drawn, LMB held **hoovers**: loose baubles are drawn in (liquid ones count double), and a mind laid low (stunned, asleep) has its Lachryma drawn out of it. A shard from the Dreamvane fills it nearly half. Full, and with a **Possibilikey** on its ring (up to four, in order, from the box, strung on its charm either side of the coffin), RMB **opens** it: the keys are used up, its **table** (the coffin on the chain is the wheel: the plain one, the gambler's 99 duds to 1 slip nuke, the shepherd's for the flock) changed by the keys (**Inverted**: the likeliest becomes the rarest, so the gambler's is 99 slip nukes; **Even**, **Loaded**, **Twin**: two spins, **Wide**: twice the reach, **Echo**: it happens again) is put up as a **wheel** over it and spun, and what it lands on comes out as hard as the coffin was full: a spill of Lachryma, cubes, mending, a ring of light that stuns, a hush, kinship, spirits, a falling chest, a bite back, or the **slip nuke** (thousands of particles of slip thrown up over everything near; every foe in reach burst, every pot broken). |
+| **The Opening** (`tools/lockheart/ultimate.js`, R40) | Final Fantasy X's aeon summons, Kingdom Hearts' summons, Persona's All-Out Attack | A Lockheart opened with a Possibilikey is the Courier's **ultimate**, and the game stops for it: the world held almost still and dark, a circle of light drawn on the ground, the keys wheeling round the coffin and plunging in (each a note and a colour), the coffin rising over the Courier's head and burning gold in a double helix of Lachryma, the wheel of odds put up enormous in the sky, and the landing in flash, shockwave and smear. Every beat has its own camera (kept out of walls: `shotclear.js`). Drawn, the Lockheart (twice its old size) dangles from the left hand by its chain; channelling (LMB) is FFXI's black magic cast, the arms out and the hands joined in an O, Lachryma streaming in through it to the coffin behind. |
 | **Spirits** (`spirits.js`) | Patapon's army, Hollow Knight's Grimmchild | What the Call and a Lockheart stand up: a slip jelly made of smoke, the same body and mind, with a place of its own in the ecology (`spirit`: it takes them for kin and wild jellies for rivals, as they take it). It follows them and fights what is against them; their blows pass through it (`ally`); it lasts its time and goes back to smoke. |
 
 ## Creatures: the slip jelly
 
-The first creature that fights back (`src/jelly/`), the maker's own model (an egg of sloppy wet sand over a skirt of four toes, its surface always sliding down it like something melting: a slow scrolled pattern in `jelly/deform.js`) in the dunes past the Weir, three of them on the flats. It has **no rig**: it is moved by springs fed to its vertex shader (`jelly/deform.js`), the way the sixth generation moved its slimes: a squash and stretch that keeps its volume, a lean that lags behind its motion, a ripple up the body, a dent where it was struck, and **toes that paddle** in a wave round the skirt as it goes. It **glides on its own slip**, and its trail is real slip you can dive into (C). It attacks with two moves whose wind-ups are its whole body: the **lunge** (it sinks and quivers, then throws itself where they stood: step aside as it leaves the ground, break the wind-up with a heavy blow, or dazzle it with the flash) and the **spit** (a glob of slip lobbed at them). A blow dents it and sets it wobbling; eight shots' worth and it **bursts**: it rears up, pops high, throws a shower of slip with a rush like a rainstick turned over, leaves a pool of slip and a scatter of cubes, and forms again from its puddle a while later. Every weapon reaches it through one door: a creature carries the tag `hurtable` and a `hurt()` method (`creatures.js`), and the shots, the cutlass, the Stinger and the club ask the tag, not the kind. The **battle music** plays while one is after them. Prior art: Dragon Quest's slime, Zelda's Chuchus, Slime Rancher's jiggle, Splatoon's ink.
+The first creature that fights back (`src/creatures/jelly/`), the maker's own model (an egg of sloppy wet sand over a skirt of four toes, its surface always sliding down it like something melting: a slow scrolled pattern in `creatures/jelly/deform.js`) in the dunes past the Weir, three of them on the flats. It has **no rig**: it is moved by springs fed to its vertex shader (`creatures/jelly/deform.js`), the way the sixth generation moved its slimes: a squash and stretch that keeps its volume, a lean that lags behind its motion, a ripple up the body, a dent where it was struck, and **toes that paddle** in a wave round the skirt as it goes. It **glides on its own slip**, and its trail is real slip you can dive into (C). It attacks with two moves whose wind-ups are its whole body: the **lunge** (it sinks and quivers, then throws itself where they stood: step aside as it leaves the ground, break the wind-up with a heavy blow, or dazzle it with the flash) and the **spit** (a glob of slip lobbed at them). A blow dents it and sets it wobbling; eight shots' worth and it **bursts**: it rears up, pops high, throws a shower of slip with a rush like a rainstick turned over, leaves a pool of slip and a scatter of cubes, and forms again from its puddle a while later. Every weapon reaches it through one door: a creature carries the tag `hurtable` and a `hurt()` method (`creatures.js`), and the shots, the cutlass, the Stinger and the club ask the tag, not the kind. The **battle music** plays while one is after them. Prior art: Dragon Quest's slime, Zelda's Chuchus, Slime Rancher's jiggle, Splatoon's ink.
 
 **It lives there.** The jellies have needs that rise and fall (thirst, hunger, rest, company, fear, curiosity, each a little different in each jelly: greedy, lazy, bold, shy), and they meet them from the place: they drink at the pond's edge, rest in the palms' shade, forage for the baubles and cubes left lying about (a jelly that has eaten Lachryma carries it, and gives it back when it bursts), fish the shallows, huddle and play together, and watch a clapperjar that has wandered out. They see in a cone (and not through walls), hear shots, breakage and each other, and remember: where they were, who hurt them, where the water is. One that notices them **calls** the others; one that is hurt is avenged; one that bursts is mourned at its puddle, and its kin hold a grudge. They hunt only so far from home before they give up and go back. **F3** shows each mind's state.
 
-**Stun, and what it opens.** Anything that can be stunned has a **poise** meter (`src/stun.js`): the flash, a blow, being caught mid-leap fill it, rest drains it, and full, the thing is **stunned** for a few seconds (gold stars wheel round its head, `vfx/dizzy.js`; a ring of them fills as the meter does). A stunned thing takes half again as much from every blow and is open to what a thinking opponent would refuse: the **Veritome's reprogramming** (above) and the **Sondelass's zandatsu**. A creature that is not stunned **resists** a blade-mode cut: the blade glances off with a ward sigil, sparks and a clang (`blade.resist`), and the log says so. Stunned, the zandatsu takes it apart: its body is cut along the blade's planes into pieces that fly in the slow air and come undone into **Lachryma** in under a second (`vfx/dissolve.js`): liquid baubles (MP) thrown out as each piece shrinks and darkens, and cubes (money) when it is gone, all drawn to them, as a Heartless comes apart in Kingdom Hearts. Coming to, a thing is hard to stun again for a while.
+**Stun, and what it opens.** Anything that can be stunned has a **poise** meter (`src/creatures/stun.js`): the flash, a blow, being caught mid-leap fill it, rest drains it, and full, the thing is **stunned** for a few seconds (gold stars wheel round its head, `vfx/dizzy.js`; a ring of them fills as the meter does). A stunned thing takes half again as much from every blow and is open to what a thinking opponent would refuse: the **Veritome's reprogramming** (above) and the **Sondelass's zandatsu**. A creature that is not stunned **resists** a blade-mode cut: the blade glances off with a ward sigil, sparks and a clang (`blade.resist`), and the log says so. Stunned, the zandatsu takes it apart: its body is cut along the blade's planes into pieces that fly in the slow air and come undone into **Lachryma** in under a second (`vfx/dissolve.js`): liquid baubles (MP) thrown out as each piece shrinks and darkens, and cubes (money) when it is gone, all drawn to them, as a Heartless comes apart in Kingdom Hearts. Coming to, a thing is hard to stun again for a while.
 
-## Creatures and their minds (`src/ai/`, `docs/AI.md`)
+## Creatures and their minds (`src/creatures/ai/`, `docs/AI.md`)
 
-The jellies' minds are built from **parts meant to be reused by every creature to come**, documented in `docs/AI.md` (the whole picture, each part's interface, the slip jelly as the worked example, and how to make a new creature in an afternoon): a **utility reasoner** (Dave Mark's Infinite Axis Utility System: actions scored by considerations on response curves, with momentum and cooldowns), **drives** with per-individual **traits** (The Sims' motives), a **stimuli** bus (anything that makes a sound, a light, a smell or a death says so once; Thief's and Splinter Cell's sound events), **senses** (a vision cone with a line-of-sight cache, hearing, feel, being dazzled), **memory** (facts that fade: aware, threat, grudge; interests; places, after F.E.A.R.'s and The Last of Us's working memory), **steering** (Reynolds' behaviours, blended), and an **ecology** (Horizon's machine herds and Breath of the Wild's animals: what the place offers (water, shade, food, prey) and who takes whom for what: kin, prey, predator, rival, curious, with any one creature's own view of another overriding its kind's). A **Brain** ties them together and thinks less often when no one is near (level of detail). A new creature is a body module and a mind module (`jelly/mind.js` is about three hundred lines of data and small functions); none of the parts know any creature by name.
+The jellies' minds are built from **parts meant to be reused by every creature to come**, documented in `docs/AI.md` (the whole picture, each part's interface, the slip jelly as the worked example, and how to make a new creature in an afternoon): a **utility reasoner** (Dave Mark's Infinite Axis Utility System: actions scored by considerations on response curves, with momentum and cooldowns), **drives** with per-individual **traits** (The Sims' motives), a **stimuli** bus (anything that makes a sound, a light, a smell or a death says so once; Thief's and Splinter Cell's sound events), **senses** (a vision cone with a line-of-sight cache, hearing, feel, being dazzled), **memory** (facts that fade: aware, threat, grudge; interests; places, after F.E.A.R.'s and The Last of Us's working memory), **steering** (Reynolds' behaviours, blended), and an **ecology** (Horizon's machine herds and Breath of the Wild's animals: what the place offers (water, shade, food, prey) and who takes whom for what: kin, prey, predator, rival, curious, with any one creature's own view of another overriding its kind's). A **Brain** ties them together and thinks less often when no one is near (level of detail). A new creature is a body module and a mind module (`creatures/jelly/mind.js` is about three hundred lines of data and small functions); none of the parts know any creature by name.
 
 ## The Pneuka Box (P)
 
@@ -205,14 +205,14 @@ The Courier's innate storage: what they carry while they are out and about (`src
 | --- | --- | --- |
 | **The box** (`box.js`, `items.js`) | OSRS's inventory | 28 slots. A curio from a chest goes **into the box** (`ceremony.js`); when the box is full it **falls at their feet** instead (`ground.js`: the curio itself, turning a hand above the floor; the chevron marks it, **F** picks it up). A new kind of item is one entry in `items.js`. |
 | **The window** (`ui.js`, `icons.js`) | OSRS's inventory and equipment tabs | P opens it (the game pauses). Left, the box; right, what is **worn**: the **lure** on the Sondelass' line (one: a made lure or a curio, with its five-aspect taste), the **fittings** of the last tools (the Crucibelle's instrument, the four Possibilikeys on the Lockheart's charm, with the odds they make), the **psygun's chambers**, and the **tools** (worn in five places: two across the back, two at the hips, one at the neck, where the coffin worn is the Lockheart; the rest are carried in the box as things, and Wear / click to take off swaps them). **Left click** does the obvious thing (tie a curio on the line; with the Book open, store it), **right click** lists everything (Tie on, Store, Drop, Examine), **drag** swaps two slots, and the line at the top says what a click will do. Examine writes to the log. Each slot shows the curio's own model, rendered once into a small picture. |
-| **The bank** (`box.js`, `veritome/book.js`) | OSRS's bank, Greed Island's Book | With the **Veritome drawn** (J), the box's window opens the Book beside it: click a thing in the box to **store** it (it becomes its card, up to the card's limit), click a card to **take it out** (it becomes the thing, in the box), **STORE ALL** empties the box. The Codex's binder can take things out too, with the Veritome drawn. |
-| **The line** (`angling/lures.js`, `angler.js`) | FFXIV's baits, Stardew's tackle | The lure on the line is the box's: tie a curio on from the window (or 9 / 0 while the line is in), and untie it back into the box. |
+| **The bank** (`box.js`, `tools/veritome/book.js`) | OSRS's bank, Greed Island's Book | With the **Veritome drawn** (J), the box's window opens the Book beside it: click a thing in the box to **store** it (it becomes its card, up to the card's limit), click a card to **take it out** (it becomes the thing, in the box), **STORE ALL** empties the box. The Codex's binder can take things out too, with the Veritome drawn. |
+| **The line** (`tools/sondelass/angling/lures.js`, `angler.js`) | FFXIV's baits, Stardew's tackle | The lure on the line is the box's: tie a curio on from the window (or 9 / 0 while the line is in), and untie it back into the box. |
 
 ## The System's voice
 
-The few things that matter are also **said aloud**, in the flat, helpful manner of an isekai System (*That Time I Got Reincarnated as a Slime*'s Great Sage: "Notice. ..."): achievements and titles, a skill or art learned, a rank risen, a creature's **analysis** progressed or complete (the bestiary), a rank S card bound, the Pneuka Box full, a prismatic chest, a legendary catch (`src/system/voice.js`). The log still writes every line; the voice only speaks the rare ones, after a soft two-note chime (a notice rises, a warning falls), and the music dips under it. **VOICE** in the Codex header turns it on or off. Its voice may one day be laid with a human one (doubled, vocoded, or a word bank): `docs/voice_recording.md` is the plan and the script.
+The few things that matter are also **said aloud**, in the flat, helpful manner of an isekai System (*That Time I Got Reincarnated as a Slime*'s Great Sage: "Notice. ..."): achievements and titles, a skill or art learned, a rank risen, a creature's **analysis** progressed or complete (the bestiary), a rank S card bound, the Pneuka Box full, a prismatic chest, a legendary catch (`src/audio/voice/voice.js`). The log still writes every line; the voice only speaks the rare ones, after a soft two-note chime (a notice rises, a warning falls), and the music dips under it. **VOICE** in the Codex header turns it on or off. Its voice may one day be laid with a human one (doubled, vocoded, or a word bank): `docs/voice_recording.md` is the plan and the script.
 
-The voice is **the game's own**, synthesized from first principles (`src/system/speech/`), the way DECtalk and MITalk spoke: a glottal pulse (KLGLOTT88) and breath noise through a cascade of formant resonators with a nasal pole-zero pair, a parallel branch for the hiss of fricatives and the bursts of stops, Klatt's phoneme targets and duration rules, and a falling "hat" intonation. Words come from a pronouncing dictionary built from the game's own vocabulary out of the **CMU Pronouncing Dictionary** (Copyright (C) 1993-2015 Carnegie Mellon University, BSD licence, its notice kept in `lexicon.data.js`; `node tools/build_lexicon.mjs` rebuilds it), the game's coined words by hand (Pneuka, Veritome, clapperjar, kintsugi...), and the NRL letter-to-sound rules for anything else. It sounds the same in every browser. Its settings were tuned against an offline speech recognizer (Vosk), with espeak-ng as the yardstick: it is a robot's voice, on purpose, but a legible one.
+The voice is **the game's own**, synthesized from first principles (`src/audio/voice/speech/`), the way DECtalk and MITalk spoke: a glottal pulse (KLGLOTT88) and breath noise through a cascade of formant resonators with a nasal pole-zero pair, a parallel branch for the hiss of fricatives and the bursts of stops, Klatt's phoneme targets and duration rules, and a falling "hat" intonation. Words come from a pronouncing dictionary built from the game's own vocabulary out of the **CMU Pronouncing Dictionary** (Copyright (C) 1993-2015 Carnegie Mellon University, BSD licence, its notice kept in `lexicon.data.js`; `node scripts/build_lexicon.mjs` rebuilds it), the game's coined words by hand (Pneuka, Veritome, clapperjar, kintsugi...), and the NRL letter-to-sound rules for anything else. It sounds the same in every browser. Its settings were tuned against an offline speech recognizer (Vosk), with espeak-ng as the yardstick: it is a robot's voice, on purpose, but a legible one.
 
 ## The music
 
@@ -229,7 +229,7 @@ A theme plays where a room has one (`src/music/`): a score as data, played live 
 
 ## The chat line and emotes
 
-The log (`gamelog.js`) takes typing: **Enter** opens a line at its foot (**/** opens it with the slash typed), Enter sends, Esc puts it away, the arrow keys go back through what was sent. Plain words are said aloud (`Courier : hello`, in the new CHAT tab); a slash is a command (`chat.js`, a table any feature adds its own to with `chat.add`): `/help`, the **emotes** `/sit` `/dance` `/talk` `/kneel` `/nod` `/no` `/fold` `/wave` `/faint` (each a Universal Animation Library clip baked onto the Courier: sitting goes in, holds and stands up; a faint stays down until they move; moving ends any of them: `emotes.js`, `moves/emote.js`), `/em <words>` for an emote of your own, `/where`, `/clear`, `/voice`, `/music`, `/window`. The clay folk notice: wave at one and it hops for joy; faint in front of one and it jumps. Prior art: Final Fantasy XI's and XIV's chat line and emotes.
+The log (`gamelog.js`) takes typing: **Enter** opens a line at its foot (**/** opens it with the slash typed), Enter sends, Esc puts it away, the arrow keys go back through what was sent. Plain words are said aloud (`Courier : hello`, in the new CHAT tab); a slash is a command (`chat.js`, a table any feature adds its own to with `chat.add`): `/help`, the **emotes** `/sit` `/dance` `/talk` `/kneel` `/nod` `/no` `/fold` `/wave` `/faint` (each a Universal Animation Library clip baked onto the Courier: sitting goes in, holds and stands up; a faint stays down until they move; moving ends any of them: `emotes.js`, `courier/moves/emote.js`), `/em <words>` for an emote of your own, `/where`, `/clear`, `/voice`, `/music`, `/window`. The clay folk notice: wave at one and it hops for joy; faint in front of one and it jumps. Prior art: Final Fantasy XI's and XIV's chat line and emotes.
 
 ## The clapperjars at rest
 
@@ -245,11 +245,11 @@ Four people live in the game now (`src/npc/`), clay folk: clapperjars grown up a
 
 ## Treasure: chests, cubes, curios and the Tithe
 
-**Chests** come in five tiers, common, fine, rare, epic and prismatic, climbing the game's terracotta ladder (pale bisque, terracotta, brick, oxblood) and then past it to the black iridescence of Lachryma. Each is a rig, not a mesh (`src/chestmodel.js`): a squash spring on the body (volume-preserving squash and stretch), a hop, and a lid on a hinge with its own spring that can rattle, be thrown open and bounce off its stop. The higher the tier, the more of the chest there is: terracotta bound in dark clay; brick with pale bronze and a gem; oxblood and gold with a crest and shards that circle it; and the prismatic one is black glass with a film of oil on it, bands that run through a spectrum, two rings and a ring of cubes. Waiting chests call to you now and then (a crouch, a hop, a rattle). **F** by one opens it.
+**Chests** come in five tiers, common, fine, rare, epic and prismatic, climbing the game's terracotta ladder (pale bisque, terracotta, brick, oxblood) and then past it to the black iridescence of Lachryma. Each is a rig, not a mesh (`src/world/treasure/chestmodel.js`): a squash spring on the body (volume-preserving squash and stretch), a hop, and a lid on a hinge with its own spring that can rattle, be thrown open and bounce off its stop. The higher the tier, the more of the chest there is: terracotta bound in dark clay; brick with pale bronze and a gem; oxblood and gold with a crest and shards that circle it; and the prismatic one is black glass with a film of oil on it, bands that run through a spectrum, two rings and a ring of cubes. Waiting chests call to you now and then (a crouch, a hop, a rattle). **F** by one opens it.
 
-**The opening** (`src/ceremony.js`) is a script of beats: the camera cuts to a low three-quarter shot and the bars come in (`cinema.shot`); the chest rattles harder and faster while light leaks from its seam, a beam of light stands on it and the room dims (`src/mood.js`); one frame of held time, a last squash, and the lid is thrown off with the body stretching, a flash, a ring, stars and confetti, a camera punch and a moment of slow motion; the cubes fountain out one at a time (each pop climbs in pitch); a **curio** rises out of the chest and is held up in a beam (a duplicate is condensed into cubes in front of you); the bars go and the cubes on the floor are drawn to you in a run whose pitch climbs. Every beat is louder than the tier below it. F / Space / click after the burst hurries the rest. **A prismatic chest is a micro blacklight rave** (`src/vfx/rave.js`, 124 bpm, about seven seconds): the room goes near-black and violet, eight coloured beams sweep the chest, a mirror ball lowers and throws forty specks of light onto whatever the room really has, neon splatter fades in on the walls, a ring of light leaves the floor on each beat, the cubes glow, and the camera cuts four times on the bar lines; then the lights come back. Nothing strobes.
+**The opening** (`src/world/treasure/ceremony.js`) is a script of beats: the camera cuts to a low three-quarter shot and the bars come in (`cinema.shot`); the chest rattles harder and faster while light leaks from its seam, a beam of light stands on it and the room dims (`src/core/mood.js`); one frame of held time, a last squash, and the lid is thrown off with the body stretching, a flash, a ring, stars and confetti, a camera punch and a moment of slow motion; the cubes fountain out one at a time (each pop climbs in pitch); a **curio** rises out of the chest and is held up in a beam (a duplicate is condensed into cubes in front of you); the bars go and the cubes on the floor are drawn to you in a run whose pitch climbs. Every beat is louder than the tier below it. F / Space / click after the burst hurries the rest. **A prismatic chest is a micro blacklight rave** (`src/vfx/rave.js`, 124 bpm, about seven seconds): the room goes near-black and violet, eight coloured beams sweep the chest, a mirror ball lowers and throws forty specks of light onto whatever the room really has, neon splatter fades in on the walls, a ring of light leaves the floor on each beat, the cubes glow, and the camera cuts four times on the bar lines; then the lights come back. Nothing strobes.
 
-**Lachryma cubes** (`src/cubes.js`) are what Lachryma is when it is condensed: small rounded black cubes with an oil-slick film whose colour follows the angle you look at it from. They are the currency, one instanced mesh with a rigid body each, so they fall, clack (a glass tick), pile up and are drawn to you after a moment. The balance is the ledger's (`cube.earned` minus `cube.spent`); a zandatsu takes a few out of a clapperjar.
+**Lachryma cubes** (`src/world/treasure/cubes.js`) are what Lachryma is when it is condensed: small rounded black cubes with an oil-slick film whose colour follows the angle you look at it from. They are the currency, one instanced mesh with a rigid body each, so they fall, clack (a glass tick), pile up and are drawn to you after a moment. The balance is the ledger's (`cube.earned` minus `cube.spent`); a zandatsu takes a few out of a clapperjar.
 
 **The Tithe** is a console on the north beach of THE WEIR beside five plinths with a chest of each tier (they shut again after 4 minutes for a common up to 2 h 40 for the prismatic; 30 s in DEBUG). Pay 48 cubes (six minutes' play) and a **sealed** chest, one of no colour, falls onto its dais. Its tier is rolled from published odds (common 60%, fine 26%, rare 10.5%, epic 3%, prismatic 0.5%) and three **pity** counters (10 pulls without a rare or better guarantee one, 40 an epic, 100 a prismatic), shown on the console as rows of lamps and listed in the Codex. Opening it, the beam **rolls through the five colours**, slowing and ticking, sometimes climbing past what it lands on (the near miss) or climbing in stumbles (the upgrade), and lands on its true colour before it turns into that chest. A sealed chest tells nothing before that. Placed chests also stand in the hub (common) and on a dune (rare), and a legendary catch pays in an epic chest that falls out of the air.
 
@@ -257,9 +257,9 @@ Four people live in the game now (`src/npc/`), clay folk: clapperjars grown up a
 
 Prior art (also in the module headers): the loot box and the gacha pull (Overwatch's boxes, Genshin and Fire Emblem Heroes' reveals, published odds and pity counters, the near miss of a slot machine), "Juice it or lose it" and Vlambeer's screenshake talk (squash and stretch, anticipation, hit-stop), Diablo's and Borderlands' gold and rarity beams, Mario's coin chime, thin-film iridescence, and the blacklight parties, mirror balls and Rez.
 
-## The economy (`src/econ/`, `docs/ECONOMY.md`)
+## The economy (`src/progress/econ/`, `docs/ECONOMY.md`)
 
-Every number that lets cubes into the world or takes them out is in one table, `src/econ/table.js`. Prices are named in **minutes of play** (`ECON.perMinute`, 8 cubes a minute). `docs/ECONOMY.md` has the flow map, the targets and the reasons for the R38 rebalance:
+Every number that lets cubes into the world or takes them out is in one table, `src/progress/econ/table.js`. Prices are named in **minutes of play** (`ECON.perMinute`, 8 cubes a minute). `docs/ECONOMY.md` has the flow map, the targets and the reasons for the R38 rebalance:
 
 - the treasury's half-minute chests (about 95,000 cubes an hour) now shut again for minutes to hours;
 - the Tithe had been paying back 227% once its pity and dupes were counted; it now pays back 78%;
@@ -268,10 +268,10 @@ Every number that lets cubes into the world or takes them out is in one table, `
 Three tools measure it:
 
 - **F3**'s `econ` line shows cubes an hour in and out this session, by source, against the aim.
-- `node tools/economy.mjs` plays four profiles (fighter, miner, photographer, treasury camper) against the table, before and after.
+- `node scripts/economy.mjs` plays four profiles (fighter, miner, photographer, treasury camper) against the table, before and after.
 - **`/grant [n]`** adds cubes to the purse for testing, in **DEBUG** only.
 
-## The vessel: glazes, kintsugi and the kiln (`src/vessel/`)
+## The vessel: glazes, kintsugi and the kiln (`src/courier/vessel/`)
 
 The Courier is a vessel, Kaolin Anagami's magnum opus, and they are decorated as a pot is.
 
@@ -287,15 +287,15 @@ The Courier is a vessel, Kaolin Anagami's magnum opus, and they are decorated as
 
 **Damage** (`damage.js`, R39). A blow cracks them **where it lands**: six regions (the mask, the torso, each arm, each leg), each a few capsules riding their bones (geometric hitboxes: they never touch how they move). A jelly's lunge is traced from the jelly to their middle, an explosion back along its push. The struck region's cracks open on the same net the gold uses, dark with Lachryma at their heart, and after three quiet seconds they **mend**, cell by cell, until nothing is left (about twelve seconds from fully cracked). Each crack and mend is an event (`vessel.crack`, `vessel.mend`) for the log and the ledger.
 
-**The shield, the cracks, and shattering** (R40: Halo's regenerating shield). The Lachryma pool is the shield: a blow is paid for from it first (35 for a full blow), and it fills again on its own. Only what the pool cannot pay for cracks the clay, where the blow lands. The cracks mend slowly (six quiet seconds, then about forty to mend from full), or at once at the kiln: **MEND** refires them for cubes (`ECON.refire`, as many as the cracks are deep). A blow on clay already cracked through, or one that takes the cracks past what a vessel holds, **shatters** the Courier (`vessel/death.js`): time all but stops, the cracks run over the whole vessel burning with Lachryma, it sinks to a knee and bursts into shards and light under the PS2's frame accumulation (`render/glow.js`: the last frame fed back into the next), and the screen goes dark; the Courier is made whole again in the workshop, cracks gone, pool full (events `courier.shatter`, `courier.reform`).
+**The shield, the cracks, and shattering** (R40: Halo's regenerating shield). The Lachryma pool is the shield: a blow is paid for from it first (35 for a full blow), and it fills again on its own. Only what the pool cannot pay for cracks the clay, where the blow lands. The cracks mend slowly (six quiet seconds, then about forty to mend from full), or at once at the kiln: **MEND** refires them for cubes (`ECON.refire`, as many as the cracks are deep). A blow on clay already cracked through, or one that takes the cracks past what a vessel holds, **shatters** the Courier (`courier/vessel/death.js`): time all but stops, the cracks run over the whole vessel burning with Lachryma, it sinks to a knee and bursts into shards and light under the PS2's frame accumulation (`render/glow.js`: the last frame fed back into the next), and the screen goes dark; the Courier is made whole again in the workshop, cracks gone, pool full (events `courier.shatter`, `courier.reform`).
 
-**In combat** (`src/combat.js`). One signal for "are they fighting?": a blow struck by them or at them, or a hunter's notice, brings it up, and it holds while anything is hunting them, then eases away. The HUD ring and the ability charges will ask it (Calissa's, R39).
+**In combat** (`src/core/combat.js`). One signal for "are they fighting?": a blow struck by them or at them, or a hunter's notice, brings it up, and it holds while anything is hunting them, then eases away. The HUD ring and the ability charges will ask it (Calissa's, R39).
 
 The title's Courier wears the same look.
 
 Prior art: the glaze families of East Asian ceramics, FFXIV's glamour and dyes, Animal Crossing's Able Sisters, Dark Cloud 2's ideas from photographs, the turntable of PS2-era character screens, kintsugi, and Worley's cellular noise for the crack net.
 
-## The shops: Raku's treasury and Old Grog's pier (`src/shop/`)
+## The shops: Raku's treasury and Old Grog's pier (`src/progress/shop/`)
 
 Talk to the keeper (F) and say **"Let's trade."** to open their counter.
 
@@ -372,8 +372,8 @@ crack it (the cracks are drawn on the jar); at zero it shatters, and reforges 7 
 its old cracks now gold seams. Counters: grab a raider and throw it away, cut or blow it up, pin it
 (anchor), make it dance (groove), or turn it (hatch: a turned clapperjar guards the vessel against
 raiders and mends it, the way clapperjars mend cracked pots). A wave cleared gives a shell of each
-kind and mends the vessel a little. Everything is in `src/godmode.js`; the shells' new effects in
-`src/casters.js`. The stress test drops into it now and then and fuzzes the hand.
+kind and mends the vessel a little. Everything is in `src/godhand/godhand.js`; the shells' new effects in
+`src/tools/psygun/casters.js`. The stress test drops into it now and then and fuzzes the hand.
 
 ## God Arts
 
@@ -391,7 +391,7 @@ Lachryma (regenerating a little faster while you are the hand). Pick with **1–
 | 5 Manifest | drag: raise a wall of clay from the floor, hold for height; it crumbles after a while |
 
 They live in the Codex (**B**) on a second shelf beside the Movement Arts, with variants, and
-their numbers are in `T.arts`. Code: `src/godarts.js`.
+their numbers are in `T.arts`. Code: `src/godhand/arts.js`.
 
 ## The Zone of Influence and Mind Mapping
 
@@ -406,21 +406,21 @@ vessel the ground is always known. Mapping a whole named room fills it in, and i
   waypoint arrow. North is −Z.
 * **Map** (**M**, again to close, or Esc): every layer, drag / wheel to pan and zoom, click to set a waypoint, right
   click to clear, layer tabs, and the named places with how well you know each.
-* `src/cartography.js` (grid, pulses, compass, map, the veil); `T.zoi` has the numbers.
+* `src/feedback/cartography.js` (grid, pulses, compass, map, the veil); `T.zoi` has the numbers.
 
 ## Raids
 
 Raids (waves of crimson clapperjars that make for the vessel) happen in **one room, THE SIEGE** (the index: S; an arena
 south of the lab with cover, pots and crates, and a dais), and nowhere else: the timer does not run elsewhere, so the
-hand can be learned in peace. `src/raids.js` sends the attackers; `src/siege.js` is the room; the vessel itself only
-knows how to be hurt (`src/godmode.js`).
+hand can be learned in peace. `src/world/basement/raids.js` sends the attackers; `src/world/basement/siege.js` is the room; the vessel itself only
+knows how to be hurt (`src/godhand/godhand.js`).
 
 ## The dunes, the oasis, and Solar Skiffing
 
 Far below the workshop there is an open layer: a sand sea (twice the size it was: a kilometre across inside its edge), low gold sun,
 half-buried ruins, a pale spire with a beam of light to sail toward, and at its heart **an oasis**: a pond on a flat of packed sand with
 palms and grass round it, where the Weir now stands (see the Sondelass). Nothing walls the sea in any more: the dunes run on to high
-dunes on the horizon, and the edge is an **invisible barrier** (`src/barrier.js`) that shows itself only where you run into it, a ring
+dunes on the horizon, and the edge is an **invisible barrier** (`src/world/dunes/barrier.js`) that shows itself only where you run into it, a ring
 of light spreading on the curve of the air with a glassy lattice and a soft note. A layer of **cloud** drifts downwind across the painted
 sky (`src/vfx/clouds.js`: a noise texture scrolled across a flat sky-plane mapping, carried on a low-poly shell inside the dome). The
 ground is drawn in chunks with levels of detail, one draw call (`src/render/terrain.js`: geomipmapping with skirts), and the camera sees
@@ -445,15 +445,15 @@ two thin white lines opening into a V behind, and a paler band between them (bui
 faded by age, with nothing scrolling); on top of that the sand keeps its own fading trail and footprints.
 
 The skiff and the rider are **one rigid unit** (one quaternion for heading, slope, lean and spin; `character.js` places the
-body in the skiff's frame), and the rider is animated by clips authored for it (`src/surfclips.js`: idle, ride, hoist, brake,
+body in the skiff's frame), and the rider is animated by clips authored for it (`src/courier/skiff/clips.js`: idle, ride, hoist, brake,
 crouch, air; blended by what the board is doing) rather than solved onto the deck. Prior art and what was taken is in the headers of
-`src/moves/surfer.js` (Wind Waker's sailing: wind and speed, the sail you manage, pumping), `src/skiff.js` (the boat's rigging and
-the pennant), `src/wake.js` (bow bubbles and the V), `src/trailmap.js` and `src/marks.js` (Journey's trails, render-to-texture trail maps).
+`src/courier/skiff/skiff.js` (Wind Waker's sailing: wind and speed, the sail you manage, pumping), `src/courier/skiff/boat.js` (the boat's rigging and
+the pennant), `src/world/ground/wake.js` (bow bubbles and the V), `src/world/ground/trailmap.js` and `src/world/ground/groundmarks.js` (Journey's trails, render-to-texture trail maps).
 Tuning is `T.tech.surfer`.
 
 ## Lap circuits
 
-Three timed courses, in the index under LAP CIRCUITS (`src/circuits.js` is the runner, `src/circuitrooms.js` the halls; the design
+Three timed courses, in the index under LAP CIRCUITS (`src/world/basement/circuits.js` is the runner, `src/world/basement/circuitrooms.js` the halls; the design
 and the analysis behind them are in `docs/CIRCUITS.md`). Cross the first gate to start the clock; each gate shows a split against your best;
 a gate crossed slower than it asks costs a second; **a fall** puts you back on the last gate with +3 s and loses the *clean* mark; the finish gives a
 medal from the par times. **R** restarts, **H** leaves.
@@ -539,7 +539,7 @@ the fog thins.
 
 ## Movement techs
 
-Optional techniques over the core movement (`src/moves/`). The core (walk, sprint, crouch,
+Optional techniques over the core movement (`src/courier/moves/`). The core (walk, sprint, crouch,
 slide, jumps, wallrun, wall jump, mantle, air dash, tuned under `movement`) is the gold
 standard the basement is measured against, and techs never change it: each lives in its own
 module with its own `tech.<id>` tuning and an `enabled` switch, and acts only through a few
@@ -579,13 +579,13 @@ lane (a 0.8 m gap only the blob fits, a slip-coated 6 m wall), a 9 m blink gap o
 pit, stomp stairs (pots on rising pillars, a bounce apart) and a 4 m wall to climb.
 
 **The rigging and the hands** are two more wings, west of the lab (through its west door, or
-the index console's RIGGING / HANDS entries). *The rigging* (`src/riglab.js`, built with the
-`Rigging` class in `src/moves/rigging.js`: bars, poles, ropes, grates, beams): R1 a 2.7 m ledge to
+the index console's RIGGING / HANDS entries). *The rigging* (`src/world/basement/rigwing.js`, built with the
+`Rigging` class in `src/courier/moves/rigging.js`: bars, poles, ropes, grates, beams): R1 a 2.7 m ledge to
 catch and shimmy with a shelf of targets behind you, and a 5.5 m pillar to latch up; R2 a pit
 crossed three ways at once, on two overhead bars a swing-jump apart, a 15 m zipline from a tower,
 and two balance beams (0.3 and 0.2 m); R3 an 8.6 m grate wall up to a grate roof that runs out
 over a pit to a tower; R4 a pole to slide down, a rope to climb, and a tower to get back up.
-*The hands* (`src/moves/carry.js`, `push.js`, `kick.js`, `recoil.js`, `src/lobber.js`): H1 heavy
+*The hands* (`src/courier/moves/carry.js`, `push.js`, `kick.js`, `recoil.js`, `src/creatures/lobber.js`): H1 heavy
 and small crates and a 3.2 m wall to stack up to; H2 a throwing range (targets at 10, 16 and 22
 m) with pots and crates on a bench; H3 a mortar that throws a glazed ball at you every few
 seconds (kick it back at the two targets beside it: a parry); H4 a 7.2 m platform you can only
@@ -593,7 +593,7 @@ reach by shooting down in the air.
 
 ## Moving ground, and the clockwork mill
 
-**Movers** (`src/movers.js`) are kinematic platforms driven by a pose function of time: shuttles
+**Movers** (`src/world/props/movers.js`) are kinematic platforms driven by a pose function of time: shuttles
 (lifts, gates, rail carts), cogs (a turning disc), pendulum swings, orbiters (a wheel's
 gondolas), belts (a fixed surface that moves), plus updraft columns. A rider is **carried** by the
 platform (the controller moves the rider against it, then the whole move is carried by the
@@ -623,7 +623,7 @@ steer 3 m/s to meet a cart that has moved. That is the **Super Slam** feat.
 
 ## The stress test
 
-`tools/stress.mjs` (Playwright; `npm i --no-save playwright`, `npm run dev`, then
+`scripts/stress.mjs` (Playwright; `npm i --no-save playwright`, `npm run dev`, then
 `npm run stress -- --seed 1 --runs 40 --ticks 900`) drives the simulation with random,
 human-shaped input from teleports all over the workshop, in Lab mode, and checks after every step:
 finite numbers, the body not inside geometry, sane speeds, the blob form only while slip diving,
@@ -642,7 +642,7 @@ can do with what you already have, and each has variants with harder asks. Press
 Codex: the Movement Arts, what you know, the shapes of what you don't (a hint, and a bar that only fills as
 you get closer), and which variant is selected. The game pauses while it's open.
 
-**Progress belongs to the build** while the game is being made (`src/progress.js`): each build carries an id made when it is built, and the
+**Progress belongs to the build** while the game is being made (`src/core/progress.js`): each build carries an id made when it is built, and the
 first time a new one runs, the unlocks, the ledger and its achievements, the Veritome's film and Book, the Pneuka Box, the map and the records
 are cleared (the log says so); the settings are kept.
 
@@ -662,9 +662,9 @@ rest, and which variant of each is selected). Progress saves as you go, and **EX
 browsers (`FFS1.<base64>.<checksum>`). A variant only changes its ability's tuning
 (`skills.js: cfg`), laid over `tech.<id>` through a live proxy, so nothing about the core moves.
 
-How it works: everything that happens is reported to an event bus (`src/events.js`:
+How it works: everything that happens is reported to an event bus (`src/core/events.js`:
 `jump`, `land {drop, fall}`, `slide.end`, `wallrun.end`, `dash`, `blink`, `slam.impact {height,
-target}`, `target.hit {cause, drop, moving}`, `break`, `tech.start/end`, ...). `src/system/skills.js`
+target}`, `target.hit {cause, drop, moving}`, `break`, `tech.start/end`, ...). `src/progress/skills.js`
 is the data: a goal is `count`, `feat`, `sum` or `chain` over events. `system.js` feeds events
 to the goals of whatever's still to learn, unlocks and saves; a tech asks
 `system.allows(id)` before it may start (`Tech.usable()`). New moves ship with an unlock rule, a
@@ -714,8 +714,8 @@ nothing missable. The RECORDS shelf is the hiscores page: lifetime totals, perso
 ## Animation
 
 Motion comes from three places, in this order of preference: baked clips (Quaternius UAL Standard,
-retargeted to the Courier by `tools/bake_anims.mjs` into `src/assets/anims.bin`), clips authored
-once at startup from key poses (`src/authoring.js`, `src/authored.js`), and only then a light
+retargeted to the Courier by `scripts/bake_anims.mjs` into `src/assets/anims.bin`), clips authored
+once at startup from key poses (`src/courier/anim/authoring.js`, `src/courier/anim/authored.js`), and only then a light
 runtime IK correction on the contact points.
 
 - **Authored clips** are built on the Courier itself: for every frame the body is put in a base
@@ -740,7 +740,7 @@ runtime IK correction on the contact points.
   last `hands`: the contact correction that puts palms and soles on the surface, capped at a few
   centimetres so the clip's motion is what you see.
 - Push uses the UAL `push` clip; balance beams keep the locomotion clip with soft, bobbing arms.
-- `tools/bake_cmu.mjs` (with `tools/cmu_clips.json`) probes, finds loops in, and retargets BVH
+- `scripts/bake_cmu.mjs` (with `scripts/cmu_clips.json`) probes, finds loops in, and retargets BVH
   files from the CMU database onto the Courier; use it to add real climbing or kicking clips.
 
 ## How it works
@@ -748,80 +748,80 @@ runtime IK correction on the contact points.
 | File | Role |
 | --- | --- |
 | `src/main.js` | bootstrap, fixed-step loop (60 Hz physics, interpolated camera) |
-| `src/player.js` | Rapier kinematic character controller (slide, wallrun, mantle, dash), FP/TP camera, recoil punch |
-| `src/weapon.js` | firing, spread/bloom, hitscan, reload, holster timing, first-person gun pose |
-| `src/character.js` | the Courier: clip blending by movement state, pistol aim offset, gun socket, IK corrections |
-| `src/animator.js`, `src/anims.js` | pose buffers, clip sampling/blending, the baked clip pack decoder |
-| `src/authoring.js`, `src/authored.js` | the clip author (IK key poses baked into clips) and the ladder / hang / pole / grate clips |
-| `src/indexmenu.js` | the index console UI (one teleport per room) |
-| `src/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture. A pot is built on its profile's own points (no extra rings to carry painted bands: a jar is ~130 triangles, an urn ~220), with an inside wall only where it can be seen and a flat foot at least 45% of its width so it stands still |
-| `src/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions; who each break was (the Courier, a clapperjar, the environment: only the Courier's are the Courier's records) |
-| `src/tags.js` | what a thing in the world is for the physics and the tools (sliceable, breakable, liftable, pushable, static): defaults per kind, per-thing tags, and a registry of static things a sweeping tool can find |
-| `src/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
-| `src/lachryma.js` | the Lachryma energy pool + collectable baubles |
-| `src/shells.js` | shell inventory and the first five shell effects (the Cleave's travelling line among them), projectiles, molten/slip fluid |
-| `src/specials.js` | ricochet and homing shells, lock-on reticles |
-| `src/cracks.js` | crack paths on pot surfaces, kintsugi gold seams |
-| `src/trial.js` | the time trial |
-| `src/basement.js` | the basement movement course |
-| `src/techlab.js` | the tech lab annex |
-| `src/mill.js` | the clockwork mill and the kiln stack |
-| `src/riglab.js` | the rigging and the hands wings west of the lab |
-| `src/lobber.js` | clay mortars that throw balls to parry |
-| `src/godarts.js` | the five God Arts, the radial wheel, the art bar |
-| `src/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
-| `src/dunes.js`, `src/moves/surfer.js` | the sand-sea layer (the height field with the oasis cut in, sky, ruins, wind) and Solar Skiffing |
-| `src/render/terrain.js`, `src/barrier.js`, `src/vfx/clouds.js` | chunked LOD terrain (one draw call, skirts), the invisible edge that shows where it is touched, the drifting cloud layer |
-| `src/skiff.js`, `src/wake.js`, `src/surfclips.js` | the Surfer's boat (hull, sail, arrow), its Wind Waker wake, and the rider's authored clips |
-| `src/circuits.js`, `src/circuitrooms.js` | the lap-circuit runner (gates, splits, medals) and the halls of The Braid and The Spindle |
-| `src/trailmap.js`, `src/marks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
-| `src/rom.js`, `src/romdata.js` | range-of-motion limits applied after every pose (the fingers; elbows and knees are held by per-state poles, `src/poles.js`, and a knee guard) |
-| `src/siege.js`, `src/raids.js` | the Siege room and the raids that only happen there |
-| `src/godmode.js`, `src/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
-| `src/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
-| `src/events.js` | the event bus everything reports to |
-| `src/gamelog.js`, `src/stats.js`, `src/tracking.js`, `src/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
-| `src/moves/sondelass.js`, `src/sondelass/`, `src/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
-| `src/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
+| `src/courier/player.js` | Rapier kinematic character controller (slide, wallrun, mantle, dash), FP/TP camera, recoil punch |
+| `src/tools/psygun/weapon.js` | firing, spread/bloom, hitscan, reload, holster timing, first-person gun pose |
+| `src/courier/character.js` | the Courier: clip blending by movement state, pistol aim offset, gun socket, IK corrections |
+| `src/courier/anim/animator.js`, `src/courier/anim/anims.js` | pose buffers, clip sampling/blending, the baked clip pack decoder |
+| `src/courier/anim/authoring.js`, `src/courier/anim/authored.js` | the clip author (IK key poses baked into clips) and the ladder / hang / pole / grate clips |
+| `src/feedback/indexmenu.js` | the index console UI (one teleport per room) |
+| `src/world/props/pottery.js` | pot profiles, shape modifiers (lobes, twist, flame rims), surface patterns, clay materials, fracture. A pot is built on its profile's own points (no extra rings to carry painted bands: a jar is ~130 triangles, an urn ~220), with an inside wall only where it can be seen and a flat foot at least 45% of its width so it stands still |
+| `src/world/props/breakables.js` | spawning, shattering into physics shards, ropes, impact breaks, explosions; who each break was (the Courier, a clapperjar, the environment: only the Courier's are the Courier's records) |
+| `src/core/tags.js` | what a thing in the world is for the physics and the tools (sliceable, breakable, liftable, pushable, static): defaults per kind, per-thing tags, and a registry of static things a sweeping tool can find |
+| `src/creatures/clappers.js` | clapperjar AI (wander, forage, taunt, nap, hide, flee) + procedural layers over the authored clips |
+| `src/courier/lachryma.js` | the Lachryma energy pool + collectable baubles |
+| `src/tools/psygun/shells.js` | shell inventory and the first five shell effects (the Cleave's travelling line among them), projectiles, molten/slip fluid |
+| `src/tools/psygun/specials.js` | ricochet and homing shells, lock-on reticles |
+| `src/world/props/potcracks.js` | crack paths on pot surfaces, kintsugi gold seams |
+| `src/world/trial.js` | the time trial |
+| `src/world/basement/basement.js` | the basement movement course |
+| `src/world/basement/techwing.js` | the tech lab annex |
+| `src/world/basement/mill.js` | the clockwork mill and the kiln stack |
+| `src/world/basement/rigwing.js` | the rigging and the hands wings west of the lab |
+| `src/creatures/lobber.js` | clay mortars that throw balls to parry |
+| `src/godhand/arts.js` | the five God Arts, the radial wheel, the art bar |
+| `src/feedback/cartography.js` | the map grid, Zone of Influence tiers, compass, map screen, survey pulses |
+| `src/world/dunes/dunes.js`, `src/courier/skiff/skiff.js` | the sand-sea layer (the height field with the oasis cut in, sky, ruins, wind) and Solar Skiffing |
+| `src/render/terrain.js`, `src/world/dunes/barrier.js`, `src/vfx/clouds.js` | chunked LOD terrain (one draw call, skirts), the invisible edge that shows where it is touched, the drifting cloud layer |
+| `src/courier/skiff/boat.js`, `src/world/ground/wake.js`, `src/courier/skiff/clips.js` | the Surfer's boat (hull, sail, arrow), its Wind Waker wake, and the rider's authored clips |
+| `src/world/basement/circuits.js`, `src/world/basement/circuitrooms.js` | the lap-circuit runner (gates, splits, medals) and the halls of The Braid and The Spindle |
+| `src/world/ground/trailmap.js`, `src/world/ground/groundmarks.js` | a fading top-down trail map any surface can read, and what feet and boards write into it |
+| `src/courier/anim/rom.js`, `src/courier/anim/romdata.js` | range-of-motion limits applied after every pose (the fingers; elbows and knees are held by per-state poles, `src/world/props/poles.js`, and a knee guard) |
+| `src/world/basement/siege.js`, `src/world/basement/raids.js` | the Siege room and the raids that only happen there |
+| `src/godhand/godhand.js`, `src/tools/psygun/casters.js` | the god hand (isometric view, grab / cast, the vessel, raids) and the groove / anchor / hatch shells |
+| `src/world/props/movers.js` | moving ground: shuttles, cogs, swings, orbiters, belts, updrafts, rail carts and targets |
+| `src/core/events.js` | the event bus everything reports to |
+| `src/feedback/gamelog.js`, `src/progress/stats.js`, `src/feedback/tracking.js`, `src/progress/achievements.js` | the log (the game's only text feedback), the ledger of counts and records, the rules that feed both from events, and the achievements over the ledger |
+| `src/tools/sondelass/sondelass.js`, `src/tools/sondelass/`, `src/courier/moves/zip.js` | the Sondelass tool (model, cutlass, hook) and the pull of the grapnel |
+| `src/tools/sondelass/angling/` | angling: species, fish meshes and minds, lures (tastes, curios as lures), lure, line, fight, angler (the rod form), the Weir at the oasis (and its treasury), gauges |
 | `src/render/` | the renderer's services: zones, the light budget, prop batches and instancing, static merging, the rest bake and the shadow trim, vertex welding, the presentation (resolution, upscale, smooth shading, shadow), the cel ramp and rim (`toon.js`) and the glow and grade (`glow.js`) |
 | `src/ui/theme.js` | the windows' kit: the fonts, the nine-slice frame, the gloves, the unfolding, the menu sounds, the window colours |
-| `src/chat.js`, `src/emotes.js`, `src/moves/emote.js` | the chat line's commands, the emotes and the tech that plays them |
-| `src/npc/` | the clay folk: who they are and where they stand (`people.js`), their bodies and feelings (`folk.js`), their voice (`clayese.js`), the dialogue box (`dialogue.js`) and what they say (`talks.js`); `moves/talk.js` holds the Courier while they talk |
+| `src/feedback/chat.js`, `src/courier/emotes.js`, `src/courier/moves/emote.js` | the chat line's commands, the emotes and the tech that plays them |
+| `src/npc/` | the clay folk: who they are and where they stand (`people.js`), their bodies and feelings (`folk.js`), their voice (`clayese.js`), the dialogue box (`dialogue.js`) and what they say (`talks.js`); `courier/moves/talk.js` holds the Courier while they talk |
 | `src/tools/belt.js`, `src/tools/grip.js`, `src/tools/draw.js`, `src/tools/heldtool.js`, `src/tools/codexpage.js` | the tool belt: the contract and the rules for the seven psychic tools, the places they are worn; the grip socket measured from a clip; the draw; the held-tool base the last three are built on; the Codex's TOOLS shelf |
-| `src/moves/dreamvane.js`, `src/dreamvane/`, `src/lachryma/crystals.js`, `src/signatures.js` | the Dreamvane (dowsing, the pick, the tuning fork), crystal formations, and the signatures of Lachryma everything senses |
-| `src/moves/crucibelle.js`, `src/crucibelle/`, `src/spirits.js` | the Crucibelle (notes on the music's grid, fever, songs, the toll), the mirage decoy, smoke spirits |
-| `src/moves/lockheart.js`, `src/lockheart/`, `src/pneuka/thingmodels.js` | the Lockheart (overflow, hoover, the wheel, outcomes), its tables and Possibilikeys, the models of keys, instruments and coffins |
-| `src/mind/` | Reprogram's neuralese: the Functions, the lattice, the macro book, the runes, the composer page |
-| `src/moves/soulbrush.js`, `src/brush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
-| `src/moves/veritome.js`, `src/veritome/` | the Veritome: the book and its open hold (shared with the Survey), the lens and its viewfinder, the subjects and the photograph's score, the film and the darkroom, the bestiary, the Book (the bank: designated pages, free slots, ranks and limits, Condense) and its card catalogue, the Codex shelf |
+| `src/tools/dreamvane/dreamvane.js`, `src/tools/dreamvane/`, `src/world/dunes/crystals.js`, `src/core/signatures.js` | the Dreamvane (dowsing, the pick, the tuning fork), crystal formations, and the signatures of Lachryma everything senses |
+| `src/tools/crucibelle/crucibelle.js`, `src/tools/crucibelle/`, `src/creatures/spirits.js` | the Crucibelle (notes on the music's grid, fever, songs, the toll), the mirage decoy, smoke spirits |
+| `src/tools/lockheart/lockheart.js`, `src/tools/lockheart/`, `src/pneuka/thingmodels.js` | the Lockheart (overflow, hoover, the wheel, outcomes), its tables and Possibilikeys, the models of keys, instruments and coffins |
+| `src/tools/veritome/mind/` | Reprogram's neuralese: the Functions, the lattice, the macro book, the runes, the composer page |
+| `src/tools/soulbrush/soulbrush.js`, `src/tools/soulbrush/`, `src/vfx/paintpath.js` | the Soul Brush: the model, the club, the brush slide's clip, the Celestial Brush (canvas, Penny Pincher recognizer, techniques), inscriptions (properties written on things), the sigils, and paint laid on the world |
+| `src/tools/veritome/veritome.js`, `src/tools/veritome/` | the Veritome: the book and its open hold (shared with the Survey), the lens and its viewfinder, the subjects and the photograph's score, the film and the darkroom, the bestiary, the Book (the bank: designated pages, free slots, ranks and limits, Condense) and its card catalogue, the Codex shelf |
 | `src/pneuka/` | the Pneuka Box: the item registry, the box's rules (slots, the line, store / take out), things on the ground, item icons rendered from the models, the window (P) |
-| `src/system/voice.js`, `src/system/speech/` | the System's voice: its rules, and the game's own formant speech synthesizer (lexicon from CMUdict + NRL rules, Klatt-style cascade/parallel synthesis) |
-| `src/creatures.js`, `src/jelly/` | creatures that fight back: the shared contract (hurt, statuses, strike) and the slip jelly (its body and springs-not-bones deformer, `slipjelly.js` / `deform.js`; its mind, `mind.js`) |
-| `src/ai/` | the reusable parts of a creature's mind (`docs/AI.md`): utility reasoner and curves, drives and traits, stimuli, senses, memory, steering, ecology, the Brain that ties them |
-| `src/stun.js`, `src/vfx/dizzy.js` | stun for every kind of thing (poise, drain, immunity, vulnerable, hold) and its stars |
-| `src/veritome/flash.js`, `src/veritome/reprogram.js` | the Veritome's flash (dazzle and stun), and reprogramming a stunned mind (macros, typed) |
+| `src/audio/voice/voice.js`, `src/audio/voice/speech/` | the System's voice: its rules, and the game's own formant speech synthesizer (lexicon from CMUdict + NRL rules, Klatt-style cascade/parallel synthesis) |
+| `src/creatures/creatures.js`, `src/creatures/jelly/` | creatures that fight back: the shared contract (hurt, statuses, strike) and the slip jelly (its body and springs-not-bones deformer, `slipjelly.js` / `deform.js`; its mind, `mind.js`) |
+| `src/creatures/ai/` | the reusable parts of a creature's mind (`docs/AI.md`): utility reasoner and curves, drives and traits, stimuli, senses, memory, steering, ecology, the Brain that ties them |
+| `src/creatures/stun.js`, `src/vfx/dizzy.js` | stun for every kind of thing (poise, drain, immunity, vulnerable, hold) and its stars |
+| `src/tools/veritome/flash.js`, `src/tools/veritome/reprogram.js` | the Veritome's flash (dazzle and stun), and reprogramming a stunned mind (macros, typed) |
 | `src/vfx/vfx.js`, `src/vfx/library.js`, `src/vfx/sprites.js`, `src/vfx/auras.js`, `src/cine/`, `src/workbench/` (Calissa's, R42; `docs/VFX.md`) | one VFX system: effects played by name (`game.vfx.play`), their looks as data; every blow's hit by tool and by what the thing is made of (`hit.<blunt|slash|shot>.<material>`, the material a tag: `tags.js`); swings; status auras; cinematic events as data (sequences: the Lockheart's opening, a chest's opening); the workbench (`/lab`), the game's own studio for effects, models and cinematics; `/vfx <name>` plays one where you stand, `/opening` the Lockheart's opening without keys |
 | `src/vfx/dissolve.js` | a creature cut by a zandatsu, coming undone into baubles and cubes |
 | `src/ui/pixel.js`, `src/ui/lachrimeter.js` | the pixel kit (the maker's art, palette-swapped at 1x, integer-scaled; the jank font) and the Lachryma gauge made of it |
-| `src/progress.js` | progress cleared on each new build (settings kept) |
+| `src/core/progress.js` | progress cleared on each new build (settings kept) |
 | `src/music/` | the music: the scores (the main theme on the black keys, the battle, the workshop, the five-movement draft, the first draft, the jingles, the Dunes' theme), the players (the Dunes' band; the arranger with its band, per-section tempo and metre, scores that play once), the sound test |
 | `src/tools/viewmodel.js` | where a held tool is drawn in first person, and the arcs it swings along |
-| `src/vessel/glazes.js`, `src/vessel/vessel.js`, `src/vessel/kintsugi.js`, `src/vessel/kilnui.js`, `src/moves/kiln.js` | the regions and the twelve glazes; their look, the glazes they have, firing, learning from photographs, dressing any Courier model; the crack net (a shader patch); the kiln's window (FIRE and MEND, MEND greyed while whole); the kiln station (the turntable) |
-| `src/shop/catalogue.js`, `src/shop/shops.js`, `src/shop/haggle.js`, `src/shop/ui.js` | what each keeper sells and buys and what a thing is worth; stock, prices, restock, buying and selling; Raku's haggle (pure logic; his words are in `npc/talks.js`); the counter's window |
-| `src/econ/table.js`, `src/econ/economy.js`, `tools/economy.mjs`, `docs/ECONOMY.md` | the economy's one table (faucets, drains, prices in minutes); the F3 econ line, `minutes()` and `/grant`; the simulator; the map and the reasons |
-| `src/treasure.js`, `src/chests.js`, `src/chestmodel.js`, `src/ceremony.js`, `src/curiomodel.js`, `src/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
-| `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
-| `src/timescale.js`, `src/lockon.js`, `src/parry.js`, `src/hideui.js`, `src/sky.js`, `src/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |
-| `src/poles.js` | knee pole targets per animation state (gait, crouch, air, slide) |
-| `src/system/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (the Codex), `ledgerui.js` (its LEDGER and RECORDS shelves) |
-| `tools/stress.mjs`, `tools/stress.page.js` | the stress test (random-input fuzzing with invariants) |
-| `tools/learn_rom.mjs` | learns finger joint limits from the game's own clips into `src/romdata.js` |
-| `src/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage, `rigging.js` bars, poles, grates, beams) |
-| `src/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
-| `src/fx.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
-| `src/audio.js` | all SFX synthesized with WebAudio (no audio files) |
-| `src/level.js` | greybox workshop and prop placement |
-| `src/outline.js` | inverted-hull outlines (matches the .blend's Solidify outline look) |
+| `src/courier/vessel/glazes.js`, `src/courier/vessel/vessel.js`, `src/courier/vessel/kintsugi.js`, `src/courier/vessel/kilnui.js`, `src/courier/moves/kiln.js` | the regions and the twelve glazes; their look, the glazes they have, firing, learning from photographs, dressing any Courier model; the crack net (a shader patch); the kiln's window (FIRE and MEND, MEND greyed while whole); the kiln station (the turntable) |
+| `src/progress/shop/catalogue.js`, `src/progress/shop/shops.js`, `src/progress/shop/haggle.js`, `src/progress/shop/ui.js` | what each keeper sells and buys and what a thing is worth; stock, prices, restock, buying and selling; Raku's haggle (pure logic; his words are in `npc/talks.js`); the counter's window |
+| `src/progress/econ/table.js`, `src/progress/econ/economy.js`, `scripts/economy.mjs`, `docs/ECONOMY.md` | the economy's one table (faucets, drains, prices in minutes); the F3 econ line, `minutes()` and `/grant`; the simulator; the map and the reasons |
+| `src/world/treasure/treasure.js`, `src/world/treasure/chests.js`, `src/world/treasure/chestmodel.js`, `src/world/treasure/ceremony.js`, `src/world/treasure/curiomodel.js`, `src/world/treasure/cubes.js` | tiers, odds and pity; the chests, the Tithe and F; the chest rig; the opening's script; the twenty curios; the Lachryma cubes |
+| `src/vfx/rave.js`, `src/vfx/beam.js`, `src/vfx/water.js`, `src/core/mood.js` | the prismatic rave, a column of light, the banded water and liquid Lachryma, and the room's lights borrowed by a ceremony |
+| `src/core/time.js`, `src/courier/lockon.js`, `src/courier/parry.js`, `src/feedback/hideui.js`, `src/vfx/sky.js`, `src/courier/interact.js`, `src/vfx/` | time (slow-mo, hit-stop), Z-targeting, the shared parry, hide-UI, the painted sky, the interact chevron, and the shared visual services (cinema bars and shots, glyphs, rope, trails, portrait) |
+| `src/world/props/poles.js` | knee pole targets per animation state (gait, crouch, air, slide) |
+| `src/progress/` | the System: `skills.js` (what can be learned, and how), `system.js` (progress, saves), `codex.js` (the Codex), `ledgerui.js` (its LEDGER and RECORDS shelves) |
+| `scripts/stress.mjs`, `scripts/stress.page.js` | the stress test (random-input fuzzing with invariants) |
+| `scripts/learn_rom.mjs` | learns finger joint limits from the game's own clips into `src/courier/anim/romdata.js` |
+| `src/courier/moves/` | movement techs (`techs.js` the framework, one module per tech, `env.js` water, ladders, slip coverage, `rigging.js` bars, poles, grates, beams) |
+| `src/tools/slicing.js` | plane cutting for triangle meshes (with wall caps) and convex point sets |
+| `src/vfx/particles.js` | tracers, muzzle flash, particles, chips, bullet-hole decals |
+| `src/audio/sfx.js` | all SFX synthesized with WebAudio (no audio files) |
+| `src/world/level.js` | greybox workshop and prop placement |
+| `src/render/outline.js` | inverted-hull outlines (matches the .blend's Solidify outline look) |
 
 **Fracture.** Each pot is a lathe (profile × radial segments) with optional lobes, twist and
 flame crests. On break, the surface is resampled on a jittered grid whose cell size comes from
@@ -833,7 +833,7 @@ Shards near the bullet's impact are smaller and get more push.
 **Animation.** The Courier is driven by authored clips with IK corrections on top. The
 clips are from Quaternius' [Universal Animation Library](https://quaternius.com/packs/universalanimationlibrary.html)
 1 and 2 (the free Standard tiers, CC0), retargeted offline onto the Courier rig by
-`tools/bake_anims.mjs` into `src/assets/anims.bin` (about 220 KB). Both rigs rest in a
+`scripts/bake_anims.mjs` into `src/assets/anims.bin` (about 220 KB). Both rigs rest in a
 T-pose, so each bone's world rotation away from the T-pose carries straight over.
 
 - **Locomotion:** idle, walk, jog and sprint play on one shared phase and blend by speed.
@@ -876,7 +876,7 @@ T-pose, so each bone's world rotation away from the T-pose carries straight over
   shoulders hang off the camera, and the hands are pinned to the gun.
 
 To rebake after changing the clip list or the rig, get the Standard `.glb` files of both
-libraries and run `node tools/bake_anims.mjs ual1.glb ual2.glb`. `npm run dev` then
+libraries and run `node scripts/bake_anims.mjs ual1.glb ual2.glb`. `npm run dev` then
 `/dev/animlab.html` is a clip viewer for picking frames.
 
 Crouching uses a 1.35 m capsule, which is where the crouched body (hair included) tops out;
@@ -901,24 +901,24 @@ Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1
 https://quaternius.com. Retargeted to the Courier; see **Animation** above. (Only the free
 Standard tiers are used; the paid full tiers are not included.) Motion capture: CMU Graphics Lab
 Motion Capture Database, free for research and games, no resale of the data itself
-(http://mocap.cs.cmu.edu), retargeted with `tools/bake_cmu.mjs` from the BVH conversion;
+(http://mocap.cs.cmu.edu), retargeted with `scripts/bake_cmu.mjs` from the BVH conversion;
 `src/assets/anims_cmu.bin` is that pack (loaded and merged with the UAL clips: the kick is from it).
 
-`tools/export_godmode.py` exports the god-mode assets (`source_assets/courier_godhand.blend`, a rigged hand, and `courier_pneuka.blend`, the jar) to `src/assets/godhand.glb` / `pneuka.glb`.
+`scripts/export_godmode.py` exports the god-mode assets (`source_assets/courier_godhand.blend`, a rigged hand, and `courier_pneuka.blend`, the jar) to `src/assets/godhand.glb` / `pneuka.glb`.
 
-`tools/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
+`scripts/export_courier.py` converts the source `.blend` (kept in `source_assets/`) into
 `src/assets/courier.glb` and `src/assets/psygun.glb`, which are bundled into the JS build.
 It strips the Solidify outline shells (outlines are rebuilt in-engine) and exports the rig
 in rest pose.
 
 ```bash
 pip install bpy==4.5.*   # Blender as a Python module (Python 3.11)
-python3 tools/export_courier.py path/to/courier_base_rigged.blend
+python3 scripts/export_courier.py path/to/courier_base_rigged.blend
 ```
 
-`tools/export_slipjelly.py` exports the maker's slip jelly (`source_assets/slipjelly.blend`, one mesh, its mirror applied, no rig) to `src/assets/slipjelly.glb`.
+`scripts/export_slipjelly.py` exports the maker's slip jelly (`source_assets/slipjelly.blend`, one mesh, its mirror applied, no rig) to `src/assets/slipjelly.glb`.
 
-`tools/export_clapperjar.py` does the same for `source_assets/clapperjar.blend`, exporting
+`scripts/export_clapperjar.py` does the same for `source_assets/clapperjar.blend`, exporting
 its idle, sprint and stumble actions as clips.
 
 The .blend's armour and mask textures point to files outside the .blend, so the

@@ -20,7 +20,7 @@
 //   post.target                        the buffer to compile shaders against (it renders without the tone curve)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { T } from '../config.js';
+import { T } from '../core/config.js';
 
 const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4( position.xy, 0.0, 1.0 ); }';
 
@@ -84,7 +84,7 @@ void main() {
 
 // FRAME ACCUMULATION (R40): the PS2's feedback blur. The frame before is kept, drawn back a hair larger and turned (the frame buffer
 // fed back into itself, as Silent Hill 2, MGS2 and Burnout smeared a dream, a death or speed), and the new frame laid over it: what
-// moves leaves a trail streaming out from the middle. Off (amount 0) it costs nothing. Used for the vessel's shattering (vessel/death.js).
+// moves leaves a trail streaming out from the middle. Off (amount 0) it costs nothing. Used for the vessel's shattering (courier/vessel/death.js).
 const ACC = `
 uniform sampler2D tCur, tPrev; uniform float uAmt, uZoom, uSpin; varying vec2 vUv;
 void main() {

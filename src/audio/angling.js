@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the rod and its line (angling/): the cast, the reel, a bite, a catch, the one that got away, the sounding.
+// A sound bank of the one mixer (audio/sfx.js): the rod and its line (angling/): the cast, the reel, a bite, a catch, the one that got away, the sounding.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class AnglingSounds {
   /** A rod cast: the whip of the line and a lure's quiet plink where it lands. */

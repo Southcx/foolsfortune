@@ -6,7 +6,7 @@ alone is as interesting as the two. This page is what to record, how, and what t
 
 ## What the game can do with a recording (three ways, from simplest)
 
-1. **Doubling.** Your recording of a whole line plays with the formant voice (`system/speech/synth.js`) saying the same line at the
+1. **Doubling.** Your recording of a whole line plays with the formant voice (`audio/voice/speech/synth.js`) saying the same line at the
    same time, the synth a little quieter, both through the same chorus and hall. The formant voice is stretched to your timing (each
    word lined up with yours), so the two speak as one. Best for the fixed lines: "Notice.", "Warning.", "Achievement acquired."
 2. **The System wearing your voice (a vocoder).** Your recording is the *modulator*, the formant voice's glottis (a buzz at the

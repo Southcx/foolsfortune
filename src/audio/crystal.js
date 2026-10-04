@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the crystals of Lachryma, tuned by ear (lachryma/tuning.js, lachryma/crystals.js).
+// A sound bank of the one mixer (audio/sfx.js): the crystals of Lachryma, tuned by ear (world/dunes/crystaltuning.js, world/dunes/crystals.js).
 // The ear does the work here, so the notes must be true: a clear fundamental at the note asked, the glass's partials above it, and
 // the beating made the honest way (two tones `beat` Hz apart, as two strings a little out of tune waver).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).

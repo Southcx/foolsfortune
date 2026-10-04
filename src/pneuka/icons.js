@@ -10,12 +10,12 @@
 //   itemIcon(game, id) -> dataURL (cached)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { buildCurio } from '../curiomodel.js';
-import { buildLure } from '../angling/luremodels.js';
+import { buildCurio } from '../world/treasure/curiomodel.js';
+import { buildLure } from '../tools/sondelass/angling/luremodels.js';
 import { buildThing } from './thingmodels.js';
 import { itemOf } from './items.js';
-import { SPECIES } from '../angling/species.js';
-import { buildFish } from '../angling/fishmesh.js';
+import { SPECIES } from '../tools/sondelass/angling/species.js';
+import { buildFish } from '../tools/sondelass/angling/fishmesh.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
 
@@ -63,7 +63,7 @@ function render(game, it) {
   return out.toDataURL('image/png');
 }
 
-/** The thing's own model, to be rendered: a curio's, a lure's (angling/luremodels.js), or a tool's (a copy of what they wear). */
+/** The thing's own model, to be rendered: a curio's, a lure's (tools/sondelass/angling/luremodels.js), or a tool's (a copy of what they wear). */
 function modelOf(game, it) {
   if (it.kind === 'curio') return buildCurio(it.key, { sky: game.sky?.env });
   if (it.kind === 'lure') { const L = buildLure(it.key); L.group.rotation.set(0.25, 0.5, 0.15); return L; }

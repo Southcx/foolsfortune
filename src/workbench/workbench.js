@@ -32,10 +32,10 @@ import { SEQUENCES } from '../cine/sequences.js';
 import { atlas } from '../vfx/sprites.js';
 import { ITEMS } from '../pneuka/items.js';
 import { buildThing } from '../pneuka/thingmodels.js';
-import { buildCurio } from '../curiomodel.js';
-import { CURIOS } from '../treasure.js';
-import { DreamvaneModel } from '../dreamvane/model.js';
-import { CrucibelleModel } from '../crucibelle/model.js';
+import { buildCurio } from '../world/treasure/curiomodel.js';
+import { CURIOS } from '../world/treasure/treasure.js';
+import { DreamvaneModel } from '../tools/dreamvane/model.js';
+import { CrucibelleModel } from '../tools/crucibelle/model.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';

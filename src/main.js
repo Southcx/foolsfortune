@@ -1,21 +1,21 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { T, PALETTE, loadTuning } from './config.js';
-import { Physics, RAPIER, GROUPS } from './physics.js';
-import { FX } from './fx.js';
-import { Breakables } from './breakables.js';
-import { Level } from './level.js';
-import { Character } from './character.js';
-import { Input } from './input.js';
-import { Player } from './player.js';
-import { HelpMenu } from './help/menu.js';
-import { Death, DeathTech } from './vessel/death.js';
-import { Ultimate, UltTech } from './lockheart/ultimate.js';
-import { Weapon } from './weapon.js';
-import { Hud } from './hud.js';
-import { buildTuningPanel } from './tuning.js';
-import { setOutlineThickness } from './outline.js';
-import { sfx } from './audio.js';
+import { T, PALETTE, loadTuning } from './core/config.js';
+import { Physics, RAPIER, GROUPS } from './core/physics.js';
+import { FX } from './vfx/particles.js';
+import { Breakables } from './world/props/breakables.js';
+import { Level } from './world/level.js';
+import { Character } from './courier/character.js';
+import { Input } from './core/input.js';
+import { Player } from './courier/player.js';
+import { HelpMenu } from './feedback/help/menu.js';
+import { Death, DeathTech } from './courier/vessel/death.js';
+import { Ultimate, UltTech } from './tools/lockheart/ultimate.js';
+import { Weapon } from './tools/psygun/weapon.js';
+import { Hud } from './feedback/hud.js';
+import { buildTuningPanel } from './debug/tuning.js';
+import { setOutlineThickness } from './render/outline.js';
+import { sfx } from './audio/sfx.js';
 import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
 import handB64 from './assets/godhand.glb?b64';
@@ -23,72 +23,72 @@ import jarB64 from './assets/pneuka.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import animsB64 from './assets/anims.bin?b64';
 import cmuB64 from './assets/anims_cmu.bin?b64';
-import { decodeAnims } from './anims.js';
-import { Clappers } from './clappers.js';
-import { LachrymaPool, Baubles } from './lachryma.js';
-import { Shells, SHELL_TYPES } from './shells.js';
-import { Trial } from './trial.js';
-import { Course } from './basement.js';
-import { Techs } from './moves/techs.js';
-import { Blink } from './moves/blink.js';
-import { Slam } from './moves/slam.js';
-import { Stomp } from './moves/stomp.js';
-import { Roll } from './moves/roll.js';
-import { Swim } from './moves/swim.js';
-import { Ladder } from './moves/ladder.js';
-import { Surfer } from './moves/surfer.js';
-import { Sondelass } from './moves/sondelass.js';
-import { SoulBrush } from './moves/soulbrush.js';
-import { Veritome } from './moves/veritome.js';
-import { Grapple } from './moves/grapple.js';
-import { Launch } from './moves/launch.js';
-import { Circuits } from './circuits.js';
-import { SlipDive } from './moves/slip.js';
-import { Hang } from './moves/hang.js';
-import { Latch } from './moves/latch.js';
-import { Pole } from './moves/pole.js';
-import { Grate } from './moves/grate.js';
-import { Balance } from './moves/balance.js';
-import { Push } from './moves/push.js';
-import { Carry } from './moves/carry.js';
-import { Kick } from './moves/kick.js';
-import { Recoil } from './moves/recoil.js';
-import { Rigging } from './moves/rigging.js';
-import { Lobbers } from './lobber.js';
-import { GodMode } from './godmode.js';
-import { Cartography } from './cartography.js';
-import { Dunes, DUNE } from './dunes.js';
-import { Water, Ladders, SlipField } from './moves/env.js';
-import { Events } from './events.js';
-import { Movers } from './movers.js';
-import { System } from './system/system.js';
-import { Codex } from './system/codex.js';
+import { decodeAnims } from './courier/anim/anims.js';
+import { Clappers } from './creatures/clappers.js';
+import { LachrymaPool, Baubles } from './courier/lachryma.js';
+import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
+import { Trial } from './world/trial.js';
+import { Course } from './world/basement/basement.js';
+import { Techs } from './courier/moves/techs.js';
+import { Blink } from './courier/moves/blink.js';
+import { Slam } from './courier/moves/slam.js';
+import { Stomp } from './courier/moves/stomp.js';
+import { Roll } from './courier/moves/roll.js';
+import { Swim } from './courier/moves/swim.js';
+import { Ladder } from './courier/moves/ladder.js';
+import { Surfer } from './courier/skiff/skiff.js';
+import { Sondelass } from './tools/sondelass/sondelass.js';
+import { SoulBrush } from './tools/soulbrush/soulbrush.js';
+import { Veritome } from './tools/veritome/veritome.js';
+import { Grapple } from './tools/sondelass/grapple.js';
+import { Launch } from './courier/moves/launch.js';
+import { Circuits } from './world/basement/circuits.js';
+import { SlipDive } from './courier/moves/slip.js';
+import { Hang } from './courier/moves/hang.js';
+import { Latch } from './courier/moves/latch.js';
+import { Pole } from './courier/moves/pole.js';
+import { Grate } from './courier/moves/grate.js';
+import { Balance } from './courier/moves/balance.js';
+import { Push } from './courier/moves/push.js';
+import { Carry } from './courier/moves/carry.js';
+import { Kick } from './courier/moves/kick.js';
+import { Recoil } from './courier/moves/recoil.js';
+import { Rigging } from './courier/moves/rigging.js';
+import { Lobbers } from './creatures/lobber.js';
+import { GodMode } from './godhand/godhand.js';
+import { Cartography } from './feedback/cartography.js';
+import { Dunes, DUNE } from './world/dunes/dunes.js';
+import { Water, Ladders, SlipField } from './courier/moves/env.js';
+import { Events } from './core/events.js';
+import { Movers } from './world/props/movers.js';
+import { System } from './progress/system.js';
+import { Codex } from './feedback/codex/codex.js';
 import { PneukaBox } from './pneuka/box.js';
-import { VesselDamage } from './vessel/damage.js';
-import { Combat } from './combat.js';
-import { Vessel } from './vessel/vessel.js';
-import { KilnUI } from './vessel/kilnui.js';
-import { Kiln, KILN_AT } from './moves/kiln.js';
-import { Shops } from './shop/shops.js';
-import { ShopUI } from './shop/ui.js';
+import { VesselDamage } from './courier/vessel/damage.js';
+import { Combat } from './core/combat.js';
+import { Vessel } from './courier/vessel/vessel.js';
+import { KilnUI } from './courier/vessel/kilnui.js';
+import { Kiln, KILN_AT } from './courier/moves/kiln.js';
+import { Shops } from './progress/shop/shops.js';
+import { ShopUI } from './progress/shop/ui.js';
 import { PneukaUI } from './pneuka/ui.js';
 import { GroundItems } from './pneuka/ground.js';
-import { SystemVoice } from './system/voice.js';
+import { SystemVoice } from './audio/voice/voice.js';
 import { MusicPlayer } from './music/player.js';
 import { LACHRYMA } from './music/lachryma.js';
 import { chooseMusic, chooseTitleMusic } from './music/choose.js';
 import { Clayese, hearHaggling } from './npc/clayese.js';
 import { hearEvents } from './audio/cues.js';
-import { GameLog } from './gamelog.js';
-import { Stats } from './stats.js';
-import { Tracking } from './tracking.js';
-import { Achievements } from './achievements.js';
-import { Weir, stockTreasury } from './angling/weir.js';
-import { TimeScale } from './timescale.js';
-import { Sky } from './sky.js';
-import { Interact } from './interact.js';
-import { LockOn } from './lockon.js';
-import { HideUI } from './hideui.js';
+import { GameLog } from './feedback/gamelog.js';
+import { Stats } from './progress/stats.js';
+import { Tracking } from './feedback/tracking.js';
+import { Achievements } from './progress/achievements.js';
+import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
+import { TimeScale } from './core/time.js';
+import { Sky } from './vfx/sky.js';
+import { Interact } from './courier/interact.js';
+import { LockOn } from './courier/lockon.js';
+import { HideUI } from './feedback/hideui.js';
 import { Glyphs } from './vfx/glyphs.js';
 import { Cinema } from './vfx/cinema.js';
 import { Portrait } from './vfx/portrait.js';
@@ -101,22 +101,22 @@ import { Auras } from './vfx/auras.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
 import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
 import { WireCompass } from './vfx/wirecompass.js';
-import { Cubes } from './cubes.js';
-import { Mood } from './mood.js';
-import { Chests, ChestTech } from './chests.js';
-import { Emote } from './moves/emote.js';
-import { Chat } from './chat.js';
-import { Talk } from './moves/talk.js';
+import { Cubes } from './world/treasure/cubes.js';
+import { Mood } from './core/mood.js';
+import { Chests, ChestTech } from './world/treasure/chests.js';
+import { Emote } from './courier/moves/emote.js';
+import { Chat } from './feedback/chat.js';
+import { Talk } from './courier/moves/talk.js';
 import { Folk } from './npc/folk.js';
-import { Creatures } from './creatures.js';
-import { AI } from './ai/index.js';
-import { Stun } from './stun.js';
-import { resetOnNewBuild } from './progress.js';
+import { Creatures } from './creatures/creatures.js';
+import { AI } from './creatures/ai/index.js';
+import { Stun } from './creatures/stun.js';
+import { resetOnNewBuild } from './core/progress.js';
 import { Dissolve } from './vfx/dissolve.js';
-import { Flash } from './veritome/flash.js';
-import { Reprogram } from './veritome/reprogram.js';
-import { SlipJellies } from './jelly/slipjelly.js';
-import { WEIR_SPAWN } from './angling/weir.js';
+import { Flash } from './tools/veritome/flash.js';
+import { Reprogram } from './tools/veritome/reprogram.js';
+import { SlipJellies } from './creatures/jelly/slipjelly.js';
+import { WEIR_SPAWN } from './tools/sondelass/angling/weir.js';
 import jellyB64 from './assets/slipjelly.glb?b64';
 import { Dialogue } from './npc/dialogue.js';
 import { placePeople, PEOPLE } from './npc/people.js';
@@ -129,18 +129,18 @@ import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
-import { Dreamvane } from './moves/dreamvane.js';
-import { Crucibelle } from './moves/crucibelle.js';
-import { Lockheart } from './moves/lockheart.js';
-import { Mirages } from './crucibelle/mirage.js';
-import { Signatures, standardSignatures } from './signatures.js';
-import { Spirits } from './spirits.js';
-import { Crystals } from './lachryma/crystals.js';
-import { installEconomy } from './econ/economy.js';
+import { Dreamvane } from './tools/dreamvane/dreamvane.js';
+import { Crucibelle } from './tools/crucibelle/crucibelle.js';
+import { Lockheart } from './tools/lockheart/lockheart.js';
+import { Mirages } from './tools/crucibelle/mirage.js';
+import { Signatures, standardSignatures } from './core/signatures.js';
+import { Spirits } from './creatures/spirits.js';
+import { Crystals } from './world/dunes/crystals.js';
+import { installEconomy } from './progress/econ/economy.js';
 import { TitleScene } from './title/scene.js';
 import { TitleUI } from './title/ui.js';
 import { Diag } from './debug/diag.js';
-import { MacroBook } from './mind/macros.js';
+import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
@@ -242,7 +242,7 @@ async function main() {
     },
     onExplosion(center, R) {
       game.god?.explosion(center, R);
-      game.ai?.stimuli.emit('noise', center, { radius: 18 + R * 6, strength: 1.5, by: 'courier' }); // (a blast is heard far off: ai/stimuli.js)
+      game.ai?.stimuli.emit('noise', center, { radius: 18 + R * 6, strength: 1.5, by: 'courier' }); // (a blast is heard far off: creatures/ai/stimuli.js)
       game.ai?.stimuli.emit('light', center, { radius: 10 + R * 3, strength: 1, by: 'courier' });
       if (game.god?.active) return; // (the Courier is a jar just now)
       const pc = player.pos.clone(); pc.y += 0.9;
@@ -259,7 +259,7 @@ async function main() {
   };
 
   game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
-  game.time = new TimeScale(game); // (who slows the world, and by how much: see timescale.js)
+  game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.post = new Glow(renderer);
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
@@ -319,13 +319,13 @@ async function main() {
   mark('character');
   character.onFootstep = () => sfx.footstep();
   game.character = character;
-  // the vessel they are: its glazes and its kintsugi, on them (vessel/: fired at the kiln in the workshop, moves/kiln.js)
+  // the vessel they are: its glazes and its kintsugi, on them (vessel/: fired at the kiln in the workshop, courier/moves/kiln.js)
   game.vessel = new Vessel(game);
   game.vessel.dress(character);
-  game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks them where it lands; the cracks mend: vessel/damage.js)
+  game.vesselDamage = new VesselDamage(game, game.vessel); // (a blow cracks them where it lands; the cracks mend: courier/vessel/damage.js)
   game.combat = new Combat(game); // (are they fighting? one signal for the HUD ring and the rest: combat.js)
-  game.ultimate = new Ultimate(game); // (the Lockheart opened with a key: the Courier's ultimate, lockheart/ultimate.js)
-  game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: vessel/death.js)
+  game.ultimate = new Ultimate(game); // (the Lockheart opened with a key: the Courier's ultimate, tools/lockheart/ultimate.js)
+  game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: courier/vessel/death.js)
 
   const input = new Input(renderer.domElement);
   const player = new Player(physics, camera, input);
@@ -369,7 +369,7 @@ async function main() {
   game.shopUI.onClose = () => { if (input.enabled && !game.god?.active && !game.dialogue?.open) input.requestLock(); };
   game.kilnUI = new KilnUI(game);
   game.kilnUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  // the System's voice: the few things that matter, said aloud (system/voice.js)
+  // the System's voice: the few things that matter, said aloud (audio/voice/voice.js)
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
   game.music = new MusicPlayer(sfx);
@@ -389,7 +389,7 @@ async function main() {
   game.baubles = baubles;
   const shells = new Shells(game);
   game.shells = shells;
-  hud.buildShells(shells.types); // (the chambers of the psygun they carry: psygun/kinds.js)
+  hud.buildShells(shells.types); // (the chambers of the psygun they carry: tools/psygun/kinds.js)
   game.input = input;
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   mark('techs+ui');
@@ -424,7 +424,7 @@ async function main() {
       const p = game.folk.head(n).add(new THREE.Vector3(0, 0.55 * n.scale, 0));
       return { pos: p, d: Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z) - 0.3, ref: n.id };
     });
-    // the kiln station: F at the kiln's mouth (moves/kiln.js)
+    // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
       if (game.dialogue?.open || game.kilnUI?.open || !idle()) return null;
       const d = Math.hypot(KILN_AT.x - player.pos.x, KILN_AT.z - player.pos.z);
@@ -525,7 +525,7 @@ async function main() {
   game.present = new Presentation(game, { renderer, sun }); // (480 lines, scaled up; smooth shading; one shadow: render/present.js)
   game.present.apply();
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
-  // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (jelly/slipjelly.js)
+  // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
@@ -533,7 +533,7 @@ async function main() {
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
-  game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: lachryma/crystals.js)
+  game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -544,9 +544,9 @@ async function main() {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   installEconomy(game); // (/grant, for the DEBUG profile)
-  game.macros = new MacroBook(); // (what they have composed for minds: mind/macros.js, the Codex's VERITOME, THE MIND)
-  game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: veritome/flash.js)
-  game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: veritome/reprogram.js)
+  game.macros = new MacroBook(); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
+  game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)
+  game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
   // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
   game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
@@ -560,7 +560,7 @@ async function main() {
   game.chat.add('lab', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', aliases: ['workbench'], run: () => game.workbench.toggle() });
   game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
     const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
-    const T = await import('./lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
+    const T = await import('./tools/lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];
     const { table, mods } = T.oddsOf('heart.plain', ['key.brass']);
     lh.queue = [{ id: T.spin(table), R: T.rates(table), power: 1.5, mods, heart: 'heart.plain', keys, i: 0 }];
     game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
@@ -757,7 +757,7 @@ async function main() {
     }
     if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open) game.codex.toggle();
     if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling) game.pneukaUI.toggle();
-    // (the survey is the Dreamvane's now, MMB with it drawn: moves/dreamvane.js; N stays the god hand's, which has no tools)
+    // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
@@ -774,7 +774,7 @@ async function main() {
     else {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
-      game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: veritome/reprogram.js)
+      game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
@@ -818,7 +818,7 @@ async function main() {
     game.interact.update(game.rawDt);
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
     game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
-    if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: mind/macros.js)
+    if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: tools/veritome/mind/macros.js)
     // the music: what the place calls for (the title, a fight, a dive, the skiff, the dunes, the workshop: music/choose.js); a
     // sound-test pick plays over any of it
     game.music.follow(chooseMusic(game, { overlay: overlayUp() }));

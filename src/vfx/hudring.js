@@ -137,7 +137,7 @@ export class HudRing {
     this.visible = true;
     this.fill = 1; this.res = 0; this.alpha = 0; this.busy = 0; this.last = -1;
     this.threats = threats.map(() => ({ a: 0, w: 0, heat: 0, k: 0 }));
-    // the blows: the vessel says whether the shield took it or the clay cracked (vessel/damage.js, which hears the blow first), and
+    // the blows: the vessel says whether the shield took it or the clay cracked (courier/vessel/damage.js, which hears the blow first), and
     // the blow itself says where it came from (a jelly's place, or the way an impulse pushed: it came from the other side)
     this.blows = Array.from({ length: MAX_BLOWS }, () => ({ a: 0, kind: 0, k: 0 }));
     this.lastKind = 0; this.lastKindT = -9;
@@ -170,7 +170,7 @@ export class HudRing {
     this.res += (res - this.res) * (1 - Math.exp(-dt * 10));
     if (Math.abs(fill - this.last) > 0.001 || res > 0) { this.last = fill; this.busy = 3; }
     this.busy = Math.max(0, this.busy - dt);
-    // what has noticed them: the creatures whose minds hold them (ai/memory.js), nearest first
+    // what has noticed them: the creatures whose minds hold them (creatures/ai/memory.js), nearest first
     const near = [];
     for (const c of g.creatures?.list || []) {
       if (!c.alive || c.ally) continue;

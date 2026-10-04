@@ -28,8 +28,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SEQUENCES } from './sequences.js';
-import { clearShot } from '../shotclear.js';
-import { sfx } from '../audio.js';
+import { clearShot } from '../core/shotclear.js';
+import { sfx } from '../audio/sfx.js';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Vector3();
 const smooth = (u) => u * u * (3 - 2 * u);

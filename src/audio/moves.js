@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the Courier's body: steps, landings, dashes and the movement techs (blink, slam, roll, swim, climb, carry...).
+// A sound bank of the one mixer (audio/sfx.js): the Courier's body: steps, landings, dashes and the movement techs (blink, slam, roll, swim, climb, carry...).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class MoveSounds {
   /** The surfer's hiss and hum: wind over sand and the emitter. Returns { set(speedFrac, boost, air), stop() }. */

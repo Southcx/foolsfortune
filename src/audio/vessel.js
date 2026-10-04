@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the Courier's vessel, damaged and mended (vessel/damage.js). They are fired clay, glazed:
+// A sound bank of the one mixer (audio/sfx.js): the Courier's vessel, damaged and mended (courier/vessel/damage.js). They are fired clay, glazed:
 // a blow cracks their glaze where it lands, and the cracks fill with gold as they heal (kintsugi).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //

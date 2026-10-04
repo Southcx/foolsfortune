@@ -22,13 +22,13 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
-import { addOutline } from '../outline.js';
+import { addOutline } from '../render/outline.js';
 import { addRim } from '../render/toon.js';
-import { JointLimits, CLAPPER_ROM } from '../rom.js';
-import { RAPIER, GROUPS, G, groups } from '../physics.js';
-import { PALETTE } from '../config.js';
+import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
+import { RAPIER, GROUPS, G, groups } from '../core/physics.js';
+import { PALETTE } from '../core/config.js';
 import { Clayese } from './clayese.js';
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const POSE = ['hop', 'squash', 'armUp', 'armIn', 'armOut', 'armDown', 'shake', 'lid', 'eyes', 'puff', 'red', 'lean', 'sink', 'sway', 'rise', 'tilt', 'look2'];

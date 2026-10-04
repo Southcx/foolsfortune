@@ -10,7 +10,7 @@
 //
 //   const ui = new TitleUI(game, { onStart, onChoose })   ui.showMenu()   ui.fade(k)   ui.close()
 // ---------------------------------------------------------------------------------------
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 
 const CSS = `
 #title { position: fixed; inset: 0; z-index: 12; pointer-events: none; font-family: var(--f-title, serif); color: #fff1dc; }

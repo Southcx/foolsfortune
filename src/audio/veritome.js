@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the Veritome (moves/veritome.js, veritome/): the lens, the shutter, the cards.
+// A sound bank of the one mixer (audio/sfx.js): the Veritome (tools/veritome/veritome.js, veritome/): the lens, the shutter, the cards.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class VeritomeSounds {
   /** The lens comes up: a brass click and a short wind. */

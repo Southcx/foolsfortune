@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE PNEUKA BOX: the Courier's innate storage, the space they carry with them (P). It is the transitory place: what is picked up,
 // found in a chest or taken out of the Veritome comes here first; what is worn is worn from here; and what is to be kept for good is
-// stored from here into the Veritome, which is the bank (long-term, stacked, by card: veritome/book.js).
+// stored from here into the Veritome, which is the bank (long-term, stacked, by card: tools/veritome/book.js).
 //
 //  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
 //    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at their feet (ground.js) and is
@@ -25,9 +25,9 @@
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
 import { itemOf } from './items.js';
-import { CARD } from '../veritome/cards.js';
-import { LURES } from '../angling/lures.js';
-import { sfx } from '../audio.js';
+import { CARD } from '../tools/veritome/cards.js';
+import { LURES } from '../tools/sondelass/angling/lures.js';
+import { sfx } from '../audio/sfx.js';
 
 export const SLOTS = 28;
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */

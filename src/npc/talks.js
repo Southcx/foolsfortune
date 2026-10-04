@@ -15,7 +15,7 @@
 //   OLD GROG          stoneware. Angler of the Weir's pier, in the dunes. Slow, sad, kind, remembers the town that was. In.
 //   PIP               stoneware, not yet glazed. Saggar's apprentice, hiding in the basement hub. Afraid of most things. Yo.
 // ---------------------------------------------------------------------------------------
-import { TITHE } from '../treasure.js';
+import { TITHE } from '../world/treasure/treasure.js';
 
 const L = (g, k) => g.ledger?.get(k) || 0;
 
@@ -189,7 +189,7 @@ export const TALKS = {
       ], next: 'menu' },
       bye: { lines: [{ mood: 'sly', text: 'Come back {gold}richer{/}!' }] },
 
-      // THE HAGGLE (shop/haggle.js keeps the numbers; shops.js the deal): his answer to what the Courier last did, then what they can do next
+      // THE HAGGLE (progress/shop/haggle.js keeps the numbers; shops.js the deal): his answer to what the Courier last did, then what they can do next
       haggle: {
         lines: [{ mood: (g) => hagMood(g), text: (g) => hagLine(g) }],
         choices: [
@@ -207,8 +207,8 @@ export const TALKS = {
 };
 
 // ---------------------------------------------------------------------------------------
-// RAKU HAGGLES: what he says to each move (shop/haggle.js names the moves). {ask} is his price now, {offer} theirs (the Courier's), {price} the deal.
-// Any number of lines to a move: they are taken in turn. The mood of each line is his (shop/haggle.js moodOf), so his body shows it.
+// RAKU HAGGLES: what he says to each move (progress/shop/haggle.js names the moves). {ask} is his price now, {offer} theirs (the Courier's), {price} the deal.
+// Any number of lines to a move: they are taken in turn. The mood of each line is his (progress/shop/haggle.js moodOf), so his body shows it.
 // He is a greedy little miser of the porcelain tier: vain of his crackle, in love with the sound of cubes, wounded by every discount.
 const H = (g) => g.shops?.hag?.h;
 const pick = (pool, g) => {

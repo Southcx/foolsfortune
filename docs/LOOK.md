@@ -51,8 +51,8 @@ Ashley; its radius is the weapon's reach and what is inside lights), Parasite Ev
 Aya while they choose), Elemental Gearbolt's closing frames (a box shrinks around what is about to fire: the closing is the warning
 and the timer), Rez's mind-space (lock squares count to eight without numerals), Zone of the Enders' ring radar on the body.
 
-- Follows it: the chevron (`vfx/chevron.js`), the lock-on reticle and the angler's brackets (`angling/reticle.js`), the sounding
-  pulse (`vfx/pulse.js`), the god-art ghost box's edges (`godarts.js`), and the 3D HUD below.
+- Follows it: the chevron (`vfx/chevron.js`), the lock-on reticle and the angler's brackets (`tools/sondelass/angling/reticle.js`), the sounding
+  pulse (`vfx/pulse.js`), the god-art ghost box's edges (`godhand/arts.js`), and the 3D HUD below.
 
 ## 4. Gold is yours
 
@@ -93,7 +93,7 @@ brightness at a variable rate. Motion in the world is things actually moving.
 The owner's direction for how things move: exaggerated movements, whimsical and a little cartoonish, but still grounded, as Monster
 Hunter's animations are. In practice:
 
-- **A silhouette per tool.** Every Lachryma tool has its own idle stance, known from across a room (`src/anim/stances.js`): the
+- **A silhouette per tool.** Every Lachryma tool has its own idle stance, known from across a room (`src/courier/anim/stances.js`): the
   Dreamvane a pilgrim's upright crook held high in both hands; the Soul Brush on the shoulder like Monster Hunter's hammer, the other
   hand on the hip; the cutlass a fencer's low guard with the free hand up behind; the rod held out over the water; the Crucibelle a
   handbell by the ear, head tipped to listen; the Lockheart held to the ear like a ticking watch; the Veritome read at the chest.
@@ -113,13 +113,13 @@ paint its vertex alpha, swap its texture; the texture scroll previews in the vie
 frame). How it flows in the game is on the object, **Custom Properties**: `fx_speedU`, `fx_speedV` (tiles a second), `fx_blend`
 (`additive` | `alpha`), `fx_side` (`double` | `front`). Then:
 
-    python3 -I tools/export_vfx.py            (every FX object -> src/assets/vfx/<name>.glb; or inside Blender: -P tools/export_vfx.py)
+    python3 -I scripts/export_vfx.py            (every FX object -> src/assets/vfx/<name>.glb; or inside Blender: -P scripts/export_vfx.py)
 
 Any GLB in `src/assets/vfx/` is in the game by its file name, with no code to touch; any PNG in `src/assets/vfx/tex/` is a texture
 a `decal` layer can wear (the two spell circles the owner's wife drew are `circle_lotus` and `circle_swirl`).
 
-Mesh Create (https://gameanimation.info/mesh-create/) stays as a sketchbook: `node tools/meshflow.mjs --author` roughs a shape out
-headless from a recipe and bakes it to `source_assets/meshflow/baked/`; `python3 -I tools/export_vfx.py --import <that.glb>` brings
+Mesh Create (https://gameanimation.info/mesh-create/) stays as a sketchbook: `node scripts/meshflow.mjs --author` roughs a shape out
+headless from a recipe and bakes it to `source_assets/meshflow/baked/`; `python3 -I scripts/export_vfx.py --import <that.glb>` brings
 it into the .blend, where it is finished.
 
 | Mesh | Where |

@@ -10,7 +10,7 @@ the gate; any division may propose a change to it (a question to Petra, or a not
    second log) is a fork, and forks rot. Extend the one there is, or replace it in one move.
 2. **Services, not reaching in.** A module asks another domain through its service on `game` (`game.creatures.strike`,
    `game.vfx.play`, `game.cubes.earn`, `game.events.emit`), not by importing the other domain's internals and poking them.
-3. **Data over code.** Tables, looks, sequences, odds, prices and lines are data (`econ/table.js`, `vfx/library.js`,
+3. **Data over code.** Tables, looks, sequences, odds, prices and lines are data (`progress/econ/table.js`, `vfx/library.js`,
    `cine/sequences.js`, `npc/talks.js`); code says when, data says what. A data module imports nothing that touches three.js, so a Node
    script can read it as the game does.
 4. **Small interfaces.** A module does one job and says how to use it in its header. If it takes a paragraph to say what a module is,
@@ -20,8 +20,8 @@ the gate; any division may propose a change to it (a question to Petra, or a not
 
 ## Layout
 
-After the restructure (Phase 1 below) the `src/` root holds `main.js` alone. Until then the old layout stands, and the move map at the end
-of this file says where each file is going.
+Since the restructure (R42, Phase 1 below) the `src/` root holds `main.js` alone. The move map at the end of this file says where each
+file came from.
 
 ```
 src/
@@ -97,7 +97,7 @@ Three files every division touches, so three files kept short:
 ## Budgets
 
 What a frame may cost. `npm run perf` measures them; the gate holds every push to them and to the last published build's numbers
-(`tools/perf-baseline.json`).
+(`scripts/perf-baseline.json`).
 
 | measure | budget | tolerance against the last build |
 | --- | --- | --- |
@@ -117,7 +117,7 @@ Every push to main goes through it. A division's round is not done until its bra
 1. **It builds** (`npm run build`).
 2. **`npm run check` passes**: no broken import, no orphan module, no event against the bus's rules, no new log celebration, no new
    module without a header or over budget, no retired word, no "he" or "she" for the Courier. Legacy debt is in
-   `tools/check-baseline.json`; the check fails only on new debt, and the baseline only falls.
+   `scripts/check-baseline.json`; the check fails only on new debt, and the baseline only falls.
 3. **The stress test is no worse** (`npm run stress`, seeds 1 and 2).
 4. **`npm run perf` is within the budgets and tolerances**, or the reason is written down and accepted.
 5. **Petra reads the diff**: nothing another file calls has gone missing; no other division's work is overwritten; it fits (the contract,
@@ -129,10 +129,9 @@ What fails goes back to its division with the reason and the fix. Petra does not
 
 **Phase 0 (R42, done):** this file, the glossary, `npm run check` with its baseline, `npm run perf` with its baseline.
 
-**Phase 1 (the quiet round, Petra):** every division pushes what it has and stops; Petra merges everything, makes the move below in
-one commit (paths, imports, comments and docs rewritten by script; the build, the check, the stress test, perf and a headless drive
-before it lands), rewrites the README as a manual, and publishes. Every division merges main straight after and carries on. The renames
-that ride with the move:
+**Phase 1 (R42, the quiet round, done):** every division pushed what it had and stopped; Petra merged everything and made the move
+below (201 files, 625 imports and 715 path mentions rewritten by script; the build, the check, the stress test, perf and a headless drive
+before it landed), rewrote the README as a manual, and published. The renames that rode with it:
 
 - the god hand's jar: `vessel` → `jar` in `godmode.js`, events `vessel.hit` / `vessel.shatter` / `vessel.reforge` → `jar.*`, their ledger
   keys and the log's lines
@@ -147,7 +146,7 @@ course and the room teleports split into `world/basement/course.js` and `world/r
 system so there is one (Calissa); `audio.js` split into `audio/` (Wanda, under way); the undotted events renamed with their ledger keys
 (Petra with Dovina); the in-game words the glossary retires (Espada).
 
-## The move map (Phase 1)
+## The move map (Phase 1, a record: old paths on the left)
 
 | from | to |
 | --- | --- |

@@ -33,11 +33,11 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sprites } from './sprites.js';
-import { hasTag } from '../tags.js';
+import { hasTag } from '../core/tags.js';
 import { Trail } from './trail.js';
 import { meshFx } from './meshfx.js';
 import { LIBRARY } from './library.js';
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 
 // the textures a decal can wear (src/assets/vfx/tex/*.png, by file name: the spell circles the owner's wife drew among them)

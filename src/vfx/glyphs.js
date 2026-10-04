@@ -58,7 +58,7 @@ function veinCanvas() {
   stroke(46, '#150806'); stroke(26, '#ffffff'); stroke(14, '#ff3b2a');
   return c;
 }
-// the ward (a ring with a bar across it, the "no" of every sign): a blow or a blade a mind refused (sondelass/blade.js)
+// the ward (a ring with a bar across it, the "no" of every sign): a blow or a blade a mind refused (tools/sondelass/blade.js)
 function wardCanvas() {
   const s = 256, c = document.createElement('canvas'); c.width = c.height = s;
   const g = c.getContext('2d'); g.translate(s / 2, s / 2); g.lineCap = 'round';

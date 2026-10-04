@@ -28,7 +28,7 @@
 import * as THREE from 'three';
 import { TALKS } from './talks.js';
 import { moodOf } from './clayese.js';
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 
 const BASE_CPS = 34;
 const MOOD_CLASS = { fear: 'tremble', anger: 'throb', sad: 'sink', joy: 'bob', awe: 'lach', confused: 'wobble', whisper: 'small', sly: 'slant' };

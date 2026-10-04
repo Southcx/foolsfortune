@@ -46,7 +46,7 @@ export class MusicPlayer {
     if (want && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.5); else this.play(score); }
     else if (!want && this.alive) this.stop(2.5);
   }
-  /** The beat to play along with (the Crucibelle plays in time and in tune with what is playing: moves/crucibelle.js): a bar's start
+  /** The beat to play along with (the Crucibelle plays in time and in tune with what is playing: tools/crucibelle/crucibelle.js): a bar's start
    *  on the audio clock, seconds a beat, beats a bar, and the key (the root's MIDI note: every theme here is a minor pentatonic one, or
    *  near enough; E flat unless the score says). Null when nothing plays. */
   grid() {

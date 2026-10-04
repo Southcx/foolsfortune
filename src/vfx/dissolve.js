@@ -11,8 +11,8 @@
 //   game.dissolve.cut(geometry (world space; position, and colour if it has one), planes, { centre, color, worth, mp })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { splitTriangles, toGeometry } from '../slicing.js';
-import { sfx } from '../audio.js';
+import { splitTriangles, toGeometry } from '../tools/slicing.js';
+import { sfx } from '../audio/sfx.js';
 
 const LIFE = 0.85;
 const _v = new THREE.Vector3();

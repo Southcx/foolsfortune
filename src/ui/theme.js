@@ -21,7 +21,7 @@
 //   theme.set('midnight')         the window colour (kept in the browser);  THEMES lists them
 //   theme.watch(root)             a menu's root: its 'open' class unfolds its window and plays the open / back sounds
 // ---------------------------------------------------------------------------------------
-import { sfx } from '../audio.js';
+import { sfx } from '../audio/sfx.js';
 import fUi from '../assets/fonts/mplusround500.woff2?b64';
 import fUiBold from '../assets/fonts/mplusround800.woff2?b64';
 import fTitle from '../assets/fonts/cinzel.woff2?b64';

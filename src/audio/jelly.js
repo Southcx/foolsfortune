@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the slip jelly (jelly/slipjelly.js) and its slip: wet, rubbery, a little musical (it is a mind jelly).
+// A sound bank of the one mixer (audio/sfx.js): the slip jelly (creatures/jelly/slipjelly.js) and its slip: wet, rubbery, a little musical (it is a mind jelly).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class JellySounds {
   jellySquelch(dist = 5, k = 1) {

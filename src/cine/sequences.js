@@ -4,7 +4,7 @@
 // real seconds from a segment's start. `preview` places the anchors on the workbench's stage.
 // ---------------------------------------------------------------------------------------
 export const SEQUENCES = {
-  // THE LOCKHEART'S OPENING (lockheart/ultimate.js says when each segment begins; the beats and their effects are here)
+  // THE LOCKHEART'S OPENING (tools/lockheart/ultimate.js says when each segment begins; the beats and their effects are here)
   'lockheart.opening': {
     anchors: ['courier', 'coffin', 'wheel'],
     preview: { courier: [0, 0, 0], coffin: [0, 1.5, 0.36], wheel: [0, 6.2, 1.2] },

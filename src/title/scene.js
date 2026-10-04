@@ -16,7 +16,7 @@
 //   const t = new TitleScene(game, { charG, gunG, clipPack, clapG })   t.update(dt)   t.render()   t.state   t.go() / t.dive(onDone)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { Character } from '../character.js';
+import { Character } from '../courier/character.js';
 import { Board } from './board.js';
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();

@@ -24,10 +24,10 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RestBake } from '../render/restbake.js';
-import { Tech } from '../moves/techs.js';
-import { Track } from '../animator.js';
-import { sfx } from '../audio.js';
-import { T } from '../config.js';
+import { Tech } from '../courier/moves/techs.js';
+import { Track } from '../courier/anim/animator.js';
+import { sfx } from '../audio/sfx.js';
+import { T } from '../core/config.js';
 import { measureGrip, handFromTool } from './grip.js';
 import { drawHands } from './draw.js';
 import { fpToolMatrix } from './viewmodel.js';

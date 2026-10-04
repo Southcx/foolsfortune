@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { addOutline } from '../outline.js';
+import { addOutline } from './outline.js';
 
 const look = (m) => [m.type, m.color?.getHex(), m.emissive?.getHex(), m.emissiveIntensity, m.roughness, m.metalness, m.transparent, m.opacity, m.side, m.map?.uuid,
   m.vertexColors, m.flatShading, m.blending, m.depthWrite, m.envMap?.uuid, m.envMapIntensity].join('|');

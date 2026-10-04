@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // RAVE: what a prismatic chest does to the room: about seven seconds of blacklight rave, on the beat of a synthesized four-on-the-floor
-// (audio.js raveLoop, 124 bpm), then the lights come back up. Everything in it is a thing that is actually there, moving:
+// (audio/sfx.js raveLoop, 124 bpm), then the lights come back up. Everything in it is a thing that is actually there, moving:
 //
 //   THE DARK       the room's own lights go nearly out and turn violet (mood.js), so that what is left is what glows.
 //   BEAMS          eight cones of coloured light from the ceiling, each swept round the chest along its own figure, with a soft pool of
@@ -25,8 +25,8 @@
 //   const rave = new Rave(game);   rave.start(ceremony);   rave.update(rawDt);   rave.stop();   rave.active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { GROUPS } from '../physics.js';
-import { sfx } from '../audio.js';
+import { GROUPS } from '../core/physics.js';
+import { sfx } from '../audio/sfx.js';
 
 const BPM = 124, SPB = 60 / BPM, BEATS = 14, DUR = BEATS * SPB;
 const NEON = [0xff2fb0, 0x22e8ff, 0xb6ff2a, 0xff8a1f, 0x9a5cff, 0xffe600, 0xff3a3a, 0x3a7bff];

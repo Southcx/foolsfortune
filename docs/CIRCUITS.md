@@ -1,9 +1,9 @@
 # The gymnasium, taken apart, and four new lap circuits
 
-Status: The Braid, The Mill Race and The Spindle are built (see the README's Lap circuits, `src/circuits.js`, `src/circuitrooms.js`), with their numbers adjusted where the physical build needed it; The Sandbar waits for the Solar Surfer. The design as first drafted follows. Part 1 lists what the gymnasium is made of (from the code as it stands),
+Status: The Braid, The Mill Race and The Spindle are built (see the README's Lap circuits, `src/world/basement/circuits.js`, `src/world/basement/circuitrooms.js`), with their numbers adjusted where the physical build needed it; The Sandbar waits for the Solar Surfer. The design as first drafted follows. Part 1 lists what the gymnasium is made of (from the code as it stands),
 what it measures and what it never asks. Part 2 designs four circuits to fill the gaps. Part 3 is the shared
 machinery they would need. Numbers are the measured ones from the basement's rubric (`RUBRIC` in
-`src/basement.js`) and `T.movement` / `T.tech` in `src/config.js`; a gap is sized at about 85% of what the
+`src/world/basement/basement.js`) and `T.movement` / `T.tech` in `src/core/config.js`; a gap is sized at about 85% of what the
 controller can clear, as the ring already does.
 
 ---
@@ -188,7 +188,7 @@ Circuit { id, name, layer, gates[], forks[], par: { gold, silver, bronze }, rese
 Gate    { at: [x, y, z], radius | zone: [x0,x1,z0,z1], order, route?: 'low' | 'high' | ..., minSpeed? }
 ```
 
-- **Data-driven**, in a `src/circuits.js` list, like `CHECKPOINTS`, instead of hand-written per room.
+- **Data-driven**, in a `src/world/basement/circuits.js` list, like `CHECKPOINTS`, instead of hand-written per room.
 - **Splits, medals, clean-run**: each gate records time and speed; a reset ends the "clean" flag; the finish scores a
   medal from `par`. (`Course.touch` is the model; it currently hard-codes the ring.)
 - **Speed-gated gates**: a gate with `minSpeed` logs the speed like the hub's gate lines; missing it does not fail

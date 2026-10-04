@@ -19,7 +19,7 @@
 //   const v = new Clayese(sfx)    v.blip(letter, voice, { mood, emph, end, pos })    (voice: { base: midi, scale: 'in'|'yo'|'hexa'|..., bell, clay })
 //   v.gesture(text, voice, { mood, end })   a short sound with no box (a chuckle, a huff), spoken a letter at a time
 //   v.haggle(mood, voice)                   a shopkeeper's reaction: pleased, greedy, insulted, sulking, sold (HAGGLE)
-//   hearHaggling(game, v, voice)            Raku answers every 'shop.haggle' event (its step, from shop/shops.js) in his own voice
+//   hearHaggling(game, v, voice)            Raku answers every 'shop.haggle' event (its step, from progress/shop/shops.js) in his own voice
 // ---------------------------------------------------------------------------------------
 export const SCALES = {
   in: [0, 1, 5, 7, 8], // Miyako-bushi / In: the sombre Japanese pentatonic
@@ -139,10 +139,10 @@ export const HAGGLE = {
   sold: { text: 'da-DONE', mood: 'surprise', end: '!' }, // (a leap up, and the deal's bell)
 };
 
-// the haggle's steps (shop/haggle.js) as the turns above: what his body says before his line does
+// the haggle's steps (progress/shop/haggle.js) as the turns above: what his body says before his line does
 const STEP = { open: 'greedy', counter: 'greedy', last: 'greedy', insult: 'insulted', flatter: 'pleased', clink: 'pleased', callback: 'pleased', bored: 'sulking', gone: 'sulking', deal: 'sold' };
 
-/** Raku answers the shop's bargaining: each 'shop.haggle' event ({ step } from shop/shops.js, or { mood } as HAGGLE's names), a
+/** Raku answers the shop's bargaining: each 'shop.haggle' event ({ step } from progress/shop/shops.js, or { mood } as HAGGLE's names), a
  *  gesture in his voice as his line begins (the purchase's own sound is the deal's bell). */
 export function hearHaggling(game, clayese, voice) {
   return game.events.on('shop.haggle', (e) => {

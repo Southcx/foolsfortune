@@ -16,7 +16,7 @@
 //   const p = new Presentation(game, { renderer, sun });   p.apply()   (on start, on resize, when a setting changes)   p.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { T } from '../config.js';
+import { T } from '../core/config.js';
 import { weld } from './weld.js';
 
 export const RESOLUTIONS = { ps2: 480, 540: 540, 720: 720, native: 0 };

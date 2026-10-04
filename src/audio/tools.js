@@ -1,4 +1,4 @@
-// A sound bank of the one mixer (audio.js): the Dreamvane, the Crucibelle, the Lockheart (tools/).
+// A sound bank of the one mixer (audio/sfx.js): the Dreamvane, the Crucibelle, the Lockheart (tools/).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
 // Prior art: the partials of a struck glass and of a singing bowl (inharmonic, two close modes beating: the "wah"); the tuning fork's

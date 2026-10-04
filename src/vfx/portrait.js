@@ -13,7 +13,7 @@
 //   game.portrait.show(fish, aspectColour)     game.portrait.hide()     game.portrait.update(dt, fight)     game.portrait.render()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { buildFish } from '../angling/fishmesh.js';
+import { buildFish } from '../tools/sondelass/angling/fishmesh.js';
 
 const CSS = `
 #portrait { position: fixed; right: 2.4vw; top: 15vh; width: min(30vw, 440px); aspect-ratio: 4 / 3; pointer-events: none; z-index: 2; opacity: 0;

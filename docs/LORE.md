@@ -281,8 +281,8 @@ for their models.
   announces skills, titles, analyses and warnings.
 - **Slip**: liquid clay; on the island, Kaolin's essence *(Owner's notes)*. The Soul Brush writes with it.
 - **Kintsugi**: breakage mended in gold, a scar made beautiful.
-- **Chests, curios, lures, tools, standings**: as in the game (`src/treasure.js`, `src/angling/lures.js`, `src/pneuka/items.js`,
-  `src/achievements.js`). The curios are almost all of the sea: a fit for things fished out of the Emocean.
+- **Chests, curios, lures, tools, standings**: as in the game (`src/world/treasure/treasure.js`, `src/tools/sondelass/angling/lures.js`, `src/pneuka/items.js`,
+  `src/progress/achievements.js`). The curios are almost all of the sea: a fit for things fished out of the Emocean.
 
 ## 9. Names and spellings
 
@@ -336,15 +336,15 @@ Nothing blocks writing. Two things are left to the owner, and one waits on purpo
 | --- | --- | --- |
 | The folk's lines, Raku's haggling | `src/npc/talks.js` | Espada |
 | The folk's names, titles, glazes | `src/npc/people.js` | Petra (strings: Espada) |
-| The log's phrasing | `src/tracking.js` | Petra (strings: Espada) |
-| The System's lines | `src/system/voice.js` | Wanda (strings: Espada) |
-| Arcana, bestiary | `src/veritome/arcana.js`, `bestiary.js` | Petra (strings: Espada) |
-| Fish, aspects; lures | `src/angling/species.js`, `lures.js` | Petra (strings: Espada) |
-| Curios and chests | `src/treasure.js` | Petra (strings: Espada) |
+| The log's phrasing | `src/feedback/tracking.js` | Petra (strings: Espada) |
+| The System's lines | `src/audio/voice/voice.js` | Wanda (strings: Espada) |
+| Arcana, bestiary | `src/tools/veritome/arcana.js`, `bestiary.js` | Petra (strings: Espada) |
+| Fish, aspects; lures | `src/tools/sondelass/angling/species.js`, `lures.js` | Petra (strings: Espada) |
+| Curios and chests | `src/world/treasure/treasure.js` | Petra (strings: Espada) |
 | Tool examines | `src/pneuka/items.js` | Petra (strings: Espada) |
-| Glazes, the kiln window | `src/vessel/glazes.js`, `kilnui.js` | Petra (strings: Espada) |
-| Shops | `src/shop/catalogue.js` | Petra (strings: Espada) |
-| Achievements, standings | `src/achievements.js` | Petra (strings: Espada) |
+| Glazes, the kiln window | `src/courier/vessel/glazes.js`, `kilnui.js` | Petra (strings: Espada) |
+| Shops | `src/progress/shop/catalogue.js` | Petra (strings: Espada) |
+| Achievements, standings | `src/progress/achievements.js` | Petra (strings: Espada) |
 | The title's words | `src/title/ui.js` | Petra (strings: Espada) |
 | Character themes | `docs/OST.md` | Wanda |
 

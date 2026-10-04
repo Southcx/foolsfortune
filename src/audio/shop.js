@@ -1,6 +1,6 @@
-// A sound bank of the one mixer (audio.js): the shop. Cubes set down on the counter (one, a few, a heap), a purchase, a refusal, the
+// A sound bank of the one mixer (audio/sfx.js): the shop. Cubes set down on the counter (one, a few, a heap), a purchase, a refusal, the
 // kiln firing a glaze, a shelf restocked.
-// (shopBuy, shopSell: shop/shops.js; kilnFire: vessel/vessel.js)
+// (shopBuy, shopSell: progress/shop/shops.js; kilnFire: courier/vessel/vessel.js)
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 //
 // Prior art: the shops of the era's games (Animal Crossing's register and Nook's "yes, yes", the rupee counter that rolls and
@@ -54,7 +54,7 @@ export class ShopSounds {
   }
 
   /** The kiln firing a glaze: the burner's roar swelling for `roar` seconds and dying, then the glaze crazing as it cools (pings,
-   *  a long tick-tick that thins out: the vessel glows and cools over about 2.6 s, vessel/vessel.js). */
+   *  a long tick-tick that thins out: the vessel glows and cools over about 2.6 s, courier/vessel/vessel.js). */
   kilnFire(roar = 1.2) {
     if (!this.ok() || !this.allow('kiln', 0.5)) return;
     const c = this.ctx, t = c.currentTime, d = this.out(0.3, 0.5), R = Math.max(1, roar);

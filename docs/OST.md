@@ -54,7 +54,7 @@ Short enough to hum, each can be played East or West, slow or fast, major or min
 | **The Leap** | E5 to E6 | the moment everything turns (the Fool steps off the cliff) | the main theme's climax; *The Fool's Step* (PRESS START: the step off the cliff itself); otherwise saved for the game's biggest moments |
 | **The Tear** | F to E (the In scale's half step), over an A minor or an F | Lachryma, loss, the uncanny | the first draft's East answer; for Lachryma places and sorrow |
 | **The Fool's Step** | A B C, leap to E | the Courier (the first draft's motif, kept as hers) | to be: the Courier's theme |
-| **The System's chime** | G to D (a rising fifth) and E to B (a falling fourth) | the System: notice, warning | the voice's chimes (`system/voice.js`) |
+| **The System's chime** | G to D (a rising fifth) and E to B (a falling fourth) | the System: notice, warning | the voice's chimes (`audio/voice/voice.js`) |
 | **The folk** | each speaker's own scale (Clayese, `npc/clayese.js`) | the clay folk | their voices; their themes will be built on the same scales |
 | **Petra's riff** | E E G E A (the A bent toward B flat), low | pentacles: earth, the builder, Main | *Stone and Coin* (`music/motifs.js`) |
 | **Wanda's spark** | G D C# D A (up a fifth, the Lydian sigh, a leap) | wands: fire, breath, the music | *Kindling* |
@@ -161,13 +161,13 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 - **Each section has a level** (`gain` in a score's section), so a climax stands above a verse without every note being rewritten.
 - A cue is checked by rendering it offline and measuring its loudness section by section: a climax is about twice the loudness of
   a verse, a jingle is about a verse's.
-- `tools/render_score.mjs` renders a score offline (one pass, its tail) and prints each section's level. References measured with it
+- `scripts/render_score.mjs` renders a score offline (one pass, its tail) and prints each section's level. References measured with it
   (dB RMS): a jingle or a quiet opening about -31, a theme's body -24 to -29, the battle -17 to -23. Keep the energy below 120 Hz
   under about 45% of the whole: the sitar's first render was at 55%, the jawari's uneven clipper leaving an offset and a rumble
   under every pluck (a high-pass after the buzz took it out).
 - What plays where is one short list, highest first (`music/choose.js`): the title, a fight, a dive (Shallows, Deep), the skiff, the
   dunes, the workshop. A dive waits a moment before taking over and before letting go.
-- **Loops are rendered seamless** (`tools/render_score.mjs ... loop`): the looping part twice round, the second kept to the sample, the
+- **Loops are rendered seamless** (`scripts/render_score.mjs ... loop`): the looping part twice round, the second kept to the sample, the
   first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
   at the seam against the music's own step at that moment (equal is seamless). Delivered as FLAC: MP3 pads its ends with silence.
 - The wider band also has a harp, a wordless voice (a vocalise through formants) and a theremin (`music/world.js`).

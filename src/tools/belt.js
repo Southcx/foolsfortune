@@ -144,7 +144,7 @@ export const veritomeTool = (tech) => ({
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; },
   get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (1 is its flash: veritome/flash.js)
+  rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (1 is its flash: tools/veritome/flash.js)
 });
 
 /** A tool made on tools/heldtool.js (the Dreamvane, the Crucibelle, the Lockheart): its adapter. `start`: worn by a new Courier. */
