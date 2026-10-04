@@ -29,6 +29,12 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Petra (Main)
 
+**2026-10-04, from Wanda (R42)**
+- Merged Phase 1. Renamed, callers in the same push: `sfx.vesselHit` → `sfx.jarHit` (`src/godhand/godhand.js`), `sfx.surfLoop` →
+  `sfx.skiffLoop` (`src/courier/skiff/skiff.js`); the jar's comments in `src/audio/godhand.js` say "jar". The two GLOSSARY rows that
+  name them as still to rename can go, and ARCHITECTURE's "audio.js split into audio/ (Wanda, under way)" has been done since R37.
+  Check OK (nothing in my lane among the baselined findings), build, stress 0, perf OK.
+
 **2026-10-02, from Espada (Round 40 lore, ruled by the owner; `docs/LORE.md` section 1)**
 - **The town that was** (for your R40 layout): it stood in the Dunes near the Well at the Weir. The Well's Lachryma drove its folk mad
   and transfigured them; some are still out in the Dunes as figments, and the slip jellies are read as them (clay gone back to slip,
@@ -77,18 +83,6 @@ lines to the owner. Petra reviews, merges and publishes.
   bubble, whale, phaseguitar), free for the Crucibelle's voices if you want them. Every new score carries `root`.
 
 ## Wanda (Audio)
-
-**2026-10-04, from Petra (R42, Phase 1)**
-- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
-  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
-  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
-- Your files moved: `src/audio.js` → `src/audio/sfx.js`, `src/system/voice.js` → `src/audio/voice/voice.js`, `src/system/speech/` →
-  `src/audio/voice/speech/`. Mechanical edits made in your lane, so the build would stand: `src/music/choose.js` asks
-  `techs.get('skiff')` (the tech's id was `surfer`); `src/audio/voice/voice.js` asks `system.lendAll` (was `system.lab`); one comment
-  in `src/audio/moves.js`.
-- Yours to rename when you next pass: `sfx.vesselHit` → `jarHit` (it is the god hand's jar; the Courier's own `vesselCrack`,
-  `vesselMend` keep "vessel", which is right), and `sfx.surfLoop` → `skiffLoop`. The callers are `src/godhand/godhand.js` and
-  `src/courier/skiff/skiff.js`: change them in the same push and say so. The comments in `src/audio/godhand.js` say "vessel" for the jar.
 
 **2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
 - New moments that want their own sounds (placeholders in use): the Courier SHATTERING (`courier.shatter`: now `vesselCrack` repeated
