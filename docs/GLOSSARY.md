@@ -202,9 +202,17 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the
   **way up** (a pale pool: back out to the mouth with the haul) and, but on the last, the **way down** (a dark pool: deeper). A **run** is
   one trip down and back; shattered in it, the run's haul is lost. *Not:* the Weir's Well (the oasis's well of liquid Lachryma).
+- **haul** (of a Well run): what the run found below, a material for each floor whose creatures are all down; it comes home only up
+  the way up, with the run's pay (and a Cogitomap, if charted enough). *Not:* hauling (the livelihood of carrying goods across the Emocean).
+- **FOE** (a Well's; Etrian Odyssey's word): the bigger creature that keeps a Well's last floor (for now a Great Slip Jelly, class 2). The
+  run's pay counts the FOEs beaten (`wellPay`). *Not:* a creature's foe (whatever its mind is fighting: `c.foe`).
+- **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
+  scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `src/core/calendar.js`): one UTC calendar day, what everything that drifts daily keys on (a Well's layout, an
   island's demand, a route's reckoning). *Not:* a day of play.
-- **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
+- **Cogitomap** (the item `cogitomap`): a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket
+  to a seeded run of it. Drawn on the way up when the run charted four fifths of the floors walked (the map's share of CHARTED ground,
+  which a survey pulse gets and walking alone does not); it carries the Well, the seed, the day and its worth (`cogitomapWorth`).
   Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
 - **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),
   "a living".

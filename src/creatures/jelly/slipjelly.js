@@ -67,7 +67,9 @@ export class SlipJellies {
     game.ai?.eco.provide('den', (pos, range) => this.list.filter((c) => !c.spirit && c.home.distanceTo(pos) < range).map((c) => ({ pos: c.home, ref: c, radius: 1.5 })));
   }
 
-  spawn(home, { yaw = Math.random() * 6.28, spirit = null } = {}) {
+  /** A jelly at `home`. `once`: it does not form again when it bursts (a Well's: the floor is taken down with it). `cls`: a bigger class
+   *  (0 the ordinary, up to 4: a FOE is 2), larger, harder to burst and to stun (Figment classes: docs/ECONOMY.md). */
+  spawn(home, { yaw = Math.random() * 6.28, spirit = null, once = false, cls = 0 } = {}) {
     const g = this.game, M = this.mind;
     // (sand, wet and sliding: the colour and the gloss are the melt's, deform.js; the material's colour only tints it)
     const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.7, metalness: 0, emissive: 0x000000, emissiveIntensity: 1 });
@@ -107,6 +109,8 @@ export class SlipJellies {
     // what it is doing, in a word, for whoever looks (the Veritome's photograph reads it: tools/veritome/subjects.js, the bestiary's facts):
     // its wind-up, the hunt, or the action its mind is running
     Object.defineProperty(c, 'state', { get: () => (c.attack?.phase === 'wind' ? 'wind' : c.brain?.action?.hunt ? 'chase' : ({ 'go home': 'home', 'sent home': 'home' })[c.brain?.action?.id] || c.brain?.action?.id || 'idle') });
+    if (cls > 0) { c.cls = cls; c.hp *= 1 + cls; c.poise *= 1 + cls; root.scale.setScalar(1 + 0.3 * cls); c.name = 'Great Slip Jelly'; }
+    c.once = once;
     if (spirit) { c.hp = JELLY.hp * (spirit.power ?? 1); c.poise = 99; tag(c, 'hurtable', 'creature'); }
     else tag(c, 'hurtable', 'programmable', 'creature', 'sliceable');
     g.physics.register(col, c);
@@ -167,7 +171,7 @@ export class SlipJellies {
     c.deform.kick(9, null, 0.3); c.deform.target.squash = 1.55; // (the rearing: up on its toes, before it goes)
     c.brain.end('burst');
     g.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: culprit, aboutPos: culprit?.pos, ttl: 2 });
-    c.burstBy = { dir: dir.clone(), by, cause };
+    c.burstBy = { dir: dir.clone(), by, cause }; c.downBy = by;
     g.events?.emit(c.spirit ? 'spirit.fade' : 'jelly.burst', { by, cause });
     c.status.clear();
   }
@@ -198,7 +202,7 @@ export class SlipJellies {
   /** Gone without a burst (the zandatsu takes its body apart itself: veritome and sondelass call this). */
   vanish(c, by, cause) {
     if (!c.alive) return;
-    c.alive = false; c.dying = null; c.deadT = 0; c.attack = null;
+    c.alive = false; c.dying = null; c.deadT = 0; c.attack = null; c.downBy = by;
     c.col.setEnabled(false); c.root.visible = false;
     c.brain.end('gone');
     this.game.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: by === 'courier' ? this.game.player : null, aboutPos: this.game.player.pos, ttl: 2 });
@@ -260,6 +264,7 @@ export class SlipJellies {
         }
         c.deadT += dt;
         if (c.spirit) { if (c.deadT > 0.5) this.dispose(c); continue; }
+        if (c.once) continue; // (a Well's: it stays burst until its floor is taken down)
         if (c.deadT > JELLY.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 10) this.reform(c);
         continue;
       }

@@ -20,6 +20,9 @@ const RULES = {
   'courier.reform': (s) => s.courierReform?.(),
   'vessel.refire': (s) => s.vesselRefire?.(),
   'creature.mind': (s, e) => { const k = { fluid: 0.45, prismatic: 1 }[e.state]; if (k) s.prismatic?.(k); }, // (a mind entering Fluid or Prismatic: a half sweep, a full one; the event says only the state entered, so Prismatic falling back to Fluid sounds the half)
+  // a Well's pools (world/well/dunemaw.js): down a floor, or back up to the mouth (not when shattered: the reform has its own)
+  'well.floor': (s, e) => s.poolDown?.(e.floor),
+  'well.leave': (s, e) => { if (!e.shattered) s.poolUp?.(); },
   'combat.annihilate': (s) => { s.damage?.('impact', 1); s.damage?.('delirium', 1); s.prismatic?.(1); }, // (the two ends of the line at once: audio/damage.js)
   'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
 };

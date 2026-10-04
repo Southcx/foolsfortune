@@ -10,8 +10,18 @@
 // made again and again), Spelunky's room grid (wellkit.js), the Mystery Dungeon games (the stairs as the floor's one goal), and the
 // daily dungeon of an MMO (the same Well for everyone that day: core/calendar.js).
 //
-// Events (each with `by`): well.enter { well, seed, day }, well.floor { well, floor, charted }, well.leave { well, floors, foes, pay,
-// charted, shattered, fill } (SLICE.md's contract). game.well.active and .floor are what the music listens to (music/choose.js, Wanda's).
+// Below, every room but the first holds slip jellies (stand-ins for the Egregores, the owner's ruling), one more each floor down, and
+// the last floor's way out is kept by a FOE (a jelly of class 2: creatures/jelly/slipjelly.js). Once every jelly on a floor is burst,
+// something is left where they were: a MATERIAL of one of the seven kinds (progress/econ/materials.js), a tier up one floor in four
+// (a deck, econ/deck.js) and a tier up for the FOE's floor. What they find is the HAUL: it comes home only up the way up, with the
+// run's pay (wellPay by the deepest floor and the FOEs, times the Well's yield at its FILL: a Well drawn on gives less and fills again
+// with rest, econ/islands.js) and, if they charted four fifths of the floors they walked (the map's 'well' layer, cleared each floor:
+// the floors share their ground), a COGITOMAP of the Well as it is that day (its worth: cogitomapWorth).
+//
+// Events (each with `by`): well.enter { well, seed, day }, well.floor { well, floor, charted: null }, well.charted { well, floor,
+// charted } (leaving a floor), well.foe { well, floor, cls }, well.find { well, floor, item, tier }, well.leave { well, floors, foes,
+// pay, charted, shattered, fill }, cogitomap.get { well, charted, worth } (SLICE.md's contract). game.well.active and .floor are what
+// the music listens to (music/choose.js, Wanda's).
 //
 //   game.well = new Dunemaw(game)   .update(dt)   .enter()   .down()   .up()   .active   .floor   .killY   .reformAt() -> { pos, yaw }
 //   .nearest(P) -> { pos, d, ref: 'mouth' | 'up' | 'down' } | null   (the interact source, main.js)   .toArrival()
@@ -19,10 +29,12 @@
 import * as THREE from 'three';
 import { DUNE } from '../dunes/dunes.js';
 import { layoutFloor, buildFloor, GRID, CELL } from './wellkit.js';
-import { wellSeed } from '../../progress/econ/islands.js';
+import { wellSeed, wellPay, wellYield, drawWell, cogitomapWorth } from '../../progress/econ/islands.js';
+import { makeMaterial, KIND_IDS } from '../../progress/econ/materials.js';
+import { deckDraw } from '../../progress/econ/deck.js';
+import { seeded } from '../../core/rng.js';
 import { today } from '../../core/calendar.js';
 import { zoneOf } from '../../render/zones.js';
-import { sfx } from '../../audio/sfx.js';
 import { mergeStatic } from '../../render/merge.js';
 
 export const WELL_ID = 'dunemaw';
@@ -32,12 +44,15 @@ export const WELL_AT = new THREE.Vector3(-1300 - (GRID * CELL) / 2, -900, -(GRID
 /** The mouth, in the dunes' local frame (metres from the centre): out past the oasis, to the north-west. */
 const MOUTH_LOCAL = { x: -150, z: -120 };
 const FLOORS = 3, REACH = 2.4;
+const MAP_AT = 0.8, RARE = 4; // (a Cogitomap at four fifths charted; a material a tier up one floor in four)
+const SAVE = 'foolsfortune.wells'; // (the Wells' fill: progress, cleared with each build: core/progress.js)
 
 export class Dunemaw {
   constructor(game) {
     this.game = game;
-    this.run = null; // { seed, day, floor, deepest, foes, pay, shattered }
+    this.run = null; // { seed, day, floor, deepest, foes, fill, charted: [per floor], haul: [{ id, data }], cleared: Set }
     this.cur = null; // the floor standing (wellkit.buildFloor)
+    this.mobs = []; // the jellies on it
     this.t = 0;
     this.buildMouth();
   }
@@ -83,7 +98,7 @@ export class Dunemaw {
   enter() {
     if (this.run || this.game.death?.active) return false;
     const day = today(), seed = wellSeed(WELL_ID, day);
-    this.run = { seed, day, floor: 0, deepest: 0, foes: 0, pay: 0 };
+    this.run = { seed, day, floor: 0, deepest: 0, foes: 0, fill: this.draw(), charted: [], haul: [], cleared: new Set() };
     this.game.events?.emit('well.enter', { well: WELL_ID, seed, day, by: 'courier' });
     this.goTo(1);
     return true;
@@ -93,29 +108,88 @@ export class Dunemaw {
 
   goTo(n) {
     const g = this.game, R = this.run;
-    this.cur?.dispose();
+    this.offFloor();
     this.cur = buildFloor(g, layoutFloor(R.seed, n), WELL_AT, n);
+    g.cartography?.clear('well'); // (every floor stands on the same ground: the map shows the one they are on)
+    this.populate(n);
     R.floor = n; R.deepest = Math.max(R.deepest, n);
     this.moving = 2; // (a couple of frames for the teleport to land before the zone check below)
     g.player.killY = this.killY; // (now, not next frame: the floor is far above the dunes' killY, the mouth far below the Well's)
     g.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true });
-    sfx.geyser?.();
-    g.events?.emit('well.floor', { well: WELL_ID, floor: n, charted: 0, by: 'courier' });
+    g.events?.emit('well.floor', { well: WELL_ID, floor: n, charted: null, by: 'courier' });
   }
 
-  /** Out of the Well: up the way up (shattered false, the haul kept), or lost (shattered true: nothing is taken home). */
+  /** The Well's fill as they go in (it fills again with the hours since the last run, econ/islands.js drawWell), and this run drawn from it. */
+  draw() {
+    let s = null; try { s = JSON.parse(localStorage.getItem(SAVE) || 'null'); } catch { /* none */ }
+    const now = Date.now(), was = s?.[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
+    try { localStorage.setItem(SAVE, JSON.stringify({ ...s, [WELL_ID]: { fill: drawWell(fill, 1, 0), at: now } })); } catch { /* private */ }
+    return fill;
+  }
+
+  /** The floor's jellies: in every room but the first, one more each floor down, and the FOE at the bottom's far end. */
+  populate(n) {
+    const g = this.game, J = g.jellies, F = this.cur; if (!J) return;
+    const r = seeded((this.run.seed ^ Math.imul(n, 0x85ebca6b)) >>> 0), rooms = F.cells.filter((c) => c.role !== 'start');
+    for (let i = rooms.length - 1; i > 0; i--) { const j = r.int(i + 1); [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; }
+    const at = (c) => new THREE.Vector3(c.x, WELL_AT.y, c.z + (c.role === 'exit' ? 3 : 0)); // (off the pool)
+    for (const c of rooms.slice(0, 1 + n)) this.mobs.push(J.spawn(at(c), { once: true }));
+    const end = rooms.find((c) => c.role === 'exit');
+    if (n === FLOORS && end) this.mobs.push(J.spawn(at(end).setX(end.x - 3), { once: true, cls: 2 }));
+  }
+
+  /** Off the floor they are on: how much of it they charted (well.charted), and the floor and its jellies taken down. */
+  offFloor() {
+    const g = this.game, F = this.cur, R = this.run; if (!F) return;
+    const h = CELL / 2, share = g.cartography?.share('well', F.cells.map((c) => ({ x0: c.x - h, z0: c.z - h, x1: c.x + h, z1: c.z + h }))) ?? 0;
+    if (R) { R.charted[F.floor - 1] = Math.max(R.charted[F.floor - 1] || 0, share); g.events?.emit('well.charted', { well: WELL_ID, floor: F.floor, charted: +share.toFixed(2), by: 'courier' }); }
+    for (const c of this.mobs) g.jellies?.dispose(c);
+    this.mobs = [];
+    F.dispose(); this.cur = null;
+  }
+
+  /** The floor's jellies, watched: a FOE burst by the Courier is counted; when the last is down, the floor gives up its material. */
+  watch() {
+    const g = this.game, R = this.run, n = R.floor;
+    let up = 0;
+    for (const c of this.mobs) {
+      if (c.alive) { up++; continue; }
+      if (c.counted) continue;
+      c.counted = true;
+      if (c.cls && c.downBy === 'courier') { R.foes++; g.events?.emit('well.foe', { well: WELL_ID, floor: n, cls: c.cls, by: 'courier' }); }
+    }
+    if (up || !this.mobs.length || R.cleared.has(n)) return;
+    R.cleared.add(n);
+    const r = seeded((R.seed ^ Math.imul(n + 7, 0x27d4eb2d)) >>> 0), kind = r.pick(KIND_IDS), foe = this.mobs.some((c) => c.cls && c.downBy === 'courier');
+    const tier = Math.min(4, n - 1 + (deckDraw(g.ledger, 'well.rare', RARE) ? 1 : 0) + (foe ? 1 : 0)), item = `mat.${kind}`;
+    R.haul.push({ id: item, data: makeMaterial(kind, (R.seed + n) >>> 0, tier) });
+    g.events?.emit('well.find', { well: WELL_ID, floor: n, item, tier, by: 'courier' });
+  }
+
+  /** Out of the Well: up the way up (shattered false: what it pays and the haul, for leave() to hand over), or lost (shattered true). */
   end(shattered) {
-    const R = this.run; if (!R) return;
-    this.game.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay: shattered ? 0 : R.pay, charted: 0, shattered, fill: 1, by: 'courier' });
-    this.cur?.dispose(); this.cur = null;
+    const g = this.game, R = this.run; if (!R) return null;
+    this.offFloor();
+    const charted = R.deepest ? R.charted.reduce((a, b) => a + (b || 0), 0) / R.deepest : 0;
+    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill));
+    g.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay, charted: +charted.toFixed(2), shattered, fill: +R.fill.toFixed(2), by: 'courier' });
     this.run = null;
-    this.game.player.killY = DUNE.y - 90; // (back to the dunes' floor of the world, before the next step: see goTo)
+    g.player.killY = DUNE.y - 90; // (back to the dunes' floor of the world, before the next step: see goTo)
+    return shattered ? null : { R, pay, charted };
   }
   leave(shattered) {
-    this.end(shattered);
-    const s = this.mouthSpot();
-    this.game.course.teleport(s.pos, s.yaw, { keepPool: true });
-    sfx.geyser?.();
+    const out = this.end(shattered), g = this.game, s = this.mouthSpot();
+    g.course.teleport(s.pos, s.yaw, { keepPool: true });
+    if (!out) return;
+    // (handed over on the sand, not below: a full box drops what it cannot hold at their feet)
+    const { R, pay, charted } = out;
+    if (pay > 0) g.cubes?.earn(pay, 'well');
+    for (const h of R.haul) g.pneuka?.add(h.id, 'well', 0, h.data);
+    if (charted >= MAP_AT) {
+      const worth = cogitomapWorth(pay, charted, 0);
+      g.pneuka?.add('cogitomap', 'well', 0, { well: WELL_ID, seed: R.seed, day: R.day, charted: +charted.toFixed(2), pay, worth, at: Date.now() });
+      g.events?.emit('cogitomap.get', { well: WELL_ID, charted: +charted.toFixed(2), worth, by: 'courier' });
+    }
   }
   /** Shattered in the Well: the run is lost and they come to again at the mouth (courier/vessel/death.js). */
   reformAt() { if (!this.run) return null; this.end(true); return this.mouthSpot(); }
@@ -135,6 +209,7 @@ export class Dunemaw {
     this.t += dt;
     if (this.mouth.visible) { this.pool.rotation.z = -this.t * 0.5; this.rim.material.opacity = 0.5 + 0.15 * Math.sin(this.t * 1.7); }
     this.cur?.update(dt);
+    if (this.run && this.cur) this.watch();
     // F at the mouth or a pool
     const it = g.interact?.cur;
     if (it?.id === 'well' && P.peekLatch?.('KeyF') && !g.god?.controlling) {
