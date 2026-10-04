@@ -696,7 +696,7 @@ export class Tracking {
   // ---------------------------------------------------------------- helpers
   where() {
     const g = this.game;
-    if (g.dunes?.active) return 'the dunes';
+    if (g.dunes?.active) return 'the Dunes';
     if (g.circuits?.active) return g.circuits.run?.def?.name || 'a circuit';
     if (g.course?.inBasement?.()) return 'the basement';
     return 'the workshop';

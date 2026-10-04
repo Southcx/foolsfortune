@@ -456,8 +456,8 @@ export function buildAchievements(game) {
   F('pl2', 'explore', 'Places', 3, 'collect', 'Well Mapped', 'Chart 8 places.', (L) => L.firstCount('room.'), 8);
   F('pl3', 'explore', 'Places', 5, 'collect', 'Every Place', 'Chart every named place.', (L) => L.firstCount('room.'), game.cartography?.anchors?.length || 12);
   F('pl4', 'explore', 'Places', 2, 'endure', 'Basement Dweller', 'Spend 30 minutes in the basement.', (L) => L.get('time.area.basement') / 60, 30, { unit: 'min' });
-  F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
-  F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
+  F('pl5', 'explore', 'Places', 2, 'endure', 'Sand in the Boots', 'Spend 15 minutes in the Dunes.', (L) => L.get('time.area.dunes') / 60, 15, { unit: 'min' });
+  F('pl6', 'explore', 'Places', 1, 'count', 'Reached the Dunes', 'Stand on the Dunes.', (L) => (L.get('time.area.dunes') > 0 ? 1 : 0), 1);
 
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
   F('lg1', 'collect', 'Logged', 1, 'collect', 'Fresh Ledger', 'Log 10 firsts.', (L) => L.firstCount(), 10);

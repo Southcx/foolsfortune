@@ -32,7 +32,7 @@ export const PAGES = [
       ['X', 'the Psygun'],
       ['Q · G · J', 'the Sondelass · the Soul Brush · the Veritome'],
       ['K · U · I', 'the Dreamvane · the Crucibelle · the Lockheart'],
-      ['Y (the dunes)', 'Solar Skiffing'],
+      ['Y (the Dunes)', 'Solar Skiffing'],
       ['~', 'the god hand'],
       ['B · P · M', 'the Codex · the Pneuka Box · Mind Mapping (the map)'],
       ['Enter · /', 'the chat line (a slash for commands: /help)'],
@@ -56,7 +56,7 @@ export const PAGES = [
   },
   {
     id: 'techs', title: 'TECHS AND ARTS', src: 'courier/moves/',
-    lead: 'The Movement Arts are learned by doing (the Codex, B: each art and its variants; the ALL ARTS switch lends them all). They add to the core; they never change it.',
+    lead: 'The Movement Arts are learned by doing (the Codex, B: each art and its variants; set ALL ARTS to ON to use all of them). They add to the core; they never change it.',
     rows: [
       ['E', 'blink: a dodge along the move keys (two charges, the beads)'],
       ['C in the air, looking down', 'ground slam; then Space for the slam jump, or hold C for the slam slide'],
@@ -173,7 +173,7 @@ export const PAGES = [
     id: 'skiff', title: 'SOLAR SKIFFING', key: 'Y', src: 'courier/skiff/skiff.js',
     lead: 'A skiff for the dune sea, sailed like a boat. The Psygun is stowed while you ride.',
     rows: [
-      ['Y', 'summon or stow the board (in the dunes)'],
+      ['Y', 'summon or stow the board (in the Dunes)'],
       ['hold W · hold S', 'hoist the sail (it stays up: half up, half speed) · let it down and brake (hoist again quickly: a pump)'],
       ['A D', 'steer'],
       ['hold Space, let go', 'crouch the springs, and hop; in the air A D spin'],

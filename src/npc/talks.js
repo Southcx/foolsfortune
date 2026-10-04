@@ -105,7 +105,7 @@ export const TALKS = {
     start: 'hello', again: 'again',
     nodes: {
       hello: { lines: [
-        { mood: 'calm', text: '{slow}Mm.{/} {p:0.6}A visitor. Not many come this far into the dunes.' },
+        { mood: 'calm', text: '{slow}Mm.{/} {p:0.6}A visitor. Not many come this far into the Dunes.' },
         { mood: 'sad', text: "I've fished this pool since it was a {small}puddle{/}. Since before the sand came. {p:0.5}{slow}Since before the Weir was a weir.{/}" },
         { mood: 'awe', text: 'Do you see how the water holds the sky? {p:0.3}{slow}That\'s the Lachryma in it.{/} The tide brings it up from somewhere deep.' },
       ], next: 'menu' },

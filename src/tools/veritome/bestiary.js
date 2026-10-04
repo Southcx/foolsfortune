@@ -63,7 +63,7 @@ function fishFacts(sp) {
 
 const JELLY = {
   name: 'Slip Jelly', glyph: '◒',
-  blurb: 'A mind jelly: an egg of sloppy wet sand over a skirt of four toes, always melting, gliding on its own slip in the dunes past the Weir. Something thinks in its middle.',
+  blurb: 'A mind jelly: an egg of sloppy wet sand over a skirt of four toes, always melting, gliding on its own slip in the Dunes past the Weir. Something thinks in its middle.',
   facts: [
     { id: 'seen', when: () => true, text: 'A slip jelly: it glides on slip it makes itself, and the trail it leaves is wet enough to dive into.' },
     { id: 'notice', when: st('chase'), battle: true, text: 'It notices you at fifteen paces and closes to four, circling, waiting for its moment. Lead it far from home and it gives up.' },
@@ -72,14 +72,14 @@ const JELLY = {
     { id: 'sleep', when: st('sleep', 'halt', 'melt', 'stunned', 'stun'), battle: true, text: 'Its mind can be opened. Stunned (the Veritome\'s flash), it takes what you say into it: the words of what you have seen it do.' },
     { id: 'idle', when: st('idle', 'wander'), text: 'Left alone, it breathes, and drifts about its puddle like a thought.' },
     // its life (src/creatures/jelly/mind.js): each a thing it does when no one is after it, and each a word its mind can be told (tools/veritome/mind/functions.js)
-    { id: 'drink', when: st('drink'), text: 'It goes to the pond\'s edge and drinks, the slip it is made of running thin as it does. Thirsty, it will cross the dunes for water.' },
+    { id: 'drink', when: st('drink'), text: 'It goes to the pond\'s edge and drinks, the slip it is made of running thin as it does. Thirsty, it will cross the Dunes for water.' },
     { id: 'rest', when: st('rest'), text: 'In the heat it finds a palm\'s shade and settles, and sleeps lightly. A noise will wake it.' },
     { id: 'forage', when: st('forage'), battle: true, text: 'It eats what it finds on the sand: loose Lachryma, the cubes, anything that shines. What it eats it keeps, until it bursts.' },
     { id: 'fish', when: st('fish'), text: 'It hunts the shallows, very still, then quick. Fish are its prey; the Courier, sometimes, too.' },
     { id: 'huddle', when: st('huddle'), text: 'Jellies gather, and lean together, and their slips run into one. They are calmer for it.' },
     { id: 'play', when: st('play'), text: 'Two of them chase each other in circles, for no reason anyone can see. It is play.' },
     { id: 'flee', when: st('flee'), battle: true, text: 'Frightened, it runs for home on its own slip, faster than it hunts. A hurt jelly is a frightened one.' },
-    { id: 'home', when: st('home'), text: 'It has a home, a hollow in the dunes, and goes back to it when it has strayed too far or been told to.' },
+    { id: 'home', when: st('home'), text: 'It has a home, a hollow in the Dunes, and goes back to it when it has strayed too far or been told to.' },
     { id: 'mourn', when: st('mourn'), text: 'Where one of its kin burst, it comes back, and stays a while, and does not eat. Its kin remember who did it.' },
     { id: 'carry', when: st('carry'), battle: true, text: 'This one has eaten Lachryma; you can see it in the middle of it, turning. Burst it and it gives it all back.' },
     { id: 'watch', when: st('watch'), text: 'It watches what it does not know (a clapperjar, a stranger) from a distance, turning to keep it in sight.' },
