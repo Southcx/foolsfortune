@@ -127,3 +127,11 @@ stun's hold, the EmO band, the keys; capped at 95%; drawn from a deck); `CONVERT
 simulator prints both. **Two rulings for the owner:** conversion pays only with a brass key and a brimming coffin (LOADED and ECHO cost
 93 and 139 cubes for about 31 back: the keys are priced for casting), so either conversion keys are cheaper or a conversion does not use
 up its key. And EVEN is the big-game catch key (a Leviathan 5% → 28%), LOADED the small-game one.
+
+**Ruled by the owner (2026-10-04, later):**
+- The trump cycle and the tools' types are approved, so B1 to B4 can be wired.
+- The domains' pace stands in principle (about 2,100 hours of grind to "The World"), but skill must count for much more than repetition.
+  `SKILL` in `domains.js` gives a rote act 0.4 of the base and a masterful one 5. "The World" is about 5,100 hours rote, 2,100 middling,
+  875 good and 410 masterful.
+- Glaze prices follow desirability: the principles and a first placement are in ECONOMY.md, "The worth of a look". Calissa is expanding
+  the kiln, and Espada and Calissa weigh in on what is most valuable.

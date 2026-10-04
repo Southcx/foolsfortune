@@ -90,12 +90,64 @@ How prices move (`ECON.shop`, after OSRS):
 - **Crystals.** A full round of the formations paid nearly three times the aim. Base 8 → 3, per size 10 → 6.
 - **The Lockheart's CUBES.** 18 → 12 per unit of power. It is a gamble on Lachryma, not a mint.
 
-## Saggar's glazes (the glamour sink)
+## The worth of a look (glazes, stones, hair, skin: the glamour sink)
 
-Six glazes are sold at the kiln (`ECON.glazeShop`), each dearer than the last one bought: 10, 15, 20, 30, 45 and 60 minutes of play
-(80 to 480 cubes; 1,440 for all six, three hours). The first is cheap enough to try on a whim; the last is a decision. They are never
-the glazes earned by achievements or learned from photographs: what is bought is never what is earned. The rows are Calissa's (the
-colours) and Espada's (the blurbs); the price is the table's.
+The kiln is the game's glamour, and the owner hunts glamour for hours (FFXIV, GW2), so it is the biggest *chosen* sink: what a look costs
+says what it is worth. The principles (ruled in outline by the owner, 2026-10-04; the placements below are provisional until Espada and
+Calissa have weighed in):
+
+1. **Price follows desirability, never what a look "costs to make".** A look is a sink, not a product.
+2. **Desirability is scored on four axes, 0 to 2 each:**
+   - *rarity in the fiction and in history*: Ru ware, fewer than a hundred pieces; yohen tenmoku, three bowls; oxblood, the hardest red;
+   - *how distinct it looks*: a special shader (metal, glow, a gem's fire, opal's play, a gradient) beats a flat colour;
+   - *the extremes*: the purest white, the deepest black, the most saturated, the iridescent (FFXIV's jet black and pure white dyes are
+     its most prized);
+   - *identity*: Lachryma's own sheen, the Prince's own clay.
+3. **The score sets the prestige, on the folk's own clay ladder:**
+
+   | score | prestige | how it is got | price |
+   |---|---|---|---|
+   | 0–1 | Earthenware | yours from the start, free | 0 |
+   | 2–3 | Stoneware | bought | 10 minutes of play (80 cubes) |
+   | 4–5 | Porcelain | bought, or earned | 25 minutes (200 cubes) |
+   | 6 | the Court | bought, or earned | 60 minutes (480 cubes) |
+   | 7–8 | the Prince's own | **earned only**, never sold | none |
+
+4. **The ratio is about 2.5× a step.** Value is felt in ratios, not differences (Weber and Fechner), so a step up must feel like one.
+5. **No bought look costs more than an hour's play.** Past that it is not a purchase but a goal, and goals are achievements.
+6. **What is bought is never what is earned**, and the top of every ladder is earned. A medal glaze is worth more than any glaze sold,
+   because nobody could buy it.
+7. **The start is a palette, not a placeholder.** A new Courier can already look like themselves, from humble earthenware.
+8. **Measured**: the ledger counts every firing by look (`glaze.fire.<id>`), which shows what players actually want. A look worn far
+   above its tier's average is under-priced and climbs a tier the next build; one no one buys is misplaced.
+9. **Looks only.** Nothing at the kiln changes a number in play.
+
+**A first placement** (scores from the four axes; for Espada and Calissa to correct):
+- **Body glazes.**
+  - Earthenware: terracotta, bisque, shino.
+  - Stoneware: natural ash, kaki, salt, ame.
+  - Porcelain: majolica, cobalt, nuka, oribe.
+  - The Court: celadon, tenmoku, raku, hare's fur, copper lustre, jun.
+  - The Prince's own: oxblood, guan, oil spot, kinrande, Ru, yohen tenmoku, Lachryma black (the achievement and medal glazes).
+- **Stones.**
+  - Earthenware: the maker's stones, citrine, onyx.
+  - Stoneware: amethyst, moonstone.
+  - Porcelain: emerald, sapphire.
+  - The Court: ruby.
+  - The Prince's own: diamond, opal.
+- **Hair.**
+  - Earthenware: satin, raven, ashen.
+  - Porcelain: copper, bisque to rose.
+  - The Prince's own: ink to gold, oil slick.
+- **Skin.**
+  - Earthenware: Lachryma, moonlight.
+  - Porcelain: ember, pearl.
+  - The Court: obsidian.
+  - The Prince's own: porcelain (the Prince's own clay) and aurora.
+
+The earned looks need an achievement each, and those are written as they are placed (`docs/plans/SYSTEMS.md`, A10). With this
+placement, buying everything that is for sale costs about 13 hours of play (6,320 cubes) (`node scripts/economy.mjs` will print it once the rows are
+settled).
 
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
