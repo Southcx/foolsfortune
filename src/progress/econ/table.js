@@ -65,4 +65,11 @@ export const ECON = {
   shop: { dear: 0.1, glut: 0.07, floor: 0.25, restock: 90, buys: 0.5 },
   /** The haggle (progress/shop/haggle.js): Raku's list price over the worth, and the least he will take over it (he never sells at a loss). */
   haggle: { list: 1.45, floor: 1.02 },
+
+  // ---- the mastery dividend (docs/ECONOMY.md, rule 6; not built yet: the simulator's numbers to aim at)
+  /** An encounter whose ledger is complete pays on its own: `share` of what farming it by hand pays an hour, accruing for at most
+   *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
+   *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
+   *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
+  dividend: { share: 0.05, capHours: 8, slots: 3 },
 };

@@ -8,10 +8,10 @@
 // Prior art: Machinations (Dormans & Adams: an economy run as a diagram before it is played), and the spreadsheets every live game
 // keeps of "gold per hour by activity" (OSRS's money-making guide is the players' own: a wiki table of activities by gp/h).
 //
-//   node scripts/economy.mjs            the table: cubes an hour by profile, before and after, and the Tithe's expected return
+//   node scripts/economy.mjs            the table: cubes an hour by profile, before and after, the Tithe's expected return, the mastery dividend
 // ---------------------------------------------------------------------------------------
-import { ECON } from '../src/econ/table.js';
-import { TIERS, rollTier, curiosOf } from '../src/treasure.js';
+import { ECON } from '../src/progress/econ/table.js';
+import { TIERS, rollTier, curiosOf } from '../src/world/treasure/treasure.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
 const OLD = {
@@ -34,6 +34,8 @@ const PLAY = {
   photographer: { rollMin: 6, spares: [['G', 1.4], ['E', 0.6], ['D', 0.3], ['B', 0.12], ['F', 0.2]] }, // a roll each rollMin, spare copies a roll by rank
   treasury: { camp: true },                                     // stands at the Weir's five plinths and opens each as it shuts again
   angler: { catchMin: 2.5, mix: [0, 0.57, 0.21, 0.19, 0.03] },  // a fish landed every catchMin minutes, by tier (the species' rarity), sold to Grog
+  completionist: { playPerDay: 2, checkInEvery: 24, farmRate: 480, mastered: [1, 3, 5, 10, 20] }, // hours played a day, hours between
+  // collections, what farming one encounter by hand pays an hour (the aim, until there are encounters), how many encounters are mastered
 };
 
 const mean = ([a, b]) => (a + b) / 2;
@@ -81,3 +83,13 @@ for (const k of Object.keys(after)) console.log(`${pad(k, 14)}${num(before[k])}$
 const tb = tithe(OLD), ta = tithe(ECON);
 console.log(`\nthe Tithe returns ${(tb * 100).toFixed(0)}% of what it takes before, ${(ta * 100).toFixed(0)}% after (pity and dupes counted; the curio is the rest of the prize)`);
 console.log(`a gambler with an hour's fighting (${Math.round(after.fighter)}) pulls ${Math.floor(after.fighter / ECON.tithe.cost)} sealed chests and keeps ~${Math.round(after.fighter * ta)} cubes of it`);
+
+// the mastery dividend (ECON.dividend): what green logs pay on their own, per hour actually played, with the Garden's slots and without
+const D = ECON.dividend, C = PLAY.completionist;
+const perDay = (k) => k * D.share * C.farmRate * Math.min(C.checkInEvery, D.capHours) * (24 / C.checkInEvery);
+console.log(`\nthe mastery dividend (share ${D.share}, fills in ${D.capHours} h, ${D.slots} slots; ${C.playPerDay} h played a day, collected every ${C.checkInEvery} h)`);
+console.log(`${pad('mastered', 14)}${'slotted'.padStart(9)}${'x aim'.padStart(8)}${'unslotted'.padStart(11)}${'x aim'.padStart(8)}   (cubes-equivalent an hour played)`);
+for (const k of C.mastered) {
+  const a = perDay(Math.min(k, D.slots)) / C.playPerDay, b = perDay(k) / C.playPerDay;
+  console.log(`${pad(k, 14)}${num(a)}${(a / aim).toFixed(2).padStart(8)}${num(b).padStart(11)}${(b / aim).toFixed(2).padStart(8)}`);
+}
