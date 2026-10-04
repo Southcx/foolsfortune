@@ -279,6 +279,8 @@ What this page adds, for the proposals in section 8:
 
 ### What is broken (bugs in Dovina's files)
 
+*Phase A (`docs/plans/SYSTEMS.md`) fixes 1 to 3, the Gambler's Lockheart, and the curio curve; the simulator prints each before and after.*
+
 1. **Six achievement ids are used twice.** `fl1`, `fl2` and `fl3` are each both a fall record (MOVEMENT) and a Reprogramming entry
    (BATTLE); `sp1`, `sp2` and `sp3` are each both a speed record and a counter at the shops. `ledger.done` is keyed by id, so
    whichever completes first completes its twin silently.

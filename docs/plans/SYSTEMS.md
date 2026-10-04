@@ -110,4 +110,5 @@ EXP**. If that loop feels good small, the rest stacks.
 ## Messages sent with this plan (2026-10-04)
 
 Each division has its items in its section of `docs/HANDOFFS.md`: Petra (A2, A4, A5, A6, A8, A10, A11, A12, and B's wiring), Calissa
-(B5, C5, D1, D2, D6), Wanda (B5, C5, D5), Espada (B9, D4, E1's words). Dovina starts on A1, A3, A4, A5, A7, A9, A10 and A11 tonight.
+(B5, C5, D1, D2, D6), Wanda (B5, C5, D5), Espada (B9, D4, E1's words). Dovina's half of phase A landed the same night on `claude/dovina-design`: A1, A3, A4 (the numbers), A5 (`consolidated()`), A6 (the
+Lockheart header), A7, A9, A10 (the titles) and A11 (the prices and `SHOPS.saggar`). Petra's wiring is what remains of phase A.
