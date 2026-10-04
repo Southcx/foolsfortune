@@ -541,7 +541,9 @@ export class Course {
 
   inBasement() { return this.game.player.pos.y < -2; }
 
-  teleport(v, yaw) {
+  /** Put the Courier at `v` facing `yaw`, everything they were doing let go. The pool is refilled (save-scumming is allowed between
+   *  rooms) unless `keepPool` (a Well's floors: going deeper is not a rest). */
+  teleport(v, yaw, { keepPool = false } = {}) {
     const p = this.game.player;
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
@@ -555,7 +557,7 @@ export class Course {
     p.airJumps = T.movement.airJumps; p.dashCharges = T.movement.dashCharges; p.slideBoostCd = 0;
     p.place();
     p.markSafe();
-    this.game.lachryma.reset(); // save-scumming is allowed here
+    if (!keepPool) this.game.lachryma.reset(); // save-scumming is allowed here
     this.game.fx.absorbSparkle(v.clone().setY(v.y + 1));
     this.prev.copy(v);
   }
@@ -623,7 +625,7 @@ export class Course {
   /** Back to the last checkpoint (or the start of a circuit, the dunes, the siege): the Tab panel's action (it was R). */
   respawnHere() {
     const g = this.game, p = g.player;
-    if (g.circuits?.active) g.circuits.restart(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
+    if (g.circuits?.active) g.circuits.restart(); else if (g.well?.active) g.well.toArrival(); else if (g.dunes.active) this.toDunes(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
   }
 
   update(dt) {

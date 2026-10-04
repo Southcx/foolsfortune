@@ -29,6 +29,7 @@ import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { sfx } from '../audio/sfx.js';
 import { BY_ID } from '../progress/skills.js';
 import { anglingRules } from './tracking/angling.js';
+import { wellRules } from './tracking/wells.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -591,6 +592,8 @@ export class Tracking {
 
     // ---- angling: feedback/tracking/angling.js
     anglingRules({ on, L, log, where: () => this.where() });
+    // ---- the Wells: feedback/tracking/wells.js
+    wellRules({ on, L, log });
 
 
     // ---- treasure (src/world/treasure/chests.js, ceremony.js, cubes.js): chests in five tiers, the cubes they hold, the curios, the Tithe

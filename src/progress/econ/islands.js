@@ -8,7 +8,7 @@
 // radioactive decay for the drifting map (a half-life, so a map's worth falls smoothly and never quite to nothing).
 //
 //   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageH) -> cubes
-//   demand(island, kind, day, sold) -> multiplier      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
+//   demand(island, kind, day, sold) -> multiplier      purserPrice(worth, island, day, sold) -> cubes      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
 //   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
 //   wellSeed(wellId, day) -> uint32 (the Well as it is that day: a Cogitomap carries it)      wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
 // ---------------------------------------------------------------------------------------
@@ -27,6 +27,9 @@ export function wellPay(floors, foes = 0) {
 /** A Cogitomap of a run paying `runPay`, charting `charted` (0..1) of the Well, `ageH` hours of play after it was charted. */
 export const cogitomapWorth = (runPay, charted = 1, ageH = 0) => Math.round(runPay * ECON.cogitomap.share * Math.max(0, Math.min(1, charted)) * Math.pow(0.5, ageH / ECON.cogitomap.halfLifeH));
 
+/** What a purser on `island` pays for a Cogitomap worth `worth` (cogitomapWorth) on `day`, after `sold` maps sold there. */
+export const purserPrice = (worth, island, day = 0, sold = 0) => Math.round(worth * demand(island, 'cogitomap', day, sold));
+
 /** A string's own small hash, so an island's and a kind's phase and period are fixed and need no table of their own. */
 const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
 
@@ -35,7 +38,8 @@ export function demand(island, kind, day = 0, sold = 0) {
   const I = ECON.island, k = hash(`${island}:${kind}`), period = I.periodDays[0] + k * (I.periodDays[1] - I.periodDays[0]);
   let wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
   // (crude: the island's own place in the band, the wave a narrow swing about it: Entra sells it cheap, Margarite buys it dear)
-  const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : undefined;
+  // (Cogitomaps likewise: Margarite buys them dear)
+  const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : kind === 'cogitomap' ? ECON.islands[island]?.maps : undefined;
   if (centre !== undefined) wave = Math.max(0, Math.min(1, centre + (wave - 0.5) * 0.4));
   return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * (ECON.crude.grades[kind] ? ECON.crude.glut : I.glut));
 }

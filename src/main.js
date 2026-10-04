@@ -58,6 +58,7 @@ import { Lobbers } from './creatures/lobber.js';
 import { GodMode } from './godhand/godhand.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE } from './world/dunes/dunes.js';
+import { Dunemaw } from './world/well/dunemaw.js';
 import { Water, Ladders, SlipField } from './courier/moves/env.js';
 import { Events } from './core/events.js';
 import { Movers } from './world/props/movers.js';
@@ -290,6 +291,7 @@ async function main() {
   mark('dunes');
   const level = new Level(scene, physics, breakables);
   game.level = level;
+  game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
@@ -432,6 +434,8 @@ async function main() {
       const p = game.folk.head(n).add(new THREE.Vector3(0, 0.55 * n.scale, 0));
       return { pos: p, d: Math.hypot(n.pos.x - player.pos.x, n.pos.z - player.pos.z) - 0.3, ref: n.id };
     });
+    // a Well: F at its mouth in the Dunes, and at the pools inside (the way up, the way down: world/well/dunemaw.js)
+    game.interact.add('well', () => (game.dialogue?.open || !idle() ? null : game.well.nearest(player)));
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
       if (game.dialogue?.open || game.kilnUI?.open || !idle()) return null;
@@ -924,6 +928,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
+    game.well.update(dt);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.dunes.update(dt);
@@ -932,7 +937,7 @@ async function main() {
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
-    player.killY = game.dunes.active ? DUNE.y - 90 : -100;
+    player.killY = game.well.active ? game.well.killY : game.dunes.active ? DUNE.y - 90 : -100;
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }

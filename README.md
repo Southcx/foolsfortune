@@ -261,6 +261,12 @@ slide-hop, dash and double 13.7; jump height 0.92 m, double jump 1.66. Gaps are 
 that shows itself only where you touch it, and at its heart an oasis with **THE WEIR**: a pond in terraces, a pier, a well of liquid
 Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier. Three slip jellies live on the flats.
 
+**The Great Dunemaw**, out on the sand north-west of the oasis: a dark pool turning in a ring of fallen stones (the Dreamvane hears it
+from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
+On every floor a pale pool is **the way up**, back out to the mouth with whatever you found, and a dark one is **the way down**, deeper.
+Shatter down there and you come to at the mouth, and the run's haul stays in the Well. (It is greybox for now: the creatures, the pay,
+the charting and the Cogitomap come next.)
+
 **Solar Skiffing.** **Y** brings the **skiff**: a small hovering boat with a lug sail (after the King of Red Lions). W hoists the sail and
 it stays up; S lets it down and brakes, and hoisting again quickly is a **pump**; A / D steer; Space crouches and hops, and in the air A / D
 spin the whole skiff (land a whole turn for a boost); Shift is a solar flare, for Lachryma. The boat is driven by the wind alone (the
