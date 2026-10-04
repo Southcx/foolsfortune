@@ -15,14 +15,15 @@
 // and the colour tease of the gacha canon (Genshin's meteor, Fire Emblem Heroes' orbs) with the tell moved from a beam into the thing.
 //
 //   const U = dressChestGlaze(material, uniforms?, { goldOnly })   U.uGlaze.value = stage (0..4)   glazeAt(tier) -> its stage
+//   chestGlazeUniforms(scale)   (the net's size: 1 a chest's; less for bigger work)
 // ---------------------------------------------------------------------------------------
 
 /** How far a tier's chest is fired (0 common .. 4 prismatic). */
 export const glazeAt = (tier) => 1 + 0.75 * tier;
-export const chestGlazeUniforms = () => ({ uGlaze: { value: 0 } });
+export const chestGlazeUniforms = (scale = 1) => ({ uGlaze: { value: 0 }, uCgScale: { value: scale } }); // (scale: the net's cells per metre against a chest's, for bigger work: the sloop's hull)
 
 const HEAD = /* glsl */`
-uniform float uGlaze; varying vec3 vCgObj;
+uniform float uGlaze; uniform float uCgScale; varying vec3 vCgObj;
 vec3 cgHash(vec3 p) { p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
 vec2 cgEdge(vec3 p) { // (the distance to the nearest edge between cells, and the nearest cell's own number)
   vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.0; vec3 c1 = vec3(0.0);
@@ -45,8 +46,8 @@ export function dressChestGlaze(m, uni = chestGlazeUniforms(), { goldOnly = fals
   // (colours in linear light, as the shader works: celadon #7fa88c, raku white #ede5d8, copper #d98c62, gold #f2b848)
   float cgS = uGlaze, cgFine = 0.0, cgBig = 0.0, cgGold = 0.0, cgCel = 0.0;
   if (cgS > 0.0) {
-    vec2 a = cgEdge(vCgObj * 9.0), b = cgEdge(vCgObj * 24.0);
-    float px = length(fwidth(vCgObj)) * 24.0, keep = 1.0 - smoothstep(0.35, 0.8, px); // (the fine net goes before it can shimmer)
+    vec3 cgP = vCgObj * uCgScale; vec2 a = cgEdge(cgP * 9.0), b = cgEdge(cgP * 24.0);
+    float px = length(fwidth(cgP)) * 24.0, keep = 1.0 - smoothstep(0.35, 0.8, px); // (the fine net goes before it can shimmer)
     ${goldOnly ? '' : `cgCel = smoothstep(0.0, 1.0, cgS);
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.20, 0.40, 0.26), cgCel);                                   // celadon
     cgFine = smoothstep(1.0, 1.75, cgS) * (1.0 - smoothstep(0.0, 0.05, b.x)) * keep;
