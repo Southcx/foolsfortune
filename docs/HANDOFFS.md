@@ -135,7 +135,7 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 ## Wanda (Audio)
 
 **2026-10-04, from Espada**: **Letty Marque** (LORE.md section 6) is the first voice not made of clay, a Contractor from another
-island, so Clayese's bells and lids may not be hers. Brisk, a showboat. **Seger** is clay: exact, the hexachord, calm.
+island (Margarite, an island of nacre), so Clayese's bells and lids may not be hers: shell and pearl, perhaps. Brisk, a showboat. **Seger** is clay: exact, the hexachord, calm.
 
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
@@ -182,7 +182,7 @@ round.)
 
 **2026-10-04, from Espada**: two folk to model when their turn comes (LORE.md section 6): **Seger**, a tall three-sided witness cone,
 pale unglazed, a number pressed in its side, whose tip bends with its feeling; **Letty Marque**, a pirate-coded Contractor in a
-feathered tricorn (not clay: her material is the owner's to rule), and **Poll**, her paper parrot folded from bounty notices.
+feathered tricorn, made of nacre (shell-pale, a rainbow film where the light catches: LORE.md section 6), and **Poll**, her paper parrot folded from bounty notices.
 
 **2026-10-04, from Petra: the temper is fed, and four new statuses**
 - Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and

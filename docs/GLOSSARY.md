@@ -244,9 +244,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
-- **you** (the player): the Courier, the god hand and the Pneuka Jar are one entity (the owner, R43). Player text: "your Pneuka Jar".
+- **you**: the Vessoul (the Courier section), in every form one being. Player text says "you", and "your Pneuka Jar" for the body.
 - **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (an Egregore hunt, given by **Letty Marque**,
-  a Contractor, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
+  a Contractor of nacre from the island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 
 ## Homonyms we keep on purpose (always qualify them)

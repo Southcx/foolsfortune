@@ -103,9 +103,16 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 - The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
 - The game divides into **STORY** and **DEBUG**.
 
-**The Courier, the god hand and the Pneuka Jar are one entity: the player.** *(Ruled, R43)* There is no Courier the player
-"returns to": the Courier is the Pneuka Jar in humanoid form, and the god hand is the same will reaching out while the body rests as
-the jar. Player text always says **"your Pneuka Jar"** ("Your Pneuka Jar breaks."), never "the jar" or "the vessel".
+**The Vessoul** *(Ruled, R43)*: the entity that stands for the player in the world, a soulspark from beyond in a vessel (*vessel* +
+*soul*, and the word keeps both). It is one being in several forms, which is why every form shares one design language:
+- **the Pneuka Jar**, its true form, the Prince's magnum opus;
+- **the Courier**, the jar in humanoid form, walking the island;
+- **the god hand**, the same will reaching out while the body rests as the jar;
+- **the ships** on the Emocean, classed by real nomenclature: sloop, frigate, tanker, destroyer, galleon.
+- **The Solar Skiff** is a limb of the Vessoul, not a vehicle it owns.
+
+There is no Courier the player "returns to". Player text says **"you"**, and **"your Pneuka Jar"** for the body ("Your Pneuka Jar
+breaks."), never "the jar", "the vessel" or "the player".
 
 ### Wells, and the town that was *(Ruled, Round 40)*
 **A Well is a pocket of distortion**: rumination gone round and round until the Lachryma pools, distorted thinking, psychosis. It is
@@ -364,8 +371,12 @@ hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnes
   a *mark* (the target); a *marquee* (star billing, which she would like).
 - **Who she is.** The first outsider: a Contractor from another Island of Ego, alive in the open Emocean because she has a Tulpa.
   Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction). She moors a small craft at the jetty on the island's
-  west edge (the concept art) and never stays long. *Blank, for the owner:* what she is made of (she is not Kaolin's clay), and her
-  island. Why she left it is hers to tell, and she has not.
+  west edge (the concept art) and never stays long. "She" *(the owner, R43)*.
+- **What she is made of: nacre.** Mother-of-pearl, the owner's own motif for the moment Lachryma crystallises. She is shell-pale
+  with a rainbow film where the light catches her, harder than clay: she scratches where a pot would shatter.
+- **Her island: Margarite** (Greek *margarites*, a pearl). An Island of Ego built the way a pearl is: layer on layer of nacre around
+  one grain of grit that hurt. A pearl is a wound made beautiful, the sea's kintsugi, which is why the clay folk find her strange and
+  familiar at once. *Still blank, on purpose:* what the grain was, and whether Margarite still holds. She left it; that much she says.
 - **Poll, her Tulpa.** A paper parrot folded from old bounty notices. *Poll* is a parrot's name, a head count, and a tax per head. It
   shouts rewards.
 - **The voice.** Brisk, a showboat, light on sea slang, quicker to a joke than to a confidence. For Wanda: she is the first voice not
