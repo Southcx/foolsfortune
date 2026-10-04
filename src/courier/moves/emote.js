@@ -41,7 +41,7 @@ export class Emote extends Tech {
     this.yaw = P.yaw;
     for (const t of g.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow();
     this.set(E.enter ? 'enter' : E.loop ? 'loop' : 'once');
-    g.events.emit('emote', { emote: this.cur, by: 'courier' });
+    g.events.emit('emote.start', { emote: this.cur, by: 'courier' });
   }
   set(phase) {
     // (the phase it leaves is held where it was and faded out under the new one: a sit left halfway does not snap to the exit's start)

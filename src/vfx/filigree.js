@@ -85,7 +85,7 @@ export class Filigree {
     pool?.on('gain', ({ amount }) => this.absorb(Math.min(1, 0.25 + amount / 25)));
     // (the psygun's plain shots and its charge do not flash it: the charge lights it, rising as it builds: update)
     pool?.on('spend', ({ amount, tag }) => { if (!/^(shot|charge|beam)/.test(tag || '')) this.channel(Math.min(1, 0.3 + amount / 20)); });
-    game.events?.on('impulse', ({ why, mag }) => { if (HURT.has(why)) this.hurt(Math.min(1, 0.45 + (mag || 0) / 20)); });
+    game.events?.on('courier.impulse', ({ why, mag }) => { if (HURT.has(why)) this.hurt(Math.min(1, 0.45 + (mag || 0) / 20)); });
     game.events?.on('jelly.strike', () => this.hurt(1));
   }
 
