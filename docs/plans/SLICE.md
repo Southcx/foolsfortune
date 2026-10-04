@@ -60,7 +60,8 @@ line shows `fuel` as a drain.
 
 - **Nodes:** one an island, at its place on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step of the line
   (Anagami to Margarite is 4, King to Queen 8). Entra Polearis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
-  `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 120 s.
+  `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 150 s, the length of Wanda's cue (Crude Sea: 100 bars of 1.5 s; every wave falls on a bar line, and
+  `stageAt(game.music)` gives the fraction as heard).
 - **The stage** is authored once (`STAGE.waves`, ten waves, 45 Figments) with its waves keyed to the fraction of the stage (0 .. 1), so
   Petra paces the rail to Wanda's cue, not to seconds. Its shape is Star Fox 64's: a calm opening, schools that teach the gun, darters
   that teach the dodge, a breather at 0.50 to 0.62, a mixed push, a heavy at 0.84 with an escort.
@@ -94,9 +95,10 @@ Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`
 `well.floor` is Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
 unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
 
-**The slice's achievements** (in the game now, as placeholders at 0 until the events exist): EXPLORATION, The Wells: Down the Well,
-Rock Bottom, Face the FOE, Mapped Mind, Every Corner, Well Worn, A Well Healed (hidden). THE EMOCEAN, Sailing: Cast Off, Made Port, Not a
-Scratch, Ports of Call; Crude: In the Trade, Good Haul, Toxic Symbiosis (hidden), Slick (hidden).
+**The slice's achievements** (in the game now, as placeholders at 0 until the events exist; names Espada's, LORE.md section 8):
+EXPLORATION, The Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden).
+THE EMOCEAN, Sailing: Cast Off, Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Symbiosis (hidden), Slick
+(hidden). The Well in the Dunes is **the Swallow**; crude is counted in **casks**; the dock trader is **the purser**.
 
 ## The seams to check before calling it done
 
