@@ -144,3 +144,11 @@ up its key. And EVEN is the big-game catch key (a Leviathan 5% → 28%), LOADED 
 
 The numbers are in `ECON`, and `scripts/economy.mjs` prints every row (ECONOMY.md, "The livelihoods"). The busking pay waits on Wanda's
 `rhythm.score` event; the rest waits on the systems that pay through them.
+
+**B7 landed (Dovina, 2026-10-04):** every art and variant is the reward of an achievement (`art_<id>`, `unlocks`), its goals ledger keys
+(`led(key, n, label)` in `skills.js`; Petra's keys for the chains, the drops, the moving-target slam, rolls and the slip). The System
+counts nothing itself now: it reads progress from the ledger and unlocks an art when its achievement is done (`system.check`, twice a
+second), a variant once its ability is yours. Verified headless: Blink unlocks at 20 air dashes, not at 10; Tumble's goal met before Roll
+waits, then both unlock in order. Found on the way: `god.swell` and `god.wring` are never emitted, so Colossus and Wringer could never be
+learned (Petra's); and an achievement done at play time 0 records 0, which a truthiness test reads as not done (fixed in
+`achievements.js` and `system.js`; the Codex's ledger page and `vessel.js` have the same test: Petra's).
