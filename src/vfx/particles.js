@@ -170,23 +170,16 @@ export class FX {
     }
   }
 
+  /** A knock on a hard thing: the library's `impact` (sparks and dust), the chips (step 3) and a decal if asked. */
   impact(point, normal, { color = PALETTE.pale, sparks = 6, dust = 6, decal = false } = {}) {
-    const c = new THREE.Color(color);
-    const hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < sparks; i++) {
-      const v = new THREE.Vector3().randomDirection().add(normal).normalize().multiplyScalar(4 + Math.random() * 6);
-      this.add.emit({ pos: point, vel: v, life: 0.15 + Math.random() * 0.2, size: 0.05, sizeEnd: 0.01, color: hot, drag: 3, gravity: 9 });
-    }
-    for (let i = 0; i < dust; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(0.6).add(_v.copy(normal).multiplyScalar(1 + Math.random() * 1.5));
-      this.alpha.emit({ pos: point, vel: v, life: 0.6 + Math.random() * 0.6, size: 0.08, sizeEnd: 0.5, color: c, alpha: 0.45, drag: 3.5, gravity: -0.2 });
-    }
+    this.vfx?.play('impact', { pos: point, normal, dir: normal, tint: color, tip: PALETTE.hot, sparks, dust });
     for (let i = 0; i < 4; i++) {
       const v = new THREE.Vector3().randomDirection().add(normal).multiplyScalar(2 + Math.random() * 2);
       this.chips.emit(point, v, 0.012 + Math.random() * 0.012, 1.5);
     }
     if (decal) this.decal(point, normal);
   }
+
 
   decal(point, normal) {
     const d = new THREE.Mesh(this.decalGeo, this.decalMat);
@@ -260,14 +253,9 @@ export class FX {
   }
 
   // Lantern cores spill glowing embers
-  embers(center, n = 24) {
-    const hot = new THREE.Color(PALETTE.hot), glow = new THREE.Color(PALETTE.glow);
-    for (let i = 0; i < n; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 2.5).add(new THREE.Vector3(0, 1, 0));
-      this.add.emit({ pos: center, vel: v, life: 0.8 + Math.random() * 1.2, size: 0.05, sizeEnd: 0.015, color: Math.random() < 0.5 ? hot : glow,
-        drag: 1.2, gravity: 4, twinkle: 12 });
-    }
-  }
+  /** Embers in the air: the library's `embers`. */
+  embers(center, n = 24) { this.vfx?.play('embers', { pos: center, tint: PALETTE.glow, tip: PALETTE.hot, n }); }
+
 
   // Charged shot: thick lingering beam + ring shockwave at the far end
   beam(from, to, power) {
@@ -332,16 +320,9 @@ export class FX {
   }
 
   // Gravity well collapse: particles rush in then burst
-  implode(center) {
-    const glow = new THREE.Color(PALETTE.glow), hot = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 70; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(3 + Math.random() * 9);
-      this.add.emit({ pos: center, vel: v, life: 0.4 + Math.random() * 0.4, size: 0.06, sizeEnd: 0.01, color: Math.random() < 0.5 ? hot : glow, drag: 2.5, twinkle: 20 });
-    }
-    this.boomLight.position.copy(center);
-    this.boomLight.intensity = 90;
-    this.boomT = 0.3;
-  }
+  /** A collapse and a burst: the library's `implode` (its light is one the light budget lends, as every VFX light is). */
+  implode(center) { this.vfx?.play('implode', { pos: center, tint: PALETTE.glow, tip: PALETTE.hot }); }
+
 
   // Mark shell: sigil ring on the surface + crackle
   markBurst(point, normal, radius) {
@@ -359,13 +340,9 @@ export class FX {
   }
 
   // Lachryma absorbed: a little starburst
-  absorbSparkle(p) {
-    const c = new THREE.Color(PALETTE.cream), h = new THREE.Color(PALETTE.hot);
-    for (let i = 0; i < 12; i++) {
-      const v = new THREE.Vector3().randomDirection().multiplyScalar(1 + Math.random() * 1.5);
-      this.add.emit({ pos: p, vel: v, life: 0.3 + Math.random() * 0.2, size: 0.035, sizeEnd: 0.005, color: Math.random() < 0.5 ? c : h, drag: 3, twinkle: 30 });
-    }
-  }
+  /** A thing taken in: the library's `absorb`. */
+  absorbSparkle(p) { this.vfx?.play('absorb', { pos: p, tint: PALETTE.cream, tip: PALETTE.hot }); }
+
 
   // Charging: sparks spiral into the muzzle
   chargeTick(muzzle, level, dt) {

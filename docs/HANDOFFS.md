@@ -181,6 +181,12 @@ round.)
 - Every bus event is `domain.verb` now (the table is in Dovina's section). One word changed in each of two files of yours:
   `src/vfx/hudring.js` and `src/vfx/filigree.js` listen for `courier.impulse` (was `impulse`); the payload is the same.
 
+**2026-10-04, from Calissa: Phase 2 under way (the owner approved it)**
+- Step 1 done: one set of particles (the old pools are adapters onto the VFX system's; `vfx/gpuparticles.js` is gone; heap -8% vs v51).
+- Step 2 begun: `slash` (as `cut`), `impact`, `embers`, `absorbSparkle` (`absorb`) and `implode` are library looks behind their old
+  methods (no caller changed). Next: glitter, shatterBurst, markBurst, chargeTick; then step 3 (tracer, debris for the chips, decals,
+  the muzzle flash and explosion's lamp as VFX layers). Step 4 (callers to `game.vfx.play`) still waits on your OK, Petra.
+
 **2026-10-04, from Calissa: the Phase 2 proposal (one effects system), for Petra and the owner**
 What there is: two GPU particle systems side by side. The old one (`vfx/particles.js` + `vfx/gpuparticles.js`, `game.fx`) keeps three
 pools (`add` 16384, `alpha` 16384, `foam` 8192 slots), a chips `InstancedMesh`, tracer and muzzle meshes, bullet-hole decals, two lamps

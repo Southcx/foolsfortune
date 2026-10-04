@@ -216,6 +216,23 @@ export const LIBRARY = {
     L({ type: 'sprites', count: [8, 12], shape: 'facet', dir: 'cone', cone: 70, speed: [2.5, 6], size: [0.07, 0.13], sizeEnd: 0.03, life: [0.4, 0.7], gravity: 9, drag: 1, color: ['lach', 'labradorite', 'gold'], spin: [-10, 10], floor: 'ground' }),
     L({ type: 'sprites', count: [6, 9], shape: 'glint', spawn: 'sphere', r: 0.25, speed: [0.5, 1.5], size: [0.1, 0.16], sizeEnd: 0, life: [0.25, 0.45], color: 'labradorite', twinkle: 24 }),
   ] },
+  // =============================================================================================== THE OLD BURSTS (Phase 2: folded in from vfx/particles.js)
+  // played by the old names through their shims, so every caller is unchanged and each can now be directed here. 'tint' is the
+  // caller's colour, 'tip' the hot one (PALETTE.hot); counts read the caller's own numbers (`sparks`, `dust`, `n`).
+  impact: { layers: [ // a shot or a knock on a hard thing: hot sparks off it, a puff of its dust (and chips: particles.js, step 3)
+    L({ type: 'sprites', count: 'sparks', shape: 'streak', dir: 'cone', axis: 'normal', cone: 70, speed: [4, 10], size: 0.05, sizeEnd: 0.01, life: [0.15, 0.35], stretch: 1.4, drag: 3, gravity: 9, color: 'tip', powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', count: 'dust', shape: 'puff', dir: 'cone', axis: 'normal', cone: 60, speed: [1, 2.5], size: 0.08, sizeEnd: 0.5, life: [0.6, 1.2], drag: 3.5, gravity: -0.2, color: 'tint', alpha: 0.45, powerCount: false }),
+  ] },
+  embers: { layers: [ // what a lantern or a fire leaves in the air: embers rising, twinkling, falling back
+    L({ type: 'sprites', count: 'n', shape: 'soft', dir: 'sphere', speed: [1, 3.5], size: 0.05, sizeEnd: 0.015, life: [0.8, 2], drag: 1.2, gravity: 4, color: ['tip', 'tint'], twinkle: 12, powerCount: false, offset: [0, 0.1, 0] }),
+  ] },
+  absorb: { layers: [ // a thing taken into the Courier: a quick sparkle where it went
+    L({ type: 'sprites', count: 12, shape: 'glint', dir: 'sphere', speed: [1, 2.5], size: 0.06, sizeEnd: 0.008, life: [0.3, 0.5], drag: 3, color: ['tint', 'tip'], twinkle: 30, powerCount: false }),
+  ] },
+  implode: { layers: [ // something collapsing inward and bursting: a sphere of hot streaks and a flash of light
+    L({ type: 'sprites', count: 70, shape: 'streak', dir: 'sphere', speed: [3, 12], size: 0.06, sizeEnd: 0.01, life: [0.4, 0.8], stretch: 1.2, drag: 2.5, color: ['tip', 'tint'], twinkle: 20, powerCount: false }),
+    L({ type: 'light', color: 'tint', k: 90, range: 16, dur: 0.3, up: 0 }),
+  ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
   // the way, so many per metre the tip travels (vfx.js `swing`). 'tint' is the swing's colour, 'tip' its hot end.
