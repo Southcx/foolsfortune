@@ -117,3 +117,6 @@ Lockheart header), A7, A9, A10 (the titles) and A11 (the prices and `SHOPS.sagga
 Influence > Delirium > Impact, annihilation, the cause → type table as a proposal), `mind.js` (the mental states), `emo.js` (EmO: yield
 band 0.35 to 0.75, enrage at 0.85, the catch factor), `src/progress/luck.js`. None is wired: `node scripts/combat.mjs` prints them all.
 The owner rules on the cycle and on which tool deals which type before Petra wires B1 to B4.
+`src/progress/domains.js` (B8's data): the seven domains, their EXP sources from today's events with a quality each (a crystal strike's
+nearness, a macro's misses, a photograph's stars, a throw's speed), v0.1's curve, and one PACE (99 in 300 hours of middling play in any
+domain; perfect play 200, sloppy 600). "The World" at that pace is about 2,100 hours: the owner sets the pace.
