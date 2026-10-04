@@ -103,6 +103,10 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 - The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
 - The game divides into **STORY** and **DEBUG**.
 
+**The Courier, the god hand and the Pneuka Jar are one entity: the player.** *(Ruled, R43)* There is no Courier the player
+"returns to": the Courier is the Pneuka Jar in humanoid form, and the god hand is the same will reaching out while the body rests as
+the jar. Player text always says **"your Pneuka Jar"** ("Your Pneuka Jar breaks."), never "the jar" or "the vessel".
+
 ### Wells, and the town that was *(Ruled, Round 40)*
 **A Well is a pocket of distortion**: rumination gone round and round until the Lachryma pools, distorted thinking, psychosis. It is
 not always dark. **Positive feeling in excess is a distortion too**: delusions of grandeur, mania, a joy that will not stop. A Well
@@ -260,6 +264,9 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
 - **Worldbuilding sets initial conditions and lets the consequences follow.** Decide the rule (Lachryma past what a mind can bear
   transfigures it), then let the town, the jellies and Grog's grief fall out of it.
 - **Blanks stay blank.** Placeholder text is marked as placeholder, never polished into something that reads like canon.
+- **The System and the log speak clean, specific and almost robotic.** *(Ruled, R43)* Subject, verb, object, number: "Your Pneuka
+  Jar breaks." "God hand active." "Commission complete. Streak: 7." No exclamation marks, no flourish, no metaphor. The voice and the
+  wit live in the folk's talk, the item flavour and the Arcana, never in a status line.
 - **No fat, especially in the UI.** The game's interface text (menus, the kiln window, the help pages, the Codex, tool and item
   names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
   present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
@@ -322,6 +329,58 @@ for their models.
   cosmic law, the least of the folk carries the least of the marks. *(Espada's gut)*
 - The other three are named for the potter's trade: a *saggar* is the box that shields a pot in the kiln, *grog* is fired clay
   crushed back into new clay, *raku* is a firing.
+
+### The livelihoods' cast *(Espada's casting, R43: the owner asked for one of each)*
+
+The split that makes them a pair: **a commission is a hunt for a Figment** (the island's own thoughts, from inside) and **a bounty is a
+hunt for an Egregore** (no one's thoughts, from the Emocean outside). One witnesses the island's work; the other brings in strays.
+
+**Seger, the Witness Cone** (commissions; D4) *(stoneware)*
+- **The name.** Hermann Seger invented the pyrometric cone (1886). A *witness cone* stands in the kiln and slumps when the firing has
+  reached its heat: it does not do the work, it certifies that the work was done. So: a witness (who sees), a cone (graded heat, as the
+  Figment classes are graded), and a commission (in a potter's world, work ordered, paid for and judged).
+- **The body.** Tall, narrow, three-sided, pale unglazed clay with a number pressed into its side. No hat: the tip is the hat. It
+  shows feeling by how far its tip bends: upright when unimpressed, slumped when the work was done right. (For Calissa, when its turn comes.)
+- **Where.** The pot-person barracks (the compendium's fourth stop); by the kiln until those are built.
+- **The voice.** Exact, a little smug about measurement, kind underneath. The hexachord; temper calm.
+- **What it teaches.** Persistence. A streak is a cone that has seen many firings and still stands; a broken streak starts at zero,
+  and Seger says so without cruelty.
+- **Lines** (ready for `talks.js` once Seger stands in the world):
+  - "Ah. The Courier. {p:0.4}I'm Seger. I stand in the fire and say when it's done."
+  - "Witnesses don't do the work. {p:0.3}{small}We only make sure it was done properly.{/}"
+  - (a commission) "Three Guppies, cleared from the Dunes. {p:0.3}I'll know if you cut corners. {small}I always slump a little when
+    someone does it right.{/}"
+  - (a streak) "Seven in a row. {p:0.4}A cone that has seen seven firings and still stands is either very good or very lucky."
+  - (a broken streak) "Broken. {p:0.4}Never mind. {slow}Every cone starts at zero.{/}"
+  - (on the Prince) "I've witnessed a thousand firings. {p:0.4}Not his. {p:0.3}{small}They say the cones in his kiln melt flat from
+    sheer admiration.{/}"
+
+**Letty Marque, Contractor** (bounties) *(not of Anagami Island)*
+- **The name.** A *letter of marque* was a licence to take prizes at sea: lawful bounty hunting. So Letty (letter) Marque: licensed;
+  a *mark* (the target); a *marquee* (star billing, which she would like).
+- **Who she is.** The first outsider: a Contractor from another Island of Ego, alive in the open Emocean because she has a Tulpa.
+  Pirate-coded (the dual divinity), with a feathered tricorn (hats read faction). She moors a small craft at the jetty on the island's
+  west edge (the concept art) and never stays long. *Blank, for the owner:* what she is made of (she is not Kaolin's clay), and her
+  island. Why she left it is hers to tell, and she has not.
+- **Poll, her Tulpa.** A paper parrot folded from old bounty notices. *Poll* is a parrot's name, a head count, and a tax per head. It
+  shouts rewards.
+- **The voice.** Brisk, a showboat, light on sea slang, quicker to a joke than to a confidence. For Wanda: she is the first voice not
+  made of clay.
+- **What she teaches.** Resilience: she has lost something to the Emocean, and she kept sailing it.
+- **Lines** (ready for `talks.js` once she moors):
+  - "Letty Marque, licensed. {p:0.3}Marque with a Q-U-E, like the letter, not the target. {small}It's often both.{/}"
+  - (Poll) "{big}CUBES! CUBES!{/}"
+  - (a bounty) "Egregores. Nobody wrote them, everybody fed them. {p:0.4}They drift in off the Emocean and nest where an island is
+    quiet. {p:0.3}I bring them in. You can help, for a cut."
+  - (on the Courier) "You're one of those jars that walks. {p:0.3}Lucky you. The Emocean barely tastes you."
+  - (on the Prince) "Your Prince keeps a tidy island. {p:0.5}{slow}Tidy islands are the ones the Emocean notices first.{/}"
+  - (on her island) "Where I'm from? {p:0.6}{slow}Somewhere I'm not anymore.{/} {p:0.4}Next question."
+  - (goodbye) "Fair winds. {p:0.3}{small}Fair-ish.{/}"
+
+**Their log lines** (the robotic register; for the rules in `tracking.js` once the events exist):
+- "Commission accepted: 3 Guppy-class Figments." · "Commission: 2 of 3." · "Commission complete. Streak: 7." · "Commission streak
+  ended at 7."
+- "Bounty accepted: one Egregore." · "Bounty claimed: 120 cubes." · "Bounty failed. The Egregore has left the island."
 
 ## 7. Creatures
 

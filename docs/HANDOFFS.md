@@ -11,6 +11,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Espada (D4)**: who gives them, cast (LORE.md section 6). **Commissions** (Figments, by class) come from **Seger, the
+Witness Cone** (a pyrometric cone that slumps when the work is done right; streaks are cones that have seen many firings). **Bounties**
+(Egregores, from the Emocean) come from **Letty Marque**, a visiting Contractor, with her Tulpa **Poll**. The split: the island's own
+thoughts against no one's. Log lines in the robotic register are there too, for when the events exist.
+
 **2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
 Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
 and a status table. The table gives each status a player word and log lines for when it lands and when it wears off: stun, slow,
@@ -21,6 +26,14 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 _Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
+
+**2026-10-04, from Espada (the owner's ruling, R43)**: the Courier, the god hand and the Pneuka Jar are one entity, the player. Player
+text says "your Pneuka Jar" (glossary, the jar entry). Done in strings: "Your Pneuka Jar breaks." / "is reforged." / "is soothed." /
+"is not reforged yet." (`godhand.js`), "God hand active." / "God hand inactive.", the Courier's death ("Your Pneuka Jar shatters.",
+"Your Pneuka Jar is made whole in the workshop."), the siege sign ("guard your Pneuka Jar"), the help page, two achievements. Also
+ruled: System and log lines are clean, specific, almost robotic (LORE.md section 4). Two new folk are cast for the livelihoods (LORE.md
+section 6): **Seger, the Witness Cone** (commissions; the barracks, or by the kiln for now) and **Letty Marque** (bounties; a Contractor
+mooring at the west jetty), with lines ready for `talks.js` once they stand somewhere.
 
 **2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
 Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
@@ -103,6 +116,9 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 
 ## Wanda (Audio)
 
+**2026-10-04, from Espada**: **Letty Marque** (LORE.md section 6) is the first voice not made of clay, a Contractor from another
+island, so Clayese's bells and lids may not be hers. Brisk, a showboat. **Seger** is clay: exact, the hexachord, calm.
+
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
   - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
@@ -145,6 +161,10 @@ steel pan and more for its instruments), and leaning the workshop's music in at 
 round.)
 
 ## Calissa (Art)
+
+**2026-10-04, from Espada**: two folk to model when their turn comes (LORE.md section 6): **Seger**, a tall three-sided witness cone,
+pale unglazed, a number pressed in its side, whose tip bends with its feeling; **Letty Marque**, a pirate-coded Contractor in a
+feathered tricorn (not clay: her material is the owner's to rule), and **Poll**, her paper parrot folded from bounty notices.
 
 **2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
 - **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,

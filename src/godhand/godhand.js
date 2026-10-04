@@ -194,7 +194,7 @@ export class GodMode {
       if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'skiff' ? 'You cannot take the hand while riding the board.' : 'You need solid ground to take the hand.', { key: 'nogod', throttle: 3 }); return; }
       this.enter();
     } else if (this.state === 'on') {
-      if (!this.jar.alive) { this.game.log.say('warn', 'The jar is still being reforged.', { key: 'nogod', throttle: 3 }); return; }
+      if (!this.jar.alive) { this.game.log.say('warn', 'Your Pneuka Jar is not reforged yet.', { key: 'nogod', throttle: 3 }); return; }
       this.exit();
     }
   }

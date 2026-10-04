@@ -203,8 +203,8 @@ export function buildAchievements(game) {
   H('gr2', 'hand', 'Raids', 3, 'endure', 'Five Waves', 'Reach wave 5 in a raid.', 'god.wave.max', 5);
   H('gr3', 'hand', 'Raids', 4, 'endure', 'Ten Waves', 'Reach wave 10 in a raid.', 'god.wave.max', 10, { title: 'Silo Warden' });
   H('gr4', 'hand', 'Raids', 5, 'endure', 'Siege Breaker', 'Reach wave 20 in a raid.', 'god.wave.max', 20, { title: 'Siege Breaker' });
-  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have the jar shatter.', 'jar.shatter', 1, { hidden: true });
-  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have the jar reforged 5 times.', 'jar.reforge', 5);
+  C('gv1', 'hand', 'Raids', 1, 'count', 'Cracked', 'Have your Pneuka Jar break.', 'jar.shatter', 1, { hidden: true });
+  C('gv2', 'hand', 'Raids', 2, 'count', 'Kintsugi', 'Have your Pneuka Jar reforged 5 times.', 'jar.reforge', 5);
   F('gl1', 'hand', 'Lachryma', 1, 'count', 'A Little Weeping', 'Spend 500 lachryma.', (L) => L.get('lach.spent'), 500);
   F('gl2', 'hand', 'Lachryma', 3, 'endure', 'A River of Tears', 'Spend 10,000 lachryma.', (L) => L.get('lach.spent'), 10000);
   C('gl3', 'hand', 'Lachryma', 1, 'count', 'Running Dry', 'Run out of lachryma.', 'lach.empty', 1);

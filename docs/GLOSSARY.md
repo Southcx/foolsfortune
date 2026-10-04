@@ -190,7 +190,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **the god hand** (~, `src/godhand/godhand.js`): the mode where the Courier becomes a jar and you become a hand.
 - **the jar** (code name `jar`; events `jar.hit`, `jar.shatter`, `jar.reforge`): the Pneuka Jar, the Courier's true form and the Prince's
-  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). It has integrity, it shatters, it is reforged. *Not:*
+  magnum opus; in the god hand the Courier settles back into it (`docs/LORE.md`). The Courier, the god hand and the jar are one
+  entity, the player (the owner, R43): player text says "your Pneuka Jar" ("Your Pneuka Jar breaks."), never "the jar". It has integrity, it shatters, it is reforged. *Not:*
   the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
 
@@ -241,6 +242,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
+- **you** (the player): the Courier, the god hand and the Pneuka Jar are one entity (the owner, R43). Player text: "your Pneuka Jar".
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (an Egregore hunt, given by **Letty Marque**,
+  a Contractor, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 
 ## Homonyms we keep on purpose (always qualify them)

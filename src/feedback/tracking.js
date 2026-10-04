@@ -60,7 +60,7 @@ const BRUSH_LINE = {
   bolt: (n) => (n ? `Lightning answers your brush and stuns ${plural(n, 'clapperjar')}.` : 'Lightning answers your brush.'),
   light: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} light.` : 'Your brush lifts you.'),
   heavy: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} heavy.` : 'Your brush drives you down.'),
-  solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'The jar is soothed.'),
+  solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'Your Pneuka Jar is soothed.'),
   wash: () => 'You lay slip across the world.',
 };
 const BRUSH_NAME = { still: 'Still', bounce: 'Bounce', mend: 'Mend', ember: 'Ember', gale: 'Gale', bolt: 'Bolt', light: 'Light', heavy: 'Heavy', solace: 'Solace', wash: 'wash' };
@@ -228,8 +228,8 @@ export class Tracking {
     on('skiff.wobble', () => { L.inc('skiff.wobble'); log.say('warn', 'You lose your balance on the board.', { key: 'wob', throttle: 3 }); });
 
     // ---- the hand
-    on('god.enter', () => { L.inc('god.enter'); log.say('god', 'You take the hand.'); });
-    on('god.exit', () => { L.inc('god.exit'); log.say('god', 'You return to the Courier.'); });
+    on('god.enter', () => { L.inc('god.enter'); log.say('god', 'God hand active.'); });
+    on('god.exit', () => { L.inc('god.exit'); log.say('god', 'God hand inactive.'); });
     on('god.grab', (e) => { L.inc('god.grab'); if (e.clapper) L.inc('god.grab.clapper'); });
     on('god.throw', (e) => { L.inc('god.throw'); L.hi('god.throw.speed', e.speed); });
     on('god.select', (e) => L.inc(`god.select.${e.id}`));
@@ -238,8 +238,8 @@ export class Tracking {
     on('god.raid', (e) => { L.inc('god.raid'); L.hi('god.wave.max', e.wave); log.say('god', `Raid, wave ${e.wave}: ${plural(e.n, 'clapperjar')} approach.`); });
     on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} is cleared.`); });
     on('jar.hit', (e) => { L.inc('jar.hit'); L.inc('jar.damage', e.amount || 0); L.inc(`jar.hit.${e.kind}`); }); // (the god hand's jar: GLOSSARY)
-    on('jar.shatter', () => { L.inc('jar.shatter'); log.say('hurt', 'The jar shatters!'); });
-    on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'The jar is reforged.'); });
+    on('jar.shatter', () => { L.inc('jar.shatter'); log.say('hurt', 'Your Pneuka Jar breaks.'); });
+    on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'Your Pneuka Jar is reforged.'); });
 
     // ---- maps
     on('map.pulse', (e) => { L.inc('map.pulse'); if (e.god) L.inc('map.pulse.god'); });
@@ -665,8 +665,8 @@ export class Tracking {
     // the shield and the shattering (courier/vessel/damage.js, courier/vessel/death.js)
     on('vessel.shield', () => L.inc('vessel.shield'));
     on('vessel.shieldbreak', () => { L.inc('vessel.shieldbreak'); log.say('battle', 'Your Lachryma is spent: the next blow reaches the clay.', { key: 'shieldbreak', throttle: 4 }); });
-    on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'The blow is one too many. You shatter.' : 'You shatter.', {}); });
-    on('courier.reform', () => { L.inc('courier.reform'); log.say('system', 'You are made whole again, in the workshop where you were made.', {}); });
+    on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'A creature shatters your Pneuka Jar.' : 'Your Pneuka Jar shatters.', {}); });
+    on('courier.reform', () => { L.inc('courier.reform'); log.say('system', 'Your Pneuka Jar is made whole in the workshop.', {}); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
     on('vessel.mend', (e) => { L.inc('vessel.mends'); log.say('info', `${(PART[e.region] || 'The crack').replace(/^y/, 'Y')} mends.`, { key: 'mend', win: 2, fmt: (n) => `${n} cracks mend.` }); });

@@ -182,12 +182,12 @@ export const PAGES = [
   },
   {
     id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godhand/',
-    lead: 'The Courier settles back into the Pneuka Jar they really are, and you, the player inside them, become a hand over the world. The hand has God Arts instead of tools, and they work only in the Zone of Influence (the ground you have explored).',
+    lead: 'You change into your Pneuka Jar, and you control a hand over the world. The hand uses God Arts, not tools. God Arts work only in the Zone of Influence: the ground you explored.',
     rows: () => [
-      ['~', 'become the hand; again to come back'],
+      ['~', 'go into the god hand; press again to go out'],
       ['LMB · hold RMB · 1 – 5', 'use the art · the art wheel · pick an art'],
       ['W A S D · Q E · wheel', 'pan · turn · zoom'],
-      ['N', 'a survey from the jar'],
+      ['N', 'a survey from your Pneuka Jar'],
       ...ARTS.map((a) => [a.key, `${a.name}: ${a.blurb}`]),
     ],
   },
