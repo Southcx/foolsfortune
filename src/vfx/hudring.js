@@ -146,7 +146,7 @@ export class HudRing {
     E?.on('vessel.shieldbreak', () => { this.lastKind = 1; this.lastKindT = E.time; });
     E?.on('vessel.crack', () => { this.lastKind = 1; this.lastKindT = E.time; });
     E?.on('jelly.strike', (e) => { if (e.from) this.blow(Math.atan2(e.from[2] - game.player.pos.z, e.from[0] - game.player.pos.x), e.move === 'lunge' ? 1 : 0.7); });
-    E?.on('impulse', (e) => { if (HURT_WHY.has(e.why) && e.why !== 'jelly' && e.dir) this.blow(Math.atan2(-e.dir[2], -e.dir[0]), Math.min(1, 0.5 + (e.mag || 0) / 16)); });
+    E?.on('courier.impulse', (e) => { if (HURT_WHY.has(e.why) && e.why !== 'jelly' && e.dir) this.blow(Math.atan2(-e.dir[2], -e.dir[0]), Math.min(1, 0.5 + (e.mag || 0) / 16)); });
   }
 
   /** A blow from the world angle `a` (atan2(z, x) round the Courier), of strength k. */

@@ -130,7 +130,7 @@ export function renderLedger(codex, cx) {
 const TOTALS = [
   ['Time played', (L) => dur(L.play)], ['Sessions', (L) => num(L.sessions)],
   ['Distance travelled', (L) => dist(L.get('dist.total'))], ['Climbed', (L) => dist(L.get('dist.up'))], ['Fallen', (L) => dist(L.get('dist.down'))],
-  ['Jumps', (L) => `${num(L.get('move.jump'))} (${num(L.get('move.airjump'))} in the air)`], ['Falls out of the world', (L) => num(L.get('respawn.fall'))],
+  ['Jumps', (L) => `${num(L.get('move.jump'))} (${num(L.get('move.airjump'))} in the air)`], ['Falls out of the world', (L) => num(L.get('courier.respawn.fall'))],
   ['Pots broken', (L) => num(L.get('break.total'))], ['Clapperjars defeated', (L) => num(L.get('clapper.down'))], ['Workshops cleared', (L) => num(L.get('room.cleared'))],
   ['Shots fired', (L) => `${num(L.get('shot.fired'))} · ${L.get('shot.fired') ? Math.round((100 * L.get('shot.hit')) / L.get('shot.fired')) : 0}% hit`],
   ['Shells fired', (L) => num(L.get('shell.fire'))], ['Lachryma spent', (L) => num(L.get('lach.spent'))], ['Lachryma absorbed', (L) => num(L.get('lach.gain'))],

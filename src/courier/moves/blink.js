@@ -51,7 +51,7 @@ export class Blink extends Tech {
     this.game.character.setHidden(true);
     P.fovPunch = Math.max(P.fovPunch, 9);
     sfx.blink();
-    this.game.events?.emit('blink', {});
+    this.game.events?.emit('move.blink', {});
   }
 
   update(dt) {

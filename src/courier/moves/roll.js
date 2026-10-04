@@ -73,7 +73,7 @@ export class Roll extends Tech {
     sfx.roll();
     this.cool = c.cooldown;
     this.dust(P.pos);
-    this.game.events?.emit('dodge', { dir: this.code || 'landing', fall: this.fall, mitigated: this.fall > 0 });
+    this.game.events?.emit('move.roll', { dir: this.code || 'landing', fall: this.fall, mitigated: this.fall > 0 });
   }
 
   update(dt) {

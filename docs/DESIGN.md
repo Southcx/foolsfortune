@@ -59,7 +59,7 @@ What it is now: a sandbox of rooms, each with its own small loop.
   - run the gong trial;
   - fire a look at the kiln.
 - **The basement:**
-  - the lab stations where the arts are learned;
+  - the movement lab's stations, where the arts are learned;
   - three lap circuits;
   - THE COURSE;
   - THE SIEGE.
@@ -71,7 +71,7 @@ session's goal. Some pieces exist:
 - a glaze not yet earned;
 - a medal not yet gold.
 
-None of them is put in front of the player. In STORY (lab off) the arts are learned by doing, but every tool, room and shop is open
+None of them is put in front of the player. In STORY (the all-arts switch off) the arts are learned by doing, but every tool, room and shop is open
 from the first minute, so the session has breadth and no direction.
 
 ### The long run (days and weeks)
@@ -102,7 +102,7 @@ means cubes into the world, "drain" cubes out, and "converter" one resource into
 | **Veritome** (J) | the lens, the Flash, reprogramming | the photographer's round; the darkroom | film (a converter: cubes to plates) | cards (the collection), bestiary facts, glazes, cubes by condensing |
 | **Dreamvane** (K) | dowse, pick, fork, survey | the miner's round in the dunes | Lachryma (survey 12) | crystal cubes (the biggest faucet), shards, Possibilikeys, the map |
 | **Crucibelle** (U) | notes on the beat, songs | support in a fight; reveals veiled crystal | Lachryma (8 to 24 a song) | sleep, decoys, spirits, sight |
-| **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `tools/lockheart/table.js`) |
+| **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `src/tools/lockheart/table.js`) |
 | **God hand** (~, not on the belt) | the God Arts | THE SIEGE | Lachryma | defence of the vessel |
 
 **Lachryma** is the moment's resource: a pool of 100 that regenerates at 3.5/s after 2.2 s, and the shield. **Cubes** are the
@@ -154,10 +154,10 @@ earned by a goal over the event bus:
 - `chain`: a then b, quickly.
 
 The goals teach. Blink comes to those who air-dash; Sunder to those who slice pots. A variant only overlays its art's tuning, so the
-core movement is never touched. Lab mode (everything unlocked) is on in DEBUG and off in STORY.
+core movement is never touched. The all-arts switch (`system.lendAll`: every art lent, nothing counted) is on in DEBUG and off in STORY.
 
 **The tools** are not a progression yet. A new Courier wears five and carries the other two in the box from the first minute
-(`main.js`, `pneuka/box.js` seed). The **Pneuka Box** (28 slots, stacks to 99) and the **Book** (54 cards, 20 free slots) are
+(`src/main.js`, the seed in `src/pneuka/box.js`). The **Pneuka Box** (28 slots, stacks to 99) and the **Book** (54 cards, 20 free slots) are
 capacity, not progression: nothing grows them.
 
 **The kiln and the glazes.** There are twelve glazes:
@@ -220,7 +220,7 @@ The Tithe returns 78% of what it takes, in cubes.
 - firsts, timestamped in play time;
 - `done` for the achievements.
 
-`tracking.js` turns about 260 kinds of event into counts and log lines. This is the game's best piece of systems architecture: every
+`src/feedback/tracking.js` turns about 260 kinds of event into counts and log lines. This is the game's best piece of systems architecture: every
 question about play can be answered from it, and the achievements are retroactive by construction.
 
 **The achievements** (`src/progress/achievements.js`):
@@ -295,7 +295,7 @@ What this page adds, for the proposals in section 8:
 
    One rule is not published at all: the epic pity has a 12% chance of a prismatic. The player is treated better than they are told,
    but the published table should be the true one.
-3. **The Tithe is counted twice.** `tithe.pulls` (in `chests.js`) and `tithe.count` (in `tracking.js`) count the same pull. The
+3. **The Tithe is counted twice.** `tithe.pulls` (in `src/world/treasure/chests.js`) and `tithe.count` (in `src/feedback/tracking.js`) count the same pull. The
    CURIOS shelf reads one and the achievements read the other.
 
 ### What contradicts
@@ -334,13 +334,11 @@ What this page adds, for the proposals in section 8:
   - That is right for currency: a mastery reward in cubes becomes a farm.
   - But nothing, not even a glaze or a title, says a gold medal mattered.
 - **Small ones.**
-  - The `chests.js` header still says the Tithe costs 25.
-  - The `tools/lockheart/table.js` header says three keys; it is four.
-  - The README's Roll is "5 hard landings"; the code asks 3 drops of 20 m.
-  - The README's System table omits the God Arts.
+  - The `src/world/treasure/chests.js` header still says the Tithe costs 25.
+  - The `src/tools/lockheart/table.js` header says three keys; it is four.
   - The fish rank G is never used.
   - Lockheart chests are never cleared away.
-  - `card.drift` from time is a dead branch in `tracking.js`.
+  - `card.drift` from time is a dead branch in `src/feedback/tracking.js`.
   - The achievements write their own log lines (`achievements.js announce`) rather than through a rule in `tracking.js`, and the
     `achievement` event carries no `by`.
 
@@ -373,6 +371,9 @@ None of these is necessarily wrong. Each needs a sentence saying why it is what 
 
 These are the five changes that would most improve the game as a game, in the order I would do them. None is made yet: the owner
 chooses.
+
+**Ruled (the owner, 2026-10-04):** 1, 2, 3 and 5 go ahead, in that order. 4 is on hold with STORY itself: STORY is taken off the title
+menu until further notice, while the tools' identities are settled (below). No content push until then.
 
 ### 1. Make the numbers true (one round, small)
 
@@ -416,7 +417,7 @@ ones should be the story the player tells.
 
 **How it is measured.** The curio curve section of the simulator, and the ledger's `curio.` firsts in play.
 
-### 4. A spine for STORY's first hours (design now, build with Petra and Espada)
+### 4. A spine for STORY's first hours (on hold, with STORY)
 
 **The change.** A first-session ladder the player can name at each step.
 - **The belt fills.** The Courier starts with the psygun and the Veritome. Each other tool is given by one of the folk for a task in
@@ -457,3 +458,28 @@ Kart's cups and Tony Hawk's gaps list reward mastery with standing and looks. FF
 
 *Later, once STORY has its spine: the Shrine Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
 rating), priced so that a committed player's surplus goes there for weeks.*
+
+---
+
+## 9. The pillar: every tool teaches a real skill (in discussion)
+
+The owner's thesis (2026-10-04): Fool's Fortune distils every genre, and each Lachryma tool teaches a skill that works outside the game.
+It is not a treadmill that only takes time. The Dreamvane is the model: a strike is judged against a reference tone, so mining by ear
+trains relative pitch. The rule this page holds every tool to is: **the skill is the verb**. The player gets better at the game by
+getting better at the real thing, and no number may do the skill for them. Prior art: *Rhythm Heaven* and *The Typing of the Dead* (the
+skill is the game), *Brain Age* and Gran Turismo's licences (a measured skill as the score). The cautionary tale is the "brain-training"
+genre, whose transfer claims did not hold up (the FTC's 2016 ruling on Lumosity). So the game teaches by play, and never says it is
+teaching.
+
+| Tool | The skill (draft) | Status |
+|---|---|---|
+| Psygun | aim; dynamic visual acuity | agreed |
+| Veritome | typing (reprogramming), reading behaviour, patience for the shot | agreed |
+| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | agreed |
+| Crucibelle | tempo, scales; chords (three keys at once) | agreed |
+| Lockheart | odds and expected value; and, proposed, catching critically stunned Figments | open |
+| Soul Brush | shape and/or colour theory | open |
+| Sondelass | not yet named | open |
+
+The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do, never do the
+skill for them.

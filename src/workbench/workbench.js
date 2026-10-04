@@ -139,7 +139,7 @@ export class Workbench {
     g.ui?.want?.('workbench', on); // (the game's HUD steps out: the stage is the workbench's)
     if (on) { document.exitPointerLock?.(); this.prevInput = g.input.enabled; g.input.enabled = false; this.show(this.tab); }
     else { this.clearHolder(); this.stopHeld(); g.input.enabled = this.prevInput ?? true; }
-    g.events?.emit('workbench', { open: on });
+    g.events?.emit(on ? 'workbench.open' : 'workbench.close', {});
   }
 
   show(tab) {

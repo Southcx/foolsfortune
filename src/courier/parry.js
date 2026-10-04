@@ -56,7 +56,7 @@ export function deflect(game, { at, radius = 2, speedMin = 4.5, outMin = 12, ass
   game.fx?.shockwave?.(new THREE.Vector3(t.x, t.y, t.z), 1.4);
   game.time?.pulse('parry', 0.05, 0.08, { release: 0.2 }); // (a breath)
   sfx.parry();
-  game.events?.emit('parry', { speed: sp, by });
+  game.events?.emit('move.parry', { speed: sp, by });
   return pr;
 }
 

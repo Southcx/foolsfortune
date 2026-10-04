@@ -107,7 +107,7 @@ export class SystemVoice {
   // ---------------------------------------------------------------- what the System says, and when
   rules() {
     const g = this.game, on = (k, f) => g.events?.on(k, (e) => { try { f(e || {}); } catch (err) { console.warn('voice', k, err); } });
-    on('achievement', (e) => {
+    on('achievement.unlock', (e) => {
       if (!e.ach) return;
       this.say(`Notice. Achievement acquired: ${e.ach}.`, { key: `ach.${e.id}` });
       if (e.title) this.say(`Title acquired: ${e.title}.`, { key: `title.${e.id}` });

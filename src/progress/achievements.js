@@ -474,8 +474,8 @@ export function buildAchievements(game) {
   F('tm4', 'general', 'Time', 6, 'endure', 'Lifer', 'Play for 50 hours.', (L) => L.play / 3600, 50, { unit: 'h', title: 'Lifer' });
   C('ss1', 'general', 'Persistence', 1, 'count', 'Back Again', 'Return for a second session.', 'sessions', 2, { cur: (L) => L.sessions });
   C('ss2', 'general', 'Persistence', 3, 'endure', 'Creature of Habit', 'Play in 20 sessions.', 'sessions', 20, { cur: (L) => L.sessions });
-  C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'respawn.fall', 10);
-  C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'respawn.fall', 100);
+  C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'courier.respawn.fall', 10);
+  C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'courier.respawn.fall', 100);
   F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
   F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
@@ -534,15 +534,13 @@ export class Achievements {
     }
     if (!this.silent) {
       const r = this.rankIndex();
-      if (r > this.rank) { this.game.log?.say('ach', `You are now known as a ${RANKS[r][1]}.`); this.rank = r; this.game.events?.emit('rank.up', { rank: RANKS[r][1] }); }
+      if (r > this.rank) { this.rank = r; this.game.events?.emit('rank.up', { rank: RANKS[r][1], by: 'courier' }); }
     } else this.rank = this.rankIndex();
   }
 
   announce(a) {
     const T0 = TIERS[a.tier];
-    this.game.log?.say('ach', `Achievement complete (${T0.name}, ${T0.pts} ${T0.pts === 1 ? 'pt' : 'pts'}): ${a.name}.`);
-    if (a.title) this.game.log?.say('ach', `You have earned the title "${a.title}".`);
-    this.game.events?.emit('achievement', { id: a.id, tier: a.tier, points: T0.pts, title: a.title || null, ach: a.name });
+    this.game.events?.emit('achievement.unlock', { id: a.id, tier: a.tier, tierName: T0.name, points: T0.pts, title: a.title || null, ach: a.name, by: 'courier' }); // (the log's lines: tracking.js)
     sfx.systemUnlock?.();
   }
 }
