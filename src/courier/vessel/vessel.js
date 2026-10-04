@@ -77,7 +77,7 @@ export class Vessel {
       } else {
         U.uFinA.value.setHex(g.color); U.uFinB.value.setHex(g.color2 ?? g.color);
         const sh = REGIONS[r].shader, P = U.uFinP.value;
-        if (sh === 'glaze') P.set(m.map ? 2.0 : 0, lumaMean(m), 0, 0); // (how much of the painting's light and shade shows through)
+        if (sh === 'glaze') P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale)
         else if (sh === 'hair') { const b = hairSpan(ch); P.set(g.kind === 'hair' ? g.p[0] : 0, b.h, g.kind === 'hair' ? g.p[2] : 0, b.y0); if (g.kind !== 'hair') U.uFinB.value.setHex(g.color); }
         else P.set(...(g.p || [0, 0, 0, 0]));
         m.color.setHex(0xffffff); m.roughness = g.rough; m.metalness = g.metal;
@@ -178,6 +178,13 @@ function lumaMean(m) {
     if (n) v = s / n;
   } catch { /* no image to read: the default */ }
   return (m.userData.lumaMean = v);
+}
+/** The Courier's height in their own space (the tallest part), so a glaze's pattern is the same size on every part. */
+function modelSpan(ch) {
+  if (ch.userData?.span) return ch.userData.span;
+  let h = 0;
+  ch.model?.traverse((o) => { if (o.isMesh) { o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox; h = Math.max(h, b.max.y - b.min.y); } });
+  return ((ch.userData ||= {}).span = h || 1);
 }
 /** The hair's height in its own space (root at the top, tips at the bottom), for an ombre. */
 function hairSpan(ch) {

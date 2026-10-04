@@ -86,8 +86,13 @@ Lawful is straight, crystalline, still; chaotic is curling, fluid, iridescent, n
 | Majolica | opaque white tin glaze (Italy, Spain) | shop |
 | Salt glaze | salt thrown into the kiln, orange-peel glass (Germany) | shop |
 
+The rare glazes carry their **kiln patterns** (`vfx/finish.js` PATTERN), each drawn the way the real one forms: yohen's stars (iron
+crystals ringed by a film that breaks the light blue), oil spot's silver blooms, hare's fur's streaks, the crackle nets of guan (two
+sizes, "iron wire and gold thread"), raku and ru, and kinrande's torn gold leaf over red enamel. Each fades out as its cells shrink below
+a pixel or two, so a far body never shimmers with them. Kinrande's ground is red enamel, as it really is.
+
 The kiln also sets **gems** in the stones (ruby, sapphire, emerald, amethyst, citrine, diamond's fire, opal's play of colour,
-moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** for the Lachryma (`vfx/finish.js`).
+moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** for the Lachryma (`vfx/finish.js`); porcelain's is translucent, with warm light through its thin edges.
 
 ## 6. The placeholder audit (what to replace first)
 

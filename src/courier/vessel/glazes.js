@@ -17,7 +17,7 @@
 // sprite era (the same body, a different colour for each of its parts).
 //
 //   REGIONS[id] = { id, name, kinds, shader }   GLAZES[id] = { id, name, kind, color, rough, metal, glow, blurb, got: { start | ach | photo | shop } }
-//   (and, for the other kinds, color2, p, keep)   DEFAULT_LOOK = { body, trim, stones, mask, hair, skin }
+//   (and, for the other kinds, color2, p, keep; a rare glaze's pattern and its colour2)   DEFAULT_LOOK = { body, trim, stones, mask, hair, skin }
 // ---------------------------------------------------------------------------------------
 // (each region takes finishes of its own kinds: glazes on the clay, gems in the settings, hair finishes or a glaze on the hair, and the
 //  Lachryma of the skin its own tones; the shader each region wears is vfx/finish.js `shader`)
@@ -32,7 +32,7 @@ export const REGIONS = {
 
 const G = (id, name, color, rough, metal, blurb, got, glow = 0) => ({ id, name, kind: 'glaze', color, rough, metal, glow, blurb, got });
 // a finish of another kind (vfx/finish.js): `color2` its second colour, `p` its four numbers (gem: facets, fire, play of colour, glow
-// under the surface; hair: ombre, -, sheen, -; skin: inner light, rim, sheen 0 / 1 pearl / 2 aurora, -), `keep` the model's own look
+// under the surface; hair: ombre, -, sheen, -; skin: inner light, rim, sheen 0 / 1 pearl / 2 aurora, translucency), `keep` the model's own look
 const F = (kind, id, name, color, color2, rough, metal, p, blurb, got, keep = false) => ({ id, name, kind, color, color2, rough, metal, p, blurb, got, keep, glow: 0 });
 export const GLAZES = Object.fromEntries([
   G('terracotta', 'TERRACOTTA', 0xb4603f, 0.65, 0.05, 'Red earthenware, unglazed: what the Prince fired you in.', { start: true }),
@@ -51,7 +51,7 @@ export const GLAZES = Object.fromEntries([
   G('haresfur', "HARE'S FUR", 0x5a3a24, 0.2, 0.3, 'Tenmoku drawn into fine gold-brown streaks as it runs, like the fur of a hare. Song potters raced to fire it.', { ach: 'c_braid_g' }),
   G('oilspot', 'OIL SPOT', 0x221a18, 0.18, 0.45, 'Black, scattered with silver spots where iron rose and bloomed in the fire, like oil drops on dark water.', { ach: 'c_mill_g' }),
   G('guan', 'GUAN', 0x9fb0a8, 0.3, 0.02, 'The official ware: grey-green, crazed all over with a fine dark net, the crackle fired in on purpose.', { ach: 'c_spindle_g' }),
-  G('kinrande', 'KINRANDE', 0xc89a3a, 0.28, 0.6, 'Gold brocade: leaf gold laid over red enamel and fired a last time, low and gentle. For a lamplighter.', { ach: 'tr4' }),
+  G('kinrande', 'KINRANDE', 0xa8281c, 0.28, 0.1, 'Gold brocade: leaf gold laid over red enamel and fired a last time, low and gentle. For a lamplighter.', { ach: 'tr4' }),
   G('ru', 'RU', 0x9cc0dc, 0.3, 0.02, 'The blue of the sky after rain. Fired for twenty years at one kiln for one court; fewer than a hundred pieces survive.', { ach: 'cx5' }),
   G('yohen', 'YOHEN TENMOKU', 0x141c36, 0.12, 0.4, 'Kiln-changed: black, with blue stars haloed in it, as if the night were trapped in the glaze. Three bowls in the world.', { ach: 'gr3' }, 0.08),
   // SHOP GLAZES (plan A11): honest everyday glazes, bought at Saggar's kiln (price: ECON.goods.glaze). Blurbs are placeholders for Espada's.
@@ -85,11 +85,14 @@ export const GLAZES = Object.fromEntries([
   F('skin', 'lachryma', 'LACHRYMA', 0xffffff, 0xffffff, 0.4, 0, [0, 0, 0, 0], 'What you are filled with, as you were filled.', { start: true }, true),
   F('skin', 'moonlight', 'MOONLIGHT', 0xdfe6f2, 0x7aa0ff, 0.35, 0, [0.5, 0.6, 0, 0], 'Cool and pale, lit blue from inside.', { start: true }),
   F('skin', 'ember', 'EMBER', 0xf2c8a0, 0xff7a30, 0.4, 0, [0.6, 0.7, 0, 0], 'Warm, with a coal\'s glow under it.', { start: true }),
-  F('skin', 'porcelain', 'PORCELAIN', 0xf6f2ec, 0xffffff, 0.25, 0, [0.15, 0.25, 0, 0], 'White and translucent, barely lit: the Court\'s own.', { start: true }),
+  F('skin', 'porcelain', 'PORCELAIN', 0xf6f2ec, 0xfff0e0, 0.25, 0, [0.15, 0.25, 0, 0.7], 'White and translucent, barely lit: the Court\'s own.', { start: true }),
   F('skin', 'obsidian', 'OBSIDIAN', 0x16121c, 0x9a60ff, 0.2, 0.05, [0.3, 0.8, 0, 0], 'Dark glass, with violet at the edges.', { start: true }),
   F('skin', 'pearl', 'PEARL', 0xf2ece8, 0xffe8f0, 0.3, 0, [0.3, 0.4, 1, 0], 'Nacre: layer on layer, catching the light pink and blue.', { start: true }),
   F('skin', 'aurora', 'AURORA', 0xe8eef2, 0x80ffd0, 0.3, 0, [0.4, 0.5, 2, 0], 'Every colour of the polar sky, moving at the edges of you.', { start: true }),
 ].map((g) => [g.id, g]));
+// the rare glazes' kiln patterns (vfx/finish.js PATTERN: 1 stars, 2 spots, 3 streaks, 4 crackle, 5 leaf) and the colour each is drawn in
+const PATTERNS = { yohen: [1, 0x46b4ff], oilspot: [2, 0xc4c8d0], haresfur: [3, 0xc08a48], guan: [4, 0x2c2622], raku: [4, 0x3a3634], ru: [4, 0x7890a0], kinrande: [5, 0xe8b850] };
+for (const [id, [pattern, color2]] of Object.entries(PATTERNS)) Object.assign(GLAZES[id], { pattern, color2 });
 
 /** How they are dressed until they fire anything else: as they were made. */
 export const DEFAULT_LOOK = { body: 'terracotta', trim: 'bisque', stones: 'maker', mask: 'terracotta', hair: 'bisque', skin: 'lachryma' };
