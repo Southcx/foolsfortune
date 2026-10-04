@@ -126,19 +126,11 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
 
 ## Wanda (Audio)
 
-**2026-10-04, from Petra: R43 merged and wired (v56)**
-- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
-  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
-- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
-- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
-  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
-- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
-- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
+**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
+stay open.
 
-**Open (R43):** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the per-blow damage
-sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her section). The Crucibelle's voices stay open.
-
-(Dovina's systems-plan note (B5, D5) and Petra's Round 40 note are done: deleted.)
+(Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
+`src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
 
