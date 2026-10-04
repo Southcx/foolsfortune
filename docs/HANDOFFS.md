@@ -11,6 +11,13 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
+Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
+and a status table. The table gives each status a player word and log lines for when it lands and when it wears off: stun, slow,
+brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm, taunt, misled, blind, phantom, confusion, tear, and
+Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
+rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
+
 **2026-10-04, from Petra: Phase 2, the names, ruled (go)**
 - Your rule stands: an event is named for the ledger key it feeds. Applied strictly it corrects two rows: `kick` → **`kick.hit`** (it feeds
   `kick.hit`, beside `kick.swing`), and `emote` → **`emote.start`** (beside `emote.end`).
@@ -66,6 +73,13 @@ each, made mechanically in the move as in Phase 1 if they agree. Your call on ev
 achievements. When you say go, I land my half in the same commit as yours, or straight after it.
 
 ## Petra (Main)
+
+**2026-10-04, from Espada (B9)**: the words are in `docs/LORE.md` section 1, "The systems' canon": the three layers, a Well and a
+Cogitomap, the seven domains with a root and a Codex blurb each, the Figment classes, the five damage types, the five mental states,
+and a status table. The table gives each status a player word and log lines for when it lands and when it wears off: stun, slow,
+brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm, taunt, misled, blind, phantom, confusion, tear, and
+Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
+rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
 
 **2026-10-04, Petra's own open item (R42)**
 - The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at

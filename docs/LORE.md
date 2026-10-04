@@ -118,6 +118,64 @@ who did it. Grog stayed by the water, and remembers. *(The owner approved this d
 This is the showcase for the Lachryma system's downside: the same stuff that powers everything, taken past what a mind can hold.
 Couriers can walk where the town could not. That is what they are for.
 
+### The systems' canon *(Ruled by the owner, 2026-10-04; the numbers are Dovina's, `docs/DESIGN.md` sections 9 to 11)*
+
+**The three layers** go inward and outward from the same ego: **Wells** (in: a dungeon inside the island's own thinking), **the island**
+(the action outside them), **the Emocean** (out: travel between islands). One Courier, one purse, one ledger, one set of seven tools
+in all three.
+
+**A Well** is a Lachryma distortion that drifts over time, as rumination does: the same thought, never quite the same twice. A
+**Cogitomap** (*cogito*, "I think", plus a map: a map of a thought) is a Well charted as it was, and so a ticket to that run of it.
+Spellscription copies a good one. The Weir's Well is a place; a Well is a pocket of distortion (`docs/GLOSSARY.md` keeps them apart).
+
+**The seven domains** (six and one) are the skills of a psyche. Each has a one-line blurb for the Codex:
+
+| Domain | Root | Blurb |
+| --- | --- | --- |
+| **Ouranurgy** | Greek *ouranos* (sky, the heavens) + *ergon* (work): sky-work | The craft of where and when: moving a thing without crossing the space between. |
+| **Manifestation** | Latin *manifestus*, struck by the hand: made plain | Making a thing out of Lachryma, so that it is there to be touched. |
+| **Divination** | Latin *divinare*, to foresee, from *divus*, of the gods | Knowing before: what is hidden, what is next. |
+| **Psychokinesis** | Greek *psyche* (soul) + *kinesis* (motion) | Moving a thing with the mind instead of the hand. |
+| **Possession** | Latin *possidere*, to sit as master | A mind in another's seat: host a spirit (the East) or ride a mind (the West). |
+| **Alteration** | Latin *alter*, the other | Making a thing other than it was. |
+| **Spellscription** | to spell (to write a word letter by letter, and to cast) + Latin *scribere*, to write | Writing a thing down so that it holds: the Soul Brush's glyphs and the Veritome's macros. Neutral, and so the most dangerous. |
+
+**Figment classes** go by sea, from a thought you could hold in your hand to one that holds you: **Guppy, Barracuda, Marlin, Whale,
+Leviathan**. They are fish because the Emocean is a sea of tears, and a Figment is a feeling that grew fins.
+
+**The five damage types** run along a Law–Chaos line: **Impact** (lawful, physical), **Ego** (lawful, mental), **Influence** (neutral,
+social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic).
+
+**The five mental states** are the lore's solid–liquid motif as a scale: how open a mind is to statuses, good and bad. **Stoic** (fired
+hard: nothing gets in, nothing gets out), **Resolved**, **Balanced**, **Fluid**, **Prismatic** (wet as slip, every colour at once: it
+rides chaos and bleeds easily). The prismatic chest takes its name from the same end of the scale.
+
+**The statuses each type builds** *(names and log lines: Espada's call; which ones are built, and their numbers, are Dovina's)*. Enough of one
+type applies its status. Where the game already has a status, its name is kept. The log lines are written for the creature in third
+person; `{c}` is the creature's name.
+
+| Type | Status (player word) | Was in the v0.1 document | Log line when it lands | Log line when it wears off |
+| --- | --- | --- | --- | --- |
+| Impact | **stun** (kept) | stun | (kept: "The {c} reels, stars wheeling round its head.") | (kept) |
+| Impact | **slow** (kept) | slow | "The {c} slows, as if wading." | "The {c} picks up its feet again." |
+| Impact | **brittle** | armour break | "The {c} goes brittle. The next blow will tell." | "The {c} sets hard again." |
+| Ego | **doubt** | doubt | "The {c} doubts itself. Its blows land softer." | "The {c} remembers what it is." |
+| Ego | **calm** (kept, the reprogram's) | pacified | "The {c} calms, and forgets why it was fighting." | "The {c} remembers why it was fighting." |
+| Influence | **charm** | charm | "The {c} is charmed, and takes you for a friend." | "The {c} sees you clearly again." |
+| Influence | **taunt** | taunt | "The {c} is taunted, and comes for you." | "The {c} loses interest." |
+| Influence | **misled** | misdirect | "The {c} is misled, and loses track of you." | "The {c} finds you again." |
+| Illusion | **blind** | blind | "The {c} is blinded." | "The {c} can see again." |
+| Illusion | **phantom** | phantom pain | "The {c} flinches at a blow that never came." | "The {c} stops flinching at nothing." |
+| Delirium | **confusion** | confusion | "The {c} is confused, and forgets which way is which." | "The {c} finds its bearings." |
+| Delirium | **tear** | reality tear | "The world tears around the {c}, and Lachryma weeps through." | "The tear around the {c} closes." |
+
+- **Annihilation** (Impact against Delirium, the two ends meeting on a target already afflicted by the other): "Annihilation! Order and
+  chaos meet in the {c}." The word is the owner's, and it stays.
+- **tear** is a homonym on purpose: a tear in the world that weeps Lachryma, which is tears. For the glossary's table: say "a tear"
+  (the status) and "Lachryma" (the substance), never "tears" for Lachryma in player text.
+- **brittle** and not "crack": "crack" is the Courier's vessel damage in the glossary, and a status must not share its word.
+- **phantom** is shortened from "phantom pain", which reads heavier than the game's overtones want; the line keeps the idea.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
