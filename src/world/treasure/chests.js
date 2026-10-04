@@ -9,10 +9,10 @@
 //   game.chests.drop(tier, pos, { yaw })                            a chest that falls out of the air and lands (a legendary catch pays in these)
 //   game.chests.setTithe({ pos, yaw, dais })                        the console and the dais of the Tithe (the room builds the stone; this brings it alive)
 //
-// The Tithe: pay 25 cubes at the console and a SEALED chest lands on the dais. It is a chest of no colour; its tier is rolled at that
-// moment from published odds and three PITY counters (10 pulls without a rare or better guarantees one; 40 an epic; 100 a prismatic),
+// The Tithe: pay `TITHE.cost` cubes (progress/econ/table.js) at the console and a SEALED chest lands on the dais. It is a chest of no
+// colour; its tier is rolled at that moment from published odds and three PITY counters (10 pulls without a rare or better guarantees one; 40 an epic; 100 a prismatic),
 // kept in the ledger and shown on the console by rows of lamps, and it is revealed only when the sealed chest is opened. The ledger
-// holds `tithe.pulls`, `tithe.tier.<id>` and `tithe.last.<rare|epic|prismatic>` (the pull each last came on).
+// holds `tithe.count`, `tithe.tier.<id>` and `tithe.last.<rare|epic|prismatic>` (the pull each last came on).
 //
 // Prior art: the gacha pull (pay, summon, reveal as separate acts, which is where most of the tension comes from), pity systems as
 // Fate/Grand Order, Genshin and Fire Emblem Heroes publish them, and Dark Souls' bonfire-lit shrines (the console is a machine you
@@ -186,7 +186,7 @@ export class Chests {
 
   /** How many pulls since the last of each tier or better (what the pity counts). */
   since() {
-    const L = this.game.ledger, n = L.get('tithe.pulls');
+    const L = this.game.ledger, n = L.get('tithe.count');
     return { rare: n - (L.best('tithe.last.rare') || 0), epic: n - (L.best('tithe.last.epic') || 0), prismatic: n - (L.best('tithe.last.prismatic') || 0) };
   }
 
@@ -205,8 +205,8 @@ export class Chests {
   summon() {
     const g = this.game, L = g.ledger;
     let tier = rollTier(this.since());
-    const n = L.get('tithe.pulls') + 1;
-    L.inc('tithe.pulls'); L.inc(`tithe.tier.${TIERS[tier].id}`);
+    const n = L.get('tithe.count') + 1;
+    L.inc('tithe.count'); L.inc(`tithe.tier.${TIERS[tier].id}`);
     if (tier >= 2) L.hi('tithe.last.rare', n);
     if (tier >= 3) L.hi('tithe.last.epic', n);
     if (tier >= 4) L.hi('tithe.last.prismatic', n);

@@ -14,22 +14,23 @@
 import { ECON } from '../../progress/econ/table.js';
 
 export const TIERS = [
-  { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: ECON.chest[0],     curioP: 0.06, weight: 60 },
-  { id: 'fine',      name: 'fine',      rgb: 0xe58a52, glow: 0xffb27a, cubes: ECON.chest[1],   curioP: 0.16, weight: 26 },
-  { id: 'rare',      name: 'rare',      rgb: 0xd0432a, glow: 0xff7a58, cubes: ECON.chest[2],   curioP: 0.4,  weight: 10.5 },
-  { id: 'epic',      name: 'epic',      rgb: 0x9c2432, glow: 0xff5a6a, cubes: ECON.chest[3], curioP: 0.8,  weight: 3 },
-  { id: 'prismatic', name: 'prismatic', rgb: 0xffffff, glow: 0xffffff, cubes: ECON.chest[4], curioP: 1.0,  weight: 0.5, rainbow: true },
+  { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: ECON.chest[0], weight: 60 },
+  { id: 'fine',      name: 'fine',      rgb: 0xe58a52, glow: 0xffb27a, cubes: ECON.chest[1], weight: 26 },
+  { id: 'rare',      name: 'rare',      rgb: 0xd0432a, glow: 0xff7a58, cubes: ECON.chest[2], weight: 10.5 },
+  { id: 'epic',      name: 'epic',      rgb: 0x9c2432, glow: 0xff5a6a, cubes: ECON.chest[3], weight: 3 },
+  { id: 'prismatic', name: 'prismatic', rgb: 0xffffff, glow: 0xffffff, cubes: ECON.chest[4], weight: 0.5, rainbow: true },
 ];
 export const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 
-/** The price of a sealed chest, in cubes, and how many pulls without a tier make the next one certain. */
-export const TITHE = { cost: ECON.tithe.cost, pity: { rare: 10, epic: 40, prismatic: 100 } }; // (its price: progress/econ/table.js)
+/** The price of a sealed chest, in cubes (progress/econ/table.js), how many pulls without a tier make the next one certain, and the
+ *  chance that a pull the epic pity makes certain is a prismatic instead. */
+export const TITHE = { cost: ECON.tithe.cost, pity: { rare: 10, epic: 40, prismatic: 100 }, epicPrismatic: 0.12 };
 
 /** The odds as they stand once pity is counted: the tier a pull lands on (a number 0-4), from three counters and a random number. */
 export function rollTier(since, r = Math.random()) {
   const p = TITHE.pity;
   if (since.prismatic + 1 >= p.prismatic) return 4;
-  if (since.epic + 1 >= p.epic) return r < 0.12 ? 4 : 3;
+  if (since.epic + 1 >= p.epic) return r < TITHE.epicPrismatic ? 4 : 3;
   const total = TIERS.reduce((a, t) => a + t.weight, 0);
   let x = r * total, tier = 0;
   for (let i = 0; i < TIERS.length; i++) { x -= TIERS[i].weight; if (x <= 0) { tier = i; break; } }
