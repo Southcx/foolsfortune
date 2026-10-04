@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE ECONOMY, MEASURED: what the cubes are doing this session, read from the ledger (src/progress/stats.js), never counted twice. Every cube
 // that comes out of something is a `cube.spill` (cubes.js: chest, dupe, jelly, zandatsu, crystal, lockheart), condensing a card is a
-// `cube.earn` with why `condense` (and selling to the folk, why `sell`), and every cube spent is a `cube.use.<why>` (tithe, and the shops to come). From those, cubes an hour
+// `cube.earn` with why `condense` (selling to the folk, why `sell`; busking, why `busk`), and every cube spent is a `cube.use.<why>` (tithe, and the shops to come). From those, cubes an hour
 // by source and by drain, beside what the table (progress/econ/table.js) says play should earn, so a faucet that runs away shows at once on the
 // F3 panel; scripts/economy.mjs simulates the same table offline.
 //
@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 import { PSYGUNS } from '../../tools/psygun/kinds.js';
+import { buskPay } from './livelihoods.js';
 
 /** A price named in minutes of ordinary play. */
 export const minutes = (n) => Math.round(n * ECON.perMinute);
@@ -27,7 +28,7 @@ export function rates(L) {
     if (k.startsWith(SPILL)) by.push([k.slice(SPILL.length), v / hours]);
     else if (k.startsWith(USE)) drains.push([k.slice(USE.length), v / hours]);
   }
-  for (const why of ['condense', 'sell']) if (s[`cube.src.${why}`]) by.push([why, s[`cube.src.${why}`] / hours]);
+  for (const why of ['condense', 'sell', 'busk']) if (s[`cube.src.${why}`]) by.push([why, s[`cube.src.${why}`] / hours]);
   by.sort((a, b) => b[1] - a[1]); drains.sort((a, b) => b[1] - a[1]);
   const inPerH = by.reduce((a, [, v]) => a + v, 0), outPerH = drains.reduce((a, [, v]) => a + v, 0);
   return { hours, inPerH, outPerH, net: inPerH - outPerH, by, drains, granted: s['cube.src.grant'] || 0, target: ECON.perMinute * 60 };
@@ -45,6 +46,17 @@ export function econLine(L) {
 /** The DEBUG profile's purse: `/grant [n]` puts n cubes (500 if unsaid) in their balance, so a shop or a Tithe can be tested without
  *  farming. STORY refuses it (the owner's split: STORY earns everything). Reported by an event and a rule in tracking.js. */
 export function installEconomy(game) {
+  // BUSKING (docs/ECONOMY.md, "The livelihoods"): a song played to its end at a stage pays by its score (livelihoods.js buskPay), less
+  // each time the same song is played again within the hour (the audience tires), into the purse as `busk`. The score is Wanda's
+  // (`rhythm.score`); what the log says of it is a tracking rule.
+  const heard = new Map(); // (track -> the play times it was heard at, this session)
+  game.events?.on('rhythm.score', (e) => {
+    if (e.by !== 'courier') return;
+    const now = game.ledger?.play || 0, times = (heard.get(e.track) || []).filter((t) => now - t < 3600);
+    const n = buskPay(e.minutes || 0, e.accuracy || 0, times.length);
+    heard.set(e.track, [...times, now]);
+    if (n > 0) game.cubes?.earn(n, 'busk');
+  });
   // (DEBUG: carry another kind of psygun: tools/psygun/kinds.js)
   game.chat?.add('psygun', {
     help: `DEBUG only: /psygun ${Object.keys(PSYGUNS).map((k) => k.slice(7)).join(' | ')} (another kind of psygun: its chambers and capacities)`,

@@ -34,7 +34,7 @@ finer its artistry, the bigger its share of him. *(Ruled)*
 
 **The Prince of Clay** is the most powerful of them, the main avatar of Kaolin Anagami and the truest picture of him: his
 personality, mannerisms, proclivities and philosophy. He is **playful, experimental, aloof, detached, witty, haughty, something
-of a brat, and wholly devoted to the act of creation.** In the concept art he stands tall and symmetrical, eyes lowered, with a
+of a brat, and wholly devoted to the act of creation.** Why he is so is in "The family", below. In the concept art he stands tall and symmetrical, eyes lowered, with a
 faint smile, under a headpiece that reads as crown, top hat and kiln chimney at once, with molten drip glaze just under its rim.
 He lives in a chateau on the thumb of the hand tower. *(Ruled: who he is and what he is like. Owner's notes: the look and the
 chateau.)* **He is "he", femboy-coded**: Lloyd de Saloum (*Dainana Ouji*) meets Tet (*No Game No Life*). *(Ruled, Round 39)*
@@ -63,8 +63,8 @@ figure. *(Ruled, Round 40)*
 | **the Court** | the finest porcelain, nearest the chateau: his favourite cups | by his nature, in worried whispers: is he overreaching, will it break, should he rest |
 | **the Prince of Clay** | the main avatar | himself |
 
-**The King and the Queen are two other Islands of Ego** *(ruled, R43)*: Magnus Ibrahim Manus and Entra Polearis (section 1, "The
-King and the Queen"). Porcelain and the Court still wait for the owner's models before they are developed.
+**The King and the Queen are two other Islands of Ego, and the Prince's parents** *(ruled, R43)*: Magnus Ibrahim Manus and Entra
+Polearis (section 1, "The King and the Queen" and "The family"). Porcelain and the Court still wait for the owner's models before they are developed.
 
 **The Pneuka Jar is his Magnum Opus.** Divine inspiration from **the System** came to him, and from it he made the Pneuka Jar: a
 vessel able to house **Players**, people like us outside the game world. *(Ruled)* (The spelling is **Pneuka**. *Pneuma* was an
@@ -249,7 +249,8 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
   with a lantern and a pail; a great dark golem carrying a lamp and a weight like a hand-bell; and the whale.
 - **His island, as drawn:** the lighthouse rises from a ship's prow, its lantern an hourglass with a flame inside, its gallery floored
   in black and white checks over a red-orange carpet, standing in a pale sea of mist and white coral.
-- **What he wants:** order. He hunts aberrant Figments hard, wherever they come from. He is the safe, stable, poor end of the economy:
+- **What he wants:** order. His lighthouse keeps the Leviathan-class Egregores at bay ("The lighthouse", below). He hunts aberrant
+  Figments hard, wherever they come from. He is the safe, stable, poor end of the economy:
   a lawful mind keeps few Wells, and keeps them shallow.
 
 **The Queen: Entra Polearis. Peak chaos, growth and abundance.**
@@ -264,7 +265,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
   wiry doll patterned in red; a mushroom-capped creature covered in eyes, dripping green; a tall faceless runner with a club; a small
   hooded pyramid with eyes and red drips.
-- **What she wants:** more. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
+- **What she wants:** more. The core feeling of chaos is hunger. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
 
 **What follows** *(Espada's, for the owner to veto)*
 - **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
@@ -273,30 +274,59 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Letty Marque is Magnus's** (the owner's suggestion, taken). A letter of marque was always issued by a sovereign: hers is the King's.
   She hunts bounties under his licence, and her pearl is his island.
 
-### The toxic symbiosis *(the owner's yes, R43; the numbers are Dovina's, `docs/ECONOMY.md`)*
+### The family *(ruled by the owner, R43)*
 
-**Chaos digs the crude up, and Law buys it.** Entra Polearis sells crude cheap: its Wells run deep with grief and dread, and abundance
-never values what it has too much of. Margarite buys it dear. The crude route runs from the Queen to the King, and the hauler (a
-Courier, in a sloop or a tanker) lives in between. Letty's bounties are mostly the Queen's strays, brought in under the King's marque
-and paid for by Margarite. So the Queen's island breeds both the riches and the strays, and the King pays to have both brought home.
+**The Prince of Clay is the son of the King and the Queen.** Kaolin Anagami grew up between Magnus Ibrahim Manus and Entra Polearis, and
+he is a cautionary tale about managing extreme parents.
 
-**How it sits with Magnus.** He likes a thing where it belongs, and to him the Queen's sorrow belongs in his lamp. **The lighthouse
-that keeps every ship safe is lit with her grief.** That is the joke at the heart of Law, and he will not laugh at it: the light that
-shows the way through the crude sea burns the crude, and order is fuelled by the very mess it disapproves of. The hourglass inside his
-lantern (the concept art) says the rest: Law measures out sorrow by the grain and burns it by the hour. He hunts what she breeds and
-buys what she spills, and he never says her name.
+**The map is a circle.** Entra Polearis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
+eating the ambient Emocean like wildfire. **The core feeling of chaos is hunger.** (It is one of the five aspects already: the Queen
+is its throne.) Magnus orbits with her, feeding off what she throws out and cleaning up after her, the two of them a binary circling
+the rim. **Kaolin is the centre: an oasis**, the still place between them. Anagami Island repeats the shape in miniature: an oasis at
+the heart of the Dunes, with Old Grog fishing at its edge.
+
+**The Queen is chaos, not only grief.** Every feeling at once, all of them pegged high: elation and fury and longing and dread, swinging
+without warning. (The owner's references are mania and emotional volatility. The game shows it and never names it: no clinical words
+in player text.)
+
+**The Prince, explained.** The aloofness, the detachment, the jokes, the haughty brat: that is the shield a child grows between a
+mother who overflows and a father who burns what overflows. Underneath he cares a great deal, and he is stressed, and there are cracks
+under the glaze. Kaolin is porcelain: clay fired hotter than any other until it turns fine, luminous, nearly translucent, and brittle.
+His mother's clay and his father's fire.
+- **Read this way** *(Espada's)*: the boy who grew up between a flood and a furnace built the one thing that could carry raw feeling
+  without breaking or burning. The Pneuka Jar is a child's answer to his parents.
+- The Court's worried whispers are the self-doubt he lets in too deep; Saggar's kiln wisdom ("what's made too fast cracks in the
+  firing") is about him, whether she knows it or not.
+- *For the stories:* never a villain parent and a victim child. Both parents love him in their own extreme ways, and the lesson is
+  in how he learns to hold himself together, and when he lets the Courier help.
+
+### The lighthouse and the toxic symbiosis *(the owner, R43; the numbers are Dovina's, `docs/ECONOMY.md`)*
+
+**The lighthouse is a weapon.** Margarite's light is the one thing that keeps the deepest horrors of the Emocean, the **Leviathan-class
+Egregores**, at bay. It has to be fed, and it burns crude. If it goes out, they come.
+
+**So Chaos digs the crude up, and Law buys it.** Entra Polearis sells crude cheap: its Wells run deep with every feeling at full, and
+abundance never values what it has too much of. Margarite buys it dear, because it must. The crude route runs from the Queen to the
+King, and the hauler (a Courier, in a sloop or a tanker) lives in between. Letty's bounties are mostly the Queen's strays, brought in
+under the King's marque and paid for by Margarite. The Queen's island breeds both the riches and the strays, and the King pays to have
+both brought home.
+
+**How it sits with Magnus.** He likes a thing where it belongs, and to him the Queen's overflow belongs in his lamp. **The light that
+keeps the whole sea safe is lit with her feelings.** He did not choose that; the Leviathans chose it for him. Law looks rigid because it
+is standing guard. The hourglass inside his lantern (the concept art): Law measures out feeling by the grain and burns it by the hour
+so that everyone else can sleep. He hunts what she breeds and buys what she spills, and he never says her name.
 
 **How it sits with the Queen.** She lets things go; it is what chaos does. Her strays wander off and she does not call them back. That
-someone else gathers them up and pays for them is, to her, simply what the world is for.
+someone else gathers them up, pays for them and keeps the dark away with them is, to her, simply what the world is for.
 
-**Why it is toxic, both ways.** Law needs Chaos's grief for its fuel and its safety, so a calmer Queen would put out the King's light.
-Chaos needs Law to buy what it cannot hold, so a King who stopped buying would leave the Queen drowning in her own Wells. Neither can
-afford for the other to get well. *For the stories:* the rigid depend on the mess they tidy, and the messy depend on being tidied up
-after; growing up is noticing which one you are being.
+**Why it is toxic, both ways.** Law needs Chaos's overflow for its fuel and for everyone's safety, so a calmer Queen would put out the
+King's light. Chaos needs Law to take what it cannot hold, so a King who stopped buying would leave the Queen drowning in her own Wells.
+Neither can afford for the other to get well, and their son lives in the middle of it. *For the stories:* the rigid depend on the mess
+they tidy, the messy depend on being tidied up after; growing up is noticing which one you are being, and choosing to be the oasis.
 
-**The middle, which follows** *(Espada's)*: Kaolin Anagami lives for making, and his magnum opus is the Pneuka Jar, the only vessel that
-carries crude safely and the only refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the
-middle (Dovina's table), and the Prince sells to neither side, because every Courier both sides need came out of his kiln.
+**The middle** *(Espada's)*: the Prince's magnum opus, the Pneuka Jar, is the only vessel that carries crude safely and the only
+refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the middle (Dovina's table), and the
+Prince sells to neither side: every Courier both of his parents need came out of his kiln.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop

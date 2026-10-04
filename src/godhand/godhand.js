@@ -699,7 +699,7 @@ export class GodMode {
     V.flash = 1;
     this.cam.shake = Math.max(this.cam.shake, 0.5);
     this.addCrack(from, amount);
-    sfx.vesselHit(Math.min(1.5, amount / 10));
+    sfx.jarHit(Math.min(1.5, amount / 10));
     this.game.fx.impact?.(V.pos.clone().setY(V.pos.y + 0.7), UP, { sparks: 10, dust: 8 });
     this.game.events?.emit('jar.hit', { kind, amount });
     if (V.hp <= 0) this.shatter();

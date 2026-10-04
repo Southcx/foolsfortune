@@ -23,6 +23,7 @@
 //   const B = new Band(ctx, { dry, pump, verb, echo })      B.koto(t, dur, midi, vel)  ...  (dur in seconds)
 // ---------------------------------------------------------------------------------------
 import { WorldBand } from './world.js';
+import { RockBand } from './rock.js';
 
 export const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -422,4 +423,5 @@ export class Band {
 }
 
 // the wider band (music/world.js): the sitar, the steel pan, the concertina and the rest, played like the band's own
-for (const key of Object.getOwnPropertyNames(WorldBand.prototype)) if (key !== 'constructor') Band.prototype[key] = WorldBand.prototype[key];
+// and the rock rig (music/rock.js): the overture's power chords, lead, bass and kit
+for (const W of [WorldBand, RockBand]) for (const key of Object.getOwnPropertyNames(W.prototype)) if (key !== 'constructor') Band.prototype[key] = W.prototype[key];

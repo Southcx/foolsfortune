@@ -40,7 +40,7 @@ export class MusicPlayer {
   follow(score) {
     score = this.pick || score;
     if (this.arr.finished && this.arr.finished !== score) this.arr.finished = null;
-    if (this.on && score?.arrange) { if (this.alive) this.stop(1.2); this.arr.follow(score); return; }
+    if (this.on && score?.arrange) { if (this.alive) this.stop(score.cut ? 0.15 : 1.2); this.arr.follow(score); return; }
     this.arr.follow(null);
     const want = this.on && score;
     if (want && (!this.alive || this.score !== score)) { if (this.alive) this.stop(1.5); else this.play(score); }

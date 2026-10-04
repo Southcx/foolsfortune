@@ -9,7 +9,8 @@
 //
 //   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageH) -> cubes
 //   demand(island, kind, day, sold) -> multiplier      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
-//   fuel(distance) -> cubes
+//   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
+//   wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 
@@ -46,4 +47,35 @@ export function haulProfit({ buy, sell, units, worth, distance, failed = 0 }) {
   let got = 0;
   for (let i = 0; i < Math.round(kept); i++) got += worth * Math.max(0, sell - i * ECON.island.glut);
   return Math.round(got - units * worth * buy - fuel(distance));
+}
+
+/** The chance a failed stage spills crude of `grade`, `units` aboard (cubes never spill). */
+export const spillChance = (grade, units, hull = 1) => Math.min(1, ECON.crude.spill * (ECON.crude.grades[grade]?.volatility ?? 1) * Math.sqrt(units / 10) * hull);
+
+/** A crude run: a ship's hold of `grade` bought at `buy` and sold at `sell` (demand multipliers), `distance` away, `failed` stages
+ *  failed on the way (each may spill the whole hold, by spillChance). The expected profit, fuel paid. */
+export function crudeRun({ ship = 'tanker', grade = 'grief', buy = 0.8, sell = 1.3, distance = 4, failed = 0 }) {
+  const S = ECON.ships[ship], G = ECON.crude.grades[grade];
+  if (!S?.carries.includes('crude') || !G) return 0;
+  const units = S.hold, worth = M(G.worth), keep = Math.pow(1 - spillChance(grade, units, S.hull ?? 1), failed);
+  let got = 0;
+  for (let i = 0; i < units; i++) got += worth * Math.max(0, sell - i * ECON.crude.glut);
+  return Math.round(got * keep - units * worth * buy - fuel(distance) * S.slow);
+}
+
+/** What a Well yields at its `fill` (0..1). */
+export const wellYield = (fill) => Math.max(ECON.wellFill.floor, Math.max(0, Math.min(1, fill)));
+/** A Well's fill after `runs` runs and `hours` of rest. */
+export const drawWell = (fill, runs = 0, hours = 0) => Math.max(0, Math.min(1, fill - runs * ECON.wellFill.perRun + hours * ECON.wellFill.refillPerH));
+
+/** A Well run on `island` (ECON.islands) by a diver of `skill` (0 poor .. 1 masterful): what it pays when it is finished, how long it
+ *  takes (five minutes a floor, a weaker diver turning back sooner), and the chance it ends early with nothing (a floor's risk, halved
+ *  by skill, compounded over the floors run). The expected pay is pay x (1 - risk). */
+export function islandRun(island, skill = 0.5) {
+  const I = ECON.islands[island], W = ECON.well;
+  const floors = Math.max(1, Math.round(I.floors * (0.6 + 0.4 * skill))), perFloorRisk = I.risk * (1.5 - skill);
+  let v = 0;
+  for (let f = 0; f < floors; f++) v += W.perFloor * Math.pow(I.deeper, f);
+  v += (skill > 0.6 ? I.foes : 0) * W.foe * W.perFloor * Math.pow(I.deeper, floors - 1);
+  return { pay: M(v), minutes: floors * 5, risk: 1 - Math.pow(1 - perFloorRisk, floors) };
 }

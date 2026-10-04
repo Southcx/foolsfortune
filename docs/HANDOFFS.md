@@ -50,6 +50,14 @@ rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's
 - The build-up now reads your `TYPES` (`buildAt`, `buildDur`, `impact.poise`) and `BUILD.drainPerSec`; the provisional numbers are gone.
   Driven headless: doubt after 3 Ego blows (6 s), charm after 3 (4 s), blind after 4 (5 s), confusion after 2 (6 s).
 
+**2026-10-04, from Wanda (R43: D5)**
+- **The rhythm mode is built** (`src/music/rhythm/`): any arranged track, three levels (`light` on the beat, `steady` the eighths,
+  `full` every note a quarter-beat apart or more). `rhythm.score { track, title, level, accuracy (0..1), combo (the best run), perfect,
+  great, good, miss, full (no miss), by }` on a finished song; `rhythm.start`, `rhythm.quit`. Grades are StepMania's windows (45, 90,
+  135 ms) worth 1, 0.75, 0.4 and 0. Ledger keys as it stands (tracking.js): `rhythm.start`, `rhythm.played`, `rhythm.played.<level>`,
+  `rhythm.full`, `rhythm.quit`, highs `rhythm.combo` and `rhythm.best.<track>.<level>` (percent). Yours: the score's worth and the
+  busking pay, and any achievements. The stage's place is Petra's.
+
 _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
@@ -73,6 +81,35 @@ and a status table. The table gives each status a player word and log lines for 
 brittle (armour break), doubt, calm (pacified, the reprogram's word kept), charm, taunt, misled, blind, phantom, confusion, tear, and
 Annihilation. When a status's event exists, its rule in `tracking.js` takes those lines (tell me the event names and I'll write the
 rules' strings). For the glossary: "brittle" (not "crack", which is the vessel's), and "tear" as a homonym kept on purpose.
+
+**2026-10-04, from Wanda (R43: D5, the overture, the Lockheart's cues, Round 40, B5)**
+- **The rhythm mode wants a stage in a room** (D5; `game.rhythm`, `src/music/rhythm/`). F at it calls `game.rhythm.begin(trackId, level)`
+  (`TRACKS` from `rhythm.js` for a menu; levels `light`, `steady`, `full`). It takes the digit keys itself (a capture listener: the field
+  never sees 1 to 0 while it plays) and Esc ends it; the place's music stands aside (`choose.js`). Two things are yours: hold the
+  Courier still while `game.rhythm.active` (as the dialogue does), and the room. `/rhythm [track] [level]` is a director's command for
+  now (keep or drop it when the stage stands); `/rhythm offset <ms>` sets the judging's offset.
+- **B5, one line in `creatures.strike`:** beside `g.vfx?.hit({ ..., type })`, add `sfx.damage?.(type, Math.min(1, power))` (the blow's
+  type heard over its hit, `src/audio/damage.js`). The same in `breakables.damage` and `clappers.hit` if they take a type. And when a
+  creature's mind crosses into Prismatic, `sfx.prismatic?.(k)` (k 0..1, how far), or an event (`creature.mind { kind, state, by }`)
+  and I'll give it a rule. Annihilation already sounds (`combat.annihilate`, `src/audio/cues.js`).
+- **Round 40's sounds are in**, through the event table (`src/audio/cues.js`): `vessel.shield`, `vessel.shieldbreak`, `courier.shatter`,
+  `courier.reform`, `vessel.refire`, `lockheart.ultimate.end`. They sit over your placeholders (the cracks and the burst at the
+  shatter fit under them); drop a placeholder where it now doubles, if you hear one.
+- **The Opening has its cue** (`src/music/lockheart.js`, chosen in `choose.js` from `game.ultimate.phase` and the coffin's mode): its
+  mode's cue from the invocation through the wheel, its landing cut in when the wheel lands. `ultimate.js`'s `music.duck(12, 0.12)` at
+  `begin` now only takes the place's music out of the way, which is still right.
+- The arranger learned `then` (a score hands on to the next on the bar line) and `lead`, `fadeIn`, `cut` (a cue that must land on a
+  moment); `src/music/rock.js` is the band's rock rig. Build, check, stress (below), driven headless.
+- **Perf, for the gate:** draw calls, triangles, tick and draw are unchanged. The heap reads 270 to 277 MB here against the 235
+  baseline (over its 12%), but the default branch itself reads 250 to 269 on this machine (four runs), so the measure moves about 20 MB
+  run to run. Bisected without a culprit: the branch with the rhythm mode not imported still read 271, and nothing new allocates at
+  boot (a note chart is built only on `begin`). It may cost about 10 MB, unexplained; please measure it on yours.
+
+**2026-10-04, from Wanda (R42)**
+- Merged Phase 1. Renamed, callers in the same push: `sfx.vesselHit` → `sfx.jarHit` (`src/godhand/godhand.js`), `sfx.surfLoop` →
+  `sfx.skiffLoop` (`src/courier/skiff/skiff.js`); the jar's comments in `src/audio/godhand.js` say "jar". The two GLOSSARY rows that
+  name them as still to rename can go, and ARCHITECTURE's "audio.js split into audio/ (Wanda, under way)" has been done since R37.
+  Check OK (nothing in my lane among the baselined findings), build, stress 0, perf OK.
 
 **2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
 - The plan is `docs/plans/SYSTEMS.md`: five phases (A: the numbers made true; B: damage types, mental state, EmO, statuses, Luck,
@@ -162,35 +199,19 @@ island (Margarite, an island of nacre), so Clayese's bells and lids may not be h
     field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
     busking pay.
 
-**2026-10-04, from Petra (R42, Phase 2: the event names)**
-- Every bus event is `domain.verb` now, named for the ledger key it feeds (the table is in Dovina's section). One word changed in your
-  lane: `src/audio/voice/voice.js` listens for `achievement.unlock` (was `achievement`); `rank.up` is unchanged. Your cue table
-  (`src/audio/cues.js`) had no old names. If you hang sounds on moves later, the names are `move.jump`, `move.land`, `move.dash`,
-  `move.roll`, `kick.hit`, `shot.fire`, `prop.break`, `courier.impulse`...
+**2026-10-04, from Petra: R43 merged and wired (v56)**
+- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
+  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
+- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
+- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
+  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
+- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
+- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
 
-**2026-10-04, from Petra (R42, Phase 1)**
-- Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
-  before anything else**; git follows the moves (rename detection), and the old path → new path table is the move map at the end of
-  `docs/ARCHITECTURE.md`. Then `npm run check` (it now runs in the gate: it fails only on new debt) and the words in `docs/GLOSSARY.md`.
-- Your files moved: `src/audio.js` → `src/audio/sfx.js`, `src/system/voice.js` → `src/audio/voice/voice.js`, `src/system/speech/` →
-  `src/audio/voice/speech/`. Mechanical edits made in your lane, so the build would stand: `src/music/choose.js` asks
-  `techs.get('skiff')` (the tech's id was `surfer`); `src/audio/voice/voice.js` asks `system.lendAll` (was `system.lab`); one comment
-  in `src/audio/moves.js`.
-- Yours to rename when you next pass: `sfx.vesselHit` → `jarHit` (it is the god hand's jar; the Courier's own `vesselCrack`,
-  `vesselMend` keep "vessel", which is right), and `sfx.surfLoop` → `skiffLoop`. The callers are `src/godhand/godhand.js` and
-  `src/courier/skiff/skiff.js`: change them in the same push and say so. The comments in `src/audio/godhand.js` say "vessel" for the jar.
+**Open (R43):** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the per-blow damage
+sound and the Prismatic tip wait on Petra's line in `creatures.strike` (her section). The Crucibelle's voices stay open.
 
-**2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
-- New moments that want their own sounds (placeholders in use): the Courier SHATTERING (`courier.shatter`: now `vesselCrack` repeated
-  and `shatter(3, 1, 'porcelain')`), being made whole (`courier.reform`), the shield taking a blow and breaking (`vessel.shield`,
-  `vessel.shieldbreak`), the kiln's MEND (`vessel.refire`), and the Lockheart's OPENING, the ultimate (`lockheart.ultimate`, then
-  `lockheart.ultimate.end`; now `coffin`, `crystalStrike` per key, `geyser`, `crystalSweet` + `chestBurst(4)` on the landing). The
-  opening is the owner's "visual flex": it would love a cue of its own (an aeon's arrival).
-- The crystal sounds are louder (out gains 0.8 / 0.75 / 0.6) and the music ducks under them (`music.duck(sec, to)` takes a depth now).
-
-(Round 39's notes are done: deleted. The Crucibelle's voices stay open (the wider band in `src/music/world.js` has a harp, a sitar, a
-steel pan and more for its instruments), and leaning the workshop's music in at the kiln (`kiln.open`, `kiln.close`) is for a later
-round.)
+(Dovina's systems-plan note (B5, D5) and Petra's Round 40 note are done: deleted.)
 
 ## Calissa (Art)
 
@@ -208,6 +229,17 @@ feathered tricorn, made of nacre (shell-pale, a rainbow film where the light cat
   gold, metal and glow as `kSeam`) by `uMend`, and the Lachryma core fades by `1 - uMend`; the cells still drop out as `uDmg` falls, so the
   last of the gold goes with the last of the crack (~40 s from a full crack). It is the plain version, to give you a working hook:
   refine the look there (a shimmer, how the gold arrives) as you like; nothing else reads `uMend`.
+
+**2026-10-04, from Wanda (R43)**
+- **The overture's storyboard** (the owner: "work with Calissa to storyboard an extended opening cinematic / in-game trailer"): the
+  cue sheet and a shot-by-shot proposal went to you by message. The music is `src/music/overture.js`, "Fortune Favours the Fool",
+  1:21.6 to the logo's strike. Ask for any re-cut of the music to the picture.
+- **The rhythm mode's highway is a placeholder** (`src/music/rhythm/highway.js`, a canvas over the scene): ten lanes in two hands of five,
+  in DEGREE_COLOR, notes falling to a line that glows with the combo, a lane lit white on a perfect, its colour on a great, dim on a
+  good, dark on a miss. No words or numbers, by the house rule. Its look is yours to remake (move it to `src/ui/` if you like); its
+  interface is `show(chart)`, `draw(t, { combo, progress, dt })`, `hit(lane, grade)`, `hide()`.
+- B5's sound is built to your looks (`src/audio/damage.js`): Impact a dry fired-clay crack, Ego a glass chime in a fifth, Influence a
+  warm swell panned across, Illusion a shimmer bent both ways and heard twice, Delirium a smear sliding down with bubbles.
 
 **2026-10-04, from Petra: the temper is fed, and four new statuses**
 - Every creature's `mind` and `emo` now reach `game.temper.set` each frame, and the jelly adds `temper.look`'s glow to its emissive and
@@ -398,9 +430,19 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
+**2026-10-04, Espada**: Petra's busking placeholder is worded in the robotic register: "Busking tip: 12 cubes." (`tracking.js`).
+
 **2026-10-04, Espada: the fight's statuses are worded** (Petra's note read). In `tracking.js`, as strings: "The {kind} resists {status}.",
 "Annihilation: Impact meets Delirium on the {kind}.", and the stun as "The {kind} is stunned." (the robotic register). The table and the
 one pattern for every status are in LORE.md section 1.
+
+**2026-10-04, from Petra: one placeholder line to word**
+- Busking's tip (`tracking.js`, `cube.earn` with `why: 'busk'`): "The crowd tips you N cubes." Placeholder; yours to reword.
+
+**2026-10-04, from Petra: words for the fight's new statuses**
+- The four statuses a damage type builds are **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium).
+  Two placeholder lines in `tracking.js` are yours: a resisted status ("The {kind} shrugs it off.") and an annihilation ("The {kind}
+  comes apart at both ends of itself.").
 
 **2026-10-04, from Petra (Phase A, A10 and A11)**
 - New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.

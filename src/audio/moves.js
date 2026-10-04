@@ -2,7 +2,7 @@
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 export class MoveSounds {
   /** The skiff's hiss and hum: wind over sand and the emitter. Returns { set(speedFrac, boost, air), stop() }. */
-  surfLoop() {
+  skiffLoop() {
     if (!this.ok()) return null;
     const ctx = this.ctx;
     const src = ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;

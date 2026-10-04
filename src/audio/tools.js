@@ -88,4 +88,13 @@ export class ToolSounds {
     this.noise(t, 0.45, { type: 'bandpass', f0: 500, f1: 1800, q: 1.4, gain: 0.5, attack: 0.25, dest: d });
     this.tone(t + 0.1, 0.45, { f0: 440, f1: 880, gain: 0.06, dest: d });
   }
+
+  /** The world coming back after the Opening (lockheart.ultimate.end): time unstuck (a tape spinning up), a rush of air, a low boom. */
+  ultimateEnd() {
+    if (!this.ok() || !this.allow('ultimateEnd', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.3, 0.5);
+    this.noise(t, 0.5, { type: 'bandpass', f0: 200, f1: 4000, q: 1.2, gain: 0.5, attack: 0.4, dest: d });
+    this.tone(t, 0.5, { f0: 40, f1: 160, type: 'sawtooth', gain: 0.06, dest: d });
+    this.tone(t + 0.45, 0.6, { f0: 70, f1: 38, gain: 0.5, dest: d });
+  }
 }
