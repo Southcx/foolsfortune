@@ -267,6 +267,17 @@ Law pays steadiness and Chaos pays mastery. Entra's best is the one place a live
 diver who still loses a third of their runs. Each island's Wells yield their own grades of crude (Margarite mirth and wonder, Entra
 grief and dread) and its commissions ask their own classes of Figment (Margarite Guppies and Barracudas, Entra up to Whales).
 
+**The toxic symbiosis** (the owner, 2026-10-04). Chaos digs crude up and Law buys it, and the hauler lives in between:
+- **Each island prices crude at its own place in the demand band** (`ECON.islands[i].crude`): Entra Polearis low (it sells cheap),
+  Margarite high (the King buys dear), Anagami in the middle, each swinging slowly about its place.
+- **The crude route runs Entra to Margarite.** A clean tanker run of dread, at a distance of 6, pays −0.73× to 1.09× the aim over a
+  fortnight: the two prices drift on their own clocks and the fuel eats a thin spread, so knowing *when* to sail is the skill.
+- **Bounties are the other half** (Letty Marque, under the King's marque). A named stray, mostly bred in Entra Polearis, brought in for
+  Margarite, pays 2.5× a commission of its class, less Letty's 20% (`ECON.bounty`; `bountyPay`): 48 cubes for a Guppy, 2,880 for a
+  Leviathan.
+
+The Queen's island breeds the strays and the riches, and the King's pays to have both brought in.
+
 **Cogitomaps.** A Well is a Lachryma distortion, and it changes over time. A Cogitomap is a map of one Well as it was when it was charted,
 so it is **a ticket to a seeded run of that Well**: the same layout, the same rewards. The Courier charts it, and **Spellscription**
 copies a high-quality Cogitomap. Cogitomaps can be sold, traded, and hauled to the island that wants that Well.

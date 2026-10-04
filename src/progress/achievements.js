@@ -39,7 +39,7 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Lockheart'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Folk'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
@@ -425,6 +425,14 @@ export function buildAchievements(game) {
   C('dp3', 'angle', 'The Deep', 3, 'count', 'Tides Turned', 'Watch the tide turn 20 times.', 'angle.tide', 20);
 
   // ---------------------------------------------------------------- BATTLE (creatures/jelly/slipjelly.js; stun.js; the Veritome's flash and reprogramming: veritome/)
+  // the five damage types, the statuses they build, the mental state and annihilation (progress/combat/: phase B)
+  C('ff1', 'battle', 'The Five Forces', 1, 'count', 'Under the Influence', 'Put a status on a creature by building it up.', 'status.applied', 1);
+  F('ff2', 'battle', 'The Five Forces', 3, 'collect', 'All Five Forces', 'Build up every status: stun, doubt, charm, blind and confusion.',
+    (L) => ['stun', 'doubt', 'charm', 'blind', 'confusion'].filter((k) => L.get(`status.${k}`) > 0).length, 5);
+  C('ff3', 'battle', 'The Five Forces', 2, 'mechanic', 'Liquefaction', 'Press a creature until its mind runs Prismatic.', 'creature.mind.prismatic', 1);
+  C('ff4', 'battle', 'The Five Forces', 3, 'mechanic', 'Both Ends of the Line', 'Annihilate: Impact on the confused, or Delirium on the stunned.', 'combat.annihilate', 1);
+  C('ff5', 'battle', 'The Five Forces', 5, 'endure', 'Law and Chaos', 'Annihilate 50 times.', 'combat.annihilate', 50, { title: 'Annihilator' });
+  C('ff6', 'battle', 'The Five Forces', 2, 'count', 'Stone Wall', 'Have a status shrugged off by a hardened mind 10 times (it is learning).', 'status.resisted', 10);
   C('jl1', 'battle', 'Slip Jellies', 1, 'count', 'Pop!', 'Burst a slip jelly.', 'jelly.burst', 1);
   C('jl2', 'battle', 'Slip Jellies', 2, 'count', 'Jelly Season', 'Burst 25 slip jellies.', 'jelly.burst', 25);
   C('jl3', 'battle', 'Slip Jellies', 4, 'endure', 'Slipmonger', 'Burst 150 slip jellies.', 'jelly.burst', 150, { title: 'Slipmonger' });

@@ -10,7 +10,7 @@
 //   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageH) -> cubes
 //   demand(island, kind, day, sold) -> multiplier      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
 //   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
-//   wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
+//   wellSeed(wellId, day) -> uint32 (the Well as it is that day: a Cogitomap carries it)      wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 
@@ -33,8 +33,11 @@ const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h
 /** What `island` pays for `kind` on `day` (days of play), as a multiplier of its worth, after `sold` units glutted it. */
 export function demand(island, kind, day = 0, sold = 0) {
   const I = ECON.island, k = hash(`${island}:${kind}`), period = I.periodDays[0] + k * (I.periodDays[1] - I.periodDays[0]);
-  const wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
-  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * I.glut);
+  let wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
+  // (crude: the island's own place in the band, the wave a narrow swing about it: Entra sells it cheap, Margarite buys it dear)
+  const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : undefined;
+  if (centre !== undefined) wave = Math.max(0, Math.min(1, centre + (wave - 0.5) * 0.4));
+  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * (ECON.crude.grades[kind] ? ECON.crude.glut : I.glut));
 }
 
 /** The fuel for a hop of `distance` units across the Emocean. */
@@ -79,3 +82,7 @@ export function islandRun(island, skill = 0.5) {
   v += (skill > 0.6 ? I.foes : 0) * W.foe * W.perFloor * Math.pow(I.deeper, floors - 1);
   return { pay: M(v), minutes: floors * 5, risk: 1 - Math.pow(1 - perFloorRisk, floors) };
 }
+
+/** The seed of a Well on a given day of play: a Well is a distortion that drifts, so it is a new layout each day, and a Cogitomap that
+ *  carries `{ well, day }` is a ticket back to this one (docs/plans/SLICE.md). */
+export const wellSeed = (wellId, day = 0) => Math.floor(hash(`well:${wellId}:${Math.floor(day)}`) * 4294967296) >>> 0;
