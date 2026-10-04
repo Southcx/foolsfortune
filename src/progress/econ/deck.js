@@ -12,6 +12,8 @@
 //
 //   deckChance(n, drawn) -> 0..1      deckHit(n, drawn, r?) -> bool      nextOfDeck(pool, has, r?) -> one of pool
 //   deckMean(n) -> (n + 1) / 2        (a deck of n <= 1 always hits)
+//   deckDraw(ledger, key, n, r?) -> bool   one draw from the deck named `key`, its state kept in the ledger (counters only go up, so the
+//                                         draws are a counter, `<key>.draws`, and the last hit a record of where it fell, `<key>.hit`)
 // ---------------------------------------------------------------------------------------
 
 /** The chance the next draw from a deck of n hits, `drawn` cards after its last hit. */
@@ -29,4 +31,14 @@ export function nextOfDeck(pool, has, r = Math.random()) {
   const fresh = pool.filter((x) => !has(x));
   const from = fresh.length ? fresh : pool;
   return from[Math.min(from.length - 1, Math.floor(r * from.length))];
+}
+
+/** One draw from a deck whose state lives in the ledger (stats.js), as the Tithe's pity does: `<key>.draws` counts every draw and the
+ *  record `<key>.hit` holds the draw on which it last hit, so the cards drawn since are the difference. */
+export function deckDraw(L, key, n, r = Math.random()) {
+  const draws = L.get(`${key}.draws`), drawn = draws - (L.best(`${key}.hit`) || 0);
+  const hit = deckHit(n, drawn, r);
+  L.inc(`${key}.draws`);
+  if (hit) L.hi(`${key}.hit`, draws + 1);
+  return hit;
 }
