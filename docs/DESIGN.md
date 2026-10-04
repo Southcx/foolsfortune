@@ -497,3 +497,67 @@ press (hopper, igniter, crucible: the owner's concept art) presses them to chang
 **Still to define:** five damage types; a full suite of emotional statuses and what each does; the six (+1) domains, mostly for the
 god hand. The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do,
 never do the skill for them.
+
+---
+
+## 10. Mined from the design document v0.1 (the owner's, given 2026-10-04)
+
+The v0.1 document describes a different game: real-time grid tactics, with a party of Contractors run by FFXII-style Gambits, a Ship
+for a hub and Bounties. Its systems are mined here; its combat model is not. Each item is marked **keep** (fits as written), **adapt**
+(fits once changed to this game), **hold** (later, or the owner's call) or **cut** (contradicts a rule of this game).
+
+**Damage and states**
+- **Five damage types on a Law–Chaos line** (keep): Impact (lawful, physical), Ego (lawful, mental), Influence (neutral, social),
+  Illusion (chaotic, perceptual), Delirium (chaotic, entropic). Two strong ideas come with them:
+  - **Annihilation**: Impact and Delirium, the two ends, amplify each other on a target already afflicted by the other.
+  - **The status a type builds**: enough of one type applies its status (Impact: stun, slow, armour break; Ego: doubt, pacified;
+    Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear).
+
+  *Adapt*: in an action game the type must be read off the tool in hand, so each tool deals a type (a proposal to settle). Two
+  repairs are needed:
+  - The trump list is lopsided: nothing beats Impact or Delirium, and Ego loses to two types. It is to be made a closed cycle.
+  - "Delirium scales with all attributes plus Luck" fits the Lockheart.
+- **Mental state, Stoic → Resolved → Balanced → Fluid → Prismatic** (keep): how open a creature is to statuses (and to buffs). It is
+  the lore's solid–liquid motif as a number, and it already names the chest tier. It is the base for the emotional statuses.
+- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought. Its Lachryma yield peaks in an optimal band;
+  past the band it enrages, and Soothe lowers it. This is the bridge to catching and conversion: catch or harvest in the band.
+
+**Progression**
+- **Seven Vessoul skills**: Ouranurgy (displacement), Manifestation, Spellcasting (glyph weaving), Divination, Psychokinesis, Possession,
+  Alteration (adapt). The god hand's arts already map onto them: Telekinesis to Psychokinesis, Manifest to Manifestation, Swell and
+  Wring to Alteration, the survey to Divination. *Open: are these the "six (+1) domains"?*
+- **Skill levels to 99 by EXP, and "The World" at all seven maxed** (adapt): OSRS levels, in line with the Fool's Journey. *Adapt to
+  the pillar*: EXP comes from doing the skill well (a clean strike, a perfect pitch, a typed macro), so practice and competence drive
+  the level together.
+- **Achievements unlock specialised abilities, passives, spells, cosmetics, titles and lore** (keep): the owner's standing rule,
+  written here first.
+- **Spell mastery by use, at 10 / 50 / 200 / 500 casts** (keep): the arts' variants already do this.
+- **Luck rises from statistically unlikely events, good or bad** (keep): a ledger predicate over rare outcomes (a prismatic, a near
+  miss, a critical, a Lockheart jackpot), so it is retroactive like the achievements. It sways chance only, never a skill.
+- **Soul Alchemy: eight attributes** (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience; Luck apart),
+  raised by pressing materials at the Shrine (adapt):
+  - Each material has a primary gain and side effects as trade-offs, and hidden combinations go into a "Grimoire of Echoes".
+  - *Adapt*: the materials' hue and saturation (the owner's spirit press) carry the colour theory.
+  - *Cut*: any attribute that does a skill for the player ("Perception: accuracy of ranged abilities" is aim assist).
+
+**World**
+- **Figment classes, by sea**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep).
+- **Traits as tags revealed by reading** (keep): Armored, Pack Hunter, Volatile Demise. This is the Veritome's bestiary.
+- **Wells as dungeons with Etrian Odyssey cartography** (keep): the Dreamvane and Veritome mapping skill has its stage. Shortcuts are
+  opened on later runs, and FOEs patrol (strong Figments to avoid or take on).
+- **Overflow converts to crystallised Lachryma at 20%, up to 50% with progression** (adapt): today the overflow goes to the Lockheart
+  at ×0.8. This rate is the Lockheart's conversion mode.
+- **Defeat costs a share of the cubes** (hold): today "nothing is lost but the place".
+
+**Held: a different game, or later**
+- Contractors (twenty classes, one per Major Arcana; Gambits; affinity; permadeath; LLM personalities).
+- The Ship, Bounties, Psychic Storms.
+- The grid and the Metronome's beats. (The Crucibelle's beat is the one place a beat lives today. A global beat would touch the core
+  movement, which is the gold standard.)
+
+**Cut**
+- The post-battle report screen and level-up notifications: the log is the only text feedback.
+
+**Of note**
+- The seven Psy-Tool families map onto today's tools: Psyguns, the Psygun; Psycasters, the Sondelass; Dreamcatcher staves, the Dreamvane;
+  Tomes, the Veritome; Bells, the Crucibelle; Paintbrushes, the Soul Brush. Clocks have no tool: the Lockheart took their place.
