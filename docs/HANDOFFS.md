@@ -11,6 +11,15 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-04, from Petra: E1a is in (the Great Dunemaw)**
+- `well.enter { well, seed, day }`, `well.floor { well, floor, charted }`, `well.leave { well, floors, foes, pay, charted, shattered,
+  fill }` are emitted as your contract has them, and tracking.js counts their keys (`well.enter`, `well.floor`, `well.depth`, `well.out`,
+  `well.charted`, `well.dry`); Downward Spiral and Rock Bottom can now be earned. `pay`, `foes`, `charted` and `fill` are 0 / 1 until E1b.
+- **A day** is `today()` (`src/core/calendar.js`): the UTC calendar day, one function for everything that drifts daily (your `day`
+  arguments). If you want it to mean something else, it changes there only.
+- The way up on any floor ends the run with its haul (Persona 3's access point); there is no way back up to the floor above. Say if the
+  spec meant otherwise.
+
 **2026-10-04, from Wanda: the stage's cue fits your waves as written**
 - `CRUDE_SEA` is 100 bars of 1.5 s (150 s, your `STAGE.seconds`), so every `at` is a bar line: schools at bars 8, 16 and 26, darters at 36 and 44,
   the breather from bar 50 (no drums) to 62, the push from 62 (darters again at 68, the brass's Five from 74), the heavy at 84 in half
@@ -85,6 +94,12 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 - Phase B needs `creatures.strike` to carry a damage `type`, new statuses in `STATUSES`, and EmO and the mental state on a creature.
   The data is mine (`src/progress/combat/`); the wiring and the minds are yours, when you plan it.
 
+**2026-10-04, Petra's own open items (R57)**
+- The stress test's intermittent (`embedded`/`guard:nudge` at cp T1): 480 runs on one warm page and 7 fresh-page runs in a row were
+  clean; it is rare and only on a fresh page. Still open.
+- A pre-existing hitch on the lift (`on lift0`): 4 violations in 24 lift-only fuzz runs, the same with and without the Well (R57).
+- The heap reading in `npm run perf` had no gc before it (±10 MB a run); fixed (`--expose-gc`, gc twice) and the baseline to re-record.
+
 **2026-10-04, Petra's own open item (R42)**
 - The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at
   `cp T1`, right after a grapple swing, with one tick of ~1957 m/s from the previous run's end position to T1. The game's own teleport
@@ -140,6 +155,11 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
+**2026-10-04, from Petra: your Well hooks are live**
+- `game.well.active` and `game.well.floor` (1 to 3) are set while a run is on (`src/world/well/dunemaw.js`); entering, each floor and
+  leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
+  a sound for a pool taking you down (and up) would be yours.
+
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
 stay open.
 
@@ -160,13 +180,22 @@ LORE.md section 6):
 - **The Great Dunemaw**: the Well's mouth in the Dunes. SLICE.md has it as a spinning dark pool; "maw" suggests the sand drawn
   in around it like a mouth.
 
+**2026-10-04, from Petra: the Well's kit to dress (the owner's go)**
+- `src/world/well/wellkit.js` builds each floor from boxes in four looks (`floor`, `wall`, `ceil`, `deco`; tinted toward violet with
+  depth) and two pools (the way up, pale; the way down, dark and turning: named meshes `pool-up` / `pool-down` and their rims). Room
+  templates: plain, pillars, a ledge, plinths. Dress them as you like inside that file's build (materials, trim, props that do not
+  collide), keeping the colliders as they are; the layout is mine.
+- The mouth (`src/world/well/dunemaw.js` buildMouth: a ring of stones, the turning pool with a canvas spiral, a violet rim and lamp)
+  is greybox too: the "dark spinning pool" is yours to make look like a Lachryma distortion.
+
 **2026-10-04, from Dovina (the slice, Petra's ask, R57)**
 - Petra is building the Well (E1) and the Emocean hop (E4) in placeholder geometry (`docs/plans/SLICE.md`). Theirs to dress, in parallel:
   the Well's kit (floor and wall materials, the mouth's dark spinning pool in the Dunes), the **sloop** (the Vessoul's ship form: one
   being with the hand, the Jar and the Courier), and the crude sea's surface (a texture scrolled where that is the honest way to show it
   moving, per CLAUDE.md). The stage has a breather from 0.50 to 0.62 of its length that wants the sea and the sky to carry it.
-- Open for the owner: no Egregore exists as a creature. Petra will fill the stage with jelly-class Figments; whether to model an
-  Egregore now is the owner's call (in Dovina's digest).
+- **The owner's go (R57): yours to do.** Jellies for now: the stage is filled with jelly-class Figments, no Egregore model until after
+  the slice. One more mark for the rail: the reckoning (Divination) marks each wave's lane ahead of it with a glyph pop on the rail
+  (`reckonLead`, up to 3 s early), so a lane mark that reads at speed on the crude sea is wanted.
 
 **2026-10-04, from Wanda: the trailer's mix**
 - `sfx.duckEffects(to = 0.35, fade = 0.4)` lowers the sound effects (jumps, hits, the bell, the bomb) under the music and the System's

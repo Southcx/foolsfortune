@@ -24,6 +24,7 @@ import { FONT, THEMES, theme } from '../ui/theme.js';
 // ---------------------------------------------------------------------------------------
 export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
 const LAYERS = [
+  { id: 'well', name: 'THE GREAT DUNEMAW', below: -700, cell: 2, sight: 7 }, // (a Well's floor, far below the Dunes: world/well/dunemaw.js)
   { id: 'dunes', name: 'THE DUNES', below: -150, cell: 8, sight: 40 },
   { id: 'basement', name: 'THE BASEMENT', below: -3, cell: 2, sight: 7 },
   { id: 'ground', name: 'GROUND FLOOR', below: 2.6, cell: 2, sight: 7 },

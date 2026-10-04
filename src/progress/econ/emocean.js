@@ -19,14 +19,25 @@
 // may spill (`spillChance`). A stage pays no cubes: the Emocean is the travel layer, a drain (fuel) and a risk (cargo), and its reward is
 // the price at the other end (DESIGN.md, section 11). How cleanly it was sailed is Ouranurgy EXP (domains.js) and the ledger's records.
 //
+// THE RECKONING (the owner, R57: "Divination is a critical skill for charting the course between Islands of Ego"). A route's
+// reckoning is how much of its crossing the Courier has divined, 0 .. 1: it grows by surveying the sea from the pier before sailing (a
+// Divination act whose quality is how well it was dowsed) and by reading the waves while sailing. It buys KNOWLEDGE, never numbers:
+// each wave's lane is marked ahead of it (a glyph pop on the rail, `lead` seconds early, up to two bars at full reckoning), so the skill
+// is reading the sea, and the gun and the dodge are still the player's. The lanes drift with the day, so a reckoning is of a day, as a
+// Cogitomap is; the ledger keeps the best for the achievements. And a reckoning is the way to a node: a locked node opens for good once
+// a route to it from an open node has been reckoned to `open` at the pier (after the slice: Entra Polearis is found by divining the way
+// there, so the Chaos end of the line is reached through Divination).
+//
 // Prior art: Star Fox 64 (two-minute rail stages with an authored wave order, a hit count and a medal for a clean run, a breather before
 // the last push, a route map whose harder paths pay off), Rez (waves keyed to the music's bars, so the stage and its cue are one thing),
-// Panzer Dragoon (lanes around the rail, threats from the sides), the shoot-'em-up's wave table (role, formation, entry), and FTL's
-// sector map (nodes, fuel per jump, danger by where you are).
+// Panzer Dragoon (lanes around the rail, threats from the sides), the shoot-'em-up's wave table (role, formation, entry), FTL's
+// sector map (nodes, fuel per jump, danger by where you are) and its long-range scanners (knowing what waits at a beacon), Sunless Sea
+// (the zee charted by sailing it; a port found, not given), and dead reckoning (a course known by working it out).
 //
 //   NODES[id] = { id, law, locked }      hop(from, to, ship) -> { distance, fuel, seconds, danger } | null
 //   STAGE = { seconds, bears, waves: [{ at, role, count, formation, lane }] }      ROLE_CLASS[role](danger) -> class 0..4
 //   stagePlan(from, to, day) -> [{ at, role, cls, count, formation, lane }]      stageQuality({ hits, bears, downed, spawned }) -> 0..1
+//   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning) -> seconds      opensNode(reckoning) -> bool
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 import { fuel } from './islands.js';
@@ -104,3 +115,13 @@ export function stageQuality({ hits = 0, bears = STAGE.bears, downed = 0, spawne
   const kept = 1 - Math.min(1, hits / Math.max(1, bears)), shot = Math.min(1, downed / Math.max(1, spawned));
   return 0.5 * kept + 0.5 * shot;
 }
+
+/** THE RECKONING: how far ahead a wave's lane is marked at full reckoning (seconds: two bars of the cue), and the reckoning at the pier
+ *  that opens a locked node for good. */
+export const RECKON = { lead: 3, open: 0.6 };
+/** A route's name, the same both ways (the ledger's records are `emocean.reckon.<route>`, percent). */
+export const routeId = (a, b) => [a, b].sort().join('-');
+/** Seconds of warning a wave gets at a reckoning of 0 .. 1 (none uncharted). */
+export const reckonLead = (r) => RECKON.lead * Math.max(0, Math.min(1, r));
+/** Whether a reckoning made at the pier is enough to open the node at the route's far end. */
+export const opensNode = (r) => r >= RECKON.open;

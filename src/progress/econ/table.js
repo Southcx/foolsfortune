@@ -141,11 +141,14 @@ export const ECON = {
    *  Margarite pays a steady 0.6-0.7x the aim and loses a run in twenty (Law pays steadiness); Anagami 0.6-1.15x; Entra Polearis
    *  0.45x to 1.6x, losing a third to a half of its runs (Chaos pays mastery, and only mastery). `crude` is where the island's price
    *  for crude sits inside the demand band (0 the bottom .. 1 the top, with its slow wave about it): Chaos digs it up and sells it
-   *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entra to Margarite. */
+   *  cheap, Law buys it dear (the owner, 2026-10-04: "a toxic symbiotic relationship"), so the crude route runs Entra to Margarite.
+   *  `maps` is the same for Cogitomaps (the owner, R57: the Purser buys them): Law wants its minds charted and pays for it, Chaos
+   *  shrugs, and an island knows its own mind (a map of Anagami's Well is worth little on Anagami), so a good map is worth sailing to
+   *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
   islands: {
-    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, grades: ['mirth', 'wonder'],  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
-    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
+    margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, grades: ['mirth', 'wonder'],  classes: [0, 1] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
    *  and it refills `refillPerH` an hour of play while its mind keeps ruminating. A Well drawn dry is a mind that has healed. */

@@ -33,7 +33,7 @@ const server = await createServer({ root: ROOT, logLevel: 'error', server: { hos
 await server.listen();
 const url = server.resolvedUrls.local[0];
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
-const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info'] });
+const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] }); // (gc before the heap is read: without it the reading is whatever garbage is lying about, ±10 MB a run)
 let out = null, errs = [];
 try {
   const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
@@ -62,6 +62,7 @@ try {
     const workshop = place();
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
     const dunes = place();
+    if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
     return { workshop, dunes, heapMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6) };
   });
   out.bootS = +bootS.toFixed(1);

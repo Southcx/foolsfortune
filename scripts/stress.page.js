@@ -27,7 +27,7 @@
     const out = [{ name: 'ground floor', at: [0, 0.02, -8], yaw: 0 }, { name: 'ground floor 2', at: [5, 0.02, 6], yaw: 2 }];
     g.course.cps.forEach((cp, i) => out.push({ name: `cp ${cp.room}`, cp: i }));
     out.push({ name: 'hub', hub: true });
-    out.push({ name: 'dunes', dunes: true }, { name: 'dunes skiff', dunes: true, mount: true }, { name: 'dunes edge', dunes: true, edge: true }, { name: 'edge skiff', dunes: true, edge: true, mount: true }, { name: 'siege', siege: true }, { name: 'weir', weir: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
+    out.push({ name: 'dunes', dunes: true }, { name: 'dunes skiff', dunes: true, mount: true }, { name: 'dunes edge', dunes: true, edge: true }, { name: 'edge skiff', dunes: true, edge: true, mount: true }, { name: 'siege', siege: true }, { name: 'weir', weir: true }, { name: 'well', well: true }, { name: 'braid', circuit: 'braid' }, { name: 'mill race', circuit: 'mill' }, { name: 'spindle', circuit: 'spindle' });
     // on top of each moving platform (the fuzz then rides, jumps off, gets carried into things)
     for (const m of g.movers.list) if (m.colliders.length && !m.surface) out.push({ name: `on ${m.name || 'mover'}`, mover: m });
     return out;
@@ -59,6 +59,7 @@
       if (s.mount) g.techs.get?.('skiff')?.mount();
     }
     else if (s.siege) g.course.toSiege();
+    else if (s.well) { if (!g.game.well.enter()) g.game.well.toArrival(); } // (a Well's first floor: world/well/dunemaw.js)
     else if (s.weir) g.course.toWeir();
     else if (s.circuit) g.game.circuits.enter(s.circuit);
     else {

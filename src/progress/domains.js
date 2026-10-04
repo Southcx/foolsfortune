@@ -54,6 +54,7 @@ export const SOURCES = [
   // the slice's big acts (docs/plans/SLICE.md), counted in `acts`: as many of the domain's ordinary acts as the time they take, so a
   // layer pays EXP at the same rate a minute as the rest of play (a two-minute stage is 12 acts at PACE) and does not skew the scale
   { event: 'emocean.stage',   domain: 'ouranurgy',      acts: 12, quality: (e) => (e.by === 'courier' ? stageQuality(e) : null) },
+  { event: 'emocean.reckon',  domain: 'divination',     acts: 4,  quality: (e) => (e.by === 'courier' && e.q != null ? q01(e.q) : null) },
   { event: 'well.floor',      domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && e.charted != null ? q01(e.charted) : null) },
 ];
 
