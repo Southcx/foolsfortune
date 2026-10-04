@@ -1,24 +1,24 @@
 {
- "when": "2026-10-04T02:31",
- "build": "ref: refs/heads/claude/fps-third-person-demo-8zp2kx",
+ "when": "2026-10-04T02:49",
+ "build": "450d12d",
  "workshop": {
-  "tick": 7.6,
-  "draw": 14.7,
-  "calls": 354,
-  "tris": 169742,
+  "tick": 7.4,
+  "draw": 16.1,
+  "calls": 352,
+  "tris": 125950,
   "programs": 95,
-  "geos": 1249,
+  "geos": 1246,
   "tex": 123
  },
  "dunes": {
-  "tick": 7.1,
-  "draw": 13.7,
-  "calls": 286,
-  "tris": 282810,
+  "tick": 7.2,
+  "draw": 14.5,
+  "calls": 281,
+  "tris": 233802,
   "programs": 98,
-  "geos": 1262,
+  "geos": 1257,
   "tex": 125
  },
- "heapMB": 234,
- "bootS": 28
+ "heapMB": 261,
+ "bootS": 25.3
 }
