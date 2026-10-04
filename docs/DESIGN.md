@@ -587,7 +587,7 @@ separate parts, building and progression are why players skipped it.
 
 1. **The Lockheart's keys**: the conversion keys are cheaper (LOADED and ECHO 6 minutes), and **a fancy key is reused**, breaking after each
    opening with a chance that rises with use (`ECON.lockheart.keyWear`: 20%, then 15 points more each time; it lasts about 2.7 openings,
-   never more than six). Brass is spent. Conversion now pays over a key's life when the coffin is brimming, not when it is merely full.
+   never more than seven). Brass is spent. Conversion now pays over a key's life when the coffin is brimming, not when it is merely full.
 2. **The Vessoul** is the player's entity in the world. Its forms are the god hand, the Pneuka Jar, the Courier and, on the Emocean, the
    ships (sloop, frigate, tanker, destroyer, galleon); the Solar Skiff is one of its limbs (GLOSSARY).
 3. **Kintsugi**: gold where a crack mends, dissipating fully as the mend completes; a very subtle sizzle as it mends (Wanda's, if she

@@ -47,7 +47,7 @@ export const ECON = {
     jackpotCap: 0.25,
     // a Possibilikey other than brass is not used up: after each opening it breaks with a chance that starts at `start` and rises by
     // `perUse` with every use (the owner, 2026-10-04: "fancy keys can be reused but the chance for them to break goes up over time"),
-    // so a key lasts about three openings on average and never more than six. Brass opens it and is spent, as before.
+    // so a key lasts about 2.7 openings on average and never more than seven. Brass opens it and is spent, as before.
     keyWear: { start: 0.2, perUse: 0.15 } },
 
   /** A landed fish, sold to Old Grog, by its tier (0 none .. 5 the legend): at about one catch every two and a half minutes, about
