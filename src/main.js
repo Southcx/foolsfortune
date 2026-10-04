@@ -77,6 +77,7 @@ import { SystemVoice } from './audio/voice/voice.js';
 import { MusicPlayer } from './music/player.js';
 import { LACHRYMA } from './music/lachryma.js';
 import { chooseMusic, chooseTitleMusic } from './music/choose.js';
+import { Rhythm, TRACKS as RHYTHM_TRACKS } from './music/rhythm/rhythm.js';
 import { Clayese, hearHaggling } from './npc/clayese.js';
 import { hearEvents } from './audio/cues.js';
 import { GameLog } from './feedback/gamelog.js';
@@ -560,6 +561,13 @@ async function main() {
   } });
   game.workbench = new Workbench(game);
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
+  // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
+  game.rhythm = new Rhythm(game);
+  game.chat.add('rhythm', { help: 'the rhythm mode: /rhythm [track] [light|steady|full], /rhythm offset <ms> (no track: the next)', run: ([a, b]) => {
+    if (a === 'offset') { game.rhythm.setOffset(+b || 0); game.events.emit('rhythm.offset', { ms: game.rhythm.offset }); return; }
+    if (a && !RHYTHM_TRACKS.some((T) => T.id === a)) { game.events.emit('rhythm.list', { tracks: RHYTHM_TRACKS.map((T) => T.id) }); return; }
+    game.rhythm.begin(a, b);
+  } });
   game.chat.add('opening', { help: "the Lockheart's opening, without keys (the Lockheart worn)", aliases: ['ult'], run: async () => {
     const lh = game.techs?.get?.('lockheart') || techs.get?.('lockheart'); if (!lh || game.ultimate?.active) return;
     const T = await import('./tools/lockheart/table.js'), keys = ['key.brass', 'key.twin', 'key.echo', 'key.loaded'];

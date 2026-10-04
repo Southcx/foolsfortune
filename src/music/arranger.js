@@ -52,7 +52,7 @@ export class Arranger {
     this.score = score; this.build();
     const ctx = this.ctx;
     this.bus.gain.setTargetAtTime(this.volume, ctx.currentTime, 0.8);
-    this.alive = true; this.next = ctx.currentTime + 0.15; this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
+    this.alive = true; this.next = this.started = ctx.currentTime + 0.15; this.section = 0; this.bar = 0; this.ended = false; this.finished = null;
     this.spb = 60 / (score.sections[0].bpm || score.bpm);
     this.timer = setInterval(() => this.run(), 50);
     this.run();

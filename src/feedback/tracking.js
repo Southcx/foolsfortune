@@ -440,6 +440,17 @@ export class Tracking {
     on('crucibelle.note', (e) => { L.inc('bell.note'); if (e.onBeat) L.inc('bell.onbeat'); });
     on('crucibelle.fever', () => { L.inc('bell.fever'); log.say('song', 'The Crucibelle burns with fever.', { key: 'fever', throttle: 6 }); });
     on('crucibelle.toll', (e) => { L.inc('bell.toll'); if (e.onBeat) L.inc('bell.toll.onbeat'); });
+    // the rhythm mode (music/rhythm/rhythm.js): a song played through on the ten keys
+    on('rhythm.start', (e) => { L.inc('rhythm.start'); first('rhythm', 'Logged: the rhythm mode. The song\'s tune falls toward the line; play it on 1 to 0 as it lands (1 to 5 the low notes, 6 to 0 the high). Esc stops.'); });
+    on('rhythm.quit', () => L.inc('rhythm.quit'));
+    on('rhythm.list', (e) => log.say('system', `Songs to play: ${e.tracks.join(', ')}.`, {}));
+    on('rhythm.offset', (e) => log.say('system', `The rhythm mode now judges ${Math.abs(e.ms)} ms ${e.ms < 0 ? 'earlier' : 'later'}.`, {}));
+    on('rhythm.score', (e) => {
+      if (e.by !== 'courier') return;
+      const pct = Math.round(e.accuracy * 100);
+      L.inc('rhythm.played'); L.inc(`rhythm.played.${e.level}`); if (e.full) L.inc('rhythm.full'); L.hi('rhythm.combo', e.combo); L.hi(`rhythm.best.${e.track}.${e.level}`, pct);
+      log.say('song', `You play ${e.title} through: ${pct} percent${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {});
+    });
     on('song.play', (e) => {
       L.inc('song.play'); L.inc(`song.${e.song}`); if (e.fever >= 1) L.inc('song.fever'); L.hi('song.power', Math.round(e.power * 100));
       const S = { reveal: (n) => (n ? `What was hidden is shown: ${plural(n, 'thing')} light up.` : 'Nothing near is hidden.'), mirage: () => 'A Courier of smoke stands where you stood.', rally: (n) => (n ? `${n === 1 ? 'Your ally takes' : `${n} allies take`} heart.` : 'Your Lachryma quickens.'), lull: (n) => (n ? `${plural(n, 'thing')} fall${n === 1 ? 's' : ''} asleep.` : 'Nothing near is listening.'), summon: (n) => (n > 1 ? `${n} smoke spirits stand up out of the bell.` : 'A smoke spirit stands up out of the bell.') };
