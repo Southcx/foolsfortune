@@ -61,7 +61,9 @@ line shows `fuel` as a drain.
 - **Nodes:** one an island, at its place on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step of the line
   (Anagami to Margarite is 4, King to Queen 8). Entra Polearis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
   `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 150 s, the length of Wanda's cue (Crude Sea: 100 bars of 1.5 s; every wave falls on a bar line, and
-  `stageAt(game.music)` gives the fraction as heard).
+  `stageAt(game.music)` gives the fraction as heard). After the slice, when there is a second ship: a ship's tempo can be its feel (Wanda,
+  `stageCue(seconds)`: a sloop at 1.25x turns the cue hardcore-fast, a galleon at 0.8x broad and stately; within 10% is transparent).
+  The slice has one ship, so it stays 150 s.
 - **The stage** is authored once (`STAGE.waves`, ten waves, 45 Figments) with its waves keyed to the fraction of the stage (0 .. 1), so
   Petra paces the rail to Wanda's cue, not to seconds. Its shape is Star Fox 64's: a calm opening, schools that teach the gun, darters
   that teach the dodge, a breather at 0.50 to 0.62, a mixed push, a heavy at 0.84 with an escort.
