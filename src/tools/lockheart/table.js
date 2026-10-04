@@ -13,7 +13,7 @@
 //
 //   OUTCOMES[id]    HEARTS[id] = { name, table: { outcome: weight }, fill, examine }    KEYS[id] = { name, does, table?(t), mods?(m) }
 //   oddsOf(heartId, keyIds) -> { table, mods }   (no jackpot likelier than ECON.lockheart.jackpotCap)
-//   rates(table) -> [{ id, p }]        spin(table) -> id
+//   rates(table) -> [{ id, p }]        spin(table) -> id        keyBreaks(id, uses) -> bool (a fancy key wears; brass is spent)
 // ---------------------------------------------------------------------------------------
 
 import { ECON } from '../../progress/econ/table.js';
@@ -87,6 +87,20 @@ export const KEYS = {
   'key.echo':   { name: 'ECHO KEY', color: 0xb49be6, does: 'Whatever comes out happens again, a moment later.', mods: (m) => { m.echo += 1; } },
 };
 export const MAX_KEYS = 4;
+
+/** Does a Possibilikey that has opened the coffin `uses` times (this time included) break now? Brass always does (it is spent); the
+ *  others wear: ECON.lockheart.keyWear. The chance alone is `keyBreakChance`; `keyLife` is the mean number of openings a key lasts. */
+export function keyBreakChance(id, uses = 1) {
+  if (id === 'key.brass') return 1;
+  const W = ECON.lockheart.keyWear;
+  return Math.min(1, W.start + W.perUse * Math.max(0, uses - 1));
+}
+export const keyBreaks = (id, uses = 1, r = Math.random()) => r < keyBreakChance(id, uses);
+export function keyLife(id) {
+  let alive = 1, mean = 0;
+  for (let u = 1; alive > 1e-9 && u < 100; u++) { mean += alive; alive *= 1 - keyBreakChance(id, u); }
+  return mean;
+}
 
 /** The odds a heart has with these keys on the ring (in order), and what is done to what comes out. */
 export function oddsOf(heartId, keyIds = []) {
