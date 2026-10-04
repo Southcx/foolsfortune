@@ -293,11 +293,7 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== CHESTS (vfx/chestfx.js)
-  // the circle under a chest as it charges (held: its strength is the charge), the whirling mandala
-  'chest.sigil': { layers: [
-    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 2.4, tint: 'tint', labradorite: 0.1, glow: 1.5, spin: 0.8, offset: [0, 0.04, 0], in: 5, out: 2.5 }),
-    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 3.4, tint: 'tint', labradorite: 0.25, glow: 1.0, spin: -0.3, offset: [0, 0.035, 0], in: 4, out: 2.5 }),
-  ] },
+  // (the circle and mandala under a charging chest are gone, the owner's, R45: the chest's glaze tells the charge, vfx/chestglaze.js)
 
   // =============================================================================================== THE LOCKHEART'S OPENING
   // (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)

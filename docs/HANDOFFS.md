@@ -30,8 +30,8 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
   dressed, `rig.setGlaze(s)`, the glaze joins the rest bake's key, and the resting pillar (epic, prismatic) stays a faint marker and goes
   dark in a ceremony instead of brightening. `ceremony.js`: `p_charge` drives the glaze (a sealed chest's wanders with the roulette),
   `openNow` sets the tier's, and the tier-coloured beam calls are gone; the curio's reveal beam is one warm colour for every tier.
-  Driven headless: tiers 3 and 4 open through burst and fountain, `chest.open` fires, no errors. Open for the owner: drop the resting
-  pillar too?
+  Driven headless: tiers 3 and 4 open through burst and fountain, `chest.open` fires, no errors. The owner then dropped the resting
+  pillar (gone from `chestmodel.js`) and the circle and mandala under an opening chest (gone from `vfx/chestfx.js` and the library).
 - **Kintsugi gold on the Courier, only while a crack mends**: merged onto your v54 hook and kept it (`uMend`: the crack lines gold
   while they mend). Added a trail (`uTrail`, `uPeak`: the cells a mend has just closed stay gold, the newest brightest) that fades out
   ~2 s after the region's last crack closes, so the gold doesn't vanish on the frame the mend completes. The kiln's instant mend flashes

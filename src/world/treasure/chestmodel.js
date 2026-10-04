@@ -21,7 +21,6 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { addOutline } from '../../render/outline.js';
 import { TIERS } from './treasure.js';
 import { oilMaterial } from './cubes.js';
-import { Beam } from '../../vfx/beam.js';
 import { dressChestGlaze, chestGlazeUniforms } from '../../vfx/chestglaze.js';
 import { mergeStatic } from '../../render/merge.js';
 import { RestBake } from '../../render/restbake.js';
@@ -156,12 +155,11 @@ export class ChestRig {
         r.rotation.set(Math.PI / 2 + (i ? 0.7 : -0.5), 0, i ? 0.4 : -0.3); r.userData.spin = i ? -0.5 : 0.7; this.rings.push(r);
       }
     }
-    // ---- light: a soft pool on the floor, an aura, and (for the upper tiers) a pillar
+    // ---- light: a soft pool on the floor and an aura (no pillar of light per tier: the owner's, R45; the glaze tells the tier)
     this.halo = new THREE.Sprite(track(new THREE.SpriteMaterial({ map: halo, color: T.glow, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0 })));
     this.halo.position.y = 0.5; this.halo.scale.setScalar(2.6 + tier * 0.7); this.halo.renderOrder = 4; this.root.add(this.halo);
     this.pool = new THREE.Mesh(track(new THREE.CircleGeometry(1.35, 32)), glowMat({ map: halo, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.pool.rotation.x = -Math.PI / 2; this.pool.position.y = 0.025; this.pool.renderOrder = 2; this.root.add(this.pool);
-    this.pillar = tier >= 3 ? new Beam(this.root, { radius: 0.45, height: 7, color: T.glow, foot: 1.3 }) : null;
 
     // ---- the state of the machine
     this.baseOpacity = [0, 0.11, 0.17, 0.26, 0.3][tier];
@@ -186,7 +184,6 @@ export class ChestRig {
     // and at rest (lid shut, standing still) the whole chest is a handful of draws (render/restbake.js); what moves on its own stays live
     if (this.orbit) this.orbit.userData.noBake = true;
     for (const r of this.rings) r.userData.noBake = true;
-    if (this.pillar?.mesh) this.pillar.mesh.userData.noBake = true;
     this.rest = new RestBake(this.root, { settle: 0.4 });
   }
   unlit() { for (const o of this.fades) o.visible = o.material.opacity > 0.004; }
@@ -262,7 +259,6 @@ export class ChestRig {
     // (the aura is a sprite: a camera close to it would be looking through a fog, so it thins as the eye comes in)
     const shy = THREE.MathUtils.smoothstep(camDist, 0.9, 3.2);
     this.halo.material.opacity = Math.min(0.5, (this.baseOpacity * (this.open ? 0.5 : 1) + this.lit * 0.4 + this.glow * 0.3) * breathe) * shy;
-    if (this.pillar) this.pillar.set(this.prismMat ? null : L.glow, this.open || this.busy ? 0 : 0.1, 1); // (a faint marker at rest; in a ceremony the glaze tells the tier, not a beam)
     for (const m of this.pulse) m.color.setHex(L.glow).multiplyScalar(0.75 + 0.5 * Math.abs(Math.sin(t * 1.3 + this.hue * 5)));
     if (this.orbit) {
       this.orbit.rotation.y += dt * (0.5 + this.glow * 3);
@@ -274,7 +270,6 @@ export class ChestRig {
       this.prism.forEach((m, i) => m.color.setHSL((this.hue + i * 0.09) % 1, 0.85, 0.6));
       if (this.prismMat) this.prismMat.userData.hue.value = this.hue;
       this.halo.material.color.setHSL((this.hue + 0.3) % 1, 0.8, 0.6);
-      if (this.pillar) this.pillar.uniforms.uColor.value.setHSL((this.hue + 0.3) % 1, 0.8, 0.6);
       if (this.oil) this.oil.uni.uHue.value = this.hue;
     }
     // a chest that is waiting calls to you now and then: a crouch, a hop, a wobble of the lid
@@ -290,7 +285,6 @@ export class ChestRig {
 
   dispose() {
     this.root.parent?.remove(this.root);
-    this.pillar?.dispose?.();
     this.rest?.dispose();
     for (const g of this.geos) g.dispose?.();
     for (const m of this.mats) m.dispose?.();
