@@ -22,7 +22,6 @@ import { layoutFloor, buildFloor, GRID, CELL } from './wellkit.js';
 import { wellSeed } from '../../progress/econ/islands.js';
 import { today } from '../../core/calendar.js';
 import { zoneOf } from '../../render/zones.js';
-import { sfx } from '../../audio/sfx.js';
 import { mergeStatic } from '../../render/merge.js';
 
 export const WELL_ID = 'dunemaw';
@@ -99,7 +98,6 @@ export class Dunemaw {
     this.moving = 2; // (a couple of frames for the teleport to land before the zone check below)
     g.player.killY = this.killY; // (now, not next frame: the floor is far above the dunes' killY, the mouth far below the Well's)
     g.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true });
-    sfx.geyser?.();
     g.events?.emit('well.floor', { well: WELL_ID, floor: n, charted: 0, by: 'courier' });
   }
 
@@ -115,7 +113,6 @@ export class Dunemaw {
     this.end(shattered);
     const s = this.mouthSpot();
     this.game.course.teleport(s.pos, s.yaw, { keepPool: true });
-    sfx.geyser?.();
   }
   /** Shattered in the Well: the run is lost and they come to again at the mouth (courier/vessel/death.js). */
   reformAt() { if (!this.run) return null; this.end(true); return this.mouthSpot(); }
