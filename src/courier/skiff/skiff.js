@@ -313,13 +313,13 @@ export class Skiffing extends Tech {
     const braking = this.P.input.isDown('KeyS') && spd > 2;
     this.brakeW = damp(this.brakeW, braking ? 1 : 0, 8, dt);
     this.hoistW = damp(this.hoistW, this.hoistDir > 0 && this.L < 0.999 ? 1 : this.hoistDir < 0 ? 0.6 : 0, 10, dt);
-    C.sample('surfIdle', t, A);
-    C.blend(A, C.sample('surfRide', t, B), smooth(1.5, 14, spd));
-    if (this.brakeW > 0.01) C.blend(A, C.sample('surfBrake', t, B), this.brakeW);
+    C.sample('skiffIdle', t, A);
+    C.blend(A, C.sample('skiffRide', t, B), smooth(1.5, 14, spd));
+    if (this.brakeW > 0.01) C.blend(A, C.sample('skiffBrake', t, B), this.brakeW);
     const crouch = Math.max(this.charge, this.landDip * 0.9);
-    if (crouch > 0.01) C.blend(A, C.sample('surfCrouch', t, B), clamp(crouch, 0, 1));
-    if (this.airW > 0.01) C.blend(A, C.sample('surfAir', t, B), this.airW);
-    if (this.hoistW > 0.01) C.blend(A, C.sample('surfHoist', this.L * 1.6, B), this.hoistW);
+    if (crouch > 0.01) C.blend(A, C.sample('skiffCrouch', t, B), clamp(crouch, 0, 1));
+    if (this.airW > 0.01) C.blend(A, C.sample('skiffAir', t, B), this.airW);
+    if (this.hoistW > 0.01) C.blend(A, C.sample('skiffHoist', this.L * 1.6, B), this.hoistW);
     C.blend(base, A, this.w);
   }
 

@@ -3,14 +3,14 @@
 // source_assets/meshflow/ so the owner can open one, change it by hand and save it), drawn in the game the way the tool previews them:
 // the texture scrolled at the project's U/V speeds, multiplied by its painted vertex colour and alpha, blended as the project says
 // (additive, alpha), and tinted here. On top, what the game's own look wants: a tint per use (a chest's rarity colour), the Mind's
-// labradorite (vfx/labradorite.js) mixed in by `lab`, and one `k` (0..1) that fades it in and out.
+// labradorite (vfx/labradorite.js) mixed in by `labradorite`, and one `k` (0..1) that fades it in and out.
 //
 // Prior art: the scrolling-UV effect mesh of every action game since the sixth generation (Devil May Cry's and God of War's slashes
 // and rings, Monster Hunter's and Genshin's skill VFX: a hand-shaped mesh, a small tiling texture flowing over it, vertex alpha fading
 // its edges), which is exactly what Mesh Create is for, and Unity's / Unreal's material parameters for the per-use tint and fade.
 //
 //   await meshFx.load()                          once (parses every baked GLB)
-//   const fx = meshFx.make('chest_circle', { tint, lab, opacity })   -> { group, u (uniforms), set(k), update(dt), dispose() }
+//   const fx = meshFx.make('chest_circle', { tint, labradorite, opacity })   -> { group, u (uniforms), set(k), update(dt), dispose() }
 //   fx.group.position / scale / rotation          where it is (the mesh as authored: metres, Y up)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -30,14 +30,14 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 const F = /* glsl */`
-uniform sampler2D uMap; uniform vec3 uTint; uniform float uOpacity, uK, uLab, uAdd;
+uniform sampler2D uMap; uniform vec3 uTint; uniform float uOpacity, uK, uLabradorite, uAdd;
 varying vec2 vUv; varying vec4 vCol; varying vec3 vW; varying vec3 vN;
 ${LAB_GLSL}
 void main() {
   vec4 t = texture2D(uMap, vUv);
   float a = t.a * vCol.a * uOpacity * uK;
   vec3 view = normalize(cameraPosition - vW);
-  vec3 c = t.rgb * vCol.rgb * mix(uTint, labSoft(labPhase(vW, view) + 0.3 * dot(vN, view)) * 1.4, uLab);
+  vec3 c = t.rgb * vCol.rgb * mix(uTint, labSoft(labPhase(vW, view) + 0.3 * dot(vN, view)) * 1.4, uLabradorite);
   // (additive: the colour carries the alpha; alpha blending: straight)
   gl_FragColor = uAdd > 0.5 ? vec4(c * a, a) : vec4(c, a);
 }`;
@@ -68,12 +68,12 @@ class MeshFx {
   has(name) { return !!this.src[name]; }
 
   /** A live copy of an effect mesh, hidden (k = 0) until set(). */
-  make(name, { tint = 0xffffff, lab = 0, opacity = 1, scene = null, renderOrder = 7 } = {}) {
+  make(name, { tint = 0xffffff, labradorite = 0, opacity = 1, scene = null, renderOrder = 7 } = {}) {
     const S = this.src[name];
     if (!S) return null;
     const M = S.meta, add = (M.blend || 'additive') !== 'alpha' && M.blend !== 'opaque';
     const u = {
-      uMap: { value: S.map }, uTint: { value: new THREE.Color(tint) }, uOpacity: { value: opacity }, uK: { value: 0 }, uLab: { value: lab },
+      uMap: { value: S.map }, uTint: { value: new THREE.Color(tint) }, uOpacity: { value: opacity }, uK: { value: 0 }, uLabradorite: { value: labradorite },
       uAdd: { value: add ? 1 : 0 }, uScroll: { value: new THREE.Vector2() }, uMindT: mindTime,
     };
     const mat = new THREE.ShaderMaterial({

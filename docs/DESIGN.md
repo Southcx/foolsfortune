@@ -279,6 +279,8 @@ What this page adds, for the proposals in section 8:
 
 ### What is broken (bugs in Dovina's files)
 
+*Phase A (`docs/plans/SYSTEMS.md`) fixes 1 to 3, the Gambler's Lockheart, and the curio curve; the simulator prints each before and after.*
+
 1. **Six achievement ids are used twice.** `fl1`, `fl2` and `fl3` are each both a fall record (MOVEMENT) and a Reprogramming entry
    (BATTLE); `sp1`, `sp2` and `sp3` are each both a speed record and a counter at the shops. `ledger.done` is keyed by id, so
    whichever completes first completes its twin silently.
@@ -372,6 +374,9 @@ None of these is necessarily wrong. Each needs a sentence saying why it is what 
 These are the five changes that would most improve the game as a game, in the order I would do them. None is made yet: the owner
 chooses.
 
+**Ruled (the owner, 2026-10-04):** 1, 2, 3 and 5 go ahead, in that order. 4 is on hold with STORY itself: STORY is taken off the title
+menu until further notice, while the tools' identities are settled (below). No content push until then.
+
 ### 1. Make the numbers true (one round, small)
 
 **The change.**
@@ -414,7 +419,7 @@ ones should be the story the player tells.
 
 **How it is measured.** The curio curve section of the simulator, and the ledger's `curio.` firsts in play.
 
-### 4. A spine for STORY's first hours (design now, build with Petra and Espada)
+### 4. A spine for STORY's first hours (on hold, with STORY)
 
 **The change.** A first-session ladder the player can name at each step.
 - **The belt fills.** The Courier starts with the psygun and the Veritome. Each other tool is given by one of the folk for a task in
@@ -455,3 +460,123 @@ Kart's cups and Tony Hawk's gaps list reward mastery with standing and looks. FF
 
 *Later, once STORY has its spine: the Shrine Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
 rating), priced so that a committed player's surplus goes there for weeks.*
+
+---
+
+## 9. The pillar: every tool teaches a real skill (in discussion)
+
+The owner's thesis (2026-10-04): Fool's Fortune distils every genre, and each Lachryma tool teaches a skill that works outside the game.
+It is not a treadmill that only takes time. The Dreamvane is the model: a strike is judged against a reference tone, so mining by ear
+trains relative pitch. The rule this page holds every tool to is: **the skill is the verb**. The player gets better at the game by
+getting better at the real thing, and no number may do the skill for them. Prior art: *Rhythm Heaven* and *The Typing of the Dead* (the
+skill is the game), *Brain Age* and Gran Turismo's licences (a measured skill as the score). The cautionary tale is the "brain-training"
+genre, whose transfer claims did not hold up (the FTC's 2016 ruling on Lumosity). So the game teaches by play, and never says it is
+teaching.
+
+| Tool | The skill | Status |
+|---|---|---|
+| Psygun | aim; dynamic visual acuity | ruled |
+| Veritome | typing (reprogramming), reading behaviour, patience for the shot | ruled |
+| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | ruled |
+| Crucibelle | tempo and melody: ten notes, 1–5 the lower register and 6–0 the upper, in the pentatonic of the music playing; every note has a colour as well as a sound. No chords (keyboard rollover). | ruled |
+| Sondelass | the platformer's movement tech: timing and momentum (the line's tension, the grapple's swing, the parry window) | ruled |
+| Soul Brush | shapes | ruled |
+| Lockheart | odds and expected value | ruled |
+
+**The Lockheart becomes the magic system (ruled in outline, 2026-10-04).** The coffin worn sets its mode:
+- **Casting**: the wheel of outcomes as it is now.
+- **Summoning**: catch a critically stunned Figment. Catching is a third choice on a stunned creature, beside zandatsu and reprogramming.
+  The wheel moves to the catch: the catch rate is the wheel, set by how cleanly the creature was stunned, and Possibilikeys augment it.
+  A key burned on a summon's release adds an effect. With several Figments inside, which one comes out is a gamble.
+- **Conversion**: liquid Lachryma (baubles) into solid (cubes); the keys set the risk and the yield.
+
+**Achievements are the main way skills are unlocked** (the owner's standing rule). Cosmetics are rewards for achievements, in quantity
+(the owner hunts glamour; FFXIV, GW2).
+
+**Soul Alchemy** (in the Shrine Garden) carries colour theory: fodder materials and curios have a hue and a saturation, and a spirit
+press (hopper, igniter, crucible: the owner's concept art) presses them to change the Courier's characteristics.
+
+**Still to define:** five damage types; a full suite of emotional statuses and what each does; the six (+1) domains, mostly for the
+god hand. The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do,
+never do the skill for them.
+
+---
+
+## 10. Mined from the design document v0.1 (the owner's, given 2026-10-04)
+
+The v0.1 document describes a different game: real-time grid tactics, with a party of Contractors run by FFXII-style Gambits, a Ship
+for a hub and Bounties. Its systems are mined here; its combat model is not. Each item is marked **keep** (fits as written), **adapt**
+(fits once changed to this game), **hold** (later, or the owner's call) or **cut** (contradicts a rule of this game).
+
+**Damage and states**
+- **Five damage types on a Law–Chaos line** (keep): Impact (lawful, physical), Ego (lawful, mental), Influence (neutral, social),
+  Illusion (chaotic, perceptual), Delirium (chaotic, entropic). Two strong ideas come with them:
+  - **Annihilation**: Impact and Delirium, the two ends, amplify each other on a target already afflicted by the other.
+  - **The status a type builds**: enough of one type applies its status (Impact: stun, slow, armour break; Ego: doubt, pacified;
+    Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear).
+
+  *Adapt*: in an action game the type must be read off the tool in hand, so each tool deals a type (a proposal to settle). Two
+  repairs are needed:
+  - The trump list is lopsided: nothing beats Impact or Delirium, and Ego loses to two types. It is to be made a closed cycle.
+  - "Delirium scales with all attributes plus Luck" fits the Lockheart.
+- **Mental state, Stoic → Resolved → Balanced → Fluid → Prismatic** (keep): how open a creature is to statuses (and to buffs). It is
+  the lore's solid–liquid motif as a number, and it already names the chest tier. It is the base for the emotional statuses.
+- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought. Its Lachryma yield peaks in an optimal band;
+  past the band it enrages, and Soothe lowers it. This is the bridge to catching and conversion: catch or harvest in the band.
+
+**Progression**
+- **The six (+1) domains** (ruled, 2026-10-04): Ouranurgy (displacement), Manifestation, Divination, Psychokinesis, Possession and
+  Alteration, and **Spellscription** as the +1. Spellscription is the newer name for Spellcasting: transcribing a thing down, so it
+  covers the Soul Brush's glyphs and the Veritome's macros. The god hand's arts already map onto them: Telekinesis to Psychokinesis,
+  Manifest to Manifestation, Swell and Wring to Alteration, the survey to Divination.
+- **Skill levels to 99 by EXP, and "The World" at all seven maxed** (adapt): OSRS levels, in line with the Fool's Journey. *Adapt to
+  the pillar*: EXP comes from doing the skill well (a clean strike, a perfect pitch, a typed macro), so practice and competence drive
+  the level together.
+- **Achievements unlock specialised abilities, passives, spells, cosmetics, titles and lore** (keep): the owner's standing rule,
+  written here first.
+- **Spell mastery by use, at 10 / 50 / 200 / 500 casts** (keep): the arts' variants already do this.
+- **Luck rises from statistically unlikely events, good or bad** (keep): a ledger predicate over rare outcomes (a prismatic, a near
+  miss, a critical, a Lockheart jackpot), so it is retroactive like the achievements. It sways chance only, never a skill.
+- **Soul Alchemy: eight attributes** (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience; Luck apart),
+  raised by pressing materials at the Shrine (adapt):
+  - Each material has a primary gain and side effects as trade-offs, and hidden combinations go into a "Grimoire of Echoes".
+  - *Adapt*: the materials' hue and saturation (the owner's spirit press) carry the colour theory.
+  - *Cut*: any attribute that does a skill for the player ("Perception: accuracy of ranged abilities" is aim assist).
+
+**World**
+- **Figment classes, by sea**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep).
+- **Traits as tags revealed by reading** (keep): Armored, Pack Hunter, Volatile Demise. This is the Veritome's bestiary.
+- **Wells as dungeons with Etrian Odyssey cartography** (keep): the Dreamvane and Veritome mapping skill has its stage. Shortcuts are
+  opened on later runs, and FOEs patrol (strong Figments to avoid or take on).
+- **Overflow converts to crystallised Lachryma at 20%, up to 50% with progression** (adapt): today the overflow goes to the Lockheart
+  at ×0.8. This rate is the Lockheart's conversion mode.
+- **Defeat costs a share of the cubes** (hold): today "nothing is lost but the place".
+
+**Later layers (not cut: they are the game's other layers, section 11)**
+- Contractors (twenty classes, one per Major Arcana; Gambits; affinity; permadeath; LLM personalities).
+- The Ship, Bounties, Psychic Storms (the Astral Ocean is the Emocean now).
+- The grid and the Metronome's beats: a Well's tactical layer, never the core movement's (the gold standard).
+
+**Cut**
+- The post-battle report screen and level-up notifications: the log is the only text feedback.
+
+**Of note**
+- The seven Psy-Tool families map onto today's tools: Psyguns, the Psygun; Psycasters, the Sondelass; Dreamcatcher staves, the Dreamvane;
+  Tomes, the Veritome; Bells, the Crucibelle; Paintbrushes, the Soul Brush. Clocks have no tool: the Lockheart took their place.
+
+---
+
+## 11. The three layers (ruled, 2026-10-04)
+
+Fool's Fortune is built in three layers of depth, each a genre, and the game is the weave between them:
+
+1. **Wells**: spontaneous dungeons on an Island of Ego. Exploration, cartography, and the tactical layer.
+2. **The island**: action combat outside the Wells (the game as it stands).
+3. **The Emocean**: travel between Islands of Ego, as node and stage-based rail-shooter combat (FTL's map, KH2's gummy ship).
+
+No player is asked to play one genre all the time; every player plays each some of the time. Prior art for one character across many
+activities: OSRS, FFXIV, Palworld, Aniimo. The repository is the vertical slice of all three.
+
+**The rule for the seams** (what decides whether the weave holds): one Courier, one purse, one ledger and one set of seven tools across
+all three layers. Each layer may add verbs, but none may have its own currency, levels or gear. KH2's gummy ship is the warning: its
+separate parts, building and progression are why players skipped it.

@@ -111,6 +111,18 @@ for (const [f, src] of text) {
   }
 }
 
+// ---- 6. records (docs/DESIGN.md): every achievement id is unique (a duplicate makes two entries share one completion, and what keys
+// on the id, a glaze, a title, gets the wrong one)
+for (const [f, raw] of text) {
+  if (!f.endsWith(path.join('progress', 'achievements.js'))) continue;
+  const src = code(raw), seen = new Map();
+  for (const m of src.matchAll(/(?:^|[\s;{(,])[CFHS]\(\s*'([a-z0-9]+)'/gm)) {
+    const id = m[1], line = lineOf(src, m.index);
+    if (seen.has(id)) add('achievement.id', f, line, `achievement id '${id}' is used twice (first at line ${seen.get(id)})`);
+    else seen.set(id, line);
+  }
+}
+
 // ---- tally against the baseline
 const counts = {};
 for (const x of findings) if (!x.hard) counts[`${x.rule}|${x.file}`] = (counts[`${x.rule}|${x.file}`] || 0) + 1;

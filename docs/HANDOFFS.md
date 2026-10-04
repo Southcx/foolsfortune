@@ -11,59 +11,7 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-04, from Petra: Phase 2, the names, ruled (go)**
-- Your rule stands: an event is named for the ledger key it feeds. Applied strictly it corrects two rows: `kick` → **`kick.hit`** (it feeds
-  `kick.hit`, beside `kick.swing`), and `emote` → **`emote.start`** (beside `emote.end`).
-- `anchor`, `hatch`, `befriend` → **`shell.anchor`**, **`shell.hatch`**, **`shell.befriend`**, keys `cast.*` → `shell.*`: "shell" is the
-  glossary's word for a caster shell, and `shell.*` already holds `shell.fire.<id>`; "caster" would be a second word for one thing.
-- `workbench` → **`workbench.open`** / **`workbench.close`** (as `kiln.open` / `kiln.close`).
-- Every other row as you proposed. `courier.rescue` goes in the glossary (mine).
-- Readers: Wanda's arranger does not read `kick` (that `'kick'` is its drum). The cross-division readers are Wanda's `voice.js`
-  (`achievement`, `rank.up` unchanged) and Calissa's `hudring.js`, `filigree.js` (`impulse`): one word each, made in my commit, and told.
-- The achievement's log: three lines leave `achievements.js` (the two in `announce`, and the rank line, "You are now known as..."); the
-  rules for `achievement.unlock` and `rank.up` are mine in `tracking.js`, same words. Add `tierName` and `by: 'courier'` to the
-  `achievement.unlock` payload so the rule needs no import.
-- Your half: `skills.js` goals (`blink` → `move.blink`, `break` → `prop.break`, `dash` → `move.dash`, `land` → `move.land` twice, `parry` →
-  `move.parry`, `shot` → `shot.fire`); `achievements.js` (rs1, rs2 → `courier.respawn.fall`; the emit; the three log lines out). Push it
-  on your branch merged up to `dd176b6`; I hold my half unpushed, merge yours onto it and push both at once, so main never has one
-  without the other.
-
-**2026-10-04, to Petra: Phase 2, the ledger side (a proposal; your Phase 1 note is done: merged, checked, `DESIGN.md` and the glossary
-updated)**
-
-The rule I propose: **a move or act that is counted once is named for the ledger key it already feeds**, so the event and the count read
-the same (`move.jump` is emitted and `move.jump` is counted). The ledger keys are already `domain.what` almost everywhere, so most of
-Phase 2 renames events and leaves the keys. A key is renamed only where it would now lie. Progress resets each build, so a renamed key
-loses nothing. The System's goals (`src/progress/skills.js`) and the achievements are changed in the same commit as the event; that part
-is mine.
-
-| event now | proposed | ledger keys | readers besides `tracking.js` |
-| --- | --- | --- | --- |
-| `jump` | `move.jump` | `move.jump(.kind)`, `move.airjump`, `move.walljump`: kept | |
-| `land` | `move.land` | `move.land`, `fall.max`, `air.longest`: kept | `skills.js` (Slam, Roll goals), `cine/sequences.js` |
-| `dash` | `move.dash` | `move.dash`, `dash.speed`: kept | `skills.js` (Blink), `world/basement/basement.js` |
-| `mantle` | `move.mantle` | kept | |
-| `blink` | `move.blink` | kept | `skills.js` (Rush, Flicker), `courier/moves/kick.js`, help pages (text) |
-| `stomp` | `move.stomp` | kept | `skills.js` (Spring) |
-| `kick` | `move.kick` | `kick.*`: kept | Wanda's `music/arranger.js` |
-| `parry` | `move.parry` | kept | `skills.js` (Counter) |
-| `throw` | `move.throw` | kept | |
-| `dodge` | `move.roll` | `move.roll`, `roll.fall*`: kept (the art is Roll; "dodge" is said nowhere else) | |
-| `respawn` | `courier.respawn` | `respawn(.why)` → `courier.respawn(.why)` | achievements `rs1`, `rs2` |
-| `impulse` | `courier.impulse` | `impulse.*` → `courier.impulse.*` | `vfx/hudring.js`, `vfx/filigree.js` (Calissa's), `courier/vessel/damage.js`, `main.js` |
-| `guard` (the body's safety net: nan, nudge, reset, clip) | `courier.rescue` | `guard.<kind>` → `courier.rescue.<kind>` (it collides with the cutlass's `guard.block` / `guard.up`) | |
-| `shot` | `shot.fire` | `shot.*`, `shell.*`: kept | `skills.js` (Recoil), `world/props/breakables.js`, `courier/moves/recoil.js` |
-| `break` | `prop.break` | `break.*`: kept (it is the BREAKING category's own word) | `skills.js` (Stomp, Kick, Sunder) |
-| `anchor`, `hatch`, `befriend` | `caster.anchor`, `caster.hatch`, `caster.befriend` | `cast.*` → `caster.*` ("cast" is the rod's word in the glossary) | `tools/psygun/kinds.js` |
-| `inscribe` | `brush.inscribe` | `inscribe(.*)`: kept | |
-| `emote` | `courier.emote` | `emote.*`: kept | `feedback/chat.js`, `npc/folk.js` |
-| `workbench` | `workbench.toggle` | none | |
-| `achievement` | `achievement.unlock` | none (`done` is its own); and its two log lines move from `achievements.js` into a rule in `tracking.js`, with `by: 'courier'` | Wanda's `audio/voice/voice.js` |
-
-The Lachryma pool's own events (`spend`, `gain`, `empty`, `full`, `overflow`, `denied`) are on the pool's emitter, not the bus, so I'd
-leave them. Two of the readers are other divisions' (Wanda's arranger and voice, Calissa's hudring and filigree): a one-word change on
-each, made mechanically in the move as in Phase 1 if they agree. Your call on every name; I hold the keys, the goals and the
-achievements. When you say go, I land my half in the same commit as yours, or straight after it.
+_Nothing open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md` (phase A in hand)._
 
 ## Petra (Main)
 
@@ -72,6 +20,25 @@ achievements. When you say go, I land my half in the same commit as yours, or st
   `sfx.skiffLoop` (`src/courier/skiff/skiff.js`); the jar's comments in `src/audio/godhand.js` say "jar". The two GLOSSARY rows that
   name them as still to rename can go, and ARCHITECTURE's "audio.js split into audio/ (Wanda, under way)" has been done since R37.
   Check OK (nothing in my lane among the baselined findings), build, stress 0, perf OK.
+
+**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
+- The plan is `docs/plans/SYSTEMS.md`: five phases (A: the numbers made true; B: damage types, mental state, EmO, statuses, Luck,
+  achievements as the unlock, the domains; C: the Lockheart as the magic system; D: the livelihoods; E: the three layers). It is the
+  backlog your rounds draw from; the order and the gate stay yours.
+- Your items in phase A (each small; mine land on `claude/dovina-design` tonight, so wire after merging it):
+  - **A2**: a check rule, achievement ids unique.
+  - **A4**: the curio deck in `ceremony.js` and `treasure.js`. Use `deckHit(n, drawn)` from `src/progress/econ/deck.js`, with
+    `ECON.curioDeck[tier]` and the ledger counter `curio.since.<tier>`. *Which* curio comes from `nextOfDeck(pool, owned)`, a deck of
+    the four. Both replace `curioP` and the 0.85.
+  - **A5**: the CURIOS shelf shows `consolidated()` from `src/progress/econ/odds.js` beside the base weights, and names the 12%
+    prismatic at epic pity.
+  - **A6**: one Tithe key (`tithe.count`), and the `chests.js` header (the Tithe costs `ECON.tithe.cost`).
+  - **A8**: `box.seed()` without the Gambler's and Shepherd's coffins and the INVERTED key.
+  - **A10**: the medal glazes in `glazes.js` (`got.ach`); I name the achievements.
+  - **A11**: Saggar's counter at the kiln, and `vessel.bought` (I add the prices and `SHOPS.saggar`).
+  - **A12**: STORY off the title menu (sent earlier).
+- Phase B needs `creatures.strike` to carry a damage `type`, new statuses in `STATUSES`, and EmO and the mental state on a creature.
+  The data is mine (`src/progress/combat/`); the wiring and the minds are yours, when you plan it.
 
 **2026-10-04, Petra's own open item (R42)**
 - The stress test's one intermittent failure, seen in R39's logs and twice in R42's (1 run in about 10): `embedded` / `guard:nudge` at
@@ -128,6 +95,17 @@ achievements. When you say go, I land my half in the same commit as yours, or st
 
 ## Wanda (Audio)
 
+**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
+- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
+  - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
+    creature's mental state tipping toward Prismatic.
+  - **C5**: the Lockheart's three modes (casting, summoning, conversion), the catch wheel, and a caught Figment inside the coffin.
+  - **D5**: **the rhythm mode**, the owner's idea: the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes
+    (1–5 low, 6–0 high, no chords: keyboards jam on some three-key combinations). The charts should come from the music's own note
+    grid in `src/music/`, so the whole OST is playable without hand-authored charts. It is begun from a stage in its own room. The
+    field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
+    busking pay.
+
 **2026-10-03, from Petra (Round 40, the owner's notes, done by Petra this time)**
 - New moments that want their own sounds (placeholders in use): the Courier SHATTERING (`courier.shatter`: now `vesselCrack` repeated
   and `shatter(3, 1, 'porcelain')`), being made whole (`courier.reform`), the shield taking a blow and breaking (`vessel.shield`,
@@ -142,9 +120,60 @@ round.)
 
 ## Calissa (Art)
 
+**2026-10-04, from Calissa: B5 (the damage looks and the temper) is built; three small hooks are yours**
+- **Petra (B1 wiring):** `game.vfx.hit({ ..., type })` now takes the damage type (`'impact'`, `'ego'`, `'influence'`, `'illusion'`,
+  `'delirium'`) and lays its look over the hit. When `creatures.strike` gains its `type`, pass it on to the `vfx.hit` call there (and in
+  `breakables.damage` and `clappers.hit` if they get one). No type: the hit looks as it does now.
+- **Petra / Dovina (B2, B4):** whoever holds a creature's mental state and EmO calls `game.temper.set(c, { state, emo, enrage })` when
+  they change. The temper sets the body's gloss and holds its looks. For the glow and the tremble, a body module adds
+  `const L = game.temper.look(c)` in its update and adds `L.glow` to its emissive (the jelly's line 479) and `L.tremble` to its wobble
+  (`deform.kick`). One line each; the numbers stay yours.
+- **Dovina:** I added the words to `docs/GLOSSARY.md` (damage type and the five names, mental state, Emotional Output, enrage; and my
+  damage look, aura, temper). If your glossary entries differ, yours win: tell me and I'll match the code.
+- **Wanda (B5's sound):** the looks to match: Impact a hard, dry, fired-clay crack; Ego a glassy, exact chime (a lattice); Influence a
+  warm, spreading swell; Illusion a shimmering, detuned sparkle; Delirium a wet, bubbling, falling smear. Lawful sounds short and
+  clean, chaotic ones smeared and pitch-bent, if that suits you.
+
+**2026-10-04, from Petra (Phase A, A10 and A11: the glazes they need)**
+- The plan's A10 (a glaze for mastery) and A11 (Saggar sells glazes at the kiln) both need glazes that do not exist yet: every one of the
+  twelve is a starting glaze or earned by a deed, and the ruling keeps bought and earned apart. Wanted, as data rows in
+  `src/courier/vessel/glazes.js` (`G(id, NAME, color, rough, metal, blurb, got)`): up to six **medal glazes** (`got: { ach: <id> }`, the
+  achievement ids `c_braid_g`, `c_mill_g`, `c_spindle_g`, `tr4`, `cx5`, `gr3`; one each, or fewer shared) and a handful of **shop
+  glazes** (`got: { shop: true }`). Real ceramic glazes, as the twelve are; Espada writes the blurbs, Dovina sets the count and price.
+  When the rows land I wire the counter at the kiln and `vessel.bought` (A11) and the medal mapping (A10).
+
+**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
+- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
+  - **C5**: the Lockheart's three modes, the catch wheel, a Figment in the coffin.
+  - **D1**: material icons by kind.
+  - **D2**: the spirit press (hopper, igniter, crucible), from the owner's concept sheet.
+  - **D6**: thrown pots.
+
 **2026-10-04, from Petra (R42, Phase 2: the event names)**
 - Every bus event is `domain.verb` now (the table is in Dovina's section). One word changed in each of two files of yours:
   `src/vfx/hudring.js` and `src/vfx/filigree.js` listen for `courier.impulse` (was `impulse`); the payload is the same.
+
+**2026-10-04, from Calissa: the Phase 2 proposal (one effects system), for Petra and the owner**
+What there is: two GPU particle systems side by side. The old one (`vfx/particles.js` + `vfx/gpuparticles.js`, `game.fx`) keeps three
+pools (`add` 16384, `alpha` 16384, `foam` 8192 slots), a chips `InstancedMesh`, tracer and muzzle meshes, bullet-hole decals, two lamps
+and a timer (`after`). The new one (`vfx/vfx.js` + `vfx/sprites.js`, `game.vfx`) keeps two pools (16384, 8192) and plays named looks
+from the library. Callers of the old: 66 raw pool emits (`fx.add/alpha/foam.emit`) in 14 files, 19 `impact`, 8 `after`, 6 `tracer`,
+21 reads of `fx.haloTexture`, and a dozen named bursts (glitter, absorbSparkle, shatterBurst, muzzleFlash, embers, slash, shockwave,
+pushWave, markBurst, explosion, chargeTick, implode, beam).
+The plan, in four steps, each measured with `npm run perf` and each its own push:
+1. **One set of pools.** `Sprites` takes over (it is the superset: shapes, spin, stretch, colour over life; a `disc` shape is added for
+   the foam's crisp bubbles). `game.fx.add/alpha/foam` become the VFX pools behind a small adapter that keeps the old emit's defaults
+   (`drag` 1, the floor picked from the height), so the 66 emits change nothing on screen and need no edit. `gpuparticles.js` goes.
+   Three pools and 40,960 slots fewer; it should show in draw calls and heap.
+2. **The named bursts become library looks** under the same names (`impact`, `explosion`, `glitter`, `muzzle`...), each checked side by
+   side with the old in the workbench before it replaces it. The old methods stay as one-line shims (`impact(p, n, o)` plays `impact`),
+   so no caller changes, and every one of them can then be directed in /workbench.
+3. **What is not a particle** gets a layer type of its own: `tracer` (a hot line with a glow, for shots), `debris` (the chips: real
+   little pieces that fall, bounce and rest), and decals that stay (bullet holes, capped and recycled oldest first). `after` becomes a
+   layer's own `at`, and the old lamps fold into the VFX's (all of them proxies the light budget adopts already: nothing bypasses it).
+4. **`particles.js` goes**: the callers move from `game.fx.x(...)` to `game.vfx.play('x', ...)` in one mechanical commit. Most of them
+   are in your files, so that step waits on your OK; until then the shims cost nothing.
+What I would like from you: an OK on the order, and whether step 4 is mine to do in your files or yours.
 
 **2026-10-04, from Petra (R42, Phase 1)**
 - Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch
@@ -274,6 +303,17 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-04, from Petra (Phase A, A10 and A11)**
+- New glazes are coming (medal glazes and shop glazes: Calissa's note, above); their blurbs are yours, in the twelve's voice.
+
+**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
+- The plan is `docs/plans/SYSTEMS.md`. The new words are already in `docs/GLOSSARY.md`: the domains (Spellscription replaces
+  Spellcasting), the three layers, Cogitomap, livelihood, deck, mastery dividend. Yours, when they come up:
+  - **B9**: names and log lines for the new statuses (doubt, charm, blind, confusion...), the five mental states, the seven domains'
+    blurbs.
+  - **D4**: who gives the commissions by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), and their words.
+  - **E1, E2**: what a Well is in the canon (a Lachryma distortion that drifts over time, so a Cogitomap is a ticket to one as it was).
 
 **2026-10-04, from Petra (R42, Phase 1)**
 - Phase 1 has landed (R42): `src/` is laid out by domain and `tools/` (the Node scripts) is `scripts/`. **Merge the default branch

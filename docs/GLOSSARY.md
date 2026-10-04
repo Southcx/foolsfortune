@@ -136,6 +136,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **mind** (code: `Brain`, `src/creatures/ai/`): what a creature thinks with: senses, memory, drives, a utility reasoner. See the homonyms below.
 - **status** (`game.stun`, `creatures.status`): a condition on a creature (stun, halt, slow, sleep, calm, melt).
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
+- **damage type** (plan B1, Dovina's numbers): what a blow is made of, on the **Law–Chaos line**: **Impact** (lawful, physical), **Ego**
+  (lawful, mental), **Influence** (neutral, social), **Illusion** (chaotic, perceptual), **Delirium** (chaotic, entropic). Code: `type`,
+  lower case (`'impact'` ... `'delirium'`).
+- **mental state** (plan B2): how solid a creature's mind is, Stoic, Resolved, Balanced, Fluid, Prismatic (a number from -2 to +2; the
+  lore's solid to liquid). **Emotional Output** (EmO, plan B4): a creature's agitation, 0 to 1; past its band it **enrages**.
 - **the folk** (code: `npc`, `src/npc/`): the clay people, all fragments of Kaolin Anagami, tiered earthenware (the clapperjars) < stoneware <
   porcelain < the Court. "The folk" in the game means the ones who speak (Saggar, Raku, Old Grog, Pip); only they speak in the dialogue
   box. Pronouns (R39): the Prince of Clay is "he"; every other folk is unisex by construction and goes by what the lore gives it (so far
@@ -152,6 +157,26 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ledger** (`src/progress/stats.js`): every count the game keeps. **achievement** (`src/progress/achievements.js`): a predicate over the ledger,
   never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
+- **the domains** (six and one): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
+  Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
+  Veritome's macros). *Retired:* Spellcasting.
+- **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
+  **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
+  carrying Delirium's status, or the reverse, hits much harder. *Not:* an element.
+- **mental state** (`src/progress/combat/mind.js`): how open a creature is to being moved: **Stoic**, **Resolved**, **Balanced**,
+  **Fluid**, **Prismatic** (solid to liquid). *Not:* mood (`npc.mood`, the folk's), nor EmO.
+- **EmO**, Emotional Output (`src/progress/combat/emo.js`): a Figment's agitation, 0 to 1; its Lachryma yield peaks in the optimal
+  band, and it enrages past it.
+- **Luck** (`src/progress/luck.js`): the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
+- **Cogitomap**: a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket to a seeded run of it.
+  Copied by Spellscription; sold, traded, hauled (`docs/ECONOMY.md`, "The livelihoods").
+- **livelihood**: a way of earning (mining, angling, hauling, a commission...) (`docs/ECONOMY.md`). *Not:* "vehicle" (the skiff is one),
+  "a living".
+- **deck** (of a drop): the shuffle bag a rare drop is drawn from: a 1-in-N item is certain within N tries. *Not:* a deck of the
+  Veritome's cards (say "the Book").
+- **mastery dividend**: the passive income an encounter pays once everything the ledger holds for it is complete.
+- **the three layers**: a **Well** (a dungeon), **the island** (action outside the Wells), **the Emocean** (travel between islands)
+  (`docs/DESIGN.md`, section 11).
 - **counter / record / first** (`stats.inc`, `stats.hi` / `stats.lo`, `stats.first`): the ledger's three kinds of entry: a number that
   only goes up, a best with when and where it was set, and the play time something first happened. A **funnel** is the firsts read in
   order (play time at the first art, fish, chest...): how fast a new player meets the game.
@@ -187,6 +212,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+- **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
+  with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
+  (`src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
 - **shot**: a psygun shot, and only that. A scripted camera is a **camera shot** (`cinema.shot`); a photograph is a **plate**.
 

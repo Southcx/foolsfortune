@@ -6,7 +6,7 @@
 //   - LAYERED. An effect is several things at once at different sizes and speeds: a core flash, a shape, sparks, something that
 //     lingers, something that drifts down; and screen weight (hitstop, shake, light) in proportion to what happened.
 //   - THE MATERIAL SPEAKS. What flies off says what was struck: clay chips and dust, crystal shards and glints, jelly bubbles and goo.
-//   - THE MIND IS LABRADORITE, LACHRYMA IS GOLD AND VIOLET, the clay is warm (the palette's named colours: gold, lach, ember, lab).
+//   - THE MIND IS LABRADORITE, LACHRYMA IS GOLD AND VIOLET, the clay is warm (the palette's named colours: gold, lach, ember, labradorite).
 //   - NO FLICKER: a flash is one wash in and out; nothing large beats at a rate.
 // ---------------------------------------------------------------------------------------
 const L = (o) => o; // (a layer: only for readability)
@@ -39,7 +39,7 @@ export const LIBRARY = {
     L({ type: 'sprites', pool: 'alpha', count: 3, shape: 'puff', dir: 'cone', cone: 40, speed: [0.5, 1.2], size: 0.25, sizeEnd: 0.55, life: 0.45, drag: 3, color: 0xd9b89a, alpha: 0.5 }),
   ] },
   'hit.shot.crystal': { extends: 'hit.shot', layers: [
-    L({ type: 'sprites', count: [5, 8], shape: 'shard', dir: 'cone', cone: 60, speed: [3, 6], size: [0.1, 0.16], sizeEnd: 0.04, life: [0.4, 0.6], gravity: 8, color: 'lab', spin: [-10, 10] }),
+    L({ type: 'sprites', count: [5, 8], shape: 'shard', dir: 'cone', cone: 60, speed: [3, 6], size: [0.1, 0.16], sizeEnd: 0.04, life: [0.4, 0.6], gravity: 8, color: 'labradorite', spin: [-10, 10] }),
   ] },
   'hit.shot.jelly': { extends: 'hit.blunt.jelly' },
   // a kill: what it was made of bursts, and a few stars of its colour go up (a finishing beat on top of its own death)
@@ -66,11 +66,11 @@ export const LIBRARY = {
   ] },
   // crystal rings and splinters: shards and glints in the stone's colours
   'hit.blunt.crystal': { extends: 'hit.blunt', layers: [
-    L({ type: 'sprites', count: [8, 12], shape: 'shard', dir: 'cone', cone: 70, speed: [3, 7], size: [0.12, 0.22], sizeEnd: 0.05, life: [0.4, 0.7], gravity: 8, drag: 1.5, color: 'lab', spin: [-10, 10] }),
-    L({ type: 'sprites', count: [4, 6], shape: 'sparkle', spawn: 'sphere', r: 0.4, size: [0.2, 0.35], sizeEnd: 0, life: [0.4, 0.7], color: 'lab', twinkle: 18, delay: [0, 0.15] }),
+    L({ type: 'sprites', count: [8, 12], shape: 'shard', dir: 'cone', cone: 70, speed: [3, 7], size: [0.12, 0.22], sizeEnd: 0.05, life: [0.4, 0.7], gravity: 8, drag: 1.5, color: 'labradorite', spin: [-10, 10] }),
+    L({ type: 'sprites', count: [4, 6], shape: 'sparkle', spawn: 'sphere', r: 0.4, size: [0.2, 0.35], sizeEnd: 0, life: [0.4, 0.7], color: 'labradorite', twinkle: 18, delay: [0, 0.15] }),
   ] },
   'hit.slash.crystal': { extends: 'hit.slash', layers: [
-    L({ type: 'sprites', count: [8, 12], shape: 'shard', dir: 'cone', cone: 80, speed: [3, 7], size: [0.12, 0.2], sizeEnd: 0.05, life: [0.4, 0.7], gravity: 8, drag: 1.5, color: 'lab', spin: [-10, 10] }),
+    L({ type: 'sprites', count: [8, 12], shape: 'shard', dir: 'cone', cone: 80, speed: [3, 7], size: [0.12, 0.2], sizeEnd: 0.05, life: [0.4, 0.7], gravity: 8, drag: 1.5, color: 'labradorite', spin: [-10, 10] }),
   ] },
   // jelly: bubbles that float off, drops of its goo that fall
   'hit.blunt.jelly': { extends: 'hit.blunt', layers: [
@@ -113,6 +113,42 @@ export const LIBRARY = {
   ] },
 
   // =============================================================================================== POOFS
+  // =============================================================================================== DAMAGE LOOKS (vfx.hit's `type`)
+  // what a blow is made of, laid over its hit (which says the tool and the material): one colour and one motif per damage type along the
+  // Law-Chaos line, so the type reads with the HUD hidden and without colour vision (each has its own shape and lightness, not only
+  // its hue). Lawful: geometric, crystalline, straight, still. Chaotic: fluid, iridescent, curling, never at rest. Prior art: Destiny's
+  // damage types (Arc's forks, Solar's flares, Void's spheres: a shape per colour), Persona's affinity icons, the elemental hit sparks
+  // of Monster Hunter; the colours follow docs/LOOK.md (lightness and saturation carry the feeling, the hue carries the world's meaning).
+  //   IMPACT     lawful, physical: bone and gold; crystal facets thrown straight out, a square flash, chips. Fired clay struck.
+  'damage.impact': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 1.05, sizeEnd: 0.2, life: 0.16, color: 0xf2e6c8, colorEnd: 'gold', rot: 0.785 }),
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.0, life: 0.18, color: 0xf2e6c8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: [7, 10], shape: 'facet', dir: 'cone', cone: 65, speed: [3, 7], size: [0.1, 0.16], sizeEnd: 0.03, life: [0.3, 0.45], drag: 4, gravity: 6, color: 0xf2e6c8, colorEnd: 'gold', spin: [-8, 8] }),
+  ] },
+  //   EGO        lawful, mental: lapis; a hex lattice that opens and holds still, diamonds in an exact ring. A mind made rigid.
+  'damage.ego': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'hex', size: 0.25, sizeEnd: 1.2, life: 0.3, color: 0xa8c0ff, colorEnd: 0x3a5fd9, alpha: 1, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: 1, shape: 'hex', size: 0.15, sizeEnd: 0.7, life: 0.36, delay: 0.05, color: 0x3a5fd9, rot: 0.5236 }),
+    L({ type: 'sprites', count: 6, shape: 'diamond', spawn: 'ring', r: 0.25, dir: 'out', lift: 0, speed: 2.4, size: 0.12, sizeEnd: 0.03, life: 0.3, drag: 6, color: 0xa8c0ff, colorEnd: 0x3a5fd9, rot: 0 }),
+  ] },
+  //   INFLUENCE  neutral, social: rose and warm gold; ripples spread slow and even, petals drift out. What spreads from one to many.
+  'damage.influence': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'ripple', size: 0.3, sizeEnd: 1.6, life: 0.55, color: 0xf2a0b8, colorEnd: 0xffd7a8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: 1, shape: 'ripple', size: 0.2, sizeEnd: 1.1, life: 0.55, delay: 0.12, color: 0xffd7a8, alphaEnd: 0, rot: 0 }),
+    L({ type: 'sprites', count: [5, 7], shape: 'petal', dir: 'swirl', spawn: 'ring', r: 0.2, lift: 0.3, speed: [0.8, 1.4], size: [0.07, 0.1], life: [0.6, 0.9], drag: 2, color: [0xf2a0b8, 0xffd7a8], spin: [-4, 4] }),
+  ] },
+  //   ILLUSION   chaotic, perceptual: the labradorite's flash; curls that turn, glints that will not hold still, a doubled sparkle.
+  'damage.illusion': { layers: [
+    L({ type: 'sprites', count: [3, 4], shape: 'swirl', spawn: 'sphere', r: 0.2, speed: [0.3, 0.7], size: [0.25, 0.4], sizeEnd: 0.6, life: [0.4, 0.6], color: 'labradorite', alphaEnd: 0, spin: [-7, 7] }),
+    L({ type: 'sprites', count: [6, 9], shape: 'glint', spawn: 'sphere', r: 0.45, speed: [0.2, 0.6], size: [0.1, 0.18], sizeEnd: 0, life: [0.3, 0.6], color: 'labradorite', twinkle: 26 }),
+    L({ type: 'sprites', count: 2, shape: 'sparkle', spawn: 'shell', r: 0.18, size: 0.4, sizeEnd: 0.05, life: 0.22, color: 'labradorite' }),
+  ] },
+  //   DELIRIUM   chaotic, entropic: ink and a sick violet-green; smoke that curls up, drips that fall, bubbles that burst. Things coming apart.
+  'damage.delirium': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [3, 4], shape: 'puff', spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.3, 0.6], size: [0.3, 0.4], sizeEnd: 0.8, life: [0.6, 0.9], drag: 2, color: 0x2a1438, alpha: 0.6, spin: [-1.5, 1.5] }),
+    L({ type: 'sprites', count: [5, 7], shape: 'drip', spawn: 'sphere', r: 0.25, dir: 'cone', axis: 'up', cone: 70, speed: [0.5, 1.5], size: [0.06, 0.1], life: [0.5, 0.8], gravity: 7, color: [0xd04ac0, 0x8ae05a], colorEnd: 0x2a1438, floor: 'ground' }),
+    L({ type: 'sprites', count: [3, 5], shape: 'bubble', spawn: 'sphere', r: 0.3, dir: 'up', speed: [0.2, 0.5], size: [0.06, 0.1], sizeEnd: 0.14, life: [0.5, 0.8], color: [0xd04ac0, 0x8ae05a], alphaEnd: 0 }),
+  ] },
   // =============================================================================================== AURAS (held, on a creature: vfx/auras.js)
   // a status, shown round whatever has it, as long as it has it (`aura.<status>`, or `aura.<status>.<kind>` for one creature's own).
   // Centred on the creature, offsets and sizes in its height (feet: [0, -0.5, 0], head: [0, 0.5, 0]); quiet: an aura is read at a
@@ -147,7 +183,25 @@ export const LIBRARY = {
     L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'soft', size: [0.9, 1.1], sizeEnd: 1.3, life: 0.8, color: 'ember', alpha: 0.18 }),
   ] },
   'aura.forget': { layers: [
-    L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'lab', alpha: 0.6, spin: [-3, 3] }),
+    L({ type: 'sprites', dur: Infinity, rate: 2.2, shape: 'swirl', offset: [0, 0.55, 0], spawn: 'sphere', r: 0.15, dir: 'up', speed: [0.1, 0.2], size: [0.15, 0.25], sizeEnd: 0.35, life: [1, 1.4], color: 'labradorite', alpha: 0.6, spin: [-3, 3] }),
+  ] },
+  // =============================================================================================== TEMPER (held, on a creature: vfx/temper.js)
+  // a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own
+  'temper.stoic': { layers: [ // dry: flakes of a fired surface falling, a little dust at the feet
+    L({ type: 'sprites', dur: Infinity, rate: 2.5, pool: 'alpha', shape: 'facet', spawn: 'shell', r: 0.45, speed: [0.05, 0.15], size: [0.05, 0.08], life: [0.8, 1.2], gravity: 2, color: [0xc8beb0, 0xa89e90], alphaEnd: 0.6, spin: [-3, 3], floor: 'ground' }),
+    L({ type: 'sprites', dur: Infinity, rate: 0.8, pool: 'alpha', shape: 'puff', offset: [0, -0.48, 0], spawn: 'disc', r: 0.35, speed: [0.05, 0.15], dir: 'up', size: 0.2, sizeEnd: 0.45, life: 1.2, color: 0xd9cfc2, alpha: 0.35 }),
+  ] },
+  'temper.prismatic': { layers: [ // liquid: the surface runs with the labradorite's colours, drips fall from it
+    L({ type: 'sprites', dur: Infinity, rate: 7, shape: 'glint', spawn: 'shell', r: 0.48, speed: [0, 0.1], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.6], color: 'labradorite', twinkle: 18 }),
+    L({ type: 'sprites', dur: Infinity, rate: 2, shape: 'drip', spawn: 'shell', r: 0.4, speed: 0.05, size: [0.05, 0.08], life: [0.6, 0.9], gravity: 4, color: 'labradorite', floor: 'ground' }),
+  ] },
+  'temper.agitated': { layers: [ // heat: steam off the top, a shimmer of warm motes rising
+    L({ type: 'sprites', dur: Infinity, rate: 3, pool: 'alpha', shape: 'puff', offset: [0, 0.4, 0], spawn: 'disc', r: 0.25, dir: 'up', speed: [0.4, 0.8], size: [0.15, 0.22], sizeEnd: 0.5, life: [0.7, 1], drag: 1, color: 0xf2ece4, alpha: 0.4, spin: [-1, 1] }),
+    L({ type: 'sprites', dur: Infinity, rate: 6, shape: 'soft', spawn: 'shell', r: 0.45, dir: 'up', speed: [0.3, 0.6], size: [0.05, 0.08], sizeEnd: 0, life: [0.5, 0.8], color: 'ember', alpha: 0.8 }),
+  ] },
+  'temper.enraged': { layers: [ // rage: sparks thrown off, hard red-gold rings pulsing out from it
+    L({ type: 'sprites', dur: Infinity, rate: 16, shape: 'streak', spawn: 'shell', r: 0.4, dir: 'out', lift: 0.6, speed: [2, 4], size: [0.05, 0.08], sizeEnd: 0.01, life: [0.25, 0.4], stretch: 1.6, gravity: 5, color: 'gold', colorEnd: 0xff3a1a }),
+    L({ type: 'sprites', dur: Infinity, rate: 1.6, shape: 'ring', size: 0.4, sizeEnd: 1.4, life: 0.5, color: 0xff4a2a, colorEnd: 'gold', alphaEnd: 0, rot: 0 }),
   ] },
   // =============================================================================================== SWINGS (held: vfx.swing(name))
   // what a thing leaves in the air as it sweeps: ribbons between its two ends (a wide one, a hot core near the tip), and motes shed along
@@ -194,8 +248,8 @@ export const LIBRARY = {
   // =============================================================================================== CHESTS (vfx/chestfx.js)
   // the circle under a chest as it charges (held: its strength is the charge), the whirling mandala
   'chest.sigil': { layers: [
-    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 2.4, tint: 'tint', lab: 0.1, glow: 1.5, spin: 0.8, offset: [0, 0.04, 0], in: 5, out: 2.5 }),
-    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 3.4, tint: 'tint', lab: 0.25, glow: 1.0, spin: -0.3, offset: [0, 0.035, 0], in: 4, out: 2.5 }),
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 2.4, tint: 'tint', labradorite: 0.1, glow: 1.5, spin: 0.8, offset: [0, 0.04, 0], in: 5, out: 2.5 }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 3.4, tint: 'tint', labradorite: 0.25, glow: 1.0, spin: -0.3, offset: [0, 0.035, 0], in: 4, out: 2.5 }),
   ] },
 
   // =============================================================================================== THE LOCKHEART'S OPENING
@@ -203,13 +257,13 @@ export const LIBRARY = {
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle
   'ult.invoke': { layers: [
     // the circles the owner's wife drew (source_assets/circles/): the lotus mandala under the Courier, the whirling one inside it
-    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 7, tint: 'gold', lab: 0.15, glow: 0.7, spin: 0.22, offset: [0, 0.05, 0], in: 2.2, out: 2 }),
-    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 4.2, tint: 'lach', lab: 0.85, glow: 0.8, spin: -0.7, offset: [0, 0.07, 0], in: 1.6, out: 2 }),
-    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 2, tint: 'white', lab: 0.4, glow: 0.6, spin: 1.4, offset: [0, 0.09, 0], in: 1.2, out: 2 }),
-    L({ type: 'mesh', mesh: 'ult_vortex', dur: Infinity, scale: 1.25, tint: 'lach', lab: 0.6, opacity: 1.3, spin: -0.9, offset: [0, 0.06, 0], in: 2, out: 3 }),
-    L({ type: 'sprites', rate: 70, dur: Infinity, shape: 'soft', spawn: 'ring', r: [3.5, 6.5], dir: 'in', speed: [3, 5], size: [0.08, 0.14], sizeEnd: 0.02, life: [0.8, 1.2], color: ['lab', 'gold', 'lach'], offset: [0, 0.3, 0] }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 7, tint: 'gold', labradorite: 0.15, glow: 0.7, spin: 0.22, offset: [0, 0.05, 0], in: 2.2, out: 2 }),
+    L({ type: 'decal', tex: 'circle_swirl', dur: Infinity, scale: 4.2, tint: 'lach', labradorite: 0.85, glow: 0.8, spin: -0.7, offset: [0, 0.07, 0], in: 1.6, out: 2 }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: Infinity, scale: 2, tint: 'white', labradorite: 0.4, glow: 0.6, spin: 1.4, offset: [0, 0.09, 0], in: 1.2, out: 2 }),
+    L({ type: 'mesh', mesh: 'ult_vortex', dur: Infinity, scale: 1.25, tint: 'lach', labradorite: 0.6, opacity: 1.3, spin: -0.9, offset: [0, 0.06, 0], in: 2, out: 3 }),
+    L({ type: 'sprites', rate: 70, dur: Infinity, shape: 'soft', spawn: 'ring', r: [3.5, 6.5], dir: 'in', speed: [3, 5], size: [0.08, 0.14], sizeEnd: 0.02, life: [0.8, 1.2], color: ['labradorite', 'gold', 'lach'], offset: [0, 0.3, 0] }),
     L({ type: 'sprites', rate: 40, dur: Infinity, shape: 'sparkle', spawn: 'ring', r: [2.6, 3.2], dir: 'up', speed: [1, 2.5], size: [0.16, 0.28], sizeEnd: 0, life: [0.8, 1.4], color: 'gold', twinkle: 16 }),
-    L({ type: 'sprites', rate: 12, dur: Infinity, shape: 'diamond', spawn: 'ring', r: [1.2, 2.2], dir: 'swirl', lift: 1.2, speed: [1.5, 2.5], size: [0.18, 0.3], sizeEnd: 0.05, life: [1, 1.6], color: 'lab', spin: [-3, 3] }),
+    L({ type: 'sprites', rate: 12, dur: Infinity, shape: 'diamond', spawn: 'ring', r: [1.2, 2.2], dir: 'swirl', lift: 1.2, speed: [1.5, 2.5], size: [0.18, 0.3], sizeEnd: 0.05, life: [1, 1.6], color: 'labradorite', spin: [-3, 3] }),
   ] },
   // a key plunged into the coffin: its colour (tint), loud
   'ult.key': { layers: [
@@ -226,8 +280,8 @@ export const LIBRARY = {
   // the coffin's ascent: rings stacked up the pillar's foot, a burst at the coffin's mouth
   'ult.ascend': { layers: [
     L({ type: 'sprites', count: 1, shape: 'core', size: 2.6, sizeEnd: 0.3, life: 0.35, color: 'white' }),
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.8, scale: [[0, 0.6], [1, 4.5]], stretch: [1, [[0, 1.4], [1, 0.4]], 1], k: [[0, 1.5], [1, 0]], tint: 'gold', lab: 0.3 }),
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, at: 0.12, scale: [[0, 0.5], [1, 3.4]], k: [[0, 1.3], [1, 0]], tint: 'lach', lab: 0.7, offset: [0, 0.8, 0] }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.8, scale: [[0, 0.6], [1, 4.5]], stretch: [1, [[0, 1.4], [1, 0.4]], 1], k: [[0, 1.5], [1, 0]], tint: 'gold', labradorite: 0.3 }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, at: 0.12, scale: [[0, 0.5], [1, 3.4]], k: [[0, 1.3], [1, 0]], tint: 'lach', labradorite: 0.7, offset: [0, 0.8, 0] }),
     L({ type: 'sprites', count: 50, shape: 'streak', dir: 'cone', axis: 'up', cone: 25, speed: [8, 16], size: [0.2, 0.35], sizeEnd: 0.05, life: [0.4, 0.7], drag: 2, stretch: 2, color: 'white', colorEnd: 'gold' }),
     L({ type: 'flash', color: 0xfff0d8, k: 0.35, dur: 0.35 }),
     L({ type: 'light', color: 'gold', k: 70, range: 14, dur: 0.8, up: 1.5 }),
@@ -236,24 +290,24 @@ export const LIBRARY = {
   // the pillar, held from the ascent to the end: a column of Lachryma to the sky, the great helix round it, streaks and sparkles
   // flowing up it, and motes orbiting
   'ult.pillar': { layers: [
-    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 1, tint: 'lach', lab: 0.8, opacity: 1.2, spin: 0.6, offset: [0, 4.5, 0], in: 4, out: 2.5 }),
-    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 0.55, tint: 'gold', lab: 0.1, opacity: 1.4, spin: -1.4, offset: [0, 4.5, 0], in: 5, out: 3 }),
-    L({ type: 'mesh', mesh: 'ult_helix', dur: Infinity, scale: 1, tint: 'gold', lab: 0.45, opacity: 1.4, spin: 1.8, offset: [0, 4, 0], in: 3, out: 2 }),
-    L({ type: 'sprites', rate: 90, dur: Infinity, shape: 'streak', spawn: 'disc', r: 0.9, dir: 'up', speed: [6, 12], size: [0.15, 0.28], sizeEnd: 0.04, life: [0.6, 1.0], stretch: 2.4, color: ['white', 'gold', 'lab'] }),
-    L({ type: 'sprites', rate: 50, dur: Infinity, shape: 'sparkle', spawn: 'column', r: [1.2, 2.2], height: 7, dir: 'swirl', lift: 0.6, speed: [1, 2], size: [0.2, 0.4], sizeEnd: 0, life: [0.7, 1.2], color: 'lab', twinkle: 14 }),
-    L({ type: 'sprites', rate: 20, dur: Infinity, shape: 'petal', spawn: 'column', r: [2, 3.5], height: 6, dir: 'swirl', lift: -0.3, speed: [1, 2], size: [0.16, 0.26], life: [1.5, 2.4], drag: 0.6, color: ['lab', 'gold'], spin: [-5, 5] }),
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 1, tint: 'lach', labradorite: 0.8, opacity: 1.2, spin: 0.6, offset: [0, 4.5, 0], in: 4, out: 2.5 }),
+    L({ type: 'mesh', mesh: 'ult_pillar', dur: Infinity, scale: 0.55, tint: 'gold', labradorite: 0.1, opacity: 1.4, spin: -1.4, offset: [0, 4.5, 0], in: 5, out: 3 }),
+    L({ type: 'mesh', mesh: 'ult_helix', dur: Infinity, scale: 1, tint: 'gold', labradorite: 0.45, opacity: 1.4, spin: 1.8, offset: [0, 4, 0], in: 3, out: 2 }),
+    L({ type: 'sprites', rate: 90, dur: Infinity, shape: 'streak', spawn: 'disc', r: 0.9, dir: 'up', speed: [6, 12], size: [0.15, 0.28], sizeEnd: 0.04, life: [0.6, 1.0], stretch: 2.4, color: ['white', 'gold', 'labradorite'] }),
+    L({ type: 'sprites', rate: 50, dur: Infinity, shape: 'sparkle', spawn: 'column', r: [1.2, 2.2], height: 7, dir: 'swirl', lift: 0.6, speed: [1, 2], size: [0.2, 0.4], sizeEnd: 0, life: [0.7, 1.2], color: 'labradorite', twinkle: 14 }),
+    L({ type: 'sprites', rate: 20, dur: Infinity, shape: 'petal', spawn: 'column', r: [2, 3.5], height: 6, dir: 'swirl', lift: -0.3, speed: [1, 2], size: [0.16, 0.26], life: [1.5, 2.4], drag: 0.6, color: ['labradorite', 'gold'], spin: [-5, 5] }),
   ] },
   // round the coffin while it hangs open in the air: a crown of flame and a halo
   'ult.crown': { layers: [
-    L({ type: 'mesh', mesh: 'ult_crown', dur: Infinity, scale: 1.3, tint: 'gold', lab: 0.25, opacity: 1.5, spin: 1.2, offset: [0, 0.3, 0], in: 6, out: 3 }),
-    L({ type: 'mesh', mesh: 'ult_crown', dur: Infinity, scale: 1.0, tint: 'lach', lab: 0.8, opacity: 1.3, spin: -2, offset: [0, 0.2, 0], in: 6, out: 3 }),
+    L({ type: 'mesh', mesh: 'ult_crown', dur: Infinity, scale: 1.3, tint: 'gold', labradorite: 0.25, opacity: 1.5, spin: 1.2, offset: [0, 0.3, 0], in: 6, out: 3 }),
+    L({ type: 'mesh', mesh: 'ult_crown', dur: Infinity, scale: 1.0, tint: 'lach', labradorite: 0.8, opacity: 1.3, spin: -2, offset: [0, 0.2, 0], in: 6, out: 3 }),
     L({ type: 'sprites', rate: 6, dur: Infinity, shape: 'ringthin', size: 0.6, sizeEnd: 2.4, life: 0.9, color: 'gold', alpha: 0.4, rot: 0 }),
     L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'glint', spawn: 'shell', r: 1.2, dir: 'out', speed: [0.5, 1.5], size: [0.3, 0.5], sizeEnd: 0, life: [0.4, 0.7], color: ['gold', 'white'], twinkle: 20 }),
   ] },
   // the wheel lands: everything at once
   'ult.land': { layers: [
-    L({ type: 'decal', tex: 'circle_lotus', dur: 1.4, scale: [[0, 3], [1, 18]], k: [[0, 1.6], [0.4, 1], [1, 0]], tint: 'gold', lab: 0.3, spin: 0.6, offset: [0, -0.9, 0] }),
-    L({ type: 'decal', tex: 'circle_swirl', dur: 1.0, face: 'camera', scale: [[0, 1], [1, 9]], k: [[0, 1.4], [1, 0]], tint: 'lach', lab: 0.9, spin: -2 }),
+    L({ type: 'decal', tex: 'circle_lotus', dur: 1.4, scale: [[0, 3], [1, 18]], k: [[0, 1.6], [0.4, 1], [1, 0]], tint: 'gold', labradorite: 0.3, spin: 0.6, offset: [0, -0.9, 0] }),
+    L({ type: 'decal', tex: 'circle_swirl', dur: 1.0, face: 'camera', scale: [[0, 1], [1, 9]], k: [[0, 1.4], [1, 0]], tint: 'lach', labradorite: 0.9, spin: -2 }),
     L({ type: 'flash', color: 0xfff6e0, k: 0.85, dur: 0.6 }),
     L({ type: 'hitstop', dur: 0.14, scale: 0.02 }),
     L({ type: 'shake', k: 0.75 }),
@@ -262,14 +316,14 @@ export const LIBRARY = {
     L({ type: 'light', color: 'lach', k: 80, range: 16, dur: 1.6, up: 3 }),
     L({ type: 'sprites', count: 1, shape: 'core', size: 5, sizeEnd: 0.5, life: 0.5, color: 'white', powerCount: false }),
     L({ type: 'sprites', count: 2, shape: 'star4', size: [5, 7], sizeEnd: 0.5, life: 0.6, color: 'gold', colorEnd: 'white', grow: 30, spin: [-1, 1], powerCount: false }),
-    L({ type: 'mesh', mesh: 'ult_dome', dur: 1.3, scale: [[0, 0.5], [1, 9]], k: [[0, 1.6], [0.5, 0.9], [1, 0]], tint: 'gold', lab: 0.4, opacity: 1.2 }),
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, scale: [[0, 1], [1, 12]], stretch: [1, [[0, 2], [1, 0.3]], 1], k: [[0, 1.8], [1, 0]], tint: 'white', lab: 0.2, offset: [0, -0.8, 0] }),
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 1.1, at: 0.1, scale: [[0, 1], [1, 9]], k: [[0, 1.5], [1, 0]], tint: 'lach', lab: 0.9, offset: [0, -0.7, 0] }),
+    L({ type: 'mesh', mesh: 'ult_dome', dur: 1.3, scale: [[0, 0.5], [1, 9]], k: [[0, 1.6], [0.5, 0.9], [1, 0]], tint: 'gold', labradorite: 0.4, opacity: 1.2 }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, scale: [[0, 1], [1, 12]], stretch: [1, [[0, 2], [1, 0.3]], 1], k: [[0, 1.8], [1, 0]], tint: 'white', labradorite: 0.2, offset: [0, -0.8, 0] }),
+    L({ type: 'mesh', mesh: 'chest_shock', dur: 1.1, at: 0.1, scale: [[0, 1], [1, 9]], k: [[0, 1.5], [1, 0]], tint: 'lach', labradorite: 0.9, offset: [0, -0.7, 0] }),
     L({ type: 'mesh', mesh: 'chest_shock', dur: 1.3, at: 0.22, scale: [[0, 1], [1, 6]], k: [[0, 1.4], [1, 0]], tint: 'gold', offset: [0, -0.6, 0] }),
     L({ type: 'sprites', count: 140, shape: 'streak', dir: 'sphere', speed: [8, 22], size: [0.25, 0.45], sizeEnd: 0.05, life: [0.4, 0.9], drag: 3, stretch: 2.2, color: 'white', colorEnd: ['gold', 'lach'], powerCount: false }),
-    L({ type: 'sprites', count: 60, shape: 'star4', dir: 'sphere', speed: [3, 9], size: [0.3, 0.6], sizeEnd: 0, life: [0.7, 1.3], drag: 2, gravity: 2, color: ['gold', 'white', 'lab'], spin: [-4, 4], twinkle: 12, powerCount: false }),
-    L({ type: 'sprites', count: 80, shape: 'petal', dir: 'sphere', speed: [3, 8], size: [0.18, 0.3], life: [2, 3.2], drag: 1.6, gravity: 1.4, color: ['lab', 'gold', 'lach'], spin: [-6, 6], at: 0.05, powerCount: false }),
+    L({ type: 'sprites', count: 60, shape: 'star4', dir: 'sphere', speed: [3, 9], size: [0.3, 0.6], sizeEnd: 0, life: [0.7, 1.3], drag: 2, gravity: 2, color: ['gold', 'white', 'labradorite'], spin: [-4, 4], twinkle: 12, powerCount: false }),
+    L({ type: 'sprites', count: 80, shape: 'petal', dir: 'sphere', speed: [3, 8], size: [0.18, 0.3], life: [2, 3.2], drag: 1.6, gravity: 1.4, color: ['labradorite', 'gold', 'lach'], spin: [-6, 6], at: 0.05, powerCount: false }),
     L({ type: 'sprites', pool: 'alpha', count: 24, shape: 'puff', spawn: 'ring', r: 0.8, dir: 'out', lift: 0.15, speed: [4, 8], size: [0.8, 1.2], sizeEnd: 2.4, life: [0.8, 1.3], drag: 3, color: 0xf3e6d8, alpha: 0.6, spin: [-1, 1], offset: [0, -0.8, 0], powerCount: false }),
-    L({ type: 'sprites', count: 40, shape: 'sparkle', spawn: 'sphere', r: 5, size: [0.3, 0.5], sizeEnd: 0, life: [0.8, 1.6], color: 'lab', twinkle: 10, delay: [0.1, 0.9], powerCount: false }),
+    L({ type: 'sprites', count: 40, shape: 'sparkle', spawn: 'sphere', r: 5, size: [0.3, 0.5], sizeEnd: 0, life: [0.8, 1.6], color: 'labradorite', twinkle: 10, delay: [0.1, 0.9], powerCount: false }),
   ] },
 };

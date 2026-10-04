@@ -250,8 +250,9 @@ export class PneukaBox {
     for (const L of LURES) if (L.id !== this.lure && !this.count(L.id)) this.add(L.id, 'start');
     const belt = this.game.belt;
     if (belt) for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.count(`tool.${t.id}`)) this.add(`tool.${t.id}`, 'start');
-    // (for the tools after the first four: the other coffins, the three instruments, and a handful of keys to begin with)
-    for (const id of ['heart.gambler', 'heart.shepherd', 'inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.invert', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
+    // (for the tools after the first four: the three instruments and a handful of keys to begin with; the Gambler's and the Shepherd's
+    // coffins and the INVERTED key are bought from Raku or found, so a first opening is never a bought jackpot: docs/DESIGN.md, section 8, proposal 2)
+    for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
     this.save();
   }
 }
