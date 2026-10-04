@@ -8,6 +8,7 @@
 // Valley's quality stars (a better-made thing sells for more), Animal Crossing's busker (an audience tires of one song).
 //
 //   buskPay(minutes, accuracy, repeats) -> cubes      commissionPay(cls, streak) -> cubes      potPay(accuracy, prestige) -> cubes
+//   bountyPay(cls) -> cubes (a named stray, mostly out of Entra Polearis, paid by the King's marque, less Letty's cut)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 
@@ -31,3 +32,6 @@ export function potPay(accuracy, prestige = 'earthenware') {
   const P = ECON.pot, w = P.floor + (P.ceil - P.floor) * Math.pow(q01(accuracy), P.power);
   return M(P.minutes * w + (P.glaze[prestige] || 0));
 }
+
+/** A bounty on a named stray of class `cls` (0 Guppy .. 4 Leviathan): a commission's worth times ECON.bounty.mult, less Letty's cut. */
+export const bountyPay = (cls) => Math.round(commissionPay(cls, 1) * ECON.bounty.mult * (1 - ECON.bounty.cut));

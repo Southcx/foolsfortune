@@ -17,7 +17,7 @@ import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
-import { buskPay, commissionPay, potPay } from '../src/progress/econ/livelihoods.js';
+import { buskPay, commissionPay, potPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
@@ -215,3 +215,11 @@ for (const [id, I] of Object.entries(ECON.islands)) {
   const v = [0.4, 0.7, 1].map(at);
   console.log(`${pad(I.name, 16)}${v.map((x) => num(x.h)).join('')}   ${v.map((x) => (x.h / aim).toFixed(2)).join(' / ')} x aim   lost ${v.map((x) => `${(x.risk * 100).toFixed(0)}%`).join(' / ')}`);
 }
+
+// the toxic symbiosis (the owner, 2026-10-04): Chaos digs crude up and sells it cheap, Law buys it dear, and Letty brings in Chaos's strays
+// for the King. The crude route Entra Polearis -> Margarite by tanker, over a fortnight of days (a clean run, distance 6), and bounties
+const route = [];
+for (let d = 0; d < 14; d++) { const buy = demand('entra', 'dread', d), sell = demand('margarite', 'dread', d); route.push(crudeRun({ ship: 'tanker', grade: 'dread', buy, sell, distance: 6 })); }
+const perH = (v) => v * 60 / (PLAY.hauler.hopMin * ECON.ships.tanker.slow);
+console.log(`\nthe crude route, Entra Polearis -> Margarite (tanker, dread, clean): a run pays ${Math.min(...route)} to ${Math.max(...route)} cubes over a fortnight, ${(perH(Math.min(...route)) / aim).toFixed(2)}x to ${(perH(Math.max(...route)) / aim).toFixed(2)}x the aim`);
+console.log(`bounties (a commission x ${ECON.bounty.mult}, less Letty's ${ECON.bounty.cut * 100}%): ${[0, 1, 2, 3, 4].map((c) => bountyPay(c)).join(' / ')} cubes, Guppy .. Leviathan (commissions ${[0, 1, 2, 3, 4].map((c) => commissionPay(c, 1)).join(' / ')})`);

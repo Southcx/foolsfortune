@@ -33,8 +33,11 @@ const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h
 /** What `island` pays for `kind` on `day` (days of play), as a multiplier of its worth, after `sold` units glutted it. */
 export function demand(island, kind, day = 0, sold = 0) {
   const I = ECON.island, k = hash(`${island}:${kind}`), period = I.periodDays[0] + k * (I.periodDays[1] - I.periodDays[0]);
-  const wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
-  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * I.glut);
+  let wave = 0.5 + 0.5 * Math.sin(2 * Math.PI * (day / period + k));
+  // (crude: the island's own place in the band, the wave a narrow swing about it: Entra sells it cheap, Margarite buys it dear)
+  const centre = ECON.crude.grades[kind] ? ECON.islands[island]?.crude : undefined;
+  if (centre !== undefined) wave = Math.max(0, Math.min(1, centre + (wave - 0.5) * 0.4));
+  return Math.max(I.lo * 0.5, I.lo + (I.hi - I.lo) * wave - sold * (ECON.crude.grades[kind] ? ECON.crude.glut : I.glut));
 }
 
 /** The fuel for a hop of `distance` units across the Emocean. */
