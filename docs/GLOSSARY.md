@@ -233,6 +233,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   with the HUD hidden. **aura** (`aura.<status>`, `src/vfx/auras.js`): a status shown round the creature that has it. **temper**
   (`game.temper`, `src/vfx/temper.js`): a creature's body showing its mental state and its EmO (never text).
 - **sequence** (`game.cine`, `src/cine/`): a cinematic as data (the Opening, a chest's opening).
+- **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
+  (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
+  anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.
+  A **still** (`src/ui/stills.js`): a frame of the trailer held as a sepia photograph on a stop-time hit (not a plate: nothing is taken).
 - **shot**: a psygun shot, and only that. A scripted camera is a **camera shot** (`cinema.shot`); a photograph is a **plate**.
 
 ## Engine and process words

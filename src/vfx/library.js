@@ -295,6 +295,25 @@ export const LIBRARY = {
   // =============================================================================================== CHESTS (vfx/chestfx.js)
   // (the circle and mandala under a charging chest are gone, the owner's, R45: the chest's glaze tells the charge, vfx/chestglaze.js)
 
+  // =============================================================================================== THE OVERTURE'S TRAILER (cine/overture.js)
+  // the CLIMB's ring: the Mind's labradorite wound round the Courier as the tools are drawn, faster and brighter to the snare roll
+  'overture.ring': { layers: [
+    L({ type: 'mesh', mesh: 'ult_vortex', dur: Infinity, scale: 0.55, tint: 'labradorite', labradorite: 0.9, opacity: 1.1, spin: 2.4, offset: [0, 0.1, 0], in: 4, out: 3 }),
+    L({ type: 'sprites', dur: Infinity, rate: 60, shape: 'streak', spawn: 'ring', r: 1.1, offset: [0, 0.6, 0], dir: 'swirl', lift: 0.25, speed: [3, 5], size: [0.06, 0.1], sizeEnd: 0.01, stretch: 2, life: [0.3, 0.5], color: ['labradorite', 'gold'] }),
+    L({ type: 'sprites', dur: Infinity, rate: 18, shape: 'sparkle', spawn: 'column', r: 1.0, height: 1.8, offset: [0, -0.4, 0], dir: 'up', speed: [0.6, 1.2], size: [0.1, 0.16], sizeEnd: 0, life: [0.5, 0.8], color: 'white', twinkle: 14 }),
+  ] },
+  // a tool drawn on the half bar: a flash of the Mind at the hand, a ring out
+  'overture.draw': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.2, sizeEnd: 1.6, life: 0.35, color: 'labradorite' }),
+    L({ type: 'sprites', count: 10, shape: 'glint', dir: 'sphere', speed: [1.5, 3], size: [0.08, 0.14], sizeEnd: 0, life: [0.3, 0.5], drag: 3, color: ['labradorite', 'white'], twinkle: 16 }),
+    L({ type: 'flash', size: 1.2, life: 0.12, color: 'white' }),
+  ] },
+  // the FUSE: the mend's gold breaking across the dark, a crack of light
+  'overture.crack': { layers: [
+    L({ type: 'sprites', count: 14, shape: 'streak', spawn: 'line', dir: 'line', speed: [0.2, 0.6], size: [0.04, 0.07], sizeEnd: 0, stretch: 2.5, life: [0.6, 1.0], color: 'gold' }),
+    L({ type: 'sprites', count: 6, shape: 'sparkle', spawn: 'line', size: [0.08, 0.14], sizeEnd: 0, life: [0.5, 0.9], color: ['gold', 'white'], twinkle: 12 }),
+  ] },
+
   // =============================================================================================== THE LOCKHEART'S OPENING
   // (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose)
   // the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle

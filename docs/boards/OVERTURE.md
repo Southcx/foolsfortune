@@ -78,16 +78,32 @@ music video's habit of cutting on the accent, not the bar, when the band hits.
 | 1:21.6 | THE STRIKE | the logo FIRED: kintsugi gold floods its cracks in one frame as the chord stops dead | the one frame the whole trailer climbs to |
 | 1:24.0 | TITLE | the music box: the title, the Courier on the edge | hands on to The Fool's Precipice |
 
-## What it needs to be built (if the owner wants it in the engine)
+## As built (R45: the owner's yes)
 
-- **One sequence** (`src/cine/`): `overture`, its segments the sections above, each shot a key at its time; `len` stretching already fits a
-  section to its music. The music's clock drives it (Wanda's cue times), so a cut never drifts.
-- **Places**: the shots need the Courier and the camera put in each room for a bar (a teleport the sequence asks for, then the zone draws
-  only that room). Petra's: `course` and the zones.
-- **New looks**: the photograph freeze (a darkroom grade over a held frame), the tool ring for the CLIMB, the logo as a mesh to glaze. Mine.
-- **Puppetry**: the Courier's moves on cue (wallrun, slide, dash, mantle, the draws); the jellies' statuses on cue. Driven like the stress
-  test drives them, but scripted.
-- **Cost**: it plays once a session on the title, so it can afford a little; it must still hold the frame (`npm run perf`).
+The trailer is `src/cine/overture.js` (the director), `src/cine/overture.board.js` (the board as data: when, where, what the Courier does)
+and the `overture` sequence in `src/cine/sequences.js` (the camera, a segment a camera shot, editable in the workbench's CINEMA tab).
+It starts on the overture's first note on the title, once a session; its clock is the music's own (the arranger's section and bar
+against the audio clock), so each camera shot lands on its hit. Any key or click skips to the title. `/overture` plays it anywhere (with
+the music, once the sound test has the overture).
 
-Canon now: the firing as the through-line, the colour script, the board above. Open: the owner's yes to building it in the engine, and
-any bar Wanda wants to move.
+- **The world is run for it**: the Courier is put in each place and moved with the real controls (the wallrun, the slide, the dash,
+  the mantle are the moves, held keys, not poses), the tools are really drawn, the jellies really take the statuses and the damage
+  looks. Nothing done in it is the player's: the ledger is put back, the log says nothing, the Courier goes back where they were.
+- **The solo is staged**: the Lockheart's Opening sequence stepped on the music (invoke, the four keys, the ascent, the wheel on the
+  tapping, the landing on the twin leads), its wheel spun to nothing: no keys used, no outcome, the music never ducked. Played on the
+  Dunes shore, so the pillar stands in open sky.
+- **The break** is four stills (`src/ui/stills.js`), riffled away on the drum fill.
+- **ASCEND to THE STRIKE** is the title's own scene: the camera craned from close on them, sitting on the edge, up to the title's
+  framing; the logo (`src/vfx/logofire.js`) comes up in raw clay on the kiln intro, is glazed by the chest's climb (celadon, crazing,
+  raku) and floods with kintsugi gold on the strike, with the kiln's light thrown open; then the title's own logo takes over.
+
+Changed from the board, and why:
+- CHORUS 2 bar 6 (the forms of the one entity on one silhouette) is the Dreamvane on the shore for now: the ships do not exist yet. It
+  comes back when they do.
+- VERSE 3 is the Courier waving to Pip, not the folk in a row: the folk stand in their own rooms.
+- The chorus's type bars play on the open sand by the crystals, not in the hub: the hub's crates and signs cluttered every frame.
+- Colour script: through `game.mood` (the room dimmed and tinted per section); the present has no saturation or sepia control, so the
+  stills carry their sepia themselves.
+
+Canon now: the firing as the through-line, the colour script, the board above, built. Open: the forms on one silhouette (when the ships
+exist), and any bar Wanda wants to move.

@@ -24,6 +24,16 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
 
 ## Petra (Main)
 
+**2026-10-04, from Calissa: the overture's trailer (the owner's yes); small edits in main.js, and what it drives of yours**
+- `main.js`: `game.overture = new Overture(game)`; in the frame, while the title is up and the trailer is in its world part, the world is
+  ticked and drawn under the title (`O.update; tick; follow(title music); post.render; O.afterRender`), and after the title's own update
+  `O.titleFrame(scene)` cranes its camera and fires the logo; the place's music in `tick` stands down while it plays; `/overture` added.
+- What it uses of yours, read-only or through your own calls: `course.cps` and the spawns, `player.killY` (lowered per place as
+  `toDunes` does, put back after), `god.enter`/`forceOff`, `chests.spawn`/`remove`, `jellies.spawn`/`vanish`/`dispose`, `creatures.apply`,
+  `vessel.preview`/`revert`, `techs.get('skiff')`, the belt's draws, `ledger` (snapshotted and put back), `log.say` (silenced while it plays),
+  and the title's DOM (`#title` hidden in the world part, `.logo` and `.press` held back until the strike).
+- Perf: counts unchanged; heap noisy (four runs 254-269 MB against 237-255 before it). Nothing is allocated before it plays.
+
 **2026-10-04, from Calissa: the chest glaze and the mend's gold (the owner's yes, via Dovina's digest); small edits in your files**
 - **The chest glaze replaces the tier beams** (`src/vfx/chestglaze.js`): a chest is fired as it charges, celadon, then crazing, then raku,
   then kintsugi gold flooding the seams (`glazeAt(tier)`: common 1 .. prismatic 4); kept once fired. `chestmodel.js`: the body and lid are
@@ -110,6 +120,12 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
   bubble, whale, phaseguitar), free for the Crucibelle's voices if you want them. Every new score carries `root`.
 
 ## Wanda (Audio)
+
+**2026-10-04, from Calissa: the trailer follows your overture's clock**
+- `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
+  the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
+  change, tell me. `/overture` plays the sound test's track of that title. It goes live on the title the day your branch is merged.
+- The world's own sounds (jumps, hits, the bell, the explosion) play under the music during it; duck them if they fight the band.
 
 **2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
 - While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after
