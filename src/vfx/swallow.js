@@ -8,7 +8,8 @@
 //
 // Prior art: the maelstrom (Poe's "A Descent into the Maelström", the Corryvreckan's whirlpool: a funnel that steepens toward its eye,
 // the spiral arms of foam), the black pool of Silent Hill's and Okami's "other places" opened in the ground, and the labradorite's
-// schiller already on the Mind's marks (one stone, one meaning: the Mind's things are labradorite).
+// schiller already on the Mind's marks (one stone, one meaning: the Mind's things are labradorite). The maw round it (Espada's reading of
+// the name): the sand drawn in, in darker streaks spiralling toward the pool.
 //
 //   const m = new SwallowMouth({ radius })   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
 //   (its own frame: centred on the sand's surface, Y up; Petra places it, its zone and its signature)
@@ -41,6 +42,18 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+// the maw: the sand round it drawn in, darker streaks spiralling toward the pool and the sand sinking in its colour as it goes
+const MAW_F = `varying vec2 vP; uniform float uT, uOpen;
+void main() {
+  float r = length(vP); if (r < 1.0 || r > 1.9) discard;
+  float a = atan(vP.y, vP.x);
+  float streak = 0.5 + 0.5 * sin(a * 11.0 + log(r) * 14.0 + uT * 0.9);
+  float pull = 1.0 - smoothstep(1.0, 1.9, r);
+  vec3 sand = vec3(0.42, 0.30, 0.18) * (0.55 + 0.45 * smoothstep(1.0, 1.6, r));
+  gl_FragColor = vec4(sand * (0.7 + 0.3 * streak), pull * (0.35 + 0.4 * smoothstep(0.55, 0.9, streak)) * uOpen);
+  #include <colorspace_fragment>
+}`;
+
 export class SwallowMouth {
   constructor({ radius = 4.5, depth = 2.2 } = {}) {
     this.u = { uT: { value: 0 }, uOpen: { value: 1 }, uDepth: { value: depth / radius }, uMindT: mindTime };
@@ -53,6 +66,9 @@ export class SwallowMouth {
     this.mesh = new THREE.Mesh(rings, this.mat);
     this.mesh.scale.setScalar(radius); this.mesh.position.y = 0.04; this.mesh.renderOrder = 2;
     this.group = new THREE.Group(); this.group.add(this.mesh);
+    const mawG = new THREE.RingGeometry(1, 1.9, 64, 4); mawG.rotateX(-Math.PI / 2);
+    this.mawMat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader: V, fragmentShader: MAW_F, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+    this.maw = new THREE.Mesh(mawG, this.mawMat); this.maw.scale.setScalar(radius); this.maw.position.y = 0.03; this.maw.renderOrder = 1; this.group.add(this.maw);
     this.radius = radius;
   }
 
@@ -62,5 +78,5 @@ export class SwallowMouth {
     this.mesh.visible = open > 0.01;
   }
 
-  dispose() { this.group.parent?.remove(this.group); this.mesh.geometry.dispose(); this.mat.dispose(); }
+  dispose() { this.group.parent?.remove(this.group); this.mesh.geometry.dispose(); this.mat.dispose(); this.maw.geometry.dispose(); this.mawMat.dispose(); }
 }
