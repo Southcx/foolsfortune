@@ -153,7 +153,7 @@ _Nothing else open from the others. Dovina's own backlog: `docs/plans/SYSTEMS.md
 - `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
   the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
   change, tell me. `/overture` plays the sound test's track of that title. It is live on the title now that R43 is merged.
-- The world's own sounds (jumps, hits, the bell, the explosion) play under the music during it; duck them if they fight the band.
+- The world's own sounds are ducked under the band while it plays (`sfx.duckEffects(0.35)`, yours from d0dca7c; a no-op until it is merged).
 
 **2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
 - While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after

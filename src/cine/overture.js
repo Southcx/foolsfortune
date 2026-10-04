@@ -21,6 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Stills } from '../ui/stills.js';
+import { sfx } from '../audio/sfx.js';
 import { LogoFire } from '../vfx/logofire.js';
 import { BOARD, PLACES, BAR, HANDOVER, ROAR, STRIKE, END, OVERTURE_TITLE } from './overture.board.js';
 
@@ -68,6 +69,7 @@ export class Overture {
     this.spawned = [];
     document.getElementById('title')?.style.setProperty('opacity', '0'); // (the title's words wait for the title)
     g.ui?.want('overture', true); document.body.classList.add('overture');
+    sfx.duckEffects?.(0.35); // (the world's own sounds under the band; the music has its own way out: Wanda's)
     this.h = g.cine.play('overture', { anchors: this.anchors = { here: new THREE.Vector3(), courier: () => g.player.renderPos, look: new THREE.Vector3() }, yaw: 0, id: 'overture' });
     g.events.emit('overture.start', { own });
   }
@@ -92,6 +94,7 @@ export class Overture {
     if (g.achievements) g.achievements.tick = this.achTick;
     document.getElementById('title')?.style.setProperty('opacity', '1');
     g.ui?.want('overture', false); document.body.classList.remove('overture');
+    sfx.duckEffects?.(1);
   }
 
   stop() {
