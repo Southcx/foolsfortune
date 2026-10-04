@@ -17,6 +17,7 @@
 //   break.*     counts         break.total, break.kind.<kind>, break.cause.<cause>
 //   clapper.*   counts         clapper.down, clapper.cause.<cause>
 //   shot.*      counts         shot.fired, shot.hit, shot.charged, shot.air, shell.fire.<id>
+//   the arts' goals (B7)       land.drop12, land.drop20, chain.blink2, chain.stomp3, target.slam.moving50, roll.end, time.slip
 //   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty
 //   god.*       counts         god.enter, god.grab, god.throw, god.sunder, god.cuts, god.manifest, god.raid, god.wave
 //   skiff.*     counts         skiff.start, skiff.pump, skiff.hop, skiff.trick, skiff.spins, skiff.wobble
@@ -142,6 +143,7 @@ export class Tracking {
       L.inc('target.hit');
       if (e.drop > 5) L.hi('target.drop', e.drop);
       if (e.moving) L.inc('target.moving');
+      if (e.cause === 'slam' && e.drop >= 50 && e.moving) L.inc('target.slam.moving50');
       if (e.drop > 5 || e.moving) log.say('battle', `You strike the target${e.drop > 5 ? ` from ${Math.round(e.drop)} m up` : ''}${e.moving ? ' as it moves' : ''}.`, { key: 'tgt', win: 0.5 });
     });
     on('slip.splat', () => L.inc('slip.splat'));
@@ -174,6 +176,8 @@ export class Tracking {
       L.inc('move.land');
       const drop = e.drop || 0;
       if (drop > 0.5) { const r = L.hi('fall.max', drop, { at: this.where() }); this.note('fall.max', r, `Your longest fall is now ${Math.round(drop)} m.`, 12, drop); }
+      if (drop >= 12) L.inc('land.drop12');
+      if (drop >= 20) L.inc('land.drop20');
       if (drop >= 10) log.say('move', `You land from a ${Math.round(drop)} m fall.`, { key: 'land', win: 1 });
       if (e.air > 0.3) { const r = L.hi('air.longest', e.air, { at: this.where() }); this.note('air.longest', r, `Your longest airtime is now ${fx(e.air, 1)} s.`, 2.5, e.air); }
     });
@@ -187,8 +191,20 @@ export class Tracking {
 
     // ---- the movement arts
     on('tech.start', (e) => { L.inc(`tech.start.${e.id}`); if (!['emote', 'talk', 'death', 'ultimate'].includes(e.id)) first(`tech.${e.id}`, `Logged: your first use of ${BY_ID[e.id]?.name || e.id}.`); });
-    on('tech.end', (e) => { L.inc(`time.tech.${e.id}`, e.dur || 0); L.hi(`tech.longest.${e.id}`, e.dur || 0); });
-    on('move.blink', () => L.inc('move.blink'));
+    on('tech.end', (e) => {
+      L.inc(`time.tech.${e.id}`, e.dur || 0); L.hi(`tech.longest.${e.id}`, e.dur || 0);
+      if (e.id === 'roll') L.inc('roll.end');
+      if (e.id === 'slip') L.inc('time.slip', e.dur || 0);
+    });
+    // a chain counts once when n of an event fall each within `within` s of the last, then starts over (as the arts' chain goals do)
+    const chained = (key, n, within) => (e) => {
+      const st = (this._chain[key] ||= { i: 0, t: -99 });
+      st.i = e.t - st.t <= within ? st.i + 1 : 1; st.t = e.t;
+      if (st.i >= n) { st.i = 0; L.inc(key); }
+    };
+    this._chain = {};
+    const blink2 = chained('chain.blink2', 2, 0.9), stomp3 = chained('chain.stomp3', 3, 4);
+    on('move.blink', (e) => { L.inc('move.blink'); blink2(e); });
     on('slam.impact', (e) => {
       L.inc('move.slam'); if (e.target) L.inc('slam.target');
       const r = L.hi('slam.height', e.height, { at: this.where() });
@@ -196,7 +212,7 @@ export class Tracking {
       if (!e.target && e.height > 6) log.say('move', `You slam into the ground from ${e.height.toFixed(0)} m.`, { key: 'slam', win: 1.2 });
       else if (e.target) log.say('battle', 'Your slam strikes the target.', { key: 'slamt', win: 1.2 });
     });
-    on('move.stomp', (e) => { L.inc('move.stomp'); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
+    on('move.stomp', (e) => { L.inc('move.stomp'); stomp3(e); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
     on('kick.swing', () => L.inc('kick.swing'));
     on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
     on('move.parry', (e) => { L.inc('move.parry'); L.hi('parry.speed', e.speed); log.say('battle', 'You parry the shot.', { key: 'parry', win: 1 }); });
@@ -406,6 +422,8 @@ export class Tracking {
     on('blade.resist', (e) => { L.inc('blade.resisted'); log.say('battle', `The ${KIND(e.kind)} turns your blade aside${e.why === 'uncuttable' ? ': it cannot be cut' : ': stun it first'}.`, { key: 'bres', throttle: 2 }); });
     on('creature.zandatsu', (e) => { L.inc('zandatsu.creature'); L.inc(`zandatsu.${e.kind}`); log.say('battle', `You take the ${KIND(e.kind)} apart. It comes undone into Lachryma.`, {}); });
     on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
+    on('creature.resist', (e) => { if (e.by === 'courier') { L.inc('status.resisted'); log.say('battle', `The ${KIND(e.kind)} shrugs it off.`, { key: 'resist', win: 1.5 }); } });
+    on('combat.annihilate', (e) => { if (e.by === 'courier') { L.inc('combat.annihilate'); L.inc(`combat.annihilate.${e.type}`); log.say('battle', `The ${KIND(e.kind)} comes apart at both ends of itself.`, { key: 'annihilate', win: 1 }); } });
     on('emote.start', (e) => { L.inc('emote.total'); L.inc(`emote.${e.emote}`); const E = EMOTES[e.emote]; if (E) log.say('emote', E.line); });
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });

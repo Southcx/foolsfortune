@@ -90,12 +90,88 @@ How prices move (`ECON.shop`, after OSRS):
 - **Crystals.** A full round of the formations paid nearly three times the aim. Base 8 → 3, per size 10 → 6.
 - **The Lockheart's CUBES.** 18 → 12 per unit of power. It is a gamble on Lachryma, not a mint.
 
-## Saggar's glazes (the glamour sink)
+## The worth of a look (glazes, stones, hair, skin: the glamour sink)
 
-Six glazes are sold at the kiln (`ECON.glazeShop`), each dearer than the last one bought: 10, 15, 20, 30, 45 and 60 minutes of play
-(80 to 480 cubes; 1,440 for all six, three hours). The first is cheap enough to try on a whim; the last is a decision. They are never
-the glazes earned by achievements or learned from photographs: what is bought is never what is earned. The rows are Calissa's (the
-colours) and Espada's (the blurbs); the price is the table's.
+The kiln is the game's glamour, and the owner hunts glamour for hours (FFXIV, GW2), so it is the biggest *chosen* sink: what a look costs
+says what it is worth. The principles (ruled in outline by the owner, 2026-10-04; the placements below are provisional until Espada and
+Calissa have weighed in):
+
+1. **Price follows desirability, never what a look "costs to make".** A look is a sink, not a product.
+2. **Desirability is scored on four axes, 0 to 2 each:**
+   - *rarity in the fiction and in history*: Ru ware, fewer than a hundred pieces; yohen tenmoku, three bowls; oxblood, the hardest red;
+   - *how distinct it looks*: a special shader (metal, glow, a gem's fire, opal's play, a gradient) beats a flat colour;
+   - *the extremes*: the purest white, the deepest black, the most saturated, the iridescent (FFXIV's jet black and pure white dyes are
+     its most prized);
+   - *identity*: Lachryma's own sheen, the Prince's own clay.
+3. **The score sets the prestige, on the folk's own clay ladder:**
+
+   | score | prestige | how it is got | price |
+   |---|---|---|---|
+   | 0–1 | Earthenware | yours from the start, free | 0 |
+   | 2–3 | Stoneware | bought | 10 minutes of play (80 cubes) |
+   | 4–5 | Porcelain | bought, or earned | 25 minutes (200 cubes) |
+   | 6 | the Court | bought, or earned | 60 minutes (480 cubes) |
+   | 7–8 | the Prince's own | **earned only**, never sold | none |
+
+4. **The ratio is about 2.5× a step.** Value is felt in ratios, not differences (Weber and Fechner), so a step up must feel like one.
+5. **No bought look costs more than an hour's play.** Past that it is not a purchase but a goal, and goals are achievements.
+6. **What is bought is never what is earned**, and the top of every ladder is earned. A medal glaze is worth more than any glaze sold,
+   because nobody could buy it.
+7. **The start is a palette, not a placeholder.** A new Courier can already look like themselves, from humble earthenware.
+8. **Measured**: the ledger counts every firing by look (`glaze.fire.<id>`), which shows what players actually want. A look worn far
+   above its tier's average is under-priced and climbs a tier the next build; one no one buys is misplaced.
+9. **Looks only.** Nothing at the kiln changes a number in play.
+
+**The placement** (scores from the four axes, corrected by Espada from the canon: `docs/LORE.md` section 8, "The worth of a look").
+*The folk rank a glaze as they rank each other*: what a tier wears is common to it, and what the tier above wears is aspired to.
+
+Prestige sets the price of what is sold; how a look is got (from the start, earned, or bought: `got` in `glazes.js`) is separate. An
+achievement glaze has a prestige too, which says how much it is worth having.
+- **Body glazes.**
+  - Earthenware: terracotta, bisque, shino.
+  - Stoneware: natural ash, kaki, salt, ame, majolica, nuka, tenmoku (Old Grog's working tea-bowl glaze). Majolica stays here: it is the purest white (Calissa), but tin glaze
+    on earthenware is never grand (Espada), and prestige is the canon's call.
+  - Porcelain: cobalt, oribe, celadon (Saggar's head-maid mark: what the stoneware folk envy), raku, copper lustre (Raku's, worn to look
+    grander), hare's fur.
+  - The Court: jun, kinrande. Guan ("official") and Ru (an emperor's court) are the Court's own, so they are **earned only**: a Court
+    glaze is given, never bought.
+  - The Court, earned: oil spot (a step below yohen once its silver blooms render; Calissa).
+  - The Prince's own: oxblood, yohen tenmoku (the kiln's accident, the experimenter's prize), Lachryma black (no folk could bear it;
+    only a Courier wears it).
+- **Stones.**
+  - Earthenware: the maker's stones, citrine.
+  - Stoneware: amethyst, onyx (the deepest black: an extreme, not free).
+  - Porcelain: emerald, sapphire, moonstone (its own glow).
+  - The Court: ruby.
+  - The Prince's own: diamond, opal.
+- **Hair.**
+  - Earthenware: satin, raven, ashen.
+  - Porcelain: copper, bisque to rose.
+  - The Prince's own: ink to gold, oil slick.
+- **Skin.**
+  - Earthenware: Lachryma (a Courier's own nature), moonlight.
+  - Porcelain: ember, pearl.
+  - The Court: obsidian.
+  - The Prince's own: porcelain (Kaolin, the Prince's own clay: wearing it is wearing him) and aurora.
+
+What is for sale today, at these prices:
+
+| what | cubes |
+|---|---:|
+| five stoneware glazes and two stoneware stones (80 each) | 560 |
+| a porcelain glaze, three stones, two hairs and two skins (200 each) | 1,600 |
+| a Court stone and a Court skin (480 each) | 960 |
+| **all of it** | **3,120 (about 6.5 hours of play)** |
+
+The rest are earned. As Calissa adds rows, the sink grows with them.
+
+**What the eye says** (Calissa): the shader-driven looks read most striking at 480 lines (opal's play, oil-slick hair, aurora, diamond's
+fire, Lachryma black's film, the metal of kinrande and copper lustre, moonstone's glow), and flat colours read weakest whatever their
+history. The rarest glazes now draw their **kiln patterns** (Calissa, `claude/calissa-art-cups` 9462552): yohen's haloed stars, oil spot's
+silver blooms, hare's fur's streaks, guan's two-size crackle, raku's and Ru's crackle, kinrande's gold leaf on red, and porcelain skin's
+translucency. By eye, strongest first: yohen, kinrande, oil spot, guan, hare's fur, Ru. Ru is the quietest, rare by its story more than
+its surface, and that is the reason it is earned, not sold. Moonlight's blue rim is the strongest free look on purpose: the hook that
+makes a new Courier open the kiln.
 
 ## The livelihoods (ruled with the owner, 2026-10-04; most are not built yet)
 
@@ -148,6 +224,21 @@ A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the 
 
 Cut: salvage (the deep Emocean leaves no wreckage), and spell scrolls (a caster shell is a spell, and the Lockheart's casting coffins fill
 the rest of that niche).
+
+**The numbers, simulated before anything is built** (`ECON.busk`, `.commission`, `.pot`, `.well`, `.cogitomap`, `.island`, `.emocean`;
+the pay rules are `src/progress/econ/livelihoods.js` and `islands.js`). Cubes an hour at poor / middling / masterful play:
+
+| livelihood | poor | middling | masterful |
+|---|---:|---:|---:|
+| busking | 0.42× | 0.75× | 1.27× |
+| commissions (Barracuda) | 0.91× | 1.05× | 1.25× |
+| throwing pots (stoneware) | 0.54× | 0.88× | 1.42× |
+| Well runs | 0.72× | 1.21× | 1.31× |
+| hauling | −0.46× (cargo lost) | 0.95× | 1.51× |
+
+Each livelihood pays more the better it is played, and none passes 1.5× the aim except hauling at its best, where the risk is the profit.
+A Cogitomap of a five-floor run is worth 79 cubes fresh, 39 after 20 hours, 10 after 60: the Well drifts, so maps are worth hauling
+while they are fresh.
 
 **Cogitomaps.** A Well is a Lachryma distortion, and it changes over time. A Cogitomap is a map of one Well as it was when it was charted,
 so it is **a ticket to a seeded run of that Well**: the same layout, the same rewards. The Courier charts it, and **Spellscription**

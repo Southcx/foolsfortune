@@ -3,8 +3,10 @@
 // Manifestation, Divination, Psychokinesis, Possession, Alteration, and Spellscription (transcribing a thing down). Each has a level, 1
 // to 99, from EXP; all seven at 99 is "The World", the end of the Fool's Journey. EXP comes from doing the domain's things, and from
 // doing them WELL: every source names the event it is earned from, its base EXP, and how the event says how good it was (0 .. 1), and
-// a sloppy act earns half the base and a perfect one half again (the pillar: the skill is the verb, so practice and competence drive
-// the level together). The bases are relative WEIGHTS within a domain; one PACE scales every domain alike, so 99 takes the same time in
+// and the weight of quality is steep on purpose (the owner, 2026-10-04: "a god-gamer should progress much faster"): SKILL's curve gives
+// a rote act 0.4 of the base, a middling one about 1, and a masterful one 5, so the grind to "The World" is about 2,100 hours and a
+// player who plays ambitiously and well gets there in about 400. A source's quality should measure ambition as well as accuracy (the
+// fragile formation's sweet spot, the long macro typed clean, the four-star photograph), never repetition. The bases are relative WEIGHTS within a domain; one PACE scales every domain alike, so 99 takes the same time in
 // each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; nothing
 // reads it yet (docs/plans/SYSTEMS.md, B8).
 //
@@ -13,7 +15,7 @@
 // Turismo's graded results (how well, not only how often).
 //
 //   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base, quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
-//   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> the multiplier that puts a domain's average act on PACE
+//   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
 //   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
 // ---------------------------------------------------------------------------------------
 
@@ -50,8 +52,12 @@ export const SOURCES = [
   { event: 'sigil.pop',       domain: 'spellscription', base: 4,  quality: () => 0.5 },
 ];
 
-/** How long 99 takes in any domain at middling quality (0.5), and how often a domain's acts come. */
+/** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
 export const PACE = { hours99: 300, actsPerMin: 6 };
+
+/** How much quality weighs: floor + (ceil - floor) x quality^power. Rote (0) 0.4, middling (0.5) about 1, masterful (1) 5. */
+export const SKILL = { floor: 0.4, ceil: 5, power: 3 };
+export const skillWeight = (q) => SKILL.floor + (SKILL.ceil - SKILL.floor) * Math.pow(Math.max(0, Math.min(1, q)), SKILL.power);
 
 /** The multiplier that puts a domain's average source on PACE (defined below the curve, which it needs). */
 let SCALE = null;
@@ -60,20 +66,20 @@ export function scaleOf(domain) {
     SCALE = {};
     for (const d of Object.keys(DOMAINS)) {
       const src = SOURCES.filter((x) => x.domain === d), avg = src.reduce((a, x) => a + x.base, 0) / Math.max(1, src.length);
-      SCALE[d] = expAt(MAX_LEVEL) / (PACE.hours99 * 60 * PACE.actsPerMin * avg * 1.0);
+      SCALE[d] = expAt(MAX_LEVEL) / (PACE.hours99 * 60 * PACE.actsPerMin * avg * skillWeight(0.5));
     }
   }
   return SCALE[domain] || 1;
 }
 
-/** The EXP an event is worth, by domain: base x the domain's scale x (0.5 + quality). A source whose quality is null does not count. */
+/** The EXP an event is worth, by domain: base x the domain's scale x skillWeight(quality). A source whose quality is null does not count. */
 export function expFor(e) {
   const out = [];
   for (const s of SOURCES) {
     if (s.event !== e.name) continue;
     const q = s.quality(e);
     if (q == null) continue;
-    out.push([s.domain, Math.round(s.base * scaleOf(s.domain) * (0.5 + q))]);
+    out.push([s.domain, Math.round(s.base * scaleOf(s.domain) * skillWeight(q))]);
   }
   return out;
 }
