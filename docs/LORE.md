@@ -192,7 +192,22 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
 
 ## 4. Tone and voice
 
-Habits the text already has, kept until the owner says otherwise.
+### The owner's rules for every word *(Ruled, Round 41)*
+- **Light overtones, dark undertones.** Safe for a child to play, layered enough to be worth coming back to when older. No blood, no
+  swearing, no adult themes (so far). The darkness is in what is implied, never in what is shown.
+- **The stories teach growing up**: getting through hardship, resilience, persistence. Pip learning not to fear pots, Grog staying by the
+  water, the Courier stepping off the edge again. Nobody is lectured; the lesson is in what the character does next.
+- **Density over length.** A line earns its place by carrying two or three meanings. Names are their own destiny (kaolin is porcelain
+  clay, an anagama is a tunnel kiln: the owner did the research, and every new name should too).
+- **Worldbuilding sets initial conditions and lets the consequences follow.** Decide the rule (Lachryma past what a mind can bear
+  transfigures it), then let the town, the jellies and Grog's grief fall out of it.
+- **Blanks stay blank.** Placeholder text is marked as placeholder, never polished into something that reads like canon.
+- **No fat, especially in the UI.** The game's interface text (menus, the kiln window, the help pages, the Codex, tool and item
+  names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
+  present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
+
+### Habits the text already has
+Kept until the owner says otherwise.
 
 - **British spelling**: colour, favourite, grey.
 - **Plain, wry, understated.** Funny by being flat about strange things: "It does up nothing. It has been on a great many coats."
