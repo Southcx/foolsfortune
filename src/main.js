@@ -92,7 +92,6 @@ import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Shore } from './vfx/shore.js';
-import { BugMarkup } from './ui/bugmarkup.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
 import { HideUI } from './feedback/hideui.js';
@@ -166,10 +165,13 @@ import { Overture } from './cine/overture.js';
 import { OVERTURE_TITLE } from './cine/overture.board.js';
 import { TRACKS as SOUNDTRACKS } from './music/soundtest.js';
 import { Diag } from './debug/diag.js';
+import { Qais } from './debug/qais/qais.js';
+import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 
 const FIXED = 1 / 60;
+const QAIS_ON = import.meta.env.VITE_PUBLIC !== '1'; // (a public build is made without QAIS: `VITE_PUBLIC=1 npm run build`; its window and store are not bundled then)
 
 /** Draw everything once, everywhere, into a postage stamp, before the first frame. Compiling a shader is not the whole of a first draw:
  *  three.js uploads a geometry's buffers and a texture the first time something using them is drawn, and the browser's GL layer
@@ -199,6 +201,7 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 
 async function main() {
   mark('main');
+  if (QAIS_ON) installConsoleRing(); // (the last warnings and errors, for a QAIS report: debug/qais/attach.js)
   const seedArg = new URLSearchParams(location.search).get('seed'); // (?seed=N: a page that must play the same twice, the stress test's)
   reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
@@ -416,7 +419,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open); // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open); // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
@@ -611,12 +614,15 @@ async function main() {
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
-  game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
-  game.chat.add('markup', { help: "the bug report's markup window over this frame (a preview: F8 files the real report)", run: () => {
-    renderer.render(scene, camera); const c = document.createElement('canvas'); c.width = renderer.domElement.width; c.height = renderer.domElement.height;
-    c.getContext('2d').drawImage(renderer.domElement, 0, 0); // (read back in the same task as the draw: the drawing buffer is not preserved)
-    new BugMarkup(game).open(c).then((r) => console.info('markup preview', r && { ...r, marks: `${r.marks.width}x${r.marks.height}` }));
+  game.chat.add('goto', { help: 'stand at a place (/goto well.mouth) or a point (/goto x y z yaw: the stand line of a QAIS report)', run: (a) => {
+    const n = a.map(Number), point = a.length >= 3 && n.slice(0, 3).every(Number.isFinite);
+    const ok = point ? game.places.stand(new THREE.Vector3(n[0], n[1], n[2]), n[3] || 0) : a[0] ? game.places.travel(a[0]) : null;
+    game.events.emit('courier.goto', { to: a.join(' ') || '(nowhere)', ok: !!ok, by: 'courier' });
   } });
+  // QAIS (F8): the owner's testing window, in every build but a public one (debug/qais/, docs/plans/QAIS.md)
+  game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
+  if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);

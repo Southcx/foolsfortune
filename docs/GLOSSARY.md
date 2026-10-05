@@ -347,9 +347,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the liquid pack** (`src/assets/liquid_pack.webp`, baked by `scripts/bake_liquid.py` from `source_assets/liquid/`): the owner's
   noise photographs as one tileable texture (marbling, bubbles, sand ripples, veins) that every liquid is drawn with (`src/vfx/liquid.js`).
   **caustics**: the net of light on a pool's floor; **glints**: the water's sparkle where the sun catches it.
-- **the markup window** (`BugMarkup`, `src/ui/bugmarkup.js`): the bug report's window over the frozen frame (F8, Petra's
-  `src/debug/bugreport.js`): the frame at a whole-number scale, **marks** on a layer of their own (pen, arrow, ring, box; red or white;
-  undo), a title, what happened, what should have, a kind and a severity. `/markup` previews it over the current frame.
+- **the markup window** (`BugMarkup`, `src/ui/bugmarkup.js`): the bug report's window over the frozen frame (F8: QAIS's Reports
+  tab, `src/debug/qais/report.js`): the frame at a whole-number scale, **marks** on a layer of their own (pen, arrow, ring, box; red or white;
+  undo), a title, what happened, what should have, a kind and a severity.
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
   anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.
@@ -396,9 +396,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
   played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
-- **QAIS** (F8, to be built: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
+- **QAIS** (F8, `game.qais`, `src/debug/qais/`: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
   the System, the game's voice): the development window in the game where the owner tests a build: its **Brief**, its **QAIS tests**,
   its **reports** and the open **questions**, kept in the published build's store. Always "QAIS". *Not:* the F3 panel, the stress test.
+  **the round** (`meta/round` in the build's store: `{ build: 'v77', id, sent, sentAt }`): the build under test, written by Petra at
+  publish with its Brief; the tests and the reports name it (`build`, `round`). **Send to the brigade**: the round marked sent and
+  Dovina's session woken through the owner's Claude Code Remote connector. **a report's number** (`bugs/R<n>`, "Report 12"). **the
+  stand line** (`/goto x y z yaw`): where the owner stood, pasted into the chat to stand there again (`/goto <place>` too).
 - **QAIS test** (`tests/T<n>` in the build's store): one thing for the owner to try in a **test session** (the owner playing the build
   by hand): what to do, what should happen, its build, pass, fail or skip and a note; it may watch for its **evidence** (an event) and
   offer **take me there** (a place). Always "QAIS test" in full. *Not:* a playtest (an agent's scenario), the stress test, an item (the

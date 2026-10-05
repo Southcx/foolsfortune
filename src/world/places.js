@@ -8,7 +8,7 @@
 // "points of interest" a test harness keeps for scripted playthroughs (Unreal's Gauntlet, Rare's automated playtests of Sea of Thieves).
 //
 //   game.places.add(id, { name, at: () => Vector3, yaw, note, near })   .get(id)   .all() -> [{ id, name, zone, pos, note }]
-//   .travel(id) -> { pos, yaw } | null   (set down a step from it, facing it)
+//   .travel(id) -> { pos, yaw } | null   (set down a step from it, facing it)   .stand(pos, yaw) -> { pos, yaw } | null (a point, as it is)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
@@ -47,6 +47,16 @@ export class Places {
     if (zone === 'dunes' && g.dunes?.heightAt) to.y = g.dunes.heightAt(to.x, to.z) + 0.05;
     const yaw = Math.atan2(at.x - to.x, at.z - to.z);
     g.course.teleport(to, yaw);
+    return { pos: to, yaw };
+  }
+
+  /** Stand at a point (a QAIS report's `stand` line, /goto x y z yaw): into its zone as travel() goes, then set down there. */
+  stand(to, yaw = 0) {
+    const g = this.game, zone = wholeOf(to);
+    if (zone === 'well') return null;
+    if (g.well?.active) g.well.end?.(false);
+    if (zone === 'dunes' && !g.dunes?.active) g.course.toDunes();
+    g.course.teleport(to.clone(), yaw);
     return { pos: to, yaw };
   }
 }

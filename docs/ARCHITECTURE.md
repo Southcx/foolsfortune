@@ -41,7 +41,7 @@ src/
   cine/          sequences (cinematics as data)                                                         (Calissa)
   title/         the title screen                                                                       (Petra; art, cue, words theirs)
   workbench/     the studio                                                                             (Calissa)
-  debug/         the diagnostics overlay and the tuning panel                                           (Petra)
+  debug/         the diagnostics overlay, the tuning panel, replays, QAIS (qais/: F8, the owner's testing window)  (Petra; QAIS's look Calissa's)
   agent/         the game as an AI player sees and drives it (observe, act: docs/plans/COOP.md)         (Petra)
   assets/        models, textures, fonts, clips                                                         (Calissa)
 scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports (was tools/)
@@ -138,7 +138,7 @@ Every push to main goes through it. A division's round is not done until its bra
 6. **Petra reads the diff**: nothing another file calls has gone missing; no other division's work is overwritten; it fits (the contract,
    the names, a shared part where one exists or should); it reads well. Then Petra drives the changed part headless.
 
-**`npm run gate`** runs all of it in order with its own dev server (check, build, stress 1 and 2, the Well playtest, the replay test, the
+**`npm run gate`** runs all of it in order with its own dev server (check, build, stress 1 and 2, the Well playtest, the replay test, the QAIS test, the
 contracts, perf) and adds **the lanes**: the files the branch changed outside its division's lane (CLAUDE.md, "Threads"), a warning the
 handover explains. It writes `gate-report.txt`, the summary a handover pastes. `npm run gate -- --quick` (check, build, stress 1, the
 contracts) is for between commits. perf also names what it does not gate but Petra reads: the shader programs compiled after the

@@ -72,6 +72,7 @@ achievements, the Veritome's film and Book, the Pneuka Box and the map are clear
 | Esc | the pause menu, with the help pages (the keys, the core movement, the arts, climbing and water, a page for each tool) |
 | F2 | hide the interface (everything, the frame of a shot only, nothing) |
 | F3 | the diagnostics panel (frame time, draw calls, the economy's line); again for physics lines and what the creatures near you are thinking |
+| F8 | QAIS, the testing window: this build's Brief, your QAIS tests, the reports (the frame is taken as you press it: draw on it, say what is wrong) and the open questions; Esc closes it |
 
 What each tool does with the mouse and the number keys is under its own heading below, and on its help page.
 
@@ -357,8 +358,10 @@ and the maker's pixel art is drawn at 1x and scaled by whole numbers. `docs/ARCH
 - **The check** (`npm run check`): broken imports, orphans, the bus's rules, log celebrations, module headers and size, retired words, the
   Courier's pronouns. It fails only on new debt.
 - **Perf** (`npm run perf`): the workshop and the Dunes measured headless, against the last published build.
-- In the game: F3, `window.__boot` (the time at each stage of loading), and DEBUG's `/grant`, `/psygun`, `/vfx`, `/opening` and
-  `/workbench` (the studio for effects, models and cinematics).
+- In the game: F3, F8 (QAIS: the Brief, the QAIS tests, the reports and the questions, kept in the published build's store;
+  `docs/plans/QAIS.md`), `window.__boot` (the time at each stage of loading), and DEBUG's `/grant`, `/psygun`, `/vfx`, `/opening`, `/goto`
+  (a place, or a report's stand line) and `/workbench` (the studio for effects, models and cinematics).
+- **The QAIS test** (`npm run qais`): QAIS driven headless, away from the store and over a stand-in for it.
 
 ## Engineering notes
 

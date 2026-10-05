@@ -35,6 +35,7 @@ import { wellRules } from './tracking/wells.js';
 import { voyageRules } from './tracking/voyage.js';
 import { gardenRules } from './tracking/garden.js';
 import { weatherRules } from './tracking/weather.js';
+import { qaisRules } from './tracking/qais.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -607,6 +608,7 @@ export class Tracking {
     voyageRules({ on, L, log });
     gardenRules({ on, L, log });
     weatherRules({ on, L, log, g });
+    qaisRules({ on, log }); // (QAIS: a report filed, a round sent, /goto; nothing counted)
 
 
     // ---- treasure (src/world/treasure/chests.js, ceremony.js, cubes.js): chests in five tiers, the cubes they hold, the curios, the Tithe

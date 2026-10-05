@@ -3,7 +3,7 @@
 // handover"), run in order, with one report to paste into the handover note. It starts its own dev server (a free port), so nothing
 // else need be running; perf starts its own as it always has.
 //
-//   npm run gate                  check, build, stress 1 and 2, the Well playtest, the replay test, the contracts, perf, the lanes
+//   npm run gate                  check, build, stress 1 and 2, the Well playtest, the replay test, the QAIS test, the contracts, perf, the lanes
 //   npm run gate -- --quick       check, build, stress 1, the contracts (a minute or two: for between commits)
 //   npm run gate -- --lanes       the lanes only (BRANCH=<name> for a detached head)
 //   writes gate-report.txt (the summary and each step's last lines; not committed)
@@ -50,7 +50,7 @@ const run = async (name, cmd, args, env = {}) => {
   const out = r.buf.trim().split('\n');
   const ok = r.code === 0, s = ((Date.now() - t0) / 1000).toFixed(0);
   // (each step's own last word: the verdict line it prints)
-  const verdict = out.filter((l) => /OK|FAIL|OVER|violations|passed|exactly|differ|built in|contracts:/.test(l)).slice(-1).join(' | ') || out.slice(-1)[0] || '';
+  const verdict = out.filter((l) => /OK|FAIL|OVER|violations|passed|exactly|differ|built in|contracts:|qais:/.test(l)).slice(-1).join(' | ') || out.slice(-1)[0] || '';
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${s.padStart(4)} s  ${verdict.slice(0, 140)}`);
   steps.push({ name, ok, s, verdict });
   report.push(`## ${name}: ${ok ? 'ok' : 'FAILED'} (${s} s)`, ...out.slice(-(ok ? 8 : 40)), '');
@@ -69,6 +69,7 @@ if (!lanesOnly) {
     if (!quick) await run('stress, seed 2', 'node', ['scripts/stress.mjs', '--seed', '2'], env);
     if (!quick) await run('playtest well', 'node', ['scripts/playtest/run.mjs', 'well'], env);
     if (!quick) await run('replay test', 'node', ['scripts/replaytest.mjs'], env);
+    if (!quick) await run('qais test', 'node', ['scripts/qaistest.mjs'], env);
     await run('contracts', 'node', ['scripts/contracts.mjs'], env);
   } finally { await server.close(); }
   if (!quick && built) await run('perf', 'node', ['scripts/perf.mjs']);

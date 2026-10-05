@@ -13,6 +13,7 @@
     "playtest": "node scripts/playtest/run.mjs",
     "replaytest": "node scripts/replaytest.mjs",
     "contracts": "node scripts/contracts.mjs",
+    "qais": "node scripts/qaistest.mjs",
     "gate": "node scripts/gate.mjs"
   },
   "dependencies": {

@@ -21,7 +21,7 @@ const results = await g.page.evaluate(async () => {
   const keys = (o, ks) => { const miss = ks.filter((k) => !(o && k in o)); return miss.length ? `missing ${miss.join(', ')}` : true; };
   const C = (name, producer, consumer, check) => { let r; try { r = check(); } catch (e) { r = `threw: ${e.message}`; } out.push({ name, producer, consumer, ok: r === true, why: r === true ? '' : String(r) }); };
   const pos = G.player.pos.clone();
-  const [aspects, soundtest, zonemap, zones] = await Promise.all(['/src/music/aspects.js', '/src/music/soundtest.js', '/src/render/zonemap.js', '/src/render/zones.js'].map((p) => import(p)));
+  const [aspects, soundtest, zonemap, zones, markup] = await Promise.all(['/src/music/aspects.js', '/src/music/soundtest.js', '/src/render/zonemap.js', '/src/render/zones.js', '/src/ui/bugmarkup.js'].map((p) => import(p)));
 
   // the weather (Dovina) and its readers: the sky's look (Calissa), the ambience (Wanda), the daylight (Petra)
   C('weather.here(pos)', 'progress/weather.js', 'vfx/weather.js, audio/ambience.js', () => { const h = G.weather.here(pos); return keys(h, ['place', 'exposure', 'aspect', 'strength', 'phase']) === true && fin(h.phase) ? true : keys(h, ['place', 'exposure', 'aspect', 'strength', 'phase']); });
@@ -43,6 +43,15 @@ const results = await g.page.evaluate(async () => {
   C('places: the shore and the jetty', 'world/places.js', 'agent, playtests', () => (G.places.pos('shore') && G.places.pos('jetty') ? true : 'missing'));
   // the zone map: the pure half agrees with the renderer's
   C('zonemap = zones', 'render/zonemap.js', 'progress/weather.js, scripts', () => { const pts = [[0, 1, 0], [2480, -416, 4], [2000, -400, 0], [-1300, -900, 0], [100, -14, -40]]; const bad = pts.filter(([x, y, z]) => zonemap.zoneOf({ x, y, z }) !== zones.zoneOf({ x, y, z })); return bad.length ? `disagree at ${JSON.stringify(bad)}` : true; });
+  // QAIS (Petra) and the markup window (Calissa): the Reports tab opens it over the frame and reads what it resolves
+  C('BugMarkup.open -> report', 'ui/bugmarkup.js', 'debug/qais/report.js', () => {
+    if (!is(markup.BugMarkup?.prototype?.open, 'function') || !markup.KINDS?.length || !markup.SEVERITIES?.length) return 'BugMarkup.open, KINDS or SEVERITIES missing';
+    const m = new markup.BugMarkup(G), c = document.createElement('canvas'); c.width = 64; c.height = 40;
+    m.open(c); const marks = m.marks; m.file(); // (it resolves { title, happened, should, kind, severity, marks }: the marks a canvas the frame's size)
+    if (document.getElementById('bugmarkup')) return 'the window did not close on file()';
+    return marks?.width === 64 && marks.height === 40 ? true : 'the marks are not the frame\'s size';
+  });
+  C('places.travel/stand', 'world/places.js', 'debug/qais (take me there, /goto)', () => (is(G.places.travel, 'function') && is(G.places.stand, 'function') ? true : 'missing'));
   return out;
 });
 await g.close();
