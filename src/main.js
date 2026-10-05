@@ -121,6 +121,7 @@ import { Save } from './core/save.js';
 import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
 import { installReplay } from './debug/replay.js';
+import { Seam } from './render/seam.js';
 import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
@@ -301,6 +302,7 @@ async function main() {
   mark('dunes');
   const level = new Level(scene, physics, breakables);
   game.level = level;
+  game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
   const movers = new Movers(game);
@@ -687,8 +689,11 @@ async function main() {
   // (an empty frame first: compile() reads the clipping state the last render left, and the God Hand's cutaway plane is always installed,
   // so without it every program was compiled for no planes here and again, for one, on the first real frame)
   renderer.render(new THREE.Scene(), camera);
+  const parkWell = game.well?.prewarm?.(); // (a Well's floor is built on entry: one stand-in floor is compiled with the rest, world/well/dunemaw.js)
+  game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
+  parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -871,6 +876,7 @@ async function main() {
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);
+    game.seam.update(game.rawDt); // (a cover over a change of place: render/seam.js)
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
     game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
     if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: tools/veritome/mind/macros.js)

@@ -17,10 +17,13 @@ export const ASPECTS = [
   { id: 'dread', name: 'DREAD', glyph: '◐', color: 0x8a6ad0, hint: 'the cold that comes before a shape' },
   { id: 'wonder', name: 'WONDER', glyph: '✦', color: 0xffd76a, hint: 'the held breath at the top of a stair' },
   { id: 'grief', name: 'GRIEF', glyph: '☂', color: 0x8fc4ff, hint: 'a room kept exactly as it was' },
-  { id: 'hunger', name: 'HUNGER', glyph: '◍', color: 0xff7a4a, hint: 'wanting, with nothing yet in mind' },
+  { id: 'desire', name: 'DESIRE', glyph: '◍', color: 0xff7a4a, hint: 'wanting, with nothing yet in mind' },
   { id: 'mirth', name: 'MIRTH', glyph: '♪', color: 0x9be36a, hint: 'a laugh that has lost its joke' },
 ];
 export const ASPECT_IDX = Object.fromEntries(ASPECTS.map((a, i) => [a.id, i]));
+/** The order the five are shown in, most positive to most negative (the owner's ruling: GLOSSARY, DISPLAY_ORDER), as indices into
+ *  ASPECTS. ASPECTS keeps its own order: every species' `aff` and every lure's profile is indexed by it. */
+export const SHOWN = ['wonder', 'mirth', 'desire', 'grief', 'dread'].map((id) => ASPECT_IDX[id]);
 
 /** The Weir's tide: four windows, each 80 s. Species come at some of them. */
 export const TIDES = [
@@ -35,7 +38,7 @@ export const TIDE_LEN = 80;
 // mooch: what it is drawn to when the lure carries the echo of a fish just landed (FFXIV's mooching: a small catch is bait for a large one)
 // needsEcho: it will not come to anything less (the Drowned Lachryma wants the echo of something large)
 // bite: what the bite feels like, in the order it escalates (nibble < tug < gulp)
-// aff: how much each aspect draws it (dread, wonder, grief, hunger, mirth)
+// aff: how much each aspect draws it (dread, wonder, grief, desire, mirth: ASPECTS' order)
 export const SPECIES = [
   {
     id: 'regret', name: 'Pale Regret', blurb: 'A translucent carp that turns to look back at where it has just been. It rings faintly when it swims.',
