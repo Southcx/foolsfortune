@@ -466,6 +466,7 @@ export class Course {
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
       { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
       { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
@@ -500,6 +501,7 @@ export class Course {
     else if (r.spawn === 'siege') this.toSiege();
     else if (r.spawn === 'weir') this.toWeir();
     else if (r.spawn === 'dunemaw') this.toDunemaw();
+    else if (r.spawn === 'shore') this.toShore();
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -529,6 +531,12 @@ export class Course {
     this.toDunes();
     const W = this.game.well; if (!W?.mouthPos) return;
     const at = W.mouthSpot(); this.teleport(at.pos, at.yaw + Math.PI);
+  }
+
+  /** The open layer, set down on the beach at the jetty's foot, facing the sea (world/dunes/beach.js). */
+  toShore() {
+    this.toDunes();
+    const at = this.game.dunes.beach?.landing(); if (at) this.teleport(at.pos, at.yaw);
   }
 
   toSiege() {

@@ -167,7 +167,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the agents, the trailer and the map read the one registry. A place is a point; *not* a room (an area the log names, which the
   `place.enter` event carries as `room`: an old homonym).
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
-  named in full (or ZoI).
+  named in full (or ZoI). A zone may be **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its
+  **whole** (`wholeOf(pos)`): the beach is part of the dunes.
 - **the Zone of Influence**: the ground the player has explored. Nothing more, for now.
 - **the workshop**: the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement**: below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
@@ -182,6 +183,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Dunes** (code `dunes`): the sand sea, a region of Anagami Island, capitalised in player text like the Weir and the Well; **the oasis**
   at its heart, **the Weir** (its pools and pier), **the Weir's Well** (of liquid Lachryma), **the barrier** (the edge), **the ruins**
   (columns and obelisks: stone).
+- **the shore** (`game.dunes.beach`, `src/world/dunes/beach.js`; its zone is `beach`, part of the dunes): due east of the oasis, where the
+  Dunes run down to the Emocean, and nothing but the sea beyond. **the waterline**: where the sand meets the crude (`shoreAt(x, z)`, signed
+  metres, negative at sea; `beach.shore`, as a line); the shore's wall stands a step out past it. **the jetty**: the plank walk out over
+  the crude from the beach, where the sloop moors. *Not:* the Weir's pier (the oasis's), or the span (a bridge).
 
 ## Creatures and folk
 
