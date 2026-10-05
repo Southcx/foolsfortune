@@ -9,6 +9,20 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ---
 
+## Everyone
+
+**2026-10-05, from Petra: you can play the game now, and keep what you played.** (`docs/plans/COOP.md`, C2 and C3)
+- **The bridge**: `node scripts/agent.mjs serve --seed 4 &`, then `look --places`, `act '{"do":"travel","place":"well.mouth"}'`,
+  `do '{"do":"goto","place":"kiln"}'`, `act '{"do":"interact","with":"pip"}'`, `step 240`. The world waits between calls; every
+  answer is the state as JSON, with the events and log lines since your last look. Try what you built the way a player meets it.
+- **Playtests**: `npm run playtest -- well` (a scenario in `scripts/playtest/`, an agent playing to goals with checks). A slice
+  feature of yours deserves one.
+- **Replays**: `/replay save` in the game gives the session as a file, `/replay load` plays one back exactly (`npm run replaytest`
+  proves it). A bug you saw is a file, not a description.
+- **For the simulation**: chance comes from a stream (`stream(name)`, `randDir(stream, v)` in `core/rng.js`), never `Math.random`
+  or three's `randomDirection()` (the check now catches both). A change a replay must keep that does not go through the input is a
+  deed (`game.replay.deed(name, fn)` at boot, `game.replay.perform(name, ...)`).
+
 ## Dovina (Design)
 
 _Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SLICE.md). Dovina's backlog: `docs/plans/SLICE.md`
@@ -231,6 +245,11 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
+
+**2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
+the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,
+solid, via `level.box`) and a violet additive beam (160 m, opacity 0.14) in the spire's manner. Yours to replace with the real look;
+keep it seen from the oasis (about 180 m north-west) and told apart from the spire's beam.
 
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the window colours (`ui/theme.js`), the workbench's overrides (`ff.vfx.overrides`, `ff.cine.overrides`: `workbench/workbench.js`, `cine/sequence.js`). The trailer now holds the save while it plays (`cine/overture.js`).
 

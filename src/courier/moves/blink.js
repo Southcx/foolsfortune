@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { PALETTE } from '../../core/config.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('courier/moves/blink'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Blink (E): a near-instant dodge. The body flashes a few metres along the move
@@ -86,7 +86,7 @@ export class Blink extends Tech {
     if (fx) {
       const col = new THREE.Color(PALETTE.pale);
       for (let i = 0; i < 14; i++) {
-        const v = new THREE.Vector3().randomDirection().multiplyScalar(2.5);
+        const v = randDir(simRand, new THREE.Vector3()).multiplyScalar(2.5);
         fx.alpha.emit({ pos: P.pos.clone().add(new THREE.Vector3(0, 0.9, 0)), vel: v, life: 0.3, size: 0.1, sizeEnd: 0.02, color: col, alpha: 0.5, drag: 6 });
       }
     }

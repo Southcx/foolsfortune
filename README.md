@@ -261,8 +261,8 @@ slide-hop, dash and double 13.7; jump height 0.92 m, double jump 1.66. Gaps are 
 that shows itself only where you touch it, and at its heart an oasis with **THE WEIR**: a pond in terraces, a pier, a well of liquid
 Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier. Three slip jellies live on the flats.
 
-**The Great Dunemaw**, out on the sand north-west of the oasis: a dark pool turning in a ring of fallen stones (the Dreamvane hears it
-from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
+**The Great Dunemaw**, out on the sand north-west of the oasis (about 180 m; sail for the violet beam, not the pale spire's, or take
+**W** at the Index): a dark pool turning in a ring of fallen stones and three standing ones (the Dreamvane hears it from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
 On every floor a pale pool is **the way up**, back out to the mouth with whatever you found, and a dark one is **the way down**, deeper.
 Shatter down there and you come to at the mouth, and the run's haul stays in the Well. Slip jellies hold every room but the first, one
 more each floor down, and a **Great Slip Jelly** (a FOE) keeps the bottom. Burst every jelly on a floor and something is left where they

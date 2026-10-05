@@ -12,7 +12,7 @@ import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, ke
 import { crackPaths, randomPaths, setCracks } from './potcracks.js';
 import { hasTag, unregister } from '../../core/tags.js';
 import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from '../../tools/slicing.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('world/props/breakables'); // (the simulation's chance: core/rng.js, the same twice)
 
 export { PROFILES };
@@ -406,7 +406,7 @@ export class Breakables {
     return halves.map((h, i) => {
       const worldC = h.center.clone().applyQuaternion(quat).add(pos);
       const v = vel.clone().addScaledVector(nWorld, sign[i] * T.shells.slicer.separate).addScaledVector(dir, T.shells.slicer.carry);
-      return this.spawnPiece(h, worldC, quat, v, new THREE.Vector3().randomDirection().multiplyScalar(2));
+      return this.spawnPiece(h, worldC, quat, v, randDir(simRand, new THREE.Vector3()).multiplyScalar(2));
     }).filter(Boolean);
   }
 
@@ -481,7 +481,7 @@ export class Breakables {
     let parts = [uniquePoints(ent.mesh.geometry)];
     const hitL = point.clone().sub(pos).applyQuaternion(inv);
     for (let k = 0; k < 2; k++) {
-      const n = new THREE.Vector3().randomDirection();
+      const n = randDir(simRand, new THREE.Vector3());
       const pl = { n, d: n.dot(hitL) };
       parts = parts.flatMap((ps) => { const { a, b } = splitConvexPoints(ps, pl); return [a, b].filter((x) => x.length >= 4); });
     }
@@ -493,7 +493,7 @@ export class Breakables {
       if (!h) continue;
       const wc = h.center.clone().applyQuaternion(quat).add(pos);
       const v = dir.clone().multiplyScalar(2 + simRand() * 2).add(wc.clone().sub(point).normalize().multiplyScalar(1.5));
-      const piece = this.spawnPiece(h, wc, quat, v, new THREE.Vector3().randomDirection().multiplyScalar(8));
+      const piece = this.spawnPiece(h, wc, quat, v, randDir(simRand, new THREE.Vector3()).multiplyScalar(8));
       if (piece) piece.life = T.shatter.shardLife * 0.6;
     }
     this.fx.shatterBurst(pos, 0.6, dir, M);
@@ -507,7 +507,7 @@ export class Breakables {
     const h = this.convexHalf(pts, { n: new THREE.Vector3(0, 1, 0), d: 1e9 }, color, MATERIALS.earthenware);
     if (!h) return;
     const v = (dir || new THREE.Vector3()).clone().multiplyScalar(2).add(new THREE.Vector3(0, 1.5, 0));
-    this.spawnPiece(h, h.center.clone(), new THREE.Quaternion(), v, new THREE.Vector3().randomDirection().multiplyScalar(3));
+    this.spawnPiece(h, h.center.clone(), new THREE.Quaternion(), v, randDir(simRand, new THREE.Vector3()).multiplyScalar(3));
   }
 
   shatter(ent, hitPoint, dir, power = 1, cause = 'shot', who = null) {
@@ -668,7 +668,7 @@ export class Breakables {
       geo.dispose();
       if (slot == null) return;
       const down = this.physics.raycast(worldC, _down, 6, undefined, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic());
-      const spin = new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * simRand());
+      const spin = randDir(simRand, new THREE.Vector3()).multiplyScalar(T.shatter.spin * power * heavy * simRand());
       this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * 0.6 * (0.8 + simRand() * 0.4), rest: false });
       while (this.flyers.length > T.shatter.maxFlyers) { const f = this.flyers.shift(); f.sb.give(f.slot); }
       return;
@@ -682,7 +682,7 @@ export class Breakables {
         .setTranslation(worldC.x, worldC.y, worldC.z)
         .setRotation(bodyRot)
         .setLinvel(vel.x, vel.y, vel.z)
-        .setAngvel(new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * simRand()))
+        .setAngvel(randDir(simRand, new THREE.Vector3()).multiplyScalar(T.shatter.spin * power * heavy * simRand()))
         .setCcdEnabled(pc.small)
         .setLinearDamping(0.1)
         .setAngularDamping(0.5),

@@ -19,8 +19,10 @@
 //
 //   const save = new Save()   save.boot(build) -> true if this build is new here (its progress wiped)
 //   save.section(id, { scope, version, dump, load, reset, migrate, check })   (load runs at once with what was kept, or reset with none)
-//   save.dirty(id)   save.flush()   (dirty marks; flush writes each dirty scope whole: main.js calls it once a frame)
-//   save.wipe(scope)   save.check() -> fixes made   save.hold(why) / save.release(why)   save.export() -> string   save.import(text)
+//   save.dirty(id)   save.flush({ all? })   (dirty marks; flush writes each dirty scope whole: main.js calls it once a frame)   save.writer(fn)
+//   save.wipe(scope)   save.check() -> fixes made   save.hold(why) / save.release(why)   save.export() -> string   save.import(text, { replace })
+//   save.stash(key, text) / save.unstash(key) (this tab only, across one reload: a replay waiting for its page)
+//   save.code() -> 'FFS2...'   save.fromCode(code) -> ok   save.wipeProgress() (player and world wiped as a new build does it; the caller reloads the page)
 // ---------------------------------------------------------------------------------------
 const PREFIXES = ['foolsfortune.', 'ff.']; // (ff.: the workbench's own edits, Calissa's studio)
 const ours = (k) => PREFIXES.some((p) => k?.startsWith(p));
@@ -36,6 +38,7 @@ export const ADOPTED = {
   settings: ['foolsfortune.windows', 'foolsfortune.voice', 'foolsfortune.music', 'foolsfortune.rhythm', 'foolsfortune.tuning', 'foolsfortune.help',
     'foolsfortune.log', 'ff.vfx.overrides', 'ff.cine.overrides'],
 };
+const fnv = (t) => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return (h >>> 0).toString(16).padStart(8, '0'); };
 const scopeOfKey = (k) => Object.keys(ADOPTED).find((s) => ADOPTED[s].some((p) => k === p || k.startsWith(`${p}.`)));
 
 export class Save {
@@ -45,6 +48,7 @@ export class Save {
     this.records = {}; // scope -> { v, at, sections: { id: { v, data } } } as last read or written
     this.dirt = new Set();
     this.holds = new Set();
+    this.writers = new Set(); // (an adopted key's owner that writes on a timer of its own: asked to write now when the save must be whole)
     for (const scope of Object.keys(RECORD)) this.records[scope] = this.read(RECORD[scope]) || { v: 1, sections: {} };
   }
 
@@ -76,9 +80,14 @@ export class Save {
   }
 
   dirty(id) { const s = this.sections.get(id); if (s) this.dirt.add(s.scope); }
-  /** Write every scope that changed, whole. Held: nothing is written (the marks wait). */
-  flush() {
-    if (this.holds.size || !this.dirt.size) return;
+  /** An adopted key's owner that keeps changes a while before writing them (the ledger, the System): written too by flush({ all }). */
+  writer(fn) { this.writers.add(fn); }
+  /** Write every scope that changed, whole. Held: nothing is written (the marks wait). `all`: the adopted keys' owners write now too
+   *  (an export, a replay's start: the save must be what the game is). */
+  flush({ all = false } = {}) {
+    if (this.holds.size) return;
+    if (all) for (const w of this.writers) { try { w(); } catch { /* its own business */ } }
+    if (!this.dirt.size) return;
     for (const scope of this.dirt) {
       const rec = { v: 1, at: Date.now(), sections: {} };
       for (const s of this.sections.values()) if (s.scope === scope) rec.sections[s.id] = { v: s.version, data: s.dump() };
@@ -113,15 +122,33 @@ export class Save {
 
   /** Everything kept, as one text (a backup, a bug report). */
   export() {
-    this.flush();
+    this.flush({ all: true });
     const out = { v: 1, at: Date.now(), keys: {} };
     if (this.store) for (let i = 0; i < this.store.length; i++) { const k = this.store.key(i); if (ours(k)) out.keys[k] = this.store.getItem(k); }
     return JSON.stringify(out);
   }
-  /** Put back an export (the page reloads after: every module reads what it keeps at boot). */
-  import(text) {
-    const inp = JSON.parse(text);
+  /** Put back an export (the page reloads after: every module reads what it keeps at boot). `replace`: ours that it lacks go too (a
+   *  replay starts from exactly what was kept, nothing more). */
+  import(text, { replace = false } = {}) {
+    const inp = typeof text === 'string' ? JSON.parse(text) : text;
     if (!inp?.keys) throw new Error('save: not an export');
+    if (replace && this.store) for (let i = this.store.length - 1; i >= 0; i--) { const k = this.store.key(i); if (ours(k) && !(k in inp.keys)) this.store.removeItem(k); }
     for (const [k, v] of Object.entries(inp.keys)) if (ours(k)) this.write(k, v);
   }
+
+  /** Everything kept, as a code to paste between browsers: FFS2.<base64>.<checksum> (the Codex's EXPORT CODE). */
+  code() { const b = btoa(unescape(encodeURIComponent(this.export()))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); return `FFS2.${b}.${fnv(b)}`; }
+  /** Put back a code (whole: what it lacks goes too). False if it does not check out; the page reloads after, as for import. */
+  fromCode(code) {
+    const m = /^FFS2\.([A-Za-z0-9_-]+)\.([0-9a-f]{8})$/.exec(String(code).trim());
+    if (!m || fnv(m[1]) !== m[2]) return false;
+    try { this.hold('import'); this.import(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/')))), { replace: true }); return true; } catch { this.release('import', { restore: false }); return false; }
+  }
+  /** Progress gone, as a new build does it: what is stored wiped and the save held (the page reloads after: the modules that write
+   *  their own keys still hold theirs in memory). */
+  wipeProgress() { this.flush(); this.hold('wipe'); for (const scope of ['player', 'world']) this.wipeStored(scope); }
+
+  /** A text kept for this tab only, across a reload and no further (a replay waiting for the page it is played on). Taken once. */
+  stash(key, text) { try { sessionStorage.setItem(`foolsfortune.${key}`, text); return true; } catch { return false; } }
+  unstash(key) { try { const k = `foolsfortune.${key}`, t = sessionStorage.getItem(k); sessionStorage.removeItem(k); return t; } catch { return null; } }
 }

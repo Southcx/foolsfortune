@@ -7,7 +7,7 @@ import { addOutline } from '../render/outline.js';
 import { prepProfile } from '../world/props/pottery.js';
 import { sfx } from '../audio/sfx.js';
 import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
-import { stream } from '../core/rng.js';
+import { stream, randDir } from '../core/rng.js';
 const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
@@ -570,7 +570,7 @@ export class Clappers {
       sfx.tap(g.listenerDistance(c.pos));
       c.squashV -= 1.5;
       const p = job.pos.clone().setY(job.pos.y + 0.1 + simRand() * 0.3);
-      g.fx.add.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(1.2).setY(1.5), life: 0.5, size: 0.03, sizeEnd: 0.005, color: GOLD, drag: 2, twinkle: 25 });
+      g.fx.add.emit({ pos: p, vel: randDir(simRand, new THREE.Vector3()).multiplyScalar(1.2).setY(1.5), life: 0.5, size: 0.03, sizeEnd: 0.005, color: GOLD, drag: 2, twinkle: 25 });
     }
     // sweep the shards back in: pull the nearby ones to the pile, and tidy away what arrives
     if (job.kind === 'wreck') {

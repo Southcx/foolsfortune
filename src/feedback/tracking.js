@@ -495,6 +495,11 @@ export class Tracking {
       log.say(e.rank >= 4 ? 'ach' : 'luck', O[e.outcome] || e.outcome, { tone: e.rank >= 4 ? '#ff5ad0' : undefined });
     });
     // the title (title/): which game was chosen (the words are Espada's to set: docs/HANDOFFS.md)
+    // replays (debug/replay.js): what is being played, and when it gives the controls back
+    on('replay.play', (e) => log.say('system', `Playing a replay: ${Math.round(e.frames / 60)} seconds of play${e.exact ? '' : ', begun mid-session (the loose world is as it boots)'}.`));
+    on('replay.end', () => log.say('system', 'The replay ends here. The controls are yours.'));
+    on('replay.save', (e) => log.say('system', `This session's replay is saved: ${Math.round(e.frames / 60)} seconds${e.full ? ' (the first twenty minutes: it was full)' : ''}.`));
+    on('replay.record', () => log.say('system', 'A new replay begins here.'));
     on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); log.say('system', e.mode === 'story' ? 'STORY is not written yet. Anagami Island is still being fired; the workshop is open in the meantime, and the arts are learned by doing.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.', {}); });
     on('item.fit', (e) => { L.inc('item.fit'); log.say('info', e.socket === 'keys' ? `You put ${an(ITEM(e.item).toLowerCase())} on the Lockheart's ring.` : e.socket === 'heart' ? `You hang ${ITEM(e.item).toLowerCase()} on the Lockheart's chain.` : `You fit the ${ITEM(e.item).toLowerCase()} to the Crucibelle.`, { key: `ifit.${e.item}`, throttle: 0.2 }); });
     on('item.unfit', (e) => log.say('info', `You take the ${ITEM(e.item).toLowerCase()} off, into your Pneuka Box.`, { key: 'iunfit', throttle: 0.2 }));

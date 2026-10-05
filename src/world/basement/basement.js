@@ -466,6 +466,7 @@ export class Course {
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
       { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
     this.game.indexMenu = this.menu;
@@ -498,6 +499,7 @@ export class Course {
     else if (r.spawn === 'dunes') this.toDunes();
     else if (r.spawn === 'siege') this.toSiege();
     else if (r.spawn === 'weir') this.toWeir();
+    else if (r.spawn === 'dunemaw') this.toDunemaw();
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -522,6 +524,12 @@ export class Course {
 
   /** The Weir is the dunes' oasis: the same arrival. */
   toWeir() { this.toDunes(); }
+  /** The open layer, set down beside the Great Dunemaw's mouth, facing it (world/well/dunemaw.js). */
+  toDunemaw() {
+    this.toDunes();
+    const W = this.game.well; if (!W?.mouthPos) return;
+    const at = W.mouthSpot(); this.teleport(at.pos, at.yaw + Math.PI);
+  }
 
   toSiege() {
     this.teleport(this.siegeSpawn.v, this.siegeSpawn.yaw);

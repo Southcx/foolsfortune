@@ -118,6 +118,10 @@ import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
 import { BUILD } from './core/progress.js';
 import { Save } from './core/save.js';
+import { Agent } from './agent/agent.js';
+import { installPlaces } from './world/places.js';
+import { installReplay } from './debug/replay.js';
+import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './tools/veritome/flash.js';
@@ -343,6 +347,7 @@ async function main() {
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: courier/vessel/death.js)
 
   const input = new Input(renderer.domElement);
+  game.replay = new Replay(input); // (what was pressed, kept to play again: core/replay.js; its commands are registered as the game is built)
   const player = new Player(physics, camera, input);
   game.player = player;
   player.game = game;
@@ -555,6 +560,7 @@ async function main() {
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
+  installPlaces(game); game.agent = new Agent(game); // (the game as an AI player sees and drives it: world/places.js, agent/agent.js; docs/plans/COOP.md)
   for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui', 'dialogue']) theme.watch(document.getElementById(id));
   theme.watch(document.getElementById('overlay'), { sound: false, point: '.go .opt' }); // (the title: the glove waits at BEGIN)
   theme.aim(document.querySelector('#overlay .go .opt'));
@@ -580,6 +586,8 @@ async function main() {
     if (tr && game.music) { if (!game.music.on) game.music.setOn(true); game.music.pick = tr.score; }
     game.overture.start({ own: !tr });
   } });
+  for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
+  const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
@@ -643,6 +651,7 @@ async function main() {
     },
   });
   titleScene.onMenu = () => title.ui.showMenu();
+  if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; started = true; } // (a replay is played from the start of play: no title)
   game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
   input.onLockChange = (locked) => {
     if (title.active) return; // (the title owns the screen: no pause menu over it)
@@ -788,6 +797,8 @@ async function main() {
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
+    game.agent?.update(dt); // (an AI player's intent becomes this tick's input, before anything reads it: agent/agent.js)
+    dt = replays.tick(dt); // (recorded, or fed from a replay: the input and the dt this tick runs on)
     game.rawDt = dt;
     dt *= game.time.update(dt); // (everything below runs in game time; the player's own blade is read in real seconds)
     simTime += dt;

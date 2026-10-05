@@ -127,6 +127,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **layer** (`LAYERS`, `src/feedback/cartography.js`): one level of the map: the upper floor, the ground floor, the basement, the Dunes.
 - **room**: a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
+- **place** (`game.places`, `src/world/places.js`): a named spot anything can be sent to by id (`well.mouth`, `kiln`, `folk.<id>`):
+  the agents, the trailer and the map read the one registry. A place is a point; *not* a room (an area the log names, which the
+  `place.enter` event carries as `room`: an old homonym).
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
   named in full (or ZoI).
 - **the Zone of Influence**: the ground the player has explored. Nothing more, for now.
@@ -291,9 +294,25 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the save** (`game.save`, `src/core/save.js`): everything the game keeps in the browser. A **section** is what one system keeps (its id,
   scope, version; how to dump, load, reset, migrate and check it); a **scope** is one record written whole: **player** (progress that
   follows the Courier: the kit, the ledger, unlocks), **world** (progress of the place: the Wells, the shops, the ground) and **settings**
-  (kept across builds). A **wipe** resets a scope (a new build wipes player and world). An **adopted** key is one a module still writes
+  (kept across builds). A **wipe** resets a scope (a new build wipes player and world; so does the Codex's RESET PROGRESS, and its
+  EXPORT CODE is the whole save, `FFS2.`). An **adopted** key is one a module still writes
   itself, declared in the save so the wipe and the export know it. To **hold** the save is to borrow the game (the trailer): nothing is
   written, and on release every section is loaded again. *Not:* `save()` on a module (that now marks its section dirty).
+- **the seed** (`?seed=N`, `game.seed`): the number the session's chance is drawn from; the same seed and the same input play the same.
+  A **stream** (`stream(name)`, `src/core/rng.js`) is one module's own draw from it, so one system drawing more never shifts another.
+  *Not:* a Well's `wellSeed` (the day's layout) or a run's seed (its floors).
+- **the agent** (`game.agent`, `src/agent/agent.js`): the game as an AI player sees and drives it: `observe()` the state as data, `act()`
+  an **intent** (goto, travel, face, use, interact, attack...) carried out through the same input the keyboard fills. *Not:* a creature's
+  mind (a Brain, `docs/AI.md`).
+- **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
+  back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
+- **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
+  a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
+  dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A
+  **deed** is a change made other than through the input (an agent's turn or travel), kept in the frames and done again on playback.
+  *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
+- **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
+  step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the
   Lockheart's kit (say its coffins and keys).
 

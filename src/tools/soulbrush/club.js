@@ -23,7 +23,7 @@ import { hasTag } from '../../core/tags.js';
 import { arcAt } from '../viewmodel.js';
 import { BRUSH } from './model.js';
 import { measureSwing, sweep as sweepArc, magnet } from '../melee.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/soulbrush/club'); // (the simulation's chance: core/rng.js, the same twice)
 
 // clip time (the clip's own seconds): the hit window, the chain window; `rate` slows the clip for the brush's weight
@@ -203,7 +203,7 @@ export class Club {
     const v = this.tipVel.lengthSq() > 4 ? _a.copy(this.tipVel).normalize() : this.P.lookDir(_a);
     const speed = 7 + 3 * k;
     for (let i = 0; i < 6 + 4 * k; i++) {
-      const d = _b.copy(v).add(_c.randomDirection().multiplyScalar(0.28)).normalize().multiplyScalar(speed * (0.7 + simRand() * 0.5));
+      const d = _b.copy(v).add(randDir(simRand, _c).multiplyScalar(0.28)).normalize().multiplyScalar(speed * (0.7 + simRand() * 0.5));
       d.y += 2;
       g.shells.addDroplet(_p.clone(), d.clone(), 0.03 + simRand() * 0.035, true);
     }

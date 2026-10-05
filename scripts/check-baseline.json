@@ -85,6 +85,7 @@
  "module.size|src/main.js": 1,
  "module.size|src/tools/psygun/shells.js": 1,
  "module.size|src/world/props/breakables.js": 1,
+ "rand.sim|src/tools/lockheart/outcomes.js": 1,
  "save.storage|src/audio/voice/voice.js": 2,
  "save.storage|src/cine/sequence.js": 1,
  "save.storage|src/core/config.js": 4,

@@ -148,7 +148,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   let t = 0;
   return {
     group, arrive, up, down, floor,
-    cells: layout.cells.map((c) => ({ ...at(c), c: c.c, r: c.r, role: c.role })),
+    cells: layout.cells.map((c) => ({ ...at(c), c: c.c, r: c.r, role: c.role, doors: [...c.doors] })), // (doors: n/s/e/w, for routes: dunemaw.route)
     update(dt) { t += dt; down?.mouth.update(t, 1); up.rim.material.opacity = 0.6 + 0.15 * Math.sin(t * 1.3); },
     dispose() {
       game.scene.remove(group);

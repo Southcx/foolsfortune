@@ -138,7 +138,7 @@ for (const [f, raw] of text) {
   const r = rel(f).split(path.sep).join('/');
   if (!SIM.test(r) || r === 'src/core/rng.js') continue;
   const src = code(raw);
-  for (const m of src.matchAll(/\bMath\.random\b/g)) add('rand.sim', f, lineOf(src, m.index), 'the simulation takes its chance from a seeded stream (core/rng.js: `const simRand = stream(name)`), never Math.random');
+  for (const m of src.matchAll(/\bMath\.random\b|\.randomDirection\(|\bMathUtils\.(?:rand|seededRandom)\w*/g)) add('rand.sim', f, lineOf(src, m.index), 'the simulation takes its chance from a seeded stream (core/rng.js: `const simRand = stream(name)`, `randDir(simRand, v)`), never Math.random or three\'s random helpers (they call it)');
 }
 
 // ---- tally against the baseline

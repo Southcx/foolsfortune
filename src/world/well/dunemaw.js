@@ -76,6 +76,17 @@ export class Dunemaw {
       s.position.set(Math.cos(a) * 3.6, h / 2 - 0.15, Math.sin(a) * 3.6); s.rotation.y = -a + 0.2 * Math.sin(i * 3.1);
       grp.add(s);
     }
+    // (a placeholder landmark until Calissa's: three standing stones round it, tall enough to be seen over the dunes from the oasis, none
+    // between the mouth and the way back to the oasis; solid, so they are walked round)
+    const home = Math.atan2(-MOUTH_LOCAL.x, -MOUTH_LOCAL.z);
+    for (const [da, h, r] of [[2.2, 9, 6.5], [3.4, 7, 7], [4.4, 6, 6.2]]) {
+      const a = home + da, sx = x + Math.sin(a) * r, sz = z + Math.cos(a) * r, sy = D.heightAt(sx, sz);
+      g.level.box([sx, sy + h / 2 - 1, sz], [1.4, h, 1.0], 0x6b4a3a, { rotY: a + 0.3 });
+    }
+    // (and a placeholder beam over it, in the spire's manner (world/dunes/dunes.js) but violet and lower: a place to sail toward)
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 3, 160, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0x9a6bff, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    beam.position.set(x, y + 80, z); beam.name = 'dunemaw-beam';
+    g.scene.add(beam); this.beam = beam;
     // the pool itself (Calissa's: vfx/dunemaw.js): black Lachryma swallowing the sand, the labradorite's arms turning in, the sand drawn in
     // round it (the maw); it darkens what it covers. Motes of the dunes are drawn into it while it is in view.
     this.maw = new DunemawMouth({ radius: 3 }); this.maw.group.name = 'dunemaw-pool';
@@ -195,6 +206,26 @@ export class Dunemaw {
   reformAt() { if (!this.run) return null; this.end(true); return this.mouthSpot(); }
   /** Back to where this floor began (the Tab panel's respawn, a fall). */
   toArrival() { if (this.cur) { this.moving = 2; this.game.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true }); } }
+
+  /** A route across the floor through its doorways (the agents': agent/agent.js): the doorways' middles, room by room, then the place.
+   *  Breadth-first over the rooms (nine at most). */
+  route(from, to) {
+    const F = this.cur; if (!F) return [to.clone()];
+    const cellAt = (p) => F.cells.find((c) => Math.abs(p.x - c.x) <= CELL / 2 && Math.abs(p.z - c.z) <= CELL / 2);
+    const a = cellAt(from), b = cellAt(to);
+    if (!a || !b || a === b) return [to.clone()];
+    const STEP = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }, key = (c) => `${c.c},${c.r}`, prev = new Map([[key(a), null]]), q = [a];
+    while (q.length) {
+      const c = q.shift(); if (c === b) break;
+      for (const d of c.doors) { const n = F.cells.find((k) => k.c === c.c + STEP[d][0] && k.r === c.r + STEP[d][1]); if (n && !prev.has(key(n))) { prev.set(key(n), c); q.push(n); } }
+    }
+    if (!prev.has(key(b))) return [to.clone()];
+    const chain = []; for (let c = b; c; c = prev.get(key(c))) chain.unshift(c);
+    const out = [];
+    for (let i = 1; i < chain.length; i++) out.push(new THREE.Vector3((chain[i - 1].x + chain[i].x) / 2, WELL_AT.y, (chain[i - 1].z + chain[i].z) / 2));
+    out.push(to.clone());
+    return out;
+  }
 
   /** The interact source: the mouth from outside, the pools inside. */
   nearest(P) {

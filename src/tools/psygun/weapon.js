@@ -4,7 +4,7 @@ import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, DEG, PALETTE } from '../../core/config.js';
 import { GUN_POINTS } from '../../courier/character.js';
 import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -510,7 +510,7 @@ export class Weapon {
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(character.gun.quaternion);
     const c = new THREE.Color(PALETTE.cream);
     for (let i = 0; i < 4 * n; i++) {
-      fx.alpha.emit({ pos: p, vel: up.clone().multiplyScalar(0.6 + simRand()).add(new THREE.Vector3().randomDirection().multiplyScalar(0.3)),
+      fx.alpha.emit({ pos: p, vel: up.clone().multiplyScalar(0.6 + simRand()).add(randDir(simRand, new THREE.Vector3()).multiplyScalar(0.3)),
         life: 0.5 + simRand() * 0.4, size: 0.03, sizeEnd: 0.2, color: c, alpha: 0.3, drag: 3, gravity: -0.5 });
     }
   }
@@ -518,7 +518,7 @@ export class Weapon {
   spawnDebris(p, q, v, geo, mat, cd, kind) {
     const g = this.game;
     const body = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x, p.y, p.z).setRotation(q)
-      .setLinvel(v.x, v.y, v.z).setAngvel(new THREE.Vector3().randomDirection().multiplyScalar(18)).setCcdEnabled(true));
+      .setLinvel(v.x, v.y, v.z).setAngvel(randDir(simRand, new THREE.Vector3()).multiplyScalar(18)).setCcdEnabled(true));
     const col = g.physics.world.createCollider(cd.setDensity(3000).setRestitution(0.35).setCollisionGroups(GROUPS.debris)
       .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS), body);
     const mesh = new THREE.Mesh(geo, mat);
