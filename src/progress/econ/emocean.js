@@ -122,6 +122,6 @@ export const RECKON = { lead: 3, open: 0.6 };
 /** A route's name, the same both ways (the ledger's records are `emocean.reckon.<route>`, percent). */
 export const routeId = (a, b) => [a, b].sort().join('-');
 /** Seconds of warning a wave gets at a reckoning of 0 .. 1 (none uncharted). */
-export const reckonLead = (r) => RECKON.lead * Math.max(0, Math.min(1, r));
+export const reckonLead = (r, widen = 1) => RECKON.lead * widen * Math.max(0, Math.min(1, r)); // (widen: game.psyche.widen('divination.reckon'))
 /** Whether a reckoning made at the pier is enough to open the node at the route's far end. */
 export const opensNode = (r) => r >= RECKON.open;

@@ -12,7 +12,7 @@ import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
 import { FRIENDLY, friendlyDamage, tolerance } from '../src/progress/combat/friendly.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
-import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf } from '../src/progress/domains.js';
+import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf, WIDEN, widenAt } from '../src/progress/domains.js';
 
 const pad = (s, n) => String(s).padEnd(n);
 
@@ -56,3 +56,5 @@ const world = (q) => (7 * expAt(99) / (PACE.actsPerMin * 60 * skillWeight(q) * (
 console.log(`  "The World" (all seven at 99): ${world(0)} hours rote, ${world(0.5)} middling (the grind), ${world(0.75)} good, ${world(1)} masterful`);
 
 console.log(`\nFRIENDLY FIRE (combat/friendly.js): a blow of 50 deals ${friendlyDamage(50)} to an ally; an ally's statuses from allies within ${FRIENDLY.windowSec} s: ${[0, 1, 2].map((n) => { const t = tolerance(n); return t ? `x${t.build} build-up, x${t.dur} hold` : 'shrugged off'; }).join(' / ')}`);
+console.log('\nWIDENING (domains.js WIDEN: what a level widens, never accuracy) at levels 1 / 33 / 66 / 99');
+for (const [k, w] of Object.entries(WIDEN)) console.log(`  ${k.padEnd(22)} ${[1, 33, 66, 99].map((l) => (w.plus ? `+${widenAt(k, l)}` : `x${widenAt(k, l).toFixed(2)}`).padEnd(6)).join(' ')} ${w.does}`);

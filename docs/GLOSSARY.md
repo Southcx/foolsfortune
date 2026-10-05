@@ -29,6 +29,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
+- **widening** (`WIDEN`, `game.psyche.widen(key)`, `progress/domains.js`): what a domain's level does in play: a multiplier of a tool's own
+  range or a bonus to a count (reach, capacity, options), never accuracy; at level 1 the tool is exactly as it is without it.
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.

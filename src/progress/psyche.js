@@ -8,9 +8,9 @@
 // Prior art: Old School RuneScape's skills (EXP only from doing the thing, a level-up message, the level as proof), and the event-
 // sourced counters the ledger already keeps (an achievement is a predicate over them).
 //
-//   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total() }
+//   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key) }
 // ---------------------------------------------------------------------------------------
-import { DOMAINS, SOURCES, expFor, levelOf } from './domains.js';
+import { DOMAINS, SOURCES, WIDEN, expFor, levelOf, widenAt } from './domains.js';
 
 const EVENTS = new Set(SOURCES.map((s) => s.event));
 
@@ -21,6 +21,8 @@ export function installPsyche(game) {
     exp,
     level: (d) => levelOf(exp(d)),
     total: () => Object.keys(DOMAINS).reduce((a, d) => a + levelOf(exp(d)), 0),
+    /** What the Courier's level widens this knob to (domains.js WIDEN): a multiplier of the tool's own number, or a bonus to a count. */
+    widen: (key) => widenAt(key, WIDEN[key] ? levelOf(exp(WIDEN[key].domain)) : 1),
   };
   game.events.on('*', (e) => {
     if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier')) return;

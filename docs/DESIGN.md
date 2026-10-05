@@ -616,3 +616,13 @@ separate parts, building and progression are why players skipped it.
   and half the hold for the second, immune to the third within 20 s). Taken from Monster Hunter's status tolerance and WoW's
   diminishing returns.
 
+## 15. Widening: what a level does (the owner, 2026-10-05: "lock it in for now")
+
+A domain's level widens what the domain can do: reach, capacity, options, never accuracy (section 10). Fifteen knobs, each read by the
+tool it names as a multiplier of the tool's own number or a bonus to a count, linear in the level for now (`WIDEN`, `widenAt` in
+`progress/domains.js`; `game.psyche.widen(key)`; the table prints in `node scripts/combat.mjs`). Level 1 is the tool exactly as it is,
+so the core movement and every tool's feel are untouched until a level is earned. Two of them tie systems together on purpose:
+`divination.reckon` (Divination charts the course: the reckoning marks the rail further ahead) and `spellscription.copy` (Spellscription
+duplicates good maps: a Cogitomap transcribed is another sale to the Purser). And levels feed the unlocks for free: an art's achievement
+is a predicate, so "this art at Divination 20" is one line in `achievements.js`. The system will grow.
+
