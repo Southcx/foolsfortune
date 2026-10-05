@@ -46,18 +46,20 @@ export class Shops {
     if (base == null) return null;
     const n = this.stockOf(shop, id);
     if (n <= 0) return null;
-    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * (1 + S.dear * Math.max(0, base - n))));
+    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * (1 + S.dear * Math.max(0, base - n)) / this.charm()));
   }
   /** What the shop pays them for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
   offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id, data) * this.want(shop, id) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     return Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
   }
 
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
   want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) : 1; }
+  /** Charisma (Soul Alchemy): the folk ask a little less of you and pay a little more (1 until it is widened). */
+  charm() { return this.game.alchemy?.widen?.('charisma.trade') || 1; }
 
   // ---------------------------------------------------------------- the counter
   open(shop) {
