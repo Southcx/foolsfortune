@@ -6,10 +6,9 @@
 //   weatherRules({ on, L, log, g })     g: the game (the weather where the Courier is, at the moment of a catch or a status)
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { TYPE_OF } from '../../progress/weather.js';
+import { TYPE_OF, NAMES } from '../../progress/weather.js';
 
-const PLACE = (id) => NODES[id]?.name || id;
-const NAME = { mirth: 'Mirth', wonder: 'Wonder', hunger: 'Hunger', grief: 'Grief', dread: 'Dread' };
+const PLACE = (id) => (id === 'well:dunemaw' ? 'the Great Dunemaw' : NODES[id]?.name || id);
 const STATUS_OF = { impact: 'stun', ego: 'doubt', influence: 'charm', illusion: 'blind', delirium: 'confusion' };
 
 export function weatherRules({ on, L, log, g }) {
@@ -17,15 +16,16 @@ export function weatherRules({ on, L, log, g }) {
   on('weather.now', seen);
   on('weather.change', (e) => {
     seen(e);
-    if (e.aspect) log.say('info', `${NAME[e.aspect]} ${e.strength > 0.6 ? 'falls hard' : 'falls'} on ${PLACE(e.island)}.`, { key: 'weather', throttle: 20 });
-    else log.say('info', `The mood over ${PLACE(e.island)} settles: calm.`, { key: 'weather', throttle: 20 });
+    const n = NAMES[e.aspect || 'calm'];
+    if (e.aspect) log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} ${e.strength > 0.6 ? 'comes down hard' : 'comes'} over ${PLACE(e.island)}.`, { key: 'weather', throttle: 20 });
+    else log.say('info', `${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
   });
   on('day.phase', (e) => { L.inc(`day.${e.phase}`); if (e.phase === 'night' || e.phase === 'dawn') log.say('info', e.phase === 'night' ? 'Night falls. Lachryma glows in the dark.' : 'Dawn.', { key: 'dayphase', throttle: 30 }); });
   // in its weather: a fish landed, a status built
-  on('angle.catch', () => { const w = g.weather?.now(); if (w?.aspect) L.inc(`angle.catch.weather.${w.aspect}`); });
+  on('angle.catch', () => { const w = g.weather?.here(g.player?.pos); if (w?.aspect) L.inc(`angle.catch.weather.${w.aspect}`); });
   on('creature.status', (e) => {
     if (e.by !== 'courier') return;
-    const w = g.weather?.now();
+    const w = g.weather?.here(e.pos ? { x: e.pos[0], y: e.pos[1], z: e.pos[2] } : g.player?.pos);
     if (w?.aspect && STATUS_OF[TYPE_OF[w.aspect]] === e.status) L.inc('status.weather');
   });
 }

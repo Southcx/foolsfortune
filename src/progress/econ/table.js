@@ -190,6 +190,8 @@ export const ECON = {
    *  and the NIGHT: `signature`, how much further Lachryma's signatures read in the dark. */
   weather: {
     lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
+    wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
+    mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
     build: 0.5, fish: 1, supply: 0.25,
     mind:   { mirth: -0.5, wonder: -0.2, hunger: 0,    grief: 0.25, dread: 0.5 },
     danger: { mirth: -0.5, wonder: 0,    hunger: 0,    grief: 0.25, dread: 0.5 },

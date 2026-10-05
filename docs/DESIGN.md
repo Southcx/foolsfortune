@@ -695,3 +695,14 @@ for everyone and in a replay, and it can be forecast: how far ahead is a Divinat
 dread; a dread fog over the King's island is rare (under 1% of hours) and a hidden achievement. The weather changes what pays and what is
 easy, never a skill. Day and night run on the same clock; at night Lachryma's signatures read further.
 
+## 19. Rulings of 2026-10-05, the weather round
+
+- **The five feelings are shown most positive to most negative: Wonder, Mirth, Hunger, Grief, Dread**, wherever a player sees them
+  (GLOSSARY; `DISPLAY_ORDER`). The Law-Chaos order (mirth .. dread) stays the systems' and is never the shown order.
+- **Wells come in radically different types**: a Well's genre is free, "action combat" (the Dunemaw) beside, say, "a JRPG board game".
+  One Courier, one purse, one ledger and the same seven tools still hold in every type: what changes is how a mind is worked through.
+  Part of the Wells' deep dive after the slice (SLICE.md).
+- **Weather is asked by place** (Petra's input): an island, or a Well with its own mood, with an exposure (open, roofed: the mood without
+  the rain, deep: the Well's own); the open Emocean has no mood. Each weather wears its damage type's colour and motif (Calissa's input:
+  wonder is diamond dust and halos by day, the aurora by night); the hour sets the music's density and the mood its colour (Wanda's).
+

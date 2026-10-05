@@ -38,7 +38,8 @@ verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada'
 - **Divination charts the course** between the islands: the reckoning, below.
 - **Get it all working first** (the owner, R57): the slice ships as specified here. The Wells and the Emocean are each a game of their
   own, and their design gets a deep dive with the owner after the slice. Parked for it: the FOE as Etrian Odyssey's (a visible threat
-  that patrols and can be routed around, its route shown by Divination), not a big jelly waiting on the last floor.
+  that patrols and can be routed around, its route shown by Divination), not a big jelly waiting on the last floor. And (the owner,
+  2026-10-05) **Wells of radically different types**: action combat (the Dunemaw) beside, say, a JRPG board game.
 
 **E1b rulings (Dovina, R57, on Petra's v64):**
 - **Pay is `wellPay(deepest, foes) x wellYield(fill)`**, kept: simpler than `islandRun` pro rata, and the same table. Three floors and

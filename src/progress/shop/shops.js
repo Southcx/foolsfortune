@@ -18,6 +18,7 @@
 import { ECON } from '../econ/table.js';
 import { SHOPS, worthOf, shelfOf, demandKey } from './catalogue.js';
 import { demand, drawWell, wellYield } from '../econ/islands.js';
+import { supplyMult, fillHours } from '../weather.js';
 import { today, now as calNow } from '../../core/calendar.js';
 import { itemOf } from '../../pneuka/items.js';
 import { startHaggle, offers, offer, flatter, clink, walk, accept, moodOf } from './haggle.js';
@@ -57,14 +58,14 @@ export class Shops {
   }
 
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
-  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * (this.game.weather?.supplyMult(isl, demandKey(id)) ?? 1) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
+  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * supplyMult(isl, demandKey(id)) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
   /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
    *  a mind still ruminating is worth its run; drawing that Well down (farming it) cheapens its maps, and letting it fill again restores
    *  them. 1 for anything else. */
   still(id, data) {
     if (itemOf(id)?.kind !== 'map' || !data?.well) return 1;
     const rec = this.game.well?.fills?.[data.well];
-    return rec ? wellYield(drawWell(rec.fill, 0, (calNow() - rec.at) / 3600000)) : 1;
+    return rec ? wellYield(drawWell(rec.fill, 0, fillHours(`well:${data.well}`, rec.at, calNow()))) : 1; // (its refill, weather and all: weather.js)
   }
   /** Charisma (Soul Alchemy): the folk ask a little less of you and pay a little more (1 until it is widened). */
   charm() { return this.game.alchemy?.widen?.('charisma.trade') || 1; }
