@@ -14,8 +14,8 @@
 // ---------------------------------------------------------------------------------------
 import { T, DEFAULTS } from '../core/config.js';
 
-/** The player's own preferences: kept, never warned about (they are not the game under test). */
-/** The player's own preferences (and `visual.shadows`: a performance and taste choice, Calissa). */
+/** The player's own preferences: kept, never warned about (they are not the game under test); `visual.shadows` is one (a performance
+ *  and taste choice, Calissa). */
 export const SETTINGS = new Set(['camera.sensitivity', 'camera.adsSensMult', 'visual.resolution', 'visual.upscale', 'visual.shadows', 'audio.volume', 'charge.mode']); // (shadows: Calissa)
 export const isSetting = (key) => SETTINGS.has(key);
 
