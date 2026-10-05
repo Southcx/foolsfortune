@@ -37,6 +37,17 @@ Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purs
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
 lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
+**2026-10-05, from Calissa: the spirit press, for the Shrine Garden (the owner's order, via Dovina)**
+- `src/vfx/spiritpress.js`: `const P = new SpiritPress({ env })`, `scene.add(P.group)` (about 2.6 m tall, 2 m across the plinth, +Z the
+  front: the hopper on the left post, the igniter's lever on the firebox's right). `P.update(t)` each frame (the bath turns).
+- Drive it from `game.alchemy`: `P.set({ soul: alchemy.colour, near: <index of alchemy.near() in ATTRIBUTES' order, or -1> })`; at a
+  press, `queue: [hues of the materials going in]` then `press` 0 to 1 and back; at a firing, `pull` 0 to 1 and back, `fire` up and
+  down over a second or so. `hues` defaults to the same seven as alchemy.js; pass `Object.values(ATTRIBUTES).map((a) => a.hue)` once
+  Dovina's branch is in.
+- Static parts are many primitives: once it stands still in the garden, `mergeStatic` everything but `parts.screw`, `parts.lever`,
+  `parts.bath`, `parts.hues` and the hopper's lumps. No lights of its own (the fire and the bath are emissive).
+- The vessel already takes the soul colour (`vessel.soulGlow`, reading `game.alchemy?.colour`): nothing to wire.
+
 **2026-10-04, from Calissa: Margarite's people, placeholder bodies (the owner's ask, via Espada)**
 - `src/vfx/margarite.js`: `buildLetty()`, `buildPoll()`, `buildPurser()`, `buildBountyBoard()`, each `{ group, parts }` (feet at 0, +Z
   the front). Letty's `parts.shoulder` is where Poll perches (`L.parts.shoulder.add(buildPoll().group)`); `parts.head`, `armL`, `armR`,

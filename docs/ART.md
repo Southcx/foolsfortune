@@ -107,6 +107,14 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **The Great Dunemaw is Lachryma's own place**, as the island is the clay's: walls of bismuth's stair (solid), a floor of glass over the
   liquid (the labradorite moving under it), a mouth that is the Mind's stone swallowing the sand.
 
+## The Shrine Garden: the spirit press and the soul colour (R58)
+
+- **The press is a potter's machine**: a terracotta firebox (the kiln's own clay), a celadon crucible crazed with guan's crackle (the
+  chest's glaze at its second stage), a bronze screw through oak, a copper hopper. The soul colour is shown twice and never written:
+  the **bath** in the crucible and the **hue ring** round the plinth (the seven attributes at their hues, the one you are inside lit).
+- **The soul colour is the vessel's Lachryma** (the skin's glow): grey gives none, so a new Courier looks exactly as the maker made them,
+  and it comes in as the soul saturates, on any skin worn. Alchemy is dress-up as well as growth.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should

@@ -41,6 +41,7 @@ import { CrudeSea } from '../vfx/crudesea.js';
 import { DunemawMouth } from '../vfx/dunemaw.js';
 import { dunemawKit } from '../vfx/dunemawkit.js';
 import { buildLetty, buildPoll, buildPurser, buildBountyBoard } from '../vfx/margarite.js';
+import { SpiritPress } from '../vfx/spiritpress.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -171,6 +172,7 @@ export class Workbench {
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
+    out.push({ id: 'garden:press', grp: 'the Shrine Garden', label: 'the spirit press' });
     out.push({ id: 'folk:letty', grp: "Margarite's people", label: 'Letty Marque (and Poll)' }, { id: 'folk:purser', grp: "Margarite's people", label: 'the Purser' }, { id: 'folk:board', grp: "Margarite's people", label: 'the bounty board' });
     for (const id of Object.keys(ITEMS).sort()) out.push({ id: `thing:${id}`, grp: 'things', label: ITEMS[id].name || id });
     for (const c of CURIOS) out.push({ id: `curio:${c.id}`, grp: 'curios', label: c.name || c.id });
@@ -315,6 +317,7 @@ export class Workbench {
       else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
       else if (id === 'ship:sloop') obj = new Sloop().group;
       else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
+      else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.3, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
       else if (id === 'folk:purser') obj = buildPurser().group;
       else if (id === 'folk:board') obj = buildBountyBoard().group;
       else if (id === 'slice:sea') { const sea = new CrudeSea({ size: 40, cells: 40 }); sea.update(4); obj = sea.mesh; }
@@ -577,6 +580,7 @@ export class Workbench {
     } else this.vfx.update(raw);
     if (this.mv?.spin && this.model && this.tab === 'models') this.model.rotation.y += raw * 0.5;
     if (this.mixer) this.mixer.update(raw);
+    if (this.model?.userData.tick) this.model.userData.tick((this.modelT = (this.modelT || 0) + raw)); // (a model that moves on its own: the press's bath)
     if (this.packClip && this.packBones) { // (the game's own clip, on the Courier: bone by bone, as character.js applies it)
       const C = g.character.clips, pose = (this.packPose ||= C.pose());
       this.packT += raw; C.sample(this.packClip, this.packT, pose, true);

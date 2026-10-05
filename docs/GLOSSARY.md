@@ -273,6 +273,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   of labradorite standing out of the crude, a whirl on the surface, rings on the beat of its approach (no words or numbers).
 - **the crude sea** (`src/vfx/crudesea.js`): the Emocean's surface where the ships sail, liquid Lachryma: black, its swells real, its
   current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
+- **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`): the hopper on the left post, the igniter on the firebox, the
+  crucible over it under a press screw. **the bath**: the soul colour as a liquid in the crucible, turning, brighter when fired. **the hue
+  ring**: seven enamel tiles round the plinth, one per attribute at its hue; the one the soul colour is inside is lit. **soul glow**: the
+  vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
   anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.

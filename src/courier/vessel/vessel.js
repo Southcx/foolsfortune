@@ -15,6 +15,8 @@
 //
 //   const v = new Vessel(game)   v.dress(character)   v.owned() -> [glaze]   v.glaze(id)   v.preview(look)   v.fire(look) -> bool
 //   v.learnFrom([r, g, b], kind)   v.update(dt)   v.look   v.cost
+// The skin also takes the SOUL COLOUR (Soul Alchemy, progress/alchemy.js): the Lachryma lit from inside in its hue, as strongly as it is
+// saturated (the grey soul they start with, not at all), whatever skin they wear: alchemy is dress-up as well as growth (DESIGN.md, 16).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
@@ -38,6 +40,7 @@ export class Vessel {
     this.dressed = new Set(); // the characters wearing it
     this.kinU = kintsugiUniforms();
     this.t = 0; this.fireT = 0;
+    this.soul = new THREE.Vector4(0, 0, 0, 0); // (the soul colour's glow, shared by every skin dressed: rgb, strength)
     this.load();
   }
   get cost() { return Math.round(ECON.firing * ECON.perMinute); }
@@ -84,6 +87,7 @@ export class Vessel {
         m.userData.rest = sh === 'glaze' && m.map ? { em: g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 };
       }
       if (m.emissive) { m.emissive.setHex(m.userData.rest.em); m.emissiveIntensity = m.userData.rest.emI; }
+      if (r === 'skin') U.uFinS.value = this.soul;
       m.userData.glaze = g;
       if ((r === 'body' || r === 'mask') && !m.userData.kin) { addKintsugi(m, this.kinU); m.userData.kin = true; }
     }
@@ -140,6 +144,7 @@ export class Vessel {
       if (!this.known) this.known = new Set(now);
       for (const id of now) if (!this.known.has(id)) { this.known.add(id); this.game.events?.emit('glaze.earn', { glaze: id }); }
     }
+    this.soulGlow(dt);
     if (this.fireT > 0) {
       this.fireT = Math.max(0, this.fireT - dt);
       const k = this.fireT / 2.6; // 1 white-hot .. 0 cooled
@@ -151,6 +156,17 @@ export class Vessel {
         m.emissive.copy(_c); m.emissiveIntensity = Math.max(rest.emI, 1.4 * k * k);
       }
     }
+  }
+
+  /** The soul colour (Soul Alchemy, `game.alchemy.colour`) as the Lachryma's own light: its hue, as strong as it is saturated, so the grey
+   *  soul they start with glows not at all. It slides to a new colour over about a second, so a press is seen to move it. */
+  soulGlow(dt) {
+    const c = this.game.alchemy?.colour;
+    const w = c ? 0.9 * THREE.MathUtils.smoothstep(c.s, 0.05, 0.65) : 0;
+    if (c) _c.setHSL((((c.h % 360) + 360) % 360) / 360, 0.85, 0.55); else _c.setRGB(0, 0, 0);
+    const k = 1 - Math.exp(-dt * 3), S = this.soul;
+    S.set(S.x + (_c.r - S.x) * k, S.y + (_c.g - S.y) * k, S.z + (_c.b - S.z) * k, S.w + (w - S.w) * k);
+    if (S.w < 1e-3 && w === 0) S.w = 0;
   }
 
   // ---------------------------------------------------------------- kept (progress: reset with each build)

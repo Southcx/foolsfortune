@@ -12,7 +12,8 @@
 //   HAIR    a sheen band that slides along the hair as it turns (Kajiya-Kay's anisotropic highlight, cheaply: the band follows the
 //           reflection's height), ombre from root to tip, and an optional oil-film sheen.
 //   SKIN    the Lachryma of their body: its glow colour, a soft light from inside at the edges (fake subsurface: wrap and rim), an
-//           optional pearl or aurora sheen, and translucency (porcelain: warm light through the thin edges).
+//           optional pearl or aurora sheen, and translucency (porcelain: warm light through the thin edges); and the SOUL COLOUR
+//           (`uFinS`: rgb and strength, Soul Alchemy's, set by the vessel), on whatever skin is worn, the maker's own included.
 //
 // Prior art: the gem shaders of Spyro (2018) and of every jewel-match game (faceted normals, sparkle, dispersion), Kajiya and Kay's hair
 // highlight (1989) as most games after it fake it, the subsurface "wrap" lighting of skin since Half-Life 2, and real gemmology for the
@@ -25,7 +26,7 @@ import * as THREE from 'three';
 
 const HEAD = `
 varying vec3 vFinObj; varying vec3 vFinN;
-uniform float uFinOn; uniform vec3 uFinA; uniform vec3 uFinB; uniform vec4 uFinP;
+uniform float uFinOn; uniform vec3 uFinA; uniform vec3 uFinB; uniform vec4 uFinP; uniform vec4 uFinS;
 float finLuma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 vec3 finSpectrum(float t) { return clamp(abs(fract(t + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0); }
 vec3 finHash3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
@@ -122,12 +123,16 @@ const LIGHT = {
     if (uFinP.z > 1.5) totalEmissiveRadiance += finSpectrum(rim * 0.8 + vFinObj.y) * rim * 0.5;              // aurora
     else if (uFinP.z > 0.5) totalEmissiveRadiance += mix(vec3(1.0, 0.92, 0.95), vec3(0.85, 0.9, 1.0), rim) * rim * 0.35; // pearl
     totalEmissiveRadiance += vec3(1.0, 0.8, 0.6) * uFinP.w * (0.06 + pow(1.0 - ndv, 1.5) * 0.4);                 // translucency: warm light through the thin edges
+  }
+  if (uFinS.w > 0.0) { // the soul colour (Soul Alchemy): the Lachryma lit from inside in it, on any skin, the maker's own too; grey is none
+    float ndvS = abs(dot(normalize(normal), normalize(vViewPosition)));
+    totalEmissiveRadiance += uFinS.rgb * uFinS.w * (0.22 + 1.1 * pow(1.0 - ndvS, 2.0));
   }`,
 };
 
 export function dressFinish(m, kind) {
   if (m.userData.finish) return m.userData.finish;
-  const u = { uFinOn: { value: 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) } };
+  const u = { uFinOn: { value: 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) } };
   const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey?.bind(m);
   m.onBeforeCompile = (sh, r) => {
     prev?.call(m, sh, r);
