@@ -23,7 +23,6 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('progress/shop/shops'); // (the haggle's chance: core/rng.js, the same twice)
 
-const KEY = 'foolsfortune.shops.v1';
 const S = ECON.shop;
 
 export class Shops {
@@ -32,7 +31,7 @@ export class Shops {
     this.state = {}; // shop -> { stock: {id: n}, glut: {id: n} }
     for (const id of Object.keys(SHOPS)) this.state[id] = { stock: Object.fromEntries(shelfOf(id)), glut: {} };
     this.t = 0; this.cur = null; this.hag = null;
-    this.load();
+    game.save?.section('shops', { scope: 'world', version: 1, dump: () => this.state, load: (d) => this.load(d), reset: () => this.restock() }); // (core/save.js)
     // a talk that ends mid-haggle (Esc, walking off): a deal shaken on stands, anything else is dropped
     game.events?.on('npc.bye', () => { if (this.hag) { if (this.hag.h.done === 'deal') this.hagClose(false); else this.hag = null; } });
   }
@@ -152,12 +151,11 @@ export class Shops {
     if (reopen && H) { const shop = H.shop; setTimeout(() => { if (!this.game.dialogue?.open) this.open(shop); }, 0); }
   }
 
-  // ---------------------------------------------------------------- kept in the browser (progress: reset with each build)
-  save() { try { localStorage.setItem(KEY, JSON.stringify(this.state)); } catch { /* this session only */ } }
-  load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) for (const id of Object.keys(this.state)) if (s[id]) { Object.assign(this.state[id].stock, s[id].stock || {}); this.state[id].glut = s[id].glut || {}; }
-    } catch { /* nothing kept */ }
+  // ---------------------------------------------------------------- kept in the save's world scope (core/save.js; progress: reset with each build)
+  save() { this.game.save?.dirty('shops'); }
+  load(s) {
+    this.restock();
+    if (s && typeof s === 'object') for (const id of Object.keys(this.state)) if (s[id]) { Object.assign(this.state[id].stock, s[id].stock || {}); this.state[id].glut = s[id].glut || {}; }
   }
+  restock() { for (const id of Object.keys(SHOPS)) this.state[id] = { stock: Object.fromEntries(shelfOf(id)), glut: {} }; }
 }

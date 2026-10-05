@@ -11,17 +11,16 @@
 //    set of things to have seen, shared between every way of seeing them, so a slot is by thing, not by source).
 //  - DONE: which achievements are complete, and when (FFXIV keeps the date of every one).
 // Retroactive by construction: achievements are predicates over these numbers, so anything counted counts (OSRS
-// made its kill-count combat tasks retroactive the same way). Saved to localStorage as it changes.
+// made its kill-count combat tasks retroactive the same way). Kept in the save's player scope (core/save.js, section 'ledger'), written a
+// few seconds after it changes.
 //
 //   stats.inc('move.jump')                          a counter
 //   stats.hi('speed.max', 13.2, { at: 'the workshop' })   -> 'new' (first ever), 'beat' (a real improvement), or false
 //   stats.lo('circuit.braid.time', 41.2)
 //   stats.first('kind.jar')                         -> true the first time
 // ---------------------------------------------------------------------------------------
-const KEY = 'foolsfortune.stats.v1';
-
 export class Stats {
-  constructor() {
+  constructor(save = null) {
     this.life = {}; this.rec = {}; this.firsts = {}; this.done = {};
     this.sess = {};
     this.play = 0;      // lifetime seconds of play
@@ -29,7 +28,8 @@ export class Stats {
     this.sessions = 0;
     this.dirty = 0;
     this.version = 0;   // bumps on any change (the achievement check reads it)
-    this.load();
+    this.store = save;
+    save?.section('ledger', { scope: 'player', version: 1, dump: () => this.dump(), load: (d) => this.load(d), reset: () => this.clear() });
     this.sessions++;
   }
 
@@ -80,18 +80,16 @@ export class Stats {
 
   touch() { this.version++; if (!(this.dirty > 0)) this.dirty = 5; }
 
-  save() {
-    this.dirty = 0;
-    try { localStorage.setItem(KEY, JSON.stringify({ v: 1, life: this.life, rec: this.rec, firsts: this.firsts, done: this.done, play: this.play, sessions: this.sessions })); } catch { /* storage unavailable */ }
-  }
-
-  load() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* storage unavailable or corrupt */ }
-    if (!raw) return;
+  /** Mark the ledger for the save (core/save.js writes the player scope whole at the end of the frame). */
+  save() { this.dirty = 0; this.store?.dirty('ledger'); }
+  dump() { return { life: this.life, rec: this.rec, firsts: this.firsts, done: this.done, play: this.play, sessions: this.sessions }; }
+  load(raw) {
+    if (!raw || typeof raw !== 'object') return;
     this.life = raw.life || {}; this.rec = raw.rec || {}; this.firsts = raw.firsts || {}; this.done = raw.done || {};
     this.play = raw.play || 0; this.sessions = raw.sessions || 0;
+    this.version++;
   }
+  clear() { this.life = {}; this.rec = {}; this.firsts = {}; this.done = {}; this.sess = {}; this.play = 0; this.sessions = 0; this.version++; }
 
-  reset() { this.life = {}; this.rec = {}; this.firsts = {}; this.done = {}; this.sess = {}; this.play = 0; this.sessions = 1; this.save(); this.version++; }
+  reset() { this.clear(); this.sessions = 1; this.save(); }
 }

@@ -17,6 +17,8 @@
 // ---------------------------------------------------------------------------------------
 
 import { ECON } from '../../progress/econ/table.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/table'); // (the default draw when a caller passes none: core/rng.js, the same twice)
 
 /** What can come out. `color` is its sector on the wheel; `rank` how good (0 a dud .. 4 a jackpot): the wheel is ordered by it. */
 export const OUTCOMES = {
@@ -95,7 +97,7 @@ export function keyBreakChance(id, uses = 1) {
   const W = ECON.lockheart.keyWear;
   return Math.min(1, W.start + W.perUse * Math.max(0, uses - 1));
 }
-export const keyBreaks = (id, uses = 1, r = Math.random()) => r < keyBreakChance(id, uses);
+export const keyBreaks = (id, uses = 1, r = simRand()) => r < keyBreakChance(id, uses);
 export function keyLife(id) {
   let alive = 1, mean = 0;
   for (let u = 1; alive > 1e-9 && u < 100; u++) { mean += alive; alive *= 1 - keyBreakChance(id, u); }
@@ -125,7 +127,7 @@ export function rates(table) {
   const sum = Object.values(table).reduce((a, b) => a + b, 0) || 1;
   return Object.entries(table).map(([id, w]) => ({ id, p: w / sum })).sort((a, b) => (OUTCOMES[a.id]?.rank ?? 0) - (OUTCOMES[b.id]?.rank ?? 0));
 }
-export function spin(table, r = Math.random()) {
+export function spin(table, r = simRand()) {
   const R = rates(table);
   for (const x of R) { if ((r -= x.p) <= 0) return x.id; }
   return R[R.length - 1].id;

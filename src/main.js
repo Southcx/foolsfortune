@@ -237,7 +237,7 @@ async function main() {
   const game = {
     scene, physics, fx, hud, camera, renderer, stats, events, save,
     reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
-    ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
+    ledger: new Stats(save), // (the quiet ledger: everything counted; see stats.js; kept in the save's player scope)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
