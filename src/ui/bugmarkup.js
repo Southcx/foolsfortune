@@ -3,7 +3,7 @@
 // key, the pause, the frame grab, the attachments and the filing are Petra's, src/debug/bugreport.js, which calls this). A development
 // tool the player opened, like the F3 panel: words are allowed in it, and it goes away when filed.
 //
-//   THE FRAME   the 480-line target as it was drawn, shown at a WHOLE-number scale (never resampled: the true look, pixel for pixel)
+//   THE FRAME   the 480-line target as it was drawn, shown at a WHOLE-number scale (never resampled: the true look, pixel for pixel; a whole fraction only where the frame is larger than the screen)
 //   THE MARKS   a layer of their own over it, at the frame's own size: a PEN, an ARROW, a RING and a BOX, in a hot red or white, each
 //               drawn over a dark hairline so it reads on any frame; UNDO takes back the last (the frame under the marks is untouched)
 //   THE WORDS   a title (one line), what happened, what should have happened; a KIND and a SEVERITY, one click each, with a default
@@ -67,7 +67,8 @@ export class BugMarkup {
       <label>Severity</label><div class="row sevs">${SEVERITIES.map(([id, n]) => `<button class="chip" data-sev="${id}">${n}</button>`).join('')}</div>
       <div class="foot"><span>Enter files · Esc closes</span><button class="file">File</button></div></div></div>`;
     // the frame and the marks, at a whole-number scale that fits beside the form
-    const k = Math.max(1, Math.floor(Math.min((innerWidth - 380) / W, (innerHeight - 40) / H)));
+    const fit = Math.min((innerWidth - 380) / W, (innerHeight - 40) / H);
+    const k = fit >= 1 ? Math.floor(fit) : 1 / Math.ceil(1 / Math.max(fit, 0.05)); // (a frame bigger than the room, at 720 or native: a whole fraction, a half or a third, so the form stays on screen)
     const show = (c) => { c.style.width = `${W * k}px`; c.style.height = `${H * k}px`; return c; };
     const base = document.createElement('canvas'); base.width = W; base.height = H; base.getContext('2d').drawImage(frame, 0, 0);
     const marks = this.marks = document.createElement('canvas'); marks.width = W; marks.height = H; marks.className = 'marks';
@@ -113,7 +114,6 @@ export class BugMarkup {
       if (key === 'c') { S.ink = S.ink === 'red' ? 'white' : 'red'; return this.refresh(); }
     };
     addEventListener('keydown', this.onKey, true);
-    addEventListener('keyup', this.swallow = (e) => { if (this.root) e.stopPropagation(); }, true);
   }
 
   /** The buttons' lit states, and the marks redrawn. */
@@ -143,7 +143,7 @@ export class BugMarkup {
   }
 
   close(result) {
-    removeEventListener('keydown', this.onKey, true); removeEventListener('keyup', this.swallow, true);
+    removeEventListener('keydown', this.onKey, true); // (keyup is never swallowed: a key held when the window opened is let go in the game too)
     this.root?.remove(); this.root = null;
     const res = this.resolve; this.resolve = null; res?.(result);
   }

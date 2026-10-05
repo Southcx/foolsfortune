@@ -12,7 +12,7 @@
 // Prior art: the iris wipe (silent film, Looney Tunes, Mario's star wipe), the swirl transition into battle of the sixth-generation
 // RPGs (Final Fantasy X's shattering, Dragon Quest's spiral), and Okami's ink-swallow into another place.
 //
-//   game.mawWipe = new MawWipe(game)   .close(onCovered)  (about 0.6 s; calls back once the view is covered)   .open()  (about 0.7 s)
+//   game.mawWipe = new MawWipe(game)   .close(onCovered)  (about 0.6 s; calls back once the view is covered; false, and nothing, while one waits)   .open()  (about 0.7 s)
 //   .update(rawDt)  (each frame, before the draw)   .covered   .active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -30,7 +30,7 @@ export class MawWipe {
   }
 
   make() {
-    const m = new THREE.ShaderMaterial({
+    const m = new THREE.ShaderMaterial({ name: 'maw-wipe',
       uniforms: this.u, transparent: true, depthTest: false, depthWrite: false, fog: false, toneMapped: false,
       vertexShader: 'varying vec2 vS; void main() { vS = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }', // (the whole view, whatever the camera)
       fragmentShader: `varying vec2 vS; uniform float uT, uClose, uHole, uAspect;
@@ -60,7 +60,10 @@ void main() {
   get active() { return !!this.mesh?.visible; }
 
   /** The pool opens from the middle until it fills the view; then `onCovered` (the place changes behind it). */
-  close(onCovered) { if (!this.mesh) this.make(); this.cb = onCovered || null; this.mode = 'close'; this.dir = 1; this.k = 0; this.mesh.visible = true; }
+  close(onCovered) {
+    if (this.cb) return false; // (one passage at a time: a second close while the first waits would drop its callback, and the seam would stay busy for good)
+    if (!this.mesh) this.make(); this.cb = onCovered || null; this.mode = 'close'; this.dir = 1; this.k = 0; this.mesh.visible = true; return true;
+  }
   /** Its eye widens and lets the new place through; then it is gone. */
   open() { if (!this.mesh) this.make(); this.mode = 'open'; this.dir = -1; this.k = 1; this.mesh.visible = true; }
 

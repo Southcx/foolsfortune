@@ -48,7 +48,7 @@ export class CrudeSea {
       uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
       uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)
     };
-    const m = this.mat = new THREE.MeshStandardMaterial({ color: 0x07050b, roughness: 0.5, metalness: 0.12, envMap: env, envMapIntensity: 0.35 });
+    const m = this.mat = new THREE.MeshStandardMaterial({ name: 'crude-sea', color: 0x07050b, roughness: 0.5, metalness: 0.12, envMap: env, envMapIntensity: 0.35 });
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, u);
       sh.vertexShader = sh.vertexShader

@@ -26,11 +26,11 @@
 // Breath of the Wild's lightning (a bolt seen far off before its thunder), Okami's painted skies graded by the hour, and Journey's
 // weather as feeling.
 //
-//   game.weatherLook = new WeatherLook(game)   .update(dt, camera)   .force({ aspect, strength, phase, light } | null) (tests, the lab)
+//   game.weatherLook = new WeatherLook(game)   .update(dt, camera)   .force({ aspect, strength, phase, light } | null) (tests, the workbench)
 //   An AGATE sky (two feelings: `second`, `secondStrength` from the rules): the first falls; the second colours the sky, the clouds and
 //   what falls, and may raise its own mark (an aurora under a pall: awe). Opposites cancel in the rules, so there is nothing to draw.
 //   .shoreline({ center, angle, half, r })   the mood ends at the waterline (vfx/shore.js tells it)
-//   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
+//   .prewarm() (made and shown for the boot's warm-up; returns what hides it)   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -67,12 +67,14 @@ const HOURS = [
 ];
 const lerp = THREE.MathUtils.lerp, smooth = THREE.MathUtils.smoothstep;
 /** The hour's grade (phase 0..1 through the day), as numbers for sky.grade. */
-export function hourGrade(phase) {
+export function hourGrade(phase, out = { mul: [1, 1, 1], haze: [0, 0, 0] }) { // (out: a grade to write into, so a caller each frame makes nothing)
   const h = ((phase % 1) + 1) % 1 * 24;
   let i = 0; while (i < HOURS.length - 2 && HOURS[i + 1][0] <= h) i++;
   const [h0, a] = HOURS[i], [h1, b] = HOURS[i + 1], k = smooth(h, h0, h1);
   const v = (x, y, d) => lerp(x ?? d, y ?? d, k);
-  return { day: v(a.day, b.day, 0), night: v(a.night, b.night, 0), expo: v(a.expo, b.expo, 1), mul: [0, 1, 2].map((j) => lerp((a.mul || [1, 1, 1])[j], (b.mul || [1, 1, 1])[j], k)), stars: v(a.stars, b.stars, 1), desat: v(a.desat, b.desat, 0), haze: [0, 0, 0], hazeK: 0 }; // (the night held a little below the painting's full cry: it is night, not a rave)
+  out.day = v(a.day, b.day, 0); out.night = v(a.night, b.night, 0); out.expo = v(a.expo, b.expo, 1); out.stars = v(a.stars, b.stars, 1); out.desat = v(a.desat, b.desat, 0); out.hazeK = 0;
+  for (let j = 0; j < 3; j++) { out.mul[j] = lerp(a.mul ? a.mul[j] : 1, b.mul ? b.mul[j] : 1, k); out.haze[j] = 0; }
+  return out; // (the night held a little below the painting's full cry: it is night, not a rave)
 }
 /** The fog a weather asks for (render/daylight.js lays it on the scene's): its colour and a multiplier on the density. */
 export function fogOf(aspect, strength = 1) { const L = LOOK[aspect]; return L ? { colour: L.fog, density: lerp(1, L.fogD, strength), k: strength } : null; }
@@ -103,7 +105,7 @@ function makeRain(n) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 6), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-rain',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
 attribute vec3 aSeed; attribute float aEnd; uniform float uLen; varying float vA;
@@ -125,7 +127,7 @@ function makeMotes(n) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-motes',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
 attribute vec3 aSeed; uniform float uSize, uHex, uPx; varying float vA; varying float vG;
@@ -166,7 +168,7 @@ void main() {
 /** A sky mark: a ring (or a disc) facing the eye, one shader for all of them (one program; `mode` picks the look). */
 function ringMesh(mode, r0, r1) {
   const u = { uA: { value: 0 }, uR0: { value: r0 }, uR1: { value: r1 }, uMode: { value: mode } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: `weather-${['halo', 'bow', 'dogs', 'glow'][mode]}`,
     uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position.z = gl_Position.w * 0.9998; }', // (at the back of the depth, as the dome: past the far plane, behind everything near)
     fragmentShader: RING_FRAG,
@@ -178,7 +180,7 @@ const tanD = (d) => Math.tan(THREE.MathUtils.degToRad(d)) * SKYD;
 
 function makeAurora() {
   const u = { uT: { value: 0 }, uA: { value: 0 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-aurora',
     uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.BackSide,
     vertexShader: 'varying vec2 vUv; void main() { vUv = uv; vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9998; }',
     fragmentShader: `uniform float uT, uA; varying vec2 vUv;
@@ -227,15 +229,23 @@ export class WeatherLook {
     this.made = true;
     this.group = new THREE.Group(); this.group.name = 'weather'; this.group.userData.zoneFree = true;
     this.game.scene?.add(this.group);
-    this.rain = makeRain(3000); this.motes = makeMotes(1400);
+    this.rain = makeRain(3000); this.motes = makeMotes(1400); this.falls = [this.rain, this.motes];
     this.halo = ringMesh(0, tanD(21), tanD(23.5));
     this.bow = ringMesh(1, tanD(40.5), tanD(42.5));
     this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
     this.aurora = makeAurora();
-    const boltMat = new THREE.MeshBasicMaterial({ color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const boltMat = new THREE.MeshBasicMaterial({ name: 'weather-bolt', color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
     this.bolt = new THREE.Mesh(boltGeo(rng(7)), boltMat); this.bolt.frustumCulled = false; this.bolt.visible = false;
     this.glow = ringMesh(3, 0, 90);
     for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
+  }
+
+  /** For the boot's shader warm-up (main.js): everything made and shown, so its programs compile with the rest and the first weather
+   *  never compiles in the middle of play; returns what hides it again (the next update decides what shows). */
+  prewarm() {
+    if (!this.made) this.make();
+    this.group.visible = true; this.group.traverse((o) => { o.visible = true; });
+    return () => { this.group.traverse((o) => { if (o !== this.group) o.visible = false; }); };
   }
 
   /** Where an island's weather stops: a shore's sector (its centre, bearing, half-width, the waterline's radius). Nothing falls past it. */
@@ -272,15 +282,15 @@ export class WeatherLook {
     if (sky?.grade) {
       if (!w) sky.grade({});
       else {
-        const g = hourGrade(w.phase);
+        const g = hourGrade(w.phase, _g);
         for (const a of ASPECTS) {
           const k = Math.min(1, this.amt[a] + 0.7 * this.sec[a]), S = LOOK[a].sky; if (!k) continue; // (the second colours the sky too)
           g.expo *= lerp(1, S.expo ?? 1, k);
-          if (S.mul) g.mul = g.mul.map((v, i) => v * lerp(1, S.mul[i], k));
+          if (S.mul) for (let i = 0; i < 3; i++) g.mul[i] *= lerp(1, S.mul[i], k);
           g.desat = Math.max(g.desat, (S.desat || 0) * k);
-          if (S.haze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; g.haze = S.haze.toArray(); }
+          if (S.haze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; S.haze.toArray(g.haze); }
         }
-        sky.grade({ day: g.day, night: g.night, expo: g.expo, mul: _c.fromArray(g.mul), stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK });
+        sky.grade(Object.assign(_sg, { day: g.day, night: g.night, expo: g.expo, mul: _c.fromArray(g.mul), stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK }));
         // the clouds take the hour's light (less of the night's dark: they hold what light there is) and the weather's cover
         const CL = this.game.dunes?.clouds, B = CL?.base;
         if (B) {
@@ -291,10 +301,10 @@ export class WeatherLook {
       }
     }
     if (!w) this.game.dunes?.clouds?.grade?.({});
-    if (!this.made) { // (calm since the boot: nothing to draw, nothing made)
-      if (!ASPECTS.some((a) => this.amt[a] > 1e-3 || this.sec[a] > 1e-3)) { this.lift = 0; return; }
-      this.make();
-    }
+    let any = false; for (const a of ASPECTS) if (this.amt[a] > 1e-3 || this.sec[a] > 1e-3) any = true;
+    if (!this.made) { if (!any) { this.lift = 0; return; } this.make(); } // (calm since the boot and never warmed: nothing to draw, nothing made)
+    this.group.visible = any || this.t - this.strike.t < 3; // (calm: nothing drawn, nothing updated)
+    if (!this.group.visible) { this.lift = 0; return; }
     const light = w?.light ?? 0.5, dayK = smooth(light, 0.3, 0.6), nightK = 1 - smooth(light, 0.15, 0.4);
     const sun = _v.copy(this.game.dunes?.sunDir || _up).normalize();
     // what falls: the strongest falling weather's way of falling, the others' colours eased in (one rain, one mote field)
@@ -314,7 +324,8 @@ export class WeatherLook {
         this.motes.obj.geometry.setDrawRange(0, Math.round(this.motes.n * F.rate * dk));
       }
     }
-    for (const [L, A] of [[this.rain, rainA], [this.motes, moteA]]) { L.obj.visible = A > 0.01; L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
+    this.rain.obj.visible = rainA > 0.01; this.motes.obj.visible = moteA > 0.01;
+    for (const L of this.falls) { L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
     M0.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
     // the marks in the sky (open places only: none of them is seen from a room)
     const mk = (a) => (open ? Math.min(1, this.amt[a] + this.sec[a]) : 0); // (the marks are the sky's colouring: a second raises its own, an aurora under a pall)
@@ -322,7 +333,7 @@ export class WeatherLook {
     this.sky(this.halo, won * dayK * 0.22, cam, sun, 1);
     this.sky(this.bow, mir * dayK * 0.16, cam, sun, -1);
     const elev = Math.asin(THREE.MathUtils.clamp(sun.y, -1, 1)), az = Math.atan2(sun.z, sun.x), off = THREE.MathUtils.degToRad(22) / Math.max(0.3, Math.cos(elev));
-    this.dogs.forEach((d, i) => { _w.set(Math.cos(az + (i ? off : -off)) * Math.cos(elev), Math.sin(elev), Math.sin(az + (i ? off : -off)) * Math.cos(elev)); this.sky(d, won * dayK * 0.6, cam, _w, 1); });
+    for (let i = 0; i < 2; i++) { _w.set(Math.cos(az + (i ? off : -off)) * Math.cos(elev), Math.sin(elev), Math.sin(az + (i ? off : -off)) * Math.cos(elev)); this.sky(this.dogs[i], won * dayK * 0.6, cam, _w, 1); }
     const au = this.aurora; au.obj.visible = won * nightK > 0.01; au.u.uA.value = 0.55 * won * nightK; au.u.uT.value = this.t; au.obj.position.set(cam.x, cam.y + 230, cam.z);
     this.thunder(dt, dre, cam);
   }
@@ -346,7 +357,7 @@ export class WeatherLook {
   thunder(dt, k, cam) {
     const S = this.strike, B = this.bolt, G = this.glow;
     if (k > 0.05 && this.t >= S.next) {
-      const r = rng(1 + S.n++ * 7919), bear = r() * Math.PI * 2, dist = 260 + r() * 70; // (inside the dunes' far plane: a long way off, never on top of you)
+      const r = rng(hash32(1 + S.n++)), bear = r() * Math.PI * 2, dist = 260 + r() * 70; // (inside the dunes' far plane: a long way off, never on top of you; the seed hashed, since a Lehmer generator's first draw is linear in it and the bearings walked round in 22-degree steps)
       B.geometry.dispose(); B.geometry = boltGeo(r);
       B.position.set(cam.x + Math.cos(bear) * dist, cam.y - 40, cam.z + Math.sin(bear) * dist); B.lookAt(cam.x, cam.y - 40, cam.z);
       G.obj.position.set(B.position.x, cam.y + 110, B.position.z); G.obj.lookAt(cam);
@@ -367,4 +378,6 @@ export class WeatherLook {
     this.group.traverse((o) => { if (o.isMesh || o.isPoints || o.isLineSegments) { o.geometry.dispose(); o.material.dispose(); } });
   }
 }
+const _g = { mul: [1, 1, 1], haze: [0, 0, 0] }, _sg = {};
+const hash32 = (n) => { n = Math.imul(n ^ (n >>> 16), 0x45d9f3b); n = Math.imul(n ^ (n >>> 16), 0x45d9f3b); return ((n ^ (n >>> 16)) >>> 0) % 2147483646 + 1; }; // (a seed scattered: neighbours land far apart)
 const _white = new THREE.Color(1, 1, 1), _c = new THREE.Color(), _c3 = new THREE.Color(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);

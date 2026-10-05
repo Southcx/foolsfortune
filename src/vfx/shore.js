@@ -68,7 +68,7 @@ export class Shore {
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('aAcross', new THREE.BufferAttribute(across, 1)); geo.setAttribute('aAlong', new THREE.BufferAttribute(along, 1));
     geo.setIndex(idx); geo.computeVertexNormals();
     this.u = { uT: { value: 0 } };
-    const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.05, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, envMap: g.sky?.env || null, envMapIntensity: 0.5 });
+    const mat = new THREE.MeshStandardMaterial({ name: 'shore-swash', color: 0xffffff, roughness: 0.5, metalness: 0.05, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, envMap: g.sky?.env || null, envMapIntensity: 0.5 });
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, this.u);
       sh.vertexShader = sh.vertexShader

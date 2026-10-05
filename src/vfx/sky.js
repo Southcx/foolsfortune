@@ -90,7 +90,7 @@ export class Sky {
 
   /** A window onto the painting: a flat surface (an oculus in a ceiling) that shows the sky in whatever direction the eye looks through it. */
   windowMaterial(sunDir) {
-    return new THREE.ShaderMaterial({
+    return new THREE.ShaderMaterial({ name: 'sky-env',
       side: THREE.DoubleSide, depthWrite: false, fog: false, toneMapped: false,
       uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() } },
       vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
@@ -107,9 +107,9 @@ void main() {
     });
   }
 
-  /** The dome's material: the painting, graded by the hour and the weather (`grade`), with the sun laid over it. */
+  /** The dome's material: the painting, graded by the hour and the weather (`grade`), with the sun laid over it (a moon by night, in the light's same direction). */
   domeMaterial(sunDir) {
-    const m = new THREE.ShaderMaterial({
+    const m = new THREE.ShaderMaterial({ name: 'sky-dome',
       side: THREE.BackSide, depthWrite: false, fog: false,
       uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() }, uTime: { value: 0 }, ...this.G },
       vertexShader: 'varying vec3 vD; void main() { vD = normalize(position); vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9999; }',
@@ -125,8 +125,11 @@ void main() {
   if (uNight > 0.001) c = mix(c, texture2D(uSkyNight, uvP).rgb, uNight);
   c = mix(c, vec3(dot(c, vec3(0.299, 0.587, 0.114))), uDesat) * uMul * uExpo;
   c = mix(c, uHaze, uHazeK * (1.0 - smoothstep(0.0, 0.5, abs(d.y))));
-  float sd = max(dot(d, normalize(uSun)), 0.0);
-  c += vec3(1.0, 0.78, 0.46) * (pow(sd, 1400.0) * 5.0 + pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14) * min(1.0, uExpo);
+  float sd = max(dot(d, normalize(uSun)), 0.0), sunK = 1.0 - uNight;
+  c += vec3(1.0, 0.78, 0.46) * (pow(sd, 1400.0) * 5.0 + pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14) * min(1.0, uExpo) * sunK; // (the sun fades with the night)
+  // the moon where the sun was (the light's one direction): a cool small disc, its limb a little darker, and a faint ring of haze
+  float md = dot(d, normalize(uSun)), disc = smoothstep(0.99985, 0.99992, md);
+  c = mix(c, vec3(0.82, 0.86, 0.95) * (0.75 + 0.25 * smoothstep(0.99985, 0.99998, md)), disc * uNight) + vec3(0.45, 0.55, 0.8) * pow(sd, 300.0) * 0.12 * uNight;
   gl_FragColor = vec4(max(c, 0.0), 1.0);
   #include <colorspace_fragment>
 }`,
