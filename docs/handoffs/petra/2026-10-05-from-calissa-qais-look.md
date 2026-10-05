@@ -26,3 +26,8 @@ look.preview()                                  (`/qais` on the chat line: all f
 
 Verified headless at 1280x720: all four tabs, a verdict stamped by a click, `npm run check` OK, build OK, stress seed 1: 0 violations.
 Not verified: your shell calling it, real store documents, the narrow-window layout below 860 px.
+
+**Handover:** head 9bf9220 (main 7d16fc1 merged in; this note's commit only adds these lines). `npm run gate`: check, build, stress seeds 1
+and 2 (0 violations each), playtest well 8/8, replay exact, contracts 13/13, perf OK (programs after the warm-up 2, was 2; nothing
+moved past noise). Lanes: 5 files, all in my lane or the hubs: `src/main.js` (the import and the `/qais` line), `src/ui/theme.js`
+(`'#qais .qw'` in WINDOWS). New: `QaisLook` (src/ui/qais.js); no events, save sections or programs; the `/qais` chat command.
