@@ -74,3 +74,27 @@ With them the wheel closes: Dread meets its opposite (Anger), and Trust and Disg
 
 My recommendation, before input: **1 to 4 now** (rings, opposites, two feelings at once, the colour wheel: cheap, deep, and made of
 what exists), and **5 as a staged expansion** after the slice, once the owner rules that Trust, Disgust and Anger join the aspects.
+
+## Input so far
+
+**Calissa (art):**
+- **Colours: reconcile to Plutchik's hues; ours are the ones out of place**, and his also agree with each feeling's damage type (ART.md
+  section 2):
+  - mirth to joy's gold-yellow (Impact's bone and gold), `0xf2c84a`;
+  - wonder to surprise's cyan-lapis (Ego's lapis), `0x5ec8e0`;
+  - desire stays orange (anticipation's; Influence's warm gold), `0xff7a4a`;
+  - grief stays blue (sadness; Illusion's labradorite), `0x8fb0ff`;
+  - dread to fear's ink-green (Delirium's violet-green), `0x3f6a4a`, with violet only in its status.
+  
+  If the three come: trust light green, disgust violet, anger red.
+- **The soul wheel:** one hue circle under both; the petals as a backdrop ring on the press's screen and in the wisps' light, never a
+  rule; the attributes keep their own targets.
+- **Intensity rings, one tier per channel:**
+  - sky: mild a tint, basic what falls, intense the weather's mark and Wanda's layer;
+  - body: mild a cast in the temper's glow, basic the expression clip, intense the particle aura and a glyph at onset.
+  
+  Prismatic stays the centre.
+- **Dyads:** the strongest feeling shows the movement, the second the colour (a body); two weathers layer (a sky: an aurora under a pall is
+  awe), so `game.weather` should report a second aspect and its strength.
+- **Order:** 1 to 4 now, with the colour swap inside step 4.
+
