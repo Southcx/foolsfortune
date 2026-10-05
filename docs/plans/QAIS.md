@@ -79,8 +79,9 @@ republish to the same URL. Every division reads and writes it with `ArtifactData
 Writes are few and only on a person's action (a tick, a note's pause, a report) or a test's first sighting of its evidence (one write a
 test, never a stream). A test's `seen` keeps the first three sightings.
 
-**Away from the published build** (the dev server, the headless runs): `use("db")` is null, so QAIS shows the Brief and Tests bundled
-at build time (read only) and a report is saved as one file (BUGREPORT.md). The headless runs never open it.
+**Away from the published build** (the dev server, the headless runs): `use("db")` is null, so QAIS says in one line that it lives in
+the published build, and the Reports tab still saves a report as one file (BUGREPORT.md). Nothing is bundled (two copies would disagree
+after the first tick: Petra). The headless runs never open it.
 
 **A public build** (later, when there is one to share) is built without QAIS: one switch at build time (`import.meta.env`), from the
 first version, so nothing of it ships by accident.
@@ -105,10 +106,14 @@ first version, so nothing of it ships by accident.
 - **Dovina:** this data shape, the triage and the tests, the questions, and reading each sent round.
 - **Every division:** the Brief and Tests sections of its handover note.
 
-## Questions for Petra
+## Petra's answers (2026-10-05)
 
-1. One window under F8 with the frame taken first, or F8 for the report and a second key for the other tabs?
-2. The evidence watch: a listener on `game.events` per open test, or one listener matching the round's tests?
-3. The build's manifest gains the Claude Code Remote connector (`create_trigger` only), so the owner's send wakes Dovina's session as
-   the checklist page does now. Any objection?
-4. Bundling the Brief and Tests into the build for the offline fallback: worth it, or should QAIS say "only in the published build"?
+1. **One window under F8**, the frame taken first in the same tick, QAIS opening on the last tab used; F3 and F4 stay the debug panel
+   and its report.
+2. **One listener**: a single tap on `game.events` holding a Set of the event names the round's open tests watch; a test's `match` is
+   checked only when its name is in the Set; a sighting writes once per test (the first three kept).
+3. **The connector**: the `mcp` capability with `servers: [{ server: 'Claude Code Remote', tools: ['create_trigger'] }]`, as the viewer,
+   with the viewer's consent on first use; the page fills `persistent_session_id` and `run_once_at`; Send only on the owner's press.
+4. **Only in the published build** (above).
+
+The handover (ARCHITECTURE.md) carries the Brief and Tests sections (items 7 and 8). Petra builds QAIS on the owner's word in her thread.
