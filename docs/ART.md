@@ -130,6 +130,12 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **The maw wipe**: the way into a Well is covered by the Dunemaw's pool itself, drawn in the frame (inside the 480 lines, over the world,
   under the HUD), never a loading screen with words.
 
+## The shore (R58)
+
+- **Crude is not water**: the shore has no white foam. The crude comes up the sand and draws back on two slow waves along the shore,
+  its oil film bright in a thin band at the lip, and leaves the sand dark and glossy behind it. The sea from the sand is the same crude
+  the ships sail, quieter near land, and the island's weather stops at the waterline (the Emocean has no mood).
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should

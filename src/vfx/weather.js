@@ -29,6 +29,7 @@
 //   game.weatherLook = new WeatherLook(game)   .update(dt, camera)   .force({ aspect, strength, phase, light } | null) (tests, the lab)
 //   An AGATE sky (two feelings: `second`, `secondStrength` from the rules): the first falls; the second colours the sky, the clouds and
 //   what falls, and may raise its own mark (an aurora under a pall: awe). Opposites cancel in the rules, so there is nothing to draw.
+//   .shoreline({ center, angle, half, r })   the mood ends at the waterline (vfx/shore.js tells it)
 //   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -77,14 +78,21 @@ export function hourGrade(phase) {
 export function fogOf(aspect, strength = 1) { const L = LOOK[aspect]; return L ? { colour: L.fog, density: lerp(1, L.fogD, strength), k: strength } : null; }
 
 // ---------------------------------------------------------------- what falls
-const R = 26, H = 22; // (the cylinder round the eye: radius and height, metres)
+const R = 26, H = 22;
+const SHORE_U = { uShore: { value: new THREE.Vector4(0, 0, 0, 0) }, uShoreA: { value: new THREE.Vector2(0, 0) } }; // (shared by what falls: vfx/shore.js sets it) // (the cylinder round the eye: radius and height, metres)
 const WRAP = /* glsl */`
 uniform float uT; uniform vec3 uCam; uniform vec3 uVel;
 vec3 wrapAt(vec3 seed, float sp) { // (a world-anchored path, wrapped into the cylinder round the eye: nothing moves with the camera)
   vec3 w = vec3(seed.x * ${2 * R}.0, seed.y * ${H}.0, seed.z * ${2 * R}.0) + uVel * sp * uT;
   return vec3(mod(w.x - uCam.x + ${R}.0, ${2 * R}.0) - ${R}.0, mod(w.y - uCam.y + ${H / 2}.0, ${H}.0) - ${H / 2}.0, mod(w.z - uCam.z + ${R}.0, ${2 * R}.0) - ${R}.0);
 }
-float edgeFade(vec3 r) { return (1.0 - smoothstep(${R * 0.7}, ${R}.0, length(r.xz))) * (1.0 - smoothstep(${H * 0.35}, ${H / 2}.0, abs(r.y))); }`;
+uniform vec4 uShore; uniform vec2 uShoreA; // (a shore: its centre xz, the waterline's radius, on; its bearing and half-width)
+float shoreFade(vec3 w) { // (the island's mood ends at the waterline: nothing falls over the crude)
+  if (uShore.w <= 0.0) return 1.0;
+  vec2 d = w.xz - uShore.xy; float a = atan(d.y, d.x) - uShoreA.x; a = abs(atan(sin(a), cos(a)));
+  return a > uShoreA.y ? 1.0 : 1.0 - smoothstep(uShore.z - 2.0, uShore.z + 6.0, length(d));
+}
+float edgeFade(vec3 r) { return (1.0 - smoothstep(${R * 0.7}, ${R}.0, length(r.xz))) * (1.0 - smoothstep(${H * 0.35}, ${H / 2}.0, abs(r.y))) * shoreFade(uCam + r); }`;
 
 function makeRain(n) {
   const seed = new Float32Array(n * 6), end = new Float32Array(n * 2);
@@ -94,7 +102,7 @@ function makeRain(n) {
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 6), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
-  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 } };
+  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 } };
   const m = new THREE.ShaderMaterial({
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
@@ -116,7 +124,7 @@ function makeMotes(n) {
   const seed = new Float32Array(n * 3); for (let i = 0; i < seed.length; i++) seed[i] = Math.random();
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
-  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 } };
+  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 } };
   const m = new THREE.ShaderMaterial({
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
@@ -215,6 +223,9 @@ export class WeatherLook {
     this.forced = null; this.wx = null; this.poll = 0; this.t = 0; this.lift = 0;
     this.strike = { next: 4, t: -9, n: 0 };
   }
+
+  /** Where an island's weather stops: a shore's sector (its centre, bearing, half-width, the waterline's radius). Nothing falls past it. */
+  shoreline({ center, angle, half, r }) { SHORE_U.uShore.value.set(center.x, center.z, r, 1); SHORE_U.uShoreA.value.set(angle, half); }
 
   /** Show a weather and an hour whatever the rules say (tests, the workbench); null hands it back to `game.weather`. */
   force(w) { this.forced = w ? { aspect: null, strength: 1, phase: 19 / 24, light: 0.5, exposure: 'open', ...w } : null; }
