@@ -228,6 +228,11 @@ read on 2026-10-05 from Spotify's public embed page. The owner's five favourites
   - **What sets the list apart from this soundtrack**: the air (the list's median 7.3% above 2 kHz, its least 1.4%; nine of 17 of
     our cues, rendered offline, have less than that least) and the drums (the list's median percussive share 26%, its least 11%;
     13 of our 17 cues are under 11%). The tempo is no gap: the list's median is 110 bpm, the middle half 96 to 125, as ours.
+- **The most-played hundred** (Spotify's own top-songs list for the owner, most likely 2025's: 59 of the 100 are from 2024 and 2025,
+  the latest from 2025-08-15; read 2026-10-05). kmoe leads it (6 songs, ranks 1, 2 and 7 among them); 8 of its top 20 are on
+  Superlike. Measured the same way, it sounds like Superlike (the same tempo, bass and drums), a little brighter and steadier: the Wall
+  holds 45 of the 100, and 26 of the bottom 50. The top ten lean the other way: 4 of them are the Drop. What is played all day is
+  bright and dense; what is played most and kept is darker, heavier and full of holes.
 - **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
   - Stops and drop-outs written into the groove.
   - A bass that slides.
