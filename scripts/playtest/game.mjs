@@ -3,20 +3,21 @@
 // and gives back the agent interface (src/agent/agent.js) as calls from Node. The playtest runner (run.mjs) and the bridge
 // (scripts/agent.mjs) both open it here, so a scenario and a session play the same game the same way.
 //
-//   const g = await openGame({ seed })   g.act(cmd) -> { ok, why }   g.look(opts) -> state   g.step(n)   g.until(fn, maxTicks) -> state
+//   const g = await openGame({ seed, query?, before?(page) })   g.act(cmd) -> { ok, why }   g.look(opts) -> state   g.step(n)   g.until(fn, maxTicks) -> state
 //   g.errors (the page's)   g.reloads (times the page was reloaded under it: the game started over)   g.close()
 // ---------------------------------------------------------------------------------------
 import { chromium } from 'playwright';
 import fs from 'fs';
 
-export async function openGame({ seed = 1, url = process.env.URL || 'http://127.0.0.1:5173/' } = {}) {
+export async function openGame({ seed = 1, query = '', before = null, url = process.env.URL || 'http://127.0.0.1:5173/' } = {}) {
   const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
   const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const page = await browser.newPage({ viewport: { width: 480, height: 300 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.addInitScript(() => { window.__noPrime = true; Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
-  await page.goto(`${url}?seed=${seed}`, { waitUntil: 'commit' });
+  if (before) await before(page); // (what the page must find when it boots: a replay's save, say)
+  await page.goto(`${url}?seed=${seed}${query}`, { waitUntil: 'commit' });
   // (ready: booted, the title's overlay away, the keys ours, the world waiting. Run again whenever the page was reloaded under us: the
   // dev server reloads it when a file changes, and a reloaded game starts over from the seed, which `reloads` counts)
   let reloads = -1;

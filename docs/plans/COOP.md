@@ -31,7 +31,12 @@ Each phase pays for itself before the next one starts.
 ### C2. What was pressed (replay)
 
 - The input recorder: each tick's input frame (keys down and pressed, the look, the mouse buttons), as a compact delta.
-- A replay is the save's export, the seed, the build and the input frames. `F4` (the diagnostics report) writes one; `/replay` plays one.
+- A replay is the save's export, the seed, the build and the input frames. `/replay save` writes one; `/replay load` plays one.
+- **Status (v71):** in. `game.replay` (`src/core/replay.js`) records from the start of play; `/replay save` gives the file, `/replay load`
+  plays one (the page reloads on its save and boot seed), `/record` begins anew. An agent's turns and travels are **deeds**, kept with the
+  frames. `npm run replaytest` records an agent's session and plays it on a fresh page: the same state, exactly (seeds 3, 5, 7; up to
+  6000 ticks). What it took: the boot seed (the shelves' pots are laid out from it), the timer-written keys written at the start
+  (`save.writer`), and three's `randomDirection()` out of the simulation (it calls Math.random; the check now catches it).
 - **Done when:** a recorded session replays to the same final state (the Courier's position, the ledger), and the owner can send a
   replay file instead of describing a bug.
 

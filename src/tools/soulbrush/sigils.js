@@ -11,7 +11,7 @@
 //   const s = new Sigils(game)   s.update(dt, on)  (on: the brush is out)   s.pop('h' | 'v' | 'vee' | 'caret' | 'bolt') -> { popped, cleared }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/soulbrush/sigils'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const SIGIL_KEYS = ['h', 'v', 'vee', 'caret', 'bolt'];
@@ -121,7 +121,7 @@ export class Sigils {
         this.on.delete(c);
         const p = c.pos.clone().setY(c.pos.y + 0.35), dir = p.clone().sub(P.pos).setY(0).normalize();
         const ink = new THREE.Color(0x17111a), sheen = new THREE.Color(0x8c56dc);
-        for (let i = 0; i < 26; i++) g.fx.alpha.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + simRand() * 3), life: 0.5 + simRand() * 0.4, size: 0.12, sizeEnd: 0.03, color: i % 4 ? ink : sheen, alpha: 0.85, drag: 3, gravity: 5 });
+        for (let i = 0; i < 26; i++) g.fx.alpha.emit({ pos: p, vel: randDir(simRand, new THREE.Vector3()).multiplyScalar(2 + simRand() * 3), life: 0.5 + simRand() * 0.4, size: 0.12, sizeEnd: 0.03, color: i % 4 ? ink : sheen, alpha: 0.85, drag: 3, gravity: 5 });
         g.clappers.hit(c, p, dir, 1, 'brushed');
       }
     }

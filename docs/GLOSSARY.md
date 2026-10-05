@@ -305,6 +305,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   mind (a Brain, `docs/AI.md`).
 - **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
   back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
+- **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
+  a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
+  dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A
+  **deed** is a change made other than through the input (an agent's turn or travel), kept in the frames and done again on playback.
+  *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the

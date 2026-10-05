@@ -24,7 +24,7 @@ import { registered, hasTag } from '../../core/tags.js';
 import { inside } from './gesture.js';
 import { SIGIL_OF } from './sigils.js';
 import { inscribe } from './inscribe.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/soulbrush/techniques'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const TECHNIQUES = {
@@ -269,7 +269,7 @@ export class BrushTechniques {
     this.live.push({ kind: 'bolt', parts: [mk(0xffffff, 1), mk(0xb892ff, 0.6)], t: 0 });
     if (g.fx.boomLight) { g.fx.boomLight.position.copy(at).y += 1.5; g.fx.boomLight.intensity = 110; g.fx.boomT = 0.22; }
     const c = new THREE.Color(0xd8c6ff);
-    for (let i = 0; i < 30; i++) g.fx.add.emit({ pos: at, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + simRand() * 5).setY(simRand() * 5), life: 0.3 + simRand() * 0.3, size: 0.05, sizeEnd: 0.01, color: c, drag: 2, twinkle: 30 });
+    for (let i = 0; i < 30; i++) g.fx.add.emit({ pos: at, vel: randDir(simRand, new THREE.Vector3()).multiplyScalar(2 + simRand() * 5).setY(simRand() * 5), life: 0.3 + simRand() * 0.3, size: 0.05, sizeEnd: 0.01, color: c, drag: 2, twinkle: 30 });
   }
 
   /** What a mark (^ or V) was drawn over: everything in its box, or nothing (then it is the Courier's). */

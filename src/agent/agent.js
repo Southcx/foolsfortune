@@ -28,8 +28,20 @@ export class Agent {
     this.task = null; // { kind, ..., ticks }
     this.result = null;
     this.lastEv = null; this.lastLine = null; // (the last event and log line it saw: the bus keeps 300, so not an index)
+    // its changes made other than through the input, as the replay's deeds (registered at boot: a page playing a replay does them)
+    const g = game, R = game.replay;
+    this.cmds = {
+      'agent.turn': (y) => { g.player.yaw = y; },
+      'agent.travel': (id) => !!g.places?.travel(id),
+      'agent.pin': (id) => { const p = (g.interact?.offers || []).find((x) => refId(x) === id || x.id === id); if (p) g.interact.pin(p.ref); },
+      'agent.say': (text) => g.events.emit('chat.say', { text, by: 'courier' }),
+    };
+    for (const [k, fn] of Object.entries(this.cmds)) R?.deed(k, fn);
   }
   get busy() { return !!this.task; }
+  /** A change made other than through the input (a turn, a travel, words): a replay's deed, so a replay keeps it. */
+  run(name, ...args) { const R = this.game.replay; return R ? R.perform(name, ...args) : this.cmds[name](...args); }
+  turn(yaw) { this.run('agent.turn', yaw); }
 
   // ------------------------------------------------------------------ looking
   observe({ places = false } = {}) {
@@ -74,11 +86,11 @@ export class Agent {
         this.task = { kind: 'goto', path, i: 0, within: cmd.within ?? 1.2, run: cmd.run !== false, ticks: cmd.ticks ?? 60 * 30, best: Infinity, still: 0 };
         return { ok: true };
       }
-      case 'travel': { const r = g.places?.travel(cmd.place); return r ? { ok: true } : { ok: false, why: 'no such place, or not reachable that way' }; }
+      case 'travel': { const r = this.run('agent.travel', cmd.place); return r ? { ok: true } : { ok: false, why: 'no such place, or not reachable that way' }; }
       case 'face': {
-        if (cmd.yaw != null) { P.yaw = cmd.yaw; return { ok: true }; }
+        if (cmd.yaw != null) { this.turn(+cmd.yaw); return { ok: true }; }
         const to = target(cmd); if (!to) return { ok: false, why: 'nothing to face' };
-        P.yaw = Math.atan2(to.x - P.pos.x, to.z - P.pos.z); return { ok: true };
+        this.turn(Math.atan2(to.x - P.pos.x, to.z - P.pos.z)); return { ok: true };
       }
       case 'hold': this.task = { kind: 'hold', keys: cmd.keys || [], ticks: cmd.ticks ?? 30 }; return { ok: true };
       case 'press': g.input.pressed.add(cmd.key); g.input.down.add(cmd.key); this.task = { kind: 'press', keys: [cmd.key], ticks: 2 }; return { ok: true };
@@ -86,12 +98,13 @@ export class Agent {
         if (!cmd.with) { if (!g.interact?.cur) return { ok: false, why: 'nothing in reach' }; return this.act({ do: 'press', key: 'KeyF' }); }
         const want = String(cmd.with).replace(/^folk\./, ''), o = (g.interact?.offers || []).find((o) => refId(o) === want || o.id === want);
         if (!o) return { ok: false, why: `'${cmd.with}' is not in reach (reach: ${(g.interact?.offers || []).map(refId).join(', ') || 'nothing'})` };
-        g.interact.pin(o.ref); this.task = { kind: 'interact', ref: o.ref, ticks: 15 }; return { ok: true };
+        this.run('agent.pin', refId(o));
+        this.task = { kind: 'interact', ref: o.ref, ticks: 15 }; return { ok: true };
       }
       case 'use': { const k = g.belt?.get(cmd.tool)?.key; if (!k) return { ok: false, why: `no tool '${cmd.tool}'` }; if (!g.belt?.isWorn(cmd.tool)) return { ok: false, why: 'not worn (it is in the box)' }; return this.act({ do: 'press', key: k }); }
       case 'choose': { const n = +cmd.n; if (!g.dialogue?.opts || !(n >= 1 && n <= g.dialogue.opts.length)) return { ok: false, why: 'no such choice' }; return this.act({ do: 'press', key: `Digit${n}` }); }
       case 'attack': this.task = { kind: 'attack', ticks: cmd.ticks ?? 40, k: 0 }; return { ok: true };
-      case 'say': g.events.emit('chat.say', { text: String(cmd.text || '').slice(0, 120), by: 'courier' }); return { ok: true };
+      case 'say': this.run('agent.say', String(cmd.text || '').slice(0, 120)); return { ok: true };
       case 'stop': this.stop('stopped'); return { ok: true };
       default: return { ok: false, why: `unknown intent '${cmd.do}'` };
     }
@@ -111,7 +124,7 @@ export class Agent {
     if (T.kind === 'goto') {
       const to = T.path[T.i], dist = Math.hypot(to.x - P.pos.x, to.z - P.pos.z), last = T.i === T.path.length - 1;
       if (dist < (last ? T.within : 0.8)) { if (last) { this.stop('arrived'); return; } T.i++; T.best = Infinity; return; }
-      P.yaw = Math.atan2(to.x - P.pos.x, to.z - P.pos.z); // (it turns to the next point at once: an agent has no mouse to sweep)
+      this.turn(Math.atan2(to.x - P.pos.x, to.z - P.pos.z)); // (it turns to the next point at once: an agent has no mouse to sweep)
       d.add('KeyW'); if (T.run && dist > 4) d.add('ShiftLeft'); else d.delete('ShiftLeft');
       // not getting closer: a hop (a lip, a step), and after a while it gives up and says so
       if (dist < T.best - 0.05) { T.best = dist; T.still = 0; } else if (++T.still % 45 === 0) { g.input.pressed.add('Space'); d.add('Space'); } else d.delete('Space');

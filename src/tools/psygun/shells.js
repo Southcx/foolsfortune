@@ -8,7 +8,7 @@ import { sfx } from '../../audio/sfx.js';
 import { Specials } from './specials.js';
 import { Casters } from './casters.js';
 import { hasTag, registered } from '../../core/tags.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/psygun/shells'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
@@ -403,7 +403,7 @@ export class Shells {
     const g = this.game, S = T.shells.slip;
     sfx.splosh(g.listenerDistance(pos));
     for (let k = 0; k < S.droplets; k++) {
-      const v = new THREE.Vector3().randomDirection();
+      const v = randDir(simRand, new THREE.Vector3());
       v.addScaledVector(normal, 0.6).normalize().multiplyScalar(2 + simRand() * S.spread);
       this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.04 + simRand() * 0.06, true);
     }
@@ -440,7 +440,7 @@ export class Shells {
       } else p.pos.add(step);
       p.mesh.position.copy(p.pos);
       p.mesh.rotation.x += dt * 12; p.mesh.rotation.z += dt * 9;
-      if (p.kind === 'bomb' && simRand() < 0.6) g.fx.add.emit({ pos: p.pos, vel: new THREE.Vector3().randomDirection(), life: 0.3, size: 0.04, sizeEnd: 0.01, color: GLOW, drag: 2 });
+      if (p.kind === 'bomb' && simRand() < 0.6) g.fx.add.emit({ pos: p.pos, vel: randDir(simRand, new THREE.Vector3()), life: 0.3, size: 0.04, sizeEnd: 0.01, color: GLOW, drag: 2 });
       if (p.kind === 'well') g.fx.chargeTick(p.pos, 1, dt);
       if (detonate) {
         g.scene.remove(p.mesh);
@@ -599,7 +599,7 @@ export class Shells {
     g.breakables.explode(pos, { radius: B.radius, breakFrac: 0, velocity: B.velocity, fx: false, cause: 'bomb' });
     // molten slip: a burst of droplets
     for (let k = 0; k < B.droplets; k++) {
-      const v = new THREE.Vector3().randomDirection();
+      const v = randDir(simRand, new THREE.Vector3());
       v.addScaledVector(normal, 0.8).normalize().multiplyScalar(3 + simRand() * 7);
       this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.025 + simRand() * 0.05);
     }
@@ -617,7 +617,7 @@ export class Shells {
   spill(center, dir, amount = 1) {
     const g = this.game;
     for (let k = 0; k < 70 * amount; k++) {
-      const v = new THREE.Vector3().randomDirection();
+      const v = randDir(simRand, new THREE.Vector3());
       v.y = Math.abs(v.y) * 0.8;
       v.multiplyScalar(1.5 + simRand() * 3.5).addScaledVector(dir, 1.5);
       this.addDroplet(center.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.3, (simRand() - 0.3) * 0.4, (simRand() - 0.5) * 0.3)), v, 0.03 + simRand() * 0.05, true);
@@ -650,7 +650,7 @@ export class Shells {
           // splash: sometimes spit two smaller droplets
           if (d.r > 0.035 && simRand() < 0.35) {
             for (let k = 0; k < 2; k++) {
-              const v = d.vel.clone().reflect(hit.normal).multiplyScalar(0.3).add(new THREE.Vector3().randomDirection().multiplyScalar(1.2));
+              const v = d.vel.clone().reflect(hit.normal).multiplyScalar(0.3).add(randDir(simRand, new THREE.Vector3()).multiplyScalar(1.2));
               this.addDroplet(hit.point.clone().addScaledVector(hit.normal, 0.03), v, d.r * 0.5, d.slip);
             }
           }

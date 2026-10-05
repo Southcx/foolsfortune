@@ -49,3 +49,5 @@ export function reseed(seed) {
   for (const S of STREAMS.values()) S.a = (SEED ^ hashName(S.name)) >>> 0;
 }
 export const sessionSeed = () => SEED;
+/** A direction on the unit sphere from a stream, into `v` (three's randomDirection() draws on Math.random: never in the simulation). */
+export function randDir(r, v) { const u = r() * 2 - 1, t = r() * Math.PI * 2, f = Math.sqrt(1 - u * u); return v.set(f * Math.cos(t), u, f * Math.sin(t)); }

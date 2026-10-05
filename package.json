@@ -10,7 +10,8 @@
     "stress": "node scripts/stress.mjs",
     "check": "node scripts/check.mjs",
     "perf": "node scripts/perf.mjs",
-    "playtest": "node scripts/playtest/run.mjs"
+    "playtest": "node scripts/playtest/run.mjs",
+    "replaytest": "node scripts/replaytest.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.21.0",

@@ -15,7 +15,7 @@ import { measureGrip, handFromTool } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { tickInscriptions, clearInscriptions } from './inscribe.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
@@ -160,7 +160,7 @@ export class SoulBrush extends Tech {
     const f = P.lookDir(_v1).clone();
     const from = this.model.tipWorld(_v2).clone();
     for (let i = 0; i < 14; i++) {
-      const d = f.clone().add(_v3.randomDirection().multiplyScalar(0.18)).normalize().multiplyScalar(12 + simRand() * 5);
+      const d = f.clone().add(randDir(simRand, _v3).multiplyScalar(0.18)).normalize().multiplyScalar(12 + simRand() * 5);
       d.y += 2.5;
       g.shells?.addDroplet(from.clone(), d, 0.035 + simRand() * 0.03, true);
     }
