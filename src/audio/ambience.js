@@ -9,7 +9,7 @@
 //   DREAD (the pall)             fog: the world's sounds muffled (sfx.setFog), thunder rolling far off minutes apart (felt, never a crack)
 // The hour: birds at dawn; at night insects, and a faint chord in the air where Lachryma glows. Under a roof the mood is there but
 // nothing falls: the rain and the wind are heard muffled through it, the sky's own sounds not at all; down a Well (deep) the Well's music
-// is the place's mood and the beds rest. And the mood and the night are handed to the music (music/player.js setMood, setNight).
+// is the place's mood and the beds rest. An agate sky (a second mood under the first: progress/weather.js) plays both beds by their shares. And the mood and the night are handed to the music (music/player.js setMood, setNight).
 //
 // Prior art: generative ambience (Brian Eno's systems; the rain of Red Dead Redemption 2 and Breath of the Wild, drawn drop by drop),
 // the classic synthesis of rain (filtered noise plus impulses) and wind (noise through a band-pass whose centre wanders), thunder as a
@@ -28,7 +28,7 @@ export class Ambience {
     this.game = game;
     this.want = { aspect: null, strength: 0, exposure: 'open', phase: 'day' };
     this.next = { thunder: 0, bell: 0 };
-    for (const e of ['weather.now', 'weather.change']) game.events?.on(e, (w) => Object.assign(this.want, { aspect: w.aspect, strength: w.strength ?? 0, exposure: w.exposure || 'open' }));
+    for (const e of ['weather.now', 'weather.change']) game.events?.on(e, (w) => Object.assign(this.want, { aspect: w.aspect, strength: w.strength ?? 0, second: w.second || null, secondStrength: w.secondStrength ?? (w.second ? (w.strength ?? 0) * 0.5 : 0), cancelled: w.cancelled || null, exposure: w.exposure || 'open' }));
     game.events?.on('day.phase', (d) => { this.want.phase = d.phase; });
     this.timer = setInterval(() => this.tick(), 250);
     this.polled = 0;
@@ -58,44 +58,46 @@ export class Ambience {
     const g = this.game, W = this.want, c = sfx.ctx, t = c.currentTime;
     if ((this.polled -= 0.25) <= 0 && g.weather?.here && g.player?.pos) { // (twice a second: walking under a roof changes the exposure without an event)
       this.polled = 0.5;
-      const w = g.weather.here(g.player.pos); Object.assign(W, { aspect: w.aspect, strength: w.strength ?? 0, exposure: w.exposure || 'open' });
+      const w = g.weather.here(g.player.pos); Object.assign(W, { aspect: w.aspect, strength: w.strength ?? 0, second: w.second || null, secondStrength: w.secondStrength ?? 0, cancelled: w.cancelled || null, exposure: w.exposure || 'open' });
       if (w.dayPhase) W.phase = w.dayPhase;
     }
     const deep = W.exposure === 'deep', roofed = W.exposure === 'roofed', k = deep ? 0 : W.strength || 0, A = deep ? null : W.aspect;
     const night = W.phase === 'night', open = !roofed && !deep;
+    const B = deep ? null : W.second, k2 = B ? W.secondStrength || 0 : 0, w = (a) => (A === a ? k : 0) + (B === a ? k2 : 0); // (an agate: both beds by their shares)
     this.roof.frequency.setTargetAtTime(roofed ? 650 : 18000, t, 0.4);
     const set = (node, v) => node.g.gain.setTargetAtTime(v, t, 1.5);
-    set(this.rain, (A === 'grief' ? 0.1 * k : A === 'mirth' ? 0.025 * k : 0) * (roofed ? 1.6 : 1));
-    this.rain.f[0].frequency.setTargetAtTime(A === 'mirth' ? 3800 : 1600, t, 1);
+    set(this.rain, (0.1 * w('grief') + 0.025 * w('mirth')) * (roofed ? 1.6 : 1));
+    this.rain.f[0].frequency.setTargetAtTime(w('mirth') > w('grief') ? 3800 : 1600, t, 1);
     // the sirocco's gusts: a random walk, so it never pumps at a steady rate
     this.gustV = 0.85 * this.gustV + (Math.random() - 0.5) * 0.12; this.gust = Math.max(0.15, Math.min(1, this.gust + this.gustV));
     this.windF = Math.max(250, Math.min(1400, this.windF + (Math.random() - 0.5) * 60 + (this.gust - 0.5) * 20));
     this.wind.f[0].frequency.setTargetAtTime(this.windF, t, 0.3);
-    set(this.wind, A === 'desire' ? 0.16 * k * this.gust : 0); set(this.sand, A === 'desire' && open ? 0.025 * k * this.gust * this.gust : 0);
-    set(this.pall, A === 'dread' ? 0.05 * k * (open ? 1 : 0.5) : 0);
-    set(this.glass, A === 'wonder' ? (open ? 0.005 : 0.001) * k : 0);
+    set(this.wind, 0.16 * w('desire') * this.gust); set(this.sand, open ? 0.025 * w('desire') * this.gust * this.gust : 0);
+    set(this.pall, 0.05 * w('dread') * (open ? 1 : 0.5));
+    set(this.glass, (open ? 0.005 : 0.001) * w('wonder'));
     this.glass.os.forEach((o, i) => o.detune.setTargetAtTime(Math.sin(t * (0.05 + i * 0.013)) * 9, t, 2)); // (the fifths drifting)
     set(this.glow, night && open ? 0.004 : 0);
-    sfx.setFog?.(A === 'dread' ? (open ? 0.75 : 0.35) * k : 0);
-    this.drops(A, k, roofed, open, night, t);
-    g.music?.setMood?.(A, k); g.music?.setNight?.(night);
+    sfx.setFog?.((open ? 0.75 : 0.35) * w('dread'));
+    this.drops(w, roofed, open, night, t, !A);
+    g.music?.setMood?.(A, k, B, k2, deep ? null : W.cancelled); g.music?.setNight?.(night);
   }
 
   /** What falls and calls in the next moment: drops, crackle, thunder, a far bell, insects, birds. */
-  drops(A, k, roofed, open, night, t) {
+  drops(w, roofed, open, night, t, calm) {
     const d = this.bus, n = (rate) => { let m = 0, r = rate * AHEAD; while (r > 0) { if (Math.random() < Math.min(1, r)) m++; r -= 1; } return m; };
     const at = () => t + 0.05 + Math.random() * AHEAD;
-    if (A === 'grief') for (let i = n(28 * k); i--;) { const s = at(), f = 260 + Math.random() * 380; sfx.tone(s, 0.035, { f0: f, f1: f * 0.8, type: 'triangle', gain: 0.05 * (roofed ? 0.6 : 1), dest: d }); sfx.noise(s, 0.012, { type: 'bandpass', f0: 2200 + Math.random() * 1500, q: 2, gain: 0.04, dest: d }); }
-    if (A === 'grief' && Math.random() < 0.6 * AHEAD * k) { const s = at(), f = 700 + Math.random() * 300; sfx.tone(s, 0.07, { f0: f, f1: f * 1.8, gain: 0.04, dest: d }); } // (a gutter)
-    if (A === 'mirth') for (let i = n(4 * k); i--;) { const s = at(), f = hz(MIRTH[Math.floor(Math.random() * MIRTH.length)]); sfx.tone(s, 0.3, { f0: f, f1: f, gain: 0.035, dest: d }); sfx.tone(s, 0.12, { f0: f * 2.76, f1: f * 2.76, gain: 0.01, dest: d }); }
-    if (A === 'wonder' && open) for (let i = n(1.5 * k); i--;) sfx.noise(at(), 0.006, { type: 'highpass', f0: 6000, gain: 0.03, dest: d });
-    if (A === 'dread' && t > this.next.thunder) { // (far off: a long low roll, minutes apart; felt under the music, never a crack)
-      if (this.next.thunder) sfx.noise(t + 0.1, 5 + 2 * k, { type: 'lowpass', f0: 180, f1: 70, q: 0.6, gain: 0.22 * k * (open ? 1 : 0.5), attack: 1.4, dest: d });
+    if (w('grief')) for (let i = n(28 * w('grief')); i--;) { const s = at(), f = 260 + Math.random() * 380; sfx.tone(s, 0.035, { f0: f, f1: f * 0.8, type: 'triangle', gain: 0.05 * (roofed ? 0.6 : 1), dest: d }); sfx.noise(s, 0.012, { type: 'bandpass', f0: 2200 + Math.random() * 1500, q: 2, gain: 0.04, dest: d }); }
+    if (Math.random() < 0.6 * AHEAD * w('grief')) { const s = at(), f = 700 + Math.random() * 300; sfx.tone(s, 0.07, { f0: f, f1: f * 1.8, gain: 0.04, dest: d }); } // (a gutter)
+    if (w('mirth')) for (let i = n(4 * w('mirth')); i--;) { const s = at(), f = hz(MIRTH[Math.floor(Math.random() * MIRTH.length)]); sfx.tone(s, 0.3, { f0: f, f1: f, gain: 0.035, dest: d }); sfx.tone(s, 0.12, { f0: f * 2.76, f1: f * 2.76, gain: 0.01, dest: d }); }
+    if (w('wonder') && open) for (let i = n(1.5 * w('wonder')); i--;) sfx.noise(at(), 0.006, { type: 'highpass', f0: 6000, gain: 0.03, dest: d });
+    const kd = w('dread');
+    if (kd && t > this.next.thunder) { // (far off: a long low roll, minutes apart; felt under the music, never a crack)
+      if (this.next.thunder) sfx.noise(t + 0.1, 5 + 2 * kd, { type: 'lowpass', f0: 180, f1: 70, q: 0.6, gain: 0.22 * kd * (open ? 1 : 0.5), attack: 1.4, dest: d });
       this.next.thunder = t + 60 + Math.random() * 120;
     }
-    if (A === 'dread' && open && t > this.next.bell) { if (this.next.bell) { const f = hz(64 + [0, 1, 7][Math.floor(Math.random() * 3)]); sfx.tone(t + 0.1, 2.5, { f0: f, f1: f * 0.995, gain: 0.015, dest: d }); } this.next.bell = t + 45 + Math.random() * 80; }
-    if (A !== 'dread') this.next.thunder = this.next.bell = 0;
+    if (kd && open && t > this.next.bell) { if (this.next.bell) { const f = hz(64 + [0, 1, 7][Math.floor(Math.random() * 3)]); sfx.tone(t + 0.1, 2.5, { f0: f, f1: f * 0.995, gain: 0.015, dest: d }); } this.next.bell = t + 45 + Math.random() * 80; }
+    if (!kd) this.next.thunder = this.next.bell = 0;
     if (night && open) for (let i = n(2.5); i--;) { const s = at(), f = 4300 + Math.random() * 500; for (let p = 0; p < 3; p++) sfx.tone(s + p * 0.035, 0.02, { f0: f, f1: f, gain: 0.006, dest: d }); }
-    if (this.want.phase === 'dawn' && open && !A) for (let i = n(0.6); i--;) { const s = at(), f = 2400 + Math.random() * 900; sfx.tone(s, 0.12, { f0: f, f1: f * 1.35, gain: 0.012, dest: d }); }
+    if (this.want.phase === 'dawn' && open && calm) for (let i = n(0.6); i--;) { const s = at(), f = 2400 + Math.random() * 900; sfx.tone(s, 0.12, { f0: f, f1: f * 1.35, gain: 0.012, dest: d }); }
   }
 }
