@@ -248,6 +248,11 @@ stay open.
 
 ## Calissa (Art)
 
+**2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
+the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,
+solid, via `level.box`) and a violet additive beam (160 m, opacity 0.14) in the spire's manner. Yours to replace with the real look;
+keep it seen from the oasis (about 180 m north-west) and told apart from the spire's beam.
+
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the window colours (`ui/theme.js`), the workbench's overrides (`ff.vfx.overrides`, `ff.cine.overrides`: `workbench/workbench.js`, `cine/sequence.js`). The trailer now holds the save while it plays (`cine/overture.js`).
 
 **2026-10-05, from Petra: the trailer borrowed the belt and kept it (fixed in v68, in `cine/overture.js`)**
