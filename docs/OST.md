@@ -191,7 +191,40 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   pitch is heard true (a free bar's 2.32 and 4.25 made it ambiguous, to a pitch detector and to the ear); beating is two tones `beat`
   Hz apart. Checked by measuring: the pitch of each strike against the note asked, the envelope's wobble against `beat`.
 
-## 6. Next
+## 6. The owner's ear
+
+What the owner replays, and what it asks of this soundtrack: their Spotify playlist *Superlike* (77 songs, about 255 real minutes),
+read on 2026-10-05 from Spotify's public embed page. The owner's five favourites (six: a tie) were measured from Spotify's own
+30-second previews; the clips and their spectrograms were not kept in the repo.
+
+- **The list.** Nearly all from 2015 on, with emo, bedroom pop, alternative R&B, hyperpop, metalcore, lo-fi trap and math rock all
+  mixed, many of the songs collaborations. The songs average 3:19 and none runs past 5:19. The titles name feelings plainly (*Anhedonia, Agoraphobia, Anxious,
+  Ad Nauseam, Disposable, Getting Older*) and set them to music that moves: sad words, a groove under them. Alchemy and water run
+  through it (*Aqua Regia, Transmutation, Battery Acid, Datura, Electrons*; *Waterfalls Coming Out Your Mouth, Tsunami, Swan Dive*).
+  Clean tapped guitar on extended chords (Ichika Nito, Yvette Young), jazz chords (Sting, Sleep Token's *Aqua Regia*), glam theatre
+  (Palaye Royale, Crown The Empire), the soft verse that drops into a wall (Sleep Token, Crywolf).
+- **The five**, the owner's picks: *Waterfalls Coming Out Your Mouth* (Glass Animals), *DATURA [paroxysm]* (Crywolf), *Agoraphobia*
+  (Coletta), *Linoleum* (kmoe), and tied for fifth, *WHY'D YOU HAVE TO GO THERE* and *MOUTHFUL OF SILENCE* (ZIG MENTALITY).
+- **What the previews measure** (spectrograms, and levels by `lowshare.sh` and ffmpeg's EBU R128):
+  - **Silence as a hit.** Five of the six cut the bass, or everything, for a beat or two and slam back in (*Waterfalls*'s
+    drop-outs, *DATURA*'s break, *Linoleum*'s hard cut, *MOUTHFUL OF SILENCE*'s stop). *Agoraphobia* is the other way: a wall, its
+    loudness range 0.3 LU.
+  - **The bass moves in pitch**: slides and dives (*Waterfalls*'s swoops, *Linoleum*'s dive), not only steps from note to note.
+  - **Weight in the bass**: 20 to 56% of the energy under 120 Hz, four of the six above this soundtrack's 45%.
+  - **Air**: 1.4 to 12.5% of the energy above 2 kHz (the median about 4.8%). This soundtrack's cues, rendered offline without the
+    reverb, have 0.2 to 3.3% (the median 0.6%): about an eighth.
+  - **Tempo**: four between 90 and 110 bpm, two near 150 (or a half-time 75).
+  - **Keys** could not be read cleanly from 30 real seconds: the notes smear across their neighbours (bends, glides, distortion).
+- **What it asks of the music**: proposals only, none made yet, and the owner's word decides.
+  - Stops and drop-outs written into the groove.
+  - A bass that slides.
+  - More air up high: hats, breath, shimmer.
+  - A sparkling clean guitar on extended chords.
+  - The soft-to-crushing drop (*The Bottom of the Well*, when the FOE shows itself).
+  - A looser low-end limit for the moments meant to hit.
+- **Open**: the owner is listening to the five again, to name what each does that they could not live without.
+
+## 7. Next
 
 0. (Round 34) Hear *Lachryma*, *The Workshop* and *Five Against Fate*; the battle plays while a slip jelly is after the Courier, the work song in the
    workshop, *Lachryma* on the title.
