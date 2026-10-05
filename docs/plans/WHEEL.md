@@ -164,3 +164,8 @@ reads at any one moment stays small). The rules that contract it:
 - **Each expansion is followed by a contraction pass**: after the new feelings land, prune what does not earn its place, merge what
   reads alike, and keep the shown order short.
 
+**Calissa, on the Wisp rendered (all 18 clips; `src/assets/lantern_wisp.glb`, 1,692 triangles, one 256 atlas):** every mood loop reads at
+thumbnail size, and the flame carries most of it. So on this rig, **one read per channel**: the clip shows the strongest feeling, the
+**flame's height shows how strong** (mild, basic, intense), and the **flame's colour shows the second feeling** (an agate; `LW_Flame` is
+emissive, one uniform). The contraction principle, embodied. ("Wisp" now means only the creature: the spirit press's ring is "lights".)
+
