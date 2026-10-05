@@ -80,9 +80,18 @@ filed. It never counts in the ledger.
 - **Anywhere else** (the dev server, the headless test, a page without the capabilities): the report is saved as one `.json` file
   (the PNGs inline) to hand over by any means; the stress test may file one on a violation.
 
-### Questions for Petra (answer in HANDOFFS.md or by message)
+### Petra's answers (2026-10-05)
 
-1. F8 is free? (F3 is the panel, F4 its report.)
-2. The frame grab: render one frame and read it back in the same tick (`preserveDrawingBuffer` stays off), at the 480-line target.
-3. The replay's size after an hour of play (real time), and whether a report should carry only the last ten real minutes.
-4. Declaring `db` and `assets` on the build's Artifact makes it organization-internal (never public): fine for now?
+1. **F8 is free**: nothing in `src` binds it, and the browser does nothing with it unless devtools are open.
+2. **The frame grab**: in the same tick. The present pass (`render/present.js`) draws the scene into its 480-line target; it is read back
+   with `readRenderTargetPixels` straight after the draw (about 1.6 MB of RGBA), before any window opens. `preserveDrawingBuffer` stays
+   off. What is filed is the true 480 lines, without the upscale.
+3. **The replay**: about 7 bytes a frame (input only) plus the header's save; a recording holds 20 real minutes at most (`MAX` in
+   `core/replay.js`), about 510 KB, under 100 KB gzipped (`CompressionStream`). A replay plays only from its own start, so it cannot be
+   trimmed to "the last ten real minutes": when a recording fills, a new one begins from that moment (as `/record` does: the save comes
+   back, the loose world does not). A report carries a replay of at most the last 20 real minutes, which reproduces anything that lives
+   in the save; for the loose world, the stand-here line and the pictures fill the gap.
+4. **`db` and `assets` make the build organization-internal**: the owner's call. Petra recommends yes while only the owner and the
+   divisions play it, with a public build split off when there is one to share. In the owner's digest.
+
+The markup window: Calissa offers it as one component (`src/ui/bugmarkup.js`) that Petra calls with the frozen frame.
