@@ -4,6 +4,8 @@ import { T, DEG, PALETTE } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { GROUPS } from '../../core/physics.js';
 import { LockSquares } from '../../vfx/wiremarks.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/psygun/specials'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Ricochet + homing shells (the Shells class dispatches to these).
@@ -233,8 +235,8 @@ export class Specials {
       // bloom out in a fan before curling in
       const a = targets.length > 1 ? (i / (targets.length - 1) - 0.5) * 2 : 0;
       const vel = ray.dir.clone().multiplyScalar(H.launchSpeed)
-        .addScaledVector(side, a * H.fan + (Math.random() - 0.5) * 1.5)
-        .addScaledVector(up, H.fan * 0.6 + Math.random() * 1.5);
+        .addScaledVector(side, a * H.fan + (simRand() - 0.5) * 1.5)
+        .addScaledVector(up, H.fan * 0.6 + simRand() * 1.5);
       const mesh = new THREE.Mesh(this.seekerGeo, this.seekerMat);
       const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false }));
       glow.scale.setScalar(0.45);
@@ -294,7 +296,7 @@ export class Specials {
       s.mesh.position.copy(s.pos);
       s.mesh.rotation.x += dt * 20; s.mesh.rotation.y += dt * 14;
       // trail
-      g.fx.add.emit({ pos: s.pos, vel: s.vel.clone().multiplyScalar(-0.05), life: 0.25, size: 0.05, sizeEnd: 0.005, color: Math.random() < 0.5 ? HOT : GLOW, drag: 1 });
+      g.fx.add.emit({ pos: s.pos, vel: s.vel.clone().multiplyScalar(-0.05), life: 0.25, size: 0.05, sizeEnd: 0.005, color: simRand() < 0.5 ? HOT : GLOW, drag: 1 });
     }
   }
 

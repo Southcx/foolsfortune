@@ -3,6 +3,8 @@ import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/movers'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Moving ground: the clockwork the mill is made of.
@@ -526,8 +528,8 @@ export class Movers {
     u.puff -= dt;
     while (u.puff <= 0) {
       u.puff += 0.035;
-      const a = Math.random() * Math.PI * 2, r = Math.random() * u.r * 0.8;
-      fx.alpha.emit({ pos: new THREE.Vector3(u.x + Math.cos(a) * r, u.y0 + 0.1, u.z + Math.sin(a) * r), vel: new THREE.Vector3(0, u.speed * (0.5 + Math.random() * 0.4), 0),
+      const a = simRand() * Math.PI * 2, r = simRand() * u.r * 0.8;
+      fx.alpha.emit({ pos: new THREE.Vector3(u.x + Math.cos(a) * r, u.y0 + 0.1, u.z + Math.sin(a) * r), vel: new THREE.Vector3(0, u.speed * (0.5 + simRand() * 0.4), 0),
         life: (u.y1 - u.y0) / (u.speed * 0.7), size: 0.25, sizeEnd: 0.9, color: new THREE.Color(0xf3e0d0), alpha: 0.22, drag: 0.3 });
     }
   }

@@ -117,7 +117,7 @@ export class GameLog {
       if (this.mode && (e.code === 'Enter' || e.code === 'NumpadEnter')) { e.preventDefault(); const v = this.field.value; this.field.value = ''; this.mode.onSend?.(v); this.mode?.onInput?.(''); return; }
       if (this.mode && e.code === 'Escape') { e.preventDefault(); this.mode.onEscape?.(); return; }
       if (e.code === 'Enter' || e.code === 'NumpadEnter') { e.preventDefault(); const v = this.field.value; this.close(); this.send(v); }
-      else if (e.code === 'Escape') { e.preventDefault(); this.closedAt = performance.now(); this.close(); }
+      else if (e.code === 'Escape') { e.preventDefault(); this.closedAt = this.clock(); this.close(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
         e.preventDefault();
         if (!this.history.length) return;
@@ -160,10 +160,12 @@ export class GameLog {
     this.mode = mode || null;
     this.prompt.textContent = mode?.prompt || '›';
     this.root.classList.toggle('moded', !!mode);
-    if (mode) this.open(''); else { this.prog.replaceChildren(); this.close(); this.closedAt = performance.now(); }
+    if (mode) this.open(''); else { this.prog.replaceChildren(); this.close(); this.closedAt = this.clock(); }
   }
   /** Typing, or just stopped with Esc (which also lets the mouse go: that is not a pause). */
-  get busy() { return this.typing || performance.now() - (this.closedAt || 0) < 500; }
+  /** The game's clock, in ms (the input it gates is the simulation's: the same twice: core/rng.js), the page's when there is no game. */
+  clock() { const t = this.game?.events?.time; return t != null ? t * 1000 : performance.now(); }
+  get busy() { return this.typing || this.clock() - (this.closedAt || 0) < 500; }
   clear() { this.lines.length = 0; this.last = null; this.body.replaceChildren(); }
 
   key(e) {

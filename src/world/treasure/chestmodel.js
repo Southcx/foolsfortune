@@ -24,6 +24,8 @@ import { oilMaterial } from './cubes.js';
 import { dressChestGlaze, chestGlazeUniforms } from '../../vfx/chestglaze.js';
 import { mergeStatic } from '../../render/merge.js';
 import { RestBake } from '../../render/restbake.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/treasure/chestmodel'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const CHEST = { W: 1.0, D: 0.64, H: 0.42, R: 0.32, SCALE: [0.86, 0.95, 1.05, 1.15, 1.26], OPEN: 1.95, STOP: 2.3 };
 
@@ -167,8 +169,8 @@ export class ChestRig {
     this.sy = 1; this.sv = 0;                   // (squash: the body's height scale and how fast it is changing)
     this.hy = 0; this.hv = 0;                   // (the hop)
     this.glow = 0; this.lit = 0;               // (how lit: the seam, the floor, the keyhole; and the extra light of an open chest)
-    this.open = false; this.callT = 3 + Math.random() * 5; this.later = [];
-    this.hue = Math.random();
+    this.open = false; this.callT = 3 + simRand() * 5; this.later = [];
+    this.hue = simRand();
     this.onLand = null; this.onClack = null;
     this.setGlow(0);
     this.apply();
@@ -197,11 +199,11 @@ export class ChestRig {
     const geo = rbox(0.1, 0.1, 0.1, 0.022); this.geos.push(geo);
     const im = new THREE.InstancedMesh(geo, mat, n); const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
     for (let i = 0; i < n; i++) {
-      const r = Math.pow(Math.random(), 0.7), a = Math.random() * Math.PI * 2;
+      const r = Math.pow(simRand(), 0.7), a = simRand() * Math.PI * 2;
       const x = Math.cos(a) * r * (W / 2 - 0.13), z = Math.sin(a) * r * (D / 2 - 0.13);
-      const y = 0.13 + (1 - r) * 0.13 + Math.random() * 0.03;
-      q.setFromEuler(new THREE.Euler(Math.random() * 2, Math.random() * 6, Math.random() * 2));
-      s.setScalar(0.85 + Math.random() * 0.4);
+      const y = 0.13 + (1 - r) * 0.13 + simRand() * 0.03;
+      q.setFromEuler(new THREE.Euler(simRand() * 2, simRand() * 6, simRand() * 2));
+      s.setScalar(0.85 + simRand() * 0.4);
       im.setMatrixAt(i, m.compose(new THREE.Vector3(x, y, z), q, s));
     }
     im.castShadow = false; g.add(im);
@@ -275,7 +277,7 @@ export class ChestRig {
     // a chest that is waiting calls to you now and then: a crouch, a hop, a wobble of the lid
     if (!this.open && !this.busy) {
       this.callT -= dt;
-      if (this.callT <= 0) { this.callT = [11, 9, 7, 5.5, 4.5][this.tier] + Math.random() * 4; this.call(); }
+      if (this.callT <= 0) { this.callT = [11, 9, 7, 5.5, 4.5][this.tier] + simRand() * 4; this.call(); }
     }
     this.unlit();
   }

@@ -11,6 +11,8 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `player`: the ledger (`progress/stats.js`), the System (`progress/system.js`); scope `world`: the shops (`progress/shop/shops.js`).
+
 _Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SLICE.md). Dovina's backlog: `docs/plans/SLICE.md`
 (E4, the Emocean hop, is next on Petra's side)._
 
@@ -187,6 +189,8 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
+**2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
+
 **2026-10-04, from Petra: your Well hooks are live**
 - `game.well.active` and `game.well.floor` (1 to 3) are set while a run is on (`src/world/well/dunemaw.js`); entering, each floor and
   leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
@@ -229,6 +233,14 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
+
+**2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the window colours (`ui/theme.js`), the workbench's overrides (`ff.vfx.overrides`, `ff.cine.overrides`: `workbench/workbench.js`, `cine/sequence.js`). The trailer now holds the save while it plays (`cine/overture.js`).
+
+**2026-10-05, from Petra: the trailer borrowed the belt and kept it (fixed in v68, in `cine/overture.js`)**
+- `draw()` in `overture.board.js` called `belt.wear(id)`, which on a full place took the longest-worn tool off into nowhere (only the
+  box's own `wear` put it in the box) and saved the belt so: the owner's psygun and Veritome went missing. Now `belt.wear` stashes what
+  it bumps, the trailer keeps and restores the belt's worn set and the jellies' places (`this.keep`), and `pneuka.reconcile()` mends any
+  tool that is nowhere. Nothing for you to change; for anything else that borrows the world for a shot, keep it in `this.keep` the same way.
 
 **2026-10-04, from Espada (placeholder models for the slice, the owner's ask, R57)**: rough is fine, so the talks have bodies (`talks.js`;
 LORE.md section 6):

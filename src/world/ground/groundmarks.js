@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/ground/groundmarks'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // GROUND MARKS: what the Courier and the Solar Skiff leave on a soft surface. It writes into a
@@ -48,7 +50,7 @@ export class SandMarks {
     if (P.grounded && !this.wasGrounded && this.fall > 3) {
       // landing: a splash of sand and a wide, shallow print
       T.stamp(P.renderPos.x - 0.1, P.renderPos.z, P.renderPos.x + 0.1, P.renderPos.z, 0.5 + Math.min(0.5, this.fall * 0.03), 0.9);
-      for (let i = 0; i < 6 + this.fall; i++) this.puff(P.renderPos, 1.4 + Math.random() * this.fall * 0.25, 0.5);
+      for (let i = 0; i < 6 + this.fall; i++) this.puff(P.renderPos, 1.4 + simRand() * this.fall * 0.25, 0.5);
     }
     if (P.grounded) this.fall = 0;
     if (!P.grounded || moved < 1e-4) return;
@@ -57,7 +59,7 @@ export class SandMarks {
     _r.set(-_f.z, 0, _f.x); // (to the right of travel)
     if (P.sliding) {
       T.stamp(this.prev.x, this.prev.z, this.prev.x + dx, this.prev.z + dz, 0.32, 0.9);
-      if (Math.random() < dt * 40) this.puff(_p.set(this.prev.x + dx, P.renderPos.y, this.prev.z + dz), 2.2 + speed * 0.15, 0.7, _r.clone().multiplyScalar((Math.random() < 0.5 ? -1 : 1)));
+      if (simRand() < dt * 40) this.puff(_p.set(this.prev.x + dx, P.renderPos.y, this.prev.z + dz), 2.2 + speed * 0.15, 0.7, _r.clone().multiplyScalar((simRand() < 0.5 ? -1 : 1)));
       return;
     }
     this.walk += moved;
@@ -89,8 +91,8 @@ export class SandMarks {
   /** One grain-cloud puff: small, tan, drifting, gone in under a second. */
   puff(at, spread, up, dir) {
     const S = this.surface, d = dir || _v.set(0, 0, 0);
-    const vel = new THREE.Vector3((Math.random() - 0.5) * spread, up * (0.4 + Math.random()), (Math.random() - 0.5) * spread);
+    const vel = new THREE.Vector3((simRand() - 0.5) * spread, up * (0.4 + simRand()), (simRand() - 0.5) * spread);
     if (dir) vel.addScaledVector(dir, spread * 0.6);
-    this.game.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.05), vel, life: 0.4 + Math.random() * 0.4, size: 0.07, sizeEnd: 0.34, color: S.dust, alpha: 0.45, drag: 2.2, gravity: 4, floor: at.y - 0.02 });
+    this.game.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.05), vel, life: 0.4 + simRand() * 0.4, size: 0.07, sizeEnd: 0.34, color: S.dust, alpha: 0.45, drag: 2.2, gravity: 4, floor: at.y - 0.02 });
   }
 }

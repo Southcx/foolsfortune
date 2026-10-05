@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/ground/wake'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // WAKE: what a fast hull leaves on a soft surface, drawn the way The Wind Waker draws the King of Red
@@ -71,11 +73,11 @@ export class Wake {
       const gy = ground(bow.x, bow.z);
       while (this.acc >= 1) {
         this.acc -= 1;
-        const side = Math.random() < 0.5 ? -1 : 1;
-        const out = 1.2 + Math.random() * 2.6 * (0.5 + k);
-        const p = new THREE.Vector3(bow.x + right.x * side * 0.3, gy + 0.12 + Math.random() * 0.25, bow.z + right.z * side * 0.3);
-        const v = new THREE.Vector3(right.x * side * out - fwd.x * speed * 0.16, 1.8 + Math.random() * 2.4 * (0.5 + k), right.z * side * out - fwd.z * speed * 0.16);
-        this.fx.foam.emit({ pos: p, vel: v, life: 0.45 + Math.random() * 0.45, size: 0.07 + Math.random() * 0.14 * (0.6 + k), sizeEnd: 0.05, color: this.color, alpha: 0.95, drag: 1.2, gravity: 11, floor: gy });
+        const side = simRand() < 0.5 ? -1 : 1;
+        const out = 1.2 + simRand() * 2.6 * (0.5 + k);
+        const p = new THREE.Vector3(bow.x + right.x * side * 0.3, gy + 0.12 + simRand() * 0.25, bow.z + right.z * side * 0.3);
+        const v = new THREE.Vector3(right.x * side * out - fwd.x * speed * 0.16, 1.8 + simRand() * 2.4 * (0.5 + k), right.z * side * out - fwd.z * speed * 0.16);
+        this.fx.foam.emit({ pos: p, vel: v, life: 0.45 + simRand() * 0.45, size: 0.07 + simRand() * 0.14 * (0.6 + k), sizeEnd: 0.05, color: this.color, alpha: 0.95, drag: 1.2, gravity: 11, floor: gy });
       }
     }
   }

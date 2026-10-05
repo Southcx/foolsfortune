@@ -25,6 +25,8 @@ import { DUNE, BARRIER, OASIS } from './dunes.js';
 import { ECON } from '../../progress/econ/table.js';
 import { tuneFor, readStrike, refNote } from './crystaltuning.js';
 import { degreeColor } from '../../music/tone.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/dunes/crystals'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** A plain tone (two, `beat` hertz apart, so it wavers) until Wanda's crystal voices land (docs/HANDOFFS.md). */
 function placeholderTone(midi, beat, dur, gain) {
@@ -183,9 +185,9 @@ export class Crystals {
       if (worth > 0) g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
-      if (g.pneuka && Math.random() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
+      if (g.pneuka && simRand() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
       e.regrowT = REGROW + GROW; e.ringT = 0;
-      T.spot = { th: Math.random() * Math.PI * 2, u: 0.25 + Math.random() * 0.5 }; // (it grows back with its spot somewhere new)
+      T.spot = { th: simRand() * Math.PI * 2, u: 0.25 + simRand() * 0.5 }; // (it grows back with its spot somewhere new)
       g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
@@ -224,7 +226,7 @@ export class Crystals {
 /** A Possibilikey, by luck (the common ones commonly): lockheart/keys.js has what each does. */
 export function rollKey() {
   const T = [['key.brass', 40], ['key.invert', 12], ['key.even', 14], ['key.twin', 10], ['key.loaded', 10], ['key.wide', 9], ['key.echo', 5]];
-  let r = Math.random() * T.reduce((a, t) => a + t[1], 0);
+  let r = simRand() * T.reduce((a, t) => a + t[1], 0);
   for (const [id, w] of T) if ((r -= w) <= 0) return id;
   return 'key.brass';
 }

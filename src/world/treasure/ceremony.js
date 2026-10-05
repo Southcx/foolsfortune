@@ -37,6 +37,8 @@ import { CHEST } from './chestmodel.js';
 import { glazeAt } from '../../vfx/chestglaze.js';
 import { buildCurio } from './curiomodel.js';
 import { CARD } from '../../tools/veritome/cards.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/treasure/ceremony'); // (the simulation's chance: core/rng.js, the same twice)
 
 const D = THREE.MathUtils.damp, lerp = THREE.MathUtils.lerp, clamp = THREE.MathUtils.clamp;
 const easeOut = (x) => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
@@ -54,7 +56,7 @@ const PLAN = [
 const DUPE_VALUE = ECON.dupe; // (progress/econ/table.js)
 
 /** The roulette's colours, in order, for a sealed chest that will turn out to be tier T (a list of tier indices). */
-export function rouletteSeq(T, rnd = Math.random) {
+export function rouletteSeq(T, rnd = simRand) {
   const kind = T >= 3 ? 'climb' : rnd() < 0.42 ? 'near' : 'plain';
   const peak = kind === 'near' ? Math.min(4, T + 1 + (rnd() < 0.25 ? 1 : 0)) : T;
   const seq = [0]; let cur = 0;
@@ -83,7 +85,7 @@ export class Ceremony {
     this.curioId = null;
     // a chest's curio is a deck (progress/econ/deck.js): one in every ECON.curioDeck[tier] chests of the tier, certain by then; and which
     // curio is a deck of the tier's four: each one before any of them twice
-    if (deckDraw(game.ledger, `curio.deck.${this.T}`, ECON.curioDeck[this.T])) this.curioId = nextOfDeck(curiosOf(this.T), (c) => owned(c.id))?.id ?? null;
+    if (deckDraw(game.ledger, `curio.deck.${this.T}`, ECON.curioDeck[this.T], simRand())) this.curioId = nextOfDeck(curiosOf(this.T), (c) => owned(c.id), simRand())?.id ?? null;
     // (one more than the Courier may have of it, in their box, on their line, in their Book and on the ground together, is condensed into
     // cubes on the spot: the card's limit)
     const box = game.pneuka, lim = CARD[`curio.${this.curioId}`]?.limit ?? 1;
@@ -207,7 +209,7 @@ export class Ceremony {
     this.knockT -= dt;
     if (this.knockT <= 0) {
       this.knockT = lerp(0.34, 0.07, kk);
-      sfx.chestKnock(k); rig.poke({ squash: -2.5 - 4 * k, lid: 2.5 + 7 * k, hop: k > 0.55 && Math.random() < 0.5 ? 0.9 + 1.6 * k : 0 });
+      sfx.chestKnock(k); rig.poke({ squash: -2.5 - 4 * k, lid: 2.5 + 7 * k, hop: k > 0.55 && simRand() < 0.5 ? 0.9 + 1.6 * k : 0 });
       g.player.shake = Math.max(g.player.shake, 0.03 + 0.1 * k);
     }
     // the glaze, the light, the room (the chest is fired as it charges, in place of a beam per tier: vfx/chestglaze.js; a sealed chest's
@@ -249,14 +251,14 @@ export class Ceremony {
     this.light.color.set(TIERS[T].rgb); this.light.intensity = 45 + 25 * T; this.flash = 1;
     rig.setGlaze(glazeAt(T)); // (fired: what it is, kept)
     chests.ringBurst(topV, TIERS[T].rgb, 2.6 + T * 0.9, 0.55, true);
-    for (let i = 1; i < plan.rings; i++) this.later(i * 0.11, () => chests.ringBurst(topV, T === 4 ? _c.setHSL(Math.random(), 0.9, 0.65).getHex() : TIERS[T].rgb, 2.2 + i * 1.3, 0.6, i % 2 === 0));
+    for (let i = 1; i < plan.rings; i++) this.later(i * 0.11, () => chests.ringBurst(topV, T === 4 ? _c.setHSL(simRand(), 0.9, 0.65).getHex() : TIERS[T].rgb, 2.2 + i * 1.3, 0.6, i % 2 === 0));
     g.glyphs.pop('star', topV.clone().addScaledVector(this.front, 0.2), { color: T === 4 ? 0xffffff : TIERS[T].rgb, size: 0.7 + 0.1 * T, burst: true, ring: true, life: T === 4 ? 0.8 : 1.1 });
     // confetti, sparks
     for (let i = 0; i < plan.spark; i++) {
-      const a = Math.random() * Math.PI * 2, u = Math.random(), sp = 1.5 + Math.random() * (4 + T * 1.2);
+      const a = simRand() * Math.PI * 2, u = simRand(), sp = 1.5 + simRand() * (4 + T * 1.2);
       const v = new THREE.Vector3(Math.cos(a) * sp * 0.6, 3.5 + u * (5 + T), Math.sin(a) * sp * 0.6);
-      const color = T === 4 ? new THREE.Color().setHSL(Math.random(), 0.9, 0.62) : new THREE.Color(TIERS[T].rgb).lerp(new THREE.Color(0xffffff), Math.random() * 0.5);
-      g.fx.add.emit({ pos: topV, vel: v, life: 1.1 + Math.random() * 1.4, size: 0.05 + Math.random() * 0.06, sizeEnd: 0.012, color, alpha: 1, drag: 0.7, gravity: 7, twinkle: 12 + Math.random() * 14, floor: chest.floor });
+      const color = T === 4 ? new THREE.Color().setHSL(simRand(), 0.9, 0.62) : new THREE.Color(TIERS[T].rgb).lerp(new THREE.Color(0xffffff), simRand() * 0.5);
+      g.fx.add.emit({ pos: topV, vel: v, life: 1.1 + simRand() * 1.4, size: 0.05 + simRand() * 0.06, sizeEnd: 0.012, color, alpha: 1, drag: 0.7, gravity: 7, twinkle: 12 + simRand() * 14, floor: chest.floor });
     }
     // the cubes: a fountain that lasts as long as the tier deserves
     g.cubes.burst(topV, this.worth, { count: this.count, up: 5.2 + T * 0.5, spread: 1.05 + T * 0.14, stagger: plan.fountain * 0.7, from: 'chest' });
@@ -284,8 +286,8 @@ export class Ceremony {
     // stars, thrown up now and then
     this.starT -= dt;
     if (this.starT <= 0 && this.pt < plan.fountain * 0.85) {
-      this.starT = plan.fountain / (plan.stars + 1) * (0.6 + Math.random() * 0.8);
-      g.glyphs.pop('star', _a.copy(this.c).add(_b.set((Math.random() - 0.5) * 1.6, 0.9 + Math.random() * 0.9, (Math.random() - 0.5) * 1.6)), { color: T === 4 ? _c.setHSL(Math.random(), 0.9, 0.65).getHex() : TIERS[T].rgb, size: 0.25 + Math.random() * 0.2, burst: Math.random() < 0.5, life: 1.0 });
+      this.starT = plan.fountain / (plan.stars + 1) * (0.6 + simRand() * 0.8);
+      g.glyphs.pop('star', _a.copy(this.c).add(_b.set((simRand() - 0.5) * 1.6, 0.9 + simRand() * 0.9, (simRand() - 0.5) * 1.6)), { color: T === 4 ? _c.setHSL(simRand(), 0.9, 0.65).getHex() : TIERS[T].rgb, size: 0.25 + simRand() * 0.2, burst: simRand() < 0.5, life: 1.0 });
     }
     // the camera draws back to show the size of the pile, and turns a little
     if (!this.chests.rave?.active) this.aim(lerp(2.35, 3.9, easeOut(k)), lerp(0.8, 1.9, easeOut(k)), 0.95 + 0.1 * this.pt, 0.55, -3, 2.6);
@@ -334,9 +336,9 @@ export class Ceremony {
     const h = this.curioHalo; h.position.copy(p); h.scale.setScalar(1.4 + 0.15 * Math.sin(this.curioT * 3)); h.material.opacity = 0.55 * (this.phase === 'collect' ? 1 - this.collectT * 2 : easeOut(u));
     if (this.phase === 'reveal') {
       this.beam.set(0xfff0dc, 0.5, 0.45); // (the curio's own light: warm and the same for every tier; the tier is in the glaze)
-      if (Math.random() < dt * 30) {
-        const a = Math.random() * Math.PI * 2, r = 0.32 + Math.random() * 0.1;
-        this.g.fx.add.emit({ pos: _b.set(p.x + Math.cos(a) * r, p.y - 0.1 + Math.random() * 0.25, p.z + Math.sin(a) * r), vel: _a.set(-Math.sin(a) * 1.3, 0.5, Math.cos(a) * 1.3), life: 0.9, size: 0.03, sizeEnd: 0.006, color: T === 4 ? _c.setHSL(Math.random(), 0.9, 0.65).clone() : new THREE.Color(TIERS[T].rgb), drag: 0.4, twinkle: 20, floor: -100 });
+      if (simRand() < dt * 30) {
+        const a = simRand() * Math.PI * 2, r = 0.32 + simRand() * 0.1;
+        this.g.fx.add.emit({ pos: _b.set(p.x + Math.cos(a) * r, p.y - 0.1 + simRand() * 0.25, p.z + Math.sin(a) * r), vel: _a.set(-Math.sin(a) * 1.3, 0.5, Math.cos(a) * 1.3), life: 0.9, size: 0.03, sizeEnd: 0.006, color: T === 4 ? _c.setHSL(simRand(), 0.9, 0.65).clone() : new THREE.Color(TIERS[T].rgb), drag: 0.4, twinkle: 20, floor: -100 });
       }
     }
   }

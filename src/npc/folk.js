@@ -29,12 +29,14 @@ import { RAPIER, GROUPS, G, groups } from '../core/physics.js';
 import { PALETTE } from '../core/config.js';
 import { Clayese } from './clayese.js';
 import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('npc/folk'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const POSE = ['hop', 'squash', 'armUp', 'armIn', 'armOut', 'armDown', 'shake', 'lid', 'eyes', 'puff', 'red', 'lean', 'sink', 'sway', 'rise', 'tilt', 'look2'];
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _c = new THREE.Color();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const rnd = (a, b) => a + Math.random() * (b - a);
+const rnd = (a, b) => a + simRand() * (b - a);
 
 // the hats (a few primitives each): what a folk does is on its head
 function hat(kind, color) {
@@ -51,7 +53,7 @@ function hat(kind, color) {
 const BODY = {
   calm: () => {},
   joy: (n, k, t) => { const h = Math.abs(Math.sin(t * 7.5)); n.p.hop = h * 0.07 * k; n.p.squash += (h < 0.15 ? -0.1 : 0.04) * k; n.p.armUp = 1.4 * k + Math.sin(t * 15) * 0.3 * k; },
-  fear: (n, k, t) => { n.p.shake = 0.018 * k; n.p.squash -= 0.14 * k; n.p.lid = Math.max(n.p.lid, (0.08 + Math.random() * 0.12) * k); n.p.armIn = 0.9 * k; n.p.eyes = 0.75; },
+  fear: (n, k, t) => { n.p.shake = 0.018 * k; n.p.squash -= 0.14 * k; n.p.lid = Math.max(n.p.lid, (0.08 + simRand() * 0.12) * k); n.p.armIn = 0.9 * k; n.p.eyes = 0.75; },
   anger: (n, k, t) => { n.p.puff = 0.09 * k + Math.sin(t * 11) * 0.025 * k; n.p.shake = 0.006 * k; n.p.red = (0.55 + 0.45 * Math.sin(t * 9)) * k; n.p.armOut = 0.8 * k; n.p.eyes = 0.55; },
   sad: (n, k, t) => { n.p.lean = 0.28 * k; n.p.sink = 0.04 * k; n.p.sway = Math.sin(t * 1.3) * 0.06 * k; n.p.armDown = 0.7 * k; n.p.eyes = 0.45; },
   surprise: (n, k, t) => { n.p.squash += 0.12 * k; n.p.lid = Math.max(n.p.lid, 0.5 * k); n.p.eyes = 1.4; n.p.armUp = 0.8 * k; },
@@ -99,7 +101,7 @@ export class Folk {
     root.position.copy(p); root.rotation.y = def.yaw || 0;
     g.scene.add(root);
     const mixer = new THREE.AnimationMixer(model), idle = this.clips.idle && mixer.clipAction(this.clips.idle);
-    idle?.play(); idle && (idle.time = Math.random() * 2);
+    idle?.play(); idle && (idle.time = simRand() * 2);
     model.updateMatrixWorld(true);
     const mq = model.getWorldQuaternion(new THREE.Quaternion()).invert();
     const restInv = (b) => (b ? b.getWorldQuaternion(new THREE.Quaternion()).premultiply(mq).invert() : null);
@@ -114,7 +116,7 @@ export class Folk {
     const n = {
       def, id: def.id, name: def.name, root, model, mixer, mat, bones, rom, pos: p, yaw: def.yaw || 0, scale: s,
       inv: { head: restInv(head), body: restInv(bones.body), L: restInv(bones.armL), R: restInv(bones.armR) },
-      mood: def.temper || 'calm', k: 0.35, kTarget: 0.35, t: Math.random() * 10, look: 0, lidT: 0, lidA: 0, blinkT: 2, hopV: 0, hopY: 0,
+      mood: def.temper || 'calm', k: 0.35, kTarget: 0.35, t: simRand() * 10, look: 0, lidT: 0, lidA: 0, blinkT: 2, hopV: 0, hopY: 0,
       vfxT: 0, talking: false, p: Object.fromEntries(POSE.map((k) => [k, 0])), glaze: new THREE.Color(def.glaze), voice: def.voice || { base: 74, scale: 'yo', bell: 0.7, clay: 0.5 },
     };
     root.scale.setScalar(s);
@@ -143,7 +145,7 @@ export class Folk {
   }
   /** One syllable: the lid lifts (more for a stressed word) and the voice sounds. */
   speak(n, letter, opts = {}) {
-    n.lidT = 0.09; n.lidA = Math.max(n.lidA, 0.28 + (opts.emph ? 0.3 : 0) + Math.random() * 0.12);
+    n.lidT = 0.09; n.lidA = Math.max(n.lidA, 0.28 + (opts.emph ? 0.3 : 0) + simRand() * 0.12);
     const d = this.game.listenerDistance?.(n.pos) ?? 3;
     this.voice.blip(letter, n.voice, { mood: n.mood, dist: d, ...opts });
   }
@@ -180,17 +182,17 @@ export class Folk {
   /** The particles of a mood (per tick; `x` scales how many). */
   emit(n, mood, x = 1) {
     const fx = this.game.fx, h = this.head(n, _v).clone(), s = n.scale;
-    const side = () => _w.set(Math.cos(n.yaw), 0, -Math.sin(n.yaw)).multiplyScalar(Math.random() < 0.5 ? -1 : 1);
+    const side = () => _w.set(Math.cos(n.yaw), 0, -Math.sin(n.yaw)).multiplyScalar(simRand() < 0.5 ? -1 : 1);
     for (let i = 0; i < x; i++) {
       if (mood === 'joy') fx.add.emit({ pos: h.clone().add(new THREE.Vector3(rnd(-0.3, 0.3), rnd(-0.1, 0.4), rnd(-0.3, 0.3)).multiplyScalar(s)), vel: new THREE.Vector3(rnd(-0.4, 0.4), rnd(0.6, 1.4), rnd(-0.4, 0.4)), life: 0.9, size: 0.06, sizeEnd: 0.0, color: _c.setHSL(rnd(0.08, 0.15), 1, 0.65).clone(), drag: 1.5, twinkle: 18, floor: -999 });
       else if (mood === 'fear') fx.alpha.emit({ pos: h.clone().addScaledVector(side(), 0.16 * s).add(_w.set(0, 0.05 * s, 0)), vel: side().multiplyScalar(rnd(0.8, 1.4)).add(_w.set(0, rnd(0.6, 1.2), 0)), life: 0.6, size: 0.04, sizeEnd: 0.025, color: _c.setHex(0xd8f0ff).clone(), alpha: 0.9, drag: 0.8, gravity: 7 });
       else if (mood === 'anger') {
         fx.alpha.emit({ pos: h.clone().add(_w.set(rnd(-0.08, 0.08) * s, 0.12 * s, rnd(-0.08, 0.08) * s)), vel: new THREE.Vector3(rnd(-0.3, 0.3), rnd(1.2, 2), rnd(-0.3, 0.3)), life: 0.9, size: 0.08, sizeEnd: 0.4, color: _c.setHex(0xf2ece4).clone(), alpha: 0.4, drag: 2.5, gravity: -0.6 });
-        if (Math.random() < 0.4) fx.add.emit({ pos: h.clone(), vel: new THREE.Vector3(rnd(-1, 1), rnd(1, 2.5), rnd(-1, 1)), life: 0.5, size: 0.04, sizeEnd: 0, color: _c.setHex(0xff6a2a).clone(), drag: 1.5, gravity: 2, twinkle: 20, floor: -999 });
+        if (simRand() < 0.4) fx.add.emit({ pos: h.clone(), vel: new THREE.Vector3(rnd(-1, 1), rnd(1, 2.5), rnd(-1, 1)), life: 0.5, size: 0.04, sizeEnd: 0, color: _c.setHex(0xff6a2a).clone(), drag: 1.5, gravity: 2, twinkle: 20, floor: -999 });
       } else if (mood === 'sad') fx.alpha.emit({ pos: h.clone().addScaledVector(side(), 0.06 * s).add(_w.set(0, -0.02 * s, 0)).addScaledVector(_w.set(Math.sin(n.yaw), 0, Math.cos(n.yaw)), 0.14 * s), vel: new THREE.Vector3(0, -0.2, 0), life: 0.9, size: 0.035, sizeEnd: 0.02, color: _c.setHex(0x9cc8ff).clone(), alpha: 0.85, drag: 0.4, gravity: 6 });
       else if (mood === 'awe') fx.add.emit({ pos: h.clone().add(new THREE.Vector3(rnd(-0.6, 0.6), rnd(-0.6, 0.2), rnd(-0.6, 0.6)).multiplyScalar(s)), vel: new THREE.Vector3(0, rnd(0.2, 0.6), 0), life: 1.6, size: 0.05, sizeEnd: 0, color: _c.setHSL(rnd(0.5, 0.88), 0.9, 0.6).clone(), drag: 0.6, twinkle: 9, floor: -999 });
       else if (mood === 'confused') { const a = n.t * 5 + i * 2.1; fx.add.emit({ pos: h.clone().add(_w.set(Math.cos(a) * 0.22 * s, 0.3 * s, Math.sin(a) * 0.22 * s)), vel: new THREE.Vector3(0, 0, 0), life: 0.35, size: 0.04, sizeEnd: 0, color: _c.setHex(0xffe6a0).clone(), drag: 1, floor: -999 }); }
-      else if (mood === 'sly' && Math.random() < 0.3) fx.add.emit({ pos: h.clone().add(_w.set(Math.sin(n.yaw) * 0.14 * s + 0.05, 0.03 * s, Math.cos(n.yaw) * 0.14 * s)), vel: new THREE.Vector3(0, 0.2, 0), life: 0.5, size: 0.07, sizeEnd: 0, color: _c.setHex(0xb07cff).clone(), drag: 2, twinkle: 25, floor: -999 });
+      else if (mood === 'sly' && simRand() < 0.3) fx.add.emit({ pos: h.clone().add(_w.set(Math.sin(n.yaw) * 0.14 * s + 0.05, 0.03 * s, Math.cos(n.yaw) * 0.14 * s)), vel: new THREE.Vector3(0, 0.2, 0), life: 0.5, size: 0.07, sizeEnd: 0, color: _c.setHex(0xb07cff).clone(), drag: 2, twinkle: 25, floor: -999 });
     }
   }
 
@@ -235,11 +237,11 @@ export class Folk {
       if (p.armDown) { arm(b.armL, n.inv.L, -0.5 * p.armDown); arm(b.armR, n.inv.R, 0.5 * p.armDown); }
       n.rom.apply(); // (every posed joint through its limits, last)
       // eyes: blink, and their size says the feeling (wide in awe, narrowed in anger)
-      n.blinkT -= dt; if (n.blinkT < 0) n.blinkT = 2 + Math.random() * 4;
+      n.blinkT -= dt; if (n.blinkT < 0) n.blinkT = 2 + simRand() * 4;
       if (b.eyes) b.eyes.scale.set(1, (n.blinkT < 0.1 ? 0.15 : 1) * p.eyes, 1);
       // the whole body
       const sh = p.shake || 0;
-      n.root.position.set(n.pos.x + (sh ? (Math.random() - 0.5) * sh * 2 : 0), n.pos.y + n.hopY + (p.rise || 0) - (p.sink || 0), n.pos.z + (sh ? (Math.random() - 0.5) * sh * 2 : 0));
+      n.root.position.set(n.pos.x + (sh ? (simRand() - 0.5) * sh * 2 : 0), n.pos.y + n.hopY + (p.rise || 0) - (p.sink || 0), n.pos.z + (sh ? (simRand() - 0.5) * sh * 2 : 0));
       n.root.rotation.set(p.lean || 0, n.yaw, (p.tilt || 0) + (p.sway || 0), 'YXZ');
       // anger glows through the glaze
       if (p.red) { n.mat.emissive.setRGB(0.55 * p.red, 0.06 * p.red, 0.02 * p.red); } else if (n.mat.emissive.r) n.mat.emissive.setRGB(0, 0, 0);

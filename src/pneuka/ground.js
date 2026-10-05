@@ -13,14 +13,23 @@ import * as THREE from 'three';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { itemOf } from './items.js';
 import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('pneuka/ground'); // (where a dropped thing lands: the simulation's chance, core/rng.js)
 
-const KEY = 'foolsfortune.ground.v1', REACH = 1.6, SCALE = 0.62;
+const REACH = 1.6, SCALE = 0.62;
 
 export class GroundItems {
   constructor(game) {
     this.game = game;
     this.list = []; // { id, pos, model, halo, t }
-    this.loaded = false;
+    this.loaded = false; this.kept = [];
+    // what lies on the ground belongs to the world (core/save.js); laid out on the first update, when the models can be built
+    game.save?.section('ground', {
+      scope: 'world', version: 1,
+      dump: () => this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)], ...(e.uses ? { uses: e.uses } : {}), ...(e.data ? { data: e.data } : {}) })),
+      load: (d) => { this.kept = Array.isArray(d) ? d : []; if (this.loaded) { this.clear(); this.loaded = false; } }, // (again, after a borrow: laid out anew)
+      reset: () => { this.kept = []; if (this.loaded) this.clear(); },
+    });
   }
   count(id) { return this.list.filter((g) => g.id === id).length; }
 
@@ -28,8 +37,8 @@ export class GroundItems {
     const it = itemOf(id), g = this.game;
     if (!it) return null;
     // (a little scatter, so a pile is a pile)
-    const p = scatter ? pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0, (Math.random() - 0.5) * 0.5)) : pos.clone();
-    const e = { id, pos: p, t: Math.random() * 6, model: null, halo: null, uses, data }; // (uses: a Possibilikey's; data: a Cogitomap's, a material's: kept)
+    const p = scatter ? pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.5, 0, (simRand() - 0.5) * 0.5)) : pos.clone();
+    const e = { id, pos: p, t: simRand() * 6, model: null, halo: null, uses, data }; // (uses: a Possibilikey's; data: a Cogitomap's, a material's: kept)
     if (it.kind === 'curio') { e.model = buildCurio(it.key, { sky: g.sky?.env }); e.model.group.scale.setScalar(SCALE); g.scene.add(e.model.group); }
     e.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx?.haloTexture, color: it.color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.5 }));
     e.halo.scale.setScalar(0.7); e.halo.renderOrder = 6; g.scene.add(e.halo);
@@ -74,9 +83,9 @@ export class GroundItems {
     this.save();
   }
 
-  save() { try { localStorage.setItem(KEY, JSON.stringify(this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)], ...(e.uses ? { uses: e.uses } : {}), ...(e.data ? { data: e.data } : {}) })))); } catch { /* unavailable */ } }
+  save() { this.game.save?.dirty('ground'); }
   load() {
-    try { for (const s of JSON.parse(localStorage.getItem(KEY) || '[]')) if (itemOf(s.id)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false, uses: s.uses | 0, data: s.data || null }); } catch { /* nothing kept */ }
+    for (const s of this.kept) if (itemOf(s.id) && Array.isArray(s.p)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false, uses: s.uses | 0, data: s.data || null });
   }
   clear() { while (this.list.length) this.remove(0); }
 }

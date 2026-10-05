@@ -302,6 +302,7 @@
     const all = starts(g).filter((s) => !only || only.includes(s.name));
     for (let r = 0; r < runs; r++) {
       const s = all[Math.floor(rnd() * all.length)];
+      g.game.reseed?.((seed * 7919 + r * 104729) >>> 0); // (the simulation's chance from this run's own seed: core/rng.js; a run found once is found again)
       place(g, s, rnd);
       sink.tracing = r === trace ? [] : null;
       fuzzRun(g, rnd, ticks, sink, `#${r} ${s.name}`);

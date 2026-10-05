@@ -32,6 +32,8 @@ import { ECON } from '../../../progress/econ/table.js';
 //   and palms round the flat, reeds at the water's edge.
 // ---------------------------------------------------------------------------------------
 import { DUNE, OASIS, POND, WELL, pondDepth } from '../../../world/dunes/dunes.js';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/weir'); // (the simulation's chance: core/rng.js, the same twice)
 const _rm = new THREE.Matrix4(), _rq = new THREE.Quaternion(), _rs = new THREE.Vector3(), _re = new THREE.Euler();
 
 // the oasis's frame, in the world
@@ -258,11 +260,11 @@ export class Weir {
     if (!sp) {
       const ws = this.weights(pool);
       if (!ws.length) return null;
-      let r = Math.random() * ws.reduce((a, [, w]) => a + w, 0);
+      let r = simRand() * ws.reduce((a, [, w]) => a + w, 0);
       for (const [s, w] of ws) { r -= w; if (r <= 0) { sp = s; break; } }
       sp = sp || ws[0][0];
     }
-    const k = Math.pow(Math.random(), 1.7);
+    const k = Math.pow(simRand(), 1.7);
     const size = cm ?? sp.size[0] + (sp.size[1] - sp.size[0]) * k;
     const f = new Fish(pool, sp, size, new THREE.Vector3(0, 0, 0));
     for (let i = 0; i < 10; i++) {
@@ -307,7 +309,7 @@ export class Weir {
       this.spawnT = 1.4;
       for (const p of this.pools) {
         const live = p.fish.filter((f) => !f.dying && f.sp.tides.includes(this.tide)).length;
-        if (live < p.cap * (p.id === 'well' ? 0.7 : 1) && this.weights(p).length && !(p.id === 'well' && this.tide !== 2 && Math.random() < 0.6)) this.spawn(p);
+        if (live < p.cap * (p.id === 'well' ? 0.7 : 1) && this.weights(p).length && !(p.id === 'well' && this.tide !== 2 && simRand() < 0.6)) this.spawn(p);
       }
     }
     const hooks = this.hooks;
@@ -329,7 +331,7 @@ export class Weir {
     const well = this.pools.find((p) => p.id === 'well');
     if (well.fish.some((f) => f.sp.legend)) return;
     const sp = BY_SPECIES.lachryma;
-    const f = this.spawn(well, sp, sp.size[0] + Math.random() * (sp.size[1] - sp.size[0]));
+    const f = this.spawn(well, sp, sp.size[0] + simRand() * (sp.size[1] - sp.size[0]));
     if (f && this.near) { sfx.leviathan(); this.game.events?.emit('angle.legend', {}); }
   }
 

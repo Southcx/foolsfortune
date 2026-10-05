@@ -12,6 +12,8 @@
 import * as THREE from 'three';
 import { OUTCOMES } from './table.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/wheel'); // (the simulation's chance: core/rng.js, the same twice)
 
 const R0 = 0.32, R1 = 0.62, DUR = 2.1, HOLD = 0.9;
 
@@ -41,12 +43,12 @@ export class Wheel {
       if (len < 1e-4) continue;
       const m = new THREE.Mesh(new THREE.RingGeometry(R0, R1, Math.max(2, Math.ceil(len * 12)), 1, Math.PI / 2 - a - len, len), new THREE.MeshBasicMaterial({ color: OUTCOMES[r.id]?.color ?? 0xffffff, side: THREE.DoubleSide }));
       m.renderOrder = 5; this.disc.add(m);
-      if (r.id === chosen) target = a + len * (0.2 + 0.6 * Math.random()); // (somewhere in its sector, not always the middle)
+      if (r.id === chosen) target = a + len * (0.2 + 0.6 * simRand()); // (somewhere in its sector, not always the middle)
       a += len;
     }
     this.edges = []; let e = 0; for (const r of rates) { e += r.p * Math.PI * 2; this.edges.push(e); }
     // turns: several whole ones, then the sector under the pointer (the disc turns clockwise: the pointer reads `angle` from the top)
-    this.from = 0; this.to = Math.PI * 2 * (5 + Math.floor(Math.random() * 2)) + target;
+    this.from = 0; this.to = Math.PI * 2 * (5 + Math.floor(simRand() * 2)) + target;
     this.t = 0; this.onStop = onStop; this.lastEdge = 0;
     this.group.position.copy(pos);
     this.group.quaternion.copy(face);

@@ -11,6 +11,8 @@
 //   const s = new Sigils(game)   s.update(dt, on)  (on: the brush is out)   s.pop('h' | 'v' | 'vee' | 'caret' | 'bolt') -> { popped, cleared }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/soulbrush/sigils'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const SIGIL_KEYS = ['h', 'v', 'vee', 'caret', 'bolt'];
 /** What the recognizer calls a drawn mark -> the sigil it answers. */
@@ -45,8 +47,8 @@ export class Sigils {
 
   /** A queue for a clapperjar: a raider carries three, the rest one or two; the bolt is rare. */
   deal(c) {
-    const n = c.raider ? 3 : Math.random() < 0.45 ? 2 : 1;
-    const pick = () => (Math.random() < 0.12 ? 'bolt' : SIGIL_KEYS[Math.floor(Math.random() * 4)]);
+    const n = c.raider ? 3 : simRand() < 0.45 ? 2 : 1;
+    const pick = () => (simRand() < 0.12 ? 'bolt' : SIGIL_KEYS[Math.floor(simRand() * 4)]);
     return Array.from({ length: n }, pick);
   }
 
@@ -119,7 +121,7 @@ export class Sigils {
         this.on.delete(c);
         const p = c.pos.clone().setY(c.pos.y + 0.35), dir = p.clone().sub(P.pos).setY(0).normalize();
         const ink = new THREE.Color(0x17111a), sheen = new THREE.Color(0x8c56dc);
-        for (let i = 0; i < 26; i++) g.fx.alpha.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 3), life: 0.5 + Math.random() * 0.4, size: 0.12, sizeEnd: 0.03, color: i % 4 ? ink : sheen, alpha: 0.85, drag: 3, gravity: 5 });
+        for (let i = 0; i < 26; i++) g.fx.alpha.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + simRand() * 3), life: 0.5 + simRand() * 0.4, size: 0.12, sizeEnd: 0.03, color: i % 4 ? ink : sheen, alpha: 0.85, drag: 3, gravity: 5 });
         g.clappers.hit(c, p, dir, 1, 'brushed');
       }
     }

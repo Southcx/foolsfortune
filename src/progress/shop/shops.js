@@ -20,6 +20,8 @@ import { SHOPS, worthOf, shelfOf } from './catalogue.js';
 import { itemOf } from '../../pneuka/items.js';
 import { startHaggle, offers, offer, flatter, clink, walk, accept, moodOf } from './haggle.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('progress/shop/shops'); // (the haggle's chance: core/rng.js, the same twice)
 
 const KEY = 'foolsfortune.shops.v1';
 const S = ECON.shop;
@@ -127,7 +129,7 @@ export class Shops {
     const npc = g.folk?.byId[D.keeper];
     if (!npc) return false;
     const w = worthOf(id), floor = Math.max(Math.ceil(w * ECON.haggle.floor), Math.round(p / D.markup * ECON.haggle.floor));
-    this.hag = { shop, item: id, h: startHaggle({ worth: w, list: p, floor, purse: g.cubes.balance }) };
+    this.hag = { shop, item: id, h: startHaggle({ worth: w, list: p, floor, purse: g.cubes.balance, rnd: simRand }) };
     this.close();
     g.dialogue?.begin(npc, 'haggle');
     this.said('open');

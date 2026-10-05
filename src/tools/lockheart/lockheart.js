@@ -6,6 +6,8 @@ import { OUTCOME_FX } from './outcomes.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE LOCKHEART: the seventh of the Courier's psychic tools. A little coffin on a chain, worn at the neck (the one place there is: so
@@ -29,7 +31,7 @@ import { sfx } from '../../audio/sfx.js';
 // Persona's and Fire Emblem's "luck" as a number that is spent.
 // ---------------------------------------------------------------------------------------
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
-const CAP = 100, KEY = 'foolsfortune.pneuka.lockheart', HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
+const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
 const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
 const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _hm = new THREE.Matrix4(), _mb = new THREE.Matrix4();
@@ -51,7 +53,7 @@ export class Lockheart extends HeldTool {
     const g = mgr.game;
     g.lockheart = this;
     this.cap = CAP; this.charge = 0;
-    try { this.charge = Math.min(CAP, +(localStorage.getItem(KEY) || 0) || 0); } catch { /* none kept */ }
+    g.save?.section('lockheart', { scope: 'player', version: 1, dump: () => Math.round(this.charge), load: (d) => { this.charge = Math.min(CAP, Math.max(0, +d || 0)); }, reset: () => { this.charge = 0; } }); // (core/save.js)
     this.hoovering = false; this.hooverW = 0; this.drainT = 0; this.queue = []; this.lidK = 0; this.saveT = 0;
     this.wheel = new Wheel(g.scene);
   }
@@ -124,12 +126,12 @@ export class Lockheart extends HeldTool {
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
     // each key turned once more; brass is spent, any other breaks by its uses (table.js keyBreaks: the owner's ruling, 2026-10-04)
     const used = [...keys], broke = [];
-    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i))) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
     const { table, mods } = oddsOf(this.heart, used);
     const power = Math.min(2, this.charge / this.fill);
     this.charge = 0; this.save();
     const R = rates(table), draws = [];
-    for (let s = 0; s < mods.spins; s++) draws.push(spin(table));
+    for (let s = 0; s < mods.spins; s++) draws.push(spin(table, simRand()));
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
@@ -213,15 +215,15 @@ export class Lockheart extends HeldTool {
     // (R40: Lachryma-coloured, through the O of the joined hands: aimed at the ring first, then on into the coffin behind it)
     const fx = g.fx?.add, ring = P.pos.clone().addScaledVector(f, 0.62).setY(P.pos.y + 1.27);
     for (let n = 0; fx?.emit && n < 3; n++) {
-      if (Math.random() > dt * 30 * this.hooverW) continue;
-      const a = (Math.random() - 0.5) * HOOVER.cone * 2, r = 2 + Math.random() * (HOOVER.range - 2);
-      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + Math.random() * 1.6);
+      if (simRand() > dt * 30 * this.hooverW) continue;
+      const a = (simRand() - 0.5) * HOOVER.cone * 2, r = 2 + simRand() * (HOOVER.range - 2);
+      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + simRand() * 1.6);
       const life = 0.55;
       fx.emit({ pos: p, vel: ring.clone().sub(p).multiplyScalar(1 / life), life, size: 0.06, sizeEnd: 0.015, color: MOTE[n % 3], alpha: 0.85, drag: 0, gravity: 0 });
     }
   }
 
-  save() { try { localStorage.setItem(KEY, String(Math.round(this.charge))); } catch { /* this session */ } }
+  save() { this.game.save?.dirty('lockheart'); }
 
   // ---------------------------------------------------------------- animation
   pose(C, out) {

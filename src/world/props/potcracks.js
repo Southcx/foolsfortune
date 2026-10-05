@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import { surfaceGrid, facetPoint, locateOnPot } from './pottery.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/potcracks'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Crack lines on intact pots. A crack is a jagged random walk in the pot's
@@ -30,12 +32,12 @@ function walk(P, u, ang, len, heading, out, depth = 0) {
     _n.set(p.x, 0, p.z);
     if (_n.lengthSq() < 1e-6) _n.set(0, 1, 0); else _n.normalize();
     pts.push({ p: p.addScaledVector(_n, 0.0015), n: _n.clone() });
-    th += (Math.random() - 0.5) * 1.1; // jagged
+    th += (simRand() - 0.5) * 1.1; // jagged
     const r = Math.max(0.03, Math.hypot(p.x, p.z));
     u += Math.cos(th) * step;
     ang += (Math.sin(th) * step) / r;
     if (u < 0.004 || u > P.len - 0.004) break;
-    if (depth < 1 && pts.length > 2 && Math.random() < 0.14) walk(P, u, ang, len * 0.45, th + (Math.random() < 0.5 ? 0.9 : -0.9), out, depth + 1);
+    if (depth < 1 && pts.length > 2 && simRand() < 0.14) walk(P, u, ang, len * 0.45, th + (simRand() < 0.5 ? 0.9 : -0.9), out, depth + 1);
   }
   if (pts.length > 1) out.push(pts);
 }
@@ -44,7 +46,7 @@ function walk(P, u, ang, len, heading, out, depth = 0) {
 export function crackPaths(P, local, n, len) {
   const { u, ang } = locateOnPot(P, local);
   const out = [];
-  for (let k = 0; k < n; k++) walk(P, u, ang, len * (0.6 + Math.random() * 0.6), (k / n) * Math.PI * 2 + Math.random() * 0.8, out);
+  for (let k = 0; k < n; k++) walk(P, u, ang, len * (0.6 + simRand() * 0.6), (k / n) * Math.PI * 2 + simRand() * 0.8, out);
   return out;
 }
 
@@ -52,8 +54,8 @@ export function crackPaths(P, local, n, len) {
 export function randomPaths(P, n, len) {
   const out = [];
   for (let k = 0; k < n; k++) {
-    const u = P.len * (0.15 + Math.random() * 0.75), ang = Math.random() * Math.PI * 2;
-    walk(P, u, ang, len * (0.7 + Math.random() * 0.6), Math.random() * Math.PI * 2, out);
+    const u = P.len * (0.15 + simRand() * 0.75), ang = simRand() * Math.PI * 2;
+    walk(P, u, ang, len * (0.7 + simRand() * 0.6), simRand() * Math.PI * 2, out);
   }
   return out;
 }
@@ -68,7 +70,7 @@ export function ribbonGeometry(paths, width) {
       const a = path[Math.max(0, i - 1)].p, b = path[Math.min(L - 1, i + 1)].p;
       tan.subVectors(b, a).normalize();
       side.crossVectors(pt.n, tan).normalize();
-      const w = width * (1 - 0.75 * (i / (L - 1))) * (0.7 + Math.random() * 0.6);
+      const w = width * (1 - 0.75 * (i / (L - 1))) * (0.7 + simRand() * 0.6);
       return [pt.p.clone().addScaledVector(side, w / 2), pt.p.clone().addScaledVector(side, -w / 2)];
     });
     for (let i = 0; i < L - 1; i++) {

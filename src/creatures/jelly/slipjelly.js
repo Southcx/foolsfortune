@@ -36,6 +36,8 @@ import { PaintPath } from '../../vfx/paintpath.js';
 import { JellyDeform } from './deform.js';
 import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
 import { jellyMind } from './mind.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('creatures/jelly/slipjelly'); // (the simulation's chance: core/rng.js, the same twice)
 
 const H = 1.5, R = 0.5;
 const COL = 0xffffff, COLD = new THREE.Color(0.65, 0.9, 1);
@@ -47,7 +49,7 @@ export const JELLY = {
 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _acc = new THREE.Vector2();
-const rnd = (a, b) => a + Math.random() * (b - a);
+const rnd = (a, b) => a + simRand() * (b - a);
 let NEXT = 1;
 
 export class SlipJellies {
@@ -69,7 +71,7 @@ export class SlipJellies {
 
   /** A jelly at `home`. `once`: it does not form again when it bursts (a Well's: the floor is taken down with it). `cls`: a bigger class
    *  (0 the ordinary, up to 4: a FOE is 2), larger, harder to burst and to stun (Figment classes: docs/ECONOMY.md). */
-  spawn(home, { yaw = Math.random() * 6.28, spirit = null, once = false, cls = 0 } = {}) {
+  spawn(home, { yaw = simRand() * 6.28, spirit = null, once = false, cls = 0 } = {}) {
     const g = this.game, M = this.mind;
     // (sand, wet and sliding: the colour and the gloss are the melt's, deform.js; the material's colour only tints it)
     const mat = new THREE.MeshStandardMaterial({ color: COL, roughness: 0.7, metalness: 0, emissive: 0x000000, emissiveIntensity: 1 });
@@ -188,7 +190,7 @@ export class SlipJellies {
       g.shells?.addDroplet?.(at.clone(), v, rnd(0.05, 0.1), true);
     }
     for (let i = 0; i < 26; i++) {
-      const a = Math.random() * Math.PI * 2, r = rnd(0.2, 2.2);
+      const a = simRand() * Math.PI * 2, r = rnd(0.2, 2.2);
       g.shells?.addDroplet?.(at.clone().setY(at.y + 0.3), new THREE.Vector3(Math.cos(a) * r, rnd(6.5, 10), Math.sin(a) * r), rnd(0.018, 0.035), true);
     }
     if (g.fx?.alpha?.emit) for (let i = 0; i < 14; i++) g.fx.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3(rnd(-1.5, 1.5), rnd(3, 6), rnd(-1.5, 1.5)), life: rnd(0.8, 1.4), size: 0.06, sizeEnd: 0.02, color: new THREE.Color(0xb3905f), alpha: 0.85, drag: 0.6, gravity: 9 });
@@ -493,12 +495,23 @@ export class SlipJellies {
     c.mat.color.setHex(COL).lerp(COLD, cold * 0.6);
   }
 
+  /** Put a jelly somewhere at once, at rest: everything that says where it is and how it moves, together (its body, its collider,
+   *  the velocity its lean is measured from, its ground, its trail), so nothing carries over from where it was (a reform, a trailer). */
+  place(c, at, yaw = c.yaw) {
+    c.pos.copy(at); c.prevPos.copy(at); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.lvx = 0; c.lvz = 0; c.yaw = yaw;
+    c.groundY = null; c.groundT = 0; // (found again under it on its next step)
+    c.deform.lean.set(0, 0); c.deform.leanV.set(0, 0); c.deform.target.lean.set(0, 0);
+    c.root.position.copy(at); c.root.rotation.y = yaw;
+    c.rb.setTranslation({ x: at.x, y: at.y + H * 0.5, z: at.z }, true);
+    this.trail.gap(c); // (no stroke of slip drawn from where it was)
+  }
+
   reform(c) {
     const g = this.game;
-    c.alive = true; c.hp = JELLY.hp; c.air = false; c.vel.set(0, 0, 0); c.attack = null; c.dying = null;
-    c.pos.copy(c.home); c.root.visible = true; c.col.setEnabled(true);
+    c.alive = true; c.hp = JELLY.hp; c.attack = null; c.dying = null;
+    this.place(c, c.home); // (it forms at home, at rest: the knock that burst it does not swing it across the sand: the lean reads velocity)
+    c.root.visible = true; c.col.setEnabled(true);
     c.deform.sq = 0.1; c.deform.sqV = 0; c.deform.target.squash = 1; c.deform.kick(2, null, 0.3);
-    c.rb.setTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z }, true);
     c.mem.wipe(); c.drives.set('fear', 0); c.drives.set('thirst', 0.1); c.rel.clear(); c.macro = null;
     c.brain.decide(); // (it has a mind again from its first moment)
     g.events?.emit('jelly.reform', {});

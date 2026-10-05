@@ -27,6 +27,8 @@ import { planeFrom } from '../slicing.js';
 import { sfx } from '../../audio/sfx.js';
 import { PALETTE, T } from '../../core/config.js';
 import { hasTag } from '../../core/tags.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/sondelass/blade'); // (the simulation's chance: core/rng.js, the same twice)
 
 const SLOW = 0.05, DRAIN = 4, ENTER_MIN = 8, ZAN_TOL = 0.24, REACH = 1.6;
 const _r = new THREE.Vector3(), _u = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _p = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
@@ -106,7 +108,7 @@ export class BladeMode {
     if (t) {
       g.lock.pointOf(t, this.pt);
       this.size = t.type === 'clapper' ? 0.5 : t.type === 'creature' ? (t.ref.height ?? 1) * 0.45 : Math.max(0.35, (t.ref.P?.height ?? 0.6) * 0.7);
-      if (this.weakFor !== t.ref) { this.weakFor = t.ref; this.weak = (Math.random() - 0.5) * Math.PI * 0.8; } // (its line: a different angle for each)
+      if (this.weakFor !== t.ref) { this.weakFor = t.ref; this.weak = (simRand() - 0.5) * Math.PI * 0.8; } // (its line: a different angle for each)
     } else {
       // nothing locked: the line goes through where the crosshair points, a few metres out
       g.camera.getWorldPosition(_a); g.camera.getWorldDirection(_b);

@@ -9,6 +9,8 @@
 //   game.mirage.raise(pos, secs, power) -> decoy      .update(dt)      decoy.struck() (a blow lands on it: it is gone)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/crucibelle/mirage'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class Mirages {
   constructor(game) {
@@ -41,12 +43,12 @@ export class Mirages {
       d.grp.rotation.y += dt * 0.6;
       // it calls attention to itself, as they would (a footstep, a breath)
       if (d.beat <= 0) { d.beat = 0.9; g.ai?.stimuli.emit('noise', d.pos, { radius: 16, strength: 0.6, by: 'courier', source: d, ttl: 1 }); }
-      if (g.fx?.alpha?.emit && Math.random() < dt * 14) g.fx.alpha.emit({ pos: d.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.3 + Math.random() * 1.5, (Math.random() - 0.5) * 0.5)), vel: new THREE.Vector3(0, 0.6 + Math.random(), 0), life: 1.2, size: 0.15, sizeEnd: 0.5, color: new THREE.Color(0x8f7fc0), alpha: 0.35, drag: 1, gravity: -0.3 });
+      if (g.fx?.alpha?.emit && simRand() < dt * 14) g.fx.alpha.emit({ pos: d.pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.5, 0.3 + simRand() * 1.5, (simRand() - 0.5) * 0.5)), vel: new THREE.Vector3(0, 0.6 + simRand(), 0), life: 1.2, size: 0.15, sizeEnd: 0.5, color: new THREE.Color(0x8f7fc0), alpha: 0.35, drag: 1, gravity: -0.3 });
       if (d.t <= 0) {
         d.alive = false; g.scene.remove(d.grp);
         const j = g.ai?.decoys.indexOf(d); if (j >= 0) g.ai.decoys.splice(j, 1);
         this.list.splice(i, 1);
-        if (g.fx?.alpha?.emit) for (let n = 0; n < 24; n++) g.fx.alpha.emit({ pos: d.pos.clone().setY(d.pos.y + 0.4 + Math.random() * 1.3), vel: new THREE.Vector3((Math.random() - 0.5) * 2, Math.random() * 1.5, (Math.random() - 0.5) * 2), life: 1.4, size: 0.2, sizeEnd: 0.7, color: new THREE.Color(0x8f7fc0), alpha: 0.4, drag: 1.3, gravity: -0.4 });
+        if (g.fx?.alpha?.emit) for (let n = 0; n < 24; n++) g.fx.alpha.emit({ pos: d.pos.clone().setY(d.pos.y + 0.4 + simRand() * 1.3), vel: new THREE.Vector3((simRand() - 0.5) * 2, simRand() * 1.5, (simRand() - 0.5) * 2), life: 1.4, size: 0.2, sizeEnd: 0.7, color: new THREE.Color(0x8f7fc0), alpha: 0.4, drag: 1.3, gravity: -0.4 });
         g.events?.emit('mirage.fade', {});
       }
     }

@@ -94,6 +94,18 @@ Three files every division touches, so three files kept short:
   adds a rule in its own domain's file.)
 - **`config.js`** holds the tuning numbers of feel (movement, combat timings). Petra's; the core movement is the gold standard.
 
+## The save
+
+Everything the game keeps goes through `game.save` (`src/core/save.js`). A system that keeps something registers a **section** in its
+constructor (`save.section(id, { scope, version, dump, load, reset, migrate, check })`; `load` runs at once with what was kept, or `reset`
+with nothing) and calls `save.dirty(id)` when it changes; `main.js` flushes once a frame, writing each changed **scope** whole. State that
+must agree is one section (the box and the belt are the `kit`). What must hold after loading is the section's `check` (every tool
+somewhere). Scopes: `player` and `world` are progress (wiped on a new build: `save.boot`), `settings` is kept. Something that borrows the
+game holds the save and releases it (`save.hold('overture')` ... `save.release('overture')`: every section reloaded). `save.export()`
+gives the whole of it as one text (a backup, a bug report). Keys a module still writes itself are **adopted** (declared in `ADOPTED`)
+until their owner moves them into a section; the check's `save.storage` rule fails any new `localStorage` outside `save.js`.
+(`player` and `world` are apart for co-op: a player's sections travel with them; the host owns the world's.)
+
 ## Budgets
 
 What a frame may cost. `npm run perf` measures them; the gate holds every push to them and to the last published build's numbers

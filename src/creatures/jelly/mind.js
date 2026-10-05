@@ -28,9 +28,11 @@ import * as THREE from 'three';
 import { st } from '../creatures.js';
 import { enraged } from '../../progress/combat/emo.js';
 import { AWARE, REL, kindOf, curve, norm, steer } from '../ai/index.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('creatures/jelly/mind'); // (the simulation's chance: core/rng.js, the same twice)
 
 const _w = new THREE.Vector3(), _s = new THREE.Vector3(), _k = new THREE.Vector3(), _o = new THREE.Vector3(), _t = new THREE.Vector3();
-const rnd = (a, b) => a + Math.random() * (b - a);
+const rnd = (a, b) => a + simRand() * (b - a);
 const hd = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
 export function jellyMind(J) {
@@ -225,7 +227,7 @@ export function jellyMind(J) {
       if (!b.soak) { c.pose = 'walk'; if (goTo(x, b.at, C.travel, 1) < b.r + 0.4) { b.soak = true; glyph(x, 'note', 0xbfe3ff, 0.4); } return 'run'; }
       c.pose = 'soak';
       x.drives.sat('thirst', dt * 0.2);
-      if (Math.random() < dt * 2) g.fx?.alpha?.emit?.({ pos: c.pos.clone().add(_k.set(rnd(-0.4, 0.4), 0.1, rnd(-0.4, 0.4))), vel: _k.set(0, 0.5, 0).clone(), life: 0.8, size: 0.05, sizeEnd: 0.1, color: new THREE.Color(0xd8ecff), alpha: 0.5, drag: 0.5 });
+      if (simRand() < dt * 2) g.fx?.alpha?.emit?.({ pos: c.pos.clone().add(_k.set(rnd(-0.4, 0.4), 0.1, rnd(-0.4, 0.4))), vel: _k.set(0, 0.5, 0).clone(), life: 0.8, size: 0.05, sizeEnd: 0.1, color: new THREE.Color(0xd8ecff), alpha: 0.5, drag: 0.5 });
       return x.drives.get('thirst') < 0.04 ? 'done' : 'run';
     },
   });

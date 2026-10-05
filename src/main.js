@@ -116,7 +116,9 @@ import { Folk } from './npc/folk.js';
 import { Creatures } from './creatures/creatures.js';
 import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
-import { resetOnNewBuild } from './core/progress.js';
+import { BUILD } from './core/progress.js';
+import { Save } from './core/save.js';
+import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './tools/veritome/flash.js';
 import { Reprogram } from './tools/veritome/reprogram.js';
@@ -181,7 +183,10 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 
 async function main() {
   mark('main');
-  const freshBuild = resetOnNewBuild(); // (a new build starts its progress afresh: progress.js)
+  const seedArg = new URLSearchParams(location.search).get('seed'); // (?seed=N: a page that must play the same twice, the stress test's)
+  reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
+  const save = new Save(); // (everything the game keeps, in one place: core/save.js)
+  const freshBuild = save.boot(BUILD); // (a new build starts its progress afresh: the player's and the world's)
   loadTuning();
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
@@ -230,7 +235,8 @@ async function main() {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events,
+    scene, physics, fx, hud, camera, renderer, stats, events, save,
+    reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {
@@ -370,7 +376,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
-  game.belt.tick(); game.pneuka.seed(); // (a new Courier: the four tools worn, the rest and the made lures in the box)
+  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the four tools worn, the rest and the made lures in the box; and no tool ever nowhere)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
@@ -630,6 +636,7 @@ async function main() {
     onChoose: (mode) => {
       title.mode = mode;
       system.setLendAll(mode === 'debug'); // (DEBUG is the sandbox: every art lent; STORY learns them by doing)
+      if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
       game.mode = mode;
       input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
       titleScene.dive(() => endTitle());
@@ -842,6 +849,7 @@ async function main() {
     movers.tick(dt);
     system.tick(dt);
     game.ledger.tick(dt);
+    save.flush(); // (whatever changed this frame, written whole: core/save.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);
@@ -979,7 +987,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
 }
 

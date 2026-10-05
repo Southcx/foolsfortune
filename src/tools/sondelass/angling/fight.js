@@ -32,10 +32,12 @@
 //  - Monster Hunter and Hades: a telegraph before the heavy hit, so that a good player is never surprised.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/fight'); // (the simulation's chance: core/rng.js, the same twice)
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const rnd = (a, b) => a + Math.random() * (b - a);
-const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const rnd = (a, b) => a + simRand() * (b - a);
+const pick = (a) => a[Math.floor(simRand() * a.length)];
 const cl = THREE.MathUtils.clamp;
 export const BAND = [0.34, 0.78];
 /** How far ahead of a change the reticle shows it (seconds). */
@@ -67,7 +69,7 @@ export class Fight {
   /** Choose a segment to follow one of kind `last` (with side `lastSide`). */
   pick(last, lastSide = 0) {
     const s = this.sp, st = s.style;
-    const side = () => (Math.random() < 0.5 ? -1 : 1);
+    const side = () => (simRand() < 0.5 ? -1 : 1);
     const S = (kind, dur, pull, sd = 0, o = {}) => ({ kind, t: dur, dur, pull, side: sd, need: NEED[kind] ?? null, ...o });
     const lowStam = this.stamina < 0.34;
     let g;

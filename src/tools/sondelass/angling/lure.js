@@ -14,6 +14,8 @@ import * as THREE from 'three';
 import { LURES, tasteOf, attraction } from './lures.js';
 import { ASPECTS } from './species.js';
 import { sfx } from '../../../audio/sfx.js';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/lure'); // (the simulation's chance: core/rng.js, the same twice)
 
 const G = 9.81;
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
@@ -192,7 +194,7 @@ export class Lure {
     if (this.moteT <= 0 && this.state !== 'air') {
       this.moteT = 0.16;
       const fx = this.game.fx;
-      fx.add.emit({ pos: _w.copy(this.pos).add(_v.set((Math.random() - 0.5) * 0.1, 0.1, (Math.random() - 0.5) * 0.1)), vel: _v.set(0, 0.3, 0), life: 1.1, size: 0.035, sizeEnd: 0.005, color: new THREE.Color(this.color), alpha: 0.7, drag: 1, floor: -100 });
+      fx.add.emit({ pos: _w.copy(this.pos).add(_v.set((simRand() - 0.5) * 0.1, 0.1, (simRand() - 0.5) * 0.1)), vel: _v.set(0, 0.3, 0), life: 1.1, size: 0.035, sizeEnd: 0.005, color: new THREE.Color(this.color), alpha: 0.7, drag: 1, floor: -100 });
     }
   }
 

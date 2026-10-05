@@ -12,6 +12,8 @@
 //  - Twenty CURIOS, four to a tier, drawn from the chest's own tier; one you already have is condensed into cubes instead.
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../../progress/econ/table.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/treasure/treasure'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const TIERS = [
   { id: 'common',    name: 'common',    rgb: 0xecd3b2, glow: 0xfff0dc, cubes: ECON.chest[0], weight: 60 },
@@ -27,7 +29,7 @@ export const hex = (c) => `#${c.toString(16).padStart(6, '0')}`;
 export const TITHE = { cost: ECON.tithe.cost, pity: { rare: 10, epic: 40, prismatic: 100 }, epicPrismatic: 0.12 };
 
 /** The odds as they stand once pity is counted: the tier a pull lands on (a number 0-4), from three counters and a random number. */
-export function rollTier(since, r = Math.random()) {
+export function rollTier(since, r = simRand()) {
   const p = TITHE.pity;
   if (since.prismatic + 1 >= p.prismatic) return 4;
   if (since.epic + 1 >= p.epic) return r < TITHE.epicPrismatic ? 4 : 3;
@@ -39,7 +41,7 @@ export function rollTier(since, r = Math.random()) {
 }
 
 /** How many cubes a chest of this tier holds (a random amount in its range, leaning a little high or low). */
-export function cubesIn(tier, r = Math.random()) {
+export function cubesIn(tier, r = simRand()) {
   const [a, b] = TIERS[tier].cubes;
   return Math.round(a + (b - a) * r);
 }

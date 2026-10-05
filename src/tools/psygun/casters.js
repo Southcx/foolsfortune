@@ -3,6 +3,8 @@ import { RAPIER } from '../../core/physics.js';
 import { T, PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/psygun/casters'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // The caster shells: three more rounds for the psygun (and for the god hand, which drops them
@@ -102,7 +104,7 @@ export class Casters {
     g.scene.add(ring);
     group.position.copy(pos);
     g.scene.add(group);
-    const gr = { pos: pos.clone(), group, ball, mat, halo, ring, t: 0, beat: -1, dur: S.duration, hue: Math.random() };
+    const gr = { pos: pos.clone(), group, ball, mat, halo, ring, t: 0, beat: -1, dur: S.duration, hue: simRand() };
     this.grooves.push(gr);
     sfx.thump();
     g.events?.emit('groove.open', {});
@@ -141,9 +143,9 @@ export class Casters {
         this.onBeat(gr, beat, col);
       }
       // sparkles thrown off the ball
-      if (Math.random() < dt * 40) {
-        const a = Math.random() * Math.PI * 2;
-        g.fx.add.emit({ pos: gr.pos.clone().add(new THREE.Vector3(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3)), vel: new THREE.Vector3(Math.cos(a) * 2, 1 + Math.random() * 2, Math.sin(a) * 2), life: 0.7, size: 0.05, sizeEnd: 0.01, color: new THREE.Color().setHSL(Math.random(), 0.9, 0.65), drag: 1.5, gravity: 2 });
+      if (simRand() < dt * 40) {
+        const a = simRand() * Math.PI * 2;
+        g.fx.add.emit({ pos: gr.pos.clone().add(new THREE.Vector3(Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3)), vel: new THREE.Vector3(Math.cos(a) * 2, 1 + simRand() * 2, Math.sin(a) * 2), life: 0.7, size: 0.05, sizeEnd: 0.01, color: new THREE.Color().setHSL(simRand(), 0.9, 0.65), drag: 1.5, gravity: 2 });
       }
     }
   }
@@ -209,7 +211,7 @@ export class Casters {
     }
     for (let i = 0; i < 2; i++) {
       const r = new THREE.Mesh(this.geoRing, this.ringMat);
-      r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+      r.rotation.set(simRand() * 3, simRand() * 3, 0);
       rec.group.add(r);
     }
     rec.rings = rec.group.children.slice();

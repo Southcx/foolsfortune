@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE CHECK: the part of Petra's gate a machine can do (docs/ARCHITECTURE.md, "The gate"). It reads every module under src/ and
 // reports what breaks the house rules: imports that go nowhere, modules nothing imports, events named or shaped against the bus's
-// rules, text feedback outside the log's rules, modules with no header, files past the size budget, retired words (docs/GLOSSARY.md).
+// rules, text feedback outside the log's rules, modules with no header, files past the size budget, retired words (docs/GLOSSARY.md),
+// and anything kept in the browser outside the save (core/save.js).
 //
 // It fails only on NEW debt. What was already there when a rule arrived is written down in scripts/check-baseline.json (a count per rule
 // per file); a count that rises, or a file that appears, fails the check. Paying debt down lowers the count, and `--update` writes the
@@ -121,6 +122,23 @@ for (const [f, raw] of text) {
     if (seen.has(id)) add('achievement.id', f, line, `achievement id '${id}' is used twice (first at line ${seen.get(id)})`);
     else seen.set(id, line);
   }
+}
+
+// ---- 7. the save (core/save.js): nothing keeps anything in the browser but the save; a module that keeps something registers a section
+for (const [f, raw] of text) {
+  if (f.endsWith(path.join('core', 'save.js'))) continue;
+  const src = code(raw);
+  for (const m of src.matchAll(/\blocalStorage\b/g)) add('save.storage', f, lineOf(src, m.index), 'keeps something in localStorage itself: register a section with game.save (core/save.js)');
+}
+
+// ---- 8. the same twice (docs/plans/COOP.md, C1): the simulation takes its chance from a seeded stream (core/rng.js `stream`), never
+// Math.random; the cosmetic domains (vfx, audio, music, ui, title, render, cine, workbench, debug) may roll freely
+const SIM = /^src\/(creatures|courier|world|tools|godhand|npc|pneuka|progress|core|feedback)\//;
+for (const [f, raw] of text) {
+  const r = rel(f).split(path.sep).join('/');
+  if (!SIM.test(r) || r === 'src/core/rng.js') continue;
+  const src = code(raw);
+  for (const m of src.matchAll(/\bMath\.random\b/g)) add('rand.sim', f, lineOf(src, m.index), 'the simulation takes its chance from a seeded stream (core/rng.js: `const simRand = stream(name)`), never Math.random');
 }
 
 // ---- tally against the baseline

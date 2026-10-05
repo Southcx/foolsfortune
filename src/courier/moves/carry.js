@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/carry'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Pick up and throw (a body move: it's yours from the start). F, facing something small
 // (a pot, a small crate): you stoop, take it in both hands and lift it to your chest. You walk with
@@ -208,7 +210,7 @@ export class Carry extends Tech {
     this.restore();
     const v = dir.multiplyScalar(sp).add(new THREE.Vector3(P.vel.x, 0, P.vel.z).multiplyScalar(0.5));
     e.body.setLinvel(v, true);
-    e.body.setAngvel({ x: (Math.random() - 0.5) * 6, y: (Math.random() - 0.5) * 3, z: (Math.random() - 0.5) * 6 }, true);
+    e.body.setAngvel({ x: (simRand() - 0.5) * 6, y: (simRand() - 0.5) * 3, z: (simRand() - 0.5) * 6 }, true);
     e.thrownT = 0;
     this.game.breakables?.instigate(e, 'courier'); // (whatever it breaks is the Courier's doing)
     this.flying.push({ e, prev: v.length(), t: 0 });

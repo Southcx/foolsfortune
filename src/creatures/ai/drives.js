@@ -16,8 +16,10 @@
 // eat, they limp to the nest to sleep, they fight what comes into their ground.
 // ---------------------------------------------------------------------------------------
 
+import { stream } from '../../core/rng.js';
+const simRand = stream('creatures/ai/drives'); // (the simulation's chance: core/rng.js, the same twice)
 const clamp01 = (x) => (x < 0 ? 0 : x > 1 ? 1 : x);
-const pick = (r) => (Array.isArray(r) ? r[0] + Math.random() * (r[1] - r[0]) : r);
+const pick = (r) => (Array.isArray(r) ? r[0] + simRand() * (r[1] - r[0]) : r);
 
 /** An individual's traits from the kind's ranges: { bold: [0.6, 1.4], greedy: [...], ... } -> { bold: 1.07, ... }. */
 export function rollTraits(ranges = {}) {

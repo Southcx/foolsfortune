@@ -26,23 +26,21 @@
 // a choice, Resident Evil's and Zelda's inventory made a matter of where on the body a thing can go (the box puts them on and off).
 //
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
-//   game.belt.isWorn(id)   game.belt.wear(id) / takeOff(id) (the box calls these)   game.belt.ready(id) (a key pressed: true, or says why not)
+//   game.belt.isWorn(id)   game.belt.wear(id, { stash }) / takeOff(id) (the box calls these; a tool wear() bumps off goes into the box)   game.belt.ready(id) (a key pressed: true, or says why not)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
 //   has become something else and their tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
 export const BELT_SIZE = 7;
 /** The places on their body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
 export const PLACES = { back: 2, hip: 2, neck: 1 };
-const KEY = 'foolsfortune.pneuka.belt'; // (progress: cleared with the box on a new build, progress.js)
 
 export class ToolBelt {
   constructor(game) {
     this.game = game;
     this.tools = [];
-    this.worn = null; // Set of tool ids, or null until the first load (then: the four they start with)
-    try { const w = JSON.parse(localStorage.getItem(KEY) || 'null'); if (Array.isArray(w)) this.worn = new Set(w); } catch { /* nothing kept */ }
+    this.worn = null; // Set of tool ids, or null until the first tick (then: the ones they start with); kept in the kit (pneuka/box.js)
   }
-  save() { try { localStorage.setItem(KEY, JSON.stringify([...this.worn])); } catch { /* this session only */ } }
+  save() { this.game.save?.dirty('kit'); } // (the belt is kept with the box, whole: core/save.js)
 
   /** Is this tool worn (and so drawn with its key), or in the box? */
   isWorn(id) { return !this.worn || this.worn.has(id); }
@@ -50,13 +48,16 @@ export class ToolBelt {
   inPlace(place) { return this.tools.filter((t) => t.slot === place && this.isWorn(t.id)); }
   /** Put a tool on: into a free place of its kind, or in place of the one there longest. Returns the id taken off to make room, null if
    *  there was room, or false if it cannot be worn at all. */
-  wear(id) {
+  wear(id, { stash = true } = {}) {
     const t = this.get(id);
     if (!t || !PLACES[t.slot]) return false;
     if (this.isWorn(id)) return null;
     const there = this.inPlace(t.slot);
     let off = null;
-    if (there.length >= PLACES[t.slot]) { off = there[0].id; this.takeOff(off, true); } // (said with the wearing: tool.wear's `off`)
+    if (there.length >= PLACES[t.slot]) { // (said with the wearing: tool.wear's `off`)
+      off = there[0].id; this.takeOff(off, true);
+      if (stash) this.game.pneuka?.add(`tool.${off}`, 'belt'); // (never into nowhere: the box's own wear puts it in the slot it emptied)
+    }
     this.worn.add(id); this.save();
     this.game.events?.emit('tool.wear', { tool: id, off });
     return off;

@@ -26,6 +26,8 @@ import { TIERS, TITHE, rollTier } from './treasure.js';
 import { Beam } from '../../vfx/beam.js';
 import { Ceremony } from './ceremony.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/treasure/chests'); // (the simulation's chance: core/rng.js, the same twice)
 const _lamp = new THREE.Color();
 
 const easeOut = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
@@ -317,9 +319,9 @@ class TitheAct {
       t.pay = 1;
       // the cubes go into the slot: a stream of dark specks with a film on them
       for (let i = 0; i < 30; i++) {
-        const from = _a.copy(g.player.renderPos).setY(g.player.renderPos.y + 1.1 + Math.random() * 0.3);
+        const from = _a.copy(g.player.renderPos).setY(g.player.renderPos.y + 1.1 + simRand() * 0.3);
         const dir = _b.copy(t.slot).sub(from);
-        g.fx.add.emit({ pos: from, vel: dir.multiplyScalar(2.2 + Math.random()).add({ x: (Math.random() - 0.5) * 0.4, y: 0.6, z: (Math.random() - 0.5) * 0.4 }), life: 0.42, size: 0.05, sizeEnd: 0.01, color: new THREE.Color().setHSL(0.72 + Math.random() * 0.2, 0.9, 0.5), drag: 0.5, twinkle: 20, floor: -100 });
+        g.fx.add.emit({ pos: from, vel: dir.multiplyScalar(2.2 + simRand()).add({ x: (simRand() - 0.5) * 0.4, y: 0.6, z: (simRand() - 0.5) * 0.4 }), life: 0.42, size: 0.05, sizeEnd: 0.01, color: new THREE.Color().setHSL(0.72 + simRand() * 0.2, 0.9, 0.5), drag: 0.5, twinkle: 20, floor: -100 });
       }
     }
     if (this.t > 1.05 && !this.summoned) {

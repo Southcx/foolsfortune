@@ -16,6 +16,8 @@ import { PALETTE, T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { addOutline } from '../render/outline.js';
 import { PROFILES, prepProfile } from './props/pottery.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('world/level'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Greybox terracotta workshop. Everything static is merged per colour into a
 // handful of meshes; colliders are simple cuboids/cylinders/balls.
@@ -24,7 +26,7 @@ const W = 10, D = 15, H = 13.5; // half-width, half-depth, total height
 const F2 = 7; // second floor walking height
 export const ROOM = { W, D, H, F2 };
 
-const rand = (a, b) => a + Math.random() * (b - a);
+const rand = (a, b) => a + simRand() * (b - a);
 let _glowTex;
 // soft radial falloff (a SpriteMaterial without a map draws as a hard square)
 function glowTexture() {
@@ -41,7 +43,7 @@ function glowTexture() {
   _glowTex = new THREE.CanvasTexture(c);
   return _glowTex;
 }
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const pick = (arr) => arr[Math.floor(simRand() * arr.length)];
 
 export class Level {
   constructor(scene, physics, breakables) {
@@ -353,9 +355,9 @@ export class Level {
     for (const gy of this.geysers) {
       gy.t += dt;
       // particle column
-      if (Math.random() < 0.9) {
-        const a = Math.random() * Math.PI * 2, r = Math.random() * 0.6;
-        fx.add.emit({ pos: gy.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(0, 6 + Math.random() * 6, 0),
+      if (simRand() < 0.9) {
+        const a = simRand() * Math.PI * 2, r = simRand() * 0.6;
+        fx.add.emit({ pos: gy.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.1, Math.sin(a) * r)), vel: new THREE.Vector3(0, 6 + simRand() * 6, 0),
           life: 0.9, size: 0.05, sizeEnd: 0.01, color: new THREE.Color(PALETTE.cream), drag: 0.3, twinkle: 18 });
       }
       const dx = feet.x - gy.pos.x, dz = feet.z - gy.pos.z;
@@ -503,7 +505,7 @@ export class Level {
 
     // shelves
     for (const s of this.shelves) {
-      const n = 2 + Math.floor(Math.random() * 2); // (R40: fewer: a workshop, not a warehouse)
+      const n = 2 + Math.floor(simRand() * 2); // (R40: fewer: a workshop, not a warehouse)
       for (let i = 0; i < n; i++) {
         const zz = s.z - s.w / 2 + (s.w / n) * (i + 0.5) + rand(-0.1, 0.1);
         const low = s.y - (s.upper ? 7 : 0) < 1;

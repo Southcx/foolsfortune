@@ -2,6 +2,8 @@ import { deflect } from '../parry.js';
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/kick'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Kick (a Movement Art) and parry. V is a kick: a quick
 // strike with the leg, forward, that knocks pots over (and cracks them), sends crates and
@@ -43,7 +45,7 @@ export class Kick extends Tech {
       this.hit.clear();
       this.hitAny = false;
       this.parried = false;
-      this.clip = Math.random() < 0.5 ? 'kick_a' : 'kick_b';
+      this.clip = simRand() < 0.5 ? 'kick_a' : 'kick_b';
       this.fwd = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
       sfx.whoosh();
       g.events?.emit('kick.swing', {});
