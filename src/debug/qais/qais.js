@@ -2,8 +2,8 @@
 // QAIS: the development window in the game where the owner tests a build (docs/plans/QAIS.md, Dovina's spec; the glossary's QAIS).
 // F8 anywhere in play takes the frame first (the 480-line canvas read back in the same task as its draw: what the owner saw, before any
 // window draws over it), pauses the world (main.js's modalOpen), frees the mouse and opens on the tab last used. Esc or F8 closes it and
-// play resumes where it stopped. Four tabs (tabs.js): the Brief, the Tests, the Reports, the Questions; all of it kept in the published
-// build's store (store.js), none of it in the save.
+// play resumes where it stopped. Four tabs (tabs.js), drawn in Calissa's look (src/ui/qais.js): the Brief, the Tests, the Reports, the
+// Questions; all of it kept in the published build's store (store.js), none of it in the save.
 //
 // What it does on its own: listens for the round's QAIS tests' evidence (evidence.js, one tap on the bus), writes a pass, a fail, a
 // skip or a note on the owner's press, files a report (report.js) from the frame taken, takes the owner to a test's place
@@ -22,13 +22,12 @@ import { BUILD } from '../../core/progress.js';
 import { openStore } from './store.js';
 import { Evidence } from './evidence.js';
 import { fileReport } from './report.js';
-import { TABS, draw } from './tabs.js';
-import { CSS } from './look.js';
+import { TABS, tabList, draw } from './tabs.js';
+import { QaisLook } from '../../ui/qais.js';
 
 /** The published build (the store every division reads with ArtifactData) and the session a sent round wakes: Dovina's. */
 export const BUILD_URL = 'https://claude.ai/artifact/FjLfppJaKzUCZxoVBp9FE8';
 export const BRIGADE = { server: 'Claude Code Remote', tool: 'create_trigger', session: 'session_01Dn7Yum1aGbbsUQBLqcm863', who: 'Dovina' };
-const NOTE_PAUSE = 1.5; // (real seconds of quiet before a note is written: one write a pause, never one a key)
 
 export class Qais {
   constructor(game, { renderer, scene, camera }) {
@@ -36,34 +35,26 @@ export class Qais {
     this.build = BUILD;
     this.open = false; this.marking = false; this.tab = 'brief';
     this.store = null; this.round = null; this.frame = null;
-    this.notes = new Map(); // test id -> timer
     this.act = {
-      mark: (t, s) => this.mark(t, s), fail: (t) => this.fail(t), note: (t, text) => this.note(t, text),
-      go: (t) => this.go(t), file: () => this.file(), send: () => this.send(),
+      mark: (t, s) => this.mark(t, s), note: (t, text) => this.note(t, text),
+      go: (t) => this.go(t), file: (t = null) => this.file(t), send: () => this.send(),
     };
     this.make();
     addEventListener('keydown', (e) => this.key(e), true);
     openStore().then((s) => this.connect(s));
   }
 
+  /** The window, in Calissa's look (the house frame: ui/theme.js WINDOWS has '#qais .qw'), and a foot line of its own. */
   make() {
-    if (!document.getElementById('qais-css')) { const st = document.createElement('style'); st.id = 'qais-css'; st.textContent = CSS; document.head.appendChild(st); }
-    const root = this.root = document.createElement('div'); root.id = 'qais';
-    const qw = document.createElement('div'); qw.className = 'qw';
-    const head = document.createElement('header'), h2 = document.createElement('h2'); h2.textContent = 'QAIS';
-    const tabs = this.tabsEl = document.createElement('div'); tabs.className = 'tabs';
-    TABS.forEach(([id, label], i) => {
-      const b = document.createElement('button'); b.dataset.tab = id; b.textContent = label;
-      const k = document.createElement('span'); k.className = 'k'; k.textContent = i + 1; b.append(k);
-      b.addEventListener('click', () => this.setTab(id)); tabs.append(b);
-    });
-    head.append(h2, tabs);
-    this.pane = document.createElement('div'); this.pane.className = 'pane';
-    this.foot = document.createElement('div'); this.foot.className = 'foot';
-    qw.append(head, this.pane, this.foot);
-    root.append(qw);
-    root.addEventListener('mousedown', (e) => { if (e.target === root) this.close(); });
-    document.body.appendChild(root);
+    this.look = new QaisLook();
+    const W = this.look.window();
+    this.root = W.root; this.tabsEl = W.tabs; this.pane = W.body;
+    this.root.style.display = 'none';
+    this.foot = document.createElement('div');
+    Object.assign(this.foot.style, { flex: 'none', padding: '6px 6px 0', fontSize: '11px', opacity: '.6' });
+    W.root.querySelector('.qw').append(this.foot);
+    this.root.addEventListener('mousedown', (e) => { if (e.target === this.root) this.close(); });
+    document.body.appendChild(this.root);
   }
 
   /** The store answered: the round, and every collection watched once (the window redraws from them). */
@@ -99,7 +90,7 @@ export class Qais {
     this.frame = this.grab();
     this.open = true; this.tab = tab;
     document.exitPointerLock?.();
-    this.root.classList.add('open');
+    this.root.style.display = '';
     this.redraw(true);
   }
 
@@ -107,7 +98,7 @@ export class Qais {
     if (!this.open) return;
     document.activeElement?.blur?.(); // (a note being typed is written by its pause timer)
     this.open = false;
-    this.root.classList.remove('open');
+    this.root.style.display = 'none';
     this.onClose?.();
   }
 
@@ -129,7 +120,7 @@ export class Qais {
     if (!this.open || !this.store && !force) return;
     if (!force && this.pane.contains(document.activeElement) && /^(TEXTAREA|INPUT)$/.test(document.activeElement.tagName)) { this.stale = true; return; }
     this.stale = false;
-    for (const b of this.tabsEl.children) b.classList.toggle('on', b.dataset.tab === this.tab);
+    this.look.tabs(this.tabsEl, this.store ? tabList(this) : TABS.map(([id, label]) => ({ id, label })), this.tab, (id) => this.setTab(id));
     const top = this.pane.scrollTop;
     if (this.store) draw(this.tab, this.pane, this);
     else this.pane.textContent = 'Opening the store...';
@@ -141,22 +132,11 @@ export class Qais {
   // ---------------------------------------------------------------- the owner's acts
   latest(t) { return this.store.docs('tests').find((x) => x.id === t.id) || t; }
 
-  mark(t, status) {
-    const cur = this.latest(t).status;
-    const next = cur === status ? 'open' : status; // (pressed again: undone)
-    this.store.update('tests', t.id, { status: next, markedAt: Date.now() });
-  }
+  /** A verdict ('open' undoes it: the card's stamped button pressed again). A Fail also files a report (the card calls file(test)). */
+  mark(t, status) { this.store.update('tests', t.id, { status, markedAt: Date.now() }); }
 
-  /** Fail: marked, then a report filed from the frame taken, carrying the test's id. */
-  async fail(t) {
-    if (this.latest(t).status !== 'fail') await this.store.update('tests', t.id, { status: 'fail', markedAt: Date.now() });
-    await this.file(this.latest(t));
-  }
-
-  note(t, text) {
-    clearTimeout(this.notes.get(t.id));
-    this.notes.set(t.id, setTimeout(() => { this.notes.delete(t.id); this.store.update('tests', t.id, { note: text.slice(0, 2000) }); if (this.stale) this.redraw(); }, NOTE_PAUSE * 1000));
-  }
+  /** A note, as the card hands it over (on its pause and on blur: never a key at a time). */
+  note(t, text) { this.store.update('tests', t.id, { note: String(text).slice(0, 2000) }).then(() => { if (this.stale) this.redraw(); }); }
 
   /** Take me there: closed, and set down beside the test's place as the Index does. */
   go(t) {
@@ -167,10 +147,10 @@ export class Qais {
   /** The Reports tab's File: the markup window over the frame taken at F8 (the QAIS window hidden under it meanwhile). */
   async file(test = null) {
     if (this.marking) return;
-    this.marking = true; this.root.classList.remove('open');
+    this.marking = true; this.root.style.display = 'none';
     try { await fileReport(this.game, this.store, this.frame || this.grab(), { test, round: this.round }); } catch (e) { console.warn('QAIS: the report could not be filed', e); }
     this.marking = false;
-    if (this.open) { this.root.classList.add('open'); this.setTab('reports'); }
+    if (this.open) { this.root.style.display = ''; this.setTab('reports'); }
   }
 
   /** A sighting of a test's evidence: written once (the first three kept, evidence.js). */

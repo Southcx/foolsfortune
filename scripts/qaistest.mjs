@@ -22,7 +22,7 @@ const F8 = (page) => page.keyboard.press('F8');
   const g = await openGame({ seed: 3, query: '&clock=1791160275000' });
   const { page } = g;
   await F8(page);
-  const s = await page.evaluate(() => { const q = __game.game.qais; return { open: q.open, frame: [q.frame.width, q.frame.height], text: document.querySelector('#qais .pane').textContent, online: q.store?.online }; });
+  const s = await page.evaluate(() => { const q = __game.game.qais; return { open: q.open, frame: [q.frame.width, q.frame.height], text: document.querySelector('#qais .qbody').textContent, online: q.store?.online }; });
   ok(s.open, 'F8 opens QAIS');
   ok(s.frame[0] > 1 && s.frame[1] > 1, `the frame is taken (${s.frame.join('x')})`);
   ok(s.online === false && /published build/.test(s.text), 'away from the store, the Brief says where QAIS lives');
@@ -84,16 +84,16 @@ const standIn = () => {
   await page.waitForTimeout(300);
   await F8(page);
   await page.waitForTimeout(200);
-  const brief = await page.evaluate(() => document.querySelector('#qais .pane').textContent);
-  ok(/QAIS opens on F8/.test(brief) && /Waiting on you/.test(brief) && /The builds before/.test(brief), 'the Brief is drawn from the store (this round, waiting on you, the builds before)');
+  const brief = await page.evaluate(() => document.querySelector('#qais .qbody').textContent);
+  ok(/QAIS opens on F8/.test(brief) && /Waiting on you/.test(brief) && /v98.*The old one/.test(brief), 'the Brief is drawn from the store (this round, waiting on you, the builds before)');
   await page.keyboard.press('Digit2');
-  const cards = await page.evaluate(() => [...document.querySelectorAll('#qais .card.t')].map((c) => c.dataset.id));
+  const cards = await page.evaluate(() => [...document.querySelectorAll('#qais .qcard')].map((c) => c.dataset.id));
   ok(cards.join() === 'T1,T2,T3', `the Tests show the round's QAIS tests in order (${cards.join()})`);
   // a pass, then a note
-  await page.evaluate(() => [...document.querySelectorAll('#qais .card.t[data-id="T2"] button')].find((b) => b.textContent === 'Pass').click());
+  await page.evaluate(() => document.querySelector('#qais .qcard[data-id="T2"] [data-v="pass"]').click());
   await page.waitForTimeout(100);
   ok(await page.evaluate(() => window.__standIn.data.tests.T2.status === 'pass'), 'Pass writes the status');
-  await page.click('#qais .card.t[data-id="T2"] textarea.note');
+  await page.click('#qais .qcard[data-id="T2"] textarea');
   await page.keyboard.type('looks right');
   await page.waitForTimeout(1900);
   ok(await page.evaluate(() => window.__standIn.data.tests.T2.note === 'looks right'), 'a note is written after its pause');
@@ -109,13 +109,13 @@ const standIn = () => {
   await page.evaluate(() => __game.game.chat.run('/goto workshop'));
   await F8(page); await page.keyboard.press('Digit2'); await page.waitForTimeout(100);
   const before = await page.evaluate(() => __game.player.pos.toArray());
-  await page.evaluate(() => [...document.querySelectorAll('#qais .card.t[data-id="T2"] button')].find((b) => b.textContent === 'Take me there').click());
+  await page.evaluate(() => document.querySelector('#qais .qcard[data-id="T2"] [data-go]').click());
   const after = await page.evaluate(() => ({ pos: __game.player.pos.toArray(), open: __game.game.qais.open, kiln: __game.game.places.pos('kiln').toArray() }));
   const d = Math.hypot(after.pos[0] - after.kiln[0], after.pos[2] - after.kiln[2]);
   ok(!after.open && d < 3 && Math.hypot(after.pos[0] - before[0], after.pos[2] - before[2]) > 0.5, `take me there closes QAIS and sets the Courier by the kiln (${d.toFixed(2)} m)`);
   // a fail files a report carrying the test
   await F8(page); await page.keyboard.press('Digit2'); await page.waitForTimeout(100);
-  await page.evaluate(() => [...document.querySelectorAll('#qais .card.t[data-id="T3"] button')].find((b) => b.textContent === 'Fail').click());
+  await page.evaluate(() => document.querySelector('#qais .qcard[data-id="T3"] [data-v="fail"]').click());
   await page.waitForSelector('#bugmarkup .title');
   await page.fill('#bugmarkup .title', 'it failed');
   await page.keyboard.press('Enter');
@@ -125,7 +125,7 @@ const standIn = () => {
   ok(r.bug?.test === 'T3' && r.bug.round === 'v99' && r.bug.status === 'new' && r.bug.frame && r.bug.marks && r.bug.state && r.bug.stand?.startsWith('/goto '), 'the report row carries the test, the round, the status, the assets and the stand line');
   ok(r.uploads.sort().join() === 'application/json,image/png,image/png', `two pictures and the state are uploaded (${r.uploads.join()})`);
   ok(r.open && r.tab === 'reports', 'QAIS comes back on the Reports tab');
-  ok(/R1.*it failed/.test(await page.evaluate(() => document.querySelector('#qais .pane').textContent)), 'the report is listed');
+  ok(/#1.*it failed/.test(await page.evaluate(() => document.querySelector('#qais .qbody').textContent)), 'the report is listed');
   // send to the brigade
   await page.evaluate(() => [...document.querySelectorAll('#qais button')].find((b) => b.textContent === 'Send to the brigade').click());
   await page.waitForTimeout(300);
@@ -136,7 +136,7 @@ const standIn = () => {
   ok(/Round v99 sent to the brigade/.test(s.said), 'the log says the round was sent');
   // the questions
   await page.keyboard.press('Digit4');
-  ok(/Four tabs or five\?/.test(await page.evaluate(() => document.querySelector('#qais .pane').textContent)), 'the Questions are drawn');
+  ok(/Four tabs or five\?/.test(await page.evaluate(() => document.querySelector('#qais .qbody').textContent)), 'the Questions are drawn');
   ok(!g.errors.length, `no page errors${g.errors.length ? `: ${g.errors.slice(0, 2).join(' | ')}` : ''}`);
   await g.close();
 }

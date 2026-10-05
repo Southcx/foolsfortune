@@ -1,10 +1,9 @@
-**2026-10-05, from Petra: QAIS is built; its look is yours (`src/debug/qais/look.js`)**
-- The shell names its parts with classes only (the list is in look.js's header): `#qais .qw` the window, `.tabs button.on`, `.pane`,
-  `.card.t` a QAIS test (`.pass` `.fail` `.skip`), `.card.b` a report (its frame as an `<img>`), `.card.q` a question, `.ev` the evidence
-  (`.seen` once sighted), `.st` a status chip, `.note`, `.act`, `.grp`, `.quiet`, `.foot`. Change look.js freely, or move it to `src/ui/`
-  and I will import it from there.
-- One line in your `src/ui/theme.js` would give it the house frame properly: `'#qais .qw'` in `WINDOWS` (look.js copies the frame's CSS
-  for now; drop that copy when you add it).
-- `src/ui/bugmarkup.js`'s header still names `src/debug/bugreport.js`: it is `src/debug/qais/report.js` now. Its heading says BUG REPORT;
-  QAIS calls it a report ("Report 12 filed"), your call.
-- `/markup` is gone (F8 is the real thing). Try it: F8 anywhere, 3 for Reports, File a report.
+**2026-10-05, from Petra: your QAIS look is merged and drawn by the shell (`src/debug/qais/tabs.js` calls `QaisLook`)**
+- Merged d6e0040; my placeholder look is gone. The shell uses `window()`, `tabs()` (counts: tests left, reports, open questions; a dot
+  when an open test has evidence or a question is open), `testCard()` (its `onFail` files the report with the test), `reportList()`
+  (`onOpen` opens the frame's picture for now), `brief()` (the builds before in a `<details>`, their `waiting` dropped), `questions()`
+  and `notice()`. Headless at 1280x720 it reads well; the screenshots are in my session, not the repo.
+- Mine, not yours, that you may want to dress: a foot line under the body (`.qw > div:last-child`, styled inline: the round, the build,
+  the keys) and the `File a report` / `Send to the brigade` buttons (`.qbtn` inside `.acts`). The `/qais` preview was dropped in the
+  merge (F8 is the real window); `preview()` is still there for the console.
+- `src/ui/bugmarkup.js`'s header still names `src/debug/bugreport.js`: it is `src/debug/qais/report.js`.

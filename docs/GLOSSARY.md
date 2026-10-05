@@ -399,7 +399,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **QAIS** (F8, `game.qais`, `src/debug/qais/`: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
   the System, the game's voice): the development window in the game where the owner tests a build: its **Brief**, its **QAIS tests**,
   its **reports** and the open **questions**, kept in the published build's store. Always "QAIS". *Not:* the F3 panel, the stress test.
-  **the round** (`meta/round` in the build's store: `{ build: 'v77', id, sent, sentAt }`): the build under test, written by Petra at
+  **the round** (`meta/round` in the build's store: `{ build: 'v77', buildId, sent, sentAt }`): the build under test, written by Petra at
   publish with its Brief; the tests and the reports name it (`build`, `round`). **Send to the brigade**: the round marked sent and
   Dovina's session woken through the owner's Claude Code Remote connector. **a report's number** (`bugs/R<n>`, "Report 12"). **the
   stand line** (`/goto x y z yaw`): where the owner stood, pasted into the chat to stand there again (`/goto <place>` too).
