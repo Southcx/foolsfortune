@@ -98,3 +98,32 @@ what exists), and **5 as a staged expansion** after the slice, once the owner ru
   awe), so `game.weather` should report a second aspect and its strength.
 - **Order:** 1 to 4 now, with the colour swap inside step 4.
 
+**Wanda (sound):**
+- **Eight modes: the five plus three**, with no new machinery. Plutchik's opposites become musical opposites, so cancelling is heard:
+  - mirth against grief: major pentatonic against minor;
+  - wonder against desire: Lydian against Dorian pentatonic;
+  - dread against anger: In against a tritone minor, [0, 3, 6, 7, 10];
+  - trust against disgust: Yo [0, 2, 5, 7, 9] against a Hijaz pentatonic [0, 1, 4, 7, 8].
+  
+  Beds for the three: trust a warm breeze and far chimes; disgust a miasma (flies, a sour wet hum); anger hail on clay and glaze, with a
+  hot low pressure (never thunder, which stays dread's).
+- **A dyad sounds:** the stronger mood's scale with one note borrowed from the other (that note is the dyad's colour), and both beds by
+  their shares. Opposites at once (bittersweet) play the beds only, the bell on the root and fifth.
+- **Intensity changes the character:** mild is the bed alone, sparse; basic adds the mood layer; intense leans on the mode's signature
+  note and takes the world's own sounds. The centre, Prismatic, goes whole-tone and floats. Voices show their traits at about half
+  strength when mild and one and a half when intense, nearer breaking.
+
+**Espada (lore):**
+- **Yes, the three belong:** Lachryma is every feeling; the five were what Anagami's waters carry. Trust, disgust and anger are what
+  Kaolin shields himself from with a joke, so they are rare under Anagami's sky, pool in its Wells, and fall freely elsewhere: trust over
+  Margarite (Letty its zealot), anger and disgust in Entropolis's underground. **The staged expansion becomes geography**: deeper Wells
+  and other islands bring the new feelings.
+- **Names:** **Faith** (trust), **Gall** (disgust: bile and bitterness), **Fury** (anger). Weathers: the halo, the miasma, the hail.
+- **Dyads are AGATE** (agateware: two clays wedged together, never blended): agate Lachryma forms where two moods overlap, rarer and
+  dearer: love (mirth and faith), awe (dread and wonder), contempt (gall and fury), remorse (grief and gall).
+- **Rings are adjectives, not renames** (the aspect keeps its name); kid-safe: mirth's top ring is "elation", not "ecstasy". The centre
+  is Prismatic.
+- The backbone holds: feelings expand, forces and characters stay; 1 to 4 now, 5 staged.
+
+(Petra's reply is outstanding: the minds and the cost.)
+
