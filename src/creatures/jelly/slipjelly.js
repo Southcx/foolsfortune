@@ -493,12 +493,23 @@ export class SlipJellies {
     c.mat.color.setHex(COL).lerp(COLD, cold * 0.6);
   }
 
+  /** Put a jelly somewhere at once, at rest: everything that says where it is and how it moves, together (its body, its collider,
+   *  the velocity its lean is measured from, its ground, its trail), so nothing carries over from where it was (a reform, a trailer). */
+  place(c, at, yaw = c.yaw) {
+    c.pos.copy(at); c.prevPos.copy(at); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.lvx = 0; c.lvz = 0; c.yaw = yaw;
+    c.groundY = null; c.groundT = 0; // (found again under it on its next step)
+    c.deform.lean.set(0, 0); c.deform.leanV.set(0, 0); c.deform.target.lean.set(0, 0);
+    c.root.position.copy(at); c.root.rotation.y = yaw;
+    c.rb.setTranslation({ x: at.x, y: at.y + H * 0.5, z: at.z }, true);
+    this.trail.gap(c); // (no stroke of slip drawn from where it was)
+  }
+
   reform(c) {
     const g = this.game;
-    c.alive = true; c.hp = JELLY.hp; c.air = false; c.vel.set(0, 0, 0); c.attack = null; c.dying = null;
-    c.pos.copy(c.home); c.root.visible = true; c.col.setEnabled(true);
+    c.alive = true; c.hp = JELLY.hp; c.attack = null; c.dying = null;
+    this.place(c, c.home); // (it forms at home, at rest: the knock that burst it does not swing it across the sand: the lean reads velocity)
+    c.root.visible = true; c.col.setEnabled(true);
     c.deform.sq = 0.1; c.deform.sqV = 0; c.deform.target.squash = 1; c.deform.kick(2, null, 0.3);
-    c.rb.setTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z }, true);
     c.mem.wipe(); c.drives.set('fear', 0); c.drives.set('thirst', 0.1); c.rel.clear(); c.macro = null;
     c.brain.decide(); // (it has a mind again from its first moment)
     g.events?.emit('jelly.reform', {});

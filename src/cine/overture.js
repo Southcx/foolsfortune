@@ -93,8 +93,7 @@ export class Overture {
     if (this.keep.worn && g.belt) { g.belt.worn = new Set(this.keep.worn); g.belt.save(); g.belt.tick(); g.pneuka?.reconcile(); }
     for (const { c, pos, yaw } of this.keep.jellies || []) {
       if (!g.jellies?.list.includes(c)) continue;
-      c.pos.copy(pos); c.prevPos.copy(pos); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.attack = null; c.yaw = yaw; c.groundY = null;
-      c.root.position.copy(pos); c.rb.setTranslation({ x: pos.x, y: pos.y + (c.height || 1) * 0.5, z: pos.z }, true);
+      c.attack = null; g.jellies.place(c, pos, yaw);
     }
     const L = JSON.parse(this.keep.ledger), led = g.ledger;
     Object.assign(led, L); led.play = this.keep.play; led.version++; led.save();
