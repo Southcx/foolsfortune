@@ -136,6 +136,36 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
   its oil film bright in a thin band at the lip, and leaves the sand dark and glossy behind it. The sea from the sand is the same crude
   the ships sail, quieter near land, and the island's weather stops at the waterline (the Emocean has no mood).
 
+## Liquid: water and Lachryma (the owner, R58)
+
+Water and Lachryma are among the most important things the game draws. Every liquid is drawn with one library (`src/vfx/liquid.js`)
+and one texture: the owner's noise photographs (`source_assets/liquid/`), baked tileable by `scripts/bake_liquid.py` into the four
+channels of `src/assets/liquid_pack.webp` (R marbling, G bubbles, B sand ripples, A the marbling's veins). Drop a new photograph in
+the folder, name it for its channel, and run the script.
+
+- **Water paints its own floor**: sand ripples where the eye meets the bottom, lit by caustics, seen through the water by the depth
+  the eye looks through (shallows clear and sandy, deeps teal to marine); the painted sky by Fresnel, short of a mirror; a tight sun
+  highlight and glints (sparkle is welcome on liquid); the crest glow toward the sun; foam made of bubbles at the shore. The far water
+  calms. (`src/vfx/water.js`)
+- **Lachryma liquid is ink with the oil film in its cells and veins**: slow, glossy, the film's colours where the marbling's veins run
+  and at the grazing angle, an iridescent meniscus. The crude sea (`src/vfx/crudesea.js`) takes the same cells and veins close up, and
+  its current's bands far off.
+
+What was taken, and from where (researched for the owner's ask; sources as found):
+- Super Mario Sunshine: two wave textures scrolled at different rates, bubbling where they cross; the water changing with distance (its
+  mip levels held different pictures). https://blog.mecheye.net/2018/03/deconstructing-the-water-effect-in-super-mario-sunshine/
+- Valve, "Water Flow in Portal 2" (Vlachos, SIGGRAPH 2010): crossing normal layers; flow maps for rivers and ooze (next: the Dunemaw's
+  pool, the crude's currents). https://cdn.akamai.steamstatic.com/apps/valve/2010/siggraph2010_vlachos_waterflow.pdf
+- Sea of Thieves (SIGGRAPH 2018 talk): the sub-surface colour at a wave's peak toward the sun; foam where the water meets things, masked
+  by painted foam textures. https://history.siggraph.org/wp-content/uploads/2022/09/2018-Talks-Ang_The-Technical-Art-of-Sea-of-Thieves.pdf
+- Roystan's toon water: depth colour, foam from a threshold that falls toward the shore. https://roystan.net/articles/toon-water/
+- Alan Zucconi on caustics (two samples of one texture at different scales and speeds). https://www.alanzucconi.com/2019/09/13/believable-caustics-reflections/
+- GPU Gems 1, ch. 1 (Finch): summed waves in world space. https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models
+- Subnautica: absorption broken on purpose for colour (water as a photographer sees it).
+  https://www.gamedeveloper.com/design/how-i-subnautica-i-plunges-deeper-into-rendering-realistic-water
+- Wind Waker, Final Fantasy X, RiME: a chosen palette and a painted sky over simulation.
+Not taken (yet): screen-space refraction (a copy of the scene: fair at 480 lines, a later step), planar reflections (a second render).
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
