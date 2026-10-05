@@ -310,6 +310,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
   dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A
   **deed** is a change made other than through the input (an agent's turn or travel), kept in the frames and done again on playback.
+  The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
+  played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).

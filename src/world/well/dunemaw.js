@@ -33,7 +33,7 @@ import { wellSeed, wellPay, wellYield, drawWell, cogitomapWorth } from '../../pr
 import { makeMaterial, KIND_IDS } from '../../progress/econ/materials.js';
 import { deckDraw } from '../../progress/econ/deck.js';
 import { seeded } from '../../core/rng.js';
-import { today } from '../../core/calendar.js';
+import { today, now as calNow } from '../../core/calendar.js';
 import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
@@ -133,7 +133,7 @@ export class Dunemaw {
 
   /** The Well's fill as they go in (it fills again with the hours since the last run, econ/islands.js drawWell), and this run drawn from it. */
   draw() {
-    const now = Date.now(), was = this.fills[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
+    const now = calNow(), was = this.fills[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
     this.fills[WELL_ID] = { fill: drawWell(fill, 1, 0), at: now }; this.game.save?.dirty('wells');
     return fill;
   }
@@ -198,7 +198,7 @@ export class Dunemaw {
     for (const h of R.haul) g.pneuka?.add(h.id, 'well', 0, h.data);
     if (charted >= MAP_AT) {
       const worth = cogitomapWorth(pay, charted, 0);
-      g.pneuka?.add('cogitomap', 'well', 0, { well: WELL_ID, seed: R.seed, day: R.day, charted: +charted.toFixed(2), pay, worth, at: Date.now() });
+      g.pneuka?.add('cogitomap', 'well', 0, { well: WELL_ID, seed: R.seed, day: R.day, charted: +charted.toFixed(2), pay, worth, at: calNow() });
       g.events?.emit('cogitomap.get', { well: WELL_ID, charted: +charted.toFixed(2), worth, by: 'courier' });
     }
   }
