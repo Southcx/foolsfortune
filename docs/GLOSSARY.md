@@ -38,7 +38,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   different thing, for the systems, and never the order they are shown in.
 - **agate** (Espada's word, after agateware: two clays wedged, never blended; `AGATES`, `agateOf` in `progress/weather.js`): two feelings
   felt at once, shown as one: the stronger is what a mind does or what falls from the sky, the weaker its colour. Named after
-  Plutchik's dyads (awe, delight, optimism, despair...; placeholders for Espada). Opposites never make an agate: they **cancel** (the
+  Plutchik's dyads, in Espada's plain words (delight, hope, guilt, disappointment, awe, longing, worry, despair). Opposites never make an agate: they **cancel** (the
   mood is torn and weaker). A mind or a sky shows one feeling or one agate, never three (the owner: cycles of expansion and contraction).
 - **the wheel** (`docs/plans/WHEEL.md`): Plutchik's eight feelings, of which the five aspects are five; **Faith** (trust), **Gall**
   (disgust: rejection, from boredom to loathing) and **Fury** (anger) join later, as places (approved, 2026-10-05). Intensity **rings**

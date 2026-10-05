@@ -43,11 +43,11 @@ export const VALENCE = { wonder: 2, mirth: 1.5, faith: 1, desire: 0, fury: -0.5,
 export const DISPLAY_ORDER = ASPECTS.slice().sort((a, b) => VALENCE[b] - VALENCE[a]);
 /** Each feeling's colour: Plutchik's hue for its petal, which is also its damage type's (Calissa; the owner, 2026-10-05). */
 export const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a, faith: 0x9be36a, gall: 0x8a5ac8, fury: 0xd8403a };
-/** AGATE: two feelings at once, wedged and never blended (Espada), named after Plutchik's dyads; opposites are "torn". Placeholder
- *  names for Espada; the key is the two feelings in Law-to-Chaos order. A mind or a sky shows one feeling, or one agate: never three. */
+/** AGATE: two feelings at once, wedged and never blended (Espada), after Plutchik's dyads in Espada's plain words (LORE.md); opposites
+ *  cancel instead. The key is the two feelings in Law-to-Chaos order. A mind or a sky shows one feeling, or one agate: never three. */
 export const AGATES = {
-  'mirth+wonder': 'delight', 'mirth+desire': 'optimism', 'mirth+dread': 'guilt',
-  'wonder+grief': 'disapproval', 'wonder+dread': 'awe', 'desire+grief': 'pessimism', 'desire+dread': 'anxiety', 'grief+dread': 'despair',
+  'mirth+wonder': 'delight', 'mirth+desire': 'hope', 'mirth+dread': 'guilt',
+  'wonder+grief': 'disappointment', 'wonder+dread': 'awe', 'desire+grief': 'longing', 'desire+dread': 'worry', 'grief+dread': 'despair',
 };
 /** Plutchik's opposed pairs among ours: they cancel, never wedge (WHEEL.md). */
 export const OPPOSITE = { mirth: 'grief', grief: 'mirth', wonder: 'desire', desire: 'wonder', dread: 'fury', fury: 'dread', faith: 'gall', gall: 'faith' };

@@ -720,5 +720,5 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
   opposites cancel, one feeling or one **agate**, Plutchik's hues for the five (mirth gold, wonder cyan, desire orange, grief blue, dread
   ink-green), room for eight; **Faith, Gall and Fury** join as places after the slice (Gall kept: rejection, boredom to loathing). The
   weather already carries an undercurrent: about one weather hour in eight is an agate, each island with its own (Margarite's delight
-  and optimism, Entropolis's anxiety, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
+  and hope, Entropolis's worry, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
 
