@@ -5,8 +5,8 @@
 // (Real time is read from core/calendar.js now(): the same milliseconds in play, pinned by a replay.)
 // - DIVIDEND SLOTS: an ENCOUNTER is mastered when every achievement in its group is done (a predicate over the ledger: retroactive). A
 //   mastered encounter set in a slot pays ECON.dividend.share of what farming it by hand pays an hour, in real time, filling for
-//   capHours and then waiting to be collected (checking in is rewarded; leaving it for a month is not).
-// - BEDS (foraging, a herb run): a material planted grows ECON.garden.yield more of its kind over growHours real hours. The Wells give
+//   capDays game days and then waiting to be collected (checking in is rewarded; leaving it for a month is not).
+// - BEDS (foraging, a herb run): a material planted grows ECON.garden.yield more of its kind over growHours game hours. The Wells give
 //   the seed stock; what grows feeds the spirit press (progress/alchemy.js).
 // - UPGRADES (the long sink): another slot or another bed, each dearer than the last, paid in cubes.
 // Later, caught Figments (the Lockheart's summoning) work the slots and the beds, Palworld's way.
@@ -22,7 +22,10 @@
 import { ECON } from './econ/table.js';
 import { makeMaterial } from './econ/materials.js';
 import { stream } from '../core/rng.js';
-import { now as clock } from '../core/calendar.js'; // (the calendar's clock, not Date.now: a replay pins it, so a replayed visit pays what it paid)
+import * as calendar from '../core/calendar.js';
+const clock = calendar.now; // (the calendar's clock, not Date.now: a replay pins it, so a replayed visit pays what it paid)
+// a game hour in real milliseconds (DESIGN.md section 17: a game day is a real hour), from the calendar when it says, else that scale
+const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, GAME_DAY = GAME_HOUR * 24;
 
 const simRand = stream('progress/garden'); // (what a bed's harvest is seeded from: core/rng.js, the same twice)
 const G = ECON.garden, D = ECON.dividend, H = 3600 * 1000, M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
@@ -72,7 +75,7 @@ export class Garden {
   accrued(i, now = clock()) {
     const S = this.s.slots[i];
     if (!S?.enc) return 0;
-    return Math.floor(G.farmRate * D.share * Math.min(D.capHours, Math.max(0, now - S.since) / H));
+    return Math.floor(G.farmRate * D.share * Math.min(D.capDays * GAME_DAY, Math.max(0, now - S.since)) / H); // (pays per hour of real time, to a cap of a game day)
   }
   /** Collect a slot (or every slot): the cubes come out, and the slot starts filling again. */
   collect(i = null) {
@@ -100,7 +103,7 @@ export class Garden {
     this.game.events.emit('garden.plant', { bed: i, kind: s.data.kind, by: 'courier' });
     return { ok: true };
   }
-  ripe(i, now = clock()) { const b = this.s.beds[i]; return !!b && now - b.at >= G.growHours * H; }
+  ripe(i, now = clock()) { const b = this.s.beds[i]; return !!b && now - b.at >= G.growHours * GAME_HOUR; }
   /** Harvest a ripe bed: its yield, of its kind and tier, into the box (each with its own path); the bed is empty again. */
   harvest(i) {
     const b = this.s.beds[i];

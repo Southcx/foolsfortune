@@ -659,3 +659,29 @@ farm, FFXIV's housing as the long sink):
 - **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
 - Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
 
+## 17. Time: one game day is one hour (the owner, 2026-10-05)
+
+Real days cannot be taste-tested: nobody can try a Well's drift, a market's swing or a garden's harvest in an afternoon. So the game keeps
+its own calendar, on a conventional game scale.
+
+**The scale.** One game day is one real hour: a game hour is 2.5 real minutes, a game minute 2.5 real seconds. (Prior art: Minecraft's
+20-minute day, Stardew Valley's 7 seconds a game minute, Majora's Mask's three days; and Animal Crossing for what this is not.)
+
+**The clock runs on the wall clock, scaled**, not only while playing: what pays or grows while you are away (the garden) still does,
+and a return after a night away finds many days gone by. It is one clock for everything (`core/calendar.js`: `now()`, `today()`), and a
+replay pins it (`setClock`), so a replay sees the days it saw. Nothing reads `Date.now()` for game time.
+
+**What is a game day, and what is not.** Two kinds of number, never mixed:
+- **The calendar** (drift, ripening, caps, ages) is in **game time**: a Well's layout and an island's demand turn over each game day; a
+  route's reckoning is of a game day; a Cogitomap halves in worth each game day; a bed ripens in game hours; the dividend's cap is a
+  game day.
+- **Rates of income** (`ECON.perMinute`, the aim of 480 cubes an hour) stay per **hour of play**: the economy is measured against the
+  player's time, never the calendar's.
+
+**What it lets us test in one sitting:** the Dunemaw changes shape every hour; the islands' prices swing over three to seven hours (the
+demand wave's period, `ECON.island.periodDays`); a Cogitomap is worth half after an hour; a bed ripens in 15 minutes (6 game hours); a
+dividend slot fills in an hour (1 game day).
+
+**What it invites (later, the others'):** a day and night that follow the game clock (Calissa's sky), the music by the hour (Wanda's),
+the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven hours.
+

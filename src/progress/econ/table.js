@@ -111,7 +111,7 @@ export const ECON = {
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
   /** A COGITOMAP: a ticket to a seeded run of a Well. Worth `share` of what that run pays, by how much of the Well it charts; the Well
-   *  drifts daily (wellSeed(well, day)), so a map halves in worth every `halfLifeDays` days since the day it charts: yesterday's map
+   *  drifts each game day (wellSeed(well, day); a game day is a real hour: DESIGN.md section 17), so a map halves in worth every `halfLifeDays` days since the day it charts: yesterday's map
    *  charts a Well that has moved on (R57: by days, not by hours of play; "The Well drifts. The chart does not."). */
   cogitomap: { share: 0.3, halfLifeDays: 1 },
   /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
@@ -167,13 +167,13 @@ export const ECON = {
    *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
-  dividend: { share: 0.05, capHours: 8, slots: 3 },
+  dividend: { share: 0.05, capDays: 1, slots: 3 }, // (R58: the cap is a game day, an hour of real time: DESIGN.md section 17)
 
   // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
   /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds
-   *  (`beds` to start, a material growing `growHours` real hours into `yield` of its kind), and the upgrades (the long sink): the n-th
+   *  (`beds` to start, a material growing `growHours` game hours into `yield` of its kind), and the upgrades (the long sink): the n-th
    *  extra slot or bed costs `upgrade[kind][n]` minutes of play, dearer each time. */
-  garden: { farmRate: 480, beds: 2, growHours: 6, yield: 2, upgrade: { slot: [180, 360, 720], bed: [60, 120, 240, 480] } },
+  garden: { farmRate: 480, beds: 2, growHours: 6, yield: 2, upgrade: { slot: [180, 360, 720], bed: [60, 120, 240, 480] } }, // (growHours: game hours, 2.5 real minutes each: DESIGN.md section 17)
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
