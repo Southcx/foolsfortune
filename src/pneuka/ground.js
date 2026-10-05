@@ -13,6 +13,8 @@ import * as THREE from 'three';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { itemOf } from './items.js';
 import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('pneuka/ground'); // (where a dropped thing lands: the simulation's chance, core/rng.js)
 
 const REACH = 1.6, SCALE = 0.62;
 
@@ -35,8 +37,8 @@ export class GroundItems {
     const it = itemOf(id), g = this.game;
     if (!it) return null;
     // (a little scatter, so a pile is a pile)
-    const p = scatter ? pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0, (Math.random() - 0.5) * 0.5)) : pos.clone();
-    const e = { id, pos: p, t: Math.random() * 6, model: null, halo: null, uses, data }; // (uses: a Possibilikey's; data: a Cogitomap's, a material's: kept)
+    const p = scatter ? pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.5, 0, (simRand() - 0.5) * 0.5)) : pos.clone();
+    const e = { id, pos: p, t: simRand() * 6, model: null, halo: null, uses, data }; // (uses: a Possibilikey's; data: a Cogitomap's, a material's: kept)
     if (it.kind === 'curio') { e.model = buildCurio(it.key, { sky: g.sky?.env }); e.model.group.scale.setScalar(SCALE); g.scene.add(e.model.group); }
     e.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: g.fx?.haloTexture, color: it.color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, opacity: 0.5 }));
     e.halo.scale.setScalar(0.7); e.halo.renderOrder = 6; g.scene.add(e.halo);

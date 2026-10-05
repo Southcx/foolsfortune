@@ -8,6 +8,8 @@ import { sfx } from '../../audio/sfx.js';
 import { Specials } from './specials.js';
 import { Casters } from './casters.js';
 import { hasTag, registered } from '../../core/tags.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/psygun/shells'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Shells: special rounds for the psygun, fired with F / middle mouse.
@@ -178,7 +180,7 @@ export class Shells {
     this[t.id]({ ...ctx, ray, muzzle, fwd });
     // every shell kicks hard and needs racking
     const k = T.shells.kick * THREE.MathUtils.lerp(1, T.recoil.adsMult, weapon.adsEase);
-    player.addRecoil(T.recoil.kickPitch * k, (Math.random() * 2 - 1) * T.recoil.kickYaw * k);
+    player.addRecoil(T.recoil.kickPitch * k, (simRand() * 2 - 1) * T.recoil.kickYaw * k);
     player.fovPunch = 4;
     weapon.kickV += 1.5 * T.recoil.gunRecoverSpeed * Math.E;
     this.game.fx.muzzleFlash(muzzle, new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion));
@@ -349,7 +351,7 @@ export class Shells {
       const dir = _v.multiplyScalar(0.55).addScaledVector(axis, 0.45).normalize();
       const m = body.mass();
       g.physics.kick(body, { x: dir.x * k * m, y: (dir.y * k + k * 0.18) * m, z: dir.z * k * m });
-      body.applyTorqueImpulse({ x: (Math.random() - 0.5) * m * k * 0.1, y: 0, z: (Math.random() - 0.5) * m * k * 0.1 }, true);
+      body.applyTorqueImpulse({ x: (simRand() - 0.5) * m * k * 0.1, y: 0, z: (simRand() - 0.5) * m * k * 0.1 }, true);
     };
     g.physics.world.forEachRigidBody((b) => { if (b.isDynamic()) shove(b); });
     for (const c of g.clappers.list) {
@@ -402,8 +404,8 @@ export class Shells {
     sfx.splosh(g.listenerDistance(pos));
     for (let k = 0; k < S.droplets; k++) {
       const v = new THREE.Vector3().randomDirection();
-      v.addScaledVector(normal, 0.6).normalize().multiplyScalar(2 + Math.random() * S.spread);
-      this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.04 + Math.random() * 0.06, true);
+      v.addScaledVector(normal, 0.6).normalize().multiplyScalar(2 + simRand() * S.spread);
+      this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.04 + simRand() * 0.06, true);
     }
     // a big wet patch right where it hit (a wall too)
     this.addSplat(pos.clone().addScaledVector(normal, -0.08), normal, S.patch * 2.2, true);
@@ -438,7 +440,7 @@ export class Shells {
       } else p.pos.add(step);
       p.mesh.position.copy(p.pos);
       p.mesh.rotation.x += dt * 12; p.mesh.rotation.z += dt * 9;
-      if (p.kind === 'bomb' && Math.random() < 0.6) g.fx.add.emit({ pos: p.pos, vel: new THREE.Vector3().randomDirection(), life: 0.3, size: 0.04, sizeEnd: 0.01, color: GLOW, drag: 2 });
+      if (p.kind === 'bomb' && simRand() < 0.6) g.fx.add.emit({ pos: p.pos, vel: new THREE.Vector3().randomDirection(), life: 0.3, size: 0.04, sizeEnd: 0.01, color: GLOW, drag: 2 });
       if (p.kind === 'well') g.fx.chargeTick(p.pos, 1, dt);
       if (detonate) {
         g.scene.remove(p.mesh);
@@ -459,7 +461,7 @@ export class Shells {
     const rimMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
     const rings = [0, 1, 2].map((k) => {
       const r = new THREE.Mesh(new THREE.TorusGeometry(0.55 + k * 0.28, 0.018, 4, 40), rimMat.clone());
-      r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+      r.rotation.set(simRand() * 3, simRand() * 3, 0);
       group.add(r);
       return r;
     });
@@ -598,8 +600,8 @@ export class Shells {
     // molten slip: a burst of droplets
     for (let k = 0; k < B.droplets; k++) {
       const v = new THREE.Vector3().randomDirection();
-      v.addScaledVector(normal, 0.8).normalize().multiplyScalar(3 + Math.random() * 7);
-      this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.025 + Math.random() * 0.05);
+      v.addScaledVector(normal, 0.8).normalize().multiplyScalar(3 + simRand() * 7);
+      this.addDroplet(pos.clone().addScaledVector(normal, 0.1), v, 0.025 + simRand() * 0.05);
     }
     // the pool: find the ground below and leave a hot puddle
     const down = g.physics.raycast(pos.clone().addScaledVector(UP, 0.2), new THREE.Vector3(0, -1, 0), 3, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
@@ -617,8 +619,8 @@ export class Shells {
     for (let k = 0; k < 70 * amount; k++) {
       const v = new THREE.Vector3().randomDirection();
       v.y = Math.abs(v.y) * 0.8;
-      v.multiplyScalar(1.5 + Math.random() * 3.5).addScaledVector(dir, 1.5);
-      this.addDroplet(center.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.3, (Math.random() - 0.3) * 0.4, (Math.random() - 0.5) * 0.3)), v, 0.03 + Math.random() * 0.05, true);
+      v.multiplyScalar(1.5 + simRand() * 3.5).addScaledVector(dir, 1.5);
+      this.addDroplet(center.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.3, (simRand() - 0.3) * 0.4, (simRand() - 0.5) * 0.3)), v, 0.03 + simRand() * 0.05, true);
     }
     const down = g.physics.raycast(center, new THREE.Vector3(0, -1, 0), 3, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     if (down) this.addPool(down.point, down.normal, true);
@@ -642,11 +644,11 @@ export class Shells {
           const ent = hit.entity;
           // (a splat is laid only on the world: fixed ground and walls, with a real normal; never on a body that moves)
           const body = hit.collider.parent();
-          if ((!body || body.isFixed()) && hit.normal.lengthSq() > 0.5 && hit.distance > 1e-4) this.addSplat(hit.point, hit.normal, d.r * (6 + Math.random() * 5), d.slip);
+          if ((!body || body.isFixed()) && hit.normal.lengthSq() > 0.5 && hit.distance > 1e-4) this.addSplat(hit.point, hit.normal, d.r * (6 + simRand() * 5), d.slip);
           if (!d.slip && ent?.type === 'breakable') g.breakables.damage(ent, T.shells.bomb.dropletDamage, hit.point, d.vel.clone().normalize(), 0.5);
           if (!d.slip && ent?.type === 'clapper') g.clappers.scald(ent, 0.4);
           // splash: sometimes spit two smaller droplets
-          if (d.r > 0.035 && Math.random() < 0.35) {
+          if (d.r > 0.035 && simRand() < 0.35) {
             for (let k = 0; k < 2; k++) {
               const v = d.vel.clone().reflect(hit.normal).multiplyScalar(0.3).add(new THREE.Vector3().randomDirection().multiplyScalar(1.2));
               this.addDroplet(hit.point.clone().addScaledVector(hit.normal, 0.03), v, d.r * 0.5, d.slip);
@@ -671,14 +673,14 @@ export class Shells {
         return;
       }
     }
-    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[Math.floor(Math.random() * 4)], color: (slip ? SLIP : HOT).clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
+    const mat = new THREE.MeshBasicMaterial({ map: this.blobTex[Math.floor(simRand() * 4)], color: (slip ? SLIP : HOT).clone(), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
     const m = new THREE.Mesh(g.fx.decalGeo, mat);
     m.position.copy(point).addScaledVector(normal, 0.004 + (this.splats.length % 16) * 0.0004);
     m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
-    m.rotateZ(Math.random() * Math.PI * 2);
+    m.rotateZ(simRand() * Math.PI * 2);
     m.scale.setScalar(size / 0.16);
     g.scene.add(m);
-    const life = T.shells.bomb.splatLife * (0.8 + Math.random() * 0.4);
+    const life = T.shells.bomb.splatLife * (0.8 + simRand() * 0.4);
     this.splats.push({ m, age: 0, life, slip });
     if (slip) g.slip?.addDisc(point, normal, size * 0.45, Math.min(life * 0.6, T.tech.slip.coverLife)); // wet enough to dive into, for a while
     if (this.splats.length > 220) { const s = this.splats.shift(); g.scene.remove(s.m); s.m.material.dispose(); }
@@ -712,8 +714,8 @@ export class Shells {
         const t = ent.body.translation();
         if (Math.abs(t.y - p.pos.y) < 0.3 && Math.hypot(t.x - p.pos.x, t.z - p.pos.z) < r) g.breakables.damage(ent, B.poolDps * heat * dt, new THREE.Vector3(t.x, t.y + 0.1, t.z), UP, 0.3, true);
       }
-      if (Math.random() < heat * 0.5) {
-        const a = Math.random() * Math.PI * 2, rr = Math.random() * r * 0.8;
+      if (simRand() < heat * 0.5) {
+        const a = simRand() * Math.PI * 2, rr = simRand() * r * 0.8;
         g.fx.alpha.emit({ pos: p.pos.clone().add(new THREE.Vector3(Math.cos(a) * rr, 0.05, Math.sin(a) * rr)), vel: new THREE.Vector3(0, 0.6, 0), life: 1.2, size: 0.12, sizeEnd: 0.5, color: new THREE.Color(PALETTE.pale), alpha: 0.2 * heat, drag: 1 });
       }
     }
@@ -738,8 +740,8 @@ export class Shells {
       w.halo.material.opacity = 0.6 + 0.4 * Math.sin(now * 12);
       w.sound?.set(Math.min(1, w.t / w.dur));
       for (let s = 0; s < 3; s++) {
-        const a = Math.random() * Math.PI * 2, r = T.shells.well.radius * (0.4 + Math.random() * 0.5);
-        const p = w.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, (Math.random() - 0.5) * 2, Math.sin(a) * r));
+        const a = simRand() * Math.PI * 2, r = T.shells.well.radius * (0.4 + simRand() * 0.5);
+        const p = w.pos.clone().add(new THREE.Vector3(Math.cos(a) * r, (simRand() - 0.5) * 2, Math.sin(a) * r));
         const v = w.pos.clone().sub(p).multiplyScalar(1.6).add(new THREE.Vector3(-Math.sin(a), 0, Math.cos(a)).multiplyScalar(4));
         g.fx.add.emit({ pos: p, vel: v, life: 0.5, size: 0.04, sizeEnd: 0.01, color: GLOW, drag: 0.5 });
       }

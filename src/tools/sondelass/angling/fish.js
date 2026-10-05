@@ -15,6 +15,8 @@
 import * as THREE from 'three';
 import { buildFish } from './fishmesh.js';
 import { sizeClass, weightOf, BY_SPECIES } from './species.js';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/fish'); // (the simulation's chance: core/rng.js, the same twice)
 
 // (bites come sooner than they used to: the time a fish spends circling the lure, scaled)
 const INSPECT = 0.55;
@@ -22,14 +24,14 @@ const INSPECT = 0.55;
 const SENSE = 1.6;
 const _v = new THREE.Vector3();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const rnd = (a, b) => a + Math.random() * (b - a);
+const rnd = (a, b) => a + simRand() * (b - a);
 
 export class Fish {
   constructor(pool, sp, cm, pos) {
     this.pool = pool; this.sp = sp; this.cm = cm; this.kg = weightOf(sp, cm);
     this.cls = sizeClass(sp, cm);
     this.pos = pos.clone();
-    this.heading = Math.random() * Math.PI * 2;
+    this.heading = simRand() * Math.PI * 2;
     this.pitch = 0;
     this.speed = 0.3;
     this.state = 'roam';
@@ -167,8 +169,8 @@ export class Fish {
           if (this.timer < 0) {
             this.pickWaypoint(); this.timer = rnd(0.5, 3.5);
             // a lure it likes draws it from across the water (the passive pull): its wandering leans toward where the lure is
-            if (lure && lure.inWater && this.cool <= 0 && lure.tasteFor && Math.random() < 0.6 * Math.min(1, lure.tasteFor(this.sp))) {
-              const P = this.pool, a = Math.random() * Math.PI * 2, r = 2 + Math.random() * 4;
+            if (lure && lure.inWater && this.cool <= 0 && lure.tasteFor && simRand() < 0.6 * Math.min(1, lure.tasteFor(this.sp))) {
+              const P = this.pool, a = simRand() * Math.PI * 2, r = 2 + simRand() * 4;
               const x = THREE.MathUtils.clamp(lure.pos.x + Math.cos(a) * r, P.x0 + 1, P.x1 - 1), z = THREE.MathUtils.clamp(lure.pos.z + Math.sin(a) * r, P.z0 + 1, P.z1 - 1);
               const floor = P.depthAt(x, z), d = Math.min(this.pickDepth(), floor - 0.3);
               if (d > 0.25 && floor >= this.sp.depth[0] + 0.2) this.wp = new THREE.Vector3(x, P.surface - d, z);
@@ -185,11 +187,11 @@ export class Fish {
         break;
       }
       case 'stalk': {
-        if (!lure || !lure.inWater || lure.claimed || (lure.speed > 3.4 && Math.random() < dt * 2)) { this.state = 'roam'; this.pickWaypoint(); lure && lure.attention--; break; }
+        if (!lure || !lure.inWater || lure.claimed || (lure.speed > 3.4 && simRand() < dt * 2)) { this.state = 'roam'; this.pickWaypoint(); lure && lure.attention--; break; }
         const to = _v.copy(lure.pos);
         this.steer(dt, to, this.base * 1.6, 2.2);
         if (this.pos.distanceTo(lure.pos) < 1.4 + this.length * 0.4) {
-          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]) * INSPECT; this.probes = 0; this.probeT = this.probeTotal = rnd(0.45, 1.0); this.orbit = Math.random() < 0.5 ? 1 : -1;
+          this.state = 'inspect'; this.timer = rnd(this.sp.inspect[0], this.sp.inspect[1]) * INSPECT; this.probes = 0; this.probeT = this.probeTotal = rnd(0.45, 1.0); this.orbit = simRand() < 0.5 ? 1 : -1;
         }
         break;
       }
@@ -202,7 +204,7 @@ export class Fish {
         this.steer(dt, to, this.base * 0.9, 3);
         this.timer -= dt; this.probeT -= dt;
         // a lure worked too hard frightens it; a lure jigged gently keeps it
-        if (lure.speed > 3.4 && Math.random() < dt * (0.4 + this.sp.shy)) { this.spook('reeled'); lure.attention--; ctx.onSpook?.(this); break; }
+        if (lure.speed > 3.4 && simRand() < dt * (0.4 + this.sp.shy)) { this.spook('reeled'); lure.attention--; ctx.onSpook?.(this); break; }
         if (this.probeT <= 0) {
           const n = this.sp.bite.length;
           const kind = this.sp.bite[Math.min(this.probes, n - 1)];
@@ -214,7 +216,7 @@ export class Fish {
             this.probes++;
             this.probeT = this.probeTotal = rnd(0.45, 1.2) * (this.sp.body === 'minnow' ? 0.5 : 1);
             ctx.onProbe?.(this, kind === 'gulp' ? 'tug' : 'nibble');
-            if (Math.random() < this.sp.shy * 0.12 * (lure.twitch > 0 ? 0.3 : 1)) { this.spook('shy'); lure.attention--; }
+            if (simRand() < this.sp.shy * 0.12 * (lure.twitch > 0 ? 0.3 : 1)) { this.spook('shy'); lure.attention--; }
           }
         }
         if (this.timer <= -3) { this.spook('bored'); lure.attention--; }

@@ -35,6 +35,8 @@ import { lureList, attraction, tasteOf, BARE } from './lures.js';
 import { ASPECTS, BY_SPECIES, TIDES } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
 import { sfx } from '../../../audio/sfx.js';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/angler'); // (the simulation's chance: core/rng.js, the same twice)
 
 const COST = 10, SOUND_COST = 5;
 /** The default sounding: how far it reaches (m) and how long it takes to get there (s). */
@@ -295,7 +297,7 @@ export class Angler {
       this.tool.tip(_t);
       // the mind goes out: a little jitter on a full charge
       const to = a.point.clone();
-      if (this.finalPower > 0.92) to.x += (Math.random() - 0.5) * 1.6, to.z += (Math.random() - 0.5) * 1.6;
+      if (this.finalPower > 0.92) to.x += (simRand() - 0.5) * 1.6, to.z += (simRand() - 0.5) * 1.6;
       this.lure.item = this.lureDef();
       this.lure.cast(_t, to, this.aspect);
       this.lure.echo = this.echo && this.echo.t > 0 ? this.echo.id : null;
@@ -628,7 +630,7 @@ export class Angler {
       this.game.baubles?.spawn(f.pos.clone(), n);
       this.settle('catch');
       const fx = this.game.fx;
-      for (let i = 0; i < 26; i++) fx.add.emit({ pos: f.pos.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 3, (Math.random() - 0.5) * 3), life: 1.2, size: 0.12, sizeEnd: 0.01, color: new THREE.Color(f.sp.color), alpha: 0.9, drag: 2, floor: -100 });
+      for (let i = 0; i < 26; i++) fx.add.emit({ pos: f.pos.clone(), vel: new THREE.Vector3((simRand() - 0.5) * 3, simRand() * 3, (simRand() - 0.5) * 3), life: 1.2, size: 0.12, sizeEnd: 0.01, color: new THREE.Color(f.sp.color), alpha: 0.9, drag: 2, floor: -100 });
       g.glyphs.pop('star', _u.copy(f.pos).addScaledVector(UP, 0.6), { color: f.sp.color, size: 0.9 + f.sp.tier * 0.12, burst: true, ring: true, life: 1.5 });
       this.game.pool?.gain?.(0);
       this.weir.remove(f);

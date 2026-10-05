@@ -17,6 +17,8 @@ import * as THREE from 'three';
 import { Tech } from '../moves/techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { clearShot } from '../../core/shotclear.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/vessel/death'); // (the simulation's chance: core/rng.js, the same twice)
 
 const CRACK = 1.15, BURST = 1.2, DARK = 2.7, REFORM = 3.6, END = 4.6; // (the beats, in real seconds)
 const LACH = 0xb49be6;
@@ -50,7 +52,7 @@ export class Death {
     if (t < BURST && D) { const k = Math.min(1, t / CRACK); for (let i = 0; i < D.crack.length; i++) D.crack[i] = Math.max(D.crack[i], k); }
     if (t < BURST) {
       g.time?.slow('death', 0.18);
-      if (Math.floor(t * 7) !== Math.floor((t - raw) * 7)) sfx.vesselCrack?.(Math.min(1, 0.4 + t), ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'][Math.floor(Math.random() * 6)]);
+      if (Math.floor(t * 7) !== Math.floor((t - raw) * 7)) sfx.vesselCrack?.(Math.min(1, 0.4 + t), ['mask', 'torso', 'armL', 'armR', 'legL', 'legR'][Math.floor(simRand() * 6)]);
     } else if (t < REFORM) g.time?.slow('death', 0.45); // (home again, the world runs at its own pace as the dark lifts)
     // the camera: in close, circling as it cracks; drawn up and back as it bursts
     const a = this.yaw + Math.PI + 0.6 + t * 0.35, r = t < BURST ? 2.4 - t * 0.5 : 1.8 + (t - BURST) * 2.2, h = t < BURST ? 1.2 : 1.2 + (t - BURST) * 1.6;

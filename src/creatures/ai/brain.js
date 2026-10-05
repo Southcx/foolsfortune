@@ -24,6 +24,8 @@
 // World and of the MMOs, where a creature far from any player costs next to nothing.
 // ---------------------------------------------------------------------------------------
 import { Reasoner } from './utility.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('creatures/ai/brain'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class Brain {
   constructor(game, c, { senses, memory, drives, actions, think = 0.2, near = 45, far = 130, watch = 26, mods = null } = {}) {
@@ -32,7 +34,7 @@ export class Brain {
     this.reasoner = new Reasoner(actions);
     this.think = think; this.near = near; this.far = far; this.watchR = watch; this.mods = mods;
     this.action = null; this.score = 0; this.cool = new Map();
-    this.now = 0; this.thinkT = Math.random() * think; this.acc = 0; this.wake = false;
+    this.now = 0; this.thinkT = simRand() * think; this.acc = 0; this.wake = false;
     this.bb = {};
     this.lod = 'near';
     this._ctx = { game, c, brain: this, mem: memory, drives, eco: game.ai?.eco, now: 0, P: game.player, focus: null, bb: this.bb };
@@ -72,7 +74,7 @@ export class Brain {
     if (this.lod === 'far') { this.acc = 0; return; }
     this.acc += dt; this.thinkT -= dt;
     if (this.thinkT <= 0 || this.wake) {
-      this.thinkT = (this.lod === 'near' ? this.think : this.think * 2.5) * (0.85 + Math.random() * 0.3); // (a little jitter: minds do not tick together)
+      this.thinkT = (this.lod === 'near' ? this.think : this.think * 2.5) * (0.85 + simRand() * 0.3); // (a little jitter: minds do not tick together)
       this.senses?.update(this.acc, c, this.mem, this.watchList());
       this.acc = 0; this.wake = false;
       this.decide();

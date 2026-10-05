@@ -5,6 +5,8 @@ import { SCALE, SONGS, INSTRUMENTS, DEGREE_COLOR, match } from './songs.js';
 import { Band } from '../../music/band.js';
 import { REL } from '../../creatures/ai/index.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE CRUCIBELLE: the sixth of the Courier's psychic tools. A smoking bell held up like a lantern (tools/crucibelle/model.js), worn at the hip.
@@ -192,7 +194,7 @@ export class Crucibelle extends HeldTool {
   puff(at, color, n) {
     const fx = this.game.fx?.alpha; if (!fx?.emit) return;
     const c = new THREE.Color(color);
-    for (let i = 0; i < n; i++) fx.emit({ pos: at.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 0.8, 0.8 + Math.random() * 1.2, (Math.random() - 0.5) * 0.8), life: 1 + Math.random() * 0.6, size: 0.08, sizeEnd: 0.35, color: c, alpha: 0.5, drag: 1.4, gravity: -0.4 });
+    for (let i = 0; i < n; i++) fx.emit({ pos: at.clone(), vel: new THREE.Vector3((simRand() - 0.5) * 0.8, 0.8 + simRand() * 1.2, (simRand() - 0.5) * 0.8), life: 1 + simRand() * 0.6, size: 0.08, sizeEnd: 0.35, color: c, alpha: 0.5, drag: 1.4, gravity: -0.4 });
   }
   /** A ring of smoke going out level from the bell (a shockwave you can see the shape of). */
   ring(at, color, n, speed = 5) {

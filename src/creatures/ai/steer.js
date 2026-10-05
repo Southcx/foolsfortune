@@ -17,6 +17,8 @@
 // by weight and truncated, as Mat Buckland's "Programming Game AI by Example" lays them out.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('creatures/ai/steer'); // (the simulation's chance: core/rng.js, the same twice)
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 const flat = (v) => { v.y = 0; return v; };
@@ -49,7 +51,7 @@ export function evade(out, pos, from, fromVel, speed, maxLead = 1) {
 }
 /** state: { a } (the wander angle, kept between frames). The target drifts round a circle ahead of where it is heading. */
 export function wander(out, state, heading, speed, dt, { jitter = 2.2, dist = 2, r = 1 } = {}) {
-  state.a = (state.a ?? Math.random() * 6.28) + (Math.random() - 0.5) * jitter * dt * 6;
+  state.a = (state.a ?? simRand() * 6.28) + (simRand() - 0.5) * jitter * dt * 6;
   const hx = Math.sin(heading), hz = Math.cos(heading);
   out.set(hx * dist + Math.sin(state.a) * r, 0, hz * dist + Math.cos(state.a) * r);
   const d = out.length();

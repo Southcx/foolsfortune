@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { inSiege } from './siege.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/basement/raids'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // RAIDS: waves of crimson clapperjars that make for the jar while you are the god hand. They are
@@ -48,7 +50,7 @@ export class Raids {
     this.wave++;
     let made = 0;
     for (let i = 0; i < n * 3 && made < n; i++) {
-      const a = Math.random() * Math.PI * 2, r = 8 + Math.random() * 6;
+      const a = simRand() * Math.PI * 2, r = 8 + simRand() * 6;
       const x = V.pos.x + Math.sin(a) * r, z = V.pos.z + Math.cos(a) * r;
       const down = g.physics.raycast({ x, y: V.pos.y + 2.5, z }, DOWN, 5, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
       if (!down || Math.abs(down.point.y - V.pos.y) > 0.7 || down.normal.y < 0.85) continue;

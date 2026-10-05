@@ -12,6 +12,8 @@
 //   game.spirits.summon(pos, { life, power, from }) -> creature | null      game.spirits.list (the living)      game.spirits.max
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../core/rng.js';
+const simRand = stream('creatures/spirits'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const MAX_SPIRITS = 4;
 
@@ -29,7 +31,7 @@ export class Spirits {
     if (y != null) home.y = y;
     const c = J.spawn(home, { spirit: { life, max: life, power, from } });
     c.deform.kick(6, null, 0.3);
-    if (g.fx?.alpha?.emit) for (let i = 0; i < 22; i++) g.fx.alpha.emit({ pos: home.clone().setY(home.y + 0.3), vel: new THREE.Vector3((Math.random() - 0.5) * 2, 1 + Math.random() * 2.5, (Math.random() - 0.5) * 2), life: 1 + Math.random(), size: 0.2, sizeEnd: 0.8, color: new THREE.Color(0x8f7fc0), alpha: 0.45, drag: 1.5, gravity: -0.5 });
+    if (g.fx?.alpha?.emit) for (let i = 0; i < 22; i++) g.fx.alpha.emit({ pos: home.clone().setY(home.y + 0.3), vel: new THREE.Vector3((simRand() - 0.5) * 2, 1 + simRand() * 2.5, (simRand() - 0.5) * 2), life: 1 + simRand(), size: 0.2, sizeEnd: 0.8, color: new THREE.Color(0x8f7fc0), alpha: 0.45, drag: 1.5, gravity: -0.5 });
     g.events?.emit('spirit.summon', { from, by, power: +power.toFixed(2), life: Math.round(life) });
     return c;
   }

@@ -4,6 +4,8 @@ import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, DEG, PALETTE } from '../../core/config.js';
 import { GUN_POINTS } from '../../courier/character.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -346,7 +348,7 @@ export class Weapon {
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const rr = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const uu = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-    const a = Math.sqrt(Math.random()) * spread, phi = Math.random() * Math.PI * 2;
+    const a = Math.sqrt(simRand()) * spread, phi = simRand() * Math.PI * 2;
     const dir = fwd.clone().multiplyScalar(Math.cos(a)).addScaledVector(rr, Math.sin(a) * Math.cos(phi)).addScaledVector(uu, Math.sin(a) * Math.sin(phi)).normalize();
 
     const range = T.weapon.range;
@@ -368,7 +370,7 @@ export class Weapon {
 
     // recoil
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase);
-    player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);
+    player.addRecoil(T.recoil.kickPitch * m, (simRand() * 2 - 1) * T.recoil.kickYaw * m);
     this.kickV += 1 * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = Math.min(T.weapon.bloomMax, this.bloom + T.weapon.bloomPerShot);
     this.vent(character);
@@ -425,7 +427,7 @@ export class Weapon {
     game.ai?.stimuli.emit('noise', player.pos, { radius: 32, strength: 1.3, by: 'courier', source: player });
 
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * C.kick * p;
-    player.addRecoil(T.recoil.kickPitch * m, (Math.random() * 2 - 1) * T.recoil.kickYaw * m);
+    player.addRecoil(T.recoil.kickPitch * m, (simRand() * 2 - 1) * T.recoil.kickYaw * m);
     player.shake = Math.max(player.shake, C.shake * p);
     player.fovPunch = C.fovPunch * p;
     this.kickV += 1.8 * T.recoil.gunRecoverSpeed * Math.E;
@@ -489,7 +491,7 @@ export class Weapon {
     const right = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
     const back = new THREE.Vector3(-1, 0, 0).applyQuaternion(q);
-    const v = right.multiplyScalar(2.2 + Math.random()).addScaledVector(up, 2 + Math.random()).addScaledVector(back, 0.4).add(player.vel);
+    const v = right.multiplyScalar(2.2 + simRand()).addScaledVector(up, 2 + simRand()).addScaledVector(back, 0.4).add(player.vel);
     this.spawnDebris(p, q, v, this.casingGeo, this.casingMat, RAPIER.ColliderDesc.cylinder(0.016, 0.009), 'casing');
   }
 
@@ -508,8 +510,8 @@ export class Weapon {
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(character.gun.quaternion);
     const c = new THREE.Color(PALETTE.cream);
     for (let i = 0; i < 4 * n; i++) {
-      fx.alpha.emit({ pos: p, vel: up.clone().multiplyScalar(0.6 + Math.random()).add(new THREE.Vector3().randomDirection().multiplyScalar(0.3)),
-        life: 0.5 + Math.random() * 0.4, size: 0.03, sizeEnd: 0.2, color: c, alpha: 0.3, drag: 3, gravity: -0.5 });
+      fx.alpha.emit({ pos: p, vel: up.clone().multiplyScalar(0.6 + simRand()).add(new THREE.Vector3().randomDirection().multiplyScalar(0.3)),
+        life: 0.5 + simRand() * 0.4, size: 0.03, sizeEnd: 0.2, color: c, alpha: 0.3, drag: 3, gravity: -0.5 });
     }
   }
 

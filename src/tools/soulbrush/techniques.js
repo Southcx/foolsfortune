@@ -24,6 +24,8 @@ import { registered, hasTag } from '../../core/tags.js';
 import { inside } from './gesture.js';
 import { SIGIL_OF } from './sigils.js';
 import { inscribe } from './inscribe.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/soulbrush/techniques'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const TECHNIQUES = {
   still: { id: 'still', name: 'STILL', cost: 4 },
@@ -256,18 +258,18 @@ export class BrushTechniques {
 
   /** A strike from the sky to a point: a jagged line, bright for a moment, and one flash (not a strobe). */
   lightning(at) {
-    const g = this.game, pts = [], top = at.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 28, (Math.random() - 0.5) * 6));
+    const g = this.game, pts = [], top = at.clone().add(new THREE.Vector3((simRand() - 0.5) * 6, 28, (simRand() - 0.5) * 6));
     const N = 12;
     for (let i = 0; i <= N; i++) {
       const u = i / N, p = top.clone().lerp(at, u);
-      if (i > 0 && i < N) p.add(new THREE.Vector3((Math.random() - 0.5) * 1.6, 0, (Math.random() - 0.5) * 1.6).multiplyScalar(1 - u * 0.6));
+      if (i > 0 && i < N) p.add(new THREE.Vector3((simRand() - 0.5) * 1.6, 0, (simRand() - 0.5) * 1.6).multiplyScalar(1 - u * 0.6));
       pts.push(p);
     }
     const mk = (color, opacity) => { const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); l.frustumCulled = false; l.renderOrder = 8; g.scene.add(l); return l; };
     this.live.push({ kind: 'bolt', parts: [mk(0xffffff, 1), mk(0xb892ff, 0.6)], t: 0 });
     if (g.fx.boomLight) { g.fx.boomLight.position.copy(at).y += 1.5; g.fx.boomLight.intensity = 110; g.fx.boomT = 0.22; }
     const c = new THREE.Color(0xd8c6ff);
-    for (let i = 0; i < 30; i++) g.fx.add.emit({ pos: at, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 5).setY(Math.random() * 5), life: 0.3 + Math.random() * 0.3, size: 0.05, sizeEnd: 0.01, color: c, drag: 2, twinkle: 30 });
+    for (let i = 0; i < 30; i++) g.fx.add.emit({ pos: at, vel: new THREE.Vector3().randomDirection().multiplyScalar(2 + simRand() * 5).setY(simRand() * 5), life: 0.3 + simRand() * 0.3, size: 0.05, sizeEnd: 0.01, color: c, drag: 2, twinkle: 30 });
   }
 
   /** What a mark (^ or V) was drawn over: everything in its box, or nothing (then it is the Courier's). */
@@ -361,14 +363,14 @@ export class BrushTechniques {
   // ---------------------------------------------------------------- shared bits
   puff(at) {
     const g = this.game, c = new THREE.Color(0xf6e6c8);
-    for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; g.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.1), vel: new THREE.Vector3(Math.cos(a) * 3, 2.5 + Math.random() * 2, Math.sin(a) * 3), life: 0.5, size: 0.12, sizeEnd: 0.5, color: c, alpha: 0.35, drag: 4 }); }
+    for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; g.fx.alpha.emit({ pos: at.clone().setY(at.y + 0.1), vel: new THREE.Vector3(Math.cos(a) * 3, 2.5 + simRand() * 2, Math.sin(a) * 3), life: 0.5, size: 0.12, sizeEnd: 0.5, color: c, alpha: 0.35, drag: 4 }); }
   }
   /** Slip bursts out round a point on the ground (it shoves; it does not break). */
   splash(at, k = 1) {
     const g = this.game, P = this.tool.P;
     const down = g.physics.raycast(at.clone().setY(at.y + 0.4), new THREE.Vector3(0, -1, 0), 2, P.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
     if (down) g.shells?.addPool(down.point, down.normal, true);
-    for (let i = 0; i < 16 * k; i++) { const a = Math.random() * Math.PI * 2; g.shells?.addDroplet(at.clone().setY(at.y + 0.2), new THREE.Vector3(Math.cos(a) * (3 + Math.random() * 3), 3 + Math.random() * 3, Math.sin(a) * (3 + Math.random() * 3)), 0.035, true); }
+    for (let i = 0; i < 16 * k; i++) { const a = simRand() * Math.PI * 2; g.shells?.addDroplet(at.clone().setY(at.y + 0.2), new THREE.Vector3(Math.cos(a) * (3 + simRand() * 3), 3 + simRand() * 3, Math.sin(a) * (3 + simRand() * 3)), 0.035, true); }
     for (const c of g.clappers?.list || []) if (c.alive && c.pos.distanceTo(at) < 2.6 * k) g.clappers.knock(c, c.pos.clone().sub(at).setY(0).normalize().multiplyScalar(6).setY(4));
     P.shake = Math.max(P.shake, 0.25 * k);
   }

@@ -24,7 +24,7 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (m) => { if (m.type() === 'error' && !/404/.test(m.text())) errors.push(m.text().slice(0, 300)); });
 await page.addInitScript(() => { window.__noPrime = true; Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
-await page.goto(url, { waitUntil: 'commit' });
+await page.goto(`${url}${url.includes('?') ? '&' : '?'}seed=${seed}`, { waitUntil: 'commit' }); // (the game's own chance seeded too: a run found once is found again)
 for (let i = 0; i < 90; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
 await page.evaluate(`document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; __game.manual = true;`);
 await page.addScriptTag({ content: fs.readFileSync(new URL('./stress.page.js', import.meta.url), 'utf8') });

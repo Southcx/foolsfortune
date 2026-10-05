@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/roll'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
 // and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
@@ -104,7 +106,7 @@ export class Roll extends Tech {
     if (!fx) return;
     const col = new THREE.Color(0xf3c9a8);
     for (let i = 0; i < 10; i++) {
-      const a = Math.random() * Math.PI * 2;
+      const a = simRand() * Math.PI * 2;
       fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.25, 0.1, Math.sin(a) * 0.25)), vel: new THREE.Vector3(Math.cos(a) * 1.4 - this.dir.x * 2, 0.5, Math.sin(a) * 1.4 - this.dir.z * 2), life: 0.4, size: 0.08, sizeEnd: 0.32, color: col, alpha: 0.3, drag: 5 });
     }
   }

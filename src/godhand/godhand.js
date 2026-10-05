@@ -8,6 +8,8 @@ import { GodArts, ART_BY_ID, ARTS } from './arts.js';
 import { ZoiVeil } from '../feedback/cartography.js';
 import { Raids } from '../world/basement/raids.js';
 import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE GOD HAND (~). The Courier turns into a Pneuka jar, an immobile jar, and you become
@@ -369,7 +371,7 @@ export class GodMode {
     const p = T.god.pitchDeg * DEG, cp = Math.cos(p), sp = Math.sin(p);
     const pos = _v.set(Math.sin(C.yaw) * cp, sp, Math.cos(C.yaw) * cp).multiplyScalar(C.dist).add(C.focus);
     C.shake = Math.max(0, C.shake - dt * 3);
-    if (C.shake > 0) pos.add(new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5)).multiplyScalar(C.shake * C.shake * 0.35));
+    if (C.shake > 0) pos.add(new THREE.Vector3((simRand() - 0.5), (simRand() - 0.5), (simRand() - 0.5)).multiplyScalar(C.shake * C.shake * 0.35));
     _m.lookAt(pos, C.focus, UP);
     const quat = _q.setFromRotationMatrix(_m);
     const fov = T.god.fov;
@@ -540,7 +542,7 @@ export class GodMode {
       const b = t.body;
       b.setGravityScale(1, true);
       b.setLinvel({ x: v.x, y: v.y, z: v.z }, true);
-      b.setAngvel({ x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 4, z: (Math.random() - 0.5) * 4 }, true);
+      b.setAngvel({ x: (simRand() - 0.5) * 4, y: (simRand() - 0.5) * 4, z: (simRand() - 0.5) * 4 }, true);
       b.wakeUp();
       if (t.ent) t.ent.grabbed = false;
       if (t.ball) { t.ball.grabbed = false; t.ball.parried = true; t.ball.reflected = true; } // (a ball you throw back rings the targets it hits)
@@ -794,8 +796,8 @@ export class GodMode {
     const n = amount > 12 ? 2 : 1;
     V.group.updateMatrixWorld(true);
     for (let k = 0; k < n; k++) {
-      let ang = Math.atan2(from.x, from.z) + (Math.random() - 0.5) * 1.6; // (in the world)
-      let y = 0.25 + Math.random() * 0.75, th = Math.PI * (0.35 + Math.random() * 0.3) * (Math.random() < 0.5 ? 1 : -1);
+      let ang = Math.atan2(from.x, from.z) + (simRand() - 0.5) * 1.6; // (in the world)
+      let y = 0.25 + simRand() * 0.75, th = Math.PI * (0.35 + simRand() * 0.3) * (simRand() < 0.5 ? 1 : -1);
       const pts = [];
       for (let i = 0; i < 18; i++) {
         const dir = new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang));
@@ -808,7 +810,7 @@ export class GodMode {
         V.group.worldToLocal(nrm.add(V.group.position));
         nrm.normalize();
         pts.push({ p: p.addScaledVector(nrm, 0.003), n: nrm });
-        th += (Math.random() - 0.5) * 1.2;
+        th += (simRand() - 0.5) * 1.2;
         y += Math.cos(th) * 0.05;
         ang += Math.sin(th) * 0.05 / 0.25;
         if (y < 0.03 || y > 1.15) break;

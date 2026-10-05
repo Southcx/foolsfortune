@@ -23,6 +23,8 @@ import { hasTag } from '../../core/tags.js';
 import { arcAt } from '../viewmodel.js';
 import { BRUSH } from './model.js';
 import { measureSwing, sweep as sweepArc, magnet } from '../melee.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/soulbrush/club'); // (the simulation's chance: core/rng.js, the same twice)
 
 // clip time (the clip's own seconds): the hit window, the chain window; `rate` slows the clip for the brush's weight
 // (when the head can hurt is measured from each clip: melee.js; `hit` here is only when the flick of slip leaves the bristles)
@@ -182,9 +184,9 @@ export class Club {
     if (down) g.shells?.addPool(down.point, down.normal, true);
     const n = big ? 22 : 10;
     for (let i = 0; i < n; i++) {
-      const a = (i / n) * Math.PI * 2 + Math.random() * 0.3;
-      const v = _c.set(Math.cos(a), 0, Math.sin(a)).multiplyScalar(3 + Math.random() * 4 * power).setY(2.5 + Math.random() * 3);
-      g.shells?.addDroplet(at.clone().setY(at.y + 0.2), v.clone(), 0.03 + Math.random() * 0.04, true);
+      const a = (i / n) * Math.PI * 2 + simRand() * 0.3;
+      const v = _c.set(Math.cos(a), 0, Math.sin(a)).multiplyScalar(3 + simRand() * 4 * power).setY(2.5 + simRand() * 3);
+      g.shells?.addDroplet(at.clone().setY(at.y + 0.2), v.clone(), 0.03 + simRand() * 0.04, true);
     }
     P.shake = Math.max(P.shake, (big ? 0.55 : 0.3) * power);
     P.fovPunch = Math.max(P.fovPunch || 0, big ? 8 : 4);
@@ -201,9 +203,9 @@ export class Club {
     const v = this.tipVel.lengthSq() > 4 ? _a.copy(this.tipVel).normalize() : this.P.lookDir(_a);
     const speed = 7 + 3 * k;
     for (let i = 0; i < 6 + 4 * k; i++) {
-      const d = _b.copy(v).add(_c.randomDirection().multiplyScalar(0.28)).normalize().multiplyScalar(speed * (0.7 + Math.random() * 0.5));
+      const d = _b.copy(v).add(_c.randomDirection().multiplyScalar(0.28)).normalize().multiplyScalar(speed * (0.7 + simRand() * 0.5));
       d.y += 2;
-      g.shells.addDroplet(_p.clone(), d.clone(), 0.03 + Math.random() * 0.035, true);
+      g.shells.addDroplet(_p.clone(), d.clone(), 0.03 + simRand() * 0.035, true);
     }
   }
 

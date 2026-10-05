@@ -118,6 +118,7 @@ import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
 import { BUILD } from './core/progress.js';
 import { Save } from './core/save.js';
+import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './tools/veritome/flash.js';
 import { Reprogram } from './tools/veritome/reprogram.js';
@@ -182,6 +183,8 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 
 async function main() {
   mark('main');
+  const seedArg = new URLSearchParams(location.search).get('seed'); // (?seed=N: a page that must play the same twice, the stress test's)
+  reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
   const freshBuild = save.boot(BUILD); // (a new build starts its progress afresh: the player's and the world's)
   loadTuning();
@@ -233,6 +236,7 @@ async function main() {
   const events = new Events();
   const game = {
     scene, physics, fx, hud, camera, renderer, stats, events, save,
+    reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {

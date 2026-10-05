@@ -23,6 +23,8 @@
 import { Lattice } from './lattice.js';
 import { FUNCTIONS, knownList } from './functions.js';
 import { REL } from '../../../creatures/ai/index.js';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/veritome/mind/macros'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const SLOTS = 5;
 const KEY = 'foolsfortune.veritome.macros';
@@ -64,7 +66,7 @@ export function runMacro(g, c, m, { by = 'courier' } = {}) {
   const q = m.q, refused = [];
   const deep = m.effects.reduce((a, e) => Math.max(a, e.pow), 1);
   const chance = Math.min(0.98, 0.45 + 0.55 * q + (deep - 1) * 0.15);
-  if (Math.random() > chance) return { ok: false, refused, q, chance };
+  if (simRand() > chance) return { ok: false, refused, q, chance };
   const brain = c.brain;
   for (const e of m.effects) {
     const f = FUNCTIONS[e.fn];

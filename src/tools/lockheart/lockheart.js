@@ -6,6 +6,8 @@ import { OUTCOME_FX } from './outcomes.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE LOCKHEART: the seventh of the Courier's psychic tools. A little coffin on a chain, worn at the neck (the one place there is: so
@@ -124,12 +126,12 @@ export class Lockheart extends HeldTool {
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
     // each key turned once more; brass is spent, any other breaks by its uses (table.js keyBreaks: the owner's ruling, 2026-10-04)
     const used = [...keys], broke = [];
-    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i))) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); if (used[i] !== 'key.brass') broke.unshift(used[i]); }
     const { table, mods } = oddsOf(this.heart, used);
     const power = Math.min(2, this.charge / this.fill);
     this.charge = 0; this.save();
     const R = rates(table), draws = [];
-    for (let s = 0; s < mods.spins; s++) draws.push(spin(table));
+    for (let s = 0; s < mods.spins; s++) draws.push(spin(table, simRand()));
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
@@ -213,9 +215,9 @@ export class Lockheart extends HeldTool {
     // (R40: Lachryma-coloured, through the O of the joined hands: aimed at the ring first, then on into the coffin behind it)
     const fx = g.fx?.add, ring = P.pos.clone().addScaledVector(f, 0.62).setY(P.pos.y + 1.27);
     for (let n = 0; fx?.emit && n < 3; n++) {
-      if (Math.random() > dt * 30 * this.hooverW) continue;
-      const a = (Math.random() - 0.5) * HOOVER.cone * 2, r = 2 + Math.random() * (HOOVER.range - 2);
-      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + Math.random() * 1.6);
+      if (simRand() > dt * 30 * this.hooverW) continue;
+      const a = (simRand() - 0.5) * HOOVER.cone * 2, r = 2 + simRand() * (HOOVER.range - 2);
+      const p = P.pos.clone().add(f.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), a).multiplyScalar(r)).setY(P.pos.y + 0.3 + simRand() * 1.6);
       const life = 0.55;
       fx.emit({ pos: p, vel: ring.clone().sub(p).multiplyScalar(1 / life), life, size: 0.06, sizeEnd: 0.015, color: MOTE[n % 3], alpha: 0.85, drag: 0, gravity: 0 });
     }

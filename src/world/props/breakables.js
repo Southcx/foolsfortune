@@ -12,6 +12,8 @@ import { PROFILES, prepProfile, buildPotGeometry, hullPoints, fracturePieces, ke
 import { crackPaths, randomPaths, setCracks } from './potcracks.js';
 import { hasTag, unregister } from '../../core/tags.js';
 import { planeToLocal, splitConvexPoints, splitTriangles, capWall, toGeometry, uniquePoints, safeHullPoints } from '../../tools/slicing.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/breakables'); // (the simulation's chance: core/rng.js, the same twice)
 
 export { PROFILES };
 
@@ -114,7 +116,7 @@ export class Breakables {
     const rot = new THREE.Quaternion();
     if (def.facing) rot.setFromUnitVectors(UP, new THREE.Vector3(...def.facing).normalize());
     else if (def.yaw !== undefined) rot.setFromAxisAngle(UP, def.yaw);
-    else if (!def.hang) rot.setFromAxisAngle(UP, Math.random() * Math.PI * 2);
+    else if (!def.hang) rot.setFromAxisAngle(UP, simRand() * Math.PI * 2);
 
     const fixed = !!def.target;
     const bd = (fixed ? RAPIER.RigidBodyDesc.fixed() : RAPIER.RigidBodyDesc.dynamic())
@@ -273,7 +275,7 @@ export class Breakables {
     const frac = ent.hp / ent.maxHp;
     let stage = 0;
     while (stage < CRACK_AT.length && frac < CRACK_AT[stage]) stage++;
-    const local = point ? ent.mesh.worldToLocal(point.clone()) : new THREE.Vector3(0, ent.P.height * Math.random(), 0);
+    const local = point ? ent.mesh.worldToLocal(point.clone()) : new THREE.Vector3(0, ent.P.height * simRand(), 0);
     const dark = ent.cracks?.dark || [];
     let grew = false;
     if (stage > ent.crackStage) {
@@ -490,7 +492,7 @@ export class Breakables {
       const h = this.convexHalf(ps, { n: new THREE.Vector3(0, 1, 0), d: 1e9 }, base, M);
       if (!h) continue;
       const wc = h.center.clone().applyQuaternion(quat).add(pos);
-      const v = dir.clone().multiplyScalar(2 + Math.random() * 2).add(wc.clone().sub(point).normalize().multiplyScalar(1.5));
+      const v = dir.clone().multiplyScalar(2 + simRand() * 2).add(wc.clone().sub(point).normalize().multiplyScalar(1.5));
       const piece = this.spawnPiece(h, wc, quat, v, new THREE.Vector3().randomDirection().multiplyScalar(8));
       if (piece) piece.life = T.shatter.shardLife * 0.6;
     }
@@ -556,7 +558,7 @@ export class Breakables {
     const down = this.physics.raycast({ x: basePos.x, y: basePos.y + 0.2, z: basePos.z }, { x: 0, y: -1, z: 0 }, 12, undefined, GROUPS.controllerQuery,
       (c) => !c.isSensor() && !c.parent()?.isDynamic());
     if (!down || down.normal.y < 0.8) return;
-    this.wrecks.push({ def, pos: down.point.clone(), t: performance.now() * 0.001, gold: ent.gold || 0, claimed: null, size: ent.size, rMax: ent.P.rMax });
+    this.wrecks.push({ def, pos: down.point.clone(), t: this.game?.events?.time ?? 0, gold: ent.gold || 0, claimed: null, size: ent.size, rMax: ent.P.rMax });
     if (this.wrecks.length > 24) this.wrecks.shift();
   }
 
@@ -564,7 +566,7 @@ export class Breakables {
   rebuild(w) {
     const i = this.wrecks.indexOf(w);
     if (i >= 0) this.wrecks.splice(i, 1);
-    const ent = this.spawn({ ...w.def, pos: [w.pos.x, w.pos.y + 0.01, w.pos.z], popIn: true, gold: Math.min(3, (w.gold || 0) + 1), yaw: Math.random() * Math.PI * 2, facing: undefined });
+    const ent = this.spawn({ ...w.def, pos: [w.pos.x, w.pos.y + 0.01, w.pos.z], popIn: true, gold: Math.min(3, (w.gold || 0) + 1), yaw: simRand() * Math.PI * 2, facing: undefined });
     this.game.onRepaired?.(ent);
     return ent;
   }
@@ -607,7 +609,7 @@ export class Breakables {
 
     // porcelain: only a few slivers survive, the rest puffs into glittering dust
     if (pieces.length > M.keep) {
-      pieces.sort(() => Math.random() - 0.5);
+      pieces.sort(() => simRand() - 0.5);
       const dust = pieces.splice(M.keep);
       const pts = dust.map((pc) => pc.points[0].clone().applyQuaternion(bodyRot).add(bodyPos));
       this.fx.glitter(pts, center, dirN, color);
@@ -652,9 +654,9 @@ export class Breakables {
     radial.divideScalar(radial.length() || 1);
     const nearHit = Math.max(0, 1 - worldC.distanceTo(hitPoint) / 0.6);
     const heavy = M.sound === 'stone' ? 0.75 : 1; // big stoneware slabs fly less
-    vel.addScaledVector(radial, T.shatter.radialBurst * power * heavy * (0.6 + Math.random() * 0.8));
-    vel.addScaledVector(dirN, T.shatter.bulletPush * power * heavy * (0.25 + nearHit) * (0.5 + Math.random()));
-    vel.y += T.shatter.upBias * power * Math.random();
+    vel.addScaledVector(radial, T.shatter.radialBurst * power * heavy * (0.6 + simRand() * 0.8));
+    vel.addScaledVector(dirN, T.shatter.bulletPush * power * heavy * (0.25 + nearHit) * (0.5 + simRand()));
+    vel.y += T.shatter.upBias * power * simRand();
 
     // a small chip has no body: it flies, bounces and settles on the floor found under it, drawn in the shard batch (the debris
     // particle of every engine since Red Faction: only the pieces big enough to matter are simulated)
@@ -666,8 +668,8 @@ export class Breakables {
       geo.dispose();
       if (slot == null) return;
       const down = this.physics.raycast(worldC, _down, 6, undefined, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic());
-      const spin = new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * Math.random());
-      this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * 0.6 * (0.8 + Math.random() * 0.4), rest: false });
+      const spin = new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * simRand());
+      this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * 0.6 * (0.8 + simRand() * 0.4), rest: false });
       while (this.flyers.length > T.shatter.maxFlyers) { const f = this.flyers.shift(); f.sb.give(f.slot); }
       return;
     }
@@ -680,7 +682,7 @@ export class Breakables {
         .setTranslation(worldC.x, worldC.y, worldC.z)
         .setRotation(bodyRot)
         .setLinvel(vel.x, vel.y, vel.z)
-        .setAngvel(new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * Math.random()))
+        .setAngvel(new THREE.Vector3().randomDirection().multiplyScalar(T.shatter.spin * power * heavy * simRand()))
         .setCcdEnabled(pc.small)
         .setLinearDamping(0.1)
         .setAngularDamping(0.5),
@@ -703,7 +705,7 @@ export class Breakables {
       mesh.quaternion.copy(bodyRot);
       this.scene.add(mesh);
     } else geo.dispose(); // (its data is in the batch now)
-    const ent = { type: 'shard', body, mesh, slot, sb: slot == null ? null : sb, age: 0, life: T.shatter.shardLife * (0.8 + Math.random() * 0.4), sound: M.sound, M, baseColor: color };
+    const ent = { type: 'shard', body, mesh, slot, sb: slot == null ? null : sb, age: 0, life: T.shatter.shardLife * (0.8 + simRand() * 0.4), sound: M.sound, M, baseColor: color };
     ent.sync = this.physics.addSynced(body, mesh);
     this.physics.register(col, ent);
     this.shards.push(ent);
@@ -733,7 +735,7 @@ export class Breakables {
       if (d < R * breakFrac) {
         const dir = _v.clone().sub(center).normalize();
         const hp = _v.clone();
-        this.fx.after(T.explosion.chainDelay * (d / R) * 3 + Math.random() * 0.03, () => this.shatter(ent, hp, dir, 1.4, cause, who));
+        this.fx.after(T.explosion.chainDelay * (d / R) * 3 + simRand() * 0.03, () => this.shatter(ent, hp, dir, 1.4, cause, who));
       } else if (d < R) {
         this.push(ent.body, center, R, velocity);
         this.instigate(ent, who);

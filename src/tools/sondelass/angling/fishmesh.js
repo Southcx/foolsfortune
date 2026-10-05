@@ -7,6 +7,8 @@
 //   m.glow(0..1)                              the halo and the core (aware, sounded, hooked)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { stream } from '../../../core/rng.js';
+const simRand = stream('tools/sondelass/angling/fishmesh'); // (the simulation's chance: core/rng.js, the same twice)
 
 const SEG = new THREE.SphereGeometry(0.5, 8, 6);
 let HALO = null;
@@ -132,7 +134,7 @@ export function buildFish(sp, cm) {
   const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: HALO, color: col, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, depthWrite: false }));
   halo.scale.setScalar(Math.max(0.5, L * 1.6));
   group.add(halo);
-  let phase = Math.random() * 6.28;
+  let phase = simRand() * 6.28;
   const api = {
     group, length: L, halo, lantern, head,
     swim(dt, speed = 0.5, turn = 0) {

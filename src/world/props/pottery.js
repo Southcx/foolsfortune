@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/pottery'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Pottery: lathe profiles + shape modifiers + surface patterns + materials.
@@ -384,12 +386,12 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
   const du = P.len / Rn;
   const dA = (Math.PI * 2) / S;
   const outer = [], inner = [];
-  const ringOffset = Math.random() * dA;
+  const ringOffset = simRand() * dA;
   for (let i = 0; i < R; i++) {
     for (let j = 0; j < S; j++) {
       const edge = i === 0 || i === R - 1;
-      const u = us[i] + (edge ? 0 : (Math.random() - 0.5) * 0.6 * du);
-      const ang = ringOffset + j * dA + (i === 0 ? 0 : (Math.random() - 0.5) * 0.5 * dA);
+      const u = us[i] + (edge ? 0 : (simRand() - 0.5) * 0.6 * du);
+      const ang = ringOffset + j * dA + (i === 0 ? 0 : (simRand() - 0.5) * 0.5 * dA);
       outer.push(potPoint(P, u, ang, false));
       inner.push(potPoint(P, u, ang, true));
     }
@@ -399,7 +401,7 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
   for (let i = 0; i < R - 1; i++) {
     for (let j = 0; j < S; j++) {
       const a = V(i, j), b = V(i, j + 1), c = V(i + 1, j + 1), d = V(i + 1, j);
-      if (Math.random() < 0.5) tris.push({ v: [a, b, c], col: j }, { v: [a, c, d], col: j });
+      if (simRand() < 0.5) tris.push({ v: [a, b, c], col: j }, { v: [a, c, d], col: j });
       else tris.push({ v: [a, b, d], col: j }, { v: [b, c, d], col: j });
     }
   }
@@ -422,7 +424,7 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
 
   const maxChunk = M.chunk + extraChunk;
   const assigned = new Int32Array(tris.length).fill(-1);
-  const order = [...tris.keys()].sort(() => Math.random() - 0.5);
+  const order = [...tris.keys()].sort(() => simRand() - 0.5);
   const groups = [];
   const nearR = Math.min(P.rMax * 0.9, 0.35);
   for (const seed of order) {
@@ -431,7 +433,7 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
     const cen = outer[t0.v[0]].clone().add(outer[t0.v[1]]).add(outer[t0.v[2]]).divideScalar(3);
     const near = cen.distanceTo(hitLocal) < nearR;
     const lo = near ? 1 : M.minChunk;
-    const target = lo + Math.floor(Math.random() * (maxChunk - lo + 1));
+    const target = lo + Math.floor(simRand() * (maxChunk - lo + 1));
     const g = [seed];
     assigned[seed] = groups.length;
     for (let k = 0; k < g.length && g.length < target; k++) {
@@ -463,7 +465,7 @@ export function fracturePieces(P, hitLocal, extraChunk = 0) {
     pushPiece(vs, [], g.length === 1);
   }
   // base: 1-3 wedges (big stoneware bases crack in more pieces)
-  const wedges = S >= 9 && Math.random() < 0.7 ? 2 + (Math.random() < (P.mat === 'stoneware' ? 0.7 : 0.3) ? 1 : 0) : 1;
+  const wedges = S >= 9 && simRand() < 0.7 ? 2 + (simRand() < (P.mat === 'stoneware' ? 0.7 : 0.3) ? 1 : 0) : 1;
   const per = Math.ceil(S / wedges);
   for (let w = 0; w < wedges; w++) {
     const end = wedges === 1 ? S : Math.min(S, (w + 1) * per);

@@ -18,6 +18,8 @@
 // shadow on every dab, so a long drawing costs no more to show than a short one.
 // ---------------------------------------------------------------------------------------
 import { PICTOGRAMS } from './gesture.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/soulbrush/canvas'); // (the simulation's chance: core/rng.js, the same twice)
 
 const CSS = `
 #brushcanvas { position: fixed; inset: 0; pointer-events: none; z-index: 40; opacity: 0; transition: opacity .16s ease-out; }
@@ -36,7 +38,7 @@ const INK = '#0e0a0c', GLOW = '#6e3caa';
 function grainTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d'), img = g.createImageData(128, 128);
-  for (let i = 0; i < img.data.length; i += 4) { const v = 150 + Math.random() * 105; img.data[i] = v; img.data[i + 1] = v * 0.95; img.data[i + 2] = v * 0.86; img.data[i + 3] = 255; }
+  for (let i = 0; i < img.data.length; i += 4) { const v = 150 + simRand() * 105; img.data[i] = v; img.data[i + 1] = v * 0.95; img.data[i + 2] = v * 0.86; img.data[i + 3] = 255; }
   g.putImageData(img, 0, 0);
   return c.toDataURL();
 }
@@ -104,7 +106,7 @@ export class BrushCanvas {
   // ---------------------------------------------------------------- drawing
   begin(x, y) {
     if (!this.wet) { this.wet = { strokes: [], state: 'wet', t: 0, layer: this.layer() }; this.groups.push(this.wet); this.glow.clearRect(0, 0, this.glowCv.width, this.glowCv.height); }
-    this.stroke = [{ x, y, w: 9, j: Math.random(), t: performance.now() }];
+    this.stroke = [{ x, y, w: 9, j: simRand(), t: performance.now() }];
     this.stroke.done = 1;
     this.wet.strokes.push(this.stroke);
   }
@@ -115,7 +117,7 @@ export class BrushCanvas {
     if (d < 2) return 0;
     const now = performance.now(), v = d / Math.max(1, now - a.t); // (px per ms)
     const w = Math.max(7, Math.min(17, 16 - v * 4));
-    s.push({ x, y, w: a.w + (w - a.w) * 0.35, j: Math.random(), t: now });
+    s.push({ x, y, w: a.w + (w - a.w) * 0.35, j: simRand(), t: now });
     // paint the new piece now, once (its end is still open: no taper yet)
     const L = this.wet.layer;
     brushPath(L.g, s, 1, 1, s.done, true);

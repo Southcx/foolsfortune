@@ -3,6 +3,8 @@ import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T, PALETTE } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/slam'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Ground slam (C in the air, looking down, high enough): drive straight down, and the landing
 // throws out a shockwave - pots break close in, get shoved further out, clapperjars
@@ -109,7 +111,7 @@ export class Slam extends Tech {
       const col = new THREE.Color(PALETTE.pale);
       for (let i = 0; i < 36; i++) {
         const a = (i / 36) * Math.PI * 2;
-        fx.alpha.emit({ pos: P.pos.clone().add(new THREE.Vector3(Math.cos(a) * 0.4, 0.1, Math.sin(a) * 0.4)), vel: new THREE.Vector3(Math.cos(a) * 7 * power, 0.8 + Math.random(), Math.sin(a) * 7 * power), life: 0.55, size: 0.15, sizeEnd: 0.55, color: col, alpha: 0.35, drag: 5 });
+        fx.alpha.emit({ pos: P.pos.clone().add(new THREE.Vector3(Math.cos(a) * 0.4, 0.1, Math.sin(a) * 0.4)), vel: new THREE.Vector3(Math.cos(a) * 7 * power, 0.8 + simRand(), Math.sin(a) * 7 * power), life: 0.55, size: 0.15, sizeEnd: 0.55, color: col, alpha: 0.35, drag: 5 });
       }
     }
     P.landed = Math.max(P.landed, 14); // the heavy landing pose

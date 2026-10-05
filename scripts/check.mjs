@@ -131,6 +131,16 @@ for (const [f, raw] of text) {
   for (const m of src.matchAll(/\blocalStorage\b/g)) add('save.storage', f, lineOf(src, m.index), 'keeps something in localStorage itself: register a section with game.save (core/save.js)');
 }
 
+// ---- 8. the same twice (docs/plans/COOP.md, C1): the simulation takes its chance from a seeded stream (core/rng.js `stream`), never
+// Math.random; the cosmetic domains (vfx, audio, music, ui, title, render, cine, workbench, debug) may roll freely
+const SIM = /^src\/(creatures|courier|world|tools|godhand|npc|pneuka|progress|core|feedback)\//;
+for (const [f, raw] of text) {
+  const r = rel(f).split(path.sep).join('/');
+  if (!SIM.test(r) || r === 'src/core/rng.js') continue;
+  const src = code(raw);
+  for (const m of src.matchAll(/\bMath\.random\b/g)) add('rand.sim', f, lineOf(src, m.index), 'the simulation takes its chance from a seeded stream (core/rng.js: `const simRand = stream(name)`), never Math.random');
+}
+
 // ---- tally against the baseline
 const counts = {};
 for (const x of findings) if (!x.hard) counts[`${x.rule}|${x.file}`] = (counts[`${x.rule}|${x.file}`] || 0) + 1;

@@ -19,6 +19,8 @@
 import * as THREE from 'three';
 import { addOutline, OUTLINE_MAT_CHAR } from '../../render/outline.js';
 import { mergeStatic } from '../../render/merge.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/veritome/model'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const BOOK = { len: 0.3, w: 0.22, pages: 0.032, cover: 0.01, tilt: 0.32 };
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0.1, ...o });
@@ -121,7 +123,7 @@ export class VeritomeModel {
     g.beginPath(); g.moveTo(cx, cy - R * 0.7); g.lineTo(cx + 6, cy); g.lineTo(cx, cy + R * 0.7); g.lineTo(cx - 6, cy); g.closePath(); g.fill();
     for (let i = 0; i <= 10; i++) { const x = 18 + (i / 10) * (W - 36); g.beginPath(); g.moveTo(x, H - 30); g.lineTo(x, H - (i % 5 ? 36 : 42)); g.stroke(); }
     g.beginPath(); g.moveTo(18, H - 30); g.lineTo(W - 18, H - 30); g.stroke();
-    for (let y = H * 0.72; y < H - 50; y += 7) { g.globalAlpha = 0.35; g.beginPath(); g.moveTo(18, y); g.lineTo(W - 18 - Math.random() * 30, y); g.stroke(); }
+    for (let y = H * 0.72; y < H - 50; y += 7) { g.globalAlpha = 0.35; g.beginPath(); g.moveTo(18, y); g.lineTo(W - 18 - simRand() * 30, y); g.stroke(); }
     g.globalAlpha = 1;
   }
   /** The right page: the last photograph, mounted in its corners (or a blank plate). */
@@ -134,7 +136,7 @@ export class VeritomeModel {
     g.fillStyle = 'rgba(70,40,24,.85)';
     for (const [x, y, sx, sy] of [[px, py, 1, 1], [px + pw, py, -1, 1], [px, py + ph, 1, -1], [px + pw, py + ph, -1, -1]]) { g.beginPath(); g.moveTo(x - sx * 3, y - sy * 3); g.lineTo(x + sx * 14, y - sy * 3); g.lineTo(x - sx * 3, y + sy * 14); g.closePath(); g.fill(); }
     g.strokeStyle = 'rgba(70,40,24,.4)';
-    for (let y = py + ph + 16; y < H - 14; y += 7) { g.beginPath(); g.moveTo(14, y); g.lineTo(W - 14 - Math.random() * 40, y); g.stroke(); }
+    for (let y = py + ph + 16; y < H - 14; y += 7) { g.beginPath(); g.moveTo(14, y); g.lineTo(W - 14 - simRand() * 40, y); g.stroke(); }
     this.pageTex[1].needsUpdate = true;
   }
   setPhoto(src) {

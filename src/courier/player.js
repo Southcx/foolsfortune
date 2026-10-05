@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { T, DEG } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('courier/player'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
@@ -896,8 +898,8 @@ export class Player {
     if (!fx) return;
     const c = new THREE.Color(0xf3c9a8);
     for (let i = 0; i < 18; i++) {
-      const p = this.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.3 + Math.random() * 1.2, (Math.random() - 0.5) * 0.5));
-      fx.alpha.emit({ pos: p, vel: dir.clone().multiplyScalar(-2 - Math.random() * 3), life: 0.35 + Math.random() * 0.2, size: 0.1, sizeEnd: 0.4, color: c, alpha: 0.3, drag: 4 });
+      const p = this.pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.5, 0.3 + simRand() * 1.2, (simRand() - 0.5) * 0.5));
+      fx.alpha.emit({ pos: p, vel: dir.clone().multiplyScalar(-2 - simRand() * 3), life: 0.35 + simRand() * 0.2, size: 0.1, sizeEnd: 0.4, color: c, alpha: 0.3, drag: 4 });
     }
   }
 
@@ -968,13 +970,13 @@ export class Player {
 
     const sh = this.shake * this.shake;
     const cf = this.camFx; // (what a cinematic asks of the camera: see vfx/cinema.js; all zero/one when nothing does)
-    const pitch = this.pitch + this.punch.x + cf.pitch + (Math.random() - 0.5) * sh * 0.02;
-    const yaw = this.yaw + this.punch.y + cf.yaw + (Math.random() - 0.5) * sh * 0.02;
+    const pitch = this.pitch + this.punch.x + cf.pitch + (simRand() - 0.5) * sh * 0.02;
+    const yaw = this.yaw + this.punch.y + cf.yaw + (simRand() - 0.5) * sh * 0.02;
     const cam = this.camera;
     // camera roll: tilt away from the wall while wallrunning, a touch into slides
     const rollWant = this.wallBlend * M.wallrunTilt * DEG * (1 - 0.6 * tb) + this.slideBlend * 4 * DEG * (1 - tb);
     this.roll = rollWant + cf.roll;
-    cam.rotation.set(pitch, yaw + Math.PI, this.roll + (Math.random() - 0.5) * sh * 0.01, 'YXZ');
+    cam.rotation.set(pitch, yaw + Math.PI, this.roll + (simRand() - 0.5) * sh * 0.01, 'YXZ');
     cam.updateMatrixWorld();
 
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);

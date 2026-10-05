@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T, PALETTE } from '../../core/config.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/swim'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Swimming: deep water takes over from the feet. At the surface you float with your
 // head out and paddle along (Shift for a faster crawl); C dives, and underwater you
@@ -134,8 +136,8 @@ export class Swim extends Tech {
     if (!fx) return;
     const col = new THREE.Color(0xcfe6e4);
     for (let i = 0; i < 10 * k; i++) {
-      const a = Math.random() * Math.PI * 2, r = Math.random() * 0.4 * k;
-      fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.05, Math.sin(a) * r)), vel: new THREE.Vector3(Math.cos(a) * 1.5, 2 + Math.random() * 2.5 * k, Math.sin(a) * 1.5), life: 0.6, size: 0.06, sizeEnd: 0.02, color: col, alpha: 0.6, drag: 1.5, gravity: 9 });
+      const a = simRand() * Math.PI * 2, r = simRand() * 0.4 * k;
+      fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.05, Math.sin(a) * r)), vel: new THREE.Vector3(Math.cos(a) * 1.5, 2 + simRand() * 2.5 * k, Math.sin(a) * 1.5), life: 0.6, size: 0.06, sizeEnd: 0.02, color: col, alpha: 0.6, drag: 1.5, gravity: 9 });
     }
   }
 

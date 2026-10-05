@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { RAPIER, G, groups } from '../core/physics.js';
 import { T, PALETTE } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------
 // Lachryma: the energy that runs the psygun (and, later, other mechanics).
@@ -145,14 +147,14 @@ export class Baubles {
   spawn(pos, n = 5, { value = T.lachryma.baubleValue, spread = 1, up = 3.5, ox = 0 } = {}) {
     this.game.ai?.stimuli.emit('food', pos, { radius: 14, strength: 0.6 });
     for (let i = 0; i < n; i++) {
-      const v = new THREE.Vector3((Math.random() - 0.5) * 3 * spread, up * (0.7 + Math.random() * 0.6), (Math.random() - 0.5) * 3 * spread);
-      this.spawnOne(pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.15, 0.1 + Math.random() * 0.1, (Math.random() - 0.5) * 0.15)), v, value, ox);
+      const v = new THREE.Vector3((simRand() - 0.5) * 3 * spread, up * (0.7 + simRand() * 0.6), (simRand() - 0.5) * 3 * spread);
+      this.spawnOne(pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.15, 0.1 + simRand() * 0.1, (simRand() - 0.5) * 0.15)), v, value, ox);
     }
   }
 
   spawnOne(pos, vel, value, ox = 0) {
     const g = this.game, w = g.physics.world;
-    const r = T.lachryma.baubleRadius * (0.85 + Math.random() * 0.3);
+    const r = T.lachryma.baubleRadius * (0.85 + simRand() * 0.3);
     const body = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pos.x, pos.y, pos.z)
       .setLinvel(vel.x, vel.y, vel.z).setLinearDamping(0.35).setAngularDamping(3).setCcdEnabled(true));
     const col = w.createCollider(RAPIER.ColliderDesc.ball(r).setDensity(400).setRestitution(T.lachryma.bounce)
@@ -171,7 +173,7 @@ export class Baubles {
     g.scene.add(root);
     const b = {
       type: 'bauble', body, col, root, mesh, r, value, age: ox > 0 ? OX.start + ox * (OX.full - OX.start) : 0, ox, step, state: 'loose',
-      squash: 0, squashV: 0, axis: new THREE.Vector3(0, 1, 0), wob: Math.random() * 10, lastVel: vel.clone(),
+      squash: 0, squashV: 0, axis: new THREE.Vector3(0, 1, 0), wob: simRand() * 10, lastVel: vel.clone(),
     };
     g.physics.register(col, b);
     this.list.push(b);

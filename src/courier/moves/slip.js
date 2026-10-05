@@ -3,6 +3,8 @@ import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T, PALETTE } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/slip'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Slip dive (Splatoon's ink swim, in liquid clay). Hold C on wet slip and the
 // Courier melts into it: a fast, low blob that only moves quickly through slip,
@@ -164,8 +166,8 @@ export class SlipDive extends Tech {
     if (!fx) return;
     const col = new THREE.Color(PALETTE.pale);
     for (let i = 0; i < 14 * k; i++) {
-      const a = Math.random() * Math.PI * 2;
-      fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.2, 0.1, Math.sin(a) * 0.2)), vel: new THREE.Vector3(Math.cos(a) * 1.6, 1.5 + Math.random() * 2.5 * k, Math.sin(a) * 1.6), life: 0.5, size: 0.07, sizeEnd: 0.03, color: col, alpha: 0.8, drag: 1.5, gravity: 9 });
+      const a = simRand() * Math.PI * 2;
+      fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.2, 0.1, Math.sin(a) * 0.2)), vel: new THREE.Vector3(Math.cos(a) * 1.6, 1.5 + simRand() * 2.5 * k, Math.sin(a) * 1.6), life: 0.5, size: 0.07, sizeEnd: 0.03, color: col, alpha: 0.8, drag: 1.5, gravity: 9 });
     }
   }
 

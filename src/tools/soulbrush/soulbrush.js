@@ -15,6 +15,8 @@ import { measureGrip, handFromTool } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { tickInscriptions, clearInscriptions } from './inscribe.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH: the third of the Courier's psychic tools, a calligrapher's brush the size of a club, worn at the left hip like a
@@ -158,9 +160,9 @@ export class SoulBrush extends Tech {
     const f = P.lookDir(_v1).clone();
     const from = this.model.tipWorld(_v2).clone();
     for (let i = 0; i < 14; i++) {
-      const d = f.clone().add(_v3.randomDirection().multiplyScalar(0.18)).normalize().multiplyScalar(12 + Math.random() * 5);
+      const d = f.clone().add(_v3.randomDirection().multiplyScalar(0.18)).normalize().multiplyScalar(12 + simRand() * 5);
       d.y += 2.5;
-      g.shells?.addDroplet(from.clone(), d, 0.035 + Math.random() * 0.03, true);
+      g.shells?.addDroplet(from.clone(), d, 0.035 + simRand() * 0.03, true);
     }
     sfx.brushSwing?.(0.8);
     g.events?.emit('brush.flick', {});
@@ -201,8 +203,8 @@ export class SoulBrush extends Tech {
       g.slip?.addDisc(down.point, down.normal, TRAIL_W * 0.55, TRAIL_WET * 0.85, TRAIL_SETTLE);
       if (this.lastDab && d < 2) this.slideDist += d;
       this.lastDab = down.point.clone();
-      if (Math.random() < 0.35) sfx.inkDab?.(0.35);
-      if (Math.random() < 0.5) g.fx.alpha.emit({ pos: down.point.clone().setY(down.point.y + 0.05), vel: new THREE.Vector3(-P.vel.x * 0.1, 0.8, -P.vel.z * 0.1), life: 0.4, size: 0.08, sizeEnd: 0.25, color: new THREE.Color(0xe8ab86), alpha: 0.35, drag: 3 });
+      if (simRand() < 0.35) sfx.inkDab?.(0.35);
+      if (simRand() < 0.5) g.fx.alpha.emit({ pos: down.point.clone().setY(down.point.y + 0.05), vel: new THREE.Vector3(-P.vel.x * 0.1, 0.8, -P.vel.z * 0.1), life: 0.4, size: 0.08, sizeEnd: 0.25, color: new THREE.Color(0xe8ab86), alpha: 0.35, drag: 3 });
     }
   }
 

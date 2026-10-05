@@ -21,6 +21,8 @@ import * as THREE from 'three';
 import { hopperGeometry, bismuthMaterial } from '../../vfx/bismuth.js';
 import { RAPIER, G, groups } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/treasure/cubes'); // (the simulation's chance: core/rng.js, the same twice)
 
 const PICKUP = 32;
 const CUBE_GROUPS = groups(PICKUP, G.STATIC | G.PROP | PICKUP); // (they pile against each other, and nothing else that is loose)
@@ -121,9 +123,9 @@ export class Cubes {
     const each = Math.floor(worth / n); let extra = worth - each * n;
     for (let i = 0; i < n; i++) {
       const v = each + (i < extra ? 1 : 0);
-      const a = Math.random() * Math.PI * 2, r = (0.4 + Math.random() * 1.7) * spread;
-      const vel = new THREE.Vector3(Math.cos(a) * r, up * (0.75 + Math.random() * 0.6), Math.sin(a) * r);
-      const at = pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.2, 0.1, (Math.random() - 0.5) * 0.2));
+      const a = simRand() * Math.PI * 2, r = (0.4 + simRand() * 1.7) * spread;
+      const vel = new THREE.Vector3(Math.cos(a) * r, up * (0.75 + simRand() * 0.6), Math.sin(a) * r);
+      const at = pos.clone().add(new THREE.Vector3((simRand() - 0.5) * 0.2, 0.1, (simRand() - 0.5) * 0.2));
       if (stagger > 0) this.queue.push({ t: (i / n) * stagger, k: i / n, at, vel, v, spin });
       else this.spawnOne(at, vel, v, spin);
     }
@@ -135,11 +137,11 @@ export class Cubes {
     const k = 0.9 + 0.16 * Math.cbrt(Math.max(1, worth));
     const h = SIZE * k / 2;
     const body = w.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(pos.x, pos.y, pos.z).setLinvel(vel.x, vel.y, vel.z)
-      .setAngvel({ x: (Math.random() - 0.5) * spin * 2, y: (Math.random() - 0.5) * spin * 2, z: (Math.random() - 0.5) * spin * 2 })
+      .setAngvel({ x: (simRand() - 0.5) * spin * 2, y: (simRand() - 0.5) * spin * 2, z: (simRand() - 0.5) * spin * 2 })
       .setLinearDamping(0.2).setAngularDamping(1.4).setCcdEnabled(true));
     const col = w.createCollider(RAPIER.ColliderDesc.cuboid(h, h, h).setDensity(500).setRestitution(0.38).setFriction(0.55)
       .setCollisionGroups(CUBE_GROUPS).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS), body);
-    const c = { type: 'cube', body, col, k, worth, seed: Math.random(), age: 0, state: 'loose', pos: pos.clone(), quat: new THREE.Quaternion(), pop: 0, lastV: vel.length(), speed: 0 };
+    const c = { type: 'cube', body, col, k, worth, seed: simRand(), age: 0, state: 'loose', pos: pos.clone(), quat: new THREE.Quaternion(), pop: 0, lastV: vel.length(), speed: 0 };
     g.physics.register(col, c);
     this.list.push(c);
     return c;

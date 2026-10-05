@@ -7,6 +7,8 @@ import { addOutline } from '../render/outline.js';
 import { prepProfile } from '../world/props/pottery.js';
 import { sfx } from '../audio/sfx.js';
 import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
 // THE IDLE ACTS: what a clapperjar does with itself when nothing is happening, so that it is not forever running somewhere. Each is a
@@ -140,11 +142,11 @@ export class Clappers {
       type: 'clapper', root, model, mixer, actions, body, col, alive: true, bones, stars, mat, cool: fromKiln ? 1 : 0,
       headInv: restInv(bones.head), bodyInv: restInv(bones.body),
       armInv: { L: restInv(bones.armL), R: restInv(bones.armR), fL: restInv(bones.foreL), fR: restInv(bones.foreR) }, idleT: 0, twirl: 0,
-      floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : Math.random() * Math.PI * 2,
-      state: 'idle', timer: 0.3 + Math.random(), target: null, speed: 0, current: null, stuckT: 0, lastPos: pos.clone(),
+      floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : simRand() * Math.PI * 2,
+      state: 'idle', timer: 0.3 + simRand(), target: null, speed: 0, current: null, stuckT: 0, lastPos: pos.clone(),
       squeakT: 0, stash: 0, kv: new THREE.Vector3(), grounded: true, peakY: pos.y, heat: 0, stunT: 0, pulledT: 0,
-      clapT: 0, clapRate: 0, look: 0, blinkT: 2 + Math.random() * 3, squash: 0, squashV: 0, hop: 0, spin: 0, t: Math.random() * 10,
-      temper: Math.random(), act: null, actT: 0, actDur: 0, actW: 0, actSeed: Math.random() * 10,
+      clapT: 0, clapRate: 0, look: 0, blinkT: 2 + simRand() * 3, squash: 0, squashV: 0, hop: 0, spin: 0, t: simRand() * 10,
+      temper: simRand(), act: null, actT: 0, actDur: 0, actW: 0, actSeed: simRand() * 10,
     };
     // (its joints' limits, applied last: rom.js)
     c.rom = new JointLimits();
@@ -195,10 +197,10 @@ export class Clappers {
     for (let i = 0; i < 12; i++) {
       let p;
       if (away && i < 7) {
-        const d = c.pos.clone().sub(away).setY(0).normalize().applyAxisAngle(UP, (Math.random() - 0.5) * 1.6);
-        p = c.pos.clone().addScaledVector(d, 3 + Math.random() * 3);
+        const d = c.pos.clone().sub(away).setY(0).normalize().applyAxisAngle(UP, (simRand() - 0.5) * 1.6);
+        p = c.pos.clone().addScaledVector(d, 3 + simRand() * 3);
       } else {
-        p = new THREE.Vector3(THREE.MathUtils.lerp(f.x0, f.x1, Math.random()), f.y, THREE.MathUtils.lerp(f.z0, f.z1, Math.random()));
+        p = new THREE.Vector3(THREE.MathUtils.lerp(f.x0, f.x1, simRand()), f.y, THREE.MathUtils.lerp(f.z0, f.z1, simRand()));
       }
       p.y = f.y;
       if (c.pos.distanceTo(p) > 1 && this.reachable(c, p)) return p;
@@ -282,14 +284,14 @@ export class Clappers {
         case 'stumble':
           wantSpeed = 0.6;
           if (c.timer <= 0) {
-            const cover = Math.random() < C.hideChance ? this.findCover(c, c.threat) : null;
+            const cover = simRand() < C.hideChance ? this.findCover(c, c.threat) : null;
             if (cover) { c.state = 'hide'; c.target = cover.spot; c.cover = cover.ent; c.timer = 4; }
             else { c.state = 'flee'; c.target = this.pickTarget(c, c.threat) || this.pickTarget(c); c.timer = 3; }
           }
           break;
         case 'hide':
           wantSpeed = C.fleeSpeed;
-          if (!c.target || c.pos.distanceTo(c.target) < 0.35 || c.timer <= 0) { c.state = 'cower'; c.timer = 3 + Math.random() * 2.5; }
+          if (!c.target || c.pos.distanceTo(c.target) < 0.35 || c.timer <= 0) { c.state = 'cower'; c.timer = 3 + simRand() * 2.5; }
           break;
         case 'cower': {
           const th = c.threat || this.game.player.renderPos;
@@ -300,7 +302,7 @@ export class Clappers {
         case 'run':
         case 'flee':
           wantSpeed = c.state === 'flee' ? C.fleeSpeed : C.runSpeed;
-          if (!c.target || c.pos.distanceTo(c.target) < 0.5 || (c.state === 'flee' && c.timer <= 0)) { c.state = 'idle'; c.timer = 0.6 + Math.random() * 2; c.target = null; }
+          if (!c.target || c.pos.distanceTo(c.target) < 0.5 || (c.state === 'flee' && c.timer <= 0)) { c.state = 'idle'; c.timer = 0.6 + simRand() * 2; c.target = null; }
           break;
         case 'celebrate':
           c.twirl = Math.min(1, c.twirl + dt / 0.6);
@@ -312,7 +314,7 @@ export class Clappers {
             c.state = 'stumble'; c.timer = 0.35; c.threat = this.game.player.renderPos.clone(); c.vy = 3; c.grounded = false;
             sfx.squeak(this.game.listenerDistance(c.pos)); c.squeakT = 0.5;
           } else if (c.timer <= 0) { c.state = 'idle'; c.timer = 0.5; }
-          if (Math.random() < dt * 1.2) this.game.fx.alpha.emit({ pos: c.pos.clone().setY(c.pos.y + 0.75), vel: new THREE.Vector3(0.15, 0.35, 0), life: 1.6, size: 0.05, sizeEnd: 0.12, color: new THREE.Color(PALETTE.cream), alpha: 0.7, drag: 0.2 });
+          if (simRand() < dt * 1.2) this.game.fx.alpha.emit({ pos: c.pos.clone().setY(c.pos.y + 0.75), vel: new THREE.Vector3(0.15, 0.35, 0), life: 1.6, size: 0.05, sizeEnd: 0.12, color: new THREE.Color(PALETTE.cream), alpha: 0.7, drag: 0.2 });
           break;
         }
         case 'stunned':
@@ -321,7 +323,7 @@ export class Clappers {
           break;
         case 'scalded':
           wantSpeed = C.fleeSpeed * 1.1;
-          if (c.grounded && Math.random() < dt * 5) { c.vy = 2.6; c.squashV -= 3; }
+          if (c.grounded && simRand() < dt * 5) { c.vy = 2.6; c.squashV -= 3; }
           if (!c.target || c.pos.distanceTo(c.target) < 0.5) c.target = this.pickTarget(c);
           if (c.timer <= 0) { c.state = 'flee'; c.timer = 1.5; }
           break;
@@ -356,7 +358,7 @@ export class Clappers {
           if (d < 0.95 && Math.abs(c.pos.y - god.jar.pos.y) < 1.2) { god.raidStrike(c); break; }
           // (blocked by something: sidestep for a moment)
           c.raidT = (c.raidT || 0) + dt;
-          if (c.raidT > 1.2) { c.detour = c.pos.distanceTo(c.raidFrom || c.pos) < 0.6 ? (c.detour ? 0 : (Math.random() < 0.5 ? 1.2 : -1.2)) : 0; c.raidFrom = c.pos.clone(); c.raidT = 0; }
+          if (c.raidT > 1.2) { c.detour = c.pos.distanceTo(c.raidFrom || c.pos) < 0.6 ? (c.detour ? 0 : (simRand() < 0.5 ? 1.2 : -1.2)) : 0; c.raidFrom = c.pos.clone(); c.raidT = 0; }
           if (c.detour) c.target = c.pos.clone().add(new THREE.Vector3(Math.sin(c.heading + c.detour), 0, Math.cos(c.heading + c.detour)).multiplyScalar(2));
           break;
         }
@@ -445,22 +447,22 @@ export class Clappers {
       const r = this.list.find((x) => x.alive && x.raider && x.state === 'raid' && x.pos.distanceTo(god.jar.pos) < 14 && !x.chased);
       if (r) { c.state = 'guard'; c.chasing = r; c.timer = 0; return; }
       if (god.jar.hp < god.jar.max - 1 && !god.jar.mendBy && this.takeJob(c)) return;
-      const a = Math.random() * Math.PI * 2, rad = 1.2 + Math.random() * 2.2;
+      const a = simRand() * Math.PI * 2, rad = 1.2 + simRand() * 2.2;
       c.target = god.jar.pos.clone().add(new THREE.Vector3(Math.sin(a) * rad, 0, Math.cos(a) * rad)).setY(c.pos.y);
       c.state = 'run'; c.stuckT = 0; c.timer = 0;
       return;
     }
     const b = this.game.baubles?.near(c.pos, 5).find((bb) => Math.abs(bb.root.position.y - c.pos.y) < 0.8);
-    if (b && Math.random() < 0.85) { c.state = 'forage'; c.bauble = b; c.timer = 0; return; }
-    if (Math.random() < T.clappers.mendChance && this.takeJob(c)) return;
+    if (b && simRand() < 0.85) { c.state = 'forage'; c.bauble = b; c.timer = 0; return; }
+    if (simRand() < T.clappers.mendChance && this.takeJob(c)) return;
     const far = c.pos.distanceTo(this.game.player.renderPos) > 9;
-    if (far && Math.random() < T.clappers.napChance) { c.state = 'nap'; c.timer = 6 + Math.random() * 6; return; }
-    if (this.canSeePlayer(c) && Math.random() < T.clappers.tauntChance) {
-      c.state = 'taunt'; c.timer = 1.2 + Math.random() * 0.8; c.clapT = c.timer; c.clapRate = 11;
+    if (far && simRand() < T.clappers.napChance) { c.state = 'nap'; c.timer = 6 + simRand() * 6; return; }
+    if (this.canSeePlayer(c) && simRand() < T.clappers.tauntChance) {
+      c.state = 'taunt'; c.timer = 1.2 + simRand() * 0.8; c.clapT = c.timer; c.clapRate = 11;
       return;
     }
     // most of the time, a jar left to itself stays where it is and does some small thing (the calmer, the more often)
-    if (!c.ally && !c.raider && Math.random() < 0.5 + 0.38 * c.temper) { this.startAct(c); return; }
+    if (!c.ally && !c.raider && simRand() < 0.5 + 0.38 * c.temper) { this.startAct(c); return; }
     c.target = this.pickTarget(c);
     if (c.target) { c.state = 'run'; c.stuckT = 0; } else c.timer = 0.5;
   }
@@ -490,18 +492,18 @@ export class Clappers {
   }
 
   startAct(c, name = null) {
-    if (!name) { let r = Math.random() * ACT_W; for (const [k, A] of Object.entries(ACTS)) { r -= A.w; if (r <= 0) { name = k; break; } } }
+    if (!name) { let r = simRand() * ACT_W; for (const [k, A] of Object.entries(ACTS)) { r -= A.w; if (r <= 0) { name = k; break; } } }
     if (name === c.act && name !== 'breathe') name = 'breathe';
     const A = ACTS[name];
     c.state = 'idle'; c.act = name; c.actT = 0;
-    c.actDur = (A.dur[0] + Math.random() * (A.dur[1] - A.dur[0])) * (0.8 + 0.5 * c.temper);
-    c.timer = c.actDur; c.actSeed = Math.random() * 10; c.actTurn = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.7);
+    c.actDur = (A.dur[0] + simRand() * (A.dur[1] - A.dur[0])) * (0.8 + 0.5 * c.temper);
+    c.timer = c.actDur; c.actSeed = simRand() * 10; c.actTurn = (simRand() < 0.5 ? -1 : 1) * (0.5 + simRand() * 0.7);
     if (name === 'hum' && this.game.listenerDistance(c.pos) < 14) this.game.glyphs?.pop('note', c.pos.clone().setY(c.pos.y + 0.9), { color: 0xffe2b0, size: 0.32, life: 1.6, float: 0.5 });
   }
 
   // ---- kintsugi: rebuild wrecks, mend cracked pots ------------------------------------
   jobs(c) {
-    const B = this.game.breakables, f = this.floors[c.floor], now = performance.now() * 0.001;
+    const B = this.game.breakables, f = this.floors[c.floor], now = this.game.events?.time ?? 0; // (the game's clock, as the wrecks are stamped: the same twice)
     const out = [];
     for (const w of B.wrecks) {
       if (w.claimed || now - w.t < T.clappers.wreckDelay || Math.abs(w.pos.y - f.y) > 0.3) continue;
@@ -564,10 +566,10 @@ export class Clappers {
     const g = this.game;
     c.tapT = (c.tapT || 0) - dt;
     if (c.tapT <= 0) {
-      c.tapT = 0.16 + Math.random() * 0.12;
+      c.tapT = 0.16 + simRand() * 0.12;
       sfx.tap(g.listenerDistance(c.pos));
       c.squashV -= 1.5;
-      const p = job.pos.clone().setY(job.pos.y + 0.1 + Math.random() * 0.3);
+      const p = job.pos.clone().setY(job.pos.y + 0.1 + simRand() * 0.3);
       g.fx.add.emit({ pos: p, vel: new THREE.Vector3().randomDirection().multiplyScalar(1.2).setY(1.5), life: 0.5, size: 0.03, sizeEnd: 0.005, color: GOLD, drag: 2, twinkle: 25 });
     }
     // sweep the shards back in: pull the nearby ones to the pile, and tidy away what arrives
@@ -658,7 +660,7 @@ export class Clappers {
       // blink (eyes stay shut while napping)
       c.blinkT -= dt;
       if (b.eyes) b.eyes.scale.y = c.blinkT < 0.1 || c.state === 'nap' ? 0.15 : 1;
-      if (c.blinkT < 0) c.blinkT = 2 + Math.random() * 4;
+      if (c.blinkT < 0) c.blinkT = 2 + simRand() * 4;
 
       // placement + whole-body flourishes
       c.root.position.lerpVectors(c.prevPos, c.pos, alpha);
