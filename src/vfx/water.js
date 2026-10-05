@@ -26,7 +26,7 @@
 //   waterGeometry(volume)   -> a plane with `aDepth` (metres to the floor; 0 at the edge) for the volume { x0, x1, z0, z1, surface, bottom, depthAt? }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { liquidTexture, LIQUID_GLSL } from './liquid.js';
+import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
 
 const VERT = `
 #include <common>
@@ -67,7 +67,7 @@ void main() {
 #else
   float t = uTime;
   vec3 pn = liqNormal(vW.xz, 0.16, t, 1.7 * (1.0 - 0.7 * far));
-  vec3 fine = liqNormal(vW.xz * 1.0 + 7.3, 0.55, t * 1.4, 0.9 * (1.0 - far));     // (the fine chop, close up only)
+  vec3 fine = liqRipple(vW.xz, 0.4, t, 1.1 * (1.0 - far));                       // (the fine chop: the owner's wind-streaked ripples, close up only)
   pn = normalize(vec3(pn.xz + fine.xz, 1.0).xzy);
 #endif
   vec3 N = normalize(vec3(vN.x + pn.x, vN.y, vN.z + pn.z));                      // (the swell's normal, the texture's slopes laid on it)
@@ -86,6 +86,7 @@ void main() {
   float sheen = 0.025 + 0.3 * fres + 0.5 * pow(veins, 1.5);                     // (ink between, the film in the veins and at the grazing angle)
   col = vec3(0.006, 0.005, 0.011) + liqFilm(film) * sheen * 0.42 + sky * (0.02 + 0.35 * fres);
   col += vec3(1.0, 0.93, 0.84) * (pow(sp, 420.0) * 2.2 + pow(sp, 60.0) * 0.12);   // (oil is glossy: a tight bright highlight)
+  col += liqFilm(film + 0.6) * pow(liqGlow(vW.xz, 0.07, t), 3.0) * 0.08 * (1.0 - fres); // (light pooled inside it, deep down, between the cells)
   float rim = 1.0 - smoothstep(0.0, 0.35, vDepth);                               // (the meniscus, iridescent, where it meets the stone)
   col += liqFilm(film + 0.3) * rim * 0.5;
   alpha = 0.96;
@@ -125,7 +126,7 @@ export function makeWaterMaterial(sky, kind = 'water') {
   const lach = kind === 'lachryma';
   const uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
-    uLiq: { value: liquidTexture() }, uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
+    ...liquidUniforms(), uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
   return new THREE.ShaderMaterial({
     uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL),

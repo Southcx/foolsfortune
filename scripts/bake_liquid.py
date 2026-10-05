@@ -7,7 +7,9 @@
 #   R  marbling      oil cells and veins (marbling.jpg): the film on Lachryma, the slow swell on water
 #   G  bubbles       rings and foam (bubbles.jpg): foam made of bubbles at the shore and on crests; Lachryma's rising beads
 #   B  sand ripples  (sand_ripples.jpg): the floor seen through the water
-#   A  veins         the marbling's bright ridges, high-passed: caustics, the light wound on a pool's floor
+#   A  veins         the marbling's bright ridges, high-passed: the film's veins on Lachryma
+#   and a second pack (liquid_pack2.webp) from the owner's noise gradients (source_assets/vfx/Noise_Gradients/, tileable already):
+#   R a dense caustic net, G a finer one, B wind-streaked ripples, A soft glowing cells
 #
 # SEAMLESS: the image is blended with a copy of itself offset by half (its seams in the middle), the copy weighted toward the borders;
 # the blend is histogram-preserving (Heitz and Neyret, "High-Performance By-Example Noise using a Histogram-Preserving Blending
@@ -22,13 +24,18 @@ from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'source_assets', 'liquid')
+NOISE = os.path.join(ROOT, 'source_assets', 'vfx', 'Noise_Gradients') # (the owner's noise gradients: already tileable)
 OUT = os.path.join(ROOT, 'src', 'assets', 'liquid_pack.webp')
+OUT2 = os.path.join(ROOT, 'src', 'assets', 'liquid_pack2.webp')
 SIZE = 512
 CHANNELS = ['marbling', 'bubbles', 'sand_ripples']
+# the second pack, from the owner's noise gradients: R a dense caustic net (T_Random_53), G a finer one (48), B wind-streaked ripples
+# (45), A soft glowing cells (23: light pooled inside Lachryma)
+CHANNELS2 = ['T_Random_53', 'T_Random_48', 'T_Random_45', 'T_Random_23']
 
-def load(name):
+def load(name, src=SRC):
     for ext in ('.jpg', '.jpeg', '.png', '.webp'):
-        p = os.path.join(SRC, name + ext)
+        p = os.path.join(src, name + ext)
         if os.path.exists(p):
             return np.asarray(Image.open(p).convert('L')).astype(np.float64) / 255.0
     print(f'bake_liquid: no {name} in {SRC}: its channel stays mid-grey', file=sys.stderr)
@@ -79,6 +86,13 @@ def main():
     rgba = np.stack(chans, -1)
     Image.fromarray((rgba * 255).astype(np.uint8), 'RGBA').save(OUT, 'WEBP', lossless=True, exact=True, method=6)  # (lossless and exact: the fourth channel is data, not alpha, so what is under a 'transparent' pixel is kept)
     print(f'bake_liquid: {OUT} ({os.path.getsize(OUT) // 1024} KB, {SIZE}px)')
+    # the second pack: these tile already (their edges match), so they are only levelled and scaled
+    chans = []
+    for n in CHANNELS2:
+        a = load(n, NOISE)
+        chans.append(np.full((SIZE, SIZE), 0.5) if a is None else resize(level(a)))
+    Image.fromarray((np.stack(chans, -1) * 255).astype(np.uint8), 'RGBA').save(OUT2, 'WEBP', lossless=True, exact=True, method=6)
+    print(f'bake_liquid: {OUT2} ({os.path.getsize(OUT2) // 1024} KB, {SIZE}px)')
 
 if __name__ == '__main__':
     main()

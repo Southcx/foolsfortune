@@ -27,7 +27,7 @@
 //   sea.clipSector({ center, angle, half, r0 })   only the sector of a shore is sea (the shore, vfx/shore.js): elsewhere it is not drawn
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { liquidTexture, LIQUID_GLSL } from './liquid.js';
+import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
 
 const N = 4;
 // the waves: direction (radians), wavelength (m), steepness, speed scale (long, low swells, a cross-sea, and a short chop on top)
@@ -43,7 +43,7 @@ export class CrudeSea {
     const u = this.u = {
       uT: { value: 0 }, uAmp: { value: 0.38 }, uFilm: { value: 1 }, uCalm: { value: 0 },
       uCur: { value: this.k.current.clone() },
-      uLiq: { value: liquidTexture() },
+      ...liquidUniforms(),
       uClip: { value: new THREE.Vector4(0, 0, 0, -1) }, uClipA: { value: new THREE.Vector2(0, 7) }, // (center xz, r0, on; angle, half)
       uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
       uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)

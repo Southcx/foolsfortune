@@ -140,8 +140,11 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 
 Water and Lachryma are among the most important things the game draws. Every liquid is drawn with one library (`src/vfx/liquid.js`)
 and one texture: the owner's noise photographs (`source_assets/liquid/`), baked tileable by `scripts/bake_liquid.py` into the four
-channels of `src/assets/liquid_pack.webp` (R marbling, G bubbles, B sand ripples, A the marbling's veins). Drop a new photograph in
-the folder, name it for its channel, and run the script.
+channels of `src/assets/liquid_pack.webp` (R marbling, G bubbles, B sand ripples, A the marbling's veins); and a second pack from the
+owner's noise gradients (`source_assets/vfx/Noise_Gradients/`, tileable already), `liquid_pack2.webp`: R and G caustic nets
+(T_Random_53, 48), B wind-streaked ripples (45, the water's fine chop), A soft glowing cells (23, light pooled inside Lachryma). Drop a
+new photograph in the folder, name it for its channel, and run the script. Of the other gradients, 66 (a cel web, Wind Waker's foam)
+and 19, 22, 44 (cells) are kept in reserve.
 
 - **Water paints its own floor**: sand ripples where the eye meets the bottom, lit by caustics, seen through the water by the depth
   the eye looks through (shallows clear and sandy, deeps teal to marine); the painted sky by Fresnel, short of a mirror; a tight sun
