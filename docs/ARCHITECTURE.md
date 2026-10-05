@@ -163,6 +163,10 @@ What cost the R43 review the most time was finding out, after the fact, what a b
    you tested against.
 6. **Rules are the owner's.** A change to CLAUDE.md or to this file is named in the note with where the owner said it; Petra asks the
    owner before it lands.
+7. **Brief** (for QAIS, `docs/plans/QAIS.md`): three to six lines for the owner, in the glossary's words, every unit of time with its
+   clock: what changed for the player and what to try. Petra copies it into the build's brief at publish.
+8. **Tests** (for QAIS): each one an area, what to do and what should happen, with `watch` (the event that is evidence), `go` (a
+   `game.places` id) and `live` (try it with QAIS closed) where they fit. Dovina triages them into the round.
 
 ## The migration
 
