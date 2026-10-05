@@ -13,12 +13,15 @@
 //  - Animal Crossing / Zelda: the silhouette in the water tells you roughly how big it is before it bites.
 //  - Dredge: the fish are the horror. They are a little wrong; the deep ones more so.
 // ---------------------------------------------------------------------------------------
+import { COLOR } from '../../../progress/weather.js';
+
+// (the colours are the feelings' canon ones, progress/weather.js COLOR: the owner's ruling, R58)
 export const ASPECTS = [
-  { id: 'dread', name: 'DREAD', glyph: '◐', color: 0x8a6ad0, hint: 'the cold that comes before a shape' },
-  { id: 'wonder', name: 'WONDER', glyph: '✦', color: 0xffd76a, hint: 'the held breath at the top of a stair' },
-  { id: 'grief', name: 'GRIEF', glyph: '☂', color: 0x8fc4ff, hint: 'a room kept exactly as it was' },
-  { id: 'desire', name: 'DESIRE', glyph: '◍', color: 0xff7a4a, hint: 'wanting, with nothing yet in mind' },
-  { id: 'mirth', name: 'MIRTH', glyph: '♪', color: 0x9be36a, hint: 'a laugh that has lost its joke' },
+  { id: 'dread', name: 'DREAD', glyph: '◐', color: COLOR.dread, hint: 'the cold that comes before a shape' },
+  { id: 'wonder', name: 'WONDER', glyph: '✦', color: COLOR.wonder, hint: 'the held breath at the top of a stair' },
+  { id: 'grief', name: 'GRIEF', glyph: '☂', color: COLOR.grief, hint: 'a room kept exactly as it was' },
+  { id: 'desire', name: 'DESIRE', glyph: '◍', color: COLOR.desire, hint: 'wanting, with nothing yet in mind' },
+  { id: 'mirth', name: 'MIRTH', glyph: '♪', color: COLOR.mirth, hint: 'a laugh that has lost its joke' },
 ];
 export const ASPECT_IDX = Object.fromEntries(ASPECTS.map((a, i) => [a.id, i]));
 /** The order the five are shown in, most positive to most negative (the owner's ruling: GLOSSARY, DISPLAY_ORDER), as indices into
