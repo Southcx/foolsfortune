@@ -723,6 +723,7 @@ async function main() {
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
