@@ -17,8 +17,8 @@ export function weatherRules({ on, L, log, g }) {
   on('weather.change', (e) => {
     seen(e);
     const n = NAMES[e.aspect || 'calm'];
-    if (e.aspect) log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} ${e.strength > 0.6 ? 'comes down hard' : 'comes'} over ${PLACE(e.island)}.`, { key: 'weather', throttle: 20 });
-    else log.say('info', `${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
+    if (e.aspect) log.say('info', `Weather over ${PLACE(e.island)}: ${n}${e.strength > 0.6 ? ', heavy' : ''}.`, { key: 'weather', throttle: 20 });
+    else log.say('info', `Weather over ${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
   });
   on('day.phase', (e) => { L.inc(`day.${e.phase}`); if (e.phase === 'night' || e.phase === 'dawn') log.say('info', e.phase === 'night' ? 'Night falls. Lachryma glows in the dark.' : 'Dawn.', { key: 'dayphase', throttle: 30 }); });
   // in its weather: a fish landed, a status built
