@@ -1,7 +1,8 @@
 # The bug report and the checklist (the owner, 2026-10-05)
 
 Kept by Dovina. A spec for Petra (who builds the bug report: `src/debug/`, the published build and its capabilities) and Calissa (the
-markup window's look). Nothing here is built yet except the checklist page.
+markup window's look). Nothing here is built yet except the checklist page. **Since 2026-10-05 the bug report is QAIS's Reports tab and
+the checklist becomes its Tests tab: `docs/plans/QAIS.md` is the window around this file**; F8 opens QAIS with the frame already taken.
 
 ## The owner's ask
 
@@ -47,8 +48,8 @@ Taken: one key, the frame frozen and taken first, marks drawn on it, few words a
    - kind: bug (Petra) · feel (Petra, Dovina) · look (Calissa) · sound (Wanda) · words (Espada) · numbers (Dovina) · idea (Dovina, to
      batch) · decides who reads it first;
    - severity: blocks play · wrong · rough · a wish.
-4. **File** (Enter). The window closes, play resumes where it stopped, and the log says so (`bugreport.filed { id, kind, by:
-   'courier' }`, a rule in `tracking.js`: "Bug report 12 filed: <title>."). Esc closes the window and files nothing.
+4. **File** (Enter). The window closes, play resumes where it stopped, and the log says so (`qais.report.filed { id, kind, test, by:
+   'courier' }`, a rule in `tracking.js`: "Report 12 filed: <title>."). Esc closes the window and files nothing.
 
 The window is a development tool the player opened, like the F3 panel: it is not text feedback in the world, and it goes away when
 filed. It never counts in the ledger.

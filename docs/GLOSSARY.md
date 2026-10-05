@@ -396,12 +396,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
   played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
-- **the checklist** (an Artifact page kept by Dovina, `docs/plans/BUGREPORT.md`): the items the owner tries in a **test session** (the
-  owner playing the build by hand), each with an id (`C12`), what to do and what should happen; the owner ticks pass, fail or skip,
-  notes it and sends the round back. *Not:* a playtest (an agent's scenario), the stress test.
-- **bug report** (F8, to be built: `docs/plans/BUGREPORT.md`): the frame frozen and marked up by the owner, a title, a kind and a
-  severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last events, the F4 report);
-  kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its attachments).
+- **QAIS** (F8, to be built: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
+  the System, the game's voice): the development window in the game where the owner tests a build: its **Brief**, its **QAIS tests**,
+  its **reports** and the open **questions**, kept in the published build's store. Always "QAIS". *Not:* the F3 panel, the stress test.
+- **QAIS test** (`tests/T<n>` in the build's store): one thing for the owner to try in a **test session** (the owner playing the build
+  by hand): what to do, what should happen, its build, pass, fail or skip and a note; it may watch for its **evidence** (an event) and
+  offer **take me there** (a place). Always "QAIS test" in full. *Not:* a playtest (an agent's scenario), the stress test, an item (the
+  Pneuka Box's), a trial (a minigame).
+- **the Brief** (QAIS's first tab): one build's changelog, a few plain lines per division and what each waits on from the owner.
+- **the checklist** (an Artifact page kept by Dovina until QAIS's tests ship, then retired): the QAIS tests' first home (`C12`).
+- **bug report** (QAIS's Reports tab: `docs/plans/BUGREPORT.md`): the frame taken when F8 is pressed and marked up by the owner, a
+  title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
+  events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its
+  attachments).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the

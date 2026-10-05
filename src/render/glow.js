@@ -18,6 +18,7 @@
 //   const post = new Glow(renderer)    post.render(scene, camera)    (T.visual.glow: strength, 0 = off; T.visual.grade: 0..1)
 //   post.accum = { amt: 0..0.95, zoom, spin }   the frame accumulation (feedback blur): amt 0 is off
 //   post.target                        the buffer to compile shaders against (it renders without the tone curve)
+//   post.compile()                     its own passes compiled (the warm-up: they are not in the scene, so compileAsync(scene) never sees them)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../core/config.js';
@@ -105,14 +106,22 @@ export class Glow {
     this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
     this.quad.frustumCulled = false;
     this.fs = new THREE.Scene(); this.fs.add(this.quad);
-    const mk = (frag, uniforms, toneMapped = false) => new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false, toneMapped });
-    this.down = mk(DOWN, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uThresh: { value: 2.0 }, uKnee: { value: 0.9 }, uFirst: { value: false } });
-    this.blur = mk(BLUR, { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } });
-    this.comp = mk(COMP, { tScene: { value: null }, tA: { value: null }, tB: { value: null }, uGlow: { value: 0.5 }, uGrade: { value: 1 }, uTexel: { value: new THREE.Vector2() } }, true);
+    const mk = (frag, uniforms, toneMapped = false, name = '') => new THREE.ShaderMaterial({ name, vertexShader: VERT, fragmentShader: frag, uniforms, depthTest: false, depthWrite: false, toneMapped });
+    this.down = mk(DOWN, { tSrc: { value: null }, uTexel: { value: new THREE.Vector2() }, uThresh: { value: 2.0 }, uKnee: { value: 0.9 }, uFirst: { value: false } }, false, 'glow-down');
+    this.blur = mk(BLUR, { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } }, false, 'glow-blur');
+    this.comp = mk(COMP, { tScene: { value: null }, tA: { value: null }, tB: { value: null }, uGlow: { value: 0.5 }, uGrade: { value: 1 }, uTexel: { value: new THREE.Vector2() } }, true, 'glow-comp');
     this.acc = [rt(), rt()]; this.accW = 0; this.accFresh = true;
-    this.accMat = mk(ACC, { tCur: { value: null }, tPrev: { value: null }, uAmt: { value: 0 }, uZoom: { value: 0 }, uSpin: { value: 0 } });
+    this.accMat = mk(ACC, { tCur: { value: null }, tPrev: { value: null }, uAmt: { value: 0 }, uZoom: { value: 0 }, uSpin: { value: 0 } }, false, 'glow-accum');
     this.accum = { amt: 0, zoom: 0.01, spin: 0 }; // (set by whoever wants the smear: amt 0 is off)
     this.size = new THREE.Vector2();
+  }
+  /** Its passes compiled now, not on the first frame they draw (the warm-up: main.js). */
+  compile() {
+    const was = this.r.getRenderTarget();
+    for (const [m, out] of [[this.down, this.half], [this.blur, this.q[0]], [this.accMat, this.acc[0]], [this.comp, null]]) { // (each against what it draws into: the composite draws to the screen)
+      this.quad.material = m; this.r.setRenderTarget(out); this.r.compile(this.fs, this.cam);
+    }
+    this.r.setRenderTarget(was);
   }
   get on() { return (T.visual.glow ?? 0) > 0 || (T.visual.grade ?? 0) > 0; }
   /** The buffer the scene is drawn into (compile shaders against it: it draws without the tone curve). */
