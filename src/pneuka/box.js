@@ -39,7 +39,6 @@ export const FITTINGS = {
   keys: { kind: 'key', max: 4, tool: 'lockheart', label: "THE KEYRING · ON THE LOCKHEART'S CHARM, IN ORDER", put: 'Put on the keyring', none: 'no key: it cannot be opened' },
 };
 const SOCKET_OF = Object.fromEntries(Object.entries(FITTINGS).map(([k, F]) => [F.kind, k]));
-const KEY = 'foolsfortune.pneuka.v1';
 
 export class PneukaBox {
   constructor(game) {
@@ -49,7 +48,15 @@ export class PneukaBox {
     this.fit = { instrument: [], heart: ['heart.plain'], keys: [] };
     this.uses = { instrument: [], heart: [0], keys: [] }; // (beside each fitting: how many times it has been turned)
     this.fresh = false;
-    this.load();
+    // THE KIT (core/save.js): the box and the belt are one section, written together, so they can never disagree about a tool
+    const belt = game.belt;
+    game.save?.section('kit', {
+      scope: 'player', version: 1,
+      dump: () => ({ box: { slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded }, belt: belt?.worn ? [...belt.worn] : null }),
+      load: (d) => { this.load(d.box); if (belt) belt.worn = Array.isArray(d.belt) ? new Set(d.belt) : null; },
+      reset: () => { this.slots = new Array(SLOTS).fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.uses = { instrument: [], heart: [0], keys: [] }; this.seeded = false; if (belt) belt.worn = null; },
+      check: () => this.reconcile(), // (every tool somewhere)
+    });
   }
   get book() { return this.game.veritome?.book || null; }
   /** The Book is open with the box while the Veritome is held open. */
@@ -224,12 +231,10 @@ export class PneukaBox {
   refuse(text, key) { this.game.log?.say('warn', text, { key: `pk.${key}`, throttle: 2 }); sfx.fizzle?.(); }
 
   // ---------------------------------------------------------------- kept in the browser
-  save() {
-    try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded })); } catch { /* unavailable: it still works this session */ }
-  }
-  load() {
+  save() { this.game.save?.dirty('kit'); } // (written with the belt, whole: core/save.js)
+  /** The box as the kit section kept it. */
+  load(s) {
     try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (!s) return;
       this.slots = Array.from({ length: SLOTS }, (_, i) => { const o = s.slots?.[i], it = o?.id && itemOf(o.id); return !it ? null : o.uses > 0 || o.data ? { id: o.id, ...(o.uses > 0 ? { uses: o.uses | 0 } : {}), ...(o.data ? { data: o.data } : {}) } : it.stack && o.n > 1 ? { id: o.id, n: Math.min(it.stack, o.n | 0) } : { id: o.id }; });
       this.lure = s.lure === undefined ? 'lure.bob' : s.lure && itemOf(s.lure) ? s.lure : itemOf(`lure.${s.lure}`) ? `lure.${s.lure}` : null;

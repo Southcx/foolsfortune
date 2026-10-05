@@ -29,7 +29,7 @@ import { sfx } from '../../audio/sfx.js';
 // Persona's and Fire Emblem's "luck" as a number that is spent.
 // ---------------------------------------------------------------------------------------
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
-const CAP = 100, KEY = 'foolsfortune.pneuka.lockheart', HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
+const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
 const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
 const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _hm = new THREE.Matrix4(), _mb = new THREE.Matrix4();
@@ -51,7 +51,7 @@ export class Lockheart extends HeldTool {
     const g = mgr.game;
     g.lockheart = this;
     this.cap = CAP; this.charge = 0;
-    try { this.charge = Math.min(CAP, +(localStorage.getItem(KEY) || 0) || 0); } catch { /* none kept */ }
+    g.save?.section('lockheart', { scope: 'player', version: 1, dump: () => Math.round(this.charge), load: (d) => { this.charge = Math.min(CAP, Math.max(0, +d || 0)); }, reset: () => { this.charge = 0; } }); // (core/save.js)
     this.hoovering = false; this.hooverW = 0; this.drainT = 0; this.queue = []; this.lidK = 0; this.saveT = 0;
     this.wheel = new Wheel(g.scene);
   }
@@ -221,7 +221,7 @@ export class Lockheart extends HeldTool {
     }
   }
 
-  save() { try { localStorage.setItem(KEY, String(Math.round(this.charge))); } catch { /* this session */ } }
+  save() { this.game.save?.dirty('lockheart'); }
 
   // ---------------------------------------------------------------- animation
   pose(C, out) {

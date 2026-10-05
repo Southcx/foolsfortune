@@ -33,16 +33,14 @@
 export const BELT_SIZE = 7;
 /** The places on their body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
 export const PLACES = { back: 2, hip: 2, neck: 1 };
-const KEY = 'foolsfortune.pneuka.belt'; // (progress: cleared with the box on a new build, progress.js)
 
 export class ToolBelt {
   constructor(game) {
     this.game = game;
     this.tools = [];
-    this.worn = null; // Set of tool ids, or null until the first load (then: the four they start with)
-    try { const w = JSON.parse(localStorage.getItem(KEY) || 'null'); if (Array.isArray(w)) this.worn = new Set(w); } catch { /* nothing kept */ }
+    this.worn = null; // Set of tool ids, or null until the first tick (then: the ones they start with); kept in the kit (pneuka/box.js)
   }
-  save() { try { localStorage.setItem(KEY, JSON.stringify([...this.worn])); } catch { /* this session only */ } }
+  save() { this.game.save?.dirty('kit'); } // (the belt is kept with the box, whole: core/save.js)
 
   /** Is this tool worn (and so drawn with its key), or in the box? */
   isWorn(id) { return !this.worn || this.worn.has(id); }

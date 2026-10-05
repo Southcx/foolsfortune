@@ -288,6 +288,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
   cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
+- **the save** (`game.save`, `src/core/save.js`): everything the game keeps in the browser. A **section** is what one system keeps (its id,
+  scope, version; how to dump, load, reset, migrate and check it); a **scope** is one record written whole: **player** (progress that
+  follows the Courier: the kit, the ledger, unlocks), **world** (progress of the place: the Wells, the shops, the ground) and **settings**
+  (kept across builds). A **wipe** resets a scope (a new build wipes player and world). An **adopted** key is one a module still writes
+  itself, declared in the save so the wipe and the export know it. To **hold** the save is to borrow the game (the trailer): nothing is
+  written, and on release every section is loaded again. *Not:* `save()` on a module (that now marks its section dirty).
+- **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the
+  Lockheart's kit (say its coffins and keys).
 
 ## Music (Wanda's: `src/music/`, `docs/OST.md`)
 

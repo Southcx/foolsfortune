@@ -51,6 +51,8 @@ credits: UAL Standard, CMU mocap, CC0).
 ## Performance and the look
 - The target is a sixth-generation console (PS2 / GameCube): the scene is drawn at 480 lines and upscaled bilinearly,
   smooth shading, one sun shadow. Keep it so (`src/render/present.js`).
+- **Everything kept goes through the save** (`game.save`, `src/core/save.js`): a system registers a section (scope `player`, `world` or
+  `settings`) and marks it dirty; state that must agree is one section; nothing touches `localStorage` itself (`npm run check`).
 - Every new room is a zone in `src/render/zones.js` (only the zone the camera is in, and what it can see, is drawn).
   Static geometry goes through `level.box`/`addGeo` (merged per zone). Lamps are plain `PointLight`s: the light budget
   (`src/render/lightbudget.js`) lends eight real lights to the nearest; never add lights that bypass it.

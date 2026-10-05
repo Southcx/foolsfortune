@@ -14,13 +14,20 @@ import { buildCurio } from '../world/treasure/curiomodel.js';
 import { itemOf } from './items.js';
 import { sfx } from '../audio/sfx.js';
 
-const KEY = 'foolsfortune.ground.v1', REACH = 1.6, SCALE = 0.62;
+const REACH = 1.6, SCALE = 0.62;
 
 export class GroundItems {
   constructor(game) {
     this.game = game;
     this.list = []; // { id, pos, model, halo, t }
-    this.loaded = false;
+    this.loaded = false; this.kept = [];
+    // what lies on the ground belongs to the world (core/save.js); laid out on the first update, when the models can be built
+    game.save?.section('ground', {
+      scope: 'world', version: 1,
+      dump: () => this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)], ...(e.uses ? { uses: e.uses } : {}), ...(e.data ? { data: e.data } : {}) })),
+      load: (d) => { this.kept = Array.isArray(d) ? d : []; if (this.loaded) { this.clear(); this.loaded = false; } }, // (again, after a borrow: laid out anew)
+      reset: () => { this.kept = []; if (this.loaded) this.clear(); },
+    });
   }
   count(id) { return this.list.filter((g) => g.id === id).length; }
 
@@ -74,9 +81,9 @@ export class GroundItems {
     this.save();
   }
 
-  save() { try { localStorage.setItem(KEY, JSON.stringify(this.list.map((e) => ({ id: e.id, p: [+e.pos.x.toFixed(2), +e.pos.y.toFixed(2), +e.pos.z.toFixed(2)], ...(e.uses ? { uses: e.uses } : {}), ...(e.data ? { data: e.data } : {}) })))); } catch { /* unavailable */ } }
+  save() { this.game.save?.dirty('ground'); }
   load() {
-    try { for (const s of JSON.parse(localStorage.getItem(KEY) || '[]')) if (itemOf(s.id)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false, uses: s.uses | 0, data: s.data || null }); } catch { /* nothing kept */ }
+    for (const s of this.kept) if (itemOf(s.id) && Array.isArray(s.p)) this.drop(s.id, new THREE.Vector3(...s.p), { save: false, scatter: false, uses: s.uses | 0, data: s.data || null });
   }
   clear() { while (this.list.length) this.remove(0); }
 }

@@ -46,7 +46,6 @@ export const WELL_AT = new THREE.Vector3(-1300 - (GRID * CELL) / 2, -900, -(GRID
 const MOUTH_LOCAL = { x: -150, z: -120 };
 const FLOORS = 3, REACH = 2.4;
 const MAP_AT = 0.8, RARE = 4; // (a Cogitomap at four fifths charted; a material a tier up one floor in four)
-const SAVE = 'foolsfortune.wells'; // (the Wells' fill: progress, cleared with each build: core/progress.js)
 
 export class Dunemaw {
   constructor(game) {
@@ -55,6 +54,8 @@ export class Dunemaw {
     this.cur = null; // the floor standing (wellkit.buildFloor)
     this.mobs = []; // the jellies on it
     this.t = 0;
+    this.fills = {}; // { [well]: { fill, at } }: the world's, kept (core/save.js)
+    game.save?.section('wells', { scope: 'world', version: 1, dump: () => this.fills, load: (d) => { this.fills = d && typeof d === 'object' ? d : {}; }, reset: () => { this.fills = {}; } });
     this.buildMouth();
   }
 
@@ -121,9 +122,8 @@ export class Dunemaw {
 
   /** The Well's fill as they go in (it fills again with the hours since the last run, econ/islands.js drawWell), and this run drawn from it. */
   draw() {
-    let s = null; try { s = JSON.parse(localStorage.getItem(SAVE) || 'null'); } catch { /* none */ }
-    const now = Date.now(), was = s?.[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
-    try { localStorage.setItem(SAVE, JSON.stringify({ ...s, [WELL_ID]: { fill: drawWell(fill, 1, 0), at: now } })); } catch { /* private */ }
+    const now = Date.now(), was = this.fills[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
+    this.fills[WELL_ID] = { fill: drawWell(fill, 1, 0), at: now }; this.game.save?.dirty('wells');
     return fill;
   }
 

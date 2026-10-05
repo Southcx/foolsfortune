@@ -116,7 +116,8 @@ import { Folk } from './npc/folk.js';
 import { Creatures } from './creatures/creatures.js';
 import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
-import { resetOnNewBuild } from './core/progress.js';
+import { BUILD } from './core/progress.js';
+import { Save } from './core/save.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './tools/veritome/flash.js';
 import { Reprogram } from './tools/veritome/reprogram.js';
@@ -181,7 +182,8 @@ const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
 
 async function main() {
   mark('main');
-  const freshBuild = resetOnNewBuild(); // (a new build starts its progress afresh: progress.js)
+  const save = new Save(); // (everything the game keeps, in one place: core/save.js)
+  const freshBuild = save.boot(BUILD); // (a new build starts its progress afresh: the player's and the world's)
   loadTuning();
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
@@ -230,7 +232,7 @@ async function main() {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events,
+    scene, physics, fx, hud, camera, renderer, stats, events, save,
     ledger: new Stats(), // (the quiet ledger: everything counted; see stats.js)
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {
@@ -843,6 +845,7 @@ async function main() {
     movers.tick(dt);
     system.tick(dt);
     game.ledger.tick(dt);
+    save.flush(); // (whatever changed this frame, written whole: core/save.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);
