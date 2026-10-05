@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { BUILD } from '../core/progress.js';
-import { zoneOf } from '../render/zones.js';
+import { wholeOf } from '../render/zones.js';
 import { setClock } from '../core/calendar.js';
 
 export function installReplay(game, { player, frame, time }) {
@@ -33,7 +33,7 @@ export function installReplay(game, { player, frame, time }) {
     game.reseed(h.seed); time.set(h.time);
     if (!h.exact) { // (begun mid-session: the Courier is set down where they stood)
       const at = new THREE.Vector3(...h.at.pos);
-      if (zoneOf(at) === 'dunes' && !game.dunes?.active) game.course.toDunes();
+      if (wholeOf(at) === 'dunes' && !game.dunes?.active) game.course.toDunes();
       game.course.teleport(at, h.at.yaw);
     }
     game.events.emit('replay.play', { frames: replay.length, exact: !!h.exact, why: h.why });

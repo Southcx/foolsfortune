@@ -131,7 +131,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the agents, the trailer and the map read the one registry. A place is a point; *not* a room (an area the log names, which the
   `place.enter` event carries as `room`: an old homonym).
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
-  named in full (or ZoI).
+  named in full (or ZoI). A zone may be **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its
+  **whole** (`wholeOf(pos)`): the beach is part of the dunes.
 - **the Zone of Influence**: the ground the player has explored. Nothing more, for now.
 - **the workshop**: the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement**: below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
@@ -146,6 +147,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Dunes** (code `dunes`): the sand sea, a region of Anagami Island, capitalised in player text like the Weir and the Well; **the oasis**
   at its heart, **the Weir** (its pools and pier), **the Weir's Well** (of liquid Lachryma), **the barrier** (the edge), **the ruins**
   (columns and obelisks: stone).
+- **the shore** (`game.dunes.beach`, `src/world/dunes/beach.js`; its zone is `beach`, part of the dunes): due east of the oasis, where the
+  Dunes run down to the Emocean, and nothing but the sea beyond. **the waterline**: where the sand meets the crude (`shoreAt(x, z)`, signed
+  metres, negative at sea; `beach.shore`, as a line); the shore's wall stands a step out past it. **the jetty**: the plank walk out over
+  the crude from the beach, where the sloop moors. *Not:* the Weir's pier (the oasis's), or the span (a bridge).
 
 ## Creatures and folk
 
@@ -197,7 +202,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **prestige** (of a look: `ECON.looks`): where a glaze, stone, hair or skin sits on the folk's clay ladder, Earthenware to the Prince's
   own; it sets the price (`docs/ECONOMY.md`, "The worth of a look").
 - **crude** (`ECON.crude`): liquid Lachryma as a cargo, fossil feeling (`docs/LORE.md`, "Lachryma as crude"); graded by aspect,
-  **mirth**, **wonder**, **hunger**, **grief**, **dread**. Volatile, so it can **spill**; cubes cannot. *Not:* a bauble (the pool's drop).
+  **wonder**, **mirth**, **desire**, **grief**, **dread**. Volatile, so it can **spill**; cubes cannot. *Not:* a bauble (the pool's drop).
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
   (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
   King's marque (Letty Marque). *Not:* the same thing.
@@ -292,6 +297,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
   cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
+- **seam** (`game.seam`, `src/render/seam.js`): a change of place made under a cover (dip to the dark, change, hold two drawn frames,
+  come back); its look is a `kind` (a Well's: 'maw'). *Not:* a texture seam.
 - **the save** (`game.save`, `src/core/save.js`): everything the game keeps in the browser. A **section** is what one system keeps (its id,
   scope, version; how to dump, load, reset, migrate and check it); a **scope** is one record written whole: **player** (progress that
   follows the Courier: the kit, the ledger, unlocks), **world** (progress of the place: the Wells, the shops, the ground) and **settings**

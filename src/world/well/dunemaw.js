@@ -59,6 +59,14 @@ export class Dunemaw {
     this.buildMouth();
   }
 
+  /** At boot, before the shader warm-up (main.js): a floor built far under the Well, so its materials' programs compile with the rest
+   *  instead of on the first look at a floor (6.9 s headless, a visible hitch on a GPU). The returned function hides it after the
+   *  compile; it is kept, never disposed (disposing its materials would let the renderer drop the programs they share with every floor). */
+  prewarm() {
+    const F = buildFloor(this.game, layoutFloor(1, 1), WELL_AT.clone().setY(WELL_AT.y - 400), 1);
+    return () => { F.group.visible = false; this.warm = F; };
+  }
+
   get active() { return !!this.run; }
   get floor() { return this.run?.floor ?? 0; }
   /** Below this the Well has no bottom (main.js sets the player's killY from it while a run is on). */
@@ -250,7 +258,8 @@ export class Dunemaw {
     const it = g.interact?.cur;
     if (it?.id === 'well' && P.peekLatch?.('KeyF') && !g.god?.controlling) {
       P.latch('KeyF');
-      if (it.ref === 'mouth') this.enter(); else if (it.ref === 'down') this.down(); else this.up();
+      const go = it.ref === 'mouth' ? () => this.enter() : it.ref === 'down' ? () => this.down() : () => this.up();
+      if (g.seam) g.seam.cross(go, { kind: 'maw' }); else go(); // (under a cover: render/seam.js; the floor is built while nothing is seen)
     }
     // somewhere else while a run is on (a teleport, the stress test, a fall the floor did not catch): the run is over and nothing is kept
     if (this.moving > 0) this.moving--;

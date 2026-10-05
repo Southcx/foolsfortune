@@ -466,6 +466,7 @@ export class Course {
       { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
       { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
       { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass (Q) · the treasury', group: 'THE OPEN', spawn: 'dunes' },
+      { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
       { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
@@ -500,6 +501,7 @@ export class Course {
     else if (r.spawn === 'siege') this.toSiege();
     else if (r.spawn === 'weir') this.toWeir();
     else if (r.spawn === 'dunemaw') this.toDunemaw();
+    else if (r.spawn === 'shore') this.toShore();
     else this.goTo(r.cp, 'geyser');
   }
 
@@ -531,6 +533,12 @@ export class Course {
     const at = W.mouthSpot(); this.teleport(at.pos, at.yaw + Math.PI);
   }
 
+  /** The open layer, set down on the beach at the jetty's foot, facing the sea (world/dunes/beach.js). */
+  toShore() {
+    this.toDunes();
+    const at = this.game.dunes.beach?.landing(); if (at) this.teleport(at.pos, at.yaw);
+  }
+
   toSiege() {
     this.teleport(this.siegeSpawn.v, this.siegeSpawn.yaw);
     this.running = false;
@@ -555,6 +563,7 @@ export class Course {
     const p = this.game.player;
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
+    p.airPeak = v.y; p.airT = 0; // (a jump taken where they were is not a fall where they arrive: a 400 m 'drop' rolled them past the Well's mouth)
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();

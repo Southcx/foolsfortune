@@ -11,7 +11,9 @@
 // Objects that follow the camera or are drawn in world space from the origin (particles, trails, ropes: `frustumCulled = false`), and
 // anything marked `userData.zoneFree`, are never hidden by zone.
 //
-//   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'dunes' | 'well' | null        (pure, for builders)
+//   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null        (pure, for builders)
+//   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
+//   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
 //   game.zones.update(dt)        game.zones.current        game.zones.visibleAt(pos)
 //   obj.userData.maxDist = 30      (also hidden beyond that distance from the camera: labels, small signage)
 // ---------------------------------------------------------------------------------------
@@ -28,15 +30,28 @@ const seesHole = (c, cam, range) => {
   return _fr.setFromProjectionMatrix(_pm).intersectsBox(HOLE_BOX);
 };
 
+// the dunes' box, and the shore's sector in it (world/dunes/beach.js SHORE: due east of the oasis, from 380 m out, the sector and its
+// fade with a margin; kept as numbers here so the zones import nothing from the world)
+const inDunes = (p) => p.x > 1000 && p.x < 3000 && p.z > -1000 && p.z < 1000 && p.y < -150;
+const SHORE_ZONE = { x: 2000, z: 0, r: 380, half: 0.3 };
+const shoreSector = (p, r, half) => { const lx = p.x - SHORE_ZONE.x, lz = p.z - SHORE_ZONE.z; return lx > 0 && Math.hypot(lx, lz) > r && Math.abs(Math.atan2(lz, lx)) < half; };
+const inShore = (p) => shoreSector(p, SHORE_ZONE.r, SHORE_ZONE.half);
+const nearShore = (c) => inDunes(c) && shoreSector(c, 220, 0.7); // (from the oasis the jetty is a speck: drawn once you are on the way)
+
 export const ZONES = [
   { id: 'workshop', test: (p) => p.y > -1.2 && p.y < 60 && Math.abs(p.x) < 40 && Math.abs(p.z) < 40, sees: (c, cam) => (seesHole(c, cam, 30) ? ['basement'] : []) },
   { id: 'basement', test: (p) => p.y <= -1.2 && p.y > -150 && p.x > -250 && p.x < 450 && p.z > -300 && p.z < 200, sees: (c, cam) => (seesHole(c, cam, 12) ? ['workshop'] : []) }, // (a hole in the ceiling: only from near under it)
   { id: 'circuits', test: (p) => p.x > 2800 && p.x < 3300 && p.z > -300 && p.z <= 380 && p.y > -120 && p.y < 120 },
-  { id: 'dunes', test: (p) => p.x > 1000 && p.x < 3000 && p.z > -1000 && p.z < 1000 && p.y < -150 },
+  // the shore (world/dunes/beach.js): the dunes' east rim, where the sand runs down to the Emocean; the dunes' own ground, a zone of its own
+  { id: 'beach', partOf: 'dunes', test: (p) => inDunes(p) && inShore(p), sees: () => ['dunes'] },
+  { id: 'dunes', test: inDunes, sees: (c) => (nearShore(c) ? ['beach'] : []) },
   // a Well's floor (world/well/dunemaw.js): built far west and deep, one floor at a time
   { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
 ];
 const BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z]));
+
+/** The zone a point is in, or the one that zone is part of (the beach is part of the dunes). */
+export function wholeOf(p) { const z = zoneOf(p); return z === null ? null : BY_ID[z].partOf ?? z; }
 
 /** Which zone a point is in, or null (between places: in transit, or somewhere no zone claims). */
 export function zoneOf(p) {

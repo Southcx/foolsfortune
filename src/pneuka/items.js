@@ -69,7 +69,7 @@ for (const k of Object.keys(MAT_KINDS)) {
 // sloop carries between islands (progress/voyage.js, Dovina's). Kind 'crude', eight to a slot.
 const CASK_LINES = {
   mirth: 'Light and sweet. Easy to carry. Somebody laughed this, a long time ago.', wonder: 'It glitters in the cask and does not settle.',
-  hunger: 'The cask feels empty, however full it is.', grief: 'Heavy and sour. Carry it carefully.', dread: 'The richest grade. The worst to spill. Do not shake it.',
+  desire: 'The cask feels empty, however full it is.', grief: 'Heavy and sour. Carry it carefully.', dread: 'The richest grade. The worst to spill. Do not shake it.',
 };
 for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,

@@ -148,7 +148,7 @@ A telescoping instrument worn on the back: **1** cutlass, **2** rod, **3** hook.
 - **Hook**: a grapnel. Solid ground pulls you to it (jump cuts the line and keeps the speed), something loose is yanked to you, and a
   held line lets you swing.
 - **Rod**: angling at **THE WEIR**, the oasis in the Dunes. Choose a **lure** (made ones, or any curio) and the **aspect** a sounding
-  pushes into it (dread, wonder, grief, hunger, mirth); cast, twitch, sink, and **sound** (middle click) to stir the pond. Answer the
+  pushes into it (wonder, mirth, desire, grief, dread); cast, twitch, sink, and **sound** (middle click) to stir the pond. Answer the
   bite inside its window, then fight: keep the tension needle in its band while the fish tires, lean against its pull, give line when it
   runs. Ten species with their own depths, tides, bites and fights; a fish just landed leaves an echo that larger fish come to. The
   Codex's ANGLING shelf is the bestiary.
@@ -260,6 +260,10 @@ slide-hop, dash and double 13.7; jump height 0.92 m, double jump 1.66. Gaps are 
 **The Dunes**, far below: a sand sea a kilometre across, low gold sun, half-buried ruins, a pale spire to sail toward, an invisible edge
 that shows itself only where you touch it, and at its heart an oasis with **THE WEIR**: a pond in terraces, a pier, a well of liquid
 Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier. Three slip jellies live on the flats.
+
+**The Shore**, due east of the oasis (about 500 m, or **E** at the Index): the one bearing where the far dunes part, the sand runs down
+to the Emocean, and there is nothing but the crude sea to the horizon. You can wade a step into it, no further; **the jetty** runs out
+over it, where the sloop will moor.
 
 **The Great Dunemaw**, out on the sand north-west of the oasis (about 180 m; sail for the violet beam, not the pale spire's, or take
 **W** at the Index): a dark pool turning in a ring of fallen stones and three standing ones (the Dreamvane hears it from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
