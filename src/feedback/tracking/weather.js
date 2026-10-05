@@ -12,12 +12,12 @@ const PLACE = (id) => (id === 'well:dunemaw' ? 'the Great Dunemaw' : NODES[id]?.
 const STATUS_OF = { impact: 'stun', ego: 'doubt', influence: 'charm', illusion: 'blind', delirium: 'confusion' };
 
 export function weatherRules({ on, L, log, g }) {
-  const seen = (e) => { const a = e.aspect || 'calm'; L.inc(`weather.seen.${a}`); L.inc(`weather.seen.${a}.${e.island}`); };
+  const seen = (e) => { const a = e.aspect || 'calm'; L.inc(`weather.seen.${a}`); L.inc(`weather.seen.${a}.${e.island}`); if (e.agate) L.inc(`weather.agate.${e.agate}`); };
   on('weather.now', seen);
   on('weather.change', (e) => {
     seen(e);
     const n = NAMES[e.aspect || 'calm'];
-    if (e.aspect) log.say('info', `Weather over ${PLACE(e.island)}: ${n}${e.strength > 0.6 ? ', heavy' : ''}.`, { key: 'weather', throttle: 20 });
+    if (e.aspect) log.say('info', `Weather over ${PLACE(e.island)}: ${n}${e.strength > 0.6 ? ', heavy' : ''}${e.agate ? `, and ${NAMES[e.second]} beneath it: ${e.agate}` : ''}.`, { key: 'weather', throttle: 20 });
     else log.say('info', `Weather over ${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
   });
   on('day.phase', (e) => { L.inc(`day.${e.phase}`); if (e.phase === 'night' || e.phase === 'dawn') log.say('info', e.phase === 'night' ? 'Night falls. Lachryma glows in the dark.' : 'Dawn.', { key: 'dayphase', throttle: 30 }); });

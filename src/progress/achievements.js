@@ -540,6 +540,7 @@ export function buildAchievements(game) {
   C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
   C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
+  F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
   C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);
 

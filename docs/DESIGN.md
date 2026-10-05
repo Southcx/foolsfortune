@@ -716,4 +716,9 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
   does not: a place carries few feelings, a mind shows one feeling or one agate, and every expansion is followed by a contraction pass
   (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips (`docs/ref/lantern_wisp.glb`): five mood loops,
   three emotes, movement, attack, hit, death, a dance.
+- **The wheel is approved** (the owner, 2026-10-05, "full speed ahead"; docs/plans/WHEEL.md, THE DETERMINATION): rings as adjectives,
+  opposites cancel, one feeling or one **agate**, Plutchik's hues for the five (mirth gold, wonder cyan, desire orange, grief blue, dread
+  ink-green), room for eight; **Faith, Gall and Fury** join as places after the slice (Gall kept: rejection, boredom to loathing). The
+  weather already carries an undercurrent: about one weather hour in eight is an agate, each island with its own (Margarite's delight
+  and optimism, Entropolis's anxiety, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
 

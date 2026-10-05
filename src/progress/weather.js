@@ -24,7 +24,7 @@
 // what is easy), Stardew Valley (rain fish), FFXIV's fish windows, Persona 4's fog (the town's mood, and dangerous), Majora's Mask and
 // Minecraft (a game clock that makes days testable), and Wind Waker (the sea's weather as a thing you sail through).
 //
-//   ASPECTS (on the line)   DISPLAY_ORDER (as shown: wonder, mirth, desire, grief, dread)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, phase, dayPhase }
+//   ASPECTS (on the line)   VALENCE, DISPLAY_ORDER (generated: wonder, mirth, desire, grief, dread)   COLOR   AGATES, agateOf(a, b)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, second?, secondStrength?, agate?, phase, dayPhase }
 //   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
 //   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .update(dt)
@@ -36,8 +36,22 @@ import { zoneOf } from '../render/zones.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
 export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
-/** The order the five are SHOWN in, anywhere a player sees them (the owner, 2026-10-05; GLOSSARY): most positive to most negative. */
-export const DISPLAY_ORDER = ['wonder', 'mirth', 'desire', 'grief', 'dread'];
+/** How positive each feeling is (the shown order is generated from it, so the wheel's eight can join without a hand-written list:
+ *  docs/plans/WHEEL.md). Faith, Gall and Fury are staged: they arrive with their places (the owner, 2026-10-05). */
+export const VALENCE = { wonder: 2, mirth: 1.5, faith: 1, desire: 0, fury: -0.5, gall: -1, grief: -1.5, dread: -2 };
+/** The order the feelings are SHOWN in, anywhere a player sees them (the owner; GLOSSARY): most positive to most negative. */
+export const DISPLAY_ORDER = ASPECTS.slice().sort((a, b) => VALENCE[b] - VALENCE[a]);
+/** Each feeling's colour: Plutchik's hue for its petal, which is also its damage type's (Calissa; the owner, 2026-10-05). */
+export const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a, faith: 0x9be36a, gall: 0x8a5ac8, fury: 0xd8403a };
+/** AGATE: two feelings at once, wedged and never blended (Espada), named after Plutchik's dyads; opposites are "torn". Placeholder
+ *  names for Espada; the key is the two feelings in Law-to-Chaos order. A mind or a sky shows one feeling, or one agate: never three. */
+export const AGATES = {
+  'mirth+wonder': 'delight', 'mirth+desire': 'optimism', 'mirth+dread': 'guilt',
+  'wonder+grief': 'disapproval', 'wonder+dread': 'awe', 'desire+grief': 'pessimism', 'desire+dread': 'anxiety', 'grief+dread': 'despair',
+};
+/** Plutchik's opposed pairs among ours: they cancel, never wedge (WHEEL.md). */
+export const OPPOSITE = { mirth: 'grief', grief: 'mirth', wonder: 'desire', desire: 'wonder', dread: 'fury', fury: 'dread', faith: 'gall', gall: 'faith' };
+export const agateOf = (a, b) => (a && b && a !== b ? AGATES[[a, b].sort((x, y) => ASPECTS.indexOf(x) - ASPECTS.indexOf(y)).join('+')] || null : null);
 /** The damage type each weather feeds: the type at its place on the line (progress/combat/types.js). */
 export const TYPE_OF = { mirth: 'impact', wonder: 'ego', desire: 'influence', grief: 'illusion', dread: 'delirium' };
 /** Espada's names (LORE.md, "Emotional weather"; proposals for the owner). */
@@ -71,7 +85,15 @@ export function weatherAt(place = 'anagami', ms = calNow()) {
   const mood = Math.max(-2, Math.min(2, lawOf(place) * W.lean + W.swing[0] * wave(t, p1, ph(1)) + W.swing[1] * wave(t, p2, ph(2))));
   const intensity = 0.5 + 0.5 * wave(t, p3, ph(3));
   if (intensity < W.calm) return { aspect: null, strength: 0, ...day };
-  return { aspect: ASPECTS[Math.round(mood) + 2], strength: +((intensity - W.calm) / (1 - W.calm)).toFixed(2), ...day };
+  const aspect = ASPECTS[Math.round(mood) + 2], strength = +((intensity - W.calm) / (1 - W.calm)).toFixed(2);
+  // an undercurrent: a second mood of the place on its own slow waves; when it runs strong and differs, the sky is an AGATE of the two
+  // (Calissa: the second shows as colour, never as a second weather to read), always weaker than the first
+  const U = W.under, mood2 = Math.max(-2, Math.min(2, lawOf(place) * W.lean + U.swing * wave(t, U.periods[0], ph(4))));
+  const i2 = 0.5 + 0.5 * wave(t, U.periods[1], ph(5)), second = ASPECTS[Math.round(mood2) + 2];
+  if (i2 < U.above || second === aspect) return { aspect, strength, ...day };
+  const s2 = +(Math.min(0.8, (i2 - U.above) / (1 - U.above)) * strength).toFixed(2);
+  if (OPPOSITE[aspect] === second) return { aspect, strength: +(strength * (1 - s2)).toFixed(2), cancelled: second, ...day }; // (opposites cancel: the mood is torn, and weaker)
+  return { aspect, strength, second, secondStrength: s2, agate: agateOf(aspect, second), ...day };
 }
 
 /** The place and exposure a position is in (null: between places, or at sea). */
@@ -131,11 +153,11 @@ export class Weather {
     this.t -= dt;
     if (this.t > 0) return;
     this.t = 0.5;
-    const w = this.here(this.game.player?.pos), key = `${w.place}:${w.aspect}:${Math.round(w.strength * 4)}`, phase = phaseAt();
+    const w = this.here(this.game.player?.pos), key = `${w.place}:${w.aspect}:${w.agate || ''}:${Math.round(w.strength * 4)}`, phase = phaseAt();
     if (key !== this.last.key) {
       const was = this.last.key;
       this.last.key = key;
-      if (w.place) this.game.events.emit(was !== null ? 'weather.change' : 'weather.now', { island: w.place, exposure: w.exposure, aspect: w.aspect, strength: w.strength, by: 'environment' });
+      if (w.place) this.game.events.emit(was !== null ? 'weather.change' : 'weather.now', { island: w.place, exposure: w.exposure, aspect: w.aspect, strength: w.strength, second: w.second || null, agate: w.agate || null, by: 'environment' });
     }
     if (phase !== this.last.phase) { const was = this.last.phase; this.last.phase = phase; if (was) this.game.events.emit('day.phase', { phase, by: 'environment' }); }
   }

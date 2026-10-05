@@ -192,6 +192,7 @@ export const ECON = {
     lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
     wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
     mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
+    under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)
     build: 0.5, fish: 1, supply: 0.25,
     mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5 },
     danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5 },
