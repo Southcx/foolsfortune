@@ -180,10 +180,13 @@ export class Codex {
     const imp = el('button', '', 'IMPORT');
     const rst = el('button', '', 'RESET PROGRESS');
     const msg = el('span', 'msg', this.msg);
-    exp.onclick = () => { ta.value = s.exportCode(); ta.select(); try { navigator.clipboard?.writeText(ta.value); this.setMsg('code copied'); } catch { this.setMsg('select and copy the code'); } };
-    imp.onclick = () => this.setMsg(s.importCode(ta.value) ? 'imported' : 'that code did not check out');
+    // (the whole save, core/save.js: the box and the belt, the ledger, the Book, the map, the Wells... not the System's unlocks alone;
+    // a code from before, FFS1, is still the System's; putting one back, or erasing, reloads the page so every module reads it afresh)
+    const G = this.game.save, reload = () => setTimeout(() => location.reload(), 400);
+    exp.onclick = () => { ta.value = G.code(); ta.select(); try { navigator.clipboard?.writeText(ta.value); this.setMsg('code copied'); } catch { this.setMsg('select and copy the code'); } };
+    imp.onclick = () => { const c = ta.value.trim(); if (c.startsWith('FFS2.') ? G.fromCode(c) : s.importCode(c)) { this.setMsg('imported'); if (c.startsWith('FFS2.')) reload(); } else this.setMsg('that code did not check out'); };
     let armed = false;
-    rst.onclick = () => { if (!armed) { armed = true; rst.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; rst.textContent = 'RESET PROGRESS'; }, 3000); } else { s.reset(); this.setMsg('progress erased'); } };
+    rst.onclick = () => { if (!armed) { armed = true; rst.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; rst.textContent = 'RESET PROGRESS'; }, 3000); } else { G.wipeProgress(); this.setMsg('progress erased'); reload(); } };
     for (const n of [exp, ta, imp, rst, msg]) foot.appendChild(n);
     this.msgEl = msg;
     cx.appendChild(foot);

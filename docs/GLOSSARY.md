@@ -294,7 +294,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the save** (`game.save`, `src/core/save.js`): everything the game keeps in the browser. A **section** is what one system keeps (its id,
   scope, version; how to dump, load, reset, migrate and check it); a **scope** is one record written whole: **player** (progress that
   follows the Courier: the kit, the ledger, unlocks), **world** (progress of the place: the Wells, the shops, the ground) and **settings**
-  (kept across builds). A **wipe** resets a scope (a new build wipes player and world). An **adopted** key is one a module still writes
+  (kept across builds). A **wipe** resets a scope (a new build wipes player and world; so does the Codex's RESET PROGRESS, and its
+  EXPORT CODE is the whole save, `FFS2.`). An **adopted** key is one a module still writes
   itself, declared in the save so the wipe and the export know it. To **hold** the save is to borrow the game (the trailer): nothing is
   written, and on release every section is loaded again. *Not:* `save()` on a module (that now marks its section dirty).
 - **the seed** (`?seed=N`, `game.seed`): the number the session's chance is drawn from; the same seed and the same input play the same.

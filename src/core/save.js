@@ -22,6 +22,7 @@
 //   save.dirty(id)   save.flush({ all? })   (dirty marks; flush writes each dirty scope whole: main.js calls it once a frame)   save.writer(fn)
 //   save.wipe(scope)   save.check() -> fixes made   save.hold(why) / save.release(why)   save.export() -> string   save.import(text, { replace })
 //   save.stash(key, text) / save.unstash(key) (this tab only, across one reload: a replay waiting for its page)
+//   save.code() -> 'FFS2...'   save.fromCode(code) -> ok   save.wipeProgress() (player and world wiped as a new build does it; the caller reloads the page)
 // ---------------------------------------------------------------------------------------
 const PREFIXES = ['foolsfortune.', 'ff.']; // (ff.: the workbench's own edits, Calissa's studio)
 const ours = (k) => PREFIXES.some((p) => k?.startsWith(p));
@@ -37,6 +38,7 @@ export const ADOPTED = {
   settings: ['foolsfortune.windows', 'foolsfortune.voice', 'foolsfortune.music', 'foolsfortune.rhythm', 'foolsfortune.tuning', 'foolsfortune.help',
     'foolsfortune.log', 'ff.vfx.overrides', 'ff.cine.overrides'],
 };
+const fnv = (t) => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return (h >>> 0).toString(16).padStart(8, '0'); };
 const scopeOfKey = (k) => Object.keys(ADOPTED).find((s) => ADOPTED[s].some((p) => k === p || k.startsWith(`${p}.`)));
 
 export class Save {
@@ -133,6 +135,18 @@ export class Save {
     if (replace && this.store) for (let i = this.store.length - 1; i >= 0; i--) { const k = this.store.key(i); if (ours(k) && !(k in inp.keys)) this.store.removeItem(k); }
     for (const [k, v] of Object.entries(inp.keys)) if (ours(k)) this.write(k, v);
   }
+
+  /** Everything kept, as a code to paste between browsers: FFS2.<base64>.<checksum> (the Codex's EXPORT CODE). */
+  code() { const b = btoa(unescape(encodeURIComponent(this.export()))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); return `FFS2.${b}.${fnv(b)}`; }
+  /** Put back a code (whole: what it lacks goes too). False if it does not check out; the page reloads after, as for import. */
+  fromCode(code) {
+    const m = /^FFS2\.([A-Za-z0-9_-]+)\.([0-9a-f]{8})$/.exec(String(code).trim());
+    if (!m || fnv(m[1]) !== m[2]) return false;
+    try { this.hold('import'); this.import(decodeURIComponent(escape(atob(m[1].replace(/-/g, '+').replace(/_/g, '/')))), { replace: true }); return true; } catch { this.release('import', { restore: false }); return false; }
+  }
+  /** Progress gone, as a new build does it: what is stored wiped and the save held (the page reloads after: the modules that write
+   *  their own keys still hold theirs in memory). */
+  wipeProgress() { this.flush(); this.hold('wipe'); for (const scope of ['player', 'world']) this.wipeStored(scope); }
 
   /** A text kept for this tab only, across a reload and no further (a replay waiting for the page it is played on). Taken once. */
   stash(key, text) { try { sessionStorage.setItem(`foolsfortune.${key}`, text); return true; } catch { return false; } }
