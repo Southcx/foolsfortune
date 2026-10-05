@@ -27,6 +27,7 @@
 //   look.seenMark(seen)                            -> element | null   (seen: [{ at, gist }], the first three sightings)
 //   look.reportList(bugs, { onOpen(id) })          -> element
 //   look.brief(docs) and look.questions(qs)        -> element   (the other two tabs, plain)
+//   look.notice(text)                              -> element   (one quiet line in the body: off the published build, QAIS says so)
 //   look.preview()                                 (the four tabs over sample documents, for `/qais` until the shell lands; Esc closes)
 // ---------------------------------------------------------------------------------------
 
@@ -211,6 +212,9 @@ export class QaisLook {
     }
     return box;
   }
+
+  /** One quiet line in the body: off the published build (no store), QAIS says it lives there (QAIS.md, Petra's answer 4). */
+  notice(text = 'QAIS keeps its tests, reports and brief in the published build. Here, a report is saved as a file.') { return el('div', 'empty', esc(text)); }
 
   /** A preview over sample documents (the shapes of QAIS.md's store): `/qais` on the chat line, until Petra's shell calls the parts. */
   preview() {

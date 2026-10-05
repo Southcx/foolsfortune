@@ -11,6 +11,7 @@ look.testCard(test, { onStatus(status|null), onNote(text), onGo(), onFail() })  
 look.seenMark(test.seen)                        -> element | null     (seen: [{ at, gist }]: the first three)
 look.reportList(bugs, { onOpen(id) })           -> element            (status: 'new' | 'seen' | 'fixed <commit>' | 'not a bug' | 'asked')
 look.brief(docs), look.questions(qs)            -> element
+look.notice(text?)                              -> element            (off the published build: the one line QAIS shows, QAIS.md answer 4)
 look.preview()                                  (`/qais` on the chat line: all four tabs over sample documents)
 ```
 
