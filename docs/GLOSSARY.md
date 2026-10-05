@@ -285,7 +285,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (wonder by night), the **rainbow** (mirth), **far bolts** (dread: a bolt a long way off, held a beat and fading; never a flash). Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.
-- **the maw wipe** (`game.mawWipe`, `src/ui/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
+- **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it

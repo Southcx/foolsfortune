@@ -89,7 +89,7 @@ import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
 import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
-import { MawWipe } from './ui/mawwipe.js';
+import { MawWipe } from './vfx/mawwipe.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
 import { HideUI } from './feedback/hideui.js';
@@ -973,7 +973,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.mawWipe.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

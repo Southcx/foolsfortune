@@ -127,8 +127,8 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **Three paintings make the day**: the maker's dusk (untouched at its hour), the owner's day (clouds and floating soap bubbles) and
   night (violet and green swirls over a dark crown, held a little below its full cry), blended by the hour; dawn is the dusk turned
   rose. The cloud layer thins under the day's and the night's own painted clouds and takes the weather's cover.
-- **The maw wipe**: the way into a Well is covered by the Dunemaw's pool itself, a page layer that keeps turning on the compositor
-  while the floor is built (a WebGL wipe would freeze), never a loading screen with words.
+- **The maw wipe**: the way into a Well is covered by the Dunemaw's pool itself, drawn in the frame (inside the 480 lines, over the world,
+  under the HUD), never a loading screen with words.
 
 ## 6. The placeholder audit (what to replace first)
 
