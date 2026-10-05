@@ -93,6 +93,7 @@ import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Shore } from './vfx/shore.js';
 import { BugMarkup } from './ui/bugmarkup.js';
+import { QaisLook } from './ui/qais.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
 import { HideUI } from './feedback/hideui.js';
@@ -612,6 +613,7 @@ async function main() {
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
+  game.chat.add('qais', { help: 'the look of QAIS over sample documents (a preview: F8 opens the real window once its shell lands)', run: () => new QaisLook().preview() });
   game.chat.add('markup', { help: "the bug report's markup window over this frame (a preview: F8 files the real report)", run: () => {
     renderer.render(scene, camera); const c = document.createElement('canvas'); c.width = renderer.domElement.width; c.height = renderer.domElement.height;
     c.getContext('2d').drawImage(renderer.domElement, 0, 0); // (read back in the same task as the draw: the drawing buffer is not preserved)
