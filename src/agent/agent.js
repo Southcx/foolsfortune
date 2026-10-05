@@ -16,7 +16,7 @@
 //   game.agent.busy (an intent is being carried out)   .result (how the last one ended: 'arrived', 'stuck', 'timeout'...)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { zoneOf } from '../render/zones.js';
+import { zoneOf, wholeOf } from '../render/zones.js';
 
 const r2 = (v) => +v.toFixed(2);
 const vec = (v) => [r2(v.x), r2(v.y), r2(v.z)];
@@ -80,7 +80,7 @@ export class Agent {
     switch (cmd.do) {
       case 'goto': { // (steered on foot: through the Well's doorways when it is down there)
         const to = target(cmd); if (!to) return { ok: false, why: 'no such place' };
-        const zt = zoneOf(to), zc = zoneOf(P.pos);
+        const zt = wholeOf(to), zc = wholeOf(P.pos); // (the whole, not the zone: the beach is walked to from the dunes)
         if (zt !== zc || Math.abs(to.y - P.pos.y) > 4) return { ok: false, why: `it is in ${zt}${zt === zc ? ', on another floor' : ''}, and you are in ${zc}: travel there first (goto walks within a room)` };
         const path = g.well?.active && g.well.route ? g.well.route(P.pos, to) : [to];
         this.task = { kind: 'goto', path, i: 0, within: cmd.within ?? 1.2, run: cmd.run !== false, ticks: cmd.ticks ?? 60 * 30, best: Infinity, still: 0 };

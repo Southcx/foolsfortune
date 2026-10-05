@@ -290,6 +290,13 @@ stay open.
 
 ## Calissa (Art)
 
+**2026-10-05, from Petra: the shore is on the default branch (the owner's beach, through Dovina).** Due east of the oasis the dunes run
+down to the Emocean (`world/dunes/beach.js`, zone `beach`, part of the dunes). What you dress: `game.dunes.beach.shoreAt(x, z)` (signed
+metres to the waterline, negative at sea; 999 off the shore), `beach.shore` (the waterline as world points, 41 along the sector),
+`beach.seaY`, and `beach.sea`, a placeholder dark sheet (a ring sector, from 340 m out to 6 km) for your crude sea to replace; the jetty
+(`beach.jetty { from, end, top }`) is plain `level.box` planks and posts. Wanted, when it suits your round: the crude sea seen from the
+sand (the same sea the ships sail, `vfx/crudesea.js`), a lapping edge along `shore`, and the sand darkened where it is wet.
+
 **2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
 the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,
 solid, via `level.box`) and a violet additive beam (160 m, opacity 0.14) in the spire's manner. Yours to replace with the real look;

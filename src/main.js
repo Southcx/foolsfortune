@@ -300,12 +300,12 @@ async function main() {
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js)
   game.chests.rave.warm(renderer, camera);
   mark('sky');
+  const level = new Level(scene, physics, breakables); // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
+  game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   mark('dunes');
-  const level = new Level(scene, physics, breakables);
-  game.level = level;
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
   // what the environmental movement techs read: water, ladders, slip (built with the level)
@@ -528,7 +528,7 @@ async function main() {
     carto.addAnchor('GALLERY', 'gallery', v([0, clappers.floors[1]?.y ?? 4.6, 0]), 'upper');
     carto.addAnchor('THE HUB', 'hub', course.hubSpawn.v);
     for (const r of course.rooms) {
-      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'siege' ? course.siegeSpawn.v : r.spawn === 'weir' ? course.weirSpawn.v : course.cps[r.cp]?.v;
+      const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'shore' ? game.dunes.beach?.landing().pos : r.spawn === 'siege' ? course.siegeSpawn.v : r.spawn === 'weir' ? course.weirSpawn.v : course.cps[r.cp]?.v;
       if (at) carto.addAnchor(r.name, r.id, at);
     }
     carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
