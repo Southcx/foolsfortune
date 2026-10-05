@@ -254,8 +254,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
-  what everything that drifts daily keys on (a Well's layout, an island's demand, a route's reckoning, a Cogitomap's age). *Not:* a
-  calendar day, or a day of play.
+  what everything that drifts daily keys on (a Well's layout, an island's demand, a route's reckoning). *Not:* a calendar day, or a day
+  of play. Always written **game day** (the owner, 2026-10-05: no bare "day" or "hour").
+- **game hour**: a twenty-fourth of a game day, 150 seconds of real time (2.5 real minutes); what the weather's spells, a bed's growth and
+  a Well's refill are counted in. *Not:* an hour of play.
+- **real time** (**real second**, **real minute**, **real hour**): the wall clock, what rates "per hour of play" and cooldowns are
+  counted in. A unit of time in a doc, commit or message always says which clock: **game** or **real**.
 - **Cogitomap** (the item `cogitomap`): a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket
   to a seeded run of it. Drawn on the way up when the run charted four fifths of the floors walked (the map's share of CHARTED ground,
   which a survey pulse gets and walking alone does not); it carries the Well, the seed, the day and its worth (`cogitomapWorth`).

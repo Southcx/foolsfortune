@@ -5,6 +5,9 @@ These come from the project's owner and apply to every change.
 ## Words and structure
 - **`docs/GLOSSARY.md` is binding**: one word, one meaning, in code, docs, commits and messages. Name a new thing there first, in the same
   commit; a request that uses a word against the glossary is clarified before anything is built.
+- **Be specific** (the owner, 2026-10-05): say the glossary's term in full, never a loose stand-in, even at the cost of words. Every unit
+  of time names its clock (**game day**, **game hour**, **real minute**; never a bare "hour" or "day"); a thing is named as the glossary
+  names it (the Dunemaw, not "the Well"; a cask of grief crude, not "crude"), with its code id where that helps.
 - **`docs/ARCHITECTURE.md` is binding**: the layout, the import rules, the module contract (a header, one job, under 800 lines), the names,
   the budgets and the gate. It is Petra's, and the gate enforces it.
 - **`npm run check`** is the machine half of the gate: it fails on new debt only (the baseline only falls). **`npm run perf`** measures a
