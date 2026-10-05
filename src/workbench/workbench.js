@@ -317,7 +317,7 @@ export class Workbench {
       else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
       else if (id === 'ship:sloop') obj = new Sloop().group;
       else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
-      else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.3, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
+      else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
       else if (id === 'folk:purser') obj = buildPurser().group;
       else if (id === 'folk:board') obj = buildBountyBoard().group;
       else if (id === 'slice:sea') { const sea = new CrudeSea({ size: 40, cells: 40 }); sea.update(4); obj = sea.mesh; }

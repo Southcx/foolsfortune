@@ -17,9 +17,8 @@
 // along its own path (the sixth generation's rain: a few thousand lines wrapped round the camera), so nothing swims or flickers.
 // Only an OPEN place gets it (`game.weather.here(pos).exposure`): a roofed room keeps its own light, a Well its own sky.
 //
-// THE HOUR: the maker's painted sky is DUSK, and dusk is the painting untouched; the other hours are graded from it (vfx/sky.js
-// `grade`): the day lifts and cools it and lays a day sky over the maroon zenith and its stars, dawn is rose, the night darkens and
-// cools it and brightens the stars (until the maker paints a night: then it is blended in by the hour). The light ON the scene (the
+// THE HOUR: three paintings (vfx/sky.js `grade`): the maker's is DUSK, untouched at its hour; the owner's DAY (clouds and floating
+// soap bubbles) and NIGHT (violet and green swirls over a dark crown) are blended in by the hour; dawn is the dusk painting turned rose. The light ON the scene (the
 // sun, the fog) is Petra's (render/daylight.js): `fogOf(aspect, strength)` and `look.lift` are what this module offers it.
 //
 // Prior art: the sixth generation's camera-wrapped rain (Wind Waker, Metal Gear Solid 2's tanker deck), real atmospheric optics (the
@@ -48,16 +47,17 @@ export const LOOK = {
 };
 const ASPECTS = Object.keys(LOOK);
 
-/** The hour's grade of the painting (dusk is the painting): keys by the hour of the day, blended round the clock. */
+/** The hour's grade: the owner's day and night paintings blended in over the maker's dusk, and a little light on each. Keys by the hour
+ *  of the day, blended round the clock; dawn is the dusk painting turned rose (it is the same light, the other way round). */
 const HOURS = [
-  [0, { expo: 0.32, mul: [0.6, 0.7, 1.05], stars: 2.2 }],
-  [4.5, { expo: 0.32, mul: [0.6, 0.7, 1.05], stars: 2.2 }],
-  [6, { expo: 0.85, mul: [1.0, 0.86, 0.92], top: [0.42, 0.36, 0.48], topK: 0.4, stars: 0.6 }],
-  [8, { expo: 1.12, mul: [0.94, 0.98, 1.08], top: [0.5, 0.56, 0.68], topK: 0.8, stars: 0 }],
-  [16.5, { expo: 1.12, mul: [0.94, 0.98, 1.08], top: [0.5, 0.56, 0.68], topK: 0.8, stars: 0 }],
-  [19, { expo: 1, mul: [1, 1, 1], top: [0, 0, 0], topK: 0, stars: 1 }], // (dusk: the maker's own)
-  [21, { expo: 0.32, mul: [0.6, 0.7, 1.05], stars: 2.2 }],
-  [24, { expo: 0.32, mul: [0.6, 0.7, 1.05], stars: 2.2 }],
+  [0, { night: 1, expo: 0.55, desat: 0.15 }],
+  [4.5, { night: 1, expo: 0.55, desat: 0.15 }],
+  [6, { expo: 0.9, mul: [1.0, 0.86, 0.94], stars: 0.6 }],
+  [8, { day: 1, expo: 1.0 }],
+  [16.5, { day: 1, expo: 1.0 }],
+  [19, { expo: 1, stars: 1 }], // (dusk: the maker's own)
+  [21, { night: 1, expo: 0.55, desat: 0.15 }],
+  [24, { night: 1, expo: 0.55, desat: 0.15 }],
 ];
 const lerp = THREE.MathUtils.lerp, smooth = THREE.MathUtils.smoothstep;
 /** The hour's grade (phase 0..1 through the day), as numbers for sky.grade. */
@@ -66,8 +66,7 @@ export function hourGrade(phase) {
   let i = 0; while (i < HOURS.length - 2 && HOURS[i + 1][0] <= h) i++;
   const [h0, a] = HOURS[i], [h1, b] = HOURS[i + 1], k = smooth(h, h0, h1);
   const v = (x, y, d) => lerp(x ?? d, y ?? d, k);
-  const v3 = (x, y, d) => [0, 1, 2].map((j) => lerp((x || d)[j], (y || d)[j], k));
-  return { expo: v(a.expo, b.expo, 1), mul: v3(a.mul, b.mul, [1, 1, 1]), top: v3(a.top, b.top, [0.5, 0.56, 0.68]), topK: v(a.topK, b.topK, 0), stars: v(a.stars, b.stars, 1), desat: 0, haze: [0, 0, 0], hazeK: 0 };
+  return { day: v(a.day, b.day, 0), night: v(a.night, b.night, 0), expo: v(a.expo, b.expo, 1), mul: [0, 1, 2].map((j) => lerp((a.mul || [1, 1, 1])[j], (b.mul || [1, 1, 1])[j], k)), stars: v(a.stars, b.stars, 1), desat: v(a.desat, b.desat, 0), haze: [0, 0, 0], hazeK: 0 }; // (the night held a little below the painting's full cry: it is night, not a rave)
 }
 /** The fog a weather asks for (render/daylight.js lays it on the scene's): its colour and a multiplier on the density. */
 export function fogOf(aspect, strength = 1) { const L = LOOK[aspect]; return L ? { colour: L.fog, density: lerp(1, L.fogD, strength), k: strength } : null; }
@@ -247,13 +246,13 @@ export class WeatherLook {
           g.desat = Math.max(g.desat, (S.desat || 0) * k);
           if (S.haze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; g.haze = S.haze.toArray(); }
         }
-        sky.grade({ expo: g.expo, mul: _c.fromArray(g.mul), top: _c2.fromArray(g.top), topK: g.topK, stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK });
+        sky.grade({ day: g.day, night: g.night, expo: g.expo, mul: _c.fromArray(g.mul), stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK });
         // the clouds take the hour's light (less of the night's dark: they hold what light there is) and the weather's cover
         const CL = this.game.dunes?.clouds, B = CL?.base;
         if (B) {
           let cover = B.cover, opacity = B.opacity;
           for (const a of ASPECTS) { const k = this.amt[a], Q = LOOK[a].clouds; if (k && Q) { cover = lerp(cover, Q.cover ?? cover, k); opacity = lerp(opacity, Q.opacity ?? opacity, k); } }
-          CL.grade({ expo: Math.pow(g.expo, 0.8) * (1 - 0.5 * g.desat), mul: _c.lerp(_white, 0.5), cover, opacity });
+          CL.grade({ expo: Math.pow(g.expo, 0.8) * (1 - 0.5 * g.desat) * (1 - 0.65 * g.night), mul: _c.lerp(_white, 0.5), cover, opacity: opacity * (1 - 0.5 * g.night) * (1 - 0.4 * g.day) }); // (thin under the day's and the night's own painted clouds)
         }
       }
     }
@@ -320,4 +319,4 @@ export class WeatherLook {
     this.group.traverse((o) => { if (o.isMesh || o.isPoints || o.isLineSegments) { o.geometry.dispose(); o.material.dispose(); } });
   }
 }
-const _white = new THREE.Color(1, 1, 1), _c = new THREE.Color(), _c2 = new THREE.Color(), _c3 = new THREE.Color(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+const _white = new THREE.Color(1, 1, 1), _c = new THREE.Color(), _c3 = new THREE.Color(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);

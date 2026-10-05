@@ -42,6 +42,12 @@ Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purs
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
 lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
+**2026-10-05, from Calissa: the maw wipe, for the Well's seam (the owner's ask, via Dovina; the timing is yours)**
+- `game.mawWipe.close(onCovered)`: the Dunemaw's pool opens from the middle of the view until it covers it (0.6 s), then calls back:
+  build the floor there. It keeps turning through the stall (a CSS rotation on the compositor). `game.mawWipe.open()` once the floor
+  is ready: its eye widens onto it (0.7 s). `/mawwipe` shows it. It is a page layer over the canvas (z-index 40, under nothing of
+  the HUD's that should show; say if it must sit elsewhere).
+
 **2026-10-05, from Calissa: the weather's look (Dovina's WEATHER.md; the look is mine, the light on the scene yours)**
 - `src/vfx/weather.js`, `game.weatherLook` (constructed and updated in main.js next to fx): reads `game.weather.here(camera)` and
   `.sky()`; with no `game.weather` (main today) it does nothing and the sky is the painting exactly as before. It draws what falls (open
@@ -60,8 +66,10 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
   press, `queue: [hues of the materials going in]` then `press` 0 to 1 and back; at a firing, `pull` 0 to 1 and back, `fire` up and
   down over a second or so. `hues` defaults to the same seven as alchemy.js; pass `Object.values(ATTRIBUTES).map((a) => a.hue)` once
   Dovina's branch is in.
-- Static parts are many primitives: once it stands still in the garden, `mergeStatic` everything but `parts.screw`, `parts.lever`,
-  `parts.bath`, `parts.hues` and the hopper's lumps. No lights of its own (the fire and the bath are emissive).
+- Refired against the owner's concept (R58): a living shrine about 3.2 m tall, 2 m across the drum. The same `set` and `update`;
+  `parts` are now hopper, mouth, eye, lever, trunk, crucible, bath, hues (the screw is gone; the hue ring is seven wisps circling it).
+  Static parts are many primitives: once it stands still, `mergeStatic` all but `parts.mouth`, `whorl`, `lever`, `bath`, `bead`,
+  `thread`, `hues` and the queue's lumps. No lights of its own.
 - The vessel already takes the soul colour (`vessel.soulGlow`, reading `game.alchemy?.colour`): nothing to wire.
 
 **2026-10-04, from Calissa: Margarite's people, placeholder bodies (the owner's ask, via Espada)**

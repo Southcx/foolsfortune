@@ -89,6 +89,7 @@ import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
 import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
+import { MawWipe } from './ui/mawwipe.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
 import { HideUI } from './feedback/hideui.js';
@@ -299,6 +300,7 @@ async function main() {
   game.chests.rave.warm(renderer, camera);
   mark('sky');
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
+  game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   mark('dunes');
   const level = new Level(scene, physics, breakables);
@@ -590,6 +592,7 @@ async function main() {
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
+  game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);

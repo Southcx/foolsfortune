@@ -109,9 +109,10 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 
 ## The Shrine Garden: the spirit press and the soul colour (R58)
 
-- **The press is a potter's machine**: a terracotta firebox (the kiln's own clay), a celadon crucible crazed with guan's crackle (the
-  chest's glaze at its second stage), a bronze screw through oak, a copper hopper. The soul colour is shown twice and never written:
-  the **bath** in the crucible and the **hue ring** round the plinth (the seven attributes at their hues, the one you are inside lit).
+- **The press grew** (the owner's concept, `docs/ref/concept_spirit_press.png`, a value study we coloured): a garden shrine of moss,
+  deep teal leaf and plum-dark root over a carved stone drum, dull bronze at its rims, wisps about it. The soul colour is the only
+  bright thing on it, shown three ways and never written: the **bath** (the pool), the bead in the hourglass and the eye's lens, and
+  the **hue ring** (seven wisps, the one you are inside drawn close and lit).
 - **The soul colour is the vessel's Lachryma** (the skin's glow): grey gives none, so a new Courier looks exactly as the maker made them,
   and it comes in as the soul saturates, on any skin worn. Alchemy is dress-up as well as growth.
 
@@ -123,9 +124,11 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
   status it feeds read as kin.
 - **What falls is in the world**: streaks and motes on world-anchored paths wrapped round the eye, each at a constant speed, so nothing
   swims or flickers; no heat shimmer, no screen flash. Thunder is a bolt a long way off and a slow glow in the cloud.
-- **The painting is dusk.** The other hours are graded from it (day cooled and lifted with a day sky over the maroon zenith, dawn rose,
-  night dark and cool with brighter stars); the clouds take the hour and the weather's cover. A night painting from the maker would
-  replace the graded night (asked, via Dovina's digest).
+- **Three paintings make the day**: the maker's dusk (untouched at its hour), the owner's day (clouds and floating soap bubbles) and
+  night (violet and green swirls over a dark crown, held a little below its full cry), blended by the hour; dawn is the dusk turned
+  rose. The cloud layer thins under the day's and the night's own painted clouds and takes the weather's cover.
+- **The maw wipe**: the way into a Well is covered by the Dunemaw's pool itself, a page layer that keeps turning on the compositor
+  while the floor is built (a WebGL wipe would freeze), never a loading screen with words.
 
 ## 6. The placeholder audit (what to replace first)
 
