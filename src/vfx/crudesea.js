@@ -21,6 +21,7 @@
 //   const sea = new CrudeSea({ env })   scene.add(sea.mesh)   sea.update(t, camera.position)   sea.set({ calm, swell, film, current })
 //   (swell 0.38 by default: about a metre and a half crest to trough, a sloop's sea)
 //   sea.heightAt(x, z, t) -> y   (for a ship: its bob and its pitch)   sea.dispose()
+//   new CrudeSea({ geometry, y })   a surface of its own shape, laid in world xz (a shore's sector): it does not follow the eye
 //   sea.clipSector({ center, angle, half, r0 })   only the sector of a shore is sea (the shore, vfx/shore.js): elsewhere it is not drawn
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -31,10 +32,11 @@ const WAVES = [[0.2, 38, 0.32, 1], [1.1, 23, 0.26, 1], [-0.7, 14, 0.18, 1.1], [2
 const G = 9.8;
 
 export class CrudeSea {
-  constructor({ env = null, size = 900, cells = 180, y = 0 } = {}) {
-    this.y = y; this.cell = size / cells; this.t = 0;
+  constructor({ env = null, size = 900, cells = 180, y = 0, geometry = null } = {}) {
+    this.y = y; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put)
     this.k = { calm: 0, swell: 0.38, film: 1, current: new THREE.Vector2(1, 0.25).normalize() };
-    const geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2);
+    let geo = geometry;
+    if (!geo) { geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2); }
     const u = this.u = {
       uT: { value: 0 }, uAmp: { value: 0.38 }, uFilm: { value: 1 }, uCalm: { value: 0 },
       uCur: { value: this.k.current.clone() },
@@ -106,7 +108,7 @@ diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (th
   /** Per frame: the time, and the grid kept under the camera in whole cells (the waves are the world's: nothing swims). */
   update(t, camPos) {
     this.t = t; this.u.uT.value = t;
-    if (camPos) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
+    if (camPos && !this.fixed) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
   }
 
   /** The surface's height at a point (the same sum as the shader's, near the eye): what a ship rides. */

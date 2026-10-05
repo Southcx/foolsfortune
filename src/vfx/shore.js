@@ -22,6 +22,19 @@ import * as THREE from 'three';
 import { CrudeSea } from './crudesea.js';
 import { SHORE } from '../world/dunes/beach.js';
 
+/** The shore's sea as its own shape: a ring sector from just inside the waterline out past the dunes' far plane, its rows packed
+ *  toward the shore (where the eye is) and thinning out to sea; laid in world xz (about 4,600 triangles). */
+function sectorGeo(C, angle, half, r0, r1, na = 72, nr = 32) {
+  const pos = [], idx = [];
+  for (let i = 0; i <= nr; i++) {
+    const r = r0 + (r1 - r0) * Math.pow(i / nr, 2);
+    for (let j = 0; j <= na; j++) { const a = angle - half + (2 * half) * (j / na); pos.push(C.x + Math.cos(a) * r, 0, C.z + Math.sin(a) * r); }
+  }
+  for (let i = 0; i < nr; i++) for (let j = 0; j < na; j++) { const a = i * (na + 1) + j, b = a + na + 1; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+  if (g.attributes.normal.getY(0) < 0) { g.index.array.reverse(); g.computeVertexNormals(); } // (facing up, whichever way the sector winds)
+  return g;
+}
 const ACROSS = [-4, -2, -1, -0.4, 0, 0.6, 1.4, 2.4, 3.6, 5]; // (metres from the waterline, inland positive: the ribbon's rows)
 
 export class Shore {
@@ -30,7 +43,7 @@ export class Shore {
   build(beach) {
     const g = this.game, C = beach.center, seaY = beach.seaY;
     // the sea: the crude, in the shore's sector, quieter near land
-    this.sea = new CrudeSea({ env: g.sky?.env || null, size: 900, cells: 180, y: seaY });
+    this.sea = new CrudeSea({ env: g.sky?.env || null, y: seaY, geometry: sectorGeo(C, SHORE.angle, SHORE.half + SHORE.fade * 1.5, SHORE.r - 30, SHORE.r + 520) });
     this.sea.clipSector({ center: C, angle: SHORE.angle, half: SHORE.half + SHORE.fade * 1.5, r0: SHORE.from });
     this.sea.set({ swell: 0.16, calm: 0.3 });
     this.sea.mesh.userData.zoneFree = true;
@@ -88,8 +101,8 @@ vec3 swFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67
 
   update(t, camera) {
     const D = this.game.dunes;
-    if (!this.built) { if (D?.beach) this.build(D.beach); else return; }
-    const on = (D.mix ?? 1) > 0.01; // (only from the dunes: the camera far plane opens there, and the sea is theirs)
+    const on = !!D && (D.mix ?? 1) > 0.01; // (only from the dunes: the camera far plane opens there, and the sea is theirs)
+    if (!this.built) { if (on && D.beach) this.build(D.beach); else return; } // (built the first time the Dunes are seen: nothing compiled before)
     this.sea.mesh.visible = this.swash.visible = on;
     if (!on) return;
     this.t = t; this.u.uT.value = t;

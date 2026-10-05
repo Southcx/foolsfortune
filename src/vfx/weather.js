@@ -154,14 +154,22 @@ void main() {
 
 // ---------------------------------------------------------------- the marks in the sky
 const SKYD = 520; // (how far off the sky's marks hang: drawn at the back of the depth, as the dome is, whatever the far plane)
-function ringMesh(r0, r1, frag, extra = {}) {
-  const u = { uA: { value: 0 }, uR0: { value: r0 }, uR1: { value: r1 }, ...extra };
+const RING_FRAG = /* glsl */`uniform float uA, uR0, uR1, uMode; varying vec2 vP;
+vec3 spectrum(float t) { return clamp(abs(fract(t + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0); }
+void main() {
+  float t = clamp((length(vP) - uR0) / (uR1 - uR0), 0.0, 1.0), edge = smoothstep(0.0, 0.2, t) * (1.0 - smoothstep(0.75, 1.0, t)), fall = (1.0 - t) * (1.0 - t);
+  if (uMode < 0.5) gl_FragColor = vec4(mix(vec3(1.0, 0.55, 0.4), vec3(0.85, 0.9, 1.0), t), uA * edge);         // the halo: red inside, as ice bends it
+  else if (uMode < 1.5) gl_FragColor = vec4(spectrum(0.78 - t * 0.78), uA * edge);                              // the bow: violet inside, red out
+  else if (uMode < 2.5) gl_FragColor = vec4(mix(vec3(1.0, 0.95, 0.85), vec3(1.0, 0.5, 0.35), t), uA * fall);  // a sun dog
+  else gl_FragColor = vec4(vec3(0.45, 0.4, 0.6) * fall, uA);                                                    // the glow in the cloud behind a far bolt
+}`;
+/** A sky mark: a ring (or a disc) facing the eye, one shader for all of them (one program; `mode` picks the look). */
+function ringMesh(mode, r0, r1) {
+  const u = { uA: { value: 0 }, uR0: { value: r0 }, uR1: { value: r1 }, uMode: { value: mode } };
   const m = new THREE.ShaderMaterial({
     uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position.z = gl_Position.w * 0.9998; }', // (at the back of the depth, as the dome: past the far plane, behind everything near)
-    fragmentShader: `uniform float uA, uR0, uR1; varying vec2 vP;
-vec3 spectrum(float t) { return clamp(abs(fract(t + vec3(0.0, 0.333, 0.667)) * 6.0 - 3.0) - 1.0, 0.0, 1.0); }
-void main() { float t = clamp((length(vP) - uR0) / (uR1 - uR0), 0.0, 1.0); float edge = smoothstep(0.0, 0.2, t) * (1.0 - smoothstep(0.75, 1.0, t)); ${frag} }`,
+    fragmentShader: RING_FRAG,
   });
   const o = new THREE.Mesh(new THREE.RingGeometry(r0, r1, 96, 1), m); o.frustumCulled = false; o.renderOrder = 4; o.visible = false;
   return { obj: o, u };
@@ -207,21 +215,27 @@ const rng = (s) => () => { s = (s * 16807) % 2147483647; return s / 2147483647; 
 export class WeatherLook {
   constructor(game) {
     this.game = game;
-    this.group = new THREE.Group(); this.group.name = 'weather';
-    game.scene?.add(this.group);
-    this.rain = makeRain(3000); this.motes = makeMotes(1400);
-    this.halo = ringMesh(tanD(21), tanD(23.5), `gl_FragColor = vec4(mix(vec3(1.0, 0.55, 0.4), vec3(0.85, 0.9, 1.0), t), uA * edge);`);
-    this.bow = ringMesh(tanD(40.5), tanD(42.5), `gl_FragColor = vec4(spectrum(0.78 - t * 0.78), uA * edge);`);
-    this.dogs = [0, 1].map(() => ringMesh(0, tanD(1.6), `gl_FragColor = vec4(mix(vec3(1.0, 0.95, 0.85), vec3(1.0, 0.5, 0.35), t), uA * (1.0 - t) * (1.0 - t));`));
-    this.aurora = makeAurora();
-    const boltMat = new THREE.MeshBasicMaterial({ color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-    this.bolt = new THREE.Mesh(boltGeo(rng(7)), boltMat); this.bolt.frustumCulled = false; this.bolt.visible = false;
-    this.glow = ringMesh(0, 90, 'gl_FragColor = vec4(vec3(0.45, 0.4, 0.6) * (1.0 - t) * (1.0 - t), uA);');
-    for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
+    this.made = false; // (its meshes are made the first time a weather shows: nothing is compiled for a calm that never ends)
     this.amt = Object.fromEntries(ASPECTS.map((a) => [a, 0])); // (each weather's present amount, eased: a spell comes in and goes out)
     this.sec = Object.fromEntries(ASPECTS.map((a) => [a, 0])); // (and as the AGATE's second: it colours, it never falls)
     this.forced = null; this.wx = null; this.poll = 0; this.t = 0; this.lift = 0;
     this.strike = { next: 4, t: -9, n: 0 };
+  }
+
+  /** The meshes, made once, the first time a weather shows. */
+  make() {
+    this.made = true;
+    this.group = new THREE.Group(); this.group.name = 'weather'; this.group.userData.zoneFree = true;
+    this.game.scene?.add(this.group);
+    this.rain = makeRain(3000); this.motes = makeMotes(1400);
+    this.halo = ringMesh(0, tanD(21), tanD(23.5));
+    this.bow = ringMesh(1, tanD(40.5), tanD(42.5));
+    this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
+    this.aurora = makeAurora();
+    const boltMat = new THREE.MeshBasicMaterial({ color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    this.bolt = new THREE.Mesh(boltGeo(rng(7)), boltMat); this.bolt.frustumCulled = false; this.bolt.visible = false;
+    this.glow = ringMesh(3, 0, 90);
+    for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
   }
 
   /** Where an island's weather stops: a shore's sector (its centre, bearing, half-width, the waterline's radius). Nothing falls past it. */
@@ -277,6 +291,10 @@ export class WeatherLook {
       }
     }
     if (!w) this.game.dunes?.clouds?.grade?.({});
+    if (!this.made) { // (calm since the boot: nothing to draw, nothing made)
+      if (!ASPECTS.some((a) => this.amt[a] > 1e-3 || this.sec[a] > 1e-3)) { this.lift = 0; return; }
+      this.make();
+    }
     const light = w?.light ?? 0.5, dayK = smooth(light, 0.3, 0.6), nightK = 1 - smooth(light, 0.15, 0.4);
     const sun = _v.copy(this.game.dunes?.sunDir || _up).normalize();
     // what falls: the strongest falling weather's way of falling, the others' colours eased in (one rain, one mote field)
@@ -344,6 +362,7 @@ export class WeatherLook {
 
   dispose() {
     this.game.sky?.grade?.({});
+    if (!this.made) return;
     this.group.parent?.remove(this.group);
     this.group.traverse((o) => { if (o.isMesh || o.isPoints || o.isLineSegments) { o.geometry.dispose(); o.material.dispose(); } });
   }

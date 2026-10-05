@@ -25,6 +25,11 @@ export class MawWipe {
   constructor(game) {
     this.game = game;
     this.u = { uT: { value: 0 }, uMindT: { value: 0 }, uClose: { value: 0 }, uHole: { value: 0 }, uAspect: { value: 1 } };
+    this.mesh = null; // (made the first time it closes: nothing compiled for a session that never goes down a Well)
+    this.k = 0; this.dir = 0; this.mode = null; this.cb = null; this.t = 0;
+  }
+
+  make() {
     const m = new THREE.ShaderMaterial({
       uniforms: this.u, transparent: true, depthTest: false, depthWrite: false, fog: false, toneMapped: false,
       vertexShader: 'varying vec2 vS; void main() { vS = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }', // (the whole view, whatever the camera)
@@ -49,19 +54,18 @@ void main() {
     });
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), m);
     this.mesh.frustumCulled = false; this.mesh.renderOrder = 10000; this.mesh.visible = false; this.mesh.userData.zoneFree = true;
-    game.scene?.add(this.mesh);
-    this.k = 0; this.dir = 0; this.mode = null; this.cb = null; this.t = 0;
+    this.game.scene?.add(this.mesh);
   }
   get covered() { return this.mode === 'close' && this.k >= 1; }
-  get active() { return this.mesh.visible; }
+  get active() { return !!this.mesh?.visible; }
 
   /** The pool opens from the middle until it fills the view; then `onCovered` (the place changes behind it). */
-  close(onCovered) { this.cb = onCovered || null; this.mode = 'close'; this.dir = 1; this.k = 0; this.mesh.visible = true; }
+  close(onCovered) { if (!this.mesh) this.make(); this.cb = onCovered || null; this.mode = 'close'; this.dir = 1; this.k = 0; this.mesh.visible = true; }
   /** Its eye widens and lets the new place through; then it is gone. */
-  open() { this.mode = 'open'; this.dir = -1; this.k = 1; this.mesh.visible = true; }
+  open() { if (!this.mesh) this.make(); this.mode = 'open'; this.dir = -1; this.k = 1; this.mesh.visible = true; }
 
   update(dt) {
-    if (!this.mesh.visible) return;
+    if (!this.mesh?.visible) return;
     dt = Math.min(dt, 0.1); // (a stalled frame does not jump the iris)
     this.t += dt; this.u.uT.value = this.t; this.u.uMindT.value = this.t;
     const c = this.game.camera; if (c) this.u.uAspect.value = c.aspect || 1;
@@ -73,5 +77,5 @@ void main() {
     if (this.mode === 'open' && this.k <= 0) { this.mesh.visible = false; this.mode = null; }
   }
 
-  dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
+  dispose() { if (!this.mesh) return; this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
