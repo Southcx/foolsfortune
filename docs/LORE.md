@@ -205,7 +205,7 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
   It is also the moral axis of the whole economy: harvesting helps an island, and a greedy driller would want the Well to keep filling.
   Intent, not alignment, decides which one a Courier is.
 - **Grades, like crude's.** Lachryma carries the feeling it came from, so it grades by aspect (the five the angling already has:
-  dread, wonder, grief, hunger, mirth), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
+  wonder, mirth, hunger, grief, dread), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
   makes hauling pay.
 - **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
   Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
@@ -352,9 +352,9 @@ Prince sells to neither side: every Courier both of his parents need came out of
   every day: the sea of feeling settling onto a mind. Grief rain is, in the oldest sense of the word, Lachryma: tears.
 - **Whose mood:** the island's, which means its ego's, since an island of ego is its ego: Kaolin Anagami's over Anagami Island,
   Magnus's over Margarite, Entra's over Entropolis. **Calm** is the glaze holding. On Anagami that is Kaolin's composure, so a calm
-  sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank.
-- **Names** (the look stays Calissa's): mirth is **a fox's wedding** (the Japanese folk name for a sunshower: rain out of a clear
-  sky, a joke the weather plays); wonder is **the aurora**; hunger is **the hungry wind** (a dry wind that brings nothing and takes
+  sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank. A Well has a mood of its own (adopted).
+- **Names** (adopted by Dovina, R58; the look stays Calissa's): wonder is **the aurora**; mirth is **a fox's wedding** (the Japanese
+  folk name for a sunshower: rain out of a clear sky, a joke the weather plays); hunger is **the hungry wind** (a dry wind that brings nothing and takes
   the sand); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
 - **One clash with canon:** the draft puts hunger at 0 on the Law–Chaos line, at Kaolin's centre. The canon says hunger is the core
   feeling of chaos, with the Queen as its throne. Either hunger moves to the Chaos end (a hot wind that eats everything fits
@@ -451,6 +451,9 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
 - **No fat, especially in the UI.** The game's interface text (menus, the kiln window, the help pages, the Codex, tool and item
   names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
   present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
+
+- **The five feelings, shown in order** *(the owner, R58)*: most positive to most negative: **Wonder, Mirth, Hunger, Grief, Dread**,
+  wherever they are listed for the player or in a doc. Their place on the Law–Chaos line is a separate thing and never the shown order.
 
 ### Habits the text already has
 Kept until the owner says otherwise.
@@ -590,7 +593,7 @@ witnesses the island's work; the other brings in what has gone astray.
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
 | **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on the Courier: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
-| **The fish** | ten "entities" answering to five aspects (dread, wonder, grief, hunger, mirth); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
+| **The fish** | ten "entities" answering to five aspects (wonder, mirth, hunger, grief, dread); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
 
@@ -607,8 +610,8 @@ witnesses the island's work; the other brings in what has gone astray.
 | Item | Name | Examine |
 | --- | --- | --- |
 | Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
-| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
 | crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
+| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
 | crude, hunger | Cask of crude hunger | The cask feels empty, however full it is. |
 | crude, grief | Cask of crude grief | Heavy and sour. Carry it carefully. |
 | crude, dread | Cask of crude dread | The richest grade. The worst to spill. Do not shake it. |
