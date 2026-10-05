@@ -14,6 +14,7 @@
 //   npm run check              report; exit 1 on new debt or on a hard error
 //   npm run check -- --update  write today's counts to the baseline (only lower; a rise still fails)
 //   npm run check -- --all     list every finding, the baselined ones too
+//   npm run check -- --adopt=rule[,rule]  a NEW rule's findings as they stand today become its baseline (once, the day the rule lands)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
@@ -141,6 +142,62 @@ for (const [f, raw] of text) {
   for (const m of src.matchAll(/\bMath\.random\b|\.randomDirection\(|\bMathUtils\.(?:rand|seededRandom)\w*/g)) add('rand.sim', f, lineOf(src, m.index), 'the simulation takes its chance from a seeded stream (core/rng.js: `const simRand = stream(name)`, `randDir(simRand, v)`), never Math.random or three\'s random helpers (they call it)');
 }
 
+// ---- 9. the clocks (CLAUDE.md, Be specific; core/calendar.js): the simulation reads the calendar's `now()` or the game clock, never the
+// wall clock itself (a replay pins the calendar; `Date.now()` it cannot pin, so the replay drifts and the gate's held clock is ignored)
+for (const [f, raw] of text) {
+  const r = rel(f).split(path.sep).join('/');
+  if (!SIM.test(r) || r === 'src/core/calendar.js') continue;
+  const src = code(raw);
+  for (const m of src.matchAll(/\bDate\.now\(\)|\bnew Date\(\)/g)) add('clock.sim', f, lineOf(src, m.index), 'the simulation reads the wall clock: use `now()` from core/calendar.js (a replay and the gate hold it), or the game clock');
+}
+
+// ---- 10. what a Node script loads (docs/ARCHITECTURE.md, Imports): a table a script reads (economy.mjs, combat.mjs) must not pull in
+// three.js through what it imports; the pure halves exist for that (render/zonemap.js beside render/zones.js)
+const importsOf = new Map();
+for (const [f, raw] of text) {
+  const src = code(raw), out = [];
+  for (const m of src.matchAll(IMPORT)) {
+    const spec = m[1].split('?')[0]; if (!/\.m?js$/.test(spec) && path.extname(spec)) continue;
+    let t = path.resolve(path.dirname(f), spec); if (!t.endsWith('.js')) t += '.js'; out.push(t);
+  }
+  importsOf.set(f, { out, three: /^\s*import[^;]*from\s*['"](three|three\/[^'"]*|@dimforge\/[^'"]*)['"]/m.test(src) });
+}
+const viaThree = new Set();
+for (const tool of fs.readdirSync(path.join(ROOT, 'scripts')).filter((x) => /\.m?js$/.test(x))) {
+  const tsrc = fs.readFileSync(path.join(ROOT, 'scripts', tool), 'utf8');
+  if (/from\s*['"](three|playwright)['"]/.test(tsrc)) continue; // (a script that loads the renderer or a browser on purpose)
+  const seen = new Set(), stack = [...tsrc.matchAll(/^\s*import[^;]*from\s*['"](\.\.\/src\/[^'"?]+)['"]/gm)].map((m) => path.resolve(ROOT, 'scripts', m[1]));
+  while (stack.length) { const f = stack.pop(); if (seen.has(f) || !importsOf.has(f)) continue; seen.add(f); const n = importsOf.get(f); if (n.three) viaThree.add(f); stack.push(...n.out); }
+}
+for (const f of viaThree) add('data.three', f, 1, 'a Node script reaches this module, and it imports three.js or Rapier: split the pure part out (render/zonemap.js is the pattern)');
+
+// ---- 11. merges finished (a hard error): no conflict markers anywhere the game, its scripts or its docs are
+for (const dir of ['src', 'scripts', 'docs']) {
+  (function walk(d) {
+    for (const x of fs.readdirSync(d)) {
+      const p = path.join(d, x);
+      if (fs.statSync(p).isDirectory()) { if (!/assets|node_modules/.test(x)) walk(p); continue; }
+      if (!/\.(m?js|md|html|json)$/.test(x)) continue;
+      const src = fs.readFileSync(p, 'utf8');
+      for (const m of src.matchAll(/^(<<<<<<<|>>>>>>>) /gm)) add('merge.marker', p, lineOf(src, m.index), 'a merge conflict left in the file', true);
+    }
+  })(path.join(ROOT, dir));
+}
+for (const x of ['CLAUDE.md', 'README.md']) { const src = fs.readFileSync(path.join(ROOT, x), 'utf8'); for (const m of src.matchAll(/^(<<<<<<<|>>>>>>>) /gm)) add('merge.marker', path.join(ROOT, x), lineOf(src, m.index), 'a merge conflict left in the file', true); }
+
+// ---- 12. the clock named (CLAUDE.md, Be specific): what the game says to the player names its clock: a game day, a game hour, a real
+// minute, never a bare "an hour" or "every day". Checked in the strings the game says as itself: the tracking rules, the items, the help
+// pages (the folk's lines are speech: "one day" there is an idiom, Espada's to judge).
+const SPOKEN = /^src\/(feedback\/tracking|pneuka\/items\.js|feedback\/help)/;
+for (const [f, raw] of text) {
+  const r = rel(f).split(path.sep).join('/');
+  if (!SPOKEN.test(r)) continue;
+  for (const m of raw.matchAll(/(['"`])((?:\\.|(?!\1)[^\\\n])*)\1/g)) {
+    const str = m[2], w = str.match(/\b(an?|one|per|each|every|this|that|next|last|the)\s+(hour|day|minute)s?\b/i);
+    if (w) add('words.clock', f, lineOf(raw, m.index), `"${w[0]}": name its clock (a game day, a game hour, a real minute)`);
+  }
+}
+
 // ---- tally against the baseline
 const counts = {};
 for (const x of findings) if (!x.hard) counts[`${x.rule}|${x.file}`] = (counts[`${x.rule}|${x.file}`] || 0) + 1;
@@ -161,10 +218,12 @@ if (fresh.length) {
   for (const [k] of fresh) { const [rule, file] = k.split('|'); show(findings.filter((x) => x.rule === rule && x.file === file)); }
 }
 if (paid.length) console.log(`\npaid down: ${paid.map(([k, n]) => `${k} ${n}→${counts[k] ?? 0}`).join(', ')}${args.has('--update') ? '' : '  (run with --update to lower the baseline)'}`);
-if (args.has('--update')) {
+const adopt = new Set([...args].filter((x) => x.startsWith('--adopt=')).flatMap((x) => x.slice(8).split(',')));
+if (args.has('--update') || adopt.size) {
   // the baseline only falls: a pair may be lowered or removed, never raised (a rise is new debt, and fails above)
   const next = {};
   for (const [k, n] of Object.entries(counts)) next[k] = Math.min(n, base[k] ?? (Object.keys(base).length ? 0 : n));
+  for (const [k, n] of Object.entries(counts)) if (adopt.has(k.split('|')[0]) && !Object.keys(base).some((b) => b.startsWith(`${k.split('|')[0]}|`))) next[k] = n; // (a new rule's debt as it stands)
   for (const k of Object.keys(next)) if (!next[k]) delete next[k];
   fs.writeFileSync(BASELINE, JSON.stringify(Object.fromEntries(Object.entries(next).sort()), null, 1) + '\n');
   console.log(`baseline written: ${Object.keys(next).length} rule/file pairs`);

@@ -476,7 +476,7 @@ export function buildAchievements(game) {
   C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
   H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
   C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
-  C('wl8', 'explore', 'The Wells', 2, 'count', 'Chart Topper', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
+  C('wl8', 'explore', 'The Wells', 2, 'count', 'Chart Topper', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold.margarite', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
@@ -538,7 +538,7 @@ export function buildAchievements(game) {
   F('sk1', 'sky', 'Weather', 2, 'collect', 'Every Mood', 'Stand in all five weathers: wonder, mirth, desire, grief and dread.', (L) => ['wonder', 'mirth', 'desire', 'grief', 'dread'].filter((a) => L.get(`weather.seen.${a}`) > 0).length, 5);
   C('sk2', 'sky', 'Weather', 2, 'mechanic', 'In Its Element', 'Build a status in the weather that feeds it, ten times.', 'status.weather', 10);
   C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
-  C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });
+  C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true }); // (reachable once Margarite is a place: no zone maps there yet)
   C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);

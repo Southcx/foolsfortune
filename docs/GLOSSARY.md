@@ -51,7 +51,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   desire, grief, dread) or **calm**, with a **strength**; a **spell** of it holds a block of game hours. Each feeds the damage type at its
   place on the Law-Chaos line, its fish, and its crude's price where it falls. **The forecast** is how far ahead it can be known (a
   Divination widening). Names of the weathers are placeholders for Espada's.
-- **the day** (`phaseAt`, `lightAt`): night, dawn, day and dusk on the game clock (a game day is a real hour); at night Lachryma glows.
+- **the day's phases** (`phaseAt`, `lightAt`): night, dawn, daytime and dusk on the game clock (a game day is a real hour); at night
+  Lachryma glows. *Not:* a game day (the calendar's unit).
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
@@ -365,7 +366,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   crystal, jelly, wood, stone, metal).
 - **service**: a `game.*` object every module may ask (time, mood, cinema, cine, vfx, events, creatures, belt, cubes...).
 - **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
-  cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
+  cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`). **`npm run gate`**: the gate's machine steps in one command, with one report
+  (`gate-report.txt`). **the contracts** (`npm run contracts`, `scripts/contracts.mjs`): what one division's service offers another, checked
+  in the running game (names and shapes). **the lanes**: which division owns which files (CLAUDE.md, "Threads"); the gate lists a branch's
+  changes outside its lane. **the handover**: what a division gives Petra with a branch (docs/ARCHITECTURE.md). **a handoff**: a note from
+  one division to another, one file in `docs/handoffs/<reader>/` (docs/HANDOFFS.md).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
 - **seam** (`game.seam`, `src/render/seam.js`): a change of place made under a cover (dip to the dark, change, hold two drawn frames,
   come back); its look is a `kind` (a Well's: 'maw'). *Not:* a texture seam.
@@ -464,6 +469,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
 | combo | the club's chain of blows (the Soul Brush); the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
+| place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island, or a Well, `well:<id>`; the weather events' `island` field carries it) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
+| day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
+| calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
+| hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
+| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds | "the wheel of feelings"; "the Lockheart's wheel" |
 
 ## Retired words
 

@@ -20,6 +20,7 @@
 //   from the root: the scale of what is playing, changed on a bar line, or the weather's mode when nothing plays (the Crucibelle plays it)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from './arranger.js';
+import { Band } from './band.js';
 import { moodLayer, moodScale, DEFAULT_SCALE } from './mood.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -149,7 +150,11 @@ export class MusicPlayer {
   hum(t) { return t + (Math.random() - 0.5) * 0.012; }
 
   playBar(sec, bar, t0) {
-    const S = this.score, ch = S.chords[sec.chords[bar]], next = S.chords[sec.chords[(bar + 1) % sec.chords.length]], band = sec.band, spb = this.spb;
+    const S = this.score, ch = S.chords[sec.chords[bar]], next = S.chords[sec.chords[(bar + 1) % sec.chords.length]], spb = this.spb;
+    // the night thins this player's kit and bass as the arranger's (arranger.thin), and the weather's colour is laid over its bars too
+    const th = this.arr.thin, band = th ? { ...sec.band, ride: (sec.band.ride || 0) * th.hit, brush: (sec.band.brush || 0) * th.hit, darbuka: (sec.band.darbuka || 0) * th.hit } : sec.band;
+    this.bassGain = th ? th.bass : 1;
+    if (this.arr.layer) this.lay(this.arr.layer(S, { beats: 4 }, bar), t0);
     // the finger cymbal opens each section
     if (bar === 0 && band.zill) this.zill(t0, 0.5 * band.zill);
     // the pad: the chord's upper notes, held the bar
@@ -187,6 +192,14 @@ export class MusicPlayer {
     // walking: root, a chord tone, the fifth, a step into the next root
     const line = [R, R + (Math.random() < 0.5 ? 3 : 4), F, next.r + (next.r > R ? -1 : 1)];
     line.forEach((n, i) => this.bass(this.hum(t0 + i * spb), spb * 0.9, n, i === 0 ? 0.5 : 0.38));
+  }
+
+  /** The mood layer's events on a band of this player's own (the arranger's instruments, through this hall and echo). */
+  lay(events, t0) {
+    if (!events?.length) return;
+    if (!this.layBand || this.layBus !== this.bus) { this.layBus = this.bus; this.layBand = { band: new Band(this.ctx, { dry: this.bus, pump: this.bus, verb: this.verbIn, echo: this.echoIn }, this.sfx.noiseBuf), jitter: 0, thin: null }; }
+    this.layBand.spb = this.spb;
+    for (const e of events) Arranger.prototype.play1.call(this.layBand, e, t0, 1);
   }
 
   // ---------------------------------------------------------------- the instruments
@@ -231,6 +244,7 @@ export class MusicPlayer {
     src.connect(bp).connect(bg); src.start(t, Math.random()); src.stop(t + d + 0.3);
   }
   bass(t, len, n, vel) {
+    vel *= this.bassGain ?? 1; // (the night's thinning)
     const ctx = this.ctx, f = hz(n);
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 1.2;
     lp.frequency.setValueAtTime(900, t); lp.frequency.exponentialRampToValueAtTime(260, t + 0.25);

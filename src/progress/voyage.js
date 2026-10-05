@@ -52,6 +52,7 @@ export class Voyage {
       if (e.by !== 'courier') return;
       const g = crudeGrade(e.item);
       if (g) {
+        this.agree(1); // (the cask just sold has left the box already: the manifest keeps one more until it is shifted below)
         const c = (this.s.manifest[g] || []).shift() || { from: e.island || this.s.at, paid: 0 };
         E.emit('crude.sell', { island: e.island || this.s.at, grade: g, units: 1, price: e.price, from: c.from, profit: e.price - c.paid, by: 'courier' });
         this.dirty();
@@ -62,12 +63,19 @@ export class Voyage {
   }
 
   dirty() { this.game.save?.dirty('voyage'); }
+  /** The Pneuka Box is the truth (the casks are its, the kit section); the manifest is only a memo of where and for how much. Two
+   *  sections that must agree, so the memo is trimmed to the box, oldest first, whenever it is read (a cask lost some other way). */
+  agree(pending = 0) {
+    const box = this.game.pneuka;
+    if (!box) return;
+    for (const g of GRADES) { const m = this.s.manifest[g]; if (!m) continue; const keep = (box.count(`cask.${g}`) || 0) + pending; if (m.length > keep) { m.splice(0, m.length - keep); this.dirty(); } }
+  }
   get at() { return this.s.at; }
   get sailing() { return this.s.sailing; }
 
   // ---------------------------------------------------------------- the hold
   /** Casks aboard (in the Pneuka Box), by grade. */
-  cargo() { const box = this.game.pneuka, out = {}; for (const g of GRADES) { const n = box?.count(`cask.${g}`) || 0; if (n) out[g] = n; } return out; }
+  cargo() { this.agree(); const box = this.game.pneuka, out = {}; for (const g of GRADES) { const n = box?.count(`cask.${g}`) || 0; if (n) out[g] = n; } return out; }
   casks() { return Object.values(this.cargo()).reduce((a, n) => a + n, 0); }
 
   // ---------------------------------------------------------------- the node map

@@ -56,7 +56,7 @@ export class SoulAlchemy {
   /** Into the hopper: the materials in these box slots, in this order (each is used up). The colour walks their paths. */
   press(slots = []) {
     const box = this.game.pneuka, mats = [];
-    for (const i of slots) { const s = box?.slots[i]; if (s?.data?.path) mats.push({ i, m: s.data }); }
+    for (const i of new Set(slots)) { const s = box?.slots[i]; if (s?.data?.path) mats.push({ i, m: s.data }); } // (a slot named twice is pressed once)
     if (!mats.length) return { colour: this.colour, trail: [] };
     const r = press(this.s.colour, mats.map((x) => x.m));
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);

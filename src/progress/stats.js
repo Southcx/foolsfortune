@@ -30,7 +30,7 @@ export class Stats {
     this.version = 0;   // bumps on any change (the achievement check reads it)
     this.store = save;
     save?.section('ledger', { scope: 'player', version: 1, dump: () => this.dump(), load: (d) => this.load(d), reset: () => this.clear() });
-    this.sessions++;
+    this.sessions = 1; // (this session; load() adds the ones before it)
   }
 
   // ---- counters
@@ -86,7 +86,7 @@ export class Stats {
   load(raw) {
     if (!raw || typeof raw !== 'object') return;
     this.life = raw.life || {}; this.rec = raw.rec || {}; this.firsts = raw.firsts || {}; this.done = raw.done || {};
-    this.play = raw.play || 0; this.sessions = raw.sessions || 0;
+    this.play = raw.play || 0; this.sessions = (raw.sessions || 0) + 1; this.touch(); // (this session counted, and kept)
     this.version++;
   }
   clear() { this.life = {}; this.rec = {}; this.firsts = {}; this.done = {}; this.sess = {}; this.play = 0; this.sessions = 0; this.version++; }

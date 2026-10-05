@@ -72,7 +72,7 @@ export class Clayese {
     const f = 440 * Math.pow(2, (midi - 69) / 12);
     const out = ctx.createGain();
     out.gain.value = 0.11 * M.gain * (1 + emph * 0.5) * gain / (0.6 + dist * 0.12);
-    out.connect(S.master); const send = ctx.createGain(); send.gain.value = voice.verb ?? 0.35; out.connect(send).connect(S.verbSend);
+    out.connect(S.main ?? S.master); const send = ctx.createGain(); send.gain.value = voice.verb ?? 0.35; out.connect(send).connect(S.verbSendMain ?? S.verbSend); // (a word is never under the fog)
     const vowel = ch in VOWEL, dur = (vowel ? 0.16 : 0.08) * M.decay * (voice.decay || 1);
     const bell = Math.max(0, Math.min(1.4, (voice.bell ?? 0.7) + M.bell)) * (vowel ? 1 : 0.55);
     const clay = Math.max(0, Math.min(1.4, (voice.clay ?? 0.5) + M.clay)) * (vowel ? 0.45 : 1);

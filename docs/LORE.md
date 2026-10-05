@@ -349,11 +349,11 @@ Prince sells to neither side: every Courier both of his parents need came out of
 
 ### Emotional weather *(Espada's reading of Dovina's draft, `docs/plans/WEATHER.md`, R58; proposals for the owner to rule)*
 - **Lachryma falling fits.** An island *precipitated* out of the Emocean (section 1); weather is the same thing on a small scale,
-  every day: the sea of feeling settling onto a mind. Grief rain is, in the oldest sense of the word, Lachryma: tears.
+  every game day: the sea of feeling settling onto a mind. Grief rain is, in the oldest sense of the word, Lachryma: tears.
 - **Whose mood:** the island's, which means its ego's, since an island of ego is its ego: Kaolin Anagami's over Anagami Island,
   Magnus's over Margarite, Entra's over Entropolis. **Calm** is the glaze holding. On Anagami that is Kaolin's composure, so a calm
   sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank. A Well has a mood of its own (adopted).
-- **Names** (adopted by Dovina, R58; the look stays Calissa's): wonder is **the aurora**; mirth is **a fox's wedding** (the Japanese
+- **Names** (adopted by Dovina, R58; the look stays Calissa's): wonder is **the aurora**; mirth is **the fox's wedding** (the Japanese
   folk name for a sunshower: rain out of a clear sky, a joke the weather plays); desire is **the wanting wind** (a dry wind that brings nothing and takes
   the sand: *want* is desire and lack at once); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
 - **Hunger, settled** *(the owner, R58)*: "Hunger is pretty neutral", so it stays in the middle of the line; the aspect is
@@ -647,7 +647,7 @@ witnesses the island's work; the other brings in what has gone astray.
 ### Words for the slice *(Espada's, R57; for `src/pneuka/items.js` when the items exist; names in player case, examine lines in STE)*
 | Item | Name | Examine |
 | --- | --- | --- |
-| Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
+| Cogitomap | Cogitomap | A chart of one Well on one game day. The Well drifts. The chart does not. |
 | crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
 | crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
 | crude, desire | Cask of crude desire | The cask feels empty, however full it is. |

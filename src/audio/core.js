@@ -3,7 +3,7 @@
 // file, mixed onto the Sfx by audio/sfx.js.
 // Two buses: `main` (the volume, the glue, the slow-time low-pass, out) and `master`, the sound effects' bus into it, which a scene can
 // lower under the music (`duckEffects`: a trailer, a cinematic). The music and the System's voice go to `main`, so they never duck.
-//   sfx.main (the music's way out)   sfx.master (the effects')   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore   sfx.setFog(k)
+//   sfx.main (the music's, the interface's and the voices' way out)   sfx.master (the world's effects')   sfx.out(gain, verb, ui)   sfx.verbSendMain   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore   sfx.setFog(k)
 import { T } from '../core/config.js';
 
 export class Sfx {
@@ -33,6 +33,9 @@ export class Sfx {
     this.verbSend = this.ctx.createGain();
     this.verbSend.gain.value = 0.22;
     this.verbSend.connect(this.verb).connect(this.master);
+    // (the interface's and the voices' own room, into main: the fog never muffles a menu click or a word)
+    this.verbMain = this.ctx.createConvolver(); this.verbMain.buffer = this.verb.buffer;
+    this.verbSendMain = this.ctx.createGain(); this.verbSendMain.gain.value = 0.22; this.verbSendMain.connect(this.verbMain).connect(this.main);
     this.noiseBuf = this.makeNoise(2);
   }
 
@@ -77,14 +80,15 @@ export class Sfx {
     return true;
   }
 
-  out(gain, verb = 0.5) {
+  /** A sound's way out: the effects bus (the world's: ducked and fogged), or with `ui` straight to main (the interface: never fogged). */
+  out(gain, verb = 0.5, ui = false) {
     const g = this.ctx.createGain();
     g.gain.value = gain;
-    g.connect(this.master);
+    g.connect(ui ? this.main : this.master);
     if (verb > 0) {
       const s = this.ctx.createGain();
       s.gain.value = verb;
-      g.connect(s).connect(this.verbSend);
+      g.connect(s).connect(ui ? this.verbSendMain : this.verbSend);
     }
     return g;
   }

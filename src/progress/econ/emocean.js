@@ -36,7 +36,7 @@
 //
 //   NODES[id] = { id, law, locked }      hop(from, to, ship, open?) -> { distance, fuel, seconds, danger } | null   (open(id): a node found)
 //   STAGE = { seconds, bears, waves: [{ at, role, count, formation, lane }] }      ROLE_CLASS[role](danger) -> class 0..4
-//   stagePlan(from, to, day, wx?) -> [{ at, role, cls, count, formation, lane }]   (wx: progress/weather.js stageWx(from))      stageQuality({ hits, bears, downed, spawned }) -> 0..1
+//   stagePlan(from, to, day, wx?, open?) -> [{ at, role, cls, count, formation, lane }]   (wx: progress/weather.js stageWx(from))      stageQuality({ hits, bears, downed, spawned }) -> 0..1
 //   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning, widen?, wx?) -> seconds      opensNode(reckoning) -> bool
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
@@ -99,8 +99,8 @@ function hash01(s) {
 }
 
 /** The stage as it plays on a route on a day: every wave with its class and lane. Null for a hop that cannot be made. */
-export function stagePlan(from, to, day = 0, wx = null) {
-  const h = hop(from, to);
+export function stagePlan(from, to, day = 0, wx = null, open = () => true) {
+  const h = hop(from, to, 'sloop', open); // (the voyage has already allowed the board: a node it opened has a stage, locked or not in NODES)
   if (!h) return null;
   if (wx) h.danger += wx.danger || 0; // (the weather of the island left behind: progress/weather.js stageWx)
   const route = [from, to].sort().join('-');

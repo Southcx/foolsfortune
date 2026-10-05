@@ -122,7 +122,7 @@ export class Arranger {
   // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
   play1(e, t0, gain = 1) {
     const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
-    const th = this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
+    const th = this.score?.moodless ? null : this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
       else if (e.i === 'riser' || e.i === 'breath') B[e.i](t, d, (e.v ?? 0.3) * gain);
