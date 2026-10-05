@@ -90,7 +90,7 @@ export class WireCompass {
     this.placeT -= dt;
     if (C && this.placeT <= 0) {
       this.placeT = 0.25;
-      const l = C.wholeOf(P.pos.y), room = C.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
+      const l = C.layerOf(P.pos.y), room = C.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
       const name = room?.name || l?.name || null;
       if (name && name !== this.place) { this.place = name; if (!g.circuits?.active) g.events?.emit('place.enter', { room: name, layer: l?.name }); }
     }
@@ -102,7 +102,7 @@ export class WireCompass {
     const up = pitch + ((cam.fov * Math.PI) / 360) * RAISE * 2;
     this.tape.position.copy(cam.position).setY(cam.position.y + Math.tan(THREE.MathUtils.clamp(up, -1.3, 1.3)) * R);
     // the waypoint, if it is on their layer
-    const wp = C?.waypoint, same = wp && C.wholeOf(P.pos.y)?.id === wp.layer;
+    const wp = C?.waypoint, same = wp && C.layerOf(P.pos.y)?.id === wp.layer;
     this.wpA += ((same ? 1 : 0) - this.wpA) * (1 - Math.exp(-dt * 5));
     this.wpTape.visible = this.wpWorld.visible = this.wpA > 0.01;
     if (!this.wpTape.visible) return;

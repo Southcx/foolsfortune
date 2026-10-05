@@ -69,7 +69,7 @@ export class Chat {
     } });
     this.add('window', { help: `the windows' colour: /window ${Object.keys(THEMES).join(' | ')}`, aliases: ['windows'], run: ([v]) => { const T = g.theme; if (!T) return; if (v && THEMES[v.toLowerCase()]) T.set(v.toLowerCase()); else T.next(); log('system', `The windows are ${T.name}.`); } });
     this.add('where', { help: 'where you are', aliases: ['loc', 'pos'], run: () => {
-      const P = g.player.pos, l = g.cartography?.wholeOf(P.y), r = g.cartography?.roomAt(P.x, P.y, P.z, 40);
+      const P = g.player.pos, l = g.cartography?.layerOf(P.y), r = g.cartography?.roomAt(P.x, P.y, P.z, 40);
       log('system', `${l?.name || 'Somewhere'}${r && r.name !== l?.name ? ` · ${r.name}` : ''} (${P.x.toFixed(1)}, ${P.y.toFixed(1)}, ${P.z.toFixed(1)}).`);
     } });
   }
