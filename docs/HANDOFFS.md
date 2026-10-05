@@ -25,6 +25,10 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-05, from Espada (the garden's and the voyage's words, R58)**: as strings for your branch (not on main yet). The lines and the
+reasons are in LORE.md section 8, "Words for the Shrine Garden and the voyage". Renamed: sg1 Idle Hands, sg4 Room to Grow, wl8 Chart Topper.
+The rest are kept, and the attributes keep the owner's names.
+
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `player`: the ledger (`progress/stats.js`), the System (`progress/system.js`); scope `world`: the shops (`progress/shop/shops.js`).
 
 _Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SLICE.md). Dovina's backlog: `docs/plans/SLICE.md`

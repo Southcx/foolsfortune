@@ -462,7 +462,7 @@ Kept until the owner says otherwise.
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
-| **The Great Dunemaw** *(the owner's name, R57)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
+| **The Great Dunemaw** *(the owner's name, R57)* | Built (v62): the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
@@ -605,6 +605,19 @@ Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Sym
 down is a spiral, the bottom is rock bottom, coming back up twenty times is bouncing back, and drawing one dry is healing it; a FOE is
 the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
 storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
+
+### Words for the Shrine Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
+- **Log lines** (the robotic register): "You cast off for {place}. Fuel: {n} cubes." · "Cargo lost: {n} casks of crude." (with a
+  spill: "… The spill burns on the sea.") · "You make port at {place}." · "Route divined: {place}." · "The press fires. {Attribute}:
+  rank {n}." · "{Encounter} now works a garden slot." · "You harvest {n} from the bed." · "Garden widened: one more {slot|bed}."
+- **The attributes** keep the owner's v0.1 names (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience): they
+  are the owner's, not mine to rename.
+- **Achievements**, kept: First Firing, Tempered, The Whole Wheel (a colour wheel and a potter's wheel), A True Hue (a true you),
+  Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
+  You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
+  not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
+- **The garden's name**: the owner's v0.1 says "an **Internal Shrine Garden**, a pocket dimension inside the vessel". "Spirit Garden"
+  was said in passing; the press is the spirit press. Shrine Garden stands until the owner rules.
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
