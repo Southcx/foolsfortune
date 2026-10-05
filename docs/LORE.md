@@ -205,7 +205,7 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
   It is also the moral axis of the whole economy: harvesting helps an island, and a greedy driller would want the Well to keep filling.
   Intent, not alignment, decides which one a Courier is.
 - **Grades, like crude's.** Lachryma carries the feeling it came from, so it grades by aspect (the five the angling already has:
-  wonder, mirth, hunger, grief, dread), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
+  wonder, mirth, desire, grief, dread), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
   makes hauling pay.
 - **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
   Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
@@ -268,7 +268,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
   real: belonging, music, self-expression, strangers who look after each other on the floor. So is the bad: chasing the next high,
   the comedown, the ones who burn out and sink to the underground. *(Espada's, for kid-safety)*: in the world the high is Lachryma
   itself, raw feeling taken for the rush of it, so the game can tell the whole story without naming a drug. It is the Queen's core
-  feeling made into a city: hunger, always one more. Letty's stories are propaganda, so they keep only the bad of both
+  feeling made into a city: desire, always one more. Letty's stories are propaganda, so they keep only the bad of both
   halves (the gutters, the strays, the decay, the excess) and drop the good: the belonging, the music, the people who look after each
   other. What she has never heard is that anyone there is happy.
 - **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
@@ -280,7 +280,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
   wiry doll patterned in red; a mushroom-capped creature covered in eyes, dripping green; a tall faceless runner with a club; a small
   hooded pyramid with eyes and red drips.
-- **What she wants:** more. The core feeling of chaos is hunger. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
+- **What she wants:** more. The core feeling of chaos is desire. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
 
 **What follows** *(Espada's, for the owner to veto)*
 - **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
@@ -295,7 +295,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 he is a cautionary tale about managing extreme parents.
 
 **The map is a circle.** Entropolis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
-eating the ambient Emocean like wildfire. **The core feeling of chaos is hunger.** (It is one of the five aspects already: the Queen
+eating the ambient Emocean like wildfire. **The core feeling of chaos is desire** *(hunger until R58: the owner floated "desire", and Dovina and Espada agreed)*. (It is one of the five aspects already: the Queen
 is its throne.) Magnus orbits with her, feeding off what she throws out and cleaning up after her, the two of them a binary circling
 the rim. **Kaolin is the centre: an oasis**, the still place between them. Anagami Island repeats the shape in miniature: an oasis at
 the heart of the Dunes, with Old Grog fishing at its edge.
@@ -354,12 +354,11 @@ Prince sells to neither side: every Courier both of his parents need came out of
   Magnus's over Margarite, Entra's over Entropolis. **Calm** is the glaze holding. On Anagami that is Kaolin's composure, so a calm
   sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank. A Well has a mood of its own (adopted).
 - **Names** (adopted by Dovina, R58; the look stays Calissa's): wonder is **the aurora**; mirth is **a fox's wedding** (the Japanese
-  folk name for a sunshower: rain out of a clear sky, a joke the weather plays); hunger is **the hungry wind** (a dry wind that brings nothing and takes
-  the sand); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
-- **One clash with canon:** the draft puts hunger at 0 on the Law–Chaos line, at Kaolin's centre. The canon says hunger is the core
-  feeling of chaos, with the Queen as its throne. Either hunger moves to the Chaos end (a hot wind that eats everything fits
-  Entropolis, which eats the Emocean like wildfire), or the canon says hunger *drives* chaos while grief and dread are what it
-  *yields* (the comedown, which fits Entropolis's underground). This is for the owner and Dovina to choose; the numbers are Dovina's.
+  folk name for a sunshower: rain out of a clear sky, a joke the weather plays); desire is **the wanting wind** (a dry wind that brings nothing and takes
+  the sand: *want* is desire and lack at once); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
+- **Hunger, settled** *(the owner, R58)*: "Hunger is pretty neutral", so it stays in the middle of the line; the aspect is
+  renamed **desire** (the owner floated it; Dovina and Espada agreed). Desire *drives* chaos; grief and dread are what chaos *yields* (the comedown, Entropolis's underground). The
+  bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -452,7 +451,7 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
   names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
   present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
 
-- **The five feelings, shown in order** *(the owner, R58)*: most positive to most negative: **Wonder, Mirth, Hunger, Grief, Dread**,
+- **The five feelings, shown in order** *(the owner, R58)*: most positive to most negative: **Wonder, Mirth, Desire, Grief, Dread**,
   wherever they are listed for the player or in a doc. Their place on the Law–Chaos line is a separate thing and never the shown order.
 
 ### Habits the text already has
@@ -593,7 +592,7 @@ witnesses the island's work; the other brings in what has gone astray.
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
 | **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on the Courier: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
-| **The fish** | ten "entities" answering to five aspects (wonder, mirth, hunger, grief, dread); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
+| **The fish** | ten "entities" answering to five aspects (wonder, mirth, desire, grief, dread); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
 
@@ -612,7 +611,7 @@ witnesses the island's work; the other brings in what has gone astray.
 | Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
 | crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
 | crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
-| crude, hunger | Cask of crude hunger | The cask feels empty, however full it is. |
+| crude, desire | Cask of crude desire | The cask feels empty, however full it is. |
 | crude, grief | Cask of crude grief | Heavy and sour. Carry it carefully. |
 | crude, dread | Cask of crude dread | The richest grade. The worst to spill. Do not shake it. |
 
