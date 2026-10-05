@@ -121,6 +121,7 @@ export const WIDEN = {
   'divination.survey':    { domain: 'divination',     mult: true, at99: 1.6, does: "a survey pulse's radius (charting, the Well's floors)" },
   'divination.reveal':    { domain: 'divination',     mult: true, at99: 1.5, does: 'the radius veiled crystal is revealed in' },
   'divination.reckon':    { domain: 'divination',     mult: true, at99: 1.5, does: "how far ahead a reckoning marks a wave's lane (RECKON.lead)" },
+  'divination.forecast':  { domain: 'divination',     mult: true, at99: 4,   does: 'how far ahead the weather can be known (progress/weather.js forecast)' },
   'psychokinesis.weight': { domain: 'psychokinesis',  mult: true, at99: 2,   does: 'how heavy a thing the god hand can lift' },
   'psychokinesis.throw':  { domain: 'psychokinesis',  mult: true, at99: 1.5, does: 'how far the god hand throws' },
   'possession.macro':     { domain: 'possession',     mult: true, at99: 1.5, does: 'how long a macro a mind will take' },

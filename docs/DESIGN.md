@@ -685,3 +685,13 @@ dividend slot fills in an hour (1 game day).
 **What it invites (later, the others'):** a day and night that follow the game clock (Calissa's sky), the music by the hour (Wanda's),
 the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven hours.
 
+## 18. Emotional weather (the owner, 2026-10-05; the plan: docs/plans/WEATHER.md)
+
+Weather is an island's mood falling as Lachryma: the five aspects (mirth, wonder, hunger, grief, dread) and calm. It resonates because
+the game already speaks in those fives: each weather feeds the damage type at its place on the Law-Chaos line (mirth Impact .. dread
+Delirium), sways every creature's mental state, draws its fish, makes its crude plentiful (cheap) where it falls, changes the Emocean's
+danger and the reckoning's reach, and feeds a ruminating Well. It is a pure function of the island and the game hour, so it is the same
+for everyone and in a replay, and it can be forecast: how far ahead is a Divination widening. Margarite leans to mirth and Entropolis to
+dread; a dread fog over the King's island is rare (under 1% of hours) and a hidden achievement. The weather changes what pays and what is
+easy, never a skill. Day and night run on the same clock; at night Lachryma's signatures read further.
+

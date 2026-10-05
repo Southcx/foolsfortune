@@ -179,4 +179,22 @@ export const ECON = {
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
   alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65 }, // (radius 0.22 at first let a half-grey colour count: R58)
+
+  // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
+  /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
+   *  in `block`s of game hours (a spell of weather holds a block at least); its strength another slow wave, CALM below `calm`. The
+   *  periods are game hours, unrelated so the pattern never repeats soon. EFFECTS at full strength (scaled by it):
+   *  `build`: the weather's damage type builds its status this much faster; `mind`: how far it sways every creature's mental state
+   *  (-2 Stoic .. +2 Prismatic); `fish`: how much more the fish drawn to its aspect bite; `supply`: how much cheaper its crude grade is
+   *  where it falls; `danger` and `lead`: the Emocean stage's danger and the reckoning's lead; `fill`: how much faster a Well refills;
+   *  and the NIGHT: `signature`, how much further Lachryma's signatures read in the dark. */
+  weather: {
+    lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
+    build: 0.5, fish: 1, supply: 0.25,
+    mind:   { mirth: -0.5, wonder: -0.2, hunger: 0,    grief: 0.25, dread: 0.5 },
+    danger: { mirth: -0.5, wonder: 0,    hunger: 0,    grief: 0.25, dread: 0.5 },
+    lead:   { mirth: 1,    wonder: 1.25, hunger: 1,    grief: 0.75, dread: 0.6 },
+    fill:   { mirth: 0.5,  wonder: 1,    hunger: 1.5,  grief: 2,    dread: 2 },
+    night: { signature: 1.5 },
+  },
 };

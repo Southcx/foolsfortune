@@ -31,6 +31,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
 - **widening** (`WIDEN`, `game.psyche.widen(key)`, `progress/domains.js`): what a domain's level does in play: a multiplier of a tool's own
   range or a bonus to a count (reach, capacity, options), never accuracy; at level 1 the tool is exactly as it is without it.
+- **weather** (`game.weather`, `src/progress/weather.js`): an island's mood, falling as Lachryma: one of the five **aspects** (mirth, wonder,
+  hunger, grief, dread) or **calm**, with a **strength**; a **spell** of it holds a block of game hours. Each feeds the damage type at its
+  place on the Law-Chaos line, its fish, and its crude's price where it falls. **The forecast** is how far ahead it can be known (a
+  Divination widening). Names of the weathers are placeholders for Espada's.
+- **the day** (`phaseAt`, `lightAt`): night, dawn, day and dusk on the game clock (a game day is a real hour); at night Lachryma glows.
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.

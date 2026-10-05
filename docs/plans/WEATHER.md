@@ -1,6 +1,10 @@
 # Emotional weather and the day (the owner, 2026-10-05)
 
-Kept by Dovina. The owner's ask: a day and night, and a weather system of **emotional weather**, five categories, **highly resonant with
+Kept by Dovina. **Status (R58): the rules are in** (`src/progress/weather.js`, `game.weather`; tracking/weather.js; THE SKY achievements;
+the market's supply wired; `node scripts/combat.mjs` prints each island's weather over ten real hours). The places, the look and the
+sound wait on the divisions' input and their rounds.
+
+The owner's ask: a day and night, and a weather system of **emotional weather**, five categories, **highly resonant with
 the existing systems**, with its mechanical implications thought through. Draft for the divisions' input (Calissa: the sky and the
 weathers' look; Wanda: their sound and the music; Espada: their names and what they mean; Petra: the places that read them).
 

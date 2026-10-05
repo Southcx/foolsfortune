@@ -13,6 +13,7 @@ import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.j
 import { FRIENDLY, friendlyDamage, tolerance } from '../src/progress/combat/friendly.js';
 import { ATTRIBUTES, radiusAt, fuelAt, widenAtRank } from '../src/progress/alchemy.js';
 import { ENCOUNTERS } from '../src/progress/garden.js';
+import { ASPECTS, TYPE_OF, weatherAt, phaseAt, lightAt } from '../src/progress/weather.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
 import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf, WIDEN, widenAt } from '../src/progress/domains.js';
 
@@ -64,3 +65,13 @@ console.log('\nSOUL ALCHEMY (alchemy.js): the attributes on the wheel, what each
 for (const a of Object.values(ATTRIBUTES)) console.log(`  ${a.name.padEnd(14)} hue ${String(a.hue).padStart(3)}  ${Object.keys(a.widen).map((k) => `${k} ${[0, 5, 10].map((r) => widenAtRank(k, r).toFixed(2)).join('/')}`).join(', ')}   (${a.does})`);
 console.log(`  the target's radius at rank 0 / 5 / 9: ${[0, 5, 9].map((r) => radiusAt(r).toFixed(3)).join(' / ')}; the fuel: ${[0, 5, 9].map(fuelAt).join(' / ')} cubes (all seven to 10: ${Object.keys(ATTRIBUTES).length * Array.from({ length: 10 }, (_, r) => fuelAt(r)).reduce((a, b) => a + b, 0)} cubes)`);
 console.log(`THE SHRINE GARDEN (garden.js): encounters a slot can work: ${Object.values(ENCOUNTERS).map((e) => e.name).join(', ')}`);
+
+console.log('\nEMOTIONAL WEATHER (weather.js): over 240 game hours (ten real hours), the share of each weather by island, and the spells');
+for (const isl of ['margarite', 'anagami', 'entra']) {
+  const n = { calm: 0 }, spells = []; let last = null, len = 0;
+  for (let h = 0; h < 240; h++) { const w = weatherAt(isl, h), a = w.aspect || 'calm'; n[a] = (n[a] || 0) + 1; if (a !== last) { if (last) spells.push(len); last = a; len = 0; } len++; }
+  const mean = spells.reduce((a, b) => a + b, 0) / Math.max(1, spells.length);
+  console.log(`  ${isl.padEnd(10)} ${['calm', ...ASPECTS].map((a) => `${a} ${Math.round(100 * (n[a] || 0) / 240)}%`).join(', ')}; a spell lasts ${mean.toFixed(1)} game hours (${(mean * 2.5).toFixed(0)} real minutes)`);
+}
+console.log(`  each feeds: ${ASPECTS.map((a) => `${a} -> ${TYPE_OF[a]}`).join(', ')}`);
+console.log(`  a game day: ${[0, 4, 6, 9, 12, 15, 18, 19, 21].map((h) => `${h}h ${phaseAt(h)} ${lightAt(h).toFixed(2)}`).join(' | ')}`);

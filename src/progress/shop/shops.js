@@ -57,7 +57,7 @@ export class Shops {
   }
 
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
-  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) : 1; }
+  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * (this.game.weather?.supplyMult(isl, demandKey(id)) ?? 1) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
   /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
    *  a mind still ruminating is worth its run; drawing that Well down (farming it) cheapens its maps, and letting it fill again restores
    *  them. 1 for anything else. */

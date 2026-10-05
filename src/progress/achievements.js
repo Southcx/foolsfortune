@@ -46,6 +46,7 @@ export const CATS = [
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SHRINE GARDEN', subs: ['The Press', 'The Garden'] },
+  { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
 
@@ -532,6 +533,14 @@ export function buildAchievements(game) {
   C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
   C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
+
+  // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)
+  F('sk1', 'sky', 'Weather', 2, 'collect', 'Every Mood', 'Stand in all five weathers: mirth, wonder, hunger, grief and dread.', (L) => ['mirth', 'wonder', 'hunger', 'grief', 'dread'].filter((a) => L.get(`weather.seen.${a}`) > 0).length, 5);
+  C('sk2', 'sky', 'Weather', 2, 'mechanic', 'In Its Element', 'Build a status in the weather that feeds it, ten times.', 'status.weather', 10);
+  C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
+  C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });
+  C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
+  C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);
 
   // ---------------------------------------------------------------- GENERAL
   F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });
