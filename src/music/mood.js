@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE MOOD LAYER: the weather heard in the music (docs/plans/WEATHER.md). The hour sets the density (the night thins every cue: the
+// THE MOOD LAYER: the weather heard in the music (docs/plans/WEATHER.md). The time of day sets the density (the night thins every cue: the
 // arranger's `thin`), the mood sets the colour: a few quiet events laid over each bar of whatever the place is playing, by the weather's
 // strength, made only of the cue's own root, second and fifth so they can never contradict its harmony (major or minor, any key):
 //   WONDER   a glass pad (fifth, octave, ninth) held across two bars, high and soft

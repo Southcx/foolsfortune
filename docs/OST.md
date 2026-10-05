@@ -161,7 +161,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   the Tear; `music/mood.js`), and the ambience is the weather itself (`audio/ambience.js`). The scale to play along in follows the cue
   that sounds, and the weather's mode only where nothing plays (so the Crucibelle is never wrong). Each track's aspect, for busking:
   `music/aspects.js`.
-  An **agate** sky (two moods, the second weaker) plays both beds and both layers by their shares, and its scale is the stronger mood's
+  An **agate** sky (two moods, the second weaker) plays both sound beds and both mood layers by their shares, and its scale is the stronger mood's
   with the other's signature note borrowed; a **torn** sky (opposites cancelling) has no mode, only the root and the fifth.
 
 ## 5. Production notes
