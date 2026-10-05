@@ -14,6 +14,7 @@ import { Ultimate, UltTech } from './tools/lockheart/ultimate.js';
 import { Weapon } from './tools/psygun/weapon.js';
 import { Hud } from './feedback/hud.js';
 import { buildTuningPanel } from './debug/tuning.js';
+import { tuned } from './debug/tuned.js';
 import { setOutlineThickness } from './render/outline.js';
 import { sfx } from './audio/sfx.js';
 import courierB64 from './assets/courier.glb?b64';
@@ -671,6 +672,7 @@ async function main() {
       input.enabled = true; started = true;
       if (!god.active && !input.locked) input.requestLock();
       game.events.emit('title.enter', { mode: title.mode });
+      { const { knobs } = tuned(); if (knobs.length) game.events.emit('tuning.tuned', { count: knobs.length, knobs, by: 'courier' }); } // (a tuned game is not a bug: debug/tuned.js)
     }
   };
   title.end = endTitle; // (tests and the profiler skip the title: tools/ and the scratch harness)

@@ -9,6 +9,7 @@
 //
 //   TABS   tabList(q) -> [{ id, label, count?, dot? }]   draw(tab, body, q)   (q: the Qais: q.look, q.store, q.round, q.act)
 // ---------------------------------------------------------------------------------------
+import { tuned, line } from '../tuned.js';
 
 export const TABS = [['brief', 'Brief'], ['tests', 'Tests'], ['reports', 'Reports'], ['questions', 'Questions']];
 const DIVISIONS = ['petra', 'dovina', 'wanda', 'calissa', 'espada'];
@@ -40,6 +41,8 @@ function brief(body, q) {
   const all = q.store.docs('brief'), cur = q.round?.build;
   if (!cur) { body.append(q.look.notice('No round is set for this build yet: the Brief is written when it is published.')); return; }
   if (q.round.buildId && q.round.buildId !== q.build) body.append(q.look.notice(`This page is build ${q.build}; the round is ${cur}. Reload for the round's build.`));
+  const { knobs } = tuned(); // (a tuned game is not a bug: said first, debug/tuned.js)
+  if (knobs.length) body.append(q.look.notice(`Tuned away from the defaults (Tab, then actions, Restore defaults): ${line(knobs, 6)}.`));
   body.append(h('div', 'qarea', `${cur}: what changed`), q.look.brief(all.filter((d) => d.build === cur).sort((a, b) => div(a) - div(b))));
   const before = new Map();
   for (const d of all.filter((x) => x.build !== cur).sort((a, b) => (b.at || 0) - (a.at || 0))) { if (!before.has(d.build)) before.set(d.build, []); before.get(d.build).push(d); }

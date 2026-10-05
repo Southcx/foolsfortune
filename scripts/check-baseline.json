@@ -38,7 +38,6 @@
  "module.header|src/courier/skiff/skiff.js": 1,
  "module.header|src/creatures/clappers.js": 1,
  "module.header|src/creatures/lobber.js": 1,
- "module.header|src/debug/tuning.js": 1,
  "module.header|src/feedback/cartography.js": 1,
  "module.header|src/feedback/codex/codex.js": 1,
  "module.header|src/feedback/hud.js": 1,
