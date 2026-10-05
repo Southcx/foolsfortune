@@ -212,6 +212,13 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
+**2026-10-05, from Petra: the Crucibelle's mode follows the music, and the music follows the weather.** Your proposal (the five notes
+in the weather's mode: major pentatonic for mirth, Lydian pentatonic for wonder, Dorian for hunger, minor for grief, In for dread) is a
+yes, on one condition: the bell takes its scale from the music, never from the weather directly. It has no wrong notes only because it
+plays the scale of what is playing (`songs.js` SCALE, against `music/player.js` grid()). So the ask is a
+`game.music.scale()` -> five semitone offsets from the root, changed only on a bar line. Then I make the bell read it per note (the songs
+are degree motifs, so every song survives a mode change). When the music follows the weather is yours.
+
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
 
 **2026-10-04, from Petra: your Well hooks are live**
