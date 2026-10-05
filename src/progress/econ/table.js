@@ -168,7 +168,7 @@ export const ECON = {
    *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
-  dividend: { share: 0.05, capDays: 1, slots: 3 }, // (R58: the cap is a game day, an hour of real time: DESIGN.md section 17)
+  dividend: { share: 0.05, capDays: 8, slots: 3 }, // (the cap: 8 game days, 8 real hours, a working day or a night's sleep away: DESIGN.md 16)
 
   // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
   /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds

@@ -25,28 +25,14 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
-- Raku buys instruments (`shop/catalogue.js` `buys`) but no shop sells them: a lute sold is gone for good, its fitting with it.
-- `progress/weather.js` update: the change key includes `place: null`, so leaving every zone and coming back re-emits `weather.change`
-  (the log repeats the weather; `weather.seen.*` counts re-entries). Keep the last key while the place is null.
-- `progress/weather.js` imports `zoneOf` from `render/zones.js`, which loads three.js: `node scripts/combat.mjs` fails. Import it from
-  `render/zonemap.js` (pure, on main now: the same `zoneOf`, `wholeOf`).
-- `econ/emocean.js` `stagePlan` calls `hop()` with the default lock check, so a board the voyage allows (Entropolis once opened) has no
-  stage. Latent: nothing calls it yet.
-- The garden's dividend: `capDays: 1` (one real hour) cut it about 8x (`scripts/economy.mjs`: 3 full slots at 0.08x the aim); the table's
-  comment and DESIGN.md section 17 still say 0.6x and 8 hours. Choose, and make the numbers and the words agree.
-- Charisma lowers the ask and raises the offer at the same shop: buying a cask from the Purser and selling it back nets +1 to +2 cubes
-  a cycle from rank 5 to 7. One side only, or the offer capped at the ask.
-- Achievements: wl8 counts `cogitomap.sold` (a sale to Raku does it; `cogitomap.sold.margarite`); sk4 needs Margarite's dread, which no
-  zone reaches yet.
-- `alchemy.js` `press([i, i])` walks one material twice but takes it once.
-- Glossary: "place" (the weather's place against `game.places`), "day" as a phase against the game day, `island` carrying
-  `'well:dunemaw'`, "calm", "hold" and "wheel" each with two meanings; bare units in DESIGN.md 656 to 695.
-- Smaller: the aspect colours (mirth's lure and cask are 0x9be36a, faith's canon colour now); `creature.status` carries no `pos` and a
-  stun is `creature.stun`, so mirth's "In Its Element" never counts; the voyage's manifest and the casks are two sections that must
-  agree; `fillHours` steps a game hour at a time (step by block); `stats.js` `sessions++` is not marked dirty.
-- Done on my side: the Well now refills by `fillHours` (the Purser's sum); your pricing edits in `shop/shops.js` and `ui.js` (mine)
-  are accepted as they are.
+**2026-10-05, Petra's R43 review: done on claude/dovina-design** (Raku no longer buys instruments; the weather keeps its last key out of
+every zone; `zoneOf` from `render/zonemap.js`, so `node scripts/combat.mjs` runs; `stagePlan(..., open)`; the dividend's cap is 8 game days
+(8 real hours: 0.6x the aim with three slots, DESIGN.md 16 and 17 agree); an offer never exceeds the same shop's full-shelf ask less a
+cube; wl8 counts sales to the Purser only; sk4 noted unreachable until Margarite is a place; `press` takes a slot once; the glossary's
+homonyms (place, day, calm, hold, wheel) and the day's phases; "In Its Element" hears `creature.stun` and the Courier's place; the
+manifest agrees with the Pneuka Box (the box is the truth); `fillHours` steps a weather block; the ledger keeps its session count).
+- **To Petra (one left, your file):** `tools/sondelass/angling/species.js` `ASPECTS` colours: mirth's lure and cask are 0x9be36a, which
+  is Faith's colour now. Read `COLOR` from `progress/weather.js` (pure; it imports `render/zonemap.js` only).
 
 - **To every division (the owner, 2026-10-05):** send Dovina 3 to 8 items for the checklist (https://claude.ai/artifact/GQSpDGYUuPVF7SzDU5RbGU):
   area, what to do, what should happen, in the glossary's words (every unit of time names its clock). Dovina writes them in.

@@ -108,7 +108,7 @@ console.log(`a gambler with an hour's fighting (${Math.round(after.fighter)}) pu
 const D = ECON.dividend, C = PLAY.completionist;
 const capH = D.capDays; // (a game day is a real hour: DESIGN.md section 17)
 const perDay = (k) => k * D.share * C.farmRate * Math.min(C.checkInEvery, capH) * (24 / C.checkInEvery);
-console.log(`\nthe mastery dividend (share ${D.share}, fills in ${capH} h (a game day), ${D.slots} slots; ${C.playPerDay} h played a day, collected every ${C.checkInEvery} h)`);
+console.log(`\nthe mastery dividend (share ${D.share}, fills in ${capH} real hours (${D.capDays} game days), ${D.slots} slots; ${C.playPerDay} h played a day, collected every ${C.checkInEvery} h)`);
 console.log(`${pad('mastered', 14)}${'slotted'.padStart(9)}${'x aim'.padStart(8)}${'unslotted'.padStart(11)}${'x aim'.padStart(8)}   (cubes-equivalent an hour played)`);
 for (const k of C.mastered) {
   const a = perDay(Math.min(k, D.slots)) / C.playPerDay, b = perDay(k) / C.playPerDay;

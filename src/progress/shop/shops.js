@@ -54,7 +54,11 @@ export class Shops {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
     const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
-    return Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
+    const paid = Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
+    // (never above its own full-shelf ask, less a cube: charisma widens both sides, and a buy-and-sell-back must never pay)
+    if (D.sells[id] == null) return paid;
+    const ask = Math.round(worthOf(id) * D.markup * this.want(shop, id) / this.charm());
+    return Math.min(paid, Math.max(0, ask - 1));
   }
 
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */

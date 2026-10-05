@@ -653,9 +653,9 @@ painter's colour wheel):
 **The Shrine Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
 farm, FFXIV's housing as the long sink):
 - **Dividend slots** (`ECON.dividend`): an encounter is **mastered** when every achievement in its group is done (a predicate over the
-  ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its hourly rate by hand, real time, filling for 8 hours
-  and waiting to be collected. Three slots to start.
-- **Beds** (foraging): a material planted grows more of its kind over real hours (a herb run). What the Wells give is the seed stock.
+  ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its rate an hour of play, filling for 8 game days (8 real hours,
+  `capDays`: a working day or a night's sleep away, FFXIV's retainer ventures and OSRS's Miscellania) and waiting to be collected. Three slots to start.
+- **Beds** (foraging): a material planted grows more of its kind in 6 game hours (15 real minutes; a herb run). What the Wells give is the seed stock.
 - **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
 - Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
 
@@ -673,17 +673,17 @@ replay pins it (`setClock`), so a replay sees the days it saw. Nothing reads `Da
 
 **What is a game day, and what is not.** Two kinds of number, never mixed:
 - **The calendar** (drift, ripening, caps, ages) is in **game time**: a Well's layout and an island's demand turn over each game day; a
-  route's reckoning is of a game day; a Cogitomap halves in worth each game day; a bed ripens in game hours; the dividend's cap is a
-  game day.
+  route's reckoning is of a game day; a Cogitomap's worth follows its Well's fill (never its age); a bed ripens in game hours; the dividend's cap is
+  8 game days.
 - **Rates of income** (`ECON.perMinute`, the aim of 480 cubes an hour) stay per **hour of play**: the economy is measured against the
   player's time, never the calendar's.
 
-**What it lets us test in one sitting:** the Dunemaw changes shape every hour; the islands' prices swing over three to seven hours (the
-demand wave's period, `ECON.island.periodDays`); a Cogitomap is worth half after an hour; a bed ripens in 15 minutes (6 game hours); a
-dividend slot fills in an hour (1 game day).
+**What it lets us test in one sitting:** the Great Dunemaw changes shape every game day (every real hour); the islands' prices swing over three to seven game days (three to seven real
+hours: the demand wave's period, `ECON.island.periodDays`); a Cogitomap's worth moves with its Well's fill; a bed ripens in 15 real
+minutes (6 game hours); a dividend slot fills in 8 real hours (8 game days), so a slot set at breakfast is full by supper.
 
 **What it invites (later, the others'):** a day and night that follow the game clock (Calissa's sky), the music by the hour (Wanda's),
-the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven hours.
+the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven game days (seven real hours).
 
 ## 18. Emotional weather (the owner, 2026-10-05; the plan: docs/plans/WEATHER.md)
 
@@ -692,7 +692,7 @@ the game already speaks in those fives: each weather feeds the damage type at it
 Delirium), sways every creature's mental state, draws its fish, makes its crude plentiful (cheap) where it falls, changes the Emocean's
 danger and the reckoning's reach, and feeds a ruminating Well. It is a pure function of the island and the game hour, so it is the same
 for everyone and in a replay, and it can be forecast: how far ahead is a Divination widening. Margarite leans to mirth and Entropolis to
-dread; a dread fog over the King's island is rare (under 1% of hours) and a hidden achievement. The weather changes what pays and what is
+dread; a dread fog over the King's island is rare (under 1% of game hours) and a hidden achievement. The weather changes what pays and what is
 easy, never a skill. Day and night run on the same clock; at night Lachryma's signatures read further.
 
 ## 19. Rulings of 2026-10-05, the weather round

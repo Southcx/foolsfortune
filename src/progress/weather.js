@@ -10,7 +10,7 @@
 //
 // WHERE: weather is asked by place, never by where the Courier happens to be (creatures fight away from the Courier; in co-op, players
 // stand on different islands). A PLACE is an island (its climate from its law) or a Well (a mind of its own, deep). here(pos) maps a
-// position through the zones (render/zones.js) to a place and an EXPOSURE: open (the dunes: everything), roofed (the workshop, the
+// position through the zones (render/zonemap.js) to a place and an EXPOSURE: open (the dunes: everything), roofed (the workshop, the
 // basement, the circuits: the mood without the rain), deep (a Well: the Well's own mood). The open Emocean, with no ego, is blank.
 //
 // THE DAY: a game day is a real hour (core/calendar.js, DAY_MS): night, dawn, day and dusk; at night Lachryma glows.
@@ -32,7 +32,7 @@
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
-import { zoneOf } from '../render/zones.js';
+import { zoneOf } from '../render/zonemap.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
 export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
@@ -57,7 +57,7 @@ export const TYPE_OF = { mirth: 'impact', wonder: 'ego', desire: 'influence', gr
 /** Espada's names (LORE.md, "Emotional weather"; proposals for the owner). */
 export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', desire: 'the wanting wind', grief: 'the long rain', dread: 'the pall', calm: 'fair' };
 
-/** Each zone's place and exposure (Petra's table: render/zones.js). */
+/** Each zone's place and exposure (Petra's table: render/zonemap.js). */
 const ZONE_PLACE = {
   dunes: ['anagami', 'open'], beach: ['anagami', 'open'], workshop: ['anagami', 'roofed'], basement: ['anagami', 'roofed'], circuits: ['anagami', 'roofed'],
   well: ['well:dunemaw', 'deep'],
@@ -112,7 +112,7 @@ export function fillHours(place, fromMs, toMs) {
   if (!(toMs > fromMs)) return 0;
   let eff = 0, t = fromMs, n = 0;
   while (t < toMs && n++ < 5000) {
-    const next = Math.min(toMs, (Math.floor(t / GAME_HOUR) + 1) * GAME_HOUR), w = weatherAt(place, t);
+    const B = GAME_HOUR * W.block, next = Math.min(toMs, (Math.floor(t / B) + 1) * B), w = weatherAt(place, t); // (a block's weather holds: one step a block)
     eff += (next - t) / 3600000 * (w.aspect ? 1 + (W.fill[w.aspect] - 1) * w.strength : 1);
     t = next;
   }
@@ -154,10 +154,10 @@ export class Weather {
     if (this.t > 0) return;
     this.t = 0.5;
     const w = this.here(this.game.player?.pos), key = `${w.place}:${w.aspect}:${w.agate || ''}:${Math.round(w.strength * 4)}`, phase = phaseAt();
-    if (key !== this.last.key) {
+    if (w.place && key !== this.last.key) { // (out of every zone, the last key is kept: coming back to the same weather says nothing)
       const was = this.last.key;
       this.last.key = key;
-      if (w.place) this.game.events.emit(was !== null ? 'weather.change' : 'weather.now', { island: w.place, exposure: w.exposure, aspect: w.aspect, strength: w.strength, second: w.second || null, agate: w.agate || null, by: 'environment' });
+      this.game.events.emit(was !== null ? 'weather.change' : 'weather.now', { island: w.place, exposure: w.exposure, aspect: w.aspect, strength: w.strength, second: w.second || null, agate: w.agate || null, by: 'environment' });
     }
     if (phase !== this.last.phase) { const was = this.last.phase; this.last.phase = phase; if (was) this.game.events.emit('day.phase', { phase, by: 'environment' }); }
   }

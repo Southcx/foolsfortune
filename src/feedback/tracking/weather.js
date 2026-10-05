@@ -24,9 +24,8 @@ export function weatherRules({ on, L, log, g }) {
   on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built
   on('angle.catch', () => { const w = g.weather?.here(g.player?.pos); if (w?.aspect) L.inc(`angle.catch.weather.${w.aspect}`); });
-  on('creature.status', (e) => {
-    if (e.by !== 'courier') return;
-    const w = g.weather?.here(e.pos ? { x: e.pos[0], y: e.pos[1], z: e.pos[2] } : g.player?.pos);
-    if (w?.aspect && STATUS_OF[TYPE_OF[w.aspect]] === e.status) L.inc('status.weather');
-  });
+  // (where the Courier stands: a status is built within reach of them; a stun is its own event, creatures/stun.js)
+  const built = (status) => { const w = g.weather?.here(g.player?.pos); if (w?.aspect && STATUS_OF[TYPE_OF[w.aspect]] === status) L.inc('status.weather'); };
+  on('creature.status', (e) => { if (e.by === 'courier') built(e.status); });
+  on('creature.stun', (e) => { if (e.by === 'courier') built('stun'); });
 }
