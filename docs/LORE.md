@@ -347,6 +347,20 @@ up is noticing which one you are being, and choosing to be the oasis.
 refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the middle (Dovina's table), and the
 Prince sells to neither side: every Courier both of his parents need came out of his kiln.
 
+### Emotional weather *(Espada's reading of Dovina's draft, `docs/plans/WEATHER.md`, R58; proposals for the owner to rule)*
+- **Lachryma falling fits.** An island *precipitated* out of the Emocean (section 1); weather is the same thing on a small scale,
+  every day: the sea of feeling settling onto a mind. Grief rain is, in the oldest sense of the word, Lachryma: tears.
+- **Whose mood:** the island's, which means its ego's, since an island of ego is its ego: Kaolin Anagami's over Anagami Island,
+  Magnus's over Margarite, Entra's over Entropolis. **Calm** is the glaze holding. On Anagami that is Kaolin's composure, so a calm
+  sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank.
+- **Names** (the look stays Calissa's): mirth is **a fox's wedding** (the Japanese folk name for a sunshower: rain out of a clear
+  sky, a joke the weather plays); wonder is **the aurora**; hunger is **the hungry wind** (a dry wind that brings nothing and takes
+  the sand); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
+- **One clash with canon:** the draft puts hunger at 0 on the Law–Chaos line, at Kaolin's centre. The canon says hunger is the core
+  feeling of chaos, with the Queen as its throne. Either hunger moves to the Chaos end (a hot wind that eats everything fits
+  Entropolis, which eats the Emocean like wildfire), or the canon says hunger *drives* chaos while grief and dread are what it
+  *yields* (the comedown, which fits Entropolis's underground). This is for the owner and Dovina to choose; the numbers are Dovina's.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
