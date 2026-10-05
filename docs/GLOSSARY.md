@@ -232,8 +232,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   run's pay counts the FOEs beaten (`wellPay`). *Not:* a creature's foe (whatever its mind is fighting: `c.foe`).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
-- **day** (`today()`, `src/core/calendar.js`): one UTC calendar day, what everything that drifts daily keys on (a Well's layout, an
-  island's demand, a route's reckoning). *Not:* a day of play.
+- **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
+  what everything that drifts daily keys on (a Well's layout, an island's demand, a route's reckoning, a Cogitomap's age). *Not:* a
+  calendar day, or a day of play.
 - **Cogitomap** (the item `cogitomap`): a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket
   to a seeded run of it. Drawn on the way up when the run charted four fifths of the floors walked (the map's share of CHARTED ground,
   which a survey pulse gets and walking alone does not); it carries the Well, the seed, the day and its worth (`cogitomapWorth`).
