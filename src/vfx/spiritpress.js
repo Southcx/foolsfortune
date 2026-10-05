@@ -13,13 +13,13 @@
 //                 beside it (its flame is the fire's)
 //   THE DRUM      stone, ball-footed, a medallion of glass with a spiral in it at the front; on top the BATH, the pool, the soul
 //                 colour itself turning slowly (a liquid stirred), brighter when fired, grey while the soul is
-//   THE HUE RING  the concept's wisps: seven small lights circling the press, each an attribute at its hue (at the targets'
+//   THE HUE RING  the concept's floating lights: seven circling the press, each an attribute at its hue (at the targets'
 //                 saturation); the one the soul colour is inside (`near`) comes close and burns bright. Shown, never written
 // The palette is the Shrine Garden's: moss and deep teal leaf, plum-dark bark, grey stone, dull bronze; the soul's colour is the only
 // bright thing on it. (R58's first press, a potter's screw press, was built before the concept arrived and is gone.)
 //
 // Prior art: the owner's concept, the alchemist's athanor (the furnace and its feeding tower: the crown over the fire), the hourglass
-// as the alchemist's vessel, the spirit shrines of Okami and Ghibli's forest spirits (a living shrine, wisps about it), and Potion
+// as the alchemist's vessel, the spirit shrines of Okami and Ghibli's forest spirits (a living shrine, lights about it), and Potion
 // Craft's map (the colour as a place you steer to).
 //
 //   const P = new SpiritPress({ env, hues })   scene.add(P.group)   P.parts (hopper, mouth, eye, lever, trunk, crucible, bath, hues)
@@ -198,7 +198,7 @@ export class SpiritPress {
       const l = part(P.queue, lumpG, m, 0, 0, 0, false); l.visible = false; this.lumps.push(l);
     }
 
-    // THE HUE RING: seven wisps circling the press, one per attribute
+    // THE HUE RING: seven lights circling the press, one per attribute
     P.hues = hues.map((h, i) => {
       const col = new THREE.Color().setHSL(h / 360, SAT, 0.55);
       const w = part(group, new THREE.SphereGeometry(0.055, 12, 8), new THREE.MeshBasicMaterial({ color: col }), 0, 0, 0, false); w.castShadow = false;
@@ -213,7 +213,7 @@ export class SpiritPress {
   }
 
   /** The press's state: the soul colour (the bath, the bead, the eye), how full the pool is, the fire, the press, the lever, the
-   *  wisp the soul is near, the materials in the mouth. */
+   *  light the soul is near, the materials in the mouth. */
   set({ soul, fill, fire, press, pull, near, queue } = {}) {
     const k = this.k, P = this.parts;
     if (soul) k.soul = { h: soul.h, s: soul.s };
@@ -240,7 +240,7 @@ export class SpiritPress {
     });
   }
 
-  /** Per frame: the bath turns, the spirals turn as it presses, the materials circle in, the wisps drift, the flame breathes. */
+  /** Per frame: the bath turns, the spirals turn as it presses, the materials circle in, the lights drift, the flame breathes. */
   update(t) {
     const dt = Math.max(0, t - this.t); this.t = t;
     const k = this.k, P = this.parts;

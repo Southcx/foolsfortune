@@ -277,7 +277,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
   is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
-  ring**: seven wisps circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
+  ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
   **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
@@ -287,6 +287,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   paintings blended in.
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
+- **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
+  gets (34 joints; its eighteen clips: idle, five floats, cast, hit, death, five mood loops, three emotes, a dance). The mood loops are
+  a feeling's basic ring, the emotes its onset; its flame carries the strength. *Not:* the hue ring's lights (the spirit press's).
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
   anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.

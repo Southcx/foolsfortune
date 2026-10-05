@@ -67,7 +67,7 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
   down over a second or so. `hues` defaults to the same seven as alchemy.js; pass `Object.values(ATTRIBUTES).map((a) => a.hue)` once
   Dovina's branch is in.
 - Refired against the owner's concept (R58): a living shrine about 3.2 m tall, 2 m across the drum. The same `set` and `update`;
-  `parts` are now hopper, mouth, eye, lever, trunk, crucible, bath, hues (the screw is gone; the hue ring is seven wisps circling it).
+  `parts` are now hopper, mouth, eye, lever, trunk, crucible, bath, hues (the screw is gone; the hue ring is seven lights circling it).
   Static parts are many primitives: once it stands still, `mergeStatic` all but `parts.mouth`, `whorl`, `lever`, `bath`, `bead`,
   `thread`, `hues` and the queue's lumps. No lights of its own.
 - The vessel already takes the soul colour (`vessel.soulGlow`, reading `game.alchemy?.colour`): nothing to wire.

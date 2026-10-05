@@ -110,9 +110,9 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 ## The Shrine Garden: the spirit press and the soul colour (R58)
 
 - **The press grew** (the owner's concept, `docs/ref/concept_spirit_press.png`, a value study we coloured): a garden shrine of moss,
-  deep teal leaf and plum-dark root over a carved stone drum, dull bronze at its rims, wisps about it. The soul colour is the only
+  deep teal leaf and plum-dark root over a carved stone drum, dull bronze at its rims, lights about it. The soul colour is the only
   bright thing on it, shown three ways and never written: the **bath** (the pool), the bead in the hourglass and the eye's lens, and
-  the **hue ring** (seven wisps, the one you are inside drawn close and lit).
+  the **hue ring** (seven lights, the one you are inside drawn close and lit).
 - **The soul colour is the vessel's Lachryma** (the skin's glow): grey gives none, so a new Courier looks exactly as the maker made them,
   and it comes in as the soul saturates, on any skin worn. Alchemy is dress-up as well as growth.
 
@@ -137,6 +137,7 @@ be made), **GENRE DEFAULT** (works, but is the look every game has; ours to repl
 
 | What | Where | Verdict | Note |
 | --- | --- | --- | --- |
+| The Lantern Wisp | `src/assets/lantern_wisp.glb` | OURS | The owner's: the baseline creature rig and its 18 clips (moods, emotes, floats); one 256 atlas, 1692 triangles. Its flame carries a feeling's strength. |
 | The painted sky | `src/assets/sky.webp`, `vfx/sky.js` | OURS | the owner's own |
 | The spell circles | `src/assets/vfx/tex/circle_*.png` | OURS | the owner's wife's |
 | The Courier | `src/assets/courier.glb`, `src/assets/courier/*.png` | OURS | textured by the owner; the model is not to change |
