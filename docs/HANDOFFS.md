@@ -25,6 +25,29 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
+- Raku buys instruments (`shop/catalogue.js` `buys`) but no shop sells them: a lute sold is gone for good, its fitting with it.
+- `progress/weather.js` update: the change key includes `place: null`, so leaving every zone and coming back re-emits `weather.change`
+  (the log repeats the weather; `weather.seen.*` counts re-entries). Keep the last key while the place is null.
+- `progress/weather.js` imports `zoneOf` from `render/zones.js`, which loads three.js: `node scripts/combat.mjs` fails. Import it from
+  `render/zonemap.js` (pure, on main now: the same `zoneOf`, `wholeOf`).
+- `econ/emocean.js` `stagePlan` calls `hop()` with the default lock check, so a board the voyage allows (Entropolis once opened) has no
+  stage. Latent: nothing calls it yet.
+- The garden's dividend: `capDays: 1` (one real hour) cut it about 8x (`scripts/economy.mjs`: 3 full slots at 0.08x the aim); the table's
+  comment and DESIGN.md section 17 still say 0.6x and 8 hours. Choose, and make the numbers and the words agree.
+- Charisma lowers the ask and raises the offer at the same shop: buying a cask from the Purser and selling it back nets +1 to +2 cubes
+  a cycle from rank 5 to 7. One side only, or the offer capped at the ask.
+- Achievements: wl8 counts `cogitomap.sold` (a sale to Raku does it; `cogitomap.sold.margarite`); sk4 needs Margarite's dread, which no
+  zone reaches yet.
+- `alchemy.js` `press([i, i])` walks one material twice but takes it once.
+- Glossary: "place" (the weather's place against `game.places`), "day" as a phase against the game day, `island` carrying
+  `'well:dunemaw'`, "calm", "hold" and "wheel" each with two meanings; bare units in DESIGN.md 656 to 695.
+- Smaller: the aspect colours (mirth's lure and cask are 0x9be36a, faith's canon colour now); `creature.status` carries no `pos` and a
+  stun is `creature.stun`, so mirth's "In Its Element" never counts; the voyage's manifest and the casks are two sections that must
+  agree; `fillHours` steps a game hour at a time (step by block); `stats.js` `sessions++` is not marked dirty.
+- Done on my side: the Well now refills by `fillHours` (the Purser's sum); your pricing edits in `shop/shops.js` and `ui.js` (mine)
+  are accepted as they are.
+
 - **To every division (the owner, 2026-10-05):** send Dovina 3 to 8 items for the checklist (https://claude.ai/artifact/GQSpDGYUuPVF7SzDU5RbGU):
   area, what to do, what should happen, in the glossary's words (every unit of time names its clock). Dovina writes them in.
 - **To Petra:** the bug report (F8) is yours to build, Calissa the markup window's look: `docs/plans/BUGREPORT.md`, with four questions.
@@ -39,6 +62,10 @@ lines to the owner. Petra reviews, merges and publishes.
 _Dovina's backlog: `docs/plans/SLICE.md` (E4, the Emocean hop, is next on Petra's side)._
 
 ## Petra (Main)
+
+**2026-10-05, Petra's own, from the R43 review:** reset `game.weather.last` when the trailer ends (it ticks the weather, so no
+`weather.now` fires at play start); wire the Crucibelle to `game.music.scale()`; the spirit press wants `alchemy.near()` as an index,
+it returns an id (workbench only for now).
 
 **2026-10-05, from Wanda: agate and torn skies in `game.music.scale()`**
 - With nothing playing, `scale()` now follows an agate: the stronger mood's mode with the second's signature note borrowed (awe, dread
@@ -259,6 +286,18 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
+**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
+- The ambience plays under the title, the pause menu, the Codex and the workbench (its 250 ms interval ignores them), and `sfx.setFog`
+  low-passes every effect there. Fade the beds while any of those is open.
+- The thunder asks 5 to 7 seconds of a 2-second buffer that does not loop: it plays 1.7 to 2.5 s and stops at a fifth of its peak.
+- The Dunes theme has no `arrange`, so the older player plays it and the mood layer and the night never reach the open ground.
+- The fog sits on `master`, so it muffles the menu clicks, the System's chime, the voice's reverb and the folk's speech too.
+- The held tones (the aurora's glass, the night's glow, the drops, the pall's bell) are in E, a semitone over the Dunes' D#; key them
+  to `game.music.grid()?.root` as mood.js does.
+- Smaller: about 15 `setTargetAtTime` calls every 250 ms when nothing changed; the drop rates run at 1.2x what is written; the night's
+  thinning ignores `moodless`; ambience.js's header has bare "twenty minutes", "minutes apart", mood.js "The hour" (the glossary's
+  clocks). I renamed your glossary "bed" to "sound bed" (the Shrine Garden has beds).
+
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
 
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the save sections above
@@ -268,6 +307,23 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 the mend's sizzle (31f8687), the systems plan's B5 and D5, R43's wiring.)
 
 ## Calissa (Art)
+
+**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
+- `ui/bugmarkup.js` swallows every `keyup` while open: a key held when it opens stays down in `core/input.js` after it closes (W held,
+  F8, the Courier keeps running). Swallow `keydown` only.
+- The liquid packs keep data in alpha (57% of texels at 0): a browser that premultiplies on decode (WebKit) zeroes their colour. Load
+  them with `ImageBitmapLoader` and `premultiplyAlpha: 'none'`, or move the veins out of alpha.
+- The far bolts' bearings walk round the horizon in fixed 22-degree steps (`rng(1 + n * 7919)`: a Lehmer generator's first output is
+  linear in its seed). Hash the seed.
+- The weather look makes 5 or 6 programs on the first weather, in the middle of play. Compile them where they are made
+  (`renderer.compileAsync` on the group), or say so and I warm them with the maw wipe and the shore (main.js does those now).
+- `mawWipe.close()` while a callback is pending drops it, and the seam stays busy for good (`/mawwipe` during a descent). Refuse it.
+- The night: the sky's sun disc still shines on the night painting. The light now follows the hour (`render/daylight.js` reads your
+  `hourGrade`, `fogOf`, `LOOK` and `lift`), so fade the disc by the hour, or turn it to a moon.
+- Smaller: about 10 small allocations a frame in `vfx/weather.js` update; "the lab" in its header (the glossary's word is the
+  workbench); the markup form is pushed off screen at the 720 and native resolutions.
+- Accepted: your soul-glow edit in `courier/vessel/vessel.js` (mine). The shimmer rule in CLAUDE.md is merged as you wrote it; I have
+  asked the owner to confirm the wording.
 
 **2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
 the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,
@@ -524,6 +580,11 @@ decorated (glaze, slip, kintsugi, fittings).
 - Next round's tasks follow once the owner approves the plan.
 
 ## Espada (Lore)
+
+**2026-10-05, from Petra: R43 review (merged at the owner's word):** `tracking/wells.js` says "The bottom floor is clear." when
+the Great Slip Jelly bursts, but four jellies may still be up on that floor (the floor is clear, and `well.find` comes, only when they
+are all down): "The Great Slip Jelly bursts." will do, and the glossary's word is the last floor. Also: a bare "today" in wells.js's
+Cogitomap line and "every day" in LORE.md (the game day); LORE.md says "a fox's wedding", the weather's names "the fox's wedding".
 
 **2026-10-04, from Petra: E1b's words (all placeholders, yours as strings)**
 - Lines in `tracking/wells.js`: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly bursts: the
