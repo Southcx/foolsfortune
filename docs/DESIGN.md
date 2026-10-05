@@ -659,12 +659,12 @@ farm, FFXIV's housing as the long sink):
 - **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
 - Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
 
-## 17. Time: one game day is one hour (the owner, 2026-10-05)
+## 17. Time: one game day is one real hour (the owner, 2026-10-05; settled, confirmed in Petra's thread)
 
 Real days cannot be taste-tested: nobody can try a Well's drift, a market's swing or a garden's harvest in an afternoon. So the game keeps
 its own calendar, on a conventional game scale.
 
-**The scale.** One game day is one real hour: a game hour is 2.5 real minutes, a game minute 2.5 real seconds. (Prior art: Minecraft's
+**The scale (settled).** One game day is one real hour (`DAY_MS` = 3,600,000 in `core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5 real seconds. (Prior art: Minecraft's
 20-minute day, Stardew Valley's 7 seconds a game minute, Majora's Mask's three days; and Animal Crossing for what this is not.)
 
 **The clock runs on the wall clock, scaled**, not only while playing: what pays or grows while you are away (the garden) still does,
