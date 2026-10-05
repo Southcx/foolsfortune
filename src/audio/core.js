@@ -3,7 +3,7 @@
 // file, mixed onto the Sfx by audio/sfx.js.
 // Two buses: `main` (the volume, the glue, the slow-time low-pass, out) and `master`, the sound effects' bus into it, which a scene can
 // lower under the music (`duckEffects`: a trailer, a cinematic). The music and the System's voice go to `main`, so they never duck.
-//   sfx.main (the music's way out)   sfx.master (the effects')   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore
+//   sfx.main (the music's way out)   sfx.master (the effects')   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore   sfx.setFog(k)
 import { T } from '../core/config.js';
 
 export class Sfx {
@@ -19,7 +19,9 @@ export class Sfx {
     this.ctx = new AC();
     this.main = this.ctx.createGain();
     this.main.gain.value = T.audio.volume;
-    this.master = this.ctx.createGain(); this.master.connect(this.main); // (the sound effects' bus)
+    this.master = this.ctx.createGain(); // (the sound effects' bus, through the fog's low-pass: the pall muffles the world, not the music)
+    this.fogLp = this.ctx.createBiquadFilter(); this.fogLp.type = 'lowpass'; this.fogLp.frequency.value = 22000; this.fogLp.Q.value = 0.5;
+    this.master.connect(this.fogLp).connect(this.main);
     const comp = this.ctx.createDynamicsCompressor();
     comp.threshold.value = -14; comp.ratio.value = 6;
     // (the master bus runs through a low-pass that closes as time slows: see core/time.js)
@@ -44,6 +46,8 @@ export class Sfx {
   }
 
   setVolume(v) { if (this.main) this.main.gain.value = v; }
+  /** The fog (k 0..1): the world's sounds muffled under it (audio/ambience.js, the pall), the music and the voice untouched. */
+  setFog(k = 0) { if (this.fogLp) this.fogLp.frequency.setTargetAtTime(22000 * Math.pow(900 / 22000, Math.max(0, Math.min(1, k))), this.ctx.currentTime, 0.8); }
   /** The sound effects lowered to `to` (1 restores) over `fade` seconds, under the music and the voice (a trailer, a cinematic). */
   duckEffects(to = 0.35, fade = 0.4) { if (this.master) this.master.gain.setTargetAtTime(Math.max(0.0001, to), this.ctx.currentTime, fade / 3); }
 

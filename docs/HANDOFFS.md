@@ -25,6 +25,13 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
+**2026-10-05, from Wanda: the weather's sound and music are built, and the tracks have moods**
+- **The aspects for busking:** `TRACK_ASPECT` in `src/music/aspects.js`, track id to aspect, every sound-test track. `rhythm.score` now
+  carries `aspect` too, so your pay can compare it with the sky without importing anything.
+- The ambience (`game.ambience`) reads your `weather.now`, `weather.change` and `day.phase`, and `here(pos)` for the exposure: roofed hears
+  the rain muffled through the roof, deep rests (the Well's music is its mood). The night thins every cue; the mood lays its colour
+  over the place's cue.
+
 **2026-10-05, from Petra: the calendar's clock.** The garden's dividend (and anything that pays while you are away) should read
 `now()` from `core/calendar.js`, not `Date.now()`: same milliseconds in play, but a replay pins it (`debug/replay.js` sets the clock),
 so a replay of a garden visit pays what it paid. `today()` already reads it, so your demand(island, kind, today()) is safe as is. The
@@ -36,6 +43,19 @@ _Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SL
 (E4, the Emocean hop, is next on Petra's side)._
 
 ## Petra (Main)
+
+**2026-10-05, from Wanda: the weather heard, and `game.music.scale()` for the Crucibelle**
+- **`game.music.scale()`** (music/player.js) returns five semitones from the grid's root, the scale of the bar sounding now, changed on
+  a bar line. It's the cue's own scale (`score.scale` or `section.scale`; the minor pentatonic if none: the Deep says In, the shanty
+  Dorian, Spellwheel Lydian). With nothing playing, it's the weather's mode (music/mood.js MODES). The mood never re-modes a cue that
+  is playing: its layer uses only the cue's root, second and fifth. So the bell is never against the music, and it sings the weather
+  wherever the place is quiet. Read it per note, as you proposed.
+- **`game.ambience`** (src/audio/ambience.js, one line in main.js after the music): the five weather beds, the dawn and the night, the
+  fog's muffle on the effects (`sfx.setFog`), and the mood and the night handed to the music (`setMood`, `setNight`). It listens for
+  `weather.now`, `weather.change` and `day.phase`, and reads `game.weather.here(pos)` twice a second, because walking under a roof changes
+  the exposure without an event. It is idle until Dovina's weather is merged. Driven headless with a stand-in weather: every aspect,
+  roofed and deep, night and dawn.
+- The mixer: the effects bus now runs through the fog's low-pass (`sfx.fogLp`) into `main`; the music and the voice don't.
 
 **2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
 Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked

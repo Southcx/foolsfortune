@@ -77,6 +77,6 @@ const deep = (i) => {
 };
 
 export const DEEP = {
-  title: 'The Deep', root: 64, bpm: 54, arrange: true, loopFrom: 0,
+  title: 'The Deep', root: 64, bpm: 54, arrange: true, loopFrom: 0, scale: [0, 1, 5, 7, 8], // (the In scale: player.scale())
   sections: [{ id: 'deep', bars: 8, gain: 3.0, bar: deep }],
 };

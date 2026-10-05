@@ -57,7 +57,7 @@ const B_MEL = [
 ];
 
 export const TITLE = {
-  title: "The Fool's Precipice", root: 64, bpm: 100, arrange: true, loopFrom: 1,
+  title: "The Fool's Precipice", root: 64, bpm: 100, arrange: true, loopFrom: 1, moodless: true,
   sections: [
     // the logo fired: the kiln's roar rising under a low roll, then the strike and the glaze's glitter
     { id: 'kiln', bars: 2, gain: 1.3, bar: (i) => (i === 0
@@ -89,7 +89,7 @@ export const THE_STEP = {
 };
 
 export const FALL = {
-  title: 'The Fall', root: 64, bpm: 100, arrange: true, loopFrom: 0,
+  title: 'The Fall', root: 64, bpm: 100, arrange: true, loopFrom: 0, moodless: true,
   sections: [{ id: 'fall', bars: 8, gain: 1.6, sweep: [1900, 1900], bar: (i) => [
     ...roll(A_CH[i], 0.14), E('upright', 0, 4, V[A_CH[i]][0], 0.18), E('pad', 0, 4.2, V[A_CH[i]].slice(2).map((n) => n + 12), 0.07, { cutoff: 1200 }),
     ...(i < 5 ? [E('vibes', 0, 4, MOTIF.FIVE[i][2], 0.3)] : []),
