@@ -205,7 +205,7 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
   It is also the moral axis of the whole economy: harvesting helps an island, and a greedy driller would want the Well to keep filling.
   Intent, not alignment, decides which one a Courier is.
 - **Grades, like crude's.** Lachryma carries the feeling it came from, so it grades by aspect (the five the angling already has:
-  dread, wonder, grief, hunger, mirth), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
+  wonder, mirth, desire, grief, dread), as crude grades sweet or sour, light or heavy. Each island wants its own grade, which is what
   makes hauling pay.
 - **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
   Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
@@ -268,7 +268,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
   real: belonging, music, self-expression, strangers who look after each other on the floor. So is the bad: chasing the next high,
   the comedown, the ones who burn out and sink to the underground. *(Espada's, for kid-safety)*: in the world the high is Lachryma
   itself, raw feeling taken for the rush of it, so the game can tell the whole story without naming a drug. It is the Queen's core
-  feeling made into a city: hunger, always one more. Letty's stories are propaganda, so they keep only the bad of both
+  feeling made into a city: desire, always one more. Letty's stories are propaganda, so they keep only the bad of both
   halves (the gutters, the strays, the decay, the excess) and drop the good: the belonging, the music, the people who look after each
   other. What she has never heard is that anyone there is happy.
 - **The look in one line** *(the owner, R57, art direction only)*: New York City dipped in LSD, then hit by a tsunami of DMT. A real
@@ -280,7 +280,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 - **Her Figments** (as drawn; names wait): a horned, spiked beast with one green eye; a small hooded silhouette with a green visor; a
   wiry doll patterned in red; a mushroom-capped creature covered in eyes, dripping green; a tall faceless runner with a club; a small
   hooded pyramid with eyes and red drips.
-- **What she wants:** more. The core feeling of chaos is hunger. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
+- **What she wants:** more. The core feeling of chaos is desire. She is the rich, dangerous end of the economy: a chaotic mind is full of Wells, and they run deep.
 
 **What follows** *(Espada's, for the owner to veto)*
 - **The dual divinity, given faces.** Pirates and Witches: the King is the sea captain, the Queen wears the witch's hat.
@@ -295,7 +295,7 @@ The owner's arcana notes already had three factions, Law, Creation and Chaos; no
 he is a cautionary tale about managing extreme parents.
 
 **The map is a circle.** Entropolis sits on the rim: a benign growth that means no harm and only wants to grow and express itself,
-eating the ambient Emocean like wildfire. **The core feeling of chaos is hunger.** (It is one of the five aspects already: the Queen
+eating the ambient Emocean like wildfire. **The core feeling of chaos is desire** *(hunger until R58: the owner floated "desire", and Dovina and Espada agreed)*. (It is one of the five aspects already: the Queen
 is its throne.) Magnus orbits with her, feeding off what she throws out and cleaning up after her, the two of them a binary circling
 the rim. **Kaolin is the centre: an oasis**, the still place between them. Anagami Island repeats the shape in miniature: an oasis at
 the heart of the Dunes, with Old Grog fishing at its edge.
@@ -346,6 +346,58 @@ up is noticing which one you are being, and choosing to be the oasis.
 **The middle** *(Espada's)*: the Prince's magnum opus, the Pneuka Jar, is the only vessel that carries crude safely and the only
 refinery there is. Creation is the hinge the whole trade turns on. Anagami's crude prices sit in the middle (Dovina's table), and the
 Prince sells to neither side: every Courier both of his parents need came out of his kiln.
+
+### Emotional weather *(Espada's reading of Dovina's draft, `docs/plans/WEATHER.md`, R58; proposals for the owner to rule)*
+- **Lachryma falling fits.** An island *precipitated* out of the Emocean (section 1); weather is the same thing on a small scale,
+  every day: the sea of feeling settling onto a mind. Grief rain is, in the oldest sense of the word, Lachryma: tears.
+- **Whose mood:** the island's, which means its ego's, since an island of ego is its ego: Kaolin Anagami's over Anagami Island,
+  Magnus's over Margarite, Entra's over Entropolis. **Calm** is the glaze holding. On Anagami that is Kaolin's composure, so a calm
+  sky is not proof that nothing is wrong underneath. Weather on the open Emocean, which has no ego, stays blank. A Well has a mood of its own (adopted).
+- **Names** (adopted by Dovina, R58; the look stays Calissa's): wonder is **the aurora**; mirth is **a fox's wedding** (the Japanese
+  folk name for a sunshower: rain out of a clear sky, a joke the weather plays); desire is **the wanting wind** (a dry wind that brings nothing and takes
+  the sand: *want* is desire and lack at once); grief is **the long rain**; dread is **the pall** (a shroud, and what appals). Calm is **fair**.
+- **Hunger, settled** *(the owner, R58)*: "Hunger is pretty neutral", so it stays in the middle of the line; the aspect is
+  renamed **desire** (the owner floated it; Dovina and Espada agreed). Desire *drives* chaos; grief and dread are what chaos *yields* (the comedown, Entropolis's underground). The
+  bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
+
+### Temperament: the grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`, R58; proposals for the owner)*
+- **The word in the world is grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
+  ("Temper" would be the perfect pottery word, since temper is what is mixed into clay, grog among it, but the glossary already gives
+  *temper* to the body showing its mental state, `vfx/temper.js`.) *Temperament* itself comes from the Latin for "a right mixing":
+  the four humours, mixed. Humours are prior art for the idea; they stay out of the text.
+- **The clinical names stay in code and docs only** (OCEAN ids). The player sees plain words, both poles of each dial:
+  **curious / wary** (Openness), **orderly / erratic** (Conscientiousness), **bold / shy** (Extraversion), **gentle / hostile**
+  (Agreeableness), **skittish / steady** (Neuroticism). No diagnosis, as the draft says.
+- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean grain of its
+  Figments (the species mean leans the way the island leans), and each creature is drawn about it. An Egregore, authored by no one,
+  has no island grain: the widest spread. The slip jellies were folk of the town that was, so their grain is the boomtown's (bold,
+  erratic). What Kaolin's own grain is stays blank.
+- **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
+  as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
+
+### The wheel of feeling *(after Plutchik; Espada's reading of Dovina's `docs/plans/WHEEL.md`; **approved in full by the owner, R58**)*
+- **The canon was already on the wheel.** Lachryma is *every* feeling (section 1); the five aspects were never all of it, only what
+  Anagami's waters carry. Grief is Plutchik's own word for sadness at its height, and "left unchecked a feeling intensifies" is the
+  canon's Well (rumination, excess of any feeling).
+- **Why Anagami is missing three** *(Espada's)*: trust, disgust and anger are the three a boy shields himself from with a joke. He
+  cannot trust between a mother who overflows and a father who burns the overflow; he swallows the anger and the distaste. So they
+  are rare under Anagami's open sky and pool in its Wells (the Great Dunemaw swallows), and they fall freely elsewhere: trust over
+  Margarite (Law runs on it; Letty is its zealot), anger and disgust in Entropolis's underground. That makes the staged expansion a
+  geography: deeper Wells and other islands bring the new feelings.
+- **Names**, in the canon's register (mirth, not joy; dread, not fear): **Faith** (trust), **Gall** (disgust: bile and bitterness,
+  the humours' word), **Fury** (anger). **Weathers:** faith is **the halo** (the ring round a high sun, still air); gall is **the
+  miasma** (bad air, the old word for a sickness in it); fury is **the hail** (anger hurled; no lightning, since nothing flickers).
+- **Dyads are agate.** Agateware is two clays wedged together, never blended, both colours showing. Compound Lachryma forms where two
+  moods overlap (two weathers at once, a mind in two feelings) and is rarer and worth more: *love* (mirth and faith: the King's
+  calcified kind), *awe* (dread and wonder: the lighthouse, the Leviathans), *contempt* (gall and fury: Letty's propaganda),
+  *remorse* (grief and gall).
+- **Agates in the weather** (two moods at once; opposites cancel and never make one): mirth and wonder, **delight**; mirth and
+  desire, **hope**; mirth and dread, **guilt**; wonder and grief, **disappointment**; wonder and dread, **awe**; desire and grief,
+  **longing**; desire and dread, **worry** (not "anxiety": no clinical words); grief and dread, **despair**. **Gall** covers
+  rejection, from boredom to loathing, physical and moral (the owner kept the name).
+- **Intensity rings** describe strength and never rename the aspect: the aspect's name stays, the ring is the adjective (a mild,
+  basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
+  is the canon's **Prismatic**.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -438,6 +490,9 @@ None of this is ruled yet, but writing should lean this way. *(Owner's notes)*
   names on screen) is written in **ASD-STE100 Simplified Technical English**: short sentences, one instruction each, active voice,
   present tense, one word for one meaning, no idioms. Prose voices (the folk, the Arcana's lore, item flavour) keep their style, trimmed.
 
+- **The five feelings, shown in order** *(the owner, R58)*: most positive to most negative: **Wonder, Mirth, Desire, Grief, Dread**,
+  wherever they are listed for the player or in a doc. Their place on the Law–Chaos line is a separate thing and never the shown order.
+
 ### Habits the text already has
 Kept until the owner says otherwise.
 
@@ -462,7 +517,7 @@ Kept until the owner says otherwise.
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
 | **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
-| **The Great Dunemaw** *(the owner's name, R57)* | Not built yet: the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
+| **The Great Dunemaw** *(the owner's name, R57)* | Built (v62): the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
 
@@ -576,7 +631,7 @@ witnesses the island's work; the other brings in what has gone astray.
 | --- | --- | --- |
 | **Clapperjar** | a little clay figment full of Lachryma, made when the kiln is "too full"; claps, steals baubles, mends pots with gold; always comes back | the smallest pot people, the least share of Kaolin. Their cream gummy centres are the owner's "vanilla-cream gummy centers". When they break, slip flows home. |
 | **Slip jelly** | a "mind jelly" of wet sand in the dunes; something thinks in its middle; its mind can be rewritten in neuralese | a Figment, and a cogitohazard when it turns on the Courier: by the town's story, a folk of the town that was, transfigured by the Well. Not bad by nature: it drinks, rests, plays and mourns. |
-| **The fish** | ten "entities" answering to five aspects (dread, wonder, grief, hunger, mirth); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
+| **The fish** | ten "entities" answering to five aspects (wonder, mirth, desire, grief, dread); the Drowned Lachryma, "what the workshop weeps, all in one place" | they fit the Emocean as "the ultimate fishing hole" |
 
 ## 8. Things
 
@@ -593,9 +648,9 @@ witnesses the island's work; the other brings in what has gone astray.
 | Item | Name | Examine |
 | --- | --- | --- |
 | Cogitomap | Cogitomap | A chart of one Well on one day. The Well drifts. The chart does not. |
-| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
 | crude, wonder | Cask of crude wonder | It glitters in the cask and does not settle. |
-| crude, hunger | Cask of crude hunger | The cask feels empty, however full it is. |
+| crude, mirth | Cask of crude mirth | Light and sweet. Easy to carry. Somebody laughed this, a long time ago. |
+| crude, desire | Cask of crude desire | The cask feels empty, however full it is. |
 | crude, grief | Cask of crude grief | Heavy and sour. Carry it carefully. |
 | crude, dread | Cask of crude dread | The richest grade. The worst to spill. Do not shake it. |
 
@@ -605,6 +660,19 @@ Weathered It, Not a Scratch, Ports of Call; Crude: Black Gold, Gusher, Toxic Sym
 down is a spiral, the bottom is rock bottom, coming back up twenty times is bouncing back, and drawing one dry is healing it; a FOE is
 the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
 storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
+
+### Words for the Shrine Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
+- **Log lines** (the robotic register): "You cast off for {place}. Fuel: {n} cubes." · "Cargo lost: {n} casks of crude." (with a
+  spill: "… The spill burns on the sea.") · "You make port at {place}." · "Route divined: {place}." · "The press fires. {Attribute}:
+  rank {n}." · "{Encounter} now works a garden slot." · "You harvest {n} from the bed." · "Garden widened: one more {slot|bed}."
+- **The attributes** keep the owner's v0.1 names (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience): they
+  are the owner's, not mine to rename.
+- **Achievements**, kept: First Firing, Tempered, The Whole Wheel (a colour wheel and a potter's wheel), A True Hue (a true you),
+  Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
+  You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
+  not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
+- **The garden's name**: the owner's v0.1 says "an **Internal Shrine Garden**, a pocket dimension inside the vessel". "Spirit Garden"
+  was said in passing; the press is the spirit press. Shrine Garden stands until the owner rules.
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
