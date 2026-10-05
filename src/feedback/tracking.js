@@ -28,6 +28,8 @@ import { PSYGUNS } from '../tools/psygun/kinds.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { sfx } from '../audio/sfx.js';
 import { BY_ID } from '../progress/skills.js';
+import { DOMAINS } from '../progress/domains.js';
+const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 import { anglingRules } from './tracking/angling.js';
 import { wellRules } from './tracking/wells.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
@@ -614,6 +616,7 @@ export class Tracking {
       if (e.sealed && e.kind === 'near') log.say('loot', 'So close to something better.', { tone: '#c9b48a' });
       if (e.tier === 4) log.say('ach', 'The lights go out. The chest has a great deal to say.', {});
     });
+    on('domain.level', (e) => { if (e.by === 'courier') log.say('gain', `Your ${DOMAIN_NAME(e.domain)} reaches level ${e.level}.`); }); // (progress/psyche.js)
     on('cube.earn', (e) => { L.inc(`cube.src.${e.why}`, e.n); if (e.why === 'busk') log.say('gain', `Busking tip: ${plural(e.n, 'cube')}.`); }); // (busking: Dovina's buskPay)
     on('cube.spend', (e) => { L.inc(`cube.use.${e.why}`, e.n); });
     on('cube.spill', (e) => { L.inc(`cube.spill.${e.from}`, e.n); if (e.from === 'zandatsu') log.say('loot', `The core condenses into ${plural(e.n, 'Lachryma cube')}.`, { key: 'zcube', win: 1.2, fmt: () => 'The cores condense into cubes.' }); });

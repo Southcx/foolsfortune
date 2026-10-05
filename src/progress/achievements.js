@@ -25,6 +25,7 @@ import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
 import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
+import { DOMAINS, levelOf } from './domains.js';
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
 export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', mechanic: 'Mechanic', endure: 'Stamina', collect: 'Collection' };
@@ -43,6 +44,7 @@ export const CATS = [
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
+  { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
 
@@ -510,6 +512,14 @@ export function buildAchievements(game) {
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
   F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
+
+  // ---------------------------------------------------------------- THE DOMAINS (progress/psyche.js: EXP in the ledger as `exp.<domain>`)
+  const lv = (L, d) => levelOf(L.get(`exp.${d}`)), DIDS = Object.keys(DOMAINS);
+  F('dm1', 'psyche', 'Levels', 1, 'count', 'Know Thyself', 'Reach level 5 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 5);
+  F('dm2', 'psyche', 'Levels', 2, 'count', 'A Practised Mind', 'Reach level 20 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 20);
+  F('dm3', 'psyche', 'Levels', 3, 'collect', 'Seven Doors', 'Reach level 10 in all seven domains.', (L) => DIDS.filter((d) => lv(L, d) >= 10).length, 7);
+  F('dm4', 'psyche', 'Levels', 5, 'endure', 'Ninety-Nine', 'Reach level 99 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 99, { title: 'Adept' });
+  F('dm5', 'psyche', 'Levels', 6, 'endure', 'The World', 'Reach level 99 in all seven domains: the end of the Fool\'s Journey.', (L) => DIDS.filter((d) => lv(L, d) >= 99).length, 7, { hidden: true, title: 'The World' });
 
   // ---------------------------------------------------------------- GENERAL
   F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });

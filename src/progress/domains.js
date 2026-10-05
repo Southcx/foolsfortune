@@ -7,8 +7,8 @@
 // a rote act 0.4 of the base, a middling one about 1, and a masterful one 5, so the grind to "The World" is about 2,100 hours and a
 // player who plays ambitiously and well gets there in about 400. A source's quality should measure ambition as well as accuracy (the
 // fragile formation's sweet spot, the long macro typed clean, the four-star photograph), never repetition. The bases are relative WEIGHTS within a domain; one PACE scales every domain alike, so 99 takes the same time in
-// each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; nothing
-// reads it yet (docs/plans/SYSTEMS.md, B8).
+// each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; progress/psyche.js
+// earns it in play (docs/plans/SYSTEMS.md, B8).
 //
 // Prior art: Old School RuneScape's skills (1 to 99 by EXP, earned only by doing the skill; the level as proof), the owner's design
 // document v0.1 (the seven skills, the EXP curve floor(level^1.5 * 50 + 100) a level, "The World" ascension), Rhythm Heaven's and Gran
