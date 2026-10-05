@@ -42,8 +42,9 @@ src/
   title/         the title screen                                                                       (Petra; art, cue, words theirs)
   workbench/     the studio                                                                             (Calissa)
   debug/         the diagnostics overlay and the tuning panel                                           (Petra)
+  agent/         the game as an AI player sees and drives it (observe, act: docs/plans/COOP.md)         (Petra)
   assets/        models, textures, fonts, clips                                                         (Calissa)
-scripts/         Node scripts: the gate's checks, the stress test, bakes and exports (was tools/)
+scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports (was tools/)
 docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, AI, ECONOMY, OST, HANDOFFS
 ```
 

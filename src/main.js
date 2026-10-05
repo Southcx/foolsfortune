@@ -118,6 +118,8 @@ import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
 import { BUILD } from './core/progress.js';
 import { Save } from './core/save.js';
+import { Agent } from './agent/agent.js';
+import { installPlaces } from './world/places.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { Flash } from './tools/veritome/flash.js';
@@ -555,6 +557,7 @@ async function main() {
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
+  installPlaces(game); game.agent = new Agent(game); // (the game as an AI player sees and drives it: world/places.js, agent/agent.js; docs/plans/COOP.md)
   for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui', 'dialogue']) theme.watch(document.getElementById(id));
   theme.watch(document.getElementById('overlay'), { sound: false, point: '.go .opt' }); // (the title: the glove waits at BEGIN)
   theme.aim(document.querySelector('#overlay .go .opt'));
@@ -788,6 +791,7 @@ async function main() {
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
+    game.agent?.update(dt); // (an AI player's intent becomes this tick's input, before anything reads it: agent/agent.js)
     game.rawDt = dt;
     dt *= game.time.update(dt); // (everything below runs in game time; the player's own blade is read in real seconds)
     simTime += dt;

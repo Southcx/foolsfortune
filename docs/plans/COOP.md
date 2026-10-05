@@ -47,6 +47,9 @@ Each phase pays for itself before the next one starts.
   calling it, a turn at a time: the world waits for it.
 - **Playtests** (`scripts/playtest/*.mjs`): scenarios with goals and checks ("down the Well, clear a floor, come up: pay > 0, the haul in
   the box"), run like the stress test. The stress test fuzzes; a playtest plays.
+- **Status (v70):** places, `game.agent` and the first playtest (`npm run playtest -- well`: down the Well, every floor cleared, back up,
+  paid, the haul home; 8/8 on seeds 1 to 3) are in. Its first finds: jellies flew through walls in the air and climbed onto the roof.
+  The bridge is next.
 - **Done when:** an agent with no knowledge of the code can be told "go down the Well and come back with something" and do it, and a
   playtest for each slice step (E1 to E5) runs in the gate.
 

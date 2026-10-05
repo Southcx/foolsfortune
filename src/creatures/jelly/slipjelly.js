@@ -48,7 +48,7 @@ export const JELLY = {
   respawn: 40, trailEvery: 0.35, poise: 1, stunFor: 5,
 };
 const UP = new THREE.Vector3(0, 1, 0);
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _acc = new THREE.Vector2();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3(), _acc = new THREE.Vector2();
 const rnd = (a, b) => a + simRand() * (b - a);
 let NEXT = 1;
 
@@ -123,16 +123,26 @@ export class SlipJellies {
   }
 
   // ---------------------------------------------------------------- the world around it
+  /** What its rays stand on and bump into: the world's own static shapes, not anything that moves or is someone (the Courier's capsule
+   *  is kinematic and untyped: without this a jelly could take their head for ground). */
+  get solid() { const g = this.game; return this._solid ||= (k) => !k.isSensor() && !k.parent()?.isDynamic() && !g.physics.entityOf(k)?.type && k.handle !== g.player?.collider?.handle; }
   ground(c, x, z) {
     const g = this.game;
-    const from = _a.set(x, (c.groundY ?? c.pos.y) + 3, z);
-    const hit = g.physics.raycast(from, _b.set(0, -1, 0), 40, c.col, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic() && !g.physics.entityOf(k)?.type);
+    // (looked for from a little over its feet, as high as it could step (0.6) and no higher: from 3 m up, a jelly pressed to a wall cast
+    // from inside it, took the hit at the ray's own start for ground, and climbed a wall's height a probe at a time onto the roof:
+    // the Well's playtest found one on a ceiling, scripts/playtest/well.mjs; in the air, from where it is now)
+    const from = _a.set(x, Math.max(c.groundY ?? c.pos.y, c.air ? c.pos.y : -Infinity) + 0.7, z);
+    const hit = g.physics.raycast(from, _b.set(0, -1, 0), 40, c.col, undefined, this.solid);
+    return hit ? hit.point.y : null;
+  }
+  /** The underside of what is over its head within `rise` (rising, it meets a ceiling), or null. */
+  roof(c, rise) {
+    const hit = this.game.physics.raycast(_c.set(c.pos.x, c.pos.y + H * 0.5, c.pos.z), _b.set(0, 1, 0), H * 0.5 + rise, c.col, undefined, this.solid);
     return hit ? hit.point.y : null;
   }
   /** Is there something solid in the way along `dir` (for the steering's whiskers)? the wall's normal, or null. */
   probe(c, pos, dir, len) {
-    const g = this.game;
-    const hit = g.physics.raycast(_c.set(pos.x, pos.y + 0.6, pos.z), dir, len, c.col, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic() && !g.physics.entityOf(k)?.type);
+    const hit = this.game.physics.raycast(_c.set(pos.x, pos.y + 0.6, pos.z), dir, len, c.col, undefined, this.solid);
     return hit && Math.abs(hit.normal.y) < 0.6 ? hit.normal : null;
   }
   head(c) { return new THREE.Vector3(c.pos.x, c.pos.y + H * c.deform.sq + 0.35, c.pos.z); }
@@ -358,15 +368,24 @@ export class SlipJellies {
       let dy = yaw - c.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
       c.yaw += dy * Math.min(1, dt * (A?.phase === 'wind' ? 8 : 4));
     }
+    // (a wall stops it whatever it is doing: in the air it had no test, a lunge carried it into a wall, and from inside a wall every ray
+    // finds its own start for ground, so it climbed the wall onto the roof, the Well's playtest)
+    const sp = Math.hypot(c.vel.x, c.vel.z) * dt;
+    if (sp > 1e-5) {
+      const n = this.probe(c, c.pos, _d.set(c.vel.x, 0, c.vel.z).normalize(), sp + R);
+      if (n) { const into = c.vel.x * n.x + c.vel.z * n.z; if (into < 0) { c.vel.x -= n.x * into; c.vel.z -= n.z * into; } }
+    }
     const nx = c.pos.x + c.vel.x * dt, nz = c.pos.z + c.vel.z * dt;
     c.groundT -= dt;
     let gy = c.groundY;
     if (c.groundT <= 0 || c.air) { const y = this.ground(c, nx, nz); c.groundT = 0.12; if (y != null) gy = y; }
     // (a step up of more than half a metre is a wall: it stops there)
-    if (!c.air && gy != null && gy - c.groundY > 0.6) { c.vel.multiplyScalar(-0.3); } else { c.pos.x = nx; c.pos.z = nz; }
-    if (gy != null) c.groundY = gy;
+    if (!c.air && gy != null && gy - c.groundY > 0.6) c.vel.multiplyScalar(-0.3); // (a wall: it stays where it was, on the ground it was on)
+    else { c.pos.x = nx; c.pos.z = nz; if (gy != null) c.groundY = gy; }
     if (c.air) {
-      c.vy -= 9.81 * dt; c.pos.y += c.vy * dt;
+      c.vy -= 9.81 * dt;
+      if (c.vy > 0) { const roof = this.roof(c, c.vy * dt); if (roof != null) { c.pos.y = roof - H; c.vy = 0; } } // (a knock up meets the ceiling: it does not pass through it onto the roof, the Well's playtest)
+      c.pos.y += c.vy * dt;
       if (c.pos.y <= c.groundY && c.vy < 0) this.land(c);
       // (on the way, it can hit its foe bodily: a lunge not stepped out of)
       else if (A?.phase === 'air' && !A.hit && A.foe && !st(c, 'calm') && !st(c, 'charm')) {

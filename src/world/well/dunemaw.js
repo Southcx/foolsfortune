@@ -196,6 +196,26 @@ export class Dunemaw {
   /** Back to where this floor began (the Tab panel's respawn, a fall). */
   toArrival() { if (this.cur) { this.moving = 2; this.game.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true }); } }
 
+  /** A route across the floor through its doorways (the agents': agent/agent.js): the doorways' middles, room by room, then the place.
+   *  Breadth-first over the rooms (nine at most). */
+  route(from, to) {
+    const F = this.cur; if (!F) return [to.clone()];
+    const cellAt = (p) => F.cells.find((c) => Math.abs(p.x - c.x) <= CELL / 2 && Math.abs(p.z - c.z) <= CELL / 2);
+    const a = cellAt(from), b = cellAt(to);
+    if (!a || !b || a === b) return [to.clone()];
+    const STEP = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }, key = (c) => `${c.c},${c.r}`, prev = new Map([[key(a), null]]), q = [a];
+    while (q.length) {
+      const c = q.shift(); if (c === b) break;
+      for (const d of c.doors) { const n = F.cells.find((k) => k.c === c.c + STEP[d][0] && k.r === c.r + STEP[d][1]); if (n && !prev.has(key(n))) { prev.set(key(n), c); q.push(n); } }
+    }
+    if (!prev.has(key(b))) return [to.clone()];
+    const chain = []; for (let c = b; c; c = prev.get(key(c))) chain.unshift(c);
+    const out = [];
+    for (let i = 1; i < chain.length; i++) out.push(new THREE.Vector3((chain[i - 1].x + chain[i].x) / 2, WELL_AT.y, (chain[i - 1].z + chain[i].z) / 2));
+    out.push(to.clone());
+    return out;
+  }
+
   /** The interact source: the mouth from outside, the pools inside. */
   nearest(P) {
     const pick = (pos, ref) => { const d = Math.hypot(pos.x - P.pos.x, pos.z - P.pos.z); return d < REACH && Math.abs(P.pos.y - pos.y) < 2 ? { pos: pos.clone().setY(pos.y + 1.4), d, ref } : null; };
