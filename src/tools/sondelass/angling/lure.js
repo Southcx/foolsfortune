@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE LURE: the Courier's mind, projected. A ghost of their mask on a line of light, tinted by the ASPECT they have chosen to think
-// (dread, wonder, grief, hunger, mirth), that floats where it lands, sinks when asked, comes home when reeled and is what the
+// (dread, wonder, grief, desire, mirth), that floats where it lands, sinks when asked, comes home when reeled and is what the
 // entities are drawn to. Also the ripples: rings of light spread on the water for a splash, a nibble, a bite.
 //
 //   air     thrown along an arc to where the cast was aimed (a ballistic lob solved for the flight time)

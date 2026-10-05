@@ -148,7 +148,7 @@ A telescoping instrument worn on the back: **1** cutlass, **2** rod, **3** hook.
 - **Hook**: a grapnel. Solid ground pulls you to it (jump cuts the line and keeps the speed), something loose is yanked to you, and a
   held line lets you swing.
 - **Rod**: angling at **THE WEIR**, the oasis in the Dunes. Choose a **lure** (made ones, or any curio) and the **aspect** a sounding
-  pushes into it (dread, wonder, grief, hunger, mirth); cast, twitch, sink, and **sound** (middle click) to stir the pond. Answer the
+  pushes into it (wonder, mirth, desire, grief, dread); cast, twitch, sink, and **sound** (middle click) to stir the pond. Answer the
   bite inside its window, then fight: keep the tension needle in its band while the fish tires, lean against its pull, give line when it
   runs. Ten species with their own depths, tides, bites and fights; a fish just landed leaves an echo that larger fish come to. The
   Codex's ANGLING shelf is the bestiary.

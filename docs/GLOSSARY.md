@@ -321,6 +321,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
   cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
+- **seam** (`game.seam`, `src/render/seam.js`): a change of place made under a cover (dip to the dark, change, hold two drawn frames,
+  come back); its look is a `kind` (a Well's: 'maw'). *Not:* a texture seam.
 - **the save** (`game.save`, `src/core/save.js`): everything the game keeps in the browser. A **section** is what one system keeps (its id,
   scope, version; how to dump, load, reset, migrate and check it); a **scope** is one record written whole: **player** (progress that
   follows the Courier: the kit, the ledger, unlocks), **world** (progress of the place: the Wells, the shops, the ground) and **settings**
