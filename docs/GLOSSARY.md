@@ -43,7 +43,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the wheel** (`docs/plans/WHEEL.md`): Plutchik's eight feelings, of which the five aspects are five; **Faith** (trust), **Gall**
   (disgust: rejection, from boredom to loathing) and **Fury** (anger) join later, as places (approved, 2026-10-05). Intensity **rings**
   are adjectives on a feeling's strength, never new names; the centre is Prismatic.
-- **grain** (a creature's temperament: `docs/plans/TEMPERAMENT.md`; planned): who a mind is, five traits each between two poles:
+- **grain** (a creature's temperament: `docs/plans/TEMPERAMENT.md`; the data in `src/progress/combat/temperament.js`): who a mind is, five traits each between two poles:
   curious / wary, orderly / erratic, bold / shy, gentle / hostile, skittish / steady (ids: the five-factor model's OCEAN). It weights
   the mind and says which damage type a mind is weak to; it shows in movement and posture, never colour. *Not:* **temper** (the body
   showing its mental state, `vfx/temper.js`); *not* "personality" or "stats" in player text. Grain is climate, mood is weather.

@@ -11,6 +11,7 @@ import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, BUILD, multiplier } from '../src/p
 import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
 import { FRIENDLY, friendlyDamage, tolerance } from '../src/progress/combat/friendly.js';
+import { TRAITS, drawGrain, susceptibility, weakTo, poles, traitsOf, sway } from '../src/progress/combat/temperament.js';
 import { ATTRIBUTES, radiusAt, fuelAt, widenAtRank } from '../src/progress/alchemy.js';
 import { ENCOUNTERS } from '../src/progress/garden.js';
 import { ASPECTS, TYPE_OF, weatherAt, phaseAt, lightAt } from '../src/progress/weather.js';
@@ -75,3 +76,11 @@ for (const isl of ['margarite', 'anagami', 'entra', 'well:dunemaw']) {
 }
 console.log(`  each feeds: ${ASPECTS.map((a) => `${a} -> ${TYPE_OF[a]}`).join(', ')}`);
 console.log(`  a game day: ${[0, 4, 6, 9, 12, 15, 18, 19, 21].map((h) => `${h}h ${phaseAt(h * 150000)} ${lightAt(h * 150000).toFixed(2)}`).join(' | ')}`);
+
+console.log('\nGRAIN (temperament.js): five slip jellies drawn about their species, what each is weak to, and the Drives\' traits');
+for (let i = 1; i <= 5; i++) {
+  const g = drawGrain('slipjelly', i), t = traitsOf(g);
+  console.log(`  #${i} ${TRAITS.map((x) => `${x.id}${g[x.id] >= 0 ? '+' : ''}${g[x.id].toFixed(2)}`).join(' ')}  reads: ${poles(g).join(', ') || '(middling)'}  weak to: ${weakTo(g).join(', ') || 'nothing in particular'}  bold x${t.bold} fearful x${t.fearful}`);
+}
+const g0 = drawGrain('slipjelly', 1);
+console.log(`  susceptibility of #1: ${TRAITS.map((x) => `${x.type} x${susceptibility(g0, x.type).toFixed(2)}`).join(', ')}; a full dread sways it ${JSON.stringify(sway('dread', 1))} a second`);
