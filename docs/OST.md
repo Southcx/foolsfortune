@@ -215,7 +215,20 @@ read on 2026-10-05 from Spotify's public embed page. The owner's five favourites
     reverb, have 0.2 to 3.3% (the median 0.6%): about an eighth.
   - **Tempo**: four between 90 and 110 bpm, two near 150 (or a half-time 75).
   - **Keys** could not be read cleanly from 30 real seconds: the notes smear across their neighbours (bends, glides, distortion).
-- **What it asks of the music**: proposals only, none made yet, and the owner's word decides.
+- **The whole list** (75 of the 77 have a preview; *I Still See You* and *forget it* do not). Measured the same way, plus drop-outs
+  (the bass or everything 18 dB under its median for a moment) and bass slides (the bass's pitch moving 3 semitones or more in one
+  sweep):
+  - **Four families** by sound: *the Low Glow* (21 songs: heavy bass, a dark top, a groove: Sleep Token's *Aqua Regia*, half•alive,
+    Phantogram), *the Drop* (13: drop-outs, slides, the biggest dynamics: Crywolf, Crown The Empire), *the Band* (18: a band in the
+    room, middling everything: Wallows, Tigercub, Sting), *the Wall* (23: bright, dense, a steady loudness: diet lemon, Worry Club).
+    Five of the six favourites are in the Low Glow (three) and the Drop (two), which hold 34 of the 75; the other is *Agoraphobia*,
+    in the Wall.
+  - **What sets the favourites apart from the list**: the bass (a median of 48% under 120 Hz against the list's 32%) and the
+    drop-outs (four of the six have them, against 24 of the 75).
+  - **What sets the list apart from this soundtrack**: the air (the list's median 7.3% above 2 kHz, its least 1.4%; nine of 17 of
+    our cues, rendered offline, have less than that least) and the drums (the list's median percussive share 26%, its least 11%;
+    13 of our 17 cues are under 11%). The tempo is no gap: the list's median is 110 bpm, the middle half 96 to 125, as ours.
+- **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
   - Stops and drop-outs written into the groove.
   - A bass that slides.
   - More air up high: hats, breath, shimmer.
