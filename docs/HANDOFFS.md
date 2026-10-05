@@ -29,9 +29,34 @@ lines to the owner. Petra reviews, merges and publishes.
   area, what to do, what should happen, in the glossary's words (every unit of time names its clock). Dovina writes them in.
 - **To Petra:** the bug report (F8) is yours to build, Calissa the markup window's look: `docs/plans/BUGREPORT.md`, with four questions.
 
+**2026-10-05, from Wanda: the weather's sound and music are built, and the tracks have moods**
+- **The aspects for busking:** `TRACK_ASPECT` in `src/music/aspects.js`, track id to aspect, every sound-test track. `rhythm.score` now
+  carries `aspect` too, so your pay can compare it with the sky without importing anything.
+- The ambience (`game.ambience`) reads your `weather.now`, `weather.change` and `day.phase`, and `here(pos)` for the exposure: roofed hears
+  the rain muffled through the roof, deep rests (the Well's music is its mood). The night thins every cue; the mood lays its colour
+  over the place's cue.
+
 _Dovina's backlog: `docs/plans/SLICE.md` (E4, the Emocean hop, is next on Petra's side)._
 
 ## Petra (Main)
+
+**2026-10-05, from Wanda: agate and torn skies in `game.music.scale()`**
+- With nothing playing, `scale()` now follows an agate: the stronger mood's mode with the second's signature note borrowed (awe, dread
+  with wonder, is [0,1,6,7,8]). A torn sky (`cancelled`) is [0, 7, 12, 19, 24]: only roots and fifths, across two octaves, so the five
+  keys still play five notes. Values past 12 are deliberate; add your high register on top as now.
+
+**2026-10-05, from Wanda: the weather heard, and `game.music.scale()` for the Crucibelle**
+- **`game.music.scale()`** (music/player.js) returns five semitones from the grid's root, the scale of the bar sounding now, changed on
+  a bar line. It's the cue's own scale (`score.scale` or `section.scale`; the minor pentatonic if none: the Deep says In, the shanty
+  Dorian, Spellwheel Lydian). With nothing playing, it's the weather's mode (music/mood.js MODES). The mood never re-modes a cue that
+  is playing: its layer uses only the cue's root, second and fifth. So the bell is never against the music, and it sings the weather
+  wherever the place is quiet. Read it per note, as you proposed.
+- **`game.ambience`** (src/audio/ambience.js, one line in main.js after the music): the five weather beds, the dawn and the night, the
+  fog's muffle on the effects (`sfx.setFog`), and the mood and the night handed to the music (`setMood`, `setNight`). It listens for
+  `weather.now`, `weather.change` and `day.phase`, and reads `game.weather.here(pos)` twice a second, because walking under a roof changes
+  the exposure without an event. It is idle until Dovina's weather is merged. Driven headless with a stand-in weather: every aspect,
+  roofed and deep, night and dawn.
+- The mixer: the effects bus now runs through the fog's low-pass (`sfx.fogLp`) into `main`; the music and the voice don't.
 
 **2026-10-04, from Espada (the slice's words, R57)**: the Well in the Dunes is **the Great Dunemaw** (the owner's name; `well` id yours; LORE.md section 5).
 Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purser, Margarite's dock trader: the role is the name). Lines marked
@@ -234,55 +259,13 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
-**2026-10-05, from Petra: the Crucibelle's mode follows the music, and the music follows the weather.** Your proposal (the five notes
-in the weather's mode: major pentatonic for mirth, Lydian pentatonic for wonder, Dorian for hunger, minor for grief, In for dread) is a
-yes, on one condition: the bell takes its scale from the music, never from the weather directly. It has no wrong notes only because it
-plays the scale of what is playing (`songs.js` SCALE, against `music/player.js` grid()). So the ask is a
-`game.music.scale()` -> five semitone offsets from the root, changed only on a bar line. Then I make the bell read it per note (the songs
-are degree motifs, so every song survives a mode change). When the music follows the weather is yours.
-
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
 
-**2026-10-04, from Petra: your Well hooks are live**
-- `game.well.active` and `game.well.floor` (1 to 3) are set while a run is on (`src/world/well/dunemaw.js`); entering, each floor and
-  leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
-  a sound for a pool taking you down (and up) would be yours.
+**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the save sections above
+(next round: the save has no way yet to carry an adopted key's value into a section, so the move would reset the settings once).
 
-**2026-10-04, from Calissa: the trailer follows your overture's clock**
-- `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
-  the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
-  change, tell me. `/overture` plays the sound test's track of that title. It is live on the title now that R43 is merged.
-- The world's own sounds are ducked under the band while it plays (`sfx.duckEffects(0.35)`, yours from d0dca7c; a no-op until it is merged).
-
-**2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
-- While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after
-  `vessel.mend`). A very subtle sizzle on it is yours to add; no event fires as a mend begins, so read `glow` or ask Petra for one.
-
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
-  - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
-    creature's mental state tipping toward Prismatic.
-  - **C5**: the Lockheart's three modes (casting, summoning, conversion), the catch wheel, and a caught Figment inside the coffin.
-  - **D5**: **the rhythm mode**, the owner's idea: the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes
-    (1–5 low, 6–0 high, no chords: keyboards jam on some three-key combinations). The charts should come from the music's own note
-    grid in `src/music/`, so the whole OST is playable without hand-authored charts. It is begun from a stage in its own room. The
-    field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
-    busking pay.
-
-**2026-10-04, from Petra: R43 merged and wired (v56)**
-- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
-  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
-- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
-- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
-  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
-- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
-- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
-
-**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
-stay open.
-
-(Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
-`src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
+(Done and deleted: the Crucibelle's mode (`game.music.scale()`, 36ce992), the Well's pools (b9c5d5a), the trailer's clock and mix (d0dca7c),
+the mend's sizzle (31f8687), the systems plan's B5 and D5, R43's wiring.)
 
 ## Calissa (Art)
 

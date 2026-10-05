@@ -81,6 +81,7 @@ import { chooseMusic, chooseTitleMusic } from './music/choose.js';
 import { Rhythm, TRACKS as RHYTHM_TRACKS } from './music/rhythm/rhythm.js';
 import { Clayese, hearHaggling } from './npc/clayese.js';
 import { hearEvents } from './audio/cues.js';
+import { Ambience } from './audio/ambience.js';
 import { GameLog } from './feedback/gamelog.js';
 import { Stats } from './progress/stats.js';
 import { Tracking } from './feedback/tracking.js';
@@ -408,6 +409,7 @@ async function main() {
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
   game.music = new MusicPlayer(sfx);
+  game.ambience = new Ambience(game); // (the weather and the hour heard where the Courier stands, and handed to the music: audio/ambience.js)
   hearHaggling(game, new Clayese(sfx), PEOPLE.find((p) => p.id === 'raku').voice); // (Raku's voice for the shop's bargaining: npc/clayese.js)
   hearEvents(game, sfx); // (the sounds events make: audio/cues.js)
   const codex = new Codex(game);

@@ -16,8 +16,11 @@
 // cymbal (six detuned square waves, filtered); swing as a long-short eighth (about 2:1).
 //
 //   const m = new MusicPlayer(sfx)   m.follow(score | null) (per frame)   m.play(score)   m.stop(fade)   m.duck(seconds, to = 0.35)   m.setOn(on)
+//   m.setMood(aspect | null, strength, second?, secondStrength?, cancelled?) (the weather's colour: music/mood.js)   m.setNight(on) (the night thins every cue)   m.scale() -> five semitones
+//   from the root: the scale of what is playing, changed on a bar line, or the weather's mode when nothing plays (the Crucibelle plays it)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from './arranger.js';
+import { moodLayer, moodScale, DEFAULT_SCALE } from './mood.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const KEY = 'foolsfortune.music.v1';
@@ -32,6 +35,23 @@ export class MusicPlayer {
     this.arr = new Arranger(sfx);
     this.arr.onEnd = (sc) => { if (this.pick === sc) this.pick = null; }; // (a jingle chosen in the sound test plays once)
     this.pick = null; // (a track chosen in the sound test, played over whatever the place would play, until stopped)
+  }
+  /** The weather's colour over the place's cue (the arranger lays it over each bar from the next one on). */
+  setMood(aspect = null, strength = 0, second = null, secondStrength = 0, cancelled = null) {
+    this.mood = { aspect, strength, second, secondStrength, cancelled }; this.arr.layer = moodLayer(aspect, strength, second, secondStrength);
+  }
+  /** The night: the drums and the bass back, the leads a little softer (every cue the arranger plays). */
+  setNight(on) { this.night = !!on; this.arr.thin = on ? { hit: 0.55, bass: 0.7, rest: 0.88 } : null; }
+  /** The scale to play along in, five semitones from the grid's root: the scale of the bar sounding now (a score or section may name its
+   *  own; the minor pentatonic if not), or, with nothing playing, the weather's mode (nothing to clash with). */
+  scale() {
+    const A = this.arr;
+    if (A.alive && !A.ended && A.score) {
+      const s = A.scaleAt; if (s && s.t <= this.ctx.currentTime) this.scaleNow = s.scale || DEFAULT_SCALE;
+      return this.scaleNow || DEFAULT_SCALE;
+    }
+    if (this.alive && this.score) return this.score.scale || DEFAULT_SCALE;
+    const M = this.mood; return M?.aspect ? moodScale(M.aspect, M.second, M.cancelled) : DEFAULT_SCALE;
   }
   setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) { this.stop(1); this.arr.stop(1); } }
   /** What is playing now (either player's score), or null. */

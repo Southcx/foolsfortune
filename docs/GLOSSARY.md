@@ -407,6 +407,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
 - **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
+- **the ambience** (`game.ambience`, `src/audio/ambience.js`): what the weather and the hour sound like where the Courier stands, a
+  generative **bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music.
+- **mood layer** (`moodLayer`, `src/music/mood.js`): the weather heard in the music, a few quiet notes over each bar of the place's cue
+  (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
+  `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
+  weather's mode when nothing plays.
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one

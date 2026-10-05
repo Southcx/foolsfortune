@@ -9,7 +9,7 @@
 //
 // It is begun from a stage in a room (begin(track, level)), never a key; Esc ends it early. While it plays it has the digit keys (the
 // field's tools do not see them) and the place's music stands aside (music/choose.js). The field's Crucibelle stays improvisation.
-// What happened is an event: rhythm.start, rhythm.score { track, title, level, minutes, accuracy, combo, perfect, great, good, miss, full, by }
+// What happened is an event: rhythm.start, rhythm.score { track, title, aspect (the song's mood: music/aspects.js), level, minutes, accuracy, combo, perfect, great, good, miss, full, by }
 // (a finished song), rhythm.quit { track, title, level, by }.
 //
 // Prior art: StepMania and DDR (a chart per song, three levels of it), Guitar Hero and Rock Band (you play the lead; a miss drops it
@@ -24,6 +24,7 @@ import { noteChart, KEYS } from './chart.js';
 import { Judge } from './judge.js';
 import { Highway } from './highway.js';
 import { sfx } from '../../audio/sfx.js';
+import { TRACK_ASPECT } from '../aspects.js';
 
 export const TRACKS = ALL.filter((T) => T.score.arrange && T.score.sections.reduce((n, x) => n + x.bars, 0) >= 4); // (a landing or a sting is too short to play)
 const KEY = 'foolsfortune.rhythm.v1';
@@ -63,7 +64,7 @@ export class Rhythm {
     this.active = false; cancelAnimationFrame(this.frame);
     removeEventListener('keydown', this.onKey, true);
     this.arr.stop(finished ? 2 : 0.6); this.highway.hide();
-    const J = this.judge, ev = { track: this.T.id, title: this.T.title, level: this.level, by: 'courier' };
+    const J = this.judge, ev = { track: this.T.id, title: this.T.title, aspect: TRACK_ASPECT[this.T.id] || null, level: this.level, by: 'courier' };
     if (finished) this.game.events?.emit('rhythm.score', { ...ev, minutes: +(this.chart.length / 60).toFixed(2), accuracy: J.accuracy, combo: J.best, ...J.counts, full: J.counts.miss === 0 });
     else this.game.events?.emit('rhythm.quit', ev);
   }

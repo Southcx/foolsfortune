@@ -7,6 +7,7 @@
 //   score = { title, bpm, arrange: true, loopFrom, then?: score (played straight on into, at the bar line), lead?, fadeIn?, cut? (a cue that
 //   must land on a moment: its first bar this soon, its fade-in this short, what it replaces cut, not faded), sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
 //   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
+//   arranger.layer = (score, section, bar) => [event] (the mood: music/mood.js)   arranger.thin = { hit, bass, rest } (the night)   score.scale / section.scale
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
 // build), sidechain compression as a rhythmic device (French house, then every EDM drop), and the arrangement of a melodic bass
@@ -14,6 +15,7 @@
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
+const BASS = new Set(['upright', 'moog', 'sub', 'growl', 'pick', 'pizz']); // (what the night's thinning takes down with the drums)
 const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle']);
 
 export class Arranger {
@@ -101,6 +103,9 @@ export class Arranger {
       if (!sec.pump) { this.pumpG.gain.cancelScheduledValues(t0); this.pumpG.gain.setValueAtTime(1, t0); }
     }
     for (const e of sec.bar(this.bar)) this.play1(e, t0, sec.gain ?? 1);
+    // the weather's colour over a cue that loops (music/mood.js), and the scale this bar is in, from when it sounds (player.scale())
+    if (this.layer && !S.moodless && S.loopFrom !== null) for (const e of this.layer(S, sec, this.bar) || []) this.play1(e, t0, 1);
+    this.scaleAt = { t: t0, scale: sec.scale || S.scale || null };
     this.next += spb * beats;
     if (++this.bar >= sec.bars) {
       this.bar = 0; this.section++;
@@ -117,6 +122,7 @@ export class Arranger {
   // (`gain`: a section's own level, so a climax can stand above a verse without every note in it being rewritten)
   play1(e, t0, gain = 1) {
     const B = this.band, t = t0 + e.b * this.spb + (e.i === 'kick' || e.i === 'snare' ? 0 : (Math.random() - 0.5) * this.jitter), d = (e.d || 1) * this.spb;
+    const th = this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
       else if (e.i === 'riser' || e.i === 'breath') B[e.i](t, d, (e.v ?? 0.3) * gain);

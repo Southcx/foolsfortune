@@ -22,7 +22,7 @@ const drips = (i, v, down = 0, every = 1) => (i % every ? [] : DRIPS.filter((_, 
 const heart = (v, beats = [0, 2]) => beats.flatMap((b) => [E('kick', b, 1, null, v), E('kick', b + 0.28, 1, null, v * 0.6)]); // (lub-dub)
 
 const FLOOR1 = {
-  title: 'Surface Thoughts', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2,
+  title: 'Surface Thoughts', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2, moodless: true,
   sections: [{ id: 'surface', bars: 8, gain: 5, sweep: [5000, 5000], bar: (i) => [
     ...(i % 2 === 0 ? [E('tanpura', 0, 8, 40, 0.18)] : []), ...drips(i, 0.12),
     ...(i % 4 === 0 ? [E('breath', 0, 4, null, 0.12), E('voice', 1, 6, 76, 0.07, { vowel: 'u', vib: 0.01 })] : []),
@@ -30,7 +30,7 @@ const FLOOR1 = {
   ] }],
 };
 const FLOOR2 = {
-  title: 'Undertow', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2,
+  title: 'Undertow', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2, moodless: true,
   sections: [{ id: 'undertow', bars: 8, gain: 4.5, sweep: [3200, 3200], bar: (i) => [
     ...(i % 2 === 0 ? [E('tanpura', 0, 8, 40, 0.16), E('strings', 0, 8, [53, 52], 0.035, { attack: 2.5, bright: 1200 })] : []), // (F on E, soft)
     ...drips(i, 0.1, 12, 2), ...heart(0.16), ...(i === 1 || i === 5 ? [E('whale', 0, 6, 55, 0.14, { to: 49 })] : []),
@@ -38,7 +38,7 @@ const FLOOR2 = {
   ] }],
 };
 const FLOOR3 = {
-  title: 'The Bottom of the Well', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2,
+  title: 'The Bottom of the Well', root: 64, bpm: 60, arrange: true, loopFrom: 0, fadeIn: 2, moodless: true,
   sections: [{ id: 'bottom', bars: 8, gain: 4, sweep: [2600, 2600], bar: (i) => [
     E('sub', 0, 4, 40, 0.015), ...[0, 1, 2, 3].map((b) => E('taiko', b, 1, null, b ? 0.07 : 0.12, { size: 1.05 })),
     ...(i % 2 === 0 ? [E('strings', 0, 8, [52, 53, 59], 0.06, { attack: 2, bright: 1800 })] : []),

@@ -35,7 +35,7 @@ const stamp = (i, v = 1) => [...Array(7)].flatMap((_, k) => {
 });
 const keys = (i) => [...Array(7)].map((_, k) => E('celesta', k * 0.5 + 0.25, 0.25, OCT[(i * 3 + k * 2) % OCT.length], 0.12));
 const SUMMONING = {
-  title: 'Barely Bound', root: 64, bpm: 138, beats: 3.5, arrange: true, loopFrom: 1, lead: 0.03, fadeIn: 0.2, cut: true,
+  title: 'Barely Bound', root: 64, bpm: 138, beats: 3.5, arrange: true, loopFrom: 1, moodless: true, lead: 0.03, fadeIn: 0.2, cut: true,
   sections: [
     { id: 'invoke', bars: 1, gain: 2.4, bar: () => [E('strings', 0, 3.5, [40, 41, 47], 0.1, { attack: 1.2 }), E('riser', 0, 3.5, null, 0.22), E('sub', 0, 3.5, 40, 0.12),
       E('voice', 1, 2.5, 71, 0.14, { vowel: 'o', from: -1 }), ...[0, 1, 2, 2.5, 3].map((b, k) => E('taiko', b, 1, null, 0.2 + k * 0.08, { size: 1.2 }))] },
@@ -58,7 +58,7 @@ const CA = [[52, 56, 59, 63, 66, 70], [49, 56, 59, 64, 68, 71], [45, 52, 57, 61,
 const flow = (i) => { const ch = CA[i], up = [...ch, ch[2] + 12, ch[3] + 12]; return [...Array(12)].map((_, k) => E('harp', k * 0.5, 1, up[k < 8 ? k : 14 - k], 0.24 - (k % 6 ? 0.06 : 0))); };
 const CAST_MEL = [[[0, 4, 71], [4, 2, 70]], [[0, 6, 68]], [[0, 3, 69], [3, 3, 73]], [[0, 4, 71], [4, 2, 66]]];
 const CASTING = {
-  title: 'Spellwheel', root: 64, bpm: 216, beats: 6, arrange: true, loopFrom: 1, lead: 0.03, fadeIn: 0.3, cut: true,
+  title: 'Spellwheel', root: 64, bpm: 216, beats: 6, arrange: true, loopFrom: 1, lead: 0.03, fadeIn: 0.3, cut: true, scale: [0, 4, 6, 7, 11], moodless: true,
   sections: [
     { id: 'invoke', bars: 1, gain: 5, bar: () => [...[52, 56, 59, 63, 66, 70, 71, 75, 78, 82].map((n, k) => E('harp', k * 0.5, 2, n, 0.22)), E('riser', 0, 6, null, 0.12),
       E('strings', 0, 6, [40, 47, 59], 0.07, { attack: 1 }), E('celesta', 5, 1, 82, 0.2)] },
@@ -84,7 +84,7 @@ const HOOK = [[[0, SW, 71], [SW, 1 - SW, 74], [1, 1, 76], [2, SW, 79], [2 + SW, 
 const swing = () => [E('ride', 0, 1, null, 0.22), E('ride', 1, 1, null, 0.26), E('ride', 1 + SW, 0.34, null, 0.14), E('ride', 2, 1, null, 0.22), E('ride', 3, 1, null, 0.26), E('ride', 3 + SW, 0.34, null, 0.14),
   E('hat', 1, 0.5, null, 0.1), E('hat', 3, 0.5, null, 0.1), E('kick', 0, 1, null, 0.18), E('brush', 2 + SW, 0.3, null, 0.12)];
 const CONVERSION = {
-  title: 'House Edge', root: 64, bpm: 176, arrange: true, loopFrom: 1, lead: 0.03, fadeIn: 0.2, cut: true,
+  title: 'House Edge', root: 64, bpm: 176, arrange: true, loopFrom: 1, moodless: true, lead: 0.03, fadeIn: 0.2, cut: true,
   sections: [
     { id: 'invoke', bars: 1, gain: 1.15, bar: () => [...[64, 67, 69, 70, 71, 74, 76, 79, 81, 82, 83, 86].map((n, k) => E('piano', k * 0.25, 0.4, n, 0.2)),
       ...[2, 2.5, 3, 3.25, 3.5, 3.75].map((b, k) => E('snare', b, 0.25, null, 0.2 + k * 0.06)), E('crash', 0, 1, null, 0.25), E('upright', 0, 2, 40, 0.4)] },

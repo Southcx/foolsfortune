@@ -41,7 +41,7 @@ const sing = (rows, v = 0.34) => rows.flatMap(([b, d, n]) => [E('hum', b, d * 0.
 const play = (rows, i, v, o = {}, up = 0) => rows.map(([b, d, n]) => E(i, b, d * 0.95, n + up, v, o));
 
 export const SHANTY = {
-  title: 'Haul Away the Fortune', root: 64, bpm: 198, beats: 6, arrange: true, loopFrom: 0,
+  title: 'Haul Away the Fortune', root: 64, bpm: 198, beats: 6, arrange: true, loopFrom: 0, scale: [0, 2, 3, 7, 9], // (Dorian: player.scale())
   sections: [
     { id: 'call', bars: 4, gain: 1.0, bar: (i) => [...deck(VERSE.chords[i], { feet: 0.4, squeeze: 0.18 }), ...play(VERSE.tune[i], 'concertina', 0.4, { pan: -0.15 })] },
     { id: 'chorus', bars: 4, gain: 1.1, bar: (i) => [...deck(CHORUS.chords[i], { feet: 0.6 }), ...sing(CHORUS.tune[i]), E('huh', 0, 1, null, 0.3), E('clap', 3, 1, null, 0.25)] },
