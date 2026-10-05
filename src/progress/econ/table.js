@@ -26,7 +26,8 @@ export const ECON = {
     // spot, it pays this many times over (a dense formation forgives, a fragile one rewards the ear)
     kind: { dense: 0.6, fragile: 0.5 }, sweet: { dense: 2, fragile: 6 },
     // SHED (R57, on the owner's R51: solid Lachryma sheds solid pieces): every pick strike that does not open it sheds `shed` cubes (x2
-    // while the fork rings), and the break pays its worth LESS what was shed, never under 0. So a formation pays the same however many
+    // while the fork rings) but never more than its plain worth less what is already shed (Petra's cap, v67: a dense formation's 8 to 10
+    // blows would otherwise shed 1.8x its worth), and the break pays its worth LESS what was shed. So a formation pays the same however many
     // blows it took: mashing it never pays, finding the sweet spot (which opens it in one) still pays many times over. The strike's
     // baubles (the Lachryma refill) shed alongside, as before: cubes are money, baubles are the tools' fuel, and a strike is both.
     shed: 1 },
@@ -93,7 +94,7 @@ export const ECON = {
   /** BUSKING (the Crucibelle's rhythm mode, Wanda's): a song pays its length in minutes of play times the score's weight: steep, so
    *  playing well pays (accuracy 1: 1.5x the aim; 0.7: about 0.8x; 0.4: 0.4x). The same song played again within the hour tires the
    *  audience (`tire` a repeat), so a set pays more than a loop. */
-  busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7 },
+  busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7, match: 0.5 }, // (match: a song that suits the sky pays up to half again, by the weather's strength: Wanda's TRACK_ASPECT)
   /** COMMISSIONS by Figment class (Guppy .. Leviathan): minutes of play each pays, about the time an ordinary hunter takes, so a better
    *  hunter, finishing sooner, earns more an hour; every `streakEvery`th in a row pays `streakMult` times (OSRS Slayer's points). Skipping
    *  one breaks the streak. */
@@ -109,9 +110,11 @@ export const ECON = {
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
-  /** A COGITOMAP: a ticket to a seeded run of a Well. Worth `share` of what that run pays, by how much of the Well it charts; the Well
-   *  drifts, so the map halves in worth every `halfLifeH` hours of play (old maps are cheap, fresh ones are worth hauling). */
-  cogitomap: { share: 0.3, halfLifeH: 20 },
+  /** A COGITOMAP: a ticket to a seeded run of a Well, as it was the day it was charted. Worth `share` of what that run paid, by how
+   *  much of it was charted, times what its Well still holds (its yield at the fill it has now: progress/shop/shops.js `still`). No
+   *  clock rots it (the owner, R58): a map is a claim on a feeling still there, so farming a Well cheapens its maps and letting it
+   *  fill again restores them. */
+  cogitomap: { share: 0.3 },
   /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
    *  `hi`; every unit sold there gluts it by `glut`, recovering one unit a `recoverMin` minutes (as Grog's prices do). */
   island: { lo: 0.75, hi: 1.35, periodDays: [3, 7], glut: 0.03, recoverMin: 6 }, // (was 0.6 to 1.6: the widest spread paid a perfect crude hauler 3x the aim)
@@ -125,7 +128,7 @@ export const ECON = {
   crude: { spill: 0.35, glut: 0.004, grades: { // (a crude market is deep: a unit sold gluts it far less than a cask of fish)
     mirth:  { worth: 0.5, volatility: 0.5 },   // light and sweet: easy to carry, cheap
     wonder: { worth: 0.75, volatility: 0.8 },
-    hunger: { worth: 0.75, volatility: 1 },
+    desire: { worth: 0.75, volatility: 1 },
     grief:  { worth: 1, volatility: 1.2 },   // heavy and sour
     dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
   } },
@@ -152,7 +155,7 @@ export const ECON = {
    *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
   islands: {
     margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, grades: ['mirth', 'wonder'],  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, grades: ['wonder', 'desire', 'grief'], classes: [0, 1, 2] },
     entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
@@ -165,5 +168,36 @@ export const ECON = {
    *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
-  dividend: { share: 0.05, capHours: 8, slots: 3 },
+  dividend: { share: 0.05, capDays: 1, slots: 3 }, // (R58: the cap is a game day, an hour of real time: DESIGN.md section 17)
+
+  // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
+  /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds
+   *  (`beds` to start, a material growing `growHours` game hours into `yield` of its kind), and the upgrades (the long sink): the n-th
+   *  extra slot or bed costs `upgrade[kind][n]` minutes of play, dearer each time. */
+  garden: { farmRate: 480, beds: 2, growHours: 6, yield: 2, upgrade: { slot: [180, 360, 720], bed: [60, 120, 240, 480] } }, // (growHours: game hours, 2.5 real minutes each: DESIGN.md section 17)
+  /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
+   *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
+   *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
+  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65 }, // (radius 0.22 at first let a half-grey colour count: R58)
+
+  // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
+  /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
+   *  in `block`s of game hours (a spell of weather holds a block at least); its strength another slow wave, CALM below `calm`. The
+   *  periods are game hours, unrelated so the pattern never repeats soon. EFFECTS at full strength (scaled by it):
+   *  `build`: the weather's damage type builds its status this much faster; `mind`: how far it sways every creature's mental state
+   *  (-2 Stoic .. +2 Prismatic); `fish`: how much more the fish drawn to its aspect bite; `supply`: how much cheaper its crude grade is
+   *  where it falls; `danger` and `lead`: the Emocean stage's danger and the reckoning's lead; `fill`: how much faster a Well refills;
+   *  and the NIGHT: `signature`, how much further Lachryma's signatures read in the dark. */
+  weather: {
+    lean: 0.5, swing: [1.7, 0.9], periods: [29, 11, 17], block: 3, calm: 0.35, forecast: 3,
+    wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
+    mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
+    under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)
+    build: 0.5, fish: 1, supply: 0.25,
+    mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5 },
+    danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5 },
+    lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6 },
+    fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2 },
+    night: { signature: 1.5 },
+  },
 };

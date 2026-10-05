@@ -608,3 +608,117 @@ separate parts, building and progression are why players skipped it.
   wave comes from, and the gun and the dodge stay the player's. `src/progress/econ/emocean.js`.
 - **The music is the stage's clock:** every stage runs its cue's 150 s; a tempo per ship (Wanda's `stageCue`) waits for a second ship.
 
+## 14. Co-op and the divisions in the game (the owner, 2026-10-05; after the slice)
+
+- **Slice first, co-op after.** The divisions get an interface templated on the Courier's (Petra's), and each a bespoke clay folk form
+  with abilities suited to its role and persona (the owner's; not to be argued on balance). Designs come after the slice.
+- **Friendly fire is on**: a fifth of the damage; statuses land on allies, and tolerance rises fast (`combat/friendly.js`: x2 build-up
+  and half the hold for the second, immune to the third within 20 s). Taken from Monster Hunter's status tolerance and WoW's
+  diminishing returns.
+
+## 15. Widening: what a level does (the owner, 2026-10-05: "lock it in for now")
+
+A domain's level widens what the domain can do: reach, capacity, options, never accuracy (section 10). Fifteen knobs, each read by the
+tool it names as a multiplier of the tool's own number or a bonus to a count, linear in the level for now (`WIDEN`, `widenAt` in
+`progress/domains.js`; `game.psyche.widen(key)`; the table prints in `node scripts/combat.mjs`). Level 1 is the tool exactly as it is,
+so the core movement and every tool's feel are untouched until a level is earned. Two of them tie systems together on purpose:
+`divination.reckon` (Divination charts the course: the reckoning marks the rail further ahead) and `spellscription.copy` (Spellscription
+duplicates good maps: a Cogitomap transcribed is another sale to the Purser). And levels feed the unlocks for free: an art's achievement
+is a predicate, so "this art at Divination 20" is one line in `achievements.js`. The system will grow.
+
+## 16. The Shrine Garden and Soul Alchemy (the owner, 2026-10-05: "the boat first, then the Spirit Garden and Soul Alchemy")
+
+The garden inside the vessel is where play already done well keeps paying, and where what the Wells give becomes who the Courier is.
+Two systems, one place (Petra's: E3; the press is Calissa's to draw). Built as rules and modules first (Dovina), so the place only has
+to call them.
+
+**One line between the two progressions, so they never overlap.** The **domains** widen the **tools** (what the Courier does; earned by
+doing it: section 15). The **attributes** widen the **vessel** (what the Courier is: capacity, toughness, standing; earned at the spirit
+press). Neither ever does a skill for the player.
+
+**Soul Alchemy** (`src/progress/alchemy.js`; prior art: Potion Craft's map, the owner's v0.1 attributes, Atelier's synthesis, a
+painter's colour wheel):
+- The Courier has a **soul colour** (a hue and a saturation on the wheel; it starts grey, at the centre). Pressing materials at the
+  spirit press walks it along each material's winding **path** in the order they go into the hopper (`materials.js press()`): the
+  order is the skill, as in Potion Craft.
+- Each of the seven **attributes** sits at its own place on the wheel (its hue, at a saturation). **Firing** the press (the igniter)
+  while the soul colour is inside an attribute's target raises that attribute one rank, spends **refined Lachryma** (cubes: the long
+  sink) and leaves the colour where it is. The target narrows with every rank (navigation must get finer: the skill is the verb).
+- The seven, after v0.1 (Luck stays apart: `luck.js`), each widening the vessel: **Willpower** (the shield's pool), **Focus** (how long
+  the statuses you build hold), **Charisma** (what the folk pay and ask: prices, the haggle), **Perception** (how far ahead a creature's
+  intent shows), **Dexterity** (drawing and stowing a tool), **Visualization** (the canvas the Soul Brush and the hand work on),
+  **Resilience** (the clay's mending, and the hits a ship bears on the Emocean: one attribute across two layers).
+- The soul colour is also a look: the vessel's glow takes it (Calissa's), so alchemy is dress-up as well as growth.
+
+**The Shrine Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
+farm, FFXIV's housing as the long sink):
+- **Dividend slots** (`ECON.dividend`): an encounter is **mastered** when every achievement in its group is done (a predicate over the
+  ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its hourly rate by hand, real time, filling for 8 hours
+  and waiting to be collected. Three slots to start.
+- **Beds** (foraging): a material planted grows more of its kind over real hours (a herb run). What the Wells give is the seed stock.
+- **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
+- Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
+
+## 17. Time: one game day is one real hour (the owner, 2026-10-05; settled, confirmed in Petra's thread)
+
+Real days cannot be taste-tested: nobody can try a Well's drift, a market's swing or a garden's harvest in an afternoon. So the game keeps
+its own calendar, on a conventional game scale.
+
+**The scale (settled).** One game day is one real hour (`DAY_MS` = 3,600,000 in `core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5 real seconds. (Prior art: Minecraft's
+20-minute day, Stardew Valley's 7 seconds a game minute, Majora's Mask's three days; and Animal Crossing for what this is not.)
+
+**The clock runs on the wall clock, scaled**, not only while playing: what pays or grows while you are away (the garden) still does,
+and a return after a night away finds many days gone by. It is one clock for everything (`core/calendar.js`: `now()`, `today()`), and a
+replay pins it (`setClock`), so a replay sees the days it saw. Nothing reads `Date.now()` for game time.
+
+**What is a game day, and what is not.** Two kinds of number, never mixed:
+- **The calendar** (drift, ripening, caps, ages) is in **game time**: a Well's layout and an island's demand turn over each game day; a
+  route's reckoning is of a game day; a Cogitomap halves in worth each game day; a bed ripens in game hours; the dividend's cap is a
+  game day.
+- **Rates of income** (`ECON.perMinute`, the aim of 480 cubes an hour) stay per **hour of play**: the economy is measured against the
+  player's time, never the calendar's.
+
+**What it lets us test in one sitting:** the Dunemaw changes shape every hour; the islands' prices swing over three to seven hours (the
+demand wave's period, `ECON.island.periodDays`); a Cogitomap is worth half after an hour; a bed ripens in 15 minutes (6 game hours); a
+dividend slot fills in an hour (1 game day).
+
+**What it invites (later, the others'):** a day and night that follow the game clock (Calissa's sky), the music by the hour (Wanda's),
+the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven hours.
+
+## 18. Emotional weather (the owner, 2026-10-05; the plan: docs/plans/WEATHER.md)
+
+Weather is an island's mood falling as Lachryma: the five aspects (mirth, wonder, desire, grief, dread) and calm. It resonates because
+the game already speaks in those fives: each weather feeds the damage type at its place on the Law-Chaos line (mirth Impact .. dread
+Delirium), sways every creature's mental state, draws its fish, makes its crude plentiful (cheap) where it falls, changes the Emocean's
+danger and the reckoning's reach, and feeds a ruminating Well. It is a pure function of the island and the game hour, so it is the same
+for everyone and in a replay, and it can be forecast: how far ahead is a Divination widening. Margarite leans to mirth and Entropolis to
+dread; a dread fog over the King's island is rare (under 1% of hours) and a hidden achievement. The weather changes what pays and what is
+easy, never a skill. Day and night run on the same clock; at night Lachryma's signatures read further.
+
+## 19. Rulings of 2026-10-05, the weather round
+
+- **The five feelings are shown most positive to most negative: Wonder, Mirth, Desire, Grief, Dread**, wherever a player sees them
+  (GLOSSARY; `DISPLAY_ORDER`). The Law-Chaos order (mirth .. dread) stays the systems' and is never the shown order.
+- **Wells come in radically different types**: a Well's genre is free, "action combat" (the Dunemaw) beside, say, "a JRPG board game".
+  One Courier, one purse, one ledger and the same seven tools still hold in every type: what changes is how a mind is worked through.
+  Part of the Wells' deep dive after the slice (SLICE.md).
+- **Weather is asked by place** (Petra's input): an island, or a Well with its own mood, with an exposure (open, roofed: the mood without
+  the rain, deep: the Well's own); the open Emocean has no mood. Each weather wears its damage type's colour and motif (Calissa's input:
+  wonder is diamond dust and halos by day, the aurora by night); the hour sets the music's density and the mood its colour (Wanda's).
+- **Hunger is renamed Desire** (the owner floated it, Espada and Dovina concur): neutral, in the middle of the line, Influence's (charm:
+  persuasion trades in desire). Desire drives chaos; grief and dread are what it yields. *Hunger* is now only a folk word, desire in excess.
+  Its weather is the wanting wind; its crude, crude desire.
+- **The Crucibelle's notes follow the weather** (Wanda's five scales: "responding to emotional barometric pressure"): approved.
+- **A beach** on the Dunes' edge shows what an Island of Ego is: nothing but Emocean to the horizon. The weather ends at the waterline
+  (the open sea has no mood), and the slice's pier would leave from it. **Entering a Well** gets its seam covered: a wordless descent
+  through the maw, held until the floor is ready (Calissa's look, Petra's timing).
+- **Cycles of expansion and contraction** (the owner): the world grows (the wheel's eight feelings, rings, agate), the player's load
+  does not: a place carries few feelings, a mind shows one feeling or one agate, and every expansion is followed by a contraction pass
+  (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips (`docs/ref/lantern_wisp.glb`): five mood loops,
+  three emotes, movement, attack, hit, death, a dance.
+- **The wheel is approved** (the owner, 2026-10-05, "full speed ahead"; docs/plans/WHEEL.md, THE DETERMINATION): rings as adjectives,
+  opposites cancel, one feeling or one **agate**, Plutchik's hues for the five (mirth gold, wonder cyan, desire orange, grief blue, dread
+  ink-green), room for eight; **Faith, Gall and Fury** join as places after the slice (Gall kept: rejection, boredom to loathing). The
+  weather already carries an undercurrent: about one weather hour in eight is an agate, each island with its own (Margarite's delight
+  and hope, Entropolis's worry, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
+

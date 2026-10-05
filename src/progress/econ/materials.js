@@ -36,10 +36,12 @@ function seeded(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Ma
 export function makeMaterial(kind, seed = 1, tier = 0) {
   const K = KINDS[kind] || KINDS.edge, r = seeded(seed * 7919 + tier * 104729 + kind.length);
   const hue = K.hue[0] + r() * (K.hue[1] - K.hue[0]), sat = 0.35 + r() * 0.5;
-  const reach = 18 + tier * 12, steps = 3 + Math.floor(r() * 3), path = [];
+  // (R58: a material turns the hue one way or the other, its own way, and carries saturation: before, every path ran clockwise and
+  // barely coloured, so the wheel could only be gone round one way and the grey centre hardly left)
+  const reach = 18 + tier * 12, steps = 3 + Math.floor(r() * 3), dir = r() < 0.5 ? -1 : 1, vivid = 0.35 + 0.65 * r(), path = [];
   for (let i = 0; i < steps; i++) {
     const turn = K.shape === 'spiral' ? (i % 2 ? 1 : -1) * (0.6 + 0.4 * r()) : K.shape === 'zigzag' ? (i % 2 ? 1 : -1) : K.shape === 'arc' ? 0.7 : 0;
-    path.push([+(reach * (0.6 + 0.4 * r()) / steps * (1 + turn)).toFixed(1), +((r() - 0.5 + turn * 0.25) * 0.3 / steps * (1 + tier * 0.3)).toFixed(3)]);
+    path.push([+(dir * reach * (0.6 + 0.4 * r()) / steps * (1 + turn)).toFixed(1), +(((r() - 0.3) * 0.14 * vivid + turn * 0.02) * (1 + tier * 0.3)).toFixed(3)]);
   }
   return { kind, tier, hue: +hue.toFixed(1), sat: +sat.toFixed(2), path };
 }

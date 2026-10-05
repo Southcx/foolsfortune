@@ -10,8 +10,13 @@
 import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, BUILD, multiplier } from '../src/progress/combat/types.js';
 import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
+import { FRIENDLY, friendlyDamage, tolerance } from '../src/progress/combat/friendly.js';
+import { TRAITS, drawGrain, susceptibility, weakTo, poles, traitsOf, sway } from '../src/progress/combat/temperament.js';
+import { ATTRIBUTES, radiusAt, fuelAt, widenAtRank } from '../src/progress/alchemy.js';
+import { ENCOUNTERS } from '../src/progress/garden.js';
+import { ASPECTS, TYPE_OF, weatherAt, phaseAt, lightAt } from '../src/progress/weather.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
-import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf } from '../src/progress/domains.js';
+import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf, WIDEN, widenAt } from '../src/progress/domains.js';
 
 const pad = (s, n) => String(s).padEnd(n);
 
@@ -53,3 +58,29 @@ for (const d of Object.values(DOMAINS)) {
 console.log(`  (a level check: ${[1000, 50000, 500000].map((x) => `${x.toLocaleString('en')} EXP is level ${levelOf(x)}`).join(', ')})`);
 const world = (q) => (7 * expAt(99) / (PACE.actsPerMin * 60 * skillWeight(q) * (expAt(99) / (PACE.hours99 * 60 * PACE.actsPerMin * skillWeight(0.5))))).toFixed(0);
 console.log(`  "The World" (all seven at 99): ${world(0)} hours rote, ${world(0.5)} middling (the grind), ${world(0.75)} good, ${world(1)} masterful`);
+
+console.log(`\nFRIENDLY FIRE (combat/friendly.js): a blow of 50 deals ${friendlyDamage(50)} to an ally; an ally's statuses from allies within ${FRIENDLY.windowSec} s: ${[0, 1, 2].map((n) => { const t = tolerance(n); return t ? `x${t.build} build-up, x${t.dur} hold` : 'shrugged off'; }).join(' / ')}`);
+console.log('\nWIDENING (domains.js WIDEN: what a level widens, never accuracy) at levels 1 / 33 / 66 / 99');
+for (const [k, w] of Object.entries(WIDEN)) console.log(`  ${k.padEnd(22)} ${[1, 33, 66, 99].map((l) => (w.plus ? `+${widenAt(k, l)}` : `x${widenAt(k, l).toFixed(2)}`).padEnd(6)).join(' ')} ${w.does}`);
+console.log('\nSOUL ALCHEMY (alchemy.js): the attributes on the wheel, what each widens at ranks 0 / 5 / 10, and the press by rank');
+for (const a of Object.values(ATTRIBUTES)) console.log(`  ${a.name.padEnd(14)} hue ${String(a.hue).padStart(3)}  ${Object.keys(a.widen).map((k) => `${k} ${[0, 5, 10].map((r) => widenAtRank(k, r).toFixed(2)).join('/')}`).join(', ')}   (${a.does})`);
+console.log(`  the target's radius at rank 0 / 5 / 9: ${[0, 5, 9].map((r) => radiusAt(r).toFixed(3)).join(' / ')}; the fuel: ${[0, 5, 9].map(fuelAt).join(' / ')} cubes (all seven to 10: ${Object.keys(ATTRIBUTES).length * Array.from({ length: 10 }, (_, r) => fuelAt(r)).reduce((a, b) => a + b, 0)} cubes)`);
+console.log(`THE SHRINE GARDEN (garden.js): encounters a slot can work: ${Object.values(ENCOUNTERS).map((e) => e.name).join(', ')}`);
+
+console.log('\nEMOTIONAL WEATHER (weather.js): over 240 game hours (ten real hours), the share of each weather by island, and the spells');
+for (const isl of ['margarite', 'anagami', 'entra', 'well:dunemaw']) {
+  const n = { calm: 0 }, spells = []; let last = null, len = 0;
+  for (let h = 0; h < 240; h++) { const w = weatherAt(isl, h * 150000), a = w.aspect || 'calm'; n[a] = (n[a] || 0) + 1; if (a !== last) { if (last) spells.push(len); last = a; len = 0; } len++; }
+  const mean = spells.reduce((a, b) => a + b, 0) / Math.max(1, spells.length);
+  console.log(`  ${isl.padEnd(10)} ${['calm', ...ASPECTS].map((a) => `${a} ${Math.round(100 * (n[a] || 0) / 240)}%`).join(', ')}; a spell lasts ${mean.toFixed(1)} game hours (${(mean * 2.5).toFixed(0)} real minutes)`);
+}
+console.log(`  each feeds: ${ASPECTS.map((a) => `${a} -> ${TYPE_OF[a]}`).join(', ')}`);
+console.log(`  a game day: ${[0, 4, 6, 9, 12, 15, 18, 19, 21].map((h) => `${h}h ${phaseAt(h * 150000)} ${lightAt(h * 150000).toFixed(2)}`).join(' | ')}`);
+
+console.log('\nGRAIN (temperament.js): five slip jellies drawn about their species, what each is weak to, and the Drives\' traits');
+for (let i = 1; i <= 5; i++) {
+  const g = drawGrain('slipjelly', i), t = traitsOf(g);
+  console.log(`  #${i} ${TRAITS.map((x) => `${x.id}${g[x.id] >= 0 ? '+' : ''}${g[x.id].toFixed(2)}`).join(' ')}  reads: ${poles(g).join(', ') || '(middling)'}  weak to: ${weakTo(g).join(', ') || 'nothing in particular'}  bold x${t.bold} fearful x${t.fearful}`);
+}
+const g0 = drawGrain('slipjelly', 1);
+console.log(`  susceptibility of #1: ${TRAITS.map((x) => `${x.type} x${susceptibility(g0, x.type).toFixed(2)}`).join(', ')}; a full dread sways it ${JSON.stringify(sway('dread', 1))} a second`);

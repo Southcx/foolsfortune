@@ -34,10 +34,10 @@
 // sector map (nodes, fuel per jump, danger by where you are) and its long-range scanners (knowing what waits at a beacon), Sunless Sea
 // (the zee charted by sailing it; a port found, not given), and dead reckoning (a course known by working it out).
 //
-//   NODES[id] = { id, law, locked }      hop(from, to, ship) -> { distance, fuel, seconds, danger } | null
+//   NODES[id] = { id, law, locked }      hop(from, to, ship, open?) -> { distance, fuel, seconds, danger } | null   (open(id): a node found)
 //   STAGE = { seconds, bears, waves: [{ at, role, count, formation, lane }] }      ROLE_CLASS[role](danger) -> class 0..4
-//   stagePlan(from, to, day) -> [{ at, role, cls, count, formation, lane }]      stageQuality({ hits, bears, downed, spawned }) -> 0..1
-//   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning) -> seconds      opensNode(reckoning) -> bool
+//   stagePlan(from, to, day, wx?) -> [{ at, role, cls, count, formation, lane }]   (wx: progress/weather.js stageWx(from))      stageQuality({ hits, bears, downed, spawned }) -> 0..1
+//   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning, widen?, wx?) -> seconds      opensNode(reckoning) -> bool
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 import { fuel } from './islands.js';
@@ -53,9 +53,9 @@ export const CHART = { perLaw: 2 };
 
 /** A hop from one node to another in a ship: its distance, fuel (cubes), how long the stage runs, and its danger (-1.5 calm .. +2 wild).
  *  Null when either end is unknown or locked, or the ends are the same. */
-export function hop(from, to, ship = 'sloop') {
+export function hop(from, to, ship = 'sloop', open = (id) => !NODES[id].locked) {
   const a = NODES[from], b = NODES[to];
-  if (!a || !b || a === b || a.locked || b.locked) return null;
+  if (!a || !b || a === b || !open(from) || !open(to)) return null;
   const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {};
   return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), seconds: STAGE.seconds, danger: (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4 };
 }
@@ -99,9 +99,10 @@ function hash01(s) {
 }
 
 /** The stage as it plays on a route on a day: every wave with its class and lane. Null for a hop that cannot be made. */
-export function stagePlan(from, to, day = 0) {
+export function stagePlan(from, to, day = 0, wx = null) {
   const h = hop(from, to);
   if (!h) return null;
+  if (wx) h.danger += wx.danger || 0; // (the weather of the island left behind: progress/weather.js stageWx)
   const route = [from, to].sort().join('-');
   return STAGE.waves.map((w, i) => ({
     at: w.at, role: w.role, cls: ROLE_CLASS[w.role](h.danger), count: w.count, formation: w.formation,
@@ -122,6 +123,6 @@ export const RECKON = { lead: 3, open: 0.6 };
 /** A route's name, the same both ways (the ledger's records are `emocean.reckon.<route>`, percent). */
 export const routeId = (a, b) => [a, b].sort().join('-');
 /** Seconds of warning a wave gets at a reckoning of 0 .. 1 (none uncharted). */
-export const reckonLead = (r) => RECKON.lead * Math.max(0, Math.min(1, r));
+export const reckonLead = (r, widen = 1, wx = null) => RECKON.lead * widen * (wx?.lead ?? 1) * Math.max(0, Math.min(1, r)); // (widen: game.psyche.widen('divination.reckon'); wx: weather.js stageWx, fog and rain hide the sea)
 /** Whether a reckoning made at the pier is enough to open the node at the route's far end. */
 export const opensNode = (r) => r >= RECKON.open;

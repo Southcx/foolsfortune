@@ -25,6 +25,7 @@ import { SPECIES, ASPECTS, TIDES } from '../tools/sondelass/angling/species.js';
 import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
+import { DOMAINS, levelOf } from './domains.js';
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
 export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', mechanic: 'Mechanic', endure: 'Stamina', collect: 'Collection' };
@@ -43,6 +44,9 @@ export const CATS = [
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
+  { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
+  { id: 'garden', name: 'THE SHRINE GARDEN', subs: ['The Press', 'The Garden'] },
+  { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
 
@@ -472,7 +476,7 @@ export function buildAchievements(game) {
   C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
   H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
   C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
-  C('wl8', 'explore', 'The Wells', 2, 'count', 'Cartographer\'s Cut', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
+  C('wl8', 'explore', 'The Wells', 2, 'count', 'Chart Topper', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
@@ -510,6 +514,35 @@ export function buildAchievements(game) {
   F('lg4', 'collect', 'Logged', 5, 'collect', 'Completionist', 'Log 100 firsts.', (L) => L.firstCount(), 100, { title: 'Completionist' });
   F('lg5', 'collect', 'Logged', 2, 'collect', 'Every Tech, Once', 'Use each movement art once.', (L) => L.firstCount('tech.'), game.techs?.list.length || 17);
   F('lg6', 'collect', 'Logged', 3, 'collect', 'A Shell of Each', 'Fire each shell once.', (L) => L.firstCount('shell.'), SHELL_TYPES.length);
+
+  // ---------------------------------------------------------------- THE DOMAINS (progress/psyche.js: EXP in the ledger as `exp.<domain>`)
+  const lv = (L, d) => levelOf(L.get(`exp.${d}`)), DIDS = Object.keys(DOMAINS);
+  F('dm1', 'psyche', 'Levels', 1, 'count', 'Know Thyself', 'Reach level 5 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 5);
+  F('dm2', 'psyche', 'Levels', 2, 'count', 'A Practised Mind', 'Reach level 20 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 20);
+  F('dm3', 'psyche', 'Levels', 3, 'collect', 'Seven Doors', 'Reach level 10 in all seven domains.', (L) => DIDS.filter((d) => lv(L, d) >= 10).length, 7);
+  F('dm4', 'psyche', 'Levels', 5, 'endure', 'Ninety-Nine', 'Reach level 99 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 99, { title: 'Adept' });
+  F('dm5', 'psyche', 'Levels', 6, 'endure', 'The World', 'Reach level 99 in all seven domains: the end of the Fool\'s Journey.', (L) => DIDS.filter((d) => lv(L, d) >= 99).length, 7, { hidden: true, title: 'The World' });
+
+  // ---------------------------------------------------------------- THE SHRINE GARDEN (progress/alchemy.js, progress/garden.js)
+  const AIDS = ['willpower', 'focus', 'charisma', 'perception', 'dexterity', 'visualization', 'resilience'], rk = (L, a) => L.best(`alchemy.rank.${a}`) || 0;
+  C('sa1', 'garden', 'The Press', 1, 'count', 'First Firing', 'Fire the spirit press into an attribute.', 'alchemy.fire', 1);
+  F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);
+  F('sa3', 'garden', 'The Press', 3, 'collect', 'The Whole Wheel', 'Fire the press into all seven attributes.', (L) => AIDS.filter((a) => rk(L, a) > 0).length, 7);
+  F('sa4', 'garden', 'The Press', 4, 'mechanic', 'A True Hue', 'Widen an attribute to its last rank, where the target is narrowest.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 10, { title: 'Alchemist' });
+  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
+  C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
+  C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
+  F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
+
+  // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)
+  F('sk1', 'sky', 'Weather', 2, 'collect', 'Every Mood', 'Stand in all five weathers: wonder, mirth, desire, grief and dread.', (L) => ['wonder', 'mirth', 'desire', 'grief', 'dread'].filter((a) => L.get(`weather.seen.${a}`) > 0).length, 5);
+  C('sk2', 'sky', 'Weather', 2, 'mechanic', 'In Its Element', 'Build a status in the weather that feeds it, ten times.', 'status.weather', 10);
+  C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
+  C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });
+  C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
+  F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
+  C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
+  C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);
 
   // ---------------------------------------------------------------- GENERAL
   F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });

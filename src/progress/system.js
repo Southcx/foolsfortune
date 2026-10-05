@@ -11,11 +11,10 @@ import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
 // It never touches the core movement: a tech asks `allows(id)` before it may start, and
 // reads its tuning through `cfgFor(id)`, which lays the chosen variant over T.tech[id].
 //
-// Progress is saved in localStorage as it happens (debounced) and can be carried between
+// Progress is kept in the save's player scope (core/save.js, section 'system'), marked a few seconds after it changes, and can be carried between
 // browsers as a short code (export / import in the Codex).
 // ---------------------------------------------------------------------------
 
-const KEY = 'foolsfortune.system.v2'; // (v2: the all-arts switch is on by default)
 const VERSION = 2;
 
 export class System {
@@ -26,7 +25,7 @@ export class System {
     this.proxies = new Map();
     this.dirty = 0;
     this.listeners = new Set(); // UI
-    this.load();
+    game.save?.section('system', { scope: 'player', version: 1, dump: () => this.state, load: (d) => this.adopt(d || {}), reset: () => this.adopt({}) }); // (core/save.js)
   }
 
   // ---- queries ----
@@ -141,16 +140,8 @@ export class System {
     if (this.dirty > 0) { this.dirty -= dt; if (this.dirty <= 0) this.save(); }
   }
 
-  save() {
-    this.dirty = 0;
-    try { localStorage.setItem(KEY, JSON.stringify(this.state)); } catch { /* storage unavailable */ }
-  }
-
-  load() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* storage unavailable or corrupt */ }
-    if (raw) this.adopt(raw);
-  }
+  /** Mark the System for the save (core/save.js writes the player scope whole at the end of the frame). */
+  save() { this.dirty = 0; this.game.save?.dirty('system'); }
 
   /** Take a saved state, keeping only what this build knows about. */
   adopt(raw) {

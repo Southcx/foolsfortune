@@ -25,7 +25,10 @@
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 const round = (x) => Math.max(1, Math.round(x));
 
-export function startHaggle({ worth, list, floor, purse = Infinity, rnd = Math.random }) {
+import { stream } from '../../core/rng.js';
+const simRand = stream('progress/shop/haggle'); // (the default when a caller passes none: core/rng.js, the same twice)
+
+export function startHaggle({ worth, list, floor, purse = Infinity, rnd = simRand }) {
   return { worth, list: round(list), floor: round(floor), ask: round(list), purse, mood: 0, patience: 3 + (rnd() < 0.4 ? 1 : 0), flattered: 0, clinked: false, step: 'open', done: null, price: null, last: null, rnd, said: 0 };
 }
 

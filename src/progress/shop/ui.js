@@ -101,10 +101,10 @@ export class ShopUI {
     const inv = el('div', 'pane'); inv.appendChild(el('h4', '', `<span>YOUR PNEUKA BOX</span><span>click to sell</span>`));
     const grid = el('div', 'grid');
     box.slots.forEach((s, i) => {
-      const it = s && itemOf(s.id), v = it ? S.offer(this.shop, s.id) : 0;
+      const it = s && itemOf(s.id), v = it ? S.offer(this.shop, s.id, s.data) : 0;
       const d = el('div', `slot${it ? (v ? ' can' : ' no') : ''}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}${v ? `<span class="v">${v}</span>` : ''}` : '');
       if (it) {
-        d.onmouseenter = () => this.say(v ? `Sell <b>${it.name}</b> for <b>${v}</b> cubes${v < worthOf(s.id) ? ` <span style="opacity:.6">(it is worth ${worthOf(s.id)})</span>` : ''}` : `${keeper} will not buy <b>${it.name}</b>.`);
+        d.onmouseenter = () => this.say(v ? `Sell <b>${it.name}</b> for <b>${v}</b> cubes${v < worthOf(s.id, s.data) ? ` <span style="opacity:.6">(it is worth ${worthOf(s.id, s.data)})</span>` : ''}` : `${keeper} will not buy <b>${it.name}</b>.`);
         d.onmouseleave = () => this.say('&nbsp;');
         d.onclick = () => { if (v) S.sell(this.shop, i); };
       }

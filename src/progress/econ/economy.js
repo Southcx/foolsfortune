@@ -53,9 +53,12 @@ export function installEconomy(game) {
   game.events?.on('rhythm.score', (e) => {
     if (e.by !== 'courier') return;
     const now = game.ledger?.play || 0, times = (heard.get(e.track) || []).filter((t) => now - t < 3600);
-    const n = buskPay(e.minutes || 0, e.accuracy || 0, times.length);
+    // a song that suits the sky (the track's aspect, Wanda's, the same as the weather over the stage) pays more, by the weather's strength
+    const w = game.weather?.here(game.player?.pos), suits = !!e.aspect && w?.aspect === e.aspect;
+    const n = Math.round(buskPay(e.minutes || 0, e.accuracy || 0, times.length) * (suits ? 1 + ECON.busk.match * w.strength : 1));
     heard.set(e.track, [...times, now]);
     if (n > 0) game.cubes?.earn(n, 'busk');
+    if (suits) game.events.emit('busk.suits', { aspect: e.aspect, by: 'courier' });
   });
   // (DEBUG: carry another kind of psygun: tools/psygun/kinds.js)
   game.chat?.add('psygun', {

@@ -15,18 +15,20 @@
 //   deckDraw(ledger, key, n, r?) -> bool   one draw from the deck named `key`, its state kept in the ledger (counters only go up, so the
 //                                         draws are a counter, `<key>.draws`, and the last hit a record of where it fell, `<key>.hit`)
 // ---------------------------------------------------------------------------------------
+import { stream } from '../../core/rng.js';
+const simRand = stream('progress/econ/deck'); // (the default draw when a caller passes none: core/rng.js, the same twice)
 
 /** The chance the next draw from a deck of n hits, `drawn` cards after its last hit. */
 export const deckChance = (n, drawn = 0) => (n <= 1 ? 1 : 1 / Math.max(1, n - Math.max(0, drawn)));
 
 /** Draw: true when this is the winning card. The caller resets its counter on a hit and adds one on a miss. */
-export const deckHit = (n, drawn = 0, r = Math.random()) => r < deckChance(n, drawn);
+export const deckHit = (n, drawn = 0, r = simRand()) => r < deckChance(n, drawn);
 
 /** The mean number of draws to a hit. */
 export const deckMean = (n) => (Math.max(1, n) + 1) / 2;
 
 /** Which of a set: one not yet had, evenly; once every one is had, any of them (a duplicate). `has(item) -> bool`. */
-export function nextOfDeck(pool, has, r = Math.random()) {
+export function nextOfDeck(pool, has, r = simRand()) {
   if (!pool.length) return null;
   const fresh = pool.filter((x) => !has(x));
   const from = fresh.length ? fresh : pool;
@@ -35,7 +37,7 @@ export function nextOfDeck(pool, has, r = Math.random()) {
 
 /** One draw from a deck whose state lives in the ledger (stats.js), as the Tithe's pity does: `<key>.draws` counts every draw and the
  *  record `<key>.hit` holds the draw on which it last hit, so the cards drawn since are the difference. */
-export function deckDraw(L, key, n, r = Math.random()) {
+export function deckDraw(L, key, n, r = simRand()) {
   const draws = L.get(`${key}.draws`), drawn = draws - (L.best(`${key}.hit`) || 0);
   const hit = deckHit(n, drawn, r);
   L.inc(`${key}.draws`);

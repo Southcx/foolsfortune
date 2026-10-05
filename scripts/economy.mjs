@@ -106,8 +106,9 @@ console.log(`a gambler with an hour's fighting (${Math.round(after.fighter)}) pu
 
 // the mastery dividend (ECON.dividend): what green logs pay on their own, per hour actually played, with the Garden's slots and without
 const D = ECON.dividend, C = PLAY.completionist;
-const perDay = (k) => k * D.share * C.farmRate * Math.min(C.checkInEvery, D.capHours) * (24 / C.checkInEvery);
-console.log(`\nthe mastery dividend (share ${D.share}, fills in ${D.capHours} h, ${D.slots} slots; ${C.playPerDay} h played a day, collected every ${C.checkInEvery} h)`);
+const capH = D.capDays; // (a game day is a real hour: DESIGN.md section 17)
+const perDay = (k) => k * D.share * C.farmRate * Math.min(C.checkInEvery, capH) * (24 / C.checkInEvery);
+console.log(`\nthe mastery dividend (share ${D.share}, fills in ${capH} h (a game day), ${D.slots} slots; ${C.playPerDay} h played a day, collected every ${C.checkInEvery} h)`);
 console.log(`${pad('mastered', 14)}${'slotted'.padStart(9)}${'x aim'.padStart(8)}${'unslotted'.padStart(11)}${'x aim'.padStart(8)}   (cubes-equivalent an hour played)`);
 for (const k of C.mastered) {
   const a = perDay(Math.min(k, D.slots)) / C.playPerDay, b = perDay(k) / C.playPerDay;
@@ -192,7 +193,7 @@ const lv = (name, f) => { const v = [0.4, 0.7, 1].map(f); console.log(`${pad(nam
 { const D = PLAY.diver; lv('Well runs', (a) => { const floors = Math.round(D.floors * (0.6 + 0.4 * a)); return (60 / (floors * D.minutesPerFloor)) * wellPay(floors, a > 0.6 ? D.foes : 0); }); } // (a weaker diver turns back sooner)
 { const H = PLAY.hauler; lv('hauling', (a) => (60 / H.hopMin) * haulProfit({ buy: 0.8, sell: 1 + 0.5 * a, units: H.units, worth: H.worth, distance: H.distance, failed: a < 0.5 ? 1 : 0 })); }
 const run = wellPay(PLAY.diver.floors, PLAY.diver.foes);
-console.log(`a Cogitomap of that run (${run} cubes), fully charted: ${cogitomapWorth(run, 1, 0)} fresh, ${cogitomapWorth(run, 1, 20)} after 20 hours, ${cogitomapWorth(run, 1, 60)} after 60; a hop's fuel at distance 4: ${fuel(4)}`);
+console.log(`a Cogitomap of that run (${run} cubes), fully charted: ${cogitomapWorth(run, 1)} (it keeps its worth); a hop's fuel at distance 4: ${fuel(4)}`);
 console.log(`island demand for edges over a week (multipliers, days 0..6): ${[0, 1, 2, 3, 4, 5, 6].map((d) => demand('anagami', 'edge', d).toFixed(2)).join(' ')}`);
 
 // the spirit press: how far one pressing of each kind walks the Courier's colour (the wheel's distance, 0..1)
@@ -238,6 +239,6 @@ console.log(`  a stage: ${plan0.length} waves, ${spawned} Figments; the lanes on
 console.log(`  how cleanly (Ouranurgy's quality): clean and thorough ${stageQuality({ hits: 0, downed: spawned, spawned })}, middling ${stageQuality({ hits: 3, downed: spawned / 2, spawned })}, scraped through ${stageQuality({ hits: 5, downed: 2, spawned }).toFixed(2)}`);
 console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)} / ${reckonLead(0.5)} / ${reckonLead(1)} s ahead at 0 / 0.5 / 1; a locked node opens at ${RECKON.open} reckoned from the pier`);
 { const run = islandRun('anagami', 0.5).pay, good = islandRun('anagami', 0.8).pay;
-  for (const [label, w] of [['middling, 80% charted, fresh', cogitomapWorth(run, 0.8)], ['good, all charted, fresh', cogitomapWorth(good, 1)], ['good, 20 h old', cogitomapWorth(good, 1, 20)]])
+  for (const [label, w] of [['middling, 80% charted, fresh', cogitomapWorth(run, 0.8)], ['good, all charted, fresh', cogitomapWorth(good, 1)]])
     console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entropolis ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
   console.log(`  after the sloop's fuel (${hop('anagami', 'margarite').fuel}): a good fresh map nets about 20 more at Margarite than at home, a middling one is better sold at home (skill decides whether the Well feeds the boat)`); }

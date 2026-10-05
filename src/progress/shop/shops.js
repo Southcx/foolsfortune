@@ -16,14 +16,16 @@
 //   .haggle(shop, id)  (begins the haggle talk)   .hag (the haggle in progress: { shop, item, h })
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
-import { SHOPS, worthOf, shelfOf } from './catalogue.js';
+import { SHOPS, worthOf, shelfOf, demandKey } from './catalogue.js';
+import { demand, drawWell, wellYield } from '../econ/islands.js';
+import { supplyMult, fillHours } from '../weather.js';
+import { today, now as calNow } from '../../core/calendar.js';
 import { itemOf } from '../../pneuka/items.js';
 import { startHaggle, offers, offer, flatter, clink, walk, accept, moodOf } from './haggle.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('progress/shop/shops'); // (the haggle's chance: core/rng.js, the same twice)
 
-const KEY = 'foolsfortune.shops.v1';
 const S = ECON.shop;
 
 export class Shops {
@@ -32,7 +34,7 @@ export class Shops {
     this.state = {}; // shop -> { stock: {id: n}, glut: {id: n} }
     for (const id of Object.keys(SHOPS)) this.state[id] = { stock: Object.fromEntries(shelfOf(id)), glut: {} };
     this.t = 0; this.cur = null; this.hag = null;
-    this.load();
+    game.save?.section('shops', { scope: 'world', version: 1, dump: () => this.state, load: (d) => this.load(d), reset: () => this.restock() }); // (core/save.js)
     // a talk that ends mid-haggle (Esc, walking off): a deal shaken on stands, anything else is dropped
     game.events?.on('npc.bye', () => { if (this.hag) { if (this.hag.h.done === 'deal') this.hagClose(false); else this.hag = null; } });
   }
@@ -45,15 +47,28 @@ export class Shops {
     if (base == null) return null;
     const n = this.stockOf(shop, id);
     if (n <= 0) return null;
-    return Math.max(1, Math.round(worthOf(id) * D.markup * (1 + S.dear * Math.max(0, base - n))));
+    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * (1 + S.dear * Math.max(0, base - n)) / this.charm()));
   }
   /** What the shop pays them for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
-  offer(shop, id) {
+  offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     return Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
   }
+
+  /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
+  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) * supplyMult(isl, demandKey(id)) : 1; } // (where an aspect falls, its crude is plentiful: progress/weather.js)
+  /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
+   *  a mind still ruminating is worth its run; drawing that Well down (farming it) cheapens its maps, and letting it fill again restores
+   *  them. 1 for anything else. */
+  still(id, data) {
+    if (itemOf(id)?.kind !== 'map' || !data?.well) return 1;
+    const rec = this.game.well?.fills?.[data.well];
+    return rec ? wellYield(drawWell(rec.fill, 0, fillHours(`well:${data.well}`, rec.at, calNow()))) : 1; // (its refill, weather and all: weather.js)
+  }
+  /** Charisma (Soul Alchemy): the folk ask a little less of you and pay a little more (1 until it is widened). */
+  charm() { return this.game.alchemy?.widen?.('charisma.trade') || 1; }
 
   // ---------------------------------------------------------------- the counter
   open(shop) {
@@ -81,14 +96,14 @@ export class Shops {
     box.add(id, 'shop');
     this.save();
     sfx.cubeGet?.(2); sfx.shopBuy?.(); // (shopBuy, shopSell: Wanda's, docs/HANDOFFS.md)
-    g.events.emit('shop.buy', { shop, item: id, price: cost, worth: worthOf(id), haggled, by: 'courier' });
+    g.events.emit('shop.buy', { shop, item: id, price: cost, worth: worthOf(id), haggled, island: SHOPS[shop].island || null, by: 'courier' });
     g.shopUI?.render();
     return true;
   }
   sell(shop, slot) {
     const g = this.game, box = g.pneuka, s = box?.slots[slot], id = s?.id;
     if (!id) return 0;
-    const w = this.offer(shop, id);
+    const w = this.offer(shop, id, s.data);
     if (!w) { this.refuse(`${this.keeperName(shop)} will not buy that.`, 'nobuy'); return 0; }
     box.take(slot);
     const st = this.state[shop];
@@ -97,7 +112,7 @@ export class Shops {
     g.cubes.earn(w, 'sell');
     this.save();
     sfx.cubeGet?.(5); sfx.shopSell?.();
-    g.events.emit('shop.sell', { shop, item: id, price: w, worth: worthOf(id), by: 'courier' });
+    g.events.emit('shop.sell', { shop, item: id, price: w, worth: worthOf(id, s.data), island: SHOPS[shop].island || null, data: s.data || null, by: 'courier' });
     g.shopUI?.render();
     return w;
   }
@@ -152,12 +167,11 @@ export class Shops {
     if (reopen && H) { const shop = H.shop; setTimeout(() => { if (!this.game.dialogue?.open) this.open(shop); }, 0); }
   }
 
-  // ---------------------------------------------------------------- kept in the browser (progress: reset with each build)
-  save() { try { localStorage.setItem(KEY, JSON.stringify(this.state)); } catch { /* this session only */ } }
-  load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) for (const id of Object.keys(this.state)) if (s[id]) { Object.assign(this.state[id].stock, s[id].stock || {}); this.state[id].glut = s[id].glut || {}; }
-    } catch { /* nothing kept */ }
+  // ---------------------------------------------------------------- kept in the save's world scope (core/save.js; progress: reset with each build)
+  save() { this.game.save?.dirty('shops'); }
+  load(s) {
+    this.restock();
+    if (s && typeof s === 'object') for (const id of Object.keys(this.state)) if (s[id]) { Object.assign(this.state[id].stock, s[id].stock || {}); this.state[id].glut = s[id].glut || {}; }
   }
+  restock() { for (const id of Object.keys(SHOPS)) this.state[id] = { stock: Object.fromEntries(shelfOf(id)), glut: {} }; }
 }

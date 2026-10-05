@@ -7,8 +7,8 @@
 // a rote act 0.4 of the base, a middling one about 1, and a masterful one 5, so the grind to "The World" is about 2,100 hours and a
 // player who plays ambitiously and well gets there in about 400. A source's quality should measure ambition as well as accuracy (the
 // fragile formation's sweet spot, the long macro typed clean, the four-star photograph), never repetition. The bases are relative WEIGHTS within a domain; one PACE scales every domain alike, so 99 takes the same time in
-// each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; nothing
-// reads it yet (docs/plans/SYSTEMS.md, B8).
+// each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; progress/psyche.js
+// earns it in play (docs/plans/SYSTEMS.md, B8).
 //
 // Prior art: Old School RuneScape's skills (1 to 99 by EXP, earned only by doing the skill; the level as proof), the owner's design
 // document v0.1 (the seven skills, the EXP curve floor(level^1.5 * 50 + 100) a level, "The World" ascension), Rhythm Heaven's and Gran
@@ -17,6 +17,7 @@
 //   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts, quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
 //   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
 //   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
+//   WIDEN[key] = { domain, mult | plus, at99, does }      widenAt(key, level) -> a multiplier, or a bonus to a count
 // ---------------------------------------------------------------------------------------
 import { stageQuality } from './econ/emocean.js';
 
@@ -106,4 +107,34 @@ export function levelOf(exp = 0) {
   let l = 1;
   while (l < MAX_LEVEL && exp >= TOTAL[l + 1]) l++;
   return l;
+}
+
+/** WIDENING (the owner, 2026-10-05: "lock it in for now"; DESIGN.md section 10): what a domain's level widens, never accuracy. Each knob
+ *  is read by the tool it names, as a MULTIPLIER of the tool's own number (`mult`: 1 at level 1 to `at99` at 99) or a BONUS added to a
+ *  count (`plus`: 0 at level 1 to `at99`, in whole steps). Linear in the level for now: the system will grow. A tool asks
+ *  `game.psyche.widen(key)`, so switching the domain off (or level 1) restores the tool exactly. */
+export const WIDEN = {
+  'ouranurgy.reach':      { domain: 'ouranurgy',      mult: true, at99: 1.5, does: 'blink and grapple reach (an art: the core movement is untouched)' },
+  'ouranurgy.lane':       { domain: 'ouranurgy',      mult: true, at99: 1.5, does: "the ship's lane-change speed on the rail" },
+  'manifestation.span':   { domain: 'manifestation',  mult: true, at99: 1.5, does: 'how long a manifested structure stands' },
+  'manifestation.count':  { domain: 'manifestation',  plus: true, at99: 2,   does: 'how many manifested structures stand at once' },
+  'divination.survey':    { domain: 'divination',     mult: true, at99: 1.6, does: "a survey pulse's radius (charting, the Well's floors)" },
+  'divination.reveal':    { domain: 'divination',     mult: true, at99: 1.5, does: 'the radius veiled crystal is revealed in' },
+  'divination.reckon':    { domain: 'divination',     mult: true, at99: 1.5, does: "how far ahead a reckoning marks a wave's lane (RECKON.lead)" },
+  'divination.forecast':  { domain: 'divination',     mult: true, at99: 4,   does: 'how far ahead the weather can be known (progress/weather.js forecast)' },
+  'psychokinesis.weight': { domain: 'psychokinesis',  mult: true, at99: 2,   does: 'how heavy a thing the god hand can lift' },
+  'psychokinesis.throw':  { domain: 'psychokinesis',  mult: true, at99: 1.5, does: 'how far the god hand throws' },
+  'possession.macro':     { domain: 'possession',     mult: true, at99: 1.5, does: 'how long a macro a mind will take' },
+  'possession.hold':      { domain: 'possession',     plus: true, at99: 2,   does: 'how many Figments a Lockheart holds when summoning' },
+  'alteration.cuts':      { domain: 'alteration',     plus: true, at99: 3,   does: 'how many cuts a sunder makes' },
+  'alteration.swell':     { domain: 'alteration',     mult: true, at99: 1.5, does: 'how far a swell or a wring reshapes' },
+  'spellscription.slots': { domain: 'spellscription', plus: true, at99: 3,   does: 'how many macros the Veritome keeps' },
+  'spellscription.copy':  { domain: 'spellscription', plus: true, at99: 3,   does: 'how many copies of a Cogitomap can be transcribed (the owner: Spellscription duplicates maps)' },
+};
+/** A knob's value at a level: a multiplier (1 .. at99) or a bonus (0 .. at99, whole). */
+export function widenAt(key, level = 1) {
+  const w = WIDEN[key];
+  if (!w) return 1;
+  const f = (Math.max(1, Math.min(MAX_LEVEL, level)) - 1) / (MAX_LEVEL - 1);
+  return w.plus ? Math.round(w.at99 * f) : 1 + (w.at99 - 1) * f;
 }

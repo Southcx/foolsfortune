@@ -13,9 +13,12 @@ import * as THREE from 'three';
 import { REL } from '../../creatures/ai/index.js';
 import { sfx } from '../../audio/sfx.js';
 import { ECON } from '../../progress/econ/table.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/outcomes');       // (what the outcome decides: the chest's tier; core/rng.js, the same twice)
+const fxRand = stream('tools/lockheart/outcomes.fx');     // (its spray: a stream of its own, so the particles never shift the tier's draws)
 
 const UP = new THREE.Vector3(0, 1, 0);
-const rnd = (a, b) => a + Math.random() * (b - a);
+const rnd = (a, b) => a + fxRand() * (b - a);
 const foes = (g, at, r) => g.creatures.near(at, r).filter((c) => !c.ally);
 const burst = (g, at, n, color, { speed = 6, up = 4, life = 1.4, size = 0.12, gravity = 6, alpha = 0.8 } = {}) => {
   const fx = g.fx?.alpha; if (!fx?.emit) return;
@@ -72,7 +75,7 @@ export const OUTCOME_FX = {
     return n;
   },
   chest(g, at, { power }) {
-    const tier = Math.min(4, Math.floor(1 + Math.random() * 1.6 * power));
+    const tier = Math.min(4, Math.floor(1 + simRand() * 1.6 * power));
     const P = g.player, f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
     g.chests?.drop(tier, at.clone().addScaledVector(f, 2.2).setY(at.y + 6), { yaw: P.yaw + Math.PI, from: 'lockheart' });
     return tier + 1;
@@ -84,11 +87,11 @@ export const OUTCOME_FX = {
     if (fx?.emit) {
       const col = new THREE.Color(0xb3905f), wet = new THREE.Color(0x7d5f3e), hot = new THREE.Color(0xff5ad0);
       for (let i = 0; i < 2600; i++) {
-        const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * R * 0.45;
-        fx.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.4, 0.3, Math.sin(a) * 0.4)), vel: new THREE.Vector3(Math.cos(a) * r, rnd(9, 17), Math.sin(a) * r), life: rnd(1.8, 3.2), size: rnd(0.07, 0.16), sizeEnd: 0.05, color: Math.random() < 0.08 ? hot : Math.random() < 0.5 ? col : wet, alpha: 0.9, drag: 0.25, gravity: 9 });
+        const a = fxRand() * Math.PI * 2, r = Math.sqrt(fxRand()) * R * 0.45;
+        fx.emit({ pos: at.clone().add(new THREE.Vector3(Math.cos(a) * 0.4, 0.3, Math.sin(a) * 0.4)), vel: new THREE.Vector3(Math.cos(a) * r, rnd(9, 17), Math.sin(a) * r), life: rnd(1.8, 3.2), size: rnd(0.07, 0.16), sizeEnd: 0.05, color: fxRand() < 0.08 ? hot : fxRand() < 0.5 ? col : wet, alpha: 0.9, drag: 0.25, gravity: 9 });
       }
     }
-    for (let i = 0; i < 40; i++) { const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * R; g.shells?.addDroplet?.(at.clone().setY(at.y + 1), new THREE.Vector3(Math.cos(a) * r * 0.6, rnd(8, 14), Math.sin(a) * r * 0.6), rnd(0.05, 0.1), true); }
+    for (let i = 0; i < 40; i++) { const a = fxRand() * Math.PI * 2, r = Math.sqrt(fxRand()) * R; g.shells?.addDroplet?.(at.clone().setY(at.y + 1), new THREE.Vector3(Math.cos(a) * r * 0.6, rnd(8, 14), Math.sin(a) * r * 0.6), rnd(0.05, 0.1), true); }
     // the ground drowned in it
     for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2, r = i === 0 ? 0 : rnd(0.3, 1) * R * 0.8; g.slip?.addDisc(at.clone().add(new THREE.Vector3(Math.cos(a) * r, 0.02, Math.sin(a) * r)), UP, rnd(1.6, 3.2), 24, rnd(0.6, 2)); }
     // everything against their burst, every pot broken, every clapperjar flung

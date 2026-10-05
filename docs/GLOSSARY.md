@@ -29,6 +29,42 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
+- **widening** (`WIDEN`, `game.psyche.widen(key)`, `progress/domains.js`): what a domain's level does in play: a multiplier of a tool's own
+  range or a bonus to a count (reach, capacity, options), never accuracy; at level 1 the tool is exactly as it is without it.
+- **the five feelings** (the aspects of Lachryma: wonder, mirth, desire, grief, dread; **desire** was "hunger" until 2026-10-05, and
+  *hunger* is now only the folk's word for desire in excess, never an aspect). **Wherever a player sees them** (a menu, a log, a
+  legend, a bestiary, a chart), **they are ordered most positive to most negative: Wonder, Mirth, Desire, Grief, Dread** (the owner,
+  2026-10-05; `DISPLAY_ORDER` in `progress/weather.js`). Their order on the Law-Chaos line (mirth at Law .. dread at Chaos) is a
+  different thing, for the systems, and never the order they are shown in.
+- **agate** (Espada's word, after agateware: two clays wedged, never blended; `AGATES`, `agateOf` in `progress/weather.js`): two feelings
+  felt at once, shown as one: the stronger is what a mind does or what falls from the sky, the weaker its colour. Named after
+  Plutchik's dyads, in Espada's plain words (delight, hope, guilt, disappointment, awe, longing, worry, despair). Opposites never make an agate: they **cancel** (the
+  mood is torn and weaker). A mind or a sky shows one feeling or one agate, never three (the owner: cycles of expansion and contraction).
+- **the wheel** (`docs/plans/WHEEL.md`): Plutchik's eight feelings, of which the five aspects are five; **Faith** (trust), **Gall**
+  (disgust: rejection, from boredom to loathing) and **Fury** (anger) join later, as places (approved, 2026-10-05). Intensity **rings**
+  are adjectives on a feeling's strength, never new names; the centre is Prismatic.
+- **grain** (a creature's temperament: `docs/plans/TEMPERAMENT.md`; the data in `src/progress/combat/temperament.js`): who a mind is, five traits each between two poles:
+  curious / wary, orderly / erratic, bold / shy, gentle / hostile, skittish / steady (ids: the five-factor model's OCEAN). It weights
+  the mind and says which damage type a mind is weak to; it shows in movement and posture, never colour. *Not:* **temper** (the body
+  showing its mental state, `vfx/temper.js`); *not* "personality" or "stats" in player text. Grain is climate, mood is weather.
+- **weather** (`game.weather`, `src/progress/weather.js`): an island's mood, falling as Lachryma: one of the five **aspects** (wonder, mirth,
+  desire, grief, dread) or **calm**, with a **strength**; a **spell** of it holds a block of game hours. Each feeds the damage type at its
+  place on the Law-Chaos line, its fish, and its crude's price where it falls. **The forecast** is how far ahead it can be known (a
+  Divination widening). Names of the weathers are placeholders for Espada's.
+- **the day** (`phaseAt`, `lightAt`): night, dawn, day and dusk on the game clock (a game day is a real hour); at night Lachryma glows.
+- **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
+  of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
+  holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
+- **the Shrine Garden** (`game.garden`, `src/progress/garden.js`): the pocket inside the vessel: the mastery dividend's **slots** (each worked
+  by a **mastered** encounter: every achievement of its group done), the **beds** (a material planted grows more of its kind), and the
+  upgrades (the long sink). *Not:* "Spirit Garden" (the owner's word for it in passing, 2026-10-05: the same place, unless ruled otherwise).
+- **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
+  (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
+  attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
+  the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
+- **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
+  (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
+- **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
 - **reckoning** (`RECKON`, `reckonLead`): how much of a crossing the Courier has divined (Divination), 0 .. 1, for that day; it marks the
   waves' lanes ahead and opens the way to a node not yet found. *Not:* "course" (the basement's loop of stations).
 - **the Purser** (Espada's, the owner R57): the trader at Margarite's dock, who buys crude, materials and Cogitomaps; the role is the name
@@ -185,7 +221,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ledger** (`src/progress/stats.js`): every count the game keeps. **achievement** (`src/progress/achievements.js`): a predicate over the ledger,
   never a flag.
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
-- **the domains** (six and one): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
+- **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
   Veritome's macros). *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
@@ -218,8 +254,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
-  what everything that drifts daily keys on (a Well's layout, an island's demand, a route's reckoning, a Cogitomap's age). *Not:* a
-  calendar day, or a day of play.
+  what everything that drifts daily keys on (a Well's layout, an island's demand, a route's reckoning). *Not:* a calendar day, or a day
+  of play. Always written **game day** (the owner, 2026-10-05: no bare "day" or "hour").
+- **game hour**: a twenty-fourth of a game day, 150 seconds of real time (2.5 real minutes); what the weather's spells, a bed's growth and
+  a Well's refill are counted in. *Not:* an hour of play.
+- **real time** (**real second**, **real minute**, **real hour**): the wall clock, what rates "per hour of play" and cooldowns are
+  counted in. A unit of time in a doc, commit or message always says which clock: **game** or **real**.
 - **Cogitomap** (the item `cogitomap`): a map of one Well as it was when charted; since a Well changes over time, a Cogitomap is a ticket
   to a seeded run of it. Drawn on the way up when the run charted four fifths of the floors walked (the map's share of CHARTED ground,
   which a survey pulse gets and walking alone does not); it carries the Well, the seed, the day and its worth (`cogitomapWorth`).
@@ -321,6 +361,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
   played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
+- **the checklist** (an Artifact page kept by Dovina, `docs/plans/BUGREPORT.md`): the items the owner tries in a **test session** (the
+  owner playing the build by hand), each with an id (`C12`), what to do and what should happen; the owner ticks pass, fail or skip,
+  notes it and sends the round back. *Not:* a playtest (an agent's scenario), the stress test.
+- **bug report** (F8, to be built: `docs/plans/BUGREPORT.md`): the frame frozen and marked up by the owner, a title, a kind and a
+  severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last events, the F4 report);
+  kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its attachments).
 - **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
   step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the
@@ -357,7 +403,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
   a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
-  Queen: chaos, every feeling pegged high, its core hunger; her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
+  Queen: chaos, every feeling pegged high, its core desire (hunger is desire in excess); her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
   Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 - **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
