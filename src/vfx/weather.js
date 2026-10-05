@@ -27,23 +27,28 @@
 // weather as feeling.
 //
 //   game.weatherLook = new WeatherLook(game)   .update(dt, camera)   .force({ aspect, strength, phase, light } | null) (tests, the lab)
+//   An AGATE sky (two feelings: `second`, `secondStrength` from the rules): the first falls; the second colours the sky, the clouds and
+//   what falls, and may raise its own mark (an aurora under a pall: awe). Opposites cancel in the rules, so there is nothing to draw.
 //   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 const C = (hex) => new THREE.Color(hex);
+/** The feelings' colours: canon (the owner, R58: Plutchik's petals; progress/weather.js COLOR, Dovina's). Mirrored here until that module
+ *  is on the default branch; then imported from it. */
+const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a };
 /** Each weather's look: its colour, what falls (and how), its mark, and what it does to the sky's grade and the fog. */
 export const LOOK = {
-  mirth:  { colour: C(0xf4d58c), clouds: { cover: 0.62 },  fall: { kind: 'rain', rate: 0.3, speed: 6, len: 0.7, alpha: 0.55, vel: [0.12, -1, 0.05] }, mark: 'rainbow',
+  mirth:  { colour: C(COLOR.mirth), clouds: { cover: 0.62 },  fall: { kind: 'rain', rate: 0.3, speed: 6, len: 0.7, alpha: 0.55, vel: [0.12, -1, 0.05] }, mark: 'rainbow',
             sky: { expo: 1.08, mul: [1.06, 1.0, 0.9] }, fog: C(0xe8cf9e), fogD: 0.9 },
-  wonder: { colour: C(0xa8c4ff), clouds: { cover: 0.6, opacity: 0.6 },  fall: { kind: 'diamond', rate: 0.6, speed: 0.35 }, mark: 'halo', night: 'aurora',
+  wonder: { colour: C(COLOR.wonder), clouds: { cover: 0.6, opacity: 0.6 },  fall: { kind: 'diamond', rate: 0.6, speed: 0.35 }, mark: 'halo', night: 'aurora',
             sky: { expo: 1.02, mul: [0.93, 0.99, 1.1] }, fog: C(0xb8c8e8), fogD: 0.8 },
-  desire: { colour: C(0xb5674a), clouds: { cover: 0.56, opacity: 0.6 },  fall: { kind: 'sirocco', rate: 1, speed: 9, len: 3, alpha: 0.55, vel: [1, 0.04, 0.35] },
+  desire: { colour: C(COLOR.desire), tone: 0.7, clouds: { cover: 0.56, opacity: 0.6 },  fall: { kind: 'sirocco', rate: 1, speed: 9, len: 3, alpha: 0.55, vel: [1, 0.04, 0.35] },
             sky: { expo: 0.95, mul: [1.08, 0.94, 0.86], haze: C(0xc98a62), hazeK: 0.85 }, fog: C(0xc48a66), fogD: 2.2 },
-  grief:  { colour: C(0xb4c0cc), clouds: { cover: 0.32, opacity: 0.95 },  fall: { kind: 'rain', rate: 1, speed: 13, len: 1.5, alpha: 0.45, vel: [0.12, -1, 0.05] },
+  grief:  { colour: C(COLOR.grief), clouds: { cover: 0.32, opacity: 0.95 },  fall: { kind: 'rain', rate: 1, speed: 13, len: 1.5, alpha: 0.45, vel: [0.12, -1, 0.05] },
             sky: { expo: 0.78, mul: [0.92, 0.96, 1.04], desat: 0.65 }, fog: C(0x7c858e), fogD: 1.6 },
-  dread:  { colour: C(0x6f8a5a), clouds: { cover: 0.28, opacity: 0.95 },  fall: null, mark: 'bolts',
-            sky: { expo: 0.55, mul: [0.8, 0.86, 0.8], desat: 0.35, haze: C(0x2e2838), hazeK: 0.75 }, fog: C(0x2c2a34), fogD: 2.6 },
+  dread:  { colour: C(COLOR.dread), clouds: { cover: 0.28, opacity: 0.95 },  fall: null, mark: 'bolts',
+            sky: { expo: 0.55, mul: [0.8, 0.86, 0.8], desat: 0.35, haze: C(0x26302a), hazeK: 0.75 }, fog: C(0x24302a), fogD: 2.6 },
 };
 const ASPECTS = Object.keys(LOOK);
 
@@ -206,6 +211,7 @@ export class WeatherLook {
     this.glow = ringMesh(0, 90, 'gl_FragColor = vec4(vec3(0.45, 0.4, 0.6) * (1.0 - t) * (1.0 - t), uA);');
     for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
     this.amt = Object.fromEntries(ASPECTS.map((a) => [a, 0])); // (each weather's present amount, eased: a spell comes in and goes out)
+    this.sec = Object.fromEntries(ASPECTS.map((a) => [a, 0])); // (and as the AGATE's second: it colours, it never falls)
     this.forced = null; this.wx = null; this.poll = 0; this.t = 0; this.lift = 0;
     this.strike = { next: 4, t: -9, n: 0 };
   }
@@ -219,7 +225,7 @@ export class WeatherLook {
     const W = this.game.weather;
     if (!W?.here) return null;
     const h = W.here(pos), s = W.sky?.(undefined, h.place);
-    return { aspect: h.aspect, strength: h.strength, exposure: h.exposure, phase: s?.phase ?? h.phase, light: s?.light ?? 0.5 };
+    return { aspect: h.aspect, strength: h.strength, second: h.second || null, secondStrength: h.secondStrength || 0, exposure: h.exposure, phase: s?.phase ?? h.phase, light: s?.light ?? 0.5 };
   }
 
   update(dt, camera) {
@@ -233,6 +239,9 @@ export class WeatherLook {
       const tgt = w && w.aspect === a ? w.strength : 0;
       this.amt[a] += (tgt - this.amt[a]) * (1 - Math.exp(-dt * 0.6));
       if (this.amt[a] < 1e-3 && tgt === 0) this.amt[a] = 0;
+      const t2 = w && w.second === a ? (w.secondStrength || 0) * (w.strength || 0) : 0; // (the second, as strong as it is in a sky as strong as the first)
+      this.sec[a] += (t2 - this.sec[a]) * (1 - Math.exp(-dt * 0.6));
+      if (this.sec[a] < 1e-3 && t2 === 0) this.sec[a] = 0;
     }
     // the sky's grade: the hour, then the weather over it (with no rules, the painting as it is)
     if (sky?.grade) {
@@ -240,7 +249,7 @@ export class WeatherLook {
       else {
         const g = hourGrade(w.phase);
         for (const a of ASPECTS) {
-          const k = this.amt[a], S = LOOK[a].sky; if (!k) continue;
+          const k = Math.min(1, this.amt[a] + 0.7 * this.sec[a]), S = LOOK[a].sky; if (!k) continue; // (the second colours the sky too)
           g.expo *= lerp(1, S.expo ?? 1, k);
           if (S.mul) g.mul = g.mul.map((v, i) => v * lerp(1, S.mul[i], k));
           g.desat = Math.max(g.desat, (S.desat || 0) * k);
@@ -251,7 +260,7 @@ export class WeatherLook {
         const CL = this.game.dunes?.clouds, B = CL?.base;
         if (B) {
           let cover = B.cover, opacity = B.opacity;
-          for (const a of ASPECTS) { const k = this.amt[a], Q = LOOK[a].clouds; if (k && Q) { cover = lerp(cover, Q.cover ?? cover, k); opacity = lerp(opacity, Q.opacity ?? opacity, k); } }
+          for (const a of ASPECTS) { const k = Math.min(1, this.amt[a] + 0.5 * this.sec[a]), Q = LOOK[a].clouds; if (k && Q) { cover = lerp(cover, Q.cover ?? cover, k); opacity = lerp(opacity, Q.opacity ?? opacity, k); } }
           CL.grade({ expo: Math.pow(g.expo, 0.8) * (1 - 0.5 * g.desat) * (1 - 0.65 * g.night), mul: _c.lerp(_white, 0.5), cover, opacity: opacity * (1 - 0.5 * g.night) * (1 - 0.4 * g.day) }); // (thin under the day's and the night's own painted clouds)
         }
       }
@@ -265,13 +274,13 @@ export class WeatherLook {
     for (const a of ASPECTS) {
       const k = open ? this.amt[a] : 0, F = LOOK[a].fall; if (!F || !k) continue;
       if (F.vel && k > rainA) { // (streaks: rain falling, or sand blown along the ground)
-        rainA = k; R0.uCol.value.copy(LOOK[a].colour); R0.uLen.value = F.len; R0.uA.value = F.alpha * k;
+        rainA = k; this.tint(R0.uCol.value, a); R0.uLen.value = F.len; R0.uA.value = F.alpha * k;
         R0.uVel.value.fromArray(F.vel); const wd = this.game.dunes?.wind?.dir; if (wd && F.kind === 'sirocco') R0.uVel.value.set(wd.x, F.vel[1], wd.y); R0.uVel.value.multiplyScalar(F.speed); // (the wanting wind blows the way the dunes' wind does)
         this.rain.obj.geometry.setDrawRange(0, Math.round(this.rain.n * F.rate * k) * 2);
       }
       const diamond = F.kind === 'diamond', dk = diamond ? k * dayK : k; // (diamond dust by day; at night wonder is the aurora)
       if ((diamond || F.kind === 'sirocco') && dk > moteA) {
-        moteA = dk; M0.uCol.value.copy(LOOK[a].colour); M0.uHex.value = diamond ? 1 : 0; M0.uSize.value = diamond ? 0.05 : 0.12;
+        moteA = dk; this.tint(M0.uCol.value, a); M0.uHex.value = diamond ? 1 : 0; M0.uSize.value = diamond ? 0.05 : 0.12;
         M0.uVel.value.set(diamond ? 0.05 : F.speed, diamond ? -F.speed : 0.3, diamond ? 0 : F.speed * 0.3); M0.uA.value = (diamond ? 0.8 : 0.6) * dk;
         this.motes.obj.geometry.setDrawRange(0, Math.round(this.motes.n * F.rate * dk));
       }
@@ -279,13 +288,21 @@ export class WeatherLook {
     for (const [L, A] of [[this.rain, rainA], [this.motes, moteA]]) { L.obj.visible = A > 0.01; L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
     M0.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
     // the marks in the sky (open places only: none of them is seen from a room)
-    const won = open ? this.amt.wonder : 0, mir = open ? this.amt.mirth : 0, dre = open ? this.amt.dread : 0;
+    const mk = (a) => (open ? Math.min(1, this.amt[a] + this.sec[a]) : 0); // (the marks are the sky's colouring: a second raises its own, an aurora under a pall)
+    const won = mk('wonder'), mir = mk('mirth'), dre = mk('dread');
     this.sky(this.halo, won * dayK * 0.22, cam, sun, 1);
     this.sky(this.bow, mir * dayK * 0.16, cam, sun, -1);
     const elev = Math.asin(THREE.MathUtils.clamp(sun.y, -1, 1)), az = Math.atan2(sun.z, sun.x), off = THREE.MathUtils.degToRad(22) / Math.max(0.3, Math.cos(elev));
     this.dogs.forEach((d, i) => { _w.set(Math.cos(az + (i ? off : -off)) * Math.cos(elev), Math.sin(elev), Math.sin(az + (i ? off : -off)) * Math.cos(elev)); this.sky(d, won * dayK * 0.6, cam, _w, 1); });
     const au = this.aurora; au.obj.visible = won * nightK > 0.01; au.u.uA.value = 0.55 * won * nightK; au.u.uT.value = this.t; au.obj.position.set(cam.x, cam.y + 230, cam.z);
     this.thunder(dt, dre, cam);
+  }
+
+  /** What falls takes its weather's colour, with the agate's second worked into it (the second colours; it never falls). */
+  tint(out, a) {
+    out.copy(LOOK[a].colour).multiplyScalar(LOOK[a].tone ?? 1);
+    for (const b of ASPECTS) if (b !== a && this.sec[b] > 0.01) out.lerp(_c3.copy(LOOK[b].colour).multiplyScalar(LOOK[b].tone ?? 1), 0.5 * this.sec[b]);
+    return out;
   }
 
   /** Hang a sky mark: a ring centred on a direction from the eye (the sun's, or its opposite), facing the eye. */
