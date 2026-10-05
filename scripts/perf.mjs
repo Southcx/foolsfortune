@@ -32,6 +32,9 @@ const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heap
 const server = await createServer({ root: ROOT, logLevel: 'error', server: { host: '127.0.0.1', port: 5180, strictPort: false } });
 await server.listen();
 const url = server.resolvedUrls.local[0];
+// (the calendar held at a calm game noon on Anagami: the hour and the weather are part of the picture, so every run measures the same one;
+// CLOCK=now measures whatever the wall clock gives, CLOCK=<ms> another moment)
+const CLOCK = process.env.CLOCK === 'now' ? null : process.env.CLOCK || 1791160275000;
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] }); // (gc before the heap is read: without it the reading is whatever garbage is lying about, ±10 MB a run)
 let out = null, errs = [];
@@ -40,7 +43,7 @@ try {
   page.on('pageerror', (e) => errs.push(e.message));
   await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
   const t0 = Date.now();
-  await page.goto(url, { waitUntil: 'commit' });
+  await page.goto(`${url}${CLOCK ? `?clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
   for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
   const bootS = (Date.now() - t0) / 1000;
   await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });

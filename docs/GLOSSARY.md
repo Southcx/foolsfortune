@@ -169,6 +169,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **zone** (`src/render/zones.js`): a render zone, what is drawn from where the camera is. *Not:* the Zone of Influence, which is always
   named in full (or ZoI). A zone may be **part of** another (`partOf`): drawn on its own, but walked, lit and travelled as one with its
   **whole** (`wholeOf(pos)`): the beach is part of the dunes.
+- **the zone map** (`src/render/zonemap.js`): the zones' bounds as pure numbers (`zoneOf`, `wholeOf`), for anything that asks where a
+  point is without drawing: the weather's place, a Node script.
+- **the daylight** (`game.daylight`, `src/render/daylight.js`): the light on the open ground (the sun, the sky's light, the fog) by the game
+  hour and the weather, so the lit world agrees with the sky's painting. *Not:* the day's phase (night, dawn, day, dusk), which it reads.
 - **the Zone of Influence**: the ground the player has explored. Nothing more, for now.
 - **the workshop**: the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement**: below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
@@ -407,8 +411,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   into the title theme (a score's `then`). *Not:* "the opening" (that is the Lockheart's ultimate, the Opening).
 - **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`): the music under the Opening, one per mode, and its **landing**
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
-- **the ambience** (`game.ambience`, `src/audio/ambience.js`): what the weather and the hour sound like where the Courier stands, a
-  generative **bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music.
+- **the ambience** (`game.ambience`, `src/audio/ambience.js`): what the weather and the game hour sound like where the Courier stands, a
+  generative **sound bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music. *Not:* the
+  Shrine Garden's **beds** (where a material is planted).
 - **mood layer** (`moodLayer`, `src/music/mood.js`): the weather heard in the music, a few quiet notes over each bar of the place's cue
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the

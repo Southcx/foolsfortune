@@ -127,6 +127,7 @@ import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
 import { installReplay } from './debug/replay.js';
 import { Seam } from './render/seam.js';
+import { Daylight } from './render/daylight.js';
 import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
@@ -589,6 +590,7 @@ async function main() {
   game.garden = new Garden(game); // (the Shrine Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
+  game.daylight = new Daylight(game); // (the light on the open ground by the hour and the weather: render/daylight.js)
   game.macros = new MacroBook(); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
@@ -715,10 +717,15 @@ async function main() {
   // so without it every program was compiled for no planes here and again, for one, on the first real frame)
   renderer.render(new THREE.Scene(), camera);
   const parkWell = game.well?.prewarm?.(); // (a Well's floor is built on entry: one stand-in floor is compiled with the rest, world/well/dunemaw.js)
+  // the pieces made on first need are made now and compiled with the rest: the maw wipe (it covers the way into a Well, so it must not
+  // open with a compile of its own) and the shore's crude sea and swash (else built on the first view of the Dunes)
+  game.mawWipe.make?.(); const wipe = game.mawWipe.mesh; if (wipe) wipe.visible = true;
+  if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
+  if (wipe) wipe.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -981,6 +988,7 @@ async function main() {
     game.well.update(dt);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
+    game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
     game.dunes.update(dt);
     game.crystals?.update(dt);
     const dm = game.dunes.mix; // (in the dunes the sun is a real one)

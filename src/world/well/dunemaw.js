@@ -34,6 +34,7 @@ import { makeMaterial, KIND_IDS } from '../../progress/econ/materials.js';
 import { deckDraw } from '../../progress/econ/deck.js';
 import { seeded } from '../../core/rng.js';
 import { today, now as calNow } from '../../core/calendar.js';
+import { fillHours } from '../../progress/weather.js';
 import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
@@ -139,9 +140,10 @@ export class Dunemaw {
     g.events?.emit('well.floor', { well: WELL_ID, floor: n, charted: null, by: 'courier' });
   }
 
-  /** The Well's fill as they go in (it fills again with the hours since the last run, econ/islands.js drawWell), and this run drawn from it. */
+  /** The Well's fill as they go in (it fills again with the hours since the last run, the weather's pull and all: econ/islands.js
+   *  drawWell, progress/weather.js fillHours, the same sum the Purser prices a Cogitomap by), and this run drawn from it. */
   draw() {
-    const now = calNow(), was = this.fills[WELL_ID], fill = was ? drawWell(was.fill, 0, (now - was.at) / 3600000) : 1;
+    const now = calNow(), was = this.fills[WELL_ID], fill = was ? drawWell(was.fill, 0, fillHours(`well:${WELL_ID}`, was.at, now)) : 1;
     this.fills[WELL_ID] = { fill: drawWell(fill, 1, 0), at: now }; this.game.save?.dirty('wells');
     return fill;
   }
