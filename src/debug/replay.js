@@ -13,6 +13,7 @@
 import * as THREE from 'three';
 import { BUILD } from '../core/progress.js';
 import { zoneOf } from '../render/zones.js';
+import { setClock } from '../core/calendar.js';
 
 export function installReplay(game, { player, frame, time }) {
   const replay = game.replay, save = game.save, boot = game.seed; // (the seed the page was built from: a replay's page is built from it too)
@@ -23,7 +24,7 @@ export function installReplay(game, { player, frame, time }) {
     const seed = (Math.imul(game.seed ^ 0x5bd1e995, frame() + 1) >>> 0) || 1;
     game.reseed(seed);
     replay.begin({ build: BUILD, boot, seed, why, exact: why === 'start' && frame() <= 1, // (exact: nothing had run before it, no trailer borrowed the world)
-      save: save.export(), time: time.get(),
+      save: save.export(), time: time.get(), wall: Date.now(),
       at: { pos: [player.pos.x, player.pos.y, player.pos.z], yaw: player.yaw }, view: [innerWidth, innerHeight] });
   };
 
@@ -65,6 +66,12 @@ export function installReplay(game, { player, frame, time }) {
     if (!save.stash('replay', text)) { game.log.say('system', 'That replay is too long to play here.', { throttle: 1 }); return; }
     location.search = `?seed=${r.boot}&replay`; // (the page is built from the seed it was built from: where the pots on the shelves stand)
   }
+
+  /** The calendar's time, as the simulation may read it (a Well's fill, a garden's dividend): the wall clock until a replay begins,
+   *  then the wall clock it began at moved on by the game clock, so a recording and its playback read the same hours. Things that
+   *  pay while you are away still do: the gap between sessions is the wall clock's. */
+  game.wallNow = () => (replay.header?.wall != null ? replay.header.wall + (time.get() - replay.header.time) * 1000 : Date.now());
+  setClock(game.wallNow); // (the calendar reads it too: a Well's day, an island's demand)
 
   // (play begins at the first tick with the title gone, or at the first deed, whichever is first)
   const starting = () => {
