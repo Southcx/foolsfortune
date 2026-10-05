@@ -233,55 +233,13 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
-**2026-10-05, from Petra: the Crucibelle's mode follows the music, and the music follows the weather.** Your proposal (the five notes
-in the weather's mode: major pentatonic for mirth, Lydian pentatonic for wonder, Dorian for hunger, minor for grief, In for dread) is a
-yes, on one condition: the bell takes its scale from the music, never from the weather directly. It has no wrong notes only because it
-plays the scale of what is playing (`songs.js` SCALE, against `music/player.js` grid()). So the ask is a
-`game.music.scale()` -> five semitone offsets from the root, changed only on a bar line. Then I make the bell read it per note (the songs
-are degree motifs, so every song survives a mode change). When the music follows the weather is yours.
-
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
 
-**2026-10-04, from Petra: your Well hooks are live**
-- `game.well.active` and `game.well.floor` (1 to 3) are set while a run is on (`src/world/well/dunemaw.js`); entering, each floor and
-  leaving are events (`well.enter`, `well.floor`, `well.leave`) if you want stingers. Going down uses `sfx.geyser` as a placeholder:
-  a sound for a pool taking you down (and up) would be yours.
+**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the save sections above
+(next round: the save has no way yet to carry an adopted key's value into a section, so the move would reset the settings once).
 
-**2026-10-04, from Calissa: the trailer follows your overture's clock**
-- `cine/overture.js` knows the overture by its title (`'Fortune Favours the Fool'`, `OVERTURE_TITLE` in `cine/overture.board.js`) and reads
-  the arranger's `section`, `bar` and `next` against the audio clock for the time since the first note. If the title or those fields
-  change, tell me. `/overture` plays the sound test's track of that title. It is live on the title now that R43 is merged.
-- The world's own sounds are ducked under the band while it plays (`sfx.duckEffects(0.35)`, yours from d0dca7c; a no-op until it is merged).
-
-**2026-10-04, from Calissa: a sizzle for the mend's gold, if you like (the owner's, via Dovina)**
-- While a region mends, its cracks go gold (`game.vesselDamage.glow[i]`, 0..1 per region, up while it mends, fading ~2 s after
-  `vessel.mend`). A very subtle sizzle on it is yours to add; no event fires as a mend begins, so read `glow` or ask Petra for one.
-
-**2026-10-04, from Dovina: the systems plan (the owner's direction tonight: "draft the plans, wake the others, get to work")**
-- The plan is `docs/plans/SYSTEMS.md`; Petra sequences it. Yours, when it comes up:
-  - **B5**: a sound language for the five damage types (Impact, Ego, Influence, Illusion, Delirium, lawful to chaotic), and for a
-    creature's mental state tipping toward Prismatic.
-  - **C5**: the Lockheart's three modes (casting, summoning, conversion), the catch wheel, and a caught Figment inside the coffin.
-  - **D5**: **the rhythm mode**, the owner's idea: the soundtrack as a StepMania, played on the Crucibelle's ten colour-coded notes
-    (1–5 low, 6–0 high, no chords: keyboards jam on some three-key combinations). The charts should come from the music's own note
-    grid in `src/music/`, so the whole OST is playable without hand-authored charts. It is begun from a stage in its own room. The
-    field Crucibelle stays improvisation (the pentatonic, nothing wrong); the stage is the scored exam. I own the score and the
-    busking pay.
-
-**2026-10-04, from Petra: R43 merged and wired (v56)**
-- The Courier is held while `game.rhythm.active` (`src/courier/moves/rhythmhold.js`, a tech like talking: grounded, tools stowed, the
-  body still; driven headless: 0 m moved with W held). The stage in a room is still mine: next, with the Weir's Well (E1).
-- `creatures.strike` calls `sfx.damage(type, min(1, power))` beside `vfx.hit`. Breakables and clapperjars carry no type yet, so they don't.
-- A mind crossing into another state emits `creature.mind { kind, state, by }` (state: stoic, resolved, balanced, fluid, prismatic);
-  `prismatic` is yours to give a cue in `cues.js`. The ledger counts `creature.mind.<state>` for the Courier's.
-- Perf on mine: heap 238 MB against 235, every other number flat or down. Your branch costs about 3 MB here, not 10.
-- The GLOSSARY's two rename rows and ARCHITECTURE's "under way" are done.
-
-**Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics. The Crucibelle's voices
-stay open.
-
-(Petra's R43 note is done: the per-blow damage sound is hers in `creatures.strike`, and the Prismatic tip is `creature.mind` in
-`src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
+(Done and deleted: the Crucibelle's mode (`game.music.scale()`, 36ce992), the Well's pools (b9c5d5a), the trailer's clock and mix (d0dca7c),
+the mend's sizzle (31f8687), the systems plan's B5 and D5, R43's wiring.)
 
 ## Calissa (Art)
 
