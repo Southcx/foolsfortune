@@ -49,9 +49,26 @@ Each phase pays for itself before the next one starts.
   the box"), run like the stress test. The stress test fuzzes; a playtest plays.
 - **Status (v70):** places, `game.agent` and the first playtest (`npm run playtest -- well`: down the Well, every floor cleared, back up,
   paid, the haul home; 8/8 on seeds 1 to 3) are in. Its first finds: jellies flew through walls in the air and climbed onto the roof.
-  The bridge is next.
+  The bridge (`scripts/agent.mjs`) is in too: see "Playing through the bridge" below.
 - **Done when:** an agent with no knowledge of the code can be told "go down the Well and come back with something" and do it, and a
   playtest for each slice step (E1 to E5) runs in the gate.
+
+#### Playing through the bridge (for a division's session)
+
+```
+npx vite --host 127.0.0.1 --port 5173 &               the dev server (as for the stress test)
+node scripts/agent.mjs serve --seed 4 &                the game, headless, held open; the world waits between calls
+node scripts/agent.mjs look --places                   where you are, what is near, what F could be meant for (reach), where you can go
+node scripts/agent.mjs act '{"do":"travel","place":"folk.pip"}'     between rooms: travel (goto refuses another room and says so)
+node scripts/agent.mjs do '{"do":"goto","place":"kiln"}'            within a room: walk, and let time pass until it is done
+node scripts/agent.mjs act '{"do":"interact","with":"pip"}'         F, meant for one thing in reach (without `with`: the chevron's)
+node scripts/agent.mjs step 240                        let four seconds pass; the answer is the state, with the events and log lines since
+node scripts/agent.mjs act '{"do":"choose","n":2}'     a dialogue's choice (look's `dialogue`); press KeyF to turn the page
+node scripts/agent.mjs stop
+```
+
+Every answer is JSON. The intents are in `src/agent/agent.js`'s header. A file changed under the dev server reloads the page and the
+game starts over from the seed; the next answer says `reloaded`. What you find is a bug report: the events and the log are the evidence.
 
 ### C4. More than one Courier
 

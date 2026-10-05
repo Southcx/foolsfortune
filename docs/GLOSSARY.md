@@ -305,6 +305,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   mind (a Brain, `docs/AI.md`).
 - **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
   back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
+- **the bridge** (`scripts/agent.mjs`): the game held open headless so a session plays it a call at a time from the shell (look, act, do,
+  step). *Not:* the Weir's pier, or any bridge in the world (say the span).
 - **the kit** (the `kit` section): the Pneuka Box and the belt, kept as one, so they can never disagree about where a tool is. *Not:* the
   Lockheart's kit (say its coffins and keys).
 
