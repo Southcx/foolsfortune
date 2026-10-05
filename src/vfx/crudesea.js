@@ -9,6 +9,8 @@
 //               drifting (CLAUDE.md allows a scrolled texture where it is that)
 //   THE FILM    the oil film's colours where the surface turns from the eye (a fresnel, low in frequency, so it rolls with the swells and
 //               never shimmers); stronger in the calm
+//   THE LIQUID  close up, the shared liquid library (vfx/liquid.js): the owner's marbling crossing itself as the surface's slopes, and the
+//               oil film in its cells and veins (the Well's own look); far off, the current's bands
 //   THE CALM    `calm` (0..1) lays the swells down and lets the film bloom: the stage's breather (0.50 to 0.62 of it) is the sea's and the
 //               sky's to carry
 // The grid follows the camera in whole cells, and the waves are in the world's own space, so nothing swims under the eye; the swells'
@@ -21,8 +23,11 @@
 //   const sea = new CrudeSea({ env })   scene.add(sea.mesh)   sea.update(t, camera.position)   sea.set({ calm, swell, film, current })
 //   (swell 0.38 by default: about a metre and a half crest to trough, a sloop's sea)
 //   sea.heightAt(x, z, t) -> y   (for a ship: its bob and its pitch)   sea.dispose()
+//   new CrudeSea({ geometry, y })   a surface of its own shape, laid in world xz (a shore's sector): it does not follow the eye
+//   sea.clipSector({ center, angle, half, r0 })   only the sector of a shore is sea (the shore, vfx/shore.js): elsewhere it is not drawn
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
 
 const N = 4;
 // the waves: direction (radians), wavelength (m), steepness, speed scale (long, low swells, a cross-sea, and a short chop on top)
@@ -30,13 +35,16 @@ const WAVES = [[0.2, 38, 0.32, 1], [1.1, 23, 0.26, 1], [-0.7, 14, 0.18, 1.1], [2
 const G = 9.8;
 
 export class CrudeSea {
-  constructor({ env = null, size = 900, cells = 180, y = 0 } = {}) {
-    this.y = y; this.cell = size / cells; this.t = 0;
+  constructor({ env = null, size = 900, cells = 180, y = 0, geometry = null } = {}) {
+    this.y = y; this.cell = size / cells; this.t = 0; this.fixed = !!geometry; // (a geometry of its own, laid in world xz: it stays put)
     this.k = { calm: 0, swell: 0.38, film: 1, current: new THREE.Vector2(1, 0.25).normalize() };
-    const geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2);
+    let geo = geometry;
+    if (!geo) { geo = new THREE.PlaneGeometry(size, size, cells, cells); geo.rotateX(-Math.PI / 2); }
     const u = this.u = {
       uT: { value: 0 }, uAmp: { value: 0.38 }, uFilm: { value: 1 }, uCalm: { value: 0 },
       uCur: { value: this.k.current.clone() },
+      ...liquidUniforms(),
+      uClip: { value: new THREE.Vector4(0, 0, 0, -1) }, uClipA: { value: new THREE.Vector2(0, 7) }, // (center xz, r0, on; angle, half)
       uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
       uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)
     };
@@ -66,23 +74,33 @@ objectNormal = normalize(mix(vec3(0.0, 1.0, 0.0), seaN, seaFar));`)
 transformed += seaD; vSeaW = seaWp.xyz + seaD; vSeaH = seaD.y;`);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-uniform float uT, uFilm, uCalm; uniform vec2 uCur; varying vec3 vSeaW; varying float vSeaH;
+uniform float uT, uFilm, uCalm; uniform vec2 uCur; uniform vec4 uClip; uniform vec2 uClipA; varying vec3 vSeaW; varying float vSeaH;
 float seaHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float seaNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(seaHash(i), seaHash(i + vec2(1, 0)), f.x), mix(seaHash(i + vec2(0, 1)), seaHash(i + vec2(1, 1)), f.x), f.y); }
-vec3 seaFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }`)
+vec3 seaFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }
+${LIQUID_GLSL}`)
         .replace('#include <color_fragment>', `#include <color_fragment>
+if (uClip.w > 0.0) { vec2 cd = vSeaW.xz - uClip.xy; float ca = atan(cd.y, cd.x) - uClipA.x; ca = abs(atan(sin(ca), cos(ca)));
+  if (ca > uClipA.y || length(cd) < uClip.z) discard; } // (a shore's sea: its sector only, from the sand out)
 // the current: streaks drawn along the drift, scrolled (two scales, so it never reads as one repeating sheet)
 vec2 seaC = vec2(dot(vSeaW.xz, uCur), dot(vSeaW.xz, vec2(-uCur.y, uCur.x)));
-float seaStreak = seaNoise(vec2(seaC.x * 0.02 - uT * 0.05, seaC.y * 0.22)) * 0.6 + seaNoise(vec2(seaC.x * 0.05 - uT * 0.11, seaC.y * 0.5)) * 0.4;
+float seaStreak = seaNoise(vec2(seaC.x * 0.025 - uT * 0.05, seaC.y * 0.1)) * 0.6 + seaNoise(vec2(seaC.x * 0.06 - uT * 0.11, seaC.y * 0.24)) * 0.4; // (streaks four times as long as wide: elongated more, they ran to the horizon as spokes)
 diffuseColor.rgb *= 0.7 + 0.6 * seaStreak;
 diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (the crests a shade warmer: crude is amber where it is thin)`)
+        .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+// the liquid's own slopes on the swell (vfx/liquid.js: the owner's marbling, two layers crossing, slow as crude is), close up only
+float seaNear = 1.0 - smoothstep(30.0, 160.0, length(vSeaW.xz - cameraPosition.xz));
+{ vec3 pn = liqNormal(vSeaW.xz, 0.045, uT * 0.4, 1.3 * seaNear); normal = normalize(normal + (viewMatrix * vec4(pn.x, 0.0, pn.z, 0.0)).xyz); }`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 { vec3 V = normalize(vViewPosition); float fres = pow(1.0 - clamp(abs(dot(normalize(normal), V)), 0.0, 1.0), 3.0);
-  float film = (0.2 + 0.8 * fres) * uFilm * (0.4 + 0.6 * uCalm) * smoothstep(0.42, 0.78, seaStreak); // (in bands, along the streaks, black between)
-  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.5 + vSeaH * 0.1) * film * 0.16; }`);
+  // the oil film: in the current's bands far off, and close up in the marbling's cells and veins (the Well's own look)
+  float cells = liqHeight(vSeaW.xz, 0.045, uT * 0.4), veins = liqTap(vSeaW.xz * 0.045 + vec2(uT * 0.4 * 0.021, uT * 0.4 * 0.013)).a;
+  float band = smoothstep(0.42, 0.78, seaStreak), vein = pow(veins, 1.8) * seaNear;
+  float film = (0.2 + 0.8 * fres) * uFilm * (0.4 + 0.6 * uCalm) * max(band, vein);
+  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.1) * film * 0.12; }`);
     };
-    m.customProgramCacheKey = () => 'crude-sea';
+    m.customProgramCacheKey = () => 'crude-sea-3';
     this.mesh = new THREE.Mesh(geo, m);
     this.mesh.position.y = y; this.mesh.frustumCulled = false; this.mesh.receiveShadow = true;
   }
@@ -96,10 +114,13 @@ diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (th
     this.u.uCalm.value = this.k.calm; this.u.uAmp.value = this.k.swell; this.u.uFilm.value = this.k.film; this.u.uCur.value.copy(this.k.current);
   }
 
+  /** Only a shore's sector is sea: the bearing within `half` of `angle` from `center` (xz), and further out than `r0`. */
+  clipSector({ center, angle = 0, half = Math.PI, r0 = 0 }) { this.u.uClip.value.set(center.x, center.z, r0, 1); this.u.uClipA.value.set(angle, half); }
+
   /** Per frame: the time, and the grid kept under the camera in whole cells (the waves are the world's: nothing swims). */
   update(t, camPos) {
     this.t = t; this.u.uT.value = t;
-    if (camPos) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
+    if (camPos && !this.fixed) this.mesh.position.set(Math.round(camPos.x / this.cell) * this.cell, this.y, Math.round(camPos.z / this.cell) * this.cell);
   }
 
   /** The surface's height at a point (the same sum as the shader's, near the eye): what a ship rides. */

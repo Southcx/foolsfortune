@@ -88,6 +88,10 @@ import { Achievements } from './progress/achievements.js';
 import { Weir, stockTreasury } from './tools/sondelass/angling/weir.js';
 import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
+import { WeatherLook } from './vfx/weather.js';
+import { MawWipe } from './vfx/mawwipe.js';
+import { Shore } from './vfx/shore.js';
+import { BugMarkup } from './ui/bugmarkup.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
 import { HideUI } from './feedback/hideui.js';
@@ -306,6 +310,9 @@ async function main() {
   const level = new Level(scene, physics, breakables); // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
+  game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
+  game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
+  game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
@@ -600,6 +607,12 @@ async function main() {
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
+  game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
+  game.chat.add('markup', { help: "the bug report's markup window over this frame (a preview: F8 files the real report)", run: () => {
+    renderer.render(scene, camera); const c = document.createElement('canvas'); c.width = renderer.domElement.width; c.height = renderer.domElement.height;
+    c.getContext('2d').drawImage(renderer.domElement, 0, 0); // (read back in the same task as the draw: the drawing buffer is not preserved)
+    new BugMarkup(game).open(c).then((r) => console.info('markup preview', r && { ...r, marks: `${r.marks.width}x${r.marks.height}` }));
+  } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
@@ -978,7 +991,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

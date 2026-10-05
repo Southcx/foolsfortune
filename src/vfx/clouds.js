@@ -12,6 +12,7 @@
 // gradient sky), and the sky-plane projection of the flight-sim and demo-scene tradition.
 //
 //   const c = new CloudLayer(scene, { sun: dir })    c.update(dt, camera.position, windDir (Vector2), windSpeed)    c.visible = bool
+//   c.grade({ expo, mul, cover, opacity })   the hour and the weather (vfx/weather.js): an empty grade is the layer as built
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -46,6 +47,7 @@ export class CloudLayer {
       uNoise: { value: noiseTexture() }, uOff: { value: this.offset }, uSun: { value: sun.clone().normalize() },
       uLit: { value: new THREE.Color(lit) }, uShade: { value: new THREE.Color(shade) }, uCover: { value: cover }, uOpacity: { value: opacity },
     };
+    this.base = { lit: this.uniforms.uLit.value.clone(), shade: this.uniforms.uShade.value.clone(), cover, opacity };
     const mat = new THREE.ShaderMaterial({
       uniforms: this.uniforms, transparent: true, depthWrite: false, side: THREE.BackSide, fog: false,
       vertexShader: 'varying vec3 vD; void main() { vD = position; vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9998; }',
@@ -70,6 +72,14 @@ void main() {
     this.mesh.frustumCulled = false; this.mesh.renderOrder = -9;
     this.mesh.userData.zoneFree = true;
     scene.add(this.mesh);
+  }
+
+  /** The hour and the weather on the layer: its light (an exposure and a multiply), how much of the sky it covers, how thick. */
+  grade({ expo = 1, mul = null, cover = this.base.cover, opacity = this.base.opacity } = {}) {
+    const U = this.uniforms, B = this.base;
+    U.uLit.value.copy(B.lit).multiplyScalar(expo); U.uShade.value.copy(B.shade).multiplyScalar(expo);
+    if (mul) { U.uLit.value.multiply(mul); U.uShade.value.multiply(mul); }
+    U.uCover.value = cover; U.uOpacity.value = opacity;
   }
 
   set visible(v) { this.mesh.visible = v; }

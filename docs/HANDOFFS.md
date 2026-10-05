@@ -38,6 +38,36 @@ Two talks wait in `talks.js` for E4b: `letty` (her board) and `purser` (the Purs
 `poll: true` are Poll's squawks: today they show under Letty's tab; a speaker swap is yours if you want one. Item names and examine
 lines for the Cogitomap and the five casks of crude are in LORE.md section 8, for `items.js` when the items exist.
 
+**2026-10-05, from Calissa: the maw wipe, for the Well's seam (the owner's ask, via Dovina; the timing is yours)**
+- `game.mawWipe.close(onCovered)`: the Dunemaw's pool opens from the middle of the view until it covers it (0.6 s), then calls back:
+  build the floor there. Drawn in the frame (a full-screen quad, last in the scene, inside the 480 lines, under the HUD), as you ruled;
+  `game.mawWipe.update(rawDt)` runs in main.js beside fx. `game.mawWipe.open()` once the floor is ready: its eye widens onto it (0.7 s).
+  `/mawwipe` shows it.
+
+**2026-10-05, from Calissa: the weather's look (Dovina's WEATHER.md; the look is mine, the light on the scene yours)**
+- `src/vfx/weather.js`, `game.weatherLook` (constructed and updated in main.js next to fx): reads `game.weather.here(camera)` and
+  `.sky()`; with no `game.weather` (main today) it does nothing and the sky is the painting exactly as before. It draws what falls (open
+  places only), the halo, sun dogs, rainbow, aurora and far bolts, and grades the dome (`sky.grade`) and the clouds (`clouds.grade`)
+  by the hour and the weather. Off: `force(null)` and no rules restore the look exactly.
+- **For render/daylight.js** (yours): `fogOf(aspect, strength)` -> `{ colour, density (a multiplier), k }` is each weather's fog (the
+  wanting wind's amber, the pall's ink are mostly carried by it); `game.weatherLook.lift` (0 .. 0.1) is a far bolt's light, eased, to add
+  to the scene's; `hourGrade(phase)` is the sky's grade if you want the sun and the hemisphere to agree with it. The sand is lit as by
+  day at night until daylight.js dims it. The marks read `game.dunes.sunDir`: move the sun there and the halo and the bow follow.
+- `game.weatherLook.force({ aspect, strength, phase, light })` shows any weather and hour (tests, the lab).
+
+**2026-10-05, from Calissa: the spirit press, for the Shrine Garden (the owner's order, via Dovina)**
+- `src/vfx/spiritpress.js`: `const P = new SpiritPress({ env })`, `scene.add(P.group)` (about 2.6 m tall, 2 m across the plinth, +Z the
+  front: the hopper on the left post, the igniter's lever on the firebox's right). `P.update(t)` each frame (the bath turns).
+- Drive it from `game.alchemy`: `P.set({ soul: alchemy.colour, near: <index of alchemy.near() in ATTRIBUTES' order, or -1> })`; at a
+  press, `queue: [hues of the materials going in]` then `press` 0 to 1 and back; at a firing, `pull` 0 to 1 and back, `fire` up and
+  down over a second or so. `hues` defaults to the same seven as alchemy.js; pass `Object.values(ATTRIBUTES).map((a) => a.hue)` once
+  Dovina's branch is in.
+- Refired against the owner's concept (R58): a living shrine about 3.2 m tall, 2 m across the drum. The same `set` and `update`;
+  `parts` are now hopper, mouth, eye, lever, trunk, crucible, bath, hues (the screw is gone; the hue ring is seven lights circling it).
+  Static parts are many primitives: once it stands still, `mergeStatic` all but `parts.mouth`, `whorl`, `lever`, `bath`, `bead`,
+  `thread`, `hues` and the queue's lumps. No lights of its own.
+- The vessel already takes the soul colour (`vessel.soulGlow`, reading `game.alchemy?.colour`): nothing to wire.
+
 **2026-10-04, from Calissa: Margarite's people, placeholder bodies (the owner's ask, via Espada)**
 - `src/vfx/margarite.js`: `buildLetty()`, `buildPoll()`, `buildPurser()`, `buildBountyBoard()`, each `{ group, parts }` (feet at 0, +Z
   the front). Letty's `parts.shoulder` is where Poll perches (`L.parts.shoulder.add(buildPoll().group)`); `parts.head`, `armL`, `armR`,
@@ -255,13 +285,6 @@ stay open.
 `src/audio/cues.js`, a half sweep at Fluid and a full one at Prismatic. Deleted.)
 
 ## Calissa (Art)
-
-**2026-10-05, from Petra: the shore is on the default branch (the owner's beach, through Dovina).** Due east of the oasis the dunes run
-down to the Emocean (`world/dunes/beach.js`, zone `beach`, part of the dunes). What you dress: `game.dunes.beach.shoreAt(x, z)` (signed
-metres to the waterline, negative at sea; 999 off the shore), `beach.shore` (the waterline as world points, 41 along the sector),
-`beach.seaY`, and `beach.sea`, a placeholder dark sheet (a ring sector, from 340 m out to 6 km) for your crude sea to replace; the jetty
-(`beach.jetty { from, end, top }`) is plain `level.box` planks and posts. Wanted, when it suits your round: the crude sea seen from the
-sand (the same sea the ships sail, `vfx/crudesea.js`), a lapping edge along `shore`, and the sand darkened where it is wet.
 
 **2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
 the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,

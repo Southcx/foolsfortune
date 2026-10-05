@@ -31,10 +31,10 @@ credits: UAL Standard, CMU mocap, CC0).
   finger hinges for the Courier are learned from the clips (`scripts/learn_rom.mjs`).
 
 ## Feel and comfort
-- Nothing that shimmers or flickers at a variable rate across large parts of the screen (the rule came from a bad bug
-  in the sand, not from any sensitivity: textures used the way sixth-generation games used them are welcome, including
-  a scrolled texture where that is the honest way to show something moving). Motion in the world should still come from
-  things actually moving where it can.
+- No aliasing crawl: nothing that flickers at a variable rate across large parts of the screen *because of a bug* (the rule came from
+  one in the sand: a pattern finer than the pixels). Liquids may shimmer and sparkle as liquids do: water and Lachryma are among the
+  most important things the game draws (the owner, R58), and several subtly scrolling textures on them are welcome. Motion in the world
+  should still come from things actually moving where it can.
 - The core movement is the gold standard: techs and arts never change it, and switching one off restores it exactly.
 
 ## The Courier

@@ -107,6 +107,68 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **The Great Dunemaw is Lachryma's own place**, as the island is the clay's: walls of bismuth's stair (solid), a floor of glass over the
   liquid (the labradorite moving under it), a mouth that is the Mind's stone swallowing the sand.
 
+## The Shrine Garden: the spirit press and the soul colour (R58)
+
+- **The press grew** (the owner's concept, `docs/ref/concept_spirit_press.png`, a value study we coloured): a garden shrine of moss,
+  deep teal leaf and plum-dark root over a carved stone drum, dull bronze at its rims, lights about it. The soul colour is the only
+  bright thing on it, shown three ways and never written: the **bath** (the pool), the bead in the hourglass and the eye's lens, and
+  the **hue ring** (seven lights, the one you are inside drawn close and lit).
+- **The soul colour is the vessel's Lachryma** (the skin's glow): grey gives none, so a new Courier looks exactly as the maker made them,
+  and it comes in as the soul saturates, on any skin worn. Alchemy is dress-up as well as growth.
+
+## Weather and the hour (R58)
+
+- **A weather wears its damage type** (section 2): mirth bone and gold (a sunshower, a rainbow), wonder lapis and the hexagon (diamond
+  dust and the 22-degree halo by day, the aurora by night), desire rose and warm gold (the wanting wind's sand streaks, an amber haze),
+  grief the labradorite's silver (the long rain, the sky drained), dread ink and violet-green (the pall, far bolts). A weather and the
+  status it feeds read as kin.
+- **What falls is in the world**: streaks and motes on world-anchored paths wrapped round the eye, each at a constant speed, so nothing
+  swims or flickers; no heat shimmer, no screen flash. Thunder is a bolt a long way off and a slow glow in the cloud.
+- **Three paintings make the day**: the maker's dusk (untouched at its hour), the owner's day (clouds and floating soap bubbles) and
+  night (violet and green swirls over a dark crown, held a little below its full cry), blended by the hour; dawn is the dusk turned
+  rose. The cloud layer thins under the day's and the night's own painted clouds and takes the weather's cover.
+- **The maw wipe**: the way into a Well is covered by the Dunemaw's pool itself, drawn in the frame (inside the 480 lines, over the world,
+  under the HUD), never a loading screen with words.
+
+## The shore (R58)
+
+- **Crude is not water**: the shore has no white foam. The crude comes up the sand and draws back on two slow waves along the shore,
+  its oil film bright in a thin band at the lip, and leaves the sand dark and glossy behind it. The sea from the sand is the same crude
+  the ships sail, quieter near land, and the island's weather stops at the waterline (the Emocean has no mood).
+
+## Liquid: water and Lachryma (the owner, R58)
+
+Water and Lachryma are among the most important things the game draws. Every liquid is drawn with one library (`src/vfx/liquid.js`)
+and one texture: the owner's noise photographs (`source_assets/liquid/`), baked tileable by `scripts/bake_liquid.py` into the four
+channels of `src/assets/liquid_pack.webp` (R marbling, G bubbles, B sand ripples, A the marbling's veins); and a second pack from the
+owner's noise gradients (`source_assets/vfx/Noise_Gradients/`, tileable already), `liquid_pack2.webp`: R and G caustic nets
+(T_Random_53, 48), B wind-streaked ripples (45, the water's fine chop), A soft glowing cells (23, light pooled inside Lachryma). Drop a
+new photograph in the folder, name it for its channel, and run the script. Of the other gradients, 66 (a cel web, Wind Waker's foam)
+and 19, 22, 44 (cells) are kept in reserve.
+
+- **Water paints its own floor**: sand ripples where the eye meets the bottom, lit by caustics, seen through the water by the depth
+  the eye looks through (shallows clear and sandy, deeps teal to marine); the painted sky by Fresnel, short of a mirror; a tight sun
+  highlight and glints (sparkle is welcome on liquid); the crest glow toward the sun; foam made of bubbles at the shore. The far water
+  calms. (`src/vfx/water.js`)
+- **Lachryma liquid is ink with the oil film in its cells and veins**: slow, glossy, the film's colours where the marbling's veins run
+  and at the grazing angle, an iridescent meniscus. The crude sea (`src/vfx/crudesea.js`) takes the same cells and veins close up, and
+  its current's bands far off.
+
+What was taken, and from where (researched for the owner's ask; sources as found):
+- Super Mario Sunshine: two wave textures scrolled at different rates, bubbling where they cross; the water changing with distance (its
+  mip levels held different pictures). https://blog.mecheye.net/2018/03/deconstructing-the-water-effect-in-super-mario-sunshine/
+- Valve, "Water Flow in Portal 2" (Vlachos, SIGGRAPH 2010): crossing normal layers; flow maps for rivers and ooze (next: the Dunemaw's
+  pool, the crude's currents). https://cdn.akamai.steamstatic.com/apps/valve/2010/siggraph2010_vlachos_waterflow.pdf
+- Sea of Thieves (SIGGRAPH 2018 talk): the sub-surface colour at a wave's peak toward the sun; foam where the water meets things, masked
+  by painted foam textures. https://history.siggraph.org/wp-content/uploads/2022/09/2018-Talks-Ang_The-Technical-Art-of-Sea-of-Thieves.pdf
+- Roystan's toon water: depth colour, foam from a threshold that falls toward the shore. https://roystan.net/articles/toon-water/
+- Alan Zucconi on caustics (two samples of one texture at different scales and speeds). https://www.alanzucconi.com/2019/09/13/believable-caustics-reflections/
+- GPU Gems 1, ch. 1 (Finch): summed waves in world space. https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models
+- Subnautica: absorption broken on purpose for colour (water as a photographer sees it).
+  https://www.gamedeveloper.com/design/how-i-subnautica-i-plunges-deeper-into-rendering-realistic-water
+- Wind Waker, Final Fantasy X, RiME: a chosen palette and a painted sky over simulation.
+Not taken (yet): screen-space refraction (a copy of the scene: fair at 480 lines, a later step), planar reflections (a second render).
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
@@ -114,6 +176,7 @@ be made), **GENRE DEFAULT** (works, but is the look every game has; ours to repl
 
 | What | Where | Verdict | Note |
 | --- | --- | --- | --- |
+| The Lantern Wisp | `src/assets/lantern_wisp.glb` | OURS | The owner's: the baseline creature rig and its 18 clips (moods, emotes, floats); one 256 atlas, 1692 triangles. Its flame carries a feeling's strength. |
 | The painted sky | `src/assets/sky.webp`, `vfx/sky.js` | OURS | the owner's own |
 | The spell circles | `src/assets/vfx/tex/circle_*.png` | OURS | the owner's wife's |
 | The Courier | `src/assets/courier.glb`, `src/assets/courier/*.png` | OURS | textured by the owner; the model is not to change |
