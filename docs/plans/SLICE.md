@@ -123,7 +123,8 @@ ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser bu
 - **The cargo is casks in the Pneuka Box** (`cask.<grade>`, kind `crude`: items for Petra's `items.js`, names in LORE.md section 8); a
   ship's hold is how many may cross, never a second inventory. The voyage's manifest remembers where each cask came from and what it
   cost, so a sale knows its route and its profit.
-- **A Cogitomap's worth falls by the days since the day it charts** (`mapAge`, a half-life of a day): the Well drifts daily.
+- **A Cogitomap is worth what its Well still holds** (the owner, R58: no decay by the clock). Its price is its worth times the Well's
+  yield at the fill it has now: farming a Well cheapens its maps, letting it fill again restores them. Farming and selling maps compete.
 
 ## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
 

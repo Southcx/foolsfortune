@@ -23,7 +23,6 @@
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
 import { LURES } from '../../tools/sondelass/angling/lures.js';
-import { mapAge } from '../econ/islands.js';
 import { today } from '../../core/calendar.js';
 
 const M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
@@ -34,7 +33,7 @@ export function worthOf(id, data = null) {
   if (grade) return M(ECON.crude.grades[grade].worth); // (a cask of crude: its grade's worth)
   const it = itemOf(id);
   if (!it) return 0;
-  if (it.kind === 'map') return data?.worth ? Math.max(1, Math.round(data.worth * mapAge(today() - (data.day ?? today())))) : 0; // (the Well has drifted since)
+  if (it.kind === 'map') return data?.worth ? Math.max(1, Math.round(data.worth)) : 0; // (a map keeps its worth: the owner, R58)
   if (it.kind === 'material' && data?.tier != null) return M(1 + data.tier); // (a Well's material: rarer walks further)
   if (it.kind === 'fish') return ECON.fish[it.tier] || 0;
   if (it.kind === 'curio') return ECON.curio[it.tier] || 0;

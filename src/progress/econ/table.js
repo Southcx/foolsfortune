@@ -110,10 +110,11 @@ export const ECON = {
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
-  /** A COGITOMAP: a ticket to a seeded run of a Well. Worth `share` of what that run pays, by how much of the Well it charts; the Well
-   *  drifts each game day (wellSeed(well, day); a game day is a real hour: DESIGN.md section 17), so a map halves in worth every `halfLifeDays` days since the day it charts: yesterday's map
-   *  charts a Well that has moved on (R57: by days, not by hours of play; "The Well drifts. The chart does not."). */
-  cogitomap: { share: 0.3, halfLifeDays: 1 },
+  /** A COGITOMAP: a ticket to a seeded run of a Well, as it was the day it was charted. Worth `share` of what that run paid, by how
+   *  much of it was charted, times what its Well still holds (its yield at the fill it has now: progress/shop/shops.js `still`). No
+   *  clock rots it (the owner, R58): a map is a claim on a feeling still there, so farming a Well cheapens its maps and letting it
+   *  fill again restores them. */
+  cogitomap: { share: 0.3 },
   /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
    *  `hi`; every unit sold there gluts it by `glut`, recovering one unit a `recoverMin` minutes (as Grog's prices do). */
   island: { lo: 0.75, hi: 1.35, periodDays: [3, 7], glut: 0.03, recoverMin: 6 }, // (was 0.6 to 1.6: the widest spread paid a perfect crude hauler 3x the aim)

@@ -17,8 +17,8 @@
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { SHOPS, worthOf, shelfOf, demandKey } from './catalogue.js';
-import { demand } from '../econ/islands.js';
-import { today } from '../../core/calendar.js';
+import { demand, drawWell, wellYield } from '../econ/islands.js';
+import { today, now as calNow } from '../../core/calendar.js';
 import { itemOf } from '../../pneuka/items.js';
 import { startHaggle, offers, offer, flatter, clink, walk, accept, moodOf } from './haggle.js';
 import { sfx } from '../../audio/sfx.js';
@@ -52,12 +52,20 @@ export class Shops {
   offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     return Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
   }
 
   /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
   want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) : 1; }
+  /** What a Cogitomap still charts (the owner, R58: a map does not rot by the clock): its Well's yield at the fill it holds now. A map of
+   *  a mind still ruminating is worth its run; drawing that Well down (farming it) cheapens its maps, and letting it fill again restores
+   *  them. 1 for anything else. */
+  still(id, data) {
+    if (itemOf(id)?.kind !== 'map' || !data?.well) return 1;
+    const rec = this.game.well?.fills?.[data.well];
+    return rec ? wellYield(drawWell(rec.fill, 0, (calNow() - rec.at) / 3600000)) : 1;
+  }
   /** Charisma (Soul Alchemy): the folk ask a little less of you and pay a little more (1 until it is widened). */
   charm() { return this.game.alchemy?.widen?.('charisma.trade') || 1; }
 
