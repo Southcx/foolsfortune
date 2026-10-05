@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE BUG REPORT'S MARKUP WINDOW: the owner draws on the frozen frame and says what went wrong (docs/plans/BUGREPORT.md, Dovina's; the
-// key, the pause, the frame grab, the attachments and the filing are Petra's, src/debug/bugreport.js, which calls this). A development
+// key, the pause, the frame grab, the attachments and the filing are Petra's, src/debug/qais/report.js, which calls this). A development
 // tool the player opened, like the F3 panel: words are allowed in it, and it goes away when filed.
 //
 //   THE FRAME   the 480-line target as it was drawn, shown at a WHOLE-number scale (never resampled: the true look, pixel for pixel; a whole fraction only where the frame is larger than the screen)

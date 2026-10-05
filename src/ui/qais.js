@@ -67,6 +67,10 @@ const CSS = `
 #qais .qbtn.v { border-color: var(--ink); color: var(--ink); }
 #qais .qbtn.v.on { background: var(--ink); color: #1c0d08; }
 #qais .qbtn.go { margin-left: auto; border-style: dashed; }
+#qais .qbody > .acts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; padding: 2px 0; }
+#qais .qbody > .acts .qbtn { padding: 6px 16px; border-radius: 5px; background: #fff1dc; color: #1c0d08; border-color: #fff1dc; font-weight: 800; text-shadow: none; }
+#qais .qbody > .acts .qbtn:hover { background: #ffffff; }
+#qais .qbody > .acts .qbtn + .qbtn { background: transparent; color: #fff1dc; border-color: rgba(255,241,220,.6); } /* (the second act, Send, quieter than File) */
 #qais .qcard textarea { box-sizing: border-box; width: 100%; margin-top: 7px; background: rgba(0,0,0,.3); color: #fff1dc; border: 1px solid rgba(255,241,220,.22); border-radius: 4px;
   padding: 4px 7px; font: inherit; font-size: 12px; resize: none; height: 30px; }
 #qais .qcard textarea:focus { height: 58px; outline: none; border-color: rgba(255,241,220,.5); }
