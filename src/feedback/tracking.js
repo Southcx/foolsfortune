@@ -32,6 +32,7 @@ import { DOMAINS } from '../progress/domains.js';
 const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 import { anglingRules } from './tracking/angling.js';
 import { wellRules } from './tracking/wells.js';
+import { voyageRules } from './tracking/voyage.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -601,6 +602,7 @@ export class Tracking {
     anglingRules({ on, L, log, where: () => this.where() });
     // ---- the Wells: feedback/tracking/wells.js
     wellRules({ on, L, log });
+    voyageRules({ on, L, log });
 
 
     // ---- treasure (src/world/treasure/chests.js, ceremony.js, cubes.js): chests in five tiers, the cubes they hold, the curios, the Tithe

@@ -111,8 +111,9 @@ export const ECON = {
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
   /** A COGITOMAP: a ticket to a seeded run of a Well. Worth `share` of what that run pays, by how much of the Well it charts; the Well
-   *  drifts, so the map halves in worth every `halfLifeH` hours of play (old maps are cheap, fresh ones are worth hauling). */
-  cogitomap: { share: 0.3, halfLifeH: 20 },
+   *  drifts daily (wellSeed(well, day)), so a map halves in worth every `halfLifeDays` days since the day it charts: yesterday's map
+   *  charts a Well that has moved on (R57: by days, not by hours of play; "The Well drifts. The chart does not."). */
+  cogitomap: { share: 0.3, halfLifeDays: 1 },
   /** ISLAND DEMAND: each island wants each kind of thing at a multiplier that drifts on a slow clock (`periodDays`) between `lo` and
    *  `hi`; every unit sold there gluts it by `glut`, recovering one unit a `recoverMin` minutes (as Grog's prices do). */
   island: { lo: 0.75, hi: 1.35, periodDays: [3, 7], glut: 0.03, recoverMin: 6 }, // (was 0.6 to 1.6: the widest spread paid a perfect crude hauler 3x the aim)

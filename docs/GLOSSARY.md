@@ -34,6 +34,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
+- **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
+  (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
+- **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
 - **reckoning** (`RECKON`, `reckonLead`): how much of a crossing the Courier has divined (Divination), 0 .. 1, for that day; it marks the
   waves' lanes ahead and opens the way to a node not yet found. *Not:* "course" (the basement's loop of stations).
 - **the Purser** (Espada's, the owner R57): the trader at Margarite's dock, who buys crude, materials and Cogitomaps; the role is the name

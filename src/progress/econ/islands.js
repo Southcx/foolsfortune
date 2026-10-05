@@ -7,7 +7,7 @@
 // drift, so hauling pays), Elite's trade runs (buy low, carry, sell high, under risk), FTL's fuel (travel spends what fighting earns), and
 // radioactive decay for the drifting map (a half-life, so a map's worth falls smoothly and never quite to nothing).
 //
-//   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageH) -> cubes
+//   wellPay(floors, foes) -> cubes      cogitomapWorth(runPay, charted, ageDays) -> cubes   mapAge(days) -> 0..1
 //   demand(island, kind, day, sold) -> multiplier      purserPrice(worth, island, day, sold) -> cubes      haulProfit({ buy, sell, units, worth, distance, failed }) -> cubes
 //   fuel(distance) -> cubes      spillChance(grade, units, hull) -> 0..1      crudeRun({ ship, grade, buy, sell, distance, failed }) -> cubes
 //   wellSeed(wellId, day) -> uint32 (the Well as it is that day: a Cogitomap carries it)      wellYield(fill) -> 0..1      drawWell(fill, runs, hours) -> fill      islandRun(island, skill) -> { pay, minutes, risk }
@@ -25,7 +25,9 @@ export function wellPay(floors, foes = 0) {
 }
 
 /** A Cogitomap of a run paying `runPay`, charting `charted` (0..1) of the Well, `ageH` hours of play after it was charted. */
-export const cogitomapWorth = (runPay, charted = 1, ageH = 0) => Math.round(runPay * ECON.cogitomap.share * Math.max(0, Math.min(1, charted)) * Math.pow(0.5, ageH / ECON.cogitomap.halfLifeH));
+export const cogitomapWorth = (runPay, charted = 1, ageDays = 0) => Math.round(runPay * ECON.cogitomap.share * Math.max(0, Math.min(1, charted)) * mapAge(ageDays));
+/** What is left of a map's worth `ageDays` days after the day it charts (the Well has drifted that many times). */
+export const mapAge = (ageDays = 0) => Math.pow(0.5, Math.max(0, ageDays) / ECON.cogitomap.halfLifeDays);
 
 /** What a purser on `island` pays for a Cogitomap worth `worth` (cogitomapWorth) on `day`, after `sold` maps sold there. */
 export const purserPrice = (worth, island, day = 0, sold = 0) => Math.round(worth * demand(island, 'cogitomap', day, sold));

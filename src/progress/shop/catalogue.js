@@ -11,19 +11,31 @@
 // restock over time, and a shop that buys only its own trade at full value and anything else at a cut), Recettear and Moonlighter
 // (a price is a conversation with a character), and Animal Crossing's Nook's Cranny (a shop with a temper and a daily turnover).
 //
-//   SHOPS[id] = { id, keeper, name, sells: { itemId: stock }, buys: [kind], trade: [kind], markup, haggle }
-//   worthOf(itemId) -> cubes (what the thing is worth: the base of every price)    glazePrice(prestige) -> cubes | null
+// A shop on an Island of Ego (`island`) prices by that island's DEMAND (progress/econ/islands.js: what the island wants, drifting by
+// the day): Old Grog's pier on Anagami sells Anagami's crude, and the Purser on Margarite's dock buys crude, Cogitomaps and materials
+// dear, as Law wants its minds charted (the slice: docs/plans/SLICE.md, E4). A thing that carries its own worth (a Cogitomap) is
+// priced from its slot's `data`.
+//
+//   SHOPS[id] = { id, keeper, name, sells: { itemId: stock }, buys: [kind], trade: [kind], markup, haggle, island? }
+//   worthOf(itemId, data?) -> cubes (what the thing is worth: the base of every price)    demandKey(itemId) -> the kind an island wants
+//   glazePrice(prestige) -> cubes | null
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { ITEMS, itemOf } from '../../pneuka/items.js';
 import { LURES } from '../../tools/sondelass/angling/lures.js';
+import { mapAge } from '../econ/islands.js';
+import { today } from '../../core/calendar.js';
 
 const M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
 
 /** What a thing is worth, in cubes: the base its prices move from. */
-export function worthOf(id) {
+export function worthOf(id, data = null) {
+  const grade = crudeGrade(id);
+  if (grade) return M(ECON.crude.grades[grade].worth); // (a cask of crude: its grade's worth)
   const it = itemOf(id);
   if (!it) return 0;
+  if (it.kind === 'map') return data?.worth ? Math.max(1, Math.round(data.worth * mapAge(today() - (data.day ?? today())))) : 0; // (the Well has drifted since)
+  if (it.kind === 'material' && data?.tier != null) return M(1 + data.tier); // (a Well's material: rarer walks further)
   if (it.kind === 'fish') return ECON.fish[it.tier] || 0;
   if (it.kind === 'curio') return ECON.curio[it.tier] || 0;
   if (it.kind === 'lure') return M(ECON.goods.lure);
@@ -34,6 +46,11 @@ export function worthOf(id) {
   if (it.kind === 'tool') return 0; // (a psychic tool is not for sale, and no one will buy one)
   return M(1);
 }
+
+/** A cask's grade (`cask.grief` -> 'grief'), or null. */
+export const crudeGrade = (id) => (id?.startsWith('cask.') && ECON.crude.grades[id.slice(5)] ? id.slice(5) : null);
+/** What an island's demand is asked for: a cask by its grade, a map as 'cogitomap', anything else by its item kind. */
+export const demandKey = (id) => crudeGrade(id) || (itemOf(id)?.kind === 'map' ? 'cogitomap' : itemOf(id)?.kind || id);
 
 export const SHOPS = {
   raku: {
@@ -53,10 +70,18 @@ export const SHOPS = {
   },
   grog: {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
-    blurb: 'Film for the Veritome, and lures, if you have lost yours. Buys fish, and pays fair.',
-    sells: { 'mat.film': 8, ...Object.fromEntries(LURES.map((L) => [L.id, 1])) },
-    trade: ['fish'], buys: ['fish', 'lure'],
-    markup: 1, haggle: false,
+    blurb: 'Film for the Veritome, lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.',
+    // (and Anagami's crude, at Anagami's price: the hop's cargo is bought on the pier it leaves from)
+    sells: { 'mat.film': 8, ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.hunger': 8, 'cask.grief': 8 },
+    trade: ['fish'], buys: ['fish', 'lure', 'crude'],
+    markup: 1, haggle: false, island: 'anagami',
+  },
+  purser: {
+    id: 'purser', keeper: 'purser', name: "THE PURSER'S COUNTER",
+    blurb: "Margarite's dock. Buys crude, Cogitomaps and whatever a Well gives, and pays as the King's island pays: dear, for order.",
+    sells: { 'cask.mirth': 8, 'cask.wonder': 8 }, // (Margarite's own grades: light, cheap to carry)
+    trade: ['crude', 'map'], buys: ['crude', 'map', 'material'],
+    markup: 1, haggle: false, island: 'margarite',
   },
 };
 

@@ -108,6 +108,23 @@ in the slice the hop must pay through **what comes up out of the Well** (the Cog
 **Letty's board**, and the crude market is the lesson that points to Entropolis. Selling a Cogitomap at Margarite's dock is the line that
 ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser buys them).
 
+## The voyage's systems are in (Dovina, R58: `src/progress/voyage.js`, `game.voyage`)
+
+- **Petra's places call it:** the pier calls `game.voyage.board(from, to, 'sloop')` (it refuses, with the reason for the log, when the
+  hold is over, the purse short, or the node not yet found); the rail calls `game.voyage.stageResult({ passed, hits, bears, downed,
+  spawned })` when the stage ends (it takes the cargo a failed stage costs, may spill, and makes port); a survey of the sea calls
+  `game.voyage.reckon(from, to, share, q)`, and the lane marks read `reckonLead(game.voyage.reckoning(from, to),
+  game.psyche.widen('divination.reckon'))`. `game.voyage.at` is the island the Courier is on.
+- **The traders are shops** (`catalogue.js`): a shop with an `island` prices by that island's demand today. **Old Grog's pier** (Anagami)
+  sells Anagami's casks (wonder, hunger, grief); **the Purser's counter** (`SHOPS.purser`, Margarite) buys crude, Cogitomaps and Well
+  materials and sells Margarite's own (mirth, wonder). Only a buyer who wants charting buys a map: on Anagami no one does, so a
+  Cogitomap's only market in the slice is Margarite's dock. The counter opens from the Purser's talk, as Raku's does (`shops.open('purser')`);
+  its keeper is `purser` (a body on the dock that the talk and the window's walk-away check can find).
+- **The cargo is casks in the Pneuka Box** (`cask.<grade>`, kind `crude`: items for Petra's `items.js`, names in LORE.md section 8); a
+  ship's hold is how many may cross, never a second inventory. The voyage's manifest remembers where each cask came from and what it
+  cost, so a sale knows its route and its profit.
+- **A Cogitomap's worth falls by the days since the day it charts** (`mapAge`, a half-life of a day): the Well drifts daily.
+
 ## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
 
 | Event | Payload | Ledger (counters, records) |
@@ -121,6 +138,7 @@ ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser bu
 | `emocean.stage` | `{ from, to, passed, hits, bears, downed, spawned, lost, spilled, by }` | `emocean.stage.passed`; `emocean.stage.clean` when hits is 0; `crude.spill` when spilled |
 | `emocean.reckon` | `{ from, to, day, reckoning (0..1 after it), q (how well this survey was dowsed), by }` | record `emocean.reckon.<route>` and `emocean.reckon.best` = reckoning x 100 |
 | `cogitomap.sell` | `{ island, well, worth, price, by }` | `cogitomap.sold`; `cogitomap.sold.<island>` |
+| `emocean.found` | `{ node, from, by }` (a node found by reckoning) | `emocean.found.<node>` |
 | `crude.buy` | `{ island, grade, units, price, by }` | `crude.bought` (units) |
 | `crude.sell` | `{ island, grade, units, price, from, profit, by }` | `crude.sold.<island>` (units); record `crude.profit`; `crude.route.<from>.<island>` |
 

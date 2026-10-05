@@ -34,7 +34,7 @@
 // sector map (nodes, fuel per jump, danger by where you are) and its long-range scanners (knowing what waits at a beacon), Sunless Sea
 // (the zee charted by sailing it; a port found, not given), and dead reckoning (a course known by working it out).
 //
-//   NODES[id] = { id, law, locked }      hop(from, to, ship) -> { distance, fuel, seconds, danger } | null
+//   NODES[id] = { id, law, locked }      hop(from, to, ship, open?) -> { distance, fuel, seconds, danger } | null   (open(id): a node found)
 //   STAGE = { seconds, bears, waves: [{ at, role, count, formation, lane }] }      ROLE_CLASS[role](danger) -> class 0..4
 //   stagePlan(from, to, day) -> [{ at, role, cls, count, formation, lane }]      stageQuality({ hits, bears, downed, spawned }) -> 0..1
 //   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning) -> seconds      opensNode(reckoning) -> bool
@@ -53,9 +53,9 @@ export const CHART = { perLaw: 2 };
 
 /** A hop from one node to another in a ship: its distance, fuel (cubes), how long the stage runs, and its danger (-1.5 calm .. +2 wild).
  *  Null when either end is unknown or locked, or the ends are the same. */
-export function hop(from, to, ship = 'sloop') {
+export function hop(from, to, ship = 'sloop', open = (id) => !NODES[id].locked) {
   const a = NODES[from], b = NODES[to];
-  if (!a || !b || a === b || a.locked || b.locked) return null;
+  if (!a || !b || a === b || !open(from) || !open(to)) return null;
   const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {};
   return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), seconds: STAGE.seconds, danger: (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4 };
 }

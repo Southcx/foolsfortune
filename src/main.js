@@ -149,6 +149,7 @@ import { Spirits } from './creatures/spirits.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
 import { installPsyche } from './progress/psyche.js';
+import { Voyage } from './progress/voyage.js';
 import { TitleScene } from './title/scene.js';
 import { TitleUI } from './title/ui.js';
 import { Overture } from './cine/overture.js';
@@ -570,6 +571,7 @@ async function main() {
   game.chat = new Chat(game);
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
+  game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.macros = new MacroBook(); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)

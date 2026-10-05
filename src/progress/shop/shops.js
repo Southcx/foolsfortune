@@ -16,7 +16,9 @@
 //   .haggle(shop, id)  (begins the haggle talk)   .hag (the haggle in progress: { shop, item, h })
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
-import { SHOPS, worthOf, shelfOf } from './catalogue.js';
+import { SHOPS, worthOf, shelfOf, demandKey } from './catalogue.js';
+import { demand } from '../econ/islands.js';
+import { today } from '../../core/calendar.js';
 import { itemOf } from '../../pneuka/items.js';
 import { startHaggle, offers, offer, flatter, clink, walk, accept, moodOf } from './haggle.js';
 import { sfx } from '../../audio/sfx.js';
@@ -44,15 +46,18 @@ export class Shops {
     if (base == null) return null;
     const n = this.stockOf(shop, id);
     if (n <= 0) return null;
-    return Math.max(1, Math.round(worthOf(id) * D.markup * (1 + S.dear * Math.max(0, base - n))));
+    return Math.max(1, Math.round(worthOf(id) * D.markup * this.want(shop, id) * (1 + S.dear * Math.max(0, base - n))));
   }
   /** What the shop pays them for one (less the more of it it already has; a cut for what is not its trade); 0 if it will not buy. */
-  offer(shop, id) {
+  offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.want(shop, id) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     return Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
   }
+
+  /** What the shop's island wants this kind of thing, today (1 for a shop on no island): progress/econ/islands.js demand. */
+  want(shop, id) { const isl = SHOPS[shop]?.island; return isl ? demand(isl, demandKey(id), today()) : 1; }
 
   // ---------------------------------------------------------------- the counter
   open(shop) {
@@ -80,14 +85,14 @@ export class Shops {
     box.add(id, 'shop');
     this.save();
     sfx.cubeGet?.(2); sfx.shopBuy?.(); // (shopBuy, shopSell: Wanda's, docs/HANDOFFS.md)
-    g.events.emit('shop.buy', { shop, item: id, price: cost, worth: worthOf(id), haggled, by: 'courier' });
+    g.events.emit('shop.buy', { shop, item: id, price: cost, worth: worthOf(id), haggled, island: SHOPS[shop].island || null, by: 'courier' });
     g.shopUI?.render();
     return true;
   }
   sell(shop, slot) {
     const g = this.game, box = g.pneuka, s = box?.slots[slot], id = s?.id;
     if (!id) return 0;
-    const w = this.offer(shop, id);
+    const w = this.offer(shop, id, s.data);
     if (!w) { this.refuse(`${this.keeperName(shop)} will not buy that.`, 'nobuy'); return 0; }
     box.take(slot);
     const st = this.state[shop];
@@ -96,7 +101,7 @@ export class Shops {
     g.cubes.earn(w, 'sell');
     this.save();
     sfx.cubeGet?.(5); sfx.shopSell?.();
-    g.events.emit('shop.sell', { shop, item: id, price: w, worth: worthOf(id), by: 'courier' });
+    g.events.emit('shop.sell', { shop, item: id, price: w, worth: worthOf(id, s.data), island: SHOPS[shop].island || null, data: s.data || null, by: 'courier' });
     g.shopUI?.render();
     return w;
   }
