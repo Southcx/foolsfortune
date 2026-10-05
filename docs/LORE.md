@@ -375,6 +375,26 @@ Prince sells to neither side: every Courier both of his parents need came out of
 - **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
   as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
 
+### The wheel of feeling *(Espada's reading of Dovina's draft, `docs/plans/WHEEL.md`, after Plutchik; R58; proposals for the owner)*
+- **The canon was already on the wheel.** Lachryma is *every* feeling (section 1); the five aspects were never all of it, only what
+  Anagami's waters carry. Grief is Plutchik's own word for sadness at its height, and "left unchecked a feeling intensifies" is the
+  canon's Well (rumination, excess of any feeling).
+- **Why Anagami is missing three** *(Espada's)*: trust, disgust and anger are the three a boy shields himself from with a joke. He
+  cannot trust between a mother who overflows and a father who burns the overflow; he swallows the anger and the distaste. So they
+  are rare under Anagami's open sky and pool in its Wells (the Great Dunemaw swallows), and they fall freely elsewhere: trust over
+  Margarite (Law runs on it; Letty is its zealot), anger and disgust in Entropolis's underground. That makes the staged expansion a
+  geography: deeper Wells and other islands bring the new feelings.
+- **Names**, in the canon's register (mirth, not joy; dread, not fear): **Faith** (trust), **Gall** (disgust: bile and bitterness,
+  the humours' word), **Fury** (anger). **Weathers:** faith is **the halo** (the ring round a high sun, still air); gall is **the
+  miasma** (bad air, the old word for a sickness in it); fury is **the hail** (anger hurled; no lightning, since nothing flickers).
+- **Dyads are agate.** Agateware is two clays wedged together, never blended, both colours showing. Compound Lachryma forms where two
+  moods overlap (two weathers at once, a mind in two feelings) and is rarer and worth more: *love* (mirth and faith: the King's
+  calcified kind), *awe* (dread and wonder: the lighthouse, the Leviathans), *contempt* (gall and fury: Letty's propaganda),
+  *remorse* (grief and gall).
+- **Intensity rings** describe strength and never rename the aspect: the aspect's name stays, the ring is the adjective (a mild,
+  basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
+  is the canon's **Prismatic**.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
