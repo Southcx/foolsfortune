@@ -63,6 +63,20 @@ An invisible dial is noise. Each trait must show on the body and in the voice (t
 
 The Veritome then confirms and names what an attentive player could already guess: reading by eye is the skill, the Veritome the proof.
 
+**The voice (Wanda's input, adopted): one trait, one dimension of the voice, each independent**, so an ear (and the Veritome) can
+pull them apart. Openness is the **contour** (a rising, varied, questioning call against the same flat one); Conscientiousness the
+**rhythm** (metronomic against erratic, cut short); Extraversion the **reach** (loud, often, wide, first against soft, rare, only
+answering); Agreeableness the **timbre and interval** (warm, tonal, consonant thirds and fifths against harsh, low, tritones: Morton's
+motivation-structural rules); Neuroticism the **stability** (a held pitch against jitter, cracks and register flips that grow under
+stress). On top, the **mental state**: from Stoic to Prismatic the same voice loses its hold (vibrato widens, the call smears toward the
+prismatic sweep). The **pack** is heard: a call is a stimulus, so fear travels as a rising chain; an extravert leads a call and response,
+and when it falls silent the chorus breaks into ragged single calls (you hear that you broke the pack); a calm pack entrains to one slow
+rhythm. The **weather** is heard on minds: tonal calls fall into the weather's mode (the Crucibelle's five), and grief slows and lowers
+them, desire makes them pushier, wonder long and breathy, mirth short and bouncy, dread jittery. Built once: `src/audio/creaturevoice.js`
+(Wanda's) takes the traits, the mental state, the weather's mode and the call's kind (idle, alarm, pain, answer); the minds emit
+`creature.call { kind, by }` with its stimulus, and decide when to call and who answers (Petra's). Prior art: Morton (1977), Spore's and
+Creatures' procedural voices, Animal Crossing's animalese, Trico (The Last Guardian).
+
 ## Who does what
 
 - **Dovina:** the temperament as data (`src/progress/combat/temperament.js`: the traits, the susceptibilities, the weather's sway,
