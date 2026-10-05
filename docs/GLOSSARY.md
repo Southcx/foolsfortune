@@ -302,7 +302,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Pneuka Box** (P, `src/pneuka/`): the inventory (28 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **the map** (M): called **Mind Mapping** in the game (`src/feedback/cartography.js`).
-- **the tuning panel** (Tab, `src/debug/tuning.js`): live sliders and actions (set the room again, last checkpoint, the hub).
+- **the tuning panel** (Tab, `src/debug/tuning.js`): live sliders and actions (set the room again, last checkpoint, the hub), laid out as
+  Settings, Feel, Combat, World, Look and Sound, with a find box. A **setting** is the player's own preference (sensitivity, resolution,
+  volume, how a charge fires: `SETTINGS` in `src/debug/tuned.js`); a **knob** is any other number there. A knob away from its default is
+  **tuned**: marked on the panel, listed under Tuned with a reset, said in the log at the start of play (`tuning.tuned`), shown at the
+  top of QAIS's Brief and carried on every report, so a tuned game is never mistaken for a bug. *Not:* a setting (never a warning).
 - **the workbench** (`/workbench`, `src/workbench/`): the studio for effects, models and sequences.
 - **the dialogue box** (`src/npc/dialogue.js`): the one window of words in the world.
 
@@ -408,7 +412,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   offer **take me there** (a place). Always "QAIS test" in full. *Not:* a playtest (an agent's scenario), the stress test, an item (the
   Pneuka Box's), a trial (a minigame).
 - **the Brief** (QAIS's first tab): one build's changelog, a few plain lines per division and what each waits on from the owner.
-- **the checklist** (an Artifact page kept by Dovina until QAIS's tests ship, then retired): the QAIS tests' first home (`C12`).
+- **the checklist** (retired 2026-10-05, the page deleted): the QAIS tests' first home (`C12`); say "QAIS tests".
 - **bug report** (QAIS's Reports tab: `docs/plans/BUGREPORT.md`): the frame taken when F8 is pressed and marked up by the owner, a
   title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
   events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its

@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // WHAT A REPORT CARRIES: everything the machine attaches to a bug report so that every division reads the same one
 // (docs/plans/BUGREPORT.md, "What the machine attaches"): where and when, what the Courier was doing, what was around, what had happened
-// (the log, the bus, the console), what it cost (the F4 report), and the state (the save and the replay so far). The person writes a
+// (the log, the bus, the console), what it cost (the F4 report), the tuning away from its defaults (debug/tuned.js), and the state (the
+// save and the replay so far). The person writes a
 // title; the machine writes the rest.
 //
 // The console ring is installed at boot, before anything can warn: the last 50 warnings and errors (and uncaught ones), kept in order.
@@ -16,6 +17,7 @@ import { zoneOf } from '../../render/zonemap.js';
 import { placeOf } from '../../progress/weather.js';
 import { now, DAY_MS, dayOf } from '../../core/calendar.js';
 import { BUILD } from '../../core/progress.js';
+import { tuned } from '../tuned.js';
 
 const RING = [], RING_MAX = 50;
 const r2 = (v) => +(+v).toFixed(2);
@@ -83,6 +85,7 @@ export function gather(game) {
   const gl = R?.getContext?.(), dbg = gl?.getExtension?.('WEBGL_debug_renderer_info');
   return {
     where: where(game),
+    tuning: safe(() => tuned()), // (every knob and setting away from its default: debug/tuned.js)
     doing: safe(() => doing(game)),
     around: safe(() => around(game)),
     happened: {

@@ -14,7 +14,7 @@ the checklist becomes its Tests tab: `docs/plans/QAIS.md` is the window around t
 Two tools, one loop: the **checklist** says what to try; the **bug report** says what went wrong, with the game's whole state attached.
 A checklist item that fails is answered by a bug report that names it (`C12` in the report's title).
 
-## 1. The checklist (built: https://claude.ai/artifact/GQSpDGYUuPVF7SzDU5RbGU, source `docs/checklist/checklist.html`)
+## 1. The checklist (retired 2026-10-05: its rows are QAIS tests T7 to T38 in v77, `docs/plans/QAIS.md`)
 
 - One page, kept by Dovina. Each **item** has an id (`C1`...), an area, the division that owns it, what to do (in the glossary's
   words, every unit of time with its clock), and what should happen.

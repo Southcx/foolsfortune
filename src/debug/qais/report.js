@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------------------
 import { BugMarkup } from '../../ui/bugmarkup.js';
 import { gather, pngOf } from './attach.js';
+import { line } from '../tuned.js';
 
 /** The next report number: one past the highest on the store (the owner files one at a time). */
 const nextN = (bugs) => bugs.reduce((m, b) => Math.max(m, +b.n || 0), 0) + 1;
@@ -32,6 +33,7 @@ export async function fileReport(game, store, frame, { test = null, round = null
     n, title: r.title, happened: r.happened, should: r.should, kind: r.kind, severity: r.severity,
     build: w.build, round: round?.build ?? null, zone: w.zone, place: w.place, stand: w.stand, test: test?.id ?? null,
     status: 'new', statusLine: '', filedAt: Date.now(), by: (await store.me()).id,
+    tuned: state.tuning?.knobs?.length ?? 0, tunedLine: state.tuning?.knobs?.length ? line(state.tuning.knobs, 8) : '', // (filed on a tuned game: read it first)
   };
   if (store.online) {
     const [fr, mk, st] = await Promise.all([
