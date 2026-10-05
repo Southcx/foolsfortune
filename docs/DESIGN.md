@@ -712,4 +712,8 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
 - **A beach** on the Dunes' edge shows what an Island of Ego is: nothing but Emocean to the horizon. The weather ends at the waterline
   (the open sea has no mood), and the slice's pier would leave from it. **Entering a Well** gets its seam covered: a wordless descent
   through the maw, held until the floor is ready (Calissa's look, Petra's timing).
+- **Cycles of expansion and contraction** (the owner): the world grows (the wheel's eight feelings, rings, agate), the player's load
+  does not: a place carries few feelings, a mind shows one feeling or one agate, and every expansion is followed by a contraction pass
+  (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips (`docs/ref/lantern_wisp.glb`): five mood loops,
+  three emotes, movement, attack, hit, death, a dance.
 

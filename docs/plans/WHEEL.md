@@ -127,3 +127,40 @@ what exists), and **5 as a staged expansion** after the slice, once the owner ru
 
 (Petra's reply is outstanding: the minds and the cost.)
 
+## The owner's baseline creature suite (the Lantern Wisp: `docs/ref/lantern_wisp.glb`), and how the wheel plays on it
+
+Every enemy comes with a baseline of 18 clips on one rig (the owner: "a good baseline suite", to expand later): **Idle**; five floats
+(forward, backward, left, right, dash); **Attack_Cast**, **Hit**, **Death**; five **moods**, looping (Happy, Sad, Scared, Angry,
+Curious); three **emotes**, one-shot (Laugh, Surprised, Wave); and a dance (Dance_FlameWaltz, 12 s).
+
+**On the wheel** (the moods are loops for the basic ring; the emotes are one-shots for the intense ring's onset, Calissa's rule):
+
+| Feeling | Mood (basic, looping) | Emote (intense, onset) |
+|---|---|---|
+| Wonder (surprise) | Curious, or Idle with lean | **Surprised** |
+| Mirth (joy) | **Happy** | **Laugh** |
+| Desire (anticipation) | **Curious** (interest is its mild ring) | (Attack_Cast's wind-up, or none yet) |
+| Grief (sadness) | **Sad** | (none yet) |
+| Dread (fear) | **Scared** | (Hit's flinch) |
+| Fury (anger), when it comes | **Angry** (already in the suite) | (none yet) |
+| Faith (trust), when it comes | Idle, softened | **Wave** |
+| Gall (disgust), when it comes | (none: the one gap) | (none) |
+| Prismatic (the centre) | **Dance_FlameWaltz**, slowed and smeared, or Scared and Happy blended | |
+
+The grain rides all of it (speed, size, regularity, how often an emote fires, which idle variant), and a dyad (agate) plays its stronger
+feeling's clip with the second's colour (Calissa's rule). The suite already holds Angry, so Fury costs no animation when it comes; Gall
+is the one feeling with no clip of its own.
+
+## The owner's principle: cycles of expansion and contraction (2026-10-05)
+
+"Emotional mixes help simplify things: we don't want mental overload juggling too many emotions." So the wheel grows the world, never
+the load on the player: **expand** (the eight feelings, the rings, the agates exist in the world) and then **contract** (what a player
+reads at any one moment stays small). The rules that contract it:
+- **A place carries few feelings.** An island or a Well has a climate of its own few (Anagami the five, Margarite its faith and mirth,
+  Entropolis's underground its fury and gall); the new feelings arrive with new places, a few at a time.
+- **A mind shows one feeling, or one agate.** Never three: the strongest feeling and, if close, the second, folded into one named
+  agate (awe, love, contempt, remorse) that reads as a single thing.
+- **Rings are adjectives**, not new names (Espada): intensity changes how a feeling looks, sounds and pays, never how many there are.
+- **Each expansion is followed by a contraction pass**: after the new feelings land, prune what does not earn its place, merge what
+  reads alike, and keep the shown order short.
+
