@@ -2,7 +2,7 @@
 // EMOTIONAL WEATHER AND THE DAY (docs/plans/WEATHER.md; the owner, 2026-10-05). Lachryma is everything and the islands are minds, so the
 // weather is a PLACE'S MOOD, falling as Lachryma (LORE.md, "Emotional weather": an island precipitated out of the Emocean, and its weather
 // is the same thing, small and daily; the mood is its ego's). The five aspects of feeling the game already has are its five weathers
-// (MIRTH, WONDER, HUNGER, GRIEF, DREAD; and CALM, the glaze holding). Each sits where its crude grade sits on the Law-Chaos line and feeds
+// (MIRTH, WONDER, DESIRE, GRIEF, DREAD; and CALM, the glaze holding). Each sits where its crude grade sits on the Law-Chaos line and feeds
 // the damage type at that place on it, so a weather touches everything that already speaks in those fives: combat (its type builds its
 // status faster; every creature's mental state drifts), angling (the fish drawn to its aspect bite more), the market (where an aspect
 // falls, its crude is plentiful and cheap), the Emocean (a route's danger, and how far ahead the reckoning marks the lanes), the Wells (a
@@ -24,7 +24,7 @@
 // what is easy), Stardew Valley (rain fish), FFXIV's fish windows, Persona 4's fog (the town's mood, and dangerous), Majora's Mask and
 // Minecraft (a game clock that makes days testable), and Wind Waker (the sea's weather as a thing you sail through).
 //
-//   ASPECTS (on the line)   DISPLAY_ORDER (as shown: wonder, mirth, hunger, grief, dread)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, phase, dayPhase }
+//   ASPECTS (on the line)   DISPLAY_ORDER (as shown: wonder, mirth, desire, grief, dread)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, phase, dayPhase }
 //   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
 //   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .update(dt)
@@ -35,13 +35,13 @@ import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { zoneOf } from '../render/zones.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
-export const ASPECTS = ['mirth', 'wonder', 'hunger', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
+export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
 /** The order the five are SHOWN in, anywhere a player sees them (the owner, 2026-10-05; GLOSSARY): most positive to most negative. */
-export const DISPLAY_ORDER = ['wonder', 'mirth', 'hunger', 'grief', 'dread'];
+export const DISPLAY_ORDER = ['wonder', 'mirth', 'desire', 'grief', 'dread'];
 /** The damage type each weather feeds: the type at its place on the line (progress/combat/types.js). */
-export const TYPE_OF = { mirth: 'impact', wonder: 'ego', hunger: 'influence', grief: 'illusion', dread: 'delirium' };
+export const TYPE_OF = { mirth: 'impact', wonder: 'ego', desire: 'influence', grief: 'illusion', dread: 'delirium' };
 /** Espada's names (LORE.md, "Emotional weather"; proposals for the owner). */
-export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', hunger: 'the hungry wind', grief: 'the long rain', dread: 'the pall', calm: 'fair' };
+export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', desire: 'the wanting wind', grief: 'the long rain', dread: 'the pall', calm: 'fair' };
 
 /** Each zone's place and exposure (Petra's table: render/zones.js). */
 const ZONE_PLACE = {

@@ -72,7 +72,7 @@ export const SHOPS = {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
     blurb: 'Film for the Veritome, lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.',
     // (and Anagami's crude, at Anagami's price: the hop's cargo is bought on the pier it leaves from)
-    sells: { 'mat.film': 8, ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.hunger': 8, 'cask.grief': 8 },
+    sells: { 'mat.film': 8, ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8 },
     trade: ['fish'], buys: ['fish', 'lure', 'crude'],
     markup: 1, haggle: false, island: 'anagami',
   },

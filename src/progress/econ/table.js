@@ -128,7 +128,7 @@ export const ECON = {
   crude: { spill: 0.35, glut: 0.004, grades: { // (a crude market is deep: a unit sold gluts it far less than a cask of fish)
     mirth:  { worth: 0.5, volatility: 0.5 },   // light and sweet: easy to carry, cheap
     wonder: { worth: 0.75, volatility: 0.8 },
-    hunger: { worth: 0.75, volatility: 1 },
+    desire: { worth: 0.75, volatility: 1 },
     grief:  { worth: 1, volatility: 1.2 },   // heavy and sour
     dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
   } },
@@ -155,7 +155,7 @@ export const ECON = {
    *  Margarite: a good one nets about 15 cubes over selling it at home after the sloop's fuel, a middling one does not (R57). */
   islands: {
     margarite: { name: 'Margarite',       law: -2, deeper: 1.2,  floors: 5, risk: 0.02, foes: 0, crude: 0.8, maps: 0.95, grades: ['mirth', 'wonder'],  classes: [0, 1] },
-    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, grades: ['wonder', 'hunger', 'grief'], classes: [0, 1, 2] },
+    anagami:   { name: 'Anagami Island',  law: 0,  deeper: 1.25, floors: 5, risk: 0.05, foes: 1, crude: 0.5, maps: 0.25, grades: ['wonder', 'desire', 'grief'], classes: [0, 1, 2] },
     entra:     { name: 'Entropolis',      law: 2,  deeper: 1.3,  floors: 6, risk: 0.12, foes: 2, crude: 0.2, maps: 0.15, grades: ['grief', 'dread'],   classes: [1, 2, 3] },
   },
   /** A WELL DRAWN DOWN: working a feeling through. Each run draws `perRun` of its fill; its yield is the fill left (never under `floor`),
@@ -193,10 +193,10 @@ export const ECON = {
     wells: { dunemaw: 1 }, // (a Well's own mood: where on the line the mind leans: a ruminating one, toward grief)
     mindRate: 0.05,        // (the mental state drifts this many states a second at full strength: a rate, never a jump)
     build: 0.5, fish: 1, supply: 0.25,
-    mind:   { mirth: -0.5, wonder: -0.2, hunger: 0,    grief: 0.25, dread: 0.5 },
-    danger: { mirth: -0.5, wonder: 0,    hunger: 0,    grief: 0.25, dread: 0.5 },
-    lead:   { mirth: 1,    wonder: 1.25, hunger: 1,    grief: 0.75, dread: 0.6 },
-    fill:   { mirth: 0.5,  wonder: 1,    hunger: 1.5,  grief: 2,    dread: 2 },
+    mind:   { mirth: -0.5, wonder: -0.2, desire: 0,    grief: 0.25, dread: 0.5 },
+    danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5 },
+    lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6 },
+    fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2 },
     night: { signature: 1.5 },
   },
 };

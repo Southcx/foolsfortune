@@ -11,7 +11,7 @@ weathers' look; Wanda: their sound and the music; Espada: their names and what t
 ## The idea in one line
 
 Lachryma is everything, and the islands are minds. **Weather is an island's mood, falling as Lachryma**: the five aspects of feeling
-the game already has (mirth, wonder, hunger, grief, dread: the fish answer to them, the crude is graded by them) are the five weathers.
+the game already has (mirth, wonder, desire, grief, dread: the fish answer to them, the crude is graded by them) are the five weathers.
 
 ## Why it resonates: the game already has five of everything
 
@@ -19,7 +19,7 @@ the game already has (mirth, wonder, hunger, grief, dread: the fish answer to th
 |---|---|---|---|---|---|
 | **Mirth** | -2 (Law) | Impact | stun | mirth | a sunshower: bright rain through warm light |
 | **Wonder** | -1 | Ego | doubt | wonder | an aurora: slow prismatic curtains, a held-breath stillness |
-| **Hunger** | 0 | Influence | charm | hunger | a sirocco: a hot dry wind, sand lifting off the dunes |
+| **Desire** | 0 | Influence | charm | desire | a sirocco: a hot dry wind, sand lifting off the dunes |
 | **Grief** | +1 | Illusion | blind | grief | rain: steady, grey, long |
 | **Dread** | +2 (Chaos) | Delirium | confusion | dread | fog, with thunder far off (no lightning flashes: CLAUDE.md, nothing flickers) |
 

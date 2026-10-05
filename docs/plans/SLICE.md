@@ -117,7 +117,7 @@ ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser bu
   `game.voyage.reckon(from, to, share, q)`, and the lane marks read `reckonLead(game.voyage.reckoning(from, to),
   game.psyche.widen('divination.reckon'))`. `game.voyage.at` is the island the Courier is on.
 - **The traders are shops** (`catalogue.js`): a shop with an `island` prices by that island's demand today. **Old Grog's pier** (Anagami)
-  sells Anagami's casks (wonder, hunger, grief); **the Purser's counter** (`SHOPS.purser`, Margarite) buys crude, Cogitomaps and Well
+  sells Anagami's casks (wonder, desire, grief); **the Purser's counter** (`SHOPS.purser`, Margarite) buys crude, Cogitomaps and Well
   materials and sells Margarite's own (mirth, wonder). On Anagami, **Raku buys anything** (the owner, R58) at half its worth, so a
   Cogitomap has a lowball price at home and a dear one at Margarite's dock: the trip pays for a map worth carrying. The counter opens from the Purser's talk, as Raku's does (`shops.open('purser')`);
   its keeper is `purser` (a body on the dock that the talk and the window's walk-away check can find).

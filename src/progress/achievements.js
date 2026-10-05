@@ -535,7 +535,7 @@ export function buildAchievements(game) {
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)
-  F('sk1', 'sky', 'Weather', 2, 'collect', 'Every Mood', 'Stand in all five weathers: wonder, mirth, hunger, grief and dread.', (L) => ['wonder', 'mirth', 'hunger', 'grief', 'dread'].filter((a) => L.get(`weather.seen.${a}`) > 0).length, 5);
+  F('sk1', 'sky', 'Weather', 2, 'collect', 'Every Mood', 'Stand in all five weathers: wonder, mirth, desire, grief and dread.', (L) => ['wonder', 'mirth', 'desire', 'grief', 'dread'].filter((a) => L.get(`weather.seen.${a}`) > 0).length, 5);
   C('sk2', 'sky', 'Weather', 2, 'mechanic', 'In Its Element', 'Build a status in the weather that feeds it, ten times.', 'status.weather', 10);
   C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
   C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });

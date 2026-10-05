@@ -687,7 +687,7 @@ the folk's routines (Petra's), and the slice's achievements that ask for "seven 
 
 ## 18. Emotional weather (the owner, 2026-10-05; the plan: docs/plans/WEATHER.md)
 
-Weather is an island's mood falling as Lachryma: the five aspects (mirth, wonder, hunger, grief, dread) and calm. It resonates because
+Weather is an island's mood falling as Lachryma: the five aspects (mirth, wonder, desire, grief, dread) and calm. It resonates because
 the game already speaks in those fives: each weather feeds the damage type at its place on the Law-Chaos line (mirth Impact .. dread
 Delirium), sways every creature's mental state, draws its fish, makes its crude plentiful (cheap) where it falls, changes the Emocean's
 danger and the reckoning's reach, and feeds a ruminating Well. It is a pure function of the island and the game hour, so it is the same
@@ -697,7 +697,7 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
 
 ## 19. Rulings of 2026-10-05, the weather round
 
-- **The five feelings are shown most positive to most negative: Wonder, Mirth, Hunger, Grief, Dread**, wherever a player sees them
+- **The five feelings are shown most positive to most negative: Wonder, Mirth, Desire, Grief, Dread**, wherever a player sees them
   (GLOSSARY; `DISPLAY_ORDER`). The Law-Chaos order (mirth .. dread) stays the systems' and is never the shown order.
 - **Wells come in radically different types**: a Well's genre is free, "action combat" (the Dunemaw) beside, say, "a JRPG board game".
   One Courier, one purse, one ledger and the same seven tools still hold in every type: what changes is how a mind is worked through.
@@ -705,7 +705,9 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
 - **Weather is asked by place** (Petra's input): an island, or a Well with its own mood, with an exposure (open, roofed: the mood without
   the rain, deep: the Well's own); the open Emocean has no mood. Each weather wears its damage type's colour and motif (Calissa's input:
   wonder is diamond dust and halos by day, the aurora by night); the hour sets the music's density and the mood its colour (Wanda's).
-- **Hunger stays in the middle of the line** ("pretty neutral"); a rename to **Desire** is being weighed with Espada.
+- **Hunger is renamed Desire** (the owner floated it, Espada and Dovina concur): neutral, in the middle of the line, Influence's (charm:
+  persuasion trades in desire). Desire drives chaos; grief and dread are what it yields. *Hunger* is now only a folk word, desire in excess.
+  Its weather is the wanting wind; its crude, crude desire.
 - **The Crucibelle's notes follow the weather** (Wanda's five scales: "responding to emotional barometric pressure"): approved.
 - **A beach** on the Dunes' edge shows what an Island of Ego is: nothing but Emocean to the horizon. The weather ends at the waterline
   (the open sea has no mood), and the slice's pier would leave from it. **Entering a Well** gets its seam covered: a wordless descent
