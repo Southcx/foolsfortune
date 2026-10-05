@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // LURES: what is on the end of the line, as things the Courier owns. Every lure has a TASTE: how strongly it carries each of the five
-// aspects of the mind (dread, wonder, grief, hunger, mirth: species.js), and a fish is drawn to it by how well that taste matches its
+// aspects of the mind (dread, wonder, grief, desire, mirth: species.js), and a fish is drawn to it by how well that taste matches its
 // own (each species' `aff`). That is the PASSIVE lure: it works by being what it is, cast and left.
 //
 // The ACTIVE lure is the Courier's own doing: every sounding (the psychic ping, MMB) pushes the aspect chosen with 4 to 8 into the lure
@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 import { CURIOS, CURIO_BY_ID } from '../../../world/treasure/treasure.js';
 
-// (dread, wonder, grief, hunger, mirth)
+// (dread, wonder, grief, desire, mirth)
 export const LURES = [
   { id: 'lure.bob', key: 'bob',   name: 'CLAY BOB',     glyph: '●', taste: [0.3, 0.3, 0.3, 0.3, 0.3], blurb: 'A pellet of the workshop\'s own clay. A little of everything; nothing much of anything.' },
   { id: 'lure.eye', key: 'eye',   name: 'BLACK EYE',    glyph: '◐', taste: [0.95, 0.15, 0.35, 0.2, 0.0], blurb: 'A glazed bead, black all the way through. It looks back.' },

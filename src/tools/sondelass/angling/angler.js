@@ -32,7 +32,7 @@ import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
 import { aspectStrip } from './ui.js';
 import { lureList, attraction, tasteOf, BARE } from './lures.js';
-import { ASPECTS, BY_SPECIES, TIDES } from './species.js';
+import { ASPECTS, SHOWN, BY_SPECIES, TIDES } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
 import { sfx } from '../../../audio/sfx.js';
 import { stream } from '../../../core/rng.js';
@@ -209,7 +209,7 @@ export class Angler {
     // the aspect (keys 4 to 8; the wheel too, until the lure is in the water) and the depth (the wheel, with it in)
     let depthNudge = 0;
     if (held && this.state !== 'fight' && this.state !== 'catch') {
-      ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(i); });
+      ASPECT_KEYS.forEach((k, i) => { if (inp.wasPressed(k)) this.setAspect(SHOWN[i]); }); // (the keys follow the order shown: species.js SHOWN)
       if (inp.wasPressed('Digit9')) this.cycleLure(-1);
       if (inp.wasPressed('Digit0')) this.cycleLure(1);
       if (inp.wheel) {
