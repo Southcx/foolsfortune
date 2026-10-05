@@ -278,6 +278,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   crucible over it under a press screw. **the bath**: the soul colour as a liquid in the crucible, turning, brighter when fired. **the hue
   ring**: seven enamel tiles round the plinth, one per attribute at its hue; the one the soul colour is inside is lit. **soul glow**: the
   vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+- **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
+  are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the hungry wind) and **motes** (diamond
+  dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**
+  (wonder by night), the **rainbow** (mirth), **far bolts** (dread: a bolt a long way off, held a beat and fading; never a flash). Only
+  an open place gets them. **the hour's grade** (`sky.grade`): the painted sky graded by the hour; the painting is dusk, untouched.
 - **the overture** (`src/music/overture.js`, Wanda's): the music the title opens with, "Fortune Favours the Fool". **the trailer**
   (`game.overture`, `src/cine/overture.js`): the in-engine cinematic cut to it, played on the title once a session (`/overture` plays it
   anywhere); its **board** (`docs/boards/OVERTURE.md`, as data in `src/cine/overture.board.js`) is its storyboard, a camera shot a line.

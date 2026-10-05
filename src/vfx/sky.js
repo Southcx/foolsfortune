@@ -11,6 +11,8 @@
 //
 //   game.sky = await new Sky(game).load()      sky.texture   sky.env   sky.horizon (a THREE.Color)   sky.at(dir, out)
 //   sky.GLSL  a snippet with `skyUv(vec3)` to paste into a shader that has `uniform sampler2D uSky`
+//   sky.grade({ expo, mul, top, topK, stars, desat, haze, hazeK })   the hour and the weather on every dome (vfx/weather.js sets it;
+//   the painting is DUSK, the maker's hour: the identity grade leaves it untouched)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import skyB64 from '../assets/sky.webp?b64';
@@ -28,6 +30,16 @@ export class Sky {
     this.zenith = new THREE.Color(0x49322a);
     this.GLSL = SKY_GLSL;
     this.px = null; this.W = 0; this.H = 0;
+    this.G = { uExpo: { value: 1 }, uMul: { value: new THREE.Color(1, 1, 1) }, uTop: { value: new THREE.Color(0, 0, 0) }, uTopK: { value: 0 },
+      uStars: { value: 1 }, uDesat: { value: 0 }, uHaze: { value: new THREE.Color(0, 0, 0) }, uHazeK: { value: 0 } };
+  }
+
+  /** The grade over the painting (the hour and the weather): exposure, a multiply, a top colour laid over the zenith (the day's sky
+   *  in place of dusk's maroon and stars), the stars' strength, a desaturation, and a haze toward the horizon. */
+  grade({ expo = 1, mul, top, topK = 0, stars = 1, desat = 0, haze, hazeK = 0 } = {}) {
+    const G = this.G;
+    G.uExpo.value = expo; G.uTopK.value = topK; G.uStars.value = stars; G.uDesat.value = desat; G.uHazeK.value = hazeK;
+    G.uMul.value.copy(mul || _white); G.uTop.value.copy(top || _black); G.uHaze.value.copy(haze || _black); // (an empty grade: the painting as it is)
   }
 
   async load() {
@@ -88,22 +100,30 @@ void main() {
     });
   }
 
-  /** The dome's material: the painting, with the sun laid over it. */
+  /** The dome's material: the painting, graded by the hour and the weather (`grade`), with the sun laid over it. */
   domeMaterial(sunDir) {
-    return new THREE.ShaderMaterial({
+    const m = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() }, uTime: { value: 0 } },
+      uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() }, uTime: { value: 0 }, ...this.G },
       vertexShader: 'varying vec3 vD; void main() { vD = normalize(position); vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9999; }',
       fragmentShader: `varying vec3 vD; uniform vec3 uSun; uniform float uTime; uniform sampler2D uSky;
+uniform float uExpo, uTopK, uStars, uDesat, uHazeK; uniform vec3 uMul, uTop, uHaze;
 ${SKY_GLSL}
 void main() {
   vec3 d = normalize(vD);
   vec3 c = texture2D(uSky, skyUv(d)).rgb;
+  float up = smoothstep(0.05, 0.75, d.y);
+  vec3 star = max(c - vec3(0.45), 0.0) * up; // (the stars: the painting's bright points high up)
+  c = mix(c, uTop * (0.75 + 0.25 * (1.0 - up)), up * uTopK) + star * (uStars - 1.0 + uTopK * -1.0) * 1.5;
+  c = mix(c, vec3(dot(c, vec3(0.299, 0.587, 0.114))), uDesat) * uMul * uExpo;
+  c = mix(c, uHaze, uHazeK * (1.0 - smoothstep(0.0, 0.5, abs(d.y))));
   float sd = max(dot(d, normalize(uSun)), 0.0);
-  c += vec3(1.0, 0.78, 0.46) * (pow(sd, 1400.0) * 5.0 + pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14);
-  gl_FragColor = vec4(c, 1.0);
+  c += vec3(1.0, 0.78, 0.46) * (pow(sd, 1400.0) * 5.0 + pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14) * min(1.0, uExpo);
+  gl_FragColor = vec4(max(c, 0.0), 1.0);
   #include <colorspace_fragment>
 }`,
     });
+    return m; // (its grade's uniforms are the sky's own, shared: every dome graded at once)
   }
 }
+const _white = new THREE.Color(1, 1, 1), _black = new THREE.Color(0, 0, 0);

@@ -115,6 +115,18 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **The soul colour is the vessel's Lachryma** (the skin's glow): grey gives none, so a new Courier looks exactly as the maker made them,
   and it comes in as the soul saturates, on any skin worn. Alchemy is dress-up as well as growth.
 
+## Weather and the hour (R58)
+
+- **A weather wears its damage type** (section 2): mirth bone and gold (a sunshower, a rainbow), wonder lapis and the hexagon (diamond
+  dust and the 22-degree halo by day, the aurora by night), hunger rose and warm gold (the hungry wind's sand streaks, an amber haze),
+  grief the labradorite's silver (the long rain, the sky drained), dread ink and violet-green (the pall, far bolts). A weather and the
+  status it feeds read as kin.
+- **What falls is in the world**: streaks and motes on world-anchored paths wrapped round the eye, each at a constant speed, so nothing
+  swims or flickers; no heat shimmer, no screen flash. Thunder is a bolt a long way off and a slow glow in the cloud.
+- **The painting is dusk.** The other hours are graded from it (day cooled and lifted with a day sky over the maroon zenith, dawn rose,
+  night dark and cool with brighter stars); the clouds take the hour and the weather's cover. A night painting from the maker would
+  replace the graded night (asked, via Dovina's digest).
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
