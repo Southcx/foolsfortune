@@ -1,4 +1,7 @@
 {
+ "clock.sim|src/core/save.js": 2,
+ "clock.sim|src/feedback/gamelog.js": 1,
+ "clock.sim|src/tools/veritome/film.js": 1,
  "log.say|src/main.js": 3,
  "module.header|src/core/physics.js": 1,
  "module.header|src/courier/anim/authored.js": 1,

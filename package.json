@@ -11,7 +11,9 @@
     "check": "node scripts/check.mjs",
     "perf": "node scripts/perf.mjs",
     "playtest": "node scripts/playtest/run.mjs",
-    "replaytest": "node scripts/replaytest.mjs"
+    "replaytest": "node scripts/replaytest.mjs",
+    "contracts": "node scripts/contracts.mjs",
+    "gate": "node scripts/gate.mjs"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.21.0",

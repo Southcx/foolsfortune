@@ -1,7 +1,7 @@
 # Architecture
 
 How the game's code is laid out, the rules every module keeps, and how a change gets onto main. Petra owns this file and enforces it at
-the gate; any division may propose a change to it (a question to Petra, or a note in `docs/HANDOFFS.md`). The words are in
+the gate; any division may propose a change to it (a question to Petra, or a note in `docs/handoffs/petra/`). The words are in
 `docs/GLOSSARY.md`; this file is the structure.
 
 ## Principles
@@ -133,8 +133,16 @@ Every push to main goes through it. A division's round is not done until its bra
    `scripts/check-baseline.json`; the check fails only on new debt, and the baseline only falls.
 3. **The stress test is no worse** (`npm run stress`, seeds 1 and 2).
 4. **`npm run perf` is within the budgets and tolerances**, or the reason is written down and accepted.
-5. **Petra reads the diff**: nothing another file calls has gone missing; no other division's work is overwritten; it fits (the contract,
+5. **The contracts hold** (`npm run contracts`): every service one division offers another still has the names and shapes its readers
+   count on (`scripts/contracts.mjs`; a branch that starts reading another's service adds its line there).
+6. **Petra reads the diff**: nothing another file calls has gone missing; no other division's work is overwritten; it fits (the contract,
    the names, a shared part where one exists or should); it reads well. Then Petra drives the changed part headless.
+
+**`npm run gate`** runs all of it in order with its own dev server (check, build, stress 1 and 2, the Well playtest, the replay test, the
+contracts, perf) and adds **the lanes**: the files the branch changed outside its division's lane (CLAUDE.md, "Threads"), a warning the
+handover explains. It writes `gate-report.txt`, the summary a handover pastes. `npm run gate -- --quick` (check, build, stress 1, the
+contracts) is for between commits. perf also names what it does not gate but Petra reads: the shader programs compiled after the
+warm-up (each a hitch the first time it is drawn) and the big things no zone hides.
 
 What fails goes back to its division with the reason and the fix. Petra does not edit another division's files to make a merge pass.
 
@@ -142,11 +150,11 @@ What fails goes back to its division with the reason and the fix. Petra does not
 
 What cost the R43 review the most time was finding out, after the fact, what a branch had done to the others. A handover says it first:
 
-1. **Main merged in, and the head frozen.** Merge the latest default branch, settle every conflict yourself (HANDOFFS.md included),
+1. **Main merged in, and the head frozen.** Merge the latest default branch, settle every conflict yourself,
    push, and name the head SHA in the note. Do not push to the branch again until Petra has answered; a fix after review is a new head
    and a new note.
-2. **The gate run by you, numbers pasted.** `npm run check`, `npm run build`, `npm run stress` (seeds 1 and 2), `npm run playtest --
-   well`, `npm run replaytest`, and `npm run perf` against main's baseline: paste the perf lines that moved and say why each moved.
+2. **The gate run by you, numbers pasted.** `npm run gate`, and paste the summary from `gate-report.txt`; for each perf line that moved,
+   say why.
    perf and stress hold the calendar at a calm game noon (`?clock=`); run `CLOCK=now` too if your work changes with the hour.
 3. **What you touched outside your lane**, file by file (a hub edit in main.js counts), and why.
 4. **What you added that others meet**: new `game.*` services and who reads them, events and their payloads, save sections, glossary

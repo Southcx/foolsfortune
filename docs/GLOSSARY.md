@@ -366,7 +366,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   crystal, jelly, wood, stone, metal).
 - **service**: a `game.*` object every module may ask (time, mood, cinema, cine, vfx, events, creatures, belt, cubes...).
 - **module**: one file under `src/`. **division**: one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada). **round**: one
-  cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`).
+  cycle of work (R42...). **the gate**: Petra's review of every push to main (`docs/ARCHITECTURE.md`). **`npm run gate`**: the gate's machine steps in one command, with one report
+  (`gate-report.txt`). **the contracts** (`npm run contracts`, `scripts/contracts.mjs`): what one division's service offers another, checked
+  in the running game (names and shapes). **the lanes**: which division owns which files (CLAUDE.md, "Threads"); the gate lists a branch's
+  changes outside its lane. **the handover**: what a division gives Petra with a branch (docs/ARCHITECTURE.md). **a handoff**: a note from
+  one division to another, one file in `docs/handoffs/<reader>/` (docs/HANDOFFS.md).
 - **rest bake**, **prop batch**, **light budget**, **present**: the render tricks (`src/render/`).
 - **seam** (`game.seam`, `src/render/seam.js`): a change of place made under a cover (dip to the dark, change, hold two drawn frames,
   come back); its look is a `kind` (a Well's: 'maw'). *Not:* a texture seam.

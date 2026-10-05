@@ -5,3 +5,4 @@ dist/
 
 # test screenshots written by headless drives
 /*.png
+gate-report.txt

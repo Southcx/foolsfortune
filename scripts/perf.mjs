@@ -52,6 +52,21 @@ try {
     let calls = 0, tris = 0;
     const rr = R.render.bind(R); R.render = (s, c) => { rr(s, c); calls += R.info.render.calls; tris += R.info.render.triangles; };
     const med = (a) => a.slice().sort((x, y) => x - y)[Math.floor(a.length / 2)];
+    const bootSet = new Set(R.info.programs || []), bootProgs = bootSet.size; // (what the warm-up compiled: anything after this is compiled in play, a hitch on a real GPU)
+    // (the big things drawn in every zone: a top-level object no zone claims, or one marked zoneFree, with its triangles. A big one here
+    // is drawn from everywhere: tag `userData.zone` if it belongs to one place)
+    const loose = () => {
+      const Z = G.zones || G.game?.zones, out = [];
+      for (const o of G.scene.children) {
+        if (!o.visible) continue;
+        const free = !!o.userData.zoneFree, z = Z?.place?.(o);
+        if (z != null && !free) continue;
+        let n = 0;
+        o.traverseVisible((m) => { if (m.isMesh && m.geometry) { const g = m.geometry; n += ((g.index ? g.index.count : g.attributes.position?.count || 0) / 3) * (m.isInstancedMesh ? m.count : 1); } });
+        if (n > 20000) out.push(`${o.name || o.type}${free ? ' (zoneFree)' : ''} ${Math.round(n)}`);
+      }
+      return out;
+    };
     const place = () => {
       for (let i = 0; i < 40; i++) { G.tick(1 / 60); G.draw(); }
       const tk = [], dr = [];
@@ -60,13 +75,13 @@ try {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
         calls = 0; tris = 0; t = performance.now(); G.draw(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
-      return { tick: +med(tk).toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures };
+      return { tick: +med(tk).toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
     const workshop = place();
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
     const dunes = place();
     if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
-    return { workshop, dunes, heapMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6) };
+    return { workshop, dunes, heapMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
   });
   out.bootS = +bootS.toFixed(1);
 } finally {
@@ -94,10 +109,13 @@ cmp('all', 'heapMB', out.heapMB, base?.heapMB, TOL.heapMB, BUDGET.heapMB);
 cmp('all', 'bootS', out.bootS, base?.bootS, TOL.bootS, null);
 console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against the baseline of ${base.when} (${base.build})` : ', no baseline yet'}:`);
 console.log(rows.join('\n'));
+// (not gated, but read at every review: programs compiled in play, and the big things no zone hides)
+console.log(`  programs compiled after the warm-up: ${out.lateProgs}${base?.lateProgs != null ? ` (was ${base.lateProgs})` : ''}${out.lateProgs > (base?.lateProgs ?? out.lateProgs) ? '   <-- each is a hitch the first time it is drawn' : ''}${out.lateNames?.length ? ` (${out.lateNames.join(', ')})` : ''}`);
+for (const p of ['workshop', 'dunes']) if (out[p].loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...out }, null, 1) + '\n');
+  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');
