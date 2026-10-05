@@ -12,5 +12,8 @@ it is yours to keep, change or send back.
   **`tabs.js`**: the Brief opens with a notice when anything is tuned.
 - **Hubs**: `main.js` emits `tuning.tuned { count, knobs, by }` at the start of play when a knob is tuned; `tracking.js` says it.
 - Verified headless: the panel boots, find shows only matches, a changed knob is marked and counted and listed, its reset restores
-  it, `tuned()` reports it, the log line fires; `qaistest` OK; quick gate OK. Not verified: how it looks to a person at full size
-  (Calissa has been asked for the marking colour and whether it should wear QAIS's look).
+  it, `tuned()` reports it, the log line fires; `qaistest` OK; quick gate OK; a screenshot of a tuned knob checked.
+- **Calissa's look (her reply, folded in):** plain lil-gui in the house colours through its CSS variables (they follow the player's
+  window colour); one accent, mirth's gold #f2c84a, meaning "tuned" only: the label, a dot, a 1 px outline on the control, a gold pill
+  for the counts, and a small undo (↺) beside each tuned knob; Restore defaults kept quiet. The visual group split: `shadows` joins
+  Settings; `shadowRes`, `lightSlots` and `smooth` go to a Developer section (your budgets, and the diagnostic faceted view).
