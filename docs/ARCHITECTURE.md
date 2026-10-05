@@ -138,6 +138,24 @@ Every push to main goes through it. A division's round is not done until its bra
 
 What fails goes back to its division with the reason and the fix. Petra does not edit another division's files to make a merge pass.
 
+### The handover (R44: what a division does before it says "ready")
+
+What cost the R43 review the most time was finding out, after the fact, what a branch had done to the others. A handover says it first:
+
+1. **Main merged in, and the head frozen.** Merge the latest default branch, settle every conflict yourself (HANDOFFS.md included),
+   push, and name the head SHA in the note. Do not push to the branch again until Petra has answered; a fix after review is a new head
+   and a new note.
+2. **The gate run by you, numbers pasted.** `npm run check`, `npm run build`, `npm run stress` (seeds 1 and 2), `npm run playtest --
+   well`, `npm run replaytest`, and `npm run perf` against main's baseline: paste the perf lines that moved and say why each moved.
+   perf and stress hold the calendar at a calm game noon (`?clock=`); run `CLOCK=now` too if your work changes with the hour.
+3. **What you touched outside your lane**, file by file (a hub edit in main.js counts), and why.
+4. **What you added that others meet**: new `game.*` services and who reads them, events and their payloads, save sections, glossary
+   words, chat commands, new shader programs, anything made lazily on first need (it compiles mid-play unless the warm-up makes it).
+5. **What you read from another branch not yet on main** (a contract: `game.weather`, `game.mawWipe`): name the producer and the head
+   you tested against.
+6. **Rules are the owner's.** A change to CLAUDE.md or to this file is named in the note with where the owner said it; Petra asks the
+   owner before it lands.
+
 ## The migration
 
 **Phase 0 (R42, done):** this file, the glossary, `npm run check` with its baseline, `npm run perf` with its baseline.

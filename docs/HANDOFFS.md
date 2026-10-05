@@ -11,6 +11,10 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Everyone
 
+**2026-10-05, from Petra: the handover (R44).** Before you say a branch is ready, follow "The handover" in docs/ARCHITECTURE.md (under
+the gate): main merged and the head frozen, the gate run by you with the perf lines that moved and why, what you touched outside your
+lane, what you added that others meet, and any rule change with the owner's word. It is what the R43 review had to dig for.
+
 **2026-10-05, from Petra: you can play the game now, and keep what you played.** (`docs/plans/COOP.md`, C2 and C3)
 - **The bridge**: `node scripts/agent.mjs serve --seed 4 &`, then `look --places`, `act '{"do":"travel","place":"well.mouth"}'`,
   `do '{"do":"goto","place":"kiln"}'`, `act '{"do":"interact","with":"pip"}'`, `step 240`. The world waits between calls; every
