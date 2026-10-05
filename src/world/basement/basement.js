@@ -555,6 +555,7 @@ export class Course {
     const p = this.game.player;
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
+    p.airPeak = v.y; p.airT = 0; // (a jump taken where they were is not a fall where they arrive: a 400 m 'drop' rolled them past the Well's mouth)
     p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
     p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
     p.techs?.reset();
