@@ -23,8 +23,8 @@ import { CrudeSea } from './crudesea.js';
 import { SHORE } from '../world/dunes/beach.js';
 
 /** The shore's sea as its own shape: a ring sector from just inside the waterline out past the dunes' far plane, its rows packed
- *  toward the shore (where the eye is) and thinning out to sea; laid in world xz (about 4,600 triangles). */
-function sectorGeo(C, angle, half, r0, r1, na = 72, nr = 32) {
+ *  toward the shore (where the eye is) and thinning out to sea; laid in world xz (about 9,200 triangles). */
+function sectorGeo(C, angle, half, r0, r1, na = 72, nr = 64) { // (64 rings: fewer and the fan triangles grew so long and thin the film read as spokes from the jetty)
   const pos = [], idx = [];
   for (let i = 0; i <= nr; i++) {
     const r = r0 + (r1 - r0) * Math.pow(i / nr, 2);
@@ -45,7 +45,7 @@ export class Shore {
     // the sea: the crude, in the shore's sector, quieter near land
     this.sea = new CrudeSea({ env: g.sky?.env || null, y: seaY, geometry: sectorGeo(C, SHORE.angle, SHORE.half + SHORE.fade * 1.5, SHORE.r - 30, SHORE.r + 520) });
     this.sea.clipSector({ center: C, angle: SHORE.angle, half: SHORE.half + SHORE.fade * 1.5, r0: SHORE.from });
-    this.sea.set({ swell: 0.16, calm: 0.3 });
+    this.sea.set({ swell: 0.16, calm: 0.3, current: new THREE.Vector2(-Math.sin(SHORE.angle), Math.cos(SHORE.angle)) }); // (a longshore current: its streaks run along the coast, not out to the horizon, where they converged into spokes)
     this.sea.mesh.userData.zoneFree = true;
     g.scene.add(this.sea.mesh);
     if (beach.sea) beach.sea.visible = false; // (the placeholder sheet, replaced)

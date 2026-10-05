@@ -85,7 +85,7 @@ if (uClip.w > 0.0) { vec2 cd = vSeaW.xz - uClip.xy; float ca = atan(cd.y, cd.x) 
   if (ca > uClipA.y || length(cd) < uClip.z) discard; } // (a shore's sea: its sector only, from the sand out)
 // the current: streaks drawn along the drift, scrolled (two scales, so it never reads as one repeating sheet)
 vec2 seaC = vec2(dot(vSeaW.xz, uCur), dot(vSeaW.xz, vec2(-uCur.y, uCur.x)));
-float seaStreak = seaNoise(vec2(seaC.x * 0.02 - uT * 0.05, seaC.y * 0.22)) * 0.6 + seaNoise(vec2(seaC.x * 0.05 - uT * 0.11, seaC.y * 0.5)) * 0.4;
+float seaStreak = seaNoise(vec2(seaC.x * 0.025 - uT * 0.05, seaC.y * 0.1)) * 0.6 + seaNoise(vec2(seaC.x * 0.06 - uT * 0.11, seaC.y * 0.24)) * 0.4; // (streaks four times as long as wide: elongated more, they ran to the horizon as spokes)
 diffuseColor.rgb *= 0.7 + 0.6 * seaStreak;
 diffuseColor.rgb += vec3(0.05, 0.03, 0.02) * smoothstep(0.2, 1.2, vSeaH); // (the crests a shade warmer: crude is amber where it is thin)`)
         .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
