@@ -24,24 +24,24 @@ export function wellRules({ on, L, log }) {
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
     if (e.pay > 0) L.hi('well.pay.best', e.pay);
-    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `, ${e.pay} cubes the richer` : ''}.`);
+    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `. Pay: ${e.pay} cubes` : ''}.`);
   });
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.foe'); L.hi('well.foe.cls', e.cls);
-    log.say('battle', 'The Great Slip Jelly bursts: the bottom of the Well is yours.');
+    log.say('battle', 'The Great Slip Jelly bursts. The bottom floor is clear.');
   });
   on('well.find', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.find'); L.hi('well.find.tier', e.tier);
     const n = NAME(e.item);
-    log.say('loot', `Where the jellies were lies ${AN(n)} ${n}. Climb out with it to keep it.`, { tone: '#ffd98a' });
+    log.say('loot', `Found: ${AN(n)} ${n}. Climb out of the Well to keep it.`, { tone: '#ffd98a' });
   });
   on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' }); });
   on('cogitomap.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth);
-    log.say('loot', 'You charted enough of it to draw a Cogitomap: the Well as it is today.', { tone: '#ffd98a' });
+    log.say('loot', 'Cogitomap drawn: the Well as it is today.', { tone: '#ffd98a' });
   });
 }
