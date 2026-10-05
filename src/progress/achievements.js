@@ -539,6 +539,7 @@ export function buildAchievements(game) {
   C('sk2', 'sky', 'Weather', 2, 'mechanic', 'In Its Element', 'Build a status in the weather that feeds it, ten times.', 'status.weather', 10);
   C('sk3', 'sky', 'Weather', 2, 'mechanic', 'Rain Fish', 'Land a fish while grief falls.', 'angle.catch.weather.grief', 1);
   C('sk4', 'sky', 'Weather', 4, 'mechanic', 'A Shadow on the Crown', 'Stand in a dread fog on Margarite, the King\'s island.', 'weather.seen.dread.margarite', 1, { hidden: true });
+  C('sk7', 'sky', 'Weather', 2, 'mechanic', 'Play to the Sky', 'Busk a song that suits the weather.', 'busk.suits', 1);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
   C('sk6', 'sky', 'The Day', 2, 'endure', 'Seven Days', 'See seven dawns.', 'day.dawn', 7);
 

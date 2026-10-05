@@ -21,6 +21,7 @@ export function weatherRules({ on, L, log, g }) {
     else log.say('info', `Weather over ${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
   });
   on('day.phase', (e) => { L.inc(`day.${e.phase}`); if (e.phase === 'night' || e.phase === 'dawn') log.say('info', e.phase === 'night' ? 'Night falls. Lachryma glows in the dark.' : 'Dawn.', { key: 'dayphase', throttle: 30 }); });
+  on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built
   on('angle.catch', () => { const w = g.weather?.here(g.player?.pos); if (w?.aspect) L.inc(`angle.catch.weather.${w.aspect}`); });
   on('creature.status', (e) => {

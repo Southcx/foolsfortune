@@ -94,7 +94,7 @@ export const ECON = {
   /** BUSKING (the Crucibelle's rhythm mode, Wanda's): a song pays its length in minutes of play times the score's weight: steep, so
    *  playing well pays (accuracy 1: 1.5x the aim; 0.7: about 0.8x; 0.4: 0.4x). The same song played again within the hour tires the
    *  audience (`tire` a repeat), so a set pays more than a loop. */
-  busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7 },
+  busk: { floor: 0.3, ceil: 1.5, power: 2, tire: 0.7, match: 0.5 }, // (match: a song that suits the sky pays up to half again, by the weather's strength: Wanda's TRACK_ASPECT)
   /** COMMISSIONS by Figment class (Guppy .. Leviathan): minutes of play each pays, about the time an ordinary hunter takes, so a better
    *  hunter, finishing sooner, earns more an hour; every `streakEvery`th in a row pays `streakMult` times (OSRS Slayer's points). Skipping
    *  one breaks the streak. */
