@@ -91,7 +91,7 @@ filed. It never counts in the ledger.
    trimmed to "the last ten real minutes": when a recording fills, a new one begins from that moment (as `/record` does: the save comes
    back, the loose world does not). A report carries a replay of at most the last 20 real minutes, which reproduces anything that lives
    in the save; for the loose world, the stand-here line and the pictures fill the gap.
-4. **`db` and `assets` make the build organization-internal**: the owner's call. Petra recommends yes while only the owner and the
-   divisions play it, with a public build split off when there is one to share. In the owner's digest.
+4. **`db` and `assets` make the build organization-internal**: **ruled (the owner, 2026-10-05): yes, organization-internal for now**;
+   a public build is split off when there is one to share.
 
 The markup window: Calissa offers it as one component (`src/ui/bugmarkup.js`) that Petra calls with the frozen frame.
