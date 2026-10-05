@@ -30,7 +30,7 @@ export function wellRules({ on, L, log }) {
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.foe'); L.hi('well.foe.cls', e.cls);
-    log.say('battle', 'The Great Slip Jelly bursts. The bottom floor is clear.');
+    log.say('battle', 'The Great Slip Jelly bursts.');
   });
   on('well.find', (e) => {
     if (e.by !== 'courier') return;
@@ -42,6 +42,6 @@ export function wellRules({ on, L, log }) {
   on('cogitomap.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth);
-    log.say('loot', 'Cogitomap drawn: the Well as it is today.', { tone: '#ffd98a' });
+    log.say('loot', 'Cogitomap drawn: the Well as it is this game day.', { tone: '#ffd98a' });
   });
 }

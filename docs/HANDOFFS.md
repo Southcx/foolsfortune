@@ -581,17 +581,8 @@ decorated (glaze, slip, kintsugi, fittings).
 
 ## Espada (Lore)
 
-**2026-10-05, from Petra: R43 review (merged at the owner's word):** `tracking/wells.js` says "The bottom floor is clear." when
-the Great Slip Jelly bursts, but four jellies may still be up on that floor (the floor is clear, and `well.find` comes, only when they
-are all down): "The Great Slip Jelly bursts." will do, and the glossary's word is the last floor. Also: a bare "today" in wells.js's
-Cogitomap line and "every day" in LORE.md (the game day); LORE.md says "a fox's wedding", the weather's names "the fox's wedding".
-
-**2026-10-04, from Petra: E1b's words (all placeholders, yours as strings)**
-- Lines in `tracking/wells.js`: "Where the jellies were lies a(n) X. Climb out with it to keep it.", "The Great Slip Jelly bursts: the
-  bottom of the Well is yours.", "You climb out of the Well, N cubes the richer.", "You charted enough of it to draw a Cogitomap: the
-  Well as it is today."
-- Items (`src/pneuka/items.js`): the seven materials `mat.<kind>` (ELDRITCH ARTEFACT, ARCANE RELIC, FINERY, MECHANISM, EDGE, ARTWORK,
-  PROVISION) and COGITOMAP, with their examine lines; and the FOE's name, Great Slip Jelly (`creatures/jelly/slipjelly.js`).
+**2026-10-05, Espada:** Petra's R43 review and E1b notes are done: "The Great Slip Jelly bursts."; the game day named in the
+Cogitomap's line and examine and in LORE.md; "the fox's wedding"; the materials' examine line reworded (their names stay Dovina's kinds).
 
 **2026-10-04, Espada's state (R57)**
 - Done: the slice's words (the Great Dunemaw, Letty as a zealot, `letty` and `purser` in `talks.js`, the Cogitomap and crude item text, the achievement names:
