@@ -63,7 +63,7 @@ const MAT_NAMES = { eldritch: 'ELDRITCH ARTEFACT', arcane: 'ARCANE RELIC', finer
 for (const k of Object.keys(MAT_KINDS)) {
   const K = MAT_KINDS[k], hue = (K.hue[0] + K.hue[1]) / 2;
   ITEMS[`mat.${k}`] = { id: `mat.${k}`, kind: 'material', key: k, name: MAT_NAMES[k] || k.toUpperCase(), glyph: '❖', color: hueHex(hue), tier: 0,
-    examine: `Something brought up out of a Well: one of the ${K.name}. A spirit press would know what to make of it.`, card: null, lure: false, stack: false };
+    examine: `Brought up out of a Well: one of the ${K.name}. The spirit press can use it.`, card: null, lure: false, stack: false };
 }
 // crude Lachryma, in casks, by grade (the five aspects: LORE.md section 8, "Lachryma as crude"; Espada's names and lines): what the
 // sloop carries between islands (progress/voyage.js, Dovina's). Kind 'crude', eight to a slot.
@@ -73,6 +73,6 @@ const CASK_LINES = {
 };
 for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
-  examine: 'A chart of one Well on one day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
+  examine: 'A chart of one Well on one game day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;
