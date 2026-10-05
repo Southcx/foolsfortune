@@ -13,7 +13,7 @@ import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 import { INSTRUMENTS } from '../tools/crucibelle/songs.js';
-import { SPECIES } from '../tools/sondelass/angling/species.js';
+import { SPECIES, ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { typeNo } from '../tools/psygun/kinds.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
@@ -65,6 +65,13 @@ for (const k of Object.keys(MAT_KINDS)) {
   ITEMS[`mat.${k}`] = { id: `mat.${k}`, kind: 'material', key: k, name: MAT_NAMES[k] || k.toUpperCase(), glyph: '❖', color: hueHex(hue), tier: 0,
     examine: `Something brought up out of a Well: one of the ${K.name}. A spirit press would know what to make of it.`, card: null, lure: false, stack: false };
 }
+// crude Lachryma, in casks, by grade (the five aspects: LORE.md section 8, "Lachryma as crude"; Espada's names and lines): what the
+// sloop carries between islands (progress/voyage.js, Dovina's). Kind 'crude', eight to a slot.
+const CASK_LINES = {
+  mirth: 'Light and sweet. Easy to carry. Somebody laughed this, a long time ago.', wonder: 'It glitters in the cask and does not settle.',
+  hunger: 'The cask feels empty, however full it is.', grief: 'Heavy and sour. Carry it carefully.', dread: 'The richest grade. The worst to spill. Do not shake it.',
+};
+for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
   examine: 'A chart of one Well on one day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
 
