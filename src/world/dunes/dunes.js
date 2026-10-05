@@ -8,6 +8,7 @@ import { ChunkTerrain } from '../../render/terrain.js';
 import { mergeStatic } from '../../render/merge.js';
 import { CloudLayer } from '../../vfx/clouds.js';
 import { Barrier } from './barrier.js';
+import { Beach, beachBlend, farMask, inSector, SHORE, JETTY } from './beach.js';
 import { PropBatch } from '../../render/propbatch.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tag, register } from '../../core/tags.js';
@@ -96,9 +97,10 @@ export function localHeight(x, z) {
   h += (fbm(px * 0.0022, pz * 0.0022 + 7, 3) - 0.43) * 22;
   // (no wall of mountains any more: the sea runs on past the barrier, and far off, out of reach, it rises into high dunes that close
   // the horizon)
-  const far = sstep(BARRIER + 90, DUNE.outer, Math.hypot(x, z));
+  const far = sstep(BARRIER + 90, DUNE.outer, Math.hypot(x, z)) * farMask(x, z); // (parted due east: the shore, beach.js)
   h += far * far * 90;
   h += 14;
+  h = beachBlend(x, z, h); // (the dunes run down to the Emocean in the shore's sector: beach.js)
   const w = 1 - sstep(OASIS.flat, OASIS.flat + OASIS.blend, r0);
   return w > 0 ? h + (oasisGround(x, z) - h) * w : h;
 }
@@ -115,7 +117,9 @@ export class Dunes {
     this.buildTerrain();
     this.buildSky();
     this.buildRuins();
-    this.barrier = new Barrier(game, { center: new THREE.Vector3(DUNE.x, 0, DUNE.z), radius: BARRIER, y0: DUNE.y - 20, y1: DUNE.y + 260 });
+    this.barrier = new Barrier(game, { center: new THREE.Vector3(DUNE.x, 0, DUNE.z), radius: BARRIER, y0: DUNE.y - 20, y1: DUNE.y + 260,
+      gap: (a) => inSector(Math.cos(a), Math.sin(a)) }); // (open on the shore: its own wall stands a step into the crude, beach.js)
+    this.beach = new Beach(game, { center: new THREE.Vector3(DUNE.x, DUNE.y, DUNE.z), heightAt: (x, z) => this.heightAt(x, z), barrier: BARRIER });
     this.setVisible(false);
     // the values the workshop is lit with (blended back to when you leave)
     const sc = game.scene;
@@ -127,7 +131,10 @@ export class Dunes {
 
   get center() { return new THREE.Vector3(DUNE.x, DUNE.y, DUNE.z); }
   /** Is the player down here? */
-  get active() { const p = this.game.player.pos; return Math.hypot(p.x - DUNE.x, p.z - DUNE.z) < BARRIER + 40 && p.y < DUNE.layerBelow; }
+  get active() {
+    const p = this.game.player.pos, lx = p.x - DUNE.x, lz = p.z - DUNE.z, r = Math.hypot(lx, lz);
+    return (r < BARRIER + 40 || (r < SHORE.r + JETTY.out + 20 && inSector(lx, lz, 0.05))) && p.y < DUNE.layerBelow; // (the ring, and the shore beyond its gap)
+  }
 
   /** World height of the sand at world x, z. */
   heightAt(x, z) { return DUNE.y + localHeight(x - DUNE.x, z - DUNE.z); }

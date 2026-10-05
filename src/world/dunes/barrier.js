@@ -9,7 +9,7 @@
 // edge-of-map haze, and the force-field ripples of shield walls (Halo's, the "hex" hits of a sci-fi dome) where contact is drawn
 // at the point of contact and nowhere else.
 //
-//   const b = new Barrier(game, { center: Vector3, radius, y0, y1, color })     b.update(dt)      b.inside(pos)
+//   const b = new Barrier(game, { center: Vector3, radius, y0, y1, color, gap?(angle) -> bool })     b.update(dt)      b.inside(pos)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -28,12 +28,13 @@ void main() {
 }`;
 
 export class Barrier {
-  constructor(game, { center, radius, y0, y1, color = 0xffe6b8, segments = 128 }) {
-    this.game = game; this.center = center.clone(); this.radius = radius;
+  constructor(game, { center, radius, y0, y1, color = 0xffe6b8, segments = 128, gap = null }) {
+    this.game = game; this.center = center.clone(); this.radius = radius; this.gap = gap;
     // the wall: a ring of thin boxes, each a little longer than its share of the circle so there is no gap between them
     const W = game.physics.world, h = (y1 - y0) / 2, len = ((2 * Math.PI * (radius + 0.5)) / segments) * 0.55;
     for (let i = 0; i < segments; i++) {
       const a = (i / segments) * Math.PI * 2, x = center.x + Math.cos(a) * (radius + 0.5), z = center.z + Math.sin(a) * (radius + 0.5);
+      if (gap?.(a)) continue; // (an opening: something else closes it, the shore's wall)
       const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -a);
       const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(x, y0 + h, z).setRotation(q));
       W.createCollider(RAPIER.ColliderDesc.cuboid(0.5, h, len).setCollisionGroups(GROUPS.static).setFriction(0), b);
@@ -81,7 +82,8 @@ export class Barrier {
     if (this.prevR !== null && dt > 0) this.approach = Math.max(this.approach * Math.exp(-dt * 6), (r - this.prevR) / dt);
     this.prevR = r;
     this.cd -= dt;
-    if (r > this.radius - 1.1 && this.cd <= 0 && this.approach > 1.2) {
+    const open = this.gap?.(Math.atan2(p.z - this.center.z, p.x - this.center.x));
+    if (!open && r > this.radius - 1.1 && this.cd <= 0 && this.approach > 1.2) {
       this.touch(new THREE.Vector3(p.x, p.y + 1.0, p.z), Math.min(1, this.approach / 14));
       this.cd = 0.4; this.approach = 0;
     }
