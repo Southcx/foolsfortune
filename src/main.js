@@ -721,11 +721,13 @@ async function main() {
   // open with a compile of its own) and the shore's crude sea and swash (else built on the first view of the Dunes)
   game.mawWipe.make?.(); const wipe = game.mawWipe.mesh; if (wipe) wipe.visible = true;
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
+  const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
+  parkWeather?.();
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');

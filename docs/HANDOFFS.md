@@ -308,22 +308,19 @@ the mend's sizzle (31f8687), the systems plan's B5 and D5, R43's wiring.)
 
 ## Calissa (Art)
 
-**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
-- `ui/bugmarkup.js` swallows every `keyup` while open: a key held when it opens stays down in `core/input.js` after it closes (W held,
-  F8, the Courier keeps running). Swallow `keydown` only.
-- The liquid packs keep data in alpha (57% of texels at 0): a browser that premultiplies on decode (WebKit) zeroes their colour. Load
-  them with `ImageBitmapLoader` and `premultiplyAlpha: 'none'`, or move the veins out of alpha.
-- The far bolts' bearings walk round the horizon in fixed 22-degree steps (`rng(1 + n * 7919)`: a Lehmer generator's first output is
-  linear in its seed). Hash the seed.
-- The weather look makes 5 or 6 programs on the first weather, in the middle of play. Compile them where they are made
-  (`renderer.compileAsync` on the group), or say so and I warm them with the maw wipe and the shore (main.js does those now).
-- `mawWipe.close()` while a callback is pending drops it, and the seam stays busy for good (`/mawwipe` during a descent). Refuse it.
-- The night: the sky's sun disc still shines on the night painting. The light now follows the hour (`render/daylight.js` reads your
-  `hourGrade`, `fogOf`, `LOOK` and `lift`), so fade the disc by the hour, or turn it to a moon.
-- Smaller: about 10 small allocations a frame in `vfx/weather.js` update; "the lab" in its header (the glossary's word is the
-  workbench); the markup form is pushed off screen at the 720 and native resolutions.
-- Accepted: your soul-glow edit in `courier/vessel/vessel.js` (mine). The shimmer rule in CLAUDE.md is merged as you wrote it; I have
-  asked the owner to confirm the wording.
+**2026-10-05, from Calissa: the R43 review, answered** (for Petra; delete when read)
+- Markup: `keyup` is no longer swallowed (only `keydown`). A frame larger than the screen shows at a whole fraction (a half, a third),
+  so the form stays on screen at 720 and native (checked at 1280x720: the frame at half beside the form).
+- The packs decode through `ImageBitmapLoader` with `premultiplyAlpha: 'none'` (the clones `cloneUniforms` makes share the source).
+- Bolts: the seed is hashed; eight strikes in a row landed at 10, -102, 20, 104, -90, 42, -136, -48 degrees.
+- The weather compiles with the rest: `weatherLook.prewarm()` beside the maw wipe and the shore in main.js's warm-up (one line and
+  its park). When the weather is calm, its group is now hidden and its update stops early.
+- `mawWipe.close()` returns false and does nothing while a callback waits.
+- The night: the sun disc fades with `uNight` and a small cool moon with a faint ring stands where it was.
+- Smaller: the per-frame allocations in `weather.js` are gone (`hourGrade(phase, out)` writes into a scratch grade; daylight.js's
+  call is unchanged). "the lab" is now "the workbench".
+- Not done: the save sections for `ff.vfx.overrides`, `ff.cine.overrides` and the window colours. The workbench and the sequences
+  read them when the module loads, before `game.save` exists, so moving them is a restructure for a later round. They stay adopted.
 
 **2026-10-05, from Petra: the Great Dunemaw needs a landmark.** The owner could not find the mouth by skiffing: a 3 m pool flush with
 the sand is hidden by the first dune crest. Placeholders in `world/well/dunemaw.js` `buildMouth()`: three standing stones (6 to 9 m,

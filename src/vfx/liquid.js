@@ -31,7 +31,12 @@ import pack2B64 from '../assets/liquid_pack2.webp?b64';
 const _tex = {};
 function pack(key, b64) {
   if (_tex[key]) return _tex[key];
-  const t = _tex[key] = new THREE.TextureLoader().load(`data:image/webp;base64,${b64}`);
+  // (the fourth channel is data, not coverage: decoded as an ImageBitmap with premultiplyAlpha 'none', so a browser that premultiplies
+  // an <img> on decode (WebKit) cannot zero the colour under the texels whose alpha is 0, more than half of them)
+  const t = _tex[key] = new THREE.Texture();
+  const L = new THREE.ImageBitmapLoader(); L.setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+  L.load(`data:image/webp;base64,${b64}`, (bmp) => { t.image = bmp; t.needsUpdate = true; });
+  t.flipY = false; // (an ImageBitmap is never flipped on upload; the noise tiles either way)
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.colorSpace = THREE.NoColorSpace; // (data, not colour)
   t.anisotropy = 4;
