@@ -286,24 +286,14 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
 
 ## Wanda (Audio)
 
-**2026-10-05, from Petra: R43 review (merged at the owner's word). Nothing blocking; to fix in your next round:**
-- The ambience plays under the title, the pause menu, the Codex and the workbench (its 250 ms interval ignores them), and `sfx.setFog`
-  low-passes every effect there. Fade the beds while any of those is open.
-- The thunder asks 5 to 7 seconds of a 2-second buffer that does not loop: it plays 1.7 to 2.5 s and stops at a fifth of its peak.
-- The Dunes theme has no `arrange`, so the older player plays it and the mood layer and the night never reach the open ground.
-- The fog sits on `master`, so it muffles the menu clicks, the System's chime, the voice's reverb and the folk's speech too.
-- The held tones (the aurora's glass, the night's glow, the drops, the pall's bell) are in E, a semitone over the Dunes' D#; key them
-  to `game.music.grid()?.root` as mood.js does.
-- Smaller: about 15 `setTargetAtTime` calls every 250 ms when nothing changed; the drop rates run at 1.2x what is written; the night's
-  thinning ignores `moodless`; ambience.js's header has bare "twenty minutes", "minutes apart", mood.js "The hour" (the glossary's
-  clocks). I renamed your glossary "bed" to "sound bed" (the Shrine Garden has beds).
-
 **2026-10-05, from Petra: the save (`game.save`, `src/core/save.js`; `docs/ARCHITECTURE.md`, "The save") now keeps everything; your keys are adopted (declared, wiped or kept with their scope) until you move them into sections in your own round: register `game.save.section(id, { scope, version, dump, load, reset })` in the constructor, call `game.save.dirty(id)` where you wrote the key, and delete its line from `ADOPTED`. New `localStorage` use fails `npm run check` (`save.storage`).** Yours, scope `settings`: the voice (`audio/voice/voice.js`), the music switch (`music/player.js`), the rhythm offset (`music/rhythm/rhythm.js`).
 
 **Open:** C5's catch wheel and a caught Figment inside the coffin wait on the summoning coffin's mechanics; the save sections above
 (next round: the save has no way yet to carry an adopted key's value into a section, so the move would reset the settings once).
 
-(Done and deleted: the Crucibelle's mode (`game.music.scale()`, 36ce992), the Well's pools (b9c5d5a), the trailer's clock and mix (d0dca7c),
+(Done and deleted: R43's review findings (the sound beds rest under menus, the thunder's full roll, the Dunes' player takes the mood
+and the night, the fog spares the interface and the voices, the tones keyed to the music, set-once parameters, the drop rate, moodless
+nights, the clocks named); the Crucibelle's mode (`game.music.scale()`, 36ce992), the Well's pools (b9c5d5a), the trailer's clock and mix (d0dca7c),
 the mend's sizzle (31f8687), the systems plan's B5 and D5, R43's wiring.)
 
 ## Calissa (Art)
