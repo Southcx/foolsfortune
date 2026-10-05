@@ -36,6 +36,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   legend, a bestiary, a chart), **they are ordered most positive to most negative: Wonder, Mirth, Desire, Grief, Dread** (the owner,
   2026-10-05; `DISPLAY_ORDER` in `progress/weather.js`). Their order on the Law-Chaos line (mirth at Law .. dread at Chaos) is a
   different thing, for the systems, and never the order they are shown in.
+- **grain** (a creature's temperament: `docs/plans/TEMPERAMENT.md`; planned): who a mind is, five traits each between two poles:
+  curious / wary, orderly / erratic, bold / shy, gentle / hostile, skittish / steady (ids: the five-factor model's OCEAN). It weights
+  the mind and says which damage type a mind is weak to; it shows in movement and posture, never colour. *Not:* **temper** (the body
+  showing its mental state, `vfx/temper.js`); *not* "personality" or "stats" in player text. Grain is climate, mood is weather.
 - **weather** (`game.weather`, `src/progress/weather.js`): an island's mood, falling as Lachryma: one of the five **aspects** (wonder, mirth,
   desire, grief, dread) or **calm**, with a **strength**; a **spell** of it holds a block of game hours. Each feeds the damage type at its
   place on the Law-Chaos line, its fish, and its crude's price where it falls. **The forecast** is how far ahead it can be known (a

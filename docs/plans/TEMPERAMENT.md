@@ -1,4 +1,4 @@
-# Temperament: the five traits of a mind (the owner, 2026-10-05)
+# Grain: the five traits of a mind (temperament; the owner, 2026-10-05)
 
 Kept by Dovina. A spec for the divisions' input (Petra: the minds; Calissa: how a trait shows; Wanda: how it sounds; Espada: what it
 is called and means). Not built yet.
@@ -85,3 +85,36 @@ Creatures' procedural voices, Animal Crossing's animalese, Trico (The Last Guard
   stimulus spread), and the Veritome's read and write (appraisal reveals, a macro pushes a dial).
 - **Calissa and Wanda:** the tells.
 - **Espada:** names in the world (do the folk say "temper", "humour", "grain of the clay"?), and the bestiary's words.
+
+## Folded in: Espada's words and Calissa's body (R58)
+
+**The word is GRAIN** (Espada; LORE.md, "Temperament: the grain of a mind"). A clay body's grain is set before firing, and you work
+with it or against it. ("Temper" is taken: the glossary gives it to the body showing its mental state, `vfx/temper.js`.) OCEAN stays as
+ids in code and docs; the player sees both poles in plain words: **curious / wary** (Openness), **orderly / erratic**
+(Conscientiousness), **bold / shy** (Extraversion), **gentle / hostile** (Agreeableness), **skittish / steady** (Neuroticism).
+**Grain is climate; mood is weather**: a Figment is hewn from its island's psyche, so the island's ego sets its species' mean grain and
+each creature is drawn about it; an Egregore (authored by no one) has the widest spread. The slip jellies, the boomtown's folk, are
+bold and erratic. The bestiary reads, in the System's register: "Grain: curious, bold, steady. Weak to: Illusion, Impact." (an unread
+trait shows "unread"); reprogramming: "You turn its grain: skittish to steady." ("Crack" stays the vessel's word.)
+
+**Each layer its own channel** (Calissa), so the body never turns to mush: the **temper** (`vfx/temper.js`: the mental state, how
+agitated) owns the surface (gloss, steam, sparks, glow, tremble); the **statuses and damage types** own colour; the **grain owns movement
+and posture**: who a mind is, as against how it feels now or what is done to it. No trait gets a colour or a permanent mark. **The
+owner's assets** carry the feelings as clips (fear, joy, anger: which clip plays); the grain says how it is played (speed, size,
+regularity, how often, which idle variant), so every trait rides on every clip and needs no art of its own. **Built once: six body
+dials** the minds produce and every body applies (as `temper.look`): **lean** (toward or away from what it attends), **amplitude**,
+**regularity**, **tempo**, **softness** (ease and squash), **startle** (how often and how hard it flinches; Neuroticism's flinch is a
+response to an event, never a standing tremble, so it does not read as the temper). Calissa's tells, high against low:
+
+| Trait | High | Low |
+|---|---|---|
+| Openness (curious / wary) | the head leads; looks before it turns; investigates in curves with pauses (a jelly leans and skews toward it) | meets trouble square, back to walls, the same path every time |
+| Conscientiousness (orderly / erratic) | even cadence, straight segments, square stops, the same patrol exactly (a jelly bounces on a beat) | uneven cadence, wobbling paths, overshoots, a new fidget each time |
+| Extraversion (bold / shy) | big, upright, takes the middle, moves first, leads, shows off at idle (a jelly bounces high and wide) | low, keeps to edges and cover, still at idle, ambushes |
+| Agreeableness (gentle / hostile) | open posture, eases in and out, gives way, head lowered (a jelly squashes soft and round) | a squared front, holds its ground, sharp starts and stops, tracks the Courier |
+| Neuroticism (skittish / steady) | startles at stimuli, scans, backs off early, recovers slowly (a jelly jolts and shrinks) | does not flinch; a slow gaze |
+
+**Readable at a glance**: a species shows one or two strong traits, an individual differs visibly on one more, and the Veritome reads
+the rest; where the Veritome shows a trait (its plate, the bestiary), it shows it in the colour of the damage type it opens (ART.md
+section 2), so reading the mind is learning its weakness.
+
