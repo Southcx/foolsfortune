@@ -360,6 +360,21 @@ Prince sells to neither side: every Courier both of his parents need came out of
   renamed **desire** (the owner floated it; Dovina and Espada agreed). Desire *drives* chaos; grief and dread are what chaos *yields* (the comedown, Entropolis's underground). The
   bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
 
+### Temperament: the grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`, R58; proposals for the owner)*
+- **The word in the world is grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
+  ("Temper" would be the perfect pottery word, since temper is what is mixed into clay, grog among it, but the glossary already gives
+  *temper* to the body showing its mental state, `vfx/temper.js`.) *Temperament* itself comes from the Latin for "a right mixing":
+  the four humours, mixed. Humours are prior art for the idea; they stay out of the text.
+- **The clinical names stay in code and docs only** (OCEAN ids). The player sees plain words, both poles of each dial:
+  **curious / wary** (Openness), **orderly / erratic** (Conscientiousness), **bold / shy** (Extraversion), **gentle / hostile**
+  (Agreeableness), **skittish / steady** (Neuroticism). No diagnosis, as the draft says.
+- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean grain of its
+  Figments (the species mean leans the way the island leans), and each creature is drawn about it. An Egregore, authored by no one,
+  has no island grain: the widest spread. The slip jellies were folk of the town that was, so their grain is the boomtown's (bold,
+  erratic). What Kaolin's own grain is stays blank.
+- **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
+  as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
