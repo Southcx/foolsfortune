@@ -8,7 +8,7 @@
 // world behind a fade, the RPG battle wipe), timed on the game's own clock so a playtest and a replay step through it the same.
 //
 //   game.seam = new Seam(game)   game.seam.cross(fn, { kind, out, hold, back }) -> false if one is already under way
-//   game.seam.update(rawDt) (main.js, each tick)   game.seam.busy
+//   game.seam.update(rawDt) (main.js, each tick)   game.seam.busy   (kind 'maw' with game.mawWipe: its close(onCovered) and open())
 // ---------------------------------------------------------------------------------------
 
 export class Seam {
@@ -26,6 +26,13 @@ export class Seam {
   /** Dip to the dark over `out` seconds, run `fn` there, hold `hold` drawn frames, come back over `back` seconds. */
   cross(fn, { kind = 'plain', out = 0.22, hold = 2, back = 0.35 } = {}) {
     if (this.job) return false;
+    // a Well's crossing under Calissa's wipe when it is there (vfx/mawwipe.js: close(onCovered), open()), else the plain dark cover
+    const wipe = kind === 'maw' ? this.game.mawWipe : null;
+    if (wipe) {
+      this.job = { fn, hold, phase: 'wipe', wipe };
+      wipe.close(() => { try { fn(); } finally { this.job.phase = 'hold'; this.job.n = hold; } });
+      return true;
+    }
     this.job = { fn, out, hold, back, t: 0, phase: 'out' };
     this.el.dataset.kind = kind;
     return true;
@@ -36,8 +43,10 @@ export class Seam {
     if (J.phase === 'out') {
       J.t += dt; this.el.style.opacity = String(Math.min(1, J.t / J.out));
       if (J.t >= J.out) { this.el.style.opacity = '1'; try { J.fn(); } finally { J.phase = 'hold'; J.n = J.hold; } }
+    } else if (J.phase === 'wipe') {
+      // (the wipe is closing: it calls back when the view is covered)
     } else if (J.phase === 'hold') {
-      if (--J.n <= 0) { J.phase = 'back'; J.t = 0; }
+      if (--J.n <= 0) { if (J.wipe) { J.wipe.open(); this.job = null; } else { J.phase = 'back'; J.t = 0; } }
     } else {
       J.t += dt; this.el.style.opacity = String(Math.max(0, 1 - J.t / J.back));
       if (J.t >= J.back) { this.el.style.opacity = '0'; this.job = null; }

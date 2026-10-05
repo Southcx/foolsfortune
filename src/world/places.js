@@ -7,11 +7,11 @@
 // Prior art: the named locations of an MMO's /goto and a level editor's landmarks (the Source engine's info_landmark), and the
 // "points of interest" a test harness keeps for scripted playthroughs (Unreal's Gauntlet, Rare's automated playtests of Sea of Thieves).
 //
-//   game.places.add(id, { name, at: () => Vector3, yaw, note })   .get(id)   .all() -> [{ id, name, zone, pos, note }]
+//   game.places.add(id, { name, at: () => Vector3, yaw, note, near })   .get(id)   .all() -> [{ id, name, zone, pos, note }]
 //   .travel(id) -> { pos, yaw } | null   (set down a step from it, facing it)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { zoneOf } from '../render/zones.js';
+import { zoneOf, wholeOf } from '../render/zones.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
 
 const r2 = (v) => +v.toFixed(2);
@@ -22,7 +22,7 @@ export class Places {
     this.map = new Map();
   }
 
-  add(id, { name = id, at, yaw = null, note = '' }) { this.map.set(id, { id, name, at, yaw, note }); return this; }
+  add(id, { name = id, at, yaw = null, note = '', near = 1.6 }) { this.map.set(id, { id, name, at, yaw, note, near }); return this; }
   get(id) { return this.map.get(id) || null; }
   pos(id) { const p = this.get(id); try { return p ? p.at() : null; } catch { return null; } }
 
@@ -38,10 +38,10 @@ export class Places {
     const g = this.game, p = this.get(id), at = this.pos(id);
     if (!p || !at) return null;
     if (g.well?.active) g.well.end?.(false);
-    const zone = zoneOf(at);
+    const zone = wholeOf(at);
     if (zone === 'dunes' && !g.dunes?.active) g.course.toDunes(); // (the sand sea is entered: its floor of the world, its sky)
     if (zone === 'well') return null; // (the Well is gone into from its mouth: travel to 'well.mouth' and interact)
-    const off = new THREE.Vector3(0, 0, 1.6);
+    const off = new THREE.Vector3(0, 0, p.near); // (how far from it they are set down: within reach of what F does there)
     if (p.yaw != null) off.applyAxisAngle(new THREE.Vector3(0, 1, 0), p.yaw);
     const to = at.clone().add(off);
     if (zone === 'dunes' && g.dunes?.heightAt) to.y = g.dunes.heightAt(to.x, to.z) + 0.05;
@@ -61,7 +61,12 @@ export function installPlaces(game) {
   if (game.course?.weirSpawn) P.add('weir', { name: 'the Weir', at: () => game.course.weirSpawn.v.clone(), note: 'the oasis: the pools, the pier, the treasury' });
   if (game.course?.siegeSpawn) P.add('siege', { name: 'the Siege', at: () => game.course.siegeSpawn.v.clone(), note: 'raids happen here' });
   if (game.course?.labSpawn) P.add('lab', { name: 'the movement lab', at: () => game.course.labSpawn.v.clone() });
-  if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), note: 'F: down into the Well' });
+  if (game.dunes?.beach) {
+    const b = game.dunes.beach;
+    P.add('shore', { name: 'the shore', at: () => b.landing().pos, note: 'where the sand meets the Emocean, due east of the oasis' });
+    P.add('jetty', { name: 'the jetty\'s end', at: () => b.jetty.end.clone(), note: 'over the crude; the sloop moors here' });
+  }
+  if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), near: 1, note: 'F: down into the Well' }); // (its reach is 2.4 m, and the sand round it slips)
   for (const n of game.folk?.list || []) P.add(`folk.${n.def?.id || n.id}`, { name: n.def?.name || n.name || 'one of the folk', at: () => n.pos.clone(), note: 'F: talk' });
   if (game.chests?.tithe) P.add('tithe', { name: 'the Tithe', at: () => game.chests.tithe.pos.clone(), note: 'the treasury\'s chest' });
   game.places = P;

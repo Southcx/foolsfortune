@@ -261,6 +261,10 @@ slide-hop, dash and double 13.7; jump height 0.92 m, double jump 1.66. Gaps are 
 that shows itself only where you touch it, and at its heart an oasis with **THE WEIR**: a pond in terraces, a pier, a well of liquid
 Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier. Three slip jellies live on the flats.
 
+**The Shore**, due east of the oasis (about 500 m, or **E** at the Index): the one bearing where the far dunes part, the sand runs down
+to the Emocean, and there is nothing but the crude sea to the horizon. You can wade a step into it, no further; **the jetty** runs out
+over it, where the sloop will moor.
+
 **The Great Dunemaw**, out on the sand north-west of the oasis (about 180 m; sail for the violet beam, not the pale spire's, or take
 **W** at the Index): a dark pool turning in a ring of fallen stones and three standing ones (the Dreamvane hears it from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
 On every floor a pale pool is **the way up**, back out to the mouth with whatever you found, and a dark one is **the way down**, deeper.
