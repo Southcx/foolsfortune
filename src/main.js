@@ -370,7 +370,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
-  game.belt.tick(); game.pneuka.seed(); // (a new Courier: the four tools worn, the rest and the made lures in the box)
+  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the four tools worn, the rest and the made lures in the box; and no tool ever nowhere)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
@@ -630,6 +630,7 @@ async function main() {
     onChoose: (mode) => {
       title.mode = mode;
       system.setLendAll(mode === 'debug'); // (DEBUG is the sandbox: every art lent; STORY learns them by doing)
+      if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
       game.mode = mode;
       input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
       titleScene.dive(() => endTitle());
@@ -979,7 +980,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => game.post.render(scene, camera), physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= 'debug'; game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
 }
 

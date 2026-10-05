@@ -26,7 +26,7 @@
 // a choice, Resident Evil's and Zelda's inventory made a matter of where on the body a thing can go (the box puts them on and off).
 //
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
-//   game.belt.isWorn(id)   game.belt.wear(id) / takeOff(id) (the box calls these)   game.belt.ready(id) (a key pressed: true, or says why not)
+//   game.belt.isWorn(id)   game.belt.wear(id, { stash }) / takeOff(id) (the box calls these; a tool wear() bumps off goes into the box)   game.belt.ready(id) (a key pressed: true, or says why not)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
 //   has become something else and their tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
@@ -50,13 +50,16 @@ export class ToolBelt {
   inPlace(place) { return this.tools.filter((t) => t.slot === place && this.isWorn(t.id)); }
   /** Put a tool on: into a free place of its kind, or in place of the one there longest. Returns the id taken off to make room, null if
    *  there was room, or false if it cannot be worn at all. */
-  wear(id) {
+  wear(id, { stash = true } = {}) {
     const t = this.get(id);
     if (!t || !PLACES[t.slot]) return false;
     if (this.isWorn(id)) return null;
     const there = this.inPlace(t.slot);
     let off = null;
-    if (there.length >= PLACES[t.slot]) { off = there[0].id; this.takeOff(off, true); } // (said with the wearing: tool.wear's `off`)
+    if (there.length >= PLACES[t.slot]) { // (said with the wearing: tool.wear's `off`)
+      off = there[0].id; this.takeOff(off, true);
+      if (stash) this.game.pneuka?.add(`tool.${off}`, 'belt'); // (never into nowhere: the box's own wear puts it in the slot it emptied)
+    }
     this.worn.add(id); this.save();
     this.game.events?.emit('tool.wear', { tool: id, off });
     return off;

@@ -25,7 +25,7 @@
 //   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
-import { itemOf } from './items.js';
+import { itemOf, ITEMS } from './items.js';
 import { CARD } from '../tools/veritome/cards.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { sfx } from '../audio/sfx.js';
@@ -204,7 +204,7 @@ export class PneukaBox {
   wear(slot) {
     const s = this.slots[slot], it = s && itemOf(s.id), belt = this.game.belt;
     if (!it || it.kind !== 'tool' || !belt) return false;
-    const off = belt.wear(it.tool);
+    const off = belt.wear(it.tool, { stash: false }); // (what comes off goes into this slot, below)
     if (off === false) { this.refuse(`There is no place to wear ${it.name.toLowerCase().replace('the ', 'the ')}.`, 'noplace'); return false; }
     this.slots[slot] = off ? { id: `tool.${off}` } : null;
     this.save();
@@ -261,5 +261,19 @@ export class PneukaBox {
     // coffins and the INVERTED key are bought from Raku or found, so a first opening is never a bought jackpot: docs/DESIGN.md, section 8, proposal 2)
     for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
     this.save();
+  }
+  /** Every tool is somewhere: worn, or held (the box, the ground, the Book). One that is neither (a save from before a fix, a belt
+   *  written without its box) comes back into the box. Run after loading, and after anything that borrowed the belt. */
+  reconcile() {
+    const belt = this.game.belt; if (!belt) return 0;
+    let n = 0;
+    for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.held(`tool.${t.id}`)) { this.add(`tool.${t.id}`, 'restore'); n++; }
+    return n;
+  }
+  /** DEBUG, the sandbox (title/ui.js): the whole kit, whatever STORY holds back (both coffins, a few of every key), topped up each time. */
+  debugKit() {
+    const want = { 'heart.gambler': 1, 'heart.shepherd': 1 };
+    for (const id of Object.keys(ITEMS)) if (ITEMS[id].kind === 'key') want[id] = 3;
+    for (const [id, n] of Object.entries(want)) for (let k = this.held(id); k < n; k++) { if (!this.room(id)) return; this.add(id, 'debug'); } // (never onto the floor)
   }
 }

@@ -10,7 +10,8 @@
 //   THE BOARD   cine/overture.board.js: each camera shot, when, where (a PLACE: a named spot in the world, its yaw the frame its camera
 //               is keyed in), what the Courier does (keys held, a tool drawn, a small function), and the segment that frames it
 //   THE SANDBOX nothing done in the trailer is the player's: the ledger is put back as it was, the log says nothing, the achievements
-//               wait, the place's own music stands down, and the Courier is put back where they were, tools away
+//               wait, the place's own music stands down, and the Courier is put back where they were, tools away and worn as they were
+//               (the belt's worn set kept and restored), the creatures back where they stood
 //
 // Prior art: the in-engine trailers of the sixth generation (Metal Gear Solid 2's and Shenmue's, made from the game running, its own
 // camera scripted), Unreal's Sequencer and Unity's Timeline (one clock, camera shots on it), and the anime opening's cut-a-bar grammar (the
@@ -63,7 +64,7 @@ export class Overture {
     const g = this.game, P = g.player;
     this.active = true; this.world = true; this.t = 0; this.i = -1; this.seen = true; this.ownClock = own;
     // the sandbox: what the player has is kept aside, and put back after
-    this.keep = { pos: P.pos.clone(), yaw: P.yaw, killY: P.killY, ledger: JSON.stringify({ life: g.ledger.life, rec: g.ledger.rec, firsts: g.ledger.firsts, done: g.ledger.done, sess: g.ledger.sess }), play: g.ledger.play };
+    this.keep = { worn: g.belt?.worn ? [...g.belt.worn] : null, jellies: (g.jellies?.list || []).map((c) => ({ c, pos: c.pos.clone(), yaw: c.yaw })), pos: P.pos.clone(), yaw: P.yaw, killY: P.killY, ledger: JSON.stringify({ life: g.ledger.life, rec: g.ledger.rec, firsts: g.ledger.firsts, done: g.ledger.done, sess: g.ledger.sess }), play: g.ledger.play };
     this.say = g.log.say; g.log.say = () => null;
     this.achTick = g.achievements?.tick; if (g.achievements) g.achievements.tick = () => {};
     this.spawned = [];
@@ -88,6 +89,13 @@ export class Overture {
     this.stills.clear();
     // (back where they were, as they were)
     P.pos.copy(this.keep.pos); P.prevPos.copy(this.keep.pos); P.renderPos.copy(this.keep.pos); P.vel.set(0, 0, 0); P.yaw = this.keep.yaw; P.killY = this.keep.killY; P.place?.();
+    // (what they wore, and where the creatures stood: the trailer borrows the belt and the world, and gives them back)
+    if (this.keep.worn && g.belt) { g.belt.worn = new Set(this.keep.worn); g.belt.save(); g.belt.tick(); g.pneuka?.reconcile(); }
+    for (const { c, pos, yaw } of this.keep.jellies || []) {
+      if (!g.jellies?.list.includes(c)) continue;
+      c.pos.copy(pos); c.prevPos.copy(pos); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.attack = null; c.yaw = yaw; c.groundY = null;
+      c.root.position.copy(pos); c.rb.setTranslation({ x: pos.x, y: pos.y + (c.height || 1) * 0.5, z: pos.z }, true);
+    }
     const L = JSON.parse(this.keep.ledger), led = g.ledger;
     Object.assign(led, L); led.play = this.keep.play; led.version++; led.save();
     g.log.say = this.say;
