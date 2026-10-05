@@ -608,3 +608,11 @@ separate parts, building and progression are why players skipped it.
   wave comes from, and the gun and the dodge stay the player's. `src/progress/econ/emocean.js`.
 - **The music is the stage's clock:** every stage runs its cue's 150 s; a tempo per ship (Wanda's `stageCue`) waits for a second ship.
 
+## 14. Co-op and the divisions in the game (the owner, 2026-10-05; after the slice)
+
+- **Slice first, co-op after.** The divisions get an interface templated on the Courier's (Petra's), and each a bespoke clay folk form
+  with abilities suited to its role and persona (the owner's; not to be argued on balance). Designs come after the slice.
+- **Friendly fire is on**: a fifth of the damage; statuses land on allies, and tolerance rises fast (`combat/friendly.js`: x2 build-up
+  and half the hold for the second, immune to the third within 20 s). Taken from Monster Hunter's status tolerance and WoW's
+  diminishing returns.
+

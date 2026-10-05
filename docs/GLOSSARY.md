@@ -29,6 +29,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
+- **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
+  of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
+  holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
 - **reckoning** (`RECKON`, `reckonLead`): how much of a crossing the Courier has divined (Divination), 0 .. 1, for that day; it marks the
   waves' lanes ahead and opens the way to a node not yet found. *Not:* "course" (the basement's loop of stations).
 - **the Purser** (Espada's, the owner R57): the trader at Margarite's dock, who buys crude, materials and Cogitomaps; the role is the name
