@@ -48,7 +48,7 @@ export class CloudLayer {
       uLit: { value: new THREE.Color(lit) }, uShade: { value: new THREE.Color(shade) }, uCover: { value: cover }, uOpacity: { value: opacity },
     };
     this.base = { lit: this.uniforms.uLit.value.clone(), shade: this.uniforms.uShade.value.clone(), cover, opacity };
-    const mat = new THREE.ShaderMaterial({
+    const mat = new THREE.ShaderMaterial({ name: 'clouds',
       uniforms: this.uniforms, transparent: true, depthWrite: false, side: THREE.BackSide, fog: false,
       vertexShader: 'varying vec3 vD; void main() { vD = position; vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9998; }',
       fragmentShader: `varying vec3 vD;

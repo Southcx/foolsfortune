@@ -90,7 +90,7 @@ export class Sky {
 
   /** A window onto the painting: a flat surface (an oculus in a ceiling) that shows the sky in whatever direction the eye looks through it. */
   windowMaterial(sunDir) {
-    return new THREE.ShaderMaterial({
+    return new THREE.ShaderMaterial({ name: 'sky-env',
       side: THREE.DoubleSide, depthWrite: false, fog: false, toneMapped: false,
       uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() } },
       vertexShader: 'varying vec3 vP; void main() { vec4 w = modelMatrix * vec4(position, 1.0); vP = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
@@ -109,7 +109,7 @@ void main() {
 
   /** The dome's material: the painting, graded by the hour and the weather (`grade`), with the sun laid over it (a moon by night, in the light's same direction). */
   domeMaterial(sunDir) {
-    const m = new THREE.ShaderMaterial({
+    const m = new THREE.ShaderMaterial({ name: 'sky-dome',
       side: THREE.BackSide, depthWrite: false, fog: false,
       uniforms: { uSky: { value: this.texture }, uSun: { value: sunDir.clone().normalize() }, uTime: { value: 0 }, ...this.G },
       vertexShader: 'varying vec3 vD; void main() { vD = normalize(position); vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9999; }',

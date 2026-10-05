@@ -30,7 +30,7 @@ export class MawWipe {
   }
 
   make() {
-    const m = new THREE.ShaderMaterial({
+    const m = new THREE.ShaderMaterial({ name: 'maw-wipe',
       uniforms: this.u, transparent: true, depthTest: false, depthWrite: false, fog: false, toneMapped: false,
       vertexShader: 'varying vec2 vS; void main() { vS = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }', // (the whole view, whatever the camera)
       fragmentShader: `varying vec2 vS; uniform float uT, uClose, uHole, uAspect;

@@ -128,7 +128,7 @@ export function makeWaterMaterial(sky, kind = 'water') {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
     ...liquidUniforms(), uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
-  return new THREE.ShaderMaterial({
+  return new THREE.ShaderMaterial({ name: lach ? 'liquid-lachryma' : 'liquid-water',
     uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL),
     defines: lach ? { LACHRYMA: 1 } : {}, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
   });

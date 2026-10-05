@@ -105,7 +105,7 @@ function makeRain(n) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 6), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-rain',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
 attribute vec3 aSeed; attribute float aEnd; uniform float uLen; varying float vA;
@@ -127,7 +127,7 @@ function makeMotes(n) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-motes',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
 attribute vec3 aSeed; uniform float uSize, uHex, uPx; varying float vA; varying float vG;
@@ -168,7 +168,7 @@ void main() {
 /** A sky mark: a ring (or a disc) facing the eye, one shader for all of them (one program; `mode` picks the look). */
 function ringMesh(mode, r0, r1) {
   const u = { uA: { value: 0 }, uR0: { value: r0 }, uR1: { value: r1 }, uMode: { value: mode } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: `weather-${['halo', 'bow', 'dogs', 'glow'][mode]}`,
     uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     vertexShader: 'varying vec2 vP; void main() { vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position.z = gl_Position.w * 0.9998; }', // (at the back of the depth, as the dome: past the far plane, behind everything near)
     fragmentShader: RING_FRAG,
@@ -180,7 +180,7 @@ const tanD = (d) => Math.tan(THREE.MathUtils.degToRad(d)) * SKYD;
 
 function makeAurora() {
   const u = { uT: { value: 0 }, uA: { value: 0 } };
-  const m = new THREE.ShaderMaterial({
+  const m = new THREE.ShaderMaterial({ name: 'weather-aurora',
     uniforms: u, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.BackSide,
     vertexShader: 'varying vec2 vUv; void main() { vUv = uv; vec4 p = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * p; gl_Position.z = gl_Position.w * 0.9998; }',
     fragmentShader: `uniform float uT, uA; varying vec2 vUv;
@@ -234,7 +234,7 @@ export class WeatherLook {
     this.bow = ringMesh(1, tanD(40.5), tanD(42.5));
     this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
     this.aurora = makeAurora();
-    const boltMat = new THREE.MeshBasicMaterial({ color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    const boltMat = new THREE.MeshBasicMaterial({ name: 'weather-bolt', color: 0xd8e8c8, transparent: true, opacity: 0, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
     this.bolt = new THREE.Mesh(boltGeo(rng(7)), boltMat); this.bolt.frustumCulled = false; this.bolt.visible = false;
     this.glow = ringMesh(3, 0, 90);
     for (const o of [this.rain.obj, this.motes.obj, this.halo.obj, this.bow.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, this.bolt, this.glow.obj]) this.group.add(o);
