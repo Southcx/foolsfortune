@@ -2,6 +2,7 @@
 // THE SHRINE GARDEN: the pocket inside the vessel where play already done well keeps paying (docs/DESIGN.md, section 16; ECONOMY.md,
 // rule 6; SYSTEMS.md, D7, D8, E3). Rules and state; the place is Petra's, the press Calissa's to draw.
 //
+// (Real time is read from core/calendar.js now(): the same milliseconds in play, pinned by a replay.)
 // - DIVIDEND SLOTS: an ENCOUNTER is mastered when every achievement in its group is done (a predicate over the ledger: retroactive). A
 //   mastered encounter set in a slot pays ECON.dividend.share of what farming it by hand pays an hour, in real time, filling for
 //   capHours and then waiting to be collected (checking in is rewarded; leaving it for a month is not).
@@ -21,6 +22,7 @@
 import { ECON } from './econ/table.js';
 import { makeMaterial } from './econ/materials.js';
 import { stream } from '../core/rng.js';
+import { now as clock } from '../core/calendar.js'; // (the calendar's clock, not Date.now: a replay pins it, so a replayed visit pays what it paid)
 
 const simRand = stream('progress/garden'); // (what a bed's harvest is seeded from: core/rng.js, the same twice)
 const G = ECON.garden, D = ECON.dividend, H = 3600 * 1000, M = (n) => Math.max(1, Math.round(n * ECON.perMinute));
@@ -61,13 +63,13 @@ export class Garden {
     if (enc && !this.mastered(enc)) return { ok: false, why: `You have not mastered ${ENCOUNTERS[enc].name}: its achievements are not all done.` };
     if (enc && this.s.slots.some((x, j) => j !== i && x.enc === enc)) return { ok: false, why: `${ENCOUNTERS[enc].name} already works a slot.` };
     this.collect(i);
-    S.enc = enc || null; S.since = Date.now();
+    S.enc = enc || null; S.since = clock();
     this.dirty();
     this.game.events.emit('garden.slot', { slot: i, encounter: S.enc, by: 'courier' });
     return { ok: true };
   }
   /** What a slot has filled with (cubes), to the cap. */
-  accrued(i, now = Date.now()) {
+  accrued(i, now = clock()) {
     const S = this.s.slots[i];
     if (!S?.enc) return 0;
     return Math.floor(G.farmRate * D.share * Math.min(D.capHours, Math.max(0, now - S.since) / H));
@@ -79,7 +81,7 @@ export class Garden {
       if (i != null && j !== i) continue;
       const c = this.accrued(j);
       if (c > 0) { n += c; this.game.events.emit('garden.collect', { slot: j, encounter: S.enc, cubes: c, by: 'courier' }); }
-      if (S.enc) S.since = Date.now();
+      if (S.enc) S.since = clock();
     }
     if (n > 0) { this.game.cubes?.earn(n, 'dividend'); this.dirty(); }
     return n;
@@ -92,13 +94,13 @@ export class Garden {
     if (i < 0 || i >= this.s.beds.length) return { ok: false, why: 'There is no such bed.' };
     if (this.s.beds[i]) return { ok: false, why: 'Something already grows there.' };
     if (!s?.id?.startsWith('mat.') || !s.data?.kind) return { ok: false, why: 'Only what a Well gives will grow here.' };
-    this.s.beds[i] = { kind: s.data.kind, tier: s.data.tier || 0, at: Date.now() };
+    this.s.beds[i] = { kind: s.data.kind, tier: s.data.tier || 0, at: clock() };
     box.take(boxSlot);
     this.dirty();
     this.game.events.emit('garden.plant', { bed: i, kind: s.data.kind, by: 'courier' });
     return { ok: true };
   }
-  ripe(i, now = Date.now()) { const b = this.s.beds[i]; return !!b && now - b.at >= G.growHours * H; }
+  ripe(i, now = clock()) { const b = this.s.beds[i]; return !!b && now - b.at >= G.growHours * H; }
   /** Harvest a ripe bed: its yield, of its kind and tier, into the box (each with its own path); the bed is empty again. */
   harvest(i) {
     const b = this.s.beds[i];
