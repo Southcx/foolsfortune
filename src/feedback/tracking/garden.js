@@ -13,11 +13,11 @@ export function gardenRules({ on, L, log }) {
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
-    log.say('gain', `The press fires: your ${ATTRIBUTES[e.attribute]?.name || e.attribute} widens to rank ${e.rank}.`);
+    log.say('gain', `The press fires. ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}.`);
   });
-  on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); log.say('info', `You set ${ENCOUNTERS[e.encounter]?.name || e.encounter} to work the garden.`); } });
+  on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} now works a garden slot.`); } } });
   on('garden.collect', (e) => { if (e.by === 'courier') L.inc('garden.dividend', e.cubes); });
   on('garden.plant', (e) => { if (e.by === 'courier') L.inc('garden.plant'); });
-  on('garden.harvest', (e) => { if (e.by === 'courier') { L.inc('garden.harvest', e.count); log.say('loot', `The bed gives up ${e.count} of what you planted.`); } });
-  on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `The garden widens: another ${e.kind}.`); } });
+  on('garden.harvest', (e) => { if (e.by === 'courier') { L.inc('garden.harvest', e.count); log.say('loot', `You harvest ${e.count} from the bed.`); } });
+  on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `Garden widened: one more ${e.kind}.`); } });
 }

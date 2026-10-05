@@ -475,7 +475,7 @@ export function buildAchievements(game) {
   C('wl4', 'explore', 'The Wells', 2, 'count', 'Mind Map', 'Come out of a Well with a Cogitomap.', 'cogitomap.get', 1);
   H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
   C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
-  C('wl8', 'explore', 'The Wells', 2, 'count', 'Cartographer\'s Cut', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
+  C('wl8', 'explore', 'The Wells', 2, 'count', 'Chart Topper', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
@@ -528,10 +528,10 @@ export function buildAchievements(game) {
   F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);
   F('sa3', 'garden', 'The Press', 3, 'collect', 'The Whole Wheel', 'Fire the press into all seven attributes.', (L) => AIDS.filter((a) => rk(L, a) > 0).length, 7);
   F('sa4', 'garden', 'The Press', 4, 'mechanic', 'A True Hue', 'Widen an attribute to its last rank, where the target is narrowest.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 10, { title: 'Alchemist' });
-  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'It Works for You', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
+  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
   C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
   C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
-  F('sg4', 'garden', 'The Garden', 5, 'collect', 'The Long Sink', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
+  F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- GENERAL
   F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });

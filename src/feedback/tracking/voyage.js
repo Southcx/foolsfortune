@@ -11,13 +11,13 @@ const PLACE = (id) => NODES[id]?.name || id;
 
 export function voyageRules({ on, L, log }) {
   let haul = 0; // (what this cargo has made so far: one crossing's sales, for the record)
-  on('emocean.hop', (e) => { if (e.by !== 'courier') return; L.inc('emocean.hop'); haul = 0; log.say('explore', `You cast off for ${PLACE(e.to)}, burning ${e.fuel} cubes of fuel.`); });
+  on('emocean.hop', (e) => { if (e.by !== 'courier') return; L.inc('emocean.hop'); haul = 0; log.say('explore', `You cast off for ${PLACE(e.to)}. Fuel: ${e.fuel} cubes.`); });
   on('emocean.stage', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`emocean.port.${e.to}`);
     if (e.passed) { L.inc('emocean.stage.passed'); if (!e.hits) L.inc('emocean.stage.clean'); }
     if (e.spilled) L.inc('crude.spill');
-    if (e.lost) log.say('warn', `The sea takes ${e.lost} ${e.lost === 1 ? 'cask' : 'casks'} of crude${e.spilled ? ', and what spills of it goes on burning' : ''}.`);
+    if (e.lost) log.say('warn', `Cargo lost: ${e.lost} ${e.lost === 1 ? 'cask' : 'casks'} of crude${e.spilled ? '. The spill burns on the sea' : ''}.`);
     log.say('explore', `You make port at ${PLACE(e.to)}.`);
   });
   on('emocean.reckon', (e) => {
@@ -25,7 +25,7 @@ export function voyageRules({ on, L, log }) {
     const pct = Math.round((e.reckoning || 0) * 100), route = [e.from, e.to].sort().join('-');
     L.hi(`emocean.reckon.${route}`, pct); L.hi('emocean.reckon.best', pct);
   });
-  on('emocean.found', (e) => { if (e.by !== 'courier') return; L.inc(`emocean.found.${e.node}`); log.say('explore', `You have divined the way to ${PLACE(e.node)}.`); });
+  on('emocean.found', (e) => { if (e.by !== 'courier') return; L.inc(`emocean.found.${e.node}`); log.say('explore', `Route divined: ${PLACE(e.node)}.`); });
   on('crude.buy', (e) => { if (e.by === 'courier') L.inc('crude.bought', e.units || 1); });
   on('crude.sell', (e) => {
     if (e.by !== 'courier') return;
