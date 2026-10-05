@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// TRACKING, THE WEATHER AND THE DAY: the rules that hear the sky (progress/weather.js): what weather the Courier has stood in, the hours
+// TRACKING, THE WEATHER AND THE DAY: the rules that hear the sky (progress/weather.js): what weather the Courier has stood in, the game hours
 // they have seen, the fish caught and the statuses built in each weather, for the achievements; and the log's line when an island's mood
 // turns. The words are placeholders for Espada's. tracking.js calls it from listen().
 //

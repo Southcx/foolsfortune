@@ -25,8 +25,11 @@ lines to the owner. Petra reviews, merges and publishes.
 
 ## Dovina (Design)
 
-_Nothing open (R57: crystal strikes ruled, `ECON.crystal.shed`; E1b ruled, in SLICE.md). Dovina's backlog: `docs/plans/SLICE.md`
-(E4, the Emocean hop, is next on Petra's side)._
+- **To every division (the owner, 2026-10-05):** send Dovina 3 to 8 items for the checklist (https://claude.ai/artifact/GQSpDGYUuPVF7SzDU5RbGU):
+  area, what to do, what should happen, in the glossary's words (every unit of time names its clock). Dovina writes them in.
+- **To Petra:** the bug report (F8) is yours to build, Calissa the markup window's look: `docs/plans/BUGREPORT.md`, with four questions.
+
+_Dovina's backlog: `docs/plans/SLICE.md` (E4, the Emocean hop, is next on Petra's side)._
 
 ## Petra (Main)
 
