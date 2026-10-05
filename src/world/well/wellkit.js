@@ -111,6 +111,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     // a lamp in each room, dim, warmer near the top of the Well
     const l = new THREE.PointLight(new THREE.Color(0xffa066).lerp(new THREE.Color(0xa070ff), deep), 14, CELL * 1.4, 1.2);
     l.position.set(x, Y + WALL_H - 0.6, z); group.add(l);
+    game.lights?.adopt(l); // (a proxy now, not at the budget's next scan: a real light for even one frame recompiles every material in view)
   }
   for (const [set, geos] of Object.entries(sets)) {
     if (!geos.length) continue;
