@@ -34,6 +34,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
+- **the Shrine Garden** (`game.garden`, `src/progress/garden.js`): the pocket inside the vessel: the mastery dividend's **slots** (each worked
+  by a **mastered** encounter: every achievement of its group done), the **beds** (a material planted grows more of its kind), and the
+  upgrades (the long sink). *Not:* "Spirit Garden" (the owner's word for it in passing, 2026-10-05: the same place, unless ruled otherwise).
+- **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
+  (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
+  attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
+  the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.

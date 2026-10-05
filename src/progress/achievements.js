@@ -45,6 +45,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
+  { id: 'garden', name: 'THE SHRINE GARDEN', subs: ['The Press', 'The Garden'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
 
@@ -520,6 +521,17 @@ export function buildAchievements(game) {
   F('dm3', 'psyche', 'Levels', 3, 'collect', 'Seven Doors', 'Reach level 10 in all seven domains.', (L) => DIDS.filter((d) => lv(L, d) >= 10).length, 7);
   F('dm4', 'psyche', 'Levels', 5, 'endure', 'Ninety-Nine', 'Reach level 99 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 99, { title: 'Adept' });
   F('dm5', 'psyche', 'Levels', 6, 'endure', 'The World', 'Reach level 99 in all seven domains: the end of the Fool\'s Journey.', (L) => DIDS.filter((d) => lv(L, d) >= 99).length, 7, { hidden: true, title: 'The World' });
+
+  // ---------------------------------------------------------------- THE SHRINE GARDEN (progress/alchemy.js, progress/garden.js)
+  const AIDS = ['willpower', 'focus', 'charisma', 'perception', 'dexterity', 'visualization', 'resilience'], rk = (L, a) => L.best(`alchemy.rank.${a}`) || 0;
+  C('sa1', 'garden', 'The Press', 1, 'count', 'First Firing', 'Fire the spirit press into an attribute.', 'alchemy.fire', 1);
+  F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);
+  F('sa3', 'garden', 'The Press', 3, 'collect', 'The Whole Wheel', 'Fire the press into all seven attributes.', (L) => AIDS.filter((a) => rk(L, a) > 0).length, 7);
+  F('sa4', 'garden', 'The Press', 4, 'mechanic', 'A True Hue', 'Widen an attribute to its last rank, where the target is narrowest.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 10, { title: 'Alchemist' });
+  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'It Works for You', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
+  C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
+  C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
+  F('sg4', 'garden', 'The Garden', 5, 'collect', 'The Long Sink', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- GENERAL
   F('tm1', 'general', 'Time', 1, 'endure', 'Settling In', 'Play for 30 minutes.', (L) => L.play / 60, 30, { unit: 'min' });

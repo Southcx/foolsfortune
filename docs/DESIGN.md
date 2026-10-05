@@ -626,3 +626,36 @@ so the core movement and every tool's feel are untouched until a level is earned
 duplicates good maps: a Cogitomap transcribed is another sale to the Purser). And levels feed the unlocks for free: an art's achievement
 is a predicate, so "this art at Divination 20" is one line in `achievements.js`. The system will grow.
 
+## 16. The Shrine Garden and Soul Alchemy (the owner, 2026-10-05: "the boat first, then the Spirit Garden and Soul Alchemy")
+
+The garden inside the vessel is where play already done well keeps paying, and where what the Wells give becomes who the Courier is.
+Two systems, one place (Petra's: E3; the press is Calissa's to draw). Built as rules and modules first (Dovina), so the place only has
+to call them.
+
+**One line between the two progressions, so they never overlap.** The **domains** widen the **tools** (what the Courier does; earned by
+doing it: section 15). The **attributes** widen the **vessel** (what the Courier is: capacity, toughness, standing; earned at the spirit
+press). Neither ever does a skill for the player.
+
+**Soul Alchemy** (`src/progress/alchemy.js`; prior art: Potion Craft's map, the owner's v0.1 attributes, Atelier's synthesis, a
+painter's colour wheel):
+- The Courier has a **soul colour** (a hue and a saturation on the wheel; it starts grey, at the centre). Pressing materials at the
+  spirit press walks it along each material's winding **path** in the order they go into the hopper (`materials.js press()`): the
+  order is the skill, as in Potion Craft.
+- Each of the seven **attributes** sits at its own place on the wheel (its hue, at a saturation). **Firing** the press (the igniter)
+  while the soul colour is inside an attribute's target raises that attribute one rank, spends **refined Lachryma** (cubes: the long
+  sink) and leaves the colour where it is. The target narrows with every rank (navigation must get finer: the skill is the verb).
+- The seven, after v0.1 (Luck stays apart: `luck.js`), each widening the vessel: **Willpower** (the shield's pool), **Focus** (how long
+  the statuses you build hold), **Charisma** (what the folk pay and ask: prices, the haggle), **Perception** (how far ahead a creature's
+  intent shows), **Dexterity** (drawing and stowing a tool), **Visualization** (the canvas the Soul Brush and the hand work on),
+  **Resilience** (the clay's mending, and the hits a ship bears on the Emocean: one attribute across two layers).
+- The soul colour is also a look: the vessel's glow takes it (Calissa's), so alchemy is dress-up as well as growth.
+
+**The Shrine Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
+farm, FFXIV's housing as the long sink):
+- **Dividend slots** (`ECON.dividend`): an encounter is **mastered** when every achievement in its group is done (a predicate over the
+  ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its hourly rate by hand, real time, filling for 8 hours
+  and waiting to be collected. Three slots to start.
+- **Beds** (foraging): a material planted grows more of its kind over real hours (a herb run). What the Wells give is the seed stock.
+- **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
+- Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
+

@@ -168,4 +168,14 @@ export const ECON = {
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
   dividend: { share: 0.05, capHours: 8, slots: 3 },
+
+  // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
+  /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds
+   *  (`beds` to start, a material growing `growHours` real hours into `yield` of its kind), and the upgrades (the long sink): the n-th
+   *  extra slot or bed costs `upgrade[kind][n]` minutes of play, dearer each time. */
+  garden: { farmRate: 480, beds: 2, growHours: 6, yield: 2, upgrade: { slot: [180, 360, 720], bed: [60, 120, 240, 480] } },
+  /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
+   *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
+   *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
+  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65 }, // (radius 0.22 at first let a half-grey colour count: R58)
 };

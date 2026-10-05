@@ -11,6 +11,8 @@ import { TYPES, TYPE_IDS, TRUMPS, CAUSE_TYPE, BUILD, multiplier } from '../src/p
 import { STATES, MIND, stateOf, pushed } from '../src/progress/combat/mind.js';
 import { EMO, yieldOf, catchFactor, enraged } from '../src/progress/combat/emo.js';
 import { FRIENDLY, friendlyDamage, tolerance } from '../src/progress/combat/friendly.js';
+import { ATTRIBUTES, radiusAt, fuelAt, widenAtRank } from '../src/progress/alchemy.js';
+import { ENCOUNTERS } from '../src/progress/garden.js';
 import { UNLIKELY, luckOf } from '../src/progress/luck.js';
 import { DOMAINS, SOURCES, PACE, scaleOf, skillWeight, expAt, levelOf, WIDEN, widenAt } from '../src/progress/domains.js';
 
@@ -58,3 +60,7 @@ console.log(`  "The World" (all seven at 99): ${world(0)} hours rote, ${world(0.
 console.log(`\nFRIENDLY FIRE (combat/friendly.js): a blow of 50 deals ${friendlyDamage(50)} to an ally; an ally's statuses from allies within ${FRIENDLY.windowSec} s: ${[0, 1, 2].map((n) => { const t = tolerance(n); return t ? `x${t.build} build-up, x${t.dur} hold` : 'shrugged off'; }).join(' / ')}`);
 console.log('\nWIDENING (domains.js WIDEN: what a level widens, never accuracy) at levels 1 / 33 / 66 / 99');
 for (const [k, w] of Object.entries(WIDEN)) console.log(`  ${k.padEnd(22)} ${[1, 33, 66, 99].map((l) => (w.plus ? `+${widenAt(k, l)}` : `x${widenAt(k, l).toFixed(2)}`).padEnd(6)).join(' ')} ${w.does}`);
+console.log('\nSOUL ALCHEMY (alchemy.js): the attributes on the wheel, what each widens at ranks 0 / 5 / 10, and the press by rank');
+for (const a of Object.values(ATTRIBUTES)) console.log(`  ${a.name.padEnd(14)} hue ${String(a.hue).padStart(3)}  ${Object.keys(a.widen).map((k) => `${k} ${[0, 5, 10].map((r) => widenAtRank(k, r).toFixed(2)).join('/')}`).join(', ')}   (${a.does})`);
+console.log(`  the target's radius at rank 0 / 5 / 9: ${[0, 5, 9].map((r) => radiusAt(r).toFixed(3)).join(' / ')}; the fuel: ${[0, 5, 9].map(fuelAt).join(' / ')} cubes (all seven to 10: ${Object.keys(ATTRIBUTES).length * Array.from({ length: 10 }, (_, r) => fuelAt(r)).reduce((a, b) => a + b, 0)} cubes)`);
+console.log(`THE SHRINE GARDEN (garden.js): encounters a slot can work: ${Object.values(ENCOUNTERS).map((e) => e.name).join(', ')}`);
