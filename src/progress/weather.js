@@ -45,7 +45,7 @@ export const NAMES = { mirth: "the fox's wedding", wonder: 'the aurora', hunger:
 
 /** Each zone's place and exposure (Petra's table: render/zones.js). */
 const ZONE_PLACE = {
-  dunes: ['anagami', 'open'], workshop: ['anagami', 'roofed'], basement: ['anagami', 'roofed'], circuits: ['anagami', 'roofed'],
+  dunes: ['anagami', 'open'], beach: ['anagami', 'open'], workshop: ['anagami', 'roofed'], basement: ['anagami', 'roofed'], circuits: ['anagami', 'roofed'],
   well: ['well:dunemaw', 'deep'],
 };
 /** Where a place sits on the line: an island by its law, a Well by its own leaning (a mind ruminating leans to grief). */

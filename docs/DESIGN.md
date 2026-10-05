@@ -705,4 +705,9 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
 - **Weather is asked by place** (Petra's input): an island, or a Well with its own mood, with an exposure (open, roofed: the mood without
   the rain, deep: the Well's own); the open Emocean has no mood. Each weather wears its damage type's colour and motif (Calissa's input:
   wonder is diamond dust and halos by day, the aurora by night); the hour sets the music's density and the mood its colour (Wanda's).
+- **Hunger stays in the middle of the line** ("pretty neutral"); a rename to **Desire** is being weighed with Espada.
+- **The Crucibelle's notes follow the weather** (Wanda's five scales: "responding to emotional barometric pressure"): approved.
+- **A beach** on the Dunes' edge shows what an Island of Ego is: nothing but Emocean to the horizon. The weather ends at the waterline
+  (the open sea has no mood), and the slice's pier would leave from it. **Entering a Well** gets its seam covered: a wordless descent
+  through the maw, held until the floor is ready (Calissa's look, Petra's timing).
 
