@@ -8,7 +8,7 @@
 //   WONDER  by day DIAMOND DUST, hexagonal ice glinting as it sinks, and the 22-degree HALO with its SUN DOGS (real halos are made by
 //           hexagonal ice: the lawful lattice twice over); by night the AURORA, slow curtains from lapis to the labradorite's green
 //           (Ego's lapis and hexagons)
-//   HUNGER  the hungry wind: amber-rose dust streaming along the wind and a haze closing the horizon; no heat shimmer, ever (it wobbles
+//   DESIRE  the wanting wind: amber-rose dust streaming along the wind and a haze closing the horizon; no heat shimmer, ever (it wobbles
 //           at a varying rate: the flicker rule) (Influence's rose and warm gold)
 //   GRIEF   the long rain: steady, long, silver, the sky grey and drained (Illusion's labradorite, in the drops' sheen)
 //   DREAD   the pall: a bruise-coloured haze, ink and violet-green, and thunder far off as FAR BOLTS, each held a beat and fading
@@ -38,7 +38,7 @@ export const LOOK = {
             sky: { expo: 1.08, mul: [1.06, 1.0, 0.9] }, fog: C(0xe8cf9e), fogD: 0.9 },
   wonder: { colour: C(0xa8c4ff), clouds: { cover: 0.6, opacity: 0.6 },  fall: { kind: 'diamond', rate: 0.6, speed: 0.35 }, mark: 'halo', night: 'aurora',
             sky: { expo: 1.02, mul: [0.93, 0.99, 1.1] }, fog: C(0xb8c8e8), fogD: 0.8 },
-  hunger: { colour: C(0xb5674a), clouds: { cover: 0.56, opacity: 0.6 },  fall: { kind: 'sirocco', rate: 1, speed: 9, len: 3, alpha: 0.55, vel: [1, 0.04, 0.35] },
+  desire: { colour: C(0xb5674a), clouds: { cover: 0.56, opacity: 0.6 },  fall: { kind: 'sirocco', rate: 1, speed: 9, len: 3, alpha: 0.55, vel: [1, 0.04, 0.35] },
             sky: { expo: 0.95, mul: [1.08, 0.94, 0.86], haze: C(0xc98a62), hazeK: 0.85 }, fog: C(0xc48a66), fogD: 2.2 },
   grief:  { colour: C(0xb4c0cc), clouds: { cover: 0.32, opacity: 0.95 },  fall: { kind: 'rain', rate: 1, speed: 13, len: 1.5, alpha: 0.45, vel: [0.12, -1, 0.05] },
             sky: { expo: 0.78, mul: [0.92, 0.96, 1.04], desat: 0.65 }, fog: C(0x7c858e), fogD: 1.6 },
@@ -266,7 +266,8 @@ export class WeatherLook {
       const k = open ? this.amt[a] : 0, F = LOOK[a].fall; if (!F || !k) continue;
       if (F.vel && k > rainA) { // (streaks: rain falling, or sand blown along the ground)
         rainA = k; R0.uCol.value.copy(LOOK[a].colour); R0.uLen.value = F.len; R0.uA.value = F.alpha * k;
-        R0.uVel.value.fromArray(F.vel); const wd = this.game.dunes?.wind?.dir; if (wd && F.kind === 'sirocco') R0.uVel.value.set(wd.x, F.vel[1], wd.y); R0.uVel.value.multiplyScalar(F.speed); // (the hungry wind blows the way the dunes' wind does) this.rain.obj.geometry.setDrawRange(0, Math.round(this.rain.n * F.rate * k) * 2);
+        R0.uVel.value.fromArray(F.vel); const wd = this.game.dunes?.wind?.dir; if (wd && F.kind === 'sirocco') R0.uVel.value.set(wd.x, F.vel[1], wd.y); R0.uVel.value.multiplyScalar(F.speed); // (the wanting wind blows the way the dunes' wind does)
+        this.rain.obj.geometry.setDrawRange(0, Math.round(this.rain.n * F.rate * k) * 2);
       }
       const diamond = F.kind === 'diamond', dk = diamond ? k * dayK : k; // (diamond dust by day; at night wonder is the aurora)
       if ((diamond || F.kind === 'sirocco') && dk > moteA) {

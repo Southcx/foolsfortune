@@ -119,7 +119,7 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 ## Weather and the hour (R58)
 
 - **A weather wears its damage type** (section 2): mirth bone and gold (a sunshower, a rainbow), wonder lapis and the hexagon (diamond
-  dust and the 22-degree halo by day, the aurora by night), hunger rose and warm gold (the hungry wind's sand streaks, an amber haze),
+  dust and the 22-degree halo by day, the aurora by night), desire rose and warm gold (the wanting wind's sand streaks, an amber haze),
   grief the labradorite's silver (the long rain, the sky drained), dread ink and violet-green (the pall, far bolts). A weather and the
   status it feeds read as kin.
 - **What falls is in the world**: streaks and motes on world-anchored paths wrapped round the eye, each at a constant speed, so nothing

@@ -54,7 +54,7 @@ lines for the Cogitomap and the five casks of crude are in LORE.md section 8, fo
   places only), the halo, sun dogs, rainbow, aurora and far bolts, and grades the dome (`sky.grade`) and the clouds (`clouds.grade`)
   by the hour and the weather. Off: `force(null)` and no rules restore the look exactly.
 - **For render/daylight.js** (yours): `fogOf(aspect, strength)` -> `{ colour, density (a multiplier), k }` is each weather's fog (the
-  hungry wind's amber, the pall's ink are mostly carried by it); `game.weatherLook.lift` (0 .. 0.1) is a far bolt's light, eased, to add
+  wanting wind's amber, the pall's ink are mostly carried by it); `game.weatherLook.lift` (0 .. 0.1) is a far bolt's light, eased, to add
   to the scene's; `hourGrade(phase)` is the sky's grade if you want the sun and the hemisphere to agree with it. The sand is lit as by
   day at night until daylight.js dims it. The marks read `game.dunes.sunDir`: move the sun there and the halo and the bow follow.
 - `game.weatherLook.force({ aspect, strength, phase, light })` shows any weather and hour (tests, the lab).
