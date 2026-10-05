@@ -375,7 +375,7 @@ Prince sells to neither side: every Courier both of his parents need came out of
 - **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
   as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
 
-### The wheel of feeling *(Espada's reading of Dovina's draft, `docs/plans/WHEEL.md`, after Plutchik; R58; proposals for the owner)*
+### The wheel of feeling *(after Plutchik; Espada's reading of Dovina's `docs/plans/WHEEL.md`; **approved in full by the owner, R58**)*
 - **The canon was already on the wheel.** Lachryma is *every* feeling (section 1); the five aspects were never all of it, only what
   Anagami's waters carry. Grief is Plutchik's own word for sadness at its height, and "left unchecked a feeling intensifies" is the
   canon's Well (rumination, excess of any feeling).
@@ -391,6 +391,10 @@ Prince sells to neither side: every Courier both of his parents need came out of
   moods overlap (two weathers at once, a mind in two feelings) and is rarer and worth more: *love* (mirth and faith: the King's
   calcified kind), *awe* (dread and wonder: the lighthouse, the Leviathans), *contempt* (gall and fury: Letty's propaganda),
   *remorse* (grief and gall).
+- **Agates in the weather** (two moods at once; opposites cancel and never make one): mirth and wonder, **delight**; mirth and
+  desire, **hope**; mirth and dread, **guilt**; wonder and grief, **disappointment**; wonder and dread, **awe**; desire and grief,
+  **longing**; desire and dread, **worry** (not "anxiety": no clinical words); grief and dread, **despair**. **Gall** covers
+  rejection, from boredom to loathing, physical and moral (the owner kept the name).
 - **Intensity rings** describe strength and never rename the aspect: the aspect's name stays, the ring is the adjective (a mild,
   basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
   is the canon's **Prismatic**.
