@@ -169,3 +169,32 @@ thumbnail size, and the flame carries most of it. So on this rig, **one read per
 **flame's height shows how strong** (mild, basic, intense), and the **flame's colour shows the second feeling** (an agate; `LW_Flame` is
 emissive, one uniform). The contraction principle, embodied. ("Wisp" now means only the creature: the spirit press's ring is "lights".)
 
+**Petra (the minds and the cost):** a creature's mood is one small AI part (`creatures/ai/mood.js`: an intensity per feeling, each
+with its own decay; `shown()` -> { a, b?, k }), and the old Stoic-to-Prismatic axis becomes a projection of it, so every caller keeps
+working. Three more petals cost: nothing for casks and items (they come from ASPECTS); three species as data for fish, once `aff` is
+keyed by aspect instead of by position; what breaks at eight is the angling keys (4 to 8 is five keys: a radial or scroll picker), the
+`[0,0,0,0,0]` literals, and the hand-written shown order. The Crucibelle's five notes are a scale, not the aspects: unchanged. The suite
+is built once (`creatures/anim/suite.js`: floats blended by velocity, the mood loop from `shown().a`, an emote at an onset, the grain's
+dials on playback), the rig specced in rom.js. All of it behind the slice.
+
+## THE DETERMINATION (all four divisions and Dovina, 2026-10-05)
+
+**Agreed by all, now (cheap, made of what exists, and each a contraction):**
+1. **Rings are adjectives on strengths we already have** (Espada's words; one tier per channel, Calissa's; intensity as character,
+   Wanda's). The centre is Prismatic.
+2. **Opposites cancel**, heard and seen: musical opposites (Wanda), pressing an opposite pulls the soul back, an opposite lure repels.
+3. **A mind shows one feeling, or one AGATE** (two wedged, never blended): the clip the strongest, the flame's height its strength,
+   the flame's colour the second (Calissa); the stronger scale with one borrowed note (Wanda); `mood.js` (Petra). The weather reports a
+   second aspect when close (Dovina: the next change to weather.js).
+4. **The five take Plutchik's hues** (Calissa): mirth gold, wonder cyan-lapis, desire orange, grief blue, dread ink-green, each matching
+   its damage type; one data change in the aspect colours.
+5. **Make room for eight before there are eight** (Petra): `aff` keyed by aspect, no five-long literals, the shown order generated.
+
+**Staged, for the owner's ruling: Faith, Gall and Fury join as geography** (Espada): rare under Anagami's sky, pooling in its deep
+Wells, falling freely elsewhere (faith over Margarite; fury and gall in Entropolis's underground). Each has a mode and a bed (Wanda),
+a hue (Calissa: trust light green, disgust violet, anger red), a weather (the halo, the miasma, the hail), a crude grade and fish (Petra:
+data). **Agate Lachryma** (love, awe, contempt, remorse) is the rare, dear compound where two moods overlap. The suite already has
+Angry for fury; **Gall is the one feeling without a clip**.
+
+**Stays as it is:** the five damage types and statuses, the grain (the five traits), the seven domains, the seven attributes.
+

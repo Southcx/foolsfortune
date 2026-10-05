@@ -118,3 +118,11 @@ response to an event, never a standing tremble, so it does not read as the tempe
 the rest; where the Veritome shows a trait (its plate, the bestiary), it shows it in the colour of the damage type it opens (ART.md
 section 2), so reading the mind is learning its weakness.
 
+**Petra (the minds): weights, not machinery.** The Drives already carry per-creature traits (`rollTraits`); `combat/temperament.js`
+exports `traitsOf(grain)` returning that same object, so the Brain and the reasoner read it unchanged (O: curiosity and the shiny
+stimulus's gain; C: territory and patrol; E: social and pack; A: the yield band and grudge; N: fear's rise and fall, the enrage
+threshold). Susceptibility is one multiply in `creatures.build` beside the weather's (amount x take x buildMult x susc[type]). Fear
+through a pack: the 'alarm' stimulus on a fear onset (about radius 12, at most once a second), a listener adding fear by its N and E,
+halved per hop so it cannot stampede. The Veritome reads `c.grain` (the appraisal's stars gate which traits show) and writes through a
+status, `nudge { trait, by, dur }`, via `creatures.applyStatus` (expiry, resistance and the resist mark for free). Behind the slice.
+
