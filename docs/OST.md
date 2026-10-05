@@ -157,7 +157,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 - **Five-bar phrases** make a natural grid for all three.
 
 - **The weather** (Dovina's `game.weather`): the hour sets the density (night thins every cue: drums and bass back), the mood sets the
-  colour (a mood layer over the place's cue: wonder a glass pad, mirth a celesta, hunger a frame drum, grief a cello, dread a drone with
+  colour (a mood layer over the place's cue: wonder a glass pad, mirth a celesta, desire a frame drum, grief a cello, dread a drone with
   the Tear; `music/mood.js`), and the ambience is the weather itself (`audio/ambience.js`). The scale to play along in follows the cue
   that sounds, and the weather's mode only where nothing plays (so the Crucibelle is never wrong). Each track's aspect, for busking:
   `music/aspects.js`.

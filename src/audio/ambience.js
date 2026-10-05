@@ -4,7 +4,7 @@
 // spell of twenty minutes does not wear), scaled by its strength and crossfaded over seconds:
 //   WONDER (the aurora)          near-silence: a glass shimmer very high in drifting fifths, the faint crackle heard under real auroras
 //   MIRTH (the fox's wedding)    a sunshower: sparse bright drops on glaze, each ringing in the major pentatonic, warm air under them
-//   HUNGER (the hungry wind)     a sirocco: hot wind in uneven gusts (a random walk, never a steady pump), sand hissing at the peaks
+//   DESIRE (the wanting wind)    a sirocco: hot wind in uneven gusts (a random walk, never a steady pump), sand hissing at the peaks
 //   GRIEF (the long rain)        rain on clay: a dull dense patter on terracotta, the rain's hush, gutters dripping
 //   DREAD (the pall)             fog: the world's sounds muffled (sfx.setFog), thunder rolling far off minutes apart (felt, never a crack)
 // The hour: birds at dawn; at night insects, and a faint chord in the air where Lachryma glows. Under a roof the mood is there but
@@ -71,7 +71,7 @@ export class Ambience {
     this.gustV = 0.85 * this.gustV + (Math.random() - 0.5) * 0.12; this.gust = Math.max(0.15, Math.min(1, this.gust + this.gustV));
     this.windF = Math.max(250, Math.min(1400, this.windF + (Math.random() - 0.5) * 60 + (this.gust - 0.5) * 20));
     this.wind.f[0].frequency.setTargetAtTime(this.windF, t, 0.3);
-    set(this.wind, A === 'hunger' ? 0.16 * k * this.gust : 0); set(this.sand, A === 'hunger' && open ? 0.025 * k * this.gust * this.gust : 0);
+    set(this.wind, A === 'desire' ? 0.16 * k * this.gust : 0); set(this.sand, A === 'desire' && open ? 0.025 * k * this.gust * this.gust : 0);
     set(this.pall, A === 'dread' ? 0.05 * k * (open ? 1 : 0.5) : 0);
     set(this.glass, A === 'wonder' ? (open ? 0.005 : 0.001) * k : 0);
     this.glass.os.forEach((o, i) => o.detune.setTargetAtTime(Math.sin(t * (0.05 + i * 0.013)) * 9, t, 2)); // (the fifths drifting)
