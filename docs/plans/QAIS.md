@@ -94,8 +94,7 @@ first version, so nothing of it ships by accident.
   duplicates, orders the walk, cuts what a headless run already proves).
 - **After a round is sent**, Dovina reads it, writes each fail to its division's folder in `docs/handoffs/`, sets the reports' first
   status, and carries the questions into the digest.
-- **The checklist page** (https://claude.ai/artifact/GQSpDGYUuPVF7SzDU5RbGU) is retired when Tests ships: Dovina copies its rows into
-  the build's store, and the page is deleted with the owner's word.
+- **The checklist page** is retired (the owner, 2026-10-05): its 37 rows are QAIS tests T7 to T38 in v77, and the page is deleted.
 
 ## Who does what
 

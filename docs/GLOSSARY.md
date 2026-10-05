@@ -408,7 +408,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   offer **take me there** (a place). Always "QAIS test" in full. *Not:* a playtest (an agent's scenario), the stress test, an item (the
   Pneuka Box's), a trial (a minigame).
 - **the Brief** (QAIS's first tab): one build's changelog, a few plain lines per division and what each waits on from the owner.
-- **the checklist** (an Artifact page kept by Dovina until QAIS's tests ship, then retired): the QAIS tests' first home (`C12`).
+- **the checklist** (retired 2026-10-05, the page deleted): the QAIS tests' first home (`C12`); say "QAIS tests".
 - **bug report** (QAIS's Reports tab: `docs/plans/BUGREPORT.md`): the frame taken when F8 is pressed and marked up by the owner, a
   title, a kind and a severity, with the game's whole state attached by the machine (the save, the replay so far, the log, the last
   events, the F4 report); kept in the published build's store for every division to read. *Not:* the F4 report alone (one of its
