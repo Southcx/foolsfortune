@@ -1,3 +1,4 @@
+import { VaneMeter } from '../../vfx/vanemeter.js';
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { DreamvaneModel, FORK as FORK_SIZE } from './model.js';
@@ -139,6 +140,7 @@ export class Dreamvane extends HeldTool {
     } else { this.needle.yaw *= 1 - Math.min(1, raw * 3); this.needle.pitch *= 1 - Math.min(1, raw * 3); }
     this.glow = THREE.MathUtils.damp(this.glow, glow, 8, raw);
     M.setDowse(this.needle.yaw, this.needle.pitch + (on && !target ? 0.15 * Math.sin(performance.now() / 700) : 0), this.glow);
+    (this.vaneMeter ||= new VaneMeter(g)).update(raw, M, { dowse: on }); // (the weather vane on the crook's head: vfx/vanemeter.js)
     if (on) M.webMat.color.lerp(new THREE.Color(ATTUNE[this.att].color), 0.35); // (its attunement in the web's colour)
     this.target = target;
   }
