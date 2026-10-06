@@ -273,8 +273,8 @@ export class Cutlass {
     const f = P.lookDir(_a).setY(0).normalize();
     const at = _b.set(P.pos.x, P.pos.y + 1.1, P.pos.z).addScaledVector(f, 0.8);
     if (this.guardT <= PARRY_WIN) {
-      if (deflect(g, { at, radius: 2.2, speedMin: 3, outMin: 13, assist: 0.5, iframes: 0.4, by: 'blade' })) { this.guardT = PARRY_WIN + 1; g.lachryma.gain?.(2, 'parry'); }
-    } else if (guard(g, { at, radius: 1.8 })) g.lachryma.drain?.(3, 'guard');
+      if (deflect(g, { at, radius: 2.2, speedMin: 3, outMin: 13, assist: 0.5, iframes: 0.4, tool: 'cutlass' })) { this.guardT = PARRY_WIN + 1; g.lachryma.gain?.(2, 'parry'); }
+    } else if (guard(g, { at, radius: 1.8, tool: 'cutlass' })) g.lachryma.drain?.(3, 'guard');
   }
 
   // ---------------------------------------------------------------- what is drawn

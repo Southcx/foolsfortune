@@ -114,7 +114,7 @@ export class Kick extends Tech {
   /** A projectile coming in near the strike: send it back where we're looking (the rule is parry.js's, shared with the blade). */
   tryParry() {
     const c = this.cfg;
-    const pr = deflect(this.game, { at: this.center(), radius: c.parryRadius, speedMin: c.parrySpeed, outMin: c.parryOut, assist: c.parryAssist, iframes: c.parryIframes, by: 'kick' });
+    const pr = deflect(this.game, { at: this.center(), radius: c.parryRadius, speedMin: c.parrySpeed, outMin: c.parryOut, assist: c.parryAssist, iframes: c.parryIframes, tool: 'kick' });
     if (pr) this.parried = true;
   }
 

@@ -121,6 +121,13 @@ export class BrushLoad {
     this.mopAt = got > 0 ? (s.at || new THREE.Vector3(fx, P.pos.y, fz)) : null; // (where the stream is drawn from: vfx/brushload.js)
   }
 
+  /** Lachryma poured into the bottle from outside (the mop's parry, the soak: courier/parry.js); returns what it took. */
+  fill(n) {
+    const b = this.bottle; if (!b || n <= 0) return 0;
+    const t = Math.min(n, BOTTLES[b].capacity - this.held); if (t > 0) this.held += t;
+    return Math.max(0, t);
+  }
+
   /** What was laid or drunk in one hold goes to the ledger in one event, when the hold ends. */
   flush() {
     const g = this.game;

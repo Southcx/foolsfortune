@@ -71,7 +71,7 @@ export class Lobbers {
     mesh.position.set(l.pos.x, l.pos.y + 0.3, l.pos.z);
     this.scene.add(mesh);
     const sync = this.physics.addSynced(body, mesh);
-    const b = { body, mesh, sync, t: 0, prev: v.length(), parried: false, reflected: false };
+    const b = { body, mesh, sync, t: 0, prev: v.length(), parried: false, reflected: false, mark: this.game.parryMark?.mark(mesh), vanish: () => { b.gone = true; } }; // (parryable, and marked so: vfx/parrymark.js)
     this.balls.push(b);
     (this.game.projectiles ||= new Set()).add(b);
     l.flash = 1;
@@ -88,7 +88,7 @@ export class Lobbers {
     const at = new THREE.Vector3(t.x, t.y, t.z);
     const sp = Math.hypot(v.x, v.y, v.z);
     g.fx?.alpha?.emit({ pos: at.clone(), vel: new THREE.Vector3(), life: 0.3, size: 0.12, sizeEnd: 0.02, color: new THREE.Color(0xffa066), alpha: 0.4, drag: 2 });
-    let done = b.t > 6;
+    let done = b.t > 6 || b.gone; // (or broken by a parry: shattered, shot down)
     // a reflected ball rings the targets it strikes
     if (b.reflected && g.movers?.hitTargetsNear(new THREE.Vector3(t.x, t.y - 0.2, t.z), 0.6, { cause: 'parry', drop: 0 })) done = true;
     // one that reaches us knocks us back
@@ -110,6 +110,7 @@ export class Lobbers {
     if (!done && b.t > 0.1 && b.prev > 3 && sp < b.prev * 0.45) done = true;
     b.prev = sp;
     if (done) {
+      if (b.paint) g.paintmap?.stamp(at.x, at.y - 0.2, at.z, 1.1, b.paint, 0.8); // (the brush's bat sent it back in its feeling)
       g.fx?.impact?.(at, new THREE.Vector3(0, 1, 0), { sparks: 8, dust: 10 });
       sfx.pop?.(4);
       this.removeBall(b);
@@ -119,6 +120,7 @@ export class Lobbers {
   }
 
   removeBall(b) {
+    b.mark?.clear();
     this.physics.removeSynced(b.sync);
     this.physics.removeBody(b.body);
     this.scene.remove(b.mesh);

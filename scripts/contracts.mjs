@@ -73,6 +73,13 @@ const results = await g.page.evaluate(async () => {
     return s && r.got >= 9.9 && r.grade === 'grief' && !G.stains.list.includes(s) ? true : `got ${JSON.stringify(r)}`;
   });
   C('the bottle\'s place', 'pneuka/box.js', 'tools/soulbrush/load.js', () => (Array.isArray(G.pneuka.fitted('bottle')) && G.player.techs.get('soulbrush')?.load ? true : 'no bottle fitting or no load'));
+  C('creatures.windup/windups/parried', 'creatures/creatures.js', 'courier/parry.js (every tool\'s parry)', () => {
+    const c = { alive: true, pos: G.player.pos.clone(), radius: 0.5, height: 1, cancel: () => { c.cancelled = true; } };
+    G.creatures.add(c); G.creatures.windup(c, { radius: 1, eta: 0.5 });
+    const seen = G.creatures.windups(c.pos, 1).includes(c); G.creatures.parried(c); G.creatures.remove(c);
+    return seen && c.cancelled && !c.windup ? true : `seen ${seen}, cancelled ${c.cancelled}, windup ${!!c.windup}`;
+  });
+  C('the parry table', 'courier/parries.js', 'tools (V in the hands), feedback/tracking.js', () => (is(G.parries?.update, 'function') ? true : 'no game.parries'));
   C('places.travel/stand', 'world/places.js', 'debug/qais (take me there, /goto)', () => (is(G.places.travel, 'function') && is(G.places.stand, 'function') ? true : 'missing'));
   return out;
 });

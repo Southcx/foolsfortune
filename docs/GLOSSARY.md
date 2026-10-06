@@ -193,6 +193,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
   the **guard** (held). A **parryable** thing wears a Lachryma outline (Cuphead's pink); one
   without it cannot be parried. *Not:* the guard (the held block after the window).
+  Each tool's answer (`courier/parries.js`, the table): the psygun's **stagger** (shot down, its thrower stunned), the Soul Brush's
+  **bat** (returned, carrying the load's feeling) and **soak** (a Lachryma shot drunk into the Lachrymato Bottle), the Veritome's
+  **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
+  **toll** (shattered within reach; wider on the beat), the Lockheart's **gulp** (a Lachryma shot swallowed into the pool). In code each
+  is a `how`: `return`, `turn`, `soak`, `gulp`, `shatter`, `stagger`, `shutter`.
+- **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
+  its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
+- **projectile** (code: an entry in `game.projectiles`): anything thrown that a parry can find: a rigid body (`{ body }`, a lobber's
+  ball) or a plain one (`{ pos, vel }`, a jelly's glob); `parry: false` keeps it out of reach of every parry.
 - **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
   in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade

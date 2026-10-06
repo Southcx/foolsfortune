@@ -66,6 +66,8 @@ export class Crucibelle extends HeldTool {
     return G || { t0: this.ownT0, spb: 60 / OWN_BPM, root: 63 };
   }
   /** How far from the nearest eighth note `t` is (seconds). */
+  /** Is now on the song's beat (within WINDOW)? The toll's parry widens on it (courier/parries.js). */
+  get onTheBeat() { return this.offBeat(this.now(), this.grid()) < WINDOW; }
   offBeat(t, G) { const e = G.spb / 2, p = ((((t - G.t0) / e) % 1) + 1) % 1; return Math.min(p, 1 - p) * e; }
   band() {
     if (this.bandObj || !sfx.ok?.()) return this.bandObj || null;

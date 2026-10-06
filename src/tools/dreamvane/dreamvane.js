@@ -115,6 +115,10 @@ export class Dreamvane extends HeldTool {
     const g = this.game, P = this.P, S = g.signatures, M = this.model;
     const on = this.dowsing && this.held;
     let glow = 0, target = null;
+    // raised to the sky (looking up while dowsing): the vane reads the weather ahead, once a raise (progress/weather.js read: the log says it)
+    const up = on && P.pitch > 0.75;
+    if (up && !this.skyRead) g.weather?.read('courier');
+    this.skyRead = up || (this.skyRead && on && P.pitch > 0.55); // (lowered past a margin, it may read again)
     if (on && S) {
       const A = ATTUNE[this.att];
       target = S.strongest(P.pos, RANGE, { kinds: A.kinds, filter: (s) => s.ref !== this.fork.ent });

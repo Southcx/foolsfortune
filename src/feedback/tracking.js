@@ -228,7 +228,15 @@ export class Tracking {
     on('move.stomp', (e) => { L.inc('move.stomp'); stomp3(e); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
     on('kick.swing', () => L.inc('kick.swing'));
     on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
-    on('move.parry', (e) => { L.inc('move.parry'); L.hi('parry.speed', e.speed); log.say('battle', 'You parry the shot.', { key: 'parry', win: 1 }); });
+    // the parry, with every tool (docs/plans/PARRY.md): counted all together and by tool; one line a way (Espada's words to come)
+    const PARRY_SAY = {
+      return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
+      shatter: 'Your bell shatters the shot.', stagger: 'You shoot the shot down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
+    };
+    on('move.parry', (e) => {
+      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed);
+      log.say('battle', e.what === 'blow' && e.how !== 'shutter' ? 'You parry the blow, and it breaks off.' : PARRY_SAY[e.how] || PARRY_SAY.return, { key: 'parry', win: 1 });
+    });
     on('recoil.jump', (e) => { L.inc('move.recoil'); if (e.charged) L.inc('recoil.charged'); L.hi('recoil.up', e.up); });
     for (const k of ['hang.start', 'hang.pullup', 'latch.start', 'pole.start', 'grate.start', 'balance.start', 'push.start', 'carry.lift', 'carry.put']) on(k, () => L.inc(`move.${k}`));
     on('push.move', (e) => L.inc('push.dist', e.dist));
@@ -581,7 +589,7 @@ export class Tracking {
     on('blade.exit', (e) => { L.hi('blade.cuts.best', e.cuts); });
     on('lock.on', () => { L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); });
     on('guard.up', () => L.inc('guard.up'));
-    on('guard.block', () => { L.inc('guard.block'); log.say('battle', 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
+    on('guard.block', (e) => { L.inc('guard.block'); log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
     on('cut.hit', (e) => {
       L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
       const w = e.what === 'clapper' ? 'clapperjar' : 'pot';

@@ -138,6 +138,7 @@ export class Sondelass extends Tech {
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
       if (this.drawTarget > 0 && this.held) {
         ['Digit1', 'Digit2', 'Digit3'].forEach((k, i) => { if (inp.wasPressed(k)) this.setForm(FORMS[i].id); });
+        if (inp.wasPressed('KeyV') && this.form !== 'cutlass' && !this.hookshot.busy) this.setForm('cutlass'); // (V is the parry: the blade snaps out for it, docs/plans/PARRY.md)
       }
     } else if (this.drawTarget > 0 && !inp.enabled) { /* paused: stay as we are */ }
     if (!this.enabled || g.god?.controlling) this.drawTarget = 0;
