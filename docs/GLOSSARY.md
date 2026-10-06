@@ -550,6 +550,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 - **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
+- **blot** *(Espada's proposal for the player's word for a stain of spilled crude)* and **blotling** (the aberrant Figment a full-grown blot
+  gives up): pending Dovina's rename; until then the glossary's "stain" holds.
 - **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
   the name.
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.

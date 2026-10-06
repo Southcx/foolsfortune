@@ -99,7 +99,7 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 
 **From Round 38** (passed on by Petra in `docs/HANDOFFS.md`, from the owner) *(Ruled)*:
 - **Lachryma is everything**: the stuff of magic and of emotion alike.
-- **Cubes are Lachryma made solid.**
+- **Cubes are Lachryma made solid**: **Lachrymite** *(the owner, R59)*.
 - The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
 - The game divides into **STORY** and **DEBUG**.
 
@@ -209,8 +209,8 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
   makes hauling pay.
 - **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
   Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
-  Lachryma is inert and safe to hold, which is why cubes are money.
-- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma solid, so the
+  Lachryma, **Lachrymite**, is inert and safe to hold, which is why cubes are money.
+- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma into Lachrymite, so the
   currency is a refined product (a petrocurrency) and a Courier is a walking refinery. The Prince's magnum opus is, read this way, the
   first safe container a soul could ride in through raw Lachryma: a jar, built to hold what would burn anyone else.
 - **Ships by trade.** Every era of ship sails the dream sea at once, and each class is a trade:
@@ -464,6 +464,22 @@ Prince sells to neither side: every Courier both of his parents need came out of
   - DIAMOND: "Clear, and full of fire. It goes to your head fast, and it takes in both feelings of an agate."
   - OPAL: "Silica spheres that break the light into flashes. By luck, some drinks are lost and some are doubled."
 
+### Lachrymite, the tear bottles and the blots *(the owner, R59; Espada's words, the numbers Dovina's: `progress/brushload.js`)*
+- **Lachrymite** is Lachryma in its solid form, whatever its shape: a cube is a coin of it, a crystal a formation of it. The *-ite* is
+  the mineralogist's ending, Greek *-ites*, "of the stone": the stone of tears. Liquid Lachryma is volatile; Lachrymite is inert and
+  safe to hold, which is why it is money.
+- **The Lachrymato Bottles** (the owner's name). A *lachrymatory* is a real old thing: a small glass tear bottle, which mourners were
+  said to fill and keep. The Courier wears one on the upper back, full of the world's tears, a reserve for the pool, the well the Soul
+  Brush paints from and mops into. Glass, so a broken shield can crack it. Item text:
+  - SMALL LACHRYMATO BOTTLE: "A tear bottle of thin glass, worn on your back. It holds a little Lachryma for when your pool runs low."
+  - MEDIUM LACHRYMATO BOTTLE: "A tear bottle, stoppered tight. Your Soul Brush paints from it and mops into it."
+  - LARGE LACHRYMATO BOTTLE: "A big tear bottle. It holds a lot of Lachryma, and it breaks like glass."
+- **Blots** *(Espada's word for the stains, proposed)*. Spilled crude soaks into the ground as a blot, and grows a stage each game day.
+  A blot is a stain and an inkblot: the shapes a mind reads into a spill, as in a Rorschach test. A full-grown blot gives up an
+  aberrant Figment shaped by what was read into it, a **blotling**. Mopping a blot is working a feeling through before it grows teeth.
+  Log lines: "You mop up a blot of grief crude." · "A blotling crawls out of a blot of dread crude." · "Your small Lachrymato Bottle
+  cracks: 12 Lachryma spilled."
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
@@ -700,7 +716,7 @@ witnesses the island's work; the other brings in what has gone astray.
 
 ## 8. Things
 
-- **Lachryma**: everything (ruled). Forms in game: baubles (cream, oxidising to black), liquid (black, oil-film), cubes (solid, the
+- **Lachryma**: everything (ruled). Forms in game: baubles (cream, oxidising to black), liquid (black, oil-film), cubes (Lachrymite, the
   currency). The owner's notes: liquid is volatile mana, solid is currency and crafting, refined is Soul Alchemy's fuel.
 - **The System**: the game's code made a voice, and the source of the inspiration behind the Pneuka Jar *(Ruled)*. In game it
   announces skills, titles, analyses and warnings.
