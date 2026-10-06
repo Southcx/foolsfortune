@@ -360,20 +360,20 @@ Prince sells to neither side: every Courier both of his parents need came out of
   renamed **desire** (the owner floated it; Dovina and Espada agreed). Desire *drives* chaos; grief and dread are what chaos *yields* (the comedown, Entropolis's underground). The
   bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
 
-### Temperament: the grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`, R58; proposals for the owner)*
-- **The word in the world is grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
+### Temperament: the Grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`; **canon, ruled by the owner, R59**: Grain is a proper noun, always capitalised)*
+- **The word in the world is Grain.** A clay body has a Grain, set before it is fired, and you can work with it or against it.
   ("Temper" would be the perfect pottery word, since temper is what is mixed into clay, grog among it, but the glossary already gives
   *temper* to the body showing its mental state, `vfx/temper.js`.) *Temperament* itself comes from the Latin for "a right mixing":
   the four humours, mixed. Humours are prior art for the idea; they stay out of the text.
 - **The clinical names stay in code and docs only** (OCEAN ids). The player sees plain words, both poles of each dial:
   **curious / wary** (Openness), **orderly / erratic** (Conscientiousness), **bold / shy** (Extraversion), **gentle / hostile**
   (Agreeableness), **skittish / steady** (Neuroticism). No diagnosis, as the draft says.
-- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean grain of its
+- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean Grain of its
   Figments (the species mean leans the way the island leans), and each creature is drawn about it. An Egregore, authored by no one,
-  has no island grain: the widest spread. The slip jellies were folk of the town that was, so their grain is the boomtown's (bold,
-  erratic). What Kaolin's own grain is stays blank.
+  has no island Grain: the widest spread. The slip jellies were folk of the town that was, so their Grain is the boomtown's (bold,
+  erratic). What Kaolin's own Grain is stays blank.
 - **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
-  as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
+  as "unread". Reprogramming's line: "You turn its Grain: skittish to steady."
 
 ### The wheel of feeling *(after Plutchik; Espada's reading of Dovina's `docs/plans/WHEEL.md`; **approved in full by the owner, R58**)*
 - **The canon was already on the wheel.** Lachryma is *every* feeling (section 1); the five aspects were never all of it, only what
@@ -430,9 +430,8 @@ Prince sells to neither side: every Courier both of his parents need came out of
   Leviathan-class Egregores back also dissolves what has been mended: Magnus's calcified love, as a chemical.
 - **Amethyst, the clear-headed stone.** The Greek *a-methystos* is "not drunk", the stone worn to keep a clear head. In Entropolis's
   overground it is sold as a charm that slows how fast excess Lachryma gets into a mind: the good half of rave culture, looking after
-  itself. Player text says only "a stone that keeps a clear head"; the root stays in the docs. (A person of that name, a sober guide
-  on the floor, is still open.)
-- **The moonflower.** A bed in the Shrine Garden that opens only at night (by the game hour), when Lachryma glows. Its root, datura,
+  itself. Player text says only "a stone that keeps a clear head"; the root stays in the docs. (A person of that name: vetoed by the owner.)
+- **The moonflower.** A bed in the Spirit Garden that opens only at night (by the game hour), when Lachryma glows. Its root, datura,
   stays out of player text.
 - *Declined* (the owner): the playlist's titles as Figment names, the water songs as references, the silence line for Old Grog.
 
@@ -735,8 +734,9 @@ storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns 
   Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
   You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
   not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
-- **The garden's name**: the owner's v0.1 says "an **Internal Shrine Garden**, a pocket dimension inside the vessel". "Spirit Garden"
-  was said in passing; the press is the spirit press. Shrine Garden stands until the owner rules.
+- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**; it is reached through a facility, **the Shrine**.
+  (The owner's v0.1 said "an Internal Shrine Garden, a pocket dimension inside the vessel": the Shrine is the door, the garden what is
+  behind it.)
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
