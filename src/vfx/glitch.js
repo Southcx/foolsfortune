@@ -77,13 +77,14 @@ void main() {
 }`;
 
 /** What tears the picture, by event: the amounts of each part, how long (real seconds), and where (`at` from the payload or the
- *  Courier). Kept to moments that earn it: a glitch on every hit would be a filter, not an event. */
+ *  Courier); an entry may be a function of the payload (a crown's stage). Kept to moments that earn it: a glitch on every hit would be a filter, not an event. */
 export const MOMENTS = {
   'well.foe': { drop: 1, beats: 3, then: { split: 0.8, tear: 0.9, mosh: 0.35, crush: 0.8, dur: 0.9 } }, // (the FOE shows itself: the cut, then the wall)
   'lockheart.ultimate': { split: 0.7, tear: 0.5, mosh: 0.25, crush: 0.5, dur: 0.7 },
   'courier.shatter': { split: 1, tear: 1, mosh: 0.6, crush: 1, dur: 1.4 },
   'reprogram.run': { drain: 1, split: 0.5, crush: 0.9, dur: 1.1, atCreature: true, unlessRefused: true }, // (a mind rewritten: the data drain)
   'slam.impact': { split: 0.35, tear: 0.25, dur: 0.25, min: { power: 0.6 } }, // (a hard slam only)
+  'well.crown': (e) => (e.stage >= 3 ? { drop: 1, beats: 2, then: { split: 0.9, tear: 0.8, mosh: 0.3, crush: 0.7, dur: 0.9 } } : { split: 0.3 + 0.15 * e.stage, crush: 0.3, dur: 0.3 }), // (the Pithos's crown: a tick at each crack; the burst is the drop, Wanda's beat of silence then the wall)
 };
 const PARTS = ['split', 'tear', 'mosh', 'crush', 'drain', 'drop'];
 
@@ -108,6 +109,7 @@ export class Glitch {
 
   /** An event's moment: its pulse (and its cut first, if it has one), placed at the payload's point, the creature, or the Courier. */
   moment(M, e = {}) {
+    if (typeof M === 'function') M = M(e);
     if (T.visual.glitch === false || !M) return;
     const now = performance.now();
     if (now - (this.lastMoment || -1e9) < 400) return; // (a moment at most every 0.4 real seconds: never a strobe)

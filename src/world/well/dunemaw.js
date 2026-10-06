@@ -87,9 +87,9 @@ export class Dunemaw {
     }
     // the pool itself (Calissa's: vfx/dunemaw.js): black Lachryma swallowing the sand, the labradorite's arms turning in, the sand drawn in
     // round it (the maw); it darkens what it covers. Motes of the dunes are drawn into it while it is in view.
-    // the landmark over it (Calissa's: vfx/dunemaw.js DunemawSpout, in place of the standing stones and the violet beam): a spout of sand
-    // pouring up out of the pool and falling back round it, 70 m tall, seen from the oasis
-    this.maw = new DunemawMouth({ radius: 3, spout: true }); this.maw.group.name = 'dunemaw-pool';
+    // the landmark round it (Calissa's: vfx/dunemaw.js PrinceCrown; docs/plans/DUNEMAW.md): the points of the Prince's crown leaning out
+    // of the sand, seen from the oasis. The antlion pit (pit: true) waits on the ground being carved with pitDepth (PIT)
+    this.maw = new DunemawMouth({ radius: 3, crown: true }); this.maw.group.name = 'dunemaw-pool';
     grp.add(this.maw.group);
     const lamp = new THREE.PointLight(0x9a6bff, 10, 14, 1.4); lamp.position.set(0, 1.2, 0); grp.add(lamp);
     mergeStatic(grp); // (the stones are one draw: the pool and its rim are named, and turn)
