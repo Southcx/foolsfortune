@@ -183,6 +183,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **Movement Art** (`src/progress/skills.js`): a tech the System teaches; a **variant** is one of its versions.
+- **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
+  press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
+  the **guard** (held). *Not:* the guard (the held block after the window).
 - **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
   in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
