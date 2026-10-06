@@ -14,7 +14,7 @@
 //   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null        (pure, for builders: render/zonemap.js)
 //   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
 //   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
-//   game.zones.update(dt)        game.zones.current        game.zones.visibleAt(pos)
+//   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)
 //   obj.userData.maxDist = 30      (also hidden beyond that distance from the camera: labels, small signage)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -47,7 +47,7 @@ const _c = new THREE.Vector3(), _s = new THREE.Sphere(), _b = new THREE.Box3();
 export class Zones {
   constructor(game) {
     this.game = game;
-    this.current = null;
+    this.current = null; this.whole = null;
     this.visible = new Set(ZONES.map((z) => z.id)); // (everything, until the camera is somewhere)
     this.t = 0;
     this.enabled = true;
@@ -89,7 +89,7 @@ export class Zones {
     const g = this.game, cam = g.camera.position;
     const cur = zoneOf(cam);
     const changed = cur !== this.current;
-    this.current = cur;
+    this.current = cur; this.whole = cur === null ? null : BY_ID[cur]?.partOf ?? cur;
     const vis = new Set();
     if (cur === null || !this.enabled) for (const z of ZONES) vis.add(z.id);
     else { vis.add(cur); for (const s of BY_ID[cur].sees?.(cam, g.camera) ?? []) vis.add(s); }

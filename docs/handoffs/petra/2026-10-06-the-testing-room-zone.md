@@ -5,7 +5,7 @@ The testing room (`src/world/testroom/`) is not yet a zone, so it is drawn from 
 doorway in `render/zones.js` as the basement is through its hole), and waits on two files that ask the zone where they mean the ground
 (zonemap's header: "is this the same ground?" asks `wholeOf`):
 - Dovina, `src/progress/weather.js` `placeOf`: `zoneOf(pos)` to `wholeOf(pos)` (else the room has no place, its exposure is 'open', and it rains indoors);
-- Wanda, `src/music/choose.js`: `game.zones?.current === 'workshop'` to `wholeOf(game.player.pos) === 'workshop'` or a `zones.whole` I add (else the room is silent).
+- Wanda, `src/music/choose.js`: `game.zones?.current === 'workshop'` to `game.zones?.whole === 'workshop'` (`zones.whole` is in; else the room is silent).
 When both are in: apply the zone (the diff below: `git apply` it), gate, record perf, and delete this note.
 `world/trial.js` will then abort a trial when you step into the room (it asks `zoneOf`): a trial belongs to its room, so that is right.
 
