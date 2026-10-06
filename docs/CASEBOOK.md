@@ -27,8 +27,35 @@ log kept blameless and searchable.
    catch on anything standing proud of it.
 10. **A rename is all the places, or none**: grep the old word across the repo, and read the stress test's page errors, not only its
     violation count.
+11. **A character controller is handed a move along the ground, not into it.** On a slope, tip the level move onto the ground's plane;
+    left to resolve a level move against a ramp, the controller climbs in uneven jumps.
+12. **A correction layer is sprung, never snapped, and never fed by a foot in the air.** IK offsets and hip drops follow their targets
+    with a damped spring at one rate both ways; the hips drop for the foot that stands, weighted by the clip's contact.
+13. **Measure the parts, not the sum**: when something shakes, log each contributor per frame (the controller's height, each
+    correction) before changing any of them; the first suspect was not the cause here.
+14. **A surface tessellated by area costs by area.** Before growing anything built at so many vertices a metre (water, sand, a
+    heightfield), multiply out its triangles; trim what is hidden (a box's dry corners) and say the rest in the perf baseline's reason.
 
 ## Cases
+
+### 2026-10-06 · The dunes shot gained 94,000 triangles when the Weir's pond was tripled (the perf gate)
+- **Measured** (the dunes shot's meshes by triangles, the head against the commit before): only `liquid-water` changed, 56,000 to
+  149,568. The water surface (`vfx/water.js` `waterGeometry`) is four vertices a metre over the volume's bounding box, and the box grew
+  with the pond (82 by 57 m); a third of the box is sand.
+- **Fix:** the water mesh drops the triangles whose three corners are dry (`depthAt` <= 0; `courier/moves/env.js` `dryTrimmed`):
+  291,398 in the shot (was 340,356; 253,616 before the pond grew). The rest is the owner's larger pond, recorded in the baseline.
+- **Rule:** 14.
+
+### 2026-10-06 · The Courier shook on slopes, worst running up a Dunemaw ramp (the owner, R46: "animations all fighting for dominance")
+- **Measured** (`scratchpad`-style probe, 60 Hz, a 6 m over 18 m ramp): the hips' frame-to-frame unevenness was 20 mm running uphill,
+  17 down, against 5.7 on flat ground. Split by part: the controller's own height stepped 6 to 59 mm a frame where 38 was due
+  (its climb and autostep taking turns); the foot IK pulled the swinging foot to the ground and dropped the hips for it, the drop
+  jumping from foot to foot each step; the reach correction pumped (40/s down, 10/s up).
+- **Fix:** the grounded move is tipped onto the ground's plane (`courier/player.js` move); each foot's ground offset is sprung
+  (FOOT_FOLLOW), the hips drop for the standing foot by the clip's contact and are sprung (PELVIS_FOLLOW), the reach correction has one
+  rate (REACH_FOLLOW) (`courier/character.js` footIK). After: the controller climbs 41 to 43 mm every frame; the hips 4.75 mm uphill
+  (was 20), 4.8 down (was 17), 3.5 on flat (was 5.7).
+- **Rules:** 11, 12, 13.
 
 ### 2026-10-06 · The Throwing Room's floor flickered (the owner's report, v86)
 - **Seen:** a dark patch with a stair-stepped edge crawling across the room's floor as the camera moved.

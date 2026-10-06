@@ -5,6 +5,18 @@ import { makeWaterMaterial, waterGeometry } from '../../vfx/water.js';
 // Level features the environmental techs read: water volumes, ladders, and slip
 // (liquid clay) coverage on floors and walls.
 
+/** The surface without its dry triangles (all three corners where the floor is at or above the surface: `depthAt` <= 0). A pond's
+ *  bounding box is a third sand (the Weir's pond, tripled at R46, was 150k triangles over its box; the casebook, "a surface by area"). */
+function dryTrimmed(g, v) {
+  if (!v.depthAt) return g;
+  const pos = g.attributes.position, idx = g.index.array, cx = (v.x0 + v.x1) / 2, cz = (v.z0 + v.z1) / 2;
+  const dry = new Uint8Array(pos.count), keep = [];
+  for (let i = 0; i < pos.count; i++) dry[i] = v.depthAt(pos.getX(i) + cx, pos.getZ(i) + cz) <= 0 ? 1 : 0;
+  for (let i = 0; i < idx.length; i += 3) if (!(dry[idx[i]] && dry[idx[i + 1]] && dry[idx[i + 2]])) keep.push(idx[i], idx[i + 1], idx[i + 2]);
+  if (keep.length < idx.length) g.setIndex(keep);
+  return g;
+}
+
 /**
  * Axis-aligned water: { x0, x1, z0, z1, bottom, surface, kind?: 'water' | 'lachryma', depthAt?(x, z) }. What it looks like is vfx/water.js's (banded, translucent,
  * with the painted sky in it); what it does to a swimmer is swim.js's, which reads only the volumes.
@@ -21,7 +33,7 @@ export class Water {
     this.volumes.push(v);
     const kind = v.kind || 'water';
     const mat = (this.mats[kind] ||= makeWaterMaterial(this.sky, kind));
-    const m = new THREE.Mesh(waterGeometry(v), mat);
+    const m = new THREE.Mesh(dryTrimmed(waterGeometry(v), v), mat);
     m.position.set((v.x0 + v.x1) / 2, v.surface, (v.z0 + v.z1) / 2);
     m.renderOrder = 2;
     this.scene.add(m);

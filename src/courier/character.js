@@ -14,6 +14,8 @@ import { dressFiligree } from '../vfx/filigree.js';
 // The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
+// foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
+const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
 const UP = new THREE.Vector3(0, 1, 0);
 const X = new THREE.Vector3(1, 0, 0);
 const Zv = new THREE.Vector3(0, 0, 1);
@@ -754,6 +756,10 @@ export class Character {
         const gy = s.ground(F.x + off.x, F.z + off.z, s.pos.y + 0.6);
         if (gy !== null) d[k] = THREE.MathUtils.clamp(gy - s.pos.y, -0.45, 0.45) * planted;
       }
+      // (the ground under a foot, smoothed over time: a ray at a swinging foot jumps as the foot crosses a step, a ripple or a
+      // triangle's edge, and the raw jump went straight into the leg. A slope reads the same, just without the jolts)
+      const fd = (st.footD ||= { L: 0, R: 0 });
+      fd[k] = THREE.MathUtils.damp(fd[k], d[k], FOOT_FOLLOW, dt); d[k] = fd[k];
       offs[k] = off;
       offs0[k] = off.clone();
       anim[k] = F.add(off);
@@ -775,7 +781,12 @@ export class Character {
     // stride with the hips at clip height would straighten the legs and drag the feet)
     const tgt = {};
     for (const k of ['L', 'R']) { tgt[k] = anim[k].clone().sub(new THREE.Vector3(offs0[k].x, 0, offs0[k].z)).add(new THREE.Vector3(offs[k].x, d[k], offs[k].z)); }
-    let drop = -Math.min(0, d.L, d.R);
+    // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a
+    // lower patch of ground does not pull the hips down mid-stride; then sprung, not snapped (the alternating feet on a slope made the
+    // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)
+    const wL = 0.3 + 0.7 * (st.contact?.L ?? 1), wR = 0.3 + 0.7 * (st.contact?.R ?? 1);
+    st.pelvis = THREE.MathUtils.damp(st.pelvis || 0, -Math.min(0, d.L * wL, d.R * wR), PELVIS_FOLLOW, dt);
+    let drop = st.pelvis;
     let reach = 0;
     for (const k of ['L', 'R']) {
       const leg = this.leg[k];
@@ -787,7 +798,7 @@ export class Character {
         reach = Math.max(reach, disc > 0 ? v.y - Math.sqrt(disc) : 0.12);
       }
     }
-    st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach), reach > (st.reachDrop || 0) ? 40 : 10, dt);
+    st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach), REACH_FOLLOW, dt); // (one rate both ways: 40 down and 10 up pumped the hips once a stride)
     drop += st.reachDrop;
     if (drop > 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
     const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
