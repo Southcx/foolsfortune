@@ -41,7 +41,7 @@ import { Overhead, OVERHEAD_GLSL } from './overhead.js';
 const C = (hex) => new THREE.Color(hex);
 /** The feelings' colours: canon (the owner, R58: Plutchik's petals; progress/weather.js COLOR, Dovina's). Mirrored here until that module
  *  is on the default branch; then imported from it. */
-const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a };
+export const COLOR = { mirth: 0xf2c84a, wonder: 0x5ec8e0, desire: 0xff7a4a, grief: 0x8fb0ff, dread: 0x3f6a4a }; // (each feeling's colour: its weather, its stains, vfx/stains.js)
 /** Each weather's look: its colour, what falls (and how), its mark, and what it does to the sky's grade and the fog. */
 export const LOOK = {
   mirth:  { colour: C(COLOR.mirth), clouds: { cover: 0.62 },  fall: { kind: 'rain', rate: 0.3, speed: 6, len: 0.7, alpha: 0.55, vel: [0.12, -1, 0.05] }, mark: 'rainbow',

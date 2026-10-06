@@ -44,6 +44,8 @@ import { buildLetty, buildPoll, buildPurser, buildBountyBoard } from '../vfx/mar
 import { SpiritPress } from '../vfx/spiritpress.js';
 import { StrawmanModel } from '../vfx/strawman.js';
 import { UrnCrown } from '../vfx/urncrown.js';
+import { LachrymatoBottle } from '../vfx/bottle.js';
+import { Stain } from '../vfx/stains.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
 import { Pillar, Stalactite, slipMaterial, Clutch } from '../vfx/cavekit.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
@@ -184,6 +186,7 @@ export class Workbench {
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (cracking, bursting, the core; on a loop)" });
+    out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' });
     out.push({ id: 'workshop:strawman', grp: 'the Workshop', label: 'Strawman (struck every 2 real seconds)' });
     out.push({ id: 'garden:regia', grp: 'the Shrine Garden', label: 'the spirit press: aqua regia (something gilded pressed)' });
     out.push({ id: 'folk:letty', grp: "Margarite's people", label: 'Letty Marque (and Poll)' }, { id: 'folk:purser', grp: "Margarite's people", label: 'the Purser' }, { id: 'folk:board', grp: "Margarite's people", label: 'the bounty board' });
@@ -349,6 +352,8 @@ export class Workbench {
       }
       else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
+      else if (id === 'brush:bottles') { obj = new THREE.Group(); const B = ['small', 'medium', 'large'].map((sz, i) => { const b = new LachrymatoBottle({ size: sz }); b.group.position.x = -0.3 + i * 0.3; b.set({ fill: [0.9, 0.55, 0.3][i], crack: i === 2 }); obj.add(b.group); return b; }); const acc = new THREE.Vector3(); let pt = 0; obj.userData.tick = (t) => { acc.set(Math.sin(t * 1.3) > 0.9 ? 9 : 0, 0, Math.cos(t * 0.9) > 0.95 ? 7 : 0); for (const b of B) b.update(Math.max(0, t - pt), acc); pt = t; }; }
+      else if (id === 'brush:stains') { obj = new THREE.Group(); const S = new Stain({ feeling: 'desire', seed: 0.31 }); obj.add(S.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 16; S.set({ stage: Math.min(3, Math.floor(k / 3) + 1), amount: k > 12 ? 1 - (k - 12) / 4 : 1 }); if (k < pt % 16) S.stage = 0; S.update(Math.max(0, t - pt) * 4); pt = t; }; }
       else if (id === 'workshop:strawman') { const S = new StrawmanModel(); obj = S.group; let last = 0, pt = 0; obj.userData.tick = (t) => { if (t - last > 2) { last = t; S.group.updateMatrixWorld(true); const p = S.body.localToWorld(new THREE.Vector3(0, -0.53, -0.4)); S.hit(p, new THREE.Vector3(Math.sin(t), 0, -1).normalize(), 1); } S.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'garden:regia') { const P = new SpiritPress(); P.set({ soul: { h: 40, s: 0.6 }, fire: 0.5, near: 2 }); obj = P.group; obj.userData.tick = (t) => { if (t % 6 < 0.05) P.set({ regia: 1 }); P.update(t); }; }
       else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
