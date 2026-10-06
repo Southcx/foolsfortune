@@ -111,6 +111,10 @@ export const ECON = {
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
+  /** The escape item (name: Espada's; docs/plans/SHRINES.md): out of a Well alive, to its mouth. A run walked up pays all of it; one
+   *  escaped pays `keep` of it (the haul and the map kept whole); one shattered pays nothing. `price` in minutes of play; one carried at a
+   *  time; `channel` real seconds of use, broken by a blow (a way out when you have a breath, not a dodge mid-blow). */
+  escape: { price: 8, keep: 0.75, carry: 1, channel: 1.5 },
   /** A COGITOMAP: a ticket to a seeded run of a Well, as it was the day it was charted. Worth `share` of what that run paid, by how
    *  much of it was charted, times what its Well still holds (its yield at the fill it has now: progress/shop/shops.js `still`). No
    *  clock rots it (the owner, R58): a map is a claim on a feeling still there, so farming a Well cheapens its maps and letting it
@@ -166,12 +170,12 @@ export const ECON = {
 
   // ---- the mastery dividend (docs/ECONOMY.md, rule 6; not built yet: the simulator's numbers to aim at)
   /** An encounter whose ledger is complete pays on its own: `share` of what farming it by hand pays an hour, accruing for at most
-   *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
+   *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Spirit Garden's `slots` (which mastered
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
   dividend: { share: 0.05, capDays: 8, slots: 3 }, // (the cap: 8 game days, 8 real hours, a working day or a night's sleep away: DESIGN.md 16)
 
-  // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
+  // ---- the Spirit Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
   /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds
    *  (`beds` to start, a material growing `growHours` game hours into `yield` of its kind), and the upgrades (the long sink): the n-th
    *  extra slot or bed costs `upgrade[kind][n]` minutes of play, dearer each time. */

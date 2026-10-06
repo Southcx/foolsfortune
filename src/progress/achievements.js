@@ -45,7 +45,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SHRINE GARDEN', subs: ['The Press', 'The Garden'] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -543,7 +543,7 @@ export function buildAchievements(game) {
   F('dm4', 'psyche', 'Levels', 5, 'endure', 'Ninety-Nine', 'Reach level 99 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 99, { title: 'Adept' });
   F('dm5', 'psyche', 'Levels', 6, 'endure', 'The World', 'Reach level 99 in all seven domains: the end of the Fool\'s Journey.', (L) => DIDS.filter((d) => lv(L, d) >= 99).length, 7, { hidden: true, title: 'The World' });
 
-  // ---------------------------------------------------------------- THE SHRINE GARDEN (progress/alchemy.js, progress/garden.js)
+  // ---------------------------------------------------------------- THE SPIRIT GARDEN (progress/alchemy.js, progress/garden.js)
   const AIDS = ['willpower', 'focus', 'charisma', 'perception', 'dexterity', 'visualization', 'resilience'], rk = (L, a) => L.best(`alchemy.rank.${a}`) || 0;
   C('sa1', 'garden', 'The Press', 1, 'count', 'First Firing', 'Fire the spirit press into an attribute.', 'alchemy.fire', 1);
   F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);

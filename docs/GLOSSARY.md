@@ -66,9 +66,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
-- **the Shrine Garden** (`game.garden`, `src/progress/garden.js`): the pocket inside the vessel: the mastery dividend's **slots** (each worked
-  by a **mastered** encounter: every achievement of its group done), the **beds** (a material planted grows more of its kind), and the
-  upgrades (the long sink). *Not:* "Spirit Garden" (the owner's word for it in passing, 2026-10-05: the same place, unless ruled otherwise).
+- **the Spirit Garden** (`game.garden`, `src/progress/garden.js`; renamed from "the Shrine Garden" by the owner, 2026-10-06): the pocket
+  dimension inside your Pneuka Jar, entered at a **Shrine**: the mastery dividend's **slots** (each worked by a **mastered** encounter:
+  every achievement of its group done), the **beds** (a material planted grows more of its kind), and the upgrades (the long sink). The
+  **Pneuka Box** is its shed: the one part of it reachable anywhere (P). *Not:* "Shrine Garden" (retired).
+- **a Shrine** (`docs/plans/SHRINES.md`): a place in the world where you **rest** (the pool full), which is **where you are made whole**
+  after a shatter (the last one you rested at), a **fast-travel** point (to any Shrine you have found), and the door into the Spirit
+  Garden. None in the Wells. *Not:* a save point: the game keeps everything as it happens (`game.save`); *not* the Wells' dead-end
+  room of the same shape (`prefabs.js` `shrine`, a breath, which keeps its code name).
+- **the escape item** (placeholder; Espada names it, `docs/plans/SHRINES.md`): a consumable that takes you out of a Well alive, to its
+  mouth (Pokemon's Escape Rope, Psychonauts' Smelling Salts).
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
   (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
@@ -113,7 +120,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes). Machinations' word.
 - **profile** (`PLAY`, `scripts/economy.mjs`): one way of spending an hour (the fighter, the miner, the photographer, the angler, the
   treasury camper), simulated against the table. A **mixed profile** is two played together.
-- **sink**: a drain the player chooses and that never fills (the glazes, later the Shrine Garden). **The long sink** is the one meant
+- **sink**: a drain the player chooses and that never fills (the glazes, later the Spirit Garden). **The long sink** is the one meant
   to take a committed player's surplus for weeks. *Not:* any drain (the Tithe is a drain, not a sink).
 - **worth** (`worthOf`, `src/progress/shop/catalogue.js`): what a thing is worth in cubes, the base every price moves from. A shop's
   **list** price is worth × its markup; Raku's **floor** is the least he takes.
@@ -539,7 +546,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
 - **the ambience** (`game.ambience`, `src/audio/ambience.js`): what the weather and the game hour sound like where the Courier stands, a
   generative **sound bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music. *Not:* the
-  Shrine Garden's **beds** (where a material is planted).
+  Spirit Garden's **beds** (where a material is planted).
 - **mood layer** (`moodLayer`, `src/music/mood.js`): the weather heard in the music, a few quiet notes over each bar of the place's cue
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
@@ -580,7 +587,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
-- **moonflower**: a Shrine Garden bed that opens only at night, by the game hour.
+- **moonflower**: a Spirit Garden bed that opens only at night, by the game hour.
 
 ## Homonyms we keep on purpose (always qualify them)
 
@@ -609,6 +616,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | surfer, Solar Surfer | the skiff, Solar Skiffing | (gone: `sfx.skiffLoop` and the `skiff*` clips, R42) |
+| Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | Calissa's `vfx/spiritpress.js`, `vfx/datura.js`, `workbench.js`, `docs/ART.md`; Espada's `docs/LORE.md`; Petra's `docs/plans/DUNEMAW.md`; `docs/plans/TEMPERAMENT.md` (asked) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | the lab (for the basement) | the basement (or the movement lab, the room) | (gone) |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |

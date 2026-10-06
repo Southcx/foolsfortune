@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// TRACKING, THE SHRINE GARDEN AND SOUL ALCHEMY: the rules that hear the garden (progress/garden.js) and the spirit press
+// TRACKING, THE SPIRIT GARDEN AND SOUL ALCHEMY: the rules that hear the garden (progress/garden.js) and the spirit press
 // (progress/alchemy.js), keep their counts for the achievements, and say the few things worth a sentence. The words are placeholders
 // for Espada's. tracking.js calls it from listen().
 //
