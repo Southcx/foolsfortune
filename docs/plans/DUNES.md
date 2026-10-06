@@ -34,6 +34,10 @@ streaming) is yours to measure.
   sweeps round the dial as the clock (**a real-time limit: Dovina's number**). Geysers are part of the line: rings hang above them.
 - **"Solar":** the light: rings to pass through while the sun is on them (they dim as the shadow of a dune crosses them). Or does it
   run only by day? **Dovina:** the rule; **Espada:** what the sundial is.
+- **Dovina's rule** (`docs/plans/DUNEMAW-SYSTEMS.md`): the rings are charged by the sun: a ring in shade (a dune's shadow, the long
+  rain, the pall) is dark and does not count. Noon is the easy run, dawn and dusk the hard one; closed at night. The Gnomon's shadow
+  sweeps the dial once in 90 real seconds; 24 rings; a missed lit ring adds 2 s. Medals: gold 60, silver 72, bronze 85 (each pays
+  once, ever). Rings over geysers light only at the top of an eruption. **The look:** lit gold against dark ash-grey, read at speed.
 - **Records:** the run's time, in the ledger (Dovina's), the log's line (`tracking.js`).
 - **The music (Wanda):** in the owner's melodic-drop sound at about 150 bpm; each ring plays the next note of the scale, so a clean run
   is a melody. The geysers by their cycle: a fizz, a rumble, a roar, a rain of sand.

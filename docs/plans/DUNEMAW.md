@@ -59,7 +59,7 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
   - **chambers**: 3 to 6 cells (24 to 48 m), the ordinary room;
   - **halls**: 8 to 12 cells (64 to 96 m), a slip river through them, two or three tiers;
   - **the great cavern** (the last floor's): up to the whole floor (200 m), the nursery and the FOE's arena, 30 m to its roof.
-- **Three floors** stay (Dovina's pay and the FOE count), each larger.
+- **Three floors**, growing: 13, 19 and 25 cells a side (Dovina: the first teaches small, the great cavern is the payoff).
 - **Sand slopes:** one-way descents between tiers (20 to 35 degrees), walked or ridden (the skiff works on them).
 - **Slip rivers:** channels of moving slip, 3 to 8 m wide, flowing at **3 to 6 m/s** (a current: they carry the Courier and the
   skiff). Ridden downstream, they are the quick way. They pour off ledges as **slipfalls**.
@@ -122,6 +122,27 @@ breaking the crown reveals the bright thing at the bottom of the jar: the core.
   slam); the 4 s reel is one bar at 60 bpm, phase 2 starting on the next bar line; the core hums and rises as it weakens.
 - **Events (Wanda's ask, for Petra):** `well.crown { stage: 1 | 2 | 3, by }` at each crack, stage 3 the burst (the glitch slams on
   it too: Calissa adds it to MOMENTS).
+
+## The systems, answered (Dovina, `docs/plans/DUNEMAW-SYSTEMS.md` and `src/progress/combat/dunemaw.js` on claude/dovina-design a1a5f9e)
+
+The numbers live in Dovina's file; in short:
+- **The crown answers to reading, not to sponging.** Only what breaks pots cracks the urn: Impact 1.5 a blow, the slam 3, its own ram into
+  a pillar or a stalactite a whole stage (6). Every other type rings off it (the resist mark). 3 stages of 6. The clever kill is the
+  bullfight: three rams, about 30 real seconds. Each ram spends the arena (a pillar cracks, a stalactite falls).
+- **Bare:** health 48; the reel 4 sim seconds at x3; the core x2, the body x0.5; it sinks every 12 sim seconds for 3 (a ring 1.2 s before
+  it surfaces); the arena slides 0.8 m/s, 1.5 below a third of its health; brood 3 at two thirds and 3 at one third, capped by the
+  clutches still whole; reprogrammed below 20% health while it reels or is stunned. Burst pays 2 floors' worth and a crown shard;
+  reprogrammed pays half, and the nursery becomes a Shrine Garden dividend worker.
+- **The nursery:** clutches 1, 3, 8 on the three floors, 3 to 6 eggs; a brood every 20 sim seconds while a guard lives and the Courier
+  is within 20 m (at most 3 out); clutches return with the next game day's layout; each clutch broken before the fight is 2 brood
+  the FOE cannot call; a broken egg leaves **slip roe** (a Garden bed material) 30% of the time.
+- **The finds:** pots 12, 16, 20 a floor (a quarter hold a find); artifacts 2, 3, 4 a floor; one **warped artifact** a floor is worth x3,
+  and taking it moves the way down, opens a sandfall and wakes 2 brood. Readable first: the Dreamvane hears the warp, Divination
+  names what will shift.
+- **The floors:** three, growing: **13, 19 and 25 cells a side.**
+
+**What it asks of the look:** the pillars and stalactites must read as ammunition (a ram's crack glows on the pillar too); a warped
+pocket must look like "this changes things".
 
 ## The look (Calissa)
 

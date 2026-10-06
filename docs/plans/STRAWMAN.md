@@ -41,3 +41,9 @@ place in the Workshop and its body, Calissa the model and how it reacts. The own
   own sound on top, and a ding on the target, higher toward the bull's-eye.
 - **Calissa (built: `src/vfx/strawman.js`, in the workbench):** the model and its rock; `ring(point)` tells which ring a blow found,
   for Wanda's ding.
+- **Dovina (the system, `docs/plans/DUNEMAW-SYSTEMS.md`):** a real creature (hurtable, struck through `creatures.strike`) whose
+  health never falls; every status at its real time; never in the ledger (`training: true`); no floating numbers: a bout ends after
+  4 real seconds without a blow and the log says one line ("Strawman took 18 blows in 6.2 s: 54 damage, 8.7 a second (Impact 40, Ego
+  14); stunned once."), and `/strawman` repeats it; reprogrammable and mirrorable, always. **F at Strawman cycles three modes:**
+  still, guard (it blocks from the front) and swing (a slow, telegraphed, harmless swing every 3 sim seconds, its wind-up 0.8 s:
+  the look must make the wind-up read).
