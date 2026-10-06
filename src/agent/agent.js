@@ -78,10 +78,10 @@ export class Agent {
     const target = (c) => (c.place ? g.places?.pos(c.place) : Array.isArray(c.to) ? new THREE.Vector3(...c.to) : null);
     this.result = null;
     switch (cmd.do) {
-      case 'goto': { // (steered on foot: through the Well's doorways when it is down there)
+      case 'goto': { // (steered on foot: through the Well's doorways when it is down there; a Well's floor has two tiers 6 m apart, and only one floor stands at a time)
         const to = target(cmd); if (!to) return { ok: false, why: 'no such place' };
         const zt = wholeOf(to), zc = wholeOf(P.pos); // (the whole, not the zone: the beach is walked to from the dunes)
-        if (zt !== zc || Math.abs(to.y - P.pos.y) > 4) return { ok: false, why: `it is in ${zt}${zt === zc ? ', on another floor' : ''}, and you are in ${zc}: travel there first (goto walks within a room)` };
+        if (zt !== zc || (!g.well?.active && Math.abs(to.y - P.pos.y) > 4)) return { ok: false, why: `it is in ${zt}${zt === zc ? ', on another floor' : ''}, and you are in ${zc}: travel there first (goto walks within a room)` };
         const path = g.well?.active && g.well.route ? g.well.route(P.pos, to) : [to];
         this.task = { kind: 'goto', path, i: 0, within: cmd.within ?? 1.2, run: cmd.run !== false, ticks: cmd.ticks ?? 60 * 30, best: Infinity, still: 0 };
         return { ok: true };
