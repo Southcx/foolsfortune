@@ -13,6 +13,7 @@
 //
 //   const m = new DunemawMouth({ radius, maw, spout })   (maw: the colour of what it draws in; spout: the landmark over it, true or { height, sand })   scene.add(m.group)   m.update(t, open 0..1)   m.dispose()
 //   (its own frame: centred on the sand's surface, Y up; Petra places it, its zone and its signature)
+//   const f = new Sandfall({ width, height })   group.add(f.group)   f.update(t, 'open' | 'warn' | 'falling', rawDt)   f.dispose()   (a floor's shifting door)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
@@ -113,6 +114,52 @@ export class DunemawSpout {
   }
   update(t) { for (const m of [this.column, this.fall]) m.material.uniforms.uT.value = t; }
   dispose() { for (const m of [this.column, this.fall]) { m.geometry.dispose(); m.material.dispose(); } }
+}
+
+// A SANDFALL (docs/plans/DUNEMAW.md): the shifting door of a side passage, a curtain of sand pouring from above. Petra's collider and
+// cycle decide when; this is how it looks, in three states it blends between: OPEN (nothing but a few grains), the WARNING (a trickle
+// down the middle, 3 sim seconds before it falls) and FALLING (a full curtain, its streaks pouring, frayed at its edges, the Lachryma
+// glinting in it as in the spout's crown). Prior art: Journey's sunken city, its sand pouring from the broken ceilings; Uncharted 3's
+// sand pouring through Iram; an hourglass's neck.
+const FALL_V = 'varying vec2 vU; varying vec3 vW; void main() { vU = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
+const FALL_F = `varying vec2 vU; varying vec3 vW; uniform float uT, uAmt, uWarn, uW; uniform vec3 uSand;
+${LAB_GLSL}
+${LIQUID_GLSL}
+void main() {
+  float x = vU.x * uW; // (metres across)
+  // (threads, not blobs: the noise stretched down the fall, fine across it, two layers falling at different speeds)
+  vec2 p1 = vec2(x * 1.1, vU.y * 0.3 + uT * 0.5), p2 = vec2(x * 2.3 + 0.4, vU.y * 0.55 + uT * 0.85);
+  float m = liqTap(p1).r, b = liqTap(p2).g, v = liqTap(p2 * vec2(0.5, 1.0)).a;
+  float grains = m * 0.6 + b * 0.4;
+  float across = 1.0 - abs(vU.x - 0.5) * 2.0;
+  float curtain = uAmt * smoothstep(0.0, 0.4, across) * smoothstep(0.38, 0.72, grains + 0.15 * uAmt); // (frayed hard at its sides, thin between its threads)
+  float trickle = uWarn * smoothstep(0.86, 0.97, across) * smoothstep(0.3, 0.5, grains); // (the warning: a thin stream down the middle)
+  float a = max(curtain, trickle) * smoothstep(0.0, 0.06, vU.y) * smoothstep(1.0, 0.92, vU.y);
+  vec3 col = uSand * (0.55 + 0.6 * grains) * (0.6 + 0.4 * vU.y);
+  float lab = smoothstep(0.7, 0.95, v) * uAmt;
+  col = mix(col, labradorite(labPhase(vW, normalize(cameraPosition - vW)) + vU.y) * 1.4, lab * 0.7);
+  gl_FragColor = vec4(col, a);
+  #include <colorspace_fragment>
+}`;
+
+export class Sandfall {
+  /** A curtain `width` by `height` metres, its foot at the group's origin, facing +z (both sides drawn). */
+  constructor({ width = 4, height = 5, sand = 0xb8834e } = {}) {
+    this.u = { uT: { value: 0 }, uAmt: { value: 0 }, uWarn: { value: 0 }, uW: { value: width }, uSand: { value: new THREE.Color(sand) }, uMindT: mindTime, ...liquidUniforms() };
+    const g = new THREE.PlaneGeometry(width, height); g.translate(0, height / 2, 0);
+    this.mesh = new THREE.Mesh(g, new THREE.ShaderMaterial({ name: 'dunemaw-sandfall-door', uniforms: this.u, vertexShader: FALL_V, fragmentShader: FALL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    this.mesh.name = 'sandfall';
+    this.group = new THREE.Group(); this.group.add(this.mesh);
+    this.amt = 0; this.warn = 0;
+  }
+  /** state: 'open' | 'warn' | 'falling'. The look eases toward it (a curtain thickens over about a second and thins as fast). */
+  update(t, state, raw = 1 / 60) {
+    const tA = state === 'falling' ? 1 : 0, tW = state === 'warn' ? 1 : 0;
+    this.amt += (tA - this.amt) * (1 - Math.exp(-raw * 3)); this.warn += (tW - this.warn) * (1 - Math.exp(-raw * 4));
+    this.u.uT.value = t; this.u.uAmt.value = this.amt; this.u.uWarn.value = this.warn;
+    this.mesh.visible = this.amt > 0.01 || this.warn > 0.01;
+  }
+  dispose() { this.mesh.geometry.dispose(); this.mesh.material.dispose(); }
 }
 
 export class DunemawMouth {

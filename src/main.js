@@ -94,6 +94,7 @@ import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
 import { DataDrain } from './vfx/datadrain.js';
+import { dunemawMood } from './vfx/dunemawkit.js';
 import { Shore } from './vfx/shore.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
@@ -300,6 +301,7 @@ async function main() {
   game.post = new Glow(renderer);
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
   game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
+  game.dunemawMood = dunemawMood(game); // (the Great Dunemaw's verse into the wall: its floors' colours by depth, slammed at the FOE)
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
@@ -1018,7 +1020,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
