@@ -11,7 +11,7 @@
 // Objects that follow the camera or are drawn in world space from the origin (particles, trails, ropes: `frustumCulled = false`), and
 // anything marked `userData.zoneFree`, are never hidden by zone.
 //
-//   zoneOf(pos) -> 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null        (pure, for builders: render/zonemap.js)
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null        (pure, for builders: render/zonemap.js)
 //   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
 //   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
 //   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)
@@ -31,9 +31,19 @@ const seesHole = (c, cam, range) => {
   return _fr.setFromProjectionMatrix(_pm).intersectsBox(HOLE_BOX);
 };
 
+// the testing room's doorway in the workshop's east wall (world/testroom/layout.js TR.door: z 1 to 4, 3.2 m high), the wall's depth and a margin
+const DOOR_BOX = new THREE.Box3(new THREE.Vector3(9.8, 0, 0.8), new THREE.Vector3(10.8, 3.4, 4.2));
+/** Can the camera see through the testing room's doorway (in range, and the doorway on screen)? */
+const seesDoor = (c, cam, range) => {
+  if (Math.max(DOOR_BOX.distanceToPoint(c), 0) > range) return false;
+  _pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);
+  return _fr.setFromProjectionMatrix(_pm).intersectsBox(DOOR_BOX);
+};
+
 // what each zone can see from where the camera stands (the tests themselves are pure: render/zonemap.js)
 const SEES = {
-  workshop: (c, cam) => (seesHole(c, cam, 30) ? ['basement'] : []),
+  workshop: (c, cam) => [...(seesHole(c, cam, 30) ? ['basement'] : []), ...(seesDoor(c, cam, 40) ? ['testroom'] : [])],
+  testroom: (c, cam) => (seesDoor(c, cam, 40) ? ['workshop'] : []),
   basement: (c, cam) => (seesHole(c, cam, 12) ? ['workshop'] : []), // (a hole in the ceiling: only from near under it)
   beach: () => ['dunes'],
   dunes: (c) => (nearShore(c) ? ['beach'] : []),
