@@ -28,7 +28,7 @@ const LANES = [
   ['hub', /^(src\/main\.js|src\/feedback\/tracking(\.js|\/)|CLAUDE\.md|README\.md|docs\/(HANDOFFS\.md|handoffs\/|GLOSSARY\.md)|package(-lock)?\.json|scripts\/(check|perf)-baseline\.json)/],
   ['Dovina', /^(src\/progress\/(?!shop\/(shops|ui)\.js)|scripts\/(economy|combat)\.mjs|docs\/(ECONOMY|DESIGN)\.md|docs\/(plans|checklist)\/|src\/tools\/lockheart\/(table|outcomes)\.js)/],
   ['Wanda', /^(src\/audio\/|src\/music\/|src\/npc\/clayese\.js|docs\/(OST|voice_recording)\.md)/],
-  ['Calissa', /^(src\/vfx\/|src\/ui\/|src\/assets\/|source_assets\/|src\/workbench\/|scripts\/(export_|bake_)|docs\/ART\.md)/],
+  ['Calissa', /^(src\/vfx\/|src\/ui\/|src\/assets\/|source_assets\/|src\/workbench\/|src\/cine\/|scripts\/(export_|bake_)|docs\/ART\.md)/],
   ['Espada', /^(docs\/LORE\.md|src\/npc\/talks\.js)/],
   ['Petra', /./],
 ];
