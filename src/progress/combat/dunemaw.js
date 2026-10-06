@@ -12,7 +12,7 @@
 //
 //   FOE  crackOf(type, cause) -> crack points   phase(foe) -> 'crown' | 'reel' | 'bare'   hitMult(phase, part, type) -> damage x
 //   broodAt(hpShare, lastShare, clutchesLeft) -> brood to call   pay(end) -> { floors, items }
-//   NURSERY   FINDS   findWorth(kind, floor, warped?) -> minutes of play   SOLAR  medalOf(seconds) -> 'gold' | 'silver' | 'bronze' | null
+//   ARENA (the bowl's measures)   NURSERY   FINDS   findWorth(kind, floor, warped?) -> minutes of play   SOLAR  medalOf(seconds) -> 'gold' | 'silver' | 'bronze' | null
 //   litRing(sunUp, shaded, weather) -> bool   STRAWMAN  bout(hits) -> { blows, seconds, damage, perSecond, byType, statuses }
 // ---------------------------------------------------------------------------------------
 
@@ -26,6 +26,9 @@ export const FOE = {
     ram: 6, // (its own ram into a pillar or a stalactite: one whole stage; the bullfight is the clever way, the hammer the honest one)
     bodyChip: 0.25, // (blows to its sides while crowned: the slip takes them, a quarter lands)
   },
+  ram: { telegraph: 1.0, speed: 11, range: 24, turn: 20, wallStun: 1 }, // (a 1 s scrape, then 11 m/s: faster than a sprint, slower than a
+                                                                       //  dash, so it is sidestepped, never outrun; 24 m at most, 20° a second)
+  slam: { within: 5, radius: 3 }, // (close in, it rears and slams a ring 6 m across)
   reel: { seconds: 4, mult: 3 }, // (the break: it reels, and every blow lands three times over; Hollow Knight's window, short on purpose)
   core: { mult: 2, body: 0.5 }, // (bare: the core takes double, the body half; the core moves with it, so aim is the skill)
   sink: { every: 12, seconds: 3, telegraph: 1.2 }, // (bare: it sinks every 12 sim s for 3 and surfaces with a slam, the slip's ring 1.2 s before)
@@ -62,6 +65,17 @@ export function broodAt(hpShare, lastShare, clutchesLeft) {
   return Math.min(n, clutchesLeft * NURSERY.clutch.brood);
 }
 export const pay = (end) => FOE.pay[end] || null;
+
+/** THE ARENA (docs/plans/DUNEMAW-ARENA.md, Petra's to build): the bowl's measures in metres, bearings from north clockwise. */
+export const ARENA = {
+  radius: 28, roof: 30, dish: 4, // (degrees of the floor's slope to the centre)
+  rim: { from: 22, depth: 0.4, wade: 0.7 }, upper: { from: 24, y: 4, bearings: [90, 270] }, ledge: { z: [26, 34], y: 6, width: 12 },
+  pillars: { r: 18, bearings: [30, 90, 150, 210, 270, 330], width: 3, height: 12, cracks: 2 }, // (a pillar takes two rams: cracked, then fallen)
+  stalactites: { r: 12, bearings: [0, 45, 90, 135, 180, 225, 270, 315], y: [14, 18] },
+  pools: { centre: 6, ring: { r: 16, bearings: [0, 90, 180, 270], width: 4 }, depth: 2 },
+  clutches: { r: 25, perQuadrant: 2, clear: 3 }, // (3 m or more from any pillar)
+  wake: 20, // (the FOE wakes when the Courier is on the floor within 20 m of it)
+};
 
 /** THE NURSERY. The slip jellies breed in the slip; a clutch is part of the floor's seeded layout, so it comes back with the next game
  *  day's layout, never sooner (a run is a place in time: what is broken stays broken). */

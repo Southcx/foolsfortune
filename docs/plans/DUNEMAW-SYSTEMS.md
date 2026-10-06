@@ -100,6 +100,26 @@ its grain agree, and a Veritome read of it says so before the fight.
   **swing** (a slow telegraphed swing every 3 sim s that does no harm, to practise the dodge and the parry). The log says the mode.
   Begun in its room, as every trial is.
 
+**Planned: a tunable Strawman** (the owner, 2026-10-06: "improve Strawman's ability to be tuned to test various combat interactions").
+Not built; the plan, for when Strawman stands:
+- **The rig:** a console beside Strawman (a trial is begun from something in its room), opening a small window of Strawman's settings.
+  It is not the Tab panel: Strawman's settings are the test's conditions, not the game's tuning, so they never raise the tuned warning.
+  It goes away when you leave the Workshop.
+- **What it sets:**
+  - its **grain** (the five dials, so a "skittish" or "bold" target can be met on purpose);
+  - its **mental state** (held at one of the five, or free);
+  - each **damage type's** affinity (weak, normal, resistant);
+  - its **poise** and each status's build-up;
+  - **friendly-fire tolerance** (on or off);
+  - its **guard** arc;
+  - its **behaviour** (still, guard, swing, or a scripted pattern of swings and guards).
+- **Presets** that mirror a real creature: a slip jelly, a bold jelly, the Great Slip Jelly crowned and bare. Strawman then answers
+  blows exactly as that creature would, so a combat interaction is tested against the real numbers before it ships.
+- **The bout says its conditions**: the log's line names the preset or the tuned settings, and a QAIS report filed in the Workshop
+  carries Strawman's rig, as it carries the Tab panel's tuning.
+- **Scripted runs** for the brigade: `/strawman` takes a preset and a script (a fixed sequence of blows), so a division can measure a
+  change against the same bout every time.
+
 ## 6. Three floors?
 
 **Yes, three, but growing:** **13, 19 and 25 cells** a side (104, 152, 200 m), not three of 25. The pit widens as it goes down, as an
