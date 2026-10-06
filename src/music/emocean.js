@@ -8,7 +8,8 @@
 //   DARTERS   36 to 50   the first things to dodge (36, 44): a two-step break, the growl's wobble, darters whooshing past
 //   BREATHER  50 to 62   no drums: the choir holds the Tear (F to E), the whale sings, bubbles; a pulse builds back under the last bars
 //   PUSH      62 to 84   the mixed push (62, 68, 74): everything, the sax on the Answer, then the brass shouting the Five
-//   HEAVY     84 to 96   the heavy and its escort (84, 86): half time, taiko under the kick, the Five as a war cry in the low brass
+//   HEAVY     84 to 96   the heavy and its escort (84, 86): half time, taiko under the kick, in three phrases: the Five as a war cry
+//                        answered by the lead guitar, the pursuit (four on the floor, the brass in canon), the turn home (B major)
 //   ARRIVE    96 to 100  Margarite in sight: E major, a harp up two octaves, a bell; it ends (the stage is done when its cue is)
 // E minor, the game's key, over Em C D Bm (the trance's lift, the anime's ache), the Emocean's fusion: a trance groove under space jazz.
 // Over it, the owner's ear (docs/OST.md section 6; the A/B of 2026-10-06, which the owner chose, "significantly better"): air on top (a
@@ -32,7 +33,7 @@ const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 export const STAGE_BARS = 100;
 const CH = ['Em', 'C', 'D', 'Bm'];
 const ROOT = { Em: 40, C: 36, D: 38, Bm: 47, E: 40, Am: 45, B: 47 };
-const TRI = { Em: [64, 67, 71], C: [64, 67, 72], D: [62, 66, 69], Bm: [62, 66, 71], E: [64, 68, 71] };
+const TRI = { Em: [64, 67, 71], C: [64, 67, 72], D: [62, 66, 69], Bm: [62, 66, 71], E: [64, 68, 71], B: [63, 66, 71] };
 const chordOf = (bar) => CH[bar % 4];
 
 // ---- the parts
@@ -56,6 +57,30 @@ const answer = (bar, n = 0, i = 'sax', up = 0, v = 0.36) => (bar % 2 === 0 ? quo
 const five = (i = 'brass', up = -12, v = 0.34) => quote(MOTIF.FIVE, i, { up, v, x: 0.8 }); // (five falling notes in a bar: 0.8 a beat)
 const swoop = (b, v = 0.3, dir = 1) => E('whoosh', b, 1.5, null, v, { from: -0.9 * dir, to: 0.9 * dir }); // (a darter going by, side to side)
 
+// the heavy: twelve bars in three phrases after the drop, so it never says the same bar twice in a row (the owner: "more variance
+// after the first bar"). The war cry (0 to 3): the Five in the low brass, answered by the rock rig's lead guitar (the overture's);
+// the pursuit (4 to 7): the kick goes four to the floor under the half time, the brass in canon, the hole and the dive at 5, a bar of
+// toms and choir after it, the gang's "hey!"; the turn home (8 to 11): the choir sings the Five, the lead holds and bends, and the last
+// bar's chord is B major (Bm's third raised), the dominant that pulls into the arrival's E major.
+const heavyChord = (i) => (i === 11 ? 'B' : chordOf(i));
+const ride = (v = 0.3) => [0, 1, 2, 3].map((b) => E('ride', b, 1, null, v));
+const toms = (v = 0.6) => [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((b, k) => E('tom', b, 0.5, null, v * (0.7 + k * 0.05), { pitch: 210 - k * 18 }));
+const heavy = (i) => {
+  const c = heavyChord(i), phrase = i >> 2, rate = [2, 3, 4][phrase];
+  const drums = phrase === 1 && i !== 6 ? [...halftime(), ...[1, 3].map((b) => E('kick', b, 1, null, 0.6)), ...ride(0.28)] : i === 6 ? toms() : halftime();
+  const bass = i === 6 ? [] : [E('growl', 0, 4, ROOT[c] + 12, 0.34, { rate })];
+  const tune = phrase === 0 ? (i === 0 || i === 2 ? five('brass', i ? 0 : -12, 0.34) // (the war cry, then the same an octave up)
+    : i === 1 ? quote(MOTIF.ANSWER, 'shred', { v: 0.32, o: { pan: 0.15 } }).map((e, k) => (k === 4 ? { ...e, o: { ...e.o, bend: 2, bendAt: 0.4 } } : e)) // (the lead answers)
+      : five('shred', 0, 0.3).map((e, k) => (k ? e : { ...e, o: { pinch: true } })))
+    : phrase === 1 ? (i === 6 ? [E('voice', 0, 4, 64, 0.16, { vowel: 'o' }), E('voice', 0, 4, 59, 0.12, { vowel: 'o' })] // (after the hole: the choir alone over the toms)
+      : [...five('brass', -12, 0.3), ...five('brass', 0, 0.24).map((e) => ({ ...e, b: e.b + 0.8 }))]) // (the Five in canon, a note behind)
+      : i === 8 ? [...five('voice', 0, 0.2).map((e) => ({ ...e, o: { vowel: 'a' } })), ...five('brass', -12, 0.28), E('shred', 0, 4, 76, 0.3, { bend: 2, bendAt: 0.5, vib: 0.04 })]
+        : i === 9 ? [...five('voice', 0, 0.2).map((e) => ({ ...e, o: { vowel: 'a' } })), E('shred', 0, 4, 78, 0.3, { bend: -2, bendAt: 0.5, vib: 0.04 })]
+          : i === 10 ? [...quote(MOTIF.ANSWER, 'shred', { v: 0.3 }), ...toms(0.4).filter((e) => e.b >= 2)]
+            : TRI.B.map((n) => E('brass', 0, 3, n - 12, 0.26)).concat(fill(0.8)); // (B major: home is next)
+  return [...drums, ...bass, ...tune, ...pad(c, 0.12), ...(i === 6 ? [] : [E('voice', 0, 4, TRI[c][0], 0.12, { vowel: 'a' })]),
+    ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.35)] : []), ...(i === 7 || i === 8 ? [E('gang', 1, 1, null, 0.4), E('gang', 3, 1, null, 0.45)] : [])];
+};
 const BASE = {
   title: 'Crude Sea', root: 64, bpm: 160, arrange: true, loopFrom: null, tail: 4,
   sections: [
@@ -76,9 +101,7 @@ const BASE = {
     { id: 'push', bars: 22, gain: 2.3, bar: (i) => { const c = chordOf(i); return [...four(1.05), ...roll(c, 0.5), ...arp(c, 0.22, i), ...pad(c, 0.12),
       ...(i < 12 ? answer(i, (i >> 1) + 2, 'sax', 12, 0.36) : five('brass', 0, 0.3)), ...(i >= 6 && i < 12 && i % 2 ? [swoop(2.5)] : []), // (the darters at 68)
       ...(i === 0 || i === 6 || i === 12 ? [E('crash', 0, 1, null, 0.5)] : []), ...(i === 21 ? [...fill(0.8), E('riser', 0, 4, null, 0.3)] : [])]; } },
-    { id: 'heavy', bars: 12, gain: 2.7, bar: (i) => { const c = chordOf(i); return [...halftime(), E('growl', 0, 4, ROOT[c] + 12, 0.34, { rate: 2 }),
-      ...five('brass', -12, 0.34), ...pad(c, 0.12), E('voice', 0, 4, TRI[c][0], 0.12, { vowel: 'a' }), ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.35)] : []),
-      ...(i === 11 ? [...fill(0.8)] : [])]; } },
+    { id: 'heavy', bars: 12, gain: 2.7, chord: heavyChord, bar: (i) => heavy(i) },
     { id: 'arrive', bars: 4, gain: 3.6, bar: (i) => (i === 0
       ? [E('crash', 0, 1, null, 0.5), E('kick', 0, 1, null, 0.8), E('supersaw', 0, 16, TRI.E, 0.12, { cutoff: 2000 }), E('strings', 0, 16, [40, 52, 56, 59, 64, 68], 0.12, { attack: 0.3 }),
         ...[64, 66, 68, 71, 73, 76, 78, 80, 83, 85, 88].map((n, k) => E('harp', k * 0.18, 2, n, 0.26)), E('bell', 2, 1, 88, 0.25), E('sax', 2, 6, 76, 0.32)]
@@ -117,7 +140,7 @@ const ohats = (v = 0.18) => [0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, nu
 const trap = (i) => [...[0, 0.5, 1, 2, 2.5, 3].map((b) => E('tick', b, 0.5, null, b % 1 ? 0.18 : 0.26)), ...[1.5, 1.667, 1.833].map((b, n) => E('tick', b, 0.17, null, 0.14 + n * 0.04)),
   ...(i % 2 ? [3.5, 3.625, 3.75, 3.875].map((b, n) => E('tick', b, 0.125, null, 0.14 + n * 0.05)) : [E('tick', 3.5, 0.5, null, 0.2)])];
 const low = (c) => ROOT[c] - (ROOT[c] > 42 ? 12 : 0); // (the 808's root, E1 to E2)
-const eights = (i) => { const c = chordOf(i), r = low(c), p = low(chordOf(i + 3)); return [E('eight', 0, 1.5, r, 0.55, { from: p - r, glide: 0.12 }), E('eight', 2.5, 1, r, 0.4),
+const eights = (i, ch = chordOf) => { const c = ch(i), r = low(c), p = low(ch(i + 3)); return [E('eight', 0, 1.5, r, 0.55, { from: p - r, glide: 0.12 }), E('eight', 2.5, 1, r, 0.4),
   ...(i % 2 ? [E('eight', 3.5, 0.5, r + 12, 0.3, { from: -12, glide: 0.1 })] : [])]; };
 /** A bar cut off at beat `at` (what sounds is shortened to end there), then a reversed swell into the next bar's downbeat: the hole. */
 const holed = (evs, at = 3) => [...evs.filter((e) => e.b < at).map((e) => ({ ...e, d: Math.min(e.d || 1, at - e.b) })), E('reverse', at, 4 - at, null, 0.4)];
@@ -128,11 +151,12 @@ const LAYERS = {
   darters: (i, c) => [...ticks(i, 0.9, true), ...sparkle(c, 0.1)], // (no guitar here: the darters have the air to themselves)
   breather: (i, c) => [...sparkle(c, 0.1), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
   push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15, i), ...sparkle(c, 0.16)],
-  heavy: (i, c) => [...trap(i), ...(i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i)), ...sparkle(c, 0.14)],
+  heavy: (i, c) => [...trap(i), ...(i === 6 ? [] : i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i, heavyChord)),
+    ...sparkle(c, 0.14), ...(i >= 8 ? ohats(0.14) : [])],
   arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.12)] : []),
 };
 const HOLES = { pincer: 9, push: 21, heavy: 5 }; // (the bar of each that ends in a hole)
 export const CRUDE_SEA = { ...BASE, sections: BASE.sections.map((s) => ({ ...s, bar: (i) => {
-  const all = [...s.bar(i), ...(LAYERS[s.id]?.(i, chordOf(i)) || [])];
+  const all = [...s.bar(i), ...(LAYERS[s.id]?.(i, (s.chord || chordOf)(i)) || [])];
   return HOLES[s.id] === i ? holed(all) : all;
 } })) };
