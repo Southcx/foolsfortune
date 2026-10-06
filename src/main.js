@@ -92,6 +92,8 @@ import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
+import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
+import { DataDrain } from './vfx/datadrain.js';
 import { Shore } from './vfx/shore.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
@@ -296,6 +298,8 @@ async function main() {
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.post = new Glow(renderer);
+  game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
+  game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
   game.glyphs = new Glyphs(game); // (the !!! over a bite: marks in the world, on the thing they are about)
   game.ai = new AI(game); // (what creatures notice and what the world offers them: ai/, docs/AI.md)
@@ -624,6 +628,7 @@ async function main() {
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
   if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
+  game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1 }); } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
@@ -729,6 +734,7 @@ async function main() {
   // open with a compile of its own) and the shore's crude sea and swash (else built on the first view of the Dunes)
   game.mawWipe.make?.(); const wipe = game.mawWipe.mesh; if (wipe) wipe.visible = true;
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
+  const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
@@ -736,7 +742,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.();
+  parkWeather?.(); parkDrain();
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -1012,7 +1018,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

@@ -17,6 +17,7 @@
 //
 //   const post = new Glow(renderer)    post.render(scene, camera)    (T.visual.glow: strength, 0 = off; T.visual.grade: 0..1)
 //   post.accum = { amt: 0..0.95, zoom, spin }   the frame accumulation (feedback blur): amt 0 is off
+//   post.screen = { on, render(post, src) -> target, compile(renderer, post) }   a screen pass on the light-linear frame, before the glow (vfx/glitch.js)
 //   post.target                        the buffer to compile shaders against (it renders without the tone curve)
 //   post.compile()                     its own passes compiled (the warm-up: they are not in the scene, so compileAsync(scene) never sees them)
 // ---------------------------------------------------------------------------------------
@@ -121,6 +122,7 @@ export class Glow {
     for (const [m, out] of [[this.down, this.half], [this.blur, this.q[0]], [this.accMat, this.acc[0]], [this.comp, null]]) { // (each against what it draws into: the composite draws to the screen)
       this.quad.material = m; this.r.setRenderTarget(out); this.r.compile(this.fs, this.cam);
     }
+    this.screen?.compile?.(this.r, this);
     this.r.setRenderTarget(was);
   }
   get on() { return (T.visual.glow ?? 0) > 0 || (T.visual.grade ?? 0) > 0; }
@@ -165,6 +167,7 @@ export class Glow {
       this.pass(this.accMat, out);
       src = out; this.accW = 1 - this.accW; this.accFresh = false;
     } else this.accFresh = true;
+    if (this.screen?.on) src = this.screen.render(this, src); // (a screen pass of the art's, when one is asked for: vfx/glitch.js, the frame in, the torn frame out)
     this.downTo(src, this.half, true);
     this.downTo(this.half, this.q[0]); this.blurIn(this.q);
     this.downTo(this.q[0], this.e[0]); this.blurIn(this.e);
