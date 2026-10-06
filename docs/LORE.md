@@ -436,14 +436,32 @@ Prince sells to neither side: every Courier both of his parents need came out of
   stays out of player text.
 - *Declined* (the owner): the playlist's titles as Figment names, the water songs as references, the silence line for Old Grog.
 
-### The stones: how a Courier takes Lachryma in *(the owner, R59: the stones are the vehicle; the mechanics are being worked out with Dovina)*
+### The stones: how a Courier takes Lachryma in *(the owner, R59: the stones are the vehicle; mechanics cut by Dovina, `progress/stones.js`, DESIGN.md section 20)*
 - **What the stones are.** The gems set in the Courier (the kiln's STONES region, `Courier_Stones`) are where Lachryma enters the
-  vessel. A pot breathes through its glaze; a Courier drinks through its stones. So the stone set decides *how* the Courier takes
-  Lachryma in: how much, how fast, which feelings it draws, and what happens to the overflow. That is why Couriers can walk where the
-  town could not: their stones filter what would drive a folk mad.
-- **The Maker's Stones** are the Prince's own choice: balanced, the baseline. Every other stone is a trade, never an upgrade.
-- **Amethyst is the first** (*a-methystos*, "not drunk"): it keeps a clear head. Each stone's virtue starts from what the old
-  lapidaries believed of it (amethyst for sobriety, citrine the merchant's stone, moonstone the night's), and Dovina sets its numbers.
+  vessel. A pot breathes through its glaze; a Courier drinks through its stones. The set decides how much comes in, how fast, which
+  feeling, and where the overflow goes. That is why Couriers can walk where the town could not. One set at a time; the stones a
+  Courier wears say how they drink (look and function are one choice for now; a glamour is the owner's call).
+- **The Maker's Stones** are the Prince's own choice: balanced, the baseline. Every other stone is a trade, never an upgrade, and each
+  one's virtue starts from what the old lapidaries believed of it.
+- **The words.** **The draught** is the feeling of the Lachryma last drunk (a drink, and a current of air: the weather comes in
+  through the stones like a draught under a door). A stone is **heady** when what you drink goes to your head. Too much, and you are
+  **brimming**: a vessel full past its brim, the Courier's softened form of the madness that takes the folk (your mental state pushed
+  toward Prismatic). The log says "You are brimming." and "You settle." Never "drunk".
+- **The stones, as cut:** amethyst, the sober stone (slow, clear-headed); citrine, the merchant's (some of the drink kept as cubes);
+  moonstone, the night's; onyx, the grounding stone (no draught; the overflow to the Lockheart); emerald, the garden (draws far, lets
+  the weather in); sapphire, calm (cheaper arts, slow to refill); ruby, fire (holds more, burns more, heady); diamond, the split light
+  (very heady; takes both feelings of an agate); opal, chance.
+- **Their blurbs** (for `courier/vessel/glazes.js`, strings, when Dovina's stones land):
+  - THE MAKER'S STONES: "The stones you were set with: the Prince chose them. They take Lachryma in evenly."
+  - AMETHYST: "Purple quartz; the Greeks thought it kept you sober. It takes Lachryma in slowly and keeps your head clear."
+  - CITRINE: "Yellow quartz, the merchant's stone. Some of what you drink becomes cubes. You hold less."
+  - MOONSTONE: "A blue light floats under its surface. It is stronger at night and weaker by day."
+  - ONYX: "Black chalcedony, polished to a mirror. The weather does not get in. What you cannot hold goes to the Lockheart."
+  - EMERALD: "Green beryl, with a garden inside it. It draws from far away and lets the weather in."
+  - SAPPHIRE: "Blue corundum, the stone of calm. Your arts cost less. You refill slowly."
+  - RUBY: "Corundum stained red by chromium. You hold more and spend more, and it goes to your head."
+  - DIAMOND: "Clear, and full of fire. It goes to your head fast, and it takes in both feelings of an agate."
+  - OPAL: "Silica spheres that break the light into flashes. By luck, some drinks are lost and some are doubled."
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
