@@ -37,9 +37,11 @@ export const BARRIER = 480;
 // THE OASIS: the middle of the sea is a flat of packed sand round a pond, and the Weir (tools/sondelass/angling/weir.js) is built on it. All in the
 // dunes' local frame (metres from the centre, heights above the layer's floor). The pond and the well are cut into the height field
 // itself, so the sand, the board's hover and the swimming all agree about where the water is.
-export const OASIS = { x: 0, z: 0, y: 12, flat: 64, blend: 70 };
-export const POND = { x: 0, z: 6, rx: 22, rz: 15, surface: OASIS.y - 0.45 };
-export const WELL = { x0: 29.5, x1: 38.5, z0: 1, z1: 11, surface: OASIS.y - 0.5, depth: 9.5 };
+// (the pond three times the area it was, the owner R46: radii 22 by 15 to 38 by 26, the oasis's flat 64 to 80 m and the well out past
+// the east shore with it; the Weir's buildings stand round the bigger water: tools/sondelass/angling/weir.js)
+export const OASIS = { x: 0, z: 0, y: 12, flat: 80, blend: 70 };
+export const POND = { x: 0, z: 6, rx: 38, rz: 26, surface: OASIS.y - 0.45 };
+export const WELL = { x0: 47.5, x1: 56.5, z0: 1, z1: 11, surface: OASIS.y - 0.5, depth: 9.5 };
 
 // (an integer hash: the noise below is sampled a few hundred thousand times when the field is built)
 const hash = (x, z) => { let h = (Math.imul(x, 374761393) + Math.imul(z, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
@@ -78,7 +80,7 @@ const inWell = (x, z, m = 0) => x > WELL.x0 - m && x < WELL.x1 + m && z > WELL.z
 function oasisGround(x, z) {
   if (inWell(x, z, 1.2)) return WELL.surface - WELL.depth - 1.5; // (the shaft is built in stone: the sand is dug out from under it)
   const r = Math.hypot(x - OASIS.x, z - OASIS.z);
-  const lap = (fbm(x * 0.05 + 40, z * 0.05, 2) - 0.43) * 0.8 * sstep(34, OASIS.flat, r); // (it ripples a little toward the edge)
+  const lap = (fbm(x * 0.05 + 40, z * 0.05, 2) - 0.43) * 0.8 * sstep(OASIS.flat - 30, OASIS.flat, r); // (it ripples a little toward the edge)
   return Math.min(OASIS.y + lap, POND.surface - pondDepth(x, z));
 }
 

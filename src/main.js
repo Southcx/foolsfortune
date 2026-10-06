@@ -60,7 +60,7 @@ import { Rigging } from './courier/moves/rigging.js';
 import { Lobbers } from './creatures/lobber.js';
 import { GodMode } from './godhand/godhand.js';
 import { Cartography } from './feedback/cartography.js';
-import { Dunes, DUNE } from './world/dunes/dunes.js';
+import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
 import { Water, Ladders, SlipField } from './courier/moves/env.js';
 import { Events } from './core/events.js';
@@ -332,7 +332,7 @@ async function main() {
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
-    const at = (a, k = 1.12) => ({ x: DUNE.x + 0 + Math.cos(a) * 22 * k, z: DUNE.z + 6 + Math.sin(a) * 15 * k });
+    const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
