@@ -12,7 +12,8 @@ const NAME = (id) => itemOf(id)?.name || id;
 const AN = (s) => (/^[AEIOU]/i.test(s) ? 'an' : 'a');
 
 export function wellRules({ on, L, log }) {
-  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); log.say('explore', 'You go down into the Great Dunemaw.'); });
+  let enteredAt = null; // (seconds of play when the run began: what a player's run takes, measured, for the pay table: Dovina)
+  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; log.say('explore', 'You go down into the Great Dunemaw.'); });
   on('well.floor', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
@@ -24,6 +25,8 @@ export function wellRules({ on, L, log }) {
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
     if (e.pay > 0) L.hi('well.pay.best', e.pay);
+    if (enteredAt != null && !e.shattered) { const secs = Math.round(L.play - enteredAt); L.inc('well.run.seconds', secs); L.inc(`well.run.seconds.f${e.floors}`, secs); L.inc(`well.run.count.f${e.floors}`); L.lo('well.run.fastest', secs); }
+    enteredAt = null;
     log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `. Pay: ${e.pay} cubes` : ''}.`);
   });
   on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round. You are back at the way in.', { throttle: 2 }); });
