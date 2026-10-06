@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE SOUL BRUSH'S LOAD: the rules that hear the paint and mop modes, the Lachrymato Bottles and the stains (the data:
 // progress/brushload.js; the plan: docs/plans/SUNSHINE-SYSTEMS.md), keep their counts for the achievements, and say the few things worth
-// a sentence (a stain mopped up, a stain that spawned, a bottle cracked). Only the Courier's acts are counted; a stain that spawns is the
-// place's (`by: 'environment'`). The words are placeholders for Espada's. tracking.js calls it from listen().
+// a sentence (a blot mopped up, a blotling spawned, a bottle cracked). The player's word is Espada's "blot"; the code ids stay `stain`. Only the Courier's acts are counted; a stain that spawns is the
+// place's (`by: 'environment'`). The words are Espada's (2026-10-06). tracking.js calls it from listen().
 //
 //   brushRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
@@ -27,16 +27,16 @@ export function brushRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('stain.wash'); if (e.grade) L.inc(`stain.${e.grade}`);
     if (e.stage >= STAINS.stages) L.inc('stain.wash.grown');
-    log.say('gain', `You mop up ${STAGE[e.stage] || 'a'} stain of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
+    log.say('gain', `You mop up ${STAGE[e.stage] || 'a'} blot of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
   });
   // stain.spawn { grade, kind, by: 'environment' }: a full-grown stain gives up an aberrant Figment
   on('stain.spawn', (e) => {
     L.inc('stain.spawn');
-    log.say('combat', `Something aberrant crawls out of a stain of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stainspawn', throttle: 3 });
+    log.say('combat', `A blotling crawls out of a blot of ${e.grade || ''} crude.`.replace('  ', ' '), { key: 'stainspawn', throttle: 3 });
   });
   // bottle.crack { bottle, spilled, by: 'creature' | 'environment' }: a broken shield cracked the glass
   on('bottle.crack', (e) => {
     L.inc('bottle.crack');
-    log.say('combat', `Your ${bottleName(e.bottle)} cracks; ${Math.round(e.spilled || 0)} Lachryma spills.`, { key: 'bottle', throttle: 1 });
+    log.say('combat', `Your ${bottleName(e.bottle)} cracks: ${Math.round(e.spilled || 0)} Lachryma spilled.`, { key: 'bottle', throttle: 1 });
   });
 }

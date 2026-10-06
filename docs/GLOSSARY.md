@@ -148,12 +148,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **environmental** Lachryma (the Lockheart's is Lachryma drained from creatures). Two **modes**, picked with 1 and 2 while it is out
   (as the Sondelass's forms): **paint** (spray Lachryma out) and **mop** (drink environmental Lachryma in). **saturate**: hold LMB and
   the bristles fill for as long as the psygun takes to charge fully, then the brush sprays (paint) or drinks (mop); a press shorter than
-  the psygun's tap window is the club, whatever is held. A **stain** is spilled crude on the ground (graded by its feeling, as a cask of
-  crude is): left alone it grows a stage a game day, and a full-grown one spawns an aberrant Figment.
+  the psygun's tap window is the club, whatever is held. A **blot** (Espada's word: a stain and an inkblot; code ids `stain`, `STAINS`)
+  is spilled crude on the ground (graded by its feeling, as a cask of crude is): left alone it grows a stage a game day, and a
+  full-grown one gives up a **blotling** (an aberrant Figment by class). *Not:* "stain" in what the player reads.
 - **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`; always so called, never "tank"): an aquarium-glass bottle of Lachryma
   worn against the Courier's upper back (its own place, not where tools are worn on the back), stoppered with an opaque topper; a
   reserve that feeds the pool below half and is what the paint mode spends and the mop mode fills. Glass: a broken shield can crack it,
-  and what spills is a stain.
+  and what spills is a blot.
 - **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
   surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its

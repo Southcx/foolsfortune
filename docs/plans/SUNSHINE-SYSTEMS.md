@@ -111,6 +111,7 @@ The three questions are answered. The data is `src/progress/brushload.js`; the l
 7. **The coated folk:** a folk in a spill is coated in Lachryma (Calissa's look) and the mop cleans them. A Courier helps; what they
    pay for it is the folk's thanks and a line, and the ledger counts it (`folk.clean`, when it is built).
 8. **Lachrymite** is Lachryma's solid form (the glossary): cubes and crystals are Lachrymite.
+9. **Words (Espada, 2026-10-06):** the player reads **blot** (a stain and an inkblot) and **blotling** (what a full-grown blot gives up); the code ids stay `stain`. Bottle item text is in `docs/LORE.md` on `claude/espada-lore`.
 
 ## 5. Events (for Petra's build), counted by `feedback/tracking/brush.js`
 
