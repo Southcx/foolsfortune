@@ -63,8 +63,8 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
 - **Sand slopes:** one-way descents between tiers (20 to 35 degrees), walked or ridden (the skiff works on them).
 - **Slip rivers:** channels of moving slip, 3 to 8 m wide, flowing at **3 to 6 m/s** (a current: they carry the Courier and the
   skiff). Ridden downstream, they are the quick way. They pour off ledges as **slipfalls**.
-- **Stalactite runs:** over a pit of slip, stalactites and the stumps of broken ones to jump between, 3 to 4.5 m apart (a dash and
-  a jump within the core movement's reach: Petra measures the gaps against `config.js`). Three kinds:
+- **Stalactite runs:** over a pit of slip, stalactites and the stumps of broken ones to jump between, 3 to 4.5 m apart (Petra, from `config.js`: a jump carries 3 m, 4.5 m
+  needs the double jump, nothing past 5 m, a step up of at most 1 m; measured in the game before the runs are final). Three kinds:
   - **stone**: solid;
   - **brittle**: shakes for **0.8 sim seconds** after it is landed on, then falls (it regrows after 20 sim seconds);
   - **warped**: phases in and out on the Dunemaw's beat (2 sim seconds solid, 1 gone), shown by the glitch's tear on it. **Wanda:**
@@ -72,9 +72,9 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
     `dunemaw.beat { phase: 'solid' | 'gone' }` a cycle (not one per stalactite). Brittle ones creak with rising grit over the 0.8 s,
     then snap, whistle and splash.
 - **The way down** of each floor is at the bottom of its deepest slope.
-- **Budgets** (the gate's): one `well` zone, but a floor this size needs **sub-zones** (a hall at a time drawn, Petra's call; Wanda
-  asks that each carries its size, for the reverb); at most
-  60 draw calls and 150k triangles in view; the sand surfaces are heightfields, at most 32 by 32 samples each.
+- **Budgets** (the gate's, Petra's measured answer): one `well` zone with **sub-zones** (`{ id, kind, size }`: a hall at a time
+  drawn; the size for Wanda's reverb); the cave's own share at most **15 draw calls and 100k triangles** in view, the whole frame at
+  most **85 calls and 150k** (the frame with no cave already costs about 68); the sand surfaces are heightfields, at most 32 by 32 samples each.
 
 ## The finds and the warp (Dovina's numbers; Calissa's look; Espada's history)
 
