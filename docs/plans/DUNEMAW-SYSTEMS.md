@@ -127,6 +127,14 @@ antlion's cone does upside down. The first floor teaches in a small space, and t
 be a forty real-minute run before the FOE, longer than the Well's pay was built for. `ECON.well.perFloor` (2.5 minutes of play) was set
 for the old small floors; it is re-based once Petra measures a floor's real time (a placeholder, as the owner said balance is).
 
+
+**Measured (Petra, v82, 2026-10-06):** the cells are 18 m now (a floor 90 m square, halls 36 m); the Courier holds full speed on slopes. The
+agent's whole run (three floors, the FOE down, back up and out) took **255 sim seconds** on the pinned game day; no single walk came near
+its 90 sim-second budget. An agent goes straight: a player who explores, breaks pots and reads the warp takes longer, so the pay
+(`ECON.well.perFloor` 2.5 minutes of play, `deeper` 1.25, the FOE 2 floors' worth: about 15 minutes of pay a full run) **stands until a
+player's run is measured**. The ledger now measures it from every test session: `well.run.seconds` and `well.run.count.f<floors>` (seconds of
+play per run, by the deepest floor reached) and `well.run.fastest`, read from QAIS reports or the save. Re-based once the owner has run
+it a few times.
 ## What each piece feeds (synergy)
 
 - The **crown's** rule matches the FOE's **grain**, and the Veritome reads both.
