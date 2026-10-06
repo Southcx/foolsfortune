@@ -399,7 +399,7 @@ Prince sells to neither side: every Courier both of his parents need came out of
   basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
   is the canon's **Prismatic**.
 
-### The cave of wonders and Strawman *(Espada's answers to Calissa's round robin, `docs/plans/DUNEMAW.md` and `STRAWMAN.md` on her branch, R59; proposals for the owner)*
+### The cave of wonders and Strawman *(Espada's answers to Calissa's round robin, `docs/plans/DUNEMAW.md` and `STRAWMAN.md` on her branch; **canon, ruled by the owner, R59**)*
 - **The town under the sand is the town that was.** The boomtown dug for crude, and dug deeper than the Weir's Well to reach the rich
   seam. Its shaft gave way, and the sand came in: Old Grog's "before the sand came" is that day. The Great Dunemaw is the pit where the
   town's own dig fell in, and a Well because the island keeps going over it: *what if they had not dug so deep*. The forgotten pots are
@@ -421,6 +421,18 @@ Prince sells to neither side: every Courier both of his parents need came out of
   breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
   always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart
   charm is Pip's. The log calls it by name, with no article: "Strawman rocks back up."
+
+### From the owner's ear *(three names from the owner's playlist, read by Espada; **canon, ruled by the owner, R59**)*
+- **Aqua regia, the King's water.** "Royal water" is the one acid that dissolves gold, and gold is what kintsugi mends with. It is
+  Margarite's refined lamp fuel: the crude the King buys, refined into what keeps the lighthouse lit. The thing that holds the
+  Leviathan-class Egregores back also dissolves what has been mended: Magnus's calcified love, as a chemical.
+- **Amethyst, the clear-headed stone.** The Greek *a-methystos* is "not drunk", the stone worn to keep a clear head. In Entropolis's
+  overground it is sold as a charm that slows how fast excess Lachryma gets into a mind: the good half of rave culture, looking after
+  itself. Player text says only "a stone that keeps a clear head"; the root stays in the docs. (A person of that name, a sober guide
+  on the floor, is still open.)
+- **The moonflower.** A bed in the Shrine Garden that opens only at night (by the game hour), when Lachryma glows. Its root, datura,
+  stays out of player text.
+- *Declined* (the owner): the playlist's titles as Figment names, the water songs as references, the silence line for Old Grog.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
