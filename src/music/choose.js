@@ -53,7 +53,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   S.riding = riding;
   if (riding) return WORK_SONGS[S.shanty];
   if (game.dunes?.active) return DUNES;
-  if (game.zones?.current === 'workshop') return WORKSHOP;
+  if (game.zones?.whole === 'workshop') return WORKSHOP;
   return null;
 }
 
