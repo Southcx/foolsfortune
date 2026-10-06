@@ -1,114 +1,121 @@
-# The Great Dunemaw, made big (the owner, 2026-10-06)
+# The Great Dunemaw: a cave of wonders under the sand (the owner, 2026-10-06, second ask)
 
-Kept by Calissa (the look and the numbers). Petra builds the layout, the colliders and the shifting (`src/world/well/wellkit.js`,
-`src/world/well/dunemaw.js`) from this file; Calissa dresses it (`src/vfx/dunemawkit.js`, `src/vfx/dunemaw.js`, `src/vfx/glitch.js`).
-Every number here is a first guess to be tuned in play. Times are **real seconds** unless they say **sim seconds** (the game's own
-clock, `dt` summed: it stops when the game pauses, and a replay sees the same).
+A round-robin spec: Calissa drafted it, and each division owns its section and answers its questions in it. Petra builds the layout,
+the colliders and the creatures' bodies; Dovina the FOE's numbers, the breeding and the finds; Wanda the sound; Espada the lore and the
+names; Calissa the look. Units: metres; **real seconds**, or **sim seconds** (the game's own clock, which stops when the game pauses and
+which a replay sees the same) where it says.
 
 ## The owner's ask
 
-> "WRT the Dunemaw, I want you to think about how to make it bigger, make it psychedelic, make the level design twisting and shifting
-> like sand (and also fill it with sand). You saw that the music was full of trippy motifs. Don't hold back on me!"
+> "Why would it be spouting like a fountain instead of a sinkhole like an antlion trap? Think of the Cave of Wonders from Aladdin,
+> subterranean desert caverns with slip rivers and sand slopes, forgotten pots and artifacts beneath the surface and touched by warp
+> from Lachryma. Rooms should have multiple scales, greater than 5x5. Up to 25x25. Stalactite jumping puzzles. We must think in
+> complex terms. Could this be the breeding ground of the slip jellies? How are we gonna turn the Great slipjelly into a proper
+> bossfight/ FOE? I feel like it should have a broken urn stuck on its head like a weird crown, and breaking off the urn reveals a
+> weakpoint or something."
 
-And from the same message: lean into .hack's glitch (datamosh, chromatic aberration), use the frame accumulation for "a sweeping pan or
-camera flythrough previewing the Dunemaw"; the look may reach for the seventh generation while the performance spec stays the sixth.
+The first draft (a mind full of sand, a spout pouring up) is withdrawn. The owner is right: a maw swallows. The spout leaves the
+mouth and goes up to the Dunes as the slip geysers (`docs/plans/DUNES.md`).
 
-## One look, named plainly: A MIND FULL OF SAND
+## One look, named plainly: THE PIT AND THE NURSERY
 
-The Dunemaw is a Well: Lachryma's own place, under the island's mood. Down there the sand of the Dunes has poured into a mind, and the
-mind is bending it. It starts as a soft verse (pale, hushed, almost the Dunes) and ends as a wall (saturated, turning, torn), as the
-owner's favourite songs do (`docs/OST.md` §6: the soft verse that drops into a wall, silence used as a hit).
+On the sand, the Dunemaw is an **antlion pit**: a cone of sand sliding down to a black eye. Under it is a **cave of wonders**: caverns
+of every size, rivers of slip (sand carried by liquid Lachryma) running through them, the town's forgotten pots half buried, and
+artifacts glinting in the walls. Where the Lachryma runs thick, the place warps. At the bottom, in the largest cavern, is the
+**nursery**: the slip jellies breed in the slip, and the Great Slip Jelly broods over them, crowned with the urn it grew up in.
 
 ## Prior art
 
-- **Psychonauts' mind levels** (Double Fine, 2005; the Milkman Conspiracy's streets bent round a planetoid): a level that is a mind
-  bends its architecture to the mind's shape. Taken: the rooms twist more the deeper the mind.
-- **Journey's sunken city and sandfalls** (thatgamecompany, 2012): sand that flows like water, falls from the ceiling and is surfed.
-  Taken: sandfalls as the shifting doors, and sand slopes the Courier can ride.
-- **Uncharted 3's Iram of the Pillars** (Naughty Dog, 2011): a city half drowned in sand, sand pouring through it. Taken: rooms half
-  buried, the doorways' sills of sand.
-- **Spelunky's room grid** (Derek Yu, 2008: already the kit's) and **Persona 3's Tartarus** (floors from a seed): kept as they are.
-- **M. C. Escher's Relativity, Antichamber**: a place that will not sit square. Taken lightly: twisted frames, never a gravity trick
-  (the core movement is the gold standard).
-- **LSD: Dream Emulator, Silent Hill's Otherworld**: the walls that breathe and the colours that drift. Taken: a few centimetres of
-  breath on the walls (looks only), the oxide colours drifting.
-- **.hack's Lost Ground and Data Drain**: the place shows its data when it tears (`src/vfx/glitch.js`).
+- **The antlion's pit** (*Myrmeleon*: a cone dug at the angle of repose, so the sand gives way under anything at its lip) and the
+  Sarlacc's pit: the mouth.
+- **The Cave of Wonders** (Disney's *Aladdin*, 1992): a mouth that rises from the sand; inside, treasure caverns. The rule "touch
+  nothing but the lamp" gives the warp its sense: what you take changes the place.
+- **Spelunky's caves**, **Terraria's underground desert**, **Dark Souls' Blighttown and Ash Lake**: one space at many scales, vertical,
+  read from inside.
+- **Journey's sunken city and its sand slopes, Uncharted 3's Iram**: sand that flows like water, the slide down as a one-way door.
+- **Prince of Persia: The Sands of Time, Mario's crumbling platforms, Ori's Ginso tree**: the stalactites to jump between, some of
+  which fall.
+- **Metroid's Kraid and the Kirby boss rule** (armour first, then the weak point), **Monster Hunter's part breaks**, **Zelda's Dodongo**:
+  the urn crown that breaks off to reveal the core.
+- **Etrian Odyssey's FOEs**: the creature of the floor you can see coming and choose to face.
 
-## The floors (Petra's to build)
+## The mouth: an antlion pit (Calissa's look; Petra's ground)
 
-Three floors stay (the economy's pay and the FOE count are Dovina's and do not change); each floor is much bigger.
+- **On the sand:** a cone **32 m across and 8 m deep**, its slope at the angle of repose (about 34 degrees). The sand slides toward
+  the eye in streaks that spiral inward. Stepping over the lip, the Courier is pulled down at **1.5 m/s** and can climb out against it.
+  The eye at the bottom (the labradorite pool, 3 m) is the way in.
+- **Petra:** carve the pit into the Dunes' `heightAt` (a cone with a soft lip), and give it a slip current. **Calissa:** the cone's
+  sliding sand (a material over the pit's ground) and the eye.
+- **Landmark:** from the oasis, the pit is seen by what stands round it. Proposed: three leaning stone horns, the jaws of a buried
+  head (the Cave of Wonders' tiger, ours of clay). **Espada:** whose head is it?
 
-| | now | proposed |
-|---|---|---|
-| grid | 3 by 3 rooms | **5 by 5** cells |
-| a room | 14 m | 14 m, and **halls** of 2 by 2 cells (28 m), 1 to 3 a floor |
-| a floor | 42 m square | **70 m square**, in **two tiers** (see below) |
-| rooms a floor | 4 to 9 | 12 to 18 on the path and off it |
+## The caverns (Petra's layout)
 
-- **Two tiers.** Every floor has an upper and a lower tier, about 6 m apart; the guaranteed path crosses between them at least twice,
-  down **sand slopes** (a slope of sand from a doorway to the tier below, 20 to 30 degrees: the Courier walks down or rides it, as the
-  skiff rides the dunes) and up by a ledge to mantle or a ramp.
-- **The twist.** Each cell's frame is turned about the floor's centre by `twist * (c + r - 4)` degrees (c, r the cell's column and row),
-  so the grid is a spiral seen from above and the corridors between rooms are short angled tunnels. `twist` grows with depth:
-  **0 degrees on floor 1, 7 on floor 2, 14 on floor 3** (the verse is square; the wall is bent). Rotated boxes are `level.box` with
-  `rotY`; the walls of a twisted room are still straight boxes.
-- **The lean.** On floor 3 a room's floor may tilt up to 8 degrees (sand piled to one side); the heightfield carries it, no box tilts.
-- **The doors** stay 4 m wide and 4 m high, and never less than 2.4 m clear above the sand in them.
+- **The grid** is **25 by 25 cells of 8 m a floor** (200 m square), carved, not boxed: a cave generator (cellular automata over
+  the cells, then rooms stamped in at scale). That makes room for spaces of every scale:
+  - **pockets**: 1 to 2 cells (8 to 16 m), a pot, a find, a jelly;
+  - **chambers**: 3 to 6 cells (24 to 48 m), the ordinary room;
+  - **halls**: 8 to 12 cells (64 to 96 m), a slip river through them, two or three tiers;
+  - **the great cavern** (the last floor's): up to the whole floor (200 m), the nursery and the FOE's arena, 30 m to its roof.
+- **Three floors** stay (Dovina's pay and the FOE count), each larger.
+- **Sand slopes:** one-way descents between tiers (20 to 35 degrees), walked or ridden (the skiff works on them).
+- **Slip rivers:** channels of moving slip, 3 to 8 m wide, flowing at **3 to 6 m/s** (a current: they carry the Courier and the
+  skiff). Ridden downstream, they are the quick way. They pour off ledges as **slipfalls**.
+- **Stalactite runs:** over a pit of slip, stalactites and the stumps of broken ones to jump between, 3 to 4.5 m apart (a dash and
+  a jump within the core movement's reach: Petra measures the gaps against `config.js`). Three kinds:
+  - **stone**: solid;
+  - **brittle**: shakes for **0.8 sim seconds** after it is landed on, then falls (it regrows after 20 sim seconds);
+  - **warped**: phases in and out on the Dunemaw's beat (2 sim seconds solid, 1 gone: Wanda's tempo), shown by the glitch's tear on it.
+- **The way down** of each floor is at the bottom of its deepest slope.
+- **Budgets** (the gate's): one `well` zone, but a floor this size needs **sub-zones** (a hall at a time drawn, Petra's call); at most
+  60 draw calls and 150k triangles in view; the sand surfaces are heightfields, at most 32 by 32 samples each.
 
-## The sand (Petra's colliders, Calissa's look)
+## The finds and the warp (Dovina's numbers; Calissa's look; Espada's history)
 
-- **Sand to walk on** is a Rapier heightfield per room: at most **32 by 32** samples (0.45 m apart in a room, 0.9 m in a hall).
-- Its shape, by floor (seeded, `seeded(seed ^ floor ^ cell)`):
-  - floor 1: a ripple field 0.2 m high, drifts against the walls up to 1.2 m;
-  - floor 2: dunes inside rooms up to 2 m, drifts to 2 m;
-  - floor 3: rooms half buried, dunes to 3 m, a doorway's sill of sand up to 1.5 m (still 2.4 m clear).
-- **Drifts too small for the heightfield** are dressing, not colliders (Calissa's: drawn, not walked on).
-- The sand is drawn with the Dunes' own sand material (the terrain's, `src/render/terrain.js`), with the owner's sand-ripple texture
-  (the liquid pack's B channel) and the Lachryma showing in the troughs (Calissa's, in the kit: `K.sand`).
-- One merged sand mesh a floor (the heightfields' surfaces, built with the floor and disposed with it): one draw.
+- **Forgotten pots:** half buried in the sand. They are breakables (`hasTag(breakable)`); some hold a find. They are the town's
+  (**Espada**: which town, and what fell?).
+- **Artifacts:** set in the walls, glinting (the Dreamvane hears them), taken home with the haul. **Dovina:** how many a floor, and
+  their worth (`econ/islands.js`).
+- **The warp:** near thick Lachryma, the place shows its data (the glitch's tear, on the objects themselves); sand falls upward;
+  a pot floats. **"Touch nothing but the lamp":** taking an artifact from a warped pocket shifts the floor round it (a sandfall opens,
+  a slope turns). **Dovina:** is it a risk that pays, or only a trick?
 
-## The shifting (Petra's, on the sim clock, seeded per floor)
+## The nursery: where the slip jellies breed (Dovina's ecology; Petra's creatures; Calissa's look)
 
-- **Sandfalls.** On a side passage (never the guaranteed path), a curtain of sand pours from the ceiling on a cycle: **open 30 sim
-  seconds, falling 12 sim seconds** (a blocking collider while it falls; drawn by Calissa as a sandfall, the spout's falling shader).
-  2 to 4 a floor, out of phase. **A sandfall never closes on the Courier**: while they stand in it, it stays open, and it starts to fall
-  only once they are clear. A warning: 3 sim seconds before it falls, a trickle starts (Calissa's look; Wanda's hiss).
-- **Drift tides.** On 1 or 2 slopes a floor, the sand rises and falls 1.5 m over **60 sim seconds**, in **10 steps** (the heightfield
-  rebuilt at each step: a ledge opens to mantle onto at the low tide, a low passage is buried at the high). Never under the Courier's
-  feet: a step that would lift the sand through them waits.
-- **The turning hall** (floor 3 only, at most one, phase 2): a round hall whose floor is a disc of sand turning slowly (one turn in 90
-  sim seconds, a kinematic body), sand pouring off its rim into the dark.
-- Nothing shifts on the guaranteed path's floor in a way that cuts the path: the path is always walkable.
+- **The slip** is where they breed: clutches of eggs (soft spheres, 0.4 m) in the shallows of the slip rivers, and **brood**
+  (young jellies a third of the size) round them. The deeper the floor, the more.
+- **The ecology** (`src/creatures/ai/`): the slip is an ecology offer (`nest`). Jellies near a clutch guard it (a drive); a broken
+  clutch draws them. **Dovina:** the rates, and whether clutches respawn by game day.
 
-## The look (Calissa's)
+## The FOE: the Great Slip Jelly, crowned (Dovina's fight; Petra's body; Calissa's look; Wanda's sound; Espada's name)
 
-- **The grade by depth: the verse into the wall.** Floor 1 is hushed: the walls' oxide colours at a third, a violet haze close in, the
-  floor's labradorite slow. Floor 2 brings the colours up. Floor 3 is the wall: everything at full cry, the oxide colours drifting, the
-  walls breathing (3 cm, a slow vertex wave: looks only), sand falling upward in the corners (motes, looks only).
-- **When the FOE shows itself** (`well.foe`): the cut (two frames of silence, the glitch's drop-out), then the slam: the glitch tears,
-  the room's lamps and colours jump to full. With Wanda's drop (OST.md: "the soft-to-crushing drop") on the same beat.
-- **The sky down there.** Where a room has no ceiling (halls), the dark overhead is the maw seen from below: the labradorite swirl, with
-  sand pouring down out of it.
-- **The flythrough.** On arriving on a floor, a preview: the camera sweeps the floor from above along the guaranteed path (about 4 real
-  seconds), with the frame accumulation on (`post.accum`: amt 0.55, zoom 0.006), and lands behind the Courier; any key skips it. It
-  needs the floor's path in order (`layout.path`, Petra's: the cells from the way in to the way down) and borrows the camera as the
-  overture does (`src/cine/`, Calissa's).
-- **The throat** (phase 2): going in, a ride down a twisting chute of sand from the mouth to floor 1 (6 real seconds, the Courier
-  sliding, the frame accumulation and the glitch on), in place of the maw wipe's cut.
-- **The landmark** (done, `DunemawSpout` in `src/vfx/dunemaw.js`): the spout of sand pouring up out of the mouth, 70 m, and falling
-  back round it.
+It grew in an urn as a brood jelly and outgrew it; the urn split and stayed on its head, a broken crown. It broods in the great
+cavern over the nursery.
 
-## Budgets (the gate's)
+- **Phase 1, the crown.** The urn on its head takes every blow to the top (blows bounce off, a ring of sparks: the resist mark).
+  It rams and slams. The urn cracks in **three stages** (Monster Hunter's part break): from heavy impacts, or when its own ram meets
+  a pillar or a stalactite. **Dovina:** the urn's toughness, and which damage types crack it.
+- **The break.** At the third crack the urn bursts off (the glitch's cut and slam). Underneath is its **core**, a lens of bright
+  Lachryma that pulses: the weak point. It reels for **4 sim seconds**.
+- **Phase 2, bare.** Hits to the core land hard. It sinks into the slip and surfaces elsewhere; it calls the brood out of the clutches;
+  the arena's sand starts sliding toward its centre (an antlion's own pit, round it). **Dovina:** the core's multiplier and the brood's
+  number.
+- **The end.** Burst, or **reprogrammed** at low health (the data drain), which ends the fight and leaves the nursery to the Courier.
+  **Dovina:** what each pays.
+- **The look (Calissa):** the urn is a real glazed pot, a cracked ru ware piece, its crack lines glowing more at each stage; the core
+  is labradorite turned to light.
 
-- It stays one `well` zone; the static parts are merged per floor (`level.box` / `addGeo`).
-- A floor: at most **60 draw calls** standing in a hall (walls and trim merged: about 6; the sand: 1; sandfalls and dressing:
-  instanced, about 4; creatures and the rest), at most **120k triangles** (the sand: 18 rooms by 2k).
-- Colliders: one heightfield a room, 32 by 32 at most; the shifting rebuilds at most one heightfield a sim second.
-- Perf gains a Dunemaw case (Petra), and its first numbers become the budget.
-- `npm run playtest well` must still pass (Petra extends it to the new floors).
+## The look (Calissa)
 
-## Order of work
+The verse into the wall stays (the floors' colours by depth, the FOE's slam: `vfx/dunemawkit.js` MOOD). The caverns are the Dunes'
+sand turned to stone where it is old: terraces of bismuth only where the Lachryma runs. The slip is sand and labradorite flowing together.
+The flythrough previews each floor (`src/cine/flythrough.js`).
 
-1. Petra: the 5 by 5 grid, halls, two tiers, the twist, heightfield sand, the sandfalls (the colliders and the cycle); `layout.path`.
-2. Calissa: the sand's material, the sandfalls' look, the grade by depth, the flythrough, the FOE's slam (the glitch is in).
-3. Phase 2: drift tides, the turning hall, the throat.
+## Order of work (to be settled in the round)
+
+1. **Petra:** the pit in the Dunes; the cave generator at 25 by 25; slopes, slip rivers, stalactite runs; sub-zones.
+2. **Dovina:** the FOE's fight, the nursery's ecology, the finds' worth.
+3. **Espada:** the town under the sand, the buried head, the FOE's name, Strawman.
+4. **Wanda:** the pit's hiss, the slip rivers, the stalactites' beat, the FOE's drop.
+5. **Calissa:** the pit's sand, the slip's material, the stalactites, the pots and artifacts, the urn crown and the core, the brood
+   and the clutches.
