@@ -2,9 +2,9 @@
 // THE WELL'S PLAN: one floor of a Well as data, from a seed (pure: no three.js, so a Node script reads it as the game does). The grid is
 // Spelunky's (Derek Yu, 2008): one guaranteed PATH from a room on the top row, sideways and down, until it drops out of the bottom row;
 // rooms off it hang from it, and a loop is sometimes cut. Since the Dunemaw was made big (docs/plans/DUNEMAW.md, Calissa's numbers):
-//   - 5 by 5 cells of 14 m; HALLS of 2 by 2 cells (1 to 3 a floor, open to the dark overhead);
+//   - 5 by 5 cells of 18 m (14 until R45: the owner found it cramped); HALLS of 2 by 2 cells (1 to 3 a floor, open to the dark overhead);
 //   - TWO TIERS 6 m apart: the path crosses between them at least twice through SLOPE cells (a ramp of sand from one tier to the other,
-//     straight through: 6 m over 14 m, 23 degrees, walked either way);
+//     straight through: 6 m over 18 m, 20 degrees at most with its ends rounded (wellsand.js), walked either way);
 //   - the TWIST: the floor is swirled about its centre, each point turned by an angle that grows with its distance out, up to
 //     4 x twist at the corners (0, 7, 14 a floor: the verse is square, the wall is bent). A swirl is continuous, so doorways still meet
 //     and no room crosses another (turning each cell's frame rigidly about the centre, the spec's first idea, made rooms on floor 3
@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
 
-export const GRID = 5, CELL = 14, WALL_H = 5.5, TIER = 6, DOOR = 4, DOOR_H = 4;
+export const GRID = 5, CELL = 18, WALL_H = 7, TIER = 6, DOOR = 5, DOOR_H = 5; // (DOOR_H: the hole in the wall, the arch's crown: wellkit.js)
 /** Degrees a step of the grid is swirled, by floor (1, 2, 3): the corners turn four steps' worth. */
 export const TWIST = [0, 7, 14];
 export const SIDES = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] };

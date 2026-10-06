@@ -377,6 +377,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the Great Dunemaw's landmark (withdrawn: the owner, 2026-10-06, the mouth is an antlion pit), now the look of a slip geyser.
 - **a sandfall** (the Great Dunemaw, `docs/plans/DUNEMAW.md`): a curtain of sand pouring from above; in the floors, a side passage's
   shifting door (open, then falling, on the sim clock; never closing on the Courier). Also the spout's falling skirt.
+- **a lane** (`src/world/well/wellsand.js`): in a room of the Great Dunemaw, the band of flat sand from each doorway and pool to the
+  room's middle (1.6 m to each side, the dunes and drifts beside it): the way through a room is level ground. *Not:* a path (the
+  floor's guaranteed route of rooms, `layout.path`).
+- **an arch** (`src/world/well/wellkit.js`): a doorway of the Great Dunemaw's floors, round-headed (4 m wide, its crown 5 m up), its
+  ring and pilasters standing proud of both faces of the wall.
+- **a skirt** (`src/world/well/wellkit.js`): a strip hung a metre down the edge of a room's sand, drawn only, so no crack shows where
+  two rooms' sand meet (the terrain trick). *Not:* the spout's falling skirt (a sandfall).
+- **rock** (`src/world/well/rock.js`): the Great Dunemaw's walls and pillars drawn rough over their box colliders, a noise field
+  pushing the skin up to 0.3 m sideways.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
   degrees a cell on floors 1 to 3).
