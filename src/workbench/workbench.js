@@ -47,6 +47,7 @@ import { UrnCrown } from '../vfx/urncrown.js';
 import { LachrymatoBottle } from '../vfx/bottle.js';
 import { Stain } from '../vfx/stains.js';
 import { coat } from '../vfx/coat.js';
+import { ShrineModel } from '../vfx/shrine.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
 import { Pillar, Stalactite, slipMaterial, Clutch } from '../vfx/cavekit.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
@@ -181,7 +182,7 @@ export class Workbench {
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
-    out.push({ id: 'garden:press', grp: 'the Shrine Garden', label: 'the spirit press' });
+    out.push({ id: 'garden:press', grp: 'the Spirit Garden', label: 'the spirit press' }, { id: 'garden:shrine', grp: 'the Spirit Garden', label: 'a Shrine (found, rested at, its door into the Spirit Garden opening; on a loop)' });
     out.push({ id: 'slice:cave', grp: 'the slice', label: "the Great Dunemaw's cave kit (a pillar cracking, stone, brittle and warped stalactites, the slip, a clutch)" });
     out.push({ id: 'slice:finds', grp: 'the slice', label: "the Great Dunemaw's finds (the lamp, the ewer, the mask, the coins; the lamp warped)" });
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
@@ -189,7 +190,7 @@ export class Workbench {
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (cracking, bursting, the core; on a loop)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });
     out.push({ id: 'workshop:strawman', grp: 'the Workshop', label: 'Strawman (struck every 2 real seconds)' });
-    out.push({ id: 'garden:regia', grp: 'the Shrine Garden', label: 'the spirit press: aqua regia (something gilded pressed)' });
+    out.push({ id: 'garden:regia', grp: 'the Spirit Garden', label: 'the spirit press: aqua regia (something gilded pressed)' });
     out.push({ id: 'folk:letty', grp: "Margarite's people", label: 'Letty Marque (and Poll)' }, { id: 'folk:purser', grp: "Margarite's people", label: 'the Purser' }, { id: 'folk:board', grp: "Margarite's people", label: 'the bounty board' });
     for (const id of Object.keys(ITEMS).sort()) out.push({ id: `thing:${id}`, grp: 'things', label: ITEMS[id].name || id });
     for (const c of CURIOS) out.push({ id: `curio:${c.id}`, grp: 'curios', label: c.name || c.id });
@@ -358,6 +359,7 @@ export class Workbench {
       else if (id === 'brush:stains') { obj = new THREE.Group(); const S = new Stain({ feeling: 'desire', seed: 0.31 }); obj.add(S.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 16; S.set({ stage: Math.min(3, Math.floor(k / 3) + 1), amount: k > 12 ? 1 - (k - 12) / 4 : 1 }); if (k < pt % 16) S.stage = 0; S.update(Math.max(0, t - pt) * 4); pt = t; }; }
       else if (id === 'workshop:strawman') { const S = new StrawmanModel(); obj = S.group; let last = 0, pt = 0; obj.userData.tick = (t) => { if (t - last > 2) { last = t; S.group.updateMatrixWorld(true); const p = S.body.localToWorld(new THREE.Vector3(0, -0.53, -0.4)); S.hit(p, new THREE.Vector3(Math.sin(t), 0, -1).normalize(), 1); } S.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'garden:regia') { const P = new SpiritPress(); P.set({ soul: { h: 40, s: 0.6 }, fire: 0.5, near: 2 }); obj = P.group; obj.userData.tick = (t) => { if (t % 6 < 0.05) P.set({ regia: 1 }); P.update(t); }; }
+      else if (id === 'garden:shrine') { const S = new ShrineModel({ ground: 'stone_flags' }); obj = S.group; let pt = 0; obj.userData.tick = (t) => { const k = t % 12; S.set({ found: k > 2, resting: k > 4 && k < 7, open: k > 7.5 }); S.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
       else if (id === 'folk:purser') obj = buildPurser().group;
       else if (id === 'folk:board') obj = buildBountyBoard().group;
