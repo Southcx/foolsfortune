@@ -108,8 +108,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute` × 60): what ordinary play should earn in an hour (480 cubes). A source is judged as a multiple of it
   ("× aim"); nothing but luck should pay more than 1.5×.
-- **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes; film:
-  cubes into plates). Machinations' word.
+- **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes). Machinations' word.
 - **profile** (`PLAY`, `scripts/economy.mjs`): one way of spending an hour (the fighter, the miner, the photographer, the angler, the
   treasury camper), simulated against the table. A **mixed profile** is two played together.
 - **sink**: a drain the player chooses and that never fills (the glazes, later the Shrine Garden). **The long sink** is the one meant
@@ -140,8 +139,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Courier does on its line).
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
-- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; the
-  **film**; the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
+- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its
+  **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
+  the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
   creature), the **Major Arcana** (twenty-two designated cards).
 - **reprogramming** (`src/tools/veritome/reprogram.js`, `src/tools/veritome/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a
@@ -209,6 +209,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **clutch** (`NURSERY`): a nest of slip jelly eggs in the slip, guarded, hatching **brood** (young jellies a third of the size), which
   the crowned FOE calls; broken, an egg may leave **slip roe** (a material). Clutches come back with the next game day's layout.
 - **warped artifact** (`FINDS.warped`): the one find a floor in a warped pocket, worth three; taking it **shifts the floor**.
+- **the testing room** (a side room off the Workshop; `src/progress/combat/testroom.js`; the name is a placeholder for Espada's): where
+  aim and recoil are measured, never earned: the Index, the **targets** (never "plates": a plate is a Veritome photograph), Strawman, the
+  **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
+  nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
+  *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **Strawman** (the Workshop's test dummy: `STRAWMAN`): a creature that never falls and that the ledger never counts (`training`); a
   **bout** is its blows until 4 real seconds pass without one, said in the log in one line.
 - **the Solar Skiffing trial** (at the sundial in the Dunes: `SOLAR`): rings charged by the sun; a ring in shade is dark and does not
