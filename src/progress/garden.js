@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE SHRINE GARDEN: the pocket inside the vessel where play already done well keeps paying (docs/DESIGN.md, section 16; ECONOMY.md,
+// THE SPIRIT GARDEN: the pocket inside the vessel where play already done well keeps paying (docs/DESIGN.md, section 16; ECONOMY.md,
 // rule 6; SYSTEMS.md, D7, D8, E3). Rules and state; the place is Petra's, the press Calissa's to draw.
 //
 // (Real time is read from core/calendar.js now(): the same milliseconds in play, pinned by a replay.)

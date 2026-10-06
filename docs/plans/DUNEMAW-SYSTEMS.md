@@ -40,7 +40,7 @@ its grain agree, and a Veritome read of it says so before the fight.
 **Two endings, two different pays** (the choice is the point):
 - **Burst:** the FOE's pay (`ECON.well.foe`, two floors' worth) and a **crown shard** (a court-glaze pot's worth, `ECON.pot`): the pay
   now.
-- **Reprogrammed:** half the pay now (one floor's worth and the shard), and **the nursery becomes the Shrine Garden's**. A Dividend slot
+- **Reprogrammed:** half the pay now (one floor's worth and the shard), and **the nursery becomes the Spirit Garden's**. A Dividend slot
   can be worked by the Great Slip Jelly's brood, so the Dunemaw pays a little forever (`progress/garden.js`; Palworld's way). The pay
   later. The ledger counts both (`foe.burst`, `foe.reprogram`), and each has an achievement.
 
@@ -55,7 +55,7 @@ its grain agree, and a Veritome read of it says so before the fight.
   is a place in time, and what is broken stays broken until the Great Dunemaw turns over.
 - **The choice it makes:** every clutch broken before the fight is two brood the FOE cannot call. Clearing the nursery first is the
   safe way and costs time and the guards' fight; rushing the FOE is fast and brings the brood.
-- **Slip roe:** each egg broken leaves slip roe at a 30% chance, a material (the Great Dunemaw's own) that a Shrine Garden bed grows.
+- **Slip roe:** each egg broken leaves slip roe at a 30% chance, a material (the Great Dunemaw's own) that a Spirit Garden bed grows.
 
 ## 3. The finds, and the warp
 
@@ -138,8 +138,8 @@ it a few times.
 ## What each piece feeds (synergy)
 
 - The **crown's** rule matches the FOE's **grain**, and the Veritome reads both.
-- Breaking **clutches** decides the FOE's **brood**, and leaves **slip roe** for the **Shrine Garden's** beds.
-- **Reprogramming** the FOE gives the Shrine Garden a **dividend** worker: the nursery, kept.
+- Breaking **clutches** decides the FOE's **brood**, and leaves **slip roe** for the **Spirit Garden's** beds.
+- **Reprogramming** the FOE gives the Spirit Garden a **dividend** worker: the nursery, kept.
 - The **warped artifact** is read by the **Dreamvane** and **Divination**, and marks the **Cogitomap**.
 - The **Solar** trial reads the **weather** and the **game day**, and its difficulty is a **forecast**.
 - **Strawman** makes every type's and status's real numbers learnable, without touching the **ledger**.

@@ -82,7 +82,7 @@ What it is now:
 - the circuits' medals and records;
 - the variants of every art.
 
-The long sink (the Internal Shrine Garden) is planned, not built. **Progress resets on every build** (`src/core/progress.js`). While the
+The long sink (the Internal Spirit Garden) is planned, not built. **Progress resets on every build** (`src/core/progress.js`). While the
 game is being made, the long run can be designed and measured (the ledger timestamps every first) but not lived.
 
 ---
@@ -192,7 +192,7 @@ reaches the moment.
   - the Tithe;
   - the shops;
   - the kiln (firing and mending);
-  - later, the Shrine Garden (the long sink: OSRS's Construction, FFXIV's housing).
+  - later, the Spirit Garden (the long sink: OSRS's Construction, FFXIV's housing).
 - **The measuring tools:**
   - the F3 panel's `econ` line, which reads the ledger;
   - `node scripts/economy.mjs`, which simulates the table;
@@ -348,7 +348,7 @@ What this page adds, for the proposals in section 8:
 
 - **A session goal, and STORY.** STORY plays the DEBUG sandbox with the arts locked. Every tool, room and shop is open from the first
   minute, so nothing yet says what tonight is for.
-- **The long sink.** The Shrine Garden, and the shop way to a glaze. Today the steady drains are keys (consumed at each opening), the
+- **The long sink.** The Spirit Garden, and the shop way to a glaze. Today the steady drains are keys (consumed at each opening), the
   Tithe, film and the kiln. Raku's whole shelf empties for about 1,320 cubes (2¾ hours' play) and restocks.
 - **Measurement of pace.** Nobody has measured how long a new player takes to earn their first art, first fish, first curio or first
   gold medal. The ledger's firsts already hold the answer; nothing reads it out.
@@ -458,7 +458,7 @@ Kart's cups and Tony Hawk's gaps list reward mastery with standing and looks. FF
 
 ---
 
-*Later, once STORY has its spine: the Shrine Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
+*Later, once STORY has its spine: the Spirit Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
 rating), priced so that a committed player's surplus goes there for weeks.*
 
 ---
@@ -493,7 +493,7 @@ teaching.
 **Achievements are the main way skills are unlocked** (the owner's standing rule). Cosmetics are rewards for achievements, in quantity
 (the owner hunts glamour; FFXIV, GW2).
 
-**Soul Alchemy** (in the Shrine Garden) carries colour theory: fodder materials and curios have a hue and a saturation, and a spirit
+**Soul Alchemy** (in the Spirit Garden) carries colour theory: fodder materials and curios have a hue and a saturation, and a spirit
 press (hopper, igniter, crucible: the owner's concept art) presses them to change the Courier's characteristics.
 
 **Still to define:** five damage types; a full suite of emotional statuses and what each does; the six (+1) domains, mostly for the
@@ -626,7 +626,7 @@ so the core movement and every tool's feel are untouched until a level is earned
 duplicates good maps: a Cogitomap transcribed is another sale to the Purser). And levels feed the unlocks for free: an art's achievement
 is a predicate, so "this art at Divination 20" is one line in `achievements.js`. The system will grow.
 
-## 16. The Shrine Garden and Soul Alchemy (the owner, 2026-10-05: "the boat first, then the Spirit Garden and Soul Alchemy")
+## 16. The Spirit Garden and Soul Alchemy (the owner, 2026-10-05: "the boat first, then the Spirit Garden and Soul Alchemy")
 
 The garden inside the vessel is where play already done well keeps paying, and where what the Wells give becomes who the Courier is.
 Two systems, one place (Petra's: E3; the press is Calissa's to draw). Built as rules and modules first (Dovina), so the place only has
@@ -650,7 +650,7 @@ painter's colour wheel):
   **Resilience** (the clay's mending, and the hits a ship bears on the Emocean: one attribute across two layers).
 - The soul colour is also a look: the vessel's glow takes it (Calissa's), so alchemy is dress-up as well as growth.
 
-**The Shrine Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
+**The Spirit Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
 farm, FFXIV's housing as the long sink):
 - **Dividend slots** (`ECON.dividend`): an encounter is **mastered** when every achievement in its group is done (a predicate over the
   ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its rate an hour of play, filling for 8 game days (8 real hours,

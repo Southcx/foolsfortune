@@ -22,12 +22,15 @@ export function wellRules({ on, L, log }) {
   on('well.leave', (e) => {
     if (e.by !== 'courier') return;
     if (!e.shattered) L.inc('well.out');
+    if (e.how === 'escape') L.inc('well.escape'); // (the Wake Whistle: docs/plans/SHRINES.md)
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
     if (e.pay > 0) L.hi('well.pay.best', e.pay);
-    if (enteredAt != null && !e.shattered) { const secs = Math.round(L.play - enteredAt); L.inc('well.run.seconds', secs); L.inc(`well.run.seconds.f${e.floors}`, secs); L.inc(`well.run.count.f${e.floors}`); L.lo('well.run.fastest', secs); }
+    if (enteredAt != null && !e.shattered && e.how !== 'escape') { const secs = Math.round(L.play - enteredAt); L.inc('well.run.seconds', secs); L.inc(`well.run.seconds.f${e.floors}`, secs); L.inc(`well.run.count.f${e.floors}`); L.lo('well.run.fastest', secs); }
     enteredAt = null;
-    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `. Pay: ${e.pay} cubes` : ''}.`);
+    const pay = e.pay > 0 ? `. Pay: ${e.pay} cubes` : '';
+    if (e.how === 'escape') log.say('explore', `You blow the Wake Whistle, and wake at the Dunemaw's mouth${pay}.`); // (Espada's words)
+    else log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${pay}.`);
   });
   on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round. You are back at the way in.', { throttle: 2 }); });
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });

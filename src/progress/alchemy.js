@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// SOUL ALCHEMY: the spirit press in the Shrine Garden (docs/DESIGN.md, section 16; SYSTEMS.md, D2). The Courier has a SOUL COLOUR, a hue
+// SOUL ALCHEMY: the spirit press in the Spirit Garden (docs/DESIGN.md, section 16; SYSTEMS.md, D2). The Courier has a SOUL COLOUR, a hue
 // and a saturation on the wheel (it starts grey, at the centre). Pressing materials walks it along each one's winding path, in the order
 // they go into the hopper (progress/econ/materials.js); FIRING the press while the colour sits inside an ATTRIBUTE's target raises that
 // attribute a rank and spends refined Lachryma (cubes: the long sink). The target narrows with every rank, so the skill is the

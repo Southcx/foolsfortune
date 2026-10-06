@@ -72,7 +72,7 @@ export const SHOPS = {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
     blurb: 'Lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.',
     // (and Anagami's crude, at Anagami's price: the hop's cargo is bought on the pier it leaves from)
-    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8, 'bottle.small': 2, 'bottle.medium': 1, 'bottle.large': 1 }, // (the bottles: a crude man's glass)
+    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8, 'bottle.small': 2, 'bottle.medium': 1, 'bottle.large': 1, 'whistle.wake': 3 }, // (the bottles: a crude man's glass; the Wake Whistle: the Wells' way out)
     trade: ['fish'], buys: ['fish', 'lure', 'crude'],
     markup: 1, haggle: false, island: 'anagami',
   },

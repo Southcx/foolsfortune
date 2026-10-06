@@ -29,7 +29,7 @@ No activity should pay more than about **1.5×** the aim. The one exception is l
  zandatsu core ........... ECON.jelly.core    │      ├─► shops ............... ECON.goods (minutes)
  crystal harvest ......... ECON.crystal       ├─►  ──┤      Raku haggles; Grog buys fish back (a faucet too)
  chests (world, treasury). ECON.chest         │ cubes├─► glazes, firing (R38d)
- a curio they have, again .. ECON.dupe          │      └─► the Shrine Garden (later: the long sink)
+ a curio they have, again .. ECON.dupe          │      └─► the Spirit Garden (later: the long sink)
  condensing a spare card . ECON.condense      │
  selling to the folk ..... ECON.fish, .curio  │
  Lockheart CUBES ......... ECON.lockheart  ───┘
@@ -41,7 +41,7 @@ No activity should pay more than about **1.5×** the aim. The one exception is l
 - the Tithe and the Lockheart turn cubes or Lachryma into chances;
 - condensing turns cards into cubes.
 
-**The long-term sink** is the Internal Shrine Garden, a pocket dimension inside the Courier vessel. Every economy that keeps running needs one sink that never fills (OSRS's construction skill, FFXIV's housing). It is what the other prices are built to feed.
+**The long-term sink** is the Internal Spirit Garden, a pocket dimension inside the Courier vessel. Every economy that keeps running needs one sink that never fills (OSRS's construction skill, FFXIV's housing). It is what the other prices are built to feed.
 
 ## What each profile earns
 
@@ -199,7 +199,7 @@ A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the 
    while you are away, up to a cap), Monster Hunter's Argosy and Meowcenaries, Melvor Idle's mastery. Completionism is long-term gain, not
    just a green log. (This is the one exception to rule 1: the dividend is paid for play already done well.)
    **The numbers** (`ECON.dividend`, simulated by `node scripts/economy.mjs`): a mastered encounter pays 5% of what farming it by hand pays
-   an hour, and fills in 8 hours. It pays only from one of the Shrine Garden's **3 slots**, so choosing which mastered encounters to work
+   an hour, and fills in 8 hours. It pays only from one of the Spirit Garden's **3 slots**, so choosing which mastered encounters to work
    is part of the game. For a player of two hours a day with every slot full, that is about 0.6× the aim on top of their play. Without
    slots, every green log would be a faucet for good: 20 mastered encounters would pay 4× the aim, more than playing. The slots are the
    cap, and a later Garden upgrade is the way to raise it, as a sink.
@@ -217,10 +217,10 @@ A **livelihood** is a way of earning. **One Courier, one purse, one ledger, the 
 | Caster shell crafting | Psygun | shells, from materials | ruled |
 | Hauling between islands | the Emocean leg | the price gap between islands | ruled |
 | Commissions | any | by Figment class (Guppy, Barracuda, Marlin, Whale, Leviathan), streaks (OSRS Slayer, FFXIV leves) | ruled |
-| Ranching Figments | Lockheart (summoning) | caught Figments working the Shrine Garden (Palworld) | ruled |
+| Ranching Figments | Lockheart (summoning) | caught Figments working the Spirit Garden (Palworld) | ruled |
 | Busking | Crucibelle: tempo, melody | tips by how true the playing is; the rhythm mode below | ruled |
 | Throwing pots | Soul Brush: shapes; the kiln: colour | pots, sold to the folk | ruled |
-| Foraging and the garden | (the Shrine Garden) | fodder materials on timers (OSRS herb runs) | ruled |
+| Foraging and the garden | (the Spirit Garden) | fodder materials on timers (OSRS herb runs) | ruled |
 
 Cut: salvage (the deep Emocean leaves no wreckage), and spell scrolls (a caster shell is a spell, and the Lockheart's casting coffins fill
 the rest of that niche).
@@ -301,4 +301,4 @@ Busking pays by its score. The charts could be drawn from the music's own note g
 - **Dormans and Adams, *Machinations*.** Sources, drains and converters, and the feedback loops between them, tuned on a diagram before the game is played.
 - **OSRS.** Gold sinks against inflation (the GE tax, construction, the item sinks), and the players' own money-making guide (activities by gp/h). The profile table above is that guide, kept by us.
 - **EVE Online's monthly economic report.** Faucets and sinks by source. The F3 econ line is a one-line version of it.
-- **FFXIV.** Housing and glamour as the sinks a player chooses, which is where the Shrine Garden and the glazes come from.
+- **FFXIV.** Housing and glamour as the sinks a player chooses, which is where the Spirit Garden and the glazes come from.
