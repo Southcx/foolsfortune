@@ -76,6 +76,8 @@ export const ECON = {
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 6, 'key.twin': 10, 'key.wide': 8, 'key.echo': 6, // (loaded and echo, the
     // conversion keys, were 8 and 12: the owner made them cheaper, 2026-10-04)
     'heart.gambler': 20, 'heart.shepherd': 20,
+    // the Lachrymato Bottles (progress/brushload.js): bigger is dearer and riskier; placeholders until the economy has a brush profile
+    'bottle.small': 10, 'bottle.medium': 25, 'bottle.large': 50,
   },
   /** What a look costs at the kiln (a glaze, a stone, a hair, a skin), by its PRESTIGE: the folk's own clay ladder (docs/LORE.md), from
    *  Earthenware (yours from the start, free) through Stoneware and Porcelain to the Court, each about 2.5 times the last (value is felt

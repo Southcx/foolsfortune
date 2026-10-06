@@ -82,6 +82,11 @@ readiness or the stun meter's fill, so the circle is read as the Flash's, and it
 | the FOE's crown cracks | Calissa's urn seams | kept, on the crown |
 | a ring lit in the Solar trial | the ring's own light | kept |
 | tuned knobs | the Tab panel, the log, QAIS | kept |
+| what can be parried (the owner, 2026-10-06) | nothing | a Lachryma outline on the projectile, and on the striking part of an answerable windup (Cuphead's pink): `docs/plans/PARRY.md` |
+| the Crucibelle's beat (the owner) | the music only | a metronome on the bell itself: a pendulum or clapper that **swings** with the beat (motion, never a flash: rule 7), its arc lit where a note would land on the beat |
+| the game day and game hour: **a clock, the Veritome's** (the owner) | nothing | the **date stamp** in the lens's corner, the 90s point-and-shoot's orange LCD (game day, game hour), and printed on every plate; the one place a number is drawn, because it is the camera's own display (rule 2's single exception, Calissa's to cut). Without the lens: `/time` in the chat line says it to the log, if you carry the Veritome |
+| the weather where you stand: **a weather meter, the Dreamvane's** (the owner) | the sky, the log's line | **the vane** on the crook's head: it turns to the mood's aspect and wears its colour (and the agate's, two together), its streamers longer with strength, slack in calm. Shown while the Dreamvane is out, and faintly on the back when it is worn |
+| the forecast (the Dreamvane's) | nothing | the **dowse raised to the sky** (look up while dowsing): the needle swings through the coming blocks one by one, in their colours, and the log says it in one line. How far it reaches is the forecast (`ECON.weather.forecast` blocks, widened by `divination.forecast`) |
 
 ## Who does what
 

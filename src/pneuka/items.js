@@ -7,9 +7,8 @@
 // keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
-import { BOTTLES } from '../progress/brushload.js';
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
@@ -18,6 +17,7 @@ import { SPECIES, ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { typeNo } from '../tools/psygun/kinds.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
+import { BOTTLES } from '../progress/brushload.js';
 
 export const ITEMS = {};
 /** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
@@ -55,6 +55,13 @@ ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
 for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
+// the Lachrymato Bottles: worn one at a time in their own place, 'bottle', on the upper back (progress/brushload.js has their numbers; the words are Espada's)
+const BOTTLE_TEXT = {
+  'bottle.small': ['SMALL LACHRYMATO BOTTLE', 'A tear bottle of thin glass, worn on your back. It holds a little Lachryma for when your pool runs low.'],
+  'bottle.medium': ['MEDIUM LACHRYMATO BOTTLE', 'A tear bottle, stoppered tight. Your Soul Brush paints from it and mops into it.'],
+  'bottle.large': ['LARGE LACHRYMATO BOTTLE', 'A big tear bottle. It holds a lot of Lachryma, and it breaks like glass.'],
+};
+for (const id of Object.keys(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id.slice(7), place: 'bottle', name: BOTTLE_TEXT[id][0], glyph: '⚱', color: 0x8fb8c8, tier: id === 'bottle.large' ? 2 : 1, examine: BOTTLE_TEXT[id][1], card: null, lure: false, stack: false };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 // what a Well gives (world/well/dunemaw.js): a material of each of the seven kinds (progress/econ/materials.js: each one carries its own
@@ -75,11 +82,5 @@ const CASK_LINES = {
 for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
   examine: 'A chart of one Well on one game day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
-
-// the Lachrymato Bottles (progress/brushload.js BOTTLES, Dovina's numbers): worn on the upper back, a reserve of Lachryma the Soul Brush
-// paints from and mops into (tools/soulbrush/load.js). Names and lines are placeholders for Espada's.
-const BOTTLE_NAMES = { 'bottle.small': 'SMALL LACHRYMATO BOTTLE', 'bottle.medium': 'LACHRYMATO BOTTLE', 'bottle.large': 'LARGE LACHRYMATO BOTTLE' };
-for (const [id, B] of Object.entries(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id.slice(7), place: 'bottle', name: BOTTLE_NAMES[id], glyph: '⚱', color: 0x9fd6e8, tier: 1,
-  examine: `Aquarium glass, worn on the upper back. It holds ${B.capacity} Lachryma and feeds your mind when it runs low. Glass breaks.`, card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;
