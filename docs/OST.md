@@ -245,6 +245,11 @@ read on 2026-10-05 from Spotify's public embed page. The owner's five favourites
   Glow and the Drop hold 62 of the 99 (33 and 29), the bass the most (35% under 120 Hz at the median), the air the least (5.8%),
   the drums the most (30%), the tempo the slowest (101 bpm), and the only list whose median song has a drop-out. Not one song is
   shared with 2025 or the all-time list; six are on Superlike. 2025 swung back to the Wall: the ear holds, the songs turn over.
+- **2023's hundred** (98 measured, read 2026-10-06). Superlike's year: 19 of its songs are on Superlike, three of the five favourites
+  among them (*DATURA* at 2, *Waterfalls* at 8, *Agoraphobia* at 9), with Yuu Miyashita's *Wozwald* at 22 (one of this soundtrack's
+  masters, above). The heaviest bass of any list (39% under 120 Hz at the median) and the fewest Walls (18 of 98); not one song is
+  shared with 2024 or 2025. The arc so far: 2023 the heaviest, 2024 the darkest and slowest with the most drops, 2025 back to the
+  bright Wall.
 - **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
   - Stops and drop-outs written into the groove.
   - A bass that slides.
