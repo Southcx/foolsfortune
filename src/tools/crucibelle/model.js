@@ -5,7 +5,7 @@
 // hangs in it on a chain and swings when it is tolled.
 // Modelled in the held-tool frame (tools/grip.js): +X up through the bell from the hand at its crown ring; metres.
 //
-//   const m = new CrucibelleModel()   m.group   m.lightVent(i, k)   m.setFever(k)   m.setSwing(a)   m.mouthWorld(out)
+//   const m = new CrucibelleModel()   m.group   m.lightVent(i, k)   m.setFever(k)   m.setSwing(a)   m.setBeat(eighths)   m.mouthWorld(out)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { addOutline } from '../../render/outline.js';
@@ -42,6 +42,11 @@ export class CrucibelleModel {
     this.clapper = new THREE.Group(); this.clapper.position.x = 0.15; g.add(this.clapper);
     const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.09, 4), brass); chain.rotation.z = -Math.PI / 2; chain.position.x = 0.045; this.clapper.add(chain);
     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.016, 6, 5), dark); ball.position.x = 0.1; this.clapper.add(ball);
+    // the metronome: a brass fob hung below the hand ring, swinging to the music's eighths (its ends land on them, alternating
+    // sides, as a metronome's swing does: the beat shown by motion, never a flash; the owner, 2026-10-06, OVERLAY rule 7)
+    this.metro = new THREE.Group(); this.metro.position.x = -0.04; g.add(this.metro);
+    const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.1, 4), brass); rod.rotation.z = Math.PI / 2; rod.position.x = -0.05; this.metro.add(rod);
+    const bob = new THREE.Mesh(new THREE.OctahedronGeometry(0.017, 0), brass); bob.position.x = -0.104; this.metro.add(bob);
     for (const o of [bell, lip]) addOutline(o);
     this.fever = 0;
   }
@@ -49,6 +54,8 @@ export class CrucibelleModel {
   lightVent(i, k = 1) { const v = this.vents[i]; if (v) v.k = Math.max(v.k, k); }
   setFever(k) { this.fever = k; this.emberMat.color.setRGB(1, 0.45 + 0.4 * k, 0.2 + 0.6 * k); this.ember.scale.setScalar(0.6 + 0.9 * k); }
   setSwing(a) { this.clapper.rotation.z = a; }
+  /** The beat: `phase` in eighth notes since the grid's start; the fob reaches an end on each eighth. */
+  setBeat(phase) { this.metro.rotation.z = 0.55 * Math.cos(Math.PI * phase); }
   update(dt) {
     for (const v of this.vents) { v.k = Math.max(0, v.k - dt * 2.2); v.m.color.setRGB(0.1, 0.06, 0.04).lerp(v.color, v.k); }
   }
