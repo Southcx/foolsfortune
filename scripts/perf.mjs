@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE PERF CHECK: the other machine half of Petra's gate (docs/ARCHITECTURE.md, "The gate", "Budgets"). It starts its own dev server,
-// opens the game headless in manual mode, and measures two standing places, the workshop and the dunes: what a frame costs to simulate
+// opens the game headless in manual mode, and measures three standing places, the workshop, the dunes and a hall of the Dunemaw's bottom floor: what a frame costs to simulate
 // (tick) and to draw, how many draw calls and triangles a frame takes (every pass of the present counted), how many shader programs,
 // geometries and textures are alive, the heap, and the boot. Then it holds the numbers against the last published build's
 // (scripts/perf-baseline.json) and against the hard budgets, and says which moved.
@@ -80,8 +80,14 @@ try {
     const workshop = place();
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
     const dunes = place();
+    // the Great Dunemaw's bottom floor, standing in a hall when it has one (docs/plans/DUNEMAW.md's budget is for a hall: 60 draws, 120k triangles)
+    const W = G.game.well; W.enter(); W.goTo(3); for (let i = 0; i < 30; i++) G.tick(1 / 60);
+    const hall = W.cur.cells.find((c) => c.hall != null);
+    if (hall) G.course.teleport(new G.THREE.Vector3(hall.x, hall.y + 2, hall.z), 0, { keepPool: true });
+    for (let i = 0; i < 30; i++) G.tick(1 / 60);
+    const well = place();
     if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
-    return { workshop, dunes, heapMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
+    return { workshop, dunes, well, heapMB: Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6), lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
   });
   out.bootS = +bootS.toFixed(1);
 } finally {
@@ -101,9 +107,10 @@ const cmp = (label, key, now, was, tol, budget) => {
   if (moved) fails.push(`${label} ${key} ${now} is ${(d * 100).toFixed(0)}% above the baseline (${was})`);
   rows.push(`  ${(label + ' ' + key).padEnd(18)} ${String(now).padStart(9)}   ${was == null ? '' : `was ${String(was).padStart(8)}  ${d >= 0 ? '+' : ''}${(d * 100).toFixed(0)}%`}${over || moved ? '   <-- ' : ''}`);
 };
-for (const p of ['workshop', 'dunes']) {
+const WELL_BUDGET = { calls: 80, tris: 120000 }; // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare)
+for (const p of ['workshop', 'dunes', 'well']) {
   const n = out[p], b = base?.[p] || {};
-  for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], BUDGET[k]);
+  for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
 cmp('all', 'heapMB', out.heapMB, base?.heapMB, TOL.heapMB, BUDGET.heapMB);
 cmp('all', 'bootS', out.bootS, base?.bootS, TOL.bootS, null);
@@ -111,11 +118,11 @@ console.log(`perf (${url}; SwiftShader: times are relative)${base ? `, against t
 console.log(rows.join('\n'));
 // (not gated, but read at every review: programs compiled in play, and the big things no zone hides)
 console.log(`  programs compiled after the warm-up: ${out.lateProgs}${base?.lateProgs != null ? ` (was ${base.lateProgs})` : ''}${out.lateProgs > (base?.lateProgs ?? out.lateProgs) ? '   <-- each is a hitch the first time it is drawn' : ''}${out.lateNames?.length ? ` (${out.lateNames.join(', ')})` : ''}`);
-for (const p of ['workshop', 'dunes']) if (out[p].loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
+for (const p of ['workshop', 'dunes', 'well']) if (out[p].loose.length) console.log(`  drawn in every zone, from the ${p}: ${out[p].loose.join(', ')}`);
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined } }, null, 1) + '\n');
+  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');
