@@ -108,8 +108,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the aim** (`ECON.perMinute` × 60): what ordinary play should earn in an hour (480 cubes). A source is judged as a multiple of it
   ("× aim"); nothing but luck should pay more than 1.5×.
-- **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes; film:
-  cubes into plates). Machinations' word.
+- **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes). Machinations' word.
 - **profile** (`PLAY`, `scripts/economy.mjs`): one way of spending an hour (the fighter, the miner, the photographer, the angler, the
   treasury camper), simulated against the table. A **mixed profile** is two played together.
 - **sink**: a drain the player chooses and that never fills (the glazes, later the Shrine Garden). **The long sink** is the one meant
@@ -140,8 +139,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Courier does on its line).
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
-- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; the
-  **film**; the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
+- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its
+  **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
+  the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
   creature), the **Major Arcana** (twenty-two designated cards).
 - **reprogramming** (`src/tools/veritome/reprogram.js`, `src/tools/veritome/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE ECONOMY SIMULATOR: four ways to spend an hour (the FIGHTER, the MINER, the PHOTOGRAPHER, the GAMBLER) played against the same
 // table the game reads (src/progress/econ/table.js, src/world/treasure/treasure.js), before and after the R38 rebalance, so a change to a number is seen as
-// cubes an hour before it is played. The rates of play (how many jellies a minute a fighter bursts, how often a roll of film is
+// cubes an hour before it is played. The rates of play (how many jellies a minute a fighter bursts, how often a batch of plates is
 // developed) are assumptions, written out in PLAY below and measured against the F3 panel's econ line (src/progress/econ/economy.js) as the
 // game is played: when the two disagree, fix PLAY here, then the table.
 //
@@ -67,7 +67,7 @@ const perHour = (E) => {
   const cycle = Math.max(m.crystals * m.walk, 186); // (a formation regrows in 186 s, crystals.js; the round is the walk)
   out.miner = 3600 / cycle * m.crystals * worth;
   const p = PLAY.photographer;
-  out.photographer = 60 / p.rollMin * (p.spares.reduce((a, [r, n]) => a + n * E.condense[r], 0) - (E.goods ? E.goods['mat.film'] * E.perMinute : 0)); // (less a roll of film each, from R38)
+  out.photographer = 60 / p.rollMin * p.spares.reduce((a, [r, n]) => a + n * E.condense[r], 0); // (no film since 2026-10-06: the Veritome is a digital camera, its memory holds a batch)
   const a = PLAY.angler;
   out.angler = E.fish ? 60 / a.catchMin * a.mix.reduce((s, p, t) => s + p * E.fish[t], 0) : 0; // (before R38 a fish came apart into Lachryma: no cubes)
   out.treasury = TIERS.reduce((a, t, i) => a + 3600 / Math.max(E.treasury.respawn[i], 20) * mean(E.chest[i]), 0);

@@ -16,7 +16,7 @@ The numbers live in one table, `src/progress/econ/table.js` (`ECON`). Change the
 Every price is named in minutes: `minutes(n)` in `src/progress/econ/economy.js` turns n minutes into cubes.
 
 - A sealed chest from the Tithe costs **6 minutes** (48 cubes).
-- The shops price in minutes too: a roll of film is a minute and a half, a lure five minutes, a twin key ten. A glaze will be about fifteen.
+- The shops price in minutes too: a lure is five minutes, a twin key ten. A glaze will be about fifteen.
 
 No activity should pay more than about **1.5×** the aim. The one exception is luck: a prismatic chest is meant to feel like a windfall.
 
@@ -55,7 +55,7 @@ From `node scripts/economy.mjs`, which uses the table and the assumed rates of p
 | angler (fish sold to Old Grog) | 0 | 475 | 0.99 |
 | treasury camper (the Weir's five plinths) | 94,980 | 586 | 1.22 |
 
-The photographer row is after film: a roll costs 12 cubes. It earns 430 an hour without film and 310 with it.
+The photographer row has no film to buy since 2026-10-06 (the Veritome is a digital camera, the owner): it earns about 430 an hour.
 
 From R39 the miner earns by ear (`src/world/dunes/crystaltuning.js`). A formation broken open by plain strikes pays a share of its worth by its nature: dense 0.6, fragile 0.5 (`ECON.crystal.kind`). One opened at its sweet spot pays many times over: dense ×2, fragile ×6 (`ECON.crystal.sweet`). The row assumes a quarter of the formations are fragile, and that they find the spot on 40% of the dense ones (ten strikes to try) and 15% of the fragile ones (three). A miner who never listens earns about 400 an hour (0.83 × aim).
 
@@ -64,7 +64,7 @@ From R39 the miner earns by ear (`src/world/dunes/crystaltuning.js`). A formatio
 There are two counters, opened from the keeper's talk ("Let's trade."):
 
 - **Raku's treasury** sells Possibilikeys and coffins at a 45% markup, and haggles. He buys curios (his trade, at `ECON.curio`, a little over what the curio's spare card condenses for), and keys and coffins at half their worth.
-- **Old Grog's pier** sells film and lures at their worth, and buys fish (his trade: `ECON.fish` by tier) and lures at half.
+- **Old Grog's pier** sells lures at their worth, and buys fish (his trade: `ECON.fish` by tier) and lures at half.
 
 How prices move (`ECON.shop`, after OSRS):
 
@@ -77,7 +77,7 @@ How prices move (`ECON.shop`, after OSRS):
 - An offer at the low end of what is put to their sulks him into holding at list.
 - Steady fair offers, flattery or walking away while he is pleased end about 18–20% under list.
 
-**Selling to the folk replaces condensing** as the way to turn things into cubes. A landed fish is now a thing in the box (it used to come apart into Lachryma only). Film is now a thing too: a roll is 24 exposures, and the next is loaded from the box.
+**Selling to the folk replaces condensing** as the way to turn things into cubes. A landed fish is now a thing in the box (it used to come apart into Lachryma only). (Film was a thing too, from R38 until 2026-10-06; the Veritome is a digital camera now, and its memory holds 24 plates.)
 
 
 **The Tithe** returned 227% of what it took before R38 and returns 78% after, with its pity and its dupes counted. The curio is the rest of the prize.

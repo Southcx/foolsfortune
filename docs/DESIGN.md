@@ -99,7 +99,7 @@ means cubes into the world, "drain" cubes out, and "converter" one resource into
 | **Psygun** (X) | shoot, charge, load caster shells | break pots, clap jars, burst jellies | Lachryma (shot 4, charge 24); shells from reliquaries | baubles (Lachryma), jelly cubes, the break ledger |
 | **Sondelass** (Q) | cutlass, rod, grapnel; zandatsu on the stunned | angling at the Weir; the zandatsu harvest | Lachryma (cast 10, stinger 6, blade 4/s) | fish (sold: a faucet), cores (cubes) |
 | **Soul Brush** (G) | the club, the slide, drawings, sigils | traversal and puzzle; befriending jars | Lachryma, ink | mended pots, friendly jars |
-| **Veritome** (J) | the lens, the Flash, reprogramming | the photographer's round; the darkroom | film (a converter: cubes to plates) | cards (the collection), bestiary facts, glazes, cubes by condensing |
+| **Veritome** (J) | the lens, the Flash, reprogramming | the photographer's round; the darkroom | none (a digital camera: its memory holds a batch) | cards (the collection), bestiary facts, glazes, cubes by condensing |
 | **Dreamvane** (K) | dowse, pick, fork, survey | the miner's round in the dunes | Lachryma (survey 12) | crystal cubes (the biggest faucet), shards, Possibilikeys, the map |
 | **Crucibelle** (U) | notes on the beat, songs | support in a fight; reveals veiled crystal | Lachryma (8 to 24 a song) | sleep, decoys, spirits, sight |
 | **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `src/tools/lockheart/table.js`) |
@@ -134,7 +134,7 @@ The bestiary turns each of them into a collection as well (Pokémon Snap, Monste
 ### The folk
 
 - **Raku** runs the treasury and is the main drain. He sells keys and coffins at 1.45× worth, and he haggles.
-- **Old Grog** is the angler's market: he buys fish and sells film and lures at their worth.
+- **Old Grog** is the angler's market: he buys fish and sells lures at their worth.
 - **Saggar** keeps the kiln, which is a station, not a shop yet.
 - **Pip** is in the hub and has no shop yet.
 
@@ -204,7 +204,7 @@ reaches the moment.
 |---|---:|---:|
 | fighter | 608 | 1.27 |
 | miner | 834 | **1.74** |
-| photographer (after film) | 310 | 0.65 |
+| photographer (no film since 2026-10-06) | 430 | 0.90 |
 | angler | 475 | 0.99 |
 | treasury camper | 586 | 1.22 |
 

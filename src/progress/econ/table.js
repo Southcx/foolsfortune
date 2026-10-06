@@ -72,7 +72,6 @@ export const ECON = {
   refire: 1.5,
   /** What the folk ask, in minutes of play (progress/shop/catalogue.js turns them into cubes); see docs/ECONOMY.md. */
   goods: {
-    'mat.film': 1.5,                                           // a roll of film: 24 exposures
     lure: 5,                                                   // a made lure, to replace one sold or lost
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 6, 'key.twin': 10, 'key.wide': 8, 'key.echo': 6, // (loaded and echo, the
     // conversion keys, were 8 and 12: the owner made them cheaper, 2026-10-04)

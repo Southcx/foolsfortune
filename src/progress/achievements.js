@@ -307,7 +307,7 @@ export function buildAchievements(game) {
   C('vl2', 'veritome', 'The Lens', 3, 'endure', 'Shutterbug', 'Take 500 photographs.', 'photo.take', 500);
   C('vl4', 'veritome', 'The Lens', 3, 'mechanic', 'Held to the Real', 'Hold 10 clapperjars with a fully charged shot.', 'photo.held', 10);
   C('vl5', 'veritome', 'The Lens', 4, 'mechanic', 'Shutter Chance', 'Hold 5 clapperjars at the shutter chance.', 'photo.chance', 5);
-  C('vd1', 'veritome', 'The Darkroom', 1, 'count', 'Developing', 'Appraise a roll of film.', 'darkroom.batches', 1);
+  C('vd1', 'veritome', 'The Darkroom', 1, 'count', 'Developing', 'Appraise a batch of photographs.', 'darkroom.batches', 1);
   H('vd2', 'veritome', 'The Darkroom', 2, 'mechanic', 'A Full Roll', 'Appraise twenty-four photographs at once.', 'darkroom.batch.best', 24);
   H('vl3', 'veritome', 'The Darkroom', 2, 'mechanic', 'Four Stars', 'Appraise a four-star photograph.', 'photo.stars.best', 4);
   H('vc3', 'veritome', 'The Darkroom', 3, 'mechanic', 'A Full Frame', 'Appraise a photograph of five kinds of thing.', 'photo.kinds.best', 5);
