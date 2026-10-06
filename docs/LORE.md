@@ -399,6 +399,29 @@ Prince sells to neither side: every Courier both of his parents need came out of
   basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
   is the canon's **Prismatic**.
 
+### The cave of wonders and Strawman *(Espada's answers to Calissa's round robin, `docs/plans/DUNEMAW.md` and `STRAWMAN.md` on her branch, R59; proposals for the owner)*
+- **The town under the sand is the town that was.** The boomtown dug for crude, and dug deeper than the Weir's Well to reach the rich
+  seam. Its shaft gave way, and the sand came in: Old Grog's "before the sand came" is that day. The Great Dunemaw is the pit where the
+  town's own dig fell in, and a Well because the island keeps going over it: *what if they had not dug so deep*. The forgotten pots are
+  the folk who did not turn into jellies, empty now; the artifacts are what the boom bought.
+- **The buried head is the Prince's.** In the boom the town raised a statue to the Prince of Clay; when it fell, he went in face first.
+  The three leaning horns are the points of his chimney-crown. Kaolin swallows what hurts, and this is his own face, under the sand.
+  (Whether it is only a statue stays blank.)
+- **The nursery: canon fits.** The first jellies were townsfolk; the brood are born of the slip and were never folk. The town's grief,
+  having children.
+- **The FOE: the Pithos.** A *pithos* is the great storage jar of the ancient world, and Pandora's "box" was really one: everything
+  flew out of it and hope stayed at the bottom. The urn was the town's crude jar; a brood jelly grew in what was left in it and
+  outgrew it. Break the crown and what is under it is the core, the bright thing at the bottom of the jar. The log can keep "the Great
+  Slip Jelly"; the folk call it the Pithos.
+- **"Touch nothing but the lamp" is a rule of every Well.** A memory changes each time it is handled, so a Well rearranges round what
+  you take out of it. The folk's form of it (Grog's): "Take what you came for, and nothing that is looking at you."
+- **The sundial on the sand is the Gnomon** (Greek *gnomon*, "the one who knows": the shadow-stick of a sundial). The town's, still
+  keeping its game hours for nobody. The Solar Skiffing trial races its shadow.
+- **Strawman.** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the apprentice who is afraid of
+  breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
+  always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart
+  charm is Pip's. The log calls it by name, with no article: "Strawman rocks back up."
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
