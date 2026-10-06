@@ -96,7 +96,7 @@ function floorMaterial(env, u) {
 // colour, rippled by the owner's sand-ripple photograph (the liquid pack's B channel) along the floor, and in the troughs the Lachryma
 // shows through: the labradorite's colours in the hollows, more the deeper the floor.
 function sandMaterial(u) {
-  const m = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
+  const m = new THREE.MeshStandardMaterial({ name: 'dunemaw-sand', color: 0xd9a066, roughness: 0.92, metalness: 0 });
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u, MOOD, liquidUniforms());
     sh.vertexShader = sh.vertexShader
@@ -105,9 +105,9 @@ function sandMaterial(u) {
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\nvarying vec3 vSwW;\nuniform float uDepth, uSlam, uT;\n${LAB_GLSL}\n${LIQUID_GLSL}\nfloat sdTrough;`)
       .replace('#include <color_fragment>', `#include <color_fragment>
-{ float rip = liqTap(vSwW.xz * 0.11 + vec2(0.0, uT * 0.004 * uDepth)).b; // (the ripples creep, deeper down: the sand is moving)
+{ float rip = liqTap(vSwW.xz * 0.22 + vec2(0.0, uT * 0.004 * uDepth)).b * 0.7 + liqTap(vSwW.xz * 0.07 + 0.4).b * 0.3; // (the ripples creep, deeper down: the sand is moving)
   sdTrough = 1.0 - smoothstep(0.15, 0.45, rip);
-  diffuseColor.rgb *= 0.78 + 0.32 * rip; }`)
+  diffuseColor.rgb *= 0.58 + 0.62 * rip; }`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
   totalEmissiveRadiance += labSoft(dot(vSwW.xz, vec2(0.04, 0.03)) + uMindT * 0.02) * sdTrough * (0.04 + 0.2 * uDepth + 0.25 * uSlam);`);
   };
@@ -120,7 +120,7 @@ export function dunemawKit({ env = null } = {}) {
   return {
     wall: wallMaterial(env),
     floor: floorMaterial(env, u),
-    sand: sandMaterial(u),
+    sand: Object.assign(sandMaterial(u), { userData: { shared: true } }), // (every floor's: never disposed with one)
     trim: new THREE.MeshStandardMaterial({ color: 0x2c2832, metalness: 0.9, roughness: 0.35, envMap: env, envMapIntensity: 0.4, flatShading: true }),
     tick() { /* (the floor drifts on the Mind's shared clock: labradorite.js mindTick, which anyone may call once a frame) */ },
   };
