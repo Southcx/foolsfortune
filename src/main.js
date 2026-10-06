@@ -35,6 +35,7 @@ import { TestRoom } from './world/testroom/room.js';
 import { TestRoomDress } from './vfx/testroomkit.js';
 import { NightSky } from './vfx/nightsky.js';
 import { WaterFx } from './vfx/waterfx.js';
+import { BrushLoad } from './vfx/brushload.js';
 import { SHORE } from './world/dunes/beach.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
@@ -356,6 +357,7 @@ async function main() {
   game.stains = new Stains(game, game.paintmap); // (spilled crude by the game day's layout and the cracked bottles: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
+  game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   level.build();
   mark('level');
   const spawnRoom = () => {
