@@ -32,7 +32,7 @@ export { TR };
 export function buildTestRoom(level) {
   const C = PALETTE, { x0, x1, z0, z1, h } = TR, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
   const shell = { outline: false, shadow: false };
-  level.box([cx, -0.25, cz], [w, 0.5, d], C.floor);
+  level.box([cx, -0.25, cz], [w, 0.5, d], C.floor, { outline: false }); // (a floor has no outline: the hull's top lay in the floor's own plane and fought it for the pixels, the owner's R45 report; the Workshop's slabs, basement.js groundFloor, are the same)
   level.box([cx, h + 0.25, cz], [w + 1, 0.5, d + 1], C.deep, shell);
   level.box([x1 + 0.25, h / 2, cz], [0.5, h, d + 1], C.wall, shell);
   level.box([cx, h / 2, z0 - 0.25], [w, h, 0.5], C.wall, shell);
@@ -45,9 +45,11 @@ export function buildTestRoom(level) {
     for (const z of [z0 + 0.2, z1 - 0.2]) level.box([x, h / 2, z], [0.45, h, 0.4], C.dark, { shadow: false });
   }
   // the lane: a strip of darker floor from the mark to the wall, and the mark itself (a ring the shooter stands in)
-  level.box([(TR.mark.x + TR.wall.x) / 2, 0.006, TR.mark.z], [TR.wall.x - TR.mark.x, 0.01, 0.9], C.deep, { outline: false, collide: false, shadow: false });
+  // (the lane stands 1.5 cm over the planks, the ring 1 cm over the lane: a plank lies right under the lane, and at 1 mm apart the two
+  // fought for the same pixels seen from the door, 15 to 20 m off: the owner, R45)
+  level.box([(TR.mark.x + TR.wall.x) / 2, 0.02, TR.mark.z], [TR.wall.x - TR.mark.x, 0.01, 0.9], C.deep, { outline: false, collide: false, shadow: false });
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.7, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
-  ring.rotation.x = -Math.PI / 2; ring.position.set(TR.mark.x, 0.012, TR.mark.z); level.scene.add(ring);
+  ring.rotation.x = -Math.PI / 2; ring.position.set(TR.mark.x, 0.035, TR.mark.z); level.scene.add(ring);
   // the spray wall: a slab of soft clay on a timber frame, its face at TR.wall.x; a cross at the aim point (no numbers: docs/LOOK.md)
   const W = TR.wall, wallCol = level.box([W.x + 0.2, 0.3 + WALL.height / 2, W.z], [0.4, WALL.height, WALL.width], C.pale);
   level.box([W.x + 0.3, 0.15, W.z], [0.6, 0.3, WALL.width + 0.4], C.wood);

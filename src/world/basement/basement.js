@@ -10,6 +10,7 @@ import { IndexMenu } from '../../feedback/indexmenu.js';
 import { addOutline } from '../../render/outline.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
+import { TR } from '../testroom/layout.js';
 
 // ---------------------------------------------------------------------------
 // The basement: a movement lab under the workshop, hub-and-spoke.
@@ -171,7 +172,11 @@ export function buildBasement(L, W, D) {
   // ceiling outside the building footprint (the ground floor slab covers the rest)
   const cy = [H, H + 0.5];
   blk(-OUT - 0.5, -W - 0.5, ...cy, -OUT - 0.5, OUT + 0.5, C.deep, solid);
-  blk(W + 0.5, OUT + 0.5, ...cy, -OUT - 0.5, OUT + 0.5, C.deep, solid);
+  // (east of the Workshop the slab's top is the ground the Throwing Room stands on: its floor fills its own footprint, and two faces in
+  // one plane fought for the pixels, the owner's R45 report. The slab goes round it: world/testroom/layout.js TR)
+  blk(W + 0.5, OUT + 0.5, ...cy, -OUT - 0.5, TR.z0, C.deep, solid);
+  blk(W + 0.5, OUT + 0.5, ...cy, TR.z1, OUT + 0.5, C.deep, solid);
+  blk(TR.x1, OUT + 0.5, ...cy, TR.z0, TR.z1, C.deep, solid);
   blk(-W - 0.5, W + 0.5, ...cy, -OUT - 0.5, -D - 0.5, C.deep, solid);
   blk(-W - 0.5, W + 0.5, ...cy, D + 0.5, OUT + 0.5, C.deep, solid);
   wallX(-OUT - Wt / 2, -OUT, OUT); wallX(OUT + Wt / 2, -OUT, OUT);
