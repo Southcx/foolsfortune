@@ -68,7 +68,7 @@ export class Dunemaw {
     // (a sandfall's curtain is dressed on only when a floor is entered (vfx/welldress.js): one is shown here, falling, so its program is
     // compiled with the rest, not on the first sandfall seen: the perf gate's late compile, R46)
     const fall = new Sandfall({ width: 4.4, height: 4.6 }); fall.group.position.copy(F.arrive.pos); fall.update(1, 'falling', 1 / 60); F.group.add(fall.group);
-    return () => { F.group.visible = false; F.group.remove(fall.group); fall.dispose(); this.warm = F; };
+    return () => { F.group.visible = false; this.warm = F; }; // (the curtain stays parked with the floor: disposed, its program would go with it)
   }
 
   get active() { return !!this.run; }

@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { mindLineMaterial } from './labradorite.js';
 import { mergeStatic } from '../render/merge.js';
+import { triplanar, surfaceTexture } from '../render/triplanar.js';
 import { PALETTE } from '../core/config.js';
 
 let FACE = null;
@@ -64,6 +65,7 @@ export function drillPlate(radius = 0.32) {
 export function indexLectern() {
   const group = new THREE.Group(); group.name = 'index-lectern';
   const wood = new THREE.MeshStandardMaterial({ name: 'lectern-wood', color: PALETTE.dark, roughness: 0.8 });
+  triplanar(wood, { side: surfaceTexture('clay_floor'), strength: 0, foot: { tex: surfaceTexture('clay_floor'), height: 0.16 } }); // (its foot's skirt: the floor's clay creeping up the plinth, the owner's rule, R46)
   const add = (geo, pos, rx = 0) => { const m = new THREE.Mesh(geo, wood); m.position.set(...pos); m.rotation.x = rx; group.add(m); return m; };
   add(new THREE.BoxGeometry(0.56, 0.06, 0.46), [0, 0.03, 0]);                          // (the foot)
   add(new THREE.BoxGeometry(0.44, 0.05, 0.36), [0, 0.085, 0]);
