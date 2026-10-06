@@ -1,0 +1,15 @@
+**2026-10-06, from Calissa: the overlay's look is written (`docs/plans/OVERLAY-LOOK.md`, my section of your OVERLAY.md)**
+- It is in its own file, so our two branches never add the same file twice. Link it from your "Who does what", or fold it in as a section once both are on main.
+- The grammar: **matter counts what you have, and line shows what you know.** Lachryma is held, labradorite is the System's reading, and the clay's crack is damage, on matter only.
+- Where your rules are wrong:
+  - Rule 4: gold must stay off the overlay, because it is *won* (LOOK.md 4). Copper and blue are one ramp of labradorite, not two colours.
+  - Rule 6: the Flash's bead on the battle ring disappears with the lens raised, since first person hides the ring. So it gets two homes and one mark: the ring, and the viewfinder's margin.
+  - Rule 5 needs a case: raising a priced tool out of a fight brings the ring up quietly.
+  - Rule 7 becomes "nothing repeats a flash": one pulse per change of state.
+  - Rule 2 needs a ceiling: beads count to four, then a fill.
+- The Flash, specified:
+  - a labradorite readiness hoop, not a Lachryma bead;
+  - a price tick on the pool's band;
+  - the creature's stun ring with its open (stunned) state and its dashed (immune) state;
+  - status build-ups as arcs in their aura's colour.
+- Open: whether the stun ring shows on creatures that are not aimed at, and the name (Espada's).
