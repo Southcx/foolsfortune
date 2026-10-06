@@ -93,7 +93,12 @@ export class Clappers {
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
     const mat = this.mat.clone();
+    // (the model's own eyes, if it brings them: any mesh or material named for an eye keeps its own material and stands in for the
+    // drawn ellipsoids below; the owner's disc eyes, 2026-10-06, were being painted with the clay and covered by them)
+    const isEye = (o) => /eye/i.test(o.name) || [].concat(o.material).some((m) => /eye/i.test(m?.name || ''));
+    const ownEyes = meshes.some(isEye);
     for (const o of meshes) {
+      if (isEye(o)) { o.castShadow = false; o.frustumCulled = false; continue; }
       o.material = mat;
       o.castShadow = true;
       o.frustumCulled = false;
@@ -101,7 +106,7 @@ export class Clappers {
     }
     const bone = (n) => model.getObjectByName(n);
     const eyesBone = bone('eyes');
-    if (eyesBone) {
+    if (eyesBone && !ownEyes) { // (drawn eyes only for a model without its own)
       for (const x of [-0.055, 0.055]) {
         const e = new THREE.Mesh(new THREE.SphereGeometry(0.028, 6, 4), this.eyeMat);
         e.scale.set(1, 1.5, 0.6);
