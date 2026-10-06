@@ -30,6 +30,7 @@ import { LachrymaPool, Baubles } from './courier/lachryma.js';
 import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
 import { Trial } from './world/trial.js';
 import { TestRoom } from './world/testroom/room.js';
+import { TestRoomDress } from './vfx/testroomkit.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
 import { Blink } from './courier/moves/blink.js';
@@ -590,6 +591,7 @@ async function main() {
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
   game.testroom = new TestRoom(game, level.testRoom); // (the testing room off the Workshop: its pots, Strawman, the drills; world/testroom/)
+  new TestRoomDress(game).update(); // (its stand-ins dressed: the drill targets as fired plates, vfx/testroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
