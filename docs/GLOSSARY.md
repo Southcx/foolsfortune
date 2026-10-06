@@ -213,6 +213,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   aim and recoil are measured, never earned: the Index, the **targets** (never "plates": a plate is a Veritome photograph), Strawman, the
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
+  Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
+  the floor, 10 m from the spray wall).
   *Not:* a trial (a minigame in its own room that pays), a playtest, the stress test.
 - **Strawman** (the Workshop's test dummy: `STRAWMAN`): a creature that never falls and that the ledger never counts (`training`); a
   **bout** is its blows until 4 real seconds pass without one, said in the log in one line.

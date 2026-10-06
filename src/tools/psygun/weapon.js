@@ -362,7 +362,7 @@ export class Weapon {
     game.fx.tracer(muzzle, end);
     game.fx.muzzleFlash(muzzle, gunFwd);
     sfx.gunshot();
-    game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded });
+    game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone() }); // (what it hit and where: the testing room's drills count by it)
     game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: creatures/ai/stimuli.js)
 
     if (hit) this.applyHit(hit, dir);
@@ -391,13 +391,14 @@ export class Weapon {
     const dir = ray.dir;
     // pierce: keep going through breakables, props and critters until we hit the level
     const skip = new Set();
-    let origin = ray.origin, end = null, lastNormal = new THREE.Vector3(0, 1, 0), hits = 0;
+    let origin = ray.origin, end = null, lastNormal = new THREE.Vector3(0, 1, 0), hits = 0, first = null;
     for (let i = 0; i < C.pierce + 1; i++) {
       const hit = game.physics.raycast(origin, dir, T.weapon.range, player.collider, undefined, (c) => !skip.has(c.handle));
       if (!hit) break;
       skip.add(hit.collider.handle);
       const ent = hit.entity;
       end = hit.point; lastNormal = hit.normal;
+      first ||= { ent: ent ?? null, at: hit.point.clone() };
       const body = hit.collider.parent();
       const solid = !ent || ent.type === 'player' || (!body?.isDynamic() && ent.type !== 'breakable' && ent.type !== 'clapper' && !hasTag(ent, 'hurtable'));
       if (ent?.type === 'mover' && ent.mover.target) ent.mover.hit({ cause: 'shot' });
@@ -423,7 +424,7 @@ export class Weapon {
     game.breakables.explode(blastAt, { radius: R, breakFrac: 0.45, velocity: 8 * p, fx: false, cause: 'charged' });
     game.clappers?.spook(end, 3);
     sfx.chargedShot(p);
-    game.events?.emit('shot.fire', { dir: dir.clone(), charged: true, air: !player.grounded });
+    game.events?.emit('shot.fire', { dir: dir.clone(), charged: true, air: !player.grounded, ent: first?.ent ?? null, at: (first?.at ?? end).clone() });
     game.ai?.stimuli.emit('noise', player.pos, { radius: 32, strength: 1.3, by: 'courier', source: player });
 
     const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * C.kick * p;

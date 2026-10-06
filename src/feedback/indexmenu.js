@@ -5,6 +5,8 @@ import { sfx } from '../audio/sfx.js';
 // (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
 // calibration numbers: the live movement values and the measured chains every space is sized from
 // (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
+// It also opens on a PAGE of its own: the testing room's console shows its Testing page (the drills, their bests, Strawman) in it.
+//   menu.show()   menu.showPage(name, render(im, el))   menu.close()
 // ---------------------------------------------------------------------------
 
 const CSS = `
@@ -53,6 +55,7 @@ export class IndexMenu {
     document.body.appendChild(this.root);
     addEventListener('keydown', (e) => {
       if (!this.open) return;
+      if (this.page) { if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); } return; } // (a page: its own clicks)
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { this.sel = (this.sel + 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.sel = (this.sel + this.rooms.length - 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'Enter' || e.code === 'Space') { this.pick(this.sel); e.preventDefault(); }
@@ -69,9 +72,13 @@ export class IndexMenu {
     sfx.lockOn?.(2);
   }
 
+  /** The same window on a page of its own (the testing room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
+  showPage(name, render) { this.page = { name, render }; this.show(); }
+
   close() {
     if (!this.open) return;
     this.open = false;
+    this.page = null;
     this.root.classList.remove('open');
     this.onClose?.();
   }
@@ -89,14 +96,15 @@ export class IndexMenu {
     const im = el('div', 'im');
     r.appendChild(im);
     const head = el('header');
-    head.appendChild(el('h2', '', 'INDEX'));
-    head.appendChild(el('span', 'sub', 'click a room, or its key (or arrows + Enter) · F closes'));
+    head.appendChild(el('h2', '', this.page ? `INDEX · ${this.page.name.toUpperCase()}` : 'INDEX'));
+    head.appendChild(el('span', 'sub', this.page ? 'click to begin · F closes' : 'click a room, or its key (or arrows + Enter) · F closes'));
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();
     head.appendChild(x);
     im.appendChild(head);
     let group = null, grid = null;
-    this.rooms.forEach((room, i) => {
+    if (this.page) this.page.render(im, el);
+    else this.rooms.forEach((room, i) => {
       if (room.group !== group) { group = room.group; im.appendChild(el('div', 'grp', group)); grid = el('div', 'rooms'); im.appendChild(grid); }
       const row = el('div', `room${i === this.sel ? ' sel' : ''}`, `<span class="n">${room.tag}</span><span><b>${room.name}</b><s>${room.blurb}</s></span>`);
       row.onclick = () => this.pick(i);

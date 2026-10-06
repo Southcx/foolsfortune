@@ -29,6 +29,7 @@ import { Clappers } from './creatures/clappers.js';
 import { LachrymaPool, Baubles } from './courier/lachryma.js';
 import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
 import { Trial } from './world/trial.js';
+import { TestRoom } from './world/testroom/room.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
 import { Blink } from './courier/moves/blink.js';
@@ -269,7 +270,8 @@ async function main() {
     listenerDistance: (p) => camera.position.distanceTo(p),
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
-      events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by });
+      events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by, ...(ent.def.training ? { training: true } : {}) });
+      if (ent.def.training) return; // (the testing room's: it measures, it never counts: world/testroom/)
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;
@@ -589,6 +591,7 @@ async function main() {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
+  game.testroom = new TestRoom(game, level.testRoom); // (the testing room off the Workshop: its pots, Strawman, the drills; world/testroom/)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
@@ -900,6 +903,7 @@ async function main() {
     if (guiOpen) { input.dx = 0; input.dy = 0; }
 
     trial.update(dt);
+    game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
     if (godOn) god.update(dt);
     else {

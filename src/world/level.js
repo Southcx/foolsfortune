@@ -17,6 +17,8 @@ import { sfx } from '../audio/sfx.js';
 import { addOutline } from '../render/outline.js';
 import { PROFILES, prepProfile } from './props/pottery.js';
 import { stream } from '../core/rng.js';
+import { TR } from './testroom/layout.js';
+import { buildTestRoom } from './testroom/room.js';
 const simRand = stream('world/level'); // (the simulation's chance: core/rng.js, the same twice)
 
 // Greybox terracotta workshop. Everything static is merged per colour into a
@@ -135,7 +137,12 @@ export class Level {
     groundFloor(this, W, D, C.floor); // (with the basement hole cut out)
     this.box([0, H + 0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.deep, wall);
     this.box([-(W + 0.25), H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
-    this.box([W + 0.25, H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
+    // (the east wall has the testing room's door in it: world/testroom/)
+    { const dz0 = TR.door.z0, dz1 = TR.door.z1, s0 = -(D + 0.5), s1 = D + 0.5;
+      this.box([W + 0.25, H / 2, (s0 + dz0) / 2], [0.5, H, dz0 - s0], C.wall, wall);
+      this.box([W + 0.25, H / 2, (dz1 + s1) / 2], [0.5, H, s1 - dz1], C.wall, wall);
+      this.box([W + 0.25, (TR.door.h + H) / 2, (dz0 + dz1) / 2], [0.5, H - TR.door.h, dz1 - dz0], C.wall, wall);
+      this.box([W + 0.25, TR.door.h + 0.1, (dz0 + dz1) / 2], [0.7, 0.2, dz1 - dz0 + 0.4], C.dark, { shadow: false }); } // (the lintel)
     this.box([0, H / 2, -(D + 0.25)], [W * 2 + 1, H, 0.5], C.wall, wall);
     this.box([0, H / 2, D + 0.25], [W * 2 + 1, H, 0.5], C.wall, wall);
     // floor planks / tiles: subtle darker strips (visual only, broken around the basement hole)
@@ -153,7 +160,8 @@ export class Level {
     // baseboards
     for (const y of [0.15, F2 + 0.15]) {
       this.box([-(W - 0.05), y, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false, shadow: false });
-      this.box([W - 0.05, y, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false, shadow: false });
+      if (y < 1) { this.box([W - 0.05, y, (TR.door.z0 - D) / 2], [0.1, 0.3, TR.door.z0 + D], C.dark, { outline: false, collide: false, shadow: false }); this.box([W - 0.05, y, (TR.door.z1 + D) / 2], [0.1, 0.3, D - TR.door.z1], C.dark, { outline: false, collide: false, shadow: false }); }
+      else this.box([W - 0.05, y, 0], [0.1, 0.3, D * 2], C.dark, { outline: false, collide: false, shadow: false });
     }
     // ground-floor ceiling beams (they stop short of the upper stair flight) + wall columns
     for (const z of [-10, -5, 0, 5, 10]) {
@@ -191,6 +199,7 @@ export class Level {
     this.buildMezzanine();
     this.buildPlatform();
     this.buildKiln();
+    this.testRoom = buildTestRoom(this); // (before the range: its posts stand in it)
     this.buildRange();
     this.buildUpperFloor();
     this.buildFeatures();
@@ -454,11 +463,12 @@ export class Level {
   buildRange() {
     const C = PALETTE;
     this.targetDefs = [];
-    const posts = [[-3.2, 7.4, 1.1], [-1.6, 8.6, 1.6], [0, 7.4, 1.25], [1.6, 8.6, 1.8], [3.2, 7.4, 1.0], [-2.4, 10.4, 2.3], [2.4, 10.4, 2.1]];
-    for (const [x, z, h] of posts) {
+    // (the targets stand in the testing room now, not by the kiln: the owner, 2026-10-06; world/testroom/)
+    for (const [x, z, h] of TR.posts) {
       this.box([x, h / 2, z], [0.08, h, 0.08], C.dark);
       this.box([x, 0.04, z], [0.5, 0.08, 0.5], C.dark);
-      this.targetDefs.push({ kind: 'plate', target: true, pos: [x, h - 0.12, z - 0.06], facing: [0, 0.05, -1], scale: 0.9, color: C.potLight, respawn: 2.5 });
+      const f = new THREE.Vector3(TR.mark.x - x, 0, TR.mark.z - z).normalize(); // (each faces the mark)
+      this.targetDefs.push({ kind: 'plate', target: true, pos: [x + f.x * 0.06, h - 0.12, z + f.z * 0.06], facing: [f.x, 0.05, f.z], scale: 0.9, color: C.potLight, respawn: 2.5 });
     }
   }
 
