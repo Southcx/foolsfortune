@@ -13,8 +13,11 @@
 //   GRIEF   the long rain: steady, long, silver, the sky grey and drained (Illusion's labradorite, in the drops' sheen)
 //   DREAD   the pall: a bruise-coloured haze, ink and violet-green, and thunder far off as FAR BOLTS, each held a beat and fading
 //           over a second and a half, with a slow glow in the cloud behind; never a flash on the screen (Delirium's ink and green)
-// What falls is in the world, never on the screen: long thin streaks and motes in a cylinder round the eye, each at a constant speed
-// along its own path (the sixth generation's rain: a few thousand lines wrapped round the camera), so nothing swims or flickers.
+// What falls is in the world, never on the screen: long thin streaks and motes in a column round the eye, each along its own path
+// (the sixth generation's rain: lines wrapped round the camera), so nothing swims or flickers. Since R46 (the owner: "toned down in
+// number and presence ... higher in the sky ... noise modulation befitting their travel path"): fewer; most of it high, only a sparse
+// few near the ground; none within a few metres of the eye, under a roof or below the ground (vfx/overhead.js); and each path
+// wanders on a curl noise, the streak bending along it.
 // Only an OPEN place gets it (`game.weather.here(pos).exposure`): a roofed room keeps its own light, a Well its own sky.
 //
 // THE HOUR: three paintings (vfx/sky.js `grade`): the maker's is DUSK, untouched at its hour; the owner's DAY (clouds and floating
@@ -33,6 +36,7 @@
 //   .prewarm() (made and shown for the boot's warm-up; returns what hides it)   .lift (0 .. 0.1: a far bolt's light, for daylight.js to add)   LOOK[aspect]   hourGrade(phase)   fogOf(aspect, strength)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { Overhead, OVERHEAD_GLSL } from './overhead.js';
 
 const C = (hex) => new THREE.Color(hex);
 /** The feelings' colours: canon (the owner, R58: Plutchik's petals; progress/weather.js COLOR, Dovina's). Mirrored here until that module
@@ -81,23 +85,43 @@ export function hourGrade(phase, out = { mul: [1, 1, 1], haze: [0, 0, 0] }) { //
 export function fogOf(aspect, strength = 1) { const L = LOOK[aspect]; return L ? { colour: L.fog, density: lerp(1, L.fogD, strength), k: strength } : null; }
 
 // ---------------------------------------------------------------- what falls
-const R = 26, H = 22;
-const SHORE_U = { uShore: { value: new THREE.Vector4(0, 0, 0, 0) }, uShoreA: { value: new THREE.Vector2(0, 0) } }; // (shared by what falls: vfx/shore.js sets it) // (the cylinder round the eye: radius and height, metres)
+const R = 26, H = 30, LOW = 4; // (the column round the eye: its radius, and its height, from LOW metres under the eye up; most of what falls is high)
+const SHORE_U = { uShore: { value: new THREE.Vector4(0, 0, 0, 0) }, uShoreA: { value: new THREE.Vector2(0, 0) } }; // (shared by what falls: vfx/shore.js sets it)
 const WRAP = /* glsl */`
-uniform float uT; uniform vec3 uCam; uniform vec3 uVel;
-vec3 wrapAt(vec3 seed, float sp) { // (a world-anchored path, wrapped into the cylinder round the eye: nothing moves with the camera)
+uniform float uT; uniform vec3 uCam; uniform vec3 uVel; uniform float uNoise, uLowK;
+vec3 wrapAt(vec3 seed, float sp) { // (a world-anchored path, wrapped into the column round the eye: nothing moves with the camera)
   vec3 w = vec3(seed.x * ${2 * R}.0, seed.y * ${H}.0, seed.z * ${2 * R}.0) + uVel * sp * uT;
-  return vec3(mod(w.x - uCam.x + ${R}.0, ${2 * R}.0) - ${R}.0, mod(w.y - uCam.y + ${H / 2}.0, ${H}.0) - ${H / 2}.0, mod(w.z - uCam.z + ${R}.0, ${2 * R}.0) - ${R}.0);
+  return vec3(mod(w.x - uCam.x + ${R}.0, ${2 * R}.0) - ${R}.0, mod(w.y - uCam.y + ${LOW}.0, ${H}.0) - ${LOW}.0, mod(w.z - uCam.z + ${R}.0, ${2 * R}.0) - ${R}.0);
 }
+// a cheap curl noise: the curl of a vector potential of sines (two octaves), so the field has no sources or sinks and neighbouring
+// drops sway together, like a gust, instead of each jittering on its own (Bridson et al. 2007, "Curl-noise for procedural fluid flow")
+vec3 curlOf(vec3 p, float t) {
+  vec3 a = vec3(0.21 * p.y + 0.13 * p.z + 0.7 * t, 0.17 * p.z + 0.19 * p.x + 0.9 * t + 2.0, 0.23 * p.x + 0.11 * p.y + 0.6 * t + 4.0);
+  vec3 c = cos(a);
+  return vec3(0.11 * c.z - 0.17 * c.y, 0.13 * c.x - 0.23 * c.z, 0.19 * c.y - 0.21 * c.x) * 3.0;
+}
+vec3 curlish(vec3 p, float t) { return curlOf(p, t) + 0.5 * curlOf(p * 2.7 + 11.0, t * 1.7); }
+${OVERHEAD_GLSL}
 uniform vec4 uShore; uniform vec2 uShoreA; // (a shore: its centre xz, the waterline's radius, on; its bearing and half-width)
 float shoreFade(vec3 w) { // (the island's mood ends at the waterline: nothing falls over the crude)
   if (uShore.w <= 0.0) return 1.0;
   vec2 d = w.xz - uShore.xy; float a = atan(d.y, d.x) - uShoreA.x; a = abs(atan(sin(a), cos(a)));
   return a > uShoreA.y ? 1.0 : 1.0 - smoothstep(uShore.z - 2.0, uShore.z + 6.0, length(d));
 }
-float edgeFade(vec3 r) { return (1.0 - smoothstep(${R * 0.7}, ${R}.0, length(r.xz))) * (1.0 - smoothstep(${H * 0.35}, ${H / 2}.0, abs(r.y))) * shoreFade(uCam + r); }`;
+// the column's edges, and nothing within a few metres of the eye (no streak drawn across the lens)
+float edgeFade(vec3 r) {
+  return (1.0 - smoothstep(${R * 0.7}, ${R}.0, length(r.xz))) * (1.0 - smoothstep(${H - LOW - 6}.0, ${H - LOW}.0, r.y)) * smoothstep(${-LOW}.0, ${-LOW + 1.5}, r.y)
+    * smoothstep(1.2, 3.5, length(r)) * shoreFade(uCam + r);
+}
+// under a roof, inside a wall's top or below the ground: nothing (vfx/overhead.js); near the ground only the sparse few (uLowK of them)
+float fallFade(vec3 w, float seed) {
+  float oy = overheadY(w.xz);
+  if (w.y < oy + 0.05) return 0.0;
+  float ground = oy > -9000.0 ? oy : uCam.y - 2.0;
+  return max(step(fract(seed * 91.7), uLowK), smoothstep(2.5, 8.0, w.y - ground));
+}`;
 
-function makeRain(n) {
+function makeRain(n, occ) {
   const seed = new Float32Array(n * 6), end = new Float32Array(n * 2);
   for (let i = 0; i < n; i++) {
     const s = [Math.random(), Math.random(), Math.random()];
@@ -105,7 +129,8 @@ function makeRain(n) {
   }
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 6), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
-  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 } };
+  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 },
+    uNoise: { value: 0.6 }, uLowK: { value: 0.12 }, ...occ };
   const m = new THREE.ShaderMaterial({ name: 'weather-rain',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
@@ -114,7 +139,9 @@ void main() {
   float sp = 0.85 + 0.3 * fract(aSeed.x * 17.3);
   vec3 r = wrapAt(aSeed, sp);
   vec3 p = uCam + r - normalize(uVel) * uLen * aEnd; // (the streak: its head, and its tail back along the way it falls)
-  vA = edgeFade(r) * (1.0 - 0.8 * aEnd);
+  float tt = uT - aEnd * uLen / max(0.001, length(uVel) * sp); // (the tail is where the head was a moment ago, on the same wandering path)
+  p += curlish(p * 0.08, tt) * uNoise;
+  vA = edgeFade(r) * fallFade(p, aSeed.y) * (1.0 - 0.8 * aEnd);
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
 }`,
     fragmentShader: 'uniform vec3 uCol; uniform float uA; varying float vA; void main() { gl_FragColor = vec4(uCol, uA * vA); }',
@@ -123,22 +150,24 @@ void main() {
   return { obj: L, u, n };
 }
 
-function makeMotes(n) {
+function makeMotes(n, occ) {
   const seed = new Float32Array(n * 3); for (let i = 0; i < seed.length; i++) seed[i] = Math.random();
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
-  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 } };
+  const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 },
+    uNoise: { value: 1.5 }, uLowK: { value: 0.2 }, ...occ };
   const m = new THREE.ShaderMaterial({ name: 'weather-motes',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
 attribute vec3 aSeed; uniform float uSize, uHex, uPx; varying float vA; varying float vG;
 void main() {
   vec3 r = wrapAt(aSeed, 0.8 + 0.4 * fract(aSeed.y * 13.1));
-  r.x += sin(uT * 0.4 + aSeed.z * 30.0) * 0.4 * uHex; // (the ice sways as it sinks; the dust only streams)
-  vec4 mv = viewMatrix * vec4(uCam + r, 1.0);
+  vec3 w = uCam + r;
+  w += curlish(w * 0.08, uT) * uNoise; // (each mote wanders on the wind's own eddies, the ice sinking slower through them)
+  vec4 mv = viewMatrix * vec4(w, 1.0);
   // a crystal's glint: a slow turn that catches the light for a moment, each on its own long period (never a twinkle field)
   vG = uHex * pow(max(0.0, sin(uT * (0.5 + 0.4 * aSeed.x) + aSeed.z * 40.0)), 24.0);
-  vA = edgeFade(r);
+  vA = edgeFade(r) * fallFade(w, aSeed.x);
   gl_PointSize = clamp(uSize * uPx / -mv.z, 1.0, 6.0) * (1.0 + 1.5 * vG);
   gl_Position = projectionMatrix * mv;
 }`,
@@ -230,7 +259,8 @@ export class WeatherLook {
     this.made = true;
     this.group = new THREE.Group(); this.group.name = 'weather'; this.group.userData.zoneFree = true;
     this.game.scene?.add(this.group);
-    this.rain = makeRain(3000); this.motes = makeMotes(1400); this.falls = [this.rain, this.motes];
+    this.over = new Overhead(this.game); // (what stands over each spot round the eye: nothing falls under it, vfx/overhead.js)
+    this.rain = makeRain(2000, this.over.u); this.motes = makeMotes(800, this.over.u); this.falls = [this.rain, this.motes]; // (fewer than they were, R46)
     this.halo = ringMesh(0, tanD(21), tanD(23.5));
     this.bow = ringMesh(1, tanD(40.5), tanD(42.5));
     this.dogs = [0, 1].map(() => ringMesh(2, 0, tanD(1.6)));
@@ -315,6 +345,7 @@ export class WeatherLook {
       const k = open ? this.amt[a] : 0, F = LOOK[a].fall; if (!F || !k) continue;
       if (F.vel && k > rainA) { // (streaks: rain falling, or sand blown along the ground)
         rainA = k; this.tint(R0.uCol.value, a); R0.uLen.value = F.len; R0.uA.value = F.alpha * k;
+        R0.uNoise.value = F.kind === 'sirocco' ? 1.2 : 0.6; R0.uLowK.value = F.kind === 'sirocco' ? 0.3 : 0.18; // (the sirocco streams along the ground: more of it low)
         R0.uVel.value.fromArray(F.vel); const wd = this.game.dunes?.wind?.dir; if (wd && F.kind === 'sirocco') R0.uVel.value.set(wd.x, F.vel[1], wd.y); R0.uVel.value.multiplyScalar(F.speed); // (the wanting wind blows the way the dunes' wind does)
         this.rain.obj.geometry.setDrawRange(0, Math.round(this.rain.n * F.rate * k) * 2);
       }
@@ -322,10 +353,12 @@ export class WeatherLook {
       if ((diamond || F.kind === 'sirocco') && dk > moteA) {
         moteA = dk; this.tint(M0.uCol.value, a); M0.uHex.value = diamond ? 1 : 0; M0.uSize.value = diamond ? 0.05 : 0.12;
         M0.uVel.value.set(diamond ? 0.05 : F.speed, diamond ? -F.speed : 0.3, diamond ? 0 : F.speed * 0.3); M0.uA.value = (diamond ? 0.8 : 0.6) * dk;
+        M0.uNoise.value = diamond ? 1.0 : 2.0; M0.uLowK.value = diamond ? 0.2 : 0.3;
         this.motes.obj.geometry.setDrawRange(0, Math.round(this.motes.n * F.rate * dk));
       }
     }
     this.rain.obj.visible = rainA > 0.01; this.motes.obj.visible = moteA > 0.01;
+    if (this.rain.obj.visible || this.motes.obj.visible) this.over.update(cam, 48); // (a few dozen rays a frame: the map round the eye kept fresh)
     for (const L of this.falls) { L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
     M0.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
     // the marks in the sky (open places only: none of them is seen from a room)
