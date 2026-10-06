@@ -159,7 +159,8 @@ import { installPsyche } from './progress/psyche.js';
 import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
 import { SoulAlchemy } from './progress/alchemy.js';
-import { Weather } from './progress/weather.js';
+import { Weather, phaseAt } from './progress/weather.js';
+import { modifier as stoneModifier } from './progress/stones.js';
 import { TitleScene } from './title/scene.js';
 import { TitleUI } from './title/ui.js';
 import { Overture } from './cine/overture.js';
@@ -594,6 +595,11 @@ async function main() {
   game.garden = new Garden(game); // (the Shrine Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
+  { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
+    const setStones = () => game.lachryma?.addModifier('stones', stoneModifier(game.vessel?.look?.stones, { night: phaseAt() === 'night' }));
+    for (const e of ['title.enter', 'vessel.fire', 'day.phase']) events.on(e, setStones);
+    setStones();
+  }
   game.daylight = new Daylight(game); // (the light on the open ground by the hour and the weather: render/daylight.js)
   game.macros = new MacroBook(); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)

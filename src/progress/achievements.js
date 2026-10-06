@@ -32,7 +32,7 @@ export const TYPES = { count: 'Count', speed: 'Speed', perfect: 'Perfection', me
 export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
-  { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks'] },
+  { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial'] },
   { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Raids', 'Lachryma'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapnel'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
@@ -40,8 +40,8 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart'] },
-  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned'] },
+  { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
@@ -477,6 +477,21 @@ export function buildAchievements(game) {
   H('wl5', 'explore', 'The Wells', 4, 'perfect', 'Every Nook and Cranium', 'Chart every part of a Well in one run.', 'well.charted', 100, { unit: '%' });
   C('wl6', 'explore', 'The Wells', 3, 'endure', 'Bounce Back', 'Come back up out of 20 Wells.', 'well.out', 20);
   C('wl8', 'explore', 'The Wells', 2, 'count', 'Chart Topper', 'Sell a Cogitomap to the Purser.', 'cogitomap.sold.margarite', 1);
+  // the Great Dunemaw's crowned FOE, its nursery and its finds (docs/plans/DUNEMAW-SYSTEMS.md); names are placeholders for Espada's
+  C('dn1', 'battle', 'The Crowned', 2, 'mechanic', 'Uncrowned', 'Break the crown off the Great Slip Jelly.', 'foe.break', 1);
+  C('dn2', 'battle', 'The Crowned', 3, 'mechanic', 'Olé', 'Let the Great Slip Jelly crack its own crown on stone three times.', 'foe.crack.ram', 3);
+  C('dn3', 'battle', 'The Crowned', 3, 'mechanic', 'Burst the Crown', 'Burst the Great Slip Jelly.', 'foe.burst', 1);
+  C('dn4', 'battle', 'The Crowned', 4, 'mechanic', 'Nursemaid', 'Reprogram the Great Slip Jelly and keep its nursery.', 'foe.reprogram', 1);
+  C('dn5', 'battle', 'The Crowned', 2, 'count', 'Clutch Breaker', 'Break ten clutches of slip jelly eggs.', 'clutch.break', 10);
+  C('dn6', 'explore', 'The Finds', 1, 'count', 'The Town Remembers', 'Take ten finds from the Great Dunemaw\'s pots.', 'find.pot', 10);
+  C('dn7', 'explore', 'The Finds', 2, 'count', 'Glint', 'Take five artifacts from the walls of the Great Dunemaw.', 'find.artifact', 5);
+  C('dn8', 'explore', 'The Finds', 3, 'mechanic', 'Touch Nothing but the Lamp', 'Take a warped artifact.', 'find.warped', 1, { hidden: true });
+  // the Solar Skiffing trial at the sundial (docs/plans/DUNEMAW-SYSTEMS.md)
+  C('su1', 'skiff', 'The Sundial', 1, 'mechanic', 'Sun Chaser', 'Finish the Solar Skiffing trial.', 'trial.solar', 1);
+  F('su2', 'skiff', 'The Sundial', 2, 'mechanic', 'Bronze Hour', 'Take bronze in the Solar Skiffing trial.', (L) => L.get('trial.solar.bronze') + L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);
+  F('su3', 'skiff', 'The Sundial', 3, 'mechanic', 'Silver Hour', 'Take silver in the Solar Skiffing trial.', (L) => L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);
+  C('su4', 'skiff', 'The Sundial', 4, 'mechanic', 'Golden Hour', 'Take gold in the Solar Skiffing trial.', 'trial.solar.gold', 1);
+  C('su5', 'skiff', 'The Sundial', 4, 'mechanic', 'Long Shadows', 'Take every lit ring at dawn or dusk.', 'trial.solar.allLitLong', 1);
   C('wl7', 'explore', 'The Wells', 3, 'mechanic', 'A Well Healed', 'Draw a Well dry.', 'well.dry', 1, { hidden: true });
   // the clay folk and the chat line (npc/, chat.js, emotes.js)
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);

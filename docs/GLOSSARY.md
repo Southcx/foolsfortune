@@ -18,6 +18,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ---
 
 ## The Courier
+- **the stones** (the kiln's STONES region, `Courier_Stones`; `src/progress/stones.js`, LORE.md "The stones"): where Lachryma enters the
+  vessel, and so how the Courier takes it in: the pool's size, regen and costs, the magnet's **reach**, how **heady** a drink is (how far
+  it pushes the Courier's mental state toward Prismatic), the **draught** it leaves, and where overflow goes. The Maker's Stones are the
+  baseline; every other stone is a trade. One set at a time. *Not:* a stone in the world (say what it is), Strawman's or a cairn's.
+- **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
+  damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
+- **mental state**, the Courier's (`COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
+  up by Lachryma drunk, settled by quiet; Prismatic is power and fragility, Stoic the reverse. The player reads "your mental state".
+- **brimming** (Espada's word): the push of overflow, a vessel full past its brim (four times a drink's); the log says "You are
+  brimming." and "You settle." *Not:* "drunk", which never appears in player text.
 
 - **the Vessoul** (the owner, 2026-10-04): the entity that stands for the player in the world, a soulspark from beyond. It takes several
   forms, all one being, which is why they share a design language: **the god hand**, **the Pneuka Jar**, **the Courier**, and, on the
@@ -194,6 +204,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the crude from the beach, where the sloop moors. *Not:* the Weir's pier (the oasis's), or the span (a bridge).
 
 ## Creatures and folk
+- **the crown** (the Great Slip Jelly's: `FOE.crown`, `src/progress/combat/dunemaw.js`): the broken urn on its head, cracked in three
+  stages by Impact, the slam or its own ram into stone, then burst off; under it, **the core**, its weak point. *Not:* a chest's tier.
+- **clutch** (`NURSERY`): a nest of slip jelly eggs in the slip, guarded, hatching **brood** (young jellies a third of the size), which
+  the crowned FOE calls; broken, an egg may leave **slip roe** (a material). Clutches come back with the next game day's layout.
+- **warped artifact** (`FINDS.warped`): the one find a floor in a warped pocket, worth three; taking it **shifts the floor**.
+- **Strawman** (the Workshop's test dummy: `STRAWMAN`): a creature that never falls and that the ledger never counts (`training`); a
+  **bout** is its blows until 4 real seconds pass without one, said in the log in one line.
+- **the Solar Skiffing trial** (at the sundial in the Dunes: `SOLAR`): rings charged by the sun; a ring in shade is dark and does not
+  count; closed at night. *Not:* solar skiffing itself (the skiff's sport).
 
 - **the Great Dunemaw** (the owner's name, R57; not "the Swallow"): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/dunemaw.js`) is a
   spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Great Dunemaw's kit** (`src/vfx/dunemawkit.js`:
