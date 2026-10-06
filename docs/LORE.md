@@ -100,7 +100,7 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 **From Round 38** (passed on by Petra in `docs/HANDOFFS.md`, from the owner) *(Ruled)*:
 - **Lachryma is everything**: the stuff of magic and of emotion alike.
 - **Cubes are Lachryma made solid**: **Lachrymite** *(the owner, R59)*.
-- The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
+- The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel (now the **Spirit Garden**, entered at a Shrine: R59).
 - The game divides into **STORY** and **DEBUG**.
 
 **The Vessoul** *(Ruled, R43)*: the entity that stands for the player in the world, a soulspark from beyond in a vessel (*vessel* +
