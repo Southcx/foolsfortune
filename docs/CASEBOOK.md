@@ -39,8 +39,20 @@ log kept blameless and searchable.
     in a scene that loop does not run (the title, a workbench); reset it on the way out, and grep who else reads it. When a report
     will not reproduce, try the other end of the timeline first.
 16. **Judge a face at play distance, not in its close-up**, and take away any line that only made sense on the shape it replaced.
+17. **A warmed thing stays referenced.** A material disposed after the warm-up takes its program with it, and the first real one
+    compiles again in play. Park warmed things hidden; never dispose them.
+18. **The warm-up covers what is made on first need**, not only what stands in the scene at boot: a dressing laid on when a place is
+    entered (a sandfall's curtain) is shown once in the warm-up, or it compiles in play.
 
 ## Cases
+
+### 2026-10-06 · A sandfall's curtain compiled in play (the perf gate's late compile, R46)
+- **Seen:** `dunemaw-sandfall-door` compiled after the warm-up once the prefab rooms changed which floor the gate measured.
+- **Cause:** the curtain is dressed on only when a floor is entered (`vfx/welldress.js`); the warm-up's stand-in floor had none. A
+  first fix showed one in the warm-up and then disposed it, which released its program, so it compiled again in play.
+- **Fix:** the warm-up's stand-in floor holds one falling curtain, parked hidden with the floor (`world/well/dunemaw.js` prewarm). Late
+  compiles 1 to 0.
+- **Rules:** 17, 18.
 
 ### 2026-10-06 · The dunes shot gained 94,000 triangles when the Weir's pond was tripled (the perf gate)
 - **Measured** (the dunes shot's meshes by triangles, the head against the commit before): only `liquid-water` changed, 56,000 to
