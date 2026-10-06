@@ -241,6 +241,10 @@ read on 2026-10-05 from Spotify's public embed page. The owner's five favourites
   Girls' *Swimming Pools*). The Drop holds 31 of the 120, the most of any list so far. *Linoleum* (kmoe) is the one song on all three
   lists. The genres moved in ten years; the ear did not: the same bass (32% under 120 Hz at the median), the same drums (28%), the
   same tempo (about 110 bpm), on every list.
+- **2024's hundred** (Spotify's top songs of 2024; 99 measured, read 2026-10-06). The darkest and heaviest list measured: the Low
+  Glow and the Drop hold 62 of the 99 (33 and 29), the bass the most (35% under 120 Hz at the median), the air the least (5.8%),
+  the drums the most (30%), the tempo the slowest (101 bpm), and the only list whose median song has a drop-out. Not one song is
+  shared with 2025 or the all-time list; six are on Superlike. 2025 swung back to the Wall: the ear holds, the songs turn over.
 - **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
   - Stops and drop-outs written into the groove.
   - A bass that slides.
