@@ -47,7 +47,10 @@ Notes for the cut:
   does, `progress/skills.js`): the one timing is the skill the player learns.
 - Whether the psygun, Veritome and Crucibelle answers need a projectile, or also answer a melee blow: they need `creatures` to say
   "a blow is winding up" (a stimulus or a creature state); the ram's telegraph (`progress/combat/dunemaw.js`, 1.0 s) is the first
-  case. Petra's call on where that lives.
+  case. **Settled (Petra, 2026-10-06):** it lives in the creatures' service, beside strike and build:
+  `creatures.windup(c, { at, radius, eta, kind })` marks a creature's telegraphed blow (cleared when it lands or is cancelled), and
+  `creatures.windups(pos, r)` lists those in reach. `courier/parry.js` asks both the projectiles and the windups in the one window, so
+  every parry can answer a melee blow as well. The Great Slip Jelly calls it first.
 
 ## The ledger and the log
 
