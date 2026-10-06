@@ -116,7 +116,7 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | --- | --- | --- |
 | draw calls a frame (every pass) | 450 | +8% |
 | triangles a frame | 350,000 | +8% |
-| shader programs alive | 120 | +6% |
+| shader programs alive | 128 (was 120 to R46: raised for the owner's brush load, parry and Shrines, one shared program each, every one compiled in the warm-up) | +6% |
 | JS heap | 320 MB | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |

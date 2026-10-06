@@ -794,9 +794,9 @@ async function main() {
   const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   // (a stain and a Lachrymato Bottle, made now and parked hidden, never disposed: their programs live while one exists; the casebook's rules 17 and 18)
-  const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group, new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshBasicMaterial())];
+  const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
-  game.parryMark.mark(brushLooks[2]); // (and the parry mark, never cleared: its program lives while one mark does)
+  game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
