@@ -27,7 +27,7 @@ export async function play(t) {
       const foe = (s.well?.foes || []).slice().sort((a, b) => dist(a) - dist(b))[0]; // (the floor's, wherever they are: the route goes through the doorways)
       if (!foe) break;
       if ((missed.get(foe.id) || 0) >= 4) missed.set(foe.id, 0); // (all the rest are down or got away too: try it again)
-      await t.act({ do: 'goto', to: foe.pos, within: 1.6 }); s = await t.until((s) => !s.task, 60 * 20);
+      await t.act({ do: 'goto', to: foe.pos, within: 1.6, ticks: WALK }); s = await t.until((s) => !s.task, WALK + 60);
       const at = s.courier.pos, d = Math.hypot(at[0] - foe.pos[0], at[2] - foe.pos[2]);
       const long = foe.cls ? 180 : 90; // (a FOE has three times the health)
       await t.act({ do: 'face', to: foe.pos }); await t.act({ do: 'attack', ticks: long }); await t.step(long);

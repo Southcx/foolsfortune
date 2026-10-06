@@ -53,6 +53,12 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
 
 ## The caverns (Petra's layout)
 
+- **Done on the way there (R45, the owner: "slopes super janky", "cramped", "too boxy"):** the present kit's cells are 18 m (were 14),
+  walls 7 m, doorways round **arches** 4 m wide; the sand lies flat along **lanes** from every doorway and pool to the room's middle,
+  and a slope is a ripple-free ramp, its ends rounded (it was ripples on the ramp, 44 degree crests, that stalled the Courier: measured,
+  4.2 m/s walking and 6.8 running held the whole way up now); the walls are **rock** (`world/well/rock.js`), the sand hangs **skirts**.
+  The Well's frame: 70 calls, 99,138 triangles (was 57,228). The carved 25 by 25 cave below is still the plan.
+
 - **The grid** is **25 by 25 cells of 8 m a floor** (200 m square), carved, not boxed: a cave generator (cellular automata over
   the cells, then rooms stamped in at scale). That makes room for spaces of every scale:
   - **pockets**: 1 to 2 cells (8 to 16 m), a pot, a find, a jelly;

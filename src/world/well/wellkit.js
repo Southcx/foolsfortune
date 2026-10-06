@@ -7,7 +7,11 @@
 // the dark, slope cells of sand between the tiers, the floor swirled about its centre (a swirl turns and shears by as much: walls are cut
 // into pieces of at most 3.5 m, each laid between its two swirled ends; the sand and the ceilings are grids of swirled points), sand in
 // every room (wellsand.js) as one trimesh collider and one merged mesh for the floor (no slab under it: the sand is the floor), walls
-// taller by the sand they hold, and sandfalls on side passages (wellshift.js). Rooms hold one of a few templates (plain, pillars, a
+// taller by the sand they hold, and sandfalls on side passages (wellshift.js). Since R45 (the owner: "too boxy and sterile", "proper
+// archways", "mesh skirts"): the walls and pillars are drawn rough (rock.js: a noisy skin on a box collider, smooth-shaded), every doorway
+// is a round ARCH (jambs, a stepped ring and pilasters standing proud of both faces: the Romanesque portal, the archivolt over a door in
+// a thick wall), and each room's sand hangs a SKIRT a metre down its edges, the terrain trick for hiding the seams between patches
+// (Ulrich's chunked LOD, 2002: a skirt under every chunk's edge). Rooms hold one of a few templates (plain, pillars, a
 // ledge to mantle onto, plinths), Mystery Dungeon's and Tartarus's way of making a small kit read as many floors. The way in (a pale pool:
 // the way up, back out of the Well) and the way down (a dark one, turning) are pools of Lachryma on the sand.
 //
@@ -22,20 +26,28 @@
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../../render/outline.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
 import { layoutFloor, swirl, GRID, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
 import { roomSand, BASE } from './wellsand.js';
 import { Sandfalls } from './wellshift.js';
+import { roughen, segments } from './rock.js';
 
 export { layoutFloor, GRID, CELL, WALL_H };
 const WT = 0.5, SLAB = 0.5, PIECE = 3.5, HALF = (GRID * CELL) / 2;
 /** How much taller a floor's walls stand than WALL_H, for the sand banked against them (wellsand.js: drifts to 1.2, 1.8 and 2.2 m, dunes
  *  on top): the wall above the highest sand stays out of a hang's reach (core/config.js hang.maxTop 2.95), as it was on bare floors. */
 const LIFT = [1.5, 2.5, 3];
+/** A doorway's arch (metres): the jambs inside the hole, the springing line, the ring's width. The opening is DOOR - 2 jambs wide and
+ *  round-headed, its crown at DOOR_H (the hole's top), so the wall's own pieces need not change. */
+const ARCH = { jamb: 0.5, spring: DOOR_H - (DOOR / 2 - 0.5), ring: 0.45 };
+const SKIRT = 1; // (metres a room's sand hangs down its edges, out of sight under the next room's)
 const UP = new THREE.Vector3(0, 1, 0);
+// (the sand is one trimesh a room: without this a character catches on the edges between its triangles, and a walk up a slope stalls
+// to a crawl every few metres. Rapier, after Bullet's btAdjustInternalEdgeContacts: contacts on an inner edge take the faces' normal)
+const TRI_FLAGS = RAPIER.TriMeshFlags?.FIX_INTERNAL_EDGES ?? 0;
 
 /** One floor, built at `origin` (the north-west corner of the grid, at the upper tier's floor level). */
 export function buildFloor(game, layout, origin, floor = 1) {
@@ -43,7 +55,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const group = new THREE.Group(); group.name = `well-floor-${floor}`; group.userData.zone = 'well';
   const WH = WALL_H + (LIFT[floor - 1] ?? LIFT[LIFT.length - 1]); // (this floor's walls, sand allowed for)
   const deep = (floor - 1) / 2, tint = (hex, k = 1) => new THREE.Color(hex).lerp(new THREE.Color(0x3a2350), deep * 0.55 * k).getHex();
-  const sets = { floor: [], wall: [], ceil: [], deco: [] }, sandGeos = [];
+  const sets = { floor: [], wall: [], ceil: [], deco: [], arch: [] }, sandGeos = [];
   const C = { x: origin.x + HALF, z: origin.z + HALF }, Y = origin.y, sw = swirl(layout.twist), unsw = swirl(layout.twist, { back: true }), bend = layout.twist > 0;
   const cellAt = new Map(layout.cells.map((k) => [`${k.c},${k.r}`, k]));
   const get = (c, r) => cellAt.get(`${c},${r}`);
@@ -52,29 +64,79 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const place = (gx, gz) => { const p = sw(gx, gz); return { x: C.x + p.x, z: C.z + p.z, a: p.a }; };
   /** A box of the plan, cut into pieces of at most 3.5 m along its length, each laid between the two swirled ends of its own stretch: the
    *  swirl turns and shears (by as much as it turns), so a piece follows the bent line it stands on and its neighbours meet it end to end. */
-  const box = (gx, cy, gz, sx, sy, sz, set = 'wall', collide = true) => {
+  const box = (gx, cy, gz, sx, sy, sz, set = 'wall', collide = true, rough = set === 'wall' || set === 'deco') => {
     const alongX = sx >= sz, L = alongX ? sx : sz, Wd = alongX ? sz : sx, n = bend ? Math.max(1, Math.ceil(L / PIECE)) : 1;
     for (let i = 0; i < n; i++) {
       const t0 = -L / 2 + (i * L) / n, t1 = t0 + L / n;
       const p0 = place(gx + (alongX ? t0 : 0), gz + (alongX ? 0 : t0)), p1 = place(gx + (alongX ? t1 : 0), gz + (alongX ? 0 : t1));
       const dx = p1.x - p0.x, dz = p1.z - p0.z, len = Math.hypot(dx, dz) + (n > 1 ? 0.1 : 0), mx = (p0.x + p1.x) / 2, mz = (p0.z + p1.z) / 2;
       const th = alongX ? Math.atan2(-dz, dx) : Math.atan2(dx, dz); // (rotateY: the box's long axis onto the chord)
-      const g = new THREE.BoxGeometry(alongX ? len : Wd, sy, alongX ? Wd : len).toNonIndexed();
-      g.deleteAttribute('uv'); g.rotateY(th); g.translate(mx, cy, mz); sets[set].push(g);
+      const bx = alongX ? len : Wd, bz = alongX ? Wd : len;
+      const g = (rough ? new THREE.BoxGeometry(bx, sy, bz, segments(bx), segments(sy), segments(bz)) : new THREE.BoxGeometry(bx, sy, bz)).toNonIndexed();
+      g.deleteAttribute('uv'); g.rotateY(th); g.translate(mx, cy, mz); if (rough) roughen(g, { seed: floor }); sets[set].push(g);
       if (collide) W.createCollider(RAPIER.ColliderDesc.cuboid((alongX ? len : Wd) / 2, sy / 2, (alongX ? Wd : len) / 2).setTranslation(mx, cy, mz)
         .setRotation(new THREE.Quaternion().setFromAxisAngle(UP, th)).setCollisionGroups(GROUPS.static).setFriction(0.9), body);
     }
   };
   /** A sheet of the plan (a ceiling, the sand): a grid of points over a rectangle, each swirled, its height from `y(gx, gz)`; drawn in `set`
    *  (or returned) and made a trimesh collider of the same triangles. */
-  const sheet = (gx, gz, size, n, y, flip = false) => {
+  const sheet = (gx, gz, size, n, y, flip = false, skirt = 0) => {
     const pos = new Float32Array(n * n * 3), idx = new Uint32Array((n - 1) * (n - 1) * 6), h0 = -size / 2, st = size / (n - 1);
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const lx = h0 + i * st, lz = h0 + j * st, p = place(gx + lx, gz + lz), k = (j * n + i) * 3; pos[k] = p.x; pos[k + 1] = y(lx, lz); pos[k + 2] = p.z; }
     let q = 0;
     for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) { const a = j * n + i, b = a + 1, d = a + n, e = d + 1; if (flip) idx.set([a, b, d, b, e, d], q); else idx.set([a, d, b, b, d, e], q); q += 6; }
-    W.createCollider(RAPIER.ColliderDesc.trimesh(pos, idx).setCollisionGroups(GROUPS.static).setFriction(0.9), body);
+    W.createCollider(RAPIER.ColliderDesc.trimesh(pos, idx, TRI_FLAGS).setCollisionGroups(GROUPS.static).setFriction(0.9), body);
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals();
-    return g.toNonIndexed();
+    const out = g.toNonIndexed(); g.dispose();
+    return skirt ? mergeGeometries([out, skirtOf(pos, n, skirt, place(gx, gz))], false) : out;
+  };
+  /** A sheet's skirt: a strip hung `depth` down from its edge, each quad turned to face out of the room (drawn only, never collided). */
+  const skirtOf = (pos, n, depth, c) => {
+    const ring = [];
+    for (let i = 0; i < n - 1; i++) ring.push(i); // (north edge, then east, south and west, as sample indices)
+    for (let j = 0; j < n - 1; j++) ring.push(j * n + n - 1);
+    for (let i = n - 1; i > 0; i--) ring.push((n - 1) * n + i);
+    for (let j = n - 1; j > 0; j--) ring.push(j * n);
+    const out = new Float32Array(ring.length * 18), v = (k) => [pos[k * 3], pos[k * 3 + 1], pos[k * 3 + 2]];
+    ring.forEach((k, q) => {
+      const a = v(k), b = v(ring[(q + 1) % ring.length]), a2 = [a[0], a[1] - depth, a[2]], b2 = [b[0], b[1] - depth, b[2]];
+      // (the quad's facing: (b - a) x down; flipped if it looks into the room rather than out of it)
+      const ex = b[0] - a[0], ez = b[2] - a[2], nx = -ez, nz = ex, ox = (a[0] + b[0]) / 2 - c.x, oz = (a[2] + b[2]) / 2 - c.z;
+      const tri = nx * ox + nz * oz >= 0 ? [a, a2, b, b, a2, b2] : [a, b, a2, b, b2, a2];
+      tri.forEach((p, i) => out.set(p, q * 18 + i * 3));
+    });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(out, 3)); g.computeVertexNormals();
+    return g;
+  };
+  /** The arches' two shapes, extruded once a floor: the FRAME (jambs and spandrels filling the hole round a round-headed opening) and the
+   *  RING (the archivolt over it and its pilasters down to the floor, deeper, so it stands proud of both faces of the wall). */
+  const archGeo = (() => {
+    const r = DOOR / 2 - ARCH.jamb, sp = ARCH.spring, Wd = DOOR / 2 + 0.3, top = DOOR_H + 0.3, R2 = r + ARCH.ring;
+    const frame = new THREE.Shape(); frame.moveTo(-Wd, 0); frame.lineTo(-r, 0); frame.lineTo(-r, sp); frame.absarc(0, sp, r, Math.PI, 0, true);
+    frame.lineTo(r, 0); frame.lineTo(Wd, 0); frame.lineTo(Wd, top); frame.lineTo(-Wd, top); frame.closePath();
+    const ring = new THREE.Shape(); ring.moveTo(-R2, 0); ring.lineTo(-R2, sp); ring.absarc(0, sp, R2, Math.PI, 0, true); ring.lineTo(R2, 0);
+    ring.lineTo(r, 0); ring.lineTo(r, sp); ring.absarc(0, sp, r, 0, Math.PI, false); ring.lineTo(-r, 0); ring.closePath();
+    const ex = (shape, depth) => { let g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 7 }); if (g.index) g = g.toNonIndexed(); g.deleteAttribute('uv'); g.translate(0, 0, -depth / 2); return g; };
+    return { frame: ex(frame, WT + 0.5), ring: ex(ring, WT + 0.9), r, sp };
+  })();
+  /** A collider box in a doorway's own frame (x along the wall, z through it), turned by `th` about the doorway's middle `pc`. */
+  const doorBox = (pc, y0, th, cx, cy, sx, sy, sz) => {
+    const c = Math.cos(th), s = Math.sin(th);
+    W.createCollider(RAPIER.ColliderDesc.cuboid(sx / 2, sy / 2, sz / 2).setTranslation(pc.x + cx * c, y0 + cy, pc.z - cx * s)
+      .setRotation(new THREE.Quaternion().setFromAxisAngle(UP, th)).setCollisionGroups(GROUPS.static).setFriction(0.9), body);
+  };
+  /** The arch in a doorway whose middle is (gx, gz) of the plan, its sill at y0, in a wall running along x (alongX) or along z. */
+  const arch = (gx, gz, y0, alongX) => {
+    const p0 = place(gx - (alongX ? 1 : 0), gz - (alongX ? 0 : 1)), p1 = place(gx + (alongX ? 1 : 0), gz + (alongX ? 0 : 1)), pc = place(gx, gz);
+    const th = Math.atan2(-(p1.z - p0.z), p1.x - p0.x);
+    for (const part of ['frame', 'ring']) { const g = archGeo[part].clone(); g.rotateY(th); g.translate(pc.x, y0, pc.z); sets.arch.push(g); }
+    // its colliders: the jambs (and the pilasters before them) from the sill to the crown, and two steps under each spandrel
+    const { r, sp } = archGeo, hw = DOOR / 2, d = WT + 0.9;
+    for (const k of [-1, 1]) {
+      doorBox(pc, y0, th, k * (r + hw) / 2, DOOR_H / 2, hw - r, DOOR_H, d);
+      doorBox(pc, y0, th, k * (0.6 * r + hw) / 2, (sp + 0.8 * r + DOOR_H) / 2, hw - 0.6 * r, DOOR_H - sp - 0.8 * r, WT + 0.5);
+      doorBox(pc, y0, th, k * (0.9 * r + hw) / 2, (sp + 0.44 * r + DOOR_H) / 2, hw - 0.9 * r, DOOR_H - sp - 0.44 * r, WT + 0.5);
+    }
   };
   const level = (cell) => cell.level; // (a slope cell's lower tier)
   const top = (cell) => (cell.slope ? Math.max(cell.slope.fromLevel, cell.slope.toLevel) : cell.level) + WH * (cell.hall != null ? 1.6 : 1);
@@ -89,6 +151,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     const doorY = Y + layout.levelAt(cell, side), sideLen = (len - DOOR) / 2, off = DOOR / 2 + sideLen / 2;
     piece(-off, sideLen, lo, hi); piece(off, sideLen, lo, hi);
     piece(0, DOOR, lo, doorY); piece(0, DOOR, doorY + DOOR_H, hi);
+    arch(wx, wz, doorY, along);
   };
   // ---- the cells: their floors, ceilings, walls, what stands in them, and a lamp
   const lit = new Set();
@@ -126,7 +189,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     const sl = cell.slope, ramp = sl ? { from: sl.from, hFrom: sl.fromLevel - cell.level, hTo: sl.toLevel - cell.level } : null;
     const S = roomSand({ seed: (layout.seed ^ Math.imul(floor, 0x9e3779b1) ^ Math.imul(cell.c * 7 + cell.r + 1, 0x85ebca6b)) >>> 0, floor, size, doors, pools, ramp });
     const yb = Y + cell.level;
-    sandGeos.push(sheet(m.x, m.z, S.size, S.n, (lx, lz) => yb + S.at(lx, lz)));
+    sandGeos.push(sheet(m.x, m.z, S.size, S.n, (lx, lz) => yb + S.at(lx, lz), false, SKIRT));
     for (const k of room.cells) sandOf.set(k, { S, m, yb });
   }
   // ---- what is drawn: one mesh a set (the kit's materials, shared by every floor), and one of sand
@@ -134,10 +197,13 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const COL = { floor: tint(PALETTE.floor), wall: tint(PALETTE.wall), ceil: tint(PALETTE.deep, 0.5), deco: tint(PALETTE.mid) };
   for (const [set, geos] of Object.entries(sets)) {
     if (!geos.length) continue;
-    const merged = mergeGeometries(geos, false); for (const g of geos) g.dispose();
-    const mesh = new THREE.Mesh(merged, set === 'floor' ? K.floor : set === 'ceil' ? K.trim : set === 'wall' || set === 'deco' ? K.wall : game.level.mat(COL[set]));
-    mesh.receiveShadow = true; mesh.castShadow = set === 'deco';
-    if (set === 'wall' || set === 'deco') addOutline(mesh); // (the floor lies under the sand; the ceiling is seen from below only)
+    let merged = mergeGeometries(geos, false); for (const g of geos) g.dispose();
+    if (set === 'wall' || set === 'deco') { // (rock: one skin, its normals smoothed over the seams and the boxes' edges, so a wall reads as cut stone, not as a box)
+      merged.deleteAttribute('normal'); const welded = mergeVertices(merged, 1e-3); merged.dispose(); merged = welded; merged.computeVertexNormals();
+    }
+    const mesh = new THREE.Mesh(merged, set === 'floor' ? K.floor : set === 'ceil' || set === 'arch' ? K.trim : set === 'wall' || set === 'deco' ? K.wall : game.level.mat(COL[set]));
+    mesh.receiveShadow = true; mesh.castShadow = set === 'deco' || set === 'arch';
+    if (set === 'wall' || set === 'deco' || set === 'arch') addOutline(mesh); // (the floor lies under the sand; the ceiling is seen from below only)
     group.add(mesh);
   }
   const sandMat = K.sand || (game.wellSandMat ||= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc9a473, roughness: 1, name: 'well-sand-standin' }), { userData: { shared: true } }));
@@ -203,7 +269,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
       falls.update(dt, game.player?.pos);
     },
     dispose() {
-      game.scene.remove(group);
+      game.scene.remove(group); archGeo.frame.dispose(); archGeo.ring.dispose();
       falls.dispose();
       group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => { if (!mm.userData?.shared) mm.dispose(); }); }); // (the kit's materials are every floor's)
       W.removeRigidBody(body); // (and every collider on it)

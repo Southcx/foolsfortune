@@ -230,7 +230,10 @@ export class Dunemaw {
     const out = [];
     for (let i = 1; i < chain.length; i++) {
       const a = chain[i - 1], d = Object.keys(STEP).find((s) => a.c + STEP[s][0] === chain[i].c && a.r + STEP[s][1] === chain[i].r);
-      out.push(F.door(a.c, a.r, d));
+      // (each doorway taken square: a point before it and one past it, 1.8 m out toward each room's middle. An arch's pilasters stand
+      // proud of the wall, and a walk along the wall to the doorway's middle runs into one: the agent did, R45)
+      const D = F.door(a.c, a.r, d), b = chain[i], front = (k) => D.clone().add(new THREE.Vector3(k.x - D.x, 0, k.z - D.z).normalize().multiplyScalar(1.8));
+      out.push(front(a), D, front(b));
       if (i < chain.length - 1) out.push(new THREE.Vector3(chain[i].x, chain[i].y, chain[i].z)); // (through the room's middle, which its furniture leaves clear)
     }
     out.push(to.clone());
