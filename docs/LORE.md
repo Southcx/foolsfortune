@@ -480,6 +480,23 @@ Prince sells to neither side: every Courier both of his parents need came out of
   Log lines: "You mop up a blot of grief crude." · "A blotling crawls out of a blot of dread crude." · "Your small Lachrymato Bottle
   cracks: 12 Lachryma spilled."
 
+### Shrines and the Wake Whistle *(the owner, R59: Shrines rest, make whole, carry between and open the Spirit Garden; names Espada's, proposed; spec `docs/plans/SHRINES.md`, Dovina's)*
+- **A Shrine** is a roadside shrine of the Japanese kind (a *hokora*), the size of a small kiln: a niche, a lamp, a fired seal. A
+  Courier who rests at one is refired in miniature: made whole after a shatter, the pool full, the mind settled. Each Shrine is named
+  for one thing set in its niche:
+  - **the Bisque Shrine** (the workshop's, by Saggar's kiln): bisque is the first firing, so the first Shrine;
+  - **the Lamp Shrine** (the Dunes', at the Dunemaw's lip): "touch nothing but the lamp", and the lamp is the one thing you may take
+    down with you;
+  - **the Float Shrine** (Old Grog's pier): a fishing float, which stays up whatever pulls at the line;
+  - **the Pearl Shrine** (Margarite's dock): Margarite means pearl; a wound made beautiful.
+- **No Shrines in Wells** (the owner). The log says "You rest at the Shrine." and never "Game saved."
+- **The escape item: the Wake Whistle.** A small clay whistle, an ocarina, which is a pot you play. A Well is rumination, and the way
+  out of going round and round is to *wake*. One blown note, and you wake at the Well's mouth (a wake is also the line a ship leaves).
+  After the owner's Escape Rope and Psychonauts' Smelling Salts.
+  - Item text: WAKE WHISTLE: "A small clay whistle. Blow it in a Well, and you wake at the Well's mouth with what you carry. It breaks
+    when you use it. You can carry one."
+  - Log: "You blow the Wake Whistle, and wake at the Dunemaw's mouth." · refusal: "You are not in a Well."
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
@@ -742,7 +759,7 @@ down is a spiral, the bottom is rock bottom, coming back up twenty times is boun
 the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
 storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
 
-### Words for the Shrine Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
+### Words for the Spirit Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
 - **Log lines** (the robotic register): "You cast off for {place}. Fuel: {n} cubes." · "Cargo lost: {n} casks of crude." (with a
   spill: "… The spill burns on the sea.") · "You make port at {place}." · "Route divined: {place}." · "The press fires. {Attribute}:
   rank {n}." · "{Encounter} now works a garden slot." · "You harvest {n} from the bed." · "Garden widened: one more {slot|bed}."
@@ -752,9 +769,9 @@ storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns 
   Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
   You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
   not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
-- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**; it is reached through a facility, **the Shrine**.
-  (The owner's v0.1 said "an Internal Shrine Garden, a pocket dimension inside the vessel": the Shrine is the door, the garden what is
-  behind it.)
+- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**, a pocket dimension inside your Pneuka Jar; the
+  Pneuka Box is its shed, reachable anywhere. The garden itself is entered only at a **Shrine**. (The owner's v0.1 said "an Internal
+  Shrine Garden": the Shrine is the door, the garden what is behind it.)
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
