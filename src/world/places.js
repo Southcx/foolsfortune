@@ -13,6 +13,7 @@
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
+import { TR } from './testroom/layout.js';
 
 const r2 = (v) => +v.toFixed(2);
 
@@ -66,6 +67,7 @@ export function installPlaces(game) {
   const P = new Places(game), V = (x, y, z) => new THREE.Vector3(x, y, z);
   P.add('workshop', { name: 'the workshop', at: () => game.player.spawn.clone(), note: 'where a new Courier wakes; the kiln and the folk' });
   P.add('kiln', { name: 'the kiln', at: () => KILN_AT.clone(), yaw: Math.PI, note: 'F: the kiln window (glazes, mending)' });
+  P.add('throwing', { name: 'the Throwing Room', at: () => TR.mark.clone(), yaw: Math.PI / 2, note: 'on the firing mark; F at the Index\'s lectern: the drills' }); // (world/testroom/)
   if (game.course?.console) P.add('index', { name: 'the index console', at: () => V(game.course.console.x, -14, game.course.console.z), note: 'F: the room menu' });
   if (game.dunes) P.add('dunes', { name: 'the dunes', at: () => game.dunes.spawnPoint(), note: 'the sand sea; the Weir is its oasis' });
   if (game.course?.weirSpawn) P.add('weir', { name: 'the Weir', at: () => game.course.weirSpawn.v.clone(), note: 'the oasis: the pools, the pier, the treasury' });
