@@ -38,6 +38,7 @@ import { weatherRules } from './tracking/weather.js';
 import { dunemawRules } from './tracking/dunemaw.js';
 import { testroomRules } from './tracking/testroom.js';
 import { qaisRules } from './tracking/qais.js';
+import { brushRules } from './tracking/brush.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -614,6 +615,7 @@ export class Tracking {
     weatherRules({ on, L, log, g });
     dunemawRules({ on, L, log });
     testroomRules({ on, L, log });
+    brushRules({ on, L, log }); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
     qaisRules({ on, log }); // (QAIS: a report filed, a round sent, /goto; nothing counted)
 
 

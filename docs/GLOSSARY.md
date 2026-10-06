@@ -100,6 +100,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **Lachryma**: the substance of feeling and magic, condensed or liquid (`docs/LORE.md`, section 1: the Emocean is an atmosphere of it; cubes
   are it made solid). Always capitalised.
+- **Lachrymite** (the owner, 2026-10-06): Lachryma in its solid form, whatever its shape: a cube is a coin of Lachrymite, a crystal is a
+  formation of it, a crystal shard a piece of it. Always capitalised. *Not:* a new item or currency; "solid Lachryma" in prose is this.
 - **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
 - **cube** (`game.cubes`, `src/world/treasure/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
 - **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear.
@@ -142,6 +144,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Planned (`docs/plans/SUNSHINE.md`): **the load**, the liquid the bristles hold (slip, water or Lachryma), filled by a **dip** in
   water and flung or sprayed; **the paint map** (`render/paintmap.js`), the world-anchored grid of wet, slip and **stains**
   (Sunshine's goop: washed to reveal what they hid).
+  Settled by the owner, 2026-10-06 (`src/progress/brushload.js`, `docs/plans/SUNSHINE-SYSTEMS.md`): the Soul Brush is the tool of
+  **environmental** Lachryma (the Lockheart's is Lachryma drained from creatures). Two **modes**, picked with 1 and 2 while it is out
+  (as the Sondelass's forms): **paint** (spray Lachryma out) and **mop** (drink environmental Lachryma in). **saturate**: hold LMB and
+  the bristles fill for as long as the psygun takes to charge fully, then the brush sprays (paint) or drinks (mop); a press shorter than
+  the psygun's tap window is the club, whatever is held. A **stain** is spilled crude on the ground (graded by its feeling, as a cask of
+  crude is): left alone it grows a stage a game day, and a full-grown one spawns an aberrant Figment.
+- **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`; always so called, never "tank"): an aquarium-glass bottle of Lachryma
+  worn against the Courier's upper back (its own place, not where tools are worn on the back), stoppered with an opaque topper; a
+  reserve that feeds the pool below half and is what the paint mode spends and the mop mode fills. Glass: a broken shield can crack it,
+  and what spills is a stain.
 - **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
   surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its

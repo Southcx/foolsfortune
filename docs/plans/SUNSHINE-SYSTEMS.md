@@ -68,16 +68,59 @@ as territory: what you stand in helps you or hinders you); de Blob (colour resto
   - a creature brought down standing on your own painted feeling;
   - slide 500 metres on wet ground.
 
-## 4. The three questions for the owner (in the digest), with Dovina's lean
+## 4. The owner's rulings (2026-10-06), and what follows from them
 
-1. **Where the spray goes on the controls.**
-   - **Lean:** holding LMB with a water or slip load sprays instead of charging the club (Sunshine's R: one tool, one trigger).
-   - With an empty load, LMB is the club as today.
-   - The load is chosen by where you fill, never by a menu.
-2. **Hover, rocket and skim as techs?**
-   - **Lean:** yes, later, as Movement Arts (opt-in, off by default, as every tech is), and only after the spray proves itself.
-   - Switching them off restores the core movement exactly.
-3. **What the stains are.**
-   - **Lean:** spilled crude, graded by its feeling (the voyage's spills, washed up at the Shore and tracked inland).
-   - Washing turns a mess into a small share of the market.
-   - Espada names it.
+The three questions are answered. The data is `src/progress/brushload.js`; the log's rules are `src/feedback/tracking/brush.js`.
+
+1. **The controls: saturate on hold.**
+   - Hold LMB: the bristles **saturate** with Lachryma over the psygun's full charge time (`T.charge.time`, 0.85 real s today,
+     Petra's feel), then the brush works its mode. One rhythm for both tools.
+   - A press shorter than the psygun's tap window (0.13 real s) is a club blow, **whatever is held**: a full bottle never costs you
+     the club.
+   - **The conflict:** the club's held slam (`SLAM.full`, 1.1 real s, `src/tools/soulbrush/club.js`) sits on the same hold. Lean: the
+     slam moves to **hold LMB in the air** (a ground pound: Sunshine's own, and Bayonetta's), and the ground hold is the saturate.
+     Petra's call, as it touches a combat timing.
+2. **Two modes, as the Sondelass's forms** (1 and 2 while the brush is out):
+   - **paint**: sprays Lachryma **out** (from the bottle, else the pool), at 6 Lachryma a real second, 7 m of throw. What it lays is
+     the bottle's grade (the feeling of the crude it last drank), else the draught's (`progress/stones.js`): section 1 still holds.
+   - **mop**: drinks environmental Lachryma **in** (a stain, a puddle, a coated folk), at 12 a real second within 2.4 m, into the
+     bottle. Out and in: the mop fills what the paint spends, so the two modes are one loop, not two tools.
+3. **The split with the Lockheart:** the Lockheart drains Lachryma from **creatures**; the Soul Brush is **environmental** Lachryma.
+   Nothing the brush does pulls from a creature, and nothing the Lockheart does mops the ground.
+4. **Hover, rocket and skim: now**, as Movement Arts (opt-in, off by default; switched off, the core movement is exactly restored).
+   Sunshine's water sliding is not a new move: it is rolled into the existing **Brush Slide** (wet or painted ground under it, the
+   slide runs on it), with Calissa's look.
+5. **Stains are spilled crude** (graded by its feeling). Left alone a stain grows a stage a game day (3 stages, 10/20/35/50 Lachryma
+   to mop); at the third it spawns **one** aberrant Figment (a slip jelly gone wrong, a bounty's kind of quarry), then holds. **Cap:**
+   at most one spawned Figment alive per stain, and stains are placed by the game day's layout, never on a timer, so a neglected place
+   is a nuisance, never a swarm. A crossing's spill puts 2 on the Shore.
+6. **The Lachrymato Bottles** (worn on the upper back, their own place; tools worn on the back keep theirs):
+
+   | bottle | holds (Lachryma) | feeds the pool (a real second, below half) | cracks on a broken shield | spills when cracked | price (minutes of play) |
+   |---|---|---|---|---|---|
+   | small | 40 | 6 | 10% | 30% | 10 |
+   | medium | 80 | 8 | 20% | 40% | 25 |
+   | large | 120 | 10 | 35% | 50% | 50 |
+
+   - **Tanky without touching the movement:** a bigger bottle is paid in **risk**, not speed. It cracks more easily, and a crack pours
+     a share of it out as a stain where you stood (which you can mop back, if you have the time). Equip weight that slowed the Courier
+     would break the gold standard, so it is not on the table.
+   - **A reserve, not a second pool:** it feeds the pool only below half, so the pool's band still reads true.
+   - A full bottle gives off a signature (`core/signatures.js`): creatures with a nose and the Dreamvane notice a tank of it.
+   - The prices are placeholders until `scripts/economy.mjs` has a brush profile (the loop's pay, about 0.5x the aim, section 2).
+7. **The coated folk:** a folk in a spill is coated in Lachryma (Calissa's look) and the mop cleans them. A Courier helps; what they
+   pay for it is the folk's thanks and a line, and the ledger counts it (`folk.clean`, when it is built).
+8. **Lachrymite** is Lachryma's solid form (the glossary): cubes and crystals are Lachrymite.
+
+## 5. Events (for Petra's build), counted by `feedback/tracking/brush.js`
+
+| event | payload | counts |
+|---|---|---|
+| `brush.mode` | `{ mode, by }` | (said, not counted) |
+| `brush.paint` | `{ aspect, area, from, by }` | `paint.area`, `paint.<aspect>` |
+| `brush.mop` | `{ lachryma, by }` | `mop.lachryma` |
+| `stain.wash` | `{ grade, stage, by }` | `stain.wash`, `stain.<grade>`, `stain.wash.grown` |
+| `stain.spawn` | `{ grade, kind, by: 'environment' }` | `stain.spawn` |
+| `bottle.crack` | `{ bottle, spilled, by }` | `bottle.crack` |
+
+The achievements (section 3) are added when these are emitted, so they are reachable on the build that ships them.
