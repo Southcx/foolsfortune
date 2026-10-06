@@ -17,6 +17,7 @@
 //
 //   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(rawDt)   S.dispose()
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
+//   S.setMode('still' | 'guard' | 'swing')   S.swing(onStrike)   (the guard folds the sleeves across its front; the swing winds up 0.8 s, then sweeps)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -88,12 +89,15 @@ export class StrawmanModel {
     // the crossbar and its sleeves (charcoal, tapered, the cuffs flared with the cream spiral)
     const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.7, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
     const sleeveM = M(std(C.sleeve)), cuffM = M(std(0xffffff, { map: cuffTexture() }));
-    for (const s of [-1, 1]) {
+    this.arms = [];
+    for (const s of [-1, 1]) { // (each sleeve on its own shoulder: they fold into a guard, and one draws back for the swing)
+      const arm = new THREE.Group(); arm.position.set(s * 0.17, 1.5, -0.08); rock.add(arm); this.arms.push(arm);
       const sl = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.19, 0.66, 12, 1, true), sleeveM); sl.material.side = THREE.DoubleSide; // (puffy, flaring to the cuff)
-      sl.rotation.z = s * Math.PI / 2; sl.position.set(s * 0.5, 1.5, -0.08); rock.add(sl);
-      const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.84, 1.5, -0.08); cuff.rotation.y = s * Math.PI / 2; rock.add(cuff);
-      const lip = new THREE.Mesh(new THREE.TorusGeometry(0.195, 0.025, 6, 20), sleeveM); lip.position.copy(cuff.position); lip.rotation.y = s * Math.PI / 2; rock.add(lip);
+      sl.rotation.z = s * Math.PI / 2; sl.position.set(s * 0.33, 0, 0); arm.add(sl);
+      const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.67, 0, 0); cuff.rotation.y = s * Math.PI / 2; arm.add(cuff);
+      const lip = new THREE.Mesh(new THREE.TorusGeometry(0.195, 0.025, 6, 20), sleeveM); lip.position.copy(cuff.position); lip.rotation.y = s * Math.PI / 2; arm.add(lip);
     }
+    this.mode = 'still'; this.pose = 0; this.sw = null; // (the guard's weight 0..1; the swing under way)
     // the sack: hangs on the bar, swings a beat behind (its own pivot at the neck)
     const sack = this.sack = new THREE.Group(); sack.position.set(0, 1.45, 0); rock.add(sack);
     const prof = []; for (let i = 0; i <= 14; i++) { const t = i / 14; prof.push(new THREE.Vector2(0.07 + 0.42 * Math.sin(Math.PI * Math.pow(t, 0.72)) * (1 - 0.3 * t), -BODY_H + t * BODY_H)); } // (a fat pear, as drawn: twice the head's width)
@@ -121,6 +125,13 @@ export class StrawmanModel {
     this.a = new THREE.Vector2(); this.av = new THREE.Vector2(); this.s = new THREE.Vector2(); this.sv = new THREE.Vector2();
     this.flash = 0;
   }
+
+  /** The mode F cycles (Dovina's, docs/plans/STRAWMAN.md): 'still', 'guard' (the sleeves fold into an X across its front: it blocks from
+   *  the front), 'swing' (Petra's clock calls swing() every 3 sim seconds). */
+  setMode(m) { this.mode = m; }
+  /** A swing: 0.8 s of wind-up that reads (it leans back, the right sleeve draws back and up, the target pulses amber: the tell), then a
+   *  quick sweep forward; `onStrike` is called at the sweep's middle (Petra's harmless hit). */
+  swing(onStrike) { if (!this.sw) this.sw = { t: 0, onStrike, hit: false }; }
 
   /** Which ring of the target a world point is on (1 the bull's-eye, 2 and 3 the rings, 0 off the target). */
   ring(point) {
@@ -150,12 +161,26 @@ export class StrawmanModel {
     this.a.clampScalar(-0.75, 0.75);
     this.sv.addScaledVector(this.s, -16 * dt).addScaledVector(this.av, -0.4 * dt * 10).multiplyScalar(Math.exp(-dt * 2.2)); this.s.addScaledVector(this.sv, dt);
     this.s.clampScalar(-0.6, 0.6);
-    this.rock.rotation.set(this.a.x, 0, this.a.y);
+    // the guard: the sleeves fold forward into an X across the front; the swing: wind-up, then the sweep
+    this.pose += ((this.mode === 'guard' ? 1 : 0) - this.pose) * (1 - Math.exp(-dt * 8));
+    let lean = 0, armR = 0, armUp = 0, tell = 0;
+    if (this.sw) {
+      const W = this.sw; W.t += dt;
+      if (W.t < 0.8) { const u = W.t / 0.8, e = u * u * (3 - 2 * u); lean = -0.22 * e; armR = -1.3 * e; armUp = 0.6 * e; tell = 0.5 + 0.5 * Math.sin(W.t * 26); } // (the wind-up: leaning back, the sleeve drawn back and up, the target pulsing)
+      else if (W.t < 1.05) { const u = (W.t - 0.8) / 0.25; lean = -0.22 + 0.5 * u; armR = -1.3 + 2.9 * u; armUp = 0.6 * (1 - u); if (u > 0.5 && !W.hit) { W.hit = true; W.onStrike?.(); } } // (the sweep)
+      else if (W.t < 1.6) { const u = (W.t - 1.05) / 0.55; lean = 0.28 * (1 - u); armR = 1.6 * (1 - u); }
+      else this.sw = null;
+    }
+    const g = this.pose;
+    this.arms[0].rotation.set(0, -g * 1.25, -g * 0.35);
+    this.arms[1].rotation.set(0, g * 1.25 + armR, g * 0.35 + armUp);
+    this.rock.rotation.set(this.a.x + lean, 0, this.a.y);
     this.sack.rotation.set(this.s.x * 0.7, 0, this.s.y * 0.7);
     for (const l of this.legs) l.rotation.x = -this.s.x * 1.4; // (the legs dangle after)
     // the ring that was hit: a flash on the target, fading
     this.flash = Math.max(0, this.flash - dt * 2.5);
     this.bodyMat.emissive.setRGB(0.9, 0.35, 0.2).multiplyScalar(this.flash * 0.6);
+    if (tell > 0) this.bodyMat.emissive.setRGB(1.0, 0.6, 0.1).multiplyScalar(0.35 * tell); // (the swing's tell: amber, pulsing, on the whole sack)
     // the straw: falls, tumbles, and is gone
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
     let n = 0;
