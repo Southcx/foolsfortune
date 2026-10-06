@@ -356,11 +356,6 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   degrees a cell on floors 1 to 3).
 - **the flythrough** (`docs/plans/DUNEMAW.md`): the preview of a floor on arrival, the camera sweeping its path with the frame
   accumulation on; any key skips it.
-- **the mask's face** (`game.maskFace`, `src/vfx/maskface.js`; the owner, 2026-10-06): the Courier's mask as an E-ink display. Its
-  eyes and brows are one of eight **faces** painted from the maker's own (neutral, happy, sad, angry, surprised, hurt, focused,
-  sleepy: `scripts/bake_mask_faces.py`), changed by a **refresh** (the eyes flash cream, are wiped to ink, and the new face shows with
-  a fading **ghost** of the old), with a stepped **blink** and **pupils** that step toward what the Courier looks at (`PUPILS`: one
-  switch to take them off). `/face <name>` shows one.
 - **Strawman** (`src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a
   stitched sack doll on a post with a weighted ball foot; infinitely durable. Named with no article ("Strawman rocks back up").
 - **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): the Great Dunemaw's FOE, a Great Slip Jelly wearing
