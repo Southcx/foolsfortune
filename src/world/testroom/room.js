@@ -99,7 +99,7 @@ export class TestRoom {
   /** The Index's console here: a lectern of dark wood with a glowing face (Calissa's to dress). */
   buildConsole() {
     const g = this.game, grp = new THREE.Group();
-    const wood = new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.85, flatShading: true });
+    const wood = new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.85 });
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.05, 0.3), wood); post.position.y = 0.525; grp.add(post);
     const top = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.08, 0.5), wood); top.position.y = 1.08; top.rotation.x = -0.35; grp.add(top);
     const face = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.36), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));

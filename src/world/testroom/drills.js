@@ -27,6 +27,7 @@ import { TR } from './layout.js';
 
 const R = stream('world/testroom');
 const DEG = Math.PI / 180, GAP = 0.35, TARGET_R = 0.32;
+const DENT_R = 0.035, DENT_SEG = 8;                        // (a dent's radius, metres, and its triangles)
 
 /** A target: a disc on its face toward the mark, its collider a ball the shot finds (`entity.type === 'drilltarget'`). */
 class Target {
@@ -54,9 +55,13 @@ export class Drills {
     this.game = game; this.room = room;
     this.active = null;
     this.targets = [new Target(game), new Target(game), new Target(game)];
-    // the wall's dents: one instanced mesh of small dark discs on its face, the oldest gone after WALL.keep real seconds
-    this.dents = new THREE.InstancedMesh(new THREE.CircleGeometry(0.035, 8), new THREE.MeshBasicMaterial({ color: PALETTE.deep }), WALL.maxDents);
-    this.dents.count = 0; this.dents.frustumCulled = false; this.dentAt = []; this.clock = 0;
+    // the wall's dents: small dark discs on its face, the oldest gone after WALL.keep real seconds. One plain mesh whose vertices are
+    // written in place (a disc of DENT_SEG triangles per dent, a spent one folded to a point): one draw call, and no shader program of its
+    // own (an instanced basic material would be the only one in the game: perf, R45)
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(WALL.maxDents * DENT_SEG * 9), 3).setUsage(THREE.DynamicDrawUsage));
+    this.dents = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: PALETTE.deep }));
+    this.dents.frustumCulled = false; this.dentAt = []; this.dentN = 0; this.clock = 0;
     game.scene.add(this.dents);
     game.events?.on('shot.fire', (e) => this.shot(e));
   }
@@ -149,16 +154,22 @@ export class Drills {
 
   // ---------------------------------------------------------------- the wall's dents (kept WALL.keep real seconds, at most WALL.maxDents)
   dent(at) {
-    const m = new THREE.Matrix4().makeRotationY(-Math.PI / 2).setPosition(TR.wall.x - 0.006, at.y, at.z);
-    const i = this.dents.count < WALL.maxDents ? this.dents.count++ : this.dentAt.indexOf(Math.min(...this.dentAt));
-    this.dents.setMatrixAt(i, m); this.dentAt[i] = this.clock; this.dents.instanceMatrix.needsUpdate = true;
+    const i = this.dentN < WALL.maxDents ? this.dentN++ : this.dentAt.indexOf(Math.min(...this.dentAt.map((t) => t ?? -Infinity)));
+    this.writeDent(i, at.y, at.z, DENT_R); this.dentAt[i] = this.clock;
+  }
+  // (dent i as a fan in the wall's plane, wound to face the mark at -x; r 0 folds it to a point)
+  writeDent(i, y, z, r) {
+    const a = this.dents.geometry.attributes.position, x = TR.wall.x - 0.006;
+    for (let k = 0; k < DENT_SEG; k++) {
+      const a0 = (k / DENT_SEG) * Math.PI * 2, a1 = ((k + 1) / DENT_SEG) * Math.PI * 2, o = (i * DENT_SEG + k) * 3;
+      a.setXYZ(o, x, y, z); a.setXYZ(o + 1, x, y + Math.sin(a0) * r, z + Math.cos(a0) * r); a.setXYZ(o + 2, x, y + Math.sin(a1) * r, z + Math.cos(a1) * r);
+    }
+    a.needsUpdate = true;
   }
   fadeDents() {
-    let changed = false;
-    for (let i = 0; i < this.dents.count; i++) if (this.dentAt[i] != null && this.clock - this.dentAt[i] > WALL.keep) { this.dents.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0)); this.dentAt[i] = null; changed = true; }
-    if (changed) this.dents.instanceMatrix.needsUpdate = true;
+    for (let i = 0; i < this.dentN; i++) if (this.dentAt[i] != null && this.clock - this.dentAt[i] > WALL.keep) { this.writeDent(i, 0, 0, 0); this.dentAt[i] = null; }
   }
-  clearDents() { this.dents.count = 0; this.dentAt = []; }
+  clearDents() { for (let i = 0; i < this.dentN; i++) this.writeDent(i, 0, 0, 0); this.dentN = 0; this.dentAt = []; }
 
   // ---------------------------------------------------------------- the Index's Testing page (feedback/indexmenu.js showPage)
   page(im, el) {
