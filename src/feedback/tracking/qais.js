@@ -11,5 +11,5 @@ export function qaisRules({ on, log }) {
   on('qais.round.sent', (e) => log.say('system', e.woke
     ? `Round ${e.round} sent to the brigade: ${e.pass} passed, ${e.fail} failed, ${e.skip} skipped, ${e.reports} reported. ${e.who} has been woken.`
     : `Round ${e.round} marked sent, but ${e.who}'s session could not be woken (${e.why}).`));
-  on('courier.goto', (e) => log.say('system', e.ok ? `You stand at ${e.to}.` : `There is no standing at ${e.to} from here.`, { throttle: 1 }));
+  on('courier.goto', (e) => log.say('system', e.ok ? `You stand at ${e.to}.` : `You cannot stand at ${e.to} from here.`, { throttle: 1 }));
 }

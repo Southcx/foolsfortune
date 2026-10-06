@@ -159,7 +159,7 @@ export class TestRoom {
       const M = STRAWMAN.modes, S = this.strawman;
       S.setMode(M[(M.indexOf(S.mode) + 1) % M.length]);
     }
-    if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('testing', (im, el) => this.drills.page(im, el)); }
+    if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);
   }
 }

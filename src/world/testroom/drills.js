@@ -174,7 +174,7 @@ export class Drills {
   // ---------------------------------------------------------------- the Index's Testing page (feedback/indexmenu.js showPage)
   page(im, el) {
     const g = this.game, L = g.ledger, t = tuned().knobs;
-    im.appendChild(el('div', 'grp', 'DRILLS · begin one (from the mark, facing the wall)'));
+    im.appendChild(el('div', 'grp', 'DRILLS · Stand on the firing mark, face the wall, and choose one'));
     const grid = el('div', 'rooms');
     for (const [id, D] of Object.entries(DRILLS)) {
       const best = L?.best(KEYS.best(id)), medal = best != null ? medalOf(id, best) : null;
@@ -185,7 +185,7 @@ export class Drills {
     im.appendChild(grid);
     if (t.length) im.appendChild(el('div', 'grp', `TUNED · ${t.map((k) => k.key).join(', ')} · runs are not recorded`));
     const S = this.room.strawman, b = S?.last;
-    im.appendChild(el('div', 'grp', `STRAWMAN · ${S?.mode || 'still'} (F at it changes)`));
+    im.appendChild(el('div', 'grp', `STRAWMAN · ${S?.mode || 'still'} · press F at Strawman to change`));
     im.appendChild(el('div', 'cal', b ? `<div><span>last bout</span><b>${b.blows} blows in ${b.seconds} s · ${Math.round(b.damage)} damage · ${b.perSecond} a second</b></div>` : '<div><span>last bout</span><b>none yet</b></div>'));
   }
 }

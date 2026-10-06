@@ -209,7 +209,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **clutch** (`NURSERY`): a nest of slip jelly eggs in the slip, guarded, hatching **brood** (young jellies a third of the size), which
   the crowned FOE calls; broken, an egg may leave **slip roe** (a material). Clutches come back with the next game day's layout.
 - **warped artifact** (`FINDS.warped`): the one find a floor in a warped pocket, worth three; taking it **shifts the floor**.
-- **the testing room** (a side room off the Workshop; `src/progress/combat/testroom.js`; the name is a placeholder for Espada's): where
+- **the Throwing Room** (a side room off the Workshop; `src/progress/combat/testroom.js`; Espada's name: a potter throws on the wheel, the Courier throws shots): where
   aim and recoil are measured, never earned: the Index, the **targets** (never "plates": a plate is a Veritome photograph), Strawman, the
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
