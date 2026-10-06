@@ -194,6 +194,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the crude from the beach, where the sloop moors. *Not:* the Weir's pier (the oasis's), or the span (a bridge).
 
 ## Creatures and folk
+- **the crown** (the Great Slip Jelly's: `FOE.crown`, `src/progress/combat/dunemaw.js`): the broken urn on its head, cracked in three
+  stages by Impact, the slam or its own ram into stone, then burst off; under it, **the core**, its weak point. *Not:* a chest's tier.
+- **clutch** (`NURSERY`): a nest of slip jelly eggs in the slip, guarded, hatching **brood** (young jellies a third of the size), which
+  the crowned FOE calls; broken, an egg may leave **slip roe** (a material). Clutches come back with the next game day's layout.
+- **warped artifact** (`FINDS.warped`): the one find a floor in a warped pocket, worth three; taking it **shifts the floor**.
+- **Strawman** (the Workshop's test dummy: `STRAWMAN`): a creature that never falls and that the ledger never counts (`training`); a
+  **bout** is its blows until 4 real seconds pass without one, said in the log in one line.
+- **the Solar Skiffing trial** (at the sundial in the Dunes: `SOLAR`): rings charged by the sun; a ring in shade is dark and does not
+  count; closed at night. *Not:* solar skiffing itself (the skiff's sport).
 
 - **the Great Dunemaw** (the owner's name, R57; not "the Swallow"): the Well in Anagami's Dunes (`docs/plans/SLICE.md`, E1). Its **mouth** (`src/vfx/dunemaw.js`) is a
   spinning black pool of the Mind's labradorite in the sand; its floors are dressed from **the Great Dunemaw's kit** (`src/vfx/dunemawkit.js`:

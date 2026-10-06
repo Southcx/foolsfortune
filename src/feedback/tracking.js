@@ -35,6 +35,7 @@ import { wellRules } from './tracking/wells.js';
 import { voyageRules } from './tracking/voyage.js';
 import { gardenRules } from './tracking/garden.js';
 import { weatherRules } from './tracking/weather.js';
+import { dunemawRules } from './tracking/dunemaw.js';
 import { qaisRules } from './tracking/qais.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
@@ -608,6 +609,7 @@ export class Tracking {
     voyageRules({ on, L, log });
     gardenRules({ on, L, log });
     weatherRules({ on, L, log, g });
+    dunemawRules({ on, L, log });
     qaisRules({ on, log }); // (QAIS: a report filed, a round sent, /goto; nothing counted)
 
 
