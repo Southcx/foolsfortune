@@ -114,14 +114,14 @@ const eights = (i) => { const c = chordOf(i), r = low(c), p = low(chordOf(i + 3)
 /** A bar cut off at beat `at` (what sounds is shortened to end there), then a reversed swell into the next bar's downbeat: the hole. */
 const holed = (evs, at = 3) => [...evs.filter((e) => e.b < at).map((e) => ({ ...e, d: Math.min(e.d || 1, at - e.b) })), E('reverse', at, 4 - at, null, 0.4)];
 const LAYERS = {
-  launch: (i, c) => [...(i >= 2 ? sparkle(c, 0.08 + 0.015 * i) : []), ...(i >= 4 ? ticks(i, 0.3 + 0.15 * (i - 4)) : [])],
+  launch: (i, c) => [...(i >= 2 ? sparkle(c, 0.06 + 0.01 * i) : []), ...(i >= 4 ? ticks(i, 0.3 + 0.15 * (i - 4)) : [])],
   schools: (i, c) => [...ticks(i), ...(i >= 8 ? ohats(0.14) : []), ...twinkle(c, i < 8 ? 0.2 : 0.16)],
-  pincer: (i, c) => [...ticks(i, 1.1), ...ohats(), ...sparkle(c, 0.18), E('snap', 1, 1, null, 0.35), E('snap', 3, 1, null, 0.35)],
+  pincer: (i, c) => [...ticks(i, 1.1), ...ohats(), ...sparkle(c, 0.16), E('snap', 1, 1, null, 0.35), E('snap', 3, 1, null, 0.35)],
   darters: (i, c) => [...ticks(i, 1, true), ...twinkle(c, 0.14)],
-  breather: (i, c) => [...sparkle(c, 0.16), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
+  breather: (i, c) => [...sparkle(c, 0.1), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
   push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15), ...sparkle(c, 0.16)],
   heavy: (i, c) => [...trap(i), ...(i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i)), ...sparkle(c, 0.14)],
-  arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.28)] : []),
+  arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.12)] : []),
 };
 const HOLES = { pincer: 9, push: 21, heavy: 5 }; // (the bar of each that ends in a hole)
 export const CRUDE_SEA_B = { ...CRUDE_SEA, title: 'Crude Sea (B)', sections: CRUDE_SEA.sections.map((s) => ({ ...s, bar: (i) => {

@@ -57,7 +57,7 @@ export class ModernBand {
 
   shimmer(t, dur, notes, v = 0.2) {
     const c = this.ctx, g = c.createGain(), end = this.env(g, t, Math.min(1.2, dur * 0.4), v, dur, 0.8);
-    const o = this.out(this.bus.dry, 0.2, { verb: 0.6, echo: 0.2 }), hp = this.filt('highpass', 2200, 0.7); g.connect(hp).connect(o);
+    const o = this.out(this.bus.dry, 0.09, { verb: 0.6, echo: 0.2 }), hp = this.filt('highpass', 2200, 0.7); g.connect(hp).connect(o);
     const trem = c.createGain(); trem.gain.value = 0.6; trem.connect(g);
     const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 7 + Math.random() * 4; lg.gain.value = 0.4; l.connect(lg).connect(trem.gain); l.start(t); l.stop(end + 0.05);
     for (const [k, m] of notes.entries()) { this.osc('sine', hz(m + 24) * (1 + k * 0.0007), t, end, trem); this.osc('triangle', hz(m + 36) * 1.002, t, end, trem); }
