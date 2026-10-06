@@ -41,7 +41,7 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
 
 ## The mouth: an antlion pit (Calissa's look; Petra's ground)
 
-- **On the sand:** a cone **32 m across and 8 m deep**, its slope at the angle of repose (about 34 degrees). The sand slides toward
+- **On the sand:** a cone **39 m across and 8 m deep**, its slope at the angle of repose (34 degrees at its steepest: `PIT`, `pitDepth`). The sand slides toward
   the eye in streaks that spiral inward. Stepping over the lip, the Courier is pulled down at **1.5 m/s** and can climb out against it.
   The eye at the bottom (the labradorite pool, 3 m) is the way in.
 - **Petra:** carve the pit into the Dunes' `heightAt` (a cone with a soft lip), and give it a slip current. **Calissa:** the cone's

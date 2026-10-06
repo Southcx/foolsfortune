@@ -168,9 +168,9 @@ export class Sandfall {
 // sand here is laid on the same profile, so they never disagree. The sand on its slope slides toward the eye in streaks that spiral
 // inward and darken as they go down. Prior art: the antlion's pit (Myrmeleon: a cone dug at the angle of repose, so the sand gives way
 // under anything at its lip), the Sarlacc's, and the sand of an hourglass running out at its neck.
-export const PIT = { radius: 16, depth: 8, eye: 1.5 };
+export const PIT = { radius: 19.3, depth: 8, eye: 1.5 }; // (the run of 17.8 m holds the S-curve's steepest at 34 degrees: the angle of repose, as the antlion digs)
 /** How far below the surrounding sand the pit's ground is at a distance r from its middle (0 outside it; PIT.depth at the eye). An
- *  S-curve, steepest at about 40 degrees at mid-slope (near the angle of repose), soft at the lip and at the eye. */
+ *  S-curve, steepest at 34 degrees at mid-slope (the angle of repose: Petra's ask), soft at the lip and at the eye. */
 export function pitDepth(r) {
   const x = Math.min(1, Math.max(0, (PIT.radius - r) / (PIT.radius - PIT.eye)));
   return PIT.depth * x * x * (3 - 2 * x);
@@ -219,7 +219,7 @@ function chimneyPoint(h) {
 export class PrinceCrown {
   /** The crown's band rings the pit, tilted and half sunk (one side rises out of the sand, the other is under it), its chimney points
    *  along the band: the pit is the inside of the crown, the Prince's own head under it. */
-  constructor({ radius = 19, points = 7, tilt = 0.24 } = {}) {
+  constructor({ radius = 22, points = 7, tilt = 0.24 } = {}) { // (just outside the pit's lip, 19.3 m)
     const clay = new THREE.MeshStandardMaterial({ name: 'prince-crown', color: 0xc77f5a, roughness: 0.85, flatShading: true, side: THREE.DoubleSide });
     const glaze = new THREE.MeshStandardMaterial({ name: 'prince-crown-glaze', color: 0x3b2a5a, roughness: 0.18, metalness: 0.1, emissive: 0x150a24 });
     this.group = new THREE.Group(); this.group.name = 'prince-crown';
