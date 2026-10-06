@@ -144,10 +144,10 @@ export class Dunemaw {
     const g = this.game, J = g.jellies, F = this.cur; if (!J) return;
     const r = seeded((this.run.seed ^ Math.imul(n, 0x85ebca6b)) >>> 0), rooms = F.cells.filter((c) => c.role !== 'start');
     for (let i = rooms.length - 1; i > 0; i--) { const j = r.int(i + 1); [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; }
-    const at = (c) => new THREE.Vector3(c.x, WELL_AT.y, c.z + (c.role === 'exit' ? 3 : 0)); // (off the pool)
+    const at = (c, dx = 0) => { const p = F.onSand(c.c, c.r, dx, c.role === 'exit' ? 3 : 0); p.y += 0.05; return p; }; // (on the sand, off the pool)
     for (const c of rooms.slice(0, 1 + n)) this.mobs.push(J.spawn(at(c), { once: true }));
     const end = rooms.find((c) => c.role === 'exit');
-    if (n === FLOORS && end) this.mobs.push(J.spawn(at(end).setX(end.x - 3), { once: true, cls: 2 }));
+    if (n === FLOORS && end) this.mobs.push(J.spawn(at(end, -3), { once: true, cls: 2 }));
   }
 
   /** Off the floor they are on: how much of it they charted (well.charted), and the floor and its jellies taken down. */
@@ -209,21 +209,30 @@ export class Dunemaw {
   toArrival() { if (this.cur) { this.moving = 2; this.game.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true }); } }
 
   /** A route across the floor through its doorways (the agents': agent/agent.js): the doorways' middles, room by room, then the place.
-   *  Breadth-first over the rooms (nine at most). */
+   *  Breadth-first over the cells (25 at most); the cell a point is in is found with the floor's swirl undone (wellkit.js cellAt). */
   route(from, to) {
     const F = this.cur; if (!F) return [to.clone()];
-    const cellAt = (p) => F.cells.find((c) => Math.abs(p.x - c.x) <= CELL / 2 && Math.abs(p.z - c.z) <= CELL / 2);
+    const cellAt = (p) => F.cellAt(p.x, p.z);
     const a = cellAt(from), b = cellAt(to);
     if (!a || !b || a === b) return [to.clone()];
-    const STEP = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }, key = (c) => `${c.c},${c.r}`, prev = new Map([[key(a), null]]), q = [a];
-    while (q.length) {
-      const c = q.shift(); if (c === b) break;
-      for (const d of c.doors) { const n = F.cells.find((k) => k.c === c.c + STEP[d][0] && k.r === c.r + STEP[d][1]); if (n && !prev.has(key(n))) { prev.set(key(n), c); q.push(n); } }
-    }
-    if (!prev.has(key(b))) return [to.clone()];
+    const STEP = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }, key = (c) => `${c.c},${c.r}`;
+    const search = (falls) => { // (falls: through a sandfall that is falling too, when there is no other way: it opens again)
+      const prev = new Map([[key(a), null]]), q = [a];
+      while (q.length) {
+        const c = q.shift(); if (c === b) break;
+        for (const d of c.doors) { if (!falls && F.open && !F.open(c.c, c.r, d)) continue; const n = F.cells.find((k) => k.c === c.c + STEP[d][0] && k.r === c.r + STEP[d][1]); if (n && !prev.has(key(n))) { prev.set(key(n), c); q.push(n); } }
+      }
+      return prev.has(key(b)) ? prev : null;
+    };
+    const prev = search(false) || search(true);
+    if (!prev) return [to.clone()];
     const chain = []; for (let c = b; c; c = prev.get(key(c))) chain.unshift(c);
     const out = [];
-    for (let i = 1; i < chain.length; i++) out.push(new THREE.Vector3((chain[i - 1].x + chain[i].x) / 2, WELL_AT.y, (chain[i - 1].z + chain[i].z) / 2));
+    for (let i = 1; i < chain.length; i++) {
+      const a = chain[i - 1], d = Object.keys(STEP).find((s) => a.c + STEP[s][0] === chain[i].c && a.r + STEP[s][1] === chain[i].r);
+      out.push(F.door(a.c, a.r, d));
+      if (i < chain.length - 1) out.push(new THREE.Vector3(chain[i].x, chain[i].y, chain[i].z)); // (through the room's middle, which its furniture leaves clear)
+    }
     out.push(to.clone());
     return out;
   }
@@ -254,6 +263,12 @@ export class Dunemaw {
       const go = it.ref === 'mouth' ? () => this.enter() : it.ref === 'down' ? () => this.down() : () => this.up();
       if (g.seam) g.seam.cross(go, { kind: 'maw' }); else go(); // (under a cover: render/seam.js; the floor is built while nothing is seen)
     }
+    // off the floor's plan for a real second (out between the rooms, where nothing is built: a climb the walls should have stopped): back
+    // to where the floor began, and the bus says so (a safety net, as every game has one for a Courier out of the level)
+    if (this.run && this.cur && !this.moving && P.grounded && !this.cur.cellAt(P.pos.x, P.pos.z)) {
+      this.astray = (this.astray || 0) + (g.rawDt ?? dt);
+      if (this.astray > 1) { this.astray = 0; g.events?.emit('well.astray', { well: WELL_ID, floor: this.run.floor, at: [P.pos.x, P.pos.y, P.pos.z].map((v) => +v.toFixed(1)), by: 'courier' }); this.toArrival(); }
+    } else this.astray = 0;
     // somewhere else while a run is on (a teleport, the stress test, a fall the floor did not catch): the run is over and nothing is kept
     if (this.moving > 0) this.moving--;
     else if (this.run && !g.death?.active && zoneOf(P.pos) !== 'well') this.end(true);
