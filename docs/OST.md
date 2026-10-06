@@ -233,6 +233,14 @@ read on 2026-10-05 from Spotify's public embed page. The owner's five favourites
   Superlike. Measured the same way, it sounds like Superlike (the same tempo, bass and drums), a little brighter and steadier: the Wall
   holds 45 of the 100, and 26 of the bottom 50. The top ten lean the other way: 4 of them are the Drop (against 14 of the 100). What is
   played all day is bright and dense; what is played most leans to the Drop, and the five favourites (above) to the bass.
+- **The all-time hundred and twenty-one** (Spotify's all-time top songs for the owner; 120 measured, read 2026-10-06). A time capsule
+  of 2013 to 2019 (42 of the 121 from 2016): pop-punk and the emo revival (Motion City Soundtrack, Farewell Fighter), post-hardcore
+  (Bring Me The Horizon, PVRIS), SoundCloud emo rap (XXXTENTACION, nothing,nowhere., Lil Xtra), melodic electronic drops (Porter
+  Robinson and Madeon's *Shelter*, ILLENIUM, Aero Chord), alt-pop (EDEN, The Neighbourhood, Chase Atlantic), with Anamanaguchi's
+  chiptune, Caravan Palace's electro-swing and The Midnight's synthwave beside them. Its number one is math rock (Strawberry
+  Girls' *Swimming Pools*). The Drop holds 31 of the 120, the most of any list so far. *Linoleum* (kmoe) is the one song on all three
+  lists. The genres moved in ten years; the ear did not: the same bass (32% under 120 Hz at the median), the same drums (28%), the
+  same tempo (about 110 bpm), on every list.
 - **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
   - Stops and drop-outs written into the groove.
   - A bass that slides.
