@@ -225,6 +225,16 @@ All of it is in the dome's fragment shader (`vfx/sky.js` NIGHT_GLSL, driven by `
 never crawls (CLAUDE.md, aliasing). Prior art: Ōkami's and Outer Wilds' turning skies, Breath of the Wild's shooting stars, and the aurora
 as seen from a northern shore.
 
+## Skirts where a model meets the ground (the owner, R46; shared with Petra)
+
+"Meshes that interact with the ground need mesh skirts to blend textures between materials." From now on a model that stands on the
+ground declares its **foot** (the height of its base, and how far up the blend runs), and the shared ground blend (`render/triplanar.js`,
+Petra's, when it lands) fades its material into the ground's by height, so no hard line shows where it stands. The level's geometry is
+Petra's; the models are Calissa's. Mine to skirt once the blend lands: the Index's lectern's foot (`vfx/testroomkit.js`), the cave kit's
+pillars and stalactite bases (`vfx/cavekit.js`), the half-buried finds (`vfx/finds.js`), the clutches (`vfx/cavekit.js` Clutch), the
+datura's stems (`vfx/datura.js`), the solar rings' plinth and the slip geysers' vents (`vfx/solarring.js`, `vfx/slipgeyser.js`), the
+Dunemaw's crown chimneys (`vfx/dunemaw.js` PrinceCrown). Not Strawman: its ball foot rocks, and a skirt would rock with it.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
