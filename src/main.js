@@ -965,9 +965,9 @@ async function main() {
     if (!godOn) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);
-      // fade the courier out when the 3rd-person camera is pressed up against them
+      // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
-      character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
+      character.setFade(player.fpWeight > 0.5 || game.cinema?.shots?.size ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
       weapon.computeAimPoint(camera, player);
       const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
       // heading change rate (the slide leans into turns)
