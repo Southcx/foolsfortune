@@ -96,6 +96,7 @@ import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
 import { DataDrain } from './vfx/datadrain.js';
 import { dunemawMood } from './vfx/dunemawkit.js';
 import { Flythrough } from './cine/flythrough.js';
+import { Daturas } from './vfx/datura.js';
 import { Shore } from './vfx/shore.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
@@ -324,6 +325,10 @@ async function main() {
   const level = new Level(scene, physics, breakables); // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
+  { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
+    const at = (a, k = 1.12) => ({ x: DUNE.x + 0 + Math.cos(a) * 22 * k, z: DUNE.z + 6 + Math.sin(a) * 15 * k });
+    game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
+  }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
@@ -1022,7 +1027,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
