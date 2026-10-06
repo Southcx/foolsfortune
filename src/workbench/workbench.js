@@ -46,6 +46,8 @@ import { StrawmanModel } from '../vfx/strawman.js';
 import { UrnCrown } from '../vfx/urncrown.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
 import { Pillar, Stalactite, slipMaterial, Clutch } from '../vfx/cavekit.js';
+import { artifact, WarpPocket } from '../vfx/finds.js';
+import { SolarRing } from '../vfx/solarring.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -178,6 +180,8 @@ export class Workbench {
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
     out.push({ id: 'garden:press', grp: 'the Shrine Garden', label: 'the spirit press' });
     out.push({ id: 'slice:cave', grp: 'the slice', label: "the Great Dunemaw's cave kit (a pillar cracking, stone, brittle and warped stalactites, the slip, a clutch)" });
+    out.push({ id: 'slice:finds', grp: 'the slice', label: "the Great Dunemaw's finds (the lamp, the ewer, the mask, the coins; the lamp warped)" });
+    out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (cracking, bursting, the core; on a loop)" });
     out.push({ id: 'workshop:strawman', grp: 'the Workshop', label: 'Strawman (struck every 2 real seconds)' });
@@ -334,6 +338,14 @@ export class Workbench {
         const sm = slipMaterial({ flow: new THREE.Vector2(1, 0.2), speed: 4 }); const slip = new THREE.Mesh(new THREE.PlaneGeometry(10, 4), sm); slip.rotation.x = -Math.PI / 2; slip.position.set(0.5, 0.02, 2.4); obj.add(slip);
         const cl = new Clutch({ eggs: 5 }); cl.group.position.set(2.6, 0.02, 2.2); obj.add(cl.group);
         obj.userData.tick = (t) => { pil.crack(Math.floor(t / 2) % 4); if (Math.floor(t / 2) % 4 === 0) { pil.u.uStage.value = 0; pil.u.uSpent.value = 0; } st.forEach((s) => s.update(t)); st[2].setSolid((t % 3) < 2 ? 1 : 0.15); if ((t % 3) > 2.2 && !st[1].shakeT) st[1].shake(); pil.update(t); sm.userData.u.uT.value = t; cl.update(t); };
+      }
+      else if (id === 'slice:finds') {
+        obj = new THREE.Group(); const A = ['lamp', 'ewer', 'mask', 'coins'].map((k, i) => { const a = artifact(k); a.group.position.set(-0.9 + i * 0.6, 0, 0); a.group.scale.setScalar(2); obj.add(a.group); return a; });
+        const W = new WarpPocket(A[0].group, { radius: 0.5 }); obj.userData.tick = (t) => { A.forEach((a) => a.update(t)); W.update(t); };
+      }
+      else if (id === 'dunes:rings') {
+        obj = new THREE.Group(); const R = [0, 1, 2, 3].map((i) => { const r = new SolarRing({ radius: 1 }); r.group.position.set(-3.3 + i * 2.2, 1.2, 0); obj.add(r.group); return r; });
+        R[0].set({ lit: true, next: true }); R[1].set({ lit: true }); R[2].set({ lit: false }); let pt = 0; obj.userData.tick = (t) => { if (t % 3 < pt % 3) R[3].pass(); R.forEach((r) => r.update(Math.max(0, t - pt))); pt = t; };
       }
       else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
