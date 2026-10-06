@@ -415,8 +415,10 @@ Prince sells to neither side: every Courier both of his parents need came out of
   Slip Jelly"; the folk call it the Pithos.
 - **"Touch nothing but the lamp" is a rule of every Well.** A memory changes each time it is handled, so a Well rearranges round what
   you take out of it. The folk's form of it (Grog's): "Take what you came for, and nothing that is looking at you."
-- **The sundial on the sand is the Gnomon** (Greek *gnomon*, "the one who knows": the shadow-stick of a sundial). The town's, still
-  keeping its game hours for nobody. The Solar Skiffing trial races its shadow.
+- **The Gnomon is the pale spire in the Dunes** *(the owner, R59)*: the 150 m needle with the beam of light, far out on the sand, that
+  the Courier sails toward. *Gnomon* is Greek for "the one who knows", the shadow-stick of a sundial: the whole Dunes are its dial,
+  and the town told the game hour by where its shadow lay. It still keeps the hours for nobody. The Solar Skiffing trial races its
+  shadow across the sand. (The beam's meaning stays blank.)
 - **Strawman.** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the apprentice who is afraid of
   breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
   always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart
@@ -433,6 +435,15 @@ Prince sells to neither side: every Courier both of his parents need came out of
 - **The moonflower.** A bed in the Shrine Garden that opens only at night (by the game hour), when Lachryma glows. Its root, datura,
   stays out of player text.
 - *Declined* (the owner): the playlist's titles as Figment names, the water songs as references, the silence line for Old Grog.
+
+### The stones: how a Courier takes Lachryma in *(the owner, R59: the stones are the vehicle; the mechanics are being worked out with Dovina)*
+- **What the stones are.** The gems set in the Courier (the kiln's STONES region, `Courier_Stones`) are where Lachryma enters the
+  vessel. A pot breathes through its glaze; a Courier drinks through its stones. So the stone set decides *how* the Courier takes
+  Lachryma in: how much, how fast, which feelings it draws, and what happens to the overflow. That is why Couriers can walk where the
+  town could not: their stones filter what would drive a folk mad.
+- **The Maker's Stones** are the Prince's own choice: balanced, the baseline. Every other stone is a trade, never an upgrade.
+- **Amethyst is the first** (*a-methystos*, "not drunk"): it keeps a clear head. Each stone's virtue starts from what the old
+  lapidaries believed of it (amethyst for sobriety, citrine the merchant's stone, moonstone the night's), and Dovina sets its numbers.
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -551,7 +562,7 @@ Kept until the owner says otherwise.
 | --- | --- | --- |
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
-| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
+| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light (the Gnomon, R59). Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
 | **The Great Dunemaw** *(the owner's name, R57)* | Built (v62): the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
