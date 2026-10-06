@@ -42,6 +42,7 @@ import { DunemawMouth } from '../vfx/dunemaw.js';
 import { dunemawKit } from '../vfx/dunemawkit.js';
 import { buildLetty, buildPoll, buildPurser, buildBountyBoard } from '../vfx/margarite.js';
 import { SpiritPress } from '../vfx/spiritpress.js';
+import { StrawmanModel } from '../vfx/strawman.js';
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
 const STORE = 'ff.vfx.overrides';
@@ -173,6 +174,7 @@ export class Workbench {
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
     out.push({ id: 'garden:press', grp: 'the Shrine Garden', label: 'the spirit press' });
+    out.push({ id: 'workshop:strawman', grp: 'the Workshop', label: 'Strawman (struck every 2 real seconds)' });
     out.push({ id: 'garden:regia', grp: 'the Shrine Garden', label: 'the spirit press: aqua regia (something gilded pressed)' });
     out.push({ id: 'folk:letty', grp: "Margarite's people", label: 'Letty Marque (and Poll)' }, { id: 'folk:purser', grp: "Margarite's people", label: 'the Purser' }, { id: 'folk:board', grp: "Margarite's people", label: 'the bounty board' });
     for (const id of Object.keys(ITEMS).sort()) out.push({ id: `thing:${id}`, grp: 'things', label: ITEMS[id].name || id });
@@ -318,6 +320,7 @@ export class Workbench {
       else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
       else if (id === 'ship:sloop') obj = new Sloop().group;
       else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
+      else if (id === 'workshop:strawman') { const S = new StrawmanModel(); obj = S.group; let last = 0, pt = 0; obj.userData.tick = (t) => { if (t - last > 2) { last = t; S.group.updateMatrixWorld(true); const p = S.body.localToWorld(new THREE.Vector3(0, -0.53, -0.4)); S.hit(p, new THREE.Vector3(Math.sin(t), 0, -1).normalize(), 1); } S.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'garden:regia') { const P = new SpiritPress(); P.set({ soul: { h: 40, s: 0.6 }, fire: 0.5, near: 2 }); obj = P.group; obj.userData.tick = (t) => { if (t % 6 < 0.05) P.set({ regia: 1 }); P.update(t); }; }
       else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
       else if (id === 'folk:purser') obj = buildPurser().group;
