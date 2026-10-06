@@ -17,3 +17,6 @@
   5. The Courier's mind state `buff` on Lachryma-driven blows and `take` on statuses landing on the Courier.
 - **One owner question is open** (it is in my digest): whether the stone's look and its function are one choice, or the function
   rides on the set and the colour can be glamoured.
+- **Words (Espada):** the player reads "your mental state"; overflow's push is **brimming** ("You are brimming." / "You settle.", an
+  event and a rule when you wire it); never "drunk". Espada's per-stone blurbs for `glazes.js` are in LORE.md "The stones", to land
+  with the wiring.

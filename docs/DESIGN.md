@@ -733,7 +733,7 @@ keystones: a gain paid for with a loss, never a straight upgrade). The table is 
 |---|---|---|
 | **pool** | the vessel's size, regen and costs (`LachrymaPool` modifiers) | wired (main.js: on firing, and by day or night) |
 | **reach** | the bauble magnet's radius | for Petra (`courier/lachryma.js`) |
-| **heady** | how far a drink pushes the **Courier's mind** toward Prismatic (the creatures' five states, built once: Prismatic is power x1.5 and fragility x2) | for Petra |
+| **heady** | how far a drink pushes **your mental state** toward Prismatic (the creatures' five states, built once: Prismatic is power x1.5 and fragility x2; past full, **brimming**, four times as far) | for Petra |
 | **tint** | how strongly the place's feeling comes in with a drink: the **draught**, whose damage type then builds its status up to x1.5 | for Petra |
 | **gulp** | a cap on the take a second (amethyst's smoothing) | for Petra |
 | **overflow** | where what does not fit goes: the Lockheart's share, or bled off | for Petra |
