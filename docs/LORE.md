@@ -361,7 +361,7 @@ Prince sells to neither side: every Courier both of his parents need came out of
   bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
 
 ### Temperament: the Grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`; **canon, ruled by the owner, R59**: Grain is a proper noun, always capitalised)*
-- **The word in the world is Grain.** A clay body has a Grain, set before it is fired, and you can work with it or against it.
+- **The word in the world is Grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
   ("Temper" would be the perfect pottery word, since temper is what is mixed into clay, grog among it, but the glossary already gives
   *temper* to the body showing its mental state, `vfx/temper.js`.) *Temperament* itself comes from the Latin for "a right mixing":
   the four humours, mixed. Humours are prior art for the idea; they stay out of the text.
