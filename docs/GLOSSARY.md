@@ -340,6 +340,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   clouds and what falls, and may raise its own mark; it never falls. Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.
+- **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
+  shattering, a reprogramming): one screen pass in the glow (`post.screen`) that splits the colour, tears bands of rows, moshes blocks
+  of the frame before, crushes colour to the code's cyan and magenta, drains toward a point, or cuts to a dark beat (**the drop-out**).
+  Always set off by an event and short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker (CLAUDE.md, aliasing crawl).
+- **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
+  the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
+  not kill.
+- **the spout** (`DunemawSpout`, `src/vfx/dunemaw.js`): the Great Dunemaw's landmark, a column of sand pouring up out of the mouth,
+  70 m, and a **sandfall** spilling back round it.
+- **a sandfall** (the Great Dunemaw, `docs/plans/DUNEMAW.md`): a curtain of sand pouring from above; in the floors, a side passage's
+  shifting door (open, then falling, on the sim clock; never closing on the Courier). Also the spout's falling skirt.
+- **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
+- **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
+  degrees a cell on floors 1 to 3).
+- **the flythrough** (`docs/plans/DUNEMAW.md`): the preview of a floor on arrival, the camera sweeping its path with the frame
+  accumulation on; any key skips it.
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
