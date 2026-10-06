@@ -31,9 +31,9 @@ const seesHole = (c, cam, range) => {
   return _fr.setFromProjectionMatrix(_pm).intersectsBox(HOLE_BOX);
 };
 
-// the testing room's doorway in the workshop's east wall (world/testroom/layout.js TR.door: z 1 to 4, 3.2 m high), the wall's depth and a margin
+// the Throwing Room's doorway in the workshop's east wall (world/testroom/layout.js TR.door: z 1 to 4, 3.2 m high), the wall's depth and a margin
 const DOOR_BOX = new THREE.Box3(new THREE.Vector3(9.8, 0, 0.8), new THREE.Vector3(10.8, 3.4, 4.2));
-/** Can the camera see through the testing room's doorway (in range, and the doorway on screen)? */
+/** Can the camera see through the Throwing Room's doorway (in range, and the doorway on screen)? */
 const seesDoor = (c, cam, range) => {
   if (Math.max(DOOR_BOX.distanceToPoint(c), 0) > range) return false;
   _pm.multiplyMatrices(cam.projectionMatrix, cam.matrixWorldInverse);

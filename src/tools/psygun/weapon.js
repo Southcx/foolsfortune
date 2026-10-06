@@ -362,7 +362,7 @@ export class Weapon {
     game.fx.tracer(muzzle, end);
     game.fx.muzzleFlash(muzzle, gunFwd);
     sfx.gunshot();
-    game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone() }); // (what it hit and where: the testing room's drills count by it)
+    game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone() }); // (what it hit and where: the Throwing Room's drills count by it)
     game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: creatures/ai/stimuli.js)
 
     if (hit) this.applyHit(hit, dir);

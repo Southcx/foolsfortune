@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TESTING ROOM'S MEASURES: where its things stand, in the Workshop's frame (room.js builds it, drills.js measures from it).
+// THE THROWING ROOM'S MEASURES: where its things stand, in the Workshop's frame (room.js builds it, drills.js measures from it).
 //   TR.x0..x1, z0..z1, h   TR.door   TR.mark (the firing mark)   TR.wall (the spray wall's face and aim point)   TR.strawman   TR.console   TR.posts
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';

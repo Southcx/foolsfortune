@@ -101,7 +101,7 @@ export class Tracking {
   // ---------------------------------------------------------------- events
   listen() {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
-    // (the testing room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
+    // (the Throwing Room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
     // drill.*, carry neither mark: world/testroom/, feedback/tracking/testroom.js)
     const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman') return; f(e); });
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TESTING ROOM: a side room off the Workshop's east wall where aim and recoil are measured and Strawman stands (the owner, 2026-10-06:
+// THE THROWING ROOM: a side room off the Workshop's east wall where aim and recoil are measured and Strawman stands (the owner, 2026-10-06:
 // "pots should respawn only if in a designated testing area... move the target plates away from the Kiln to a side room, lump Strawman in
 // there too... make it a whole thing with the calibration room/Index as a means of testing aim and recoil"). What it measures and counts
 // is Dovina's (progress/combat/testroom.js: DRILLS, POTS, WALL, INDEX; Strawman's STRAWMAN and bout() in progress/combat/dunemaw.js); its
@@ -7,7 +7,7 @@
 //
 // The room is 20 by 16 m through a door in the Workshop's east wall: the firing mark a few steps in, the spray wall of soft clay 10 m down
 // the lane from it, the targets that came from beside the kiln on posts along the north side, Strawman on the south side, the twelve pots
-// that come back on a shelf by the door, and the Index's console beside it (F: the Testing page, feedback/indexmenu.js). It measures and
+// that come back on a shelf by the door, and the Index's console beside it (F: the room's page, feedback/indexmenu.js). It measures and
 // never pays: its pots and Strawman are `training` (the ledger never hears them: tracking.js), and a drill run on a tuned game is said but
 // not recorded (feedback/tracking/testroom.js).
 //
@@ -15,7 +15,7 @@
 // practice (a wall that keeps where every shot went), Aim Lab's drills (drills.js), a fighting game's training mode (Strawman).
 //
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
-//   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall
+//   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -81,7 +81,7 @@ export class TestRoom {
     if (built?.wallCol) g.physics.register(built.wallCol, this.wall);
     this.strawman = this.makeStrawman();
     this.drills = new Drills(g, this);
-    // F: the console opens the Index on its Testing page; Strawman cycles its mode
+    // F: the console opens the Index on its page; Strawman cycles its mode
     g.interact?.add('testroom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);
       return dd < 1.8 && Math.abs(P.pos.y - TR.console.y) < 1.2 ? { pos: TR.console.clone().setY(1.75), d: dd } : null;
@@ -105,7 +105,7 @@ export class TestRoom {
     const face = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.36), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
     face.position.set(0, 1.13, 0.02); face.rotation.x = -Math.PI / 2 - 0.35; grp.add(face); // (lying on the slanted top)
     grp.position.copy(TR.console); grp.rotation.y = Math.PI / 2; // (facing into the room: +x)
-    g.scene.add(grp);
+    g.scene.add(grp); this.console = grp; // (Calissa dresses it: vfx/testroomkit.js)
     const col = g.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.3, 0.55, 0.3).setTranslation(TR.console.x, 0.55, TR.console.z).setCollisionGroups(GROUPS.static));
     this.consoleCol = col;
   }

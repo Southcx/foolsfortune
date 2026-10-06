@@ -20,7 +20,7 @@ const inShore = (p) => shoreSector(p, SHORE_ZONE.r, SHORE_ZONE.half);
 export const nearShore = (c) => inDunes(c) && shoreSector(c, 220, 0.7);
 
 export const ZONE_TESTS = [
-  // the testing room (world/testroom/layout.js TR: x 10.5 to 30.5, z -5.5 to 10.5, 6 m high), through a door in the Workshop's east wall:
+  // the Throwing Room (world/testroom/layout.js TR: x 10.5 to 30.5, z -5.5 to 10.5, 6 m high), through a door in the Workshop's east wall:
   // drawn only from where its doorway can be seen; part of the Workshop's ground (one roof, one set of lamps)
   { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.y < 7 && p.x > 10.5 && p.x < 30.6 && p.z > -5.6 && p.z < 10.6 },
   { id: 'workshop', test: (p) => p.y > -1.2 && p.y < 60 && Math.abs(p.x) < 40 && Math.abs(p.z) < 40 },

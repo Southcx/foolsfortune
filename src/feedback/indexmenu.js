@@ -5,7 +5,7 @@ import { sfx } from '../audio/sfx.js';
 // (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
 // calibration numbers: the live movement values and the measured chains every space is sized from
 // (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
-// It also opens on a PAGE of its own: the testing room's console shows its Testing page (the drills, their bests, Strawman) in it.
+// It also opens on a PAGE of its own: the Throwing Room's console shows its page (the drills, their bests, Strawman) in it.
 //   menu.show()   menu.showPage(name, render(im, el))   menu.close()
 // ---------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ export class IndexMenu {
     sfx.lockOn?.(2);
   }
 
-  /** The same window on a page of its own (the testing room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
+  /** The same window on a page of its own (the Throwing Room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
   showPage(name, render) { this.page = { name, render }; this.show(); }
 
   close() {

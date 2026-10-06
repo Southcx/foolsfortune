@@ -271,7 +271,7 @@ async function main() {
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
       events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by, ...(ent.def.training ? { training: true } : {}) });
-      if (ent.def.training) return; // (the testing room's: it measures, it never counts: world/testroom/)
+      if (ent.def.training) return; // (the Throwing Room's: it measures, it never counts: world/testroom/)
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;
@@ -590,7 +590,7 @@ async function main() {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
-  game.testroom = new TestRoom(game, level.testRoom); // (the testing room off the Workshop: its pots, Strawman, the drills; world/testroom/)
+  game.testroom = new TestRoom(game, level.testRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/testroom/)
   new TestRoomDress(game).update(); // (its stand-ins dressed: the drill targets as fired plates, vfx/testroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)

@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// THE DRILLS: the testing room's four measures of aim and recoil (Dovina's: progress/combat/testroom.js DRILLS, score, group), begun from
-// the Index's Testing page in the room (a trial is begun in its own room) and ended by their own clock, or by leaving the room. A drill
+// THE DRILLS: the Throwing Room's four measures of aim and recoil (Dovina's: progress/combat/testroom.js DRILLS, score, group), begun from
+// the Index's page in the room (a trial is begun in its own room) and ended by their own clock, or by leaving the room. A drill
 // counts the psygun's shots (`shot.fire`, which carries what the shot hit) against its own targets, and at the end says one event,
 // `drill.end { id, run: { hits, shots, times, group }, tuned, by }`; the rule (feedback/tracking/testroom.js) scores it, says it and
 // records it, unless the game is tuned (debug/tuned.js).
@@ -15,7 +15,7 @@
 //
 // Prior art: Aim Lab's and KovaaK's drills (Gridshot, Sixshot, strafe tracking), Counter-Strike's spray practice on a wall.
 //
-//   const D = new Drills(game, room)   D.start(id)   D.update(dt, raw)   D.active (the drill running, or null)   D.page(im, el) (the Index's Testing page)
+//   const D = new Drills(game, room)   D.start(id)   D.update(dt, raw)   D.active (the drill running, or null)   D.page(im, el) (the Index's page)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -171,7 +171,7 @@ export class Drills {
   }
   clearDents() { for (let i = 0; i < this.dentN; i++) this.writeDent(i, 0, 0, 0); this.dentN = 0; this.dentAt = []; }
 
-  // ---------------------------------------------------------------- the Index's Testing page (feedback/indexmenu.js showPage)
+  // ---------------------------------------------------------------- the Index's page (feedback/indexmenu.js showPage)
   page(im, el) {
     const g = this.game, L = g.ledger, t = tuned().knobs;
     im.appendChild(el('div', 'grp', 'DRILLS · Stand on the firing mark, face the wall, and choose one'));
