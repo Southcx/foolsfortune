@@ -394,6 +394,9 @@ Coji Morishita), **Cinzel** and **Cinzel Decorative** (Natanael Gama), **IM Fell
 **DotGothic16** (Fontworks Inc.).
 
 Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1.0, https://quaternius.com (only the free Standard tiers).
+Tiling textures (`src/assets/textures/`, for the triplanar material): ambientCG, CC0 1.0, https://ambientcg.com: Ground080 (`sand`),
+Ground079S (`sand_packed`), Rock061 (`rock`), Tiles144 (`clay_floor`), Plaster001 (`plaster`), PavingStones128 (`stone_flags`); graded to
+the game's palette and taken to 256 px by `scripts/bake_textures.py`.
 Motion capture: CMU Graphics Lab Motion Capture Database, free for research and games, no resale of the data itself
 (http://mocap.cs.cmu.edu); `src/assets/anims_cmu.bin` is that pack.
 
