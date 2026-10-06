@@ -169,6 +169,33 @@ What was taken, and from where (researched for the owner's ask; sources as found
 - Wind Waker, Final Fantasy X, RiME: a chosen palette and a painted sky over simulation.
 Not taken (yet): screen-space refraction (a copy of the scene: fair at 480 lines, a later step), planar reflections (a second render).
 
+## The data showing through, and the owner's ear (the owner, 2026-10-06)
+
+The owner's playlist (`docs/OST.md` §6, Wanda's reading) asked for the look's *structure* more than a palette: the soft verse that drops
+into a wall, silence used as a hit, sad words over a groove, alchemy and water everywhere. And then, of the glitch I had held back: "I
+fucking love dot hack… why not lean into it?" So it leans in, at the moments that earn it, and nowhere else.
+
+- **The glitch** (`src/vfx/glitch.js`): one screen pass on the light-linear frame, before the glow (so the bloom tears with it). Chromatic
+  split, slice tear, datamosh (blocks of the frame before, dragged), crush (cyan and magenta in broken lines of signal), the data drain
+  (blocks pulled to a point), the drop-out (a dark beat). It stutters at 6 to 10 steps a second, never glides. It is always an event's
+  pulse with an end: the FOE showing itself (the cut, then the slam), an ultimate, a shattering, a mind rewritten, a hard slam. Never
+  ambient; under the WCAG flash line; `visual.glitch` turns it off. Prior art: .hack's Data Drain and Lost Ground, MGS2's colonel
+  breaking down, Rez, the datamosh videos (Takeshi Murata's Monster Movie).
+- **The data drain** (`src/vfx/datadrain.js`): a reprogrammed creature broken into polygons streaming down a beam into the bracelet's
+  petals at the Courier's hand: the Orca moment. Solid, unlit colours, so it reads on white sand as in a dark Well.
+- **The frame accumulation, used more** (`post.accum`): the flythrough of a Dunemaw floor (`src/cine/flythrough.js`), the trailer's
+  dive. A smear is a speed, a dream or a death; it lets go as the camera lands.
+- **The Great Dunemaw** (`docs/plans/DUNEMAW.md`): a mind full of sand. The spout pours up out of the mouth and falls back round it (the
+  landmark, seen from the oasis); down below, the verse into the wall: the floors' colours at a third on floor 1 and at full cry on the
+  last, a light climbing the terraces like an equalizer, slammed to full when the FOE shows itself; sand with the Lachryma in its
+  troughs; sandfalls as the shifting doors.
+- **The playlist, literally**: DATURA (sacred datura at the oasis, furled by day, open at dusk: `src/vfx/datura.js`); AQUA REGIA (the
+  spirit press's bath fuming gold when something gilded goes in); the clean tapped guitar (the filigree's arpeggio: a band of light up
+  the armour's lines per Crucibelle note); a peach golden hour and a plum night in the hour's grade.
+- **Where it stops**: no glitch as decoration, no chromatic aberration at rest, no ambient datamosh. The PS2's frame and the console's
+  480 lines stay the canvas; the seventh generation is reached for in what is drawn on it, never in what it costs (the owner: "We're
+  6th-7th generation, I'm just a performance hardass").
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should

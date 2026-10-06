@@ -1,0 +1,49 @@
+# Strawman: the Workshop's test dummy (the owner, 2026-10-06)
+
+A round-robin seed, drafted by Calissa. Dovina owns the system (what it is to the game), Espada the character and the words, Petra its
+place in the Workshop and its body, Calissa the model and how it reacts. The owner's drawing: `source_assets/strawman/strawman_ref.png`.
+
+## The owner's ask
+
+> "We need a proper test dummy in The Workshop. Clapperjars are fun to smash, but we need something infinitely durable. Luckily I have
+> just the character… it's name is 'Strawman'."
+
+## The drawing, read (Calissa)
+
+- A stitched **sack doll** on a **crossbar** (a scarecrow's frame): its arms are long sleeves along the bar, with a spiral painted on
+  each cuff.
+- A round head with **stitched X eyes** and a stitched mouth.
+- A tall **block hat**: the post's top, standing up behind the head like a stovepipe.
+- A **target** on its belly, three rings.
+- A **heart charm** on a cord round its neck.
+- Stubby stitched legs.
+- Its post rises from a **black ball foot**: a weighted base, so it rocks back up when hit (a roly-poly, a punching bag's wobble).
+
+## What it needs (Dovina's system; Petra's body)
+
+- **Infinitely durable:** it takes every blow and every status and never bursts.
+- **Questions for Dovina:**
+  - Is it a creature (`hurtable`, registered with `game.creatures`, so every weapon's path is the real path), with health that never
+    falls, or that refills at once?
+  - Which statuses does it show (halt, slow, sleep, stun) and for how long?
+  - Does it count in the ledger? The house rule says only the Courier's records count; a test dummy should not raise achievements.
+  - Is there a read-out? No floating numbers (the house rule). Does the log say one line per blow ("Strawman takes 42 impact."), or
+    a sum every few real seconds, or only on a chat command (`/strawman` for the last run's damage per second)?
+  - Can it be reprogrammed (the data drain) and mirrored (a decoy)?
+  - Does it fight back on a switch (a training mode)?
+- **The look (Calissa):** it rocks on its ball foot, swings on its bar, its straw puffs out at the seams, the target ring hit lights,
+  and it rights itself.
+- **Espada (LORE.md, a proposal for the owner):** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the
+  apprentice who is afraid of breaking things. The heart charm is Pip's. Three meanings in the name: a scarecrow, a training dummy,
+  and the argument built only to be knocked down; it always stands back up. The log calls it by name, with no article: "Strawman
+  rocks back up."
+- **Wanda (proposals):** a straw thump, the post's creak on each swing, a bell in the ball foot as it rights itself, the damage type's
+  own sound on top, and a ding on the target, higher toward the bull's-eye.
+- **Calissa (built: `src/vfx/strawman.js`, in the workbench):** the model and its rock; `ring(point)` tells which ring a blow found,
+  for Wanda's ding.
+- **Dovina (the system, `docs/plans/DUNEMAW-SYSTEMS.md`):** a real creature (hurtable, struck through `creatures.strike`) whose
+  health never falls; every status at its real time; never in the ledger (`training: true`); no floating numbers: a bout ends after
+  4 real seconds without a blow and the log says one line ("Strawman took 18 blows in 6.2 s: 54 damage, 8.7 a second (Impact 40, Ego
+  14); stunned once."), and `/strawman` repeats it; reprogrammable and mirrorable, always. **F at Strawman cycles three modes:**
+  still, guard (it blocks from the front) and swing (a slow, telegraphed, harmless swing every 3 sim seconds, its wind-up 0.8 s:
+  the look must make the wind-up read).

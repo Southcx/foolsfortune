@@ -332,6 +332,7 @@ export const DEFAULTS = {
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
     grade: 1, // the colour grade after it: shadows toward indigo, light toward the kiln's warmth
+    glitch: true, // the data showing through at the big moments (vfx/glitch.js, vfx/datadrain.js): false turns every tear and drop-out off
   },
   audio: {
     volume: 0.7,
