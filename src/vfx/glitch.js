@@ -14,8 +14,9 @@
 //
 // It moves in steps, not smoothly: the seed that picks the bands and blocks jumps a few times a second (a glitch that glides reads as
 // a filter; one that stutters reads as broken). It is always a pulse with an end, never a state that stays: the rule on aliasing crawl
-// is about a flicker that is a bug; this one is the point, and it is short. T.visual.glitch (0 to 1, default 1) scales every pulse for
-// anyone who would rather not.
+// is about a flicker that is a bug; this one is the point, and it is short. Comfort (Petra's terms, the WCAG 2.3.1 line): nothing ambient,
+// every tear set off by an event and over in a bounded time; moments at most one every 0.4 real seconds, a drop-out at most one every
+// 1.5, the stutter between 6 and 10 steps a second. T.visual.glitch (a setting, default on) turns it all off.
 //
 // Prior art: .hack//Infection's Data Drain (CyberConnect2, 2002: the target broken into flickering blocks and pulled into the bracelet)
 // and its error-ridden Lost Ground, MGS2's colonel breaking down ("fission mailed": the screen torn into colour bands), Rez's wireframe
@@ -99,16 +100,18 @@ export class Glitch {
   make() {
     if (this.mat) return;
     this.mat = new THREE.ShaderMaterial({
-      name: 'glitch', vertexShader: VERT, fragmentShader: FRAG, depthTest: false, depthWrite: false,
+      name: 'glitch-screen', vertexShader: VERT, fragmentShader: FRAG, depthTest: false, depthWrite: false,
       uniforms: { tSrc: { value: null }, tHist: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uAt: { value: this.at }, uSeed: { value: 0 }, uFresh: { value: true },
         ...Object.fromEntries(PARTS.map((p) => [`u${p[0].toUpperCase()}${p.slice(1)}`, { value: 0 }])) },
     });
-    const rt = () => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false });
-    this.hist = [rt(), rt()];
   }
 
   /** An event's moment: its pulse (and its cut first, if it has one), placed at the payload's point, the creature, or the Courier. */
   moment(M, e = {}) {
+    if (T.visual.glitch === false || !M) return;
+    const now = performance.now();
+    if (now - (this.lastMoment || -1e9) < 400) return; // (a moment at most every 0.4 real seconds: never a strobe)
+    this.lastMoment = now;
     if (M.min && Object.entries(M.min).some(([k, v]) => (e[k] ?? 1) < v)) return;
     if (M.unlessRefused && e.refused?.length >= (e.effects?.length || 1)) return; // (a mind that refused it all: no drain)
     const at = e.at || (M.atCreature && this.game.reprogram?.c?.pos) || null;
@@ -124,14 +127,18 @@ export class Glitch {
     if (at) this.aim(at);
     return p;
   }
-  drop(beats = 2) { this.dropFrames = Math.max(this.dropFrames, beats); }
+  drop(beats = 2) { // (the cut: rare by rule, at most one every 1.5 real seconds)
+    const now = performance.now(); if (T.visual.glitch === false || now - (this.lastDrop || -1e9) < 1500) return;
+    this.lastDrop = now; this.dropFrames = Math.max(this.dropFrames, beats);
+  }
   drain(at, dur = 1.1) { return this.pulse({ drain: 1, split: 0.5, crush: 0.9, dur, at }); }
   aim(at) { if (at.isVector3) this.atWorld = at.clone(); else { this.atWorld = null; this.at.set(at.u ?? 0.5, at.v ?? 0.5); } }
 
   get on() { return this.dropFrames > 0 || this.pulses.length > 0; }
 
   update(raw, camera) {
-    const k = T.visual.glitch ?? 1;
+    const k = T.visual.glitch === false ? 0 : 1;
+    if (!k) { this.pulses.length = 0; this.dropFrames = 0; this.after = null; }
     for (const p of PARTS) this.amt[p] = 0;
     for (const P of this.pulses) {
       P.t += raw;
@@ -141,7 +148,7 @@ export class Glitch {
     this.pulses = this.pulses.filter((P) => P.t < P.dur);
     if (this.dropFrames > 0) { this.amt.drop = Math.max(this.amt.drop, k); if (--this.dropFrames === 0 && this.after) { this.pulse(this.after); this.after = null; } }
     // the seed jumps a few times a second, at an uneven pace (a stutter, not a glide)
-    if ((this.seedT -= raw) <= 0) { this.seed = (this.seed + 1 + Math.floor(Math.random() * 7)) % 997; this.seedT = 0.04 + Math.random() * 0.1; }
+    if ((this.seedT -= raw) <= 0) { this.seed = (this.seed + 1 + Math.floor(Math.random() * 7)) % 997; this.seedT = 0.1 + Math.random() * 0.067; } // (6 to 10 steps a second)
     if (this.atWorld && camera) { const v = this.atWorld.clone().project(camera); this.at.set(v.x * 0.5 + 0.5, v.y * 0.5 + 0.5); }
     if (!this.on) this.fresh = true;
   }
@@ -149,6 +156,7 @@ export class Glitch {
   /** The glow's screen hook (render/glow.js): the frame in, the torn frame out (this pass's own target, kept as the next mosh's past). */
   render(post, src) {
     this.make();
+    if (!this.hist) { const rt = () => new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: false }); this.hist = [rt(), rt()]; } // (made on the first tear, never before)
     const w = src.width, h = src.height;
     if (this.w !== w || this.h !== h) { for (const t of this.hist) t.setSize(w, h); this.w = w; this.h = h; this.fresh = true; }
     const u = this.mat.uniforms, out = this.hist[this.flip ? 1 : 0], past = this.hist[this.flip ? 0 : 1];
@@ -160,5 +168,5 @@ export class Glitch {
   }
 
   /** For the warm-up: the pass compiled against its own target, so the first tear is not a hitch. */
-  compile(renderer, post) { this.make(); post.quad.material = this.mat; renderer.setRenderTarget(this.hist[0]); renderer.compile(post.fs, post.cam); renderer.setRenderTarget(null); }
+  compile(renderer, post) { this.make(); post.quad.material = this.mat; renderer.setRenderTarget(post.half); renderer.compile(post.fs, post.cam); } // (against the glow's own half-float target: the same program as on its own, and no target of its own made for it)
 }

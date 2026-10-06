@@ -17,9 +17,10 @@
 // and Rez's wireframe data-space.
 //
 //   game.dataDrain = new DataDrain(game)   .play(creature | { pos, radius, height, root? }, from: Vector3, dur = 1.6)   .update(rawDt)
-//   .active   .prewarm() -> park()
+//   .active   .prewarm() -> park()   (off with T.visual.glitch, as the screen's glitch is)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { T } from '../core/config.js';
 
 const N = 360, PETALS = 6;
 const CYAN = new THREE.Color(0x46f0ff), MAGENTA = new THREE.Color(0xff3fd2), WHITE = new THREE.Color(0xffffff);
@@ -94,7 +95,7 @@ void main() {
 
   /** Drain a creature (or anything with pos, radius, height and a root) into `from` over `dur` real seconds. */
   play(target, from, dur = 1.6) {
-    if (!target?.pos || !from) return;
+    if (!target?.pos || !from || T.visual.glitch === false) return;
     this.make();
     this.stop();
     const pts = surfacePoints(target, N);
