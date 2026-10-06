@@ -364,6 +364,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
   ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
   **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+- **the ripple tank** (`src/vfx/ripples.js`): the rings on water: a height field round the eye stepped by the wave equation, that every
+  disturbance of a water surface (`game.water.disturb`) dents; the water's shader reads its slopes. **The wake** is its rings' V behind
+  a swimmer. **The crown** (`src/vfx/waterfx.js`): a dive's splash, a rim of drops flung up and out round a column. **Drips**: the
+  Courier dripping for a few real seconds after leaving the water.
 - **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
   **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore
   **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky).
