@@ -2,7 +2,7 @@
 // THE VIEWFINDER: what the Veritome puts on the screen while the lens is up. The book is held up open before the eyes and the view is
 // the picture on its pages (the lens is in the spine, behind them), so the frame is PARCHMENT: the margins of the two open pages
 // round the picture, the gutter's shadow down the middle of the top and foot, and the instruments drawn in the margins in ink. No
-// words, no numbers:
+// words, and one number only: the date stamp, the camera's own orange LCD in the picture's corner (ui/datestamp.js; the owner):
 //
 //  - along the top margin a compass tape (the heading); down the left margin a sextant's arc (how far the lens is tipped); in the
 //    corner the clock (the tide, as the cover's hands keep it); along the foot the zoom, and the roll of film as a row of plates
@@ -19,6 +19,7 @@
 //
 //   vf.show(on)  vf.draw(dt, { heading, pitch, tide, charge, chance, brackets, zoom, stars, film: { left, roll } })  vf.flash(thumb)
 // ---------------------------------------------------------------------------------------
+import { drawStamp, stampText } from '../../ui/datestamp.js';
 const CSS = `
 #viewfinder { position: fixed; inset: 0; pointer-events: none; z-index: 30; opacity: 0; transition: opacity .12s; }
 #viewfinder.on { opacity: 1; }
@@ -100,6 +101,8 @@ export class Viewfinder {
     g.strokeStyle = 'rgba(241,223,186,.85)'; g.fillStyle = 'rgba(241,223,186,.85)';
     g.lineWidth = 2; g.beginPath(); g.arc(kx, ky, 20, 0, Math.PI * 2); g.stroke();
     for (const [len, a] of [[15, s.tide * Math.PI * 2 * 4], [9, s.tide * Math.PI * 2]]) { g.beginPath(); g.moveTo(kx, ky); g.lineTo(kx + Math.sin(a) * len, ky - Math.cos(a) * len); g.stroke(); }
+    // the date stamp, bottom right inside the picture: the camera's own orange LCD (ui/datestamp.js)
+    { const h = Math.max(10, A.h * 0.035); drawStamp(g, stampText(), A.x + A.w - h * 0.8, A.y + A.h - h * 1.8, h); }
     // the subjects in frame: focus brackets
     for (const b of s.brackets || []) {
       const x = (b.x * 0.5 + 0.5) * W, y = (-b.y * 0.5 + 0.5) * H, h = Math.max(14, b.h * H * 0.5), w2 = h * 0.8, L = h * 0.35;

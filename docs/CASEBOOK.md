@@ -43,13 +43,16 @@ log kept blameless and searchable.
     compiles again in play. Park warmed things hidden; never dispose them.
 18. **The warm-up covers what is made on first need**, not only what stands in the scene at boot: a dressing laid on when a place is
     entered (a sandfall's curtain) is shown once in the warm-up, or it compiles in play.
+19. **A tech's pose is drawn while its weight is above zero, not while its state is on.** The weight eases out after the state ends;
+    a pose that stops at the state's end snaps. And measure a mocap clip before playing it: its pelvis against the base pose's (re-root
+    it), and its per-frame jumps (mask a bone the capture got wrong).
 
-19. **A tech reads its own key edge.** The core movement consumes its latches before or after a tech looks; a tech that starts on a
+20. **A tech reads its own key edge.** The core movement consumes its latches before or after a tech looks; a tech that starts on a
     press keeps the key's last state and detects the press itself, and a tech that spends a press marks it spent for the core
     (`jumpHeldLast`, `jumpBuf`). Test a tech by the chat line's `/art`, never by importing config into the page (another module copy).
-20. **An event that sums an act fires after its last effect lands**, not when the input stops: what is still in flight (drops, a
+21. **An event that sums an act fires after its last effect lands**, not when the input stops: what is still in flight (drops, a
     projectile) is part of the act.
-21. **A coverage map is one channel, premultiplied, finer than its edges.** Split alphas and cells as coarse as the feature show
+22. **A coverage map is one channel, premultiplied, finer than its edges.** Split alphas and cells as coarse as the feature show
     the grid; filter premultiplied colour so an edge fades toward the colour, never toward black.
 
 ## Cases
@@ -60,18 +63,33 @@ log kept blameless and searchable.
   every edge blended toward black.
 - **Fix:** one coverage channel, premultiplied RGBA8, 0.25 m cells (`world/ground/paintmap.js`); stains then moved to Calissa's own
   meshes (`vfx/stains.js`, `world/ground/stains.js`), out of the map.
-- **Rule:** 21.
+- **Rule:** 22.
 
 ### 2026-10-06 · The paint event fired twice for one spray
 - **Cause:** `brush.paint` was flushed on the release, and the drops still in the air landed after it and flushed a second.
 - **Fix:** the flush waits for the last drop (`paintDue`, `tools/soulbrush/load.js`).
-- **Rule:** 20.
+- **Rule:** 21.
 
 ### 2026-10-06 · The Rocket never launched, and the Hover started again in the same airtime
 - **Cause:** the Rocket read the jump latch before the core filled it (and the test toggled the art through an imported config, a
   different module instance); once started, the core's own jump overwrote the launch. The Hover had no memory of having been spent.
 - **Fix:** the Rocket detects the Space press itself and marks it spent for the core (`jumpHeldLast`, `jumpBuf`), and launches by
   `P.impulse`; the Hover is spent until grounded (`courier/moves/jets.js`); tests toggle by `/art`.
+- **Rule:** 20.
+
+### 2026-10-06 · The kick's bad loop and no blending (the owner's report, through Dovina; Calissa)
+- **Seen:** the kick (V) snapped back at its end and jerked when kicked again.
+- **Cause (measured):** three things.
+  - `Kick.animate` returned as soon as the state left `'kick'` (at 0.5 s), while the techs' weight was still easing out (`techs.js`, at 12 a second), so the body snapped back. The largest bone rotation in one frame was 159° (forearmL, at frame 31).
+  - The CMU clips' pelvis stands 0.39 m (kick_a) and 0.97 m (kick_b) forward of the base pose's (0, 0.73, -0.04), so blending in threw the body forward. The pelvis's largest offset from the Courier was 1.21 m.
+  - The capture's toes jump up to 50° in one frame.
+- **Fix** (`courier/moves/kick.js`):
+  - the last frame is held while the weight eases out;
+  - a kick begun over the last crossfades from where the body was (0.12 s);
+  - the clip's pelvis is taken relative to its own first frame;
+  - the toes keep the base pose.
+
+  Measured after, on the same run of kicks: the pelvis's largest offset 0.22 m (the kick's own step), and the largest rotation in one frame 34° (the right foot, mid-swing).
 - **Rule:** 19.
 
 ### 2026-10-06 · A sandfall's curtain compiled in play (the perf gate's late compile, R46)

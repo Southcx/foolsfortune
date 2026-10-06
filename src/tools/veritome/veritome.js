@@ -1,3 +1,4 @@
+import { drawStamp, stampText } from '../../ui/datestamp.js';
 import * as THREE from 'three';
 import { RestBake } from '../../render/restbake.js';
 import { hasTag } from '../../core/tags.js';
@@ -245,6 +246,7 @@ export class Veritome extends Tech {
         c.width = 192; c.height = 120;
         const sw = A.w, sh = sw * (120 / 192), sy = A.y + (A.h - sh) / 2;
         c.getContext('2d').drawImage(canvas, A.x, sy, sw, sh, 0, 0, 192, 120);
+        drawStamp(c.getContext('2d'), stampText(), 186, 104, 11); // (burnt into the print's corner, as the 90s date-backs did: ui/datestamp.js)
         thumb = c.toDataURL('image/jpeg', 0.72);
         q.swatch = swatchOf(c); // (its strongest colour: a good plate teaches the kiln a glaze, courier/vessel/vessel.js)
       } catch { thumb = null; }

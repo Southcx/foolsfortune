@@ -217,6 +217,7 @@ export class Crucibelle extends HeldTool {
     // the clapper swings (a spring), the vents fade, the ember is the fever, and the bell smokes while it is out
     this.swingV += (-this.swing * 60 - this.swingV * 4) * dt; this.swing += this.swingV * dt;
     this.model.setSwing(THREE.MathUtils.clamp(this.swing * 0.2, -0.6, 0.6));
+    { const G = this.grid(); this.model.setBeat((this.now() - G.t0) / (G.spb / 2)); } // (the metronome on the bell: tools/crucibelle/model.js)
     this.model.update(raw);
     this.model.setFever(this.fever);
     if (this.drawT > 0.5 && (this.smokeT = (this.smokeT || 0) - dt) <= 0) {
