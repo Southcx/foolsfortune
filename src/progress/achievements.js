@@ -40,7 +40,7 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Testing Room'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
@@ -487,10 +487,10 @@ export function buildAchievements(game) {
   C('dn7', 'explore', 'The Finds', 2, 'count', 'Glint', 'Take five artifacts from the walls of the Great Dunemaw.', 'find.artifact', 5);
   C('dn8', 'explore', 'The Finds', 3, 'mechanic', 'Touch Nothing but the Lamp', 'Take a warped artifact.', 'find.warped', 1, { hidden: true });
   // the testing room's drills (progress/combat/testroom.js): measures, so only records and medals; a tuned run is never counted
-  F('tx1', 'battle', 'The Testing Room', 1, 'mechanic', 'Calibrated', 'Finish each drill in the testing room once.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}`) > 0).length, 4);
-  F('tx2', 'battle', 'The Testing Room', 3, 'mechanic', 'Quick Draw', 'Take gold at the Flick drill.', (L) => L.get('drill.flick.gold'), 1);
-  F('tx3', 'battle', 'The Testing Room', 3, 'mechanic', 'Steady Hand', 'Take gold at the Spray drill.', (L) => L.get('drill.spray.gold'), 1);
-  F('tx4', 'battle', 'The Testing Room', 4, 'mechanic', 'Range Master', 'Take gold at all four drills.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}.gold`) > 0).length, 4);
+  F('tx1', 'battle', 'The Throwing Room', 1, 'mechanic', 'Calibrated', 'Finish each drill in the Throwing Room once.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}`) > 0).length, 4);
+  F('tx2', 'battle', 'The Throwing Room', 3, 'mechanic', 'Quick Draw', 'Take gold at the Flick drill.', (L) => L.get('drill.flick.gold'), 1);
+  F('tx3', 'battle', 'The Throwing Room', 3, 'mechanic', 'Steady Hand', 'Take gold at the Spray drill.', (L) => L.get('drill.spray.gold'), 1);
+  F('tx4', 'battle', 'The Throwing Room', 4, 'mechanic', 'Range Master', 'Take gold at all four drills.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}.gold`) > 0).length, 4);
   // the Solar Skiffing trial at the sundial (docs/plans/DUNEMAW-SYSTEMS.md)
   C('su1', 'skiff', 'The Sundial', 1, 'mechanic', 'Sun Chaser', 'Finish the Solar Skiffing trial.', 'trial.solar', 1);
   F('su2', 'skiff', 'The Sundial', 2, 'mechanic', 'Bronze Hour', 'Take bronze in the Solar Skiffing trial.', (L) => L.get('trial.solar.bronze') + L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);

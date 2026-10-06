@@ -1,4 +1,4 @@
-# The testing room: aim, recoil and Strawman, in one side room (the owner, 2026-10-06)
+# The Throwing Room: aim, recoil and Strawman, in one side room (the owner, 2026-10-06)
 
 Kept by Dovina, for Petra, who builds the room and its bodies. The data is `src/progress/combat/testroom.js`, Strawman's is
 `src/progress/combat/dunemaw.js` (`STRAWMAN`, `bout`), and the rules are `src/feedback/tracking/testroom.js` and `dunemaw.js`. The name is a
@@ -42,7 +42,7 @@ circuits' are, because a measure you can't beat is no use.
 
 ## (c) The pots
 
-- **Where they come back:** only the testing room's 12 pots respawn, 8 sim seconds after breaking, in place. Every other pot in the
+- **Where they come back:** only the Throwing Room's 12 pots respawn, 8 sim seconds after breaking, in place. Every other pot in the
   Workshop breaks and stays broken.
 - **What they give:** they pay nothing (`POTS.cubes` 0, `finds` 0). They give 2 baubles of Lachryma, so the psygun can keep firing.
 - **The ledger:** they are `training`, so it never sees them, and they can't be farmed for anything.

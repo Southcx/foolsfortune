@@ -419,6 +419,8 @@ Prince sells to neither side: every Courier both of his parents need came out of
   the Courier sails toward. *Gnomon* is Greek for "the one who knows", the shadow-stick of a sundial: the whole Dunes are its dial,
   and the town told the game hour by where its shadow lay. It still keeps the hours for nobody. The Solar Skiffing trial races its
   shadow across the sand. (The beam's meaning stays blank.)
+- **The Throwing Room** (Espada's name, R59): the side room off the Workshop's east wall where aim and recoil are measured and
+  Strawman stands. A potter throws on the wheel; the Courier throws shots.
 - **Strawman.** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the apprentice who is afraid of
   breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
   always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart

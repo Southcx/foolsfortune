@@ -26,7 +26,7 @@ export function wellRules({ on, L, log }) {
     if (e.pay > 0) L.hi('well.pay.best', e.pay);
     log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `. Pay: ${e.pay} cubes` : ''}.`);
   });
-  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round, and sets you down again where you came in.', { throttle: 2 }); });
+  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round. You are back at the way in.', { throttle: 2 }); });
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;
