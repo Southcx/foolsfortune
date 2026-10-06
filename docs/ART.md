@@ -229,7 +229,8 @@ as seen from a northern shore.
 
 "Meshes that interact with the ground need mesh skirts to blend textures between materials." From now on a model that stands on the
 ground declares its **foot** (the height of its base, and how far up the blend runs), and the shared ground blend (`render/triplanar.js`,
-Petra's, when it lands) fades its material into the ground's by height, so no hard line shows where it stands. The level's geometry is
+Petra's: `triplanar(material, { side, strength: 0, foot: { tex, height } })` for a foot alone) fades its material into the ground's by
+height, so no hard line shows where it stands. Done: the Index's lectern (0.16 m of the floor's clay up its plinth). The level's geometry is
 Petra's; the models are Calissa's. Mine to skirt once the blend lands: the Index's lectern's foot (`vfx/testroomkit.js`), the cave kit's
 pillars and stalactite bases (`vfx/cavekit.js`), the half-buried finds (`vfx/finds.js`), the clutches (`vfx/cavekit.js` Clutch), the
 datura's stems (`vfx/datura.js`), the solar rings' plinth and the slip geysers' vents (`vfx/solarring.js`, `vfx/slipgeyser.js`), the
