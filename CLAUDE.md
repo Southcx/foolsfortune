@@ -52,6 +52,8 @@ credits: UAL Standard, CMU mocap, CC0).
 - Achievements are predicates over the ledger, never flags set by hooks (so they are retroactive); follow OSRS's tiers/types and FFXIV's categories (see the header of `src/progress/achievements.js`).
 
 ## Performance and the look
+- The look reaches for the sixth and seventh generations (the owner, 2026-10-06: .hack's glitch, the frame accumulation, at the moments
+  that earn them); the performance spec stays the sixth's.
 - The target is a sixth-generation console (PS2 / GameCube): the scene is drawn at 480 lines and upscaled bilinearly,
   smooth shading, one sun shadow. Keep it so (`src/render/present.js`).
 - **Everything kept goes through the save** (`game.save`, `src/core/save.js`): a system registers a section (scope `player`, `world` or
