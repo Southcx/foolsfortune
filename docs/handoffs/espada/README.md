@@ -8,6 +8,6 @@
 - **Still mine, not started:** a full pass on the log's lines in the robotic register (shops, the vessel and its shield, crystals,
   psyguns, the last three tools); the neuralese, Crucibelle and Lockheart strings; the shops' blurbs; the remaining help pages; a
   kintsugi line when the kintsugi has one.
-- **Open for the owner** (via Dovina's digest): grain as the word for temperament; Shrine Garden or Spirit Garden; Kaolin's own grain;
+- **Open for the owner** (via Dovina's digest): Kaolin's own Grain;
   the Purser's shape.
 - **Words reports** from the F8 bug report (kind "words") come here first.

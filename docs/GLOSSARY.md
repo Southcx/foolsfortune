@@ -486,6 +486,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
   the name.
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
+- **the Pithos**: what the folk call the Great Slip Jelly, crowned with the broken crude jar it grew in (a *pithos*, Pandora's jar). The
+  log says "the Great Slip Jelly".
+- **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
+  hours. The Solar Skiffing trial races its shadow.
+- **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
+- **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
+- **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
+- **moonflower**: a Shrine Garden bed that opens only at night, by the game hour.
 
 ## Homonyms we keep on purpose (always qualify them)
 

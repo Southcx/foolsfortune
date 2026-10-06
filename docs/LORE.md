@@ -360,20 +360,20 @@ Prince sells to neither side: every Courier both of his parents need came out of
   renamed **desire** (the owner floated it; Dovina and Espada agreed). Desire *drives* chaos; grief and dread are what chaos *yields* (the comedown, Entropolis's underground). The
   bite is kept in a word the folk may still use: *hunger* is desire in excess, a distortion like any other, and no longer an aspect.
 
-### Temperament: the grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`, R58; proposals for the owner)*
-- **The word in the world is grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
+### Temperament: the Grain of a mind *(Espada's reading of Dovina's draft, `docs/plans/TEMPERAMENT.md`; **canon, ruled by the owner, R59**: Grain is a proper noun, always capitalised)*
+- **The word in the world is Grain.** A clay body has a grain, set before it is fired, and you can work with it or against it.
   ("Temper" would be the perfect pottery word, since temper is what is mixed into clay, grog among it, but the glossary already gives
   *temper* to the body showing its mental state, `vfx/temper.js`.) *Temperament* itself comes from the Latin for "a right mixing":
   the four humours, mixed. Humours are prior art for the idea; they stay out of the text.
 - **The clinical names stay in code and docs only** (OCEAN ids). The player sees plain words, both poles of each dial:
   **curious / wary** (Openness), **orderly / erratic** (Conscientiousness), **bold / shy** (Extraversion), **gentle / hostile**
   (Agreeableness), **skittish / steady** (Neuroticism). No diagnosis, as the draft says.
-- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean grain of its
+- **Grain is climate; mood is weather.** A Figment is hewn from an island's psyche, so an island's ego sets the mean Grain of its
   Figments (the species mean leans the way the island leans), and each creature is drawn about it. An Egregore, authored by no one,
-  has no island grain: the widest spread. The slip jellies were folk of the town that was, so their grain is the boomtown's (bold,
-  erratic). What Kaolin's own grain is stays blank.
+  has no island Grain: the widest spread. The slip jellies were folk of the town that was, so their Grain is the boomtown's (bold,
+  erratic). What Kaolin's own Grain is stays blank.
 - **The bestiary's read** (the System register): "Grain: curious, bold, steady. Weak to: Illusion, Impact." An unread trait shows
-  as "unread". Reprogramming's line: "You turn its grain: skittish to steady."
+  as "unread". Reprogramming's line: "You turn its Grain: skittish to steady."
 
 ### The wheel of feeling *(after Plutchik; Espada's reading of Dovina's `docs/plans/WHEEL.md`; **approved in full by the owner, R58**)*
 - **The canon was already on the wheel.** Lachryma is *every* feeling (section 1); the five aspects were never all of it, only what
@@ -398,6 +398,69 @@ Prince sells to neither side: every Courier both of his parents need came out of
 - **Intensity rings** describe strength and never rename the aspect: the aspect's name stays, the ring is the adjective (a mild,
   basic or intense spell). Kept kid-safe: mirth's top ring is **elation**, not "ecstasy". The centre, every feeling at its strongest,
   is the canon's **Prismatic**.
+
+### The cave of wonders and Strawman *(Espada's answers to Calissa's round robin, `docs/plans/DUNEMAW.md` and `STRAWMAN.md` on her branch; **canon, ruled by the owner, R59**)*
+- **The town under the sand is the town that was.** The boomtown dug for crude, and dug deeper than the Weir's Well to reach the rich
+  seam. Its shaft gave way, and the sand came in: Old Grog's "before the sand came" is that day. The Great Dunemaw is the pit where the
+  town's own dig fell in, and a Well because the island keeps going over it: *what if they had not dug so deep*. The forgotten pots are
+  the folk who did not turn into jellies, empty now; the artifacts are what the boom bought.
+- **The buried head is the Prince's.** In the boom the town raised a statue to the Prince of Clay; when it fell, he went in face first.
+  The three leaning horns are the points of his chimney-crown. Kaolin swallows what hurts, and this is his own face, under the sand.
+  (Whether it is only a statue stays blank.)
+- **The nursery: canon fits.** The first jellies were townsfolk; the brood are born of the slip and were never folk. The town's grief,
+  having children.
+- **The FOE: the Pithos.** A *pithos* is the great storage jar of the ancient world, and Pandora's "box" was really one: everything
+  flew out of it and hope stayed at the bottom. The urn was the town's crude jar; a brood jelly grew in what was left in it and
+  outgrew it. Break the crown and what is under it is the core, the bright thing at the bottom of the jar. The log can keep "the Great
+  Slip Jelly"; the folk call it the Pithos.
+- **"Touch nothing but the lamp" is a rule of every Well.** A memory changes each time it is handled, so a Well rearranges round what
+  you take out of it. The folk's form of it (Grog's): "Take what you came for, and nothing that is looking at you."
+- **The Gnomon is the pale spire in the Dunes** *(the owner, R59)*: the 150 m needle with the beam of light, far out on the sand, that
+  the Courier sails toward. *Gnomon* is Greek for "the one who knows", the shadow-stick of a sundial: the whole Dunes are its dial,
+  and the town told the game hour by where its shadow lay. It still keeps the hours for nobody. The Solar Skiffing trial races its
+  shadow across the sand. (The beam's meaning stays blank.)
+- **Strawman.** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the apprentice who is afraid of
+  breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
+  always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart
+  charm is Pip's. The log calls it by name, with no article: "Strawman rocks back up."
+
+### From the owner's ear *(three names from the owner's playlist, read by Espada; **canon, ruled by the owner, R59**)*
+- **Aqua regia, the King's water.** "Royal water" is the one acid that dissolves gold, and gold is what kintsugi mends with. It is
+  Margarite's refined lamp fuel: the crude the King buys, refined into what keeps the lighthouse lit. The thing that holds the
+  Leviathan-class Egregores back also dissolves what has been mended: Magnus's calcified love, as a chemical.
+- **Amethyst, the clear-headed stone.** The Greek *a-methystos* is "not drunk", the stone worn to keep a clear head. In Entropolis's
+  overground it is sold as a charm that slows how fast excess Lachryma gets into a mind: the good half of rave culture, looking after
+  itself. Player text says only "a stone that keeps a clear head"; the root stays in the docs. (A person of that name: vetoed by the owner.)
+- **The moonflower.** A bed in the Spirit Garden that opens only at night (by the game hour), when Lachryma glows. Its root, datura,
+  stays out of player text.
+- *Declined* (the owner): the playlist's titles as Figment names, the water songs as references, the silence line for Old Grog.
+
+### The stones: how a Courier takes Lachryma in *(the owner, R59: the stones are the vehicle; mechanics cut by Dovina, `progress/stones.js`, DESIGN.md section 20)*
+- **What the stones are.** The gems set in the Courier (the kiln's STONES region, `Courier_Stones`) are where Lachryma enters the
+  vessel. A pot breathes through its glaze; a Courier drinks through its stones. The set decides how much comes in, how fast, which
+  feeling, and where the overflow goes. That is why Couriers can walk where the town could not. One set at a time; the stones a
+  Courier wears say how they drink (look and function are one choice for now; a glamour is the owner's call).
+- **The Maker's Stones** are the Prince's own choice: balanced, the baseline. Every other stone is a trade, never an upgrade, and each
+  one's virtue starts from what the old lapidaries believed of it.
+- **The words.** **The draught** is the feeling of the Lachryma last drunk (a drink, and a current of air: the weather comes in
+  through the stones like a draught under a door). A stone is **heady** when what you drink goes to your head. Too much, and you are
+  **brimming**: a vessel full past its brim, the Courier's softened form of the madness that takes the folk (your mental state pushed
+  toward Prismatic). The log says "You are brimming." and "You settle." Never "drunk".
+- **The stones, as cut:** amethyst, the sober stone (slow, clear-headed); citrine, the merchant's (some of the drink kept as cubes);
+  moonstone, the night's; onyx, the grounding stone (no draught; the overflow to the Lockheart); emerald, the garden (draws far, lets
+  the weather in); sapphire, calm (cheaper arts, slow to refill); ruby, fire (holds more, burns more, heady); diamond, the split light
+  (very heady; takes both feelings of an agate); opal, chance.
+- **Their blurbs** (for `courier/vessel/glazes.js`, strings, when Dovina's stones land):
+  - THE MAKER'S STONES: "The stones you were set with: the Prince chose them. They take Lachryma in evenly."
+  - AMETHYST: "Purple quartz; the Greeks thought it kept you sober. It takes Lachryma in slowly and keeps your head clear."
+  - CITRINE: "Yellow quartz, the merchant's stone. Some of what you drink becomes cubes. You hold less."
+  - MOONSTONE: "A blue light floats under its surface. It is stronger at night and weaker by day."
+  - ONYX: "Black chalcedony, polished to a mirror. The weather does not get in. What you cannot hold goes to the Lockheart."
+  - EMERALD: "Green beryl, with a garden inside it. It draws from far away and lets the weather in."
+  - SAPPHIRE: "Blue corundum, the stone of calm. Your arts cost less. You refill slowly."
+  - RUBY: "Corundum stained red by chromium. You hold more and spend more, and it goes to your head."
+  - DIAMOND: "Clear, and full of fire. It goes to your head fast, and it takes in both feelings of an agate."
+  - OPAL: "Silica spheres that break the light into flashes. By luck, some drinks are lost and some are doubled."
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -516,7 +579,7 @@ Kept until the owner says otherwise.
 | --- | --- | --- |
 | **The workshop and the kiln** | Saggar's workshop; the kiln is "her", and "everything in this workshop came out of her belly". The Courier's look is fired there (the kiln station). | On Kaolin's island; the compendium's "kiln workshops" stop. |
 | **The basement, the hub and its rooms** | the movement lab, THE COURSE, THE SPINDLE, THE BRAID, THE MILL RACE, THE SIEGE | Testing grounds. The owner's notes call the clay island the tutorial and "testing gymnasium". |
-| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light. Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
+| **The dunes, the Weir, the Well** | "Far below the workshop": a desert, an oasis with a pier, tides, a well of liquid Lachryma, a pale spire with a beam of light (the Gnomon, R59). Grog's lost town. | **Ruled**: the Dunes surround the rocky outcrop of Kaolin's main island, on the 5 x 5 grid of Anagami Island. The town that was is out there (Petra lays it out in R40). |
 | **The Great Dunemaw** *(the owner's name, R57)* | Built (v62): the slice's Well (`docs/plans/SLICE.md`, E1), a mouth in the Dunes, three floors, a FOE at the bottom. | A maw is a mouth that swallows: the sand opens and takes you down into what the island keeps going over and will not say aloud. Kaolin swallows his stress behind a joke, and it pools here, under the sand. Distinct from the Weir's Well (a place); the Great Dunemaw is a Well (a distortion), so it drifts. Its mouth stands apart, out on the sand north-west of the oasis in a ring of fallen stones (Petra, v62; Espada's ruling: keep them apart, since the oasis is the still centre and a Well pools away from it). |
 | **The Tithe, the treasury** | Raku's console: cubes in, a sealed chest down. | Open (where the chests come from). |
 | **The title, THE FOOL'S PRECIPICE** | The Courier on a hill over a checkerboard whirlpool sea with giant game pieces, falling cards, a spiral moon; the Courier steps off. | **Ruled: not a place.** A metaphor for where the story has got to; it should change a little as things happen (later, with the story and the graphics). |
@@ -671,8 +734,9 @@ storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns 
   Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
   You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
   not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
-- **The garden's name**: the owner's v0.1 says "an **Internal Shrine Garden**, a pocket dimension inside the vessel". "Spirit Garden"
-  was said in passing; the press is the spirit press. Shrine Garden stands until the owner rules.
+- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**; it is reached through a facility, **the Shrine**.
+  (The owner's v0.1 said "an Internal Shrine Garden, a pocket dimension inside the vessel": the Shrine is the door, the garden what is
+  behind it.)
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to
