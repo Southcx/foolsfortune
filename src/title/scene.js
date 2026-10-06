@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 import { Character } from '../courier/character.js';
 import { Board } from './board.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -41,8 +42,8 @@ export class TitleScene {
     this.pose = this.ch.clips.pose();
     this.ch.root.rotation.y = Math.PI; // (facing out, down -Z, into the spiral)
     // the Fool's little dog: a clapperjar, sitting by them
-    this.jar = clapG.scene.clone(true);
-    this.jar.scale.setScalar(0.55); this.jar.position.set(-0.8, 0, -0.1); this.jar.rotation.y = Math.PI + 0.5;
+    this.jar = cloneSkinned(clapG.scene); // (a skinned clone of its own: Object3D.clone kept the model's own bones, so the jar was drawn where they were, not where it was put)
+    this.jar.scale.setScalar(0.85); this.jar.position.set(0.6, 0, -0.58); this.jar.rotation.y = Math.PI + 0.3; // (beside them on the lip, level with them and looking out over the sea with them, not behind their back: the owner, 2026-10-06)
     const clay = new THREE.MeshStandardMaterial({ color: 0xc8805a, roughness: 0.8, flatShading: true }); // (the jars are glazed at run time by clappers.js: here, plain terracotta)
     this.jar.traverse((o) => { if (o.isMesh) { o.material = clay; o.castShadow = false; } });
     S.add(this.jar);

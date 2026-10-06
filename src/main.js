@@ -713,6 +713,9 @@ async function main() {
   if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; started = true; } // (a replay is played from the start of play: no title)
   game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
   input.onLockChange = (locked) => {
+    // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened
+    // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
+    if (locked && (modalOpen() || (title.active && game.codex?.open))) { document.exitPointerLock?.(); return; }
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';

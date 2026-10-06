@@ -13,6 +13,7 @@ import { Sigils } from './sigils.js';
 import { PaintPath } from '../../vfx/paintpath.js';
 import { measureGrip, handFromTool } from '../grip.js';
 import { drawHands } from '../draw.js';
+import { hipMirror, mirrorSide } from '../heldtool.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { tickInscriptions, clearInscriptions } from './inscribe.js';
 import { stream, randDir } from '../../core/rng.js';
@@ -88,6 +89,8 @@ export class SoulBrush extends Tech {
     const Z = new THREE.Vector3(1, 0, 0).addScaledVector(X, -X.x).normalize(); // (the palm's side faces out from the hip)
     const Y = new THREE.Vector3().crossVectors(Z, X).normalize();
     const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(0.24, 0.98, 0.14);
+    const { side, mirror } = hipMirror(this.game, 'soulbrush', 'L'); this.socketSide = side; this.mirrored = mirror;
+    if (mirror) mirrorSide(G); // (the right hip, when a tool that wants the left was worn first: belt.hipSide)
     this.holsterLocal = B.spine.matrixWorld.clone().invert().multiply(G);
     ch.root.position.copy(saveP); ch.root.quaternion.copy(saveQ); ch.root.updateMatrixWorld(true);
   }
@@ -96,7 +99,7 @@ export class SoulBrush extends Tech {
   tick(dt) {
     this.dt = dt;
     const P = this.P, g = this.game, inp = P.input, ch = g.character;
-    if (!this.grip && ch) this.computeSocket(ch);
+    if (ch && (!this.grip || this.game.belt?.hipSide('soulbrush') !== this.socketSide)) this.computeSocket(ch);
     const raw = g.rawDt || dt;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;

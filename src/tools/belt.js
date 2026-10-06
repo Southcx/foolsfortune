@@ -33,6 +33,9 @@
 export const BELT_SIZE = 7;
 /** The places on their body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
 export const PLACES = { back: 2, hip: 2, neck: 1 };
+/** Which hip each hip tool hangs at by choice (R: their right). Two worn on the same side: the one worn first keeps it, the other goes to
+ *  the other hip, its holster mirrored (the owner, 2026-10-06: the Veritome and the Crucibelle both hung at the right hip). */
+export const HIP_SIDE = { veritome: 'R', soulbrush: 'L', crucibelle: 'L' };
 
 export class ToolBelt {
   constructor(game) {
@@ -46,6 +49,14 @@ export class ToolBelt {
   isWorn(id) { return !this.worn || this.worn.has(id); }
   /** The tools worn in a place. */
   inPlace(place) { return this.tools.filter((t) => t.slot === place && this.isWorn(t.id)); }
+  /** The hip a hip tool hangs at now ('L' | 'R'): its own (HIP_SIDE), unless one worn before it already hangs there. */
+  hipSide(id) {
+    const own = HIP_SIDE[id] || 'R';
+    if (!this.isWorn(id)) return own;
+    const order = (this.worn ? [...this.worn] : this.tools.map((t) => t.id)).filter((x) => this.get(x)?.slot === 'hip' && this.isWorn(x));
+    const first = order[0];
+    return first && first !== id && (HIP_SIDE[first] || 'R') === own ? (own === 'R' ? 'L' : 'R') : own;
+  }
   /** Put a tool on: into a free place of its kind, or in place of the one there longest. Returns the id taken off to make room, null if
    *  there was room, or false if it cannot be worn at all. */
   wear(id, { stash = true } = {}) {

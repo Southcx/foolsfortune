@@ -24,12 +24,19 @@ export class Slam extends Tech {
     return hit ? hit.distance - 0.1 : Infinity;
   }
 
+  /** Deep water at this point (a swimmer's depth: the swim's own test), or null. */
+  waterAt(p) {
+    const v = this.game.water?.at(p.x, p.y + 0.9, p.z);
+    return v && p.y < v.surface - 0.2 && v.surface - v.bottom > 1.2 ? v : null;
+  }
+
   canStart() {
     const P = this.P;
     if (P.grounded || P.wallrun || P.mantle || !P.peekLatch('KeyC')) return false;
     // (C in the air looking ahead is the core's landing slide: a slam wants you looking down)
     if (P.pitch > -this.cfg.lookDown * Math.PI / 180) return false;
     if (this.heightAbove() < this.cfg.minHeight) return false;
+    if (this.waterAt(this.P.pos)) return false; // (no slam out of the water: there is nothing to drive into)
     P.latch('KeyC');
     P.slideBuf = 0;
     return true;
@@ -53,6 +60,9 @@ export class Slam extends Tech {
       this.hv.lerp(wish.multiplyScalar(c.steer), Math.min(1, 4 * dt));
       P.vel.set(this.hv.x, -c.speed, this.hv.z);
       P.move(dt);
+      // into deep water: the slam is spent on the surface (a splash, a quarter of the fall kept), and the swim takes them (the owner, 2026-10-06)
+      const w = this.waterAt(P.pos);
+      if (w) { P.vel.y = -c.speed * 0.25; sfx.splash?.(0.9); return false; }
       if (P.grounded) this.impact();
       else if (this.t > 4) return false;
       return true;

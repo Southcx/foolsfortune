@@ -6,6 +6,7 @@
 //   super(mgr, id, { key, worn: { at: [x, y, z], along: [x, y, z], out: [x, y, z], bone }, draw: { twist, lean, via, pole }, idle, grip })
 //     key     the key that draws and stows it (the belt's contract: tools/belt.js)
 //     worn    where it hangs, in body space at rest (+X their left, +Z forward): `at` the grip, `along` the haft, `out` the palm side;
+//             `side` ('L' | 'R') for a hip tool: the hip it was measured at (belt.hipSide may send it to the other, mirrored);
 //             `bone` the bone it rides (default the spine: a hip; 'spine003' the chest, for something on a chain at the neck)
 //     draw    the draw's reach and whip (tools/draw.js), the clip it is held in (`idle`, a UAL one-handed idle) and its grip clip
 //   this.model (with .group, in the tool frame of tools/grip.js), and any of:
@@ -34,6 +35,13 @@ import { fpToolMatrix } from './viewmodel.js';
 
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _v = new THREE.Vector3(), _p = new THREE.Vector3(), _q = new THREE.Quaternion();
+const _mx = new THREE.Matrix4().makeScale(-1, 1, 1), _my = new THREE.Matrix4().makeScale(1, -1, 1);
+/** A placing in body space moved to the other side of the body (a hip tool sent to the other hip: belt.hipSide): its place and its haft
+ *  (local X) and outward face (local Z) mirrored across their middle; a mirror cannot be a turn, so the tool's own Y turns over instead
+ *  (a bell or a haft is the same either way; a book's spine faces the other way), and the mesh is never inside out. */
+export const mirrorSide = (G) => G.premultiply(_mx).multiply(_my);
+/** The hip a tool hangs at now, and whether that is the other side from the one its holster was measured for. */
+export const hipMirror = (game, id, own) => { const s = game.belt?.hipSide?.(id) || own; return { side: s, mirror: s !== own }; };
 
 export class HeldTool extends Tech {
   constructor(mgr, id, { key, worn, draw = {}, idle = 'swordIdle', idles = null, grip = 'torchIdle', drawK = 1 } = {}) {
@@ -67,6 +75,8 @@ export class HeldTool extends Tech {
     const Z = new THREE.Vector3(...W.out).addScaledVector(X, -new THREE.Vector3(...W.out).dot(X)).normalize();
     const Y = new THREE.Vector3().crossVectors(Z, X).normalize();
     const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(...W.at);
+    const { side, mirror } = hipMirror(this.game, this.id, W.side || 'R'); this.socketSide = side; this.mirrored = mirror;
+    if (W.side && mirror) mirrorSide(G); // (a hip tool sent to the other hip: belt.hipSide)
     this.holsterLocal = bone.matrixWorld.clone().invert().multiply(G);
     this.holsterBone = bone;
     ch.root.position.copy(saveP); ch.root.quaternion.copy(saveQ); ch.root.updateMatrixWorld(true);
@@ -76,7 +86,7 @@ export class HeldTool extends Tech {
   tick(dt) {
     this.dt = dt;
     const P = this.P, g = this.game, inp = P.input, ch = g.character, raw = g.rawDt || dt;
-    if (!this.grip && ch) this.computeSocket(ch);
+    if (ch && (!this.grip || (this.wornSpec.side && g.belt?.hipSide(this.id) !== this.socketSide))) this.computeSocket(ch);
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
       if (inp.wasPressed(this.key) && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready(this.id) !== false)) {
@@ -129,7 +139,7 @@ export class HeldTool extends Tech {
     ch.root.updateMatrixWorld(true);
     const holster = _m1.multiplyMatrices(this.holsterBone.matrixWorld, this.holsterLocal).clone();
     const M = new THREE.Matrix4();
-    const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: T.weapon.drawGrab, twist: D.twist ?? -10, lean: D.lean ?? 8, via: D.via || [-0.35, 1.15, 0.4], pole: D.pole, out: M });
+    const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: T.weapon.drawGrab, twist: D.twist ?? -10, lean: D.lean ?? 8, via: this.mirrored && D.via ? [-D.via[0], D.via[1], D.via[2]] : D.via || [-0.35, 1.15, 0.4], pole: D.pole, out: M });
     if (P.fp && this.drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, this.drawT / 0.6), ...(this.fpArc?.() || {}) }, M);
     if (!M.elements.every(Number.isFinite)) M.copy(holster); // (never a NaN placed in the world)
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);

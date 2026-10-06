@@ -105,7 +105,7 @@ export class Swim extends Tech {
       target.copy(look).multiplyScalar(iz).addScaledVector(right, ix).addScaledVector(UP, up - down);
       if (target.lengthSq() > 1) target.normalize();
       target.multiplyScalar(fast ? c.underwater * 1.35 : c.underwater);
-      if (target.lengthSq() < 0.01) target.y = 0.8; // buoyancy
+      if (target.lengthSq() < 0.01) target.y = c.rise ?? 0; // (nothing held: they hang where they are, neutrally buoyant (the owner, 2026-10-06); `rise` drifts them up)
       if (P.pos.y + 0.2 > float && target.y > 0) target.y = Math.min(target.y, Math.max(0, depth * c.buoyancy + 0.3)); // slow into the surface, don't shoot through it
     }
     // (horizontal eases; vertical at the surface tracks the target directly so the bob can't ring)

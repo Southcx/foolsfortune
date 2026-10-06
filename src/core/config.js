@@ -272,7 +272,7 @@ export const DEFAULTS = {
     stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar
     roll: { enabled: true, minDrop: 20, time: 0.5, speed: 8.5, speedPerFall: 0.25, iframes: 0.32, cooldown: 0.7, clipFrom: 0.3, clipTo: 1.0 }, // Shift while crouched; automatic out of a fall of 20 m or more
     slip: { enabled: true, speed: 10, accel: 45, dryCrawl: 1.4, climbSpeed: 6, jump: 8.4, keepSpeed: 10, regen: 12, coverLife: 30 }, // C on slip
-    swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, exitJump: 7.4, exitPush: 2.2 }, // water
+    swim: { enabled: true, speed: 3.2, sprint: 5.2, underwater: 3.6, accel: 8, drag: 2.5, buoyancy: 9, rise: 0, exitJump: 7.4, exitPush: 2.2 }, // water (rise: m/s up underwater with nothing held; 0 is neutrally buoyant)
     ladder: { enabled: true, speed: 1.1, fast: 2.2, slide: 6, kickOut: 4.5, kickUp: 4.5, rung: 0.3 }, // walk into a ladder
     hang: { enabled: true, reach: 0.5, minTop: 1.92, maxTop: 2.95, handTol: 0.5, maxRise: 8, maxFall: 9, grace: 0.5, shimmy: 1.8, brachiate: 2.6, kickOut: 4.5, kickUp: 5, barReach: 0.45, barKick: 3.5, zipSpeed: 9, zipAccel: 5 }, // W at a ledge just above mantle height; an overhead bar; a cable
     latch: { enabled: true, reach: 0.55, budget: 2.2, speed: 2.4, kickOut: 5, kickUp: 5.5, slide: 1.6 }, // C in the air beside a wall

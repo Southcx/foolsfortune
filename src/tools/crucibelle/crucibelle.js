@@ -40,9 +40,10 @@ export class Crucibelle extends HeldTool {
   constructor(mgr) {
     super(mgr, 'crucibelle', {
       key: 'KeyU',
-      // hung at the right hip by its crown ring, the mouth down
-      worn: { at: [-0.24, 1.02, 0.1], along: [0.05, -1, 0.15], out: [-1, 0, 0] },
-      draw: { twist: 10, lean: 6, via: [-0.4, 1.15, 0.35] },
+      // hung at the left hip by its crown ring, the mouth down (the Veritome has the right: the owner, 2026-10-06), and drawn across the
+      // body by the right hand; with the Soul Brush worn first it goes to the right hip instead, mirrored (tools/belt.js hipSide)
+      worn: { at: [0.24, 1.02, 0.1], along: [-0.05, -1, 0.15], out: [1, 0, 0], side: 'L' },
+      draw: { twist: 10, lean: 6, via: [0.1, 1.15, 0.45] },
       idle: 'stance:crucibelle', idles: ['stance:crucibelle', 'idle'], grip: 'torchIdle', // (its own stance: courier/anim/stances.js)
     });
     this.model = new CrucibelleModel();

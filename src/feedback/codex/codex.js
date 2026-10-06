@@ -78,6 +78,11 @@ export class Codex {
     this.root.id = 'codex';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); });
+    // (Esc closes it anywhere; over the title, where the game's tick (B) does not run, B does too: the SOUND TEST is opened from there)
+    addEventListener('keydown', (e) => {
+      if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      if (e.code === 'Escape' || (e.code === 'KeyB' && this.game.title?.active)) { e.preventDefault(); e.stopPropagation(); this.close(); }
+    }, true);
     document.body.appendChild(this.root);
     this.sys.listeners.add(() => { if (this.open) this.render(); });
   }
@@ -86,6 +91,7 @@ export class Codex {
 
   show() {
     this.open = true;
+    this.root.style.zIndex = this.game.title?.active ? '14' : ''; // (over the title's own layers (12) when opened from its menu)
     this.root.classList.add('open');
     document.exitPointerLock?.();
     this.render();

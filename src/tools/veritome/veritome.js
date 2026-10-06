@@ -15,6 +15,7 @@ import { Viewfinder } from './viewfinder.js';
 import { bookFrame, holdBook } from './hold.js';
 import { measureGrip } from '../grip.js';
 import { drawHands } from '../draw.js';
+import { hipMirror, mirrorSide } from '../heldtool.js';
 import { unwrite, inscribed } from '../soulbrush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 
@@ -94,6 +95,8 @@ export class Veritome extends Tech {
     ch.root.position.set(0, 0, 0); ch.root.quaternion.identity(); ch.resetPose(); ch.root.updateMatrixWorld(true);
     const X = new THREE.Vector3(0, -1, 0), Y = new THREE.Vector3(0, 0, 1), Z = new THREE.Vector3().crossVectors(X, Y);
     const G = new THREE.Matrix4().makeBasis(X, Y, Z).setPosition(-0.25, 1.02, 0.02);
+    const { side, mirror } = hipMirror(this.game, 'veritome', 'R'); this.socketSide = side; this.mirrored = mirror;
+    if (mirror) mirrorSide(G); // (the left hip, when a tool that wants the right was worn first: belt.hipSide)
     this.holsterLocal = B.spine.matrixWorld.clone().invert().multiply(G);
     ch.root.position.copy(saveP); ch.root.quaternion.copy(saveQ); ch.root.updateMatrixWorld(true);
   }
@@ -102,7 +105,7 @@ export class Veritome extends Tech {
   tick(dt) {
     this.dt = dt;
     const P = this.P, g = this.game, inp = P.input, ch = g.character, raw = g.rawDt || dt;
-    if (!this.grip && ch) this.computeSocket(ch);
+    if (ch && (!this.grip || this.game.belt?.hipSide('veritome') !== this.socketSide)) this.computeSocket(ch);
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
       if (inp.wasPressed('KeyJ') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('veritome') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('veritome')); }
@@ -281,7 +284,7 @@ export class Veritome extends Tech {
       this.holdW = smooth(0.4, 1, this.drawT);
     } else if (this.drawT > 0.001) {
       // third person: reached for at the hip, swung up in the right hand, opened and taken in both
-      const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: HOLD, twist: -8, lean: 6, via: [-0.3, 1.15, 0.35], out: M });
+      const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: HOLD, twist: -8, lean: 6, via: [this.mirrored ? 0.3 : -0.3, 1.15, 0.35], out: M });
       if (phase !== 'reach' && phase !== 'worn') {
         M.multiply(SPINE_TO_GRIP);
         const k = smooth(0.55, 1, this.drawT);

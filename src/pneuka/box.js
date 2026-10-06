@@ -267,12 +267,18 @@ export class PneukaBox {
     for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
     this.save();
   }
-  /** Every tool is somewhere: worn, or held (the box, the ground, the Book). One that is neither (a save from before a fix, a belt
-   *  written without its box) comes back into the box. Run after loading, and after anything that borrowed the belt. */
+  /** Every tool is somewhere, once: worn, or held (the box, the ground, the Book). One that is neither (a save from before a fix, a belt
+   *  written without its box) comes back into the box; a copy in the box of one worn or held elsewhere (the owner's duplicate tools,
+   *  2026-10-06) leaves it. Run after loading, and after anything that borrowed the belt. */
   reconcile() {
     const belt = this.game.belt; if (!belt) return 0;
     let n = 0;
-    for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.held(`tool.${t.id}`)) { this.add(`tool.${t.id}`, 'restore'); n++; }
+    for (const t of belt.tools) {
+      const id = `tool.${t.id}`;
+      if (!belt.isWorn(t.id) && !this.held(id)) { this.add(id, 'restore'); n++; continue; }
+      for (let extra = this.held(id) + (belt.isWorn(t.id) ? 1 : 0) - 1; extra > 0 && this.count(id); extra--) { this.slots[this.slots.findIndex((s) => s?.id === id)] = null; n++; }
+    }
+    if (n) this.save();
     return n;
   }
   /** DEBUG, the sandbox (title/ui.js): the whole kit, whatever STORY holds back (both coffins, a few of every key), topped up each time. */

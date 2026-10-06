@@ -91,7 +91,10 @@ export class Save {
     for (const scope of this.dirt) {
       const rec = { v: 1, at: Date.now(), sections: {} };
       for (const s of this.sections.values()) if (s.scope === scope) rec.sections[s.id] = { v: s.version, data: s.dump() };
-      if (this.write(RECORD[scope], rec)) this.records[scope] = rec;
+      // (kept as the text written, read back: a dump may hand over its live arrays (the box's slots), and a record holding those would
+      // change with the game, so a hold's release would put back the game as it is, not as it was written)
+      const text = JSON.stringify(rec);
+      if (this.write(RECORD[scope], text)) this.records[scope] = JSON.parse(text);
     }
     this.dirt.clear();
   }
