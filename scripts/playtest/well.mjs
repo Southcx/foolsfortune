@@ -3,6 +3,9 @@
 // each floor with the cutlass, goes down while there is a way down, and comes back up; the run must pay, the haul must come home.
 // Played only through the agent interface (src/agent/agent.js): what an AI player could do, nothing it could not.
 // ---------------------------------------------------------------------------------------
+// (a walk across a floor of the Well: a 5 x 5 floor's far pool is 60 m and more of doorways from where you stand, at a run 40 sim seconds
+// and more; the agent's own default, 30 sim seconds, is for a room)
+const WALK = 60 * 90;
 export const name = 'well';
 
 export async function play(t) {
@@ -36,7 +39,7 @@ export async function play(t) {
     if (!s.well?.down) break;
     // (down: a sandfall may stand in the way for up to 12 sim seconds, as a player would wait, so a few tries)
     for (let tries = 0; tries < 4 && s.well?.floor === floor; tries++) {
-      await t.act({ do: 'goto', to: s.well.down, within: 0.9 }); s = await t.until((s) => !s.task, 60 * 30);
+      await t.act({ do: 'goto', to: s.well.down, within: 0.9, ticks: WALK }); s = await t.until((s) => !s.task, WALK + 60);
       await t.act({ do: 'interact' }); s = await t.until((s) => s.well && s.well.floor > floor, 60 * 3);
       if (s.well?.floor === floor) s = await t.until(() => false, 60 * 4);
     }
@@ -49,7 +52,7 @@ export async function play(t) {
     const left = ((await t.look()).events || []).filter((e) => e.name === 'well.leave').pop();
     t.check('still in the Well when the hunt was done', false, JSON.stringify(left)); return;
   }
-  await t.act({ do: 'goto', to: s.well.up, within: 0.9 }); s = await t.until((s) => !s.task, 60 * 40);
+  await t.act({ do: 'goto', to: s.well.up, within: 0.9, ticks: WALK }); s = await t.until((s) => !s.task, WALK + 60);
   await t.act({ do: 'interact' }); s = await t.until((s) => !s.well, 60 * 3);
   t.check('comes back up out of the Well', !s.well, `zone ${s.zone}`);
   const all = s.events || [], leave = all.find((e) => e.name === 'well.leave');
