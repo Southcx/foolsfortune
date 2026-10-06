@@ -196,6 +196,17 @@ fucking love dot hack… why not lean into it?" So it leans in, at the moments t
   480 lines stay the canvas; the seventh generation is reached for in what is drawn on it, never in what it costs (the owner: "We're
   6th-7th generation, I'm just a performance hardass").
 
+## The Courier's face (the owner, 2026-10-06)
+
+The first try at the mask as an E-ink face (eight faces painted from the maker's eyes, a refresh, a blink, pupils) was rolled back
+(reverted at `d4872d0`). What the owner said, for the next try:
+- **The pupils were too small**: a 15 px dot in a 116 px eye on the 512 px mask. Next time, go much bigger.
+- **Sleepy read well.**
+- **The rim round the eyes was wrong.** The bake kept a mid-brown shadow outline round each changed shape, and on a lidded or cut eye
+  it showed as the ghost of the full eye.
+- **The owner will make the atlas** for Calissa to puppeteer. The runtime (the shader swap after `map_fragment`, the stepped blink and
+  look, the event map) can come back from the reverted commit to drive the owner's cells.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
