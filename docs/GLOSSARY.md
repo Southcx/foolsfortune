@@ -359,6 +359,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
   ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
   **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+- **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
+  **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore
+  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky).
+- **the overhead map** (`src/vfx/overhead.js`): what stands over each spot round the eye (a roof, the ground), measured by rays from
+  high above; what falls from the sky is never drawn under it.
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
   dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**
