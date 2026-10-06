@@ -631,6 +631,11 @@ async function main() {
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
   // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
+  // (the clock is the Veritome's: docs/plans/OVERLAY.md; carried, it tells the time; the words are the log's rule, tracking/weather.js)
+  game.chat.add('time', { help: 'the game day and game hour (the Veritome tells it)', run: () => {
+    if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'You have no Veritome to tell the time.', { key: 'notime', throttle: 2 }); return; }
+    game.events.emit('clock.read', { by: 'courier' }); // (the time is read where it is said: the calendar's, which a replay pins)
+  } });
   game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
     const P = game.player;
     if (!name) { game.events.emit('vfx.list', { names: game.vfx.names() }); return; }

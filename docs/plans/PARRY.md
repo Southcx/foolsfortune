@@ -25,7 +25,7 @@ Prior art: Bloodborne's gun parry (a shot in the window staggers), Sekiro's defl
 shield parry and Ocarina's Mirror Shield, Kirby's inhale, Luigi's Mansion 3's Poltergust, Fatal Frame's Fatal Frame shot (the shutter
 in the last instant before a ghost strikes), staff spins (Ninja Gaiden, the Monkey King).
 
-## Each tool's parry (a proposal for the owner to cut; a dash is "settled already")
+## Each tool's parry (the owner approved the whole table, 2026-10-06; a dash is "nothing held")
 
 | in hand | V in the window | V held after | why it fits the tool |
 |---|---|---|---|
@@ -52,6 +52,22 @@ Notes for the cut:
   `creatures.windups(pos, r)` lists those in reach. `courier/parry.js` asks both the projectiles and the windups in the one window, so
   every parry can answer a melee blow as well. The Great Slip Jelly calls it first.
 
+## What can be parried is shown (the owner, 2026-10-06: Cuphead's pink)
+
+> "Use a lachryma-colored outline shader to indicate which projectiles can be parried. Very similar to the pink projectiles in Cuphead."
+
+- **A parryable thing wears a Lachryma outline** (near-black with its oil film, Calissa's shader); anything else wears none. Cuphead's
+  rule: one colour means "answer this", and it is never used for anything else, so it is read at a glance in a crowd of shots.
+- **Why Lachryma's colour and not labradorite's** (OVERLAY.md: matter counts what you have, line shows what you know): a parried shot
+  becomes yours, sent back or drunk (the soak, the gulp), so it is matter about to be had. The outline is drawn on the thing itself.
+- **Not everything is parryable.** A projectile carries `parry: true | false` in `game.projectiles` (default true; `courier/parry.js`
+  skips the false). False: what is too heavy to turn (a boulder, the Great Slip Jelly's ram), the Courier's own shots, and any shot a
+  creature's design makes a "must dodge". So the outline is a promise kept: outlined means a parry in the window always answers it.
+- **A windup that can be answered** (`creatures.windup`, Petra) wears the same outline on the striking part for its `eta`: the
+  melee case of the same promise. A blow that cannot be parried (a grab, a ram) is telegraphed but never outlined.
+- **Every parry tool answers every outlined thing** in its own way (the table above). A soak or a gulp on a projectile that is not
+  Lachryma turns it aside instead (`guard`), so the promise holds with every tool.
+
 ## The ledger and the log
 
 - `move.parry` gains `tool` (`'kick' | 'cutlass' | 'psygun' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart'`) and
@@ -63,5 +79,5 @@ Notes for the cut:
 
 ## The animations (Calissa)
 
-Each parry needs a clip, found before authored (CLAUDE.md, animation). The owner also saw the kick's clips (`kick_a`, `kick_b`)
+Each parry needs a clip, found before authored (CLAUDE.md, animation); the outline is a shader (above). The owner also saw the kick's clips (`kick_a`, `kick_b`)
 **loop badly and play with no blending**. That is a bug, so it goes in the casebook when fixed.

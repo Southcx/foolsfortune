@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE WEATHER AND THE DAY: the rules that hear the sky (progress/weather.js): what weather the Courier has stood in, the game hours
 // they have seen, the fish caught and the statuses built in each weather, for the achievements; and the log's line when an island's mood
-// turns. The words are placeholders for Espada's. tracking.js calls it from listen().
+// turns, the forecast read with the Dreamvane, and the time asked of the Veritome. The words are placeholders for Espada's. tracking.js calls it from listen().
 //
 //   weatherRules({ on, L, log, g })     g: the game (the weather where the Courier is, at the moment of a catch or a status)
 // ---------------------------------------------------------------------------------------
 import { NODES } from '../../progress/econ/emocean.js';
-import { TYPE_OF, NAMES } from '../../progress/weather.js';
+import { TYPE_OF, NAMES, clockAt } from '../../progress/weather.js';
 
 const PLACE = (id) => (id === 'well:dunemaw' ? 'the Great Dunemaw' : NODES[id]?.name || id);
 const STATUS_OF = { impact: 'stun', ego: 'doubt', influence: 'charm', illusion: 'blind', delirium: 'confusion' };
@@ -21,6 +21,19 @@ export function weatherRules({ on, L, log, g }) {
     else log.say('info', `Weather over ${PLACE(e.island)}: fair.`, { key: 'weather', throttle: 20 });
   });
   on('day.phase', (e) => { L.inc(`day.${e.phase}`); if (e.phase === 'night' || e.phase === 'dawn') log.say('info', e.phase === 'night' ? 'Night falls. Lachryma glows in the dark.' : 'Dawn.', { key: 'dayphase', throttle: 30 }); });
+  // the Dreamvane reads the sky: sky.read { island, now (game hours), blocks: [{ hour, aspect, strength, agate }], by }
+  const AHEAD = (h) => { const n = Math.max(1, Math.round(h)); return n === 1 ? 'in a game hour' : `in ${n} game hours`; };
+  on('sky.read', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('sky.read');
+    const said = (e.blocks || []).map((b) => `${b.aspect ? `${NAMES[b.aspect]}${b.strength > 0.6 ? ', heavy' : ''}${b.agate ? ` (${b.agate})` : ''}` : 'fair'} ${AHEAD(b.hour - e.now)}`);
+    log.say('info', said.length ? `The vane reads the sky over ${PLACE(e.island)}: ${said.join('; then ')}.` : 'The vane cannot read further.', { key: 'skyread', throttle: 2 });
+  });
+  // the Veritome's clock: clock.read { ms?, by } (no ms: now)
+  on('clock.read', (e) => {
+    const c = clockAt(e.ms);
+    log.say('info', `Game day ${c.day}, ${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}.`, { key: 'clock', throttle: 1 });
+  });
   on('busk.suits', (e) => { if (e.by === 'courier') L.inc('busk.suits'); });
   // in its weather: a fish landed, a status built
   on('angle.catch', () => { const w = g.weather?.here(g.player?.pos); if (w?.aspect) L.inc(`angle.catch.weather.${w.aspect}`); });
