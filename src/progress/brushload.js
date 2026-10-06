@@ -1,11 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH'S LOAD, THE LACHRYMATO BOTTLES AND THE STAINS (the owner, 2026-10-06; docs/plans/SUNSHINE-SYSTEMS.md): the Soul Brush is
-// the tool of ENVIRONMENTAL Lachryma (the Lockheart drains it from enemies). It has two modes, as the Sondelass has forms:
+// the tool of ENVIRONMENTAL Lachryma (the Lockheart drains it from enemies). It has two modes, as the Sondelass has forms (1 and 2):
 //   PAINT  hold LMB: the brush SATURATES with Lachryma (as long as the psygun takes to charge fully), then sprays it: a feeling laid on
-//          the ground (the bottle's grade if it holds one, else the draught: progress/stones.js). A short click is still the club.
+//          the ground (the bottle's grade if it holds one, else the draught: progress/stones.js). Every press is still the club's blow;
+//          held past it, the saturate (in the air, the slam's ground pound).
 //   MOP    hold LMB: the brush saturates, then drinks: environmental Lachryma (a stain of spilled crude, a puddle, a coated folk) is
 //          scrubbed up into the LACHRYMATO BOTTLE. Out and in: paint spends the bottle, the mop fills it.
-// A Lachrymato Bottle is worn against the upper back (its own place, not the tools' back): a reserve that feeds the pool and the brush.
+// A Lachrymato Bottle is worn against the upper back (its own place, 'bottle', listed in the Pneuka Box's equipment): a reserve that feeds the pool and the brush.
 // It is glass: a broken shield can crack it and spill it, and the spill is a stain where you stood. A full one gives off a signature.
 // So a "tanky" build carries more and risks more; the core movement is never touched (CLAUDE.md).
 // Stains are spilled crude, graded by feeling (the voyage's spills come ashore at the Shore). Left alone a stain grows by the game day,
@@ -16,14 +17,15 @@
 // blow, one tool), PowerWash Simulator (a stain coming off as its own reward), Fallout's and Dark Souls' equip weight (a carried
 // reserve as a trade, here paid in risk rather than speed).
 //
-//   BRUSH = { modes, saturate }   saturateTime(T) -> s   BOTTLES[id] = { capacity, feed, crack, spill, price }   STAINS   CLEAN
+//   BRUSH = { modes, saturate }   saturateTime(T) -> s   BOTTLES[id] = { capacity, feed, crack, spill }   STAINS   CLEAN
 //   bottleFeed(bottle, held, poolShare, dt) -> Lachryma into the pool   crack(bottle, roll) -> spilled share | 0   stainStage(ageDays) -> 0..3
 // ---------------------------------------------------------------------------------------
 
 /** The brush's two modes (1 and 2 with the brush out, as the Sondelass's forms), and the saturation: the psygun's full charge time. */
 export const BRUSH = {
   modes: ['paint', 'mop'],
-  click: 0.13, // (a press shorter than this is a club blow, whatever the tank holds: the psygun's tap window)
+  // (no click window: every press swings the club at once; held past the blow's hold point (SLAM.hold, Petra's) the bristles saturate on
+  //  the ground, and in the air it is the slam's charge, a ground pound. Petra, 2026-10-06)
   spray: { cost: 6, reach: 7, width: 1.2 }, // (paint: Lachryma a second from the bottle, else the pool; metres of throw; metres of stroke)
   mop: { rate: 12, reach: 2.4 }, // (mop: Lachryma a second drunk from a stain into the bottle; metres of reach)
 };
@@ -32,9 +34,9 @@ export const saturateTime = (T) => T?.charge?.time ?? 0.85;
 
 /** The Lachrymato Bottles: aquarium glass on the upper back. Bigger holds more, cracks more easily, and spills more when it does. */
 export const BOTTLES = {
-  'bottle.small':  { capacity: 40,  feed: 6,  crack: 0.1,  spill: 0.3, price: 10 }, // (price: minutes of play, ECON.goods)
-  'bottle.medium': { capacity: 80,  feed: 8,  crack: 0.2,  spill: 0.4, price: 25 },
-  'bottle.large':  { capacity: 120, feed: 10, crack: 0.35, spill: 0.5, price: 50 },
+  'bottle.small':  { capacity: 40,  feed: 6,  crack: 0.1,  spill: 0.3 }, // (their prices: ECON.goods, in minutes of play)
+  'bottle.medium': { capacity: 80,  feed: 8,  crack: 0.2,  spill: 0.4 },
+  'bottle.large':  { capacity: 120, feed: 10, crack: 0.35, spill: 0.5 },
 };
 // feed: Lachryma a second the bottle gives the pool while the pool is below half and regenerating (a reserve, not a second pool);
 // crack: the chance a broken shield (vessel.shieldbreak) cracks it; spill: the share of what it holds that pours out as a stain.

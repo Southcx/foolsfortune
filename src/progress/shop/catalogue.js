@@ -57,7 +57,7 @@ export const SHOPS = {
     blurb: 'Possibilikeys and coffins for the Lockheart. Buys curios, and anything else, cheaply. Everything is negotiable, in his favour.',
     sells: { 'key.brass': 6, 'key.invert': 2, 'key.even': 2, 'key.loaded': 1, 'key.twin': 1, 'key.wide': 1, 'key.echo': 1, 'heart.gambler': 1, 'heart.shepherd': 1 },
     // (the owner, R58: "he'll buy anything": whatever is not his trade, at half its worth, so a Cogitomap has a lowball price at home)
-    trade: ['curio'], buys: ['curio', 'key', 'heart', 'map', 'crude', 'material', 'fish', 'lure', 'shell'], // (not instruments: no counter sells one back, so a sold lute would be gone for good)
+    trade: ['curio'], buys: ['curio', 'key', 'heart', 'map', 'crude', 'material', 'fish', 'lure', 'shell', 'bottle'], // (not instruments: no counter sells one back, so a sold lute would be gone for good)
     markup: ECON.haggle.list, haggle: true,
   },
   saggar: {
@@ -72,7 +72,7 @@ export const SHOPS = {
     id: 'grog', keeper: 'grog', name: "OLD GROG'S PIER",
     blurb: 'Lures if you have lost yours, and casks of crude for the crossing. Buys fish, and pays fair.',
     // (and Anagami's crude, at Anagami's price: the hop's cargo is bought on the pier it leaves from)
-    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8 },
+    sells: { ...Object.fromEntries(LURES.map((L) => [L.id, 1])), 'cask.wonder': 8, 'cask.desire': 8, 'cask.grief': 8, 'bottle.small': 2, 'bottle.medium': 1, 'bottle.large': 1 }, // (the bottles: a crude man's glass)
     trade: ['fish'], buys: ['fish', 'lure', 'crude'],
     markup: 1, haggle: false, island: 'anagami',
   },

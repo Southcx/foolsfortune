@@ -72,14 +72,12 @@ as territory: what you stand in helps you or hinders you); de Blob (colour resto
 
 The three questions are answered. The data is `src/progress/brushload.js`; the log's rules are `src/feedback/tracking/brush.js`.
 
-1. **The controls: saturate on hold.**
-   - Hold LMB: the bristles **saturate** with Lachryma over the psygun's full charge time (`T.charge.time`, 0.85 real s today,
-     Petra's feel), then the brush works its mode. One rhythm for both tools.
-   - A press shorter than the psygun's tap window (0.13 real s) is a club blow, **whatever is held**: a full bottle never costs you
-     the club.
-   - **The conflict:** the club's held slam (`SLAM.full`, 1.1 real s, `src/tools/soulbrush/club.js`) sits on the same hold. Lean: the
-     slam moves to **hold LMB in the air** (a ground pound: Sunshine's own, and Bayonetta's), and the ground hold is the saturate.
-     Petra's call, as it touches a combat timing.
+1. **The controls: saturate on hold** (settled with Petra, 2026-10-06).
+   - Every press of LMB swings the club at once, as now: no tap window delays a blow, so the club's feel is untouched, and a full
+     bottle never costs you the club.
+   - Held past the blow's hold point (`SLAM.hold`, 0.32 real s): **on the ground** the bristles saturate over the psygun's full charge
+     time (`saturateTime(T)`: `T.charge.time`, 0.85 real s), then the mode works; **in the air** it is the slam's charge, a ground
+     pound (Sunshine's and Bayonetta's).
 2. **Two modes, as the Sondelass's forms** (1 and 2 while the brush is out):
    - **paint**: sprays Lachryma **out** (from the bottle, else the pool), at 6 Lachryma a real second, 7 m of throw. What it lays is
      the bottle's grade (the feeling of the crude it last drank), else the draught's (`progress/stones.js`): section 1 still holds.
@@ -94,7 +92,8 @@ The three questions are answered. The data is `src/progress/brushload.js`; the l
    to mop); at the third it spawns **one** aberrant Figment (a slip jelly gone wrong, a bounty's kind of quarry), then holds. **Cap:**
    at most one spawned Figment alive per stain, and stains are placed by the game day's layout, never on a timer, so a neglected place
    is a nuisance, never a swarm. A crossing's spill puts 2 on the Shore.
-6. **The Lachrymato Bottles** (worn on the upper back, their own place; tools worn on the back keep theirs):
+6. **The Lachrymato Bottles** (their own equipment place, `'bottle'`, on the upper back between the shoulder blades, listed in the
+   Pneuka Box's equipment beside the lure; one at a time; items `bottle.small|medium|large`, sold by Old Grog on the pier):
 
    | bottle | holds (Lachryma) | feeds the pool (a real second, below half) | cracks on a broken shield | spills when cracked | price (minutes of play) |
    |---|---|---|---|---|---|
