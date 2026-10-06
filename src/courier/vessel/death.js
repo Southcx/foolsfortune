@@ -2,7 +2,8 @@
 // THE VESSEL SHATTERS: the Courier's death, and the way back. When a blow lands on clay already cracked through (courier/vessel/damage.js),
 // time all but stops; the cracks run over the whole vessel at once, Lachryma burning in every line, as the Courier sinks to a knee; then
 // it bursts, a cloud of shards and light, and the frame smears (the PS2's frame accumulation: render/glow.js) as the pieces fall and the
-// screen goes dark. The Courier is made whole again in the workshop where they were made: the cracks gone, the pool full. Nothing is lost
+// screen goes dark. The Courier is made whole again at the last Shrine they rested at (the workshop's, where they were made, until
+// another: world/shrines.js): the cracks gone, the pool full. Nothing is lost
 // but the place (in a Well, they come to at its mouth and the run's haul is lost: world/well/dunemaw.js). Each half is an event
 // (`courier.shatter`, `courier.reform`) for the log and the ledger.
 //
@@ -87,13 +88,14 @@ export class Death {
       g.time?.free('death');
       D?.mendAll(true);
       const course = g.course;
-      // the workshop, where the Courier was made; or, shattered in a Well, its mouth (the run is lost: world/well/dunemaw.js)
-      const well = g.well?.reformAt?.();
-      if (course?.teleport) course.teleport(well ? well.pos : P.spawn.clone(), well ? well.yaw : 0);
+      // the last Shrine rested at (world/shrines.js; the workshop's until another); shattered in a Well, the run is lost first
+      // (world/well/dunemaw.js), and its mouth is where they come to only if there are no Shrines
+      const well = g.well?.reformAt?.(), shrine = g.shrines?.reformAt?.(), at = shrine || well;
+      if (at && g.places?.stand(at.pos, at.yaw)) { /* (into its zone first: world/places.js) */ } else if (course?.teleport) course.teleport(at ? at.pos : P.spawn.clone(), at ? at.yaw : 0);
       g.character?.setHidden(false);
       g.lachryma?.reset();
       this.want = false;
-      g.events?.emit('courier.reform', { where: well ? 'well' : 'workshop' });
+      g.events?.emit('courier.reform', { where: shrine ? 'shrine' : well ? 'well' : 'workshop', shrine: shrine ? g.shrines.last : null, lost: !!well });
     }
     if (t >= END) { this.active = false; this.fade.style.opacity = '0'; g.cinema?.unshot('death'); g.time?.free('death'); }
   }

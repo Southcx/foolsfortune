@@ -38,6 +38,7 @@ import { fillHours } from '../../progress/weather.js';
 import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
+import { ECON } from '../../progress/econ/table.js';
 
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
@@ -51,6 +52,8 @@ const MAP_AT = 0.8, RARE = 4; // (a Cogitomap at four fifths charted; a material
 export class Dunemaw {
   constructor(game) {
     this.game = game;
+    this.escaping = null; // the Wake Whistle's channel ({ t }: real seconds)
+    for (const k of ['vessel.shield', 'vessel.shieldbreak', 'vessel.crack']) game.events?.on(k, () => this.breakEscape());
     this.run = null; // { seed, day, floor, deepest, foes, fill, charted: [per floor], haul: [{ id, data }], cleared: Set }
     this.cur = null; // the floor standing (wellkit.buildFloor)
     this.mobs = []; // the jellies on it
@@ -119,7 +122,7 @@ export class Dunemaw {
     return true;
   }
   down() { if (this.run && this.run.floor < FLOORS && this.cur?.down) this.goTo(this.run.floor + 1); }
-  up() { if (this.run) this.leave(false); }
+  up() { if (this.run) this.leave('walk'); }
 
   goTo(n) {
     const g = this.game, R = this.run;
@@ -183,19 +186,23 @@ export class Dunemaw {
     g.events?.emit('well.find', { well: WELL_ID, floor: n, item, tier, by: 'courier' });
   }
 
-  /** Out of the Well: up the way up (shattered false: what it pays and the haul, for leave() to hand over), or lost (shattered true). */
-  end(shattered) {
+  /** Out of the Well, one of three ways (docs/plans/SHRINES.md, Tarkov's extracts): 'walk' up the way up (all the pay and the haul, for
+   *  leave() to hand over), 'escape' by the Wake Whistle (ECON.escape.keep of the pay, the haul kept), or 'shatter' (lost). (A boolean
+   *  is the old call: true, shattered.) */
+  end(how) {
+    if (typeof how === 'boolean') how = how ? 'shatter' : 'walk';
     const g = this.game, R = this.run; if (!R) return null;
-    this.offFloor();
+    const shattered = how === 'shatter';
+    this.offFloor(); this.escaping = null;
     const charted = R.deepest ? R.charted.reduce((a, b) => a + (b || 0), 0) / R.deepest : 0;
-    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill));
-    g.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay, charted: +charted.toFixed(2), shattered, fill: +R.fill.toFixed(2), by: 'courier' });
+    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill) * (how === 'escape' ? ECON.escape.keep : 1));
+    g.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay, charted: +charted.toFixed(2), shattered, how, fill: +R.fill.toFixed(2), by: 'courier' });
     this.run = null;
     g.player.killY = DUNE.y - 90; // (back to the dunes' floor of the world, before the next step: see goTo)
     return shattered ? null : { R, pay, charted };
   }
-  leave(shattered) {
-    const out = this.end(shattered), g = this.game, s = this.mouthSpot();
+  leave(how) {
+    const out = this.end(how), g = this.game, s = this.mouthSpot();
     g.course.teleport(s.pos, s.yaw, { keepPool: true });
     if (!out) return;
     // (handed over on the sand, not below: a full box drops what it cannot hold at their feet)
@@ -208,8 +215,21 @@ export class Dunemaw {
       g.events?.emit('cogitomap.get', { well: WELL_ID, charted: +charted.toFixed(2), worth, by: 'courier' });
     }
   }
-  /** Shattered in the Well: the run is lost and they come to again at the mouth (courier/vessel/death.js). */
-  reformAt() { if (!this.run) return null; this.end(true); return this.mouthSpot(); }
+  /** Shattered in the Well: the run is lost (courier/vessel/death.js makes them whole at the last Shrine; the mouth if there is none). */
+  reformAt() { if (!this.run) return null; this.end('shatter'); return this.mouthSpot(); }
+
+  /** The Wake Whistle blown (from the Pneuka Box): a channel of ECON.escape.channel real seconds, broken by a blow; then out to the mouth,
+   *  with ECON.escape.keep of the pay and the haul. Anywhere but a Well it does nothing. */
+  escape() {
+    const g = this.game;
+    if (!this.run) { g.log?.say('warn', 'You are not in a Well.', { key: 'notwell', throttle: 2 }); return false; }
+    if (this.escaping) return false;
+    this.escaping = { t: 0 };
+    g.events?.emit('well.escape.start', { well: WELL_ID, by: 'courier' }); // (the whistle's sound and the channel's look: Wanda's, Calissa's)
+    return true;
+  }
+  /** A blow on the vessel breaks the channel (core/events: vessel.shield, vessel.shieldbreak, vessel.crack). */
+  breakEscape() { if (!this.escaping) return; this.escaping = null; this.game.log?.say('warn', 'The blow breaks your breath; the whistle is still in your box.', { key: 'escapebroke', throttle: 2 }); }
   /** Back to where this floor began (the Tab panel's respawn, a fall). */
   toArrival() { if (this.cur) { this.moving = 2; this.game.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true }); } }
 
@@ -256,6 +276,14 @@ export class Dunemaw {
   update(dt) {
     const g = this.game, P = g.player;
     this.t += dt;
+    // the Wake Whistle's breath: held for its channel, then the whistle breaks and they wake at the mouth (the haul and ECON.escape.keep of the pay)
+    if (this.escaping && this.run && (this.escaping.t += g.rawDt ?? dt) >= ECON.escape.channel) {
+      this.escaping = null;
+      const box = g.pneuka, i = box?.slots.findIndex((s) => s?.id === ECON.escape.item);
+      if (i >= 0) box.take(i);
+      const go = () => this.leave('escape');
+      if (g.seam) g.seam.cross(go, { kind: 'maw' }); else go();
+    }
     if (this.mouth.visible) {
       this.maw.update(this.t, 1);
       const near = P.pos.distanceTo(this.mouthPos) < 70;
@@ -279,7 +307,7 @@ export class Dunemaw {
     } else this.astray = 0;
     // somewhere else while a run is on (a teleport, the stress test, a fall the floor did not catch): the run is over and nothing is kept
     if (this.moving > 0) this.moving--;
-    else if (this.run && !g.death?.active && zoneOf(P.pos) !== 'well') this.end(true);
+    else if (this.run && !g.death?.active && zoneOf(P.pos) !== 'well') this.end('shatter');
   }
 }
 

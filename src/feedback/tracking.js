@@ -681,7 +681,12 @@ export class Tracking {
     on('vessel.shield', () => L.inc('vessel.shield'));
     on('vessel.shieldbreak', () => { L.inc('vessel.shieldbreak'); log.say('battle', 'Your Lachryma is spent: the next blow reaches the clay.', { key: 'shieldbreak', throttle: 4 }); });
     on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'A creature shatters your Pneuka Jar.' : 'Your Pneuka Jar shatters.', {}); });
-    on('courier.reform', () => { L.inc('courier.reform'); log.say('system', 'Your Pneuka Jar is made whole in the workshop.', {}); });
+    on('courier.reform', (e) => { L.inc('courier.reform'); log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is made whole at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is made whole in the workshop.', {}); });
+    // the Shrines (docs/plans/SHRINES.md; world/shrines.js): found, rested at, travelled between; the Spirit Garden's door. Never "saved".
+    on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
+    on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
+    on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
+    on('garden.enter', (e) => { if (e.by === 'courier') L.inc('garden.enter'); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
     on('vessel.mend', (e) => { L.inc('vessel.mends'); log.say('info', `${(PART[e.region] || 'The crack').replace(/^y/, 'Y')} mends.`, { key: 'mend', win: 2, fmt: (n) => `${n} cracks mend.` }); });

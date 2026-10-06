@@ -103,6 +103,7 @@ export class PneukaUI {
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
     if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
     if (it.id === 'mat.shard' && this.game.lockheart) out.push({ label: 'Feed to the Lockheart', run: () => box.feed(slot) });
+    if (it.kind === 'whistle') out.push({ label: 'Blow', run: () => { if (this.game.well?.escape()) this.close(); } }); // (the Wake Whistle: world/well/dunemaw.js)
     out.push({ label: 'Drop', run: () => box.drop(slot) });
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;

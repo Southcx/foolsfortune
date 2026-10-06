@@ -95,6 +95,7 @@ export class Shops {
     const g = this.game, box = g.pneuka, cost = price ?? this.price(shop, id);
     if (cost == null) { this.refuse('There are none left.', 'none'); return false; }
     if (!box?.room(id)) { this.refuse('Your Pneuka Box is full.', 'full'); return false; }
+    if (id === ECON.escape.item && box.held(id) >= ECON.escape.carry) { this.refuse('You can carry only one.', 'carry'); return false; } // (the Wake Whistle: one bail-out a run, docs/plans/SHRINES.md)
     if (!g.cubes.spend(cost, `shop.${shop}`)) { this.refuse(`You cannot afford it. (${cost} cubes)`, 'poor'); return false; }
     this.state[shop].stock[id] = Math.max(0, this.stockOf(shop, id) - 1);
     box.add(id, 'shop');

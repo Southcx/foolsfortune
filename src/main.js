@@ -43,6 +43,7 @@ import { SHORE } from './world/dunes/beach.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
 import { Parries } from './courier/parries.js';
+import { Shrines } from './world/shrines.js';
 import { Blink } from './courier/moves/blink.js';
 import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
@@ -511,6 +512,7 @@ async function main() {
       const d = Math.hypot(KILN_AT.x - player.pos.x, KILN_AT.z - player.pos.z);
       return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
+    game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
@@ -1066,7 +1068,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt);
+    game.well.update(dt); game.shrines?.update();
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

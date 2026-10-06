@@ -138,7 +138,7 @@ The numbers live in Dovina's file; in short:
 - **Bare:** health 48; the reel 4 sim seconds at x3; the core x2, the body x0.5; it sinks every 12 sim seconds for 3 (a ring 1.2 s before
   it surfaces); the arena slides 0.8 m/s, 1.5 below a third of its health; brood 3 at two thirds and 3 at one third, capped by the
   clutches still whole; reprogrammed below 20% health while it reels or is stunned. Burst pays 2 floors' worth and a crown shard;
-  reprogrammed pays half, and the nursery becomes a Shrine Garden dividend worker.
+  reprogrammed pays half, and the nursery becomes a Spirit Garden dividend worker.
 - **The nursery:** clutches 1, 3, 8 on the three floors, 3 to 6 eggs; a brood every 20 sim seconds while a guard lives and the Courier
   is within 20 m (at most 3 out); clutches return with the next game day's layout; each clutch broken before the fight is 2 brood
   the FOE cannot call; a broken egg leaves **slip roe** (a Garden bed material) 30% of the time.

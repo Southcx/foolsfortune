@@ -80,4 +80,4 @@ court's worried whispers); Pip's name and Saggar's master.
 
 - **R40**: Anagami Island laid out on its 5 x 5 chunks (Kaolin's plateau in the middle, the Dunes around), the town that was (the
   treadmill test), slips, fittings, Saggar's and Pip's shops, selling to all four folk, STORY's first steps.
-- Later: the Internal Shrine Garden; the title changing with the story; the islands and the ship between them.
+- Later: the Internal Spirit Garden; the title changing with the story; the islands and the ship between them.
