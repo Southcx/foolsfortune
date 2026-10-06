@@ -5,6 +5,7 @@ import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { ChunkTerrain } from '../../render/terrain.js';
+import { triplanar, surfaceTexture } from '../../render/triplanar.js';
 import { mergeStatic } from '../../render/merge.js';
 import { CloudLayer } from '../../vfx/clouds.js';
 import { Barrier } from './barrier.js';
@@ -164,7 +165,8 @@ export class Dunes {
   buildTerrain() {
     const g = this.game;
     this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() },
-      uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) } };
+      uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) },
+      uGlow: { value: 1 } }; // (the glints and the rim follow the sun: at night the sand does not shine, Calissa's R46 note)
     const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
@@ -175,7 +177,7 @@ export class Dunes {
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
 varying vec3 vWP; varying vec3 vWN;
-uniform float uTime; uniform vec2 uWind; uniform vec3 uSun; uniform vec4 uOasis;
+uniform float uTime, uGlow; uniform vec2 uWind; uniform vec3 uSun; uniform vec4 uOasis;
 ${TRAIL_GLSL}
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }`)
@@ -234,9 +236,12 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   float r = h21(cell);
   float sp = step(0.9965, r) * 0.7;                                   // (still: no flicker, no time, no view term)
   float rim = pow(1.0 - clamp(dot(normalize(vViewPosition), normalize(vNormal)), 0.0, 1.0), 3.0);
-  totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16);
+  totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16) * uGlow;
 }`);
     };
+    // the sand's grain from the world (render/triplanar.js: Calissa's CC0 sand on the tops, packed sand on the steep lee faces), over
+    // the colour above: the texture's own light and shade, the palette the shader's
+    triplanar(mat, { side: surfaceTexture('sand_packed'), top: surfaceTexture('sand'), scale: 0.25, strength: 0.8 });
     // the field: chunks with levels of detail (render/terrain.js), sampled once from the one height function
     const TR = (this.chunks = new ChunkTerrain({ height: localHeight, half: DUNE.half, step: DUNE.step, chunk: 32, outer: DUNE.outer, outerStep: 20, material: mat }));
     const mesh = TR.mesh;
@@ -433,6 +438,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     L.sun.target.updateMatrixWorld();
     // (the caller sets sun.intensity from `under`: see main.js; here the dune value is offered)
     this.sunIntensity = A.sunI;
+    this.uniforms.uGlow.value = THREE.MathUtils.clamp(L.sun.intensity / A.sunI, 0, 1); // (last frame's sun, after the hour and the weather)
     // what has passed over the sand: the fading path, and the spray
     this.marks.update(dt, this.active);
     this.trail.update(dt, P.x, P.z);

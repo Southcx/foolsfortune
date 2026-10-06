@@ -387,8 +387,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   floor's guaranteed route of rooms, `layout.path`).
 - **an arch** (`src/world/well/wellkit.js`): a doorway of the Great Dunemaw's floors, round-headed (4 m wide, its crown 5 m up), its
   ring and pilasters standing proud of both faces of the wall.
-- **a skirt** (`src/world/well/wellkit.js`): a strip hung a metre down the edge of a room's sand, drawn only, so no crack shows where
-  two rooms' sand meet (the terrain trick). *Not:* the spout's falling skirt (a sandfall).
+- **a skirt**: what blends a thing into the ground where the two meet, so no hard line shows (the owner, R46: "meshes that interact
+  with the ground need mesh skirts"). Two kinds: the level's, a strip hung a metre down the edge of a room's sand, drawn only, so no
+  crack shows where two rooms' sand meet (`src/world/well/wellkit.js`, the terrain trick); and a model's, its **foot** band taking the
+  ground's own texture, fading up (`foot` in `src/render/triplanar.js`). *Not:* the spout's falling skirt (a sandfall).
+- **triplanar** (`src/render/triplanar.js`): a texture laid on a surface from the world, along the three axes, blended by which way
+  the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
+  textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
+  stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
 - **rock** (`src/world/well/rock.js`): the Great Dunemaw's walls and pillars drawn rough over their box colliders, a noise field
   pushing the skin up to 0.3 m sideways.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.

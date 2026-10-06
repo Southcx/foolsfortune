@@ -24,6 +24,7 @@
 //   GRID (cells a side), CELL (metres a cell), WALL_H
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { triplanar, surfaceTexture } from '../../render/triplanar.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -207,6 +208,8 @@ export function buildFloor(game, layout, origin, floor = 1) {
     group.add(mesh);
   }
   const sandMat = K.sand || (game.wellSandMat ||= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc9a473, roughness: 1, name: 'well-sand-standin' }), { userData: { shared: true } }));
+  // (the sand's grain from the world: render/triplanar.js, Calissa's CC0 sand on the tops, packed sand on the banks; once per material)
+  if (!sandMat.userData.triplanar) triplanar(sandMat, { side: surfaceTexture('sand_packed'), top: surfaceTexture('sand'), scale: 0.3, strength: 0.75 });
   const sand = new THREE.Mesh(mergeGeometries(sandGeos, false), sandMat); for (const g of sandGeos) g.dispose();
   sand.receiveShadow = true; sand.name = 'well-sand'; group.add(sand);
   // ---- the pools: the way up at the way in, the way down at the end of the path (none on the last floor: the bottom of the Well)
