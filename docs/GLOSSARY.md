@@ -458,6 +458,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
   played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
+- **the casebook** (`docs/CASEBOOK.md`): every bug fixed, with its cause and the rule it left; read its rules before building in the same
+  area. *Not:* the log (the game's text), a report (QAIS's, the owner's), the ledger (the stats).
 - **QAIS** (F8, `game.qais`, `src/debug/qais/`: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
   the System, the game's voice): the development window in the game where the owner tests a build: its **Brief**, its **QAIS tests**,
   its **reports** and the open **questions**, kept in the published build's store. Always "QAIS". *Not:* the F3 panel, the stress test.
