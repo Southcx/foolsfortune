@@ -13,7 +13,7 @@
 // flowers that bloom as a sign, and the moonflowers of the night garden (a garden made for the evening, of white flowers).
 //
 //   game.daturas = new Daturas(game, spots)   (spots: [{ x, z, n }] in world metres: a clump of n flowers each)   .update(rawDt)
-//   new Daturas(game, spots, { parent, heightAt })   elsewhere (the Shrine Garden: Petra places it)
+//   new Daturas(game, spots, { parent, heightAt })   elsewhere (the Spirit Garden: Petra places it)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 

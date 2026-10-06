@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE SPIRIT PRESS: Soul Alchemy's station in the Shrine Garden (docs/DESIGN.md, section 16; progress/alchemy.js), after the owner's
+// THE SPIRIT PRESS: Soul Alchemy's station in the Spirit Garden (docs/DESIGN.md, section 16; progress/alchemy.js), after the owner's
 // concept (docs/ref/concept_spirit_press.png, a value study: the colour is ours). Not a machine but a thing that GREW: a garden
 // shrine of root and leaf over a stone drum, the three parts the owner named grown into it, top to bottom:
 //
@@ -15,7 +15,7 @@
 //                 colour itself turning slowly (a liquid stirred), brighter when fired, grey while the soul is
 //   THE HUE RING  the concept's floating lights: seven circling the press, each an attribute at its hue (at the targets'
 //                 saturation); the one the soul colour is inside (`near`) comes close and burns bright. Shown, never written
-// The palette is the Shrine Garden's: moss and deep teal leaf, plum-dark bark, grey stone, dull bronze; the soul's colour is the only
+// The palette is the Spirit Garden's: moss and deep teal leaf, plum-dark bark, grey stone, dull bronze; the soul's colour is the only
 // bright thing on it. (R58's first press, a potter's screw press, was built before the concept arrived and is gone.)
 //
 // Prior art: the owner's concept, the alchemist's athanor (the furnace and its feeding tower: the crown over the fire), the hourglass

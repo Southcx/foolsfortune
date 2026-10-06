@@ -107,7 +107,7 @@ moonstone's blue glow, onyx), and offers **hair finishes** and **skin tones** fo
 - **The Great Dunemaw is Lachryma's own place**, as the island is the clay's: walls of bismuth's stair (solid), a floor of glass over the
   liquid (the labradorite moving under it), a mouth that is the Mind's stone swallowing the sand.
 
-## The Shrine Garden: the spirit press and the soul colour (R58)
+## The Spirit Garden: the spirit press and the soul colour (R58)
 
 - **The press grew** (the owner's concept, `docs/ref/concept_spirit_press.png`, a value study we coloured): a garden shrine of moss,
   deep teal leaf and plum-dark root over a carved stone drum, dull bronze at its rims, lights about it. The soul colour is the only
