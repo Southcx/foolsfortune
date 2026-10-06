@@ -125,7 +125,7 @@ export class Arranger {
     const th = this.score?.moodless ? null : this.thin; if (th) gain *= HITS.has(e.i) ? th.hit : BASS.has(e.i) ? th.bass : th.rest; // (the night: music/player.js setNight)
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
-      else if (e.i === 'riser' || e.i === 'breath' || e.i === 'reverse') B[e.i](t, d, (e.v ?? 0.3) * gain);
+      else if (e.i === 'riser' || e.i === 'breath' || e.i === 'reverse' || e.i === 'whoosh') B[e.i](t, d, (e.v ?? 0.3) * gain, e.o);
       else if (e.i === 'bell') B.bell(t, e.n, (e.v ?? 0.5) * gain);
       else B[e.i](t, d, e.n, (e.v ?? 0.5) * gain, e.o || {});
     } catch (err) { console.warn('music', e.i, err); }

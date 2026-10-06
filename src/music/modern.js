@@ -13,6 +13,7 @@
 //   TWINKLE   the clean tapped guitar: a bright pluck through a low-pass that closes fast, two takes a few cents apart and spread,
 //             the pick's click, a dotted echo (math rock's and the Midwest's: Strawberry Girls, Ichika Nito, Yvette Young)
 //   REVERSE   a reversed cymbal: noise swelling into the downbeat and cut dead on it (the breath before the drop)
+//   WHOOSH    something going by: noise through a band falling in pitch as it passes (the Doppler), panned across, loudest in the middle
 //
 // Prior art: the TR-808 (its hat's six detuned squares through a band-pass, its bass drum's long sine), the trap hat roll, future
 // bass's shimmer and reversed swells (Porter Robinson, ILLENIUM), and the clean tapping of math rock.
@@ -77,6 +78,13 @@ export class ModernBand {
     const kb = this.filt('bandpass', 3500, 1.5); this.noise(t, t + 0.02, kb); kb.connect(k); // (the pick)
   }
 
+  whoosh(t, dur, v = 0.3, { from = -0.9, to = 0.9 } = {}) {
+    const c = this.ctx, o = this.out(this.bus.dry, 0.35, { verb: 0.2 }), g = c.createGain(), p = c.createStereoPanner();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + dur * 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    p.pan.setValueAtTime(from, t); p.pan.linearRampToValueAtTime(to, t + dur); g.connect(p).connect(o);
+    const bp = this.filt('bandpass', 2400, 1.6); bp.frequency.setValueAtTime(2400, t); bp.frequency.exponentialRampToValueAtTime(700, t + dur); // (the Doppler: higher coming, lower going)
+    this.noise(t, t + dur + 0.02, bp, 0.8); bp.connect(g);
+  }
   reverse(t, dur, v = 0.3) {
     const c = this.ctx, o = this.out(this.bus.dry, 0.3, { verb: 0.15 }), g = c.createGain();
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + dur - 0.01); g.gain.setValueAtTime(0, t + dur); g.connect(o); // (cut dead on the downbeat)

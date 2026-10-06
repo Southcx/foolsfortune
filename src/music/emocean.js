@@ -2,19 +2,25 @@
 // THE EMOCEAN STAGE'S CUE: "Crude Sea", the music of one hop across the Emocean (docs/plans/SLICE.md, E4), a rail of 150 seconds that is
 // paced to it (Rez: the stage and its cue are one thing). 100 bars at 160 bpm, a bar 1.5 s, so the stage's fraction is simply the bar
 // over 100 and every wave of src/progress/econ/emocean.js STAGE lands on a bar line:
-//   LAUNCH    0 to 8     the calm opening: the sloop leaves the pier; a pad and a Rhodes, the sea's whale far off, a pulse finding itself
-//   SCHOOLS   8 to 26    the first schools (8, 16): four on the floor, a rolling Moog, a koto arpeggio; from 16 the sax sails the Answer
+//   LAUNCH    0 to 9     the calm opening: the sloop leaves the pier; a pad and a Rhodes, the sea's whale far off, a pulse finding itself
+//   SCHOOLS   9 to 26    the first schools: four on the floor, a rolling Moog, a koto arpeggio; from 17 the sax sails the Answer
 //   PINCER    26 to 36   from both sides (26): the supersaw opens, brass stabs on the off-beats, the Answer an octave up
-//   DARTERS   36 to 50   the first things to dodge (36, 44): a two-step break, the growl's wobble, the theremin swooping past
+//   DARTERS   36 to 50   the first things to dodge (36, 44): a two-step break, the growl's wobble, darters whooshing past
 //   BREATHER  50 to 62   no drums: the choir holds the Tear (F to E), the whale sings, bubbles; a pulse builds back under the last bars
 //   PUSH      62 to 84   the mixed push (62, 68, 74): everything, the sax on the Answer, then the brass shouting the Five
 //   HEAVY     84 to 96   the heavy and its escort (84, 86): half time, taiko under the kick, the Five as a war cry in the low brass
 //   ARRIVE    96 to 100  Margarite in sight: E major, a harp up two octaves, a bell; it ends (the stage is done when its cue is)
 // E minor, the game's key, over Em C D Bm (the trance's lift, the anime's ache), the Emocean's fusion: a trance groove under space jazz.
+// Over it, the owner's ear (docs/OST.md section 6; the A/B of 2026-10-06, which the owner chose, "significantly better"): air on top (a
+// shimmer, crisp hats and their rolls), a clean tapped guitar answering the koto from the other side, an 808 under the heavy that
+// slides between the roots, and three holes (a beat of silence and a reversed swell: into the darters, into the heavy, in its middle).
+// The sax's answer to the Answer (its sixth and seventh notes) varies each time round, and the arpeggios turn over every other phrase
+// (the owner: "the whole song is pretty repetitive").
 //
 // Prior art: Rez (Mizuguchi: the stage paced by the music, waves on its bars), the trance of the late nineties (four on the floor, the
 // rolling off-beat bass, the supersaw's lift, the breakdown and the build), drum and bass's two-step at 160, Panzer Dragoon's sea of
-// choirs, Star Fox's on-rails pacing (a breather before the last push), and this game's own motifs (the Answer, the Five, the Tear).
+// choirs, Star Fox's on-rails pacing (a breather before the last push), future bass and trap (the shimmer, the hat rolls, the 808's
+// slides, the drop's held breath), and this game's own motifs (the Answer, the Five, the Tear).
 //
 //   import { CRUDE_SEA, STAGE_BARS, stageAt, stageCue } from './emocean.js'   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
 //   stageCue(seconds) -> the cue played in that many seconds (the same hundred bars at another tempo: a sloop's 120 s is 200 bpm)
@@ -37,33 +43,38 @@ const twostep = (v = 1) => [E('kick', 0, 1, null, 0.9 * v), E('kick', 2.5, 1, nu
 const halftime = (v = 1) => [E('kick', 0, 1, null, 0.95 * v), E('taiko', 0, 1, null, 0.5 * v, { size: 1.2 }), E('snare', 2, 1, null, 0.75 * v), E('kick', 1.5, 1, null, 0.5 * v),
   E('taiko', 3, 1, null, 0.3 * v), ...[0, 1, 2, 3].map((b) => E('hat', b + 0.5, 0.5, null, 0.12 * v, true))];
 const roll = (c, v = 0.45) => [0.5, 1.5, 2.5, 3.5].flatMap((b) => [E('moog', b, 0.45, ROOT[c], v, { cutoff: 900 }), E('moog', b + 0.25, 0.2, ROOT[c] + 12, v * 0.5, { cutoff: 1400 })]); // (the off-beat roll)
-const arp = (c, v = 0.2) => { const t = TRI[c], up = [t[0], t[1], t[2], t[0] + 12]; return [...Array(16)].map((_, k) => E('koto', k * 0.25, 0.3, up[[0, 1, 2, 3, 2, 1][k % 6]] + 12, k % 4 ? v * 0.7 : v)); };
+const arp = (c, v = 0.2, bar = 0) => { const t = TRI[c], up = [t[0], t[1], t[2], t[0] + 12], P = (bar >> 2) % 2 ? [3, 2, 1, 0, 1, 2] : [0, 1, 2, 3, 2, 1]; // (up, or down every other phrase)
+  return [...Array(16)].map((_, k) => E('koto', k * 0.25, 0.3, up[P[k % 6]] + 12, k % 4 ? v * 0.7 : v)); };
 const pad = (c, v = 0.1) => [E('supersaw', 0, 4, TRI[c], v, { cutoff: 2400 })];
 const keys = (c, v = 0.25) => TRI[c].map((n) => E('rhodes', 0, 3.8, n - 12, v));
 const fill = (v = 0.6) => [2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75].map((b, k) => E('snare', b, 0.25, null, v * (0.5 + k * 0.07)));
-const answer = (bar, i = 'sax', up = 0, v = 0.36) => (bar % 2 === 0 ? quote(MOTIF.ANSWER, i, { up, v, at: 0 }) : [E(i, 0, 2, 74 + up, v * 0.9), E(i, 2, 2, 71 + up, v * 0.8)]);
+// the answer to the Answer: the phrase's sixth and seventh notes, D and B the first time, then varied with the chord under them (the owner)
+const REPLY = { C: [[[0, 2, 74], [2, 2, 71]], [[0, 2, 76], [2, 2, 79]], [[0, 1.5, 79], [1.5, 2.5, 78]]], // (D B; E G, rising; G and the raised fourth)
+  Bm: [[[0, 2, 74], [2, 2, 71]], [[0, 2, 78], [2, 2, 76]], [[0, 1.5, 81], [1.5, 2.5, 78]]] }; // (D B; F# E; up to A, down to F#)
+const answer = (bar, n = 0, i = 'sax', up = 0, v = 0.36) => (bar % 2 === 0 ? quote(MOTIF.ANSWER, i, { up, v, at: 0 })
+  : REPLY[chordOf(bar) === 'C' ? 'C' : 'Bm'][n % 3].map(([b, d, m], k) => E(i, b, d, m + up > 86 ? m + up - 12 : m + up, v * (k ? 0.8 : 0.9)))); // (never above D6: no squeal)
 const five = (i = 'brass', up = -12, v = 0.34) => quote(MOTIF.FIVE, i, { up, v, x: 0.8 }); // (five falling notes in a bar: 0.8 a beat)
-const swoop = (b, v = 0.2) => E('theremin', b, 1.5, 83, v, { from: 9, glide: 0.6 }); // (a darter going by)
+const swoop = (b, v = 0.3, dir = 1) => E('whoosh', b, 1.5, null, v, { from: -0.9 * dir, to: 0.9 * dir }); // (a darter going by, side to side)
 
-export const CRUDE_SEA = {
+const BASE = {
   title: 'Crude Sea', root: 64, bpm: 160, arrange: true, loopFrom: null, tail: 4,
   sections: [
-    { id: 'launch', bars: 8, gain: 2.9, bar: (i) => { const c = chordOf(i); return [...keys(c, 0.22), ...(i % 4 === 0 ? [E('pad', 0, 16, TRI.Em.map((n) => n - 12), 0.08, { cutoff: 900 })] : []),
-      ...(i === 0 ? [E('whale', 0, 8, 52, 0.18, { to: 47 })] : []), ...(i >= 4 ? [0, 1, 2, 3].map((b) => E('kick', b, 1, null, 0.12 * (i - 3))) : []),
-      ...(i >= 2 ? [0.5, 1.5, 2.5, 3.5].map((b) => E('hat', b, 0.5, null, 0.05 + 0.01 * i)) : []), ...(i === 6 ? [E('riser', 0, 8, null, 0.25)] : [])]; } },
-    { id: 'schools', bars: 18, gain: 2, bar: (i) => { const c = chordOf(i); return [...four(i < 2 ? 0.8 : 1), ...roll(c), ...arp(c), ...keys(c, 0.12),
-      ...(i === 0 || i === 8 ? [E('crash', 0, 1, null, 0.4)] : []), ...(i >= 8 ? answer(i, 'sax') : []), ...(i === 17 ? fill() : [])]; } },
-    { id: 'pincer', bars: 10, gain: 2.25, bar: (i) => { const c = chordOf(i); return [...four(), ...roll(c, 0.5), ...arp(c, 0.22), ...pad(c),
-      ...[0.5, 1.5, 2.5, 3.5].map((b) => E('brass', b, 0.3, TRI[c][2], 0.14, { stab: true })), ...answer(i, 'sax', 12, 0.34),
+    { id: 'launch', bars: 9, gain: 2.9, bar: (i) => { const c = chordOf(i), j = i - 1; return [...keys(c, 0.22), ...(i % 4 === 0 && i < 8 ? [E('pad', 0, 16, TRI.Em.map((n) => n - 12), 0.08, { cutoff: 900 })] : []),
+      ...(i === 0 ? [E('whale', 0, 8, 52, 0.18, { to: 47 })] : []), ...(j >= 4 ? [0, 1, 2, 3].map((b) => E('kick', b, 1, null, 0.12 * (j - 3))) : []),
+      ...(j >= 2 ? [0.5, 1.5, 2.5, 3.5].map((b) => E('hat', b, 0.5, null, 0.05 + 0.01 * j)) : []), ...(j === 6 ? [E('riser', 0, 8, null, 0.25)] : [])]; } }, // (a bar longer than first written: the owner)
+    { id: 'schools', bars: 17, gain: 2, bar: (i) => { const c = chordOf(i); return [...four(i < 2 ? 0.8 : 1), ...roll(c), ...arp(c, 0.2, i), ...keys(c, 0.12),
+      ...(i === 0 || i === 8 ? [E('crash', 0, 1, null, 0.4)] : []), ...(i >= 8 ? answer(i, (i - 8) >> 1, 'sax') : []), ...(i === 16 ? fill() : [])]; } },
+    { id: 'pincer', bars: 10, gain: 2.25, bar: (i) => { const c = chordOf(i); return [...four(), ...roll(c, 0.5), ...arp(c, 0.22, i), ...pad(c),
+      ...[0.5, 1.5, 2.5, 3.5].map((b) => E('brass', b, 0.3, TRI[c][2], 0.14, { stab: true })), ...answer(i, (i >> 1) + 1, 'sax', 12, 0.34),
       ...(i === 0 ? [E('crash', 0, 1, null, 0.45)] : []), ...(i === 9 ? [...fill(0.7), E('riser', 0, 4, null, 0.2)] : [])]; } },
-    { id: 'darters', bars: 14, gain: 2.6, bar: (i) => { const c = chordOf(i); return [...twostep(), E('growl', 0, 4, ROOT[c], 0.32, { rate: 4 }), ...arp(c, 0.18),
-      ...(i % 2 ? [swoop(1), swoop(3)] : [swoop(2)]), ...(i === 0 || i === 8 ? [E('crash', 0, 1, null, 0.45), E('impact', 0, 1, null, 0.3)] : []), ...(i === 13 ? fill(0.6) : [])]; } },
+    { id: 'darters', bars: 14, gain: 2.6, bar: (i) => { const c = chordOf(i); return [...twostep(), E('growl', 0, 4, ROOT[c], 0.32, { rate: 4 }), ...arp(c, 0.18, i),
+      ...(i % 2 ? [swoop(1), swoop(3, 0.3, -1)] : [swoop(2, 0.3, (i >> 1) % 2 ? -1 : 1)]), ...(i === 0 || i === 8 ? [E('crash', 0, 1, null, 0.45), E('impact', 0, 1, null, 0.3)] : []), ...(i === 13 ? fill(0.6) : [])]; } },
     { id: 'breather', bars: 12, gain: 3.1, bar: (i) => { const c = chordOf(i); return [...keys(c, 0.2), E('pad', 0, 4.2, TRI[c].map((n) => n - 12), 0.07, { cutoff: 1100 }),
       ...(i % 4 === 0 ? [E('voice', 0, 6, 65, 0.16, { vowel: 'o' }), E('voice', 6, 10, 64, 0.16, { vowel: 'o' })] : []), // (the Tear, held by the choir)
       ...(i === 2 || i === 7 ? [E('whale', 0, 6, 59, 0.2, { to: 52 })] : []), ...[0.5, 2.25, 3.1].map((b) => E('bubble', b + (i % 3) * 0.2, 1, null, 0.12, { size: 1 + (i % 4) * 0.3 })),
       ...(i >= 9 ? [0, 1, 2, 3].map((b) => E('kick', b, 1, null, 0.2 * (i - 8))) : []), ...(i === 10 ? [E('riser', 0, 8, null, 0.3)] : [])]; } },
-    { id: 'push', bars: 22, gain: 2.3, bar: (i) => { const c = chordOf(i); return [...four(1.05), ...roll(c, 0.5), ...arp(c, 0.22), ...pad(c, 0.12),
-      ...(i < 12 ? answer(i, 'sax', 12, 0.36) : five('brass', 0, 0.3)), ...(i >= 6 && i < 12 && i % 2 ? [swoop(2.5)] : []), // (the darters at 68)
+    { id: 'push', bars: 22, gain: 2.3, bar: (i) => { const c = chordOf(i); return [...four(1.05), ...roll(c, 0.5), ...arp(c, 0.22, i), ...pad(c, 0.12),
+      ...(i < 12 ? answer(i, (i >> 1) + 2, 'sax', 12, 0.36) : five('brass', 0, 0.3)), ...(i >= 6 && i < 12 && i % 2 ? [swoop(2.5)] : []), // (the darters at 68)
       ...(i === 0 || i === 6 || i === 12 ? [E('crash', 0, 1, null, 0.5)] : []), ...(i === 21 ? [...fill(0.8), E('riser', 0, 4, null, 0.3)] : [])]; } },
     { id: 'heavy', bars: 12, gain: 2.7, bar: (i) => { const c = chordOf(i); return [...halftime(), E('growl', 0, 4, ROOT[c] + 12, 0.34, { rate: 2 }),
       ...five('brass', -12, 0.34), ...pad(c, 0.12), E('voice', 0, 4, TRI[c][0], 0.12, { vowel: 'a' }), ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.35)] : []),
@@ -95,16 +106,13 @@ export function stageCue(seconds = 150) {
   return FITTED.get(bpm);
 }
 
-// ---- CRUDE SEA (B): the A/B the owner asked for (2026-10-06), the same score with the owner's ear laid over it (docs/OST.md section 6):
-// layers and texture, not a rescoring. Air on top (the shimmer, crisp hats and their rolls), the clean tapped guitar answering the koto
-// from the other side, the 808 under the heavy that slides between the roots, and three holes: a beat of silence with a reversed swell
-// into the darters, into the heavy, and in the heavy's middle (the bass diving into it). The game plays A until the owner picks.
+// ---- the owner's ear, laid over the score (layers and texture, not a rescoring: the owner, 2026-10-06)
 const V = { Em: [64, 67, 71, 74, 78], C: [60, 64, 67, 71, 78], D: [62, 66, 69, 71, 76], Bm: [59, 62, 66, 69, 76] }; // (Em9, Cmaj7#11, D6/9, Bm11)
-const TAP = [0, 2, 4, 1, 3, 4, 2, 0, 1, 3, 4, 2, 4, 3, 1, 2];
-const twinkle = (c, v = 0.2) => TAP.map((p, n) => E('twinkle', n * 0.25, 0.5, V[c][p] + (n >= 8 && p < 2 ? 12 : 0), v * (n % 4 ? 0.75 : 1)));
+const TAP = [[0, 2, 4, 1, 3, 4, 2, 0, 1, 3, 4, 2, 4, 3, 1, 2], [4, 2, 0, 3, 1, 0, 2, 4, 3, 1, 0, 2, 0, 1, 3, 2]]; // (climbing, then its mirror every other phrase)
+const twinkle = (c, v = 0.2, bar = 0) => TAP[(bar >> 2) % 2].map((p, n) => E('twinkle', n * 0.25, 0.5, V[c][p] + (n >= 8 && p < 2 ? 12 : 0), v * (n % 4 ? 0.75 : 1)));
 const sparkle = (c, v = 0.2) => [E('shimmer', 0, 4, TRI[c], v)];
 const ticks = (i, k = 1, rolls = false) => [...Array(rolls && i % 2 ? 12 : 16)].map((_, n) => E('tick', n * 0.25, 0.25, null, (n % 4 === 0 ? 0.32 : n % 2 ? 0.14 : 0.22) * k))
-  .concat(rolls && i % 2 ? [3, 3.125, 3.25, 3.375, 3.5, 3.625, 3.75, 3.875].map((b, n) => E('tick', b, 0.125, null, (0.12 + n * 0.03) * k)) : []);
+  .concat(rolls && i % 2 ? [3, 3.25, 3.5, 3.75].map((b, n) => E('tick', b, 0.25, null, (0.14 + n * 0.02) * k)) : []); // (an even roll, not a fizz)
 const ohats = (v = 0.18) => [0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, v));
 const trap = (i) => [...[0, 0.5, 1, 2, 2.5, 3].map((b) => E('tick', b, 0.5, null, b % 1 ? 0.18 : 0.26)), ...[1.5, 1.667, 1.833].map((b, n) => E('tick', b, 0.17, null, 0.14 + n * 0.04)),
   ...(i % 2 ? [3.5, 3.625, 3.75, 3.875].map((b, n) => E('tick', b, 0.125, null, 0.14 + n * 0.05)) : [E('tick', 3.5, 0.5, null, 0.2)])];
@@ -114,17 +122,17 @@ const eights = (i) => { const c = chordOf(i), r = low(c), p = low(chordOf(i + 3)
 /** A bar cut off at beat `at` (what sounds is shortened to end there), then a reversed swell into the next bar's downbeat: the hole. */
 const holed = (evs, at = 3) => [...evs.filter((e) => e.b < at).map((e) => ({ ...e, d: Math.min(e.d || 1, at - e.b) })), E('reverse', at, 4 - at, null, 0.4)];
 const LAYERS = {
-  launch: (i, c) => [...(i >= 2 ? sparkle(c, 0.06 + 0.01 * i) : []), ...(i >= 4 ? ticks(i, 0.3 + 0.15 * (i - 4)) : [])],
-  schools: (i, c) => [...ticks(i), ...(i >= 8 ? ohats(0.14) : []), ...twinkle(c, i < 8 ? 0.2 : 0.16)],
+  launch: (i, c) => [...(i >= 3 ? sparkle(c, 0.05 + 0.01 * i) : []), ...(i >= 5 ? ticks(i, 0.3 + 0.15 * (i - 5)) : [])],
+  schools: (i, c) => [...ticks(i), ...(i >= 8 ? ohats(0.14) : []), ...twinkle(c, i < 8 ? 0.2 : 0.16, i)],
   pincer: (i, c) => [...ticks(i, 1.1), ...ohats(), ...sparkle(c, 0.16), E('snap', 1, 1, null, 0.35), E('snap', 3, 1, null, 0.35)],
-  darters: (i, c) => [...ticks(i, 1, true), ...twinkle(c, 0.14)],
+  darters: (i, c) => [...ticks(i, 0.9, true), ...sparkle(c, 0.1)], // (no guitar here: the darters have the air to themselves)
   breather: (i, c) => [...sparkle(c, 0.1), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
-  push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15), ...sparkle(c, 0.16)],
+  push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15, i), ...sparkle(c, 0.16)],
   heavy: (i, c) => [...trap(i), ...(i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i)), ...sparkle(c, 0.14)],
   arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.12)] : []),
 };
 const HOLES = { pincer: 9, push: 21, heavy: 5 }; // (the bar of each that ends in a hole)
-export const CRUDE_SEA_B = { ...CRUDE_SEA, title: 'Crude Sea (B)', sections: CRUDE_SEA.sections.map((s) => ({ ...s, bar: (i) => {
+export const CRUDE_SEA = { ...BASE, sections: BASE.sections.map((s) => ({ ...s, bar: (i) => {
   const all = [...s.bar(i), ...(LAYERS[s.id]?.(i, chordOf(i)) || [])];
   return HOLES[s.id] === i ? holed(all) : all;
 } })) };
