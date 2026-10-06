@@ -68,8 +68,8 @@ clutches (`NURSERY.guard`). The rim shallows are slow and the pillars break the 
 colliders), so clearing the nursery first is a stealth circuit of the rim: slow and safe, as the system intends.
 
 **Phase 1, the crown.** The FOE fights on the floor:
-- **The ram:** it lowers its crown and scrapes for **1.0 sim s** (the telegraph: the crown's glow brightens, Wanda's scrape), then
-  charges straight at where the Courier stood at **11 m/s** (faster than a sprint at 6.8, slower than a dash at 13: you sidestep, you
+- **The ram:** it lowers its crown and scrapes for **1.0 sim s** (the telegraph: the crown's glow brightens, Wanda's scrape). It takes
+  its aim **when the scrape begins** (Petra measured: aimed when the charge starts, the sidestep fails), then charges at that point at **11 m/s** (faster than a sprint at 6.8, slower than a dash at 13: you sidestep, you
   don't outrun), for up to **24 m**, turning at most 20° a second. It stops at whatever it meets first:
   - a **pillar**: a whole crown stage (`FOE.crown.ram`); the pillar takes a crack (its first: a glowing seam; its second: it falls,
     lying across the floor as a 12 m log, cover and a new ram target worth one more stage, then rubble), and the nearest stalactite falls;
@@ -107,7 +107,17 @@ forms in W2 (the east).
 - **Wanda:** the ram's scrape (the 1.0 s tell), a pillar's crack and fall, the pool's ring before it surfaces, the brood's call.
 - **Dovina:** the numbers above live in `FOE` and `NURSERY`; any change Petra measures comes back to me.
 
-## Things to measure first (Petra)
+## Measured (Petra, 2026-10-06)
+
+1. **The sidestep:** aimed when the charge starts, the Courier has 0.55 s and clears at most 1.56 m of the FOE's half-width: a fail.
+   Aimed when the scrape begins, even reacting 0.75 s into it, the sprint, roll and jump-and-dash clear 3.29, 3.95 and 5.75 m: a pass.
+   **Ruled (Dovina): the aim is taken at the scrape's start** (`FOE.ram.aim` 0), and the 20° a second turn is kept. The tell and the
+   movement are unchanged. The FOE's half-width, crown included, is `FOE.halfWidth` 1.0 m.
+2. **The pillars:** 15 m stone to stone; a charge down the middle misses both.
+3. **The slide:** a sprint nets about 5.3 m/s against 1.5; aiming (2.3 m/s) nets 0.8, slow but never a trap. Kept: aiming in the pit is
+   a choice with a cost.
+
+## What was to be measured first (Petra)
 
 1. A sidestep of a 11 m/s charge from 6 m away: the core movement's dash must clear it with the telegraph's 1.0 s (it should, by about
    0.4 s to spare; if it doesn't, the telegraph grows, the movement never changes).

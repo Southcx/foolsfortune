@@ -19,6 +19,7 @@
 /** THE CROWNED FOE. The urn is a pot: what breaks pots breaks it (Impact, the slam, its own ram into stone); everything else rings off
  *  it (the resist mark) for a chip. Three crack stages, then the core is bare. */
 export const FOE = {
+  cls: 2, halfWidth: 1.0, // (the Great Slip Jelly at class 2: a slip jelly's 0.5 m radius x1.6, squashed wider at a ram, crown included)
   hp: 48, // (six slip jellies' worth: the bare phase is about 24 plain blows, 12 on the core, a real minute or two of a fight)
   crown: {
     stage: 6, stages: 3, // (crack points a stage: 18 in all, about 12 heavy Impact blows, or three rams, or a mix)
@@ -26,8 +27,10 @@ export const FOE = {
     ram: 6, // (its own ram into a pillar or a stalactite: one whole stage; the bullfight is the clever way, the hammer the honest one)
     bodyChip: 0.25, // (blows to its sides while crowned: the slip takes them, a quarter lands)
   },
-  ram: { telegraph: 1.0, speed: 11, range: 24, turn: 20, wallStun: 1 }, // (a 1 s scrape, then 11 m/s: faster than a sprint, slower than a
-                                                                       //  dash, so it is sidestepped, never outrun; 24 m at most, 20° a second)
+  ram: { telegraph: 1.0, speed: 11, range: 24, turn: 20, wallStun: 1, aim: 0 }, // (a 1 s scrape, then 11 m/s: faster than a sprint, slower than a
+                                                                       //  dash, so it is sidestepped, never outrun; 24 m at most, 20° a second;
+                                                                       //  `aim`: the aim is taken at this share of the scrape, 0 its start
+                                                                       //  (Petra measured: aimed at the charge's start, the sidestep fails)
   slam: { within: 5, radius: 3 }, // (close in, it rears and slams a ring 6 m across)
   reel: { seconds: 4, mult: 3 }, // (the break: it reels, and every blow lands three times over; Hollow Knight's window, short on purpose)
   core: { mult: 2, body: 0.5 }, // (bare: the core takes double, the body half; the core moves with it, so aim is the skill)
