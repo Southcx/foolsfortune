@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE PAINT MAP: where Lachryma lies on the ground, as a grid the world can ask and the ground's shaders can draw. The Soul Brush's
-// paint lays a feeling on it (and the mop drinks it back), stains of spilled crude are drawn into it, and what stands in it is asked
-// of it: a creature in painted ground takes the feeling's status, a Brush Slide over it runs on (docs/plans/SUNSHINE.md phase 2;
+// paint lays a feeling on it (and the mop drinks it back), and what stands in it is asked of it (stains of spilled crude are their own
+// meshes: world/ground/stains.js): a creature in painted ground takes the feeling's status, a Brush Slide over it runs on (docs/plans/SUNSHINE.md phase 2;
 // docs/plans/SUNSHINE-SYSTEMS.md, Dovina's numbers).
 //
 // Prior art: Super Mario Sunshine's pollution layers (doldecomp/sms PollutionLayer: a bitmap projected flat onto the floor, stamped by
@@ -11,14 +11,13 @@
 //
 //   const pm = new PaintMap()   pm.update(dt, focusX, focusZ)   pm.patch(material) (the ground's shaders: tops of things only)
 //   pm.stamp(x, y, z, r, aspect, k) -> m² newly covered   pm.drink(x, y, z, r, want) -> paint taken (0..want, in cell-fulls)
-//   pm.at(x, y, z) -> { k, aspect } | null   pm.setStains(list: [{ x, y, z, r, k }])   ASPECT_COLOR
+//   pm.at(x, y, z) -> { k, aspect } | null   ASPECT_COLOR
 //   (one cell is 0.25 m, so a puddle's edge reads round; a window of 256 cells, 64 m, round the focus; paint fades over LIFE real seconds)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ASPECTS, COLOR } from '../../progress/weather.js';
 
 const N = 256, CELL = 0.25, SPAN = N * CELL, LIFE = 150, NONE = -1e4, NEAR = 0.8;
-const STAIN = new THREE.Color(0x1c1322); // (spilled crude: dark, with its grade's colour in its sheen)
 export const ASPECT_COLOR = Object.fromEntries(ASPECTS.map((a) => [a, new THREE.Color(COLOR[a])]));
 
 export class PaintMap {
@@ -26,9 +25,8 @@ export class PaintMap {
     this.k = new Float32Array(N * N);       // paint, 0..1
     this.asp = new Int8Array(N * N).fill(-1); // its feeling (index into ASPECTS)
     this.h = new Float32Array(N * N).fill(NONE); // the height it lies at
-    this.stainK = new Float32Array(N * N); this.stainH = new Float32Array(N * N).fill(NONE); this.stainA = new Int8Array(N * N).fill(-1);
     this.x0 = -SPAN / 2; this.z0 = -SPAN / 2; // (the window's corner, in whole cells)
-    this.stains = []; this.live = new Set(); this.dirty = true; this.upT = 0;
+    this.live = new Set(); this.dirty = true; this.upT = 0;
     this.colData = new Uint8Array(N * N * 4); this.hData = new Float32Array(N * N);
     this.colTex = new THREE.DataTexture(this.colData, N, N, THREE.RGBAFormat); this.colTex.magFilter = this.colTex.minFilter = THREE.LinearFilter;
     this.hTex = new THREE.DataTexture(this.hData, N, N, THREE.RedFormat, THREE.FloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
@@ -77,22 +75,6 @@ export class PaintMap {
     return { k: this.k[n], aspect: ASPECTS[this.asp[n]] };
   }
 
-  /** The stains to draw ({ x, y, z, r, k, aspect? }: world/ground/stains.js keeps them). */
-  setStains(list) { this.stains = list; this.drawStains(); }
-  drawStains() {
-    this.stainK.fill(0); this.stainH.fill(NONE); this.stainA.fill(-1);
-    for (const s of this.stains) {
-      const c = Math.ceil(s.r / CELL), ci = Math.floor((s.x - this.x0) / CELL), cj = Math.floor((s.z - this.z0) / CELL);
-      for (let dj = -c; dj <= c; dj++) for (let di = -c; di <= c; di++) {
-        const i = ci + di, j = cj + dj; if (i < 0 || j < 0 || i >= N || j >= N) continue;
-        const d = Math.hypot(this.x0 + (i + 0.5) * CELL - s.x, this.z0 + (j + 0.5) * CELL - s.z) / s.r; if (d > 1) continue;
-        const n = j * N + i, v = s.k * (1 - d * d * d); // (a puddle's edge: full almost to the rim)
-        if (v > this.stainK[n]) { this.stainK[n] = v; this.stainH[n] = s.y; this.stainA[n] = ASPECTS.indexOf(s.aspect); }
-      }
-    }
-    this.dirty = true;
-  }
-
   /** Once a frame: fade the paint, follow the focus (whole cells; what leaves the window is gone), upload when changed. */
   update(dt, fx, fz) {
     const want0 = Math.floor((fx - SPAN / 2) / CELL) * CELL, want1 = Math.floor((fz - SPAN / 2) / CELL) * CELL;
@@ -113,15 +95,14 @@ export class PaintMap {
     }
     this.k = k; this.asp = a; this.h = h; this.live = live; this.x0 = x0; this.z0 = z0;
     this.uniforms.uPmWin.value.set(x0, z0, SPAN, 1 / N);
-    this.drawStains();
+    this.dirty = true;
   }
 
   upload() {
     const C = this.colData, Hh = this.hData, tmp = new THREE.Color();
     for (let n = 0; n < N * N; n++) {
-      const s = this.stainK[n], p = this.k[n], o = n * 4;
-      if (s > 0.02 && s >= p) { tmp.copy(STAIN); if (this.stainA[n] >= 0) tmp.lerp(ASPECT_COLOR[ASPECTS[this.stainA[n]]], 0.18); Hh[n] = this.stainH[n]; C[o + 3] = Math.round(255 * Math.min(1, s)); }
-      else if (p > 0.02) { tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, p)); }
+      const p = this.k[n], o = n * 4;
+      if (p > 0.02) { tmp.copy(ASPECT_COLOR[ASPECTS[this.asp[n]]]); Hh[n] = this.h[n]; C[o + 3] = Math.round(255 * Math.min(1, p)); }
       else { C[o] = C[o + 1] = C[o + 2] = 0; C[o + 3] = 0; Hh[n] = NONE; continue; } // (black under nothing: an edge filters toward the colour, not away from it)
       const a = C[o + 3] / 255; C[o] = Math.round(tmp.r * a * 255); C[o + 1] = Math.round(tmp.g * a * 255); C[o + 2] = Math.round(tmp.b * a * 255); // (premultiplied)
     }

@@ -25,6 +25,7 @@ import { ASPECT_COLOR } from '../../world/ground/paintmap.js';
 import { T } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
+import { LachrymatoBottle } from '../../vfx/bottle.js';
 
 const simRand = stream('tools/soulbrush/load');
 
@@ -45,10 +46,7 @@ export class BrushLoad {
     this.tool = tool; this.mode = 'paint'; this.sat = -1; this.working = false;
     this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null;
     tool.game.events?.on('vessel.shieldbreak', () => this.shieldBreak());
-    // (a stand-in for the bottle on the upper back until Calissa's model comes: a glass capsule and the Lachryma in it, by its level)
-    this.glass = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.16, 3, 8), new THREE.MeshStandardMaterial({ color: 0xbfe8f2, roughness: 0.1, transparent: true, opacity: 0.35, depthWrite: false }));
-    this.fill = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 8), new THREE.MeshStandardMaterial({ color: 0x8fb0ff, roughness: 0.3, emissive: 0x8fb0ff, emissiveIntensity: 0.35 }));
-    this.glass.name = 'bottle-standin'; this.glass.visible = this.fill.visible = false; tool.game.scene.add(this.glass, this.fill);
+    this.look = null; this.lookId = null; this.crackT = 0; this.mopAt = null; // (the bottle worn, seen: Calissa's vfx/bottle.js)
     tool.game.save?.section('brushload', { // (the mode and the grade of what the bottle holds; the Lachryma it holds is the bottle's own `uses`)
       scope: 'player', version: 1,
       dump: () => ({ mode: this.mode, grade: this.grade }),
@@ -94,7 +92,7 @@ export class BrushLoad {
     const fromPool = want - fromBottle > 0 ? g.lachryma.drain(want - fromBottle, 'brushpaint') : 0;
     if (fromBottle + fromPool < want * 0.5) { this.end(); sfx.fizzle?.(); g.log?.say('info', 'The bristles run dry.', { key: 'brushdry2', throttle: 4 }); return; }
     this.paintFrom = fromBottle > 0 ? 'bottle' : 'pool';
-    const aspect = this.aspect, col = ASPECT_COLOR[aspect];
+    const aspect = this.aspect;
     this.acc += dt * DROPS_PER_SEC;
     const tip = this.tool.model.tipWorld(_a), aim = this.tool.club.aimDir(_d);
     while (this.acc >= 1 && this.drops.length < MAX_DROPS) {
@@ -102,8 +100,7 @@ export class BrushLoad {
       const spread = (simRand() - 0.5) * 0.35, up = 0.32 + simRand() * 0.18, sp = DROP_SPEED * (0.8 + simRand() * 0.35);
       const c = Math.cos(spread), s = Math.sin(spread), dx = aim.x * c - aim.z * s, dz = aim.x * s + aim.z * c;
       const v = new THREE.Vector3(dx, up, dz).normalize().multiplyScalar(sp);
-      this.drops.push({ p: tip.clone(), v, aspect, life: 2.5 });
-      g.fx?.alpha.emit({ pos: tip.clone(), vel: v.clone(), life: 0.9, size: 0.09, sizeEnd: 0.05, color: col, alpha: 0.85, drag: 0.1, gravity: 9.8 });
+      this.drops.push({ p: tip.clone(), v, aspect, life: 2.5 }); // (the spray's look is Calissa's: vfx/brushload.js, driven in tick)
     }
     g.ai?.stimuli?.emit?.({ kind: 'sound', pos: tip.clone(), loud: 0.3, by: 'courier' });
   }
@@ -120,10 +117,8 @@ export class BrushLoad {
     let got = s.got;
     if (s.grade && s.grade !== this.grade) { this.grade = s.grade; this.save(); }
     if (got < want && g.paintmap) { const p = g.paintmap.drink(fx, P.pos.y, fz, r, (want - got) * 0.25) * 4; got += p; } // (a cell-full of paint is four Lachryma)
-    if (got > 0) {
-      this.held += got; this.mopped += got;
-      if (simRand() < 0.4) g.fx?.alpha.emit({ pos: tip.clone(), vel: new THREE.Vector3((P.pos.x - tip.x) * 2, 1.2, (P.pos.z - tip.z) * 2), life: 0.4, size: 0.07, sizeEnd: 0.02, color: ASPECT_COLOR[this.grade || 'wonder'], alpha: 0.8, drag: 2, gravity: 0 });
-    }
+    if (got > 0) { this.held += got; this.mopped += got; }
+    this.mopAt = got > 0 ? (s.at || new THREE.Vector3(fx, P.pos.y, fz)) : null; // (where the stream is drawn from: vfx/brushload.js)
   }
 
   /** What was laid or drunk in one hold goes to the ledger in one event, when the hold ends. */
@@ -163,25 +158,27 @@ export class BrushLoad {
         g.creatures.build(c, TYPE_OF[p.aspect], 6 * p.k * STATUS_EVERY, 'courier', 'paint');
       }
     }
+    // the looks (Calissa's): the load on the bristles while the brush is out, the bottle worn
+    const raw = g.rawDt || dt;
+    if (this.busy && this.tool.drawT > 0.02) g.brushLoad?.update(raw, { model: this.tool.model, mode: this.mode, saturate: Math.max(0, this.sat), working: this.working, aim: this.tool.club.aimDir(_d).clone(), from: this.mopAt, feeling: this.aspect });
     // the bottle: a reserve that feeds the pool below half
     const b = this.bottle;
-    this.place(b);
+    this.wear(b, raw);
     if (b && this.held > 0 && g.lachryma) {
       const f = bottleFeed(b, this.held, g.lachryma.fraction, dt);
       if (f > 0) { this.held -= f; g.lachryma.gain(f, 'bottle'); }
     }
   }
 
-  /** The stand-in bottle on the upper back, behind the chest, filled to its level in its grade's colour. */
-  place(b) {
-    const ch = this.game.character, on = !!b && !!ch && !ch.hidden && !this.game.god?.active;
-    this.glass.visible = this.fill.visible = on; if (!on) return;
-    const P = this.P, c = ch.chestPoint(_a), yaw = P.bodyYaw;
-    c.x -= Math.sin(yaw) * 0.17; c.z -= Math.cos(yaw) * 0.17; c.y += 0.04;
-    this.glass.position.copy(c); this.glass.rotation.set(0, yaw, 0.12);
-    const k = Math.max(0.02, this.held / BOTTLES[b].capacity);
-    this.fill.scale.set(1, 0.24 * k, 1); this.fill.position.set(c.x, c.y - 0.12 + 0.12 * k, c.z); this.fill.rotation.copy(this.glass.rotation);
-    this.fill.material.color.copy(ASPECT_COLOR[this.grade || 'grief']); this.fill.material.emissive.copy(this.fill.material.color);
+  /** The bottle on the upper back, seen (vfx/bottle.js): made when one is worn, its fill and its crack each frame. */
+  wear(b, raw) {
+    const g = this.game, ch = g.character;
+    if (b !== this.lookId) { this.look?.dispose(); this.look = null; this.lookId = b; if (b && ch) { this.look = new LachrymatoBottle({ size: b.slice(7) }); this.look.mount(ch); } }
+    if (!this.look) return;
+    this.look.group.visible = !ch.hidden && !g.god?.active;
+    this.crackT = Math.max(0, this.crackT - raw);
+    this.look.set({ fill: this.held / BOTTLES[b].capacity, crack: this.crackT > 0 });
+    this.look.update(raw, this.P.accel || null);
   }
 
   land(d, at) {
@@ -198,6 +195,7 @@ export class BrushLoad {
     const spilled = this.held * share; this.held -= spilled;
     g.stains?.spill(this.P.pos.clone(), this.grade || ASPECTS[0], spilled, 'courier', 'bottle');
     sfx.glassCrack?.(); // (a placeholder: Wanda's)
+    this.crackT = 12; // (the crack shows a while: vfx/bottle.js)
     g.events?.emit('bottle.crack', { bottle: b, spilled: Math.round(spilled), by: 'creature' });
   }
 }

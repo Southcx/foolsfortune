@@ -155,8 +155,9 @@ export class SoulBrush extends Tech {
     this.slideTick(dt);
     this.paint.update(dt);
     // the ink in the head: Lachryma gathers while the canvas is open or a slam gathers, and drains back after
-    const ink = this.celestial.active ? 1 : this.club.charge >= 0 ? Math.min(1, this.club.charge / 1.1) : this.load.busy ? this.load.sat : 0;
-    this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
+    // (while the load is worked, its look inks the tuft: vfx/brushload.js, driven from load.js)
+    const ink = this.celestial.active ? 1 : this.club.charge >= 0 ? Math.min(1, this.club.charge / 1.1) : 0;
+    if (!this.load.busy) this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
     const ch2 = g.character;
     this.model.group.visible = this.enabled && g.belt?.isWorn('soulbrush') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active; // (in the box: not on them)
     { const m = this.model; this.rest.update(raw, this.drawT === 0 && !this.sliding, `${Math.round(m.bendY * 100)}|${Math.round(m.bendZ * 100)}|${Math.round(m.ink * 100)}`); }
@@ -201,7 +202,9 @@ export class SoulBrush extends Tech {
     let hs = Math.hypot(P.vel.x, P.vel.z);
     if (this.slideT < 0.05) this.slideEntry = hs;
     // on painted ground the slide runs on (Sunshine's belly slide on wet ground): it keeps the speed it came in with, no more
-    if (g.paintmap?.at(P.pos.x, P.pos.y, P.pos.z) && hs > 1 && hs < (this.slideEntry || 0)) {
+    const painted = g.paintmap?.at(P.pos.x, P.pos.y, P.pos.z), W = g.water?.at(P.pos.x, P.pos.y + 0.1, P.pos.z);
+    g.brushLoad?.slide(dt, { pos: P.pos, vel: P.vel, surface: W ? 'water' : painted ? 'paint' : null, feeling: painted?.aspect || this.load.aspect }); // (the rooster tails: vfx/brushload.js)
+    if (painted && hs > 1 && hs < (this.slideEntry || 0)) {
       const k = Math.min(this.slideEntry / hs, 1 + PAINT_GLIDE * dt); P.vel.x *= k; P.vel.z *= k; hs *= k;
     }
     if (hs > 0.5) {

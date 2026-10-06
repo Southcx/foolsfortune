@@ -34,6 +34,8 @@ import { Trial } from './world/trial.js';
 import { TestRoom } from './world/testroom/room.js';
 import { TestRoomDress } from './vfx/testroomkit.js';
 import { NightSky } from './vfx/nightsky.js';
+import { Stain } from './vfx/stains.js';
+import { LachrymatoBottle } from './vfx/bottle.js';
 import { WaterFx } from './vfx/waterfx.js';
 import { BrushLoad } from './vfx/brushload.js';
 import { SHORE } from './world/dunes/beach.js';
@@ -354,7 +356,7 @@ async function main() {
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
-  game.stains = new Stains(game, game.paintmap); // (spilled crude by the game day's layout and the cracked bottles: world/ground/stains.js)
+  game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
@@ -782,6 +784,9 @@ async function main() {
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
   const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
+  // (a stain and a Lachrymato Bottle, made now and parked hidden, never disposed: their programs live while one exists; the casebook's rules 17 and 18)
+  const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
+  for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
@@ -789,6 +794,7 @@ async function main() {
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain();
+  for (const o of brushLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -982,7 +988,7 @@ async function main() {
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
-    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt);
+    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);

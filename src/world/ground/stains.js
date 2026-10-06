@@ -3,12 +3,13 @@
 // numbers in progress/brushload.js STAINS). The game day's layout puts STAINS.shore of them on the Shore, where the voyages' spills
 // come ashore; a cracked Lachrymato Bottle spills one where the Courier stood. Left alone, a stain grows a stage a game day (its crude
 // grows with it), and at the third it spawns ONE aberrant Figment (a slip jelly gone wrong), then holds. The Soul Brush's mop drinks a
-// stain up (tools/soulbrush/load.js); emptied, it is washed (`stain.wash`). Drawn into the paint map (world/ground/paintmap.js).
+// stain up (tools/soulbrush/load.js); emptied, it is washed (`stain.wash`). Each is drawn as Calissa's Stain (vfx/stains.js: one mesh,
+// one program shared by all), draped once over the static ground under it.
 //
 // Prior art: Super Mario Sunshine's goop (a stage's pollution that Piranha Plants grow out of, cleaned for access), PowerWash
 // Simulator (the stain coming off is its own reward), and Stardew Valley's daily layout (what the day put down stays until dealt with).
 //
-//   const S = new Stains(game, paintmap)   S.update(dt)   S.spill(pos, grade, lachryma, by)   S.drink(x, y, z, r, want) -> { got, grade }
+//   const S = new Stains(game)   S.update(dt)   S.spill(pos, grade, lachryma, by)   S.drink(x, y, z, r, want) -> { got, grade, at }
 //   S.list ([{ x, y, z, grade, born, drunk, spawned, from }])   S.stageOf(s)   S.crudeOf(s)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -16,18 +17,21 @@ import { STAINS, stainStage } from '../../progress/brushload.js';
 import { ASPECTS } from '../../progress/weather.js';
 import { now, today, DAY_MS } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
+import { Stain } from '../../vfx/stains.js';
 
 const RADIUS = [1.1, 1.6, 2.2, 2.8]; // (metres across a stain's middle, by stage 0..3)
 const SHORE_CAP = 6; // (stains the Shore holds at most: the game days' layouts add up to this, never past it)
 
+const _o = new THREE.Vector3(), _down = new THREE.Vector3(0, -1, 0);
+
 export class Stains {
-  constructor(game, paintmap) {
-    this.game = game; this.pm = paintmap; this.list = []; this.laid = -1; this.t = 0;
+  constructor(game) {
+    this.game = game; this.list = []; this.looks = new Map(); this.laid = -1; this.t = 0;
     game.save?.section('stains', {
       scope: 'world', version: 1,
       dump: () => ({ list: this.list.map((s) => ({ ...s })), laid: this.laid }),
       load: (d) => { this.list = (d.list || []).filter((s) => ASPECTS.includes(s.grade)).map((s) => ({ ...s })); this.laid = d.laid ?? -1; this.draw(); },
-      reset: () => { this.list = []; this.laid = -1; },
+      reset: () => { this.list = []; this.laid = -1; this.draw(); },
     });
   }
 
@@ -38,7 +42,7 @@ export class Stains {
   /** A spill: a stain of `grade` where `pos` is (a cracked bottle, a crossing's spill). Its crude starts at what was spilled. */
   spill(pos, grade, lachryma = STAINS.crude[0], by = 'environment', from = 'spill') {
     if (!ASPECTS.includes(grade)) return null;
-    const s = { x: pos.x, y: pos.y, z: pos.z, grade, born: now(), drunk: Math.max(0, STAINS.crude[0] - lachryma), spawned: false, from };
+    const s = { x: pos.x, y: this.groundAt(pos.x, pos.y, pos.z), z: pos.z, grade, born: now(), drunk: Math.max(0, STAINS.crude[0] - lachryma), spawned: false, from };
     this.list.push(s); this.draw(); this.save();
     this.game.events?.emit('stain.spill', { grade, lachryma, from, by });
     return s;
@@ -46,16 +50,16 @@ export class Stains {
 
   /** The mop: drink up to `want` Lachryma from the stains within r of (x, y, z). An emptied stain is washed. */
   drink(x, y, z, r, want) {
-    let got = 0, grade = null;
+    let got = 0, grade = null, at = null;
     for (const s of this.list.slice()) {
       if (got >= want) break;
       const rad = RADIUS[this.stageOf(s)];
       if (Math.abs(s.y - y) > 1.2 || Math.hypot(s.x - x, s.z - z) > r + rad) continue;
-      const t = Math.min(this.crudeOf(s), want - got); s.drunk += t; got += t; grade = s.grade;
+      const t = Math.min(this.crudeOf(s), want - got); s.drunk += t; got += t; grade = s.grade; at = s;
       if (this.crudeOf(s) <= 0.01) this.wash(s);
     }
     if (got) { this.draw(); this.save(); }
-    return { got, grade };
+    return { got, grade, at: at && new THREE.Vector3(at.x, at.y, at.z) };
   }
 
   wash(s) {
@@ -101,6 +105,27 @@ export class Stains {
     this.draw();
   }
 
-  draw() { this.pm?.setStains(this.list.map((s) => { const st = this.stageOf(s); return { x: s.x, y: s.y, z: s.z, r: RADIUS[st] * (0.35 + 0.65 * this.crudeOf(s) / STAINS.crude[st]), k: 1, aspect: s.grade }; })); }
+  /** Each stain's look: made (and draped) when it first shows, its stage and what the mop has left set, disposed when it is washed. */
+  draw() {
+    const scene = this.game.scene; if (!scene) return;
+    for (const [s, L] of this.looks) if (!this.list.includes(s)) { L.dispose(); this.looks.delete(s); }
+    for (const s of this.list) {
+      let L = this.looks.get(s);
+      if (!L) {
+        L = new Stain({ feeling: s.grade, seed: ((Math.imul(Math.round(s.x * 10), 73856093) ^ Math.imul(Math.round(s.z * 10), 19349663)) >>> 0) / 4294967296 });
+        L.group.position.set(s.x, s.y, s.z); scene.add(L.group);
+        L.drape((x, z) => this.groundAt(x, s.y, z));
+        this.looks.set(s, L);
+      }
+      const st = this.stageOf(s); L.set({ stage: st, amount: this.crudeOf(s) / STAINS.crude[st] });
+    }
+  }
+  /** The static ground under (x, z) near height y (a pot or a creature is not ground), else y. */
+  groundAt(x, y, z) {
+    const hit = this.game.physics?.raycast(_o.set(x, y + 0.6, z), _down, 3, undefined, undefined, (c) => !c.parent() || c.parent().isFixed());
+    return hit ? hit.point.y : y;
+  }
+  /** Once a frame (render): the looks ease toward their stage. */
+  tick(raw) { for (const L of this.looks.values()) L.update(raw); }
   save() { this.game.save?.dirty('stains'); }
 }
