@@ -11,15 +11,16 @@
 // archways", "mesh skirts"): the walls and pillars are drawn rough (rock.js: a noisy skin on a box collider, smooth-shaded), every doorway
 // is a round ARCH (jambs, a stepped ring and pilasters standing proud of both faces: the Romanesque portal, the archivolt over a door in
 // a thick wall), and each room's sand hangs a SKIRT a metre down its edges, the terrain trick for hiding the seams between patches
-// (Ulrich's chunked LOD, 2002: a skirt under every chunk's edge). Rooms hold one of a few templates (plain, pillars, a
-// ledge to mantle onto, plinths), Mystery Dungeon's and Tartarus's way of making a small kit read as many floors. The way in (a pale pool:
+// (Ulrich's chunked LOD, 2002: a skirt under every chunk's edge). Since R46 (the owner: "expertly designed rooms ... prefab rooms that
+// can be chained together") each room is one of a dozen designs (prefabs.js: a processional, the narrows, a cloister, a gallery, a
+// shrine, a pylon gate, three halls...), turned to its doorways and paced along the path; the sand lies low round their pieces. The way in (a pale pool:
 // the way up, back out of the Well) and the way down (a dark one, turning) are pools of Lachryma on the sand.
 //
 // Dressed in the Great Dunemaw's kit (vfx/dunemawkit.js: bismuth walls, its sand `K.sand` when it has one) and its pool (vfx/dunemaw.js):
 // Calissa's.
 //
 //   layoutFloor(seed, floor) (welllayout.js)
-//   buildFloor(game, layout, origin, floor) -> { group, cells, path, arrive: { pos, yaw }, up, down, sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
+//   buildFloor(game, layout, origin, floor) -> { group, cells (each with its design `tpl` and `spots`: [{ kind, pos }]), path, arrive: { pos, yaw }, up, down, sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
 //     ground(x, z, top?), update(dt), dispose() }       (origin: the grid's north-west corner, at the upper tier's floor)
 //   GRID (cells a side), CELL (metres a cell), WALL_H
 // ---------------------------------------------------------------------------------------
@@ -35,6 +36,8 @@ import { layoutFloor, swirl, GRID, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from
 import { roomSand, BASE } from './wellsand.js';
 import { Sandfalls } from './wellshift.js';
 import { roughen, segments } from './rock.js';
+import { chooseRooms, roomPieces, TALL } from './prefabs.js';
+import { seeded } from '../../core/rng.js';
 
 export { layoutFloor, GRID, CELL, WALL_H };
 const WT = 0.5, SLAB = 0.5, PIECE = 3.5, HALF = (GRID * CELL) / 2;
@@ -55,6 +58,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const W = game.physics.world, body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed());
   const group = new THREE.Group(); group.name = `well-floor-${floor}`; group.userData.zone = 'well';
   const WH = WALL_H + (LIFT[floor - 1] ?? LIFT[LIFT.length - 1]); // (this floor's walls, sand allowed for)
+  chooseRooms(layout, seeded((layout.seed ^ Math.imul(floor, 0x2c1b3c6d)) >>> 0)); // (each room's design, paced along the path: prefabs.js)
   const deep = (floor - 1) / 2, tint = (hex, k = 1) => new THREE.Color(hex).lerp(new THREE.Color(0x3a2350), deep * 0.55 * k).getHex();
   const sets = { floor: [], wall: [], ceil: [], deco: [], arch: [] }, sandGeos = [];
   const C = { x: origin.x + HALF, z: origin.z + HALF }, Y = origin.y, sw = swirl(layout.twist), unsw = swirl(layout.twist, { back: true }), bend = layout.twist > 0;
@@ -162,10 +166,6 @@ export function buildFloor(game, layout, origin, floor = 1) {
     wall(cell, 'n'); wall(cell, 'w');
     if (!get(cell.c + 1, cell.r)) wall(cell, 'e');
     if (!get(cell.c, cell.r + 1)) wall(cell, 's');
-    const t = cell.tpl;
-    if (t === 'pillars') for (const [ox, oz] of [[-3.2, -3.2], [3.2, -3.2], [-3.2, 3.2], [3.2, 3.2]]) box(m.x + ox, y + WH / 2, m.z + oz, 1.1, WH, 1.1, 'deco');
-    else if (t === 'ledge') box(m.x, y + 0.6, m.z - CELL / 2 + 2.2, CELL - 5, 1.2, 3.4, 'deco'); // (one mantle up: the core movement's step)
-    else if (t === 'plinths') for (const [ox, oz, h] of [[-3, 0, 0.9], [3, 1.5, 1.6], [0, -3.5, 0.5]]) box(m.x + ox, y + h / 2, m.z + oz, 2, h, 2, 'deco');
     // a lamp in each room (one a hall), dim, warmer near the top of the Well
     const key = cell.hall != null ? `h${cell.hall}` : `${cell.c},${cell.r}`;
     if (lit.has(key)) continue;
@@ -179,7 +179,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const rooms = [];
   for (const cell of layout.cells) if (cell.hall == null) rooms.push({ cells: [cell], m: mid(cell), size: CELL, cell });
   layout.halls.forEach((h, id) => rooms.push({ cells: layout.cells.filter((k) => k.hall === id), m: hallMid(h), size: 2 * CELL, cell: layout.cells.find((k) => k.hall === id) }));
-  const sandOf = new Map();
+  const sandOf = new Map(), spotsOf = new Map();
   for (const room of rooms) {
     const { m, size, cell } = room, doors = [], pools = [];
     for (const k of room.cells) {
@@ -187,11 +187,18 @@ export function buildFloor(game, layout, origin, floor = 1) {
       for (const s of k.doors) { const [dx, dz] = SIDES[s], o = get(k.c + dx, k.r + dz); if (o && o.hall != null && o.hall === k.hall) continue; doors.push({ x: km.x - m.x + (dx * CELL) / 2, z: km.z - m.z + (dz * CELL) / 2 }); }
       if (k === layout.start || k === layout.exit) pools.push({ x: km.x - m.x, z: km.z - m.z });
     }
+    // the room's design: its pieces (rough, like the walls), where the sand is kept low for them, and its spots
+    const hall = cell.hall != null, design = hall ? layout.halls[cell.hall].tpl : cell.tpl;
+    const D = roomPieces(design, cell.turn, hall ? doors.map((d) => [d.x, d.z]) : null), y = Y + cell.level, high = top(cell) - cell.level;
+    for (const p of D.pieces) { const h = p.h === TALL ? high : p.h; box(m.x + p.x, y + h / 2, m.z + p.z, p.w, h, p.d, 'deco'); }
+    const clear = [...D.flat, ...D.pieces.filter((p) => p.kind !== 'pillar').map((p) => ({ x: p.x, z: p.z, r: Math.hypot(p.w, p.d) / 2 + 0.4 }))];
     const sl = cell.slope, ramp = sl ? { from: sl.from, hFrom: sl.fromLevel - cell.level, hTo: sl.toLevel - cell.level } : null;
-    const S = roomSand({ seed: (layout.seed ^ Math.imul(floor, 0x9e3779b1) ^ Math.imul(cell.c * 7 + cell.r + 1, 0x85ebca6b)) >>> 0, floor, size, doors, pools, ramp });
+    const S = roomSand({ seed: (layout.seed ^ Math.imul(floor, 0x9e3779b1) ^ Math.imul(cell.c * 7 + cell.r + 1, 0x85ebca6b)) >>> 0, floor, size, doors, pools, ramp, clear });
     const yb = Y + cell.level;
     sandGeos.push(sheet(m.x, m.z, S.size, S.n, (lx, lz) => yb + S.at(lx, lz), false, SKIRT));
     for (const k of room.cells) sandOf.set(k, { S, m, yb });
+    spotsOf.set(cell, D.spots.map((o) => { const p = place(m.x + o.x, m.z + o.z), on = D.pieces.find((q) => Math.abs(q.x - o.x) < q.w / 2 && Math.abs(q.z - o.z) < q.d / 2);
+      return { kind: o.kind, pos: new THREE.Vector3(p.x, on ? y + (on.h === TALL ? high : on.h) : yb + S.at(o.x, o.z), p.z) }; })); // (on a piece's top where one stands there)
   }
   // ---- what is drawn: one mesh a set (the kit's materials, shared by every floor), and one of sand
   const K = (game.dunemawKit ||= (() => { const k = dunemawKit({ env: game.sky?.env }); for (const mm of [k.wall, k.floor, k.trim, k.sand].filter(Boolean)) mm.userData.shared = true; return k; })());
@@ -258,7 +265,8 @@ export function buildFloor(game, layout, origin, floor = 1) {
   };
   game.scene.add(group);
   let t = 0;
-  const cells = layout.cells.map((k) => { const p = onSand(k); return { x: p.x, z: p.z, y: Y + k.level, c: k.c, r: k.r, role: k.role, hall: k.hall ?? null, slope: !!k.slope, doors: [...k.doors] }; });
+  const cells = layout.cells.map((k) => { const p = onSand(k); return { x: p.x, z: p.z, y: Y + k.level, c: k.c, r: k.r, role: k.role, hall: k.hall ?? null, slope: !!k.slope, doors: [...k.doors],
+    tpl: k.hall != null ? layout.halls[k.hall].tpl : k.tpl, spots: spotsOf.get(k) ?? [] }; });
   return {
     group, arrive, up, down, floor, cells, door, ground, sandfalls: falls.list, onSand: (c, r, lx, lz) => onSand(get(c, r), lx, lz),
     /** The cell a point of the world stands in (the swirl undone), or null off the plan. */

@@ -144,7 +144,9 @@ export class Dunemaw {
     const g = this.game, J = g.jellies, F = this.cur; if (!J) return;
     const r = seeded((this.run.seed ^ Math.imul(n, 0x85ebca6b)) >>> 0), rooms = F.cells.filter((c) => c.role !== 'start');
     for (let i = rooms.length - 1; i > 0; i--) { const j = r.int(i + 1); [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; }
-    const at = (c, dx = 0) => { const p = F.onSand(c.c, c.r, dx, c.role === 'exit' ? 3 : 0); p.y += 0.05; return p; }; // (on the sand, off the pool)
+    const at = (c, dx = 0) => { // (in the room's lair when its design has one (prefabs.js), else on the sand, off the pool)
+      const lair = !dx && c.spots?.find((s) => s.kind === 'lair'); if (lair) return lair.pos.clone().setY(lair.pos.y + 0.05);
+      const p = F.onSand(c.c, c.r, dx, c.role === 'exit' ? 3 : 0); p.y += 0.05; return p; };
     for (const c of rooms.slice(0, 1 + n)) this.mobs.push(J.spawn(at(c), { once: true }));
     const end = rooms.find((c) => c.role === 'exit');
     if (n === FLOORS && end) this.mobs.push(J.spawn(at(end, -3), { once: true, cls: 2 }));

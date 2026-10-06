@@ -111,8 +111,7 @@ function attempt(R, floor) {
     for (const [a, b] of [[0, 1], [0, 2], [1, 3], [2, 3]]) if (!linked(members[a], members[b])) link(members[a], members[b]);
     // (an added cell must join the floor: the block is joined inside, and the block to the floor through the cells it had)
   }
-  // ---- what stands in a room, and which side links fall
-  for (const cell of cells.values()) if (!cell.slope && cell.hall == null && cell !== start && cell !== exit) cell.tpl = R.pick(['plain', 'pillars', 'ledge', 'plinths']); // (the pools' rooms stand bare)
+  // ---- which side links fall (what stands in each room is chosen by its design: prefabs.js, wellkit.js)
   const sides = links.filter((l) => !l.path && !(l.a.hall != null && l.a.hall === l.b.hall)); // (never the path, never inside a hall)
   const rooms = cells.size - 3 * halls.length; // (a hall is one room of four cells)
   if (!halls.length || sides.length < 2 || rooms < 10 || rooms > 20) return null; // (a hall at least, two sandfalls, 10 to 20 rooms: drawn again)

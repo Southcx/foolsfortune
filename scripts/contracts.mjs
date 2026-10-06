@@ -12,6 +12,10 @@
 //   another's service
 // ---------------------------------------------------------------------------------------
 import { openGame } from './playtest/game.mjs';
+import { PREFABS, checkPrefab } from '../src/world/well/prefabs.js';
+
+// (the Dunemaw's room designs keep their socket: no piece in a lane or the middle, in any shape a design is drawn for: pure, no page)
+const prefabProblems = Object.keys(PREFABS).flatMap(checkPrefab);
 
 const g = await openGame({ seed: 7, query: '&clock=1791160275000' });
 const results = await g.page.evaluate(async () => {
@@ -55,6 +59,7 @@ const results = await g.page.evaluate(async () => {
   return out;
 });
 await g.close();
+results.push({ name: 'Dunemaw room designs keep the socket', producer: 'world/well/prefabs.js', consumer: 'world/well/wellkit.js, the agents\' routes', ok: !prefabProblems.length, why: prefabProblems.slice(0, 3).join('; ') });
 const bad = results.filter((r) => !r.ok);
 for (const r of results) console.log(`${r.ok ? 'ok  ' : 'FAIL'} ${r.name.padEnd(36)} ${r.producer}  ->  ${r.consumer}${r.ok ? '' : `\n       ${r.why}`}`);
 if (g.errors.length) console.log(`page errors: ${g.errors.slice(0, 3).join(' | ')}`);

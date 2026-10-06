@@ -385,6 +385,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **a lane** (`src/world/well/wellsand.js`): in a room of the Great Dunemaw, the band of flat sand from each doorway and pool to the
   room's middle (1.6 m to each side, the dunes and drifts beside it): the way through a room is level ground. *Not:* a path (the
   floor's guaranteed route of rooms, `layout.path`).
+- **a room's design** (`src/world/well/prefabs.js`): one of the Great Dunemaw's designed rooms (a prefab): the processional, the
+  narrows, the stones, the cloister, the crossing, the gallery, the shrine, the pylon gate, the vestibule; and three halls: the
+  hypostyle, the amphitheatre, the ruin. Drawn once for a shape of doorways and turned to fit; paced along the path (a way through,
+  a fight, a breath). *Not:* a template (the word retired with the four R45 ones).
+- **the socket** (`src/world/well/prefabs.js`): what every room's design keeps clear so any two chain: a lane from each doorway to
+  the room's middle (nothing within 2.2 m of its line) and the middle (2.5 m round). `npm run contracts` checks it.
 - **an arch** (`src/world/well/wellkit.js`): a doorway of the Great Dunemaw's floors, round-headed (4 m wide, its crown 5 m up), its
   ring and pilasters standing proud of both faces of the wall.
 - **a skirt**: what blends a thing into the ground where the two meet, so no hard line shows (the owner, R46: "meshes that interact

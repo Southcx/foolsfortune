@@ -164,3 +164,12 @@ The flythrough previews each floor (`src/cine/flythrough.js`).
 4. **Wanda:** the pit's hiss, the slip rivers, the stalactites' beat, the FOE's drop.
 5. **Calissa:** the pit's sand, the slip's material, the stalactites, the pots and artifacts, the urn crown and the core, the brood
    and the clutches.
+
+**R46 pass (Petra): designed rooms that chain** (the owner: "expertly designed rooms and level geometry prefab rooms that can be
+chained together"). `world/well/prefabs.js`: twelve room designs (nine for a cell, three for a hall), each drawn once for a shape of
+doorways (dead end, through, corner, T, crossing) and turned to fit. They chain because each keeps the socket (a lane from every
+doorway to the middle, and the middle, clear), checked by `npm run contracts`. Along the path they are paced: a way through, a fight,
+a breath, never the same design twice running, and a pylon gate before the way down. Dead ends always hold something (a shrine, a
+gallery, the stones' perch). The sand lies low round a design's blocks and steps (`roomSand` `clear`); a jelly waits in a design's
+lair. Measured over 600 floors (seeds 1 to 200, floors 1 to 3): every cell fits its doorways, no repeats on the path; the gap check
+leaks 0 rays; the playtest walks all three floors.

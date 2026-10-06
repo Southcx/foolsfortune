@@ -13,7 +13,8 @@
 // Prior art: Journey's sand (thatgamecompany, 2012: dunes, drifts and slopes to slide down), and any terrain built as a sum of a few
 // waves (the dunes' own height function, world/dunes/dunes.js).
 //
-//   roomSand({ seed, floor, size, doors: [{ x, z }], pools: [{ x, z }], ramp?: { from: 'n'|'s'|'e'|'w', hFrom, hTo } }) ->
+//   roomSand({ seed, floor, size, doors: [{ x, z }], pools: [{ x, z }], ramp?: { from: 'n'|'s'|'e'|'w', hFrom, hTo },
+//             clear?: [{ x, z, r }] (where a room's design wants the sand low: round its blocks and steps, prefabs.js) }) ->
 //     { n, size, step, heights (column-major, x rows: Rapier's), at(x, z) -> height }   (room-local metres, from the room's centre)
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
@@ -30,7 +31,7 @@ const toMid = (x, z, ax, az) => { const L = ax * ax + az * az, t = L ? Math.min(
 const LANE = [1.6, 3.6]; // (a lane's flat half-width, and where the sand is wholly its own again: metres)
 const ROUND = 2; // (metres over which a ramp's ends are rounded)
 
-export function roomSand({ seed, floor, size, doors = [], pools = [], ramp = null }) {
+export function roomSand({ seed, floor, size, doors = [], pools = [], ramp = null, clear = [] }) {
   const R = seeded(seed >>> 0), L = LOOK[floor] || LOOK[3];
   const n = SAMPLES, span = size, step = span / (n - 1), half = size / 2, h0 = -span / 2; // (to the walls' middles: wellkit.js swirls every sample, so rooms meet edge to edge)
   // the dunes: a few long waves, each its own direction and phase
@@ -43,6 +44,7 @@ export function roomSand({ seed, floor, size, doors = [], pools = [], ramp = nul
     let k = 1;
     for (const d of doors) k = Math.min(k, smooth(2.6, 4.6, Math.hypot(x - d.x, z - d.z)));
     for (const p of pools) k = Math.min(k, smooth(2.8, 4.4, Math.hypot(x - p.x, z - p.z)));
+    for (const c of clear) k = Math.min(k, smooth(c.r, c.r + 2, Math.hypot(x - c.x, z - c.z)));
     for (const d of lanes) k = Math.min(k, smooth(LANE[0], LANE[1], toMid(x, z, d.x, d.z)));
     return k;
   };
