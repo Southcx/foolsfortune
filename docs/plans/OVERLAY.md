@@ -51,13 +51,18 @@ readiness or the stun meter's fill, so the circle is read as the Flash's, and it
 - **A readiness hoop** for the Flash, in labradorite (it is a reading, not a held thing, so not a Lachryma bead): on the ring, and in the
   viewfinder's margin with the lens raised. It closes as the 1.1 s cooldown runs, and is whole when the Flash is ready.
 - **A price tick** on the pool's band at 6 Lachryma, so whether you can afford a Flash reads on the pool itself.
-- **The stun ring** at a creature's feet. It fills as flashes land, closes to "open" when the creature is stunned (the reprogram prompt
-  is the closed ring), and is dashed while the creature is immune.
-- **Status build-ups** as arcs on that ring, each in its aura's colour.
-- **The capture circle** stays the photograph's alone.
-- **Open:** does the stun ring show on creatures you are not aiming at? Calissa leans no. Dovina leans **yes for any creature whose
-  meter is above zero, fading 3 real seconds after its last flash**, because choosing whom to flash next is the decision the ring
-  serves; at zero it shows nothing. This one is the owner's call (in the digest).
+- **The meter lives where you aim from** (the owner, 2026-10-06: "why would the stun ring go around the enemy's feet when you're looking
+  at them THROUGH the Veritome to stun them? Remember, Fatal Frame and Pokemon Snap"). The feet ring is withdrawn.
+  - **Through the lens** (the Veritome raised): **the capture circle is the Flash's**, Fatal Frame's way. It locks onto the subject, and
+    the subject's stun meter fills the circle as flashes land; it closes to "open" when the subject is stunned (the reprogram cue) and is
+    dashed while it is immune. Status build-ups ride the circle's rim as arcs in their aura's colour. The readiness hoop is the circle's
+    own outer rim, closing with the cooldown.
+  - **The photograph's quality** moves off the circle to the viewfinder's frame: Pokemon Snap's way, the frame's corners close on a
+    subject held well (the held plate), and the shutter chance is the frame's one brief brightening. So one circle means one thing: the
+    Flash.
+  - **Without the lens** (the book out, a third-person Flash): the same mark, a bracket round the creature's body at its eyes (what
+    the light reaches), never at its feet. It shows on creatures whose meter is above zero and fades 3 real seconds after their last
+    flash; at zero it shows nothing.
 - The log says once, the first time, which key is which.
 
 ## The inventory: what the player needs to read, and where it should sit
@@ -68,8 +73,8 @@ readiness or the stun meter's fill, so the circle is read as the Flash's, and it
 | the Blink's charges | beads on the ring | kept |
 | where a blow came from, shield or clay | the ring's flash and crack | kept |
 | what has noticed you | the ring's threat arcs | kept |
-| the Flash's readiness | nothing | a labradorite hoop on the ring and in the viewfinder's margin, a price tick on the band |
-| a creature's stun meter and status build-up | nothing on the creature | a ring at its feet: stun in labradorite, a status's build-up in its damage type's colour |
+| the Flash's readiness | nothing | the capture circle's outer rim through the lens; a labradorite hoop on the ring without it; a price tick on the band |
+| a creature's stun meter and status build-up | nothing | through the lens: the capture circle on the subject (Fatal Frame); without it: a bracket at the creature's eyes; build-ups as arcs in their aura's colour |
 | a creature's mental state | its body (temper: Calissa's) | kept, the body |
 | a creature's grain | its movement (Calissa's dials) | kept, the body; the Veritome names it |
 | the draught (the stones) | nothing | the ring's band tinted by the feeling drunk |
