@@ -68,8 +68,8 @@ export const STAGE = {
   seconds: 150,
   bears: 6,
   waves: [
-    { at: 0.08, role: 'school', count: 5, formation: 'line',   lane: 0 },     // the first shots: a line straight ahead
-    { at: 0.16, role: 'school', count: 6, formation: 'vee',    lane: null },
+    { at: 0.09, role: 'school', count: 5, formation: 'line',   lane: 0 },     // the first shots: a line straight ahead
+    { at: 0.17, role: 'school', count: 6, formation: 'vee',    lane: null },
     { at: 0.26, role: 'school', count: 8, formation: 'pincer', lane: 0 },     // from both sides at once
     { at: 0.36, role: 'darter', count: 2, formation: 'dash',   lane: null },  // the first thing to dodge, not shoot
     { at: 0.44, role: 'darter', count: 3, formation: 'dash',   lane: null },
