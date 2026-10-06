@@ -5,5 +5,7 @@
   - Budget ask: the overlay costs at most 3 calls a frame.
 - Two hooks on your side:
   - Raising a priced tool out of a fight brings the battle ring up in its quiet state (`combat.engaged || belt.out?.overlay`).
-  - The Flash's readiness also shows in the viewfinder's margin, because the ring is hidden in first person.
+  - With the lens raised, the capture circle becomes the Flash's (the owner's ruling, folded in). It locks onto the subject and fills with its stun meter, and its outer rim is the readiness hoop.
+  - The photograph's quality moves to the viewfinder's corner brackets.
+  - Without the lens, the stun meter is a bracket at the creature's eyes (`head(out)`). The feet ring is withdrawn.
 - Sizes are for 480 lines: lines 1 to 1.6 px, a ring at least 24 px on the screen, a fade past 30 m.

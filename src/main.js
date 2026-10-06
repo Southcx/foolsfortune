@@ -99,7 +99,6 @@ import { dunemawMood } from './vfx/dunemawkit.js';
 import { Flythrough } from './cine/flythrough.js';
 import { Daturas } from './vfx/datura.js';
 import { WellDress } from './vfx/welldress.js';
-import { MaskFace, FACES as MASK_FACES } from './vfx/maskface.js';
 import { Shore } from './vfx/shore.js';
 import { Interact } from './courier/interact.js';
 import { LockOn } from './courier/lockon.js';
@@ -309,7 +308,6 @@ async function main() {
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
   game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
   game.wellDress = new WellDress(game); // (the Dunemaw floor's sandfalls dressed: vfx/welldress.js)
-  game.maskFace = new MaskFace(game); // (the Courier's mask an E-ink face: its expressions, blink and pupils, vfx/maskface.js)
   game.flythrough = new Flythrough(game); // (a Dunemaw floor previewed on arrival, smeared by the frame accumulation: cine/flythrough.js)
   game.dunemawMood = dunemawMood(game); // (the Great Dunemaw's verse into the wall: its floors' colours by depth, slammed at the FOE)
   game.ui = new HideUI(game); // (F2: the interface off the screen, for a clean shot)
@@ -650,7 +648,6 @@ async function main() {
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
   if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
-  game.chat.add('face', { help: `the mask's face for a few seconds (${MASK_FACES.join(', ')})`, run: ([name]) => { game.maskFace.set(name, 4, 9); } });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
@@ -1045,7 +1042,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.maskFace.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
