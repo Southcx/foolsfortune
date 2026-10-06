@@ -1,4 +1,4 @@
-# Shrines, the Spirit Garden's door, and the escape item (the owner, 2026-10-06)
+# Shrines, the Spirit Garden's door, and the Wake Whistle (the owner, 2026-10-06)
 
 Kept by Dovina. Petra builds the places and the acts, Calissa the look, Espada the names. Units: real seconds, minutes of play.
 
@@ -26,24 +26,26 @@ it did would fear quitting anywhere else, and lose nothing by it. The log says "
 
 **Where they stand** (the first set, one per place you can be made whole in):
 
-1. the workshop (where the Courier was made; the first, found from the start),
-2. the Dunes, by the Dunemaw's mouth (outside the Well, never in it),
-3. Old Grog's pier on Anagami (the crossing's start),
-4. Margarite's dock (the crossing's end).
+1. **the Bisque Shrine**: the workshop (where the Courier was made; bisque is the first firing; found from the start),
+2. **the Lamp Shrine**: the Dunes, at the Dunemaw's lip (outside the Well, never in it),
+3. **the Float Shrine**: Old Grog's pier on Anagami (the crossing's start),
+4. **the Pearl Shrine**: Margarite's dock (the crossing's end; Margarite means pearl).
+
+Names are Espada's (`docs/LORE.md`, "Shrines and the Wake Whistle").
 
 **No Shrines in the Wells** (the owner): a Well is a run, and its risk is that a shatter loses the run. A Shrine inside would end that.
 
-## 2. The escape item (placeholder name; Espada's)
+## 2. The Wake Whistle (`whistle.wake`; Espada's name: a Well is rumination, and the way out is to wake)
 
-A consumable that takes you out of a Well alive, to its mouth. What you keep depends on how you leave (Tarkov's extracts):
+A small clay whistle, a consumable that takes you out of a Well alive, to its mouth. What you keep depends on how you leave (Tarkov's extracts):
 
 | how you leave the Well | the run's pay | the haul (materials) and the map (the Cogitomap) |
 |---|---|---|
 | walked up the way up | all | kept |
-| **escaped** (the item) | **75%** (`ECON.escape.keep`) | kept |
+| **woken** (the Wake Whistle) | **75%** (`ECON.escape.keep`) | kept |
 | shattered | nothing | lost |
 
-- **Price: 8 minutes of play** (64 cubes), placeholder until a measured run. Bailing costs the toll (a quarter of the pay) and the
+- **Price: 8 minutes of play** (64 cubes, `ECON.goods['whistle.wake']`), placeholder until a measured run. Bailing costs the toll (a quarter of the pay) and the
   price: at 3 floors (pay 451 cubes) 177, about 0.39 of the run; at 8 floors (3,449) 926, about 0.27; deeper, toward the toll's 0.25.
   So the cost of bailing grows with what you have to lose and stays a choice at every depth (a flat price alone would be nothing at
   depth, where `wellPay` grows 1.25 times a floor).
@@ -51,8 +53,9 @@ A consumable that takes you out of a Well alive, to its mouth. What you keep dep
 - **A channel of 1.5 real s, broken by a blow** (WoW's Hearthstone, Tarkov's extract timer): it is a way out when you have a breath,
   not a dodge in the middle of a blow. The owner's "without dying" holds whenever you find a breath; whether a FOE floor allows one
   is the FOE's design.
-- Sold where crude is: Old Grog's pier (with the Lachrymato Bottles). Used from the Pneuka Box. Works in any Well (the Great Dunemaw
-  included); anywhere else it does nothing ("You are not in a Well.", at the point of use).
+- Sold where crude is: Old Grog's pier, three in stock (with the Lachrymato Bottles). Blown from the Pneuka Box; it breaks. Works in any Well (the Great Dunemaw
+  included); anywhere else it does nothing ("You are not in a Well.", at the point of use). The log (rule in `tracking/wells.js`): "You blow the Wake
+  Whistle, and wake at the Dunemaw's mouth." A woken run is not a timed run (`well.run.*` skip it).
 
 ## 3. Events and counts (for the build; rules added when they are emitted)
 

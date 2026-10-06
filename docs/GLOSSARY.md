@@ -70,12 +70,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   dimension inside your Pneuka Jar, entered at a **Shrine**: the mastery dividend's **slots** (each worked by a **mastered** encounter:
   every achievement of its group done), the **beds** (a material planted grows more of its kind), and the upgrades (the long sink). The
   **Pneuka Box** is its shed: the one part of it reachable anywhere (P). *Not:* "Shrine Garden" (retired).
-- **a Shrine** (`docs/plans/SHRINES.md`): a place in the world where you **rest** (the pool full), which is **where you are made whole**
+- **a Shrine** (`docs/plans/SHRINES.md`; in the lore a roadside hokora, kiln-sized: Espada): a place in the world where you **rest** (the pool full), which is **where you are made whole**
   after a shatter (the last one you rested at), a **fast-travel** point (to any Shrine you have found), and the door into the Spirit
   Garden. None in the Wells. *Not:* a save point: the game keeps everything as it happens (`game.save`); *not* the Wells' dead-end
-  room of the same shape (`prefabs.js` `shrine`, a breath, which keeps its code name).
-- **the escape item** (placeholder; Espada names it, `docs/plans/SHRINES.md`): a consumable that takes you out of a Well alive, to its
-  mouth (Pokemon's Escape Rope, Psychonauts' Smelling Salts).
+  room of the same shape (`prefabs.js` `shrine`, a breath, which keeps its code name). The first four (Espada): the **Bisque Shrine**
+  (the workshop), the **Lamp Shrine** (the Dunemaw's lip), the **Float Shrine** (Old Grog's pier), the **Pearl Shrine** (Margarite's dock).
+- **the Wake Whistle** (`whistle.wake`, `ECON.escape`; Espada's name, `docs/plans/SHRINES.md`): a small clay whistle that takes you out of
+  a Well alive, to its mouth, with the haul and three quarters of the run's pay (Pokemon's Escape Rope, Psychonauts' Smelling Salts). It
+  breaks when blown; one carried at a time. *Not:* "escape item" (the placeholder) in what the player reads.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
   (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening

@@ -7,7 +7,7 @@
 // keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
@@ -55,6 +55,8 @@ ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
 for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
+// the Wake Whistle: out of a Well alive (docs/plans/SHRINES.md; the words are Espada's); broken when blown, one carried at a time
+ITEMS['whistle.wake'] = { id: 'whistle.wake', kind: 'whistle', key: 'wake', name: 'WAKE WHISTLE', glyph: '♫', color: 0xc89a6a, tier: 1, examine: 'A small clay whistle. Blow it in a Well, and you wake at the Well\'s mouth with what you carry. It breaks when you use it. You can carry one.', card: null, lure: false, stack: false };
 // the Lachrymato Bottles: worn one at a time in their own place, 'bottle', on the upper back (progress/brushload.js has their numbers; the words are Espada's)
 const BOTTLE_TEXT = {
   'bottle.small': ['SMALL LACHRYMATO BOTTLE', 'A tear bottle of thin glass, worn on your back. It holds a little Lachryma for when your pool runs low.'],

@@ -78,6 +78,7 @@ export const ECON = {
     'heart.gambler': 20, 'heart.shepherd': 20,
     // the Lachrymato Bottles (progress/brushload.js): bigger is dearer and riskier; placeholders until the economy has a brush profile
     'bottle.small': 10, 'bottle.medium': 25, 'bottle.large': 50,
+    'whistle.wake': 8, // (the Wake Whistle: the toll on the pay does the rest at depth, docs/plans/SHRINES.md)
   },
   /** What a look costs at the kiln (a glaze, a stone, a hair, a skin), by its PRESTIGE: the folk's own clay ladder (docs/LORE.md), from
    *  Earthenware (yours from the start, free) through Stoneware and Porcelain to the Court, each about 2.5 times the last (value is felt
@@ -111,10 +112,10 @@ export const ECON = {
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
-  /** The escape item (name: Espada's; docs/plans/SHRINES.md): out of a Well alive, to its mouth. A run walked up pays all of it; one
-   *  escaped pays `keep` of it (the haul and the map kept whole); one shattered pays nothing. `price` in minutes of play; one carried at a
-   *  time; `channel` real seconds of use, broken by a blow (a way out when you have a breath, not a dodge mid-blow). */
-  escape: { price: 8, keep: 0.75, carry: 1, channel: 1.5 },
+  /** The Wake Whistle (`whistle.wake`, Espada's name; docs/plans/SHRINES.md): out of a Well alive, to its mouth. A run walked up pays all
+   *  of it; one escaped pays `keep` of it (the haul and the map kept whole); one shattered pays nothing. One carried at a time; `channel`
+   *  real seconds of use, broken by a blow (a way out when you have a breath, not a dodge mid-blow). Its price is in `goods`. */
+  escape: { item: 'whistle.wake', keep: 0.75, carry: 1, channel: 1.5 },
   /** A COGITOMAP: a ticket to a seeded run of a Well, as it was the day it was charted. Worth `share` of what that run paid, by how
    *  much of it was charted, times what its Well still holds (its yield at the fill it has now: progress/shop/shops.js `still`). No
    *  clock rots it (the owner, R58): a map is a claim on a feeling still there, so farming a Well cheapens its maps and letting it
