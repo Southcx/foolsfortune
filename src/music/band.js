@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------------------
 import { WorldBand } from './world.js';
 import { RockBand } from './rock.js';
+import { ModernBand } from './modern.js';
 
 export const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -423,5 +424,5 @@ export class Band {
 }
 
 // the wider band (music/world.js): the sitar, the steel pan, the concertina and the rest, played like the band's own
-// and the rock rig (music/rock.js): the overture's power chords, lead, bass and kit
-for (const W of [WorldBand, RockBand]) for (const key of Object.getOwnPropertyNames(W.prototype)) if (key !== 'constructor') Band.prototype[key] = W.prototype[key];
+// and the rock rig (music/rock.js): the overture's power chords, lead, bass and kit; and the modern rig (music/modern.js): hats, the 808, shimmer
+for (const W of [WorldBand, RockBand, ModernBand]) for (const key of Object.getOwnPropertyNames(W.prototype)) if (key !== 'constructor') Band.prototype[key] = W.prototype[key];

@@ -89,7 +89,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
 | Mirage of the Still Water | the Dunes | 84 swung, D# minor pentatonic blues | vibes, ney, Rhodes, brushes, darbuka | (to be woven in: the Five, on D#) | **made** |
 | The Workshop | home: the kiln, Saggar | 75, the blues in E | a work song: hammer, foot, breath, washboard; hummed calls and sung answers; harmonica, slide guitar, upright | the Five in the calls | **made** |
 | Surface Thoughts, Undertow, The Bottom of the Well | a mind's Well, floors 1 to 3 | 60, E (a drone) | tanpura, drips of bells, breath, a far voice; then the Tear held under it, a heartbeat, the whale, an octatonic celesta; then a sub pedal, a far taiko, a string cluster (E, F, B), a low choir | Tear (floors 2 and 3) | **made** (`music/well.js`) |
-| Crude Sea | a hop across the Emocean (the stage; its rail is paced to it) | 160, E minor, 100 bars = 150 s | a trance groove under space jazz: four on the floor, a rolling Moog, a koto arpeggio, a supersaw, a two-step break, the growl, the theremin swooping; sax, brass, choir, whale | Answer (sailing), Tear (the breather), Five (the heavy) | **made** (`music/emocean.js`) |
+| Crude Sea | a hop across the Emocean (the stage; its rail is paced to it) | 160, E minor, 100 bars = 150 s (a launch of 9) | a trance groove under space jazz: four on the floor, a rolling Moog, a koto arpeggio, a supersaw, a two-step break, the growl, darters whooshing past; sax, brass, choir, whale. With the owner's ear laid over it (the A/B of 2026-10-06, chosen): a shimmer, hats and their rolls, a tapped guitar answering the koto, an 808 sliding under the heavy, three holes. The sax's reply varies each time round; the arpeggios turn over every other phrase | Answer (sailing), Tear (the breather), Five (the heavy) | **made** (`music/emocean.js`) |
 | The Weir by night | the oasis after dark | 75, B minor (a fifth up) | shakuhachi, harp, crickets | the Five, high and slow | |
 | The Field | walking between places | 100 in 5/4, E minor / G | the Path movement grown into its own piece | Five, Answer | *sketch: movement II* |
 | The Basement | the lab, tinkering | 125, A minor (a fifth down) | koto ostinato, plucked synth, clock ticks | the Five in diminution | |
@@ -187,11 +187,84 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
   at the seam against the music's own step at that moment (equal is seamless). Delivered as FLAC: MP3 pads its ends with silence.
 - The wider band also has a harp, a wordless voice (a vocalise through formants) and a theremin (`music/world.js`).
+- **The modern rig** (`music/modern.js`, for the owner's ear: section 6): a crisp hat and an open one (`tick`, `ohat`: the 808's metal
+  squares over noise), a snap, the 808 (`eight`, sliding into a note with `from`), a shimmer (the chord two and three octaves up,
+  sparkling, with air above 8 kHz), a clean tapped guitar (`twinkle`) and a reversed swell cut dead on the downbeat (`reverse`).
+  Laid over the cues as layers and texture, not to rescore them (the owner, 2026-10-06). The hole: a bar cut at its third beat and a
+  reversed swell into the next downbeat.
 - **Sounds the ear has to read** (the crystals, `audio/crystal.js`) keep their partials near-harmonic and the fundamental strong, so the
   pitch is heard true (a free bar's 2.32 and 4.25 made it ambiguous, to a pitch detector and to the ear); beating is two tones `beat`
   Hz apart. Checked by measuring: the pitch of each strike against the note asked, the envelope's wobble against `beat`.
 
-## 6. Next
+## 6. The owner's ear
+
+What the owner replays, and what it asks of this soundtrack: their Spotify playlist *Superlike* (77 songs, about 255 real minutes),
+read on 2026-10-05 from Spotify's public embed page. The owner's five favourites (six: a tie) were measured from Spotify's own
+30-second previews; the clips and their spectrograms were not kept in the repo.
+
+- **The list.** Nearly all from 2015 on, with emo, bedroom pop, alternative R&B, hyperpop, metalcore, lo-fi trap and math rock all
+  mixed, many of the songs collaborations. The songs average 3:19 and none runs past 5:19. The titles name feelings plainly (*Anhedonia, Agoraphobia, Anxious,
+  Ad Nauseam, Disposable, Getting Older*) and set them to music that moves: sad words, a groove under them. Alchemy and water run
+  through it (*Aqua Regia, Transmutation, Battery Acid, Datura, Electrons*; *Waterfalls Coming Out Your Mouth, Tsunami, Swan Dive*).
+  Clean tapped guitar on extended chords (Ichika Nito, Yvette Young), jazz chords (Sting, Sleep Token's *Aqua Regia*), glam theatre
+  (Palaye Royale, Crown The Empire), the soft verse that drops into a wall (Sleep Token, Crywolf).
+- **The five**, the owner's picks: *Waterfalls Coming Out Your Mouth* (Glass Animals), *DATURA [paroxysm]* (Crywolf), *Agoraphobia*
+  (Coletta), *Linoleum* (kmoe), and tied for fifth, *WHY'D YOU HAVE TO GO THERE* and *MOUTHFUL OF SILENCE* (ZIG MENTALITY).
+- **What the previews measure** (spectrograms, and levels by `lowshare.sh` and ffmpeg's EBU R128):
+  - **Silence as a hit.** Five of the six cut the bass, or everything, for a beat or two and slam back in (*Waterfalls*'s
+    drop-outs, *DATURA*'s break, *Linoleum*'s hard cut, *MOUTHFUL OF SILENCE*'s stop). *Agoraphobia* is the other way: a wall, its
+    loudness range 0.3 LU.
+  - **The bass moves in pitch**: slides and dives (*Waterfalls*'s swoops, *Linoleum*'s dive), not only steps from note to note.
+  - **Weight in the bass**: 20 to 56% of the energy under 120 Hz, four of the six above this soundtrack's 45%.
+  - **Air**: 1.4 to 12.5% of the energy above 2 kHz (the median about 4.8%). This soundtrack's cues, rendered offline without the
+    reverb, have 0.2 to 3.3% (the median 0.6%): about an eighth.
+  - **Tempo**: four between 90 and 110 bpm, two near 150 (or a half-time 75).
+  - **Keys** could not be read cleanly from 30 real seconds: the notes smear across their neighbours (bends, glides, distortion).
+- **The whole list** (75 of the 77 have a preview; *I Still See You* and *forget it* do not). Measured the same way, plus drop-outs
+  (the bass or everything 18 dB under its median for a moment) and bass slides (the bass's pitch moving 3 semitones or more in one
+  sweep):
+  - **Four families** by sound: *the Low Glow* (21 songs: heavy bass, a dark top, a groove: Sleep Token's *Aqua Regia*, half•alive,
+    Phantogram), *the Drop* (13: drop-outs, slides, the biggest dynamics: Crywolf, Crown The Empire), *the Band* (18: a band in the
+    room, middling everything: Wallows, Tigercub, Sting), *the Wall* (23: bright, dense, a steady loudness: diet lemon, Worry Club).
+    Five of the six favourites are in the Low Glow (three) and the Drop (two), which hold 34 of the 75; the other is *Agoraphobia*,
+    in the Wall.
+  - **What sets the favourites apart from the list**: the bass (a median of 48% under 120 Hz against the list's 32%) and the
+    drop-outs (four of the six have them, against 24 of the 75).
+  - **What sets the list apart from this soundtrack**: the air (the list's median 7.3% above 2 kHz, its least 1.4%; nine of 17 of
+    our cues, rendered offline, have less than that least) and the drums (the list's median percussive share 26%, its least 11%;
+    13 of our 17 cues are under 11%). The tempo is no gap: the list's median is 110 bpm, the middle half 96 to 125, as ours.
+- **The most-played hundred** (Spotify's own top-songs list for the owner, most likely 2025's: 59 of the 100 are from 2024 and 2025,
+  the latest from 2025-08-15; read 2026-10-05). kmoe leads it (6 songs, ranks 1, 2 and 7 among them); 8 of its top 20 are on
+  Superlike. Measured the same way, it sounds like Superlike (the same tempo, bass and drums), a little brighter and steadier: the Wall
+  holds 45 of the 100, and 26 of the bottom 50. The top ten lean the other way: 4 of them are the Drop (against 14 of the 100). What is
+  played all day is bright and dense; what is played most leans to the Drop, and the five favourites (above) to the bass.
+- **The all-time hundred and twenty-one** (Spotify's all-time top songs for the owner; 120 measured, read 2026-10-06). A time capsule
+  of 2013 to 2019 (42 of the 121 from 2016): pop-punk and the emo revival (Motion City Soundtrack, Farewell Fighter), post-hardcore
+  (Bring Me The Horizon, PVRIS), SoundCloud emo rap (XXXTENTACION, nothing,nowhere., Lil Xtra), melodic electronic drops (Porter
+  Robinson and Madeon's *Shelter*, ILLENIUM, Aero Chord), alt-pop (EDEN, The Neighbourhood, Chase Atlantic), with Anamanaguchi's
+  chiptune, Caravan Palace's electro-swing and The Midnight's synthwave beside them. Its number one is math rock (Strawberry
+  Girls' *Swimming Pools*). The Drop holds 31 of the 120, the most of any list so far. *Linoleum* (kmoe) is the one song on all three
+  lists. The genres moved in ten years; the ear did not: the same bass (32% under 120 Hz at the median), the same drums (28%), the
+  same tempo (about 110 bpm), on every list.
+- **2024's hundred** (Spotify's top songs of 2024; 99 measured, read 2026-10-06). The darkest and heaviest list measured: the Low
+  Glow and the Drop hold 62 of the 99 (33 and 29), the bass the most (35% under 120 Hz at the median), the air the least (5.8%),
+  the drums the most (30%), the tempo the slowest (101 bpm), and the only list whose median song has a drop-out. Not one song is
+  shared with 2025 or the all-time list; six are on Superlike. 2025 swung back to the Wall: the ear holds, the songs turn over.
+- **2023's hundred** (98 measured, read 2026-10-06). Superlike's year: 19 of its songs are on Superlike, three of the five favourites
+  among them (*DATURA* at 2, *Waterfalls* at 8, *Agoraphobia* at 9), with Yuu Miyashita's *Wozwald* at 22 (one of this soundtrack's
+  masters, above). The heaviest bass of any list (39% under 120 Hz at the median) and the fewest Walls (18 of 98); not one song is
+  shared with 2024 or 2025. The arc so far: 2023 the heaviest, 2024 the darkest and slowest with the most drops, 2025 back to the
+  bright Wall.
+- **What it asks of the music**: proposals only, none made yet, and the owner's word decides. First, by the whole list: more air and more drums.
+  - Stops and drop-outs written into the groove.
+  - A bass that slides.
+  - More air up high: hats, breath, shimmer.
+  - A sparkling clean guitar on extended chords.
+  - The soft-to-crushing drop (*The Bottom of the Well*, when the FOE shows itself).
+  - A looser low-end limit for the moments meant to hit.
+- **Open**: the owner is listening to the five again, to name what each does that they could not live without.
+
+## 7. Next
 
 0. (Round 34) Hear *Lachryma*, *The Workshop* and *Five Against Fate*; the battle plays while a slip jelly is after the Courier, the work song in the
    workshop, *Lachryma* on the title.

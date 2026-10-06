@@ -23,11 +23,13 @@
 // Craft's map (the colour as a place you steer to).
 //
 //   const P = new SpiritPress({ env, hues })   scene.add(P.group)   P.parts (hopper, mouth, eye, lever, trunk, crucible, bath, hues)
-//   P.set({ soul: { h, s }, fill, fire, press, pull, near, queue: [hue, ...] })   P.update(t)   (about 3.2 m tall; +Z its front)
+//   P.set({ soul: { h, s }, fill, fire, press, pull, near, queue: [hue, ...], regia })   P.update(t)   (about 3.2 m tall; +Z its front)
+//   regia: 1 when something gilded is pressed: the bath turns gold-orange and fumes, clearing by itself over about 4 real seconds
 //   hues: the seven attributes' hues, in order (progress/alchemy.js ATTRIBUTES; by default the same seventh-of-the-colour-wheel spacing)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { addOutline } from '../render/outline.js';
+import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
 
 const SEVEN = Array.from({ length: 7 }, (_, i) => Math.round(i * 360 / 7 + 20));
 const SAT = 0.65; // (the targets' saturation: ECON.alchemy.sat)
@@ -120,17 +122,17 @@ export class SpiritPress {
     const med = part(group, new THREE.CircleGeometry(0.15, 24), spiralM, 0, 0.36, 0.985, false); med.material = spiralM.clone(); med.material.polygonOffset = false;
     part(group, new THREE.SphereGeometry(0.16, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), std(0xdfe6ee, { transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.1, envMap: env }), 0, 0.36, 0.95).rotation.x = Math.PI / 2;
     part(group, new THREE.TorusGeometry(0.17, 0.025, 6, 24), bronze, 0, 0.36, 0.97);
-    this.bathU = { uT: { value: 0 }, uSoul: { value: new THREE.Color(0.75, 0.78, 0.82) }, uHeat: { value: 0 } };
+    this.bathU = { uT: { value: 0 }, uSoul: { value: new THREE.Color(0.75, 0.78, 0.82) }, uHeat: { value: 0 }, uRegia: { value: 0 } };
     const bath = this.bathMat = std(0x0c0a10, { roughness: 0.12, metalness: 0.2, envMap: env });
     bath.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, this.bathU);
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vBathP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvBathP = position.xy;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform float uT, uHeat; uniform vec3 uSoul; varying vec2 vBathP;')
+        .replace('#include <common>', '#include <common>\nuniform float uT, uHeat, uRegia; uniform vec3 uSoul; varying vec2 vBathP;')
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 { vec2 q = vBathP; float r = length(q), a = atan(q.y, q.x);
   float swirl = 0.5 + 0.5 * sin(a * 3.0 + r * 7.0 - uT * 0.7) * (1.0 - 0.5 * r); // (stirred: three slow arms turning, a liquid's own movement)
-  totalEmissiveRadiance += uSoul * (0.3 + 0.6 * uHeat) * (0.55 + 0.45 * swirl) * (0.6 + 0.4 * (1.0 - r)); }`);
+  totalEmissiveRadiance += mix(uSoul, vec3(1.0, 0.55, 0.12) * 1.6, uRegia) * (0.3 + 0.6 * max(uHeat, uRegia)) * (0.55 + 0.45 * swirl) * (0.6 + 0.4 * (1.0 - r)); } // (aqua regia: the bath gold-orange while gold dissolves in it)`);
     };
     bath.customProgramCacheKey = () => 'spirit-bath';
     P.bath = part(group, new THREE.CircleGeometry(0.9, 32), bath, 0, 0.56, 0, false); P.bath.rotation.x = -Math.PI / 2;
@@ -208,14 +210,34 @@ export class SpiritPress {
     });
 
     this.t = 0;
-    this.k = { soul: { h: 0, s: 0 }, fill: 0.6, fire: 0, press: 0, pull: 0, near: -1, queue: [] };
+    // AQUA REGIA (the owner's playlist: Sleep Token's "Aqua Regia"): the one acid that dissolves gold. When something gilded goes into
+    // the press, the bath turns gold-orange and a column of fume rises off it, fraying as it climbs, then clears as the acid spends itself.
+    // Prior art: the real thing (nitric and hydrochloric acid, orange-yellow with nitrosyl chloride, fuming off gold), the alchemists'
+    // aqua regia, "royal water" (it dissolves the king of metals), and the coloured smokes over every alchemy bench.
+    this.fumeU = { uT: { value: 0 }, uA: { value: 0 }, ...liquidUniforms() };
+    const fg = new THREE.CylinderGeometry(0.55, 0.85, 1.6, 24, 8, true); fg.translate(0, 0.8 + 0.58, 0);
+    P.fume = new THREE.Mesh(fg, new THREE.ShaderMaterial({ name: 'spirit-fume', uniforms: this.fumeU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      vertexShader: 'varying vec2 vU; varying vec3 vN, vW; void main() { vU = uv; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }',
+      fragmentShader: `varying vec2 vU; varying vec3 vN, vW; uniform float uT, uA;
+${LIQUID_GLSL}
+void main() {
+  float m = liqTap(vec2(vU.x * 2.0, vU.y * 0.8 - uT * 0.12)).r, b = liqTap(vec2(vU.x * 3.0 + 0.3, vU.y * 1.4 - uT * 0.2)).g;
+  float wisps = smoothstep(0.35, 0.75, m * 0.6 + b * 0.4);
+  float edge = 1.0 - abs(dot(normalize(cameraPosition - vW), vN));
+  float a = uA * wisps * (0.4 + 0.6 * edge) * smoothstep(0.0, 0.15, vU.y) * (1.0 - smoothstep(0.45, 1.0, vU.y));
+  gl_FragColor = vec4(mix(vec3(1.0, 0.72, 0.25), vec3(0.95, 0.45, 0.12), vU.y), a * 0.7);
+  #include <colorspace_fragment>
+}` }));
+    P.fume.visible = false; group.add(P.fume);
+    this.k = { soul: { h: 0, s: 0 }, fill: 0.6, fire: 0, press: 0, pull: 0, near: -1, queue: [], regia: 0 };
     this.set(); this.update(0);
   }
 
   /** The press's state: the soul colour (the bath, the bead, the eye), how full the pool is, the fire, the press, the lever, the
    *  light the soul is near, the materials in the mouth. */
-  set({ soul, fill, fire, press, pull, near, queue } = {}) {
+  set({ soul, fill, fire, press, pull, near, queue, regia } = {}) {
     const k = this.k, P = this.parts;
+    if (regia !== undefined) k.regia = THREE.MathUtils.clamp(regia, 0, 1); // (it clears by itself: update)
     if (soul) k.soul = { h: soul.h, s: soul.s };
     if (fill !== undefined) k.fill = THREE.MathUtils.clamp(fill, 0, 1);
     if (fire !== undefined) k.fire = THREE.MathUtils.clamp(fire, 0, 1);
@@ -245,6 +267,8 @@ export class SpiritPress {
     const dt = Math.max(0, t - this.t); this.t = t;
     const k = this.k, P = this.parts;
     this.bathU.uT.value = t;
+    k.regia = Math.max(0, k.regia - dt / 4); // (the acid spends itself over about four real seconds)
+    this.bathU.uRegia.value = k.regia; this.fumeU.uT.value = t; this.fumeU.uA.value = Math.min(1, k.regia * 1.5); P.fume.visible = k.regia > 0.01;
     this.spin = (this.spin || 0) + dt * (0.15 + 2.4 * k.press);
     P.mouth.rotation.z = this.spin; P.whorl.rotation.z = -this.spin * 0.8;
     this.lumps.forEach((l, i) => { const a = this.spin * 1.5 + i * 1.05, r = 0.2 - 0.02 * i; l.position.set(Math.cos(a) * r, Math.sin(a) * r, 0.02); l.rotation.set(t + i, t * 0.7, 0); });

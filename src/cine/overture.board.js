@@ -111,7 +111,7 @@ export const BOARD = [
       if (api.ring) api.ring.k = 0.5 + Math.min(1, (s - 4.8) / 1.6);
     } },
   // ---- CHORUS: one damage type a bar, then the spectacle
-  { t: 28.8, id: 'impact', place: 'crystals', ...typeBar('impact'), tint: TYPE_TINT.impact },
+  { t: 28.8, id: 'impact', place: 'crystals', ...typeBar('impact'), tint: TYPE_TINT.impact, enter(api) { slam(api); typeBar('impact').enter(api); } }, // (the verse drops into the wall: the cut, then the tear)
   { t: 30.4, id: 'ego', place: 'crystals', ...typeBar('ego', 'doubt') },
   { t: 32.0, id: 'influence', place: 'crystals', ...typeBar('influence', 'charm') },
   { t: 33.6, id: 'illusion', place: 'crystals', ...typeBar('illusion', 'blind'), enter(api) { typeBar('illusion').enter(api); api.game.flash?.fire?.(); } },
@@ -137,7 +137,7 @@ export const BOARD = [
   { t: 45.6, id: 'ascend', place: 'shore', put: false, enter(api) { solo(api).go('ascend'); } },
   { t: 46.4, id: 'wheel', place: 'shore', put: false, enter(api) { solo(api).go('wheel'); spinWheel(api); } },  // (the tapped sextuplets)
   { t: 48.0, id: 'land', place: 'shore', put: false, enter(api) { solo(api).go('land'); } },                     // (the twin leads: the pillar)
-  { t: 52.8, id: 'deep', place: 'shore', put: false, enter(api) { endSolo(api); } },                             // (the dive scream: down past the island)
+  { t: 52.8, id: 'deep', place: 'shore', put: false, enter(api) { endSolo(api); smear(api, { amt: 0.7, zoom: 0.012, spin: 0.004 }); api.game.glitch?.pulse({ mosh: 0.5, split: 0.4, dur: 1.4 }); } }, // (the dive scream: down past the island, smeared and moshed)
   // ---- BREAK: stop time; each hit a still
   { t: 54.4, id: 'still1', place: 'mantle', enter(api) { api.game.ultimate?.abort?.(); }, frame(api, u, s) { if (s > 0.1 && !api.p) { api.p = true; api.still(); } } },
   { t: 54.7, id: 'still2', place: 'saggar', frame(api, u, s) { if (s > 0.1 && !api.p) { api.p = true; api.still(); } } },
@@ -145,7 +145,7 @@ export const BOARD = [
   { t: 55.6, id: 'still4', place: 'pier', frame(api, u, s) { if (s > 0.1 && !api.p) { api.p = true; api.still(); } } },
   { t: 56.0, id: 'riffle', place: 'pier', put: false, frame(api, u) { api.riffle(u); } },
   // ---- CHORUS 2: everything
-  { t: 57.6, id: 'siege', place: 'siege', enter(api) { api.clearStills(); } },
+  { t: 57.6, id: 'siege', place: 'siege', enter(api) { api.clearStills(); slam(api); } }, // (chorus 2: everything, and the wall again)
   { t: 59.2, id: 'god', place: 'siege', put: false, enter(api) { const g = api.game; g.god?.enter?.(); api.after(() => g.god?.forceOff?.()); }, frame(api, u, s) { if (s > 0.6 && !api.raid) { api.raid = true; api.game.god?.raids?.spawn?.(); } } },
   { t: 60.8, id: 'bell', place: 'hub', enter(api) { draw(api, 'crucibelle'); }, frame(api, u, s) { if (s > 0.6 && !api.tolled) { api.tolled = true; api.game.techs.get('crucibelle')?.toll?.(); } } },
   { t: 62.4, id: 'chest', place: 'hub',
@@ -157,6 +157,11 @@ export const BOARD = [
     } },
   { t: 64.0, id: 'refire', place: 'kilnFront', enter(api) { const g = api.game; g.vessel?.preview?.({ ...g.vessel.look, body: 'yohen', mask: 'yohen', trim: 'kinrande' }); api.after(() => g.vessel?.revert?.()); } },
   { t: 65.6, id: 'spire', place: 'shore', enter(api) { draw(api, 'dreamvane'); } },
-  { t: 67.2, id: 'suits', place: 'saggar', enter(api) { api.game.techs.get('emote')?.request?.('dance'); }, frame(api, u) { const C = [0x2e7d4f, 0xc8402a, 0x3a5fc8, 0xd8c8a8]; mood(api, { dim: 0.3, tint: C[Math.floor(u * 8) % 4], tintK: 0.5, ease: 30 }); } },
+  { t: 67.2, id: 'suits', place: 'saggar', enter(api) { api.game.techs.get('emote')?.request?.('dance'); }, frame(api, u) { const C = [0x2e7d4f, 0xc8402a, 0x3a5fc8, 0xd8c8a8], b = Math.floor(u * 4); mood(api, { dim: 0.3, tint: C[Math.floor(u * 8) % 4], tintK: 0.5, ease: 30 }); if (api.beat !== b) { api.beat = b; api.game.glitch?.pulse({ split: 0.55, dur: 0.3 }); } } }, // (glam theatre: the stage lights' colours, a chromatic hit on each beat)
   { t: 68.8, id: 'run', place: 'slide', hold: ['KeyW', 'ShiftLeft'], enter(api) { mood(api, null); } },
 ];
+
+// THE GLAM THEATRE (the owner, 2026-10-06: the playlist's soft verses dropping into walls, silence used as a hit, .hack's glitch): at the
+// music's drops the picture cuts to a dark beat and slams back torn (vfx/glitch.js), and the dive is smeared by the frame accumulation.
+function slam(api) { api.game.glitch?.moment({ drop: 1, beats: 2, then: { split: 0.85, tear: 0.7, mosh: 0.25, crush: 0.6, dur: 0.75 } }); }
+function smear(api, a) { const A = api.game.post?.accum; if (!A) return; Object.assign(A, a); api.after(() => { A.amt = 0; }); }

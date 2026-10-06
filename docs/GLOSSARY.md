@@ -364,6 +364,29 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   clouds and what falls, and may raise its own mark; it never falls. Only
   an open place gets them. **the hour's grade** (`sky.grade`): the sky by the hour: the maker's dusk painting, the owner's day and night
   paintings blended in.
+- **the glitch** (`game.glitch`, `src/vfx/glitch.js`): the data showing through at a big moment (a FOE showing itself, an ultimate, a
+  shattering, a reprogramming): one screen pass in the glow (`post.screen`) that splits the colour, tears bands of rows, moshes blocks
+  of the frame before, crushes colour to the code's cyan and magenta, drains toward a point, or cuts to a dark beat (**the drop-out**).
+  Always set off by an event and short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker (CLAUDE.md, aliasing crawl).
+- **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
+  the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
+  not kill.
+- **the spout** (`DunemawSpout`, `src/vfx/dunemaw.js`): a column of sand pouring up and a **sandfall** spilling back round it; once
+  the Great Dunemaw's landmark (withdrawn: the owner, 2026-10-06, the mouth is an antlion pit), now the look of a slip geyser.
+- **a sandfall** (the Great Dunemaw, `docs/plans/DUNEMAW.md`): a curtain of sand pouring from above; in the floors, a side passage's
+  shifting door (open, then falling, on the sim clock; never closing on the Courier). Also the spout's falling skirt.
+- **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
+- **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
+  degrees a cell on floors 1 to 3).
+- **the flythrough** (`docs/plans/DUNEMAW.md`): the preview of a floor on arrival, the camera sweeping its path with the frame
+  accumulation on; any key skips it.
+- **Strawman** (`src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a
+  stitched sack doll on a post with a weighted ball foot; infinitely durable. Named with no article ("Strawman rocks back up").
+- **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): the Great Dunemaw's FOE, a Great Slip Jelly wearing
+  the broken urn it grew in as a crown (**the urn crown**, `src/vfx/urncrown.js`); breaking the crown bares **the core**, its weak point.
+- **the Gnomon** (Espada's name, a proposal; `docs/plans/DUNES.md`): the town's sundial on the sand, where the Solar Skiffing trial
+  is begun.
+- **a slip geyser** (`docs/plans/DUNES.md`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
@@ -491,6 +514,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
   the name.
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
+- **the Pithos**: what the folk call the Great Slip Jelly, crowned with the broken crude jar it grew in (a *pithos*, Pandora's jar). The
+  log says "the Great Slip Jelly".
+- **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
+  hours. The Solar Skiffing trial races its shadow.
+- **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
+- **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
+- **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
+- **moonflower**: a Shrine Garden bed that opens only at night, by the game hour.
 
 ## Homonyms we keep on purpose (always qualify them)
 

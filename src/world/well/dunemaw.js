@@ -85,20 +85,11 @@ export class Dunemaw {
       s.position.set(Math.cos(a) * 3.6, h / 2 - 0.15, Math.sin(a) * 3.6); s.rotation.y = -a + 0.2 * Math.sin(i * 3.1);
       grp.add(s);
     }
-    // (a placeholder landmark until Calissa's: three standing stones round it, tall enough to be seen over the dunes from the oasis, none
-    // between the mouth and the way back to the oasis; solid, so they are walked round)
-    const home = Math.atan2(-MOUTH_LOCAL.x, -MOUTH_LOCAL.z);
-    for (const [da, h, r] of [[2.2, 9, 6.5], [3.4, 7, 7], [4.4, 6, 6.2]]) {
-      const a = home + da, sx = x + Math.sin(a) * r, sz = z + Math.cos(a) * r, sy = D.heightAt(sx, sz);
-      g.level.box([sx, sy + h / 2 - 1, sz], [1.4, h, 1.0], 0x6b4a3a, { rotY: a + 0.3 });
-    }
-    // (and a placeholder beam over it, in the spire's manner (world/dunes/dunes.js) but violet and lower: a place to sail toward)
-    const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 3, 160, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0x9a6bff, transparent: true, opacity: 0.14, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
-    beam.position.set(x, y + 80, z); beam.name = 'dunemaw-beam';
-    g.scene.add(beam); this.beam = beam;
     // the pool itself (Calissa's: vfx/dunemaw.js): black Lachryma swallowing the sand, the labradorite's arms turning in, the sand drawn in
     // round it (the maw); it darkens what it covers. Motes of the dunes are drawn into it while it is in view.
-    this.maw = new DunemawMouth({ radius: 3 }); this.maw.group.name = 'dunemaw-pool';
+    // the landmark round it (Calissa's: vfx/dunemaw.js PrinceCrown; docs/plans/DUNEMAW.md): the points of the Prince's crown leaning out
+    // of the sand, seen from the oasis. The antlion pit (pit: true) waits on the ground being carved with pitDepth (PIT)
+    this.maw = new DunemawMouth({ radius: 3, crown: true }); this.maw.group.name = 'dunemaw-pool';
     grp.add(this.maw.group);
     const lamp = new THREE.PointLight(0x9a6bff, 10, 14, 1.4); lamp.position.set(0, 1.2, 0); grp.add(lamp);
     mergeStatic(grp); // (the stones are one draw: the pool and its rim are named, and turn)

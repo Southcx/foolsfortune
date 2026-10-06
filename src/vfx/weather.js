@@ -56,14 +56,15 @@ const ASPECTS = Object.keys(LOOK);
 /** The hour's grade: the owner's day and night paintings blended in over the maker's dusk, and a little light on each. Keys by the hour
  *  of the day, blended round the clock; dawn is the dusk painting turned rose (it is the same light, the other way round). */
 const HOURS = [
-  [0, { night: 1, expo: 0.55, desat: 0.15 }],
-  [4.5, { night: 1, expo: 0.55, desat: 0.15 }],
+  [0, { night: 1, expo: 0.55, desat: 0.15, mul: [1.04, 0.94, 1.08] }], // (the night leans plum: the owner's playlist, sad but bright)
+  [4.5, { night: 1, expo: 0.55, desat: 0.15, mul: [1.04, 0.94, 1.08] }],
   [6, { expo: 0.9, mul: [1.0, 0.86, 0.94], stars: 0.6 }],
   [8, { day: 1, expo: 1.0 }],
   [16.5, { day: 1, expo: 1.0 }],
+  [17.75, { day: 0.6, expo: 1.0, mul: [1.07, 0.92, 0.84] }], // (the golden hour on the way to dusk: peach, the playlist's pastel over the shadow)
   [19, { expo: 1, stars: 1 }], // (dusk: the maker's own)
-  [21, { night: 1, expo: 0.55, desat: 0.15 }],
-  [24, { night: 1, expo: 0.55, desat: 0.15 }],
+  [21, { night: 1, expo: 0.55, desat: 0.15, mul: [1.04, 0.94, 1.08] }],
+  [24, { night: 1, expo: 0.55, desat: 0.15, mul: [1.04, 0.94, 1.08] }],
 ];
 const lerp = THREE.MathUtils.lerp, smooth = THREE.MathUtils.smoothstep;
 /** The hour's grade (phase 0..1 through the day), as numbers for sky.grade. */

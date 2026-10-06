@@ -19,6 +19,8 @@
 //   dressFiligree(material)            once, on the armour's material (character.js): returns its uniforms
 //   new Filigree(game, uniforms)       listens to the pool and the player; update(dt) each frame
 //   filigree.absorb(k) / channel(k) / hurt(k)       0..1, for anything else that wants the armour to say so
+//   filigree.note(degree)              a note played (crucibelle.note): a band of light runs up the lines in the degree's colour, an arpeggio
+//   ARPEGGIO (the owner's playlist, the clean tapped guitar on extended chords): each note a band of light up the lines, four may overlap
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import filigreeB64 from '../assets/courier/courier_filigree.png?b64';
@@ -36,6 +38,7 @@ function masks() {
 
 const FRAG_DECL = `uniform sampler2D uFil;
 uniform vec4 uFilK; // absorption, channelling, damage, rest (the pool's fill)
+uniform vec4 uArpT, uArpD; // the arpeggio: the last four notes' ages (real seconds; below 0: none) and their scale degrees
 ${LAB_GLSL}
 `;
 // (after the painting is read: the veins are inked as deep as the pool is full, and a blow leaves the strokes dark for a while)
@@ -55,12 +58,18 @@ const FRAG_EMISSIVE = `
     totalEmissiveRadiance += schiller * filM.r * (uFilK.w * 0.06 * graze + uFilK.x * 1.15);
     totalEmissiveRadiance += labSoft(filPh + 0.3) * filM.g * uFilK.y * 1.3;
     totalEmissiveRadiance += mix(vec3(1.0, 0.92, 1.0), labradorite(filPh + 0.5), 0.45) * filM.b * uFilK.z * 1.5;
+    // the arpeggio: each note a band of light running up the lines, its colour the note's degree, a few overlapping as a run does
+    for (int i = 0; i < 4; i++) {
+      float age = uArpT[i]; if (age < 0.0 || age > 0.6) continue;
+      float c = age / 0.5, band = exp(-pow((vMapUv.y - c) / 0.07, 2.0)) * (1.0 - age / 0.6);
+      totalEmissiveRadiance += labradorite(filPh * 0.3 + uArpD[i] * 0.143) * (filM.g + filM.r * 0.6) * band * 1.8;
+    }
   }
 `;
 
 /** Dress the armour's material with the three masks; returns the uniforms the Filigree drives. */
 export function dressFiligree(material) {
-  const uniforms = { uFil: { value: masks() }, uFilK: { value: new THREE.Vector4(0, 0, 0, 1) }, uMindT: mindTime };
+  const uniforms = { uFil: { value: masks() }, uFilK: { value: new THREE.Vector4(0, 0, 0, 1) }, uArpT: { value: new THREE.Vector4(-1, -1, -1, -1) }, uArpD: { value: new THREE.Vector4() }, uMindT: mindTime };
   const prev = material.onBeforeCompile;
   material.onBeforeCompile = (sh, r) => {
     prev?.call(material, sh, r);
@@ -87,12 +96,16 @@ export class Filigree {
     pool?.on('spend', ({ amount, tag }) => { if (!/^(shot|charge|beam)/.test(tag || '')) this.channel(Math.min(1, 0.3 + amount / 20)); });
     game.events?.on('courier.impulse', ({ why, mag }) => { if (HURT.has(why)) this.hurt(Math.min(1, 0.45 + (mag || 0) / 20)); });
     game.events?.on('jelly.strike', () => this.hurt(1));
+    this.arp = 0; // (the next of the four arpeggio slots)
+    game.events?.on('crucibelle.note', ({ degree }) => this.note(degree ?? 0));
   }
 
   absorb(k) { this.abs = Math.max(this.abs, k); }
   /** Lachryma going out. Called every frame while something drinks steadily (a drain), so it holds while the flow does. */
   channel(k) { this.flow = Math.max(this.flow, k); }
   hurt(k) { this.dmg = Math.max(this.dmg, k); }
+  /** A note played: a band of light runs up the lines in its degree's colour (the owner's playlist: the tapped guitar's arpeggio). */
+  note(degree = 0) { const i = this.arp++ % 4; this.u.uArpT.value.setComponent(i, 0); this.u.uArpD.value.setComponent(i, degree); }
 
   update(dt) {
     mindTick();
@@ -108,5 +121,6 @@ export class Filigree {
     const pool = this.game.lachryma;
     if (pool) this.rest += (pool.fraction - this.rest) * (1 - Math.exp(-dt * 3));
     this.u.uFilK.value.set(this.abs, this.chan, this.dmg * this.dmg * (3 - 2 * this.dmg), this.rest);
+    const A = this.u.uArpT.value; for (let i = 0; i < 4; i++) { const a = A.getComponent(i); if (a >= 0) A.setComponent(i, a + dt > 0.6 ? -1 : a + dt); }
   }
 }
