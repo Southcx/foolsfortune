@@ -32,7 +32,7 @@
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
-import { zoneOf } from '../render/zonemap.js';
+import { wholeOf } from '../render/zonemap.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
 export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
@@ -97,7 +97,8 @@ export function weatherAt(place = 'anagami', ms = calNow()) {
 }
 
 /** The place and exposure a position is in (null: between places, or at sea). */
-export function placeOf(pos) { const z = pos && zoneOf(pos); return z && ZONE_PLACE[z] ? { place: ZONE_PLACE[z][0], exposure: ZONE_PLACE[z][1] } : null; }
+// (a question about the ground asks the whole: a room that is part of the workshop is the workshop's weather)
+export function placeOf(pos) { const z = pos && wholeOf(pos); return z && ZONE_PLACE[z] ? { place: ZONE_PLACE[z][0], exposure: ZONE_PLACE[z][1] } : null; }
 
 /** The Emocean: what the weather of the island a ship leaves does to the stage (pass it to stagePlan and reckonLead). */
 export function stageWx(island, ms = calNow()) {
