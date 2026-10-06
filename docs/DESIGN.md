@@ -722,3 +722,29 @@ easy, never a skill. Day and night run on the same clock; at night Lachryma's si
   weather already carries an undercurrent: about one weather hour in eight is an agate, each island with its own (Margarite's delight
   and hope, Entropolis's worry, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
 
+
+## 20. The stones: how a Courier takes Lachryma in (the owner, 2026-10-06; Espada's lore, LORE.md "The stones")
+
+The kiln's stones were look only; now they are the vessel's **intake**. A Courier drinks through its stones (Espada: as a pot breathes
+through its glaze), so the stone set decides six things, and every stone trades some against others (Dark Souls' rings, Path of Exile's
+keystones: a gain paid for with a loss, never a straight upgrade). The table is `src/progress/stones.js`.
+
+| the knob | what it is | today |
+|---|---|---|
+| **pool** | the vessel's size, regen and costs (`LachrymaPool` modifiers) | wired (main.js: on firing, and by day or night) |
+| **reach** | the bauble magnet's radius | for Petra (`courier/lachryma.js`) |
+| **heady** | how far a drink pushes the **Courier's mind** toward Prismatic (the creatures' five states, built once: Prismatic is power x1.5 and fragility x2) | for Petra |
+| **tint** | how strongly the place's feeling comes in with a drink: the **draught**, whose damage type then builds its status up to x1.5 | for Petra |
+| **gulp** | a cap on the take a second (amethyst's smoothing) | for Petra |
+| **overflow** | where what does not fit goes: the Lockheart's share, or bled off | for Petra |
+
+The stones, each a trade: **Amethyst** (sober: heady x0.4, tint x0.5, gulp 25 a second, overflow bled; slower regen, shorter reach),
+**Citrine** (a tenth of what is drunk kept as cubes; 15 less to hold), **Moonstone** (regen and reach x1.3 at night, x0.85 and x0.9 by
+day), **Onyx** (no tint, every drop of overflow to the Lockheart; slower, shorter), **Emerald** (reach x1.5, tint x2; heady x1.3),
+**Sapphire** (costs x0.85; regen x0.8), **Ruby** (30 more to hold; costs x1.15, heady x1.25), **Diamond** (heady x2, and an agate's two
+feelings both drunk), **Opal** (each drink a game of chance by Luck: a tenth lost, a tenth doubled). One set at a time.
+
+What it feeds: the **weather** (the draught is the place's feeling; amethyst and onyx shut it out, emerald drinks it), the **mind**
+states (the creatures' own, now the Courier's too), the **Lockheart** (onyx feeds it everything), **Luck** (opal), the **economy**
+(citrine: a faucet, watched in `scripts/economy.mjs` once wired), and **Soul Alchemy** (the soul colour is the vessel's growth; the
+stones its temper).

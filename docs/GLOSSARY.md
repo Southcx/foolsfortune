@@ -18,6 +18,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ---
 
 ## The Courier
+- **the stones** (the kiln's STONES region, `Courier_Stones`; `src/progress/stones.js`, LORE.md "The stones"): where Lachryma enters the
+  vessel, and so how the Courier takes it in: the pool's size, regen and costs, the magnet's **reach**, how **heady** a drink is (how far
+  it pushes the Courier's mind toward Prismatic), the **draught** it leaves, and where overflow goes. The Maker's Stones are the
+  baseline; every other stone is a trade. One set at a time. *Not:* a stone in the world (say what it is), Strawman's or a cairn's.
+- **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
+  damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
+- **the Courier's mind** (`COURIER_MIND`; the creatures' five states, `progress/combat/mind.js`): pushed up by Lachryma drunk (hardest
+  past full), settled by quiet; Prismatic is power and fragility, Stoic the reverse.
 
 - **the Vessoul** (the owner, 2026-10-04): the entity that stands for the player in the world, a soulspark from beyond. It takes several
   forms, all one being, which is why they share a design language: **the god hand**, **the Pneuka Jar**, **the Courier**, and, on the
