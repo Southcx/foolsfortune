@@ -55,6 +55,12 @@ const results = await g.page.evaluate(async () => {
     if (document.getElementById('bugmarkup')) return 'the window did not close on file()';
     return marks?.width === 64 && marks.height === 40 ? true : 'the marks are not the frame\'s size';
   });
+  // the water's disturbances (Petra) and its rings and wakes (Calissa): docs/plans/SUNSHINE.md, phase 1
+  C('water.disturb / ripples', 'courier/moves/env.js', 'vfx/water.js', () => {
+    const v = G.water.volumes[0]; if (!v) return 'no water volume';
+    const d = G.water.disturb((v.x0 + v.x1) / 2, (v.z0 + v.z1) / 2, 0.5, 'drop');
+    return d && fin(d.x) && fin(d.y) && fin(d.s) && d.kind === 'drop' && G.water.ripples.includes(d) ? true : `got ${JSON.stringify(d)}`;
+  });
   C('places.travel/stand', 'world/places.js', 'debug/qais (take me there, /goto)', () => (is(G.places.travel, 'function') && is(G.places.stand, 'function') ? true : 'missing'));
   return out;
 });

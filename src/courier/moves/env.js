@@ -27,6 +27,18 @@ export class Water {
     this.volumes = [];
     this.time = 0;
     this.mats = {};
+    this.ripples = []; // (the last 3 s of disturbances, for vfx/water.js's rings and wakes: docs/plans/SUNSHINE.md, phase 1)
+    this.onDisturb = null;
+  }
+
+  /** Something touched a water surface at (x, z): `strength` 0..1, `kind` 'stroke' | 'dive' | 'land' | 'drop' | 'fish' | 'wake'.
+   *  Kept in `ripples` ({ x, z, y, s, kind, t }) for 3 s, and handed to `onDisturb` as it comes (the look is Calissa's). */
+  disturb(x, z, strength = 0.5, kind = 'stroke', y = null) {
+    if (y === null) { const v = this.volumes.find((w) => x > w.x0 && x < w.x1 && z > w.z0 && z < w.z1); if (!v) return null; y = v.surface; }
+    const d = { x, z, y, s: Math.min(1, Math.max(0, strength)), kind, t: this.time };
+    this.ripples.push(d); if (this.ripples.length > 64) this.ripples.shift();
+    this.onDisturb?.(d);
+    return d;
   }
 
   add(v) {
@@ -48,6 +60,7 @@ export class Water {
 
   update(dt) {
     this.time += dt;
+    while (this.ripples.length && this.time - this.ripples[0].t > 3) this.ripples.shift();
     for (const m of Object.values(this.mats)) m.uniforms.uTime.value = this.time;
   }
 }

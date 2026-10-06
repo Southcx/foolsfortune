@@ -53,7 +53,7 @@ export class Swim extends Tech {
     this.diveA = 0;
     if (impact > 3) {
       sfx.splash(Math.min(2, impact / 6));
-      this.splash(P.pos.clone().setY(this.vol.surface), impact);
+      this.splash(P.pos.clone().setY(this.vol.surface), impact, 'dive');
     }
     // water eats the fall
     P.vel.y *= 0.35;
@@ -92,7 +92,7 @@ export class Swim extends Tech {
         P.vel.x = P.vel.x * 0.8 + wish.x * c.exitPush; P.vel.z = P.vel.z * 0.8 + wish.z * c.exitPush;
         P.grounded = false;
         this.hopT = 0.5;
-        this.splash(P.pos.clone().setY(v.surface), 3);
+        this.splash(P.pos.clone().setY(v.surface), 3, 'land');
         sfx.splash(0.5);
         this.hopped = true;
         return false;
@@ -118,8 +118,11 @@ export class Swim extends Tech {
     this.stroke += dt * (0.6 + sp * 0.5);
     if (sp > 0.5 && Math.floor(this.stroke) !== Math.floor(this.stroke - dt * (0.6 + sp * 0.5))) {
       sfx.stroke();
-      if (atSurface) this.splash(P.pos.clone().setY(v.surface), 1.2);
+      if (atSurface) this.splash(P.pos.clone().setY(v.surface), 1.2, 'stroke');
     }
+    // the wake: a disturbance every 0.15 s while moving at the surface (the rings and the V are vfx/water.js's)
+    this.wakeT = (this.wakeT ?? 0) - dt;
+    if (atSurface && sp > 0.4 && this.wakeT <= 0) { this.wakeT = 0.15; this.water.disturb?.(P.pos.x, P.pos.z, Math.min(1, sp / 5), 'wake', v.surface); }
     // out of the water (walked up a shallow end, or out of the volume)
     const still = this.deepAt(P.pos) || (this.water.at(P.pos.x, P.pos.y + 0.9, P.pos.z) && P.pos.y < v.surface - 0.8);
     if (!still) return false;
@@ -131,7 +134,8 @@ export class Swim extends Tech {
     if (P.canStand()) P.setShape('stand');
   }
 
-  splash(at, k = 1) {
+  splash(at, k = 1, kind = 'stroke') {
+    this.water?.disturb?.(at.x, at.z, Math.min(1, k / 3), kind, at.y);
     const fx = this.game.fx;
     if (!fx) return;
     const col = new THREE.Color(0xcfe6e4);

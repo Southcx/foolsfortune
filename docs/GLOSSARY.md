@@ -139,6 +139,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Courier does on its line).
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
+  Planned (`docs/plans/SUNSHINE.md`): **the load**, the liquid the bristles hold (slip, water or Lachryma), filled by a **dip** in
+  water and flung or sprayed; **the paint map** (`render/paintmap.js`), the world-anchored grid of wet, slip and **stains**
+  (Sunshine's goop: washed to reveal what they hid).
+- **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
+  surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its
   **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**

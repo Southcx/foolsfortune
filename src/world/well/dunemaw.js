@@ -37,7 +37,7 @@ import { today, now as calNow } from '../../core/calendar.js';
 import { fillHours } from '../../progress/weather.js';
 import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
-import { DunemawMouth } from '../../vfx/dunemaw.js';
+import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
 
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
@@ -65,7 +65,10 @@ export class Dunemaw {
    *  compile; it is kept, never disposed (disposing its materials would let the renderer drop the programs they share with every floor). */
   prewarm() {
     const F = buildFloor(this.game, layoutFloor(1, 1), WELL_AT.clone().setY(WELL_AT.y - 400), 1);
-    return () => { F.group.visible = false; this.warm = F; };
+    // (a sandfall's curtain is dressed on only when a floor is entered (vfx/welldress.js): one is shown here, falling, so its program is
+    // compiled with the rest, not on the first sandfall seen: the perf gate's late compile, R46)
+    const fall = new Sandfall({ width: 4.4, height: 4.6 }); fall.group.position.copy(F.arrive.pos); fall.update(1, 'falling', 1 / 60); F.group.add(fall.group);
+    return () => { F.group.visible = false; F.group.remove(fall.group); fall.dispose(); this.warm = F; };
   }
 
   get active() { return !!this.run; }
