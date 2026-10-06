@@ -207,6 +207,24 @@ The first try at the mask as an E-ink face (eight faces painted from the maker's
 - **The owner will make the atlas** for Calissa to puppeteer. The runtime (the shader swap after `map_fragment`, the stepped blink and
   look, the event map) can come back from the reverted commit to drive the owner's cells.
 
+## The night sky (the owner, R46: "evaluate using a shader to make the night sky feel more alive")
+
+**The evaluation.** The night is the owner's painting (violet and green swirls over a dark crown) under a moon. What would make it
+alive, and what each costs at 480 lines:
+
+| what | why it reads as alive | cost | verdict |
+|---|---|---|---|
+| **twinkle** | starlight scintillates, more near the horizon (more air) | a few ALU a sky pixel, in the dome's own shader | **built**, slow (0.13 to 0.35 Hz) and only on our own stars, never a field flicker |
+| **the wheel** | the stars turn about a tilted pole: the sky is a clock | one rotation a pixel | **built**, one turn a game day (too slow to see except over a stay) |
+| **meteors** | a rare event the sky gives you | one segment test a pixel while one falls | **built**, one every 25 to 70 real seconds of night, 0.6 s each |
+| **a milky band** | the galaxy's bright river | a noise band | **not built**: the painting's swirls already are the galaxy, and a second one would fight them |
+| **the aurora** | the owner's ask at the Shore | a curtain in the same shader | **built**, at the Shore only, low over the sea |
+
+All of it is in the dome's fragment shader (`vfx/sky.js` NIGHT_GLSL, driven by `vfx/nightsky.js`): **no draw call and no new program**
+(the dome's own). The stars are our own, each at least a pixel and a half across (sized by the field's own `fwidth`), so the turning field
+never crawls (CLAUDE.md, aliasing). Prior art: Ōkami's and Outer Wilds' turning skies, Breath of the Wild's shooting stars, and the aurora
+as seen from a northern shore.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
