@@ -61,6 +61,18 @@ const results = await g.page.evaluate(async () => {
     const d = G.water.disturb((v.x0 + v.x1) / 2, (v.z0 + v.z1) / 2, 0.5, 'drop');
     return d && fin(d.x) && fin(d.y) && fin(d.s) && d.kind === 'drop' && G.water.ripples.includes(d) ? true : `got ${JSON.stringify(d)}`;
   });
+  // the paint map and the stains (Petra) and their readers: the Soul Brush's load, the creatures' statuses, Calissa's look of them
+  C('paintmap.stamp/at/drink', 'world/ground/paintmap.js', 'tools/soulbrush/load.js, courier/moves/jets.js', () => {
+    const p = G.player.pos, n = G.paintmap.stamp(p.x + 30, p.y, p.z + 30, 1, 'mirth', 0.8), a = G.paintmap.at(p.x + 30, p.y, p.z + 30);
+    const d = G.paintmap.drink(p.x + 30, p.y, p.z + 30, 1.2, 99);
+    return n > 0 && a?.aspect === 'mirth' && d > 0 && !G.paintmap.at(p.x + 30, p.y, p.z + 30) ? true : `stamp ${n}, at ${JSON.stringify(a)}, drink ${d}`;
+  });
+  C('stains.spill/drink', 'world/ground/stains.js', 'tools/soulbrush/load.js', () => {
+    const p = G.player.pos.clone().setX(G.player.pos.x + 40), s = G.stains.spill(p, 'grief', 10, 'courier', 'contract');
+    const r = G.stains.drink(p.x, p.y, p.z, 1, 99);
+    return s && r.got >= 9.9 && r.grade === 'grief' && !G.stains.list.includes(s) ? true : `got ${JSON.stringify(r)}`;
+  });
+  C('the bottle\'s place', 'pneuka/box.js', 'tools/soulbrush/load.js', () => (Array.isArray(G.pneuka.fitted('bottle')) && G.player.techs.get('soulbrush')?.load ? true : 'no bottle fitting or no load'));
   C('places.travel/stand', 'world/places.js', 'debug/qais (take me there, /goto)', () => (is(G.places.travel, 'function') && is(G.places.stand, 'function') ? true : 'missing'));
   return out;
 });

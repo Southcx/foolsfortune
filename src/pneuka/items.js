@@ -9,6 +9,7 @@
 //
 //   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
+import { BOTTLES } from '../progress/brushload.js';
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
@@ -74,5 +75,11 @@ const CASK_LINES = {
 for (const a of ASPECTS) ITEMS[`cask.${a.id}`] = { id: `cask.${a.id}`, kind: 'crude', key: a.id, name: `CASK OF CRUDE ${a.name}`, glyph: a.glyph, color: a.color, tier: 1, examine: CASK_LINES[a.id], card: null, lure: false, stack: 8 };
 ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGITOMAP', glyph: '⌗', color: 0x9a6bff, tier: 2,
   examine: 'A chart of one Well on one game day. The Well drifts. The chart does not.' /* (Espada's: LORE.md section 8) */, card: null, lure: false, stack: false };
+
+// the Lachrymato Bottles (progress/brushload.js BOTTLES, Dovina's numbers): worn on the upper back, a reserve of Lachryma the Soul Brush
+// paints from and mops into (tools/soulbrush/load.js). Names and lines are placeholders for Espada's.
+const BOTTLE_NAMES = { 'bottle.small': 'SMALL LACHRYMATO BOTTLE', 'bottle.medium': 'LACHRYMATO BOTTLE', 'bottle.large': 'LARGE LACHRYMATO BOTTLE' };
+for (const [id, B] of Object.entries(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id.slice(7), place: 'bottle', name: BOTTLE_NAMES[id], glyph: '⚱', color: 0x9fd6e8, tier: 1,
+  examine: `Aquarium glass, worn on the upper back. It holds ${B.capacity} Lachryma and feeds your mind when it runs low. Glass breaks.`, card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

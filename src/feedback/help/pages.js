@@ -113,13 +113,14 @@ export const PAGES = [
     lead: 'A calligrapher\'s brush the size of a club, worn at the hip. It alters things rather than hurting them.',
     rows: [
       ['G', 'draw or stow'],
-      ['LMB · hold LMB', 'the club: three blows · the charge and the slam'],
+      ['LMB · hold LMB', 'the club: three blows · on the ground the bristles saturate, then the mode works; in the air, the charge and the slam'],
+      ['1 · 2', 'PAINT: spray Lachryma, laying its feeling on the ground · MOP: drink stains and paint into your Lachrymato Bottle'],
       ['RMB tap', 'FLICK: a fan of slip ahead'],
       ['hold RMB', 'the Celestial Brush: the world stops and turns to paper; LMB draws, let go of RMB and the painting takes'],
-      ['C at speed', 'the Brush Slide: the same slide, painting slip in your wake'],
+      ['C at speed', 'the Brush Slide: the same slide, painting slip in your wake; on painted ground it runs on'],
       ['MMB', 'lock on'],
     ],
-    notes: () => [`What the Celestial Brush knows: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Anything else is laid on the world as slip.`],
+    notes: () => ['A Lachrymato Bottle worn on the upper back (the Pneuka Box) holds what the mop drinks and feeds your mind below half; a broken shield can crack it. Painted ground gives what stands in it the feeling\'s status. Opt-in arts on the load: /art hover, /art rocket, /art skim.', `What the Celestial Brush knows: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Anything else is laid on the world as slip.`],
   },
   {
     id: 'veritome', title: 'THE VERITOME', key: 'J', src: 'tools/veritome/',

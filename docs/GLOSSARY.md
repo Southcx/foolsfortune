@@ -141,9 +141,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Courier does on its line).
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
-  Planned (`docs/plans/SUNSHINE.md`): **the load**, the liquid the bristles hold (slip, water or Lachryma), filled by a **dip** in
-  water and flung or sprayed; **the paint map** (`render/paintmap.js`), the world-anchored grid of wet, slip and **stains**
-  (Sunshine's goop: washed to reveal what they hid).
+  **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
+  (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
+  shaders draw and the game asks; the **stains** themselves are kept in `world/ground/stains.js`.
+- **the jet arts** (`courier/moves/jets.js`): three opt-in Movement Arts on the Soul Brush's load, after Sunshine's nozzles, off until
+  switched on with the chat line's `/art`: **hover** (in the air, jumps spent, hold Space), **rocket** (crouched and still, hold Space),
+  **skim** (run into water at a sprint, Shift held: run on the surface).
   Settled by the owner, 2026-10-06 (`src/progress/brushload.js`, `docs/plans/SUNSHINE-SYSTEMS.md`): the Soul Brush is the tool of
   **environmental** Lachryma (the Lockheart's is Lachryma drained from creatures). Two **modes**, picked with 1 and 2 while it is out
   (as the Sondelass's forms): **paint** (spray Lachryma out) and **mop** (drink environmental Lachryma in). **saturate**: hold LMB and

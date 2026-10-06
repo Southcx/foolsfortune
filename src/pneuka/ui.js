@@ -195,7 +195,7 @@ export class PneukaUI {
     pane.appendChild(tg);
     // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if they have those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
-      if (F.hidden || (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
+      if (F.hidden || (!F.place && !box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
       const cur = box.fitted(socket), row = el('div', 'fits');
       for (let i = 0; i < F.max; i++) {
         const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');

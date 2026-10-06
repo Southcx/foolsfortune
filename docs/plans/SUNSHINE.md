@@ -5,8 +5,12 @@ feedback when swimming around. Do analysis of implementation and execution in th
 You can use the Soul Brush as the substrate ... Reference Splatoon for other painting crossovers" (games where painting and fluid
 manipulation are major mechanics) "and talk with Dovina about making the mechanical systems create synergy with the existing ones."
 
-This is the analysis and a plan in phases. Status: **phase 1 handed to Calissa; the rest is proposed**, with the open questions for
-the owner at the end (they go into Dovina's digest).
+This is the analysis and a plan in phases. Status (R46, end of the day): **phase 1 built** (Calissa's rings, wakes, crown and drips
+on `game.water.disturb`); **the owner answered the questions** (Dovina's `docs/plans/SUNSHINE-SYSTEMS.md` section 4). **Phases 2 to 5
+are built on Petra's integration branch** for the owner's next review: the paint map (`world/ground/paintmap.js`); the load on the Soul
+Brush with paint and mop, the saturating hold and the Lachrymato Bottle (`tools/soulbrush/load.js`); stains (`world/ground/stains.js`);
+the jet arts hover, rocket and skim (`courier/moves/jets.js`, opt-in through `/art`); and the Brush Slide running on painted ground.
+The liquid is Lachryma, by the owner's ruling, not water.
 
 ---
 

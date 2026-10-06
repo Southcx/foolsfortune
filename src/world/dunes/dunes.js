@@ -242,6 +242,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     // the sand's grain from the world (render/triplanar.js: Calissa's CC0 sand on the tops, packed sand on the steep lee faces), over
     // the colour above: the texture's own light and shade, the palette the shader's
     triplanar(mat, { side: surfaceTexture('sand_packed'), top: surfaceTexture('sand'), scale: 0.25, strength: 0.8 });
+    g.paintmap?.patch(mat); // (the paint and the Shore's stains on it: world/ground/paintmap.js)
     // the field: chunks with levels of detail (render/terrain.js), sampled once from the one height function
     const TR = (this.chunks = new ChunkTerrain({ height: localHeight, half: DUNE.half, step: DUNE.step, chunk: 32, outer: DUNE.outer, outerStep: 20, material: mat }));
     const mesh = TR.mesh;

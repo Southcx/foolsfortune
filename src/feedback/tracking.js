@@ -522,6 +522,12 @@ export class Tracking {
     on('brush.stow', () => L.inc('brush.stow'));
     on('brush.swing', (e) => { L.inc('brush.swing'); if (e.slam) L.inc(e.air ? 'brush.slam.dive' : 'brush.slam.swing'); });
     on('brush.flick', () => L.inc('brush.flick'));
+    // the opt-in Movement Arts (the chat line's /art) and the jet arts' moves (courier/moves/jets.js)
+    on('art.toggle', (e) => log.say('system', `${e.art.toUpperCase()} is now ${e.on ? 'on' : 'off'}.`));
+    on('art.list', (e) => log.say('system', `Opt-in Movement Arts: ${e.arts}. Type /art and a name to switch one.`));
+    on('move.hover', () => L.inc('move.hover'));
+    on('move.rocket', () => L.inc('move.rocket'));
+    on('move.skim', () => L.inc('move.skim'));
     on('brush.hit', (e) => {
       L.inc('brush.hit'); L.inc(`brush.hit.${e.what}`);
       if (e.stun) L.inc('brush.stun');

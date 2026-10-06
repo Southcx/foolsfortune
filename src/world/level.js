@@ -67,7 +67,8 @@ export class Level {
 
   mat(color, emissive) {
     // (dressed with what its colour is made of: plaster, tiles, planks; vfx/surfaces.js)
-    return dress(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 }), color);
+    const m = dress(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true, emissive: emissive ?? 0x000000 }), color);
+    return this.paintmap ? this.paintmap.patch(m) : m; // (the paint and the stains on its floors: world/ground/paintmap.js)
   }
 
   addGeo(geo, color, outline = true, shadow = true) {

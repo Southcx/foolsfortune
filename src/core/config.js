@@ -267,6 +267,10 @@ export const DEFAULTS = {
   // Movement techs (src/courier/moves/): optional techniques over the core movement above. Each
   // has an `enabled` switch; off, the core behaves exactly as if the tech didn't exist.
   tech: {
+    // the jet arts (courier/moves/jets.js): opt-in, off until switched on (the chat line's /art); they spend the Soul Brush's load
+    hover: { enabled: false, cost: 8, time: 1.6, lift: 1.2, speed: 6, steer: 4 },
+    rocket: { enabled: false, cost: 20, charge: 0.55, speed: 17 },
+    skim: { enabled: false, cost: 5, speed: 11, minSpeed: 6 },
     blink: { enabled: true, distance: 5.5, time: 0.09, charges: 2, recharge: 1.8, exitSpeed: 7, airLift: 1.5, ghostLife: 0.45 }, // E
     slam: { enabled: true, lookDown: 30, minHeight: 1.8, speed: 24, steer: 3, radius: 3.2, breakFrac: 0.45, velocity: 9, window: 0.3, jumpMult: 1.15, jumpPerMetre: 0.06, jumpMax: 1.9, slidePerMetre: 0.35 }, // C in the air, looking down
     stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar

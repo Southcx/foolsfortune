@@ -5,6 +5,8 @@ import { Physics, RAPIER, GROUPS } from './core/physics.js';
 import { FX } from './vfx/particles.js';
 import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
+import { PaintMap } from './world/ground/paintmap.js';
+import { Stains } from './world/ground/stains.js';
 import { Character } from './courier/character.js';
 import { Input } from './core/input.js';
 import { Player } from './courier/player.js';
@@ -37,6 +39,7 @@ import { SHORE } from './world/dunes/beach.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
 import { Blink } from './courier/moves/blink.js';
+import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
 import { Stomp } from './courier/moves/stomp.js';
 import { Roll } from './courier/moves/roll.js';
@@ -331,7 +334,8 @@ async function main() {
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js)
   game.chests.rave.warm(renderer, camera);
   mark('sky');
-  const level = new Level(scene, physics, breakables); // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
+  game.paintmap = new PaintMap(); // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
+  const level = new Level(scene, physics, breakables); level.paintmap = game.paintmap; // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
@@ -349,6 +353,7 @@ async function main() {
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
+  game.stains = new Stains(game, game.paintmap); // (spilled crude by the game day's layout and the cracked bottles: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   level.build();
@@ -408,7 +413,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Skim, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -654,6 +659,15 @@ async function main() {
   // QAIS (F8): the owner's testing window, in every build but a public one (debug/qais/, docs/plans/QAIS.md)
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
   if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  // the opt-in Movement Arts (the jet arts: courier/moves/jets.js): switched on and off here, kept with the settings
+  const OPT_ARTS = ['hover', 'rocket', 'skim'];
+  game.save?.section('optarts', { scope: 'settings', version: 1, dump: () => Object.fromEntries(OPT_ARTS.map((a) => [a, !!T.tech[a].enabled])),
+    load: (d) => { for (const a of OPT_ARTS) T.tech[a].enabled = !!d[a]; }, reset: () => { for (const a of OPT_ARTS) T.tech[a].enabled = false; } });
+  game.chat.add('art', { help: `switch an opt-in Movement Art on or off: /art ${OPT_ARTS.join(' | ')} (no name: the list)`, run: ([id]) => {
+    if (!OPT_ARTS.includes(id)) { game.events.emit('art.list', { arts: OPT_ARTS.map((a) => `${a} ${T.tech[a].enabled ? 'on' : 'off'}`).join(', ') }); return; }
+    T.tech[id].enabled = !T.tech[id].enabled; game.save?.dirty('optarts');
+    game.events.emit('art.toggle', { art: id, on: T.tech[id].enabled, by: 'courier' });
+  } });
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
@@ -966,6 +980,7 @@ async function main() {
 
     if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     env.water.update(dt);
+    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);
