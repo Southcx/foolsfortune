@@ -27,9 +27,13 @@ streaming) is yours to measure.
 
 ## The Solar Skiffing trial (Dovina's rules; Petra's room; Calissa's look)
 
-- **Begun from its own place** (the house rule: a trial is begun in its room): a sundial plinth out on the sand, F at the gnomon.
+- **Begun from its own place** (the house rule: a trial is begun in its room): **the Gnomon**, a sundial out on the sand, F at it.
+  **Espada:** the Gnomon (Greek: "the one who knows", a sundial's shadow-stick) is the town's, still keeping its game hours for
+  nobody; the trial races its shadow.
 - **The run:** a course of **rings of light** across the dunes (Calissa's: rings of the sun's gold, the next one lit). The sun's shadow
   sweeps round the dial as the clock (**a real-time limit: Dovina's number**). Geysers are part of the line: rings hang above them.
 - **"Solar":** the light: rings to pass through while the sun is on them (they dim as the shadow of a dune crosses them). Or does it
   run only by day? **Dovina:** the rule; **Espada:** what the sundial is.
 - **Records:** the run's time, in the ledger (Dovina's), the log's line (`tracking.js`).
+- **The music (Wanda):** in the owner's melodic-drop sound at about 150 bpm; each ring plays the next note of the scale, so a clean run
+  is a melody. The geysers by their cycle: a fizz, a rumble, a roar, a rain of sand.

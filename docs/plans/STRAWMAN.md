@@ -33,4 +33,11 @@ place in the Workshop and its body, Calissa the model and how it reacts. The own
   - Does it fight back on a switch (a training mode)?
 - **The look (Calissa):** it rocks on its ball foot, swings on its bar, its straw puffs out at the seams, the target ring hit lights,
   and it rights itself.
-- **Espada:** who made it, and why it is called Strawman. The name is already a pun on the argument that is set up to be knocked down.
+- **Espada (LORE.md, a proposal for the owner):** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the
+  apprentice who is afraid of breaking things. The heart charm is Pip's. Three meanings in the name: a scarecrow, a training dummy,
+  and the argument built only to be knocked down; it always stands back up. The log calls it by name, with no article: "Strawman
+  rocks back up."
+- **Wanda (proposals):** a straw thump, the post's creak on each swing, a bell in the ball foot as it rights itself, the damage type's
+  own sound on top, and a ding on the target, higher toward the bull's-eye.
+- **Calissa (built: `src/vfx/strawman.js`, in the workbench):** the model and its rock; `ring(point)` tells which ring a blow found,
+  for Wanda's ding.

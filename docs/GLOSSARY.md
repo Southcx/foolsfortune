@@ -347,8 +347,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
-- **the spout** (`DunemawSpout`, `src/vfx/dunemaw.js`): the Great Dunemaw's landmark, a column of sand pouring up out of the mouth,
-  70 m, and a **sandfall** spilling back round it.
+- **the spout** (`DunemawSpout`, `src/vfx/dunemaw.js`): a column of sand pouring up and a **sandfall** spilling back round it; once
+  the Great Dunemaw's landmark (withdrawn: the owner, 2026-10-06, the mouth is an antlion pit), now the look of a slip geyser.
 - **a sandfall** (the Great Dunemaw, `docs/plans/DUNEMAW.md`): a curtain of sand pouring from above; in the floors, a side passage's
   shifting door (open, then falling, on the sim clock; never closing on the Courier). Also the spout's falling skirt.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
@@ -356,6 +356,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   degrees a cell on floors 1 to 3).
 - **the flythrough** (`docs/plans/DUNEMAW.md`): the preview of a floor on arrival, the camera sweeping its path with the frame
   accumulation on; any key skips it.
+- **Strawman** (`src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a
+  stitched sack doll on a post with a weighted ball foot; infinitely durable. Named with no article ("Strawman rocks back up").
+- **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): the Great Dunemaw's FOE, a Great Slip Jelly wearing
+  the broken urn it grew in as a crown (**the urn crown**, `src/vfx/urncrown.js`); breaking the crown bares **the core**, its weak point.
+- **the Gnomon** (Espada's name, a proposal; `docs/plans/DUNES.md`): the town's sundial on the sand, where the Solar Skiffing trial
+  is begun.
+- **a slip geyser** (`docs/plans/DUNES.md`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
