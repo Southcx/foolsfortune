@@ -88,9 +88,9 @@ lit.
    is hidden in first person (`hudring.js`: `ring.visible = false` in first person). The bead would vanish exactly when you aim the
    narrow beam. The readiness needs **two homes, one mark**:
    - on the battle ring when the book is out in third person;
-   - in the viewfinder's margin when the lens is up.
+   - in the view through the lens when it is raised.
 
-   It is the same hoop in both, drawn in ink on the parchment, the way the lens draws everything.
+   (Since the owner's ruling, the lens's home is the capture circle's own outer rim, not the margin: see "The Flash, specified".)
 3. **Rule 5 needs one more case.** Raising a tool with a cost or a cooldown out of a fight must bring the battle ring up in its quiet
    state (online, at 40%, no pulse), or the Flash's bead is unseen before the first flash. That is the moment you need it most: the
    flash that starts the fight. This is a hook for Petra: `combat.engaged || belt.out?.overlay`.
@@ -101,28 +101,53 @@ lit.
 
 ## The Flash, specified
 
-- **The Flash's bead** is a labradorite hoop. It is not a Lachryma disc, because it shows an act's readiness, not a charge held.
-  - **On the battle ring** (book out) it sits in the frame *after* the band's end, across the ring from the Blink's Lachryma beads.
-    They are never confused: different side, different material.
-  - **The cooldown** (1.1 s, `FLASH.cool`) draws the hoop round clockwise.
-  - **Ready** (cooled down, and at least `FLASH.cost` Lachryma held) fills it with the lens's white glint and rings its one pulse.
-  - **Cooled down but too poor:** the hoop is whole and its inside stays dark.
+**The owner's ruling (2026-10-06):** "why would the stun ring go around the enemy's feet when you're looking at them THROUGH the Veritome
+to stun them? Remember, Fatal Frame and Pokemon Snap." The meter lives **where you aim from**. My feet ring is withdrawn (Dovina's
+OVERLAY.md, `claude/dovina-design` f0da7ef, has the rules). One more line for the grammar falls out of it: **the margins are the book's,
+and the picture is the overlay's.** The viewfinder's parchment margins draw in ink, as they always have. Anything laid over the picture
+itself is the System's reading, so it is labradorite.
+
+**Through the lens (the Veritome raised): the capture circle is the Flash's.** This is Fatal Frame's Camera Obscura.
+- **It locks on.** When a creature that can be stunned is inside it, the circle eases onto the creature over 0.15 s and holds there. It
+  eases back to the middle of the picture over 0.3 s when the creature is lost. It keeps its size on the screen.
+- **The stun meter fills it.** A labradorite band inside the circle fills clockwise from the top as flashes land. The fill is eased at
+  0.12 s, so each flash is a visible step, and it drains as the meter drains.
+- **Open** (stunned: the reprogram cue): the circle closes with one bright head running round it (0.4 s), and its ticks turn, one turn
+  in 6 s. The interact chevron still hangs over the creature once you are near enough to press the middle button.
+- **Immune** (coming to): the band is drawn dashed (gaps of a quarter), at 40%, so the next flash is seen to be worth less.
+- **Status build-ups** (doubt, charm, blind, confusion) ride outside the circle's rim as arcs filled in their aura's colour, at most
+  four.
+- **The circle's outer rim is the readiness hoop.**
+  - It draws itself round over the 1.1 s cooldown (`FLASH.cool`).
+  - When ready, it gets the lens's white glint at its top left and rings one pulse.
+  - When the Flash is cooled but you hold too little Lachryma, the hoop is whole but hollow and dark.
+
+  It sits on the circle, so readiness is where you aim, and the margin home from my first cut is no longer needed.
+- With no subject held, the circle sits empty in the middle with only its readiness hoop: it is a sight, ready or not.
+
+**The photograph's quality moves to the frame.** This is Pokemon Snap's viewfinder.
+- **Four corner brackets** of ink sit on the inner edge of the parchment, one at each corner of the picture. They close inward as the
+  held plate improves: from flush with the margin to 6% of the picture's height in. They ease at 0.2 s and never jump.
+- **The shutter chance** is the frame's one brief brightening. The parchment margin lifts 25% toward white over 0.08 s and settles
+  over 0.4 s, once per chance and never repeated while the chance holds (rule 7).
+- The focus brackets over each subject stay as they are (darker for a better shot, vermilion for one that can be held).
+
+**Without the lens (the book out, a third-person Flash): a bracket at the creature's eyes.**
+- **The mark.** Two labradorite brackets, `[` and `]`, sit either side of the creature's head (`head(out)`, the point stun.js puts
+  its stars at). They are as wide as the head with a 20% margin, and never under 28 px on the screen.
+- **The fill.** Each bracket's upright is the gauge: it fills bottom to top with the stun meter, both sides together, eased at 0.12 s.
+- **Open:** the two brackets slide together and join into a closed square round the head (0.4 s, the running head along its edges),
+  and the square turns slowly, one turn in 6 s.
+- **Immune:** the uprights are dashed.
+- **Status build-ups:** short ticks on the outside of the uprights, in their aura's colour.
+- **When it shows:** only on a creature whose meter is above zero. It fades over 0.6 s, starting 3 real seconds after that creature's
+  last flash. At zero it shows nothing, so a fight with several creatures shows only the ones you have flashed. That settles our
+  "unaimed creatures" question.
+- **Readiness in this view** stays on the battle ring: the hoop in the frame after the band's end, across from the Blink's beads.
+
+**And for both views:**
 - **The price tick.** While the book is out, a fine labradorite tick crosses the pool's band at the level the Flash would spend it down
-  to. This is the general mark for any act's cost: the same tick serves every priced act. You see before you press it what the flash
-  will take.
-- **In the viewfinder** (lens up) the same hoop sits in the right-hand margin at the height of the capture circle, in ink on the
-  parchment, with its glint in vermilion (the lens's colour for a creature that can be held). The capture circle in the middle stays
-  the photograph's alone.
-- **A creature's stun meter** is a ring at its feet (the family's ring: labradorite fill, labradorite frame).
-  - It sits at its ground contact, its footprint times 1.25.
-  - It shows only in a fight, and only while the meter is above zero or the Flash is aimed at the creature (the cone's edge touching
-    it).
-  - It fills clockwise as flashes land, eased at 0.12 s, so each flash is a visible step. It drains as the meter drains.
-  - **Stunned:** the ring closes with its running head and its ticks turn, which is the **open** state. That *is* the reprogram cue;
-    the interact chevron still hangs over it when you are near enough to press the middle button.
-  - **Immune** (coming to: its meter fills at a quarter of the rate, `src/creatures/stun.js`): the frame is dashed, so the next flash
-    is seen to be worth less.
-  - **Status build-ups** (doubt, charm, blind, confusion) are arcs outside the same ring, filled in their aura's colour.
+  to. The battle ring is up in its quiet state, so the tick reads before the fight.
 - **The log** says the keys once (Espada's line, Dovina's ask). The marks never do.
 
 ## For Petra: the one module
@@ -130,17 +155,17 @@ lit.
 What the shared part needs, from the look's side:
 - `ring({ at, radius, band: 'lachryma' | 'mind', fill, frame: 'solid' | 'dashed', state })`, with `.bead(i, kind, k)`,
   `.arc(angle, width, heat | color)`, `.tick(at)`, `.seam(angle, width)`.
+- The same band, frame, arcs and hoop also serve the capture circle on the screen (a ring drawn in screen space instead of on the
+  ground) and the bracket at a creature's eyes (a ring cut to two uprights). One shader, three placements.
 - All in **one shader**: the battle ring's fragment shader, generalised. Every ring is a quad on the ground, so many rings are one
   instanced draw, with no lights and no shadow.
 - A screen-size floor (24 px) and a distance fade (30 m).
 - Brackets stay `src/vfx/wiremarks.js`'s; seams stay on the matter they crack.
 
-My budget ask: every creature ring in a room together costs **one** draw call (instanced quads, the ring's state in instance
-attributes), and the frame's overlay costs at most 3 (the battle ring, the creature rings, the wire marks).
+My budget ask: every creature bracket in a room together costs **one** draw call (instanced quads, the ring's state in instance
+attributes), and the frame's overlay costs at most 3 (the battle ring, the creature brackets, the wire marks; the capture circle is the viewfinder's own canvas).
 
 **Open (to settle with Petra and Dovina, then the owner):**
-- Whether the stun ring shows on creatures the Flash is not aimed at, in a fight with several. I lean to: only the aimed one and any
-  above zero.
 - The overlay's name: Espada's to give.
 - Mental state on the frame (Stoic to Prismatic) as the schiller's strength rather than a shimmer. It is a constant-rate drift whose
   amplitude rises, never a faster flicker.

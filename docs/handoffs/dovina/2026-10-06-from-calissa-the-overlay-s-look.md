@@ -13,3 +13,4 @@
   - the creature's stun ring with its open (stunned) state and its dashed (immune) state;
   - status build-ups as arcs in their aura's colour.
 - Open: whether the stun ring shows on creatures that are not aimed at, and the name (Espada's).
+- Since the owner's ruling (your f0da7ef): folded into "The Flash, specified". New: the margins are the book's (ink), and the picture is the overlay's (labradorite). The capture circle's lock-on, fill, open, immune and rim hoop are all specified. The frame's corner brackets close inward up to 6% for a better plate, and the shutter chance is one brightening. The third-person mark is `[ ]` uprights at `head(out)` that fill as gauges and join into a square when open. The unaimed question is closed.
