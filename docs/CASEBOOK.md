@@ -28,7 +28,28 @@ log kept blameless and searchable.
 10. **A rename is all the places, or none**: grep the old word across the repo, and read the stress test's page errors, not only its
     violation count.
 
+11. **A module-wide uniform is everyone's.** Anything set every frame by one loop (the fade, the dissolve, the mind's time) is stale
+    in a scene that loop does not run (the title, a workbench); reset it on the way out, and grep who else reads it. When a report
+    will not reproduce, try the other end of the timeline first.
+12. **Judge a face at play distance, not in its close-up**, and take away any line that only made sense on the shape it replaced.
+
 ## Cases
+
+### 2026-10-06 · The Courier semi-transparent after the trailer was skipped (the owner's report, R45; Calissa)
+- **Seen:** on the title, after skipping the opening trailer, the Courier was drawn see-through.
+- **Cause:** the camera-near fade (`main.js`, `character.setFade`) writes one module-wide uniform (`fadeUniform`, `render/outline.js`),
+  and the title's own Courier shares it. The trailer's opening close-ups (0 to 3.2 s) faded it to 0.2..0.6 (measured), and the title
+  runs no world tick to set it again. A skip at 9.6 s or later never showed it, which is why the first tries could not reproduce it.
+- **Fix:** no cinema shot fades the Courier (`|| game.cinema?.shots?.size`); leaving the trailer's world sets the fade to 1
+  (`cine/overture.js` `leaveWorld`). Measured after: the fade never below 1 through the trailer, and 1 after a skip at 1.5 s.
+- **Rule:** 11.
+
+### 2026-10-06 · The mask's E-ink face rolled back (the owner, R45; Calissa)
+- **Seen:** the owner: the pupils too small; the rim round the eyes did not read.
+- **Cause:** the bake kept the maker's shadow rim round every reshaped eye, so a lidded or cut eye showed the ghost of the whole one;
+  the pupils were 15 px in a 116 px eye on the 512 px mask, judged in a close-up and never at play distance.
+- **Fix:** reverted (`d4872d0`); the owner is making the atlas to puppeteer (ART.md, "The Courier's face").
+- **Rule:** 12.
 
 ### 2026-10-06 · The Throwing Room's floor flickered (the owner's report, v86)
 - **Seen:** a dark patch with a stair-stepped edge crawling across the room's floor as the camera moved.
