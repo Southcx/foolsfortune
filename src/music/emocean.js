@@ -94,3 +94,37 @@ export function stageCue(seconds = 150) {
   if (!FITTED.has(bpm)) FITTED.set(bpm, { ...CRUDE_SEA, bpm, of: CRUDE_SEA });
   return FITTED.get(bpm);
 }
+
+// ---- CRUDE SEA (B): the A/B the owner asked for (2026-10-06), the same score with the owner's ear laid over it (docs/OST.md section 6):
+// layers and texture, not a rescoring. Air on top (the shimmer, crisp hats and their rolls), the clean tapped guitar answering the koto
+// from the other side, the 808 under the heavy that slides between the roots, and three holes: a beat of silence with a reversed swell
+// into the darters, into the heavy, and in the heavy's middle (the bass diving into it). The game plays A until the owner picks.
+const V = { Em: [64, 67, 71, 74, 78], C: [60, 64, 67, 71, 78], D: [62, 66, 69, 71, 76], Bm: [59, 62, 66, 69, 76] }; // (Em9, Cmaj7#11, D6/9, Bm11)
+const TAP = [0, 2, 4, 1, 3, 4, 2, 0, 1, 3, 4, 2, 4, 3, 1, 2];
+const twinkle = (c, v = 0.2) => TAP.map((p, n) => E('twinkle', n * 0.25, 0.5, V[c][p] + (n >= 8 && p < 2 ? 12 : 0), v * (n % 4 ? 0.75 : 1)));
+const sparkle = (c, v = 0.2) => [E('shimmer', 0, 4, TRI[c], v)];
+const ticks = (i, k = 1, rolls = false) => [...Array(rolls && i % 2 ? 12 : 16)].map((_, n) => E('tick', n * 0.25, 0.25, null, (n % 4 === 0 ? 0.32 : n % 2 ? 0.14 : 0.22) * k))
+  .concat(rolls && i % 2 ? [3, 3.125, 3.25, 3.375, 3.5, 3.625, 3.75, 3.875].map((b, n) => E('tick', b, 0.125, null, (0.12 + n * 0.03) * k)) : []);
+const ohats = (v = 0.18) => [0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, v));
+const trap = (i) => [...[0, 0.5, 1, 2, 2.5, 3].map((b) => E('tick', b, 0.5, null, b % 1 ? 0.18 : 0.26)), ...[1.5, 1.667, 1.833].map((b, n) => E('tick', b, 0.17, null, 0.14 + n * 0.04)),
+  ...(i % 2 ? [3.5, 3.625, 3.75, 3.875].map((b, n) => E('tick', b, 0.125, null, 0.14 + n * 0.05)) : [E('tick', 3.5, 0.5, null, 0.2)])];
+const low = (c) => ROOT[c] - (ROOT[c] > 42 ? 12 : 0); // (the 808's root, E1 to E2)
+const eights = (i) => { const c = chordOf(i), r = low(c), p = low(chordOf(i + 3)); return [E('eight', 0, 1.5, r, 0.55, { from: p - r, glide: 0.12 }), E('eight', 2.5, 1, r, 0.4),
+  ...(i % 2 ? [E('eight', 3.5, 0.5, r + 12, 0.3, { from: -12, glide: 0.1 })] : [])]; };
+/** A bar cut off at beat `at` (what sounds is shortened to end there), then a reversed swell into the next bar's downbeat: the hole. */
+const holed = (evs, at = 3) => [...evs.filter((e) => e.b < at).map((e) => ({ ...e, d: Math.min(e.d || 1, at - e.b) })), E('reverse', at, 4 - at, null, 0.4)];
+const LAYERS = {
+  launch: (i, c) => [...(i >= 2 ? sparkle(c, 0.08 + 0.015 * i) : []), ...(i >= 4 ? ticks(i, 0.3 + 0.15 * (i - 4)) : [])],
+  schools: (i, c) => [...ticks(i), ...(i >= 8 ? ohats(0.14) : []), ...twinkle(c, i < 8 ? 0.2 : 0.16)],
+  pincer: (i, c) => [...ticks(i, 1.1), ...ohats(), ...sparkle(c, 0.18), E('snap', 1, 1, null, 0.35), E('snap', 3, 1, null, 0.35)],
+  darters: (i, c) => [...ticks(i, 1, true), ...twinkle(c, 0.14)],
+  breather: (i, c) => [...sparkle(c, 0.16), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
+  push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15), ...sparkle(c, 0.16)],
+  heavy: (i, c) => [...trap(i), ...(i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i)), ...sparkle(c, 0.14)],
+  arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.28)] : []),
+};
+const HOLES = { pincer: 9, push: 21, heavy: 5 }; // (the bar of each that ends in a hole)
+export const CRUDE_SEA_B = { ...CRUDE_SEA, title: 'Crude Sea (B)', sections: CRUDE_SEA.sections.map((s) => ({ ...s, bar: (i) => {
+  const all = [...s.bar(i), ...(LAYERS[s.id]?.(i, chordOf(i)) || [])];
+  return HOLES[s.id] === i ? holed(all) : all;
+} })) };

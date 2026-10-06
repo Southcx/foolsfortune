@@ -22,7 +22,7 @@ import { ROLL_THE_MOON, LEAVE_HER } from './shanties.js';
 import { SIREN } from './siren.js';
 import { WITCH } from './witch.js';
 import { OVERTURE } from './overture.js';
-import { CRUDE_SEA } from './emocean.js';
+import { CRUDE_SEA, CRUDE_SEA_B } from './emocean.js';
 import { WELL_FLOORS } from './well.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 
@@ -53,6 +53,7 @@ export const TRACKS = [
   { id: 'calissa', score: CALISSA, title: 'Overflowing', where: "Calissa's theme · cups, water", notes: 'Calypso in E at 116: the pour (B G# E, C# E: a major arpeggio tumbling in three, three and two, and a hop back up) on the steel pan, marimba chucking the off-beats, the tresillo on the upright, bongos, shaker and timbale; the bridge climbs the Answer and the horns stab the last verse.' },
   { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
   { id: 'crudesea', score: CRUDE_SEA, title: 'Crude Sea', where: 'a hop across the Emocean · the stage', notes: 'A trance groove under space jazz at 160, a hundred bars that are the stage: a calm launch, four on the floor for the first schools with the sax sailing the Answer, the supersaw opening on the pincer, a two-step break and the theremin swooping for the darters, a breather where the choir holds the Tear and the whale sings, the push, the heavy in half time with the Five in the low brass, and E major as Margarite comes into sight.' },
+  { id: 'crudeseab', score: CRUDE_SEA_B, title: 'Crude Sea (B)', where: 'the A/B: the same stage, the owner\'s ear laid over it', notes: 'The same hundred bars with layers, not a rescoring: air on top (a shimmer, crisp hats and their rolls), a clean tapped guitar answering the koto from the other side, an 808 under the heavy that slides between the roots, and three holes, a beat of silence and a reversed swell, into the darters, into the heavy, and in the heavy\'s middle with the bass diving into it.' },
   { id: 'well1', score: WELL_FLOORS[0], title: 'Surface Thoughts', where: "a mind's Well · the first floor", notes: 'A tanpura on E, drips of thought in the pentatonic, a breath, a far voice sinking from E to D.' },
   { id: 'well2', score: WELL_FLOORS[1], title: 'Undertow', where: "a mind's Well · the second floor", notes: 'The Tear (F on E) held soft under the drone, a heartbeat, the whale gliding down, an octatonic celesta that will not resolve.' },
   { id: 'well3', score: WELL_FLOORS[2], title: 'The Bottom of the Well', where: "a mind's Well · the FOE's floor", notes: 'A sub on E, a far taiko like something walking, strings holding E, F and B, the heartbeat quickening, a low choir.' },
