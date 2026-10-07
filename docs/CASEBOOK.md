@@ -67,6 +67,14 @@ log kept blameless and searchable.
 
 ## Cases
 
+### 2026-10-07 · "The Lockheart catches spirit.bind."
+- **Seen:** reading the garden's log rules for `realm.name`: the catch's line names the Figment from `e.name`.
+- **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every
+  `spirit.bind`, `spirit.mature` and `spirit.release` line said the event's name, and `realm.name { name }` would have too.
+- **Fix:** the spirit's name rides as `spirit`, the realm's as `realm` (`creatures/bound.js`, `world/garden/realm.js`, the rules in
+  `tracking/garden.js`).
+- **Rule:** CLAUDE.md's (payloads never use `name` or `t`); a spec's payload is checked against it before it is built.
+
 ### 2026-10-07 · The raid's brood, fed to the FOE, panicked the physics ("unreachable")
 - **Seen:** headless drive of the raid, the transition: a Rapier `unreachable` in `setNextKinematicTranslation`, then every call into the
   world "recursive use of an object".

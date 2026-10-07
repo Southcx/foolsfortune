@@ -10,7 +10,7 @@
 // folklore (a genie, a spirit sealed in a vessel).
 //
 //   game.bound = new Bound(game)   .bind(creature, from, by?) -> entry   .list   .release(i)
-//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, by }, spirit.release { kind, by }
+//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, spirit, by }, spirit.release { kind, spirit, by }
 // ---------------------------------------------------------------------------------------
 import { now as calNow } from '../core/calendar.js';
 
@@ -31,7 +31,7 @@ export class Bound {
     this.list.push(e);
     g.save?.dirty('bound');
     if (c.kind === 'slipjelly' || c.kind === 'spirit') g.jellies?.take(c, by); else { c.alive = false; c.root && (c.root.visible = false); g.creatures.remove(c); }
-    g.events?.emit('spirit.bind', { from, kind: e.kind, cls: e.cls, by });
+    g.events?.emit('spirit.bind', { from, kind: e.kind, cls: e.cls, spirit: e.name || null, by }); // (`spirit`: its name; the bus's `name` is the event's)
     return e;
   }
 
@@ -39,7 +39,7 @@ export class Bound {
   release(i) {
     const e = this.list.splice(i, 1)[0]; if (!e) return null;
     this.game.save?.dirty('bound');
-    this.game.events?.emit('spirit.release', { kind: e.kind, by: 'courier' });
+    this.game.events?.emit('spirit.release', { kind: e.kind, spirit: e.name || null, by: 'courier' });
     return e;
   }
 }
