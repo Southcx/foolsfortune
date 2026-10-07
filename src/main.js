@@ -816,10 +816,12 @@ async function main() {
   titleScene.onMenu = () => title.ui.showMenu();
   if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; started = true; } // (a replay is played from the start of play: no title)
   game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
+  let selfRelease = false; // (the next unlock is the game's own: see below)
   input.onLockChange = (locked) => {
     // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened
     // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
-    if (locked && (modalOpen() || game.kilnUI?.open || (title.active && game.codex?.open))) { document.exitPointerLock?.(); return; }
+    if (locked && (modalOpen() || game.kilnUI?.open || (title.active && game.codex?.open))) { selfRelease = true; document.exitPointerLock?.(); return; }
+    if (!locked && selfRelease) { selfRelease = false; return; } // (a release the game made itself is not you leaving: no pause, the kiln sweep's F and Esc spam)
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';

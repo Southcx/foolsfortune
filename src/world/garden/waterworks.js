@@ -102,6 +102,7 @@ export class Waterworks {
     this.every = Math.min(BUDGET.most, Math.max(1, Math.ceil((this.cost * this.every) / BUDGET.ms))); // (what one folded step costs, over the budget)
   }
   run(dt) {
+    this.R.cascades?.step(dt); // (water spilling from one planetoid to the next: world/garden/cascades.js)
     const rain = this.rain();
     if (rain > 0) { const r = (this.rand ||= stream('garden.rain')), f = this.feeling(); for (const P of this.R.site.planets) { const k = Math.floor(r() * NX * NY), d = new THREE.Vector3().fromArray(CELL_DIRS, k * 3); this.water(P).pour(d, RAIN.most * rain * dt * (P.r / 20) ** 2, f); } } // (a drop a step somewhere on each, as much as its size)
     for (const s of this.springs) this.water(s.planet).pour(s.dir, s.rate * dt, s.feeling);
