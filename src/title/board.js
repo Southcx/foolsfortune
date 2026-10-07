@@ -13,9 +13,22 @@
 // Prior art: Escher's spirals and "Smaller and Smaller", Alice's chessboard country (Through the Looking-Glass), the tarot Fool on his
 // cliff, Kirby's and Mario Party's board worlds, and the "box-filtered checkerboard" of Inigo Quilez (an antialiased procedural checker).
 //
+// THE PIECES are the owner's (source_assets/chess_pieces.blend -> src/assets/chess.glb, scripts/export_chess.py, 2026-10-07): six
+// porcelain pieces on five-bone rigs, alive. Each idles, glances about, bows and taunts between turns; on its turn it MOVES (its own
+// move clip, a square's travel taken out of it: the board carries it from square to square, log-polar), the knight in an L and the queen
+// spinning; the king and the queen celebrate a move; a piece drawn down the drain FALLS, and comes back at the rim with its SPAWN.
+// Fetched beside the bundle like the clip packs; until it is in, the pieces are lathed porcelain.
+//
 //   const b = new Board(scene)   b.update(dt, beat)   (beat: { bar, beat, phase } from the music's grid, or the board's own clock)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { clone as cloneRig } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import chessUrl from '../assets/chess.glb?url';
+
+// the owner's pieces: the name of each rig in chess.glb, its height in its own units, and the step a turn takes it (squares: round, in)
+const RIGS = { pawn: ['pawn_Rig', 3.0], rook: ['Rook_Rig', 3.7], knight: ['Knight_Rig', 3.96], bishop: ['bishop_Rig', 4.3], queen: ['queen_Rig', 4.29], king: ['King_Rig', 5.0] };
+const CLIP = { pawn: 'pawn', rook: 'Rook', knight: 'Knight', bishop: 'bishop', queen: 'queen', king: 'King' };
 
 const N = 24;                // squares round the board
 const R0 = 4, R1 = 260;      // the drain's lip and the rim, in metres
@@ -116,13 +129,15 @@ export class Board {
     const pale = new THREE.MeshStandardMaterial({ color: 0xe8dcc6, roughness: 0.35, metalness: 0.05 });
     this.geos = Object.fromEntries(Object.keys(PROFILES).map((k) => [k, lathe(k)]));
     this.pieces = [];
-    const cast = [['king', 1, 22, 13], ['rook', 0, 7, 10], ['pawn', 0, 2, 8], ['pawn', 1, 15, 8], ['bishop', 0, 18, 11], ['pawn', 0, 10, 7], ['rook', 1, 4, 10], ['pawn', 1, 20, 7], ['bishop', 1, 12, 10], ['pawn', 0, 23, 7]];
+    const cast = [['king', 1, 22, 13], ['rook', 0, 7, 10], ['pawn', 0, 2, 8], ['queen', 0, 16, 12.5], ['pawn', 1, 15, 8], ['bishop', 0, 18, 11], ['pawn', 0, 10, 7], ['knight', 1, 1, 10], ['rook', 1, 4, 10], ['pawn', 1, 20, 7], ['bishop', 1, 12, 10], ['knight', 0, 8, 10], ['pawn', 0, 23, 7]];
+    this.mats = [dark, pale];
     cast.forEach(([kind, side, i, h], n) => {
-      const m = new THREE.Mesh(this.geos[kind], side ? pale : dark);
+      const m = new THREE.Mesh(this.geos[kind === 'knight' ? 'bishop' : kind === 'queen' ? 'king' : kind], side ? pale : dark);
       m.scale.setScalar(h);
       this.group.add(m);
-      this.pieces.push({ m, kind, i: i + 0.5, j: 9 + (n * 5) % 11 + 0.5, h, hop: null, yaw: Math.random() * 6.28 }); // (j in log-radius squares: 9 is ~10 m out, 20 ~190 m)
+      this.pieces.push({ m, kind, side, i: i + 0.5, j: 9 + (n * 5) % 11 + 0.5, h, hop: null, yaw: Math.random() * 6.28, wait: 2 + (n % 5) * 1.7 }); // (j in log-radius squares: 9 is ~10 m out, 20 ~190 m)
     });
+    this.loadPieces();
     // dice in the air, turning
     const dieMat = new THREE.MeshStandardMaterial({ map: dieTexture(), roughness: 0.4 });
     this.dice = [];
@@ -136,6 +151,39 @@ export class Board {
     }
     this.lastBar = -1; this.lastBeat = -1; this.turn = 0;
   }
+
+  /** The owner's pieces in place of the lathed ones, once chess.glb is in (each its own rig, its own mixer). */
+  async loadPieces() {
+    let gl;
+    try { const buf = await fetch(chessUrl).then((r) => r.arrayBuffer()); gl = await new GLTFLoader().parseAsync(buf, ''); } catch (e) { console.warn('chess pieces', e); return; }
+    // (a move's square of travel taken out: the board carries the piece; its rise and its squash stay)
+    for (const a of gl.animations) if (/_move$/.test(a.name)) for (const t of a.tracks) if (/^root(_\d+)?\.position$/.test(t.name)) for (let k = 0; k < t.values.length; k += 3) { t.values[k] = 0; t.values[k + 2] = 0; }
+    const rigs = {}; gl.scene.traverse((o) => { if (o.name.endsWith('_Rig')) rigs[o.name] = o; });
+    for (const p of this.pieces) {
+      const [rn, height] = RIGS[p.kind], src = rigs[rn]; if (!src) continue;
+      const rig = cloneRig(src); rig.position.set(0, 0, 0);
+      rig.traverse((o) => { if (o.isSkinnedMesh) { o.material = this.mats[p.side]; o.frustumCulled = false; } });
+      const holder = new THREE.Group(); holder.add(rig); holder.scale.setScalar(p.h / height);
+      this.group.remove(p.m); this.group.add(holder);
+      const pre = `${CLIP[p.kind]}_`, mixer = new THREE.AnimationMixer(rig), clips = {};
+      for (const a of gl.animations) if (a.name.startsWith(pre)) clips[a.name.slice(pre.length)] = a;
+      p.m = holder; p.unit = p.h / height; p.mixer = mixer; p.clips = clips; p.rigged = true;
+      this.play(p, 'idle', { loop: true, fade: 0 });
+    }
+  }
+
+  /** A piece plays one of its clips (crossfaded); a one-shot goes back to its idle when it ends. */
+  play(p, name, { loop = false, fade = 0.2, dur = null } = {}) {
+    const c = p.clips?.[name]; if (!c) return;
+    const a = p.mixer.clipAction(c);
+    a.reset(); a.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1); a.clampWhenFinished = !loop;
+    a.setEffectiveTimeScale(dur ? c.duration / dur : 1); a.setEffectiveWeight(1);
+    if (p.action && p.action !== a) a.crossFadeFrom(p.action, fade, false); else a.play();
+    a.play(); p.action = a; p.clip = name; p.left = loop ? Infinity : (dur ?? c.duration);
+  }
+
+  /** The way a step goes on the board, from piece p's square: [x, z] for atan2 (the piece's +Z is its front). */
+  heading(p, step) { const a = this.at(p.i, p.j, new THREE.Vector3()), b = this.at(p.i + step[0], p.j + step[1], new THREE.Vector3()); return [b.x - a.x, b.z - a.z]; }
 
   /** Where a square's centre is (and the board's up there, roughly). */
   at(i, j, out = new THREE.Vector3()) {
@@ -151,8 +199,10 @@ export class Board {
       this.lastBar = beat.bar;
       const p = this.pieces[this.turn++ % this.pieces.length];
       const md = (a, n) => ((a % n) + n) % n;
-      const step = p.kind === 'rook' ? [0, -2] : p.kind === 'bishop' ? [1, -1] : p.kind === 'king' ? [Math.random() < 0.5 ? 1 : -1, 0] : [0, -1];
-      p.hop = { t: 0, dur: beat.spb * 1.4, from: [p.i, p.j], to: [p.i + step[0], p.j + step[1]] };
+      const side = Math.random() < 0.5 ? 1 : -1;
+      const step = p.kind === 'rook' ? [0, -2] : p.kind === 'bishop' ? [side, -1] : p.kind === 'king' ? [side, 0] : p.kind === 'knight' ? [side, -2] : p.kind === 'queen' ? [side * 2, -2] : [0, -1];
+      p.hop = { t: 0, dur: beat.spb * (p.rigged ? 2 : 1.4), from: [p.i, p.j], to: [p.i + step[0], p.j + step[1]] };
+      if (p.rigged) { this.play(p, 'move', { dur: p.hop.dur }); p.face = Math.atan2(...this.heading(p, step)); }
       const d = this.dice[md(beat.bar, this.dice.length)];
       d.tumble = { t: 0, dur: beat.spb * 0.9, from: d.m.quaternion.clone(), to: d.m.quaternion.clone().multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)) };
     }
@@ -163,16 +213,23 @@ export class Board {
         p.hop.t += dt;
         const u = Math.min(1, p.hop.t / p.hop.dur), e = u * u * (3 - 2 * u);
         i = p.hop.from[0] + (p.hop.to[0] - p.hop.from[0]) * e; j = p.hop.from[1] + (p.hop.to[1] - p.hop.from[1]) * e;
-        lift = Math.sin(Math.PI * u) * p.h * 0.35;
-        if (u >= 1) { p.i = p.hop.to[0]; p.j = p.hop.to[1]; p.hop = null; }
+        lift = p.rigged ? 0 : Math.sin(Math.PI * u) * p.h * 0.35; // (an owner's piece hops in its own clip)
+        if (u >= 1) { p.i = p.hop.to[0]; p.j = p.hop.to[1]; p.hop = null; if (p.rigged && (p.kind === 'king' || p.kind === 'queen')) this.play(p, 'celebrate'); }
       }
-      // (drawn down the drain: back at the rim)
-      if (Math.exp(j * K - this.flow) < R0 + 2) { p.j += Math.log(R1 * 0.55 / R0) / K; p.hop = null; }
+      if (p.rigged) {
+        p.mixer.update(dt); p.left -= dt; p.wait -= dt;
+        if (p.left <= 0 && p.clip !== 'idle' && p.clip !== 'fall') this.play(p, 'idle', { loop: true, fade: 0.3 });
+        if (p.wait <= 0 && p.clip === 'idle' && !p.hop) { p.wait = 4 + Math.random() * 6; this.play(p, ['lookAround', 'bow', 'taunt', 'lookAround'][Math.floor(Math.random() * 4)], { fade: 0.3 }); }
+        if (Math.exp(j * K - this.flow) < R0 + 10 && p.clip !== 'fall') { p.hop = null; this.play(p, 'fall', { fade: 0.15 }); }
+      }
+      // (drawn down the drain: back at the rim, rising out of the board)
+      if (Math.exp(j * K - this.flow) < R0 + 2) { p.j += Math.log(R1 * 0.55 / R0) / K; p.hop = null; if (p.rigged) this.play(p, 'spawn', { fade: 0 }); }
       this.at(i, j, v);
       const r = Math.hypot(v.x, v.z), sink = THREE.MathUtils.smoothstep(r, R0, R0 + 14);
       p.m.position.set(v.x, v.y + lift - (1 - sink) * p.h, v.z);
-      p.m.scale.setScalar(p.h * (0.35 + 0.65 * sink));
-      p.m.rotation.y = p.yaw + (p.kind === 'king' && p.hop ? Math.PI * 2 * (p.hop.t / p.hop.dur) : 0);
+      p.m.scale.setScalar((p.rigged ? p.unit : p.h) * (0.35 + 0.65 * sink));
+      if (p.rigged) { if (p.face != null) p.yaw += Math.atan2(Math.sin(p.face - p.yaw), Math.cos(p.face - p.yaw)) * Math.min(1, dt * 4); p.m.rotation.y = p.yaw; } // (it turns to where it goes)
+      else p.m.rotation.y = p.yaw + (p.kind === 'king' && p.hop ? Math.PI * 2 * (p.hop.t / p.hop.dur) : 0);
     }
     for (const d of this.dice) {
       if (d.tumble) {
