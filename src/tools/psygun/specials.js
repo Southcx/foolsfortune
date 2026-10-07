@@ -1,3 +1,10 @@
+// ---------------------------------------------------------------------------
+// Ricochet + homing shells (the Shells class dispatches to these).
+//   ricochet – a hitscan round that banks off walls and floors, gets stronger
+//              with every bounce and bends toward a target after each one
+//   homing   – hold to paint up to N targets with the lock-on reticle, release
+//              to loose one seeker per lock
+// ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
 import { T, DEG, PALETTE } from '../../core/config.js';
@@ -7,13 +14,6 @@ import { LockSquares } from '../../vfx/wiremarks.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/psygun/specials'); // (the simulation's chance: core/rng.js, the same twice)
 
-// ---------------------------------------------------------------------------
-// Ricochet + homing shells (the Shells class dispatches to these).
-//   ricochet – a hitscan round that banks off walls and floors, gets stronger
-//              with every bounce and bends toward a target after each one
-//   homing   – hold to paint up to N targets with the lock-on reticle, release
-//              to loose one seeker per lock
-// ---------------------------------------------------------------------------
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _ndc = new THREE.Vector3();

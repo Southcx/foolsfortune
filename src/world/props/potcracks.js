@@ -1,15 +1,15 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { surfaceGrid, facetPoint, locateOnPot } from './pottery.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/props/potcracks'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------
 // Crack lines on intact pots. A crack is a jagged random walk in the pot's
 // surface parameters (profile arc-length u, angle), mapped onto the faceted
 // mesh and drawn as a thin tapered ribbon. Kintsugi repairs re-draw the same
 // paths in gold.
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { surfaceGrid, facetPoint, locateOnPot } from './pottery.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/potcracks'); // (the simulation's chance: core/rng.js, the same twice)
+
 
 export const crackMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
 // (no environment map in the scene, so a truly metallic gold would render near-black: fake it bright)

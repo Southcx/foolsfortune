@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 // Authored clips: the moves the free libraries don't cover (ladders, hangs, poles, grates...)
 // are built once at startup, on the Courier itself, from key poses solved with two-bone IK
 // in body space (root at the feet, facing +Z, Y up, the character's left is +X), then stored
@@ -12,6 +10,8 @@ import * as THREE from 'three';
 //
 // build() runs per frame with the skeleton at the base pose; it moves the hips, bends the spine,
 // and puts hands and feet on targets. `u` is the phase 0..1 (a loop's last frame is its first again).
+import * as THREE from 'three';
+
 
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const UP = new THREE.Vector3(0, 1, 0), FWD = new THREE.Vector3(0, 0, 1);

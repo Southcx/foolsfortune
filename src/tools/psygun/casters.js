@@ -1,11 +1,3 @@
-import * as THREE from 'three';
-import { RAPIER } from '../../core/physics.js';
-import { T, PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
-import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('tools/psygun/casters'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------
 // The caster shells: three more rounds for the psygun (and for the god hand, which drops them
 // where the cursor is). Named for what they do to the world, in the spirit of the Caster gun's
@@ -18,6 +10,14 @@ const simRand = stream('tools/psygun/casters'); // (the simulation's chance: cor
 //   HATCH   a pot cracks open and a clapperjar climbs out; a clapperjar hit by it turns friendly
 //           (a kintsugi helper: it mends cracked pots, and the god hand's vessel)
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { RAPIER } from '../../core/physics.js';
+import { T, PALETTE } from '../../core/config.js';
+import { addOutline } from '../../render/outline.js';
+import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/psygun/casters'); // (the simulation's chance: core/rng.js, the same twice)
+
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 const BPM_T = 60 / 128; // a beat, in seconds

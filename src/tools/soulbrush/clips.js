@@ -1,5 +1,3 @@
-import { V3 } from '../../courier/anim/authoring.js';
-
 // ---------------------------------------------------------------------------------------
 // THE SOUL BRUSH'S OWN ANIMATION: the BRUSH SLIDE. Nothing in the free libraries (UAL, CMU) slides sideways on its feet dragging
 // something behind it, so it is authored once at startup with the key-pose author (authoring.js), as the Skiff's rider is: a
@@ -13,6 +11,8 @@ import { V3 } from '../../courier/anim/authoring.js';
 //
 //   brushSlide   the slide: a slow breath of a bob, the balancing arm riding it
 // ---------------------------------------------------------------------------------------
+import { V3 } from '../../courier/anim/authoring.js';
+
 export function authorBrush(A, ch) {
   const ah = ch.ankleRest;
   A.clip('brushSlide', {

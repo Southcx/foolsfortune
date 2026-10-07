@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { BASE_Y } from './basement.js';
-import { sfx } from '../../audio/sfx.js';
-import { BRAID_DEF, SPINDLE_DEF } from './circuitrooms.js';
-
 // ---------------------------------------------------------------------------------------
 // LAP CIRCUITS: a data-driven runner for timed courses through the gymnasium's pieces (docs/CIRCUITS.md).
 // What a circuit is: an ordered list of STAGES, each a list of gates (a fork is a stage with more
@@ -24,6 +19,11 @@ import { BRAID_DEF, SPINDLE_DEF } from './circuitrooms.js';
 //
 // A gate: { zone: [x0, x1, y0, y1, z0, z1] (world), label?, route?, minSpeed?, respawn?: [x, y, z] }
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { BASE_Y } from './basement.js';
+import { sfx } from '../../audio/sfx.js';
+import { BRAID_DEF, SPINDLE_DEF } from './circuitrooms.js';
+
 const B = BASE_Y;
 const STORE = 'foolsfortune.circuits.v1';
 const zone = (x0, x1, y0, y1, z0, z1) => [x0, x1, B + y0, B + y1, z0, z1];

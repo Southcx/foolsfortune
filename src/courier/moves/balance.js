@@ -1,11 +1,11 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-import { T } from '../../core/config.js';
-
 // Balance: walk onto a beam and you slow to a careful step, arms out. The beam is only as wide
 // as your boots: A / D (across it) step off, W / S walk along it, Shift is a trot that wobbles
 // you off the middle so it takes steering back. Space hops off. (No falling damage, no timer:
 // the beam is the challenge, the drop below is what steers you.)
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+import { T } from '../../core/config.js';
+
 const _v = new THREE.Vector3();
 
 export class Balance extends Tech {

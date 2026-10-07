@@ -1,6 +1,3 @@
-import * as THREE from 'three';
-import { LEARNED } from './romdata.js';
-
 // ---------------------------------------------------------------------------------------
 // RANGE OF MOTION. A final pass that keeps every limited joint inside what a body can do, whatever
 // put it there (a clip, IK, a procedural layer, a tech's pose): a finger does not bend backwards,
@@ -22,6 +19,9 @@ import { LEARNED } from './romdata.js';
 //   rom.apply();                             // after posing, before drawing
 // `rom.clamped` counts how many joints had to be pulled back in the last apply (for the stress test).
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { LEARNED } from './romdata.js';
+
 const _d = new THREE.Quaternion(), _t = new THREE.Quaternion(), _s = new THREE.Quaternion(), _h = new THREE.Vector3(), _v = new THREE.Vector3();
 const ID = new THREE.Quaternion();
 

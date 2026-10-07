@@ -44,7 +44,7 @@ src/
   debug/         the diagnostics overlay, the tuning panel, replays, QAIS (qais/: F8, the owner's testing window)  (Petra; QAIS's look Calissa's)
   agent/         the game as an AI player sees and drives it (observe, act: docs/plans/COOP.md)         (Petra)
   assets/        models, textures, fonts, clips                                                         (Calissa)
-scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports (was tools/)
+scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports
 docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, AI, ECONOMY, OST, HANDOFFS
 ```
 
@@ -121,7 +121,6 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |
 
-At v45: workshop 354 calls and 172k triangles, dunes 284 calls and 282k triangles, 95 to 98 programs, 235 MB.
 
 ## The gate
 
@@ -148,9 +147,7 @@ warm-up (each a hitch the first time it is drawn) and the big things no zone hid
 
 What fails goes back to its division with the reason and the fix. Petra does not edit another division's files to make a merge pass.
 
-### The handover (R44: what a division does before it says "ready")
-
-What cost the R43 review the most time was finding out, after the fact, what a branch had done to the others. A handover says it first:
+### The handover (what a division does before it says "ready": it says first what it did to the others)
 
 1. **Main merged in, and the head frozen.** Merge the latest default branch, settle every conflict yourself,
    push, and name the head SHA in the note. Do not push to the branch again until Petra has answered; a fix after review is a new head
@@ -170,63 +167,8 @@ What cost the R43 review the most time was finding out, after the fact, what a b
 8. **Tests** (for QAIS): each one an area, what to do and what should happen, with `watch` (the event that is evidence), `go` (a
    `game.places` id) and `live` (try it with QAIS closed) where they fit. Dovina triages them into the round.
 
-## The migration
+## Open restructuring
 
-**Phase 0 (R42, done):** this file, the glossary, `npm run check` with its baseline, `npm run perf` with its baseline.
-
-**Phase 1 (R42, the quiet round, done):** every division pushed what it had and stopped; Petra merged everything and made the move
-below (201 files, 625 imports and 715 path mentions rewritten by script; the build, the check, the stress test, perf and a headless drive
-before it landed), rewrote the README as a manual, and published. The renames that rode with it:
-
-- the god hand's jar: `vessel` → `jar` in `godmode.js`, events `vessel.hit` / `vessel.shatter` / `vessel.reforge` → `jar.*`, their ledger
-  keys and the log's lines
-- the skiff: `surfer` → `skiff` (the tech's id, `T.tech.surfer`, events `surf.*`, their ledger keys, the log's class and the
-  achievements' category); the tech's class `Surfer` → `Skiffing` (the boat is `Skiff`)
-- the all-arts switch: `system.lab` / `setLab` → `lendAll` / `setLendAll` (not `allArts`: `ALL_ARTS` is the list of arts); the map's
-  layer "THE LAB" → "THE BASEMENT"; the workbench's command `/lab` → `/workbench`; "pause card" → the pause menu
-- `marks.js` → `groundmarks.js`, `cracks.js` → `potcracks.js`, `timescale.js` → `time.js`, `godmode.js` → `godhand.js`,
-  `godarts.js` → `arts.js`, `fx.js` → `vfx/particles.js`
-- `tools/` (Node) → `scripts/`; `npm run stress`, `check`, `perf` keep their names
-
-**Phase 2 (each in its own lane, the rounds after):** `tracking.js` split by domain and `main.js` split into boot stages (Petra); the
-course and the room teleports split into `world/basement/course.js` and `world/rooms.js` (Petra); the old particles folded into the VFX
-system so there is one (Calissa); the in-game words the glossary retires (Espada). Done: `audio.js` split into `audio/` (Wanda, R37); the
-undotted events renamed, each for the ledger key it feeds (Petra with Dovina; the rule is under **event** in `docs/GLOSSARY.md`, the rules that hear them in `tracking.js`).
-
-## The move map (Phase 1, a record: old paths on the left)
-
-| from | to |
-| --- | --- |
-| `config.js`, `events.js`, `input.js`, `physics.js`, `mood.js`, `tags.js`, `signatures.js`, `progress.js`, `restart.js`, `shotclear.js`, `combat.js` | `core/` |
-| `timescale.js` | `core/time.js` |
-| `player.js`, `character.js`, `interact.js`, `lockon.js`, `parry.js`, `emotes.js`, `lachryma.js` | `courier/` |
-| `animator.js`, `anims.js`, `authored.js`, `authoring.js`, `rom.js`, `romdata.js`, `anim/stances.js` | `courier/anim/` |
-| `moves/*` (the techs, without the tools' and the skiff's) | `courier/moves/` |
-| `moves/surfer.js`, `skiff.js`, `surfclips.js` | `courier/skiff/skiff.js`, `boat.js`, `clips.js` |
-| `vessel/` | `courier/vessel/` |
-| `tools/*` | `tools/` (unchanged) |
-| `combat/melee.js`, `slicing.js` | `tools/melee.js`, `tools/slicing.js` |
-| `weapon.js`, `shells.js`, `casters.js`, `specials.js`, `psygun/kinds.js` | `tools/psygun/` |
-| `sondelass/`, `moves/sondelass.js`, `moves/grapple.js`, `angling/` | `tools/sondelass/` (angling as `tools/sondelass/angling/`) |
-| `brush/`, `moves/soulbrush.js` | `tools/soulbrush/` |
-| `veritome/`, `moves/veritome.js`, `mind/` | `tools/veritome/` (`mind/` as `tools/veritome/mind/`) |
-| `dreamvane/`, `moves/dreamvane.js` | `tools/dreamvane/` |
-| `crucibelle/`, `moves/crucibelle.js` | `tools/crucibelle/` |
-| `lockheart/`, `moves/lockheart.js` | `tools/lockheart/` |
-| `level.js`, `trial.js` | `world/` |
-| `basement.js`, `techlab.js`, `riglab.js`, `mill.js`, `circuits.js`, `circuitrooms.js`, `siege.js`, `raids.js` | `world/basement/` (`techlab.js` → `techwing.js`, `riglab.js` → `rigwing.js`) |
-| `dunes.js`, `barrier.js`, `lachryma/crystals.js`, `lachryma/tuning.js` | `world/dunes/` (`tuning.js` → `crystaltuning.js`) |
-| `breakables.js`, `pottery.js`, `cracks.js`, `movers.js`, `poles.js` | `world/props/` (`cracks.js` → `potcracks.js`) |
-| `trailmap.js`, `marks.js`, `wake.js` | `world/ground/` (`marks.js` → `groundmarks.js`) |
-| `chests.js`, `chestmodel.js`, `ceremony.js`, `treasure.js`, `curiomodel.js`, `cubes.js` | `world/treasure/` |
-| `creatures.js`, `stun.js`, `clappers.js`, `lobber.js`, `spirits.js`, `jelly/`, `ai/` | `creatures/` |
-| `achievements.js`, `stats.js`, `system/system.js`, `system/skills.js`, `econ/`, `shop/` | `progress/` |
-| `gamelog.js`, `tracking.js`, `chat.js`, `hud.js`, `hideui.js`, `cartography.js`, `indexmenu.js`, `help/` | `feedback/` |
-| `system/codex.js`, `system/ledgerui.js` | `feedback/codex/codex.js`, `feedback/codex/ledger.js` |
-| `godmode.js`, `godarts.js` | `godhand/godhand.js`, `godhand/arts.js` |
-| `outline.js` | `render/` |
-| `fx.js`, `sky.js` | `vfx/particles.js`, `vfx/sky.js` |
-| `audio.js`, `system/voice.js`, `system/speech/` | `audio/sfx.js`, `audio/voice/voice.js`, `audio/voice/speech/` |
-| `tuning.js`, `debug/diag.js` | `debug/` |
-| `npc/`, `render/`, `vfx/`, `ui/`, `music/`, `cine/`, `title/`, `workbench/`, `assets/` | unchanged |
-| `tools/` (the Node scripts) | `scripts/` |
+`main.js` split into boot stages and `tracking.js` by domain (begun: `feedback/tracking/*.js`), Petra's; the course and the room teleports
+into `world/basement/course.js` and `world/rooms.js`, Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
+the glossary retires, Espada's.

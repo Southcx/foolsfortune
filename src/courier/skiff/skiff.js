@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from '../moves/techs.js';
-import { sfx } from '../../audio/sfx.js';
-import { T } from '../../core/config.js';
-import { Skiff, SKIFF } from './boat.js';
-import { Wake } from '../../world/ground/wake.js';
-
 // ---------------------------------------------------------------------------------------
 // THE SOLAR SKIFF (Solar Skiffing), after the King of Red Lions in The Wind Waker, with a little acrobatics on top.
 //
@@ -30,6 +23,13 @@ import { Wake } from '../../world/ground/wake.js';
 // lean and spin) turns the skiff and, through character.js, the rider standing on it; the rider is
 // animated with clips authored for it (courier/skiff/clips.js) rather than solved onto the deck.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { Tech } from '../moves/techs.js';
+import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
+import { Skiff, SKIFF } from './boat.js';
+import { Wake } from '../../world/ground/wake.js';
+
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
 const qA = new THREE.Quaternion(), qB = new THREE.Quaternion(), qC = new THREE.Quaternion(), qFace = new THREE.Quaternion().setFromAxisAngle(UP, -Math.PI / 2);

@@ -1,9 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-import { sfx } from '../../audio/sfx.js';
-import { T } from '../../core/config.js';
-import { LADDER } from '../anim/authored.js';
-
 // Ladders: walk (or jump) into one and you're on it. W / S climb (Shift faster), C slides down,
 // Space kicks off backwards, and climbing past the top steps off onto whatever's up there.
 // The body plays the authored `ladderUp` cycle (authored.js): two rungs of climbing per cycle,
@@ -11,6 +5,12 @@ import { LADDER } from '../anim/authored.js';
 // limbs in stance stay on their rungs and going down is the same cycle in reverse. Stopped, the
 // body settles onto the nearest height where all four limbs hold a rung. The gun stays out at a
 // walk (the right arm aims it, one-handed; the left keeps climbing).
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
+import { LADDER } from '../anim/authored.js';
+
 const TAU = 0.05; // the phases where all four limbs hold: 0.05 and 0.55 of a cycle
 
 export class Ladder extends Tech {

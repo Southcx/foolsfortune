@@ -1,3 +1,8 @@
+// Wall latch (a Movement Art): in the air beside any wall, hold C and you cling to it, feet against
+// the wall and one hand on it, the other free for the gun. WASD crawls along the wall (any
+// direction, up too), Space kicks off, letting go of C drops. It doesn't last: a couple of seconds
+// a jump, then you start to slide, and you get the time back on the ground. (Looking well down
+// is the slam's.)
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,11 +10,6 @@ import { GROUPS } from '../../core/physics.js';
 import { T } from '../../core/config.js';
 import { wallClimb, wallContacts } from '../anim/authored.js';
 
-// Wall latch (a Movement Art): in the air beside any wall, hold C and you cling to it, feet against
-// the wall and one hand on it, the other free for the gun. WASD crawls along the wall (any
-// direction, up too), Space kicks off, letting go of C drops. It doesn't last: a couple of seconds
-// a jump, then you start to slide, and you get the time back on the ground. (Looking well down
-// is the slam's.)
 const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 const DIRS = 8;
 

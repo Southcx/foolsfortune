@@ -1,3 +1,9 @@
+// ---------------------------------------------------------------------------
+// Time trial: the gong by the workshop's door starts it (F at it: the chevron marks it). The room resets, shells and Lachryma are topped up,
+// and a dozen glowing trial jars appear around both floors. Break them all.
+// Deliberately forgiving: the jars glow through walls, an arrow points at the
+// nearest one, quick double-breaks shave time off, and the medals are generous.
+// ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { makeGlowOutline, addOutline } from '../render/outline.js';
@@ -5,12 +11,6 @@ import { sfx } from '../audio/sfx.js';
 import { zoneOf } from '../render/zones.js';
 import { CountRings } from '../vfx/wiremarks.js';
 
-// ---------------------------------------------------------------------------
-// Time trial: the gong by the workshop's door starts it (F at it: the chevron marks it). The room resets, shells and Lachryma are topped up,
-// and a dozen glowing trial jars appear around both floors. Break them all.
-// Deliberately forgiving: the jars glow through walls, an arrow points at the
-// nearest one, quick double-breaks shave time off, and the medals are generous.
-// ---------------------------------------------------------------------------
 
 // [x, y (surface), z]: a route that wants a mantle, the geyser (or stairs), a dash
 // across the atrium and a banked or seeking shot or two

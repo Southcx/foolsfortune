@@ -1,23 +1,9 @@
-import { JointLimits, RIGIFY } from '../courier/anim/rom.js';
-import * as THREE from 'three';
-import { T, PALETTE } from '../core/config.js';
-import { RAPIER } from '../core/physics.js';
-import { addOutline } from '../render/outline.js';
-import { sfx } from '../audio/sfx.js';
-import { GodArts, ART_BY_ID, ARTS } from './arts.js';
-import { ZoiVeil } from '../feedback/cartography.js';
-import { Raids } from '../world/basement/raids.js';
-import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
-import { stream } from '../core/rng.js';
-import { HandCatch } from './catch.js';
-const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // THE GOD HAND (~). The Courier turns into a Pneuka jar, an immobile jar, and you become
 // a disembodied hand: the camera pulls up into a turnable isometric view, the cursor is the hand,
 // and the game becomes a physics god game played over the same rooms.
 //
-//   the jar     the jar stands where the Courier stood. It can be hurt: raiders (clapperjars
+//   the jar     (godhand/jar.js) the jar stands where the Courier stood. It can be hurt: raiders (clapperjars
 //                  come in waves, kamikaze), lobber balls, blasts, and whatever you throw at it
 //                  crack it; at zero it shatters and reforges, more gold-seamed, a few seconds
 //                  later. The hand can't roam further from it than its tether.
@@ -30,6 +16,20 @@ const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng
 //                  and mends it). Clapperjars you hatch stay.
 // ~ again (once the jar is whole) puts the Courier back where the jar stood.
 // ---------------------------------------------------------------------------------------
+import { JointLimits, RIGIFY } from '../courier/anim/rom.js';
+import * as THREE from 'three';
+import { T, PALETTE } from '../core/config.js';
+import { RAPIER } from '../core/physics.js';
+import { addOutline } from '../render/outline.js';
+import { sfx } from '../audio/sfx.js';
+import { GodArts, ART_BY_ID, ARTS } from './arts.js';
+import { ZoiVeil } from '../feedback/cartography.js';
+import { Raids } from '../world/basement/raids.js';
+import { stream } from '../core/rng.js';
+import { HandCatch } from './catch.js';
+import { GodJar } from './jar.js';
+const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
+
 const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;
@@ -68,9 +68,8 @@ export class GodMode {
     this.handPos = new THREE.Vector3(); // the hand's smoothed cursor point
     this.samples = []; // recent cursor points, for the throw
     this.castCool = 0;
-    this.jar = { pos: new THREE.Vector3(), hp: T.god.jarHp, max: T.god.jarHp, alive: true, mendBy: null, scars: 0, reforgeT: 0, flash: 0, cracks: { dark: [], gold: [] } };
     this.buildHand(handGltf);
-    this.buildJar(jarGltf);
+    this.jar = new GodJar(this, jarGltf); // (the Pneuka Jar the Courier becomes: godhand/jar.js)
     this.buildCursor();
     this.buildHud();
     this.arts = new GodArts(this);
@@ -124,34 +123,6 @@ export class GodMode {
     }
     root.visible = false;
     this.game.scene.add(root);
-  }
-
-  buildJar(gltf) {
-    const V = this.jar;
-    const group = new THREE.Group();
-    group.name = 'PneukaJar';
-    const model = gltf.scene;
-    group.add(model);
-    this.jarMat = new THREE.MeshStandardMaterial({ color: 0x9a4f36, roughness: 0.6, flatShading: true });
-    this.coreMat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.4, emissive: PALETTE.glow, emissiveIntensity: 0.6 });
-    const meshes = [];
-    model.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    for (const o of meshes) {
-      const core = o.material.name === 'CourierEnergy';
-      o.material = core ? this.coreMat : this.jarMat;
-      o.castShadow = true; o.receiveShadow = true;
-      if (!core) { addOutline(o); this.jarBody = o; }
-    }
-    group.visible = false;
-    this.game.scene.add(group);
-    V.group = group;
-    // a halo that shows how whole it is
-    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.game.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.4 }));
-    halo.scale.setScalar(2.4);
-    halo.position.y = 0.7;
-    group.add(halo);
-    this.halo = halo;
-    this.raycaster = new THREE.Raycaster();
   }
 
   buildCursor() {
@@ -312,7 +283,7 @@ export class GodMode {
     this.updateView(dt);
     this.updateCursor();
     if (this.t > 0.6) this.updateHand(dt);
-    this.updateJar(dt);
+    this.jar.update(dt);
     this.raids.update(dt);
     this.updateHud(dt);
   }
@@ -699,146 +670,11 @@ export class GodMode {
     }
   }
 
-  // ------------------------------------------------------------------ the jar
-  hitJar(amount, from, kind = 'raid') {
-    const V = this.jar;
-    if (!V.alive || this.state !== 'on') return;
-    V.hp = Math.max(0, V.hp - amount);
-    V.flash = 1;
-    this.cam.shake = Math.max(this.cam.shake, 0.5);
-    this.addCrack(from, amount);
-    sfx.jarHit(Math.min(1.5, amount / 10));
-    this.game.fx.impact?.(V.pos.clone().setY(V.pos.y + 0.7), UP, { sparks: 10, dust: 8 });
-    this.game.events?.emit('jar.hit', { kind, amount });
-    if (V.hp <= 0) this.shatter();
-  }
-
-  raidStrike(c) {
-    const V = this.jar, g = this.game;
-    const dir = _v.set(c.pos.x - V.pos.x, 0, c.pos.z - V.pos.z).normalize().clone();
-    sfx.clap(g.listenerDistance(c.pos));
-    g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), dir.clone().negate(), 1.2, 'shot');
-    c.raider = false;
-    this.hitJar(T.god.raidDamage, dir, 'raid');
-  }
-
-  explosion(center, R) {
-    const V = this.jar;
-    if (this.state !== 'on' || !V.alive) return;
-    const d = V.pos.distanceTo(center);
-    if (d > R * 1.1) return;
-    this.hitJar(T.god.blastDamage * (1 - d / (R * 1.1)), _v.set(center.x - V.pos.x, 0, center.z - V.pos.z).normalize().clone(), 'blast');
-  }
-
-  mendJar(amount) {
-    const V = this.jar;
-    if (!V.alive) return;
-    V.hp = Math.min(V.max, V.hp + amount);
-    V.mendBy = null;
-    // the cracks it no longer needs turn to gold
-    const need = Math.ceil((1 - V.hp / V.max) * 8);
-    while (V.cracks.dark.length > need) {
-      const p = V.cracks.dark.shift();
-      if (V.cracks.gold.length < 22) V.cracks.gold.push(p);
-    }
-    this.rebuildCracks();
-    sfx.mended(this.game.listenerDistance(V.pos));
-    const top = V.pos.clone().setY(V.pos.y + 0.8);
-    this.game.fx.glitter?.([top], top, UP, new THREE.Color(0xffc65c));
-    V.flash = -1;
-  }
-
-  shatter() {
-    const g = this.game, V = this.jar;
-    V.alive = false; V.reforgeT = T.god.reforge; V.mendBy = null;
-    V.group.visible = false;
-    const at = V.pos.clone().setY(V.pos.y + 0.6);
-    g.fx.explosion?.(at, 1.6);
-    sfx.shatter?.(1.4, 3);
-    g.fx.impact?.(at, UP, { sparks: 24, dust: 20 });
-    this.cam.shake = 1;
-    for (const c of g.clappers.list) if (c.alive && c.raider) { c.raider = false; g.clappers.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'shot'); }
-    g.events?.emit('jar.shatter', {});
-  }
-
-  updateJar(dt) {
-    const g = this.game, V = this.jar;
-    if (!V.alive) {
-      V.reforgeT -= dt;
-      if (V.reforgeT <= 0) {
-        V.alive = true; V.hp = V.max * 0.6; V.scars++;
-        // what cracked before becomes gold seams
-        V.cracks.gold.push(...V.cracks.dark.splice(0)); V.cracks.gold.length = Math.min(V.cracks.gold.length, 22);
-        this.rebuildCracks();
-        V.group.visible = true;
-        V.group.scale.setScalar(0.001);
-        V.regrow = 0;
-        sfx.reforge();
-        g.events?.emit('jar.reforge', {});
-      }
-    } else if (V.regrow !== undefined) {
-      V.regrow += dt;
-      V.group.scale.setScalar(Math.max(0.001, easeOutBack(Math.min(1, V.regrow / 0.7))));
-      if (V.regrow >= 0.7) V.regrow = undefined;
-    }
-    // integrity shows in the core's glow
-    const k = V.hp / V.max;
-    V.flash = V.flash > 0 ? Math.max(0, V.flash - dt * 4) : Math.min(0, V.flash + dt * 3);
-    this.coreMat.emissiveIntensity = 0.15 + 0.85 * k + Math.max(0, V.flash) * 1.5 + Math.max(0, -V.flash) * 0.8 + (k < 0.4 ? Math.sin(this.t * 14) * 0.15 : 0);
-    this.coreMat.emissive.setHex(k > 0.4 ? PALETTE.glow : 0xff5a3a);
-    this.jarMat.emissive.setHex(0xffffff).multiplyScalar(0);
-    if (V.flash > 0) this.jarMat.emissive.setRGB(0.5 * V.flash, 0.3 * V.flash, 0.2 * V.flash);
-    this.halo.material.opacity = 0.2 + 0.3 * k;
-    this.halo.material.color.setHex(k > 0.4 ? PALETTE.glow : 0xff5a3a);
-    V.group.position.copy(g.player.pos);
-    V.pos.copy(g.player.pos);
-  }
-
-  /** New cracks from the side it was hit on. */
-  addCrack(from, amount) {
-    const V = this.jar, body = this.jarBody;
-    if (!body) return;
-    const paths = [];
-    const n = amount > 12 ? 2 : 1;
-    V.group.updateMatrixWorld(true);
-    for (let k = 0; k < n; k++) {
-      let ang = Math.atan2(from.x, from.z) + (simRand() - 0.5) * 1.6; // (in the world)
-      let y = 0.25 + simRand() * 0.75, th = Math.PI * (0.35 + simRand() * 0.3) * (simRand() < 0.5 ? 1 : -1);
-      const pts = [];
-      for (let i = 0; i < 18; i++) {
-        const dir = new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang));
-        const origin = V.pos.clone().addScaledVector(dir, 1.2).setY(V.pos.y + y);
-        this.raycaster.set(origin, dir.clone().negate());
-        const hit = this.raycaster.intersectObject(body, false)[0];
-        if (!hit) break;
-        const p = V.group.worldToLocal(hit.point.clone());
-        const nrm = hit.face.normal.clone().transformDirection(body.matrixWorld);
-        V.group.worldToLocal(nrm.add(V.group.position));
-        nrm.normalize();
-        pts.push({ p: p.addScaledVector(nrm, 0.003), n: nrm });
-        th += (simRand() - 0.5) * 1.2;
-        y += Math.cos(th) * 0.05;
-        ang += Math.sin(th) * 0.05 / 0.25;
-        if (y < 0.03 || y > 1.15) break;
-      }
-      if (pts.length > 2) paths.push(pts);
-    }
-    V.cracks.dark.push(...paths);
-    if (V.cracks.dark.length > 14) V.cracks.dark.splice(0, V.cracks.dark.length - 14);
-    this.rebuildCracks();
-  }
-
-  rebuildCracks() {
-    const V = this.jar;
-    for (const key of ['dark', 'gold']) {
-      const mk = `${key}Mesh`;
-      if (V[mk]) { V.group.remove(V[mk]); V[mk].geometry.dispose(); V[mk] = null; }
-      if (!V.cracks[key].length) continue;
-      const m = new THREE.Mesh(ribbonGeometry(V.cracks[key], key === 'dark' ? 0.012 : 0.02), key === 'dark' ? crackMat : goldMat);
-      V.group.add(m);
-      V[mk] = m;
-    }
-  }
+  // ------------------------------------------------------------------ the jar (godhand/jar.js)
+  hitJar(amount, from, kind) { this.jar.hit(amount, from, kind); }
+  raidStrike(c) { this.jar.raidStrike(c); }
+  explosion(center, R) { this.jar.explosion(center, R); }
+  mendJar(amount) { this.jar.mend(amount); }
 
   // ------------------------------------------------------------------ hud
   updateHud() {

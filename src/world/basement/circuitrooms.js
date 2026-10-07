@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { BASE_Y, label, strip } from './basement.js';
-
 // ---------------------------------------------------------------------------------------
 // The circuits' own halls (the third, THE MILL RACE, is the mill itself: see circuits.js). Both halls
 // are annexes standing far out in the basement's layer (x 3000), so they can be as tall and as long
@@ -17,6 +13,10 @@ import { BASE_Y, label, strip } from './basement.js';
 //                                          a hang, a mantle, a dash gap, an updraft), then down a
 //                                          long chute and across a last gap.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { BASE_Y, label, strip } from './basement.js';
+
 const B = BASE_Y;
 const H = Math.PI / 2;
 

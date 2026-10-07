@@ -1,10 +1,10 @@
+// Inverted-hull outlines, same trick as the Solidify+Outline setup in the .blend.
+// A back-face-only copy of the mesh is pushed out along a *smoothed* normal so
+// hard edges (flat-shaded lowpoly) don't crack open.
 import * as THREE from 'three';
 import { PALETTE, T } from '../core/config.js';
 import { weld } from './weld.js';
 
-// Inverted-hull outlines, same trick as the Solidify+Outline setup in the .blend.
-// A back-face-only copy of the mesh is pushed out along a *smoothed* normal so
-// hard edges (flat-shaded lowpoly) don't crack open.
 
 const outlineUniform = { value: T.visual.outline };
 export function setOutlineThickness(v) { outlineUniform.value = v; }

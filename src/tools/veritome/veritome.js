@@ -1,25 +1,3 @@
-import { drawStamp, stampText } from '../../ui/datestamp.js';
-import * as THREE from 'three';
-import { RestBake } from '../../render/restbake.js';
-import { hasTag } from '../../core/tags.js';
-import { Tech } from '../../courier/moves/techs.js';
-import { Track } from '../../courier/anim/animator.js';
-import { sfx } from '../../audio/sfx.js';
-import { T } from '../../core/config.js';
-import { VeritomeModel } from './model.js';
-import { Book } from './book.js';
-import { ROLL } from './film.js';
-import { scorePhoto, serial } from './photo.js';
-import { kindOf, appraise } from './darkroom.js';
-import { ENGAGED } from './subjects.js';
-import { Viewfinder } from './viewfinder.js';
-import { bookFrame, holdBook } from './hold.js';
-import { measureGrip } from '../grip.js';
-import { drawHands } from '../draw.js';
-import { hipMirror, mirrorSide } from '../heldtool.js';
-import { unwrite, inscribed } from '../soulbrush/inscribe.js';
-import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
-
 // ---------------------------------------------------------------------------------------
 // THE VERITOME (Veritas, and a tome of knowledge): the fourth of the Courier's psychic tools, and their inventory. A grimoire worn shut
 // at the right hip, drawn and held OPEN in both hands (tools/veritome/hold.js), the lens in its spine and its measuring instruments on the
@@ -43,6 +21,28 @@ import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 //   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     P (while it is out)  the box and the bank
 //   B      the Codex: the binder (Take out, Condense), the film (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
+import { drawStamp, stampText } from '../../ui/datestamp.js';
+import * as THREE from 'three';
+import { RestBake } from '../../render/restbake.js';
+import { hasTag } from '../../core/tags.js';
+import { Tech } from '../../courier/moves/techs.js';
+import { Track } from '../../courier/anim/animator.js';
+import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
+import { VeritomeModel } from './model.js';
+import { Book } from './book.js';
+import { ROLL } from './film.js';
+import { scorePhoto, serial } from './photo.js';
+import { kindOf, appraise } from './darkroom.js';
+import { ENGAGED } from './subjects.js';
+import { Viewfinder } from './viewfinder.js';
+import { bookFrame, holdBook } from './hold.js';
+import { measureGrip } from '../grip.js';
+import { drawHands } from '../draw.js';
+import { hipMirror, mirrorSide } from '../heldtool.js';
+import { unwrite, inscribed } from '../soulbrush/inscribe.js';
+import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
+
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _v = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3();

@@ -1,13 +1,13 @@
+// Lobbers: clay mortars in the handling lab that throw a glazed ball at the courier every few
+// seconds. A ball that reaches you knocks you back (nothing worse: there's no damage yet); a
+// ball you parry with a kick goes back the way you're looking, and a target it strikes rings.
+// Balls are listed in `game.projectiles` so the parry can find them.
 import * as THREE from 'three';
 import { RAPIER, groups, G } from '../core/physics.js';
 import { PALETTE, T } from '../core/config.js';
 import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
 
-// Lobbers: clay mortars in the handling lab that throw a glazed ball at the courier every few
-// seconds. A ball that reaches you knocks you back (nothing worse: there's no damage yet); a
-// ball you parry with a kick goes back the way you're looking, and a target it strikes rings.
-// Balls are listed in `game.projectiles` so the parry can find them.
 const BALL = groups(G.PROP, G.STATIC);
 
 export class Lobbers {

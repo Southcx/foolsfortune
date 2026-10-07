@@ -1,3 +1,4 @@
+// The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 import { courierLimits } from './anim/rom.js';
 import { kneeProfile } from '../world/props/poles.js';
 import * as THREE from 'three';
@@ -11,7 +12,6 @@ import armorB64 from '../assets/courier/courier_armor.png?b64';
 import maskB64 from '../assets/courier/courier_mask.png?b64';
 import { dressFiligree } from '../vfx/filigree.js';
 
-// The Courier: materials, the psygun, and animation (clips + IK corrections, below).
 
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
 // foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach

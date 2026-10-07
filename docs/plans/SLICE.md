@@ -1,173 +1,86 @@
 # The vertical slice: one Well, one island fight, one Emocean hop
 
-The smallest build that proves the three layers weave (`docs/DESIGN.md`, section 11): **one Courier, one purse, one ledger, the same
-seven tools in every layer**. Kept by Dovina. Phases E1 to E5 of `docs/plans/SYSTEMS.md`, cut to what the slice needs. Every number and
-rule below already exists in `src/progress/econ/` and is simulated (`node scripts/economy.mjs`). What is missing is the places and the
-verbs, which are Petra's to build (Calissa's to dress, Wanda's to score, Espada's to word).
+Kept by Dovina. **Built.** The smallest build that proves the three layers weave (`docs/DESIGN.md`, section 11): **one Courier, one
+purse, one ledger, the same seven tools in every layer**. Phases E1 and E4 of `docs/plans/SYSTEMS.md`; the numbers are in
+`src/progress/econ/` and simulated by `node scripts/economy.mjs`.
 
-**Status, 2026-10-04:**
-- **The island layer is in.** It has damage types, statuses, the mental state, EmO, busking, keys that wear, curio decks, and arts
-  that unlock through achievements.
-- **No Well and no Emocean exist yet.** Petra's estimate (R57): 4 to 6 rounds, one gated build each: E1a (the mouth, its zone, three
-  floors, the events, losing), E1b (jellies and the FOE, pay, materials, charting, the Cogitomap), E4a (the pier, the node map, the
-  sloop, the rail, fuel, the hold), E4b (the stage's enemies, pass and fail, Margarite's dock). Everything is built in placeholder
-  geometry first, so nothing waits on another division.
-- **Dovina's data is in** (R57): the node map and the stage (`src/progress/econ/emocean.js`), the EXP sources for a floor and a
-  stage (`domains.js`), and the slice's achievements (`achievements.js`, below). They read nothing yet, so they wait on the events.
+**The loop (about twenty minutes of play):** a Well mouth in the Dunes (the Great Dunemaw) → three floors and the FOE, charted with the
+Dreamvane and the Veritome, out with cubes, materials and perhaps a Cogitomap → at the pier, the sloop hops to Margarite (one rail
+stage: `RAIL.md`) carrying casks of crude bought on Anagami → at Margarite's dock, sell to the Purser, read Letty's bounty board, hop
+home. The seam is the test: purse, ledger, domains' EXP and achievements all moved in all three layers, and nothing had its own
+currency, levels or gear.
 
-## The loop the slice must play in about twenty minutes
+**Where the code is:** the Well `src/world/well/` (`dunemaw.js` carries its events and loop in its header); the voyage
+`src/progress/voyage.js` (`game.voyage`); the node map and the stage data `src/progress/econ/emocean.js`; Well pay, Cogitomap worth,
+demand, fuel `src/progress/econ/islands.js`; the pier and Margarite's dock `src/world/emocean/pier.js`, `margarite.js`; the traders
+`src/progress/shop/catalogue.js`; the log's rules `src/feedback/tracking/wells.js`, `voyage.js`.
 
-1. On Anagami Island, a **Well mouth** opens in the Dunes (a Lachryma distortion: a spinning dark pool, a signature the Dreamvane can
-   dowse).
-2. **Into the Well:** three floors, a FOE on the last. Fight with any tool, chart it with the Dreamvane and the Veritome, and come out
-   with cubes, materials and, if it is charted well enough, a **Cogitomap**.
-3. **At the pier:** the Courier takes the ship's form (a **sloop** for the slice) and **hops** to Margarite, one rail-shooter stage of
-   about two minutes, carrying crude bought on Anagami.
-4. **At Margarite's dock:** sell the crude to a trader at Margarite's price. Read the bounty board (Letty), and **hop home**.
-5. **The seam is the test:** the purse, the ledger, the domains' EXP and the achievements all moved in all three layers, and nothing
-   anywhere had its own currency, levels or gear.
+## The owner's rulings
 
-## The owner's rulings (R57)
+- **Jellies for now** (R57): slip jellies stand in for the Egregores in the Well; the Egregore's own body and mind come after the slice.
+- **The Purser buys Cogitomaps** (R57; `purserPrice`, `ECON.islands[id].maps`): Law wants its minds charted, so Margarite pays dear; a
+  map of Anagami's Well is worth little on Anagami. A good, fresh map nets about 20 cubes more at Margarite than at home after the
+  sloop's fuel; a middling one is better sold at home. Skill decides whether the Well feeds the boat.
+- **Divination charts the course** between the islands (R57): the reckoning, below.
+- **Get it all working first** (R57): the Wells and the Emocean each get a deep dive with the owner after the slice. Parked for it:
+  the FOE as Etrian Odyssey's (a visible threat that patrols and can be routed round, its route shown by Divination); and (2026-10-05)
+  **Wells of radically different types**: action combat (the Dunemaw) beside, say, a JRPG board game.
+- **Raku buys anything** (R58) at half its worth, so a Cogitomap has a lowball price at home and a dear one at Margarite's dock.
+- **A Cogitomap is worth what its Well still holds** (R58: no decay by the clock): its worth times the Well's yield at the fill it has
+  now. Farming a Well cheapens its maps; letting it fill restores them.
 
-- **Jellies for now:** the stage is filled with jelly-class Figments (a mind module on the AI parts, the jelly's body); the Egregore's
-  own body and mind come after the slice.
-- **The Purser buys Cogitomaps** (`purserPrice`, `ECON.islands[id].maps`): Law wants its minds charted, so Margarite pays dear; an island
-  knows its own mind, so a map of Anagami's Well is worth little on Anagami. A good, fresh map nets about 20 cubes more at Margarite
-  than at home after the sloop's fuel; a middling one is better sold at home. Skill decides whether the Well feeds the boat.
-- **Calissa dresses the slice** (the Well's kit, the sloop, the crude sea), in parallel with Petra's placeholders.
-- **Divination charts the course** between the islands: the reckoning, below.
-- **Get it all working first** (the owner, R57): the slice ships as specified here. The Wells and the Emocean are each a game of their
-  own, and their design gets a deep dive with the owner after the slice. Parked for it: the FOE as Etrian Odyssey's (a visible threat
-  that patrols and can be routed around, its route shown by Divination), not a big jelly waiting on the last floor. And (the owner,
-  2026-10-05) **Wells of radically different types**: action combat (the Dunemaw) beside, say, a JRPG board game.
+## The numbers, with their reasons
 
-**E1b rulings (Dovina, R57, on Petra's v64):**
-- **Pay is `wellPay(deepest, foes) x wellYield(fill)`**, kept: simpler than `islandRun` pro rata, and the same table. Three floors and
-  the FOE at full fill pay 139 cubes, which is the aim (1.0x) for a run of about 17 minutes; if timed runs come in much faster, the cut is
-  `ECON.well.perFloor`, nowhere else.
-- **Material tier = floor - 1, +1 on a hit of the deck `well.rare` (1 in 4), +1 if the FOE fell to the Courier, capped at 4**, kept:
-  depth and the FOE are both skill, and the deck keeps the luck honest (rule 5).
-- **Divination EXP is earned on `well.charted`** (a floor left, its charted share the quality): standing about charts 0.27 of a floor
-  (rote, 0.4x weight), a survey pulse a room 0.91 (about 4x). The Cogitomap needs the Dreamvane, as it should.
+- **Well pay is `wellPay(deepest, foes) x wellYield(fill)`**: three floors and the FOE at full fill pay 139 cubes, the aim (1.0x) for a
+  run of about 17 minutes of play. If timed runs come in much faster, the cut is `ECON.well.perFloor`, nowhere else.
+- **Material tier = floor - 1, +1 on a hit of the deck `well.rare` (1 in 4), +1 if the FOE fell to the Courier, capped at 4**: depth
+  and the FOE are skill, the deck keeps the luck honest.
+- **Divination EXP on `well.charted`**: standing about charts 0.27 of a floor (rote, 0.4x), a survey pulse a room 0.91 (about 4x).
+- **Nodes** sit on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step (Anagami to Margarite 4, King to Queen 8).
+  `hop(from, to, ship)` gives `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes; the stage runs 150 real seconds,
+  the length of Wanda's cue. The sloop's hold is 8 casks (a hold is how many may cross, never a second inventory).
+- **The stage bears six hits** (`STAGE.bears`; not "shield", which is the Courier's Lachryma pool). Failing loses a quarter of the cargo
+  and may spill crude (`ECON.emocean.lose`, `spillChance`). A stage pays no cubes: the travel layer is a drain and a risk. Waves are
+  roles (`school`, `darter`, `heavy`); the route's danger picks the Figment class; the day moves the lanes, never the order or counts.
 
-## E1, the Well (Petra's room; Dovina's numbers)
+**A hole, said plainly:** a sloop of crude from Anagami to Margarite nets -10 to +1 cubes (the sloop's `burn` 0.3; at the tanker's it
+lost 25 to 35); the spread is Entropolis to Margarite. So the hop pays through the Well's haul (Cogitomaps, materials) and Letty's
+board, and the crude market is the lesson that points to Entropolis.
 
-| What | How | Hook |
-|---|---|---|
-| The mouth | a prop in the Dunes with a signature; F to enter; a zone of its own (`render/zones.js`) | `well.enter { well, seed, by }` |
-| The seed | `hash(wellId, day)`: the Well drifts daily; a Cogitomap carries its seed and day | `src/progress/econ/islands.js` (add `wellSeed` when wiring) |
-| Floors | three rooms from a small kit (`level.box`), laid out from the seed; one exit down, one back up | `well.floor { floor, by }` |
-| Creatures | slip jellies, as on the island (EmO, statuses: phase B); a FOE on the last floor: a jelly of a bigger class (poise and EmO rise scaled by class) | `creatures.add`, `combat/emo.js` |
-| Pay | `islandRun('anagami', skill).pay` pro rata by floors reached; FOE bonus; the Well's fill falls by `drawWell` | `cubes.earn(n, 'well')`, `well.leave { floors, foes, by }` |
-| Materials | each floor's clear draws a material from a deck (`deckDraw`, `makeMaterial(kind, seed, tier)`) | `item.get` |
-| Charting | the share of the floors' cells charted (`cartography.js`); at 80% or more, a **Cogitomap** item carrying `{ well, seed, day, charted }` | `cogitomapWorth()` |
-| Losing | shattered in a Well: back to the mouth, the run's pay lost (the purse is not touched) | `courier.shatter` |
+## Not yet built
 
-**Measure:** `well.leave` counts by floors; the F3 econ line shows `well`; a middling run should pay about 1.0x the aim (ECONOMY.md).
+- **The reckoning (Divination):** how much of a crossing the Courier has divined, 0 to 1, for that game day (the lanes drift daily). It
+  grows by a Dreamvane survey of the sea from the pier (Petra's verb; its quality `q` is how well it was dowsed) and by reading the
+  waves under way. It buys knowledge, never numbers: each wave's lane is marked ahead by a glyph pop on the rail, `reckonLead(r)` real
+  seconds early (up to 3, two bars, at full reckoning). A locked node opens for good once a route to it is reckoned to 0.6 from the
+  pier (`opensNode`): Entropolis is found by divining the way there. The data is in (`RECKON`, `reckonLead`, `opensNode` in
+  `econ/emocean.js`; `game.voyage.reckon(from, to, share, q)`, `game.voyage.reckoning(from, to)`, widened by
+  `game.psyche.widen('divination.reckon')`); the survey verb and the lane marks are not wired.
+- **A ship's tempo as its feel** (Wanda, `stageCue(seconds)`), once there is a second ship: a sloop at 1.25x hardcore-fast, a galleon at 0.8x stately.
 
-## E4, the Emocean hop (Petra's; Dovina's numbers)
-
-| What | How | Hook |
-|---|---|---|
-| The node map | three nodes: Anagami, Margarite, Entropolis (the last can be locked in the slice); opened at the pier | `emocean.open` |
-| The ship | the Vessoul's ship form: a **sloop** (`ECON.ships.sloop`). The psygun is its gun, and the Solar Skiff's handling is the base of its feel (the core movement is untouched) | `ship.board { ship }` |
-| A stage | a rail shooter of about two minutes: Egregores and Figments in the crude sea; a stage failed is a hit that empties the shield, and loses cargo (`ECON.emocean.lose`; crude can spill: `spillChance`) | `emocean.stage { passed, by }` |
-| Fuel | paid at departure: `fuel(distance)` | `cubes.spend(n, 'fuel')` |
-| Cargo | crude by grade, bought and sold at `demand(island, grade, day)`; the sloop's hold of 8 | `crude.buy`, `crude.sell` |
-| Arrival | a dock zone on Margarite: a trader (crude, materials), Letty's board (`bountyPay`) | `npc` (Espada's words) |
-
-**Measure:** a clean hop with a sloop of grief or dread should net a small profit (`crudeRun`); a failed stage should hurt. The F3 econ
-line shows `fuel` as a drain.
-
-## The node map and the stage (Dovina's, `src/progress/econ/emocean.js`; printed by `node scripts/economy.mjs`)
-
-- **Nodes:** one an island, at its place on the Law-Chaos line (`ECON.islands[id].law`); a hop's distance is 2 a step of the line
-  (Anagami to Margarite is 4, King to Queen 8). Entropolis is locked in the slice (`NODES.entra.locked`). `hop(from, to, ship)` gives
-  `{ distance, fuel, seconds, danger }`: a sloop to Margarite burns 14 cubes and its stage runs 150 s, the length of Wanda's cue (Crude Sea: 100 bars of 1.5 s; every wave falls on a bar line, and
-  `stageAt(game.music)` gives the fraction as heard). After the slice, when there is a second ship: a ship's tempo can be its feel (Wanda,
-  `stageCue(seconds)`: a sloop at 1.25x turns the cue hardcore-fast, a galleon at 0.8x broad and stately; within 10% is transparent).
-  The slice has one ship, so it stays 150 s.
-- **The stage** is authored once (`STAGE.waves`, ten waves, 45 Figments) with its waves keyed to the fraction of the stage (0 .. 1), so
-  Petra paces the rail to Wanda's cue, not to seconds. Its shape is Star Fox 64's: a calm opening, schools that teach the gun, darters
-  that teach the dodge, a breather at 0.50 to 0.62, a mixed push, a heavy at 0.84 with an escort.
-- **Roles, not creatures:** each wave is a `school`, a `darter` or a `heavy`; the route fills each with a Figment class from its danger.
-  The Margarite run is Guppy schools, Barracuda darters and one Marlin; an Entropolis run is a class up throughout. `stagePlan(from, to, day)`
-  gives every wave with its class, count, formation and lane; the day moves the lanes, never the order or the counts.
-- **What it bears:** six hits (`STAGE.bears`; "shield" is the Courier's Lachryma pool, a different thing). Failing loses a quarter of the
-  cargo and may spill crude. A stage pays no cubes: the travel layer is a drain and a risk, and it pays at the other end.
-
-- **The reckoning (Divination):** how much of a crossing the Courier has divined, 0 .. 1, for that day (the lanes drift daily). It grows
-  by surveying the sea from the pier before sailing (a Dreamvane survey over the water: Petra's verb; its quality `q` is how well it
-  was dowsed) and by reading the waves under way. It buys knowledge, never numbers: each wave's lane is marked ahead of it by a glyph
-  pop on the rail, `reckonLead(r)` seconds early (up to 3 s, two bars, at full reckoning). After the slice it is also the way to a new
-  node: a locked node opens for good once a route to it is reckoned to 0.6 from the pier (`opensNode`), so Entropolis is found by
-  divining the way there. Divination EXP from `emocean.reckon` (`acts` 4).
-
-**A hole, said plainly:** on the slice's route the crude barely pays. A sloop of crude from Anagami to Margarite nets -10 to +1 cubes
-(with the sloop's light `burn` of 0.3: at the tanker's rate it lost 25 to 35). The spread is Entropolis to Margarite, and Entropolis is locked. So
-in the slice the hop must pay through **what comes up out of the Well** (the Cogitomap and the materials, sold at Margarite's dock) and
-**Letty's board**, and the crude market is the lesson that points to Entropolis. Selling a Cogitomap at Margarite's dock is the line that
-ties E1 to E4, which is the seam the slice exists to prove (ruled: the Purser buys them).
-
-## The voyage's systems are in (Dovina, R58: `src/progress/voyage.js`, `game.voyage`)
-
-- **Petra's places call it:** the pier calls `game.voyage.board(from, to, 'sloop')` (it refuses, with the reason for the log, when the
-  hold is over, the purse short, or the node not yet found); the rail calls `game.voyage.stageResult({ passed, hits, bears, downed,
-  spawned })` when the stage ends (it takes the cargo a failed stage costs, may spill, and makes port); a survey of the sea calls
-  `game.voyage.reckon(from, to, share, q)`, and the lane marks read `reckonLead(game.voyage.reckoning(from, to),
-  game.psyche.widen('divination.reckon'))`. `game.voyage.at` is the island the Courier is on.
-- **The traders are shops** (`catalogue.js`): a shop with an `island` prices by that island's demand today. **Old Grog's pier** (Anagami)
-  sells Anagami's casks (wonder, desire, grief); **the Purser's counter** (`SHOPS.purser`, Margarite) buys crude, Cogitomaps and Well
-  materials and sells Margarite's own (mirth, wonder). On Anagami, **Raku buys anything** (the owner, R58) at half its worth, so a
-  Cogitomap has a lowball price at home and a dear one at Margarite's dock: the trip pays for a map worth carrying. The counter opens from the Purser's talk, as Raku's does (`shops.open('purser')`);
-  its keeper is `purser` (a body on the dock that the talk and the window's walk-away check can find).
-- **The cargo is casks in the Pneuka Box** (`cask.<grade>`, kind `crude`: items for Petra's `items.js`, names in LORE.md section 8); a
-  ship's hold is how many may cross, never a second inventory. The voyage's manifest remembers where each cask came from and what it
-  cost, so a sale knows its route and its profit.
-- **A Cogitomap is worth what its Well still holds** (the owner, R58: no decay by the clock). Its price is its worth times the Well's
-  yield at the fill it has now: farming a Well cheapens its maps, letting it fill again restores them. Farming and selling maps compete.
-
-## The contract: events and ledger keys (tracking.js rules; every event carries `by`)
+## The contract: events and ledger keys (every event carries `by`)
 
 | Event | Payload | Ledger (counters, records) |
 |---|---|---|
-| `well.enter` | `{ well, seed, day, by }` | `well.enter` |
-| `well.floor` | `{ well, floor, charted (0..1 of that floor), by }` | `well.floor`; record `well.depth` = floor |
-| `well.foe` | `{ well, cls, by }` | `well.foe` |
-| `well.leave` | `{ well, floors, foes, pay, charted (0..1 of the run), shattered, fill, by }` | `well.out` when not shattered; record `well.charted` = charted x 100; `well.dry` when `fill` reaches 0 |
-| `cogitomap.get` | `{ well, seed, day, charted, by }` | `cogitomap.get` |
-| `emocean.hop` | `{ from, to, ship, fuel, by }` | `emocean.hop`; `emocean.port.<to>` |
-| `emocean.stage` | `{ from, to, passed, hits, bears, downed, spawned, lost, spilled, by }` | `emocean.stage.passed`; `emocean.stage.clean` when hits is 0; `crude.spill` when spilled |
-| `emocean.reckon` | `{ from, to, day, reckoning (0..1 after it), q (how well this survey was dowsed), by }` | record `emocean.reckon.<route>` and `emocean.reckon.best` = reckoning x 100 |
-| `cogitomap.sell` | `{ island, well, worth, price, by }` | `cogitomap.sold`; `cogitomap.sold.<island>` |
-| `emocean.found` | `{ node, from, by }` (a node found by reckoning) | `emocean.found.<node>` |
-| `crude.buy` | `{ island, grade, units, price, by }` | `crude.bought` (units) |
-| `crude.sell` | `{ island, grade, units, price, from, profit, by }` | `crude.sold.<island>` (units); record `crude.profit`; `crude.route.<from>.<island>` |
+| `well.enter` | `{ well, seed, day }` | `well.enter` |
+| `well.floor` | `{ well, floor, charted }` | `well.floor`; record `well.depth` = floor |
+| `well.charted` | `{ well, floor, charted }` (on leaving a floor) | Divination EXP |
+| `well.foe` | `{ well, floor, cls }` | `well.foe` |
+| `well.leave` | `{ well, floors, foes, pay, charted (0..1 of the run), shattered, fill }` | `well.out` when not shattered; record `well.charted` = charted x 100; `well.dry` when `fill` reaches 0 |
+| `cogitomap.get` | `{ well, charted, worth }` | `cogitomap.get` |
+| `cogitomap.sell` | `{ island, well, worth, price }` | `cogitomap.sold`; `cogitomap.sold.<island>` |
+| `emocean.hop` | `{ from, to, ship, fuel }` | `emocean.hop`; `emocean.port.<to>` |
+| `emocean.stage` | `{ from, to, passed, hits, bears, downed, spawned, lost, spilled }` (and `RAIL.md`'s additions) | `emocean.stage.passed`; `emocean.stage.clean` when hits is 0; `crude.spill` when spilled |
+| `emocean.reckon` | `{ from, to, day, reckoning (0..1 after it), q }` | record `emocean.reckon.<route>` and `emocean.reckon.best` = reckoning x 100 |
+| `emocean.found` | `{ node, from }` | `emocean.found.<node>` |
+| `crude.buy` | `{ island, grade, units, price }` | `crude.bought` (units) |
+| `crude.sell` | `{ island, grade, units, price, from, profit }` | `crude.sold.<island>` (units); record `crude.profit`; `crude.route.<from>.<island>` |
 
 Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`, `cogitomap`. EXP: `emocean.stage` is Ouranurgy;
-`well.charted` (a floor charted, on leaving it) and `emocean.reckon` are Divination, each worth as many ordinary acts as the minutes it takes (`acts` in `domains.js`, so the pace to 99 is
-unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
+`well.charted` and `emocean.reckon` are Divination, each worth as many ordinary acts as the minutes of play it takes (`acts` in
+`domains.js`, so the pace to 99 is unchanged), weighed by how clean it was (`stageQuality`; the floor's charted share).
 
-**The slice's achievements** (in the game now, as placeholders at 0 until the events exist; names Espada's, LORE.md section 8):
-EXPLORATION, The Wells: Downward Spiral, Rock Bottom, Face It, Mind Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden), and Cartographer's Cut (selling a Cogitomap
-to the Purser: a placeholder name, R57).
-THE EMOCEAN, Sailing: Cast Off, Weathered It, Not a Scratch, Ports of Call, and Dead Reckoning (a placeholder name, R57); Crude: Black Gold, Gusher, Toxic Symbiosis (hidden), Slick
-(hidden). The Well in the Dunes is **the Great Dunemaw**; crude is counted in **casks**; the dock trader is **the Purser** (the role is the name).
-
-## The seams to check before calling it done
-
-- **One purse:** every cube in or out goes through `game.cubes` with a `why` (`well`, `crude`, `fuel`, `bounty`).
-- **One ledger:** every new event carries `by` and gets a tracking rule.
-- **Retroactive achievements:** the slice's achievements (first Well, first Cogitomap, first hop, first sale at Margarite) are
-  predicates over the ledger.
-- **The domains' EXP:** a clean Well floor is Divination EXP if it is charted, a stage passed is Ouranurgy EXP. Their quality is how
-  clean it was.
-- **The same seven tools in the Well and on the ship.** No new currency, level or gear anywhere.
-
-## Order
-
-1. E1, a Well of three floors.
-2. E4, one hop to Margarite and back.
-3. The Cogitomap and the bounty board.
-
-Each step ships on its own, gated by Petra as usual.
+**The slice's achievements** (names Espada's, LORE.md section 8): EXPLORATION, The Wells: Downward Spiral, Rock Bottom, Face It, Mind
+Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden), Cartographer's Cut (a placeholder name, R57). THE EMOCEAN, Sailing:
+Cast Off, Weathered It, Not a Scratch, Ports of Call, Dead Reckoning (a placeholder name, R57); Crude: Black Gold, Gusher, Toxic
+Symbiosis (hidden), Slick (hidden).

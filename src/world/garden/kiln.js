@@ -10,25 +10,28 @@
 //
 // Prior art: xianxia's heavenly tribulation (lightning that grows with the stage being crossed), Zelda's Ganon tennis (a bolt sent back),
 // Bayonetta's Witch Time ring read before the blow, and the kiln's firing itself (the heat that makes clay into stoneware).
+// The look is Calissa's (vfx/garden/tribulation.js): the storm over the Peak with the kiln's fire in its eye (hotter the higher the
+// Firing), each bolt traced then striking, its ring closing on the mat and gold in the flick's window.
 //
 //   const K = new Kiln(game, realm)   K.open() -> n | null (the Firing open to try)   K.begin()   K.flick(point)   K.update(dt)   K.active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { strikesOf } from '../../progress/realm.js';
-import { firingOf, ranksOf } from '../../progress/spirits.js';
+import { firingOf, ranksOf, FIRINGS } from '../../progress/spirits.js';
+import { HeavenlyKiln } from '../../vfx/garden/tribulation.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/garden/kiln'); // (where a bolt lands about the Jar: core/rng.js, the same twice)
 
 const RING = { r: 1.5, warn: 0.9, flick: 0.45, spread: 1.2, mat: 3.2 }; // (a bolt's ring 1.5 m; outlined 0.9 s before it lands; flicked in its last 0.45 s; landing within 1.2 m of the Jar; the mat 3.2 m round)
+const UP = new THREE.Vector3(0, 1, 0);
 
 export class Kiln {
   constructor(game, realm) {
     this.game = game; this.realm = realm; this.active = false; this.strikes = [];
-    this.ringGeo = new THREE.RingGeometry(RING.r * 0.82, RING.r, 28).rotateX(-Math.PI / 2);
-    this.ringMat = new THREE.MeshBasicMaterial({ color: 0xbfe6ff, transparent: true, opacity: 0.85, depthWrite: false, name: 'kiln-ring' });
-    this.boltGeo = new THREE.CylinderGeometry(0.12, 0.3, 40, 6, 1, true).translate(0, 20, 0);
-    this.boltMat = new THREE.MeshBasicMaterial({ color: 0xe8f6ff, transparent: true, opacity: 0.95, depthWrite: false, blending: THREE.AdditiveBlending, name: 'kiln-bolt' });
+    const M = this.mat; // (the sky stands over the mat, on the Peak's own up)
+    this.look = new HeavenlyKiln({ height: 40, radius: 60 }); this.look.group.position.copy(M.pos); this.look.group.quaternion.setFromUnitVectors(UP, M.pos.clone().sub(M.planet.c).normalize());
+    realm.place.group.add(this.look.group);
   }
 
   /** The Firing open to try (the next past the last crossed, if the attributes' ranks have opened it), or null. */
@@ -44,6 +47,7 @@ export class Kiln {
     if (this.active || n == null) return false;
     const S = strikesOf(n);
     this.active = true; this.firing = n; this.left = S.strikes; this.every = S.every; this.may = S.may; this.next = 1.6; this.hits = 0; this.parried = 0; this.endT = 0;
+    this.look.open(0.35 + 0.65 * Math.min(1, (n - 1) / (FIRINGS.length - 1))); // (the eye's fire: red at the second Firing, the white of the hottest at the sixth)
     if (g.garden) g.garden.tribulation = { active: true, tier: n, outcome: null };
     g.events?.emit('cultivation.kiln', { firing: n, by: 'courier' });
     return true;
@@ -51,48 +55,42 @@ export class Kiln {
 
   /** The hand's flick at a point: a bolt about to land there is sent back. */
   flick(point) {
-    for (const s of this.strikes) if (!s.done && s.t <= RING.flick && s.at.distanceTo(point) < RING.r * 1.4) { s.done = 'parried'; this.parried++; this.fx(s, true); sfx.parry?.(); return true; }
+    for (const s of this.strikes) if (!s.done && s.t <= RING.flick && s.at.distanceTo(point) < RING.r * 1.4) { s.done = 'parried'; this.parried++; s.B.eta = s.B.t; this.fx(s, true); sfx.parry?.(); return true; } // (it strikes now, short of the Jar)
     return false;
   }
 
   update(dt) {
+    this.look.update(dt); // (the eye closes over a few seconds after the end)
     if (!this.active) return;
     const g = this.game, J = this.realm.jar;
     // the end: the music's ending on its bar line, then the kiln closes
-    if (this.endT > 0) { if ((this.endT -= dt) <= 0) { this.active = false; if (g.garden) g.garden.tribulation = { active: false, tier: this.firing, outcome: g.garden.tribulation?.outcome || null }; } return; }
+    if (this.endT > 0) { if ((this.endT -= dt) <= 0) { this.look.open(0); this.active = false; if (g.garden) g.garden.tribulation = { active: false, tier: this.firing, outcome: g.garden.tribulation?.outcome || null }; } return; }
     // a new bolt, outlined where it will land (about the Jar, never far)
     if (this.left > 0 && (this.next -= dt) <= 0) {
       this.next = this.every; this.left--;
       const up = J.up.clone(), side = new THREE.Vector3(1, 0, 0).cross(up).normalize(), fwd = up.clone().cross(side);
       const a = simRand() * Math.PI * 2, r = simRand() * RING.spread, at = J.pos.clone().addScaledVector(side, Math.cos(a) * r).addScaledVector(fwd, Math.sin(a) * r).addScaledVector(up, -J.radius + 0.05);
-      const ring = new THREE.Mesh(this.ringGeo, this.ringMat); ring.position.copy(at); ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), up); ring.name = 'kiln-ring';
-      this.realm.place.group.add(ring);
-      this.strikes.push({ at, up, ring, t: RING.warn, done: null });
+      this.strikes.push({ at, up, t: RING.warn, done: null, B: this.look.bolt(at, RING.warn, { r: RING.r, flick: RING.flick, up }) });
     }
     for (const s of this.strikes) {
       if (s.done) continue;
-      s.t -= dt; s.ring.scale.setScalar(0.6 + 0.4 * (1 - s.t / RING.warn));
-      if (s.t > 0) continue;
+      if ((s.t -= dt) > 0) continue;
       s.done = 'landed'; this.fx(s, false);
       if (J.pos.distanceTo(s.at) < RING.r + J.radius * 0.5 && !J.flight) { this.hits++; J.vel.addScaledVector(s.up, 6); J.grounded = false; this.realm.game.player.shake = 0.5; }
     }
-    for (let i = this.strikes.length - 1; i >= 0; i--) { const s = this.strikes[i]; if (s.done && (s.life = (s.life ?? 0.25) - dt) <= 0) { this.realm.place.group.remove(s.ring); if (s.bolt) this.realm.place.group.remove(s.bolt); this.strikes.splice(i, 1); } }
+    this.strikes = this.strikes.filter((s) => !s.done); // (the look lets its bolts fade by themselves)
     // through, or failed: the log says which (tracking/garden.js), the music turns to its ending
     const failed = this.hits > this.may, through = this.left <= 0 && !this.strikes.some((s) => !s.done);
     if (failed || through) {
       const passed = !failed;
       if (g.garden?.tribulation) g.garden.tribulation.outcome = passed ? 'passed' : 'failed';
       g.events?.emit('cultivation.tribulation', { firing: this.firing, passed, hits: this.hits, parried: this.parried, by: 'courier' });
-      for (const s of this.strikes) { this.realm.place.group.remove(s.ring); if (s.bolt) this.realm.place.group.remove(s.bolt); }
       this.strikes = []; this.left = 0; this.endT = 2;
     }
   }
 
-  /** The bolt: a white line from the sky to the ring (sent back, it runs up again). */
+  /** The strike's flash and thunder (the bolt itself is the look's; sent back, the flash is gold). */
   fx(s, back) {
-    const b = new THREE.Mesh(this.boltGeo, this.boltMat); b.position.copy(s.at); b.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), s.up); b.name = 'kiln-bolt';
-    if (back) b.scale.set(1.6, 1, 1.6);
-    this.realm.place.group.add(b); s.bolt = b; s.ring.visible = false;
     this.game.fx?.toneBurst?.(s.at.clone(), back ? 0xffe9a0 : 0xbfe6ff, 1, 2.5);
     if (sfx.thunder) sfx.thunder(1); else sfx.slam?.(0.8); // (a placeholder until Wanda's thunder: her cue already falls with the bars)
   }

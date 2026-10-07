@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-import { T } from '../../core/config.js';
-import { sfx } from '../../audio/sfx.js';
-import { inSiege } from './siege.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/basement/raids'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // RAIDS: waves of crimson clapperjars that make for the jar while you are the god hand. They are
 // a mode of one room now, THE SIEGE (siege.js), and nothing else: outside it the timer does not run
@@ -13,6 +6,13 @@ const simRand = stream('world/basement/raids'); // (the simulation's chance: cor
 // `raidStrike`), and this module only knows how to send the attackers, so raids can be reworked,
 // moved, or dropped without touching either.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { T } from '../../core/config.js';
+import { sfx } from '../../audio/sfx.js';
+import { inSiege } from './siege.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/basement/raids'); // (the simulation's chance: core/rng.js, the same twice)
+
 const DOWN = new THREE.Vector3(0, -1, 0);
 
 export class Raids {

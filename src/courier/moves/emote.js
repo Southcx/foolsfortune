@@ -1,12 +1,12 @@
-import { Tech } from './techs.js';
-import { EMOTES } from '../emotes.js';
-
 // ---------------------------------------------------------------------------
 // THE EMOTE (a tech that owns the body while it lasts): stand where you are and play the emote's clips (emotes.js) through their
 // phases: in -> the loop (or the one-shot, held or not) -> out. Moving ends it: through its way out if it has one (sitting stands
 // up first), straight away if not. It is asked for (`request(id)`) and begins on the next step it can: on the ground, the hands
 // free of anything heavy, nothing else going on.
 // ---------------------------------------------------------------------------
+import { Tech } from './techs.js';
+import { EMOTES } from '../emotes.js';
+
 const MOVE_KEYS = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space'];
 
 export class Emote extends Tech {

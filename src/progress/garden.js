@@ -17,11 +17,12 @@
 //   ENCOUNTERS[id] = { id, name, cat, sub }   game.garden = new Garden(game)
 //   .mastered(enc) -> bool   .slots -> [{ enc, since }]   .slot(i, enc) -> { ok, why? }   .accrued(i) -> cubes   .collect() -> cubes
 //   .beds -> [{ kind, tier, at } | null]   .plant(i, boxSlot) -> { ok, why? }   .ripe(i) -> bool   .harvest(i) -> n
-//   .price(kind) -> cubes | null   .upgrade(kind) -> { ok, why? }      (kind: 'slot' | 'bed')
+//   .price(kind) -> cubes | null   .upgrade(kind) -> { ok, why? }   .grant(kind) (a feature placed: free)   .workBonus(kind) -> 0..0.25   (kind: 'slot' | 'bed')
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { makeMaterial } from './econ/materials.js';
 import { stream } from '../core/rng.js';
+import { MAX } from './spirits.js';
 import * as calendar from '../core/calendar.js';
 const clock = calendar.now; // (the calendar's clock, not Date.now: a replay pins it, so a replayed visit pays what it paid)
 // a game hour in real milliseconds (DESIGN.md section 17: a game day is a real hour), from the calendar when it says, else that scale
@@ -46,6 +47,8 @@ export class Garden {
     this.game = game;
     this.s = fresh();
     game.save?.section('garden', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
+    // a terrace placed in the Inner Realm is a bed, a pavilion a slot: paid for as a feature (world/garden/plots.js), so granted here free
+    game.events?.on?.('garden.place', (e) => { if (e.by !== 'courier') return; if (e.feature === 'terrace') this.grant('bed'); else if (e.feature === 'pavilion') this.grant('slot'); });
   }
   dirty() { this.game.save?.dirty('garden'); }
   get slots() { return this.s.slots; }
@@ -75,7 +78,7 @@ export class Garden {
   accrued(i, now = clock()) {
     const S = this.s.slots[i];
     if (!S?.enc) return 0;
-    return Math.floor(G.farmRate * D.share * Math.min(D.capDays * GAME_DAY, Math.max(0, now - S.since)) / H); // (pays per hour of real time, to a cap of a game day)
+    return Math.floor(G.farmRate * D.share * (1 + this.workBonus('slot')) * Math.min(D.capDays * GAME_DAY, Math.max(0, now - S.since)) / H); // (pays per hour of real time, to a cap; spirits at work add theirs)
   }
   /** Collect a slot (or every slot): the cubes come out, and the slot starts filling again. */
   collect(i = null) {
@@ -109,7 +112,8 @@ export class Garden {
     const b = this.s.beds[i];
     if (!b || !this.ripe(i)) return 0;
     let n = 0;
-    for (let k = 0; k < G.yield; k++) {
+    const B = G.yield * (1 + this.workBonus('bed')), count = Math.floor(B) + (simRand() < B % 1 ? 1 : 0); // (spirits at work: the fraction drawn)
+    for (let k = 0; k < count; k++) {
       const seed = Math.floor(simRand() * 1e9);
       this.game.pneuka?.add(`mat.${b.kind}`, 'garden', 0, makeMaterial(b.kind, seed, b.tier)); n++; // (a full box drops it at their feet)
     }
@@ -117,6 +121,25 @@ export class Garden {
     this.dirty();
     this.game.events.emit('garden.harvest', { bed: i, kind: b.kind, count: n, by: 'courier' });
     return n;
+  }
+
+  // ---------------------------------------------------------------- spirits at work (SPIRIT-GARDEN.md 5; ECON.place.work)
+  /** What the spirits at work add to every slot or every bed (0 .. ECON.place.work): the best worker's matching stat over the ceiling.
+   *  A spirit works what it stands by (world/garden/raising.js sets its entry's `work` to the feature: a pavilion or a slot is labour,
+   *  read from desire, its strength; a terrace or a bed is tending, read from grief, its stamina). */
+  workBonus(kind) {
+    const jobs = kind === 'slot' ? ['slot', 'pavilion'] : ['bed', 'terrace'], stat = kind === 'slot' ? 'desire' : 'grief';
+    let best = 0;
+    for (const e of this.game.bound?.list || []) if (jobs.includes(e.work) && e.sp?.stats) best = Math.max(best, (e.sp.stats[stat] || 0) / MAX);
+    return Math.min(1, best) * ECON.place.work;
+  }
+
+  /** A slot or a bed given, not bought (a feature placed in the Inner Realm was the price). */
+  grant(kind) {
+    if (kind === 'slot') this.s.slots.push({ enc: null, since: 0 }); else if (kind === 'bed') this.s.beds.push(null); else return false;
+    this.dirty();
+    this.game.events.emit('garden.grant', { kind, by: 'courier' });
+    return true;
   }
 
   // ---------------------------------------------------------------- the long sink

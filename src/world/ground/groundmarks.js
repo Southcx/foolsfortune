@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/ground/groundmarks'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // GROUND MARKS: what the Courier and the Solar Skiff leave on a soft surface. It writes into a
 // TrailMap (the fading path the ground shader shows) and throws a little spray (fx.alpha). It
@@ -16,6 +12,10 @@ const simRand = stream('world/ground/groundmarks'); // (the simulation's chance:
 //   const marks = new SandMarks(game, trailMap, SAND);
 //   marks.update(dt, active)      // every frame; `active` = the ground here is soft
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/ground/groundmarks'); // (the simulation's chance: core/rng.js, the same twice)
+
 export const SAND = { spray: new THREE.Color(0xf0c890), dust: new THREE.Color(0xe7b98a), footRadius: 0.11, stride: 0.72 };
 
 const UP = new THREE.Vector3(0, 1, 0);

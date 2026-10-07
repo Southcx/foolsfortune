@@ -1,6 +1,3 @@
-import * as THREE from 'three';
-import { T } from '../../core/config.js';
-
 // ---------------------------------------------------------------------------
 // Movement techs: optional techniques layered over the core movement profile.
 //
@@ -23,6 +20,9 @@ import { T } from '../../core/config.js';
 // Techs read their own keys through `player.latch(code)` (edge presses held for a
 // short buffer, since fixed steps don't line up with frames).
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { T } from '../../core/config.js';
+
 
 export class Tech {
   constructor(mgr, id) {

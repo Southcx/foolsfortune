@@ -1,12 +1,12 @@
+// Push and pull: facing a heavy crate, hold F and you take hold of it. Then W pushes it away
+// from you and S pulls it toward you, along the way you're facing and no other (it can't be
+// turned); letting go of F (or jumping) lets go. Crates too heavy to lift are meant for this:
+// steps to build, a plug to shove into a hole, a block to drag to a wall.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 
-// Push and pull: facing a heavy crate, hold F and you take hold of it. Then W pushes it away
-// from you and S pulls it toward you, along the way you're facing and no other (it can't be
-// turned); letting go of F (or jumping) lets go. Crates too heavy to lift are meant for this:
-// steps to build, a plug to shove into a hole, a block to drag to a wall.
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 

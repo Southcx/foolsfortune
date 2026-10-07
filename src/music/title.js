@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE FOOL'S PRECIPICE: the title's three cues (docs/PLAN.md, piece 1; music/choose.js picks among them by the scene's state).
+// THE FOOL'S PRECIPICE: the title's three cues (title/scene.js; music/choose.js picks among them by the scene's state).
 //   TITLE      while they sit on the edge. An intro as the clay logo is fired (the kiln's roar rising, a strike, the glaze's glitter),
 //              then a loop at 100 (walking music: about to set out) in E minor that the board's giant pieces move to, a step a bar:
 //              piano rolling in eighths like a music box, brushes, an upright, the flute singing the Fool's Step (A B C and up to E,

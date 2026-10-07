@@ -1,18 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../../core/config.js';
-import { label } from '../../../world/basement/basement.js';
-import { Fish } from './fish.js';
-import { setHaloTexture } from './fishmesh.js';
-import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
-import { Ripples } from './lure.js';
-import { sfx } from '../../../audio/sfx.js';
-import { FONT } from '../../../ui/theme.js';
-import { mergeStatic } from '../../../render/merge.js';
-import { RAPIER, GROUPS } from '../../../core/physics.js';
-import { addOutline } from '../../../render/outline.js';
-import { TITHE } from '../../../world/treasure/treasure.js';
-import { ECON } from '../../../progress/econ/table.js';
-
 // ---------------------------------------------------------------------------------------
 // THE WEIR: the Sondelass's own place, built for testing everything it does. It used to be a vaulted hall far out in the basement's
 // layer; now it is the OASIS at the heart of the dunes (dunes.js): a pond on a flat of packed sand, open to the sky, the skiff drawn
@@ -31,6 +16,21 @@ import { ECON } from '../../../progress/econ/table.js';
 //   THE TREASURY  five plinths on the north beach (a chest of each tier), the Tithe's console and its dais.
 //   and palms round the flat, reeds at the water's edge.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../../core/config.js';
+import { label } from '../../../world/basement/basement.js';
+import { Fish } from './fish.js';
+import { setHaloTexture } from './fishmesh.js';
+import { SPECIES, BY_SPECIES, TIDES, TIDE_LEN, weightOf } from './species.js';
+import { Ripples } from './lure.js';
+import { sfx } from '../../../audio/sfx.js';
+import { FONT } from '../../../ui/theme.js';
+import { mergeStatic } from '../../../render/merge.js';
+import { RAPIER, GROUPS } from '../../../core/physics.js';
+import { addOutline } from '../../../render/outline.js';
+import { TITHE } from '../../../world/treasure/treasure.js';
+import { ECON } from '../../../progress/econ/table.js';
+
 import { DUNE, OASIS, POND, WELL, pondDepth } from '../../../world/dunes/dunes.js';
 import { stream } from '../../../core/rng.js';
 const simRand = stream('tools/sondelass/angling/weir'); // (the simulation's chance: core/rng.js, the same twice)

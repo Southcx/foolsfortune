@@ -1,3 +1,13 @@
+// ---------------------------------------------------------------------------------------
+// MAIN: the boot and the frame. It builds every service onto `game` in order (physics, the level, the Courier, the tools on the belt,
+// the creatures, the places, the feedback), compiles every shader in the warm-up (nothing may compile in play), and runs the frame: input,
+// the fixed 1/60 s steps (the body, physics, movers), then the world's updates, the camera, the animation and the draw at 480 lines. A
+// hub: each division adds a line here for what it builds (CLAUDE.md, Threads); the services are documented in their own headers.
+//
+// Prior art: the game loop with a fixed simulation step and an interpolated render (Glenn Fiedler, "Fix Your Timestep!").
+//
+//   window.__game (the test harness's handle: tick(dt), draw(), game)   window.__boot (ms at each stage of loading)
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { T, PALETTE, loadTuning } from './core/config.js';
@@ -187,6 +197,7 @@ import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
 import { Realm } from './world/garden/realm.js';
 import { SolarTrial } from './world/dunes/solar.js';
+import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
 import { Weather, phaseAt } from './progress/weather.js';
 import { modifier as stoneModifier } from './progress/stones.js';
@@ -521,6 +532,7 @@ async function main() {
     game.interact.add('well', () => (game.dialogue?.open || !idle() ? null : game.well.nearest(player)));
     game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
+    game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
@@ -577,7 +589,7 @@ async function main() {
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
-    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.')),
+    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),
     resetRoom,
     respawn: () => game.course?.respawnHere?.(), // (was R in the basement)
     toHub: () => game.course?.toHub(), // (was H)
@@ -730,8 +742,7 @@ async function main() {
     game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
   } });
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
-  game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
-  if (freshBuild) game.log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
+  game.events.emit('session.open', { fresh: !!freshBuild }); // (the welcome is a tracking rule: tracking/place.js)
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
@@ -745,7 +756,7 @@ async function main() {
   };
   overlay.addEventListener('click', start);
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
-  // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
+  // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
   game.vessel.dress(titleScene.ch); // (they wear on the hill what they wear in the world)
@@ -828,7 +839,7 @@ async function main() {
   const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
-  const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
+  const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
@@ -1106,7 +1117,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.solar?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

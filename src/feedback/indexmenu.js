@@ -1,5 +1,3 @@
-import { sfx } from '../audio/sfx.js';
-
 // ---------------------------------------------------------------------------
 // The index: the console in the hub. Stand at it, press F, and pick a room; one teleport per room
 // (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
@@ -8,6 +6,8 @@ import { sfx } from '../audio/sfx.js';
 // It also opens on a PAGE of its own: the Throwing Room's console shows its page (the drills, their bests, Strawman) in it.
 //   menu.show()   menu.showPage(name, render(im, el), { title, sub })   menu.close()
 // ---------------------------------------------------------------------------
+import { sfx } from '../audio/sfx.js';
+
 
 const CSS = `
 #indexmenu { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.78); cursor: default; user-select: none; }

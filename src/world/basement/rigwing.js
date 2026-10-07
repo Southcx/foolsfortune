@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { BASE_Y, label, strip } from './basement.js';
-import { ARCHES } from './techwing.js';
-
 // ---------------------------------------------------------------------------
 // Two wings of THE MOVEMENT LAB, west of the tech lab (through its west arch):
 //
@@ -19,6 +14,11 @@ import { ARCHES } from './techwing.js';
 //     H3 PARRY     a mortar throwing at you every few seconds: kick them back at the targets
 //     H4 RECOIL    a 7.2 m platform you can reach by shooting down in the air
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { BASE_Y, label, strip } from './basement.js';
+import { ARCHES } from './techwing.js';
+
 
 export const RIG = { x0: -70, x1: -36.5, z0: -72, z1: -36.5 };
 export const HANDS = { x0: -104, x1: -70.5, z0: -72, z1: -36.5 };

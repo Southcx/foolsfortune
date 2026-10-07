@@ -1,97 +1,48 @@
-# The overlay: how the game tells the player things (the owner, 2026-10-06; a round-robin seed)
+# The overlay (a placeholder name, Espada's to give): how the game tells the player things (the owner, 2026-10-06)
 
-Opened by Dovina for Calissa (who owns the look and will write the visual spec here) and Petra (who builds it). The name "overlay" is a
-placeholder for Espada's. Units: **real seconds**, metres.
+Kept by Dovina (rules, inventory); the look: Calissa's `OVERLAY-LOOK.md`; drawn through one module (`src/vfx/hudring.js`'s, shared).
 
-> "That charging circle in photograph mode isn't functioning as an indicator for the 'Flash' attack. Coordinate with [Petra] and
-> Calissa to determine how to improve the communication of the Flash mechanic and in general how information should be communicated to
-> the player. I think we should really lean in to the current design language of the HUD ring around the Courier during battle and make
-> a more formalized system spec out of it. I love the esoteric digital interfaces overlaid on 'physical' objects motif."
+> "...lean in to the current design language of the HUD ring around the Courier during battle and make a more formalized system spec
+> out of it. I love the esoteric digital interfaces overlaid on 'physical' objects motif." (the owner, 2026-10-06)
 
-## The motif, named
+The battle ring (a gauge of the world's matter, no words, no numbers) made the rule for everything. Prior art: Zone of the Enders,
+Dead Space, Metroid Prime, Serial Experiments Lain, .hack, NieR: Automata.
 
-**Esoteric digital interfaces laid over physical things.** The battle ring (`src/vfx/hudring.js`) is the model: a gauge drawn on the
-ground round the Courier, made of the world's own matter (Lachryma in a labradorite frame), with no words and no numbers. It tells the
-pool, the Blink's charges, where blows came from, and what has noticed you. The ask is to make that the rule for everything the player
-needs to read, rather than a one-off.
+## The rules
 
-Prior art: Zone of the Enders' ring radar; Dead Space's diegetic spine and holograms; Metroid Prime's visor (the interface as the lens
-you look through); Serial Experiments Lain and .hack's esoteric UIs; Ghost in the Shell's and NieR: Automata's overlays on the world; and
-Parasite Eve's and Vagrant Story's floor-borne wireframes.
+**The grammar (Calissa):** matter counts what you have; line shows what you know; a crack is damage, drawn on matter only.
+1. **It sits on the thing it is about.** Nothing floats in a screen corner that could sit on the object.
+2. **No words, no numbers.** Sentences go to the log, counts to the ledger; the overlay shows state by shape, fill and colour. **Beads
+   count to four; past four it is a fill.** (One exception: the Veritome's date stamp, below.)
+3. **One family of marks** (ring, arc, bead, bracket, seam), so learning one teaches the rest.
+4. **Colour has one meaning each.** Lachryma is what you have; labradorite the System's reading; a threat's distance is one
+   labradorite ramp. **Gold stays off the overlay: gold means won** (LOOK.md section 4).
+5. **It speaks in a fight, or quietly when a priced tool is raised out of one** (the ring comes up faint).
+6. **Readiness is shown where the act comes from, in every view**: on the ring, and in the viewfinder's margin with the lens raised.
+7. **Nothing repeats a flash**: a state changes once and eases; nothing pulses for attention.
 
-## The rules (Dovina's draft, cut by Calissa: her look is `docs/plans/OVERLAY-LOOK.md`, on `claude/calissa-art-cups` a6bec00)
+## The Flash, the first case (settled 2026-10-06)
+The capture circle showed the photograph's quality and was misread as the Flash's (key 1: 1.1 real second cooldown, 6 Lachryma).
+**The meter lives where you aim from** (the owner: "why would the stun ring go around the enemy's feet when you're looking at them
+THROUGH the Veritome to stun them? Remember, Fatal Frame and Pokemon Snap"); the feet ring is withdrawn. **Through the lens** the
+capture circle is the Flash's: locked on the subject, filled by its stun meter, "open" when stunned (the reprogram cue), dashed while
+immune, build-ups on its rim in their aura's colour, its outer rim the readiness hoop. The photograph's quality moves to the
+viewfinder's corners closing on a subject held well. **Without the lens:** a labradorite hoop on the ring, and a bracket at the
+creature's eyes while its meter is above zero, fading 3 real seconds after the last flash. **A price tick** on the pool's band at 6
+Lachryma. The log says once, the first time, which key is which.
 
-**The grammar (Calissa):** matter counts what you have; line shows what you know. Lachryma is held, labradorite is the System's reading,
-and a crack is damage, drawn on matter only.
+## The inventory
 
-1. **It sits on the thing it is about.** A creature's stun meter is on the creature; the Courier's pool is round the Courier; a
-   target's lit state is on the target. Nothing floats in a screen corner that could sit on the object instead (CLAUDE.md: marks in the
-   world are not text).
-2. **No words, no numbers.** A sentence goes to the log, and anything counted goes to the ledger. The overlay shows *state* (full,
-   charging, ready, open, spent) by shape, fill and colour only. **Beads count to four; past four it is a fill** (Calissa).
-3. **One family of marks** (ring, arc, bead, bracket, seam), drawn from the same few pieces, so learning one teaches the rest.
-4. **Colour has one meaning each.** The Lachryma (near-black with its oil film) is what you have; labradorite is the System's reading,
-   and a threat's distance is one labradorite ramp (Calissa: not two colours). **Gold stays off the overlay: gold means won** (LOOK.md
-   section 4). The Tab panel's gold mark for tuned is a panel, not the overlay.
-5. **It speaks in a fight, or quietly when a priced tool is raised out of one** (Calissa): the ring comes up faint when you raise a tool
-   that costs Lachryma, so its price is readable before the fight.
-6. **Readiness is shown where the act comes from, in every view.** One mark in two homes: on the ring, and in the viewfinder's margin
-   when the lens is raised (first person hides the ring; Calissa).
-7. **Nothing repeats a flash** (Calissa's wording of CLAUDE.md's comfort rule): a state changes once and eases; nothing pulses again
-   and again for attention.
-
-## The Flash, as the first case
-
-**What is wrong today:** with the Veritome out, the **capture circle** charges while a creature is held in it. That charge is the
-*photograph's* quality (a held plate). The **Flash** is a different act on a different key (1): a cone of light with a 1.1 s cooldown
-and a cost of 6 Lachryma, which fills a creature's **stun meter** until it goes down and can be reprogrammed. Nothing shows the Flash's
-readiness or the stun meter's fill, so the circle is read as the Flash's, and it isn't.
-
-**Settled (Calissa's look, Dovina's rules):**
-- **A readiness hoop** for the Flash, in labradorite (it is a reading, not a held thing, so not a Lachryma bead): on the ring, and in the
-  viewfinder's margin with the lens raised. It closes as the 1.1 s cooldown runs, and is whole when the Flash is ready.
-- **A price tick** on the pool's band at 6 Lachryma, so whether you can afford a Flash reads on the pool itself.
-- **The meter lives where you aim from** (the owner, 2026-10-06: "why would the stun ring go around the enemy's feet when you're looking
-  at them THROUGH the Veritome to stun them? Remember, Fatal Frame and Pokemon Snap"). The feet ring is withdrawn.
-  - **Through the lens** (the Veritome raised): **the capture circle is the Flash's**, Fatal Frame's way. It locks onto the subject, and
-    the subject's stun meter fills the circle as flashes land; it closes to "open" when the subject is stunned (the reprogram cue) and is
-    dashed while it is immune. Status build-ups ride the circle's rim as arcs in their aura's colour. The readiness hoop is the circle's
-    own outer rim, closing with the cooldown.
-  - **The photograph's quality** moves off the circle to the viewfinder's frame: Pokemon Snap's way, the frame's corners close on a
-    subject held well (the held plate), and the shutter chance is the frame's one brief brightening. So one circle means one thing: the
-    Flash.
-  - **Without the lens** (the book out, a third-person Flash): the same mark, a bracket round the creature's body at its eyes (what
-    the light reaches), never at its feet. It shows on creatures whose meter is above zero and fades 3 real seconds after their last
-    flash; at zero it shows nothing.
-- The log says once, the first time, which key is which.
-
-## The inventory: what the player needs to read, and where it should sit
-
-| information | today | where it should sit |
-|---|---|---|
-| your Lachryma pool, held charge | the battle ring | the ring (kept) |
-| the Blink's charges | beads on the ring | kept |
-| where a blow came from, shield or clay | the ring's flash and crack | kept |
-| what has noticed you | the ring's threat arcs | kept |
-| the Flash's readiness | nothing | the capture circle's outer rim through the lens; a labradorite hoop on the ring without it; a price tick on the band |
-| a creature's stun meter and status build-up | nothing | through the lens: the capture circle on the subject (Fatal Frame); without it: a bracket at the creature's eyes; build-ups as arcs in their aura's colour |
-| a creature's mental state | its body (temper: Calissa's) | kept, the body |
-| a creature's grain | its movement (Calissa's dials) | kept, the body; the Veritome names it |
-| the draught (the stones) | nothing | the ring's band tinted by the feeling drunk |
-| your mental state (Stoic .. Prismatic) | nothing | the ring's frame: steady at Stoic, shimmering toward Prismatic (easing, never flicker) |
-| the FOE's crown cracks | Calissa's urn seams | kept, on the crown |
-| a ring lit in the Solar trial | the ring's own light | kept |
-| tuned knobs | the Tab panel, the log, QAIS | kept |
-| what can be parried (the owner, 2026-10-06) | nothing | a Lachryma outline on the projectile, and on the striking part of an answerable windup (Cuphead's pink): `docs/plans/PARRY.md` |
-| the Crucibelle's beat (the owner) | the music only | a metronome on the bell itself: a pendulum or clapper that **swings** with the beat (motion, never a flash: rule 7), its arc lit where a note would land on the beat |
-| the game day and game hour: **a clock, the Veritome's** (the owner) | nothing | the **date stamp** in the lens's corner, the 90s point-and-shoot's orange LCD (game day, game hour), and printed on every plate; the one place a number is drawn, because it is the camera's own display (rule 2's single exception, Calissa's to cut). Without the lens: `/time` in the chat line says it to the log, if you carry the Veritome |
-| the weather where you stand: **a weather meter, the Dreamvane's** (the owner) | the sky, the log's line | **the vane** on the crook's head: it turns to the mood's aspect and wears its colour (and the agate's, two together), its streamers longer with strength, slack in calm. Shown while the Dreamvane is out, and faintly on the back when it is worn |
-| the forecast (the Dreamvane's) | nothing | the **dowse raised to the sky** (look up while dowsing): the needle swings through the coming blocks one by one, in their colours, and the log says it in one line. How far it reaches is the forecast (`ECON.weather.forecast` blocks, widened by `divination.forecast`) |
-
-## Who does what
-
-- **Calissa:** the visual spec of the family: written, `docs/plans/OVERLAY-LOOK.md` (fold in here once both are on main).
-- **Petra:** one module that every overlay is drawn through (the ring's code made the shared part), and the Flash's bead and the stun
-  ring first.
-- **Dovina:** this inventory, kept as new systems arrive (the stones' draught, your mental state, the drills), and the rules.
-- **Espada:** the name, and the log's one-time lines.
+| information | where it sits |
+|---|---|
+| Lachryma pool, held charge; the Blink's charges (beads); where a blow came from; what has noticed you (threat arcs) | the battle ring (kept) |
+| the Flash's readiness; a creature's stun meter and build-ups | the capture circle (lens); a hoop on the ring and a bracket at its eyes (no lens) |
+| a creature's mental state; its grain | its body (temper; Calissa's dials); the Veritome names the grain |
+| the draught (the stones) | the ring's band tinted by the feeling drunk |
+| your mental state (Stoic .. Prismatic) | the ring's frame: steady at Stoic, shimmering toward Prismatic (easing, never flicker) |
+| the FOE's crown cracks; a ring lit in the Solar trial; tuned knobs | kept: the crown; the ring's light; the Tab panel (its gold allowed) |
+| what can be parried (the owner, 2026-10-06) | a Lachryma outline on the projectile and on the striking part of an answerable windup: `docs/plans/PARRY.md` |
+| the Crucibelle's beat (the owner) | a pendulum or clapper on the bell that **swings** with the beat (motion, never a flash), its arc lit where a note would land |
+| game day and game hour: the Veritome's clock (the owner) | the **date stamp** in the lens's corner (`ui/datestamp.js`: a 90s point-and-shoot's orange LCD), printed on every plate; rule 2's single exception. Without the lens: `/time` in the chat line, if you carry the Veritome |
+| the weather where you stand: the Dreamvane's meter (the owner) | **the vane** on the crook's head turns to the mood's aspect in its colour (and the agate's), streamers longer with strength; shown while out, faintly when worn |
+| the forecast (the Dreamvane's) | the dowse raised to the sky: the needle swings through the coming blocks in their colours; the log says it in one line; reach is `ECON.weather.forecast` blocks, widened by `divination.forecast` |

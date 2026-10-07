@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
-import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('courier/moves/carry'); // (the simulation's chance: core/rng.js, the same twice)
-
 // Pick up and throw (a body move: it's yours from the start). F, facing something small
 // (a pot, a small crate): you stoop, take it in both hands and lift it to your chest. You walk with
 // it slowly, no sprint and no gun. F again sets it down; the fire button throws it, two-handed over
@@ -15,6 +8,13 @@ const simRand = stream('courier/moves/carry'); // (the simulation's chance: core
 // OverhandThrow. Chest_Open and OverhandThrow reach with one arm, so the other is given its mirror (the pose mirror the gun's hand
 // swap uses): two hands, as a pot wants. Each is time-warped onto the move's own timings (LIFT, THROW_AT, PUT), which are the
 // game's feel and do not change. IK only closes the palms on the pot's sides.
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
+import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/carry'); // (the simulation's chance: core/rng.js, the same twice)
+
 const UP = new THREE.Vector3(0, 1, 0);
 const CARRIED = groups(G.PROP, 0); // touches nothing while it's in your hands
 const LIFT = 0.55, THROW_AT = 0.17, THROW_END = 0.32, PUT = 0.34;

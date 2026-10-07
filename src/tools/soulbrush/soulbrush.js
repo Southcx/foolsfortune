@@ -1,3 +1,25 @@
+// ---------------------------------------------------------------------------------------
+// THE SOUL BRUSH: the third of the Courier's psychic tools, a calligrapher's brush the size of a club, worn at the left hip like a
+// sword in a sash and drawn across the body. It is three things, each from a game that did it best:
+//
+//  - a CLUB (tools/soulbrush/club.js): heavy blows that bat what they meet, a held charge and a slam; every swing flicks slip off the bristles
+//    (Splatoon's Inkbrush). LMB, and hold LMB.
+//  - the BRUSH SLIDE: with the brush out, the core slide (C at speed) is the same slide, as fast and as long, but they ride it
+//    sideways, low, the brush trailing behind them on the ground, and it paints a stroke of slip in their wake that they can dive into once
+//    it has settled (Splatoon's Inkbrush dash and ink-swim; Jet Set Radio's tag-as-you-go). The core movement is untouched: only the
+//    picture and the paint are the brush's.
+//  - the CELESTIAL BRUSH (tools/soulbrush/celestial.js): hold RMB and the world stops and turns to paper; what they draw on it is read as a
+//    shape ($P, multi-stroke: tools/soulbrush/gesture.js) and done to the world (tools/soulbrush/techniques.js, after Okami), and the marks over the
+//    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
+//
+//   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
+//   LMB    the club: three blows; held on the ground, the bristles SATURATE and the mode works (tools/soulbrush/load.js: 1 PAINT,
+//          2 MOP); held in the air, the charge and the slam (a ground pound)                    RMB tap   FLICK: a fan of slip ahead
+//   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
+//
+// It is a passive tech (it doesn't take the step from the core movement): it owns the right arm's pose while drawn, the slide's
+// look while sliding with it, and the mouse while it is out.
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RestBake } from '../../render/restbake.js';
 import { Tech } from '../../courier/moves/techs.js';
@@ -22,28 +44,6 @@ import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
 const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
-// ---------------------------------------------------------------------------------------
-// THE SOUL BRUSH: the third of the Courier's psychic tools, a calligrapher's brush the size of a club, worn at the left hip like a
-// sword in a sash and drawn across the body. It is three things, each from a game that did it best:
-//
-//  - a CLUB (tools/soulbrush/club.js): heavy blows that bat what they meet, a held charge and a slam; every swing flicks slip off the bristles
-//    (Splatoon's Inkbrush). LMB, and hold LMB.
-//  - the BRUSH SLIDE: with the brush out, the core slide (C at speed) is the same slide, as fast and as long, but they ride it
-//    sideways, low, the brush trailing behind them on the ground, and it paints a stroke of slip in their wake that they can dive into once
-//    it has settled (Splatoon's Inkbrush dash and ink-swim; Jet Set Radio's tag-as-you-go). The core movement is untouched: only the
-//    picture and the paint are the brush's.
-//  - the CELESTIAL BRUSH (tools/soulbrush/celestial.js): hold RMB and the world stops and turns to paper; what they draw on it is read as a
-//    shape ($P, multi-stroke: tools/soulbrush/gesture.js) and done to the world (tools/soulbrush/techniques.js, after Okami), and the marks over the
-//    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
-//
-//   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
-//   LMB    the club: three blows; held on the ground, the bristles SATURATE and the mode works (tools/soulbrush/load.js: 1 PAINT,
-//          2 MOP); held in the air, the charge and the slam (a ground pound)                    RMB tap   FLICK: a fan of slip ahead
-//   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
-//
-// It is a passive tech (it doesn't take the step from the core movement): it owns the right arm's pose while drawn, the slide's
-// look while sliding with it, and the mouse while it is out.
-// ---------------------------------------------------------------------------------------
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };

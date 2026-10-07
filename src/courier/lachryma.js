@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-import { RAPIER, G, groups } from '../core/physics.js';
-import { T, PALETTE } from '../core/config.js';
-import { sfx } from '../audio/sfx.js';
-import { stream } from '../core/rng.js';
-const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------
 // Lachryma: the energy that runs the psygun (and, later, other mechanics).
 //
@@ -17,6 +10,13 @@ const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rn
 //   - modifiers stack: { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult }
 //   - events: change, spend, gain, empty, full, overflow, denied
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { RAPIER, G, groups } from '../core/physics.js';
+import { T, PALETTE } from '../core/config.js';
+import { sfx } from '../audio/sfx.js';
+import { stream } from '../core/rng.js';
+const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
+
 export class LachrymaPool {
   constructor({ max = 100, value = max, regenRate = 4, regenDelay = 2 } = {}) {
     this.baseMax = max;

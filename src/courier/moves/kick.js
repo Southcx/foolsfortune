@@ -1,3 +1,8 @@
+// Kick (a Movement Art) and parry. V is a kick: a quick
+// strike with the leg, forward, that knocks pots over (and cracks them), sends crates and
+// clapperjars flying, and rings targets. The first moments of it are also a parry: kick a
+// projectile that's coming at you and it goes back the way you're looking, faster, and you
+// are untouchable for a beat (`player.invuln`, ready for when there's damage to avoid).
 import { deflect } from '../parry.js';
 import * as THREE from 'three';
 import { Tech } from './techs.js';
@@ -5,11 +10,6 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/kick'); // (the simulation's chance: core/rng.js, the same twice)
 
-// Kick (a Movement Art) and parry. V is a kick: a quick
-// strike with the leg, forward, that knocks pots over (and cracks them), sends crates and
-// clapperjars flying, and rings targets. The first moments of it are also a parry: kick a
-// projectile that's coming at you and it goes back the way you're looking, faster, and you
-// are untouchable for a beat (`player.invuln`, ready for when there's damage to avoid).
 const UP = new THREE.Vector3(0, 1, 0);
 const WIND = 0.09, PARRY_TO = 0.26, ACTIVE_TO = 0.3, DONE = 0.5;
 const sm = (u) => u * u * (3 - 2 * u);

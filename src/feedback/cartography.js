@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { T, PALETTE } from '../core/config.js';
-import { sfx } from '../audio/sfx.js';
-import { FONT, THEMES, theme } from '../ui/theme.js';
-
 // ---------------------------------------------------------------------------------------
 // MIND MAPPING (psychic cartography). The world is mapped in cells (2 m indoors, 8 m out on the dunes), one
 // grid per LAYER (the dunes, the basement, the ground floor, the upper floor). Every cell holds
@@ -22,6 +17,11 @@ import { FONT, THEMES, theme } from '../ui/theme.js';
 // Also here: the compass (top right: a dial with the local map, heading, room, waypoint) and the
 // map screen (M; drag to pan, wheel to zoom, click to set a waypoint, right click to clear it).
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { T, PALETTE } from '../core/config.js';
+import { sfx } from '../audio/sfx.js';
+import { FONT, THEMES, theme } from '../ui/theme.js';
+
 export const TIER_NAMES = ['UNKNOWN', 'SENSED', 'CHARTED', 'UNDERSTOOD'];
 const LAYERS = [
   { id: 'well', name: 'THE GREAT DUNEMAW', below: -700, cell: 2, sight: 7 }, // (a Well's floor, far below the Dunes: world/well/dunemaw.js)

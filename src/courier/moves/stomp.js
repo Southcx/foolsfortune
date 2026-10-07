@@ -1,11 +1,11 @@
+// Stomp: come down on a pot from above and it shatters under you and throws you
+// back up (with your air jump back); a clapperjar's lid works too. Never takes over
+// the step - it just watches landings and falls.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 
-// Stomp: come down on a pot from above and it shatters under you and throws you
-// back up (with your air jump back); a clapperjar's lid works too. Never takes over
-// the step - it just watches landings and falls.
 export class Stomp extends Tech {
   constructor(mgr) { super(mgr, 'stomp'); }
 

@@ -1,3 +1,7 @@
+// Ground slam (C in the air, looking down, high enough): drive straight down, and the landing
+// throws out a shockwave - pots break close in, get shoved further out, clapperjars
+// go flying. For a moment after landing: Space is a slam jump (higher the further
+// you fell), holding C with a direction turns the fall into a slide.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -6,10 +10,6 @@ import { GROUPS } from '../../core/physics.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/slam'); // (the simulation's chance: core/rng.js, the same twice)
 
-// Ground slam (C in the air, looking down, high enough): drive straight down, and the landing
-// throws out a shockwave - pots break close in, get shoved further out, clapperjars
-// go flying. For a moment after landing: Space is a slam jump (higher the further
-// you fell), holding C with a direction turns the fall into a slide.
 export class Slam extends Tech {
   constructor(mgr) {
     super(mgr, 'slam');
