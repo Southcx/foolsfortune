@@ -20,5 +20,5 @@ export const TRACK_ASPECT = {
   // grief: the long rain
   fall: 'grief', leaveher: 'grief', well1: 'grief', well2: 'grief',
   // dread: the pall
-  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', crudesealeviathan: 'dread', boundout: 'dread',
+  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', crudesealeviathan: 'dread', crownedbrood: 'dread', boundout: 'dread',
 };

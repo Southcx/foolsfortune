@@ -12,6 +12,8 @@
 //   CALISSA  cups, water: the pour. A major arpeggio tumbling down in the calypso's 3+3+2 and a hop back up (B G# E C# E);
 //            the steel pan
 //
+//   CROWN    the Great Slip Jelly's urn crown (music/greatjelly.js): B C E F E, two half steps (B to C, E to F) climbing to the Tear on
+//            top, the In scale's; rung on a bell, then the brass's, then four calves' at once
 //   LEVIATHAN the rogue Leviathan of the crossing (docs/plans/RAIL.md): low and slow, E to the Tear's F and back, then falling to C
 //            and the B under the floor, two bars; the beast you survive more than kill (Moby-Dick, Shadow of the Colossus)
 //
@@ -25,6 +27,7 @@ export const MOTIF = {
   WANDA: [[0, 0.5, 67], [0.5, 1.5, 74], [2, 0.25, 73], [2.25, 0.75, 74], [3, 2, 81]],
   ESPADA: [[0, 0.25, 64], [0.25, 0.25, 65], [0.5, 0.25, 68], [0.75, 0.25, 71], [1, 1.5, 72, { to: 71, meend: 0.4 }]],
   CALISSA: [[0, 0.75, 83], [0.75, 0.75, 80], [1.5, 0.5, 76], [2, 0.5, 73], [2.5, 1.5, 76]],
+  CROWN: [[0, 1, 71], [1, 1, 72], [2, 1, 76], [3, 0.5, 77], [3.5, 1.5, 76]], // B C E F E: up through the half step to the Tear on top (the Great Slip Jelly's urn crown)
   LEVIATHAN: [[0, 2, 40], [2, 1, 41], [3, 1, 40], [4, 2, 36], [6, 2, 35]], // E F E C B, two slow bars down at the floor: a whale's breath with the Tear in it (the crossing's rogue Leviathan)
 };
 

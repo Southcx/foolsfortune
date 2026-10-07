@@ -8,10 +8,12 @@
 //   must land on a moment: its first bar this soon, its fade-in this short, what it replaces cut, not faded), sections: [{ id, bars, bpm?, beats?, gain?, sweep: [hzFrom, hzTo] | null, pump: bool, bar(i) -> [event] }] }
 //   event = { i: instrument, b: beat in the bar, d: beats, n: midi | [midi], v: velocity, o: options }
 //   arranger.layer = (score, section, bar) => [event] (the mood: music/mood.js)   arranger.thin = { hit, bass, rest } (the night)   score.scale / section.scale
+//   score.jump(section, bar) -> the next section's index, -1 to end, or null (a score that follows the game: music/greatjelly.js)
 //
 // Prior art: Chris Wilson's lookahead scheduling ("A Tale of Two Clocks"), the DAW's automation lane (a filter cutoff drawn across a
 // build), sidechain compression as a rhythmic device (French house, then every EDM drop), and the arrangement of a melodic bass
-// track (intro, build, drop, breakdown, build, drop, outro: Crywolf's "Datura" among many).
+// track (intro, build, drop, breakdown, build, drop, outro: Crywolf's "Datura" among many), and LucasArts' iMUSE (a score that moves
+// between its sections on the bar line as the game asks, Monkey Island 2's).
 // ---------------------------------------------------------------------------------------
 import { Band } from './band.js';
 
@@ -107,7 +109,12 @@ export class Arranger {
     if (this.layer && !S.moodless && S.loopFrom !== null) for (const e of this.layer(S, sec, this.bar) || []) this.play1(e, t0, 1);
     this.scaleAt = { t: t0, scale: sec.scale || S.scale || null };
     this.next += spb * beats;
-    if (++this.bar >= sec.bars) {
+    // a score that follows the game (iMUSE's horizontal resequencing): asked after every bar which section plays next; a number moves
+    // there on the next bar line (its own index on its last bar loops it), -1 ends the score, null carries on as written
+    const to = S.jump?.(this.section, this.bar);
+    if (to === -1) { this.ended = true; this.endAt = this.next + (S.tail ?? 3); }
+    else if (to != null && S.sections[to] && (to !== this.section || this.bar >= sec.bars - 1)) { this.section = to; this.bar = 0; }
+    else if (++this.bar >= sec.bars) {
       this.bar = 0; this.section++;
       if (this.section >= S.sections.length) {
         // (a score with no loop plays once: a fanfare, a jingle)
