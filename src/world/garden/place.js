@@ -3,9 +3,9 @@
 // (docs/plans/SPIRIT-GARDEN.md section 3). A small galaxy far over the world (GARDEN_AT, its own zone), entered at a Shrine as the
 // Pneuka Jar (world/garden/realm.js). Each planetoid is a sphere you can hop round in 5 to 15 real seconds; a lotus on one faces each
 // neighbour and flies the Jar there. Its systems stand where the spec puts them: the gate and the Pneuka Box's shed on the Dantian, the
-// beds on the Herb Terraces, the press on the Furnace, the dividend's slots on the Pavilions of Echoes, the cocoon tree in the Spirit
-// Grove, the needle of the Meditation Peak. The shapes are stand-ins for Calissa's look (Dual Hearts: soft light, clouds, spirit veins);
-// the names for Espada's.
+// beds on the Herb Terraces, the press on the Athanor, the dividend's slots on the Pavilions of Echoes, the cocoon tree in the Mulberry
+// Grove, the needle of the Chimney (Espada's names). The shapes are stand-ins for Calissa's look (Dual Hearts: soft light, clouds,
+// spirit veins).
 //
 // Prior art: Super Mario Galaxy's planetoids and launch stars (a hub made of small worlds), Dual Hearts' dream islands, the xianxia
 // cave abode (the dantian at the heart, the pill furnace, the herb fields, the meditation peak).
@@ -15,18 +15,20 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { PLANETOIDS as NAMES } from '../../npc/realmnames.js';
 
 /** Where the garden hangs: far over the workshop's north, no other zone near (render/zonemap.js 'garden'). */
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
-/** The six planetoids (radius in metres; `at` from GARDEN_AT). Names are placeholders for Espada's. */
+/** The six planetoids (radius in metres; `at` from GARDEN_AT); their names are Espada's (npc/realmnames.js: the Athanor is the furnace,
+ *  the Mulberry Grove the spirits', the Chimney the peak). */
 export const PLANETOIDS = [
-  { id: 'dantian', name: 'the Dantian', r: 20, at: [0, 0, 0], color: 0x9fb4d6 },
-  { id: 'terraces', name: 'the Herb Terraces', r: 12, at: [-50, 12, -22], color: 0x9cc58a },
-  { id: 'furnace', name: 'the Furnace', r: 10, at: [-34, -8, 44], color: 0x7a6560 },
-  { id: 'pavilions', name: 'the Pavilions of Echoes', r: 14, at: [46, 8, 36], color: 0xcdb2dc },
-  { id: 'grove', name: 'the Spirit Grove', r: 16, at: [48, -6, -38], color: 0x7cb59a },
-  { id: 'peak', name: 'the Meditation Peak', r: 8, at: [0, 40, -66], color: 0xa29c94 },
-];
+  { id: 'dantian', r: 20, at: [0, 0, 0], color: 0x9fb4d6 },
+  { id: 'terraces', r: 12, at: [-50, 12, -22], color: 0x9cc58a },
+  { id: 'furnace', r: 10, at: [-34, -8, 44], color: 0x7a6560 },
+  { id: 'pavilions', r: 14, at: [46, 8, 36], color: 0xcdb2dc },
+  { id: 'grove', r: 16, at: [48, -6, -38], color: 0x7cb59a },
+  { id: 'peak', r: 8, at: [0, 40, -66], color: 0xa29c94 },
+].map((p) => ({ ...p, name: NAMES[p.id]?.name || p.id }));
 /** The lotuses' flights, both ways: the Dantian to each, and round the ring. */
 export const LINKS = [['dantian', 'terraces'], ['dantian', 'furnace'], ['dantian', 'pavilions'], ['dantian', 'grove'], ['grove', 'peak'], ['terraces', 'furnace'], ['pavilions', 'grove'], ['terraces', 'peak']];
 export const MAX_BEDS = 8, MAX_SLOTS = 8;

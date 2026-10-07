@@ -42,6 +42,7 @@ import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
 import { ECON } from '../../progress/econ/table.js';
 import { Cavern } from './cavern.js';
+import { FoeLook } from '../../vfx/foelook.js';
 import { BOWL_AT, slipMaterial } from './bowl.js';
 import { Nursery } from './nursery.js';
 import { Pillar, Stalactite, Clutch, dressBrood } from '../../vfx/cavekit.js';
@@ -88,6 +89,12 @@ export class Dunemaw {
     const ring = new PoolRing({ radius: 1 }); ring.ring(0.5); ring.update(1 / 60);
     const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood);
     for (const o of [new Pillar({ height: 2, radius: 0.3 }).group, new Stalactite({ kind: 'brittle', length: 1, radius: 0.3 }).group, new Clutch({ eggs: 2 }).group, ring.group, brood]) { o.position.copy(F.arrive.pos); F.group.add(o); }
+    // (Calissa's FoeLook for the raid: the body's shell lit, the beads, the lip, a sherd and its threads, the flood: world/well/raid.js)
+    const foeRoot = new THREE.Group(); foeRoot.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), slipMaterial())); foeRoot.position.copy(F.arrive.pos); F.group.add(foeRoot);
+    const calf = new THREE.Group(); calf.position.copy(F.arrive.pos); F.group.add(calf);
+    const FL = new FoeLook({ root: foeRoot, fx: null, floor: { center: F.arrive.pos.clone(), radius: 3, depth: 0.3 }, size: { r: 0.5, h: 1 } });
+    for (const c of ['slipNova', 'oozeRain', 'brineCascade', 'crownGlare']) { FL.windup(c, 0.9); FL.update(1 / 60); }
+    FL.calve([calf]); FL.mend(0.5); FL.overflow(0.5); FL.update(1 / 60);
     return () => { F.group.visible = false; this.warm = F; }; // (the curtain stays parked with the floor: disposed, its program would go with it)
   }
 

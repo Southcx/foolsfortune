@@ -26,6 +26,8 @@ import { Timeline } from '../../creatures/ai/timeline.js';
 import { DO } from '../../creatures/jelly/jellycasts.js';
 import { PHASES, CASTS, NOVA_AT, ENRAGE, phaseOf, timeline } from '../../progress/combat/greatjelly.js';
 import { bearingXZ, dishY, BOWL_AT } from './bowl.js';
+import { ARENA } from '../../progress/combat/dunemaw.js';
+import { FoeLook } from '../../vfx/foelook.js';
 
 const SHIELD = 35; // (Lachryma a full blow costs the pool: courier/vessel/damage.js's; a share of the pool is a blow of share * max / SHIELD)
 const HIDDEN_OK = new Set(['slipNova', 'broodCall', 'swallow', 'overflow']); // (cast from under the slip: the transition's own)
@@ -45,6 +47,8 @@ export class Raid {
       on: { phase: (p, prev) => this.onPhase(p, prev), cast: (id, d) => this.onCast(id, d), blow: (id, d) => this.onBlow(id, d) },
     });
     this.rec = { hitBy: {}, mirrored: 0, clutchesLeft: null };
+    // Calissa's: each cast's windup read from the body, the sherds' split and threads, the flood (vfx/foelook.js)
+    this.look = new FoeLook({ root: this.F.c.root, crown: this.F.crown, fx: game.fx, floor: { center: this.B.world(0, 0.05, 0), radius: ARENA.radius - 1, depth: 0.6 } });
     this.timers = []; this.lobs = []; this.sherds = null; this.feeding = [];
     this.sodden = 0; this.slowed = 0; this.held = 0; this.slideT = 0; this.slideV = 0; this.overflow = false; this.skip = null;
   }
@@ -82,9 +86,11 @@ export class Raid {
     this.skip = null;
     this.g.events?.emit('foe.cast', { cast: id, windup: d.windup, by: 'creature' });
     DO[id]?.begin?.(this, d);
+    if (!d.windup) this.look.blow(id);
   }
   onBlow(id, d) {
     if (this.skip === id) { this.skip = null; return; }
+    this.look.blow(id);
     if (this.down() && id !== 'swallow') return; // (stunned in its windup: the cast is broken)
     DO[id]?.blow?.(this, d);
   }
@@ -177,6 +183,7 @@ export class Raid {
       c.deform?.kick(8, null, 0.3);
       return c;
     });
+    this.look.calve(this.sherds.map((c) => c.root));
     this.sherdT = area.within; this.sherdHeal = area.heal;
     this.moment('sherds');
   }
@@ -189,10 +196,16 @@ export class Raid {
   // ------------------------------------------------------------------ every frame
   update(dt) {
     const F = this.F, P = this.P, B = this.B;
-    if (F.ended) { if (this.T.running) { this.T.stop(); B.slide(0, 0, 0); } return; }
+    if (F.ended) { if (this.T.running) { this.T.stop(); B.slide(0, 0, 0); this.look.windup(null, 0); } this.look.update(this.g.rawDt ?? dt); return; }
     if (this.over) return;
     if (!this.T.running && F.state !== 'asleep') this.pull();
     this.T.update(dt, F.share);
+    // the windup on the body (a gaze's or a ring's order told by it: Throwing Rings are out, then in)
+    const C = this.T.casting;
+    if (C && this.skip !== C.id) this.look.windup(C.id, C.def.windup ? 1 - C.left / C.def.windup : 1, { order: 'out' });
+    if (this.overflow) this.flood = Math.min(1, (this.flood || 0) + dt / 3);
+    this.look.overflow(this.flood || 0);
+    this.look.update(this.g.rawDt ?? dt);
     // the casts' follow-ups and drops
     for (let i = this.timers.length - 1; i >= 0; i--) if (this.T.t >= this.timers[i].at) { const t = this.timers.splice(i, 1)[0]; t.fn(); }
     for (const L of this.lobs) {
@@ -217,15 +230,16 @@ export class Raid {
     // the sherds: all down, it comes back whole; the time out, they mend and heal it
     if (this.sherds) {
       const up = this.sherds.filter((c) => c.alive);
-      this.sherdT -= dt;
+      this.sherdT -= dt; this.look.mend(1 - this.sherdT / (CASTS.calving.area.within || 30));
       if (!up.length || this.sherdT <= 0) {
         if (up.length) { for (const c of up) { c.alive = false; this.g.jellies.dispose(c); } F.heal(this.sherdHeal); this.moment('mend'); }
-        this.sherds = null; F.show(0);
+        this.sherds = null; this.look.mend(0); F.show(0);
       }
     }
   }
 
   dispose() {
+    this.look.dispose();
     for (const L of this.lobs) this.g.scene.remove(L.mesh);
     this.dropGeo?.dispose();
     for (const c of this.sherds || []) if (c.alive) this.g.jellies?.dispose(c);

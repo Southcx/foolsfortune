@@ -20,10 +20,9 @@ import { GardenPlace, MAX_BEDS, MAX_SLOTS } from './place.js';
 import { PlanetBody } from './planetbody.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
+import { OFFERED, gloss } from '../../npc/realmnames.js';
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
-/** Names on offer at the first entry (Espada's, docs/plans/SPIRIT-GARDEN.md section 6, from the neuralese Functions). */
-export const REALM_NAMES = ['HEMA-LUNO', 'KITH-HEMA', 'LUNO-DEO', 'STIL-DEO', 'EZA-LON', 'ROMI-LON', 'SIVA-LUNO', 'HUSA-HEMA', 'AMI-HEMA', 'MOR-LUNO'];
 const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; // (metres; radians; radians a real second for Q / E)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4 }; // (a thing within 2.2 m of the cursor's ray is grabbed; a throw is at most 26 m/s)
 const LOTUS = { r: 1.3, seconds: 2 };
@@ -59,6 +58,7 @@ export class Realm {
       this.jar.planet = D; this.jar.up.copy(start).sub(D.c).normalize();
       this.cam.up.copy(this.jar.up); this.cam.fwd.copy(gate.pos).sub(start).projectOnPlane(this.cam.up).normalize(); this.cam.dist = CAM.dist;
       this.active = true; this.lotusLock = null;
+      if (g.garden) g.garden.inside = true; // (Wanda's cue plays while it is: music/choose.js)
       this.place.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
       this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false;
       for (const t of g.belt?.tools || []) if (t.wants) t.stow?.();
@@ -80,6 +80,7 @@ export class Realm {
     const g = this.game; if (!this.active) return;
     const go = () => {
       this.active = false; this.place.show(false);
+      if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.place.group.remove(s.mesh);
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
@@ -98,7 +99,7 @@ export class Realm {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     menu.showPage('realm.name', (im, el) => {
       const box = el('div', 'rooms');
-      for (const n of REALM_NAMES) { const d = el('div', 'room', `<span class="n">❀</span><span><b>${n}</b></span>`); d.onclick = () => { this.setName(n); menu.close(); }; box.appendChild(d); }
+      for (const n of OFFERED) { const d = el('div', 'room', `<span class="n">❀</span><span><b>${n}</b><s>${gloss(n) || ''}</s></span>`); d.onclick = () => { this.setName(n); menu.close(); }; box.appendChild(d); }
       for (const e of [el('div', 'grp', 'NAME YOUR INNER REALM'), box, el('div', 'grp', 'or type /realmname and your own')]) im.appendChild(e);
     }, { title: 'YOUR INNER REALM', sub: 'click a name · F closes' });
   }
