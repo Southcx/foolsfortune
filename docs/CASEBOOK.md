@@ -75,7 +75,23 @@ the rules before building in the same area; a rule a machine can check goes into
 31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
     that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
 
+32. **Every goal has a give-up, and every call a deadline.** A mind told to reach something measures its progress and, when it stops
+    closing, is set down there or gives up and says so; a call to anything outside the page (Claude, a connector, the room) has a
+    timeout, a cap, and a line in the log when it runs out. Nothing waits forever, and nothing spends the owner's usage unbounded.
+
 ## Cases
+
+### 2026-10-07 · A sibling sent to the Dunes walked into a wall and would not be told
+- **Seen (the owner, v105):** asked Petra to go to the Dunes; Petra pressed against the workshop's wall, and asked to teleport, did not.
+- **Cause:** "go" was an order that stands where told and is never warped, so no stuck check applied to it; the stuck check counted only
+  a body that did not move, not one sliding along a wall; the answer was offered places in other regions (the Dunes is its own world,
+  entered by travel) and had no order that warps.
+- **Fix:** every goal measures its progress (`coop/follow.js`: six seconds without gaining half a metre) and a sibling told to go or hold
+  is set down there, or gives up and comes back, and says which (`sibling.stuck`); "go" to another region is refused with the reason;
+  a `warp` order (`/sib petra warp`, and the answer's) sets a sibling down beside you. With it, the deadlines and caps on the calls out
+  of the page (coop/usage.js, answer.js, letters.js, guests.js). Measured headless: sent 40 m through the wall four ways, Petra
+  warped twice and gave up twice (no ground there), within 6.9 to 12.5 s.
+- **Rule:** 32.
 
 ### 2026-10-07 · A sibling in a fight was lost when the Courier travelled
 - **Seen:** the stress test with the party (seed 2, run 13): Dovina more than 40 m away for half a second, the Courier in the Dunes.

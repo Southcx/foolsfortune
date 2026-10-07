@@ -7,7 +7,11 @@
 // once and says it in the log, out of the channel's five-minute cadence. An answer takes a few real minutes: a session wakes at the
 // minute and thinks in turns. Only the owner writes letters (a guest's page has no such connector), one to each division every three
 // real minutes (each costs that session a turn). The protocol for the divisions: docs/handoffs/everyone/2026-10-07-from-petra-letters.md.
-// Events: party.letter { sibling }, party.unsent { sibling, why: 'owner' | 'away' | 'soon' | 'failed' | 'unknown' }.
+// The safeguards (each letter spends your connector and a session's turn): the hour's cap (coop/usage.js, `/usage`); one letter waiting
+// on each division until it answers or is `LATE` (said once in the log, then you may write again); the same words twice are not sent;
+// a wake not confirmed in `TIMEOUT` seconds is counted as sent (it may have gone) and said so, never sent again by itself.
+// Events: party.letter { sibling }, party.letter.late { sibling }, party.unsent { sibling, why: 'owner' | 'away' | 'soon' | 'failed' |
+// 'unknown' | 'cap' | 'waiting' | 'same' | 'unsure' }.
 //
 // Prior art: play-by-mail games (a turn a letter), Animal Crossing's letters to the villagers (answered the next day), and Death
 // Stranding's async messages.
@@ -18,14 +22,16 @@ import { SIBLINGS } from './party.js';
 import { PERSONAS } from './personas.js';
 import { BUILD, BUILD_URL } from '../core/progress.js';
 
-const EACH = 180e3, WORDS_MAX = 1000; // (real milliseconds between letters to one division; characters a letter may carry)
+const EACH = 180e3, LATE = 15 * 60e3, TIMEOUT = 30e3, WORDS_MAX = 1000; // (real milliseconds between letters to one division; before an unanswered one is late; a wake may take; characters a letter may carry)
 const SERVER = 'Claude Code Remote', TOOL = 'create_trigger';
 const clean = (s) => String(s ?? '').replace(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f​-‏‪-‮⁠-⁯]/g, ' ').trim().slice(0, WORDS_MAX);
 
 export class Letters {
   constructor(game) {
-    this.game = game; this.db = this.mcp = this.user = null; this.sent = {}; this.now = () => Date.now();
+    this.game = game; this.db = this.mcp = this.user = null; this.sent = {}; this.last = {}; this.now = () => Date.now();
+    game.events.on('party.say', (e) => { const W = this.waiting; if (e.re === 'letter' && W[e.sibling] && (!e.letter || e.letter === W[e.sibling].letter)) { delete W[e.sibling]; game.coopUsage?.dirty(); } }); // (answered)
     const use = window.claude?.use;
+    if (use) setInterval(() => this.check(), 30e3); // (wall-clock: a letter late is a real quarter hour, not the game's)
     if (use) Promise.all(['db', 'mcp', 'user'].map((n) => Promise.resolve(use(n)).catch(() => null))).then(([db, mcp, user]) => this.use({ db, mcp, user }));
     game.chat?.add('letter', {
       help: 'write to a division itself (its session answers in a few real minutes): /letter <petra | dovina | wanda | calissa | espada> <words>',
@@ -35,6 +41,16 @@ export class Letters {
   }
 
   use({ db = null, mcp = null, user = null }) { this.db = db; this.mcp = mcp; this.user = user; return this; }
+  get waiting() { return this.game.coopUsage?.waiting || (this._waiting ||= {}); } // (kept with the meter, so a reload remembers)
+
+  /** A letter unanswered a quarter hour is said to be late, once; you may then write again. */
+  check() {
+    const now = this.now();
+    for (const [id, w] of Object.entries(this.waiting)) {
+      if (!w.late && now - w.at > LATE) { w.late = true; this.game.coopUsage?.dirty(); this.game.events.emit('party.letter.late', { sibling: id, by: 'courier' }); }
+      if (now - w.at > 24 * 3600e3) delete this.waiting[id];
+    }
+  }
 
   /** Send one letter: kept in the store, then the division's session woken a minute ahead. */
   async send(id, words) {
@@ -42,15 +58,27 @@ export class Letters {
     if (!SIBLINGS.some((s) => s.id === id) || !clean(words)) return emit('unknown');
     if (!this.db || !this.mcp) return emit('away');
     if (!(await this.user?.isOwner?.().catch(() => false))) return emit('owner');
-    const now = this.now();
+    const now = this.now(), text = clean(words), W = this.waiting;
+    this.check();
+    if (W[id] && !W[id].late) return emit('waiting');
     if (now - (this.sent[id] ?? -Infinity) < EACH) return emit('soon');
-    this.sent[id] = now;
-    const letter = `L${now.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`, text = clean(words);
+    if (this.last[id] === text) return emit('same');
+    if (g.coopUsage && !g.coopUsage.take('letters')) return emit('cap');
+    this.sent[id] = now; this.last[id] = text;
+    const letter = `L${now.toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
+    const within = (p) => Promise.race([p, new Promise((_, no) => setTimeout(() => no({ code: 'timeout' }), TIMEOUT))]);
+    let woke = false;
     try {
-      await this.db.collection('letters').doc(letter).set({ to: id, text, at: now, build: BUILD });
+      await within(this.db.collection('letters').doc(letter).set({ to: id, text, at: now, build: BUILD }));
       const at = new Date(now + 70e3).toISOString().replace(/\.\d+Z$/, 'Z');
-      await this.mcp.callTool(SERVER, TOOL, { name: `Letter to ${SIBLINGS.find((s) => s.id === id).name}`, prompt: this.prompt(id, letter, text), persistent_session_id: PERSONAS[id].session, run_once_at: at, initiation: 'human_request' });
-    } catch (e) { console.warn('letters: not sent', e); this.sent[id] = -Infinity; return emit('failed'); }
+      woke = true; // (from here a timeout cannot say the wake did not happen)
+      await within(this.mcp.callTool(SERVER, TOOL, { name: `Letter to ${SIBLINGS.find((s) => s.id === id).name}`, prompt: this.prompt(id, letter, text), persistent_session_id: PERSONAS[id].session, run_once_at: at, initiation: 'human_request' }));
+    } catch (e) {
+      console.warn('letters: not sent', e);
+      if (woke && e?.code === 'timeout') { W[id] = { letter, at: now, late: false }; g.coopUsage?.dirty(); return emit('unsure'); } // (it may have gone: wait for an answer)
+      this.sent[id] = -Infinity; this.last[id] = null; g.coopUsage?.give('letters'); return emit('failed');
+    }
+    W[id] = { letter, at: now, late: false }; g.coopUsage?.dirty();
     g.events.emit('party.letter', { sibling: id, by: 'courier' });
     return true;
   }

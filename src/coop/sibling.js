@@ -53,6 +53,10 @@ export class Sibling {
     this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this); this.point = new SiblingPoint(this, seen); // (seen: what the party has pointed at)
     this.lastHeading = null; this.leader = null;
     B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
+    this.follow.onStuck = (fix) => { // (told to stand where it could not walk: set down there, or back to following, and said: casebook rule 32)
+      game.events.emit('sibling.stuck', { sibling: id, order: this.order, fix, by: 'sibling' });
+      if (fix === 'gave-up') { this.order = 'follow'; this.to = null; }
+    };
   }
 
   /** Where it stands and how it is placed in the world (feet). */

@@ -6,10 +6,11 @@
 // is around you, and the last few things said between you; it remembers nothing else. While it thinks, a "..." mark hangs over the
 // sibling (or nothing, when it is not out). The bodies never wait on it: a sibling's mind runs every frame in the page (coop/sibling.js);
 // this is its voice and its will, not its feet. The slow speed is the division's own session (coop/letters.js).
-// One question at a time, a breath between (`GAP`); never from a timer. Away from the published build (the dev server, the headless
-// runs) there is no `sample` and you are told so once.
+// One question at a time, a breath between (`GAP`); never from a timer. Each spends one of the hour's asks (coop/usage.js: the co-op
+// meter, `/usage`), given back when it never reached Claude; an answer not back in `TIMEOUT` seconds is let go. Away from the published
+// build (the dev server, the headless runs) there is no `sample` and you are told so once.
 // Events: party.ask { sibling }, party.say { sibling, line, near, re: 'ask' }, party.order (through party.command), party.unheard
-// { sibling, why: 'away' | 'alone' | 'busy' | 'declined' | 'failed' | 'unmet' }.
+// { sibling, why: 'away' | 'alone' | 'busy' | 'declined' | 'failed' | 'unmet' | 'cap' | 'timeout' | 'limited' }.
 //
 // Prior art: the companions who answer in character (Mass Effect's squad banter, Dragon's Dogma's pawn chatter), the MMO tell (/t name),
 // and the language-model companions of the 2020s (a persona card, the scene and a short memory per call).
@@ -18,9 +19,11 @@
 // ---------------------------------------------------------------------------------------
 import { SIBLINGS } from './party.js';
 import { PERSONAS } from './personas.js';
+import { wholeOf } from '../render/zones.js';
 
-const GAP = 2.5, KEEP = 6, LINE_MAX = 120; // (real seconds between questions; exchanges kept a sibling; characters an answer may say)
-const ANSWER_ORDERS = new Set(['follow', 'hold', 'go', 'fight', 'back']);
+const GAP = 2.5, KEEP = 6, LINE_MAX = 120, TIMEOUT = 20; // (real seconds between questions; exchanges kept a sibling; characters an answer may say; real seconds an answer may take)
+const ANSWER_ORDERS = new Set(['follow', 'hold', 'go', 'fight', 'back', 'warp']);
+const UNSPENT = new Set(['not_granted', 'sampling_disabled', 'not_declared', 'rate_limited', 'invalid_request', 'prompt_too_large', 'capability_disabled', 'capability_removed']); // (refused before Claude: the ask is given back)
 const MOODS = new Set(['mirth', 'wonder', 'desire', 'grief', 'dread']);
 const clean = (s, n = LINE_MAX) => String(s ?? '').replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁯]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
 
@@ -48,12 +51,13 @@ export class SiblingAnswers {
   /** What is around you, in a few lines: where, who is out and doing what, what threatens, the hour. */
   scene(id) {
     const g = this.game, P = g.player, S = g.party?.get(id);
-    const l = g.cartography?.layerOf?.(P.pos.y), r = g.cartography?.roomAt?.(P.pos.x, P.pos.y, P.pos.z, 40);
+    const l = g.cartography?.layerOf?.(P.pos.y), r = g.cartography?.roomAt?.(P.pos.x, P.pos.y, P.pos.z, 40), stuck = S ? Math.max(S.follow.stuck, S.follow.since) : 0;
     const foes = g.creatures?.near?.(P.pos, 18)?.filter((c) => c.alive && !c.ally).map((c) => c.kind) || [];
     const out = (g.party?.list || []).map((x) => `${x.id} (${x.order}${x.fight?.target ? ', fighting' : ''})`);
     return [
       `Where the player is: ${l?.name || 'somewhere'}${r && r.name !== l?.name ? `, ${r.name}` : ''}.`,
-      S ? `You are out beside the player, ${S.pos.distanceTo(P.pos).toFixed(0)} m away, told to ${S.order}.` : 'You are not out with the player; you answer from afar.',
+      S ? `You are out beside the player, ${S.pos.distanceTo(P.pos).toFixed(0)} m away, told to ${S.order}${S.to ? ` (${S.to.distanceTo(S.pos).toFixed(0)} m from where you were sent)` : ''}.${stuck > 1.5 ? ` You have made no headway for ${stuck.toFixed(0)} s: you are stuck.` : ''}` : 'You are not out with the player; you answer from afar.',
+      `The region: ${wholeOf(P.pos) || 'unknown'}.`,
       `Siblings out: ${out.join(', ') || 'none'}.`,
       foes.length ? `Near the player: ${foes.length} foe(s): ${[...new Set(foes)].join(', ')}.` : 'Nothing hostile near.',
       g.weather?.now?.id ? `Weather: ${g.weather.now.id}.` : '',
@@ -62,7 +66,7 @@ export class SiblingAnswers {
 
   prompt(id, words) {
     const def = SIBLINGS.find((s) => s.id === id), C = PERSONAS[id], S = this.game.party?.get(id);
-    const places = (this.game.places?.all?.() || []).slice(0, 40).map((p) => `${p.id}: ${p.name}`).join('; ');
+    const here = wholeOf(this.game.player.pos), places = (this.game.places?.all?.() || []).filter((p) => wholeOf({ x: p.pos[0], y: p.pos[1], z: p.pos[2] }) === here).slice(0, 40).map((p) => `${p.id}: ${p.name}`).join('; ');
     const said = (this.history[id] || []).map((h) => `${h.who === 'you' ? 'Player' : def.name}: ${h.text}`).join('\n');
     return `You are ${def.name}, ${C.craft}. You are one of five siblings who build the game "Fool's Fortune" with the player, its owner, and you walk inside it as a Courier like theirs.
 Your voice: ${C.voice}
@@ -74,8 +78,8 @@ ${said ? `\nSaid between you lately (oldest first):\n${said}\n` : ''}
 The player says to you: "${clean(words, 300)}"
 
 Reply with only a JSON object, like {"line": "Measured the floor. It holds.", "order": "none", "target": null, "mood": "wonder"}.
-order is what you now do in the game${S ? '' : ' (you are not out, so always "none")'}: "none" (keep on as you are), "follow", "hold" (wait here), "go" (go to target), "fight" (fight beside them), "back" (come back to them). Give an order only when the player asks for one or it plainly fits.
-target, with "go": a place id from this list, else null. Places (id: name): ${places || 'none known'}.
+order is what you now do in the game${S ? '' : ' (you are not out, so always "none")'}: "none" (keep on as you are), "follow", "hold" (wait here), "go" (walk to target), "fight" (fight beside them), "back" (come back to them), "warp" (be set down beside them at once: when you are stuck, lost, or asked to teleport). Give an order only when the player asks for one or it plainly fits.
+target, with "go": a place id from this list (the places in this region you can walk to), else null. Places (id: name): ${places || 'none known'}. You cannot walk to another region (the Dunes from the workshop, say): the player travels there and you come with them; say so if asked.
 mood: one of mirth, wonder, desire, grief, dread.`;
   }
 
@@ -85,13 +89,20 @@ mood: one of mirth, wonder, desire, grief, dread.`;
     if (!g.party?.may(id)) { g.events.emit('party.unheard', { sibling: id, why: 'unmet', by: 'courier' }); return; }
     if (!this.sample) { g.events.emit('party.unheard', { sibling: id, why: this.declined ? 'declined' : 'away', by: 'courier' }); return; }
     if (this.busy || now - this.last < GAP) { g.events.emit('party.unheard', { sibling: id, why: 'busy', by: 'courier' }); return; }
+    if (g.coopUsage && !g.coopUsage.take('asks')) { g.events.emit('party.unheard', { sibling: id, why: 'cap', by: 'courier' }); return; }
     this.busy = true; this.last = now;
     const S = g.party.get(id), mark = S && g.glyphs?.pop('dots', S.pos.clone().setY(S.pos.y + 2.1), { color: 0xfbe3cf, size: 0.4, hold: 30, follow: () => S.pos.clone().setY(S.pos.y + 2.1) });
     g.events.emit('party.ask', { sibling: id, by: 'courier' });
-    let a = null;
-    try { a = await this.sample.json(this.prompt(id, words), { modelTier: 'quick', cache: false }); }
-    catch (e) { if (e?.code === 'not_granted' || e?.code === 'sampling_disabled') { this.declined = true; this.sample = null; } g.events.emit('party.unheard', { sibling: id, why: this.declined ? 'declined' : 'failed', by: 'courier' }); }
-    finally { mark?.close?.(); this.busy = false; this.last = performance.now() / 1000; }
+    let a = null, late = false;
+    const ctl = new AbortController(), timer = setTimeout(() => { late = true; ctl.abort(); }, TIMEOUT * 1000);
+    try { a = await this.sample.json(this.prompt(id, words), { modelTier: 'quick', cache: false, signal: ctl.signal }); }
+    catch (e) {
+      const code = e?.code;
+      if (code === 'not_granted' || code === 'sampling_disabled') { this.declined = true; this.sample = null; }
+      if (UNSPENT.has(code)) g.coopUsage?.give('asks');
+      g.events.emit('party.unheard', { sibling: id, why: late ? 'timeout' : this.declined ? 'declined' : code === 'rate_limited' ? 'limited' : 'failed', by: 'courier' });
+    }
+    finally { clearTimeout(timer); mark?.close?.(); this.busy = false; this.last = performance.now() / 1000; }
     if (a) this.answered(id, words, a);
     if (a && then.length) setTimeout(() => this.ask(then[0], words, then.slice(1)), GAP * 1000 + 50);
   }
