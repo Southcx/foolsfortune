@@ -483,7 +483,7 @@ export function buildAchievements(game) {
   C('dn3', 'battle', 'The Crowned', 3, 'mechanic', 'Burst the Crown', 'Burst the Great Slip Jelly.', 'foe.burst', 1);
   // the raid fight's cosmetics, each guaranteed when its criteria are met in the fight (greatjelly.js DROPS; the owner, 2026-10-07)
   C('gj1', 'battle', 'The Crowned', 3, 'perfect', 'The Jelly-crown', 'Beat the Great Slip Jelly. It drops its glaze.', 'foe.drop.glaze.jellycrown', 1);
-  C('gj2', 'battle', 'The Crowned', 5, 'perfect', 'Not a Scratch on the Crown', 'Beat it without being hit by a Crown Bash. It drops the Crown of the Dunemaw.', 'foe.drop.curio.crown', 1);
+  C('gj2', 'battle', 'The Crowned', 5, 'perfect', 'Not a Scratch on the Crown', 'Beat it without being hit by a Lidfall. It drops the Crown of the Dunemaw.', 'foe.drop.curio.crown', 1);
   C('gj3', 'battle', 'The Crowned', 4, 'perfect', 'Empty Nest', 'Beat it with every clutch broken before the pull. It drops a slip jelly to ride.', 'foe.drop.mount.slipjelly', 1);
   C('gj4', 'battle', 'The Crowned', 4, 'speed', 'A Minute to Spare', 'Beat it with the enrage more than a minute away. A title.', 'foe.drop.title.jellybane', 1);
   C('gj5', 'battle', 'The Crowned', 3, 'mechanic', 'Mirror, Mirror', 'Turn its gaze back with the Veritome, and beat it. A kiln pattern.', 'foe.drop.pattern.crowneye', 1);

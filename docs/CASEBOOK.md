@@ -389,3 +389,14 @@ the rules before building in the same area; a rule a machine can check goes into
   in the sweep's page to log any value over 22,050 with its stack (`Band.osc` from `Band.celesta`).
 - **Fix:** the struck instruments built from partials (celesta, marimba, bell, tabla) drop a partial at or past half the sample rate.
 - **Rule:** an additive voice skips any partial `f * r >= sampleRate / 2`: a high note loses its top overtones, never gains a whistle.
+
+### 2026-10-07 · The ledger counted what the Courier did not do (the room sweeps, `docs/plans/SWEEPS.md`)
+- **Seen:** a shoal crossing added 3,904 m to `dist.total` (Footsore earned at sea); leaving a raid mid-wave counted its raiders as
+  clapperjars downed (Clapped earned); the Dreamvane's twirl counted toward the cutlass's Turned Aside; "The Great Slip Jelly bursts."
+  said twice; "You are now known as a Apprentice."
+- **Cause:** the distance rule left out the god hand and the garden but not the rail (`tracking.js`); `clapper.down` carries no `by` and
+  the dismissal reaches it through `hit()`; `guard.block` is emitted by both guards; `well.foe` and `foe.end` both said the burst.
+- **Fix:** the rail is excluded from distance; `clapper.down` with a `by` other than the Courier's is not counted (Petra adds the `by`);
+  the twirl counts as `guard.twirl`; one line, `foe.end`'s, which follows how it ended; the article chosen by the word.
+- **Rule:** a ledger rule names what the Courier must be doing for it to count (on foot, the Courier's blow, this tool), never only what
+  happened; a sweep checks each against a place where it must not count.
