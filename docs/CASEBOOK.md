@@ -138,6 +138,9 @@ the rules before building in the same area; a rule a machine can check goes into
 55. **A hook laid over the engine's calls the engine's.** A tool that adds to a carrier's options (`poseFix`, `drive`, `onEnd`) wraps
     what is there; replaced, the engine's own work in it (the join's fade from the last pose, and the pose kept for the next join)
     silently stops, and the next move inherits the stale state.
+56. **A pose that cannot be crossfaded to the next in a fifth of a second leaves by its own way out first.** A seated body blended
+    straight to a standing one passes its legs through the floor; a way in left partway leaves from as far into its way out as it had
+    still to go, never from the way out's start.
 
 ## Cases
 
@@ -333,6 +336,38 @@ the rules before building in the same area; a rule a machine can check goes into
   (`bare`) puts the worn tools out of sight from halfway down to halfway up (the belt's `hideWorn`; each tool shows itself again from
   its own tick).
 - **Rule:** 44.
+
+### 2026-10-07 · The Soul Brush went through the floor under every sitting emote (Calissa, the emotes review)
+- **Seen:** filmed from the side with the starting belt worn: under /sit, /hugknees, /meditate, /hover and /sulk the Soul Brush at the
+  left hip ran down through the floor, and under /sleep and /recline it came back into sight under the floor as they got up. Measured
+  on its model, the lowest point of every visible worn tool against the floor through all 134 emotes: the brush 0.135 m under (sit,
+  meditate, hover), 0.235 (sulk), 0.313 (hugknees), 0.457 (sleep and recline, at 0.77 s into their exits); every other tool stays above.
+- **Cause, measured:** the hide was only for lying down and only "halfway down to halfway up" of the clips (`bare`); a hip tool hangs
+  0.36 m above the floor standing, so any pose that brings the hips lower than that puts it through the floor, and the exits are still
+  low past their halfway mark.
+- **Fix:** under any floor pose, a worn tool whose model reaches the floor goes out of sight until it is 3 cm above it again (measured
+  on the model each frame, courier/moves/emote.js `offFloor`; its own tick shows it again, so nothing stays hidden). After, the same
+  measure over the twelve floor poses: the lowest visible point of any worn tool is 0.004 m above the floor.
+- **Rule:** 44 (measure every worn tool against the floor through the whole emote, not only the poses that lie down).
+
+### 2026-10-07 · Sitting, /wave stood the Courier up through the floor in a fifth of a second (Calissa, the emotes review)
+- **Seen:** /sit, then /wave while seated: the crossed legs unfolded to standing in 13 frames, the feet and toes down to 0.139 m under
+  the floor on the way, the knees turning 15 degrees a frame. And leaving the hover halfway up its rise, the body sprang 0.3 m higher in
+  0.15 s before it came down.
+- **Cause, measured:** one emote into another stopped the old and crossfaded its last pose into the new over 0.22 s, whatever it was;
+  from a floor pose that is a seated body blended to a standing one with no way up, the foot IK switched on at once under it. And a way
+  in left halfway began its way out from the way out's start: the hover's way out starts at the top of the hover.
+- **Fix:** from a floor pose a new emote waits for the old one's way out (courier/moves/emote.js `request`; `/stand` forgets a queued
+  one); a way in left partway begins its way out as far in as the way in had still to go (`leaving`). After: sit into wave, the lowest
+  foot -0.016 m and the wave begins when the Courier is up; the hover left at 43 % of its rise, the hips 0.439 m and then 0.438 m, down
+  from there.
+- **Rule:** 56.
+
+### 2026-10-07 · An emote whose clip is missing would have waited for ever (Calissa, the emotes review)
+- **Seen:** by reading, then tested with a clip taken out of the pack after it landed: `/bow` was accepted, never began, and said nothing.
+- **Cause:** the refusal waited on the pack's promise resolving false; a pack that lands without one of the emote's clips resolves true.
+- **Fix:** the refusal is said when the pack lands and the emote still cannot begin (courier/moves/emote.js `request`).
+- **Rule:** 32 (every call a deadline).
 
 ### 2026-10-07 · The stress test stopped on a Dreamvane dash begun on a ledge (Calissa)
 - **Seen:** the quick gate, stress seed 1: `Cannot read properties of null (reading 'drive')` in `carryInto` (tools/toolbody.js), from the
