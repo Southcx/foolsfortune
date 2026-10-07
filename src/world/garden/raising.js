@@ -6,7 +6,7 @@
 // button: toward Chaos); F at it opens its page: FEED it from the Pneuka Box (a Well's material raises its stat, a curio its bond, a
 // cask leans its feeling), DRILL it at a drill yard (one stat up, tiring; rest takes it away, a game hour at a time), take it OUT with
 // you (one at a time: it walks the world as an ally, creatures/spirits.js), or RELEASE it. At the thresholds it MATURES into a form, its
-// strongest feeling on its side of the line: 5 x 3 a kind (the forms' looks are Calissa's; here a tint and a shape stand in). A spirit
+// strongest feeling on its side of the line: 5 x 3 a kind (the forms' looks are Calissa's: vfx/garden/forms.js). A spirit
 // standing at a feature WORKS there (Palworld): the feature and the spirit say so (`work`); what work adds is Dovina's (progress/garden.js).
 // Events (each with `by`): spirit.feed { item, stat, gain }, spirit.pet, spirit.flick, spirit.drill { stat, gain }, spirit.mature
 // { feeling, side }, spirit.out, spirit.release, each carrying `spirit` (its name: the bus's own `name` is the event's).
@@ -21,7 +21,7 @@ import * as THREE from 'three';
 import { fresh, feed as feedSheet, formOf, ALIGN, STATS } from '../../progress/spirits.js';
 import { DRILLS, FATIGUE, drillGain } from '../../progress/realm.js';
 import { itemOf } from '../../pneuka/items.js';
-import { FEELING_COLOR } from './plots.js';
+import { dressForm } from '../../vfx/garden/forms.js';
 
 const FEELINGS = Object.keys(STATS);
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
@@ -81,12 +81,11 @@ export class Raising {
     S.form = f; this.lookOf(s);
     this.say('spirit.mature', s, { feeling: f.feeling, side: f.side });
   }
-  /** Its stand-in look: tinted by its feeling once it has a form, its shape by its side (Law round, Chaos spiky, Neutral between). */
+  /** Its look once it has a form: Calissa's (vfx/garden/forms.js: its feeling's element and colour, a halo for Law, horns for Chaos). */
   lookOf(s) {
-    const S = s.e.sp, f = S?.form; if (!f) return;
+    const f = s.e.sp?.form; if (!f || s.formed) return;
     if (!s.mat) { s.mat = s.mesh.material.clone(); s.mesh.material = s.mat; }
-    s.mat.color.setHex(FEELING_COLOR[f.feeling] || 0xd9c19a); s.mat.emissive.setHex(FEELING_COLOR[f.feeling] || 0x6a4f30); s.mat.emissiveIntensity = 0.3;
-    s.mesh.scale.multiply(new THREE.Vector3(f.side === 'chaos' ? 0.9 : 1.08, f.side === 'law' ? 0.92 : 1.12, f.side === 'chaos' ? 0.9 : 1.08));
+    s.formed = dressForm(s.mesh, { feeling: f.feeling, side: f.side, size: 0.42 });
   }
 
   /** Who works where: a spirit standing within 3 m of a placed feature (or a bed or a pavilion) works it, as long as it stays. */

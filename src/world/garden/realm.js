@@ -25,6 +25,10 @@ import { Raising } from './raising.js';
 import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Kiln } from './kiln.js';
+import { JarHop } from '../../vfx/garden/jarhop.js';
+import { buildFeature } from '../../vfx/garden/features.js';
+import { dressForm } from '../../vfx/garden/forms.js';
+import { phaseAt } from '../../progress/weather.js';
 import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
@@ -44,7 +48,7 @@ export class Realm {
     this.place = new GardenPlace(game);
     // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
     this.clays = Object.fromEntries(this.place.planets.map((P) => [P.id, new Clay(P)]));
-    for (const P of this.place.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d);
+    for (const P of this.place.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d); // (Calissa's shape plus the clay: one ground)
     for (const f of this.place.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'gate' || f.kind === 'shed' ? 4 : 3);
     for (const l of this.place.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
     this.plots = new Plots(game, this.place, this.clays);
@@ -66,6 +70,11 @@ export class Realm {
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
   parked() {
     const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.place.group.add(s); this.parkedSpirit = s;
+    // (Calissa's features and forms, one of each, and the brush's ring: compiled with the rest, then put away)
+    this.parkedLooks = [];
+    for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.place.by.dantian.c); this.place.group.add(F.group); this.parkedLooks.push(F.group); }
+    ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.place.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.place.group.add(m); this.parkedLooks.push(m); });
+    this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.place.by.peak.c, this.place.by.dantian.c]), this.plots.threadMat.gen); this.place.group.add(this.parkedThread);
     return [this.place.group];
   }
@@ -85,14 +94,14 @@ export class Realm {
       this.active = true; this.lotusLock = null;
       if (g.garden) g.garden.inside = true; // (Wanda's cue plays while it is: music/choose.js)
       this.place.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
-      this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false; if (this.parkedThread) this.parkedThread.visible = false; this.plots.show(this.hand.art === 'place');
+      this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false; for (const o of this.parkedLooks || []) o.visible = false; if (this.parkedThread) this.parkedThread.visible = false; this.plots.show(this.hand.art === 'place');
       for (const c of g.spirits?.list || []) if (c.spirit?.from === 'garden') g.jellies.vanish(c, 'courier', 'home'); // (the one out with you comes home)
       for (const t of g.belt?.tools || []) if (t.wants) t.stow?.();
       g.character?.setHidden(true);
       document.exitPointerLock?.();
       g.hud?.el?.cross && (g.hud.el.cross.style.display = 'none');
       const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = 'hidden'; // (the world's map has no say in here)
-      const V = this.god?.jar; if (V?.group) V.group.visible = true;
+      const V = this.god?.jar; if (V?.group) { V.group.visible = true; this.jarLook ||= new JarHop(V.group, { fx: g.fx }); } // (Calissa's hop: crouch, stretch, land, trail)
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
       this.sync();
@@ -188,6 +197,9 @@ export class Realm {
     P.pos.copy(J.pos); P.prevPos?.copy(J.pos); P.renderPos?.copy(J.pos);
     this.placeJar(dt);
     this.hand.update(dt);
+    const raw = g.rawDt ?? dt;
+    this.place.update(raw, g.camera); this.plots.update(raw);
+    for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
@@ -216,7 +228,12 @@ export class Realm {
     _m.makeBasis(_w.crossVectors(up, fwd).normalize(), up, fwd); _q.setFromRotationMatrix(_m);
     grp.quaternion.slerp(_q, Math.min(1, dt * 12));
     grp.position.copy(J.pos).addScaledVector(J.up, -J.radius);
-    const s = J.grounded ? 1 : 1.08; grp.scale.set(1 / Math.sqrt(s), s, 1 / Math.sqrt(s));
+    const L = this.jarLook; if (!L) return;
+    if (J.hops !== this.lastHops) { this.lastHops = J.hops; L.hop(); }
+    if (J.grounded && !this.wasGrounded) L.land(this.fallV || 4);
+    this.wasGrounded = J.grounded; this.fallV = -J.vel.dot(J.up);
+    L.trail(!!J.flight || (!J.grounded && J.vel.length() > 9));
+    L.update(this.game.rawDt ?? dt);
   }
 
   // ------------------------------------------------------------------ the clay and the water
@@ -224,7 +241,7 @@ export class Realm {
   reshape(P, now = false) {
     const clay = this.clays[P.id]; if (!clay) return;
     if (!now && (this.shapeT = (this.shapeT || 0) + 1) % 2) return;
-    clay.apply(P.mesh);
+    clay.toLook(P.look);
     if (now) this.flowAll();
   }
   /** Every pond's water led downhill (world/garden/clay.js flow): a ribbon of Lachryma along the ground to where it pools. */
@@ -318,8 +335,9 @@ export class Realm {
   light() {
     if (!this.active) return;
     const sc = this.game.scene;
-    const storm = this.kiln?.active ? 1 : 0; // (the Heavenly Kiln darkens the sky: Calissa's sky to come)
-    sc.fog.color.setHex(storm ? 0x3a3550 : 0xcfc6e8); sc.fog.density = storm ? 0.012 : 0.004;
-    if (sc.background?.isColor) sc.background.setHex(storm ? 0x2a2640 : 0xb9b2e0);
+    const storm = this.kiln?.active ? 1 : 0, ph = phaseAt(), S = this.place.sky; // (Calissa's sky: your draught's haze, the night's stars; the Heavenly Kiln darkens it)
+    S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0 });
+    sc.fog.color.copy(S.fog); sc.fog.density = storm ? 0.012 : 0.003;
+    if (sc.background?.isColor) sc.background.copy(S.fog);
   }
 }

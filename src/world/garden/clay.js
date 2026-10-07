@@ -3,15 +3,15 @@
 // section 4, "sculpt" and "lead water"; the owner: "literally let you reshape your inner world like clay"). Each planetoid keeps a grid
 // of heights over latitude and longitude (64 by 32: a cell about two metres at the Dantian's equator), read with a bilinear sample in
 // any direction; a press, a pull, a smoothing or a carve is a soft brush on that grid, held within a band of the radius (a hill or a
-// hollow, never through the heart) and held still round what stands on the ground (a feature never floats or sinks). The mesh follows
-// the grid, and the planetoid bodies stand on it (world/garden/planetbody.js asks `radiusAt`). Water led from a pond runs down the
+// hollow, never through the heart) and held still round what stands on the ground (a feature never floats or sinks). Calissa's planetoid
+// look (vfx/garden/planetoid.js) is the base shape under it and is redrawn from it, and the planetoid bodies stand on the sum (world/garden/planetbody.js asks `radiusAt`). Water led from a pond runs down the
 // slope the hand carved, cell by cell, until it pools (From Dust's water, a ribbon of Lachryma).
 //
 // Prior art: Populous's raise and lower, From Dust's sculpted ground and its water that finds the low path, Spore's planet editor
 // (a sphere's height field under a brush), and the potter's thumb on a pot's wall.
 //
 //   const C = new Clay(planet, { band })   C.heightAt(dir)   C.radiusAt(dir)   C.brush(dir, how, strength, radius)   C.keep(dir, r)
-//   C.flow(fromDir, steps) -> [dirs]   C.apply(mesh)   C.dump() -> [int]   C.load([int])   (how: 'press' | 'pull' | 'smooth' | 'carve')
+//   C.flow(fromDir, steps) -> [dirs]   C.toLook(planetoidLook)   C.dump() -> [int]   C.load([int])   (how: 'press' | 'pull' | 'smooth' | 'carve')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -33,7 +33,7 @@ export class Clay {
     const fu = u - i0, fv = THREE.MathUtils.clamp(v - j0, 0, 1), i1 = (i0 + 1) % NX, H = this.h;
     return (H[j0 * NX + i0] * (1 - fu) + H[j0 * NX + i1] * fu) * (1 - fv) + (H[j1 * NX + i0] * (1 - fu) + H[j1 * NX + i1] * fu) * fv;
   }
-  radiusAt(dir) { return this.P.r + this.heightAt(dir); }
+  radiusAt(dir) { return (this.P.base ? this.P.base(dir) : this.P.r) + this.heightAt(dir); } // (the unsculpted shape, Calissa's, under the clay)
   /** Hold the ground still within `r` metres of a direction (a feature stands there). */
   keep(dir, r = 3) { this.kept.push({ d: dir.clone().normalize(), r }); }
   held(d) { let k = 1; for (const q of this.kept) { const s = this.P.r * Math.acos(THREE.MathUtils.clamp(d.dot(q.d), -1, 1)); k = Math.min(k, THREE.MathUtils.smoothstep(s, q.r, q.r + 2)); } return k; }
@@ -62,24 +62,23 @@ export class Clay {
   /** Water led from a direction: downhill a cell at a time until it pools (at most `steps`); the directions it passes. */
   flow(from, steps = 80) {
     const out = [from.clone().normalize()], c = new THREE.Vector3(), step = 0.8 / this.P.r; // (0.8 m a step along the ground)
-    let d = out[0].clone(), h = this.heightAt(d);
+    let d = out[0].clone(), h = this.radiusAt(d);
     for (let s = 0; s < steps; s++) {
       // the lowest of eight neighbours a step away (in the plane tangent to here)
       const t1 = new THREE.Vector3(0, 1, 0).cross(d); if (t1.lengthSq() < 1e-6) t1.set(1, 0, 0); t1.normalize(); const t2 = d.clone().cross(t1);
       let best = null, bh = h - 1e-3;
-      for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; c.copy(d).addScaledVector(t1, Math.cos(a) * step).addScaledVector(t2, Math.sin(a) * step).normalize(); const ch = this.heightAt(c); if (ch < bh) { bh = ch; best = c.clone(); } }
+      for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; c.copy(d).addScaledVector(t1, Math.cos(a) * step).addScaledVector(t2, Math.sin(a) * step).normalize(); const ch = this.radiusAt(c); if (ch < bh) { bh = ch; best = c.clone(); } }
       if (!best) break; // (it pools here)
       d = best; h = bh; out.push(d.clone());
     }
     return out;
   }
 
-  /** The planetoid's mesh made to follow the grid: each vertex at its rest direction, out to the radius there. */
-  apply(mesh) {
-    const g = mesh.geometry, pos = g.attributes.position, base = g.userData.dirs || (g.userData.dirs = Float32Array.from(pos.array, (v, i) => v)); // (the rest shape's directions, kept once)
-    if (!g.userData.unit) { for (let i = 0; i < base.length; i += 3) { _d.set(base[i], base[i + 1], base[i + 2]).normalize(); base[i] = _d.x; base[i + 1] = _d.y; base[i + 2] = _d.z; } g.userData.unit = true; }
-    for (let i = 0; i < pos.count; i++) { _d.set(base[i * 3], base[i * 3 + 1], base[i * 3 + 2]); const r = this.radiusAt(_d); pos.setXYZ(i, _d.x * r, _d.y * r, _d.z * r); }
-    pos.needsUpdate = true; g.computeVertexNormals(); g.computeBoundingSphere();
+  /** A look made to follow the grid (vfx/garden/planetoid.js: its vertices' directions `dir`, heights `h` in units of its radius `R`). */
+  toLook(look) {
+    const D = look.dir, H = look.h;
+    for (let i = 0; i < H.length; i++) H[i] = this.heightAt(_d.set(D[i * 3], D[i * 3 + 1], D[i * 3 + 2])) / look.R;
+    look.rebuild();
   }
 
   /** Kept as whole centimetres (a planetoid's ground in the save: core/save.js). */

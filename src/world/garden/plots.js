@@ -5,7 +5,7 @@
 // fixed there. A feature is placed with a feeling, for cubes and one material of that feeling's kind; neighbours that GENERATE it
 // strengthen it, those that OVERCOME it weaken it, and a spirit vein under its plot doubles the lot. The pull between two neighbours is
 // shown, not written: a bright thread for one that feeds the other, a dark crack for one that checks it (marks in the world are not text);
-// the log has the number (garden.place carries `mult`). The features' shapes are stand-ins for Calissa's.
+// the log has the number (garden.place carries `mult`). The features are Calissa's (vfx/garden/features.js).
 //
 // Prior art: Dark Cloud 2's Georama (a place built piece by piece), feng shui and the Wu Xing cycles (generating and overcoming), the
 // xianxia formation array (stones that empower their neighbours), and Animal Crossing's plots marked where a house may stand.
@@ -16,6 +16,7 @@
 import * as THREE from 'three';
 import { PLANETOIDS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES } from '../../progress/realm.js';
 import { seeded } from '../../core/rng.js';
+import { buildFeature } from '../../vfx/garden/features.js';
 
 /** The five feelings' colours (the garden's tints for a feature placed with one: Calissa's to refine). */
 export const FEELING_COLOR = { mirth: 0xffb35c, wonder: 0x7fd6a0, desire: 0xe0705a, grief: 0x9fb0d8, dread: 0x7a62b8 };
@@ -30,7 +31,6 @@ export class Plots {
     this.markMat = new THREE.MeshBasicMaterial({ color: 0xfff2d8, transparent: true, opacity: 0.45, depthWrite: false, name: 'garden-plot' });
     this.markGeo = new THREE.RingGeometry(0.9, 1.15, 20).rotateX(-Math.PI / 2);
     this.threadMat = { gen: new THREE.LineBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9, name: 'garden-thread' }), over: new THREE.LineBasicMaterial({ color: 0x5a2238, transparent: true, opacity: 0.9, name: 'garden-crack' }) };
-    this.featMats = Object.fromEntries(Object.entries(FEELING_COLOR).map(([f, c]) => [f, new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.18, roughness: 0.7, name: `garden-feat-${f}` })]));
     this.plots = [];
     for (const P of place.planets) {
       const n = PLOTS[P.id]?.plots || 0, fixed = place.features.filter((f) => f.planet === P).map((f) => f.pos.clone().sub(P.c).normalize());
@@ -43,7 +43,7 @@ export class Plots {
         const y = 1 - (k + 0.5) / (n * 8) * 1.6, rad = Math.sqrt(Math.max(0, 1 - y * y)), th = k * 2.39996 + r() * 0.3;
         const dir = new THREE.Vector3(Math.cos(th) * rad, y, Math.sin(th) * rad).normalize();
         if (avoid.some((a) => a.angleTo(dir) < spacing * 0.9) || this.plots.some((q) => q.planet === P && q.dir.angleTo(dir) < spacing)) continue;
-        const pos = P.c.clone().addScaledVector(dir, P.r);
+        const pos = P.c.clone().addScaledVector(dir, P.radiusAt ? P.radiusAt(dir) : P.r);
         const mark = new THREE.Mesh(this.markGeo, this.markMat); mark.position.copy(pos).addScaledVector(dir, 0.06); mark.quaternion.setFromUnitVectors(UP, dir); mark.visible = false; this.group.add(mark);
         this.plots.push({ id: `${P.id}.${made}`, planet: P, i: made, dir, pos, mark, placed: null });
         clays[P.id]?.keep(dir, 2.5);
@@ -85,23 +85,14 @@ export class Plots {
     return { ok: true, mult };
   }
 
-  /** A feature's stand-in shape on its plot, tinted by its feeling. */
+  /** A feature on its plot: Calissa's (vfx/garden/features.js), wearing its feeling's colour, lit and at work. */
   build(p) {
-    const f = p.placed, m = this.featMats[f.feeling], g = new THREE.Group(), add = (geo, mat = m) => { const o = new THREE.Mesh(geo, mat); o.castShadow = true; g.add(o); return o; };
-    switch (f.feature) {
-      case 'terrace': for (let s = 0; s < 3; s++) add(new THREE.BoxGeometry(2.4 - s * 0.6, 0.35, 2.4 - s * 0.6).translate(0, 0.18 + s * 0.35, 0)); break;
-      case 'pavilion': add(new THREE.BoxGeometry(2, 1.6, 2).translate(0, 0.8, 0), this.site.mats.wood); add(new THREE.ConeGeometry(1.9, 1.1, 4).rotateY(Math.PI / 4).translate(0, 2.15, 0)); break;
-      case 'spiritHouse': add(new THREE.BoxGeometry(1.3, 1, 1.3).translate(0, 0.5, 0), this.site.mats.wood); add(new THREE.ConeGeometry(1.2, 0.8, 4).rotateY(Math.PI / 4).translate(0, 1.4, 0)); break;
-      case 'pond': add(new THREE.CylinderGeometry(1.8, 1.8, 0.1, 18).translate(0, 0.06, 0), this.site.mats.lake); add(new THREE.TorusGeometry(1.85, 0.12, 6, 18).rotateX(Math.PI / 2).translate(0, 0.08, 0)); break;
-      case 'lantern': add(new THREE.CylinderGeometry(0.08, 0.1, 1.6, 6).translate(0, 0.8, 0), this.site.mats.wood); add(new THREE.BoxGeometry(0.45, 0.5, 0.45).translate(0, 1.8, 0), this.site.mats.ember); add(new THREE.ConeGeometry(0.4, 0.3, 4).rotateY(Math.PI / 4).translate(0, 2.2, 0)); break;
-      case 'incense': add(new THREE.CylinderGeometry(0.35, 0.45, 0.5, 8).translate(0, 0.25, 0)); add(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 4).translate(0, 0.8, 0), this.site.mats.ember); break;
-      case 'stone': add(new THREE.DodecahedronGeometry(0.6, 0).scale(0.7, 1.6, 0.7).translate(0, 0.9, 0)); break;
-      case 'drillYard': for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; add(new THREE.CylinderGeometry(0.08, 0.08, 0.7, 5).translate(Math.cos(a) * 2.2, 0.35, Math.sin(a) * 2.2), this.site.mats.wood); } add(new THREE.TorusGeometry(2.2, 0.06, 4, 24).rotateX(Math.PI / 2).translate(0, 0.6, 0)); break;
-      default: add(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0));
-    }
-    g.position.copy(p.pos); g.quaternion.setFromUnitVectors(UP, p.dir); g.name = `feature-${f.feature}`;
-    this.group.add(g); p.group = g; p.mark.visible = false;
+    const f = p.placed, F = buildFeature(f.feature, { feeling: f.feeling });
+    F.group.position.copy(p.pos); F.group.quaternion.setFromUnitVectors(UP, p.dir); F.group.name = `feature-${f.feature}`;
+    F.set?.({ lit: true, active: true });
+    this.group.add(F.group); p.group = F.group; p.look = F; p.mark.visible = false;
   }
+  update(raw) { for (const p of this.plots) p.look?.update?.(raw); }
 
   /** The threads between neighbours: bright where one generates the other, dark where one overcomes it. */
   links() {

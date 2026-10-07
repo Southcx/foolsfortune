@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
+import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
 
 export const ARTS = ['grab', 'pull', 'press', 'carve', 'smooth', 'place'];
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
@@ -33,6 +34,7 @@ export class GardenHand {
     this.R = realm; this.game = realm.game; this.art = 'grab';
     this.held = null; this.dist = 0; this.at = new THREE.Vector3(); this.prev = new THREE.Vector3(); this.vel = new THREE.Vector3();
     this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0;
+    this.brush = new SculptBrush({ fx: realm.game.fx }); realm.place.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
   }
 
   setArt(a) {
@@ -65,7 +67,7 @@ export class GardenHand {
     const g = this.game, I = g.input, R = this.R;
     for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(`Digit${k + 1}`) && !g.log?.typing) this.setArt(ARTS[k]);
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
-    if (!cursorIn || menuOpen) { this.letGo(); return this.pose(dt); }
+    if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
     if (I.wasPressed('Mouse2')) { if (R.kiln?.active) R.kiln.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
@@ -73,6 +75,10 @@ export class GardenHand {
       case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
       default: this.sculpt(dt);
     }
+    // the brush's ring on the clay under the hand, for the four strokes
+    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), HAND.brush, this.art === 'pull' ? 'raise' : this.art === 'smooth' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
+    else this.brush.hide();
+    this.brush.update(this.game.rawDt ?? dt);
     this.pose(dt);
   }
 

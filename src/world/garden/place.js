@@ -16,6 +16,9 @@
 import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLANETOIDS as NAMES } from '../../npc/realmnames.js';
+import { Planetoid } from '../../vfx/garden/planetoid.js';
+import { GardenSky } from '../../vfx/garden/gardensky.js';
+import { SpiritVein } from '../../vfx/garden/veins.js';
 
 /** Where the garden hangs: far over the workshop's north, no other zone near (render/zonemap.js 'garden'). */
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
@@ -60,21 +63,24 @@ export class GardenPlace {
   stand(P, dir, lift = 0, yaw = 0) {
     const n = dir.clone().normalize(), m = new THREE.Matrix4();
     const q = new THREE.Quaternion().setFromUnitVectors(UP, n).multiply(new THREE.Quaternion().setFromAxisAngle(UP, yaw));
-    m.compose(P.c.clone().addScaledVector(n, P.r + lift), q, new THREE.Vector3(1, 1, 1));
+    m.compose(P.c.clone().addScaledVector(n, (P.radiusAt ? P.radiusAt(n) : P.r) + lift), q, new THREE.Vector3(1, 1, 1));
     return m;
   }
 
   build() {
     const g = this.group, parts = new Map(), add = (mat, geo, m) => { geo.applyMatrix4(m); if (!parts.has(mat)) parts.set(mat, []); parts.get(mat).push(geo); };
-    // the planetoids: one smooth sphere each, their own clay
-    for (const P of this.planets) {
-      const mat = new THREE.MeshStandardMaterial({ color: P.color, roughness: 0.85, name: `garden-${P.id}` });
-      // (welded, so a sculpted surface shades smooth: world/garden/clay.js moves its vertices; about 5000 faces a large one, 1300 a small)
-      const ico = new THREE.IcosahedronGeometry(P.r, P.r >= 14 ? 4 : 3); ico.deleteAttribute('uv'); ico.deleteAttribute('normal');
-      const geo = mergeVertices(ico); geo.computeVertexNormals(); ico.dispose();
-      const mesh = new THREE.Mesh(geo, mat); mesh.position.copy(P.c); mesh.receiveShadow = true; mesh.castShadow = true; mesh.name = `planetoid-${P.id}`;
-      g.add(mesh); P.mesh = mesh;
-    }
+    // the planetoids: Calissa's (vfx/garden/planetoid.js: the skin, the roots, each kind dressed), on the one ground: her unsculpted shape
+    // is the base, the clay's height goes on top (world/garden/clay.js), and her `surface` asks that ground (O(1), not a search)
+    this.planets.forEach((P, k) => {
+      const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1 }); look.group.position.copy(P.c); g.add(look.group);
+      P.look = look; P.mesh = look.mesh;
+      P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
+      P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
+      look.surface = (dir) => P.radiusAt(dir.clone().normalize());
+    });
+    // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
+    this.sky = new GardenSky(); g.add(this.sky.group);
+    this.veins = LINKS.map(([a, b]) => { const A = this.by[a], B = this.by[b], d = B.c.clone().sub(A.c).normalize(); const V = new SpiritVein(A.c.clone().addScaledVector(d, A.r * 0.9), B.c.clone().addScaledVector(d, -B.r * 0.9)); g.add(V.mesh); return V; });
     // the lotuses: one on each end of a link, on the side facing the other
     this.lotuses = [];
     for (const [a, b] of LINKS) for (const [f, t] of [[a, b], [b, a]]) {
@@ -82,7 +88,7 @@ export class GardenPlace {
       const m = this.stand(A, dir, 0.02);
       add(this.mats.lotus, new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12), m);
       for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); add(this.mats.lotus, pg, m); }
-      this.lotuses.push({ i: this.lotuses.length, planet: A, to: B, pos: A.c.clone().addScaledVector(dir, A.r), land: B.c.clone().addScaledVector(land, B.r), toPlanet: B });
+      this.lotuses.push({ i: this.lotuses.length, planet: A, to: B, pos: A.c.clone().addScaledVector(dir, A.radiusAt(dir)), land: B.c.clone().addScaledVector(land, B.radiusAt(land)), toPlanet: B });
     }
     // the features: where each system is worked
     const D = this.by.dantian, F = [];
@@ -91,10 +97,7 @@ export class GardenPlace {
       for (const sx of [-1.3, 1.3]) add(this.mats.roof, new THREE.CylinderGeometry(0.16, 0.18, 3, 8).translate(sx, 1.5, 0), m.clone());
       add(this.mats.roof, new THREE.BoxGeometry(3.6, 0.3, 0.4).translate(0, 3.05, 0), m.clone()); add(this.mats.wood, new THREE.BoxGeometry(3, 0.18, 0.3).translate(0, 2.55, 0), m.clone());
       F.push({ kind: 'gate', planet: D, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
-    { const m = this.stand(D, dirOf(62, 90), 0, -Math.PI / 2);
-      add(this.mats.wood, new THREE.BoxGeometry(2.4, 1.8, 2).translate(0, 0.9, 0), m.clone()); add(this.mats.roof, new THREE.ConeGeometry(2.1, 1.1, 4).rotateY(Math.PI / 4).translate(0, 2.35, 0), m.clone());
-      F.push({ kind: 'shed', planet: D, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
-    add(this.mats.lake, new THREE.CylinderGeometry(5.5, 5.5, 0.1, 24), this.stand(D, UP, 0.04));
+    { const d = new THREE.Vector3(0.5, 0.75, 0.42).normalize(); F.push({ kind: 'shed', planet: D, pos: D.c.clone().addScaledVector(d, D.radiusAt(d)) }); } // (Calissa's shed, her lake on the crown)
     // the Herb Terraces: the beds, a ring round its shoulder (shown as many as the garden has)
     const T = this.by.terraces;
     for (let i = 0; i < MAX_BEDS; i++) {
@@ -116,9 +119,7 @@ export class GardenPlace {
       add(this.mats.wood, new THREE.CylinderGeometry(0.5, 0.8, 5, 8).translate(0, 2.5, 0), m.clone()); add(this.mats.leaf, new THREE.IcosahedronGeometry(3, 1).translate(0, 6, 0), m.clone());
       F.push({ kind: 'cocoon', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
     // the Meditation Peak: a needle of rock, and the mat at its foot (the tribulation is Round 4's)
-    { const R = this.by.peak, m = this.stand(R, UP, -1);
-      add(this.mats.wood, new THREE.ConeGeometry(3, 16, 7).translate(0, 8, 0), m.clone());
-      F.push({ kind: 'peak', planet: R, pos: R.c.clone().addScaledVector(dirOf(40, 180), R.r) }); }
+    { const R = this.by.peak, d = dirOf(40, 180); F.push({ kind: 'peak', planet: R, pos: R.c.clone().addScaledVector(d, R.radiusAt(d)) }); } // (the mat at the needle's foot: Calissa's needle above it)
     this.features = F;
     // one mesh a material for everything that never moves (render/merge.js's rule: a model of many static primitives is merged)
     for (const [mat, geos] of parts) { const mesh = new THREE.Mesh(mergeGeometries(geos, false), mat); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); geos.forEach((x) => x.dispose()); }
@@ -129,4 +130,6 @@ export class GardenPlace {
     for (const f of this.features) if (f.mesh) f.mesh.visible = f.kind === 'bed' ? f.i < beds : f.kind === 'slot' ? f.i < slots : true;
   }
   show(on) { this.group.visible = on; }
+  /** The looks that move: the furnace's vent, the veins' light, the sky round the eye. */
+  update(raw, camera) { for (const P of this.planets) P.look.update(raw); for (const V of this.veins) V.update(raw); this.sky.update(raw, camera); }
 }
