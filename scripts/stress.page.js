@@ -91,7 +91,7 @@
     sink.hist = hist;
     // (a 'clip' is the controller's own miss caught and corrected inside the move: counted, not a failure)
     const guardOff = g.events.on('courier.rescue', (e) => { if (e.kind === 'clip') sink.clips = (sink.clips || 0) + 1; else sink.violation('guard:' + e.kind, P, label); });
-    const respawnOff = g.events.on('courier.respawn', (e) => { if (e.why !== 'pit' && e.why !== 'trial') sink.violation('courier.respawn', P, label + ' ' + e.why); }); // (a trial's start puts her at its line: by design)
+    const respawnOff = g.events.on('courier.respawn', (e) => { if (e.why !== 'pit' && e.why !== 'trial') sink.violation('courier.respawn', P, label + ' ' + e.why); }); // (a trial's start puts them at its line: by design)
     const techOff = g.events.on('tech.start', (e) => { sink.techs[e.id] = (sink.techs[e.id] || 0) + 1; });
     const evOff = g.events.on('*', (e) => { sink.events[e.name] = (sink.events[e.name] || 0) + 1; });
     for (let i = 0; i < ticks; i++) {
@@ -224,6 +224,14 @@
       // can say, and no stun outlasts its time (stun.js) unless a window holds it
       if (gg.reprogram?.open && gg.reprogram.phase === 'type' && gg.reprogram.t < -1) sink.violation('reprogram-stuck', P, label);
       if (gg.log?.mode) sink.violation('log-mode-stuck', P, label);
+      // a sibling (coop/sibling.js) stays a number and stays with you: within its warp range after each step (coop/follow.js)
+      for (const S of gg.party?.list || []) {
+        const q = S.pos;
+        if (!Number.isFinite(q.x + q.y + q.z)) { sink.violation('sibling-finite', P, label + ' ' + S.id); break; }
+        const lost = (sink.lost ||= {}), far = S.order === 'follow' && Math.hypot(q.x - p.x, q.z - p.z) > 40;
+        lost[S.id] = far ? (lost[S.id] || 0) + 1 : 0; // (lost for half a second: a warp waits for the next fixed step, and an arrival may pause a few frames)
+        if (lost[S.id] === 30) sink.violation('sibling-lost', P, label + ' ' + S.id);
+      }
       for (const c of gg.jellies?.list || []) {
         if (!Number.isFinite(c.pos.x + c.pos.y + c.pos.z + c.deform.sq)) { sink.violation('jelly-finite', P, label); break; }
         if (c.alive && c.brain.lod !== 'far' && !c.brain.action && c.brain.now > 2) { sink.violation('mind-idle', P, label + ' ' + JSON.stringify({ st: [...c.status.keys()], dir: c.brain.directive?.action?.id, sc: c.brain.reasoner.actions.map((a) => a.id + ':' + (+c.brain.reasoner.score(a, c.brain.ctx)).toFixed(2) + (c.brain.cool.get(a.id) > c.brain.now ? 'c' : '')).join(' '), drives: c.drives.v, spirit: !!c.spirit })); break; }

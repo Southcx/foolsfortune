@@ -75,6 +75,13 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the default is read inside the compile hook (`own || COURIER_RIG`).
 - **Rule:** 27.
 
+### 2026-10-07 · In the Dunes the siblings never came: each step they fell, woke at the workshop and warped back
+- **Seen:** the stress test (seed 2, with the party): 11,615 `sibling-lost`, the siblings at the body's spawn (0, 0, -11.5).
+- **Cause:** a place sets its floor (`killY`) on `game.player` alone (world/places.js); a sibling's body kept the default -100, and the
+  Dunes are 408 m down, so its own step called it fallen and respawned it at the spawn.
+- **Fix:** a sibling takes its leader's `killY` each step, and its respawn is a warp to its leader (coop/sibling.js).
+- **Rule:** 23 (every body in the place, not only the Courier's).
+
 ### 2026-10-07 · One sibling compiled eleven new programs
 - **Cause:** the Courier's region materials carry the kiln's finish (`-fin-glaze` on their program key, `vfx/finish.js`); the sibling's
   copies did not, so each was a program of its own (145 to 156).

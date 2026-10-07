@@ -3,7 +3,7 @@
 //
 //   npm i --no-save playwright          (once; the runner is not part of the shipped game)
 //   npm run dev &                        (or: URL=http://host:port/ )
-//   node scripts/stress.mjs [--seed 1] [--runs 24] [--ticks 900] [--pairs] [--only "on lift0,cp M1"]
+//   node scripts/stress.mjs [--seed 1] [--runs 24] [--ticks 900] [--pairs] [--party] [--only "on lift0,cp M1"]
 //
 // --pairs runs every pair of techs alone (the rest switched off): the interference matrix.
 import { chromium } from 'playwright';
@@ -33,6 +33,7 @@ await page.evaluate(`document.getElementById('overlay').style.display = 'none'; 
 await page.addScriptTag({ content: fs.readFileSync(new URL('./stress.page.js', import.meta.url), 'utf8') });
 
 const t0 = Date.now();
+if (args.party) { await page.evaluate(() => __game.game.party.call('all')); console.log('the party: five siblings called'); } // (--party: the siblings run under every run's inputs, coop/)
 let bad = 0;
 if (args.pairs) {
   const res = await page.evaluate(`__stress.pairs({ seed: ${seed}, runs: ${Math.max(2, Math.floor(runs / 8))}, ticks: ${ticks} })`);

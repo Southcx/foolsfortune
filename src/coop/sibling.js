@@ -48,7 +48,8 @@ export class Sibling {
     this.rig = rig; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Sibling-${id}`;
     game.vessel?.dress(rig, { ...DEFAULT_LOOK, body: glaze, mask: glaze }, { own: true }); // (a placeholder glaze of its suit, on the Courier's own finish shaders: the look is Calissa's to give)
     this.follow = new Follow(B, this.keys, { slot, of });
-    this.lastHeading = null;
+    this.lastHeading = null; this.leader = null;
+    B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
   }
 
   /** Where it stands and how it is placed in the world (feet). */
@@ -58,6 +59,8 @@ export class Sibling {
 
   /** The fixed step: the mind presses its keys, the body moves as the Courier's does. */
   fixed(dt, ctx) {
+    this.leader = ctx.leader;
+    this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
     this.follow.think(dt, { ...ctx, order: this.order });
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
