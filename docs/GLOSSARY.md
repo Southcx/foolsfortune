@@ -144,14 +144,20 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Dovina, Wanda, Calissa, Espada; docs/plans/COOP.md C6). The same body and rig as the Courier, driven by its mind's keys, so it moves
   as the Courier moves. Its division's session may steer it between its beats. *Not:* a spirit (an ally creature), nor a guest.
 - **the party** (`game.party`, `src/coop/party.js`): the siblings called into your world (two at once; four players at most, guests
-  included), and what you tell them (`/sib`: follow, hold, go, fight, back). A sibling is **met** once where its craft lives
+  included), and what you tell them (`/sib`: follow, hold, go, fight, back, warp: set down beside you at once). A sibling is **met** once where its craft lives
   (`src/coop/meeting.js`), then **called** or **dismissed** at any Shrine.
 - **guest**: a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
 - **asking a sibling** (`@name words` on the chat line, `src/coop/answer.js`): a question a sibling answers in seconds, in its division's
   voice (`src/coop/personas.js`), drafted by Claude through the page's `sample`; its **answer** is a line and, when asked, an order.
   *Not:* a letter, nor the division itself.
+- **voice card** (`PERSONAS[id]`, `src/coop/personas.js`, Espada's): a sibling's voice written as form (sentence length, punctuation,
+  the first word), a lexicon, what it notices, its moves, what it never says, and sample lines; composed into the brief a prompt carries.
+  **drift** (`drift(line)`, `DRIFT`): the house voice's tells a line slides back to (an eager opener, the question said back, an offer
+  to help, a hedge, a house word, a dash); banned for all five.
 - **letter** (`/letter name words`, `src/coop/letters.js`): words the owner sends from the game to a division's own session, which
   answers in a few real minutes through the store (`siblings/<name>`, `re`). *Not:* an answer (seconds, Claude in the page).
+- **the co-op meter** (`/usage`, `src/coop/usage.js`): what asking and letters spend of the owner's Claude usage over the last real hour,
+  each stopped at a cap the owner sets (40 asks, 10 letters by default); a letter waits on one answer from each division at a time.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
 

@@ -74,13 +74,16 @@ the rules before building in the same area; a rule a machine can check goes into
     rest value apart and is returned to it when the act's result is gone.
 31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
     that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
-32. **A tech asked to start while it is on is restarted in place**, never stopped and begun: `stop()` calls `end()`, which reads the state
+32. **Every goal has a give-up, and every call a deadline.** A mind told to reach something measures its progress and, when it stops
+    closing, is set down there or gives up and says so; a call to anything outside the page (Claude, a connector, the room) has a
+    timeout, a cap, and a line in the log when it runs out. Nothing waits forever, and nothing spends the owner's usage unbounded.
+33. **A tech asked to start while it is on is restarted in place**, never stopped and begun: `stop()` calls `end()`, which reads the state
     the new start has just written (Launch's options), and ends the new move instead of the old.
-33. **A service is asked for when it is needed, not when the asker is built.** The techs are made before `game.interact` (main.js); a
+34. **A service is asked for when it is needed, not when the asker is built.** The techs are made before `game.interact` (main.js); a
     source registered in a constructor with `game.interact?.add` was silently dropped. Register on first use (`offer()`), and test it.
-34. **A committed move does not cut the core's climb.** Whatever takes the step with `endCore` (Launch, a whole-body strike) waits for the
+35. **A committed move does not cut the core's climb.** Whatever takes the step with `endCore` (Launch, a whole-body strike) waits for the
     mantle to finish: ended half way over a lip, the capsule is left inside it.
-35. **A position set outright is checked first.** Anything that moves the Courier without the controller (a phase's step, a teleport by
+36. **A position set outright is checked first.** Anything that moves the Courier without the controller (a phase's step, a teleport by
     an animation's travel) asks whether the capsule is clear there, and keeps the last clear place to fall back on.
 
 ## Cases
@@ -91,25 +94,37 @@ the rules before building in the same area; a rule a machine can check goes into
   the step down, the bail and the get-up), and at the barrier those places were inside it.
 - **Fix:** every phase move asks `clearAt` first and keeps the last clear place; the tech's end puts an embedded Courier back there
   (courier/skiff/skiff.js).
-- **Rule:** 35.
+- **Rule:** 36.
 
 ### 2026-10-07 · The stress test caught the Courier in a ledge after a mantle (Calissa)
 - **Seen:** the gate's stress run, seed 1: `guard:nudge` on cog0, the tech `launch`, `move.mantle` then `combo.move` 0.17 s later.
 - **Cause:** a whole-body cutlass move began during the mantle; Launch's `endCore()` stopped the climb half way over the lip.
 - **Fix:** the combo engine plays a whole-body move on the upper body alone while `P.mantle` or `P.freeze` (tools/moveset.js `carry`).
-- **Rule:** 34.
+- **Rule:** 35.
 
 ### 2026-10-07 · The Solar Skiff's parked board had no chevron (Calissa)
 - **Seen:** headless, F beside a parked board did nothing; `interact.cur` was undefined.
 - **Cause:** the skiff tech registered its interact source in its constructor, and the techs are built before `game.interact` exists.
 - **Fix:** the source is registered the first frame the service is there (`Skiffing.offer()`, courier/skiff/skiff.js).
-- **Rule:** 33.
+- **Rule:** 34.
 
 ### 2026-10-07 · An air string would have ended at its second cut (Calissa)
 - **Seen:** building the cutlass's air combo: the second committed move (a launcher straight into an air cut) dropped at once.
 - **Cause:** `Launch.go` while the launch was on called `mgr.begin`, which stopped the active tech; its `end()` took the options `go`
   had just written, nulled them and called the new move's `onEnd`.
 - **Fix:** a `go` while the launch is on restarts it in place (courier/moves/launch.js).
+- **Rule:** 33.
+
+### 2026-10-07 · A sibling sent to the Dunes walked into a wall and would not be told
+- **Seen (the owner, v105):** asked Petra to go to the Dunes; Petra pressed against the workshop's wall, and asked to teleport, did not.
+- **Cause:** "go" was an order that stands where told and is never warped, so no stuck check applied to it; the stuck check counted only
+  a body that did not move, not one sliding along a wall; the answer was offered places in other regions (the Dunes is its own world,
+  entered by travel) and had no order that warps.
+- **Fix:** every goal measures its progress (`coop/follow.js`: six seconds without gaining half a metre) and a sibling told to go or hold
+  is set down there, or gives up and comes back, and says which (`sibling.stuck`); "go" to another region is refused with the reason;
+  a `warp` order (`/sib petra warp`, and the answer's) sets a sibling down beside you. With it, the deadlines and caps on the calls out
+  of the page (coop/usage.js, answer.js, letters.js, guests.js). Measured headless: sent 40 m through the wall four ways, Petra
+  warped twice and gave up twice (no ground there), within 6.9 to 12.5 s.
 - **Rule:** 32.
 
 ### 2026-10-07 · A sibling in a fight was lost when the Courier travelled

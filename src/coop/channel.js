@@ -53,7 +53,7 @@ export class SiblingChannel {
       }
       // a line, once every five real minutes
       const re = typeof d.re === 'string' ? d.re.slice(0, 40) : null, answer = re && re !== was.re; // (an answer to a letter: said at once)
-      if (line && (answer || (line !== was.line && now - was.lineAt >= LINE_EVERY))) { was.line = line; was.lineAt = now; was.re = re; g.events.emit('party.say', { sibling: d.id, line, near: !!S, re: answer ? 'letter' : 'store' }); }
+      if (line && (answer || (line !== was.line && now - was.lineAt >= LINE_EVERY))) { was.line = line; was.lineAt = now; was.re = re; g.events.emit('party.say', { sibling: d.id, line, near: !!S, re: answer ? 'letter' : 'store', ...(answer ? { letter: re } : {}) }); }
     }
     this.first = false;
   }

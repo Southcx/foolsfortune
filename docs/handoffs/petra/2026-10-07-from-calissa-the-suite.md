@@ -13,7 +13,7 @@ kept about 13 MB of base64 string in the heap. game.js is unchanged at 13.9 MB.
 - `game.clipPack` (the pack; `.social` resolves when the emotes are in). 51 bones now: spine005 sits between spine004 and head (parent
   first, for mirrorPose). Old clips are widened and keep their names. 14 old names now play their suite twins (`ual:<name>` keeps the old).
 - `tools/moveset.js`, one combo engine (its header is the contract). `Launch.go` takes `drive(vel, dt)` and `poseFix(pose)`, and a `go`
-  while a launch is on restarts in place (casebook 32).
+  while a launch is on restarts in place (casebook 33).
 - `melee.js` `measureSwing(ch, clip, { limb })`: 'R' (the default, as before), 'L', 'footR', 'footL', 'auto'.
 - Events: `combo.move {tool, move, kind, by}`, `combo.juggle {tool, hits, by}` (feedback/tracking/combo.js); `skiff.summon / .mount /
   .park / .recall / .bail {why, speed}` (feedback/tracking/skiff.js). Every one has a rule and carries `by`.
