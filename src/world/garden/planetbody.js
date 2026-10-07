@@ -12,7 +12,7 @@
 // Prior art: Super Mario Galaxy (spherical gravity, the planetoid you are nearest owns you, the launch star's authored flight), Sonic's
 // Chao (the hop), Katamari Damacy's small world.
 //
-//   const H = new PlanetBody({ planets: [{ c: Vector3, r }], pos, radius, hop })   H.step(dt, { move: Vector3 (world, length 0..1), jump })
+//   const H = new PlanetBody({ planets: [{ c: Vector3, r, radiusAt?(dir) }], pos, radius, hop })   (radiusAt: the ground as sculpted)   H.step(dt, { move: Vector3 (world, length 0..1), jump })
 //   H.pos  H.vel  H.up  H.planet  H.grounded  H.forward  H.held  H.flight   H.launch(to, seconds, toPlanet)   H.release(vel)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -78,14 +78,16 @@ export class PlanetBody {
     this.pos.addScaledVector(this.vel, dt);
     // the ground: every planetoid is solid (a throw can land on any of them)
     for (const Q of this.planets) {
-      _a.copy(this.pos).sub(Q.c); const dq = _a.length(), min = Q.r + this.radius;
-      if (dq >= min) continue;
+      _a.copy(this.pos).sub(Q.c); const dq = _a.length();
+      if (dq > Q.r + 4) continue; // (beyond any hill the hand can raise: world/garden/clay.js)
       _a.divideScalar(dq || 1);
+      const min = (Q.radiusAt ? Q.radiusAt(_a) : Q.r) + this.radius; // (the ground as sculpted)
+      if (dq >= min) continue;
       this.pos.copy(Q.c).addScaledVector(_a, min);
       const vn = this.vel.dot(_a);
       if (vn < 0) this.vel.addScaledVector(_a, -vn);
       if (Q === P) { if (!this.grounded) this.wait = H.every; this.grounded = true; this.vel.addScaledVector(_b.copy(_a), -this.vel.dot(_a)); }
     }
-    if (this.grounded && this.pos.distanceTo(P.c) > P.r + this.radius + 0.08) this.grounded = false; // (left the ground: over a rim)
+    if (this.grounded && this.pos.distanceTo(P.c) > (P.radiusAt ? P.radiusAt(_n.copy(this.pos).sub(P.c).normalize()) : P.r) + this.radius + 0.08) this.grounded = false; // (left the ground: over a rim)
   }
 }

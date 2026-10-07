@@ -2,8 +2,9 @@
 // THE INNER REALM: the Spirit Garden entered (docs/plans/SPIRIT-GARDEN.md; the owner, 2026-10-07: "Use the Pneuka Jar as the character
 // controller and have it hopping around with WASD, grabbable with the Godhand ... SMG from the get-go"). Entered at a Shrine, the
 // Courier is not there: you are the Pneuka Jar, hopping round the planetoids (world/garden/planetbody.js, Galaxy's gravity), and you are the
-// god hand over it, always (no ~): the cursor is the hand. It picks up the Jar or a spirit and throws it; let go over another planetoid,
-// what it held falls to that one. A lotus flies the Jar to its neighbour. F at a place works it: the gate takes you back to the Shrine,
+// god hand over it, always (no ~): the cursor is the hand (world/garden/hand.js: grab and throw, pet and flick, the clay's four strokes,
+// placing a feature in a plot: world/garden/plots.js); the planetoids' ground is clay (world/garden/clay.js), a pond's water runs where
+// it was carved, and the spirits are raised by hand (world/garden/raising.js). A lotus flies the Jar to its neighbour. F at a place works it: the gate takes you back to the Shrine,
 // the shed opens the Pneuka Box, a bed is planted or harvested, a pavilion's slot paid out, the furnace's press told of. The Figments
 // you caught (creatures/bound.js) hop about the Grove. The first time in, you name it (Espada's names on offer; /realmname writes your
 // own). Its look is Calissa's to come, its music Wanda's; the place is world/garden/place.js.
@@ -18,15 +19,20 @@
 import * as THREE from 'three';
 import { GardenPlace, MAX_BEDS, MAX_SLOTS } from './place.js';
 import { PlanetBody } from './planetbody.js';
+import { Clay } from './clay.js';
+import { Plots } from './plots.js';
+import { Raising } from './raising.js';
+import { GardenHand } from './hand.js';
+import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
 const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; // (metres; radians; radians a real second for Q / E)
-const HAND = { reach: 2.2, throwMax: 26, lift: 1.4 }; // (a thing within 2.2 m of the cursor's ray is grabbed; a throw is at most 26 m/s)
 const LOTUS = { r: 1.3, seconds: 2 };
 const FEATURE_R = 3.2; // (F works a place within this of the Jar)
+const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 
 export class Realm {
@@ -34,16 +40,32 @@ export class Realm {
     this.game = game; this.god = god;
     this.active = false; this.name = null; this.spirits = [];
     this.place = new GardenPlace(game);
+    // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
+    this.clays = Object.fromEntries(this.place.planets.map((P) => [P.id, new Clay(P)]));
+    for (const P of this.place.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d);
+    for (const f of this.place.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'gate' || f.kind === 'shed' ? 4 : 3);
+    for (const l of this.place.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
+    this.plots = new Plots(game, this.place, this.clays);
+    this.raising = new Raising(game, this);
+    this.hand = new GardenHand(this);
+    this.water = new THREE.Group(); this.water.name = 'garden-water'; this.place.group.add(this.water);
     this.cam = { fwd: new THREE.Vector3(0, 0, -1), up: new THREE.Vector3(0, 1, 0), dist: CAM.dist };
-    this.hand = { held: null, dist: 0, at: new THREE.Vector3(), prev: new THREE.Vector3(), vel: new THREE.Vector3(), point: new THREE.Vector3() };
+    this.restT = 0; this.workT = 0;
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
-    game.save?.section('realm', { scope: 'player', version: 1, dump: () => ({ name: this.name }), load: (d) => { this.name = d?.name || null; }, reset: () => { this.name = null; } });
+    game.save?.section('realm', { scope: 'player', version: 2,
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }),
+      load: (d) => { this.name = d?.name || null; for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.place.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
+      reset: () => { this.name = null; } });
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
-  parked() { const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.place.group.add(s); this.parkedSpirit = s; return [this.place.group]; }
+  parked() {
+    const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.place.group.add(s); this.parkedSpirit = s;
+    this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.place.by.peak.c, this.place.by.dantian.c]), this.plots.threadMat.gen); this.place.group.add(this.parkedThread);
+    return [this.place.group];
+  }
 
   // ------------------------------------------------------------------ in and out
   /** In at a Shrine: the Courier stays there; you are the Jar on the Dantian, by the gate. */
@@ -60,11 +82,13 @@ export class Realm {
       this.active = true; this.lotusLock = null;
       if (g.garden) g.garden.inside = true; // (Wanda's cue plays while it is: music/choose.js)
       this.place.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
-      this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false;
+      this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false; if (this.parkedThread) this.parkedThread.visible = false; this.plots.show(this.hand.art === 'place');
+      for (const c of g.spirits?.list || []) if (c.spirit?.from === 'garden') g.jellies.vanish(c, 'courier', 'home'); // (the one out with you comes home)
       for (const t of g.belt?.tools || []) if (t.wants) t.stow?.();
       g.character?.setHidden(true);
       document.exitPointerLock?.();
       g.hud?.el?.cross && (g.hud.el.cross.style.display = 'none');
+      const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = 'hidden'; // (the world's map has no say in here)
       const V = this.god?.jar; if (V?.group) V.group.visible = true;
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
@@ -87,7 +111,10 @@ export class Realm {
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
       g.character?.setHidden(false);
       g.hud?.el?.cross && (g.hud.el.cross.style.display = '');
+      const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = '';
+      this.hand.letGo();
       const B = this.back; if (B && !g.places?.stand(B.pos, B.yaw)) g.course.teleport(B.pos, B.yaw);
+      const O = this.raising.out; if (O) g.spirits?.summon(B?.pos || g.player.pos, { life: 1e6, power: 1 + (O.sp ? Math.max(...Object.values(O.sp.stats)) / 999 : 0), from: 'garden' }); // (one walks the world with you: creatures/spirits.js)
       if (g.input?.enabled) g.input.requestLock();
       g.events?.emit('garden.leave', { by: 'courier' });
     };
@@ -116,7 +143,9 @@ export class Realm {
       const a = (i / Math.max(1, list.length)) * Math.PI * 2, dir = new THREE.Vector3(Math.cos(a) * 0.6, 1, Math.sin(a) * 0.6).normalize();
       const mesh = new THREE.Mesh(this.spiritGeo, this.spiritMat); mesh.castShadow = true; mesh.scale.setScalar(0.8 + 0.25 * (e.cls || 0)); mesh.name = `spirit-${e.kind}`;
       this.place.group.add(mesh);
-      this.spirits.push({ e, mesh, hop: new PlanetBody({ planets: this.place.planets, pos: G.c.clone().addScaledVector(dir, G.r + 1.5), radius: 0.4, hop: { short: [2.4, 1.6], long: [3, 2.4] } }), wish: new THREE.Vector3(), next: simRand() * 2 });
+      const s = { e, mesh, hop: new PlanetBody({ planets: this.place.planets, pos: G.c.clone().addScaledVector(dir, G.r + 1.5), radius: 0.4, hop: { short: [2.4, 1.6], long: [3, 2.4] } }), wish: new THREE.Vector3(), next: simRand() * 2 };
+      this.raising.ready(e); this.raising.lookOf(s);
+      this.spirits.push(s);
     });
   }
 
@@ -154,7 +183,10 @@ export class Realm {
     // the Courier's place is the Jar's while in here (the sun's shadow, the zones and the listener follow it)
     P.pos.copy(J.pos); P.prevPos?.copy(J.pos); P.renderPos?.copy(J.pos);
     this.placeJar(dt);
-    this.updateHand(dt);
+    this.hand.update(dt);
+    // the spirits rest a game hour at a time, and work where they stand
+    if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
+    if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.place.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -182,40 +214,31 @@ export class Realm {
     const s = J.grounded ? 1 : 1.08; grp.scale.set(1 / Math.sqrt(s), s, 1 / Math.sqrt(s));
   }
 
-  // ------------------------------------------------------------------ the hand
-  /** The cursor's ray, where it meets a planetoid (or a point ahead), and what it would grab. */
-  updateHand(dt) {
-    const g = this.game, I = g.input, cam = g.camera, H = this.hand, god = this.god;
-    const ndc = _v.set((I.mx / innerWidth) * 2 - 1, -(I.my / innerHeight) * 2 + 1, 0.5).unproject(cam), o = cam.position, d = ndc.sub(o).normalize();
-    let tHit = Infinity;
-    for (const Pl of this.place.planets) { const t = raySphere(o, d, Pl.c, Pl.r); if (t > 0 && t < tHit) tHit = t; }
-    H.point.copy(o).addScaledVector(d, Number.isFinite(tHit) ? tHit : 30);
-    if (I.mx >= 0 && I.wasPressed('Mouse0') && !H.held) { // (grab: the nearest of the Jar and the spirits to the ray)
-      let best = null, bd = HAND.reach;
-      for (const b of [{ hop: this.jar, kind: 'jar' }, ...this.spirits.map((s) => ({ hop: s.hop, kind: 'spirit', s }))]) {
-        const t = Math.max(0, _w.copy(b.hop.pos).sub(o).dot(d)), near = _w.copy(o).addScaledVector(d, t).distanceTo(b.hop.pos);
-        if (near < bd) { bd = near; best = b; }
-      }
-      if (best) { H.held = best; H.dist = o.distanceTo(best.hop.pos); best.hop.held = true; best.hop.flight = null; H.at.copy(best.hop.pos); H.prev.copy(H.at); sfx.grab?.(); }
+  // ------------------------------------------------------------------ the clay and the water
+  /** A planetoid's clay changed: its mesh follows (a few times a second while a stroke runs, at once when it ends), and the water. */
+  reshape(P, now = false) {
+    const clay = this.clays[P.id]; if (!clay) return;
+    if (!now && (this.shapeT = (this.shapeT || 0) + 1) % 2) return;
+    clay.apply(P.mesh);
+    if (now) this.flowAll();
+  }
+  /** Every pond's water led downhill (world/garden/clay.js flow): a ribbon of Lachryma along the ground to where it pools. */
+  flowAll() {
+    for (const o of [...this.water.children]) { this.water.remove(o); o.geometry.dispose(); }
+    for (const p of this.plots.plots) {
+      if (p.placed?.feature !== 'pond') continue;
+      const P = p.planet, clay = this.clays[P.id], dirs = clay.flow(p.dir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0).cross(p.dir).normalize(), 1.9 / P.r));
+      if (dirs.length < 3) continue;
+      const pts = dirs.map((d) => P.c.clone().addScaledVector(d, clay.radiusAt(d) + 0.08));
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(64, pts.length * 2), 0.28, 5, false), this.place.mats.lake); tube.name = 'garden-stream';
+      this.water.add(tube);
     }
-    if (H.held) {
-      const want = _w.copy(o).addScaledVector(d, H.dist);
-      H.prev.copy(H.at); H.at.lerp(want, 1 - Math.exp(-14 * dt));
-      H.vel.copy(H.at).sub(H.prev).divideScalar(Math.max(dt, 1e-3));
-      H.held.hop.pos.copy(H.at);
-      if (!I.isDown('Mouse0')) { // (let go: thrown with the hand's speed)
-        const v = H.vel.clampLength(0, HAND.throwMax); H.held.hop.release(v); H.held = null; sfx.toss?.();
-      }
-    }
-    // the hand's model over what it holds or the ground under the cursor (the god hand's own: godhand.js, its fingers posed there)
-    const hand = god?.hand; if (!hand?.root) return;
-    const at = H.held ? H.at : H.point, n = this.place.planets.reduce((b, Pl) => (at.distanceTo(Pl.c) - Pl.r < at.distanceTo(b.c) - b.r ? Pl : b)).c;
-    const up = _w.copy(at).sub(n).normalize(), fwd = this.cam.fwd.clone().projectOnPlane(up).normalize();
-    const fingers = fwd.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(up, -Math.sin(0.5)).normalize(), back = up.clone().addScaledVector(fingers, -up.dot(fingers)).normalize();
-    _m.makeBasis(new THREE.Vector3().crossVectors(fingers, back).normalize(), fingers, back); hand.root.quaternion.setFromRotationMatrix(_m);
-    hand.root.position.copy(at).addScaledVector(up, H.held ? 0.6 : HAND.lift).addScaledVector(fingers, -hand.tip.length());
-    hand.grab += ((H.held ? 1 : 0.15) - hand.grab) * Math.min(1, dt * 12);
-    god.t = (god.t || 0) + dt; god.poseHand?.(dt);
+  }
+  /** Let one go for good (creatures/bound.js release): it hops off into the sky. */
+  release(s) {
+    const i = (this.game.bound?.list || []).indexOf(s.e); if (i < 0) return;
+    this.game.bound.release(i);
+    this.place.group.remove(s.mesh); this.spirits.splice(this.spirits.indexOf(s), 1);
   }
 
   // ------------------------------------------------------------------ the places
@@ -224,6 +247,7 @@ export class Realm {
     if (!this.active || this.jar?.held || this.jar?.flight) return null;
     let best = null, bd = FEATURE_R;
     for (const f of this.place.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jar.pos); if (d < bd) { bd = d; best = f; } }
+    for (const s of this.spirits) { const d = s.hop.pos.distanceTo(this.jar.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.hop.pos }; } }
     this.near = best;
     return best ? { pos: best.pos.clone().addScaledVector(this.jar.up, 2.4), d: bd } : null;
   }
@@ -233,6 +257,7 @@ export class Realm {
     const say = (s) => g.log?.say('info', s, { key: 'garden.use', throttle: 1 }); // (a refusal at the point of use)
     switch (f.kind) {
       case 'gate': this.leave(); return;
+      case 'spirit': this.raising.page(f.s); return;
       case 'shed': g.pneukaUI?.toggle(); return;
       case 'bed': {
         const b = G?.beds?.[f.i];
@@ -258,12 +283,4 @@ export class Realm {
     sc.fog.color.setHex(0xcfc6e8); sc.fog.density = 0.004;
     if (sc.background?.isColor) sc.background.setHex(0xb9b2e0);
   }
-}
-
-/** Where a ray (o, unit d) first meets a sphere, or -1. */
-function raySphere(o, d, c, r) {
-  const ox = o.x - c.x, oy = o.y - c.y, oz = o.z - c.z, b = ox * d.x + oy * d.y + oz * d.z, k = ox * ox + oy * oy + oz * oz - r * r, h = b * b - k;
-  if (h < 0) return -1;
-  const s = Math.sqrt(h), t = -b - s;
-  return t > 0 ? t : -b + s;
 }

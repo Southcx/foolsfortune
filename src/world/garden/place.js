@@ -14,7 +14,7 @@
 //   P.lotuses [{ i, planet, to, pos, land, toPlanet }]   P.features [{ kind, i, planet, pos, mesh? }]   P.show(on)   P.sync(counts)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLANETOIDS as NAMES } from '../../npc/realmnames.js';
 
 /** Where the garden hangs: far over the workshop's north, no other zone near (render/zonemap.js 'garden'). */
@@ -69,7 +69,10 @@ export class GardenPlace {
     // the planetoids: one smooth sphere each, their own clay
     for (const P of this.planets) {
       const mat = new THREE.MeshStandardMaterial({ color: P.color, roughness: 0.85, name: `garden-${P.id}` });
-      const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(P.r, 5), mat); mesh.position.copy(P.c); mesh.receiveShadow = true; mesh.castShadow = true; mesh.name = `planetoid-${P.id}`;
+      // (welded, so a sculpted surface shades smooth: world/garden/clay.js moves its vertices; about 5000 faces a large one, 1300 a small)
+      const ico = new THREE.IcosahedronGeometry(P.r, P.r >= 14 ? 4 : 3); ico.deleteAttribute('uv'); ico.deleteAttribute('normal');
+      const geo = mergeVertices(ico); geo.computeVertexNormals(); ico.dispose();
+      const mesh = new THREE.Mesh(geo, mat); mesh.position.copy(P.c); mesh.receiveShadow = true; mesh.castShadow = true; mesh.name = `planetoid-${P.id}`;
       g.add(mesh); P.mesh = mesh;
     }
     // the lotuses: one on each end of a link, on the side facing the other
