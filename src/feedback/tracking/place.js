@@ -16,6 +16,8 @@ export function placeRules({ on, log }) {
     log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
     if (e.fresh) log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
   });
+  on('garden.refuse', (e) => log.say('warn', { god: 'Not while you are the god hand.', death: 'Not now.', stage: 'Not while you are on the stage.', busy: 'Not yet: a moment.' }[e.why] || 'Not now.', { key: 'garden.refuse', throttle: 1 })); // (world/garden/realm.js)
+  on('garden.jar.back', () => log.say('info', 'The Jar comes back down by the gate.', { key: 'garden.jar.back', throttle: 2 })); // (thrown off into the sky: world/garden/realm.js)
   on('garden.art', (e) => log.say('system', `Your hand: ${ART[e.art] || e.art}`, { key: 'garden.art', throttle: 0.3 }));
   on('garden.grant', (e) => { if (e.by === 'courier') log.say('info', `The ${e.kind === 'bed' ? 'terrace' : 'pavilion'} gives you one more ${e.kind}.`); }); // (Dovina's: progress/garden.js grant)
   on('trial.solar.start', (e) => log.say('info', `The Gnomon's shadow starts to move. Time: 90 real seconds. Rings lit: ${e.lit} of 24.`, { key: 'solar.start', throttle: 1 }));

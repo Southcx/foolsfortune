@@ -21,7 +21,7 @@ import { GardenPlace, MAX_BEDS, MAX_SLOTS } from './place.js';
 import { PlanetBody } from './planetbody.js';
 import { Clay } from './clay.js';
 import { Plots } from './plots.js';
-import { Raising } from './raising.js';
+import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Kiln } from './kiln.js';
@@ -39,6 +39,7 @@ const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/r
 const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; // (metres; radians; radians a real second for Q / E)
 const LOTUS = { r: 1.3, seconds: 2 };
 const FEATURE_R = 3.2; // (F works a place within this of the Jar)
+const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it is set down by the gate: GARDEN-SWEEP #5)
 const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 
@@ -86,11 +87,13 @@ export class Realm {
   /** In at a Shrine: the Courier stays there; you are the Jar on the Dantian, by the gate. */
   enter(shrine) {
     const g = this.game, P = g.player;
-    if (this.active || this.god?.active || g.death?.active || g.emocean?.stage.active) return false;
+    const no = this.active ? 'inside' : this.god?.active ? 'god' : g.death?.active ? 'death' : g.emocean?.stage.active ? 'stage' : g.seam?.busy ? 'busy' : null;
+    if (no) { if (no !== 'inside') g.events?.emit('garden.refuse', { why: no, by: 'courier' }); return false; } // (a refusal is said: GARDEN-SWEEP #14)
     this.back = { shrine: shrine?.id || null, pos: P.pos.clone(), yaw: P.yaw };
     const go = () => {
-      const D = this.place.by.dantian, gate = this.place.features.find((f) => f.kind === 'gate');
-      const start = D.c.clone().add(gate.pos.clone().sub(D.c).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.25).multiplyScalar(D.r + 0.5));
+      this.entering = false;
+      const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density }; // (what the garden changes of the world's, put back on leaving: casebook rule 30, GARDEN-SWEEP #12)
+      const D = this.place.by.dantian, gate = this.place.features.find((f) => f.kind === 'gate'), start = this.gateStart();
       this.jar = new PlanetBody({ planets: this.place.planets, pos: start, radius: 0.5 });
       this.jar.planet = D; this.jar.up.copy(start).sub(D.c).normalize();
       this.cam.up.copy(this.jar.up); this.cam.fwd.copy(gate.pos).sub(start).projectOnPlane(this.cam.up).normalize(); this.cam.dist = CAM.dist;
@@ -104,28 +107,39 @@ export class Realm {
       document.exitPointerLock?.();
       g.hud?.el?.cross && (g.hud.el.cross.style.display = 'none');
       const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = 'hidden'; // (the world's map has no say in here)
-      const V = this.god?.jar; if (V?.group) { V.group.visible = true; this.jarLook ||= new JarHop(V.group, { fx: g.fx }); } // (Calissa's hop: crouch, stretch, land, trail)
+      const V = this.god?.jar; if (V?.group) { V.group.visible = true; V.group.scale.setScalar(1); this.jarLook ||= new JarHop(V.group, { fx: g.fx }); this.jarLook.base.setScalar(1); } // (Calissa's hop: crouch, stretch, land, trail; at full size whatever the god hand left: GARDEN-SWEEP #2)
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
       this.sync();
       this.awaken.visitors(); // (the wild ones the garden draws come by once a game day: progress/realm.js VISITORS)
       g.events?.emit('garden.enter', { shrine: this.back.shrine, by: 'courier' });
-      if (!this.name) this.naming();
+      this.namingDue = !this.name; // (asked once the seam is back up: a page opened under the cover held it black, GARDEN-SWEEP #1)
     };
-    if (g.seam) g.seam.cross(go, { kind: 'shrine' }); else go();
-    return true;
+    const took = g.seam ? g.seam.cross(go, { kind: 'shrine' }) : (go(), true);
+    if (took && g.seam) this.entering = true;
+    return !!took; // (a seam already under way refuses: said, not pretended, GARDEN-SWEEP #11)
+  }
+  /** Where the Jar is set down on the Dantian, a step from the gate (on entry, and when a throw has lost it). */
+  gateStart() {
+    const D = this.place.by.dantian, gate = this.place.features.find((f) => f.kind === 'gate');
+    return D.c.clone().add(gate.pos.clone().sub(D.c).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.25).multiplyScalar(D.r + 0.5));
   }
   /** Out by the gate: the Courier where they stood at the Shrine. */
   leave() {
-    const g = this.game; if (!this.active) return;
+    const g = this.game;
+    if (this.entering || (this.active && g.seam?.busy)) { this.leaveDue = true; return; } // (asked mid-fade: kept until the seam is done, GARDEN-SWEEP #11)
+    if (!this.active) return;
+    this.leaveDue = false;
     const go = () => {
       this.active = false; this.place.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
+      if (this.kiln?.active) this.kiln.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.place.group.remove(s.mesh);
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
       g.character?.setHidden(false);
+      const K = this.kept, sc = g.scene; if (K) { g.camera.up.copy(K.up); if (K.bg && sc.background?.isColor) sc.background.copy(K.bg); if (K.fog && sc.fog) { sc.fog.color.copy(K.fog); sc.fog.density = K.fogD; } this.kept = null; }
       g.hud?.el?.cross && (g.hud.el.cross.style.display = '');
       const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = '';
       this.hand.letGo();
@@ -179,6 +193,10 @@ export class Realm {
     if (!this.active) return;
     const I = this.game.input, J = this.jar, typing = this.game.log?.typing;
     if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && I.isDown('Space') && J.grounded });
+    if (!J.held && !J.flight && J.airT > JAR_LOST) { // (thrown off into the sky: set down by the gate, casebook rule 32, GARDEN-SWEEP #5)
+      const D = this.place.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
+      this.game.events?.emit('garden.jar.back', { by: 'courier' });
+    }
     for (const s of this.spirits) {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
       s.hop.step(dt, { move: s.wish });
@@ -220,8 +238,9 @@ export class Realm {
     // the spirits' bodies
     for (const s of this.spirits) { s.mesh.position.copy(s.hop.pos); s.mesh.quaternion.setFromUnitVectors(_w.set(0, 1, 0), s.hop.up); const sq = s.hop.grounded ? 1 : 1.12; s.mesh.scale.y = s.mesh.scale.x * sq; }
     // F works the place the Jar stands at
+    if (this.leaveDue && !g.seam?.busy) { this.leave(); return; }
+    if (this.namingDue && !g.seam?.busy) { this.namingDue = false; this.naming(); }
     if (I.wasPressed('KeyF') && !g.log?.typing && g.interact?.cur?.id === 'garden') this.use(this.near);
-    if (I.wasPressed('KeyP') && !g.log?.typing && !g.pneukaUI?.open) g.pneukaUI?.toggle(); // (the box is yours anywhere, the shed's or not)
   }
 
   /** The Jar's model where its body is, upright on the planetoid, turned the way it hops, squashed as it lands. */
@@ -277,7 +296,9 @@ export class Realm {
     for (const f of this.place.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jar.pos); if (d < bd) { bd = d; best = f; } }
     for (const s of this.spirits) { const d = s.hop.pos.distanceTo(this.jar.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.hop.pos }; } }
     this.near = best;
-    return best ? { pos: best.pos.clone().addScaledVector(this.jar.up, 2.4), d: bd } : null;
+    if (!best) return null;
+    const up = best.kind === 'spirit' ? best.s.hop.up.clone() : best.pos.clone().sub(best.planet.c).normalize(); // (the place's own up on its planetoid, not the Jar's: GARDEN-SWEEP #4)
+    return { pos: best.pos.clone().addScaledVector(up, 2.4), up, d: bd };
   }
   /** F at a place. */
   use(f) {
@@ -329,7 +350,7 @@ export class Realm {
       const H = this.awaken.hatch;
       if (H) btn(H.kind === 'fossil' ? 'A fossil is waking' : 'Two are twining in the tree', 'listen, and watch the tree', null);
       else if (g.pneuka?.count(FOSSIL)) btn('Wake a fossil', 'the Awakening Song wakes what the Lachryma kept', () => { this.awaken.fossil(); menu.close(); });
-      if (!H) for (const e of L) { this.raising.ready(e); btn(`${first === e ? '◆ ' : ''}${e.name || e.kind}`, first ? (first === e ? 'chosen: choose another to merge with it' : 'merge with the chosen one') : 'choose two to merge into one', () => { if (!first) { first = e; open(); } else if (first !== e) { this.awaken.merge(first, e); menu.close(); } }); }
+      if (!H) for (const e of L) { this.raising.ready(e); btn(`${first === e ? '◆ ' : ''}${spiritName(e)}`, first ? (first === e ? 'chosen: choose another to merge with it' : 'merge with the chosen one') : 'choose two to merge into one', () => { if (!first) { first = e; open(); } else if (first !== e) { this.awaken.merge(first, e); menu.close(); } }); }
       if (L.length < 2) btn('Two spirits make one here', 'when you have two', null);
       im.appendChild(el('div', 'grp', 'THE COCOON TREE')); im.appendChild(rows);
     }, { title: 'THE COCOON TREE', sub: 'click · F closes' });

@@ -86,6 +86,10 @@ export class PneukaUI {
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); this.hideMenu(); });
+    addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
+      if (!this.open || e.repeat || e.code !== 'Escape' || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      e.preventDefault(); e.stopImmediatePropagation(); this.close();
+    }, true);
     document.body.appendChild(this.root);
   }
   get box() { return this.game.pneuka; }

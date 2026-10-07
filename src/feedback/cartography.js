@@ -181,6 +181,7 @@ export class Cartography {
   passive(dt) {
     const g = this.game, P = g.player, Z = T.zoi;
     if (g.god?.controlling && g.god.state !== 'on') return;
+    if (g.realm?.active) return; // (the Spirit Garden is not ground you explore: never charted, GARDEN-SWEEP #8)
     const l = this.layerOf(P.pos.y), cs = l.cell, R = l.sight;
     const eye = _v2.set(P.pos.x, P.pos.y + 1.3, P.pos.z).clone();
     const cx = Math.floor(P.pos.x / cs), cz = Math.floor(P.pos.z / cs), n = Math.ceil(R / cs);
@@ -492,7 +493,7 @@ export class Cartography {
     addEventListener('keydown', (e) => {
       if (e.repeat) return;
       const g = this.game, tag = document.activeElement?.tagName;
-      if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); return; }
+      if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); e.stopImmediatePropagation(); return; } // (spent: the pause menu does not open under it, GARDEN-SWEEP #9)
       if (!this.open && e.code === 'KeyM' && g.input.enabled && tag !== 'INPUT' && tag !== 'TEXTAREA' && !g.codex?.open && !g.indexMenu?.open) { this.show(); e.preventDefault(); }
     });
   }
