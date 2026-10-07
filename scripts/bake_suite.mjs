@@ -2,7 +2,7 @@
 // the Courier's skeleton) into the game's clip packs. No retarget: the suite's rest pose is the Courier's to the bit, so each frame's
 // local bone rotation is exactly what Character.applyPose writes, and the hips' translation is already in the pack's space.
 //
-//   node scripts/bake_suite.mjs          -> src/assets/clips/{core,combat,social}.bin
+//   node scripts/bake_suite.mjs          -> src/assets/clips/{core,social}.bin   (bake again when code names a new clip)
 //
 // The packs keep anims.bin's layout (scripts/bake_anims.mjs: uint32 header length, JSON header, int16 data; quaternions x32767, the
 // pelvis x8192, a track of one frame is constant) with three additions the old decoder ignores:
@@ -13,10 +13,12 @@
 // Timing: every channel's first key is at 1/30 s, not 0 (Blender's frame 1). The frames are the keys themselves: frame i is key i,
 // dur = (keys - 1) / 30. Sampling from t = 0, as bake_anims.mjs does, would hold frame 0 twice and stall every loop two frames.
 //
-// What goes where (by need, src/courier/anim/suite.js): CORE (move + skiff) and COMBAT (melee) are fetched at boot; SOCIAL (emotes,
-// dances, flirts, taunts) is fetched after it, unawaited. Left out: the Vane_Rev* set (the Dreamvane's left-hand mirror, re-posed by
-// hand so a runtime mirror would not reproduce it; the game holds the Vane right-handed) and the tools' IdleB..E fidgets (2-5 degrees
-// from their idle), 51 clips, 1.2 MB.
+// What goes where (by need, src/courier/anim/suite.js): CORE, fetched at boot, holds every move, skiff and melee clip the game's code
+// NAMES (a string in src/ that is the clip's name, or its prefix before a `${`: `Bell_Note${n}`); SOCIAL, fetched the first time anything
+// asks, holds the emotes, dances, flirts and taunts and every clip nothing names yet (the workbench's to browse). A clip in the heap
+// is a clip the game plays (the JS heap's budget, docs/ARCHITECTURE.md). Left out: the Vane_Rev* set (the Dreamvane's left-hand
+// mirror, re-posed by hand so a runtime mirror would not reproduce it; the game holds the Vane right-handed) and the tools' IdleB..E
+// fidgets (2-5 degrees from their idle), 51 clips, 1.2 MB.
 //
 // Prior art: the game's own bake_anims.mjs (the layout and the writer); the glTF 2.0 animation sampler (keys read as they are, LINEAR).
 import fs from 'node:fs';
@@ -33,23 +35,29 @@ const BONES = JSON.parse(old.subarray(4, 4 + old.readUInt32LE(0)).toString()).bo
 BONES.splice(BONES.indexOf('spine004') + 1, 0, 'spine005'); // (parent before child, as Character.mirrorPose's FK needs: spine004 > spine005 > head)
 const BODY = BONES.filter((b) => !/^(f_|thumb)/.test(b));
 const skip = (n) => /^Vane_Rev/.test(n) || /^(Sond|Brush|Vane|Bell|Lock|Tome|Gun)_Idle[B-E]$/.test(n);
-const PACKS = { core: ['move', 'skiff'], combat: ['melee'], social: ['emotes', 'social'] };
+const FILES = ['move', 'skiff', 'melee', 'emotes', 'social'];
+// what the code names (a clip's name in a string; or its prefix before a template's `${`)
+const named = new Set(), prefixes = [];
+const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : e.name.endsWith('.js') ? [path.join(d, e.name)] : []));
+for (const f of walk(path.join(root, 'src'))) for (const m of fs.readFileSync(f, 'utf8').matchAll(/['"`]((?:Loco|Air|Trav|Skiff|Sond|Fist|Brush|Vane|Bell|Lock|Tome|Gun)_[A-Za-z0-9]*)(\$\{)?/g)) (m[2] ? prefixes.push(m[1]) : named.add(m[1]));
+const boot = (n) => named.has(n) || prefixes.some((p) => n.startsWith(p));
+const PACKS = { core: (file, n) => file !== 'emotes' && file !== 'social' && boot(n), social: (file, n) => !(file !== 'emotes' && file !== 'social' && boot(n)) };
 
 const load = (f) => new Promise((res, rej) => { const b = fs.readFileSync(f); new GLTFLoader().parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength), '', res, rej); });
 const q16 = (x) => Math.max(-32767, Math.min(32767, Math.round(x * 32767)));
 const p16 = (x) => Math.max(-32767, Math.min(32767, Math.round(x * P)));
 fs.mkdirSync(OUT, { recursive: true });
 
-for (const [pack, files] of Object.entries(PACKS)) {
+for (const [pack, takes] of Object.entries(PACKS)) {
   const header = { fps: FPS, bones: BONES, rest: null, clips: [], posScale: 1 / P, src: 'source_assets/Courier' };
   const data = [];
-  for (const file of files) {
+  for (const file of FILES) {
     const gltf = await load(path.join(SRC, `courier_anims_${file}.glb`));
     const bone = {}; gltf.scene.traverse((n) => { if (n.isBone) bone[n.name] = n; });
     for (const b of BONES) if (!bone[b]) throw new Error(`${file}: no bone ${b}`);
     header.rest ??= BONES.map((b) => bone[b].quaternion.toArray().map((x) => +x.toFixed(6)));
     for (const clip of gltf.animations) {
-      if (skip(clip.name)) continue;
+      if (skip(clip.name) || !takes(file, clip.name)) continue;
       const tr = {}; for (const t of clip.tracks) tr[t.name] = t;
       let t0 = Infinity, t1 = 0; for (const t of clip.tracks) { t0 = Math.min(t0, t.times[0]); t1 = Math.max(t1, t.times[t.times.length - 1]); }
       const frames = Math.round((t1 - t0) * FPS) + 1;

@@ -5,23 +5,23 @@
 //
 //   FETCHED, NOT INLINED  the suite is 8 MB of clips; inlined as base64 it would take the bundle past the publish limit (16 MB a file)
 //                         and keep the string in the heap for the session. Each pack is a plain .bin beside the bundle (`?url`),
-//                         fetched once: CORE (move + skiff) and COMBAT (melee) before the Courier is built, SOCIAL (emotes, dances,
-//                         flirts, taunts) after, unawaited (`pack.social` resolves when its clips are in `pack.clips`).
+//                         fetched once: CORE (every move, skiff and melee clip the code names: scripts/bake_suite.mjs) before the
+//                         Courier is built, SOCIAL (the emotes, dances, flirts and taunts, and every clip nothing names yet) the first
+//                         time anything asks (`pack.social`, a promise: it resolves when its clips are in `pack.clips`; a session that
+//                         never emotes never fetches it).
 //   DECODED ON FIRST USE  a clip's frames become Float32 the first time anything reads its `q` or `p` (Clips.sample, a stance bake);
 //                         until then it is a few numbers over the pack's int16 data. A session that never dances never decodes a dance.
-//   ONE BONE ORDER        the old packs' clips are widened to the suite's order, spine005 held at its rest (as it always was).
+//   ONE BONE ORDER        the old packs' clips decode onto the suite's order, spine005 held at its rest (as it always was).
 //   SAME MOTIONS          SAME names the old clips the suite recalibrates (the same capture: lengths and hip curves equal, 5-15 degrees
-//                         a bone, the neck and toes now moving); the game keeps playing them by their old names, and the old clip
-//                         stays under `ual:<name>` for the workbench to compare.
+//                         a bone, the neck and toes now moving); the game keeps playing them by their old names (the two compared front
+//                         and side: docs/ref/suite_same.png).
 //
 // Prior art: the game's own decoder (anims.js) and pack layout (scripts/bake_anims.mjs); streaming animation sets by need, as
 // Unreal's and Unity's addressable animation bundles do; lazy decompression of animation data on first sample (ACL's runtime).
 //
-//   const pack = await loadClips({ packs: [animsB64, cmuB64] })   -> { fps, bones, rest, clips, social: Promise }   (Clips(pack))
+//   const pack = await loadClips({ packs: [animsB64, cmuB64] })   -> { fps, bones, rest, clips, social: Promise (asked: fetched) }   (Clips(pack))
 // ---------------------------------------------------------------------------------------
-import { decodeAnims } from './anims.js';
 import coreUrl from '../../assets/clips/core.bin?url';
-import combatUrl from '../../assets/clips/combat.bin?url';
 import socialUrl from '../../assets/clips/social.bin?url';
 
 // the old name -> the suite clip that is the same capture (front-and-side sheets of both: docs/ref/suite_same.png)
@@ -31,22 +31,26 @@ export const SAME = {
   slideStart: 'Trav_SlideStart', slideLoop: 'Trav_SlideLoop', slideExit: 'Trav_SlideExit', climb: 'Trav_Mantle',
 };
 
-/** A pack's bytes -> { fps, bones, rest, clips } with each clip's frames decoded the first time they are read. */
-export function readPack(buf) {
+/** A pack's bytes -> { fps, bones, rest, clips } with each clip's frames decoded the first time they are read. `to`: another bone order
+ *  ({ bones, rest }) to decode onto: a bone the pack lacks is held at its rest (the old packs' spine005). */
+export function readPack(buf, to = null) {
   const bin = new Uint8Array(buf), hl = new DataView(buf).getUint32(0, true);
   const H = JSON.parse(new TextDecoder().decode(bin.subarray(4, 4 + hl)));
-  const data = new Int16Array(buf, 4 + hl, (bin.length - 4 - hl) >> 1), nb = H.bones.length, ps = H.posScale, clips = {};
+  const data = new Int16Array(buf, 4 + hl, (bin.length - 4 - hl) >> 1), bones = to?.bones || H.bones, nb = bones.length, ps = H.posScale, clips = {};
+  const map = H.bones.map((b) => bones.indexOf(b)), missing = bones.map((b, i) => (H.bones.includes(b) ? -1 : i)).filter((i) => i >= 0);
   for (const c of H.clips) {
-    const T = new Int32Array(c.tracks.length * 4); c.tracks.forEach((t, i) => T.set([t.b, t.k === 'q' ? 0 : 1, t.o, t.n], i * 4)); // (the header's track objects let go)
-    clips[c.name] = lazy({ name: c.name, src: c.src, dur: c.dur, n: c.frames, loop: !!c.loop }, () => unpack(data, T, c.frames, nb, ps));
+    const T = new Int32Array(c.tracks.length * 4); c.tracks.forEach((t, i) => T.set([t.k === 'q' ? map[t.b] : t.b, t.k === 'q' ? 0 : 1, t.o, t.n], i * 4)); // (the header's track objects let go)
+    clips[c.name] = lazy({ name: c.name, src: c.src, dur: c.dur, n: c.frames, loop: !!c.loop }, () => unpack(data, T, c.frames, nb, ps, missing, to?.rest));
   }
-  return { fps: H.fps, bones: H.bones, rest: H.rest, clips };
+  return { fps: H.fps, bones, rest: H.rest || to?.rest, clips };
 }
 
-function unpack(data, T, n, nb, ps) {
+function unpack(data, T, n, nb, ps, missing = [], rest = null) {
   const q = new Float32Array(n * nb * 4), p = new Float32Array(n * 3);
+  for (const b of missing) for (let f = 0; f < n; f++) q.set(rest[b], (f * nb + b) * 4); // (a bone the pack never drove: at rest, as it always was)
   for (let i = 0; i < T.length; i += 4) {
     const b = T[i], isQ = T[i + 1] === 0, o = T[i + 2], tn = T[i + 3], w = isQ ? 4 : 3;
+    if (isQ && b < 0) continue;
     for (let f = 0; f < n; f++) {
       const s = o + Math.min(f, tn - 1) * w;
       if (isQ) {
@@ -65,30 +69,16 @@ function lazy(c, make) {
   return c;
 }
 
-/** An old pack's clips (decodeAnims) on the suite's bone order: a bone the old pack lacks is held at its rest. */
-export function widen(old, bones, rest) {
-  const from = bones.map((b) => old.bones.indexOf(b)), nb = bones.length, ob = old.bones.length, out = {};
-  for (const [name, c] of Object.entries(old.clips)) {
-    const q = new Float32Array(c.n * nb * 4);
-    for (let f = 0; f < c.n; f++) for (let b = 0; b < nb; b++) {
-      const d = (f * nb + b) * 4;
-      if (from[b] < 0) q.set(rest[b], d); else q.set(c.q.subarray((f * ob + from[b]) * 4, (f * ob + from[b]) * 4 + 4), d);
-    }
-    out[name] = { ...c, q };
-  }
-  return out;
-}
-
 const fetchPack = (url) => fetch(url).then((r) => { if (!r.ok) throw new Error(`clips: ${url} ${r.status}`); return r.arrayBuffer(); }).then(readPack);
 
-/** The game's clip pack: the suite's core and combat clips, the old packs widened, the same motions renamed; social to follow. */
+/** The game's clip pack: the suite's core clips, the old packs onto its bones, the same motions renamed; social when asked for. */
 export async function loadClips({ packs = [] } = {}) {
-  const [core, combat] = await Promise.all([fetchPack(coreUrl), fetchPack(combatUrl)]);
+  const core = await fetchPack(coreUrl);
   const pack = { fps: core.fps, bones: core.bones, rest: core.rest, clips: {} };
-  for (const b64 of packs) Object.assign(pack.clips, widen(decodeAnims(b64), pack.bones, pack.rest));
-  for (const [old, now] of Object.entries(SAME)) if (pack.clips[old] && core.clips[now]) pack.clips[`ual:${old}`] = pack.clips[old];
-  Object.assign(pack.clips, core.clips, combat.clips);
+  for (const b64 of packs) Object.assign(pack.clips, readPack(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer, pack).clips); // (the old packs, decoded onto the suite's bones as each clip is first read)
+  Object.assign(pack.clips, core.clips);
   for (const [old, now] of Object.entries(SAME)) if (core.clips[now]) pack.clips[old] = { ...core.clips[now], name: old };
-  pack.social = fetchPack(socialUrl).then((s) => { Object.assign(pack.clips, s.clips); return true; }, (e) => { console.warn(e); return false; });
+  let social = null; // (fetched the first time anything asks for it: the first emote, not the boot)
+  Object.defineProperty(pack, 'social', { get: () => (social ||= fetchPack(socialUrl).then((s) => { Object.assign(pack.clips, s.clips); return true; }, (e) => { console.warn(e); return false; })) });
   return pack;
 }

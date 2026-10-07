@@ -782,7 +782,7 @@ async function main() {
   game.ui.want('title', true); // (the HUD steps out while the title is up: hideui.js)
   const endTitle = (quiet = false) => {
     if (!title.active) return;
-    title.active = false; title.ui?.close(); game.ui.want('title', false); game.vessel.dressed.delete(titleScene.ch);
+    title.active = false; title.ui?.close(); game.ui.want('title', false); game.vessel.dressed.delete(titleScene.ch); titleScene.board?.release?.(); // (the title's chess pieces let go: title/board.js)
     if (!quiet) {
       // (from the dark of the dive into the world)
       const f = document.createElement('div'); f.style.cssText = 'position:fixed;inset:0;background:#0b0614;z-index:12;pointer-events:none;transition:opacity .8s';

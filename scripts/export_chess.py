@@ -1,4 +1,4 @@
-"""Export source_assets/chess_pieces.blend -> src/assets/chess.glb: the title's six chess pieces (pawn, rook, knight, bishop, queen,
+"""Export source_assets/chess_pieces.blend -> src/assets/clips/chess.bin (GLB bytes, fetched as a .bin: title/board.js): the title's six chess pieces (pawn, rook, knight, bishop, queen,
 king; the owner's, 2026-10-07), each on its own five-bone rig, with every action as a clip (`<piece>_<verb>`: idle, hop, land, march,
 bow, lookAround, taunt, celebrate, fall, getUp, captured, spawn, move; the king's shiver). The rigs are set at the origin (the file lays
 them out in a row); the Solidify outline shells and their Outline slot are stripped (the game draws its own outline); the light and the
@@ -45,7 +45,7 @@ for o in keep:
     o.hide_set(False)
     o.select_set(True)
 bpy.context.view_layer.objects.active = keep[0]
-out = os.path.join(root, "src", "assets", "chess.glb")
+out = os.path.join(root, "src", "assets", "clips", "chess.bin")
 bpy.ops.export_scene.gltf(
     filepath=out, export_format="GLB", use_selection=True, export_apply=True,
     export_yup=True, export_skins=True, export_animations=True,

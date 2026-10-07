@@ -80,8 +80,18 @@ the rules before building in the same area; a rule a machine can check goes into
     source registered in a constructor with `game.interact?.add` was silently dropped. Register on first use (`offer()`), and test it.
 34. **A committed move does not cut the core's climb.** Whatever takes the step with `endCore` (Launch, a whole-body strike) waits for the
     mantle to finish: ended half way over a lip, the capsule is left inside it.
+35. **A position set outright is checked first.** Anything that moves the Courier without the controller (a phase's step, a teleport by
+    an animation's travel) asks whether the capsule is clear there, and keeps the last clear place to fall back on.
 
 ## Cases
+
+### 2026-10-07 · The stress test's edge-of-the-Dunes skiff runs ended inside the barrier (Calissa)
+- **Seen:** stress seed 2, `edge skiff`: `guard:reset` after `tech.end`, and `guard:nudge` just after `skiff.summon` (none on main).
+- **Cause:** the skiff's new phases set the Courier's position outright (the summon's step to the board's middle, the mount's walk on,
+  the step down, the bail and the get-up), and at the barrier those places were inside it.
+- **Fix:** every phase move asks `clearAt` first and keeps the last clear place; the tech's end puts an embedded Courier back there
+  (courier/skiff/skiff.js).
+- **Rule:** 35.
 
 ### 2026-10-07 · The stress test caught the Courier in a ledge after a mantle (Calissa)
 - **Seen:** the gate's stress run, seed 1: `guard:nudge` on cog0, the tech `launch`, `move.mantle` then `combo.move` 0.17 s later.

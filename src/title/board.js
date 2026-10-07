@@ -13,20 +13,21 @@
 // Prior art: Escher's spirals and "Smaller and Smaller", Alice's chessboard country (Through the Looking-Glass), the tarot Fool on his
 // cliff, Kirby's and Mario Party's board worlds, and the "box-filtered checkerboard" of Inigo Quilez (an antialiased procedural checker).
 //
-// THE PIECES are the owner's (source_assets/chess_pieces.blend -> src/assets/chess.glb, scripts/export_chess.py, 2026-10-07): six
+// THE PIECES are the owner's (source_assets/chess_pieces.blend -> src/assets/clips/chess.bin, scripts/export_chess.py, 2026-10-07): six
 // porcelain pieces on five-bone rigs, alive. Each idles, glances about, bows and taunts between turns; on its turn it MOVES (its own
 // move clip, a square's travel taken out of it: the board carries it from square to square, log-polar), the knight in an L and the queen
 // spinning; the king and the queen celebrate a move; a piece drawn down the drain FALLS, and comes back at the rim with its SPAWN.
-// In the bundle like every model (some hosts will not serve a .glb); until it is parsed, the pieces are lathed porcelain.
+// Its GLB bytes are fetched beside the bundle as a .bin like the clip packs (some hosts will not serve a .glb), only while the title
+// plays, and let go when it closes; until then the pieces are lathed porcelain.
 //
 //   const b = new Board(scene)   b.update(dt, beat)   (beat: { bar, beat, phase } from the music's grid, or the board's own clock)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import chessB64 from '../assets/chess.glb?b64';
+import chessUrl from '../assets/clips/chess.bin?url';
 
-// the owner's pieces: the name of each rig in chess.glb, its height in its own units, and the step a turn takes it (squares: round, in)
+// the owner's pieces: the name of each rig in chess.bin, its height in its own units, and the step a turn takes it (squares: round, in)
 const RIGS = { pawn: ['pawn_Rig', 3.0], rook: ['Rook_Rig', 3.7], knight: ['Knight_Rig', 3.96], bishop: ['bishop_Rig', 4.3], queen: ['queen_Rig', 4.29], king: ['King_Rig', 5.0] };
 const CLIP = { pawn: 'pawn', rook: 'Rook', knight: 'Knight', bishop: 'bishop', queen: 'queen', king: 'King' };
 
@@ -137,7 +138,7 @@ export class Board {
       this.group.add(m);
       this.pieces.push({ m, kind, side, i: i + 0.5, j: 9 + (n * 5) % 11 + 0.5, h, hop: null, yaw: Math.random() * 6.28, wait: 2 + (n % 5) * 1.7 }); // (j in log-radius squares: 9 is ~10 m out, 20 ~190 m)
     });
-    this.loadPieces();
+    this.piecesWanted = true; // (the owner's pieces are parsed the first time the board plays: the title shown, not a test drive)
     // dice in the air, turning
     const dieMat = new THREE.MeshStandardMaterial({ map: dieTexture(), roughness: 0.4 });
     this.dice = [];
@@ -152,10 +153,12 @@ export class Board {
     this.lastBar = -1; this.lastBeat = -1; this.turn = 0;
   }
 
-  /** The owner's pieces in place of the lathed ones, once chess.glb is in (each its own rig, its own mixer). */
+  /** The owner's pieces in place of the lathed ones, once chess.bin is in (each its own rig, its own mixer). */
   async loadPieces() {
+    if (this.loading) return;
+    this.loading = true;
     let gl;
-    try { gl = await new GLTFLoader().parseAsync(Uint8Array.from(atob(chessB64), (c) => c.charCodeAt(0)).buffer, ''); } catch (e) { console.warn('chess pieces', e); return; }
+    try { gl = await new GLTFLoader().parseAsync(await fetch(chessUrl).then((r) => r.arrayBuffer()), ''); } catch (e) { console.warn('chess pieces', e); return; }
     // (a move's square of travel taken out: the board carries the piece; its rise and its squash stay)
     for (const a of gl.animations) if (/_move$/.test(a.name)) for (const t of a.tracks) if (/^root(_\d+)?\.position$/.test(t.name)) for (let k = 0; k < t.values.length; k += 3) { t.values[k] = 0; t.values[k + 2] = 0; }
     const rigs = {}; gl.scene.traverse((o) => { if (o.name.endsWith('_Rig')) rigs[o.name] = o; });
@@ -170,6 +173,17 @@ export class Board {
       p.m = holder; p.unit = p.h / height; p.mixer = mixer; p.clips = clips; p.rigged = true;
       this.play(p, 'idle', { loop: true, fade: 0 });
     }
+  }
+
+  /** The title is gone: the owner's pieces let go (the lathed ones stand in until it is shown again). */
+  release() {
+    for (const p of this.pieces) {
+      if (!p.rigged) continue;
+      p.mixer.stopAllAction(); this.group.remove(p.m);
+      p.m = new THREE.Mesh(this.geos[p.kind === 'knight' ? 'bishop' : p.kind === 'queen' ? 'king' : p.kind], this.mats[p.side]); this.group.add(p.m);
+      p.rigged = false; p.mixer = p.clips = p.action = null;
+    }
+    this.loading = false;
   }
 
   /** A piece plays one of its clips (crossfaded); a one-shot goes back to its idle when it ends. */
@@ -192,6 +206,7 @@ export class Board {
   }
 
   update(dt, beat) {
+    if (this.piecesWanted && !this.loading) this.loadPieces();
     this.spin += SPIN * dt; this.flow += FLOW * dt;
     this.mat.uniforms.uSpin.value = this.spin; this.mat.uniforms.uFlow.value = this.flow;
     // the beat: a move each bar, by turns; a die tumbles on each bar's downbeat

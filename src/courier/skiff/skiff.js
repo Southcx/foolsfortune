@@ -111,7 +111,12 @@ export class Skiffing extends Tech {
     P.endCore?.();
     P.setShape('stand');
     this.phase = this.next || 'ride'; this.phaseT = 0; this.next = null; this.want = false; this.stowNow = false;
-    if (this.phase === 'summon') { this.heading = P.bodyYaw + Math.PI / 2; P.pos.addScaledVector(_v2.set(Math.sin(this.heading), 0, Math.cos(this.heading)), -SKIFF.rider.z); this.parked = null; } // (the board rises with its rider's spot under their feet; they face its bow)
+    this.safe = (this.safe || new THREE.Vector3()).copy(P.pos); // (the last place the capsule stood clear: where it is put back if a phase ends it inside something)
+    if (this.phase === 'summon') { // (the board rises with its rider's spot under their feet, if there is room; they face its bow)
+      this.heading = P.bodyYaw + Math.PI / 2; this.parked = null;
+      _v2.set(Math.sin(this.heading), 0, Math.cos(this.heading)).multiplyScalar(-SKIFF.rider.z).add(P.pos);
+      if (this.clearAt(_v2.x, P.pos.y, _v2.z)) P.pos.copy(_v2);
+    }
     else if (this.phase === 'mount') { this.heading = this.parked.heading; this.board.pos.copy(P.pos); this.mountFrom = P.pos.clone(); }
     else this.heading = P.yaw;
     this.hPrev = this.heading; this.spinPrev = 0; this.rollPrev = 0;
@@ -131,6 +136,7 @@ export class Skiffing extends Tech {
   }
 
   end() {
+    const P0 = this.P; if (this.safe && P0.embedded?.()) P0.pos.copy(this.safe); // (a phase never leaves them inside the barrier or a ruin)
     if (!this.parked) this.skiff.visible = false;
     this.wake.clear();
     this.unit = null;
@@ -150,13 +156,28 @@ export class Skiffing extends Tech {
     if (phase === 'dismount' || phase === 'bail') {
       this.board.pos.copy(P.pos); this.board.heading = this.heading; this.board.v.copy(this.v).multiplyScalar(phase === 'bail' ? 0.6 : 0);
       this.rider.pos.set(0, SKIFF.deck, SKIFF.rider.z).applyAxisAngle(UP, this.heading).add(P.pos); this.rider.q = qr.clone(); this.rider.dy = 0;
+      if (!this.clearAt(this.rider.pos.x, P.pos.y, this.rider.pos.z)) this.rider.pos.set(P.pos.x, this.rider.pos.y, P.pos.z); // (against a wall: where the board's middle is)
     }
     if (phase === 'getup') { // (the get-up's first hips laid onto where the bail left the hips: the same body, now on the sand)
       const C = g.character.clips, hb = C.clips.Skiff_Bail, gu = C.clips.getUp, e = hb.n - 1;
-      if (hb && gu) this.rider.pos.add(_v2.set(hb.p[e * 3] - gu.p[0], 0, hb.p[e * 3 + 2] - gu.p[2]).applyQuaternion(this.rider.q));
+      if (hb && gu) {
+        const r = this.rider.pos, x = r.x, z = r.z;
+        _v2.set(hb.p[e * 3] - gu.p[0], 0, hb.p[e * 3 + 2] - gu.p[2]).applyQuaternion(this.rider.q);
+        if (this.clearAt(x + _v2.x, this.P.pos.y, z + _v2.z)) r.add(_v2); // (the body lies where it fell, unless that is in a wall)
+      }
     }
     if (phase === 'bail') { this.parked = null; P.shake = Math.max(P.shake, 0.4); sfx.thunk?.(1.4, 3); }
   }
+
+  /** Is the capsule clear standing at (x, y, z)? (a phase never sets them down inside a wall: the barrier, a ruin) */
+  clearAt(x, y, z) {
+    const P = this.P, sx = P.pos.x, sy = P.pos.y, sz = P.pos.z;
+    P.pos.set(x, y, z); const ok = !P.embedded?.(); P.pos.set(sx, sy, sz);
+    return ok;
+  }
+
+  /** Set the capsule down at (x, y, z) if it is clear there (else it stays); and remember the clear place. */
+  setPos(x, y, z) { if (this.clearAt(x, y, z)) { this.P.pos.set(x, y, z); this.safe?.copy(this.P.pos); } }
 
   /** A crash: thrown off. */
   bail(why) {
@@ -171,20 +192,23 @@ export class Skiffing extends Tech {
     const sand = D.rideHeight(P.pos.x, P.pos.z), hover = this.cfg.hover + 0.1;
     this.v.multiplyScalar(Math.exp(-6 * dt)); P.vel.x = this.v.x; P.vel.z = this.v.z;
     if (this.phase === 'summon' || this.phase === 'mount') {
-      if (this.phase === 'mount') { const k = smooth(0, 0.35, t); P.pos.x = this.mountFrom.x + (this.parked.pos.x - this.mountFrom.x) * k; P.pos.z = this.mountFrom.z + (this.parked.pos.z - this.mountFrom.z) * k; }
+      let x = P.pos.x, z = P.pos.z;
+      if (this.phase === 'mount') { const k = smooth(0, 0.35, t); x = this.mountFrom.x + (this.parked.pos.x - this.mountFrom.x) * k; z = this.mountFrom.z + (this.parked.pos.z - this.mountFrom.z) * k; }
       const rise = this.phase === 'summon' ? smooth(0.85, 1.35, t) : smooth(0.25, 0.6, t);
-      P.pos.y = sand + hover * rise; P.vel.y = 0;
+      this.setPos(x, D.rideHeight(x, z) + hover * rise, z); P.vel.y = 0;
       if (t >= len) { this.phase = 'ride'; this.parked = null; this.air = false; this.phaseT = 0; }
     } else if (this.phase === 'recall') {
       this.rider.dy = hover * smooth(0.1, 0.55, t); P.vel.y = 0;
-      if (t >= len) { P.pos.y = sand; P.vel.x = this.v.x * 2; P.vel.z = this.v.z * 2; P.bodyYaw = this.heading - Math.PI / 2; g.events?.emit('skiff.recall', { by: 'courier' }); return false; }
+      if (t >= len) { this.setPos(P.pos.x, sand, P.pos.z); P.vel.x = this.v.x * 2; P.vel.z = this.v.z * 2; P.bodyYaw = this.heading - Math.PI / 2; g.events?.emit('skiff.recall', { by: 'courier' }); return false; }
     } else if (this.phase === 'dismount') {
       this.rider.dy = hover * smooth(0.35, 0.8, t); P.vel.y = 0;
       if (t >= len) {
         const e = rootOf(g.character.clips, 'Skiff_Dismount')?.end;
         this.parked = { pos: this.board.pos.clone(), heading: this.board.heading };
-        P.pos.copy(this.rider.pos); if (e) P.pos.add(_v.set(e.x, 0, e.z).applyQuaternion(this.rider.q));
-        P.pos.y = D.rideHeight(P.pos.x, P.pos.z); P.vel.set(0, 0, 0); P.bodyYaw = P.yaw = this.heading - Math.PI / 2;
+        _v3.copy(this.rider.pos); if (e) _v3.add(_v.set(e.x, 0, e.z).applyQuaternion(this.rider.q));
+        _v3.y = D.rideHeight(_v3.x, _v3.z);
+        if (this.clearAt(_v3.x, _v3.y, _v3.z)) P.pos.copy(_v3); // (stepped off into a wall: they stay where they stood)
+        P.vel.set(0, 0, 0); P.bodyYaw = P.yaw = this.heading - Math.PI / 2;
         g.events?.emit('skiff.park', { by: 'courier' });
         return false;
       }
@@ -192,10 +216,10 @@ export class Skiffing extends Tech {
       // the board slides on to a stop, upright; the rider is thrown off where they were and lies there, then gets up
       const b = this.board; b.v.multiplyScalar(Math.exp(-2.5 * dt)); b.pos.addScaledVector(b.v, dt); b.pos.y = D.rideHeight(b.pos.x, b.pos.z) + hover;
       this.rider.dy = hover * smooth(0.12, 0.45, this.phase === 'bail' ? t : 9);
-      P.pos.x = this.rider.pos.x; P.pos.z = this.rider.pos.z; P.pos.y = D.rideHeight(P.pos.x, P.pos.z); P.vel.set(0, 0, 0);
+      { const y = D.rideHeight(this.rider.pos.x, this.rider.pos.z); if (this.clearAt(this.rider.pos.x, y, this.rider.pos.z)) P.pos.set(this.rider.pos.x, y, this.rider.pos.z); else this.rider.pos.set(P.pos.x, this.rider.pos.y, P.pos.z); } P.vel.set(0, 0, 0);
       const done = this.phase === 'getup' ? t >= len : t >= len && !g.character.clips.clips.getUp;
       if (this.phase === 'bail' && t >= len && !done) this.enter('getup');
-      if (done) { this.parked = { pos: b.pos.clone(), heading: b.heading }; P.pos.x = this.rider.pos.x; P.pos.z = this.rider.pos.z; P.bodyYaw = P.yaw = this.heading - Math.PI / 2; return false; }
+      if (done) { this.parked = { pos: b.pos.clone(), heading: b.heading }; P.bodyYaw = P.yaw = this.heading - Math.PI / 2; return false; }
     }
     P.move(dt);
     P.grounded = this.phase !== 'summon' || t > 1.35;
@@ -309,6 +333,7 @@ export class Skiffing extends Tech {
     if (P.pos.y < gy2 + 0.35) { P.pos.y = gy2 + 0.35; if (P.vel.y < 0) P.vel.y = 0; }
     P.grounded = !this.air;
     P.bodyYaw = this.heading;
+    if (this.safe && !P.embedded?.()) this.safe.copy(P.pos);
 
     // ---- the camera swings round behind where the board goes, unless you are looking about
     if (P.input.dx || P.input.dy) this.mouseIdle = 0; else this.mouseIdle += dt;
