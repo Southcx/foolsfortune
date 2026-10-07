@@ -15,7 +15,7 @@
 //   S (hold)  let it down, and brake. Hoist again quickly and it is a PUMP: a burst of speed
 //   A / D     steer (the board can turn on the spot, and carves at speed)
 //   Space     hold to crouch the springs, release to hop. In the air A / D spin the whole skiff, rider and
-//             all: land a whole turn square for a boost
+//             all: land a whole turn square for a boost (skiff.ollie { geyser, by }: the hop, or a geyser caught crouched)
 //   Shift     solar flare: the emblem blazes and top speed and acceleration jump, for Lachryma
 //   Y         on foot: SUMMON the board (it rises out of the sand under them, the mast telescopes up, they hop on: 2.2 s);
 //             riding: RECALL it (they step down and it shrinks into the raised hand). The psygun is stowed while you ride.
@@ -81,8 +81,12 @@ export class Skiffing extends Tech {
     this.rider = { pos: new THREE.Vector3(), yaw: 0, dy: 0 }; // (where the rider is when not on the board: bailing, getting up)
     this.popT = null; this.landT = null; this.flaring = false; this.furling = false;
   }
-  /** F at a parked board (game.interact is made after the techs: offered the first frame it is there). */
+  /** F at a parked board (game.interact is made after the techs: offered the first frame it is there), and the geyser heard. */
   offer() {
+    if (!this.heard && this.game.events) { // (a geyser caught with the springs crouched is an ollie off it: Dovina's skiff.ollie.geyser)
+      this.heard = true;
+      this.game.events.on('geyser.launch', () => { if (this.active && this.charge > 0.2) this.game.events.emit('skiff.ollie', { geyser: true, by: 'courier' }); });
+    }
     if (this.offered || !this.game.interact) return;
     this.offered = true;
     this.game.interact.add('skiff', () => { const k = this.parked, P = this.P; if (!k || this.active) return null; const d = Math.hypot(k.pos.x - P.pos.x, k.pos.z - P.pos.z); return d < 2.8 ? { pos: new THREE.Vector3(k.pos.x, k.pos.y + 1.1, k.pos.z), d } : null; });
@@ -301,6 +305,7 @@ export class Skiffing extends Tech {
       this.air = true; this.spin = 0; this.airT = 0; this.popT = 0;
       sfx.airJump();
       g.events?.emit('skiff.hop', {});
+      g.events?.emit('skiff.ollie', { geyser: false, by: 'courier' });
     }
     if (!sp2) this.charge = Math.max(0, this.charge - dt * 4);
     this.spaceWas = sp2;
