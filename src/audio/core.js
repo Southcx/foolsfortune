@@ -74,6 +74,7 @@ export class Sfx {
   // rate limiter so 200 shards landing at once don't melt the mixer
   allow(key, perSec) {
     const now = performance.now();
+    if (this.limitTag) key = this.limitTag + key; // (a sound made elsewhere keeps its own limits: audio/positional.js)
     const last = this.limits.get(key); // (never played is not "played at time zero": the first one always sounds)
     if (last !== undefined && now - last < 1000 / perSec) return false;
     this.limits.set(key, now);
@@ -84,7 +85,7 @@ export class Sfx {
   out(gain, verb = 0.5, ui = false) {
     const g = this.ctx.createGain();
     g.gain.value = gain;
-    g.connect(ui ? this.main : this.master);
+    g.connect(ui ? this.main : this.route || this.master); // (`route`: a sound made somewhere else, panned and rolled off: audio/positional.js)
     if (verb > 0) {
       const s = this.ctx.createGain();
       s.gain.value = verb;
