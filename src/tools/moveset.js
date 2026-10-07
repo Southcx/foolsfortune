@@ -178,7 +178,7 @@ export class Moveset {
   /** A whole-body move owns the step (Launch): carried by its clip's own travel, hung in the air, or falling to a plunge. */
   carry(c, m) {
     const P = this.P, L = P.techs.get('launch'), def = c.def, C = this.game.character.clips;
-    if (!L || (P.techs.active && P.techs.active !== L)) { c.def = { ...def, body: 'upper' }; return; }
+    if (!L || P.mantle || P.freeze || (P.techs.active && P.techs.active !== L)) { c.def = { ...def, body: 'upper' }; return; } // (never mid-mantle: ending the core's climb there leaves them in the ledge)
     const R = def.root ? rootOf(C, def.clip) : null, span = ((def.to ?? this.dur(def)) - (def.from || 0)) / (def.rate || 1);
     const yaw = c.yaw, xyz = def.root === 'xyz';
     // never through what it was aimed at: the travel is cut to stop a reach short of it

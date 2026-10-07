@@ -458,5 +458,5 @@ The models are exported from `source_assets/` with Blender as a Python module (`
 - `scripts/export_godmode.py` → `src/assets/godhand.glb`, `pneuka.glb`
 - `scripts/export_slipjelly.py` → `src/assets/slipjelly.glb` (one mesh, no rig)
 - `scripts/export_clapperjar.py` → the clapperjar with its idle, sprint and stumble clips
-- `scripts/export_chess.py` → `src/assets/chess.glb`, the title's six chess pieces on their rigs with their 79 clips (fetched beside the bundle)
+- `scripts/export_chess.py` → `src/assets/chess.glb`, the title's six chess pieces on their rigs with their 79 clips
 - `node scripts/posesheet.mjs out.png Clip@t,t ...` → a contact sheet of the Courier's poses, front and side, on the workbench's stage

@@ -78,8 +78,16 @@ the rules before building in the same area; a rule a machine can check goes into
     the new start has just written (Launch's options), and ends the new move instead of the old.
 33. **A service is asked for when it is needed, not when the asker is built.** The techs are made before `game.interact` (main.js); a
     source registered in a constructor with `game.interact?.add` was silently dropped. Register on first use (`offer()`), and test it.
+34. **A committed move does not cut the core's climb.** Whatever takes the step with `endCore` (Launch, a whole-body strike) waits for the
+    mantle to finish: ended half way over a lip, the capsule is left inside it.
 
 ## Cases
+
+### 2026-10-07 · The stress test caught the Courier in a ledge after a mantle (Calissa)
+- **Seen:** the gate's stress run, seed 1: `guard:nudge` on cog0, the tech `launch`, `move.mantle` then `combo.move` 0.17 s later.
+- **Cause:** a whole-body cutlass move began during the mantle; Launch's `endCore()` stopped the climb half way over the lip.
+- **Fix:** the combo engine plays a whole-body move on the upper body alone while `P.mantle` or `P.freeze` (tools/moveset.js `carry`).
+- **Rule:** 34.
 
 ### 2026-10-07 · The Solar Skiff's parked board had no chevron (Calissa)
 - **Seen:** headless, F beside a parked board did nothing; `interact.cur` was undefined.

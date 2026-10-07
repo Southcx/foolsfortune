@@ -17,14 +17,14 @@
 // porcelain pieces on five-bone rigs, alive. Each idles, glances about, bows and taunts between turns; on its turn it MOVES (its own
 // move clip, a square's travel taken out of it: the board carries it from square to square, log-polar), the knight in an L and the queen
 // spinning; the king and the queen celebrate a move; a piece drawn down the drain FALLS, and comes back at the rim with its SPAWN.
-// Fetched beside the bundle like the clip packs; until it is in, the pieces are lathed porcelain.
+// In the bundle like every model (some hosts will not serve a .glb); until it is parsed, the pieces are lathed porcelain.
 //
 //   const b = new Board(scene)   b.update(dt, beat)   (beat: { bar, beat, phase } from the music's grid, or the board's own clock)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneRig } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import chessUrl from '../assets/chess.glb?url';
+import chessB64 from '../assets/chess.glb?b64';
 
 // the owner's pieces: the name of each rig in chess.glb, its height in its own units, and the step a turn takes it (squares: round, in)
 const RIGS = { pawn: ['pawn_Rig', 3.0], rook: ['Rook_Rig', 3.7], knight: ['Knight_Rig', 3.96], bishop: ['bishop_Rig', 4.3], queen: ['queen_Rig', 4.29], king: ['King_Rig', 5.0] };
@@ -155,7 +155,7 @@ export class Board {
   /** The owner's pieces in place of the lathed ones, once chess.glb is in (each its own rig, its own mixer). */
   async loadPieces() {
     let gl;
-    try { const buf = await fetch(chessUrl).then((r) => r.arrayBuffer()); gl = await new GLTFLoader().parseAsync(buf, ''); } catch (e) { console.warn('chess pieces', e); return; }
+    try { gl = await new GLTFLoader().parseAsync(Uint8Array.from(atob(chessB64), (c) => c.charCodeAt(0)).buffer, ''); } catch (e) { console.warn('chess pieces', e); return; }
     // (a move's square of travel taken out: the board carries the piece; its rise and its squash stay)
     for (const a of gl.animations) if (/_move$/.test(a.name)) for (const t of a.tracks) if (/^root(_\d+)?\.position$/.test(t.name)) for (let k = 0; k < t.values.length; k += 3) { t.values[k] = 0; t.values[k + 2] = 0; }
     const rigs = {}; gl.scene.traverse((o) => { if (o.name.endsWith('_Rig')) rigs[o.name] = o; });
