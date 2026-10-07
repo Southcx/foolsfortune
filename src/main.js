@@ -507,6 +507,7 @@ async function main() {
   game.god = god;
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
+  input.wantLock = () => !cursorFree(); // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
@@ -771,7 +772,7 @@ async function main() {
     sfx.unlock();
     overlay.style.display = 'none';
     input.enabled = true; started = true;
-    if (!god.active) input.requestLock(); // (the hand has a free cursor)
+    if (!cursorFree()) input.requestLock(); // (the hand's and the garden's cursor is free: GARDEN-SWEEP #10)
   };
   overlay.addEventListener('click', start);
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
@@ -827,7 +828,7 @@ async function main() {
     if (e.code !== 'Escape' || e.repeat || !cursorFree() || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
     e.preventDefault();
     if (god.arts.wheelOpen) { god.arts.closeWheel(false); return; }
-    overlay.style.display = 'flex'; input.enabled = false;
+    overlay.style.display = 'flex'; input.enabled = false; game.realm?.hand?.letGo(); // (what the garden's hand held is set down, not left hanging under the pause: GARDEN-SWEEP #14)
   });
   renderer.domElement.addEventListener('click', () => {
     if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !cursorFree() && !game.reprogram?.open) input.requestLock();
@@ -996,8 +997,8 @@ async function main() {
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) god.toggle();
-    if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
-    if (started && overlayUp()) { if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
+    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1)
+    if (started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();

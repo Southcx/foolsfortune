@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
+import { transformSync } from 'esbuild';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const SRC = path.join(ROOT, 'src');
@@ -48,6 +49,12 @@ const text = new Map(files.map((f) => [f, fs.readFileSync(f, 'utf8')]));
 const findings = []; // { rule, file, line, msg, hard }
 const add = (rule, file, line, msg, hard = false) => findings.push({ rule, file: rel(file), line, msg, hard });
 const lineOf = (src, i) => src.slice(0, i).split('\n').length;
+
+// ---- 0. every module parses (a comment that ate the rest of a one-line function passed every rule below once: the casebook, 2026-10-07)
+for (const [f, src] of text) {
+  try { transformSync(src, { loader: 'js', format: 'esm', logLevel: 'silent' }); }
+  catch (e) { const m = e.errors?.[0]; add('module.parse', f, m?.location?.line || 1, `does not parse: ${m?.text || e.message}`, true); }
+}
 
 // ---- 1. the import graph: every relative import resolves; every module is imported by something (main.js is the root)
 const imported = new Set();

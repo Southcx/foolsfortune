@@ -305,7 +305,7 @@ export class Tracking {
     on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
-    on('place.enter', (e) => { const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); });
+    on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
     on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.`); });
     on('circuit.gate', (e) => {
@@ -753,7 +753,7 @@ export class Tracking {
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
     // distance and speed (a jump of more than a few metres in a frame is a teleport, not travel)
-    const at = g.god?.controlling ? null : P.pos;
+    const at = g.god?.controlling || g.realm?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7)
     if (at) {
       if (this.prev) {
         const dx = at.x - this.prev.x, dz = at.z - this.prev.z, dy = at.y - this.prev.y, d = Math.hypot(dx, dz);

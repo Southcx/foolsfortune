@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------------------
 import { Chevron } from '../vfx/chevron.js';
 
+
 export class Interact {
   constructor(game) {
     this.game = game;
@@ -51,8 +52,8 @@ export class Interact {
       if (!best && this.cur && !hidden && !g.techs?.active && !g.techs?.get('carry')?.item && (this.lost += 0.08) < 0.24) best = this.cur;
       else if (best) this.lost = 0;
       this.cur = best;
-      this.chevron.target(best ? best.pos : null, best?.up); // (a source may give its up: the garden's planetoids)
+      this.chevron.target(best ? best.pos : null, best?.up); // (a source may give its up: the garden's planetoids, GARDEN-SWEEP #4)
     }
-    this.chevron.update(dt);
+    this.chevron.update(dt); // (it turns and bobs along the offer's up itself: vfx/chevron.js)
   }
 }

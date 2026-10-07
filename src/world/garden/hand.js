@@ -15,13 +15,26 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
+import { STATS } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
 
 export const ARTS = ['grab', 'pull', 'press', 'carve', 'smooth', 'place'];
+const FEATURE_NAME = { terrace: 'terrace', pavilion: 'pavilion', spiritHouse: 'spirit house', pond: 'pond', lantern: 'lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's to word)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4();
 
 /** Where a ray (o, unit d) first meets a sphere, or -1. */
+/** Where a ray meets a planetoid's ground as shaped (its needles and hills: GARDEN-SWEEP #6): its reach's sphere first, then marched
+ *  in steps and halved to the surface; -1 when it misses. */
+const _rp = new THREE.Vector3();
+export function rayGround(o, d, P) {
+  if (!P.radiusAt) return raySphere(o, d, P.c, P.r);
+  const R = P.rMax ?? P.r + 4, inside = o.distanceTo(P.c) < R;
+  let t = inside ? 0 : raySphere(o, d, P.c, R); if (t < 0) return -1;
+  const under = (tt) => { _rp.copy(o).addScaledVector(d, tt).sub(P.c); const r = _rp.length(); return r < P.radiusAt(_rp.divideScalar(r || 1)); };
+  for (const end = t + 2 * R, step = 0.4; t < end; t += step) if (under(t)) { let a = t - step, b = t; for (let k = 0; k < 6; k++) { const m = (a + b) / 2; if (under(m)) b = m; else a = m; } return b; }
+  return -1;
+}
 export function raySphere(o, d, c, r) {
   const ox = o.x - c.x, oy = o.y - c.y, oz = o.z - c.z, b = ox * d.x + oy * d.y + oz * d.z, k = ox * ox + oy * oy + oz * oz - r * r, h = b * b - k;
   if (h < 0) return -1;
@@ -48,7 +61,7 @@ export class GardenHand {
     const g = this.game, I = g.input, cam = g.camera;
     const o = cam.position, d = _v.set((I.mx / innerWidth) * 2 - 1, -(I.my / innerHeight) * 2 + 1, 0.5).unproject(cam).sub(o).normalize().clone();
     let tHit = Infinity, planet = null;
-    for (const P of this.R.place.planets) { const t = raySphere(o, d, P.c, P.r + (P.radiusAt ? 0 : 0)); if (t > 0 && t < tHit) { tHit = t; planet = P; } }
+    for (const P of this.R.place.planets) { const t = rayGround(o, d, P); if (t > 0 && t < tHit) { tHit = t; planet = P; } }
     this.hit = planet ? { planet, point: o.clone().addScaledVector(d, tHit) } : null;
     this.point.copy(planet ? this.hit.point : o.clone().addScaledVector(d, 30));
     return { o: o.clone(), d };
@@ -125,14 +138,23 @@ export class GardenHand {
   choose(p) {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     menu.showPage('garden.place', (im, el) => {
-      const rows = el('div', 'rooms');
-      for (const [id, F] of Object.entries(FEATURES)) for (const f of Object.keys(FEELING_COLOR)) {
-        const c = costOf(id, f), d = el('div', 'room', `<span class="n" style="color:#${FEELING_COLOR[f].toString(16).padStart(6, '0')}">◆</span><span><b>${id} of ${f}</b><s>${F.does} · ${c.cubes} cubes${c.material ? ` and ${/^[aeiou]/.test(c.material) ? 'an' : 'a'} ${c.material} material` : ''}</s></span>`);
-        d.onclick = () => { const r = this.R.plots.place(p, id, f); if (!r.ok) g.log?.say('warn', r.why, { key: 'garden.place', throttle: 1 }); else this.R.flowAll(); menu.close(); };
-        rows.appendChild(d);
+      // one row a feature, its five feelings in the order the pages show them (STATS: wonder first); what you cannot afford is shown dim,
+      // never hidden (Dovina's ruling, GARDEN-SWEEP #14). Which features a Firing opens waits on Dovina's table: all are listed until then.
+      const rows = el('div', 'rooms'), cubes = g.cubes?.balance ?? Infinity, has = (m) => !m || g.pneuka?.slots.some((x) => x?.id === `mat.${m}`);
+      for (const [id, F] of Object.entries(FEATURES)) {
+        const c0 = costOf(id, 'wonder'), d = el('div', 'room', `<span class="n">◇</span><span><b>${FEATURE_NAME[id] || id}</b><s>${F.does} · ${c0.cubes} cubes and a material of its feeling</s></span>`);
+        const pick = el('span', 'feel');
+        for (const f of Object.keys(STATS)) {
+          const c = costOf(id, f), ok = cubes >= c.cubes && has(c.material), b = el('span', '', `◆ ${f}`);
+          b.style.cssText = `color:#${FEELING_COLOR[f].toString(16).padStart(6, '0')};margin-right:.8em;cursor:pointer;opacity:${ok ? 1 : 0.35}`;
+          b.title = `${c.cubes} cubes${c.material ? ` and ${/^[aeiou]/.test(c.material) ? 'an' : 'a'} ${c.material} material` : ''}`;
+          b.onclick = (e) => { e.stopPropagation(); const r = this.R.plots.place(p, id, f); if (!r.ok) g.log?.say('warn', r.why, { key: 'garden.place', throttle: 1 }); else this.R.flowAll(); menu.close(); };
+          pick.appendChild(b);
+        }
+        d.lastChild.appendChild(pick); rows.appendChild(d);
       }
       im.appendChild(el('div', 'grp', `A PLOT ON ${p.planet.name.toUpperCase()}`)); im.appendChild(rows);
-    }, { title: 'PLACE', sub: 'click a feature and its feeling · F closes' });
+    }, { title: 'PLACE', sub: 'click a feeling beside a feature · F closes' });
   }
 
   // ---- the model: over what it holds, or the ground under the cursor, its fingers by the art

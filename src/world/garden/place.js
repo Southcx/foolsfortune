@@ -10,7 +10,7 @@
 // Prior art: Super Mario Galaxy's planetoids and launch stars (a hub made of small worlds), Dual Hearts' dream islands, the xianxia
 // cave abode (the dantian at the heart, the pill furnace, the herb fields, the meditation peak).
 //
-//   PLANETOIDS [{ id, name, r, at, color }]   LINKS [[from, to]]   GARDEN_AT   const P = new GardenPlace(game)   P.group   P.planets [{ id, c, r }]
+//   PLANETOID_SITES [{ id, name, r, at, color }]   LINKS [[from, to]]   GARDEN_AT   const P = new GardenPlace(game)   P.group   P.planets [{ id, c, r }]
 //   P.lotuses [{ i, planet, to, pos, land, toPlanet }]   P.features [{ kind, i, planet, pos, mesh? }]   P.show(on)   P.sync(counts)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -25,7 +25,7 @@ import { CocoonTree } from '../../vfx/garden/cocoontree.js';
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
 /** The six planetoids (radius in metres; `at` from GARDEN_AT); their names are Espada's (npc/realmnames.js: the Athanor is the furnace,
  *  the Mulberry Grove the spirits', the Chimney the peak). */
-export const PLANETOIDS = [
+export const PLANETOID_SITES = [
   { id: 'dantian', r: 20, at: [0, 0, 0], color: 0x9fb4d6 },
   { id: 'terraces', r: 12, at: [-50, 12, -22], color: 0x9cc58a },
   { id: 'furnace', r: 10, at: [-34, -8, 44], color: 0x7a6560 },
@@ -45,7 +45,7 @@ export class GardenPlace {
   constructor(game) {
     this.game = game;
     const g = this.group = new THREE.Group(); g.name = 'garden'; g.userData.zone = 'garden'; g.visible = false;
-    this.planets = PLANETOIDS.map((p) => ({ ...p, c: new THREE.Vector3(...p.at).add(GARDEN_AT) }));
+    this.planets = PLANETOID_SITES.map((p) => ({ ...p, c: new THREE.Vector3(...p.at).add(GARDEN_AT) }));
     this.by = Object.fromEntries(this.planets.map((p) => [p.id, p]));
     this.mats = {
       lotus: new THREE.MeshStandardMaterial({ color: 0xffc6dc, emissive: 0xff8fb8, emissiveIntensity: 0.6, roughness: 0.5, name: 'garden-lotus' }),
@@ -77,6 +77,10 @@ export class GardenPlace {
       P.look = look; P.mesh = look.mesh;
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
       P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
+      // its highest reach, the shape's (the Chimney's needle runs to 28 m on an 8 m world) plus the clay's band: what is solid, whose
+      // gravity it is and what the hand's ray meets are all asked out to here, never the bare radius (GARDEN-SWEEP #6)
+      let top = P.r; for (let i = 0, n = 2048; i < n; i++) { const y = 1 - (2 * (i + 0.5)) / n, q = Math.sqrt(1 - y * y), a = i * 2.399963; top = Math.max(top, P.base(_s.set(Math.cos(a) * q, y, Math.sin(a) * q))); }
+      P.rMax = top * 1.04 + 3;
     });
     // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
     this.sky = new GardenSky(); g.add(this.sky.group);
@@ -104,7 +108,7 @@ export class GardenPlace {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.35, 1.3), this.mats.soil); mesh.applyMatrix4(this.stand(T, dirOf(58, (i / MAX_BEDS) * 360), 0.1, (i / MAX_BEDS) * Math.PI * 2)); mesh.castShadow = true; g.add(mesh);
       F.push({ kind: 'bed', i, planet: T, pos: mesh.position.clone(), mesh });
     }
-    // the Furnace: the pill furnace on its crown (the spirit press)
+    // the Athanor: the pill furnace on its crown (the spirit press)
     { const R = this.by.furnace, m = this.stand(R, UP, 0);
       add(this.mats.wood, new THREE.CylinderGeometry(1.6, 2, 2.6, 10).translate(0, 1.3, 0), m.clone()); add(this.mats.ember, new THREE.CylinderGeometry(1.1, 1.1, 0.3, 10).translate(0, 2.7, 0), m.clone());
       F.push({ kind: 'furnace', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
@@ -114,11 +118,11 @@ export class GardenPlace {
       const mesh = new THREE.Mesh(pavGeo, this.mats.roof); mesh.applyMatrix4(this.stand(V, dirOf(52, (i / MAX_SLOTS) * 360), 0, (i / MAX_SLOTS) * Math.PI * 2)); mesh.castShadow = true; g.add(mesh);
       F.push({ kind: 'slot', i, planet: V, pos: mesh.position.clone(), mesh });
     }
-    // the Spirit Grove: the cocoon tree on its crown (Calissa's: vfx/garden/cocoontree.js; what hangs in it is world/garden/awaken.js's)
+    // the Mulberry Grove: the cocoon tree on its crown (Calissa's: vfx/garden/cocoontree.js; what hangs in it is world/garden/awaken.js's)
     { const R = this.by.grove, m = this.stand(R, UP, 0);
       this.tree = new CocoonTree({ slots: 3 }); this.tree.group.applyMatrix4(m); g.add(this.tree.group);
       F.push({ kind: 'cocoon', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
-    // the Meditation Peak: a needle of rock, and the mat at its foot (the tribulation is Round 4's)
+    // the Chimney: a needle of rock, and the mat at its foot (the tribulation is Round 4's)
     { const R = this.by.peak, d = dirOf(40, 180); F.push({ kind: 'peak', planet: R, pos: R.c.clone().addScaledVector(d, R.radiusAt(d)) }); } // (the mat at the needle's foot: Calissa's needle above it)
     this.features = F;
     // one mesh a material for everything that never moves (render/merge.js's rule: a model of many static primitives is merged)
