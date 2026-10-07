@@ -117,11 +117,27 @@ The garden's god arts are the god hand's own (`godhand/arts.js`), built once, wi
 
 | source | how | from |
 |---|---|---|
-| **captured** | a Figment reprogrammed with the Veritome, or turned by the god hand's HATCH, can be **bound** and sent to the garden | Pokemon, Jade Cocoon |
+| **caught** | **by the Lockheart**: its summoning coffin opened on a Figment laid low, the catch wheel at its odds (`CATCH`, `tools/lockheart/table.js`). **Or by the god hand in battle**: ~ to the Jar and the hand, grab a stunned Figment and hold it over the Jar's mouth through its struggle (section 5a). Either way it is **bound** and sent to the garden. (The Veritome reprograms; it does not catch: the owner) | Pokemon, Jade Cocoon |
 | **awakened from a plate** | a Veritome photograph of a creature, set in the Furnace's shrine, awakens a spirit of its kind; its stats are read from the plate's quality | Monster Rancher's disc stone |
 | **dug** | **Lachrymite fossils** in the Dunes, found with the Dreamvane's pick, awakened in the Grove by the Crucibelle's song | Spectrobes Origins |
 | **visitors** | wild Figments **visit when the garden meets their wants** (a pond of grief, a dread lantern, a terrace of desire herbs), and settle if you meet more. The ecology's offers (`docs/AI.md`) say what each wants | Viva Piñata |
 | **bred** | two merged in the cocoon tree give one with traits of both | Jade Cocoon, Monster Rancher |
+
+### 5a. The catch in battle (the owner, 2026-10-07: "something really fun about using the Pneuka Jar and Godhand form in battle to
+capture them when stunned")
+
+Two ways, one skill and one gamble, as the game likes its pairs (the slam and the ram; the reckoning and the dice):
+
+| | the Lockheart (summoning coffin worn) | the god hand (~, the Jar and the hand) |
+|---|---|---|
+| when | a Figment critically stunned (`stun.vulnerable`) | a Figment stunned |
+| how | open the coffin on it: the catch wheel spins at `catchOdds` (class, how cleanly it was laid low, its EmO; the Possibilikeys bend it) | grab it with the hand and hold it over the Jar's mouth: it **struggles** (a second a class: Guppy 1 s .. Leviathan 5 s), tugging the hand; keep it over the mouth until it is drawn in |
+| the risk | the odds: a miss spends the keys | the Jar is still and the fight goes on: whatever is hitting the Jar while you hold (raiders, shots, the rest of the pack) can crack it, and a stun that ends mid-struggle frees it |
+| the reward | at range, mid-fight, gambled | **certain** if held through: skill over luck |
+| prior art | Pokemon's catch rate, the gacha's published rate | Black & White's hand, Luigi's Mansion's Poltergust tug, Pikmin's carry |
+
+A Figment caught either way is bound (`spirit.bind { from: 'lockheart' | 'hand', kind, cls, by }`), and waits in the Jar until you
+next enter the garden, where it hops out into the Grove.
 
 **Bound until released** (the owner): a spirit is bound to you and never leaves, fades or dies. You may **release** one; Pokemon
 never release themselves.
@@ -141,15 +157,16 @@ never release themselves.
 - **Come out with you** as an ally (`creatures/spirits.js`), one at a time.
 - **Later:** races on a planetoid track (Chao Race), sparring at the Peak.
 
-## 6. Cultivation, and your Inner Realm's name
+## 6. Cultivation (the Firings), and your Inner Realm's name
 
 - **Naming** (the owner): each player names their own Inner Realm, their garden. Espada offers pre-generated names in her conlang,
   the neuralese the Veritome's reprogramming speaks, so the naming is also where the language is first met.
-- **The cultivation tiers** (proposed; **the word is open, see section 9**):
+- **The Firings** (the owner, 2026-10-07: "Very appropriate and can scale to any number"): the soul refired, as clay is, each Firing a
+  harder heat. The first Firing, the second, and so on, with no ceiling:
   - They are read from the sum of the attributes' ranks from Soul Alchemy (70 in all).
   - They are crossed by the **heavenly tribulation** at the Meditation Peak: the Jar on the peak's mat, lightning from a darkening sky,
     each strike outlined, sent back by the hand's flick or dodged by a hop. Failing costs nothing but the try.
-  - **Thresholds:** 7, 14, 24, 36, 50.
+  - **Thresholds:** 7, 14, 24, 36, 50 (the second to the sixth Firing); a seventh and later when the attributes' ranks grow.
   - **What they open:** the Grove, the Pavilions, two spirits out at once, planetoid slots, and the last planetoid.
   - **Never a level:** they add no numbers to the Courier (DESIGN.md: no experience points, no levels). They open places and verbs.
 
@@ -184,19 +201,6 @@ Every event carries `by`. The log's rules and the counts are Dovina's.
 6. The tribulation can be begun, failed, retried and passed.
 7. The garden's name, chosen at the first entry, is shown where the garden is named.
 
-## 9. Open for the owner
+## 9. The build
 
-1. **A word collision.** "Inner Realm" is now the garden's own name, so the cultivation tiers need another word before they are built
-   (the glossary forbids one word with two meanings). Candidates:
-   - **firings**: the soul refired, in the game's clay idiom;
-   - **heavens**: the genre's other word;
-   - or the tiers named one by one with no shared noun.
-2. **The phases of building** (one gate each):
-   - **G1:** the planetoids, the Jar's controller and gravity, the hand over the garden, launch lotuses, the door and the shed, the
-     beds, the Furnace and the slots on their planetoids.
-   - **G2:** sculpting and placement.
-   - **G3:** spirits bound, fed and drilled.
-   - **G4:** awakening (plates, fossils), visitors, merging.
-   - **G5:** cultivation.
-
-   Is G1 to G3 the first build you want?
+`docs/plans/BUILD.md`, gates G1 to G5 (the owner, 2026-10-07: "Plan out the full build").

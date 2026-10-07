@@ -372,8 +372,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   run. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
 - **Inner Realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): a player's own Spirit Garden by the name they give it (Espada offers
   names in her conlang). In the garden you are **the Pneuka Jar**, hopping round its **planetoids**, and **the god hand** over them
-  (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. The cultivation tiers' word is open
-  (the owner's to choose; *not* "realm", which would collide).
+  (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. A **Firing** (the owner,
+  2026-10-07) is a tier of cultivation, read from the attributes' ranks and crossed by the **tribulation** (the first Firing, the
+  second, and on: no ceiling). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
+  battle (held over the Jar's mouth through its **struggle**), and then bound. *Not:* caught by the Veritome (it reprograms).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
