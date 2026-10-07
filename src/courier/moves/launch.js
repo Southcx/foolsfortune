@@ -5,8 +5,12 @@
 // steering, the controller for collisions; it gives the body back when the time is up, when they land, or when a wall has taken the
 // speed. Whatever asked for it can watch each step (`onStep`) and hear when it ends (`onEnd`).
 //
-//   techs.get('launch').go(velocity, { time, gravity, drag, steer, until: 'time' | 'ground', endSpeed, yaw, clip, clipMap, onStep, onEnd, tag })
+//   techs.get('launch').go(velocity, { time, gravity, drag, steer, until: 'time' | 'ground', endSpeed, yaw, clip, clipMap, onStep, onEnd, tag,
+//                                      drive, poseFix })
 //   `clip` is one of the baked clips, played over the whole body for the move; `clipMap(t)` says where in it (the thrust holds its lunge).
+//   `drive(vel, dt)` sets the velocity before each step (a move carried by its clip's own travel: tools/moveset.js); `poseFix(pose)`
+//   corrects the sampled pose (that travel taken out of the hips, so the body is not carried twice: casebook rule 19). A move may follow
+//   another without a gap: `go` while a launch is on replaces it (the old one's `onEnd` is not called; it was cut, not ended).
 //
 // Prior art: the "committed" moves of every action game (Devil May Cry's Stinger and Helm Breaker, Bayonetta's dodge offset, Titanfall's
 // slide-hop launch): the move owns the body for its duration and its exit speed is a design number, not whatever is left.
@@ -36,6 +40,7 @@ export class Launch extends Tech {
     this.o = { time: 0.3, gravity: 1, drag: 0.03, steer: 0, until: 'time', endSpeed: null, face: true, minAir: 0.12, jumpExit: false, onStep: null, onEnd: null, tag: 'launch', ...o };
     this.P.vel.copy(vel);
     if (vel.y > 0.5) { this.P.grounded = false; this.P.coyote = 0; }
+    if (this.mgr.active === this) { this.t = 0; this.start(); return; } // (one committed move straight into the next: an air string)
     this.mgr.begin(this);
   }
 
@@ -48,13 +53,15 @@ export class Launch extends Tech {
   animate(ch, base) {
     const o = this.clipO;
     if (!o) return;
-    const C = ch.clips, t = o.clipMap ? o.clipMap(this.clipT) : this.clipT;
-    C.blend(base, C.sample(o.clip, t, ch.P.tmp, false), this.w);
+    const C = ch.clips, t = o.clipMap ? o.clipMap(this.clipT) : this.clipT, pose = C.sample(o.clip, t, ch.P.tmp, false);
+    o.poseFix?.(pose);
+    C.blend(base, pose, this.w);
   }
 
   update(dt) {
     const P = this.P, o = this.o, M = T.movement;
     if (!o) return false;
+    o.drive?.(P.vel, dt, this);
     const v = _v.copy(P.vel);
     v.y -= M.gravity * o.gravity * dt;
     v.multiplyScalar(1 - o.drag * dt);

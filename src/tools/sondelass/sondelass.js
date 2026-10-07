@@ -198,14 +198,14 @@ export class Sondelass extends Tech {
   animate(ch, base, dt) {
     const C = ch.clips, P = ch.P;
     if (!this.track) {
-      this.track = new Track(C, new Set(['stance:cutlass', 'swordIdle', 'torchIdle', 'idle']));
+      this.track = new Track(C, new Set(['Sond_Idle', 'Sond_CastIdle', 'torchIdle', 'idle']));
       this.track.play('torchIdle', 0, 0.01);
       this.P1 = C.pose(); this.P2 = C.pose();
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override); // (a move that poses the whole body, the stinger's lunge, takes the arm too)
     if (layerW <= 0.001) return;
     const tr = this.track;
-    const want = this.form === 'cutlass' ? (C.clips['stance:cutlass'] ? 'stance:cutlass' : 'swordIdle') : 'torchIdle'; // (the cutlass en garde: courier/anim/stances.js; the rod held up, as the UAL torch idle holds it)
+    const want = this.form === 'cutlass' ? 'Sond_Idle' : this.form === 'rod' ? 'Sond_CastIdle' : 'torchIdle'; // (the cutlass en garde and the rod held out: the suite's own idles; the hook as the UAL torch idle holds it)
     if (!this.cutlass.playing && !this.angler?.castClip && tr.cur !== want) tr.play(want, 0, 0.25);
     tr.update(dt);
     const layer = tr.sample(this.P1);
@@ -218,6 +218,7 @@ export class Sondelass extends Tech {
     // line; the rod and the cutlass take both)
     if (!this.MASK_HOOK) { this.MASK_HOOK = Float32Array.from(ch.MASK_UPPER); C.bones.forEach((b, i) => { if (/L$/.test(b) && /arm|hand|f_|thumb/.test(b)) this.MASK_HOOK[i] = 0; }); }
     C.blend(base, layer, layerW, this.form === 'hook' && !this.hookshot.att ? this.MASK_HOOK : ch.MASK_UPPER, 0);
+    if (this.form === 'cutlass') this.cutlass.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the stroke's: tools/moveset.js)
   }
 
   // ---------------------------------------------------------------- hands: the draw, the hook's aim, the reel, and where the tool ends up
