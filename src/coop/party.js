@@ -70,7 +70,7 @@ export class Party {
     this.met.add(id); this.dirty();
     this.game.events.emit('party.meet', { sibling: id, by: 'courier' });
     if (this.room()) this.add(id, rig, at);
-    else if (rig) rig.root.parent?.remove(rig.root);
+    else if (rig) rig.dispose();
   }
 
   /** Call one (or every one met, up to the room there is) into your world, set down beside you. */
@@ -83,7 +83,7 @@ export class Party {
       this.coming.add(sid);
       const rig = await this.makeRig();
       this.coming.delete(sid);
-      if (this.get(sid)) { rig.root.parent?.remove(rig.root); continue; }
+      if (this.get(sid)) { rig.dispose(); continue; }
       this.add(sid, rig, null);
     }
   }

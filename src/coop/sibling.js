@@ -98,7 +98,6 @@ export class Sibling {
   dispose() {
     const P = this.game.physics;
     P.removeBody(this.body.body); P.world.removeCharacterController(this.body.ctrl);
-    this.rig.root.parent?.remove(this.rig.root);
-    this.rig.root.traverse((o) => { if (o.isMesh) { o.geometry?.dispose(); } });
+    this.rig.dispose();
   }
 }

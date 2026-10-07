@@ -72,6 +72,6 @@ export class Meetings {
 
   letGo(id) {
     const W = this.waiting.get(id); this.waiting.delete(id); if (!W) return;
-    W.rig.root.parent?.remove(W.rig.root); W.rig.root.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); });
+    W.rig.dispose(); // (the body and the gun: the gun hangs from the scene on its own, and was left there each time, the Dunemaw sweep's leak)
   }
 }

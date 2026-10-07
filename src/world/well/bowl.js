@@ -85,9 +85,10 @@ export class Bowl {
     this.group.add(glow, warm); g.lights?.adopt(glow); g.lights?.adopt(warm);
     g.scene.add(this.group);
     /** Where a Courier dropping in arrives: in the tunnel behind the ledge, facing the bowl. */
-    this.arrive = { pos: this.world(0, LEDGE.y + 0.05, 40), yaw: Math.PI };
-    /** Where a wipe makes them whole: on the ledge behind the Lip Stone (1.4 m from it), facing the bowl (the tunnel was 11.8 m off, SWEEPS group 7). */
+    /** Where a wipe makes them whole, and where a Courier dropping in arrives: on the ledge behind the Lip Stone (1.4 m from it), facing
+     *  the bowl: the reveal is the ledge itself (the tunnel 11.8 m back was off the sweep's acceptance, SWEEPS group 7). */
     this.lipStand = { pos: this.world(0, LEDGE.y + 0.05, LEDGE.z0 + 3.6), yaw: Math.PI };
+    this.arrive = this.lipStand;
   }
 
   world(x, y, z) { return new THREE.Vector3(BOWL_AT.x + x, BOWL_AT.y + y, BOWL_AT.z + z); }

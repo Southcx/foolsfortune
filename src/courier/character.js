@@ -246,6 +246,11 @@ export class Character {
     for (const m of this.gunGlowMats) m.emissiveIntensity = k;
   }
 
+  /** Taken out of the world: the body and the gun (each hangs from the scene on its own), their geometry freed (a sibling's or a
+   *  guest's rig; the Courier's own is never disposed). Materials are the rig's family's, shared, and kept. */
+  dispose() {
+    for (const o of [this.root, this.gun]) { o?.parent?.remove(o); o?.traverse((m) => { if (m.isMesh) m.geometry?.dispose(); }); }
+  }
   setGunScale(s) { this.gunModel.scale.setScalar(s); this.gunScale = s; this.holsterLocal = null; this.socketR = null; }
 
   gunPoint(name, target = new THREE.Vector3()) {

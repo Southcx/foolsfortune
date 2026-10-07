@@ -701,7 +701,7 @@ export class Course {
     if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
     signHelp(g, p.pos);
     if (this.el) {
-      if (running !== this.elShown) { this.elShown = running; this.el.style.display = running ? '' : 'none'; }
+      if (running !== this.elShown) { this.elShown = running; this.el.style.display = running ? 'block' : 'none'; } // ('' fell back to the stylesheet's none: the banner never showed, the basement sweep)
       if (running) {
         const best = this.best[`room${cp.room}`];
         this.el.innerHTML = `<b>${cp.room}</b> ${cp.name} · <b>${this.t.toFixed(2)}</b>s${best ? ` · best ${best.toFixed(2)}` : ''}${this.lapT !== null ? ` · lap ${this.lapT.toFixed(1)}s` : ''}`;

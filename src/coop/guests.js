@@ -96,7 +96,7 @@ export class Guests {
 
   drop(G) {
     this.list.splice(this.list.indexOf(G), 1);
-    G.rig.root.parent?.remove(G.rig.root); G.rig.root.traverse((o) => { if (o.isMesh) o.geometry?.dispose(); });
+    G.rig.dispose();
     this.game.events.emit('guest.leave', { guest: 'Someone' });
   }
 
