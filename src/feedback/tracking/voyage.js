@@ -18,7 +18,8 @@ export function voyageRules({ on, L, log }) {
     if (e.passed) { L.inc('emocean.stage.passed'); if (!e.hits) L.inc('emocean.stage.clean'); }
     if (e.spilled) L.inc('crude.spill');
     if (e.lost) log.say('warn', `Cargo lost: ${e.lost} ${e.lost === 1 ? 'cask' : 'casks'} of crude${e.spilled ? '. The spill burns on the sea' : ''}.`);
-    log.say('explore', `You make port at ${PLACE(e.to)}.`);
+    if (e.passed || !e.at) log.say('explore', `You make port at ${PLACE(e.to)}.`);
+    else log.say('warn', `Your ship breaks up. You are made whole on ${PLACE(e.at)}.`); // (no continue taken: the last Shrine's island)
   });
   on('emocean.reckon', (e) => {
     if (e.by !== 'courier') return;

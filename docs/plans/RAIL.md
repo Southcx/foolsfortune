@@ -234,9 +234,78 @@ Leviathan at 64), and the breather is a breather.
 | **Wanda** | Crude Sea already paces it. Wanted: three layers for bars 62–96, one per set piece (the shoal's churn, a shanty over the broadside, the Leviathan's own motif); lock-on tones in E minor; the downs quantised to the sixteenth | from R2 |
 | **Espada** | names: the shoal's fish and its caller, the pirates (who sails the Emocean for crude?), the brig, the rogue Leviathan (one name, it is a character); the log's lines (placeholders in `tracking/rail.js`) | any time |
 
-## 12. Open for the owner
+## 12. The cast (Espada, 2026-10-07; `docs/LORE.md`, "The crossing's cast")
 
-1. **The second half is one set piece in 34 bars.** Should a long crossing (Anagami to Entropolis, King to Queen) chain two of them,
-   with a second breather? The cue would want to be longer (Wanda), and a long crossing is rarer and riskier, so it would be earned.
-2. **A failed crossing** still makes port, broken, and loses a quarter of the cargo (SLICE.md). Should there be a **continue**, an
-   arcade's coin: cubes to repair at bar 0 of the failure and fly on?
+- **The shoal's fish are glints**, named for the flash as a bait ball turns. The caller is **the Conductor**: the shoal moves on the
+  cue's beat, so the Conductor falling is the music stopping.
+- **The pirates are the Wreckers.** Wreckers hung false lights to lure ships onto rocks. These are Contractors under no letter (Letty
+  holds the King's marque; they hold none), and their brig is **the False Light**. Where they come from is left blank.
+- **The rogue Leviathan is Old Nobody.** An Egregore is authored by no one, and Nobody is also the name Odysseus gave the Cyclops.
+  Letty's notice reads "WANTED: NOBODY".
+
+## 13. The music (Wanda, 2026-10-07; `claude/friendly-knuth-vbv82r` e735393)
+
+Bars 62 to 96 have a version for each set piece (`stageCue(seconds, setPiece)`):
+
+| set piece | what the cue does |
+|---|---|
+| **the shoal** | a churn to bar 70 (bubbles, rising strings), then string pulses with the strikes |
+| **the Wreckers** | the crew's shanty grows astern from bar 62, a bow-chaser boom every two bars; "Haul Away the Fortune" in full over the broadside from 70, a boom with each volley; the ram at 84; the crew's chorus home from 92 |
+| **Old Nobody** | its own motif (E F E C B): it heaves at 62, comes alongside at 70 (the gills breathing two bars in four, as in `setpieces.js`), sounds at 80, and is face to face at 88 |
+
+**Lock tones:** `sfx.railLock(n, grid)`, E minor from E5, a degree per lock, heard from `rail.lock { n }`.
+**Downs:** `sfx.railDown(cls, grid)`, on the next sixteenth, heard from `rail.down { cls }`.
+The sound contract for Petra is `docs/handoffs/petra/2026-10-07-from-wanda-the-crossing-s-sound-contract.md`.
+
+## 14. The owner's rulings (2026-10-07)
+
+### A long crossing chains up to three set pieces
+
+| route | legs | bars | real s | why |
+|---|---|---|---|---|
+| Anagami to Margarite | 1 | 100 | 150 | a short hop |
+| Anagami to Entropolis | 2 | 146 | 219 | onto the wild end (danger 1.5) |
+| Margarite to Entropolis (King to Queen) | 3 | 192 | 288 | the whole line (8 steps; danger 1) |
+
+**How a long crossing is built** (`LEG`, `legsOf`, `barsOf` in `econ/emocean.js`; `setPiecesOf`, `timeline`, `script` in
+`rail/crossing.js`):
+- The first half plays once. Then each set piece (34 bars), with a **breather of 12 between two**, then the arrival.
+- **The breather's flotsam mends the ship by 3** (Star Fox's silver rings).
+- Each leg further out is half a step of danger wilder: the escorts come a class up.
+- The pirates come at most once (each leg rolls the day's dice).
+- The rogue Leviathan, when drawn, is always the last leg: the climax.
+
+**Measured:**
+
+| route | good player | expert | novice |
+|---|---|---|---|
+| two legs | 99% | 100% | 2%, needing about one continue (53 cubes) |
+| three legs | 97% | 100% | 2%, needing about one and a half continues (71 cubes) |
+
+The wild routes are meant for the skilled. A novice can still get there by paying.
+
+### The continue: an arcade's coin, priced by the way home
+
+- **When:** the ship has borne all it can.
+- **Pay:** `voyage.continueRun(share)`, and the ship is mended whole and flies on.
+- **Decline:** it breaks up. You lose a quarter of the cargo (spills as ever) and **you are made whole at your last Shrine**, on its
+  island (`SHRINE_ISLAND`), not at the far port.
+- **The price** (`continueCost`): the fuel from where the ship is on the line back to that Shrine's island, plus a repair of 2
+  minutes of play. It doubles with each continue in one crossing.
+- **Examples:** on the Margarite run, resting last at the Float Shrine, a coin costs 26 cubes a fifth of the way out and 54 cubes
+  four-fifths of the way. The crossing's fuel is 14.
+- **What a coin-fed run gets:** it keeps its score but tops out at rank C, and never medals (the high-score table's honesty).
+- **Counted:** `rail.continue`, `rail.continue.cubes`.
+
+**The cue chains too** (Wanda, `claude/friendly-knuth-vbv82r` 60bc2d2):
+- `stageCue(seconds, setPieces)` takes one set piece or a list of up to three, with the breather's 12 bars between two: 100, 146 or
+  192 bars, the k-th set piece on bar 62 + 46k.
+- `stageAt(game.music)` is the fraction of whichever length plays.
+- `music/choose.js` reads `game.emocean.stage.setPieces`.
+
+**Events:** `emocean.continue { cost, continues, share, by }`. `emocean.stage` gains `setPieces`, `continues`, and `at` (where you
+came to).
+
+## 15. Open for the owner
+
+Nothing yet.
