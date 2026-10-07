@@ -19,7 +19,9 @@
 //   RAIL_VIEWS[name] -> { pos, look, fov }   swingLook(game, k 0..1, from, to) -> fov   new ShipWake(game)   .update(rawDt, ship, sea)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-export { ShoalLook } from './shoal.js'; // (the set pieces' looks ride along: game.railLook.ShoalLook)
+export { ShoalLook } from './shoal.js'; // (the set pieces' looks ride along: game.railLook.ShoalLook, .BrigLook, .LeviathanLook)
+export { BrigLook, BoarderLook } from './brig.js';
+export { LeviathanLook } from './leviathan.js';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
 export const RAIL_VIEWS = {

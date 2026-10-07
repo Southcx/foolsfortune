@@ -365,7 +365,7 @@ async function main() {
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); vfx/parrymark.js)
-  game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook; vfx/rail.js, the sloop's polarity/hurt/hoist)
+  game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's polarity/hurt/hoist)
   level.build();
   mark('level');
   const spawnRoom = () => {
