@@ -18,16 +18,24 @@
 // The body is a point mass at their chest on a rope: gravity and the pump move it, and if it would go farther from the anchor than the
 // rope is long it is put back on the sphere and the speed away from the anchor is taken out (position-based, so a wall they hit
 // takes the speed it takes). While they are on the ground with slack in the line the core movement runs as normal and this tech is idle.
-// The hang and the swing are the CC0 hang-from-a-bar clip (the zipline's), leaned into the speed; the free hand closes on the line.
+// The hang is the authored bar hang (the zipline's); the swing is the suite's (Trav_Swing), its phase read from the rope's angle against
+// the body (never from time: a 2 s capture is the swing of a 2.1 m rope, and this rope is any length), the whole pose moved so its hands
+// are on the line; a fling off it plays the suite's release (Trav_SwingRelease) over the flight. The free hand closes on the line.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../../courier/moves/techs.js';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
+import { inPlace } from '../../courier/anim/layers.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _c = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _w = new THREE.Vector3(), _p = new THREE.Vector3();
 const CHEST = 0.9;
+/** The suite's swing (measured on the clip): its hands hold still at `hands` (body frame, m) while its body swings +-52 degrees (`amp`,
+ *  rad) through a cycle, front at a quarter; on the rope the hands sit `grip` m up the line from the chest (the bar hang's: 1.66 - 0.9).
+ *  In from `speedIn` m/s; the release from `relAt` at `relRate`, out between relOut s, its hips held where the swing's were. */
+const SWING = { clip: 'Trav_Swing', release: 'Trav_SwingRelease', hands: [0, 2.12, -0.01], amp: 0.9, grip: 0.76, speedIn: [1.5, 4], relAt: 0, relRate: 1.5, relIn: 0.05, relOut: [0.35, 0.6] };
+const smooth = (a, b, t) => THREE.MathUtils.smoothstep(t, a, b);
 
 export class Grapple extends Tech {
   constructor(mgr) {
@@ -59,7 +67,7 @@ export class Grapple extends Tech {
     const P = this.P, h = this.hook, a = this.att;
     P.endCore();
     if (P.grounded) { P.grounded = false; P.vel.y = Math.max(P.vel.y, 2.6); } // (reeling from the floor: off it)
-    this.swingT = 0; this.peak = 0; this.reelT = 0; this.lean = 0;
+    this.swingT = 0; this.peak = 0; this.reelT = 0; this.lean = 0; this.relP = null; this.relT = null;
     this.dist0 = this.chest(_c).distanceTo(a.point);
     this.game.events?.emit('zip.start', { dist: this.dist0 });
     this.game.events?.emit('grapple.swing', { phase: 'start', len: h.L });
@@ -154,6 +162,7 @@ export class Grapple extends Tech {
     const launch = this.mgr.get('launch');
     if (launch && Math.hypot(v.x, v.z) > 11) {
       const peak = Math.hypot(v.x, v.z);
+      this.relT = 0; // (the body: the suite's release over the flight)
       this.game.events?.emit('grapple.fling', { speed: peak });
       launch.go(v, { time: 4, until: 'ground', steer: 5, drag: 0.02, jumpExit: true, tag: 'fling' });
     } else P.vel.copy(v);
@@ -175,16 +184,44 @@ export class Grapple extends Tech {
   // ---- the pose
   animate(ch, base, dt) {
     const C = ch.clips;
+    if (this.relT != null) this.release(ch, base, dt);
     if (!this.att) return;
-    // both hands on the line: the hang clip, held; swinging fast it is only partly there (the body leans instead)
+    // both hands on the line: the bar hang, held; swinging, the suite's swing at the rope's angle
     const idle = C.sample('hangBar', ch.time, ch.P.tmp);
-    C.blend(base, idle, this.w * (0.55 + 0.45 * this.hangK));
+    const sp = this.P.vel.length();
+    this.swingW = (1 - this.hangK) * smooth(SWING.speedIn[0], SWING.speedIn[1], sp);
+    if (this.swingW > 0.001) {
+      // the rope in the body's frame (+z ahead, +x their left): the anchor from the chest
+      const yaw = ch.root.rotation.y, d = _p.copy(this.att.point).sub(this.chest(_c)).normalize();
+      const rz = d.x * Math.sin(yaw) + d.z * Math.cos(yaw), rx = d.x * Math.cos(yaw) - d.z * Math.sin(yaw);
+      // (ahead of the anchor is the front of the swing: the clip's quarter)
+      const a = Math.atan2(-rz, Math.max(0.05, d.y)), c = C.clips[SWING.clip];
+      const u = ((Math.asin(THREE.MathUtils.clamp(a / SWING.amp, -1, 1)) / (Math.PI * 2)) % 1 + 1) % 1;
+      const sw = C.sample(SWING.clip, u * c.dur, ch.P.tmp2, true);
+      // its hands onto the line
+      sw.p[0] += rx * SWING.grip - SWING.hands[0]; sw.p[1] += CHEST + d.y * SWING.grip - SWING.hands[1]; sw.p[2] += rz * SWING.grip - SWING.hands[2];
+      this.relP = (this.relP || [0, 0, 0]); this.relP[0] = sw.p[0]; this.relP[1] = sw.p[1]; this.relP[2] = sw.p[2];
+      C.blend(idle, sw, this.swingW);
+    }
+    C.blend(base, idle, this.w * (0.55 + 0.45 * Math.max(this.hangK, this.swingW)));
+  }
+
+  /** Flung off the line: the suite's release over the flight (Launch's, which plays the air), in place where the swing held the hips. */
+  release(ch, base, dt) {
+    const C = ch.clips, c = C.clips[SWING.release];
+    this.relT += dt;
+    if (!c || this.relT > SWING.relOut[1] || this.P.grounded) { this.relT = null; return; }
+    const t = SWING.relAt + this.relT * SWING.relRate, p = C.sample(SWING.release, t, ch.P.tmp, false);
+    inPlace(C, p, SWING.release, t, 'xyz');
+    const h = this.relP || [0, 0.66, 0]; // (the hips where the swing last held them; travel is the flight's, Launch's)
+    p.p[0] += h[0] - c.p[0]; p.p[1] += h[1] - c.p[1]; p.p[2] += h[2] - c.p[2];
+    C.blend(base, p, smooth(0, SWING.relIn, this.relT) * (1 - smooth(SWING.relOut[0], SWING.relOut[1], this.relT)));
   }
 
   afterPose(ch) {
     if (!this.att || this.w < 0.02) return;
-    // the legs stream out behind a swing, and the body leans into it
-    const P = this.P, k = this.speedK * this.w * (1 - 0.6 * this.hangK);
+    // the legs stream out behind a swing, and the body leans into it (hung still: the swing's clip has its own lean)
+    const P = this.P, k = this.speedK * this.w * (1 - 0.6 * this.hangK) * (1 - (this.swingW || 0));
     if (k < 0.02) return;
     _w.copy(P.vel).setY(0);
     if (_w.lengthSq() < 1) return;

@@ -104,6 +104,7 @@ export class Grate extends Tech {
       return false;
     }
     if (P.latch('Space')) {
+      P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
       if (this.mode === 'wall') P.vel.set(this.n.x * c.kickOut, c.kickUp, this.n.z * c.kickOut);
       else P.vel.set(wish.x * 4, 2.5, wish.z * 4);
       P.grounded = false;

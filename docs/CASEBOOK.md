@@ -91,6 +91,8 @@ the rules before building in the same area; a rule a machine can check goes into
     layer) or the chain, never the clip's arm.
 38. **A method is called on its object.** `(a || obj.m)?.()` calls `m` with no `this`; pick the function and call it where it lives
     (`a ? a() : obj.m?.()`), or bind it once where it is stored.
+39. **One handoff a frame.** A track that changes clip on a condition changes once per update (an `else if` chain): a clip handed to is
+    never left in the same frame because its own exit was already true, which drops the fade that was meant to show it.
 
 ## Cases
 
@@ -122,6 +124,23 @@ the rules before building in the same area; a rule a machine can check goes into
   shoulder to the hand, its chain let out by the hand's speed (hanging while the windup is slow), and kept out of a 0.3 m column round
   the body.
 - **Rule:** 37.
+
+### 2026-10-07 · A kick off a ledge spent the double jump, and played the flip over the kick (Calissa)
+- **Seen:** headless, a ledge hang caught from a jump, then Space: `airJumps` 1 before the kick, 0 one step after, the air track on
+  Air_DoubleJump at 0.02 s (`.scratch/sc_kick.mjs`). From a ladder taken on the ground the same press kept it (1 after).
+- **Cause:** the hang, the ladder, the pole, the latch and the grate read the kick from `P.latch('Space')` and ended; the core ran the
+  same step and saw Space down with `jumpHeldLast` still false from before the hold, so it was a fresh press: an air jump whenever
+  `airT` was over 0.05 s (caught in the air: yes; stepped onto from the ground: no, which is why the ladder hid it).
+- **Fix:** each kick marks the press spent (`P.jumpHeldLast = true; P.jumpBuf = 0`), as the grapple's jump-off already did.
+- **Rule:** 20.
+
+### 2026-10-07 · The double jump's tuck lasted one frame (Calissa)
+- **Seen:** the survey: `flipLoop` played for a single frame, its 0.2 s fade from `flipStart` overwritten the same frame.
+- **Cause:** character.js handed `flipStart` to `flipLoop` at 0.75 s, and in the same frame `flipLoop`'s own exit (`vy < -2.5`, true by
+  then on every air jump) handed it to `jumpLoop`: two `play` calls in one update, the first fade lost.
+- **Fix:** the flip is one clip now (Air_DoubleJump, courier/anim/airborne.js), handed to the loop once, from its last frames; the
+  handoffs are an `else if` chain (one change a frame).
+- **Rule:** 39.
 
 ### 2026-10-07 · The stress test's edge-of-the-Dunes skiff runs ended inside the barrier (Calissa)
 - **Seen:** stress seed 2, `edge skiff`: `guard:reset` after `tech.end`, and `guard:nudge` just after `skiff.summon` (none on main).

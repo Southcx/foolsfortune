@@ -12,7 +12,8 @@
 // "YOU DIED" as a moment the game stops for (here without words: CLAUDE.md, the log says it), and a pot's own end, which is to shatter.
 //
 //   game.death = new Death(game)   .begin({ why, by, region })   .update(rawDt)   .active
-//   DeathTech (courier/moves/techs.js list, first): holds the body while it happens
+//   DeathTech (courier/moves/techs.js list, first): holds the body while it happens: the blow (UAL Hit_Chest), then down into the
+//   suite's defeat (Emote_DefeatEnter, then its loop: a slump to the knees, the head bowed) when the social pack is in, else the UAL kneel
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../moves/techs.js';
@@ -23,6 +24,8 @@ const simRand = stream('courier/vessel/death'); // (the simulation's chance: cor
 
 const CRACK = 1.15, BURST = 1.2, DARK = 2.7, REFORM = 3.6, END = 4.6; // (the beats, in real seconds)
 const LACH = 0xb49be6;
+/** The body's beats (real s): the blow until `knee`, crossfaded over `blend` into the defeat (or the kneel), played at `rate`. */
+const DEFEAT = { enter: 'Emote_DefeatEnter', loop: 'Emote_DefeatLoop', knee: 0.35, blend: 0.12, rate: 1.4, kneelRate: 1.6 };
 const _p = new THREE.Vector3(), _l = new THREE.Vector3();
 
 export class Death {
@@ -114,6 +117,8 @@ export class DeathTech extends Tech {
   start() {
     const P = this.P;
     P.endCore?.(); P.vel.set(0, 0, 0);
+    this.defeat = undefined;
+    void this.game.clipPack?.social; // (asks for the social pack, the defeat's: in by now if anything fetched it, else ready for the next)
     for (const t of this.game.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow();
   }
   update(dt) {
@@ -122,11 +127,19 @@ export class DeathTech extends Tech {
     return !!this.game.death?.want;
   }
   animate(ch, base) {
-    const C = ch.clips, t = this.game.death?.t || 0;
-    // the blow taken, then down on one knee as the cracks run
+    const C = ch.clips, t = this.game.death?.t || 0, D = DEFEAT;
+    // the blow taken, then down as the cracks run: the suite's defeat if its pack is in (decided once, at the knee), else the kneel
     const hit = C.clips.hitChest ? C.sample('hitChest', Math.min(t * 1.4, (C.clips.hitChest.dur || 0.6) - 0.01), ch.P.tmp, false) : null;
-    if (hit && t < 0.35) { C.blend(base, hit, this.w); return; }
-    if (C.clips.kneel) C.blend(base, C.sample('kneel', Math.min((t - 0.35) * 1.6, (C.clips.kneel.dur || 1) - 0.01), ch.P.tmp, false), this.w);
+    if (hit) C.blend(base, hit, this.w);
+    if (t < D.knee - D.blend) return;
+    if (this.defeat === undefined) this.defeat = !!(C.clips[D.enter] && C.clips[D.loop]);
+    const u = Math.max(0, t - (D.knee - D.blend)), k = Math.min(1, u / D.blend);
+    let down = null;
+    if (this.defeat) {
+      const e = C.clips[D.enter], at = u * D.rate;
+      down = at < e.dur ? C.sample(D.enter, at, ch.P.tmp2, false) : C.sample(D.loop, at - e.dur, ch.P.tmp2, true);
+    } else if (C.clips.kneel) down = C.sample('kneel', Math.min(u * D.kneelRate, (C.clips.kneel.dur || 1) - 0.01), ch.P.tmp2, false);
+    if (down) C.blend(base, down, this.w * k * k * (3 - 2 * k));
   }
   faceYaw() { return this.game.death?.yaw ?? null; }
 }

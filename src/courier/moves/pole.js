@@ -68,6 +68,7 @@ export class Pole extends Tech {
     const ix = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
     const out = this.out().clone();
     if (P.latch('Space')) {
+      P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
       const look = P.lookDir();
       const sp = c.kickOut;
       P.vel.set(out.x * sp + look.x * 1.5, c.kickUp, out.z * sp + look.z * 1.5);
