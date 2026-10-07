@@ -529,6 +529,12 @@ export function buildAchievements(game) {
   H('em5', 'emocean', 'Sailing', 3, 'perfect', 'Dead Reckoning', 'Reckon a crossing in full before sailing it.', 'emocean.reckon.best', 100, { unit: '%' });
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
   // the crossing (progress/rail/: the genre's own feats, each named for where it was learned)
+  // the movesets (progress/combat/moves.js; Calissa's suite)
+  H('ms1', 'battle', 'The Five Forces', 3, 'mechanic', 'Juggler', 'Land six blows in one air string.', 'move.air.best', 6);
+  C('ms2', 'battle', 'The Five Forces', 2, 'count', 'Lift Off', 'Launch fifty things into the air.', 'move.launch', 50);
+  C('ms3', 'battle', 'The Five Forces', 3, 'collect', 'Showboat', 'Use a special a hundred times.', 'move.special', 100);
+  C('ms4', 'move', 'Air', 1, 'count', 'Eat Sand', 'Bail off the Solar Skiff.', 'skiff.bail', 1, { hidden: true });
+  C('ms5', 'move', 'Air', 3, 'mechanic', 'Old Faithful', 'Ollie off a geyser.', 'skiff.ollie.geyser', 1);
   C('rl1', 'emocean', 'The Rail', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times on the rail.', 'rail.rolls', 50);
   C('rl2', 'emocean', 'The Rail', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a crossing: four in five of what came at you downed.', 'rail.medal', 1);
   C('rl3', 'emocean', 'The Rail', 4, 'perfect', 'Rank S', 'Score at par on a crossing.', 'rail.rank.S', 1);
