@@ -1,16 +1,9 @@
-# The parries' clips: found before authored (Calissa, for docs/plans/PARRY.md on claude/dovina-design)
+# The parries' clips: found, not authored (Calissa; PARRY.md is Dovina's)
 
-The owner approved all nine per-tool parries (V in the window). The house rule is to find a clip for each in the libraries already in
-the game before authoring one: UAL Standard (`src/assets/anims.bin`) and CMU (`anims_cmu.bin`), listed by name in
-`character.clips.clips`. Below is the clip for each parry, the stretch of it to play over the window, and the mask.
-
-Every one is played the kick's way, as fixed today (`courier/moves/kick.js`; CASEBOOK rule 19):
-- It is sampled one-shot (`loop = false`) and squeezed onto the window.
-- It is drawn while its weight is above zero, not while its state is on. The last frame is held as the weight eases out.
-- A parry started over a parry crossfades from where the body was.
-- Each clip's pelvis is re-rooted to its own first frame.
-
-Only the upper body is masked in unless the row says otherwise, so the feet keep running: the core movement is the gold standard.
+From UAL (`anims.bin`) and CMU (`anims_cmu.bin`), by name in `character.clips.clips`. Each is played the kick's way (`courier/moves/kick.js`,
+casebook rule 19): one-shot, squeezed onto the window, drawn while its weight is above zero (the last frame held as it eases out),
+crossfaded from where the body was, its pelvis re-rooted to its first frame. Upper body only unless the row says, so the feet keep
+running (the core movement is the gold standard). Timings are the clip's own seconds.
 
 | tool | parry | clip (found) | the stretch played | mask | notes |
 |---|---|---|---|---|---|
@@ -25,8 +18,4 @@ Only the upper body is masked in unless the row says otherwise, so the feet keep
 | Crucibelle | the toll | `castShoot` (UAL) | 0.1 .. 0.5 s, as the toll's own | upper | the toll's clip already (crucibelle.js); on the beat the ring is wider, which is the look's job, not the clip's |
 | Lockheart | the gulp | `block` (UAL), then `stance:lockheartChannel` | 0.3 s of the guard, then the channel stance while the lid is open | upper | the coffin raised before them; its lid opening is the model's (no body clip), the Lachryma drawn in is the data drain's look turned inward |
 
-**Authored:** nothing so far. The Dreamvane's hand loop is the only candidate, and only if the procedural spin reads wrong with the
-hands still.
-
-**For Petra:** the timing columns are the clip's own seconds. The window's length is PARRY.md's, and the stretch is squeezed onto it as
-kick.js squeezes the kick (`K`).
+**Authored:** nothing. The only candidate is the Dreamvane's hand loop, if the procedural spin reads wrong with the hands still.
