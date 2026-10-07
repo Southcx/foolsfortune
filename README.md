@@ -420,6 +420,8 @@ and the maker's pixel art is drawn at 1x and scaled by whole numbers. `docs/ARCH
   `docs/plans/QAIS.md`), `window.__boot` (the time at each stage of loading), and DEBUG's `/grant`, `/psygun`, `/vfx`, `/opening`, `/goto`
   (a place, or a report's stand line) and `/workbench` (the studio for effects, models and cinematics).
 - **The QAIS test** (`npm run qais`): QAIS driven headless, away from the store and over a stand-in for it.
+- **The agent bridge** (`node scripts/agent.mjs serve --seed 4 &`, then `look --places`, `act '{"do":"travel","place":"well.mouth"}'`,
+  `do '{"do":"goto","place":"kiln"}'`, `step 240`): play the game as JSON, the world waiting between calls (`docs/plans/COOP.md`).
 
 ## Engineering notes
 
