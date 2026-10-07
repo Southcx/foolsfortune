@@ -150,6 +150,12 @@ the rules before building in the same area; a rule a machine can check goes into
     cursor's ray is cast from, or each frame chases the last; and what the hand holds stays on the near side of the ground.
 58. **A model two modes share is set up by the one drawing it, every frame it draws it.** The god hand and the garden share the Jar's
     model; whichever leaves last must not decide whether the other sees it.
+59. **What a thing adds to the scene, its own dispose takes away, all of it.** A rig that hangs two roots from the scene (the body
+    and the gun) has a `dispose()` that removes both; callers never take it apart by hand.
+60. **An adapter is not the thing.** A registry's entry (the belt's tool) answers the registry's questions; to reach the thing's own
+    state (the Sondelass's Blade Mode), ask the thing's own service (`game.techs.get`), and check the call did something.
+61. **A shortcut to a shared folder is never committed.** A worktree's link to `node_modules` (or any folder outside the tree) is
+    named in `.gitignore` as a file as well as a folder, and a commit made with `add -A` is read before it is merged.
 
 ## Cases
 
@@ -779,4 +785,28 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** Blade Mode exits when the tool is put away and when the hand is taken; the hand reads `trial.running`; a teleport lets the
   hand go first.
 - **Rule:** 30: what slows time ends with what began it, not on a clock it slows.
+
+### 2026-10-07 · Each visit to the great cavern left two guns in the scene (the Dunemaw sweep)
+- **Seen:** three trips to the great cavern and back added 226 objects (8 at the scene's top), no geometry, no bodies.
+- **Cause:** a census of the scene by type, name and parent: two `PsyGun` groups a trip, with the glTF's meshes under them. A sibling's
+  waiting rig is made near its meeting spot and let go when the Courier walks off; `letGo()` removed `rig.root` but the gun hangs from
+  the scene on its own (`character.js`: `scene.add(this.gun)`).
+- **Fix:** `Character.dispose()` takes down the body and the gun; the meeting, the party, the guests and a sibling call it.
+- **Rule:** 59.
+
+### 2026-10-07 · The god hand still opened in Blade Mode after the fix for it
+- **Seen:** the tools sweep: ~ in Blade Mode, 2 real seconds later Blade Mode on, time at 0.05.
+- **Cause:** the fix called `belt.get('sondelass').cutlass.blade.exit()`; the belt's entry is an adapter (`sondelassTool`) with no
+  `cutlass`, so the optional chain did nothing, silently.
+- **Fix:** `game.techs.get('sondelass')`, the Sondelass itself. The form strip is taken off as the hand opens (its tick, which puts it
+  back, does not run under the hand), and a walking climb lets only the gun out (`belt.mayDraw` asks the tech's `oneHand`).
+- **Rule:** 60.
+
+### 2026-10-07 · node_modules replaced by a link to itself
+- **Seen:** after a fast-forward of main, `node_modules` was a symlink pointing at itself; nothing built.
+- **Cause:** a scratch worktree linked its `node_modules` to main's; `git add -A` there committed the link (`.gitignore` had
+  `node_modules/`, which matches a folder and not a link); the fast-forward put the link where the folder was.
+- **Fix:** the link out of git (pushed before anyone merged), `.gitignore` says `node_modules`, the folder reinstalled (`npm ci`), the
+  worktree retired.
+- **Rule:** 61.
 

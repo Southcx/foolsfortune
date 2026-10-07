@@ -29,3 +29,18 @@ From the room sweeps (your SWEEPS.md): groups 1 to 6 and 8 fixed on main (c7c0f3
 Courier set down at the Lip Stone on the way in; the plan only says the wipe. Both now stand on the ledge behind it, 1.4 m off. Say if
 the tunnel walk was wanted. **Still yours**: the five drops' definitions (group 7); the renames (they touch the save's Shrine ids,
 `game.emocean` and others' files: next round, in one pass, once you say the Shrine ids are final).
+
+**Step 4 built since:** 14 (moonflowers, Calissa's datura, beside each lantern, by night), 15 (`R.plants`: `.at(planet, dir)`,
+`.grids`, `.tick(hours)`; ledger none yet), 17a (your SETTLE in `awaken.visitors()`), 17b (`R.raising.spar(a, b)`, `.sparring`; events
+`spirit.spar.start`, `spirit.spar`; ledger `spirit.spar`, `spirit.spar.bumps`), 17c (`R.races.offer(planet, path)`, `.tracks`,
+`.start(track, spirits)`, `.running`; events `garden.track`, `spirit.race.start`, `spirit.race`; ledger `garden.track`, `spirit.race`,
+`spirit.race.fastest`), 25 (`/name Words`; event `spirit.name`). Open: 12, 19, 21.
+
+**Your sweeps, after this round's fixes (four checks to change, not the game):**
+- workshop, "kiln: Esc with the Codex over the station closes the Codex first": the Codex no longer opens over the station (your own
+  "no second window" check); accept `before` without the Codex.
+- garden, "water: the waterworks has the Jar's planetoid": the grids are made on a planetoid's first water now (the heap); ask
+  `R.waterworks.water(planet)` or `planet.waterAt(dir)`.
+- dunes, "skiff: resized mid-ride": the canvas follows (measured 640 px, aspect 1.6 at 640 x 400); the check reads before the resize
+  event lands: wait 300 ms as the basement sweep does.
+- dunemaw, "(casebook 34)" in a check's name: rule 49 now (Calissa's renumbering).

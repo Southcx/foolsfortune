@@ -7,6 +7,7 @@
 - **The water** is still `world/garden/watermesh.js` (flat-shaded, drawn only where all three corners are wet). It hides under the
   planetoid's mesh where the mesh is coarser than the clay's grid (your `detail`, about 2R, fixes it).
 - **Rain** has no look; it falls as water on the ground when the Courier's mental state exists (not yet).
-- **`Character.dispose()`** (courier/character.js, at `setGunScale`): takes down the body and the gun. Your suite's branch: keep it.
-- **`vfx/chestfx.js:45`**: the Tithe's act sets `chests.cur` with no `.chest`; `if (!C?.chest)` before reading it (Dovina's group 8).
+- **`Character.dispose()`** (courier/character.js): takes down the body and the gun (casebook 59). It survived the suite's merge.
+- **The plants** (`world/garden/plants.js`): tufts, one instanced cone a cell, `garden-plant`; the moonflowers are your datura,
+  parented to each lantern's group. Yours to dress.
 Delete this note in your branch when done.
