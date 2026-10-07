@@ -7,6 +7,14 @@
 // second; what the water wears away reaches the planetoid's look twice a real second (world/garden/realm.js `reshape`). Springs and
 // drains are marked by a stand-in (a ring on the ground, Calissa's to dress); the water's look is world/garden/watermesh.js.
 // The planetoid bodies (the Jar, the spirits) ask `planet.waterAt(dir)` and wade or float (world/garden/planetbody.js).
+// Water keeps its feeling (item 11, Dovina's WATERS): what is poured is the feeling R chose with the WATER art, else your draught's
+// (wonder when you carry none); a spring keeps the feeling it was set with. Water standing at a plot counts in its formation as one
+// neighbour (`feelingAt`: the leading feeling, opposites cancelling to fair water as `mixWater` says). Rain (item 20, `rainOf`) is the
+// garden's own weather: your draught falls on every planetoid as hard as your mental state is liquid (Stoic dry .. Prismatic 0.9). The
+// Courier's mental state is not kept in play yet (progress/stones.js has its numbers): until it is, `game.courierMind` is absent and the
+// garden is dry.
+// A frame budget (SPIRIT-GARDEN.md item 31): the water and the slumping together cost under BUDGET.ms a fixed step on average; past it
+// the simulation steps less often (every second or third step, with the time owed), never the frame. `cost` is the measure (ms a step).
 // Kept in the realm's save: each planetoid's wet cells, and the springs and drains.
 // Events: garden.water { planetoid, how: 'pour' | 'drink' | 'spring' | 'drain' | 'unset' }.
 //
@@ -14,17 +22,23 @@
 // infinite source block.
 //
 //   game.realm.waterworks = new Waterworks(realm)   .fixed(dt)   .update(dt)   .handle(dt, hit, intent)   .disturb(planet)   .dump() / .load(d)
-//   .waters[id] (a PlanetWater, made on its first water: .water(planet))   .springs / .drains [{ planet, dir, rate, feeling }]
+//   .feelingAt(planet, dir) -> feeling | null   .rain() -> 0..1   .reset(planet)   .cost (ms a fixed step, averaged)   .every (steps folded into one)   .waters[id] (a PlanetWater, made on its first water: .water(planet))   .springs / .drains [{ planet, dir, rate, feeling }]
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { PlanetWater } from './water.js';
+import { PlanetWater, FEELINGS } from './water.js';
 import { WaterLook } from './watermesh.js';
+import { WATERS, rainOf } from '../../progress/realm.js';
+import { stream } from '../../core/rng.js';
+import { CELL_DIRS, NX, NY } from './clay.js';
 
+const BUDGET = { ms: 2, most: 3, ease: 0.1 }; // (ms a fixed step on average; the most steps folded into one; how fast the measure moves)
+const RAIN = { most: 0.6, wet: 0.05 }; // (cubic metres a real second on a planetoid at full rain; metres deep for water to count at a plot)
 const FLOW = { pour: 2, drink: 4, spring: 0.4, drain: 0.8, slumpEvery: 0.2, lookEvery: 0.5, near: 3 }; // (cubic metres a real second; real seconds; metres)
 
 export class Waterworks {
   constructor(realm) {
     this.R = realm; this.game = realm.game;
+    this.cost = 0; this.every = 1; this.owed = 0; this.skip = 0; // (the budget: ms a step, steps folded into one, time owed)
     this.waters = {}; this.looks = {}; this.springs = []; this.drains = []; this.slumpT = 0; this.lookT = 0; this.marks = new THREE.Group(); this.marks.name = 'garden-springs';
     for (const P of realm.site.planets) P.waterAt = (dir) => this.waters[P.id]?.depthAt(dir) ?? 0; // (the bodies wade and float: world/garden/planetbody.js)
     realm.site.group.add(this.marks);
@@ -37,15 +51,27 @@ export class Waterworks {
   /** A planetoid's water, made the first time it has any (about 0.8 MB of grids each: six made at boot were over the heap's budget). */
   water(P) { return (this.waters[P.id] ||= new PlanetWater(this.R.clays[P.id])); }
 
-  feeling() { const d = this.game.draught?.aspect || this.game.draught; return typeof d === 'string' ? d : 'wonder'; }
+  /** Your draught's leading feeling (game.draught: { aspect: share }, or a name), wonder when there is none. */
+  feeling() { const d = this.game.draught; if (typeof d === 'string') return d; let best = null, bv = 0; for (const [k, v] of Object.entries(d || {})) if (v > bv) { bv = v; best = k; } return best || 'wonder'; }
+  /** The feeling of the water standing at a plot (deeper than RAIN.wet), or null: dry, or opposites cancelled to fair water. */
+  feelingAt(P, dir) {
+    const W = this.waters[P.id]; if (!W || W.depthAt(dir) < RAIN.wet) return null;
+    const M = W.mix(W.cellOf(dir)), F = FEELINGS;
+    let i = 0; for (let e = 1; e < 5; e++) if (M[e] > M[i]) i = e;
+    const lead = F[i], opp = WATERS.opposite[lead], o = opp ? M[F.indexOf(opp)] : 0;
+    return opp && Math.abs(M[i] - o) <= (M[i] + o) * 0.5 ? null : lead;
+  }
+  /** How hard it rains in the garden, 0..1 (progress/realm.js rainOf, by your mental state). */
+  rain() { const M = this.game.courierMind; return M?.state ? rainOf({ state: M.state, brimming: !!M.brimming }) : 0; }
 
   /** The WATER art, a frame: what the buttons ask at the ground under the hand. */
-  handle(dt, hit, { pour, drink, spring, drain, unset }) {
+  handle(dt, hit, { pour, drink, spring, drain, unset, feeling = null }) {
     if (!hit) return;
     const P = hit.planet, W = this.water(P), dir = hit.point.clone().sub(P.c).normalize(), say = (how) => this.game.events?.emit('garden.water', { planetoid: P.id, how, by: 'courier' });
-    if (pour) { W.pour(dir, FLOW.pour * dt, this.feeling()); if (!this.pouring) { this.pouring = true; say('pour'); } } else this.pouring = false;
+    const f = feeling || this.feeling();
+    if (pour) { W.pour(dir, FLOW.pour * dt, f); if (!this.pouring) { this.pouring = true; say('pour'); } } else this.pouring = false;
     if (drink) { const got = W.drink(dir, FLOW.drink * dt); if (got && !this.drinking) { this.drinking = true; say('drink'); } } else this.drinking = false;
-    if (spring || drain) { const L = spring ? this.springs : this.drains; L.push({ planet: P, dir, rate: spring ? FLOW.spring : FLOW.drain, feeling: this.feeling() }); this.mark(); W.wake(); say(spring ? 'spring' : 'drain'); this.dirty(); }
+    if (spring || drain) { const L = spring ? this.springs : this.drains; L.push({ planet: P, dir, rate: spring ? FLOW.spring : FLOW.drain, feeling: f }); this.mark(); W.wake(); say(spring ? 'spring' : 'drain'); this.dirty(); }
     if (unset) {
       let best = null, bd = FLOW.near, from = null;
       for (const L of [this.springs, this.drains]) for (const s of L) { if (s.planet !== P) continue; const d = P.c.clone().addScaledVector(s.dir, P.radiusAt(s.dir)).distanceTo(hit.point); if (d < bd) { bd = d; best = s; from = L; } }
@@ -64,9 +90,20 @@ export class Waterworks {
   }
 
   dirty() { this.game.save?.dirty('realm'); }
+  /** A planetoid's water gone, its springs and drains with it (the hand's reset: world/garden/hand.js). */
+  reset(P) { this.waters[P.id]?.load(null); this.springs = this.springs.filter((s) => s.planet !== P); this.drains = this.drains.filter((s) => s.planet !== P); this.mark(); this.dirty(); }
 
   /** The water's step: the springs run, the drains take, every wet planetoid steps; the slopes slump; what was worn reaches the look. */
   fixed(dt) {
+    this.owed += dt; if (--this.skip > 0) return;
+    const t0 = performance.now(); dt = this.owed; this.owed = 0; this.skip = this.every;
+    this.run(dt);
+    const ms = (performance.now() - t0) / this.every; this.cost += (ms - this.cost) * BUDGET.ease;
+    this.every = Math.min(BUDGET.most, Math.max(1, Math.ceil((this.cost * this.every) / BUDGET.ms))); // (what one folded step costs, over the budget)
+  }
+  run(dt) {
+    const rain = this.rain();
+    if (rain > 0) { const r = (this.rand ||= stream('garden.rain')), f = this.feeling(); for (const P of this.R.site.planets) { const k = Math.floor(r() * NX * NY), d = new THREE.Vector3().fromArray(CELL_DIRS, k * 3); this.water(P).pour(d, RAIN.most * rain * dt * (P.r / 20) ** 2, f); } } // (a drop a step somewhere on each, as much as its size)
     for (const s of this.springs) this.water(s.planet).pour(s.dir, s.rate * dt, s.feeling);
     for (const s of this.drains) this.waters[s.planet.id]?.drink(s.dir, s.rate * dt);
     for (const W of Object.values(this.waters)) W.step(dt);

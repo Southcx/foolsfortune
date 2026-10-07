@@ -5,23 +5,29 @@
 // fixed there. A feature is placed with a feeling, for cubes and one material of that feeling's kind; neighbours that GENERATE it
 // strengthen it, those that OVERCOME it weaken it, and a spirit vein under its plot doubles the lot. The pull between two neighbours is
 // shown, not written: a bright thread for one that feeds the other, a dark crack for one that checks it (marks in the world are not text);
-// the log has the number (garden.place carries `mult`). The features are Calissa's (vfx/garden/features.js).
+// the log has the number (garden.place carries `mult`). The ground a feature stands on and the water that reaches it count as one
+// neighbour each (SPIRIT-GARDEN.md items 6 and 11). A spirit vein ends, on each planetoid it joins, at the highest ground within 35
+// degrees of the way to the other (item 13: dragon veins run along ridges), worked out again when a stroke ends; a plot within 3 m of an
+// end is on the vein. A placed feature can be lifted by the hand and set in another free plot (item 7: free). The features are
+// Calissa's (vfx/garden/features.js).
 //
 // Prior art: Dark Cloud 2's Georama (a place built piece by piece), feng shui and the Wu Xing cycles (generating and overcoming), the
 // xianxia formation array (stones that empower their neighbours), and Animal Crossing's plots marked where a house may stand.
 //
 //   const T = new Plots(game, place, clays)   T.plots [{ id, planet, i, dir, pos, placed }]   T.near(point, r) -> plot   T.place(plot, feature, feeling)
 //   T.show(on)   T.mult(plot) -> n   T.dump() -> [{ planet, i, feature, feeling }]   T.load(list)   T.counts() -> { features, feelings }
+//   T.move(from, to)   T.settle(plot)   T.veins(planet?)   T.wet (a hook: (plot) -> a feeling or null, the realm's waterworks)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { PLANETOID_PLOTS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES } from '../../progress/realm.js';
+import { PLANETOID_PLOTS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES, VEIN as VEIN_RULE, veinEnd } from '../../progress/realm.js';
+import { NX, NY, CELL_DIRS } from './clay.js';
+import { SpiritVein } from '../../vfx/garden/veins.js';
 import { seeded } from '../../core/rng.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 
 /** The five feelings' colours (the garden's tints for a feature placed with one: Calissa's to refine). */
 export const FEELING_COLOR = { mirth: 0xffb35c, wonder: 0x7fd6a0, desire: 0xe0705a, grief: 0x9fb0d8, dread: 0x7a62b8 };
 const NEAR = 1.75; // (two plots are neighbours within this many plot spacings)
-const VEIN = 8 * (Math.PI / 180); // (a plot within 8 degrees of a planetoid's vein sits on it)
 const UP = new THREE.Vector3(0, 1, 0);
 
 export class Plots {
@@ -49,11 +55,32 @@ export class Plots {
         clays[P.id]?.keep(dir, 2.5);
         made++;
       }
-      // the planetoid's spirit vein: a great circle through two seeded directions (sculpting will bend it: later)
-      const a = new THREE.Vector3(r() - 0.5, r() - 0.5, r() - 0.5).normalize(), b = new THREE.Vector3(r() - 0.5, r() - 0.5, r() - 0.5).normalize();
-      P.vein = a.clone().cross(b).normalize(); // (the circle's axis)
     }
     this.threads = new THREE.Group(); this.group.add(this.threads);
+    this.wet = null;
+    this.veins();
+  }
+
+  /** Where each spirit vein touching `planet` (or every vein) ends, worked out from the ground as it is now; the veins redrawn to them. */
+  veins(planet = null) {
+    const S = this.site; S.links ||= S.veins.map((V, i) => ({ V, a: S.by[S.LINKS[i][0]], b: S.by[S.LINKS[i][1]], ends: {} }));
+    for (const L of S.links) {
+      if (planet && L.a !== planet && L.b !== planet) continue;
+      for (const [P, Q] of [[L.a, L.b], [L.b, L.a]]) L.ends[P.id] = this.veinEnd(P, Q);
+      const A = L.a.c.clone().addScaledVector(L.ends[L.a.id], L.a.radiusAt(L.ends[L.a.id])), B = L.b.c.clone().addScaledVector(L.ends[L.b.id], L.b.radiusAt(L.ends[L.b.id]));
+      const i = S.veins.indexOf(L.V), V = new SpiritVein(A, B); V.set({ k: L.V.u.uK.value }); V.u.uT.value = L.V.u.uT.value;
+      const parent = L.V.mesh.parent || S.group; L.V.dispose(); parent.add(V.mesh); S.veins[i] = V; L.V = V;
+    }
+    if (planet) this.links();
+  }
+  /** The direction on P where its vein to Q ends: the highest ground within VEIN_RULE.cone degrees of the way to Q (progress/realm.js). */
+  veinEnd(P, Q) {
+    const clay = this.clays[P.id], to = Q.c.clone().sub(P.c).normalize(), cosC = Math.cos(VEIN_RULE.cone * Math.PI / 180), cells = [], ks = [];
+    for (let k = 0; k < NX * NY; k++) {
+      const dot = CELL_DIRS[k * 3] * to.x + CELL_DIRS[k * 3 + 1] * to.y + CELL_DIRS[k * 3 + 2] * to.z; if (dot < cosC) continue;
+      cells.push({ height: clay ? clay.groundAt(k) : P.r, angle: Math.acos(Math.min(1, dot)) * 180 / Math.PI }); ks.push(k);
+    }
+    const i = veinEnd(cells); return i < 0 ? to : new THREE.Vector3().fromArray(CELL_DIRS, ks[i] * 3);
   }
 
   near(point, r = 2.2) {
@@ -62,10 +89,27 @@ export class Plots {
     return best;
   }
   show(on) { for (const p of this.plots) p.mark.visible = on && !p.placed; }
-  onVein(p) { return Math.abs(p.dir.dot(p.planet.vein)) < Math.sin(VEIN); }
+  onVein(p) { return (this.site.links || []).some((L) => { const e = L.ends[p.planet.id]; return e && p.planet.r * e.angleTo(p.dir) <= VEIN_RULE.reach; }); }
   neighbours(p) { return this.plots.filter((q) => q !== p && q.planet === p.planet && q.placed && q.dir.angleTo(p.dir) < p.planet.spacing * NEAR); }
   /** A feature's multiplier where it stands (progress/realm.js formation). */
-  mult(p) { return p.placed ? formation(p.placed.feeling, this.neighbours(p).map((q) => q.placed.feeling), this.onVein(p)) : 1; }
+  mult(p) { return p.placed ? formation(p.placed.feeling, this.neighbours(p).map((q) => q.placed.feeling), this.onVein(p), { ground: this.clays[p.planet.id]?.groundOf(p.dir) ?? null, water: this.wet?.(p) ?? null }) : 1; }
+
+  /** A feature lifted by the hand set in another free plot (free: item 7), its formation worked out where it lands. */
+  move(from, to) {
+    if (!from?.placed || !to || to.placed) return false;
+    to.placed = from.placed; from.placed = null;
+    const G = from.group, look = from.look; from.group = null; from.look = null;
+    to.group = G; to.look = look; this.settle(to); from.mark.visible = false;
+    this.links();
+    this.game.events?.emit('garden.move', { from: from.id, to: to.id, planetoid: to.planet.id, feature: to.placed.feature, mult: +this.mult(to).toFixed(2), vein: this.onVein(to), by: 'courier' });
+    return true;
+  }
+  /** A feature back on its own plot (let go over nothing, or just moved there). */
+  settle(p) {
+    const G = p.group; if (!G) return;
+    if (G.parent !== this.group) this.group.add(G);
+    G.position.copy(p.pos); G.quaternion.setFromUnitVectors(UP, p.dir); p.mark.visible = false;
+  }
 
   /** The hand places `feature` with `feeling` in a plot: paid in cubes and a material of the feeling's kind (from the Pneuka Box). */
   place(p, feature, feeling, { free = false } = {}) {

@@ -20,7 +20,7 @@ import * as THREE from 'three';
 import { GardenSite, MAX_BEDS, MAX_SLOTS } from './place.js';
 import { PlanetBody } from './planetbody.js';
 import { Clay } from './clay.js';
-import { Plots } from './plots.js';
+import { Plots, FEELING_COLOR } from './plots.js';
 import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
@@ -58,6 +58,7 @@ export class Realm {
     this.raising = new Raising(game, this);
     this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
     this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
+    this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
@@ -66,9 +67,13 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump() }),
-      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.site.by[id], true); } this.plots.load(d?.placed); this.flowAll(); this.waterworks.load(d?.water); },
-      reset: () => { this.name = null; } });
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump() }),
+      load: (d) => {
+        this.name = d?.name || null; this.awaken.load(d?.awaken);
+        for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
+        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water);
+      },
+      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -94,6 +99,7 @@ export class Realm {
     this.back = { shrine: shrine?.id || null, pos: P.pos.clone(), yaw: P.yaw };
     const go = () => {
       this.entering = false;
+      this.lake = this.waterworks.feeling(); this.site.by.dantian?.look?.tint?.(FEELING_COLOR[this.lake]); // (the Dantian's lake is the draught you entered with: item 11)
       const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density }; // (what the garden changes of the world's, put back on leaving: casebook rule 30, GARDEN-SWEEP #12)
       const D = this.site.by.dantian, gate = this.site.features.find((f) => f.kind === 'gate'), start = this.gateStart();
       this.jarBody = new PlanetBody({ planets: this.site.planets, pos: start, radius: 0.5 });
@@ -260,6 +266,14 @@ export class Realm {
 
   // ------------------------------------------------------------------ the clay and the water
   /** A planetoid's clay changed: its mesh follows (a few times a second while a stroke runs, at once when it ends), and the water. */
+  /** A planetoid put back to its rest shape (the hand's Ctrl+Backspace, asked twice: free, item 30): its clay, its paint and its water. */
+  resetPlanetoid(P) {
+    const c = this.clays[P.id]; if (!c) return;
+    this.hand.undos.push({ planet: P, h: c.snapshot() }); // (and a slip of the keys can be undone: Ctrl+Z)
+    c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 });
+    this.waterworks.reset(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
+    this.game.events?.emit('garden.reset', { planetoid: P.id, by: 'courier' });
+  }
   reshape(P, now = false) {
     const clay = this.clays[P.id]; if (!clay) return;
     if (!now && (this.shapeT = (this.shapeT || 0) + 1) % 2) return;

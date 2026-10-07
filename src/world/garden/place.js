@@ -86,6 +86,7 @@ export class GardenSite {
     });
     // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
     this.sky = new GardenSky(); g.add(this.sky.group);
+    this.LINKS = LINKS; // (the pairs the veins join, in the veins' order: world/garden/plots.js moves their ends)
     this.veins = LINKS.map(([a, b]) => { const A = this.by[a], B = this.by[b], d = B.c.clone().sub(A.c).normalize(); const V = new SpiritVein(A.c.clone().addScaledVector(d, A.r * 0.9), B.c.clone().addScaledVector(d, -B.r * 0.9)); g.add(V.mesh); return V; });
     // the lotuses: one on each end of a link, on the side facing the other
     this.lotuses = [];

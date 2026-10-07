@@ -10,6 +10,9 @@
 // In every view the mouse is the hand (world/garden/hand.js). While the hand holds the Jar, a view that follows the Jar holds still where
 // it was when it was picked up (casebook: the held Jar's runaway, 2026-10-07: the camera chased the Jar, the cursor's ray re-aimed from
 // the moved camera, and the Jar fled at 130 m/s).
+// The camera never goes under the ground (nor into the Chimney's needle, which is the ground's shape): from what it looks at out to where
+// it would stand, the first point within CLEAR of any planetoid's surface is as far as it goes, eased back out (every third-person
+// camera's spring arm). The overhead view is tethered the same way: zoomed out, it stops short of a planetoid between it and the ground.
 // Events: garden.view { view }.
 //
 // Prior art: Super Mario Galaxy's camera (up is the planetoid's, the heading kept over the curve), the god games' straight-down map view
@@ -23,7 +26,8 @@ import * as THREE from 'three';
 const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; // (metres; radians; radians a real second for Q / E)
 const FIRST = { eye: 0.75, pitch: -0.12, min: -1.1, max: 0.9, tilt: 0.08 }; // (metres over the Jar's middle; radians, and a wheel notch's)
 const OVER = { dist: 18, min: 9, max: 70, pan: 0.9, turn: 1.8 }; // (metres over the ground; pan speed in view-heights a real second)
-const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _n = new THREE.Vector3(), _r = new THREE.Vector3();
+const CLEAR = { margin: 0.6, step: 0.35, out: 4 }; // (metres off the ground; metres a test along the arm; how fast it eases back out, a real second)
+const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _n = new THREE.Vector3(), _r = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
 export class GardenCamera {
   constructor(realm) {
@@ -31,7 +35,23 @@ export class GardenCamera {
     this.fwd = new THREE.Vector3(0, 0, -1); this.up = new THREE.Vector3(0, 1, 0); this.dist = CAM.dist; this.pitch = FIRST.pitch;
     this.over = null; // ({ focus, north, dist, planet } while the overhead view is up)
     this.anchor = null; // (where a followed view holds while the Jar is held)
+    this.arm = 1; // (the share of the wanted distance the camera stands at: less while the ground is in the way)
   }
+
+  /** How far along from `from` to `to` (0..1) the camera may stand before it is within CLEAR.margin of any planetoid's surface. */
+  clear(from, to) {
+    const len = from.distanceTo(to), n = Math.max(2, Math.ceil(len / CLEAR.step)), planets = this.R.site.planets;
+    for (let i = 1; i <= n; i++) {
+      const t = i / n; _p.lerpVectors(from, to, t);
+      for (const P of planets) {
+        const d = _p.distanceTo(P.c); if (d > (P.rMax || P.r * 2) + CLEAR.margin) continue;
+        if (d < (P.radiusAt ? P.radiusAt(_d.copy(_p).sub(P.c).divideScalar(d || 1)) : P.r) + CLEAR.margin) return Math.max(0, (i - 1) / n);
+      }
+    }
+    return 1;
+  }
+  /** The arm eased: in at once to what is clear, out again slowly. */
+  spring(want, dt) { this.arm = want < this.arm ? want : Math.min(want, this.arm + CLEAR.out * dt / Math.max(1, this.dist)); return this.arm; }
 
   get view() { return this.over ? 'overhead' : this.game.player?.fp ? 'first' : 'behind'; }
   get hidesJar() { return this.view === 'first'; }
@@ -71,7 +91,8 @@ export class GardenCamera {
     } else {
       if (wheel) this.dist = THREE.MathUtils.clamp(this.dist * (1 + Math.sign(wheel) * 0.12), CAM.min, CAM.max);
       const focus = _v.copy(at).addScaledVector(this.up, CAM.lookUp);
-      cam.position.copy(focus).addScaledVector(this.fwd, -this.dist * Math.cos(CAM.pitch)).addScaledVector(this.up, this.dist * Math.sin(CAM.pitch));
+      const want = _w.copy(focus).addScaledVector(this.fwd, -this.dist * Math.cos(CAM.pitch)).addScaledVector(this.up, this.dist * Math.sin(CAM.pitch));
+      cam.position.lerpVectors(focus, want, this.spring(this.clear(focus, want), dt));
       cam.up.copy(this.up); cam.lookAt(focus);
     }
     cam.updateMatrixWorld();
@@ -91,6 +112,8 @@ export class GardenCamera {
     // back onto the ground under it (so the view stays a height over the surface, round the curve)
     const n2 = _w.copy(O.focus).sub(P.c).normalize();
     O.focus.copy(P.c).addScaledVector(n2, P.radiusAt ? P.radiusAt(n2) : P.r);
-    cam.position.copy(O.focus).addScaledVector(n2, O.dist); cam.up.copy(O.north); cam.lookAt(O.focus); cam.updateMatrixWorld();
+    const lift = _a.copy(O.focus).addScaledVector(n2, CLEAR.margin * 2), want = _b.copy(O.focus).addScaledVector(n2, O.dist);
+    const k = this.clear(lift, want); // (tethered: zoomed out past another planetoid, the view stops short of it)
+    cam.position.lerpVectors(lift, want, k); cam.up.copy(O.north); cam.lookAt(O.focus); cam.updateMatrixWorld();
   }
 }

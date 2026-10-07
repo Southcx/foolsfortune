@@ -4,8 +4,11 @@
 // strokes (the owner: "fluid sims, mesh deformation, the works"): 2 PULL and 3 PRESS (raise and lower the planetoid's clay), 4 SMOOTH,
 // 5 FLATTEN (to the height where the stroke began: terraces), 6 CARVE (a narrow groove, for water to run in), 7 ROUGHEN; 8 WATER (pour
 // with the left button, drink up with the right, a spring with Shift and the left, a drain with Ctrl and the left, Shift and the right
-// takes the nearest away: world/garden/waterworks.js); 9 PLACE (a feature in a plot: world/garden/plots.js). Shift and the wheel size
-// the stroke (1 to 12 m); Ctrl+Z undoes the last of ten. The model is the god hand's own (godhand/godhand.js: its fingers posed there); the strokes are the
+// takes the nearest away: world/garden/waterworks.js); 9 PLACE (a feature in a plot: world/garden/plots.js); 0 PAINT (a ground's
+// material with the left button, none with the right: world/garden/clay.js). R turns the choice: PAINT's ground, WATER's feeling. GRAB
+// also lifts a placed feature and sets it in the free plot it is let go over (its formation worked out again there, free). Shift and the
+// wheel size the stroke (1 to 12 m); Ctrl+Z undoes the last of ten; Ctrl+Backspace twice within three real seconds puts the planetoid
+// under the hand back to its rest shape (its clay, its paint and its water: free). The model is the god hand's own (godhand/godhand.js: its fingers posed there); the strokes are the
 // clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's pose says the rest (open over the
 // ground, pinched to sculpt, curled to grab).
 //
@@ -20,12 +23,16 @@ import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
 import { STATS, firingOf, ranksOf } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
+import { GROUNDS } from './clay.js';
+import { FEELINGS } from './water.js';
 
-export const ARTS = ['grab', 'pull', 'press', 'smooth', 'flatten', 'carve', 'roughen', 'water', 'place'];
+export const ARTS = ['grab', 'pull', 'press', 'smooth', 'flatten', 'carve', 'roughen', 'water', 'place', 'paint']; // (keys 1 to 9, then 0)
+const KEY = (k) => `Digit${(k + 1) % 10}`;
+const RESET = { within: 3 }; // (real seconds between the two presses that put a planetoid back)
 const STROKE = { pull: 0.12, press: 0.12, carve: 0.12, smooth: 0.5, flatten: 0.5, roughen: 0.25, size: [1, 12], undo: 10 }; // (metres a stroke tick, or the share eased; the size's range; strokes kept to undo)
 const FEATURE_NAME = { terrace: 'herb terrace', pavilion: 'echo pavilion', spiritHouse: 'spirit house', pond: 'Lachryma pond', lantern: 'stone lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's words)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
-const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4();
+const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4(), _UP = new THREE.Vector3(0, 1, 0);
 
 /** Where a ray (o, unit d) first meets a sphere, or -1. */
 /** Where a ray meets a planetoid's ground as shaped (its needles and hills: GARDEN-SWEEP #6): its reach's sphere first, then marched
@@ -52,12 +59,29 @@ export class GardenHand {
     this.held = null; this.dist = 0; this.at = new THREE.Vector3(); this.prev = new THREE.Vector3(); this.vel = new THREE.Vector3();
     this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0; this.size = HAND.brush; this.undos = [];
     this.brush = new SculptBrush({ fx: realm.game.fx }); realm.site.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
+    this.ground = GROUNDS[0]; this.feeling = null; // (PAINT's ground; WATER's feeling, null: your draught's)
+    this.resetAsk = null; this.clock = 0; // ({ planet, t } after the first Ctrl+Backspace; the hand's own real seconds)
   }
 
   setArt(a) {
     if (!ARTS.includes(a) || a === this.art) return;
     this.art = a; this.R.plots?.show(a === 'place');
-    this.game.events?.emit('garden.art', { art: a, by: 'courier' });
+    this.game.events?.emit('garden.art', { art: a, ground: a === 'paint' ? this.ground : undefined, feeling: a === 'water' ? this.feeling || undefined : undefined, by: 'courier' });
+  }
+  /** R: the next ground to paint, or the next feeling to pour (wonder first, as the pages show them; then your draught's again). */
+  turn() {
+    if (this.art === 'paint') this.ground = GROUNDS[(GROUNDS.indexOf(this.ground) + 1) % GROUNDS.length];
+    else if (this.art === 'water') { const i = this.feeling ? FEELINGS.indexOf(this.feeling) + 1 : 0; this.feeling = i < FEELINGS.length ? FEELINGS[i] : null; }
+    else return;
+    this.game.events?.emit('garden.art', { art: this.art, ground: this.art === 'paint' ? this.ground : undefined, feeling: this.art === 'water' ? this.feeling || 'draught' : undefined, by: 'courier' });
+  }
+  /** Ctrl+Backspace: asked twice within RESET.within real seconds, the planetoid under the hand is put back to its rest shape. */
+  askReset() {
+    const P = this.hit?.planet; if (!P) return;
+    const now = this.clock;
+    if (this.resetAsk?.planet === P && now - this.resetAsk.t < RESET.within) { this.resetAsk = null; this.R.resetPlanetoid(P); return; }
+    this.resetAsk = { planet: P, t: now };
+    this.game.events?.emit('garden.reset.ask', { planetoid: P.id, by: 'courier' });
   }
 
   /** The cursor's ray, and the planetoid it meets (the ground under the hand). */
@@ -82,8 +106,11 @@ export class GardenHand {
 
   update(dt) {
     const g = this.game, I = g.input, R = this.R;
+    this.clock += g.rawDt ?? dt;
     const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
-    for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(`Digit${k + 1}`) && !typing) this.setArt(ARTS[k]);
+    for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(KEY(k)) && !typing) this.setArt(ARTS[k]);
+    if (I.wasPressed('KeyR') && !typing) this.turn();
+    if (ctrl && I.wasPressed('Backspace') && !typing) this.askReset();
     if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1]); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
     if (ctrl && I.wasPressed('KeyZ') && !typing) this.undo();
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
@@ -92,12 +119,13 @@ export class GardenHand {
     if (I.wasPressed('Mouse2') && this.art !== 'water') { if (R.tribulation?.active) R.tribulation.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
       case 'grab': this.grab(dt, o, d); break;
-      case 'water': R.waterworks?.handle(dt, this.hit, { pour: I.isDown('Mouse0') && !shift && !ctrl, drink: I.isDown('Mouse2') && !shift, spring: shift && I.wasPressed('Mouse0'), drain: ctrl && I.wasPressed('Mouse0'), unset: shift && I.wasPressed('Mouse2') }); break;
+      case 'paint': this.paint(dt); break;
+      case 'water': R.waterworks?.handle(dt, this.hit, { feeling: this.feeling, pour: I.isDown('Mouse0') && !shift && !ctrl, drink: I.isDown('Mouse2') && !shift, spring: shift && I.wasPressed('Mouse0'), drain: ctrl && I.wasPressed('Mouse0'), unset: shift && I.wasPressed('Mouse2') }); break;
       case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
       default: this.sculpt(dt);
     }
     // the brush's ring on the clay under the hand, for the four strokes
-    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), this.art === 'water' ? 1.5 : this.size, this.art === 'pull' ? 'raise' : this.art === 'smooth' || this.art === 'flatten' || this.art === 'water' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
+    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), this.art === 'water' ? 1.5 : this.size, this.art === 'pull' ? 'raise' : this.art === 'smooth' || this.art === 'flatten' || this.art === 'water' || this.art === 'paint' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
     else this.brush.hide();
     this.brush.update(this.game.rawDt ?? dt);
     this.pose(dt);
@@ -109,7 +137,9 @@ export class GardenHand {
     if (I.wasPressed('Mouse0') && !this.held) {
       const b = this.pick(o, d);
       if (b) { this.held = b; this.dist = o.distanceTo(b.body.pos); this.downT = 0; this.moved = 0; b.body.held = true; b.body.flight = null; this.at.copy(b.body.pos); this.prev.copy(this.at); sfx.grab?.(); }
+      else if (this.hit) { const p = this.R.plots.near(this.hit.point, 2.2); if (p?.placed) { this.held = { kind: 'feature', plot: p }; this.R.plots.show(true); sfx.grab?.(); } } // (a placed feature: lifted, to be set in another plot)
     }
+    if (this.held?.kind === 'feature') return this.carryFeature();
     if (!this.held) return;
     this.downT += dt;
     const want = _w.copy(o).addScaledVector(d, this.dist);
@@ -125,7 +155,28 @@ export class GardenHand {
       this.held = null;
     }
   }
-  letGo() { if (this.held) { this.held.body.release(new THREE.Vector3()); this.held = null; } this.endStroke(); }
+  /** A feature held: it follows the ground under the hand, and is set in the free plot it is let go over (or goes back to its own). */
+  carryFeature() {
+    const I = this.game.input, p = this.held.plot, G = p.group;
+    if (G && this.hit) { const n = this.hit.point.clone().sub(this.hit.planet.c).normalize(); G.position.copy(this.hit.point).addScaledVector(n, 0.8); G.quaternion.setFromUnitVectors(_UP, n); }
+    if (I.isDown('Mouse0')) return;
+    const to = this.hit ? this.R.plots.near(this.hit.point, 2.6) : null;
+    this.held = null; this.R.plots.show(this.art === 'place');
+    if (to && to !== p && !to.placed) this.R.plots.move(p, to); else this.R.plots.settle(p); // (moved free: the formation worked out where it lands)
+    this.R.flowAll();
+  }
+  letGo() { if (this.held?.kind === 'feature') { this.R.plots.settle(this.held.plot); this.held = null; this.R.plots.show(this.art === 'place'); } else if (this.held) { this.held.body.release(new THREE.Vector3()); this.held = null; } this.endStroke(); }
+
+  // ---- paint: a ground's material where the hand is (the left button), none (the right); a stroke as the clay's, undone the same way
+  paint(dt) {
+    const I = this.game.input, clear = I.isDown('Mouse2'), on = I.isDown('Mouse0') || clear;
+    if (!on || !this.hit) { this.endStroke(); return; }
+    const P = this.hit.planet, clay = this.R.clays[P.id]; if (!clay) return;
+    if (!this.stroke) { this.stroke = { planet: P, how: 'paint', moved: false, ground: clear ? null : this.ground }; this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift(); }
+    if ((this.brushT -= dt) > 0) return;
+    this.brushT = HAND.every;
+    if (clay.paint(this.hit.point.clone().sub(P.c), this.stroke.ground, this.size)) { this.stroke.moved = true; this.R.reshape(P); }
+  }
 
   // ---- the clay
   sculpt(dt) {
@@ -144,13 +195,14 @@ export class GardenHand {
   /** Ctrl+Z: the last stroke taken back (the ground as it was before it, and the water told). */
   undo() {
     const U = this.undos.pop(); if (!U) return;
-    this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet);
+    this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet); this.R.plots.veins(U.planet);
     this.game.events?.emit('garden.undo', { planetoid: U.planet.id, by: 'courier' });
   }
   endStroke() {
     const S = this.stroke; this.stroke = null; if (!S) return; if (!S.moved) { this.undos.pop(); return; } // (nothing changed: nothing to undo)
     this.R.reshape(S.planet, true);
-    this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' });
+    if (S.how === 'paint') this.game.events?.emit('garden.paint', { planetoid: S.planet.id, ground: S.ground || 'none', by: 'courier' });
+    else { this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' }); this.R.plots.veins(S.planet); } // (a ridge raised moves the veins' ends: item 13)
   }
 
   // ---- placing: the page of what may stand there (its cost in cubes and a material of the feeling's kind)
