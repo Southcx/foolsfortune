@@ -80,6 +80,7 @@ export class WorldBand {
     if (stroke === 'na' || stroke === 'tin' || stroke === 'dha') {
       const f = hz(m), ring = stroke === 'tin' ? 0.55 : 0.28;
       for (const [r, a] of [[1, 1], [2, 0.5], [3, 0.3], [4, 0.15], [5, 0.1]]) {
+        if (f * r >= c.sampleRate / 2) continue; // (past the top of hearing)
         const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v * 0.5, t + 0.002);
         g.gain.exponentialRampToValueAtTime(0.0001, t + ring / Math.sqrt(r)); g.connect(o); this.osc('sine', f * r, t, t + ring + 0.05, g);
       }

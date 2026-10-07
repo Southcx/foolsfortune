@@ -9,10 +9,10 @@
 //                (it floats over the cloud sea), the colours lifted toward pastel, as Dual Hearts paints
 //   THE KINDS    dantian   the heart, 20 m: a lake of your own Lachryma at its crown in a ring of stones, the Pneuka Box's shed
 //                terraces  the Herb Terraces, 12 m: stepped round its crown, rows of spirit herbs on them
-//                furnace   the Athanor, 10 m: basalt in columns, a vent at its crown glowing with the athanor's fire
+//                athanor   the Athanor, 10 m: basalt in columns, a vent at its crown glowing with the athanor's fire
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
-//                grove     the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
-//                peak      the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
+//                mulberryGrove the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
+//                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
 //
 // Prior art: Super Mario Galaxy's planetoids (a world you run round in seconds, a single readable shape each), Dual Hearts' floating
 // isles, the xianxia cave abode and its spirit fields (terraces, the pill furnace, the needle peak of a sect's mountain), and Animal
@@ -29,18 +29,20 @@ import { mergeStatic } from '../../render/merge.js';
 export const PLANETOIDS = {
   dantian: { radius: 20, top: 0x9fd88a, low: 0x7fb08a, rock: 0x8a7f94 },
   terraces: { radius: 12, top: 0xb4dc7e, low: 0x8cb878, rock: 0x947e78 },
-  furnace: { radius: 10, top: 0x6a5a6a, low: 0x564a5a, rock: 0x3a3440 },
+  athanor: { radius: 10, top: 0x6a5a6a, low: 0x564a5a, rock: 0x3a3440 },
   pavilions: { radius: 14, top: 0xe8dcc8, low: 0xb8d494, rock: 0x9a8c98 },
-  grove: { radius: 16, top: 0x7cc48a, low: 0x5fa47a, rock: 0x7a6f86 },
-  peak: { radius: 8, top: 0xd8d2dc, low: 0xa89cb4, rock: 0x7a7088 },
+  mulberryGrove: { radius: 16, top: 0x7cc48a, low: 0x5fa47a, rock: 0x7a6f86 },
+  chimney: { radius: 8, top: 0xd8d2dc, low: 0xa89cb4, rock: 0x7a7088 },
 };
 
+const WAS = { furnace: 'athanor', grove: 'mulberryGrove', peak: 'chimney' }; // (the ids before the rename of 2026-10-07)
 const BAND = 0.18; // (sculpting keeps the surface within this share of the radius, in or out)
 
 export class Planetoid {
-  constructor({ kind = 'grove', radius = null, seed = 1, surface = null } = {}) {
+  constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null } = {}) {
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
-    const K = PLANETOIDS[kind] ?? PLANETOIDS.grove; this.kind = kind; this.R = radius ?? K.radius; this.K = K;
+    kind = WAS[kind] ?? kind; // (an old id while place.js keeps its bridge: dropped with it)
+    const K = PLANETOIDS[kind] ?? PLANETOIDS.mulberryGrove; this.kind = kind; this.R = radius ?? K.radius; this.K = K;
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
     let g = new THREE.IcosahedronGeometry(1, Math.min(6, Math.round(3 + this.R / 6))); g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g);
@@ -62,9 +64,9 @@ export class Planetoid {
     const n3 = (a, b, c) => Math.sin(a * 2.3 + b * 1.7) * Math.sin(b * 2.9 - c * 1.3) * Math.sin(c * 2.1 + a * 2.7); // (soft rolling hills)
     let r = 1 + 0.035 * n3(x * 2, y * 2, z * 2) + 0.015 * n3(x * 5 + 1, y * 5, z * 5 - 2);
     if (this.kind === 'terraces' && y > 0.15) r += Math.floor(y * 6) / 6 * 0.06 - y * 0.06; // (stepped terraces round its crown)
-    if (this.kind === 'furnace') { const c = Math.floor(Math.atan2(z, x) * 4) + Math.floor(y * 6) * 7; r += (((c * 37) % 11) / 11 - 0.5) * 0.04; } // (basalt columns)
+    if (this.kind === 'athanor') { const c = Math.floor(Math.atan2(z, x) * 4) + Math.floor(y * 6) * 7; r += (((c * 37) % 11) / 11 - 0.5) * 0.04; } // (basalt columns)
     if (this.kind === 'pavilions' && y > 0.6) r = Math.min(r, 1.005); // (its crown paved smooth)
-    if (this.kind === 'peak' && y > 0) r *= 1 + 2.6 * y ** 12; // (drawn up into a needle: only the very crown is pulled)
+    if (this.kind === 'chimney' && y > 0) r *= 1 + 2.6 * y ** 12; // (drawn up into a needle: only the very crown is pulled)
     if (y < -0.35) r *= 1 + 0.08 * (-y - 0.35); // (its underside a touch deeper: the island's keel)
     return r;
   }
@@ -121,17 +123,17 @@ export class Planetoid {
     } else if (this.kind === 'terraces') {
       const herb = std(0x5fae5a), bloom = std(0xf2a8c8);
       for (let i = 0; i < 60; i++) { const a = rnd() * 6.28, y = 0.25 + rnd() * 0.65, s = Math.sqrt(1 - y * y); at(new THREE.Mesh(new THREE.SphereGeometry(0.28 + rnd() * 0.1, 6, 4), i % 6 ? herb : bloom), Math.cos(a) * s, y, Math.sin(a) * s, 0.1); }
-    } else if (this.kind === 'furnace') {
-      this.vent = new THREE.Mesh(new THREE.CircleGeometry(R * 0.26, 16), new THREE.MeshBasicMaterial({ color: 0xff7a3a })); this.vent.name = 'furnace-vent';
+    } else if (this.kind === 'athanor') {
+      this.vent = new THREE.Mesh(new THREE.CircleGeometry(R * 0.26, 16), new THREE.MeshBasicMaterial({ color: 0xff7a3a })); this.vent.name = 'athanor-vent';
       this.place(this.vent, _v.set(0, 1, 0), 0.06); this.vent.rotateX(-Math.PI / 2); this.props.add(this.vent);
     } else if (this.kind === 'pavilions') {
       const pave = new THREE.Mesh(new THREE.SphereGeometry(R * 1.006, 32, 6, 0, Math.PI * 2, 0, 0.6), std(0xeee4d4, { roughness: 0.6 })); pave.name = 'pavilions-paving'; pave.material.userData.noMerge = true; this.props.add(pave);
-    } else if (this.kind === 'grove') {
+    } else if (this.kind === 'mulberryGrove') {
       const trunk = std(0x8a6a5a), leaf = [std(0x8fd4a0), std(0xa8e0b4), std(0xc8e8a0), std(0xf2c8d8)];
       for (let i = 0; i < 18; i++) { const a = rnd() * 6.28, y = -0.1 + rnd() * 1.0, s = Math.sqrt(Math.max(0, 1 - y * y)), h = 2 + rnd() * 2.5, tree = new THREE.Group();
         tree.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.24, h, 5).translate(0, h / 2, 0), trunk)); tree.add(new THREE.Mesh(new THREE.SphereGeometry(1 + rnd() * 0.8, 8, 6).translate(0, h + 0.6, 0), leaf[i % 4]));
         this.place(tree, _v.set(Math.cos(a) * s, y, Math.sin(a) * s), -0.1); tree.updateMatrix(); for (const c of [...tree.children]) { c.applyMatrix4(tree.matrix); this.props.add(c); } }
-    } else if (this.kind === 'peak') {
+    } else if (this.kind === 'chimney') {
       const top = this.surface(_v.set(0, 1, 0));
       const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.2, 0.4, 8).translate(0, top + 0.1, 0), stone); this.props.add(plat);
     }

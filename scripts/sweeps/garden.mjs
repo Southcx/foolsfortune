@@ -6,7 +6,7 @@
 // Prints one line a check (PASS / FAIL with what was measured) and exits non-zero on any FAIL.
 //
 //   npm run dev &                     (or URL=http://host:port/ for a build under `vite preview`)
-//   node scripts/garden-sweep.mjs [--out dir] [--seed 1] [--quick]   (screenshots to <out>/shots, default <tmp>/garden-sweep)
+//   node scripts/sweeps/garden.mjs [--out dir] [--seed 1] [--quick]   (screenshots to <out>/shots, default <tmp>/garden-sweep)
 //
 // Prior art: scripts/stress.mjs and scripts/playtest/game.mjs (the page opened the same way, manual mode, the clock pinned: the
 // casebook's rule 3), Playwright's screenshot assertions.

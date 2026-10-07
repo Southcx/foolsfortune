@@ -49,8 +49,8 @@ export class Awaken {
   fossil() {
     const g = this.game; if (this.hatch || !g.pneuka?.count(FOSSIL)) return false;
     const e = this.entry({ kind: 'spirit', cls: 1, name: 'Lachrymite' }, 'fossil'); // (what a fossil wakes as is Calissa's and Espada's to say: a spirit of set Lachryma)
-    const look = new Fossil({ shape: SHAPES[this.woken % SHAPES.length], feeling: e.sp.feeling }), P = this.realm.place;
-    look.group.applyMatrix4(P.stand(P.by.grove, dirOf(62, 35), 0)); P.group.add(look.group);
+    const look = new Fossil({ shape: SHAPES[this.woken % SHAPES.length], feeling: e.sp.feeling }), P = this.realm.site;
+    look.group.applyMatrix4(P.stand(P.by.mulberryGrove, dirOf(62, 35), 0)); P.group.add(look.group);
     this.hatch = { kind: 'fossil', e, look, t: 0, beat: -1 }; if (g.garden) g.garden.awakening = true;
     return true;
   }
@@ -58,7 +58,7 @@ export class Awaken {
   merge(a, b) {
     if (this.hatch || !a?.sp || !b?.sp || a === b) return false;
     const R = this.realm;
-    for (const s of [...R.spirits]) if (s.e === a || s.e === b) { R.place.group.remove(s.mesh); R.spirits.splice(R.spirits.indexOf(s), 1); } // (into the pods)
+    for (const s of [...R.spirits]) if (s.e === a || s.e === b) { R.site.group.remove(s.mesh); R.spirits.splice(R.spirits.indexOf(s), 1); } // (into the pods)
     this.hatch = { kind: 'merge', a, b, t: 0 };
     return true;
   }
@@ -68,7 +68,7 @@ export class Awaken {
   cancel() {
     const H = this.hatch; if (!H) return;
     this.hatch = null; if (this.game.garden) this.game.garden.awakening = false;
-    H.look?.dispose(); const T = this.realm.place.tree; T.cocoon(0, { k: 0 }); T.cocoon(1, { k: 0 }); T.merging = null;
+    H.look?.dispose(); const T = this.realm.site.tree; T.cocoon(0, { k: 0 }); T.cocoon(1, { k: 0 }); T.merging = null;
   }
 
   /** The wild ones the garden draws: once a game day each kind whose wants it meets visits, and settles after enough visits. */
@@ -98,7 +98,7 @@ export class Awaken {
 
   update(dt) {
     const H = this.hatch; if (!H) return;
-    const g = this.game, T = this.realm.place.tree; H.t += dt;
+    const g = this.game, T = this.realm.site.tree; H.t += dt;
     if (H.kind === 'fossil') {
       // the crystal answers the song's beats (the music's grid, or every half second when nothing plays), and wakes as the song goes on
       const M = g.music?.grid?.(), b = M ? Math.floor((g.music.ctx.currentTime - M.t0) / M.spb) : Math.floor(H.t / 0.5);

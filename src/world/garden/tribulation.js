@@ -13,7 +13,7 @@
 // The look is Calissa's (vfx/garden/tribulation.js): the storm over the Chimney with the kiln's fire in its eye (hotter the higher the
 // Firing), each bolt traced then striking, its ring closing on the mat and gold in the flick's window.
 //
-//   const K = new Kiln(game, realm)   K.open() -> n | null (the Firing open to try)   K.begin()   K.flick(point)   K.update(dt)   K.cancel()   K.active
+//   const K = new Tribulation(game, realm)   K.open() -> n | null (the Firing open to try)   K.begin()   K.flick(point)   K.update(dt)   K.cancel()   K.active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { strikesOf } from '../../progress/realm.js';
@@ -26,12 +26,12 @@ const simRand = stream('world/garden/kiln'); // (where a bolt lands about the Ja
 const RING = { r: 1.5, warn: 0.9, flick: 0.45, spread: 1.2, mat: 3.2 }; // (a bolt's ring 1.5 m; outlined 0.9 s before it lands; flicked in its last 0.45 s; landing within 1.2 m of the Jar; the mat 3.2 m round)
 const UP = new THREE.Vector3(0, 1, 0);
 
-export class Kiln {
+export class Tribulation {
   constructor(game, realm) {
     this.game = game; this.realm = realm; this.active = false; this.strikes = [];
     const M = this.mat; // (the sky stands over the mat, on the Chimney's own up)
     this.look = new HeavenlyKiln({ height: 40, radius: 60 }); this.look.group.position.copy(M.pos); this.look.group.quaternion.setFromUnitVectors(UP, M.pos.clone().sub(M.planet.c).normalize());
-    realm.place.group.add(this.look.group);
+    realm.site.group.add(this.look.group);
   }
 
   /** The Firing open to try (the next past the last crossed, if the attributes' ranks have opened it), or null. */
@@ -39,8 +39,8 @@ export class Kiln {
     const L = this.game.ledger, crossed = Math.max(1, L?.best?.('firing') || 0), opened = firingOf(L ? ranksOf(L) : 0); // (the first Firing is had from the start: progress/spirits.js FIRINGS)
     return opened > crossed ? crossed + 1 : null;
   }
-  get mat() { return this.realm.place.features.find((f) => f.kind === 'peak'); }
-  onMat() { const M = this.mat; return !!M && this.realm.jar?.pos.distanceTo(M.pos) < RING.mat + 1.5; }
+  get mat() { return this.realm.site.features.find((f) => f.kind === 'tribulationMat'); }
+  onMat() { const M = this.mat; return !!M && this.realm.jarBody?.pos.distanceTo(M.pos) < RING.mat + 1.5; }
 
   begin() {
     const g = this.game, n = this.open();
@@ -69,7 +69,7 @@ export class Kiln {
   update(dt) {
     this.look.update(dt); // (the eye closes over a few seconds after the end)
     if (!this.active) return;
-    const g = this.game, J = this.realm.jar;
+    const g = this.game, J = this.realm.jarBody;
     // the end: the music's ending on its bar line, then the kiln closes
     if (this.endT > 0) { if ((this.endT -= dt) <= 0) { this.look.open(0); this.active = false; if (g.garden) g.garden.tribulation = { active: false, tier: this.firing, outcome: g.garden.tribulation?.outcome || null }; } return; }
     // a new bolt, outlined where it will land (about the Jar, never far)

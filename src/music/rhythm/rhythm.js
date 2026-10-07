@@ -16,7 +16,7 @@
 // from the mix), Rhythm Heaven's and Patapon's "the sound is the feedback", and Chris Wilson's "A Tale of Two Clocks".
 //
 //   game.rhythm = new Rhythm(game)   game.rhythm.begin('wanda', 'steady')   game.rhythm.active   game.rhythm.end()   game.rhythm.offset
-//   game.rhythm.press(lane, audioTime) (what a key calls; a script can too)   TRACKS: the playable tracks (the sound test's, arranged)
+//   game.rhythm.press(lane, audioTime) (what a key calls; a script can too)   game.rhythm.last { lane, grade, t } (the latest press)   TRACKS: the playable tracks (the sound test's, arranged)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from '../arranger.js';
 import { TRACKS as ALL } from '../soundtest.js';
@@ -91,11 +91,12 @@ export class Rhythm {
     if (r) {
       const n = r.note, w = r.grade === 'perfect' ? 1 : r.grade === 'great' ? 0.9 : 0.75;
       A.play1({ i: n.i, b: 0, d: n.d / A.spb, n: n.midi, v: n.v * w, o: n.o }, at, n.g);
-      this.highway.hit(lane, r.grade);
+      this.highway.hit(lane, r.grade, { off: r.off, combo: this.judge.combo }); // (off in seconds, + late: the rating's ladder, ui/rating.js)
     } else {
       const n = this.nearest(lane);
       if (n) A.play1({ i: n.i, b: 0, d: 0.5, n: n.midi, v: n.v * 0.35, o: n.o }, at, n.g);
     }
+    this.last = { lane, grade: r?.grade ?? null, t: this.ctx.currentTime }; // (the body's cue: a strike pose a press, grade null for a stray; audio clock)
     return r;
   }
   /** The lane's note nearest in time (a stray press plays it). */
