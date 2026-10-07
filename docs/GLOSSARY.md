@@ -612,7 +612,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   mind (a Brain, `docs/AI.md`).
 - **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
   back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
-- **the garden sweep** (`node scripts/garden-sweep.mjs`, the dev server up): the Spirit Garden entered, worked and left headless, a
+- **the garden sweep** (`node scripts/sweeps/garden.mjs`, the dev server up): the Spirit Garden entered, worked and left headless, a
   screenshot at every step and a PASS/FAIL line for each thing seen go wrong there (the black screen on entry, the Pneuka Jar unseen,
   the interact chevron off the planetoid's heart, a page carrying the Index's calibration) and the owner's stress (in and out twenty
   times, menus mid-throw, the hand spammed on the Jar). Findings: `docs/plans/GARDEN-SWEEP.md`. *Not:* the stress test (it fuzzes the
