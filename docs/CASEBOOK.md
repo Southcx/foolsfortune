@@ -1,12 +1,7 @@
 # The casebook: every bug fixed, its cause, and the rule it left
 
-The owner, 2026-10-06: "whenever you fix a bug, annotate it somewhere for yourself in a log to reference so that we repeat fewer
-implementation mistakes." One case per fix, newest first: what was seen, the cause (measured, not guessed), the fix, and **the rule**
-(what to do or check next time so the same mistake is not made twice). Read the rules before building in the same area.
-Every division writes here when it fixes something; a rule that a machine can check goes to `npm run check` or a test too.
-
-Prior art: the aviation incident report and the medical case series (what happened, why, what changes), and a team's postmortem
-log kept blameless and searchable.
+One case per fix, newest first: the cause (measured, not guessed), the fix, and **the rule** that keeps it from happening twice. Read
+the rules before building in the same area; a rule a machine can check goes into `npm run check` or a test too. (The owner, 2026-10-06.)
 
 ## The rules, short (from the cases below)
 
@@ -71,7 +66,6 @@ log kept blameless and searchable.
 ## Cases
 
 ### 2026-10-07 · "The Lockheart catches spirit.bind."
-- **Seen:** reading the garden's log rules for `realm.name`: the catch's line names the Figment from `e.name`.
 - **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every
   `spirit.bind`, `spirit.mature` and `spirit.release` line said the event's name, and `realm.name { name }` would have too.
 - **Fix:** the spirit's name rides as `spirit`, the realm's as `realm` (`creatures/bound.js`, `world/garden/realm.js`, the rules in
@@ -79,15 +73,12 @@ log kept blameless and searchable.
 - **Rule:** CLAUDE.md's (payloads never use `name` or `t`); a spec's payload is checked against it before it is built.
 
 ### 2026-10-07 · The raid's brood, fed to the FOE, panicked the physics ("unreachable")
-- **Seen:** headless drive of the raid, the transition: a Rapier `unreachable` in `setNextKinematicTranslation`, then every call into the
-  world "recursive use of an object".
 - **Cause, measured:** a brood reaching the FOE was fed and disposed inside its own `driven` callback, which `SlipJellies.update` calls
   per jelly; the loop went on to move the disposed jelly's removed body.
 - **Fix:** `driven` only marks it (`c.reached`); `raid.update` feeds and disposes after the jellies' loop (`world/well/raid.js`).
 - **Rule:** 26.
 
 ### 2026-10-07 · Old Nobody had no eye, a tail pinned to its middle and fins that never swept back
-- **Seen:** the eye on its brow did not show; the tail's cap drawn as a fan to the body's centre; raised fins stayed square to it.
 - **Cause, found by a sweep:** three edits in `vfx/leviathan.js` put a `// (...)` comment in the middle of a line, and the code after it
   (`head.add(eye)`, the tail tip's `setXYZ`, the fin's `rotateY`) was commented out. The same slip was caught three times while building
   `vfx/foelook.js` (the Decant lip never added) before it shipped.
@@ -95,8 +86,6 @@ log kept blameless and searchable.
 - **Rule:** 25.
 
 ### 2026-10-07 · Every Well floor taken down recompiled the outlines
-- **Seen:** perf after Round 1: two shader programs compiled after the warm-up (was none), both the outline's back-face basic, with keys
-  identical to programs compiled at boot; they appeared on the third floor, the first to stand pots (outlined) once the second was gone.
 - **Cause, measured:** taking a floor down (`wellkit.js` dispose) released three basic programs to zero users. The floor disposes every
   material in its group not marked `userData.shared`, and the outlines it carries are `OUTLINE_MAT`, one material for the whole game
   (`render/outline.js`): disposed, every outline in the game lost its program and the next outlined thing drawn compiled it again. It
@@ -105,14 +94,12 @@ log kept blameless and searchable.
 - **Rule:** 24.
 
 ### 2026-10-07 · Set down at Margarite's dock, the Courier was "fallen" and woke at the workshop
-- **Seen:** `places.stand` to the dock (418 m down, outside the dunes) left them at the workshop, headless.
 - **Cause:** the fall height was last frame's (the workshop's, -100 m); the next fixed step saw them below it and respawned them before
   main.js recomputed it for the dock.
 - **Fix:** `places.stand` lowers `killY` under the point it sets them down (as `toDunes` does); main.js's own rule counts the dock and the crossing.
 - **Rule:** 23.
 
 ### 2026-10-06 · Stains and paint drawn as squares (the brush load, headless shots)
-- **Seen:** spilled crude and fresh paint showed half-metre squares with dark rims.
 - **Cause:** the paint map kept two alphas (paint, stain) in one texel and cells of 0.5 m, as coarse as a drop; filtered unpremultiplied,
   every edge blended toward black.
 - **Fix:** one coverage channel, premultiplied RGBA8, 0.25 m cells (`world/ground/paintmap.js`); stains then moved to Calissa's own
@@ -132,7 +119,6 @@ log kept blameless and searchable.
 - **Rule:** 20.
 
 ### 2026-10-06 · The kick's bad loop and no blending (the owner's report, through Dovina; Calissa)
-- **Seen:** the kick (V) snapped back at its end and jerked when kicked again.
 - **Cause (measured):** three things.
   - `Kick.animate` returned as soon as the state left `'kick'` (at 0.5 s), while the techs' weight was still easing out (`techs.js`, at 12 a second), so the body snapped back. The largest bone rotation in one frame was 159° (forearmL, at frame 31).
   - The CMU clips' pelvis stands 0.39 m (kick_a) and 0.97 m (kick_b) forward of the base pose's (0, 0.73, -0.04), so blending in threw the body forward. The pelvis's largest offset from the Courier was 1.21 m.
@@ -147,7 +133,6 @@ log kept blameless and searchable.
 - **Rule:** 19.
 
 ### 2026-10-06 · A sandfall's curtain compiled in play (the perf gate's late compile, R46)
-- **Seen:** `dunemaw-sandfall-door` compiled after the warm-up once the prefab rooms changed which floor the gate measured.
 - **Cause:** the curtain is dressed on only when a floor is entered (`vfx/welldress.js`); the warm-up's stand-in floor had none. A
   first fix showed one in the warm-up and then disposed it, which released its program, so it compiled again in play.
 - **Fix:** the warm-up's stand-in floor holds one falling curtain, parked hidden with the floor (`world/well/dunemaw.js` prewarm). Late
@@ -173,7 +158,6 @@ log kept blameless and searchable.
   (was 20), 4.8 down (was 17), 3.5 on flat (was 5.7).
 - **Rules:** 11, 12, 13.
 ### 2026-10-06 · The Courier semi-transparent after the trailer was skipped (the owner's report, R45; Calissa)
-- **Seen:** on the title, after skipping the opening trailer, the Courier was drawn see-through.
 - **Cause:** the camera-near fade (`main.js`, `character.setFade`) writes one module-wide uniform (`fadeUniform`, `render/outline.js`),
   and the title's own Courier shares it. The trailer's opening close-ups (0 to 3.2 s) faded it to 0.2..0.6 (measured), and the title
   runs no world tick to set it again. A skip at 9.6 s or later never showed it, which is why the first tries could not reproduce it.
@@ -182,14 +166,12 @@ log kept blameless and searchable.
 - **Rule:** 15.
 
 ### 2026-10-06 · The mask's E-ink face rolled back (the owner, R45; Calissa)
-- **Seen:** the owner: the pupils too small; the rim round the eyes did not read.
 - **Cause:** the bake kept the maker's shadow rim round every reshaped eye, so a lidded or cut eye showed the ghost of the whole one;
   the pupils were 15 px in a 116 px eye on the 512 px mask, judged in a close-up and never at play distance.
 - **Fix:** reverted (`d4872d0`); the owner is making the atlas to puppeteer (ART.md, "The Courier's face").
 - **Rule:** 16.
 
 ### 2026-10-06 · The Throwing Room's floor flickered (the owner's report, v86)
-- **Seen:** a dark patch with a stair-stepped edge crawling across the room's floor as the camera moved.
 - **Cause:** the basement's east ceiling slab (`world/basement/basement.js`, top at y 0) ran under the whole room; the room's floor top
   was also at y 0. Two faces in one plane. A ray from the camera met both at the same distance. Also, the floor box had an outline
   hull, and the lane stood only 1 mm over a plank.

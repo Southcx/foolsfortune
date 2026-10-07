@@ -184,27 +184,13 @@ mind in place of its kind's: a clutch's guard is held 10 m to its nest, `world/w
 `c.squashTo`): a boss whose body is moved by its own pattern instead of a mind (the Great Slip Jelly, `creatures/jelly/greatjelly.js`)
 keeps the jelly's body, its hurt, burst and statuses, and stands its mind aside.
 
-## 5. Next (the long road)
+## 5. Next
 
-What the parts are ready for, roughly in order:
-
-- **More kinds that meet**: a second creature in the dunes that preys on jellies (the table already has the slot), a grazer the
-  jellies follow, birds that scatter at a shot. Every relation in the table is a story the player can watch.
-- **Clapperjars on the parts**: the workshop's jars keep their own module for now (`clappers.js`); their wants (bauble-greed, mischief,
-  napping, mending) map onto drives and actions directly, and they already offer and eat baubles.
-- **Time of day**: a world clock as a drive modifier (sleep at night, drink at dawn), the Weir's tide already turns.
-- **Squads**: shared memory between kin (a pack's blackboard), roles (one calls, two flank), formations from `separate`/`cohere`.
-- **Scent**: trails as `scent` stimuli that a tracker follows (the jellies' slip trails are already laid as paths).
-- **Population**: dens with capacity, young that grow, reforming tied to a den's health (a puddle that is soaked up does not reform).
-- **Learning**: memory that outlives a reform (a jelly that was reprogrammed remembers the Courier as kin; one they burst remembers).
-- **Debugging**: F3 lists every mind near them (its action, score, drives and focus); the stress test checks no mind goes without an
-  action, no drive leaves 0..1, no stun outlasts its time.
+More kinds that meet (a predator of jellies, grazers, birds); the clapperjars moved onto the parts; the hour as a drive modifier; squads
+sharing a blackboard; scent trails; dens with a population; memory that outlives a reform.
 
 ## 6. Prior art
 
-Dave Mark's *Behavioral Mathematics for Game AI* and the Infinite Axis Utility System (with Kevin Dill); The Sims' motives and
-smart objects (Will Wright, Don Hopkins); Rain World's creature relationships and off-screen simulation (Joar Jakobsson, James
-Primate); Monster Hunter's ecology (hunger, nests, turf wars); Halo 2's knowledge model and sense-think-act loop (Damian Isla);
-Thief's and Metal Gear Solid's awareness levels and sound propagation (Tom Leonard, "Building an AI Sensory System"); Craig Reynolds'
-steering behaviours and boids; the blackboard of the behaviour-tree engines; and, for the stun and the reprogramming, Monster Hunter's
-KO and flash pods, Sekiro's posture, Fatal Frame's Camera Obscura, The Typing of the Dead and NieR: Automata's hacking.
+Dave Mark's utility AI (the Infinite Axis Utility System), The Sims' motives and smart objects, Rain World's relationships, Monster
+Hunter's ecology, Halo 2's knowledge model, Thief's and Metal Gear Solid's senses, Reynolds' steering, the blackboard; for the stun and
+the reprogramming, Monster Hunter's KO, Sekiro's posture, Fatal Frame, The Typing of the Dead and NieR: Automata's hacking.
