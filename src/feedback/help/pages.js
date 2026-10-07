@@ -174,12 +174,14 @@ export const PAGES = [
     id: 'skiff', title: 'SOLAR SKIFFING', key: 'Y', src: 'courier/skiff/skiff.js',
     lead: 'A skiff for the dune sea, sailed like a boat. The Psygun is stowed while you ride.',
     rows: [
-      ['Y', 'summon or stow the board (in the Dunes)'],
+      ['Y', 'on foot: summon the board out of the sand (in the Dunes) · riding: recall it into your hand'],
+      ['F', 'riding slowly: step off and leave it parked · at a parked board: step on'],
       ['hold W · hold S', 'hoist the sail (it stays up: half up, half speed) · let it down and brake (hoist again quickly: a pump)'],
       ['A D', 'steer'],
       ['hold Space, let go', 'crouch the springs, and hop; in the air A D spin'],
       ['Shift', 'the solar flare: faster, for Lachryma'],
     ],
+    notes: ['Strike a wall hard, land too hard or land a spin crooked and you are thrown off: the board stops where it slides, parked.'],
   },
   {
     id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godhand/',

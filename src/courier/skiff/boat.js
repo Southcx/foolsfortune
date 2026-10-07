@@ -135,7 +135,7 @@ export class Skiff {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, mast.h, 6), dark);
     m.position.set(0, mast.h / 2 + 0.04, mast.z);
     m.castShadow = true; addOutline(m);
-    this.group.add(m);
+    this.group.add(m); this.mast = m;
     // the rig turns about the mast: the boom, and the cloth hung between the mast and the boom's end
     this.rig = new THREE.Group();
     this.rig.position.set(0, 0, mast.z);
@@ -252,11 +252,17 @@ export class Skiff {
     scene.add(this.pennant);
   }
 
+  /** The mast telescoped down (0) or standing (1), the boom and the pennant with it: the summon and the recall (skiff.js). */
+  fold(k) {
+    const s = Math.max(0.05, k), { mast, boom } = SKIFF;
+    this.folded = k; this.mast.scale.y = s; this.mast.position.y = (mast.h * s) / 2 + 0.04; this.rig.position.y = -(1 - k) * (boom.y - 0.35);
+  }
+
   /** The pennant at the masthead, streaming where the wind goes (dir: unit vector in x, z; strength 0..1+), t seconds. */
   placePennant(dir, strength, t) {
     const { mast } = SKIFF;
     this.group.updateMatrixWorld();
-    this.pennant.position.set(0, mast.h + 0.02, mast.z).applyMatrix4(this.group.matrixWorld);
+    this.pennant.position.set(0, mast.h * Math.max(0.05, this.folded ?? 1) + 0.02, mast.z).applyMatrix4(this.group.matrixWorld);
     this.pennant.rotation.set(0, Math.atan2(-dir.y, dir.x), 0); // (dir.y is z)
     this.pennantU.uTime.value = t;
     this.pennantU.uStr.value = THREE.MathUtils.clamp(strength, 0, 1.2);
