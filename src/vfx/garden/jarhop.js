@@ -7,6 +7,9 @@
 //               the air (Katamari's bounce, a Chao's waddle)
 //   THE LAND    land(speed) squashes it flat by how hard it came down, wobbling back, and a ring of soft motes puffs from its foot
 //   THE FLIGHT  in a long arc (a lotus, a throw) a thin trail of light follows it, your draught's colour
+//   THE LIGHT   the Vessoul's glow, as the god hand carries it: a soft halo at its heart breathing slowly and a ring of light at its foot,
+//               your draught's colour; it sets the Jar apart from the torii it starts before (the garden sweep's #2: the owner's vermilion
+//               Jar read as the gate's foot). Shown only while the garden drives the hop (`update`), so god mode's Jar is untouched
 //
 // Prior art: the squash and stretch of the Disney animators' bouncing ball, Super Mario Galaxy's Mario on a small world, Katamari and
 // Chao Garden's toy bounce, and Pikmin's sparkle trail.
@@ -17,8 +20,16 @@ import * as THREE from 'three';
 
 export class JarHop {
   constructor(obj, { fx = null, color = 0xf2c84a } = {}) {
-    this.obj = obj; this.fx = fx; this.color = new THREE.Color(color); this.base = obj.scale.clone();
-    this.sq = 0; this.v = 0; this.crouchK = 0; this.trailOn = false; this.acc = 0;
+    this.obj = obj; this.fx = fx; this.color = new THREE.Color(color); this.base = new THREE.Vector3(1, 1, 1); // (never its scale at entry: the god hand leaves it at 0.001)
+    this.sq = 0; this.v = 0; this.crouchK = 0; this.trailOn = false; this.acc = 0; this.t = 0; this.shownAt = -1;
+    const map = fx?.haloTexture ?? null, glow = (o) => ({ map, color: this.color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, ...o });
+    this.halo = new THREE.Sprite(new THREE.SpriteMaterial(glow({ opacity: 0.32 })));
+    this.halo.scale.setScalar(3.0); this.halo.position.y = 0.75;
+    this.foot = new THREE.Mesh(new THREE.CircleGeometry(1.1, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial(glow({ opacity: 0.3 })));
+    this.foot.position.y = 0.03; this.foot.renderOrder = 2;
+    this.halo.visible = this.foot.visible = false;
+    this.halo.onBeforeRender = () => { if (performance.now() - this.shownAt > 250) this.halo.visible = this.foot.visible = false; }; // (the garden stopped driving it: out of the garden, the light goes)
+    obj.add(this.halo, this.foot);
   }
   /** Loading the hop: 0 .. 1 how far it is squashed down (a held hop loads deeper). */
   crouch(k) { this.crouchK = THREE.MathUtils.clamp(k, 0, 1); }
@@ -39,10 +50,12 @@ export class JarHop {
     const a = -90 * this.sq - 9 * this.v; this.v += a * raw; this.sq += this.v * raw;
     const s = this.sq - 0.22 * this.crouchK, y = 1 + s, xz = 1 / Math.sqrt(Math.max(0.3, y));
     this.obj.scale.set(this.base.x * xz, this.base.y * y, this.base.z * xz);
+    this.t += raw; this.shownAt = performance.now(); this.halo.visible = this.foot.visible = true;
+    this.halo.material.opacity = 0.62 + 0.12 * Math.sin(this.t * 1.6); this.foot.material.opacity = 0.7 + 0.12 * Math.sin(this.t * 1.6 + 0.8); // (a slow breath)
     const fx = this.fx; if (!fx?.add || !this.trailOn) return;
     this.acc += raw * 40;
     while (this.acc >= 1) { this.acc -= 1; fx.add.emit({ pos: this.obj.getWorldPosition(_p).clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.3), life: 0.6, size: 0.08, sizeEnd: 0.01, color: this.color.clone(), alpha: 0.8, drag: 1, gravity: 0 }); }
   }
-  dispose() { this.obj.scale.copy(this.base); }
+  dispose() { this.obj.scale.copy(this.base); this.obj.remove(this.halo, this.foot); this.halo.material.dispose(); this.foot.geometry.dispose(); this.foot.material.dispose(); }
 }
 const _u = new THREE.Vector3(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _f = new THREE.Vector3();
