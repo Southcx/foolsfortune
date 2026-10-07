@@ -17,7 +17,7 @@ you keep depends on how you leave).
 | it is | what that means |
 |---|---|
 | **where you are made whole** | after a shatter, you are made whole at the last Shrine you rested at (today: always the workshop, `courier/vessel/death.js`); the workshop's is the first |
-| **a rest** | F at the Shrine: the pool full, your mental state settled to Balanced; nothing else (no world reset, no creature respawn: the Souls bonfire's reset is not taken, because the world here turns by the game day) |
+| **a rest** | F at the Shrine: the pool full (and, once the Courier has a mental state in code, `COURIER_MIND` in `progress/stones.js`, it settles to Balanced); nothing else (no world reset, no creature respawn: the Souls bonfire's reset is not taken, because the world here turns by the game day) |
 | **a fast-travel point** | at any Shrine, travel to any Shrine you have **found** (rested at once), free. Okami's mirrors: travel is a convenience, never a cost, because the long sea crossing (the voyage) is the journey that is meant to cost |
 | **the Spirit Garden's door** | the Spirit Garden (the slots, the beds, the spirit press) is entered at a Shrine and nowhere else; the Pneuka Box (P) stays reachable anywhere, as the garden's shed |
 
