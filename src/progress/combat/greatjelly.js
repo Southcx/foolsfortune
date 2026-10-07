@@ -9,14 +9,25 @@
 // phase transition that remakes the arena, the hard enrage), Monster Hunter's tells read from the body, Dark Souls' boss phases, and
 // Thunder Force's boss as a musical event (Wanda's cue turns on the casts).
 //
-//   NAMES[cast]   STATES   HEALTH   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
+//   NAMES[cast]   STATES   SUSTAINED   HEALTH   clearAt(uptime)   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
 //   phaseOf(share) -> phase   timeline(phase, t0, until) -> [{ t, cast }]   DROPS   dropsFor(run) -> [cosmetic ids]
 // ---------------------------------------------------------------------------------------
 
-/** Health in plain blows (power 1; a slip jelly bursts at 8): seven minutes of a good player's sustained damage at about 2 blows a
- *  real second, so a good player meets the enrage and an expert clears with a minute spare. A placeholder until Strawman measures the
- *  sustained damage (`strawman.bout`'s perSecond): re-set it from the ledger, not from a guess. */
-export const HEALTH = 840;
+/** THE COURIER'S SUSTAINED DAMAGE, read from the tools' own numbers (core/config.js, the strike calls), in power a real second at full
+ *  uptime, for a player who lands what they swing: the psygun 1 a shot at its 0.16 s cap, about 3 clicks a second really (3.0); the
+ *  club's combo of three (1.68, 1.8 and 2.4 power in 2.26 s: 2.6); the cutlass's chain (about 2.7); the charged shot 3.0 every 0.85 s
+ *  while the pool lasts (24 Lachryma each). So about 2.6 a second at full uptime, whatever the tool: the tools are balanced, so the
+ *  fight need not ask which one is carried. UPTIME is the share of the fight a player spends hitting it (the rest is reading,
+ *  dodging, the brood, the untouchable transition): a good player 0.6, an expert 0.8. */
+export const SUSTAINED = { perSecond: 2.6, uptime: { good: 0.6, expert: 0.8 }, untouchable: 50 }; // (untouchable: real seconds it cannot be struck: the transition, the sinkings)
+/** Health in plain blows, set so an EXPERT clears at about 8:00 (480 s, less the untouchable 50: 430 s of fight at 2.6 x 0.8 = 894)
+ *  and a GOOD player meets the enrage (570 s, less 50: 520 s at 2.6 x 0.6 = 811, short of 900: they must play better to clear). The
+ *  crown's quarter in phase 1 and the core's double in phase 2 roughly cancel (a crown broken by the third ram, at about 1:30).
+ *  Re-measure from the ledger once players have fought Strawman (`strawman.bout`'s perSecond) and the Great Slip Jelly (`foe.end`'s
+ *  seconds): it is a model until then. */
+export const HEALTH = 900;
+/** What the model says each player meets: the seconds to clear, or null for the enrage. */
+export const clearAt = (uptime, perSecond = SUSTAINED.perSecond) => { const t = HEALTH / (perSecond * uptime) + SUSTAINED.untouchable; return t <= ENRAGE ? Math.round(t) : null; };
 /** The hard enrage: at this many real seconds from the pull, The Dunemaw Swallows the bowl and the attempt ends. */
 export const ENRAGE = 570;
 
