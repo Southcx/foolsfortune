@@ -96,8 +96,10 @@ export class Dunemaw {
    *  'bare', 'won' once it is burst or reprogrammed), how many crack stages, whether the crown has burst. Round 2's timeline adds the
    *  casts' phases ('clutch', 'calving', 'overflow', 'swallow'). Null outside the great cavern. */
   get fight() {
-    const F = this.cur?.isCavern ? this.cur.foe : null; if (!F) return null;
-    return { active: F.state !== 'asleep', phase: F.ended ? 'won' : F.phase === 'bare' ? 'bare' : 'crown', cracks: F.stage, broken: F.stage >= 3 };
+    const C = this.cur?.isCavern ? this.cur : null, F = C?.foe; if (!F) return null;
+    const R = C.raid;
+    return { active: R ? R.pulled : F.state !== 'asleep', phase: R ? R.phaseName : F.ended ? 'won' : F.phase === 'bare' ? 'bare' : 'crown', cracks: F.stage, broken: F.stage >= 3,
+      seconds: R ? R.T.t : 0, casting: R?.T.casting?.id || null };
   }
   get floor() { return this.run?.floor ?? 0; }
   /** Below this the Well has no bottom (main.js sets the player's killY from it while a run is on). */
@@ -269,7 +271,22 @@ export class Dunemaw {
     }
   }
   /** Shattered in the Well: the run is lost (courier/vessel/death.js makes them whole at the last Shrine; the mouth if there is none). */
-  reformAt() { if (!this.run) return null; this.end('shatter'); return this.mouthSpot(); }
+  reformAt() {
+    if (!this.run) return null;
+    const C = this.cur; if (C?.isCavern && C.raid?.pulled && !C.foe?.ended) return this.wipe();
+    this.end('shatter'); return this.mouthSpot();
+  }
+  /** A wipe in the great cavern's fight (shattered, or swallowed at the enrage): the attempt is lost, not the run. The cavern is laid
+   *  again (the FOE whole and asleep, the bowl's pillars standing, the clutches broken still broken) and the Courier made whole at the
+   *  Lip Stone (DUNEMAW-EXTREME.md section 2). `keep`: death.js stands them here, not at a Shrine. */
+  wipe() {
+    const g = this.game, R = this.run, C = this.cur;
+    g.events?.emit('foe.wipe', { seconds: Math.round(C.raid.T.t), phase: C.raid.T.phase?.id || 'crown', by: 'courier' });
+    this.offFloor();
+    this.cur = new Cavern(g, { run: R, onEnd: (how, by) => this.foeEnd(how, by) });
+    g.player.killY = this.killY;
+    return { pos: this.cur.arrive.pos.clone(), yaw: this.cur.arrive.yaw, keep: true };
+  }
 
   /** The Wake Whistle blown (from the Pneuka Box): a channel of ECON.escape.channel real seconds, broken by a blow; then out to the mouth,
    *  with ECON.escape.keep of the pay and the haul. Anywhere but a Well it does nothing. */

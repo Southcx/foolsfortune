@@ -97,6 +97,13 @@ member makes for, and how hard) and `speed(i)` (cruise or burst); every turn is 
 crossing's shoal is its first (`src/world/emocean/shoal.js`: the bait ball, the frenzy, the scatter); a flight of birds or a swarm of
 motes would be the next.
 
+### Timelines (`src/creatures/ai/timeline.js`): a scripted fight
+A raid boss is not a mind weighing drives; it is a script learned by wiping (FFXIV's timelines). Casts at set times from the pull, in
+phases begun at a share of health and looping each a fifth faster; a phase marked `once` is a transition; `marks` fire at a share
+(the second Blowout), `at` at a time (the enrage). The runner says `phase`, `cast` (the windup begins: the log names it) and `blow`;
+casts never overlap. The script is data (`progress/combat/greatjelly.js`); what each cast does is the body's
+(`creatures/jelly/jellycasts.js`), and the place's part is the raid (`world/well/raid.js`).
+
 ### Ecology (`src/creatures/ai/ecology.js`): the world as it is to a creature
 **Affordances**: `eco.offer({ kind, pos, radius })` for standing ones (the Weir offers water round the pond and shade under every
 palm), `eco.provide(kind, (pos, range) => [...])` for ones that come and go (baubles: `food`; loose cubes: `shiny`; wet slip:

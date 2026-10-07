@@ -10,12 +10,15 @@
 // Prior art: Etrian Odyssey's FOEs (seen before you choose to face them), Dark Souls' boss rooms (an entrance that commits, a way out
 // only after), Persona 3's Tartarus (the access point back up only past the guardian).
 //
-//   const C = new Cavern(game, { run, onEnd(how, by) })   (the floor's contract, plus) C.foe   C.nursery   C.bowl   C.bowl === true
+// The fight is a raid (world/well/raid.js): a wipe lays the cavern again (dunemaw.js wipe), the run's broken clutches (`run.broken`) kept.
+//
+//   const C = new Cavern(game, { run, onEnd(how, by) })   (the floor's contract, plus) C.foe   C.nursery   C.bowl   C.raid   C.isCavern
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Bowl, BOWL_AT } from './bowl.js';
 import { Nursery } from './nursery.js';
 import { GreatJelly } from '../../creatures/jelly/greatjelly.js';
+import { Raid } from './raid.js';
 import { NURSERY, ARENA } from '../../progress/combat/dunemaw.js';
 
 export class Cavern {
@@ -25,10 +28,12 @@ export class Cavern {
     this.group = this.bowl.group; this.floor = 3; this.isCavern = true;
     this.arrive = this.bowl.arrive; this.up = null; this.down = null; this.cells = []; this.path = [];
     // the guards: two a quadrant, between the clutches they keep (their leash: nursery.js)
-    const J = game.jellies, spots = this.bowl.clutchSpots;
-    this.guards = J ? spots.map((p) => J.spawn(p.clone().lerp(BOWL_AT.clone().setY(p.y), 2.2 / ARENA.clutches.r).setY(p.y + 0.05), { once: true })) : [];
-    this.nursery = new Nursery(game, { floor: 3, spots: spots.slice(0, NURSERY.clutches[2]), guards: this.guards, haul: run?.haul });
+    // (laid again after a wipe: the clutches broken in this run stay broken, and their guards are not set again: raid.js)
+    const J = game.jellies, spots = this.bowl.clutchSpots, broken = run ? (run.broken ||= new Set()) : new Set();
+    this.guards = J ? spots.filter((p, i) => !broken.has(i)).map((p) => J.spawn(p.clone().lerp(BOWL_AT.clone().setY(p.y), 2.2 / ARENA.clutches.r).setY(p.y + 0.05), { once: true })) : [];
+    this.nursery = new Nursery(game, { floor: 3, spots: spots.slice(0, NURSERY.clutches[2]), skip: broken, guards: this.guards, haul: run?.haul });
     this.foe = J ? new GreatJelly(game, { bowl: this.bowl, nursery: this.nursery, at: this.bowl.pools[0].pos.clone().setY(this.bowl.pools[0].pos.y + 0.05) }) : null;
+    this.raid = this.foe ? new Raid(game, { cavern: this }) : null; // (the fight as an extreme trial: its timeline, its casts, the wipe)
     this.ended = false;
   }
 
@@ -65,6 +70,7 @@ export class Cavern {
     this.bowl.update(dt);
     this.nursery.update(dt);
     F?.update(dt);
+    this.raid?.update(dt);
     if (F?.ended && !this.ended) {
       this.ended = true;
       this.wayUp(F.ended === 'reprogram' ? 2 : 0);
@@ -75,6 +81,7 @@ export class Cavern {
 
   dispose() {
     const g = this.game;
+    this.raid?.dispose();
     this.foe?.dispose();
     for (const c of this.guards) g.jellies?.dispose(c);
     this.nursery.dispose();

@@ -15,7 +15,7 @@
 // Prior art: Monster Hunter's nests and Zelda's Gohma's eggs (a boss that is weaker for what was broken before it), the Alien queen's
 // eggs and Pikmin's Emperor Bulblax's brood (a nest that hatches while you dither), and stealth games' guarded objectives.
 //
-//   const N = new Nursery(game, { floor, spots: [Vector3], guards: [jelly], haul })   N.update(dt)   N.call(n, near?) -> brood spawned
+//   const N = new Nursery(game, { floor, spots: [Vector3], skip: Set(index), guards: [jelly], haul })   N.update(dt)   N.call(n, near?) -> brood spawned
 //   N.whole -> clutches still whole   N.clutches   N.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -34,11 +34,11 @@ export const ROE = NURSERY.roeItem || 'roe.slip';
 const WAKE = 20; // (the Courier within 20 m wakes a clutch's hatching)
 
 export class Nursery {
-  constructor(game, { floor, spots, guards = [], haul = null }) {
-    this.game = game; this.floor = floor; this.haul = haul;
+  constructor(game, { floor, spots, skip = null, guards = [], haul = null }) {
+    this.game = game; this.floor = floor; this.haul = haul; this.skip = skip; // (skip: the spots' indices broken already, kept by the run)
     this.mat = slipMaterial(); // (the dish each clutch lies in)
     this.brood = [];
-    this.clutches = spots.map((at, i) => this.lay(at, i));
+    this.clutches = spots.map((at, i) => (skip?.has(i) ? null : this.lay(at, i))).filter(Boolean);
     // the guards: each jelly within NURSERY.guard.radius of a clutch keeps to it (its home moved there, on a short leash)
     for (const c of guards) {
       const k = this.clutches.reduce((b, x) => (x.pos.distanceTo(c.pos) < (b?.pos.distanceTo(c.pos) ?? Infinity) ? x : b), null);
@@ -86,7 +86,7 @@ export class Nursery {
   break(k, by = 'courier') {
     const g = this.game;
     if (!k.alive) return;
-    k.alive = false; k.root.visible = false;
+    k.alive = false; k.root.visible = false; this.skip?.add(k.i);
     g.physics.world.removeRigidBody(k.rb); k.rb = null;
     g.creatures.remove(k);
     const up = new THREE.Vector3(0, 1, 0);

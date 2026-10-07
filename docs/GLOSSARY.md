@@ -379,10 +379,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ground's drift**, **wade** (`player.drift`, `player.wade`): a place's pull on the Courier's feet (sand sliding, carried as a
   platform's move) and its drag on a walk (shallows), set by the place and put back when the Courier leaves it; the core movement is
   untouched when they are zero and one.
-- **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the Great Slip Jelly's fight is a scripted **timeline**
+- **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`; `world/well/raid.js`, `creatures/ai/timeline.js`): the Great Slip Jelly's fight is a scripted **timeline**
   of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), in the style of an FFXIV extreme trial; one difficulty
   (the owner). The Lip Stone on the bowl's ledge is the fight's start: a **wipe** (a shatter in the fight) costs the attempt, not the
-  run. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
+  run. **The pull** is the moment it wakes (the timeline's nought). **Sodden** (Espada's: Brine Soaked) doubles the next blow; the
+  **sherds** are its four calves. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
 - **Inner Realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): a player's own Spirit Garden by the name they give it (Espada offers
   names in her conlang). In the garden you are **the Pneuka Jar**, hopping round its **planetoids**, and **the god hand** over them
   (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. A **Firing** (the owner,

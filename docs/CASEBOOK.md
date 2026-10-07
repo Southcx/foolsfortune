@@ -62,7 +62,18 @@ log kept blameless and searchable.
 24. **A material made once for the whole game is marked `userData.shared`.** Whatever is taken down (a Well floor, the bowl) disposes
     every material it holds that is not marked; a global one disposed loses its program and recompiles at its next draw, a hitch.
 
+25. **Nothing is taken out of a list from inside that list's own update.** A callback a module calls per member (a jelly's `driven`)
+    marks the member (`c.reached`); the owner removes it after the loop. A Rapier body removed mid-loop panics the whole world.
+
 ## Cases
+
+### 2026-10-07 · The raid's brood, fed to the FOE, panicked the physics ("unreachable")
+- **Seen:** headless drive of the raid, the transition: a Rapier `unreachable` in `setNextKinematicTranslation`, then every call into the
+  world "recursive use of an object".
+- **Cause, measured:** a brood reaching the FOE was fed and disposed inside its own `driven` callback, which `SlipJellies.update` calls
+  per jelly; the loop went on to move the disposed jelly's removed body.
+- **Fix:** `driven` only marks it (`c.reached`); `raid.update` feeds and disposes after the jellies' loop (`world/well/raid.js`).
+- **Rule:** 25.
 
 ### 2026-10-07 · Every Well floor taken down recompiled the outlines
 - **Seen:** perf after Round 1: two shader programs compiled after the warm-up (was none), both the outline's back-face basic, with keys

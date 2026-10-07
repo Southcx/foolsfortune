@@ -90,12 +90,13 @@ export class Death {
       const course = g.course;
       // the last Shrine rested at (world/shrines.js; the workshop's until another); shattered in a Well, the run is lost first
       // (world/well/dunemaw.js), and its mouth is where they come to only if there are no Shrines
-      const well = g.well?.reformAt?.(), shrine = g.shrines?.reformAt?.(), at = shrine || well;
+      // (a wipe in the great cavern's fight is not a lost run: the Lip Stone, `keep`, before any Shrine: world/well/dunemaw.js wipe)
+      const well = g.well?.reformAt?.(), shrine = well?.keep ? null : g.shrines?.reformAt?.(), at = shrine || well;
       if (at && g.places?.stand(at.pos, at.yaw)) { /* (into its zone first: world/places.js) */ } else if (course?.teleport) course.teleport(at ? at.pos : P.spawn.clone(), at ? at.yaw : 0);
       g.character?.setHidden(false);
       g.lachryma?.reset();
       this.want = false;
-      g.events?.emit('courier.reform', { where: shrine ? 'shrine' : well ? 'well' : 'workshop', shrine: shrine ? g.shrines.last : null, lost: !!well });
+      g.events?.emit('courier.reform', { where: shrine ? 'shrine' : well?.keep ? 'lip' : well ? 'well' : 'workshop', shrine: shrine ? g.shrines.last : null, lost: !!well && !well.keep });
     }
     if (t >= END) { this.active = false; this.fade.style.opacity = '0'; g.cinema?.unshot('death'); g.time?.free('death'); }
   }

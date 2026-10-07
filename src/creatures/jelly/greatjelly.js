@@ -29,10 +29,14 @@
 // arenas, Kirby's and Metroid's armour first then the weak point, Hollow Knight's stagger window, Ocarina's Morpha and the Gohma pit
 // (a boss that sinks and surfaces), and the antlion's pit.
 //
+// In the raid fight (world/well/raid.js: the timeline of casts, progress/combat/greatjelly.js) it is `scripted`: its moves are the casts'
+// verbs below (ram, bash, cast, submerge, sinkInto, show, forceBare, heal), and between casts it only keeps near and slams.
+//
 //   const F = new GreatJelly(game, { bowl, nursery, at })   F.update(dt)   F.c (the body)   F.phase   F.stage   F.ended   F.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FOE, ARENA, crackOf, phase as phaseOf, hitMult, broodAt } from '../../progress/combat/dunemaw.js';
+import { HEALTH } from '../../progress/combat/greatjelly.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
 import { tag, untag } from '../../core/tags.js';
 import { st } from '../creatures.js';
@@ -49,23 +53,27 @@ export class GreatJelly {
   constructor(game, { bowl, nursery = null, at }) {
     this.game = game; this.bowl = bowl; this.nursery = nursery;
     const J = game.jellies, c = this.c = J.spawn(at, { once: true, cls: FOE.cls, yaw: 0 });
-    c.hp = c.maxHp = FOE.hp; c.foeOf = this; c.name = 'Great Slip Jelly';
+    c.hp = c.maxHp = HEALTH; c.foeOf = this; c.name = 'Great Slip Jelly'; // (a raid boss's health: greatjelly.js, measured against Strawman)
     untag(c, 'sliceable', 'programmable'); // (no zandatsu on a FOE; reprogrammable only when it is low: see update)
     this.crown = new UrnCrown({ radius: CROWN_R }); c.root.add(this.crown.group);
     this.crown.group.position.y = H;
     const hurt = c.hurt; this.bodyHurt = (p, dir, power, cause, by, from) => hurt(p, dir, power, cause, by, from);
     c.hurt = (p, dir, power, cause, by, from, type) => this.hurt(p, dir, power, cause, by, from, type);
     c.driven = (dt) => this.drive(dt); // (slipjelly.js: its mind stands aside, this module moves it)
-    c.onParried = () => { if (this.state === 'rear') this.go('idle', RECOVER); };
+    c.onParried = () => {
+      if (this.state === 'rear') this.go('idle', RECOVER);
+      if (this.state === 'bash') { this.parried = true; this.go('daze', 1.5); c.deform.kick(-6, null, 0.3); } // (Lidfall turned: it staggers)
+    };
     this.crack = 0; this.sinceBreak = null; this.state = 'asleep'; this.t = 0; this.wait = 0;
     this.pool = 0; this.sinkT = 0; this.lastShare = 1; this.ended = null; this.by = 'courier';
     this.aim = new THREE.Vector3(); this.dir = new THREE.Vector3(0, 0, 1); this.ran = 0; this.struck = false;
+    this.scripted = false; this.raid = null; this.autoCd = 3; this.plates = 0; // (scripted: its casts are the timeline's (world/well/raid.js); between them only its slam)
     this.offReprogram = game.events?.on('reprogram.run', () => { if (game.reprogram?.c === c && !this.ended) this.end('reprogram', 'courier'); });
   }
 
   get stage() { return Math.min(STAGES, Math.floor(this.crack / STAGE)); }
   get phase() { return this.ended ? 'end' : phaseOf({ crack: this.crack, sinceBreak: this.sinceBreak }); }
-  get share() { return Math.max(0, this.c.hp) / FOE.hp; }
+  get share() { return Math.max(0, this.c.hp) / this.c.maxHp; }
   local() { return this.bowl.local(this.c.pos); }
   go(state, wait = 0) { this.state = state; this.t = 0; this.wait = wait; }
 
@@ -78,7 +86,7 @@ export class GreatJelly {
   }
   hurt(p, dir, power, cause, by, from, type = 'impact') {
     const c = this.c, g = this.game;
-    if (!c.alive || this.ended || this.disposed || this.state === 'under') return;
+    if (!c.alive || this.ended || this.disposed || this.state === 'under' || this.state === 'hidden' || this.state === 'sinkHold') return;
     if (this.state === 'asleep') this.wake();
     const ph = this.phase, part = cause === 'slam' && ph === 'crown' ? 'crown' : this.part(p);
     if (ph === 'crown' && part === 'crown') {
@@ -88,9 +96,13 @@ export class GreatJelly {
       c.flash = 0.6; g.fx?.impact?.(p.clone(), dir.clone().negate(), { sparks: 6, dust: 0 });
       return;
     }
+    if (this.plates > 0 && ph === 'bare') { // (a plate a brood grew back: it takes the blow whole and breaks)
+      this.plates--; c.flash = 0.6; g.glyphs?.pop('ward', p.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true });
+      sfx.shatter?.(0.8, g.listenerDistance(c.pos), 'clay'); return;
+    }
     const k = hitMult(ph, part, type) / (g.stun?.bonus(c) ?? 1); // (the reel is its own x3: the stun's bonus is not added on top)
     this.bodyHurt(p, dir, power * k, cause, by, from);
-    if (c.alive) this.calls(by);
+    if (c.alive && !this.scripted) this.calls(by);
   }
   /** Crack points into the crown; a stage passed says so; the third bursts it. */
   addCrack(k, cause, by = 'courier') {
@@ -145,11 +157,17 @@ export class GreatJelly {
       }
       case 'idle': {
         c.face = P.pos;
+        if (this.scripted) { // (its casts are the timeline's: between them it keeps near, and slams what comes close, now and then)
+          this.autoCd -= dt;
+          if (dC > 7) c.want.copy(toC).setLength(GLIDE * 0.6);
+          if (dC < FOE.slam.within && this.autoCd <= 0 && !this.raid?.busy) { this.autoCd = 6; this.go('rear', REAR); g.creatures.windup(c, { at: c.pos, radius: FOE.slam.radius, eta: REAR, kind: 'slam', part: c.root }); c.deform.kick(4, null, 0.2); }
+          return;
+        }
         if (ph === 'bare' && (this.sinkT += dt) >= FOE.sink.every) { this.sinkT = 0; this.sinkTo(); return; }
         if ((this.wait -= dt) > 0) { if (dC > 6) c.want.copy(toC).setLength(GLIDE * 0.5); return; }
         if (dC < FOE.slam.within) { this.go('rear', REAR); g.creatures.windup(c, { at: c.pos, radius: FOE.slam.radius, eta: REAR, kind: 'slam', part: c.root }); c.deform.kick(4, null, 0.2); return; }
         // the ram: its aim taken now, at the scrape's start (FOE.ram.aim 0)
-        this.aim.copy(P.pos); this.dir.copy(toC).normalize();
+        this.aim.copy(P.pos); this.dir.copy(toC).normalize(); this.scrapeFor = FOE.ram.telegraph;
         this.go('scrape', FOE.ram.telegraph);
         g.creatures.windup(c, { at: c.pos, radius: 2, eta: FOE.ram.telegraph, kind: 'ram', parry: false });
         g.events?.emit('foe.scrape', { by: 'creature' }); // (Wanda's scrape, Calissa's glowing crown: the tell)
@@ -158,8 +176,8 @@ export class GreatJelly {
       case 'scrape': {
         c.face = this.aim; c.vel.multiplyScalar(Math.max(0, 1 - dt * 8));
         c.squashTo = 0.7; c.deform.wob = Math.max(c.deform.wob, 0.06);
-        this.crown.tell?.(this.t / FOE.ram.telegraph); // (Calissa's: the broken edge and the cracks brighten and the urn trembles)
-        if (this.t >= FOE.ram.telegraph) { this.crown.tell?.(0); g.creatures.unwind(c); this.ran = 0; this.struck = false; this.go('charge'); c.deform.kick(7, null, 0.12); }
+        this.crown.tell?.(this.t / this.scrapeFor); // (Calissa's: the broken edge and the cracks brighten and the urn trembles)
+        if (this.t >= this.scrapeFor) { this.crown.tell?.(0); g.creatures.unwind(c); this.ran = 0; this.struck = false; this.go('charge'); c.deform.kick(7, null, 0.12); }
         return;
       }
       case 'charge': {
@@ -195,10 +213,35 @@ export class GreatJelly {
         this.under(); return;
       }
       case 'under': {
-        const next = B.pools[this.next];
-        if (!this.rang && this.t >= FOE.sink.seconds - FOE.sink.telegraph) { this.rang = true; B.ring(this.next, FOE.sink.telegraph); g.events?.emit('foe.rise', { pool: this.next, by: 'creature' }); }
-        if (this.t >= FOE.sink.seconds) this.surface(next);
+        if (!this.rang && this.t >= FOE.sink.seconds - FOE.sink.telegraph) {
+          if (this.scripted) this.next = this.poolNear(P.pos, this.pool); // (Wedge: it comes up under you)
+          this.rang = true; B.ring(this.next, FOE.sink.telegraph); g.events?.emit('foe.rise', { pool: this.next, by: 'creature' }); }
+        if (this.t >= FOE.sink.seconds) this.surface(B.pools[this.next]);
         return;
+      }
+      // ---- the casts' own postures (world/well/raid.js calls the verbs below; jellycasts.js says what each cast is)
+      case 'bash': { // (Lidfall's windup: it rears, its crown high, the parry's outline on it; then the lunge)
+        c.face = P.pos; c.squashTo = 1.4; c.deform.wob = Math.max(c.deform.wob, 0.05);
+        if (this.t >= this.wait) { this.dir.copy(toC).setY(0).normalize(); this.ran = 0; this.struck = false; this.go('lunge'); c.deform.kick(8, null, 0.12); }
+        return;
+      }
+      case 'lunge': { // (a third of a second across `reach` metres: rolled through, parried before, or struck)
+        const v = this.reach / 0.3; c.vel.copy(this.dir).multiplyScalar(v); c.want.copy(c.vel); this.ran += v * dt;
+        if (!this.struck && dC < FOE.halfWidth + 0.7 && Math.abs(P.pos.y - c.pos.y) < 2.2) { this.struck = true; this.strike('crownBash'); }
+        if (this.ran >= this.reach || this.t > 0.45) this.go('skid', SKID);
+        return;
+      }
+      case 'cast': { // (a cast's windup: still, facing them until `lockAt`, its body the telegraph)
+        if (this.t < this.lockAt) { c.face = P.pos; this.dir.copy(toC).setY(0).normalize(); } else c.face = _b.copy(c.pos).add(this.dir);
+        c.vel.multiplyScalar(Math.max(0, 1 - dt * 8));
+        c.squashTo = this.pose; c.deform.wob = Math.max(c.deform.wob, 0.04 + 0.08 * Math.min(1, this.t / Math.max(0.1, this.wait)));
+        if (this.t >= this.wait) this.go('idle', 0.6);
+        return;
+      }
+      case 'sinkHold': { // (into a pool and under, to stay until it is called up: the transition, the sherds)
+        const w = B.pools[this.pool], to = _b.set(w.pos.x - c.pos.x, 0, w.pos.z - c.pos.z);
+        if (to.length() > 0.6 && this.t < 3) { c.want.copy(to).setLength(7); c.vel.copy(c.want); return; }
+        this.hide(); return;
       }
       default: return;
     }
@@ -232,6 +275,7 @@ export class GreatJelly {
   strike(move) {
     const g = this.game, P = g.player, c = this.c;
     if (P.invuln > 0) return;
+    if (this.raid) { this.raid.struck(move); return; } // (in the fight, what a blow costs is the cast's: world/well/raid.js)
     const v = _b.set(P.pos.x - c.pos.x, 0, P.pos.z - c.pos.z); if (v.lengthSq() < 1e-4) v.copy(this.dir); v.normalize();
     P.impulse(v.clone().multiplyScalar(move === 'ram' ? 13 : 8).setY(move === 'ram' ? 6 : 4.5), 'foe');
     P.shake = Math.max(P.shake || 0, 0.6);
@@ -265,6 +309,42 @@ export class GreatJelly {
     this.go('idle', RECOVER);
   }
 
+  // ------------------------------------------------------------------ the casts' verbs (world/well/raid.js)
+  /** Shoulder Charge: the scrape for `windup`, then the ram. */
+  ram(windup) {
+    const P = this.game.player, c = this.c;
+    this.aim.copy(P.pos); this.dir.set(P.pos.x - c.pos.x, 0, P.pos.z - c.pos.z).normalize(); this.scrapeFor = windup;
+    this.go('scrape', windup);
+    this.game.creatures.windup(c, { at: c.pos, radius: 2, eta: windup, kind: 'ram', parry: false });
+  }
+  /** Lidfall: it rears for `windup` (the parry's outline on it), then lunges `reach` metres at them. */
+  bash(windup, reach) {
+    this.reach = reach; this.parried = false;
+    this.go('bash', windup);
+    this.game.creatures.windup(this.c, { at: this.game.player.pos.clone(), radius: 2.5, eta: windup, kind: 'bash', parry: true, part: this.c.root });
+  }
+  /** Any other cast's windup: still, `pose` its squash, facing them until `lockAt` seconds in. */
+  cast(windup, { pose = 1.15, lockAt = windup } = {}) { this.pose = pose; this.lockAt = lockAt; this.go('cast', windup); }
+  /** Slake and Wedge: down into the nearest pool, up in the one nearest them. */
+  submerge() { this.pool = this.poolNear(this.c.pos); this.next = this.pool; this.go('sink'); }
+  /** Down into pool `i` to stay (the transition; the sherds); up again with show(). */
+  sinkInto(i = 0) { this.pool = i; this.go('sinkHold'); }
+  hide() { const c = this.c; c.root.visible = false; c.col.setEnabled(false); c.vel.set(0, 0, 0); this.go('hidden'); }
+  /** Up out of pool `i` (W0 by default), with a slam. */
+  show(i = 0) { this.next = i; this.surface(this.bowl.pools[i]); }
+  /** The crown off without a reel (the transition: it sinks crowned and comes up bare). */
+  forceBare() {
+    if (this.stage < STAGES) { this.crack = STAGE * STAGES; this.crown.crack(STAGES); this.crown.burst(this.dir.clone()); }
+    this.sinceBreak = FOE.reel.seconds + 1;
+  }
+  heal(share) { const c = this.c; c.hp = Math.min(c.maxHp, c.hp + share * c.maxHp); c.deform.kick(5, null, 0.3); }
+  /** The pool nearest a world point (not `not`). */
+  poolNear(p, not = -1) {
+    const B = this.bowl; let best = 0, bd = Infinity;
+    for (const w of B.pools) { if (w.i === not || w.r <= 0) continue; const d = Math.hypot(w.pos.x - p.x, w.pos.z - p.z); if (d < bd) { bd = d; best = w.i; } }
+    return best;
+  }
+
   // ------------------------------------------------------------------ the end
   /** Burst (its health spent) or reprogrammed: once, either way. */
   end(how, by = 'courier') {
@@ -279,7 +359,7 @@ export class GreatJelly {
       c.alive = false; c.downBy = by; // (gone from the fight, not burst: nothing pops)
       g.creatures.remove(c);
     }
-    g.events?.emit('foe.end', { how, by });
+    g.events?.emit('foe.end', { how, by, ...(this.raid?.record() || {}) }); // (the run's record: the drops its achievements guarantee read it)
   }
 
   update(dt) {
@@ -291,7 +371,8 @@ export class GreatJelly {
     this.crown.group.position.y = H * c.deform.sq;
     const low = this.share <= FOE.reprogramAt;
     if (low) tag(c, 'programmable'); else untag(c, 'programmable');
-    // bare and above the slip: the sand slides toward its pool
+    // bare and above the slip: the sand slides toward its pool (in the fight, only when a cast says: raid.js)
+    if (this.scripted) return;
     if (this.phase === 'bare' && this.state !== 'under') {
       const w = this.bowl.pools[this.pool];
       this.bowl.slide(w.x, w.z, this.share < FOE.slide.lowAt ? FOE.slide.low : FOE.slide.speed);
