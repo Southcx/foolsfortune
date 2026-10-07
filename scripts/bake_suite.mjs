@@ -3,6 +3,7 @@
 // local bone rotation is exactly what Character.applyPose writes, and the hips' translation is already in the pack's space.
 //
 //   node scripts/bake_suite.mjs          -> src/assets/clips/{core,social}.bin   (bake again when code names a new clip)
+//   node scripts/bake_suite.mjs --check  says whether core.bin holds every clip the code names, and fails if not (bakes nothing)
 //
 // The packs keep anims.bin's layout (scripts/bake_anims.mjs: uint32 header length, JSON header, int16 data; quaternions x32767, the
 // pelvis x8192, a track of one frame is constant) with three additions the old decoder ignores:
@@ -46,6 +47,14 @@ const PACKS = { core: (file, n) => file !== 'emotes' && file !== 'social' && boo
 const load = (f) => new Promise((res, rej) => { const b = fs.readFileSync(f); new GLTFLoader().parse(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength), '', res, rej); });
 const q16 = (x) => Math.max(-32767, Math.min(32767, Math.round(x * 32767)));
 const p16 = (x) => Math.max(-32767, Math.min(32767, Math.round(x * P)));
+if (process.argv.includes('--check')) {
+  const bin = fs.readFileSync(path.join(OUT, 'core.bin')), have = new Set(JSON.parse(bin.subarray(4, 4 + bin.readUInt32LE(0))).clips.map((c) => c.name));
+  const suite = [];
+  for (const file of ['move', 'skiff', 'melee']) { const g = await load(path.join(SRC, `courier_anims_${file}.glb`)); for (const a of g.animations) if (!skip(a.name) && boot(a.name)) suite.push(a.name); }
+  const missing = suite.filter((n) => !have.has(n));
+  console.log(missing.length ? `core.bin is out of date: ${missing.length} clip(s) the code names are not in it: ${missing.join(', ')} (node scripts/bake_suite.mjs)` : `core.bin holds every clip the code names (${have.size})`);
+  process.exit(missing.length ? 1 : 0);
+}
 fs.mkdirSync(OUT, { recursive: true });
 
 for (const [pack, takes] of Object.entries(PACKS)) {
