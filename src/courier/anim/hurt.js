@@ -37,7 +37,8 @@ export class Hurt {
     if (this.hitT < 0.45 && C.clips.hitChest) {
       this.hitT += dt;
       const hw = this.hitW * (1 - smooth(0.22, 0.45, this.hitT)) * smooth(0, 0.04, this.hitT);
-      if (hw > 0.001) C.blend(base, C.sample('hitChest', 0.05 + this.hitT * 0.75, ch.P.tmp, false), hw, ch.MASK_UPPER);
+      // (hipW 0: an upper-body layer leaves the pelvis where it is, casebook rule 43; a crouched blow had lifted it 0.25 m for 0.3 s)
+      if (hw > 0.001) C.blend(base, C.sample('hitChest', 0.05 + this.hitT * 0.75, ch.P.tmp, false), hw, ch.MASK_UPPER, 0);
     }
     if (this.bigT >= HURT.outTo || !C.clips[HURT.clip]) return;
     // (from behind: the blow pushes along the body's forward)

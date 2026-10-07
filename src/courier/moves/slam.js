@@ -3,9 +3,10 @@
 // go flying. For a moment after landing: Space is a slam jump (higher the further
 // you fell), holding C with a direction turns the fall into a slide.
 // The body is the suite's slam (Air_SlamStart, Air_SlamFall, Air_SlamLand): the physics drops at once, so the start's front flip is
-// time-warped onto the fall the slam has (SLAM: measured from the height when it begins; a short slam skips the flip for the tuck), the
-// fall loop holds feet first with the arms up, and the landing's crouch, a fist to the ground, plays through the slam's window and on
-// while the tech's weight eases out (casebook rule 19). Prior art: Bayonetta's and Devil May Cry's plunges, Smash's down-air landing lag.
+// time-warped onto the fall the slam has (SLAM: measured from the height when it begins; a short slam, or one in first person, skips the
+// flip for the tuck), the fall loop holds feet first with the arms up, and the landing's crouch, a fist to the ground, plays through the
+// slam's window and on while the tech's weight eases out (casebook rule 19). Prior art: Bayonetta's and Devil May Cry's plunges, Smash's
+// down-air landing lag.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -58,6 +59,7 @@ export class Slam extends Tech {
     this.phase = 'fall';
     this.y0 = P.pos.y;
     this.fallT = Math.max(0.05, (this.h0 || 0) / this.cfg.speed); // (the fall it will have, for the start's time-warp)
+    this.tuckOnly = !!this.game.character?.fpMode; // (in first person no flip: the worn tools and the limbs would wheel across the view)
     this.fa = 0;
     this.hv = new THREE.Vector3(P.vel.x, 0, P.vel.z).multiplyScalar(0.25);
     P.fovPunch = Math.max(P.fovPunch, 5);
@@ -163,7 +165,7 @@ export class Slam extends Tech {
 
   /** The falling body at a time into the fall: the start, warped onto the fall, then the loop. */
   fallPose(C, t, out, tmp) {
-    const from = this.fallT >= SLAM.flipMin ? SLAM.flip : SLAM.tuck;
+    const from = this.fallT >= SLAM.flipMin && !this.tuckOnly ? SLAM.flip : SLAM.tuck;
     const span = Math.max(0.06, Math.min(SLAM.end - from, SLAM.share * this.fallT));
     C.sample(SLAM.start, from + Math.min(1, t / span) * (SLAM.end - from), out, false);
     if (t > span) C.blend(out, C.sample(SLAM.fall, t - span, tmp, true), smooth(0, SLAM.fallIn, t - span));
