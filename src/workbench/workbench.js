@@ -53,6 +53,7 @@ import { Pillar, Stalactite, slipMaterial, Clutch, dressBrood } from '../vfx/cav
 import { bowlSand, bowlSandTick, PoolRing } from '../vfx/bowl.js';
 import { CatchLook } from '../vfx/catch.js';
 import { BuskerMat } from '../vfx/buskermat.js';
+import { FoeLook } from '../vfx/foelook.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 
@@ -191,6 +192,7 @@ export class Workbench {
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
+    out.push({ id: 'slice:foe', grp: 'the slice', label: "the Great Slip Jelly's windups (each cast in turn, read from the body; then the Sherds and the Overflow)" });
     out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
     out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
@@ -365,6 +367,14 @@ export class Workbench {
           sand.userData.u.uSlide.value = k > 5 ? 1.5 : 0; bowlSandTick(sand, 1 / 60); ring.ring(Math.max(0, ((k % 3) - 1.8) / 1.2)); ring.update(1 / 60);
           pil.update(t, 1 / 60); cl.update(t, 1 / 60);
         };
+      }
+      else if (id === 'slice:foe') {
+        obj = new THREE.Group(); const root = new THREE.Group(); obj.add(root); root.scale.setScalar(0.6);
+        const body = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), new THREE.MeshStandardMaterial({ color: 0x9a7348, roughness: 0.35 })); body.scale.set(1, 0.85, 1); body.position.y = 0.8; root.add(body);
+        const crown = new UrnCrown({ radius: 0.62 }); crown.group.position.y = 1.5; root.add(crown.group);
+        const L = new FoeLook({ root, crown, floor: { center: new THREE.Vector3(0, 0, 0), radius: 3, depth: 0.3 } });
+        const casts = ['crownBash', 'brineLine', 'gelidRings', 'oozeRain', 'crownGlare', 'slipNova', 'sinkingSands', 'brineCascade', 'broodCall', 'calving', 'overflow'];
+        let last = -1; obj.userData.tick = (t) => { const n = Math.floor(t / 2.5) % casts.length, k = (t % 2.5) / 2; if (n !== last) { if (last >= 0) L.blow(casts[last]); last = n; } if (k <= 1) L.windup(casts[n], k, { order: n % 2 ? 'in' : 'out' }); L.overflow(casts[n] === 'overflow' ? Math.min(1, k) : 0); L.update(1 / 60); crown.update(1 / 60); };
       }
       else if (id === 'garden:catch') {
         obj = new THREE.Group();

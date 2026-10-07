@@ -156,7 +156,7 @@ export class Raid {
   broodDrive(c, dt) {
     const F = this.F, to = _v.set(F.c.pos.x - c.pos.x, 0, F.c.pos.z - c.pos.z), d = to.length();
     c.face = F.c.pos; c.want.copy(to).setLength(BROOD_SPEED);
-    if (d < 2.2) { c.reached = true; c.want.set(0, 0, 0); } // (fed in update, never inside the jellies' own loop: casebook 25)
+    if (d < 2.2) { c.reached = true; c.want.set(0, 0, 0); } // (fed in update, never inside the jellies' own loop: casebook 26)
   }
   /** A brood reached it: it heals, grows a plate back (bare), and the brood is gone into it. */
   feed(c) {
