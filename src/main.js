@@ -589,7 +589,7 @@ async function main() {
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   }, {
-    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.')),
+    copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),
     resetRoom,
     respawn: () => game.course?.respawnHere?.(), // (was R in the basement)
     toHub: () => game.course?.toHub(), // (was H)
@@ -742,8 +742,7 @@ async function main() {
     game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
   } });
   game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
-  game.log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
-  if (freshBuild) game.log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
+  game.events.emit('session.open', { fresh: !!freshBuild }); // (the welcome is a tracking rule: tracking/place.js)
 
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
