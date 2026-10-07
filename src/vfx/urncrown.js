@@ -15,7 +15,10 @@
 // Metroid's armoured bosses (the armour first, then the weak point), Zelda's Dodongo and the Hinox's armour, kintsugi in reverse (the
 // crack shown with light, not gold), and ru ware itself (the crazing of its glaze, prized).
 //
-//   const U = new UrnCrown({ radius })   head.add(U.group)   U.crack(stage)   U.burst(dir?)   U.update(rawDt)   U.stage   U.core (the weak point's mesh)
+//   THE TELL   tell(k): through the ram's 1.0 s scrape the broken edge and the cracks brighten and the urn trembles (the body is the
+//              telegraph: no floor marker, docs/plans/DUNEMAW-EXTREME.md)
+//
+//   const U = new UrnCrown({ radius })   head.add(U.group)   U.crack(stage)   U.tell(k)   U.burst(dir?)   U.update(rawDt)   U.stage   U.core (the weak point's mesh)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
@@ -64,21 +67,22 @@ function urnGeometry() {
 
 export class UrnCrown {
   constructor({ radius = 0.5 } = {}) {
-    this.u = { uStage: { value: 0 }, uFlash: { value: 0 }, uMindT: mindTime, uCrack: { value: urnTexture() } };
+    this.u = { uStage: { value: 0 }, uFlash: { value: 0 }, uTell: { value: 0 }, uMindT: mindTime, uCrack: { value: urnTexture() } };
     const m = this.mat = new THREE.MeshStandardMaterial({ name: 'urn-crown', color: 0x9cc7c8, roughness: 0.3, metalness: 0.0, side: THREE.DoubleSide });
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, this.u);
       sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vUrnUv; varying vec3 vUrnW;')
         .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvUrnUv = uv; vUrnW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
       sh.fragmentShader = sh.fragmentShader
-        .replace('#include <common>', `#include <common>\nuniform sampler2D uCrack; uniform float uStage, uFlash; varying vec2 vUrnUv; varying vec3 vUrnW;\n${LAB_GLSL}\nfloat urnCrack;`)
+        .replace('#include <common>', `#include <common>\nuniform sampler2D uCrack; uniform float uStage, uFlash, uTell; varying vec2 vUrnUv; varying vec3 vUrnW;\n${LAB_GLSL}\nfloat urnCrack;`)
         .replace('#include <color_fragment>', `#include <color_fragment>
 { vec4 k = texture2D(uCrack, vUrnUv);
   diffuseColor.rgb = mix(vec3(0.36, 0.58, 0.62), vec3(0.28, 0.5, 0.6), vUrnUv.y) * (1.0 - 0.35 * k.g); // (ru's sky-blue celadon, crazed: deep enough to hold its colour under a warm light)
   float lvl = k.r * 3.0; urnCrack = step(0.5, lvl) * step(lvl, uStage + 0.5); // (a crack shows once its stage has come)
   diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.05, 0.03, 0.08), urnCrack * 0.85); }`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-  totalEmissiveRadiance += labradorite(dot(vUrnW, vec3(0.7, 1.3, 0.5)) + uMindT * 0.1) * urnCrack * (0.6 + 0.6 * uStage / 3.0 + 1.5 * uFlash); // (the Lachryma pressing out)`);
+  totalEmissiveRadiance += labradorite(dot(vUrnW, vec3(0.7, 1.3, 0.5)) + uMindT * 0.1) * urnCrack * (0.6 + 0.6 * uStage / 3.0 + 1.5 * uFlash); // (the Lachryma pressing out)
+  totalEmissiveRadiance += labradorite(vUrnUv.x * 2.0 + uMindT * 0.3) * uTell * (1.6 * (1.0 - smoothstep(0.0, 0.3, vUrnUv.y)) + 2.6 * urnCrack); // (the ram's tell: the broken edge and its cracks brighten through the scrape)`);
     };
     m.customProgramCacheKey = () => 'urn-crown';
     this.urn = new THREE.Mesh(urnGeometry(), m); this.urn.name = 'urn-crown';
@@ -110,6 +114,10 @@ void main() {
     this.stage = Math.min(3, stage); this.u.uStage.value = this.stage; this.u.uFlash.value = 1; this.shake = 0.35;
   }
 
+  /** The ram's tell (DUNEMAW-ARENA.md: it lowers its crown and scrapes for 1.0 sim s): 0..1 through the scrape, 0 when it charges.
+   *  The broken edge and the cracks brighten and the urn trembles, so the crown itself says the charge is coming. */
+  tell(k) { this.u.uTell.value = THREE.MathUtils.clamp(k, 0, 1); }
+
   /** The urn bursts off: the shards fly (away from `dir`, the blow's way, and up), the core is bare. */
   burst(dir = new THREE.Vector3(0, 0, 1)) {
     if (this.flying) return;
@@ -126,7 +134,8 @@ void main() {
   update(raw = 1 / 60) {
     const dt = Math.min(raw, 0.05); this.t += dt;
     this.u.uFlash.value = Math.max(0, this.u.uFlash.value - dt * 2);
-    if (this.shake > 0) { this.shake = Math.max(0, this.shake - dt); const k = this.shake * 0.12; this.urn.rotation.set((Math.random() - 0.5) * k, 0, (Math.random() - 0.5) * k); } else this.urn.rotation.set(0, 0, 0);
+    const tk = this.u.uTell.value * 0.03; // (a tremble through the scrape, growing)
+    if (this.shake > 0) { this.shake = Math.max(0, this.shake - dt); const k = this.shake * 0.12 + tk; this.urn.rotation.set((Math.random() - 0.5) * k, 0, (Math.random() - 0.5) * k); } else this.urn.rotation.set((Math.random() - 0.5) * tk, 0, (Math.random() - 0.5) * tk);
     this.coreU.uT.value = this.t;
     if (this.core.visible) this.coreU.uA.value = Math.min(1, this.coreU.uA.value + dt * 3);
     if (this.flying) {

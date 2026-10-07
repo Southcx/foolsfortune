@@ -248,6 +248,17 @@ open gills and throat. The parryable things wear only the Lachryma outline (`vfx
 - **Old Nobody** (`vfx/leviathan.js`): crude standing up (the oil film's colours on black glass). Crusted with Lachryma in every feeling's colour, fed by
   everyone. A blank face with one milky blind eye: Nobody, and the Cyclops whom Nobody blinded.
 
+## The Great Slip Jelly's bowl and the catch (the full build, Round 1, 2026-10-07)
+
+The bowl is read from the ground up. **The stone is ammunition** (seams that glow, then a felled log, then rubble: the room is spent as
+it is fought). **The sand says which way it is going**: streaks combed toward the pool the FOE is in, still at rest and streaming as it
+slides. **The slip says where it will rise**: thin ripples and a glow from under, never a painted ring. **The body is the telegraph**: the urn crown's broken
+edge and cracks brighten through the ram's scrape. The brood wear their eggshell caps.
+
+The catch is one look for both ways of catching, because both are a mouth drinking a mind. Two strands of Lachryma twist from the mouth to
+the Figment, and a vortex turns over the mouth. The Figment strains in jerks, then is drawn in down the tether, or snaps it (Luigi's
+Mansion's tug, Pokemon's ball).
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
