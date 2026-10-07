@@ -1,4 +1,4 @@
-# The Great Slip Jelly, overhauled: an extreme trial (the owner, 2026-10-07)
+# The Great Slip Jelly, overhauled: a raid boss in the style of an extreme trial (the owner, 2026-10-07)
 
 Kept by Dovina. A spec for the owner's cut. **Petra builds the fight and the room, Calissa the looks and telegraphs, Wanda the music,
 Espada the names.** Units: real seconds (the fight's clock), plain blows (power 1: a slip jelly bursts at 8), metres.
@@ -34,33 +34,31 @@ FFXIV's extreme trials, translated to one player with the Courier's tools:
 |---|---|
 | a **scripted timeline**: the same mechanics in the same order every pull, learned by wiping | the fight is a timeline of named casts (section 3); the timings never change, only the targets |
 | the **cast bar** names the attack before it lands | the log says the cast's name as it begins ("The Great Slip Jelly readies Brine Cascade."); its windup carries the outline where it can be parried (PARRY.md) |
-| extremes hide the ground markers that normal mode shows | Normal draws every area on the floor in labradorite (OVERLAY.md: line shows what you know); Extreme draws none: you read the cast and the body |
+| extremes hide the ground markers | the floor shows only what persists (a puddle, the slip); an attack is read from its cast and its body, never from a marker drawn for it |
 | tank, healer, damage | solo: the **tankbuster** is a parry or a roll; the **healer check** is your pool (raidwides take a set share of it; baubles and guard timing keep you up); the **damage check** is the enrage |
 | **phases and transitions** that remake the arena | four phases; the arena changes at each (section 3) |
 | **adds** that must die before they reach the boss | the brood (DUNEMAW-SYSTEMS.md's nursery), now a mechanic |
 | a **hard enrage** | at 9:30 the Dunemaw swallows the arena |
-| **totems** traded for gear, a rare **mount** drop | crown shards traded at Raku's for looks; a rare drop (section 5) |
+| loot | **no tokens, no second currency** (the owner): a cosmetic drops from the boss, guaranteed, when its achievement's criteria are met in the fight (section 5) |
 
 **Length:**
 - An expert clear takes about **8:00**, against a hard enrage at **9:30**: about 15% slack, the margin FFXIV leaves at the item level a
   fight is tuned for.
 - A first clear is meant to take **an evening of pulls** (10 to 30).
 
-## 2. Two difficulties
+## 2. One fight (the owner, 2026-10-07)
 
-- **Normal:** the run's FOE, as the Well has it today.
-  - Every area is drawn on the floor; the timeline runs at three quarters speed.
-  - There is no enrage, and the health is a third.
-  - It is the version every player meets, and its pay is the run's (DUNEMAW-SYSTEMS.md's two endings).
-- **Extreme:** the full fight.
-  - It is begun at the **Lip Stone** on the bowl's ledge (a trial is begun in its own room: CLAUDE.md), offered once you have reached
-    the bowl.
-  - **A wipe costs the attempt only** (the run below is not lost): an extreme is learned by wiping, and losing a forty-minute run per
-    wipe would make it unlearnable. The Lip Stone is not a Shrine (no respawn point in a Well, the owner's rule). It is the trial's own
-    start, as a gong is the drills'.
-  - Its pay is its own (section 5).
+- **There is one difficulty.** "Extreme" was the owner's word for the *style* of fight, not a mode. Content is not padded with tiers;
+  an easier or a harder fight is a new fight.
+- **It is the run's FOE.** It keeps the last floor's bowl, its pay is the run's, and its two endings (burst or reprogram,
+  DUNEMAW-SYSTEMS.md) stand.
+- **A wipe costs the attempt, not the run** (the owner: yes).
+  - On reaching the bowl's ledge, the **Lip Stone** marks the fight's start.
+  - A shatter in the fight makes you whole at the Lip Stone with the run kept: the floors, the haul, the clutches you broke.
+  - The Lip Stone is not a Shrine (no respawn point in a Well, the owner's rule). It is the fight's own start, as a gong is a drill's.
+  - The Wake Whistle still takes you out with the haul.
 
-## 3. The timeline (Extreme; times in real seconds from the pull)
+## 3. The timeline (times in real seconds from the pull)
 
 **Health: 840 plain blows**, placeholder. It is sized as seven minutes of a good player's sustained damage (about 2 plain blows a real
 second, to be measured with Strawman's bout line, `strawman.bout`), so that a good player meets the enrage and an expert clears with a
@@ -99,7 +97,7 @@ The core is exposed and moves: the core takes ×2, the body ×0.5.
 |---|---|---|
 | **Sinking Sands** | the floor slides toward it at 0.8 m/s, then 1.5 | stand on islands (rubble, fallen pillars) |
 | **Submerge** and **Surface Slam** | it sinks for 3 s; the slip rings 1.2 s before it surfaces under you | move off the rings |
-| **Brine Cascade** (cone) | it turns to face you, and the cone is outlined in Normal only | get behind it |
+| **Brine Cascade** (cone) | it turns to face you, its maw swelling for a bar | get behind it |
 | **Crown Bash** | as in phase 1, now followed at once by **Gelid Rings**, in or out (the order told by which way its crown tilts) | parry, then read the tilt |
 | **Brood Call** | two brood from each clutch still whole | kill them before they reach it |
 
@@ -120,47 +118,46 @@ The Well's mouth closes over the bowl. You are swallowed; the attempt ends.
 
 - **The cast:** the log says its name as it begins; the body shows its windup; parryable windups wear the Lachryma outline
   (PARRY.md).
-- **Normal** draws every area in labradorite on the floor; **Extreme** draws none (FFXIV's extreme convention).
+- **No floor markers** for attacks (FFXIV's extreme convention, the style the owner asked for). Only what persists is drawn: puddles,
+  the slip, the brood's paths.
 - **Wanda's cue** marks every phase on a bar (Thunder Force's musical boss): the transition's breath, the Calving's turn, the
   Overflow's last section.
 - **The pool's band** (the battle ring) is the healer check: the raidwides take a set share, so you can see whether you will survive
   the next one.
 
-## 5. What it pays
+## 5. What it pays (the owner, 2026-10-07: "Lachrymite cubes are the one and only currency... achievements and skill dictating
+your progression and cosmetics")
 
-**Normal (the run's FOE): as DUNEMAW-SYSTEMS.md specified, and none of it is built yet:**
-- the two endings (burst or reprogram);
-- the crown shard;
-- the brood's slip roe;
-- the finds.
+**The run's pay:** as DUNEMAW-SYSTEMS.md specified, and none of it is built yet:
+- the two endings (burst: the FOE's pay in cubes now; reprogram: half now and its brood for the Spirit Garden);
+- the brood's slip roe and the finds (materials for the garden's beds and features);
+- no crown shard (withdrawn: no item that exists only to be traded).
 
-**Extreme:**
-- **A crown shard of the extreme kind, every clear** (FFXIV's totem), up to one a game day (the Dunemaw turns over daily). Raku trades
-  them: four for the **Jelly-crown glaze** (a court-tier look), six for a **slip jelly to ride** in the Dunes (a mount; Calissa's).
-- **A rare drop:** a deck of 12, certain by the twelfth clear. It is the **Crown of the Dunemaw**, a curio of the highest tier, and the
-  achievement's title.
-- **First clear:** a title, and the achievements below.
-- **No cubes beyond Normal's:** the Extreme's pay is looks and standing, so the economy is not bent by the hardest content (DESIGN.md:
-  nothing but luck pays more than 1.5× the aim).
+**Cosmetics, guaranteed by skill:** when an achievement's criteria are met **in the fight**, the boss drops its cosmetic directly,
+every time. There are no tokens, no trades and no odds.
 
-**Achievements, under THE WELLS** (when built):
-- clear Extreme;
-- clear it without being hit by a tankbuster;
-- clear it with every clutch broken before the pull;
-- clear it with the enrage more than a minute away;
-- turn its gaze back with the Veritome.
+| achievement (met in the fight) | what drops |
+|---|---|
+| beat it | the **Jelly-crown glaze** (a court-tier look for the Courier's glaze regions) |
+| beat it without being hit by a Crown Bash | the **Crown of the Dunemaw**, a curio of the highest tier (the Book's rarest) |
+| beat it with every clutch broken before the pull | a **slip jelly to ride** in the Dunes (Calissa's) |
+| beat it with the enrage more than a minute away | a **title** |
+| turn its gaze back with the Veritome | a **kiln pattern** of the crown's eye for any glaze |
+
+These are achievements in THE WELLS (predicates over the ledger, so they are retroactive). The fight emits what they read (`foe.end`
+with its conditions met), and the drop is the boss's.
 
 ## 6. Acceptance (the owner ticks these; each becomes a QAIS test)
 
-1. Reaching the bowl's ledge shows the FOE before the fight (the reveal); clutches stand round the rim with eggs, and jellies guard
-   them.
+1. Reaching the bowl's ledge shows the FOE before the fight (the reveal) and the Lip Stone; clutches stand round the rim with eggs,
+   and jellies guard them.
 2. Breaking a clutch before the pull leaves fewer brood in the transition; the log counts it.
-3. In Normal, the crown cracks when it rams a pillar; a pillar cracks, then falls; the crown breaks in three rams.
+3. The crown cracks when it rams a pillar; a pillar cracks, then falls; the crown breaks in three rams.
 4. The log names every cast as it begins; Crown Bash can be parried.
 5. At 65% it sinks, the Slip Nova lands, and the brood hatch and heal it if they reach it.
 6. At 30% it calves into four; leaving one alive for 30 s heals it.
-7. In Extreme, the enrage swallows the arena at 9:30; a wipe returns you to the Lip Stone, the run below kept.
-8. Finds, slip roe and the crown shard come home in the haul.
+7. The enrage swallows the arena at 9:30; a wipe returns you to the Lip Stone with the run kept.
+8. Finds and slip roe come home in the haul; meeting an achievement's criteria in the fight drops its cosmetic, every time.
 
 ## 7. Who builds what, in gates
 
@@ -168,13 +165,13 @@ The Well's mouth closes over the bowl. You are swallowed; the attempt ends.
 
 | gate | builds | who |
 |---|---|---|
-| **D1: what was specified and never built** | the bowl (DUNEMAW-ARENA.md), the crowned FOE's phase 1 and bare phase, the nursery and its brood, the finds, the two endings | Petra; looks Calissa (the urn crown and the finds' looks exist: `vfx/urncrown.js`, `vfx/finds.js`) |
-| **D2: the timeline** | a **timeline runner**, a new part in `creatures/ai/` built once (a scripted fight is not utility reasoning: FFXIV's bosses are timelines). Each cast is a windup, an area and an effect; Normal and Extreme from one script | Petra; the casts' numbers mine (a data module, `progress/combat/extreme.js`, when the owner cuts this) |
-| **D3: Extreme** | the Lip Stone, the wipe and retry, the enrage, Calving, the Overflow, the pay | Petra; Calissa's telegraphs; Wanda's phases; Espada's cast names |
+| **D1: what was specified and never built** | the bowl (DUNEMAW-ARENA.md); the crowned FOE's phase 1 and bare phase; the nursery and its brood; the finds; the two endings | Petra; looks Calissa (the urn crown and the finds' looks exist: `vfx/urncrown.js`, `vfx/finds.js`) |
+| **D2: the timeline** | a **timeline runner**, a new part in `creatures/ai/` built once (a scripted fight is not utility reasoning: FFXIV's bosses are timelines). Each cast is a windup, an area and an effect, and the script is data | Petra; the casts' numbers mine (`progress/combat/greatjelly.js`, when the owner cuts this) |
+| **D3: the whole fight** | the Lip Stone and the retry, the transition, Calving, the Overflow, the enrage, the drops by achievement | Petra; Calissa's windups; Wanda's phases; Espada's cast names |
 
-## 8. Open for the owner
+## 8. Settled by the owner (2026-10-07)
 
-1. **A wipe in Extreme costs the attempt, not the run** (the Lip Stone is the trial's own start, not a Shrine). Agree?
-2. **Normal stays the run's FOE**, with the run's risk. Extreme is optional, its pay looks and standing, not cubes. Agree?
-3. **Health is a placeholder** until Strawman measures a good player's sustained damage. Do you want to set the target clear time
-   yourself (8 minutes here), or should I hold it to FFXIV's 8 to 10?
+- **A wipe costs the attempt**, not the run.
+- **One difficulty.**
+- **No currency but cubes.** Cosmetics drop by achievement, guaranteed.
+- **About 8 minutes** against a 9:30 enrage. Health is a placeholder until Strawman measures a good player's sustained damage.

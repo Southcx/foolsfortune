@@ -366,12 +366,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the way up, with the run's pay (and a Cogitomap, if charted enough). *Not:* hauling (the livelihood of carrying goods across the Emocean).
 - **FOE** (a Well's; Etrian Odyssey's word): the bigger creature that keeps a Well's last floor (for now a Great Slip Jelly, class 2). The
   run's pay counts the FOEs beaten (`wellPay`). *Not:* a creature's foe (whatever its mind is fighting: `c.foe`).
-- **Extreme** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the FOE's fight at full scale, an FFXIV extreme trial for one: a scripted
-  **timeline** of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), begun at the **Lip Stone** on the bowl's
-  ledge; a **wipe** costs the attempt, not the run. **Normal** is the run's FOE.
-- **realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): how far the soul has been refined, read from the sum of the attributes' ranks
-  (never a level); crossed by the **tribulation** at the Meditation Peak. **The cave abode**: the Spirit Garden as a place (its
-  **planetoids**, **launch lotuses**, **plots**, **features**).
+- **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the Great Slip Jelly's fight is a scripted **timeline**
+  of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), in the style of an FFXIV extreme trial; one difficulty
+  (the owner). The Lip Stone on the bowl's ledge is the fight's start: a **wipe** (a shatter in the fight) costs the attempt, not the
+  run. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
+- **Inner Realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): a player's own Spirit Garden by the name they give it (Espada offers
+  names in her conlang). In the garden you are **the Pneuka Jar**, hopping round its **planetoids**, and **the god hand** over them
+  (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. The cultivation tiers' word is open
+  (the owner's to choose; *not* "realm", which would collide).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),

@@ -39,8 +39,8 @@ export const FOE = {
   brood: { at: [0.66, 0.33], each: 3, hp: 2 }, // (it calls brood at two thirds and one third: three a call, from the clutches still whole)
   reprogramAt: 0.2, // (below a fifth of its health and reeling or stunned: the data drain can take it)
   pay: {
-    burst: { floors: 2, items: ['crownShard'] }, // (ECON.well.foe floors' worth, and a shard of the crown: a court-glaze pot's worth)
-    reprogram: { floors: 1, items: ['crownShard'], nursery: true }, // (half the pay now; the nursery becomes the Spirit Garden's)
+    burst: { floors: 2, items: [] }, // (ECON.well.foe floors' worth; the crown shard withdrawn, the owner 2026-10-07: cosmetics drop by achievement, DUNEMAW-EXTREME.md)
+    reprogram: { floors: 1, items: [], nursery: true }, // (half the pay now; the nursery becomes the Spirit Garden's)
   },
 };
 const CRACK_TYPES = new Set(['impact']);
