@@ -29,7 +29,19 @@ const DRILL_NAME = { sprint: 'sprints', scout: 'lookout', haul: 'hauling', swim:
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
 
 export class Raising {
-  constructor(game, realm) { this.game = game; this.realm = realm; }
+  constructor(game, realm) {
+    this.game = game; this.realm = realm;
+    // a spirit named (the Chao Garden's; item 25): the one nearest the hand in the garden, else the one out with you
+    game.chat?.add('name', { help: 'name a spirit: /name Words (in the garden, the one nearest your hand; elsewhere, the one out with you)', run: (words) => {
+      const name = words.join(' ').replace(/[^\p{L}\p{N} '\-]/gu, '').trim().slice(0, 20);
+      const R = this.realm, at = R.active ? R.hand?.point : null;
+      const s = at ? R.spirits.reduce((b, x) => (!b || x.body.pos.distanceTo(at) < b.body.pos.distanceTo(at) ? x : b), null) : null, e = s?.e || this.out;
+      if (!e) { game.log?.say('warn', 'No spirit is near to name.', { key: 'spirit.name', throttle: 1 }); return; }
+      if (!name) { game.log?.say('warn', 'Give it a name: /name Words.', { key: 'spirit.name', throttle: 1 }); return; }
+      const was = e.name || `your ${spiritName(e)}`; e.name = name; game.save?.dirty('bound');
+      game.events?.emit('spirit.name', { kind: e.kind, was, spirit: name, by: 'courier' });
+    } });
+  }
   get out() { return (this.game.bound?.list || []).find((e) => e.out) || null; }
 
   /** A bound entry given its sheet, the first time it is raised (its feeling from its kind and when it was caught: the same every load). */

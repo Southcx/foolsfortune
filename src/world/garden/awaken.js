@@ -19,7 +19,7 @@
 //   (realm.js calls them from the Athanor's and the cocoon tree's pages)
 // ---------------------------------------------------------------------------------------
 import { fresh, merge as mergeSheets, STATS } from '../../progress/spirits.js';
-import { VISITORS, wantsMet } from '../../progress/realm.js';
+import { VISITORS, wantsMet, SETTLE, FEATURES } from '../../progress/realm.js';
 import { today, now as calNow } from '../../core/calendar.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
 import { dirOf } from './place.js';
@@ -71,16 +71,21 @@ export class Awaken {
     H.look?.dispose(); const T = this.realm.site.tree; T.cocoon(0, { k: 0 }); T.cocoon(1, { k: 0 }); T.merging = null;
   }
 
-  /** The wild ones the garden draws: once a game day each kind whose wants it meets visits, and settles after enough visits. */
+  /** The wild ones the garden draws: once a game day each kind whose wants it meets visits, and settles after enough visits, bound free,
+   *  if a spirit house has room (SETTLE, item 17a: two a house); else it keeps visiting. A missed visit keeps the count; a want lost for
+   *  SETTLE.lapse game days resets it. */
   visitors() {
-    const day = today(), counts = this.realm.plots.counts();
+    const day = today(), counts = this.realm.plots.counts(), room = (counts.features.spiritHouse || 0) * FEATURES.spiritHouse.n - (this.game.bound?.list || []).filter((e) => e.from === 'visit').length;
+    let free = room;
     for (const kind of Object.keys(VISITORS)) {
-      const v = this.visits[kind] ||= { n: 0, day: -1 };
-      if (v.day === day || wantsMet(kind, counts) < 1) continue;
-      v.day = day; v.n++;
-      const settled = v.n >= VISITORS[kind].settle;
+      const v = this.visits[kind] ||= { n: 0, day: -1, met: day };
+      if (wantsMet(kind, counts) < 1) { if (v.n && day - (v.met ?? day) >= SETTLE.lapse) { v.n = 0; this.dirty(); } continue; }
+      v.met = day;
+      if (v.day === day) continue;
+      v.day = day; v.n = Math.min(VISITORS[kind].settle, v.n + 1);
+      const settled = v.n >= VISITORS[kind].settle && free > 0;
       this.game.events?.emit('spirit.visit', { kind, settled, by: 'courier' });
-      if (settled) { v.n = 0; this.bind({ kind, cls: 0 }, 'visit'); }
+      if (settled) { v.n = 0; free--; this.bind({ kind, cls: 0 }, 'visit'); }
       this.dirty();
     }
   }
