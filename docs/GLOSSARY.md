@@ -657,7 +657,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **an Island of Ego**: an island precipitated out of the Emocean where an identity is strong enough; its owner's Will holds it apart.
 - **Anagami Island**: this Island of Ego, a 5 x 5 grid of chunks. **Kaolin Anagami** is the island, and the ego it is.
 - **the Prince of Clay**: Kaolin Anagami's main avatar, the most powerful of the folk. "He".
-- **Couriers**: the Pneuka Jar in humanoid form; every player is one. They go out across the Emocean and resist excess Lachryma best.
+- **Couriers**: the Pneuka Jar in humanoid form; every player is one.
+- **sibling** (`docs/plans/COOP.md`): one of the five divisions as a Courier in the owner's world (Dovina, Petra, Calissa, Wanda, Espada),
+  with a mind, a temperament and a tool of its own; met once, then called or dismissed at a Shrine; steered by its division's session
+  through the game's db. A **guest** is another person playing; the **party** is at most four. *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
