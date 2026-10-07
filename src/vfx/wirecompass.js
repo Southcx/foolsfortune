@@ -110,7 +110,7 @@ export class WireCompass {
     this.tape.visible = this.wpTape.visible = this.wpWorld.visible = on;
     // the room they are in, said once as they enter it (four times a second is often enough to ask)
     this.placeT -= dt;
-    if (C && this.placeT <= 0) {
+    if (C && this.placeT <= 0 && !g.realm?.active) { // (the Spirit Garden is no floor of the workshop: never charted, never announced)
       this.placeT = 0.25;
       const l = C.layerOf(P.pos.y), room = C.roomAt(P.pos.x, P.pos.y, P.pos.z, 40);
       const name = room?.name || l?.name || null;

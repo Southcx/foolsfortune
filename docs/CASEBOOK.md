@@ -97,8 +97,26 @@ the rules before building in the same area; a rule a machine can check goes into
     struck from the feet takes only what stands within a body's height of them.
 41. **A move that follows a whole-body move ends that move's carrier.** Launch, left to run out its time, draws the old clip over the
     new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself.
+42. **Up is asked where it can differ.** A marker, a bob, a label of floors assumes world Y only where nothing else can be up; in the
+    Spirit Garden each planetoid has its own, so a source says its up and the reader stands along it.
 
 ## Cases
+
+### 2026-10-07 · In the Spirit Garden the chevron leaned off its planetoid, and the compass called the garden the upper floor (Calissa)
+- **Seen (Dovina's garden sweep, #4 and #8):** the chevron off the planetoid's heart by up to 52 degrees at the Chimney; "You enter
+  UPPER FLOOR." on entering the garden.
+- **Cause:** the chevron (vfx/chevron.js) stood and bobbed along world Y whatever the source; the wire compass (vfx/wirecompass.js) read
+  the workshop's floors at any height, and the garden sits above them.
+- **Fix:** a source may give its `up` (courier/interact.js passes it on) and the chevron stands and bobs along it; the compass says no
+  place while the realm is active. Petra's `realm.offer` is to pass the feature's normal.
+- **Rule:** 42.
+
+### 2026-10-07 · The Pneuka Jar was invisible in the Spirit Garden (Calissa)
+- **Seen (Dovina's garden sweep, #2):** after the god hand, the garden's Jar could not be seen; its scale read 0.001.
+- **Cause:** leaving the god hand leaves the Jar's group at scale 0.001; the hop (vfx/garden/jarhop.js) took the scale it found at
+  entry as its rest scale, so it squashed and stretched about nothing.
+- **Fix:** its rest scale is 1, never a reading of the moment. Measured headless: 0.89 / 1.27 / 0.89 mid-hop, visible.
+- **Rule:** 30.
 
 ### 2026-10-07 · The stress test stopped on a Dreamvane dash begun on a ledge (Calissa)
 - **Seen:** the quick gate, stress seed 1: `Cannot read properties of null (reading 'drive')` in `carryInto` (tools/toolbody.js), from the

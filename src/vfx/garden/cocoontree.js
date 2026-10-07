@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE COCOON TREE: where spirits are cocooned and merged (the owner, 2026-10-07: the full build, Round 4; docs/plans/SPIRIT-GARDEN.md
-// section 5: "set a spirit in the cocoon tree; set two together to merge", Jade Cocoon's way). It grows on the Spirit Grove, the oldest
+// section 5: "set a spirit in the cocoon tree; set two together to merge", Jade Cocoon's way). It grows on the Mulberry Grove, the oldest
 // thing in the garden, and its silk is the Lachryma's: what is wrapped in it is remade.
 //
 //   THE TREE     a great twisted trunk, roots gripping the planetoid, a broad low canopy; silk hanging in its boughs
@@ -8,7 +8,7 @@
 //                pod glows from within with the spirit's feeling, breathing slowly
 //   A MERGING    merge(i, j, k): two pods drawn toward each other along their threads, twining, the light passing between them in a
 //                braid, until (at 1) they are one pod with both their colours
-//   THE OPENING  open(i): the pod splits and its silk falls away in threads (the spirit is out: Petra's body there)
+//   THE SPLIT    open(i): the pod splits and its silk falls away in threads (the spirit is out: Petra's body there)
 //
 // Prior art: Jade Cocoon (the cocoon master, the merged child), the silk moth and the mulberry (sericulture, the oldest of China's
 // crafts), the world tree and the Bodhi tree (the old tree as the place of becoming), and Okami's guardian sapling.

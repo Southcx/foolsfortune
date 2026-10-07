@@ -8,17 +8,18 @@
 //   THE SKIN     coloured by height and by kind: soft grass over the top, a rocky underside with a few roots of stone hanging from it
 //                (it floats over the cloud sea), the colours lifted toward pastel, as Dual Hearts paints
 //   THE KINDS    dantian   the heart, 20 m: a lake of your own Lachryma at its crown in a ring of stones, the Pneuka Box's shed
-//                terraces  12 m: the herb terraces stepped round its crown, rows of spirit herbs on them
-//                furnace   10 m: basalt in columns, a vent at its crown glowing with the pill furnace's fire
-//                pavilions 14 m: pale paving over its crown, where the pavilions of echoes will stand
-//                grove     16 m: moss and round-crowned spirit trees (the cocoon tree is Round 4's)
-//                peak       8 m and tall: a needle of rock drawn up to a little platform, the meditation peak
+//                terraces  the Herb Terraces, 12 m: stepped round its crown, rows of spirit herbs on them
+//                furnace   the Athanor, 10 m: basalt in columns, a vent at its crown glowing with the athanor's fire
+//                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
+//                grove     the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
+//                peak      the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
 //
 // Prior art: Super Mario Galaxy's planetoids (a world you run round in seconds, a single readable shape each), Dual Hearts' floating
 // isles, the xianxia cave abode and its spirit fields (terraces, the pill furnace, the needle peak of a sect's mountain), and Animal
 // Crossing's soft, rounded toy-like ground.
 //
 //   const P = new Planetoid({ kind, radius, seed, surface })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
+//   P.reach (m: its farthest ground from the heart, kept with every sculpt; the Chimney's is 27.8 against its 8 m radius)
 //   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.tint(lakeHex)   P.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -80,6 +81,8 @@ export class Planetoid {
       const v = 0.94 + 0.06 * Math.sin(x * 31 + z * 17 + y * 23); C.setXYZ(i, _c4.r * v, _c4.g * v, _c4.b * v);
     }
     P.needsUpdate = true; C.needsUpdate = true; this.geo.computeVertexNormals(); this.geo.computeBoundingSphere();
+    let far = 0; for (let i = 0; i < this.h.length; i++) far = Math.max(far, this.base[i] + this.h[i]);
+    this.reach = R * far + 0.6; // (its farthest ground from the heart, its crown's platform and props over it: what a body or a ray must test out to)
   }
 
   /** Its surface's radius in a direction (local; normalised here). */
