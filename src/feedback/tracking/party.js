@@ -16,6 +16,12 @@ export function partyRules({ on, log }) {
   on('party.dismiss', (e) => log.say('info', `${nameOf(e.sibling)} goes home.`, { key: 'party.dismiss', win: 1, fmt: (n) => `${n} siblings go home.` }));
   on('party.refuse', (e) => log.say('warn', e.why === 'unmet' ? `You have not met ${nameOf(e.sibling)} yet.` : 'Your party is full: two siblings at once.', { key: 'party.refuse', throttle: 1 }));
   on('party.order', (e) => log.say('info', e.sibling ? `${nameOf(e.sibling)} will ${ORDER_LINE[e.order] || e.order}.` : `Your siblings ${ORDER_LINE[e.order] || e.order}.`, { key: `party.order.${e.sibling || 'all'}`, throttle: 0.5 }));
+  // the siblings in a fight (coop/fight.js): what they do for you is said; nothing of it is counted as yours, but a foe you struck that
+  // one of them finishes is yours (creature.credit: Dovina's ledger counts it)
+  const FOE = (k) => (k === 'slipjelly' ? 'the slip jelly' : k === 'clapperjar' ? 'the clapperjar' : 'it');
+  on('sibling.parry', (e) => log.say('battle', `${nameOf(e.sibling)} parries ${FOE(e.kind)}'s blow.`, { key: 'sib.parry', throttle: 3 }));
+  on('sibling.flash', (e) => log.say('battle', `${nameOf(e.sibling)} flashes ${FOE(e.kind)}.`, { key: 'sib.flash', throttle: 4 }));
+  on('creature.credit', (e) => log.say('battle', `${nameOf(e.who)} finishes what you struck.`, { key: 'sib.credit', throttle: 2 }));
   on('party.say', (e) => log.say('info', `${nameOf(e.sibling)}${e.near ? '' : ' (from afar)'}: ${e.line}`)); // (a division's own words, through the store: coop/channel.js)
   on('guest.join', (e) => log.say('info', `${e.guest} is here with you.`)); // (a guest over the room: coop/guests.js)
   on('guest.leave', (e) => log.say('info', `${e.guest} has gone.`));

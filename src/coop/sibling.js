@@ -17,6 +17,7 @@ import { Player } from '../courier/player.js';
 import { GROUPS } from '../core/physics.js';
 import { T } from '../core/config.js';
 import { Follow } from './follow.js';
+import { SiblingFight } from './fight.js';
 import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
 
 const SILENT = new Proxy({}, { get: () => () => {} }); // (every sound the body would make, made by no one)
@@ -47,7 +48,7 @@ export class Sibling {
     game.physics.register(B.collider, { type: 'sibling', sibling: this });
     this.rig = rig; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Sibling-${id}`;
     game.vessel?.dress(rig, { ...DEFAULT_LOOK, body: glaze, mask: glaze }, { own: true }); // (a placeholder glaze of its suit, on the Courier's own finish shaders: the look is Calissa's to give)
-    this.follow = new Follow(B, this.keys, { slot, of });
+    this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this);
     this.lastHeading = null; this.leader = null;
     B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
   }
@@ -61,7 +62,8 @@ export class Sibling {
   fixed(dt, ctx) {
     this.leader = ctx.leader;
     this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
-    this.follow.think(dt, { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to }); // (fight: until the minds can, close by: coop/follow.js)
+    const goal = this.fight.think(dt, { game: this.game, leader: ctx.leader, order: this.order }); // (something to fight: where to stand, coop/fight.js)
+    this.follow.think(dt, goal ? { ...ctx, order: 'go', to: goal } : { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to });
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
   }
@@ -80,7 +82,7 @@ export class Sibling {
       grounded: B.grounded, groundN: B.grounded ? B.groundNormal() : null, groundVel: B.groundVel,
       wall: B.wallBlend, slide: B.slideBlend, mantle: B.mantleBlend, mantleT: B.mantle ? B.mantle.t : 1, dash: B.dashBlend, crouch: B.crouchBlend,
       aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1,
-      walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: B.landed, techs: null,
+      walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: B.landed, techs: this.fight, // (the fight's blows: a layer, as a tech's)
     });
     B.landedOut = B.landed; B.landed = 0;
     this.keys.frame();
