@@ -4,10 +4,13 @@
 // strikes) and its STRINGS (which move follows which); the engine reads the presses, plays the moves, sweeps what each one hits
 // (melee.js), lands the blow, and carries the body through the moves that take it (courier/moves/launch.js, with the clip's own travel).
 // Built once (CLAUDE.md, "Built once"): the cutlass, the club, the pick, the bell, the flail, the book, the gun and the unarmed kick are
-// the same machine with different tables.
+// the same machine with different tables. What a move is WORTH is Dovina's (progress/combat/moves.js: its power a hit, its hits, the
+// real seconds before the next may begin, its cost, the status it puts on, its unlock as a ledger predicate): a move names its row
+// there (`rule`), and the row wins over the tool's own numbers; a locked move falls back to the string (a locked special refuses).
 //
 //   THE GRAMMAR (every tool the same; what a tool lacks it simply has not got)
-//     LMB                  the GROUND string: each press inside a move's chain window goes on to the next
+//     LMB                  the GROUND string: each press inside a move's chain window goes on to the next; at a string's last
+//                          blow, a press once its row's time is spent and its strike past cancels the recovery into a new opener
 //     LMB after a pause    the PAUSE string: pressed 0.25-0.8 s after a move ends, at the move the string branches from
 //     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow
 //     S + LMB (ground)     the LAUNCHER: it lifts them and what it strikes (`knock` upward: each creature decides what that means)
@@ -18,9 +21,9 @@
 //             lunge (m/s, a step in), root: 'xz'|'xyz' (a whole-body move's travel, read from its hips: casebook rule 19),
 //             gravity, plunge: { hold, speed } (falls from clip time `hold` until the ground, then plays on), ring (m: the landing's
 //             blast radius), cost, trail: [t0, t1], heat, arc ('r2l'|'l2r'|'over'|'raise': first person), kind (for the events) }
-//   THE EVENTS  the tool's own swing and hit events (`cut.swing {n, move}`, `cut.hit {what, combo, move}`), and for every move that is
-//               not the ground string `combo.move { tool, move, kind, by }`; an air string of two hits or more `combo.juggle { tool,
-//               hits, by }` (feedback/tracking/combo.js).
+//   THE EVENTS  the tool's own swing and hit events (`cut.swing {n, move, by}`, `cut.hit {what, combo, move, by}`); and Dovina's
+//               (feedback/tracking/moves.js): `move.launch { tool, by }` when a launcher lifts something, `move.air { tool, hits, by }`
+//               when an air string ends, `move.special { tool, special, by }` when a special is loosed.
 //
 // Prior art: Devil May Cry's grammar (the Launcher on back + attack, the air string and the Helm Breaker plunge, the pause combo),
 // Bayonetta's "Wicked Weave" strings (the same buttons, the rhythm of the presses choosing the branch), Kingdom Hearts' air combo
@@ -32,11 +35,15 @@
 //                                 onBegin(c), onAt(c) (once a move, at def.at or its strike's start), onUpdate(c, dt), onHit(...), onEnd(c) })
 //   strings.charge: { hold, release?, after? } (no release: letting go ends the hold; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
-//   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo
+//   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
+//   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
 import { measureSwing, sweep as sweepArc, magnet, targets } from './melee.js';
+import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
+
+const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
 
 const BUFFER = 0.35, PAUSE = [0.25, 0.8], RESET = 0.9, HOLD = 0.3, HANG = 0.12;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _e = new THREE.Vector3(), _f = new THREE.Vector3(), _k = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
@@ -68,6 +75,10 @@ export class Moveset {
   get playing() { return !!this.cur || (this.rec && this.rec.t < this.rec.dur); }
   get whole() { return !!this.cur && this.cur.def.body === 'whole'; }
   def(id) { return this.S.moves[id]; }
+  /** A move's row in Dovina's table (progress/combat/moves.js), or null. */
+  rule(def) { return (def?.rule && RULES[this.S.rules || this.id]?.[def.rule]) || null; }
+  /** Whether a move is open to the Courier (its row's unlock over the ledger; a move with no row always is). */
+  open(id) { const d = this.def(id); return !d?.rule || !this.rule(d) || unlocked(this.S.rules || this.id, d.rule, this.game.ledger); }
   /** The pause strings: [{ at: the ground move they branch from, to: [moves] }]. */
   branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; }
 
@@ -80,12 +91,15 @@ export class Moveset {
   update(dt, inp, { allow = true } = {}) {
     const P = this.P, S = this.S, st = S.strings;
     this.after += dt;
-    if (P.grounded) { if (this.airN && this.airHits >= 2) this.game.events?.emit('combo.juggle', { tool: this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; }
+    if (P.grounded) { if (this.airN && this.airHits >= 1) this.game.events?.emit('move.air', { tool: this.S.rules || this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; }
     if (this.rec) { this.rec.t += dt * (Math.hypot(P.vel.x, P.vel.z) > 2 ? 2.2 : 1); if (this.rec.t >= this.rec.dur) this.rec = null; }
     const B = S.button || 'Mouse0';
     if (inp.wasPressed(B)) this.buffer = BUFFER;
     this.buffer -= dt;
-    if (allow && st.special && inp.wasPressed(S.specialKey || 'KeyR') && (!this.cur || this.cur.def.body !== 'whole')) { this.begin(st.special, 'special'); return; }
+    if (allow && st.special && inp.wasPressed(S.specialKey || 'KeyR') && (!this.cur || this.cur.def.body !== 'whole')) {
+      if (this.open(st.special)) { this.begin(st.special, 'special'); return; }
+      sfx.fizzle?.(); this.game.log?.say('warn', 'You have not mastered that yet.', { key: 'move.locked', throttle: 3 }); // (a refusal at the point of use; Espada's words to come)
+    }
     const c = this.cur;
     if (!c) {
       if (this.after > RESET) { this.n = -1; this.str = 'ground'; }
@@ -105,10 +119,14 @@ export class Moveset {
     const at = c.def.at ?? c.def.track?.strike[0];
     if (at != null && c.tPrev < at && c.t >= at && c.phase !== 'fall') S.onAt?.(c);
     S.onUpdate?.(c, dt);
-    if (c.def.ringAt != null && c.tPrev < c.def.ringAt && c.t >= c.def.ringAt) this.ring(c.def.ring, c.def.hit);
+    if (c.def.ringAt != null && c.tPrev < c.def.ringAt && c.t >= c.def.ringAt) this.ring(this.rule(c.def)?.radius ?? c.def.ring, c.def.hit);
     // the next move: a press inside the chain window
-    const next = this.nextOf(c);
-    if (next && this.buffer > 0 && c.def.chain && c.t >= c.def.chain[0] && c.t <= c.def.chain[1]) { this.begin(next.id, next.kind, next.n); return; }
+    const next = this.nextOf(c), R = this.rule(c.def), soon = R?.time ?? 0;
+    c.age = (c.age || 0) + dt;
+    if (next && this.buffer > 0 && c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
+    // a string's last blow: its row's time spent and its strike past, a press cancels the recovery into a new opener (Devil May Cry's
+    // cancel: the string runs at its rows' rate, not its clips' length)
+    if (!next && R && this.buffer > 0 && (c.kind === 'ground' || c.kind === 'pause') && c.age >= soon && c.t > (c.def.track?.strike[1] ?? 0)) { this.opener(inp); if (this.cur !== c) return; }
     if (c.kind !== 'charge-hold' && c.phase !== 'fall' && c.t >= (c.def.to ?? this.dur(c.def))) this.finish(); // (the hold loops until let go)
   }
 
@@ -116,10 +134,9 @@ export class Moveset {
   opener(inp) {
     const P = this.P, st = this.S.strings, grounded = P.grounded;
     const speed = Math.hypot(P.vel.x, P.vel.z);
-    if (!grounded && st.air && this.airN < st.air.length && P.techs.active?.id !== 'swim') return this.begin(st.air[this.airN], 'air', this.airN);
-    if (!grounded) return;
-    if (st.launcher && inp.isDown('KeyS')) return this.begin(st.launcher, 'launcher');
-    if (st.dash && speed > 5.6) return this.begin(st.dash, 'dash');
+    if (!grounded && st.air && this.airN < st.air.length && P.techs.active?.id !== 'swim' && this.open(st.air[this.airN])) return this.begin(st.air[this.airN], 'air', this.airN);
+    if (st.launcher && grounded && inp.isDown('KeyS') && this.open(st.launcher)) return this.begin(st.launcher, 'launcher');
+    if (st.dash && grounded && speed > 5.6 && this.open(st.dash)) return this.begin(st.dash, 'dash');
     const g = st.ground || [];
     if (!g.length) return;
     const br = this.str === 'ground' && this.n >= 0 && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((b) => b.at === this.n);
@@ -136,7 +153,7 @@ export class Moveset {
     if (c.def.next) return { id: c.def.next, kind: c.kind === 'launcher' ? 'air' : c.kind, n: c.n + 1 };
     if (c.kind === 'ground' && st.ground && c.n + 1 < st.ground.length) return { id: st.ground[c.n + 1], kind: 'ground', n: c.n + 1 };
     if (c.kind === 'pause' && this.branch && c.n + 1 < this.branch.to.length) return { id: this.branch.to[c.n + 1], kind: 'pause', n: c.n + 1 };
-    if ((c.kind === 'air' || c.kind === 'launcher') && st.air) { const k = c.kind === 'launcher' ? 0 : c.n + 1; if (k < st.air.length && this.airN < st.air.length) return { id: st.air[k], kind: 'air', n: k }; }
+    if ((c.kind === 'air' || c.kind === 'launcher') && st.air) { const k = c.kind === 'launcher' ? 0 : c.n + 1; if (k < st.air.length && this.airN < st.air.length && this.open(st.air[k])) return { id: st.air[k], kind: 'air', n: k }; }
     return null;
   }
 
@@ -146,10 +163,11 @@ export class Moveset {
   begin(id, kind = 'ground', n = 0) {
     const def = this.def(id), g = this.game, P = this.P, ch = g.character;
     if (!def || !ch?.clips.clips[def.clip]) return false;
-    if (def.cost && !g.lachryma.spend(def.cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); return false; }
+    const R = this.rule(def), cost = R?.cost ?? def.cost;
+    if (cost && !g.lachryma.spend(cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); return false; }
     const prev = this.cur;
     if (prev && this.last) { (this.from ||= this.last.constructor ? new this.last.constructor(this.last.q.length / 4) : null)?.copy(this.last); this.fadeT = 0; } // (what was showing, held and faded out over the new move: no pop at a join)
-    if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) L.o.onEnd = null; }
+    if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (the whole-body move's launch ends: the core has the step again)
     if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false });
     this.hit.clear(); this.buffer = 0; this.rec = null;
@@ -171,7 +189,8 @@ export class Moveset {
     }
     sfx.slash?.(def.heat > 0.5);
     g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' });
-    if (kind !== 'ground' && kind !== 'charge-hold') g.events?.emit('combo.move', { tool: this.id, move: id, kind, by: 'courier' });
+    if (kind === 'special') g.events?.emit('move.special', { tool: this.S.rules || this.id, special: R?.id || id, by: 'courier' });
+    c.lifted = false;
     this.S.onBegin?.(c);
     return true;
   }
@@ -209,9 +228,8 @@ export class Moveset {
   land() {
     const c = this.cur, def = c.def, g = this.game, P = this.P;
     c.phase = 'play'; c.landed = true;
-    if (def.ring && def.ringAt == null) this.ring(def.ring, def.hit);
+    if (def.ring && def.ringAt == null) this.ring(this.rule(def)?.radius ?? def.ring, def.hit);
     P.landed = Math.max(P.landed || 0, 10);
-    g.events?.emit('combo.move', { tool: this.id, move: c.id, kind: 'plunge', by: 'courier' });
     const L = P.techs.get('launch'), rest = ((def.to ?? this.dur(def)) - c.t) / (def.rate || 1);
     if (L?.active && L.o?.tag === c.tag) { L.o.time = L.t + rest + 0.02; L.o.gravity = 1; }
   }
@@ -237,6 +255,8 @@ export class Moveset {
     const c = this.cur, def = c.def, g = this.game, P = this.P;
     if (!def.hit || c.phase === 'fall') return;
     let struck = 0;
+    const R = this.rule(def), n = R?.hits || 1;
+    if (n > 1 && def.track) { const [a, b] = def.track.strike, k = Math.floor(((c.t - a) / Math.max(1e-3, b - a)) * n); if (k > (c.part ?? 0) && k < n) { c.part = k; this.hit.clear(); } }
     sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev, c.t, { reach: this.S.reach ?? 0.6, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } });
     if (struck) this.impact(def.hit.dmg ?? 1, c);
   }
@@ -253,16 +273,24 @@ export class Moveset {
 
   /** One blow on one thing: its damage, its knock (the launcher's lift, the plunge's spike), its event. */
   blow(kind, ent, at, dir, h, c) {
-    const g = this.game, S = this.S, power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1), cause = h.cause || S.cause || 'sliced';
+    const g = this.game, S = this.S, R = this.rule(c?.def), charged = c?.kind === 'charge', cause = h.cause || S.cause || 'sliced';
+    const power = (h.power ?? 1) * (charged ? 1 + this.charge : 1), strike = R ? R.power * (charged ? 0.5 + 0.5 * this.charge : 1) : (S.k ?? 1.4) * power; // (the row's power is creatures.strike's own; the tool's k only for a move with no row)
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = h.lift ?? 0;
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', this.id);
     else if (kind === 'pot') g.breakables.damage(ent, (S.pot ?? 62) * (h.dmg ?? 1), at, dir, power);
-    else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); }
-    else if (kind === 'creature') { g.creatures.strike(ent, at, dir, (S.k ?? 1.4) * power, cause); if (h.lift || h.push) ent.knock?.(kv.clone()); }
+    else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); if (h.lift) this.lifted(c); }
+    else if (kind === 'creature') {
+      g.creatures.strike(ent, at, dir, strike, cause); if (h.lift || h.push) ent.knock?.(kv.clone());
+      if (R?.status && ent.alive) g.creatures.apply(ent, R.status, STATUS_DUR[R.status] ?? 1, 1, 'courier');
+      this.lifted(c);
+    }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
-    S.onHit?.(kind, ent, at, dir, h, c);
+    S.onHit?.(kind, ent, at, dir, h, c, R);
   }
+
+  /** A launcher's first lift of something: Dovina's count (move.launch opens the air string). */
+  lifted(c) { if (c?.kind !== 'launcher' || c.lifted) return; c.lifted = true; this.game.events?.emit('move.launch', { tool: this.S.rules || this.id, by: 'courier' }); }
 
   /** What a hit does to the world: the sound, the shake, the flash, and the stop. */
   impact(dmg, c) {

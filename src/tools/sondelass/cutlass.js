@@ -40,27 +40,27 @@ import { Moveset, rootOf } from '../moveset.js';
 // The strikes are the Courier's own suite (melee.glb's Sond_*), played by the shared combo engine (tools/moveset.js): the moves below
 // are its table. Clip seconds throughout; when the blade can hurt is not typed here: it is measured from the clip (melee.js).
 const MOVES = {
-  c1: { clip: 'Sond_Combo1', rate: 1.1, chain: [0.22, 0.75], to: 0.85, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 3.2, arc: 'r2l' },
-  c2: { clip: 'Sond_Combo2', rate: 1.1, chain: [0.26, 0.8], to: 0.9, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 3.2, arc: 'l2r' },
-  c3: { clip: 'Sond_Combo3', rate: 1.1, chain: [0.42, 0.95], to: 1.05, fade: 0.35, hit: { power: 1.5, dmg: 1.3 }, lunge: 3.6, arc: 'r2l' },
-  c4: { clip: 'Sond_Combo4', body: 'whole', root: 'xz', hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' },
+  c1: { rule: 'combo1', clip: 'Sond_Combo1', rate: 1.1, chain: [0.22, 0.75], to: 0.85, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 3.2, arc: 'r2l' },
+  c2: { rule: 'combo2', clip: 'Sond_Combo2', rate: 1.1, chain: [0.26, 0.8], to: 0.9, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 3.2, arc: 'l2r' },
+  c3: { rule: 'combo3', clip: 'Sond_Combo3', rate: 1.1, chain: [0.42, 0.95], to: 1.05, fade: 0.35, hit: { power: 1.5, dmg: 1.3 }, lunge: 3.6, arc: 'r2l' },
+  c4: { rule: 'combo4', clip: 'Sond_Combo4', body: 'whole', root: 'xz', hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' },
   // the pause strings: after the first stroke, a thrust and its follow; after the second, the three wide arcs (the JRPG string)
-  t1: { clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
-  t2: { clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'raise' },
-  j1: { clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.45, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
-  j2: { clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.6, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
-  j3: { clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
+  t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
+  t2: { rule: 'pause3', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'raise' },
+  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.45, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
+  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.6, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
+  j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
   // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes; LMB in the air: two cuts and the plunge
-  up: { clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 9.5, push: 1 }, arc: 'over' },
-  a1: { clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 4, push: 1.5 }, arc: 'r2l' },
-  a2: { clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], hit: { power: 1.3, dmg: 1.1, lift: 4, push: 2 }, arc: 'l2r', heat: 0.5 },
-  a3: { clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 7, lift: 5 }, heat: 1, arc: 'over' },
+  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 9.5, push: 1 }, arc: 'over' },
+  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 4, push: 1.5 }, arc: 'r2l' },
+  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], hit: { power: 1.3, dmg: 1.1, lift: 4, push: 2 }, arc: 'l2r', heat: 0.5 },
+  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 7, lift: 5 }, heat: 1, arc: 'over' },
   // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard, and the special (R)
-  dash: { clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
+  dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
   hold: { clip: 'Sond_ChargeHold' },
-  burst: { clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
-  spin: { clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
-  tide: { clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
+  burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
+  spin: { rule: 'combo3', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
+  tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
 };
 const STRINGS = { ground: ['c1', 'c2', 'c3', 'c4'], pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
