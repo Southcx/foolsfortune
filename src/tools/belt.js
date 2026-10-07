@@ -118,7 +118,7 @@ export class ToolBelt {
   /** Any tool but this one out, or asked for. */
   others(tool) { return this.tools.some((t) => t !== tool && (t.drawT > 0.02 || t.wants)); }
   /** May this tool come out yet? (every other one is back in its holster) */
-  mayDraw(tool) { return this.tools.every((t) => t === tool || t.drawT < 0.02); }
+  mayDraw(tool) { return !(tool.id !== 'psygun' && this.game.techs?.active?.oneHand) && this.tools.every((t) => t === tool || t.drawT < 0.02); } // (a tech that leaves one hand free, a walking climb, lets only the gun out: SWEEPS group 8)
   /** Ask for a tool: the others are put away first. */
   draw(tool) { for (const t of this.tools) if (t !== tool && (t.wants || t.drawT > 0)) t.stow(); }
   /** What the tool in the hands allows (true when nothing is out). */

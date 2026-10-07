@@ -48,7 +48,6 @@ export const FORMS = [
 const CSS = `
 #toolstrip { position: absolute; right: 24px; bottom: calc(20px + var(--cine, 0vh)); display: none; gap: 6px; align-items: flex-end; }
 #toolstrip.on { display: flex; }
-#toolstrip.on.godhidden { display: none; }
 #toolstrip .slot { width: 46px; height: 46px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.3); background: rgba(28,13,8,.45); border-radius: 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .7; }
 #toolstrip .slot i { font-style: normal; font-size: 16px; line-height: 1; }

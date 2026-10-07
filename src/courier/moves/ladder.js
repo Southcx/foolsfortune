@@ -26,6 +26,7 @@ export class Ladder extends Tech {
 
   get ladders() { return this.game.ladders; }
   get handsBusy() { return this.rushing; }
+  get oneHand() { return true; } // (a hand on the rungs: only the gun comes out, tools/belt.js mayDraw)
   /** How the aim layer behaves here: only the gun arm aims, and the torso hardly turns from the ladder. */
   get aim() { return { arm: 'R', turn: 0.3 }; }
 

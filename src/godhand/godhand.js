@@ -176,8 +176,8 @@ export class GodMode {
 
   enter() {
     const g = this.game, P = g.player, V = this.jar;
-    g.belt?.get('sondelass')?.cutlass?.blade?.exit('god'); // (no Blade Mode under the hand: its slow time made the hand take 24 real seconds to open, SWEEPS group 4)
-    document.getElementById('toolstrip')?.classList.add('godhidden'); // (the Sondelass's form strip is not over the hand's arts: SWEEPS group 6)
+    g.techs?.get('sondelass')?.cutlass?.blade?.exit('god'); // (no Blade Mode under the hand: its slow time made the hand take 24 real seconds to open, SWEEPS group 4; the tech's, not the belt's adapter)
+    document.getElementById('toolstrip')?.classList.remove('on'); // (the Sondelass's form strip is not over the hand's arts: its own tick, which puts it back, does not run under the hand, SWEEPS group 6)
     this.state = 'in'; this.active = true; this.t = 0;
     V.pos.copy(P.pos);
     V.group.position.copy(P.pos);
@@ -254,7 +254,6 @@ export class GodMode {
   /** Back to the psygun's HUD. */
   restoreUi() {
     const g = this.game;
-    document.getElementById('toolstrip')?.classList.remove('godhidden');
     g.hud.el.shells.style.display = '';
     this.arts.showBar(false);
     this.arts.tip.style.display = 'none';
