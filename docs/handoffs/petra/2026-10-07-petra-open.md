@@ -24,4 +24,6 @@
   at 0.4 of the sustained damage, the order wheel (T), pointing at what lies loose; Calissa's looks and Wanda's body sounds and footsteps. **Still to build:** the tools in their hands (Calissa's
   models; Dovina's coffin, Espada's dowsing of Lachryma), the god hand's art wheel onto feedback/wheel.js, siblings that can be struck and shatter, the
   guests' shared errand (the Dunemaw run, host-owned; waits on the room).
-
+- **v104 is built and on main but not published** (65d841a): the publish, same shape as v103's (no `capabilities`), was refused as a
+  permission grant; it waits on the owner. The build id is `__BUILD__` (`grep -o '"mu[a-z0-9]\{6\}"' dist/assets/game.js`: v104 is
+  `muy28j0g`); `mux...` was a base64 match, so the tracker's round record (`muxawr2q` at v103) is wrong and is set right at the next publish.
