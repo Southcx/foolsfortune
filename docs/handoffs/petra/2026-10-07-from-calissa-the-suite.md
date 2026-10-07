@@ -5,11 +5,19 @@ busking words). Your files carry most of it. Every crossing is listed below for 
 yourself.
 
 **For publishing (needed, or the game does not boot):** three files now sit beside the bundle and are fetched, not inlined:
-- `dist/assets/core-*.bin` (1.9 MB, at boot: only the 114 clips the code names; `node scripts/bake_suite.mjs --check` says whether it
+- `dist/assets/core-*.bin` (2.65 MB, at boot: only the 155 clips the code names; `node scripts/bake_suite.mjs --check` says whether it
   is current);
-- `social-*.bin` (6.5 MB, on first use of an emote, the workbench or the ROM learner);
+- `social-*.bin` (5.80 MB, on the first emote, the overture's wave, the workbench or the ROM learner);
 - `chess-*.bin` (0.4 MB, the title's pieces, fetched on its first frame and let go when it ends).
 All three are application/octet-stream. game.js is unchanged in size.
+
+**The gate at ce5c63c** (main a7eb1f1 and Dovina's d1df291 merged in): check, unbuilt, build, stress 1 and 2 (`--party`), the Dunemaw
+playtest (8/8), replay (exact), QAIS and contracts (22/22) all pass. Perf fails one line, the heap: **337 MB against the 330 budget**.
+Main itself measures **332** under the same perf script today, so it is over too, since the 324 baseline (dbbc8c9). Measured side by side
+on built bundles, the suite costs 2 to 3 MB: 2.5 MB at boot, 2 to 3 MB after perf's tour, 5 MB in perf's own reading. Most of it is the
+boot pack kept for lazy decoding (2.65 MB). Decoded clips are 1.4 MB after the tour (37 of 244). Boot is 26.7 s against 31.8, and the same
+side by side. The budget is yours to rule on. If it holds at 330, the next cut I'd make is to fetch the held tools' moves (about 100 of
+core.bin's 155 clips) when the first tool is drawn.
 
 **What others meet**
 - `game.clipPack` (the pack; `.social` is a promise for the rest). 51 bones now: spine005 sits between spine004 and head (parent
