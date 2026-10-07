@@ -696,7 +696,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **the busking body** (`src/courier/moves/rhythmhold.js`): the Courier playing it, the Crucibelle kept in hand: a **gesture** on each judged
   press (the lane's note), the **jam** (a groove of the whole body) while a rhythm combo runs at ten or more, the fever's peak at every
   twenty-fifth note.
-- **gesture** (`Gestures`, `src/tools/heldclips.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
+- **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
   played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).

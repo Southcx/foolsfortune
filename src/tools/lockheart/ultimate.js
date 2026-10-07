@@ -27,7 +27,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../../courier/moves/techs.js';
-import { Gestures, Crossfade } from '../heldclips.js';
+import { Gestures, Crossfade } from '../toolbody.js';
 import { buildThing } from '../../pneuka/thingmodels.js';
 import { degreeColor } from '../../music/tone.js';
 import { sfx } from '../../audio/sfx.js';

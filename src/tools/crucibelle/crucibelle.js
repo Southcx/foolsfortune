@@ -35,7 +35,7 @@ import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
 import { MOVES as RULES, unlocked } from '../../progress/combat/moves.js';
-import { Gestures, Crossfade, standLegs } from '../heldclips.js';
+import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { Track } from '../../courier/anim/animator.js';
 import { T } from '../../core/config.js';
 import { CrucibelleModel } from './model.js';
@@ -289,7 +289,7 @@ export class Crucibelle extends HeldTool {
 
   // ---------------------------------------------------------------- animation
   /** The upper body's layer: the bell's idle (the suite's Bell_Idle), a gesture over it, the toll string's moves over that; every change
-   *  of what plays crossfaded (tools/heldclips.js); the legs the clip's while they stand to play. At a busker's mat the rhythm mode's
+   *  of what plays crossfaded (tools/toolbody.js); the legs the clip's while they stand to play. At a busker's mat the rhythm mode's
    *  busking body takes over (courier/moves/rhythmhold.js), this layer stepping aside as it comes in. */
   animate(ch, base, dt) {
     const C = ch.clips, P = this.P;

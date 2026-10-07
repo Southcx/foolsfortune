@@ -322,21 +322,21 @@ export class Dreamvane extends HeldTool {
     }
     const layerW = this.w * smooth(T.weapon.drawGrab, 1, this.drawT) * (1 - this.mgr.override);
     const a = this.pose(C, this.P2);
-    if (layerW <= 0.001) { this.xf.skip(); this.xfLegs.skip(); return; }
+    if (layerW <= 0.001) { this.xf.reset(); this.xfLegs.reset(); return; }
     const moving = P.grounded && Math.hypot(P.vel.x, P.vel.z) > 1.2;
     const want = C.clips[CARRY] && moving && !a && !this.dowsing ? CARRY : this.idleClip;
     if (this.track.cur !== want) this.track.play(want, 0, 0.3);
     this.track.update(dt);
     const layer = this.track.sample(this.P1);
     if (a) C.blend(layer, a.pose, a.w);
-    this.xf.apply(C, layer, this.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
+    this.xf.keyed(layer, this.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
     this.freeW = THREE.MathUtils.damp(this.freeW, want === CARRY ? 1 : 0, 8, dt);
     for (const i of this.leftArm) this.mask[i] = ch.MASK_UPPER[i] * (1 - this.freeW);
     C.blend(base, layer, layerW, this.mask, 0);
     this.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
     const lg = this.legClip;
-    standLegs(ch, base, P, lg?.clip, lg?.t ?? 0, layerW, this.legState, dt, !!lg?.loop);
-    this.xfLegs.apply(C, base, this.playKey || 'stand', dt, this.lower, legsW(this.moves, this.legState) * layerW); // (the legs and hips through a join, too)
+    standLegs(ch, P, base, lg?.clip ?? null, layerW, this.legState, dt, { t: lg?.t ?? 0, loop: !!lg?.loop });
+    this.xfLegs.keyed(base, this.playKey || 'stand', dt, this.lower, legsW(this.moves, this.legState) * layerW); // (the legs and hips through a join, too)
   }
 
   /** What plays over the stance: a blow (the engine), the throw, the catch, the survey, the dowse. */

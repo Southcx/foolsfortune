@@ -46,7 +46,7 @@ import { measureGrip } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { hipMirror, mirrorSide } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
-import { Gestures, Crossfade, standLegs } from '../heldclips.js';
+import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { unwrite, inscribed } from '../soulbrush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 
@@ -299,7 +299,7 @@ export class Veritome extends Tech {
   // ---------------------------------------------------------------- animation and the hands
   /** The upper body's layer: the book held open (Tome_Idle; the pages turned, Tome_FlipPages, while a mind is reprogrammed), lifted to
    *  the eye for the lens (Tome_LensRaise, held up while it is), a gesture (the Flash, the shutter, the survey), the bash over that;
-   *  every change crossfaded (tools/heldclips.js), the legs the clip's while they stand. */
+   *  every change crossfaded (tools/toolbody.js), the legs the clip's while they stand. */
   animate(ch, base, dt) {
     const C = ch.clips, P = this.P;
     if (!this.track) {

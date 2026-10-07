@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from './techs.js';
-import { Gestures, Crossfade } from '../../tools/heldclips.js';
+import { Gestures, Crossfade } from '../../tools/toolbody.js';
 
 const JAM_AT = 10, PEAK_EVERY = 25;
 

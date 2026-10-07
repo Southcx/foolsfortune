@@ -264,20 +264,20 @@ export class SoulBrush extends Tech {
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.slideW);
     const cl = this.club.pose(C, this.P2, dt); // (its clocks run on while the layer is away)
-    if (layerW <= 0.001) { this.xf.skip(); this.xfLegs.skip(); return; }
+    if (layerW <= 0.001) { this.xf.reset(); this.xfLegs.reset(); return; }
     const tr = this.track;
     tr.update(dt);
     const layer = tr.sample(this.P1);
     if (cl) C.blend(layer, cl.pose, cl.w);
-    this.xf.apply(C, layer, this.club.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
+    this.xf.keyed(layer, this.club.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
     // moving with nothing playing, the free hand comes off the hip and swings with their run
     this.freeW = THREE.MathUtils.damp(this.freeW, !cl && !this.club.playing && P.grounded && Math.hypot(P.vel.x, P.vel.z) > 1.2 ? 1 : 0, 8, dt);
     for (const i of this.leftArm) this.mask[i] = ch.MASK_UPPER[i] * (1 - this.freeW);
     C.blend(base, layer, layerW, this.mask, 0);
     this.club.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
     const lg = this.club.legs;
-    standLegs(ch, base, P, lg?.clip, lg?.t ?? 0, layerW, this.legState, dt, !!lg?.loop);
-    this.xfLegs.apply(C, base, this.club.playKey || 'stand', dt, this.lower, legsW(this.club.moves, this.legState) * layerW); // (the legs and hips through a join, too)
+    standLegs(ch, P, base, lg?.clip ?? null, layerW, this.legState, dt, { t: lg?.t ?? 0, loop: !!lg?.loop });
+    this.xfLegs.keyed(base, this.club.playKey || 'stand', dt, this.lower, legsW(this.club.moves, this.legState) * layerW); // (the legs and hips through a join, too)
   }
 
   // ---------------------------------------------------------------- hands: the draw, the brush on the ground in a slide, the hair

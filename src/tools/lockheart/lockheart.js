@@ -34,7 +34,7 @@ import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
 import { measureSwing } from '../melee.js';
-import { Gestures, Crossfade, standLegs } from '../heldclips.js';
+import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { Track } from '../../courier/anim/animator.js';
 import { T } from '../../core/config.js';
 import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
@@ -347,7 +347,7 @@ export class Lockheart extends HeldTool {
 
   // ---------------------------------------------------------------- animation
   /** The upper body's layer: the coffin held (Lock_Idle), braced and drawing while it hoovers (Lock_Hoover), a gesture (Lock_Open), the
-   *  flail's blows over that; every change crossfaded (tools/heldclips.js), the legs the clip's while they stand (the hoover's brace). */
+   *  flail's blows over that; every change crossfaded (tools/toolbody.js), the legs the clip's while they stand (the hoover's brace). */
   animate(ch, base, dt) {
     const C = ch.clips, P = this.P;
     if (!this.track) {
