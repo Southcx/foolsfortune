@@ -69,8 +69,9 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
   frame); the basement hub's help is said inside the Dunemaw (`inBasement()` is `y < -2`).
 - A finished lap circuit names keys that do nothing ("R to run it again · H hub", `circuits.js:220`).
 - The Sondelass's form strip stays over the god hand's arts (`#toolstrip`: hide it in `GodHand.enter()`).
-- **Asked of the owner:** the course banner (`#course`) and the lap circuit's panel (`#circuit`) are text on the screen while running.
-  CLAUDE.md says the log is the only text feedback. Keep them as the basement's timing instruments, or move them to the log?
+- **The owner's ruling (2026-10-07):** the course banner (`#course`) and the lap circuit's panel (`#circuit`) stay as they are, the
+  basement's timing instruments: an exception to "the log is the only text", for those two only. The bug above stands: the banner
+  must still go when the run ends and never show outside the basement.
 
 ### 7. The Great Dunemaw (Petra, Calissa, Dovina)
 - **The fight's cosmetics are counted but never given** (Dovina's to define, below): the five drops of `greatjelly.js` `DROPS` must

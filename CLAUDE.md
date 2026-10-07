@@ -41,7 +41,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   building in the same area.
 
 ## Feedback
-- **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed. A
+- **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed (one exception, the owner's: the basement's
+  course timer and lap circuit panel, while a run is on). A
   feature emits an event (`game.events.emit`) and gets a rule in `tracking.js` (or `feedback/tracking/*.js`); a refusal at the point of
   use may `log.say` with a `throttle`. Payloads never use `name` or `t` (the bus writes its own).
 - **Marks in the world are not text**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
