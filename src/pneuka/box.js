@@ -21,7 +21,7 @@
 //
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
 //   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
-//   box.wear(slot) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn)
+//   box.wear(slot) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn, a small bottle worn half full)
 //   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
@@ -29,6 +29,7 @@ import { itemOf, ITEMS } from './items.js';
 import { CARD } from '../tools/veritome/cards.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { sfx } from '../audio/sfx.js';
+import { BOTTLES } from '../progress/brushload.js';
 
 export const SLOTS = 56; // (the owner, 2026-10-07: 56 by default, twice OSRS's 28)
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
@@ -268,6 +269,9 @@ export class PneukaBox {
     // (for the tools after the first four: the three instruments and a handful of keys to begin with; the Gambler's and the Shepherd's
     // coffins and the INVERTED key are bought from Raku or found, so a first opening is never a bought jackpot: docs/DESIGN.md, section 8, proposal 2)
     for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even', 'mat.film']) this.add(id, 'start');
+    // (a small Lachrymato Bottle on the upper back, half full: the Soul Brush paints from it and it feeds the pool below half at once;
+    // the medium and the large are Grog's to sell. Dovina's ask for the owner, 2026-10-07)
+    if (!this.fit.bottle.length && !this.held('bottle.small')) { this.fit.bottle.push('bottle.small'); this.uses.bottle.push(BOTTLES['bottle.small'].capacity / 2); }
     this.save();
   }
   /** Every tool is somewhere, once: worn, or held (the box, the ground, the Book). One that is neither (a save from before a fix, a belt
@@ -286,7 +290,7 @@ export class PneukaBox {
   }
   /** DEBUG, the sandbox (title/ui.js): the whole kit, whatever STORY holds back (both coffins, a few of every key), topped up each time. */
   debugKit() {
-    const want = { 'heart.gambler': 1, 'heart.shepherd': 1, 'heart.summoning': 1 }; // (Dovina's: the Warden's, the catch)
+    const want = { 'heart.gambler': 1, 'heart.shepherd': 1, 'heart.summoning': 1, 'bottle.small': 1, 'bottle.medium': 1, 'bottle.large': 1 }; // (Dovina's: the Warden's, the catch; a bottle of each size)
     for (const id of Object.keys(ITEMS)) if (ITEMS[id].kind === 'key') want[id] = 3;
     for (const [id, n] of Object.entries(want)) for (let k = this.held(id); k < n; k++) { if (!this.room(id)) return; this.add(id, 'debug'); } // (never onto the floor)
   }
