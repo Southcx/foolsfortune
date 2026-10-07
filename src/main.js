@@ -1109,6 +1109,7 @@ async function main() {
         walkSpeed: T.movement.walkSpeed,
         sprintSpeed: T.movement.sprintSpeed,
         recoil: weapon.kick * held,
+        gun: weapon, // (the psygun's moves and the suite's Gun_* over the aim: tools/psygun/gunmoves.js)
         adsT: weapon.adsEase,
         landed: player.landedOut,
         techs: player.techs,

@@ -19,6 +19,7 @@ import { brushRules } from './brush.js';
 import { partyRules } from './party.js';
 import { comboRules } from './combo.js';
 import { skiffRules } from './skiff.js';
+import { blowRules } from './blows.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -35,4 +36,5 @@ export function areaRules(ctx) {
   partyRules(ctx); // (the siblings: coop/party.js)
   comboRules(ctx); // (the combo engine's launchers, air strings, plunges and specials: tools/moveset.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
+  blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
 }
