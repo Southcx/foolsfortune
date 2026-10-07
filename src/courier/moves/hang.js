@@ -1,3 +1,8 @@
+// Hanging: a body move (always yours). Airborne beside a ledge just above mantle height, or
+// under an overhead bar, and you catch it with both hands and hang. A / D shimmy along a ledge
+// (W / S go hand over hand along a bar); W pulls up onto a ledge; C or S lets go; Space kicks off
+// (a bar: swings you out along it). A slanted cable is a zipline: it takes you down, hanging. Hanging leaves a hand free: the gun stays out and you can
+// aim and fire one-handed while you hang.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,11 +10,6 @@ import { T } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
 import { HANG } from '../anim/authored.js';
 
-// Hanging: a body move (always yours). Airborne beside a ledge just above mantle height, or
-// under an overhead bar, and you catch it with both hands and hang. A / D shimmy along a ledge
-// (W / S go hand over hand along a bar); W pulls up onto a ledge; C or S lets go; Space kicks off
-// (a bar: swings you out along it). A slanted cable is a zipline: it takes you down, hanging. Hanging leaves a hand free: the gun stays out and you can
-// aim and fire one-handed while you hang.
 const UP = new THREE.Vector3(0, 1, 0);
 const DROP = HANG.drop; // feet this far below the grip (the authored hang clips are built for it)
 const CAPSULE_WALL = 0.34; // the capsule hangs this far from the ledge's face; the body is drawn HANG.wall from it

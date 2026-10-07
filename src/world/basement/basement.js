@@ -1,17 +1,3 @@
-import { SIEGE_SPAWN, inSiege } from './siege.js';
-import { WEIR_SPAWN, inWeir } from '../../tools/sondelass/angling/weir.js';
-import * as THREE from 'three';
-import { PALETTE, T } from '../../core/config.js';
-import { sfx } from '../../audio/sfx.js';
-import { FONT } from '../../ui/theme.js';
-import { TECH_CPS, TECH_PITS } from './techwing.js';
-import { MILL_CPS, MILL_PITS } from './mill.js';
-import { IndexMenu } from '../../feedback/indexmenu.js';
-import { addOutline } from '../../render/outline.js';
-import { RAPIER, GROUPS } from '../../core/physics.js';
-import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
-import { TR } from '../testroom/layout.js';
-
 // ---------------------------------------------------------------------------
 // The basement: a movement lab under the workshop, hub-and-spoke.
 //
@@ -43,6 +29,20 @@ import { TR } from '../testroom/layout.js';
 // Distances are sized at ~85% of what the controller measured at default
 // tuning (see RUBRIC), so a clean human input makes them.
 // ---------------------------------------------------------------------------
+import { SIEGE_SPAWN, inSiege } from './siege.js';
+import { WEIR_SPAWN, inWeir } from '../../tools/sondelass/angling/weir.js';
+import * as THREE from 'three';
+import { PALETTE, T } from '../../core/config.js';
+import { sfx } from '../../audio/sfx.js';
+import { FONT } from '../../ui/theme.js';
+import { TECH_CPS, TECH_PITS } from './techwing.js';
+import { MILL_CPS, MILL_PITS } from './mill.js';
+import { IndexMenu } from '../../feedback/indexmenu.js';
+import { addOutline } from '../../render/outline.js';
+import { RAPIER, GROUPS } from '../../core/physics.js';
+import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
+import { TR } from '../testroom/layout.js';
+
 
 export const BASE_Y = -14;
 export const HOLE = { x0: 4.5, x1: 9, z0: -15.5, z1: -12.4 }; // ground-floor hole, runs to the south wall

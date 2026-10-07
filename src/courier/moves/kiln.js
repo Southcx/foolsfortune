@@ -1,6 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-
 // ---------------------------------------------------------------------------
 // THE KILN STATION (a tech that holds the body while they are dressed, as talking does): F at the mouth of the workshop's kiln opens the
 // station (courier/vessel/kilnui.js: the glazes, the preview, the firing). The Courier stands in the kiln's light and puts away what was in them
@@ -11,6 +8,9 @@ import { Tech } from './techs.js';
 // Prior art: the character-edit turntable of the PS2 era (Soul Calibur II's, Dark Cloud 2's), FFXIV's glamour dresser camera, and
 // Animal Crossing's fitting room.
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+
 export const KILN_AT = new THREE.Vector3(0, 0, 8.4); // (in front of the kiln's mouth, in the workshop: level.js)
 // where they stand to be dressed (in the kiln's mouth, between the plate stands, its glow behind them), and the lens: a little above
 // them, over the plate on its stand in front of the kiln

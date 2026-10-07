@@ -1,5 +1,3 @@
-import { V3, lerp, smooth } from '../anim/authoring.js';
-
 // ---------------------------------------------------------------------------------------
 // THE SKIFF RIDER'S OWN ANIMATIONS. Nothing in the free libraries stands a body sideways on a sailing
 // board (UAL and CMU have no sailing, surfing or skiff clips; the nearest, a crouch and a slide, read as
@@ -20,6 +18,8 @@ import { V3, lerp, smooth } from '../anim/authoring.js';
 //   skiffCrouch  the springs charging for a hop, and the landing
 //   skiffAir     the air: feet stay on the deck, knees bent
 // ---------------------------------------------------------------------------------------
+import { V3, lerp, smooth } from '../anim/authoring.js';
+
 export function authorSkiff(A, ch) {
   const ah = ch.ankleRest;
   /** One key pose. o: crouch (m, hips down), lean (deg, back), twist, look (deg toward the bow), wide, lift (m, both feet), hl / hr (palm positions). */

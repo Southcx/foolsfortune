@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from '../../courier/moves/techs.js';
-import { T } from '../../core/config.js';
-import { sfx } from '../../audio/sfx.js';
-
 // ---------------------------------------------------------------------------------------
 // THE GRAPPLE: what the Courier does on the end of the Sondelass's line once the grapnel has bitten into something solid (the line,
 // its length and the reel are the hook's: tools/sondelass/hookshot.js; this is the body). It replaces the old Zip, which took the Courier to
@@ -25,6 +20,11 @@ import { sfx } from '../../audio/sfx.js';
 // takes the speed it takes). While they are on the ground with slack in the line the core movement runs as normal and this tech is idle.
 // The hang and the swing are the CC0 hang-from-a-bar clip (the zipline's), leaned into the speed; the free hand closes on the line.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { Tech } from '../../courier/moves/techs.js';
+import { T } from '../../core/config.js';
+import { sfx } from '../../audio/sfx.js';
+
 const UP = new THREE.Vector3(0, 1, 0);
 const _c = new THREE.Vector3(), _v = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _w = new THREE.Vector3(), _p = new THREE.Vector3();
 const CHEST = 0.9;

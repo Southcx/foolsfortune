@@ -1,3 +1,7 @@
+// Blink (E): a near-instant dodge. The body flashes a few metres along the move
+// keys (or the view, with no keys held), sliding along anything in the way, and
+// leaves an afterimage behind. Momentum comes out the other side pointed where you
+// blinked, so it's a redirect as much as a dodge. Charges recharge on a timer.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,10 +9,6 @@ import { PALETTE } from '../../core/config.js';
 import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('courier/moves/blink'); // (the simulation's chance: core/rng.js, the same twice)
 
-// Blink (E): a near-instant dodge. The body flashes a few metres along the move
-// keys (or the view, with no keys held), sliding along anything in the way, and
-// leaves an afterimage behind. Momentum comes out the other side pointed where you
-// blinked, so it's a redirect as much as a dodge. Charges recharge on a timer.
 const ghostMat = () => new THREE.MeshBasicMaterial({ color: PALETTE.pale, transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending });
 
 export class Blink extends Tech {

@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------------------
+// THE IDLE ACTS: what a clapperjar does with itself when nothing is happening, so that it is not forever running somewhere. Each is a
+// few seconds of one small, slow thing, laid over the idle clip on the same bones the other layers use, eased in and out: it breathes,
+// looks about, yawns, scratches its side, hums and sways, sits down, gazes up at the sky, polishes its lid, shuffles round to face a
+// new way. Each jar has a TEMPER (0 lively, 1 calm): how often it stays rather than runs, and how slowly it does what it does.
+// Prior art: Animal Crossing's villagers (most of their day is small idle business: a stretch, a yawn, a look round, humming), the
+// idle breaks of character animation (an idle loop broken now and then by a one-off: Overwatch's and Street Fighter's idle variants),
+// and The Sims' fidgets (chosen at random, weighted by personality).
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
@@ -10,15 +19,6 @@ import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { stream, randDir } from '../core/rng.js';
 const simRand = stream('creatures/clappers'); // (the simulation's chance: core/rng.js, the same twice)
 
-// ---------------------------------------------------------------------------------------
-// THE IDLE ACTS: what a clapperjar does with itself when nothing is happening, so that it is not forever running somewhere. Each is a
-// few seconds of one small, slow thing, laid over the idle clip on the same bones the other layers use, eased in and out: it breathes,
-// looks about, yawns, scratches its side, hums and sways, sits down, gazes up at the sky, polishes its lid, shuffles round to face a
-// new way. Each jar has a TEMPER (0 lively, 1 calm): how often it stays rather than runs, and how slowly it does what it does.
-// Prior art: Animal Crossing's villagers (most of their day is small idle business: a stretch, a yawn, a look round, humming), the
-// idle breaks of character animation (an idle loop broken now and then by a one-off: Overwatch's and Street Fighter's idle variants),
-// and The Sims' fidgets (chosen at random, weighted by personality).
-// ---------------------------------------------------------------------------------------
 const ACTS = {
   breathe: { w: 3, dur: [4, 7] }, lookabout: { w: 3, dur: [4, 6] }, yawn: { w: 1.2, dur: [2.6, 3.4] }, scratch: { w: 1.5, dur: [2.5, 4] },
   hum: { w: 1.6, dur: [4, 7] }, sit: { w: 1.4, dur: [6, 11] }, gaze: { w: 1.2, dur: [3.5, 6] }, polish: { w: 1, dur: [2.5, 4] }, shuffle: { w: 1.2, dur: [2, 3] },

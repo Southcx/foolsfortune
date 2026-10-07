@@ -1,11 +1,3 @@
-import * as THREE from 'three';
-import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
-import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
-import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/props/movers'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------
 // Moving ground: the clockwork the mill is made of.
 //
@@ -24,6 +16,14 @@ const simRand = stream('world/props/movers'); // (the simulation's chance: core/
 // Rendering interpolates between the last two poses with the same alpha the player uses,
 // so riders don't shimmer against the platform.
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';
+import { PALETTE } from '../../core/config.js';
+import { addOutline } from '../../render/outline.js';
+import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/movers'); // (the simulation's chance: core/rng.js, the same twice)
+
 
 export const BRASS = 0xb98a3f;
 export const STONE = 0xc9b8a4;

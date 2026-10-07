@@ -1,16 +1,3 @@
-import * as THREE from 'three';
-import { HeldTool } from '../heldtool.js';
-import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
-import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './table.js';
-import { catchFactor } from '../../progress/combat/emo.js';
-import { deckDraw } from '../../progress/econ/deck.js';
-import { OUTCOME_FX } from './outcomes.js';
-import { Wheel } from './wheel.js';
-import { addOutline } from '../../render/outline.js';
-import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // THE LOCKHEART: the seventh of the Courier's psychic tools. A little coffin on a chain, worn at the neck (the one place there is: so
 // they start with it on). It is weaponised luck.
@@ -36,6 +23,19 @@ const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance
 // Balatro's stacking modifiers, the reliquary and the mourning locket (a coffin on a chain that holds what is left of something), and
 // Persona's and Fire Emblem's "luck" as a number that is spent.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { HeldTool } from '../heldtool.js';
+import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
+import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './table.js';
+import { catchFactor } from '../../progress/combat/emo.js';
+import { deckDraw } from '../../progress/econ/deck.js';
+import { OUTCOME_FX } from './outcomes.js';
+import { Wheel } from './wheel.js';
+import { addOutline } from '../../render/outline.js';
+import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
+
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
 const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4, CATCH_REACH = 8;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();

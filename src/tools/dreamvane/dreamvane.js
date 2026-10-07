@@ -1,11 +1,3 @@
-import { VaneMeter } from '../../vfx/vanemeter.js';
-import * as THREE from 'three';
-import { HeldTool } from '../heldtool.js';
-import { DreamvaneModel, FORK as FORK_SIZE } from './model.js';
-import { measureSwing, sweep, magnet } from '../melee.js';
-import { G, groups } from '../../core/physics.js';
-import { sfx } from '../../audio/sfx.js';
-
 // ---------------------------------------------------------------------------------------
 // THE DREAMVANE: the fifth of the Courier's psychic tools. A shepherd's crook with a dreamcatcher hung in it, a pick across it and a
 // tuning fork in its heel (tools/dreamvane/model.js), worn across the back and held in both hands. It is a TRACKER first: it hears Lachryma
@@ -33,6 +25,14 @@ import { sfx } from '../../audio/sfx.js';
 // pickaxe of every mining game (Minecraft, Deep Rock Galactic), God of War's Leviathan Axe (thrown, stuck, recalled), and the tuning
 // fork itself (struck, it sets what it touches ringing at its pitch).
 // ---------------------------------------------------------------------------------------
+import { VaneMeter } from '../../vfx/vanemeter.js';
+import * as THREE from 'three';
+import { HeldTool } from '../heldtool.js';
+import { DreamvaneModel, FORK as FORK_SIZE } from './model.js';
+import { measureSwing, sweep, magnet } from '../melee.js';
+import { G, groups } from '../../core/physics.js';
+import { sfx } from '../../audio/sfx.js';
+
 const PICK = { clip: 'swordC', from: 0.25, to: 1.3 }; // (UAL Sword_Regular_C: the overhead brought down to the ground, measured: its strike 0.6-0.7 s)
 const SURVEY = { clip: 'swordC', from: 0.45, strike: 0.32, dur: 0.75 }; // (the heel struck down: the pick's downstroke for now)
 const TAP = 0.16, RANGE = 70, FORK = { speed: 34, gravity: 6, ring: 7, back: 28, reach: 60, life: 2.2 };

@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
-
 // ---------------------------------------------------------------------------------------
 // THE SKIFF: the Solar Skiff's body. A small hovering boat with a lug sail, after the King of Red
 // Lions in The Wind Waker: a hull with a raised, curled prow and a figurehead, one mast, a yellow
@@ -23,6 +19,10 @@ import { addOutline } from '../../render/outline.js';
 //   skiff.set({ sail, side, fill, boom, glow, t })      // per frame: what the sail is doing
 //   skiff.group.position / .quaternion                  // where it is
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { addOutline } from '../../render/outline.js';
+
 export const SKIFF = {
   half: 1.3, beam: 0.46, deck: 0.04, // half length, half width, height of the deck surface over the origin
   mast: { z: 0.45, h: 4.4 },

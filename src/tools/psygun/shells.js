@@ -1,3 +1,13 @@
+// ---------------------------------------------------------------------------
+// Shells: special rounds for the psygun, fired with F / middle mouse.
+//   slicer  – THE CLEAVE: a line of light that flies out level (or upright: press 1 again) and cuts everything it passes through
+//   push    – a cone of force from the muzzle
+//   well    – a lobbed singularity that drags everything in, then pops
+//   mark    – stuns critters and marks things (marked things drop Lachryma)
+//   bomb    – a lobbed clay grenade: splash damage, molten slip, hot pool
+//   ricochet, homing – see specials.js
+//   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
+// ---------------------------------------------------------------------------
 import { PSYGUNS, DEFAULT_PSYGUN, capacityOf, typeNo } from './kinds.js';
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -11,16 +21,6 @@ import { hasTag, registered } from '../../core/tags.js';
 import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/psygun/shells'); // (the simulation's chance: core/rng.js, the same twice)
 
-// ---------------------------------------------------------------------------
-// Shells: special rounds for the psygun, fired with F / middle mouse.
-//   slicer  – THE CLEAVE: a line of light that flies out level (or upright: press 1 again) and cuts everything it passes through
-//   push    – a cone of force from the muzzle
-//   well    – a lobbed singularity that drags everything in, then pops
-//   mark    – stuns critters and marks things (marked things drop Lachryma)
-//   bomb    – a lobbed clay grenade: splash damage, molten slip, hot pool
-//   ricochet, homing – see specials.js
-//   slip    – a lobbed ball of liquid clay that paints floors and walls wet (dive in: C)
-// ---------------------------------------------------------------------------
 // (each has a number, TYPE-00 to TYPE-10, by its place here: tools/psygun/kinds.js typeNo; which a psygun carries is its chambers)
 export const SHELL_TYPES = [
   { id: 'slicer', name: 'CLEAVE', glyph: '═' }, // (the id is the old one: the ledger's counts are kept under it)

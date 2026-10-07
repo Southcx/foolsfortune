@@ -1,5 +1,3 @@
-import { Tech } from './techs.js';
-
 // ---------------------------------------------------------------------------
 // TALKING (a tech that holds the body while a conversation lasts): F at one of the clay folk (npc/folk.js) begins the dialogue
 // (npc/dialogue.js); the Courier stands, turns to the speaker and puts away what was in their hands, and the step is theirs until the
@@ -9,6 +7,8 @@ import { Tech } from './techs.js';
 // (Idle_Talking_Loop); as each line of theirs begins they nod to the glad and the calm (Yes), shakes their head at the muddled
 // (Idle_No_Loop), and folds their arms at the sly (Idle_FoldArms_Loop); otherwise they listen, still.
 // ---------------------------------------------------------------------------
+import { Tech } from './techs.js';
+
 export class Talk extends Tech {
   constructor(mgr) { super(mgr, 'talk'); this.blendIn = 8; }
   get enabled() { return true; }

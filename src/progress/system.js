@@ -1,6 +1,3 @@
-import { T } from '../core/config.js';
-import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
-
 // ---------------------------------------------------------------------------
 // The System: teaches you things for what you do. Every art and variant is the reward of an
 // achievement (achievements.js: `art_<id>`, its goals predicates over the ledger: skills.js), so
@@ -14,6 +11,9 @@ import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
 // Progress is kept in the save's player scope (core/save.js, section 'system'), marked a few seconds after it changes, and can be carried between
 // browsers as a short code (export / import in the Codex).
 // ---------------------------------------------------------------------------
+import { T } from '../core/config.js';
+import { ALL_ARTS, BY_ID, BY_TECH, achOf, goalFracOf } from './skills.js';
+
 
 const VERSION = 2;
 

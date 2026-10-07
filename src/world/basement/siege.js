@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { BASE_Y, label, strip } from './basement.js';
-
 // ---------------------------------------------------------------------------
 // THE SIEGE: the one room where raids happen. In god-hand mode the jar is only ever attacked
 // here (src/world/basement/raids.js); everywhere else the hand is left in peace to build up its Zone of Influence
@@ -10,6 +6,10 @@ import { BASE_Y, label, strip } from './basement.js';
 //
 //   x -30..30   z -108..-76   (the lab's back wall is at z -72.5)
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { BASE_Y, label, strip } from './basement.js';
+
 export const SIEGE = { x0: -30, x1: 30, z0: -108, z1: -76 };
 export const SIEGE_SPAWN = { pos: [0, 0.56, -80], yaw: Math.PI }; // (on the dais; relative to the basement floor)
 const H = 10, Wt = 0.5;

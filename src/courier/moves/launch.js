@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-import { T } from '../../core/config.js';
-
 // ---------------------------------------------------------------------------------------
 // LAUNCH: being carried by momentum the core movement would not allow. The core caps the Courier's horizontal speed (14 m/s, so that
 // every room can be measured against one number); a swing's release, a stinger's thrust and a blade-mode lunge all want more than
@@ -15,6 +11,10 @@ import { T } from '../../core/config.js';
 // Prior art: the "committed" moves of every action game (Devil May Cry's Stinger and Helm Breaker, Bayonetta's dodge offset, Titanfall's
 // slide-hop launch): the move owns the body for its duration and its exit speed is a design number, not whatever is left.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+import { T } from '../../core/config.js';
+
 const _v = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Launch extends Tech {

@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { BASE_Y, label, strip } from './basement.js';
-
 // ---------------------------------------------------------------------------
 // The tech lab: the middle wing of THE MOVEMENT LAB, south of the course's start (through its south door), with a
 // station for each movement tech (src/courier/moves/). Stations have checkpoints (R returns to the last one); the hub's index
@@ -15,6 +11,10 @@ import { BASE_Y, label, strip } from './basement.js';
 //   STOMP    x 21..27     pots on rising pillars: bounce pot to pot up onto the climb wall
 //   CLIMB    x 28..36     a 4 m wall (jump into it with W held)
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { BASE_Y, label, strip } from './basement.js';
+
 
 export const LAB = { x0: -36, x1: 36, z0: -72, z1: -36.5 };
 // THE MOVEMENT LAB is one hall of five wings in a row (the hands, the rigging, this tech lab, the clockwork mill, the kiln stack), open

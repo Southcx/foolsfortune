@@ -1,3 +1,14 @@
+// ---------------------------------------------------------------------------------------
+// PHYSICS: the Rapier world, and the few things every module asks of it. The collision layers (`G`, `groups`, `GROUPS`: membership in
+// the high 16 bits, filter in the low), the map from a collider to the game entity it belongs to (`register`, `entityOf`: a shot or a
+// blow finds a pot, a jelly, the Courier), meshes kept in step with their bodies (`addSynced`), and an impulse that survives a multibody
+// link (`kick`: Rapier recomputes a link's velocity from its joints, so a raw impulse on a rope's link is lost; it becomes a one-step
+// force). Steps at the game's fixed 1/60 s.
+//
+// Prior art: Rapier's own collision groups, Unity's layer matrix, and the entity-lookup every engine keeps beside its physics.
+//
+//   const P = new Physics()   P.world   P.step(dt)   P.register(collider, entity)   P.entityOf(collider)   P.raycast(...)   P.kick(body, imp)
+// ---------------------------------------------------------------------------------------
 import RAPIER from '@dimforge/rapier3d-compat';
 import * as THREE from 'three';
 import { T } from './config.js';

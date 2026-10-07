@@ -1,3 +1,8 @@
+// Grate climbing: walls and overhangs of openwork grating are climbed in any direction, for as
+// long as you like. On a wall W / S go up and down and A / D sideways; reaching the top edge
+// pulls you over it, and reaching an overhang above carries you onto it; on an overhang you hang
+// by your hands and WASD crawls along it (the way you look). C lets go, Space kicks off a wall
+// or hops off an overhang. Shift is a scramble (both hands: the gun goes away).
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,11 +10,6 @@ import { GROUPS } from '../../core/physics.js';
 import { T } from '../../core/config.js';
 import { HANG, wallClimb, wallContacts } from '../anim/authored.js';
 
-// Grate climbing: walls and overhangs of openwork grating are climbed in any direction, for as
-// long as you like. On a wall W / S go up and down and A / D sideways; reaching the top edge
-// pulls you over it, and reaching an overhang above carries you onto it; on an overhang you hang
-// by your hands and WASD crawls along it (the way you look). C lets go, Space kicks off a wall
-// or hops off an overhang. Shift is a scramble (both hands: the gun goes away).
 const DROP = HANG.drop + 0.09; // feet this far below an overhang's underside (the hands hold its lip: the authored hang is built for it)
 const DIRS = 8;
 

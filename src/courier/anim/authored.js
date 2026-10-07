@@ -1,13 +1,13 @@
+// The authored clips (see authoring.js): what the free libraries don't have. Body space: root at
+// the feet, facing +Z, Y up, the character's left is +X. Each clip is built from the geometry
+// the level gives its contacts (a ladder's rungs, a ledge's lip, a pole's radius), so a tech
+// only has to place the body relative to the thing it holds.
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { Author, V3, lerp, smooth, tri } from './authoring.js';
 import { authorSkiff } from '../skiff/clips.js';
 import { authorBrush } from '../../tools/soulbrush/clips.js';
 
-// The authored clips (see authoring.js): what the free libraries don't have. Body space: root at
-// the feet, facing +Z, Y up, the character's left is +X. Each clip is built from the geometry
-// the level gives its contacts (a ladder's rungs, a ledge's lip, a pole's radius), so a tech
-// only has to place the body relative to the thing it holds.
 
 const DEG = Math.PI / 180;
 

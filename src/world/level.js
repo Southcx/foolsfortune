@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------------------
+// THE LEVEL: the workshop, built in code (greybox terracotta), and the basement's rooms through it. Everything static is merged per
+// colour and per zone into a handful of meshes (`box`, `addGeo`), with simple colliders (cuboids, cylinders, balls); lamps are plain
+// PointLights lent by the light budget. The rooms' own builders (in world/basement/) add to it.
+//
+// Prior art: the console room table (static geometry merged per area), and greyboxing (layout first, dressing after).
+//
+//   const L = new Level(scene, physics, breakables)   L.box(...)   L.addGeo(geo, colour)   L.mat(colour)   ROOM
+// ---------------------------------------------------------------------------------------
 import { tag } from '../core/tags.js';
 import { buildBasement, groundFloor, spawnBasement, inHole, HOLE, BASE_Y } from './basement/basement.js';
 import { buildTechLab, spawnTechLab } from './basement/techwing.js';

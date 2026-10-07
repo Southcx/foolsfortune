@@ -1,3 +1,15 @@
+// ---------------------------------------------------------------------------------------
+// THE COURIER'S BODY: the core movement, the gold standard (CLAUDE.md: techs and arts never change it). A kinematic capsule on Rapier's
+// character controller: walk, sprint, crouch, slide, jump and double jump, the dash, mantle and step-over, coyote time and jump buffering,
+// carried momentum off moving ground, the camera (first person and over the shoulder) and its look, and the guard that puts the body back
+// when it is embedded. The place may add its own pull and drag (`drift`, `wade`), zero and one leaving the core untouched. The techs
+// (courier/moves/) take over from it while they run and hand it back exactly.
+//
+// Prior art: Quake's and Source's air control and strafe-jumping feel kept gentle, Titanfall's slide-hop and wallrun, Celeste's coyote
+// time and buffered jumps, Mario 64's step-over, Rapier's kinematic character controller.
+//
+//   const P = new Player(...)   P.fixedUpdate(dt, opts)   P.look(dt, ads)   P.updateCamera(...)   P.impulse(v, why)   P.guard()   P.pos   P.vel
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { T, DEG } from '../core/config.js';

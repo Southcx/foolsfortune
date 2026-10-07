@@ -1,11 +1,3 @@
-import * as THREE from 'three';
-import { Tech } from './techs.js';
-import { sfx } from '../../audio/sfx.js';
-import { T, PALETTE } from '../../core/config.js';
-import { GROUPS } from '../../core/physics.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('courier/moves/slip'); // (the simulation's chance: core/rng.js, the same twice)
-
 // Slip dive (Splatoon's ink swim, in liquid clay). Hold C on wet slip and the
 // Courier melts into it: a fast, low blob that only moves quickly through slip,
 // climbs walls where they're slip-coated, and fits through gaps nothing else does.
@@ -18,6 +10,14 @@ const simRand = stream('courier/moves/slip'); // (the simulation's chance: core/
 // the body is built up from the feet as it springs to its height with a little overshoot (0.32 s). The physics changes shape at
 // once (the momentum is never held up by the show): only the picture takes its time. Prior art: Splatoon's squid form (the swap is
 // near-instant, the squash and the splash sell it) and the dissolve-in of the era's teleports (Kingdom Hearts, Phantasy Star Online).
+import * as THREE from 'three';
+import { Tech } from './techs.js';
+import { sfx } from '../../audio/sfx.js';
+import { T, PALETTE } from '../../core/config.js';
+import { GROUPS } from '../../core/physics.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('courier/moves/slip'); // (the simulation's chance: core/rng.js, the same twice)
+
 const UP = new THREE.Vector3(0, 1, 0);
 const MELT = 0.3, RISE = 0.32;
 const clamp01 = (x) => Math.min(1, Math.max(0, x));

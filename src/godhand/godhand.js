@@ -1,17 +1,3 @@
-import { JointLimits, RIGIFY } from '../courier/anim/rom.js';
-import * as THREE from 'three';
-import { T, PALETTE } from '../core/config.js';
-import { RAPIER } from '../core/physics.js';
-import { addOutline } from '../render/outline.js';
-import { sfx } from '../audio/sfx.js';
-import { GodArts, ART_BY_ID, ARTS } from './arts.js';
-import { ZoiVeil } from '../feedback/cartography.js';
-import { Raids } from '../world/basement/raids.js';
-import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
-import { stream } from '../core/rng.js';
-import { HandCatch } from './catch.js';
-const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // THE GOD HAND (~). The Courier turns into a Pneuka jar, an immobile jar, and you become
 // a disembodied hand: the camera pulls up into a turnable isometric view, the cursor is the hand,
@@ -30,6 +16,20 @@ const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng
 //                  and mends it). Clapperjars you hatch stay.
 // ~ again (once the jar is whole) puts the Courier back where the jar stood.
 // ---------------------------------------------------------------------------------------
+import { JointLimits, RIGIFY } from '../courier/anim/rom.js';
+import * as THREE from 'three';
+import { T, PALETTE } from '../core/config.js';
+import { RAPIER } from '../core/physics.js';
+import { addOutline } from '../render/outline.js';
+import { sfx } from '../audio/sfx.js';
+import { GodArts, ART_BY_ID, ARTS } from './arts.js';
+import { ZoiVeil } from '../feedback/cartography.js';
+import { Raids } from '../world/basement/raids.js';
+import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
+import { stream } from '../core/rng.js';
+import { HandCatch } from './catch.js';
+const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
+
 const UP = new THREE.Vector3(0, 1, 0);
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;

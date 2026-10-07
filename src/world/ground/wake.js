@@ -1,7 +1,3 @@
-import * as THREE from 'three';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/ground/wake'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // WAKE: what a fast hull leaves on a soft surface, drawn the way The Wind Waker draws the King of Red
 // Lions' passage: crisp white bubbles thrown off the bow, a pair of thin white lines running back
@@ -14,6 +10,10 @@ const simRand = stream('world/ground/wake'); // (the simulation's chance: core/r
 //   wake.update(dt, { bow, fwd, right, speed, air, glow, ground: (x, z) => y, floor })
 //   wake.clear()
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/ground/wake'); // (the simulation's chance: core/rng.js, the same twice)
+
 const N = 72;          // samples kept
 const SPACING = 0.32;  // metres between samples
 const LIFE = 2.6;      // seconds a mark lasts at full speed

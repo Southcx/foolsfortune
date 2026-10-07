@@ -1,13 +1,13 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('world/props/pottery'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------
 // Pottery: lathe profiles + shape modifiers + surface patterns + materials.
 // Every point on a pot comes from `potPoint()`, so the intact mesh, its
 // collider and the fracture shards all agree on the same surface.
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/props/pottery'); // (the simulation's chance: core/rng.js, the same twice)
+
 
 // How a clay body breaks. `cell` is the rough fragment edge length in metres,
 // `chunk` how many surface triangles a shard may merge, `keep` caps physics

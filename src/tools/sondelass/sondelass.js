@@ -1,18 +1,3 @@
-import * as THREE from 'three';
-import { RestBake } from '../../render/restbake.js';
-import { Tech } from '../../courier/moves/techs.js';
-import { Track } from '../../courier/anim/animator.js';
-import { sfx } from '../../audio/sfx.js';
-import { T } from '../../core/config.js';
-import { SondelassModel } from './model.js';
-import { Cutlass } from './cutlass.js';
-import { Hookshot } from './hookshot.js';
-import { Angler } from './angling/angler.js';
-import { measureGrip, handFromTool } from '../grip.js';
-import { drawHands } from '../draw.js';
-import { fpToolMatrix } from '../viewmodel.js';
-import { buildLure } from './angling/luremodels.js';
-
 // ---------------------------------------------------------------------------------------
 // THE SONDELASS: a telescoping instrument that is a fishing rod, a cutlass and a grapple hook, worn on the Courier's back
 // parallel to the Psygun and drawn the same way (the hand reaches back, grabs, whips it round). The first melee tool, and the way
@@ -35,6 +20,21 @@ import { buildLure } from './angling/luremodels.js';
 //    with a hop; jump cancels and keeps the momentum.
 //  - Monster Hunter's weapon-form switch: one instrument, three shapes, the sections sliding in and out between them.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { RestBake } from '../../render/restbake.js';
+import { Tech } from '../../courier/moves/techs.js';
+import { Track } from '../../courier/anim/animator.js';
+import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
+import { SondelassModel } from './model.js';
+import { Cutlass } from './cutlass.js';
+import { Hookshot } from './hookshot.js';
+import { Angler } from './angling/angler.js';
+import { measureGrip, handFromTool } from '../grip.js';
+import { drawHands } from '../draw.js';
+import { fpToolMatrix } from '../viewmodel.js';
+import { buildLure } from './angling/luremodels.js';
+
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();

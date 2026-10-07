@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------------------
+// THE HUD: the few things drawn over the world that are not the log: the crosshair and its spread, the hitmarker, the Lachryma gauge's
+// pulse, the psygun's shells, the speed, and the pixelation the present asks for. No words or numbers in the world (CLAUDE.md,
+// Feedback): what deserves a sentence goes to the log.
+//
+// Prior art: the PS2 shooters' minimal HUDs (Ratchet & Clank's reticle and ammo, Metroid Prime's visor kept to the edges).
+//
+//   const H = new Hud()   H.update(dt, { spreadDeg, fov, fp, ads, charge, pool, shells, speed, move, gunOut, blink, combat })   H.hitmarker(kill)
+// ---------------------------------------------------------------------------------------
 import { restartClass } from '../core/restart.js';
 import { T } from '../core/config.js';
 

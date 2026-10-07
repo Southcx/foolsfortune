@@ -1,3 +1,18 @@
+// ---------------------------------------------------------------------------------------
+// THE DUNES: a layer far below the workshop, a sand sea in the manner of Journey: long
+// sweeping dunes with sharp crests and steep lee faces, glinting sand, a low gold sun in a
+// teal-to-rose sky, half-buried ruins and a pale spire in the distance to sail toward, and at
+// its heart an oasis: a pond on a flat of packed sand, with the Weir built round it
+// (tools/sondelass/angling/weir.js). It is crossed on the Solar Skiff (courier/skiff/skiff.js), a sail-board that
+// catches the wind: Solar Skiffing. Nothing walls it in: the sand runs on to high dunes on the
+// horizon, and the edge is an invisible barrier (barrier.js) that shows itself only where you
+// touch it. A layer of cloud drifts downwind across the painted sky (vfx/clouds.js).
+//
+// The ground is one height function (heightAt) that the mesh, the collider, the board's hover
+// and the particles all read, so they can never disagree. It is drawn in chunks with levels of
+// detail (render/terrain.js), one draw call, sampled every 2.5 m inside the barrier. It lies at ORIGIN, well away from the
+// lab's rooms (in x and z as well as in y) so nothing there can trigger on it.
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { openSea } from '../../render/zonemap.js';
 import { TrailMap, TRAIL_GLSL } from '../ground/trailmap.js';
@@ -16,21 +31,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tag, register } from '../../core/tags.js';
 import { MATERIALS } from '../props/pottery.js';
 
-// ---------------------------------------------------------------------------------------
-// THE DUNES: a layer far below the workshop, a sand sea in the manner of Journey: long
-// sweeping dunes with sharp crests and steep lee faces, glinting sand, a low gold sun in a
-// teal-to-rose sky, half-buried ruins and a pale spire in the distance to sail toward, and at
-// its heart an oasis: a pond on a flat of packed sand, with the Weir built round it
-// (tools/sondelass/angling/weir.js). It is crossed on the Solar Skiff (courier/skiff/skiff.js), a sail-board that
-// catches the wind: Solar Skiffing. Nothing walls it in: the sand runs on to high dunes on the
-// horizon, and the edge is an invisible barrier (barrier.js) that shows itself only where you
-// touch it. A layer of cloud drifts downwind across the painted sky (vfx/clouds.js).
-//
-// The ground is one height function (heightAt) that the mesh, the collider, the board's hover
-// and the particles all read, so they can never disagree. It is drawn in chunks with levels of
-// detail (render/terrain.js), one draw call, sampled every 2.5 m inside the barrier. It lies at ORIGIN, well away from the
-// lab's rooms (in x and z as well as in y) so nothing there can trigger on it.
-// ---------------------------------------------------------------------------------------
 export const DUNE = { x: 2000, y: -420, z: 0, half: 520, step: 2.5, outer: 900, layerBelow: -150 };
 const WIND_AT = 0.55; // (radians) the way the wind blows toward, on average
 /** The edge of the world down here: an invisible wall round the sand at this radius (see Barrier). */

@@ -1,8 +1,8 @@
+// Plane-cutting utilities for the slicer shell. A plane is { n: unit Vector3, d }
+// with signed distance dist(p) = n·p - d, in whatever space the data lives in.
 import * as THREE from 'three';
 import { ConvexHull } from 'three/addons/math/ConvexHull.js';
 
-// Plane-cutting utilities for the slicer shell. A plane is { n: unit Vector3, d }
-// with signed distance dist(p) = n·p - d, in whatever space the data lives in.
 
 const EPS = 1e-5;
 

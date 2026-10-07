@@ -1,3 +1,14 @@
+// ---------------------------------------------------------------------------------------
+// BREAKABLES: the pots, urns and lanterns, and how they break. A pot is a lathe (profile by segments, lobes, twist and flame crests) in
+// one of three clay bodies that break differently (stoneware in slabs, earthenware in shards, porcelain in slivers and dust). On a
+// break its surface is resampled on a jittered grid and grouped into shards, each the convex hull of its outer and inner points (a mesh
+// and an exact collider). Crack stages first; ember urns chain-explode; lanterns hang on ropes of sensor links on multibody joints. Who
+// broke it is said (`by`), and only the Courier's count.
+//
+// Prior art: Zelda's pots, Red Faction and Battlefield's destruction, Voronoi fracture done cheap (a jittered grid), Katamari's clutter.
+//
+//   const B = new Breakables(...)   B.spawn(...)   B.hit(...)   B.preStep()   B.update(dt)   PROFILES
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
 import { RAPIER, GROUPS, G, groups } from '../../core/physics.js';

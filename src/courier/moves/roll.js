@@ -1,3 +1,9 @@
+// Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
+// and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
+// when there's damage to dodge). The same roll happens on its own out of a fall of 20 m or more: the
+// fall is turned into forward speed and the landing is mitigated (`mitigated` on the event;
+// fall damage, when it exists, reads it). Jump out of the back half of a roll to keep the speed.
+// It never takes over a slide (the core owns those) or a slam's landing.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,12 +11,6 @@ import { T } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/roll'); // (the simulation's chance: core/rng.js, the same twice)
 
-// Roll: an evasive maneuver. Press Sprint while crouched (C held, or the crouch left standing)
-// and you roll the way you're steering (or the way you face): a short low dash with invulnerability frames at the start of it (`player.invuln`, ready for
-// when there's damage to dodge). The same roll happens on its own out of a fall of 20 m or more: the
-// fall is turned into forward speed and the landing is mitigated (`mitigated` on the event;
-// fall damage, when it exists, reads it). Jump out of the back half of a roll to keep the speed.
-// It never takes over a slide (the core owns those) or a slam's landing.
 export class Roll extends Tech {
   constructor(mgr) {
     super(mgr, 'roll');

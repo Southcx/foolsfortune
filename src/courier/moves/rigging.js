@@ -1,8 +1,3 @@
-import * as THREE from 'three';
-import { RAPIER, GROUPS } from '../../core/physics.js';
-import { PALETTE } from '../../core/config.js';
-import { addOutline } from '../../render/outline.js';
-
 // ---------------------------------------------------------------------------
 // The rigging: things to hold on to and things to walk on that the level is strung with.
 //
@@ -15,6 +10,11 @@ import { addOutline } from '../../render/outline.js';
 // Everything is registered here so the techs can ask "is there something to grab within
 // reach of this point"; the level builds the geometry through these calls.
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { RAPIER, GROUPS } from '../../core/physics.js';
+import { PALETTE } from '../../core/config.js';
+import { addOutline } from '../../render/outline.js';
+
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);

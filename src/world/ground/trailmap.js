@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 // ---------------------------------------------------------------------------------------
 // TRAIL MAP: a small, fading, top-down record of where things have passed, kept in a texture
 // that follows a focus point. Surfaces sample it to show a path: sand darkens and grooves,
@@ -24,6 +22,8 @@ import * as THREE from 'three';
 //   trail.uniforms                                   // { uTrail, uTrailCenter, uTrailSize, uTrailTexel } for a material
 //   TRAIL_GLSL                                       // the GLSL that reads it (see below)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+
 const MAX = 24; // segments per frame
 
 const vs = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';

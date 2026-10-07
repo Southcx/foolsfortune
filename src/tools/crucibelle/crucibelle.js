@@ -1,13 +1,3 @@
-import * as THREE from 'three';
-import { HeldTool } from '../heldtool.js';
-import { CrucibelleModel } from './model.js';
-import { SCALE, SONGS, INSTRUMENTS, DEGREE_COLOR, match } from './songs.js';
-import { Band } from '../../music/band.js';
-import { REL } from '../../creatures/ai/index.js';
-import { sfx } from '../../audio/sfx.js';
-import { stream } from '../../core/rng.js';
-const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
-
 // ---------------------------------------------------------------------------------------
 // THE CRUCIBELLE: the sixth of the Courier's psychic tools. A smoking bell held up like a lantern (tools/crucibelle/model.js), worn at the hip.
 // It RECEIVES what is played into it and TRANSFORMS it: an amplifier for a musician, and the musician is them. A battle bard: everyone
@@ -32,6 +22,16 @@ const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chan
 // (on the beat, leniently), the tabletop bard (inspire courage, fascinate, summon), Brütal Legend (a guitar that summons and rallies:
 // a rockstar's army), and the pentatonic scale, on which nothing is wrong.
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { HeldTool } from '../heldtool.js';
+import { CrucibelleModel } from './model.js';
+import { SCALE, SONGS, INSTRUMENTS, DEGREE_COLOR, match } from './songs.js';
+import { Band } from '../../music/band.js';
+import { REL } from '../../creatures/ai/index.js';
+import { sfx } from '../../audio/sfx.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
+
 const WINDOW = 0.085, OWN_BPM = 96, TOLL = { cool: 0.4, range: 4.2, cone: 1.1 };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };

@@ -1,9 +1,9 @@
+// Level features the environmental techs read: water volumes, ladders, and slip
+// (liquid clay) coverage on floors and walls.
 import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import { makeWaterMaterial, waterGeometry } from '../../vfx/water.js';
 
-// Level features the environmental techs read: water volumes, ladders, and slip
-// (liquid clay) coverage on floors and walls.
 
 /** The surface without its dry triangles (all three corners where the floor is at or above the surface: `depthAt` <= 0). A pond's
  *  bounding box is a third sand (the Weir's pond, tripled at R46, was 150k triangles over its box; the casebook, "a surface by area"). */

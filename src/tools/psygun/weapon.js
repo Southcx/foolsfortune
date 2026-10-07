@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------------------
+// THE PSYGUN: the Courier's first tool, on the belt (tools/belt.js). Drawn and holstered, raised to aim (ADS), racked, fired on the
+// trigger with its spread, and charged (held) into its shells' heavier forms; the shot's ray from the camera through the aim point,
+// first person or over the shoulder. The shells themselves are tools/psygun/shells.js; their kinds and chambers kinds.js.
+//
+// Prior art: Halo's reticle bloom and its charged plasma pistol, Ratchet & Clank's weapon wheel feel, Metroid Prime's charge beam.
+//
+//   const W = new Weapon(game)   W.update(dt, input, player)   W.raised(player)   W.computeAimPoint(camera, player)   W.tryFire(...)
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';

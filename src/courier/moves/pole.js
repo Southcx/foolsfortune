@@ -1,13 +1,13 @@
+// Poles and ropes: walk (or jump) into one and you have it, arms and legs round it. W / S climb
+// (Shift faster), A / D swing round it, C lets you slide (fast) and Space jumps off, away from
+// it and a little toward where you look. A rope hangs from its top and sways under you; a pole
+// stands. Both take the gun away only for the fast moves: at a walk you can aim one-handed.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { POLE } from '../anim/authored.js';
 
-// Poles and ropes: walk (or jump) into one and you have it, arms and legs round it. W / S climb
-// (Shift faster), A / D swing round it, C lets you slide (fast) and Space jumps off, away from
-// it and a little toward where you look. A rope hangs from its top and sways under you; a pole
-// stands. Both take the gun away only for the fast moves: at a walk you can aim one-handed.
 const _o = new THREE.Vector3();
 
 export class Pole extends Tech {

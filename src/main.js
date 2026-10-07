@@ -1,3 +1,13 @@
+// ---------------------------------------------------------------------------------------
+// MAIN: the boot and the frame. It builds every service onto `game` in order (physics, the level, the Courier, the tools on the belt,
+// the creatures, the places, the feedback), compiles every shader in the warm-up (nothing may compile in play), and runs the frame: input,
+// the fixed 1/60 s steps (the body, physics, movers), then the world's updates, the camera, the animation and the draw at 480 lines. A
+// hub: each division adds a line here for what it builds (CLAUDE.md, Threads); the services are documented in their own headers.
+//
+// Prior art: the game loop with a fixed simulation step and an interpolated render (Glenn Fiedler, "Fix Your Timestep!").
+//
+//   window.__game (the test harness's handle: tick(dt), draw(), game)   window.__boot (ms at each stage of loading)
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { T, PALETTE, loadTuning } from './core/config.js';

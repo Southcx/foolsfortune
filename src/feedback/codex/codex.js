@@ -1,9 +1,3 @@
-import { ABILITIES, GOD_ARTS, BY_ID } from '../../progress/skills.js';
-import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledger.js';
-import { renderVeritome } from '../../tools/veritome/ui.js';
-import { renderTools } from '../../tools/codexpage.js';
-import { renderSoundTest } from '../../music/soundtest.js';
-
 // ---------------------------------------------------------------------------
 // The System's face: the Codex (B). What is learned is announced in the log (tracking.js), not here. The Codex sorts what you can
 // learn into arts; for now there is one shelf, MOVEMENT ARTS: the ones you know, the shapes
@@ -11,6 +5,12 @@ import { renderSoundTest } from '../../music/soundtest.js';
 // variant is selected. The all-arts switch lends you everything. The Codex pauses the game while it's
 // open. Fired-clay tablets, the same ink as the rest of the HUD.
 // ---------------------------------------------------------------------------
+import { ABILITIES, GOD_ARTS, BY_ID } from '../../progress/skills.js';
+import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledger.js';
+import { renderVeritome } from '../../tools/veritome/ui.js';
+import { renderTools } from '../../tools/codexpage.js';
+import { renderSoundTest } from '../../music/soundtest.js';
+
 
 const CSS = `
 #codex { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.78); cursor: default; user-select: none; }

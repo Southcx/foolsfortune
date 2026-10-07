@@ -1,10 +1,3 @@
-import * as THREE from 'three';
-import { PALETTE } from '../../core/config.js';
-import { BASE_Y, label, strip } from './basement.js';
-import { ARCHES } from './techwing.js';
-import { gearGeometry, BRASS, STONE } from '../props/movers.js';
-import { addOutline } from '../../render/outline.js';
-
 // ---------------------------------------------------------------------------
 // The clockwork mill: a wing of THE MOVEMENT LAB east of the tech lab (through its east
 // arch), and the kiln stack beyond it. Everything that moves is a Mover
@@ -19,6 +12,13 @@ import { addOutline } from '../../render/outline.js';
 //   STEAM       x 39..47    an updraft column up to a 9 m ledge
 //   KILN STACK  x 101..131  a 57 m well with rail carts at the bottom, a freight lift and a ladder
 // ---------------------------------------------------------------------------
+import * as THREE from 'three';
+import { PALETTE } from '../../core/config.js';
+import { BASE_Y, label, strip } from './basement.js';
+import { ARCHES } from './techwing.js';
+import { gearGeometry, BRASS, STONE } from '../props/movers.js';
+import { addOutline } from '../../render/outline.js';
+
 
 export const MILL = { x0: 36.5, x1: 101, z0: -72, z1: -36.5 };
 export const KILN = { x0: 101.5, x1: 131, z0: -72, z1: -36.5 };

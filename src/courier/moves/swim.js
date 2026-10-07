@@ -1,3 +1,7 @@
+// Swimming: deep water takes over from the feet. At the surface you float with your
+// head out and paddle along (Shift for a faster crawl); C dives, and underwater you
+// swim where you look; Space rises, and at the surface hops you up out of the water.
+// Swim into a wall with a ledge in reach and you climb out.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -5,10 +9,6 @@ import { T, PALETTE } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/swim'); // (the simulation's chance: core/rng.js, the same twice)
 
-// Swimming: deep water takes over from the feet. At the surface you float with your
-// head out and paddle along (Shift for a faster crawl); C dives, and underwater you
-// swim where you look; Space rises, and at the surface hops you up out of the water.
-// Swim into a wall with a ledge in reach and you climb out.
 const UP = new THREE.Vector3(0, 1, 0);
 const FLOAT = 1.12; // feet this far below the surface when floating (head and shoulders out)
 

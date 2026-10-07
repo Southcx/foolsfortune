@@ -1,12 +1,3 @@
-import * as THREE from 'three';
-import { mindLineMaterial } from '../vfx/labradorite.js';
-import { ReachDome } from '../vfx/wiremarks.js';
-import { T, PALETTE } from '../core/config.js';
-import { RAPIER, GROUPS } from '../core/physics.js';
-import { addOutline } from '../render/outline.js';
-import { sfx } from '../audio/sfx.js';
-import { planeFrom } from '../tools/slicing.js';
-
 // ---------------------------------------------------------------------------------------
 // GOD ARTS. What the hand can do. They are nothing to do with the psygun's shells: shells are
 // prepackaged one-shot rounds that cost nothing but the shell; a god art is a power of the hand
@@ -28,6 +19,15 @@ import { planeFrom } from '../tools/slicing.js';
 // Right mouse opens the radial wheel; 1-5 pick directly. Each art's numbers are in T.arts, and
 // the variants the System teaches change them (system.artCfg).
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { mindLineMaterial } from '../vfx/labradorite.js';
+import { ReachDome } from '../vfx/wiremarks.js';
+import { T, PALETTE } from '../core/config.js';
+import { RAPIER, GROUPS } from '../core/physics.js';
+import { addOutline } from '../render/outline.js';
+import { sfx } from '../audio/sfx.js';
+import { planeFrom } from '../tools/slicing.js';
+
 export const ARTS = [
   { id: 'telekinesis', key: '1', name: 'TELEKINESIS', glyph: '⤒', needs: 1, blurb: 'lift and throw', color: '#ffe0c0' },
   { id: 'sunder', key: '2', name: 'SUNDER', glyph: '╱', needs: 1, blurb: 'draw a blade', color: '#ffd696' },
