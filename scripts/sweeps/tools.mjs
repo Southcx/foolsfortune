@@ -78,7 +78,7 @@ window.__tl = (() => {
     mouse(b, n = 0) { I.pressed.add(b); I.down.add(b); __sw.tick(Math.max(1, n)); I.down.delete(b); __sw.tick(1); },
     mdown(b) { I.pressed.add(b); I.down.add(b); }, mup(b) { I.down.delete(b); },
     /** Every object in the scene, and the renderer's own counts. */
-    counts() { let n = 0; g.scene.traverse(() => n++); const i = G.renderer.info; return { objects: n, top: g.scene.children.length, geometries: i.memory.geometries, textures: i.memory.textures }; },
+    counts() { let n = 0; g.scene.traverse(() => n++); const i = G.renderer.info, dec = g.fx?.decals?.length ?? 0; return { objects: n - dec, decals: dec, top: g.scene.children.length - dec, geometries: i.memory.geometries, textures: i.memory.textures }; }, // (the psygun's shot marks on the walls are kept, eighty at most: particles.js; counted apart)
     /** The Lachrymato Bottle as worn: the box's fitting against the model on the upper back. */
     bottle() {
       const L = g.techs.get?.('soulbrush')?.load || g.belt.get('soulbrush') && g.techs.list.find((t) => t.id === 'soulbrush')?.load, box = g.pneuka, ch = g.character;
@@ -388,6 +388,7 @@ if (part('moves')) {
     await S.shot(`ladder-${id}`);
     S.note(`moves: on the ladder with ${id} asked for`, { tech: st.tech, drawT: t.drawT, fromRightHand: t.hand });
     S.check(`moves: on the ladder, ${id} is in the hand or away (never between)`, t.drawT === 0 || (t.drawT === 1 && t.hand < 0.75), t);
+    S.check(`moves: on the ladder, ${id} goes away (both hands climb; only the psygun stays, one-handed)`, st.tech !== 'ladder' || t.drawT <= 0.02, { tech: st.tech, drawT: t.drawT, cause: t.drawT > 0.02 ? 'courier/moves/ladder.js handsBusy is only `rushing` (a fast climb), so a held tool stays drawn on a walking climb, held level through the rails (as swim.js does, it should be both hands)' : null });
   }
   await S.page.keyboard.up('KeyW');
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
@@ -409,6 +410,7 @@ if (part('god')) {
     await S.shot(`god-with-${id}`);
     S.check(`god hand over ${id} out: the god hand is on`, st.god !== 'off', { god: st.god });
     S.check(`god hand over ${id} out: no tool of the Courier's shown`, !shown.length, { shown, hidden: st.hidden });
+    S.check(`god hand over ${id} out: the Sondelass's form strip is not left over the hand's arts`, !st.strip, { toolstrip: st.strip, cause: st.strip ? "sondelass.js toggles #toolstrip 'on' only from its own tick, which does not run under the god hand (godhand.js hides the shells and the crosshair, not the strip)" : null });
     await godOut(); await S.ticks(60);
     const t = (await tl('tools()')).find((x) => x.id === id);
     S.note(`god hand left: ${id}`, t);
@@ -481,7 +483,8 @@ if (part('leak')) {
   for (const id of WORN0) await cycle(id, quick ? 5 : 20);
   await S.ticks(300);
   const c1 = await tl('counts()');
-  S.check('leak: the scene\'s objects after twenty draws of each worn tool', c1.objects <= c0.objects + 2 && c1.geometries <= c0.geometries + 4, { before: c0, after: c1 });
+  S.check('leak: the scene\'s objects after twenty draws of each worn tool (shot marks apart)', c1.objects <= c0.objects + 2 && c1.geometries <= c0.geometries + 4, { before: c0, after: c1 });
+  S.check('leak: the psygun\'s shot marks stay within their eighty', c1.decals <= 80, { decals: c1.decals });
   await settledChecks('leak', { expectOut: null });
 }
 

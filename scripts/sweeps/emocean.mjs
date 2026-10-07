@@ -6,7 +6,7 @@
 // to Margarite's dock (the rail: every act's view and every swing, a bar long and on a bar line with nothing entering during it; the
 // lock-on; the barrel roll and its two charges; the parry, a whiff and an outlined shot sent home; polarity and an absorbed shot; a hit
 // and its mercy; the set piece's first beat and its end said in the log; the tally before "You make port"); careless play aboard (the
-// windows' keys, F, Esc to the pause, a resize, /goto mid-crossing); making port (the Courier set down on the far pier, shown, standing,
+// windows' keys, F, a resize, /goto mid-crossing); making port (the Courier set down on the far pier, shown, standing,
 // the rail's things gone); Margarite's dock (the Purser's posted board, Letty Marque, the Pearl Shrine, the dock's pier and its page);
 // the crossing back under /crossing pirates with a continue offered, taken, offered again dearer and declined (made whole at the last
 // Shrine); a crossing under /crossing leviathan to Anagami's jetty; and boarding and making port many times over, the scene and the
@@ -18,7 +18,8 @@
 //   (shots to <out>/shots, default <tmp>/sweeps/emocean; --quick sails at half the ticks and repeats four times, not twelve)
 //
 // A crossing is 100 bars, 150 real seconds, and is sailed tick by tick (the stage keeps its own clock when no cue plays: stage.js
-// clock); the forced set pieces come from the chat line's /crossing, as a tester would. Measures are read inside the page through
+// clock); the forced set pieces come from the chat line's /crossing, as a tester would. Not here: the pause (the harness's manual mode
+// skips it: main.js overlayUp) and a reload mid-crossing (each page is a fresh browser context, so the save does not carry). Measures are read inside the page through
 // window.__game (game.emocean, game.voyage, game.pier, game.margarite).
 //
 // Prior art: scripts/sweeps/garden.mjs and dunes.mjs (the harness, the page measured from inside), scripts/rail.mjs (the crossing's
@@ -356,7 +357,7 @@ if (part('dock')) {
   S.phase = 'dock';
   if (!crossed) { await S.go('margarite'); await S.ticks(30); }
   // the posted board: F at it opens the Purser's counter; F spammed opens one; it can be shut
-  await em('standBoard()'); await S.ticks(20);
+  await em('standBoard()'); await S.ticks(60); // (the chevron eases onto its thing)
   let ch = await em('chevron()');
   S.check('dock: the chevron is on the posted board', ch.cur === 'purser' && ch.shown && ch.off < 0.6, ch);
   await S.press('KeyF', 6); let w = await em('win()'); await S.shot('dock-purser');
