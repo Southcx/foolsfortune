@@ -69,6 +69,7 @@ export class Overture {
     this.say = g.log.say; g.log.say = () => null;
     this.achTick = g.achievements?.tick; if (g.achievements) g.achievements.tick = () => {};
     this.spawned = [];
+    void g.clipPack?.social; // (the wave and the dance it asks of the Courier are the suite's emotes: fetched now, in long before their shots)
     document.getElementById('title')?.style.setProperty('opacity', '0'); // (the title's words wait for the title)
     g.ui?.want('overture', true); document.body.classList.add('overture');
     sfx.duckEffects?.(0.35); // (the world's own sounds under the band; the music has its own way out: Wanda's)
