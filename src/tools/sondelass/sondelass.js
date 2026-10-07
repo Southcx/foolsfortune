@@ -148,6 +148,7 @@ export class Sondelass extends Tech {
     if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
     if (this.drawTarget === 0 && this.hookshot.att) this.hookshot.release('stow'); // (put away with a line out: it comes away)
+    if (this.drawTarget === 0 && this.cutlass.moves.cur) this.cutlass.cancel(); // (put away mid-stroke: the stroke ends now, not frozen until the holster)
     if (this.drawT > 0.02 && !this.wasOut) { sfx.toolDraw(); this.wasOut = true; this.game.events?.emit('sondelass.draw', {}); this.renderStrip(); }
     if (this.drawT <= 0.02 && this.wasOut) {
       this.wasOut = false; sfx.holster?.(); this.cutlass.cancel(); this.hookshot.cancel(); this.angler?.stow();

@@ -138,6 +138,8 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** both tools cut the move on the stow's first frame (`drawTarget` 0), finishing it first so the Launch ends with it
   (dreamvane.js `cutMove`, club.js `cancel`). Measured: the Launch is off the frame K or G is pressed. The engine's own `cancel` leaves
   the same gap for every tool (the cutlass's too): worth closing there.
+  The engine's own `cancel` now ends the launch too (tools/moveset.js), and the Sondelass cancels its stroke as the stow begins
+  (measured: a fourth stroke put away has no launch two frames later).
 - **Rule:** 41.
 
 ### 2026-10-07 · From the Dreamvane's pick into its first sweep the hips swung 15 degrees in one frame (Calissa, the brush and vane review)

@@ -86,7 +86,7 @@ export class Moveset {
   branches() { const p = this.S.strings.pause; return !p ? [] : Array.isArray(p) ? p : [p]; }
 
   cancel() {
-    if (this.cur?.def.body === 'whole') { const L = this.P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) L.o.onEnd = null; }
+    if (this.cur?.def.body === 'whole') { const L = this.P.techs.get('launch'); if (L?.active && L.o?.tag?.startsWith(this.id)) { L.o.onEnd = null; L.o.time = 0; } } // (its launch ends with it: left to run out its time it froze the pose and shut the core out, the brush and vane review)
     this.cur = null; this.rec = null; this.buffer = 0; this.charge = 0; this.S.trail?.gap();
   }
 
