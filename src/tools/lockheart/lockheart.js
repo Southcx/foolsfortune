@@ -56,9 +56,9 @@ const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4, CA
 // than it is sharp (the club's power, a little less damage), the third the whirl that throws them off.
 const FLAIL = 'lockheart.flail', TAP = 0.16, CHAIN = { rest: 0.22, out: 0.62 };
 const MOVES = {
-  f1: { clip: 'Lock_FlailCombo1', strike: [0.27, 0.48], chain: [0.48, 0.83], hit: { power: 1.0, dmg: 0.8, push: 3 }, lunge: 2.4, arc: 'r2l' },
-  f2: { clip: 'Lock_FlailCombo2', strike: [0.36, 0.52], chain: [0.56, 0.9], hit: { power: 1.3, dmg: 1.1, push: 2, lift: 2.5 }, lunge: 2.4, arc: 'over' },
-  f3: { clip: 'Lock_FlailCombo3', strike: [0.58, 0.87], hit: { power: 1.8, dmg: 1.5, push: 7 }, lunge: 1.6, heat: 0.8, arc: 'l2r', stop: 1.4 },
+  f1: { rule: 'flail1', clip: 'Lock_FlailCombo1', strike: [0.27, 0.48], chain: [0.48, 0.83], hit: { power: 1.0, dmg: 0.8, push: 3 }, lunge: 2.4, arc: 'r2l' },
+  f2: { rule: 'flail2', clip: 'Lock_FlailCombo2', strike: [0.36, 0.52], chain: [0.56, 0.9], hit: { power: 1.3, dmg: 1.1, push: 2, lift: 2.5 }, lunge: 2.4, arc: 'over' },
+  f3: { rule: 'flail3', clip: 'Lock_FlailCombo3', strike: [0.58, 0.87], hit: { power: 1.8, dmg: 1.5, push: 7 }, lunge: 1.6, heat: 0.8, arc: 'l2r', stop: 1.4 },
 };
 const STRINGS = { ground: ['f1', 'f2', 'f3'] };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -92,6 +92,7 @@ export class Lockheart extends HeldTool {
     this.moves = new Moveset(this, {
       id: 'lockheart', moves: MOVES, strings: STRINGS, button: FLAIL, limb: 'L', tip: CHAIN.out, reach: 0.35, pot: 40, k: 1.2, cause: 'bashed',
       events: { swing: 'lockheart.swing', hit: 'lockheart.hit' }, trail: this.trail, segment: (a, b) => this.chainSegment(a, b),
+      onHit: (kind, ent, at, dir, h, c, R) => { if (kind === 'creature' && R?.drink && !ent.ally) this.feed(R.drink, 'flail'); }, // (each blow drinks: the row's Lachryma into the coffin)
     });
   }
   get busy() { return this.wheel.busy || this.queue.length > 0 || this.moves.busy; }

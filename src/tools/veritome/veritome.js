@@ -60,8 +60,8 @@ const SPINE_TO_GRIP = new THREE.Matrix4().makeRotationZ(-Math.PI / 2);
 // The book bash, a table for the combo engine (tools/moveset.js): the book shut in the right hand and swung flat, a forehand then a
 // backhand. Numbers proposed to Dovina (docs/handoffs/dovina/): a book is a poor club (less than the Soul Brush's), the second a shove.
 const MOVES = {
-  b1: { clip: 'Tome_BookBash1', chain: [0.34, 0.63], hit: { power: 0.9, dmg: 0.7, push: 2.5 }, lunge: 2.2, arc: 'r2l' },
-  b2: { clip: 'Tome_BookBash2', hit: { power: 1.2, dmg: 1.0, push: 5 }, lunge: 2.2, arc: 'l2r', heat: 0.3 },
+  b1: { rule: 'bash1', clip: 'Tome_BookBash1', chain: [0.34, 0.63], hit: { power: 0.9, dmg: 0.7, push: 2.5 }, lunge: 2.2, arc: 'r2l' },
+  b2: { rule: 'bash2', clip: 'Tome_BookBash2', hit: { power: 1.2, dmg: 1.0, push: 5 }, lunge: 2.2, arc: 'l2r', heat: 0.3 },
 };
 const STRINGS = { ground: ['b1', 'b2'] };
 const LIFT = 0.3; // (the lens: seconds of Tome_LensRaise in third person before first person takes over)

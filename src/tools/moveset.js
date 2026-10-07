@@ -36,6 +36,7 @@
 //   strings.charge: { hold, release?, after? } (no release: letting go ends the hold; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
+//   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)
 //   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -139,7 +140,7 @@ export class Moveset {
     if (st.dash && grounded && speed > 5.6 && this.open(st.dash)) return this.begin(st.dash, 'dash');
     const g = st.ground || [];
     if (!g.length) return;
-    const br = this.str === 'ground' && this.n >= 0 && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((b) => b.at === this.n);
+    const br = this.str === 'ground' && this.n >= 0 && this.after >= PAUSE[0] && this.after <= PAUSE[1] && this.branches().find((b) => b.at === this.n && this.open(b.to[0]));
     if (br) { this.branch = br; return this.begin(br.to[0], 'pause', 0); }
     if (this.str === 'pause' && this.n >= 0 && this.after <= RESET && this.branch && this.n + 1 < this.branch.to.length) return this.begin(this.branch.to[this.n + 1], 'pause', this.n + 1);
     const n = this.str === 'ground' && this.n >= 0 && this.after <= RESET ? (this.n + 1) % g.length : 0;
@@ -273,20 +274,32 @@ export class Moveset {
 
   /** One blow on one thing: its damage, its knock (the launcher's lift, the plunge's spike), its event. */
   blow(kind, ent, at, dir, h, c) {
-    const g = this.game, S = this.S, R = this.rule(c?.def), charged = c?.kind === 'charge', cause = h.cause || S.cause || 'sliced';
-    const power = (h.power ?? 1) * (charged ? 1 + this.charge : 1), strike = R ? R.power * (charged ? 0.5 + 0.5 * this.charge : 1) : (S.k ?? 1.4) * power; // (the row's power is creatures.strike's own; the tool's k only for a move with no row)
+    const g = this.game, S = this.S, cause = h.cause || S.cause || 'sliced';
+    const power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     const kv = _k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0); kv.y = h.lift ?? 0;
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', this.id);
     else if (kind === 'pot') g.breakables.damage(ent, (S.pot ?? 62) * (h.dmg ?? 1), at, dir, power);
     else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); if (h.lift) this.lifted(c); }
     else if (kind === 'creature') {
-      g.creatures.strike(ent, at, dir, strike, cause); if (h.lift || h.push) ent.knock?.(kv.clone());
-      if (R?.status && ent.alive) g.creatures.apply(ent, R.status, STATUS_DUR[R.status] ?? 1, 1, 'courier');
-      this.lifted(c);
+      g.creatures.strike(ent, at, dir, this.worth(h, c), cause); if (h.lift || h.push) ent.knock?.(kv.clone());
+      this.struck(ent, c);
     }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
-    S.onHit?.(kind, ent, at, dir, h, c, R);
+    S.onHit?.(kind, ent, at, dir, h, c, this.rule(c?.def));
+  }
+
+  /** What a blow is worth to a creature (creatures.strike's power): its row's, a charge from half of it to all; with no row, the tool's
+   *  k times the blow's own (a tool with its own rules for a blow asks here too). */
+  worth(h, c) {
+    const R = this.rule(c?.def), charged = c?.kind === 'charge';
+    return R ? R.power * (charged ? 0.5 + 0.5 * this.charge : 1) : (this.S.k ?? 1.4) * (h.power ?? 1) * (charged ? 1 + this.charge : 1);
+  }
+  /** A creature struck: its row's status put on it (each creature decides what it means), and a launcher's first lift counted. */
+  struck(ent, c) {
+    const R = this.rule(c?.def);
+    if (R?.status && ent.alive) this.game.creatures.apply(ent, R.status, STATUS_DUR[R.status] ?? 1, 1, 'courier');
+    this.lifted(c);
   }
 
   /** A launcher's first lift of something: Dovina's count (move.launch opens the air string). */

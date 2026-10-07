@@ -13,17 +13,20 @@
 
 export function heldStrikeRules({ on, L, log }) {
   on('crucibelle.swing', (e) => {
+    if (e.by !== 'courier') return;
     L.inc(`bell.string.${e.move}`);
     if (e.n >= 3 && L.first('bell.string')) log.say('record', 'Logged: your first full toll string, brought down overhead.');
   });
   on('lockheart.swing', (e) => {
+    if (e.by !== 'courier') return;
     L.inc('lockheart.swing'); L.inc(`lockheart.swing.${e.move}`);
     if (L.first('lockheart.flail')) log.say('record', 'Logged: your first swing of the coffin on its chain.');
   });
-  on('lockheart.hit', (e) => { L.inc('lockheart.hit'); L.inc(`lockheart.hit.${e.what}`); });
+  on('lockheart.hit', (e) => { if (e.by !== 'courier') return; L.inc('lockheart.hit'); L.inc(`lockheart.hit.${e.what}`); });
   on('veritome.swing', (e) => {
+    if (e.by !== 'courier') return;
     L.inc('veritome.swing'); L.inc(`veritome.swing.${e.move}`);
     if (L.first('veritome.bash')) log.say('record', 'Logged: your first book bash.');
   });
-  on('veritome.hit', (e) => { L.inc('veritome.hit'); L.inc(`veritome.hit.${e.what}`); });
+  on('veritome.hit', (e) => { if (e.by !== 'courier') return; L.inc('veritome.hit'); L.inc(`veritome.hit.${e.what}`); });
 }

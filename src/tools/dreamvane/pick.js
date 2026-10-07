@@ -34,22 +34,22 @@ import { Moveset } from '../moveset.js';
 // 7 m/s shove; the Dreamquake 10 Lachryma (the cutlass's Tidecutter is 12 and wider) for a 4 m ring of 2.6 power that throws at 9 m/s
 // and lifts at 6, and reveals what is veiled within it (as the pick does in 3.2 m).
 export const VANE_MOVES = {
-  pick: { clip: 'Vane_PickStrike', from: 0.12, rate: 1.1, chain: [0.68, 1.1], to: 1.2, fade: 0.35, hit: { power: 1.5, dmg: 1.4 }, lunge: 1.4, ground: 0.64, heat: 0.4, arc: 'over' },
-  c1: { clip: 'Vane_Combo1', rate: 1.05, chain: [0.5, 0.85], to: 0.92, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 2.4, arc: 'r2l' },
-  c2: { clip: 'Vane_Combo2', rate: 1.05, chain: [0.32, 0.88], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 2.4, arc: 'l2r' },
-  c3: { clip: 'Vane_Combo3', rate: 1.05, to: 1.55, fade: 0.45, hit: { power: 1.9, dmg: 1.7, push: 4 }, lunge: 3, ground: 0.84, heat: 0.8, arc: 'over' },
+  pick: { rule: 'pick', clip: 'Vane_PickStrike', from: 0.12, rate: 1.1, chain: [0.68, 1.1], to: 1.2, fade: 0.35, hit: { power: 1.5, dmg: 1.4 }, lunge: 1.4, ground: 0.64, heat: 0.4, arc: 'over' },
+  c1: { rule: 'combo1', clip: 'Vane_Combo1', rate: 1.05, chain: [0.5, 0.85], to: 0.92, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 2.4, arc: 'r2l' },
+  c2: { rule: 'combo2', clip: 'Vane_Combo2', rate: 1.05, chain: [0.32, 0.88], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 2.4, arc: 'l2r' },
+  c3: { rule: 'combo3', clip: 'Vane_Combo3', rate: 1.05, to: 1.55, fade: 0.45, hit: { power: 1.9, dmg: 1.7, push: 4 }, lunge: 3, ground: 0.84, heat: 0.8, arc: 'over' },
   // held: the pick stays up (the same clip, held at its top), and comes down on release
   raise: { clip: 'Vane_PickStrike', from: 0.42, holdAt: 0.47, arc: 'raise' },
   drive: { clip: 'Vane_PickStrike', from: 0.47, rate: 1.2, to: 1.25, fade: 0.35, hit: { power: 2.0, dmg: 2.0, push: 3 }, ground: 0.64, heat: 1, arc: 'over' },
   // the pause strings and the counter
-  spin: { clip: 'Vane_SpinSweep', body: 'whole', hit: { power: 1.6, dmg: 1.4, push: 5, lift: 2 }, heat: 0.6, arc: 'r2l' },
-  j1: { clip: 'Vane_JrpgCombo1', rate: 1.1, chain: [0.45, 1.0], to: 1.08, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.2, arc: 'r2l' },
-  j2: { clip: 'Vane_JrpgCombo2', rate: 1.1, chain: [0.62, 1.1], to: 1.18, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.2, arc: 'l2r' },
-  j3: { clip: 'Vane_JrpgCombo3', rate: 1.05, to: 1.6, fade: 0.4, hit: { power: 2.0, dmg: 1.9, push: 6, lift: 3 }, lunge: 2.6, heat: 1, arc: 'r2l' },
+  spin: { rule: 'pause1', clip: 'Vane_SpinSweep', body: 'whole', hit: { power: 1.6, dmg: 1.4, push: 5, lift: 2 }, heat: 0.6, arc: 'r2l' },
+  j1: { rule: 'pause1', clip: 'Vane_JrpgCombo1', rate: 1.1, chain: [0.45, 1.0], to: 1.08, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.2, arc: 'r2l' },
+  j2: { rule: 'pause2', clip: 'Vane_JrpgCombo2', rate: 1.1, chain: [0.62, 1.1], to: 1.18, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.2, arc: 'l2r' },
+  j3: { rule: 'pause3', clip: 'Vane_JrpgCombo3', rate: 1.05, to: 1.6, fade: 0.4, hit: { power: 2.0, dmg: 1.9, push: 6, lift: 3 }, lunge: 2.6, heat: 1, arc: 'r2l' },
   // S + LMB, sprinting, and R
   up: { clip: 'Vane_Thrust', rate: 1.1, chain: [0.36, 0.72], to: 0.78, fade: 0.25, hit: { power: 1.4, dmg: 1.1, lift: 9, push: 1 }, lunge: 2.6, arc: 'raise' },
-  vault: { clip: 'Vane_Vault', body: 'whole', root: 'xz', rate: 1.2, carry: 4, carryTo: 0.3, hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'over' },
-  quake: { clip: 'Vane_SpecialDreamquake', body: 'whole', cost: 10, ringAt: 1.7, ring: 4, hit: { power: 2.6, dmg: 2.6, push: 9, lift: 6 }, heat: 1, arc: 'over' },
+  vault: { rule: 'vault', clip: 'Vane_Vault', body: 'whole', root: 'xz', rate: 1.2, carry: 4, carryTo: 0.3, hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'over' },
+  quake: { rule: 'special', clip: 'Vane_SpecialDreamquake', body: 'whole', cost: 10, ringAt: 1.7, ring: 4, hit: { power: 2.6, dmg: 2.6, push: 9, lift: 6 }, heat: 1, arc: 'over' },
 };
 export const VANE_STRINGS = {
   ground: ['pick', 'c1', 'c2', 'c3'], air: ['c1', 'c2'], launcher: 'up', dash: 'vault', special: 'quake',
@@ -70,7 +70,7 @@ export class VaneMoves extends Moveset {
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', 'dreamvane');
     else if (kind === 'pot') g.breakables.shatter(ent, at, dir, power * 0.93, 'picked', 'courier');
     else if (kind === 'clapper') { g.clappers.knock(ent, flat.multiplyScalar(8 + (h.push ?? 0)).setY(5 + (h.lift ?? 0) * 0.5).clone()); g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray); }
-    else if (kind === 'creature') { g.creatures.strike(ent, at, dir, (this.S.k ?? 1.07) * power, 'picked'); if (h.push || h.lift) ent.knock?.(flat.multiplyScalar(h.push ?? 0).setY(h.lift ?? 0).clone()); }
+    else if (kind === 'creature') { const w = this.worth(h, c); if (w > 0) g.creatures.strike(ent, at, dir, w, 'picked'); if (h.push || h.lift) ent.knock?.(flat.multiplyScalar(h.push ?? 0).setY(h.lift ?? 0).clone()); this.struck(ent, c); } // (the row's power: a vault's is none, a shove)
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(this.S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
   }

@@ -7,7 +7,8 @@
 //    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and they sound an octave up. The voice is the
 //    instrument fitted to the bell (the Pneuka Box): the bell itself, a clay ocarina, a kalimba, a lute (band.js plays them).
 //  - ON THE BEAT: a note within a small window of the music's eighth notes builds FEVER; off the beat, or long silence, lets it fall.
-//    Fever is the ember in the bell and the smoke out of it, and it makes every song stronger and cheaper (Patapon's fever).
+//    Fever is the ember in the bell and the smoke out of it, and it makes every song stronger and cheaper (Patapon's fever). Its peak,
+//    once a fever, rings out at its widest and strikes all round (Dovina's feverPeak row, progress/combat/moves.js, once earned).
 //  - SONGS: a short motif played in order (tools/crucibelle/songs.js: Ocarina of Time's songs) is TAKEN by the bell and comes out as more:
 //    THE SONG OF SEEING shows what is veiled (crystal rises: world/dunes/crystals.js; every Lachryma signature marked), THE SONG OF
 //    SEEMING puts up a Courier of smoke that hunts are drawn to (tools/crucibelle/mirage.js; a decoy every mind sees: creatures/ai/brain.js) and veils
@@ -16,7 +17,8 @@
 //  - TOLL (LMB): the bell struck: a ring of sound that staggers what is close in front (a little stun, a shove), and on the beat it
 //    counts for fever too (the drum to the songs' melody). Pressed again in time, the TOLL STRING: four tolls, each a toll, the bell
 //    swung wider each time (a forehand, a backhand), the last brought down overhead and rung all round them (the combo engine,
-//    tools/moveset.js: Bell_Toll and Bell_TollCombo1-3 of the Courier's own suite).
+//    tools/moveset.js: Bell_Toll and Bell_TollCombo1-3 of the Courier's own suite). Each toll strikes for its row's power and status
+//    (toll1-3, progress/combat/moves.js).
 //  - THE BODY (the Courier's own suite, Bell_*): the bell held up before them as a lantern (Bell_Idle, its wrist turned out so the bell
 //    clears the face), a gesture for every note (Bell_Note1-5, the octave Bell_NoteHigh), the fever's peak (Bell_FeverPeak), a song cast
 //    out of it (Bell_SongCast). At a busker's mat the busking body is the rhythm mode's (courier/moves/rhythmhold.js); the bell stays out.
@@ -31,6 +33,7 @@
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { Moveset } from '../moveset.js';
+import { MOVES as RULES, unlocked } from '../../progress/combat/moves.js';
 import { Gestures, Crossfade, standLegs } from '../heldclips.js';
 import { Track } from '../../courier/anim/animator.js';
 import { T } from '../../core/config.js';
@@ -49,10 +52,10 @@ const WINDOW = 0.085, OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1 };
 // a string keeps time with eighth notes up to about 100 bpm and quarter notes at any tempo. `toll`: its strength (k, times the old toll's),
 // its cone and reach (the last, brought down overhead, rings all round them). Numbers proposed to Dovina: docs/handoffs/dovina/.
 const MOVES = {
-  toll: { clip: 'Bell_Toll', from: 0.13, at: 0.25, chain: [0.43, 0.7], toll: { k: 1 }, arc: 'raise' },
-  t1: { clip: 'Bell_TollCombo1', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.15 }, arc: 'r2l' },
-  t2: { clip: 'Bell_TollCombo2', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.3 }, arc: 'l2r' },
-  t3: { clip: 'Bell_TollCombo3', from: 0.22, at: 0.45, toll: { k: 1.8, cone: Math.PI, range: 5.2 }, arc: 'over' },
+  toll: { rule: 'toll1', clip: 'Bell_Toll', from: 0.13, at: 0.25, chain: [0.43, 0.7], toll: { k: 1 }, arc: 'raise' },
+  t1: { rule: 'toll2', clip: 'Bell_TollCombo1', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.15 }, arc: 'r2l' },
+  t2: { rule: 'toll2', clip: 'Bell_TollCombo2', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.3 }, arc: 'l2r' },
+  t3: { rule: 'toll3', clip: 'Bell_TollCombo3', from: 0.22, at: 0.45, toll: { k: 1.8, cone: Math.PI, range: 5.2 }, arc: 'over' },
 };
 const STRINGS = { ground: ['toll', 't1', 't2', 't3'] };
 /** The bell hand's wrist turned out (about the hand's own Y, radians): the suite holds the hand before the right shoulder, and the bell,
@@ -148,11 +151,22 @@ export class Crucibelle extends HeldTool {
     if (song) { this.history = []; this.sing(song); }
     g.events?.emit('crucibelle.note', { degree: d, onBeat: on });
   }
+  /** The fever's peak, once a fever: the ring at its widest, Dovina's feverPeak row (its power to all within its radius, once earned). */
+  peak() {
+    const g = this.game, P = this.P, R = RULES.crucibelle?.feverPeak;
+    if (!R || !unlocked('crucibelle', 'feverPeak', g.ledger)) return;
+    for (const cr of g.creatures.near(P.pos, R.radius ?? 6)) {
+      if (cr.ally) continue;
+      const d = _a.set(cr.pos.x - P.pos.x, 0, cr.pos.z - P.pos.z).normalize();
+      g.creatures.strike(cr, cr.pos, d, R.power, 'toll'); cr.knock?.(d.clone().multiplyScalar(4).setY(2));
+    }
+    this.ring(this.model.mouthWorld(_a).clone(), 0xffd76a, 40, 5.5);
+  }
   /** On the beat or not: the fever rises or falls (Patapon's fever). */
   beatHit(on, t, G) {
     this.fever = THREE.MathUtils.clamp(this.fever + (on ? 0.1 : -0.18), 0, 1);
     if (on) this.onBeat++;
-    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', {}); if (!this.moves.busy) this.gesture('Bell_FeverPeak', { fadeOut: 0.25 }); }
+    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', { by: 'courier' }); if (!this.moves.busy) this.gesture('Bell_FeverPeak', { fadeOut: 0.25 }); this.peak(); }
     if (this.fever < 0.6) this.feverHot = false;
   }
 
@@ -205,7 +219,7 @@ export class Crucibelle extends HeldTool {
   // ---------------------------------------------------------------- the toll
   /** The bell rung, at the strike of a move of the toll string (`c`: the combo engine's move; none: a toll on its own). */
   toll(c = null) {
-    const g = this.game, P = this.P, G = this.grid(), t = this.now(), spec = c?.def.toll || {};
+    const g = this.game, P = this.P, G = this.grid(), t = this.now(), spec = c?.def.toll || {}, R = c ? this.moves.rule(c.def) : null;
     const at = t - this.pressAt < 0.5 ? this.pressAt : t; // (judged when it was pressed: a toll buffered in the string rings at its turn)
     const on = this.offBeat(at, G) < WINDOW;
     this.swingV += 9 * (spec.k ?? 1);
@@ -218,6 +232,7 @@ export class Crucibelle extends HeldTool {
       if (cr.ally) continue;
       const d = _a.set(cr.pos.x - P.pos.x, 0, cr.pos.z - P.pos.z); if (d.length() > 0.3 && d.normalize().angleTo(f) > cone) continue;
       g.stun?.add(cr, 0.22 * k, { by: 'courier', cause: 'toll' }); cr.knock?.(d.clone().multiplyScalar(2.5 * k).setY(1)); n++;
+      if (R) { g.creatures.strike(cr, cr.pos, d, R.power, 'toll'); if (c) this.moves.struck(cr, c); } // (the row's power and status: progress/combat/moves.js crucibelle)
     }
     for (const cl of g.clappers?.list || []) {
       if (!cl.alive || cl.ally || cl.pos.distanceTo(P.pos) > range) continue;
@@ -227,7 +242,7 @@ export class Crucibelle extends HeldTool {
     this.ring(this.model.mouthWorld(_a).clone(), 0xffd76a, 18 + Math.round(10 * this.fever) + (spec.cone > 2 ? 14 : 0), 3.5 * Math.min(1.6, spec.k ?? 1));
     if (n) P.shake = Math.max(P.shake || 0, 0.06 * (spec.k ?? 1));
     g.ai?.stimuli.emit('noise', P.pos, { radius: 20, strength: 0.7, by: 'courier' });
-    g.events?.emit('crucibelle.toll', { onBeat: on, n, move: c?.id ?? 'toll' });
+    g.events?.emit('crucibelle.toll', { onBeat: on, n, move: c?.id ?? 'toll', by: 'courier' });
   }
   /** A gesture of the bell's own (a note, the fever's peak, a song cast): played over the stance, cut off by the next. */
   gesture(clip, o) { this.gestures?.play(clip, o); }

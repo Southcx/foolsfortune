@@ -47,11 +47,11 @@ const simRand = stream('tools/soulbrush/club'); // (the simulation's chance: cor
 // power, 1.3 damage and a 5 m/s shove (a finisher of the second branch, a little under the overhead); the dive 1.8 and 1.5 with a 6 m/s
 // shove (a sprint's committed lunge, the cutlass's dash slash scaled to the brush's weight).
 const MOVES = {
-  c1: { clip: 'Brush_Combo1', chain: [0.42, 0.85], to: 0.88, fade: 0.3, hit: { power: 1.4, dmg: 1.0, bat: true }, lunge: 2.6, arc: 'r2l', flick: 1 },
-  c2: { clip: 'Brush_Combo2', chain: [0.52, 0.92], to: 0.95, fade: 0.3, hit: { power: 1.5, dmg: 1.1, bat: true }, lunge: 2.6, arc: 'l2r', flick: 1 },
-  c3: { clip: 'Brush_Combo3', rate: 1.05, to: 1.45, fade: 0.45, hit: { power: 2.0, dmg: 1.8, bat: false }, lunge: 4, ground: 0.75, heat: 0.6, arc: 'over', flick: 1.2 },
-  spin: { clip: 'Brush_Spin', body: 'whole', hit: { power: 1.6, dmg: 1.3, bat: true, push: 5 }, heat: 0.6, arc: 'r2l', flick: 1.4 },
-  dive: { clip: 'Brush_Dive', body: 'whole', root: 'xz', from: 0.08, rate: 1.1, to: 0.44, strike: [0.29, 0.4], carry: 6, hit: { power: 1.8, dmg: 1.5, bat: true, push: 6 }, heat: 0.7, arc: 'r2l', endSpeed: 5, flick: 1.2 },
+  c1: { rule: 'combo1', clip: 'Brush_Combo1', chain: [0.42, 0.85], to: 0.88, fade: 0.3, hit: { power: 1.4, dmg: 1.0, bat: true }, lunge: 2.6, arc: 'r2l', flick: 1 },
+  c2: { rule: 'combo2', clip: 'Brush_Combo2', chain: [0.52, 0.92], to: 0.95, fade: 0.3, hit: { power: 1.5, dmg: 1.1, bat: true }, lunge: 2.6, arc: 'l2r', flick: 1 },
+  c3: { rule: 'combo3', clip: 'Brush_Combo3', rate: 1.05, to: 1.45, fade: 0.45, hit: { power: 2.0, dmg: 1.8, bat: false }, lunge: 4, ground: 0.75, heat: 0.6, arc: 'over', flick: 1.2 },
+  spin: { rule: 'spin', clip: 'Brush_Spin', body: 'whole', hit: { power: 1.6, dmg: 1.3, bat: true, push: 5 }, heat: 0.6, arc: 'r2l', flick: 1.4 },
+  dive: { rule: 'dash', clip: 'Brush_Dive', body: 'whole', root: 'xz', from: 0.08, rate: 1.1, to: 0.44, strike: [0.29, 0.4], carry: 6, hit: { power: 1.8, dmg: 1.5, bat: true, push: 6 }, heat: 0.7, arc: 'r2l', endSpeed: 5, flick: 1.2 },
 };
 const STRINGS = { ground: ['c1', 'c2', 'c3'], air: ['c1', 'c2', 'c3'], pause: [{ at: 1, to: ['spin'] }], dash: 'dive' };
 // the slams: held up (the charge), then down. Clip seconds; `hold` is where the air slam waits while they fall, `strike` where the head
@@ -92,8 +92,9 @@ class ClubMoves extends Moveset {
       }
       g.events?.emit('brush.hit', { what: 'pot', n, move, by: 'courier' });
     } else if (kind === 'creature') {
-      g.creatures.strike(ent, at, dir, 1.2 * power, 'bashed');
+      g.creatures.strike(ent, at, dir, this.worth(h, c), 'bashed'); // (the row's power: progress/combat/moves.js brush)
       if (h.push || h.lift) ent.knock?.(_k.copy(dir).setY(0).normalize().multiplyScalar(h.push ?? 0).setY(h.lift ?? 0).clone());
+      this.struck(ent, c);
       g.events?.emit('brush.hit', { what: ent.kind, n, move, by: 'courier' });
     } else if (kind === 'clapper') {
       const flat = _k.copy(dir).setY(0).normalize();
@@ -122,7 +123,7 @@ export class Club {
     const g = tool.game;
     this.trail = g?.vfx?.swing('swing.brush') || null; // (the head's arc through the air: its look is vfx/library.js 'swing.brush')
     this.moves = new ClubMoves(tool, {
-      id: 'club', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.2, cause: 'bashed', events: { swing: 'brush.swing', hit: 'brush.hit' },
+      id: 'club', rules: 'brush', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.2, cause: 'bashed', events: { swing: 'brush.swing', hit: 'brush.hit' },
       trail: this.trail, segment: (a, b) => this.tool.model.headSegment(a, b),
       onBegin: (c) => this.onBegin(c), onAt: (c) => this.flick(c.def.flick ?? 1), onUpdate: (c) => this.onMove(c),
     });
