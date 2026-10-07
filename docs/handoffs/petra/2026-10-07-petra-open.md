@@ -6,5 +6,9 @@
 - **The Dunes made bigger** (`docs/plans/DUNES.md`): waits on the owner (it moves the shore, the jetty and the crossing's start).
 - **The stress test's rare `embedded` / `guard:nudge` at cp T1** (about 1 run in 10, fresh page only, after a grapple swing): not seen
   since R57; reopen if it returns.
-- **Requests out**: Dovina, `garden.grant(kind)` for a terrace or pavilion feature, and spirits' work feeding slots and beds; Calissa,
-  `{ surface }` as a Planetoid option (realm.js sets it on the instance), the cocoon tree, the fossil, the Heavenly Kiln's sky and rings.
+- **The heap**: 322 MB at 6d900d1, budget raised to 330. 44 MB of geometry hangs on meshes with no zone (35 MB unnamed `Mesh`), 7.8 MB in
+  `shards`; find what they are (the crossing's parked sea and ship?) and whether they need to live from boot. The garden is 1 MB.
+- **Dovina's unwired data** (her note, 2026-10-07): the weather's `mindDrift`, `fishPull`, `signatureMult` have no callers and
+  `buildMult` reaches `friendly.js` only; Grain (`progress/combat/temperament.js`) is imported by nothing; `voyage.reckon` and
+  `reckonLead` are never called (Divination does not chart a crossing, the owner's R57 ruling). For the next round.
+- **Wanda's asks** (round robin): the ground's material under a step (`move.step { surface }`), and an `acoustic` on each zone.
