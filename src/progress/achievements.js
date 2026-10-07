@@ -324,7 +324,7 @@ export function buildAchievements(game) {
   C('vb4', 'veritome', 'The Book', 3, 'collect', 'Portraitist', 'Bind five creature cards.', 'card.pages.creature', 5);
   C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Banked', 'Store something in the Veritome from the Pneuka Box.', 'item.store', 1);
   C('vb7', 'veritome', 'The Book', 1, 'mechanic', 'Something Old', 'Tie a curio on as a lure.', 'lure.tie.curio', 1);
-  C('vb8', 'veritome', 'The Book', 2, 'mechanic', 'Overburdened', 'Fill all twenty-eight slots of the Pneuka Box.', 'pneuka.filled', 1);
+  C('vb8', 'veritome', 'The Book', 2, 'mechanic', 'Overburdened', 'Fill all fifty-six slots of the Pneuka Box.', 'pneuka.filled', 1);
   C('vb6', 'veritome', 'The Book', 2, 'mechanic', 'Condensed', 'Condense a spare card into cubes.', 'card.condense', 1);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)

@@ -392,6 +392,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **the Heavenly Kiln**). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
   battle (held over the Jar's mouth through its **struggle**), and then bound. *Not:* caught by the Veritome (it reprograms).
   The bound wait in the Jar (`game.bound`, `src/creatures/bound.js`) until the garden opens; the hand's catch is `src/godhand/catch.js`.
+  **The planetoids** (Espada's names, `src/npc/realmnames.js` `PLANETOIDS`): **the Dantian** (the heart: the way in, the lake, the
+  shed), **the Herb Terraces** (the beds), **the Athanor** (the furnace: the press and the firing), **the Pavilions of Echoes** (the
+  slots), **the Mulberry Grove** (the spirits and the cocoon tree), **the Chimney** (the peak of the Heavenly Kiln); bought later, the
+  Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed. A realm's offered name is two neuralese words (`name(seed)`, `gloss`).
   Entered at a Shrine (`realm.enter`): six planetoids over the world's north (`place.js`, zone `garden`), each a sphere with gravity to
   its heart; a **planetoid body** (`planetbody.js`, Galaxy's gravity) is what stands and hops on one, the Jar's and each spirit's. A
   **launch lotus** flies the Jar to a neighbour in two real seconds. *Not:* "hopper" (the press's mouth), "island" (the bowl's rubble).
