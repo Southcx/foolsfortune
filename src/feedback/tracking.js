@@ -223,8 +223,8 @@ export class Tracking {
     on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
     // the parry, with every tool (docs/plans/PARRY.md): counted all together and by tool; one line a way (Espada's words to come)
     const PARRY_SAY = {
-      return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
-      shatter: 'Your bell shatters the shot.', stagger: 'You shoot the shot down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
+      return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your Soul Brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
+      shatter: 'The Crucibelle shatters the shot.', stagger: 'You shoot it down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
     };
     on('move.parry', (e) => {
       L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed);

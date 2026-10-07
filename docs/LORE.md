@@ -335,6 +335,8 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   with one turn in them. The folk show feeling with their bodies, never stage directions. The Courier's own hand (the Arcana) is first
   person, dry. Word pools: the potter's trade, the sea, the tarot, board games, the number five. Compound concrete names (clapperjar,
   Sondelass, Veritome, Dreamvane, Crucibelle, Lockheart). The Prince's voice is the key to the island's; every pot is a smaller piece.
+- **The siblings' voices** are voice cards in `src/coop/personas.js`: five built to differ on every axis (length, punctuation,
+  register, what comes first, how a line ends), with the house voice's tells banned for all five.
 - **No clinical words** in player text: show mania, worry, despair; never name them.
 
 ### Directions from the owner's notes *(direction, not yet ruled)*

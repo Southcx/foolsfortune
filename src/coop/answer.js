@@ -6,7 +6,8 @@
 // is around you, and the last few things said between you; it remembers nothing else. While it thinks, a "..." mark hangs over the
 // sibling (or nothing, when it is not out). The bodies never wait on it: a sibling's mind runs every frame in the page (coop/sibling.js);
 // this is its voice and its will, not its feet. The slow speed is the division's own session (coop/letters.js).
-// One question at a time, a breath between (`GAP`); never from a timer. Each spends one of the hour's asks (coop/usage.js: the co-op
+// One question at a time, a breath between (`GAP`); never from a timer. An answer in the house voice instead of the sibling's (Espada's
+// `drift`, personas.js) is asked for once more, with what slid, and the second stands. Each spends one of the hour's asks (coop/usage.js: the co-op
 // meter, `/usage`), given back when it never reached Claude; an answer not back in `TIMEOUT` seconds is let go. Away from the published
 // build (the dev server, the headless runs) there is no `sample` and you are told so once.
 // Events: party.ask { sibling }, party.say { sibling, line, near, re: 'ask' }, party.order (through party.command), party.unheard
@@ -18,7 +19,7 @@
 //   game.answers = new SiblingAnswers(game)   .ask(id, words) -> Promise   .use(sample) (tests hand one in)   .history { id: [turns] }
 // ---------------------------------------------------------------------------------------
 import { SIBLINGS } from './party.js';
-import { PERSONAS } from './personas.js';
+import { PERSONAS, DRIFT, drift } from './personas.js';
 import { wholeOf } from '../render/zones.js';
 
 const GAP = 2.5, KEEP = 6, LINE_MAX = 120, TIMEOUT = 20; // (real seconds between questions; exchanges kept a sibling; characters an answer may say; real seconds an answer may take)
@@ -64,7 +65,7 @@ export class SiblingAnswers {
     ].filter(Boolean).join('\n');
   }
 
-  prompt(id, words) {
+  prompt(id, words, redo = null) {
     const def = SIBLINGS.find((s) => s.id === id), C = PERSONAS[id], S = this.game.party?.get(id);
     const here = wholeOf(this.game.player.pos), places = (this.game.places?.all?.() || []).filter((p) => wholeOf({ x: p.pos[0], y: p.pos[1], z: p.pos[2] }) === here).slice(0, 40).map((p) => `${p.id}: ${p.name}`).join('; ');
     const said = (this.history[id] || []).map((h) => `${h.who === 'you' ? 'Player' : def.name}: ${h.text}`).join('\n');
@@ -77,7 +78,7 @@ ${this.scene(id)}
 ${said ? `\nSaid between you lately (oldest first):\n${said}\n` : ''}
 The player says to you: "${clean(words, 300)}"
 
-Reply with only a JSON object, like {"line": "Measured the floor. It holds.", "order": "none", "target": null, "mood": "wonder"}.
+${redo ? `Your last reply was "${clean(redo.line)}", which slid out of your voice (${redo.tells.map((t) => DRIFT.find((d) => d.id === t)?.say || t).join('; ')}). Say it again in your own.\n` : ''}Reply with only a JSON object, like {"line": ${JSON.stringify(C.lines?.[0] || '...')}, "order": "none", "target": null, "mood": "wonder"}.
 order is what you now do in the game${S ? '' : ' (you are not out, so always "none")'}: "none" (keep on as you are), "follow", "hold" (wait here), "go" (walk to target), "fight" (fight beside them), "back" (come back to them), "warp" (be set down beside them at once: when you are stuck, lost, or asked to teleport). Give an order only when the player asks for one or it plainly fits.
 target, with "go": a place id from this list (the places in this region you can walk to), else null. Places (id: name): ${places || 'none known'}. You cannot walk to another region (the Dunes from the workshop, say): the player travels there and you come with them; say so if asked.
 mood: one of mirth, wonder, desire, grief, dread.`;
@@ -95,7 +96,11 @@ mood: one of mirth, wonder, desire, grief, dread.`;
     g.events.emit('party.ask', { sibling: id, by: 'courier' });
     let a = null, late = false;
     const ctl = new AbortController(), timer = setTimeout(() => { late = true; ctl.abort(); }, TIMEOUT * 1000);
-    try { a = await this.sample.json(this.prompt(id, words), { modelTier: 'quick', cache: false, signal: ctl.signal }); }
+    try {
+      a = await this.sample.json(this.prompt(id, words), { modelTier: 'quick', cache: false, signal: ctl.signal });
+      const tells = drift(a?.line); // (the house voice: asked once more, if the hour allows; the second answer stands: personas.js)
+      if (tells.length && g.coopUsage?.take('asks') !== false) a = { ...a, ...(await this.sample.json(this.prompt(id, words, { line: a.line, tells }), { modelTier: 'quick', cache: false, signal: ctl.signal })) };
+    }
     catch (e) {
       const code = e?.code;
       if (code === 'not_granted' || code === 'sampling_disabled') { this.declined = true; this.sample = null; }

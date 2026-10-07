@@ -66,8 +66,8 @@ export class Pier {
       for (const id of Object.keys(NODES)) {
         if (id === at) continue;
         const N = NODES[id], c = V.canBoard(at, id, 'sloop'), open = V.isOpen(id), ok = c.ok;
-        const sub = c.ok ? `cast off: ${c.hop.fuel} cubes of fuel` : c.why;
-        const d = el('div', 'room', `<span class="n">${ok ? '⚓' : '·'}</span><span><b>${open ? N.name : 'Somewhere not yet found'}</b><s>${sub}</s></span>`);
+        const sub = c.ok ? `fuel: ${c.hop.fuel} cubes` : c.why;
+        const d = el('div', 'room', `<span class="n">${ok ? '⚓' : '·'}</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${sub}</s></span>`);
         if (ok) d.onclick = () => this.sail(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
       }
@@ -79,7 +79,7 @@ export class Pier {
         d.onclick = () => { this.chosen = on ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-SLOTS); this.open(at); };
         mb.appendChild(d);
       }
-      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', can.length ? 'THE MOUNTS (1 AND 2 AT SEA)' : 'NO TOOLS WORN TO MOUNT'), mb];
+      const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', can.length ? 'MOUNTS: KEYS 1 AND 2 AT SEA' : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes' });
   }
