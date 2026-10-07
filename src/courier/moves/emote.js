@@ -11,7 +11,7 @@
 // mid-step, or one emote straight into another never snaps). A floor pose (`floor`: sitting, kneeling, lying, the hover) keeps its
 // own legs (no foot IK bending the folded knees) and is lifted, frame by frame, so no foot sinks under the floor (measured on this
 // skeleton the first time it plays: the hover's legs swing down before its hips rise). Lying down (`bare`) puts the worn tools out of
-// sight while the body is down.
+// sight while the body is down, and under any floor pose a worn tool that would go through the floor is out of sight until it is above it.
 //
 // Prior art: the emote state of FFXIV (begin, loop, end clips, cancelled by moving, the end clip played on the way out), Unreal's
 // Montage sections (a chain of clips with a way out from each), and the inertial/crossfade blends of every engine's animation graph.
@@ -27,13 +27,13 @@ const FADE = 0.22; // (s: a phase change's crossfade)
 const TAIL = 0.3; // (s: the last pose faded off the body's own when it ends)
 const FLOOR = -0.025; // (m: the lowest a foot or toe may go, measured as the standing feet are: rest height to the floor)
 const smooth = (x) => x * x * (3 - 2 * x);
-const _v = new THREE.Vector3();
+const _v = new THREE.Vector3(), _box = new THREE.Box3();
 
 export class Emote extends Tech {
   constructor(mgr) {
     super(mgr, 'emote');
     this.want = null; this.cur = null; this.phase = null; this.step = 0; this.ct = 0; this.blendIn = 9;
-    this.prev = null; this.tail = null; this.last = { name: null, t: 0, loop: false }; this.lifts = {};
+    this.prev = null; this.tail = null; this.last = { name: null, t: 0, loop: false }; this.lifts = {}; this.sunk = new Set();
   }
   get enabled() { return true; }
   usable() { return true; }
@@ -64,13 +64,17 @@ export class Emote extends Tech {
     if (!this.ready(id)) {
       const pack = g.clipPack?.social; // (fetched now if nothing has asked yet; the emote begins when it lands)
       if (!pack) return 'busy';
-      pack.then((ok) => { if (!ok && this.want === id) { this.want = null; g.log?.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 }); } });
+      pack.then((ok) => { if (this.want === id && !(ok && this.ready(id))) { this.want = null; g.log?.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 }); } });
     }
-    if (this.active) this.mgr.stop(); // (one emote straight into another: the old one's last pose fades under the new)
+    // (from a floor pose, up through its way out first and the new one begins when that is done: crossfaded straight from sitting to a
+    //  wave, the legs unfolded through the floor in 0.2 s, 0.14 m under it, measured; any other emote straight into the next, its last
+    //  pose faded under the new)
+    if (this.active && EMOTES[this.cur].floor && EMOTES[this.cur].exit) { this.leaving(); this.want = id; return true; }
+    if (this.active) this.mgr.stop();
     this.want = id;
     return true;
   }
-  stop() { if (this.active) this.leaving(); else this.want = null; }
+  stop() { this.want = null; if (this.active) this.leaving(); }
 
   /** Every clip the emote names is in the pack. */
   ready(id) { const c = this.game.character?.clips?.clips; return !!c && clipsOf(EMOTES[id]).every((n) => c[n]); }
@@ -85,7 +89,7 @@ export class Emote extends Tech {
     P.endCore?.(); P.vel.set(0, 0, 0);
     this.yaw = P.yaw;
     for (const t of g.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow();
-    this.prev = this.tail ? { ...this.tail, f: 1 - this.tail.f } : null; this.tail = null; // (an emote still fading out is faded under this one, from where its fade had got to)
+    this.prev = this.tail ? { ...this.tail, f: 1 - this.tail.f } : null; this.tail = null; this.sunk.clear(); // (an emote still fading out is faded under this one, from where its fade had got to)
     this.phase = null; this.set(E.enter ? 'enter' : E.loop ? 'loop' : 'once');
     g.events.emit('emote.start', { emote: this.cur, by: 'courier' });
   }
@@ -108,8 +112,12 @@ export class Emote extends Tech {
     const E = EMOTES[this.cur];
     if (!E || this.phase === 'exit' || this.phase === 'done') return;
     if (!E.exit) { this.phase = 'done'; return; }
-    // (halfway into a chain, out by the way back from that step: the hover's rise is undone before the sitting is)
+    // (halfway into a chain, out by the way back from that step: the hover's rise is undone before the sitting is; and halfway into a
+    //  way in, as far into the way out as the way in had still to go, so the body goes back from where it is: begun at its start, the
+    //  hover's way out from a rise left halfway sprang 0.3 m up to the top of the hover in 0.15 s before it came down, measured)
+    const into = this.phase === 'enter' ? Math.min(1, this.ct / this.endOf()) : 0;
     this.set('exit', this.phase === 'enter' ? Math.max(0, this.steps('exit') - 1 - this.step) : 0);
+    if (into > 0) this.ct = (1 - into) * this.dur(this.clipOf());
   }
   update(dt) {
     const P = this.P, inp = this.game.input, E = EMOTES[this.cur];
@@ -142,6 +150,7 @@ export class Emote extends Tech {
     if (EMOTES[this.cur].floor && this.measured !== this.cur) { for (const n of clipsOf(EMOTES[this.cur])) this.liftOf(ch, n); this.measured = this.cur; }
     const name = this.clipOf(), t = this.timeIn(name), loop = this.phase === 'loop';
     const L = this.last; L.name = name; L.t = t; L.loop = loop;
+    if (EMOTES[this.cur].floor) this.offFloor();
     // (lying down: the worn tools out of sight while the body is down, from halfway down to halfway up; each tool shows itself again
     //  from its own tick, which runs before this, so nothing is left hidden: tools/belt.js hideWorn)
     if (EMOTES[this.cur].bare && (loop || (this.phase === 'enter' && t > 0.5 * this.dur(name)) || (this.phase === 'exit' && t < 0.5 * this.dur(name)))) this.game.belt?.hideWorn();
@@ -154,6 +163,19 @@ export class Emote extends Tech {
       return;
     }
     C.blend(base, this.pose(ch, name, t, loop), this.w);
+  }
+  /** Under a floor pose, a worn tool that reaches the floor (the Soul Brush at the hip, under a crossed leg: 0.13 to 0.46 m down,
+   *  measured) is put out of sight until it is back 3 cm above it, measured on its own model as the last frame hung it; its own tick
+   *  shows it again (tools/belt.js hideWorn), so nothing is left hidden when the emote ends. */
+  offFloor() {
+    const S = this.sunk, y0 = this.P.pos.y;
+    for (const tool of this.game.belt?.tools || []) {
+      const m = tool.model;
+      if (!m || (!m.visible && !S.has(tool.id))) continue;
+      const low = _box.setFromObject(m).min.y - y0;
+      if (low < 0) S.add(tool.id); else if (low > 0.03) S.delete(tool.id);
+      if (S.has(tool.id)) m.visible = false;
+    }
   }
   /** A clip's pose at t, lifted out of the floor where it sinks (a floor pose's clips: liftOf). */
   pose(ch, name, t, loop) {
