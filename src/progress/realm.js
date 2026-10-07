@@ -5,13 +5,17 @@
 //
 // Prior art: Dark Cloud 2's Georama (a place built piece by piece against what its people want), Viva Pinata (visitors drawn by the
 // garden's conditions, who settle when more are met), Monster Rancher's drills (one stat up, fatigue up, rest down), feng shui and Wu
-// Xing (the generating and overcoming cycles, here on the game's five feelings: Espada's mapping, LORE.md), and xianxia's heavenly
-// tribulation (lightning that grows with the stage being crossed).
+// Xing (the generating and overcoming cycles, here on the game's five feelings: Espada's mapping, LORE.md), xianxia's heavenly
+// tribulation (lightning that grows with the stage being crossed), From Dust (ground and water as the god's paint), feng shui's dragon
+// veins (they run along ridges), the Chao Garden's races, Super Mario Galaxy's observatory (planetoids ringed round a hub), and Animal
+// Crossing's visitors (they look and leave a gift; they do not dig).
 //
 //   PHASE[feeling]   GENERATES[f] -> f   OVERCOMES[f] -> f   formation(feature, neighbours, onVein) -> multiplier
 //   PLANETOID_PLOTS[id] = { radius, plots }   FEATURES[id] = { size, job, does, firing }   costOf(feature, feeling) -> { cubes, material }
 //   DRILLS[id] = { stat, gain }   drillGain(stat now, fatigue) -> points   FATIGUE   VISITORS[kind] = { wants, settle }   wantsMet(kind, garden) -> 0..1
 //   TRIBULATION   strikesOf(firing) -> { strikes, every, outlined, may }
+//   GROUND[material]   GROWTH   WATERS   mixWater(a, b) -> { feeling, volume }   VEIN   veinEnd(heights) -> index   RACE   raceSpeed(spirit, stretch, done)
+//   SPAR   SETTLE   ORBIT   orbitSlot(n) -> { angle, radius, tilt }   RAIN   rainOf(state) -> 0..1   GUEST (the rules for SPIRIT-GARDEN.md's list)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 
@@ -23,10 +27,11 @@ export const OVERCOMES = { wonder: 'desire', desire: 'dread', dread: 'mirth', mi
 /** A feature's multiplier from its neighbours (features in adjoining plots) and whether a spirit vein runs under its plot: each neighbour
  *  that generates it adds ECON.place.formation, each that overcomes it takes it away; a vein doubles the whole (ECON.place.vein). Never
  *  below half: a bad layout is weak, never dead. */
-export function formation(feeling, neighbours = [], onVein = false) {
+export function formation(feeling, neighbours = [], onVein = false, { ground = null, water = null } = {}) {
   const F = ECON.place.formation;
   let m = 1;
-  for (const n of neighbours) { if (GENERATES[n] === feeling) m += F; else if (OVERCOMES[n] === feeling) m -= F; }
+  // (the ground a feature stands on and the water that reaches it count as one neighbour each: GROUND and WATERS below)
+  for (const n of [...neighbours, GROUND_FEELING[ground], water].filter(Boolean)) { if (GENERATES[n] === feeling) m += F; else if (OVERCOMES[n] === feeling) m -= F; }
   return Math.max(0.5, m) * (onVein ? ECON.place.vein : 1);
 }
 
@@ -98,3 +103,75 @@ export const TRIBULATION = { base: 12, more: 4, every: 1.2, faster: 0.9, may: 3 
  *  strikes 1.08 s apart (about 17 real seconds); the sixth 36 strikes 0.64 s apart (about 23 real seconds, and fierce). Every strike is
  *  outlined (PARRY.md): the skill is reading, not luck. */
 export const strikesOf = (firing = 1) => ({ strikes: TRIBULATION.base + TRIBULATION.more * firing, every: +(TRIBULATION.every * TRIBULATION.faster ** firing).toFixed(2), outlined: true, may: TRIBULATION.may });
+
+// ---- THE FEATURE LIST'S RULES (SPIRIT-GARDEN.md, "The feature list", 2026-10-07: Petra's draft, the owner's order)
+
+/** 6. The ground's materials, one a phase, painted by the god hand. Free: the ground is yours, and sculpting is play, not a sink (From
+ *  Dust); what costs is what is placed on it. A feature counts its ground as one neighbour in its formation; a bed on its own feeling's
+ *  ground grows GROWTH.ground times as fast; plants spread only onto ground that `spreads` (15 in the list). */
+export const GROUND = {
+  moss: { phase: 'wood', feeling: 'wonder', spreads: true }, ash: { phase: 'fire', feeling: 'mirth', spreads: false },
+  loam: { phase: 'earth', feeling: 'desire', spreads: true }, slate: { phase: 'metal', feeling: 'grief', spreads: false },
+  silt: { phase: 'water', feeling: 'dread', spreads: true },
+};
+/** A bed grows `ground` times as fast on its own feeling's ground and `water` times watered with it (both: their product). */
+export const GROWTH = { ground: 1.25, water: 1.25 };
+const GROUND_FEELING = Object.fromEntries(Object.entries(GROUND).map(([k, g]) => [k, g.feeling]));
+
+/** 11. Water keeps a feeling: the Dantian's lake the draught you entered with, a spring the feeling chosen when it is placed (a feature
+ *  of its own: costs as a small one), rain the garden's weather (RAIN). Water reaching a feature counts as one neighbour in its formation;
+ *  a bed watered with its own feeling grows GROWTH.water times as fast; a spirit that drinks its stat's
+ *  feeling gains `drink` points a game hour (as a feed, never past FEED's cap). Opposite feelings mixed cancel to fair water (the glossary:
+ *  opposites never make an agate); otherwise the larger volume's feeling holds. */
+export const WATERS = { drink: 1, opposite: { wonder: 'grief', grief: 'wonder', mirth: 'dread', dread: 'mirth', desire: null } };
+export function mixWater(a = {}, b = {}) {
+  const volume = (a.volume || 0) + (b.volume || 0);
+  if (!a.feeling || !b.feeling) return { feeling: a.feeling || b.feeling || null, volume };
+  if (WATERS.opposite[a.feeling] === b.feeling) return { feeling: Math.abs((a.volume || 0) - (b.volume || 0)) > volume * 0.5 ? ((a.volume || 0) > (b.volume || 0) ? a.feeling : b.feeling) : null, volume };
+  return { feeling: (a.volume || 0) >= (b.volume || 0) ? a.feeling : b.feeling, volume };
+}
+
+/** 13. A spirit vein runs between two planetoids and ends, on each, at the highest ground within `cone` degrees of the direction to the
+ *  other (feng shui: dragon veins run along ridges). So sculpting moves it: raise a ridge and the vein's end follows it; water never
+ *  moves it. A feature within `reach` metres of a vein's end is on the vein (formation's x2). Recomputed when a stroke ends. */
+export const VEIN = { cone: 35, reach: 3 };
+/** The index of the cell a vein ends at: `cells` = [{ height, angle }] (angle in degrees off the direction to the other planetoid). */
+export const veinEnd = (cells = []) => cells.reduce((best, c, i) => (c.angle <= VEIN.cone && (best < 0 || c.height > cells[best].height) ? i : best), -1);
+
+/** 17. Races (the Chao Garden's): a track is a carved groove that closes on itself (at least `minLength` metres) on one planetoid; up to
+ *  four spirits run it. Each stretch is read from a stat: flat by mirth (speed), climbs by desire (strength), water by dread (will),
+ *  length by grief (stamina: the last third slows without it), and wonder (sight) finds the inside line. Races pay no cubes (no currency
+ *  but cubes, and none from play inside you): the ledger's records and their achievements, and bond. */
+export const RACE = { minLength: 40, runners: 4, bond: 2, base: 4, per999: 3 };
+/** Metres a real second for a spirit on a kind of stretch ('flat' | 'climb' | 'water'), and the share of the track left when it tires. */
+export function raceSpeed(spirit, stretch = 'flat', done = 0) {
+  const st = spirit?.stats || {}, by = { flat: 'mirth', climb: 'desire', water: 'dread' }[stretch] || 'mirth';
+  const v = RACE.base + RACE.per999 * (st[by] || 0) / 999, line = 1 + 0.1 * (st.wonder || 0) / 999;
+  const tired = done > 2 / 3 ? 0.7 + 0.3 * (st.grief || 0) / 999 : 1;
+  return +(v * line * tired).toFixed(3);
+}
+/** Sparring at the Chimney: two of your spirits (or yours and a guest's), nobody hurt: each gains `gain` points in its strongest stat,
+ *  `fatigue` fatigue (FATIGUE), and alignment toward Chaos (ALIGN.spar, progress/spirits.js). Ends at the first to tire or `seconds`. */
+export const SPAR = { gain: 6, fatigue: 25, seconds: 45 };
+/** Settling: a visitor whose wants are met (wantsMet = 1) on a visit counts it; after VISITORS[kind].settle such visits it settles and is
+ *  bound, free (no catch), if a spirit house has room; else it keeps visiting. A visit missed does not reset the count (Viva Pinata is
+ *  patient); a want lost for `lapse` game days does. */
+export const SETTLE = { lapse: 3 };
+
+/** 19. Where a bought planetoid sits: a ring round the Dantian (Galaxy's observatory: domes round a hub). The god hand carries the
+ *  planetoid's seed into the sky and lets go; it takes the nearest free slot of `slots`, at `radius` metres from the Dantian's heart and
+ *  `tilt` degrees above or below its equator by turn, and grows launch lotuses to its two nearest neighbours and a vein to each. */
+export const ORBIT = { slots: 10, radius: 95, tilt: 12 };
+export const orbitSlot = (n = 0) => ({ angle: +((360 / ORBIT.slots) * (n % ORBIT.slots)).toFixed(1), radius: ORBIT.radius, tilt: n % 2 ? -ORBIT.tilt : ORBIT.tilt });
+
+/** 20. The garden's weather is you: the draught's feeling falls as rain inside the Jar, as hard as your mental state is liquid (Stoic
+ *  and Resolved dry, Balanced a drizzle, Fluid rain, Prismatic a storm), so drinking Lachryma in the world waters the garden, and
+ *  meditating at the Chimney (settling you) clears it. Brimming adds `brim`. Rain is a water source of the draught's feeling (WATERS). */
+export const RAIN = { Stoic: 0, Resolved: 0, Balanced: 0.2, Fluid: 0.5, Prismatic: 0.9, brim: 0.1 };
+export const rainOf = ({ state = 'Balanced', brimming = false } = {}) => Math.min(1, (RAIN[state] ?? 0) + (brimming ? RAIN.brim : 0));
+
+/** 21. A guest in your garden (over the room, COOP.md): their Pneuka Jar on your planetoids, hopping and looking; their god hand may pet
+ *  your spirits (bond to both), spar one of theirs with one of yours at the Chimney, and leave `gifts` material a visit in the shed's
+ *  gift slot. It never sculpts, paints, places, waters, catches, releases or takes (Animal Crossing's visitors do not dig): your inner
+ *  world is yours. Nothing a guest does moves the economy beyond the gift. */
+export const GUEST = { gifts: 1, may: ['hop', 'look', 'pet', 'spar', 'gift'] };

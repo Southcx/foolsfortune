@@ -422,6 +422,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Entered at a Shrine (`realm.enter`): six planetoids over the world's north (`place.js`, zone `garden`), each a sphere with gravity to
   its heart; a **planetoid body** (`planetbody.js`, Galaxy's gravity) is what stands and hops on one, the Jar's and each spirit's. A
   **launch lotus** flies the Jar to a neighbour in two real seconds. *Not:* "hopper" (the press's mouth), "island" (the bowl's rubble).
+- **the ground's materials** (`GROUND`, `src/progress/realm.js`; SPIRIT-GARDEN.md section 7): what the god hand paints a planetoid's
+  ground with, one a phase: **moss** (wood, wonder), **ash** (fire, mirth), **loam** (earth, desire), **slate** (metal, grief), **silt**
+  (water, dread). Free; a feature counts its ground in its formation. *Not:* a material (Soul Alchemy's, pressed), the formation
+  **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
