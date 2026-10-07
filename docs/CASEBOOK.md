@@ -149,6 +149,13 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
+- **Seen (Dovina's room sweeps):** `TypeError` reading `rig` at vfx/chestfx.js:45 every frame of the Tithe's opening; the rest of that
+  tick after main.js's chest update was skipped.
+- **Cause:** the Tithe's act sets `chests.cur` with no `.chest`; the chest's effects read `C.chest.rig` whenever `chests.cur` was set.
+- **Fix:** the effects draw only for a current act that has a chest with a rig (vfx/chestfx.js).
+- **Rule:** 35's note, widened: a hook asks what it was given, not what the field usually holds.
+
 ### 2026-10-07 · The Pneuka Jar unseen after the god hand, in the garden
 - **Seen (the owner):** in the Spirit Garden, ` and back: the Jar invisible.
 - **Cause (measured):** in the garden ` entered the world's god hand, and its exit sets `jar.group.visible = false`; the garden draws
