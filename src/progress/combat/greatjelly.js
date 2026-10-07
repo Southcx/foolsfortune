@@ -9,7 +9,7 @@
 // phase transition that remakes the arena, the hard enrage), Monster Hunter's tells read from the body, Dark Souls' boss phases, and
 // Thunder Force's boss as a musical event (Wanda's cue turns on the casts).
 //
-//   HEALTH   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
+//   NAMES[cast]   STATES   HEALTH   ENRAGE   PHASES[{ id, from (health share), loop: [{ at, cast }] }]   CASTS[id] = { windup, area, effect, answer, parry? }
 //   phaseOf(share) -> phase   timeline(phase, t0, until) -> [{ t, cast }]   DROPS   dropsFor(run) -> [cosmetic ids]
 // ---------------------------------------------------------------------------------------
 
@@ -23,6 +23,13 @@ export const ENRAGE = 570;
 /** What it does, cast by cast. `windup`: real seconds from the log naming it to the blow (the body shows it; parryable windups wear the
  *  outline: PARRY.md). `area`: what it covers. `effect`: what a hit costs (`pool`: a share of the Courier's Lachryma pool; `hits`: blows
  *  of its class). `answer`: what the player does. Names are placeholders for Espada's. */
+/** The casts' names as the log says them (Espada's, 2026-10-07, docs/LORE.md: each a jar's part or a potter's step, each telling
+ *  you what to do). The log: "The Great Slip Jelly readies <name>." */
+export const NAMES = { crownBash: 'Lidfall', brineLine: 'Shoulder Charge', gelidRings: 'Throwing Rings', oozeRain: 'Slip Trail',
+  crownGlare: 'Eye Cup', slipNova: 'Blowout', sinkingSands: 'Centring', surfaceSlam: 'Wedge', brineCascade: 'Decant', broodCall: 'Broodwake',
+  calving: 'Sherds', overflow: 'The Overflow', swallow: 'The Dunemaw Swallows' };
+/** The transition is Unstopped; Brine Soaked is Sodden; Submerge is Slake; the calves are sherds, and "the sherds mend" when they re-merge. */
+export const STATES = { clutch: 'Unstopped', soaked: 'Sodden', submerge: 'Slake', calf: 'sherd' };
 export const CASTS = {
   crownBash:   { windup: 1.2, area: { shape: 'lunge', at: 'courier', reach: 9 }, effect: { pool: 0.6, soaked: 20 }, answer: 'parry (V) or roll', parry: true }, // (the tankbuster; soaked: the next hit doubled for 20 s)
   brineLine:   { windup: 1.0, area: { shape: 'line', at: 'courier', width: 4, length: 24 }, effect: { hits: 1, crown: 'pillar' }, answer: 'stand before a pillar and step aside: it cracks its own crown' }, // (the ram: DUNEMAW-SYSTEMS.md)

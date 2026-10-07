@@ -71,6 +71,9 @@ export function merge(a, b) {
 /** THE FIRINGS: the sum of the attributes' ranks each one needs (the first is had from the start). Past the list, every 20 ranks
  *  more is another Firing: no ceiling (the owner). */
 export const FIRINGS = [0, 7, 14, 24, 36, 50];
+/** The first six Firings' names (Espada's, 2026-10-07: no potter has fired past an anagama, so the rest go by number); the tribulation
+ *  is the Heavenly Kiln. */
+export const FIRING_NAMES = ['Candling', 'Sinter', 'Lustre', 'Salt', 'Reduction', 'Anagama'];
 export const ATTRS = ['willpower', 'focus', 'charisma', 'perception', 'dexterity', 'visualization', 'resilience'];
 /** The sum of the attributes' ranks, from the ledger (alchemy.js fires them: `alchemy.rank.<attribute>`). */
 export const ranksOf = (L) => ATTRS.reduce((n, a) => n + (L.best(`alchemy.rank.${a}`) || 0), 0);

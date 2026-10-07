@@ -7,7 +7,7 @@
 // ---------------------------------------------------------------------------------------
 import { ATTRIBUTES } from '../../progress/alchemy.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
-import { firingOf, ranksOf } from '../../progress/spirits.js';
+import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 
 export function gardenRules({ on, L, log }) {
   on('alchemy.press', (e) => { if (e.by === 'courier') L.inc('alchemy.press', e.count || 1); });
@@ -35,10 +35,11 @@ export function gardenRules({ on, L, log }) {
   on('cultivation.tribulation', (e) => {
     if (e.by !== 'courier') return;
     L.inc('tribulation.tried');
-    if (!e.passed) return;
-    const open = firingOf(ranksOf(L)), n = Math.min(e.firing || open, open);
-    L.hi('firing', n); log.say('gain', `The ${['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh'][n - 1] || `${n}th`} Firing.`);
+    if (!e.passed) { log.say('info', 'The Heavenly Kiln closes. Try again when you are ready.'); return; }
+    const open = firingOf(ranksOf(L)), n = Math.min(e.firing || open, open), ORD = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth'];
+    L.hi('firing', n); log.say('gain', `${ORD[n - 1] || `Firing ${n}`}${ORD[n - 1] ? ' Firing' : ''}${FIRING_NAMES[n - 1] ? `: ${FIRING_NAMES[n - 1]}` : ''}. Complete.`); // (Espada's line)
   });
+  on('cultivation.kiln', (e) => { if (e.by === 'courier') log.say('info', 'The Heavenly Kiln opens.'); });
   on('realm.name', (e) => { if (e.by === 'courier') log.say('info', `Your Inner Realm is named ${e.name}.`); });
   on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `Garden widened: one more ${e.kind}.`); } });
 }

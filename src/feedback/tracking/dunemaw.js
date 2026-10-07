@@ -7,7 +7,7 @@
 //   dunemawRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { medalOf } from '../../progress/combat/dunemaw.js';
-import { dropsFor } from '../../progress/combat/greatjelly.js';
+import { dropsFor, NAMES } from '../../progress/combat/greatjelly.js';
 
 const DONE = { stun: 'stunned', halt: 'halted', slow: 'slowed', sleep: 'put to sleep', charm: 'charmed', blind: 'blinded', confusion: 'confused', doubt: 'made to doubt' };
 const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: 'Illusion', delirium: 'Delirium' };
@@ -15,7 +15,7 @@ const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: '
 export function dunemawRules({ on, L, log }) {
   // the crowned FOE
   on('foe.crack', (e) => { if (e.by !== 'courier') return; L.inc('foe.crack'); if (e.cause === 'ram') L.inc('foe.crack.ram'); });
-  on('foe.break', (e) => { if (e.by !== 'courier') return; L.inc('foe.break'); log.say('combat', 'The crown bursts from the Great Slip Jelly. Its core lies bare.'); });
+  on('foe.break', (e) => { if (e.by !== 'courier') return; L.inc('foe.break'); log.say('combat', "The Great Slip Jelly's crown breaks. Its core lies bare."); });
   on('foe.end', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`foe.${e.how}`);
@@ -30,7 +30,12 @@ export function dunemawRules({ on, L, log }) {
     if (e.warped) L.inc('find.warped');
   });
   on('foe.wipe', (e) => { if (e.by === 'courier') { L.inc('foe.wipe'); log.say('warn', 'The Dunemaw takes you back to the Lip Stone.', { key: 'wipe', throttle: 3 }); } });
-  on('foe.cast', (e) => { if (e.name) log.say('combat', `The Great Slip Jelly readies ${e.name}.`, { key: 'cast', throttle: 0.5 }); }); // (the cast named as it begins: FFXIV's cast bar, in the log)
+  on('foe.cast', (e) => { const n = NAMES[e.cast] || e.name; if (n) log.say('combat', `The Great Slip Jelly readies ${n}.`, { key: 'cast', throttle: 0.5 }); }); // (foe.cast { cast }: Espada's names)
+  // the fight's moments (Espada's lines): foe.moment { what, by: 'creature' }
+  const MOMENT = { crack: "The Great Slip Jelly's crown cracks.", mirror: 'Eye Cup turns back. The Great Slip Jelly is stunned.', sink: 'The Great Slip Jelly sinks into the dish.',
+    feed: 'A brood reaches the Great Slip Jelly. It heals.', sherds: 'The Great Slip Jelly breaks into four sherds.', mend: 'The sherds mend. The Great Slip Jelly heals.',
+    sodden: 'You are sodden.', dry: 'You are no longer sodden.', swallowed: 'The Dunemaw swallows you.' };
+  on('foe.moment', (e) => { if (MOMENT[e.what]) log.say(e.what === 'swallowed' || e.what === 'sodden' ? 'warn' : 'combat', MOMENT[e.what], { key: `moment.${e.what}`, throttle: 0.5 }); }); // (the cast named as it begins: FFXIV's cast bar, in the log)
   on('floor.shift', (e) => { if (e.by === 'courier') log.say('explore', 'The floor shifts round what you took.', { key: 'shift', throttle: 5 }); });
   // the Solar Skiffing trial
   on('trial.solar', (e) => {

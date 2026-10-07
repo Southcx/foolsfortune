@@ -374,7 +374,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   names in her conlang). In the garden you are **the Pneuka Jar**, hopping round its **planetoids**, and **the god hand** over them
   (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. A **Firing** (the owner,
   2026-10-07) is a tier of cultivation, read from the attributes' ranks and crossed by the **tribulation** (the first Firing, the
-  second, and on: no ceiling). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
+  second, and on: no ceiling; Espada's names for the first six: Candling, Sinter, Lustre, Salt, Reduction, Anagama; the tribulation is
+  **the Heavenly Kiln**). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
   battle (held over the Jar's mouth through its **struggle**), and then bound. *Not:* caught by the Veritome (it reprograms).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
