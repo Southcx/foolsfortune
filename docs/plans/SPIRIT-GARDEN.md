@@ -36,8 +36,8 @@ Prior art: Black & White, Populous, From Dust, Super Mario Galaxy, Chao Garden, 
 
 Entered at any Shrine (SHRINES.md): a small galaxy inside the Pneuka Jar, under a sky tinted by your draught, on the game's clock (the
 moonflower opens at night). Six planetoids: **the Dantian** (the heart: the way in, a lake of your own Lachryma, the Pneuka Box's
-shed), **the Herb Terraces** (the beds), **the Furnace** (Soul Alchemy's press and firing), **the Pavilions of Echoes** (the dividend's
-slots), **the Spirit Grove** (the spirits and the cocoon tree), **the Meditation Peak** (the tribulation); later ones bought. Radii 8 to
+shed), **the Herb Terraces** (the beds), **the Athanor** (the furnace: Soul Alchemy's press and firing), **the Pavilions of Echoes** (the dividend's
+slots), **the Mulberry Grove** (the spirits and the cocoon tree), **the Chimney** (the Heavenly Kiln's tribulation); later ones bought. Radii 8 to
 20 m: hopped round in 5 to 15 real seconds, small enough to feel like a toy in your hand. Launch lotuses fling the Jar to a neighbour in
 about 2 real seconds. The look (Dual Hearts): soft and floating, clouds below, spirit veins glowing between the planetoids.
 
@@ -52,7 +52,7 @@ game's shown order, wonder → mirth → desire → grief → dread → wonder (
 
 ## 2. The spirits
 
-**Where they come from:** caught (below); awakened from a Veritome plate at the Furnace's shrine (Monster Rancher's disc stone);
+**Where they come from:** caught (below); awakened from a Veritome plate at the Athanor's shrine (Monster Rancher's disc stone);
 Lachrymite fossils dug in the Dunes and awakened by the Crucibelle's song (Spectrobes); visitors drawn by what the garden offers, who
 settle if you meet more (Viva Piñata; the ecology's offers, `docs/AI.md`); bred by merging in the cocoon tree (Jade Cocoon).
 
@@ -69,12 +69,12 @@ Either way it is bound and waits in the Jar until you next enter the garden, whe
 **Raising:** five stats, one a feeling; fed by what the game drops; drills that raise one stat and tire it; alignment on the
 Law–Chaos line; 5 × 3 = 15 forms a kind (strongest feeling by alignment); merging keeps the stronger of each stat at a share. They
 work the garden (Palworld), and one comes out with you as an ally (`creatures/spirits.js`). **Later (not built):** races on a planetoid
-track (Chao Race), sparring at the Peak.
+track (Chao Race), sparring at the Chimney.
 
 ## 3. The Firings and the Inner Realm's name (Espada's words, 2026-10-07, `docs/LORE.md`)
 
 The soul refired, as clay is, each Firing a harder heat: read from the sum of Soul Alchemy's attribute ranks (thresholds 7, 14, 24, 36,
-50 for the second to the sixth), crossed by the tribulation at the Meditation Peak (lightning, each strike outlined, flicked back by the
+50 for the second to the sixth), crossed by the tribulation at the Chimney (lightning, each strike outlined, flicked back by the
 hand or dodged by a hop; failing costs nothing but the try). They open places and verbs (the Grove, the Pavilions, two spirits out,
 planetoid slots), **never a level**: no numbers on the Courier (DESIGN.md).
 

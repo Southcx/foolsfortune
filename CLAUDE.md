@@ -5,6 +5,12 @@ The owner's rules for every change. Each line is a rule; the reasons are kept sh
 ## Words and structure
 - **`docs/GLOSSARY.md` is binding**: one word, one meaning, in code, docs, commits and messages. Name a new thing there first, in the same
   commit; a request that uses a word against the glossary is clarified before anything is built.
+- **The glossary is always in context** (the owner, 2026-10-07): it is imported below, so every session and every agent it starts
+  reads it before anything else. A prompt for a subagent says "read CLAUDE.md and docs/GLOSSARY.md first" all the same.
+- **Names say which thing, whole** (the owner: "be more verbose when naming your scripts so that they're not ambiguous"): a file,
+  script, id or key carries the glossary's term for what it is, never a part for the whole or a form for the tool (the tool is the
+  Sondelass; the cutlass is one of its forms, so a table of the tool's moves is keyed `sondelass`, a file of the form's code
+  `sondelass/cutlass.js`). A name that could mean two things in the glossary is qualified (`gardenSweep`, not `sweep`).
 - **Be specific**: the glossary's term in full, never a loose stand-in. Every unit of time names its clock (**game day**, **game hour**,
   **real minute**); a thing is named as the glossary names it (the Dunemaw, not "the Well"), with its code id where that helps.
 - **`docs/ARCHITECTURE.md` is binding** (Petra's; the gate enforces it): the layout, the import rules, the module contract (a header, one
@@ -124,3 +130,7 @@ default branch, merge small and often, stay inside your own files (a small edit 
     and casual, quick to a pun (the sharpest sword is wit); loves a dense line, a double or triple meaning, a name that is its own
     destiny, and the root of a word; says where a thing comes from before what it is; leaves blanks blank; ends with what is canon
     now and what is still open.
+
+## The glossary (imported: always loaded)
+
+@docs/GLOSSARY.md

@@ -17,11 +17,13 @@ import { testroomRules } from './testroom.js';
 import { qaisRules } from './qais.js';
 import { brushRules } from './brush.js';
 import { partyRules } from './party.js';
+import { moveRules } from './moves.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
   wellRules(ctx);
   railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
+  moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   voyageRules(ctx);
   gardenRules(ctx);
   weatherRules(ctx);

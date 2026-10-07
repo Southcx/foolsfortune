@@ -7,7 +7,10 @@
 //   .cur (the one with the chevron)   .offers (every source's one thing, this sweep)   .pin(ref, secs) (that one wins while it is offered:
 //   an agent naming what it means, docs/plans/COOP.md; nearest-wins chose a pot over the folk beside it)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { Chevron } from '../vfx/chevron.js';
+
+const _Y = new THREE.Vector3(0, 1, 0), _q = new THREE.Quaternion();
 
 export class Interact {
   constructor(game) {
@@ -52,7 +55,11 @@ export class Interact {
       else if (best) this.lost = 0;
       this.cur = best;
       this.chevron.target(best ? best.pos : null);
+      this.up = best?.up || null; // (an offer may say which way is up where it is: a planetoid's, in the garden)
     }
     this.chevron.update(dt);
+    // the chevron points down this offer's up (world up when it says none): GARDEN-SWEEP #4; Calissa may take this into target(p, up)
+    const G = this.chevron.group;
+    if (G.visible) { _q.setFromUnitVectors(_Y, this.up || _Y); G.quaternion.slerp(_q, this.up && G.quaternion.angleTo(_q) > 1.5 ? 1 : Math.min(1, dt * 12)); }
   }
 }

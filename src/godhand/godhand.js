@@ -363,7 +363,7 @@ export class GodMode {
       const V = this.jar;
       V.group.scale.setScalar(V.alive ? Math.max(0.001, 1 - ease(Math.min(1, this.t / 0.4))) : 0.001);
       if (this.t > 0.4) V.group.visible = false;
-      if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; }
+      if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; V.group.scale.setScalar(1); } // (put away at full size: the garden shows it again, GARDEN-SWEEP #2)
     } else {
       cam.position.copy(pos);
       cam.quaternion.copy(quat);

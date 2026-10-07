@@ -61,7 +61,7 @@ export class Input {
   lockError() {
     if (!this.everLocked) { this.lockFailed = true; this.onLockChange?.(false); return; }
     if (this.tries++ < 2) {
-      setTimeout(() => { if (!this.locked && this.enabled) this.requestLock(true); }, 1400);
+      setTimeout(() => { if (!this.locked && this.enabled && (this.wantLock?.() ?? true)) this.requestLock(true); }, 1400); // (asking the game first: the garden's cursor is free, GARDEN-SWEEP #10)
       return;
     }
     this.tries = 0;

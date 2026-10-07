@@ -304,7 +304,7 @@ export class Tracking {
     on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
-    on('place.enter', (e) => { const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); });
+    on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
     on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.`); });
     on('circuit.gate', (e) => {
@@ -401,6 +401,9 @@ export class Tracking {
       if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'You burst the slip jelly.', { key: 'jbur', win: 1, fmt: (n) => `You burst ${plural(n, 'slip jelly').replace('jellys', 'jellies')}.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle in a while.'); }
       else log.say('other', 'The slip jelly bursts.', { key: 'jbur2', throttle: 1 });
     });
+    // a foe the owner struck and a sibling finished is the owner's (docs/plans/COOP.md: FFXIV's credit by taking part); the death itself
+    // stays the sibling's (`by: 'sibling'`), so it counts here, once, as a burst by the owner (cause 'party')
+    on('creature.credit', (e) => { if (e.by !== 'courier') return; L.inc('creature.credit'); if (e.kind === 'slipjelly' || e.kind === 'jelly') { L.inc('jelly.burst'); L.inc('jelly.burst.party'); } });
     // their lives, said when they are near enough to see (creatures/jelly/mind.js): what they eat, what they catch, what they bring, whom they fight
     const seen = () => { const P = this.game.player.pos; return this.game.jellies?.list.some((c) => c.alive && c.pos.distanceTo(P) < 30); };
     on('jelly.eat', (e) => { L.inc('jelly.ate'); if (seen()) log.say('other', e.what === 'cube' ? 'A slip jelly swallows a cube of Lachryma.' : 'A slip jelly swallows a bauble of Lachryma.', { key: 'jeat', throttle: 8 }); });
@@ -749,7 +752,7 @@ export class Tracking {
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
     // distance and speed (a jump of more than a few metres in a frame is a teleport, not travel)
-    const at = g.god?.controlling ? null : P.pos;
+    const at = g.god?.controlling || g.realm?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7)
     if (at) {
       if (this.prev) {
         const dx = at.x - this.prev.x, dz = at.z - this.prev.z, dy = at.y - this.prev.y, d = Math.hypot(dx, dz);

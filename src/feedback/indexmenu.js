@@ -55,7 +55,7 @@ export class IndexMenu {
     document.body.appendChild(this.root);
     addEventListener('keydown', (e) => {
       if (!this.open) return;
-      if (this.page) { if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); } return; } // (a page: its own clicks)
+      if (this.page) { if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); e.stopImmediatePropagation(); } return; } // (a page: its own clicks; its Esc is spent here, so the pause menu does not open under it: GARDEN-SWEEP #9)
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { this.sel = (this.sel + 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.sel = (this.sel + this.rooms.length - 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'Enter' || e.code === 'Space') { this.pick(this.sel); e.preventDefault(); }
@@ -111,7 +111,7 @@ export class IndexMenu {
       row.onmouseenter = () => { this.sel = i; };
       grid.appendChild(row);
     });
-    const cal = this.calibration?.();
+    const cal = !this.page && this.calibration?.(); // (the basement's numbers belong under its list of rooms only, never under a page: GARDEN-SWEEP #3)
     if (cal) {
       for (const [title, rows] of [['CALIBRATION · LIVE (from the tuning panel)', cal.live], ['CALIBRATION · MEASURED CHAINS (default tuning)', cal.chains]]) {
         im.appendChild(el('div', 'grp', title));

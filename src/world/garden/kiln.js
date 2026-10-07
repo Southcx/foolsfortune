@@ -10,10 +10,10 @@
 //
 // Prior art: xianxia's heavenly tribulation (lightning that grows with the stage being crossed), Zelda's Ganon tennis (a bolt sent back),
 // Bayonetta's Witch Time ring read before the blow, and the kiln's firing itself (the heat that makes clay into stoneware).
-// The look is Calissa's (vfx/garden/tribulation.js): the storm over the Peak with the kiln's fire in its eye (hotter the higher the
+// The look is Calissa's (vfx/garden/tribulation.js): the storm over the Chimney with the kiln's fire in its eye (hotter the higher the
 // Firing), each bolt traced then striking, its ring closing on the mat and gold in the flick's window.
 //
-//   const K = new Kiln(game, realm)   K.open() -> n | null (the Firing open to try)   K.begin()   K.flick(point)   K.update(dt)   K.active
+//   const K = new Kiln(game, realm)   K.open() -> n | null (the Firing open to try)   K.begin()   K.flick(point)   K.update(dt)   K.cancel()   K.active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { strikesOf } from '../../progress/realm.js';
@@ -29,7 +29,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 export class Kiln {
   constructor(game, realm) {
     this.game = game; this.realm = realm; this.active = false; this.strikes = [];
-    const M = this.mat; // (the sky stands over the mat, on the Peak's own up)
+    const M = this.mat; // (the sky stands over the mat, on the Chimney's own up)
     this.look = new HeavenlyKiln({ height: 40, radius: 60 }); this.look.group.position.copy(M.pos); this.look.group.quaternion.setFromUnitVectors(UP, M.pos.clone().sub(M.planet.c).normalize());
     realm.place.group.add(this.look.group);
   }
@@ -57,6 +57,13 @@ export class Kiln {
   flick(point) {
     for (const s of this.strikes) if (!s.done && s.t <= RING.flick && s.at.distanceTo(point) < RING.r * 1.4) { s.done = 'parried'; this.parried++; s.B.eta = s.B.t; this.fx(s, true); sfx.parry?.(); return true; } // (it strikes now, short of the Jar)
     return false;
+  }
+
+  /** Left mid-tribulation (out by the gate, or put away): it ends unjudged, neither passed nor failed, its music and storm with it. */
+  cancel() {
+    if (!this.active) return;
+    const g = this.game; this.active = false; this.left = 0; this.endT = 0; this.look.open(0);
+    if (g.garden) g.garden.tribulation = { active: false, tier: this.firing, outcome: g.garden.tribulation?.outcome || null };
   }
 
   update(dt) {
