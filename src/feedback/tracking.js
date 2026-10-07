@@ -50,6 +50,7 @@ import { itemOf } from '../pneuka/items.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
+import { SLOTS } from '../pneuka/box.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -381,7 +382,7 @@ export class Tracking {
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
       L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
-      if (e.used >= 28) L.inc('pneuka.filled');
+      if (e.used >= SLOTS) L.inc('pneuka.filled'); // (every slot of the Pneuka Box: pneuka/box.js SLOTS)
       if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
       else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
       else if (e.from === 'catch') log.say('loot', `You keep the ${ITEM(e.item)} in your Pneuka Box. (Old Grog buys fish.)`, { key: 'fishkeep', fmt: (n) => `You keep ${n} fish in your Pneuka Box.` });

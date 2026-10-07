@@ -301,7 +301,7 @@ voice of bells and clay (Clayese), a body that shows the mood. Every line is als
 
 ## Things and money
 
-**The Pneuka Box** (P): what the Courier carries, 28 slots (keys and film stack to 99). Right, what is worn: the lure on the line, each tool's
+**The Pneuka Box** (P): what the Courier carries, 56 slots (keys and film stack to 99). Right, what is worn: the lure on the line, each tool's
 **fittings** (the Crucibelle's instrument, the Lockheart's keys), the psygun's chambers, and the five tools worn. Left click does the
 obvious thing, right click lists everything, drag swaps. When the box is full, a new thing falls at your feet.
 

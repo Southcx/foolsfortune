@@ -3,7 +3,7 @@
 // found in a chest or taken out of the Veritome comes here first; what is worn is worn from here; and what is to be kept for good is
 // stored from here into the Veritome, which is the bank (long-term, stacked, by card: tools/veritome/book.js).
 //
-//  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
+//  - FIFTY-SIX SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
 //    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at their feet (ground.js) and is
 //    picked up again with F.
 //  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
@@ -15,7 +15,7 @@
 //  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
 //    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
 //
-// Prior art: Old School RuneScape's inventory (twenty-eight slots, a left click does the obvious thing, a right click lists the rest,
+// Prior art: Old School RuneScape's inventory (twenty-eight slots there, twice that here, a left click does the obvious thing, a right click lists the rest,
 // Examine writes to the chat, Drop puts it on the ground, the bank is somewhere else and holds stacks), its equipment screen (worn
 // things in their places beside the inventory), and Greed Island's Book for what the bank is.
 //
@@ -30,7 +30,7 @@ import { CARD } from '../tools/veritome/cards.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { sfx } from '../audio/sfx.js';
 
-export const SLOTS = 28;
+export const SLOTS = 56; // (the owner, 2026-10-07: 56 by default, twice OSRS's 28)
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
 export const FITTINGS = {
   instrument: { kind: 'instrument', max: 1, tool: 'crucibelle', label: 'THE INSTRUMENT · IN THE CRUCIBELLE', put: 'Fit to the Crucibelle', none: 'the bell alone' },

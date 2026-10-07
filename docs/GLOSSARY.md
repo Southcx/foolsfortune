@@ -371,7 +371,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ## Windows
 
 - **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
-- **the Pneuka Box** (P, `src/pneuka/`): the inventory (28 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
+- **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **the map** (M): called **Mind Mapping** in the game (`src/feedback/cartography.js`).
 - **the tuning panel** (Tab, `src/debug/tuning.js`): live sliders and actions (set the room again, last checkpoint, the hub), laid out as
