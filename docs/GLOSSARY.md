@@ -708,7 +708,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
-| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds | "the wheel of feelings"; "the Lockheart's wheel" |
+| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words
 
