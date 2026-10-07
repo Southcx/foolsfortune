@@ -50,6 +50,7 @@ export class RhythmHold extends Tech {
     const P = this.P;
     P.vel.set(0, -2, 0); P.move(dt);
     if (this.bell) for (const t of this.game.belt?.tools || []) if (t.id !== 'crucibelle' && t.wants) t.stow(); // (nothing else comes out while they play)
+    if (this.bell) this.bell.drawTarget = 1; // (and the bell stays in hand: another tool's key, or its own, would put it away under the busking body)
     return true;
   }
   end() {

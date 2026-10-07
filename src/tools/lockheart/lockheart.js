@@ -177,7 +177,10 @@ export class Lockheart extends HeldTool {
   /** The chain, hand to coffin, in the world (the flail's ribbon and its flash on a hit). */
   chainSegment(a, b) {
     const ch = this.game.character;
-    ch?.arm.L.hand.getWorldPosition(a);
+    // in first person the coffin is the held placement before the eye and the body's hand is behind the camera: the chain is the
+    // tool's own, from its bail (the model's origin) to the coffin, or the ribbon between the two sweeps across the whole view
+    if (this.P.fp && !this.cine) this.model.group.getWorldPosition(a);
+    else ch?.arm.L.hand.getWorldPosition(a);
     if (this.cof) this.cof.group.getWorldPosition(b); else b.copy(a);
     return a;
   }
@@ -278,6 +281,7 @@ export class Lockheart extends HeldTool {
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
     const g = this.game;
+    if (this.drawTarget === 0 && this.moves.busy) this.moves.cancel(); // (put away mid-flail: let go now, not frozen mid-swing until the holster)
     this.coffin(); this.charmKeys();
     // (the overflow: hooked once the pool exists)
     if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart') this.feed(e.amount * 0.8, 'overflow'); }); }

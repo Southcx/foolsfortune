@@ -80,7 +80,37 @@ the rules before building in the same area; a rule a machine can check goes into
     body in body space, from the front and the side, before taking the clip as a stance; correct the hand (a wrist turn on the
     layer) or the chain, never the clip's arm.
 
+33. **One press, one meaning, in every state the tool can be in.** When a tool's button means something else in a mode (the lens's
+    shutter, the air, the busking body that keeps the bell), shut the other meaning out there: empty the combo engine's buffer, hold the
+    tool in hand every frame. Drive the press in each state and across each edge between them (lens up then down, airborne then
+    landed), and check that the press still does what it did before the change.
+
+34. **A weight that can drop in one frame is eased wherever it is blended outside the crossfade.** A move's weight goes to nothing the
+    frame it ends; the upper layer is crossfaded, but the legs and an IK weight blended after it are not. Damp the weight, and cancel
+    a move whose update stops (the tool being put away) rather than leave it on its last frame.
+
+35. **In first person, what is drawn from a tool is measured on its held placement.** The body is hidden and its bones are behind the
+    camera; a trail, a flash or a chain taken from a bone sweeps across the whole view.
+
 ## Cases
+
+### 2026-10-07 · The bell's toll string, the coffin's flail and the book's bash, reviewed: six faults found and fixed (Calissa, belltome review)
+- **Seen, measured headless (`.scratch/rv.mjs`, films front and side):** (1) LMB in the air no longer rang the bell (the old toll did,
+  anywhere); (2) a photograph taken with the lens up, the lens let down within 0.35 s, swung a book bash (`veritome.swing b1` 17 frames
+  after the shutter); (3) at a busker's mat, another tool's key (I) or the bell's own (U) put the bell away while the busking body went
+  on playing an empty hand; (4) the legs snapped back to the run's the frame a toll, a blow of the flail or a bash ended (a shin 26.7 to
+  29.3 degrees in one frame); (5) put away mid-string, a toll or a flail stood frozen on its frame until the holster (0.3 s); (6) in first
+  person the flail's ribbon ran from the hidden body's left hand to the coffin before the eye, a sheet of gold across half the view.
+- **Cause:** (1) the engine opens a ground string only on the ground, and no air string was given; (2) the engine buffers the press
+  whether or not it may open, and opens it the first frame it may; (3) the busking body freed the hands (`handsBusy` false) so the bell
+  could stay, which freed every tool's key too, and `belt.draw` puts the bell away; (4) `standLegs` was weighted by the move's weight,
+  which `moves.pose` drops to nothing at its end; (5) `use` (and with it `moves.update`) runs only while the tool is fully held;
+  (6) `chainSegment` took the body's hand in first person too.
+- **Fix:** (1) in the air a press rings one toll at once with Bell_Toll as a gesture, `TOLL.cool` apart, and the buffer is emptied;
+  (2) the buffer is emptied while the lens is up or lifting; (3) the busking body sets the bell's `drawTarget` every step; (4) the
+  weight is damped both ways in `standLegs` (up 30/s, down 12/s): at the end no leg bone now turns more than 6 degrees in a frame; (5) the bell and
+  the coffin cancel their move once `drawTarget` is 0; (6) in first person the chain runs from the model's bail to the coffin.
+- **Rules 33, 34, 35.**
 
 ### 2026-10-07 · The Crucibelle stood in front of the Courier's face in Bell_Idle, and the flail's coffin crossed it (Calissa, belltome)
 - **Seen:** with the suite's Bell_Idle as the bell's stance, the bell covered the face from the front; the first cut of the Lockheart's
