@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// TRACKING, THE PARTY: what the log says when a sibling is called or dismissed, what you tell them (coop/party.js), and what a
-// division's session has its sibling say (coop/channel.js). Nothing is counted yet: what a sibling earns or costs is Dovina's to rule
-// (docs/plans/COOP.md). Words are placeholders for Espada's.
+// TRACKING, THE PARTY: what the log says when a sibling is called or dismissed, what you tell them (coop/party.js), what a division's
+// session has its sibling say (coop/channel.js), and a guest's coming and going (coop/guests.js). Nothing is counted yet: what a
+// sibling earns or costs is Dovina's to rule (docs/plans/COOP.md). Words are placeholders for Espada's.
 //
 //   partyRules({ on, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -13,5 +13,7 @@ export function partyRules({ on, log }) {
   on('party.dismiss', (e) => log.say('info', `${nameOf(e.sibling)} goes home.`, { key: 'party.dismiss', win: 1, fmt: (n) => `${n} siblings go home.` }));
   on('party.order', (e) => log.say('info', e.order === 'hold' ? 'Your siblings hold where they stand.' : 'Your siblings follow you.', { key: 'party.order', throttle: 0.5 }));
   on('party.say', (e) => log.say('info', `${nameOf(e.sibling)}${e.near ? '' : ' (from afar)'}: ${e.line}`)); // (a division's own words, through the store: coop/channel.js)
+  on('guest.join', (e) => log.say('info', `${e.guest} is here with you.`)); // (a guest over the room: coop/guests.js)
+  on('guest.leave', (e) => log.say('info', `${e.guest} has gone.`));
   on('party.list', (e) => log.say('system', e.siblings.length ? `With you: ${e.siblings.map(nameOf).join(', ')}.` : 'No one is with you. /party call all brings your siblings.'));
 }
