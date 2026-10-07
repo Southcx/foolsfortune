@@ -25,6 +25,7 @@
 //   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
 //   .stage { active, seconds, setPieces }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld }
 //   .blow(n, { by, what, rollable })   .endPay(end)   (the set pieces')
+//   /crossing shoal,pirates,leviathan   (the chat line: the next crossing's set pieces, for testing them on demand; the dice and the deck otherwise)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
@@ -33,7 +34,7 @@ import { CrudeSea } from '../../vfx/crudesea.js';
 import { ShipWake, swingLook } from '../../vfx/rail.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
-import { BAR_S, viewAt } from '../../progress/rail/crossing.js';
+import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
 import { SCORE, chain, chainDown, volleyBonus, downScore } from '../../progress/rail/score.js';
 import { STAGE } from '../../progress/econ/emocean.js';
 import { blendRig, rig } from '../../courier/ship/views.js';
@@ -106,7 +107,9 @@ export class Emocean {
   // ---------------------------------------------------------------- the crossing
   /** Cast off (the voyage has boarded): the plan read, the Courier taken aboard under a cover. */
   begin() {
-    const g = this.game, V = g.voyage?.sailing, plan = g.voyage?.crossing();
+    const g = this.game, V = g.voyage?.sailing;
+    const plan = this.force && V ? script(V.from, V.to, V.day, { casks: V.casks, wx: V.wx, open: (id) => g.voyage.isOpen(id), pieces: this.force }) : g.voyage?.crossing();
+    if (this.force && V && plan) { V.setPieces = plan.setPieces; V.setPiece = plan.setPiece; this.force = null; } // (a tester's choice: the voyage ranks and pays the set pieces sailed)
     if (!V || !plan || this.stage.active) return false;
     if (!this.built) this.build();
     this.plan = plan; this.to = V.to;
@@ -140,6 +143,7 @@ export class Emocean {
   /** Once a frame (before the camera: main.js). */
   update(dt) {
     const g = this.game, raw = g.rawDt ?? dt;
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('crossing', { help: 'the next crossing\'s set pieces, one to three of shoal, pirates, leviathan: /crossing pirates,leviathan', run: (_, arg) => { const L = String(arg || '').split(/[ ,]+/).filter((x) => this.pieces[x]).slice(0, 3); this.force = L.length ? L : null; g.events?.emit('rail.force', { setPieces: L, by: 'courier' }); } }); }
     if (!this.stage.active) { this.unfinished(); this.ashore(raw); return; }
     if (this.offering) { if (!g.indexMenu?.open) this.decline(); return; } // (the coin's page closed unanswered: the ship breaks up)
     this.clock(raw);
