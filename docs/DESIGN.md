@@ -1,771 +1,359 @@
 # The design bible
 
-What play is worth and where it leads: the loops at each scale, what every tool, place and creature is for in them, the progression,
-the economy, the ledger and the achievements, and an honest audit of where they stand. Kept by Dovina (Game Design Systems). The
-economy's own map and numbers are in `docs/ECONOMY.md` and are not repeated here; the lore is `docs/LORE.md`; how the creatures think
-is `docs/AI.md`. Numbers quoted are from the code as of R41 (commit `44e7c58`), measured where it says so.
-
-Every number in a system file answers to a reason. Where one does not yet, this page says so (section 7).
-
-## Contents
-
-1. The player's goal at each scale
-2. What each thing is for
-3. Progression
-4. The economy, in brief
-5. The ledger and the achievements
-6. Prior art this design stands on
-7. The audit: what works, what is missing, what contradicts, what has no reason
-8. The proposal for the next rounds
+What play is worth and where it leads: the loops, what each thing is for, the progression, the ledger and the achievements, the
+audit, and the owner's rulings. Kept by Dovina (Game Design Systems). The economy's map and numbers are `docs/ECONOMY.md`; the lore is
+`docs/LORE.md`; how the creatures think is `docs/AI.md`. Every number in a system file answers to a reason; where one does not yet,
+section 7 says so. Section numbers are cited by code: keep them stable.
 
 ---
 
 ## 1. The player's goal at each scale
 
-A systems designer asks what the player wants in the next thirty seconds, in this session, and over the weeks. Each answer should be
-something the player can name, and each scale should feed the one above it. Here is what the game offers at each scale today, and
-what it should offer.
-
-### The moment (seconds to a minute)
-
-**What it is now.** The core movement is the gold standard and the heart of the game: sprint, slide, wallrun, mantle and dash, and
-the Movement Arts on top of them. Every tool is a verb with a feel of its own:
-- a shot, a charge, a caster shell;
-- a cutlass combo, a cast and its fight;
-- a brush stroke;
-- a photograph held in the capture circle;
-- a strike on a crystal that sounds sharp, flat or pure;
-- a note on the beat;
-- a hoover, and an opening.
-
-**What it rewards.** Each verb has a readable outcome in the world: a pot shatters, a jar is clapped, a fish bites, a formation rings
-true. The log writes the sentence.
-
-**Verdict.** Strong. This is the layer the project has spent forty rounds on, and it shows.
-
-### The session (ten minutes to an hour)
-
-What it is now: a sandbox of rooms, each with its own small loop.
-- **The Weir:**
-  - fish and sell the catch to Old Grog;
-  - open the treasury chests as they come back;
-  - pay the Tithe.
-- **The dunes:**
-  - mine the formations by ear;
-  - burst jellies;
-  - skiff.
-- **The workshop:**
-  - break pots;
-  - run the gong trial;
-  - fire a look at the kiln.
-- **The basement:**
-  - the movement lab's stations, where the arts are learned;
-  - three lap circuits;
-  - THE COURSE;
-  - THE SIEGE.
-
-What a session has no answer to yet: "what am I working toward tonight?" There are many small loops and nothing yet ties them into a
-session's goal. Some pieces exist:
-- an art's progress bar in the Codex;
-- a curio missing from the shelf;
-- a glaze not yet earned;
-- a medal not yet gold.
-
-None of them is put in front of the player. In STORY (the all-arts switch off) the arts are learned by doing, but every tool, room and shop is open
-from the first minute, so the session has breadth and no direction.
-
-### The long run (days and weeks)
-
-What it is now:
-- the achievements: 366 entries, six tiers, about 950 points, and a standing from Sweeper to Fool's Fortune;
-- the collections: twenty curios, 54 cards in the Book, the bestiary's facts, twelve glazes;
-- the circuits' medals and records;
-- the variants of every art.
-
-The long sink (the Internal Spirit Garden) is planned, not built. **Progress resets on every build** (`src/core/progress.js`). While the
-game is being made, the long run can be designed and measured (the ledger timestamps every first) but not lived.
+- **The moment (real seconds to a real minute): strong.** The core movement (sprint, slide, wallrun, mantle, dash, the Movement Arts)
+  is the gold standard. Every tool is a verb with a readable outcome in the world (a pot shatters, a fish bites, a formation rings
+  true), and the log writes the sentence.
+- **The session (ten minutes to an hour of play): breadth, no direction.** A sandbox of rooms, each with a small loop: the Weir
+  (fish, the treasury, the Tithe), the dunes (mining by ear, jellies, the skiff), the workshop (pots, the gong trial, the kiln), the
+  basement (the movement lab, three lap circuits, THE COURSE, THE SIEGE). Nothing yet answers "what am I working toward tonight?":
+  an art's progress, a missing curio, an unearned glaze, a medal not yet gold all exist, and none is put in front of the player.
+- **The long run (game days and real weeks):** the achievements (366 entries, six tiers, about 950 points, a standing from Sweeper to
+  Fool's Fortune), the collections (twenty curios, 54 cards in the Book, the bestiary, the glazes), medals and records, the arts'
+  variants. **Progress resets on every build** (`src/core/progress.js`), so the long run can be measured (the ledger timestamps every
+  first) but not lived.
 
 ---
 
 ## 2. What each thing is for
 
-A thing earns its place by feeding a loop. The tables below say which loop each feeds and what it takes in and gives out. "Faucet"
-means cubes into the world, "drain" cubes out, and "converter" one resource into another (Machinations' terms, `docs/ECONOMY.md`).
+"Faucet" is cubes into the world, "drain" cubes out, "converter" one resource into another (Machinations; `docs/ECONOMY.md`).
 
 ### The tools (the belt: seven tools, five places to wear them)
 
 | Tool | The moment | The session | Takes | Gives |
 |---|---|---|---|---|
-| **Psygun** (X) | shoot, charge, load caster shells | break pots, clap jars, burst jellies | Lachryma (shot 4, charge 24); shells from reliquaries | baubles (Lachryma), jelly cubes, the break ledger |
-| **Sondelass** (Q) | cutlass, rod, grapnel; zandatsu on the stunned | angling at the Weir; the zandatsu harvest | Lachryma (cast 10, stinger 6, blade 4/s) | fish (sold: a faucet), cores (cubes) |
-| **Soul Brush** (G) | the club, the slide, drawings, sigils | traversal and puzzle; befriending jars | Lachryma, ink | mended pots, friendly jars |
-| **Veritome** (J) | the lens, the Flash, reprogramming | the photographer's round; the darkroom | none (a digital camera: its memory holds a batch) | cards (the collection), bestiary facts, glazes, cubes by condensing |
-| **Dreamvane** (K) | dowse, pick, fork, survey | the miner's round in the dunes | Lachryma (survey 12) | crystal cubes (the biggest faucet), shards, Possibilikeys, the map |
-| **Crucibelle** (U) | notes on the beat, songs | support in a fight; reveals veiled crystal | Lachryma (8 to 24 a song) | sleep, decoys, spirits, sight |
-| **Lockheart** (I) | hoover, open: the ultimate | the gamble at the end of a fight | Lachryma overflow, a Possibilikey | anything from a dud to a slip nuke (table: `src/tools/lockheart/table.js`) |
-| **God hand** (~, not on the belt) | the God Arts | THE SIEGE | Lachryma | defence of the vessel |
+| **Psygun** (X) | shoot, charge, caster shells | pots, jars, jellies | Lachryma (shot 4, charge 24); shells | baubles, jelly cubes |
+| **Sondelass** (Q) | cutlass, rod, grapnel; zandatsu | angling; the zandatsu harvest | Lachryma (cast 10, stinger 6, blade 4 a real second) | fish (sold), cores |
+| **Soul Brush** (G) | club, slide, drawings, sigils | traversal, puzzles, befriending jars | Lachryma, ink | mended pots, friendly jars |
+| **Veritome** (J) | lens, the Flash, reprogramming | the photographer's round | none (a digital camera) | cards, bestiary facts, glazes, cubes by condensing |
+| **Dreamvane** (K) | dowse, pick, fork, survey | mining in the dunes | Lachryma (survey 12) | crystal cubes, shards, Possibilikeys, the map |
+| **Crucibelle** (U) | notes on the beat, songs | support; reveals veiled crystal | Lachryma (8 to 24 a song) | sleep, decoys, spirits, sight |
+| **Lockheart** (I) | hoover, open: the ultimate | the gamble after a fight | Lachryma overflow, a Possibilikey | a dud to a slip nuke (`src/tools/lockheart/table.js`) |
+| **God hand** (~, off the belt) | the God Arts | THE SIEGE | Lachryma | the vessel's defence |
 
-**Lachryma** is the moment's resource: a pool of 100 that regenerates at 3.5/s after 2.2 s, and the shield. **Cubes** are the
-session's resource. The two meet in only two places: the Lockheart (Lachryma in, cubes or chests out) and the crystals (a strike
-gives both). That split is good design and should be kept. It is FFXIV's MP against gil, or Zelda's magic meter against rupees: the
-moment's meter refills, so the player spends it freely, and the session's purse does not.
+**Lachryma** is the moment's resource (a pool of 100, regenerating 3.5 a real second after 2.2 real seconds; also the shield).
+**Cubes** are the session's. They meet only at the Lockheart and the crystals. Keep the split (FFXIV's MP against gil).
 
 ### The places
 
 | Place | Its loop | Pays |
 |---|---|---|
-| The workshop | pots, jars, the gong trial, the kiln | baubles; the trial pays a medal and a record only |
-| The basement hub, the lab, THE COURSE | learning the arts at their stations | arts and variants; records |
+| The workshop | pots, jars, the gong trial, the kiln | baubles; the trial a medal and a record |
+| The basement hub, the lab, THE COURSE | learning the arts | arts, variants, records |
 | The lap circuits (Braid, Mill Race, Spindle) | mastery by time | medals, records, achievements; no cubes |
-| THE SIEGE | the god hand's defence | shells and a little mending per wave; no cubes |
+| THE SIEGE | the god hand's defence | shells and a little mending a wave; no cubes |
 | The dunes | mining by ear, jellies, skiffing | the miner's cubes, shards, keys; jelly cubes |
-| The Weir | angling, the treasury, the Tithe, both shops | fish to sell, chests, curios; the main drains |
+| The Weir | angling, the treasury, the Tithe, both shops | fish, chests, curios; the main drains |
 
-### The creatures
+### The creatures and the folk
 
-- **Clapperjars** are the fodder and a source of Lachryma: 6 baubles each, and they grow fatter on baubles left lying.
-- **Slip jellies** are the only thinking opponents. They are where the fighter earns (6 cubes a burst, 3 a core) and where the
-  stun, the Flash, zandatsu and reprogramming are learned.
-- **Fish** are the angler's living, in ten species over five tiers.
-- **Spirits** are allies from the Call song and the Lockheart.
-
-The bestiary turns each of them into a collection as well (Pokémon Snap, Monster Hunter's notes).
-
-### The folk
-
-- **Raku** runs the treasury and is the main drain. He sells keys and coffins at 1.45× worth, and he haggles.
-- **Old Grog** is the angler's market: he buys fish and sells lures at their worth.
-- **Saggar** keeps the kiln, which is a station, not a shop yet.
-- **Pip** is in the hub and has no shop yet.
+- **Clapperjars**: fodder, 6 baubles each. **Slip jellies**: the only thinking opponents (6 cubes a burst, 3 a core); where the stun,
+  the Flash, zandatsu and reprogramming are learned. **Fish**: ten species over five tiers. **Spirits**: allies. The bestiary makes
+  each a collection.
+- **Raku**: the treasury, the main drain; sells keys and coffins at 1.45x worth, and haggles. **Old Grog**: buys fish, sells lures at
+  worth. **Saggar**: the kiln. **Pip**: the hub, no shop yet.
 
 ---
 
 ## 3. Progression
 
-The game has **no experience points and no levels**, and that is a decision worth keeping. Everything is learned by doing (Tony Hawk's
-goal lists, Breath of the Wild's discovery, OSRS's quest-locked unlocks), and power grows sideways, not up: the Lachryma pool never
-grows (`maxBonus` exists and nothing uses it).
-
-**The System's arts** (`src/progress/skills.js`) are eight Movement Arts and five God Arts. Each has one to three variants, and each is
-earned by a goal over the event bus:
-- `count`: do it n times;
-- `feat`: do the hard thing once;
-- `sum`: add up a distance or a time;
-- `chain`: a then b, quickly.
-
-The goals teach. Blink comes to those who air-dash; Sunder to those who slice pots. A variant only overlays its art's tuning, so the
-core movement is never touched. The all-arts switch (`system.lendAll`: every art lent, nothing counted) is on in DEBUG and off in STORY.
-
-**The tools** are not a progression yet. A new Courier wears five and carries the other two in the box from the first minute
-(`src/main.js`, the seed in `src/pneuka/box.js`). The **Pneuka Box** (28 slots, stacks to 99) and the **Book** (54 cards, 20 free slots) are
-capacity, not progression: nothing grows them.
-
-**The kiln and the glazes.** There are twelve glazes:
-- three from the start;
-- nine given by achievements (retroactive, as they should be);
-- up to eight learned from photographs.
-
-Firing a look costs 16 cubes, and mending cracks up to 12. Buying a glaze (planned at about 15 minutes' play) is not built.
-
-**Chests.** There are five tiers, from three sources:
-- the Weir's treasury plinths, which shut again for 4 minutes (common) up to 2 h 40 (prismatic);
-- the Tithe (48 cubes a pull: published odds and three pity counters);
-- a few one-off chests (the hub, the dunes, the legendary fish, the Lockheart's CHEST).
-
-Twenty curios hang off them, four to a tier.
-
-**The Lockheart.** Fill it with Lachryma (the overflow, hoovering, a shard), put up to four Possibilikeys on its ring, and open it.
-Three coffins give three tables, and seven keys bend the odds. It is the game's gacha made a weapon, and the one place where luck
-reaches the moment.
-
-**The standing.** Achievement points buy a rank, from Sweeper (0) up to Fool's Fortune (340), with titles as rewards (FFXIV).
+- **No experience points for the arts and no growing Lachryma pool**: everything is learned by doing (Tony Hawk's goals, OSRS's
+  quest-locked unlocks), and power grows sideways, not up (`maxBonus` exists, unused). The Firings follow this: they open places, not numbers. The domains'
+  levels (section 10, 15) widen, never do the skill.
+- **The System's arts** (`src/progress/skills.js`): eight Movement Arts and five God Arts, one to three variants each, earned by goals
+  over the event bus (`count`, `feat`, `sum`, `chain`). The goals teach (Blink to those who air-dash). A variant only overlays tuning,
+  so the core movement is never touched. `system.lendAll` lends every art and counts nothing (on in DEBUG, off in STORY).
+- **The tools** are not a progression yet: five worn and two in the box from the first minute (`box.seed`). The **Pneuka Box** (28
+  slots, stacks of 99) and the **Book** (54 cards, 20 free slots) are capacity; nothing grows them.
+- **The kiln**: glazes from the start, from achievements (retroactive) and from photographs; firing a look costs 16 cubes, mending up
+  to 12. Prices of bought looks: ECONOMY.md, "The worth of a look".
+- **Chests**: five tiers from the treasury plinths (shut again for 4 real minutes, common, up to 2 h 40 real minutes, prismatic), the
+  Tithe (48 cubes a pull, published odds, three pity counters) and one-off chests. Twenty curios, four to a tier.
+- **The Lockheart**: fill it with Lachryma, put up to four Possibilikeys on its ring, open it; three coffins, seven keys. The game's
+  gacha made a weapon, the one place luck reaches the moment.
+- **The standing**: achievement points buy a rank, Sweeper (0) to Fool's Fortune (340), with titles (FFXIV).
 
 ---
 
 ## 4. The economy, in brief
 
-`docs/ECONOMY.md` has the map, the profiles, the R38 rebalance and its reasons; `src/progress/econ/table.js` has every number. In short:
-- **The unit is a minute of ordinary play:** 8 cubes, so the aim is 480 an hour. Every price is named in minutes.
-- **No activity should pay more than 1.5× the aim**, except luck.
-- **The faucets:** jellies, crystals, chests, dupes, condensing, selling to the folk, and the Lockheart's CUBES outcome.
-- **The drains:**
-  - the Tithe;
-  - the shops;
-  - the kiln (firing and mending);
-  - later, the Spirit Garden (the long sink: OSRS's Construction, FFXIV's housing).
-- **The measuring tools:**
-  - the F3 panel's `econ` line, which reads the ledger;
-  - `node scripts/economy.mjs`, which simulates the table;
-  - `/grant`, in DEBUG.
-
-`node scripts/economy.mjs` today:
-
-| profile | cubes/h | × aim |
-|---|---:|---:|
-| fighter | 608 | 1.27 |
-| miner | 834 | **1.74** |
-| photographer (no film since 2026-10-06) | 430 | 0.90 |
-| angler | 475 | 0.99 |
-| treasury camper | 586 | 1.22 |
-
-The Tithe returns 78% of what it takes, in cubes.
+`docs/ECONOMY.md` has the map, the profiles and the reasons; `src/progress/econ/table.js` (`ECON`) has every number.
+- The unit is a minute of play: 8 cubes, so the aim is 480 cubes an hour of play. Every price is named in minutes.
+- No activity pays more than 1.5x the aim, except luck.
+- Measured by the F3 panel's `econ` line (reads the ledger), `node scripts/economy.mjs` (simulates the table), `/grant` (DEBUG).
 
 ---
 
 ## 5. The ledger and the achievements
 
-**The ledger** (`src/progress/stats.js`) follows OSRS and FFXIV. It keeps:
-- counters that only go up, kept for the lifetime and for the session;
-- records, each with when and where it was set;
-- firsts, timestamped in play time;
-- `done` for the achievements.
-
-`src/feedback/tracking.js` turns about 260 kinds of event into counts and log lines. This is the game's best piece of systems architecture: every
-question about play can be answered from it, and the achievements are retroactive by construction.
-
-**The achievements** (`src/progress/achievements.js`):
-- 366 entries in 14 categories;
-- by tier: 67 Easy, 108 Medium, 100 Hard, 50 Elite, 28 Master, 4 Grandmaster (counted from the source);
-- six types: count, speed, perfection, mechanic, stamina, collection;
-- hidden entries, titles, and a standing.
-
-Every ledger key an achievement reads is fed somewhere (checked: each key or its prefix is incremented in `src/`). They are
-placeholders until STORY exists, and they reset with every build.
+- **The ledger** (`src/progress/stats.js`, after OSRS and FFXIV): counters that only rise (lifetime and session), records with when
+  and where, firsts timestamped in play time, and `done` for the achievements. `src/feedback/tracking.js` turns about 260 kinds of
+  event into counts and log lines: every question about play is answered from it, and achievements are retroactive by construction.
+- **The achievements** (`src/progress/achievements.js`): 366 entries in 14 categories; 67 Easy, 108 Medium, 100 Hard, 50 Elite, 28
+  Master, 4 Grandmaster; six types (count, speed, perfection, mechanic, stamina, collection); hidden entries, titles, a standing.
+  Every ledger key an achievement reads is fed in `src/`. Placeholders until STORY; reset with every build.
 
 ---
 
-## 6. Prior art this design stands on
+## 6. Prior art
 
-What is already taken, and from where (the module headers have the detail):
-- **OSRS:**
-  - the inventory and the bank kept apart;
-  - shops with stock and restock;
-  - the collection log;
-  - the achievement tiers and types;
-  - hiscores;
-  - the money-making guide as a profile table.
-- **FFXIV:** achievement categories and titles; glamour and housing as the sinks a player chooses; MP and gil kept apart.
-- **Machinations** (Dormans and Adams): sources, drains and converters.
-- **The gacha:** published odds, pity counters, dupe protection (Genshin, Fire Emblem Heroes).
-- **Slay the Spire and Balatro:** modifiers stacked in order on one roll (the Possibilikeys).
-- **Pokémon Snap, Fatal Frame, Dark Cloud 2:** the camera as a collection and a source of ideas.
-- **Tony Hawk and Breath of the Wild:** skills learned by doing.
-
-What this page adds, for the proposals in section 8:
-- **Consolidated odds** (China's 2017 loot-box disclosure rule, and Genshin's published "consolidated probability" that counts pity):
-  publish the rate a player will actually see, not the base weight.
-- **Collection curves** (OSRS's collection-log design and Hearthstone's duplicate protection): a set should take longer to finish
-  the rarer it is.
-- **The tool-gated spine** (Zelda's item per dungeon, Metroid's gates, OSRS's quest unlocks): what the session is for, early on.
-- **Funnel metrics from firsts**: what live games measure as "time to first X" (the drop-off funnel). The ledger's timestamped firsts
-  are that funnel already.
-- **OSRS's birdhouse and farming runs:** timed passive income, designed as an add-on to other play, and counted as such.
-- **Mario Kart's cups and Tony Hawk's gaps list:** mastery rewarded in standing and cosmetics, never in currency that can be farmed.
+OSRS (bank, shops with restock, collection log, achievement tiers, hiscores, the money-making guide, birdhouse and farming runs);
+FFXIV (achievement categories, titles, glamour and housing as chosen sinks); Machinations (Dormans and Adams); gacha practice (Genshin,
+Fire Emblem Heroes: published and consolidated odds, pity, sparks, dupe protection; China's 2017 disclosure rule); Slay the Spire and
+Balatro (stacked modifiers); Pokemon Snap, Fatal Frame, Dark Cloud 2 (the camera); Tony Hawk and Breath of the Wild (learning by doing);
+Zelda, Metroid and OSRS quests (the tool-gated spine); Mario Kart's cups and Tony Hawk's gaps (mastery rewarded in standing, never
+currency); live games' "time to first X" funnel. Module headers carry the detail.
 
 ---
 
 ## 7. The audit
 
 ### What works
+- One table, one unit, a simulator and a live panel reading the same numbers.
+- The ledger as the single source of truth (retroactive achievements and glazes, a first for everything).
+- Lachryma and cubes kept apart; skills learned by doing, with no XP for the arts.
+- Luck with an honest face: published odds, pity shown as lamps, a staged near miss, every item-giving chance a deck (ECONOMY.md rule 5).
 
-- **One table, one unit.** Every price is named in minutes of play, in one file, with a simulator and a live panel reading the same
-  numbers. Most games reach this only after their economy has broken once. This one has broken once (R38) and been fixed.
-- **The ledger as the single source of truth.** Retroactive achievements, glazes earned from achievements (and so retroactive too),
-  a timestamped first for everything, and the F3 economy line, all read from one place.
-- **Lachryma and cubes kept apart.** The moment's meter and the session's purse are two resources with one converter between them.
-- **Skills learned by doing, with goals that teach.** No XP. Variants that only overlay tuning, so the gold standard is safe.
-- **Luck with an honest face.** The odds are published, pity is shown as lamps, the near miss is staged, and dupes are protected
-  (85% of curio draws go to what you lack).
+### Fixed by Phase A (`docs/plans/SYSTEMS.md`)
+The duplicate achievement ids, the Tithe counted twice (now `tithe.count` only), the published odds (consolidated), the Gambler's
+Lockheart (`ECON.lockheart.jackpotCap` 0.25; coffins and INVERTED out of the starting kit), and the curio curve (`ECON.curioDeck`).
 
-### What is broken (bugs in Dovina's files)
-
-*Phase A (`docs/plans/SYSTEMS.md`) fixes 1 to 3, the Gambler's Lockheart, and the curio curve; the simulator prints each before and after.*
-
-1. **Six achievement ids are used twice.** `fl1`, `fl2` and `fl3` are each both a fall record (MOVEMENT) and a Reprogramming entry
-   (BATTLE); `sp1`, `sp2` and `sp3` are each both a speed record and a counter at the shops. `ledger.done` is keyed by id, so
-   whichever completes first completes its twin silently.
-   - Reaching 16 m/s marks *Fishmonger* done and grants **tenmoku**, which is meant for selling fish.
-   - Reaching 22 m/s grants **raku**, which is meant for haggling Raku down.
-
-   The fix is a rename, plus a uniqueness check the stress test can run.
-2. **The published odds are not the odds.** The Codex shows 0.5% prismatic and 10.5% rare. Measured over a million pulls with pity,
-   the rates are:
-
-   | tier | common | fine | rare | epic | prismatic |
-   |---|---:|---:|---:|---:|---:|
-   | measured rate | 56.5% | 24.5% | 13.8% | 3.8% | 1.3% |
-
-   One rule is not published at all: the epic pity has a 12% chance of a prismatic. The player is treated better than they are told,
-   but the published table should be the true one.
-3. **The Tithe is counted twice.** `tithe.pulls` (in `src/world/treasure/chests.js`) and `tithe.count` (in `src/feedback/tracking.js`) count the same pull. The
-   CURIOS shelf reads one and the achievements read the other.
-
-### What contradicts
-
-- **The Gambler's Lockheart is not a gamble.**
-  - The INVERTED key sets each weight to `hi + lo − w`. On a two-outcome table that is a swap, so dud 99 / nuke 1 becomes
-    **dud 1 / nuke 99**.
-  - The starting kit already holds the Gambler's coffin and an Inverted key (`box.seed`), so a new Courier's first opening can be a
-    slip nuke at no cost.
-  - After that, a nuke costs one Inverted key from Raku: 70 cubes, about nine minutes' play.
-  - The EVEN key gives 50%. On the plain coffin, INVERTED raises the nuke to 27%.
-
-  The fiction ("Almost always nothing. Almost.") and the numbers disagree.
-- **The curio collection runs backwards.** Common chests carry a curio 6% of the time, so the four common curios take longer to
-  complete than the rare ones. Measured through the Tithe, with dupe protection, median pulls to complete each set:
-
-  | set | median pulls |
-  |---|---:|
-  | common | 118 |
-  | fine | 99 |
-  | rare | **68** |
-  | epic | 133 |
-  | prismatic | 321 |
-
-  All twenty take a median 323 pulls, about 10 hours of play net of what comes back. The cheapest set to complete should not be the
-  third tier.
-- **Faucets in the same place stack.** The treasury's plinths stand at the Weir, beside the angler's water.
-  - Fishing (475/h) plus opening the plinths as they come back (586/h) is about **1,060 an hour, 2.2× the aim**.
-  - That is more than the miner, and the profiles never add the two together.
-
-  OSRS designs this on purpose (the birdhouse run): the simulator should count it as a mixed profile and the table should decide
-  whether 2.2× is meant.
-- **The miner earns 1.74× the aim**, over the 1.5× cap ECONOMY.md sets, with ear-tuning that assumes a 40% find rate on dense
-  formations. This is either a measured skill premium (then say so) or a rate to bring down.
-- **The mastery rooms pay nothing but standing.** The trial, the Course, the circuits and the Siege give medals and records only.
-  - That is right for currency: a mastery reward in cubes becomes a farm.
-  - But nothing, not even a glaze or a title, says a gold medal mattered.
-- **Small ones.**
-  - The `src/world/treasure/chests.js` header still says the Tithe costs 25.
-  - The `src/tools/lockheart/table.js` header says three keys; it is four.
-  - The fish rank G is never used.
-  - Lockheart chests are never cleared away.
-  - `card.drift` from time is a dead branch in `src/feedback/tracking.js`.
-  - The achievements write their own log lines (`achievements.js announce`) rather than through a rule in `tracking.js`, and the
-    `achievement` event carries no `by`.
+### Still open
+- **Faucets in the same place stack.** Fishing (475 cubes an hour) plus the treasury plinths beside it (586) is about 1,060 an hour,
+  2.2x the aim. Count it as a mixed profile and decide whether 2x is meant (OSRS's birdhouse run does this on purpose).
+- **The miner earns 1.74x the aim**, over the 1.5x cap, on an assumed 40% sweet-spot rate on dense formations: a measured skill
+  premium (say so) or a rate to bring down.
+- **Small ones**: fish rank G is never used; Lockheart chests are never cleared away; `card.drift` from time is a dead branch in
+  `tracking.js`; the achievements write their own log lines (`achievements.js announce`) instead of a rule in `tracking.js`, and the
+  `achievement` event carries no `by`.
 
 ### What is missing
-
-- **A session goal, and STORY.** STORY plays the DEBUG sandbox with the arts locked. Every tool, room and shop is open from the first
-  minute, so nothing yet says what tonight is for.
-- **The long sink.** The Spirit Garden, and the shop way to a glaze. Today the steady drains are keys (consumed at each opening), the
-  Tithe, film and the kiln. Raku's whole shelf empties for about 1,320 cubes (2¾ hours' play) and restocks.
-- **Measurement of pace.** Nobody has measured how long a new player takes to earn their first art, first fish, first curio or first
-  gold medal. The ledger's firsts already hold the answer; nothing reads it out.
+- **A session goal, and STORY** (on hold: section 8).
+- **Measurement of pace**: time to first art, fish, curio, gold medal. The ledger's firsts hold it; nothing reads it out.
 
 ### Numbers with no reason yet
-
-None of these is necessarily wrong. Each needs a sentence saying why it is what it is, or a measurement that sets it.
-- The 12% prismatic at epic pity.
-- The 85% bias toward unowned curios.
-- The 42% near-miss rate and its 25% second step.
-- The curio chances (6 / 16 / 40 / 80 / 100%).
-- The chest cube ranges.
-- The condense ladder below SS.
-- The 1.6 in the Lockheart's chest tier.
-- The coffins' fills (40 / 30 / 50).
-- The keys' prices relative to what they change.
-- The standing thresholds: Fool's Fortune at 340 of about 950 points.
+Each needs a sentence or a measurement: the 12% prismatic at epic pity; the 42% near-miss rate and its 25% second step; the chest cube
+ranges; the condense ladder below SS; the 1.6 in the Lockheart's chest tier; the coffins' fills (40 / 30 / 50); the keys' prices
+against what they change; the standing thresholds (Fool's Fortune at 340 of about 950 points).
 
 ---
 
-## 8. The proposal for the next rounds
+## 8. The proposals
 
-These are the five changes that would most improve the game as a game, in the order I would do them. None is made yet: the owner
-chooses.
+**Ruled (the owner, 2026-10-04):** 1, 2, 3 and 5 go ahead, in that order (Phase A). 4 is on hold with STORY: **STORY is off the title
+menu until further notice**, while the tools' identities are settled. No content push until then.
 
-**Ruled (the owner, 2026-10-04):** 1, 2, 3 and 5 go ahead, in that order. 4 is on hold with STORY itself: STORY is taken off the title
-menu until further notice, while the tools' identities are settled (below). No content push until then.
+### 1. Make the numbers true
+Unique achievement ids (checked), consolidated Tithe odds in the Codex, one Tithe key, true headers, and the simulator's mixed
+profiles, Lockheart value per opening, curio curve and points by tier.
 
-### 1. Make the numbers true (one round, small)
+### 2. Balance the Lockheart's luck
+A jackpot ceiling (25%); the Gambler's and Shepherd's coffins out of the starting kit, so **a first opening is never a bought
+jackpot**; keys priced by what they change. Aim: a jackpot about once a session for a committed player, not once a key.
 
-**The change.**
-- Rename the six duplicate achievement ids, and add a check, run by the stress test, that ids are unique.
-- Publish the consolidated Tithe odds, pity counted, in the Codex.
-- Count the Tithe in one ledger key.
-- Fix the stale headers.
-- Extend `scripts/economy.mjs` with four new sections:
-  - mixed profiles (angler plus treasury, miner plus jellies);
-  - the Lockheart's expected value per opening, by coffin and keys;
-  - the curio completion curve;
-  - the achievement points by tier.
-
-**Why.** A designer cannot tune what the tools misreport. The tenmoku and raku glazes are being handed out for the wrong deeds today.
-
-**How it is measured.** The simulator prints every number quoted in section 7, so each later change shows a before and an after.
-
-### 2. Balance the Lockheart's luck (one round)
-
-**The change.**
-- INVERTED and EVEN cannot lift a jackpot above a ceiling (say 25%). Alternatively, the Gambler's coffin is *warded*: its odds
-  cannot be turned, only LOADED.
-- The Gambler's and Shepherd's coffins leave the starting kit, to be bought or found.
-- The keys are priced by what they change: a key worth more nukes costs more.
-
-**Why.** The Lockheart is the game's ultimate and its gacha. A jackpot that a starting key buys at 99% stops being a jackpot. Balatro
-and Slay the Spire let modifiers stack, but they price the strong combinations by rarity, not by a shop shelf.
-
-**How it is measured.** The Lockheart section of the simulator gives nukes per hour of play and cubes-equivalent per opening for
-each coffin and key set. The aim is a jackpot that comes to a committed player about once a session, not once a key.
-
-### 3. Turn the curio curve the right way up (half a round)
-
-**The change.** Set the curio chances so that a set takes longer to finish the rarer it is. For example, aim for a median of about 20
-pulls for the commons, 40 for fine, 80 for rare, 150 for epic and 300 for prismatic. Then name the 85% dupe bias as a deliberate
-rule, or replace it with a **spark** (Genshin's Epitomized Path, FEH's spark): a missing curio of your choice after N dupes in a tier.
-
-**Why.** A collection is the long run's backbone (OSRS's collection log). Its first slots should fill in the first hour and its last
-ones should be the story the player tells.
-
-**How it is measured.** The curio curve section of the simulator, and the ledger's `curio.` firsts in play.
+### 3. Turn the curio curve the right way up
+A set takes longer to finish the rarer it is: medians of about 20 / 40 / 80 / 150 / 300 Tithe pulls, common to prismatic.
 
 ### 4. A spine for STORY's first hours (on hold, with STORY)
+The belt fills from the folk, one tool per task in their room (Grog the Sondelass, Saggar the Soul Brush, Raku the Lockheart, Pip the
+Dreamvane, the Crucibelle later); each room opened by what it needs. Measured by a funnel from the ledger's firsts: a new thing every
+five to ten minutes of play in the first hour, no gap over fifteen.
 
-**The change.** A first-session ladder the player can name at each step.
-- **The belt fills.** The Courier starts with the psygun and the Veritome. Each other tool is given by one of the folk for a task in
-  their room:
-  - Grog gives the Sondelass;
-  - Saggar gives the Soul Brush, at the kiln;
-  - Raku gives the Lockheart, at the Tithe;
-  - Pip gives the Dreamvane, in the hub;
-  - the Crucibelle comes later.
-  
-  This is Zelda's item per dungeon and OSRS's quest unlocks.
-- **The arts are learned in STORY as now.** The Codex shows "next" first.
-- **Each room is opened by what it needs.** The dunes open once the Dreamvane is had; the Weir's Tithe once the first chest is
-  opened.
-
-Petra owns the rooms and the tools, and Espada the words. This proposal is the order and the reasons, and it is a document first.
-
-**Why.** Today a new Courier has seven tools and six rooms at once and no reason to pick one. A spine gives the session its goal and
-lets each tool be learned alone, the way the owner already tests a tool with every other one taken off.
-
-**How it is measured.** A **funnel** read from the ledger's firsts: play time at the first art, first fish, first sale, first chest,
-first Tithe, first opening and first medal. It goes on the F3 panel beside the econ line and in F4's report. The aim is a new thing
-every five to ten minutes in the first hour, with no gap longer than fifteen.
-
-### 5. Mastery that is worth something, never in cubes (half a round)
-
-**The change.** Gold on a circuit or the trial, a full Siege and a Course record each earn a **glaze or a title**, predicates over the
-ledger as the glazes already are. The kiln's shop glazes (about 15 minutes' play each, as ECONOMY.md planned) become the cube sink
-beside them. The two are kept apart: what is bought is never what is earned.
-
-**Why.** Mastery rooms must not become farms (no cubes), but a medal with no consequence reads as a medal no one asked for. Mario
-Kart's cups and Tony Hawk's gaps list reward mastery with standing and looks. FFXIV keeps bought glamour and earned glamour apart.
-
-**How it is measured.** The ledger's medal firsts against the session count (do players come back for gold?), and the kiln's
-`cube.use.kiln` share of the drains on the F3 line.
+### 5. Mastery that is worth something, never in cubes
+Gold on a circuit or the trial, a full Siege and a Course record each earn a **glaze or a title** (predicates over the ledger). The
+kiln's bought glazes are the cube sink beside them; **what is bought is never what is earned**. Measured by medal firsts against
+sessions, and `cube.use.kiln` on the F3 line.
 
 ---
 
-*Later, once STORY has its spine: the Spirit Garden as the long sink (OSRS's Construction, FFXIV's housing, Animal Crossing's home
-rating), priced so that a committed player's surplus goes there for weeks.*
+## 9. The pillar: every tool teaches a real skill (the owner, 2026-10-04)
+
+**The skill is the verb**: the player gets better at the game by getting better at the real thing, and no number may do the skill for
+them. The game teaches by play and never says it is teaching (prior art: Rhythm Heaven, The Typing of the Dead, Brain Age, Gran
+Turismo's licences; the warning: the FTC's 2016 Lumosity ruling). **Luck sways chance only, never a skill.**
+
+| Tool | The skill (all ruled) |
+|---|---|
+| Psygun | aim; dynamic visual acuity |
+| Veritome | typing (reprogramming), reading behaviour, patience for the shot |
+| Dreamvane | relative pitch; with the Veritome, spatial mapping |
+| Crucibelle | tempo and melody: ten notes (1-5 low, 6-0 high) in the pentatonic of the music playing, each with a colour; no chords (keyboard rollover) |
+| Sondelass | the platformer's timing and momentum (line tension, the grapple's swing, the parry window) |
+| Soul Brush | shapes |
+| Lockheart | odds and expected value |
+
+**The Lockheart is the magic system (ruled in outline, 2026-10-04).** The coffin worn sets its mode: **casting** (the wheel of
+outcomes); **summoning** (catch a critically stunned Figment, a third choice beside zandatsu and reprogramming; the catch rate is the
+wheel, set by how cleanly it was stunned, and keys augment it); **conversion** (baubles into cubes; the keys set risk and yield).
+
+**Achievements are the main way skills are unlocked**, and cosmetics are their rewards, in quantity (the owner's standing rule).
 
 ---
 
-## 9. The pillar: every tool teaches a real skill (in discussion)
+## 10. Mined from the owner's design document v0.1 (given 2026-10-04)
 
-The owner's thesis (2026-10-04): Fool's Fortune distils every genre, and each Lachryma tool teaches a skill that works outside the game.
-It is not a treadmill that only takes time. The Dreamvane is the model: a strike is judged against a reference tone, so mining by ear
-trains relative pitch. The rule this page holds every tool to is: **the skill is the verb**. The player gets better at the game by
-getting better at the real thing, and no number may do the skill for them. Prior art: *Rhythm Heaven* and *The Typing of the Dead* (the
-skill is the game), *Brain Age* and Gran Turismo's licences (a measured skill as the score). The cautionary tale is the "brain-training"
-genre, whose transfer claims did not hold up (the FTC's 2016 ruling on Lumosity). So the game teaches by play, and never says it is
-teaching.
+v0.1 describes a grid-tactics game; its systems are mined, its combat model is not. **Keep**, **adapt**, **hold** or **cut**:
 
-| Tool | The skill | Status |
-|---|---|---|
-| Psygun | aim; dynamic visual acuity | ruled |
-| Veritome | typing (reprogramming), reading behaviour, patience for the shot | ruled |
-| Dreamvane | relative pitch; with the Veritome, spatial mapping (cartography) | ruled |
-| Crucibelle | tempo and melody: ten notes, 1–5 the lower register and 6–0 the upper, in the pentatonic of the music playing; every note has a colour as well as a sound. No chords (keyboard rollover). | ruled |
-| Sondelass | the platformer's movement tech: timing and momentum (the line's tension, the grapple's swing, the parry window) | ruled |
-| Soul Brush | shapes | ruled |
-| Lockheart | odds and expected value | ruled |
-
-**The Lockheart becomes the magic system (ruled in outline, 2026-10-04).** The coffin worn sets its mode:
-- **Casting**: the wheel of outcomes as it is now.
-- **Summoning**: catch a critically stunned Figment. Catching is a third choice on a stunned creature, beside zandatsu and reprogramming.
-  The wheel moves to the catch: the catch rate is the wheel, set by how cleanly the creature was stunned, and Possibilikeys augment it.
-  A key burned on a summon's release adds an effect. With several Figments inside, which one comes out is a gamble.
-- **Conversion**: liquid Lachryma (baubles) into solid (cubes); the keys set the risk and the yield.
-
-**Achievements are the main way skills are unlocked** (the owner's standing rule). Cosmetics are rewards for achievements, in quantity
-(the owner hunts glamour; FFXIV, GW2).
-
-**Soul Alchemy** (in the Spirit Garden) carries colour theory: fodder materials and curios have a hue and a saturation, and a spirit
-press (hopper, igniter, crucible: the owner's concept art) presses them to change the Courier's characteristics.
-
-**Still to define:** five damage types; a full suite of emotional statuses and what each does; the six (+1) domains, mostly for the
-god hand. The RPG layer (abilities, numbers) is not decided. The constraint it must meet: a number may widen what the player can do,
-never do the skill for them.
-
----
-
-## 10. Mined from the design document v0.1 (the owner's, given 2026-10-04)
-
-The v0.1 document describes a different game: real-time grid tactics, with a party of Contractors run by FFXII-style Gambits, a Ship
-for a hub and Bounties. Its systems are mined here; its combat model is not. Each item is marked **keep** (fits as written), **adapt**
-(fits once changed to this game), **hold** (later, or the owner's call) or **cut** (contradicts a rule of this game).
-
-**Damage and states**
-- **Five damage types on a Law–Chaos line** (keep): Impact (lawful, physical), Ego (lawful, mental), Influence (neutral, social),
-  Illusion (chaotic, perceptual), Delirium (chaotic, entropic). Two strong ideas come with them:
-  - **Annihilation**: Impact and Delirium, the two ends, amplify each other on a target already afflicted by the other.
-  - **The status a type builds**: enough of one type applies its status (Impact: stun, slow, armour break; Ego: doubt, pacified;
-    Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear).
-
-  *Adapt*: in an action game the type must be read off the tool in hand, so each tool deals a type (a proposal to settle). Two
-  repairs are needed:
-  - The trump list is lopsided: nothing beats Impact or Delirium, and Ego loses to two types. It is to be made a closed cycle.
-  - "Delirium scales with all attributes plus Luck" fits the Lockheart.
-- **Mental state, Stoic → Resolved → Balanced → Fluid → Prismatic** (keep): how open a creature is to statuses (and to buffs). It is
-  the lore's solid–liquid motif as a number, and it already names the chest tier. It is the base for the emotional statuses.
-- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought. Its Lachryma yield peaks in an optimal band;
-  past the band it enrages, and Soothe lowers it. This is the bridge to catching and conversion: catch or harvest in the band.
-
-**Progression**
-- **The six (+1) domains** (ruled, 2026-10-04): Ouranurgy (displacement), Manifestation, Divination, Psychokinesis, Possession and
-  Alteration, and **Spellscription** as the +1. Spellscription is the newer name for Spellcasting: transcribing a thing down, so it
-  covers the Soul Brush's glyphs and the Veritome's macros. The god hand's arts already map onto them: Telekinesis to Psychokinesis,
-  Manifest to Manifestation, Swell and Wring to Alteration, the survey to Divination.
-- **Skill levels to 99 by EXP, and "The World" at all seven maxed** (adapt): OSRS levels, in line with the Fool's Journey. *Adapt to
-  the pillar*: EXP comes from doing the skill well (a clean strike, a perfect pitch, a typed macro), so practice and competence drive
-  the level together.
-- **Achievements unlock specialised abilities, passives, spells, cosmetics, titles and lore** (keep): the owner's standing rule,
-  written here first.
-- **Spell mastery by use, at 10 / 50 / 200 / 500 casts** (keep): the arts' variants already do this.
-- **Luck rises from statistically unlikely events, good or bad** (keep): a ledger predicate over rare outcomes (a prismatic, a near
-  miss, a critical, a Lockheart jackpot), so it is retroactive like the achievements. It sways chance only, never a skill.
-- **Soul Alchemy: eight attributes** (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience; Luck apart),
-  raised by pressing materials at the Shrine (adapt):
-  - Each material has a primary gain and side effects as trade-offs, and hidden combinations go into a "Grimoire of Echoes".
-  - *Adapt*: the materials' hue and saturation (the owner's spirit press) carry the colour theory.
-  - *Cut*: any attribute that does a skill for the player ("Perception: accuracy of ranged abilities" is aim assist).
-
-**World**
-- **Figment classes, by sea**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep).
-- **Traits as tags revealed by reading** (keep): Armored, Pack Hunter, Volatile Demise. This is the Veritome's bestiary.
-- **Wells as dungeons with Etrian Odyssey cartography** (keep): the Dreamvane and Veritome mapping skill has its stage. Shortcuts are
-  opened on later runs, and FOEs patrol (strong Figments to avoid or take on).
-- **Overflow converts to crystallised Lachryma at 20%, up to 50% with progression** (adapt): today the overflow goes to the Lockheart
-  at ×0.8. This rate is the Lockheart's conversion mode.
-- **Defeat costs a share of the cubes** (hold): today "nothing is lost but the place".
-
-**Later layers (not cut: they are the game's other layers, section 11)**
-- Contractors (twenty classes, one per Major Arcana; Gambits; affinity; permadeath; LLM personalities).
-- The Ship, Bounties, Psychic Storms (the Astral Ocean is the Emocean now).
-- The grid and the Metronome's beats: a Well's tactical layer, never the core movement's (the gold standard).
-
-**Cut**
-- The post-battle report screen and level-up notifications: the log is the only text feedback.
-
-**Of note**
-- The seven Psy-Tool families map onto today's tools: Psyguns, the Psygun; Psycasters, the Sondelass; Dreamcatcher staves, the Dreamvane;
-  Tomes, the Veritome; Bells, the Crucibelle; Paintbrushes, the Soul Brush. Clocks have no tool: the Lockheart took their place.
+- **Five damage types on a Law-Chaos line** (keep; `src/progress/combat/types.js`): Impact (lawful, physical), Ego (lawful, mental),
+  Influence (neutral, social), Illusion (chaotic, perceptual), Delirium (chaotic, entropic). **Annihilation**: Impact and Delirium
+  amplify each other on a target afflicted by the other. Enough of one type applies its status (Impact: stun, slow, armour break; Ego:
+  doubt, pacified; Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear). *Adapt*:
+  each tool deals a type; the trump list is to become a closed cycle.
+- **Mental state, Stoic, Resolved, Balanced, Fluid, Prismatic** (keep): how open a creature is to statuses and buffs.
+- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought; its Lachryma yield peaks in a band, past
+  which it enrages; Soothe lowers it. Catch or harvest in the band.
+- **The six (+1) domains** (ruled, 2026-10-04; `src/progress/domains.js`, `src/progress/psyche.js`): Ouranurgy (displacement),
+  Manifestation, Divination, Psychokinesis, Possession, Alteration, and **Spellscription** as the +1 (transcribing: the Soul Brush's
+  glyphs, the Veritome's macros).
+- **Skill levels to 99 by EXP, "The World" at all seven maxed** (adapt): EXP comes from doing the skill well, so competence drives the
+  level.
+- **Achievements unlock abilities, passives, spells, cosmetics, titles and lore** (keep). **Spell mastery at 10 / 50 / 200 / 500
+  casts** (keep: the arts' variants). **Luck rises from statistically unlikely events** (keep: a retroactive ledger predicate;
+  `src/progress/luck.js`).
+- **Soul Alchemy's attributes** (adapt: section 16). *Cut*: any attribute that does a skill ("Perception: accuracy" is aim assist).
+- **Figment classes**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep). **Traits revealed by reading** (keep: the bestiary).
+  **Wells as dungeons with Etrian Odyssey cartography**, shortcuts and FOEs (keep).
+- **Overflow converted at 20%, up to 50%** (adapt: the Lockheart's conversion mode). **Defeat costs a share of the cubes** (hold).
+- **Later layers**: Contractors, the Ship, Bounties, Psychic Storms (the Emocean now), the grid inside a Well, never the core movement.
+- **Cut**: the post-battle report screen and level-up notifications (the log is the only text feedback).
 
 ---
 
 ## 11. The three layers (ruled, 2026-10-04)
 
-Fool's Fortune is built in three layers of depth, each a genre, and the game is the weave between them:
+1. **Wells**: dungeons on an Island of Ego (exploration, cartography, the tactical layer).
+2. **The island**: action combat (the game as it stands).
+3. **The Emocean**: travel between islands, a node map and rail-shooter stages (FTL, KH2's gummy ship).
 
-1. **Wells**: spontaneous dungeons on an Island of Ego. Exploration, cartography, and the tactical layer.
-2. **The island**: action combat outside the Wells (the game as it stands).
-3. **The Emocean**: travel between Islands of Ego, as node and stage-based rail-shooter combat (FTL's map, KH2's gummy ship).
-
-No player is asked to play one genre all the time; every player plays each some of the time. Prior art for one character across many
-activities: OSRS, FFXIV, Palworld, Aniimo. The repository is the vertical slice of all three.
-
-**The rule for the seams** (what decides whether the weave holds): one Courier, one purse, one ledger and one set of seven tools across
-all three layers. Each layer may add verbs, but none may have its own currency, levels or gear. KH2's gummy ship is the warning: its
-separate parts, building and progression are why players skipped it.
+**The rule for the seams**: one Courier, one purse, one ledger, one set of seven tools across all three. A layer may add verbs, never
+its own currency, levels or gear (KH2's gummy ship is the warning). The Emocean pays at the price at the other end.
 
 ---
 
-## 12. Rulings of 2026-10-04 (the digest)
+## 12. Rulings of 2026-10-04
 
-1. **The Lockheart's keys**: the conversion keys are cheaper (LOADED and ECHO 6 minutes), and **a fancy key is reused**, breaking after each
-   opening with a chance that rises with use (`ECON.lockheart.keyWear`: 20%, then 15 points more each time; it lasts about 2.7 openings,
-   never more than seven). Brass is spent. Conversion now pays over a key's life when the coffin is brimming, not when it is merely full.
-2. **The Vessoul** is the player's entity in the world. Its forms are the god hand, the Pneuka Jar, the Courier and, on the Emocean, the
-   ships (sloop, frigate, tanker, destroyer, galleon); the Solar Skiff is one of its limbs (GLOSSARY).
-3. **Kintsugi**: gold where a crack mends, dissipating fully as the mend completes; a very subtle sizzle as it mends (Wanda's, if she
-   likes).
-4. **Espada's cast** for commissions and bounties stands (Seger the Witness Cone; Letty Marque and her Tulpa Poll, "she"); the details
-   are Espada's to write.
+1. **The Lockheart's keys**: LOADED and ECHO cost 6 minutes of play; **a fancy key is reused**, breaking after each opening at a
+   chance that rises with use (`ECON.lockheart.keyWear`: 20%, then 15 points more; about 2.7 openings, never more than seven). Brass
+   is spent.
+2. **The Vessoul** is the player's entity: the god hand, the Pneuka Jar, the Courier and the Emocean's ships; the Solar Skiff is a
+   limb (GLOSSARY).
+3. **Kintsugi**: gold where a crack mends, gone as the mend completes; a subtle sizzle (Wanda's).
+4. **Espada's cast** for commissions and bounties stands (Seger the Witness Cone; Letty Marque and her Tulpa Poll).
 5. **The STE100 trim** of the UI text comes after the systems plan.
-6. **The chests' beams** become a glaze that changes as the chest charges (Calissa's), touching Petra's ceremony.
+6. **The chests' beams** become a glaze that changes as the chest charges (Calissa's).
 
-## 13. Rulings of 2026-10-04, evening (R57: the slice)
+## 13. Rulings of 2026-10-04, evening (the slice)
 
-- **Jellies for now** in the Emocean's stage; the Egregore's body and mind after the slice.
-- **The Purser buys Cogitomaps**, dearest on Margarite (Law wants its minds charted), cheapest on the island whose Well it maps (it
-  knows its own mind). The map is what makes the first hop pay, and only a good map pays the trip: skill decides (`purserPrice`).
-- **Divination charts the course between the Islands of Ego** (the owner's steer). Taken from FTL's long-range scanners, Sunless Sea's
-  zee charted by sailing it, and dead reckoning: a route's **reckoning** (0 .. 1, of a day) marks each wave's lane ahead on the rail and,
-  after the slice, opens the way to a node not yet found (Entropolis). Knowledge, never numbers: the reckoning shows where the
-  wave comes from, and the gun and the dodge stay the player's. `src/progress/econ/emocean.js`.
-- **The music is the stage's clock:** every stage runs its cue's 150 s; a tempo per ship (Wanda's `stageCue`) waits for a second ship.
+- **Jellies for now** in the Emocean's stage; the Egregore after the slice.
+- **The Purser buys Cogitomaps**: dearest on Margarite, cheapest on the island whose Well it maps; only a good map pays the trip
+  (`purserPrice`).
+- **Divination charts the course**: a route's **reckoning** (0 to 1, of a game day) marks each wave's lane ahead on the rail and later
+  opens unfound nodes. Knowledge, never numbers (`src/progress/econ/emocean.js`).
+- **The music is the stage's clock**: every stage runs its cue's 150 real seconds.
 
-## 14. Co-op and the divisions in the game (the owner, 2026-10-05; after the slice)
+## 14. Co-op (the owner, 2026-10-05; after the slice)
 
-- **Slice first, co-op after.** The divisions get an interface templated on the Courier's (Petra's), and each a bespoke clay folk form
-  with abilities suited to its role and persona (the owner's; not to be argued on balance). Designs come after the slice.
-- **Friendly fire is on**: a fifth of the damage; statuses land on allies, and tolerance rises fast (`combat/friendly.js`: x2 build-up
-  and half the hold for the second, immune to the third within 20 s). Taken from Monster Hunter's status tolerance and WoW's
-  diminishing returns.
+- Slice first, co-op after: each division gets a clay folk form with abilities suited to its role (the owner's; not argued on balance).
+- **Friendly fire is on**: a fifth of the damage; statuses land on allies with fast-rising tolerance (`combat/friendly.js`: x2 build-up
+  and half the hold the second time, immune the third within 20 real seconds; Monster Hunter, WoW's diminishing returns).
 
 ## 15. Widening: what a level does (the owner, 2026-10-05: "lock it in for now")
 
-A domain's level widens what the domain can do: reach, capacity, options, never accuracy (section 10). Fifteen knobs, each read by the
-tool it names as a multiplier of the tool's own number or a bonus to a count, linear in the level for now (`WIDEN`, `widenAt` in
-`progress/domains.js`; `game.psyche.widen(key)`; the table prints in `node scripts/combat.mjs`). Level 1 is the tool exactly as it is,
-so the core movement and every tool's feel are untouched until a level is earned. Two of them tie systems together on purpose:
-`divination.reckon` (Divination charts the course: the reckoning marks the rail further ahead) and `spellscription.copy` (Spellscription
-duplicates good maps: a Cogitomap transcribed is another sale to the Purser). And levels feed the unlocks for free: an art's achievement
-is a predicate, so "this art at Divination 20" is one line in `achievements.js`. The system will grow.
+A domain's level widens reach, capacity and options, **never accuracy**. Fifteen knobs, linear in the level, each read by its tool
+(`WIDEN`, `widenAt` in `progress/domains.js`; `game.psyche.widen(key)`; printed by `node scripts/combat.mjs`). Level 1 is the tool
+exactly as it is. `divination.reckon` lengthens the reckoning; `spellscription.copy` duplicates good Cogitomaps.
 
-## 16. The Spirit Garden and Soul Alchemy (the owner, 2026-10-05: "the boat first, then the Spirit Garden and Soul Alchemy")
+## 16. The Spirit Garden and Soul Alchemy (the owner, 2026-10-05)
 
-The garden inside the vessel is where play already done well keeps paying, and where what the Wells give becomes who the Courier is.
-Two systems, one place (Petra's: E3; the press is Calissa's to draw). Built as rules and modules first (Dovina), so the place only has
-to call them.
+One line between the progressions: the **domains** widen the **tools** (what the Courier does); the **attributes** widen the **vessel**
+(what the Courier is). Neither does a skill for the player.
 
-**One line between the two progressions, so they never overlap.** The **domains** widen the **tools** (what the Courier does; earned by
-doing it: section 15). The **attributes** widen the **vessel** (what the Courier is: capacity, toughness, standing; earned at the spirit
-press). Neither ever does a skill for the player.
+**Soul Alchemy** (`src/progress/alchemy.js`, `materials.js press()`; Potion Craft's map, Atelier): the Courier's **soul colour** (hue
+and saturation, starting grey) walks each material's **path** in the order pressed; the order is the skill. **Firing** inside an
+attribute's target raises it one rank and spends cubes (the long sink); targets narrow with each rank. The seven: **Willpower** (the
+shield's pool), **Focus** (how long built statuses hold), **Charisma** (prices, the haggle), **Perception** (how far ahead intent
+shows), **Dexterity** (drawing and stowing), **Visualization** (the Soul Brush's canvas), **Resilience** (mending; a ship's hits). Luck
+stays apart. The vessel's glow takes the soul colour.
 
-**Soul Alchemy** (`src/progress/alchemy.js`; prior art: Potion Craft's map, the owner's v0.1 attributes, Atelier's synthesis, a
-painter's colour wheel):
-- The Courier has a **soul colour** (a hue and a saturation on the wheel; it starts grey, at the centre). Pressing materials at the
-  spirit press walks it along each material's winding **path** in the order they go into the hopper (`materials.js press()`): the
-  order is the skill, as in Potion Craft.
-- Each of the seven **attributes** sits at its own place on the wheel (its hue, at a saturation). **Firing** the press (the igniter)
-  while the soul colour is inside an attribute's target raises that attribute one rank, spends **refined Lachryma** (cubes: the long
-  sink) and leaves the colour where it is. The target narrows with every rank (navigation must get finer: the skill is the verb).
-- The seven, after v0.1 (Luck stays apart: `luck.js`), each widening the vessel: **Willpower** (the shield's pool), **Focus** (how long
-  the statuses you build hold), **Charisma** (what the folk pay and ask: prices, the haggle), **Perception** (how far ahead a creature's
-  intent shows), **Dexterity** (drawing and stowing a tool), **Visualization** (the canvas the Soul Brush and the hand work on),
-  **Resilience** (the clay's mending, and the hits a ship bears on the Emocean: one attribute across two layers).
-- The soul colour is also a look: the vessel's glow takes it (Calissa's), so alchemy is dress-up as well as growth.
+**The Spirit Garden** (`src/progress/garden.js`; OSRS's Miscellania and herb runs, Palworld, FFXIV housing):
+- **Dividend slots** (`ECON.dividend`): a mastered encounter (every achievement in its group done) in a slot pays 5% of its rate an
+  hour of play, filling for 8 game days (8 real hours), then waits. Three slots to start.
+- **Beds**: a material planted grows more of its kind in 6 game hours (15 real minutes).
+- **Upgrades**: more slots and beds, each dearer, in cubes. Later, caught Figments work them.
 
-**The Spirit Garden** (`src/progress/garden.js`; prior art: OSRS's Kingdom of Miscellania and herb runs, Palworld's base, Stardew's
-farm, FFXIV's housing as the long sink):
-- **Dividend slots** (`ECON.dividend`): an encounter is **mastered** when every achievement in its group is done (a predicate over the
-  ledger, so it is retroactive); a mastered encounter set in a slot pays 5% of its rate an hour of play, filling for 8 game days (8 real hours,
-  `capDays`: a working day or a night's sleep away, FFXIV's retainer ventures and OSRS's Miscellania) and waiting to be collected. Three slots to start.
-- **Beds** (foraging): a material planted grows more of its kind in 6 game hours (15 real minutes; a herb run). What the Wells give is the seed stock.
-- **Upgrades** (the long sink): more slots, more beds, each dearer than the last, paid in cubes.
-- Later: caught Figments (the Lockheart's summoning) work the slots and beds, Palworld's way.
+## 17. Time: one game day is one real hour (the owner, 2026-10-05; settled)
 
-## 17. Time: one game day is one real hour (the owner, 2026-10-05; settled, confirmed in Petra's thread)
+A game day must be tasted in a sitting. `DAY_MS` = 3,600,000 (`core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5
+real seconds. The clock runs on the wall clock, scaled, so the garden grows while you are away; one clock for everything (`now()`,
+`today()`), pinned in a replay (`setClock`). Nothing reads `Date.now()` for game time.
 
-Real days cannot be taste-tested: nobody can try a Well's drift, a market's swing or a garden's harvest in an afternoon. So the game keeps
-its own calendar, on a conventional game scale.
+**Two kinds of number, never mixed:** the calendar (a Well's drift, ripening, caps, demand) is in game time; rates of income
+(`ECON.perMinute`) are per hour of play. "Seven days" in an achievement means seven game days.
 
-**The scale (settled).** One game day is one real hour (`DAY_MS` = 3,600,000 in `core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5 real seconds. (Prior art: Minecraft's
-20-minute day, Stardew Valley's 7 seconds a game minute, Majora's Mask's three days; and Animal Crossing for what this is not.)
+## 18. Emotional weather (the owner, 2026-10-05; docs/plans/WEATHER.md)
 
-**The clock runs on the wall clock, scaled**, not only while playing: what pays or grows while you are away (the garden) still does,
-and a return after a night away finds many days gone by. It is one clock for everything (`core/calendar.js`: `now()`, `today()`), and a
-replay pins it (`setClock`), so a replay sees the days it saw. Nothing reads `Date.now()` for game time.
-
-**What is a game day, and what is not.** Two kinds of number, never mixed:
-- **The calendar** (drift, ripening, caps, ages) is in **game time**: a Well's layout and an island's demand turn over each game day; a
-  route's reckoning is of a game day; a Cogitomap's worth follows its Well's fill (never its age); a bed ripens in game hours; the dividend's cap is
-  8 game days.
-- **Rates of income** (`ECON.perMinute`, the aim of 480 cubes an hour) stay per **hour of play**: the economy is measured against the
-  player's time, never the calendar's.
-
-**What it lets us test in one sitting:** the Great Dunemaw changes shape every game day (every real hour); the islands' prices swing over three to seven game days (three to seven real
-hours: the demand wave's period, `ECON.island.periodDays`); a Cogitomap's worth moves with its Well's fill; a bed ripens in 15 real
-minutes (6 game hours); a dividend slot fills in 8 real hours (8 game days), so a slot set at breakfast is full by supper.
-
-**What it invites (later, the others'):** a day and night that follow the game clock (Calissa's sky), the music by the hour (Wanda's),
-the folk's routines (Petra's), and the slice's achievements that ask for "seven days" mean seven game days (seven real hours).
-
-## 18. Emotional weather (the owner, 2026-10-05; the plan: docs/plans/WEATHER.md)
-
-Weather is an island's mood falling as Lachryma: the five aspects (mirth, wonder, desire, grief, dread) and calm. It resonates because
-the game already speaks in those fives: each weather feeds the damage type at its place on the Law-Chaos line (mirth Impact .. dread
-Delirium), sways every creature's mental state, draws its fish, makes its crude plentiful (cheap) where it falls, changes the Emocean's
-danger and the reckoning's reach, and feeds a ruminating Well. It is a pure function of the island and the game hour, so it is the same
-for everyone and in a replay, and it can be forecast: how far ahead is a Divination widening. Margarite leans to mirth and Entropolis to
-dread; a dread fog over the King's island is rare (under 1% of game hours) and a hidden achievement. The weather changes what pays and what is
-easy, never a skill. Day and night run on the same clock; at night Lachryma's signatures read further.
+An island's mood falling as Lachryma: mirth, wonder, desire, grief, dread, and calm. Each feeds its damage type, sways mental states,
+draws its fish, makes its crude cheap where it falls, changes the Emocean's danger and the reckoning's reach, and feeds a ruminating
+Well. A pure function of the island and the game hour (same for everyone, replayable, forecastable by Divination). Margarite leans to
+mirth, Entropolis to dread; a dread fog over the King's island (under 1% of game hours) is a hidden achievement. It changes what pays,
+never a skill.
 
 ## 19. Rulings of 2026-10-05, the weather round
 
-- **The five feelings are shown most positive to most negative: Wonder, Mirth, Desire, Grief, Dread**, wherever a player sees them
-  (GLOSSARY; `DISPLAY_ORDER`). The Law-Chaos order (mirth .. dread) stays the systems' and is never the shown order.
-- **Wells come in radically different types**: a Well's genre is free, "action combat" (the Dunemaw) beside, say, "a JRPG board game".
-  One Courier, one purse, one ledger and the same seven tools still hold in every type: what changes is how a mind is worked through.
-  Part of the Wells' deep dive after the slice (SLICE.md).
-- **Weather is asked by place** (Petra's input): an island, or a Well with its own mood, with an exposure (open, roofed: the mood without
-  the rain, deep: the Well's own); the open Emocean has no mood. Each weather wears its damage type's colour and motif (Calissa's input:
-  wonder is diamond dust and halos by day, the aurora by night); the hour sets the music's density and the mood its colour (Wanda's).
-- **Hunger is renamed Desire** (the owner floated it, Espada and Dovina concur): neutral, in the middle of the line, Influence's (charm:
-  persuasion trades in desire). Desire drives chaos; grief and dread are what it yields. *Hunger* is now only a folk word, desire in excess.
-  Its weather is the wanting wind; its crude, crude desire.
-- **The Crucibelle's notes follow the weather** (Wanda's five scales: "responding to emotional barometric pressure"): approved.
-- **A beach** on the Dunes' edge shows what an Island of Ego is: nothing but Emocean to the horizon. The weather ends at the waterline
-  (the open sea has no mood), and the slice's pier would leave from it. **Entering a Well** gets its seam covered: a wordless descent
-  through the maw, held until the floor is ready (Calissa's look, Petra's timing).
-- **Cycles of expansion and contraction** (the owner): the world grows (the wheel's eight feelings, rings, agate), the player's load
-  does not: a place carries few feelings, a mind shows one feeling or one agate, and every expansion is followed by a contraction pass
-  (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips (`docs/ref/lantern_wisp.glb`): five mood loops,
-  three emotes, movement, attack, hit, death, a dance.
-- **The wheel is approved** (the owner, 2026-10-05, "full speed ahead"; docs/plans/WHEEL.md, THE DETERMINATION): rings as adjectives,
-  opposites cancel, one feeling or one **agate**, Plutchik's hues for the five (mirth gold, wonder cyan, desire orange, grief blue, dread
-  ink-green), room for eight; **Faith, Gall and Fury** join as places after the slice (Gall kept: rejection, boredom to loathing). The
-  weather already carries an undercurrent: about one weather hour in eight is an agate, each island with its own (Margarite's delight
-  and hope, Entropolis's worry, despair and awe), and an opposite undercurrent cancels instead (the mood weaker).
+- **Shown order: Wonder, Mirth, Desire, Grief, Dread** (`DISPLAY_ORDER`); the Law-Chaos order (mirth to dread) is the systems' only.
+- **Wells come in radically different genres**; one Courier, one purse, one ledger, the same seven tools in every one.
+- **Weather is asked by place** with an exposure (open, roofed, deep); the open Emocean has no mood.
+- **Hunger is renamed Desire**: neutral, Influence's. *Hunger* is a folk word now. Its crude: crude desire.
+- **The Crucibelle's notes follow the weather** (Wanda's five scales): approved.
+- **A beach** on the Dunes' edge; the weather ends at the waterline. **Entering a Well**: a wordless descent through the maw.
+- **Cycles of expansion and contraction**: the world grows, the player's load does not; every expansion is followed by a contraction
+  pass (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips.
+- **The wheel is approved** (docs/plans/WHEEL.md): one feeling or one **agate**; Plutchik's hues; Faith, Gall and Fury after the
+  slice; about one weather game hour in eight is an agate.
 
+## 20. The stones: how a Courier takes Lachryma in (the owner, 2026-10-06; LORE.md "The stones")
 
-## 20. The stones: how a Courier takes Lachryma in (the owner, 2026-10-06; Espada's lore, LORE.md "The stones")
+The stones are the vessel's **intake**; every stone trades a gain for a loss (Dark Souls' rings, Path of Exile's keystones). One set
+at a time. The table is `src/progress/stones.js`.
 
-The kiln's stones were look only; now they are the vessel's **intake**. A Courier drinks through its stones (Espada: as a pot breathes
-through its glaze), so the stone set decides six things, and every stone trades some against others (Dark Souls' rings, Path of Exile's
-keystones: a gain paid for with a loss, never a straight upgrade). The table is `src/progress/stones.js`.
-
-| the knob | what it is | today |
+| knob | what it is | wired |
 |---|---|---|
-| **pool** | the vessel's size, regen and costs (`LachrymaPool` modifiers) | wired (main.js: on firing, and by day or night) |
-| **reach** | the bauble magnet's radius | for Petra (`courier/lachryma.js`) |
-| **heady** | how far a drink pushes **your mental state** toward Prismatic (the creatures' five states, built once: Prismatic is power x1.5 and fragility x2; past full, **brimming**, four times as far) | for Petra |
-| **tint** | how strongly the place's feeling comes in with a drink: the **draught**, whose damage type then builds its status up to x1.5 | for Petra |
-| **gulp** | a cap on the take a second (amethyst's smoothing) | for Petra |
-| **overflow** | where what does not fit goes: the Lockheart's share, or bled off | for Petra |
+| **pool** | size, regen, costs (`LachrymaPool` modifiers) | yes (main.js) |
+| **reach** | the bauble magnet's radius | Petra (`courier/lachryma.js`) |
+| **heady** | how far a drink pushes your mental state toward Prismatic (x1.5 power, x2 fragility; brimming four times as far) | Petra |
+| **tint** | how strongly the place's feeling comes in: the **draught**, building its status up to x1.5 | Petra |
+| **gulp** | a cap on the take a real second | Petra |
+| **overflow** | the Lockheart's share, or bled off | Petra |
 
-The stones, each a trade: **Amethyst** (sober: heady x0.4, tint x0.5, gulp 25 a second, overflow bled; slower regen, shorter reach),
-**Citrine** (a tenth of what is drunk kept as cubes; 15 less to hold), **Moonstone** (regen and reach x1.3 at night, x0.85 and x0.9 by
-day), **Onyx** (no tint, every drop of overflow to the Lockheart; slower, shorter), **Emerald** (reach x1.5, tint x2; heady x1.3),
-**Sapphire** (costs x0.85; regen x0.8), **Ruby** (30 more to hold; costs x1.15, heady x1.25), **Diamond** (heady x2, and an agate's two
-feelings both drunk), **Opal** (each drink a game of chance by Luck: a tenth lost, a tenth doubled). One set at a time.
+| Stone | Gain | Cost |
+|---|---|---|
+| Amethyst | sober: heady x0.4, tint x0.5, gulp 25 a real second, overflow bled | slower regen, shorter reach |
+| Citrine | a tenth of what is drunk kept as cubes | 15 less to hold |
+| Moonstone | regen and reach x1.3 at night | x0.85 and x0.9 by day |
+| Onyx | no tint, all overflow to the Lockheart | slower, shorter |
+| Emerald | reach x1.5, tint x2 | heady x1.3 |
+| Sapphire | costs x0.85 | regen x0.8 |
+| Ruby | 30 more to hold | costs x1.15, heady x1.25 |
+| Diamond | an agate's two feelings both drunk | heady x2 |
+| Opal | each drink a chance by Luck: a tenth doubled | a tenth lost |
 
-What it feeds: the **weather** (the draught is the place's feeling; amethyst and onyx shut it out, emerald drinks it), the **mind**
-states (the creatures' own, now the Courier's too), the **Lockheart** (onyx feeds it everything), **Luck** (opal), the **economy**
-(citrine: a faucet, watched in `scripts/economy.mjs` once wired), and **Soul Alchemy** (the soul colour is the vessel's growth; the
-stones its temper).
+## 21. The crossing: the Emocean as a rail shooter (the owner, 2026-10-07; docs/plans/RAIL.md)
 
-## 21. The crossing: the Emocean as a rail shooter (the owner, 2026-10-07; the plan: docs/plans/RAIL.md)
-
-The hop's stage, made a love letter to the genre: a hundred bars of Wanda's Crude Sea, whose first half teaches one idea an act
-(the gun and the lock-on, polarity, the parry) and whose second half is one **set piece** (the shoal, the pirates, the rogue
-Leviathan), each in its own camera grammar, swinging between Star Fox's chase, Ikaruga's above, Einhander's side, Sin & Punishment's
-free reticle and a look astern.
-
-**What it is worth:**
-- It pays no cubes: the Emocean stays the travel layer (section 11).
-- Its reward is the arcade's: a rank against a measured par, Star Fox's medal, the chain and the volley, the set piece's end.
-- Its stakes are the cargo's: pirates come for casks (a tax on the unskilled, a prize for the skilled: measured, -1.4 to +2 casks).
-- Its rarest thing is certain: the Leviathan is a deck, so it comes within 14 crossings on the Margarite run.
-
-**The same tools in every layer:** the ship carries two of the tools you wear as its mounts (the Crucibelle is the bomb, the Veritome
-photographs the Leviathan for the Compendium); polarity is your draught; the parry is V, as on foot.
-
-**Numbers, measured before built:** `node scripts/rail.mjs` plays the crossing against three players and checks its rules (everything
-on a bar, nothing entering during a swing). Every set piece is the peak of its stage; novices come through the common one three times
-in five, good players always, and an expert fells the Leviathan about one time in four. Par and the medal's line are to be re-measured
-from the ledger once the rail is played.
+A hundred bars of Wanda's Crude Sea: the first half teaches one idea an act (the gun and lock-on, polarity, the parry), the second is
+one **set piece** (the shoal, the pirates, the rogue Leviathan), with camera grammars from Star Fox, Ikaruga, Einhander and Sin &
+Punishment.
+- **Pays no cubes** (section 11). Its reward is a rank against a measured par and a medal; its stakes the cargo (pirates take casks:
+  measured -1.4 to +2 casks); the Leviathan is a deck, certain within 14 crossings on the Margarite run.
+- The ship mounts two of your tools (the Crucibelle the bomb, the Veritome photographs the Leviathan); polarity is your draught; the
+  parry is V.
+- `node scripts/rail.mjs` plays it against three players: novices clear the common set piece three times in five, good players
+  always, an expert fells the Leviathan about one time in four. Par and the medal line are re-measured from the ledger once played.
