@@ -116,7 +116,7 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | --- | --- | --- |
 | draw calls a frame (every pass) | 450 | +8% |
 | triangles a frame | 350,000 | +8% |
-| shader programs alive | 136 (was 120 to R46, 128 to R47: raised for the owner's brush load, parry and Shrines, then the crossing's set pieces: the wake, the glints and their boil, the brig's hull and colours, Old Nobody's hide and shadow; one shared program each, every one compiled in the warm-up) | +6% |
+| shader programs alive | 144 (was 120 to R46, 128 to R47, 136 to the full build's Round 1: raised for the owner's brush load, parry and Shrines, then the crossing's set pieces: the wake, the glints and their boil, the brig's hull and colours, Old Nobody's hide and shadow; then the Great Dunemaw's cavern: the dish's sand, the pool's ring, the pillar's and the stalactite's seams, the clutch's eggs, the catch's tether and mouth, the busker's mat; one shared program each, every one compiled in the warm-up) | +6% |
 | JS heap | 320 MB | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |
