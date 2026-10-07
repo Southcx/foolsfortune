@@ -90,8 +90,8 @@ window.__ds = (() => {
     },
     // ---- the clock (the replay's header: debug/replay.js wallNow)
     clockShift(ms) { const h = g.replay.header; h.wall += ms - g.wallNow(); return g.weather.sky(); },
-    findTime(kind) { const now = g.wallNow(), W = g.weather; for (let k = 0; k < 24 * 60; k++) { const ms = now + k * 75000, w = W.at('anagami', ms);
-      if (kind === 'night' ? w.dayPhase === 'night' && w.phase > 0.9 : kind === 'dawn' ? w.dayPhase === 'dawn' : kind === 'storm' ? w.aspect === 'dread' && w.strength > 0.4 && w.dayPhase === 'day' && W.at('anagami', ms + 600000).aspect === 'dread' : false) return ms + 60000; } return null; },
+    findTime(kind, from = null) { const now = from ?? g.wallNow(), W = g.weather; for (let k = 0; k < 24 * 60; k++) { const ms = now + k * 75000, w = W.at('anagami', ms);
+      if (kind === 'night' ? w.dayPhase === 'night' && w.phase > 0.9 : kind === 'dawn' ? w.dayPhase === 'dawn' : kind === 'storm' ? w.aspect === 'dread' && w.strength > 0.4 && w.dayPhase === 'day' && W.at('anagami', ms + 120000).aspect === 'dread' : false) return ms + 60000; } return null; },
     sky() { const L = g.weatherLook, w = g.weather.here(g.player.pos); return { phase: w.dayPhase, aspect: w.aspect, strength: w.strength, amt: L.amt ? Object.fromEntries(Object.entries(L.amt).filter(([, a]) => a > 0.01).map(([k, a]) => [k, +a.toFixed(2)])) : null, lift: +(L.lift || 0).toFixed(3), bg: g.scene.background?.isColor ? '#' + g.scene.background.getHexString() : 'texture', fog: g.scene.fog ? '#' + g.scene.fog.color.getHexString() : null }; },
   };
   return D;
@@ -112,14 +112,18 @@ const unlockAudio = async () => { await S.ev(() => __game.player.sfx.unlock()); 
  *  parts want them walking. */
 const goFoot = async (p) => { const r = await S.go(p); if (await S.ev(() => __game.game.techs.active?.id === 'skiff')) await S.press('KeyY', 12); return r; };
 /** A part, run to its end or failed with what stopped it; a page reloaded under it (the shared dev server's HMR) is opened again. */
-async function run(id, fn) {
+async function run(id, fn, retry = true) {
   if (!part(id)) return;
   S.phase = id;
   try { await fn(); }
   catch (e) {
-    S.check(`${id}: ran to its end`, false, String(e.message || e).split('\n')[0].slice(0, 200));
     const alive = await S.page.evaluate('!!window.__ds && !!window.__sw && !!window.__game?.game').catch(() => false);
-    if (!alive) { S.note(`${id}: the page reloaded under the part (opened again)`, String(e.message || e).slice(0, 120)); await S.page.close().catch(() => {}); await S.openPage(); await install(); }
+    if (!alive) { // (the shared dev server reloaded the page under the part: opened again, and the part run once more)
+      S.note(`${id}: the page reloaded under the part (opened again)`, String(e.message || e).slice(0, 120));
+      await S.page.close().catch(() => {}); await S.openPage(); await install();
+      if (retry) return run(id, fn, false);
+    }
+    S.check(`${id}: ran to its end`, false, String(e.message || e).split('\n')[0].slice(0, 200));
   }
   try { await closeAll(); } catch { /* the next part opens what it needs */ }
 }
@@ -321,7 +325,7 @@ await run('solar', async () => {
   const n0 = await S.ev(() => __game.game.events.counts['trial.solar.start'] || 0);
   for (let i = 0; i < 10; i++) await F(2);
   const n1 = await S.ev(() => __game.game.events.counts['trial.solar.start'] || 0), sAfter = await ds('solar()');
-  S.check('solar: F spammed mid-trial begins no second trial', n1 === n0, { starts: n1 - n0, running: sAfter.running, t: sAfter.t, next: sAfter.next });
+  S.check('solar: F spammed mid-trial begins no second trial', n1 === n0, { starts: n1 - n0, running: sAfter.running, t: sAfter.t, next: sAfter.next, cause: n1 !== n0 ? 'world/dunes/solar.js update() starts on interact.cur \'solar\' + F, and start() does not refuse while running; courier/interact.js keeps the last offer up to 0.24 s after offer() returns null, so an F in that window restarts the clock' : null });
   // the course run backwards first: the last ring is the nearest to the Gnomon. Through it, on foot, the trial must not finish
   const d = await S.ev(() => { const g = __game.game, P = g.player.pos; return g.solar.rings.map((R, i) => [i, +R.pos.distanceTo(P).toFixed(1)]).sort((a, b) => a[1] - b[1]).slice(0, 3); });
   S.note('solar: the rings nearest the Gnomon\'s foot (index, metres)', d);
@@ -374,16 +378,19 @@ await run('solar', async () => {
 // ================================================================== 6. a slip geyser's launch
 await run('geyser', async () => {
   await goFoot('dunes');
-  const G0 = await S.ev(() => { const L = __game.game.geysers?.list || []; return L.length ? L[0].pos.toArray() : null; });
-  S.check('geyser: the slip geysers stand', !!G0, { first: G0 });
+  // the one nearest its eruption (a person waits by the one that rumbles): its index, where it stands, the seconds until its column
+  const G0 = await S.ev(() => { const L = __game.game.geysers?.list || []; if (!L.length) return null;
+    const until = (G) => G.look.state === 'rumble' ? G.look.left : G.look.state === 'dormant' ? G.look.left + 2 : G.look.state === 'erupt' ? 0 : G.look.left + 40;
+    const i = L.map((G, i) => [i, until(G)]).sort((a, b) => a[1] - b[1])[0][0]; return { i, pos: L[i].pos.toArray(), until: +until(L[i]).toFixed(1), state: L[i].look.state }; });
+  S.check('geyser: the slip geysers stand', !!G0, G0);
   if (!G0) return;
-  await ds(`standOn(${G0[0] + 1}, ${G0[2]}, 0)`);
+  await ds(`standOn(${G0.pos[0] + 1}, ${G0.pos[2]}, 0)`);
   const m = await ds('mark()');
-  let launched = null, top = -1e9;
-  for (let i = 0; i < 30 && !launched; i++) {
-    await S.ticks(30);
-    const st = await S.ev(() => { const g = __game.game, Gy = g.geysers.list[0]; return { state: Gy.look.state, launching: !!Gy.look.launching, y: g.player.pos.y, vy: g.player.vel.y }; });
-    if (st.launching) { await S.ticks(20); const y = await S.ev(() => __game.game.player.pos.y); launched = { ...st, rise: +(y - G0[1]).toFixed(1) }; }
+  let launched = null;
+  for (let i = 0; i < Math.ceil((G0.until + 6) * 6) && !launched; i++) {
+    await S.ticks(10);
+    const st = await S.ev((k) => { const g = __game.game, Gy = g.geysers.list[k]; return { state: Gy.look.state, launching: !!Gy.look.launching, y: g.player.pos.y, vy: g.player.vel.y }; }, G0.i);
+    if (st.launching) { await S.ticks(20); const y = await S.ev(() => __game.game.player.pos.y); launched = { ...st, rise: +(y - G0.pos[1]).toFixed(1) }; }
   }
   const f = await S.shot('geyser-launch');
   S.check('geyser: standing in its ring when it erupts throws the Courier up', !!launched && launched.rise > 3, { launched, file: name(f) });
@@ -440,7 +447,7 @@ await run('shrines', async () => {
     await F(8);
     const w2 = await ds('win()');
     const r1 = await S.ev(() => __game.game.events.counts['shrine.rest'] || 0);
-    S.check(`shrines ${label}: F closes its page (and does not rest again)`, !w2.index && r1 === r0, { index: w2.index, restsByThatF: r1 - r0 });
+    S.check(`shrines ${label}: F closes its page (and does not rest again)`, !w2.index && r1 === r0, { index: w2.index, restsByThatF: r1 - r0, cause: w2.index ? 'feedback/indexmenu.js:58 closes the page on keydown F; P.latch(KeyF) is still set, and world/shrines.js update() (interact offers again once the menu is shut) rests and opens it again' : null });
     await closeAll();
     // Esc closes it, and the Courier walks after
     await F(8); await S.press('Escape', 6); await S.resume(); await S.ticks(4);
@@ -477,7 +484,8 @@ await run('jetty', async () => {
   await S.hold('KeyW', quick ? 240 : 420);
   const out = await S.ev(() => { const g = __game.game, B = g.dunes.beach, P = g.player.pos; return { shore: +B.shoreAt(P.x, P.z).toFixed(2), y: +P.y.toFixed(2), seaY: +B.seaY.toFixed(2) }; });
   await S.shot('shore-waterline');
-  S.check('jetty: walked out to sea, the wall holds the Courier a step past the waterline', out.shore > -4, { from: sea, stopped: out });
+  S.check('jetty: walked out to sea, the wall holds the Courier (never past a step into the crude)', out.shore > -4, { from: sea, stopped: out });
+  S.note('jetty: where the walk to sea stopped, metres from the waterline (+ dry, - in the crude; the wall stands 2.5 m out)', out.shore);
   await S.go('jetty');
   const deck = await S.ev(() => { const g = __game.game, B = g.dunes.beach; return { y: +g.player.pos.y.toFixed(2), top: +B.jetty.top.toFixed(2), sand: +g.dunes.heightAt(B.jetty.end.x, B.jetty.end.z).toFixed(2), seaY: +B.seaY.toFixed(2) }; });
   await S.ticks(90);
@@ -496,7 +504,7 @@ await run('jetty', async () => {
   S.check('jetty: the pier\'s page carries no movement calibration', !/CALIBRATION/.test(text), /CALIBRATION/.test(text) ? 'feedback/indexmenu.js render()' : 'none');
   await F(8);
   w = await ds('win()');
-  S.check('jetty: F closes the pier\'s page (and does not reopen it)', !w.index, { index: w.index, page: w.page });
+  S.check('jetty: F closes the pier\'s page (and does not reopen it)', !w.index, { index: w.index, page: w.page, cause: w.index ? 'feedback/indexmenu.js closes the page on keydown F; the same press stays latched, and world/emocean/pier.js update() opens it again (as world/shrines.js does)' : null });
   await closeAll();
   S.check('jetty: after the page the Courier stands on the jetty', (await S.ev(() => { const g = __game.game; return g.player.pos.y > g.dunes.beach.seaY; })), await ds('pos()'));
 });
@@ -507,7 +515,7 @@ await run('weather', async () => {
   const noon = await S.ev(() => __game.game.wallNow());
   const m = await ds('mark()');
   for (const kind of ['night', 'dawn', 'storm']) {
-    const at = await ds(`findTime('${kind}')`);
+    const at = await ds(`findTime('${kind}', ${noon})`);
     if (!at) { S.note(`weather ${kind}: none found within 60 game days`, null); continue; }
     await ds(`clockShift(${at})`);
     await S.ticks(300); // (5 s: the look eases in at 0.6 a second)

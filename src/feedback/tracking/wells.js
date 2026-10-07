@@ -36,8 +36,7 @@ export function wellRules({ on, L, log }) {
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;
-    L.inc('well.foe'); L.hi('well.foe.cls', e.cls);
-    log.say('battle', 'The Great Slip Jelly bursts.');
+    L.inc('well.foe'); L.hi('well.foe.cls', e.cls); // (the log's line is foe.end's, which follows how it ended: tracking/dunemaw.js)
   });
   on('well.find', (e) => {
     if (e.by !== 'courier') return;

@@ -126,6 +126,7 @@ export class Tracking {
     });
     on('room.reset', () => { this.roomT = 0; L.inc('room.reset'); });
     on('clapper.down', (e) => {
+      if (e.by && e.by !== 'courier') return; // (a raider dismissed when a raid is left is no one's down: SWEEPS.md, basement 1)
       L.inc('clapper.down'); L.inc(`clapper.cause.${e.cause}`);
       if (e.raider) L.inc('clapper.raider');
       const c = this.chain;
@@ -162,9 +163,9 @@ export class Tracking {
         L.inc('lach.gain', e.amount); L.inc(`lach.gain.${e.source}`, e.amount);
         if (e.source === 'regen') return;
         const sum = (this._lg = (this._lgT > L.play - 2.5 ? this._lg : 0) + e.amount); this._lgT = L.play; // (folded into one line)
-        log.say('gain', `You absorb ${Math.round(sum)} lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} lachryma.` });
+        log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} Lachryma.` });
       });
-      P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough lachryma.', { key: 'lden', throttle: 2.5 }); });
+      P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
       P.on('empty', () => { L.inc('lach.empty'); log.say('warn', 'Your lachryma is depleted.', { key: 'lemp', throttle: 8 }); });
       P.on('full', () => L.inc('lach.full'));
       P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
@@ -495,7 +496,7 @@ export class Tracking {
     on('spirit.summon', (e) => { L.inc('spirit.summon'); L.inc(`spirit.summon.${e.from}`); first('spirit', 'Logged: your first spirit. It is yours for a while: it follows you and fights what is against you, and your blows pass through it.'); });
     on('spirit.fade', (e) => { L.inc('spirit.fade'); if (e.cause !== 'faded') log.say('other', 'A smoke spirit is struck back into smoke.', { key: 'sfade', throttle: 2 }); });
     on('lockheart.feed', (e) => { L.inc('lockheart.fed', e.amount); L.inc(`lockheart.fed.${e.from}`, e.amount); if (e.from === 'shard') log.say('luck', 'The Lockheart drinks the shard whole.', {}); });
-    on('lockheart.full', (e) => log.say('luck', `The ${ITEM(e.heart).replace(/^THE /, '').toLowerCase()} is full: a key will open it.`, { key: 'lhfull', throttle: 10 }));
+    on('lockheart.full', (e) => log.say('luck', `The ${ITEM(e.heart).replace(/^THE /, '').toLowerCase()} is full: a Possibilikey will open it.`, { key: 'lhfull', throttle: 10 }));
     on('lockheart.drain', () => L.inc('lockheart.drain'));
     on('lockheart.open', (e) => {
       L.inc('lockheart.open'); L.inc(`lockheart.open.${e.heart}`); for (const k of e.keys) L.inc(`lockheart.key.${k}`); if (e.keys.length >= 3) L.inc('lockheart.three');
@@ -521,7 +522,7 @@ export class Tracking {
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });
     on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 
-    // ---- the Soul Brush: the club, the brush slide, the Celestial Brush, the sigils (src/tools/soulbrush/soulbrush.js, src/tools/soulbrush/)
+    // ---- the Soul Brush: the club, the brush slide, Celestial mode, the sigils (src/tools/soulbrush/soulbrush.js, src/tools/soulbrush/)
     on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
     on('brush.stow', () => L.inc('brush.stow'));
     on('brush.swing', (e) => { L.inc('brush.swing'); if (e.slam) L.inc(e.air ? 'brush.slam.dive' : 'brush.slam.swing'); });
@@ -551,7 +552,7 @@ export class Tracking {
     on('brush.canvas', (e) => {
       if (!e.open) { L.hi('brush.drawings.best', e.drawings); return; }
       L.inc('brush.canvas');
-      first('brush.canvas', 'Logged: your first time at the Celestial Brush.');
+      first('brush.canvas', 'Logged: your first time in Celestial mode.');
       log.say('info', 'The world stills, and becomes paper.', { key: 'bcanvas', throttle: 6 });
     });
     on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
@@ -585,7 +586,8 @@ export class Tracking {
     on('blade.exit', (e) => { L.hi('blade.cuts.best', e.cuts); });
     on('lock.on', () => { L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); });
     on('guard.up', () => L.inc('guard.up'));
-    on('guard.block', (e) => { L.inc('guard.block'); log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
+    on('guard.block', (e) => { L.inc(e.tool === 'dreamvane' ? 'guard.twirl' : 'guard.block'); // (the cutlass's guard only: the twirl is the Dreamvane's, SWEEPS.md tools 5)
+      log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
     on('cut.hit', (e) => {
       L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
       const w = e.what === 'clapper' ? 'clapperjar' : 'pot';
@@ -698,7 +700,7 @@ export class Tracking {
       log.say('ach', `Achievement complete (${e.tierName}, ${e.points} ${e.points === 1 ? 'pt' : 'pts'}): ${e.ach}.`);
       if (e.title) log.say('ach', `You have earned the title "${e.title}".`);
     });
-    on('rank.up', (e) => log.say('ach', `You are now known as a ${e.rank}.`));
+    on('rank.up', (e) => log.say('ach', `You are now known as ${/^[AEIOU]/i.test(e.rank) ? 'an' : 'a'} ${e.rank}.`));
 
     // ---- the System: what has been learned
     on('system.unlock', (e) => {
@@ -752,7 +754,7 @@ export class Tracking {
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
     // distance and speed (a jump of more than a few metres in a frame is a teleport, not travel)
-    const at = g.god?.controlling || g.realm?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7)
+    const at = g.god?.controlling || g.realm?.active || g.emocean?.stage?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7; aboard, the ship's rail is not walked: SWEEPS.md)
     if (at) {
       if (this.prev) {
         const dx = at.x - this.prev.x, dz = at.z - this.prev.z, dy = at.y - this.prev.y, d = Math.hypot(dx, dz);

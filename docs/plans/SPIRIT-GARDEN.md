@@ -107,3 +107,43 @@ add up to +25% to a slot (measured before final). **Open:** a gardener profile i
 5. Two generating features side by side show their bonus.
 6. The tribulation can be begun, failed, retried and passed.
 7. The garden's name, chosen at the first entry, is shown where the garden is named.
+
+## 7. The feature list (the owner, 2026-10-07, through Petra: "plot out a full feature list with everything that should be in the Spirit Garden from previous notes and your own future considerations, and execute it")
+
+Also asked: terraforming with "fluid sims, mesh deformation, the works"; the god hand's view straight down on the Jar; first person.
+Petra's draft (23 items) folded in, with Dovina's rules and what was missing (24 to 31). **The order is the build order**; a step
+starts when the one before it runs clean in the garden sweep (`scripts/sweeps/garden.mjs`), and each item lands with its check there
+(item 23). Rules with numbers are in `src/progress/realm.js` (named beside each). Status: **built**, **building**, **open**.
+
+| order | # | item | status | owner | the rule |
+|---|---|---|---|---|---|
+| 1 | 1, 2 | Three views (behind the Jar; first person, Z; overhead, the god hand's view straight down, WASD pans); the held Jar never under the ground | built | Petra | |
+| 1 | 3 | The camera kept out of the ground and the Chimney's needle; the overhead view tethered to the planetoids | open | Petra | |
+| 2 | 4, 5 | A finer ground (128 × 64 cells, a band to a third of the radius); brushes raise, lower, smooth, flatten, carve, roughen; size, strength, undo (ten strokes) | building | Petra | |
+| 2 | 8, 9 | Shallow water (virtual pipes): sources, drains, pooling, spilling, evaporation; hydraulic and thermal erosion | building | Petra | |
+| 2 | 10 | The Jar wades and floats; a spirit swims or avoids water by its grain; a pond fills from the water | building | Petra | |
+| 2 | 22 | The ground, the water, the materials and the features in the save (under 200 KB for six planetoids) | building | Petra | |
+| 2 | 31 | **Added:** a frame budget for the garden: the water and erosion together under 2 ms a frame on the Dantian, measured with `npm run perf`; past it the simulation steps less often, never the frame | open | Petra | |
+| 3 | 6 | Ground materials painted by the hand: moss (wood, wonder), ash (fire, mirth), loam (earth, desire), slate (metal, grief), silt (water, dread) | open | Petra; the look Calissa | `GROUND`, `GROWTH`: **free** (sculpting is play, not a sink; From Dust); a feature counts its ground as **one neighbour** in its formation; a bed on its own feeling's ground grows 1.25× |
+| 3 | 11 | Water keeps a feeling and mixes | open | Petra | `WATERS`, `mixWater`: the lake is the draught you entered with, a spring the feeling chosen when placed, rain the garden's weather; water reaching a feature is **one neighbour**; a bed watered with its own feeling grows 1.25×; a spirit drinking its stat's feeling gains 1 a game hour; opposites mixed cancel to fair water |
+| 3 | 13 | Sculpting moves a vein | open | Petra | `VEIN`, `veinEnd`: a vein ends at the **highest ground within 35°** of the direction to the other planetoid (dragon veins run along ridges); raise a ridge and it follows; water never moves it; within 3 m of its end is on the vein |
+| 3 | 20 | Rain from the garden's own weather | open | Petra; the look Calissa; the sound Wanda | `RAIN`, `rainOf`: **the weather is you**: the draught falls as rain as hard as your mental state is liquid (Stoic and Resolved dry, Balanced 0.2, Fluid 0.5, Prismatic 0.9, brimming +0.1). Drinking Lachryma in the world waters the garden; meditating at the Chimney clears it |
+| 3 | 7 | Placed features picked up and moved by the hand | open | Petra | moved free; the formation recomputed where it lands |
+| 3 | 30 | **Added:** reset a planetoid to its rest shape (free, asked twice) | open | Petra | |
+| 4 | 14 | The moonflower opens at night | open | Petra | by the game hour (`phaseAt` night) |
+| 4 | 15 | Plants spread on wet, fertile ground by a cellular rule; trees on the Mulberry Grove | open | Petra; the look Calissa | spread only onto ground that `spreads` (moss, loam, silt) and is wet |
+| 4 | 17a | Visitors settle | open | Petra | `SETTLE`: after `VISITORS[kind].settle` visits with its wants met it is bound, free, if a spirit house has room; a missed visit keeps the count, a want lost for 3 game days resets it |
+| 4 | 17b | Sparring at the Chimney | open | Petra | `SPAR`: no one is hurt; each gains 6 in its strongest stat and 25 fatigue, alignment toward Chaos; at most 45 real seconds |
+| 4 | 17c | Races on a planetoid track | open | Petra | `RACE`, `raceSpeed`: a track is a carved groove that closes on itself (40 m or more), up to four runners; flat by mirth, climbs by desire, water by dread, the last third by grief, the inside line by wonder. **Pays no cubes**: records, achievements and bond |
+| 4 | 25 | **Added:** name a spirit (the Chao Garden's) | open | Petra; words Espada | shown where the spirit is named, in the log |
+| 5 | 19 | New planetoids bought and placed | open | Petra | `ORBIT`, `orbitSlot`: a ring of 10 slots 95 m round the Dantian, 12° above and below its equator by turn (Galaxy's observatory); the hand carries the seed up and lets go; it takes the nearest free slot and grows lotuses and veins to its two nearest |
+| 5 | 12 | Water between planetoids (a fall off a rim drops to the nearest by its gravity) | open | Petra | |
+| 6 | 21 | A guest in your garden | open | Petra (after COOP.md C5) | `GUEST`: their Jar hops and looks; their hand may pet your spirits, spar at the Chimney, and leave one material a visit in the shed's gift slot; it never sculpts, paints, places, waters, catches, releases or takes (Animal Crossing's visitors do not dig) |
+| all | 23 | Each item's check in the garden sweep | as each lands | Dovina | Petra sends the hooks |
+| all | 24 | **Added:** the garden's help page (the keys, the brushes, the views) | open | Petra; words Espada | |
+| all | 26 | **Added:** the garden's ledger and achievements (strokes, water led, rivers cut, races won and records, visitors settled, sparring) | open | Dovina | predicates over the ledger, as every achievement |
+| all | 27 | **Added:** the gardener in `scripts/economy.mjs` (what an hour in the garden costs and earns: beds, the dividend, the sinks) | open | Dovina | |
+| all | 28 | **Added:** the garden's sound (water by its feeling, rain, the brushes, a cue per Firing) | open | Wanda | |
+| all | 29 | **Added:** the garden's look for the new parts (the five grounds, the water's surface, rain, plants) | open | Calissa | Lachryma water may shimmer (CLAUDE.md) |
+
+Asked of the owner: none; every rule above is a default the owner may overturn.

@@ -211,7 +211,7 @@ phase = 'chevron';
 const places = await ev(() => __game.game.realm.site.features.map((f, i) => ({ i, fi: f.i, kind: f.kind, planet: f.planet.id, pos: [f.pos.x, f.pos.y, f.pos.z], shown: !f.mesh || f.mesh.visible })));
 const chevs = [];
 for (const f of places.filter((f) => f.shown)) {
-  await ev((f) => { const R = __game.game.realm, P = R.site.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.cam.up.copy(d); }, f);
+  await ev((f) => { const R = __game.game.realm, P = R.site.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.camera.up.copy(d); }, f);
   await ticks(40);
   const c = await sw('chevron()');
   chevs.push({ kind: f.kind, planet: f.planet, ...c });
@@ -228,7 +228,7 @@ const planets = await sw('planets()');
 for (const P of planets) {
   let worstAlt = 0, nan = false, endPlanet = null;
   for (const [k, dir] of [['top', [0, 1, 0]], ['side', [1, 0, 0]], ['under', [0, -1, 0]]]) {
-    await ev(([id, dir]) => { __sw.put(id, dir); __game.game.realm.cam.up.set(...dir); __game.game.realm.lotusLock = null; }, [P.id, dir]);
+    await ev(([id, dir]) => { __sw.put(id, dir); __game.game.realm.camera.up.set(...dir); __game.game.realm.lotusLock = null; }, [P.id, dir]);
     await ticks(30);
     if (k === 'top' || P.id === 'dantian') await shot(`planet-${P.id}-${k}`);
     await page.keyboard.down('KeyW'); await page.keyboard.down('KeyD'); await ticks(quick ? 120 : 300); await page.keyboard.up('KeyW'); await page.keyboard.up('KeyD');
@@ -250,7 +250,7 @@ check('lotus: every one flies to its neighbour', !lotBad.length, lotBad.length ?
 
 // ================================================================== 6. the hand: grab, throw, spam, menus mid-throw
 phase = 'hand';
-await ev(() => { __sw.put('dantian', [0.2, 1, 0.3]); __game.game.realm.cam.up.set(0.2, 1, 0.3).normalize(); }); await ticks(40);
+await ev(() => { __sw.put('dantian', [0.2, 1, 0.3]); __game.game.realm.camera.up.set(0.2, 1, 0.3).normalize(); }); await ticks(40);
 await press('Digit1');
 let [jx, jy] = await sw('jarScreen()');
 await page.mouse.move(jx, jy); await ticks(2);
@@ -420,6 +420,57 @@ await ev(() => { const god = __game.game.god; god.toggle(); __sw.tick(90); god.t
 await enter(); await ticks(40); await settle(); await ticks(30);
 const jG2 = await sw('jar()');
 check('after ~, the second visit: the Jar full size', jG2.scale.every((x) => x > 0.5), { scale: jG2.scale });
+
+// ================================================================== 12. the views and terraforming (SPIRIT-GARDEN.md section 7, items 1, 2, 5, 8, 10)
+phase = 'terraform';
+await enter(); await ticks(40); await settle(); await closeAll(); await ticks(10);
+const view = () => ev(() => __game.game.realm.camera?.view);
+check('views: the garden opens behind the Jar', (await view()) === 'behind', await view());
+await press('Backquote', 4);
+const ov = await ev(() => { const R = __game.game.realm, c = __game.camera, d = new __game.THREE.Vector3(0, 0, -1).applyQuaternion(c.quaternion), down = R.jarBody.up.clone().negate(); return { view: R.camera.view, offDeg: +(Math.acos(Math.max(-1, Math.min(1, d.dot(down)))) * 180 / Math.PI).toFixed(1) }; });
+check('views: ` gives the overhead view, straight down on the Jar', ov.view === 'overhead' && ov.offDeg < 5, ov);
+const jw0 = await ev(() => __game.game.realm.jarBody.pos.toArray().map((x) => +x.toFixed(2))); await hold('KeyW', 60); const jw1 = await ev(() => __game.game.realm.jarBody.pos.toArray().map((x) => +x.toFixed(2)));
+check('views: overhead, W moves the view and not the Jar', Math.hypot(jw1[0] - jw0[0], jw1[1] - jw0[1], jw1[2] - jw0[2]) < 0.3, { before: jw0, after: jw1 });
+await shot('overhead');
+// a press with the hand, then undo: the ground under the stroke goes down, and comes back exactly
+await press('Digit3', 4);
+const art = await ev(() => __game.game.realm.hand.art);
+check('terraform: 3 is the press', art === 'press', art);
+await page.mouse.move(480 + 60, 300 + 40); await ticks(6);
+const at = await ev(() => { const R = __game.game.realm, h = R.hand.hit; if (!h) return null; const d = h.point.clone().sub(h.planet.c).normalize(); window.__dig = { id: h.planet.id, d }; return { planet: h.planet.id, h: +R.clays[h.planet.id].heightAt(d).toFixed(3) }; });
+check('terraform: the hand finds the ground under the pointer', !!at, at);
+if (at) {
+  await page.mouse.down(); await ticks(60); await page.mouse.up(); await ticks(4);
+  const h1 = await ev(() => +__game.game.realm.clays[__dig.id].heightAt(__dig.d).toFixed(3));
+  check('terraform: a press digs the ground', h1 < at.h - 0.3, { before: at.h, after: h1 });
+  await shot('pressed');
+  await page.keyboard.down('Control'); await press('KeyZ', 4); await page.keyboard.up('Control');
+  const h2 = await ev(() => +__game.game.realm.clays[__dig.id].heightAt(__dig.d).toFixed(3));
+  check('terraform: Ctrl+Z puts the ground back exactly', Math.abs(h2 - at.h) < 0.01, { before: at.h, pressed: h1, undone: h2 });
+}
+// water: poured into a pit round the Jar, it pools there, and the Jar floats in it
+// (the ground under a standing thing is held still, so the pit is pressed beside the Jar, and the Jar set in it)
+await page.mouse.move(480 + 60, 300 + 40); await ticks(6);
+const h0 = await ev(() => { const R = __game.game.realm, h = R.hand.hit; if (!h) return null; window.__pit = h.point.clone().sub(h.planet.c).normalize(); return R.clays[h.planet.id].heightAt(__pit); });
+await page.mouse.down(); await ticks(150); await page.mouse.up(); await ticks(30);
+const fl = h0 === null ? null : await ev((h0) => { const R = __game.game.realm, J = R.jarBody, P = J.planet, W = R.waterworks?.waters?.[P.id]; if (!W) return null; const pit = +(R.clays[P.id].heightAt(__pit) - h0).toFixed(2);
+  J.vel.set(0, 0, 0); J.pos.copy(P.c).addScaledVector(__pit, P.radiusAt(__pit) + J.radius + 0.1); J.up.copy(__pit); // (the Jar set in the pit)
+  W.pour(__pit, 60, 'wonder'); W.wake?.(); return { planet: P.id, pit }; }, h0);
+check('water: the waterworks has the Jar\'s planetoid', !!fl, fl);
+if (fl) {
+  await ticks(600);
+  const w = await ev(() => { const R = __game.game.realm, J = R.jarBody, W = R.waterworks.waters[J.planet.id], dir = J.pos.clone().sub(J.planet.c).normalize(); return { total: +W.total.toFixed(1), depthAtPit: +W.depthAt(__pit).toFixed(2), depthAtJar: +W.depthAt(dir).toFixed(2), jarMoved: +(dir.angleTo(__pit) * J.planet.r).toFixed(2), swim: J.swim, pit: 0 }; });
+  check('water: poured water stays (no loss but evaporation)', w.total > 40, w);
+  check('water: the Jar floats in a pool deeper than itself', w.swim >= 0.9, w);
+  await shot('afloat');
+}
+await press('Backquote', 4); await press('KeyZ', 4);
+check('views: Z gives first person', (await view()) === 'first', await view());
+await press('KeyZ', 4);
+check('views: Z again comes back', (await view()) !== 'first', await view());
+await ev(() => __game.game.realm.leave()); await ticks(60); await settle();
+const out = await sw('state()');
+check('terraform: leaving restores the world camera up', Math.abs(out.camUp[1] - 1) < 0.01, out.camUp);
 
 // ================================================================== the page's errors
 phase = 'end';
