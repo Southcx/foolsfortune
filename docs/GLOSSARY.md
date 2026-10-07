@@ -143,8 +143,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **sibling** (`game.party`, `src/coop/sibling.js`): another Courier in your world with a mind of its own, one for each division (Petra,
   Dovina, Wanda, Calissa, Espada; docs/plans/COOP.md C6). The same body and rig as the Courier, driven by its mind's keys, so it moves
   as the Courier moves. Its division's session may steer it between its beats. *Not:* a spirit (an ally creature), nor a guest.
-- **the party** (`game.party`, `src/coop/party.js`): the siblings called into your world, and what you tell them (follow, hold).
+- **the party** (`game.party`, `src/coop/party.js`): the siblings called into your world (two at once; four players at most, guests
+  included), and what you tell them (`/sib`: follow, hold, go, fight, back). A sibling is **met** once where its craft lives
+  (`src/coop/meeting.js`), then **called** or **dismissed** at any Shrine.
 - **guest**: a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
+- **asking a sibling** (`@name words` on the chat line, `src/coop/answer.js`): a question a sibling answers in seconds, in its division's
+  voice (`src/coop/personas.js`), drafted by Claude through the page's `sample`; its **answer** is a line and, when asked, an order.
+  *Not:* a letter, nor the division itself.
+- **letter** (`/letter name words`, `src/coop/letters.js`): words the owner sends from the game to a division's own session, which
+  answers in a few real minutes through the store (`siblings/<name>`, `re`). *Not:* an answer (seconds, Claude in the page).
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
 
@@ -657,7 +664,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **an Island of Ego**: an island precipitated out of the Emocean where an identity is strong enough; its owner's Will holds it apart.
 - **Anagami Island**: this Island of Ego, a 5 x 5 grid of chunks. **Kaolin Anagami** is the island, and the ego it is.
 - **the Prince of Clay**: Kaolin Anagami's main avatar, the most powerful of the folk. "He".
-- **Couriers**: the Pneuka Jar in humanoid form; every player is one. They go out across the Emocean and resist excess Lachryma best.
+- **Couriers**: the Pneuka Jar in humanoid form; every player is one.
+- **sibling** (`docs/plans/COOP.md`): one of the five divisions as a Courier in the owner's world (Dovina, Petra, Calissa, Wanda, Espada),
+  with a mind, a temperament and a tool of its own; met once, then called or dismissed at a Shrine; steered by its division's session
+  through the game's db. A **guest** is another person playing; the **party** is at most four. You **ask** a sibling (seconds) or send its division a **letter** (minutes). *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
@@ -703,7 +713,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
-| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds | "the wheel of feelings"; "the Lockheart's wheel" |
+| wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words
 

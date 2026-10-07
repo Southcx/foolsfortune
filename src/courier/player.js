@@ -181,7 +181,7 @@ export class Player {
 
   look(dt, adsT) {
     const inp = this.input;
-    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.lens ?? 1) * (this.lookScale.shot ?? 1);
+    const k = 0.0022 * T.camera.sensitivity * THREE.MathUtils.lerp(1, T.camera.adsSensMult, adsT) * this.lookScale.lock * this.lookScale.blade * (this.lookScale.brush ?? 1) * (this.lookScale.lens ?? 1) * (this.lookScale.shot ?? 1) * (this.lookScale.wheel ?? 1); // (wheel: the party's orders, held: coop/party.js)
     this.yaw -= inp.dx * k;
     this.pitch = THREE.MathUtils.clamp(this.pitch - inp.dy * k, -85 * DEG, 85 * DEG);
     this.lookDX = inp.dx; this.lookDY = inp.dy;

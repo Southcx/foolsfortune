@@ -67,7 +67,22 @@ the rules before building in the same area; a rule a machine can check goes into
 28. **A second copy of a dressed model is dressed the same way**, or every one of its materials is a new program. Count
     `renderer.info.programs` before and after it first appears.
 
+29. **A field keeps one meaning.** A name already given a meaning (a setting, a window, a limit) is never reused as a working counter
+    in the same object; give the counter its own name.
+
+30. **What an event moves, its end moves back.** A position, scale or state changed for the length of an act (a merge, a hold) keeps its
+    rest value apart and is returned to it when the act's result is gone.
+31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
+    that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
+
 ## Cases
+
+### 2026-10-07 · A sibling in a fight was lost when the Courier travelled
+- **Seen:** the stress test with the party (seed 2, run 13): Dovina more than 40 m away for half a second, the Courier in the Dunes.
+- **Cause:** the fight's approach handed the follow mind the order "go" (stand where told, never warped), so a sibling chasing a foe
+  was not set down beside the Courier when they went far.
+- **Fix:** the approach is its own order, `engage`, warped like following (coop/follow.js).
+- **Rule:** 31.
 
 ### 2026-10-07 · The game did not boot: "Cannot access 'COURIER_RIG' before initialization"
 - **Cause:** `withFade(material, key, U = COURIER_RIG)`: the outline materials are made by `withFade` while `render/outline.js` loads,
@@ -88,6 +103,20 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** a sibling is dressed by the vessel too, with a look of its own (`vessel.dress(rig, look, { own: true })`): one program left
   (a shadow's depth variant).
 - **Rule:** 28.
+
+### 2026-10-07 · The Heavenly Kiln's ring burned gold too soon
+- **Seen (Petra, measured):** the ring turned gold, the flick's window, 0.78 s before the strike instead of 0.45.
+- **Cause:** `vfx/garden/tribulation.js` used `B.flick` (the window's length) as the trace's flicker counter, so the window grew with every
+  flicker.
+- **Fix:** the counter is `B.frame`; `B.flick` is only the window.
+- **Rule:** 29.
+
+### 2026-10-07 · A merge in the cocoon tree moved its slot for good
+- **Seen (Petra, measured):** after a merge, slot 0's pod hung where the two had met, for every cocoon after it.
+- **Cause:** `vfx/garden/cocoontree.js` wrote the meeting point into the slot's only position, its rest.
+- **Fix:** each slot keeps `rest` apart from `pos`; the merged pod hangs at `pos`, and opening it (or a fresh cocoon) returns it to
+  `rest`. Measured: moved 2.57 m by the merge, 0.000 m from rest after the open.
+- **Rule:** 30.
 
 ### 2026-10-07 · "The Lockheart catches spirit.bind."
 - **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every

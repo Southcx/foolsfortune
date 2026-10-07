@@ -88,6 +88,8 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   tapped guitar), `reverse`, `whoosh`. Laid over cues as layers, not rescoring (the owner).
 - **Loops render seamless** (twice round, the seam crossfaded 10 ms from the true continuation); delivered as FLAC, never MP3.
 - **Sounds the ear must read** (the crystals) keep near-harmonic partials and a strong fundamental.
+- **Sounds made elsewhere** (`sfx.voiceAt(where, { listener, tag })`, `audio/positional.js`): a co-op sibling's body plays the Courier's
+  own sounds, panned to its side and rolled off with distance (gone past 30 m), with its own rate limits.
 - **Voices:** the spirits (`audio/spirits.js`) are Chao-like: a small throat, the mood in the tune, the feeling in the leap (mirth a
   major third, wonder a fourth, desire a fifth, grief a minor third, dread a half step).
 

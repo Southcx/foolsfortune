@@ -2,24 +2,26 @@
 // A SIBLING: another Courier in your world with a mind of its own, one for each division (docs/plans/COOP.md C6; the glossary). It is
 // the Courier's own body (`courier/player.js`, the core movement) and rig (`courier/character.js`, the same clips and corrections),
 // driven by a mind that presses keys on a virtual keyboard instead of a person's (`VirtualKeys`), so it walks, sprints, jumps and climbs
-// exactly as the Courier does. What it may do to the world beyond moving waits on Dovina's rulings (COOP.md): until then it is silent
-// to the bus (no events, so nothing it does counts toward the Courier's records), quiet (its body's sounds are a silent set until Wanda
-// gives it its own), solid only to the world (its own collision group: nothing that listens for the Courier hears it), and every
-// blow passes through it. Its rig has its own fade and dissolve and is never hidden by the first-person view.
+// exactly as the Courier does. What it does to the world is by Dovina's rulings (COOP.md C6): nothing it does counts toward the
+// Courier's records; its body makes the Courier's own sounds from where it stands (Wanda's `sfx.voiceAt`: panned to its side, rolled off
+// with distance, gone past 30 m, its own rate limits), footsteps included; it is solid only to the world (its own collision group:
+// nothing that listens for the Courier hears it), and every blow passes through it. It wears its division's look (Calissa's,
+// vfx/siblinglooks.js). Its rig has its own fade and dissolve and is never hidden by the first-person view.
 //
 // Prior art: the Kingdom Hearts party, and the companion built from the player's own controller (Halo's co-op Arbiter, Sonic's Tails
 // driven by a second pad): one body, two drivers.
 //
-//   const S = new Sibling(game, { id, color, glaze, rig, slot, of })   S.fixed(dt, ctx)   S.update(dt, alpha)   S.order   S.dispose()
+//   const S = new Sibling(game, { id, color, look, rig, slot, of })   S.fixed(dt, ctx)   S.update(dt, alpha)   S.order   S.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Player } from '../courier/player.js';
 import { GROUPS } from '../core/physics.js';
 import { T } from '../core/config.js';
 import { Follow } from './follow.js';
-import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
+import { SiblingFight } from './fight.js';
+import { SiblingPoint } from './point.js';
+import { sfx } from '../audio/sfx.js';
 
-const SILENT = new Proxy({}, { get: () => () => {} }); // (every sound the body would make, made by no one)
 const _gd = new THREE.Vector3(0, -1, 0);
 
 /** The keys a mind presses: what the Courier's body reads from a keyboard (isDown, wasPressed, the look's dx and dy). */
@@ -38,16 +40,17 @@ export class VirtualKeys {
 }
 
 export class Sibling {
-  constructor(game, { id, color, glaze, rig, slot = 0, of = 1 }) {
-    this.game = game; this.id = id; this.color = color; this.order = 'follow';
+  constructor(game, { id, color, look, rig, slot = 0, of = 1, seen = new WeakSet() }) {
+    this.game = game; this.id = id; this.color = color; this.order = 'follow'; this.to = null; // (the order, and where 'go' goes)
     this.keys = new VirtualKeys();
     const B = (this.body = new Player(game.physics, new THREE.PerspectiveCamera(), this.keys));
-    B.sfx = SILENT; B.isPlayer = false; B.kind = 'sibling';
+    B.sfx = sfx.voiceAt(() => this.pos, { listener: () => game.camera, tag: id }); B.isPlayer = false; B.kind = 'sibling';
     B.collider.setCollisionGroups(GROUPS.sibling);
     game.physics.register(B.collider, { type: 'sibling', sibling: this });
     this.rig = rig; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Sibling-${id}`;
-    game.vessel?.dress(rig, { ...DEFAULT_LOOK, body: glaze, mask: glaze }, { own: true }); // (a placeholder glaze of its suit, on the Courier's own finish shaders: the look is Calissa's to give)
-    this.follow = new Follow(B, this.keys, { slot, of });
+    rig.onFootstep = () => B.sfx.footstep?.(); // (the rig's heel strikes, as the Courier's are: main.js)
+    game.vessel?.dress(rig, look, { own: true }); // (its division's look, coop/party.js lookOf, on the Courier's own finish shaders)
+    this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this); this.point = new SiblingPoint(this, seen); // (seen: what the party has pointed at)
     this.lastHeading = null; this.leader = null;
     B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
   }
@@ -61,9 +64,11 @@ export class Sibling {
   fixed(dt, ctx) {
     this.leader = ctx.leader;
     this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
-    this.follow.think(dt, { ...ctx, order: this.order });
+    const goal = this.fight.think(dt, { game: this.game, leader: ctx.leader, order: this.order }); // (something to fight: where to stand, coop/fight.js)
+    this.follow.think(dt, goal ? { ...ctx, order: 'engage', to: goal } : { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to });
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
+    if (!this.fight.target) this.point.update(dt, this.game); // (between fights: what lies loose, pointed at, never taken: coop/point.js)
   }
 
   /** The frame: the body turns and is drawn between steps, the rig poses it (what main.js gives the Courier's rig, without a tool). */
@@ -80,7 +85,7 @@ export class Sibling {
       grounded: B.grounded, groundN: B.grounded ? B.groundNormal() : null, groundVel: B.groundVel,
       wall: B.wallBlend, slide: B.slideBlend, mantle: B.mantleBlend, mantleT: B.mantle ? B.mantle.t : 1, dash: B.dashBlend, crouch: B.crouchBlend,
       aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1,
-      walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: B.landed, techs: null,
+      walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: B.landed, techs: this.fight, // (the fight's blows: a layer, as a tech's)
     });
     B.landedOut = B.landed; B.landed = 0;
     this.keys.frame();

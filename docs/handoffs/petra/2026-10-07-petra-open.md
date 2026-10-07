@@ -15,3 +15,12 @@
   `buildMult` reaches `friendly.js` only; Grain (`progress/combat/temperament.js`) is imported by nothing; `voyage.reckon` and
   `reckonLead` are never called (Divination does not chart a crossing, the owner's R57 ruling). For the next round.
 - **Wanda's asks** (round robin): the ground's material under a step (`move.step { surface }`), and an `acoustic` on each zone.
+- **The siblings' draw calls**: five in view +58 (the workshop 483, over 450), so two are out; rest-bake merging is the cut (above).
+- **Perf's draw times are noise on the software renderer** (the Dunes' draw 13.6 to 21.6 ms between runs of one build, today): a
+  median of three runs before the gate compares, or the draw row read with a wider tolerance; the baseline at v102 is a high one.
+- **Co-op built so far** (v105; the page declares `room` and `sample` since v105, the owner's OK): siblings met, called at Shrines, two out, /sib, beside you, the channel at Dovina's cadence, fighting by temperament
+  at 0.4 of the sustained damage, the order wheel (T), pointing at what lies loose; Calissa's looks and Wanda's body sounds and footsteps; asking a sibling (@name, seconds, `sample`), letters to the sessions (/letter, minutes), guests and their chat over the room. **Still to build:** the tools in their hands (Calissa's
+  models; Dovina's coffin, Espada's dowsing of Lachryma), the god hand's art wheel onto feedback/wheel.js, siblings that can be struck and shatter, the
+  guests' shared errand (the Dunemaw run, host-owned), siblings a guest can see (each page has its own), and the room's lag measured
+  with two real people (T114).
+- **The build id** is `__BUILD__`: `grep -o '"mu[a-z0-9]\{6\}"' dist/assets/game.js` (a `mux...` match is base64, not the id).

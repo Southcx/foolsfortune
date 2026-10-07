@@ -24,9 +24,9 @@ import { Evidence } from './evidence.js';
 import { fileReport } from './report.js';
 import { TABS, tabList, draw } from './tabs.js';
 import { QaisLook } from '../../ui/qais.js';
+import { BUILD_URL } from '../../core/progress.js';
 
-/** The published build (the store every division reads with ArtifactData) and the session a sent round wakes: Dovina's. */
-export const BUILD_URL = 'https://claude.ai/artifact/FjLfppJaKzUCZxoVBp9FE8';
+/** The session a sent round wakes: Dovina's (the build's URL is core/progress.js's BUILD_URL). */
 export const BRIGADE = { server: 'Claude Code Remote', tool: 'create_trigger', session: 'session_01Dn7Yum1aGbbsUQBLqcm863', who: 'Dovina' };
 
 export class Qais {

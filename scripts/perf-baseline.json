@@ -1,34 +1,34 @@
 {
- "when": "2026-10-07T10:36",
- "build": "bda4774",
+ "when": "2026-10-07T14:09",
+ "build": "92ad408",
  "workshop": {
-  "tick": 8.1,
-  "draw": 15.4,
-  "calls": 374,
-  "tris": 129672,
-  "programs": 150,
+  "tick": 8.4,
+  "draw": 17,
+  "calls": 375,
+  "tris": 131380,
+  "programs": 147,
   "geos": 1801,
-  "tex": 151
+  "tex": 152
  },
  "dunes": {
-  "tick": 8.1,
-  "draw": 15.7,
-  "calls": 295,
-  "tris": 292858,
-  "programs": 153,
+  "tick": 7.9,
+  "draw": 15.2,
+  "calls": 294,
+  "tris": 292276,
+  "programs": 150,
   "geos": 1816,
-  "tex": 153
+  "tex": 154
  },
  "well": {
-  "tick": 8.6,
-  "draw": 9.1,
-  "calls": 80,
-  "tris": 107506,
-  "programs": 153,
+  "tick": 6.2,
+  "draw": 5.9,
+  "calls": 79,
+  "tris": 107478,
+  "programs": 150,
   "geos": 1852,
-  "tex": 161
+  "tex": 162
  },
- "heapMB": 323,
+ "heapMB": 325,
  "lateProgs": 3,
- "bootS": 35.8
+ "bootS": 33.9
 }

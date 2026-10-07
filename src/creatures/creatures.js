@@ -71,6 +71,7 @@ export class Creatures {
   strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause)) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && by === 'courier') return false; // (their own: a spirit they called up is not struck by them)
+    if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     c.hurt(point, dir, power * m.dmg * (st(c, 'soft') ? 2 : 1), cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)

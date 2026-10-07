@@ -43,7 +43,8 @@ src/
   workbench/     the studio                                                                             (Calissa)
   debug/         the diagnostics overlay, the tuning panel, replays, QAIS (qais/: F8, the owner's testing window)  (Petra; QAIS's look Calissa's)
   agent/         the game as an AI player sees and drives it (observe, act: docs/plans/COOP.md)         (Petra)
-  coop/          the party: siblings (Couriers with minds, the divisions'), guests over the page's room (COOP.md)  (Petra)
+  coop/          the party: siblings (Couriers with minds, the divisions'), their answers (sample) and letters (sessions), guests over
+                 the page's room (COOP.md)  (Petra)
   assets/        models, textures, fonts, clips                                                         (Calissa)
 scripts/         Node scripts: the gate's checks, the stress test, the playtests, bakes and exports
 docs/            the bibles: GLOSSARY, ARCHITECTURE, DESIGN, LORE, LOOK, VFX, AI, ECONOMY, OST, HANDOFFS
