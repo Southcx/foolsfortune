@@ -497,6 +497,22 @@ Prince sells to neither side: every Courier both of his parents need came out of
     when you use it. You can carry one."
   - Log: "You blow the Wake Whistle, and wake at the Dunemaw's mouth." · refusal: "You are not in a Well."
 
+### The crossing's cast *(Espada's names for Dovina's rail shooter, `docs/plans/RAIL.md`; proposals for the owner)*
+- **The shoal: glints, and their Conductor.** A bait ball of Guppy-class Figments that flash as they turn, so they are named for the
+  flash. The shoal moves on the cue's beat, so the one that drives it is **the Conductor**: down it and the music stops, and the shoal
+  scatters.
+- **The pirates: the Wreckers.** Wreckers were the coast's thieves who hung false lights to lure ships onto the rocks: the King's
+  lighthouse turned inside out. Here they are Contractors who sail under no letter (Letty sails under the King's marque; they have
+  none), and they come for what you carry. Their brig is the ***False Light***. Where they come from stays blank.
+- **The rogue Leviathan: Old Nobody.** A Leviathan-class Egregore that slipped past the lighthouse. An Egregore is authored by no one,
+  so it is Nobody, which is also what Odysseus told the Cyclops his name was. When it is driven off, Letty posts the notice: WANTED:
+  NOBODY. It is a character; it comes back.
+- **The log:** "The crude boils under the hull." · "Sails astern: the Wreckers' brig, the *False Light*." · "The sea heaves. Something
+  vast is under it." · "The Conductor falls, and the shoal scatters." · "The *False Light* goes down. Her hold floats astern." · "The
+  *False Light* strikes her colours." · "The *False Light* limps off." · "Old Nobody sounds, and is gone." · "Old Nobody is felled."
+- **The Rail's achievements** keep their homage names, with one change: sinking the brig is **Sunk Cost** (Strike Her Colours is the
+  surrender, not the sinking).
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
