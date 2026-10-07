@@ -20,17 +20,6 @@ import * as THREE from 'three';
 import { COLOR } from '../weather.js';
 import { mergeStatic } from '../../render/merge.js';
 
-const POD_F = /* glsl */`varying vec3 vN, vW, vP; uniform vec3 uA, uB; uniform float uK, uT, uMix;
-void main() {
-  vec3 V = normalize(cameraPosition - vW); float f = abs(dot(V, normalize(vN)));
-  float wind = 0.5 + 0.5 * sin(vP.y * 40.0 + atan(vP.z, vP.x) * 2.0);                          // (the silk wound round it)
-  vec3 silk = vec3(0.92, 0.9, 0.86) * (0.75 + 0.25 * wind);
-  vec3 inner = mix(uA, uB, uMix * (0.5 + 0.5 * sin(vP.y * 9.0 + uT * 2.0)));                     // (both colours braided when merged)
-  float glow = uK * (0.7 + 0.3 * sin(uT * 1.6)) * pow(f, 1.2);                                   // (a light inside, breathing; seen through its middle)
-  gl_FragColor = vec4(silk * (0.45 + 0.4 * f) + inner * glow, 1.0);
-  #include <colorspace_fragment>
-}`;
-
 export class CocoonTree {
   constructor({ slots = 3 } = {}) {
     const g = (this.group = new THREE.Group()); g.name = 'cocoon-tree'; this.t = 0;
@@ -56,16 +45,16 @@ export class CocoonTree {
     this.threadMat = new THREE.LineBasicMaterial({ color: 0xe8e2d8 });
     for (const S of this.slots) {
       S.u = { uA: { value: new THREE.Color(0xffffff) }, uB: { value: new THREE.Color(0xffffff) }, uK: { value: 0 }, uT: { value: 0 }, uMix: { value: 0 } };
-      const pod = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 12), new THREE.ShaderMaterial({ name: 'cocoon-pod', uniforms: S.u, fragmentShader: POD_F,
-        vertexShader: 'varying vec3 vN, vW, vP; void main() { vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }' }));
+      S.mat = new THREE.MeshStandardMaterial({ name: 'cocoon-pod', color: 0xece6dc, roughness: 0.75, emissive: 0x000000 }); // (silk, lit from within: a plain material, its glow driven below)
+      const pod = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 12), S.mat);
       pod.scale.set(0.8, 1.35, 0.8); pod.name = 'cocoon-pod'; pod.visible = false; g.add(pod); S.pod = pod;
       S.thread = new THREE.Line(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3)), this.threadMat); S.thread.visible = false; S.thread.frustumCulled = false; g.add(S.thread);
-      S.pos = S.tip.clone().setY(S.tip.y - 1.6);
+      S.rest = S.tip.clone().setY(S.tip.y - 1.6); S.pos = S.rest.clone(); // (rest: where its pod hangs; pos: where it hangs now, moved by a merge)
     }
   }
 
   /** A spirit in slot i: its feeling's light within, the silk wound round by k (0 none .. 1 sealed). */
-  cocoon(i, { feeling = 'wonder', k = 1 } = {}) { const S = this.slots[i]; if (!S) return; S.k = k; S.feeling = feeling; S.u.uA.value.setHex(COLOR[feeling] ?? COLOR.wonder); if (!S.mixing) S.u.uB.value.copy(S.u.uA.value); S.open = -1; }
+  cocoon(i, { feeling = 'wonder', k = 1 } = {}) { const S = this.slots[i]; if (!S) return; if (S.k <= 0.01 && S.open < 0) S.pos.copy(S.rest); S.k = k; S.feeling = feeling; S.u.uA.value.setHex(COLOR[feeling] ?? COLOR.wonder); if (!S.mixing) S.u.uB.value.copy(S.u.uA.value); S.open = -1; }
   /** Two cocooned spirits merging (Jade Cocoon): drawn together and twined by k; at 1 they hang as one pod with both colours. */
   merge(i, j, k) { const A = this.slots[i], B = this.slots[j]; if (!A || !B) return; this.merging = { i, j, k: THREE.MathUtils.clamp(k, 0, 1) }; A.mixing = B.mixing = true; A.u.uB.value.copy(B.u.uA.value); B.u.uB.value.copy(A.u.uA.value); }
   /** The pod splits and its silk falls away (the spirit is out). */
@@ -79,13 +68,13 @@ export class CocoonTree {
       const sway = 0.08 * Math.sin(t * 0.9 + n * 2), home = _v.copy(S.pos).add(_w.set(sway, 0, sway * 0.5));
       if (M && (M.i === n || M.j === n)) { const other = this.slots[M.i === n ? M.j : M.i], mid = _w.copy(S.pos).lerp(other.pos, 0.5).setY(Math.min(S.pos.y, other.pos.y) - 0.3); home.lerp(mid, M.k * M.k); S.u.uMix.value = M.k; }
       const show = S.k > 0.01 || S.open >= 0; S.pod.visible = show; S.thread.visible = show;
-      if (S.open >= 0) { S.open += raw / 0.8; const o = Math.min(1, S.open); S.pod.scale.set(0.8 * (1 + o * 0.6), 1.35 * (1 - o * 0.7), 0.8 * (1 + o * 0.6)); if (o >= 1) { S.k = 0; S.open = -1; S.pod.visible = S.thread.visible = false; } }
+      if (S.open >= 0) { S.open += raw / 0.8; const o = Math.min(1, S.open); S.pod.scale.set(0.8 * (1 + o * 0.6), 1.35 * (1 - o * 0.7), 0.8 * (1 + o * 0.6)); if (o >= 1) { S.k = 0; S.open = -1; S.pod.visible = S.thread.visible = false; S.pos.copy(S.rest); } }
       else S.pod.scale.set(0.8 * (0.6 + 0.4 * S.k), 1.35 * (0.5 + 0.5 * S.k) * (1 + 0.03 * Math.sin(t * 1.6 + n)), 0.8 * (0.6 + 0.4 * S.k));
       S.pod.position.copy(home); S.pod.rotation.y = t * 0.2 + n + (M && (M.i === n || M.j === n) ? M.k * t * 2 : 0);
-      S.u.uK.value = S.k; S.u.uT.value = t;
+      S.u.uK.value = S.k; S.u.uT.value = t; S.mat.emissive.copy(S.u.uA.value).lerp(S.u.uB.value, S.u.uMix.value * (0.5 + 0.5 * Math.sin(t * 2 + n))).multiplyScalar(S.k * (0.45 + 0.2 * Math.sin(t * 1.6 + n))); // (both colours braided when merged; the light breathing)
       const P = S.thread.geometry.attributes.position; P.setXYZ(0, S.tip.x, S.tip.y, S.tip.z); P.setXYZ(1, home.x, home.y + 0.7, home.z); P.needsUpdate = true;
     }
-    if (M && M.k >= 1) { const A = this.slots[M.i], B = this.slots[M.j]; A.pos.lerp(B.pos, 0.5).setY(Math.min(A.pos.y, B.pos.y) - 0.3); B.k = 0; B.pod.visible = B.thread.visible = false; this.slots[M.i].mixing = false; B.mixing = false; this.merging = null; } // (one pod now: the merged child hangs where they met)
+    if (M && M.k >= 1) { const A = this.slots[M.i], B = this.slots[M.j]; A.pos.lerp(B.pos, 0.5).setY(Math.min(A.pos.y, B.pos.y) - 0.3); B.k = 0; B.pos.copy(B.rest); B.pod.visible = B.thread.visible = false; this.slots[M.i].mixing = false; B.mixing = false; this.merging = null; } // (one pod now: the merged child hangs where they met)
   }
 
   dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); }

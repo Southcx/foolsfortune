@@ -30,7 +30,7 @@ import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
 const STONE = 0x9b7a5c, PALE = 0xd8c4a4;
 
 /** A material that shows a seam and stages of cracks glowing with the Lachryma (shared by the pillar and the stalactite). */
-function seamed(color, u, { seam = 1, flat = true } = {}) {
+export function seamed(color, u, { seam = 1, flat = true } = {}) {
   const m = new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: flat });
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
