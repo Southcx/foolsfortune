@@ -27,6 +27,10 @@ All three are application/octet-stream. game.js is unchanged in size.
 holds the rise at 0.6 m/s. It lives in the engine (`HANG`), never in `core/config.js`. With the tool away the core movement is today's
 (the replay test is exact).
 
+**The siblings** (your condition): they share the Courier's rig, so they play the same new clips. `docs/ref/suite_siblings.jpg`
+shows the Courier with the party called, idle, running, jumping, flipping and landed, from the front and the side. Nothing broke on
+their looks.
+
 **Files outside my lane** (each: why)
 - `src/courier/anim/suite.js` (new) and `romdata.js` (relearned): the pipeline (CLAUDE.md gives me the animation pipeline).
 - `src/courier/character.js`: spine005 in MASK_UPPER and MASK_ARM (one line).
