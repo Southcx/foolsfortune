@@ -8,6 +8,9 @@
   since R57; reopen if it returns.
 - **The heap**: 322 MB at 6d900d1, budget raised to 330. 44 MB of geometry hangs on meshes with no zone (35 MB unnamed `Mesh`), 7.8 MB in
   `shards`; find what they are (the crossing's parked sea and ship?) and whether they need to live from boot. The garden is 1 MB.
+- **The belt's draw calls**: about 30 in every zone (the Veritome's rest bake 10 draws, the Sondelass's 6, the Soul Brush's 6 at rest and
+  11 awake, the psygun's 2). `render/restbake.js` should merge a tool's meshes by material (vertex colours for the rest): the Veritome's 10
+  to 2. The Dunemaw floor's budget went 80 to 88 for it.
 - **Dovina's unwired data** (her note, 2026-10-07): the weather's `mindDrift`, `fishPull`, `signatureMult` have no callers and
   `buildMult` reaches `friendly.js` only; Grain (`progress/combat/temperament.js`) is imported by nothing; `voyage.reckon` and
   `reckonLead` are never called (Divination does not chart a crossing, the owner's R57 ruling). For the next round.
