@@ -28,6 +28,7 @@ import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
 import { Waterworks } from './waterworks.js';
 import { Plants } from './plants.js';
+import { Daturas } from '../../vfx/datura.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
@@ -147,6 +148,7 @@ export class Realm {
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.site.group.remove(s.mesh);
+      this.raising.sparring = null; // (a spar is left with the garden)
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
@@ -214,6 +216,7 @@ export class Realm {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
       s.body.step(dt, { move: s.wish });
     }
+    this.raising.fixed(dt); // (a spar at the Chimney: world/garden/raising.js)
     this.waterworks.fixed(dt); // (the water runs while you are in the garden: world/garden/waterworks.js)
   }
 
@@ -235,6 +238,7 @@ export class Realm {
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw);
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
+    this.moonflowers(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -271,6 +275,16 @@ export class Realm {
 
   // ------------------------------------------------------------------ the clay and the water
   /** A planetoid's clay changed: its mesh follows (a few times a second while a stroke runs, at once when it ends), and the water. */
+  /** The moonflower (item 14): a clump of Calissa's datura beside each stone lantern, riding on the lantern's own group (so a lantern moved
+   *  takes it along), open by night and furled by day on the game clock, as slowly as the real flower. */
+  moonflowers(raw) {
+    if ((this.moonT = (this.moonT ?? 0) - raw) <= 0) {
+      this.moonT = 1;
+      for (const p of this.plots.plots) if (p.placed?.feature === 'lantern' && p.group && !p.group.userData.moon) p.group.userData.moon = new Daturas(this.game, [{ x: 0.9, z: 0.2, n: 6 }], { parent: p.group, heightAt: () => 0 });
+    }
+    const want = phaseAt() === 'night' ? 1 : 0; this.moonOpen = (this.moonOpen ?? want) + (want - (this.moonOpen ?? want)) * (1 - Math.exp(-raw * 0.4));
+    for (const p of this.plots.plots) { const D = p.group?.userData.moon; if (D) D.u.uOpen.value = this.moonOpen; }
+  }
   /** A planetoid put back to its rest shape (the hand's Ctrl+Backspace, asked twice: free, item 30): its clay, its paint and its water. */
   resetPlanetoid(P) {
     const c = this.clays[P.id]; if (!c) return;

@@ -22,6 +22,8 @@ export function placeRules({ on, log }) {
   on('garden.reset.ask', () => log.say('warn', 'Again to put this planetoid back as it was: its clay, its ground and its water.', { key: 'garden.reset', throttle: 1 }));
   on('garden.reset', () => log.say('info', 'The planetoid is back as it was. Ctrl+Z undoes it.', { key: 'garden.reset', throttle: 1 }));
   on('spirit.name', (e) => log.say('info', `${e.was[0].toUpperCase()}${e.was.slice(1)} is named ${e.spirit}.`, { key: 'spirit.name', throttle: 0.5 })); // (words a placeholder, Espada's)
+  on('spirit.spar.start', (e) => log.say('info', `Your ${e.a} and your ${e.b} square up.`, { key: 'spar', throttle: 1 })); // (words placeholders, Espada's)
+  on('spirit.spar', (e) => log.say('info', `The spar ends after ${e.seconds} real seconds. Each grows stronger: ${e.stats.join(' and ')}.`, { key: 'spar', throttle: 1 }));
   on('garden.move', (e) => log.say('info', `Moved. Its formation there: ×${e.mult}${e.vein ? ', on a spirit vein' : ''}.`, { key: 'garden.move', throttle: 0.5 }));
   on('garden.grant', (e) => { if (e.by === 'courier') log.say('info', `The ${e.kind === 'bed' ? 'terrace' : 'pavilion'} gives you one more ${e.kind}.`); }); // (Dovina's: progress/garden.js grant)
   on('trial.solar.start', (e) => log.say('info', `The Gnomon's shadow starts to move. Time: 90 real seconds. Rings lit: ${e.lit} of 24.`, { key: 'solar.start', throttle: 1 }));

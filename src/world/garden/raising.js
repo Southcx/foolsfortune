@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { fresh, feed as feedSheet, formOf, ALIGN, STATS } from '../../progress/spirits.js';
-import { DRILLS, FATIGUE, drillGain } from '../../progress/realm.js';
+import { DRILLS, FATIGUE, drillGain, SPAR } from '../../progress/realm.js';
 import { itemOf } from '../../pneuka/items.js';
 import { dressForm } from '../../vfx/garden/forms.js';
 
@@ -85,6 +85,36 @@ export class Raising {
     this.dirty();
     return gain;
   }
+  /** Sparring at the Chimney (item 17b, Dovina's SPAR): two spirits close and bump, nobody hurt, until the first tires or SPAR.seconds
+   *  pass; then each gains SPAR.gain in its strongest stat. Fatigue builds through it (SPAR.fatigue over the whole), each bump leans
+   *  both toward Chaos (ALIGN.spar). */
+  spar(a, b) {
+    if (this.sparring || !a || !b || a === b) return false;
+    for (const s of [a, b]) { this.ready(s.e); s.next = 1e9; }
+    this.sparring = { a, b, t: 0, bump: 0, bumps: 0 };
+    this.game.events?.emit('spirit.spar.start', { a: spiritName(a.e), b: spiritName(b.e), by: 'courier' });
+    return true;
+  }
+  fixed(dt) {
+    const X = this.sparring; if (!X) return;
+    X.t += dt; X.bump -= dt;
+    const { a, b } = X, d = b.body.pos.clone().sub(a.body.pos), dist = d.length(); d.divideScalar(dist || 1);
+    a.wish.copy(d); b.wish.copy(d).negate();
+    for (const s of [a, b]) s.e.sp.fatigue = Math.min(100, s.e.sp.fatigue + (SPAR.fatigue / SPAR.seconds) * dt);
+    if (dist < 0.95 && X.bump <= 0 && a.body.grounded && b.body.grounded) { // (a bump: both thrown back and up, apart)
+      X.bump = 0.8; X.bumps++;
+      a.body.release(d.clone().multiplyScalar(-3.5).addScaledVector(a.body.up, 3)); b.body.release(d.clone().multiplyScalar(3.5).addScaledVector(b.body.up, 3));
+      for (const s of [a, b]) s.e.sp.align = Math.max(-1, Math.min(1, (s.e.sp.align || 0) + ALIGN.spar));
+      this.game.events?.emit('spirit.spar.bump', { by: 'courier' });
+    }
+    if (X.t >= SPAR.seconds || a.e.sp.fatigue >= FATIGUE.fail || b.e.sp.fatigue >= FATIGUE.fail) this.endSpar();
+  }
+  endSpar() {
+    const X = this.sparring; if (!X) return; this.sparring = null;
+    const gains = [X.a, X.b].map((s) => { const S = s.e.sp, top = Object.keys(STATS).reduce((m, f) => ((S.stats[f] ?? 0) > (S.stats[m] ?? 0) ? f : m)); S.stats[top] = Math.min(999, (S.stats[top] ?? 0) + SPAR.gain); s.next = 0; s.wish.set(0, 0, 0); this.mature(s); return top; });
+    this.game.events?.emit('spirit.spar', { a: spiritName(X.a.e), b: spiritName(X.b.e), seconds: Math.round(X.t), bumps: X.bumps, stats: gains, by: 'courier' });
+    this.dirty();
+  }
   /** Rest, a game hour at a time: every spirit's fatigue falls. */
   rest(hours) { for (const e of this.game.bound?.list || []) if (e.sp?.fatigue > 0) e.sp.fatigue = Math.max(0, e.sp.fatigue - FATIGUE.perHour * hours); }
 
@@ -124,6 +154,7 @@ export class Raising {
         if (it.id.startsWith('mat.') || def.kind === 'curio' || it.id.startsWith('cask.')) btn(`Feed: ${def.name || it.id}`, it.id.startsWith('mat.') ? `raises ${Object.entries({ mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', roe: 'grief' }).find(([k2]) => it.id === `mat.${k2}` || it.data?.kind === k2)?.[1] || 'a stat'}` : def.kind === 'curio' ? 'raises its bond' : 'leans its feeling', () => this.feed(s, k));
       });
       if (R.plots?.plots.some((p) => p.placed?.feature === 'drillYard')) for (const [id, D] of Object.entries(DRILLS)) btn(`Drill: ${DRILL_NAME[id] || id}`, `${D.stat}${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => this.drill(s, id));
+      if (s.body?.planet?.id === 'chimney' && !this.sparring) for (const o of R.spirits) if (o !== s && o.body.planet === s.body.planet) btn(`Spar: ${spiritName(o.e)}`, `at the Chimney, nobody hurt: each gains ${SPAR.gain} in its strongest stat${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => { if (S.fatigue < FATIGUE.fail) this.spar(s, o); });
       btn(s.e.out ? 'Stay in the garden' : 'Come out with me', s.e.out ? 'it waits here' : 'one at a time: it walks the world beside you', () => this.setOut(s.e, !s.e.out));
       btn('Release it', 'it goes, for good', () => { R.release(s); menu.close(); });
       im.appendChild(el('div', 'grp', 'YOUR SPIRIT')); im.appendChild(rows);
