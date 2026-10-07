@@ -147,6 +147,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   included), and what you tell them (`/sib`: follow, hold, go, fight, back). A sibling is **met** once where its craft lives
   (`src/coop/meeting.js`), then **called** or **dismissed** at any Shrine.
 - **guest**: a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
+- **asking a sibling** (`@name words` on the chat line, `src/coop/answer.js`): a question a sibling answers in seconds, in its division's
+  voice (`src/coop/personas.js`), drafted by Claude through the page's `sample`; its **answer** is a line and, when asked, an order.
+  *Not:* a letter, nor the division itself.
+- **letter** (`/letter name words`, `src/coop/letters.js`): words the owner sends from the game to a division's own session, which
+  answers in a few real minutes through the store (`siblings/<name>`, `re`). *Not:* an answer (seconds, Claude in the page).
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.
 
@@ -662,7 +667,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **Couriers**: the Pneuka Jar in humanoid form; every player is one.
 - **sibling** (`docs/plans/COOP.md`): one of the five divisions as a Courier in the owner's world (Dovina, Petra, Calissa, Wanda, Espada),
   with a mind, a temperament and a tool of its own; met once, then called or dismissed at a Shrine; steered by its division's session
-  through the game's db. A **guest** is another person playing; the **party** is at most four. *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
+  through the game's db. A **guest** is another person playing; the **party** is at most four. You **ask** a sibling (seconds) or send its division a **letter** (minutes). *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.

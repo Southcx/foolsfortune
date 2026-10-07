@@ -200,6 +200,8 @@ import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
 import { Guests } from './coop/guests.js';
 import { Meetings } from './coop/meeting.js';
+import { SiblingAnswers } from './coop/answer.js';
+import { Letters } from './coop/letters.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
@@ -675,6 +677,8 @@ async function main() {
   game.meetings = new Meetings(game, game.party, { makeRig }); // (each sibling met once where its craft lives: coop/meeting.js)
   game.guests = new Guests(game, { makeRig }); // (people there with you, over the published page's room: coop/guests.js)
   game.siblingChannel = new SiblingChannel(game); // (the divisions steer their siblings through the published build's store)
+  game.answers = new SiblingAnswers(game); // ("@petra ...": a sibling answers in seconds, through the page's sample: coop/answer.js)
+  game.letters = new Letters(game); // ("/letter petra ...": the division's own session answers in minutes: coop/letters.js)
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)

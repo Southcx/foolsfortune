@@ -9,6 +9,7 @@
 //   target  a place id (world/places.js) or null                   with `order: 'scout'` (or alone) it goes there
 //   line    120 characters at most, said once in the log as "<Name>: <line>"; at most one every five real minutes
 //   mood    one of the five feelings (mirth, wonder, desire, grief, dread): kept on the sibling for its look (Calissa's)
+//   re      the id of the owner's letter this answers (coop/letters.js): a line with a new `re` is said at once, out of the cadence
 //
 // A line is new when its text changes; the first answer only notes where each document stands (nothing old is said again). What comes
 // faster than the cadence is dropped. Never anything economic: no items, cubes, ledger, save or records (the page reads none). Away from
@@ -43,7 +44,7 @@ export class SiblingChannel {
       const S = g.party?.get(d.id), was = (this.seen[d.id] ||= { order: null, line: null, orderAt: -Infinity, lineAt: -Infinity });
       const order = ORDERS.has(d.order) ? d.order : null, target = typeof d.target === 'string' ? d.target : null, line = clean(d.line);
       if (S && MOODS.has(d.mood)) S.mood = d.mood;
-      if (this.first) { Object.assign(was, { order: `${order}|${target}`, line }); continue; }
+      if (this.first) { Object.assign(was, { order: `${order}|${target}`, line, re: typeof d.re === 'string' ? d.re.slice(0, 40) : null }); continue; }
       // an order (with its target), once a real minute
       const key = `${order}|${target}`;
       if (order && key !== was.order && now - was.orderAt >= ORDER_EVERY) {
@@ -51,7 +52,8 @@ export class SiblingChannel {
         if (S) { const to = target && g.places?.get?.(target)?.at?.(); S.order = to ? 'go' : order === 'free' ? 'follow' : order; S.to = to || null; g.events.emit('party.order', { order, sibling: d.id, from: 'session', by: 'courier' }); }
       }
       // a line, once every five real minutes
-      if (line && line !== was.line && now - was.lineAt >= LINE_EVERY) { was.line = line; was.lineAt = now; g.events.emit('party.say', { sibling: d.id, line, near: !!S }); }
+      const re = typeof d.re === 'string' ? d.re.slice(0, 40) : null, answer = re && re !== was.re; // (an answer to a letter: said at once)
+      if (line && (answer || (line !== was.line && now - was.lineAt >= LINE_EVERY))) { was.line = line; was.lineAt = now; was.re = re; g.events.emit('party.say', { sibling: d.id, line, near: !!S, re: answer ? 'letter' : 'store' }); }
     }
     this.first = false;
   }
