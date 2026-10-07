@@ -513,6 +513,61 @@ Prince sells to neither side: every Courier both of his parents need came out of
 - **The Rail's achievements** keep their homage names, with one change: sinking the brig is **Sunk Cost** (Strike Her Colours is the
   surrender, not the sinking).
 
+### The Pithos's casts *(Espada's names for Dovina's timeline, `docs/plans/DUNEMAW-EXTREME.md` section 3; proposals for the owner)*
+- **The rule:** the Pithos is a jar, so every cast is named for a part of a jar or a step of the potter's trade, and every name also
+  says what to do (FFXIV's habit: the cast's name is the first tell). The log keeps "the Great Slip Jelly"; the folk say the Pithos.
+- **Phase 1, the Crown.** **Lidfall** (the tankbuster: the lid comes down on you; parry or roll). **Shoulder Charge** (the ram: a
+  jar's shoulder is the curve under its neck, and it leads with it into a pillar). **Throwing Rings** (out, then in: the ridges a
+  potter's fingers leave round a pot on the wheel, spreading from the middle). **Slip Trail** (the baited puddles: slip-trailing is
+  decorating a pot with dribbled slip, and the drops trail you). **Eye Cup** (the gaze: the Greek drinking cup painted with two eyes to
+  stare evil back; the Veritome does exactly that). The crown's break stays plain in the log.
+- **The transition: Unstopped** (the jar's stopper comes out, as Pandora's did). **Blowout** (the raidwide: a pot with water trapped
+  in it bursts in the kiln, and nothing near it is spared; guard to take half). **Broodwake** (the clutches hatch; the same name in
+  phase 2 for Brood Call).
+- **Phase 2, Bare.** **Centring** (the floor slides toward it: on the wheel, centring pulls all the clay to the middle). **Slake**,
+  then **Wedge** (it sinks, then slams up under you: dry clay is slaked in water to soften, and wedged by slamming it to drive the
+  air out). **Decant** (the cone: it pours what it holds out of its mouth; get behind it).
+- **Phase 3: Sherds.** It breaks into **four sherds** (a broken pot's pieces), one a quadrant. Left alive past 30 real seconds, **the
+  sherds mend** (the kintsugi joke turned on you: the jar repaired, and stronger at the seam). **The Overflow** stays: the desperation
+  at 5% is the mother who overflows, at the bottom of her son's swallowed grief, and the name is already canon's.
+- **The enrage, The Dunemaw Swallows,** stays: a maw is a mouth that swallows (section 5).
+- **Brine Soaked** becomes **Sodden** (wet clay is soft clay: the next hit lands double).
+- **The log** (STE, FFXI's "readies"): "The Great Slip Jelly readies Lidfall." · "You are sodden." · "You are no longer sodden." ·
+  "The Great Slip Jelly's crown cracks." · "The Great Slip Jelly's crown breaks." · "Eye Cup turns back. The Great Slip Jelly is
+  stunned." · "The Great Slip Jelly sinks into the dish." · "A brood reaches the Great Slip Jelly. It heals." · "The Great Slip Jelly
+  breaks into four sherds." · "The sherds mend. The Great Slip Jelly heals." · "The Great Slip Jelly readies the Overflow." · "The
+  Dunemaw swallows you." Every other cast is "The Great Slip Jelly readies <cast>."
+- **Hope is not a cast.** Pandora's jar kept hope at the bottom; the core is that bright thing (section above), and it is what you
+  strike, never what strikes you.
+
+### The Spirit Garden's words *(Espada's answers to Dovina's `docs/plans/SPIRIT-GARDEN.md`; proposals for the owner)*
+- **The five phases: a correction, with the reason.** Mirth is fire and desire is earth, as Dovina has it (traditional Chinese
+  medicine gives joy to fire, and earth governs the stomach: desire was hunger until R58). But swap the last two: **grief is metal,
+  dread is water**, which is the tradition's own assignment (grief sits in the lungs, under metal; fear in the kidneys, under water).
+  Then the generating cycle (wood, fire, earth, metal, water) runs in the shown order exactly: **Wonder feeds Mirth feeds Desire feeds
+  Grief feeds Dread**, and Dread feeds Wonder again, which is awe, the dyad of dread and wonder (the wheel of feeling, above). The
+  overcoming cycle reads too: wonder checks desire, desire checks dread, dread checks mirth, mirth checks grief, grief checks wonder.
+  Metal for grief is gold, and gold is what kintsugi mends a break with; water for dread is the deep the Leviathans come up out of.
+  (Lachryma is every feeling, so grief has no claim on water: section 1.)
+- **The Firings: six named, then numbers.** Each named for what that firing does to clay, and each a match for a cultivation realm.
+  (Bisque, glaze and raku were the first thought and are taken: a Shrine, the Courier's colours, and Raku himself. One word, one meaning.)
+  1. **Candling**: the first low heat that drives the last water out; after it the clay can never go back to mud (Foundation Establishment).
+  2. **Sinter**: the grains fuse into one body without melting (Core Formation).
+  3. **Lustre**: a potter's third firing, for the metal sheen.
+  4. **Salt**: salt thrown into the kiln at its hottest; it stings, and it glazes (the heart's tribulation).
+  5. **Reduction**: the kiln starved of air, so the colours change from inside (the soul transformed).
+  6. **Anagama**: the days-long wood firing, where the ash falls and turns to glaze by itself (the island's own name: Anagami).
+  - **The seventh and on have only numbers.** No potter has fired past an anagama, so no one has named what comes after; that is the
+    no-ceiling, said as lore.
+  - **The tribulation is the Heavenly Kiln**: the sky is the kiln, the strikes are its flame. The log: "The Heavenly Kiln opens." ·
+    "Second Firing: Sinter. Complete." · "The Heavenly Kiln closes. Try again when you are ready." (A fail costs only the try.)
+- **The Inner Realm's names, in neuralese.** Built from words a player will learn in the Veritome's reprogramming, so the naming
+  teaches the language, and drawn as runes (`veritome/mind/runes.js`). The offered names, each with its gloss on the naming page:
+  **HEMA-LUNO** (home, rest) · **KITH-HEMA** (the home of kin) · **LUNO-DEO** (deep rest) · **STIL-DEO** (deep stillness) · **EZA-LON**
+  (long ease) · **ROMI-LON** (long play) · **SIVA-LUNO** (drink, and rest: an oasis) · **HUSA-HEMA** (the hushed home) · **AMI-HEMA**
+  (where you are kin) · **MOR-LUNO** (where grief rests). A player's own name may be any letters: the runes write every word.
+- **The spirits' kinds** stay blank until Dovina's kinds are set: a name is the thing's destiny, so the thing comes first.
+
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
   weeps" turns out to be literal: they hold what Kaolin weeps.
