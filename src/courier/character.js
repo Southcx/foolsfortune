@@ -8,6 +8,10 @@ import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT
 import { Clips, Track } from './anim/animator.js';
 import { authorAll } from './anim/authored.js';
 import { bakeStances } from './anim/stances.js';
+import { Airborne } from './anim/airborne.js';
+import { IdleBreaks } from './anim/idlebreak.js';
+import { Hurt } from './anim/hurt.js';
+import { MantleClips } from './anim/mantle.js';
 import armorB64 from '../assets/courier/courier_armor.png?b64';
 import maskB64 from '../assets/courier/courier_mask.png?b64';
 import { dressFiligree } from '../vfx/filigree.js';
@@ -203,8 +207,8 @@ export class Character {
   get dissolve() { return this.U.dissolve.value; }
 
   /** Hide the body and gun (a tech that turns the Courier into something else). */
-  /** A blow taken (k 0..1): the upper body flinches (Hit_Chest) over whatever is playing. */
-  flinch(k = 1) { this.st.hitT = 0; this.st.hitW = Math.min(1, 0.5 + 0.5 * k); }
+  /** A blow taken (k 0..1, dir: its world direction): the upper body flinches over whatever is playing, a big one recoils (anim/hurt.js). */
+  flinch(k = 1, dir = null) { this.hurt.flinch(k, dir); }
 
   setHidden(h) {
     if (h === !!this.hidden) return;
@@ -275,10 +279,11 @@ export class Character {
   // =========================================================================
   // Animation.
   //
-  // The body is driven by authored clips (Quaternius' Universal Animation
-  // Library, CC0, retargeted offline by scripts/bake_anims.mjs): speed-synced
-  // idle/walk/jog/sprint, crouch, jump/flip/fall/land, slide and climb, with a
-  // pistol aim offset layered on the upper body when the gun is up. The gun sits
+  // The body is driven by clips (the Courier's own suite, courier/anim/suite.js, and
+  // the older UAL and CMU packs): speed-synced idle/walk/jog/sprint, crouch, slide,
+  // with a pistol aim offset layered on the upper body when the gun is up; the air
+  // (anim/airborne.js), the idle and its breaks (anim/idlebreak.js), a blow taken
+  // (anim/hurt.js) and the mantle (anim/mantle.js) are modules of their own. The gun sits
   // in the right hand (a socket), so hands never chase the gun. IK only corrects
   // the animated pose: feet onto slopes and stairs (plus stride warping at speed),
   // the support hand onto the gun, a hand on the wall, hands on a ledge. Every IK
@@ -298,7 +303,11 @@ export class Character {
       for (const n of C.bones) if (n.endsWith(s) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) t[n] = 1;
       this.MASK_ARM[s] = C.mask(t);
     }
-    this.airTrack = new Track(C, new Set(['jumpLoop', 'flipLoop']));
+    this.air = new Airborne(this); // (the air: take-off, fall, flip, kick-off, dash, landings: anim/airborne.js)
+    this.airTrack = this.air.track;
+    this.idles = new IdleBreaks(this); // (the idle, the fighting stance, the idle breaks: anim/idlebreak.js)
+    this.hurt = new Hurt(this); // (a blow taken: anim/hurt.js)
+    this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
     this.slideTrack = new Track(C, new Set(['slideLoop']));
     const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
     this.leg = {
@@ -319,7 +328,7 @@ export class Character {
     for (const n of ['walk', 'jog', 'sprint', 'crouchWalk']) this.gait[n] = this.analyseGait(n);
     this.lock = { L: { w: 0, on: false, p: new THREE.Vector3() }, R: { w: 0, on: false, p: new THREE.Vector3() } };
     this.initMirror();
-    this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, landW: 0, landT: 9, dip: 0, dipV: 0, wasFooted: true, sliding: false, yawOff: 0 };
+    this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, dip: 0, dipV: 0, sliding: false, yawOff: 0 };
     this.airT = 0;
     this.resetPose();
     authorAll(this); // (clips the libraries lack: built once here, from key poses solved on this very skeleton)
@@ -569,7 +578,7 @@ export class Character {
     const cad = ratio / st.stride / blendG('dur');
     if (footed && sl < 0.5) st.phi = (((st.phi + (back ? -1 : 1) * cad * dt) % 1) + 1) % 1;
     const at = (n) => ((st.phi + g[n].off) % 1) * g[n].dur;
-    const base = C.sample('idle', this.time, P.base);
+    const base = this.idles.idle(dt, s, W[0], P.base);
     let cum = W[0];
     for (const [i, n] of moving) {
       if (W[i] <= 0) continue;
@@ -599,40 +608,17 @@ export class Character {
     }
     st.lastPhi = ph;
 
-    // ---- landing ----
-    if (s.landed) {
-      st.landW = clamp(s.landed / 7, 0.3, 1); st.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14;
-      // (out of the tuck flip, the flip's own landing (UAL NinjaJump_Land): it comes down from the tuck; else the jump's)
-      const flip = C.clips.flipLand && (this.airTrack.cur === 'flipLoop' || this.airTrack.cur === 'flipStart');
-      st.landClip = flip ? 'flipLand' : 'jumpLand'; st.landT = flip ? 0.2 : A.landFrom;
-    }
-    st.landT += dt;
-    const landW = st.landW * (1 - smooth(0.12, 0.5, st.landT - (st.landClip === 'flipLand' ? 0.1 : 0))) * (1 - 0.7 * clamp(gs / s.walkSpeed, 0, 1)) * (footed ? 1 : 0);
-    if (landW > 0.001) C.blend(base, C.sample(st.landClip || 'jumpLand', st.landT, P.tmp, false), landW);
-    // ---- a blow taken: a flinch of the upper body (UAL Hit_Chest), over whatever they are doing ----
-    if (st.hitT !== undefined && st.hitT < 0.45 && C.clips.hitChest) {
-      st.hitT += dt;
-      const hw = st.hitW * (1 - smooth(0.22, 0.45, st.hitT)) * smooth(0, 0.04, st.hitT);
-      if (hw > 0.001) C.blend(base, C.sample('hitChest', 0.05 + st.hitT * 0.75, P.tmp, false), hw, this.MASK_UPPER);
-    }
+    // ---- landing: the jump's, and the hard one past a long fall (anim/airborne.js) ----
+    if (s.landed) st.dipV -= A.landDip * Math.min(2, s.landed / 6) * 14;
+    this.air.land(dt, s, gs, footed, base);
+    // ---- a blow taken: a flinch of the upper body, a big one's recoil (anim/hurt.js), over whatever they are doing ----
+    this.hurt.pose(dt, base, s.yaw);
     st.dipV += (-180 * st.dip - 22 * st.dipV) * dt;
     st.dip += st.dipV * dt;
 
-    // ---- air: take-off, the air-jump flip, then the airborne loop ----
-    const at2 = this.airTrack;
-    if (!footed && st.wasFooted && mn < 0.5) {
-      if ((s.vy || 0) > 1) at2.play('jumpStart', A.jumpFrom, 0.06);
-      else at2.play('jumpLoop', 0.5, 0.25);
-    }
-    if (s.airJump) at2.play('flipStart', A.flipFrom, 0.06);
-    if (!at2.cur) at2.play('jumpLoop', 0.5);
-    at2.update(dt);
-    if (at2.cur === 'jumpStart' && at2.t > 0.9) at2.play('jumpLoop', 0.4, 0.3);
-    if (at2.cur === 'flipStart' && at2.t > 0.75) at2.play('flipLoop', 0, 0.2);
-    if (at2.cur === 'flipLoop' && (s.vy || 0) < -2.5) at2.play('jumpLoop', 0.4, 0.35);
-    st.wasFooted = footed;
+    // ---- air: take-off, the double jump's flip, the kick-off, the loop, the fall (anim/airborne.js) ----
     const air = this.airT * (1 - mn) * (1 - aw);
-    if (air > 0.001) C.blend(base, at2.sample(P.air), air);
+    this.air.air(dt, s, footed, air, base);
 
     // ---- slide: drop in, then hold the slide ----
     const sT = this.slideTrack;
@@ -662,10 +648,10 @@ export class Character {
       if (alt) C.blend(pose, alt.pose, alt.w);
       C.blend(base, pose, sl);
     }
-    // ---- air dash: stretched out like the jump's take-off ----
-    if (da > 0.001) C.blend(base, C.sample('jumpStart', A.dashFrame, P.tmp, false), da);
-    // ---- mantle: the climb, timed to the vault ----
-    if (mn > 0.001) C.blend(base, C.sample('climb', THREE.MathUtils.lerp(A.climbFrom, A.climbTo, clamp(s.mantleT ?? 1, 0, 1)), P.tmp, false), mn);
+    // ---- air dash: the suite's dash by its direction (anim/airborne.js) ----
+    this.air.dash(dt, s, da, vLocal, base);
+    // ---- mantle: the climb, the step-over's vault or the pull-up from a hang, timed to it (anim/mantle.js) ----
+    this.mantle.pose(dt, s, mn, base);
 
     // which hand has the gun (swaps to the left on right-side wallruns)
     st.hand = THREE.MathUtils.clamp((st.hand || 0) + Math.sign((s.gunHand || 0) - (st.hand || 0)) * dt / T.weapon.swapTime, 0, 1);
@@ -719,8 +705,6 @@ export class Character {
     st.yawOff = damp(st.yawOff, s.aimYawOffset * cw * (prof?.turn ?? 1), 18, dt);
     for (const [b, w] of [[B.spine001, 0.25], [B.spine002, 0.3], [B.spine003, 0.45]]) this.rotW(b, upW, st.yawOff * w);
     const rightW = _v4.set(-1, 0, 0).applyQuaternion(root.quaternion);
-    // air dash: pitch the whole body into the dash, about the hips
-    if (da > 0.001) this.rotW(B.spine, rightW, -da * A.dashLean * DEG);
     this.rotW(B.spine003, rightW, -(s.recoil || 0) * 5 * DEG);
     const lookW = 1 - wU;
     this.rotW(B.spine004, upW, s.aimYawOffset * (1 - cw) * 0.25);

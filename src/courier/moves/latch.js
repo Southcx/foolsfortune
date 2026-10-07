@@ -74,6 +74,7 @@ export class Latch extends Tech {
     this.snap = Math.min(1, this.snap + dt * 9);
     if (!inp.isDown('KeyC') && this.t > 0.12) { P.vel.set(this.n.x * 1.2, 0, this.n.z * 1.2); this.cool = 0.25; return false; }
     if (P.latch('Space')) {
+      P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
       P.vel.set(this.n.x * c.kickOut, c.kickUp, this.n.z * c.kickOut);
       P.grounded = false;
       P.jumpFx(0.5);

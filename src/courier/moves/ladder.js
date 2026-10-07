@@ -1,10 +1,13 @@
 // Ladders: walk (or jump) into one and you're on it. W / S climb (Shift faster), C slides down,
 // Space kicks off backwards, and climbing past the top steps off onto whatever's up there.
-// The body plays the authored `ladderUp` cycle (authored.js): two rungs of climbing per cycle,
+// The body plays the suite's climb (Trav_LadderClimb, CLIMB): two rungs of climbing per cycle,
 // hands and feet a half-cycle apart, driven by the height climbed rather than by time, so the
 // limbs in stance stay on their rungs and going down is the same cycle in reverse. Stopped, the
-// body settles onto the nearest height where all four limbs hold a rung. The gun stays out at a
-// walk (the right arm aims it, one-handed; the left keeps climbing).
+// body settles onto the nearest height where all four limbs hold a rung, into the suite's idle on a
+// ladder; taken from the ground, the suite's step onto it (Trav_LadderEnter). The slide is still the
+// authored one (authored.js: the suite has none). The gun stays out at a walk (the right arm aims it,
+// one-handed; the left keeps climbing). Prior art: Uncharted's and Tomb Raider's ladders (a climb
+// cycle driven by the rung climbed, never by time).
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -12,6 +15,12 @@ import { T } from '../../core/config.js';
 import { LADDER } from '../anim/authored.js';
 
 const TAU = 0.05; // the phases where all four limbs hold: 0.05 and 0.55 of a cycle
+/** The suite's climb on this game's ladder (measured on the clip): it climbs 0.6 m a cycle (its planted hand slides 0.29 m a half), two
+ *  rungs, as the authored cycle did; moved onto the rungs (dy, dz: its palms are 0.25 m ahead of its feet where the rungs are 0.39) and
+ *  its phase set so its exact holds (0 and 0.5: all four limbs on rungs) are the ladder's rest (TAU). The step on: from the ground, at
+ *  enterRate, faded out between enterOut s and as the climb rises past enterRise m. */
+const CLIMB = { clip: 'Trav_LadderClimb', idle: 'Trav_LadderIdle', enter: 'Trav_LadderEnter', dy: 0.013, dz: 0.14, phase: -TAU, enterRate: 1.4, enterOut: [0.55, 0.8], enterRise: [0.15, 0.45] };
+const smooth = (a, b, t) => THREE.MathUtils.smoothstep(t, a, b);
 
 export class Ladder extends Tech {
   constructor(mgr) {
@@ -58,6 +67,7 @@ export class Ladder extends Tech {
     this.vy = 0;
     this.slideW = 0;
     this.moving = 0;
+    this.enterT = P.grounded ? 0 : null; this.enterY = P.pos.y; // (from the ground: the step on)
     sfx.rung();
   }
 
@@ -65,6 +75,7 @@ export class Ladder extends Tech {
     const P = this.P, c = this.cfg, l = this.l, inp = P.input, M = T.movement;
     // kick off, back the way you came (a little toward where you look)
     if (P.latch('Space')) {
+      P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
       const look = P.lookDir();
       const out = l.n.clone().multiplyScalar(c.kickOut).addScaledVector(new THREE.Vector3(look.x, 0, look.z), 1.5);
       P.vel.set(out.x, c.kickUp, out.z);
@@ -117,13 +128,26 @@ export class Ladder extends Tech {
 
   faceYaw() { return Math.atan2(-this.l.n.x, -this.l.n.z); }
 
-  // ---- animation: the authored cycle, by height climbed ----
+  // ---- animation: the suite's climb, by height climbed ----
   animate(ch, base, dt) {
-    const C = ch.clips, P = this.P;
-    const up = C.clips.ladderUp;
-    const ph = this.phase(P.renderPos.y);
+    const C = ch.clips, P = this.P, c = C.clips[CLIMB.clip];
+    const u = (((this.phase(P.renderPos.y) + CLIMB.phase) % 1) + 1) % 1;
     this.slideW = THREE.MathUtils.damp(this.slideW, this.active && this.sliding ? 1 : 0, 10, dt);
-    const pose = C.sample('ladderUp', ph * up.dur, ch.P.tmp, true);
+    const pose = C.sample(CLIMB.clip, u * c.dur, ch.P.tmp, true);
+    // still: the idle on a ladder (its right hand high, as the climb's 0; mirrored for the left, the climb's 0.5)
+    this.stillW = THREE.MathUtils.damp(this.stillW || 0, this.active && !this.sliding && Math.abs(this.vy) < 0.15 ? 1 : 0, 6, dt);
+    if (this.stillW > 0.001) {
+      const idle = C.sample(CLIMB.idle, ch.time, ch.P.tmp2);
+      C.blend(pose, Math.abs(u - 0.5) < 0.25 ? ch.mirrorPose(idle, (this.mir ||= C.pose())) : idle, this.stillW);
+    }
+    // the step on, from the ground
+    if (this.enterT != null) {
+      this.enterT += dt;
+      const ew = (1 - smooth(CLIMB.enterOut[0], CLIMB.enterOut[1], this.enterT)) * (1 - smooth(CLIMB.enterRise[0], CLIMB.enterRise[1], Math.abs(P.renderPos.y - this.enterY)));
+      if (ew > 0.001 && this.active) C.blend(pose, C.sample(CLIMB.enter, this.enterT * CLIMB.enterRate, ch.P.tmp2, false), ew);
+      else if (this.enterT > CLIMB.enterOut[1] || !this.active) this.enterT = null;
+    }
+    pose.p[1] += CLIMB.dy; pose.p[2] += CLIMB.dz; // (onto the rungs)
     if (this.slideW > 0.001) C.blend(pose, C.sample('ladderSlide', ch.time, ch.P.tmp2), this.slideW);
     C.blend(base, pose, this.w);
   }

@@ -2,6 +2,10 @@
 // throws out a shockwave - pots break close in, get shoved further out, clapperjars
 // go flying. For a moment after landing: Space is a slam jump (higher the further
 // you fell), holding C with a direction turns the fall into a slide.
+// The body is the suite's slam (Air_SlamStart, Air_SlamFall, Air_SlamLand): the physics drops at once, so the start's front flip is
+// time-warped onto the fall the slam has (SLAM: measured from the height when it begins; a short slam skips the flip for the tuck), the
+// fall loop holds feet first with the arms up, and the landing's crouch, a fist to the ground, plays through the slam's window and on
+// while the tech's weight eases out (casebook rule 19). Prior art: Bayonetta's and Devil May Cry's plunges, Smash's down-air landing lag.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -9,6 +13,11 @@ import { T, PALETTE } from '../../core/config.js';
 import { GROUPS } from '../../core/physics.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('courier/moves/slam'); // (the simulation's chance: core/rng.js, the same twice)
+
+/** The slam's clips. The start plays from `flip` (the arms thrown up, then the flip) to `end` (feet first: the fall loop's pose to 2
+ *  degrees), over `share` of the fall the slam will have, never slower than captured; a fall under `flipMin` s starts from the tuck
+ *  (`tuck`) instead. The fall loop comes in over `fallIn` s; the landing from `landAt`, in from the pose at impact over `landIn` s. */
+export const SLAM = { start: 'Air_SlamStart', fall: 'Air_SlamFall', land: 'Air_SlamLand', flip: 0.1, tuck: 0.42, end: 0.65, flipMin: 0.2, share: 0.7, fallIn: 0.1, landAt: 0.03, landIn: 0.06 };
 
 export class Slam extends Tech {
   constructor(mgr) {
@@ -35,7 +44,8 @@ export class Slam extends Tech {
     if (P.grounded || P.wallrun || P.mantle || !P.peekLatch('KeyC')) return false;
     // (C in the air looking ahead is the core's landing slide: a slam wants you looking down)
     if (P.pitch > -this.cfg.lookDown * Math.PI / 180) return false;
-    if (this.heightAbove() < this.cfg.minHeight) return false;
+    this.h0 = this.heightAbove();
+    if (this.h0 < this.cfg.minHeight) return false;
     if (this.waterAt(this.P.pos)) return false; // (no slam out of the water: there is nothing to drive into)
     P.latch('KeyC');
     P.slideBuf = 0;
@@ -47,6 +57,8 @@ export class Slam extends Tech {
     P.endCore();
     this.phase = 'fall';
     this.y0 = P.pos.y;
+    this.fallT = Math.max(0.05, (this.h0 || 0) / this.cfg.speed); // (the fall it will have, for the start's time-warp)
+    this.fa = 0;
     this.hv = new THREE.Vector3(P.vel.x, 0, P.vel.z).multiplyScalar(0.25);
     P.fovPunch = Math.max(P.fovPunch, 5);
     sfx.slamStart();
@@ -100,6 +112,7 @@ export class Slam extends Tech {
     const P = this.P, c = this.cfg, g = this.game;
     this.phase = 'land';
     this.lt = 0;
+    this.la = 0;
     this.fallH = Math.max(0, this.y0 - P.pos.y);
     const drop = Math.max(this.fallH, P.lastDrop || 0); // (the whole fall, from the top of the jump)
     const power = THREE.MathUtils.clamp(0.5 + this.fallH / 8, 0.5, 1.6);
@@ -148,19 +161,32 @@ export class Slam extends Tech {
     }
   }
 
-  // tucked and pitched head-down while falling; the landing clip does the impact
-  animate(ch, base, dt) {
-    if (this.phase !== 'fall' && !this.active) return;
-    const C = ch.clips;
-    const p = C.sample('flipLoop', this.t, ch.P.tmp);
-    C.blend(base, p, this.w * (this.phase === 'fall' ? 1 : 0));
+  /** The falling body at a time into the fall: the start, warped onto the fall, then the loop. */
+  fallPose(C, t, out, tmp) {
+    const from = this.fallT >= SLAM.flipMin ? SLAM.flip : SLAM.tuck;
+    const span = Math.max(0.06, Math.min(SLAM.end - from, SLAM.share * this.fallT));
+    C.sample(SLAM.start, from + Math.min(1, t / span) * (SLAM.end - from), out, false);
+    if (t > span) C.blend(out, C.sample(SLAM.fall, t - span, tmp, true), smooth(0, SLAM.fallIn, t - span));
+    return out;
   }
 
-  afterPose(ch) {
-    if (this.phase !== 'fall' || !this.active) return;
-    const rightW = new THREE.Vector3(-1, 0, 0).applyQuaternion(ch.root.quaternion);
-    ch.rotW(ch.bones.spine, rightW, -0.5 * this.w);
+  // the slam's own clips; the landing's crouch carries on while the weight eases out after the window
+  animate(ch, base, dt) {
+    const C = ch.clips, P = ch.P;
+    if (!this.pose) { this.pose = C.pose(); this.hit = C.pose(); }
+    if (this.phase === 'fall') {
+      this.fa += dt;
+      this.fallPose(C, this.fa, this.pose, P.tmp);
+      this.hit.copy(this.pose);
+    } else {
+      this.la += dt;
+      C.sample(SLAM.land, SLAM.landAt + this.la, this.pose, false);
+      if (this.la < SLAM.landIn) { P.tmp.copy(this.hit); C.blend(P.tmp, this.pose, smooth(0, SLAM.landIn, this.la)); this.pose.copy(P.tmp); }
+    }
+    C.blend(base, this.pose, this.w);
   }
 
   label() { return 'SLAM'; }
 }
+
+function smooth(a, b, t) { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }

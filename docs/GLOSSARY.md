@@ -245,6 +245,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
+- **idle break** (`IDLE`, `src/courier/anim/idlebreak.js`): a fidget played over the idle after a still spell with nothing in hand (a look
+  round, a stretch, a shift and tap, in turn); any move ends it. *Not:* an emote (asked for by the player).
+- **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
+  control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
+- **kick-off**: a jump off something that holds the Courier facing it (a ladder, a ledge, a pole, the latch's wall, a grate wall), shown
+  with the suite's wall jump. *Not:* the wall jump (the core's, off a wallrun).
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **Movement Art** (`src/progress/skills.js`): a tech the System teaches; a **variant** is one of its versions.
