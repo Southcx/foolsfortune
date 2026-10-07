@@ -66,7 +66,7 @@ window.__sw = (() => {
     },
     // ---- the Pneuka Jar, as drawn
     jar() {
-      const V = g.god?.jar, grp = V?.group, J = R.jar, cam = G.camera; if (!grp) return null;
+      const V = g.god?.jar, grp = V?.group, J = R.jarBody, cam = G.camera; if (!grp) return null;
       grp.updateWorldMatrix(true, true);
       const wp = grp.getWorldPosition(new THREE.Vector3()), ws = grp.getWorldScale(new THREE.Vector3());
       const ndc = wp.clone().project(cam);
@@ -87,29 +87,29 @@ window.__sw = (() => {
     // ---- the interact chevron against the planetoid it is over
     chevron() {
       const I = g.interact, C = I.chevron, cur = I.cur; if (!cur || cur.id !== 'garden') return { cur: cur?.id || null, shown: C.group.visible };
-      const P = R.near?.planet || (R.near?.s ? R.near.s.hop.planet : null) || R.jar.planet;
+      const P = R.near?.planet || (R.near?.s ? R.near.s.body.planet : null) || R.jarBody.planet;
       C.group.updateWorldMatrix(true, true);
       const tip = new THREE.Vector3(0, -1, 0).transformDirection(C.group.matrixWorld); // (the way it points: its point is at -Y in its own frame)
       const at = C.group.getWorldPosition(new THREE.Vector3()), toHeart = P.c.clone().sub(at).normalize();
       const feat = R.near?.pos, featUp = feat ? feat.clone().sub(P.c).normalize() : null;
       return { cur: cur.id, kind: R.near?.kind, planet: P.id, shown: C.group.visible, pos: v(at), points: v(tip), toHeart: v(toHeart),
         offDeg: +(Math.acos(Math.max(-1, Math.min(1, tip.dot(toHeart)))) * 180 / Math.PI).toFixed(1),
-        offsetUpVsFeatureUpDeg: featUp ? +(Math.acos(Math.max(-1, Math.min(1, R.jar.up.dot(featUp)))) * 180 / Math.PI).toFixed(1) : null };
+        offsetUpVsFeatureUpDeg: featUp ? +(Math.acos(Math.max(-1, Math.min(1, R.jarBody.up.dot(featUp)))) * 180 / Math.PI).toFixed(1) : null };
     },
     state() {
-      const J = R.jar, P = g.player, cam = G.camera;
+      const J = R.jarBody, P = g.player, cam = G.camera;
       return { active: R.active, named: R.name, jar: J ? { pos: v(J.pos), planet: J.planet?.id, grounded: J.grounded, held: J.held, flight: !!J.flight, alt: +(J.pos.distanceTo(J.planet.c) - J.planet.radiusAt(J.pos.clone().sub(J.planet.c).normalize()) - J.radius).toFixed(2), nan: !Number.isFinite(J.pos.x + J.pos.y + J.pos.z) } : null,
         cam: v(cam.position), camUp: v(cam.up), courierHidden: !!g.character?.hidden || g.character?.root?.visible === false, player: v(P.pos), zone: g.zones.current,
         fog: g.scene.fog ? { c: '#' + g.scene.fog.color.getHexString(), d: g.scene.fog.density } : null, bg: g.scene.background?.isColor ? '#' + g.scene.background.getHexString() : (g.scene.background ? 'texture' : null),
         music: g.music?.current?.title || null, roll: +(Math.asin(new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion).y) * 180 / Math.PI).toFixed(1),
         upperCells: g.cartography?.cells?.upper?.size ?? null, compassTape: !!g.wireCompass?.tape?.visible, layer: g.cartography?.layerOf(P.pos.y)?.name, inside: !!g.garden?.inside, spirits: R.spirits.length, god: g.god?.state, beltOut: g.belt?.tools?.filter((t) => t.wants || t.held).map((t) => t.id) || [] };
     },
-    planets() { return R.place.planets.map((P) => ({ id: P.id, c: v(P.c), r: P.r })); },
+    planets() { return R.site.planets.map((P) => ({ id: P.id, c: v(P.c), r: P.r })); },
     /** Put the Jar at a direction on a planetoid (a tester's teleport). */
-    put(id, dir = [0, 1, 0], lift = 0.1) { const P = R.place.by[id], d = new THREE.Vector3(...dir).normalize(); R.jar.flight = null; R.jar.held = false; R.jar.vel.set(0, 0, 0); R.jar.pos.copy(P.c).addScaledVector(d, P.radiusAt(d) + R.jar.radius + lift); R.jar.planet = P; R.jar.up.copy(d); },
+    put(id, dir = [0, 1, 0], lift = 0.1) { const P = R.site.by[id], d = new THREE.Vector3(...dir).normalize(); R.jarBody.flight = null; R.jarBody.held = false; R.jarBody.vel.set(0, 0, 0); R.jarBody.pos.copy(P.c).addScaledVector(d, P.radiusAt(d) + R.jarBody.radius + lift); R.jarBody.planet = P; R.jarBody.up.copy(d); },
     /** Screen point of a world point. */
     screen(p) { const q = new THREE.Vector3(...p).project(G.camera); return [(q.x + 1) / 2 * innerWidth, (1 - q.y) / 2 * innerHeight, q.z]; },
-    jarScreen() { return S.screen(v(R.jar.pos)); },
+    jarScreen() { return S.screen(v(R.jarBody.pos)); },
     /** The renderer's own pixels (what the canvas holds): mean luminance and how much is near black. */
     lum() { const c = G.renderer.domElement, gl = G.renderer.getContext(); S.draw(); const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, px = new Uint8Array(4 * 64 * 64); let sum = 0, dark = 0, n = 0;
       for (let k = 0; k < 4; k++) { gl.readPixels(Math.floor(w * (0.2 + 0.2 * k)) - 32, Math.floor(h / 2) - 32, 64, 64, gl.RGBA, gl.UNSIGNED_BYTE, px); for (let i = 0; i < px.length; i += 4) { const L = 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]; sum += L; if (L < 8) dark++; n++; } }
@@ -177,7 +177,7 @@ check('jar: drawn (own, zone, parents)', j1 && j1.own && !j1.zoneOff && j1.meshe
 check('jar: on screen', j1 && j1.inFrustum && Math.abs(j1.ndc[0]) < 1 && Math.abs(j1.ndc[1]) < 1 && j1.ndc[2] < 1, { ndc: j1?.ndc, dist: j1?.dist });
 check('jar: model where its body is', j1 && Math.hypot(...j1.pos.map((x, i) => x - j1.body[i])) < 1.5, { model: j1?.pos, body: j1?.body });
 check('jar: full size (this session never used ~)', j1 && j1.scale.every((x) => x > 0.5), { scale: j1?.scale, worldBox: j1?.box });
-const gateD = await ev(() => { const R = __game.game.realm, gate = R.place.features.find((f) => f.kind === 'gate'); return +gate.pos.distanceTo(R.jar.pos).toFixed(2); });
+const gateD = await ev(() => { const R = __game.game.realm, gate = R.site.features.find((f) => f.kind === 'gate'); return +gate.pos.distanceTo(R.jarBody.pos).toFixed(2); });
 note('jar: distance to the gate at entry (it stands in front of the torii, the same red-brown)', `${gateD} m; the camera faces the gate through the Jar`);
 note('hand measured', await sw('hand()'));
 await shot('jar-standing');
@@ -208,14 +208,14 @@ check('in the garden, the wire compass is not drawn', !sHop.compassTape, `wireCo
 
 // ================================================================== 4. the chevron at each place
 phase = 'chevron';
-const places = await ev(() => __game.game.realm.place.features.map((f, i) => ({ i, fi: f.i, kind: f.kind, planet: f.planet.id, pos: [f.pos.x, f.pos.y, f.pos.z], shown: !f.mesh || f.mesh.visible })));
+const places = await ev(() => __game.game.realm.site.features.map((f, i) => ({ i, fi: f.i, kind: f.kind, planet: f.planet.id, pos: [f.pos.x, f.pos.y, f.pos.z], shown: !f.mesh || f.mesh.visible })));
 const chevs = [];
 for (const f of places.filter((f) => f.shown)) {
-  await ev((f) => { const R = __game.game.realm, P = R.place.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.cam.up.copy(d); }, f);
+  await ev((f) => { const R = __game.game.realm, P = R.site.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.cam.up.copy(d); }, f);
   await ticks(40);
   const c = await sw('chevron()');
   chevs.push({ kind: f.kind, planet: f.planet, ...c });
-  if (['gate', 'shed', 'furnace', 'cocoon', 'peak'].includes(f.kind) || (f.kind === 'bed' && f.fi === 0)) await shot(`chevron-${f.kind}`);
+  if (['gate', 'shed', 'athanor', 'cocoon', 'tribulationMat'].includes(f.kind) || (f.kind === 'bed' && f.fi === 0)) await shot(`chevron-${f.kind}`);
 }
 note('chevrons', chevs.map((c) => `${c.kind}@${c.planet}: cur=${c.cur} off ${c.offDeg} deg (offer's up vs feature's up ${c.offsetUpVsFeatureUpDeg})`));
 const worst = chevs.filter((c) => c.cur === 'garden').reduce((a, c) => (c.offDeg > (a?.offDeg ?? -1) ? c : a), null);
@@ -238,13 +238,13 @@ for (const P of planets) {
   }
   check(`rim: ${P.id} hopped round, comes to rest`, !nan && worstAlt < 0.5, `worst rest height ${worstAlt} m over the ground as sculpted; ends on ${endPlanet}`);
 }
-const lot = await ev(() => __game.game.realm.place.lotuses.map((l) => ({ i: l.i, from: l.planet.id, to: l.toPlanet.id, pos: [l.pos.x, l.pos.y, l.pos.z] })));
+const lot = await ev(() => __game.game.realm.site.lotuses.map((l) => ({ i: l.i, from: l.planet.id, to: l.toPlanet.id, pos: [l.pos.x, l.pos.y, l.pos.z] })));
 const lotBad = [];
 for (const L of lot) {
-  const r = await ev((L) => { const R = __game.game.realm, P = R.place.by[L.from], T = __game.THREE; const d = new T.Vector3(...L.pos).sub(P.c).normalize(); R.lotusLock = null; __sw.put(L.from, [d.x, d.y, d.z], 0.02); R.jar.grounded = true; __sw.tick(5); const fl = !!R.jar.flight; __sw.tick(150); return { fl, planet: R.jar.planet.id, alt: +(R.jar.pos.distanceTo(R.jar.planet.c) - R.jar.planet.radiusAt(R.jar.pos.clone().sub(R.jar.planet.c).normalize()) - R.jar.radius).toFixed(2) }; }, L);
+  const r = await ev((L) => { const R = __game.game.realm, P = R.site.by[L.from], T = __game.THREE; const d = new T.Vector3(...L.pos).sub(P.c).normalize(); R.lotusLock = null; __sw.put(L.from, [d.x, d.y, d.z], 0.02); R.jarBody.grounded = true; __sw.tick(5); const fl = !!R.jarBody.flight; __sw.tick(150); return { fl, planet: R.jarBody.planet.id, alt: +(R.jarBody.pos.distanceTo(R.jarBody.planet.c) - R.jarBody.planet.radiusAt(R.jarBody.pos.clone().sub(R.jarBody.planet.c).normalize()) - R.jarBody.radius).toFixed(2) }; }, L);
   if (!r.fl || r.planet !== L.to || Math.abs(r.alt) > 1) lotBad.push({ ...L, ...r });
 }
-const needle = await ev(() => { const R = __game.game.realm, T = __game.THREE, P = R.place.by.peak; let mx = 0, top = null; for (let i = 0; i < 4000; i++) { const d = new T.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(); const r = P.radiusAt(d); if (r > mx) { mx = r; top = d; } } R.jar.flight = null; R.jar.vel.set(0, 0, 0); R.jar.pos.copy(P.c).addScaledVector(top, mx + 0.6); __sw.tick(180); const J = R.jar, n = J.pos.clone().sub(P.c).normalize(); return { needleTop: +mx.toFixed(1), r: P.r, collideWithin: P.r + 4, jarFromHeart: +J.pos.distanceTo(P.c).toFixed(2), groundThere: +P.radiusAt(n).toFixed(2), planet: J.planet.id }; });
+const needle = await ev(() => { const R = __game.game.realm, T = __game.THREE, P = R.site.by.chimney; let mx = 0, top = null; for (let i = 0; i < 4000; i++) { const d = new T.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(); const r = P.radiusAt(d); if (r > mx) { mx = r; top = d; } } R.jarBody.flight = null; R.jarBody.vel.set(0, 0, 0); R.jarBody.pos.copy(P.c).addScaledVector(top, mx + 0.6); __sw.tick(180); const J = R.jarBody, n = J.pos.clone().sub(P.c).normalize(); return { needleTop: +mx.toFixed(1), r: P.r, collideWithin: P.r + 4, jarFromHeart: +J.pos.distanceTo(P.c).toFixed(2), groundThere: +P.radiusAt(n).toFixed(2), planet: J.planet.id }; });
 check('the Chimney\'s needle is solid to the Jar', needle.jarFromHeart >= needle.groundThere + 0.3, needle);
 check('lotus: every one flies to its neighbour', !lotBad.length, lotBad.length ? lotBad.slice(0, 4) : `${lot.length} lotuses`);
 
@@ -264,7 +264,7 @@ await ticks(240);
 const st2 = await sw('state()');
 check('hand: a thrown Jar lands on a planetoid', st2.jar.grounded && Math.abs(st2.jar.alt) < 0.5 && !st2.jar.nan, st2.jar);
 // the hardest throw the hand allows (26 m/s), sideways along the ground: does it ever come down?
-const orbit = await ev(() => { const R = __game.game.realm, T = __game.THREE, J = R.jar; __sw.put('dantian', [0, 1, 0], 6); const t = new T.Vector3(1, 0, 0); J.release(t.multiplyScalar(26)); const path = []; let landed = null; for (let k = 0; k < 60 * 40; k++) { __sw.tick(1); if (k % 120 === 0) path.push([+(k / 60).toFixed(0), J.planet.id, +(J.pos.distanceTo(J.planet.c) - J.planet.r).toFixed(1)]); if (J.grounded && landed == null) { landed = +(k / 60).toFixed(2); break; } } return { landed, path }; });
+const orbit = await ev(() => { const R = __game.game.realm, T = __game.THREE, J = R.jarBody; __sw.put('dantian', [0, 1, 0], 6); const t = new T.Vector3(1, 0, 0); J.release(t.multiplyScalar(26)); const path = []; let landed = null; for (let k = 0; k < 60 * 40; k++) { __sw.tick(1); if (k % 120 === 0) path.push([+(k / 60).toFixed(0), J.planet.id, +(J.pos.distanceTo(J.planet.c) - J.planet.r).toFixed(1)]); if (J.grounded && landed == null) { landed = +(k / 60).toFixed(2); break; } } return { landed, path }; });
 check('hand: a full-strength sideways throw comes down', orbit.landed != null && orbit.landed < 10, orbit.landed != null ? `landed after ${orbit.landed} s` : `still flying after 40 s: [s, planetoid, height] ${JSON.stringify(orbit.path.slice(0, 12))}`);
 await ev(() => { __sw.put('dantian', [0.2, 1, 0.3]); }); await ticks(30);
 // Esc while holding the Jar
@@ -355,7 +355,7 @@ const lumL = await sw('lum()'); check('leave: the world is drawn', lumL.dark < 0
 
 // ================================================================== 9. stress: in and out twenty times quickly
 phase = 'in-out x20';
-const census = () => ev(() => ({ children: __game.scene.children.length, garden: __game.game.realm.place.group.children.length, geos: __game.renderer.info.memory.geometries, textures: __game.renderer.info.memory.textures, progs: __game.renderer.info.programs?.length }));
+const census = () => ev(() => ({ children: __game.scene.children.length, garden: __game.game.realm.site.group.children.length, geos: __game.renderer.info.memory.geometries, textures: __game.renderer.info.memory.textures, progs: __game.renderer.info.programs?.length }));
 const before = await census();
 const lost = [];
 for (let k = 0; k < 20; k++) {
@@ -396,7 +396,7 @@ note('back in the fight', { player: sF3.player, zone: sF3.zone });
 phase = 'spirit';
 await ev(() => __game.game.bound.add({ kind: 'slipjelly', name: null, cls: 1, from: 'test', emo: 0.4, mind: 0.5, traits: null, at: 0 }));
 await enter(); await ticks(30); await settle();
-const sp = await ev(() => { const R = __game.game.realm; return { spirits: R.spirits.length, at: R.spirits[0] ? R.spirits[0].hop.planet.id : null }; });
+const sp = await ev(() => { const R = __game.game.realm; return { spirits: R.spirits.length, at: R.spirits[0] ? R.spirits[0].body.planet.id : null }; });
 note('a bound spirit in the Grove', sp);
 await ev(() => { const R = __game.game.realm, s = R.spirits[0]; if (s) R.raising.page(s); }); await ticks(2); await shot('page-spirit');
 const dS = await sw('dom()');
