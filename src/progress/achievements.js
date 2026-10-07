@@ -575,6 +575,9 @@ export function buildAchievements(game) {
   C('sv3', 'garden', 'The Spirits', 2, 'count', 'Grown', 'Raise a spirit to its form.', 'spirit.mature', 1);
   C('sv4', 'garden', 'The Spirits', 3, 'mechanic', 'Cocoon', 'Merge two spirits into one.', 'spirit.merge', 1);
   H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
+  C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);
+  C('ir2', 'garden', 'The Garden', 3, 'count', 'Potter of Worlds', 'Sculpt your planetoids a hundred times.', 'garden.sculpt', 100);
+  F('ir3', 'garden', 'The Spirits', 3, 'collect', 'Open House', 'Have every kind of visitor settle.', (L) => ['slipjelly', 'clapperjar', 'glint', 'lobber'].filter((k) => L.get(`spirit.settle.${k}`) >= 1).length, 4);
   H('fi1', 'garden', 'The Firings', 2, 'count', 'The Second Firing', 'Pass a tribulation.', 'firing', 2);
   H('fi2', 'garden', 'The Firings', 4, 'count', 'The Sixth Firing', 'Reach the sixth Firing.', 'firing', 6, { title: 'Refired' });
   C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);

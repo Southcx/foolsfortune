@@ -8,6 +8,7 @@
 import { ATTRIBUTES } from '../../progress/alchemy.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
+import { FEATURES, VISITORS } from '../../progress/realm.js';
 
 export function gardenRules({ on, L, log }) {
   on('alchemy.press', (e) => { if (e.by === 'courier') L.inc('alchemy.press', e.count || 1); });
@@ -43,6 +44,15 @@ export function gardenRules({ on, L, log }) {
     L.hi('firing', n); log.say('gain', `${ORD[n - 1] || `Firing ${n}`}${ORD[n - 1] ? ' Firing' : ''}${FIRING_NAMES[n - 1] ? `: ${FIRING_NAMES[n - 1]}` : ''}. Complete.`); // (Espada's line)
   });
   on('cultivation.kiln', (e) => { if (e.by === 'courier') log.say('info', 'The Heavenly Kiln opens.'); });
+  // the Inner Realm as a place (progress/realm.js): features placed, the planetoids sculpted, drills, visitors who settle
+  on('garden.place', (e) => { if (e.by === 'courier' && FEATURES[e.feature]) { L.inc('garden.place'); L.inc(`garden.place.${e.feature}`); } });
+  on('garden.sculpt', (e) => { if (e.by === 'courier') L.inc('garden.sculpt'); });
+  on('spirit.drill', (e) => { if (e.by === 'courier') { L.inc('spirit.drill'); if (!e.gain) log.say('info', `${e.name || 'The spirit'} is too tired to drill.`, { key: 'tired', throttle: 3 }); } });
+  on('spirit.visit', (e) => {
+    if (!VISITORS[e.kind]) return;
+    L.inc(`spirit.visit.${e.kind}`);
+    if (e.settled) { L.inc(`spirit.settle.${e.kind}`); log.say('gain', `A ${e.kind} settles in your Inner Realm.`); } else log.say('info', `A ${e.kind} visits your Inner Realm.`, { key: `visit.${e.kind}`, throttle: 30 });
+  });
   on('realm.name', (e) => { if (e.by === 'courier') log.say('info', `Your Inner Realm is named ${e.name}.`); });
   on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `Garden widened: one more ${e.kind}.`); } });
 }
