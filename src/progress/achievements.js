@@ -42,7 +42,7 @@ export const CATS = [
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds'] },
-  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
+  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden'] },
@@ -522,6 +522,19 @@ export function buildAchievements(game) {
   C('em3', 'emocean', 'Sailing', 4, 'perfect', 'Not a Scratch', 'Sail a stage without being hit once.', 'emocean.stage.clean', 1);
   H('em5', 'emocean', 'Sailing', 3, 'perfect', 'Dead Reckoning', 'Reckon a crossing in full before sailing it.', 'emocean.reckon.best', 100, { unit: '%' });
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
+  // the crossing (progress/rail/: the genre's own feats, each named for where it was learned)
+  C('rl1', 'emocean', 'The Rail', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times on the rail.', 'rail.rolls', 50);
+  C('rl2', 'emocean', 'The Rail', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a crossing: four in five of what came at you downed.', 'rail.medal', 1);
+  C('rl3', 'emocean', 'The Rail', 4, 'perfect', 'Rank S', 'Score at par on a crossing.', 'rail.rank.S', 1);
+  C('rl4', 'emocean', 'The Rail', 4, 'mechanic', '25,600', 'Chain to the cap: three of one feeling, again and again.', 'rail.chain.capped', 1);
+  H('rl5', 'emocean', 'The Rail', 3, 'mechanic', 'Full Lock', 'Down every target of an eight-lock volley.', 'rail.volley.best', 8);
+  C('rl6', 'emocean', 'The Rail', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots on the rail.', 'rail.parried', 25);
+  C('rl7', 'emocean', 'The Rail', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);
+  C('rl8', 'emocean', 'The Rail', 2, 'mechanic', 'Point Blank', 'Down a hundred things at point blank.', 'rail.pointBlank', 100);
+  C('rl9', 'emocean', 'The Rail', 3, 'count', 'Strike Her Colours', 'Sink a pirate brig.', 'rail.end.sunk', 1);
+  C('rl10', 'emocean', 'The Rail', 3, 'count', 'Here Be Leviathans', 'Drive off a rogue Leviathan.', 'rail.end.driven', 1, { hidden: true });
+  C('rl11', 'emocean', 'The Rail', 5, 'perfect', 'Call Me Ishmael', 'Fell a rogue Leviathan.', 'rail.end.felled', 1, { hidden: true });
+  C('rl12', 'emocean', 'The Rail', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its caller.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
   C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });

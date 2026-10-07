@@ -20,12 +20,19 @@
 //
 //   game.voyage = new Voyage(game)
 //   .at (the island the Courier is on)   .sailing ({ from, to, ship } | null)   .cargo() -> { grade: casks }   .casks() -> n
-//   .canBoard(from, to, ship) -> { ok, why?, hop? }   .board(from, to, ship) -> { ok, why? }   .stageResult(r) -> { lost, spilled }
+//   .canBoard(from, to, ship) -> { ok, why?, hop? }   .board(from, to, ship, mounts?) -> { ok, why? } (mounts: two worn tools, progress/rail/mounts.js)   .stageResult(r) -> { lost, spilled }
+//   .crossing() -> the crossing's script (progress/rail/crossing.js) while at sea
 //   .reckon(from, to, share, q) -> share today   .reckoning(from, to) -> 0..1   .isOpen(node) -> bool
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { NODES, hop, routeId, opensNode } from './econ/emocean.js';
 import { spillChance } from './econ/islands.js';
+import { script } from './rail/crossing.js';
+import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
+import { rankOf, medalOf } from './rail/score.js';
+import { loadout } from './rail/mounts.js';
+import { deckDraw } from './econ/deck.js';
+import { stageWx } from './weather.js';
 import { crudeGrade } from './shop/catalogue.js';
 import { today } from '../core/calendar.js';
 import { stream } from '../core/rng.js';
@@ -98,21 +105,45 @@ export class Voyage {
   }
 
   /** Cast off: the fuel is paid, and the ship is at sea until the stage is sailed. */
-  board(from = this.s.at, to, ship = 'sloop') {
+  board(from = this.s.at, to, ship = 'sloop', mounts = []) {
     const c = this.canBoard(from, to, ship);
     if (!c.ok) return c;
     if (!this.game.cubes.spend(c.hop.fuel, 'fuel')) return { ok: false, why: `The crossing burns ${c.hop.fuel} cubes of fuel.` };
-    this.s.sailing = { from, to, ship, day: today() };
+    // the crossing's set piece is settled at the pier (progress/rail/crossing.js): the Leviathan's deck is drawn here, once a crossing,
+    // so it comes within its count; the pirates read the casks aboard as they cast off; the weather of the island left behind is kept
+    const wx = stageWx(from), aspect = this.game.weather?.at?.(from)?.aspect || null;
+    const leviathan = this.game.ledger ? deckDraw(this.game.ledger, 'emocean.leviathan', leviathanDeck(c.hop.danger + wx.danger, aspect)) : false;
+    const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)); // (the tools that can be mounted: the ones worn)
+    this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: loadout(mounts, worn) };
+    const plan = this.crossing();
+    this.s.sailing.setPiece = plan?.setPiece || 'shoal';
     this.dirty();
-    this.game.events.emit('emocean.hop', { from, to, ship, fuel: c.hop.fuel, by: 'courier' });
+    this.game.events.emit('emocean.hop', { from, to, ship, fuel: c.hop.fuel, mounts: this.s.sailing.mounts, by: 'courier' });
+    this.game.events.emit('emocean.setpiece', { from, to, setPiece: this.s.sailing.setPiece, by: 'environment' });
     return { ok: true, hop: c.hop };
   }
+  /** The crossing as it will play (Petra's rail reads this: its acts, views, swings, beats and waves): progress/rail/crossing.js script. */
+  crossing() {
+    const V = this.s.sailing;
+    return V ? script(V.from, V.to, V.day, { casks: V.casks, leviathan: V.leviathan, wx: V.wx, open: (id) => this.isOpen(id) }) : null;
+  }
 
-  /** The stage is over (Petra's rail calls this): a failed one costs cargo and may spill; either way the ship makes port. */
-  stageResult({ passed = true, hits = 0, bears = 6, downed = 0, spawned = 0 } = {}) {
+  /** The stage is over (Petra's rail calls this with the run): a failed one costs cargo and may spill; either way the ship makes port.
+   *  The run: { passed, hits, bears, downed, spawned, score, chainBest, volleyBest, parried, absorbed, rolls, pointBlank, end, won, stolen }
+   *  (end: the set piece's: 'scattered' | 'sunk' | 'struck' | 'limped' | 'driven' | 'felled'; won: casks gathered from the pirates' loot;
+   *  stolen: casks the boarders took). The rank and the medal are worked out here (progress/rail/score.js). */
+  stageResult({ passed = true, hits = 0, bears = 6, downed = 0, spawned = 0, score = 0, chainBest = 0, volleyBest = 0, parried = 0, absorbed = 0, rolls = 0, pointBlank = 0, end = null, won = 0, stolen = 0 } = {}) {
     const V = this.s.sailing;
     if (!V) return { lost: 0, spilled: false };
     let lost = 0, spilled = false;
+    // the pirates: what the boarders took goes first (the dearest grade: a thief knows the cargo), then what was gathered of their loot
+    const took = stolen;
+    if (stolen > 0) for (const g of [...GRADES].sort((a, b) => ECON.crude.grades[b].worth - ECON.crude.grades[a].worth)) { const n = Math.min(stolen, this.cargo()[g] || 0); if (n) { this.lose(g, n); stolen -= n; lost += n; } }
+    const lootG = won > 0 ? lootGrade(V.from, routeId(V.from, V.to), V.day) : null;
+    for (let i = 0; i < won; i++) if ((this.game.pneuka?.add(`cask.${lootG}`, 'loot') ?? -1) >= 0) (this.s.manifest[lootG] ||= []).push({ from: 'pirates', paid: 0 });
+    // the Leviathan: a shard of Lachrymite driven off, three felled
+    const shards = end === 'felled' ? LEVIATHAN.pay.felled : end === 'driven' ? LEVIATHAN.pay.driven : 0;
+    for (let i = 0; i < shards; i++) this.game.pneuka?.add('mat.shard', 'loot');
     if (!passed) {
       const S = ECON.ships[V.ship] || {};
       for (const [g, n] of Object.entries(this.cargo())) {
@@ -123,7 +154,9 @@ export class Voyage {
     }
     this.s.at = V.to; this.s.sailing = null;
     this.dirty();
-    this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, by: 'courier' });
+    const setPiece = V.setPiece || 'shoal', rank = rankOf(score, setPiece), medal = medalOf({ passed, downed, spawned });
+    this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, end, score, rank, medal,
+      chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
     return { lost, spilled };
   }
   lose(grade, n) {

@@ -748,3 +748,24 @@ What it feeds: the **weather** (the draught is the place's feeling; amethyst and
 states (the creatures' own, now the Courier's too), the **Lockheart** (onyx feeds it everything), **Luck** (opal), the **economy**
 (citrine: a faucet, watched in `scripts/economy.mjs` once wired), and **Soul Alchemy** (the soul colour is the vessel's growth; the
 stones its temper).
+
+## 21. The crossing: the Emocean as a rail shooter (the owner, 2026-10-07; the plan: docs/plans/RAIL.md)
+
+The hop's stage, made a love letter to the genre: a hundred bars of Wanda's Crude Sea, whose first half teaches one idea an act
+(the gun and the lock-on, polarity, the parry) and whose second half is one **set piece** (the shoal, the pirates, the rogue
+Leviathan), each in its own camera grammar, swinging between Star Fox's chase, Ikaruga's above, Einhander's side, Sin & Punishment's
+free reticle and a look astern.
+
+**What it is worth:**
+- It pays no cubes: the Emocean stays the travel layer (section 11).
+- Its reward is the arcade's: a rank against a measured par, Star Fox's medal, the chain and the volley, the set piece's end.
+- Its stakes are the cargo's: pirates come for casks (a tax on the unskilled, a prize for the skilled: measured, -1.4 to +2 casks).
+- Its rarest thing is certain: the Leviathan is a deck, so it comes within 14 crossings on the Margarite run.
+
+**The same tools in every layer:** the ship carries two of the tools you wear as its mounts (the Crucibelle is the bomb, the Veritome
+photographs the Leviathan for the Compendium); polarity is your draught; the parry is V, as on foot.
+
+**Numbers, measured before built:** `node scripts/rail.mjs` plays the crossing against three players and checks its rules (everything
+on a bar, nothing entering during a swing). Every set piece is the peak of its stage; novices come through the common one three times
+in five, good players always, and an expert fells the Leviathan about one time in four. Par and the medal's line are to be re-measured
+from the ledger once the rail is played.

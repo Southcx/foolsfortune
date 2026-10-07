@@ -39,6 +39,23 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
+- **the crossing** (`progress/rail/crossing.js`, `docs/plans/RAIL.md`): a stage as it plays, 100 bars of the cue: its **acts** (launch,
+  schools, pincer, darters, breather, the set piece, arrive), each held in a **view**, the camera's grammar: **chase** (Star Fox),
+  **above** (Ikaruga), **side** (Einhander), **free** (Sin & Punishment), **astern** (looking back). A **swing** is the change of view:
+  one bar, on a bar line, and nothing enters during it.
+- **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school: its
+  **caller**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the pirates** (their **brig**: hull, rigging,
+  gunports; **boarders** who take casks), and **the rogue Leviathan** (rare, a deck; **driven off** or **felled**). *Not:* an
+  encounter (the Spirit Garden's: an achievement group mastered).
+- **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
+  Lachryma to the pool) instead of hurting (Ikaruga).
+- **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
+  **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
+- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, two chosen at the pier (the wake brush, the toll, the
+  gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
+- **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
+  `scripts/rail.mjs`); a crossing's rank is its score against par (S, A, B, C, D); the medal is Star Fox's (passed, four in five
+  downed); the tally is the crossing's last line in the log.
 - **widening** (`WIDEN`, `game.psyche.widen(key)`, `progress/domains.js`): what a domain's level does in play: a multiplier of a tool's own
   range or a bonus to a count (reach, capacity, options), never accuracy; at level 1 the tool is exactly as it is without it.
 - **the five feelings** (the aspects of Lachryma: wonder, mirth, desire, grief, dread; **desire** was "hunger" until 2026-10-05, and
@@ -619,6 +636,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | tier | a chest's (common .. prismatic); an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..) | "card rank", "outcome rank", "standing" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
+| rank | an attribute's step (Soul Alchemy); a crossing's letter (S to D, the rail) | "an attribute's rank", "the crossing's rank" |
+| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail (Ikaruga's) | "a chain of ...", "a feeling chain" |
 | combo | the club's chain of blows (the Soul Brush); the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island, or a Well, `well:<id>`; the weather events' `island` field carries it) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |

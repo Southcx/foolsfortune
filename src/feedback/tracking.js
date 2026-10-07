@@ -33,6 +33,7 @@ const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 import { anglingRules } from './tracking/angling.js';
 import { wellRules } from './tracking/wells.js';
 import { voyageRules } from './tracking/voyage.js';
+import { railRules } from './tracking/rail.js';
 import { gardenRules } from './tracking/garden.js';
 import { weatherRules } from './tracking/weather.js';
 import { dunemawRules } from './tracking/dunemaw.js';
@@ -625,6 +626,7 @@ export class Tracking {
     anglingRules({ on, L, log, where: () => this.where() });
     // ---- the Wells: feedback/tracking/wells.js
     wellRules({ on, L, log });
+    railRules({ on, L, log }); // (the crossing's tally, before the voyage's "You make port")
     voyageRules({ on, L, log });
     gardenRules({ on, L, log });
     weatherRules({ on, L, log, g });
