@@ -566,6 +566,13 @@ Prince sells to neither side: every Courier both of his parents need came out of
   **HEMA-LUNO** (home, rest) · **KITH-HEMA** (the home of kin) · **LUNO-DEO** (deep rest) · **STIL-DEO** (deep stillness) · **EZA-LON**
   (long ease) · **ROMI-LON** (long play) · **SIVA-LUNO** (drink, and rest: an oasis) · **HUSA-HEMA** (the hushed home) · **AMI-HEMA**
   (where you are kin) · **MOR-LUNO** (where grief rests). A player's own name may be any letters: the runes write every word.
+- **The planetoids** (Round 2; `src/npc/realmnames.js`): **the Dantian** stays (the elixir field, where a cultivator keeps what they
+  refine; here a lake of your own Lachryma). **The Herb Terraces** and **the Pavilions of Echoes** stay (plain, and they say what they
+  are). The furnace is **the Athanor**, the alchemist's furnace kept at one slow heat (Arabic *al-tannur*, the oven), since "the kiln"
+  is Saggar's and the Crucibelle has the crucible. The Grove is **the Mulberry Grove**: the cocoon tree is a mulberry, as the silkworm's
+  is. The peak is **the Chimney**: a kiln's chimney is where the draw is, and the Heavenly Kiln draws there; it is also the Prince's
+  chimney-crown. Bought later: the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed (a geologist's word for a layer of old
+  bones, where the Lachrymite fossils lie).
 - **The spirits' kinds** stay blank until Dovina's kinds are set: a name is the thing's destiny, so the thing comes first.
 
 ### How the frame reads the game we have

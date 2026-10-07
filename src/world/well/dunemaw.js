@@ -42,6 +42,7 @@ import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
 import { ECON } from '../../progress/econ/table.js';
 import { Cavern } from './cavern.js';
+import { FoeLook } from '../../vfx/foelook.js';
 import { BOWL_AT, slipMaterial } from './bowl.js';
 import { Nursery } from './nursery.js';
 import { Pillar, Stalactite, Clutch, dressBrood } from '../../vfx/cavekit.js';
@@ -88,6 +89,12 @@ export class Dunemaw {
     const ring = new PoolRing({ radius: 1 }); ring.ring(0.5); ring.update(1 / 60);
     const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood);
     for (const o of [new Pillar({ height: 2, radius: 0.3 }).group, new Stalactite({ kind: 'brittle', length: 1, radius: 0.3 }).group, new Clutch({ eggs: 2 }).group, ring.group, brood]) { o.position.copy(F.arrive.pos); F.group.add(o); }
+    // (Calissa's FoeLook for the raid: the body's shell lit, the beads, the lip, a sherd and its threads, the flood: world/well/raid.js)
+    const foeRoot = new THREE.Group(); foeRoot.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), slipMaterial())); foeRoot.position.copy(F.arrive.pos); F.group.add(foeRoot);
+    const calf = new THREE.Group(); calf.position.copy(F.arrive.pos); F.group.add(calf);
+    const FL = new FoeLook({ root: foeRoot, fx: null, floor: { center: F.arrive.pos.clone(), radius: 3, depth: 0.3 }, size: { r: 0.5, h: 1 } });
+    for (const c of ['slipNova', 'oozeRain', 'brineCascade', 'crownGlare']) { FL.windup(c, 0.9); FL.update(1 / 60); }
+    FL.calve([calf]); FL.mend(0.5); FL.overflow(0.5); FL.update(1 / 60);
     return () => { F.group.visible = false; this.warm = F; }; // (the curtain stays parked with the floor: disposed, its program would go with it)
   }
 
@@ -96,8 +103,10 @@ export class Dunemaw {
    *  'bare', 'won' once it is burst or reprogrammed), how many crack stages, whether the crown has burst. Round 2's timeline adds the
    *  casts' phases ('clutch', 'calving', 'overflow', 'swallow'). Null outside the great cavern. */
   get fight() {
-    const F = this.cur?.isCavern ? this.cur.foe : null; if (!F) return null;
-    return { active: F.state !== 'asleep', phase: F.ended ? 'won' : F.phase === 'bare' ? 'bare' : 'crown', cracks: F.stage, broken: F.stage >= 3 };
+    const C = this.cur?.isCavern ? this.cur : null, F = C?.foe; if (!F) return null;
+    const R = C.raid;
+    return { active: R ? R.pulled : F.state !== 'asleep', phase: R ? R.phaseName : F.ended ? 'won' : F.phase === 'bare' ? 'bare' : 'crown', cracks: F.stage, broken: F.stage >= 3,
+      seconds: R ? R.T.t : 0, casting: R?.T.casting?.id || null };
   }
   get floor() { return this.run?.floor ?? 0; }
   /** Below this the Well has no bottom (main.js sets the player's killY from it while a run is on). */
@@ -269,7 +278,22 @@ export class Dunemaw {
     }
   }
   /** Shattered in the Well: the run is lost (courier/vessel/death.js makes them whole at the last Shrine; the mouth if there is none). */
-  reformAt() { if (!this.run) return null; this.end('shatter'); return this.mouthSpot(); }
+  reformAt() {
+    if (!this.run) return null;
+    const C = this.cur; if (C?.isCavern && C.raid?.pulled && !C.foe?.ended) return this.wipe();
+    this.end('shatter'); return this.mouthSpot();
+  }
+  /** A wipe in the great cavern's fight (shattered, or swallowed at the enrage): the attempt is lost, not the run. The cavern is laid
+   *  again (the FOE whole and asleep, the bowl's pillars standing, the clutches broken still broken) and the Courier made whole at the
+   *  Lip Stone (DUNEMAW-EXTREME.md section 2). `keep`: death.js stands them here, not at a Shrine. */
+  wipe() {
+    const g = this.game, R = this.run, C = this.cur;
+    g.events?.emit('foe.wipe', { seconds: Math.round(C.raid.T.t), phase: C.raid.T.phase?.id || 'crown', by: 'courier' });
+    this.offFloor();
+    this.cur = new Cavern(g, { run: R, onEnd: (how, by) => this.foeEnd(how, by) });
+    g.player.killY = this.killY;
+    return { pos: this.cur.arrive.pos.clone(), yaw: this.cur.arrive.yaw, keep: true };
+  }
 
   /** The Wake Whistle blown (from the Pneuka Box): a channel of ECON.escape.channel real seconds, broken by a blow; then out to the mouth,
    *  with ECON.escape.keep of the pay and the haul. Anywhere but a Well it does nothing. */

@@ -242,3 +242,9 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
   for (const [label, w] of [['middling, 80% charted, fresh', cogitomapWorth(run, 0.8)], ['good, all charted, fresh', cogitomapWorth(good, 1)]])
     console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entropolis ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
   console.log(`  after the sloop's fuel (${hop('anagami', 'margarite').fuel}): a good fresh map nets about 20 more at Margarite than at home, a middling one is better sold at home (skill decides whether the Well feeds the boat)`); }
+
+// the garden as a place (ECON.place; docs/plans/SPIRIT-GARDEN.md): how long each profile takes to buy the planetoids, spending all it earns
+{ const P = ECON.place, total = P.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
+  console.log(`\nthe Spirit Garden's planetoids: ${P.planetoids.map((m) => m * ECON.perMinute).join(' + ')} = ${total} cubes; at the aim (${ECON.perMinute * 60} an hour) ${(total / (ECON.perMinute * 60)).toFixed(1)} hours of play spent on nothing else; at half the aim (a player who also buys looks and keys) ${(2 * total / (ECON.perMinute * 60)).toFixed(1)} hours: the long sink, as meant (weeks at an hour or two a day)`);
+  console.log(`  features: ${Object.entries(P.features).map(([k, m]) => `${k} ${m * ECON.perMinute}`).join(', ')} cubes; a spirit at work adds up to ${P.work * 100}% to its slot; formation +/-${P.formation * 100}%, a vein x${P.vein}`); }
+

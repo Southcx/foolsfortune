@@ -20,6 +20,8 @@
 //                     never names the Queen. The role is the name. Waits for a model.
 // ---------------------------------------------------------------------------------------
 import { TITHE } from '../world/treasure/treasure.js';
+// the Spirit Garden's words (the planetoids, the Inner Realm's names in neuralese), kept beside the talks for whoever opens the garden
+export { PLANETOIDS, OFFERED as REALM_NAMES, name as realmName, gloss as realmGloss } from './realmnames.js';
 
 const L = (g, k) => g.ledger?.get(k) || 0;
 
@@ -281,6 +283,7 @@ export const TALKS = {
       ], next: 'menu' },
       again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }], next: 'menu' },
       menu: { lines: [], choices: [
+        { text: 'I have cargo.', do: (g) => g.shops?.open('purser'), go: null },
         { text: 'What do you buy?', go: 'buy' },
         { text: 'Can we talk price?', go: 'price' },
         { text: 'What is the lamp for?', go: 'lamp' },

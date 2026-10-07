@@ -185,6 +185,8 @@ import { installEconomy } from './progress/econ/economy.js';
 import { installPsyche } from './progress/psyche.js';
 import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
+import { Realm } from './world/garden/realm.js';
+import { SolarTrial } from './world/dunes/solar.js';
 import { SoulAlchemy } from './progress/alchemy.js';
 import { Weather, phaseAt } from './progress/weather.js';
 import { modifier as stoneModifier } from './progress/stones.js';
@@ -450,13 +452,13 @@ async function main() {
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the four tools worn, the rest and the made lures in the box; and no tool ever nowhere)
   game.pneukaUI = new PneukaUI(game);
-  game.pneukaUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
   game.shops = new Shops(game);
   game.shopUI = new ShopUI(game);
-  game.shopUI.onClose = () => { if (input.enabled && !game.god?.active && !game.dialogue?.open) input.requestLock(); };
+  game.shopUI.onClose = () => { if (input.enabled && !cursorFree() && !game.dialogue?.open) input.requestLock(); };
   game.kilnUI = new KilnUI(game);
-  game.kilnUI.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  game.kilnUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the System's voice: the few things that matter, said aloud (audio/voice/voice.js)
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
@@ -466,7 +468,7 @@ async function main() {
   hearEvents(game, sfx); // (the sounds events make: audio/cues.js)
   const codex = new Codex(game);
   game.codex = codex;
-  codex.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open); // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
@@ -485,6 +487,8 @@ async function main() {
   const god = new GodMode(game, renderer, handG, jarG);
   mark('god');
   game.god = god;
+  game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
@@ -515,6 +519,8 @@ async function main() {
     });
     // a Well: F at its mouth in the Dunes, and at the pools inside (the way up, the way down: world/well/dunemaw.js)
     game.interact.add('well', () => (game.dialogue?.open || !idle() ? null : game.well.nearest(player)));
+    game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
+    game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
@@ -585,10 +591,10 @@ async function main() {
   mark('course');
   game.course = course;
   game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
-  course.menu.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  course.menu.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // Mind Mapping: the map and compass, and the named places in them
   const carto = game.cartography;
-  carto.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  carto.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   {
     const v = (a) => new THREE.Vector3(...a);
     carto.addAnchor('WORKSHOP', 'workshop', v([0, 0, 0]), 'ground');
@@ -688,7 +694,7 @@ async function main() {
   } });
   // QAIS (F8): the owner's testing window, in every build but a public one (debug/qais/, docs/plans/QAIS.md)
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
-  if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  if (game.qais) game.qais.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the opt-in Movement Arts (the jet arts: courier/moves/jets.js): switched on and off here, kept with the settings
   const OPT_ARTS = ['hover', 'rocket', 'skim'];
   game.save?.section('optarts', { scope: 'settings', version: 1, dump: () => Object.fromEntries(OPT_ARTS.map((a) => [a, !!T.tech[a].enabled])),
@@ -704,6 +710,8 @@ async function main() {
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
   game.busk = new Busk(game); // (the busker's mats on the piers: F with the Crucibelle worn begins a song: world/busk.js)
+  game.chat.add('garden', { help: "into your Inner Realm from where you stand (a tester's way: a Shrine is the door)", run: () => game.realm?.enter(game.shrines?.get?.(game.shrines.last) || null) });
+  game.chat.add('realmname', { help: 'name your Inner Realm yourself: /realmname <name>', run: (args) => game.realm?.setName(args.join(' ')) });
   game.chat.add('cavern', { help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
     const W = game.well; if (game.emocean?.stage.active || game.death?.active) return;
     const go = () => { if (!W.active && !W.enter()) return; W.toCavern(); game.events.emit('cavern.force', { by: 'courier' }); };
@@ -781,18 +789,18 @@ async function main() {
       document.getElementById('lockwarn').style.display = 'block';
       return;
     }
-    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !god.active && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
+    if (!locked && !guiOpen && !modalOpen() && !game.log?.busy && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open && !game.lockheartCine?.active) { overlay.style.display = 'flex'; input.enabled = false; } // (a window that frees the mouse itself, the kiln's, is not a pause)
   };
   // Esc pauses: in play the pointer lock's own Esc does it (above); the God Hand has a free cursor, so there the key itself does (the art
   // wheel, if it is open, closes first)
   addEventListener('keydown', (e) => {
-    if (e.code !== 'Escape' || e.repeat || !god.active || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
+    if (e.code !== 'Escape' || e.repeat || !cursorFree() || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
     e.preventDefault();
     if (god.arts.wheelOpen) { god.arts.closeWheel(false); return; }
     overlay.style.display = 'flex'; input.enabled = false;
   });
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !god.active && !game.reprogram?.open) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !cursorFree() && !game.reprogram?.open) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -820,6 +828,7 @@ async function main() {
   const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
+  const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
@@ -831,6 +840,7 @@ async function main() {
   parkWeather?.(); parkDrain();
   for (const o of brushLooks) o.visible = false;
   for (const o of seaLooks) o.visible = false;
+  for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -949,7 +959,7 @@ async function main() {
     if (input.wasPressed('Tab')) {
       guiOpen = !guiOpen;
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
-      else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
+      else { gui.hide(); if (input.enabled && !cursorFree()) input.requestLock(); }
     }
     if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open && !game.emocean?.stage.active) game.codex.toggle();
     if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling && !game.emocean?.stage.active) game.pneukaUI.toggle();
@@ -967,7 +977,7 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
-    const aboard = !!game.emocean?.stage.active; // (a crossing: the Courier is aboard the ship, held there, and theirs does not run either)
+    const aboard = !!game.emocean?.stage.active || !!game.realm?.active; // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     if (godOn) god.update(dt);
     else if (!aboard) {
       player.look(dt, weapon.adsEase || 0);
@@ -988,6 +998,7 @@ async function main() {
         player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
         player.guard();
       }
+      game.realm?.fixed(FIXED); // (the Jar and the spirits on their planetoids)
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
@@ -1025,12 +1036,13 @@ async function main() {
 
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
+    game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     env.water.update(dt);
     game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);
-    if (!godOn) {
+    if (!godOn && !game.realm?.active) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);
       // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
@@ -1094,7 +1106,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.solar?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1110,6 +1122,7 @@ async function main() {
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
+    game.realm?.light(); // (the garden's sky over the world's, while you are in it)
     diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;

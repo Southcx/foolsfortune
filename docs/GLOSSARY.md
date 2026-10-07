@@ -379,11 +379,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the ground's drift**, **wade** (`player.drift`, `player.wade`): a place's pull on the Courier's feet (sand sliding, carried as a
   platform's move) and its drag on a walk (shallows), set by the place and put back when the Courier leaves it; the core movement is
   untouched when they are zero and one.
-- **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the Great Slip Jelly's fight is a scripted **timeline**
+- **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`; `world/well/raid.js`, `creatures/ai/timeline.js`): the Great Slip Jelly's fight is a scripted **timeline**
   of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), in the style of an FFXIV extreme trial; one difficulty
   (the owner). The Lip Stone on the bowl's ledge is the fight's start: a **wipe** (a shatter in the fight) costs the attempt, not the
-  run. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
-- **Inner Realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): a player's own Spirit Garden by the name they give it (Espada offers
+  run. **The pull** is the moment it wakes (the timeline's nought). **Sodden** (Espada's: Brine Soaked) doubles the next blow; the
+  **sherds** are its four calves. *Not:* a Shrine; *not* "Extreme" as a mode (there is none).
+- **Inner Realm** (`docs/plans/SPIRIT-GARDEN.md`; `game.realm`, `src/world/garden/`): a player's own Spirit Garden by the name they give it (Espada offers
   names in her conlang). In the garden you are **the Pneuka Jar**, hopping round its **planetoids**, and **the god hand** over them
   (sculpting, placing, tending, binding). Its spirits are **bound** until you **release** them. A **Firing** (the owner,
   2026-10-07) is a tier of cultivation, read from the attributes' ranks and crossed by the **tribulation** (the first Firing, the
@@ -391,6 +392,13 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **the Heavenly Kiln**). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
   battle (held over the Jar's mouth through its **struggle**), and then bound. *Not:* caught by the Veritome (it reprograms).
   The bound wait in the Jar (`game.bound`, `src/creatures/bound.js`) until the garden opens; the hand's catch is `src/godhand/catch.js`.
+  **The planetoids** (Espada's names, `src/npc/realmnames.js` `PLANETOIDS`): **the Dantian** (the heart: the way in, the lake, the
+  shed), **the Herb Terraces** (the beds), **the Athanor** (the furnace: the press and the firing), **the Pavilions of Echoes** (the
+  slots), **the Mulberry Grove** (the spirits and the cocoon tree), **the Chimney** (the peak of the Heavenly Kiln); bought later, the
+  Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed. A realm's offered name is two neuralese words (`name(seed)`, `gloss`).
+  Entered at a Shrine (`realm.enter`): six planetoids over the world's north (`place.js`, zone `garden`), each a sphere with gravity to
+  its heart; a **planetoid body** (`planetbody.js`, Galaxy's gravity) is what stands and hops on one, the Jar's and each spirit's. A
+  **launch lotus** flies the Jar to a neighbour in two real seconds. *Not:* "hopper" (the press's mouth), "island" (the bowl's rubble).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),

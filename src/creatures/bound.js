@@ -9,8 +9,8 @@
 // Prior art: Pokemon's party box (a caught creature waits in storage until it is wanted), Jade Cocoon's cocoons, and the jar spirits of
 // folklore (a genie, a spirit sealed in a vessel).
 //
-//   game.bound = new Bound(game)   .bind(creature, from, by?) -> entry   .list   .release(i)
-//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, by }, spirit.release { kind, by }
+//   game.bound = new Bound(game)   .bind(creature, from, by?) -> entry   .add(entry)   .list   .release(i)
+//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, spirit, by }, spirit.release { kind, spirit, by }
 // ---------------------------------------------------------------------------------------
 import { now as calNow } from '../core/calendar.js';
 
@@ -31,7 +31,14 @@ export class Bound {
     this.list.push(e);
     g.save?.dirty('bound');
     if (c.kind === 'slipjelly' || c.kind === 'spirit') g.jellies?.take(c, by); else { c.alive = false; c.root && (c.root.visible = false); g.creatures.remove(c); }
-    g.events?.emit('spirit.bind', { from, kind: e.kind, cls: e.cls, by });
+    g.events?.emit('spirit.bind', { from, kind: e.kind, cls: e.cls, spirit: e.name || null, by }); // (`spirit`: its name; the bus's `name` is the event's)
+    return e;
+  }
+
+  /** A spirit come by another way than a catch (awakened from a plate or a fossil, a visitor settled, two merged: world/garden/awaken.js). */
+  add(e) {
+    this.list.push(e); this.game.save?.dirty('bound');
+    this.game.events?.emit('spirit.bind', { from: e.from, kind: e.kind, cls: e.cls || 0, spirit: e.name || null, by: 'courier' });
     return e;
   }
 
@@ -39,7 +46,7 @@ export class Bound {
   release(i) {
     const e = this.list.splice(i, 1)[0]; if (!e) return null;
     this.game.save?.dirty('bound');
-    this.game.events?.emit('spirit.release', { kind: e.kind, by: 'courier' });
+    this.game.events?.emit('spirit.release', { kind: e.kind, spirit: e.name || null, by: 'courier' });
     return e;
   }
 }

@@ -324,7 +324,7 @@ export function buildAchievements(game) {
   C('vb4', 'veritome', 'The Book', 3, 'collect', 'Portraitist', 'Bind five creature cards.', 'card.pages.creature', 5);
   C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Banked', 'Store something in the Veritome from the Pneuka Box.', 'item.store', 1);
   C('vb7', 'veritome', 'The Book', 1, 'mechanic', 'Something Old', 'Tie a curio on as a lure.', 'lure.tie.curio', 1);
-  C('vb8', 'veritome', 'The Book', 2, 'mechanic', 'Overburdened', 'Fill all twenty-eight slots of the Pneuka Box.', 'pneuka.filled', 1);
+  C('vb8', 'veritome', 'The Book', 2, 'mechanic', 'Overburdened', 'Fill all fifty-six slots of the Pneuka Box.', 'pneuka.filled', 1);
   C('vb6', 'veritome', 'The Book', 2, 'mechanic', 'Condensed', 'Condense a spare card into cubes.', 'card.condense', 1);
 
   // ---------------------------------------------------------------- TREASURE (chests.js, cubes.js, treasure.js)
@@ -575,6 +575,9 @@ export function buildAchievements(game) {
   C('sv3', 'garden', 'The Spirits', 2, 'count', 'Grown', 'Raise a spirit to its form.', 'spirit.mature', 1);
   C('sv4', 'garden', 'The Spirits', 3, 'mechanic', 'Cocoon', 'Merge two spirits into one.', 'spirit.merge', 1);
   H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
+  C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);
+  C('ir2', 'garden', 'The Garden', 3, 'count', 'Potter of Worlds', 'Sculpt your planetoids a hundred times.', 'garden.sculpt', 100);
+  F('ir3', 'garden', 'The Spirits', 3, 'collect', 'Open House', 'Have every kind of visitor settle.', (L) => ['slipjelly', 'clapperjar', 'glint', 'lobber'].filter((k) => L.get(`spirit.settle.${k}`) >= 1).length, 4);
   H('fi1', 'garden', 'The Firings', 2, 'count', 'The Second Firing', 'Pass a tribulation.', 'firing', 2);
   H('fi2', 'garden', 'The Firings', 4, 'count', 'The Sixth Firing', 'Reach the sixth Firing.', 'firing', 6, { title: 'Refired' });
   C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);

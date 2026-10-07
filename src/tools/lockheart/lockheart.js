@@ -161,7 +161,7 @@ export class Lockheart extends HeldTool {
     if (!keys.length) { sfx.fizzle?.(); g.log?.say('warn', 'There is no Possibilikey on the ring (the Pneuka Box).', { key: 'lh.nokey', throttle: 3 }); return; }
     if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
     const c = this.quarry();
-    if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is nothing laid low to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
+    if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is no stunned Figment to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
     const used = [...keys];
     for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) box.useUp('keys', i);
     const s = c.status?.get('stun'), clean = s ? Math.min(1, s.t / Math.max(0.1, c.stunFor ?? 4.5)) : 0.6; // (asleep, held or melted: a fair hold)

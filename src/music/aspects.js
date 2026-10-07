@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------------------
 export const TRACK_ASPECT = {
   // wonder: the held breath, the sky, the magic
-  lachryma: 'wonder', fortune: 'wonder', found: 'wonder', dunes: 'wonder', title: 'wonder', foolstep: 'wonder', shallows: 'wonder', wanda: 'wonder',
+  lachryma: 'wonder', garden: 'wonder', awakening: 'wonder', fortune: 'wonder', found: 'wonder', dunes: 'wonder', title: 'wonder', foolstep: 'wonder', shallows: 'wonder', wanda: 'wonder',
   spellwheel: 'wonder', spell: 'wonder',
   // mirth: the dance, the crew, the win
   fanfare: 'mirth', rest: 'mirth', suits: 'mirth', shanty: 'mirth', moon: 'mirth', calissa: 'mirth', overture: 'mirth', jackpot: 'mirth',
@@ -20,5 +20,5 @@ export const TRACK_ASPECT = {
   // grief: the long rain
   fall: 'grief', leaveher: 'grief', well1: 'grief', well2: 'grief',
   // dread: the pall
-  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', crudesealeviathan: 'dread', crownedbrood: 'dread', boundout: 'dread',
+  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', crudesealeviathan: 'dread', crownedbrood: 'dread', kiln: 'dread', boundout: 'dread',
 };

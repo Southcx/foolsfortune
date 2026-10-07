@@ -130,7 +130,7 @@ export class Shrines {
     this.menu?.showPage(s.id, (im, el) => {
       const box = el('div', 'rooms');
       const btn = (title, sub, run) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${title}</b><s>${sub}</s></span>`); d.onclick = run; box.appendChild(d); };
-      btn('The Spirit Garden', 'go in: the slots, the beds', () => this.garden(s));
+      btn('The Spirit Garden', 'go in, as your Pneuka Jar', () => this.garden(s));
       for (const t of this.list) if (t.id !== s.id && this.found.has(t.id)) btn(t.name, 'travel there', () => this.travel(t.id));
       const unfound = SHRINES.filter((t) => !this.found.has(t.id)).length;
       for (const e of [el('div', 'grp', 'YOU REST HERE'), box, el('div', 'grp', unfound ? `${unfound} NOT YET FOUND` : 'EVERY SHRINE FOUND')]) im.appendChild(e);
@@ -140,6 +140,7 @@ export class Shrines {
   /** The Spirit Garden, entered at a Shrine and nowhere else (progress/garden.js: its slots and beds; the look is Calissa's to come). */
   garden(s) {
     const g = this.game, G = g.garden;
+    if (g.realm) { this.menu?.close(); g.realm.enter(s); return; } // (the garden as a place: world/garden/realm.js; the page below is its stand-in where there is none)
     g.events?.emit('garden.enter', { shrine: s.id, by: 'courier' });
     this.page = `garden.${s.id}`;
     this.menu?.showPage('garden', (im, el) => {

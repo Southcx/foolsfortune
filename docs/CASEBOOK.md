@@ -65,7 +65,26 @@ log kept blameless and searchable.
 25. **A trailing comment closes its line.** Nothing follows a `//` on the same line: code written after one, in a later edit that put a
     comment mid-line, is silently commented out and never runs. Put the comment last, or use `/* */` inside a line.
 
+26. **Nothing is taken out of a list from inside that list's own update.** A callback a module calls per member (a jelly's `driven`)
+    marks the member (`c.reached`); the owner removes it after the loop. A Rapier body removed mid-loop panics the whole world.
+
 ## Cases
+
+### 2026-10-07 · "The Lockheart catches spirit.bind."
+- **Seen:** reading the garden's log rules for `realm.name`: the catch's line names the Figment from `e.name`.
+- **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every
+  `spirit.bind`, `spirit.mature` and `spirit.release` line said the event's name, and `realm.name { name }` would have too.
+- **Fix:** the spirit's name rides as `spirit`, the realm's as `realm` (`creatures/bound.js`, `world/garden/realm.js`, the rules in
+  `tracking/garden.js`).
+- **Rule:** CLAUDE.md's (payloads never use `name` or `t`); a spec's payload is checked against it before it is built.
+
+### 2026-10-07 · The raid's brood, fed to the FOE, panicked the physics ("unreachable")
+- **Seen:** headless drive of the raid, the transition: a Rapier `unreachable` in `setNextKinematicTranslation`, then every call into the
+  world "recursive use of an object".
+- **Cause, measured:** a brood reaching the FOE was fed and disposed inside its own `driven` callback, which `SlipJellies.update` calls
+  per jelly; the loop went on to move the disposed jelly's removed body.
+- **Fix:** `driven` only marks it (`c.reached`); `raid.update` feeds and disposes after the jellies' loop (`world/well/raid.js`).
+- **Rule:** 26.
 
 ### 2026-10-07 · Old Nobody had no eye, a tail pinned to its middle and fins that never swept back
 - **Seen:** the eye on its brow did not show; the tail's cap drawn as a fan to the body's centre; raised fins stayed square to it.
