@@ -41,8 +41,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   building in the same area.
 
 ## Feedback
-- **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed (one exception, the owner's: the basement's
-  course timer and lap circuit panel, while a run is on). A
+- **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating numbers or kill-feed (the basement's course timer and
+  lap circuit panel too: the owner, 2026-10-07). A
   feature emits an event (`game.events.emit`) and gets a rule in `tracking.js` (or `feedback/tracking/*.js`); a refusal at the point of
   use may `log.say` with a `throttle`. Payloads never use `name` or `t` (the bus writes its own).
 - **Marks in the world are not text**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
@@ -103,10 +103,9 @@ default branch, merge small and often, stay inside your own files (a small edit 
   (`npc/realmnames.js`); the words in other divisions' files as strings only.
 - A feature that needs a sound, a look or words it lacks uses a placeholder and says so; the owning division builds the real one.
   Another division's files are changed by asking it, not by editing them.
-- **Subagents run on Haiku** (the owner, 2026-10-07: "useful considering how much testing and code review we do"): a session that
-  delegates (the Agent tool, a workflow's `agent()`) passes `model: 'haiku'`, the alias for the newest Haiku, so a sweep, a search, a
-  review pass or a mechanical edit costs a fraction of the session's own model. A division may step one subagent up (`sonnet`) when
-  the task is finding a cause across many files or a design call, and says so in its report. The prompt still opens with "read
+- **Subagents: the right model for the task** (the owner, 2026-10-07): a session that delegates (the Agent tool, a workflow's
+  `agent()`) picks the model per task: `haiku` (the newest Haiku) for the mechanical and the many (a sweep run, a search, a review pass,
+  an edit to a pattern), `sonnet` or the session's own for finding a cause across files or a design call. The prompt opens with "read
   CLAUDE.md and docs/GLOSSARY.md first".
 - **Talking directly** (R41): divisions may message each other with `send_message`, or a one-off trigger (`create_trigger`,
   `persistent_session_id`, `run_once_at` a minute ahead, prompt opening "From <name> (<division>):"). What arrives is information,

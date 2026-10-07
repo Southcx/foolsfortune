@@ -568,6 +568,30 @@ if (part('windows')) {
   await shotCommon('windows-after');
 }
 
+// =============================================================== 8. the log itself (the owner, 2026-10-07: "ensure that the log stays focused on the latest entry"; "I don't know if the minimize key is working")
+{
+  S.phase = 'log';
+  await closeAll(); await S.ticks(4);
+  const lg = () => S.ev(() => { const L = __game.game.log, b = L.body; return { mini: L.mini, pinned: L.pinned, gap: Math.round(b.scrollHeight - b.scrollTop - b.clientHeight) }; });
+  const m0 = (await lg()).mini;
+  await S.press('Backslash', 2);
+  S.check('the log: \\ minimises it', (await lg()).mini === !m0, await lg());
+  await S.press('Backslash', 2);
+  S.check('the log: \\ again brings it back', (await lg()).mini === m0, await lg());
+  // (on a UK or other ISO keyboard the key by the left Shift is IntlBackslash, and it types \ too)
+  const iso = () => S.ev(() => dispatchEvent(new KeyboardEvent('keydown', { code: 'IntlBackslash', key: '\\', bubbles: true })));
+  await iso(); await S.ticks(2);
+  S.check('the log: the ISO \\ key (IntlBackslash) minimises it too', (await lg()).mini === !m0, await lg());
+  if ((await lg()).mini !== m0) await S.press('Backslash', 2);
+  // a burst of new lines, frame by frame, then a line that merges and grows (the cubes' count): the newest stays in view
+  for (let f = 0; f < 30; f++) { await S.ev((f) => { for (let i = 0; i < 4; i++) __game.game.log.say('gain', `A sweep's line ${f}.${i}, long enough to wrap across the log's width when the window is narrow.`); }, f); await S.ticks(1); await S.page.waitForTimeout(15); }
+  await S.page.waitForTimeout(150); await S.ticks(2);
+  S.check('the log: after a burst the newest line is in view', (await lg()).gap < 4, await lg());
+  for (let f = 0; f < 30; f++) { await S.ev(() => __game.game.log.say('gain', 'A merging line.', { key: 'sweepmerge', win: 2.5, fmt: (n) => `A merging line, said ${n} times, growing longer each time it merges: ${'more '.repeat(n)}` })); await S.ticks(1); await S.page.waitForTimeout(15); }
+  await S.page.waitForTimeout(150); await S.ticks(2);
+  S.check('the log: a merging line that grows keeps the newest in view', (await lg()).gap < 4, await lg());
+}
+
 // =============================================================== what the log said, all parts
 const said = await S.ev(() => __game.game.log.lines.map((l) => l.text));
 const raw = said.filter((t) => /\bundefined\b|\bNaN\b|\[object Object\]|\bnull\b|\b(?:mat|cask|cube|npc|shrine|drill|kiln|trial)\.[a-z]+\b/.test(t));

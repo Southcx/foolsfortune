@@ -308,7 +308,7 @@ export class Tracking {
     const entered = new Map();
     on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
     on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
-    on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.`); });
+    on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.${e.par ? ` Gold under ${e.par.gold} s, silver ${e.par.silver}, bronze ${e.par.bronze}.` : ''}${e.best ? ` Your best: ${fx(e.best)} s.` : ''}`); }); // (the circuit panel's targets, now in the log: the owner, 2026-10-07)
     on('circuit.gate', (e) => {
       L.inc('circuit.gate');
       log.say('circuit', `${e.label}: ${fx(e.time)} s${e.delta != null ? ` (${e.delta >= 0 ? '+' : '−'}${fx(Math.abs(e.delta))})` : ''}${e.slow ? ' Too slow, +1 s.' : ''}`);
