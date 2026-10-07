@@ -193,6 +193,25 @@ export const PAGES = [
     ],
   },
   {
+    id: 'garden', title: 'THE SPIRIT GARDEN', src: 'world/garden/',
+    lead: 'Your Inner Realm, inside your Pneuka Jar: small worlds where your spirits live. You go in at a Shrine. In here you are the Jar, and the mouse is your hand.',
+    rows: [
+      ['W A S D', 'hop along the ground (hold a direction for longer hops)'],
+      ['Space', 'a high jump'],
+      ['Q E · wheel', 'turn the camera · zoom'],
+      ['the mouse · LMB', 'the hand · use its art'],
+      ['RMB', 'flick a spirit'],
+      ['1 – 6', 'the hand\'s arts: grab (and throw), pull, press, carve, smooth, place'],
+      ['F', 'use the place under the chevron (the gate takes you out)'],
+      ['P · Esc', 'the Pneuka Box · the pause menu'],
+    ],
+    notes: [
+      'Stand on a lotus and it flies you to the next world.',
+      'Thrown too far, the Jar comes back down by the gate.',
+      'Nothing you do in here counts as the Courier\'s travel.',
+    ],
+  },
+  {
     id: 'mind', title: 'THE BOX, THE CODEX, THE MAP', src: 'pneuka/, feedback/codex/, feedback/cartography.js, feedback/chat.js',
     lead: 'What you carry, what you know, and where you have been.',
     rows: [

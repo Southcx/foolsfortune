@@ -24,6 +24,8 @@ import { itemOf } from '../../pneuka/items.js';
 import { dressForm } from '../../vfx/garden/forms.js';
 
 const FEELINGS = Object.keys(STATS);
+export const spiritName = (e) => e?.name || { slipjelly: 'slip jelly', clapperjar: 'clapperjar' }[e?.kind] || String(e?.kind || 'a spirit').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(); // (its name, else its kind as said, never the code id: GARDEN-SWEEP #14)
+const DRILL_NAME = { sprint: 'a sprint', scout: 'a scouting', haul: 'a haul', swim: 'a swim', sit: 'a sitting' }; // (a drill as said: Espada's to word)
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
 
 export class Raising {
@@ -102,18 +104,18 @@ export class Raising {
     const g = this.game, menu = g.indexMenu || g.course?.menu, S = this.ready(s.e), R = this.realm; if (!menu?.showPage) return;
     const open = () => menu.showPage('spirit', (im, el) => {
       const rows = el('div', 'rooms'), btn = (t, sub, run) => { const d = el('div', 'room', `<span class="n">❀</span><span><b>${t}</b><s>${sub}</s></span>`); if (run) d.onclick = () => { run(); open(); }; rows.appendChild(d); };
-      const stats = Object.entries(S.stats).map(([f, v]) => `${f} ${v}`).join(' · ');
-      btn(`${s.e.name || s.e.kind}${S.form ? `, ${S.form.feeling} ${S.form.side}` : ''}`, `${stats} · bond ${Math.round(S.bond)} · ${S.align < -ALIGN.third ? 'law' : S.align > ALIGN.third ? 'chaos' : 'neutral'} · tired ${Math.round(S.fatigue)}`, null);
+      const stats = Object.keys(STATS).map((f) => `${f} ${S.stats[f] ?? 0}`).join(' · '); // (in the order every page shows them: GARDEN-SWEEP #14)
+      btn(`${spiritName(s.e)}${S.form ? `, ${S.form.feeling} ${S.form.side}` : ''}`, `${stats} · bond ${Math.round(S.bond)} · ${S.align < -ALIGN.third ? 'law' : S.align > ALIGN.third ? 'chaos' : 'neutral'} · tired ${Math.round(S.fatigue)}`, null);
       // feeding: what in the box it would take
       (g.pneuka?.slots || []).forEach((it, k) => {
         if (!it) return; const def = itemOf(it.id) || {};
         if (it.id.startsWith('mat.') || def.kind === 'curio' || it.id.startsWith('cask.')) btn(`Feed: ${def.name || it.id}`, it.id.startsWith('mat.') ? `raises ${Object.entries({ mechanism: 'mirth', arcane: 'wonder', edge: 'desire', provision: 'grief', eldritch: 'dread', roe: 'grief' }).find(([k2]) => it.id === `mat.${k2}` || it.data?.kind === k2)?.[1] || 'a stat'}` : def.kind === 'curio' ? 'raises its bond' : 'leans its feeling', () => this.feed(s, k));
       });
-      if (R.plots?.plots.some((p) => p.placed?.feature === 'drillYard')) for (const [id, D] of Object.entries(DRILLS)) btn(`Drill: ${id}`, `${D.stat}${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => this.drill(s, id));
+      if (R.plots?.plots.some((p) => p.placed?.feature === 'drillYard')) for (const [id, D] of Object.entries(DRILLS)) btn(`Drill: ${DRILL_NAME[id] || id}`, `${D.stat}${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => this.drill(s, id));
       btn(s.e.out ? 'Stay in the garden' : 'Come out with me', s.e.out ? 'it waits here' : 'one at a time: it walks the world beside you', () => this.setOut(s.e, !s.e.out));
       btn('Release it', 'it goes, for good', () => { R.release(s); menu.close(); });
       im.appendChild(el('div', 'grp', 'YOUR SPIRIT')); im.appendChild(rows);
-    }, { title: (s.e.name || s.e.kind).toUpperCase(), sub: 'click to choose · F closes' });
+    }, { title: spiritName(s.e).toUpperCase(), sub: 'click to choose · F closes' });
     open();
   }
   setOut(e, on) {

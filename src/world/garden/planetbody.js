@@ -18,7 +18,8 @@
 import * as THREE from 'three';
 
 export const GRAVITY = 20; // (m/s²: twice the Courier's world, so a small world's hop lands quickly: Galaxy's floatiness is in the hop, not the fall)
-const HOP = { short: [3.0, 2.6], long: [4.4, 4.6], growth: 0.7, every: 0.06, jump: 8.5, air: 7, friction: 10 }; // ([up, along] m/s; the hop grows to long over `growth` s held)
+const HOP = { short: [3.0, 2.6], long: [4.4, 4.6], growth: 0.7, every: 0.06, jump: 8.5, air: 7, friction: 10, drag: 0.06, dragOver: 8 }; // ([up, along] m/s; the hop grows to long over `growth` s held; drag: 1/s for each m/s over `dragOver` in the air: a throw comes down,
+// a hop is never slowed, GARDEN-SWEEP #5)
 const _n = new THREE.Vector3(), _t = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
 export class PlanetBody {
@@ -26,13 +27,13 @@ export class PlanetBody {
     this.planets = planets; this.radius = radius; this.hop = { ...HOP, ...hop };
     this.pos = pos.clone(); this.vel = new THREE.Vector3(); this.up = new THREE.Vector3(0, 1, 0); this.forward = new THREE.Vector3(0, 0, 1);
     this.planet = this.nearest(this.pos); this.grounded = false; this.held = false; this.flight = null;
-    this.heldFor = 0; this.wait = 0; this.hops = 0;
+    this.heldFor = 0; this.wait = 0; this.hops = 0; this.airT = 0; // (seconds off the ground, flown or thrown: the realm's give-up reads it)
   }
 
   /** The planetoid that owns a point: the one whose surface is nearest. */
   nearest(p) {
     let best = this.planets[0], bd = Infinity;
-    for (const P of this.planets) { const d = p.distanceTo(P.c) - P.r; if (d < bd) { bd = d; best = P; } }
+    for (const P of this.planets) { const dd = _b.copy(p).sub(P.c), r = dd.length(), d = r - (P.radiusAt && r > 0 ? P.radiusAt(dd.divideScalar(r)) : P.r); if (d < bd) { bd = d; best = P; } } // (the shaped ground, not the bare sphere: GARDEN-SWEEP #6)
     return best;
   }
   /** The surface point of a planet under a direction from its heart. */
@@ -73,13 +74,15 @@ export class PlanetBody {
         this.vel.copy(_n).multiplyScalar(up).addScaledVector(this.forward, along); this.grounded = false; this.hops++;
       } else this.vel.multiplyScalar(Math.max(0, 1 - H.friction * dt)); // (standing: it settles)
     } else if (wl > 0.05) this.vel.addScaledVector(this.forward, H.air * wl * dt); // (a little steering in the air)
+    // a throw slows in the air (only what is over a hop's speed: orbit is never reached, GARDEN-SWEEP #5)
+    if (!this.grounded) { const sp = this.vel.length(); if (sp > H.dragOver) this.vel.multiplyScalar(1 - Math.min(0.5, H.drag * (sp - H.dragOver) * dt)); this.airT += dt; } else this.airT = 0;
     // gravity toward the heart of the planetoid that owns it
     this.vel.addScaledVector(_n, -GRAVITY * dt);
     this.pos.addScaledVector(this.vel, dt);
     // the ground: every planetoid is solid (a throw can land on any of them)
     for (const Q of this.planets) {
       _a.copy(this.pos).sub(Q.c); const dq = _a.length();
-      if (dq > Q.r + 4) continue; // (beyond any hill the hand can raise: world/garden/clay.js)
+      if (dq > (Q.rMax ?? Q.r + 4)) continue; // (beyond its highest reach: the shape's and any hill the hand can raise, world/garden/place.js)
       _a.divideScalar(dq || 1);
       const min = (Q.radiusAt ? Q.radiusAt(_a) : Q.r) + this.radius; // (the ground as sculpted)
       if (dq >= min) continue;

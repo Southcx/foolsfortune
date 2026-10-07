@@ -79,7 +79,58 @@ the rules before building in the same area; a rule a machine can check goes into
     closing, is set down there or gives up and says so; a call to anything outside the page (Claude, a connector, the room) has a
     timeout, a cap, and a line in the log when it runs out. Nothing waits forever, and nothing spends the owner's usage unbounded.
 
+33. **A key one handler spends, no other handler sees.** A window that closes on Esc or P stops the event there; one key is read in
+    one place a tick (two readers of P opened the box as the other closed it).
+34. **Nothing opens under a cover, and a cover always lifts.** A page asked for inside a seam waits until the seam is up; the seam runs
+    whatever early return the frame takes. What a place changes of the world (the camera's up, the sky) it puts back on leaving.
+35. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
+    runs first, and a page that will not boot is a hard failure.
+
 ## Cases
+
+### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
+- **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,
+  calibration numbers under the garden's pages, and a chevron pointing world-down on a round world.
+- **Causes (measured, file:line in GARDEN-SWEEP.md):**
+  1. The naming page opened inside the seam's callback, and the frame returned before the seam updated, so the cover stayed black.
+  2. The god hand put the Jar away at a scale of 0.001, and the garden never reset it.
+  3. The Index appended its calibration to every page, not only its list.
+  4. Offers carried no `up`.
+  5. A throw of 26 m/s against an orbit of 22.8 m/s, with no drag, left the Jar circling.
+  6. Collision, gravity's owner and the hand's ray used the bare radius against a needle running to 28 m.
+  7. Travel was read from `player.pos`, which is the Jar's in the garden.
+  8. The garden was charted and announced as the upper floor.
+  9. P was read twice a tick, and a window's Esc reached the pause menu.
+  10. The lock was asked by `!god.active`, and a refused lock retried without asking the game.
+  11. A leave during the fade was dropped.
+  12. The camera's up and the sky were never put back.
+  13. The garden had no help page.
+  14. Several smaller ones: feelings shown mirth first, code ids shown as names, all 40 PLACE rows at once, a silent refusal, a held
+      Jar hanging under the pause, a tribulation that outlived the leave.
+- **Fix (Petra's halves):**
+  1. Naming opens once the seam is up, and the seam updates under the windows' and the pause's early returns.
+  2. The Jar is set to full size on entry and on the god hand's exit.
+  3. Calibration shows only under the Index's list.
+  4. Offers carry `up`, the realm passes the place's own normal, and interact turns the chevron to it.
+  5. Drag over hop speed, plus a give-up after 6 s airborne (`garden.jar.back`).
+  6. `rMax` per planetoid (the shape's reach plus the clay's band), used in all three, with the hand's ray marched to the ground.
+  7. No travel is counted while the realm is active (Dovina's ruling).
+  8. No charting and no room line while in the garden.
+  9. Windows stop their Esc, and P is read in one place.
+  10. `cursorFree()` decides the lock, and `input.wantLock` is asked before a retry.
+  11. A leave is queued until the seam ends, and `enter` returns its refusal.
+  12. The camera's up, the background and the fog are kept on entry and restored on leaving.
+  13. A help page for the garden (THE SPIRIT GARDEN).
+  14. STATS order, names as said, PLACE a row per feature with the unaffordable dim, `garden.refuse`, the pause sets the held thing
+      down, `kiln.cancel()`.
+
+  Measured after: **65 passed, 0 failed.** The chevron is 0.2° off the heart at the Chimney (52.2° before); a full throw lands in
+  1.47 s; the Jar at the needle's top rests on it.
+- **Not Petra's:** the chevron's own orientation, which belongs in `vfx/chevron.js` `target(p, up)` (Calissa; interact turns it
+  meanwhile); the Jar's look apart from the torii, `jarhop.js` and `wirecompass.js` (Calissa); the 24,890 Hz oscillator (Wanda); the
+  player names (Espada); which features each Firing opens (Dovina: PLACE lists all until her table).
+- **Rule:** 32, 33, 34; and 35 for the line this round broke: a trailing comment ate the rest of a one-line function, `npm run check`
+  passed it, and the page would not boot.
 
 ### 2026-10-07 · A sibling sent to the Dunes walked into a wall and would not be told
 - **Seen (the owner, v105):** asked Petra to go to the Dunes; Petra pressed against the workshop's wall, and asked to teleport, did not.
