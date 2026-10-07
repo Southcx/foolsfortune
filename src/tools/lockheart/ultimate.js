@@ -20,10 +20,14 @@
 // what happens in it. (Without game.cine it falls back to its own cameras below.)
 //
 //   game.ultimate = new Ultimate(game)   .begin(lockheart)   .update(rawDt)   .active
-//   UltTech (courier/moves/techs.js list): holds the body in the channel while it happens
+//   UltTech (courier/moves/techs.js list): holds the body while it happens, a timeline of the Courier's own suite in real seconds (the
+//   world is held nearly still; the Courier is not): the coffin lifted and its lid opened (Lock_Open), the hands joined before it while
+//   the keys go in (Lock_Channel), the arms raised as it climbs and held up while the wheel turns (Lock_Opening, its first two seconds),
+//   and brought down to the ground as the wheel lands (Lock_Opening's slam, timed to the landing); for a second spin, up again
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../../courier/moves/techs.js';
+import { Gestures, Crossfade } from '../heldclips.js';
 import { buildThing } from '../../pneuka/thingmodels.js';
 import { degreeColor } from '../../music/tone.js';
 import { sfx } from '../../audio/sfx.js';
@@ -31,6 +35,7 @@ import { clearShot } from '../../core/shotclear.js';
 
 const INVOKE = 1.4, KEY_DT = 0.32, ASCEND = 1.4, LAND_HOLD = 1.6, BACK = 1.0; // (beats, real seconds)
 const SLOW = 0.2; // (how fast the world runs meanwhile: nearly held)
+const HOLD = { d: 0.5, h: 1.5 }; // (where the coffin floats while the keys go in: just before the joined hands of Lock_Channel, metres out and up)
 const LACH = new THREE.Color(0xb49be6), GOLD = new THREE.Color(0xffd76a), BLUE = new THREE.Color(0x7fb2ff), WHITE = new THREE.Color(0xffffff);
 const _v = new THREE.Vector3(), _l = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Vector3();
 
@@ -74,7 +79,7 @@ export class Ultimate {
     // the keys, off the charm: they wheel round the coffin, then go into it
     this.keys = keys.map((id, i) => { const k = buildThing(id); if (!k) return null; k.group.scale.setScalar(2.4); g.scene.add(k.group); return { k, i, a: (i / Math.max(1, keys.length)) * Math.PI * 2, gone: false }; }).filter(Boolean);
     this.circle.visible = this.circle2.visible = !g.vfx; // (with the VFX system, the circles are the owner's wife's: 'ult.invoke')
-    this.cof = this.around(0, 0.36, 1.5).clone(); // (where the coffin is: a sequence's anchor, kept up to date in update)
+    this.cof = this.around(0, HOLD.d, HOLD.h).clone(); // (where the coffin is: a sequence's anchor, kept up to date in update)
     if (g.cine) {
       this.fx = {};
       this.seq = g.cine.play('lockheart.opening', { yaw: this.yaw, anchors: { courier: () => this.at, coffin: () => this.cof, wheel: () => this.wheelPos || this.cof } });
@@ -107,7 +112,7 @@ export class Ultimate {
     // ---- where the coffin is: floating in the O, then up over the Courier's head and growing
     const coffinUp = this.phase === 'back' ? 0 : Math.min(1, Math.max(0, (t - keysEnd) / ASCEND));
     const ease = coffinUp * coffinUp * (3 - 2 * coffinUp);
-    const hold = this.around(0, 0.36, 1.5).clone(), high = this.around(0, 0.2, 4.2).clone();
+    const hold = this.around(0, HOLD.d, HOLD.h).clone(), high = this.around(0, 0.2, 4.2).clone();
     lh.cine = { pos: hold.lerp(high, ease), scale: 1 + 1.8 * ease, spin: t * (0.6 + 4 * ease) };
     lh.castW = this.phase === 'back' ? Math.max(0, 1 - (t - this.backT) / 0.5) : 1;
     const cof = lh.cine.pos.clone().setY(lh.cine.pos.y - 0.22 * lh.cine.scale);
@@ -249,9 +254,34 @@ export class UltTech extends Tech {
   canStart() { return !!this.game.ultimate?.want; }
   start() { const P = this.P; P.endCore?.(); P.vel.set(0, 0, 0); }
   update(dt) { const P = this.P; P.vel.set(0, Math.min(P.vel.y, 0) - 9 * dt, 0); P.move(dt); return !!this.game.ultimate?.want; }
-  animate(ch, base) {
-    const C = ch.clips, n = C.clips['stance:lockheartChannel'] ? 'stance:lockheartChannel' : 'idle';
-    C.blend(base, C.sample(n, 0.5, ch.P.tmp, false), this.w);
+  /** The body's clip for the beat the opening is at: { key, clip, from, rate, loop, hold } (Lock_Opening's slam lands 0.12 s after 2.05). */
+  beat(U) {
+    if (U.phase === 'invoke') return U.t < 1.2 ? { key: 'open', clip: 'Lock_Open', hold: true } : { key: 'channel', clip: 'Lock_Channel', loop: true };
+    if (U.phase === 'ascend') return { key: 'ascend', clip: 'Lock_Opening', from: 0.15, rate: 0.85 / ASCEND, hold: true };
+    if (U.phase === 'wheel') return { key: `wheel${U.spins}`, clip: 'Lock_Opening', from: 1.0, to: 1.95, rate: 0.35, hold: true };
+    if (U.phase === 'landed') return { key: `land${U.spins}`, clip: 'Lock_Opening', from: 2.05, hold: true };
+    return { key: 'back', clip: 'Lock_Idle', loop: true };
   }
+  animate(ch, base, dt) {
+    const C = ch.clips, U = this.game.ultimate;
+    if (!C.clips.Lock_Opening || !U?.active) {
+      if (this.last) { C.blend(base, this.last, this.w); return; } // (the last pose of it, as the weight goes)
+      const n = C.clips['stance:lockheartChannel'] ? 'stance:lockheartChannel' : 'idle';
+      C.blend(base, C.sample(n, 0.5, ch.P.tmp, false), this.w);
+      return;
+    }
+    if (!this.S) { this.S = new Gestures(C); this.X = new Crossfade(C, 0.18); this.A = C.pose(); }
+    const raw = this.game.rawDt || dt, b = this.beat(U); // (real seconds: the show is in them, the world is not)
+    if (b.key !== this.key) { this.key = b.key; this.S.play(b.clip, { fadeIn: 0.15, fadeOut: 0.3, ...b }); }
+    this.S.update(raw);
+    C.sample('Lock_Idle', 0, this.A, true);
+    const w = this.S.sample(ch.P.tmp);
+    if (w > 0) C.blend(this.A, ch.P.tmp, w);
+    if (this.S.fresh) { this.X.cut(b.key.startsWith('land') ? 0.05 : 0.18); this.S.fresh = false; }
+    this.X.apply(this.A, raw);
+    (this.last ||= C.pose()).copy(this.A);
+    C.blend(base, this.A, this.w);
+  }
+  end() { this.key = null; }
   faceYaw() { return this.game.ultimate?.yaw ?? null; }
 }

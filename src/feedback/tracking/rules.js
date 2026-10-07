@@ -18,6 +18,7 @@ import { qaisRules } from './qais.js';
 import { brushRules } from './brush.js';
 import { partyRules } from './party.js';
 import { comboRules } from './combo.js';
+import { heldStrikeRules } from './heldstrikes.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -33,4 +34,5 @@ export function areaRules(ctx) {
   qaisRules(ctx); // (QAIS: a report filed, a round sent, /goto; nothing counted)
   partyRules(ctx); // (the siblings: coop/party.js)
   comboRules(ctx); // (the combo engine's launchers, air strings, plunges and specials: tools/moveset.js)
+  heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
 }

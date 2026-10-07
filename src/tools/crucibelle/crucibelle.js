@@ -14,16 +14,26 @@
 //    them a moment, THE RALLY makes their spirits and their kin quicker and harder (statuses haste and empower) and their Lachryma quick,
 //    THE LULLABY puts what is near and against them to sleep, THE CALL stands a smoke spirit up out of the bell (spirits.js).
 //  - TOLL (LMB): the bell struck: a ring of sound that staggers what is close in front (a little stun, a shove), and on the beat it
-//    counts for fever too (the drum to the songs' melody).
+//    counts for fever too (the drum to the songs' melody). Pressed again in time, the TOLL STRING: four tolls, each a toll, the bell
+//    swung wider each time (a forehand, a backhand), the last brought down overhead and rung all round them (the combo engine,
+//    tools/moveset.js: Bell_Toll and Bell_TollCombo1-3 of the Courier's own suite).
+//  - THE BODY (the Courier's own suite, Bell_*): the bell held up before them as a lantern (Bell_Idle, its wrist turned out so the bell
+//    clears the face), a gesture for every note (Bell_Note1-5, the octave Bell_NoteHigh), the fever's peak (Bell_FeverPeak), a song cast
+//    out of it (Bell_SongCast). At a busker's mat the busking body is the rhythm mode's (courier/moves/rhythmhold.js); the bell stays out.
 //
-//   U      draw / stow          1-5  notes (RMB held: an octave up)          LMB  toll          (the Codex: THE TOOLS has the songs)
+//   U      draw / stow          1-5  notes (RMB held: an octave up)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
 //
 // Prior art: Ocarina of Time (songs), Patapon (rhythm, fever, an army that the song commands), Crypt of the NecroDancer and Hi-Fi Rush
-// (on the beat, leniently), the tabletop bard (inspire courage, fascinate, summon), Brütal Legend (a guitar that summons and rallies:
-// a rockstar's army), and the pentatonic scale, on which nothing is wrong.
+// (on the beat, leniently; Hi-Fi Rush's rule that the blow lands with the press, so a string is played like a drum part), the tabletop
+// bard (inspire courage, fascinate, summon), Brütal Legend (a guitar that summons and rallies: a rockstar's army), the handbell choir's
+// swing (the forehand ring, the backhand, the bell brought down), and the pentatonic scale, on which nothing is wrong.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
+import { Moveset } from '../moveset.js';
+import { Gestures, Crossfade, standLegs } from '../heldclips.js';
+import { Track } from '../../courier/anim/animator.js';
+import { T } from '../../core/config.js';
 import { CrucibelleModel } from './model.js';
 import { SCALE, SONGS, INSTRUMENTS, DEGREE_COLOR, match } from './songs.js';
 import { Band } from '../../music/band.js';
@@ -32,8 +42,23 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
-const WINDOW = 0.085, OWN_BPM = 96, TOLL = { cool: 0.4, range: 4.2, cone: 1.1 };
-const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+const WINDOW = 0.085, OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1 };
+// The toll string, a table for the combo engine (tools/moveset.js). Each move is a toll at `at` (clip seconds: the swing's fastest moment,
+// measured), begun near it (`from`) so the bell rings with the press: a rhythm game's blow lands on the input, never a windup later.
+// The chain windows are the old cooldown (0.4 s between tolls) reshaped to the string: the next toll may begin 0.3 s after this one, so
+// a string keeps time with eighth notes up to about 100 bpm and quarter notes at any tempo. `toll`: its strength (k, times the old toll's),
+// its cone and reach (the last, brought down overhead, rings all round them). Numbers proposed to Dovina: docs/handoffs/dovina/.
+const MOVES = {
+  toll: { clip: 'Bell_Toll', from: 0.13, at: 0.25, chain: [0.43, 0.7], toll: { k: 1 }, arc: 'raise' },
+  t1: { clip: 'Bell_TollCombo1', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.15 }, arc: 'r2l' },
+  t2: { clip: 'Bell_TollCombo2', from: 0.13, at: 0.26, chain: [0.44, 0.7], toll: { k: 1.3 }, arc: 'l2r' },
+  t3: { clip: 'Bell_TollCombo3', from: 0.22, at: 0.45, toll: { k: 1.8, cone: Math.PI, range: 5.2 }, arc: 'over' },
+};
+const STRINGS = { ground: ['toll', 't1', 't2', 't3'] };
+/** The bell hand's wrist turned out (about the hand's own Y, radians): the suite holds the hand before the right shoulder, and the bell,
+ *  which stands up out of the fist like a lantern, would stand in front of the face; turned out, it is held beside it. */
+const WRIST = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), 0.8);
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 
 export class Crucibelle extends HeldTool {
@@ -44,19 +69,25 @@ export class Crucibelle extends HeldTool {
       // body by the right hand; with the Soul Brush worn first it goes to the right hip instead, mirrored (tools/belt.js hipSide)
       worn: { at: [0.24, 1.02, 0.1], along: [-0.05, -1, 0.15], out: [1, 0, 0], side: 'L' },
       draw: { twist: 10, lean: 6, via: [0.1, 1.15, 0.45] },
-      idle: 'stance:crucibelle', idles: ['stance:crucibelle', 'idle'], grip: 'torchIdle', // (its own stance: courier/anim/stances.js)
+      idle: 'Bell_Idle', idles: ['Bell_Idle'], grip: 'torchIdle', // (the suite's own bell idle; without the suite, its old stance: courier/anim/stances.js)
     });
     this.model = new CrucibelleModel();
     this.mount();
     this.mgr.game.crucibelle = this;
-    this.fever = 0; this.history = []; this.lastNote = -99; this.ownT0 = 0; this.tollT = -1; this.tollCool = 0; this.swing = 0; this.swingV = 0;
-    this.notes = 0; this.onBeat = 0;
+    this.fever = 0; this.history = []; this.lastNote = -99; this.ownT0 = 0; this.swing = 0; this.swingV = 0; this.pressAt = -99;
+    this.notes = 0; this.onBeat = 0; this.legSt = {};
+    this.moves = new Moveset(this, {
+      id: 'crucibelle', moves: MOVES, strings: STRINGS, cause: 'bashed', tip: 0.3, events: { swing: 'crucibelle.swing', hit: 'crucibelle.hit' },
+      onAt: (c) => this.toll(c),
+    });
   }
-  get busy() { return this.tollT >= 0; }
+  get busy() { return this.moves.busy; }
   get instrument() { return this.game.pneuka?.fitted('instrument')[0] || 'bell'; }
+  /** At a busker's mat the rhythm mode holds the body, and the bell with it (courier/moves/rhythmhold.js): its weight, 0..1. */
+  get busking() { const R = this.mgr.get?.('rhythm'); return R?.posed === this ? R.w : 0; }
 
   onDraw() { this.ownT0 = this.now(); }
-  onStow() { this.history = []; this.tollT = -1; }
+  onStow() { this.history = []; this.moves.cancel(); this.gestures?.stop(0.1); }
 
   // ---------------------------------------------------------------- the clock and the voice
   now() { return sfx.ok?.() ? sfx.ctx.currentTime : performance.now() / 1000; }
@@ -93,10 +124,11 @@ export class Crucibelle extends HeldTool {
 
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
+    if (this.mgr.get?.('rhythm')?.bell === this) return; // (at a busker's mat the rhythm mode has the keys and the body)
     for (let d = 1; d <= 5; d++) if (inp.wasPressed(`Digit${d}`)) this.note(d, inp.isDown('Mouse2'));
-    if (inp.wasPressed('Mouse0') && this.tollCool <= 0) this.toll();
+    if (inp.wasPressed('Mouse0')) this.pressAt = this.now(); // (the beat is judged at the press, though a buffered toll rings later)
+    this.moves.update(dt, inp, { allow: this.P.techs.active?.id !== 'swim' });
   }
-
   note(d, high = false) {
     const g = this.game, G = this.grid(), t = this.now();
     const off = this.offBeat(t, G), on = off < WINDOW;
@@ -104,6 +136,7 @@ export class Crucibelle extends HeldTool {
     this.beatHit(on, t, G);
     this.notes++;
     this.model.lightVent(d - 1, 1);
+    if (!this.moves.busy) this.gesture(high ? 'Bell_NoteHigh' : `Bell_Note${d}`, { from: 0.05, fadeOut: 0.12 }); // (a toll swinging owns the arm)
     const mouth = this.model.mouthWorld(_a).clone();
     g.glyphs?.pop('note', mouth.clone().setY(mouth.y + 0.25), { color: DEGREE_COLOR[d - 1], size: 0.28 + 0.12 * this.fever, life: 0.8 });
     this.puff(mouth, DEGREE_COLOR[d - 1], 4 + Math.round(6 * this.fever));
@@ -119,7 +152,7 @@ export class Crucibelle extends HeldTool {
   beatHit(on, t, G) {
     this.fever = THREE.MathUtils.clamp(this.fever + (on ? 0.1 : -0.18), 0, 1);
     if (on) this.onBeat++;
-    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', {}); }
+    if (on && this.fever >= 1 && !this.feverHot) { this.feverHot = true; this.game.events?.emit('crucibelle.fever', {}); if (!this.moves.busy) this.gesture('Bell_FeverPeak', { fadeOut: 0.25 }); }
     if (this.fever < 0.6) this.feverHot = false;
   }
 
@@ -163,35 +196,41 @@ export class Crucibelle extends HeldTool {
     this.ring(mouth, col, 26 + Math.round(30 * this.fever));
     g.glyphs?.pop('note', mouth.clone().setY(mouth.y + 0.5), { color: col, size: 0.7, life: 1.3, burst: true });
     for (let i = 0; i < 5; i++) this.model.lightVent(i, 1);
+    if (!this.moves.busy) this.gesture('Bell_SongCast', { fadeOut: 0.3 }); // (the song thrown out of the bell, arms wide)
     sfx.chime?.(1);
     g.ai?.stimuli.emit('noise', P.pos, { radius: 18, strength: 0.5, by: 'courier' });
     g.events?.emit('song.play', { song: id, fever: +this.fever.toFixed(2), power: +power.toFixed(2), instrument: this.instrument, n });
   }
 
   // ---------------------------------------------------------------- the toll
-  toll() {
-    const g = this.game, P = this.P, G = this.grid(), t = this.now();
-    const on = this.offBeat(t, G) < WINDOW;
-    this.tollT = 0; this.tollCool = TOLL.cool; this.swingV += 9;
-    const B = this.band(); if (B) { try { B.bell(sfx.ctx.currentTime + 0.005, G.root - 12, 0.9); } catch { /* silent */ } }
-    this.beatHit(on, t, G);
-    P.bodyYaw = P.yaw;
-    const f = this.aimFlat(_b).clone(), k = (on ? 1.4 : 1) * (1 + this.fever);
+  /** The bell rung, at the strike of a move of the toll string (`c`: the combo engine's move; none: a toll on its own). */
+  toll(c = null) {
+    const g = this.game, P = this.P, G = this.grid(), t = this.now(), spec = c?.def.toll || {};
+    const at = t - this.pressAt < 0.5 ? this.pressAt : t; // (judged when it was pressed: a toll buffered in the string rings at its turn)
+    const on = this.offBeat(at, G) < WINDOW;
+    this.swingV += 9 * (spec.k ?? 1);
+    const B = this.band(); if (B) { try { B.bell(sfx.ctx.currentTime + 0.005, G.root - 12, Math.min(1, 0.9 * (spec.k ?? 1))); } catch { /* silent */ } }
+    this.beatHit(on, at, G);
+    const yaw = c?.yaw ?? P.bodyYaw ?? P.yaw, f = _b.set(Math.sin(yaw), 0, Math.cos(yaw)).clone();
+    const k = (on ? 1.4 : 1) * (1 + this.fever) * (spec.k ?? 1), range = spec.range ?? TOLL.range, cone = spec.cone ?? TOLL.cone;
     let n = 0;
-    for (const c of g.creatures.near(P.pos, TOLL.range)) {
-      if (c.ally) continue;
-      const d = _a.set(c.pos.x - P.pos.x, 0, c.pos.z - P.pos.z); if (d.length() > 0.3 && d.normalize().angleTo(f) > TOLL.cone) continue;
-      g.stun?.add(c, 0.22 * k, { by: 'courier', cause: 'toll' }); c.knock?.(d.clone().multiplyScalar(2.5 * k).setY(1)); n++;
+    for (const cr of g.creatures.near(P.pos, range)) {
+      if (cr.ally) continue;
+      const d = _a.set(cr.pos.x - P.pos.x, 0, cr.pos.z - P.pos.z); if (d.length() > 0.3 && d.normalize().angleTo(f) > cone) continue;
+      g.stun?.add(cr, 0.22 * k, { by: 'courier', cause: 'toll' }); cr.knock?.(d.clone().multiplyScalar(2.5 * k).setY(1)); n++;
     }
-    for (const c of g.clappers?.list || []) {
-      if (!c.alive || c.ally || c.pos.distanceTo(P.pos) > TOLL.range) continue;
-      const d = _a.set(c.pos.x - P.pos.x, 0, c.pos.z - P.pos.z); if (d.normalize().angleTo(f) > TOLL.cone) continue;
-      g.clappers.knock(c, d.clone().multiplyScalar(5 * k).setY(3)); n++;
+    for (const cl of g.clappers?.list || []) {
+      if (!cl.alive || cl.ally || cl.pos.distanceTo(P.pos) > range) continue;
+      const d = _a.set(cl.pos.x - P.pos.x, 0, cl.pos.z - P.pos.z); if (d.normalize().angleTo(f) > cone) continue;
+      g.clappers.knock(cl, d.clone().multiplyScalar(5 * k).setY(3)); n++;
     }
-    this.ring(this.model.mouthWorld(_a).clone(), 0xffd76a, 18 + Math.round(10 * this.fever), 3.5);
+    this.ring(this.model.mouthWorld(_a).clone(), 0xffd76a, 18 + Math.round(10 * this.fever) + (spec.cone > 2 ? 14 : 0), 3.5 * Math.min(1.6, spec.k ?? 1));
+    if (n) P.shake = Math.max(P.shake || 0, 0.06 * (spec.k ?? 1));
     g.ai?.stimuli.emit('noise', P.pos, { radius: 20, strength: 0.7, by: 'courier' });
-    g.events?.emit('crucibelle.toll', { onBeat: on, n });
+    g.events?.emit('crucibelle.toll', { onBeat: on, n, move: c?.id ?? 'toll' });
   }
+  /** A gesture of the bell's own (a note, the fever's peak, a song cast): played over the stance, cut off by the next. */
+  gesture(clip, o) { this.gestures?.play(clip, o); }
 
   // ---------------------------------------------------------------- smoke
   puff(at, color, n) {
@@ -209,8 +248,6 @@ export class Crucibelle extends HeldTool {
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
     const g = this.game, P = this.P;
-    this.tollCool -= dt;
-    if (this.tollT >= 0) { this.tollT += dt; if (this.tollT > 0.45) this.tollT = -1; }
     // the fever falls in silence (two bars without a note), and slowly anyway
     const G = this.grid();
     if (this.now() - this.lastNote > G.spb * 8) this.fever = Math.max(0, this.fever - dt * 0.25);
@@ -229,10 +266,40 @@ export class Crucibelle extends HeldTool {
   }
 
   // ---------------------------------------------------------------- animation
-  pose(C, out) {
-    if (this.tollT >= 0) { C.sample('castShoot', 0.1 + this.tollT * 0.9, out, false); return { pose: out, w: Math.min(1, this.tollT / 0.05) * (1 - smooth(0.3, 0.45, this.tollT)) }; }
-    return null;
+  /** The upper body's layer: the bell's idle (the suite's Bell_Idle), a gesture over it, the toll string's moves over that; every change
+   *  of what plays crossfaded (tools/heldclips.js); the legs the clip's while they stand to play. At a busker's mat the rhythm mode's
+   *  busking body takes over (courier/moves/rhythmhold.js), this layer stepping aside as it comes in. */
+  animate(ch, base, dt) {
+    const C = ch.clips, P = this.P;
+    if (!this.track) {
+      this.idleClip = C.clips.Bell_Idle ? 'Bell_Idle' : 'stance:crucibelle';
+      this.track = new Track(C, new Set([this.idleClip]));
+      this.track.play(this.idleClip, 0, 0.01);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.gestures = new Gestures(C); this.X = new Crossfade(C, 0.1);
+    }
+    this.gestures.update(dt);
+    const layerW = this.w * smooth(T.weapon.drawGrab, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.busking);
+    if (layerW <= 0.001) { this.X.reset(); return; }
+    this.track.update(dt);
+    const layer = this.track.sample(this.P1);
+    const sw = this.gestures.sample(this.P2);
+    if (sw > 0) C.blend(layer, this.P2, sw);
+    const m = this.moves.pose(C, this.P2);
+    if (m) C.blend(layer, m.pose, m.w);
+    if (this.gestures.fresh || this.moves.cur !== this.lastMove) { this.X.cut(this.moves.cur && this.lastMove ? 0.07 : 0.1); this.gestures.fresh = false; this.lastMove = this.moves.cur; }
+    if (this.moves.cur && this.gestures.playing) this.gestures.stop(0.06); // (a toll cuts a gesture off)
+    this.X.apply(layer, dt);
+    if (this.idleClip === 'Bell_Idle') this.wrist(C, layer);
+    C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
+    standLegs(ch, P, base, layer, layerW * Math.max(sw, m?.w ?? 0), this.legSt, dt);
   }
-  fpArc() { return this.tollT >= 0 ? { arc: 'raise', u: Math.min(1, this.tollT / 0.3) } : { lift: 0.04 * this.fever }; }
+  /** The bell hand's wrist turned out (WRIST), on a pose of the suite's Bell_* clips (the busking body asks for it too). */
+  wrist(C, pose) {
+    const i = C.index.handR * 4, q = pose.q;
+    _q.set(q[i], q[i + 1], q[i + 2], q[i + 3]).multiply(WRIST);
+    q[i] = _q.x; q[i + 1] = _q.y; q[i + 2] = _q.z; q[i + 3] = _q.w;
+    return pose;
+  }
+  fpArc() { return this.moves.fpArc() || { lift: 0.04 * this.fever }; }
   restSig() { return `${Math.round(this.fever * 10)}`; }
 }
