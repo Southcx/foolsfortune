@@ -49,7 +49,10 @@ import { Stain } from '../vfx/stains.js';
 import { coat } from '../vfx/coat.js';
 import { ShrineModel } from '../vfx/shrine.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
-import { Pillar, Stalactite, slipMaterial, Clutch } from '../vfx/cavekit.js';
+import { Pillar, Stalactite, slipMaterial, Clutch, dressBrood } from '../vfx/cavekit.js';
+import { bowlSand, bowlSandTick, PoolRing } from '../vfx/bowl.js';
+import { CatchLook } from '../vfx/catch.js';
+import { BuskerMat } from '../vfx/buskermat.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 
@@ -187,7 +190,10 @@ export class Workbench {
     out.push({ id: 'slice:finds', grp: 'the slice', label: "the Great Dunemaw's finds (the lamp, the ewer, the mask, the coins; the lamp warped)" });
     out.push({ id: 'dunes:rings', grp: 'the Dunes', label: 'the Solar Skiffing rings (lit, the next, dark, passed)' });
     out.push({ id: 'dunes:geyser', grp: 'the Dunes', label: 'a slip geyser (its cycle, quickened)' });
-    out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (cracking, bursting, the core; on a loop)" });
+    out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
+    out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });
+    out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
+    out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });
     out.push({ id: 'workshop:strawman', grp: 'the Workshop', label: 'Strawman (struck every 2 real seconds)' });
     out.push({ id: 'garden:regia', grp: 'the Spirit Garden', label: 'the spirit press: aqua regia (something gilded pressed)' });
@@ -344,6 +350,36 @@ export class Workbench {
         const cl = new Clutch({ eggs: 5 }); cl.group.position.set(2.6, 0.02, 2.2); obj.add(cl.group);
         obj.userData.tick = (t) => { pil.crack(Math.floor(t / 2) % 4); if (Math.floor(t / 2) % 4 === 0) { pil.u.uStage.value = 0; pil.u.uSpent.value = 0; } st.forEach((s) => s.update(t)); st[2].setSolid((t % 3) < 2 ? 1 : 0.15); if ((t % 3) > 2.2 && !st[1].shakeT) st[1].shake(); pil.update(t); sm.userData.u.uT.value = t; cl.update(t); };
       }
+      else if (id === 'slice:bowl') {
+        obj = new THREE.Group();
+        const dg = new THREE.CircleGeometry(7, 48).rotateX(-Math.PI / 2), dp = dg.attributes.position; for (let i = 0; i < dp.count; i++) dp.setY(i, Math.hypot(dp.getX(i), dp.getZ(i)) * 0.07); dg.computeVertexNormals();
+        const sand = bowlSand({ scale: 0.4 }); sand.userData.u.uPool.value.set(2.5, 0); obj.add(new THREE.Mesh(dg, sand));
+        const pool = new THREE.Mesh(new THREE.CircleGeometry(1, 32).rotateX(-Math.PI / 2), slipMaterial({ speed: 0.5 })); pool.position.set(2.5, 0.19, 0); obj.add(pool);
+        const ring = new PoolRing({ radius: 1 }); ring.group.position.set(2.5, 0.2, 0); obj.add(ring.group);
+        let pil = null, cl = null, loop = -1; const brood = new THREE.Mesh(new THREE.SphereGeometry(0.3, 14, 10), new THREE.MeshStandardMaterial({ color: 0x8a6a45, roughness: 0.4 })); brood.scale.y = 0.8; brood.position.set(-1, 0.3, 2.4); obj.add(brood); dressBrood(brood, { size: 1 });
+        obj.userData.tick = (t) => {
+          const L = Math.floor(t / 10), k = t % 10;
+          if (L !== loop) { loop = L; if (pil) { obj.remove(pil.group); pil.dispose(); } if (cl) { obj.remove(cl.group); cl.dispose(); } pil = new Pillar({ height: 4, radius: 0.5 }); pil.group.position.set(-3, 0.2, -2); obj.add(pil.group); cl = new Clutch({ eggs: 5 }); cl.group.position.set(-2, 0.15, 2.4); obj.add(cl.group); }
+          if (k > 1.5) pil.crack(1); if (k > 4) pil.fall(new THREE.Vector3(1, 0, 0.3)); if (k > 7) pil.rubble();
+          for (let i = 0; i < 5; i++) if (k > 2 + i * 1.4) cl.hatch(i);
+          sand.userData.u.uSlide.value = k > 5 ? 1.5 : 0; bowlSandTick(sand, 1 / 60); ring.ring(Math.max(0, ((k % 3) - 1.8) / 1.2)); ring.update(1 / 60);
+          pil.update(t, 1 / 60); cl.update(t, 1 / 60);
+        };
+      }
+      else if (id === 'garden:catch') {
+        obj = new THREE.Group();
+        const jar = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.42, 0.9, 16), new THREE.MeshStandardMaterial({ color: 0xb5532d, roughness: 0.6 })); jar.position.y = 0.45; obj.add(jar);
+        const fig = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), new THREE.MeshStandardMaterial({ color: 0x6b5ca8, roughness: 0.4 })); obj.add(fig);
+        const C = new CatchLook(); obj.add(C.group); let loop = -1;
+        obj.userData.tick = (t) => {
+          const L = Math.floor(t / 5), k = t % 5;
+          if (L !== loop) { loop = L; fig.visible = true; fig.position.set(0.2, 2.1, 0.1); C.begin(fig, () => jar.getWorldPosition(new THREE.Vector3()).setY(jar.getWorldPosition(new THREE.Vector3()).y + 0.48)); }
+          C.set({ k: Math.min(1, k / 3), tug: 0.5 + 0.5 * Math.sin(t * 3) });
+          if (k > 3.2 && C.state === 'hold') { if (L % 2 === 0) C.take(); else C.free(); }
+          C.update(1 / 60);
+        };
+      }
+      else if (id === 'pier:mat') { const B = new BuskerMat(); obj = B.group; obj.userData.tick = (t) => { B.tip(Math.floor(t % 14)); B.set({ playing: (t % 14) > 3 }); B.update(1 / 60); }; }
       else if (id === 'slice:finds') {
         obj = new THREE.Group(); const A = ['lamp', 'ewer', 'mask', 'coins'].map((k, i) => { const a = artifact(k); a.group.position.set(-0.9 + i * 0.6, 0, 0); a.group.scale.setScalar(2); obj.add(a.group); return a; });
         const W = new WarpPocket(A[0].group, { radius: 0.5 }); obj.userData.tick = (t) => { A.forEach((a) => a.update(t)); W.update(t); };
@@ -353,7 +389,7 @@ export class Workbench {
         R[0].set({ lit: true, next: true }); R[1].set({ lit: true }); R[2].set({ lit: false }); let pt = 0; obj.userData.tick = (t) => { if (t % 3 < pt % 3) R[3].pass(); R.forEach((r) => r.update(Math.max(0, t - pt))); pt = t; };
       }
       else if (id === 'dunes:geyser') { const Gy = new SlipGeyser({ height: 20, dormant: [3, 4] }); obj = Gy.group; let pt = 0; obj.userData.tick = (t) => { Gy.update(Math.max(0, t - pt)); pt = t; }; }
-      else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
+      else if (id === 'slice:urn') { let U = new UrnCrown({ radius: 0.6 }); obj = new THREE.Group(); obj.add(U.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 8; if (k < pt % 8) { obj.remove(U.group); U.dispose(); U = new UrnCrown({ radius: 0.6 }); obj.add(U.group); } U.tell(k < 1.5 ? k / 1.5 : 0); if (k > 1.5) U.crack(1); if (k > 3) U.crack(2); if (k > 4.5) U.crack(3); if (k > 5.5) U.burst(); U.update(Math.max(0, t - pt)); pt = t; }; }
       else if (id === 'brush:bottles') { obj = new THREE.Group(); const B = ['small', 'medium', 'large'].map((sz, i) => { const b = new LachrymatoBottle({ size: sz }); b.group.position.x = -0.3 + i * 0.3; b.set({ fill: [0.9, 0.55, 0.3][i], crack: i === 2 }); obj.add(b.group); return b; }); const acc = new THREE.Vector3(); let pt = 0; obj.userData.tick = (t) => { acc.set(Math.sin(t * 1.3) > 0.9 ? 9 : 0, 0, Math.cos(t * 0.9) > 0.95 ? 7 : 0); for (const b of B) b.update(Math.max(0, t - pt), acc); pt = t; }; }
       else if (id === 'brush:coat') { const m = new THREE.MeshStandardMaterial({ color: 0x9ab07a, roughness: 0.42, flatShading: true }); obj = new THREE.Mesh(new THREE.LatheGeometry([[0.001, 0], [0.3, 0.02], [0.42, 0.3], [0.38, 0.62], [0.24, 0.8], [0.26, 0.86], [0.001, 0.88]].map(([r, y]) => new THREE.Vector2(r, y)), 20), m); const C = coat(m, { height: 0.88, feeling: 'desire' }); obj.userData.tick = (t) => { const k = t % 8; C.set(k < 4 ? k / 4 : 1 - (k - 4) / 4); }; }
       else if (id === 'brush:stains') { obj = new THREE.Group(); const S = new Stain({ feeling: 'desire', seed: 0.31 }); obj.add(S.group); let pt = 0; obj.userData.tick = (t) => { const k = t % 16; S.set({ stage: Math.min(3, Math.floor(k / 3) + 1), amount: k > 12 ? 1 - (k - 12) / 4 : 1 }); if (k < pt % 16) S.stage = 0; S.update(Math.max(0, t - pt) * 4); pt = t; }; }
