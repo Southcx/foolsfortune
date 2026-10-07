@@ -72,9 +72,24 @@ export class GardenSite {
     const g = this.group, parts = new Map(), add = (mat, geo, m) => { geo.applyMatrix4(m); if (!parts.has(mat)) parts.set(mat, []); parts.get(mat).push(geo); };
     // the planetoids: Calissa's (vfx/garden/planetoid.js: the skin, the roots, each kind dressed), on the one ground: her unsculpted shape
     // is the base, the clay's height goes on top (world/garden/clay.js), and her `surface` asks that ground (O(1), not a search)
-    this.planets.forEach((P, k) => {
+    this.planets.forEach((P, k) => this.makePlanet(P, k));
+    this.sky = new GardenSky(); g.add(this.sky.group);
+    this.LINKS = LINKS.slice(); // (the pairs the veins join, in the veins' order: world/garden/plots.js moves their ends; a bought planetoid adds its own)
+    this.veins = LINKS.map(([a, b]) => this.vein(this.by[a], this.by[b]));
+    this.lotuses = [];
+    for (const [a, b] of LINKS) for (const [f, t] of [[a, b], [b, a]]) {
+      const { m, rec } = this.lotusAt(this.by[f], this.by[t]); this.lotuses.push(rec);
+      add(this.mats.lotus, new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12), m);
+      for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); add(this.mats.lotus, pg, m); }
+    }
+    this.buildFeatures(add, parts);
+  }
+
+  /** One planetoid: Calissa's look on the one ground (her unsculpted shape the base, the clay's height on top: world/garden/clay.js). */
+  makePlanet(P, k) {
+    {
       const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } });
-      look.group.position.copy(P.c); g.add(look.group);
+      look.group.position.copy(P.c); this.group.add(look.group);
       P.look = look; P.mesh = look.mesh;
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
       P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
@@ -82,22 +97,35 @@ export class GardenSite {
       // gravity it is and what the hand's ray meets are all asked out to here, never the bare radius (GARDEN-SWEEP #6)
       let top = P.r; for (let i = 0, n = 2048; i < n; i++) { const y = 1 - (2 * (i + 0.5)) / n, q = Math.sqrt(1 - y * y), a = i * 2.399963; top = Math.max(top, P.base(_s.set(Math.cos(a) * q, y, Math.sin(a) * q))); }
       P.rMax = top * 1.04 + P.r / 3; // (the clay's band: a third of the radius, world/garden/clay.js)
-    });
-    // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
-    this.sky = new GardenSky(); g.add(this.sky.group);
-    this.LINKS = LINKS; // (the pairs the veins join, in the veins' order: world/garden/plots.js moves their ends)
-    this.veins = LINKS.map(([a, b]) => { const A = this.by[a], B = this.by[b], d = B.c.clone().sub(A.c).normalize(); const V = new SpiritVein(A.c.clone().addScaledVector(d, A.r * 0.9), B.c.clone().addScaledVector(d, -B.r * 0.9)); g.add(V.mesh); return V; });
-    // the lotuses: one on each end of a link, on the side facing the other
-    this.lotuses = [];
-    for (const [a, b] of LINKS) for (const [f, t] of [[a, b], [b, a]]) {
-      const A = this.by[f], B = this.by[t], dir = B.c.clone().sub(A.c).normalize().lerp(UP, 0.25).normalize(), land = A.c.clone().sub(B.c).normalize().lerp(UP, 0.25).normalize();
-      const m = this.stand(A, dir, 0.02);
-      add(this.mats.lotus, new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12), m);
-      for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); add(this.mats.lotus, pg, m); }
-      this.lotuses.push({ i: this.lotuses.length, planet: A, to: B, pos: A.c.clone().addScaledVector(dir, A.radiusAt(dir)), land: B.c.clone().addScaledVector(land, B.radiusAt(land)), toPlanet: B });
     }
-    // the features: where each system is worked
-    const D = this.by.dantian, F = [];
+  }
+  /** A spirit vein between two planetoids (Calissa's), added to the site. */
+  vein(A, B) { const d = B.c.clone().sub(A.c).normalize(), V = new SpiritVein(A.c.clone().addScaledVector(d, A.r * 0.9), B.c.clone().addScaledVector(d, -B.r * 0.9)); this.group.add(V.mesh); return V; }
+  /** Where a launch lotus on A toward B stands, and its record (the flight's start and landing). */
+  lotusAt(A, B) {
+    const dir = B.c.clone().sub(A.c).normalize().lerp(UP, 0.25).normalize(), land = A.c.clone().sub(B.c).normalize().lerp(UP, 0.25).normalize();
+    return { m: this.stand(A, dir, 0.02), rec: { i: this.lotuses?.length || 0, planet: A, to: B, pos: A.c.clone().addScaledVector(dir, A.radiusAt(dir)), land: B.c.clone().addScaledVector(land, B.radiusAt(land)), toPlanet: B } };
+  }
+  /** A bought planetoid (world/garden/orbit.js): made as the first six were, at its slot. */
+  addPlanet({ id, r, c, name }) {
+    const P = { id, r, at: c.clone().sub(GARDEN_AT).toArray(), c: c.clone(), name, color: 0xb0b8c8, bought: true };
+    this.planets.push(P); this.by[id] = P; this.makePlanet(P, this.planets.length - 1);
+    return P;
+  }
+  /** Lotuses both ways and a vein between a bought planetoid and a neighbour (its own meshes: the first six are merged). */
+  link(A, B) {
+    this.LINKS.push([A.id, B.id]); const V = this.vein(A, B); this.veins.push(V);
+    for (const [f, t] of [[A, B], [B, A]]) {
+      const { m, rec } = this.lotusAt(f, t); rec.i = this.lotuses.length; this.lotuses.push(rec);
+      const geos = [new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12)]; for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); geos.push(pg); }
+      const mesh = new THREE.Mesh(mergeGeometries(geos, false), this.mats.lotus); geos.forEach((x) => x.dispose()); mesh.applyMatrix4(m); mesh.name = 'garden-lotus'; this.group.add(mesh);
+    }
+    return V;
+  }
+
+  /** The features: where each system is worked. */
+  buildFeatures(add, parts) {
+    const g = this.group, D = this.by.dantian, F = [];
     // the Dantian: the gate out (a torii), the shed (the Pneuka Box), the lake of your own Lachryma on its crown
     { const m = this.stand(D, dirOf(62, 0), 0);
       for (const sx of [-1.3, 1.3]) add(this.mats.roof, new THREE.CylinderGeometry(0.16, 0.18, 3, 8).translate(sx, 1.5, 0), m.clone());

@@ -29,6 +29,8 @@ import { GardenCamera } from './gardencam.js';
 import { Waterworks } from './waterworks.js';
 import { Plants } from './plants.js';
 import { Races } from './races.js';
+import { Orbit } from './orbit.js';
+import { Cascades } from './cascades.js';
 import { Daturas } from '../../vfx/datura.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
@@ -63,6 +65,8 @@ export class Realm {
     this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
     this.plants = new Plants(this); // (green that spreads over wet, fertile ground: world/garden/plants.js)
     this.races = new Races(this); // (tracks carved in one closed stroke, and the spirits' races on them: world/garden/races.js)
+    this.orbit = new Orbit(this); // (the planetoids bought and set in the ring: world/garden/orbit.js)
+    this.cascades = new Cascades(this); // (water spilling from one planetoid to the next: world/garden/cascades.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
@@ -73,9 +77,9 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump() }),
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }),
       load: (d) => {
-        this.name = d?.name || null; this.awaken.load(d?.awaken);
+        this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the bought planetoids first: their clay loads next)
         for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
         this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
       },
@@ -91,6 +95,7 @@ export class Realm {
     { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.site.by.mulberryGrove.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
     this.site.tree.slots[0].pod.visible = true; this.tribulation.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
     { const T = new THREE.InstancedMesh(this.plants.geo, this.plants.mat, 1); T.setMatrixAt(0, new THREE.Matrix4()); T.position.copy(this.site.by.dantian.c); this.site.group.add(T); this.parkedLooks.push(T); } // (the plants' tufts: world/garden/plants.js)
+    { const L = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.dantian.c, this.site.by.dantian.c.clone().setY(this.site.by.dantian.c.y + 1)]), this.cascades.mat); L.computeLineDistances(); this.site.group.add(L); this.parkedLooks.push(L); } // (a cascade's dashes: world/garden/cascades.js)
     ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.site.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.site.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.chimney.c, this.site.by.dantian.c]), this.plots.threadMat.gen); this.site.group.add(this.parkedThread);
@@ -151,6 +156,7 @@ export class Realm {
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.site.group.remove(s.mesh);
       this.raising.sparring = null; this.races.stop(); // (a spar or a race is left with the garden)
+      if (this.hand.seed) { this.orbit.release(this.hand.seed.id, this.hand.seed.mesh.position); this.site.group.remove(this.hand.seed.mesh); this.hand.seed = null; } // (a seed paid for is never lost: it takes the nearest free slot)
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
@@ -238,7 +244,7 @@ export class Realm {
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
-    this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw);
+    this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw);
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
@@ -286,6 +292,27 @@ export class Realm {
     }
     const want = phaseAt() === 'night' ? 1 : 0; this.moonOpen = (this.moonOpen ?? want) + (want - (this.moonOpen ?? want)) * (1 - Math.exp(-raw * 0.4));
     for (const p of this.plots.plots) { const D = p.group?.userData.moon; if (D) D.u.uOpen.value = this.moonOpen; }
+  }
+  /** A bought planetoid taken in (world/garden/orbit.js): its clay, its plots, its veins and lotuses to its two nearest, its water. */
+  adopt(P, plots) {
+    this.clays[P.id] = new Clay(P); P.radiusAt = (d) => this.clays[P.id].radiusAt(d);
+    const near = this.site.planets.filter((Q) => Q !== P && !Q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2);
+    for (const Q of near) { const V = this.site.link(P, Q); this.site.links?.push({ V, a: P, b: Q, ends: {} }); }
+    for (const l of this.site.lotuses) if (l.planet === P) this.clays[P.id].keep(l.pos.clone().sub(P.c), 2);
+    this.plots.addPlanet(P, plots); this.plots.veins(P);
+    P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
+    P.look.group.visible = true;
+  }
+  /** The shed: the Pneuka Box (P opens it anywhere), and the next planetoid to buy (world/garden/orbit.js). */
+  shed() {
+    const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) { g.pneukaUI?.toggle(); return; }
+    menu.showPage('garden.shed', (im, el) => {
+      const rows = el('div', 'rooms'), row = (t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.4; if (run) d.onclick = run; rows.appendChild(d); };
+      row('The Pneuka Box', 'P opens it anywhere', () => { menu.close(); g.pneukaUI?.toggle(); });
+      const N = this.orbit.next();
+      if (N) { const why = () => { const r = this.orbit.buy(); if (r) g.log?.say('warn', r, { key: 'garden.buy', throttle: 1 }); else menu.close(); }; row(`A new planetoid: ${N.name}`, `${N.cubes} cubes · opens with the ${['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth'][N.firing - 1]} Firing · its seed goes in your hand: let it go in the open sky`, why, (g.cubes?.balance ?? 0) < N.cubes); }
+      im.appendChild(el('div', 'grp', 'THE SHED')); im.appendChild(rows);
+    }, { title: 'THE SHED', sub: 'click to choose · F closes' });
   }
   /** A planetoid put back to its rest shape (the hand's Ctrl+Backspace, asked twice: free, item 30): its clay, its paint and its water. */
   resetPlanetoid(P) {
@@ -341,7 +368,7 @@ export class Realm {
     switch (f.kind) {
       case 'gate': this.leave(); return;
       case 'spirit': this.raising.page(f.s); return;
-      case 'shed': g.pneukaUI?.toggle(); return;
+      case 'shed': this.shed(); return;
       case 'bed': {
         const b = G?.beds?.[f.i];
         if (b && G.ripe(f.i)) G.harvest(f.i);

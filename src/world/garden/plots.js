@@ -38,8 +38,17 @@ export class Plots {
     this.markGeo = new THREE.RingGeometry(0.9, 1.15, 20).rotateX(-Math.PI / 2);
     this.threadMat = { gen: new THREE.LineBasicMaterial({ color: 0xffe9a0, transparent: true, opacity: 0.9, name: 'garden-thread' }), over: new THREE.LineBasicMaterial({ color: 0x5a2238, transparent: true, opacity: 0.9, name: 'garden-crack' }) };
     this.plots = [];
-    for (const P of place.planets) {
-      const n = PLOTS[P.id]?.plots || 0, fixed = place.features.filter((f) => f.planet === P).map((f) => f.pos.clone().sub(P.c).normalize());
+    for (const P of place.planets) this.addPlanet(P, PLOTS[P.id]?.plots || 0, true);
+    this.threads = new THREE.Group(); this.group.add(this.threads);
+    this.wet = null;
+    this.veins();
+  }
+
+  /** A planetoid's plots, spread over it (a bought one's too: world/garden/orbit.js). */
+  addPlanet(P, n, first = false) {
+    const place = this.site, clays = this.clays;
+    {
+      const fixed = place.features.filter((f) => f.planet === P).map((f) => f.pos.clone().sub(P.c).normalize());
       const r = seeded(P.id.split('').reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261));
       // a golden spiral over the sphere, keeping clear of what is fixed there and of the lotuses
       const lotus = place.lotuses.filter((l) => l.planet === P).map((l) => l.pos.clone().sub(P.c).normalize());
@@ -56,9 +65,6 @@ export class Plots {
         made++;
       }
     }
-    this.threads = new THREE.Group(); this.group.add(this.threads);
-    this.wet = null;
-    this.veins();
   }
 
   /** Where each spirit vein touching `planet` (or every vein) ends, worked out from the ground as it is now; the veins redrawn to them. */

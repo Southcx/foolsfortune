@@ -210,6 +210,9 @@ export const PAGES = [
       ['paint: LMB · RMB', 'lay the ground (moss, ash, loam, slate, silt) · clear it'],
       ['Shift + wheel · Ctrl + Z', 'the size of a stroke · undo the last stroke'],
       ['Ctrl + Backspace, twice', 'put the planetoid under the hand back as it was'],
+      ['F at the shed', 'the Pneuka Box, and the next planetoid to buy; its seed goes in your hand: click in the open sky to set it in the ring'],
+      ['F at a spirit', 'its page: feed it, drill, spar at the Chimney, race on a track, take it out with you'],
+      ['/name Words', 'name the spirit nearest your hand'],
       ['water: LMB · RMB', 'pour Lachryma · drink it up'],
       ['water: Shift + LMB · Ctrl + LMB · Shift + RMB', 'set a spring · set a drain · take the nearest away'],
       ['F', 'use what is under the chevron (the gate takes you out)'],
@@ -222,6 +225,8 @@ export const PAGES = [
       'Water runs downhill, pools, and wears away the ground it runs over. Your Pneuka Jar wades in shallow water and floats in deep water.',
       'A feature counts its ground and the water standing at it as one neighbour each. A spirit vein ends at the highest ground facing the next planetoid, so a ridge you raise moves it.',
       'The Dantian\'s lake takes the feeling of the draught you came in with.',
+      'Carve one stroke that closes on itself, 40 m or more, and it is a track for races.',
+      'Water held deep on the side facing a linked planetoid spills over to it.',
     ],
   },
   {

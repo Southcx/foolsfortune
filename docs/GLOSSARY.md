@@ -465,6 +465,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **wades**, or **floats** when it is deeper than the body (`swim`). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
 - **a track** (the garden's: `src/world/garden/races.js`): a groove the hand carved in one stroke that closes on itself, 40 m or more;
   the spirits on its planetoid **race** a lap on it (Dovina's `RACE`). *Not:* a music track (the sound test's), the course.
+- **the ring** (`ORBIT`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a **bought planetoid** is set (the
+  Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed, in turn); bought at the shed, its **seed** is carried by the god hand
+  into the open sky and let go there. *Not:* the hue ring (the spirit press's), the upper ring (the bowl's gallery).
+- **a cascade** (`src/world/garden/cascades.js`): water deep in a basin facing a linked planetoid spilling over to it. *Not:* a
+  sandfall (the Great Dunemaw's).
 - **the plants** (the garden's: `src/world/garden/plants.js`): green that spreads cell by cell over wet moss, loam and silt, and wilts
   elsewhere; seeded by a herb terrace and by moss painted. *Not:* a material planted in a bed (the beds grow materials).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is

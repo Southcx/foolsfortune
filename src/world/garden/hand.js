@@ -68,6 +68,11 @@ export class GardenHand {
     this.art = a; this.R.plots?.show(a === 'place');
     this.game.events?.emit('garden.art', { art: a, ground: a === 'paint' ? this.ground : undefined, feeling: a === 'water' ? this.feeling || undefined : undefined, by: 'courier' });
   }
+  /** A bought planetoid's seed in the hand (world/garden/orbit.js), until it is let go in the open sky. */
+  carrySeed(id) {
+    const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 1), this.R.site.mats.lotus); mesh.name = 'garden-seed';
+    this.R.site.group.add(mesh); this.seed = { id, mesh }; this.setArt('grab');
+  }
   /** R: the next ground to paint, or the next feeling to pour (wonder first, as the pages show them; then your draught's again). */
   turn() {
     if (this.art === 'paint') this.ground = GROUNDS[(GROUNDS.indexOf(this.ground) + 1) % GROUNDS.length];
@@ -110,6 +115,9 @@ export class GardenHand {
     const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
     for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(KEY(k)) && !typing) this.setArt(ARTS[k]);
     if (I.wasPressed('KeyR') && !typing) this.turn();
+    if (this.seed) { const { o: so, d: sd } = this.ray(); this.seed.mesh.position.copy(this.hit ? this.hit.point : so.clone().addScaledVector(sd, 30)); this.seed.mesh.rotation.y += dt;
+      if (I.wasPressed('Mouse0')) { if (this.hit) this.game.log?.say('warn', 'Let it go in the open sky, away from the planetoids.', { key: 'garden.seed', throttle: 1 }); else if (this.R.orbit.release(this.seed.id, this.seed.mesh.position)) { this.R.site.group.remove(this.seed.mesh); this.seed = null; } }
+      this.brush.hide(); return this.pose(dt); }
     if (ctrl && I.wasPressed('Backspace') && !typing) this.askReset();
     if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1]); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
     if (ctrl && I.wasPressed('KeyZ') && !typing) this.undo();
