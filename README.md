@@ -264,7 +264,25 @@ Lachryma, the Tithe and its treasury (Raku), and Old Grog fishing from the pier.
 
 **The Shore**, due east of the oasis (about 500 m, or **E** at the Index): the one bearing where the far dunes part, the sand runs down
 to the Emocean, and there is nothing but the crude sea to the horizon. You can wade a step into it, no further; **the jetty** runs out
-over it, where the sloop will moor.
+over it, where the sloop moors.
+
+**The crossing.** **F** at the jetty's end opens **the pier**: every island, with the fuel a crossing there burns (or why you cannot go),
+and the **mounts**: two of the tools you wear, carried on the sloop and fired on **1** and **2** (the wake brush, the toll, the gulp, the
+plate, the hook; the vane is passive). Choose an island and you cast off: the hop is sailed as a rail shooter paced by its cue, the camera
+swinging between five views (behind the ship, straight down, abeam, a loose reticle, looking back). **WASD** moves the ship in the view's
+plane; the **mouse** moves the reticle (from above and abeam the gun fires along the way the sea runs, and abeam at whatever runs
+alongside). **LMB** held fires on every sixteenth note; **RMB** held paints up to eight targets and letting go fires a lance at each (3
+Lachryma a lance; a volley that downs everything it painted pays double for every lock). **E** is a barrel roll (two charges: it turns
+plain shots aside and rolls through the big blows); **V** parries an outlined shot back at whoever threw it; **Q** flips the ship's
+feeling, and shots of the ship's feeling are drunk, not felt; **Shift** / **C** boost and brake. The second half is a **set piece**, and a
+long crossing has up to three: **the shoal** (a school of glints rings you in a bait ball and strikes in pulses; down its Conductor, with a
+lance, and it scatters), **the Wreckers' brig, the False Light** (her bow chasers astern, then her broadside: shoot out her ports, cut her
+rigging with a full lock, shoot her boarders off your deck before they take a cask; she comes about to ram), and, rarely, **Old Nobody**
+(it breaches across your lane, runs alongside with its gills open as it breathes, sounds and comes up under you, then meets you face to
+face, maw open: lock its teeth, parry its spit down its throat). A breather between two set pieces mends the ship by three. Six hits and
+you are offered a **continue** (cubes, doubling each time; a coin-fed run ranks no higher than C); decline and the ship breaks up and you
+are made whole at your last Shrine. Made, the crossing sets you down at the far island's pier: **Margarite's dock**, with its lamp, the
+**Pearl Shrine**, Letty Marque, and the Purser (F at the posted board beside the Purser: the counter). The tally is said in the log.
 
 **The Great Dunemaw**, out on the sand north-west of the oasis (about 180 m; sail for the violet beam, not the pale spire's, or take
 **W** at the Index): a dark pool turning in a ring of fallen stones and three standing ones (the Dreamvane hears it from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
@@ -301,7 +319,7 @@ voice of bells and clay (Clayese), a body that shows the mood. Every line is als
 
 ## Things and money
 
-**The Pneuka Box** (P): what the Courier carries, 28 slots (keys and film stack to 99). Right, what is worn: the lure on the line, each tool's
+**The Pneuka Box** (P): what the Courier carries, 56 slots (keys and film stack to 99). Right, what is worn: the lure on the line, each tool's
 **fittings** (the Crucibelle's instrument, the Lockheart's keys), the psygun's chambers, and the five tools worn. Left click does the
 obvious thing, right click lists everything, drag swaps. When the box is full, a new thing falls at your feet.
 
@@ -394,6 +412,9 @@ Coji Morishita), **Cinzel** and **Cinzel Decorative** (Natanael Gama), **IM Fell
 **DotGothic16** (Fontworks Inc.).
 
 Animation clips: Quaternius, Universal Animation Library 1 & 2 (Standard), CC0 1.0, https://quaternius.com (only the free Standard tiers).
+Tiling textures (`src/assets/textures/`, for the triplanar material): ambientCG, CC0 1.0, https://ambientcg.com: Ground080 (`sand`),
+Ground079S (`sand_packed`), Rock061 (`rock`), Tiles144 (`clay_floor`), Plaster001 (`plaster`), PavingStones128 (`stone_flags`); graded to
+the game's palette and taken to 256 px by `scripts/bake_textures.py`.
 Motion capture: CMU Graphics Lab Motion Capture Database, free for research and games, no resale of the data itself
 (http://mocap.cs.cmu.edu); `src/assets/anims_cmu.bin` is that pack.
 

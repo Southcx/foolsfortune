@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import { openSea } from '../../render/zonemap.js';
 import { TrailMap, TRAIL_GLSL } from '../ground/trailmap.js';
 import { SandMarks, SAND } from '../ground/groundmarks.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { T, PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { ChunkTerrain } from '../../render/terrain.js';
+import { triplanar, surfaceTexture } from '../../render/triplanar.js';
 import { mergeStatic } from '../../render/merge.js';
 import { CloudLayer } from '../../vfx/clouds.js';
 import { Barrier } from './barrier.js';
@@ -37,9 +39,11 @@ export const BARRIER = 480;
 // THE OASIS: the middle of the sea is a flat of packed sand round a pond, and the Weir (tools/sondelass/angling/weir.js) is built on it. All in the
 // dunes' local frame (metres from the centre, heights above the layer's floor). The pond and the well are cut into the height field
 // itself, so the sand, the board's hover and the swimming all agree about where the water is.
-export const OASIS = { x: 0, z: 0, y: 12, flat: 64, blend: 70 };
-export const POND = { x: 0, z: 6, rx: 22, rz: 15, surface: OASIS.y - 0.45 };
-export const WELL = { x0: 29.5, x1: 38.5, z0: 1, z1: 11, surface: OASIS.y - 0.5, depth: 9.5 };
+// (the pond three times the area it was, the owner R46: radii 22 by 15 to 38 by 26, the oasis's flat 64 to 80 m and the well out past
+// the east shore with it; the Weir's buildings stand round the bigger water: tools/sondelass/angling/weir.js)
+export const OASIS = { x: 0, z: 0, y: 12, flat: 80, blend: 70 };
+export const POND = { x: 0, z: 6, rx: 38, rz: 26, surface: OASIS.y - 0.45 };
+export const WELL = { x0: 47.5, x1: 56.5, z0: 1, z1: 11, surface: OASIS.y - 0.5, depth: 9.5 };
 
 // (an integer hash: the noise below is sampled a few hundred thousand times when the field is built)
 const hash = (x, z) => { let h = (Math.imul(x, 374761393) + Math.imul(z, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
@@ -78,7 +82,7 @@ const inWell = (x, z, m = 0) => x > WELL.x0 - m && x < WELL.x1 + m && z > WELL.z
 function oasisGround(x, z) {
   if (inWell(x, z, 1.2)) return WELL.surface - WELL.depth - 1.5; // (the shaft is built in stone: the sand is dug out from under it)
   const r = Math.hypot(x - OASIS.x, z - OASIS.z);
-  const lap = (fbm(x * 0.05 + 40, z * 0.05, 2) - 0.43) * 0.8 * sstep(34, OASIS.flat, r); // (it ripples a little toward the edge)
+  const lap = (fbm(x * 0.05 + 40, z * 0.05, 2) - 0.43) * 0.8 * sstep(OASIS.flat - 30, OASIS.flat, r); // (it ripples a little toward the edge)
   return Math.min(OASIS.y + lap, POND.surface - pondDepth(x, z));
 }
 
@@ -162,7 +166,8 @@ export class Dunes {
   buildTerrain() {
     const g = this.game;
     this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() },
-      uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) } };
+      uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) },
+      uGlow: { value: 1 } }; // (the glints and the rim follow the sun: at night the sand does not shine, Calissa's R46 note)
     const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
@@ -173,7 +178,7 @@ export class Dunes {
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
 varying vec3 vWP; varying vec3 vWN;
-uniform float uTime; uniform vec2 uWind; uniform vec3 uSun; uniform vec4 uOasis;
+uniform float uTime, uGlow; uniform vec2 uWind; uniform vec3 uSun; uniform vec4 uOasis;
 ${TRAIL_GLSL}
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y); }`)
@@ -232,9 +237,13 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
   float r = h21(cell);
   float sp = step(0.9965, r) * 0.7;                                   // (still: no flicker, no time, no view term)
   float rim = pow(1.0 - clamp(dot(normalize(vViewPosition), normalize(vNormal)), 0.0, 1.0), 3.0);
-  totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16);
+  totalEmissiveRadiance += vec3(1.0, 0.86, 0.6) * (sp * 2.2 + rim * 0.16) * uGlow;
 }`);
     };
+    // the sand's grain from the world (render/triplanar.js: Calissa's CC0 sand on the tops, packed sand on the steep lee faces), over
+    // the colour above: the texture's own light and shade, the palette the shader's
+    triplanar(mat, { side: surfaceTexture('sand_packed'), top: surfaceTexture('sand'), scale: 0.25, strength: 0.8 });
+    g.paintmap?.patch(mat); // (the paint and the Shore's stains on it: world/ground/paintmap.js)
     // the field: chunks with levels of detail (render/terrain.js), sampled once from the one height function
     const TR = (this.chunks = new ChunkTerrain({ height: localHeight, half: DUNE.half, step: DUNE.step, chunk: 32, outer: DUNE.outer, outerStep: 20, material: mat }));
     const mesh = TR.mesh;
@@ -381,7 +390,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     const g = this.game, cam = g.camera, L = this.lights;
     this.t += dt;
     // where the camera is decides the light
-    const inside = Math.hypot(cam.position.x - DUNE.x, cam.position.z - DUNE.z) < DUNE.outer && cam.position.y < DUNE.layerBelow;
+    const inside = (Math.hypot(cam.position.x - DUNE.x, cam.position.z - DUNE.z) < DUNE.outer && cam.position.y < DUNE.layerBelow) || !!g.emocean?.stage.active || openSea(cam.position); // (a crossing and a far dock are under the same sky: world/emocean/)
     this.mix = THREE.MathUtils.damp(this.mix, inside ? 1 : 0, 3, dt);
     // (the open sea is drawn further than a room: the camera's far plane opens out down here, and the fog closes it)
     const far = THREE.MathUtils.lerp(200, 420, this.mix);
@@ -431,6 +440,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     L.sun.target.updateMatrixWorld();
     // (the caller sets sun.intensity from `under`: see main.js; here the dune value is offered)
     this.sunIntensity = A.sunI;
+    this.uniforms.uGlow.value = THREE.MathUtils.clamp(L.sun.intensity / A.sunI, 0, 1); // (last frame's sun, after the hour and the weather)
     // what has passed over the sand: the fading path, and the spray
     this.marks.update(dt, this.active);
     this.trail.update(dt, P.x, P.z);

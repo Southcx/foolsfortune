@@ -3,7 +3,7 @@
 // found in a chest or taken out of the Veritome comes here first; what is worn is worn from here; and what is to be kept for good is
 // stored from here into the Veritome, which is the bank (long-term, stacked, by card: tools/veritome/book.js).
 //
-//  - TWENTY-EIGHT SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
+//  - FIFTY-SIX SLOTS, one thing to a slot (OSRS's inventory: a full box is a reason to go home), except what STACKS (keys and rolls
 //    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at their feet (ground.js) and is
 //    picked up again with F.
 //  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
@@ -15,7 +15,7 @@
 //  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
 //    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
 //
-// Prior art: Old School RuneScape's inventory (twenty-eight slots, a left click does the obvious thing, a right click lists the rest,
+// Prior art: Old School RuneScape's inventory (twenty-eight slots there, twice that here, a left click does the obvious thing, a right click lists the rest,
 // Examine writes to the chat, Drop puts it on the ground, the bank is somewhere else and holds stacks), its equipment screen (worn
 // things in their places beside the inventory), and Greed Island's Book for what the bank is.
 //
@@ -30,13 +30,16 @@ import { CARD } from '../tools/veritome/cards.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { sfx } from '../audio/sfx.js';
 
-export const SLOTS = 28;
+export const SLOTS = 56; // (the owner, 2026-10-07: 56 by default, twice OSRS's 28)
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
 export const FITTINGS = {
   instrument: { kind: 'instrument', max: 1, tool: 'crucibelle', label: 'THE INSTRUMENT · IN THE CRUCIBELLE', put: 'Fit to the Crucibelle', none: 'the bell alone' },
   // (the coffin IS the Lockheart: which one they wear at the neck, so it has no slot of its own in the window: the owner's note)
   heart: { kind: 'heart', max: 1, tool: 'lockheart', label: 'THE LOCKHEART', put: 'Wear as the Lockheart', none: 'no coffin: it cannot be opened', hidden: true },
   keys: { kind: 'key', max: 4, tool: 'lockheart', label: "THE KEYRING · ON THE LOCKHEART'S CHARM, IN ORDER", put: 'Put on the keyring', none: 'no key: it cannot be opened' },
+  // (a place of its own on the body, not a tool's: the Lachrymato Bottle on the upper back; its `uses` is the Lachryma it holds,
+  // so a bottle taken off keeps what is in it: tools/soulbrush/load.js)
+  bottle: { kind: 'bottle', max: 1, place: true, label: 'THE LACHRYMATO BOTTLE · ON THE UPPER BACK', put: 'Wear on the upper back', none: 'no bottle: the Soul Brush draws on your mind' },
 };
 const SOCKET_OF = Object.fromEntries(Object.entries(FITTINGS).map(([k, F]) => [F.kind, k]));
 
@@ -45,8 +48,8 @@ export class PneukaBox {
     this.game = game;
     this.slots = new Array(SLOTS).fill(null); // { id, n?, uses?, data? } (a thing with uses or data of its own never stacks: a worn key, a Cogitomap)
     this.lure = 'lure.bob';
-    this.fit = { instrument: [], heart: ['heart.plain'], keys: [] };
-    this.uses = { instrument: [], heart: [0], keys: [] }; // (beside each fitting: how many times it has been turned)
+    this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] };
+    this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; // (beside each fitting: how many times it has been turned)
     this.fresh = false;
     // THE KIT (core/save.js): the box and the belt are one section, written together, so they can never disagree about a tool
     const belt = game.belt;
@@ -54,7 +57,7 @@ export class PneukaBox {
       scope: 'player', version: 1,
       dump: () => ({ box: { slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded }, belt: belt?.worn ? [...belt.worn] : null }),
       load: (d) => { this.load(d.box); if (belt) belt.worn = Array.isArray(d.belt) ? new Set(d.belt) : null; },
-      reset: () => { this.slots = new Array(SLOTS).fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.uses = { instrument: [], heart: [0], keys: [] }; this.seeded = false; if (belt) belt.worn = null; },
+      reset: () => { this.slots = new Array(SLOTS).fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] }; this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; this.seeded = false; if (belt) belt.worn = null; },
       check: () => this.reconcile(), // (every tool somewhere)
     });
   }
@@ -254,7 +257,7 @@ export class PneukaBox {
     for (const id of owed) if (itemOf(id)) this.add(id, 'migrate');
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
-  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [] }; this.uses = { instrument: [], heart: [0], keys: [] }; this.seeded = false; this.seed(); }
+  erase() { this.slots.fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] }; this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; this.seeded = false; this.seed(); }
   /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools they are not wearing. */
   seed() {
     if (this.seeded) return;

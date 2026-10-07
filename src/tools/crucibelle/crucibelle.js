@@ -66,6 +66,8 @@ export class Crucibelle extends HeldTool {
     return G || { t0: this.ownT0, spb: 60 / OWN_BPM, root: 63 };
   }
   /** How far from the nearest eighth note `t` is (seconds). */
+  /** Is now on the song's beat (within WINDOW)? The toll's parry widens on it (courier/parries.js). */
+  get onTheBeat() { return this.offBeat(this.now(), this.grid()) < WINDOW; }
   offBeat(t, G) { const e = G.spb / 2, p = ((((t - G.t0) / e) % 1) + 1) % 1; return Math.min(p, 1 - p) * e; }
   band() {
     if (this.bandObj || !sfx.ok?.()) return this.bandObj || null;
@@ -217,6 +219,7 @@ export class Crucibelle extends HeldTool {
     // the clapper swings (a spring), the vents fade, the ember is the fever, and the bell smokes while it is out
     this.swingV += (-this.swing * 60 - this.swingV * 4) * dt; this.swing += this.swingV * dt;
     this.model.setSwing(THREE.MathUtils.clamp(this.swing * 0.2, -0.6, 0.6));
+    { const G = this.grid(); this.model.setBeat((this.now() - G.t0) / (G.spb / 2)); } // (the metronome on the bell: tools/crucibelle/model.js)
     this.model.update(raw);
     this.model.setFever(this.fever);
     if (this.drawT > 0.5 && (this.smokeT = (this.smokeT || 0) - dt) <= 0) {

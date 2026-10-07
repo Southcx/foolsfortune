@@ -87,6 +87,7 @@ export class Overture {
     this.spawned = [];
     this.h?.stop(); this.h = null;
     g.cinema?.cut('overture'); g.mood?.free('overture'); g.time?.free('overture');
+    g.character?.setFade?.(1); g.character?.setDissolve?.(0); // (the fade is one uniform the title's Courier shares: the title runs no tick to set it again)
     this.stills.clear();
     // (back where they were, as they were)
     P.pos.copy(this.keep.pos); P.prevPos.copy(this.keep.pos); P.renderPos.copy(this.keep.pos); P.vel.set(0, 0, 0); P.yaw = this.keep.yaw; P.killY = this.keep.killY; P.place?.();

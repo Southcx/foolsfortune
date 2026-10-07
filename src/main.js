@@ -5,6 +5,8 @@ import { Physics, RAPIER, GROUPS } from './core/physics.js';
 import { FX } from './vfx/particles.js';
 import { Breakables } from './world/props/breakables.js';
 import { Level } from './world/level.js';
+import { PaintMap } from './world/ground/paintmap.js';
+import { Stains } from './world/ground/stains.js';
 import { Character } from './courier/character.js';
 import { Input } from './core/input.js';
 import { Player } from './courier/player.js';
@@ -30,9 +32,24 @@ import { LachrymaPool, Baubles } from './courier/lachryma.js';
 import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
 import { Trial } from './world/trial.js';
 import { TestRoom } from './world/testroom/room.js';
+import { TestRoomDress } from './vfx/testroomkit.js';
+import { NightSky } from './vfx/nightsky.js';
+import { Stain } from './vfx/stains.js';
+import { LachrymatoBottle } from './vfx/bottle.js';
+import { WaterFx } from './vfx/waterfx.js';
+import { BrushLoad } from './vfx/brushload.js';
+import { ParryMark } from './vfx/parrymark.js';
+import * as RailLook from './vfx/rail.js';
+import { SHORE } from './world/dunes/beach.js';
 import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
+import { Parries } from './courier/parries.js';
+import { Shrines } from './world/shrines.js';
+import { Emocean } from './world/emocean/stage.js';
+import { Pier } from './world/emocean/pier.js';
+import { Margarite } from './world/emocean/margarite.js';
 import { Blink } from './courier/moves/blink.js';
+import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
 import { Stomp } from './courier/moves/stomp.js';
 import { Roll } from './courier/moves/roll.js';
@@ -59,7 +76,7 @@ import { Rigging } from './courier/moves/rigging.js';
 import { Lobbers } from './creatures/lobber.js';
 import { GodMode } from './godhand/godhand.js';
 import { Cartography } from './feedback/cartography.js';
-import { Dunes, DUNE } from './world/dunes/dunes.js';
+import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
 import { Water, Ladders, SlipField } from './courier/moves/env.js';
 import { Events } from './core/events.js';
@@ -270,7 +287,7 @@ async function main() {
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
       events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by, ...(ent.def.training ? { training: true } : {}) });
-      if (ent.def.training) return; // (the testing room's: it measures, it never counts: world/testroom/)
+      if (ent.def.training) return; // (the Throwing Room's: it measures, it never counts: world/testroom/)
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;
@@ -327,15 +344,18 @@ async function main() {
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js)
   game.chests.rave.warm(renderer, camera);
   mark('sky');
-  const level = new Level(scene, physics, breakables); // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
+  game.paintmap = new PaintMap(); // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
+  const level = new Level(scene, physics, breakables); level.paintmap = game.paintmap; // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;
   game.dunes = new Dunes(game, { sun, hemi, amb }); // the sand sea far below
+  game.margarite = new Margarite(game); // (Margarite's dock: the far end of the crossing, built with the level's static geometry; world/emocean/margarite.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
-    const at = (a, k = 1.12) => ({ x: DUNE.x + 0 + Math.cos(a) * 22 * k, z: DUNE.z + 6 + Math.sin(a) * 15 * k });
+    const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
+  game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors, the aurora over the sea at the Shore; vfx/nightsky.js)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
@@ -344,7 +364,12 @@ async function main() {
   const movers = new Movers(game);
   const env = { water: new Water(scene, game.sky), ladders: new Ladders(scene), slip: new SlipField(scene, game), movers, rigging: new Rigging(scene, physics), lobbers: new Lobbers(scene, physics) };
   level.env = env;
+  game.stains = new Stains(game); // (spilled crude by the game day's layout and the cracked bottles, drawn as Calissa's stains: world/ground/stains.js)
   game.water = env.water; game.ladders = env.ladders; game.slip = env.slip; game.movers = movers; game.rigging = env.rigging; game.lobbers = env.lobbers;
+  game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
+  game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
+  game.parryMark = new ParryMark(); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); vfx/parrymark.js)
+  game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's polarity/hurt/hoist)
   level.build();
   mark('level');
   const spawnRoom = () => {
@@ -402,7 +427,7 @@ async function main() {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Skim, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -415,6 +440,7 @@ async function main() {
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
   player.techs = techs;
   game.techs = techs;
+  game.parries = new Parries(game); // (V with a tool in the hands: the tool's own parry, docs/plans/PARRY.md; courier/parries.js)
   // the Pneuka Box: what they carry (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
@@ -492,6 +518,10 @@ async function main() {
       const d = Math.hypot(KILN_AT.x - player.pos.x, KILN_AT.z - player.pos.z);
       return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
+    game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
+    game.emocean = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
+    if (game.dunes?.beach) game.pier.add('anagami', () => { const j = game.dunes.beach.jetty; return j && { end: j.end, top: j.top, yaw: -Math.PI / 2 }; });
+    game.pier.add('margarite', () => game.margarite.pier);
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
@@ -589,7 +619,8 @@ async function main() {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
-  game.testroom = new TestRoom(game, level.testRoom); // (the testing room off the Workshop: its pots, Strawman, the drills; world/testroom/)
+  game.testroom = new TestRoom(game, level.testRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/testroom/)
+  (game.testroomDress = new TestRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/testroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
@@ -610,7 +641,7 @@ async function main() {
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
-  game.garden = new Garden(game); // (the Shrine Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
+  game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
@@ -624,6 +655,11 @@ async function main() {
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);
   // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
+  // (the clock is the Veritome's: docs/plans/OVERLAY.md; carried, it tells the time; the words are the log's rule, tracking/weather.js)
+  game.chat.add('time', { help: 'the game day and game hour (the Veritome tells it)', run: () => {
+    if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'You have no Veritome to tell the time.', { key: 'notime', throttle: 2 }); return; }
+    game.events.emit('clock.read', { by: 'courier' }); // (the time is read where it is said: the calendar's, which a replay pins)
+  } });
   game.chat.add('vfx', { help: 'play an effect: /vfx <name> [tint] (no name: the list)', run: ([name, tint]) => {
     const P = game.player;
     if (!name) { game.events.emit('vfx.list', { names: game.vfx.names() }); return; }
@@ -647,6 +683,15 @@ async function main() {
   // QAIS (F8): the owner's testing window, in every build but a public one (debug/qais/, docs/plans/QAIS.md)
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
   if (game.qais) game.qais.onClose = () => { if (input.enabled && !game.god?.active) input.requestLock(); };
+  // the opt-in Movement Arts (the jet arts: courier/moves/jets.js): switched on and off here, kept with the settings
+  const OPT_ARTS = ['hover', 'rocket', 'skim'];
+  game.save?.section('optarts', { scope: 'settings', version: 1, dump: () => Object.fromEntries(OPT_ARTS.map((a) => [a, !!T.tech[a].enabled])),
+    load: (d) => { for (const a of OPT_ARTS) T.tech[a].enabled = !!d[a]; }, reset: () => { for (const a of OPT_ARTS) T.tech[a].enabled = false; } });
+  game.chat.add('art', { help: `switch an opt-in Movement Art on or off: /art ${OPT_ARTS.join(' | ')} (no name: the list)`, run: ([id]) => {
+    if (!OPT_ARTS.includes(id)) { game.events.emit('art.list', { arts: OPT_ARTS.map((a) => `${a} ${T.tech[a].enabled ? 'on' : 'off'}`).join(', ') }); return; }
+    T.tech[id].enabled = !T.tech[id].enabled; game.save?.dirty('optarts');
+    game.events.emit('art.toggle', { art: id, on: T.tech[id].enabled, by: 'courier' });
+  } });
   game.chat.add('mawwipe', { help: 'the maw wipe that covers the way into a Well, shown here (it holds a second and a half)', run: () => game.mawWipe.close(() => setTimeout(() => game.mawWipe.open(), 1500)) });
   game.chat.add('glitch', { help: `the picture torn as at a moment (${Object.keys(GLITCH_MOMENTS).join(', ')}), or a drop-out: /glitch drop`, run: (_, arg) => { const m = GLITCH_MOMENTS[arg]; if (arg === 'drop') game.glitch.drop(3); else game.glitch.moment(m || GLITCH_MOMENTS['lockheart.ultimate'], { at: player.pos.clone().setY(player.pos.y + 1), power: 1, stage: 3 }); } });
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
@@ -759,6 +804,12 @@ async function main() {
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
   const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
+  // (a stain and a Lachrymato Bottle, made now and parked hidden, never disposed: their programs live while one exists; the casebook's rules 17 and 18)
+  const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
+  for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
+  game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
+  game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
+  for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
@@ -766,6 +817,8 @@ async function main() {
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain();
+  for (const o of brushLooks) o.visible = false;
+  for (const o of seaLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -886,13 +939,13 @@ async function main() {
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
       else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
-    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open) game.codex.toggle();
-    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling) game.pneukaUI.toggle();
+    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open && !game.emocean?.stage.active) game.codex.toggle();
+    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling && !game.emocean?.stage.active) game.pneukaUI.toggle();
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
-    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
+    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
-    if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
+    if (started && overlayUp()) { if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();
@@ -902,8 +955,9 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
+    const aboard = !!game.emocean?.stage.active; // (a crossing: the Courier is aboard the ship, held there, and theirs does not run either)
     if (godOn) god.update(dt);
-    else {
+    else if (!aboard) {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
@@ -918,7 +972,7 @@ async function main() {
       movers.pre(FIXED);
       god.arts.fixed(FIXED);
       if (godOn) god.fixed(FIXED);
-      else {
+      else if (!aboard) {
         player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
         player.guard();
       }
@@ -957,17 +1011,19 @@ async function main() {
     // sound-test pick plays over any of it
     if (!game.overture?.active) game.music.follow(chooseMusic(game, { overlay: overlayUp() })); // (the overture's trailer keeps the title's music)
 
-    if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
+    if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
+    game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     env.water.update(dt);
+    game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt);
     env.rigging.update(dt);
     env.lobbers.update(dt);
     env.slip.update(dt);
     if (!godOn) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
       character.setFirstPerson(player.fpWeight > 0.5);
-      // fade the courier out when the 3rd-person camera is pressed up against them
+      // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
-      character.setFade(player.fpWeight > 0.5 ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
+      character.setFade(player.fpWeight > 0.5 || game.cinema?.shots?.size ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
       weapon.computeAimPoint(camera, player);
       const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
       // heading change rate (the slide leans into turns)
@@ -1026,7 +1082,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt);
+    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1036,13 +1092,13 @@ async function main() {
     const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
-    player.killY = game.well.active ? game.well.killY : game.dunes.active ? DUNE.y - 90 : -100;
+    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.margarite?.here || game.emocean?.stage.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

@@ -39,11 +39,13 @@ const _rm = new THREE.Matrix4(), _rq = new THREE.Quaternion(), _rs = new THREE.V
 // the oasis's frame, in the world
 export const OX = DUNE.x + OASIS.x, OY = DUNE.y + OASIS.y, OZ = DUNE.z + OASIS.z;
 /** Where the palms stand round the oasis flat (oasis frame, x / z): the Veritome photographs them too. */
-export const PALM_SPOTS = [[-26, -14], [-30, 8], [-22, 26], [-40, -22], [24, -16], [28, 22], [44, -8], [46, 18], [-6, 40], [12, 42], [-44, 30], [36, 36], [-16, -30], [20, -34]];
+export const PALM_SPOTS = [[-26, -14], [-30, 8], [-22, 26], [-40, -22], [24, -16], [28, 22], [44, -8], [46, 18], [-6, 40], [12, 42], [-44, 30], [36, 36], [-16, -30], [20, -34]].map(([x, z]) => [x * 1.3, z * 1.3]); // (spread with the pond, R46)
 /** The tally's stone (world). */
-export const TALLY_AT = [OX + 16, OY + 2.2, OZ + 31];
+export const TALLY_AT = [OX + 16, OY + 2.2, OZ + 41];
 const B = OY; // (the builders below were written for a floor at B; the packed sand is that floor now)
 export const WEIR_SPAWN = { pos: [OX + OASIS.x - 3, OY, OZ + POND.z - POND.rz - 7], yaw: 0 }; // (the dunes' spawn point: dunes.js)
+/** The yard's west edge (oasis frame): its pots' plinths, past the pond's west shore. */
+const YARD = -POND.rx - 20;
 const RIM = { x0: WELL.x0 - 0.5, x1: WELL.x1 + 0.5, z0: WELL.z0 - 0.5, z1: WELL.z1 + 0.5 };
 
 /** Is a world point at the oasis? */
@@ -52,12 +54,12 @@ export function inWeir(p, pad = 0) {
 }
 
 /** The treasury on the north beach: five plinths (one chest of each tier, common to prismatic), the Tithe's console and the dais its sealed chests land on. */
-export const TREASURY = { z: 30, plinths: [-6.8, -3.4, 0, 3.4, 6.8], top: 0.55, tithe: { x: -11, z: 30.3 }, dais: { x: -15.5, z: 28 } };
+export const TREASURY = { z: 40, plinths: [-6.8, -3.4, 0, 3.4, 6.8], top: 0.55, tithe: { x: -11, z: 40.3 }, dais: { x: -15.5, z: 38 } };
 export const WEIR_FLOOR = B;
 
 const pondD = (x, z) => Math.max(0, pondDepth(x - DUNE.x, z - DUNE.z));
 export const POOLS = [
-  { id: 'shallows', name: 'THE SHALLOWS', x0: OX + POND.x - 25, x1: OX + POND.x + 25, z0: OZ + POND.z - 17.5, z1: OZ + POND.z + 17.5, surface: DUNE.y + POND.surface, bottom: DUNE.y + POND.surface - 6, maxDepth: 6,
+  { id: 'shallows', name: 'THE SHALLOWS', x0: OX + POND.x - POND.rx - 3, x1: OX + POND.x + POND.rx + 3, z0: OZ + POND.z - POND.rz - 2.5, z1: OZ + POND.z + POND.rz + 2.5, surface: DUNE.y + POND.surface, bottom: DUNE.y + POND.surface - 6, maxDepth: 6,
     depthAt: pondD, species: SPECIES.filter((s) => !s.legend).map((s) => s.id), cap: 13 },
   { id: 'well', name: 'THE WELL', x0: DUNE.x + WELL.x0, x1: DUNE.x + WELL.x1, z0: DUNE.z + WELL.z0, z1: DUNE.z + WELL.z1, surface: DUNE.y + WELL.surface, bottom: DUNE.y + WELL.surface - WELL.depth, maxDepth: WELL.depth,
     depthAt: () => WELL.depth, species: ['dread', 'hush', 'hunger', 'lachryma'], cap: 3 },
@@ -90,32 +92,33 @@ export function buildWeir(L, env) {
   blk(POND.x - 0.5, POND.x + 0.5, 0.15, 7, POND.z - 0.5, POND.z + 0.5, C.mid);
   blk(POND.x - 1.2, POND.x + 1.2, 7, 7.3, POND.z - 1.2, POND.z + 1.2, C.dark);
   // ---- the pergola: posts, two long beams over the water and three across, the rings that hang from them
-  const top = 10.5, zs = [POND.z - 7, POND.z + 7], xs = [-22, -8, 8, 22];
+  // (laid out on the pond's own measures: K is how much bigger it is than the pond it was first built for, 22 by 15)
+  const K = POND.rx / 22, top = 10.5, zs = [POND.z - 7 * K, POND.z + 7 * K], xs = [-22, -8, 8, 22].map((x) => x * K);
   for (const z of zs) for (const x of xs) blk(x - 0.3, x + 0.3, -7, top, z - 0.3, z + 0.3, TIMBER);
-  for (const z of zs) blk(-23.5, 23.5, top - 0.7, top, z - 0.35, z + 0.35, TIMBER);
-  for (const x of [-8, 0, 8]) blk(x - 0.3, x + 0.3, top - 1.2, top - 0.7, zs[0] - 1, zs[1] + 1, TIMBER);
+  for (const z of zs) blk(-23.5 * K, 23.5 * K, top - 0.7, top, z - 0.35, z + 0.35, TIMBER);
+  for (const x of [-8, 0, 8].map((x) => x * K)) blk(x - 0.3, x + 0.3, top - 1.2, top - 0.7, zs[0] - 1, zs[1] + 1, TIMBER);
   const ringMat = new THREE.MeshBasicMaterial({ color: C.glow });
-  for (const z of zs) for (const x of [-18, -12, 4, 14]) {
+  for (const z of zs) for (const x of [-18, -12, 4, 14].map((x) => x * K)) {
     const r = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 6, 20), ringMat);
     r.position.set(OX + x, B + top - 1.9, OZ + z); r.rotation.x = Math.PI / 2; S.add(r);
     const chain = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.1, 4), new THREE.MeshBasicMaterial({ color: C.dark }));
     chain.position.set(OX + x, B + top - 1.25, OZ + z); S.add(chain);
   }
   // ---- the yard (west): plinths for the pots, and a tall pillar with a ledge
-  for (let i = 0; i < 6; i++) blk(-37, -35, 0, 0.8, -7 + i * 4, -5 + i * 4, C.mid);
-  blk(-32.5, -30, 0, 6, 19, 21.5, STONE);
-  blk(-32.5, -28, 5.6, 6, 19, 23.5, C.dark);
+  for (let i = 0; i < 6; i++) blk(YARD - 2, YARD, 0, 0.8, -7 + i * 4, -5 + i * 4, C.mid);
+  blk(YARD + 4.5, YARD + 7, 0, 6, 19, 21.5, STONE);
+  blk(YARD + 4.5, YARD + 9, 5.6, 6, 19, 23.5, C.dark);
   // ---- the treasury: five plinths, the Tithe's console and its dais
   for (const x of TREASURY.plinths) { blk(x - 0.75, x + 0.75, 0, TREASURY.top, TREASURY.z - 0.55, TREASURY.z + 0.55, C.mid); blk(x - 0.85, x + 0.85, TREASURY.top, TREASURY.top + 0.06, TREASURY.z - 0.65, TREASURY.z + 0.65, C.dark); }
   { const { x, z } = TREASURY.tithe; blk(x - 0.55, x + 0.55, 0, 1.06, z - 0.32, z + 0.32, STONE); blk(x - 0.62, x + 0.62, 1.06, 1.12, z - 0.4, z + 0.4, C.dark); }
   { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, -0.2, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
   // ---- the tally's stone (the board itself is drawn on it: Weir.buildBoard)
-  blk(9.4, 22.6, -0.5, 6.1, 31.1, 31.7, STONE);
+  blk(9.4, 22.6, -0.5, 6.1, TALLY_AT[2] - OZ + 0.1, TALLY_AT[2] - OZ + 0.7, STONE);
   // words
   const T = (t, x, z, o = {}) => label(S, t, [OX + x, B + 0.02 + (o.y || 0), OZ + z], { rotY: Math.PI, ...o });
   T('THE WEIR', -3, pz0 - 3.2, { width: 3.2, sub: 'Q draw · 2 the rod · 4-8 aspect · hold LMB cast · MMB sound' });
   T('PIER', 0, pz0 + 0.8, { width: 1.1, sub: 'hold LMB · release to cast', y: -0.02 });
-  T('THE YARD', -33, -10, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
+  T('THE YARD', YARD + 4, -10, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
   T('THE WELL', (WELL.x0 + WELL.x1) / 2, RIM.z0 - 2.2, { width: 2, sub: 'deep things · the top of the tide', y: 0.06 });
   ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
   T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3, sub: 'F open · they come back' });
@@ -133,8 +136,8 @@ export function stockTreasury(game) {
 export function spawnWeir(Bk, level) {
   const C = PALETTE;
   const kinds = ['jar', 'amphora', 'pitcher', 'melon', 'jar', 'amphora'];
-  for (let i = 0; i < 6; i++) Bk.spawn({ kind: kinds[i], pos: [OX - 36, B + 0.8 + 0.002, OZ - 6 + i * 4], color: i % 2 ? C.potLight : C.pot, respawn: 6 });
-  for (const [x, z, s] of [[-31, -4, 1.0], [-30, 0, 1.0], [-31, 4, 0.9]]) level.crate([OX + x, B + s / 2, OZ + z], s);
+  for (let i = 0; i < 6; i++) Bk.spawn({ kind: kinds[i], pos: [OX + YARD - 1, B + 0.8 + 0.002, OZ - 6 + i * 4], color: i % 2 ? C.potLight : C.pot, respawn: 6 });
+  for (const [x, z, s] of [[YARD + 6, -4, 1.0], [YARD + 7, 0, 1.0], [YARD + 6, 4, 0.9]]) level.crate([OX + x, B + s / 2, OZ + z], s);
 }
 
 // ---------------------------------------------------------------------------------------

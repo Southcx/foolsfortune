@@ -44,6 +44,17 @@ export class Flash {
     if (V && V.drawT > 0.6 && inp?.enabled && inp.wasPressed('Digit1') && !g.reprogram?.open && !g.god?.controlling) this.fire();
   }
 
+  /** The light alone, no cost and no stun of its own: the shutter's parry (courier/parry.js does the rest). */
+  burst() {
+    const g = this.game, V = this.tome, cam = g.camera; cam.getWorldPosition(_e); cam.getWorldDirection(_f);
+    const from = V?.model?.lensWorld ? V.model.lensWorld(new THREE.Vector3()) : _e.clone();
+    if (!Number.isFinite(from.x) || from.distanceTo(_e) > 4) from.copy(_e);
+    this.cone.position.copy(from); this.cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), _f);
+    const r = Math.tan(FLASH.half * DEG) * 4; this.cone.scale.set(r, r, 4);
+    this.k = 1; this.cone.visible = true;
+    sfx.shutter?.();
+  }
+
   fire() {
     const g = this.game, V = this.tome;
     if (!this.ready) return false;

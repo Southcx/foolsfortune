@@ -40,7 +40,7 @@ export const FOE = {
   reprogramAt: 0.2, // (below a fifth of its health and reeling or stunned: the data drain can take it)
   pay: {
     burst: { floors: 2, items: ['crownShard'] }, // (ECON.well.foe floors' worth, and a shard of the crown: a court-glaze pot's worth)
-    reprogram: { floors: 1, items: ['crownShard'], nursery: true }, // (half the pay now; the nursery becomes the Shrine Garden's)
+    reprogram: { floors: 1, items: ['crownShard'], nursery: true }, // (half the pay now; the nursery becomes the Spirit Garden's)
   },
 };
 const CRACK_TYPES = new Set(['impact']);
@@ -87,7 +87,7 @@ export const NURSERY = {
   clutch: { eggs: [3, 6], brood: 2, hatchSeconds: 20, cap: 3, hp: 3 }, // (eggs a clutch; brood it can give; one hatches every 20 sim s while
                                                                        //  a guard lives and the Courier is within 20 m, at most 3 out)
   guard: { radius: 12, leash: 10, alarm: 15 }, // (jellies within 12 m guard it, held 10 m to it; breaking it is an alarm heard at 15 m)
-  roe: 0.3, // (each egg broken leaves slip roe at this chance: a material, the Well's own, which a Shrine Garden bed can grow)
+  roe: 0.3, // (each egg broken leaves slip roe at this chance: a material, the Well's own, which a Spirit Garden bed can grow)
 };
 
 /** THE FINDS. Pots are the town's (breakables, some holding a find); artifacts glint in the walls (the Dreamvane hears them). A warped

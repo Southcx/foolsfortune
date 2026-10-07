@@ -25,14 +25,14 @@
 // Minecraft (a game clock that makes days testable), and Wind Waker (the sea's weather as a thing you sail through).
 //
 //   ASPECTS (on the line)   VALENCE, DISPLAY_ORDER (generated: wonder, mirth, desire, grief, dread)   COLOR   AGATES, agateOf(a, b)   TYPE_OF[aspect] -> damage type   NAMES[aspect]   weatherAt(place, ms?) -> { aspect | null, strength, second?, secondStrength?, agate?, phase, dayPhase }
-//   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
+//   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   clockAt(ms?) -> { day, weekday, hour, minute }   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
-//   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .update(dt)
+//   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .read(by?) (the Dreamvane)  .update(dt)
 //     effects where a thing stands: .buildMult(type, pos)  .mindDrift(pos) (per second)  .fishPull(aspect, pos)  .signatureMult(pos)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
-import { zoneOf } from '../render/zonemap.js';
+import { wholeOf } from '../render/zonemap.js';
 
 const W = ECON.weather, GAME_HOUR = DAY_MS / 24;
 export const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread']; // (Law to Chaos, as the crude's grades sit on the islands)
@@ -75,6 +75,11 @@ export function phaseAt(ms = calNow()) {
   return h < 5 || h >= 20 ? 'night' : h < 7 ? 'dawn' : h < 18 ? 'day' : 'dusk';
 }
 /** How light it is (0.08 the starlit floor .. 1 noon). */
+/** The clock (the Veritome's date stamp, `/time`): the game day's number, its place in a seven-day week, the game hour and game minute. */
+export function clockAt(ms = calNow()) {
+  const day = Math.floor(ms / DAY_MS), into = (ms - day * DAY_MS) / GAME_HOUR;
+  return { day, weekday: ((day % 7) + 7) % 7, hour: Math.floor(into), minute: Math.floor((into % 1) * 60) };
+}
 export const lightAt = (ms = calNow()) => Math.max(0.08, Math.sin(Math.PI * ((((hour(ms) % 24) + 24) % 24) - 5) / 15));
 
 /** A place's weather at a moment: its aspect (null for calm), its strength (0 .. 1), and the day (phase 0 .. 1 through it, and its name). */
@@ -97,7 +102,8 @@ export function weatherAt(place = 'anagami', ms = calNow()) {
 }
 
 /** The place and exposure a position is in (null: between places, or at sea). */
-export function placeOf(pos) { const z = pos && zoneOf(pos); return z && ZONE_PLACE[z] ? { place: ZONE_PLACE[z][0], exposure: ZONE_PLACE[z][1] } : null; }
+// (a question about the ground asks the whole: a room that is part of the workshop is the workshop's weather)
+export function placeOf(pos) { const z = pos && wholeOf(pos); return z && ZONE_PLACE[z] ? { place: ZONE_PLACE[z][0], exposure: ZONE_PLACE[z][1] } : null; }
 
 /** The Emocean: what the weather of the island a ship leaves does to the stage (pass it to stagePlan and reckonLead). */
 export function stageWx(island, ms = calNow()) {
@@ -136,6 +142,15 @@ export class Weather {
     const out = [], h0 = hour(calNow());
     for (let h = Math.floor(h0 / W.block) * W.block + W.block; h <= h0 + hours; h += W.block) out.push({ hour: h, ...weatherAt(place, h * GAME_HOUR) });
     return out;
+  }
+
+  /** Read the sky (the Dreamvane's dowse raised: docs/plans/OVERLAY.md): the forecast where the Courier stands, said through the log. */
+  read(by = 'courier') {
+    const place = this.here(this.game.player?.pos).place;
+    if (!place) return null;
+    const blocks = this.forecast(place).map((b) => ({ hour: b.hour, aspect: b.aspect, strength: b.strength, agate: b.agate || null }));
+    this.game.events.emit('sky.read', { island: place, now: hour(calNow()), blocks, by });
+    return blocks;
   }
 
   // ---------------------------------------------------------------- what the weather where a thing stands does

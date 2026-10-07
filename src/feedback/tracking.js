@@ -33,11 +33,13 @@ const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 import { anglingRules } from './tracking/angling.js';
 import { wellRules } from './tracking/wells.js';
 import { voyageRules } from './tracking/voyage.js';
+import { railRules } from './tracking/rail.js';
 import { gardenRules } from './tracking/garden.js';
 import { weatherRules } from './tracking/weather.js';
 import { dunemawRules } from './tracking/dunemaw.js';
 import { testroomRules } from './tracking/testroom.js';
 import { qaisRules } from './tracking/qais.js';
+import { brushRules } from './tracking/brush.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -49,6 +51,7 @@ import { itemOf } from '../pneuka/items.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
+import { SLOTS } from '../pneuka/box.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -101,7 +104,7 @@ export class Tracking {
   // ---------------------------------------------------------------- events
   listen() {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
-    // (the testing room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
+    // (the Throwing Room measures and never counts: its pots (`training`) and Strawman never reach a rule here; its own rules, strawman.* and
     // drill.*, carry neither mark: world/testroom/, feedback/tracking/testroom.js)
     const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman') return; f(e); });
     const first = (key, text) => { if (L.first(key)) log.say('record', text); };
@@ -227,7 +230,15 @@ export class Tracking {
     on('move.stomp', (e) => { L.inc('move.stomp'); stomp3(e); L.inc(`stomp.${e.what}`); log.say('move', `You stomp on the ${e.what}.`, { key: 'stomp', win: 1.5, fmt: (n) => `You stomp on the ${e.what} (×${n}).` }); });
     on('kick.swing', () => L.inc('kick.swing'));
     on('kick.hit', (e) => { L.inc('kick.hit', e.hits); L.hi('kick.best', e.hits); if (e.hits >= 2) log.say('battle', `Your kick strikes ${e.hits} targets.`, { key: 'kick', win: 1 }); });
-    on('move.parry', (e) => { L.inc('move.parry'); L.hi('parry.speed', e.speed); log.say('battle', 'You parry the shot.', { key: 'parry', win: 1 }); });
+    // the parry, with every tool (docs/plans/PARRY.md): counted all together and by tool; one line a way (Espada's words to come)
+    const PARRY_SAY = {
+      return: 'You parry the shot.', turn: 'You turn the shot aside.', soak: 'Your brush drinks the shot.', gulp: 'The Lockheart swallows the shot.',
+      shatter: 'Your bell shatters the shot.', stagger: 'You shoot the shot down, and its thrower reels.', shutter: 'Your shutter catches the blow.',
+    };
+    on('move.parry', (e) => {
+      L.inc('move.parry'); if (e.tool) L.inc(`parry.${e.tool}`); if (e.speed) L.hi('parry.speed', e.speed);
+      log.say('battle', e.what === 'blow' && e.how !== 'shutter' ? 'You parry the blow, and it breaks off.' : PARRY_SAY[e.how] || PARRY_SAY.return, { key: 'parry', win: 1 });
+    });
     on('recoil.jump', (e) => { L.inc('move.recoil'); if (e.charged) L.inc('recoil.charged'); L.hi('recoil.up', e.up); });
     for (const k of ['hang.start', 'hang.pullup', 'latch.start', 'pole.start', 'grate.start', 'balance.start', 'push.start', 'carry.lift', 'carry.put']) on(k, () => L.inc(`move.${k}`));
     on('push.move', (e) => L.inc('push.dist', e.dist));
@@ -372,7 +383,7 @@ export class Tracking {
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
       L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
-      if (e.used >= 28) L.inc('pneuka.filled');
+      if (e.used >= SLOTS) L.inc('pneuka.filled'); // (every slot of the Pneuka Box: pneuka/box.js SLOTS)
       if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
       else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
       else if (e.from === 'catch') log.say('loot', `You keep the ${ITEM(e.item)} in your Pneuka Box. (Old Grog buys fish.)`, { key: 'fishkeep', fmt: (n) => `You keep ${n} fish in your Pneuka Box.` });
@@ -521,6 +532,12 @@ export class Tracking {
     on('brush.stow', () => L.inc('brush.stow'));
     on('brush.swing', (e) => { L.inc('brush.swing'); if (e.slam) L.inc(e.air ? 'brush.slam.dive' : 'brush.slam.swing'); });
     on('brush.flick', () => L.inc('brush.flick'));
+    // the opt-in Movement Arts (the chat line's /art) and the jet arts' moves (courier/moves/jets.js)
+    on('art.toggle', (e) => log.say('system', `${e.art.toUpperCase()} is now ${e.on ? 'on' : 'off'}.`));
+    on('art.list', (e) => log.say('system', `Opt-in Movement Arts: ${e.arts}. Type /art and a name to switch one.`));
+    on('move.hover', () => L.inc('move.hover'));
+    on('move.rocket', () => L.inc('move.rocket'));
+    on('move.skim', () => L.inc('move.skim'));
     on('brush.hit', (e) => {
       L.inc('brush.hit'); L.inc(`brush.hit.${e.what}`);
       if (e.stun) L.inc('brush.stun');
@@ -574,7 +591,7 @@ export class Tracking {
     on('blade.exit', (e) => { L.hi('blade.cuts.best', e.cuts); });
     on('lock.on', () => { L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); });
     on('guard.up', () => L.inc('guard.up'));
-    on('guard.block', () => { L.inc('guard.block'); log.say('battle', 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
+    on('guard.block', (e) => { L.inc('guard.block'); log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });
     on('cut.hit', (e) => {
       L.inc('cut.hit'); L.inc(`cut.hit.${e.what}`);
       const w = e.what === 'clapper' ? 'clapperjar' : 'pot';
@@ -609,11 +626,13 @@ export class Tracking {
     anglingRules({ on, L, log, where: () => this.where() });
     // ---- the Wells: feedback/tracking/wells.js
     wellRules({ on, L, log });
+    railRules({ on, L, log }); // (the crossing's tally, before the voyage's "You make port")
     voyageRules({ on, L, log });
     gardenRules({ on, L, log });
     weatherRules({ on, L, log, g });
     dunemawRules({ on, L, log });
     testroomRules({ on, L, log });
+    brushRules({ on, L, log }); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
     qaisRules({ on, log }); // (QAIS: a report filed, a round sent, /goto; nothing counted)
 
 
@@ -665,7 +684,13 @@ export class Tracking {
     on('vessel.shield', () => L.inc('vessel.shield'));
     on('vessel.shieldbreak', () => { L.inc('vessel.shieldbreak'); log.say('battle', 'Your Lachryma is spent: the next blow reaches the clay.', { key: 'shieldbreak', throttle: 4 }); });
     on('courier.shatter', (e) => { L.inc('courier.shatter'); log.say('battle', e.by === 'creature' ? 'A creature shatters your Pneuka Jar.' : 'Your Pneuka Jar shatters.', {}); });
-    on('courier.reform', () => { L.inc('courier.reform'); log.say('system', 'Your Pneuka Jar is made whole in the workshop.', {}); });
+    on('courier.reform', (e) => { L.inc('courier.reform'); log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is made whole at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is made whole in the workshop.', {}); });
+    // the Shrines (docs/plans/SHRINES.md; world/shrines.js): found, rested at, travelled between; the Spirit Garden's door. Never "saved".
+    on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next crossing sails into ${e.setPieces.join(', then ')}.` : 'The next crossing is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
+    on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
+    on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
+    on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
+    on('garden.enter', (e) => { if (e.by === 'courier') L.inc('garden.enter'); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });
     on('vessel.mend', (e) => { L.inc('vessel.mends'); log.say('info', `${(PART[e.region] || 'The crack').replace(/^y/, 'Y')} mends.`, { key: 'mend', win: 2, fmt: (n) => `${n} cracks mend.` }); });

@@ -40,12 +40,12 @@ export const CATS = [
   { id: 'angle', name: 'ANGLING', subs: ['Casting', 'The Bite', 'The Fight', 'The Catch', 'Bestiary', 'The Deep'] },
   { id: 'treasure', name: 'TREASURE', subs: ['Chests', 'Cubes', 'The Tithe', 'Curios', 'The Vessel', 'The Counters'] },
   { id: 'circuit', name: 'CIRCUITS', subs: ['Laps', 'Medals', 'The Trial'] },
-  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Testing Room'] },
+  { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds'] },
-  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Crude'] },
+  { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SHRINE GARDEN', subs: ['The Press', 'The Garden'] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -487,10 +487,10 @@ export function buildAchievements(game) {
   C('dn7', 'explore', 'The Finds', 2, 'count', 'Glint', 'Take five artifacts from the walls of the Great Dunemaw.', 'find.artifact', 5);
   C('dn8', 'explore', 'The Finds', 3, 'mechanic', 'Touch Nothing but the Lamp', 'Take a warped artifact.', 'find.warped', 1, { hidden: true });
   // the testing room's drills (progress/combat/testroom.js): measures, so only records and medals; a tuned run is never counted
-  F('tx1', 'battle', 'The Testing Room', 1, 'mechanic', 'Calibrated', 'Finish each drill in the testing room once.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}`) > 0).length, 4);
-  F('tx2', 'battle', 'The Testing Room', 3, 'mechanic', 'Quick Draw', 'Take gold at the Flick drill.', (L) => L.get('drill.flick.gold'), 1);
-  F('tx3', 'battle', 'The Testing Room', 3, 'mechanic', 'Steady Hand', 'Take gold at the Spray drill.', (L) => L.get('drill.spray.gold'), 1);
-  F('tx4', 'battle', 'The Testing Room', 4, 'mechanic', 'Range Master', 'Take gold at all four drills.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}.gold`) > 0).length, 4);
+  F('tx1', 'battle', 'The Throwing Room', 1, 'mechanic', 'Calibrated', 'Finish each drill in the Throwing Room once.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}`) > 0).length, 4);
+  F('tx2', 'battle', 'The Throwing Room', 3, 'mechanic', 'Quick Draw', 'Take gold at the Flick drill.', (L) => L.get('drill.flick.gold'), 1);
+  F('tx3', 'battle', 'The Throwing Room', 3, 'mechanic', 'Steady Hand', 'Take gold at the Spray drill.', (L) => L.get('drill.spray.gold'), 1);
+  F('tx4', 'battle', 'The Throwing Room', 4, 'mechanic', 'Range Master', 'Take gold at all four drills.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}.gold`) > 0).length, 4);
   // the Solar Skiffing trial at the sundial (docs/plans/DUNEMAW-SYSTEMS.md)
   C('su1', 'skiff', 'The Sundial', 1, 'mechanic', 'Sun Chaser', 'Finish the Solar Skiffing trial.', 'trial.solar', 1);
   F('su2', 'skiff', 'The Sundial', 2, 'mechanic', 'Bronze Hour', 'Take bronze in the Solar Skiffing trial.', (L) => L.get('trial.solar.bronze') + L.get('trial.solar.silver') + L.get('trial.solar.gold'), 1);
@@ -522,6 +522,20 @@ export function buildAchievements(game) {
   C('em3', 'emocean', 'Sailing', 4, 'perfect', 'Not a Scratch', 'Sail a stage without being hit once.', 'emocean.stage.clean', 1);
   H('em5', 'emocean', 'Sailing', 3, 'perfect', 'Dead Reckoning', 'Reckon a crossing in full before sailing it.', 'emocean.reckon.best', 100, { unit: '%' });
   F('em4', 'emocean', 'Sailing', 3, 'collect', 'Ports of Call', 'Make port at all three islands.', (L) => ['anagami', 'margarite', 'entra'].filter((k) => L.get(`emocean.port.${k}`) > 0).length, 3);
+  // the crossing (progress/rail/: the genre's own feats, each named for where it was learned)
+  C('rl1', 'emocean', 'The Rail', 1, 'count', 'Do a Barrel Roll', 'Roll fifty times on the rail.', 'rail.rolls', 50);
+  C('rl2', 'emocean', 'The Rail', 2, 'perfect', 'Mission Accomplished', 'Earn a medal on a crossing: four in five of what came at you downed.', 'rail.medal', 1);
+  C('rl3', 'emocean', 'The Rail', 4, 'perfect', 'Rank S', 'Score at par on a crossing.', 'rail.rank.S', 1);
+  C('rl4', 'emocean', 'The Rail', 4, 'mechanic', '25,600', 'Chain to the cap: three of one feeling, again and again.', 'rail.chain.capped', 1);
+  H('rl5', 'emocean', 'The Rail', 3, 'mechanic', 'Full Lock', 'Down every target of an eight-lock volley.', 'rail.volley.best', 8);
+  C('rl6', 'emocean', 'The Rail', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots on the rail.', 'rail.parried', 25);
+  C('rl7', 'emocean', 'The Rail', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);
+  C('rl8', 'emocean', 'The Rail', 2, 'mechanic', 'Point Blank', 'Down a hundred things at point blank.', 'rail.pointBlank', 100);
+  C('rl9', 'emocean', 'The Rail', 3, 'count', 'Sunk Cost', 'Sink the False Light.', 'rail.end.sunk', 1);
+  C('rl13', 'emocean', 'The Rail', 2, 'count', 'Strike Her Colours', 'Make the False Light strike her colours.', 'rail.end.struck', 1);
+  C('rl10', 'emocean', 'The Rail', 3, 'count', 'Here Be Leviathans', 'Drive off Old Nobody.', 'rail.end.driven', 1, { hidden: true });
+  C('rl11', 'emocean', 'The Rail', 5, 'perfect', 'Call Me Ishmael', 'Fell Old Nobody.', 'rail.end.felled', 1, { hidden: true });
+  C('rl12', 'emocean', 'The Rail', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
   C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
@@ -543,7 +557,7 @@ export function buildAchievements(game) {
   F('dm4', 'psyche', 'Levels', 5, 'endure', 'Ninety-Nine', 'Reach level 99 in any domain.', (L) => Math.max(...DIDS.map((d) => lv(L, d))), 99, { title: 'Adept' });
   F('dm5', 'psyche', 'Levels', 6, 'endure', 'The World', 'Reach level 99 in all seven domains: the end of the Fool\'s Journey.', (L) => DIDS.filter((d) => lv(L, d) >= 99).length, 7, { hidden: true, title: 'The World' });
 
-  // ---------------------------------------------------------------- THE SHRINE GARDEN (progress/alchemy.js, progress/garden.js)
+  // ---------------------------------------------------------------- THE SPIRIT GARDEN (progress/alchemy.js, progress/garden.js)
   const AIDS = ['willpower', 'focus', 'charisma', 'perception', 'dexterity', 'visualization', 'resilience'], rk = (L, a) => L.best(`alchemy.rank.${a}`) || 0;
   C('sa1', 'garden', 'The Press', 1, 'count', 'First Firing', 'Fire the spirit press into an attribute.', 'alchemy.fire', 1);
   F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);

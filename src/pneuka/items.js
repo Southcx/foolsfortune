@@ -7,7 +7,7 @@
 // keys, shards), the fish they land and the film the Veritome uses; a new kind of item is a new entry here and nothing
 // else (the Pneuka Box, its window, the ground, the bank all read this).
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'tool' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle', name, glyph, color, tier, examine, card, lure, tool, place, stack (false, or how many a slot holds) }      itemOf(id)
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
@@ -17,6 +17,7 @@ import { SPECIES, ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { typeNo } from '../tools/psygun/kinds.js';
 import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
+import { BOTTLES } from '../progress/brushload.js';
 
 export const ITEMS = {};
 /** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
@@ -54,6 +55,15 @@ ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)
 for (const [i, t] of SHELL_TYPES.entries()) ITEMS[`shell.${t.id}`] = { id: `shell.${t.id}`, kind: 'shell', key: t.id, name: `${typeNo(i)} ${t.name}`, glyph: t.glyph, color: 0xd9b048, tier: 1, examine: `Caster shell ${typeNo(i)}: the ${t.name.toLowerCase()}.`, card: null, lure: false, stack: 99 };
+// the Wake Whistle: out of a Well alive (docs/plans/SHRINES.md; the words are Espada's); broken when blown, one carried at a time
+ITEMS['whistle.wake'] = { id: 'whistle.wake', kind: 'whistle', key: 'wake', name: 'WAKE WHISTLE', glyph: '♫', color: 0xc89a6a, tier: 1, examine: 'A small clay whistle. Blow it in a Well, and you wake at the Well\'s mouth with what you carry. It breaks when you use it. You can carry one.', card: null, lure: false, stack: false };
+// the Lachrymato Bottles: worn one at a time in their own place, 'bottle', on the upper back (progress/brushload.js has their numbers; the words are Espada's)
+const BOTTLE_TEXT = {
+  'bottle.small': ['SMALL LACHRYMATO BOTTLE', 'A tear bottle of thin glass, worn on your back. It holds a little Lachryma for when your pool runs low.'],
+  'bottle.medium': ['MEDIUM LACHRYMATO BOTTLE', 'A tear bottle, stoppered tight. Your Soul Brush paints from it and mops into it.'],
+  'bottle.large': ['LARGE LACHRYMATO BOTTLE', 'A big tear bottle. It holds a lot of Lachryma, and it breaks like glass.'],
+};
+for (const id of Object.keys(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id.slice(7), place: 'bottle', name: BOTTLE_TEXT[id][0], glyph: '⚱', color: 0x8fb8c8, tier: id === 'bottle.large' ? 2 : 1, examine: BOTTLE_TEXT[id][1], card: null, lure: false, stack: false };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 // what a Well gives (world/well/dunemaw.js): a material of each of the seven kinds (progress/econ/materials.js: each one carries its own

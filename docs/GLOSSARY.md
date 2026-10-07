@@ -39,6 +39,44 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
+- **the crossing** (`progress/rail/crossing.js`, `docs/plans/RAIL.md`): a stage as it plays, 100 bars of the cue: its **acts** (launch,
+  schools, pincer, darters, breather, the set piece, arrive), each held in a **view**, the camera's grammar: **chase** (Star Fox),
+  **above** (Ikaruga), **side** (Einhander), **free** (Sin & Punishment), **astern** (looking back). A **swing** is the change of view:
+  one bar, on a bar line, and nothing enters during it.
+- **the rail** (`world/emocean/stage.js`, `game.emocean`): the crossing as it is sailed, a straight line in a zone of its own (`emocean`)
+  at the dunes' layer. Everything that fights is kept in **the rail's frame** (x across, y up, z along) about the **rail point**, which
+  the **stage clock** moves (the cue as heard, else its own). The **ship** (`courier/ship/ship.js`) is the sloop at the rail, in a
+  **box** about the rail point; the view's **plane** says which two of its three numbers WASD moves (screen, sea, wall). *Not:* a
+  rail you grind or a rope (the Courier's moves).
+- **plain shot**, **outlined shot** (`courier/ship/shots.js`): a foe's shot at sea. A plain one has a feeling (absorbed if it is the
+  ship's, else it hurts; the roll turns it); an outlined one wears the parry mark and only the parry answers it, home to its thrower.
+- **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not) and
+  the two **mounts** to take; choosing an island boards and casts off. Each island has one (Anagami's jetty, Margarite's dock), and a
+  crossing makes port at the pier of the island it sails to.
+- **Margarite's dock** (`world/emocean/margarite.js`, zone `margarite`): the King's island's quay and pier on the crude, its lamp
+  tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
+  counter). *Not:* Margarite (the island, of which the dock is all that is built).
+- **the flock** (`creatures/ai/flock.js`): many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a
+  school (a wave's role).
+- **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school of
+  **glints**: its caller is **the Conductor**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the Wreckers**
+  (the pirates: Contractors under no letter; their brig **the False Light**: hull, rigging, gunports; **boarders** who take casks), and
+  **Old Nobody** (the rogue Leviathan, an Egregore: rare, a deck; **driven off** or **felled**; then Letty's "WANTED: NOBODY"). The
+  names are Espada's (`docs/LORE.md`, "The crossing's cast"). *Not:* an
+  encounter (the Spirit Garden's: an achievement group mastered).
+- **leg** (`LEG`, `legsOf`, `progress/econ/emocean.js`): one set piece of a long crossing; a crossing has one to three (the owner,
+  2026-10-07), a **breather** between two whose flotsam **mends** the ship.
+- **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
+  to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
+- **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
+  Lachryma to the pool) instead of hurting (Ikaruga).
+- **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a
+  **volley** (RayStorm). *Not:* the lock-on reticle on foot (the same word, the same idea: a target held).
+- **mount** (`MOUNTS`, `progress/rail/mounts.js`): a worn tool carried on the ship, two chosen at the pier (the wake brush, the toll, the
+  gulp, the plate, the hook, the vane); the psygun is always the gun. *Not:* a ship part (the ships have none).
+- **par**, **rank**, **medal**, **the tally** (`progress/rail/score.js`): par is an expert's median score for a set piece (measured,
+  `scripts/rail.mjs`); a crossing's rank is its score against par (S, A, B, C, D); the medal is Star Fox's (passed, four in five
+  downed); the tally is the crossing's last line in the log.
 - **widening** (`WIDEN`, `game.psyche.widen(key)`, `progress/domains.js`): what a domain's level does in play: a multiplier of a tool's own
   range or a bonus to a count (reach, capacity, options), never accuracy; at level 1 the tool is exactly as it is without it.
 - **the five feelings** (the aspects of Lachryma: wonder, mirth, desire, grief, dread; **desire** was "hunger" until 2026-10-05, and
@@ -66,9 +104,18 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **friendly fire** (`src/progress/combat/friendly.js`): a blow on an ally (another player's Courier, a division's clay folk form): a fifth
   of its damage, and statuses that land once and then meet **tolerance** (each one of a kind from allies needs twice the build-up and
   holds half as long; the third in 20 s is shrugged off). *Not:* the spirits (allied creatures), whom the Courier's blows pass through.
-- **the Shrine Garden** (`game.garden`, `src/progress/garden.js`): the pocket inside the vessel: the mastery dividend's **slots** (each worked
-  by a **mastered** encounter: every achievement of its group done), the **beds** (a material planted grows more of its kind), and the
-  upgrades (the long sink). *Not:* "Spirit Garden" (the owner's word for it in passing, 2026-10-05: the same place, unless ruled otherwise).
+- **the Spirit Garden** (`game.garden`, `src/progress/garden.js`; renamed from "the Shrine Garden" by the owner, 2026-10-06): the pocket
+  dimension inside your Pneuka Jar, entered at a **Shrine**: the mastery dividend's **slots** (each worked by a **mastered** encounter:
+  every achievement of its group done), the **beds** (a material planted grows more of its kind), and the upgrades (the long sink). The
+  **Pneuka Box** is its shed: the one part of it reachable anywhere (P). *Not:* "Shrine Garden" (retired).
+- **a Shrine** (`docs/plans/SHRINES.md`; in the lore a roadside hokora, kiln-sized: Espada): a place in the world where you **rest** (the pool full), which is **where you are made whole**
+  after a shatter (the last one you rested at), a **fast-travel** point (to any Shrine you have found), and the door into the Spirit
+  Garden. None in the Wells. *Not:* a save point: the game keeps everything as it happens (`game.save`); *not* the Wells' dead-end
+  room of the same shape (`prefabs.js` `shrine`, a breath, which keeps its code name). The first four (Espada): the **Bisque Shrine**
+  (the workshop), the **Lamp Shrine** (the Dunemaw's lip), the **Float Shrine** (Old Grog's pier), the **Pearl Shrine** (Margarite's dock).
+- **the Wake Whistle** (`whistle.wake`, `ECON.escape`; Espada's name, `docs/plans/SHRINES.md`): a small clay whistle that takes you out of
+  a Well alive, to its mouth, with the haul and three quarters of the run's pay (Pokemon's Escape Rope, Psychonauts' Smelling Salts). It
+  breaks when blown; one carried at a time. *Not:* "escape item" (the placeholder) in what the player reads.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`): pressing materials at **the spirit press** walks the Courier's **soul colour**
   (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
@@ -100,6 +147,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **Lachryma**: the substance of feeling and magic, condensed or liquid (`docs/LORE.md`, section 1: the Emocean is an atmosphere of it; cubes
   are it made solid). Always capitalised.
+- **Lachrymite** (the owner, 2026-10-06): Lachryma in its solid form, whatever its shape: a cube is a coin of Lachrymite, a crystal is a
+  formation of it, a crystal shard a piece of it. Always capitalised. *Not:* a new item or currency; "solid Lachryma" in prose is this.
 - **bauble** (`game.baubles`): a gummy drop of Lachryma that refills the pool. Left lying, it oxidizes and sinks.
 - **cube** (`game.cubes`, `src/world/treasure/cubes.js`): a Lachryma cube, the only currency. *Not:* a box in the level ("block").
 - **crystal** (`src/world/dunes/crystals.js`): a Lachryma crystal formation in the Dunes, struck with the Dreamvane's pick and tuned by ear.
@@ -111,7 +160,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **converter**: a thing that takes one resource and gives another (the Tithe: cubes into chances; condensing: cards into cubes). Machinations' word.
 - **profile** (`PLAY`, `scripts/economy.mjs`): one way of spending an hour (the fighter, the miner, the photographer, the angler, the
   treasury camper), simulated against the table. A **mixed profile** is two played together.
-- **sink**: a drain the player chooses and that never fills (the glazes, later the Shrine Garden). **The long sink** is the one meant
+- **sink**: a drain the player chooses and that never fills (the glazes, later the Spirit Garden). **The long sink** is the one meant
   to take a committed player's surplus for weeks. *Not:* any drain (the Tithe is a drain, not a sink).
 - **worth** (`worthOf`, `src/progress/shop/catalogue.js`): what a thing is worth in cubes, the base every price moves from. A shop's
   **list** price is worth × its markup; Raku's **floor** is the least he takes.
@@ -139,17 +188,39 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Courier does on its line).
 - **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
+  **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
+  (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
+  shaders draw and the game asks; the **stains** themselves are kept in `world/ground/stains.js`.
+- **the jet arts** (`courier/moves/jets.js`): three opt-in Movement Arts on the Soul Brush's load, after Sunshine's nozzles, off until
+  switched on with the chat line's `/art`: **hover** (in the air, jumps spent, hold Space), **rocket** (crouched and still, hold Space),
+  **skim** (run into water at a sprint, Shift held: run on the surface).
+  Settled by the owner, 2026-10-06 (`src/progress/brushload.js`, `docs/plans/SUNSHINE-SYSTEMS.md`): the Soul Brush is the tool of
+  **environmental** Lachryma (the Lockheart's is Lachryma drained from creatures). Two **modes**, picked with 1 and 2 while it is out
+  (as the Sondelass's forms): **paint** (spray Lachryma out) and **mop** (drink environmental Lachryma in). **saturate**: hold LMB and
+  the bristles fill for as long as the psygun takes to charge fully, then the brush sprays (paint) or drinks (mop); a press shorter than
+  the psygun's tap window is the club, whatever is held. A **blot** (Espada's word: a stain and an inkblot; code ids `stain`, `STAINS`)
+  is spilled crude on the ground (graded by its feeling, as a cask of crude is): left alone it grows a stage a game day, and a
+  full-grown one gives up a **blotling** (an aberrant Figment by class). *Not:* "stain" in what the player reads.
+- **a Lachrymato Bottle** (`BOTTLES`, `src/progress/brushload.js`; always so called, never "tank"): an aquarium-glass bottle of Lachryma
+  worn against the Courier's upper back (its own place, not where tools are worn on the back), stoppered with an opaque topper; a
+  reserve that feeds the pool below half and is what the paint mode spends and the mop mode fills. Glass: a broken shield can crack it,
+  and what spills is a blot.
+- **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
+  surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its
   **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
-  the **darkroom** (where plates are appraised); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
+  the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
+  and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
   creature), the **Major Arcana** (twenty-two designated cards).
 - **reprogramming** (`src/tools/veritome/reprogram.js`, `src/tools/veritome/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a
   **lattice** of **Functions** on the Codex's **THE MIND** shelf, and spoken in **neuralese**.
 - **the Dreamvane** (`src/tools/dreamvane/`, `src/tools/dreamvane/dreamvane.js`): **dowse** (the needle points at Lachryma), the **pick** (strikes
-  crystals), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around).
+  crystals), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around), **the vane** (the weather meter on the crook's head: it turns
+  to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, **songs** (note patterns with effects),
-  **fever**; the **mirage** (the Song of Seeming's decoy).
+  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: a swing, never a flash; the owner,
+  2026-10-06).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
   a Possibilikey's **uses** (the openings it has been turned in: brass is spent at the first, any other **breaks** with a chance that
@@ -165,6 +236,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **Movement Art** (`src/progress/skills.js`): a tech the System teaches; a **variant** is one of its versions.
+- **the parry** (V; `courier/parry.js`, `docs/plans/PARRY.md`): the one button that answers a blow or a projectile in a short **window** at the
+  press, in the way of the tool in hand (the owner, 2026-10-06): unarmed it is the **kick**, with the cutlass the **deflect** and then
+  the **guard** (held). A **parryable** thing wears a Lachryma outline (Cuphead's pink); one
+  without it cannot be parried. *Not:* the guard (the held block after the window).
+  Each tool's answer (`courier/parries.js`, the table): the psygun's **stagger** (shot down, its thrower stunned), the Soul Brush's
+  **bat** (returned, carrying the load's feeling) and **soak** (a Lachryma shot drunk into the Lachrymato Bottle), the Veritome's
+  **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
+  **toll** (shattered within reach; wider on the beat), the Lockheart's **gulp** (a Lachryma shot swallowed into the pool). In code each
+  is a `how`: `return`, `turn`, `soak`, `gulp`, `shatter`, `stagger`, `shutter`.
+- **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
+  its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
+- **projectile** (code: an entry in `game.projectiles`): anything thrown that a parry can find: a rigid body (`{ body }`, a lobber's
+  ball) or a plain one (`{ pos, vel }`, a jelly's glob); `parry: false` keeps it out of reach of every parry.
 - **the skiff / Solar Skiffing** (`src/courier/skiff/`: the tech `Skiffing` in `skiff.js`, the boat `Skiff` in `boat.js`; code name `skiff`: the tech's id, `T.tech.skiff`, events `skiff.*`): the sand boat, and sailing it
   in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
@@ -209,7 +293,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **clutch** (`NURSERY`): a nest of slip jelly eggs in the slip, guarded, hatching **brood** (young jellies a third of the size), which
   the crowned FOE calls; broken, an egg may leave **slip roe** (a material). Clutches come back with the next game day's layout.
 - **warped artifact** (`FINDS.warped`): the one find a floor in a warped pocket, worth three; taking it **shifts the floor**.
-- **the testing room** (a side room off the Workshop; `src/progress/combat/testroom.js`; the name is a placeholder for Espada's): where
+- **the Throwing Room** (a side room off the Workshop; `src/progress/combat/testroom.js`; Espada's name: a potter throws on the wheel, the Courier throws shots): where
   aim and recoil are measured, never earned: the Index, the **targets** (never "plates": a plate is a Veritome photograph), Strawman, the
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
@@ -325,7 +409,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 ## Windows
 
 - **the pause menu** (Esc): the help pages and the controls. *Retired:* "pause card".
-- **the Pneuka Box** (P, `src/pneuka/`): the inventory (28 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
+- **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
   beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
 - **the map** (M): called **Mind Mapping** in the game (`src/feedback/cartography.js`).
 - **the tuning panel** (Tab, `src/debug/tuning.js`): live sliders and actions (set the room again, last checkpoint, the hub), laid out as
@@ -359,6 +443,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   is the hourglass in the pool. **the bath**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired. **the hue
   ring**: seven lights circling the press, one per attribute at its hue; the one the soul colour is inside comes close and burns.
   **soul glow**: the vessel's skin lit from inside in the soul colour, as strong as it is saturated (none while grey).
+- **the ripple tank** (`src/vfx/ripples.js`): the rings on water: a height field round the eye stepped by the wave equation, that every
+  disturbance of a water surface (`game.water.disturb`) dents; the water's shader reads its slopes. **The wake** is its rings' V behind
+  a swimmer. **The crown** (`src/vfx/waterfx.js`): a dive's splash, a rim of drops flung up and out round a column. **Drips**: the
+  Courier dripping for a few real seconds after leaving the water.
+- **the night alive** (`game.nightSky`, `src/vfx/nightsky.js`; drawn in the dome, `src/vfx/sky.js`): what the night sky does: our own
+  **stars** on **the wheel** (turning about their pole once a game day, twinkling slowly), now and then a **meteor**, and at the Shore
+  **the Shore's aurora**: curtains low over the sea by night. *Not:* the weather's aurora (wonder by night, over the whole sky).
+- **the overhead map** (`src/vfx/overhead.js`): what stands over each spot round the eye (a roof, the ground), measured by rays from
+  high above; what falls from the sky is never drawn under it.
 - **the weather's look** (`game.weatherLook`, `src/vfx/weather.js`): how the emotional weather (`game.weather`, Dovina's) and the hour
   are drawn, each weather in its damage type's colour and motif: **streaks** (rain, or sand on the wanting wind) and **motes** (diamond
   dust, dust) wrapped round the eye in the world, never on the screen; the **halo** and **sun dogs** (wonder by day), the **aurora**
@@ -377,6 +470,27 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the Great Dunemaw's landmark (withdrawn: the owner, 2026-10-06, the mouth is an antlion pit), now the look of a slip geyser.
 - **a sandfall** (the Great Dunemaw, `docs/plans/DUNEMAW.md`): a curtain of sand pouring from above; in the floors, a side passage's
   shifting door (open, then falling, on the sim clock; never closing on the Courier). Also the spout's falling skirt.
+- **a lane** (`src/world/well/wellsand.js`): in a room of the Great Dunemaw, the band of flat sand from each doorway and pool to the
+  room's middle (1.6 m to each side, the dunes and drifts beside it): the way through a room is level ground. *Not:* a path (the
+  floor's guaranteed route of rooms, `layout.path`).
+- **a room's design** (`src/world/well/prefabs.js`): one of the Great Dunemaw's designed rooms (a prefab): the processional, the
+  narrows, the stones, the cloister, the crossing, the gallery, the shrine, the pylon gate, the vestibule; and three halls: the
+  hypostyle, the amphitheatre, the ruin. Drawn once for a shape of doorways and turned to fit; paced along the path (a way through,
+  a fight, a breath). *Not:* a template (the word retired with the four R45 ones).
+- **the socket** (`src/world/well/prefabs.js`): what every room's design keeps clear so any two chain: a lane from each doorway to
+  the room's middle (nothing within 2.2 m of its line) and the middle (2.5 m round). `npm run contracts` checks it.
+- **an arch** (`src/world/well/wellkit.js`): a doorway of the Great Dunemaw's floors, round-headed (4 m wide, its crown 5 m up), its
+  ring and pilasters standing proud of both faces of the wall.
+- **a skirt**: what blends a thing into the ground where the two meet, so no hard line shows (the owner, R46: "meshes that interact
+  with the ground need mesh skirts"). Two kinds: the level's, a strip hung a metre down the edge of a room's sand, drawn only, so no
+  crack shows where two rooms' sand meet (`src/world/well/wellkit.js`, the terrain trick); and a model's, its **foot** band taking the
+  ground's own texture, fading up (`foot` in `src/render/triplanar.js`). *Not:* the spout's falling skirt (a sandfall).
+- **triplanar** (`src/render/triplanar.js`): a texture laid on a surface from the world, along the three axes, blended by which way
+  the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
+  textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
+  stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
+- **rock** (`src/world/well/rock.js`): the Great Dunemaw's walls and pillars drawn rough over their box colliders, a noise field
+  pushing the skin up to 0.3 m sideways.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
 - **the twist** (`docs/plans/DUNEMAW.md`): the Great Dunemaw's rooms turned about the floor's centre, more the deeper (0, 7, 14
   degrees a cell on floors 1 to 3).
@@ -449,6 +563,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   The calendar (`core/calendar.js` `now()`, `today()`) is read through the replay too, so a replay watched tomorrow sees the day it was
   played; what pays while you are away reads `now()`, never `Date.now()`.
   *Not:* a chat command (`/replay` is one), a cinematic's playback (`cine/`).
+- **the casebook** (`docs/CASEBOOK.md`): every bug fixed, with its cause and the rule it left; read its rules before building in the same
+  area. *Not:* the log (the game's text), a report (QAIS's, the owner's), the ledger (the stats).
 - **QAIS** (F8, `game.qais`, `src/debug/qais/`: `docs/plans/QAIS.md`; Quality Assurance Interface System, spelled out here only, never elsewhere: *not*
   the System, the game's voice): the development window in the game where the owner tests a build: its **Brief**, its **QAIS tests**,
   its **reports** and the open **questions**, kept in the published build's store. Always "QAIS". *Not:* the F3 panel, the stress test.
@@ -482,7 +598,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`LOCK_LANDED`), the chord it cuts to when the wheel lands.
 - **the ambience** (`game.ambience`, `src/audio/ambience.js`): what the weather and the game hour sound like where the Courier stands, a
   generative **sound bed** per weather (drops and gusts drawn as they fall); it hands the mood and the night to the music. *Not:* the
-  Shrine Garden's **beds** (where a material is planted).
+  Spirit Garden's **beds** (where a material is planted).
 - **mood layer** (`moodLayer`, `src/music/mood.js`): the weather heard in the music, a few quiet notes over each bar of the place's cue
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
@@ -513,6 +629,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 - **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
+- **blot** *(Espada's proposal for the player's word for a stain of spilled crude)* and **blotling** (the aberrant Figment a full-grown blot
+  gives up): pending Dovina's rename; until then the glossary's "stain" holds.
 - **the Purser**: the King's buyer at Margarite's dock (crude, materials, Cogitomaps), at a posted price, never haggled. The role is
   the name.
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
@@ -523,7 +641,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
-- **moonflower**: a Shrine Garden bed that opens only at night, by the game hour.
+- **moonflower**: a Spirit Garden bed that opens only at night, by the game hour.
 
 ## Homonyms we keep on purpose (always qualify them)
 
@@ -539,6 +657,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | tier | a chest's (common .. prismatic); an achievement's (Easy .. Grandmaster); a fish's (1 .. 5); the folk's (earthenware .. the Court) | "chest tier", "achievement tier", "fish tier", "the folk's tiers" |
 | rank | a Veritome card's (SS .. H); a Lockheart outcome's (0 dud .. 4 jackpot); the standing (Sweeper ..) | "card rank", "outcome rank", "standing" |
 | chart | the map's (charting the ground, a Cogitomap); the rhythm mode's note chart | "chart" is the map's; "note chart" in full |
+| rank | an attribute's step (Soul Alchemy); a crossing's letter (S to D, the rail) | "an attribute's rank", "the crossing's rank" |
+| chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail (Ikaruga's) | "a chain of ...", "a feeling chain" |
 | combo | the club's chain of blows (the Soul Brush); the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
 | Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island, or a Well, `well:<id>`; the weather events' `island` field carries it) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
@@ -552,6 +672,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | surfer, Solar Surfer | the skiff, Solar Skiffing | (gone: `sfx.skiffLoop` and the `skiff*` clips, R42) |
+| Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | Calissa's `vfx/spiritpress.js`, `vfx/datura.js`, `workbench.js`, `docs/ART.md`; Espada's `docs/LORE.md`; Petra's `docs/plans/DUNEMAW.md`; `docs/plans/TEMPERAMENT.md` (asked) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | the lab (for the basement) | the basement (or the movement lab, the room) | (gone) |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |

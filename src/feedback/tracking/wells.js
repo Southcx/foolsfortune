@@ -12,7 +12,8 @@ const NAME = (id) => itemOf(id)?.name || id;
 const AN = (s) => (/^[AEIOU]/i.test(s) ? 'an' : 'a');
 
 export function wellRules({ on, L, log }) {
-  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); log.say('explore', 'You go down into the Great Dunemaw.'); });
+  let enteredAt = null; // (seconds of play when the run began: what a player's run takes, measured, for the pay table: Dovina)
+  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; log.say('explore', 'You go down into the Great Dunemaw.'); });
   on('well.floor', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
@@ -21,12 +22,17 @@ export function wellRules({ on, L, log }) {
   on('well.leave', (e) => {
     if (e.by !== 'courier') return;
     if (!e.shattered) L.inc('well.out');
+    if (e.how === 'escape') L.inc('well.escape'); // (the Wake Whistle: docs/plans/SHRINES.md)
     L.hi('well.charted', Math.round((e.charted || 0) * 100));
     if (e.fill <= 0) L.inc('well.dry');
     if (e.pay > 0) L.hi('well.pay.best', e.pay);
-    log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${e.pay > 0 ? `. Pay: ${e.pay} cubes` : ''}.`);
+    if (enteredAt != null && !e.shattered && e.how !== 'escape') { const secs = Math.round(L.play - enteredAt); L.inc('well.run.seconds', secs); L.inc(`well.run.seconds.f${e.floors}`, secs); L.inc(`well.run.count.f${e.floors}`); L.lo('well.run.fastest', secs); }
+    enteredAt = null;
+    const pay = e.pay > 0 ? `. Pay: ${e.pay} cubes` : '';
+    if (e.how === 'escape') log.say('explore', `You blow the Wake Whistle, and wake at the Dunemaw's mouth${pay}.`); // (Espada's words)
+    else log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${pay}.`);
   });
-  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round, and sets you down again where you came in.', { throttle: 2 }); });
+  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round. You are back at the way in.', { throttle: 2 }); });
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;

@@ -27,6 +27,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
+import { RIPPLE_U, RIPPLE_GLSL } from './ripples.js';
 
 const VERT = `
 #include <common>
@@ -57,6 +58,7 @@ uniform sampler2D uSky; uniform vec3 uSun; uniform float uMaxDepth; uniform floa
 varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN;
 //SKYGLSL
 //LIQUIDGLSL
+//RIPPLEGLSL
 void main() {
   vec3 V = normalize(cameraPosition - vW);
   bool under = !gl_FrontFacing;
@@ -71,6 +73,9 @@ void main() {
   pn = normalize(vec3(pn.xz + fine.xz, 1.0).xzy);
 #endif
   vec3 N = normalize(vec3(vN.x + pn.x, vN.y, vN.z + pn.z));                      // (the swell's normal, the texture's slopes laid on it)
+  vec3 rip = ripSlope(vW.xz);                                                     // (the rings where something touched it: vfx/ripples.js)
+  N = normalize(N + vec3(-rip.x, 0.0, -rip.y) * 3.5);
+  float ripCrest = smoothstep(0.14, 0.4, length(rip.xy)) * (1.0 - far);           // (the steepest of a ring catches white)
   if (under) N = -N;
   float ndv = clamp(dot(N, V), 0.0, 1.0);
   float fres = 0.02 + 0.98 * pow(1.0 - ndv, 5.0);                                 // (Schlick, water's 2% head-on)
@@ -89,6 +94,7 @@ void main() {
   col += liqFilm(film + 0.6) * pow(liqGlow(vW.xz, 0.07, t), 3.0) * 0.08 * (1.0 - fres); // (light pooled inside it, deep down, between the cells)
   float rim = 1.0 - smoothstep(0.0, 0.35, vDepth);                               // (the meniscus, iridescent, where it meets the stone)
   col += liqFilm(film + 0.3) * rim * 0.5;
+  col += liqFilm(film + rip.z * 2.0) * ripCrest * 0.6;                             // (on Lachryma a ring is a slow band of the film's colours)
   alpha = 0.96;
 #else
   // WATER: the light that comes back up through it (absorbed by the path it took), the floor's caustics seen through it, the sky in it
@@ -113,6 +119,7 @@ void main() {
   float shore = 1.0 - smoothstep(0.0, 0.45, vDepth);
   float foam = liqFoam(vW.xz, 0.3, t, shore * shore * (0.62 + 0.1 * sin(uTime * 0.8 + vW.x * 0.4)) + smoothstep(0.85, 1.0, vH) * 0.12);
   col = mix(col, vec3(0.95, 0.98, 0.97), foam * 0.9);
+  col = mix(col, vec3(0.92, 0.97, 0.96), ripCrest * 0.4);                       // (a ring's crest, Sunshine's white rings)
   alpha = smoothstep(0.0, 0.3, vDepth) * 0.97 + foam * 0.3;                    // (the water paints its own floor: it fades only at the very edge, onto the real sand)
 #endif
   if (under) { col *= 0.55; alpha = 0.55; }
@@ -128,8 +135,9 @@ export function makeWaterMaterial(sky, kind = 'water') {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
     ...liquidUniforms(), uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
+  Object.assign(uniforms, RIPPLE_U); // (the ripple tank's, shared as they are: merge would have copied them)
   return new THREE.ShaderMaterial({ name: lach ? 'liquid-lachryma' : 'liquid-water',
-    uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL),
+    uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL).replace('//RIPPLEGLSL', RIPPLE_GLSL),
     defines: lach ? { LACHRYMA: 1 } : {}, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
   });
 }

@@ -99,8 +99,8 @@ Call it a god if you like. *(Ruled, Round 39)* It speaks flatly, helpfully and r
 
 **From Round 38** (passed on by Petra in `docs/HANDOFFS.md`, from the owner) *(Ruled)*:
 - **Lachryma is everything**: the stuff of magic and of emotion alike.
-- **Cubes are Lachryma made solid.**
-- The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel.
+- **Cubes are Lachryma made solid**: **Lachrymite** *(the owner, R59)*.
+- The long-term sink is an **Internal Shrine Garden**, a pocket dimension inside the vessel (now the **Spirit Garden**, entered at a Shrine: R59).
 - The game divides into **STORY** and **DEBUG**.
 
 **The Vessoul** *(Ruled, R43)*: the entity that stands for the player in the world, a soulspark from beyond in a vessel (*vessel* +
@@ -209,8 +209,8 @@ behaves like petroleum? Set the initial condition and let the consequences fall:
   makes hauling pay.
 - **Cognitively radioactive.** Exposure is a dose, and the dose drives a mind mad by degrees and then transfigures it (the ruled lore).
   Liquid Lachryma is unstable: a bauble left lying sours (it oxidises from cream to black, in the game already) and sinks away. Solid
-  Lachryma is inert and safe to hold, which is why cubes are money.
-- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma solid, so the
+  Lachryma, **Lachrymite**, is inert and safe to hold, which is why cubes are money.
+- **Couriers are refineries, and the Pneuka Jar is a containment vessel.** Only a Courier turns liquid Lachryma into Lachrymite, so the
   currency is a refined product (a petrocurrency) and a Courier is a walking refinery. The Prince's magnum opus is, read this way, the
   first safe container a soul could ride in through raw Lachryma: a jar, built to hold what would burn anyone else.
 - **Ships by trade.** Every era of ship sails the dream sea at once, and each class is a trade:
@@ -419,6 +419,8 @@ Prince sells to neither side: every Courier both of his parents need came out of
   the Courier sails toward. *Gnomon* is Greek for "the one who knows", the shadow-stick of a sundial: the whole Dunes are its dial,
   and the town told the game hour by where its shadow lay. It still keeps the hours for nobody. The Solar Skiffing trial races its
   shadow across the sand. (The beam's meaning stays blank.)
+- **The Throwing Room** (Espada's name, R59): the side room off the Workshop's east wall where aim and recoil are measured and
+  Strawman stands. A potter throws on the wheel; the Courier throws shots.
 - **Strawman.** Pip stitched it: the one thing in a workshop of clay that cannot shatter, made by the apprentice who is afraid of
   breaking things. The name holds three: a scarecrow's straw man, a training dummy, and the argument set up only to be knocked down. It
   always stands back up, which is the lesson: knocking down a strawman wins nothing, and the real argument is still out there. The heart
@@ -461,6 +463,55 @@ Prince sells to neither side: every Courier both of his parents need came out of
   - RUBY: "Corundum stained red by chromium. You hold more and spend more, and it goes to your head."
   - DIAMOND: "Clear, and full of fire. It goes to your head fast, and it takes in both feelings of an agate."
   - OPAL: "Silica spheres that break the light into flashes. By luck, some drinks are lost and some are doubled."
+
+### Lachrymite, the tear bottles and the blots *(the owner, R59; Espada's words, the numbers Dovina's: `progress/brushload.js`)*
+- **Lachrymite** is Lachryma in its solid form, whatever its shape: a cube is a coin of it, a crystal a formation of it. The *-ite* is
+  the mineralogist's ending, Greek *-ites*, "of the stone": the stone of tears. Liquid Lachryma is volatile; Lachrymite is inert and
+  safe to hold, which is why it is money.
+- **The Lachrymato Bottles** (the owner's name). A *lachrymatory* is a real old thing: a small glass tear bottle, which mourners were
+  said to fill and keep. The Courier wears one on the upper back, full of the world's tears, a reserve for the pool, the well the Soul
+  Brush paints from and mops into. Glass, so a broken shield can crack it. Item text:
+  - SMALL LACHRYMATO BOTTLE: "A tear bottle of thin glass, worn on your back. It holds a little Lachryma for when your pool runs low."
+  - MEDIUM LACHRYMATO BOTTLE: "A tear bottle, stoppered tight. Your Soul Brush paints from it and mops into it."
+  - LARGE LACHRYMATO BOTTLE: "A big tear bottle. It holds a lot of Lachryma, and it breaks like glass."
+- **Blots** *(Espada's word for the stains, proposed)*. Spilled crude soaks into the ground as a blot, and grows a stage each game day.
+  A blot is a stain and an inkblot: the shapes a mind reads into a spill, as in a Rorschach test. A full-grown blot gives up an
+  aberrant Figment shaped by what was read into it, a **blotling**. Mopping a blot is working a feeling through before it grows teeth.
+  Log lines: "You mop up a blot of grief crude." · "A blotling crawls out of a blot of dread crude." · "Your small Lachrymato Bottle
+  cracks: 12 Lachryma spilled."
+
+### Shrines and the Wake Whistle *(the owner, R59: Shrines rest, make whole, carry between and open the Spirit Garden; names Espada's, proposed; spec `docs/plans/SHRINES.md`, Dovina's)*
+- **A Shrine** is a roadside shrine of the Japanese kind (a *hokora*), the size of a small kiln: a niche, a lamp, a fired seal. A
+  Courier who rests at one is refired in miniature: made whole after a shatter, the pool full, the mind settled. Each Shrine is named
+  for one thing set in its niche:
+  - **the Bisque Shrine** (the workshop's, by Saggar's kiln): bisque is the first firing, so the first Shrine;
+  - **the Lamp Shrine** (the Dunes', at the Dunemaw's lip): "touch nothing but the lamp", and the lamp is the one thing you may take
+    down with you;
+  - **the Float Shrine** (Old Grog's pier): a fishing float, which stays up whatever pulls at the line;
+  - **the Pearl Shrine** (Margarite's dock): Margarite means pearl; a wound made beautiful.
+- **No Shrines in Wells** (the owner). The log says "You rest at the Shrine." and never "Game saved."
+- **The escape item: the Wake Whistle.** A small clay whistle, an ocarina, which is a pot you play. A Well is rumination, and the way
+  out of going round and round is to *wake*. One blown note, and you wake at the Well's mouth (a wake is also the line a ship leaves).
+  After the owner's Escape Rope and Psychonauts' Smelling Salts.
+  - Item text: WAKE WHISTLE: "A small clay whistle. Blow it in a Well, and you wake at the Well's mouth with what you carry. It breaks
+    when you use it. You can carry one."
+  - Log: "You blow the Wake Whistle, and wake at the Dunemaw's mouth." · refusal: "You are not in a Well."
+
+### The crossing's cast *(Espada's names for Dovina's rail shooter, `docs/plans/RAIL.md`; proposals for the owner)*
+- **The shoal: glints, and their Conductor.** A bait ball of Guppy-class Figments that flash as they turn, so they are named for the
+  flash. The shoal moves on the cue's beat, so the one that drives it is **the Conductor**: down it and the music stops, and the shoal
+  scatters.
+- **The pirates: the Wreckers.** Wreckers were the coast's thieves who hung false lights to lure ships onto the rocks: the King's
+  lighthouse turned inside out. Here they are Contractors who sail under no letter (Letty sails under the King's marque; they have
+  none), and they come for what you carry. Their brig is the ***False Light***. Where they come from stays blank.
+- **The rogue Leviathan: Old Nobody.** A Leviathan-class Egregore that slipped past the lighthouse. An Egregore is authored by no one,
+  so it is Nobody, which is also what Odysseus told the Cyclops his name was. When it is driven off, Letty posts the notice: WANTED:
+  NOBODY. It is a character; it comes back.
+- **The log:** "The crude boils under the hull." · "Sails astern: the Wreckers' brig, the *False Light*." · "The sea heaves. Something
+  vast is under it." · "The Conductor falls, and the shoal scatters." · "The *False Light* goes down. Her hold floats astern." · "The
+  *False Light* strikes her colours." · "The *False Light* limps off." · "Old Nobody sounds, and is gone." · "Old Nobody is felled."
+- **The Rail's achievements** keep their homage names, with one change: sinking the brig is **Sunk Cost** (Strike Her Colours is the
+  surrender, not the sinking).
 
 ### How the frame reads the game we have
 - **"The workshop" is Kaolin's island**, and in the end Kaolin himself. So the in-game line that clapperjars hold "what the workshop
@@ -698,7 +749,7 @@ witnesses the island's work; the other brings in what has gone astray.
 
 ## 8. Things
 
-- **Lachryma**: everything (ruled). Forms in game: baubles (cream, oxidising to black), liquid (black, oil-film), cubes (solid, the
+- **Lachryma**: everything (ruled). Forms in game: baubles (cream, oxidising to black), liquid (black, oil-film), cubes (Lachrymite, the
   currency). The owner's notes: liquid is volatile mana, solid is currency and crafting, refined is Soul Alchemy's fuel.
 - **The System**: the game's code made a voice, and the source of the inspiration behind the Pneuka Jar *(Ruled)*. In game it
   announces skills, titles, analyses and warnings.
@@ -724,7 +775,7 @@ down is a spiral, the bottom is rock bottom, coming back up twenty times is boun
 the feeling you have to face; a Cogitomap is a mind map; a fully charted Well has had every nook and cranium seen. A passed stage is a
 storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns were already six deep in the Codex; one is kept.
 
-### Words for the Shrine Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
+### Words for the Spirit Garden and the voyage *(Espada's, R58; strings for Dovina's `tracking/garden.js`, `tracking/voyage.js`, `achievements.js`)*
 - **Log lines** (the robotic register): "You cast off for {place}. Fuel: {n} cubes." · "Cargo lost: {n} casks of crude." (with a
   spill: "… The spill burns on the sea.") · "You make port at {place}." · "Route divined: {place}." · "The press fires. {Attribute}:
   rank {n}." · "{Encounter} now works a garden slot." · "You harvest {n} from the bed." · "Garden widened: one more {slot|bed}."
@@ -734,9 +785,9 @@ storm weathered. Crude is black gold, and a big profit is a gusher. "Well" puns 
   Dividends, Green Fingers; Know Thyself, A Practised Mind, Seven Doors, Ninety-Nine, The World; Dead Reckoning. Renamed: It Works for
   You is **Idle Hands** (a mastered encounter works while yours rest); The Long Sink is **Room to Grow** ("sink" is the economy's word,
   not the player's); Cartographer's Cut is **Chart Topper** (it shared "Cartographer" with ex3 and a title).
-- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**; it is reached through a facility, **the Shrine**.
-  (The owner's v0.1 said "an Internal Shrine Garden, a pocket dimension inside the vessel": the Shrine is the door, the garden what is
-  behind it.)
+- **The garden's name** *(the owner, R59)*: the mechanic is the **Spirit Garden**, a pocket dimension inside your Pneuka Jar; the
+  Pneuka Box is its shed, reachable anywhere. The garden itself is entered only at a **Shrine**. (The owner's v0.1 said "an Internal
+  Shrine Garden": the Shrine is the door, the garden what is behind it.)
 
 ### The worth of a look, in the folk's eyes *(Espada's ruling on prestige, R43; prices are Dovina's, `docs/ECONOMY.md`)*
 The folk rank a glaze the way they rank each other: by the clay it belongs on and how hot it was fired. What a folk wears is common to

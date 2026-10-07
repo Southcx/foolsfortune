@@ -5,8 +5,8 @@ import { sfx } from '../audio/sfx.js';
 // (the rooms' own stations are checkpoints: R takes you back to the last one). Under the rooms, the
 // calibration numbers: the live movement values and the measured chains every space is sized from
 // (the same ones as the hub's metrics board). Like the Codex it pauses the game while it's open.
-// It also opens on a PAGE of its own: the testing room's console shows its Testing page (the drills, their bests, Strawman) in it.
-//   menu.show()   menu.showPage(name, render(im, el))   menu.close()
+// It also opens on a PAGE of its own: the Throwing Room's console shows its page (the drills, their bests, Strawman) in it.
+//   menu.show()   menu.showPage(name, render(im, el), { title, sub })   menu.close()
 // ---------------------------------------------------------------------------
 
 const CSS = `
@@ -72,8 +72,8 @@ export class IndexMenu {
     sfx.lockOn?.(2);
   }
 
-  /** The same window on a page of its own (the testing room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
-  showPage(name, render) { this.page = { name, render }; this.show(); }
+  /** The same window on a page of its own (the Throwing Room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
+  showPage(name, render, { title = null, sub = null } = {}) { this.page = { name, render, title, sub }; this.show(); } // (title/sub: a page that is not the index's own, a Shrine's)
 
   close() {
     if (!this.open) return;
@@ -96,8 +96,8 @@ export class IndexMenu {
     const im = el('div', 'im');
     r.appendChild(im);
     const head = el('header');
-    head.appendChild(el('h2', '', this.page ? `INDEX · ${this.page.name.toUpperCase()}` : 'INDEX'));
-    head.appendChild(el('span', 'sub', this.page ? 'click to begin · F closes' : 'click a room, or its key (or arrows + Enter) · F closes'));
+    head.appendChild(el('h2', '', this.page ? this.page.title || `INDEX · ${this.page.name.toUpperCase()}` : 'INDEX'));
+    head.appendChild(el('span', 'sub', this.page ? this.page.sub || 'click to begin · F closes' : 'click a room, or its key (or arrows + Enter) · F closes'));
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();
     head.appendChild(x);

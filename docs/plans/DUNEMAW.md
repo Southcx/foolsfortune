@@ -53,6 +53,12 @@ artifacts glinting in the walls. Where the Lachryma runs thick, the place warps.
 
 ## The caverns (Petra's layout)
 
+- **Done on the way there (R45, the owner: "slopes super janky", "cramped", "too boxy"):** the present kit's cells are 18 m (were 14),
+  walls 7 m, doorways round **arches** 4 m wide; the sand lies flat along **lanes** from every doorway and pool to the room's middle,
+  and a slope is a ripple-free ramp, its ends rounded (it was ripples on the ramp, 44 degree crests, that stalled the Courier: measured,
+  4.2 m/s walking and 6.8 running held the whole way up now); the walls are **rock** (`world/well/rock.js`), the sand hangs **skirts**.
+  The Well's frame: 70 calls, 99,138 triangles (was 57,228). The carved 25 by 25 cave below is still the plan.
+
 - **The grid** is **25 by 25 cells of 8 m a floor** (200 m square), carved, not boxed: a cave generator (cellular automata over
   the cells, then rooms stamped in at scale). That makes room for spaces of every scale:
   - **pockets**: 1 to 2 cells (8 to 16 m), a pot, a find, a jelly;
@@ -132,7 +138,7 @@ The numbers live in Dovina's file; in short:
 - **Bare:** health 48; the reel 4 sim seconds at x3; the core x2, the body x0.5; it sinks every 12 sim seconds for 3 (a ring 1.2 s before
   it surfaces); the arena slides 0.8 m/s, 1.5 below a third of its health; brood 3 at two thirds and 3 at one third, capped by the
   clutches still whole; reprogrammed below 20% health while it reels or is stunned. Burst pays 2 floors' worth and a crown shard;
-  reprogrammed pays half, and the nursery becomes a Shrine Garden dividend worker.
+  reprogrammed pays half, and the nursery becomes a Spirit Garden dividend worker.
 - **The nursery:** clutches 1, 3, 8 on the three floors, 3 to 6 eggs; a brood every 20 sim seconds while a guard lives and the Courier
   is within 20 m (at most 3 out); clutches return with the next game day's layout; each clutch broken before the fight is 2 brood
   the FOE cannot call; a broken egg leaves **slip roe** (a Garden bed material) 30% of the time.
@@ -158,3 +164,12 @@ The flythrough previews each floor (`src/cine/flythrough.js`).
 4. **Wanda:** the pit's hiss, the slip rivers, the stalactites' beat, the FOE's drop.
 5. **Calissa:** the pit's sand, the slip's material, the stalactites, the pots and artifacts, the urn crown and the core, the brood
    and the clutches.
+
+**R46 pass (Petra): designed rooms that chain** (the owner: "expertly designed rooms and level geometry prefab rooms that can be
+chained together"). `world/well/prefabs.js`: twelve room designs (nine for a cell, three for a hall), each drawn once for a shape of
+doorways (dead end, through, corner, T, crossing) and turned to fit. They chain because each keeps the socket (a lane from every
+doorway to the middle, and the middle, clear), checked by `npm run contracts`. Along the path they are paced: a way through, a fight,
+a breath, never the same design twice running, and a pylon gate before the way down. Dead ends always hold something (a shrine, a
+gallery, the stones' perch). The sand lies low round a design's blocks and steps (`roomSand` `clear`); a jelly waits in a design's
+lair. Measured over 600 floors (seeds 1 to 200, floors 1 to 3): every cell fits its doorways, no repeats on the path; the gap check
+leaks 0 rays; the playtest walks all three floors.

@@ -42,6 +42,10 @@ credits: UAL Standard, CMU mocap, CC0).
   System, help pages, item text) it says "you"; in docs, comments and the folk's talk about the Courier, "they" (or "the Courier"). The
   model is not to change.
 
+## The casebook
+- **Every bug fixed gets a case in `docs/CASEBOOK.md`** (the owner, 2026-10-06): what was seen, the cause as measured, the fix, and the
+  rule it leaves. Read its rules before building in the same area (new level geometry: rule 1, two faces never in one plane).
+
 ## Feedback
 - **The log (`src/feedback/gamelog.js`) is the only text feedback.** No pop-ups, toasts, banners, floating counters or kill-feed in the world or on the HUD; if something deserves a sentence, `tracking.js` writes it (plain third person, FFXI-style, a colour class per kind), and everything else is counted in the ledger (`src/progress/stats.js`) for the achievements. A new feature emits an event (`game.events.emit`) and gets a rule in `tracking.js`; it does not call the log to celebrate. (A refusal at the point of use, "You have no bomb shells.", may `log.say` directly, with a `throttle`.) Event payloads must not use `name` or `t` (the bus's own).
 - **Marks in the world are not text.** A glyph pop (`src/vfx/glyphs.js`: a `!`, `!!!`, `?` over the thing it is about), the interact chevron (`src/courier/interact.js`), the lock-on reticle, the letterbox bars and the fish portrait (`src/vfx/cinema.js`, `portrait.js`) are how the game *shows* something: they sit on the thing, carry no words or numbers, and are diegetic wherever they can be (a line that glows with its load beats a gauge). Anything that needs a sentence still goes to the log.

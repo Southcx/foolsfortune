@@ -81,12 +81,12 @@ Each is a row in `docs/ECONOMY.md` and gets a simulator row before it is built. 
 | # | Livelihood | Owner | Notes |
 |---|---|---|---|
 | D1 | **Materials**: broad kinds (from the v0.1 document's categories), each material with a hue, a saturation and a **path** (a short polyline on the colour map, Potion Craft) | Dovina (data, `src/progress/materials.js`); Calissa (icons by kind) | combat drops them; the deck rule applies |
-| D2 | **The spirit press (Soul Alchemy)**: hopper, igniter, crucible (the owner's concept art). Pressing materials moves the Courier's colour along their paths; reaching a target colour changes a characteristic. Attributes widen and never do a skill (no "Perception: ranged accuracy") | Dovina (rules); Calissa (the press); Petra (the station, in the Shrine Garden) | a station like the kiln (`moves/kiln.js` is the pattern) |
+| D2 | **The spirit press (Soul Alchemy)**: hopper, igniter, crucible (the owner's concept art). Pressing materials moves the Courier's colour along their paths; reaching a target colour changes a characteristic. Attributes widen and never do a skill (no "Perception: ranged accuracy") | Dovina (rules); Calissa (the press); Petra (the station, in the Spirit Garden) | a station like the kiln (`moves/kiln.js` is the pattern) |
 | D3 | **Caster shell crafting** from materials | Dovina (recipes); Petra (the bench) | shells are spells: no spell scrolls |
 | D4 | **Commissions** by Figment class (Guppy to Leviathan), with streaks (OSRS Slayer) | Dovina (rules); Espada (who gives them, and the words); Petra (the board) | |
 | D5 | **Busking and the rhythm mode**: the Crucibelle's ten colour-coded notes (1–5 low, 6–0 high; no chords). In the field it is improvisation (the pentatonic, nothing wrong); at a stage it is a charted, scored mode, with **the charts drawn from the music's own note grid**, not authored by hand. Tips by score | Wanda (the charts from `src/music/`, the stage); Dovina (the scoring and the pay) | begun from a stage in its own room (CLAUDE.md) |
 | D6 | **Throwing pots**: a shape pulled on the wheel (the Soul Brush's skill), glazed at the kiln (colour), sold to the folk | Dovina (rules, prices); Petra (the wheel); Calissa (the pots) | |
-| D7 | **Ranching** caught Figments in the Shrine Garden, and the **mastery dividend** (3 slots, 5%, fills in 8 h: `ECON.dividend`) | Dovina | after E3 |
+| D7 | **Ranching** caught Figments in the Spirit Garden, and the **mastery dividend** (3 slots, 5%, fills in 8 h: `ECON.dividend`) | Dovina | after E3 |
 | D8 | **Foraging and the garden**: fodder materials on timers (OSRS herb runs) | Dovina; Petra | after E3 |
 
 ---
@@ -100,7 +100,7 @@ EXP**. If that loop feels good small, the rest stacks.
 |---|---|---|---|
 | E1 | **A Well**: a spontaneous dungeon on Anagami Island, a Lachryma distortion that changes over time. Seeded rooms, shortcuts opened on later runs, FOEs (Etrian Odyssey), mapped by the Dreamvane and the Veritome | Petra (the dungeon); Dovina (rewards, the seed); Espada (what a Well is) | a zone in `render/zones.js`, as every room |
 | E2 | **Cogitomaps**: a map of a Well as charted is a ticket to a seeded run of it; Spellscription copies a good one; sold, traded and hauled | Dovina (item, value); Petra (the run from a seed) | after E1 |
-| E3 | **The Shrine Garden**: the long sink, a pocket inside the vessel; the press, the slots, the garden | Petra (the place); Dovina (what it costs and pays) | |
+| E3 | **The Spirit Garden**: the long sink, a pocket inside the vessel; the press, the slots, the garden | Petra (the place); Dovina (what it costs and pays) | |
 | E4 | **The Emocean**: travel between Islands of Ego as a node map (FTL) with rail-shooter stages (KH2's gummy ship, but with no parts or progression of its own: the same tools, the same purse) | Petra; Dovina (fuel as a drain, rewards) | a second island is needed for E5 |
 | E5 | **Island demand and hauling**: each island wants different kinds of material, classes of Figment, particular Wells. Demand moves on a slow clock (days) and a glut lowers it (as Grog's prices do). Cargo can be lost on the Emocean leg | Dovina (the model, simulated first) | |
 | E6 | Contractors, Gambits, the grid and the Metronome | held | a Well's tactical layer, later |

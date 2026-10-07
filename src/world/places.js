@@ -13,6 +13,7 @@
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
+import { TR } from './testroom/layout.js';
 
 const r2 = (v) => +v.toFixed(2);
 
@@ -46,6 +47,7 @@ export class Places {
     const to = at.clone().add(off);
     if (zone === 'dunes' && g.dunes?.heightAt) to.y = g.dunes.heightAt(to.x, to.z) + 0.05;
     const yaw = Math.atan2(at.x - to.x, at.z - to.z);
+    if (g.player) g.player.killY = Math.min(g.player.killY ?? -100, to.y - 90); // (the floor under where they are set down, now: casebook 23)
     g.course.teleport(to, yaw);
     return { pos: to, yaw };
   }
@@ -56,6 +58,7 @@ export class Places {
     if (zone === 'well') return null;
     if (g.well?.active) g.well.end?.(false);
     if (zone === 'dunes' && !g.dunes?.active) g.course.toDunes();
+    if (g.player) g.player.killY = Math.min(g.player.killY ?? -100, to.y - 90); // (the world's floor under where they are set down, now: a far dock is 418 m down, and last frame's floor would call it a fall)
     g.course.teleport(to.clone(), yaw);
     return { pos: to, yaw };
   }
@@ -66,6 +69,7 @@ export function installPlaces(game) {
   const P = new Places(game), V = (x, y, z) => new THREE.Vector3(x, y, z);
   P.add('workshop', { name: 'the workshop', at: () => game.player.spawn.clone(), note: 'where a new Courier wakes; the kiln and the folk' });
   P.add('kiln', { name: 'the kiln', at: () => KILN_AT.clone(), yaw: Math.PI, note: 'F: the kiln window (glazes, mending)' });
+  P.add('throwing', { name: 'the Throwing Room', at: () => TR.mark.clone(), yaw: Math.PI / 2, note: 'on the firing mark; F at the Index\'s lectern: the drills' }); // (world/testroom/)
   if (game.course?.console) P.add('index', { name: 'the index console', at: () => V(game.course.console.x, -14, game.course.console.z), note: 'F: the room menu' });
   if (game.dunes) P.add('dunes', { name: 'the dunes', at: () => game.dunes.spawnPoint(), note: 'the sand sea; the Weir is its oasis' });
   if (game.course?.weirSpawn) P.add('weir', { name: 'the Weir', at: () => game.course.weirSpawn.v.clone(), note: 'the oasis: the pools, the pier, the treasury' });
@@ -76,6 +80,7 @@ export function installPlaces(game) {
     P.add('shore', { name: 'the shore', at: () => b.landing().pos, note: 'where the sand meets the Emocean, due east of the oasis' });
     P.add('jetty', { name: 'the jetty\'s end', at: () => b.jetty.end.clone(), note: 'over the crude; the sloop moors here' });
   }
+  if (game.margarite) P.add('margarite', { name: "Margarite's dock", at: () => game.margarite.spot('landing').pos.clone().setX(game.margarite.spot('landing').pos.x - 6), yaw: -Math.PI / 2, note: 'the far end of the crossing: the Pearl Shrine, the Purser, Letty, the pier home' });
   if (game.well) P.add('well.mouth', { name: 'the mouth of the Great Dunemaw', at: () => game.well.mouthPos.clone(), near: 1, note: 'F: down into the Well' }); // (its reach is 2.4 m, and the sand round it slips)
   for (const n of game.folk?.list || []) P.add(`folk.${n.def?.id || n.id}`, { name: n.def?.name || n.name || 'one of the folk', at: () => n.pos.clone(), note: 'F: talk' });
   if (game.chests?.tithe) P.add('tithe', { name: 'the Tithe', at: () => game.chests.tithe.pos.clone(), note: 'the treasury\'s chest' });

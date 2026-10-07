@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TESTING ROOM: a side room off the Workshop's east wall where aim and recoil are measured and Strawman stands (the owner, 2026-10-06:
+// THE THROWING ROOM: a side room off the Workshop's east wall where aim and recoil are measured and Strawman stands (the owner, 2026-10-06:
 // "pots should respawn only if in a designated testing area... move the target plates away from the Kiln to a side room, lump Strawman in
 // there too... make it a whole thing with the calibration room/Index as a means of testing aim and recoil"). What it measures and counts
 // is Dovina's (progress/combat/testroom.js: DRILLS, POTS, WALL, INDEX; Strawman's STRAWMAN and bout() in progress/combat/dunemaw.js); its
@@ -7,7 +7,7 @@
 //
 // The room is 20 by 16 m through a door in the Workshop's east wall: the firing mark a few steps in, the spray wall of soft clay 10 m down
 // the lane from it, the targets that came from beside the kiln on posts along the north side, Strawman on the south side, the twelve pots
-// that come back on a shelf by the door, and the Index's console beside it (F: the Testing page, feedback/indexmenu.js). It measures and
+// that come back on a shelf by the door, and the Index's console beside it (F: the room's page, feedback/indexmenu.js). It measures and
 // never pays: its pots and Strawman are `training` (the ledger never hears them: tracking.js), and a drill run on a tuned game is said but
 // not recorded (feedback/tracking/testroom.js).
 //
@@ -15,7 +15,7 @@
 // practice (a wall that keeps where every shot went), Aim Lab's drills (drills.js), a fighting game's training mode (Strawman).
 //
 //   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
-//   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall
+//   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -32,7 +32,7 @@ export { TR };
 export function buildTestRoom(level) {
   const C = PALETTE, { x0, x1, z0, z1, h } = TR, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
   const shell = { outline: false, shadow: false };
-  level.box([cx, -0.25, cz], [w, 0.5, d], C.floor);
+  level.box([cx, -0.25, cz], [w, 0.5, d], C.floor, { outline: false }); // (a floor has no outline: the hull's top lay in the floor's own plane and fought it for the pixels, the owner's R45 report; the Workshop's slabs, basement.js groundFloor, are the same)
   level.box([cx, h + 0.25, cz], [w + 1, 0.5, d + 1], C.deep, shell);
   level.box([x1 + 0.25, h / 2, cz], [0.5, h, d + 1], C.wall, shell);
   level.box([cx, h / 2, z0 - 0.25], [w, h, 0.5], C.wall, shell);
@@ -45,9 +45,11 @@ export function buildTestRoom(level) {
     for (const z of [z0 + 0.2, z1 - 0.2]) level.box([x, h / 2, z], [0.45, h, 0.4], C.dark, { shadow: false });
   }
   // the lane: a strip of darker floor from the mark to the wall, and the mark itself (a ring the shooter stands in)
-  level.box([(TR.mark.x + TR.wall.x) / 2, 0.006, TR.mark.z], [TR.wall.x - TR.mark.x, 0.01, 0.9], C.deep, { outline: false, collide: false, shadow: false });
+  // (the lane stands 1.5 cm over the planks, the ring 1 cm over the lane: a plank lies right under the lane, and at 1 mm apart the two
+  // fought for the same pixels seen from the door, 15 to 20 m off: the owner, R45)
+  level.box([(TR.mark.x + TR.wall.x) / 2, 0.02, TR.mark.z], [TR.wall.x - TR.mark.x, 0.01, 0.9], C.deep, { outline: false, collide: false, shadow: false });
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.55, 0.7, 24), new THREE.MeshBasicMaterial({ color: C.glow }));
-  ring.rotation.x = -Math.PI / 2; ring.position.set(TR.mark.x, 0.012, TR.mark.z); level.scene.add(ring);
+  ring.rotation.x = -Math.PI / 2; ring.position.set(TR.mark.x, 0.035, TR.mark.z); level.scene.add(ring);
   // the spray wall: a slab of soft clay on a timber frame, its face at TR.wall.x; a cross at the aim point (no numbers: docs/LOOK.md)
   const W = TR.wall, wallCol = level.box([W.x + 0.2, 0.3 + WALL.height / 2, W.z], [0.4, WALL.height, WALL.width], C.pale);
   level.box([W.x + 0.3, 0.15, W.z], [0.6, 0.3, WALL.width + 0.4], C.wood);
@@ -81,7 +83,7 @@ export class TestRoom {
     if (built?.wallCol) g.physics.register(built.wallCol, this.wall);
     this.strawman = this.makeStrawman();
     this.drills = new Drills(g, this);
-    // F: the console opens the Index on its Testing page; Strawman cycles its mode
+    // F: the console opens the Index on its page; Strawman cycles its mode
     g.interact?.add('testroom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);
       return dd < 1.8 && Math.abs(P.pos.y - TR.console.y) < 1.2 ? { pos: TR.console.clone().setY(1.75), d: dd } : null;
@@ -105,7 +107,7 @@ export class TestRoom {
     const face = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.36), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
     face.position.set(0, 1.13, 0.02); face.rotation.x = -Math.PI / 2 - 0.35; grp.add(face); // (lying on the slanted top)
     grp.position.copy(TR.console); grp.rotation.y = Math.PI / 2; // (facing into the room: +x)
-    g.scene.add(grp);
+    g.scene.add(grp); this.console = grp; // (Calissa dresses it: vfx/testroomkit.js)
     const col = g.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.3, 0.55, 0.3).setTranslation(TR.console.x, 0.55, TR.console.z).setCollisionGroups(GROUPS.static));
     this.consoleCol = col;
   }
@@ -159,7 +161,7 @@ export class TestRoom {
       const M = STRAWMAN.modes, S = this.strawman;
       S.setMode(M[(M.indexOf(S.mode) + 1) % M.length]);
     }
-    if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('testing', (im, el) => this.drills.page(im, el)); }
+    if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);
   }
 }

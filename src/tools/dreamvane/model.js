@@ -71,6 +71,42 @@ export class DreamvaneModel {
   /** A fork to throw (a copy of the one in the heel, the same look), its point toward its own -X. */
   forkMesh() { const f = this.makeFork(this.forkMats.steel, this.forkMats.brass); f.scale.setScalar(FORK); f.traverse((o) => { if (o.isMesh) o.castShadow = true; }); return f; }
 
+  /** The weather vane on the crook's head (vfx/vanemeter.js drives it): a brass rose of five petals, the feelings in their shown order,
+   *  each faintly its colour; a needle turning about the staff to point at the mood, its head the mood's colour and its tail the agate's
+   *  second; two streamers from the tail, longer with the mood's strength, slack in calm. Built on first use. */
+  vane() {
+    if (this.vaneG) return this.vaneG;
+    const V = (this.vaneG = new THREE.Group()); V.position.set(1.0 + 0.11 * HOOK + 0.06, 0.11 * HOOK, 0); V.scale.setScalar(1.6); this.group.add(V);
+    const brass = new THREE.MeshStandardMaterial({ name: 'vane-brass', color: BRASS, metalness: 0.7, roughness: 0.35 });
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.07, 6), brass); post.rotation.z = -Math.PI / 2; post.position.x = -0.02; V.add(post);
+    this.petals = [];
+    for (let i = 0; i < 5; i++) { // (the rose: five petals round the post, in the plane across the staff)
+      const a = (i / 5) * Math.PI * 2, m = new THREE.MeshStandardMaterial({ name: 'vane-petal', color: 0x8a6a3a, metalness: 0.5, roughness: 0.4, emissive: 0x000000 });
+      const pet = new THREE.Mesh(new THREE.ConeGeometry(0.012, 0.035, 4), m); pet.position.set(0.012, Math.cos(a) * 0.05, Math.sin(a) * 0.05); pet.rotation.x = a; V.add(pet); this.petals.push(m);
+    }
+    const N = (this.vaneNeedle = new THREE.Group()); N.position.x = 0.03; V.add(N);
+    this.vaneHead = new THREE.MeshStandardMaterial({ name: 'vane-head', color: 0xffffff, roughness: 0.4, emissive: 0xffffff, emissiveIntensity: 0.25 });
+    this.vaneTail = new THREE.MeshStandardMaterial({ name: 'vane-tail', color: 0xffffff, roughness: 0.5, side: THREE.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.15 });
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.005, 0.13, 0.005), brass); N.add(shaft);
+    const head = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.04, 4), this.vaneHead); head.position.y = 0.085; N.add(head);
+    const fin = new THREE.Mesh(new THREE.PlaneGeometry(0.004, 0.045), this.vaneTail); fin.scale.x = 8; fin.position.y = -0.06; N.add(fin);
+    this.streamers = [-1, 1].map((sd) => { // (ribbons from the tail: their length is the strength, scaled at runtime)
+      const g2 = new THREE.PlaneGeometry(0.012, 0.2, 1, 6); g2.translate(0, -0.1, 0);
+      const st = new THREE.Mesh(g2, this.vaneTail); st.position.set(0, -0.08, sd * 0.008); N.add(st); return st;
+    });
+    return V;
+  }
+
+  /** The vane: the needle's turn about the staff, its head's and tail's colours, the mood's strength (0 calm); `t` for the streamers' flutter. */
+  setVane(angle, head, tail, strength, t = 0, petals = null) {
+    this.vane();
+    this.vaneNeedle.rotation.x = angle;
+    this.vaneHead.color.copy(head); this.vaneHead.emissive.copy(head);
+    this.vaneTail.color.copy(tail); this.vaneTail.emissive.copy(tail);
+    this.streamers.forEach((st, i) => { st.scale.y = 0.15 + 1.1 * strength; st.rotation.x = (1 - strength) * 0.15 + Math.sin(t * (5 + 4 * strength) + i * 1.7) * 0.35 * strength; st.rotation.z = (i ? 1 : -1) * (0.2 + 0.5 * strength); });
+    if (petals) this.petals.forEach((m, i) => m.color.setHex(petals[i]).multiplyScalar(0.6));
+  }
+
   /** The needle: the catcher turned toward what it hears (in the staff's frame: yaw about the staff, pitch across it), its web lit. */
   setDowse(yaw, pitch, glow) {
     this.catcher.rotation.set(yaw, 0, pitch);

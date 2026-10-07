@@ -6,7 +6,7 @@
 // off the bristles in the direction the head was going, which splats where it lands and is wet enough to dive into.
 //
 //   LMB        a three-blow combo (the third an overhead that strikes the ground)
-//   LMB held   after the blow, the brush goes up and back and gathers (Zelda's spin-attack charge): let go to bring it down,
+//   LMB held   in the air: after the blow, the brush goes up and back and gathers (Zelda's spin-attack charge): let go to bring it down,
 //              the harder the longer it was held. On the ground: a SLAM, a ring that throws what is near (what breaks, breaks where it
 //              lands), a pool of slip where it struck. In the air: they go down with it, and it strikes where they land.
 //
@@ -117,7 +117,12 @@ export class Club {
     this.sweep(b);
     if (b.ground && !this.struckGround && this.t >= b.ground) { this.struckGround = true; if (P.grounded) this.strike(0.45, 'bashed'); }
     // held through the blow: it goes up, and gathers
-    if (this.held >= SLAM.hold && this.t >= (b.hit[1] + b.dur) / 2 - 0.1) { this.blow = null; this.charge = 0; this.struckGround = false; sfx.brushCharge?.(); return; }
+    // (on the ground the hold saturates the bristles for the brush's mode (tools/soulbrush/load.js); in the air it is the slam: a ground pound)
+    if (this.held >= SLAM.hold && this.t >= (b.hit[1] + b.dur) / 2 - 0.1) {
+      this.blow = null; this.struckGround = false;
+      if (P.grounded && this.tool.load) { this.idle = 0; this.tool.load.begin(); } else { this.charge = 0; sfx.brushCharge?.(); }
+      return;
+    }
     if (b.chain.length && this.buffer > 0 && this.t >= b.chain[0] && this.t <= b.chain[1]) { this.struckGround = false; this.start(this.n + 1); return; }
     if (this.t >= b.dur) { this.blow = null; this.idle = 0; this.struckGround = false; if (b.rec) this.rec = { clip: b.rec, t: 0, dur: 0.75 }; }
   }

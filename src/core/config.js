@@ -267,6 +267,10 @@ export const DEFAULTS = {
   // Movement techs (src/courier/moves/): optional techniques over the core movement above. Each
   // has an `enabled` switch; off, the core behaves exactly as if the tech didn't exist.
   tech: {
+    // the jet arts (courier/moves/jets.js): opt-in, off until switched on (the chat line's /art); they spend the Soul Brush's load
+    hover: { enabled: false, cost: 8, time: 1.6, lift: 1.2, speed: 6, steer: 4 },
+    rocket: { enabled: false, cost: 20, charge: 0.55, speed: 17 },
+    skim: { enabled: false, cost: 5, speed: 11, minSpeed: 6 },
     blink: { enabled: true, distance: 5.5, time: 0.09, charges: 2, recharge: 1.8, exitSpeed: 7, airLift: 1.5, ghostLife: 0.45 }, // E
     slam: { enabled: true, lookDown: 30, minHeight: 1.8, speed: 24, steer: 3, radius: 3.2, breakFrac: 0.45, velocity: 9, window: 0.3, jumpMult: 1.15, jumpPerMetre: 0.06, jumpMax: 1.9, slidePerMetre: 0.35 }, // C in the air, looking down
     stomp: { enabled: true, minSpeed: 2, bounce: 8.5 }, // land on a pot or a clapperjar
@@ -336,6 +340,24 @@ export const DEFAULTS = {
   },
   audio: {
     volume: 0.7,
+  },
+  // the sloop on the rail (courier/ship/, world/emocean/): the crossing's feel (docs/plans/RAIL.md section 8, Dovina's proposals, Petra's
+  // to own). Metres, real seconds; a bar is 1.5 s at the cue's 160 bpm.
+  ship: {
+    speed: 26, // the rail's speed along the crossing (m/s): 150 s of cue is a 3.9 km crossing
+    box: { x: 7, yLo: 1.2, yHi: 7, z: 7 }, // the box the ship moves in, about the rail (lateral, height, fore and aft in the above/side views)
+    top: 14, spring: 12, // top speed in its plane (m/s), and the critically damped spring that brings it there (w)
+    bank: 3.5, bankMax: 50, pitch: 2.5, pitchMax: 25, // degrees per m/s of sideways (vertical) speed, and the most
+    cam: { up: 2.2, back: 7.5, follow: 0.35, lag: 6 }, // the chase camera: above and behind the rail, following a share of the ship's offset
+    reticles: [12, 36], // the two reticles' depths along the aim (Star Fox 64)
+    shot: { speed: 70, life: 0.9, radius: 0.35 }, // the gun: a shot each sixteenth note while LMB is held
+    lock: { max: 8, reach: 0.14, cost: 3, lance: 4 }, // the sweep: up to 8 painted, within this much of the screen of the reticle; Lachryma a lance; shots a lance is worth
+    roll: { time: 0.35, turns: 0.25, charges: 2, recharge: 3 }, // the barrel roll: its length, how long it turns plain shots, its charges and their refill (s)
+    hurt: 0.35, mercy: 1.0, // the hurtbox's radius (the ship is 1.6 m), and the untouchable time after a hit
+    boost: { ahead: 6, behind: 4, rate: 10 }, // boost and brake: how far the ship's place along the rail may move, and how fast
+    hitstop: { heavy: 0.08, mid: 0.04 }, // a heavy's or a part's down; a Marlin's; none on fish
+    trauma: { hit: 0.5, heavy: 0.3, decay: 1.5 }, // screen shake as trauma squared (Eiserloh)
+    absorb: 2, // Lachryma a shot of the ship's feeling gives when it is drunk
   },
 };
 

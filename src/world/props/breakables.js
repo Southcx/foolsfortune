@@ -311,7 +311,7 @@ export class Breakables {
     if (ent.marked) this.game.baubles?.spawn(center, T.lachryma.markedDrop);
     this.onGone(ent, new THREE.Vector3(t.x, t.y, t.z));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
-    if (ent.def.baubles) this.game.baubles?.spawn(center, ent.def.baubles); // (the testing room's pots: Lachryma to keep firing, nothing else)
+    if (ent.def.baubles) this.game.baubles?.spawn(center, ent.def.baubles); // (the Throwing Room's pots: Lachryma to keep firing, nothing else)
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0), cause === 'sliced' ? 0.6 : 1);
     if (ent.def.ember || ent.ember) this.fx.after(cause === 'sliced' ? 0.35 : 0.03, () => this.explode(center, { who: 'courier' }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
@@ -541,7 +541,7 @@ export class Breakables {
     this.onGone(ent, bodyPos);
     ent.extras?.forEach((x) => this.spawnConvexFromMesh(x, dir, ent.color));
     if (ent.def.lantern) { this.fx.embers(center, 30); this.game.baubles?.spawn(center, 1, { up: 1 }); }
-    if (ent.def.baubles) this.game.baubles?.spawn(center, ent.def.baubles); // (the testing room's pots: Lachryma to keep firing, nothing else)
+    if (ent.def.baubles) this.game.baubles?.spawn(center, ent.def.baubles); // (the Throwing Room's pots: Lachryma to keep firing, nothing else)
     if (ent.def.slip) this.game.shells?.spill(center, dir || new THREE.Vector3(0, -1, 0));
     if (ent.def.ember || ent.ember) this.fx.after(0.03, () => this.explode(center, { who }));
     if (ent.def.respawn) this.fx.after(ent.def.respawn, () => this.spawn({ ...ent.def, popIn: true }));
@@ -555,7 +555,7 @@ export class Breakables {
       this.game.baubles?.spawn(c, T.clappers.kintsugiDrop * ent.gold);
       this.fx.glitter([c], c, UP, new THREE.Color(0xf2b24a));
     }
-    // (a broken pot stays broken: only one marked `wreck` leaves a site the clapperjars rebuild; the testing room's come back by their own
+    // (a broken pot stays broken: only one marked `wreck` leaves a site the clapperjars rebuild; the Throwing Room's come back by their own
     // `respawn` (the owner, 2026-10-06: "pots should respawn only if in a designated testing area, not the whole workshop"))
     if (!def.wreck || def.hang || def.lantern || def.ember || def.slip || def.target || def.respawn || ent.size < 0.2) return;
     // the site is the floor under where it broke

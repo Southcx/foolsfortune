@@ -530,6 +530,14 @@ export class Player {
   move(dt) {
     const want = { x: this.vel.x * dt + this.shove.x, y: this.vel.y * dt, z: this.vel.z * dt + this.shove.z };
     this.shove.set(0, 0, 0);
+    // on a slope, the move goes along the ground, not into it: tipped onto the ground's plane. Handed a level move, the controller
+    // climbed a ramp in uneven jumps (6 to 59 mm a frame where 38 was due, its climb and autostep taking turns) and the body shook
+    // with them (Petra measured it on a Dunemaw ramp at a run, R46). Level ground (n straight up) leaves the move exactly as it was.
+    if (this.grounded && this.vel.y === 0) {
+      const n = this.groundNormal();
+      if (n.y < 0.9995 && n.y > Math.cos(T.movement.maxSlope * DEG)) want.y -= // (up to the controller's own climb limit)
+         (n.x * want.x + n.z * want.z) / n.y;
+    }
     const opts = [QF.EXCLUDE_SENSORS, GROUPS.controllerQuery];
     this.ctrl.computeColliderMovement(this.collider, want, ...opts);
     let mv = this.ctrl.computedMovement();

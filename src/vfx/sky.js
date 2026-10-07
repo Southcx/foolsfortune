@@ -25,6 +25,54 @@ export const SKY_GLSL = `
 vec2 skyUv(vec3 d) { return vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d.y, -1.0, 1.0)) * 0.31830989 + 0.5); }
 `;
 
+
+// THE NIGHT ALIVE (the owner, R46: "make the night sky feel more alive"; the evaluation is docs/ART.md, "The night sky"): laid over the
+// night painting in the dome's own shader, so it costs no draw call. STARS of our own on a wheel turning about a tilted pole (one turn
+// a game day), each at least a pixel and a half across so the turning field never crawls, twinkling slowly and more near the horizon
+// (as starlight scintillates through more air); now and then a METEOR; and at the Shore, an AURORA's curtains low over the sea.
+const NIGHT_GLSL = /* glsl */`
+uniform float uNT, uWheel, uAur, uMetK; uniform vec2 uAurDir; uniform vec3 uMetS, uMetE;
+float nh1(float x) { return fract(sin(x * 127.1) * 43758.5453); }
+float nn1(float x) { float i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(nh1(i), nh1(i + 1.0), f); }
+vec3 nh3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
+vec3 nightAlive(vec3 c, vec3 d, float k) {
+  float lum = dot(c, vec3(0.299, 0.587, 0.114)), dark = 1.0 - smoothstep(0.18, 0.5, lum), up = smoothstep(0.0, 0.1, d.y);
+  // the wheel: the sky turned about a pole 35 degrees off the zenith, toward the north (-z)
+  vec3 P = normalize(vec3(0.0, 0.819, -0.574)); float ca = cos(uWheel), sa = sin(uWheel);
+  vec3 r = d * ca + cross(P, d) * sa + P * dot(P, d) * (1.0 - ca);
+  vec3 q = r * 70.0, cell = floor(q), h = nh3(cell), f = fract(q);
+  float px = max(fwidth(q.x) + fwidth(q.y) + fwidth(q.z), 1e-4) * 0.5;                  // (a pixel, in the star field's own units)
+  if (h.x < 0.16) {                                                                       // (one cell in six holds a star)
+    vec3 at = 0.25 + 0.5 * nh3(cell + 17.0);
+    float mag = pow(h.y, 5.0), rad = px * (0.75 + 0.9 * mag);                             // (most faint; at least a pixel and a half across)
+    float tw = 1.0 + (0.25 + 0.45 * (1.0 - smoothstep(0.0, 0.5, d.y))) * sin(uNT * (0.8 + 1.4 * h.z) + h.x * 40.0); // (a slow twinkle, deeper low down)
+    float s = 1.0 - smoothstep(rad * 0.5, rad, length(f - at));
+    vec3 col = mix(vec3(0.75, 0.82, 1.0), vec3(1.0, 0.86, 0.7), h.z);
+    c += col * s * (0.35 + 1.6 * mag) * tw * dark * up * k;
+  }
+  // a meteor: a short bright streak along its path, its tail fading behind the head
+  if (uMetK >= 0.0) {
+    vec3 hd = normalize(mix(uMetS, uMetE, uMetK)), tl = normalize(mix(uMetS, uMetE, max(0.0, uMetK - 0.3)));
+    vec3 ab = hd - tl; float t = clamp(dot(d - tl, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+    float w = length(fwidth(d)) * 2.0, m = 1.0 - smoothstep(0.0, w, length(d - (tl + ab * t)));
+    c += vec3(0.95, 0.92, 1.0) * m * t * t * (1.0 - uMetK * uMetK) * 2.6 * up * k;
+  }
+  // the aurora: curtains low over the sea, hemmed in labradorite's green, lapis above, violet at the top, drifting and folding slowly
+  if (uAur > 0.001) {
+    float az = atan(d.z, d.x), da = abs(atan(sin(az - uAurDir.x), cos(az - uAurDir.x)));
+    float sector = 1.0 - smoothstep(uAurDir.y * 0.6, uAurDir.y, da), u = az * 2.0;
+    float e = asin(clamp(d.y, -1.0, 1.0));
+    float fold = nn1(u * 6.0 + nn1(u * 1.7 + uNT * 0.03) * 4.0 + uNT * 0.05);
+    float hem = 0.03 + 0.05 * nn1(u * 3.0 + uNT * 0.04), top = hem + 0.18 + 0.22 * fold;      // (radians of elevation: a frayed curtain)
+    float body = smoothstep(hem - 0.01, hem + 0.025, e) * (1.0 - smoothstep(top * 0.6, top, e));
+    float rays = 0.55 + 0.45 * nn1(u * 90.0 + fold * 8.0 + uNT * 0.02);
+    float y = clamp((e - hem) / max(top - hem, 0.01), 0.0, 1.0);
+    vec3 ac = mix(vec3(0.15, 0.95, 0.6), vec3(0.2, 0.35, 1.0), smoothstep(0.1, 0.6, y));
+    ac = mix(ac, vec3(0.6, 0.25, 0.9), smoothstep(0.6, 1.0, y));
+    c += ac * body * rays * sector * (0.4 + 0.6 * fold) * uAur * 0.9 * (0.5 + 0.5 * dark);
+  }
+  return c;
+}`;
 export class Sky {
   constructor(game) {
     this.game = game;
@@ -35,7 +83,11 @@ export class Sky {
     this.GLSL = SKY_GLSL;
     this.px = null; this.W = 0; this.H = 0;
     this.G = { uSkyDay: { value: null }, uSkyNight: { value: null }, uDay: { value: 0 }, uNight: { value: 0 }, uExpo: { value: 1 }, uMul: { value: new THREE.Color(1, 1, 1) },
-      uStars: { value: 1 }, uDesat: { value: 0 }, uHaze: { value: new THREE.Color(0, 0, 0) }, uHazeK: { value: 0 } };
+      uStars: { value: 1 }, uDesat: { value: 0 }, uHaze: { value: new THREE.Color(0, 0, 0) }, uHazeK: { value: 0 },
+      // the night alive (vfx/nightsky.js drives them): its clock (real seconds), the stars' wheel (radians), the aurora (amount; its bearing
+      // and half-width), and a meteor (its start and end directions; its age 0..1, below 0 none)
+      uNT: { value: 0 }, uWheel: { value: 0 }, uAur: { value: 0 }, uAurDir: { value: new THREE.Vector2(0, 1.1) },
+      uMetS: { value: new THREE.Vector3(1, 0, 0) }, uMetE: { value: new THREE.Vector3(1, 0, 0) }, uMetK: { value: -1 } };
   }
 
   /** The grade over the paintings (the hour and the weather): the day's and the night's shares (the rest is dusk), an exposure, a
@@ -116,6 +168,7 @@ void main() {
       fragmentShader: `varying vec3 vD; uniform vec3 uSun; uniform float uTime; uniform sampler2D uSky;
 uniform sampler2D uSkyDay, uSkyNight; uniform float uDay, uNight, uExpo, uStars, uDesat, uHazeK; uniform vec3 uMul, uHaze;
 ${SKY_GLSL}
+${NIGHT_GLSL}
 void main() {
   vec3 d = normalize(vD);
   vec3 c = texture2D(uSky, skyUv(d)).rgb;
@@ -130,6 +183,7 @@ void main() {
   // the moon where the sun was (the light's one direction): a cool small disc, its limb a little darker, and a faint ring of haze
   float md = dot(d, normalize(uSun)), disc = smoothstep(0.99985, 0.99992, md);
   c = mix(c, vec3(0.82, 0.86, 0.95) * (0.75 + 0.25 * smoothstep(0.99985, 0.99998, md)), disc * uNight) + vec3(0.45, 0.55, 0.8) * pow(sd, 300.0) * 0.12 * uNight;
+  if (uNight > 0.01) c = nightAlive(c, d, (1.0 - disc) * uNight * min(1.0, uExpo * 1.5)); // (the stars, a meteor, the aurora: vfx/nightsky.js)
   gl_FragColor = vec4(max(c, 0.0), 1.0);
   #include <colorspace_fragment>
 }`,

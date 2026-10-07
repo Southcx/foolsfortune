@@ -31,6 +31,8 @@
 // Unity's IDamageable): the attacker calls one method and the target decides what it means.
 //
 //   game.creatures.add(c)   .near(p, r)   .strike(c, point, dir, power, cause, by, from?, type?)   .apply(c, status, dur, k)   st(c, status)
+//   .windup(c, { at, radius, eta, kind, parry, part })   .unwind(c)   .windups(pos, r)   .parried(c)   (a telegraphed blow, for the parry:
+//   courier/parry.js answers what is listed in reach; `part` is the striking part, worn with the parry mark while it can be answered)
 //   stateOf(c.mind) (mind.js) names a creature's state; c.emo, c.build[type] are its numbers
 // ---------------------------------------------------------------------------------------
 import { hasTag } from '../core/tags.js';
@@ -110,6 +112,25 @@ export class Creatures {
     return true;
   }
   clearStatus(c, name) { c.status.delete(name); }
+  /** A creature's telegraphed blow: what a parry in its window answers (docs/plans/PARRY.md). Cleared when it lands or is cancelled
+   *  (`unwind`), or `eta` and a breath after, whichever is first. `at` may be a live vector (a lunge's body). A blow that cannot be
+   *  parried (a grab, a ram) passes `parry: false`: telegraphed by its own body, never marked. */
+  windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null } = {}) {
+    this.unwind(c);
+    c.windup = { at, radius, eta, kind, parry, t: eta + 0.3, mark: parry && part ? this.game.parryMark?.mark(part, { eta }) : null };
+  }
+  unwind(c) { c.windup?.mark?.clear(); if (c.windup) c.windup = null; }
+  /** The answerable blows winding up within r of pos (nearest first). */
+  windups(pos, r) {
+    const out = [];
+    for (const c of this.list) {
+      const w = c.windup; if (!c.alive || c.ally || !w?.parry) continue;
+      const d = w.at.distanceTo(pos); if (d <= r + w.radius) out.push([d, c]);
+    }
+    return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  }
+  /** A blow answered by a parry: it breaks off (the creature decides how: `onParried`, else its `cancel`). */
+  parried(c) { this.unwind(c); if (c.onParried) c.onParried(); else c.cancel?.('parried'); }
   /** A mind that has crossed into another state says so (`creature.mind`: the sound of it going Prismatic is Wanda's, by cues.js). */
   mindMoved(c, by) {
     const id = stateOf(c.mind).id;
@@ -122,6 +143,7 @@ export class Creatures {
     const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
+      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(Math.max(0, w.t - 0.3)); if (w.t <= 0 || !c.alive) this.unwind(c); }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
       c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');

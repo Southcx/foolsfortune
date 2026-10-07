@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE WIRE COMPASS: which way they face and where the waypoint is, as a tape of ticks drawn in the Mind's lines across the top of
 // the view, and a wire diamond standing over the waypoint in the world. No letters, no degrees, no metres (docs/LOOK.md 6): north is
-// the tall tick with a diamond on it, east, south and west the middling ones; the waypoint is a diamond on the tape at its bearing and
+// the tall tick, east, south and west the middling ones, each with its glyph under it (the sun's road: CARDINAL); the waypoint is a diamond on the tape at its bearing and
 // another over the place itself, drawn through walls, a fixed size on the screen. The map is still the map (M); the room they are in
 // is said by the log as they enter it (place.enter -> tracking.js).
 //
@@ -38,6 +38,28 @@ void main() {
   gl_FragColor = vec4(labSoft(labPhase(vW, normalize(-d))) * (0.8 + 0.4 * vSize), uAlpha * fade * (0.45 + 0.55 * vSize));
 }`;
 
+// The four quarters as the sun's road, not letters (the owner, R45: "glyphs of some form denoting the cardinal directions"): NORTH the
+// pole star (four points, the one that does not move); EAST the sun rising (half a disc on the horizon, its rays); SOUTH the sun at noon
+// (the astronomer's sun, a ring with its point); WEST the moon of evening (a crescent). Line segments in a unit square, u along the
+// tape, v up. Prior art: the compass rose's own marks (the fleur-de-lis at north and the cross at east on the portolan charts), the
+// sun and moon glyphs of the almanac, and Okami's and Zelda's sun-and-moon dials.
+const arc = (cx, cy, r, a0, a1, n = 12) => Array.from({ length: n }, (_, i) => {
+  const t0 = a0 + ((a1 - a0) * i) / n, t1 = a0 + ((a1 - a0) * (i + 1)) / n;
+  return [cx + Math.cos(t0) * r, cy + Math.sin(t0) * r, cx + Math.cos(t1) * r, cy + Math.sin(t1) * r];
+});
+const CARDINAL = [
+  // north: the pole star, four long points and four short
+  [[0, 1, 0.18, 0.18], [0.18, 0.18, 1, 0], [1, 0, 0.18, -0.18], [0.18, -0.18, 0, -1], [0, -1, -0.18, -0.18], [-0.18, -0.18, -1, 0], [-1, 0, -0.18, 0.18], [-0.18, 0.18, 0, 1],
+    [0.42, 0.42, 0.12, 0.12], [-0.42, 0.42, -0.12, 0.12], [0.42, -0.42, 0.12, -0.12], [-0.42, -0.42, -0.12, -0.12]],
+  // east: the sun rising on the horizon
+  [[-1, -0.45, 1, -0.45], ...arc(0, -0.45, 0.55, 0, Math.PI, 8),
+    ...[0.2, 0.5, 0.8].map((k) => { const a = k * Math.PI; return [Math.cos(a) * 0.75, -0.45 + Math.sin(a) * 0.75, Math.cos(a) * 1.0, -0.45 + Math.sin(a) * 1.0]; })],
+  // south: the sun at noon, a ring and its point
+  [...arc(0, 0, 0.8, 0, Math.PI * 2, 16), [-0.1, 0, 0.1, 0], [0, -0.1, 0, 0.1]],
+  // west: the crescent of evening
+  [...arc(0, 0, 0.85, Math.PI * 0.35, Math.PI * 1.65, 12), ...arc(0.38, 0, 0.62, Math.PI * 0.62, Math.PI * 1.38, 10)],
+];
+
 export class WireCompass {
   constructor(game) {
     this.game = game;
@@ -49,10 +71,10 @@ export class WireCompass {
       const cardinal = deg % 90 === 0, north = deg === 0;
       const h = north ? 0.6 : cardinal ? 0.42 : deg % 45 === 0 ? 0.26 : 0.16;
       add(new THREE.Vector3(x * R, -h, z * R), new THREE.Vector3(x * R, h, z * R), north ? 1 : cardinal ? 0.7 : 0.3);
-      if (north) { // a diamond on north's tick
-        const s = 0.2, y = h + 0.28, tx = Math.cos(b), tz = Math.sin(b); // (along the tape)
-        const P = (u, v) => new THREE.Vector3(x * R + tx * u, y + v, z * R + tz * u);
-        add(P(0, s), P(s, 0), 1); add(P(s, 0), P(0, -s), 1); add(P(0, -s), P(-s, 0), 1); add(P(-s, 0), P(0, s), 1);
+      if (cardinal) { // the quarter's glyph, under its tick (above is the Dreamvane's sigil's: vfx/vanehud.js)
+        const s = 0.36, y = -h - 0.5, tx = Math.cos(b), tz = Math.sin(b); // (along the tape)
+        const P = (u, v) => new THREE.Vector3(x * R + tx * u * s, y + v * s, z * R + tz * u * s);
+        for (const [u0, v0, u1, v1] of CARDINAL[deg / 90]) add(P(u0, v0), P(u1, v1), north ? 1 : 0.8);
       }
     }
     // and the line the ticks stand on, faint

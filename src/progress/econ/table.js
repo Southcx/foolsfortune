@@ -76,6 +76,9 @@ export const ECON = {
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 6, 'key.twin': 10, 'key.wide': 8, 'key.echo': 6, // (loaded and echo, the
     // conversion keys, were 8 and 12: the owner made them cheaper, 2026-10-04)
     'heart.gambler': 20, 'heart.shepherd': 20,
+    // the Lachrymato Bottles (progress/brushload.js): bigger is dearer and riskier; placeholders until the economy has a brush profile
+    'bottle.small': 10, 'bottle.medium': 25, 'bottle.large': 50,
+    'whistle.wake': 8, // (the Wake Whistle: the toll on the pay does the rest at depth, docs/plans/SHRINES.md)
   },
   /** What a look costs at the kiln (a glaze, a stone, a hair, a skin), by its PRESTIGE: the folk's own clay ladder (docs/LORE.md), from
    *  Earthenware (yours from the start, free) through Stoneware and Porcelain to the Court, each about 2.5 times the last (value is felt
@@ -109,6 +112,10 @@ export const ECON = {
   /** A WELL (a dungeon): each floor down pays `perFloor` minutes of play, `deeper` times more than the floor above; an FOE beaten pays
    *  `foe` floors' worth. */
   well: { perFloor: 2.5, deeper: 1.25, foe: 2 },
+  /** The Wake Whistle (`whistle.wake`, Espada's name; docs/plans/SHRINES.md): out of a Well alive, to its mouth. A run walked up pays all
+   *  of it; one escaped pays `keep` of it (the haul and the map kept whole); one shattered pays nothing. One carried at a time; `channel`
+   *  real seconds of use, broken by a blow (a way out when you have a breath, not a dodge mid-blow). Its price is in `goods`. */
+  escape: { item: 'whistle.wake', keep: 0.75, carry: 1, channel: 1.5 },
   /** A COGITOMAP: a ticket to a seeded run of a Well, as it was the day it was charted. Worth `share` of what that run paid, by how
    *  much of it was charted, times what its Well still holds (its yield at the fill it has now: progress/shop/shops.js `still`). No
    *  clock rots it (the owner, R58): a map is a claim on a feeling still there, so farming a Well cheapens its maps and letting it
@@ -164,12 +171,12 @@ export const ECON = {
 
   // ---- the mastery dividend (docs/ECONOMY.md, rule 6; not built yet: the simulator's numbers to aim at)
   /** An encounter whose ledger is complete pays on its own: `share` of what farming it by hand pays an hour, accruing for at most
-   *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Shrine Garden's `slots` (which mastered
+   *  `capHours` (a night, or a working day) before it waits to be collected, in one of the Spirit Garden's `slots` (which mastered
    *  encounters to work is a choice, as in OSRS's Miscellania; without slots every green log would add a faucet for good). Tuned so a
    *  player of two hours a day with every slot full gets about 0.6 x the aim on top of their play (scripts/economy.mjs). */
   dividend: { share: 0.05, capDays: 8, slots: 3 }, // (the cap: 8 game days, 8 real hours, a working day or a night's sleep away: DESIGN.md 16)
 
-  // ---- the Shrine Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
+  // ---- the Spirit Garden and Soul Alchemy (DESIGN.md section 16; progress/garden.js, progress/alchemy.js)
   /** THE GARDEN: what a mastered encounter is worth farming by hand an hour (the aim, until each encounter has its own rate), the beds
    *  (`beds` to start, a material growing `growHours` game hours into `yield` of its kind), and the upgrades (the long sink): the n-th
    *  extra slot or bed costs `upgrade[kind][n]` minutes of play, dearer each time. */

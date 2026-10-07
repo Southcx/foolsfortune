@@ -90,6 +90,13 @@ Reynolds' behaviours as plain functions writing a desired velocity: `seek`, `arr
 `separate`, `cohere`, `align`, `contain`, `avoid` (three whisker rays through a `probe` the body supplies), and `blend` (weighted,
 capped). An action blends what it needs into `c.want`; the body eases its velocity toward it.
 
+### Flocking (`src/creatures/ai/flock.js`): many as one
+Reynolds' boids for a crowd: separation, alignment and cohesion over neighbours found through a spatial hash, in three dimensions, kept
+in flat arrays (a hundred fish cost a hundred, not ten thousand). The owner gives it a mood from outside: `seek(i, out)` (a point each
+member makes for, and how hard) and `speed(i)` (cruise or burst); every turn is limited, so a flock wheels and never snaps. The
+crossing's shoal is its first (`src/world/emocean/shoal.js`: the bait ball, the frenzy, the scatter); a flight of birds or a swarm of
+motes would be the next.
+
 ### Ecology (`src/creatures/ai/ecology.js`): the world as it is to a creature
 **Affordances**: `eco.offer({ kind, pos, radius })` for standing ones (the Weir offers water round the pond and shade under every
 palm), `eco.provide(kind, (pos, range) => [...])` for ones that come and go (baubles: `food`; loose cubes: `shiny`; wet slip:

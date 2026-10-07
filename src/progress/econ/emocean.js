@@ -34,7 +34,8 @@
 // sector map (nodes, fuel per jump, danger by where you are) and its long-range scanners (knowing what waits at a beacon), Sunless Sea
 // (the zee charted by sailing it; a port found, not given), and dead reckoning (a course known by working it out).
 //
-//   NODES[id] = { id, law, locked }      hop(from, to, ship, open?) -> { distance, fuel, seconds, danger } | null   (open(id): a node found)
+//   NODES[id] = { id, law, locked }      hop(from, to, ship, open?) -> { distance, fuel, legs, seconds, danger } | null   (open(id): a node found)
+//   LEG   legsOf(distance, danger) -> 1..3   barsOf(legs)   legStart(k)
 //   STAGE = { seconds, bears, waves: [{ at, role, count, formation, lane }] }      ROLE_CLASS[role](danger) -> class 0..4
 //   stagePlan(from, to, day, wx?, open?) -> [{ at, role, cls, count, formation, lane }]   (wx: progress/weather.js stageWx(from))      stageQuality({ hits, bears, downed, spawned }) -> 0..1
 //   RECKON = { lead, open }      routeId(a, b) -> 'a-b'      reckonLead(reckoning, widen?, wx?) -> seconds      opensNode(reckoning) -> bool
@@ -51,13 +52,24 @@ export const NODES = Object.fromEntries(Object.entries(ECON.islands).map(([id, i
 /** Distance a step of the line (so Anagami to Margarite is 4, a crude run's distance in the simulator; King to Queen is 8). */
 export const CHART = { perLaw: 2 };
 
+/** A LONG CROSSING chains set pieces (the owner, 2026-10-07: "up to a maximum of three"; progress/rail/crossing.js plays them): the
+ *  first half once, each set piece 34 bars, a breather of 12 between two (its flotsam MENDS the ship: Star Fox's silver rings), and the
+ *  arrival. One on a short hop; one more for a hop the length of the line (8 steps), one more onto a wild route (danger 1 or more):
+ *  Anagami-Margarite 1, Anagami-Entropolis 2, Margarite-Entropolis (King to Queen) 3. Each leg further out is half a step wilder. */
+export const LEG = { first: 62, setPiece: 34, breather: 12, arrive: 4, max: 3, mend: 3, deeper: 0.5 }; // (mend 3: measured, at 2 a novice came through two legs one time in fifty)
+export const legsOf = (distance = 0, danger = 0) => Math.max(1, Math.min(LEG.max, 1 + Math.floor(distance / 8) + (danger >= 1 ? 1 : 0)));
+/** Bars of a crossing of `legs` set pieces (100, 146, 192), and the bar the k-th set piece begins on (62, 108, 154). */
+export const barsOf = (legs = 1) => LEG.first + legs * LEG.setPiece + (legs - 1) * LEG.breather + LEG.arrive;
+export const legStart = (k) => LEG.first + k * (LEG.setPiece + LEG.breather);
+
 /** A hop from one node to another in a ship: its distance, fuel (cubes), how long the stage runs, and its danger (-1.5 calm .. +2 wild).
  *  Null when either end is unknown or locked, or the ends are the same. */
 export function hop(from, to, ship = 'sloop', open = (id) => !NODES[id].locked) {
   const a = NODES[from], b = NODES[to];
   if (!a || !b || a === b || !open(from) || !open(to)) return null;
-  const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {};
-  return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), seconds: STAGE.seconds, danger: (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4 };
+  const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {}, danger = (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4;
+  const legs = legsOf(distance, danger);
+  return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), legs, seconds: barsOf(legs) * STAGE.seconds / 100, danger };
 }
 
 /** The stage, authored once. `at` is the fraction of the stage a wave enters; `lane` -1 left, 0 ahead, 1 right (null: the day picks).

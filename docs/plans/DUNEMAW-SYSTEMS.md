@@ -40,7 +40,7 @@ its grain agree, and a Veritome read of it says so before the fight.
 **Two endings, two different pays** (the choice is the point):
 - **Burst:** the FOE's pay (`ECON.well.foe`, two floors' worth) and a **crown shard** (a court-glaze pot's worth, `ECON.pot`): the pay
   now.
-- **Reprogrammed:** half the pay now (one floor's worth and the shard), and **the nursery becomes the Shrine Garden's**. A Dividend slot
+- **Reprogrammed:** half the pay now (one floor's worth and the shard), and **the nursery becomes the Spirit Garden's**. A Dividend slot
   can be worked by the Great Slip Jelly's brood, so the Dunemaw pays a little forever (`progress/garden.js`; Palworld's way). The pay
   later. The ledger counts both (`foe.burst`, `foe.reprogram`), and each has an achievement.
 
@@ -55,7 +55,7 @@ its grain agree, and a Veritome read of it says so before the fight.
   is a place in time, and what is broken stays broken until the Great Dunemaw turns over.
 - **The choice it makes:** every clutch broken before the fight is two brood the FOE cannot call. Clearing the nursery first is the
   safe way and costs time and the guards' fight; rushing the FOE is fast and brings the brood.
-- **Slip roe:** each egg broken leaves slip roe at a 30% chance, a material (the Great Dunemaw's own) that a Shrine Garden bed grows.
+- **Slip roe:** each egg broken leaves slip roe at a 30% chance, a material (the Great Dunemaw's own) that a Spirit Garden bed grows.
 
 ## 3. The finds, and the warp
 
@@ -127,11 +127,19 @@ antlion's cone does upside down. The first floor teaches in a small space, and t
 be a forty real-minute run before the FOE, longer than the Well's pay was built for. `ECON.well.perFloor` (2.5 minutes of play) was set
 for the old small floors; it is re-based once Petra measures a floor's real time (a placeholder, as the owner said balance is).
 
+
+**Measured (Petra, v82, 2026-10-06):** the cells are 18 m now (a floor 90 m square, halls 36 m); the Courier holds full speed on slopes. The
+agent's whole run (three floors, the FOE down, back up and out) took **255 sim seconds** on the pinned game day; no single walk came near
+its 90 sim-second budget. An agent goes straight: a player who explores, breaks pots and reads the warp takes longer, so the pay
+(`ECON.well.perFloor` 2.5 minutes of play, `deeper` 1.25, the FOE 2 floors' worth: about 15 minutes of pay a full run) **stands until a
+player's run is measured**. The ledger now measures it from every test session: `well.run.seconds` and `well.run.count.f<floors>` (seconds of
+play per run, by the deepest floor reached) and `well.run.fastest`, read from QAIS reports or the save. Re-based once the owner has run
+it a few times.
 ## What each piece feeds (synergy)
 
 - The **crown's** rule matches the FOE's **grain**, and the Veritome reads both.
-- Breaking **clutches** decides the FOE's **brood**, and leaves **slip roe** for the **Shrine Garden's** beds.
-- **Reprogramming** the FOE gives the Shrine Garden a **dividend** worker: the nursery, kept.
+- Breaking **clutches** decides the FOE's **brood**, and leaves **slip roe** for the **Spirit Garden's** beds.
+- **Reprogramming** the FOE gives the Spirit Garden a **dividend** worker: the nursery, kept.
 - The **warped artifact** is read by the **Dreamvane** and **Divination**, and marks the **Cogitomap**.
 - The **Solar** trial reads the **weather** and the **game day**, and its difficulty is a **forecast**.
 - **Strawman** makes every type's and status's real numbers learnable, without touching the **ledger**.

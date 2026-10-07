@@ -27,9 +27,9 @@ file came from.
 src/
   main.js        the composition root: builds the services, registers the techs, runs the frame        (Petra)
   core/          services every module may use, and nothing of the game itself                         (Petra)
-  courier/       the Courier: body, animation, moves (techs), vessel, the pool, the skiff               (Petra)
+  courier/       the Courier: body, animation, moves (techs), vessel, the pool, the skiff, the ship      (Petra)
   tools/         the belt, the held-tool base, and one folder per tool                                  (Petra; shared parts)
-  world/         places and the things in them: workshop, basement, dunes, props, treasure, ground marks (Petra)
+  world/         places and the things in them: workshop, basement, dunes, props, treasure, ground marks, the Emocean's crossing (Petra)
   creatures/     creatures, their minds (ai/), statuses, clapperjars, spirits                           (Petra)
   progress/      the System, the ledger, achievements, the economy, the shops                           (Dovina; shops' code Petra's)
   feedback/      the log and its rules, the chat line, the HUD, the Codex, the map, the Index, help      (Petra; strings Espada's)
@@ -116,7 +116,7 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | --- | --- | --- |
 | draw calls a frame (every pass) | 450 | +8% |
 | triangles a frame | 350,000 | +8% |
-| shader programs alive | 120 | +6% |
+| shader programs alive | 136 (was 120 to R46, 128 to R47: raised for the owner's brush load, parry and Shrines, then the crossing's set pieces: the wake, the glints and their boil, the brig's hull and colours, Old Nobody's hide and shadow; one shared program each, every one compiled in the warm-up) | +6% |
 | JS heap | 320 MB | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |

@@ -98,7 +98,7 @@ export class SlipJellies {
       center: (out) => out.copy(c.pos).setY(c.pos.y + H * 0.55),
       head: () => this.head(c),
       hurt: (p, dir, power, cause, by, from) => this.hurt(c, p, dir, power, cause, by, from),
-      cancel: (why) => this.cancel(c, why),
+      cancel: (why) => this.cancel(c, why), onParried: () => this.parried(c),
       vanish: (by, cause) => this.vanish(c, by, cause),
       knock: (v) => { c.vel.add(_a.copy(v).setY(0)); if (v.y > 1) { c.vy = v.y; c.air = true; } },
       onStatus: (name, dur, k, by) => this.onStatus(c, name, by), onStatusEnd: (name) => this.onStatusEnd(c, name),
@@ -242,10 +242,18 @@ export class SlipJellies {
     const g = this.game, A = c.attack;
     if (!A || A.phase !== 'wind') return false;
     A.phase = 'recover'; A.t = 0.9; c.deform.target.squash = 1; c.deform.kick(3, null, 0.2);
+    g.creatures.unwind(c);
     g.glyphs?.pop('ask', this.head(c), { color: 0xd9c8ff, size: 0.45, life: 0.9, follow: () => this.head(c) });
     g.events?.emit('jelly.cancel', { why });
     c.brain.signal();
     return true;
+  }
+
+  /** A parry answered its blow: a wind-up breaks off; a lunge in the air is thrown back, its blow spent. */
+  parried(c) {
+    const A = c.attack; if (!A) return;
+    if (A.phase === 'wind') { this.cancel(c, 'parried'); return; }
+    if (A.phase === 'air') { A.hit = true; c.vel.multiplyScalar(-0.5); c.vy = Math.max(c.vy, 2.5); c.deform.kick(-5, null, 0.25); this.game.events?.emit('jelly.cancel', { why: 'parried' }); }
   }
 
   onStatus(c, name) {
@@ -302,6 +310,7 @@ export class SlipJellies {
     const g = this.game, W = JELLY[move];
     c.attack = { move, foe, phase: 'wind', t: W.wind * (st(c, 'doubt') ? 1.6 : 1), hit: false }; // (doubt: it hesitates)
     c.vel.multiplyScalar(0.2);
+    g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: c.attack.t, kind: move, part: c.root }); // (answerable: courier/parry.js; worn with the parry mark)
     sfx.jellyWind(g.listenerDistance(c.pos), W.wind * (st(c, 'slow') ? 2.8 : 1));
     g.events?.emit('jelly.wind', { move });
   }
@@ -330,6 +339,7 @@ export class SlipJellies {
       to.setLength(dist / L.flight);
       c.vel.copy(to); c.vy = 9.81 * L.flight * 0.5; c.air = true; // (an arc that comes down where its foe stood)
       A.phase = 'air'; A.t = L.flight + 0.5;
+      g.creatures.windup(c, { at: c.pos, radius: 0.9, eta: L.flight, kind: 'lunge', part: c.root }); // (the body itself is the blow: answerable until it lands)
       D.kick(7, null, 0.1);
       c.drives.add('thirst', 0.05); c.drives.add('rest', 0.04);
     } else {
@@ -340,7 +350,10 @@ export class SlipJellies {
       v.setLength(S.speed);
       v.y = (aim.y - from.y) / tFlight + 0.5 * 9.81 * tFlight;
       const m = new THREE.Mesh(this.globGeo, this.globMat); m.position.copy(from); g.scene.add(m);
-      this.globs.push({ m, v, t: 0, c, foe });
+      g.creatures.unwind(c);
+      // the glob is a projectile (courier/parry.js): parryable, Lachryma (a soak or a gulp takes it), and marked so
+      const q = { m, v, t: 0, c, foe, pos: m.position, vel: v, lachryma: 2, from: c, mark: g.parryMark?.mark(m), vanish: () => { q.gone = true; } };
+      this.globs.push(q); (g.projectiles ||= new Set()).add(q);
       D.kick(5, new THREE.Vector2(0, 1.5), 0.15);
       sfx.jellySquelch(g.listenerDistance(c.pos), 0.9);
       A.phase = 'recover'; A.t = 0.7;
@@ -410,6 +423,7 @@ export class SlipJellies {
   land(c) {
     const g = this.game, A = c.attack;
     c.pos.y = c.groundY; c.vy = 0; c.air = false;
+    if (A?.phase === 'air') g.creatures.unwind(c);
     c.deform.kick(-6, null, 0.25);
     c.vel.multiplyScalar(0.25);
     sfx.jellyLand(g.listenerDistance(c.pos));
@@ -445,22 +459,28 @@ export class SlipJellies {
     const g = this.game, P = g.player;
     for (let i = this.globs.length - 1; i >= 0; i--) {
       const q = this.globs[i]; q.t += dt;
+      if (q.gone) { this.dropGlob(i); continue; } // (taken by a parry: soaked, gulped or shattered where it was)
       q.v.y -= 9.81 * dt;
       const from = q.m.position.clone(); q.m.position.addScaledVector(q.v, dt);
       const step = q.m.position.clone().sub(from), len = step.length();
       const hitP = len > 1e-4 ? g.physics.raycast(from, step.normalize(), len, null, undefined, (k) => !k.isSensor() && !g.physics.entityOf(k)?.type) : null;
-      const foe = q.foe, F = foe ? (foe === P ? _a.copy(P.pos).setY(P.pos.y + 0.9) : foe.center?.(_a) ?? _a.copy(foe.pos)) : null;
+      // (sent back by a parry, it strikes whatever it meets, its own thrower too; else it looks for its foe)
+      const hitC = q.reflected ? g.creatures?.near(q.m.position, 0.5).find((k) => !k.ally) : null;
+      const foe = q.reflected ? null : q.foe, F = foe ? (foe === P ? _a.copy(P.pos).setY(P.pos.y + 0.9) : foe.center?.(_a) ?? _a.copy(foe.pos)) : null;
       const nearF = !!(F && foe.alive !== false && q.m.position.distanceTo(F) < JELLY.spit.hit);
-      if (hitP || nearF || q.t > 4) {
+      if (hitP || nearF || hitC || q.t > 4) {
         const at = hitP ? hitP.point : q.m.position.clone(), n = hitP && hitP.normal.lengthSq() > 0.5 ? hitP.normal : UP;
         if (hitP) g.shells?.addSplat?.(at, n, 1.2, true);
         g.slip?.addDisc(at, n, 0.8, 14);
+        if (q.paint && n.y > 0.5) g.paintmap?.stamp(at.x, at.y, at.z, 1.1, q.paint, 0.8); // (the brush's bat sent it back in its feeling)
         sfx.jellySquelch(g.listenerDistance(at), 0.8);
         if (nearF && q.c.alive) this.strike(q.c, foe, 'spit');
-        g.scene.remove(q.m); this.globs.splice(i, 1);
+        if (hitC) g.creatures.strike(hitC, at, _b.copy(q.v).normalize(), 1, 'parry', 'courier');
+        this.dropGlob(i);
       }
     }
   }
+  dropGlob(i) { const q = this.globs[i]; this.game.scene.remove(q.m); q.mark?.clear(); this.game.projectiles?.delete(q); this.globs.splice(i, 1); }
 
   // ---------------------------------------------------------------- the small things the mind asks for
   /** A wet cry and a hop: kin within earshot learn what it has seen (an 'alarm' stimulus about `about`). */

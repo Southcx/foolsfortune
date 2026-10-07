@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear. Left, the box: twenty-eight slots, four across. Right,
+// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear. Left, the box: fifty-six slots, eight across (four on a narrow screen). Right,
 // the equipment: the one lure on the line, and the tools worn in their places on their body (two across the back, one at each hip, one at
 // the neck: a click takes one off into the box; a tool in the box is worn with a click). While the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked,
 // each taken out with a click, and STORE ALL to empty the box into it.
@@ -37,7 +37,8 @@ const CSS = `
 #pneuka .cols { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
 #pneuka .pane { background: rgba(14,6,4,.55); border: 1px solid rgba(255,178,122,.22); border-radius: 4px; padding: 10px; }
 #pneuka .pane h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: .22em; color: #e7c46a; font-weight: normal; display: flex; justify-content: space-between; gap: 12px; }
-#pneuka .grid { display: grid; grid-template-columns: repeat(4, 52px); gap: 5px; }
+#pneuka .grid { display: grid; grid-template-columns: repeat(8, 52px); gap: 5px; }
+@media (max-width: 560px) { #pneuka .grid { grid-template-columns: repeat(4, 52px); } }
 #pneuka .bank .grid { grid-template-columns: repeat(5, 52px); }
 #pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); position: relative; cursor: var(--jcur-pointer, pointer); }
 #pneuka .slot:hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
@@ -103,6 +104,7 @@ export class PneukaUI {
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
     if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
     if (it.id === 'mat.shard' && this.game.lockheart) out.push({ label: 'Feed to the Lockheart', run: () => box.feed(slot) });
+    if (it.kind === 'whistle') out.push({ label: 'Blow', run: () => { if (this.game.well?.escape()) this.close(); } }); // (the Wake Whistle: world/well/dunemaw.js)
     out.push({ label: 'Drop', run: () => box.drop(slot) });
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;
@@ -195,7 +197,7 @@ export class PneukaUI {
     pane.appendChild(tg);
     // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if they have those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
-      if (F.hidden || (!box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
+      if (F.hidden || (!F.place && !box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
       const cur = box.fitted(socket), row = el('div', 'fits');
       for (let i = 0; i < F.max; i++) {
         const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');

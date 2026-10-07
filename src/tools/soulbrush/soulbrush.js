@@ -17,6 +17,9 @@ import { hipMirror, mirrorSide } from '../heldtool.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { tickInscriptions, clearInscriptions } from './inscribe.js';
 import { stream, randDir } from '../../core/rng.js';
+import { BrushLoad } from './load.js';
+import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
+const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
@@ -34,7 +37,8 @@ const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance
 //    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
 //
 //   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
-//   LMB    the club: three blows; held, the charge and the slam                                   RMB tap   FLICK: a fan of slip ahead
+//   LMB    the club: three blows; held on the ground, the bristles SATURATE and the mode works (tools/soulbrush/load.js: 1 PAINT,
+//          2 MOP); held in the air, the charge and the slam (a ground pound)                    RMB tap   FLICK: a fan of slip ahead
 //   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
 //
 // It is a passive tech (it doesn't take the step from the core movement): it owns the right arm's pose while drawn, the slide's
@@ -43,6 +47,7 @@ const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
+const PAINT_GLIDE = 2.2; // (a second's worth of the slide's lost speed given back on painted ground)
 const TAP = 0.16, SLIDE_STEP = 0.32, TRAIL_W = 0.62, TRAIL_WET = 14, TRAIL_SETTLE = 0.55;
 const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();
 
@@ -59,6 +64,7 @@ export class SoulBrush extends Tech {
     this.rest = new RestBake(this.model.group); // (at rest on the hip, one mesh a material: render/restbake.js)
     g.scene.add(this.model.group);
     this.club = new Club(this);
+    this.load = new BrushLoad(this);
     this.canvas = new BrushCanvas();
     this.techniques = new BrushTechniques(this);
     this.celestial = new Celestial(this);
@@ -74,7 +80,7 @@ export class SoulBrush extends Tech {
   get toolOut() { return this.drawTarget > 0 || this.drawT > 0.02; }
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
-  get stance() { return this.toolOut && (this.club.busy || this.celestial.active); }
+  get stance() { return this.toolOut && (this.club.busy || this.celestial.active || this.load.busy); }
   get slow() { return this.toolOut && this.club.charge >= 0 ? 0.6 : 1; }
 
   // ---------------------------------------------------------------- where it is worn, and the grip
@@ -116,7 +122,7 @@ export class SoulBrush extends Tech {
     if (this.drawT > 0.02 && !this.wasOut) { this.wasOut = true; sfx.toolDraw(); g.events?.emit('brush.draw', {}); }
     if (this.drawT <= 0.02 && this.wasOut) {
       this.wasOut = false; sfx.holster?.();
-      this.club.cancel(); this.celestial.exit('stow'); this.rmbT = -1;
+      this.club.cancel(); this.load.end(); this.celestial.exit('stow'); this.rmbT = -1;
       g.events?.emit('brush.stow', {});
     }
     // the brush's own inputs, once it is in the hand
@@ -135,9 +141,13 @@ export class SoulBrush extends Tech {
             else { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); g.log?.say('info', 'Your mind is too dry to paint.', { key: 'brushdry', throttle: 3 }); }
           }
         }
-        if (!this.sliding) this.club.update(dt, inp);
+        ['Digit1', 'Digit2'].forEach((k, i) => { if (inp.wasPressed(k)) this.load.setMode(LOAD_MODES[i]); }); // (the modes, as the Sondelass's forms)
+        if (this.load.busy) this.load.update(raw, inp);
+        else if (!this.sliding) this.club.update(dt, inp);
       }
     } else if (this.celestial.active) this.celestial.exit('stow');
+    if (!this.held && this.load.busy) this.load.end();
+    this.load.tick(dt);
     this.canvas.update(raw);
     this.techniques.update(dt);
     tickInscriptions(g, dt);
@@ -145,8 +155,9 @@ export class SoulBrush extends Tech {
     this.slideTick(dt);
     this.paint.update(dt);
     // the ink in the head: Lachryma gathers while the canvas is open or a slam gathers, and drains back after
+    // (while the load is worked, its look inks the tuft: vfx/brushload.js, driven from load.js)
     const ink = this.celestial.active ? 1 : this.club.charge >= 0 ? Math.min(1, this.club.charge / 1.1) : 0;
-    this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
+    if (!this.load.busy) this.model.setInk(THREE.MathUtils.damp(this.model.ink, ink, ink > this.model.ink ? 8 : 2, raw));
     const ch2 = g.character;
     this.model.group.visible = this.enabled && g.belt?.isWorn('soulbrush') !== false && !ch2?.hidden && (ch2?.dissolve ?? 0) < 0.3 && !g.god?.active; // (in the box: not on them)
     { const m = this.model; this.rest.update(raw, this.drawT === 0 && !this.sliding, `${Math.round(m.bendY * 100)}|${Math.round(m.bendZ * 100)}|${Math.round(m.ink * 100)}`); }
@@ -188,7 +199,14 @@ export class SoulBrush extends Tech {
     this.slideW = THREE.MathUtils.damp(this.slideW, this.sliding && !P.fp ? 1 : 0, this.sliding ? 14 : 9, dt);
     if (!this.sliding) return;
     this.slideT += dt;
-    const hs = Math.hypot(P.vel.x, P.vel.z);
+    let hs = Math.hypot(P.vel.x, P.vel.z);
+    if (this.slideT < 0.05) this.slideEntry = hs;
+    // on painted ground the slide runs on (Sunshine's belly slide on wet ground): it keeps the speed it came in with, no more
+    const painted = g.paintmap?.at(P.pos.x, P.pos.y, P.pos.z), W = g.water?.at(P.pos.x, P.pos.y + 0.1, P.pos.z);
+    g.brushLoad?.slide(dt, { pos: P.pos, vel: P.vel, surface: W ? 'water' : painted ? 'paint' : null, feeling: painted?.aspect || this.load.aspect }); // (the rooster tails: vfx/brushload.js)
+    if (painted && hs > 1 && hs < (this.slideEntry || 0)) {
+      const k = Math.min(this.slideEntry / hs, 1 + PAINT_GLIDE * dt); P.vel.x *= k; P.vel.z *= k; hs *= k;
+    }
     if (hs > 0.5) {
       // sideways to the slide: their left (the lead foot) toward where they are going, the brush hand trailing
       const want = Math.atan2(P.vel.x, P.vel.z) - Math.PI / 2;
