@@ -76,6 +76,7 @@ export const ECON = {
     'key.brass': 2, 'key.invert': 6, 'key.even': 6, 'key.loaded': 6, 'key.twin': 10, 'key.wide': 8, 'key.echo': 6, // (loaded and echo, the
     // conversion keys, were 8 and 12: the owner made them cheaper, 2026-10-04)
     'heart.gambler': 20, 'heart.shepherd': 20,
+    'heart.summoning': 30, // (the summoning coffin: the garden's first spirits come through it; dearer, as a tool that keeps paying)
     // the Lachrymato Bottles (progress/brushload.js): bigger is dearer and riskier; placeholders until the economy has a brush profile
     'bottle.small': 10, 'bottle.medium': 25, 'bottle.large': 50,
     'whistle.wake': 8, // (the Wake Whistle: the toll on the pay does the rest at depth, docs/plans/SHRINES.md)

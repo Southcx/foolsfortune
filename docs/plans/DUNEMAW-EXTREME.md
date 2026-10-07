@@ -169,6 +169,31 @@ with its conditions met), and the drop is the boss's.
 | **D2: the timeline** | a **timeline runner**, a new part in `creatures/ai/` built once (a scripted fight is not utility reasoning: FFXIV's bosses are timelines). Each cast is a windup, an area and an effect, and the script is data | Petra; the casts' numbers mine (`progress/combat/greatjelly.js`, when the owner cuts this) |
 | **D3: the whole fight** | the Lip Stone and the retry, the transition, Calving, the Overflow, the enrage, the drops by achievement | Petra; Calissa's windups; Wanda's phases; Espada's cast names |
 
+## 7a. The casts' names (Espada, 2026-10-07; `docs/LORE.md`; in `greatjelly.js` NAMES)
+
+Each name is a jar's part or a potter's step, and each also tells you what to do:
+
+| placeholder | name |
+|---|---|
+| Crown Bash | Lidfall |
+| Brine Line | Shoulder Charge |
+| Gelid Rings | Throwing Rings |
+| Ooze Rain | Slip Trail |
+| Crown Glare | Eye Cup (the Greek eye-cup that stares evil back; the Veritome turns it) |
+| the Clutch Wakes | Unstopped |
+| the Slip Nova | Blowout |
+| Brood Call | Broodwake |
+| Sinking Sands | Centring |
+| Submerge, Surface Slam | Slake, Wedge |
+| Brine Cascade | Decant |
+| Calving, the calves | Sherds ("the sherds mend" when they re-merge) |
+| Brine Soaked | Sodden |
+| The Overflow, The Dunemaw Swallows | unchanged |
+
+**Events for the log** (rules in `tracking/dunemaw.js`):
+- `foe.cast { cast }` (the cast's id, e.g. `crownBash`): the log says "The Great Slip Jelly readies Lidfall."
+- `foe.moment { what }`, one of `crack`, `mirror`, `sink`, `feed`, `sherds`, `mend`, `sodden`, `dry`, `swallowed`: Espada's lines.
+
 ## 8. Settled by the owner (2026-10-07)
 
 - **A wipe costs the attempt**, not the run.

@@ -56,18 +56,21 @@ play.
 | **Wu Xing, the five phases** | the generating and overcoming cycles | the five feelings as the garden's elements |
 | **Dark Cloud 2's Georama** | building a place piece by piece against its people's wishes | placement against the spirits' wants |
 
-**The five feelings are the five phases.** They work as the garden's elements: the generating cycle feeds, the overcoming cycle
-checks.
+**The five feelings are the five phases** (Espada's correction, 2026-10-07: grief is metal and dread is water, the tradition's own
+pairing: grief with the lungs and metal, fear with the kidneys and water):
 
 | feeling | phase |
 |---|---|
 | mirth | fire |
 | wonder | wood |
 | desire | earth |
-| grief | water |
-| dread | metal |
+| grief | metal |
+| dread | water |
 
-Espada should confirm the mapping against LORE.md.
+**Generating** runs in the game's shown order: wonder → mirth → desire → grief → dread → wonder. The last step, dread to wonder, is
+awe, already canon as that pair's dyad.
+
+**Overcoming:** wonder checks desire, desire checks dread, dread checks mirth, mirth checks grief, grief checks wonder.
 
 ## 3. The place (Galaxy, from the start)
 
@@ -169,6 +172,15 @@ never release themselves.
   - **Thresholds:** 7, 14, 24, 36, 50 (the second to the sixth Firing); a seventh and later when the attributes' ranks grow.
   - **What they open:** the Grove, the Pavilions, two spirits out at once, planetoid slots, and the last planetoid.
   - **Never a level:** they add no numbers to the Courier (DESIGN.md: no experience points, no levels). They open places and verbs.
+
+**Espada's words (2026-10-07, `docs/LORE.md`):**
+- **The first six Firings:** Candling, Sinter, Lustre, Salt, Reduction, Anagama. After the sixth they go by number.
+- **The tribulation** is the Heavenly Kiln. The log says:
+  - "The Heavenly Kiln opens."
+  - "Second Firing: Sinter. Complete."
+  - "The Heavenly Kiln closes. Try again when you are ready."
+- **Inner Realm names** on offer, built from neuralese Functions the player will learn: HEMA-LUNO, KITH-HEMA, LUNO-DEO, STIL-DEO,
+  EZA-LON, ROMI-LON, SIVA-LUNO, HUSA-HEMA, AMI-HEMA, MOR-LUNO. A player can also write their own.
 
 ## 7. The economy
 

@@ -45,7 +45,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden'] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Spirits', 'The Firings'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -481,6 +481,12 @@ export function buildAchievements(game) {
   C('dn1', 'battle', 'The Crowned', 2, 'mechanic', 'Uncrowned', 'Break the crown off the Great Slip Jelly.', 'foe.break', 1);
   C('dn2', 'battle', 'The Crowned', 3, 'mechanic', 'Olé', 'Let the Great Slip Jelly crack its own crown on stone three times.', 'foe.crack.ram', 3);
   C('dn3', 'battle', 'The Crowned', 3, 'mechanic', 'Burst the Crown', 'Burst the Great Slip Jelly.', 'foe.burst', 1);
+  // the raid fight's cosmetics, each guaranteed when its criteria are met in the fight (greatjelly.js DROPS; the owner, 2026-10-07)
+  C('gj1', 'battle', 'The Crowned', 3, 'perfect', 'The Jelly-crown', 'Beat the Great Slip Jelly. It drops its glaze.', 'foe.drop.glaze.jellycrown', 1);
+  C('gj2', 'battle', 'The Crowned', 5, 'perfect', 'Not a Scratch on the Crown', 'Beat it without being hit by a Crown Bash. It drops the Crown of the Dunemaw.', 'foe.drop.curio.crown', 1);
+  C('gj3', 'battle', 'The Crowned', 4, 'perfect', 'Empty Nest', 'Beat it with every clutch broken before the pull. It drops a slip jelly to ride.', 'foe.drop.mount.slipjelly', 1);
+  C('gj4', 'battle', 'The Crowned', 4, 'speed', 'A Minute to Spare', 'Beat it with the enrage more than a minute away. A title.', 'foe.drop.title.jellybane', 1);
+  C('gj5', 'battle', 'The Crowned', 3, 'mechanic', 'Mirror, Mirror', 'Turn its gaze back with the Veritome, and beat it. A kiln pattern.', 'foe.drop.pattern.crowneye', 1);
   C('dn4', 'battle', 'The Crowned', 4, 'mechanic', 'Nursemaid', 'Reprogram the Great Slip Jelly and keep its nursery.', 'foe.reprogram', 1);
   C('dn5', 'battle', 'The Crowned', 2, 'count', 'Clutch Breaker', 'Break ten clutches of slip jelly eggs.', 'clutch.break', 10);
   C('dn6', 'explore', 'The Finds', 1, 'count', 'The Town Remembers', 'Take ten finds from the Great Dunemaw\'s pots.', 'find.pot', 10);
@@ -563,6 +569,14 @@ export function buildAchievements(game) {
   F('sa2', 'garden', 'The Press', 2, 'count', 'Tempered', 'Widen an attribute to rank 5.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 5);
   F('sa3', 'garden', 'The Press', 3, 'collect', 'The Whole Wheel', 'Fire the press into all seven attributes.', (L) => AIDS.filter((a) => rk(L, a) > 0).length, 7);
   F('sa4', 'garden', 'The Press', 4, 'mechanic', 'A True Hue', 'Widen an attribute to its last rank, where the target is narrowest.', (L) => Math.max(...AIDS.map((a) => rk(L, a))), 10, { title: 'Alchemist' });
+  // the spirits and the Firings (progress/spirits.js; SPIRIT-GARDEN.md)
+  C('sv1', 'garden', 'The Spirits', 1, 'count', 'Bound', 'Catch a Figment and bind it.', 'spirit.bind', 1);
+  C('sv2', 'garden', 'The Spirits', 3, 'mechanic', 'By Hand', 'Draw a stunned Figment into your Pneuka Jar with the god hand.', 'spirit.bind.hand', 1);
+  C('sv3', 'garden', 'The Spirits', 2, 'count', 'Grown', 'Raise a spirit to its form.', 'spirit.mature', 1);
+  C('sv4', 'garden', 'The Spirits', 3, 'mechanic', 'Cocoon', 'Merge two spirits into one.', 'spirit.merge', 1);
+  H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
+  H('fi1', 'garden', 'The Firings', 2, 'count', 'The Second Firing', 'Pass a tribulation.', 'firing', 2);
+  H('fi2', 'garden', 'The Firings', 4, 'count', 'The Sixth Firing', 'Reach the sixth Firing.', 'firing', 6, { title: 'Refired' });
   C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
   C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
   C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
