@@ -84,8 +84,10 @@ phases); the moonflower bed opens at night.
    - **Proposal:** two phases.
      - **Phase 1:** the planetoids are floating islands with flat tops and rounded undersides (Dual Hearts). The core movement is
        untouched, and launch lotuses join them.
-     - **Phase 2**, only if Petra judges it sound: a gravity field (up = away from the planetoid's heart). With up set to the world's
-       up it must measure exactly the same as today (the stress test, compared tick for tick), so the gold standard holds.
+     - **Phase 2, if round planets are still wanted** (Petra, 2026-10-07): never in the core movement. The controller, wallrun, mantle,
+       slide, ladders and camera all take world +Y as up. Round planets would be **a mode of their own**: a tech with its own small
+       controller and camera on a small sphere, as the skiff is, with the core moves off while in it. Petra prototypes it in the
+       testing room before anyone designs on it.
 
 ## 5. Base building: placement as a formation array
 
@@ -206,11 +208,13 @@ not a level: it is a name for how far your soul has been refined, read from what
   - A spirit mind built from the AI parts.
 - **G4:** cultivation.
   - The realms (a ledger predicate, mine), the Peak, the tribulation, sword flight.
-- **G5, if Petra judges it sound:** Galaxy's gravity on the planetoids, proven equal to today's movement when up is the world's.
+- **G5, if still wanted after G1:** a round-planet mode (its own small controller and camera, as the skiff has; the core moves off
+  while in it), prototyped by Petra in the testing room first.
 
 ## 11. Open for the owner
 
-1. **Galaxy's gravity:** phase 1 as floating flat-topped islands, round-planet gravity only if the engine change proves safe. Agree?
+1. **Galaxy's gravity:** Petra rules it out of the core movement. Flat-topped floating islands first; round planets later only as a
+   mode of their own, like the skiff. Agree?
 2. **Spirits' death:** Chao never die on screen; neglected ones leave. Same here?
 3. **Realm count and names:** six realms on the classic ladder, named by Espada in the game's own idiom (clay and glaze?), or the
    genre's own names kept as they are?
