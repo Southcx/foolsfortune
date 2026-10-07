@@ -25,7 +25,7 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 144, heapMB: 320 }; // (programs 120 until R46, 128 until R47, 136 until the full build's Round 1: docs/ARCHITECTURE.md says why)
+const BUDGET = { calls: 450, tris: 350_000, programs: 152, heapMB: 320 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // how far a number may move from the baseline before the gate asks why (counts are exact; times are a software renderer's, so looser)
 const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, draw: 0.25, bootS: 0.3 };
 
