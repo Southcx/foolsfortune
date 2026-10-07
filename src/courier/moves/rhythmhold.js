@@ -8,8 +8,8 @@
 // the body plays the song: the bell held up in its idle (Bell_Idle), the lane's own gesture on every judged press (lanes 1 to 5:
 // Bell_Note1-5; the high lanes, 6 to 0: Bell_NoteHigh), the JAM (Bell_Jam, a groove of the whole body) while a rhythm combo runs at ten or
 // more, and the fever's peak (Bell_FeverPeak) on every twenty-fifth note of a combo. The presses are read off the rhythm mode, never
-// changed: a lane's light (`highway.lit[lane]`) jumps to 1 on each judged press, `litGrade` is its grade (a miss is no press), and
-// `judge.combo` is the run.
+// changed: Wanda's cue `rhythm.last` ({ lane, grade, t }, a new object a press) where it is given, else a lane's light
+// (`highway.lit[lane]`) jumping to 1 on each judged press with `litGrade` its grade (a miss is no press); `judge.combo` is the run.
 //
 // Prior art: Guitar Hero's and Rock Band's band on stage (the player's character playing what the player plays, a big move at a star
 // power), Hatsune Miku: Project DIVA's dancer over the notes, Patapon's fever, and Crypt of the NecroDancer's bounce to the beat.
@@ -43,7 +43,7 @@ export class RhythmHold extends Tech {
     this.bellWasOut = !!bell && bell.drawTarget > 0;
     for (const t of B?.tools || []) if (t.id !== 'psygun' && t.id !== 'crucibelle' && t.wants) t.stow();
     if (this.bell) { this.bell.drawTarget = 1; B?.draw(B.get('crucibelle')); this.posed = this.bell; }
-    this.lit.fill(0); this.seen = false;
+    this.lit.fill(0); this.seen = false; this.cued = false;
   }
   update(dt) {
     if (!this.game.rhythm?.active) return false;
@@ -61,7 +61,14 @@ export class RhythmHold extends Tech {
   /** The presses since last frame: each lane whose light jumped (a judged press), and its gesture. */
   listen() {
     const R = this.game.rhythm, H = R?.highway, J = R?.judge;
-    if (!R?.active || !H?.lit) return;
+    if (!R?.active) return;
+    if ('last' in R) { // (Wanda's cue, where the rhythm mode gives it: { lane, grade, t } a press, grade null for a stray)
+      const e = R.last;
+      if (this.cued && e && e !== this.heard && e.grade && e.grade !== 'miss') this.press(e.lane, J?.combo ?? 0);
+      this.heard = e; this.cued = true; // (the first frame it is seen only marks where it stands: a press already played is not played again)
+      return;
+    }
+    if (!H?.lit) return;
     for (let l = 0; l < 10; l++) {
       const k = H.lit[l] ?? 0, g = H.litGrade?.[l];
       if (this.seen && k >= 0.99 && k > this.lit[l] + 0.01 && g && g !== 'miss') this.press(l, J?.combo ?? 0);
