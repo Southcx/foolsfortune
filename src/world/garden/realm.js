@@ -17,14 +17,14 @@
 //   game.realm = new Realm(game, { god })   .enter(shrine)   .leave()   .active   .fixed(dt)   .update(dt)   .light()   .offer()   .parked()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { GardenPlace, MAX_BEDS, MAX_SLOTS } from './place.js';
+import { GardenSite, MAX_BEDS, MAX_SLOTS } from './place.js';
 import { PlanetBody } from './planetbody.js';
 import { Clay } from './clay.js';
 import { Plots } from './plots.js';
 import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
-import { Kiln } from './kiln.js';
+import { Tribulation } from './tribulation.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
@@ -47,17 +47,17 @@ export class Realm {
   constructor(game, { god }) {
     this.game = game; this.god = god;
     this.active = false; this.name = null; this.spirits = [];
-    this.place = new GardenPlace(game);
+    this.site = new GardenSite(game);
     // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
-    this.clays = Object.fromEntries(this.place.planets.map((P) => [P.id, new Clay(P)]));
-    for (const P of this.place.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d); // (Calissa's shape plus the clay: one ground)
-    for (const f of this.place.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'gate' || f.kind === 'shed' ? 4 : 3);
-    for (const l of this.place.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
-    this.plots = new Plots(game, this.place, this.clays);
+    this.clays = Object.fromEntries(this.site.planets.map((P) => [P.id, new Clay(P)]));
+    for (const P of this.site.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d); // (Calissa's shape plus the clay: one ground)
+    for (const f of this.site.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'gate' || f.kind === 'shed' ? 4 : 3);
+    for (const l of this.site.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
+    this.plots = new Plots(game, this.site, this.clays);
     this.raising = new Raising(game, this);
-    this.awaken = new Awaken(game, this); this.kiln = new Kiln(game, this);
+    this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
     this.hand = new GardenHand(this);
-    this.water = new THREE.Group(); this.water.name = 'garden-water'; this.place.group.add(this.water);
+    this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.cam = { fwd: new THREE.Vector3(0, 0, -1), up: new THREE.Vector3(0, 1, 0), dist: CAM.dist };
     this.restT = 0; this.workT = 0;
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
@@ -65,22 +65,22 @@ export class Realm {
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 2,
       dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), awaken: this.awaken.dump() }),
-      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.place.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
+      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.site.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
       reset: () => { this.name = null; } });
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
   parked() {
-    const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.place.group.add(s); this.parkedSpirit = s;
+    const s = new THREE.Mesh(this.spiritGeo, this.spiritMat); this.site.group.add(s); this.parkedSpirit = s;
     // (Calissa's features and forms, one of each, and the brush's ring: compiled with the rest, then put away)
     this.parkedLooks = [];
-    for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.place.by.dantian.c); this.place.group.add(F.group); this.parkedLooks.push(F.group); }
-    { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.place.by.grove.c); this.place.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
-    this.place.tree.slots[0].pod.visible = true; this.kiln.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
-    ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.place.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.place.group.add(m); this.parkedLooks.push(m); });
+    for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.site.by.dantian.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); }
+    { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.site.by.mulberryGrove.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
+    this.site.tree.slots[0].pod.visible = true; this.tribulation.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
+    ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.site.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.site.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
-    this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.place.by.peak.c, this.place.by.dantian.c]), this.plots.threadMat.gen); this.place.group.add(this.parkedThread);
-    return [this.place.group];
+    this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.chimney.c, this.site.by.dantian.c]), this.plots.threadMat.gen); this.site.group.add(this.parkedThread);
+    return [this.site.group];
   }
 
   // ------------------------------------------------------------------ in and out
@@ -93,14 +93,14 @@ export class Realm {
     const go = () => {
       this.entering = false;
       const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density }; // (what the garden changes of the world's, put back on leaving: casebook rule 30, GARDEN-SWEEP #12)
-      const D = this.place.by.dantian, gate = this.place.features.find((f) => f.kind === 'gate'), start = this.gateStart();
-      this.jar = new PlanetBody({ planets: this.place.planets, pos: start, radius: 0.5 });
-      this.jar.planet = D; this.jar.up.copy(start).sub(D.c).normalize();
-      this.cam.up.copy(this.jar.up); this.cam.fwd.copy(gate.pos).sub(start).projectOnPlane(this.cam.up).normalize(); this.cam.dist = CAM.dist;
+      const D = this.site.by.dantian, gate = this.site.features.find((f) => f.kind === 'gate'), start = this.gateStart();
+      this.jarBody = new PlanetBody({ planets: this.site.planets, pos: start, radius: 0.5 });
+      this.jarBody.planet = D; this.jarBody.up.copy(start).sub(D.c).normalize();
+      this.cam.up.copy(this.jarBody.up); this.cam.fwd.copy(gate.pos).sub(start).projectOnPlane(this.cam.up).normalize(); this.cam.dist = CAM.dist;
       this.active = true; this.lotusLock = null;
       if (g.garden) g.garden.inside = true; // (Wanda's cue plays while it is: music/choose.js)
-      this.place.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
-      this.place.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false; for (const o of this.parkedLooks || []) o.visible = false; if (this.parkedThread) this.parkedThread.visible = false; this.plots.show(this.hand.art === 'place');
+      this.site.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
+      this.site.show(true); if (this.parkedSpirit) this.parkedSpirit.visible = false; for (const o of this.parkedLooks || []) o.visible = false; if (this.parkedThread) this.parkedThread.visible = false; this.plots.show(this.hand.art === 'place');
       for (const c of g.spirits?.list || []) if (c.spirit?.from === 'garden') g.jellies.vanish(c, 'courier', 'home'); // (the one out with you comes home)
       for (const t of g.belt?.tools || []) if (t.wants) t.stow?.();
       g.character?.setHidden(true);
@@ -121,7 +121,7 @@ export class Realm {
   }
   /** Where the Jar is set down on the Dantian, a step from the gate (on entry, and when a throw has lost it). */
   gateStart() {
-    const D = this.place.by.dantian, gate = this.place.features.find((f) => f.kind === 'gate');
+    const D = this.site.by.dantian, gate = this.site.features.find((f) => f.kind === 'gate');
     return D.c.clone().add(gate.pos.clone().sub(D.c).normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.25).multiplyScalar(D.r + 0.5));
   }
   /** Out by the gate: the Courier where they stood at the Shrine. */
@@ -131,10 +131,10 @@ export class Realm {
     if (!this.active) return;
     this.leaveDue = false;
     const go = () => {
-      this.active = false; this.place.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
-      if (this.kiln?.active) this.kiln.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
+      this.active = false; this.site.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
+      if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
-      for (const s of this.spirits) this.place.group.remove(s.mesh);
+      for (const s of this.spirits) this.site.group.remove(s.mesh);
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
@@ -168,13 +168,13 @@ export class Realm {
 
   /** The bound hop out of the Jar into the Grove (creatures/bound.js): one body each, wandering. */
   hopOut() {
-    const G = this.place.by.grove, list = this.game.bound?.list || [];
+    const G = this.site.by.mulberryGrove, list = this.game.bound?.list || [];
     list.forEach((e, i) => {
       if (this.awaken.inTree(e)) return; // (wound into a pod in the cocoon tree: world/garden/awaken.js)
       const a = (i / Math.max(1, list.length)) * Math.PI * 2, dir = new THREE.Vector3(Math.cos(a) * 0.6, 1, Math.sin(a) * 0.6).normalize();
       const mesh = new THREE.Mesh(this.spiritGeo, this.spiritMat); mesh.castShadow = true; mesh.scale.setScalar(0.8 + 0.25 * (e.cls || 0)); mesh.name = `spirit-${e.kind}`;
-      this.place.group.add(mesh);
-      const s = { e, mesh, hop: new PlanetBody({ planets: this.place.planets, pos: G.c.clone().addScaledVector(dir, G.r + 1.5), radius: 0.4, hop: { short: [2.4, 1.6], long: [3, 2.4] } }), wish: new THREE.Vector3(), next: simRand() * 2 };
+      this.site.group.add(mesh);
+      const s = { e, mesh, body: new PlanetBody({ planets: this.site.planets, pos: G.c.clone().addScaledVector(dir, G.r + 1.5), radius: 0.4, hop: { short: [2.4, 1.6], long: [3, 2.4] } }), wish: new THREE.Vector3(), next: simRand() * 2 };
       this.raising.ready(e); this.raising.lookOf(s);
       this.spirits.push(s);
     });
@@ -191,21 +191,21 @@ export class Realm {
   }
   fixed(dt) {
     if (!this.active) return;
-    const I = this.game.input, J = this.jar, typing = this.game.log?.typing;
+    const I = this.game.input, J = this.jarBody, typing = this.game.log?.typing;
     if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && I.isDown('Space') && J.grounded });
     if (!J.held && !J.flight && J.airT > JAR_LOST) { // (thrown off into the sky: set down by the gate, casebook rule 32, GARDEN-SWEEP #5)
-      const D = this.place.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
+      const D = this.site.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
       this.game.events?.emit('garden.jar.back', { by: 'courier' });
     }
     for (const s of this.spirits) {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
-      s.hop.step(dt, { move: s.wish });
+      s.body.step(dt, { move: s.wish });
     }
   }
 
   update(dt) {
     if (!this.active) return;
-    const g = this.game, I = g.input, P = g.player, J = this.jar;
+    const g = this.game, I = g.input, P = g.player, J = this.jarBody;
     // the camera: behind and over the Jar, its up the planetoid's (smoothed: a hop over a rim turns the world, not the head)
     this.cam.up.lerp(J.up, Math.min(1, dt * 4)).normalize();
     const turn = (I.isDown('KeyE') ? 1 : 0) - (I.isDown('KeyQ') ? 1 : 0);
@@ -220,23 +220,23 @@ export class Realm {
     this.placeJar(dt);
     this.hand.update(dt);
     const raw = g.rawDt ?? dt;
-    this.place.update(raw, g.camera); this.plots.update(raw);
+    this.site.update(raw, g.camera); this.plots.update(raw);
     for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
-    this.awaken.update(dt); this.kiln.update(dt);
+    this.awaken.update(dt); this.tribulation.update(dt);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
-      const L = this.place.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
+      const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
       if (L && L !== this.lotusLock) {
-        const land = this.place.lotuses.find((l) => l.planet === L.toPlanet && l.toPlanet === L.planet);
+        const land = this.site.lotuses.find((l) => l.planet === L.toPlanet && l.toPlanet === L.planet);
         this.lotusLock = land; J.launch(J.surface(L.toPlanet, L.land.clone().sub(L.toPlanet.c), 0.1), LOTUS.seconds, L.toPlanet);
         sfx.jump?.(); g.events?.emit('garden.launch', { from: L.planet.id, to: L.toPlanet.id, by: 'courier' });
       } else if (!L && this.lotusLock && this.lotusLock.pos.distanceTo(J.pos) > LOTUS.r + 1.5) this.lotusLock = null;
     }
     // the spirits' bodies
-    for (const s of this.spirits) { s.mesh.position.copy(s.hop.pos); s.mesh.quaternion.setFromUnitVectors(_w.set(0, 1, 0), s.hop.up); const sq = s.hop.grounded ? 1 : 1.12; s.mesh.scale.y = s.mesh.scale.x * sq; }
+    for (const s of this.spirits) { s.mesh.position.copy(s.body.pos); s.mesh.quaternion.setFromUnitVectors(_w.set(0, 1, 0), s.body.up); const sq = s.body.grounded ? 1 : 1.12; s.mesh.scale.y = s.mesh.scale.x * sq; }
     // F works the place the Jar stands at
     if (this.leaveDue && !g.seam?.busy) { this.leave(); return; }
     if (this.namingDue && !g.seam?.busy) { this.namingDue = false; this.naming(); }
@@ -245,7 +245,7 @@ export class Realm {
 
   /** The Jar's model where its body is, upright on the planetoid, turned the way it hops, squashed as it lands. */
   placeJar(dt) {
-    const V = this.god?.jar, J = this.jar; if (!V?.group) return;
+    const V = this.god?.jar, J = this.jarBody; if (!V?.group) return;
     const grp = V.group, up = this.cam.up.clone().lerp(J.up, 0.7).normalize(), fwd = J.forward.clone().projectOnPlane(up).normalize();
     if (fwd.lengthSq() < 0.5) fwd.copy(this.cam.fwd);
     _m.makeBasis(_w.crossVectors(up, fwd).normalize(), up, fwd); _q.setFromRotationMatrix(_m);
@@ -275,29 +275,29 @@ export class Realm {
       const P = p.planet, clay = this.clays[P.id], dirs = clay.flow(p.dir.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0).cross(p.dir).normalize(), 1.9 / P.r));
       if (dirs.length < 3) continue;
       const pts = dirs.map((d) => P.c.clone().addScaledVector(d, clay.radiusAt(d) + 0.08));
-      const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(64, pts.length * 2), 0.28, 5, false), this.place.mats.lake); tube.name = 'garden-stream';
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(64, pts.length * 2), 0.28, 5, false), this.site.mats.lake); tube.name = 'garden-stream';
       this.water.add(tube);
     }
   }
   /** The spirits' bodies laid again (one bound or two merged while you are in here). */
-  respawn() { for (const s of this.spirits) this.place.group.remove(s.mesh); this.spirits = []; this.hopOut(); }
+  respawn() { for (const s of this.spirits) this.site.group.remove(s.mesh); this.spirits = []; this.hopOut(); }
   /** Let one go for good (creatures/bound.js release): it hops off into the sky. */
   release(s) {
     const i = (this.game.bound?.list || []).indexOf(s.e); if (i < 0) return;
     this.game.bound.release(i);
-    this.place.group.remove(s.mesh); this.spirits.splice(this.spirits.indexOf(s), 1);
+    this.site.group.remove(s.mesh); this.spirits.splice(this.spirits.indexOf(s), 1);
   }
 
   // ------------------------------------------------------------------ the places
   /** The place the Jar stands at, for the chevron (courier/interact.js: game.interact.add('garden', ...)). */
   offer() {
-    if (!this.active || this.jar?.held || this.jar?.flight) return null;
+    if (!this.active || this.jarBody?.held || this.jarBody?.flight) return null;
     let best = null, bd = FEATURE_R;
-    for (const f of this.place.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jar.pos); if (d < bd) { bd = d; best = f; } }
-    for (const s of this.spirits) { const d = s.hop.pos.distanceTo(this.jar.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.hop.pos }; } }
+    for (const f of this.site.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jarBody.pos); if (d < bd) { bd = d; best = f; } }
+    for (const s of this.spirits) { const d = s.body.pos.distanceTo(this.jarBody.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.body.pos }; } }
     this.near = best;
     if (!best) return null;
-    const up = best.kind === 'spirit' ? best.s.hop.up.clone() : best.pos.clone().sub(best.planet.c).normalize(); // (the place's own up on its planetoid, not the Jar's: GARDEN-SWEEP #4)
+    const up = best.kind === 'spirit' ? best.s.body.up.clone() : best.pos.clone().sub(best.planet.c).normalize(); // (the place's own up on its planetoid, not the Jar's: GARDEN-SWEEP #4)
     return { pos: best.pos.clone().addScaledVector(up, 2.4), up, d: bd };
   }
   /** F at a place. */
@@ -316,14 +316,14 @@ export class Realm {
         break;
       }
       case 'slot': if (G?.accrued(f.i) > 0) G.collect(f.i); else say(G?.slots?.[f.i]?.enc ? 'Nothing has gathered here yet.' : 'No echo works this pavilion yet.'); break;
-      case 'furnace': this.athanor(); return;
+      case 'athanor': this.athanor(); return;
       case 'cocoon': this.cocoon(); return;
-      case 'peak': {
-        if (this.kiln.active) return;
-        const n = this.kiln.open();
+      case 'tribulationMat': {
+        if (this.tribulation.active) return;
+        const n = this.tribulation.open();
         if (n == null) say('The Heavenly Kiln is closed. Fire your soul at the Athanor to open the next Firing.');
-        else if (!this.kiln.onMat()) say('Stand on the mat at the Chimney\'s foot.');
-        else this.kiln.begin();
+        else if (!this.tribulation.onMat()) say('Stand on the mat at the Chimney\'s foot.');
+        else this.tribulation.begin();
         return;
       }
       default: break;
@@ -356,13 +356,13 @@ export class Realm {
     }, { title: 'THE COCOON TREE', sub: 'click · F closes' });
     open();
   }
-  sync() { const G = this.game.garden; this.place.sync({ beds: Math.min(MAX_BEDS, G?.beds?.length || 0), slots: Math.min(MAX_SLOTS, G?.slots?.length || 0) }); }
+  sync() { const G = this.game.garden; this.site.sync({ beds: Math.min(MAX_BEDS, G?.beds?.length || 0), slots: Math.min(MAX_SLOTS, G?.slots?.length || 0) }); }
 
   /** The garden's light over the world's (after the dunes and the hour have set theirs): a soft dream, no ground under it. */
   light() {
     if (!this.active) return;
     const sc = this.game.scene;
-    const storm = this.kiln?.active ? 1 : 0, ph = phaseAt(), S = this.place.sky; // (Calissa's sky: your draught's haze, the night's stars; the Heavenly Kiln darkens it)
+    const storm = this.tribulation?.active ? 1 : 0, ph = phaseAt(), S = this.site.sky; // (Calissa's sky: your draught's haze, the night's stars; the Heavenly Kiln darkens it)
     S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0 });
     sc.fog.color.copy(S.fog); sc.fog.density = storm ? 0.012 : 0.003;
     if (sc.background?.isColor) sc.background.copy(S.fog);

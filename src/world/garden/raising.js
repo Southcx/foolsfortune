@@ -42,8 +42,8 @@ export class Raising {
   }
   say(type, s, extra = {}) { this.game.events?.emit(type, { kind: s.e.kind, spirit: s.e.name || null, feeling: s.e.sp?.feeling, pitch: 1.4 - 0.15 * (s.e.cls || 0), ...extra, by: 'courier' }); }
 
-  pet(s) { const S = this.ready(s.e); S.align = Math.max(-1, S.align + ALIGN.pet); S.bond = Math.min(100, S.bond + PET_BOND); s.hop.vel.addScaledVector(s.hop.up, 3); this.say('spirit.pet', s); this.mature(s); this.dirty(); }
-  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.hop.vel.addScaledVector(s.hop.up, 5).addScaledVector(this.realm.cam.fwd, 4); s.hop.grounded = false; this.say('spirit.flick', s); this.dirty(); }
+  pet(s) { const S = this.ready(s.e); S.align = Math.max(-1, S.align + ALIGN.pet); S.bond = Math.min(100, S.bond + PET_BOND); s.body.vel.addScaledVector(s.body.up, 3); this.say('spirit.pet', s); this.mature(s); this.dirty(); }
+  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.cam.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
 
   /** Feed it what lies in a box slot: a material (its stat by tier), a curio (its bond), a cask (its feeling). */
   feed(s, slot) {
@@ -93,8 +93,8 @@ export class Raising {
   /** Who works where: a spirit standing within 3 m of a placed feature (or a bed or a pavilion) works it, as long as it stays. */
   work(spirits, plots) {
     for (const s of spirits) {
-      if (!s.hop.grounded) continue;
-      const p = plots.near(s.hop.pos, 3), job = p?.placed?.feature || this.realm.place.features.find((f) => (f.kind === 'bed' || f.kind === 'slot') && f.pos.distanceTo(s.hop.pos) < 3)?.kind || null;
+      if (!s.body.grounded) continue;
+      const p = plots.near(s.body.pos, 3), job = p?.placed?.feature || this.realm.site.features.find((f) => (f.kind === 'bed' || f.kind === 'slot') && f.pos.distanceTo(s.body.pos) < 3)?.kind || null;
       if (job !== s.e.work) { s.e.work = job; this.dirty(); }
     }
   }

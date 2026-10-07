@@ -35,12 +35,11 @@ export function formation(feeling, neighbours = [], onVein = false) {
 export const PLANETOID_PLOTS = {
   dantian:   { radius: 20, plots: 6, fixed: ['arrival lotus', 'the Lachryma lake', 'the Pneuka Box shed'] },
   terraces:  { radius: 12, plots: 6, fixed: [] },
-  furnace:   { radius: 10, plots: 3, fixed: ['the spirit press', 'the plate shrine'] },
+  athanor:   { radius: 10, plots: 3, fixed: ['the spirit press', 'the plate shrine'] },
   pavilions: { radius: 14, plots: 5, fixed: [] },
-  grove:     { radius: 16, plots: 8, fixed: ['the cocoon tree'] },
-  peak:      { radius: 8, plots: 2, fixed: ['the meditation mat'] },
+  mulberryGrove: { radius: 16, plots: 8, fixed: ['the cocoon tree'] },
+  chimney:   { radius: 8, plots: 2, fixed: ['the meditation mat'] },
 };
-export const PLANETOIDS = PLANETOID_PLOTS; // (the old name, until Petra's rename pass moves plots.js's import: then deleted)
 
 /** The features: what each is for, its size (ECON.place.features prices it), and its job's number (before formation). A feature is
  *  placed with a feeling, chosen at placing, and costs one material of that feeling's kind (progress/spirits.js FEED.stat, read back).
