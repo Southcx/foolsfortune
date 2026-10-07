@@ -28,6 +28,7 @@ const RULES = {
   // the crossing's rail shooter (audio/rail.js): a lock's tone and a down, each on the music's next sixteenth (Rez)
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
+  'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
 };
 
 export function hearEvents(game, sfx) {
