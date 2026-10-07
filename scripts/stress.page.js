@@ -228,7 +228,7 @@
       for (const S of gg.party?.list || []) {
         const q = S.pos;
         if (!Number.isFinite(q.x + q.y + q.z)) { sink.violation('sibling-finite', P, label + ' ' + S.id); break; }
-        const lost = (sink.lost ||= {}), far = S.order === 'follow' && Math.hypot(q.x - p.x, q.z - p.z) > 40;
+        const lost = (sink.lost ||= {}), far = S.order === 'follow' && !paused && Math.hypot(q.x - p.x, q.z - p.z) > 40; // (under a window that pauses, nothing steps: the warp waits for it to close)
         lost[S.id] = far ? (lost[S.id] || 0) + 1 : 0; // (lost for half a second: a warp waits for the next fixed step, and an arrival may pause a few frames)
         if (lost[S.id] === 30) sink.violation('sibling-lost', P, label + ' ' + S.id);
       }
