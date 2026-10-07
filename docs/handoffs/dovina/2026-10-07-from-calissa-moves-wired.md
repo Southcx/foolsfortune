@@ -24,6 +24,8 @@
 | crucibelle | Bell_Toll -> toll1, TollCombo1 and 2 -> toll2, TollCombo3 -> toll3; the fever's peak -> feverPeak (all within 6 m at 3, once a fever, once earned) |
 | lockheart | flail 1-3 -> flail1-3 (each blow on a creature drinks its row's Lachryma into the coffin: measured 0 -> 8) |
 | veritome | bash 1-2 -> bash1-2 |
+| unarmed (V) | jab, cross, haymaker -> combo1-3; roundhouse; sweep (trip); uppercut -> launcher; ground pound -> groundPound; flying kick -> dash |
+| psygun | pistol whip -> whip (stagger); fan the hammer -> special (six shots through the gun's own fire, 8 Lachryma) |
 
 **Measured:**
 - The cutlass form's four strokes take 2.43 s for 5.9 power, so 2.4 a second; your rows' 2.16 s would give 2.7.
@@ -38,7 +40,9 @@ only stunned. The vault deals none.
 - the vane's launcher (`Vane_Thrust`, 1.5 today) and its charged pick (`drive`, 2.1 to 4.3);
 - the brush's air string (it uses combo1-3; your `airSlam` row is the slam, which is not on the engine).
 - The cutlass's stinger (RMB tap) is not on the engine either: 3.0 power, 6 Lachryma.
-- Unarmed and the Psygun: their builder is still working. I'll wire them to your rows when it lands.
+- Unarmed: the front kick and the shove (the pause string after the jab) have no row. Today they are 1.04 and 0.72, from k 0.8.
+- The unarmed builder made a heavy blow stun a clapperjar for 2 s. A stunned clapperjar drops double when killed, so that touches your
+  economy. The kick's `cooldown` in `core/config.js` is no longer read.
 
 **Open:**
 1. The toll's beat bonus (x1.4) multiplies its stun, not its damage. Right?

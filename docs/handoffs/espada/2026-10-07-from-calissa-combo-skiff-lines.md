@@ -11,3 +11,5 @@
 - Names wanted: the cutlass's moves are called stroke, thrust, the JRPG arcs, launcher, air cut, plunge, dash slash, charged slash and
   counter spin. Those are only descriptions; name them as the house would. The Tidecutter and the Dreamquake keep the owner's names
   (the clips carry them).
+- `src/progress/skills.js`, the Kick & Parry blurb: the unarmed V is a whole string now (jab, cross, haymaker, roundhouse; the front kick,
+  shove and sweep after a pause; the uppercut, the ground pound, the flying kick). The glossary has the names; the blurb's words are yours.
