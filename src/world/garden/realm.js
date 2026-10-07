@@ -27,6 +27,7 @@ import { Awaken, FOSSIL } from './awaken.js';
 import { Kiln } from './kiln.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
+import { Fossil } from '../../vfx/garden/fossil.js';
 import { dressForm } from '../../vfx/garden/forms.js';
 import { phaseAt } from '../../progress/weather.js';
 import { DAY_MS } from '../../core/calendar.js';
@@ -73,6 +74,8 @@ export class Realm {
     // (Calissa's features and forms, one of each, and the brush's ring: compiled with the rest, then put away)
     this.parkedLooks = [];
     for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.place.by.dantian.c); this.place.group.add(F.group); this.parkedLooks.push(F.group); }
+    { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.place.by.grove.c); this.place.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
+    this.place.tree.slots[0].pod.visible = true; this.kiln.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
     ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.place.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.place.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.place.by.peak.c, this.place.by.dantian.c]), this.plots.threadMat.gen); this.place.group.add(this.parkedThread);
@@ -116,7 +119,7 @@ export class Realm {
   leave() {
     const g = this.game; if (!this.active) return;
     const go = () => {
-      this.active = false; this.place.show(false);
+      this.active = false; this.place.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.place.group.remove(s.mesh);
       this.spirits = []; this.hand.held = null;
@@ -153,6 +156,7 @@ export class Realm {
   hopOut() {
     const G = this.place.by.grove, list = this.game.bound?.list || [];
     list.forEach((e, i) => {
+      if (this.awaken.inTree(e)) return; // (wound into a pod in the cocoon tree: world/garden/awaken.js)
       const a = (i / Math.max(1, list.length)) * Math.PI * 2, dir = new THREE.Vector3(Math.cos(a) * 0.6, 1, Math.sin(a) * 0.6).normalize();
       const mesh = new THREE.Mesh(this.spiritGeo, this.spiritMat); mesh.castShadow = true; mesh.scale.setScalar(0.8 + 0.25 * (e.cls || 0)); mesh.name = `spirit-${e.kind}`;
       this.place.group.add(mesh);
@@ -322,8 +326,10 @@ export class Realm {
     let first = null;
     const open = () => menu.showPage('cocoon', (im, el) => {
       const rows = el('div', 'rooms'), btn = (t, sub, run) => { const d = el('div', 'room', `<span class="n">❦</span><span><b>${t}</b><s>${sub}</s></span>`); if (run) d.onclick = run; rows.appendChild(d); };
-      if (g.pneuka?.count(FOSSIL)) btn('Wake a fossil', this.awaken.waking ? 'it is waking: listen' : 'the Awakening Song wakes what the Lachryma kept', () => { this.awaken.fossil(); menu.close(); });
-      for (const e of L) { this.raising.ready(e); btn(`${first === e ? '◆ ' : ''}${e.name || e.kind}`, first ? (first === e ? 'chosen: choose another to merge with it' : 'merge with the chosen one') : 'choose two to merge into one', () => { if (!first) { first = e; open(); } else if (first !== e) { this.awaken.merge(first, e); menu.close(); } }); }
+      const H = this.awaken.hatch;
+      if (H) btn(H.kind === 'fossil' ? 'A fossil is waking' : 'Two are twining in the tree', 'listen, and watch the tree', null);
+      else if (g.pneuka?.count(FOSSIL)) btn('Wake a fossil', 'the Awakening Song wakes what the Lachryma kept', () => { this.awaken.fossil(); menu.close(); });
+      if (!H) for (const e of L) { this.raising.ready(e); btn(`${first === e ? '◆ ' : ''}${e.name || e.kind}`, first ? (first === e ? 'chosen: choose another to merge with it' : 'merge with the chosen one') : 'choose two to merge into one', () => { if (!first) { first = e; open(); } else if (first !== e) { this.awaken.merge(first, e); menu.close(); } }); }
       if (L.length < 2) btn('Two spirits make one here', 'when you have two', null);
       im.appendChild(el('div', 'grp', 'THE COCOON TREE')); im.appendChild(rows);
     }, { title: 'THE COCOON TREE', sub: 'click · F closes' });

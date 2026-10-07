@@ -19,6 +19,7 @@ import { PLANETOIDS as NAMES } from '../../npc/realmnames.js';
 import { Planetoid } from '../../vfx/garden/planetoid.js';
 import { GardenSky } from '../../vfx/garden/gardensky.js';
 import { SpiritVein } from '../../vfx/garden/veins.js';
+import { CocoonTree } from '../../vfx/garden/cocoontree.js';
 
 /** Where the garden hangs: far over the workshop's north, no other zone near (render/zonemap.js 'garden'). */
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
@@ -36,7 +37,7 @@ export const PLANETOIDS = [
 export const LINKS = [['dantian', 'terraces'], ['dantian', 'furnace'], ['dantian', 'pavilions'], ['dantian', 'grove'], ['grove', 'peak'], ['terraces', 'furnace'], ['pavilions', 'grove'], ['terraces', 'peak']];
 export const MAX_BEDS = 8, MAX_SLOTS = 8;
 
-const UP = new THREE.Vector3(0, 1, 0);
+const UP = new THREE.Vector3(0, 1, 0), _s = new THREE.Vector3();
 /** A direction on a sphere from latitude and longitude (degrees; latitude 90 is the top). */
 export const dirOf = (lat, lon) => { const a = (lat * Math.PI) / 180, b = (lon * Math.PI) / 180; return new THREE.Vector3(Math.cos(a) * Math.sin(b), Math.sin(a), Math.cos(a) * Math.cos(b)); };
 
@@ -52,7 +53,6 @@ export class GardenPlace {
       lake: new THREE.MeshStandardMaterial({ color: 0x9fe0ff, emissive: 0x4fb6ff, emissiveIntensity: 0.5, roughness: 0.2, name: 'garden-lake' }),
       soil: new THREE.MeshStandardMaterial({ color: 0x5a3e2a, roughness: 1, name: 'garden-soil' }),
       roof: new THREE.MeshStandardMaterial({ color: 0xb5513c, roughness: 0.7, name: 'garden-roof' }),
-      leaf: new THREE.MeshStandardMaterial({ color: 0x9be3b8, emissive: 0x3f9f72, emissiveIntensity: 0.3, roughness: 0.8, name: 'garden-leaf' }),
       ember: new THREE.MeshStandardMaterial({ color: 0xffb27a, emissive: 0xff7a3a, emissiveIntensity: 0.9, roughness: 0.6, name: 'garden-ember' }),
     };
     this.build();
@@ -72,11 +72,11 @@ export class GardenPlace {
     // the planetoids: Calissa's (vfx/garden/planetoid.js: the skin, the roots, each kind dressed), on the one ground: her unsculpted shape
     // is the base, the clay's height goes on top (world/garden/clay.js), and her `surface` asks that ground (O(1), not a search)
     this.planets.forEach((P, k) => {
-      const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1 }); look.group.position.copy(P.c); g.add(look.group);
+      const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } });
+      look.group.position.copy(P.c); g.add(look.group);
       P.look = look; P.mesh = look.mesh;
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
       P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
-      look.surface = (dir) => P.radiusAt(dir.clone().normalize());
     });
     // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
     this.sky = new GardenSky(); g.add(this.sky.group);
@@ -114,9 +114,9 @@ export class GardenPlace {
       const mesh = new THREE.Mesh(pavGeo, this.mats.roof); mesh.applyMatrix4(this.stand(V, dirOf(52, (i / MAX_SLOTS) * 360), 0, (i / MAX_SLOTS) * Math.PI * 2)); mesh.castShadow = true; g.add(mesh);
       F.push({ kind: 'slot', i, planet: V, pos: mesh.position.clone(), mesh });
     }
-    // the Spirit Grove: the cocoon tree on its crown (merging is Round 4's)
+    // the Spirit Grove: the cocoon tree on its crown (Calissa's: vfx/garden/cocoontree.js; what hangs in it is world/garden/awaken.js's)
     { const R = this.by.grove, m = this.stand(R, UP, 0);
-      add(this.mats.wood, new THREE.CylinderGeometry(0.5, 0.8, 5, 8).translate(0, 2.5, 0), m.clone()); add(this.mats.leaf, new THREE.IcosahedronGeometry(3, 1).translate(0, 6, 0), m.clone());
+      this.tree = new CocoonTree({ slots: 3 }); this.tree.group.applyMatrix4(m); g.add(this.tree.group);
       F.push({ kind: 'cocoon', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
     // the Meditation Peak: a needle of rock, and the mat at its foot (the tribulation is Round 4's)
     { const R = this.by.peak, d = dirOf(40, 180); F.push({ kind: 'peak', planet: R, pos: R.c.clone().addScaledVector(d, R.radiusAt(d)) }); } // (the mat at the needle's foot: Calissa's needle above it)
@@ -131,5 +131,5 @@ export class GardenPlace {
   }
   show(on) { this.group.visible = on; }
   /** The looks that move: the furnace's vent, the veins' light, the sky round the eye. */
-  update(raw, camera) { for (const P of this.planets) P.look.update(raw); for (const V of this.veins) V.update(raw); this.sky.update(raw, camera); }
+  update(raw, camera) { for (const P of this.planets) P.look.update(raw); for (const V of this.veins) V.update(raw); this.sky.update(raw, camera); this.tree.update(raw); }
 }

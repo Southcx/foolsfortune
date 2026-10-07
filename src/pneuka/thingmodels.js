@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THINGS: the models of the small things the last three tools take (a Possibilikey, an instrument for the Crucibelle, a Lockheart's
-// coffin, a shard of crystal). Each is a few primitives in the tool-kit's palette, flat-shaded, sized in metres; the Pneuka Box renders
+// coffin, a shard of crystal, a Lachrymite fossil). Each is a few primitives in the tool-kit's palette, flat-shaded, sized in metres; the Pneuka Box renders
 // each once into its icon (pneuka/icons.js, prerendered: the look of a PS2 inventory), and the Lockheart wears the coffin on its chain
 // (`buildCoffin`, also the tool's own model).
 //
@@ -12,6 +12,7 @@
 //   buildThing(id) -> { group, dispose } | null         buildCoffin(heartId) -> { group, lid, dispose }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { fossilThing } from '../vfx/garden/fossil.js';
 import { HEARTS, KEYS } from '../tools/lockheart/table.js';
 
 const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.1, flatShading: true, ...o });
@@ -151,5 +152,6 @@ export function buildThing(id) {
   if (id.startsWith('inst.')) return instrument(id);
   if (id.startsWith('heart.')) { const c = buildCoffin(id); c.group.rotation.set(0.25, 0.45, 0.1); return c; }
   if (id === 'mat.shard') return shard();
+  if (id === 'fossil.lachrymite') return fossilThing(); // (Calissa's: vfx/garden/fossil.js)
   return null;
 }
