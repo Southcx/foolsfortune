@@ -101,7 +101,7 @@ export class Skiffing extends Tech {
     this.wake.clear();
     this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
     this.sfxLoop = sfx.skiffLoop?.();
-    this.game.events?.emit('skiff.start', {});
+    this.game.events?.emit('skiff.start', { by: 'courier'});
   }
 
   end() {
@@ -135,7 +135,7 @@ export class Skiffing extends Tech {
     let pump = 0;
     if (this.L < 0.4) this.pumpReady = true;
     if (this.L >= 0.999 && wasL < 0.999) {
-      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; sfx.hoist?.(); g.events?.emit('skiff.pump', {}); }
+      if (this.pumpReady && this.pumpFresh) { pump = c.pump; this.pumpReady = false; sfx.hoist?.(); g.events?.emit('skiff.pump', { by: 'courier'}); }
       this.pumpFresh = false;
     }
     if (this.L < 0.5) this.pumpFresh = true;
@@ -185,7 +185,7 @@ export class Skiffing extends Tech {
       this.v.addScaledVector(f, 1.2 + 2 * this.charge);
       this.air = true; this.spin = 0; this.airT = 0;
       sfx.airJump();
-      g.events?.emit('skiff.hop', {});
+      g.events?.emit('skiff.hop', { by: 'courier'});
     }
     if (!sp2) this.charge = Math.max(0, this.charge - dt * 4);
     this.spaceWas = sp2;
@@ -244,9 +244,9 @@ export class Skiffing extends Tech {
     if (Math.abs(near) >= 1 && off < 0.9) {
       const f = _v.set(Math.sin(this.heading), 0, Math.cos(this.heading));
       this.v.addScaledVector(f, 3 + 2 * Math.abs(near));
-      g.events?.emit('skiff.trick', { turns: Math.abs(near) });
+      g.events?.emit('skiff.trick', { turns: Math.abs(near), by: 'courier' });
       sfx.parry?.();
-    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.events?.emit('skiff.wobble', { spin: Math.abs(this.spin) }); }
+    } else if (Math.abs(this.spin) > 2.2) { this.v.multiplyScalar(0.75); g.events?.emit('skiff.wobble', { spin: Math.abs(this.spin), by: 'courier' }); }
     this.spinRest = this.spin - near * TAU;
     this.spin = 0;
   }
