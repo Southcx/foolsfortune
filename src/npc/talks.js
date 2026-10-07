@@ -283,6 +283,7 @@ export const TALKS = {
       ], next: 'menu' },
       again: { lines: [{ mood: 'calm', text: 'You are back on the hour, which I appreciate. {p:0.3}What is the cargo?' }], next: 'menu' },
       menu: { lines: [], choices: [
+        { text: 'I have cargo.', do: (g) => g.shops?.open('purser'), go: null },
         { text: 'What do you buy?', go: 'buy' },
         { text: 'Can we talk price?', go: 'price' },
         { text: 'What is the lamp for?', go: 'lamp' },
