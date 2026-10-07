@@ -2,8 +2,8 @@
 // THE SOUL BRUSH: the third of the Courier's psychic tools, a calligrapher's brush the size of a club, worn at the left hip like a
 // sword in a sash and drawn across the body. It is three things, each from a game that did it best:
 //
-//  - a CLUB (tools/soulbrush/club.js): heavy blows that bat what they meet, a held charge and a slam; every swing flicks slip off the bristles
-//    (Splatoon's Inkbrush). LMB, and hold LMB.
+//  - a CLUB (tools/soulbrush/club.js): heavy blows that bat what they meet, a spin after a pause, a dive at a sprint, a held charge and
+//    a slam; every swing flicks slip off the bristles (Splatoon's Inkbrush). LMB, and hold LMB. Its body is the Courier's suite (Brush_*).
 //  - the BRUSH SLIDE: with the brush out, the core slide (C at speed) is the same slide, as fast and as long, but they ride it
 //    sideways, low, the brush trailing behind them on the ground, and it paints a stroke of slip in their wake that they can dive into once
 //    it has settled (Splatoon's Inkbrush dash and ink-swim; Jet Set Radio's tag-as-you-go). The core movement is untouched: only the
@@ -13,12 +13,13 @@
 //    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
 //
 //   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
-//   LMB    the club: three blows; held on the ground, the bristles SATURATE and the mode works (tools/soulbrush/load.js: 1 PAINT,
-//          2 MOP); held in the air, the charge and the slam (a ground pound)                    RMB tap   FLICK: a fan of slip ahead
+//   LMB    the club: three blows (a pause after the second: the spin; sprinting: the dive); held on the ground, the bristles SATURATE
+//          and the mode works (tools/soulbrush/load.js: 1 PAINT, 2 MOP); held in the air, the charge and the slam   RMB tap  FLICK
 //   RMB    held: the Celestial Brush (LMB draws; let go of RMB to let the painting take)          C at speed  the Brush Slide
 //
-// It is a passive tech (it doesn't take the step from the core movement): it owns the right arm's pose while drawn, the slide's
-// look while sliding with it, and the mouse while it is out.
+// It is a passive tech (it doesn't take the step from the core movement): it owns the upper body's pose while drawn (the suite's
+// Brush_Idle: the brush laid back over the shoulder, the free arm swinging with the run when they move), the slide's look while sliding
+// with it (Brush_BrushSlide), and the mouse while it is out. The engine's whole-body moves and the slams take the step through Launch.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RestBake } from '../../render/restbake.js';
@@ -26,7 +27,7 @@ import { Tech } from '../../courier/moves/techs.js';
 import { Track } from '../../courier/anim/animator.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
-import { BrushModel } from './model.js';
+import { BrushModel, BRUSH } from './model.js';
 import { Club } from './club.js';
 import { Celestial } from './celestial.js';
 import { BrushCanvas } from './canvas.js';
@@ -41,6 +42,7 @@ import { tickInscriptions, clearInscriptions } from './inscribe.js';
 import { stream, randDir } from '../../core/rng.js';
 import { BrushLoad } from './load.js';
 import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
+import { Crossfade, standLegs, liftAbove, floorUnder, closeHand } from '../toolbody.js';
 const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -48,6 +50,9 @@ const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const wrap = (a) => { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; };
 const PAINT_GLIDE = 2.2; // (a second's worth of the slide's lost speed given back on painted ground)
+const IDLE = 'Brush_Idle', SLIDE = 'Brush_BrushSlide'; // (the suite's own stance and slide; stance:soulbrush and the authored brushSlide stand in without them)
+// what of the brush must stay out of the ground (tool frame: along the haft, and a radius): the bristles' point, the head, the butt
+const OFF_GROUND = [{ x: BRUSH.tip, r: 0.03 }, { x: 1.0, r: BRUSH.radius }, { x: BRUSH.back, r: 0.03 }];
 const TAP = 0.16, SLIDE_STEP = 0.32, TRAIL_W = 0.62, TRAIL_WET = 14, TRAIL_SETTLE = 0.55;
 const _m1 = new THREE.Matrix4(), _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _q1 = new THREE.Quaternion();
 
@@ -147,6 +152,7 @@ export class SoulBrush extends Tech {
       }
     } else if (this.celestial.active) this.celestial.exit('stow');
     if (!this.held && this.load.busy) this.load.end();
+    this.club.tick(dt);
     this.load.tick(dt);
     this.canvas.update(raw);
     this.techniques.update(dt);
@@ -167,10 +173,14 @@ export class SoulBrush extends Tech {
     this.wasShellsHidden = this.drawT > 0.02;
   }
 
-  /** RMB tapped: a fan of slip flung ahead, where they are looking (Splatoon's brush flick, at range). */
+  /** RMB tapped: a fan of slip flung ahead, where they are looking (Splatoon's brush flick, at range), at the top of the throw
+   *  (Brush_Flick: the club plays it). */
   flick() {
+    if (!this.game.lachryma.spend(1, 'brushflick')) { sfx.fizzle?.(); return; }
+    this.club.startFlick(() => this.flickFan());
+  }
+  flickFan() {
     const g = this.game, P = this.P;
-    if (!g.lachryma.spend(1, 'brushflick')) { sfx.fizzle?.(); return; }
     const f = P.lookDir(_v1).clone();
     const from = this.model.tipWorld(_v2).clone();
     for (let i = 0; i < 14; i++) {
@@ -232,30 +242,39 @@ export class SoulBrush extends Tech {
   /** The slide faces sideways while the brush slides it. */
   faceYaw() { return this.sliding || this.slideW > 0.5 ? this.slideYaw : null; }
 
-  /** The slide's pose, while the brush slides it: the authored brush slide (tools/soulbrush/clips.js). */
+  /** The slide's pose, while the brush slides it: the suite's Brush_BrushSlide (the authored brushSlide without it: soulbrush/clips.js). */
   slidePose(ch, dt) {
     if (this.slideW < 0.01) return null;
     this.slidePoseBuf ||= ch.clips.pose();
     this.slideClipT = (this.slideClipT || 0) + dt;
-    return { pose: ch.clips.sample('brushSlide', this.slideClipT, this.slidePoseBuf), w: this.slideW };
+    return { pose: ch.clips.sample(ch.clips.clips[SLIDE] ? SLIDE : 'brushSlide', this.slideClipT, this.slidePoseBuf), w: this.slideW };
   }
 
-  // ---------------------------------------------------------------- animation: the right arm's clip layer
+  // ---------------------------------------------------------------- animation: the upper body's clip layer
   animate(ch, base, dt) {
-    const C = ch.clips;
+    const C = ch.clips, P = this.P;
     if (!this.track) {
-      this.track = new Track(C, new Set(['stance:soulbrush', 'swordIdle', 'torchIdle', 'idle']));
-      this.track.play(C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle', 0, 0.01); // (the brush on their shoulder: courier/anim/stances.js)
-      this.P1 = C.pose(); this.P2 = C.pose();
+      const idle = C.clips[IDLE] ? IDLE : C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle'; // (the brush over their shoulder)
+      this.track = new Track(C, new Set([idle, 'swordIdle', 'torchIdle', 'idle']));
+      this.track.play(idle, 0, 0.01);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C); this.legState = {}; this.freeW = 0;
+      this.mask = Float32Array.from(ch.MASK_UPPER); this.leftArm = C.bones.map((b, i) => (/L$/.test(b) && /arm|hand|f_|thumb/.test(b) ? i : -1)).filter((i) => i >= 0);
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.slideW);
+    const cl = this.club.pose(C, this.P2, dt); // (its clocks run on while the layer is away)
     if (layerW <= 0.001) return;
     const tr = this.track;
     tr.update(dt);
     const layer = tr.sample(this.P1);
-    const cl = this.club.pose(C, this.P2);
     if (cl) C.blend(layer, cl.pose, cl.w);
-    C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
+    this.xf.apply(C, layer, this.club.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
+    // moving with nothing playing, the free hand comes off the hip and swings with their run
+    this.freeW = THREE.MathUtils.damp(this.freeW, !cl && !this.club.playing && P.grounded && Math.hypot(P.vel.x, P.vel.z) > 1.2 ? 1 : 0, 8, dt);
+    for (const i of this.leftArm) this.mask[i] = ch.MASK_UPPER[i] * (1 - this.freeW);
+    C.blend(base, layer, layerW, this.mask, 0);
+    this.club.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
+    const lg = this.club.legs;
+    standLegs(ch, base, P, lg?.clip, lg?.t ?? 0, layerW, this.legState, dt, !!lg?.loop);
   }
 
   // ---------------------------------------------------------------- hands: the draw, the brush on the ground in a slide, the hair
@@ -289,9 +308,12 @@ export class SoulBrush extends Tech {
         }
       }
     }
+    if (phase === 'held' && this.slideW < 0.5 && !this.P.fp) this.offGround(ch, M);
     if (this.P.fp && this.drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, this.drawT / 0.6), ...this.club.fpArc() }, M);
     if (!M.elements.every(Number.isFinite)) M.copy(holster); // (never a NaN placed in the world)
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);
+    // the two-handed holds (the charge, the slams, the paint): the free hand closed on the haft where the clip already has it
+    if (phase === 'held' && !this.P.fp && this.slideW < 0.5) closeHand(ch, this.grip, M, (this.leftHold ||= {}), dt, { from: -0.35, to: 0.8 });
     // the hair lags: a spring on the head's motion in the brush's own frame (and drags flat in the slide)
     model.group.updateMatrixWorld(true);
     const v = this.club.tipVel;
@@ -308,6 +330,20 @@ export class SoulBrush extends Tech {
     model.setBend(this.lagY, this.lagZ);
     model.group.updateMatrixWorld(true);
     this.club.afterHands(dt);
+  }
+
+  /** The suite's blows were made with a shorter brush: where one would put the head through the floor (the low upswing, a slam, the
+   *  paint's sweep), the brush is turned up about the hand until it rests on the ground, and the hand follows (tools/toolbody.js). */
+  offGround(ch, M) {
+    const P = this.P, a = _v1.set(BRUSH.tip, 0, 0).applyMatrix4(M), b = _v2.set(BRUSH.back, 0, 0).applyMatrix4(M), low = a.y < b.y ? a : b;
+    if (low.y > P.renderPos.y + 0.5) return;
+    const floor = floorUnder(this.game, P, low.x, low.z, P.renderPos.y);
+    if (liftAbove(M, OFF_GROUND, floor) <= 0) return;
+    const hp = _v3, hq = _q1;
+    handFromTool(this.grip, M, 'R', hp, 0, 0, 0, hq);
+    if (!Number.isFinite(hp.x + hp.y + hp.z + hq.x + hq.w)) return;
+    ch.reachHand('R', hp, hq, 1);
+    M.multiplyMatrices(ch.bones.handR.matrixWorld, this.grip.R);
   }
 
   fixed() {}
