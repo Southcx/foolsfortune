@@ -19,34 +19,17 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../weather.js';
-
-const CRYSTAL_F = /* glsl */`varying vec3 vN, vW, vP; uniform vec3 uC; uniform float uK, uBeat, uT;
-void main() {
-  vec3 V = normalize(cameraPosition - vW); float f = abs(dot(V, normalize(vN)));
-  float run = 0.5 + 0.5 * sin(length(vP) * 18.0 - uT * 6.0);                                     // (light running out along the bones)
-  vec3 c = uC * (0.25 + 0.5 * pow(1.0 - f, 2.0)) + uC * uK * (0.4 + 0.6 * run) * (0.6 + 0.8 * uBeat);
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-}`;
+import { seamed } from '../cavekit.js';
+import { mindTime } from '../labradorite.js';
 
 export class Fossil {
   constructor({ shape = 'spiral', feeling = 'wonder' } = {}) {
     this.group = new THREE.Group(); this.group.name = `fossil-${shape}`; this.t = 0; this.k = 0; this.beatK = 0; this.pieces = null;
     this.u = { uC: { value: new THREE.Color(COLOR[feeling] ?? COLOR.wonder) }, uK: { value: 0 }, uBeat: { value: 0 }, uT: { value: 0 } };
-    this.crystal = new THREE.ShaderMaterial({ name: 'fossil-crystal', uniforms: this.u, fragmentShader: CRYSTAL_F,
-      vertexShader: 'varying vec3 vN, vW, vP; void main() { vP = position; vN = normalize(mat3(modelMatrix) * normal); vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }' });
-    // the nodule: sandstone, cracking with light as it wakes
-    this.su = { uK: { value: 0 }, uC: this.u.uC };
-    this.stone = new THREE.MeshStandardMaterial({ name: 'fossil-stone', color: 0xc9a77a, roughness: 0.95, flatShading: true });
-    this.stone.onBeforeCompile = (sh) => {
-      Object.assign(sh.uniforms, this.su);
-      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vFsP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvFsP = position;');
-      sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vFsP; uniform float uK; uniform vec3 uC;')
-        .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-  { float cr = 1.0 - smoothstep(0.0, 0.03, abs(sin(vFsP.x * 9.0 + vFsP.y * 5.0) * 0.5 + sin(vFsP.z * 11.0 - vFsP.y * 7.0) * 0.5));
-    totalEmissiveRadiance += uC * cr * smoothstep(0.3, 1.0, uK) * 1.4; }`);
-    };
-    this.stone.customProgramCacheKey = () => 'fossil-stone';
+    // (plain materials, shared programs: the crystal's glow and the stone's cracks are driven from here, not a shader of their own)
+    this.crystal = new THREE.MeshStandardMaterial({ name: 'fossil-crystal', color: this.u.uC.value.clone().multiplyScalar(0.35), roughness: 0.2, metalness: 0.3, emissive: this.u.uC.value, emissiveIntensity: 0.25 });
+    this.su = { uStage: { value: 0 }, uSeam: { value: 0 }, uSpent: { value: 0 }, uMindT: mindTime }; // (the cave kit's seamed stone: its cracks glow by stage)
+    this.stone = seamed(0xc9a77a, this.su);
     const ng = new THREE.DodecahedronGeometry(0.5, 1); const P = ng.attributes.position;
     for (let i = 0; i < P.count; i++) { const x = P.getX(i), y = P.getY(i), z = P.getZ(i); const k = 1 + 0.12 * Math.sin(x * 7 + y * 5) * Math.sin(z * 6); P.setXYZ(i, x * k * 1.2, y * k * 0.75, z > 0.18 ? 0.18 + (z - 0.18) * 0.2 : z * k); } // (squat, its front broken flat where the fossil shows)
     ng.computeVertexNormals();
@@ -77,7 +60,8 @@ export class Fossil {
 
   update(raw = 1 / 60) {
     this.t += raw; this.u.uT.value = this.t; this.beatK = Math.max(0, this.beatK - raw * 4);
-    this.u.uK.value = this.k; this.u.uBeat.value = this.beatK; this.su.uK.value = this.k;
+    this.u.uK.value = this.k; this.u.uBeat.value = this.beatK; this.su.uStage.value = THREE.MathUtils.smoothstep(this.k, 0.2, 1) * 3;
+    this.crystal.emissiveIntensity = (0.25 + 1.3 * this.k * (0.75 + 0.25 * Math.sin(this.t * 6))) * (0.6 + 0.8 * this.beatK); // (it answers the song: brighter as it wakes, a pulse on each note)
     if (this.k > 0.2 && !this.pieces) this.nodule.rotation.z = (Math.random() - 0.5) * 0.03 * this.k; // (it trembles as it wakes)
     if (this.pieces) {
       this.burstT += raw;

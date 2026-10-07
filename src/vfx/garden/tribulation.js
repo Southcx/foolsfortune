@@ -73,7 +73,7 @@ export class HeavenlyKiln {
     this.t += raw; this.k += (this.to - this.k) * Math.min(1, raw * 1.2); this.u.uK.value = this.k; this.u.uT.value = this.t; this.vortex.visible = this.k > 0.01;
     for (const B of this.bolts) {
       B.t += raw; const struck = B.t >= B.eta;
-      if (Math.floor(B.t * 20) !== B.flick) { B.flick = Math.floor(B.t * 20); this.shape(B); }
+      if (Math.floor(B.t * 20) !== B.frame) { B.frame = Math.floor(B.t * 20); this.shape(B); } // (its own counter: B.flick is the flick's window)
       const left = B.eta - B.t, inFlick = left <= B.flick && !struck; // (the ring closes on its mark; gold in the flick's window; at the strike, a ring of heat runs out)
       if (!struck) { B.ring.scale.setScalar(B.r * (1 + Math.max(0, left / B.eta))); B.ringMat.color.setHex(inFlick ? 0xffd76a : 0xff7a2a); B.ringMat.opacity = 0.35 + 0.5 * (1 - left / B.eta); }
       else { const s = (B.t - B.eta) / 0.35; B.ring.scale.setScalar(B.r * (1 + 2.5 * s)); B.ringMat.color.setHex(0xfff4e0); B.ringMat.opacity = Math.max(0, 0.9 * (1 - s)); }
