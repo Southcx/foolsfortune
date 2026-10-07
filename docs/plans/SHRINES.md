@@ -50,7 +50,7 @@ A small clay whistle, a consumable that takes you out of a Well alive, to its mo
   So the cost of bailing grows with what you have to lose and stays a choice at every depth (a flat price alone would be nothing at
   depth, where `wellPay` grows 1.25 times a floor).
 - **One carried at a time** (`carry: 1`): one bail-out a run.
-- **A channel of 1.5 real s, broken by a blow** (WoW's Hearthstone, Tarkov's extract timer): it is a way out when you have a breath,
+- **A channel of 1.5 real s, broken by a blow** (settled by the owner, 2026-10-07) (WoW's Hearthstone, Tarkov's extract timer): it is a way out when you have a breath,
   not a dodge in the middle of a blow. The owner's "without dying" holds whenever you find a breath; whether a FOE floor allows one
   is the FOE's design.
 - Sold where crude is: Old Grog's pier, three in stock (with the Lachrymato Bottles). Blown from the Pneuka Box; it breaks. Works in any Well (the Great Dunemaw
