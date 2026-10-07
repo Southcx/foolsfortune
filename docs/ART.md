@@ -236,6 +236,18 @@ pillars and stalactite bases (`vfx/cavekit.js`), the half-buried finds (`vfx/fin
 datura's stems (`vfx/datura.js`), the solar rings' plinth and the slip geysers' vents (`vfx/solarring.js`, `vfx/slipgeyser.js`), the
 Dunemaw's crown chimneys (`vfx/dunemaw.js` PrinceCrown). Not Strawman: its ball foot rocks, and a skirt would rock with it.
 
+## The crossing (the owner, 2026-10-07: "a love letter to the genre... placeholders, but feeling polished to a mirror shine")
+
+One rule for all of the rail shooter's art: **the sea is ink, and everything you can shoot carries the one warm or pale thing on it**. Nothing on the crude is lit
+from within except what matters: the sloop's Lachryma (its polarity), the Conductor's glow, the False Light's lure and her open ports' matches, Old Nobody's
+open gills and throat. The parryable things wear only the Lachryma outline (`vfx/parrymark.js`).
+- **The shoal** (`vfx/shoal.js`): glints are slivers of ink seen from above. The silver turn rolls them on their side so the flank faces the sky. A sardine
+  run's flicker as a motion, never a light.
+- **The False Light** (`vfx/brig.js`): a tarred brig whose one friendly light, a lantern at her bowsprit, is the lie the Wreckers are named for. Lids red
+  inside, as a man-of-war's were, so a port opening reads a bar ahead.
+- **Old Nobody** (`vfx/leviathan.js`): crude standing up (the oil film's colours on black glass). Crusted with Lachryma in every feeling's colour, fed by
+  everyone. A blank face with one milky blind eye: Nobody, and the Cyclops whom Nobody blinded.
+
 ## 6. The placeholder audit (what to replace first)
 
 Verdicts: **OURS** (the owner's own, or made for this game and carrying its identity), **PLACEHOLDER** (stands in for art that should
