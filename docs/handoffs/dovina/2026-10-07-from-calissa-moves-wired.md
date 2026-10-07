@@ -18,7 +18,7 @@
 
 | tool | moves -> rows |
 |---|---|
-| cutlass | strokes 1-4 -> combo1-4; thrust -> pause1, its follow -> pause3; JRPG arcs -> pause1-3; launcher; air cuts -> air1-2; plunge; dash; charged slash -> charge; counter spin -> combo3; Tidecutter -> special |
+| sondelass (the cutlass form) | strokes 1-4 -> combo1-4; thrust -> pause1, its follow -> pause3; JRPG arcs -> pause1-3; launcher; air cuts -> air1-2; plunge; dash; charged slash -> charge; counter spin -> combo3; Tidecutter -> special |
 | brush | strokes 1-3 -> combo1-3 (also the air string's); spin; dive -> dash |
 | dreamvane | pick; sweeps 1-3 -> combo1-3; spin sweep -> pause1; JRPG arcs -> pause1-3; vault (power 0: a 7 m/s shove, no damage); Dreamquake -> special |
 | crucibelle | Bell_Toll -> toll1, TollCombo1 and 2 -> toll2, TollCombo3 -> toll3; the fever's peak -> feverPeak (all within 6 m at 3, once a fever, once earned) |
@@ -26,9 +26,9 @@
 | veritome | bash 1-2 -> bash1-2 |
 
 **Measured:**
-- The cutlass's four strokes take 2.43 s for 5.9 power, so 2.4 a second; your rows' 2.16 s would give 2.7.
-- To keep the string near that rate, a string's last blow can be cancelled into a new opener once its row's time is spent and its
-  strike is past. Without the cancel, stroke 4's clip runs 1.7 s and the rate falls to 1.7 a second.
+- The cutlass form's four strokes take 2.43 s for 5.9 power, so 2.4 a second; your rows' 2.16 s would give 2.7.
+- To keep the string near that rate, a string's last blow can be cut short (the recovery cut) into a new opener once its row's time is spent and its
+  strike is past. Without the cut, stroke 4's clip runs 1.7 s and the rate falls to 1.7 a second.
 - These times include hitstop.
 
 **Changed from the builders' proposals:** the toll now deals damage (your 0.8 / 0.8 / 1.6; cause `toll`, influence), where before it

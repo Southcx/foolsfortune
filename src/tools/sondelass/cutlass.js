@@ -83,7 +83,7 @@ export class Cutlass {
     const g = tool.game;
     this.trail = g.vfx?.swing('swing.cutlass', { tint: 0xffb27a, tip: 0xfff1dc }) || new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 }); // (its look: vfx/library.js)
     this.moves = new Moveset(tool, {
-      id: 'cutlass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
+      id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
       trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b),
     });
     this.blade = new BladeMode(this);

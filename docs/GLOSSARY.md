@@ -257,7 +257,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the moveset** (`tools/moveset.js`, Calissa's; numbers `progress/combat/moves.js`, Dovina's): a tool's **string** (LMB, blow by blow),
   its **pause string** (LMB after a pause mid-string), its **charge** (LMB held), its **launcher** (S + LMB: the struck thing is
   `airborne`), its **air string** (LMB in the air, ending in a **plunge**), its **dash attack** (LMB while sprinting) and its **special**
-  (a burst that costs Lachryma, unlocked by the tool's mastery). A **bail** is being thrown off the Solar Skiff. *Not:* a combo (the
+  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow, its row's time spent and its strike past, may be
+  cut short by a press into a new opener: the **recovery cut** (*not* a cancel: opposites cancel). A **bail** is being thrown off the
+  Solar Skiff. *Not:* a combo (the
   club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one yet.
 
 ## Moving
@@ -698,7 +700,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
   chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
-  it came and the combo, worst to best: Miss!, OK..., Nice!, Great!, Excellent, Awesome, Perfect, Wow. *Not:* a grade (the judge's four).
+  it came and the combo, worst to best: Miss!, OK..., Nice!, Great!, Excellent, Awesome, Perfect, Wow. **The set's rating**: one of the
+  same words for a whole song played through, from its accuracy, said in the log at its end. *Not:* a grade (the judge's four).
 
 ## The world (Espada's: `docs/LORE.md`, section 1)
 

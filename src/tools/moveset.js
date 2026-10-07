@@ -10,7 +10,8 @@
 //
 //   THE GRAMMAR (every tool the same; what a tool lacks it simply has not got)
 //     LMB                  the GROUND string: each press inside a move's chain window goes on to the next; at a string's last
-//                          blow, a press once its row's time is spent and its strike past cancels the recovery into a new opener
+//                          blow, a press once its row's time is spent and its strike past cuts the recovery short into a new
+//                          opener (the RECOVERY CUT)
 //     LMB after a pause    the PAUSE string: pressed 0.25-0.8 s after a move ends, at the move the string branches from
 //     hold LMB             CHARGE: held past 0.3 s into the opener, the hold clip loops; released, the charged blow
 //     S + LMB (ground)     the LAUNCHER: it lifts them and what it strikes (`knock` upward: each creature decides what that means)
@@ -126,8 +127,8 @@ export class Moveset {
     const next = this.nextOf(c), R = this.rule(c.def), soon = R?.time ?? 0;
     c.age = (c.age || 0) + dt;
     if (next && this.buffer > 0 && c.def.chain && c.t >= c.def.chain[0] && c.age >= soon && (c.t <= c.def.chain[1] || c.age <= soon + 0.25)) { this.begin(next.id, next.kind, next.n); return; } // (never sooner than its row's time: the rate the raids are sized to)
-    // a string's last blow: its row's time spent and its strike past, a press cancels the recovery into a new opener (Devil May Cry's
-    // cancel: the string runs at its rows' rate, not its clips' length)
+    // the recovery cut: a string's last blow, its row's time spent and its strike past, is cut short by a press into a new opener
+    // (Devil May Cry's cancels: the string runs at its rows' rate, not its clips' length)
     if (!next && R && this.buffer > 0 && (c.kind === 'ground' || c.kind === 'pause') && c.age >= soon && c.t > (c.def.track?.strike[1] ?? 0)) { this.opener(inp); if (this.cur !== c) return; }
     if (c.kind !== 'charge-hold' && c.phase !== 'fall' && c.t >= (c.def.to ?? this.dur(c.def))) this.finish(); // (the hold loops until let go)
   }
