@@ -136,7 +136,8 @@ export class Shots {
       r.p.addScaledVector(r.v, dt); r.life -= dt;
       if (r.life <= 0 || r.p.z < -40 || r.p.z > 200) { this.endOutlined(r); continue; }
       if (r.back && r.from?.alive) { _d.copy(r.from.local).sub(r.p); const sp = r.v.length(); r.v.lerp(_d.multiplyScalar(sp / Math.max(_d.length(), 0.001)), Math.min(1, dt * 6)); } // (home: Sin & Punishment's return finds its thrower)
-      if (r.back) { const f = waves?.hitAt(r.p, OUT_R + 0.2); if (f) { waves.strike(f, 999, { cause: 'parry', at: r.p, dir: r.v, returned: true }); this.endOutlined(r); } continue; }
+      // (sent home: a part says what its own shot does to it, the brig's bow 6, a gill 5; else it downs its thrower)
+      if (r.back) { const f = waves?.hitAt(r.p, OUT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: r.p, dir: r.v, returned: true }); this.endOutlined(r); } continue; }
       if (ship && r.p.distanceTo(ship.local) < T.ship.hurt + OUT_R && ship.hit(r)) this.endOutlined(r);
     }
     this.draw();

@@ -30,7 +30,7 @@ export const SHRINES = [
   { id: 'workshop', name: 'the Bisque Shrine', start: true, ground: 'clay_floor', at: (g) => { const s = g.player.spawn, x = s.x + 2.2, z = s.z - 1.5; return { pos: new THREE.Vector3(x, ground(g, x, s.y, z), z), yaw: 0 }; } },
   { id: 'dunemaw', name: 'the Lamp Shrine', at: (g) => { const s = g.well?.mouthSpot?.(); if (!s) return null; const a = s.yaw + Math.PI / 2, x = s.pos.x + Math.sin(a) * 3, z = s.pos.z + Math.cos(a) * 3; return { pos: new THREE.Vector3(x, g.dunes.heightAt(x, z), z), yaw: s.yaw }; } },
   { id: 'pier', name: 'the Float Shrine', ground: 'stone_flags', at: (g) => { const [x, y, z] = WEIR_SPAWN.pos; return { pos: new THREE.Vector3(x + 6.5, ground(g, x + 6.5, y, z + 1), z + 1), yaw: -Math.PI / 2 }; } }, // (beside Old Grog: npc/people.js)
-  { id: 'margarite', name: 'the Pearl Shrine', at: () => null },
+  { id: 'margarite', name: 'the Pearl Shrine', at: (g) => g.margarite?.spot('shrine') ?? null }, // (Margarite's dock: world/emocean/margarite.js)
 ];
 
 export class Shrines {

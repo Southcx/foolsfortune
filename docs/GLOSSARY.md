@@ -50,8 +50,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   rail you grind or a rope (the Courier's moves).
 - **plain shot**, **outlined shot** (`courier/ship/shots.js`): a foe's shot at sea. A plain one has a feeling (absorbed if it is the
   ship's, else it hurts; the roll turns it); an outlined one wears the parry mark and only the parry answers it, home to its thrower.
-- **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not);
-  choosing an island boards and casts off. Until Margarite's dock is built every pier is Anagami's jetty.
+- **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not) and
+  the two **mounts** to take; choosing an island boards and casts off. Each island has one (Anagami's jetty, Margarite's dock), and a
+  crossing makes port at the pier of the island it sails to.
+- **Margarite's dock** (`world/emocean/margarite.js`, zone `margarite`): the King's island's quay and pier on the crude, its lamp
+  tower, the Pearl Shrine, the Purser and Letty Marque; the **posted board** beside the Purser is the price (F at it: the Purser's
+  counter). *Not:* Margarite (the island, of which the dock is all that is built).
+- **the flock** (`creatures/ai/flock.js`): many bodies moving as one (Reynolds' boids), the AI part the shoal is made of. *Not:* a
+  school (a wave's role).
 - **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school of
   **glints**: its caller is **the Conductor**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the Wreckers**
   (the pirates: Contractors under no letter; their brig **the False Light**: hull, rigging, gunports; **boarders** who take casks), and

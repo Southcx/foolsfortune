@@ -57,6 +57,7 @@ export class Places {
     if (zone === 'well') return null;
     if (g.well?.active) g.well.end?.(false);
     if (zone === 'dunes' && !g.dunes?.active) g.course.toDunes();
+    if (g.player) g.player.killY = Math.min(g.player.killY ?? -100, to.y - 90); // (the world's floor under where they are set down, now: a far dock is 418 m down, and last frame's floor would call it a fall)
     g.course.teleport(to.clone(), yaw);
     return { pos: to, yaw };
   }

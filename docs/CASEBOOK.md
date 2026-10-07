@@ -55,7 +55,18 @@ log kept blameless and searchable.
 22. **A coverage map is one channel, premultiplied, finer than its edges.** Split alphas and cells as coarse as the feature show
     the grid; filter premultiplied colour so an edge fades toward the colour, never toward black.
 
+23. **A move to a place sets that place's floor in the same step.** The fall height is read by the next fixed step, before the frame
+    that would have updated it: whatever sets the Courier down far below (a far dock, a Well) lowers `player.killY` under them first
+    (`places.stand`, `course.toDunes`).
+
 ## Cases
+
+### 2026-10-07 · Set down at Margarite's dock, the Courier was "fallen" and woke at the workshop
+- **Seen:** `places.stand` to the dock (418 m down, outside the dunes) left them at the workshop, headless.
+- **Cause:** the fall height was last frame's (the workshop's, -100 m); the next fixed step saw them below it and respawned them before
+  main.js recomputed it for the dock.
+- **Fix:** `places.stand` lowers `killY` under the point it sets them down (as `toDunes` does); main.js's own rule counts the dock and the crossing.
+- **Rule:** 23.
 
 ### 2026-10-06 · Stains and paint drawn as squares (the brush load, headless shots)
 - **Seen:** spilled crude and fresh paint showed half-metre squares with dark rims.

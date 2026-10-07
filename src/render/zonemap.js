@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'margarite' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -33,6 +33,8 @@ export const ZONE_TESTS = [
   { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
   // a crossing of the Emocean (world/emocean/stage.js SEA_AT): a straight rail 4 km along +Z, far west, at the dunes' layer
   { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 2400 && p.y > -470 && p.y < -360 },
+  // Margarite's dock (world/emocean/margarite.js MARGARITE): a quay and a pier on the crude, far west, at the dunes' layer
+  { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];
 const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 
@@ -43,3 +45,5 @@ export function zoneOf(p) {
 }
 /** The zone a point is in, or the one that zone is part of (the beach is part of the dunes). */
 export function wholeOf(p) { const z = zoneOf(p); return z === null ? null : BY_ID[z].partOf ?? z; }
+/** Under the open sky of the dunes' layer, but not the dunes: the crossing and the far islands' docks (their sky is the dunes'). */
+export const openSea = (p) => { const z = zoneOf(p); return z === 'emocean' || z === 'margarite'; };

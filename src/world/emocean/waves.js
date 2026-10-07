@@ -14,11 +14,18 @@
 // bar, a shot on a bar or a sixteenth; a wave more than a bar late (the game was paused while the cue played on) is let go, not
 // heaped.
 //
+// THE ROLL: a set piece's parts are foes on this same roll (`add`): a fish of the shoal, a gill, a gunport, a boarder. Each moves itself
+// (`tick`), may be drawn by its set piece's look (no mesh of its own), pays its own way (`pay`, else its class), may stand outside the
+// chain (`chain: false`: a shoal's fish are one body) and the medal's count (`count: false`), and may take a blow at a share (`armour`:
+// a shut gill takes none). One roll, so the gun, the lock-on, the parry's return and the score never ask what a thing is.
+//
 // Prior art: the shmup's wave table and its formations (Galaga's swoops, Gradius's lines, Star Fox 64's flights of four), Ikaruga's
 // two colours, Sin & Punishment's thrown things you send back, R-Type's big slow ship that soaks a beam.
 //
 //   const W = new Waves(game, rail)   W.build(scene)   W.begin(plan, aspect)   W.update(dt, { bar, ship, shots })   W.end()
 //   W.foes (alive)   W.hitAt(local, r) -> foe | null   W.strike(foe, power, { cause, at, dir, returned, volley })
+//   W.add({ kind, name, cls, aspect, local, radius, hp, tick(dt, f, ctx) -> false when gone, mesh?, pay?, chain?, count?, lock?, armour?(f),
+//          onHurt?(f, power), onDown?(f) })   (a set piece's part, on the roll)
 //   W.onDown(foe, { returned, volley, by })   (the stage's: the score)   W.onSpawn(n)   W.HP
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -86,7 +93,8 @@ export class Waves {
   }
 
   // ---------------------------------------------------------------- the frame
-  update(dt, { bar, ship, shots }) {
+  update(dt, ctx) {
+    const { bar, ship, shots } = ctx;
     // waves enter on their bars (one more than a bar late: let go)
     while (this.waves && this.next < this.waves.length && this.waves[this.next].bar <= bar) {
       const w = this.waves[this.next++];
@@ -97,6 +105,12 @@ export class Waves {
     for (let i = this.foes.length - 1; i >= 0; i--) {
       const f = this.foes[i];
       f.t += dt; f.hitT = Math.max(0, f.hitT - dt);
+      if (f.tick) { // (a set piece's part moves itself)
+        if (f.tick(dt, f, ctx) === false) { this.leave(f); this.foes.splice(i, 1); continue; }
+        this.rail.toWorld(f.local, f.pos);
+        if (f.mesh) f.mesh.position.copy(f.pos);
+        continue;
+      }
       _p.copy(f.local);
       if (!f.path(f.t, f.i, f.n, f.lane, f.local)) { this.leave(f); this.foes.splice(i, 1); continue; }
       this.rail.toWorld(f.local, f.pos);
@@ -137,47 +151,73 @@ export class Waves {
       const mesh = new THREE.Mesh(this.geo[role], this.mat(aspect)); mesh.userData.zoneFree = true;
       mesh.scale.setScalar(SIZE * (role === 'school' ? 1 + 0.25 * w.cls : 1));
       this.scene.add(mesh);
-      const g = this.game, waves = this;
-      const f = {
-        type: 'creature', kind: `rail.${role}`, name: role === 'school' ? 'a fish of the school' : role === 'darter' ? 'a darter' : 'a heavy',
-        role, form: w.formation, cls: w.cls, aspect, i, n: w.count, lane: w.lane ?? 0, t: 0, off: (i * 5 + wi * 3) % 16, lastBar: -1, hitT: 0,
-        path, local: new THREE.Vector3(), pos: new THREE.Vector3(), radius: SIZE * R.radius * (role === 'school' ? 1 + 0.25 * w.cls : 1), height: R.radius * 2,
-        alive: true, tags: new Set(['hurtable']), hp: HP[Math.max(0, Math.min(4, w.cls))], poise: 1e6, mesh, last: null,
-        hurt(point, dir, power) {
-          if (!this.alive) return;
-          this.hp -= power; this.hitT = 0.08;
-          if (this.hp <= 0) { this.alive = false; waves.down(this); }
-        },
-        center(out = new THREE.Vector3()) { return out.copy(this.pos); },
-        head() { return this.pos.clone(); },
-        vanish() { if (this.alive) { this.alive = false; waves.down(this); } },
-      };
+      const f = this.make({
+        kind: `rail.${role}`, name: role === 'school' ? 'a fish of the school' : role === 'darter' ? 'a darter' : 'a heavy',
+        role, cls: w.cls, aspect, radius: SIZE * R.radius * (role === 'school' ? 1 + 0.25 * w.cls : 1), hp: HP[Math.max(0, Math.min(4, w.cls))], mesh,
+      });
+      Object.assign(f, { form: w.formation, i, n: w.count, lane: w.lane ?? 0, off: (i * 5 + wi * 3) % 16, path });
       path(0, i, w.count, f.lane, f.local); this.rail.toWorld(f.local, f.pos); mesh.position.copy(f.pos);
-      g.creatures?.add(f);
+      this.game.creatures?.add(f);
       this.foes.push(f);
     }
     this.onSpawn?.(w.count, w);
   }
 
+  /** A foe as a creature (creatures/creatures.js's contract: hurtable, struck only through `creatures.strike`). */
+  make(spec) {
+    const waves = this;
+    const f = {
+      type: 'creature', role: spec.role || 'part', cls: 0, aspect: null, t: 0, lastBar: -1, hitT: 0, height: (spec.radius || 1) * 2,
+      local: new THREE.Vector3(), pos: new THREE.Vector3(), alive: true, tags: new Set(['hurtable']), poise: 1e6, mesh: null, last: null,
+      hurt(point, dir, power) {
+        if (!this.alive) return;
+        const k = this.armour ? this.armour(this) : 1; if (k <= 0) return; // (a shut gill, a closed port: the blow glances off)
+        this.hp -= power * k; this.hitT = 0.08; this.onHurt?.(this, power * k);
+        if (this.hp <= 0) { this.alive = false; waves.down(this); }
+      },
+      center(out = new THREE.Vector3()) { return out.copy(this.pos); },
+      head() { return this.pos.clone(); },
+      vanish() { if (this.alive) { this.alive = false; waves.down(this); } },
+    };
+    const { local, ...rest } = Object.getOwnPropertyDescriptors(spec);
+    Object.defineProperties(f, rest); // (descriptors, not a spread: a part's getters, `solid`, `lock`, stay live)
+    if (local) f.local = spec.local.clone();
+    return f;
+  }
+  /** A set piece's part onto the roll (see the header). */
+  add(spec) {
+    const f = this.make(spec);
+    this.rail.toWorld(f.local, f.pos); if (f.mesh) { f.mesh.userData.zoneFree = true; if (!f.mesh.parent) this.scene.add(f.mesh); f.mesh.position.copy(f.pos); }
+    this.game.creatures?.add(f);
+    this.foes.push(f);
+    if (f.count !== false) this.onSpawn?.(1, null);
+    return f;
+  }
+  /** Take a part off the roll without a down (its set piece is over: the brig sails off, the shoal sinks). */
+  drop(f) { const i = this.foes.indexOf(f); if (i >= 0) this.foes.splice(i, 1); this.leave(f); }
+
   /** A blow on a foe, through the creatures' one door (so its look, its sound and its numbers are the game's own). */
-  strike(f, power, { cause = 'shot', at = null, dir = null, returned = false, volley = null } = {}) {
+  strike(f, power, { cause = 'shot', at = null, dir = null, returned = false, volley = null, by = 'courier' } = {}) {
     if (!f?.alive) return false;
-    f.last = { returned, volley, cause };
+    f.last = { returned, volley, cause, by };
     if (at) this.rail.toWorld(at, _p); else _p.copy(f.pos);
     if (dir) this.rail.dirWorld(dir, _d).normalize(); else _d.set(0, 0, 1);
-    return this.game.creatures ? this.game.creatures.strike(f, _p.clone(), _d.clone(), power, cause, 'courier') : (f.hurt(_p, _d, power), true);
+    return this.game.creatures ? this.game.creatures.strike(f, _p.clone(), _d.clone(), power, cause, by) : (f.hurt(_p, _d, power), true);
   }
   down(f) {
     const i = this.foes.indexOf(f); if (i >= 0) this.foes.splice(i, 1);
-    this.onDown?.(f, { returned: !!f.last?.returned, volley: f.last?.volley || null, by: 'courier' });
+    f.onDown?.(f);
+    this.onDown?.(f, { returned: !!f.last?.returned, volley: f.last?.volley || null, by: f.last?.by || 'courier' });
     this.gone(f);
   }
   leave(f) { f.alive = false; this.onLeave?.(f); this.gone(f); }
-  gone(f) { f.alive = false; this.game.creatures?.remove(f); f.mesh?.parent?.remove(f.mesh); }
+  gone(f) { f.alive = false; this.game.creatures?.remove(f); if (!f.keepMesh) f.mesh?.parent?.remove(f.mesh); }
 
-  /** The first foe whose body a point (rail frame) is inside, with a margin r. */
+  /** The first foe whose body a point (rail frame) is inside, with a margin r (a part that is `solid: false` lets shots through). */
   hitAt(p, r = 0.3) {
-    for (const f of this.foes) if (f.alive && f.local.distanceTo(p) < f.radius + r) return f;
+    for (const f of this.foes) if (f.alive && f.solid !== false && f.local.distanceTo(p) < f.radius + r) return f;
     return null;
   }
+  /** Every live foe within r of a point (rail frame): the toll's ring, the gulp's cone, the brush's fan ask this. */
+  within(p, r) { return this.foes.filter((f) => f.alive && f.local.distanceTo(p) < r + f.radius); }
 }

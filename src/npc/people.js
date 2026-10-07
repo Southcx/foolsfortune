@@ -32,6 +32,19 @@ export const PEOPLE = [
     glaze: 0xeae3d6, rough: 0.2, metal: 0.4, hat: 'fez', hatColor: 0x9a2a2a, // (raku: crackled white, a copper lustre)
     voice: { base: 75, scale: 'hexaMolle', bell: 0.7, clay: 0.55 }, temper: 'sly',
   },
+  // Margarite's dock (world/emocean/margarite.js): the King's buyer behind the counter, and the bounty-poster by her board
+  {
+    id: 'purser', name: 'the Purser', title: "the King's buyer",
+    pos: (g) => g.margarite.spot('purser').pos.toArray(), yaw: Math.PI, scale: 2.0,
+    glaze: 0xe6e0d6, rough: 0.2, metal: 0.3, hat: 'cap', hatColor: 0x3f6a4a, // (nacre, buttoned up; a sage cap)
+    voice: { base: 66, scale: 'hexa', bell: 0.9, clay: 0.3 }, temper: 'calm',
+  },
+  {
+    id: 'letty', name: 'Letty Marque', title: 'bounty-poster of Margarite',
+    pos: (g) => g.margarite.spot('letty').pos.toArray(), yaw: 0, scale: 1.9,
+    glaze: 0x8a2a2a, rough: 0.35, hat: 'straw', hatColor: 0x2a2420, // (an oxblood glaze, a dark brim)
+    voice: { base: 72, scale: 'in', bell: 0.6, clay: 0.6 }, temper: 'sly',
+  },
 ];
 
 /** Where each stands, now that the rooms are built (some stand by things: the index console, the Tithe). */

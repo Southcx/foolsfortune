@@ -6,7 +6,8 @@
 //   WASD      the ship in the view's plane: a critically damped approach to 14 m/s (Star Fox 64's Arwing settles, it never wobbles);
 //             it banks into a sideways move and pitches into a climb, so it shows its intent before it arrives
 //   mouse     the reticle (chase, free, astern): two marks on one line from the nose, at 12 m and 36 m (Star Fox 64: depth read without
-//             stereo); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty)
+//             stereo); in the scroll views (above, side) the gun fires along the scroll and the mouse rests (a shmup's honesty), and
+//             abeam (into the screen) in the side view while a set piece runs alongside (the brig's broadside, Old Nobody's flank)
 //   LMB held  full auto, a shot on each sixteenth of the cue (Rez: firing is playing the hi-hat)
 //   RMB held  the lock-on sweep: the far reticle paints what it passes, one a sixteenth, up to eight; release fires a lance at each, a
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
@@ -23,7 +24,7 @@
 //
 //   const ship = new Ship(game, rail)   ship.build(scene)   ship.begin(aspect)   ship.update(dt, { view, plane, sixteenth, shots, waves })
 //   ship.local   ship.aspect   ship.turning   ship.hit(shot) -> consumed   ship.absorb(shot)   ship.turned(shot)   ship.locks   ship.show(on)
-//   ship.onHit / onAbsorb / onRoll / onParry / onVolley (the stage's)
+//   ship.onHit / onAbsorb / onRoll / onParry / onVolley / onLock (the stage's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
@@ -80,7 +81,7 @@ export class Ship {
   get turning() { const R = T.ship.roll; return this.rollT > R.time - R.turns; }
 
   // ---------------------------------------------------------------- the frame
-  update(dt, { view, plane, sixteenth, shots, waves }) {
+  update(dt, { view, plane, sixteenth, shots, waves, abeam = false }) {
     const S = T.ship, I = this.game.input, raw = this.game.rawDt ?? dt, keys = I?.down || new Set(), hit = I?.pressed || new Set();
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
@@ -102,7 +103,7 @@ export class Ship {
     const sx = (pl === 'wall' ? this.vel.z : this.vel.x * (VIEW_RIGHT[view] || 1)), sy = this.vel.y;
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
     this.pitch = damp(this.pitch, clamp(sy * S.pitch, -S.pitchMax, S.pitchMax) * D2R, 10, dt);
-    this.aimAt(view, I);
+    this.aimAt(view, I, abeam && view === 'side');
     // the roll, its charges, the parry's window, the mercy after a hit
     const R = S.roll;
     if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
@@ -137,9 +138,9 @@ export class Ship {
   }
 
   /** Where the gun points: from the nose to the reticle at 36 m (free views), or along the scroll (above, side). */
-  aimAt(view, I) {
-    const [d1, d2] = T.ship.reticles, f = VIEW_FWD[view] || VIEW_FWD.chase, lim = RET[view];
-    this.nose.copy(this.local).add(_n.set(0, 0, 0.9 * Math.sign(f[2] || 1)));
+  aimAt(view, I, abeam = false) {
+    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, lim = RET[view]; // (abeam: a set piece alongside, the gun at it, into the screen)
+    this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
     if (!lim || VIEW_RIGS[view] == null) { this.ret.x = damp(this.ret.x, 0, 8, 1 / 60); this.ret.y = damp(this.ret.y, 0, 8, 1 / 60); this.aim.set(...f); }
     else {
       const k = 0.035;
@@ -158,12 +159,12 @@ export class Ship {
     const rp = this.rail.toWorld(this.retFar, _a).project(cam), asp = cam.aspect || 16 / 9;
     let best = null, bd = L.reach;
     for (const f of waves.foes) {
-      if (!f.alive || this.locks.includes(f) || f.local.z < this.local.z + 4) continue;
+      if (!f.alive || f.lock === false || this.locks.includes(f)) continue; // (behind the camera is refused below: the screen decides)
       const p = _b.copy(f.pos).project(cam); if (p.z > 1) continue;
       const d = Math.hypot((p.x - rp.x) * asp, p.y - rp.y) / 2;
       if (d < bd) { bd = d; best = f; }
     }
-    if (best) { this.locks.push(best); sfx.lockTick?.(); }
+    if (best) { this.locks.push(best); this.onLock?.(this.locks.length - 1); } // (its tone: rail.lock, on the music's sixteenth: audio/cues.js)
   }
 
   // ---------------------------------------------------------------- what the shots ask
