@@ -21,6 +21,10 @@ blow lands three times over (Hollow Knight's stagger, kept short so it feels ear
 
 ## 1. The FOE: the Great Slip Jelly, crowned
 
+> **Superseded in scale (2026-10-07):** the owner wanted an FFXIV extreme trial; 48 health was a mini-boss. The fight is now
+> `docs/plans/DUNEMAW-EXTREME.md`. The crown's rule, the nursery, the finds and the two endings below still stand, and none of them is
+> built yet (`node scripts/unbuilt.mjs`).
+
 | | number | why |
 |---|---|---|
 | health | 48 | six slip jellies' worth; the bare phase is about 24 plain blows, or 12 on the core |

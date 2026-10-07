@@ -366,6 +366,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the way up, with the run's pay (and a Cogitomap, if charted enough). *Not:* hauling (the livelihood of carrying goods across the Emocean).
 - **FOE** (a Well's; Etrian Odyssey's word): the bigger creature that keeps a Well's last floor (for now a Great Slip Jelly, class 2). The
   run's pay counts the FOEs beaten (`wellPay`). *Not:* a creature's foe (whatever its mind is fighting: `c.foe`).
+- **Extreme** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the FOE's fight at full scale, an FFXIV extreme trial for one: a scripted
+  **timeline** of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), begun at the **Lip Stone** on the bowl's
+  ledge; a **wipe** costs the attempt, not the run. **Normal** is the run's FOE.
+- **realm** (`docs/plans/SPIRIT-GARDEN.md`, planned): how far the soul has been refined, read from the sum of the attributes' ranks
+  (never a level); crossed by the **tribulation** at the Meditation Peak. **The cave abode**: the Spirit Garden as a place (its
+  **planetoids**, **launch lotuses**, **plots**, **features**).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
