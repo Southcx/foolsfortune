@@ -16,9 +16,9 @@ export const TRACK_ASPECT = {
   // mirth: the dance, the crew, the win
   fanfare: 'mirth', rest: 'mirth', suits: 'mirth', shanty: 'mirth', moon: 'mirth', calissa: 'mirth', overture: 'mirth', jackpot: 'mirth',
   // desire: the drive, the want, the chase
-  battle: 'desire', step: 'desire', workshop: 'desire', petra: 'desire', espada: 'desire', siren: 'desire', crudesea: 'desire', houseedge: 'desire',
+  battle: 'desire', step: 'desire', workshop: 'desire', petra: 'desire', espada: 'desire', siren: 'desire', crudesea: 'desire', crudeseapirates: 'desire', houseedge: 'desire',
   // grief: the long rain
   fall: 'grief', leaveher: 'grief', well1: 'grief', well2: 'grief',
   // dread: the pall
-  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', boundout: 'dread',
+  witch: 'dread', deep: 'dread', well3: 'dread', bound: 'dread', crudesealeviathan: 'dread', boundout: 'dread',
 };

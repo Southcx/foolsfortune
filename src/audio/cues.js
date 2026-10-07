@@ -25,8 +25,11 @@ const RULES = {
   'well.leave': (s, e) => { if (!e.shattered) s.poolUp?.(); },
   'combat.annihilate': (s) => { s.damage?.('impact', 1); s.damage?.('delirium', 1); s.prismatic?.(1); }, // (the two ends of the line at once: audio/damage.js)
   'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
+  // the crossing's rail shooter (audio/rail.js): a lock's tone and a down, each on the music's next sixteenth (Rez)
+  'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
+  'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
 };
 
 export function hearEvents(game, sfx) {
-  for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e));
+  for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
 }
