@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // SHRINES: where the Courier is made whole, rests, travels, and goes into the Spirit Garden (the owner, 2026-10-06; docs/plans/SHRINES.md,
 // Dovina's). F at a Shrine finds it (once), rests there (the pool full, the mind settled to Balanced) and opens its page: travel to any
-// Shrine found, free, and the Spirit Garden's door (the garden's page: its slots, its beds). A shatter makes you whole at the last Shrine
+// Shrine found, free, the Spirit Garden's door (the garden's page: its slots, its beds), and the party: the siblings met, called or
+// dismissed here (coop/party.js). A shatter makes you whole at the last Shrine
 // rested at (courier/vessel/death.js asks `reformAt`). None in the Wells: a Well is a run, and its risk is losing it.
 // It is NOT a save point: the game keeps everything the moment it happens (core/save.js), and the log never says "saved".
 //
@@ -18,6 +19,7 @@ import { ShrineModel } from '../vfx/shrine.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { GROUPS } from '../core/physics.js';
 import { WEIR_SPAWN } from '../tools/sondelass/angling/weir.js';
+import { SIBLINGS } from '../coop/party.js';
 
 const REACH = 2.2; // (metres from the stone: F reaches it)
 const _o = new THREE.Vector3(), _down = new THREE.Vector3(0, -1, 0);
@@ -134,6 +136,17 @@ export class Shrines {
       for (const t of this.list) if (t.id !== s.id && this.found.has(t.id)) btn(t.name, 'travel there', () => this.travel(t.id));
       const unfound = SHRINES.filter((t) => !this.found.has(t.id)).length;
       for (const e of [el('div', 'grp', 'YOU REST HERE'), box, el('div', 'grp', unfound ? `${unfound} NOT YET FOUND` : 'EVERY SHRINE FOUND')]) im.appendChild(e);
+      // the party: each sibling met is called or dismissed here (coop/party.js; Dragon's Dogma's rift stones)
+      const P = g.party, met = SIBLINGS.filter((d) => P?.met.has(d.id) || g.mode === 'debug');
+      if (P && met.length) {
+        const rows = el('div', 'rooms');
+        for (const d of met) {
+          const out = !!P.get(d.id), r = el('div', 'room', `<span class="n">${out ? '◆' : '◇'}</span><span><b>${d.name}</b><s>${out ? 'with you: dismiss' : 'call'}</s></span>`);
+          r.onclick = async () => { if (out) P.dismiss(d.id); else await P.call(d.id); this.open(s); };
+          rows.appendChild(r);
+        }
+        im.appendChild(el('div', 'grp', `THE PARTY (${P.list.length} OF ${P.cap})`)); im.appendChild(rows);
+      }
     }, { title: s.name.toUpperCase(), sub: 'click to choose · F closes' });
   }
 

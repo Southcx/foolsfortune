@@ -143,7 +143,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **sibling** (`game.party`, `src/coop/sibling.js`): another Courier in your world with a mind of its own, one for each division (Petra,
   Dovina, Wanda, Calissa, Espada; docs/plans/COOP.md C6). The same body and rig as the Courier, driven by its mind's keys, so it moves
   as the Courier moves. Its division's session may steer it between its beats. *Not:* a spirit (an ally creature), nor a guest.
-- **the party** (`game.party`, `src/coop/party.js`): the siblings called into your world, and what you tell them (follow, hold).
+- **the party** (`game.party`, `src/coop/party.js`): the siblings called into your world (two at once; four players at most, guests
+  included), and what you tell them (`/sib`: follow, hold, go, fight, back). A sibling is **met** once where its craft lives
+  (`src/coop/meeting.js`), then **called** or **dismissed** at any Shrine.
 - **guest**: a person who joins your world over the published page's room (a co-op player). *Not:* a sibling.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`): the Courier's store of Lachryma. It pays for shots, charges and arts, and it is the
   shield. "Lachryma" alone means the substance.

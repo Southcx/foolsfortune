@@ -1,23 +1,26 @@
 // ---------------------------------------------------------------------------------------
 // A SIBLING'S FOLLOW: how a sibling keeps with the one it follows, by pressing the Courier's own keys (W, Shift, Space) on a virtual
 // keyboard, so it moves exactly as the Courier moves (CLAUDE.md: the core movement is the gold standard; nothing here touches it).
-// Each sibling has a slot in an arc behind its leader; it walks to it, sprints when far, jumps when the leader is above it or when it
-// is stuck against something, and double-jumps if the first was not enough. Too far behind (a teleport, another room, a long fall),
-// it is set down in its slot at once, as a party member is in Kingdom Hearts and Ocarina's Navi: the party never gets lost. Steering
-// is the creatures' (`creatures/ai/steer.js`: arrive, separate, avoid), blended.
+// Each sibling has a slot beside its leader (to the sides and a little behind, never in the camera's line: COOP.md, within 6 m); it
+// walks to it, sprints when far, jumps when the leader is above it or when it is stuck against something, and double-jumps if the first
+// was not enough. Too far behind (a teleport, another room, a long fall), it is set down in its slot at once, as a party member is in
+// Kingdom Hearts and Ocarina's Navi: the party never gets lost. Steering is the creatures' (`creatures/ai/steer.js`: arrive, separate,
+// avoid), blended. The orders (Dovina's rulings, COOP.md): follow and free (the slot), guard (a near slot), hold (where it stood),
+// go (to a point, then stay), scout (ahead of the leader), back (follow, warped at once if far).
 //
 // Prior art: Kingdom Hearts' party (Donald and Goofy keep a slot beside Sora and warp back when left behind), the follower AI of
 // Banjo-Tooie's and The Last of Us's companions (a slot, a catch-up, never in the way), Reynolds' steering behaviours.
 //
-//   const F = new Follow(body, keys, { slot, of })   F.think(dt, { leader, others, probe, order })   F.stuck (seconds)
-//   order: 'follow' | 'hold' (stay where told)
+//   const F = new Follow(body, keys, { slot, of })   F.think(dt, { leader, others, probe, order, to })   F.stuck (seconds)
+//   order: 'follow' | 'free' | 'guard' | 'hold' | 'go' (to: a point) | 'scout' | 'back'
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { arrive, separate, avoid, blend } from '../creatures/ai/steer.js';
 import { T } from '../core/config.js';
 import { GROUPS } from '../core/physics.js';
 
-const KEEP = { r: 2.6, row: 1.4, arc: 0.55, slowR: 3, sprintAt: 6, idle: 0.35, catchUp: 28, catchUpY: 9, stuckJump: 0.35, stuckWarp: 3 };
+const KEEP = { r: 3.2, row: 1.8, guard: 2, scout: 10, side: 1.4, back: 0.45, slowR: 3, sprintAt: 6, idle: 0.35, catchUp: 28, catchUpY: 9, backWarp: 12, stuckJump: 0.35, stuckWarp: 3 };
+const STAY = new Set(['hold', 'go']); // (orders that stand where told: never warped to the leader)
 const _goal = new THREE.Vector3(), _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
 
 export class Follow {
@@ -27,21 +30,25 @@ export class Follow {
     this.stuck = 0; this.jumped = 0; this.holdAt = null; this.lastLeader = null;
   }
 
-  /** Where this sibling's slot is, behind the leader as it faces. */
-  slotOf(leader, out = _goal) {
-    const n = Math.max(1, this.of), row = Math.floor(this.slot / 3), k = this.slot % 3, inRow = Math.min(3, n - row * 3);
-    const a = leader.bodyYaw + Math.PI + (k - (inRow - 1) / 2) * KEEP.arc, r = KEEP.r + row * KEEP.row;
+  /** Where this sibling's slot is: beside the leader as it faces, right then left, a little behind, out of the camera's line. */
+  slotOf(leader, out = _goal, r0 = KEEP.r) {
+    const side = this.slot % 2 ? -1 : 1, row = Math.floor(this.slot / 2);
+    const a = leader.bodyYaw + side * (KEEP.side + KEEP.back * row), r = r0 + row * KEEP.row;
     return out.set(leader.pos.x + Math.sin(a) * r, leader.pos.y, leader.pos.z + Math.cos(a) * r);
   }
 
-  think(dt, { leader, others = [], probe = null, order = 'follow' }) {
+  think(dt, { leader, others = [], probe = null, order = 'follow', to = null }) {
     const B = this.body, K = this.keys;
-    if (order === 'hold') { if (!this.holdAt) this.holdAt = B.pos.clone(); _goal.copy(this.holdAt); } else { this.holdAt = null; this.slotOf(leader); }
+    if (order === 'hold') { if (!this.holdAt) this.holdAt = B.pos.clone(); _goal.copy(this.holdAt); }
+    else if (order === 'go' && to) { this.holdAt = null; _goal.copy(to); }
+    else if (order === 'scout') { this.holdAt = null; _goal.set(leader.pos.x + Math.sin(leader.bodyYaw) * KEEP.scout, leader.pos.y, leader.pos.z + Math.cos(leader.bodyYaw) * KEEP.scout); }
+    else { this.holdAt = null; this.slotOf(leader, _goal, order === 'guard' ? KEEP.guard : KEEP.r); }
     // left far behind (a teleport, a fall, another room): set down in the slot
     const jumpedAway = this.lastLeader && this.lastLeader.distanceTo(leader.pos) > 12;
     this.lastLeader = (this.lastLeader || new THREE.Vector3()).copy(leader.pos);
     const dx = _goal.x - B.pos.x, dz = _goal.z - B.pos.z, d = Math.hypot(dx, dz), dy = leader.pos.y - B.pos.y;
-    if (order !== 'hold' && (jumpedAway || d > KEEP.catchUp || Math.abs(dy) > KEEP.catchUpY || this.stuck > KEEP.stuckWarp)) { this.warp(leader); return; }
+    const lead = Math.hypot(leader.pos.x - B.pos.x, leader.pos.z - B.pos.z);
+    if (!STAY.has(order) && (jumpedAway || lead > KEEP.catchUp || Math.abs(dy) > KEEP.catchUpY || this.stuck > KEEP.stuckWarp || (order === 'back' && lead > KEEP.backWarp))) { this.warp(leader); return; }
     // the way to go: arrive at the slot, out of the others' way, round what is in front
     arrive(_a, B.pos, _goal, d > KEEP.sprintAt ? T.movement.sprintSpeed : T.movement.walkSpeed, KEEP.slowR);
     separate(_b, B.pos, others, 1.2);

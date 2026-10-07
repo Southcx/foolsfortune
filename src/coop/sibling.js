@@ -39,7 +39,7 @@ export class VirtualKeys {
 
 export class Sibling {
   constructor(game, { id, color, glaze, rig, slot = 0, of = 1 }) {
-    this.game = game; this.id = id; this.color = color; this.order = 'follow';
+    this.game = game; this.id = id; this.color = color; this.order = 'follow'; this.to = null; // (the order, and where 'go' goes)
     this.keys = new VirtualKeys();
     const B = (this.body = new Player(game.physics, new THREE.PerspectiveCamera(), this.keys));
     B.sfx = SILENT; B.isPlayer = false; B.kind = 'sibling';
@@ -61,7 +61,7 @@ export class Sibling {
   fixed(dt, ctx) {
     this.leader = ctx.leader;
     this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
-    this.follow.think(dt, { ...ctx, order: this.order });
+    this.follow.think(dt, { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to }); // (fight: until the minds can, close by: coop/follow.js)
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
   }

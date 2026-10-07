@@ -199,6 +199,7 @@ import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
 import { Guests } from './coop/guests.js';
+import { Meetings } from './coop/meeting.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
@@ -671,6 +672,7 @@ async function main() {
     return new Character(scene, cG, gG, clipPack, { uniforms: rigUniforms(), fpHide: false });
   };
   game.party = new Party(game, { makeRig }); // (the siblings: coop/party.js)
+  game.meetings = new Meetings(game, game.party, { makeRig }); // (each sibling met once where its craft lives: coop/meeting.js)
   game.guests = new Guests(game, { makeRig }); // (people there with you, over the published page's room: coop/guests.js)
   game.siblingChannel = new SiblingChannel(game); // (the divisions steer their siblings through the published build's store)
   installEconomy(game); // (/grant, for the DEBUG profile)
@@ -1112,6 +1114,7 @@ async function main() {
       character.poseHands(handContext());
       game.party.update(dt, acc / FIXED);
       game.guests.update(dt);
+      game.meetings.update(dt);
       diag.end('anim');
       weapon.tryFire(camera, player, character);
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
