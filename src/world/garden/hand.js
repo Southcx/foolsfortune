@@ -26,7 +26,7 @@ const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4
 /** Where a ray (o, unit d) first meets a sphere, or -1. */
 /** Where a ray meets a planetoid's ground as shaped (its needles and hills: GARDEN-SWEEP #6): its reach's sphere first, then marched
  *  in steps and halved to the surface; -1 when it misses. */
-const _rp = new THREE.Vector3();
+const _rp = new THREE.Vector3(), _n2 = new THREE.Vector3();
 export function rayGround(o, d, P) {
   if (!P.radiusAt) return raySphere(o, d, P.c, P.r);
   const R = P.rMax ?? P.r + 4, inside = o.distanceTo(P.c) < R;
@@ -105,6 +105,8 @@ export class GardenHand {
     if (!this.held) return;
     this.downT += dt;
     const want = _w.copy(o).addScaledVector(d, this.dist);
+    // never into the ground: what the hand holds stays over the planetoid under it (the held Jar was dragged 5.6 m in, casebook 2026-10-07)
+    { const P = this.R.jarBody.nearest(want), n = _n2.copy(want).sub(P.c), r = n.length(), floor = (P.radiusAt ? P.radiusAt(n.divideScalar(r || 1)) : P.r) + this.held.body.radius + 0.1; if (r < floor) want.copy(P.c).addScaledVector(n, floor); }
     this.prev.copy(this.at); this.at.lerp(want, 1 - Math.exp(-14 * dt)); this.moved += this.at.distanceTo(this.prev);
     this.vel.copy(this.at).sub(this.prev).divideScalar(Math.max(dt, 1e-3));
     this.held.body.pos.copy(this.at);
@@ -164,7 +166,7 @@ export class GardenHand {
   pose(dt) {
     const R = this.R, god = R.god, hand = god?.hand; if (!hand?.root) return;
     const at = this.held ? this.at : this.point, n = R.site.planets.reduce((b, P) => (at.distanceTo(P.c) - P.r < at.distanceTo(b.c) - b.r ? P : b)).c;
-    const up = _w.copy(at).sub(n).normalize(), fwd = R.cam.fwd.clone().projectOnPlane(up).normalize();
+    const up = _w.copy(at).sub(n).normalize(), fwd = R.camera.fwd.clone().projectOnPlane(up).normalize();
     const fingers = fwd.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(up, -Math.sin(0.5)).normalize(), back = up.clone().addScaledVector(fingers, -up.dot(fingers)).normalize();
     _m.makeBasis(new THREE.Vector3().crossVectors(fingers, back).normalize(), fingers, back); hand.root.quaternion.setFromRotationMatrix(_m);
     hand.root.position.copy(at).addScaledVector(up, this.held ? 0.6 : this.stroke ? 0.5 : HAND.lift).addScaledVector(fingers, -hand.tip.length());

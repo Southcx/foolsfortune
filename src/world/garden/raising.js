@@ -43,7 +43,7 @@ export class Raising {
   say(type, s, extra = {}) { this.game.events?.emit(type, { kind: s.e.kind, spirit: s.e.name || null, feeling: s.e.sp?.feeling, pitch: 1.4 - 0.15 * (s.e.cls || 0), ...extra, by: 'courier' }); }
 
   pet(s) { const S = this.ready(s.e); S.align = Math.max(-1, S.align + ALIGN.pet); S.bond = Math.min(100, S.bond + PET_BOND); s.body.vel.addScaledVector(s.body.up, 3); this.say('spirit.pet', s); this.mature(s); this.dirty(); }
-  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.cam.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
+  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.camera.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
 
   /** Feed it what lies in a box slot: a material (its stat by tier), a curio (its bond), a cask (its feeling). */
   feed(s, slot) {
