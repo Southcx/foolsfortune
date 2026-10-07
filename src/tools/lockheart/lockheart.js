@@ -17,14 +17,26 @@
 //    long the stun has left to hold it, its EmO, the keys), drawn from a deck per kind (econ/deck.js: a 1-in-N catch within N tries). Caught,
 //    it is BOUND (creatures/bound.js) and waits in the Jar; missed, the keys are spent all the same. Nothing laid low: the coffin stays shut.
 //
-//   I      draw / stow          LMB (hold)  hoover          RMB  open it (a key on the ring, and full)          (the box: P; the Codex: THE TOOLS)
+//  - IT SWINGS: a tapped LMB is the FLAIL, the coffin swung on its chain let out (three blows, the combo engine: tools/moveset.js); held,
+//    LMB is the hoover, as it always was (the hold told from the tap at 0.16 s, as the cutlass's RMB tells the Stinger from blade mode).
+//  - THE BODY (the Courier's own suite, Lock_*): the coffin held gingerly in the left hand (Lock_Idle), braced and drawing (Lock_Hoover),
+//    the flail (Lock_FlailCombo1-3), the coffin lifted and its lid opened (Lock_Open: an opening that is not the ultimate, and the catch);
+//    the ultimate's channel and its opening are tools/lockheart/ultimate.js's (Lock_Channel, Lock_Opening).
+//
+//   I      draw / stow          LMB (tap)  flail     LMB (hold)  hoover          RMB  open it (a key on the ring, and full)          (the box: P; the Codex: THE TOOLS)
 //
 // Prior art: the gacha (a table of rates, a pull, the spin before the reveal), Luigi's Mansion's Poltergust, Slay the Spire's and
-// Balatro's stacking modifiers, the reliquary and the mourning locket (a coffin on a chain that holds what is left of something), and
-// Persona's and Fire Emblem's "luck" as a number that is spent.
+// Balatro's stacking modifiers, the reliquary and the mourning locket (a coffin on a chain that holds what is left of something),
+// Persona's and Fire Emblem's "luck" as a number that is spent, and the censer swung on its chain (the thurible's arc, and Castlevania's
+// Vampire Killer and the flail of every action game: the weight out on its chain, the swing's reach the chain's length).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
+import { Moveset } from '../moveset.js';
+import { measureSwing } from '../melee.js';
+import { Gestures, Crossfade, standLegs } from '../heldclips.js';
+import { Track } from '../../courier/anim/animator.js';
+import { T } from '../../core/config.js';
 import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
 import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './table.js';
 import { catchFactor } from '../../progress/combat/emo.js';
@@ -38,9 +50,22 @@ const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance
 
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
 const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4, CATCH_REACH = 8;
+// The flail, a table for the combo engine (tools/moveset.js): the coffin in the LEFT hand, its chain let out to CHAIN.out while it is
+// swung, so a blow's reach is the forearm's line out to the coffin (melee.js measures the left hand, `tip` past it). `strike`: the blow's
+// own window in the clip (the windup's backswing is not a blow). Numbers proposed to Dovina (docs/handoffs/dovina/): a coffin is heavier
+// than it is sharp (the club's power, a little less damage), the third the whirl that throws them off.
+const FLAIL = 'lockheart.flail', TAP = 0.16, CHAIN = { rest: 0.22, out: 0.62 };
+const MOVES = {
+  f1: { clip: 'Lock_FlailCombo1', strike: [0.27, 0.48], chain: [0.48, 0.83], hit: { power: 1.0, dmg: 0.8, push: 3 }, lunge: 2.4, arc: 'r2l' },
+  f2: { clip: 'Lock_FlailCombo2', strike: [0.36, 0.52], chain: [0.56, 0.9], hit: { power: 1.3, dmg: 1.1, push: 2, lift: 2.5 }, lunge: 2.4, arc: 'over' },
+  f3: { clip: 'Lock_FlailCombo3', strike: [0.58, 0.87], hit: { power: 1.8, dmg: 1.5, push: 7 }, lunge: 1.6, heat: 0.8, arc: 'l2r', stop: 1.4 },
+};
+const STRINGS = { ground: ['f1', 'f2', 'f3'] };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
-const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
+const _f = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
 const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _hm = new THREE.Matrix4(), _mb = new THREE.Matrix4();
+const _z = new THREE.Vector3(), _s1 = new THREE.Vector3(), _s2 = new THREE.Vector3();
+const HOLD_O = { ahead: 0.14, up: 0.2 }, BODY_R = 0.3; // (the hoover's coffin: before the joined hands, its bail above them; the column round their middle the flail keeps out of; metres)
 const smoothK = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
 
 export class Lockheart extends HeldTool {
@@ -50,7 +75,7 @@ export class Lockheart extends HeldTool {
       // on its chain at the breastbone (the chest bone: it moves with their breathing), hanging
       worn: { at: [0, 1.3, 0.14], along: [0, -1, 0.12], out: [0, 0, 1], bone: 'spine003' },
       draw: { twist: 4, lean: 4, via: [-0.25, 1.3, 0.4] },
-      idle: 'stance:lockheart', idles: ['stance:lockheart', 'idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: courier/anim/stances.js; hands() below)
+      idle: 'Lock_Idle', idles: ['Lock_Idle'], grip: 'torchIdle', // (held gingerly in the LEFT hand, the right free: the suite's Lock_Idle; hands() below)
     });
     this.model = { group: new THREE.Group() };
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));
@@ -62,8 +87,14 @@ export class Lockheart extends HeldTool {
     g.save?.section('lockheart', { scope: 'player', version: 1, dump: () => Math.round(this.charge), load: (d) => { this.charge = Math.min(CAP, Math.max(0, +d || 0)); }, reset: () => { this.charge = 0; } }); // (core/save.js)
     this.hoovering = false; this.hooverW = 0; this.drainT = 0; this.queue = []; this.lidK = 0; this.saveT = 0;
     this.wheel = new Wheel(g.scene);
+    this.lmbT = -1; this.flailK = 0; this.legSt = {}; this.hooverT = 0;
+    this.trail = g.vfx?.swing('swing', { tint: 0xffc65c, tip: 0xfff1d0 }) || null; // (the generic swing in the coffin's gold: a placeholder look, vfx/library.js)
+    this.moves = new Moveset(this, {
+      id: 'lockheart', moves: MOVES, strings: STRINGS, button: FLAIL, limb: 'L', tip: CHAIN.out, reach: 0.35, pot: 40, k: 1.2, cause: 'bashed',
+      events: { swing: 'lockheart.swing', hit: 'lockheart.hit' }, trail: this.trail, segment: (a, b) => this.chainSegment(a, b),
+    });
   }
-  get busy() { return this.wheel.busy || this.queue.length > 0; }
+  get busy() { return this.wheel.busy || this.queue.length > 0 || this.moves.busy; }
   get slow() { return this.toolOut && this.hoovering ? 0.65 : 1; }
   get heart() { return this.game.pneuka?.fitted('heart')[0] || null; }
   get fill() { return HEARTS[this.heart]?.fill ?? 40; }
@@ -116,12 +147,39 @@ export class Lockheart extends HeldTool {
     return took;
   }
 
-  onStow() { this.hoovering = false; }
+  onStow() { this.hoovering = false; this.moves.cancel(); this.lmbT = -1; }
 
   // ---------------------------------------------------------------- input
+  /** LMB: a tap (let go inside 0.16 s) is the flail, given to the combo engine as its own button; held past that, the hoover, as it was. */
   use(dt, raw, inp) {
-    this.hoovering = inp.isDown('Mouse0') && !this.wheel.busy;
+    let tap = false;
+    if (inp.wasPressed('Mouse0')) this.lmbT = 0;
+    if (this.lmbT >= 0) { this.lmbT += raw; if (!inp.isDown('Mouse0')) { tap = this.lmbT < TAP; this.lmbT = -1; } }
+    const held = this.lmbT >= TAP && inp.isDown('Mouse0');
+    this.hoovering = held && !this.wheel.busy && !this.moves.busy;
+    this.prime();
+    const I = this.flailInput ||= { inp: null, tap: false, wasPressed(c) { return c === FLAIL ? this.tap : this.inp.wasPressed(c); }, isDown(c) { return c === FLAIL ? false : this.inp.isDown(c); } };
+    I.inp = inp; I.tap = tap;
+    this.moves.update(dt, I, { allow: !this.hoovering && !this.wheel.busy && !this.queue.length && this.P.techs.active?.id !== 'swim' });
     if (inp.wasPressed('Mouse2') && !this.busy) this.open();
+  }
+  /** The flail's blows, measured once on the left hand out along the chain (melee.js), each kept to its own strike window (MOVES). */
+  prime() {
+    const ch = this.game.character;
+    if (this.primed || !ch) return;
+    for (const def of Object.values(MOVES)) {
+      if (!ch.clips.clips[def.clip]) continue;
+      const tr = measureSwing(ch, def.clip, { tip: CHAIN.out, limb: 'L' });
+      def.track = tr && def.strike ? { ...tr, strike: def.strike } : tr;
+    }
+    this.primed = true;
+  }
+  /** The chain, hand to coffin, in the world (the flail's ribbon and its flash on a hit). */
+  chainSegment(a, b) {
+    const ch = this.game.character;
+    ch?.arm.L.hand.getWorldPosition(a);
+    if (this.cof) this.cof.group.getWorldPosition(b); else b.copy(a);
+    return a;
   }
 
   open() {
@@ -142,8 +200,10 @@ export class Lockheart extends HeldTool {
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
-    if (g.ultimate) g.ultimate.begin(this); else this.next(); // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
+    if (g.ultimate) g.ultimate.begin(this); else { this.gesture('Lock_Open'); this.next(); } // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
+  /** A clip of the coffin's own over the stance (the lid opened): cut off by the next. */
+  gesture(clip, o = { fadeOut: 0.3 }) { this.gestures?.play(clip, o); }
   /** The mind laid low that a summoning coffin would open on: critically stunned, in front of them, within reach (8 m). */
   quarry() {
     const g = this.game, P = this.P, f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw));
@@ -175,6 +235,7 @@ export class Lockheart extends HeldTool {
     const pos = c.pos.clone().setY(c.pos.y + (c.height ?? 1.5) * (c.root?.scale.y ?? 1) + 1.2), cam = g.camera;
     const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
     this.queue = [{ id: 'catch' }];
+    this.gesture('Lock_Open'); // (the coffin lifted and its lid opened on what it catches)
     // (Calissa's catch look runs with the wheel: the tether from the open coffin to it, tightening as the wheel slows)
     const L = g.catchLook, mouth = () => (this.cof ? this.cof.group.getWorldPosition(new THREE.Vector3()) : this.P.pos.clone().setY(this.P.pos.y + 1.3));
     L?.begin(c.root, mouth); this.catching = L ? { L, t: 0 } : null;
@@ -266,8 +327,8 @@ export class Lockheart extends HeldTool {
       }
     }
     // what it draws, seen going in: a cone of fine motes toward the coffin
-    // (R40: Lachryma-coloured, through the O of the joined hands: aimed at the ring first, then on into the coffin behind it)
-    const fx = g.fx?.add, ring = P.pos.clone().addScaledVector(f, 0.62).setY(P.pos.y + 1.27);
+    // (R40: Lachryma-coloured; aimed at the coffin held before the joined hands, its lid to the world)
+    const fx = g.fx?.add, ring = this.mouthAt ? this.mouthAt.clone() : P.pos.clone().addScaledVector(f, 0.62).setY(P.pos.y + 1.27); // (into the coffin before the joined hands: hands())
     for (let n = 0; fx?.emit && n < 3; n++) {
       if (simRand() > dt * 30 * this.hooverW) continue;
       const a = (simRand() - 0.5) * HOOVER.cone * 2, r = 2 + simRand() * (HOOVER.range - 2);
@@ -280,38 +341,94 @@ export class Lockheart extends HeldTool {
   save() { this.game.save?.dirty('lockheart'); }
 
   // ---------------------------------------------------------------- animation
-  pose(C, out) {
-    // the channel (FFXI's black magic cast): the arms out and the hands joined in an O; the coffin floats behind it (hands())
-    const w = Math.max(this.hooverW, this.castW || 0);
-    if (w > 0.02) { C.sample(C.clips['stance:lockheartChannel'] ? 'stance:lockheartChannel' : 'watering', 0.5, out, false); return { pose: out, w }; }
-    return null;
+  /** The upper body's layer: the coffin held (Lock_Idle), braced and drawing while it hoovers (Lock_Hoover), a gesture (Lock_Open), the
+   *  flail's blows over that; every change crossfaded (tools/heldclips.js), the legs the clip's while they stand (the hoover's brace). */
+  animate(ch, base, dt) {
+    const C = ch.clips, P = this.P;
+    if (!this.track) {
+      this.idleClip = C.clips.Lock_Idle ? 'Lock_Idle' : 'stance:lockheart';
+      this.track = new Track(C, new Set([this.idleClip]));
+      this.track.play(this.idleClip, 0, 0.01);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.gestures = new Gestures(C); this.X = new Crossfade(C, 0.1);
+    }
+    this.gestures.update(dt);
+    const layerW = this.w * smoothK((this.drawT - T.weapon.drawGrab) / (1 - T.weapon.drawGrab)) * (1 - this.mgr.override);
+    if (layerW <= 0.001) { this.X.reset(); return; }
+    this.track.update(dt);
+    const layer = this.track.sample(this.P1);
+    // the hoover (Lock_Hoover, looped while it draws), or the ultimate's channel easing in and out (Lock_Channel: ultimate.js)
+    const hw = Math.max(this.hooverW, this.castW || 0);
+    this.hooverT = hw > 0.02 ? this.hooverT + dt : 0;
+    if (hw > 0.02) {
+      const clip = this.castW > this.hooverW && C.clips.Lock_Channel ? 'Lock_Channel' : C.clips.Lock_Hoover ? 'Lock_Hoover' : 'stance:lockheartChannel';
+      C.sample(clip, this.hooverT, this.P2, true); C.blend(layer, this.P2, hw);
+    }
+    const sw = this.gestures.sample(this.P2);
+    if (sw > 0) C.blend(layer, this.P2, sw);
+    const m = this.moves.pose(C, this.P2);
+    if (m) C.blend(layer, m.pose, m.w);
+    if (this.gestures.fresh || this.moves.cur !== this.lastMove) { this.X.cut(this.moves.cur && this.lastMove ? 0.07 : 0.1); this.gestures.fresh = false; this.lastMove = this.moves.cur; }
+    this.X.apply(layer, dt);
+    C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
+    standLegs(ch, P, base, layer, layerW * Math.max(hw, sw, m?.w ?? 0), this.legSt, dt);
   }
 
   /** Where the coffin is (R40): on its chain at the chest when worn; drawn, dangling by its chain from the LEFT hand's fingers, held
-   *  gingerly (the right hand is free); channelling, out of the hand and floating just behind the O of the joined hands, its lid
-   *  toward them, so what it draws comes in through the O. (First person: the shared held placement.) */
+   *  gingerly (the right hand is free); hoovering, out of the hand and floating just before the joined hands (Lock_Hoover's grip), its
+   *  lid to the world, so what it draws streams in; FLAILED, out on its chain let long as the hand swings it, along the arm's line from
+   *  the shoulder (lagging it a little, as a weight on a chain does). (First person: the shared held placement.) */
   hands(ch) {
     const P = this.P;
-    if ((P.fp && !this.cine) || !this.holsterBone) return super.hands(ch);
+    if ((P.fp && !this.cine) || !this.holsterBone) { super.hands(ch); this.moves.afterHands(this.dt || 1 / 60); return; }
     ch.root.updateMatrixWorld(true);
-    const g = this.model.group, yaw = P.bodyYaw ?? P.yaw, t = performance.now() / 1000;
-    const f = _f.set(Math.sin(yaw), 0, Math.cos(yaw)), r = _r.set(-Math.cos(yaw), 0, Math.sin(yaw));
+    const g = this.model.group, yaw = P.bodyYaw ?? P.yaw, t = performance.now() / 1000, dt = this.dt || 1 / 60;
+    const f = _f.set(Math.sin(yaw), 0, Math.cos(yaw));
     _hm.multiplyMatrices(this.holsterBone.matrixWorld, this.holsterLocal).decompose(_p0, _q0, _s0);
     // tool +X down (it hangs from its bail), +Z forward
     _x.set(0, -1, 0); _y.crossVectors(f, _x); _mb.makeBasis(_x, _y, f); _q1.setFromRotationMatrix(_mb);
-    ch.arm.L.hand.getWorldPosition(_p1).addScaledVector(f, 0.03).y -= 0.02;
+    const hand = ch.arm.L.hand;
+    hand.getWorldPosition(_p1).addScaledVector(f, 0.03).y -= 0.02;
     _p1.y += Math.sin(t * 2.1) * 0.004; // (it sways a little on its chain)
-    // the channel's place: behind the O, at the chest
-    _p2.copy(P.pos).addScaledVector(f, 0.36).setY(P.pos.y + 1.5 + Math.sin(t * 3) * 0.015); // (the bail: the coffin hangs 0.22 below it, level with the O)
-    const k = smoothK(this.drawT), c = this.hooverW;
-    _p1.lerp(_p2, c);
+    // the flail: the chain let out as the hand swings it (its speed lets it out), the coffin flung out along the arm's line from the
+    // shoulder (where a weight on a chain goes, swung), lagging a little, and never through the body
+    hand.getWorldPosition(_s1);
+    const v = this.lastHand ? _s2.subVectors(_s1, this.lastHand).length() / dt : 0;
+    (this.lastHand ||= new THREE.Vector3()).copy(_s1);
+    this.handV = THREE.MathUtils.damp(this.handV || 0, Math.min(v, 30), 20, dt);
+    const want = this.moves.busy ? 0.25 + 0.75 * THREE.MathUtils.smoothstep(this.handV, 1.5, 6) : 0;
+    this.flailK = THREE.MathUtils.damp(this.flailK, want, want > this.flailK ? 16 : 5, dt);
+    const fk = this.flailK, len = CHAIN.rest + (CHAIN.out - CHAIN.rest) * fk;
+    if (fk > 0.001) {
+      ch.shoulder('L', _s2); _s2.subVectors(_s1, _s2).normalize();
+      this.chainDir = (this.chainDir || _s2.clone()).lerp(_s2, 1 - Math.exp(-20 * dt)).normalize();
+      _x.set(0, -1, 0).lerp(this.chainDir, fk).normalize();
+      // (out of the body: the coffin's end kept beyond a column round their middle)
+      _s2.copy(_s1).addScaledVector(_x, len + 0.08).sub(P.pos); const rr = Math.hypot(_s2.x, _s2.z);
+      if (_s2.y > 0.4 && _s2.y < 1.7 && rr < BODY_R) { _s2.x *= BODY_R / Math.max(0.01, rr); _s2.z *= BODY_R / Math.max(0.01, rr); _x.copy(_s2).add(P.pos).sub(_s1).normalize(); }
+      _z.copy(f).addScaledVector(_x, -f.dot(_x)); if (_z.lengthSq() < 1e-4) _z.set(-f.z, 0, f.x); _z.normalize();
+      _y.crossVectors(_z, _x); _mb.makeBasis(_x, _y, _z); _q1.setFromRotationMatrix(_mb);
+      _p1.lerp(_s1, fk);
+    } else this.chainDir = null;
+    if (this.cof) this.cof.group.position.x = len;
+    this.chain.scale.y = 1 + (len - CHAIN.rest) / 0.12; this.chain.position.x = 0.06 * this.chain.scale.y;
+    // the hoover's place: just before the joined hands (the bail above, so the coffin hangs level with them)
+    const c = this.hooverW;
+    if (c > 0.001) {
+      ch.arm.L.hand.getWorldPosition(_s1); ch.arm.R.hand.getWorldPosition(_s2);
+      _p2.addVectors(_s1, _s2).multiplyScalar(0.5).addScaledVector(f, HOLD_O.ahead);
+      _p2.y += HOLD_O.up + Math.sin(t * 3) * 0.012;
+      this.mouthAt = (this.mouthAt || new THREE.Vector3()).copy(_p2).setY(_p2.y - HOLD_O.up);
+      _p1.lerp(_p2, c);
+    }
+    const k = smoothK(this.drawT);
     g.position.copy(_p0).lerp(_p1, k); g.quaternion.copy(_q0).slerp(_q1, k); g.scale.copy(_s0);
     // the opening (tools/lockheart/ultimate.js) takes it: up over the head, growing, turning
     const U = this.cine;
     if (U) { g.position.copy(U.pos); g.scale.copy(_s0).multiplyScalar(U.scale); g.quaternion.multiplyQuaternions(_q.setFromAxisAngle(_x.set(0, 1, 0), U.spin), _q1); }
     g.updateMatrixWorld(true);
     this.placed?.(g.matrixWorld);
+    this.moves.afterHands(dt); // (the flail's ribbon, hand to coffin)
   }
-  fpArc() { return { lift: this.wheel.busy ? 0.1 : 0 }; }
+  fpArc() { return this.moves.fpArc() || { lift: this.wheel.busy ? 0.1 : 0 }; }
   restSig() { return `${this.coffinId}|${Math.round(this.lidK * 20)}|${Math.round(Math.min(1, this.charge / this.fill) * 20)}`; }
 }

@@ -3,15 +3,18 @@
 // pose, shared: the Veritome uses it while it is out (reading low at the chest; raised to the eye for the lens), and the Survey
 // (cartography.js, N) uses it in third person, the Courier reading the ground off the open book while the pulse goes out.
 //
-// The arms come from a clip (castIdle: both forearms forward at the waist, from the Universal Animation Library), and the hands are
+// The arms come from a clip (the Courier's own suite: Tome_Idle, both hands before them at the waist; and the book's other clips, the
+// lens raised, the Flash thrust out, the survey's bow over it), and in third person THE HANDS CARRY THE BOOK: it sits between the two
+// palms where the clip has them, its pages turned to the eyes (handsFrame), so a clip that moves the hands moves the book. The hands are
 // then CLOSED ON THE EDGES of the open book (a light IK correction, as CLAUDE.md allows: a hand set on a handle): each palm behind its
-// half, fingers round toward the spine, the thumb over the page. Where the book is comes first (bookFrame), the hands follow it.
+// half, fingers round toward the spine, the thumb over the page. In first person the book is placed before the eye (bookFrame).
 //
 // Prior art: holding an iPad up to photograph (both hands on the edges, the screen toward the eye, elbows in), the reading pose of
 // every JRPG's menu-book idle (Dark Cloud 2's Max with his photo album, Ni no Kuni's Wizard's Companion), and FFXIV's Scholar, whose
 // grimoire is held open in one hand and read from while it works.
 //
 //   bookFrame(ch, P, camera, { mode: 'read' | 'raise', k, fp }, out) -> out (Matrix4: the open book's world matrix)
+//   handsFrame(ch, out) -> out (the open book between the animated palms, pages to the eyes: third person)
 //   holdBook(ch, model, w, { fp })        both hands onto the model's edges, weight w (the model already placed)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -39,6 +42,22 @@ export function bookFrame(ch, P, camera, { mode = 'read', k = 0, fp = false } = 
   _z.copy(_f).negate().addScaledVector(UP, lerp(0.95, 0.12, raise)).normalize();
   _x.copy(_r); _y.crossVectors(_z, _x).normalize(); _x.crossVectors(_y, _z);
   return out.makeBasis(_x, _y, _z).setPosition(_p);
+}
+
+const _pl = new THREE.Vector3(), _pr = new THREE.Vector3(), _eye = new THREE.Vector3();
+/** Where the open book is when the hands carry it: between the palms as the clip has them, the pages turned to the eyes, the spine up. */
+export function handsFrame(ch, out = new THREE.Matrix4()) {
+  const L = ch.arm.L, R = ch.arm.R;
+  _pl.copy(L.palmPt).applyMatrix4(L.hand.matrixWorld); _pr.copy(R.palmPt).applyMatrix4(R.hand.matrixWorld);
+  _x.subVectors(_pr, _pl); // (toward their right: the right half's side)
+  if (_x.lengthSq() < 1e-6) _x.set(1, 0, 0);
+  _x.normalize();
+  _c.addVectors(_pl, _pr).multiplyScalar(0.5);
+  ch.bones.head.getWorldPosition(_eye).y += 0.06;
+  _z.subVectors(_eye, _c); _z.addScaledVector(_x, -_x.dot(_z)).normalize(); // (the pages to the eyes, square to the hands' line)
+  _y.crossVectors(_z, _x).normalize(); _x.crossVectors(_y, _z);
+  _c.addScaledVector(_z, 0.03); // (the pages a finger's thickness off the palms behind them)
+  return out.makeBasis(_x, _y, _z).setPosition(_c);
 }
 
 const _e = new THREE.Vector3(), _in = new THREE.Vector3(), _palm = new THREE.Vector3(), _fing = new THREE.Vector3(), _q = new THREE.Quaternion(), _m3 = new THREE.Matrix3();

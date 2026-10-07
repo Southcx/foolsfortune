@@ -85,8 +85,25 @@ the rules before building in the same area; a rule a machine can check goes into
     mantle to finish: ended half way over a lip, the capsule is left inside it.
 36. **A position set outright is checked first.** Anything that moves the Courier without the controller (a phase's step, a teleport by
     an animation's travel) asks whether the capsule is clear there, and keeps the last clear place to fall back on.
+37. **A tool's clip is judged with the tool in the hand.** A body clip made without the tool (the suite's) and a grip measured on
+    another clip (`torchIdle`) can disagree: measure where the tool's far end goes (its mouth, its coffin) against the head and the
+    body in body space, from the front and the side, before taking the clip as a stance; correct the hand (a wrist turn on the
+    layer) or the chain, never the clip's arm.
 
 ## Cases
+
+### 2026-10-07 · The Crucibelle stood in front of the Courier's face in Bell_Idle, and the flail's coffin crossed it (Calissa, belltome)
+- **Seen:** with the suite's Bell_Idle as the bell's stance, the bell covered the face from the front; the first cut of the Lockheart's
+  flail swung the coffin across the face as the string began.
+- **Cause, measured:** Bell_Idle holds the right hand before the shoulder at (-0.26, 1.28, 0.17) m (body space); the grip measured on
+  `torchIdle` stands the bell up out of the fist, so its mouth was at (-0.22, 1.58, 0.24): 0.25 m before the face, square to it. The
+  flail placed the coffin along the forearm's line, and with the coffin held at the chest the forearm points inward: at 0.07 s into the
+  first blow the coffin was at (-0.33, 1.31, 0.56), across the face.
+- **Fix:** the bell hand's wrist turned out 0.8 rad about the hand's own Y on every Bell_* pose (the stance, the string, the gestures,
+  the busking body: `crucibelle.wrist`): the mouth at (-0.45, 1.52, 0.22), beside the head. The coffin flung along the line from the
+  shoulder to the hand, its chain let out by the hand's speed (hanging while the windup is slow), and kept out of a 0.3 m column round
+  the body.
+- **Rule:** 37.
 
 ### 2026-10-07 · The stress test's edge-of-the-Dunes skiff runs ended inside the barrier (Calissa)
 - **Seen:** stress seed 2, `edge skiff`: `guard:reset` after `tech.end`, and `guard:nudge` just after `skiff.summon` (none on main).
