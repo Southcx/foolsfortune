@@ -18,10 +18,10 @@
 export const PLANETOIDS = {
   dantian:   { name: 'the Dantian', gloss: 'the elixir field: where a cultivator keeps what they have refined; your own Lachryma, a lake' },
   terraces:  { name: 'the Herb Terraces', gloss: 'the beds, stepped round a small world' },
-  furnace:   { name: 'the Athanor', gloss: "the alchemist's furnace, kept at one slow heat (al-tannur, the oven): the press and the firing" },
+  athanor:   { name: 'the Athanor', gloss: "the alchemist's furnace, kept at one slow heat (al-tannur, the oven): the press and the firing" },
   pavilions: { name: 'the Pavilions of Echoes', gloss: 'where echoes of the encounters you mastered keep working' },
-  grove:     { name: 'the Mulberry Grove', gloss: 'the spirits\' home; the cocoon tree is a mulberry, as silk\'s is' },
-  peak:      { name: 'the Chimney', gloss: "a kiln's chimney, where the Heavenly Kiln draws; the needle of rock it stands on" },
+  mulberryGrove: { name: 'the Mulberry Grove', gloss: 'the spirits\' home; the cocoon tree is a mulberry, as silk\'s is' },
+  chimney:   { name: 'the Chimney', gloss: "a kiln's chimney, where the Heavenly Kiln draws; the needle of rock it stands on" },
   // the later planetoids, bought
   moon:      { name: 'the Moonflower Moon', gloss: 'where the moonflower opens at night' },
   koi:       { name: 'the Koi Pond', gloss: 'a small world that is mostly water' },
