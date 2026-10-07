@@ -352,3 +352,10 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** mirroring as M·G·M also mirrored the tool's own axis.
 - **Fix:** mirror the socket, then flip the local Y (`mirrorSide`).
 - **Rule:** when mirroring a held thing, mirror where it is, not what it is.
+
+### 2026-10-07 · "Oscillator.frequency … 24890.2 outside nominal range" in every phase of the garden sweep
+- **Cause:** the garden's birdsong plays the celesta up to MIDI 99 (2,489 Hz); the celesta's tenth partial is 24,890 Hz, over the
+  Nyquist limit (22,050 Hz at 44.1 kHz), so the browser clamped it to a 22 kHz tone. Traced by wrapping `AudioParam.setValueAtTime`
+  in the sweep's page to log any value over 22,050 with its stack (`Band.osc` from `Band.celesta`).
+- **Fix:** the struck instruments built from partials (celesta, marimba, bell, tabla) drop a partial at or past half the sample rate.
+- **Rule:** an additive voice skips any partial `f * r >= sampleRate / 2`: a high note loses its top overtones, never gains a whistle.

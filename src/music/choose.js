@@ -38,7 +38,9 @@ export function chooseMusic(game, { overlay = false } = {}) {
   const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
   if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
-  if (game.garden?.tribulation?.active) { setKiln(game.garden.tribulation); return KILN; } // (a Firing at the Meditation Peak: music/kiln.js)
+  // a Firing at the Chimney (music/kiln.js): its ending (fired or cooled) plays out in the garden; a Firing cancelled by leaving stops at once
+  const T = game.garden?.tribulation, A = game.music?.arr;
+  if (T?.active || (T?.outcome && game.garden?.inside && A?.alive && A.score === KILN)) { setKiln(T); return KILN; }
   if (game.garden?.awakening) return AWAKENING; // (a fossil woken by the Crucibelle's song: once, then the garden again)
   if (game.garden?.inside) { setGarden({ phase: phaseAt(), draught: strongest(game.draught) }); return GARDEN; } // (the Inner Realm: the day's phase and your draught, music/garden.js)
   if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150, game.emocean.stage.setPieces ?? game.emocean.stage.setPiece); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)

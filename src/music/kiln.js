@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TRIBULATION'S CUE: "The Heavenly Kiln", a Firing crossed at the Meditation Peak (docs/plans/SPIRIT-GARDEN.md, section 6; Espada's
+// THE TRIBULATION'S CUE: "The Heavenly Kiln", a Firing crossed at the Chimney (docs/plans/SPIRIT-GARDEN.md, section 6; Espada's
 // names: Candling, Sinter, Lustre, Salt, Reduction, Anagama): the soul refired as clay is, under a darkening sky, lightning sent back by
 // the hand's flick or dodged by a hop. A score that follows the trial (the arranger's `jump`, read as each bar is laid out):
 //   OPEN    2 bars: the kiln opens. A gong, the roar drawn up, the sky closing (a low-pass over everything)
