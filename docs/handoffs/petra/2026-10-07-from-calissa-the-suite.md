@@ -43,8 +43,15 @@ their looks.
   set's word), `help/pages.js` (skiff keys).
 - `src/title/board.js`: the owner's chess pieces (the title's art is mine).
 - The builders' areas, each listed in its own merge commit: the Soul Brush, the Dreamvane, the Crucibelle and the busking body
-  (`rhythmhold.js`), the Lockheart, the Veritome, `tools/heldclips.js` and `tools/toolbody.js` (to be made one), and still to come: the
-  unarmed kick and the Psygun, locomotion/air/traversal, the emotes.
+  (`rhythmhold.js`), the Lockheart, the Veritome, `tools/heldclips.js` and `tools/toolbody.js` (to be made one), the unarmed V and the
+  Psygun (kick.js, `psygun/gunmoves.js`, `weapon.js`, character.js's aim block), locomotion, air and traversal (four modules in
+  `courier/anim/`, the traversal techs, death; and the kick-off fix in `docs/handoffs/petra/2026-10-07-from-calissa-loco.md`, yours to
+  rule on), the emotes (emotes.js, emote.js, talk.js, folk.js's react map, chat.js's lists, one line in overture.js).
+
+**Found in your core, not changed** (the emotes builder, measured headless): `character.js`'s foot IK snaps a knee 20-45 degrees in
+one frame when a short walk starts or stops (the core alone, tapping W from idle: 26). It is behind the worst emote exits (catwalk and
+monkey 36); with the foot IK off the same exits peak at 9. Also: a belt flag for "hide the worn tools while posing" would be cleaner
+than the emote calling `hideWorn` every frame after the tools' own updates.
 
 **Not done, and why:**
 - The .blend skiff in place of `boat.js`: its hull texture is missing; the owner decides.
