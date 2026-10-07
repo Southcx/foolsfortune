@@ -11,3 +11,4 @@
 // ---------------------------------------------------------------------------------------
 /* global __BUILD__ */
 export const BUILD = typeof __BUILD__ !== 'undefined' ? __BUILD__ : 'dev';
+export const BUILD_URL = 'https://claude.ai/artifact/FjLfppJaKzUCZxoVBp9FE8'; // (where the playable build is published: the store every division reaches with ArtifactData)

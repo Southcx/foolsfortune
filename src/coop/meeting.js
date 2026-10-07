@@ -13,8 +13,7 @@
 import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
-import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
-import { SIBLINGS } from './party.js';
+import { SIBLINGS, lookOf } from './party.js';
 
 const NEAR = 30, REACH = 2.6;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -54,7 +53,7 @@ export class Meetings {
         this.making.add(id);
         this.makeRig().then((rig) => {
           this.making.delete(id); rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Waiting-${id}`;
-          g.vessel?.dress(rig, { ...DEFAULT_LOOK, body: def.glaze, mask: def.glaze }, { own: true });
+          g.vessel?.dress(rig, lookOf(id), { own: true });
           this.waiting.set(id, { rig, pos: at.clone(), yaw: 0 });
         });
       }
