@@ -88,6 +88,6 @@ export class Letters {
 
 "${text}"
 
-Answer it in your own voice, in one line the game says in its log as your sibling's: with ArtifactData on ${BUILD_URL}, read collection "siblings", doc "${id}", then "update" it (with its version) with { "line": "<your answer, at most 120 characters>", "re": "${letter}" }, and, if the letter asks it of your sibling, "order" (follow | hold | scout | guard | free) and "target" (a place id). An answer with a new "re" is said at once. If the letter asks for work on the game, say in your line what you will do. The protocol: docs/handoffs/everyone/2026-10-07-from-petra-letters.md.`;
+Answer it in your own voice (your sibling's card in the game: ${PERSONAS[id].voice}), in one line the game says in its log as your sibling's: with ArtifactData on ${BUILD_URL}, read collection "siblings", doc "${id}", then "update" it (with its version) with { "line": "<your answer, at most 120 characters>", "re": "${letter}" }, and, if the letter asks it of your sibling, "order" (follow | hold | scout | guard | free) and "target" (a place id). An answer with a new "re" is said at once. If the letter asks for work on the game, say in your line what you will do. The protocol: docs/handoffs/everyone/2026-10-07-from-petra-letters.md.`;
   }
 }

@@ -2,7 +2,7 @@
 // TRACKING, THE PARTY: what the log says when a sibling is called or dismissed, what you tell them (coop/party.js), what a division's
 // session has its sibling say (coop/channel.js), a sibling's answer (coop/answer.js), a letter (coop/letters.js), and a guest's coming,
 // going and words (coop/guests.js). Nothing is counted yet: what a
-// sibling earns or costs is Dovina's to rule (docs/plans/COOP.md). Words are placeholders for Espada's.
+// sibling earns or costs is Dovina's to rule (docs/plans/COOP.md). Words: Espada's (speech as `Name : words`, the log's habit).
 //
 //   partyRules({ on, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -13,8 +13,8 @@ const ORDER_LINE = { warp: 'step through to your side', follow: 'follow you', ho
 
 export function partyRules({ on, log }) {
   on('party.meet', (e) => log.say('gain', `You meet ${nameOf(e.sibling)}.`));
-  on('party.call', (e) => log.say('info', `${nameOf(e.sibling)} joins you.`, { key: 'party.call', win: 1, fmt: (n) => `${n} siblings join you.` }));
-  on('party.dismiss', (e) => log.say('info', `${nameOf(e.sibling)} goes home.`, { key: 'party.dismiss', win: 1, fmt: (n) => `${n} siblings go home.` }));
+  on('party.call', (e) => log.say('info', `${nameOf(e.sibling)} joins your party.`, { key: 'party.call', win: 1, fmt: (n) => `${n} siblings join your party.` }));
+  on('party.dismiss', (e) => log.say('info', `${nameOf(e.sibling)} leaves your party.`, { key: 'party.dismiss', win: 1, fmt: (n) => `${n} siblings leave your party.` }));
   on('party.refuse', (e) => log.say('warn', e.why === 'unmet' ? `You have not met ${nameOf(e.sibling)} yet.` : e.why === 'far' ? `${e.sibling ? nameOf(e.sibling) : 'Your siblings'} cannot walk to ${e.place} from here: travel there, and they come with you.` : 'Your party is full: two siblings at once.', { key: 'party.refuse', throttle: 1 }));
   on('sibling.stuck', (e) => log.say('info', e.fix === 'warp' ? `${nameOf(e.sibling)} was stuck, and steps through to where you sent them.` : `${nameOf(e.sibling)} cannot get there, and comes back to you.`, { key: `sib.stuck.${e.sibling}`, throttle: 4 })); // (coop/follow.js: every goal has a give-up)
   on('party.order', (e) => log.say('info', e.sibling ? `${nameOf(e.sibling)} will ${ORDER_LINE[e.order] || e.order}.` : `Your siblings ${ORDER_LINE[e.order] || e.order}.`, { key: `party.order.${e.sibling || 'all'}`, throttle: 0.5 }));

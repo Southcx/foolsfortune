@@ -150,6 +150,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **asking a sibling** (`@name words` on the chat line, `src/coop/answer.js`): a question a sibling answers in seconds, in its division's
   voice (`src/coop/personas.js`), drafted by Claude through the page's `sample`; its **answer** is a line and, when asked, an order.
   *Not:* a letter, nor the division itself.
+- **voice card** (`PERSONAS[id]`, `src/coop/personas.js`, Espada's): a sibling's voice written as form (sentence length, punctuation,
+  the first word), a lexicon, what it notices, its moves, what it never says, and sample lines; composed into the brief a prompt carries.
+  **drift** (`drift(line)`, `DRIFT`): the house voice's tells a line slides back to (an eager opener, the question said back, an offer
+  to help, a hedge, a house word, a dash); banned for all five.
 - **letter** (`/letter name words`, `src/coop/letters.js`): words the owner sends from the game to a division's own session, which
   answers in a few real minutes through the store (`siblings/<name>`, `re`). *Not:* an answer (seconds, Claude in the page).
 - **the co-op meter** (`/usage`, `src/coop/usage.js`): what asking and letters spend of the owner's Claude usage over the last real hour,
