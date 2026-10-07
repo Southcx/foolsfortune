@@ -73,8 +73,11 @@ let LOWER = null;
 export function standLegs(ch, P, base, pose, w, st, dt = 1 / 60) {
   const want = pose && P.grounded ? 1 - THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.6) : 0;
   st.legW = THREE.MathUtils.damp(st.legW || 0, want, want > (st.legW || 0) ? 12 : 8, dt);
-  if (st.legW < 0.01 || !pose) return;
+  // the clip's own weight eased both ways: a move's weight drops to nothing the frame it ends, which snapped the legs back to the run's
+  // in one frame (a shin 27-29 degrees at the end of a toll, a blow of the flail, a bash: measured)
+  st.w = THREE.MathUtils.damp(st.w || 0, w, w > (st.w || 0) ? 30 : 12, dt);
+  if (st.legW * st.w < 0.01 || !pose) return;
   const C = ch.clips;
   if (!LOWER || LOWER.length !== C.nb) LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
-  C.blend(base, pose, st.legW * w, LOWER, 1);
+  C.blend(base, pose, st.legW * st.w, LOWER, 1);
 }

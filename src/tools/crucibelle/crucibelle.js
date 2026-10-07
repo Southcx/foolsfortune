@@ -24,6 +24,7 @@
 //    out of it (Bell_SongCast). At a busker's mat the busking body is the rhythm mode's (courier/moves/rhythmhold.js); the bell stays out.
 //
 //   U      draw / stow          1-5  notes (RMB held: an octave up)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
+//   (in the air the string cannot be played, so a press there rings one toll at once, as the toll always did: TOLL.cool apart)
 //
 // Prior art: Ocarina of Time (songs), Patapon (rhythm, fever, an army that the song commands), Crypt of the NecroDancer and Hi-Fi Rush
 // (on the beat, leniently; Hi-Fi Rush's rule that the blow lands with the press, so a string is played like a drum part), the tabletop
@@ -45,7 +46,7 @@ import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/crucibelle/crucibelle'); // (the simulation's chance: core/rng.js, the same twice)
 
-const WINDOW = 0.085, OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1 };
+const WINDOW = 0.085, OWN_BPM = 96, TOLL = { range: 4.2, cone: 1.1, cool: 0.4 }; // (cool: between tolls rung in the air, the old cooldown)
 // The toll string, a table for the combo engine (tools/moveset.js). Each move is a toll at `at` (clip seconds: the swing's fastest moment,
 // measured), begun near it (`from`) so the bell rings with the press: a rhythm game's blow lands on the input, never a windup later.
 // The chain windows are the old cooldown (0.4 s between tolls) reshaped to the string: the next toll may begin 0.3 s after this one, so
@@ -130,7 +131,11 @@ export class Crucibelle extends HeldTool {
     if (this.mgr.get?.('rhythm')?.bell === this) return; // (at a busker's mat the rhythm mode has the keys and the body)
     for (let d = 1; d <= 5; d++) if (inp.wasPressed(`Digit${d}`)) this.note(d, inp.isDown('Mouse2'));
     if (inp.wasPressed('Mouse0')) this.pressAt = this.now(); // (the beat is judged at the press, though a buffered toll rings later)
+    // in the air the engine plays no string (no air string is given), so the press rings one toll at once, as the toll always did
+    const air = !this.P.grounded;
+    if (air && inp.wasPressed('Mouse0') && !this.moves.busy && !(this.airCool > 0)) { this.airCool = TOLL.cool; this.P.bodyYaw = this.P.yaw; this.toll(); this.gesture('Bell_Toll', { from: 0.13, fadeOut: 0.15 }); }
     this.moves.update(dt, inp, { allow: this.P.techs.active?.id !== 'swim' });
+    if (air) this.moves.buffer = 0; // (a press in the air is that toll, never a string begun on landing)
   }
   note(d, high = false) {
     const g = this.game, G = this.grid(), t = this.now();
@@ -263,6 +268,8 @@ export class Crucibelle extends HeldTool {
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
     const g = this.game, P = this.P;
+    if (this.airCool > 0) this.airCool -= dt;
+    if (this.drawTarget === 0 && this.moves.busy) this.moves.cancel(); // (put away mid-string: let go now, not frozen mid-swing until the holster)
     // the fever falls in silence (two bars without a note), and slowly anyway
     const G = this.grid();
     if (this.now() - this.lastNote > G.spb * 8) this.fever = Math.max(0, this.fever - dt * 0.25);

@@ -153,6 +153,7 @@ export class Veritome extends Tech {
       else if (!wantLens) { if (this.lens) this.lower(); this.liftT = -1; }
       if (this.lens) this.lensUpdate(raw, inp);
       this.moves.update(dt, inp, { allow: !this.lens && this.liftT < 0 && !g.reprogram?.open && this.mgr.active?.id !== 'swim' });
+      if (this.lens || this.liftT >= 0) this.moves.buffer = 0; // (LMB with the lens up is the shutter: never a bash buffered for when it comes down)
     } else { if (this.lens) this.lower(); this.liftT = -1; if (!this.held) this.moves.cancel(); }
     this.liftK = THREE.MathUtils.damp(this.liftK, this.liftT >= 0 || this.lens ? 1 : 0, this.liftT >= 0 || this.lens ? 14 : 8, raw);
     if (this.lens) this.liftAt = 0.46; else if (this.liftT >= 0) this.liftAt = this.liftT * (0.46 / LIFT); // (where in Tome_LensRaise: held there as it is let down)
