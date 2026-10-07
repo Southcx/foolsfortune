@@ -296,7 +296,7 @@ export class Realm {
       case 'peak': {
         if (this.kiln.active) return;
         const n = this.kiln.open();
-        if (n == null) say('The Heavenly Kiln is not yet open. Fire your soul at the press to open the next Firing.');
+        if (n == null) say('The Heavenly Kiln is closed. Fire your soul at the Athanor to open the next Firing.');
         else if (!this.kiln.onMat()) say('Stand on the mat at the Chimney\'s foot.');
         else this.kiln.begin();
         return;
