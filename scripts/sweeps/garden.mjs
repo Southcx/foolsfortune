@@ -211,7 +211,7 @@ phase = 'chevron';
 const places = await ev(() => __game.game.realm.site.features.map((f, i) => ({ i, fi: f.i, kind: f.kind, planet: f.planet.id, pos: [f.pos.x, f.pos.y, f.pos.z], shown: !f.mesh || f.mesh.visible })));
 const chevs = [];
 for (const f of places.filter((f) => f.shown)) {
-  await ev((f) => { const R = __game.game.realm, P = R.site.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.cam.up.copy(d); }, f);
+  await ev((f) => { const R = __game.game.realm, P = R.site.by[f.planet], T = __game.THREE, d = new T.Vector3(...f.pos).sub(P.c).normalize(); const side = new T.Vector3(0, 1, 0).cross(d); if (side.lengthSq() < 1e-4) side.set(1, 0, 0); d.applyAxisAngle(side.normalize(), 1.2 / P.r); __sw.put(f.planet, [d.x, d.y, d.z]); R.camera.up.copy(d); }, f);
   await ticks(40);
   const c = await sw('chevron()');
   chevs.push({ kind: f.kind, planet: f.planet, ...c });
@@ -228,7 +228,7 @@ const planets = await sw('planets()');
 for (const P of planets) {
   let worstAlt = 0, nan = false, endPlanet = null;
   for (const [k, dir] of [['top', [0, 1, 0]], ['side', [1, 0, 0]], ['under', [0, -1, 0]]]) {
-    await ev(([id, dir]) => { __sw.put(id, dir); __game.game.realm.cam.up.set(...dir); __game.game.realm.lotusLock = null; }, [P.id, dir]);
+    await ev(([id, dir]) => { __sw.put(id, dir); __game.game.realm.camera.up.set(...dir); __game.game.realm.lotusLock = null; }, [P.id, dir]);
     await ticks(30);
     if (k === 'top' || P.id === 'dantian') await shot(`planet-${P.id}-${k}`);
     await page.keyboard.down('KeyW'); await page.keyboard.down('KeyD'); await ticks(quick ? 120 : 300); await page.keyboard.up('KeyW'); await page.keyboard.up('KeyD');
@@ -250,7 +250,7 @@ check('lotus: every one flies to its neighbour', !lotBad.length, lotBad.length ?
 
 // ================================================================== 6. the hand: grab, throw, spam, menus mid-throw
 phase = 'hand';
-await ev(() => { __sw.put('dantian', [0.2, 1, 0.3]); __game.game.realm.cam.up.set(0.2, 1, 0.3).normalize(); }); await ticks(40);
+await ev(() => { __sw.put('dantian', [0.2, 1, 0.3]); __game.game.realm.camera.up.set(0.2, 1, 0.3).normalize(); }); await ticks(40);
 await press('Digit1');
 let [jx, jy] = await sw('jarScreen()');
 await page.mouse.move(jx, jy); await ticks(2);

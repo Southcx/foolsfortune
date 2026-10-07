@@ -210,7 +210,7 @@ let crossed = false;
 if (part('crossing')) {
   S.phase = 'crossing';
   const pool0 = await S.ev(() => __game.game.cubes.balance);
-  const m0 = await em('mark()'), cnt0 = await em('counts()');
+  const m0 = await em('mark()'), cnt0 = await em('counts()'), dist0 = await S.ev(() => __game.game.ledger.get('dist.total') || 0);
   await S.ev(() => { const g = __game.game; g.cubes.earn(600, 'test'); g.chat.run('/crossing shoal'); });
   const cubes0 = await S.ev(() => __game.game.cubes.balance);
   await S.press('KeyF', 4);
@@ -256,6 +256,7 @@ if (part('crossing')) {
     const exp = [want[0] + sl[0] * f, want[1] + 3 + (sl[1] - 3) * f, want[2] + sl[2] * f], off = Math.hypot(cl[0] - exp[0], cl[1] - exp[1], cl[2] - exp[2]);
     S.check(`crossing: ${a.id} (bar ${a.from}) holds the ${a.view} view`, off < 3, { bar: s.bar, cam: cl, rig: exp.map((x) => +x.toFixed(2)), off: +off.toFixed(2) });
     await S.common(`crossing: ${a.id} in the ${a.view} view`, { courier: false });
+    if (a.id === 'setpiece') S.note('crossing: the shoal round the ship', await S.ev(() => { const E = __game.game.emocean, fish = E.waves.foes.filter((f) => f.alive && f.role === 'glint'); if (!fish.length) return 'no glints'; const c = fish.reduce((o, f) => o.add(f.local), new __game.THREE.Vector3()).multiplyScalar(1 / fish.length); return { glints: fish.length, bar: +E.bar.toFixed(1), centreFromShip: __sw.v(c.sub(E.ship.local)) }; }));
   }
   // the verbs, in the breather or wherever the clock is (no threats needed for most)
   s = await st();
@@ -347,6 +348,8 @@ if (part('crossing')) {
   S.check('port: the voyage is at Margarite', s2.at === 'margarite' && !s2.sailing, { at: s2.at, sailing: s2.sailing });
   S.check('port: the camera follows the Courier again', Math.hypot(s2.cam[0] - s2.player[0], s2.cam[2] - s2.player[2]) < 12, { cam: s2.cam, player: s2.player });
   await S.common('port: Margarite\'s dock');
+  const dist1 = await S.ev(() => __game.game.ledger.get('dist.total') || 0);
+  S.check('ledger: sailing the rail is not distance travelled', dist1 - dist0 < 50, { metres: +(dist1 - dist0).toFixed(0), railSpeed: await S.ev(() => __game.game.emocean.rail.speed), footsore: await S.ev(() => !!__game.game.achievements?.done?.('dt1')) });
   const cnt1 = await em('counts()');
   S.note('crossing: the scene before and after one crossing', { before: cnt0, after: cnt1 });
   crossed = true;
@@ -531,5 +534,7 @@ const late = spawns.filter((x) => x.bar - Math.floor(x.bar) > 0.1);
 S.check('crossing: every wave enters on a bar line', !late.length, late.length ? late.slice(0, 6) : `${spawns.length} entries`);
 const log = await em('logAll()');
 S.check('log: never calls the Courier she or he', !(await S.ev((l) => __em.gendered(l), log)).length, await S.ev((l) => __em.gendered(l), log));
+const words = log.filter((t) => /\blachryma\b/.test(t) || /\ba key\b/i.test(t));
+S.check('log: Lachryma capitalised, a Possibilikey never "a key"', !words.length, words.length ? [...new Set(words)].slice(0, 4) : 'none');
 S.check('log: no code ids or empty values said', !(await S.ev((l) => l.flatMap((t) => __em.rawIds(t)), log)).length, await S.ev((l) => l.filter((t) => __em.rawIds(t).length).slice(0, 6), log));
 await S.done();

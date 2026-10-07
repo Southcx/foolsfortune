@@ -86,7 +86,37 @@ the rules before building in the same area; a rule a machine can check goes into
 35. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
     runs first, and a page that will not boot is a hard failure.
 
+36. **A view that follows a thing lets go of it while the hand holds it.** Whatever the cursor moves must not move the camera the
+    cursor's ray is cast from, or each frame chases the last; and what the hand holds stays on the near side of the ground.
+37. **A model two modes share is set up by the one drawing it, every frame it draws it.** The god hand and the garden share the Jar's
+    model; whichever leaves last must not decide whether the other sees it.
+
 ## Cases
+
+### 2026-10-07 · The Pneuka Jar unseen after the god hand, in the garden
+- **Seen (the owner):** in the Spirit Garden, ` and back: the Jar invisible.
+- **Cause (measured):** in the garden ` entered the world's god hand, and its exit sets `jar.group.visible = false`; the garden draws
+  the Jar with that same model and never set it visible again (headless: `visible: false` after the toggle).
+- **Fix:** in the garden ` opens the overhead view (`world/garden/gardencam.js`) and never the world's god hand; and the realm sets the
+  model visible every frame it is the Jar's (`placeJar`), hidden only in first person.
+- **Rule:** 37.
+
+### 2026-10-07 · The held Pneuka Jar sank into the planetoid, then fled
+- **Seen (the owner):** grabbing the Jar with the hand, you slowly clip through the planetoid you are on.
+- **Cause (measured):** the held Jar went where the cursor's ray reached at the grab's distance, with no floor (dragged down, 5.6 m
+  under the ground); and the camera followed the Jar, so the ray was re-cast from a camera the Jar had just moved, and the Jar ran away
+  (130 m/s; held still afterwards, 459 m to 861 m off the ground in 4 s).
+- **Fix:** what the hand holds is kept at least 0.1 m over the ground under it (`hand.js` grab); a followed view holds still while
+  the Jar is held (`gardencam.js` anchor). Measured after: 0.6 m over the ground through the whole drag, and still.
+- **Rule:** 36.
+
+### 2026-10-07 · The garden's water flickered as specks round its shore
+- **Seen (Petra, headless, the first build of the water):** white specks on the ground round a filled pit.
+- **Cause:** the water's dry points were tucked 0.25 m under the clay's ground, at the clay's 1 m grid; the planetoid is drawn on a
+  coarser mesh (about 3 m), whose ground lies above or below the clay's between its vertices, so the tucked edges poked through.
+- **Fix:** only the triangles wet at all three corners are drawn (`watermesh.js`). The water under the coarse ground still does not
+  show until the planetoid's mesh is as fine as the clay's (Calissa's, asked).
+- **Rule:** 1 (no aliasing crawl).
 
 ### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
 - **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,

@@ -1,15 +1,18 @@
 // ---------------------------------------------------------------------------------------
 // THE GOD HAND IN THE GARDEN: the cursor is the hand, always (docs/plans/SPIRIT-GARDEN.md sections 1 and 4). Its arts, by the number
-// keys: 1 GRAB (pick up the Jar or a spirit and throw it; a quick tap on a spirit PETS it, the right button FLICKS it), 2 PULL and
-// 3 PRESS (raise and lower the planetoid's clay), 4 CARVE (a narrow groove, for water to run in), 5 SMOOTH, 6 PLACE (a feature in a
-// plot: world/garden/plots.js). The model is the god hand's own (godhand/godhand.js: its fingers posed there); the strokes are the
+// keys: 1 GRAB (pick up the Jar or a spirit and throw it; a quick tap on a spirit PETS it, the right button FLICKS it), the terraforming
+// strokes (the owner: "fluid sims, mesh deformation, the works"): 2 PULL and 3 PRESS (raise and lower the planetoid's clay), 4 SMOOTH,
+// 5 FLATTEN (to the height where the stroke began: terraces), 6 CARVE (a narrow groove, for water to run in), 7 ROUGHEN; 8 WATER (pour
+// with the left button, drink up with the right, a spring with Shift and the left, a drain with Ctrl and the left, Shift and the right
+// takes the nearest away: world/garden/waterworks.js); 9 PLACE (a feature in a plot: world/garden/plots.js). Shift and the wheel size
+// the stroke (1 to 12 m); Ctrl+Z undoes the last of ten. The model is the god hand's own (godhand/godhand.js: its fingers posed there); the strokes are the
 // clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's pose says the rest (open over the
 // ground, pinched to sculpt, curled to grab).
 //
 // Prior art: Black & White's hand (the cursor as your whole presence: pick up, throw, pat and slap), Populous's raise and lower,
 // From Dust's carved channels, and Animal Crossing's placing on a grid of plots.
 //
-//   const H = new GardenHand(realm)   H.update(dt)   H.art ('grab' | 'pull' | 'press' | 'carve' | 'smooth' | 'place')   H.held
+//   const H = new GardenHand(realm)   H.update(dt)   H.art (ARTS)   H.held   H.size (metres)   H.undo()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -18,7 +21,8 @@ import { FEELING_COLOR } from './plots.js';
 import { STATS, firingOf, ranksOf } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
 
-export const ARTS = ['grab', 'pull', 'press', 'carve', 'smooth', 'place'];
+export const ARTS = ['grab', 'pull', 'press', 'smooth', 'flatten', 'carve', 'roughen', 'water', 'place'];
+const STROKE = { pull: 0.12, press: 0.12, carve: 0.12, smooth: 0.5, flatten: 0.5, roughen: 0.25, size: [1, 12], undo: 10 }; // (metres a stroke tick, or the share eased; the size's range; strokes kept to undo)
 const FEATURE_NAME = { terrace: 'herb terrace', pavilion: 'echo pavilion', spiritHouse: 'spirit house', pond: 'Lachryma pond', lantern: 'stone lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's words)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4();
@@ -46,7 +50,7 @@ export class GardenHand {
   constructor(realm) {
     this.R = realm; this.game = realm.game; this.art = 'grab';
     this.held = null; this.dist = 0; this.at = new THREE.Vector3(); this.prev = new THREE.Vector3(); this.vel = new THREE.Vector3();
-    this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0;
+    this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0; this.size = HAND.brush; this.undos = [];
     this.brush = new SculptBrush({ fx: realm.game.fx }); realm.site.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
   }
 
@@ -78,18 +82,22 @@ export class GardenHand {
 
   update(dt) {
     const g = this.game, I = g.input, R = this.R;
-    for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(`Digit${k + 1}`) && !g.log?.typing) this.setArt(ARTS[k]);
+    const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
+    for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(`Digit${k + 1}`) && !typing) this.setArt(ARTS[k]);
+    if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1]); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
+    if (ctrl && I.wasPressed('KeyZ') && !typing) this.undo();
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
-    if (I.wasPressed('Mouse2')) { if (R.tribulation?.active) R.tribulation.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
+    if (I.wasPressed('Mouse2') && this.art !== 'water') { if (R.tribulation?.active) R.tribulation.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
       case 'grab': this.grab(dt, o, d); break;
+      case 'water': R.waterworks?.handle(dt, this.hit, { pour: I.isDown('Mouse0') && !shift && !ctrl, drink: I.isDown('Mouse2') && !shift, spring: shift && I.wasPressed('Mouse0'), drain: ctrl && I.wasPressed('Mouse0'), unset: shift && I.wasPressed('Mouse2') }); break;
       case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
       default: this.sculpt(dt);
     }
     // the brush's ring on the clay under the hand, for the four strokes
-    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), HAND.brush, this.art === 'pull' ? 'raise' : this.art === 'smooth' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
+    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), this.art === 'water' ? 1.5 : this.size, this.art === 'pull' ? 'raise' : this.art === 'smooth' || this.art === 'flatten' || this.art === 'water' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
     else this.brush.hide();
     this.brush.update(this.game.rawDt ?? dt);
     this.pose(dt);
@@ -124,14 +132,23 @@ export class GardenHand {
     const I = this.game.input, how = this.art;
     if (!I.isDown('Mouse0') || !this.hit) { this.endStroke(); return; }
     const P = this.hit.planet, clay = this.R.clays[P.id]; if (!clay) return;
-    this.stroke ||= { planet: P, how, moved: false };
+    const dir = this.hit.point.clone().sub(P.c).normalize();
+    if (!this.stroke) { // (a stroke begins: what it changes can be undone, and a flattening keeps the height it began at)
+      this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir) };
+      this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift();
+    }
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
-    const dir = this.hit.point.clone().sub(P.c).normalize();
-    if (clay.brush(dir, how, how === 'smooth' ? 0.5 : 0.12, HAND.brush)) { this.stroke.moved = true; this.R.reshape(P); }
+    if (clay.brush(dir, how, STROKE[how] ?? 0.12, this.size, { to: this.stroke.to })) { this.stroke.moved = true; this.R.reshape(P); this.R.waterworks?.disturb(P); }
+  }
+  /** Ctrl+Z: the last stroke taken back (the ground as it was before it, and the water told). */
+  undo() {
+    const U = this.undos.pop(); if (!U) return;
+    this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet);
+    this.game.events?.emit('garden.undo', { planetoid: U.planet.id, by: 'courier' });
   }
   endStroke() {
-    const S = this.stroke; this.stroke = null; if (!S?.moved) return;
+    const S = this.stroke; this.stroke = null; if (!S) return; if (!S.moved) { this.undos.pop(); return; } // (nothing changed: nothing to undo)
     this.R.reshape(S.planet, true);
     this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' });
   }

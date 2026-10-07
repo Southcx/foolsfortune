@@ -82,7 +82,7 @@ export class GardenSite {
       // its highest reach, the shape's (the Chimney's needle runs to 28 m on an 8 m world) plus the clay's band: what is solid, whose
       // gravity it is and what the hand's ray meets are all asked out to here, never the bare radius (GARDEN-SWEEP #6)
       let top = P.r; for (let i = 0, n = 2048; i < n; i++) { const y = 1 - (2 * (i + 0.5)) / n, q = Math.sqrt(1 - y * y), a = i * 2.399963; top = Math.max(top, P.base(_s.set(Math.cos(a) * q, y, Math.sin(a) * q))); }
-      P.rMax = top * 1.04 + 3;
+      P.rMax = top * 1.04 + P.r / 3; // (the clay's band: a third of the radius, world/garden/clay.js)
     });
     // the sky inside the Jar and the spirit veins between the planetoids (Calissa's)
     this.sky = new GardenSky(); g.add(this.sky.group);

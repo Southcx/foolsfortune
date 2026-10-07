@@ -26,6 +26,7 @@ import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
+import { Waterworks } from './waterworks.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
@@ -56,6 +57,7 @@ export class Realm {
     this.plots = new Plots(game, this.site, this.clays);
     this.raising = new Raising(game, this);
     this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
+    this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
@@ -63,9 +65,9 @@ export class Realm {
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
-    game.save?.section('realm', { scope: 'player', version: 2,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), awaken: this.awaken.dump() }),
-      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.site.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
+    game.save?.section('realm', { scope: 'player', version: 3,
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump() }),
+      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.site.by[id], true); } this.plots.load(d?.placed); this.flowAll(); this.waterworks.load(d?.water); },
       reset: () => { this.name = null; } });
   }
 
@@ -202,13 +204,14 @@ export class Realm {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
       s.body.step(dt, { move: s.wish });
     }
+    this.waterworks.fixed(dt); // (the water runs while you are in the garden: world/garden/waterworks.js)
   }
 
   update(dt) {
     if (!this.active) return;
     const g = this.game, I = g.input, P = g.player, J = this.jarBody;
     // the camera: behind the Jar, first person (Z), or overhead (`: the god hand's view here) (world/garden/gardencam.js)
-    if (I.wasPressed('KeyZ') && !g.log?.typing) this.camera.toggleFirst();
+    if (I.wasPressed('KeyZ') && !g.log?.typing && !I.isDown('ControlLeft') && !I.isDown('ControlRight')) this.camera.toggleFirst(); // (Ctrl+Z is the hand's undo)
     this.camera.update(dt);
     // the Courier's place is the Jar's while in here (the sun's shadow, the zones and the listener follow it)
     P.pos.copy(J.pos); P.prevPos?.copy(J.pos); P.renderPos?.copy(J.pos);
@@ -220,7 +223,7 @@ export class Realm {
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
-    this.awaken.update(dt); this.tribulation.update(dt);
+    this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
