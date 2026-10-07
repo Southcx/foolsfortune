@@ -6,13 +6,13 @@
 // was not enough. Too far behind (a teleport, another room, a long fall), it is set down in its slot at once, as a party member is in
 // Kingdom Hearts and Ocarina's Navi: the party never gets lost. Steering is the creatures' (`creatures/ai/steer.js`: arrive, separate,
 // avoid), blended. The orders (Dovina's rulings, COOP.md): follow and free (the slot), guard (a near slot), hold (where it stood),
-// go (to a point, then stay), scout (ahead of the leader), back (follow, warped at once if far).
+// go (to a point, then stay), scout (ahead of the leader), back (follow, warped at once if far), engage (closing on a foe: coop/fight.js).
 //
 // Prior art: Kingdom Hearts' party (Donald and Goofy keep a slot beside Sora and warp back when left behind), the follower AI of
 // Banjo-Tooie's and The Last of Us's companions (a slot, a catch-up, never in the way), Reynolds' steering behaviours.
 //
 //   const F = new Follow(body, keys, { slot, of })   F.think(dt, { leader, others, probe, order, to })   F.stuck (seconds)
-//   order: 'follow' | 'free' | 'guard' | 'hold' | 'go' (to: a point) | 'scout' | 'back'
+//   order: 'follow' | 'free' | 'guard' | 'hold' | 'go' (to: a point) | 'scout' | 'back' | 'engage' (to: where to stand to strike)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { arrive, separate, avoid, blend } from '../creatures/ai/steer.js';
@@ -40,7 +40,7 @@ export class Follow {
   think(dt, { leader, others = [], probe = null, order = 'follow', to = null }) {
     const B = this.body, K = this.keys;
     if (order === 'hold') { if (!this.holdAt) this.holdAt = B.pos.clone(); _goal.copy(this.holdAt); }
-    else if (order === 'go' && to) { this.holdAt = null; _goal.copy(to); }
+    else if ((order === 'go' || order === 'engage') && to) { this.holdAt = null; _goal.copy(to); } // (engage: closing on a foe, coop/fight.js: still warped back if you go far)
     else if (order === 'scout') { this.holdAt = null; _goal.set(leader.pos.x + Math.sin(leader.bodyYaw) * KEEP.scout, leader.pos.y, leader.pos.z + Math.cos(leader.bodyYaw) * KEEP.scout); }
     else { this.holdAt = null; this.slotOf(leader, _goal, order === 'guard' ? KEEP.guard : KEEP.r); }
     // left far behind (a teleport, a fall, another room): set down in the slot

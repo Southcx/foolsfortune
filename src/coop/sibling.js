@@ -63,7 +63,7 @@ export class Sibling {
     this.leader = ctx.leader;
     this.body.killY = ctx.leader.killY; // (the place's floor is set on the Courier's body: world/places.js; a sibling stands in the same place)
     const goal = this.fight.think(dt, { game: this.game, leader: ctx.leader, order: this.order }); // (something to fight: where to stand, coop/fight.js)
-    this.follow.think(dt, goal ? { ...ctx, order: 'go', to: goal } : { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to });
+    this.follow.think(dt, goal ? { ...ctx, order: 'engage', to: goal } : { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to });
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
   }

@@ -72,8 +72,17 @@ the rules before building in the same area; a rule a machine can check goes into
 
 30. **What an event moves, its end moves back.** A position, scale or state changed for the length of an act (a merge, a hold) keeps its
     rest value apart and is returned to it when the act's result is gone.
+31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
+    that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
 
 ## Cases
+
+### 2026-10-07 · A sibling in a fight was lost when the Courier travelled
+- **Seen:** the stress test with the party (seed 2, run 13): Dovina more than 40 m away for half a second, the Courier in the Dunes.
+- **Cause:** the fight's approach handed the follow mind the order "go" (stand where told, never warped), so a sibling chasing a foe
+  was not set down beside the Courier when they went far.
+- **Fix:** the approach is its own order, `engage`, warped like following (coop/follow.js).
+- **Rule:** 31.
 
 ### 2026-10-07 · The game did not boot: "Cannot access 'COURIER_RIG' before initialization"
 - **Cause:** `withFade(material, key, U = COURIER_RIG)`: the outline materials are made by `withFade` while `render/outline.js` loads,
