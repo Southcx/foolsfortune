@@ -20,4 +20,10 @@
 - **Co-op, next (waits on Dovina's COOP.md rulings)**: what siblings may do (strike, gather, open), how the party is called in play, the
   shared errand for guests (the host's quest), what a session may write. The siblings' draw calls: five in view +58 (the workshop 483,
   over 450); rest-bake merging is the cut (above).
+- **Perf's draw times are noise on the software renderer** (the Dunes' draw 13.6 to 21.6 ms between runs of one build, today): a
+  median of three runs before the gate compares, or the draw row read with a wider tolerance; the baseline at v102 is a high one.
+- **Co-op built so far** (v102): siblings met, called at Shrines, two out, /sib, beside you, the channel at Dovina's cadence, and fighting by
+  temperament at 0.4 of the sustained damage. **Still to build:** the order wheel (held key: Come, Wait, Go, Help), the tools in their hands
+  (Calissa's models; Dovina's coffin, Espada's dowsing, pointing at drops with a glyph), siblings that can be struck and shatter, the
+  guests' shared errand (the Dunemaw run, host-owned; waits on the room).
 
