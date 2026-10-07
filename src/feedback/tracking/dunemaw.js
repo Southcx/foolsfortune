@@ -7,7 +7,7 @@
 //   dunemawRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { medalOf } from '../../progress/combat/dunemaw.js';
-import { dropsFor, NAMES } from '../../progress/combat/greatjelly.js';
+import { dropsFor, DROPS, NAMES } from '../../progress/combat/greatjelly.js';
 
 const DONE = { stun: 'stunned', halt: 'halted', slow: 'slowed', sleep: 'put to sleep', charm: 'charmed', blind: 'blinded', confusion: 'confused', doubt: 'made to doubt' };
 const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: 'Illusion', delirium: 'Delirium' };
@@ -19,8 +19,10 @@ export function dunemawRules({ on, L, log }) {
   on('foe.end', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`foe.${e.how}`);
-    for (const id of dropsFor(e)) L.inc(`foe.drop.${id}`); // (the cosmetics its achievements guarantee: greatjelly.js DROPS; the boss drops them)
+    const drops = dropsFor(e);
+    for (const id of drops) L.inc(`foe.drop.${id}`); // (the cosmetics its achievements guarantee: greatjelly.js DROPS; the boss drops them)
     log.say('gain', e.how === 'reprogram' ? 'You reprogram the Great Slip Jelly. The nursery is yours.' : 'The Great Slip Jelly bursts.');
+    for (const id of drops) { const d = DROPS.find((x) => x.id === id); if (d?.name) log.say('gain', `It drops ${d.name}.`); } // (the words a placeholder for Espada's)
   });
   // the nursery, the finds and the warp
   on('clutch.break', (e) => { if (e.by !== 'courier') return; L.inc('clutch.break'); log.say('combat', 'You break a clutch. Fewer brood will wake.', { key: 'clutch', throttle: 1 }); }); // (DUNEMAW-EXTREME acceptance 2; the words a placeholder for Espada's)

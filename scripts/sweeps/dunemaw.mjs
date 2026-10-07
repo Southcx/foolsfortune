@@ -474,7 +474,10 @@ if (part('fight')) {
   const DROP = ['glaze.jellycrown', 'curio.crown', 'mount.slipjelly', 'title.jellybane', 'pattern.crowneye'];
   const got = await S.ev(async (ids) => { const g = __game.game, { ITEMS } = await import('/src/pneuka/items.js'), { GLAZES } = await import('/src/courier/vessel/glazes.js');
     return ids.map((id) => ({ id, item: !!ITEMS[id], glaze: !!(GLAZES[id] || GLAZES[id.replace(/^glaze\./, '')]), inBox: g.pneuka.count(id), ledger: g.ledger.get(`foe.drop.${id}`) })); }, DROP);
-  S.check('accept 8: beating it drops the Jelly-crown glaze into play, not only a ledger count', (got[0].glaze || got[0].item) && got[0].ledger > 0, got[0]);
+  // (as defined in greatjelly.js DROPS' give: the glaze opens at the kiln through its achievement; the log says each drop)
+  S.check('accept 8: beating it opens the Jelly-crown glaze at the kiln (GLAZES.jellycrown, gated by gj1)', got[0].glaze && got[0].ledger > 0, got[0]);
+  const dropSaid = await S.ev(() => __game.game.log.lines.map((l) => l.text).filter((t) => /^It drops /.test(t)));
+  S.check('accept 8: the log says what it drops', dropSaid.some((t) => /Jelly-crown/.test(t)), dropSaid);
   S.note('accept 8: the five cosmetics, as the game knows them', got);
   S.check('accept 8: the haul comes home (finds and slip roe)', box1.length > box0.length, { before: box0.length, after: box1.length, new: box1.filter((x, i) => !box0.includes(x)).slice(0, 8) });
   await words('fight', m);
@@ -489,7 +492,7 @@ if (part('careless')) {
   await S.page.keyboard.press('KeyF'); await S.ticks(3);
   await S.page.keyboard.press('KeyP'); await S.ticks(1);
   const underP = await dm('win()');
-  S.check('careless: the Pneuka Box does not open under the maw wipe (casebook 34)', !(underP.seamBusy && underP.pneuka), underP);
+  S.check('careless: the Pneuka Box does not open under the maw wipe (casebook rule 49)', !(underP.seamBusy && underP.pneuka), underP);
   await S.shot('careless-p-under-maw-wipe');
   await S.page.keyboard.press('Escape'); await S.ticks(3);
   await S.page.keyboard.press('Escape'); await S.ticks(3); // (and the pause menu, mid-wipe)

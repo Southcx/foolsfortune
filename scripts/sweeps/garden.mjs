@@ -453,7 +453,7 @@ if (at) {
 await page.mouse.move(480 + 60, 300 + 40); await ticks(6);
 const h0 = await ev(() => { const R = __game.game.realm, h = R.hand.hit; if (!h) return null; window.__pit = h.point.clone().sub(h.planet.c).normalize(); return R.clays[h.planet.id].heightAt(__pit); });
 await page.mouse.down(); await ticks(150); await page.mouse.up(); await ticks(30);
-const fl = h0 === null ? null : await ev((h0) => { const R = __game.game.realm, J = R.jarBody, P = J.planet, W = R.waterworks?.waters?.[P.id]; if (!W) return null; const pit = +(R.clays[P.id].heightAt(__pit) - h0).toFixed(2);
+const fl = h0 === null ? null : await ev((h0) => { const R = __game.game.realm, J = R.jarBody, P = J.planet, W = R.waterworks?.water?.(P) || R.waterworks?.waters?.[P.id]; if (!W) return null; const pit = +(R.clays[P.id].heightAt(__pit) - h0).toFixed(2);
   J.vel.set(0, 0, 0); J.pos.copy(P.c).addScaledVector(__pit, P.radiusAt(__pit) + J.radius + 0.1); J.up.copy(__pit); // (the Jar set in the pit)
   W.pour(__pit, 60, 'wonder'); W.wake?.(); return { planet: P.id, pit }; }, h0);
 check('water: the waterworks has the Jar\'s planetoid', !!fl, fl);
