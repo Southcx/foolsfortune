@@ -275,6 +275,7 @@ export class Dialogue {
     this.age = (this.age || 0) + dt;
     if (this.age < 0.2) return; // (the F that began it is not also the F that turns the first page)
     const pressed = (k) => inp.wasPressed(k);
+    if (pressed('Escape')) { inp.spend?.('Escape'); this.end(); return; } // (Esc is a person's way out of any window: the workshop sweep)
     if (this.opts) {
       if (pressed('KeyW') || pressed('ArrowUp')) this.pick(this.sel - 1);
       if (pressed('KeyS') || pressed('ArrowDown')) this.pick(this.sel + 1);
