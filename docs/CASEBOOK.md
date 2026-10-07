@@ -127,8 +127,27 @@ the rules before building in the same area; a rule a machine can check goes into
 51. **An act paid for at the press and done later keeps its slot until it is done.** A second press before the first lands fires the
     first at once (or refunds it); it never overwrites it. And what a move's row says it is worth (nothing, for a shove) holds for every
     kind of thing it meets, not only the one the row was written for.
+52. **A whole-body clip is filmed from the eye too.** The head is hidden in first person, but the arms and the worn tools are not: a
+    clip that turns the body over or flings the arms (a flip, a kick-off's push) wheels them across the view. In first person play
+    the part that stays upright, or leave the clip out, and film both views before calling it done.
+53. **"Nothing is happening" asks every tech, the passive ones too.** A layer that plays only when the body is free (an idle break)
+    checks `active`, `override` and every `passive` tech's `engaged` (a carried crate, a kick of the unarmed V, a tool in hand).
 
 ## Cases
+
+### 2026-10-07 · The core movement's look from the suite, reviewed: four faults found and fixed (Calissa, loco review)
+- **Seen, measured headless (`.scratch/lfilm.mjs` scenarios, a per-frame bone-jump probe):** (1) a kick-off from a ladder's foot,
+  landing 0.38 s later: a fingertip jumped 1.57 m in the landing frame (a plain landing: 0.25 m); (2) in first person the slam's flip
+  and the kick-off's push swept the worn tools and a hand across the view, where the old slam held them still; (3) a big blow taken
+  crouched lifted the hips 0.25 m for 0.3 s; (4) the idle breaks played under a carried crate (Loco_IdleLookAround at 11 s,
+  Loco_IdleStretch at 20 s, the legs doing them under the crate).
+- **Cause:** (1) `airborne.js` dropped the kick layer the frame the Courier was footed, at whatever weight it had; (2) only the double
+  jump's flip was left out in first person; (3) the flinch blends Hit_Chest over the upper body with the pelvis at full weight (it came
+  across from character.js as it was); (4) `IdleBreaks.quiet` asked the active tech and `override`, not the passive techs.
+- **Fix:** (1) a landing fades the kick out over `KICK.land` (0.1 s; the landing frame's jump is 0.66 m and falling, as any landing
+  from flung arms); (2) in first person the kick-off is not drawn and the slam starts from its tuck (`tuckOnly`): the view is as still
+  as the old slam's; (3) the flinch passes `hipW = 0` (the hips now move under 0.02 m); (4) `quiet` also asks `passive && engaged`.
+- **Rule:** 43, 46, 52, 53.
 
 ### 2026-10-07 · Put away mid-vault, the Courier slid on frozen in it for a second (Calissa, the brush and vane review)
 - **Seen (headless, K pressed 0.17 s into the Dreamvane's vault):** the Launch `dreamvane.vault` ran on to its 1.21 s with the pose held at
@@ -212,6 +231,7 @@ the rules before building in the same area; a rule a machine can check goes into
   player names (Espada); which features each Firing opens (Dovina: PLACE lists all until her table).
 - **Rule:** 32, 48, 49; and 50 for the line this round broke: a trailing comment ate the rest of a one-line function, `npm run check`
   passed it, and the page would not boot.
+
 ### 2026-10-07 · The bell's toll string, the coffin's flail and the book's bash, reviewed: six faults found and fixed (Calissa, belltome review)
 - **Seen, measured headless (`.scratch/rv.mjs`, films front and side):** (1) LMB in the air no longer rang the bell (the old toll did,
   anywhere); (2) a photograph taken with the lens up, the lens let down within 0.35 s, swung a book bash (`veritome.swing b1` 17 frames

@@ -38,7 +38,8 @@ export class IdleBreaks {
     const tk = s.techs, g = tk?.game;
     if (!tk || still < 0.98 || !s.grounded || fighting) return false;
     if ((s.slide || 0) > 0.01 || (s.crouch || 0) > 0.05 || (s.mantle || 0) > 0.01 || (s.dash || 0) > 0.01 || (s.upper || 0) > 0.01 || (s.wall || 0)) return false;
-    if (tk.active || tk.override > 0.05) return false;
+    // (a passive tech's hold counts too: a crate carried, a kick of the unarmed V; measured, the breaks had played under a carried crate)
+    if (tk.active || tk.override > 0.05 || tk.list?.some((t) => t.passive && t.engaged)) return false;
     return !g?.belt?.others(null);
   }
 

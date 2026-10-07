@@ -7,7 +7,8 @@
 //                  at its take-off height 0.55 s after), then as captured and handed to the loop. Its hips' rise is kept: it is the turn
 //                  about the body's centre of mass, 0.25 m above the hip joint, not a second jump (measured: 0.49 m up when upside down)
 //   THE KICK-OFF   a jump off a ladder, a ledge, a pole or a wall held by the latch or a grate: Trav_WallJump's push from the wall,
-//                  unturned (the game turns the body toward the way it goes) and in place, over the air loop
+//                  unturned (the game turns the body toward the way it goes) and in place, over the air loop; faded out on a landing
+//                  (KICK.land), and not shown in first person (like the flip, it would sweep the arms and the worn tools across the view)
 //   THE AIR DASH   Air_AirDash / Air_AirDashL / Air_AirDashR / Air_AirDashBack by the dash's direction against the body (blended between
 //                  the two nearest as the body turns into the dash): in fast, its middle held through the dash, then out at its own pace
 //                  as the dash's weight eases off. Each clip carries its own pitch (the 38 degree lean of the old frozen frame is gone)
@@ -41,8 +42,9 @@ export const DASH = { ahead: 'Air_AirDash', left: 'Air_AirDashL', back: 'Air_Air
 /** The hard landing: in from a fall of HARD.from m/s (a 1.9 m drop), whole at HARD.full (2.9 m); from its impact frame at 1.5x (the hand
  *  down by 0.05 s, rising from 0.45 s), faded out between fadeFrom and fadeTo s, and mostly gone as soon as they move. */
 export const HARD = { clip: 'Loco_LandHard', from: 9, full: 11, at: 0.03, rate: 1.5, fadeFrom: 0.4, fadeTo: 0.7, moving: 0.85 };
-/** The kick-off: Trav_WallJump from the push (0.13), in over 0.06 s, out between 0.35 and 0.6 s, for a jump up faster than vy. */
-export const KICK = { clip: 'Trav_WallJump', at: 0.13, rate: 1.1, fadeIn: 0.06, outFrom: 0.35, outTo: 0.6, vy: 1.5 };
+/** The kick-off: Trav_WallJump from the push (0.13), in over 0.06 s, out between 0.35 and 0.6 s, for a jump up faster than vy; landed
+ *  before it is out, gone over `land` s (a kick from a ladder's foot lands at 0.38 s: cut there, a fingertip jumped 1.57 m in a frame). */
+export const KICK = { clip: 'Trav_WallJump', at: 0.13, rate: 1.1, fadeIn: 0.06, outFrom: 0.35, outTo: 0.6, vy: 1.5, land: 0.1 };
 /** What a kick-off is a kick-off from: the techs that hold the Courier facing a wall, a ladder, a pole (a bar's swing-out is not one). */
 const HOLDS = { ladder: () => true, pole: () => true, latch: () => true, hang: (t) => t.grip?.kind === 'ledge', grate: (t) => t.mode === 'wall' };
 
@@ -54,7 +56,7 @@ export class Airborne {
     this.track = new Track(this.C, new Set(['jumpLoop', FALL.clip]));
     this.wasFooted = true; this.airTime = 0;
     this.landW = 0; this.landT = 9; this.hard = 0; this.hardT = 9;
-    this.kickT = null; this.holder = null; this.held = false;
+    this.kickT = null; this.kickOn = 1; this.holder = null; this.held = false;
     this.dashT = null; this.daPrev = 0; this.dashA = 0; this.dashP = this.C.pose();
   }
 
@@ -95,7 +97,7 @@ export class Airborne {
     // a kick-off: the tech that held them to a wall has just let them go upward
     const a = s.techs?.active || null;
     if (a !== this.holder) {
-      if (this.holder && !a && this.held && !footed && vy > KICK.vy) this.kickT = 0;
+      if (this.holder && !a && this.held && !footed && vy > KICK.vy) { this.kickT = 0; this.kickOn = 1; }
       this.holder = a;
     }
     this.held = !!(a && HOLDS[a.id]?.(a));
@@ -103,8 +105,11 @@ export class Airborne {
     if (w > 0.001) C.blend(base, tr.sample(this.ch.P.air), w);
     if (this.kickT === null) return;
     this.kickT += dt;
-    if (footed || this.kickT > KICK.outTo) { this.kickT = null; return; }
-    const kw = smooth(0, KICK.fadeIn, this.kickT) * (1 - smooth(KICK.outFrom, KICK.outTo, this.kickT)) * w;
+    // (landed while it is still on: faded over KICK.land, never cut in one frame, casebook rule 46; it does not come back on the next jump)
+    if (footed) this.kickOn = Math.max(0, this.kickOn - dt / KICK.land);
+    if (this.kickT > KICK.outTo || this.kickOn <= 0) { this.kickT = null; return; }
+    // (in first person no kick: the arms and the worn tools would sweep across the view, as the flip's would)
+    const kw = this.ch.fpMode ? 0 : smooth(0, KICK.fadeIn, this.kickT) * (1 - smooth(KICK.outFrom, KICK.outTo, this.kickT)) * w * this.kickOn;
     if (kw <= 0.001) return;
     const t = KICK.at + this.kickT * KICK.rate, p = C.sample(KICK.clip, t, this.ch.P.tmp, false);
     unturn(this.ch, p, KICK.clip, t);
