@@ -375,6 +375,17 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 - Waiting on the owner's rulings: the Pithos's casts, the Firings, the five phases' swap, the Shrines' names, the Wake Whistle,
   blot/blotling, the crossing's cast.
 
+### The round robin's proposals *(Espada's, for the owner)*
+- **The town that was is Elpis** (from Hesiod's *Works and Days*): Greek for hope, the one thing left in Pandora's jar when everything
+  else flew out. The boomtown named itself for hope; its jar became the Pithos; the bright core at the bottom is what is left of it.
+  Grog says the name once, and never again.
+- **The Drowned King is Full Fathom Five** (from Ariel's song in *The Tempest*: "Full fathom five thy father lies ... those are pearls
+  that were his eyes"). A father under the water whose eyes turned to pearl is Magnus, seen from his son's island: Margarite is the
+  pearl. The Drowned Lachryma stays "it" (a fish), and its title is the son's picture of his father, not the King himself.
+- **Old Nobody is Letty's white whale** (from *Moby-Dick*, with Javert of *Les Misérables* for the certainty). She posts WANTED: NOBODY
+  and will chase it to the far shore; but an Egregore is authored by no one, so there is no source to finish. Her arc: the hunt that
+  cannot end is how she learns the strays had no author to blame.
+
 ## 12. Where the words live
 
 | Words | File |
