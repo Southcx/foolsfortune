@@ -13,13 +13,14 @@
 // Chao (the hop), Katamari Damacy's small world.
 //
 //   const H = new PlanetBody({ planets: [{ c: Vector3, r, radiusAt?(dir) }], pos, radius, hop })   (radiusAt: the ground as sculpted)   H.step(dt, { move: Vector3 (world, length 0..1), jump })
-//   H.pos  H.vel  H.up  H.planet  H.grounded  H.forward  H.held  H.flight   H.launch(to, seconds, toPlanet)   H.release(vel)
+//   H.pos  H.vel  H.up  H.planet  H.grounded  H.forward  H.held  H.flight  H.swim (0 dry .. 1 afloat: the garden's water, planet.waterAt)   H.launch(to, seconds, toPlanet)   H.release(vel)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 export const GRAVITY = 20; // (m/s²: twice the Courier's world, so a small world's hop lands quickly: Galaxy's floatiness is in the hop, not the fall)
 const HOP = { short: [3.0, 2.6], long: [4.4, 4.6], growth: 0.7, every: 0.06, jump: 8.5, air: 7, friction: 10, drag: 0.06, dragOver: 8 }; // ([up, along] m/s; the hop grows to long over `growth` s held; drag: 1/s for each m/s over `dragOver` in the air: a throw comes down,
 // a hop is never slowed, GARDEN-SWEEP #5)
+const WADE = { min: 0.05, float: 1.2, drag: 3, ride: 0.35 }; // (metres of water before it is felt; afloat when deeper than 1.2 of its radius; drag a real second, afloat; how high it rides, of its radius)
 const _n = new THREE.Vector3(), _t = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
 export class PlanetBody {
@@ -91,6 +92,19 @@ export class PlanetBody {
       if (vn < 0) this.vel.addScaledVector(_a, -vn);
       if (Q === P) { if (!this.grounded) this.wait = H.every; this.grounded = true; this.vel.addScaledVector(_b.copy(_a), -this.vel.dot(_a)); }
     }
-    if (this.grounded && this.pos.distanceTo(P.c) > (P.radiusAt ? P.radiusAt(_n.copy(this.pos).sub(P.c).normalize()) : P.r) + this.radius + 0.08) this.grounded = false; // (left the ground: over a rim)
+    // the water over the ground (world/garden/water.js): wading drags, and deeper than the body's middle it floats, standing on the water
+    // as on ground, hopping off it; `swim` is how deep it is in it (0 dry .. 1 afloat)
+    this.swim = 0;
+    if (P.waterAt) {
+      const n = _n.copy(this.pos).sub(P.c), dq = n.length(); n.divideScalar(dq || 1);
+      const depth = P.waterAt(n), ground = P.radiusAt ? P.radiusAt(n) : P.r;
+      if (depth > WADE.min && dq < ground + depth + this.radius) {
+        this.swim = Math.min(1, depth / (this.radius * WADE.float));
+        this.vel.multiplyScalar(Math.max(0, 1 - WADE.drag * this.swim * dt));
+        const rest = ground + depth - this.radius * (1 - WADE.ride); // (afloat: its middle a little under the surface)
+        if (this.swim >= 1 && dq < rest) { this.pos.copy(P.c).addScaledVector(n, rest); const vn = this.vel.dot(n); if (vn < 0) this.vel.addScaledVector(n, -vn); if (!this.grounded) this.wait = H.every; this.grounded = true; }
+      }
+    }
+    if (this.grounded && !(this.swim >= 1) && this.pos.distanceTo(P.c) > (P.radiusAt ? P.radiusAt(_n.copy(this.pos).sub(P.c).normalize()) : P.r) + this.radius + 0.08) this.grounded = false; // (left the ground: over a rim)
   }
 }

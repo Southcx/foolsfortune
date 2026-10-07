@@ -55,7 +55,7 @@ export class GardenCamera {
 
   update(dt) {
     const g = this.game, I = g.input, J = this.R.jarBody, cam = g.camera, typing = g.log?.typing;
-    const turn = typing ? 0 : (I.isDown('KeyE') ? 1 : 0) - (I.isDown('KeyQ') ? 1 : 0), wheel = I.wheel; I.wheel = 0;
+    const shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight'), turn = typing ? 0 : (I.isDown('KeyE') ? 1 : 0) - (I.isDown('KeyQ') ? 1 : 0), wheel = shift ? 0 : I.wheel; if (!shift) I.wheel = 0; // (Shift and the wheel are the hand's: the stroke's size)
     this.up.lerp(J.up, Math.min(1, dt * 4)).normalize();
     if (this.over) return this.overhead(dt, turn, wheel, typing);
     if (turn) this.fwd.applyAxisAngle(this.up, -turn * CAM.turn * dt);
