@@ -80,7 +80,7 @@ export class Crucibelle extends HeldTool {
     this.fever = 0; this.history = []; this.lastNote = -99; this.ownT0 = 0; this.swing = 0; this.swingV = 0; this.pressAt = -99;
     this.notes = 0; this.onBeat = 0; this.legSt = {};
     this.moves = new Moveset(this, {
-      id: 'crucibelle', moves: MOVES, strings: STRINGS, cause: 'bashed', tip: 0.3, events: { swing: 'crucibelle.swing', hit: 'crucibelle.hit' },
+      id: 'crucibelle', sound: false, moves: MOVES, strings: STRINGS, cause: 'bashed', tip: 0.3, events: { swing: 'crucibelle.swing', hit: 'crucibelle.hit' },
       onAt: (c) => this.toll(c),
     });
   }

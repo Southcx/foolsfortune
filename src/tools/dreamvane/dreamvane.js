@@ -81,7 +81,7 @@ export class Dreamvane extends HeldTool {
     // the blows (pick.js); the arc of the head through the air is vfx/library.js 'swing.dreamvane'
     this.trail = this.mgr.game.vfx?.swing('swing.dreamvane') || null;
     this.moves = new VaneMoves(this, {
-      id: 'dreamvane', moves: VANE_MOVES, strings: VANE_STRINGS, reach: 0.75, tip: 1.05, k: 1.07, cause: 'picked', pot: 60,
+      id: 'dreamvane', sound: false, moves: VANE_MOVES, strings: VANE_STRINGS, reach: 0.75, tip: 1.05, k: 1.07, cause: 'picked', pot: 60,
       events: { swing: 'dreamvane.swing', hit: 'dreamvane.hit' }, trail: this.trail,
       segment: (a, b) => { this.toolPoint(0.4, 0, 0, a); this.model.headWorld(b); return a; },
       onBegin: (c) => { sfx.whoosh?.(0.8); carryInto(this.moves, c); }, onUpdate: (c) => this.onMove(c),

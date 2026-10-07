@@ -123,7 +123,7 @@ export class Club {
     const g = tool.game;
     this.trail = g?.vfx?.swing('swing.brush') || null; // (the head's arc through the air: its look is vfx/library.js 'swing.brush')
     this.moves = new ClubMoves(tool, {
-      id: 'club', rules: 'brush', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.2, cause: 'bashed', events: { swing: 'brush.swing', hit: 'brush.hit' },
+      id: 'club', rules: 'brush', sound: false, moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.2, cause: 'bashed', events: { swing: 'brush.swing', hit: 'brush.hit' },
       trail: this.trail, segment: (a, b) => this.tool.model.headSegment(a, b),
       onBegin: (c) => this.onBegin(c), onAt: (c) => this.flick(c.def.flick ?? 1), onUpdate: (c) => this.onMove(c),
     });

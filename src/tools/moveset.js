@@ -38,6 +38,7 @@
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo   M.rule(def) (its row of moves.js)
 //   M.worth(h, c) (what a blow is worth to a creature)   M.struck(ent, c) (its row's status, the launcher's lift: a tool's own blow rules call both)
 //   spec.rules: the tool's key in moves.js (default its id); a move's `rule`: its row (combo1, launcher, air1, plunge, special ...)
+//   spec.sound: the swing's sound (heavy) -> (default sfx.slash; false when the tool sounds its own in onBegin)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
@@ -188,8 +189,8 @@ export class Moveset {
       P.impulse(_b.copy(f).setY(0).normalize().multiplyScalar(lunge), this.S.cause === 'bashed' ? 'brush' : 'cut');
       if (!P.grounded && kind === 'air') P.vel.y = Math.max(P.vel.y, 1);
     }
-    sfx.slash?.(def.heat > 0.5);
-    g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' });
+    if (this.S.sound !== false) (this.S.sound || sfx.slash)?.(def.heat > 0.5); // (the tool's own swing, else the cutlass's slash; false: the tool sounds its own)
+    if (kind !== 'charge-hold') g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' }); // (a hold is not a swing: its release is)
     if (kind === 'special') g.events?.emit('move.special', { tool: this.S.rules || this.id, special: R?.id || id, by: 'courier' });
     c.lifted = false;
     this.S.onBegin?.(c);
