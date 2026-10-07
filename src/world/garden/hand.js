@@ -19,7 +19,7 @@ import { STATS } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
 
 export const ARTS = ['grab', 'pull', 'press', 'carve', 'smooth', 'place'];
-const FEATURE_NAME = { terrace: 'terrace', pavilion: 'pavilion', spiritHouse: 'spirit house', pond: 'pond', lantern: 'lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's to word)
+const FEATURE_NAME = { terrace: 'herb terrace', pavilion: 'echo pavilion', spiritHouse: 'spirit house', pond: 'Lachryma pond', lantern: 'stone lantern', incense: 'incense burner', stone: 'formation stone', drillYard: 'drill yard' }; // (the features as said, not their code ids: Espada's words)
 const HAND = { reach: 2.2, throwMax: 26, lift: 1.4, tap: 0.22, brush: 3, every: 0.05 }; // (grab within 2.2 m of the ray; a throw at most 26 m/s; a tap under 0.22 s pets; a stroke 3 m wide, 20 a second)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4();
 

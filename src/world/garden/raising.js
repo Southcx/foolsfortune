@@ -25,7 +25,7 @@ import { dressForm } from '../../vfx/garden/forms.js';
 
 const FEELINGS = Object.keys(STATS);
 export const spiritName = (e) => e?.name || { slipjelly: 'slip jelly', clapperjar: 'clapperjar' }[e?.kind] || String(e?.kind || 'a spirit').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(); // (its name, else its kind as said, never the code id: GARDEN-SWEEP #14)
-const DRILL_NAME = { sprint: 'a sprint', scout: 'a scouting', haul: 'a haul', swim: 'a swim', sit: 'a sitting' }; // (a drill as said: Espada's to word)
+const DRILL_NAME = { sprint: 'sprints', scout: 'lookout', haul: 'hauling', swim: 'laps', sit: 'meditation' }; // (a drill as said, "Drill: sprints": Espada's words)
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
 
 export class Raising {
