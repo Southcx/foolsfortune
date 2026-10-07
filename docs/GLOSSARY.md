@@ -612,11 +612,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   mind (a Brain, `docs/AI.md`).
 - **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
   back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
-- **the garden sweep** (`node scripts/garden-sweep.mjs`, the dev server up): the Spirit Garden entered, worked and left headless, a
-  screenshot at every step and a PASS/FAIL line for each thing seen go wrong there (the black screen on entry, the Pneuka Jar unseen,
-  the interact chevron off the planetoid's heart, a page carrying the Index's calibration) and the owner's stress (in and out twenty
-  times, menus mid-throw, the hand spammed on the Jar). Findings: `docs/plans/GARDEN-SWEEP.md`. *Not:* the stress test (it fuzzes the
-  whole game) or a playtest (it plays to a goal).
+- **a sweep** (`scripts/sweeps/<room>.mjs` on `harness.mjs`; all: `node scripts/sweeps/run.mjs`, the dev server up; Dovina's): one
+  room entered, worked and left headless as a person would and as a careless one would, a screenshot at every step and a PASS/FAIL line
+  a check; a defect once seen stays checked. **The garden sweep** (`garden.mjs`) was the first (`docs/plans/GARDEN-SWEEP.md`); the
+  others are named for their room (`workshop`, `basement`, `dunes`, `dunemaw`, `emocean`, `tools`). *Not:* the stress test (it fuzzes
+  the whole game), a playtest (it plays to a goal), the Soul Brush's mop.
 - **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
   a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
   dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A

@@ -9,7 +9,7 @@
 // tribulation (lightning that grows with the stage being crossed).
 //
 //   PHASE[feeling]   GENERATES[f] -> f   OVERCOMES[f] -> f   formation(feature, neighbours, onVein) -> multiplier
-//   PLANETOIDS[id] = { radius, plots }   FEATURES[id] = { size, job, does }   costOf(feature, feeling) -> { cubes, material }
+//   PLANETOID_PLOTS[id] = { radius, plots }   FEATURES[id] = { size, job, does, firing }   costOf(feature, feeling) -> { cubes, material }
 //   DRILLS[id] = { stat, gain }   drillGain(stat now, fatigue) -> points   FATIGUE   VISITORS[kind] = { wants, settle }   wantsMet(kind, garden) -> 0..1
 //   TRIBULATION   strikesOf(firing) -> { strikes, every, outlined, may }
 // ---------------------------------------------------------------------------------------
@@ -32,7 +32,7 @@ export function formation(feeling, neighbours = [], onVein = false) {
 
 /** The first planetoids (SPIRIT-GARDEN.md section 3): radius in metres, plots to place features in, and what is fixed there. The
  *  bought ones (ECON.place.planetoids) are 8 to 16 m with 4 to 8 plots, chosen by the player's sculpting. */
-export const PLANETOIDS = {
+export const PLANETOID_PLOTS = {
   dantian:   { radius: 20, plots: 6, fixed: ['arrival lotus', 'the Lachryma lake', 'the Pneuka Box shed'] },
   terraces:  { radius: 12, plots: 6, fixed: [] },
   furnace:   { radius: 10, plots: 3, fixed: ['the spirit press', 'the plate shrine'] },
@@ -40,18 +40,24 @@ export const PLANETOIDS = {
   grove:     { radius: 16, plots: 8, fixed: ['the cocoon tree'] },
   peak:      { radius: 8, plots: 2, fixed: ['the meditation mat'] },
 };
+export const PLANETOIDS = PLANETOID_PLOTS; // (the old name, until Petra's rename pass moves plots.js's import: then deleted)
 
 /** The features: what each is for, its size (ECON.place.features prices it), and its job's number (before formation). A feature is
- *  placed with a feeling, chosen at placing, and costs one material of that feeling's kind (progress/spirits.js FEED.stat, read back). */
+ *  placed with a feeling, chosen at placing, and costs one material of that feeling's kind (progress/spirits.js FEED.stat, read back).
+ *  `firing`: the Firing that opens it (progress/spirits.js FIRINGS; the PLACE page lists only what is open). The first Firing gives
+ *  the first visit something to do with its hands (a bed, water, light: Animal Crossing's first day is a tent, a fruit tree and a
+ *  river); the second the formation's play (stones, incense) and the dividend's slot, once an encounter can have been mastered; the
+ *  third room for more spirits, once a few are caught; the fourth the drills, once there are spirits worth training (Monster
+ *  Rancher opens its harder drills late). Never a number on the Courier: a Firing opens verbs. */
 export const FEATURES = {
-  terrace:    { size: 'medium', job: 'grow',    does: 'a bed: a material planted grows more of its kind', n: 1 },
-  pavilion:   { size: 'large',  job: 'work',    does: 'a dividend slot: a mastered encounter works it', n: 1 },
-  spiritHouse:{ size: 'medium', job: 'shelter', does: 'room for two more spirits', n: 2 },
-  pond:       { size: 'medium', job: 'water',   does: 'a pond of Lachryma; visitors drink; led downhill by sculpting', n: 1 },
-  lantern:    { size: 'small',  job: 'light',   does: 'light: the moonflower blooms in it, visitors of the night come to it', n: 1 },
-  incense:    { size: 'small',  job: 'calm',    does: 'the draught settles faster while the Jar rests near it (a tenth of a game hour sooner a burner)', n: 0.1 },
-  stone:      { size: 'small',  job: 'empower', does: 'a formation stone: its neighbours count it twice in their formation', n: 2 },
-  drillYard:  { size: 'large',  job: 'drill',   does: 'the spirits drill here (DRILLS)', n: 1 },
+  terrace:    { size: 'medium', job: 'grow',    does: 'a bed: a material planted grows more of its kind', n: 1, firing: 1 },
+  pavilion:   { size: 'large',  job: 'work',    does: 'a dividend slot: a mastered encounter works it', n: 1, firing: 2 },
+  spiritHouse:{ size: 'medium', job: 'shelter', does: 'room for two more spirits', n: 2, firing: 3 },
+  pond:       { size: 'medium', job: 'water',   does: 'a pond of Lachryma; visitors drink; led downhill by sculpting', n: 1, firing: 1 },
+  lantern:    { size: 'small',  job: 'light',   does: 'light: the moonflower blooms in it, visitors of the night come to it', n: 1, firing: 1 },
+  incense:    { size: 'small',  job: 'calm',    does: 'the draught settles faster while the Jar rests near it (a tenth of a game hour sooner a burner)', n: 0.1, firing: 2 },
+  stone:      { size: 'small',  job: 'empower', does: 'a formation stone: its neighbours count it twice in their formation', n: 2, firing: 2 },
+  drillYard:  { size: 'large',  job: 'drill',   does: 'the spirits drill here (DRILLS)', n: 1, firing: 4 },
 };
 const KIND_OF = { mirth: 'mechanism', wonder: 'arcane', desire: 'edge', grief: 'provision', dread: 'eldritch' };
 /** What placing a feature costs: cubes by its size, and one material of its feeling's kind. */
