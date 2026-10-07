@@ -297,6 +297,12 @@ The wild routes are meant for the skilled. A novice can still get there by payin
 - **What a coin-fed run gets:** it keeps its score but tops out at rank C, and never medals (the high-score table's honesty).
 - **Counted:** `rail.continue`, `rail.continue.cubes`.
 
+**The cue chains too** (Wanda, `claude/friendly-knuth-vbv82r` 60bc2d2):
+- `stageCue(seconds, setPieces)` takes one set piece or a list of up to three, with the breather's 12 bars between two: 100, 146 or
+  192 bars, the k-th set piece on bar 62 + 46k.
+- `stageAt(game.music)` is the fraction of whichever length plays.
+- `music/choose.js` reads `game.emocean.stage.setPieces`.
+
 **Events:** `emocean.continue { cost, continues, share, by }`. `emocean.stage` gains `setPieces`, `continues`, and `at` (where you
 came to).
 
