@@ -16,11 +16,12 @@ import { T } from './config.js';
 export { RAPIER };
 
 // Collision layers (membership << 16 | filter)
-export const G = { STATIC: 1, PLAYER: 2, PROP: 4, DEBRIS: 8, SWIRL: 64, CRITTER: 128 };
+export const G = { STATIC: 1, PLAYER: 2, PROP: 4, DEBRIS: 8, SWIRL: 64, CRITTER: 128, SIBLING: 256 };
 export const groups = (member, filter) => (member << 16) | filter;
 export const GROUPS = {
   static: groups(G.STATIC, 0xffff),
   player: groups(G.PLAYER, G.STATIC | G.PROP | G.DEBRIS),
+  sibling: groups(G.SIBLING, G.STATIC | G.PROP), // (another Courier with a mind, coop/sibling.js: solid to the world, nothing that listens for the player hears it)
   prop: groups(G.PROP, 0xffff),
   debris: groups(G.DEBRIS, G.STATIC | G.PROP | G.DEBRIS | G.PLAYER | G.CRITTER),
   // debris caught in a gravity well: no debris-debris contacts (a packed, orbiting ball of

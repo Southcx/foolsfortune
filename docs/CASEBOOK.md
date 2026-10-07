@@ -62,8 +62,25 @@ the rules before building in the same area; a rule a machine can check goes into
 
 26. **Nothing is taken out of a list from inside that list's own update.** A callback a module calls per member (a jelly's `driven`)
     marks the member (`c.reached`); the owner removes it after the loop. A Rapier body removed mid-loop panics the whole world.
+27. **A default argument is read at the call.** A module that calls its own helper while it loads (`withFade` for the outline materials)
+    must not default that helper's argument to a constant declared further down: read it inside, when it is used.
+28. **A second copy of a dressed model is dressed the same way**, or every one of its materials is a new program. Count
+    `renderer.info.programs` before and after it first appears.
 
 ## Cases
+
+### 2026-10-07 · The game did not boot: "Cannot access 'COURIER_RIG' before initialization"
+- **Cause:** `withFade(material, key, U = COURIER_RIG)`: the outline materials are made by `withFade` while `render/outline.js` loads,
+  above the line that declares `COURIER_RIG`, and a default argument is read at the call.
+- **Fix:** the default is read inside the compile hook (`own || COURIER_RIG`).
+- **Rule:** 27.
+
+### 2026-10-07 · One sibling compiled eleven new programs
+- **Cause:** the Courier's region materials carry the kiln's finish (`-fin-glaze` on their program key, `vfx/finish.js`); the sibling's
+  copies did not, so each was a program of its own (145 to 156).
+- **Fix:** a sibling is dressed by the vessel too, with a look of its own (`vessel.dress(rig, look, { own: true })`): one program left
+  (a shadow's depth variant).
+- **Rule:** 28.
 
 ### 2026-10-07 · "The Lockheart catches spirit.bind."
 - **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every

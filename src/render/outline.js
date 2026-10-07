@@ -81,6 +81,8 @@ export function addOutline(mesh, material = OUTLINE_MAT) {
 
 export const OUTLINE_MAT_FPHIDE = withFade(makeOutlineMaterial(true), 'ol-fphide');
 export const OUTLINE_MAT_CHAR = withFade(makeOutlineMaterial(), 'ol-char');
+/** A second rig's own outline materials, on its own fade and dissolve (the same programs as the Courier's). */
+export const rigOutlines = (U) => ({ fphide: withFade(makeOutlineMaterial(true), 'ol-fphide', U), char: withFade(makeOutlineMaterial(), 'ol-char', U) });
 
 // Screen-door fade for the player character when the 3rd-person camera is
 // squeezed against a wall (dithered discard keeps it opaque/sortable).
@@ -90,13 +92,17 @@ export const fadeUniform = { value: 1 };
 // is eating; run backwards, the body is built up from the feet. uDisBase = (the feet's world height, the body's height).
 export const dissolveUniform = { value: 0 };
 export const dissolveBaseUniform = { value: new THREE.Vector2(0, 1.8) };
-export function withFade(material, key) {
+/** A rig's own fade and dissolve (a sibling's: coop/sibling.js), so one Courier's slip dive does not melt the others. Same program. */
+export const rigUniforms = () => ({ fade: { value: 1 }, dissolve: { value: 0 }, base: { value: new THREE.Vector2(0, 1.8) } });
+export const COURIER_RIG = { fade: fadeUniform, dissolve: dissolveUniform, base: dissolveBaseUniform };
+export function withFade(material, key, own = null) {
   const prev = material.onBeforeCompile;
   material.onBeforeCompile = (shader, r) => {
     prev?.call(material, shader, r);
-    shader.uniforms.uFade = fadeUniform;
-    shader.uniforms.uDissolve = dissolveUniform;
-    shader.uniforms.uDisBase = dissolveBaseUniform;
+    const U = own || COURIER_RIG; // (read at compile, not at the call: this module calls withFade before COURIER_RIG is made)
+    shader.uniforms.uFade = U.fade;
+    shader.uniforms.uDissolve = U.dissolve;
+    shader.uniforms.uDisBase = U.base;
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vDisW;')
       .replace('#include <project_vertex>', '#include <project_vertex>\nvDisW = (modelMatrix * vec4(transformed, 1.0)).xyz;');

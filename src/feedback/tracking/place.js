@@ -4,7 +4,7 @@
 // a new build has set progress afresh (core/progress.js). In the Inner Realm the hand names its art when it takes one up
 // (world/garden/hand.js, the keys 1 to 6), and a terrace or a pavilion placed says the bed or the slot it grants (progress/garden.js).
 // The Solar Skiffing trial says its start and an end short of the last ring (world/dunes/solar.js). Words are placeholders for
-// Espada's. tracking.js calls it from listen().
+// Espada's. feedback/tracking/rules.js calls it.
 //
 //   placeRules({ on, log })
 // ---------------------------------------------------------------------------------------

@@ -106,6 +106,7 @@ export class Player {
     this.roll = 0;
     this.headRel = null; // posed head position relative to the feet (from the character, last frame)
     this.game = null; // set by main (Lachryma, fx, clappers)
+    this.sfx = sfx; // (its sounds: a sibling's body is given its own, coop/sibling.js)
     this.invuln = 0; // seconds of invulnerability left (a dodge's first frames): read by damage, when there is any
     this.platform = null; // the moving platform under the feet (src/world/props/movers.js)
     this.carry = new THREE.Vector3(); // its displacement under us this step
@@ -388,7 +389,7 @@ export class Player {
         if (this.slideBoostCd <= 0) { hv.setLength(Math.max(hs + M.slideBoost, M.slideSpeed)); this.slideBoostCd = M.slideBoostCooldown; }
         else hv.setLength(Math.max(hs, M.sprintSpeed));
       }
-      sfx.slide();
+      this.sfx.slide();
     }
 
     // capsule: low while sliding or crouching (and while there's no headroom to stand)
@@ -429,7 +430,7 @@ export class Player {
         this.vel.y = Math.max(this.vel.y, M.jumpVelocity * M.airJumpMult);
         if (wishDir.lengthSq() > 0.01) hv.copy(wishDir).normalize().multiplyScalar(Math.max(hs, M.walkSpeed));
         this.jumpFx(0.6);
-        sfx.airJump();
+        this.sfx.airJump();
         this.airJumpPulse = true; // (the animation reads and clears it)
         jumped = true;
         this.ev('move.jump', { kind: 'air' });
@@ -508,11 +509,11 @@ export class Player {
         this.vel.y = Math.max(this.vel.y, M.dashUp);
         this.dashT = M.dashTime;
         this.fovPunch = Math.max(this.fovPunch, 7);
-        sfx.dash();
+        this.sfx.dash();
         this.ev('move.dash', { speed: hv.length() });
         this.dashFx(d);
       } else {
-        sfx.fizzle();
+        this.sfx.fizzle();
         this.game?.hud?.lachrymaPulse(false);
       }
     }
@@ -595,7 +596,7 @@ export class Player {
     const fallSpeed = -this.vel.y;
     if (this.grounded && !wasGrounded) {
       this.landT = 0.15;
-      if (fallSpeed > 3) { this.landed = fallSpeed; sfx.land(fallSpeed); }
+      if (fallSpeed > 3) { this.landed = fallSpeed; this.sfx.land(fallSpeed); }
       if (this.wallrun) this.endWallrun(false);
       const under = this.underfoot();
       this.lastDrop = Math.max(0, this.airPeak - this.pos.y); // (the whole fall, from the top of the jump)
@@ -779,7 +780,7 @@ export class Player {
       this.sliding = false;
       this.dashT = 0;
       this.vel.y = THREE.MathUtils.clamp(this.vel.y, M.wallrunStartUp, M.wallrunStartUp * 1.6);
-      sfx.wallTouch?.();
+      this.sfx.wallTouch?.();
       return;
     }
   }
@@ -822,7 +823,7 @@ export class Player {
     this.endWallrun(false);
     this.wallCd = 0.25;
     this.jumpFx(0.4);
-    sfx.airJump();
+    this.sfx.airJump();
   }
 
   // ---- mantle ---------------------------------------------------------------------
@@ -876,7 +877,7 @@ export class Player {
     this.jumpBuf = 0;
     this.coyote = 0;
     this.mantle.jumpHeld = this.input.isDown('Space'); // (a held jump is not a new one: only a fresh press chains out of it)
-    if (step) sfx.footstep?.(0); else sfx.mantle();
+    if (step) this.sfx.footstep?.(0); else this.sfx.mantle();
     this.ev('move.mantle', { height: h, step });
     return true;
   }

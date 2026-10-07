@@ -27,7 +27,7 @@ import { Weapon } from './tools/psygun/weapon.js';
 import { Hud } from './feedback/hud.js';
 import { buildTuningPanel } from './debug/tuning.js';
 import { tuned } from './debug/tuned.js';
-import { setOutlineThickness } from './render/outline.js';
+import { setOutlineThickness, rigUniforms } from './render/outline.js';
 import { sfx } from './audio/sfx.js';
 import courierB64 from './assets/courier.glb?b64';
 import gunB64 from './assets/psygun.glb?b64';
@@ -196,6 +196,8 @@ import { installPsyche } from './progress/psyche.js';
 import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
 import { Realm } from './world/garden/realm.js';
+import { Party } from './coop/party.js';
+import { SiblingChannel } from './coop/channel.js';
 import { SolarTrial } from './world/dunes/solar.js';
 import { Geysers } from './world/dunes/geysers.js';
 import { SoulAlchemy } from './progress/alchemy.js';
@@ -662,6 +664,12 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
+  game.party = new Party(game, { makeRig: async () => {
+    const [cG, gG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
+    return new Character(scene, cG, gG, clipPack, { uniforms: rigUniforms(), fpHide: false });
+  } });
+  game.siblingChannel = new SiblingChannel(game); // (the divisions steer their siblings through the published build's store)
   installEconomy(game); // (/grant, for the DEBUG profile)
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
@@ -1010,6 +1018,7 @@ async function main() {
         player.guard();
       }
       game.realm?.fixed(FIXED); // (the Jar and the spirits on their planetoids)
+      game.party.fixed(FIXED); // (the siblings: coop/party.js)
       clappers.fixedUpdate(FIXED);
       shells.fixedUpdate(FIXED);
       breakables.preStep();
@@ -1098,6 +1107,7 @@ async function main() {
       player.headRel = character.headRel;
       weapon.fpPose(dt, camera, player, character);
       character.poseHands(handContext());
+      game.party.update(dt, acc / FIXED);
       diag.end('anim');
       weapon.tryFire(camera, player, character);
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);

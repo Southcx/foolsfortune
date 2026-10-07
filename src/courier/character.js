@@ -4,7 +4,7 @@ import { kneeProfile } from '../world/props/poles.js';
 import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
 import { T, PALETTE, DEG } from '../core/config.js';
-import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, fadeUniform, dissolveUniform, dissolveBaseUniform } from '../render/outline.js';
+import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, COURIER_RIG, rigOutlines } from '../render/outline.js';
 import { Clips, Track } from './anim/animator.js';
 import { authorAll } from './anim/authored.js';
 import { bakeStances } from './anim/stances.js';
@@ -85,8 +85,11 @@ function tagFpHide(mesh, isArmor) {
 }
 
 export class Character {
-  constructor(scene, charGltf, gunGltf, animPack) {
-    this.scene = scene;
+  /** opts (a second rig: a sibling, coop/sibling.js): `uniforms`, its own fade and dissolve (render/outline.js rigUniforms); `fpHide: false`,
+   *  never hidden by the first-person view (that is the Courier's own camera). */
+  constructor(scene, charGltf, gunGltf, animPack, { uniforms = COURIER_RIG, fpHide = true } = {}) {
+    this.scene = scene; this.U = uniforms;
+    const OL = uniforms === COURIER_RIG ? { fphide: OUTLINE_MAT_FPHIDE, char: OUTLINE_MAT_CHAR } : rigOutlines(uniforms); // (a sibling's outlines melt with it, not with the Courier)
     this.root = new THREE.Group();
     this.root.name = 'CourierRoot';
     this.model = charGltf.scene;
@@ -109,17 +112,17 @@ export class Character {
         m.onBeforeCompile = applyFpHide;
         m.customProgramCacheKey = () => `fphide-${key}`;
         if (!m.transparent) addRim(m); // (the thin Lachryma rim: render/toon.js)
-        byMat.set(key, withFade(m, key));
+        byMat.set(key, withFade(m, key, this.U));
         if (region) this.regionMats[region] = m;
         if (name === 'Courier_Armor' && !this.filigree) this.filigree = dressFiligree(byMat.get(key)); // (the maker's line masks: vfx/filigree.js)
       }
       o.material = byMat.get(key);
-      tagFpHide(o, isArmor);
+      tagFpHide(o, isArmor); if (!fpHide) o.geometry.attributes.fpHide?.array.fill(0); // (a sibling: nothing of it is the camera's own head)
       o.castShadow = true;
       o.receiveShadow = true;
       o.frustumCulled = false;
       const outlined = OUTLINED.has(name) || OUTLINED.has(o.parent?.name) || OUTLINED.has(o.name);
-      if (outlined) addOutline(o, OUTLINE_MAT_FPHIDE);
+      if (outlined) addOutline(o, OL.fphide);
       if (o.name === 'Courier_Mask' || o.name === 'Kiritohair') this.fpHidden.push(o, o.userData.outline);
     }
 
@@ -165,13 +168,13 @@ export class Character {
         ? new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.5, flatShading: true, emissive: PALETTE.glow, emissiveIntensity: 0 })
         : new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.55, metalness: 0.1, flatShading: true });
       if (shell) this.gunGlowMats.push(o.material);
-      withFade(o.material, `gun${gunMeshes.indexOf(o)}`);
+      withFade(o.material, `gun${gunMeshes.indexOf(o)}`, this.U);
       o.castShadow = true;
-      addOutline(o, OUTLINE_MAT_CHAR);
+      addOutline(o, OL.char);
     }
     // greybox iron sights so ADS has something to line up
-    const sightMat = withFade(new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true }), 'sight');
-    const dotMat = withFade(new THREE.MeshBasicMaterial({ color: PALETTE.hot }), 'dot');
+    const sightMat = withFade(new THREE.MeshStandardMaterial({ color: PALETTE.deep, flatShading: true }), 'sight', this.U);
+    const dotMat = withFade(new THREE.MeshBasicMaterial({ color: PALETTE.hot }), 'dot', this.U);
     const y = GUN_POINTS.sightY;
     for (const z of [-0.016, 0.016]) {
       const r = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.036, 0.012), sightMat);
@@ -193,11 +196,11 @@ export class Character {
     this.initAnim(animPack);
   }
 
-  setFade(f) { fadeUniform.value = f; }
+  setFade(f) { this.U.fade.value = f; }
 
   /** The dissolve (outline.js): 0 whole .. 1 gone, eaten from the top of a body standing at feetY (a melt into slip, a rise out). */
-  setDissolve(k, feetY = this.root.position.y, height = 1.9) { dissolveUniform.value = k; dissolveBaseUniform.value.set(feetY, height); }
-  get dissolve() { return dissolveUniform.value; }
+  setDissolve(k, feetY = this.root.position.y, height = 1.9) { this.U.dissolve.value = k; this.U.base.value.set(feetY, height); }
+  get dissolve() { return this.U.dissolve.value; }
 
   /** Hide the body and gun (a tech that turns the Courier into something else). */
   /** A blow taken (k 0..1): the upper body flinches (Hit_Chest) over whatever is playing. */
