@@ -657,6 +657,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   alone (that is the map's: see the homonyms).
 - **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
   chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
+- **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
+  it came and the combo, worst to best: Miss!, OK..., Nice!, Great!, Excellent, Awesome, Perfect, Wow. *Not:* a grade (the judge's four).
 
 ## The world (Espada's: `docs/LORE.md`, section 1)
 
