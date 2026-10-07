@@ -86,7 +86,7 @@ export class LeviathanLook {
     this.head = new THREE.Group(); this.group.add(this.head);
     const G0 = LEVIATHAN.girth;
     this.eye = new THREE.Mesh(track(new THREE.SphereGeometry(0.75, 14, 10)), track(new THREE.MeshStandardMaterial({ color: 0xc9d2d8, roughness: 0.35, emissive: 0x8a96a0, emissiveIntensity: 0.45 })));
-    this.eye.scale.set(1.2, 0.8, 0.45); this.eye.position.set(0, G0 * 0.3, G0 * 0.78); // (on the brow of its blunt face) this.head.add(this.eye);
+    this.eye.scale.set(1.2, 0.8, 0.45); this.eye.position.set(0, G0 * 0.3, G0 * 0.78); this.head.add(this.eye); // (on the brow of its blunt face)
     const scar = new THREE.Mesh(track(new THREE.BoxGeometry(0.09, 1.1, 0.08)), track(new THREE.MeshStandardMaterial({ color: 0x3e3533, roughness: 0.9 })));
     scar.position.copy(this.eye.position).add(_v.set(0, 0, 0.32)); scar.rotation.z = 0.7; this.head.add(scar);
     // the lower jaw: a hinged shell under the snout, dark flesh inside
@@ -162,7 +162,7 @@ export class LeviathanLook {
       const chin = THREE.MathUtils.smoothstep(u, 0.08, 0.14); // (the head's underside is its palate, flat: the jaw hangs below it)
       for (let a = 0; a < NA; a++) { const th = (a / NA) * Math.PI * 2, cx = Math.cos(th) * R; let cy = Math.sin(th) * R * (Math.sin(th) < 0 ? 0.62 : 0.85) + R * 0.22 * Math.exp(-(((th - Math.PI / 2) / 0.3) ** 2)) * THREE.MathUtils.smoothstep(u, 0.25, 0.4) * (1 - THREE.MathUtils.smoothstep(u, 0.75, 0.95)); if (cy < 0) cy = THREE.MathUtils.lerp(Math.max(cy, -LEVIATHAN.girth * 0.25), cy, chin); P.setXYZ(r * NA + a, f.p.x + f.b.x * cx + f.n.x * cy, f.p.y + f.b.y * cx + f.n.y * cy, f.p.z + f.b.z * cx + f.n.z * cy); }
     }
-    const tipF = F[0], tailF = F[NR]; P.setXYZ(NR * NA + NA, tipF.p.x + tipF.t.x * 0.35, tipF.p.y + tipF.t.y * 0.35 - 0.3, tipF.p.z + tipF.t.z * 0.35); // (a blunt, flat face) P.setXYZ(NR * NA + NA + 1, tailF.p.x, tailF.p.y, tailF.p.z);
+    const tipF = F[0], tailF = F[NR]; P.setXYZ(NR * NA + NA, tipF.p.x + tipF.t.x * 0.35, tipF.p.y + tipF.t.y * 0.35 - 0.3, tipF.p.z + tipF.t.z * 0.35); P.setXYZ(NR * NA + NA + 1, tailF.p.x, tailF.p.y, tailF.p.z); // (a blunt, flat face; the tail's tip)
     P.needsUpdate = true; this.hideG.computeVertexNormals();
     const place = (o, f) => { o.position.copy(f.p); _m.makeBasis(f.b, f.n, f.t); o.quaternion.setFromRotationMatrix(_m); };
     // the head's furniture on ring 2, the flukes past the tail, the fins at the chest
@@ -170,7 +170,7 @@ export class LeviathanLook {
     place(this.flukes, tailF); this.flukes.position.addScaledVector(tailF.t, -0.6); this.flukes.rotateX(Math.sin(1 * 5.5 - t * 1.4) * 0.3 * sw);
     for (const fn of this.fins) {
       const f = F[Math.round(NR * 0.27)], R = radius(0.27); place(fn.pivot, f); fn.pivot.position.addScaledVector(f.b, fn.side * R * 0.95).addScaledVector(f.n, -R * 0.35);
-      fn.k = ease(fn.k, fn.to, 4); fn.pivot.rotateZ(fn.side * (-0.4 + 1.0 * fn.k + 0.08 * Math.sin(t * 1.1))); // (at rest they hang; raised, the sweep is coming) fn.pivot.rotateY(fn.side * -0.5 * Math.abs(fn.k));
+      fn.k = ease(fn.k, fn.to, 4); fn.pivot.rotateZ(fn.side * (-0.4 + 1.0 * fn.k + 0.08 * Math.sin(t * 1.1))); fn.pivot.rotateY(fn.side * -0.5 * Math.abs(fn.k)); // (at rest they hang; raised, the sweep is coming)
     }
     // the barnacles, ridden on the hide
     for (const [i, b] of this.barnAt.entries()) {

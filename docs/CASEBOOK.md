@@ -62,7 +62,18 @@ log kept blameless and searchable.
 24. **A material made once for the whole game is marked `userData.shared`.** Whatever is taken down (a Well floor, the bowl) disposes
     every material it holds that is not marked; a global one disposed loses its program and recompiles at its next draw, a hitch.
 
+25. **A trailing comment closes its line.** Nothing follows a `//` on the same line: code written after one, in a later edit that put a
+    comment mid-line, is silently commented out and never runs. Put the comment last, or use `/* */` inside a line.
+
 ## Cases
+
+### 2026-10-07 · Old Nobody had no eye, a tail pinned to its middle and fins that never swept back
+- **Seen:** the eye on its brow did not show; the tail's cap drawn as a fan to the body's centre; raised fins stayed square to it.
+- **Cause, found by a sweep:** three edits in `vfx/leviathan.js` put a `// (...)` comment in the middle of a line, and the code after it
+  (`head.add(eye)`, the tail tip's `setXYZ`, the fin's `rotateY`) was commented out. The same slip was caught three times while building
+  `vfx/foelook.js` (the Decant lip never added) before it shipped.
+- **Fix:** the comments moved to the ends of their lines; a grep for code after a mid-line `//` swept the new looks clean.
+- **Rule:** 25.
 
 ### 2026-10-07 · Every Well floor taken down recompiled the outlines
 - **Seen:** perf after Round 1: two shader programs compiled after the warm-up (was none), both the outline's back-face basic, with keys
