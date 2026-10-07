@@ -212,14 +212,14 @@ export class Club {
     s.whole = this.carry(s);
     if (air && !s.whole) { s.phase = 'fall'; s.t = s.S.hold; P.vel.y = Math.min(P.vel.y, -16); P.impulse(_a.set(0, -6, 0), 'brush'); } // (nothing to carry them: straight down)
     sfx.brushSwing?.(1.8);
-    g.events?.emit('brush.swing', { n: 3, slam: true, air });
+    g.events?.emit('brush.swing', { n: 3, slam: true, air, by: 'courier' });
   }
 
   /** The slam owns the step (Launch, as the engine's whole-body moves do): the ground slam stands, the air slam winds up hanging, falls,
    *  and plays on from where they land. False when something else has the body (then it is the arms' only). */
   carry(s) {
     const P = this.P, L = P.techs.get('launch'), S = s.S;
-    if (!L || (P.techs.active && P.techs.active !== L)) return false;
+    if (!L || P.mantle || P.freeze || (P.techs.active && P.techs.active !== L)) return false; // (never mid-mantle: casebook 35)
     s.tag = 'club.slam';
     L.go(_a.set(s.air ? P.vel.x * 0.2 : 0, s.air ? Math.max(0, P.vel.y) * 0.3 : 0, s.air ? P.vel.z * 0.2 : 0), {
       time: s.air ? 6 : (S.end - s.t) / S.rate + 0.02, gravity: s.air ? 0.12 : 1, drag: 0, tag: s.tag, yaw: s.yaw, face: true, until: 'time', endSpeed: 2,

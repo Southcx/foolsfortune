@@ -89,8 +89,26 @@ the rules before building in the same area; a rule a machine can check goes into
     another clip (`torchIdle`) can disagree: measure where the tool's far end goes (its mouth, its coffin) against the head and the
     body in body space, from the front and the side, before taking the clip as a stance; correct the hand (a wrist turn on the
     layer) or the chain, never the clip's arm.
+38. **A method is called on its object.** `(a || obj.m)?.()` calls `m` with no `this`; pick the function and call it where it lives
+    (`a ? a() : obj.m?.()`), or bind it once where it is stored.
 
 ## Cases
+
+### 2026-10-07 · The stress test stopped on a Dreamvane dash begun on a ledge (Calissa)
+- **Seen:** the quick gate, stress seed 1: `Cannot read properties of null (reading 'drive')` in `carryInto` (tools/toolbody.js), from the
+  vane's `onBegin`.
+- **Cause:** a whole-body move asked for mid-mantle is played on the upper body alone (rule 35), so it starts no launch and has no tag;
+  `carryInto` compared the launch's tag (undefined) with the move's (undefined), found them equal, and read the null launch.
+- **Fix:** it carries only a move with a tag whose launch is on (tools/toolbody.js).
+- **Rule:** 35 (and a hook on a move asks what the move became, not what it was asked to be).
+
+### 2026-10-07 · The stress test stopped on the cutlass's first swing (Calissa)
+- **Seen:** the quick gate, stress seed 1: `TypeError: Cannot read properties of undefined (reading 'ok')` at `slash`
+  (audio/sondelass.js:21), from `Moveset.begin`.
+- **Cause:** the engine's new per-tool swing sound picked the function as `(this.S.sound || sfx.slash)` and called it bare, so
+  `sfx.slash` ran without `sfx` as `this`.
+- **Fix:** the tool's own sound is called, else `sfx.slash?.()` on `sfx` (tools/moveset.js `begin`).
+- **Rule:** 38.
 
 ### 2026-10-07 · The Crucibelle stood in front of the Courier's face in Bell_Idle, and the flail's coffin crossed it (Calissa, belltome)
 - **Seen:** with the suite's Bell_Idle as the bell's stance, the bell covered the face from the front; the first cut of the Lockheart's

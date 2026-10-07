@@ -189,7 +189,7 @@ export class Moveset {
       P.impulse(_b.copy(f).setY(0).normalize().multiplyScalar(lunge), this.S.cause === 'bashed' ? 'brush' : 'cut');
       if (!P.grounded && kind === 'air') P.vel.y = Math.max(P.vel.y, 1);
     }
-    if (this.S.sound !== false) (this.S.sound || sfx.slash)?.(def.heat > 0.5); // (the tool's own swing, else the cutlass's slash; false: the tool sounds its own)
+    if (this.S.sound) this.S.sound(def.heat > 0.5); else if (this.S.sound !== false) sfx.slash?.(def.heat > 0.5); // (the tool's own swing, else the cutlass's slash, called on sfx; false: the tool sounds its own)
     if (kind !== 'charge-hold') g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' }); // (a hold is not a swing: its release is)
     if (kind === 'special') g.events?.emit('move.special', { tool: this.S.rules || this.id, special: R?.id || id, by: 'courier' });
     c.lifted = false;

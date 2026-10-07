@@ -107,7 +107,7 @@ export function closeHand(ch, grip, M, state, dt, { side = 'L', from = -1, to = 
  *  to nothing by clip time `carryTo` (its end, else), the engine's drive left as it is beneath (tools/moveset.js carries it in Launch). */
 export function carryInto(moves, c) {
   const L = moves.P.techs.get('launch'), o = L?.o;
-  if (!c.def.carry || o?.tag !== c.tag || !o.drive) return;
+  if (!c.def.carry || !o?.drive || !c.tag || o.tag !== c.tag) return; // (a move played on the upper body alone, as mid-mantle, has no launch to carry: casebook 35)
   const own = o.drive, from = c.def.from || 0, to = c.def.carryTo ?? c.def.to ?? moves.dur(c.def);
   o.drive = (vel, dt, l) => {
     own(vel, dt, l);
