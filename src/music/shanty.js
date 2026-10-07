@@ -17,13 +17,13 @@ const DORIAN = [52, 54, 55, 57, 59, 61, 62, 64, 66, 67, 69, 71, 73, 74, 76, 78, 
 const third = (n) => DORIAN[DORIAN.indexOf(n) + 2] ?? n + 4;
 
 // a bar's chords: [beat, chord] (two halves of the 6/8, or one chord for the whole bar)
-const VERSE = { tune: [[[0, 2, 64], [2, 1, 67], [3, 2, 71], [5, 1, 69]], [[0, 2, 69], [2, 1, 66], [3, 3, 62]], [[0, 2, 64], [2, 1, 67], [3, 2, 71], [5, 1, 73]], [[0, 3, 76], [3, 2, 74], [5, 1, 71]]],
+export const VERSE = { tune: [[[0, 2, 64], [2, 1, 67], [3, 2, 71], [5, 1, 69]], [[0, 2, 69], [2, 1, 66], [3, 3, 62]], [[0, 2, 64], [2, 1, 67], [3, 2, 71], [5, 1, 73]], [[0, 3, 76], [3, 2, 74], [5, 1, 71]]],
   chords: [[[0, 'Em']], [[0, 'D']], [[0, 'Em']], [[0, 'A']]] };
 // the chorus: the Five falling (E D B, A G E), then the Answer climbing (E G A B, D E)
-const CHORUS = { tune: [[[0, 2, 76], [2, 1, 74], [3, 3, 71]], [[0, 2, 69], [2, 1, 67], [3, 3, 64]], [[0, 2, 64], [2, 1, 67], [3, 2, 69], [5, 1, 71]], [[0, 3, 74], [3, 3, 76]]],
+export const CHORUS = { tune: [[[0, 2, 76], [2, 1, 74], [3, 3, 71]], [[0, 2, 69], [2, 1, 67], [3, 3, 64]], [[0, 2, 64], [2, 1, 67], [3, 2, 69], [5, 1, 71]], [[0, 3, 74], [3, 3, 76]]],
   chords: [[[0, 'Em']], [[0, 'G']], [[0, 'Em'], [3, 'A']], [[0, 'D'], [3, 'Em']]] };
-const JIG = [[76, 74, 71, 71, 69, 67], [66, 69, 74, 74, 73, 71], [67, 71, 76, 79, 76, 74], [73, 74, 76, 71, 67, 64]];
-const JIG_CH = [[[0, 'Em']], [[0, 'D']], [[0, 'Em']], [[0, 'A'], [3, 'Em']]];
+export const JIG = [[76, 74, 71, 71, 69, 67], [66, 69, 74, 74, 73, 71], [67, 71, 76, 79, 76, 74], [73, 74, 76, 71, 67, 64]];
+export const JIG_CH = [[[0, 'Em']], [[0, 'D']], [[0, 'Em']], [[0, 'A'], [3, 'Em']]];
 
 // the deck: bodhrán on the two beats (a rim tap between), the crew's feet, the bass on root and fifth, the concertina's oom-pah
 const deck = (chords, { feet = 0.5, busy = false, squeeze = 0.3 } = {}) => {

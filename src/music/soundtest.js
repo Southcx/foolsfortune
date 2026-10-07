@@ -22,7 +22,7 @@ import { ROLL_THE_MOON, LEAVE_HER } from './shanties.js';
 import { SIREN } from './siren.js';
 import { WITCH } from './witch.js';
 import { OVERTURE } from './overture.js';
-import { CRUDE_SEA } from './emocean.js';
+import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN } from './emocean.js';
 import { WELL_FLOORS } from './well.js';
 import { LOCK_CUES, LOCK_LANDED } from './lockheart.js';
 
@@ -53,6 +53,8 @@ export const TRACKS = [
   { id: 'calissa', score: CALISSA, title: 'Overflowing', where: "Calissa's theme · cups, water", notes: 'Calypso in E at 116: the pour (B G# E, C# E: a major arpeggio tumbling in three, three and two, and a hop back up) on the steel pan, marimba chucking the off-beats, the tresillo on the upright, bongos, shaker and timbale; the bridge climbs the Answer and the horns stab the last verse.' },
   { id: 'step', score: FOOLS_STEP, title: "The Fool's Step (first draft)", where: 'the first draft of the main theme', notes: "A minor, 140 bpm: the In scale and the hexachord taking turns, a build and a drop. Kept for comparison." },
   { id: 'crudesea', score: CRUDE_SEA, title: 'Crude Sea', where: 'a hop across the Emocean · the stage', notes: 'A trance groove under space jazz at 160, a hundred bars that are the stage, with the owner\'s ear laid over it: a calm launch, four on the floor for the first schools with the sax sailing the Answer (its reply different each time round) and a tapped guitar answering the koto, the supersaw opening on the pincer, a two-step break with darters whooshing past, a breather where the choir holds the Tear, the push, the heavy in half time with an 808 sliding under the Five, three holes of held breath, and E major as Margarite comes into sight.' },
+  { id: 'crudeseapirates', score: CRUDE_SEA_PIRATES, title: 'Crude Sea: the Pirates', where: 'a crossing\'s set piece: a brig comes for the cargo', notes: 'The same crossing until bar 62, then a brig closing astern, her crew\'s shanty heard from behind and growing, a bow chaser\'s boom every two bars; the broadside duel with the shanty in full over it (the call, the chorus, the jig) and a broadside every two bars; the ram, and from bar 92 the crew singing the chorus home as she sinks or strikes.' },
+  { id: 'crudesealeviathan', score: CRUDE_SEA_LEVIATHAN, title: 'Crude Sea: the Leviathan', where: 'a crossing\'s rare set piece: the rogue Leviathan', notes: 'The same crossing until bar 62, then the Leviathan\'s own motif (E, the Tear\'s F, E, C, B, two slow bars at the floor): it breaches and heaves, runs alongside breathing through its gills, sounds while a heartbeat quickens and the sea closes over, and meets you face to face with its motif as the war cry, into B major and home.' },
   { id: 'well1', score: WELL_FLOORS[0], title: 'Surface Thoughts', where: "a mind's Well · the first floor", notes: 'A tanpura on E, drips of thought in the pentatonic, a breath, a far voice sinking from E to D.' },
   { id: 'well2', score: WELL_FLOORS[1], title: 'Undertow', where: "a mind's Well · the second floor", notes: 'The Tear (F on E) held soft under the drone, a heartbeat, the whale gliding down, an octatonic celesta that will not resolve.' },
   { id: 'well3', score: WELL_FLOORS[2], title: 'The Bottom of the Well', where: "a mind's Well · the FOE's floor", notes: 'A sub on E, a far taiko like something walking, strings holding E, F and B, the heartbeat quickening, a low choir.' },

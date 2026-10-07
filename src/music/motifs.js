@@ -12,6 +12,9 @@
 //   CALISSA  cups, water: the pour. A major arpeggio tumbling down in the calypso's 3+3+2 and a hop back up (B G# E C# E);
 //            the steel pan
 //
+//   LEVIATHAN the rogue Leviathan of the crossing (docs/plans/RAIL.md): low and slow, E to the Tear's F and back, then falling to C
+//            and the B under the floor, two bars; the beast you survive more than kill (Moby-Dick, Shadow of the Colossus)
+//
 //   import { MOTIF, quote } from './motifs.js'    quote(MOTIF.ESPADA, 'sitar', { at: 1, up: 12, x: 2, v: 0.5, o: { pan: 0.2 } })
 // ---------------------------------------------------------------------------------------
 export const MOTIF = {
@@ -22,6 +25,7 @@ export const MOTIF = {
   WANDA: [[0, 0.5, 67], [0.5, 1.5, 74], [2, 0.25, 73], [2.25, 0.75, 74], [3, 2, 81]],
   ESPADA: [[0, 0.25, 64], [0.25, 0.25, 65], [0.5, 0.25, 68], [0.75, 0.25, 71], [1, 1.5, 72, { to: 71, meend: 0.4 }]],
   CALISSA: [[0, 0.75, 83], [0.75, 0.75, 80], [1.5, 0.5, 76], [2, 0.5, 73], [2.5, 1.5, 76]],
+  LEVIATHAN: [[0, 2, 40], [2, 1, 41], [3, 1, 40], [4, 2, 36], [6, 2, 35]], // E F E C B, two slow bars down at the floor: a whale's breath with the Tear in it (the crossing's rogue Leviathan)
 };
 
 /** A motif as events for one instrument: `at` (beat), `up` (semitones), `x` (time stretch), `v`, and options for every note. */

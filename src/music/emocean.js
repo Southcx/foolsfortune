@@ -23,17 +23,21 @@
 // choirs, Star Fox's on-rails pacing (a breather before the last push), future bass and trap (the shimmer, the hat rolls, the 808's
 // slides, the drop's held breath), and this game's own motifs (the Answer, the Five, the Tear).
 //
-//   import { CRUDE_SEA, STAGE_BARS, stageAt, stageCue } from './emocean.js'   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
-//   stageCue(seconds) -> the cue played in that many seconds (the same hundred bars at another tempo: a sloop's 120 s is 200 bpm)
+//   import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN, SET_PIECE_CUES, STAGE_BARS, stageAt, stageCue, crossingCue } from './emocean.js'
+//   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
+//   stageCue(seconds, setPieces) -> the cue played in that many seconds with that set piece (progress/rail/crossing.js: 'shoal' |
+//   'pirates' | 'leviathan'), or a long crossing's list of up to three (crossingCue: 146 or 192 bars); its bars at the tempo that fills
+//   the seconds (a sloop's 120 s for 100 bars is 200 bpm)
 //   when the cue is not playing (music/choose.js plays it while game.emocean.stage.active; the rail and the waves follow this)
 // ---------------------------------------------------------------------------------------
 import { MOTIF, quote } from './motifs.js';
+import { VERSE, CHORUS, JIG, JIG_CH } from './shanty.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 export const STAGE_BARS = 100;
 const CH = ['Em', 'C', 'D', 'Bm'];
-const ROOT = { Em: 40, C: 36, D: 38, Bm: 47, E: 40, Am: 45, B: 47 };
-const TRI = { Em: [64, 67, 71], C: [64, 67, 72], D: [62, 66, 69], Bm: [62, 66, 71], E: [64, 68, 71], B: [63, 66, 71] };
+const ROOT = { Em: 40, C: 36, D: 38, Bm: 47, E: 40, Am: 45, B: 47, G: 43, A: 45, F: 41 };
+const TRI = { Em: [64, 67, 71], C: [64, 67, 72], D: [62, 66, 69], Bm: [62, 66, 71], E: [64, 68, 71], B: [63, 66, 71], G: [62, 67, 71], A: [61, 64, 69], F: [65, 69, 72] };
 const chordOf = (bar) => CH[bar % 4];
 
 // ---- the parts
@@ -112,23 +116,24 @@ const BASE = {
 /** Where the stage is, as heard: the fraction of its hundred bars that have sounded (0..1), read off the arranger playing CRUDE_SEA, or null. */
 export function stageAt(music) {
   const A = music?.arr;
-  if (!A?.alive || (A.score !== CRUDE_SEA && A.score?.of !== CRUDE_SEA)) return null;
+  if (!A?.alive || !(CROSSINGS.has(A.score) || CROSSINGS.has(A.score?.of))) return null;
   if (A.ended) return 1;
   let bars = A.bar; for (let k = 0; k < A.section; k++) bars += A.score.sections[k].bars; // (the next bar to be laid out, at A.next)
-  const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4);
-  return Math.max(0, Math.min(1, (bars - ahead) / STAGE_BARS));
+  const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4), total = A.score.sections.reduce((n, x) => n + x.bars, 0); // (100, 146 or 192 bars)
+  return Math.max(0, Math.min(1, (bars - ahead) / total));
 }
 
-/** The cue fitted to a stage of `seconds` (hop()'s, by the ship): the same hundred bars at the tempo that fills it (made once a length,
- *  so music/choose.js sees the same score every frame). 150 s is the cue as written; a quicker ship's is faster, a slower one's broader. */
+/** The cue fitted to a stage of `seconds` (hop()'s, by the ship) and its set piece or set pieces (progress/rail/crossing.js: 'shoal',
+ *  'pirates', 'leviathan', or a long crossing's list of up to three: `crossingCue`): its bars at the tempo that fills it (made once a
+ *  length, so music/choose.js sees the same score every frame). A bar is 1.5 s as written (160 bpm); a quicker ship's is faster. */
 const FITTED = new Map();
-export function stageCue(seconds = 150) {
-  const bpm = Math.round(160 * 150 / Math.max(60, seconds));
-  if (bpm === 160) return CRUDE_SEA;
-  if (!FITTED.has(bpm)) FITTED.set(bpm, { ...CRUDE_SEA, bpm, of: CRUDE_SEA });
-  return FITTED.get(bpm);
+export function stageCue(seconds = 150, setPieces = 'shoal') {
+  const S = crossingCue(setPieces), bars = S.sections.reduce((n, x) => n + x.bars, 0), bpm = Math.round(160 * bars * 1.5 / Math.max(60, seconds));
+  if (bpm === 160) return S;
+  const key = `${S.title}:${bpm}`;
+  if (!FITTED.has(key)) FITTED.set(key, { ...S, bpm, of: S });
+  return FITTED.get(key);
 }
-
 // ---- the owner's ear, laid over the score (layers and texture, not a rescoring: the owner, 2026-10-06)
 const V = { Em: [64, 67, 71, 74, 78], C: [60, 64, 67, 71, 78], D: [62, 66, 69, 71, 76], Bm: [59, 62, 66, 69, 76] }; // (Em9, Cmaj7#11, D6/9, Bm11)
 const TAP = [[0, 2, 4, 1, 3, 4, 2, 0, 1, 3, 4, 2, 4, 3, 1, 2], [4, 2, 0, 3, 1, 0, 2, 4, 3, 1, 0, 2, 0, 1, 3, 2]]; // (climbing, then its mirror every other phrase)
@@ -150,7 +155,7 @@ const LAYERS = {
   pincer: (i, c) => [...ticks(i, 1.1), ...ohats(), ...sparkle(c, 0.16), E('snap', 1, 1, null, 0.35), E('snap', 3, 1, null, 0.35)],
   darters: (i, c) => [...ticks(i, 0.9, true), ...sparkle(c, 0.1)], // (no guitar here: the darters have the air to themselves)
   breather: (i, c) => [...sparkle(c, 0.1), ...(i % 2 ? [] : [0, 1.5, 2.5].map((b, k) => E('twinkle', b, 2, V[c][[4, 2, 3][k]], 0.18)))],
-  push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15, i), ...sparkle(c, 0.16)],
+  push: (i, c) => [...ticks(i, 1.1, i >= 12), ...ohats(0.16), ...twinkle(c, 0.15, i), ...sparkle(c, 0.16), ...SHOAL_CHURN(i, c)], // (the shoal's churn: below)
   heavy: (i, c) => [...trap(i), ...(i === 6 ? [] : i === 5 ? [E('eight', 0, 1.5, low(c), 0.55), E('eight', 2, 1, low(c) - 12, 0.5, { from: 12, glide: 0.35 })] : eights(i, heavyChord)),
     ...sparkle(c, 0.14), ...(i >= 8 ? ohats(0.14) : [])],
   arrive: (i) => (i === 0 ? [E('shimmer', 0, 16, TRI.E, 0.12)] : []),
@@ -160,3 +165,109 @@ export const CRUDE_SEA = { ...BASE, sections: BASE.sections.map((s) => ({ ...s, 
   const all = [...s.bar(i), ...(LAYERS[s.id]?.(i, (s.chord || chordOf)(i)) || [])];
   return HOLES[s.id] === i ? holed(all) : all;
 } })) };
+
+// ---- the set pieces (docs/plans/RAIL.md, section 3): bars 62 to 96 are one of three, the first 62 bars and the arrival the same.
+// THE SHOAL is the cue above (the push and the heavy: the ball rises at 62, the frenzy at 70, the heavy it fled at 84), with a churn laid
+// under it: bubbles boiling up and low strings rising while the ball forms, then the strings in short pulses with the strikes.
+// THE PIRATES: astern (62): a brig closing, her crew's shanty heard from behind and growing (Haul Away the Fortune, music/shanty.js, its
+// 6/8 laid over the 4/4 as triplets), a bow chaser's boom every two bars; the broadside (70): the shanty in full over the duel, the
+// concertina's call, the crew's chorus, the fiddle's jig, a broadside's boom every two bars; the ram (84): the heavy's war cry, and from
+// 92, as she sinks or strikes, the crew sings the chorus (the Five falling, the Answer rising) to the dominant and home.
+// THE LEVIATHAN: its own motif (music/motifs.js LEVIATHAN: E, the Tear's F, E, C, B, two slow bars at the floor). It heaves (62): the
+// breach, the motif in the low brass, the whale, the Neapolitan F before the dominant; alongside (70): a two-step, the gills' breathing
+// in the strings two bars in four, the motif up in the strings; it sounds (80): the drums gone, a heartbeat quickening, the sea closing
+// over (a low-pass opening as its shadow grows), the motif sung in the deep; face to face (88): the motif as the war cry, the Five
+// answering in the lead guitar, B major into the arrival.
+// Prior art: Radiant Silvergun and Thunder Force (the boss as a musical event), the sea shanty under a broadside (Assassin's Creed IV,
+// the Wind Waker), Jaws (the beast as a motif before it is a sight), Shadow of the Colossus (the colossus's theme turning heroic).
+const six = (rows, i, v, o = {}, up = 0) => rows.map(([b, d, n]) => E(i, b * 2 / 3, d * 2 / 3 * 0.95, n + up, v, o)); // (a 6/8 bar as triplets in a 4/4 bar)
+const sung = (rows, v = 0.18) => rows.map(([b, d, n]) => E('hum', b * 2 / 3, d * 2 / 3 * 0.95, [n, n - 12], v, { open: true, attack: 0.06 }));
+const triplets = (v = 0.3) => [0, 2 / 3, 4 / 3, 2, 8 / 3, 10 / 3].map((b, k) => E('bodhran', b, 0.5, null, k % 3 ? v * 0.6 : v, { rim: k % 3 === 2 }));
+const boom = (v = 0.6) => [E('impact', 0, 1, null, 0.3 * v), E('taiko', 0, 1, null, 0.6 * v, { size: 1.15 }), E('bigkick', 0, 1, null, 0.5 * v)]; // (a gun: the bow chaser, the broadside)
+const shantyCh = (rows) => rows.map(([b, c]) => [b * 2 / 3, c]); // (the shanty's chords, its 6/8 halves at beats 0 and 2)
+const deck = (rows, v = 0.18) => shantyCh(rows).flatMap(([b, c], k, all) => [E('upright', b, all.length > 1 ? 2 : 4, ROOT[c], v), E('eight', b, 1, low(c), 0.15)]);
+const heart = (v, beats = [0, 2]) => beats.flatMap((b) => [E('kick', b, 1, null, v), E('kick', b + 0.28, 1, null, v * 0.6)]); // (lub-dub)
+
+const SHOAL_CHURN = (i, c) => (i < 8 ? [...[0.3, 1.1, 1.9, 2.6, 3.4].map((b, k) => E('bubble', b, 1, null, 0.1 + 0.01 * i, { size: 0.8 + ((i + k) % 4) * 0.3 })),
+  E('strings', 0, 4, [ROOT[c] + 12, ROOT[c] + 19], 0.04 + 0.006 * i, { attack: 1.2, bright: 900 + 120 * i })]
+  : [0, 0.25, 0.5, 2, 2.25, 2.5].map((b) => E('strings', b, 0.25, TRI[c].map((n) => n - 12), 0.05, { spic: true }))); // (the ball forming, then the strikes in pulses)
+
+const pirateCh = (i) => ['Em', 'D', 'Em', 'A'][i % 4];
+const PIRATES = [
+  { id: 'astern', bars: 8, gain: 2.4, chord: pirateCh, bar: (i) => { const c = pirateCh(i); return [...halftime(0.85), ...roll(c, 0.3), ...pad(c, 0.1),
+    ...six(VERSE.tune[i % 4], 'concertina', 0.1 + 0.035 * i, { pan: 0.55 }), ...(i % 2 ? [] : boom(0.45 + 0.03 * i)), // (her crew's song from astern, closing; a bow chaser every two bars)
+    ...(i === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.4)] : []), ...(i === 6 ? [E('riser', 0, 8, null, 0.25)] : [])]; } },
+  { id: 'broadside', bars: 14, gain: 2.3, chord: (i) => (i < 4 ? VERSE.chords : i < 8 || i >= 12 ? CHORUS.chords : JIG_CH)[i % 4][0][1], bar: (i) => {
+    const part = i < 4 ? 'call' : i < 8 || i >= 12 ? 'chorus' : 'jig', rows = part === 'call' ? VERSE.chords[i % 4] : part === 'jig' ? JIG_CH[i % 4] : CHORUS.chords[i % 4];
+    const tune = part === 'call' ? six(VERSE.tune[i % 4], 'concertina', 0.3, { pan: -0.15 }) : part === 'jig' ? JIG[i % 4].map((n, k) => E('fiddle', k * 2 / 3, 2 / 3, n, 0.28, { pan: 0.3, vib: 0.006 }))
+      : [...sung(CHORUS.tune[i % 4]), ...six(CHORUS.tune[i % 4], 'fiddle', 0.18, { pan: 0.3 }, 12), E('huh', 0, 1, null, 0.22)];
+    return [E('kick', 0, 1, null, 0.9), E('kick', 2, 1, null, 0.8), E('snare', 1, 1, null, 0.6), E('snare', 3, 1, null, 0.65), ...triplets(0.32),
+      E('stomp', 0, 1, null, 0.45), E('stomp', 2, 1, null, 0.4), ...deck(rows), ...shantyCh(rows).map(([b, c]) => E('concertina', b + 2 / 3, 1, [...TRI[c]].map((n) => n - 12), 0.12)),
+      ...tune, ...(i % 2 ? [] : boom(0.7)), ...(i === 0 || i === 8 ? [E('crash', 0, 1, null, 0.5)] : [])]; // (a broadside every two bars)
+  } },
+  { id: 'ram', bars: 12, gain: 2.7, chord: (i) => (i < 8 ? heavyChord(i) : ['Em', 'G', 'Em', 'B'][i - 8]), bar: (i) => {
+    if (i < 8) return heavy(i); // (she comes about to ram: the heavy's war cry and pursuit)
+    const k = i - 8, rows = k === 3 ? [[0, 'D'], [3, 'B']] : CHORUS.chords[k], tune = CHORUS.tune[k];
+    return [...halftime(), ...ride(0.25), ...deck(rows), ...sung(tune, 0.22), ...six(tune, 'brass', 0.18, {}, -12), ...six(tune, 'shred', 0.18, { pan: 0.15, vib: 0.04 }),
+      ...pad(k === 3 ? 'B' : CHORUS.chords[k][0][1] === 'G' ? 'G' : 'Em', 0.12), ...(k === 0 ? [E('crash', 0, 1, null, 0.5), E('gang', 1, 1, null, 0.45)] : []), ...(k === 3 ? fill(0.8) : [])];
+  } }, // (from 92: she sinks or strikes, and the crew sings the chorus home)
+];
+const levChord = (i) => ['Em', 'Em', 'C', 'C', 'Em', 'Em', 'F', 'B'][i % 8];
+const faceChord = (i) => ['Em', 'C', 'D', 'Bm', 'Em', 'C', 'D', 'B'][i];
+const LEVIATHAN = [
+  { id: 'heaves', bars: 8, gain: 3.2, chord: levChord, bar: (i) => { const c = levChord(i); return [E('taiko', 0, 1, null, 0.26, { size: 1.25 }), E('taiko', 2.5, 1, null, 0.14, { size: 1.1 }),
+    ...pad(c, 0.11), E('voice', 0, 4, TRI[c][0] - 12, 0.12, { vowel: 'o' }), ...(i % 4 === 0 ? [...quote(MOTIF.LEVIATHAN, 'brass', { up: 12, v: 0.32 }), ...quote(MOTIF.LEVIATHAN, 'voice', { up: 24, v: 0.12, o: { vowel: 'o' } })] : []), // (the motif an octave over its floor: heard, not only felt)
+    ...(i % 4 === 2 ? [E('whale', 0, 6, 52, 0.22, { to: 45 })] : []), ...(i === 0 ? [E('impact', 0, 1, null, 0.6), E('crash', 0, 1, null, 0.5)] : []),
+    ...(i === 7 ? [E('riser', 0, 4, null, 0.3), ...heart(0.3, [0, 1, 2, 3])] : [])]; } }, // (the breach; the motif; the Neapolitan F, then the dominant)
+  { id: 'alongside', bars: 10, gain: 2.5, bar: (i) => { const c = chordOf(i); return [...twostep(), E('taiko', 0, 1, null, 0.4, { size: 1.3 }), E('growl', 0, 4, ROOT[c] + 12, 0.3, { rate: 3 }), ...arp(c, 0.16, i),
+    ...(i % 4 < 2 ? [E('strings', 0, 4, TRI[c], 0.07, { attack: 0.9, bright: 2200 })] : []), // (the gills, open two bars in four, as it breathes)
+    ...(i % 4 === 0 ? quote(MOTIF.LEVIATHAN, 'strings', { up: 24, v: 0.14, o: { attack: 0.2, bright: 3000 } }) : []), ...(i % 4 === 2 ? [swoop(2, 0.32, i % 8 ? -1 : 1)] : []), // (a fin sweep)
+    ...(i === 0 ? [E('crash', 0, 1, null, 0.45)] : [])]; } },
+  { id: 'sounds', bars: 8, gain: 4.2, sweep: [500, 6000], chord: levChord, bar: (i) => { const c = levChord(i); return [...heart(0.34, i < 4 ? [0, 2] : [0, 1, 2, 3]), // (it sounds: the drums gone, a heartbeat)
+    E('pad', 0, 4.2, TRI[c].map((n) => n - 12), 0.08, { cutoff: 900 }), E('sub', 0, 4, ROOT[c], 0.012), ...(i % 4 === 0 ? quote(MOTIF.LEVIATHAN, 'voice', { up: 12, v: 0.16, o: { vowel: 'o' } }) : []),
+    ...[0.6, 2.2, 3.3].map((b) => E('bubble', b, 1, null, 0.1, { size: 1.6 })), ...(i === 5 ? [E('riser', 0, 8, null, 0.3)] : [])]; } }, // (its shadow growing under you)
+  { id: 'face', bars: 8, gain: 2.7, chord: faceChord, bar: (i) => { const c = faceChord(i);
+    const tune = i % 2 === 0 && i < 6 ? quote(MOTIF.LEVIATHAN, 'brass', { up: 12, x: 0.5, v: 0.36 }) : i === 1 || i === 3 ? five('shred', 0, 0.3).map((e, k) => (k ? e : { ...e, o: { pinch: true } }))
+      : i === 5 ? [...five('brass', -12, 0.32), E('gang', 1, 1, null, 0.4), E('gang', 3, 1, null, 0.45)] : i === 6 ? quote(MOTIF.LEVIATHAN, 'voice', { up: 24, x: 0.5, v: 0.2, o: { vowel: 'a' } })
+        : TRI.B.map((n) => E('brass', 0, 3, n - 12, 0.26)).concat(fill(0.8)); // (the motif as the war cry, the Five answering, B major home)
+    return [...halftime(), ...(i >= 4 ? [1, 3].map((b) => E('kick', b, 1, null, 0.6)) : []), ...ride(0.26), E('growl', 0, 4, ROOT[c] + 12, 0.34, { rate: 4 }), ...tune, ...pad(c, 0.12),
+      ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.5), E('impact', 0, 1, null, 0.4)] : [])]; } },
+];
+const SET_LAYERS = {
+  astern: (i, c) => [...ticks(i, 0.8), ...sparkle(c, 0.1)],
+  broadside: (i, c) => [...ticks(i, 0.7), ...sparkle(c, 0.1), ...(i >= 8 ? ohats(0.12) : [])],
+  ram: (i, c) => (i < 8 ? LAYERS.heavy(i, c) : [...trap(i), ...sparkle(c, 0.14), ...ohats(0.14)]),
+  heaves: (i, c) => sparkle(c, 0.07),
+  alongside: (i, c) => [...ticks(i, 1, true), ...eights(i), ...sparkle(c, 0.12)],
+  sounds: (i, c) => sparkle(c, 0.05),
+  face: (i, c) => [...trap(i), ...eights(i, faceChord), ...sparkle(c, 0.14), ...(i >= 4 ? ohats(0.14) : [])],
+};
+const SET_HOLES = { astern: 7, broadside: 13, ram: 5, alongside: 9, sounds: 7 };
+const layered = (s, L, H) => ({ ...s, bar: (i) => { const all = [...s.bar(i), ...(L[s.id]?.(i, (s.chord || chordOf)(i)) || [])]; return H[s.id] === i ? holed(all) : all; } });
+const crossing = (title, piece) => { const S = CRUDE_SEA.sections, at = S.findIndex((x) => x.id === 'push');
+  return { ...CRUDE_SEA, title, sections: [...S.slice(0, at), ...piece.map((s) => layered(s, SET_LAYERS, SET_HOLES)), S[S.length - 1]] }; };
+export const CRUDE_SEA_PIRATES = crossing('Crude Sea: the Pirates', PIRATES);
+export const CRUDE_SEA_LEVIATHAN = crossing('Crude Sea: the Leviathan', LEVIATHAN);
+export const SET_PIECE_CUES = { shoal: CRUDE_SEA, pirates: CRUDE_SEA_PIRATES, leviathan: CRUDE_SEA_LEVIATHAN };
+const CROSSINGS = new Set(Object.values(SET_PIECE_CUES));
+
+// ---- a long crossing (the owner, 2026-10-07: up to three set pieces; RAIL.md section 14): the first half once, each set piece's 34
+// bars with the breather's 12 between two (its flotsam mends the ship: the drums drop out, the choir holds the Tear, and the pulse
+// builds back into the next), then the arrival. 100, 146 or 192 bars; the k-th set piece starts on bar 62 + 46k.
+const PIECES = { shoal: CRUDE_SEA.sections.filter((x) => x.id === 'push' || x.id === 'heavy'), pirates: CRUDE_SEA_PIRATES.sections.slice(5, 8),
+  leviathan: CRUDE_SEA_LEVIATHAN.sections.slice(5, 9) };
+const MEND = { ...CRUDE_SEA.sections.find((x) => x.id === 'breather'), id: 'mend' };
+const CHAINED = new Map();
+/** The cue of a crossing with these set pieces (a name, or a list of up to three), made once a list. */
+export function crossingCue(setPieces = 'shoal') {
+  const list = [].concat(setPieces || 'shoal').filter((p) => PIECES[p]).slice(0, 3);
+  if (list.length <= 1) return SET_PIECE_CUES[list[0]] || CRUDE_SEA;
+  const key = list.join('+');
+  if (!CHAINED.has(key)) {
+    const S = CRUDE_SEA.sections, first = S.slice(0, S.findIndex((x) => x.id === 'push'));
+    const cue = { ...CRUDE_SEA, title: `Crude Sea: ${list.join(', ')}`, sections: [...first, ...list.flatMap((p, k) => [...(k ? [MEND] : []), ...PIECES[p]]), S[S.length - 1]] };
+    CHAINED.set(key, cue); CROSSINGS.add(cue);
+  }
+  return CHAINED.get(key);
+}
+
