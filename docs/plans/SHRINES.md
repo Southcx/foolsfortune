@@ -17,7 +17,7 @@ you keep depends on how you leave).
 | it is | what that means |
 |---|---|
 | **where you are made whole** | after a shatter, you are made whole at the last Shrine you rested at (today: always the workshop, `courier/vessel/death.js`); the workshop's is the first |
-| **a rest** | F at the Shrine: the pool full, your mental state settled to Balanced; nothing else (no world reset, no creature respawn: the Souls bonfire's reset is not taken, because the world here turns by the game day) |
+| **a rest** | F at the Shrine: the pool full (and, once the Courier has a mental state in code, `COURIER_MIND` in `progress/stones.js`, it settles to Balanced); nothing else (no world reset, no creature respawn: the Souls bonfire's reset is not taken, because the world here turns by the game day) |
 | **a fast-travel point** | at any Shrine, travel to any Shrine you have **found** (rested at once), free. Okami's mirrors: travel is a convenience, never a cost, because the long sea crossing (the voyage) is the journey that is meant to cost |
 | **the Spirit Garden's door** | the Spirit Garden (the slots, the beds, the spirit press) is entered at a Shrine and nowhere else; the Pneuka Box (P) stays reachable anywhere, as the garden's shed |
 
@@ -50,7 +50,7 @@ A small clay whistle, a consumable that takes you out of a Well alive, to its mo
   So the cost of bailing grows with what you have to lose and stays a choice at every depth (a flat price alone would be nothing at
   depth, where `wellPay` grows 1.25 times a floor).
 - **One carried at a time** (`carry: 1`): one bail-out a run.
-- **A channel of 1.5 real s, broken by a blow** (WoW's Hearthstone, Tarkov's extract timer): it is a way out when you have a breath,
+- **A channel of 1.5 real s, broken by a blow** (settled by the owner, 2026-10-07) (WoW's Hearthstone, Tarkov's extract timer): it is a way out when you have a breath,
   not a dodge in the middle of a blow. The owner's "without dying" holds whenever you find a breath; whether a FOE floor allows one
   is the FOE's design.
 - Sold where crude is: Old Grog's pier, three in stock (with the Lachrymato Bottles). Blown from the Pneuka Box; it breaks. Works in any Well (the Great Dunemaw
