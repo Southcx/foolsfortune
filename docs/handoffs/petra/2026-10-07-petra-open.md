@@ -17,13 +17,11 @@
 - **Wanda's asks** (round robin): the ground's material under a step (`move.step { surface }`), and an `acoustic` on each zone.
 - **Co-op's room (waits on the owner)**: guests (coop/guests.js) need the build's capabilities to add `room` (and `user` scopes
   `profile` for names); the publish that adds it was refused as a permission grant: the owner's OK first. Until then guests are dormant.
-- **Co-op, next (waits on Dovina's COOP.md rulings)**: what siblings may do (strike, gather, open), how the party is called in play, the
-  shared errand for guests (the host's quest), what a session may write. The siblings' draw calls: five in view +58 (the workshop 483,
-  over 450); rest-bake merging is the cut (above).
+- **The siblings' draw calls**: five in view +58 (the workshop 483, over 450), so two are out; rest-bake merging is the cut (above).
 - **Perf's draw times are noise on the software renderer** (the Dunes' draw 13.6 to 21.6 ms between runs of one build, today): a
   median of three runs before the gate compares, or the draw row read with a wider tolerance; the baseline at v102 is a high one.
-- **Co-op built so far** (v103): siblings met, called at Shrines, two out, /sib, beside you, the channel at Dovina's cadence, fighting by temperament
-  at 0.4 of the sustained damage, the order wheel (T), pointing at what lies loose. **Still to build:** the tools in their hands (Calissa's
+- **Co-op built so far** (v104): siblings met, called at Shrines, two out, /sib, beside you, the channel at Dovina's cadence, fighting by temperament
+  at 0.4 of the sustained damage, the order wheel (T), pointing at what lies loose; Calissa's looks and Wanda's body sounds and footsteps. **Still to build:** the tools in their hands (Calissa's
   models; Dovina's coffin, Espada's dowsing of Lachryma), the god hand's art wheel onto feedback/wheel.js, siblings that can be struck and shatter, the
   guests' shared errand (the Dunemaw run, host-owned; waits on the room).
 

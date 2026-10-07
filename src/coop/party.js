@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE PARTY: the siblings called into your world (Dovina's rulings, docs/plans/COOP.md C4 and C6; the glossary: sibling, the party).
-// Five, one for each division, each fired in a placeholder glaze of its suit's colour until Calissa gives them their look: Petra
+// Five, one for each division, each in its division's look (Calissa's, vfx/siblinglooks.js; `lookOf`), else its suit's glaze alone: Petra
 // (pentacles), Dovina (the trumps), Wanda (wands), Calissa (cups), Espada (swords). A sibling is met once where its craft lives
 // (coop/meeting.js) and is yours from then on: called or dismissed at any Shrine (world/shrines.js) or from the chat line. Two are out
 // at once (`CAP`: a sibling costs about 12 draw calls in view; a third when the zone can bear it), and a party is four players at most,
@@ -14,12 +14,14 @@
 // Hearts' party (a slot each, warping back when left behind).
 //
 //   game.party = new Party(game, { makeRig })   .meet(id, rig?, at?)   .call(id | 'all')   .dismiss(id | 'all')   .command(order, who, arg)
-//   .fixed(dt)   .update(dt, alpha) (and the wheel: T held)   .list [Sibling]   .met (Set)   .cap   SIBLINGS [{ id, name, suit, color, glaze }]
+//   .fixed(dt)   .update(dt, alpha) (and the wheel: T held)   .list [Sibling]   .met (Set)   .cap   SIBLINGS [{ id, name, suit, color, glaze }]   lookOf(id)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GROUPS } from '../core/physics.js';
 import { Sibling } from './sibling.js';
 import { RadialWheel } from '../feedback/wheel.js';
+import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
+import { SIBLING_LOOKS } from '../vfx/siblinglooks.js';
 
 export const SIBLINGS = [
   { id: 'petra', name: 'Petra', suit: 'pentacles', color: 0xd4a83a, glaze: 'ash' },
@@ -28,6 +30,8 @@ export const SIBLINGS = [
   { id: 'calissa', name: 'Calissa', suit: 'cups', color: 0x4a8ae0, glaze: 'ru' },
   { id: 'espada', name: 'Espada', suit: 'swords', color: 0xb8c8dc, glaze: 'guan' },
 ];
+/** A sibling's look: its division's (Calissa's), else the Courier's with its suit's glaze. */
+export const lookOf = (id) => { const g = SIBLINGS.find((s) => s.id === id)?.glaze; return SIBLING_LOOKS[id] ?? { ...DEFAULT_LOOK, body: g, mask: g }; };
 export const CAP = 2, PLAYERS = 4; // (two siblings out at once; four players at most, guests included: COOP.md C4)
 export const ORDERS = ['follow', 'hold', 'go', 'fight', 'back', 'scout', 'guard', 'free'];
 const WHEEL = [{ order: 'follow', label: 'COME', sub: 'follow me' }, { order: 'go', label: 'GO', sub: 'where I look' }, { order: 'fight', label: 'HELP', sub: 'fight with me' }, { order: 'hold', label: 'WAIT', sub: 'hold here' }]; // (T held: Dragon's Dogma's four)
@@ -84,7 +88,7 @@ export class Party {
 
   add(id, rig, at) {
     const def = SIBLINGS.find((s) => s.id === id);
-    const S = new Sibling(this.game, { id, color: def.color, glaze: def.glaze, rig, seen: this.seen });
+    const S = new Sibling(this.game, { id, color: def.color, look: lookOf(id), rig, seen: this.seen });
     this.list.push(S); this.reslot(); this.dirty();
     if (at) { S.body.pos.copy(at); S.body.prevPos.copy(at); S.body.renderPos.copy(at); S.body.place(); S.body.markSafe(); } else S.warp(this.game.player);
     this.game.events.emit('party.call', { sibling: id, by: 'courier' });
