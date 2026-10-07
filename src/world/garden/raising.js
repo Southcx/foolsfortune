@@ -25,7 +25,7 @@ import { dressForm } from '../../vfx/garden/forms.js';
 
 const FEELINGS = Object.keys(STATS);
 export const spiritName = (e) => e?.name || { slipjelly: 'slip jelly', clapperjar: 'clapperjar' }[e?.kind] || String(e?.kind || 'a spirit').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase(); // (its name, else its kind as said, never the code id: GARDEN-SWEEP #14)
-const DRILL_NAME = { sprint: 'a sprint', scout: 'a scouting', haul: 'a haul', swim: 'a swim', sit: 'a sitting' }; // (a drill as said: Espada's to word)
+const DRILL_NAME = { sprint: 'sprints', scout: 'lookout', haul: 'hauling', swim: 'laps', sit: 'meditation' }; // (a drill as said, "Drill: sprints": Espada's words)
 const PET_BOND = 0.5; // (a pat's bond: two hundred to fill a heart from nothing, so food and gifts matter more than fuss)
 
 export class Raising {
@@ -43,7 +43,7 @@ export class Raising {
   say(type, s, extra = {}) { this.game.events?.emit(type, { kind: s.e.kind, spirit: s.e.name || null, feeling: s.e.sp?.feeling, pitch: 1.4 - 0.15 * (s.e.cls || 0), ...extra, by: 'courier' }); }
 
   pet(s) { const S = this.ready(s.e); S.align = Math.max(-1, S.align + ALIGN.pet); S.bond = Math.min(100, S.bond + PET_BOND); s.body.vel.addScaledVector(s.body.up, 3); this.say('spirit.pet', s); this.mature(s); this.dirty(); }
-  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.cam.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
+  flick(s) { const S = this.ready(s.e); S.align = Math.min(1, S.align + ALIGN.flick); s.body.vel.addScaledVector(s.body.up, 5).addScaledVector(this.realm.camera.fwd, 4); s.body.grounded = false; this.say('spirit.flick', s); this.dirty(); }
 
   /** Feed it what lies in a box slot: a material (its stat by tier), a curio (its bond), a cask (its feeling). */
   feed(s, slot) {

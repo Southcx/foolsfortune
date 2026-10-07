@@ -25,6 +25,7 @@ import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
+import { GardenCamera } from './gardencam.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
@@ -36,7 +37,6 @@ import { sfx } from '../../audio/sfx.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
-const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; // (metres; radians; radians a real second for Q / E)
 const LOTUS = { r: 1.3, seconds: 2 };
 const FEATURE_R = 3.2; // (F works a place within this of the Jar)
 const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it is set down by the gate: GARDEN-SWEEP #5)
@@ -58,7 +58,7 @@ export class Realm {
     this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
-    this.cam = { fwd: new THREE.Vector3(0, 0, -1), up: new THREE.Vector3(0, 1, 0), dist: CAM.dist };
+    this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
     this.restT = 0; this.workT = 0;
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
@@ -96,7 +96,7 @@ export class Realm {
       const D = this.site.by.dantian, gate = this.site.features.find((f) => f.kind === 'gate'), start = this.gateStart();
       this.jarBody = new PlanetBody({ planets: this.site.planets, pos: start, radius: 0.5 });
       this.jarBody.planet = D; this.jarBody.up.copy(start).sub(D.c).normalize();
-      this.cam.up.copy(this.jarBody.up); this.cam.fwd.copy(gate.pos).sub(start).projectOnPlane(this.cam.up).normalize(); this.cam.dist = CAM.dist;
+      this.camera.reset(this.jarBody.up, gate.pos.clone().sub(start));
       this.active = true; this.lotusLock = null;
       if (g.garden) g.garden.inside = true; // (Wanda's cue plays while it is: music/choose.js)
       this.site.sync({ beds: Math.min(MAX_BEDS, g.garden?.beds?.length || 0), slots: Math.min(MAX_SLOTS, g.garden?.slots?.length || 0) });
@@ -184,15 +184,16 @@ export class Realm {
   /** Is the Jar's (or a spirit's) wish this step: WASD along the ground, as the camera faces. */
   wish(out) {
     const I = this.game.input, f = (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
-    const right = _w.crossVectors(this.cam.fwd, this.cam.up).normalize();
-    out.copy(this.cam.fwd).multiplyScalar(f).addScaledVector(right, r);
+    if (this.camera.view === 'overhead') return out.set(0, 0, 0); // (overhead, WASD pans the view: the Jar stands)
+    const right = _w.crossVectors(this.camera.fwd, this.camera.up).normalize();
+    out.copy(this.camera.fwd).multiplyScalar(f).addScaledVector(right, r);
     if (out.lengthSq() > 1) out.normalize();
     return out;
   }
   fixed(dt) {
     if (!this.active) return;
     const I = this.game.input, J = this.jarBody, typing = this.game.log?.typing;
-    if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && I.isDown('Space') && J.grounded });
+    if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && this.camera.view !== 'overhead' && I.isDown('Space') && J.grounded });
     if (!J.held && !J.flight && J.airT > JAR_LOST) { // (thrown off into the sky: set down by the gate, casebook rule 32, GARDEN-SWEEP #5)
       const D = this.site.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
       this.game.events?.emit('garden.jar.back', { by: 'courier' });
@@ -206,15 +207,9 @@ export class Realm {
   update(dt) {
     if (!this.active) return;
     const g = this.game, I = g.input, P = g.player, J = this.jarBody;
-    // the camera: behind and over the Jar, its up the planetoid's (smoothed: a hop over a rim turns the world, not the head)
-    this.cam.up.lerp(J.up, Math.min(1, dt * 4)).normalize();
-    const turn = (I.isDown('KeyE') ? 1 : 0) - (I.isDown('KeyQ') ? 1 : 0);
-    if (turn) this.cam.fwd.applyAxisAngle(this.cam.up, -turn * CAM.turn * dt);
-    this.cam.fwd.projectOnPlane(this.cam.up).normalize(); // (carried along the surface: Galaxy's camera keeps its heading over the curve)
-    if (I.wheel) { this.cam.dist = THREE.MathUtils.clamp(this.cam.dist * (1 + Math.sign(I.wheel) * 0.12), CAM.min, CAM.max); I.wheel = 0; }
-    const cam = g.camera, focus = _v.copy(J.pos).addScaledVector(this.cam.up, CAM.lookUp);
-    cam.position.copy(focus).addScaledVector(this.cam.fwd, -this.cam.dist * Math.cos(CAM.pitch)).addScaledVector(this.cam.up, this.cam.dist * Math.sin(CAM.pitch));
-    cam.up.copy(this.cam.up); cam.lookAt(focus); cam.updateMatrixWorld();
+    // the camera: behind the Jar, first person (Z), or overhead (`: the god hand's view here) (world/garden/gardencam.js)
+    if (I.wasPressed('KeyZ') && !g.log?.typing) this.camera.toggleFirst();
+    this.camera.update(dt);
     // the Courier's place is the Jar's while in here (the sun's shadow, the zones and the listener follow it)
     P.pos.copy(J.pos); P.prevPos?.copy(J.pos); P.renderPos?.copy(J.pos);
     this.placeJar(dt);
@@ -246,8 +241,9 @@ export class Realm {
   /** The Jar's model where its body is, upright on the planetoid, turned the way it hops, squashed as it lands. */
   placeJar(dt) {
     const V = this.god?.jar, J = this.jarBody; if (!V?.group) return;
-    const grp = V.group, up = this.cam.up.clone().lerp(J.up, 0.7).normalize(), fwd = J.forward.clone().projectOnPlane(up).normalize();
-    if (fwd.lengthSq() < 0.5) fwd.copy(this.cam.fwd);
+    const grp = V.group, up = this.camera.up.clone().lerp(J.up, 0.7).normalize(), fwd = J.forward.clone().projectOnPlane(up).normalize();
+    grp.visible = !this.camera.hidesJar; // (shown every frame it is the Jar's, whatever put it away: the god hand's exit hid it, casebook 2026-10-07)
+    if (fwd.lengthSq() < 0.5) fwd.copy(this.camera.fwd);
     _m.makeBasis(_w.crossVectors(up, fwd).normalize(), up, fwd); _q.setFromRotationMatrix(_m);
     grp.quaternion.slerp(_q, Math.min(1, dt * 12));
     grp.position.copy(J.pos).addScaledVector(J.up, -J.radius);
