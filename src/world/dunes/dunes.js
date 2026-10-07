@@ -389,7 +389,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     const g = this.game, cam = g.camera, L = this.lights;
     this.t += dt;
     // where the camera is decides the light
-    const inside = Math.hypot(cam.position.x - DUNE.x, cam.position.z - DUNE.z) < DUNE.outer && cam.position.y < DUNE.layerBelow;
+    const inside = (Math.hypot(cam.position.x - DUNE.x, cam.position.z - DUNE.z) < DUNE.outer && cam.position.y < DUNE.layerBelow) || !!g.emocean?.stage.active; // (a crossing is under the same sky: world/emocean/stage.js)
     this.mix = THREE.MathUtils.damp(this.mix, inside ? 1 : 0, 3, dt);
     // (the open sea is drawn further than a room: the camera's far plane opens out down here, and the fog closes it)
     const far = THREE.MathUtils.lerp(200, 420, this.mix);

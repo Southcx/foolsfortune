@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -31,6 +31,8 @@ export const ZONE_TESTS = [
   { id: 'dunes', test: inDunes },
   // a Well's floor (world/well/dunemaw.js): built far west and deep, one floor at a time
   { id: 'well', test: (p) => p.x > -1450 && p.x < -1150 && p.z > -150 && p.z < 150 && p.y > -960 && p.y < -840 },
+  // a crossing of the Emocean (world/emocean/stage.js SEA_AT): a straight rail 4 km along +Z, far west, at the dunes' layer
+  { id: 'emocean', test: (p) => p.x > -3200 && p.x < -2800 && p.z > -2200 && p.z < 2400 && p.y > -470 && p.y < -360 },
 ];
 const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 

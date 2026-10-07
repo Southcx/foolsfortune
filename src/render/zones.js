@@ -11,7 +11,7 @@
 // Objects that follow the camera or are drawn in world space from the origin (particles, trails, ropes: `frustumCulled = false`), and
 // anything marked `userData.zoneFree`, are never hidden by zone.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | null        (pure, for builders: render/zonemap.js)
+//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | null        (pure, for builders: render/zonemap.js)
 //   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
 //   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
 //   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)

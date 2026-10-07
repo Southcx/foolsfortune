@@ -43,6 +43,15 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   schools, pincer, darters, breather, the set piece, arrive), each held in a **view**, the camera's grammar: **chase** (Star Fox),
   **above** (Ikaruga), **side** (Einhander), **free** (Sin & Punishment), **astern** (looking back). A **swing** is the change of view:
   one bar, on a bar line, and nothing enters during it.
+- **the rail** (`world/emocean/stage.js`, `game.emocean`): the crossing as it is sailed, a straight line in a zone of its own (`emocean`)
+  at the dunes' layer. Everything that fights is kept in **the rail's frame** (x across, y up, z along) about the **rail point**, which
+  the **stage clock** moves (the cue as heard, else its own). The **ship** (`courier/ship/ship.js`) is the sloop at the rail, in a
+  **box** about the rail point; the view's **plane** says which two of its three numbers WASD moves (screen, sea, wall). *Not:* a
+  rail you grind or a rope (the Courier's moves).
+- **plain shot**, **outlined shot** (`courier/ship/shots.js`): a foe's shot at sea. A plain one has a feeling (absorbed if it is the
+  ship's, else it hurts; the roll turns it); an outlined one wears the parry mark and only the parry answers it, home to its thrower.
+- **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not);
+  choosing an island boards and casts off. Until Margarite's dock is built every pier is Anagami's jetty.
 - **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school: its
   **caller**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the pirates** (their **brig**: hull, rigging,
   gunports; **boarders** who take casks), and **the rogue Leviathan** (rare, a deck; **driven off** or **felled**). *Not:* an

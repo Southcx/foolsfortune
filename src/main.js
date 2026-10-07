@@ -44,6 +44,8 @@ import { Course } from './world/basement/basement.js';
 import { Techs } from './courier/moves/techs.js';
 import { Parries } from './courier/parries.js';
 import { Shrines } from './world/shrines.js';
+import { Emocean } from './world/emocean/stage.js';
+import { Pier } from './world/emocean/pier.js';
 import { Blink } from './courier/moves/blink.js';
 import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
@@ -513,6 +515,7 @@ async function main() {
       return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
     game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
+    game.emocean = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at the jetty's end, the rail shooter; world/emocean/)
     game.interact.add('push', () => {
       if (!push?.usable() || push.cool > 0 || carry?.item || !idle()) return null;
       const e = push.canGrab(); if (!e) return null;
@@ -799,6 +802,8 @@ async function main() {
   const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
+  game.emocean?.build(); const seaLooks = game.emocean ? [game.emocean.sea.mesh, game.emocean.waves.parked, game.emocean.ship.sloop.group] : []; // (the crossing's sea, ship and foes, parked: world/emocean/stage.js)
+  for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
@@ -807,6 +812,7 @@ async function main() {
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain();
   for (const o of brushLooks) o.visible = false;
+  for (const o of seaLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
   mark('shaders');
@@ -927,13 +933,13 @@ async function main() {
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
       else { gui.hide(); if (input.enabled && !game.god?.active) input.requestLock(); }
     }
-    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open) game.codex.toggle();
-    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling) game.pneukaUI.toggle();
+    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open && !game.emocean?.stage.active) game.codex.toggle();
+    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling && !game.emocean?.stage.active) game.pneukaUI.toggle();
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
-    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen()) god.toggle();
+    if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) god.toggle();
     if (modalOpen()) { game.cartography.tickModal(); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game)
-    if (started && overlayUp()) { game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
+    if (started && overlayUp()) { if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     // (setting the room again, the last checkpoint and the hub are the Tab panel's: tuning.js actions)
     if (input.wasPressed('F3')) diag.cycle();
@@ -943,8 +949,9 @@ async function main() {
     trial.update(dt);
     game.testroom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
+    const aboard = !!game.emocean?.stage.active; // (a crossing: the Courier is aboard the ship, held there, and theirs does not run either)
     if (godOn) god.update(dt);
-    else {
+    else if (!aboard) {
       player.look(dt, weapon.adsEase || 0);
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
@@ -959,7 +966,7 @@ async function main() {
       movers.pre(FIXED);
       god.arts.fixed(FIXED);
       if (godOn) god.fixed(FIXED);
-      else {
+      else if (!aboard) {
         player.fixedUpdate(FIXED, { adsT: weapon.adsEase, wantsFire: weapon.wantsFire });
         player.guard();
       }
@@ -998,7 +1005,8 @@ async function main() {
     // sound-test pick plays over any of it
     if (!game.overture?.active) game.music.follow(chooseMusic(game, { overlay: overlayUp() })); // (the overture's trailer keeps the title's music)
 
-    if (!godOn) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
+    if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
+    game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     env.water.update(dt);
     game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt);
     env.rigging.update(dt);
@@ -1068,7 +1076,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.shrines?.update();
+    game.well.update(dt); game.shrines?.update(); game.pier?.update();
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
