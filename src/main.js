@@ -178,6 +178,7 @@ import { Mirages } from './tools/crucibelle/mirage.js';
 import { Signatures, standardSignatures } from './core/signatures.js';
 import { Spirits } from './creatures/spirits.js';
 import { Bound } from './creatures/bound.js';
+import { CatchLook } from './vfx/catch.js';
 import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
@@ -631,6 +632,7 @@ async function main() {
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
+  game.catchLook = new CatchLook({ fx: game.fx }); scene.add(game.catchLook.group); // (Calissa's: one look for the hand's catch and the coffin's, vfx/catch.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
@@ -1092,7 +1094,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update();
+    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

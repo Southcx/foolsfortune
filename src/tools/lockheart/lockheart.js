@@ -175,10 +175,18 @@ export class Lockheart extends HeldTool {
     const pos = c.pos.clone().setY(c.pos.y + (c.height ?? 1.5) * (c.root?.scale.y ?? 1) + 1.2), cam = g.camera;
     const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
     this.queue = [{ id: 'catch' }];
+    // (Calissa's catch look runs with the wheel: the tether from the open coffin to it, tightening as the wheel slows)
+    const L = g.catchLook, mouth = () => (this.cof ? this.cof.group.getWorldPosition(new THREE.Vector3()) : this.P.pos.clone().setY(this.P.pos.y + 1.3));
+    L?.begin(c.root, mouth); this.catching = L ? { L, t: 0 } : null;
     this.wheel.spin(R, caught ? 'caught' : 'free', pos, face, () => {
-      this.queue = []; sfx.coffin?.(false);
-      if (caught && c.alive) { g.fx?.absorbSparkle?.(c.pos.clone().setY(c.pos.y + 0.6)); g.bound?.bind(c, 'lockheart'); }
-      else g.events?.emit('catch.miss', { from: 'lockheart', kind: c.kind, cls: c.cls || 0, odds: +p.toFixed(2), by: 'courier' });
+      this.queue = []; sfx.coffin?.(false); this.catching = null;
+      if (caught && c.alive) {
+        c.taking = true; const done = () => { c.taking = false; g.bound?.bind(c, 'lockheart'); };
+        if (L?.state === 'hold') L.take(done); else done();
+      } else {
+        L?.free();
+        g.events?.emit('catch.miss', { from: 'lockheart', kind: c.kind, cls: c.cls || 0, odds: +p.toFixed(2), by: 'courier' });
+      }
     });
   }
 
@@ -215,6 +223,7 @@ export class Lockheart extends HeldTool {
     this.hooverW = THREE.MathUtils.damp(this.hooverW, this.hoovering && this.held ? 1 : 0, 10, dt);
     if (this.hooverW > 0.05) this.hoover(dt);
     this.wheel.update(raw);
+    if (this.catching) { this.catching.t += raw; this.catching.L.set({ k: Math.min(0.9, this.catching.t / 2.1), tug: 0.5 + 0.5 * Math.sin(this.catching.t * 9) }); } // (the wheel's 2.1 s: wheel.js)
     // the coffin's light is its load: the lid's glow, and full, the lid ajar a crack (a line that glows with its load, not a gauge)
     const k = Math.min(1, this.charge / this.fill), C = this.cof;
     if (C) {

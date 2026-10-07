@@ -18,8 +18,10 @@
 // What fights in it is the FOE's (creatures/jelly/greatjelly.js): this module answers what a charge meets (`ramHit`), spends what it
 // struck (`spend`), drops stalactites, slides the sand toward a pool (`slide`), and keeps the Courier out of the pools.
 //
-// Its look is a greybox in the Great Dunemaw's kit (vfx/dunemawkit.js: the bismuth wall, the sand) and its pools (vfx/dunemaw.js):
-// Calissa dresses it (the crack seams that glow with a ram, the stalactites' shake, the pools' ring).
+// Its look is Calissa's: the Great Dunemaw's kit for the walls (vfx/dunemawkit.js), the dish's sand combed toward the pool as it slides and
+// the pools' ring before a surfacing (vfx/bowl.js), the pillars that crack, fall and break to rubble and the brittle stalactites that shake
+// and shatter (vfx/cavekit.js); here are their bodies, colliders and states. A felled pillar lies ACROSS the floor (along the ring, the way
+// the ram was turning), so a 12 m log never runs into the wall.
 //
 // Prior art: Monster Hunter's arenas (a ring of walls and features the monster wrecks, about 60 m across); the bullring's barrera and
 // burladeros (stone to step behind, drawn into); Zelda's Dodongo pit; Shadow of the Colossus (the room as the weapon); Journey's sand
@@ -38,6 +40,8 @@ import { ARENA } from '../../progress/combat/dunemaw.js';
 import { roughen, segments } from './rock.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
+import { Pillar, Stalactite } from '../../vfx/cavekit.js';
+import { bowlSand, bowlSandTick, PoolRing } from '../../vfx/bowl.js';
 import { sfx } from '../../audio/sfx.js';
 
 /** Where the bowl stands: its centre on the rim's level, in the Well's zone (render/zonemap.js), under where the floors are built. */
@@ -67,6 +71,7 @@ export class Bowl {
     this.group = new THREE.Group(); this.group.name = 'well-bowl'; this.group.userData.zone = 'well';
     this.group.position.copy(BOWL_AT);
     this.K = (g.dunemawKit ||= (() => { const k = dunemawKit({ env: g.sky?.env }); for (const mm of [k.wall, k.floor, k.trim, k.sand].filter(Boolean)) mm.userData.shared = true; return k; })());
+    this.dishMat = bowlSand({}); // (Calissa's: its streaks run toward uPool at uSlide)
     this.sandMat = this.K.sand || (g.wellSandMat ||= Object.assign(new THREE.MeshStandardMaterial({ color: 0xc9a473, roughness: 1, name: 'well-sand-standin' }), { userData: { shared: true } }));
     this.slipMat = slipMaterial();
     this.t = 0;
@@ -108,7 +113,7 @@ export class Bowl {
     const world = P.slice(); for (let k = 0; k < world.length; k += 3) { world[k] += BOWL_AT.x; world[k + 1] += BOWL_AT.y; world[k + 2] += BOWL_AT.z; }
     this.collide(RAPIER.ColliderDesc.trimesh(world, I, RAPIER.TriMeshFlags?.FIX_INTERNAL_EDGES ?? 0));
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(P, 3)); geo.setIndex(new THREE.BufferAttribute(I, 1)); geo.computeVertexNormals();
-    this.mesh(geo, this.sandMat, 'bowl-floor');
+    this.mesh(geo, this.dishMat, 'bowl-floor');
     const slip = new THREE.Mesh(new THREE.RingGeometry(RIM + 0.3, R, 64, 1), this.slipMat); slip.rotation.x = -Math.PI / 2; slip.position.y = -0.04; slip.name = 'bowl-slip';
     slip.receiveShadow = true; this.group.add(slip);
     // the roof: a disc seen from below
@@ -181,27 +186,26 @@ export class Bowl {
 
   /** The six pillars at r 18, each its own body (a ram can bring one down). */
   buildPillars() {
-    this.pillarGeo = (() => { const g = new THREE.CylinderGeometry(PILLAR.r, PILLAR.r * 1.15, PILLAR.h, 10, segments(PILLAR.h)).toNonIndexed(); g.deleteAttribute('uv'); g.translate(0, PILLAR.h / 2, 0); return g; })();
     this.pillars = ARENA.pillars.bearings.map((b, i) => {
       const p = bearingXZ(b, ARENA.pillars.r), y = dishY(ARENA.pillars.r);
-      const g = this.pillarGeo.clone(); g.translate(p.x, y, p.z); roughen(g, { seed: 20 + i, amp: 0.18 }); g.translate(-p.x, -y, -p.z); g.computeVertexNormals();
-      const m = new THREE.Mesh(g, this.K.wall); m.position.set(p.x, y, p.z); m.castShadow = m.receiveShadow = true; m.name = `pillar-${i + 1}`; this.group.add(m);
+      const look = new Pillar({ height: PILLAR.h, radius: PILLAR.r, fx: this.game.fx }); look.group.position.set(p.x, y, p.z); look.group.name = `pillar-${i + 1}`;
+      look.group.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+      this.group.add(look.group);
       const rb = this.game.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(BOWL_AT.x + p.x, BOWL_AT.y + y + PILLAR.h / 2, BOWL_AT.z + p.z));
       const col = this.game.physics.world.createCollider(RAPIER.ColliderDesc.cylinder(PILLAR.h / 2, PILLAR.r).setCollisionGroups(GROUPS.static).setFriction(0.9), rb);
-      return { i, bearing: b, x: p.x, z: p.z, y, state: 'whole', mesh: m, rb, col, log: null };
+      return { i, bearing: b, x: p.x, z: p.z, y, state: 'whole', look, rb, col, log: null };
     });
   }
 
   /** The eight stalactites at r 12: a spike hanging from a rock drape to the roof. */
   buildStalactites() {
-    const spike = new THREE.ConeGeometry(STAL.root, STAL.len, 7, 3); spike.rotateX(Math.PI); spike.translate(0, STAL.len / 2, 0); // (its tip at its origin, pointing down)
-    this.stalGeo = spike;
     const drapes = [];
     this.stals = ARENA.stalactites.bearings.map((b, i) => {
       const p = bearingXZ(b, ARENA.stalactites.r), tip = ARENA.stalactites.y[i % 2];
-      const m = new THREE.Mesh(spike, this.K.wall); m.position.set(p.x, tip, p.z); m.castShadow = true; m.name = `stal-${i + 1}`; this.group.add(m);
+      const look = new Stalactite({ kind: 'brittle', length: STAL.len, radius: STAL.root, fx: this.game.fx }); // (brittle: these fall; Calissa's grit says so)
+      look.group.position.set(p.x, tip + STAL.len, p.z); look.group.name = `stal-${i + 1}`; look.mesh.castShadow = true; this.group.add(look.group);
       const h = ROOF - tip - STAL.len, d = new THREE.CylinderGeometry(STAL.root * 0.8, STAL.root * 1.6, h, 7); d.translate(p.x, tip + STAL.len + h / 2, p.z); drapes.push(d);
-      return { i, x: p.x, z: p.z, tip, state: 'hanging', mesh: m, vy: 0, shake: 0, col: null };
+      return { i, x: p.x, z: p.z, tip, state: 'hanging', look, root: look.group, vy: 0, col: null };
     });
     this.mesh(mergeGeometries(drapes, false), this.K.wall, 'bowl-drapes'); drapes.forEach((g) => g.dispose());
   }
@@ -213,7 +217,8 @@ export class Bowl {
       const y = dishY(Math.hypot(w.x, w.z));
       const mouth = new DunemawMouth({ radius: w.r, maw: 0x2a1a40 }); mouth.group.position.set(w.x, y + 0.03, w.z); mouth.mesh.name = `pool-w${i}`; mouth.maw.name = `rim-w${i}`;
       this.group.add(mouth.group);
-      return { i, x: w.x, z: w.z, r: w.r, y, mouth, pos: this.world(w.x, y, w.z), ring: 0 };
+      const ripple = new PoolRing({ radius: w.r, fx: this.game.fx }); ripple.group.position.set(w.x, y + 0.06, w.z); this.group.add(ripple.group); // (Calissa's ring before a surfacing)
+      return { i, x: w.x, z: w.z, r: w.r, y, mouth, ripple, pos: this.world(w.x, y, w.z), ringT: 0, ringDur: 1 };
     });
   }
 
@@ -222,7 +227,7 @@ export class Bowl {
   ramHit(x, z, r) {
     for (const p of this.pillars) {
       if (p.state === 'whole' || p.state === 'cracked') { if (Math.hypot(x - p.x, z - p.z) < PILLAR.r + r) return { kind: 'pillar', it: p }; }
-      else if (p.state === 'fallen' && segDist(x, z, p.log) < PILLAR.r * 0.8 + r) return { kind: 'log', it: p };
+      else if ((p.state === 'fallen' || p.state === 'falling') && segDist(x, z, p.log) < PILLAR.r * 0.8 + r) return { kind: 'log', it: p };
     }
     for (const s of this.stals) if (s.state === 'fallen' && segDist(x, z, s.seg) < STAL.root * 0.8 + r) return { kind: 'stal', it: s };
     if (Math.hypot(x, z) > R - r - 0.4) return { kind: 'wall', it: null };
@@ -236,23 +241,24 @@ export class Bowl {
     if (!hit || hit.kind === 'wall') return false;
     const g = this.game, it = hit.it;
     if (hit.kind === 'pillar') {
-      if (it.state === 'whole') { it.state = 'cracked'; it.mesh.scale.set(0.97, 1, 0.97); }
+      if (it.state === 'whole') { it.state = 'cracked'; it.look.crack(1); }
       else this.topple(it, dir);
       this.dropNearest(it.x, it.z);
     } else if (hit.kind === 'log') {
-      it.state = 'rubble'; this.removeLog(it);
-      it.mesh.visible = true; it.mesh.rotation.set(0, 0, 0); it.mesh.position.y = it.y - PILLAR.h + 1.2; // (a stump of it, a mound to stand on)
+      it.state = 'rubble'; this.removeLog(it); it.look.rubble(); // (a heap where the log lay: an island the slide does not move)
       this.dropNearest(it.x, it.z);
     } else if (hit.kind === 'stal') {
-      it.state = 'gone'; it.mesh.visible = false; if (it.col) { g.physics.world.removeCollider(it.col, false); it.col = null; }
+      it.state = 'gone'; it.look.shatter(); if (it.col) { g.physics.world.removeCollider(it.col, false); it.col = null; }
     }
     sfx.shatter?.(hit.kind === 'stal' ? 1.4 : 2.2, g.listenerDistance(this.world(it.x, 1, it.z)), 'stone'); // (Wanda's crack and fall come on bowl.spend)
     g.events?.emit('bowl.spend', { what: hit.kind, state: it.state, i: it.i, by: 'creature' }); // (Calissa's seams and dust, Wanda's crack: their cues)
     return true;
   }
-  /** A cracked pillar falls: the standing body goes, and it lies along the ram's line as a 12 m log (its own collider, cover). */
+  /** A cracked pillar falls: the standing body goes, and it lies across the floor as a 12 m log (its own collider, cover): along the ring,
+   *  the way the ram was turning (a ram from the centre runs outward, and a log felled straight along it would run into the wall). */
   topple(p, dir) {
-    const W = this.game.physics.world, d = new THREE.Vector3(dir.x, 0, dir.z).normalize();
+    const W = this.game.physics.world, rr = Math.hypot(p.x, p.z), tx = -p.z / rr, tz = p.x / rr, sgn = dir.x * tx + dir.z * tz < 0 ? -1 : 1;
+    const d = new THREE.Vector3(tx * sgn, 0, tz * sgn);
     p.state = 'fallen';
     W.removeRigidBody(p.rb); p.rb = null; p.col = null;
     // (it lies from its foot along d, shortened where the wall would cut it: the far end kept 1.5 m inside the wall)
@@ -261,8 +267,7 @@ export class Bowl {
     const b = { x: a.x + d.x * t, z: a.z + d.z * t };
     p.log = { ax: a.x, az: a.z, bx: b.x, bz: b.z };
     const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2, len = Math.hypot(b.x - a.x, b.z - a.z), yaw = Math.atan2(d.x, d.z), y = this.floorY(mx, mz) - BOWL_AT.y + PILLAR.r * 0.8;
-    // (laid down: the drawn pillar's foot at a, its length along d (+Y turned to +Z, then about Y to d), shortened to the log)
-    p.mesh.rotation.set(Math.PI / 2, yaw, 0, 'YXZ'); p.mesh.scale.set(1, len / PILLAR.h, 1); p.mesh.position.set(a.x, y, a.z);
+    p.look.fall(d); // (Calissa's fall: slow off the vertical, then all at once, with a bounce and dust)
     p.logBody = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(BOWL_AT.x + mx, BOWL_AT.y + y, BOWL_AT.z + mz)
       .setRotation(new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, yaw, 0, 'YXZ'))));
     W.createCollider(RAPIER.ColliderDesc.cylinder(len / 2, PILLAR.r * 0.8).setCollisionGroups(GROUPS.static).setFriction(0.9), p.logBody);
@@ -278,14 +283,14 @@ export class Bowl {
   }
   /** Every hanging stalactite within r of a point drops (the FOE surfacing under them). */
   dropOver(x, z, r) { for (const s of this.stals) if (s.state === 'hanging' && Math.hypot(s.x - x, s.z - z) < r) this.drop(s); }
-  drop(s) { s.state = 'shaking'; s.shake = STAL.fall; this.game.events?.emit('bowl.shake', { i: s.i, by: 'environment' }); }
+  drop(s) { s.state = 'shaking'; s.shake = STAL.fall; s.look.shake(STAL.fall); this.game.events?.emit('bowl.shake', { i: s.i, by: 'environment' }); }
   /** A fallen stalactite within r of a point (the FOE's slam on one cracks its crown: the hammer's way), or null. */
   fallenNear(x, z, r) { return this.stals.find((s) => s.state === 'fallen' && segDist(x, z, s.seg) < r) || null; }
   /** Is a point (the bowl's frame) on something that does not slide: a fallen log, rubble, a fallen stalactite? */
   island(x, z) {
     for (const p of this.pillars) {
       if (p.state === 'fallen' && segDist(x, z, p.log) < PILLAR.r + 0.4) return true;
-      if (p.state === 'rubble' && Math.hypot(x - p.x, z - p.z) < PILLAR.r + 0.8) return true;
+      if (p.state === 'rubble' && segDist(x, z, p.log) < PILLAR.r + 0.8) return true;
     }
     return this.stals.some((s) => s.state === 'fallen' && segDist(x, z, s.seg) < STAL.root + 0.4);
   }
@@ -296,20 +301,32 @@ export class Bowl {
   update(dt) {
     const g = this.game, P = g.player;
     this.t += dt;
-    for (const w of this.pools) { w.mouth.update(this.t, 1); if (w.ring > 0) { w.ring -= dt; w.mouth.group.scale.setScalar(1 + 0.12 * Math.sin(this.t * 30) * Math.min(1, w.ring)); } else w.mouth.group.scale.setScalar(1); }
+    const raw = g.rawDt ?? dt;
+    for (const w of this.pools) {
+      w.mouth.update(this.t, 1);
+      if (w.ringT > 0) { w.ringT = Math.max(0, w.ringT - dt); w.ripple.ring(w.ringT > 0 ? 1 - w.ringT / w.ringDur : 0); }
+      w.ripple.update(raw);
+    }
+    for (const p of this.pillars) p.look.update(this.t, dt);
+    for (const s of this.stals) s.look.update(this.t, dt);
+    // the dish's streaks: toward the pool the sand slides to, at its speed (Calissa's bowlSand)
+    const U = this.dishMat.userData.u; U.uSlide.value = this.slideTo ? this.slideTo.speed : 0;
+    if (this.slideTo) U.uPool.value.set(BOWL_AT.x + this.slideTo.x, BOWL_AT.z + this.slideTo.z);
+    bowlSandTick(this.dishMat, raw);
     // the stalactites: a shake, a fall, a landing (then a ram target lying on the floor, and something to stand behind)
     for (const s of this.stals) {
       if (s.state === 'shaking') {
-        s.shake -= dt; s.mesh.position.x = s.x + 0.08 * Math.sin(this.t * 60); if (s.shake <= 0) { s.state = 'falling'; s.vy = 0; s.mesh.position.x = s.x; }
+        s.shake -= dt; if (s.shake <= 0) { s.state = 'falling'; s.vy = 0; }
       } else if (s.state === 'falling') {
-        s.vy -= 9.81 * dt; s.mesh.position.y += s.vy * dt;
+        s.vy -= 9.81 * dt; s.root.position.y += s.vy * dt;
+        const tipY = s.root.position.y - STAL.len;
         const floor = dishY(Math.hypot(s.x, s.z));
         // (on the Courier under it: a blow, as a falling rock's)
         const L = this.local(P.pos);
-        if (Math.hypot(L.x - s.x, L.z - s.z) < STAL.root + 0.4 && s.mesh.position.y < L.y + 1.9 && s.mesh.position.y > L.y - 0.2 && !s.hit) {
+        if (Math.hypot(L.x - s.x, L.z - s.z) < STAL.root + 0.4 && tipY < L.y + 1.9 && tipY > L.y - 0.2 && !s.hit) {
           s.hit = true; g.vesselDamage?.hit({ from: this.world(s.x, L.y + 3, s.z), k: 0.5, why: 'stalactite', by: 'environment' });
         }
-        if (s.mesh.position.y <= floor + 0.3) this.land(s, floor);
+        if (tipY <= floor + 0.3) this.land(s, floor);
       }
     }
     // the Courier: the one-way slopes, the shallows, the pools, the slide
@@ -338,7 +355,7 @@ export class Bowl {
   land(s, floor) {
     const g = this.game, W = g.physics.world, a = (s.i * 1.7) % (Math.PI * 2), d = { x: Math.sin(a), z: Math.cos(a) };
     s.state = 'fallen'; s.hit = false;
-    s.mesh.position.set(s.x, floor + STAL.root * 0.7, s.z); s.mesh.rotation.set(0, a, 0); s.mesh.rotateX(Math.PI / 2);
+    s.root.position.set(s.x, floor + STAL.root * 0.7, s.z); s.root.rotation.set(-Math.PI / 2, a, 0, 'YXZ'); // (its point, -Y from the root, laid along d)
     s.seg = { ax: s.x, az: s.z, bx: s.x + d.x * STAL.len, bz: s.z + d.z * STAL.len };
     const mx = s.x + d.x * STAL.len / 2, mz = s.z + d.z * STAL.len / 2;
     s.col = W.createCollider(RAPIER.ColliderDesc.cylinder(STAL.len / 2, STAL.root * 0.7).setTranslation(BOWL_AT.x + mx, BOWL_AT.y + floor + STAL.root * 0.7, BOWL_AT.z + mz)
@@ -348,16 +365,19 @@ export class Bowl {
   }
 
   /** A pool rings before the FOE surfaces in it (Calissa's ripple, Wanda's ring: both listen for foe.rise). */
-  ring(i, seconds) { const w = this.pools[i]; if (w) w.ring = seconds; }
+  ring(i, seconds) { const w = this.pools[i]; if (w) { w.ringT = w.ringDur = seconds; } }
+  /** The FOE comes up through a pool: the ring's splash. */
+  surfaced(i) { const w = this.pools[i]; if (w) { w.ringT = 0; w.ripple.ring(0); w.ripple.surface(); } }
 
   dispose() {
     const g = this.game, W = g.physics.world;
     g.player.drift.set(0, 0, 0); g.player.wade = 1;
-    for (const p of this.pillars) { if (p.rb) W.removeRigidBody(p.rb); this.removeLog(p); }
+    for (const p of this.pillars) { if (p.rb) W.removeRigidBody(p.rb); this.removeLog(p); p.look.dispose(); }
+    for (const s of this.stals) s.look.dispose();
+    for (const w of this.pools) w.ripple.dispose();
     W.removeRigidBody(this.body);
     g.scene.remove(this.group);
-    this.group.traverse((o) => { if (o.geometry && o.geometry !== this.stalGeo) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => { if (!mm.userData?.shared) mm.dispose(); }); });
-    this.stalGeo.dispose(); this.pillarGeo.dispose();
+    this.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => { if (!mm.userData?.shared) mm.dispose(); }); });
   }
 }
 

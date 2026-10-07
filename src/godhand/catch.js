@@ -7,6 +7,8 @@
 // is free where it is (`catch.free`). The Jar stands still the whole time and the fight goes on round it: whatever is hitting the Jar
 // can crack it. Skill over luck: the Lockheart's catch is the gamble (tools/lockheart/lockheart.js).
 //
+// Its look is Calissa's (game.catchLook, vfx/catch.js): the tether from the mouth, the struggle, the take and the snap.
+//
 // Prior art: Black & White's hand (a creature picked up, struggling in the fingers), Luigi's Mansion's Poltergust tug of war, Pikmin's
 // carry, and the genie drawn back into the bottle.
 //
@@ -42,6 +44,7 @@ export class HandCatch {
     const need = (c.cls || 0) + 1;
     this.held = { c, t: 0, need, tug: new THREE.Vector3(), next: 0.3, at: c.pos.clone() };
     c.held = c.pos.clone();
+    const V = this.god.jar; this.game.catchLook?.begin(c.root, () => V.pos.clone().setY(V.pos.y + 1.2)); // (the Jar's mouth)
     this.game.events?.emit('catch.grab', { kind: c.kind, cls: c.cls || 0, need, by: 'courier' });
     return this.held;
   }
@@ -66,7 +69,13 @@ export class HandCatch {
     H.t = over ? H.t + dt : Math.max(0, H.t - dt * TUG.ebb);
     H.over = over;
     if (over) g.stun?.hold(c, 0.5); // (being drawn in keeps it down: the struggle is the clock, not the stun)
-    if (H.t >= H.need) { this.held = null; c.held = null; g.bound?.bind(c, 'hand'); g.fx?.absorbSparkle?.(V.pos.clone().setY(V.pos.y + 1.2)); return false; }
+    g.catchLook?.set({ k: H.t / H.need, tug: Math.min(1, H.tug.length() / TUG.pull) });
+    if (H.t >= H.need) { // (held through: drawn down the tether into the mouth, then bound)
+      this.held = null; c.taking = true;
+      const done = () => { c.taking = false; c.held = null; g.bound?.bind(c, 'hand'); };
+      if (g.catchLook?.state === 'hold') g.catchLook.take(done); else done();
+      return false;
+    }
     return true;
   }
 
@@ -75,6 +84,7 @@ export class HandCatch {
     const H = this.held; if (!H) return;
     this.held = null;
     const c = H.c; c.held = null;
+    this.game.catchLook?.free();
     if (c.alive) { c.air = true; c.vy = 0; c.groundY = null; }
     this.game.events?.emit('catch.free', { from: 'hand', kind: c.kind, why, by: 'courier' });
   }

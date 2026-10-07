@@ -43,7 +43,9 @@ import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
 import { ECON } from '../../progress/econ/table.js';
 import { Cavern } from './cavern.js';
 import { BOWL_AT, slipMaterial } from './bowl.js';
-import { Nursery, eggMaterial } from './nursery.js';
+import { Nursery } from './nursery.js';
+import { Pillar, Stalactite, Clutch, dressBrood } from '../../vfx/cavekit.js';
+import { bowlSand, PoolRing } from '../../vfx/bowl.js';
 import { Finds, artifactMaterial } from './finds.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
 import { NURSERY, FOE } from '../../progress/combat/dunemaw.js';
@@ -79,13 +81,24 @@ export class Dunemaw {
     // (a sandfall's curtain is dressed on only when a floor is entered (vfx/welldress.js): one is shown here, falling, so its program is
     // compiled with the rest, not on the first sandfall seen: the perf gate's late compile, R46)
     const fall = new Sandfall({ width: 4.4, height: 4.6 }); fall.group.position.copy(F.arrive.pos); fall.update(1, 'falling', 1 / 60); F.group.add(fall.group);
-    // (the great cavern's own, compiled with the rest: the rim's slip, the urn crown with its core and shards bare, an egg, an artifact)
+    // (the great cavern's own, compiled with the rest: the rim's slip, the dish's sand, an artifact, the urn crown with its core and shards
+    // bare, and Calissa's cave kit: a pillar, a brittle stalactite, a clutch, a pool's ring, a brood's cap)
     const U = new UrnCrown({ radius: 0.62 }); U.core.visible = true; U.shards.visible = true; U.group.position.copy(F.arrive.pos); F.group.add(U.group);
-    for (const mat of [slipMaterial(), eggMaterial(), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); }
+    for (const mat of [slipMaterial(), bowlSand({}), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); }
+    const ring = new PoolRing({ radius: 1 }); ring.ring(0.5); ring.update(1 / 60);
+    const brood = new THREE.Group(); brood.add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), artifactMaterial(true))); dressBrood(brood);
+    for (const o of [new Pillar({ height: 2, radius: 0.3 }).group, new Stalactite({ kind: 'brittle', length: 1, radius: 0.3 }).group, new Clutch({ eggs: 2 }).group, ring.group, brood]) { o.position.copy(F.arrive.pos); F.group.add(o); }
     return () => { F.group.visible = false; this.warm = F; }; // (the curtain stays parked with the floor: disposed, its program would go with it)
   }
 
   get active() { return !!this.run; }
+  /** The Great Slip Jelly's fight, for its cue (music/greatjelly.js, Wanda's): awake, which phase ('crown' with the crown on or reeling,
+   *  'bare', 'won' once it is burst or reprogrammed), how many crack stages, whether the crown has burst. Round 2's timeline adds the
+   *  casts' phases ('clutch', 'calving', 'overflow', 'swallow'). Null outside the great cavern. */
+  get fight() {
+    const F = this.cur?.isCavern ? this.cur.foe : null; if (!F) return null;
+    return { active: F.state !== 'asleep', phase: F.ended ? 'won' : F.phase === 'bare' ? 'bare' : 'crown', cracks: F.stage, broken: F.stage >= 3 };
+  }
   get floor() { return this.run?.floor ?? 0; }
   /** Below this the Well has no bottom (main.js sets the player's killY from it while a run is on). */
   get killY() { return this.cur?.isCavern ? BOWL_AT.y - 25 : WELL_AT.y - 30; }

@@ -298,6 +298,7 @@ export class SlipJellies {
         continue;
       }
       if (c.spirit && (c.spirit.life -= dt) <= 0) { this.vanish(c, 'environment', 'faded'); continue; } // (its time is up: back into smoke)
+      if (c.taking) continue; // (being drawn into a vessel: vfx/catch.js moves it until it is in)
       if (c.held) { // (in the god hand's grip: where the hand holds it, its mind stood aside, struggling: godhand/catch.js)
         c.prevPos.copy(c.pos); c.pos.copy(c.held); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.groundY = null; c.want.set(0, 0, 0);
         c.deform.wob = Math.max(c.deform.wob, 0.08); this.pose(c, dt, dt);

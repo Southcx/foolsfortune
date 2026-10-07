@@ -286,7 +286,7 @@ export class PneukaBox {
   }
   /** DEBUG, the sandbox (title/ui.js): the whole kit, whatever STORY holds back (both coffins, a few of every key), topped up each time. */
   debugKit() {
-    const want = { 'heart.gambler': 1, 'heart.shepherd': 1 };
+    const want = { 'heart.gambler': 1, 'heart.shepherd': 1, 'heart.summoning': 1 }; // (Dovina's: the Warden's, the catch)
     for (const id of Object.keys(ITEMS)) if (ITEMS[id].kind === 'key') want[id] = 3;
     for (const [id, n] of Object.entries(want)) for (let k = this.held(id); k < n; k++) { if (!this.room(id)) return; this.add(id, 'debug'); } // (never onto the floor)
   }

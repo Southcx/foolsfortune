@@ -78,7 +78,7 @@ export class GreatJelly {
   }
   hurt(p, dir, power, cause, by, from, type = 'impact') {
     const c = this.c, g = this.game;
-    if (!c.alive || this.ended || this.state === 'under') return;
+    if (!c.alive || this.ended || this.disposed || this.state === 'under') return;
     if (this.state === 'asleep') this.wake();
     const ph = this.phase, part = cause === 'slam' && ph === 'crown' ? 'crown' : this.part(p);
     if (ph === 'crown' && part === 'crown') {
@@ -135,7 +135,7 @@ export class GreatJelly {
     if (this.sinceBreak != null) this.sinceBreak += dt;
     const ph = this.phase;
     // (down: stunned outside its reel, or asleep by a song or a macro, it does nothing until it comes to)
-    if ((st(c, 'stun') && this.state !== 'reel') || st(c, 'sleep')) { if (this.state === 'charge' || this.state === 'scrape' || this.state === 'rear') { g.creatures.unwind(c); this.go('idle', 0.4); } return; }
+    if ((st(c, 'stun') && this.state !== 'reel') || st(c, 'sleep')) { if (this.state === 'charge' || this.state === 'scrape' || this.state === 'rear') { g.creatures.unwind(c); this.crown.tell?.(0); this.go('idle', 0.4); } return; }
     switch (this.state) {
       case 'asleep': { // (half sunk in W0, brooding: squashed low, its crown just over the slip)
         c.squashTo = 0.62;
@@ -158,8 +158,8 @@ export class GreatJelly {
       case 'scrape': {
         c.face = this.aim; c.vel.multiplyScalar(Math.max(0, 1 - dt * 8));
         c.squashTo = 0.7; c.deform.wob = Math.max(c.deform.wob, 0.06);
-        this.crown.u.uFlash.value = Math.max(this.crown.u.uFlash.value, 0.5 * (this.t / FOE.ram.telegraph));
-        if (this.t >= FOE.ram.telegraph) { g.creatures.unwind(c); this.ran = 0; this.struck = false; this.go('charge'); c.deform.kick(7, null, 0.12); }
+        this.crown.tell?.(this.t / FOE.ram.telegraph); // (Calissa's: the broken edge and the cracks brighten and the urn trembles)
+        if (this.t >= FOE.ram.telegraph) { this.crown.tell?.(0); g.creatures.unwind(c); this.ran = 0; this.struck = false; this.go('charge'); c.deform.kick(7, null, 0.12); }
         return;
       }
       case 'charge': {
@@ -259,7 +259,7 @@ export class GreatJelly {
     g.jellies.place(c, w.pos.clone(), c.yaw);
     c.root.visible = true; c.col.setEnabled(true);
     c.deform.kick(9, null, 0.3);
-    this.bowl.dropOver(w.x, w.z, 3.5);
+    this.bowl.dropOver(w.x, w.z, 3.5); this.bowl.surfaced(w.i);
     g.events?.emit('foe.surface', { pool: w.i, by: 'creature' });
     this.slam(w.pos);
     this.go('idle', RECOVER);
@@ -299,7 +299,7 @@ export class GreatJelly {
   }
 
   dispose() {
-    this.offReprogram?.();
+    this.disposed = true; this.offReprogram?.();
     this.crown.dispose();
     this.game.jellies?.dispose(this.c);
   }
