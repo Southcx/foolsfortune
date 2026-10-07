@@ -11,7 +11,7 @@
 // ---------------------------------------------------------------------------------------
 export const TRACK_ASPECT = {
   // wonder: the held breath, the sky, the magic
-  lachryma: 'wonder', fortune: 'wonder', found: 'wonder', dunes: 'wonder', title: 'wonder', foolstep: 'wonder', shallows: 'wonder', wanda: 'wonder',
+  lachryma: 'wonder', garden: 'wonder', fortune: 'wonder', found: 'wonder', dunes: 'wonder', title: 'wonder', foolstep: 'wonder', shallows: 'wonder', wanda: 'wonder',
   spellwheel: 'wonder', spell: 'wonder',
   // mirth: the dance, the crew, the win
   fanfare: 'mirth', rest: 'mirth', suits: 'mirth', shanty: 'mirth', moon: 'mirth', calissa: 'mirth', overture: 'mirth', jackpot: 'mirth',
