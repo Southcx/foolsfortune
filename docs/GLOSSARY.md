@@ -43,9 +43,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   schools, pincer, darters, breather, the set piece, arrive), each held in a **view**, the camera's grammar: **chase** (Star Fox),
   **above** (Ikaruga), **side** (Einhander), **free** (Sin & Punishment), **astern** (looking back). A **swing** is the change of view:
   one bar, on a bar line, and nothing enters during it.
-- **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school: its
-  **caller**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the pirates** (their **brig**: hull, rigging,
-  gunports; **boarders** who take casks), and **the rogue Leviathan** (rare, a deck; **driven off** or **felled**). *Not:* an
+- **set piece** (`SET_PIECES`, `progress/rail/setpieces.js`): the crossing's second half, one of three: **the shoal** (a boid school of
+  **glints**: its caller is **the Conductor**, the **bait ball** it rings the ship in, the **frenzy** of its strikes), **the Wreckers**
+  (the pirates: Contractors under no letter; their brig **the False Light**: hull, rigging, gunports; **boarders** who take casks), and
+  **Old Nobody** (the rogue Leviathan, an Egregore: rare, a deck; **driven off** or **felled**; then Letty's "WANTED: NOBODY"). The
+  names are Espada's (`docs/LORE.md`, "The crossing's cast"). *Not:* an
   encounter (the Spirit Garden's: an achievement group mastered).
 - **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
   Lachryma to the pool) instead of hurting (Ikaruga).

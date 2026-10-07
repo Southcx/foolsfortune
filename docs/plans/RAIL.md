@@ -234,7 +234,16 @@ Leviathan at 64), and the breather is a breather.
 | **Wanda** | Crude Sea already paces it. Wanted: three layers for bars 62–96, one per set piece (the shoal's churn, a shanty over the broadside, the Leviathan's own motif); lock-on tones in E minor; the downs quantised to the sixteenth | from R2 |
 | **Espada** | names: the shoal's fish and its caller, the pirates (who sails the Emocean for crude?), the brig, the rogue Leviathan (one name, it is a character); the log's lines (placeholders in `tracking/rail.js`) | any time |
 
-## 12. Open for the owner
+## 12. The cast (Espada, 2026-10-07; `docs/LORE.md`, "The crossing's cast")
+
+- **The shoal's fish are glints**, named for the flash as a bait ball turns. The caller is **the Conductor**: the shoal moves on the
+  cue's beat, so the Conductor falling is the music stopping.
+- **The pirates are the Wreckers.** Wreckers hung false lights to lure ships onto rocks. These are Contractors under no letter (Letty
+  holds the King's marque; they hold none), and their brig is **the False Light**. Where they come from is left blank.
+- **The rogue Leviathan is Old Nobody.** An Egregore is authored by no one, and Nobody is also the name Odysseus gave the Cyclops.
+  Letty's notice reads "WANTED: NOBODY".
+
+## 13. Open for the owner
 
 1. **The second half is one set piece in 34 bars.** Should a long crossing (Anagami to Entropolis, King to Queen) chain two of them,
    with a second breather? The cue would want to be longer (Wanda), and a long crossing is rarer and riskier, so it would be earned.

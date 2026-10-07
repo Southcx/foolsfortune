@@ -531,10 +531,11 @@ export function buildAchievements(game) {
   C('rl6', 'emocean', 'The Rail', 2, 'mechanic', 'Return to Sender', 'Parry twenty-five shots on the rail.', 'rail.parried', 25);
   C('rl7', 'emocean', 'The Rail', 2, 'mechanic', 'Dot Eater', 'Absorb five hundred shots of your own feeling.', 'rail.absorbed', 500);
   C('rl8', 'emocean', 'The Rail', 2, 'mechanic', 'Point Blank', 'Down a hundred things at point blank.', 'rail.pointBlank', 100);
-  C('rl9', 'emocean', 'The Rail', 3, 'count', 'Strike Her Colours', 'Sink a pirate brig.', 'rail.end.sunk', 1);
-  C('rl10', 'emocean', 'The Rail', 3, 'count', 'Here Be Leviathans', 'Drive off a rogue Leviathan.', 'rail.end.driven', 1, { hidden: true });
-  C('rl11', 'emocean', 'The Rail', 5, 'perfect', 'Call Me Ishmael', 'Fell a rogue Leviathan.', 'rail.end.felled', 1, { hidden: true });
-  C('rl12', 'emocean', 'The Rail', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its caller.', 'rail.end.scattered', 1);
+  C('rl9', 'emocean', 'The Rail', 3, 'count', 'Sunk Cost', 'Sink the False Light.', 'rail.end.sunk', 1);
+  C('rl13', 'emocean', 'The Rail', 2, 'count', 'Strike Her Colours', 'Make the False Light strike her colours.', 'rail.end.struck', 1);
+  C('rl10', 'emocean', 'The Rail', 3, 'count', 'Here Be Leviathans', 'Drive off Old Nobody.', 'rail.end.driven', 1, { hidden: true });
+  C('rl11', 'emocean', 'The Rail', 5, 'perfect', 'Call Me Ishmael', 'Fell Old Nobody.', 'rail.end.felled', 1, { hidden: true });
+  C('rl12', 'emocean', 'The Rail', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
   C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
