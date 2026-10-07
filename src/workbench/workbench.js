@@ -54,6 +54,10 @@ import { bowlSand, bowlSandTick, PoolRing } from '../vfx/bowl.js';
 import { CatchLook } from '../vfx/catch.js';
 import { BuskerMat } from '../vfx/buskermat.js';
 import { FoeLook } from '../vfx/foelook.js';
+import { GardenSky } from '../vfx/garden/gardensky.js';
+import { Planetoid } from '../vfx/garden/planetoid.js';
+import { SpiritVein } from '../vfx/garden/veins.js';
+import { JarHop } from '../vfx/garden/jarhop.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 
@@ -194,6 +198,7 @@ export class Workbench {
     out.push({ id: 'slice:urn', grp: 'the slice', label: "the Pithos's urn crown (the ram's tell, cracking, bursting, the core; on a loop)" });
     out.push({ id: 'slice:foe', grp: 'the slice', label: "the Great Slip Jelly's windups (each cast in turn, read from the body; then the Sherds and the Overflow)" });
     out.push({ id: 'slice:bowl', grp: 'the slice', label: "the Great Slip Jelly's bowl (the sand sliding to a pool, the pool ringing, a pillar cracked, felled and broken, a clutch hatching, a brood; on a loop)" });
+    out.push({ id: 'garden:galaxy', grp: 'the Spirit Garden', label: "the garden as a galaxy (the six planetoids, the spirit veins, the cloud sea, the Jar hopping; day to night)" });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
     out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });
@@ -375,6 +380,20 @@ export class Workbench {
         const L = new FoeLook({ root, crown, floor: { center: new THREE.Vector3(0, 0, 0), radius: 3, depth: 0.3 } });
         const casts = ['crownBash', 'brineLine', 'gelidRings', 'oozeRain', 'crownGlare', 'slipNova', 'sinkingSands', 'brineCascade', 'broodCall', 'calving', 'overflow'];
         let last = -1; obj.userData.tick = (t) => { const n = Math.floor(t / 2.5) % casts.length, k = (t % 2.5) / 2; if (n !== last) { if (last >= 0) L.blow(casts[last]); last = n; } if (k <= 1) L.windup(casts[n], k, { order: n % 2 ? 'in' : 'out' }); L.overflow(casts[n] === 'overflow' ? Math.min(1, k) : 0); L.update(1 / 60); crown.update(1 / 60); };
+      }
+      else if (id === 'garden:galaxy') {
+        obj = new THREE.Group(); const S = new GardenSky({ radius: 300, motes: 60 }); obj.add(S.group);
+        const L = { dantian: [0, 0, 0], terraces: [40, 8, -12], furnace: [-34, 12, 16], pavilions: [12, -6, 44], grove: [-24, -2, -40], peak: [44, 18, 30] };
+        const world = new THREE.Group(); world.scale.setScalar(0.05); obj.add(world); const P = {}; let n = 1;
+        for (const [k, p] of Object.entries(L)) { const pl = new Planetoid({ kind: k, seed: n++ }); pl.group.position.set(...p); world.add(pl.group); P[k] = pl; }
+        const V = Object.keys(L).filter((k) => k !== 'dantian').map((k) => { const v = new SpiritVein(new THREE.Vector3(...L.dantian), new THREE.Vector3(...L[k])); world.add(v.mesh); return v; });
+        const jar = new THREE.Mesh(new THREE.LatheGeometry([[0, 0], [0.3, 0.05], [0.5, 0.4], [0.55, 0.7], [0.4, 1.0], [0.25, 1.15], [0.3, 1.25]].map(([r, y]) => new THREE.Vector2(r, y)), 16), new THREE.MeshStandardMaterial({ color: 0xb5532d, roughness: 0.6 }));
+        jar.scale.setScalar(3); const J = new JarHop(jar); P.dantian.group.add(jar); let last = 0;
+        obj.userData.tick = (t) => {
+          S.set({ night: 0.5 - 0.5 * Math.cos(t * 0.2) }); S.update(1 / 60); V.forEach((v) => v.update(1 / 60)); Object.values(P).forEach((p) => p.update(1 / 60));
+          const a = t * 0.4, ph = (t * 1.6) % 1; P.dantian.place(jar, new THREE.Vector3(Math.cos(a) * 0.5, 0.85, Math.sin(a) * 0.5), Math.sin(ph * Math.PI) * 2.2);
+          if (ph < last) J.land(5); else if (ph > 0.02 && last <= 0.02) J.hop(); last = ph; J.update(1 / 60);
+        };
       }
       else if (id === 'garden:catch') {
         obj = new THREE.Group();
