@@ -49,6 +49,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **Old Nobody** (the rogue Leviathan, an Egregore: rare, a deck; **driven off** or **felled**; then Letty's "WANTED: NOBODY"). The
   names are Espada's (`docs/LORE.md`, "The crossing's cast"). *Not:* an
   encounter (the Spirit Garden's: an achievement group mastered).
+- **leg** (`LEG`, `legsOf`, `progress/econ/emocean.js`): one set piece of a long crossing; a crossing has one to three (the owner,
+  2026-10-07), a **breather** between two whose flotsam **mends** the ship.
+- **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
+  to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
 - **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
   Lachryma to the pool) instead of hurting (Ikaruga).
 - **the lock-on** (RMB held on the rail): the reticle paints up to eight targets; release fires a **lance** at each, together a

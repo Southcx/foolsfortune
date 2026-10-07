@@ -11,8 +11,8 @@
 //   - ABSORBING a shot of your own feeling (the ship's polarity: Ikaruga) pays 10 and fills the pool that the lances spend.
 //   - The tally (Star Fox 64): what the ship still bears is worth 1,000 a hit; the set piece's end pays its own (a brig sunk, a
 //     Leviathan driven off or felled).
-// The RANK is the score against PAR, the median of an expert's run measured by scripts/rail.mjs (S at par, A at three quarters, B half,
-// C three tenths); the MEDAL is Star Fox's: the stage passed with four in five of what came downed.
+// The RANK is the score against PAR, the median of an expert's run measured by scripts/rail.mjs (S at par, then halving: A at half, B a
+// quarter, C an eighth); the MEDAL is Star Fox's: the stage passed with four in five of what came downed.
 //
 //   SCORE   chain() -> state   chainDown(state, aspect) -> bonus   volleyBonus(locked, downed)   downScore({ cls, pointBlank, returned })
 //   PAR[setPiece]   rankOf(score, setPiece) -> 'S'|'A'|'B'|'C'|'D'   medalOf({ passed, downed, spawned }) -> bool
@@ -28,7 +28,7 @@ export const SCORE = {
   bears: 1000, // (each hit the ship could still have borne, at the tally)
   end: { sunk: 5000, struck: 3000, driven: 8000, felled: 20000, scattered: 1500 }, // (the set piece's end; `scattered`: the shoal's caller downed)
   part: { port: 500, rigging: 800, boarder: 300, gill: 2000, tooth: 500 },
-  rank: [['S', 1], ['A', 0.75], ['B', 0.5], ['C', 0.3]],
+  rank: [['S', 1], ['A', 0.5], ['B', 0.25], ['C', 0.12]], // (halving bands: the chain doubles, so an expert scores about four times a good player, as in Ikaruga; measured, three-quarter bands ranked every good shoal D)
   medal: 0.8,
 };
 

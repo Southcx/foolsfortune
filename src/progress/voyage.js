@@ -21,13 +21,13 @@
 //   game.voyage = new Voyage(game)
 //   .at (the island the Courier is on)   .sailing ({ from, to, ship } | null)   .cargo() -> { grade: casks }   .casks() -> n
 //   .canBoard(from, to, ship) -> { ok, why?, hop? }   .board(from, to, ship, mounts?) -> { ok, why? } (mounts: two worn tools, progress/rail/mounts.js)   .stageResult(r) -> { lost, spilled }
-//   .crossing() -> the crossing's script (progress/rail/crossing.js) while at sea
+//   .crossing() -> the crossing's script (progress/rail/crossing.js) while at sea   .continueCost(share) -> cubes   .continueRun(share) -> { ok, why?, cost? }
 //   .reckon(from, to, share, q) -> share today   .reckoning(from, to) -> 0..1   .isOpen(node) -> bool
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { NODES, hop, routeId, opensNode } from './econ/emocean.js';
 import { spillChance } from './econ/islands.js';
-import { script } from './rail/crossing.js';
+import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.js';
 import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
 import { loadout } from './rail/mounts.js';
@@ -116,11 +116,25 @@ export class Voyage {
     const worn = (this.game.belt?.tools || []).map((t) => t.id).filter((id) => this.game.belt.isWorn(id)); // (the tools that can be mounted: the ones worn)
     this.s.sailing = { from, to, ship, day: today(), casks: this.casks(), leviathan, wx, mounts: loadout(mounts, worn) };
     const plan = this.crossing();
-    this.s.sailing.setPiece = plan?.setPiece || 'shoal';
+    this.s.sailing.setPiece = plan?.setPiece || 'shoal'; this.s.sailing.setPieces = plan?.setPieces || ['shoal'];
     this.dirty();
     this.game.events.emit('emocean.hop', { from, to, ship, fuel: c.hop.fuel, mounts: this.s.sailing.mounts, by: 'courier' });
-    this.game.events.emit('emocean.setpiece', { from, to, setPiece: this.s.sailing.setPiece, by: 'environment' });
+    this.game.events.emit('emocean.setpiece', { from, to, setPiece: this.s.sailing.setPiece, setPieces: this.s.sailing.setPieces, by: 'environment' });
     return { ok: true, hop: c.hop };
+  }
+  /** THE CONTINUE (progress/rail/crossing.js): what a coin costs now, the ship `share` (0..1) of the way across, priced by the way back
+   *  to the island of the last Shrine rested at; and paying it (refused, with the reason, when the purse is short). */
+  continueCost(share = 0) {
+    const V = this.s.sailing;
+    return V ? continueCost(V.from, V.to, share, this.game.shrines?.last || 'workshop', V.continues || 0) : 0;
+  }
+  continueRun(share = 0) {
+    const V = this.s.sailing, cost = this.continueCost(share);
+    if (!V) return { ok: false, why: 'You are not at sea.' };
+    if (!this.game.cubes?.spend(cost, 'continue')) return { ok: false, why: `A continue costs ${cost} cubes.` };
+    V.continues = (V.continues || 0) + 1; this.dirty();
+    this.game.events.emit('emocean.continue', { cost, continues: V.continues, share: +share.toFixed(2), by: 'courier' });
+    return { ok: true, cost };
   }
   /** The crossing as it will play (Petra's rail reads this: its acts, views, swings, beats and waves): progress/rail/crossing.js script. */
   crossing() {
@@ -152,10 +166,15 @@ export class Voyage {
         if (gone) { this.lose(g, gone); lost += gone; }
       }
     }
-    this.s.at = V.to; this.s.sailing = null;
+    // a crossing failed (no continue taken) breaks the ship up: you are made whole at your last Shrine, on its island (the shatter's
+    // rule: courier/vessel/death.js), not at the far port
+    const home = SHRINE_ISLAND[this.game.shrines?.last] || 'anagami';
+    this.s.at = passed ? V.to : home; this.s.sailing = null;
     this.dirty();
-    const setPiece = V.setPiece || 'shoal', rank = rankOf(score, setPiece), medal = medalOf({ passed, downed, spawned });
-    this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, end, score, rank, medal,
+    const continues = V.continues || 0, setPieces = V.setPieces || [V.setPiece || 'shoal'], setPiece = setPieces[setPieces.length - 1];
+    const ranked = rankOf(score, setPiece), rank = continues && 'SAB'.includes(ranked) ? CONTINUE.rankCap : ranked; // (a coin-fed run tops out at C)
+    const medal = !continues && medalOf({ passed, downed, spawned });
+    this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
       chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
     return { lost, spilled };
   }

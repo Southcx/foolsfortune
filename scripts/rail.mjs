@@ -12,7 +12,7 @@
 //   node scripts/rail.mjs            the report        node scripts/rail.mjs --par    also the par each set piece should carry (score.js)
 //   node scripts/rail.mjs --runs 500 fewer runs        exits 1 when a rule of the score is broken
 // ---------------------------------------------------------------------------------------
-import { BARS, BAR_S, SWING, ACTS, SET_PIECES, script, swings } from '../src/progress/rail/crossing.js';
+import { BARS, BAR_S, SWING, ACTS, SET_PIECES, LEG, legStart, script, swings, continueCost, CONTINUE } from '../src/progress/rail/crossing.js';
 import { WAVES, SHOAL, PIRATES, LEVIATHAN, LANCE, leviathanDeck } from '../src/progress/rail/setpieces.js';
 import { SCORE, chain, chainDown, volleyBonus, downScore, rankOf, medalOf, PAR } from '../src/progress/rail/score.js';
 import { STAGE } from '../src/progress/econ/emocean.js';
@@ -41,13 +41,14 @@ const HP = WAVES.hp, STAY = WAVES.stay, FIRE = WAVES.fire, OUTLINED = WAVES.outl
 const POOL = { max: 100, start: 60, regen: 2 }; // (Lachryma: the lances' purse; regen a bar)
 const ASPECTS = ['wonder', 'desire', 'grief']; // (Anagami's grades: the feelings the sea fires)
 
-// ---- the rules of the score, checked
-function rules(enc) {
-  const s = script('anagami', 'margarite', 3, { casks: enc === 'pirates' ? 8 : 0, leviathan: enc === 'leviathan' });
+// ---- the rules of the score, checked (for a crossing of these set pieces)
+function rules(pieces, from = 'anagami', to = 'margarite') {
+  if (typeof pieces === 'string') pieces = [pieces];
+  const s = script(from, to, 3, { pieces });
   const bad = [];
-  if (s.setPiece !== enc) bad.push(`asked for ${enc}, got ${s.setPiece}`);
-  const sw = swings(enc);
-  const enters = [...s.waves.map((w) => ['wave', w.bar, w.at * BARS]), ...s.beats.map((b) => ['beat', b.bar, b.bar])];
+  if (s.setPieces.join('+') !== pieces.join('+')) bad.push(`asked for ${pieces.join('+')}, got ${s.setPieces.join('+')}`);
+  const sw = s.swings;
+  const enters = [...s.waves.map((w) => ['wave', w.bar, w.bar + (w.at * BARS - Math.round(w.at * BARS))]), ...s.beats.map((b) => ['beat', b.bar, b.bar])];
   for (const [what, bar, exact] of enters) {
     if (Math.abs(exact - Math.round(exact)) > 1e-9) bad.push(`${what} at ${exact} is off the bar line`);
     for (const x of sw) if (bar >= x.bar - SWING.bars && bar < x.bar) bad.push(`${what} at bar ${bar} enters during the swing to ${x.to} (bars ${x.bar - SWING.bars}..${x.bar})`);
@@ -57,13 +58,20 @@ function rules(enc) {
 }
 
 // ---- one crossing
-function run(enc, P, danger = -0.5) {
-  const S = rules(enc).s;
-  const st = { hits: 0, bites: 0, downed: 0, spawned: 0, score: 0, pool: POOL.start, ch: chain(), chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, failed: false, end: null, casks: 0, threat: new Array(BARS).fill(0) };
+function run(pieces, P, danger = -0.5, { from = 'anagami', to = 'margarite', coins = false } = {}) {
+  if (typeof pieces === 'string') pieces = [pieces];
+  const S = rules(pieces, from, to).s, TOTAL = S.bars;
+  const st = { continues: 0, coinCost: 0, hits: 0, bites: 0, downed: 0, spawned: 0, score: 0, pool: POOL.start, ch: chain(), chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, failed: false, end: null, casks: 0, threat: new Array(TOTAL).fill(0) };
   const live = []; // { role, cls, hp, until, aspect }
   const enter = (role, cls, n, bar) => { for (let i = 0; i < n; i++) live.push({ role, cls, hp: HP[cls], until: bar + STAY[role], aspect: ASPECTS[Math.floor(rnd() * ASPECTS.length)] }); st.spawned += n; };
   const down = (t, opts = {}) => { if (!opts.fish) st.downed++; st.fishDown = (st.fishDown || 0) + (opts.fish ? 1 : 0); st.score += downScore({ cls: t.cls, pointBlank: rnd() < P.pb, returned: !!opts.returned }); if (opts.fish) return; const keep = rnd() < P.order; const bonus = chainDown(st.ch, keep && st.ch.aspect ? st.ch.aspect : t.aspect); st.score += bonus; st.chainBest = Math.max(st.chainBest, bonus); };
-  const hurt = (n = 1) => { if (st.failed) return; st.hits += n; if (st.hits >= STAGE.bears) st.failed = true; };
+  const hurt = (n = 1) => {
+    if (st.failed) return; st.hits += n;
+    if (st.hits < STAGE.bears) return;
+    if (coins) { st.coinCost += continueCost(from, to, curBar / TOTAL, 'pier', st.continues); st.continues++; st.hits = 0; return; } // (an arcade's coin: mended whole)
+    st.failed = true;
+  };
+  let curBar = 0;
   // incoming: n shots, `outl` share parryable; polarity absorbs the share of matching feeling the player keeps up with
   const incoming = (n, outl, bar) => {
     st.threat[bar] += n;
@@ -87,58 +95,66 @@ function run(enc, P, danger = -0.5) {
   };
 
   // ---- the set piece's own state
-  const E = { fish: 0, caller: SHOAL.caller.hp, scatterUntil: -1, hull: PIRATES.brig.hull, rig: PIRATES.brig.rigging * PIRATES.brig.riggingHp, ports: PIRATES.brig.ports * PIRATES.brig.portHp, gills: LEVIATHAN.gills.count * LEVIATHAN.gills.hp, throat: 0, stolen: 0 };
-  const cls0 = Math.max(0, Math.round(danger / 2 + 0.5));
-  for (let bar = 0; bar < BARS && !st.failed; bar++) {
+  const fresh = () => ({ fish: 0, caller: SHOAL.caller.hp, scatterUntil: -1, hull: PIRATES.brig.hull, rig: PIRATES.brig.rigging * PIRATES.brig.riggingHp, ports: PIRATES.brig.ports * PIRATES.brig.portHp, gills: LEVIATHAN.gills.count * LEVIATHAN.gills.hp, throat: 0, stolen: 0 });
+  const legE = pieces.map(fresh); let stolen = 0;
+  for (let bar = 0; bar < TOTAL && !st.failed; bar++) {
+    curBar = bar;
     for (const w of S.waves) if (w.bar === bar) enter(w.role, w.cls, w.count, bar);
+    // which leg the bar is in, and the bar as that set piece counts it (62..95); a breather between legs mends the ship
+    const k = pieces.findIndex((_, i) => bar >= legStart(i) && bar < legStart(i) + LEG.setPiece + LEG.breather);
+    if (k >= 0 && k < pieces.length - 1 && bar === legStart(k) + LEG.setPiece) st.hits = Math.max(0, st.hits - LEG.mend);
+    const enc = k >= 0 && bar < legStart(k) + LEG.setPiece ? pieces[k] : null, E = k >= 0 ? legE[k] : null;
+    const lb = k >= 0 ? bar - legStart(k) + LEG.first : -1, dk = danger + LEG.deeper * Math.max(0, k);
     for (let i = live.length - 1; i >= 0; i--) if (live[i].until <= bar || live[i].hp <= 0) live.splice(i, 1);
     for (const t of live) incoming(binom(1, Math.min(1, FIRE[t.role])) + (FIRE[t.role] > 1 ? Math.floor(FIRE[t.role]) - 1 : 0), OUTLINED[t.role], bar);
     let spare = shoot(bar, null);
-    if (enc === 'shoal' && bar >= 62 && bar < 84) {
-      if (bar === 62) { E.fish = SHOAL.count(cls0); st.spawned += 1; } // (the caller counts toward the medal; the fish are one body and do not)
+    const cls0 = Math.max(0, Math.round(dk / 2 + 0.5));
+    if (enc === 'shoal' && lb >= 62 && lb < 84) {
+      if (lb === 62) { E.fish = SHOAL.count(cls0); st.spawned += 1; } // (the caller counts toward the medal; the fish are one body and do not)
       else if (E.caller > 0) E.fish += SHOAL.reinforce.perBar;
-      const striking = bar >= 70 && bar > E.scatterUntil && E.fish > 0;
+      const striking = lb >= 70 && lb > E.scatterUntil && E.fish > 0;
       if (striking) {
         for (let p = 0; p < 1 / SHOAL.frenzy.every; p++) {
           const g = Math.min(E.fish, SHOAL.frenzy.group(cls0)); st.threat[bar] += g;
-          // a strike group is read a quarter bar ahead: dodged as a telegraphed blow; what lands bites
+          // a strike group is read a quarter lb ahead: dodged as a telegraphed blow; what lands bites
           const land = binom(g, 1 - P.roll); st.bites += land; while (st.bites >= SHOAL.bite.perHit) { st.bites -= SHOAL.bite.perHit; hurt(); }
         }
       }
       // inside the ball every shot finds a fish: spare damage and a share of aimed fire go to the fish; the caller at the expert's pace
-      const into = bar < 70 ? 0 : Math.min(E.fish, spare + binom(SHOTS_PER_BAR, P.acc * 0.5)); // (under the crude until the ball forms at 70: only the caller, by lance, can be reached)
+      const into = lb < 70 ? 0 : Math.min(E.fish, spare + binom(SHOTS_PER_BAR, P.acc * 0.5)); // (under the crude until the ball forms at 70: only the caller, by lance, can be reached)
       E.fish -= into; for (let i = 0; i < into; i++) down({ cls: cls0 }, { fish: true });
-      if (E.caller > 0 && bar >= 62 && rnd() < P.lock * 0.5) { E.caller -= LANCE; if (E.caller <= 0) { st.downed++; st.score += SCORE.end.scattered; E.scatterUntil = bar + SHOAL.scatter.bars; st.end = 'scattered'; } }
+      if (E.caller > 0 && lb >= 62 && rnd() < P.lock * 0.5) { E.caller -= LANCE; if (E.caller <= 0) { st.downed++; st.score += SCORE.end.scattered; E.scatterUntil = lb + SHOAL.scatter.bars; st.end = 'scattered'; } }
     }
-    if (enc === 'pirates' && bar >= 62 && bar < 96 && !E.done) {
-      if (bar < 70 && bar % PIRATES.chaser.every === 0) { st.threat[bar] += 1; if (rnd() < P.parry) { st.parried++; E.hull -= PIRATES.chaser.returned; } else if (rnd() > P.dodge) hurt(); }
-      if (bar >= 70 && bar < 84) {
-        if (bar % PIRATES.broadside.every === 0) { const open = Math.ceil(E.ports / PIRATES.brig.portHp); st.threat[bar] += open * PIRATES.broadside.shotsPerPort; if (rnd() < (open / PIRATES.brig.ports) * (1 - big(P))) hurt(); }
-        if (bar % PIRATES.boarders.every === 1) { for (let i = 0; i < PIRATES.boarders.count; i++) { st.spawned++; if (rnd() < Math.min(1, P.acc + 0.25)) { st.downed++; st.score += SCORE.part.boarder; } else E.stolen += PIRATES.boarders.steals; } }
+    if (enc === 'pirates' && lb >= 62 && lb < 96 && !E.done) {
+      if (lb < 70 && lb % PIRATES.chaser.every === 0) { st.threat[bar] += 1; if (rnd() < P.parry) { st.parried++; E.hull -= PIRATES.chaser.returned; } else if (rnd() > P.dodge) hurt(); }
+      if (lb >= 70 && lb < 84) {
+        if (lb % PIRATES.broadside.every === 0) { const open = Math.ceil(E.ports / PIRATES.brig.portHp); st.threat[bar] += open * PIRATES.broadside.shotsPerPort; if (rnd() < (open / PIRATES.brig.ports) * (1 - big(P))) hurt(); }
+        if (lb % PIRATES.boarders.every === 1) { for (let i = 0; i < PIRATES.boarders.count; i++) { st.spawned++; if (rnd() < Math.min(1, P.acc + 0.25)) { st.downed++; st.score += SCORE.part.boarder; } else E.stolen += PIRATES.boarders.steals; } }
         // aimed fire: ports first (they hurt), then rigging by volley, then the hull
         let d = spare + binom(SHOTS_PER_BAR, P.acc * 0.6);
         const hitPart = (k, per, pay) => { const before = Math.ceil(E[k] / per); const take = Math.min(E[k], d); E[k] -= take; d -= take; const after = Math.ceil(E[k] / per); st.score += (before - after) * pay; };
         hitPart('ports', PIRATES.brig.portHp, SCORE.part.port); if (rnd() < P.lock) d += LANCE * 4; hitPart('rig', PIRATES.brig.riggingHp, SCORE.part.rigging); E.hull -= d;
-      } else if (bar >= 84) { E.hull -= binom(SHOTS_PER_BAR, P.acc * 0.7); if (bar === 85 && E.hull > 0 && rnd() > big(P)) hurt(PIRATES.ram.hits); }
+      } else if (lb >= 84) { E.hull -= binom(SHOTS_PER_BAR, P.acc * 0.7); if (lb === 85 && E.hull > 0 && rnd() > big(P)) hurt(PIRATES.ram.hits); }
       if (E.hull <= 0) { E.done = true; st.end = 'sunk'; st.score += SCORE.end.sunk; st.casks += PIRATES.loot.sunk; }
-      else if (bar === 92) { E.done = true; if (E.rig <= 0) { st.end = 'struck'; st.score += SCORE.end.struck; st.casks += PIRATES.loot.struck; } else st.end = 'limped'; }
+      else if (lb === 92) { E.done = true; if (E.rig <= 0) { st.end = 'struck'; st.score += SCORE.end.struck; st.casks += PIRATES.loot.struck; } else st.end = 'limped'; }
     }
-    if (enc === 'leviathan' && bar >= 62 && bar < 96 && !E.done) {
-      if (bar === 64) { st.threat[bar] += 4; if (rnd() > big(P)) hurt(LEVIATHAN.breach.hits); }
-      if (bar === LEVIATHAN.sound.at) { st.threat[bar] += 4; if (rnd() > big(P)) hurt(LEVIATHAN.sound.hits); }
-      const abreast = bar >= 70 && bar < 80, maw = bar >= 88;
-      if (abreast && bar % LEVIATHAN.fin.every === 0) { st.threat[bar] += 2; if (rnd() > big(P)) hurt(LEVIATHAN.fin.hits); }
+    if (enc === 'leviathan' && lb >= 62 && lb < 96 && !E.done) {
+      if (lb === 64) { st.threat[bar] += 4; if (rnd() > big(P)) hurt(LEVIATHAN.breach.hits); }
+      if (lb === LEVIATHAN.sound.at) { st.threat[bar] += 4; if (rnd() > big(P)) hurt(LEVIATHAN.sound.hits); }
+      const abreast = lb >= 70 && lb < 80, maw = lb >= 88;
+      if (abreast && lb % LEVIATHAN.fin.every === 0) { st.threat[bar] += 2; if (rnd() > big(P)) hurt(LEVIATHAN.fin.hits); }
       if (abreast || maw) { st.threat[bar] += 1; if (rnd() < P.parry) { st.parried++; if (maw) E.throat++; else E.gills -= LEVIATHAN.spit.returned; } else if (rnd() > P.dodge) hurt(); }
-      const gillsOpen = (bar % LEVIATHAN.gills.of) < LEVIATHAN.gills.open;
+      const gillsOpen = (lb % LEVIATHAN.gills.of) < LEVIATHAN.gills.open;
       if (abreast && gillsOpen) { const before = Math.ceil(E.gills / LEVIATHAN.gills.hp); E.gills -= spare + binom(SHOTS_PER_BAR, P.acc * 0.7); const after = Math.ceil(Math.max(0, E.gills) / LEVIATHAN.gills.hp); st.score += (before - after) * SCORE.part.gill; }
       if (maw && rnd() < P.lock) st.score += SCORE.part.tooth * 6;
       if (E.gills <= 0 && E.throat >= LEVIATHAN.throat.spits) { E.done = true; st.end = 'felled'; st.score += SCORE.end.felled; }
-      if (bar === 95 && !E.done) { E.done = true; st.end = 'driven'; st.score += SCORE.end.driven; }
+      if (lb === 95 && !E.done) { E.done = true; st.end = 'driven'; st.score += SCORE.end.driven; }
     }
   }
-  const passed = !st.failed; st.stolen = E.stolen;
+  const passed = !st.failed; st.stolen = legE.reduce((a, e) => a + e.stolen, 0);
   if (passed) st.score += (STAGE.bears - st.hits) * SCORE.bears;
-  return { ...st, passed, medal: medalOf({ passed, downed: st.downed, spawned: st.spawned }), rank: rankOf(st.score, enc) };
+  const coined = st.continues > 0, rank = rankOf(st.score, pieces[pieces.length - 1]);
+  return { ...st, passed, medal: !coined && medalOf({ passed, downed: st.downed, spawned: st.spawned }), rank: coined && 'SAB'.includes(rank) ? CONTINUE.rankCap : rank };
 }
 
 // ---- the report
@@ -168,6 +184,21 @@ for (const enc of Object.keys(SET_PIECES)) {
   console.log(`   threat |${th.map((v) => ramp[Math.min(9, Math.round((v / top) * 9))]).join('')}|  peak ${top.toFixed(1)} a bar at bar ${th.indexOf(top)}`);
   console.log(`   acts   |${Array.from({ length: BARS }, (_, b) => { const a = ACTS.find((x) => b === x.from); return a ? a.id[0].toUpperCase() : ' '; }).join('')}|\n`);
 }
+// ---- the long crossings (the owner: up to three set pieces) and the continue (the owner: a coin priced by the way home)
+console.log('THE LONG CROSSINGS (pass: no coin; with coins: always continue; cost: cubes a crossing, respawn at the Float Shrine)');
+for (const [from, to, pieces, danger] of [['anagami', 'margarite', ['shoal'], -0.5], ['anagami', 'entra', ['shoal', 'pirates'], 1.5], ['margarite', 'entra', ['shoal', 'pirates', 'leviathan'], 1]]) {
+  const r = rules(pieces, from, to);
+  for (const b of r.bad) { console.log(`   RULE BROKEN (${from}-${to}): ${b}`); broken++; }
+  const row = Object.entries(PROFILES).map(([name, P]) => {
+    const plain = Array.from({ length: RUNS / 2 }, () => run(pieces, P, danger, { from, to }));
+    const fed = Array.from({ length: RUNS / 2 }, () => run(pieces, P, danger, { from, to, coins: true }));
+    const n = plain.length, pass = plain.filter((x) => x.passed).length / n;
+    const coins = fed.reduce((a, x) => a + x.continues, 0) / n, cost = fed.reduce((a, x) => a + x.coinCost, 0) / n;
+    return `${name} ${pct(pass).trim()} (coins ${coins.toFixed(1)}, ${Math.round(cost)} cubes)`;
+  });
+  console.log(`   ${from}-${to} (${pieces.length} leg${pieces.length > 1 ? 's' : ''}, ${r.s.bars} bars, ${r.s.seconds} s, ${pieces.join('+')}): ${row.join('; ')}`);
+}
+console.log('');
 console.log(`The Leviathan's deck: ${[-1.5, -0.5, 0.5, 1.5].map((d) => `danger ${d}: 1 in ${leviathanDeck(d)} (pall ${leviathanDeck(d, 'dread')})`).join('; ')}.`);
 console.log(`Pirates' chance on the Margarite run: ${[0, 2, 4, 8].map((c) => `${c} casks ${pct(PIRATES.chance(c, -0.5)).trim()}`).join(', ')}.`);
 function viewOf(r, bar) { return r.s.acts.find((a) => bar >= a.from && bar < a.to)?.view; }
