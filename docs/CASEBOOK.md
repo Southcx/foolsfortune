@@ -74,8 +74,25 @@ the rules before building in the same area; a rule a machine can check goes into
     rest value apart and is returned to it when the act's result is gone.
 31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
     that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
+32. **A tech asked to start while it is on is restarted in place**, never stopped and begun: `stop()` calls `end()`, which reads the state
+    the new start has just written (Launch's options), and ends the new move instead of the old.
+33. **A service is asked for when it is needed, not when the asker is built.** The techs are made before `game.interact` (main.js); a
+    source registered in a constructor with `game.interact?.add` was silently dropped. Register on first use (`offer()`), and test it.
 
 ## Cases
+
+### 2026-10-07 · The Solar Skiff's parked board had no chevron (Calissa)
+- **Seen:** headless, F beside a parked board did nothing; `interact.cur` was undefined.
+- **Cause:** the skiff tech registered its interact source in its constructor, and the techs are built before `game.interact` exists.
+- **Fix:** the source is registered the first frame the service is there (`Skiffing.offer()`, courier/skiff/skiff.js).
+- **Rule:** 33.
+
+### 2026-10-07 · An air string would have ended at its second cut (Calissa)
+- **Seen:** building the cutlass's air combo: the second committed move (a launcher straight into an air cut) dropped at once.
+- **Cause:** `Launch.go` while the launch was on called `mgr.begin`, which stopped the active tech; its `end()` took the options `go`
+  had just written, nulled them and called the new move's `onEnd`.
+- **Fix:** a `go` while the launch is on restarts it in place (courier/moves/launch.js).
+- **Rule:** 32.
 
 ### 2026-10-07 · A sibling in a fight was lost when the Courier travelled
 - **Seen:** the stress test with the party (seed 2, run 13): Dovina more than 40 m away for half a second, the Courier in the Dunes.
