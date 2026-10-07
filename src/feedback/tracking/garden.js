@@ -50,6 +50,8 @@ export function gardenRules({ on, L, log }) {
   on('garden.sculpt', (e) => { if (e.by === 'courier') L.inc('garden.sculpt'); });
   on('garden.paint', (e) => { if (e.by === 'courier') { L.inc('garden.paint'); if (e.ground !== 'none') L.inc(`garden.paint.${e.ground}`); } });
   on('garden.move', (e) => { if (e.by === 'courier') L.inc('garden.move'); });
+  on('garden.track', (e) => { if (e.by === 'courier') L.inc('garden.track'); });
+  on('spirit.race', (e) => { if (e.by !== 'courier') return; L.inc('spirit.race'); if (e.seconds != null) L.lo('spirit.race.fastest', e.seconds); });
   on('spirit.spar', (e) => { if (e.by === 'courier') { L.inc('spirit.spar'); L.hi('spirit.spar.bumps', e.bumps); } });
   on('garden.reset', (e) => { if (e.by === 'courier') L.inc('garden.reset'); });
   on('spirit.drill', (e) => { if (e.by === 'courier') { L.inc('spirit.drill'); if (!e.gain) log.say('info', `${e.spirit || 'The spirit'} is too tired to drill.`, { key: 'tired', throttle: 3 }); } });

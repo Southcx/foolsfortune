@@ -185,24 +185,25 @@ export class GardenHand {
     const P = this.hit.planet, clay = this.R.clays[P.id]; if (!clay) return;
     const dir = this.hit.point.clone().sub(P.c).normalize();
     if (!this.stroke) { // (a stroke begins: what it changes can be undone, and a flattening keeps the height it began at)
-      this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir) };
+      this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir), path: how === 'carve' ? [] : null }; // (a carve's path: a track if it closes on itself, world/garden/races.js)
       this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift();
     }
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
+    if (this.stroke.path && this.stroke.planet === P) this.stroke.path.push(dir.clone());
     if (clay.brush(dir, how, STROKE[how] ?? 0.12, this.size, { to: this.stroke.to })) { this.stroke.moved = true; this.R.reshape(P); this.R.waterworks?.disturb(P); }
   }
   /** Ctrl+Z: the last stroke taken back (the ground as it was before it, and the water told). */
   undo() {
     const U = this.undos.pop(); if (!U) return;
-    this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet); this.R.plots.veins(U.planet);
+    this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet); this.R.plots.veins(U.planet); this.R.races?.redraw(U.planet);
     this.game.events?.emit('garden.undo', { planetoid: U.planet.id, by: 'courier' });
   }
   endStroke() {
     const S = this.stroke; this.stroke = null; if (!S) return; if (!S.moved) { this.undos.pop(); return; } // (nothing changed: nothing to undo)
     this.R.reshape(S.planet, true);
     if (S.how === 'paint') this.game.events?.emit('garden.paint', { planetoid: S.planet.id, ground: S.ground || 'none', by: 'courier' });
-    else { this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' }); this.R.plots.veins(S.planet); } // (a ridge raised moves the veins' ends: item 13)
+    else { this.game.events?.emit('garden.sculpt', { planetoid: S.planet.id, how: S.how, by: 'courier' }); this.R.plots.veins(S.planet); this.R.races?.redraw(S.planet); if (S.path) this.R.races?.offer(S.planet, S.path); } // (a ridge raised moves the veins' ends: item 13; a carve that closes is a track: 17c)
   }
 
   // ---- placing: the page of what may stand there (its cost in cubes and a material of the feeling's kind)

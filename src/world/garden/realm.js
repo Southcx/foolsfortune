@@ -28,6 +28,7 @@ import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
 import { Waterworks } from './waterworks.js';
 import { Plants } from './plants.js';
+import { Races } from './races.js';
 import { Daturas } from '../../vfx/datura.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
@@ -61,6 +62,7 @@ export class Realm {
     this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
     this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
     this.plants = new Plants(this); // (green that spreads over wet, fertile ground: world/garden/plants.js)
+    this.races = new Races(this); // (tracks carved in one closed stroke, and the spirits' races on them: world/garden/races.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
@@ -71,13 +73,13 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump() }),
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump() }),
       load: (d) => {
         this.name = d?.name || null; this.awaken.load(d?.awaken);
         for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
-        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants);
+        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
       },
-      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -148,7 +150,7 @@ export class Realm {
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.site.group.remove(s.mesh);
-      this.raising.sparring = null; // (a spar is left with the garden)
+      this.raising.sparring = null; this.races.stop(); // (a spar or a race is left with the garden)
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
@@ -216,7 +218,7 @@ export class Realm {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
       s.body.step(dt, { move: s.wish });
     }
-    this.raising.fixed(dt); // (a spar at the Chimney: world/garden/raising.js)
+    this.raising.fixed(dt); this.races.fixed(dt); // (a spar at the Chimney: world/garden/raising.js; a race: races.js)
     this.waterworks.fixed(dt); // (the water runs while you are in the garden: world/garden/waterworks.js)
   }
 
@@ -290,7 +292,7 @@ export class Realm {
     const c = this.clays[P.id]; if (!c) return;
     this.hand.undos.push({ planet: P, h: c.snapshot() }); // (and a slip of the keys can be undone: Ctrl+Z)
     c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 });
-    this.waterworks.reset(P); this.plants.clear(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
+    this.waterworks.reset(P); this.plants.clear(P); this.races.clear(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
     this.game.events?.emit('garden.reset', { planetoid: P.id, by: 'courier' });
   }
   reshape(P, now = false) {

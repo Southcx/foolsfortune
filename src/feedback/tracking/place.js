@@ -24,6 +24,9 @@ export function placeRules({ on, log }) {
   on('spirit.name', (e) => log.say('info', `${e.was[0].toUpperCase()}${e.was.slice(1)} is named ${e.spirit}.`, { key: 'spirit.name', throttle: 0.5 })); // (words a placeholder, Espada's)
   on('spirit.spar.start', (e) => log.say('info', `Your ${e.a} and your ${e.b} square up.`, { key: 'spar', throttle: 1 })); // (words placeholders, Espada's)
   on('spirit.spar', (e) => log.say('info', `The spar ends after ${e.seconds} real seconds. Each grows stronger: ${e.stats.join(' and ')}.`, { key: 'spar', throttle: 1 }));
+  on('garden.track', (e) => log.say('info', `A track: ${e.metres} m round. A spirit's page starts a race on it.`, { key: 'garden.track', throttle: 1 })); // (words placeholders, Espada's)
+  on('spirit.race.start', (e) => log.say('info', `The race begins: ${e.runners.join(', ')}.`, { key: 'race', throttle: 1 }));
+  on('spirit.race', (e) => log.say('info', e.winner ? `${e.winner[0].toUpperCase()}${e.winner.slice(1)} wins, in ${e.seconds} real seconds.` : 'Nobody finishes the race.', { key: 'race', throttle: 1 }));
   on('garden.move', (e) => log.say('info', `Moved. Its formation there: ×${e.mult}${e.vein ? ', on a spirit vein' : ''}.`, { key: 'garden.move', throttle: 0.5 }));
   on('garden.grant', (e) => { if (e.by === 'courier') log.say('info', `The ${e.kind === 'bed' ? 'terrace' : 'pavilion'} gives you one more ${e.kind}.`); }); // (Dovina's: progress/garden.js grant)
   on('trial.solar.start', (e) => log.say('info', `The Gnomon's shadow starts to move. Time: 90 real seconds. Rings lit: ${e.lit} of 24.`, { key: 'solar.start', throttle: 1 }));

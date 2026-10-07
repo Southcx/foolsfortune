@@ -155,6 +155,7 @@ export class Raising {
       });
       if (R.plots?.plots.some((p) => p.placed?.feature === 'drillYard')) for (const [id, D] of Object.entries(DRILLS)) btn(`Drill: ${DRILL_NAME[id] || id}`, `${D.stat}${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => this.drill(s, id));
       if (s.body?.planet?.id === 'chimney' && !this.sparring) for (const o of R.spirits) if (o !== s && o.body.planet === s.body.planet) btn(`Spar: ${spiritName(o.e)}`, `at the Chimney, nobody hurt: each gains ${SPAR.gain} in its strongest stat${S.fatigue >= FATIGUE.fail ? ' (too tired)' : ''}`, () => { if (S.fatigue < FATIGUE.fail) this.spar(s, o); });
+      for (const T of R.races?.near(s.body?.planet) || []) if (!R.races.running) btn(`Race: the ${Math.round(T.len)} m track`, `the spirits here run a lap: ${R.spirits.filter((o) => o.body.planet === T.planet).slice(0, 4).map((o) => spiritName(o.e)).join(', ')}`, () => R.races.start(T, R.spirits));
       btn(s.e.out ? 'Stay in the garden' : 'Come out with me', s.e.out ? 'it waits here' : 'one at a time: it walks the world beside you', () => this.setOut(s.e, !s.e.out));
       btn('Release it', 'it goes, for good', () => { R.release(s); menu.close(); });
       im.appendChild(el('div', 'grp', 'YOUR SPIRIT')); im.appendChild(rows);
