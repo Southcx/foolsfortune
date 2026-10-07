@@ -8,7 +8,7 @@
 // owner: "Pokemon don't release themselves"). Five stats, one a feeling; fed by what the game already drops; aligned on the Law-Chaos
 // line by the hand's pet and flick; maturing into a form by its strongest feeling and its alignment.
 // THE FIRINGS (the owner's word: "can scale to any number"): the soul refired, read from the sum of the attributes' ranks (Soul
-// Alchemy, ledger `alchemy.rank.<attribute>`) and crossed by the tribulation at the Meditation Peak. Never a level: a Firing opens
+// Alchemy, ledger `alchemy.rank.<attribute>`) and crossed by the tribulation at the Chimney. Never a level: a Firing opens
 // places and verbs, never numbers on the Courier (DESIGN.md: no experience points, no levels).
 //
 // Prior art: Sonic Adventure's Chao (stats from food, alignment from treatment, forms by both), Monster Rancher (stats to 999 by
@@ -20,7 +20,8 @@
 // ---------------------------------------------------------------------------------------
 
 /** Five stats, one a feeling (the game's fives); each 0..999, Monster Rancher's ceiling. */
-export const STATS = { mirth: 'speed', wonder: 'sight', desire: 'strength', grief: 'stamina', dread: 'will' };
+// (in the game's shown order: Wonder, Mirth, Desire, Grief, Dread; pages list them in this order)
+export const STATS = { wonder: 'sight', mirth: 'speed', desire: 'strength', grief: 'stamina', dread: 'will' };
 export const MAX = 999;
 
 /** What feeding raises (a Well's material by its kind: progress/econ/materials.js KINDS), by how much a tier (0..4) of the material.
@@ -34,7 +35,7 @@ export const FEED = {
   curioBond: [2, 4, 7, 12, 20],
 };
 /** Alignment on the Law-Chaos line (-1 Law .. +1 Chaos): a pet nudges it toward Law, a flick toward Chaos (Black & White), sparring at
- *  the Peak toward Chaos, tending its terrace toward Law. A form is Law past -1/3, Chaos past +1/3, else Neutral (Chao's three). */
+ *  the Chimney toward Chaos, tending its terrace toward Law. A form is Law past -1/3, Chaos past +1/3, else Neutral (Chao's three). */
 export const ALIGN = { pet: -0.02, flick: 0.02, spar: 0.01, tend: -0.005, third: 1 / 3 };
 /** Maturing: bond at 50 (of 100) and one stat at 300; the form is its strongest feeling and its side: 5 x 3 = 15 forms a kind. */
 export const MATURE = { bond: 50, stat: 300 };

@@ -36,7 +36,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.mature', (e) => { if (e.by !== 'courier') return; L.inc('spirit.mature'); L.inc(`spirit.form.${e.feeling}.${e.side}`); log.say('gain', `${e.spirit || 'A spirit'} matures.`); });
   on('spirit.merge', (e) => { if (e.by === 'courier') L.inc('spirit.merge'); });
   on('spirit.release', (e) => { if (e.by === 'courier') { L.inc('spirit.release'); log.say('info', `You release ${e.spirit || 'a spirit'}.`); } });
-  // the Firings: the tribulation at the Meditation Peak crosses the one the attributes' ranks have opened
+  // the Firings: the tribulation at the Chimney crosses the one the attributes' ranks have opened
   on('cultivation.tribulation', (e) => {
     if (e.by !== 'courier') return;
     L.inc('tribulation.tried');

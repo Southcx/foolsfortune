@@ -25,7 +25,7 @@ const best = (key, n) => (L) => (L.best(key) || 0) >= n;     // (a record)
  *  (its clip at the speed it plays), `cost` Lachryma, `status` it puts on what it strikes (creatures.apply; each creature decides what
  *  it means), `unlock` a ledger predicate. Strings are listed stroke by stroke ('combo1'..): their sum over their time is the dps. */
 export const MOVES = {
-  cutlass: {
+  sondelass: { // (the cutlass form: the rod and the hook do not fight with strings)
     combo1: { power: 1.2, time: 0.42, unlock: always }, combo2: { power: 1.3, time: 0.46, unlock: always },
     combo3: { power: 1.4, time: 0.5, unlock: always }, combo4: { power: 2.0, time: 0.78, unlock: always },   // (2.7 power a second over the four)
     pause1: { power: 1.0, time: 0.4, unlock: always }, pause2: { power: 1.0, time: 0.4, unlock: always },
