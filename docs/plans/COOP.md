@@ -71,7 +71,8 @@ Kept by Dovina (the design); Petra builds the engine. Units: real seconds, real 
 **What a sibling may do to the world:**
 - **Strike foes** (`by: 'sibling'`, `who: '<name>'`). A sibling's blows **never count toward the owner's records** (CLAUDE.md: only the
   Courier's do).
-  - A foe the owner has struck at all and a sibling finishes still counts for the owner (FFXIV's credit by taking part).
+  - A foe the owner has struck at all and a sibling finishes still counts for the owner (FFXIV's credit by taking part):
+    `creature.credit { kind, who, by: 'courier' }`, counted in `tracking.js` as the owner's burst (`jelly.burst.party`).
   - A sibling deals **0.4 of the Courier's sustained damage** (help, not a carry: the owner's skill decides the fight).
 - **Never pick up** cubes, drops, casks or finds. What the world gives is the owner's to take; a sibling **points at it** (a glyph pop
   over it, CLAUDE.md's marks).
@@ -90,7 +91,7 @@ Kept by Dovina (the design); Petra builds the engine. Units: real seconds, real 
 - **The chat line:** `/sib <name | all> follow | hold | go <place> | fight | back | call | dismiss`. Every order is said in the log by its
   event.
 
-## C6. What a session may write (`coop/siblings/<name>` in the db; Dovina's rulings)
+## C6. What a session may write (`siblings/<name>` in the db: a document path has two segments; Dovina's rulings)
 
 **Fields** (the page whitelists them and ignores the rest):
 

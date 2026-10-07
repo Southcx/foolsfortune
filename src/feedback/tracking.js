@@ -401,6 +401,9 @@ export class Tracking {
       if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'You burst the slip jelly.', { key: 'jbur', win: 1, fmt: (n) => `You burst ${plural(n, 'slip jelly').replace('jellys', 'jellies')}.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle in a while.'); }
       else log.say('other', 'The slip jelly bursts.', { key: 'jbur2', throttle: 1 });
     });
+    // a foe the owner struck and a sibling finished is the owner's (docs/plans/COOP.md: FFXIV's credit by taking part); the death itself
+    // stays the sibling's (`by: 'sibling'`), so it counts here, once, as a burst by the owner (cause 'party')
+    on('creature.credit', (e) => { if (e.by !== 'courier') return; L.inc('creature.credit'); if (e.kind === 'slipjelly' || e.kind === 'jelly') { L.inc('jelly.burst'); L.inc('jelly.burst.party'); } });
     // their lives, said when they are near enough to see (creatures/jelly/mind.js): what they eat, what they catch, what they bring, whom they fight
     const seen = () => { const P = this.game.player.pos; return this.game.jellies?.list.some((c) => c.alive && c.pos.distanceTo(P) < 30); };
     on('jelly.eat', (e) => { L.inc('jelly.ate'); if (seen()) log.say('other', e.what === 'cube' ? 'A slip jelly swallows a cube of Lachryma.' : 'A slip jelly swallows a bauble of Lachryma.', { key: 'jeat', throttle: 8 }); });
