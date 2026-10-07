@@ -73,6 +73,7 @@ export class SolarTrial {
     const d = Math.hypot(P.pos.x - G.x, P.pos.z - G.z); return d < LOOP.foot ? { pos: G.clone().setY(P.pos.y + 2.4), d } : null;
   }
   start() {
+    if (this.running) return false; // (F again mid-trial is not a restart: SWEEPS group 4)
     const g = this.game, phase = phaseAt();
     if (phase === 'night') { g.log?.say('warn', 'The Gnomon casts no shadow at night. The trial is closed.', { key: 'solar.night', throttle: 3 }); return false; }
     this.build();
@@ -96,23 +97,20 @@ export class SolarTrial {
     const g = this.game, P = g.player.pos;
     this.t += dt;
     if (!this.dunes.active) { this.end('left'); return; }
-    // through a ring: the segment since last step crosses its plane inside it
-    for (let i = this.next; i < this.rings.length; i++) {
-      const R = this.rings[i], a = this.prev.clone().sub(R.pos).dot(R.dir), b = P.clone().sub(R.pos).dot(R.dir);
-      if (a > 0 || b < 0) continue;
-      const k = a / (a - b), at = this.prev.clone().lerp(P, k);
-      if (at.distanceTo(R.pos) > LOOP.ring) continue;
-      for (let j = this.next; j < i; j++) if (this.rings[j].lit && !this.rings[j].taken) this.missed++; // (a lit ring passed by: two seconds)
-      if (R.lit) { R.taken = true; R.look.pass(); }
-      this.next = i + 1; this.mark();
-      break;
+    // through the next lit ring, on the skiff: the segment since last step crosses its plane inside it (only that one counts, and only
+    // ridden: the last ring run through first on foot won gold in 1.1 s, SWEEPS group 4; Dovina's ruling)
+    const n = this.rings.findIndex((R, i) => i >= this.next && R.lit), R = this.rings[n];
+    if (R && g.techs?.active?.id === 'skiff') {
+      const a = this.prev.clone().sub(R.pos).dot(R.dir), b = P.clone().sub(R.pos).dot(R.dir);
+      if (a <= 0 && b >= 0 && this.prev.clone().lerp(P, a / (a - b || -1)).distanceTo(R.pos) <= LOOP.ring) { R.taken = true; R.look.pass(); this.next = n + 1; this.mark(); }
     }
     this.prev.copy(P);
-    if (this.next >= this.rings.length) this.finish();
+    if (!this.rings.some((Q, i) => i >= this.next && Q.lit)) this.finish();
     else if (this.t >= SOLAR.limit) this.end('time');
   }
   finish() {
     const g = this.game, L = g.ledger, taken = this.rings.filter((R) => R.taken).length;
+    if (!taken) { this.end('dark'); return; } // (no ring lit to run: nothing won)
     const seconds = +(this.t + this.missed * SOLAR.missed).toFixed(1), medal = medalOf(seconds);
     const first = medal && !(L?.get?.(`trial.solar.${medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
     g.events?.emit('trial.solar', { seconds, taken, lit: this.lit, phase: this.phase, medal, by: 'courier' });

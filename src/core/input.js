@@ -86,6 +86,8 @@ export class Input {
 
   isDown(code) { return this.down.has(code); }
   wasPressed(code) { return this.pressed.has(code); }
+  /** A press that closed or picked something is spent: no one else this frame, nor the Courier's latch, sees it (CASEBOOK rule 20). */
+  spend(...codes) { for (const c of codes) { this.pressed.delete(c); this.onSpend?.(c); } }
 
   endFrame() {
     this.pressed.clear();

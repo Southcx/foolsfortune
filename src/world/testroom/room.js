@@ -137,7 +137,7 @@ export class TestRoom {
         model.hit?.(point || S.center(), dir || new THREE.Vector3(0, 0, -1), Math.min(2, 0.5 + power));
       },
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
-      setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m }); },
+      setMode(m) { mode = m; model.setMode?.(m); swingT = 0; g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); },
       /** Once a frame, in real seconds: the bout's end said, the swing's slow sweep (harmless: STRAWMAN.swing.harm). */
       tick(raw) {
         clock += raw;

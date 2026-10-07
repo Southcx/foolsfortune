@@ -61,7 +61,7 @@ export class Kiln extends Tech {
     g.ui?.want('kiln', false);
     if (g.kilnUI?.open) g.kilnUI.hide();
     g.vessel?.revert(); // (a look tried on and not fired comes off)
-    g.events?.emit('kiln.close', {});
+    g.events?.emit('kiln.close', { by: 'courier'});
     g.kilnUI.onClose?.();
   }
   faceYaw() { return this.face; }

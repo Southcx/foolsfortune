@@ -248,20 +248,20 @@ export class Dunemaw {
   }
 
   /** Out of the Well, one of three ways (docs/plans/SHRINES.md, Tarkov's extracts): 'walk' up the way up (all the pay and the haul, for
-   *  leave() to hand over), 'escape' by the Wake Whistle (ECON.escape.keep of the pay, the haul kept), or 'shatter' (lost). (A boolean
+   *  leave() to hand over), 'escape' by the Wake Whistle (ECON.escape.keep of the pay, the haul kept), or 'shatter' (lost); 'abandon' is travelled out of it (lost, unshattered). (A boolean
    *  is the old call: true, shattered.) */
   end(how) {
     if (typeof how === 'boolean') how = how ? 'shatter' : 'walk';
     const g = this.game, R = this.run; if (!R) return null;
-    const shattered = how === 'shatter';
+    const shattered = how === 'shatter', lost = shattered || how === 'abandon'; // ('abandon': travelled out of the run, world/places.js: nothing paid, nothing hauled, and nothing said as pay)
     this.offFloor(); this.escaping = null;
     const charted = R.deepest ? R.charted.reduce((a, b) => a + (b || 0), 0) / R.deepest : 0;
     const keep = how === 'escape' ? ECON.escape.keep : 1;
-    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill) * keep + (R.finds || 0) * keep); // (the artifacts' worth rides with the haul: finds.js)
+    const pay = lost ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill) * keep + (R.finds || 0) * keep); // (the artifacts' worth rides with the haul: finds.js)
     g.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay, charted: +charted.toFixed(2), shattered, how, fill: +R.fill.toFixed(2), by: 'courier' });
     this.run = null;
     g.player.killY = DUNE.y - 90; // (back to the dunes' floor of the world, before the next step: see goTo)
-    return shattered ? null : { R, pay, charted };
+    return lost ? null : { R, pay, charted };
   }
   leave(how) {
     const out = this.end(how), g = this.game, s = this.mouthSpot();
@@ -292,7 +292,8 @@ export class Dunemaw {
     this.offFloor();
     this.cur = new Cavern(g, { run: R, onEnd: (how, by) => this.foeEnd(how, by) });
     g.player.killY = this.killY;
-    return { pos: this.cur.arrive.pos.clone(), yaw: this.cur.arrive.yaw, keep: true };
+    const at = this.cur.bowl?.lipStand || this.cur.arrive;
+    return { pos: at.pos.clone(), yaw: at.yaw, keep: true };
   }
 
   /** The Wake Whistle blown (from the Pneuka Box): a channel of ECON.escape.channel real seconds, broken by a blow; then out to the mouth,
@@ -354,10 +355,11 @@ export class Dunemaw {
     const g = this.game, P = g.player;
     this.t += dt;
     // the Wake Whistle's breath: held for its channel, then the whistle breaks and they wake at the mouth (the haul and ECON.escape.keep of the pay)
+    const whistle = () => g.pneuka?.slots.findIndex((s) => s?.id === ECON.escape.item) ?? -1;
+    if (this.escaping && whistle() < 0) { this.escaping = null; g.log?.say('warn', 'The whistle is no longer in your box.', { key: 'escapegone', throttle: 2 }); } // (dropped or sold mid-breath: no whistle, no waking, SWEEPS group 7; words a placeholder, Espada's)
     if (this.escaping && this.run && (this.escaping.t += g.rawDt ?? dt) >= ECON.escape.channel) {
       this.escaping = null;
-      const box = g.pneuka, i = box?.slots.findIndex((s) => s?.id === ECON.escape.item);
-      if (i >= 0) box.take(i);
+      g.pneuka.take(whistle());
       const go = () => this.leave('escape');
       if (g.seam) g.seam.cross(go, { kind: 'maw' }); else go();
     }

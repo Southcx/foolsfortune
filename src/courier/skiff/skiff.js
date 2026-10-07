@@ -79,7 +79,8 @@ export class Skiffing extends Tech {
 
   canStart() {
     const P = this.P;
-    if (!this.dunes.active || P.mantle || P.freeze) return false;
+    if (!this.dunes.active) { this.want = false; return false; } // (out of the Dunes the skiff is put away: back in them, no ride unasked, SWEEPS group 4)
+    if (P.mantle || P.freeze) return false;
     if (P.peekLatch('KeyY')) { P.latch('KeyY'); this.want = !this.want; if (!this.want) return false; }
     return this.want;
   }

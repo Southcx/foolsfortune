@@ -130,17 +130,18 @@ export class Dialogue {
     const met = g.ledger?.get?.(`npc.talk.${npc.id}`) || 0;
     this.root.classList.add('open');
     this.el.name.innerHTML = `${npc.name}${npc.def.title ? `<s>${npc.def.title}</s>` : ''}`;
-    g.events.emit('npc.talk', { npc: npc.id, first: !met });
+    g.events.emit('npc.talk', { npc: npc.id, first: !met, by: 'courier' });
     this.go(at || (met ? (T.again || T.start) : T.start));
     return true;
   }
   end() {
     if (!this.open) return;
     const g = this.game, n = this.npc;
+    g.input?.spend?.('KeyF', 'Space', 'Enter', 'Mouse0');
     this.open = false; this.root.classList.remove('open', 'done', 'ask'); document.body.classList.remove('talking');
     g.cinema?.unshot('talk'); g.mood?.free('npc.burst');
     if (n) g.folk.setMood(n, n.def.temper || 'calm', 0.35);
-    g.events.emit('npc.bye', { npc: n?.id });
+    g.events.emit('npc.bye', { npc: n?.id, by: 'courier' });
     this.npc = null; this.node = null;
   }
 
@@ -194,7 +195,7 @@ export class Dialogue {
   choose() {
     const c = this.opts?.[this.sel]; if (!c) return;
     sfx.menuOk?.();
-    this.game.events.emit('npc.choose', { npc: this.npc.id, text: this.say(c).replace(/<[^>]+>/g, '') });
+    this.game.events.emit('npc.choose', { npc: this.npc.id, text: this.say(c).replace(/<[^>]+>/g, ''), by: 'courier' });
     this.opts = null; this.el.choices.replaceChildren(); this.root.classList.remove('ask');
     this.game.theme?.aim(null);
     c.do?.(this.game, this);
@@ -210,7 +211,7 @@ export class Dialogue {
   finish() {
     if (this.typed) return;
     this.typed = true; this.root.classList.add('done');
-    this.game.events.emit('npc.say', { npc: this.npc.id, line: this.plain, mood: this.mood });
+    this.game.events.emit('npc.say', { npc: this.npc.id, line: this.plain, mood: this.mood, by: 'courier' });
     // a line that has nothing after it and no choices: the window waits for the last press
   }
 
@@ -280,5 +281,6 @@ export class Dialogue {
       for (let i = 0; i < this.opts.length && i < 9; i++) if (pressed(`Digit${i + 1}`)) { this.pick(i, false); this.choose(); return; }
       if (pressed('KeyF') || pressed('Space') || pressed('Enter')) this.choose();
     } else if (pressed('KeyF') || pressed('Space') || pressed('Enter') || pressed('Mouse0')) this.advance();
+    inp.spend?.('KeyF', 'Space', 'Enter', 'Mouse0'); // (the box's keys are the box's: the F that ends a talk does not begin it again, the Space does not jump: SWEEPS group 1)
   }
 }

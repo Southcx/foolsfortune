@@ -114,16 +114,17 @@ export function buildWeir(L, env) {
   { const { x, z } = TREASURY.dais; blk(x - 1.15, x + 1.15, -0.2, 0.14, z - 1.15, z + 1.15, C.dark); blk(x - 0.9, x + 0.9, 0.14, 0.16, z - 0.9, z + 0.9, C.mid, solid); }
   // ---- the tally's stone (the board itself is drawn on it: Weir.buildBoard)
   blk(9.4, 22.6, -0.5, 6.1, TALLY_AT[2] - OZ + 0.1, TALLY_AT[2] - OZ + 0.7, STONE);
-  // words
+  // words: the places' names cut in the stone; what the keys do is the log's (tracking.js, room.help 'weir': marks in the world carry
+  // no key help, SWEEPS group 6)
   const T = (t, x, z, o = {}) => label(S, t, [OX + x, B + 0.02 + (o.y || 0), OZ + z], { rotY: Math.PI, ...o });
-  T('THE WEIR', -3, pz0 - 3.2, { width: 3.2, sub: 'Q draw · 2 the rod · 4-8 aspect · hold LMB cast · MMB sound' });
-  T('PIER', 0, pz0 + 0.8, { width: 1.1, sub: 'hold LMB · release to cast', y: -0.02 });
-  T('THE YARD', YARD + 4, -10, { width: 2.2, sub: '1 cutlass · LMB combo · RMB lunge' });
+  T('THE WEIR', -3, pz0 - 3.2, { width: 3.2 });
+  T('PIER', 0, pz0 + 0.8, { width: 1.1, y: -0.02 });
+  T('THE YARD', YARD + 4, -10, { width: 2.2 });
   T('THE WELL', (WELL.x0 + WELL.x1) / 2, RIM.z0 - 2.2, { width: 2, sub: 'deep things · the top of the tide', y: 0.06 });
   ['COMMON', 'FINE', 'RARE', 'EPIC', 'PRISMATIC'].forEach((n, i) => T(n, TREASURY.plinths[i], TREASURY.z - 1.35, { width: 1.5 }));
-  T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3, sub: 'F open · they come back' });
-  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2, sub: `F · ${TITHE.cost} cubes · a sealed chest lands on the dais` });
-  T('HOOK', -12, pz0 - 1, { width: 1.1, sub: '3 the hook · LMB throw · hold: reel · RMB: pay out / tap: let go' });
+  T('THE TREASURY', 0, TREASURY.z - 3.4, { width: 3 });
+  T('THE TITHE', TREASURY.tithe.x, TREASURY.tithe.z - 1.55, { width: 2 });
+  T('HOOK', -12, pz0 - 1, { width: 1.1 });
 }
 
 /** Chests on the plinths (they close again after a while), and the Tithe's console brought alive. */

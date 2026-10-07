@@ -477,6 +477,11 @@ export class Course {
     this.menu = new IndexMenu(this.game, this.rooms, (id) => this.goRoom(id), () => this.calibration());
     this.game.indexMenu = this.menu;
     this.console = { x: cx, z: cz };
+    this.game.interact?.add('index', (P) => { // (the hub's Index offers the chevron as every other F does: SWEEPS group 8)
+      if (this.menu.open || this.game.god?.controlling) return null;
+      const d = Math.hypot(P.pos.x - cx, P.pos.z - cz);
+      return Math.abs(P.pos.y - BASE_Y) < 0.5 && d < 2.3 ? { pos: new THREE.Vector3(cx, BASE_Y + 1.9, cz), d } : null;
+    });
     // the console: a pedestal with a lit face, on a glowing ring
     const ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.8), new THREE.MeshStandardMaterial({ color: PALETTE.dark, roughness: 0.85, flatShading: true }));
     ped.position.set(cx, B + 0.55, cz);
@@ -560,12 +565,13 @@ export class Course {
     sfx.geyser();
   }
 
-  inBasement() { return this.game.player.pos.y < -2; }
+  inBasement() { const g = this.game; return g.player.pos.y < -2 && !g.well?.active && !g.dunes?.active && !g.realm?.active && !g.emocean?.stage.active; } // (the Wells, the Dunes and the garden lie lower still: the hub's help was said in the Dunemaw)
 
   /** Put the Courier at `v` facing `yaw`, everything they were doing let go. The pool is refilled (save-scumming is allowed between
    *  rooms) unless `keepPool` (a Well's floors: going deeper is not a rest). */
   teleport(v, yaw, { keepPool = false } = {}) {
     const p = this.game.player;
+    this.game.god?.forceOff?.(); // (set down elsewhere, the hand is let go: its view was left 36 m off in the siege, SWEEPS group 4)
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
     p.airPeak = v.y; p.airT = 0; // (a jump taken where they were is not a fall where they arrive: a 400 m 'drop' rolled them past the Well's mouth)
@@ -653,8 +659,7 @@ export class Course {
   update(dt) {
     const g = this.game, p = g.player, inp = g.input;
     const here = this.inBasement();
-    if (this.el) this.el.style.display = here ? 'block' : 'none';
-    if (!here) { this.running = false; this.prev.copy(p.pos); return; }
+    if (!here) { this.running = false; this.prev.copy(p.pos); if (this.el && this.elShown) { this.elShown = false; this.el.style.display = 'none'; } return; } // (the banner is shown only while a station is run, below: it stayed on, frozen, in the siege and the hand, SWEEPS group 6)
     this.t += dt;
     if (this.lapT !== null) this.lapT += dt;
 
@@ -677,7 +682,7 @@ export class Course {
     // the index console
     const cs = this.console, nearConsole = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - cs.x, feet.z - cs.z) < 2.3;
     this.consoleDisc.material.opacity = nearConsole ? 0.55 : 0.22;
-    if (nearConsole && inp.wasPressed('KeyF') && this.game.interact?.cur?.id !== 'npc') { this.menu.show(); return; }
+    if (this.game.interact?.cur?.id === 'index' && p.peekLatch?.('KeyF')) { p.latch('KeyF'); this.menu.show(); return; }
     // speed gates
     for (const gt of this.gates) {
       const a = gt.axis === 'x' ? this.prev.x : this.prev.z, b = gt.axis === 'x' ? feet.x : feet.z;
@@ -691,7 +696,7 @@ export class Course {
 
     // the banner is the course's own: the station and its clock while a station is being run. What the keys do in each place is said
     // once by the log on arriving there (room.help -> tracking.js), not kept on the screen (CLAUDE.md, Feedback; docs/LOOK.md 7)
-    const cp = this.cps[this.current], running = !!(cp && this.running && !g.circuits?.active);
+    const cp = this.cps[this.current], running = !!(cp && this.running && !g.circuits?.active && !g.god?.active && !inSiege(p.pos));
     const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'skiff' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
     if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
     signHelp(g, p.pos);

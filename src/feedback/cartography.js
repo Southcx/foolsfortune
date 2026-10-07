@@ -494,7 +494,7 @@ export class Cartography {
       if (e.repeat) return;
       const g = this.game, tag = document.activeElement?.tagName;
       if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); e.stopImmediatePropagation(); return; } // (spent: the pause menu does not open under it, GARDEN-SWEEP #9)
-      if (!this.open && e.code === 'KeyM' && g.input.enabled && tag !== 'INPUT' && tag !== 'TEXTAREA' && !g.codex?.open && !g.indexMenu?.open) { this.show(); e.preventDefault(); }
+      if (!this.open && e.code === 'KeyM' && g.input.enabled && tag !== 'INPUT' && tag !== 'TEXTAREA' && !(g.windowOpen ? g.windowOpen() : g.codex?.open || g.indexMenu?.open)) { this.show(); e.preventDefault(); }
     });
   }
 

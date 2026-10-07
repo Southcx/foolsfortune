@@ -106,11 +106,11 @@ export class Cubes {
 
   // ---------------------------------------------------------------- the currency (the ledger's numbers)
   get balance() { const L = this.game.ledger; return Math.max(0, Math.round(L.get('cube.earned') - L.get('cube.spent'))); }
-  earn(n, why = 'pickup') { if (n > 0) this.game.ledger.inc('cube.earned', n); this.game.events?.emit('cube.earn', { n, why }); }
+  earn(n, why = 'pickup') { if (n > 0) this.game.ledger.inc('cube.earned', n); this.game.events?.emit('cube.earn', { n, why, by: 'courier' }); }
   spend(n, why = 'spend') {
     if (this.balance < n) return false;
     this.game.ledger.inc('cube.spent', n);
-    this.game.events?.emit('cube.spend', { n, why });
+    this.game.events?.emit('cube.spend', { n, why, by: 'courier' });
     return true;
   }
 
@@ -118,7 +118,7 @@ export class Cubes {
   /** Cubes worth `worth` in all, out of `pos`. `stagger` (s) spreads them over time, as a chest lets them go. */
   burst(pos, worth, { count = null, spread = 1, up = 5, stagger = 0, spin = 6, from = 'spill' } = {}) {
     worth = Math.max(1, Math.round(worth));
-    this.game.events?.emit('cube.spill', { n: worth, from });
+    this.game.events?.emit('cube.spill', { n: worth, from, by: 'courier' });
     const n = Math.max(1, Math.min(count ?? Math.min(worth, 40), worth, 150));
     const each = Math.floor(worth / n); let extra = worth - each * n;
     for (let i = 0; i < n; i++) {

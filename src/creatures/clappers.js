@@ -478,8 +478,8 @@ export class Clappers {
 
   /** A raider gives up (the jar is gone, or the hand has let go of it). */
   dismiss(c) {
-    c.raider = false;
-    this.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'shot');
+    c.raider = false; c.wasRaider = true;
+    this.hit(c, c.pos.clone().setY(c.pos.y + 0.4), UP, 1, 'dismiss'); // (no one's down: clapper.down says by 'environment', main.js onClapper)
   }
 
   takeJob(c) {
@@ -766,6 +766,7 @@ export class Clappers {
     game.onClapper?.(c, cause || 'shot');
     this.list = this.list.filter((x) => x !== c);
     const floor = c.floor;
+    if (c.raider || c.wasRaider) return; // (a raider is the siege's, not the workshop's: three raids put 12 clapperjars where 6 were, SWEEPS group 5)
     game.fx.after(T.clappers.respawn, () => {
       const f = this.floors[floor];
       this.spawn(f.spawn.clone(), true, floor);

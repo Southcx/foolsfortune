@@ -55,6 +55,8 @@ export class IndexMenu {
     document.body.appendChild(this.root);
     addEventListener('keydown', (e) => {
       if (!this.open) return;
+      if (e.repeat) { e.preventDefault(); return; } // (a held key is one press: W held picked a room, SWEEPS group 1)
+      game.input?.spend?.(e.code); // (a key the window takes is the window's: F that closes a page does not open it again, B that picks the Braid does not open the Codex)
       if (this.page) { if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); e.stopImmediatePropagation(); } return; } // (a page: its own clicks; its Esc is spent here, so the pause menu does not open under it: GARDEN-SWEEP #9)
       if (e.code === 'ArrowDown' || e.code === 'ArrowRight') { this.sel = (this.sel + 1) % this.rooms.length; this.render(); e.preventDefault(); }
       else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') { this.sel = (this.sel + this.rooms.length - 1) % this.rooms.length; this.render(); e.preventDefault(); }

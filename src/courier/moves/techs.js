@@ -95,7 +95,7 @@ export class Techs {
     const a = this.active;
     this.active = null;
     a?.end();
-    if (a) this.game.events?.emit('tech.end', { id: a.id, dur: a.t });
+    if (a) this.game.events?.emit('tech.end', { id: a.id, dur: a.t, by: 'courier' });
   }
 
   /** Per render frame: blends, cooldowns, visuals. */

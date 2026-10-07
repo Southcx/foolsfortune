@@ -51,6 +51,7 @@ export class Ladder extends Tech {
 
   start() {
     const P = this.P;
+    for (const t of this.game.belt?.tools || []) if (t.id !== 'psygun' && t.wants) t.stow(); // (a hand on the rungs: only the gun arm is free, so the other tools go away, SWEEPS group 8)
     P.endCore();
     P.setShape('stand');
     P.vel.set(0, 0, 0);

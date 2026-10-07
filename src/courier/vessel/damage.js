@@ -160,7 +160,7 @@ export class VesselDamage {
     for (let i = 0; i < this.crack.length; i++) {
       if (this.crack[i] <= 0) continue;
       this.crack[i] = 0; this.glow[i] = 1; // (mended at once: the gold flashes through every crack and fades)
-      if (!quiet) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
+      if (!quiet) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i], by: 'courier' }); }
     }
   }
   /** How cracked the vessel is, 0 (whole) .. 1 (at the edge of shattering). */
@@ -171,7 +171,7 @@ export class VesselDamage {
       this.quiet[i] += dt;
       if (this.crack[i] > 0 && this.quiet[i] > MEND_AFTER) {
         this.crack[i] = Math.max(0, this.crack[i] - MEND_RATE * dt);
-        if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i] }); }
+        if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i], by: 'courier' }); }
       }
       // the gold comes into the cracks over a second once they mend, and goes dark again if a blow lands first; the cells it fills go
       // out one by one as the crack closes, so the last of the gold leaves with the last of the crack

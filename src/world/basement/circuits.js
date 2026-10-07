@@ -217,7 +217,7 @@ export class Circuits {
     let h = `<span class="n">${def.name}</span><br>`;
     if (r.done) {
       h += `<b>${r.total.toFixed(2)}</b>s <span class="medal ${r.medal === '—' ? 'bad' : 'good'}">${r.medal}</span>${r.clean ? ' · clean' : ''}${r.pb ? ' · best' : ''}<br>`;
-      h += `<span class="d">gold ${def.par.gold}s · silver ${def.par.silver}s · bronze ${def.par.bronze}s${r.routes.length ? ` · route ${r.routes.join(' ')}` : ''}<br>R to run it again · H hub</span>`;
+      h += `<span class="d">gold ${def.par.gold}s · silver ${def.par.silver}s · bronze ${def.par.bronze}s${r.routes.length ? ` · route ${r.routes.join(' ')}` : ''}</span>`;
     } else {
       h += `<b>${r.started ? t.toFixed(2) : '0.00'}</b>s ${r.penalty ? `<span class="bad">+${r.penalty}s</span>` : ''}${r.clean ? '' : ' · not clean'}<br>`;
       const next = def.stages[r.stage].map((g) => g.label).join(' or ');

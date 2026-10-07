@@ -116,7 +116,7 @@ export class Drills {
     this.fadeDents();
     const a = this.active, g = this.game;
     if (!a) return;
-    if (!this.room.inRoom(g.player.pos)) { this.stop(); g.events?.emit('drill.left', { id: a.id }); return; } // (left the room: the drill is off)
+    if (!this.room.inRoom(g.player.pos)) { this.stop(); g.events?.emit('drill.left', { id: a.id, by: 'courier' }); return; } // (left the room: the drill is off)
     a.t += dt;
     if (a.id === 'flick') this.flick(a, dt);
     else if (a.id === 'track') this.track(a, dt);

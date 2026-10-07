@@ -80,7 +80,7 @@ export class Qais {
   /** May it open now? In play, not over the title, the workbench or another window that pauses. */
   canOpen() {
     const g = this.game;
-    return !g.title?.active && !g.workbench?.open && !g.codex?.open && !g.indexMenu?.open && !g.cartography?.open && !g.pneukaUI?.open && !g.shopUI?.open && !g.dialogue?.open;
+    return !g.title?.active && !g.workbench?.open && !g.kilnUI?.open && !g.seam?.busy && !g.codex?.open && !g.indexMenu?.open && !g.cartography?.open && !g.pneukaUI?.open && !g.shopUI?.open && !g.dialogue?.open;
   }
 
   toggle() { if (this.open) this.close(); else if (this.canOpen()) this.show(); }

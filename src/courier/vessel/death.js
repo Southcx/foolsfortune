@@ -96,7 +96,7 @@ export class Death {
       g.character?.setHidden(false);
       g.lachryma?.reset();
       this.want = false;
-      g.events?.emit('courier.reform', { where: shrine ? 'shrine' : well?.keep ? 'lip' : well ? 'well' : 'workshop', shrine: shrine ? g.shrines.last : null, lost: !!well && !well.keep });
+      g.events?.emit('courier.reform', { where: shrine ? 'shrine' : well?.keep ? 'lip' : well ? 'well' : 'workshop', shrine: shrine ? g.shrines.last : null, lost: !!well && !well.keep, by: 'courier' });
     }
     if (t >= END) { this.active = false; this.fade.style.opacity = '0'; g.cinema?.unshot('death'); g.time?.free('death'); }
   }

@@ -318,7 +318,7 @@ async function main() {
     },
     onClapper(c, cause = 'shot') {
       stats.clappers = (stats.clappers || 0) + 1;
-      events.emit('clapper.down', { cause, ally: !!c.ally, raider: !!c.raider });
+      events.emit('clapper.down', { cause, ally: !!c.ally, raider: !!(c.raider || c.wasRaider), by: cause === 'dismiss' ? 'environment' : 'courier' });
     },
     onRepaired() {
       stats.total++;
@@ -487,7 +487,11 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open); // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open);
+  // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
+  // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
+  const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
+  game.windowOpen = windowOpen; // (the chat line does not pause: the world goes on while you type, as in an MMO; the keys typed are the field's, input.js)
   const lachryma = new LachrymaPool({ max: T.lachryma.max, regenRate: T.lachryma.regenRate, regenDelay: T.lachryma.regenDelay });
   game.lachryma = lachryma;
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
@@ -500,6 +504,7 @@ async function main() {
   game.shells = shells;
   hud.buildShells(shells.types); // (the chambers of the psygun they carry: tools/psygun/kinds.js)
   game.input = input;
+  input.onSpend = (code) => { if (player.latches[code] > 0) player.latches[code] = 0; if (code === 'ShiftLeft' || code === 'ShiftRight') player.latches.Dodge = 0; }; // (a spent press is spent for the body too: core/input.js spend)
   game.cartography = new Cartography(game); // (before the hand: it reads the Zone of Influence)
   mark('techs+ui');
   const god = new GodMode(game, renderer, handG, jarG);
@@ -507,7 +512,7 @@ async function main() {
   game.god = god;
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   const cursorFree = () => !!(god.active || game.realm?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
-  input.wantLock = () => !cursorFree(); // (a refused lock is retried only if the game still wants one: core/input.js)
+  input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
   game.interact = new Interact(game);
@@ -761,7 +766,7 @@ async function main() {
     lh.queue = [{ id: T.spin(table), R: T.rates(table), power: 1.5, mods, heart: 'heart.plain', keys, i: 0 }];
     game.ultimate.begin(lh); game.events.emit('vfx.test', { fx: 'the opening', found: true });
   } });
-  game.log.canOpen = () => !modalOpen() && !god.controlling && !game.dialogue?.open;
+  game.log.canOpen = () => !windowOpen() && !god.controlling;
   game.events.emit('session.open', { fresh: !!freshBuild }); // (the welcome is a tracking rule: tracking/place.js)
 
   // --- overlay / pointer lock -----------------------------------------------
@@ -814,7 +819,7 @@ async function main() {
   input.onLockChange = (locked) => {
     // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened
     // over a lock taken by a stray click could not be closed with Esc: the owner's QAIS, 2026-10-06)
-    if (locked && (modalOpen() || (title.active && game.codex?.open))) { document.exitPointerLock?.(); return; }
+    if (locked && (modalOpen() || game.kilnUI?.open || (title.active && game.codex?.open))) { document.exitPointerLock?.(); return; }
     if (title.active) return; // (the title owns the screen: no pause menu over it)
     if (input.lockFailed) {
       document.getElementById('lockwarn').style.display = 'block';
@@ -831,7 +836,7 @@ async function main() {
     overlay.style.display = 'flex'; input.enabled = false; game.realm?.hand?.letGo(); // (what the garden's hand held is set down, not left hanging under the pause: GARDEN-SWEEP #14)
   });
   renderer.domElement.addEventListener('click', () => {
-    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !cursorFree() && !game.reprogram?.open) input.requestLock();
+    if (input.enabled && !input.locked && !guiOpen && !modalOpen() && !game.log?.typing && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open) input.requestLock();
   });
 
   addEventListener('resize', () => {
@@ -992,8 +997,8 @@ async function main() {
       if (guiOpen) { gui.show(); gui.open(); document.exitPointerLock?.(); }
       else { gui.hide(); if (input.enabled && !cursorFree()) input.requestLock(); }
     }
-    if (input.wasPressed('KeyB') && input.enabled && !game.pneukaUI.open && !game.emocean?.stage.active) game.codex.toggle();
-    if (input.wasPressed('KeyP') && input.enabled && !game.codex.open && !game.indexMenu?.open && !game.cartography?.open && !god.controlling && !game.emocean?.stage.active) game.pneukaUI.toggle();
+    if (input.wasPressed('KeyB') && input.enabled && (game.codex.open || !windowOpen())) game.codex.toggle();
+    if (input.wasPressed('KeyP') && input.enabled && (game.pneukaUI.open || (!windowOpen() && !god.controlling))) game.pneukaUI.toggle();
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)

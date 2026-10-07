@@ -28,7 +28,6 @@ const COURSE = [
   [0, 7.4, 11.2], // gallery plinth
   [6.5, 8.1, 8], // gallery pedestal
 ];
-const STORE = 'foolsfortune.trial.best';
 // the gong that starts it (a thing in the room, not a key: every game in a room is begun from something in that room)
 const GONG = new THREE.Vector3(-2.6, 0, -12.6);
 const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -40,7 +39,8 @@ export class Trial {
     this.jars = [];
     this.t = 0;
     this.best = null;
-    try { this.best = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch { /* storage unavailable */ }
+    game.save?.section('trial', { scope: 'player', version: 1, // (the best time is kept in the save, not in storage of its own: SWEEPS group 8)
+      dump: () => ({ best: this.best }), load: (d) => { this.best = Number.isFinite(d?.best) ? d.best : null; }, reset: () => { this.best = null; } });
     this.glow = makeGlowOutline(PALETTE.hot, 0.012);
     // the count is rings on the start line that close one by one, and a ring that bursts on GO (no digits: docs/LOOK.md 6, 7)
     this.rings = new CountRings(game.scene);
@@ -124,7 +124,7 @@ export class Trial {
       const f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
       this.rings.start(P.pos.clone().addScaledVector(f, 3.2).setY(P.pos.y + 1.5), 3);
     }
-    g.events?.emit('trial.start', {});
+    g.events?.emit('trial.start', { by: 'courier'});
     sfx.lockOn(1);
   }
 
@@ -167,7 +167,7 @@ export class Trial {
     const pb = this.best === null || time < this.best;
     if (pb) {
       this.best = time;
-      try { localStorage.setItem(STORE, JSON.stringify(time)); } catch { /* storage unavailable */ }
+      this.game.save?.dirty('trial');
     }
     this.state = 'done';
     // (the time is the log's to say: trial.finish -> tracking.js; the board keeps it)

@@ -293,7 +293,7 @@ export class Tracking {
       hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, Y steps off.',
-      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). Y brings the skiff.',
+      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 8 choose a feeling, hold LMB and let go to cast, MMB sounds the water. With the hook, LMB throws, hold to reel, RMB pays out. The treasury\'s chests open with F and come back; the Tithe takes cubes for a sealed chest on the dais. Y brings the skiff.',
       dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };

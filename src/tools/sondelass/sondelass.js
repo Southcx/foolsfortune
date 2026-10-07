@@ -48,6 +48,7 @@ export const FORMS = [
 const CSS = `
 #toolstrip { position: absolute; right: 24px; bottom: calc(20px + var(--cine, 0vh)); display: none; gap: 6px; align-items: flex-end; }
 #toolstrip.on { display: flex; }
+#toolstrip.on.godhidden { display: none; }
 #toolstrip .slot { width: 46px; height: 46px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.3); background: rgba(28,13,8,.45); border-radius: 4px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: .7; }
 #toolstrip .slot i { font-style: normal; font-size: 16px; line-height: 1; }
@@ -142,6 +143,7 @@ export class Sondelass extends Tech {
       }
     } else if (this.drawTarget > 0 && !inp.enabled) { /* paused: stay as we are */ }
     if (!this.enabled || g.god?.controlling) this.drawTarget = 0;
+    if (this.drawTarget === 0 && this.cutlass.blade?.active) this.cutlass.blade.exit('stow'); // (put away is out of Blade Mode at once: the holster ran on its 5% time, six real seconds, SWEEPS group 4)
     // the Psygun holsters first, then this is drawn (and the reverse)
     const gunAway = g.belt ? g.belt.mayDraw(g.belt.get('sondelass')) : !wpn || wpn.drawT < 0.02; // (the belt: the hands are free of every other tool)
     const step = dt / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
