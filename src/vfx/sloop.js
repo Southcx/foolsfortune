@@ -13,6 +13,7 @@
 // the owner's own can replace.
 //
 //   const s = new Sloop({ env })   scene.add(s.group)   s.set({ sail 0..1, heel rad, side -1|1, glow 0..1, t })   s.dispose()
+//   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   (the crossing: docs/plans/RAIL.md)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; about 7 m long)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -163,5 +164,29 @@ export class Sloop {
     void S;
   }
 
+  /** The ship's polarity (the crossing, docs/plans/RAIL.md: your draught or its opposite): the Lachryma that drives it, in the stern's
+   *  mouth and under the keel, takes the feeling's colour; the pennant's edge too. `hex`: the feeling's colour. */
+  polarity(hex) { _pc.setHex(hex); this.mouth.color.copy(_pc); this.keelMat.color.copy(_pc); }
+
+  /** After a hit (RAIL.md: 1.0 s untouchable, the hull steady and half-clear, never a blink): k 0..1, eased by the caller. The whole
+   *  ship goes half-clear and lit from within; at 0 it is exactly as it was. */
+  hurt(k) {
+    if (Math.abs(k - (this.hurtK ?? 0)) < 1e-3) return; this.hurtK = k;
+    for (const m of this.mats) {
+      if (!m.isMeshStandardMaterial) continue;
+      const b = (m.userData.hurtBase ||= { transparent: m.transparent, opacity: m.opacity, depthWrite: m.depthWrite, em: m.emissive.clone(), emI: m.emissiveIntensity });
+      m.transparent = b.transparent || k > 0.01; m.opacity = b.opacity * (1 - 0.45 * k); m.depthWrite = k > 0.01 ? false : b.depthWrite;
+      m.emissive.copy(b.em).lerp(_pc.setRGB(0.85, 0.9, 1.0), 0.5 * k); m.emissiveIntensity = b.emI + 0.6 * k;
+    }
+  }
+
+  /** The tally (RAIL.md): the medal run up the mast as the pennant's colour (a mark, no number: the log says the tally). */
+  hoist(medal) {
+    const col = { none: 0xc2432b, bronze: 0xb0703a, silver: 0xd8dde6, gold: 0xf2c84a, platinum: 0xe8f4ff }[medal] ?? 0xc2432b;
+    const m = this.pennant.material; m.color.setHex(col); m.emissive.setHex(col).multiplyScalar(0.35); m.emissiveIntensity = medal && medal !== 'none' ? 0.8 : 0.25;
+    this.pennant.scale.setScalar(medal && medal !== 'none' ? 1.6 : 1);
+  }
+
   dispose() { this.group.parent?.remove(this.group); for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.(); }
 }
+const _pc = new THREE.Color();
