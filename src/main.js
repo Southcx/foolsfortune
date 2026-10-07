@@ -177,6 +177,8 @@ import { Lockheart } from './tools/lockheart/lockheart.js';
 import { Mirages } from './tools/crucibelle/mirage.js';
 import { Signatures, standardSignatures } from './core/signatures.js';
 import { Spirits } from './creatures/spirits.js';
+import { Bound } from './creatures/bound.js';
+import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
 import { installPsyche } from './progress/psyche.js';
@@ -512,6 +514,7 @@ async function main() {
     });
     // a Well: F at its mouth in the Dunes, and at the pools inside (the way up, the way down: world/well/dunemaw.js)
     game.interact.add('well', () => (game.dialogue?.open || !idle() ? null : game.well.nearest(player)));
+    game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
     // the kiln station: F at the kiln's mouth (courier/moves/kiln.js)
     game.interact.add('kiln', () => {
       if (game.dialogue?.open || game.kilnUI?.open || !idle()) return null;
@@ -627,6 +630,7 @@ async function main() {
   for (const [dx, dz] of [[-9, -26], [4, -31], [13, -22]]) game.jellies.spawn(new THREE.Vector3(WEIR_SPAWN.pos[0] + dx, WEIR_SPAWN.pos[1], WEIR_SPAWN.pos[2] + dz));
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
+  game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
@@ -697,6 +701,12 @@ async function main() {
   game.chat.add('workbench', { help: 'the workbench: every effect, model and texture of the game, on a stage of its own (Esc closes it)', run: () => game.workbench.toggle() });
   // the rhythm mode: a song played on the ten keys (music/rhythm/); begun from a stage in a room, /rhythm for directing it
   game.rhythm = new Rhythm(game);
+  game.busk = new Busk(game); // (the busker's mats on the piers: F with the Crucibelle worn begins a song: world/busk.js)
+  game.chat.add('cavern', { help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
+    const W = game.well; if (game.emocean?.stage.active || game.death?.active) return;
+    const go = () => { if (!W.active && !W.enter()) return; W.toCavern(); game.events.emit('cavern.force', { by: 'courier' }); };
+    if (game.seam) game.seam.cross(go, { kind: 'maw' }); else go();
+  } });
   game.chat.add('rhythm', { help: 'the rhythm mode: /rhythm [track] [light|steady|full], /rhythm offset <ms> (no track: the next)', run: ([a, b]) => {
     if (a === 'offset') { game.rhythm.setOffset(+b || 0); game.events.emit('rhythm.offset', { ms: game.rhythm.offset }); return; }
     if (a && !RHYTHM_TRACKS.some((T) => T.id === a)) { game.events.emit('rhythm.list', { tracks: RHYTHM_TRACKS.map((T) => T.id) }); return; }
@@ -1082,7 +1092,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt);
+    game.well.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update();
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

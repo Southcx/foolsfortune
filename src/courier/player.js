@@ -98,6 +98,9 @@ export class Player {
     this.platform = null; // the moving platform under the feet (src/world/props/movers.js)
     this.carry = new THREE.Vector3(); // its displacement under us this step
     this.groundVel = new THREE.Vector3(); // ... as a velocity (the animation moves locked feet with it)
+    // the ground's own pull and drag, set by the place that has them and put back by it when the Courier leaves (zero and one: the core
+    // movement exactly): sand sliding under the feet (`drift`, m/s, carried like a platform's move), shallows that slow a walk (`wade`)
+    this.drift = new THREE.Vector3(); this.wade = 1;
     this.airPeak = 0; // highest point since the feet last touched down
     this.killY = -100; // below this the world has ended
     this.safe = { pos: this.pos.clone(), t: 0 }; // last place we stood without being embedded
@@ -154,7 +157,7 @@ export class Player {
     this.sliding = false;
     this.invuln = 0;
     this.platform = null;
-    this.carry.set(0, 0, 0);
+    this.carry.set(0, 0, 0); this.drift.set(0, 0, 0); this.wade = 1;
     this.wedged = 0;
     this.techs?.reset();
     this.setShape('stand');
@@ -459,6 +462,7 @@ export class Player {
       let speed = this.crouching ? M.crouchSpeed : this.sprinting ? M.sprintSpeed * (iz > 0 ? 1 : M.strafeSprintMult) : this.walking ? M.walkSlowSpeed : M.walkSpeed;
       speed *= THREE.MathUtils.lerp(1, M.adsSpeedMult, adsT);
       speed *= this.techs?.speedMult ?? 1;
+      speed *= this.wade; // (the place's: world/well/bowl.js's rim shallows)
       speed *= THREE.MathUtils.lerp(1, T.charge.moveMult, this.chargeLevel || 0);
       const before = hv.length();
       if (this.grounded && before > speed + 0.1 && wish.lengthSq() > 0.01) {
@@ -650,6 +654,12 @@ export class Player {
       }
     }
     this.platform = under;
+    // the ground's drift (sand sliding: world/well/bowl.js), carried as a platform's move is, and swept no more than one is
+    if (this.grounded && this.drift.lengthSq() > 1e-6) {
+      const dx = this.drift.x * dt, dy = this.drift.y * dt, dz = this.drift.z * dt; // (y: down a slope, the way the sand goes)
+      this.pos.x += dx; this.pos.y += dy; this.pos.z += dz;
+      if (this.embedded()) { this.pos.x -= dx; this.pos.y -= dy; this.pos.z -= dz; }
+    }
     if (this.pos.y < this.killY) this.respawn();
     this.body.setNextKinematicTranslation({ x: this.pos.x, y: this.pos.y, z: this.pos.z });
   }

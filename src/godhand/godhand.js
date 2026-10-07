@@ -9,6 +9,7 @@ import { ZoiVeil } from '../feedback/cartography.js';
 import { Raids } from '../world/basement/raids.js';
 import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
 import { stream } from '../core/rng.js';
+import { HandCatch } from './catch.js';
 const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
 
 // ---------------------------------------------------------------------------------------
@@ -73,6 +74,7 @@ export class GodMode {
     this.buildCursor();
     this.buildHud();
     this.arts = new GodArts(this);
+    this.catch = new HandCatch(this); // (a stunned Figment grabbed and held over the Jar's mouth: godhand/catch.js)
     this.raids = new Raids(game, this); // (raids happen in the Siege room only: raids.js)
     this.veil = new ZoiVeil(game, game.cartography);
     this.veil.visible = false;
@@ -432,7 +434,7 @@ export class GodMode {
     const g = this.game, input = g.input, K = this.cursor, H = this.hand, V = this.jar;
     // ---- what's under the cursor
     const filter = (r) => !r.ent?.carried && !r.clapper?.job;
-    this.hover = K.ok && !this.grab && K.start ? g.shells.casters.pick(K.start, K.ray.dir, 250, 0.55, filter) : null;
+    this.hover = K.ok && !this.grab && K.start ? (this.catch.hover(K) || g.shells.casters.pick(K.start, K.ray.dir, 250, 0.55, filter)) : null;
     // ---- the art wheel (hold the right button), and the art in hand
     const A = this.arts;
     if (input.wasPressed('Mouse2') && !this.grab && !A.live) A.openWheel(input.mx, input.my);
@@ -483,6 +485,7 @@ export class GodMode {
   hoverPoint() {
     const h = this.hover;
     if (h?.clapper) return h.clapper.pos.clone();
+    if (h?.creature) return h.creature.pos.clone();
     if (h?.body?.isValid()) { const q = h.body.translation(); return new THREE.Vector3(q.x, q.y, q.z); }
     return this.cursor.point.clone();
   }
@@ -490,8 +493,9 @@ export class GodMode {
   // ------------------------------------------------------------------ grabbing
   beginGrab(t) {
     const g = this.game;
-    const grab = { t, y: 0, target: null, held: t.clapper || t.body };
-    if (t.clapper) {
+    const grab = { t, y: 0, target: null, held: t.clapper || t.body || t.creature };
+    if (t.creature) { this.catch.begin(t.creature); grab.y = t.creature.pos.y + 1.8; sfx.grab(); } // (a Figment, stunned: held over the Jar's mouth, it is caught)
+    else if (t.clapper) {
       const c = t.clapper;
       if (c.pinned) g.shells.casters.anchors.filter((a) => a.target.clapper === c).forEach((a) => g.shells.casters.releasePin(a));
       c.held = true; c.holdPos = c.pos.clone();
@@ -534,6 +538,7 @@ export class GodMode {
       if (v.length() > T.god.throwMax) v.setLength(T.god.throwMax);
     }
     const t = gr.t;
+    if (t.creature) { this.catch.drop('dropped'); return; }
     if (t.clapper) {
       const c = t.clapper;
       c.held = false;
@@ -554,7 +559,8 @@ export class GodMode {
   /** Physics-step work: drag the held thing to the hand; chip the jar with what's thrown at it. */
   fixed(dt) {
     const g = this.game, V = this.jar, gr = this.grab;
-    if (gr && gr.target) {
+    if (gr?.target && gr.t.creature) { if (!this.catch.hold(gr.target, dt)) this.grab = null; } // (its struggle: godhand/catch.js)
+    else if (gr && gr.target) {
       const t = gr.t;
       // holding costs Lachryma, by weight; empty, the hand lets go
       const mass = t.clapper ? 0.6 : t.body?.isValid() ? t.body.mass() : 0;

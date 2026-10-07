@@ -157,7 +157,7 @@ export function jellyMind(J) {
   });
   act({
     id: 'hunt', hunt: true, weight: 1.7,
-    when: (x) => !st(x.c, 'calm') && !st(x.c, 'charm') && !st(x.c, 'forget') && !!foe(x) && distHome(x) < C.leash,
+    when: (x) => !st(x.c, 'calm') && !st(x.c, 'charm') && !st(x.c, 'forget') && !!foe(x) && distHome(x) < (x.c.leash ?? C.leash),
     consider: [(x) => curve.logistic(0.42, 9)(aggression(x, foe(x)))],
     cooldown: 3,
     lock: (x) => !!x.c.attack && x.c.attack.phase !== 'recover',
@@ -173,7 +173,7 @@ export function jellyMind(J) {
       const c = x.c, f = foe(x);
       if (!f || f.ent !== c.foe) return c.attack ? 'run' : 'done';
       const F = x.now - f.seenAt < 1 ? f.ent.pos : f.pos, d = hd(c.pos, F); // (where it is, while it sees it; where it was, after)
-      if (distHome(x) > C.leash) { f.aware = Math.min(f.aware, 0.3); return 'fail'; } // (it will not be drawn off its ground)
+      if (distHome(x) > (x.c.leash ?? C.leash)) { f.aware = Math.min(f.aware, 0.3); return 'fail'; } // (it will not be drawn off its ground)
       c.pose = 'walk'; facing(x, F);
       if (!c.attack) {
         // keep its distance, circling while it waits for its moment
@@ -343,7 +343,7 @@ export function jellyMind(J) {
     tick: (x, dt) => {
       const c = x.c, b = x.bb; b.t += dt;
       if (!b.i || b.t > 18) { x.mem.done(b.i); return 'fail'; }
-      if (!b.there) { c.pose = 'walk'; if (goTo(x, b.i.pos, C.travel, 1.5) < 2 || hd(b.i.pos, c.home) > C.leash) { b.there = true; b.t = 0; } return 'run'; }
+      if (!b.there) { c.pose = 'walk'; if (goTo(x, b.i.pos, C.travel, 1.5) < 2 || hd(b.i.pos, c.home) > (x.c.leash ?? C.leash)) { b.there = true; b.t = 0; } return 'run'; }
       c.pose = 'watch';
       facing(x, _t.set(c.pos.x + Math.sin(x.now * 1.3) * 3, c.pos.y, c.pos.z + Math.cos(x.now * 1.3) * 3)); // (it looks about)
       if (b.t > 2.5) { x.mem.done(b.i); x.drives.sat('curiosity', 0.35); return 'done'; }
@@ -352,8 +352,8 @@ export function jellyMind(J) {
   });
   act({
     id: 'go home', weight: 1.1,
-    when: (x) => distHome(x) > C.home,
-    consider: [(x) => norm(distHome(x), C.home, C.leash)],
+    when: (x) => distHome(x) > (x.c.homeR ?? C.home),
+    consider: [(x) => norm(distHome(x), x.c.homeR ?? C.home, x.c.leash ?? C.leash)],
     tick: (x) => { x.c.pose = 'walk'; return goTo(x, x.c.home, C.travel, 2) < 2 ? 'done' : 'run'; },
   });
   act({
@@ -365,7 +365,7 @@ export function jellyMind(J) {
       const c = x.c; x.bb.t -= dt;
       c.pose = 'walk';
       steer.wander(_w, x.bb.w, c.yaw, C.wander, dt);
-      steer.contain(_k, c.pos, c.home, C.home * 0.8, 1);
+      steer.contain(_k, c.pos, c.home, (c.homeR ?? C.home) * 0.8, 1);
       steer.separate(_s, c.pos, kinNear(x, 3), 2);
       const avoid = x.mem.near('danger', c.pos, 6); // (it gives a wide berth to where kin burst)
       if (avoid) steer.flee(_t, c.pos, avoid.pos, 0.8); else _t.set(0, 0, 0);

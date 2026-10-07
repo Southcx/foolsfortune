@@ -205,6 +205,10 @@ crystal and marks signatures; Seeming (2 4 2 4) stands up a smoke Courier that h
 allies; the Lullaby (5 4 3 2 1) puts foes to sleep; the Call (1 1 5 5) stands up a **smoke spirit** that fights beside you. Click tolls the bell.
 The **instrument** fitted in the Pneuka Box is its voice.
 
+**Busking.** A **busker's mat** lies on Old Grog's pier at the Weir and on Margarite's dock. F on it with the Crucibelle worn plays a
+song as the **rhythm mode** (keys 1 to 0 on the notes as they come; a good run plays the tune, a miss leaves a hole in it) for tips. Walk
+off the pier and the song stops.
+
 ### The Lockheart (I)
 
 A little coffin on a chain, worn at the neck from the start. Worn, it drinks the Lachryma that overflows your pool. Drawn, the left button
@@ -213,6 +217,10 @@ A little coffin on a chain, worn at the neck from the start. Worn, it drinks the
 coffin's table, changed by the keys: Inverted, Even, Loaded, Twin, Wide, Echo), and what it lands on comes out as hard as the coffin was
 full, from a spill of Lachryma to the slip nuke. A brass Possibilikey is spent in the turning; the others can be turned again, but each
 use makes it likelier to snap in the lock (about three openings on average).
+
+A **summoning coffin** on the chain makes the opening a **catch**: open it on a Figment laid low (stunned, asleep or melted, in front of you
+within 8 m) and the wheel is two sectors, caught and free, as wide as the odds (its class, how long the stun has left, its feeling, the
+keys). Caught, it is **bound** and waits in the Jar for the Spirit Garden; missed, the keys are spent all the same.
 
 ## The god hand (~)
 
@@ -232,6 +240,10 @@ The arts work only on ground you have explored (the **Zone of Influence**, shown
 always known. **The jar can be hurt**: at nothing it shatters, and it is reforged a few seconds later. **Raids** (waves of crimson
 clapperjars making for the jar) happen in one room only, **THE SIEGE**, so the hand can be learned in peace elsewhere. Throw raiders away,
 cut them, pin them, make them dance, or turn them to guard and mend the jar.
+
+**The catch in battle.** With Telekinesis, grab a **stunned** Figment and hold it over the jar's mouth: it **struggles** (a second a class),
+tugging the hand off the mouth, and if you hold it there through the struggle it is drawn in and **bound**, certain. Let go, or let its stun
+run out, and it is free where it falls. The jar stands still the whole time, and whatever is fighting round it can crack it.
 
 ## Places
 
@@ -288,8 +300,23 @@ are made whole at your last Shrine. Made, the crossing sets you down at the far 
 **W** at the Index): a dark pool turning in a ring of fallen stones and three standing ones (the Dreamvane hears it from far off). **F** at it goes down into **a Well**: three floors of rooms, laid out afresh each day (the same Well for everyone that day).
 On every floor a pale pool is **the way up**, back out to the mouth with whatever you found, and a dark one is **the way down**, deeper.
 Shatter down there and you come to at the mouth, and the run's haul stays in the Well. Slip jellies hold every room but the first, one
-more each floor down, and a **Great Slip Jelly** (a FOE) keeps the bottom. Burst every jelly on a floor and something is left where they
-were: a **material** for the spirit press, rarer deeper. Up the way up you keep the haul and the run pays in cubes (more for depth and the
+more each floor down. Their **clutches** of eggs lie about the rooms (one on the first floor, three on the second): guarded, they hatch
+**brood** while you are near, and three blows break one (it may leave slip roe). **Pots** stand about (a quarter hold a find) and
+**artifacts** glint at the walls (F to take: their worth comes home with the haul); one a floor lies in a **warped pocket**, worth three,
+and taking it **shifts the floor** (the way down moves, the sandfalls turn, two brood wake). Burst every jelly on a floor and something is
+left where they were: a **material** for the spirit press, rarer deeper.
+
+**The great cavern.** The third floor's way down drops into **the bowl** (`/cavern` goes straight there, for testing), where the crowned
+**Great Slip Jelly** broods in the centre pool. You come in on a ledge; its slopes are one way. Its **crown** is an urn and breaks as a pot
+does: a blow to it cracks it (Impact best, the slam better, anything else a chip) and does it no harm; a blow to its sides lands a
+quarter. The clever way is the bullfight: it **scrapes** a second, aiming where you stand **as the scrape begins**, then **rams** at
+11 m/s; step aside in front of a **pillar** and it cracks its own crown a whole stage, and the pillar cracks (a second ram fells it as a
+log; a stalactite overhead falls too, and lies on the floor as one more thing to ram). The wall only stuns it. Three stages and the crown
+bursts: it **reels** four seconds and every blow lands three times over. Bare, its **core** takes double; every twelve seconds it sinks
+into a slip pool and surfaces from another (the pool rings first), the sand slides toward it, and at two thirds and one third it calls
+its **brood** from the clutches still whole round the rim (break them first and it has fewer to call). Burst it and the pale pool forms
+in the centre: the way up, with the FOE's pay. Or, below a fifth of its health and reeling or stunned, **reprogram** it: half the pay
+now, it sinks into its pool for good, the nursery is yours, and the pale pool forms in the east. Up the way up you keep the haul and the run pays in cubes (more for depth and the
 FOE, less as the Well is drawn on: it fills again with rest). Chart four fifths of the floors you walk (the Dreamvane's survey does it;
 walking alone does not) and you also come up with a **Cogitomap**: the Well as it is today. (The rooms are greybox until Calissa dresses them.)
 

@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
-import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks } from './table.js';
+import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './table.js';
+import { catchFactor } from '../../progress/combat/emo.js';
+import { deckDraw } from '../../progress/econ/deck.js';
 import { OUTCOME_FX } from './outcomes.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
@@ -23,6 +25,10 @@ const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance
 //    twice as hard). A TWIN key spins it twice, an ECHO key has it happen again, a WIDE key reaches twice as far.
 //  - WHICH COFFIN is on the chain is which wheel: the plain one gives back what was put in, the gambler's almost never anything but
 //    a slip nuke one time in a hundred (and turned upside down by an inverted key, ninety-nine), the shepherd's what is for the flock.
+//    A SUMMONING coffin (its mode: table.js MODES) is the CATCH (docs/plans/SPIRIT-GARDEN.md, 5a): opened on a Figment laid low
+//    (critically stunned, in front, within reach), its wheel is two sectors, caught and free, as wide as `catchOdds` (its class, how
+//    long the stun has left to hold it, its EmO, the keys), drawn from a deck per kind (econ/deck.js: a 1-in-N catch within N tries). Caught,
+//    it is BOUND (creatures/bound.js) and waits in the Jar; missed, the keys are spent all the same. Nothing laid low: the coffin stays shut.
 //
 //   I      draw / stow          LMB (hold)  hoover          RMB  open it (a key on the ring, and full)          (the box: P; the Codex: THE TOOLS)
 //
@@ -31,7 +37,7 @@ const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance
 // Persona's and Fire Emblem's "luck" as a number that is spent.
 // ---------------------------------------------------------------------------------------
 const MOTE = [new THREE.Color(0xb49be6), new THREE.Color(0xffd76a), new THREE.Color(0x7fb2ff)];
-const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4;
+const CAP = 100, HOOVER = { range: 7, cone: 0.7, pull: 9 }, ECHO_DELAY = 1.4, CATCH_REACH = 8;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion();
 const _f = new THREE.Vector3(), _r = new THREE.Vector3(), _x = new THREE.Vector3(), _y = new THREE.Vector3(), _p0 = new THREE.Vector3(), _p1 = new THREE.Vector3(), _p2 = new THREE.Vector3(), _s0 = new THREE.Vector3();
 const _q0 = new THREE.Quaternion(), _q1 = new THREE.Quaternion(), _hm = new THREE.Matrix4(), _mb = new THREE.Matrix4();
@@ -119,6 +125,7 @@ export class Lockheart extends HeldTool {
   }
 
   open() {
+    if (HEARTS[this.heart]?.mode === 'summoning') { this.summon(); return; }
     const g = this.game, box = g.pneuka;
     if (!this.heart) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart has no coffin (wear one from the Pneuka Box).', { key: 'lh.noheart', throttle: 3 }); return; }
     const keys = box.fitted('keys');
@@ -137,6 +144,44 @@ export class Lockheart extends HeldTool {
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, power: +power.toFixed(2), spins: mods.spins });
     if (g.ultimate) g.ultimate.begin(this); else this.next(); // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
+  /** The mind laid low that a summoning coffin would open on: critically stunned, in front of them, within reach (8 m). */
+  quarry() {
+    const g = this.game, P = this.P, f = _b.set(Math.sin(P.yaw), 0, Math.cos(P.yaw));
+    let best = null, bd = CATCH_REACH;
+    for (const c of g.creatures?.list || []) {
+      if (!g.bound?.catchable(c) || !g.stun?.vulnerable(c)) continue;
+      const d = _a.set(c.pos.x - P.pos.x, 0, c.pos.z - P.pos.z), n = d.length();
+      if (n < bd && (n < 1.5 || d.divideScalar(n).dot(f) > 0.4)) { bd = n; best = c; }
+    }
+    return best;
+  }
+  /** The catch: the keys turned, the odds put up as a wheel of two (caught, free) and spun; caught, it is bound. */
+  summon() {
+    const g = this.game, box = g.pneuka, keys = box.fitted('keys');
+    if (!keys.length) { sfx.fizzle?.(); g.log?.say('warn', 'There is no Possibilikey on the ring (the Pneuka Box).', { key: 'lh.nokey', throttle: 3 }); return; }
+    if (!this.full) { sfx.fizzle?.(); g.log?.say('warn', 'The Lockheart is not full enough to open.', { key: 'lh.empty', throttle: 3 }); return; }
+    const c = this.quarry();
+    if (!c) { sfx.fizzle?.(); g.log?.say('warn', 'There is nothing laid low to catch.', { key: 'lh.nocatch', throttle: 3 }); return; }
+    const used = [...keys];
+    for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) box.useUp('keys', i);
+    const s = c.status?.get('stun'), clean = s ? Math.min(1, s.t / Math.max(0.1, c.stunFor ?? 4.5)) : 0.6; // (asleep, held or melted: a fair hold)
+    const p = catchOdds({ cls: c.cls || 0, clean, emoFactor: catchFactor(c.emo), keys: used });
+    const caught = p > 0 && deckDraw(g.ledger, `catch.${c.kind}`, Math.max(1, Math.round(1 / p)), simRand());
+    this.charge = 0; this.save();
+    g.stun?.hold(c, 4); // (kept down while the wheel turns)
+    sfx.coffin?.(true);
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: [], power: 1, spins: 1 });
+    const R = [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }];
+    const pos = c.pos.clone().setY(c.pos.y + (c.height ?? 1.5) * (c.root?.scale.y ?? 1) + 1.2), cam = g.camera;
+    const face = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(cam.getWorldPosition(new THREE.Vector3()), pos, new THREE.Vector3(0, 1, 0)));
+    this.queue = [{ id: 'catch' }];
+    this.wheel.spin(R, caught ? 'caught' : 'free', pos, face, () => {
+      this.queue = []; sfx.coffin?.(false);
+      if (caught && c.alive) { g.fx?.absorbSparkle?.(c.pos.clone().setY(c.pos.y + 0.6)); g.bound?.bind(c, 'lockheart'); }
+      else g.events?.emit('catch.miss', { from: 'lockheart', kind: c.kind, cls: c.cls || 0, odds: +p.toFixed(2), by: 'courier' });
+    });
+  }
+
   /** The next spin in the queue: the wheel put up over the coffin, facing them. */
   next(spec = null) {
     const q = this.queue[0];

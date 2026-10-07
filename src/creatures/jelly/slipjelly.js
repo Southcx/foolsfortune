@@ -228,6 +228,15 @@ export class SlipJellies {
     if (g.fx?.alpha?.emit) for (let i = 0; i < 28; i++) g.fx.alpha.emit({ pos: at.clone().add(new THREE.Vector3(rnd(-0.4, 0.4), rnd(-0.3, 0.5), rnd(-0.4, 0.4))), vel: new THREE.Vector3(rnd(-0.8, 0.8), rnd(0.6, 2.2), rnd(-0.8, 0.8)), life: rnd(1.2, 2.2), size: 0.25, sizeEnd: 0.9, color: new THREE.Color(0x8f7fc0), alpha: 0.4, drag: 1.4, gravity: -0.6 });
     sfx.jellyPop?.(g.listenerDistance(at) * 1.6);
   }
+  /** Taken whole (bound: creatures/bound.js): out of the world without a burst, nothing spilled, nothing said of a death. A Well's is
+   *  gone for good; a jelly of the dunes forms again at home in time (another one: this one is in the Jar). */
+  take(c, by = 'courier') {
+    if (!c.alive) return;
+    c.alive = false; c.dying = null; c.deadT = 0; c.attack = null; c.downBy = by; c.held = null;
+    c.col.setEnabled(false); c.root.visible = false;
+    c.brain.end('gone'); c.status.clear(); this.game.creatures.unwind(c);
+    this.trail.gap(c);
+  }
   /** Gone for good (a spirit: it does not form again). */
   dispose(c) {
     const g = this.game;
@@ -289,6 +298,12 @@ export class SlipJellies {
         continue;
       }
       if (c.spirit && (c.spirit.life -= dt) <= 0) { this.vanish(c, 'environment', 'faded'); continue; } // (its time is up: back into smoke)
+      if (c.held) { // (in the god hand's grip: where the hand holds it, its mind stood aside, struggling: godhand/catch.js)
+        c.prevPos.copy(c.pos); c.pos.copy(c.held); c.vel.set(0, 0, 0); c.vy = 0; c.air = false; c.groundY = null; c.want.set(0, 0, 0);
+        c.deform.wob = Math.max(c.deform.wob, 0.08); this.pose(c, dt, dt);
+        c.rb.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + H * 0.5, z: c.pos.z });
+        continue;
+      }
       // (far from the Courier, it rests where it is: its mind keeps its wants ticking and no more (brain.js's level of detail))
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;
       if (far) { c.brain.update(dt); continue; }
@@ -297,7 +312,7 @@ export class SlipJellies {
       const k = (halt ? 0 : slow ? 0.35 : 1) * (1 + 0.5 * st(c, 'haste')), dtk = dt * k; // (haste: a song's rally, tools/crucibelle/crucibelle.js)
       c.prevPos.copy(c.pos);
       c.want.set(0, 0, 0); c.face = null;
-      if (dtk > 0) { c.brain.update(dtk); this.attackTick(c, dtk); }
+      if (dtk > 0) { if (c.driven) c.driven(dtk); else { c.brain.update(dtk); this.attackTick(c, dtk); } } // (`driven`: a body moved by its own pattern, not the jelly's mind: greatjelly.js)
       this.move(c, dtk);
       this.pose(c, dt, dtk);
     }
@@ -516,6 +531,7 @@ export class SlipJellies {
         const breathe = c.pose === 'idle' || c.pose === 'walk' ? 0.025 * Math.sin(t * 2.2 + c.home.x) - Math.min(0.06, sp * 0.02) : 0;
         D.target.squash = c.air ? 1.0 + Math.min(0.25, Math.abs(c.vy) * 0.03) : base + breathe;
         D.target.lean.set(stun ? 0.12 * Math.sin(t * 3.1) : 0, stun ? 0.12 * Math.cos(t * 2.6) : 0); // (stunned: it sways)
+        if (c.squashTo != null) D.target.squash = c.squashTo; // (a driven body's own posture: the FOE's scrape, its rearing)
       }
       // the toes walk while it moves, and the whole of it ripples, more the faster it goes
       D.feet = THREE.MathUtils.damp(D.feet, c.air ? 0 : Math.min(1, sp / 2.2), 6, dtk);

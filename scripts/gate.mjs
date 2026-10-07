@@ -3,7 +3,7 @@
 // handover"), run in order, with one report to paste into the handover note. It starts its own dev server (a free port), so nothing
 // else need be running; perf starts its own as it always has.
 //
-//   npm run gate                  check, build, stress 1 and 2, the Well playtest, the replay test, the QAIS test, the contracts, perf, the lanes
+//   npm run gate                  check, the unbuilt report, build, stress 1 and 2, the Well playtest, the replay test, the QAIS test, the contracts, perf, the lanes
 //   npm run gate -- --quick       check, build, stress 1, the contracts (a minute or two: for between commits)
 //   npm run gate -- --lanes       the lanes only (BRANCH=<name> for a detached head)
 //   writes gate-report.txt (the summary and each step's last lines; not committed)
@@ -50,7 +50,7 @@ const run = async (name, cmd, args, env = {}) => {
   const out = r.buf.trim().split('\n');
   const ok = r.code === 0, s = ((Date.now() - t0) / 1000).toFixed(0);
   // (each step's own last word: the verdict line it prints)
-  const verdict = out.filter((l) => /OK|FAIL|OVER|violations|passed|exactly|differ|built in|contracts:|qais:/.test(l)).slice(-1).join(' | ') || out.slice(-1)[0] || '';
+  const verdict = out.filter((l) => /OK|FAIL|OVER|violations|passed|exactly|differ|built in|contracts:|qais:|UNBUILT/.test(l)).slice(-1).join(' | ') || out.slice(-1)[0] || '';
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${s.padStart(4)} s  ${verdict.slice(0, 140)}`);
   steps.push({ name, ok, s, verdict });
   report.push(`## ${name}: ${ok ? 'ok' : 'FAILED'} (${s} s)`, ...out.slice(-(ok ? 8 : 40)), '');
@@ -60,6 +60,7 @@ const run = async (name, cmd, args, env = {}) => {
 let built = false;
 if (!lanesOnly) {
   await run('check', 'node', ['scripts/check.mjs']);
+  await run('unbuilt', 'node', ['scripts/unbuilt.mjs']); // (a report line, never a failure: events the log hears that nothing emits, Dovina's scripts/unbuilt.mjs; BUILD.md says which round each belongs to)
   built = await run('build', 'npx', ['vite', 'build']);
   const server = await createServer({ root: ROOT, logLevel: 'error', server: { host: '127.0.0.1', port: 5190, strictPort: false } });
   await server.listen();

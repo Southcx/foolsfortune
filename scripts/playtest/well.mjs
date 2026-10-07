@@ -36,7 +36,7 @@ export async function play(t) {
     }
     s = await t.look();
     floors.push({ floor, left: s.well?.mobs ?? 0 });
-    if (!s.well?.down) break;
+    if (!s.well?.down || floor === 3) break; // (the third floor's way down is the great cavern's: the FOE's fight is its own test, T-series in QAIS)
     // (down: a sandfall may stand in the way for up to 12 sim seconds, as a player would wait, so a few tries)
     for (let tries = 0; tries < 4 && s.well?.floor === floor; tries++) {
       await t.act({ do: 'goto', to: s.well.down, within: 0.9, ticks: WALK }); s = await t.until((s) => !s.task, WALK + 60);

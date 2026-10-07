@@ -172,6 +172,11 @@ your Lachryma; and that, reprogrammed, follow you, fetch for you, or turn on eac
 4. **Wire it**: one `Brain` per individual (`game.ai.add(brain)`), an update in main.js; tracking rules for its events (`tracking.js`);
    its line in the stress test's invariants.
 
+Two things an individual may carry without a new part: its own **leash** and **home radius** (`c.leash`, `c.homeR`, read by the jelly's
+mind in place of its kind's: a clutch's guard is held 10 m to its nest, `world/well/nursery.js`), and a **driven** body (`c.driven(dt)`,
+`c.squashTo`): a boss whose body is moved by its own pattern instead of a mind (the Great Slip Jelly, `creatures/jelly/greatjelly.js`)
+keeps the jelly's body, its hurt, burst and statuses, and stands its mind aside.
+
 ## 5. Next (the long road)
 
 What the parts are ready for, roughly in order:

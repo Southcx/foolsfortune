@@ -11,6 +11,7 @@ export function setOutlineThickness(v) { outlineUniform.value = v; }
 
 function makeOutlineMaterial(fpHide = false) {
   const m = new THREE.MeshBasicMaterial({ color: PALETTE.outline, side: THREE.BackSide });
+  m.userData.shared = true; // (one for the whole game: a room taken down never disposes it, casebook rule 24)
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uOutline = outlineUniform;
     shader.vertexShader = shader.vertexShader

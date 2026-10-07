@@ -59,7 +59,20 @@ log kept blameless and searchable.
     that would have updated it: whatever sets the Courier down far below (a far dock, a Well) lowers `player.killY` under them first
     (`places.stand`, `course.toDunes`).
 
+24. **A material made once for the whole game is marked `userData.shared`.** Whatever is taken down (a Well floor, the bowl) disposes
+    every material it holds that is not marked; a global one disposed loses its program and recompiles at its next draw, a hitch.
+
 ## Cases
+
+### 2026-10-07 · Every Well floor taken down recompiled the outlines
+- **Seen:** perf after Round 1: two shader programs compiled after the warm-up (was none), both the outline's back-face basic, with keys
+  identical to programs compiled at boot; they appeared on the third floor, the first to stand pots (outlined) once the second was gone.
+- **Cause, measured:** taking a floor down (`wellkit.js` dispose) released three basic programs to zero users. The floor disposes every
+  material in its group not marked `userData.shared`, and the outlines it carries are `OUTLINE_MAT`, one material for the whole game
+  (`render/outline.js`): disposed, every outline in the game lost its program and the next outlined thing drawn compiled it again. It
+  has done so at every floor change since the floors were outlined; the pots made the perf gate see it.
+- **Fix:** the outline materials are marked shared where they are made (`makeOutlineMaterial`).
+- **Rule:** 24.
 
 ### 2026-10-07 · Set down at Margarite's dock, the Courier was "fallen" and woke at the workshop
 - **Seen:** `places.stand` to the dock (418 m down, outside the dunes) left them at the workshop, headless.

@@ -20,7 +20,7 @@
 // Calissa's.
 //
 //   layoutFloor(seed, floor) (welllayout.js)
-//   buildFloor(game, layout, origin, floor) -> { group, cells (each with its design `tpl` and `spots`: [{ kind, pos }]), path, arrive: { pos, yaw }, up, down, sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
+//   buildFloor(game, layout, origin, floor) -> { group, cells (each with its design `tpl` and `spots`: [{ kind, pos }]), path, arrive: { pos, yaw }, up, down, moveDown(cell), sandfalls, door(c, r, side), open(c, r, side), cellAt(x, z),
 //     ground(x, z, top?), update(dt), dispose() }       (origin: the grid's north-west corner, at the upper tier's floor)
 //   GRID (cells a side), CELL (metres a cell), WALL_H
 // ---------------------------------------------------------------------------------------
@@ -241,7 +241,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     return { pos: at, mesh: m, rim };
   };
   const up = pool(layout.start, 'up');
-  const down = floor < 3 ? pool(layout.exit, 'down') : null;
+  const down = pool(layout.exit, 'down'); // (on the third floor it goes down into the great cavern: world/well/cavern.js)
   /** A doorway's middle on the floor: where a cell's side meets its neighbour, at the doorway's own tier. */
   const door = (c, r, side) => {
     const cell = get(c, r), km = mid(cell), [dx, dz] = SIDES[side], p = place(km.x + (dx * CELL) / 2, km.z + (dz * CELL) / 2);
@@ -276,6 +276,8 @@ export function buildFloor(game, layout, origin, floor = 1) {
     open: (c, r, side) => (fallAt.get(`${c},${r},${side}`)?.state ?? 'open') === 'open',
     /** The guaranteed path's cells in order, on the sand (the flythrough's: Calissa's), from the way in to the way down. */
     path: layout.path.map((k) => onSand(k)),
+    /** The way down moved to another room (a warped artifact taken: world/well/finds.js): its pool and where it is, together. */
+    moveDown(cell) { const k = get(cell.c, cell.r), at = onSand(k); down.pos.copy(at); down.mouth.group.position.set(at.x, at.y + 0.02, at.z); },
     update(dt) {
       t += dt; down?.mouth.update(t, 1); up.rim.material.opacity = 0.6 + 0.15 * Math.sin(t * 1.3);
       falls.update(dt, game.player?.pos);

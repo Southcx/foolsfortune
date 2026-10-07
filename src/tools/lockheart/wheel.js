@@ -7,7 +7,8 @@
 // Prior art: the gacha banner's spin and the prize wheel of the game show (Wheel of Fortune), the slot reel's ease-out and its ticks,
 // and Persona's arcana roulette after a battle (the odds shown as you watch).
 //
-//   const w = new Wheel(scene)   w.spin(rates, chosenId, pos, face, onStop, size = 1)   w.update(dt)   w.busy
+//   const w = new Wheel(scene)   w.spin(rates, chosenId, pos, face, onStop, size = 1)   w.update(dt)   w.busy   (a rate may carry its own `color`:
+//   the catch's two sectors, caught and free, are no outcome of the table)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OUTCOMES } from './table.js';
@@ -41,7 +42,7 @@ export class Wheel {
     for (const r of rates) {
       const len = r.p * Math.PI * 2;
       if (len < 1e-4) continue;
-      const m = new THREE.Mesh(new THREE.RingGeometry(R0, R1, Math.max(2, Math.ceil(len * 12)), 1, Math.PI / 2 - a - len, len), new THREE.MeshBasicMaterial({ color: OUTCOMES[r.id]?.color ?? 0xffffff, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(new THREE.RingGeometry(R0, R1, Math.max(2, Math.ceil(len * 12)), 1, Math.PI / 2 - a - len, len), new THREE.MeshBasicMaterial({ color: r.color ?? OUTCOMES[r.id]?.color ?? 0xffffff, side: THREE.DoubleSide }));
       m.renderOrder = 5; this.disc.add(m);
       if (r.id === chosen) target = a + len * (0.2 + 0.6 * simRand()); // (somewhere in its sector, not always the middle)
       a += len;

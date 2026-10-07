@@ -60,7 +60,8 @@ export class Agent {
       courier: { pos: vec(P.pos), vel: vec(P.vel), yaw: r2(P.yaw), grounded: !!P.grounded, tech: g.techs?.active?.id || null, shape: P.shape,
         cubes: g.cubes?.balance ?? null, lachryma: g.lachryma ? r2(g.lachryma.value ?? g.lachryma.pool ?? 0) : null, inHand: g.belt?.inHand?.id || null },
       interact: it ? I(it) : null, reach: (g.interact?.offers || []).map(I), // (the chevron's one, and everything F could be meant for)
-      well: g.well?.active ? { floor: g.well.floor, mobs: g.well.mobs.filter((c) => c.alive).length, up: vec(g.well.cur.up.pos), down: g.well.cur.down ? vec(g.well.cur.down.pos) : null,
+      well: g.well?.active ? { floor: g.well.floor, mobs: g.well.mobs.filter((c) => c.alive).length, up: g.well.cur?.up ? vec(g.well.cur.up.pos) : null, down: g.well.cur?.down ? vec(g.well.cur.down.pos) : null,
+        cavern: g.well.cur?.isCavern ? { phase: g.well.cur.foe?.phase, state: g.well.cur.foe?.state, stage: g.well.cur.foe?.stage, hp: g.well.cur.foe ? +g.well.cur.foe.c.hp.toFixed(1) : null, clutches: g.well.cur.nursery.whole } : null, // (the great cavern: world/well/cavern.js)
         foes: g.well.mobs.filter((c) => c.alive).map((c) => ({ id: c.id, kind: c.kind, name: c.name, pos: vec(c.pos), cls: c.cls || 0 })) } : null, // (the whole floor's: a room is out of sight, not out of mind)
       dialogue: g.dialogue?.open ? { with: g.dialogue.npc?.id, line: g.dialogue.plain, done: !!g.dialogue.typed,
         choices: g.dialogue.opts ? g.dialogue.opts.map((c) => String(g.dialogue.say(c)).replace(/<[^>]*>/g, '')) : null } : null, // (next: press F; a choice: choose)

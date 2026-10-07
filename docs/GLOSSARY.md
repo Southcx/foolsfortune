@@ -366,6 +366,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the way up, with the run's pay (and a Cogitomap, if charted enough). *Not:* hauling (the livelihood of carrying goods across the Emocean).
 - **FOE** (a Well's; Etrian Odyssey's word): the bigger creature that keeps a Well's last floor (for now a Great Slip Jelly, class 2). The
   run's pay counts the FOEs beaten (`wellPay`). *Not:* a creature's foe (whatever its mind is fighting: `c.foe`).
+- **the great cavern** (`src/world/well/cavern.js`): the Great Dunemaw's last place, under its third floor's way down: **the bowl**
+  (`src/world/well/bowl.js`, DUNEMAW-ARENA.md), where the crowned FOE broods. Its parts: **the ledge** (the way in, 6 m up; its two
+  **slopes** are one way down), the **pillars** (six; a ram **cracks** one, a second **fells** it as a **log**, a third leaves **rubble**),
+  the **stalactites** (eight, overhead; fallen, one lies on the floor as a ram target used once), the **slip pools** (W0 at the centre, W1
+  to W4 round it), the **rim shallows** (slow to wade) and **the upper ring** (a gallery in the south wall). Its way up, the pale pool,
+  forms only when the fight ends. *Not:* the Well's mouth (out on the sand).
+- **the ram**, **the slam**, **the reel**, **the slide** (the Great Slip Jelly's: `src/creatures/jelly/greatjelly.js`): its charge after
+  a one-second scrape, aimed as the scrape begins (stone it hits cracks its own crown); its slam close in; the four seconds it reels
+  when the crown bursts (every blow three times over); and, crown off, the sand sliding toward the pool it is in. It **sinks** into a
+  pool and **surfaces** from another. *Not:* the Courier's slam (the Soul Brush's and the move's: the slam that cracks the crown).
+- **the ground's drift**, **wade** (`player.drift`, `player.wade`): a place's pull on the Courier's feet (sand sliding, carried as a
+  platform's move) and its drag on a walk (shallows), set by the place and put back when the Courier leaves it; the core movement is
+  untouched when they are zero and one.
 - **the Lip Stone**, **cast**, **wipe** (`docs/plans/DUNEMAW-EXTREME.md`, planned): the Great Slip Jelly's fight is a scripted **timeline**
   of named **casts** (its **tankbuster**, **raidwide**, **adds**, **enrage**), in the style of an FFXIV extreme trial; one difficulty
   (the owner). The Lip Stone on the bowl's ledge is the fight's start: a **wipe** (a shatter in the fight) costs the attempt, not the
@@ -376,6 +389,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   2026-10-07) is a tier of cultivation, read from the attributes' ranks and crossed by the **tribulation** (the first Firing, the
   second, and on: no ceiling). A Figment is **caught** by the Lockheart (its summoning coffin, the catch wheel) or by the god hand in
   battle (held over the Jar's mouth through its **struggle**), and then bound. *Not:* caught by the Veritome (it reprograms).
+  The bound wait in the Jar (`game.bound`, `src/creatures/bound.js`) until the garden opens; the hand's catch is `src/godhand/catch.js`.
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
@@ -613,6 +627,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (its own root, second and fifth); the night **thins** every cue instead (`MusicPlayer.setNight`). A cue the weather must not touch is
   `moodless`. **the scale** (`game.music.scale()`): the five notes to play along in (the Crucibelle's), the cue's own, or the
   weather's mode when nothing plays.
+- **a busker's mat** (`src/world/busk.js`): where the rhythm mode is begun in the world, one on each pier (Old Grog's at the Weir,
+  Margarite's dock): F on it with the Crucibelle worn plays a song for tips; walking off the pier ends it. **busking**: playing there.
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one

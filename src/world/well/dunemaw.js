@@ -10,8 +10,10 @@
 // made again and again), Spelunky's room grid (wellkit.js), the Mystery Dungeon games (the stairs as the floor's one goal), and the
 // daily dungeon of an MMO (the same Well for everyone that day: core/calendar.js).
 //
-// Below, every room but the first holds slip jellies (stand-ins for the Egregores, the owner's ruling), one more each floor down, and
-// the last floor's way out is kept by a FOE (a jelly of class 2: creatures/jelly/slipjelly.js). Once every jelly on a floor is burst,
+// Below, every room but the first holds slip jellies (stand-ins for the Egregores, the owner's ruling), one more each floor down; their
+// CLUTCHES are about the rooms (world/well/nursery.js) and the FINDS (pots, artifacts, the warped one: world/well/finds.js). The third
+// floor's way down drops into the GREAT CAVERN (world/well/cavern.js): the bowl where the crowned FOE broods, the Great Slip Jelly
+// (creatures/jelly/greatjelly.js), whose end (burst, or reprogrammed: half the pay, and the nursery yours) opens the way up. Once every jelly on a floor is burst,
 // something is left where they were: a MATERIAL of one of the seven kinds (progress/econ/materials.js), a tier up one floor in four
 // (a deck, econ/deck.js) and a tier up for the FOE's floor. What they find is the HAUL: it comes home only up the way up, with the
 // run's pay (wellPay by the deepest floor and the FOEs, times the Well's yield at its FILL: a Well drawn on gives less and fills again
@@ -39,6 +41,12 @@ import { zoneOf } from '../../render/zones.js';
 import { mergeStatic } from '../../render/merge.js';
 import { DunemawMouth, Sandfall } from '../../vfx/dunemaw.js';
 import { ECON } from '../../progress/econ/table.js';
+import { Cavern } from './cavern.js';
+import { BOWL_AT, slipMaterial } from './bowl.js';
+import { Nursery, eggMaterial } from './nursery.js';
+import { Finds, artifactMaterial } from './finds.js';
+import { UrnCrown } from '../../vfx/urncrown.js';
+import { NURSERY, FOE } from '../../progress/combat/dunemaw.js';
 
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
@@ -71,13 +79,16 @@ export class Dunemaw {
     // (a sandfall's curtain is dressed on only when a floor is entered (vfx/welldress.js): one is shown here, falling, so its program is
     // compiled with the rest, not on the first sandfall seen: the perf gate's late compile, R46)
     const fall = new Sandfall({ width: 4.4, height: 4.6 }); fall.group.position.copy(F.arrive.pos); fall.update(1, 'falling', 1 / 60); F.group.add(fall.group);
+    // (the great cavern's own, compiled with the rest: the rim's slip, the urn crown with its core and shards bare, an egg, an artifact)
+    const U = new UrnCrown({ radius: 0.62 }); U.core.visible = true; U.shards.visible = true; U.group.position.copy(F.arrive.pos); F.group.add(U.group);
+    for (const mat of [slipMaterial(), eggMaterial(), artifactMaterial(false)]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat); m.position.copy(F.arrive.pos); F.group.add(m); }
     return () => { F.group.visible = false; this.warm = F; }; // (the curtain stays parked with the floor: disposed, its program would go with it)
   }
 
   get active() { return !!this.run; }
   get floor() { return this.run?.floor ?? 0; }
   /** Below this the Well has no bottom (main.js sets the player's killY from it while a run is on). */
-  get killY() { return WELL_AT.y - 30; }
+  get killY() { return this.cur?.isCavern ? BOWL_AT.y - 25 : WELL_AT.y - 30; }
 
   // ------------------------------------------------------------------ the mouth
   buildMouth() {
@@ -121,7 +132,29 @@ export class Dunemaw {
     this.goTo(1);
     return true;
   }
-  down() { if (this.run && this.run.floor < FLOORS && this.cur?.down) this.goTo(this.run.floor + 1); }
+  down() {
+    if (!this.run || !this.cur?.down) return;
+    if (this.run.floor < FLOORS) this.goTo(this.run.floor + 1); else this.toCavern();
+  }
+
+  /** Down from the third floor into the great cavern, where the FOE broods (world/well/cavern.js). */
+  toCavern() {
+    const g = this.game, R = this.run;
+    this.offFloor();
+    this.cur = new Cavern(g, { run: R, onEnd: (how, by) => this.foeEnd(how, by) });
+    this.moving = 2;
+    g.player.killY = this.killY;
+    g.course.teleport(this.cur.arrive.pos, this.cur.arrive.yaw, { keepPool: true });
+    g.events?.emit('well.cavern', { well: WELL_ID, by: 'courier' });
+    setTimeout(() => this.cur?.isCavern && this.cur.reveal(), 0); // (after the teleport has landed: the reveal sweeps from the far side to them)
+  }
+  /** The FOE's end, counted for the run's pay: burst, a FOE's worth; reprogrammed, its share (FOE.pay: half now, the nursery later). */
+  foeEnd(how, by) {
+    const R = this.run; if (!R) return;
+    if (by === 'courier') R.foes += how === 'reprogram' ? FOE.pay.reprogram.floors / FOE.pay.burst.floors : 1;
+    R.foeEnd = how;
+    this.game.events?.emit('well.foe', { well: WELL_ID, floor: FLOORS, cls: FOE.cls, how, by });
+  }
   up() { if (this.run) this.leave('walk'); }
 
   goTo(n) {
@@ -129,7 +162,12 @@ export class Dunemaw {
     this.offFloor();
     this.cur = buildFloor(g, layoutFloor(R.seed, n), WELL_AT, n);
     g.cartography?.clear('well'); // (every floor stands on the same ground: the map shows the one they are on)
-    this.populate(n);
+    const rooms = this.populate(n);
+    // its clutches, in the rooms the jellies keep (the third floor's are the cavern's), and its finds
+    // (in the room's clear middle, 2 m off its centre: prefabs.js keeps 2.5 m round the middle clear of every piece)
+    const nests = rooms.slice(0, n < FLOORS ? NURSERY.clutches[n - 1] : 0).map((c) => { const p = this.cur.onSand(c.c, c.r, 1.6, 1.2); p.y += 0.02; return p; });
+    this.nursery = new Nursery(g, { floor: n, spots: nests, guards: this.mobs, haul: R.haul });
+    this.finds = new Finds(g, { floor: n, cur: this.cur, run: R, seed: R.seed, onShift: (p) => this.nursery?.brood.push(g.jellies?.spawn(p, { once: true })) });
     R.floor = n; R.deepest = Math.max(R.deepest, n);
     this.moving = 2; // (a couple of frames for the teleport to land before the zone check below)
     g.player.killY = this.killY; // (now, not next frame: the floor is far above the dunes' killY, the mouth far below the Well's)
@@ -145,22 +183,23 @@ export class Dunemaw {
     return fill;
   }
 
-  /** The floor's jellies: in every room but the first, one more each floor down, and the FOE at the bottom's far end. */
+  /** The floor's jellies: in every room but the first, one more each floor down (the FOE is the great cavern's). */
   populate(n) {
-    const g = this.game, J = g.jellies, F = this.cur; if (!J) return;
+    const g = this.game, J = g.jellies, F = this.cur; if (!J) return [];
     const r = seeded((this.run.seed ^ Math.imul(n, 0x85ebca6b)) >>> 0), rooms = F.cells.filter((c) => c.role !== 'start');
     for (let i = rooms.length - 1; i > 0; i--) { const j = r.int(i + 1); [rooms[i], rooms[j]] = [rooms[j], rooms[i]]; }
     const at = (c, dx = 0) => { // (in the room's lair when its design has one (prefabs.js), else on the sand, off the pool)
       const lair = !dx && c.spots?.find((s) => s.kind === 'lair'); if (lair) return lair.pos.clone().setY(lair.pos.y + 0.05);
       const p = F.onSand(c.c, c.r, dx, c.role === 'exit' ? 3 : 0); p.y += 0.05; return p; };
     for (const c of rooms.slice(0, 1 + n)) this.mobs.push(J.spawn(at(c), { once: true }));
-    const end = rooms.find((c) => c.role === 'exit');
-    if (n === FLOORS && end) this.mobs.push(J.spawn(at(end, -3), { once: true, cls: 2 }));
+    return rooms.slice(0, 1 + n); // (the rooms that have jellies: their clutches go there)
   }
 
   /** Off the floor they are on: how much of it they charted (well.charted), and the floor and its jellies taken down. */
   offFloor() {
     const g = this.game, F = this.cur, R = this.run; if (!F) return;
+    this.nursery?.dispose(); this.nursery = null; this.finds?.dispose(); this.finds = null;
+    if (F.isCavern) { F.dispose(); this.cur = null; return; } // (the cavern is one room, nothing to chart: its floor's charting stands)
     const h = CELL / 2, share = g.cartography?.share('well', F.cells.map((c) => ({ x0: c.x - h, z0: c.z - h, x1: c.x + h, z1: c.z + h }))) ?? 0;
     if (R) { R.charted[F.floor - 1] = Math.max(R.charted[F.floor - 1] || 0, share); g.events?.emit('well.charted', { well: WELL_ID, floor: F.floor, charted: +share.toFixed(2), by: 'courier' }); }
     for (const c of this.mobs) g.jellies?.dispose(c);
@@ -195,7 +234,8 @@ export class Dunemaw {
     const shattered = how === 'shatter';
     this.offFloor(); this.escaping = null;
     const charted = R.deepest ? R.charted.reduce((a, b) => a + (b || 0), 0) / R.deepest : 0;
-    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill) * (how === 'escape' ? ECON.escape.keep : 1));
+    const keep = how === 'escape' ? ECON.escape.keep : 1;
+    const pay = shattered ? 0 : Math.round(wellPay(R.deepest, R.foes) * wellYield(R.fill) * keep + (R.finds || 0) * keep); // (the artifacts' worth rides with the haul: finds.js)
     g.events?.emit('well.leave', { well: WELL_ID, floors: R.deepest, foes: R.foes, pay, charted: +charted.toFixed(2), shattered, how, fill: +R.fill.toFixed(2), by: 'courier' });
     this.run = null;
     g.player.killY = DUNE.y - 90; // (back to the dunes' floor of the world, before the next step: see goTo)
@@ -211,7 +251,7 @@ export class Dunemaw {
     for (const h of R.haul) g.pneuka?.add(h.id, 'well', 0, h.data);
     if (charted >= MAP_AT) {
       const worth = cogitomapWorth(pay, charted, 0);
-      g.pneuka?.add('cogitomap', 'well', 0, { well: WELL_ID, seed: R.seed, day: R.day, charted: +charted.toFixed(2), pay, worth, at: calNow() });
+      g.pneuka?.add('cogitomap', 'well', 0, { well: WELL_ID, seed: R.seed, day: R.day, charted: +charted.toFixed(2), pay, worth, at: calNow(), shifted: R.shifted || [] }); // (a shifted floor is charted as it became)
       g.events?.emit('cogitomap.get', { well: WELL_ID, charted: +charted.toFixed(2), worth, by: 'courier' });
     }
   }
@@ -270,7 +310,7 @@ export class Dunemaw {
     const pick = (pos, ref) => { const d = Math.hypot(pos.x - P.pos.x, pos.z - P.pos.z); return d < REACH && Math.abs(P.pos.y - pos.y) < 2 ? { pos: pos.clone().setY(pos.y + 1.4), d, ref } : null; };
     if (!this.run) return pick(this.mouthPos, 'mouth');
     if (!this.cur) return null;
-    return (this.cur.down && pick(this.cur.down.pos, 'down')) || pick(this.cur.up.pos, 'up');
+    return (this.cur.down && pick(this.cur.down.pos, 'down')) || (this.cur.up && pick(this.cur.up.pos, 'up')) || null; // (the cavern's way up is there only when the fight is over)
   }
 
   update(dt) {
@@ -291,9 +331,11 @@ export class Dunemaw {
       else if (!near && this.motes) { this.motes.stop?.(); this.motes = null; }
     }
     this.cur?.update(dt);
-    if (this.run && this.cur) this.watch();
+    this.nursery?.update(dt); this.finds?.update(dt);
+    if (this.run && this.cur && !this.cur.isCavern) this.watch();
     // F at the mouth or a pool
     const it = g.interact?.cur;
+    if (it?.id === 'find' && P.peekLatch?.('KeyF') && !g.god?.controlling) { P.latch('KeyF'); this.finds?.take(it.ref); } // (an artifact: finds.js)
     if (it?.id === 'well' && P.peekLatch?.('KeyF') && !g.god?.controlling) {
       P.latch('KeyF');
       const go = it.ref === 'mouth' ? () => this.enter() : it.ref === 'down' ? () => this.down() : () => this.up();

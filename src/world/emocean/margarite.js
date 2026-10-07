@@ -79,13 +79,14 @@ export class Margarite {
   /** Is the Courier on the dock (its zone)? */
   get here() { return zoneOf(this.game.player.pos) === 'margarite'; }
 
-  /** Where things stand: the Pearl Shrine, the Purser, Letty, the landing. */
+  /** Where things stand: the Pearl Shrine, the Purser, Letty, the busker's mat, the landing. */
   spot(id) {
     const M = MARGARITE, t = this.top;
     const S = {
       shrine: { pos: new THREE.Vector3(M.x + 2, t, M.z + 5.5), yaw: Math.PI },
       purser: { pos: new THREE.Vector3(M.x - 6, t, M.z + 5.2), yaw: Math.PI },
       letty: { pos: new THREE.Vector3(M.x + 5, t, M.z - 4.6), yaw: 0 },
+      busk: { pos: new THREE.Vector3(M.x - 2.2, t, M.z - 4.4), yaw: 0 }, // (the busker's mat: world/busk.js)
       landing: { pos: new THREE.Vector3(M.x + M.quay[0] / 2 + 2, t + 0.05, M.z), yaw: -Math.PI / 2 },
     };
     return S[id] || null;

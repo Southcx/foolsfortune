@@ -550,6 +550,7 @@ export class Breakables {
   /** Shared by shatter + slice: kintsugi payout, and leave a wreck site to rebuild. */
   onGone(ent, basePos) {
     const def = ent.def;
+    def.onBreak?.(ent, basePos.clone().setY(basePos.y + ent.P.height * 0.5), ent.by || 'courier'); // (whoever placed it hears it go: a Well's find, world/well/finds.js)
     if (ent.gold) {
       const c = basePos.clone().setY(basePos.y + ent.P.height * 0.5);
       this.game.baubles?.spawn(c, T.clappers.kintsugiDrop * ent.gold);

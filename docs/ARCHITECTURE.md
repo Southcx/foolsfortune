@@ -140,7 +140,9 @@ Every push to main goes through it. A division's round is not done until its bra
 
 **`npm run gate`** runs all of it in order with its own dev server (check, build, stress 1 and 2, the Well playtest, the replay test, the QAIS test, the
 contracts, perf) and adds **the lanes**: the files the branch changed outside its division's lane (CLAUDE.md, "Threads"), a warning the
-handover explains. It writes `gate-report.txt`, the summary a handover pastes. `npm run gate -- --quick` (check, build, stress 1, the
+handover explains. It reports **the unbuilt** too (`node scripts/unbuilt.mjs`, Dovina's, R1 of the full build): every event a log rule
+hears that nothing in the game emits, a feature specified and never wired. A report, never a failure; `docs/plans/BUILD.md` says which
+round each belongs to, and a round is done when none of its own is listed. It writes `gate-report.txt`, the summary a handover pastes. `npm run gate -- --quick` (check, build, stress 1, the
 contracts) is for between commits. perf also names what it does not gate but Petra reads: the shader programs compiled after the
 warm-up (each a hitch the first time it is drawn) and the big things no zone hides.
 
