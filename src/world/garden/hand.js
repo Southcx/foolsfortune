@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
-import { STATS } from '../../progress/spirits.js';
+import { STATS, firingOf, ranksOf } from '../../progress/spirits.js';
 import { SculptBrush } from '../../vfx/garden/sculptbrush.js';
 
 export const ARTS = ['grab', 'pull', 'press', 'carve', 'smooth', 'place'];
@@ -47,7 +47,7 @@ export class GardenHand {
     this.R = realm; this.game = realm.game; this.art = 'grab';
     this.held = null; this.dist = 0; this.at = new THREE.Vector3(); this.prev = new THREE.Vector3(); this.vel = new THREE.Vector3();
     this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0;
-    this.brush = new SculptBrush({ fx: realm.game.fx }); realm.place.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
+    this.brush = new SculptBrush({ fx: realm.game.fx }); realm.site.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
   }
 
   setArt(a) {
@@ -61,7 +61,7 @@ export class GardenHand {
     const g = this.game, I = g.input, cam = g.camera;
     const o = cam.position, d = _v.set((I.mx / innerWidth) * 2 - 1, -(I.my / innerHeight) * 2 + 1, 0.5).unproject(cam).sub(o).normalize().clone();
     let tHit = Infinity, planet = null;
-    for (const P of this.R.place.planets) { const t = rayGround(o, d, P); if (t > 0 && t < tHit) { tHit = t; planet = P; } }
+    for (const P of this.R.site.planets) { const t = rayGround(o, d, P); if (t > 0 && t < tHit) { tHit = t; planet = P; } }
     this.hit = planet ? { planet, point: o.clone().addScaledVector(d, tHit) } : null;
     this.point.copy(planet ? this.hit.point : o.clone().addScaledVector(d, 30));
     return { o: o.clone(), d };
@@ -69,8 +69,8 @@ export class GardenHand {
   /** The Jar or a spirit nearest the ray, within reach. */
   pick(o, d) {
     let best = null, bd = HAND.reach;
-    for (const b of [{ hop: this.R.jar, kind: 'jar' }, ...this.R.spirits.map((s) => ({ hop: s.hop, kind: 'spirit', s }))]) {
-      const t = Math.max(0, _w.copy(b.hop.pos).sub(o).dot(d)), near = _w.copy(o).addScaledVector(d, t).distanceTo(b.hop.pos);
+    for (const b of [{ body: this.R.jarBody, kind: 'jar' }, ...this.R.spirits.map((s) => ({ body: s.body, kind: 'spirit', s }))]) {
+      const t = Math.max(0, _w.copy(b.body.pos).sub(o).dot(d)), near = _w.copy(o).addScaledVector(d, t).distanceTo(b.body.pos);
       if (near < bd) { bd = near; best = b; }
     }
     return best;
@@ -82,7 +82,7 @@ export class GardenHand {
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
-    if (I.wasPressed('Mouse2')) { if (R.kiln?.active) R.kiln.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
+    if (I.wasPressed('Mouse2')) { if (R.tribulation?.active) R.tribulation.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
       case 'grab': this.grab(dt, o, d); break;
       case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
@@ -100,22 +100,22 @@ export class GardenHand {
     const I = this.game.input;
     if (I.wasPressed('Mouse0') && !this.held) {
       const b = this.pick(o, d);
-      if (b) { this.held = b; this.dist = o.distanceTo(b.hop.pos); this.downT = 0; this.moved = 0; b.hop.held = true; b.hop.flight = null; this.at.copy(b.hop.pos); this.prev.copy(this.at); sfx.grab?.(); }
+      if (b) { this.held = b; this.dist = o.distanceTo(b.body.pos); this.downT = 0; this.moved = 0; b.body.held = true; b.body.flight = null; this.at.copy(b.body.pos); this.prev.copy(this.at); sfx.grab?.(); }
     }
     if (!this.held) return;
     this.downT += dt;
     const want = _w.copy(o).addScaledVector(d, this.dist);
     this.prev.copy(this.at); this.at.lerp(want, 1 - Math.exp(-14 * dt)); this.moved += this.at.distanceTo(this.prev);
     this.vel.copy(this.at).sub(this.prev).divideScalar(Math.max(dt, 1e-3));
-    this.held.hop.pos.copy(this.at);
+    this.held.body.pos.copy(this.at);
     if (!I.isDown('Mouse0')) {
       const b = this.held;
-      if (b.kind === 'spirit' && this.downT < HAND.tap && this.moved < 0.4) { b.hop.held = false; this.R.raising.pet(b.s); } // (a tap: a pat on the head)
-      else { b.hop.release(this.vel.clampLength(0, HAND.throwMax)); sfx.toss?.(); }
+      if (b.kind === 'spirit' && this.downT < HAND.tap && this.moved < 0.4) { b.body.held = false; this.R.raising.pet(b.s); } // (a tap: a pat on the head)
+      else { b.body.release(this.vel.clampLength(0, HAND.throwMax)); sfx.toss?.(); }
       this.held = null;
     }
   }
-  letGo() { if (this.held) { this.held.hop.release(new THREE.Vector3()); this.held = null; } this.endStroke(); }
+  letGo() { if (this.held) { this.held.body.release(new THREE.Vector3()); this.held = null; } this.endStroke(); }
 
   // ---- the clay
   sculpt(dt) {
@@ -138,10 +138,12 @@ export class GardenHand {
   choose(p) {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
     menu.showPage('garden.place', (im, el) => {
-      // one row a feature, its five feelings in the order the pages show them (STATS: wonder first); what you cannot afford is shown dim,
-      // never hidden (Dovina's ruling, GARDEN-SWEEP #14). Which features a Firing opens waits on Dovina's table: all are listed until then.
+      // one row a feature the Firings have opened (Dovina's table, FEATURES[id].firing), its five feelings in the order the pages show them
+      // (STATS: wonder first); what you cannot afford is shown dim, never hidden (her ruling, GARDEN-SWEEP #14)
       const rows = el('div', 'rooms'), cubes = g.cubes?.balance ?? Infinity, has = (m) => !m || g.pneuka?.slots.some((x) => x?.id === `mat.${m}`);
+      const fired = g.ledger ? firingOf(ranksOf(g.ledger)) : Infinity, shut = Object.values(FEATURES).filter((F) => (F.firing || 1) > fired).length;
       for (const [id, F] of Object.entries(FEATURES)) {
+        if ((F.firing || 1) > fired) continue;
         const c0 = costOf(id, 'wonder'), d = el('div', 'room', `<span class="n">◇</span><span><b>${FEATURE_NAME[id] || id}</b><s>${F.does} · ${c0.cubes} cubes and a material of its feeling</s></span>`);
         const pick = el('span', 'feel');
         for (const f of Object.keys(STATS)) {
@@ -154,13 +156,14 @@ export class GardenHand {
         d.lastChild.appendChild(pick); rows.appendChild(d);
       }
       im.appendChild(el('div', 'grp', `A PLOT ON ${p.planet.name.toUpperCase()}`)); im.appendChild(rows);
+      if (shut) im.appendChild(el('div', 'grp', `${shut} more open with the Firings to come`));
     }, { title: 'PLACE', sub: 'click a feeling beside a feature · F closes' });
   }
 
   // ---- the model: over what it holds, or the ground under the cursor, its fingers by the art
   pose(dt) {
     const R = this.R, god = R.god, hand = god?.hand; if (!hand?.root) return;
-    const at = this.held ? this.at : this.point, n = R.place.planets.reduce((b, P) => (at.distanceTo(P.c) - P.r < at.distanceTo(b.c) - b.r ? P : b)).c;
+    const at = this.held ? this.at : this.point, n = R.site.planets.reduce((b, P) => (at.distanceTo(P.c) - P.r < at.distanceTo(b.c) - b.r ? P : b)).c;
     const up = _w.copy(at).sub(n).normalize(), fwd = R.cam.fwd.clone().projectOnPlane(up).normalize();
     const fingers = fwd.clone().multiplyScalar(Math.cos(0.5)).addScaledVector(up, -Math.sin(0.5)).normalize(), back = up.clone().addScaledVector(fingers, -up.dot(fingers)).normalize();
     _m.makeBasis(new THREE.Vector3().crossVectors(fingers, back).normalize(), fingers, back); hand.root.quaternion.setFromRotationMatrix(_m);

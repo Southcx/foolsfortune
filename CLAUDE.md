@@ -77,7 +77,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 
 ## Scope
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
-  goes away when you leave. The Zone of Influence is the ground explored. The testing tool is the stress test (`scripts/stress.mjs`).
+  goes away when you leave. The Zone of Influence is the ground explored. The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
+  (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check); a bug fixed in a room gets its check.
 - Progress (unlocks, Codex, ledger, achievements) resets on every new build; settings are kept.
 
 ## Git and publishing
@@ -91,7 +92,8 @@ default branch, merge small and often, stay inside your own files (a small edit 
   `src/render/`, publishing, and the gate: standards, architecture and performance for every push to main.
 - **Dovina** (the trumps), Game Design Systems, `claude/dovina-design`, `session_01Dn7Yum1aGbbsUQBLqcm863`: what play is worth and where it
   leads: the economy (`progress/econ/`, `scripts/economy.mjs`, `docs/ECONOMY.md`), progression and unlocks, the ledger and achievements,
-  prices and odds, the plans in `docs/plans/`, and `docs/DESIGN.md`. The feel's tuning (`core/config.js`) stays Petra's.
+  prices and odds, the plans in `docs/plans/`, and `docs/DESIGN.md`; and mechanical testing (the owner, 2026-10-07): the sweeps
+  (`scripts/sweeps/`), whose findings go to each file's owner. The feel's tuning (`core/config.js`) stays Petra's.
 - **Wanda** (wands), Audio, `claude/friendly-knuth-vbv82r`, `session_01TJWi6AnZAQ8uug5yMgzhHW`: `src/audio/`, `src/music/`, `npc/clayese.js`,
   `docs/OST.md`, `docs/voice_recording.md`.
 - **Calissa** (cups), Art, `claude/calissa-art-cups`, `session_01XGT2M7FzmmweYqpDur2os6`: `src/vfx/`, `src/ui/`, the models and the animation

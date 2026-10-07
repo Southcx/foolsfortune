@@ -180,6 +180,7 @@ export class Band {
   bell(t, m, v = 0.5) {
     const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.25, { verb: 0.6, echo: 0.2 });
     for (const [r, a, d] of [[1, 1, 3], [2.76, 0.35, 1.6], [5.4, 0.15, 0.8], [0.5, 0.4, 3.5]]) {
+      if (f * r >= c.sampleRate / 2) continue; // (an overtone past the top of hearing: clamped to a whistle, so dropped)
       const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
       g.connect(o); this.osc('sine', f * r, t, t + d, g);
     }
@@ -243,6 +244,7 @@ export class Band {
   celesta(t, dur, m, v = 0.4) {
     const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.2, { verb: 0.55, echo: 0.2 });
     for (const [r, a, d] of [[1, 1, 1.4], [4, 0.25, 0.4], [10, 0.06, 0.15]]) {
+      if (f * r >= c.sampleRate / 2) continue; // (an overtone past the top of hearing: clamped to a whistle, so dropped)
       const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v, t + 0.003); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
       g.connect(o); this.osc('sine', f * r, t, t + d, g);
     }
@@ -250,6 +252,7 @@ export class Band {
   marimba(t, dur, m, v = 0.5, { pan = 0 } = {}) {
     const c = this.ctx, f = hz(m), o = this.out(this.bus.dry, 0.26, { verb: 0.3, pan });
     for (const [r, a, d] of [[1, 1, 0.5], [3.93, 0.3, 0.12], [9.2, 0.08, 0.05]]) {
+      if (f * r >= c.sampleRate / 2) continue; // (an overtone past the top of hearing: clamped to a whistle, so dropped)
       const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v, t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + d * Math.sqrt(440 / f));
       g.connect(o); this.osc('sine', f * r, t, t + d * Math.sqrt(440 / f) + 0.05, g);
     }

@@ -1,6 +1,6 @@
 # The Spirit Garden sweep (the owner, 2026-10-07)
 
-Kept by Dovina; each fix is its owner's. Run: `npm run dev`, then `node scripts/garden-sweep.mjs` (one PASS/FAIL line per check,
+Kept by Dovina; each fix is its owner's. Run: `npm run dev`, then `node scripts/sweeps/garden.mjs` (one PASS/FAIL line per check,
 screenshots under `<tmp>/garden-sweep/shots`, exit 1 on any FAIL). First run, on b4c39f5: **40 pass, 25 fail, no page errors**.
 
 > "There are artifacts from previous builds like the 'calibration settings' information being present in the menus for the Spirit

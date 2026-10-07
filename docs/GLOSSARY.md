@@ -612,11 +612,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   mind (a Brain, `docs/AI.md`).
 - **playtest** (`npm run playtest -- <name>`, `scripts/playtest/`): a scenario an agent plays to its goals, with checks ("down the Well and
   back: the run pays, the haul comes home"). The stress test fuzzes; a playtest plays.
-- **the garden sweep** (`node scripts/garden-sweep.mjs`, the dev server up): the Spirit Garden entered, worked and left headless, a
-  screenshot at every step and a PASS/FAIL line for each thing seen go wrong there (the black screen on entry, the Pneuka Jar unseen,
-  the interact chevron off the planetoid's heart, a page carrying the Index's calibration) and the owner's stress (in and out twenty
-  times, menus mid-throw, the hand spammed on the Jar). Findings: `docs/plans/GARDEN-SWEEP.md`. *Not:* the stress test (it fuzzes the
-  whole game) or a playtest (it plays to a goal).
+- **a sweep** (`scripts/sweeps/<room>.mjs` on `harness.mjs`; all: `node scripts/sweeps/run.mjs`, the dev server up; Dovina's): one
+  room entered, worked and left headless as a person would and as a careless one would, a screenshot at every step and a PASS/FAIL line
+  a check; a defect once seen stays checked. **The garden sweep** (`garden.mjs`) was the first (`docs/plans/GARDEN-SWEEP.md`); the
+  others are named for their room (`workshop`, `basement`, `dunes`, `dunemaw`, `emocean`, `tools`). *Not:* the stress test (it fuzzes
+  the whole game), a playtest (it plays to a goal), the Soul Brush's mop.
 - **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
   a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
   dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A
@@ -729,10 +729,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
-| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `body`, never `hop` (`s.hop` is to be renamed) |
-| kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney, class `Kiln` in `world/garden/kiln.js`, to be renamed `Tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
+| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
-| Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jar`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
+| Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jarBody`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words

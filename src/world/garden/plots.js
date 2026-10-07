@@ -14,7 +14,7 @@
 //   T.show(on)   T.mult(plot) -> n   T.dump() -> [{ planet, i, feature, feeling }]   T.load(list)   T.counts() -> { features, feelings }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { PLANETOIDS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES } from '../../progress/realm.js';
+import { PLANETOID_PLOTS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES } from '../../progress/realm.js';
 import { seeded } from '../../core/rng.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 
