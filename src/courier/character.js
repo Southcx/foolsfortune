@@ -656,18 +656,40 @@ export class Character {
     // which hand has the gun (swaps to the left on right-side wallruns)
     st.hand = THREE.MathUtils.clamp((st.hand || 0) + Math.sign((s.gunHand || 0) - (st.hand || 0)) * dt / T.weapon.swapTime, 0, 1);
     if (Math.abs((s.gunHand || 0) - st.hand) < dt / T.weapon.swapTime) st.hand = s.gunHand || 0;
-    // ---- pistol on the upper body: an aim offset (down / level / up) ----
+    // ---- pistol on the upper body: an aim offset (down / level / up; the gun's sockets are measured from aimMid), and the suite's
+    // Gun_* over it (tools/psygun/gunmoves.js): a shot's recoil, the rack, the quick draw; and the gun's own moves (the whip, the fan,
+    // the flourish), which the aim gives way to while they play (the weapon's `combatBlend` reads less by their weight) ----
     const wU = s.upper || 0;
     const prof = s.techs?.aimProfile?.() || null;
-    if (wU > 0.001) {
+    const gm = s.gun?.moves, mv = gm?.layer, wM = mv ? mv.w * (s.gun.held ?? 1) : 0;
+    // (two passes: the aim at its own weight, `upper` with the move's share given back, then the move over it at the move's: the same sum
+    // as one layer of both, and a move may keep a hand out of it: the flourish leaves the free hand to the walk)
+    const wA = mv ? Math.min(1, wU / Math.max(1e-3, 1 - mv.w)) : wU;
+    if (wA > 0.001) {
       const up = C.sample('aimMid', 0, P.up);
       const pk = clamp(s.aimPitch / (A.aimRange * DEG), -1, 1);
       if (pk > 0) C.blend(up, C.sample('aimUp', 0, P.up2), pk);
       else if (pk < 0) C.blend(up, C.sample('aimDown', 0, P.up2), -pk);
-      if (s.reload >= 0) C.blend(up, C.sample('reload', s.reload * C.clips.reload.dur, P.up2, false), smooth(0, 0.12, s.reload) * (1 - smooth(0.85, 1, s.reload)));
+      const shot = gm?.shotW() ?? 0;
+      if (shot > 0.001 && C.clips.Gun_Shoot) {
+        // (additive: Gun_Shoot's motion against its own first frame, laid on the aim, so the suite's grip never replaces aimMid's)
+        const s0 = (P.shot0 ||= C.sample('Gun_Shoot', 0, C.pose(), false)), s1 = C.sample('Gun_Shoot', gm.shotAt(), P.up2, false), [qa, qb] = (this._shotQ ||= [new THREE.Quaternion(), new THREE.Quaternion()]);
+        for (let b = 0, i = 0; b < C.nb; b++, i += 4) {
+          const k = shot * this.MASK_UPPER[b];
+          if (k > 0) qa.fromArray(up.q, i).multiply(qb.fromArray(s0.q, i).invert().multiply(_q2.fromArray(s1.q, i)).slerp(_q1.identity(), 1 - k)).toArray(up.q, i);
+        }
+      }
+      const qd = gm?.quickDraw?.();
+      if (qd && C.clips.Gun_QuickDraw) C.blend(up, C.sample('Gun_QuickDraw', qd.t, P.up2, false), qd.w);
+      const rack = C.clips.Gun_Reload ? 'Gun_Reload' : 'reload';
+      if (s.reload >= 0) C.blend(up, C.sample(rack, s.reload * C.clips[rack].dur, P.up2, false), smooth(0, 0.12, s.reload) * (1 - smooth(0.85, 1, s.reload)));
       // gun in the left hand: the same aim, mirrored
       if (st.hand > 0.001) C.blend(up, this.mirrorPose(up, P.up2), smooth(0.2, 0.8, st.hand));
-      C.blend(base, up, wU, prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
+      C.blend(base, up, wA, prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
+    }
+    if (wM > 0.001) {
+      this.MASK_GUN_R ||= Float32Array.from(this.MASK_UPPER, (v, i) => (/L$/.test(C.bones[i]) && /^(upper_arm|forearm|hand|f_|thumb)/.test(C.bones[i]) ? 0 : v));
+      C.blend(base, mv.pose, wM, mv.arm === 'R' ? this.MASK_GUN_R : prof?.arm ? this.MASK_ARM[prof.arm] : this.MASK_UPPER, 0);
     }
     // movement techs blend their own poses in (swim, roll, climb...)
     s.techs?.animate(this, base, dt, s);

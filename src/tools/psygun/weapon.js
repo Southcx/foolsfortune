@@ -1,11 +1,14 @@
 // ---------------------------------------------------------------------------------------
 // THE PSYGUN: the Courier's first tool, on the belt (tools/belt.js). Drawn and holstered, raised to aim (ADS), racked, fired on the
 // trigger with its spread, and charged (held) into its shells' heavier forms; the shot's ray from the camera through the aim point,
-// first person or over the shoulder. The shells themselves are tools/psygun/shells.js; their kinds and chambers kinds.js.
+// first person or over the shoulder. The shells themselves are tools/psygun/shells.js; their kinds and chambers kinds.js. Its moves
+// (the pistol whip on LMB with something close, fanning the hammer on R, the flourish before it is put away after a fight) and the
+// suite's Gun_* over the aim are tools/psygun/gunmoves.js; while a move plays the aim gives way to it (`combatBlend` reads less).
 //
 // Prior art: Halo's reticle bloom and its charged plasma pistol, Ratchet & Clank's weapon wheel feel, Metroid Prime's charge beam.
 //
 //   const W = new Weapon(game)   W.update(dt, input, player)   W.raised(player)   W.computeAimPoint(camera, player)   W.tryFire(...)
+//   W.moves (GunMoves)   W.shoot(camera, player, character, { spread, recoil }) (one round, paid for already)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
@@ -14,6 +17,7 @@ import { T, DEG, PALETTE } from '../../core/config.js';
 import { GUN_POINTS } from '../../courier/character.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream, randDir } from '../../core/rng.js';
+import { GunMoves } from './gunmoves.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -38,7 +42,7 @@ function gatedInput(inp) {
 /** The input with every weapon control held up (a tool is out: see Techs.toolOut). */
 function deadInput(inp) {
   const g = Object.create(inp);
-  const dead = (c) => c === 'Mouse0' || c === 'Mouse1' || c === 'Mouse2' || c === 'KeyX' || c === 'Minus' || /^Digit/.test(c);
+  const dead = (c) => c === 'Mouse0' || c === 'Mouse1' || c === 'Mouse2' || c === 'KeyX' || c === 'KeyR' || c === 'Minus' || /^Digit/.test(c);
   g.wasPressed = (c) => (dead(c) ? false : inp.wasPressed(c));
   g.isDown = (c) => (dead(c) ? false : inp.isDown(c));
   g.wheel = 0;
@@ -55,7 +59,7 @@ export class Weapon {
     this.adsT = 0;
     this.kick = 0; // gun recoil spring
     this.kickV = 0;
-    this.combatBlend = 0;
+    this.combat = 0; // (the aim's own weight: `combatBlend` is it, less a move that has the arms)
     this.sprintBlend = 0;
     this.sway = new THREE.Vector2();
     this.aimPoint = new THREE.Vector3();
@@ -80,7 +84,11 @@ export class Weapon {
     this.idleT = 0;
     this.fpPos = new THREE.Vector3();
     this.fpQ = new THREE.Quaternion();
+    this.moves = new GunMoves(this);
   }
+
+  /** How much the arms are the aim's: the aim's weight, given up to a move of the gun's own while it plays (gunmoves.js). */
+  get combatBlend() { return this.combat * (1 - this.moves.weight); }
 
   get drawn() { return this.drawT >= 1; }
   /** Out and up: drawn, and the arm raised to aim (first person is always up). */
@@ -90,9 +98,9 @@ export class Weapon {
 
   updateHolster(dt, input, player) {
     const W = T.weapon;
-    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('Mouse1') || this.holding;
+    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('Mouse1') || input.wasPressed('KeyR') || this.holding;
     if (input.wasPressed('KeyX')) { this.drawTarget = this.drawTarget > 0.5 ? 0 : 1; this.manualHolster = this.drawTarget === 0; this.idleT = 0; }
-    if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; }
+    if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; this.moves.stopFlourish(); }
     if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
     // both hands busy (a ladder, swimming): stow it, and bring it back out after if it was out
     const busy = !!player.techs?.handsBusy;
@@ -104,8 +112,8 @@ export class Weapon {
       if (!this.manualHolster) this.drawTarget = 1;
     }
     this.idleT += dt;
-    if (this.charge > 0 || this.adsT > 0 || this.reloading || this.cooldown > -0.3 || this.wantShell) this.idleT = 0;
-    if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay) this.drawTarget = 0;
+    if (this.charge > 0 || this.adsT > 0 || this.reloading || this.cooldown > -0.3 || this.wantShell || this.moves.moves.busy) this.idleT = 0;
+    if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay && !this.moves.flourish(player)) this.drawTarget = 0; // (after a fight, the flourish first)
     const was = this.drawT;
     // (this used to step back down every other frame once fully drawn - the drawn-state flicker)
     if (this.drawTarget > this.drawT) this.drawT = Math.min(this.drawTarget, this.drawT + dt / W.drawTime);
@@ -128,9 +136,13 @@ export class Weapon {
     if (blocked && (this.holding || this.charge > 0)) this.cancelCharge(); // (picked something up mid-charge)
     const belt = this.game.belt;
     const toolOut = belt ? belt.others(belt.get('psygun')) || !belt.isWorn('psygun') : !!player.techs?.toolOut; // (or the Psygun is in the box) // (another tool is out: the Psygun stays on the back, and the mouse is that tool's)
-    if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); }
-    const input = toolOut ? deadInput(rawInput) : blocked || this.fireGate ? gatedInput(rawInput) : rawInput;
+    if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); if (this.moves.busy) this.moves.cancel(); }
+    // (the trigger with something close in front is the pistol whip, not a shot: the press is spent, and the button held up until let go;
+    // aiming down the sights, or in first person, the trigger is the trigger)
+    if (!toolOut && !blocked && !this.fireGate && rawInput.wasPressed('Mouse0') && this.drawn && !this.reloading && this.charge === 0 && !player.fp && this.adsT < 0.5 && this.moves.tryWhip()) this.fireGate = true;
+    const input = toolOut ? deadInput(rawInput) : blocked || this.fireGate || this.moves.moves.busy ? gatedInput(rawInput) : rawInput;
     this.updateHolster(dt, input, player);
+    this.moves.update(dt, input, { allow: this.drawn && !toolOut && !blocked && !this.reloading && this.charge === 0 && !this.holding && !player.techs?.handsBusy });
     const wantAds = input.isDown('Mouse2') && !this.reloading && this.drawn;
     const step = dt / Math.max(0.01, W.adsTime);
     this.adsT = wantAds ? Math.min(1, this.adsT + step) : Math.max(0, this.adsT - step);
@@ -171,11 +183,11 @@ export class Weapon {
     this.sway.y = THREE.MathUtils.damp(this.sway.y, THREE.MathUtils.clamp((player.lookDY || 0) * 0.0006, -0.04, 0.04) * sw, 10, dt);
 
     // (a shot asked for raises the gun: it leaves once the gun is up, not from the hip or a lowered arm)
-    const combat = player.fp || this.adsT > 0 || this.cooldown > -0.4 || this.reloading || player.inCombat || this.wantShell || this.buffer > 0 || this.releaseCharged || this.charge > 0;
+    const combat = player.fp || this.adsT > 0 || this.cooldown > -0.4 || this.reloading || player.inCombat || this.wantShell || this.buffer > 0 || this.releaseCharged || this.charge > 0 || this.moves.moves.busy;
     // critically damped spring: eases in and out instead of starting at full speed
     const cw = combat ? 16 : 7;
-    this.combatV = (this.combatV || 0) + ((combat ? 1 : 0) - this.combatBlend) * cw * cw * dt - 2 * cw * (this.combatV || 0) * dt;
-    this.combatBlend = THREE.MathUtils.clamp(this.combatBlend + this.combatV * dt, 0, 1);
+    this.combatV = (this.combatV || 0) + ((combat ? 1 : 0) - this.combat) * cw * cw * dt - 2 * cw * (this.combatV || 0) * dt;
+    this.combat = THREE.MathUtils.clamp(this.combat + this.combatV * dt, 0, 1);
     this.sprintBlend = THREE.MathUtils.damp(this.sprintBlend, player.sprinting ? 1 : 0, 8, dt);
   }
 
@@ -329,6 +341,9 @@ export class Weapon {
 
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
+    this.moves.afterHands(character, player);
+    // the fan's rounds, on the slaps (paid for when it began: gunmoves.js)
+    for (; this.moves.fanDue > 0; this.moves.fanDue--) this.shoot(camera, player, character, { spread: 3, recoil: 0.45 });
     if (this.wantShell) {
       if (this.cooldown > 0 || !this.raised(player)) return; // held until the gun is out and up
       this.wantShell = false;
@@ -349,11 +364,17 @@ export class Weapon {
       return;
     }
     this.cooldown = T.weapon.fireInterval;
+    this.shoot(camera, player, character);
+  }
+
+  /** One round out of the muzzle, already paid for: its spread (x `spread`), its ray, what it hits, and its kick (x `recoil`). */
+  shoot(camera, player, character, { spread: spreadMul = 1, recoil = 1 } = {}) {
     this.shots++;
+    this.moves.shot();
     const game = this.game;
 
     // spread cone around the crosshair
-    const spread = this.spreadDeg(player) * DEG;
+    const spread = this.spreadDeg(player) * DEG * spreadMul;
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const rr = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const uu = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
@@ -378,9 +399,9 @@ export class Weapon {
     game.clappers?.spook(end);
 
     // recoil
-    const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase);
+    const m = THREE.MathUtils.lerp(1, T.recoil.adsMult, this.adsEase) * recoil;
     player.addRecoil(T.recoil.kickPitch * m, (simRand() * 2 - 1) * T.recoil.kickYaw * m);
-    this.kickV += 1 * T.recoil.gunRecoverSpeed * Math.E;
+    this.kickV += recoil * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = Math.min(T.weapon.bloomMax, this.bloom + T.weapon.bloomPerShot);
     this.vent(character);
   }
@@ -394,6 +415,7 @@ export class Weapon {
     this.buffer = 0;
     this.cooldown = T.weapon.fireInterval * 2;
     this.shots++;
+    this.moves.shot();
 
     const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const ray = this.shotRay(camera, player, character, fwd);

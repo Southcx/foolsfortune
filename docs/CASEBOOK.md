@@ -93,6 +93,10 @@ the rules before building in the same area; a rule a machine can check goes into
     (`a ? a() : obj.m?.()`), or bind it once where it is stored.
 39. **One handoff a frame.** A track that changes clip on a condition changes once per update (an `else if` chain): a clip handed to is
     never left in the same frame because its own exit was already true, which drops the fade that was meant to show it.
+40. **A blast along the floor is measured along the floor.** A radius is a cylinder of any height until its height is said: a ring
+    struck from the feet takes only what stands within a body's height of them.
+41. **A move that follows a whole-body move ends that move's carrier.** Launch, left to run out its time, draws the old clip over the
+    new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself.
 
 ## Cases
 
@@ -149,6 +153,21 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** every phase move asks `clearAt` first and keeps the last clear place; the tech's end puts an embedded Courier back there
   (courier/skiff/skiff.js).
 - **Rule:** 36.
+
+### 2026-10-07 · A ground pound broke the pots on the shelves above it (Calissa)
+- **Seen:** headless, the unarmed V in the air over the workshop floor: `fist.hit` on 14 pots, `kick.hit { hits: 15 }`; the pots stood
+  on shelves one to two metres up.
+- **Cause:** the combo engine's ring (tools/moveset.js `ring`) takes everything within its radius across the floor, at any height.
+- **Fix:** the kick's own ring (courier/moves/kick.js, `FistMoves.ring`) keeps to what is within 1.2 m above their feet and 0.6 m below.
+- **Rule:** 40.
+
+### 2026-10-07 · The shove played under the front kick (Calissa)
+- **Seen:** headless, the unarmed pause string: for the first 0.5 s of the shove the active tech was still `launch`, and the shove's
+  upper-body layer was drawn under the kick's held whole-body pose.
+- **Cause:** a whole-body move's Launch ends when the move finishes or another whole-body move restarts it; a whole-body move followed
+  by an upper-body one leaves it running out its time, its clip over the new move.
+- **Fix:** the shove is a whole-body move (its clip's own step carried, `root: 'xz'`), so Launch restarts in place.
+- **Rule:** 41.
 
 ### 2026-10-07 · The stress test caught the Courier in a ledge after a mantle (Calissa)
 - **Seen:** the gate's stress run, seed 1: `guard:nudge` on cog0, the tech `launch`, `move.mantle` then `combo.move` 0.17 s later.

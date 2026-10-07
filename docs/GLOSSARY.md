@@ -201,6 +201,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Box. A tool never has an inventory of its own.
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`): the gun. A **shot** is one round fired (and only that: see "shot" below). A
   **charge** winds up a piercing beam. A **shell** is a caster shell (`Type-00`...), a special round loaded in a **chamber**.
+  Its moves (`src/tools/psygun/gunmoves.js`): the **pistol whip** (LMB with a creature or a clapperjar close in front: a blow, not a
+  shot), **fanning the hammer** (R: six shots off the hip, paid for at once) and the **flourish** (the gun spun round a finger before it
+  is put away after a fight). *Not:* the Dreamvane's twirl (its parry).
 - **the Sondelass** (`src/tools/sondelass/`, `src/tools/sondelass/sondelass.js`): the blade with three **forms**: the **cutlass** (with **blade mode**,
   **zandatsu**, the **Stinger**, **guard**), the **rod** (angling: `src/tools/sondelass/angling/`), the **hook** (the grapnel; the **grapple** is what the
   Courier does on its line).
@@ -279,6 +282,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
   **toll** (shattered within reach; wider on the beat), the Lockheart's **gulp** (a Lachryma shot swallowed into the pool). In code each
   is a `how`: `return`, `turn`, `soak`, `gulp`, `shatter`, `stagger`, `shutter`.
+- **the kick** (the Movement Art `kick`, V with nothing in the hands; `src/courier/moves/kick.js`): the unarmed moveset on the combo
+  engine (`tools/moveset.js`): V's string is the **jab**, the **cross**, the **haymaker** and the **roundhouse**; after a pause at the
+  jab the **front kick** and the **shove**, at the cross the **sweep**; S + V the **uppercut** (its launcher), V in the air the **ground
+  pound**, V sprinting the **flying kick**. The first 0.26 s of every one is the parry. In the ledger `kick.hit` is a move that struck
+  (with how many things it struck), `fist.hit` each blow. *Not:* the hook (the boxer's is the haymaker here: the hook is the Sondelass's).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
 - **projectile** (code: an entry in `game.projectiles`): anything thrown that a parry can find: a rigid body (`{ body }`, a lobber's

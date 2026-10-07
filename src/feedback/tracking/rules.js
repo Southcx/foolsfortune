@@ -20,6 +20,7 @@ import { partyRules } from './party.js';
 import { skiffRules } from './skiff.js';
 import { moveRules } from './moves.js';
 import { heldStrikeRules } from './heldstrikes.js';
+import { blowRules } from './blows.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -37,4 +38,5 @@ export function areaRules(ctx) {
   partyRules(ctx); // (the siblings: coop/party.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
   heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
+  blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
 }

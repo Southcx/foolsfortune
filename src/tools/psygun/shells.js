@@ -142,6 +142,7 @@ export class Shells {
     weapon.kickV += 1.5 * T.recoil.gunRecoverSpeed * Math.E;
     this.game.fx.muzzleFlash(muzzle, new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion));
     weapon.ejectShell(character, player);
+    weapon.moves?.shot(); // (the arms' recoil, over the aim: gunmoves.js)
     weapon.startRack();
     return true;
   }
