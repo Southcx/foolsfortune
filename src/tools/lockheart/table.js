@@ -55,6 +55,8 @@ export const MODES = ['casting', 'summoning', 'conversion'];
  *  catchFactor). A Possibilikey augments them: LOADED by half again, EVEN halfway to a coin toss, TWIN and ECHO a second try. The chance
  *  is never above `cap`, and it is drawn from a deck (econ/deck.js: a 1-in-N catch is certain within N tries at that Figment's kind).
  *  Prior art: Pokemon's catch rate (status and weakness raise it), Shin Megami Tensei's negotiation, the gacha's published rate. */
+// (the god hand's catch in battle, the other way: a stunned Figment held over the Pneuka Jar's mouth through its struggle, certain if held:
+//  progress/spirits.js STRUGGLE; SPIRIT-GARDEN.md 5a. Either catch binds it: spirit.bind)
 export const CATCH = {
   base: [0.6, 0.4, 0.25, 0.12, 0.05], cap: 0.95,
   keys: { 'key.brass': (p) => p, 'key.loaded': (p) => p * 1.5, 'key.even': (p) => (p + 0.5) / 2,

@@ -63,6 +63,19 @@ Every division works in parallel within a round; Petra merges at the round's end
 | **Wanda** | the tribulation's cue, the awakening song |
 | **Dovina** | visitors' wants, merging's inheritance, the tribulation's pace |
 
+## 2a. Dovina's Round 1 part: done (this commit)
+
+- `src/progress/combat/greatjelly.js`: the fight as a script: thirteen casts (windup, area, effect, answer), five phases looping
+  faster each time, the enrage at 570 real seconds, health 840 (a placeholder for Strawman's measure), and the cosmetics guaranteed by
+  achievement (`DROPS`, `dropsFor`).
+- `src/progress/spirits.js`: five stats, feeding by what the game drops, alignment by the hand, fifteen forms a kind, merging, the
+  Firings (a ledger predicate with no ceiling), the god hand's catch (a second of struggle a class).
+- **The log's rules and counts:** `foe.cast` (the cast named as it begins), `foe.wipe`, the drops, `spirit.*`,
+  `cultivation.tribulation`, `realm.name`.
+- **Twelve achievements:** gj1–5 (each drops its cosmetic), sv1–5, fi1–2.
+- **`node scripts/unbuilt.mjs` now lists 16 events.** They are the to-do list for Petra's Rounds 1 and 2: the Dunemaw's nine, and the
+  spirits' and the Firings' seven.
+
 ## 3. What the owner can try after each round
 
 - **Round 1:**

@@ -7,6 +7,7 @@
 //   dunemawRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { medalOf } from '../../progress/combat/dunemaw.js';
+import { dropsFor } from '../../progress/combat/greatjelly.js';
 
 const DONE = { stun: 'stunned', halt: 'halted', slow: 'slowed', sleep: 'put to sleep', charm: 'charmed', blind: 'blinded', confusion: 'confused', doubt: 'made to doubt' };
 const TYPE = { impact: 'Impact', ego: 'Ego', influence: 'Influence', illusion: 'Illusion', delirium: 'Delirium' };
@@ -18,6 +19,7 @@ export function dunemawRules({ on, L, log }) {
   on('foe.end', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`foe.${e.how}`);
+    for (const id of dropsFor(e)) L.inc(`foe.drop.${id}`); // (the cosmetics its achievements guarantee: greatjelly.js DROPS; the boss drops them)
     log.say('gain', e.how === 'reprogram' ? 'You reprogram the Great Slip Jelly. The nursery is yours.' : 'The Great Slip Jelly bursts.');
   });
   // the nursery, the finds and the warp
@@ -27,6 +29,8 @@ export function dunemawRules({ on, L, log }) {
     L.inc(`find.${e.kind}`);
     if (e.warped) L.inc('find.warped');
   });
+  on('foe.wipe', (e) => { if (e.by === 'courier') { L.inc('foe.wipe'); log.say('warn', 'The Dunemaw takes you back to the Lip Stone.', { key: 'wipe', throttle: 3 }); } });
+  on('foe.cast', (e) => { if (e.name) log.say('combat', `The Great Slip Jelly readies ${e.name}.`, { key: 'cast', throttle: 0.5 }); }); // (the cast named as it begins: FFXIV's cast bar, in the log)
   on('floor.shift', (e) => { if (e.by === 'courier') log.say('explore', 'The floor shifts round what you took.', { key: 'shift', throttle: 5 }); });
   // the Solar Skiffing trial
   on('trial.solar', (e) => {
