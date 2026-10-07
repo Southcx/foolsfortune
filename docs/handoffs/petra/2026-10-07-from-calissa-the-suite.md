@@ -43,7 +43,7 @@ their looks.
   set's word), `help/pages.js` (skiff keys).
 - `src/title/board.js`: the owner's chess pieces (the title's art is mine).
 - The builders' areas, each listed in its own merge commit: the Soul Brush, the Dreamvane, the Crucibelle and the busking body
-  (`rhythmhold.js`), the Lockheart, the Veritome, `tools/heldclips.js` and `tools/toolbody.js` (to be made one), the unarmed V and the
+  (`rhythmhold.js`), the Lockheart, the Veritome, `tools/toolbody.js` (the held tools' shared parts, made one module), the unarmed V and the
   Psygun (kick.js, `psygun/gunmoves.js`, `weapon.js`, character.js's aim block), locomotion, air and traversal (four modules in
   `courier/anim/`, the traversal techs, death; and the kick-off fix in `docs/handoffs/petra/2026-10-07-from-calissa-loco.md`, yours to
   rule on), the emotes (emotes.js, emote.js, talk.js, folk.js's react map, chat.js's lists, one line in overture.js).
