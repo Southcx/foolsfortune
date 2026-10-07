@@ -391,7 +391,8 @@ if (part('trial')) {
   S.check('trial: after it is called off the Courier walks', mv > 0.5, `${mv} m in 0.5 s of W`);
   await S.go('workshop'); await S.ticks(60);
   const c1 = await ws('counts()');
-  S.check('trial: twenty-odd starts leak nothing', c1.objects <= c0.objects + 4 && c1.geometries <= c0.geometries + 8 && c1.breakables <= c0.breakables, { before: c0, after: c1 });
+  const potsBack = Math.max(0, c1.breakables - c0.breakables); // (a start resets the room: pots broken before come back, three objects each at most)
+  S.check('trial: twenty-odd starts leak nothing', c1.objects <= c0.objects + 4 + 3 * potsBack && c1.geometries <= c0.geometries + 8 && c1.textures <= c0.textures + 2, { before: c0, after: c1, potsBack });
   S.note('trial: its events', [...new Set((await ws('seen')).filter((e) => /^trial\./.test(e.name)).map((e) => `${e.name}${e.by ? '' : ' (no by)'}`))]);
 }
 
