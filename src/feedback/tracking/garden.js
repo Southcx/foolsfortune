@@ -27,7 +27,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.bind', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spirit.bind'); L.inc(`spirit.bind.${e.from}`); L.hi('spirit.bind.cls', (e.cls || 0) + 1);
-    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || 'a Figment'}.${e.from === 'lockheart' || e.from === 'hand' ? ' It waits in your Pneuka Jar for the garden.' : ''}`);
+    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || (e.kind ? `a ${e.kind}` : 'a Figment')}.${e.from === 'lockheart' || e.from === 'hand' ? ' It waits in your Pneuka Jar for the garden.' : ''}`);
   });
   // a catch that fails: the wheel came up free, or the hand let go (Petra's rail of the catch: tools/lockheart, godhand)
   on('catch.miss', (e) => { if (e.by !== 'courier') return; L.inc('catch.miss'); log.say('info', `It slips the coffin. (${Math.round((e.odds || 0) * 100)}%)`, { key: 'catchmiss', throttle: 1 }); });
