@@ -245,7 +245,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   rises with them, `keyBreaks`, the rule Dovina's `ECON.lockheart.keyWear`); a used one keeps its uses wherever it goes and never stacks
   with fresh ones (*not* "worn": to wear is to put a tool on the belt);
   the **wheel** of odds; **the Opening** (its ultimate: `src/tools/lockheart/ultimate.js`).
-- **ultimate**: the category, a tool's cinematic signature move. The Lockheart's is the Opening; no other tool has one yet.
+- **ultimate**: the category, a tool's cinematic signature move.
+- **the moveset** (`tools/moveset.js`, Calissa's; numbers `progress/combat/moves.js`, Dovina's): a tool's **string** (LMB, blow by blow),
+  its **pause string** (LMB after a pause mid-string), its **charge** (LMB held), its **launcher** (S + LMB: the struck thing is
+  `airborne`), its **air string** (LMB in the air, ending in a **plunge**), its **dash attack** (LMB while sprinting) and its **special**
+  (a burst that costs Lachryma, unlocked by the tool's mastery). A **bail** is being thrown off the Solar Skiff. *Not:* a combo (the
+  club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one yet.
 
 ## Moving
 

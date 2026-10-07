@@ -17,13 +17,14 @@ import { testroomRules } from './testroom.js';
 import { qaisRules } from './qais.js';
 import { brushRules } from './brush.js';
 import { partyRules } from './party.js';
-import { comboRules } from './combo.js';
 import { skiffRules } from './skiff.js';
+import { moveRules } from './moves.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
   wellRules(ctx);
   railRules(ctx); // (the crossing's tally, before the voyage's "You make port")
+  moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   voyageRules(ctx);
   gardenRules(ctx);
   weatherRules(ctx);
@@ -33,6 +34,5 @@ export function areaRules(ctx) {
   brushRules(ctx); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
   qaisRules(ctx); // (QAIS: a report filed, a round sent, /goto; nothing counted)
   partyRules(ctx); // (the siblings: coop/party.js)
-  comboRules(ctx); // (the combo engine's launchers, air strings, plunges and specials: tools/moveset.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
 }
