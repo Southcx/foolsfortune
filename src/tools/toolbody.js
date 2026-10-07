@@ -8,7 +8,10 @@
 //  - CROSSFADE: one move straight into the next (a string's blows, a hold into its release) is a cut between two clips that do not
 //    meet (the clip QA's joins: up to 112 degrees between Brush_Combo1's end and Brush_Combo2's start); the layer as it last was is
 //    held and faded out under the new move over a tenth of a second. Unreal's "inertialization" in its plainest form (the frozen
-//    pose blend: a snapshot of the outgoing pose, faded, instead of keeping two clips running), as in UE4's Blend Profiles.
+//    pose blend: a snapshot of the outgoing pose, faded, instead of keeping two clips running), as in UE4's Blend Profiles. The legs
+//    get one too (the engine's `legs` and `standLegs` switch clips at a join and drop a cut move's legs at once: the hips swung 15 to
+//    34 degrees in one frame from the pick into the sweep, and from a blow into the brush's load), weighted by how much the legs are
+//    the tool's, so running legs are never held.
 //  - THE SECOND HAND: the suite's two-handed holds already put the free hand on the haft (the Vane's, the brush's slams), within a few
 //    centimetres of where the tool lands in the other hand; the palm is moved onto the haft there, its wrist as the clip has it, and
 //    let go as the clip takes the hand away (a hand on a handle, the lightest IK: no grip point is imposed on a clip that has its own).
@@ -22,7 +25,8 @@
 //    held thing instead of the foot.
 //
 //   standLegs(ch, base, P, clip, t, w, state, dt, loop)   state: any object the caller keeps (its weight and buffers)
-//   const X = new Crossfade(C)   X.apply(C, layer, key, dt)   (key: what is playing now; a change of key between two moves fades)
+//   const X = new Crossfade(C, dur)   X.apply(C, layer, key, dt, mask, w)   X.skip()   (key: what is playing now; a change of key
+//   between two moves fades; legsW(moves, state) -> how much of the legs is the tool's now)
 //   liftAbove(M, points, floorY, max) -> radians turned   (M: the tool's world matrix, turned in place about its origin: the hand)
 //   floorUnder(game, P, x, z, y) -> the ground's height under (x, z) near y (a ray down; the feet's height if nothing is hit)
 //   closeHand(ch, grip, M, state, dt, { side, from, to, near, far })   the free hand onto the haft where the clip has it near
@@ -47,16 +51,22 @@ export function standLegs(ch, base, P, clip, t, w, state, dt, loop = false) {
   C.blend(base, pose, state.w * w, state.lower, 1);
 }
 
-/** The layer held as it was and faded out under the next move (a frozen-pose crossfade). */
+/** The layer held as it was and faded out under the next move (a frozen-pose crossfade). `mask` and `w` limit it to some bones and
+ *  some of the time (the legs, while they are the tool's: a moving Courier's legs are the run's, never held); `skip()` when the layer
+ *  was not drawn this frame, so a later change never fades in a pose from before the gap. */
 export class Crossfade {
   constructor(C, dur = 0.1) { this.snap = C.pose(); this.last = C.pose(); this.k = 0; this.key = null; this.dur = dur; this.has = false; }
-  apply(C, layer, key, dt) {
+  apply(C, layer, key, dt, mask = null, w = 1) {
     if (key !== this.key) { if (this.key != null && key != null && this.has) { this.snap.copy(this.last); this.k = 1; } this.key = key; }
-    if (this.k > 0) { this.k = Math.max(0, this.k - dt / this.dur); const f = this.k * this.k * (3 - 2 * this.k); C.blend(layer, this.snap, f); }
+    if (this.k > 0) { this.k = Math.max(0, this.k - dt / this.dur); const f = this.k * this.k * (3 - 2 * this.k); C.blend(layer, this.snap, f * w, mask, 1); }
     this.last.copy(layer); this.has = true;
     return layer;
   }
+  skip() { this.has = false; this.k = 0; }
 }
+
+/** How much of the legs is the tool's now: the engine's standing weight for its moves, or standLegs' for the tool's own clips. */
+export const legsW = (moves, state) => Math.max(moves?.legW || 0, state?.w || 0);
 
 /** Turn the tool at world matrix M about its origin (the hand) so that none of `points` ({ x, y, z, r }: tool frame, and a radius) is
  *  under `floorY`: in the vertical plane through the lowest of them, upward, by no more than `max` radians. */

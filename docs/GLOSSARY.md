@@ -762,6 +762,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney, class `Kiln` in `world/garden/kiln.js`, to be renamed `Tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jar`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
+| dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
+| counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words
