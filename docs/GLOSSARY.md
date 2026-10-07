@@ -656,12 +656,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
   authored by no one. Neither is good or evil by nature.
-- **you**: the Vessoul (the Courier section), in every form one being. Player text says "you", and "your Pneuka Jar" for the body.
 - **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
   a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
-- **Magnus Ibrahim Manus** (the King: pure Law; his island **Margarite**, a lighthouse on a cosmic whale) and **Entra Polearis** (the
-  Queen: chaos, every feeling pegged high, its core desire (hunger is desire in excess); her island **Entropolis**, a blacklight metroplex of rave culture, flashy hedonism overground and twisted decay underground): two other Islands of Ego, and the
-  Prince of Clay's parents. Margarite's lighthouse keeps the Leviathan-class Egregores at bay, and burns crude to do it.
+- **Magnus Ibrahim Manus** (the King; his island **Margarite**) and **Entra Polearis** (the Queen; her island **Entropolis**): two other
+  Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
 - **Contractor**, **Tulpa**: one who survives the open Emocean is a Contractor with a Tulpa (a thought-form authored with care).
 - **the Great Dunemaw**: the Well in Anagami's Dunes (the slice's Well). A Well, so it drifts. *Not:* the Weir's Well, which is a place.
 - **blot** *(Espada's proposal for the player's word for a stain of spilled crude)* and **blotling** (the aberrant Figment a full-grown blot
@@ -695,7 +693,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | rank | an attribute's step (Soul Alchemy); a crossing's letter (S to D, the rail) | "an attribute's rank", "the crossing's rank" |
 | chain | a run of one event (the ledger's `chain.<what>`); three downs of one feeling on the rail (Ikaruga's) | "a chain of ...", "a feeling chain" |
 | combo | the club's chain of blows (the Soul Brush); the rhythm mode's run of notes | "the club's combo", "a rhythm combo" |
-| Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon, R40) | "the Weir's Well", "a Well" |
+| Well | the Weir's well of liquid Lachryma (a place); a Well, a pocket of distortion (a dungeon) | "the Weir's Well", "a Well" |
 | place | a named spot things are sent to (`game.places`); where a weather falls (`placeOf`: an island, or a Well, `well:<id>`; the weather events' `island` field carries it) | "a place" is `game.places`'; "the weather's island" or "the Great Dunemaw's weather" |
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
@@ -706,12 +704,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 | retired | say instead | where it still is |
 | --- | --- | --- |
-| surfer, Solar Surfer | the skiff, Solar Skiffing | (gone: `sfx.skiffLoop` and the `skiff*` clips, R42) |
-| Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | Calissa's `vfx/spiritpress.js`, `vfx/datura.js`, `workbench.js`, `docs/ART.md`; Espada's `docs/LORE.md`; Petra's `docs/plans/DUNEMAW.md`; `docs/plans/TEMPERAMENT.md` (asked) |
+| Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | (gone; kept: the owner's own word) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
-| the lab (for the basement) | the basement (or the movement lab, the room) | (gone) |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
-| pause card | the pause menu | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |
-| /lab (the workbench's command) | /workbench | (gone) |
-| torture test / bot | the stress test | (gone) |
