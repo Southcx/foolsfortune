@@ -34,8 +34,8 @@ import { T } from '../../core/config.js';
 // whip strikes a creature at K x power (a shot is 1: a blow at arm's length is worth a little more than a shot, and costs nothing);
 // the fan is six shots for 8 Lachryma (six taps are 24), three times as wide.
 const MOVES = {
-  whip: { clip: 'Gun_PistolWhip', rate: 1.15, to: 0.66, fade: 0.2, lunge: 2.5, limb: 'R', tip: 0.3, hit: { power: 1.4, dmg: 1.2, push: 5, lift: 1.5 }, heat: 0.5 },
-  fan: { clip: 'Gun_FanTheHammer', cost: 8, to: 1.1, fade: 0.18 },
+  whip: { rule: 'whip', clip: 'Gun_PistolWhip', rate: 1.15, to: 0.66, fade: 0.2, lunge: 2.5, limb: 'R', tip: 0.3, hit: { power: 1.4, dmg: 1.2, push: 5, lift: 1.5 }, heat: 0.5 },
+  fan: { rule: 'special', clip: 'Gun_FanTheHammer', cost: 8, to: 1.1, fade: 0.18 },
 };
 const K = 0.9, WHIP_REACH = 1.6, WHIP_CONE = 0.7;
 const FAN = [0.07, 0.23, 0.4, 0.57, 0.73, 0.9]; // (the left palm's six slaps on the hammer, read from the clip: where the hands meet)

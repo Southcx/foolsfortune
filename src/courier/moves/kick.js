@@ -44,19 +44,19 @@ const STEP = { range: 2.6, stand: 0.45, max: 1.3 }; // (the step in: from as far
 // `turn` (mine): the clip ends turned; the turn goes to the facing at its end. `squat` (mine): the hips never above standing in the pose.
 // `ribbon: false` (mine): no ribbon (the pound's mark is its ring).
 const MOVES = {
-  j1: { clip: 'Fist_Combo1', rate: 1.15, chain: [0.1, 0.5], to: 0.6, fade: 0.25, lunge: 2.2, hit: { power: 0.8, dmg: 0.6, push: 1.5 } },
-  j2: { clip: 'Fist_Combo2', rate: 1.15, chain: [0.14, 0.6], to: 0.7, fade: 0.25, lunge: 2.4, hit: { power: 0.9, dmg: 0.7, push: 2 } },
-  j3: { clip: 'Fist_Combo3', rate: 1.1, chain: [0.2, 0.75], to: 0.85, fade: 0.3, lunge: 2.6, hit: { power: 1.1, dmg: 0.9, push: 3 } },
-  rh: { clip: 'Fist_Roundhouse', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, turn: true, hit: { power: 1.6, dmg: 1.3, push: 8, cause: 'kick', heavy: true }, heat: 1 },
+  j1: { rule: 'combo1', clip: 'Fist_Combo1', rate: 1.15, chain: [0.1, 0.5], to: 0.6, fade: 0.25, lunge: 2.2, hit: { power: 0.8, dmg: 0.6, push: 1.5 } },
+  j2: { rule: 'combo2', clip: 'Fist_Combo2', rate: 1.15, chain: [0.14, 0.6], to: 0.7, fade: 0.25, lunge: 2.4, hit: { power: 0.9, dmg: 0.7, push: 2 } },
+  j3: { rule: 'combo3', clip: 'Fist_Combo3', rate: 1.1, chain: [0.2, 0.75], to: 0.85, fade: 0.3, lunge: 2.6, hit: { power: 1.1, dmg: 0.9, push: 3 } },
+  rh: { rule: 'roundhouse', clip: 'Fist_Roundhouse', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, turn: true, hit: { power: 1.6, dmg: 1.3, push: 8, cause: 'kick', heavy: true }, heat: 1 },
   // the pause strings: after the jab, the front kick and the shove; after the cross, the sweep
   fk: { clip: 'Fist_Kick', body: 'whole', root: 'xz', limb: 'footL', tip: 0.22, chain: [0.62, 1.05], hit: { power: 1.3, dmg: 1.0, push: 6, cause: 'kick' } },
   sh: { clip: 'Fist_Shove', body: 'whole', root: 'xz', rate: 1.1, hit: { power: 0.9, dmg: 0.5, push: 9, heavy: true } }, // (whole: it follows the kick's whole body)
-  sw: { clip: 'Fist_Sweep', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, rate: 1.1, hit: { power: 1.0, dmg: 0.8, push: 2, lift: 3.5, cause: 'kick' } },
+  sw: { rule: 'sweep', clip: 'Fist_Sweep', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, rate: 1.1, hit: { power: 1.0, dmg: 0.8, push: 2, lift: 3.5, cause: 'kick' } },
   // S + V: the uppercut (the capsule rises with its hop, half again: a launcher); V in the air, or while up: the ground pound
-  up: { clip: 'Fist_Uppercut', body: 'whole', rise: 1.5, chain: [0.28, 0.56], hit: { power: 1.2, dmg: 1.0, lift: 8.5, push: 1 } },
-  gp: { clip: 'Fist_GroundPound', body: 'whole', from: 0.24, lift: 0, squat: true, ribbon: false, plunge: { hold: 0.36, speed: 24 }, ring: 2.4, hit: { power: 1.5, dmg: 1.3, push: 6, lift: 4, heavy: true }, heat: 1 },
+  up: { rule: 'launcher', clip: 'Fist_Uppercut', body: 'whole', rise: 1.5, chain: [0.28, 0.56], hit: { power: 1.2, dmg: 1.0, lift: 8.5, push: 1 } },
+  gp: { rule: 'groundPound', clip: 'Fist_GroundPound', body: 'whole', from: 0.24, lift: 0, squat: true, ribbon: false, plunge: { hold: 0.36, speed: 24 }, ring: 2.4, hit: { power: 1.5, dmg: 1.3, push: 6, lift: 4, heavy: true }, heat: 1 },
   // V while sprinting: the flying kick, its own 1.3 m carried
-  fly: { clip: 'Fist_FlyingKick', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, hit: { power: 1.6, dmg: 1.3, push: 9, cause: 'kick', heavy: true }, heat: 0.8 },
+  fly: { rule: 'dash', clip: 'Fist_FlyingKick', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, hit: { power: 1.6, dmg: 1.3, push: 9, cause: 'kick', heavy: true }, heat: 0.8 },
 };
 const STRINGS = { ground: ['j1', 'j2', 'j3', 'rh'], pause: [{ at: 0, to: ['fk', 'sh'] }, { at: 1, to: ['sw'] }], launcher: 'up', air: ['gp'], dash: 'fly' };
 const RING_H = 1.2; // (the ring's reach above their feet)
@@ -71,7 +71,7 @@ class FistMoves extends Moveset {
     if (ent.ally) return;
     g.clappers.knock(ent, new THREE.Vector3().copy(dir).setY(0).normalize().multiplyScalar(cfg.knock * (h.power ?? 1)).setY(3 + (h.lift ?? 0) * 0.5));
     if (h.heavy && g.shells) g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray);
-    g.events?.emit(this.S.events.hit, { what: 'clapper', combo: this.combo, move: c?.id });
+    g.events?.emit(this.S.events.hit, { what: 'clapper', combo: this.combo, move: c?.id, by: 'courier' });
     this.S.onHit?.(kind, ent, at, dir, h, c);
   }
 
@@ -100,7 +100,7 @@ export class Kick extends Tech {
     this.hits = 0; this.shoved = new Set();
     const self = this;
     this.moves = new FistMoves(this, {
-      id: 'kick', moves: MOVES, strings: STRINGS, button: 'KeyV', limb: 'auto', tip: 0.12, reach: 0.35, k: K, cause: 'bashed',
+      id: 'kick', rules: 'unarmed', moves: MOVES, strings: STRINGS, button: 'KeyV', limb: 'auto', tip: 0.12, reach: 0.35, k: K, cause: 'bashed',
       get pot() { return self.cfg.damage; },
       events: { swing: 'kick.swing', hit: 'fist.hit' },
       onBegin: (c) => this.onBegin(c), onUpdate: (c, dt) => this.onUpdate(c, dt), onHit: (kind, ent) => this.onHit(kind, ent), onEnd: (c) => this.onEnd(c),
