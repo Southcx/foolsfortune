@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE BOARD: the checkerboard sea of the title (THE FOOL'S PRECIPICE: docs/PLAN.md), bent down into a slow whirlpool and up again at its
+// THE BOARD: the checkerboard sea of the title (THE FOOL'S PRECIPICE: title/scene.js), bent down into a slow whirlpool and up again at its
 // rim, with giant game pieces standing on it that PLAY: on the beat of the music, one of them makes its move (a pawn steps a square, a
 // rook slides two, the king turns, a die tumbles), so the game is already being played when they sit down to watch it.
 //

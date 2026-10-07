@@ -31,7 +31,7 @@ npm run stress     # the stress test (needs `npm run dev` running)
 | `docs/ECONOMY.md` | where cubes come from and go, by the minute |
 | `docs/OST.md`, `docs/voice_recording.md` | the soundtrack's plan; the System voice's recording script |
 | `docs/CIRCUITS.md` | the movement gym taken apart, and the lap circuits |
-| `docs/HANDOFFS.md`, `docs/PLAN.md` | notes between the divisions; the current round |
+| `docs/HANDOFFS.md`, `docs/plans/` | notes between the divisions; the plans being built |
 
 ## Starting
 
@@ -306,24 +306,37 @@ more each floor down. Their **clutches** of eggs lie about the rooms (one on the
 and taking it **shifts the floor** (the way down moves, the sandfalls turn, two brood wake). Burst every jelly on a floor and something is
 left where they were: a **material** for the spirit press, rarer deeper.
 
-**The great cavern.** The third floor's way down drops into **the bowl** (`/cavern` goes straight there, for testing), where the crowned
-**Great Slip Jelly** broods in the centre pool. You come in on a ledge; its slopes are one way. Its **crown** is an urn and breaks as a pot
-does: a blow to it cracks it (Impact best, the slam better, anything else a chip) and does it no harm; a blow to its sides lands a
-quarter. The clever way is the bullfight: it **scrapes** a second, aiming where you stand **as the scrape begins**, then **rams** at
-11 m/s; step aside in front of a **pillar** and it cracks its own crown a whole stage, and the pillar cracks (a second ram fells it as a
-log; a stalactite overhead falls too, and lies on the floor as one more thing to ram). The wall only stuns it. Three stages and the crown
-bursts: it **reels** four seconds and every blow lands three times over. Bare, its **core** takes double; every twelve seconds it sinks
-into a slip pool and surfaces from another (the pool rings first), the sand slides toward it, and at two thirds and one third it calls
-its **brood** from the clutches still whole round the rim (break them first and it has fewer to call). Burst it and the pale pool forms
-in the centre: the way up, with the FOE's pay. Or, below a fifth of its health and reeling or stunned, **reprogram** it: half the pay
-now, it sinks into its pool for good, the nursery is yours, and the pale pool forms in the east. Up the way up you keep the haul and the run pays in cubes (more for depth and the
-FOE, less as the Well is drawn on: it fills again with rest). Chart four fifths of the floors you walk (the Dreamvane's survey does it;
-walking alone does not) and you also come up with a **Cogitomap**: the Well as it is today. (The rooms are greybox until Calissa dresses them.)
+**The great cavern.** The third floor's way down drops into **the bowl** (`/cavern` goes straight there), where the **Great Slip Jelly**
+broods. It is a raid fight in the manner of an FFXIV extreme trial, one difficulty, learned by wiping: **the pull** is when it wakes; the
+log names every **cast** as it begins and its body shows the windup (no floor markers). Lidfall (parry with V or roll; it soaks you:
+the next blow doubled), Shoulder Charge (step aside in front of a **pillar** and it cracks its own **crown**), Throwing Rings (out, then
+in), Slip Trail (lead the drops to the rim), Eye Cup (look away, or turn it back through the Veritome), Blowout (unavoidable: hold V for
+half), Centring, Wedge, Decant, Broodwake. At 65% it sinks and comes up **bare** (the core takes double), its **brood** making for it to heal
+it (break clutches before the pull and it has fewer); at 30% it splits into four **sherds** (all down in 30 s, or they mend); at 5% **the
+Overflow**; at 9:30 **the Dunemaw Swallows**. A wipe costs the attempt, not the run: you wake at the **Lip Stone** on the ledge, the run
+and your broken clutches kept. Burst it (or reprogram it below a fifth) and the pale pool forms; meeting an achievement's terms in the
+fight drops its cosmetic, every time. Up the way up you keep the haul and the run pays in cubes (more for depth and the FOE, less as the
+Well is drawn on). Chart four fifths of the floors you walk and you also come up with a **Cogitomap**.
 
 **Solar Skiffing.** **Y** brings the **skiff**: a small hovering boat with a lug sail (after the King of Red Lions). W hoists the sail and
 it stays up; S lets it down and brakes, and hoisting again quickly is a **pump**; A / D steer; Space crouches and hops, and in the air A / D
 spin the whole skiff (land a whole turn for a boost); Shift is a solar flare, for Lachryma. The boat is driven by the wind alone (the
 pennant shows it): a tailwind is fastest, into the wind is slow but never a stall. The wake is geometry laid down where the boat went.
+
+**The Solar Skiffing trial.** **F** at the foot of **the Gnomon** (the pale spire) by day: 24 rings on a loop the game day lays out, lit
+where the sun reaches and dark in a dune's shadow (dawn and dusk are the hard runs), 90 seconds on the dial, two seconds for a lit ring
+passed by, a medal at the last ring (each pays once). Closed at night.
+
+**The Inner Realm** (the Spirit Garden), entered at any Shrine: you are the **Pneuka Jar** on six small planetoids with their own
+gravity (the Dantian, the Herb Terraces, the Athanor, the Pavilions of Echoes, the Mulberry Grove, the Chimney), and the cursor is the
+**god hand**. WASD hops (longer the longer you hold), Space jumps, Q / E turn the view, the wheel zooms; a **lotus** flies you to the next
+planetoid; **F** works what you stand at (the torii takes you back, the shed opens the box, a bed, a pavilion's slot). The hand's arts on
+**1 to 6**: grab (throw the Jar or a spirit; tap a spirit to pet it, right-click to flick it), pull, press, carve and smooth the clay
+(water from a pond runs where you carved), and place a feature with a feeling in a plot (neighbours that feed each other glow together).
+The Figments you **catch** (the Lockheart's coffin, or the god hand holding a stunned one over the Jar's mouth) live in the Grove: F at
+one to feed it, drill it, take it out with you, or release it; it matures into a form. Plates (a creature's photograph) wake at the
+Athanor, fossils dug from crystals wake at the cocoon tree, where two spirits also merge; wild ones visit when the garden suits them. At
+the Chimney, the **Heavenly Kiln** crosses your next **Firing**: lightning outlined before it falls, hopped out of or flicked back.
 
 ## Creatures and folk
 
@@ -410,23 +423,9 @@ and the maker's pixel art is drawn at 1x and scaled by whole numbers. `docs/ARCH
 
 ## Engineering notes
 
-**Fracture.** A pot is a lathe (profile × segments, with lobes, twist and flame crests). On a break its surface is resampled on a jittered
-grid sized by the clay body and the pot, each cell cut on a diagonal, and neighbouring triangles grouped into shards; each shard is the
-convex hull of its outer points and the matching inner wall, so it gets a render mesh and an exact Rapier collider.
-
-**Ropes** are chains of sensor links on Rapier multibody joints, stiff under heavy pots (sensors, because contacts on multibody links make
-NaNs). Rapier recomputes a link's velocity from its joints, so a raw impulse on one is lost: `physics.kick()` turns it into a one-step force.
-
-**The controller.** Grounded steps never push into the floor, a stalled move is retried, walls take away only the velocity into them, stairs
-collide as ramps, and a move that leaves the capsule inside a wall is pulled back to the last clear spot (counted by the stress test, not
-hidden). Crouching shortens the capsule to 1.35 m; crawlspaces are 1.5 m.
-
-**Animation.** Motion comes from baked clips first (Quaternius' Universal Animation Library and CMU mocap, retargeted offline onto the
-Courier: `scripts/bake_anims.mjs`, `scripts/bake_cmu.mjs`), then clips authored at startup from key poses on the level's own geometry
-(ladders, ledges, poles, grates; played by distance, not time, so planted limbs stay planted), and only then a light IK correction on the
-contacts (feet on slopes, a hand on a wall or a gun). Every posed joint passes the range-of-motion limits last (`src/courier/anim/rom.js`;
-the fingers' are learned from the clips by `scripts/learn_rom.mjs`). To rebake, get the Standard `.glb` of both UAL libraries and run
-`node scripts/bake_anims.mjs ual1.glb ual2.glb`; `/dev/animlab.html` (under `npm run dev`) is a clip viewer.
+How the pots break, how ropes hang, how the controller keeps to the ground and how the animation is layered are told in the headers of
+`world/props/breakables.js`, `core/physics.js`, `courier/player.js` and `courier/character.js`; the casebook (`docs/CASEBOOK.md`) has the
+rules learnt the hard way.
 
 ## Credits and assets
 

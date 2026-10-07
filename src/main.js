@@ -745,7 +745,7 @@ async function main() {
   };
   overlay.addEventListener('click', start);
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
-  // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made (docs/PLAN.md) ---
+  // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });
   game.vessel.dress(titleScene.ch); // (they wear on the hill what they wear in the world)

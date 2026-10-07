@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE FOOL'S PRECIPICE: the title (docs/PLAN.md, piece 1; the owner's references in docs/ref/). Not the workshop: the moment before
+// THE FOOL'S PRECIPICE: the title (the owner's references in docs/ref/: title_fool_card.png, title_checker_vortex.webp). Not the workshop: the moment before
 // setting out. The Courier sits on the lip of a crooked hill under a twisted tree, legs over the edge, a clapperjar at their side (the
 // Fool's little dog); below and beyond, a checkerboard sea bends down into a slow whirlpool, its giant pieces playing a game on the
 // beat (title/board.js); tarot cards fall like leaves, a spiral moon with a face hangs over it all, and motes of Lachryma rise.
