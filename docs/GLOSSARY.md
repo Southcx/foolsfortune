@@ -204,7 +204,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Sondelass** (`src/tools/sondelass/`, `src/tools/sondelass/sondelass.js`): the blade with three **forms**: the **cutlass** (with **blade mode**,
   **zandatsu**, the **Stinger**, **guard**), the **rod** (angling: `src/tools/sondelass/angling/`), the **hook** (the grapnel; the **grapple** is what the
   Courier does on its line).
-- **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
+- **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, the **spin** after a pause, the **dive** at a
+  sprint, the **slam**: the **air slam** let go in the air, the **ground slam** let go after landing), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
   **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
   (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
@@ -235,7 +236,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **reprogramming** (`src/tools/veritome/reprogram.js`, `src/tools/veritome/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a
   **lattice** of **Functions** on the Codex's **THE MIND** shelf, and spoken in **neuralese**.
 - **the Dreamvane** (`src/tools/dreamvane/`, `src/tools/dreamvane/dreamvane.js`): **dowse** (the needle points at Lachryma), the **pick** (strikes
-  crystals), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around), **the vane** (the weather meter on the crook's head: it turns
+  crystals; the opener of its string, held for the heavy blow: `src/tools/dreamvane/pick.js`, with the **spin sweep**, the **vault** at a sprint and
+  **the Dreamquake**, its special on R: the ground rung round them), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around), **the vane** (the weather meter on the crook's head: it turns
   to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
