@@ -73,7 +73,7 @@ export class Plots {
     if (!p || p.placed || !FEATURES[feature] || !FEELING_COLOR[feeling]) return { ok: false, why: 'That cannot stand there.' };
     if (!free) {
       const cost = costOf(feature, feeling), box = g.pneuka, k = cost.material ? box?.slots.findIndex((x) => x?.id === `mat.${cost.material}`) : -1;
-      if (cost.material && k < 0) return { ok: false, why: `It wants ${/^[aeiou]/.test(cost.material) ? 'an' : 'a'} ${cost.material} material from your box.` };
+      if (cost.material && k < 0) return { ok: false, why: `It needs ${/^[aeiou]/.test(cost.material) ? 'an' : 'a'} ${cost.material} material from your Pneuka Box.` };
       if (cost.cubes > 0 && !g.cubes?.spend(cost.cubes, 'garden')) return { ok: false, why: `It costs ${cost.cubes} cubes.` };
       if (k >= 0) box.take(k);
     }
