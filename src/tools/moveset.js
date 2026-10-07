@@ -348,11 +348,13 @@ export class Moveset {
     const c = this.cur, P = this.P, C = ch.clips;
     const want = c && c.def.body !== 'whole' && P.grounded ? 1 - THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.6) : 0;
     this.legW = THREE.MathUtils.damp(this.legW || 0, want, want > (this.legW || 0) ? 14 : 8, dt);
-    if (this.legW < 0.01 || !c) return;
+    if (this.legW < 0.01 || (!c && !this.legHeld)) { this.legHeld = false; return; }
+    if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
+    if (!c) { C.blend(base, this._lp, this.legW * w * this.legFw, this.LOWER, 1); return; } // (the move is over: its last legs eased out, not dropped in a frame: casebook rule 46)
     const pose = C.sample(c.def.clip, c.t, (this._lp ||= C.pose()), c.kind === 'charge-hold'), R = rootOf(C, c.def.clip);
     if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; }
-    if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
     const end = c.def.to ?? this.dur(c.def), fw = c.def.fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - c.def.fade, end) : 1;
+    this.legFw = fw; this.legHeld = true;
     C.blend(base, pose, this.legW * w * fw, this.LOWER, 1);
   }
 
