@@ -18,7 +18,8 @@
 // (a hitbox interpolated between frames so that speed does not tunnel), God of War's (2018) and Batman Arkham's attack magnetism, and the
 // "measure the animation, do not hand-type the numbers" habit of data-driven combat (Naughty Dog's and Guerrilla's animation-event tools).
 //
-//   const tr = measureSwing(character, 'swordA')   tr.strike [t0, t1]   tr.at(t) -> { ang, reach, y }
+//   const tr = measureSwing(character, 'swordA', { tip, limb })   tr.strike [t0, t1]   tr.at(t) -> { ang, reach, y }
+//   (limb: 'R' the right hand, the default; 'L', 'footR', 'footL'; 'auto' whichever moves fastest: a kick, a left hook)
 //   sweep(game, P, yaw, tr, tPrev, t, { reach, hit(kind, ent, point) })   (once a frame while the stroke plays)
 //   const m = magnet(game, P, dir, { range, cone })  -> { pos, kind, ent, dist } | null
 //   targets(game, centre, R) -> [{ kind: 'pot'|'clapper'|'creature'|'thing', ent, pos, r }]   ('thing': anything registered 'struckable',
@@ -31,10 +32,12 @@ const FPS = 120;
 const _h = new THREE.Vector3(), _f = new THREE.Vector3(), _t = new THREE.Vector3(), _p = new THREE.Vector3();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const cache = new Map();
+const LIMBS = { R: ['handR', 'forearmR'], L: ['handL', 'forearmL'], footR: ['footR', 'shinR'], footL: ['footL', 'shinL'] }; // (the tip: past the end bone, along the bone before it)
 
 /** The track of a swing clip: per-frame angle (unwrapped, radians, 0 ahead, + toward their left... the +x side), reach, height, speed. */
-export function measureSwing(character, clip, { tip = 0.9 } = {}) {
-  const key = `${clip}|${tip}`;
+export function measureSwing(character, clip, { tip = 0.9, limb = 'R' } = {}) {
+  if (limb === 'auto') return fastest(character, clip, tip);
+  const key = `${clip}|${tip}|${limb}`;
   if (cache.has(key)) return cache.get(key);
   const C = character.clips, c = C.clips[clip];
   if (!c) return null;
@@ -48,7 +51,7 @@ export function measureSwing(character, clip, { tip = 0.9 } = {}) {
   for (let i = 0; i < n; i++) {
     character.applyPose(C.sample(clip, i / FPS, p, false));
     root.updateMatrixWorld(true);
-    B.handR.getWorldPosition(_h); B.forearmR.getWorldPosition(_f);
+    const [end, mid] = LIMBS[limb] || LIMBS.R; B[end].getWorldPosition(_h); B[mid].getWorldPosition(_f);
     _t.copy(_h).sub(_f).normalize().multiplyScalar(tip).add(_h);
     let a = Math.atan2(_t.x, _t.z);
     if (i) a = last + wrap(a - last); // (unwrapped: a swing round them back keeps counting)
@@ -64,7 +67,7 @@ export function measureSwing(character, clip, { tip = 0.9 } = {}) {
   while (i0 > 1 && speed[i0 - 1] > speed[im] * 0.33) i0--;
   while (i1 < n - 1 && speed[i1 + 1] > speed[im] * 0.33) i1++;
   const tr = {
-    clip, dur, ang, reach, y, speed, peak: speed[im],
+    clip, limb, dur, ang, reach, y, speed, peak: speed[im],
     strike: [Math.max(0, (i0 - 1) / FPS), (i1 + 1) / FPS],
     at(t) {
       const f = THREE.MathUtils.clamp(t * FPS, 0, n - 1), i = Math.floor(f), k = f - i, j = Math.min(n - 1, i + 1);
@@ -73,6 +76,13 @@ export function measureSwing(character, clip, { tip = 0.9 } = {}) {
   };
   cache.set(key, tr);
   return tr;
+}
+
+/** The swing of whichever limb moves fastest in the clip (a kick's foot, a left hook's hand): its track. */
+function fastest(character, clip, tip) {
+  let best = null;
+  for (const limb of Object.keys(LIMBS)) { const tr = measureSwing(character, clip, { tip: limb.startsWith('foot') ? tip * 0.25 : tip, limb }); if (tr && (!best || tr.peak > best.peak)) best = tr; }
+  return best;
 }
 
 /** Everything near `centre` a swing can strike: pots, clapperjars, creatures (and their radius). */

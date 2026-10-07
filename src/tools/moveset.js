@@ -27,7 +27,10 @@
 // and finisher, and the data-driven move tables of the fighting games (each move a row: its startup, active and recovery frames,
 // here read from the clip itself by melee.js rather than typed).
 //
-//   const M = new Moveset(tool, { id, moves, strings, reach, pot, k, cause, events: { swing, hit }, segment(a, b), trail })
+//   const M = new Moveset(tool, { id, moves, strings, reach, pot, k, cause, events: { swing, hit }, segment(a, b), trail, button ('Mouse0'),
+//                                 specialKey ('KeyR'), tip, limb ('R' | 'L' | 'footR' | 'footL' | 'auto': what a move's reach is measured on),
+//                                 onBegin(c), onAt(c) (once a move, at def.at or its strike's start), onUpdate(c, dt), onHit(...), onEnd(c) })
+//   strings.charge: { hold, release?, after? } (no release: letting go ends the hold; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
 //   M.busy   M.playing   M.whole (a whole-body move is playing)   M.fpArc()   M.combo
 // ---------------------------------------------------------------------------------------
@@ -79,9 +82,10 @@ export class Moveset {
     this.after += dt;
     if (P.grounded) { if (this.airN && this.airHits >= 2) this.game.events?.emit('combo.juggle', { tool: this.id, hits: this.airHits, by: 'courier' }); this.airN = 0; this.airHits = 0; }
     if (this.rec) { this.rec.t += dt * (Math.hypot(P.vel.x, P.vel.z) > 2 ? 2.2 : 1); if (this.rec.t >= this.rec.dur) this.rec = null; }
-    if (inp.wasPressed('Mouse0')) this.buffer = BUFFER;
+    const B = S.button || 'Mouse0';
+    if (inp.wasPressed(B)) this.buffer = BUFFER;
     this.buffer -= dt;
-    if (allow && st.special && inp.wasPressed('KeyR') && (!this.cur || this.cur.def.body !== 'whole')) { this.begin(st.special, 'special'); return; }
+    if (allow && st.special && inp.wasPressed(S.specialKey || 'KeyR') && (!this.cur || this.cur.def.body !== 'whole')) { this.begin(st.special, 'special'); return; }
     const c = this.cur;
     if (!c) {
       if (this.after > RESET) { this.n = -1; this.str = 'ground'; }
@@ -94,10 +98,13 @@ export class Moveset {
     else c.t += dt * (c.def.rate || 1);
     if (c.phase !== 'fall' && c.def.plunge && c.t >= c.def.plunge.hold && !c.landed) { c.t = c.def.plunge.hold; c.phase = 'fall'; }
     // charge: the opener held becomes the hold, the hold released becomes the blow
-    if (c.kind === 'charge-hold') { this.charge = Math.min(1, this.charge + dt / 1.1); if (!inp.isDown('Mouse0')) { this.begin(st.charge.release, 'charge'); return; } }
-    else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= HOLD) { if (inp.isDown('Mouse0')) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
-    if (!inp.isDown('Mouse0')) this.held = false;
+    if (c.kind === 'charge-hold') { this.charge = Math.min(1, this.charge + dt / 1.1); if (!inp.isDown(B)) { if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return; } }
+    else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
+    if (!inp.isDown(B)) this.held = false;
     this.sweep();
+    const at = c.def.at ?? c.def.track?.strike[0];
+    if (at != null && c.tPrev < at && c.t >= at && c.phase !== 'fall') S.onAt?.(c);
+    S.onUpdate?.(c, dt);
     if (c.def.ringAt != null && c.tPrev < c.def.ringAt && c.t >= c.def.ringAt) this.ring(c.def.ring, c.def.hit);
     // the next move: a press inside the chain window
     const next = this.nextOf(c);
@@ -142,7 +149,7 @@ export class Moveset {
     if (def.cost && !g.lachryma.spend(def.cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); return false; }
     const prev = this.cur;
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) L.o.onEnd = null; }
-    def.track ??= measureSwing(ch, def.clip, { tip: this.S.tip ?? 0.9 });
+    def.track ??= measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' });
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false });
     this.hit.clear(); this.buffer = 0; this.rec = null;
     if (kind === 'ground' || kind === 'pause') { this.n = n; this.str = kind; }
