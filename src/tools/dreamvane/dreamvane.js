@@ -39,7 +39,7 @@ import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { Track } from '../../courier/anim/animator.js';
 import { VaneMoves, VANE_MOVES, VANE_STRINGS } from './pick.js';
-import { Crossfade, standLegs, liftAbove, floorUnder, closeHand, carryInto } from '../toolbody.js';
+import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand, carryInto } from '../toolbody.js';
 import { handFromTool } from '../grip.js';
 
 // the vane's own clips (clip seconds): the survey's heel meets the ground at `strike`; the fork leaves the heel at `release`, and is
@@ -95,7 +95,10 @@ export class Dreamvane extends HeldTool {
   get busy() { return this.moves.busy || this.throwing || this.surveyT >= 0; }
   get slow() { return this.toolOut && (this.dowsing || this.moves.busy) ? 0.7 : 1; }
 
-  onStow() { this.dowsing = false; this.moves.cancel(); this.throwT = -1; this.surveyT = -1; this.catchT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  onStow() { this.dowsing = false; this.cutMove(); this.throwT = -1; this.surveyT = -1; this.catchT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  /** The move stops where it is, a whole-body one's Launch with it (the engine's cancel alone leaves the Launch running out its time,
+   *  the pose frozen: put away mid-vault, they slid on in it for a second). */
+  cutMove() { if (this.moves.cur) this.moves.finish(); this.moves.cancel(); }
 
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
@@ -114,6 +117,7 @@ export class Dreamvane extends HeldTool {
 
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
+    if (this.drawTarget === 0 && this.moves.cur) this.cutMove(); // (being put away: the blow ends now, not frozen through the holster)
     this.surveyTick(dt);
     this.throwTick(dt);
     if (this.catchT >= 0 && (this.catchT += dt) >= CATCH.end) this.catchT = -1;
@@ -201,7 +205,7 @@ export class Dreamvane extends HeldTool {
   }
   /** The Dreamquake comes down: the ground rings round them (the engine's ring strikes what is in it), and what is veiled rises. */
   quake(c) {
-    const g = this.game, P = this.P, R = c.def.ring;
+    const g = this.game, P = this.P, R = this.moves.rule(c.def)?.radius ?? c.def.ring; // (the ring the engine strikes in: Dovina's row's, else the table's)
     const n = g.crystals?.reveal(P.pos.clone(), R, 'courier', 'quake') || 0;
     g.ai?.stimuli.emit('noise', P.pos.clone(), { radius: 24, strength: 0.8, by: 'courier' });
     g.techs?.get('slam')?.ring?.(P.pos.clone(), R);
@@ -312,12 +316,13 @@ export class Dreamvane extends HeldTool {
       this.idleClip = C.clips[IDLE] ? IDLE : 'stance:dreamvane';
       this.track = new Track(C, new Set([IDLE, CARRY, 'stance:dreamvane', 'idle']));
       this.track.play(this.idleClip, 0, 0.01);
-      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C); this.xfLegs = new Crossfade(C, 0.15);
+      this.lower = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
       this.mask = Float32Array.from(ch.MASK_UPPER); this.leftArm = C.bones.map((b, i) => (/L$/.test(b) && /arm|hand|f_|thumb/.test(b) ? i : -1)).filter((i) => i >= 0);
     }
     const layerW = this.w * smooth(T.weapon.drawGrab, 1, this.drawT) * (1 - this.mgr.override);
     const a = this.pose(C, this.P2);
-    if (layerW <= 0.001) return;
+    if (layerW <= 0.001) { this.xf.skip(); this.xfLegs.skip(); return; }
     const moving = P.grounded && Math.hypot(P.vel.x, P.vel.z) > 1.2;
     const want = C.clips[CARRY] && moving && !a && !this.dowsing ? CARRY : this.idleClip;
     if (this.track.cur !== want) this.track.play(want, 0, 0.3);
@@ -331,6 +336,7 @@ export class Dreamvane extends HeldTool {
     this.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
     const lg = this.legClip;
     standLegs(ch, base, P, lg?.clip, lg?.t ?? 0, layerW, this.legState, dt, !!lg?.loop);
+    this.xfLegs.apply(C, base, this.playKey || 'stand', dt, this.lower, legsW(this.moves, this.legState) * layerW); // (the legs and hips through a join, too)
   }
 
   /** What plays over the stance: a blow (the engine), the throw, the catch, the survey, the dowse. */

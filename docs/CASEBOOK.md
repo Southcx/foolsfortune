@@ -96,7 +96,8 @@ the rules before building in the same area; a rule a machine can check goes into
 40. **A blast along the floor is measured along the floor.** A radius is a cylinder of any height until its height is said: a ring
     struck from the feet takes only what stands within a body's height of them.
 41. **A move that follows a whole-body move ends that move's carrier.** Launch, left to run out its time, draws the old clip over the
-    new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself.
+    new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself. So does a move
+    cut short (the tool put away, a cancel): finished, not dropped, and at the stow's first frame, not its last.
 42. **Up is asked where it can differ.** A marker, a bob, a label of floors assumes world Y only where nothing else can be up; in the
     Spirit Garden each planetoid has its own, so a source says its up and the reader stands along it.
 43. **A layer over part of the body leaves the hips alone, and what a tech's weight switches follows its pose.** `Clips.blend(out, src,
@@ -123,8 +124,48 @@ the rules before building in the same area; a rule a machine can check goes into
     whatever early return the frame takes. What a place changes of the world (the camera's up, the sky) it puts back on leaving.
 50. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
     runs first, and a page that will not boot is a hard failure.
+51. **An act paid for at the press and done later keeps its slot until it is done.** A second press before the first lands fires the
+    first at once (or refunds it); it never overwrites it. And what a move's row says it is worth (nothing, for a shove) holds for every
+    kind of thing it meets, not only the one the row was written for.
 
 ## Cases
+
+### 2026-10-07 · Put away mid-vault, the Courier slid on frozen in it for a second (Calissa, the brush and vane review)
+- **Seen (headless, K pressed 0.17 s into the Dreamvane's vault):** the Launch `dreamvane.vault` ran on to its 1.21 s with the pose held at
+  clip time 0.20 and the core movement shut out; the spin sweep the same (1.39 s); the Soul Brush's dive and air slam likewise (G).
+- **Cause:** a held tool's blows advance only while it is in the hand (`use`, `club.update`), so from the stow's first frame the move's
+  clock stopped while its Launch carried on; at the stow's end `Moveset.cancel` dropped the move and only nulled the Launch's `onEnd`.
+- **Fix:** both tools cut the move on the stow's first frame (`drawTarget` 0), finishing it first so the Launch ends with it
+  (dreamvane.js `cutMove`, club.js `cancel`). Measured: the Launch is off the frame K or G is pressed. The engine's own `cancel` leaves
+  the same gap for every tool (the cutlass's too): worth closing there.
+- **Rule:** 41.
+
+### 2026-10-07 · From the Dreamvane's pick into its first sweep the hips swung 15 degrees in one frame (Calissa, the brush and vane review)
+- **Seen (headless, each bone's turn per frame at 60 Hz, the root's yaw taken out):** at the join of Vane_PickStrike into Vane_Combo1
+  the hips 15.5, the chest 34.2 and the head 42.7 degrees in one frame (3 to 7 either side); a Soul Brush blow held into the load, the
+  hips 33.6 and the chest 42.9.
+- **Cause:** a join crossfades the upper layer (the engine's `joined`, tools/toolbody.js `Crossfade`), but not the legs and hips:
+  `Moveset.legs` samples the new move's clip at once, drops a cut move's legs the frame it ends (`!c`), and the hips carry the chest.
+- **Fix:** both tools crossfade the lower body too, over 0.15 s, weighted by how much the legs are the tool's (`legsW`: never the
+  run's legs). Measured after: the pick into the sweep 2.4 / 11.7 / 16.8 degrees, the brush's second blow into its third 0.2 / 2.8;
+  the blow into the load 5.3 / 11.2, spread over the frames after. Still to do (the engine's): a move begun from standing ramps its
+  legs in at the engine's own rate (the vane's overhead from rest, 10.5 at the hips in its first frame).
+- **Rule:** 19, widened: every channel a move writes is eased at a join, the legs too; the engine's `legs` should do it for every tool.
+
+### 2026-10-07 · Two quick flicks of the Soul Brush paid 2 Lachryma for one fan (Calissa, the brush and vane review)
+- **Seen (headless):** RMB tapped twice within 0.13 s: 2 Lachryma spent, one `brush.flick`.
+- **Cause:** the fan leaves at the top of Brush_Flick (`startFlick(onRelease)`); the second tap replaced the first's callback before it ran.
+- **Fix:** a throw still to leave goes at once when the next begins (club.js `startFlick`). Measured: 2 spent, 2 fans.
+- **Rule:** 51.
+
+### 2026-10-07 · The Dreamvane's vault, "never a weapon", stunned clapperjars and counted as hits; its launcher led into the air string on the ground (Calissa, the brush and vane review)
+- **Seen (headless):** a sprinting LMB through a clapperjar knocked it, stunned it 2 s and emitted `dreamvane.hit` (toward the
+  Dreamquake's 200); S+LMB then LMB played Vane_Combo1 as an `air` move with the Courier standing.
+- **Cause:** Dovina's row gives the vault power 0, and the vane's blow rules asked the row only for creatures; the engine follows any
+  launcher with the air string, but the vane's jab is an upper-body move and they never leave the ground (the cutlass's lifts them).
+- **Fix:** pick.js: a move whose row is worth nothing only shoves (knocked aside, never broken, stunned or counted); a launcher on the
+  ground leads into the staff's string from its first sweep. The Dreamquake's reveal and ring use the row's radius (5 m), as its blow does.
+- **Rule:** 51 (its second half), and 35's note: a hook asks what the move became (where they are), not what it was meant to be.
 
 ### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
 - **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,

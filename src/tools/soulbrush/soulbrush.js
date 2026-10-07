@@ -42,7 +42,7 @@ import { tickInscriptions, clearInscriptions } from './inscribe.js';
 import { stream, randDir } from '../../core/rng.js';
 import { BrushLoad } from './load.js';
 import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
-import { Crossfade, standLegs, liftAbove, floorUnder, closeHand } from '../toolbody.js';
+import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand } from '../toolbody.js';
 const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -130,6 +130,7 @@ export class SoulBrush extends Tech {
       this.club.cancel(); this.load.end(); this.celestial.exit('stow'); this.rmbT = -1;
       g.events?.emit('brush.stow', {});
     }
+    if (this.drawTarget === 0 && this.club.busy) this.club.cancel(); // (being put away: a blow or a slam ends now, not frozen through the holster)
     // the brush's own inputs, once it is in the hand
     if (this.held && inp.enabled) {
       if (this.celestial.active) this.celestial.update(raw, inp);
@@ -189,7 +190,7 @@ export class SoulBrush extends Tech {
       g.shells?.addDroplet(from.clone(), d, 0.035 + simRand() * 0.03, true);
     }
     sfx.brushSwing?.(0.8);
-    g.events?.emit('brush.flick', {});
+    g.events?.emit('brush.flick', { by: 'courier' });
   }
 
   // ---------------------------------------------------------------- the Brush Slide
@@ -257,12 +258,13 @@ export class SoulBrush extends Tech {
       const idle = C.clips[IDLE] ? IDLE : C.clips['stance:soulbrush'] ? 'stance:soulbrush' : 'swordIdle'; // (the brush over their shoulder)
       this.track = new Track(C, new Set([idle, 'swordIdle', 'torchIdle', 'idle']));
       this.track.play(idle, 0, 0.01);
-      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C); this.legState = {}; this.freeW = 0;
+      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C); this.xfLegs = new Crossfade(C, 0.15); this.legState = {}; this.freeW = 0;
+      this.lower = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
       this.mask = Float32Array.from(ch.MASK_UPPER); this.leftArm = C.bones.map((b, i) => (/L$/.test(b) && /arm|hand|f_|thumb/.test(b) ? i : -1)).filter((i) => i >= 0);
     }
     const layerW = this.w * smooth(HOLD, 1, this.drawT) * (1 - this.mgr.override) * (1 - this.slideW);
     const cl = this.club.pose(C, this.P2, dt); // (its clocks run on while the layer is away)
-    if (layerW <= 0.001) return;
+    if (layerW <= 0.001) { this.xf.skip(); this.xfLegs.skip(); return; }
     const tr = this.track;
     tr.update(dt);
     const layer = tr.sample(this.P1);
@@ -275,6 +277,7 @@ export class SoulBrush extends Tech {
     this.club.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
     const lg = this.club.legs;
     standLegs(ch, base, P, lg?.clip, lg?.t ?? 0, layerW, this.legState, dt, !!lg?.loop);
+    this.xfLegs.apply(C, base, this.club.playKey || 'stand', dt, this.lower, legsW(this.club.moves, this.legState) * layerW); // (the legs and hips through a join, too)
   }
 
   // ---------------------------------------------------------------- hands: the draw, the brush on the ground in a slide, the hair

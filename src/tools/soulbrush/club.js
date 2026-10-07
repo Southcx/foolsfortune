@@ -139,7 +139,10 @@ export class Club {
   get busy() { return this.moves.busy || this.charge >= 0 || !!this.slam; }
   get playing() { return this.busy || this.moves.playing || this.flickT >= 0; }
 
+  /** Everything stops where it is. A whole-body move is finished first, so its Launch ends with it (the engine's cancel leaves a
+   *  Launch running out its time with the pose frozen: put away mid-dive, they slid on in it). */
   cancel() {
+    if (this.moves.cur) this.moves.finish();
     this.moves.cancel(); this.charge = -1; this.held = -1; this.flickT = -1; this.onFlick = null;
     if (this.slam) this.endSlam();
   }
@@ -197,7 +200,7 @@ export class Club {
     if (t1 >= FLICK.end) this.flickT = -1;
   }
   /** RMB tapped (paid for already): the throw, and `onRelease` at the top of it. */
-  startFlick(onRelease) { this.flickT = 0; this.onFlick = onRelease; }
+  startFlick(onRelease) { this.onFlick?.(); this.flickT = 0; this.onFlick = onRelease; } // (a throw still to leave goes now: each tap is paid for)
 
   // ---------------------------------------------------------------- the slams
   /** Let go of a charge: it comes down. */

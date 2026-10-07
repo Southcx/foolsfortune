@@ -9,22 +9,26 @@
 //   hold LMB         the pick held up over the head (the charge), driven down on release: the heavy blow
 //   LMB, pause, LMB  after the pick: the SPIN SWEEP (Vane_SpinSweep), low and all the way round; after the first sweep: the three wide
 //                    arcs of the JRPG string (Vane_JrpgCombo1-3)
-//   S + LMB          the LAUNCHER (Vane_Thrust): the heel jabbed up under what is in front of them, which goes up
+//   S + LMB          the LAUNCHER (Vane_Thrust): the heel jabbed up under what is in front of them, which goes up; they stay down,
+//                    so LMB in its window goes on into the staff's sweeps (Vane_Combo1-3), not the air string
 //   LMB in the air   the two sweeps
-//   sprinting LMB    the VAULT (Vane_Vault): the staff planted and swung over, its own 1.6 m, carried
-//   R                the DREAMQUAKE (Vane_SpecialDreamquake): up with the staff and down on it; the ground rings for 4 m round them, and
-//                    what is veiled in it rises (10 Lachryma)
+//   sprinting LMB    the VAULT (Vane_Vault): the staff planted and swung over, its own 1.6 m, carried; a shove, never a blow (its
+//                    row is worth nothing: what it meets is knocked aside, not broken, stunned or counted)
+//   R                the DREAMQUAKE (Vane_SpecialDreamquake): up with the staff and down on it; the ground rings round them
+//                    (its row's 5 m, else 4), and what is veiled in it rises (10 Lachryma)
 //   after a parry    LMB: the spin sweep as the COUNTER (the twirl turned something aside: courier/parries.js)
 //
 // Prior art: the pickaxe of every mining game (one heavy committed blow into the ground), the quarterstaff of the action games (Sun
 // Wukong's staff in Black Myth and Warriors Orochi: sweeps, a spin, a vault on the planted staff), Devil May Cry's launcher and pause
 // combos and Bayonetta's Wicked Weaves for the grammar, and Kingdom Hearts' ground-slam finishers for the Dreamquake.
 //
-//   const M = new VaneMoves(tool, spec)   (a Moveset with the pick's rules for what a blow does)   VANE_MOVES   VANE_STRINGS
+//   const M = new VaneMoves(tool, spec)   (a Moveset with the pick's rules for what a blow does, a shove, and what follows the
+//   launcher)   VANE_MOVES   VANE_STRINGS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { Moveset } from '../moveset.js';
+import { hasTag } from '../../core/tags.js';
 
 // The table, in clip seconds (tools/moveset.js); when a blow can hurt is measured from the clip (melee.js). `ground`: when the head
 // meets the ground (a blow that met nothing strikes the sand there: dreamvane.js); `holdAt`: where the raised pick is held.
@@ -65,14 +69,31 @@ export class VaneMoves extends Moveset {
   blow(kind, ent, at, dir, h, c) {
     const g = this.game, power = (h.power ?? 1) * (c?.kind === 'charge' ? 1 + this.charge : 1);
     if (kind === 'clapper' && ent.ally) return; // (an ally's: the Courier's blows pass through it)
-    this.landed = true;
     const flat = _k.copy(dir).setY(0).normalize();
+    if (this.rule(c?.def)?.power === 0) { this.shove(kind, ent, flat, h); return; } // (a row worth nothing, the vault's: Dovina's "never a weapon")
+    this.landed = true;
     if (kind === 'thing') ent.struck?.(at, dir, power, 'courier', 'dreamvane');
     else if (kind === 'pot') g.breakables.shatter(ent, at, dir, power * 0.93, 'picked', 'courier');
-    else if (kind === 'clapper') { g.clappers.knock(ent, flat.multiplyScalar(8 + (h.push ?? 0)).setY(5 + (h.lift ?? 0) * 0.5).clone()); g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray); }
+    else if (kind === 'clapper') { g.clappers.knock(ent, flat.multiplyScalar(8 + (h.push ?? 0)).setY(5 + (h.lift ?? 0) * 0.5).clone()); g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray); if (h.lift) this.lifted(c); }
     else if (kind === 'creature') { const w = this.worth(h, c); if (w > 0) g.creatures.strike(ent, at, dir, w, 'picked'); if (h.push || h.lift) ent.knock?.(flat.multiplyScalar(h.push ?? 0).setY(h.lift ?? 0).clone()); this.struck(ent, c); } // (the row's power: a vault's is none, a shove)
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
     g.events?.emit(this.S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
+  }
+
+  /** A move whose row is worth nothing only shoves what it meets: knocked aside, never broken, stunned or counted as struck. */
+  shove(kind, ent, flat, h) {
+    const g = this.game, v = flat.multiplyScalar(h.push ?? 0).setY(h.lift ?? 0);
+    if (kind === 'clapper') g.clappers.knock(ent, v.clone());
+    else if (kind === 'creature') ent.knock?.(v.clone());
+    else if (kind === 'pot' && hasTag(ent, 'pushable')) g.physics.kick(ent.body, v.clone().setY(Math.max(1.5, v.y)).multiplyScalar(ent.body.mass() * 0.6));
+  }
+
+  /** The launcher is a jab from the ground and they stay there (an upper-body move): what follows it on the ground is the staff's
+   *  string from its first sweep, not the air string the engine would play standing (its count, its hold-up beat). */
+  nextOf(c) {
+    const g = this.S.strings.ground;
+    if (c.kind === 'launcher' && this.P.grounded) return g.length > 1 ? { id: g[1], kind: 'ground', n: 1 } : null;
+    return super.nextOf(c);
   }
 
   /** It lands: the knock, the shake, the stop. */
