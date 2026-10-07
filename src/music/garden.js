@@ -19,6 +19,7 @@
 //   import { GARDEN, setGarden } from './garden.js'   setGarden({ phase: 'dawn'|'day'|'dusk'|'night', draught: aspect | null })  (music/choose.js)
 // ---------------------------------------------------------------------------------------
 import { MODES } from './mood.js';
+import { MOTIF, quote } from './motifs.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 const SW = 2 / 3; // (the swung eighth: a triplet's second third)
@@ -80,3 +81,15 @@ export const GARDEN_TOUR = { ...GARDEN, title: 'A Garden in the Jar (a day in it
   G.draught = TOUR[k + 1][1]; // (the next phase in its own feeling, from its first bar)
   return AT[TOUR[k + 1][0]];
 } };
+
+// ---- the awakening song (SPIRIT-GARDEN.md: a Lachrymite fossil dug in the Dunes, awakened in the Grove by the Crucibelle's song):
+// the song once on the bell (music/motifs.js AWAKEN), the harp and the choir answering it a fifth up, the strings swelling, a beat of
+// held breath, and the waking (a bright chord, the air opening). About 15 real seconds; the spirit's first cry is its own (audio/spirits.js).
+export const AWAKENING = { title: 'The Awakening Song', root: 64, bpm: 96, arrange: true, loopFrom: null, moodless: true, tail: 4, sections: [
+  { id: 'song', bars: 2, gain: 5.5, bar: (i) => (i === 0 ? [...quote(MOTIF.AWAKEN, 'bell', { v: 0.32 }), E('pad', 0, 8, [52, 59, 64], 0.05, { cutoff: 1000 })] : [E('voice', 0, 4, 64, 0.08, { vowel: 'u' })]) },
+  { id: 'answer', bars: 2, gain: 6.5, bar: (i) => (i === 0 ? [...quote(MOTIF.AWAKEN, 'harp', { up: 7, v: 0.26 }), ...quote(MOTIF.AWAKEN, 'voice', { up: -5, v: 0.1, o: { vowel: 'o' } }), E('strings', 0, 8, [52, 59, 64, 71], 0.05, { attack: 2 })]
+    : [E('strings', 0, 4, [52, 59, 64, 71], 0.08, { attack: 0.5 }), E('reverse', 2, 2, null, 0.35)]) }, // (a swell, then held breath)
+  { id: 'wake', bars: 2, gain: 6, bar: (i) => (i === 0 ? [E('bell', 0, 1, 76, 0.32), ...[64, 68, 71, 76, 80, 83].map((n, k) => E('harp', k * 0.15, 2, n, 0.22)), E('shimmer', 0, 8, [64, 68, 71], 0.14),
+    E('strings', 0, 8, [52, 56, 59, 64, 68], 0.08, { attack: 0.1 }), E('celesta', 1, 1, 88, 0.16)] : [E('celesta', 0.5, 1, 83, 0.12), E('celesta', 1, 2, 88, 0.12)]) }, // (E major: awake)
+] };
+
