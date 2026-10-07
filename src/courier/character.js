@@ -290,11 +290,11 @@ export class Character {
     const B = this.bones;
     this.driven = C.bones.map((n) => B[n]);
     this.P = { base: C.pose(), tmp: C.pose(), tmp2: C.pose(), air: C.pose(), up: C.pose(), up2: C.pose() };
-    this.MASK_UPPER = C.mask({ spine001: 0.3, spine002: 0.65, spine003: 1, spine004: 0.6, head: 0.5, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
+    this.MASK_UPPER = C.mask({ spine001: 0.3, spine002: 0.65, spine003: 1, spine004: 0.6, spine005: 0.55, head: 0.5, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
     // (one arm and the head: for the moves that hold the body to something with the other hand)
     this.MASK_ARM = {};
     for (const s of ['L', 'R']) {
-      const t = { head: 0.35, spine004: 0.25 };
+      const t = { head: 0.35, spine005: 0.3, spine004: 0.25 };
       for (const n of C.bones) if (n.endsWith(s) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) t[n] = 1;
       this.MASK_ARM[s] = C.mask(t);
     }

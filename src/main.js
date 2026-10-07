@@ -36,7 +36,7 @@ import jarB64 from './assets/pneuka.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import animsB64 from './assets/anims.bin?b64';
 import cmuB64 from './assets/anims_cmu.bin?b64';
-import { decodeAnims } from './courier/anim/anims.js';
+import { loadClips } from './courier/anim/suite.js';
 import { Clappers } from './creatures/clappers.js';
 import { LachrymaPool, Baubles } from './courier/lachryma.js';
 import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
@@ -416,9 +416,9 @@ async function main() {
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
   clappers.spawnAll();
-  const clipPack = decodeAnims(animsB64);
-  Object.assign(clipPack.clips, decodeAnims(cmuB64).clips); // (mocap: the soccer kick)
+  const clipPack = await loadClips({ packs: [animsB64, cmuB64] }); // (the Courier's own suite, fetched; the UAL and mocap packs widened to its bones: courier/anim/suite.js)
   mark('clappers+anims');
+  game.clipPack = clipPack; // (its `social` resolves when the emotes, dances, flirts and taunts are in)
   const character = new Character(scene, charG, gunG, clipPack);
   mark('character');
   character.onFootstep = () => sfx.footstep();
