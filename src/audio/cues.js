@@ -29,6 +29,16 @@ const RULES = {
   'rail.lock': (s, e, g) => s.railLock?.(e.n, g.music?.grid?.()),
   'rail.down': (s, e, g) => s.railDown?.(e.cls, g.music?.grid?.()),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
+  // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap
+  'spirit.feed': (s, e) => { s.spiritVoice?.('eat', e); setTimeout(() => s.spiritVoice?.('happy', e), 420); },
+  'spirit.drill': (s, e) => s.spiritVoice?.('effort', e),
+  'spirit.mature': (s, e) => s.spiritVoice?.('cheer', e),
+  'spirit.merge': (s, e) => { s.spiritVoice?.('call', e); setTimeout(() => s.spiritVoice?.('cheer', e), 350); },
+  'spirit.release': (s, e) => s.spiritVoice?.('sad', e),
+  'spirit.visit': (s, e) => s.spiritVoice?.('call', e),
+  'spirit.pet': (s, e) => s.spiritVoice?.('happy', e),
+  'spirit.flick': (s, e) => s.spiritVoice?.('hurt', e),
+  'garden.sculpt': (s, e) => s.sculpt?.(e.how || 'press'),
 };
 
 export function hearEvents(game, sfx) {

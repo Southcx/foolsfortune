@@ -191,6 +191,7 @@ Five groups of cues, as a full-scope JRPG will need them. Status: **made**, *ske
   first 10 ms crossfaded from the true continuation (the third time round), with the players' few-ms jitter off. Checked by the jump
   at the seam against the music's own step at that moment (equal is seamless). Delivered as FLAC: MP3 pads its ends with silence.
 - The wider band also has a harp, a wordless voice (a vocalise through formants) and a theremin (`music/world.js`).
+- **The spirits' voices** (`audio/spirits.js`, Chao-like): a small throat (a buzz through two formants scaled up), a syllable or two whose tune is the mood (happy, sad, eat, hurt, call, cheer, effort, sleep), the leap bent by the spirit's feeling (mirth a major third, wonder a fourth, desire a fifth, grief a minor third, dread the Tear's half step). **The sculpt** (`sfx.sculpt(how)`): wet clay, pressed, pulled, smoothed, carved.
 - **The catch's sting** (`audio/catch.js`, on `spirit.bind`): the Answer rung fast on glass in the key of whatever plays, after the coffin's lid or the Jar's stopper, on the music's next beat.
 - **The modern rig** (`music/modern.js`, for the owner's ear: section 6): a crisp hat and an open one (`tick`, `ohat`: the 808's metal
   squares over noise), a snap, the 808 (`eight`, sliding into a note with `from`), a shimmer (the chord two and three octaves up,
