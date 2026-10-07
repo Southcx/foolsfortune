@@ -61,6 +61,9 @@ import { JarHop } from '../vfx/garden/jarhop.js';
 import { buildFeature, FEATURE_IDS } from '../vfx/garden/features.js';
 import { dressForm, SIDES } from '../vfx/garden/forms.js';
 import { SculptBrush } from '../vfx/garden/sculptbrush.js';
+import { CocoonTree } from '../vfx/garden/cocoontree.js';
+import { Fossil } from '../vfx/garden/fossil.js';
+import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
 import { SolarRing } from '../vfx/solarring.js';
 
@@ -204,6 +207,9 @@ export class Workbench {
     out.push({ id: 'garden:galaxy', grp: 'the Spirit Garden', label: "the garden as a galaxy (the six planetoids, the spirit veins, the cloud sea, the Jar hopping; day to night)" });
     out.push({ id: 'garden:features', grp: 'the Spirit Garden', label: "the garden's features on a planetoid (each with its feeling; lit at night), and the sculpt brush raising and digging" });
     out.push({ id: 'garden:forms', grp: 'the Spirit Garden', label: "a spirit's fifteen forms (the five feelings by Law, Neutral and Chaos), on a stand-in body" });
+    out.push({ id: 'garden:cocoon', grp: 'the Spirit Garden', label: 'the cocoon tree (a spirit cocooned, two merging into one, a pod opening; on a loop)' });
+    out.push({ id: 'garden:fossils', grp: 'the Spirit Garden', label: 'Lachrymite fossils (buried, dug, woken by the song, breaking open; on a loop)' });
+    out.push({ id: 'garden:kiln', grp: 'the Spirit Garden', label: 'the Heavenly Kiln over the Peak (opening, bolts traced then striking)' });
     out.push({ id: 'garden:catch', grp: 'the Spirit Garden', label: "the catch (a Figment held struggling over the Pneuka Jar's mouth: drawn in, then breaking free; on a loop)" });
     out.push({ id: 'pier:mat', grp: "Margarite's people", label: "a busker's mat (the tips piling up; played on)" });
     out.push({ id: 'brush:bottles', grp: 'the Soul Brush', label: 'the Lachrymato Bottles (small, medium, large; sloshing; the large one cracked)' }, { id: 'brush:stains', grp: 'the Soul Brush', label: 'stains of spilled crude (growing through its three stages, then mopped)' }, { id: 'brush:coat', grp: 'the Soul Brush', label: 'coated in a spill (the coat running down, then mopped off)' });
@@ -410,6 +416,22 @@ export class Workbench {
         obj = new THREE.Group(); const fe = ['mirth', 'wonder', 'desire', 'grief', 'dread'], R = [];
         fe.forEach((f, i) => SIDES.forEach((sd, j) => { const r = new THREE.Group(); const b = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 12), new THREE.MeshStandardMaterial({ color: 0x9a7348, roughness: 0.4 })); b.scale.y = 0.85; b.position.y = 0.22; r.add(b); r.position.set((i - 2) * 0.75, 0, (j - 1) * 0.75); obj.add(r); dressForm(r, { feeling: f, side: sd }); R.push(r); }));
         obj.userData.tick = () => R.forEach((r) => r.userData.form?.update(1 / 60));
+      }
+      else if (id === 'garden:cocoon') {
+        let T = null, loop = -1; obj = new THREE.Group();
+        obj.userData.tick = (t) => { const L = Math.floor(t / 8), k = t % 8; if (L !== loop) { loop = L; if (T) { obj.remove(T.group); T.dispose(); } T = new CocoonTree({ slots: 3 }); T.group.scale.setScalar(0.35); obj.add(T.group); }
+          T.cocoon(0, { feeling: 'wonder', k: Math.min(1, k / 1.5) }); T.cocoon(1, { feeling: 'mirth', k: Math.min(1, k / 1.5) }); if (T.slots[2].k > 0 || k < 2) T.cocoon(2, { feeling: 'dread', k: Math.min(1, k / 1.5) });
+          if (k > 2 && k < 5.2) T.merge(1, 2, (k - 2) / 3); if (k > 6 && T.slots[0].open < 0 && T.slots[0].k > 0.5) T.open(0); T.update(1 / 60); };
+      }
+      else if (id === 'garden:fossils') {
+        let F = null, loop = -1, lastBeat = 0; obj = new THREE.Group();
+        obj.userData.tick = (t) => { const L = Math.floor(t / 8), k = t % 8; if (L !== loop) { loop = L; if (F) { obj.remove(F.group); F.dispose(); } F = new Fossil({ shape: ['spiral', 'fish', 'claw'][L % 3], feeling: ['wonder', 'desire', 'grief'][L % 3] }); obj.add(F.group); }
+          F.set({ buried: Math.max(0, 1 - k / 2) }); F.awaken(Math.max(0, (k - 3) / 3)); if (k > 3 && Math.floor(k * 2) !== lastBeat) { lastBeat = Math.floor(k * 2); F.beat(); } if (k > 6.2) F.burst(); F.update(1 / 60); };
+      }
+      else if (id === 'garden:kiln') {
+        obj = new THREE.Group(); const P = new Planetoid({ kind: 'peak', seed: 7 }); P.group.scale.setScalar(0.12); obj.add(P.group); const top = P.surface(new THREE.Vector3(0, 1, 0));
+        const K = new HeavenlyKiln({ height: 26 }); K.group.position.y = top; P.group.add(K.group); let next = 1;
+        obj.userData.tick = (t) => { K.open(0.5 + 0.5 * Math.sin(t * 0.3)); if (t > next) { next = t + 1.6; K.bolt(P.group.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 4, top + 1, (Math.random() - 0.5) * 4)), 1.2); } K.update(1 / 60); };
       }
       else if (id === 'garden:catch') {
         obj = new THREE.Group();
