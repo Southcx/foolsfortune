@@ -15,3 +15,9 @@
   `buildMult` reaches `friendly.js` only; Grain (`progress/combat/temperament.js`) is imported by nothing; `voyage.reckon` and
   `reckonLead` are never called (Divination does not chart a crossing, the owner's R57 ruling). For the next round.
 - **Wanda's asks** (round robin): the ground's material under a step (`move.step { surface }`), and an `acoustic` on each zone.
+- **Co-op's room (waits on the owner)**: guests (coop/guests.js) need the build's capabilities to add `room` (and `user` scopes
+  `profile` for names); the publish that adds it was refused as a permission grant: the owner's OK first. Until then guests are dormant.
+- **Co-op, next (waits on Dovina's COOP.md rulings)**: what siblings may do (strike, gather, open), how the party is called in play, the
+  shared errand for guests (the host's quest), what a session may write. The siblings' draw calls: five in view +58 (the workshop 483,
+  over 450); rest-bake merging is the cut (above).
+
