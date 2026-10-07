@@ -148,8 +148,9 @@ export class Moveset {
     if (!def || !ch?.clips.clips[def.clip]) return false;
     if (def.cost && !g.lachryma.spend(def.cost, `${this.id}.${id}`)) { sfx.fizzle?.(); g.hud?.lachrymaPulse?.(false); return false; }
     const prev = this.cur;
+    if (prev && this.last) { (this.from ||= this.last.constructor ? new this.last.constructor(this.last.q.length / 4) : null)?.copy(this.last); this.fadeT = 0; } // (what was showing, held and faded out over the new move: no pop at a join)
     if (prev?.def.body === 'whole' && def.body !== 'whole') { const L = P.techs.get('launch'); if (L?.o?.tag?.startsWith(this.id)) L.o.onEnd = null; }
-    def.track ??= measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' });
+    if (!def.track) { def.track = measureSwing(ch, def.clip, { tip: def.tip ?? this.S.tip ?? 0.9, limb: def.limb ?? this.S.limb ?? 'R' }); if (def.track && def.strike) def.track = { ...def.track, strike: def.strike }; } // (a typed strike window wins: a flourish can be faster than the blow)
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false });
     this.hit.clear(); this.buffer = 0; this.rec = null;
     if (kind === 'ground' || kind === 'pause') { this.n = n; this.str = kind; }
@@ -169,7 +170,7 @@ export class Moveset {
       if (!P.grounded && kind === 'air') P.vel.y = Math.max(P.vel.y, 1);
     }
     sfx.slash?.(def.heat > 0.5);
-    g.events?.emit(this.S.events.swing, { n, move: id });
+    g.events?.emit(this.S.events.swing, { n, move: id, by: 'courier' });
     if (kind !== 'ground' && kind !== 'charge-hold') g.events?.emit('combo.move', { tool: this.id, move: id, kind, by: 'courier' });
     this.S.onBegin?.(c);
     return true;
@@ -198,7 +199,7 @@ export class Moveset {
         R.at(t1, _a).sub(R.at(t0, _b)).multiplyScalar(scale / Math.max(1e-4, dt)); toWorld(_a, yaw, _k);
         vel.x = _k.x; vel.z = _k.z; if (xyz) vel.y = _k.y;
       },
-      poseFix: R ? (pose) => { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } : null,
+      poseFix: (pose) => { if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; if (xyz) pose.p[1] -= _a.y; } this.joined(C, pose); },
       onEnd: () => { if (this.cur === c && c.phase !== 'fall') this.finish(); },
     });
     this.wholeOn = true;
@@ -259,7 +260,7 @@ export class Moveset {
     else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); }
     else if (kind === 'creature') { g.creatures.strike(ent, at, dir, (S.k ?? 1.4) * power, cause); if (h.lift || h.push) ent.knock?.(kv.clone()); }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
-    g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id });
+    g.events?.emit(S.events.hit, { what: kind === 'creature' ? ent.kind : kind, combo: this.combo, move: c?.id, by: 'courier' });
     S.onHit?.(kind, ent, at, dir, h, c);
   }
 
@@ -282,9 +283,20 @@ export class Moveset {
     }
     if (c.def.body === 'whole') return null;
     C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold');
+    this.joined(C, out);
     const end = c.def.to ?? this.dur(c.def), fade = c.def.fade;
-    const w = Math.min(1, (c.t - (c.def.from || 0)) / 0.05 + (c.kind === 'ground' && c.n > 0 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
+    const w = Math.min(1, (c.t - (c.def.from || 0)) / 0.05 + (this.from && this.fadeT < 1 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
     return { pose: out, w: Math.min(1, w) };
+  }
+
+  /** A chained move begins from what was showing: the last pose held and faded out over 0.1 s (the join's pop smoothed), and the pose kept. */
+  joined(C, pose) {
+    if (this.from && this.fadeT < 1) {
+      this.fadeT = Math.min(1, this.fadeT + (this.game.rawDt || 1 / 60) / 0.1);
+      const k = this.fadeT * this.fadeT * (3 - 2 * this.fadeT), tmp = (this._jt ||= C.pose());
+      tmp.copy(pose); pose.copy(this.from); C.blend(pose, tmp, k);
+    }
+    (this.last ||= C.pose()).copy(pose);
   }
 
   /** Standing still, an upper move's legs are the clip's too (its step, its weight), its own travel taken out of the hips; moving,
@@ -297,7 +309,8 @@ export class Moveset {
     const pose = C.sample(c.def.clip, c.t, (this._lp ||= C.pose()), c.kind === 'charge-hold'), R = rootOf(C, c.def.clip);
     if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; }
     if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
-    C.blend(base, pose, this.legW * w * (this.pose(C, this._lp2 ||= C.pose())?.w ?? 0), this.LOWER, 1);
+    const end = c.def.to ?? this.dur(c.def), fw = c.def.fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - c.def.fade, end) : 1;
+    C.blend(base, pose, this.legW * w * fw, this.LOWER, 1);
   }
 
   /** After the tool is placed this frame: the ribbon while the move is in its strike. */
