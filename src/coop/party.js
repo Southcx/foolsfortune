@@ -36,7 +36,7 @@ const _o = new THREE.Vector3(), _n = new THREE.Vector3();
 
 export class Party {
   constructor(game, { makeRig }) {
-    this.game = game; this.makeRig = makeRig; this.list = []; this.coming = new Set(); this.met = new Set(); this.cap = CAP; this.restore = [];
+    this.game = game; this.makeRig = makeRig; this.list = []; this.coming = new Set(); this.met = new Set(); this.cap = CAP; this.restore = []; this.seen = new WeakSet(); // (seen: what a sibling has pointed at, once for the party)
     game.save?.section('party', { scope: 'player', version: 1,
       dump: () => ({ met: [...this.met], out: this.list.map((s) => s.id) }),
       load: (d) => { this.met = new Set(d?.met || []); this.restore = (d?.out || []).filter((id) => this.met.has(id)); },
@@ -84,7 +84,7 @@ export class Party {
 
   add(id, rig, at) {
     const def = SIBLINGS.find((s) => s.id === id);
-    const S = new Sibling(this.game, { id, color: def.color, glaze: def.glaze, rig });
+    const S = new Sibling(this.game, { id, color: def.color, glaze: def.glaze, rig, seen: this.seen });
     this.list.push(S); this.reslot(); this.dirty();
     if (at) { S.body.pos.copy(at); S.body.prevPos.copy(at); S.body.renderPos.copy(at); S.body.place(); S.body.markSafe(); } else S.warp(this.game.player);
     this.game.events.emit('party.call', { sibling: id, by: 'courier' });

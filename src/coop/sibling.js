@@ -18,6 +18,7 @@ import { GROUPS } from '../core/physics.js';
 import { T } from '../core/config.js';
 import { Follow } from './follow.js';
 import { SiblingFight } from './fight.js';
+import { SiblingPoint } from './point.js';
 import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
 
 const SILENT = new Proxy({}, { get: () => () => {} }); // (every sound the body would make, made by no one)
@@ -39,7 +40,7 @@ export class VirtualKeys {
 }
 
 export class Sibling {
-  constructor(game, { id, color, glaze, rig, slot = 0, of = 1 }) {
+  constructor(game, { id, color, glaze, rig, slot = 0, of = 1, seen = new WeakSet() }) {
     this.game = game; this.id = id; this.color = color; this.order = 'follow'; this.to = null; // (the order, and where 'go' goes)
     this.keys = new VirtualKeys();
     const B = (this.body = new Player(game.physics, new THREE.PerspectiveCamera(), this.keys));
@@ -48,7 +49,7 @@ export class Sibling {
     game.physics.register(B.collider, { type: 'sibling', sibling: this });
     this.rig = rig; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Sibling-${id}`;
     game.vessel?.dress(rig, { ...DEFAULT_LOOK, body: glaze, mask: glaze }, { own: true }); // (a placeholder glaze of its suit, on the Courier's own finish shaders: the look is Calissa's to give)
-    this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this);
+    this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this); this.point = new SiblingPoint(this, seen); // (seen: what the party has pointed at)
     this.lastHeading = null; this.leader = null;
     B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
   }
@@ -66,6 +67,7 @@ export class Sibling {
     this.follow.think(dt, goal ? { ...ctx, order: 'engage', to: goal } : { ...ctx, order: this.order === 'fight' ? 'guard' : this.order, to: this.to });
     this.body.fixedUpdate(dt, { adsT: 0, wantsFire: false });
     this.keys.step();
+    if (!this.fight.target) this.point.update(dt, this.game); // (between fights: what lies loose, pointed at, never taken: coop/point.js)
   }
 
   /** The frame: the body turns and is drawn between steps, the rig poses it (what main.js gives the Courier's rig, without a tool). */
