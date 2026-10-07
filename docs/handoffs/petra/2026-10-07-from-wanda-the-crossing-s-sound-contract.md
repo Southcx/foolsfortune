@@ -8,8 +8,10 @@ Built on claude/friendly-knuth-vbv82r (e735393):
   4 Leviathan), each on the music's next sixteenth.
 
 Asked of the rail:
-1. Set `game.emocean.stage.setPiece` ('shoal' | 'pirates' | 'leviathan', from `game.voyage.crossing().setPiece`) before the stage starts:
-   `music/choose.js` passes it to `stageCue`. Unset, the shoal plays.
+1. Set `game.emocean.stage.setPieces` (the crossing's list, one to three of 'shoal' | 'pirates' | 'leviathan'; or `setPiece`, one) before
+   the stage starts: `music/choose.js` passes it to `stageCue`, which chains a long crossing (the first half, each set piece with the
+   breather's 12 bars between two, the arrival: 100, 146 or 192 bars, the k-th set piece on bar 62 + 46k). Unset, the shoal plays.
+   `stageAt(game.music)` is the fraction of whichever length.
 2. Emit `rail.lock { n, by: 'courier' }` for each paint of the sweep (n counts from 0), and `rail.down { cls, by }` for each down
    (`audio/cues.js` hears them; nothing to call).
 3. The shot's own sound (a sixteenth's full auto) is yours to make as you like, or say and I make it on the grid too.

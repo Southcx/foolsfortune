@@ -23,10 +23,11 @@
 // choirs, Star Fox's on-rails pacing (a breather before the last push), future bass and trap (the shimmer, the hat rolls, the 808's
 // slides, the drop's held breath), and this game's own motifs (the Answer, the Five, the Tear).
 //
-//   import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN, SET_PIECE_CUES, STAGE_BARS, stageAt, stageCue } from './emocean.js'
+//   import { CRUDE_SEA, CRUDE_SEA_PIRATES, CRUDE_SEA_LEVIATHAN, SET_PIECE_CUES, STAGE_BARS, stageAt, stageCue, crossingCue } from './emocean.js'
 //   stageAt(game.music) -> the stage's fraction now (0..1, as heard), or null
-//   stageCue(seconds, setPiece) -> the cue played in that many seconds with that set piece (progress/rail/crossing.js: 'shoal' |
-//   'pirates' | 'leviathan'; the same hundred bars at another tempo: a sloop's 120 s is 200 bpm)
+//   stageCue(seconds, setPieces) -> the cue played in that many seconds with that set piece (progress/rail/crossing.js: 'shoal' |
+//   'pirates' | 'leviathan'), or a long crossing's list of up to three (crossingCue: 146 or 192 bars); its bars at the tempo that fills
+//   the seconds (a sloop's 120 s for 100 bars is 200 bpm)
 //   when the cue is not playing (music/choose.js plays it while game.emocean.stage.active; the rail and the waves follow this)
 // ---------------------------------------------------------------------------------------
 import { MOTIF, quote } from './motifs.js';
@@ -118,18 +119,18 @@ export function stageAt(music) {
   if (!A?.alive || !(CROSSINGS.has(A.score) || CROSSINGS.has(A.score?.of))) return null;
   if (A.ended) return 1;
   let bars = A.bar; for (let k = 0; k < A.section; k++) bars += A.score.sections[k].bars; // (the next bar to be laid out, at A.next)
-  const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4);
-  return Math.max(0, Math.min(1, (bars - ahead) / STAGE_BARS));
+  const ahead = (A.next - A.ctx.currentTime) / (A.spb * 4), total = A.score.sections.reduce((n, x) => n + x.bars, 0); // (100, 146 or 192 bars)
+  return Math.max(0, Math.min(1, (bars - ahead) / total));
 }
 
-/** The cue fitted to a stage of `seconds` (hop()'s, by the ship) and its set piece (progress/rail/crossing.js: 'shoal', 'pirates',
- *  'leviathan'): the same hundred bars at the tempo that fills it (made once a length, so music/choose.js sees the same score every
- *  frame). 150 s is the cue as written; a quicker ship's is faster, a slower one's broader. */
+/** The cue fitted to a stage of `seconds` (hop()'s, by the ship) and its set piece or set pieces (progress/rail/crossing.js: 'shoal',
+ *  'pirates', 'leviathan', or a long crossing's list of up to three: `crossingCue`): its bars at the tempo that fills it (made once a
+ *  length, so music/choose.js sees the same score every frame). A bar is 1.5 s as written (160 bpm); a quicker ship's is faster. */
 const FITTED = new Map();
-export function stageCue(seconds = 150, setPiece = 'shoal') {
-  const S = SET_PIECE_CUES[setPiece] || CRUDE_SEA, bpm = Math.round(160 * 150 / Math.max(60, seconds));
+export function stageCue(seconds = 150, setPieces = 'shoal') {
+  const S = crossingCue(setPieces), bars = S.sections.reduce((n, x) => n + x.bars, 0), bpm = Math.round(160 * bars * 1.5 / Math.max(60, seconds));
   if (bpm === 160) return S;
-  const key = `${setPiece}:${bpm}`;
+  const key = `${S.title}:${bpm}`;
   if (!FITTED.has(key)) FITTED.set(key, { ...S, bpm, of: S });
   return FITTED.get(key);
 }
@@ -249,4 +250,24 @@ export const CRUDE_SEA_PIRATES = crossing('Crude Sea: the Pirates', PIRATES);
 export const CRUDE_SEA_LEVIATHAN = crossing('Crude Sea: the Leviathan', LEVIATHAN);
 export const SET_PIECE_CUES = { shoal: CRUDE_SEA, pirates: CRUDE_SEA_PIRATES, leviathan: CRUDE_SEA_LEVIATHAN };
 const CROSSINGS = new Set(Object.values(SET_PIECE_CUES));
+
+// ---- a long crossing (the owner, 2026-10-07: up to three set pieces; RAIL.md section 14): the first half once, each set piece's 34
+// bars with the breather's 12 between two (its flotsam mends the ship: the drums drop out, the choir holds the Tear, and the pulse
+// builds back into the next), then the arrival. 100, 146 or 192 bars; the k-th set piece starts on bar 62 + 46k.
+const PIECES = { shoal: CRUDE_SEA.sections.filter((x) => x.id === 'push' || x.id === 'heavy'), pirates: CRUDE_SEA_PIRATES.sections.slice(5, 8),
+  leviathan: CRUDE_SEA_LEVIATHAN.sections.slice(5, 9) };
+const MEND = { ...CRUDE_SEA.sections.find((x) => x.id === 'breather'), id: 'mend' };
+const CHAINED = new Map();
+/** The cue of a crossing with these set pieces (a name, or a list of up to three), made once a list. */
+export function crossingCue(setPieces = 'shoal') {
+  const list = [].concat(setPieces || 'shoal').filter((p) => PIECES[p]).slice(0, 3);
+  if (list.length <= 1) return SET_PIECE_CUES[list[0]] || CRUDE_SEA;
+  const key = list.join('+');
+  if (!CHAINED.has(key)) {
+    const S = CRUDE_SEA.sections, first = S.slice(0, S.findIndex((x) => x.id === 'push'));
+    const cue = { ...CRUDE_SEA, title: `Crude Sea: ${list.join(', ')}`, sections: [...first, ...list.flatMap((p, k) => [...(k ? [MEND] : []), ...PIECES[p]]), S[S.length - 1]] };
+    CHAINED.set(key, cue); CROSSINGS.add(cue);
+  }
+  return CHAINED.get(key);
+}
 
