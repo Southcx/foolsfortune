@@ -52,7 +52,8 @@ the rules before building in the same area; a rule a machine can check goes into
 
 23. **A move to a place sets that place's floor in the same step.** The fall height is read by the next fixed step, before the frame
     that would have updated it: whatever sets the Courier down far below (a far dock, a Well) lowers `player.killY` under them first
-    (`places.stand`, `course.toDunes`).
+    (`places.stand`, `course.toDunes`). And it sets them down on what stands there (a deck, not the seabed under it), within reach of
+    what F does there and of nothing else, and never out of a mode that owns the body (a crossing): it refuses instead.
 
 24. **A material made once for the whole game is marked `userData.shared`.** Whatever is taken down (a Well floor, the bowl) disposes
     every material it holds that is not marked; a global one disposed loses its program and recompiles at its next draw, a hitch.
@@ -80,9 +81,12 @@ the rules before building in the same area; a rule a machine can check goes into
     timeout, a cap, and a line in the log when it runs out. Nothing waits forever, and nothing spends the owner's usage unbounded.
 
 33. **A key one handler spends, no other handler sees.** A window that closes on Esc or P stops the event there; one key is read in
-    one place a tick (two readers of P opened the box as the other closed it).
+    one place a tick (two readers of P opened the box as the other closed it). Whatever closes or picks on a key spends it,
+    for the body too (`input.spend(code)`: the press and the Courier's latch), or the place under the Courier opens it again.
 34. **Nothing opens under a cover, and a cover always lifts.** A page asked for inside a seam waits until the seam is up; the seam runs
     whatever early return the frame takes. What a place changes of the world (the camera's up, the sky) it puts back on leaving.
+    One window at a time: every opener asks `game.windowOpen()` (a window, the kiln's, the dialogue box, a seam, a crossing) unless
+    it is closing itself.
 35. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
     runs first, and a page that will not boot is a hard failure.
 
@@ -400,3 +404,48 @@ the rules before building in the same area; a rule a machine can check goes into
   the twirl counts as `guard.twirl`; one line, `foe.end`'s, which follows how it ended; the article chosen by the word.
 - **Rule:** a ledger rule names what the Courier must be doing for it to count (on foot, the Courier's blow, this tool), never only what
   happened; a sweep checks each against a place where it must not count.
+
+### 2026-10-07 · F never ended a talk, and each F at a Shrine rested again (the room sweeps, groups 1 and 2)
+- **Seen:** in every room the sweeps found a key that closed something opening it again: a talk with any of the folk restarted on the
+  F that ended it; a Shrine's page, the pier's and the Throwing Room's Index reopened (12 presses, 12 `shrine.rest`); B that picked the
+  Braid on the Index opened the Codex; W held with the Index open sent the Courier 1,897 m to the Dunemaw. B, P, M, Enter and F8 opened
+  over the kiln station; P under the maw wipe; M mid-crossing; the pointer locked over the kiln in 5 of 15 openings.
+- **Cause:** the close ran on the key's own event (or the dialogue's frame), but the press stayed in `input.pressed` and was latched
+  for the Courier's body that frame, so the place under them read it next tick. The Index took `e.repeat`. Each opener kept its own
+  list of what it may not open over, and each list was short a window.
+- **Fix:** `input.spend(...codes)` clears the press and, through `input.onSpend`, the latch; the dialogue box spends its keys every
+  frame it reads them and on its end, the Index every key it takes, and it ignores repeats. One `game.windowOpen()` (`main.js`) read
+  by B, P, the chat line, M (`cartography.js`), F8 (`qais.canOpen`) and the pointer lock.
+- **Rule:** 33 and 34 (extended).
+
+### 2026-10-07 · Travel set the Courier in the crude, beside Saggar, and out of a Well with pay it never gave
+- **Seen:** `travel('jetty')` dropped them under the deck into the crude; `kiln` stood them 1.5 m from Saggar, so F talked to her;
+  `tithe` 2.6 m from its mark; `/goto` mid-crossing left a full-size Courier on the sloop; travel out of a Dunemaw run said "Pay: 3
+  cubes" and gave nothing.
+- **Cause:** `travel` snapped every Dunes place to `heightAt` (the seabed under a deck); a place was only a point and a distance from
+  it; nothing asked whether a crossing owned the body; the Well was ended with `false`, read as 'walk', which reports the run's pay
+  while only `leave()` gives it.
+- **Fix:** a place may give `stand` (the spot) and `deck` (its own height); the kiln and the Tithe stand on their marks; Strawman and
+  the spray wall are places; travel and stand refuse mid-crossing; a run travelled out of ends 'abandon' (nothing paid, its log line
+  its own).
+- **Rule:** 23 (extended).
+
+### 2026-10-07 · The Solar Skiffing trial won with gold in 1.1 s on foot
+- **Seen:** running through the last ring first finished the trial; F at the Gnomon restarted it; back in the Dunes after travel the
+  Courier was on the skiff unasked.
+- **Cause:** a pass through any later ring counted, skipping the rest as "missed" at two seconds each; `start()` did not ask whether it
+  ran; the skiff's `want` outlived the Dunes.
+- **Fix:** only the next lit ring counts, and only ridden (Dovina's ruling: begun from the skiff too, so the Gnomon's offer shows while
+  riding); `start()` refuses while running; out of the Dunes the skiff is put away. No lit ring is no win.
+- **Rule:** a trial counts the act it names (a ring passed *on the skiff*) in the order it names; a sweep runs it the careless way.
+
+### 2026-10-07 · Blade Mode outlived its tool, and the hand took 24 real seconds to open in it
+- **Seen:** stowing the Sondelass in Blade Mode left the world at 5% speed for about six real seconds; ~ in Blade Mode opened the god
+  hand over 24 real seconds; the hand could be taken mid time trial; the tuning panel's teleport left the hand's view 36 m off.
+- **Cause:** Blade Mode ended at the holster's end, and the holster ran on game time slowed by Blade Mode itself; the hand's opening
+  likewise. `godhand.canEnter` read `trial.active`, which the trial never sets (`running`). `course.teleport` moved the body under a
+  hand still out.
+- **Fix:** Blade Mode exits when the tool is put away and when the hand is taken; the hand reads `trial.running`; a teleport lets the
+  hand go first.
+- **Rule:** 30: what slows time ends with what began it, not on a clock it slows.
+
