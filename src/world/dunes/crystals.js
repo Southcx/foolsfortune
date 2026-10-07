@@ -186,9 +186,10 @@ export class Crystals {
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
       if (g.pneuka && simRand() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
+      let fossil = false; if (g.pneuka && simRand() < (ringing ? 0.1 : 0.03)) { g.pneuka.add('fossil.lachrymite', 'crystal'); fossil = true; } // (a creature's shape in the set Lachryma: the Grove wakes it, world/garden/awaken.js)
       e.regrowT = REGROW + GROW; e.ringT = 0;
       T.spot = { th: simRand() * Math.PI * 2, u: 0.25 + simRand() * 0.5 }; // (it grows back with its spot somewhere new)
-      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, sweet: R.sweet, nature: T.kind });
+      g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, fossil, sweet: R.sweet, nature: T.kind });
     }
     this.dirty(e);
     return true;

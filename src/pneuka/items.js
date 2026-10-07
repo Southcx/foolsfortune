@@ -67,6 +67,9 @@ for (const id of Object.keys(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id
 // slip roe: what a broken clutch of the Great Slip Jelly's eggs leaves (progress/combat/dunemaw.js NURSERY.roe), a material for the
 // Spirit Garden's beds and a meal for its spirits (progress/spirits.js FEED)
 ITEMS['roe.slip'] = { id: 'roe.slip', kind: 'material', key: 'roe', name: 'SLIP ROE', glyph: '∘', color: 0xb8e0c8, tier: 1, examine: 'A cluster of slip jelly eggs, cold and quivering. A garden bed would grow more; a spirit would eat it.', card: null, lure: false, stack: 99 };
+// a Lachrymite fossil: a creature's shape kept in set Lachryma, dug with the Dreamvane's pick out of a crystal (world/dunes/crystals.js);
+// in the Mulberry Grove the Awakening Song wakes it (world/garden/awaken.js). The words are placeholders for Espada's.
+ITEMS['fossil.lachrymite'] = { id: 'fossil.lachrymite', kind: 'material', key: 'fossil', name: 'LACHRYMITE FOSSIL', glyph: '◈', color: 0xb9a6e8, tier: 2, examine: 'A shape curled in set Lachryma, like something asleep. A song might wake it.', card: null, lure: false, stack: 8 };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 // what a Well gives (world/well/dunemaw.js): a material of each of the seven kinds (progress/econ/materials.js: each one carries its own

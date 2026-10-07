@@ -689,6 +689,8 @@ export class Tracking {
     on('cavern.force', () => log.say('info', 'You drop through the Great Dunemaw into the great cavern.', { key: 'cavernforce', throttle: 0.5 })); // (/cavern: world/well/dunemaw.js)
     { const ART = { grab: 'Grab: take up the Jar or a spirit, tap a spirit to pet it, the right button to flick it.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: even the clay.', place: 'Place: a feature in a plot.' };
       on('garden.art', (e) => log.say('system', `Your hand: ${ART[e.art] || e.art}`, { key: 'garden.art', throttle: 0.3 })); } // (the garden's hand, 1 to 6: world/garden/hand.js)
+    on('trial.solar.start', (e) => log.say('info', `The Gnomon's shadow begins to sweep: 90 seconds. ${e.lit} of 24 rings are lit.`, { key: 'solar.start', throttle: 1 })); // (world/dunes/solar.js)
+    on('trial.solar.end', (e) => log.say('info', e.why === 'time' ? "The Gnomon's shadow has swept the dial. Time." : 'You leave the course.', { key: 'solar.end', throttle: 1 }));
     on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next crossing sails into ${e.setPieces.join(', then ')}.` : 'The next crossing is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });

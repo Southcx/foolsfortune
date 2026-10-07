@@ -351,7 +351,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       sliceable(painted(new THREE.CylinderGeometry(w * 0.8, w, h, 8), col), null, c, q, col, RAPIER.ColliderDesc.cylinder(h / 2, w * 0.9));
     }
     // the spire: a pale needle far off, with a beam of light, to sail toward
-    const sp = place(-300, -270);
+    const sp = place(-300, -270); this.gnomon = sp.clone(); // (the Gnomon (Espada's): the Solar Skiffing trial begins at its foot, world/dunes/solar.js)
     const spire = new THREE.Mesh(new THREE.CylinderGeometry(3, 16, 150, 6), new THREE.MeshStandardMaterial({ color: 0xf6d9b8, roughness: 0.8, flatShading: true }));
     spire.position.set(sp.x, sp.y + 65, sp.z);
     spire.castShadow = true;

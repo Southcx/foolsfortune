@@ -67,7 +67,7 @@ export class GardenHand {
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
-    if (I.wasPressed('Mouse2')) { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); }
+    if (I.wasPressed('Mouse2')) { if (R.kiln?.active) R.kiln.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
       case 'grab': this.grab(dt, o, d); break;
       case 'place': if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;

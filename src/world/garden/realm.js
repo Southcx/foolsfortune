@@ -23,6 +23,8 @@ import { Clay } from './clay.js';
 import { Plots } from './plots.js';
 import { Raising } from './raising.js';
 import { GardenHand } from './hand.js';
+import { Awaken, FOSSIL } from './awaken.js';
+import { Kiln } from './kiln.js';
 import { DAY_MS } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
@@ -47,6 +49,7 @@ export class Realm {
     for (const l of this.place.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
     this.plots = new Plots(game, this.place, this.clays);
     this.raising = new Raising(game, this);
+    this.awaken = new Awaken(game, this); this.kiln = new Kiln(game, this);
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.place.group.add(this.water);
     this.cam = { fwd: new THREE.Vector3(0, 0, -1), up: new THREE.Vector3(0, 1, 0), dist: CAM.dist };
@@ -55,8 +58,8 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 2,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }),
-      load: (d) => { this.name = d?.name || null; for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.place.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), awaken: this.awaken.dump() }),
+      load: (d) => { this.name = d?.name || null; this.awaken.load(d?.awaken); for (const [id, a] of Object.entries(d?.clay || {})) { this.clays[id]?.load(a); this.reshape(this.place.by[id], true); } this.plots.load(d?.placed); this.flowAll(); },
       reset: () => { this.name = null; } });
   }
 
@@ -93,6 +96,7 @@ export class Realm {
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
       this.sync();
+      this.awaken.visitors(); // (the wild ones the garden draws come by once a game day: progress/realm.js VISITORS)
       g.events?.emit('garden.enter', { shrine: this.back.shrine, by: 'courier' });
       if (!this.name) this.naming();
     };
@@ -187,6 +191,7 @@ export class Realm {
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
+    this.awaken.update(dt); this.kiln.update(dt);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.place.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -234,6 +239,8 @@ export class Realm {
       this.water.add(tube);
     }
   }
+  /** The spirits' bodies laid again (one bound or two merged while you are in here). */
+  respawn() { for (const s of this.spirits) this.place.group.remove(s.mesh); this.spirits = []; this.hopOut(); }
   /** Let one go for good (creatures/bound.js release): it hops off into the sky. */
   release(s) {
     const i = (this.game.bound?.list || []).indexOf(s.e); if (i < 0) return;
@@ -267,12 +274,43 @@ export class Realm {
         break;
       }
       case 'slot': if (G?.accrued(f.i) > 0) G.collect(f.i); else say(G?.slots?.[f.i]?.enc ? 'Nothing has gathered here yet.' : 'No echo works this pavilion yet.'); break;
-      case 'furnace': say('The furnace waits for the press: soon.'); break;
-      case 'cocoon': say('The cocoon tree is still growing.'); break;
-      case 'peak': say('The Heavenly Kiln is not yet open.'); break;
+      case 'furnace': this.athanor(); return;
+      case 'cocoon': this.cocoon(); return;
+      case 'peak': {
+        if (this.kiln.active) return;
+        const n = this.kiln.open();
+        if (n == null) say('The Heavenly Kiln is not yet open. Fire your soul at the press to open the next Firing.');
+        else if (!this.kiln.onMat()) say('Stand on the mat at the Chimney\'s foot.');
+        else this.kiln.begin();
+        return;
+      }
       default: break;
     }
     this.sync();
+  }
+  /** The Athanor's shrine: a photograph of a creature awakens a spirit of its kind (world/garden/awaken.js). */
+  athanor() {
+    const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
+    const open = () => menu.showPage('athanor', (im, el) => {
+      const rows = el('div', 'rooms'), plates = this.awaken.plates();
+      for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Awaken: ${p.kind}</b><s>a plate of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
+      if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No plate to awaken</b><s>photograph a creature with the Veritome, and its plate can wake one here</s></span>'));
+      im.appendChild(el('div', 'grp', 'THE PLATE SHRINE')); im.appendChild(rows);
+    }, { title: 'THE ATHANOR', sub: 'click a plate · F closes' });
+    open();
+  }
+  /** The cocoon tree: a fossil woken by the Awakening Song, or two spirits merged into one. */
+  cocoon() {
+    const g = this.game, menu = g.indexMenu || g.course?.menu, L = g.bound?.list || []; if (!menu?.showPage) return;
+    let first = null;
+    const open = () => menu.showPage('cocoon', (im, el) => {
+      const rows = el('div', 'rooms'), btn = (t, sub, run) => { const d = el('div', 'room', `<span class="n">❦</span><span><b>${t}</b><s>${sub}</s></span>`); if (run) d.onclick = run; rows.appendChild(d); };
+      if (g.pneuka?.count(FOSSIL)) btn('Wake a fossil', this.awaken.waking ? 'it is waking: listen' : 'the Awakening Song wakes what the Lachryma kept', () => { this.awaken.fossil(); menu.close(); });
+      for (const e of L) { this.raising.ready(e); btn(`${first === e ? '◆ ' : ''}${e.name || e.kind}`, first ? (first === e ? 'chosen: choose another to merge with it' : 'merge with the chosen one') : 'choose two to merge into one', () => { if (!first) { first = e; open(); } else if (first !== e) { this.awaken.merge(first, e); menu.close(); } }); }
+      if (L.length < 2) btn('Two spirits make one here', 'when you have two', null);
+      im.appendChild(el('div', 'grp', 'THE COCOON TREE')); im.appendChild(rows);
+    }, { title: 'THE COCOON TREE', sub: 'click · F closes' });
+    open();
   }
   sync() { const G = this.game.garden; this.place.sync({ beds: Math.min(MAX_BEDS, G?.beds?.length || 0), slots: Math.min(MAX_SLOTS, G?.slots?.length || 0) }); }
 
@@ -280,7 +318,8 @@ export class Realm {
   light() {
     if (!this.active) return;
     const sc = this.game.scene;
-    sc.fog.color.setHex(0xcfc6e8); sc.fog.density = 0.004;
-    if (sc.background?.isColor) sc.background.setHex(0xb9b2e0);
+    const storm = this.kiln?.active ? 1 : 0; // (the Heavenly Kiln darkens the sky: Calissa's sky to come)
+    sc.fog.color.setHex(storm ? 0x3a3550 : 0xcfc6e8); sc.fog.density = storm ? 0.012 : 0.004;
+    if (sc.background?.isColor) sc.background.setHex(storm ? 0x2a2640 : 0xb9b2e0);
   }
 }
