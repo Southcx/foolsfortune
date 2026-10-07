@@ -43,6 +43,7 @@ import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
 import { SLOTS } from '../pneuka/box.js';
 import { areaRules } from './tracking/rules.js';
+import { RATINGS, overall } from '../ui/rating.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -484,7 +485,7 @@ export class Tracking {
     on('rhythm.score', (e) => {
       if (e.by !== 'courier') return;
       const pct = Math.round(e.accuracy * 100); L.inc('rhythm.played'); L.inc(`rhythm.played.${e.level}`); if (e.full) L.inc('rhythm.full'); L.hi('rhythm.combo', e.combo); L.hi(`rhythm.best.${e.track}.${e.level}`, pct);
-      log.say('song', `You play ${e.title} through: ${pct} percent${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {});
+      log.say('song', `You play ${e.title} through: ${pct} percent, ${RATINGS[overall(e.accuracy, e.full)].replace(/[.!]+$/, '')}${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {}); // (the set's word: ui/rating.js overall)
     });
     on('song.play', (e) => {
       L.inc('song.play'); L.inc(`song.${e.song}`); if (e.fever >= 1) L.inc('song.fever'); L.hi('song.power', Math.round(e.power * 100));

@@ -7,6 +7,8 @@
 //   THE LADDER   Miss! (a miss), OK... (a good), Nice! and Great! (a great, late or early by more than 67 ms or less), Excellent,
 //                Awesome and Perfect (a perfect: inside 45, 30 and 15 ms), and Wow on every 25th note of a combo struck great or
 //                better. Without the press's timing (`off`), a grade gives its plainest word (good OK..., great Great!, perfect Perfect).
+//   THE SET      the song's end gives the whole set a word from its accuracy (`overall`: Miss! under 35 percent, then OK..., Nice!,
+//                Great!, Excellent, Awesome and Perfect at 55, 70, 80, 90 and 95; Wow at 97 with no note missed), said in the log
 //   THE INKS     the pixel kit's palettes, rising with the word: grey for the misses and the OKs, clay for Nice and Great, a mind's
 //                indigo for Excellent and Awesome, gold for Perfect and Wow (gold is won: docs/LOOK.md)
 //   THE POP      the newest word replaces the last: it lands one whole step larger for 60 ms, settles, rises 10 px and fades by 0.6 s.
@@ -15,7 +17,7 @@
 // Prior art: DDR's and StepMania's judgement words over the receptors (Marvelous, Perfect, Great), Bemani's combo celebrations, and
 // PaRappa the Rapper's "U Rappin'" ladder (the word as the crowd's voice, from Awful to Cool).
 //
-//   const R = new Ratings()   R.attach(parentEl?)   R.call(grade, { off, combo })   R.update(dt)   R.detach()   rate(grade, off, combo)
+//   const R = new Ratings()   R.attach(parentEl?)   R.call(grade, { off, combo })   R.update(dt)   R.detach()   rate(grade, off, combo)   overall(accuracy, full)
 // ---------------------------------------------------------------------------------------
 import { px } from './pixel.js';
 
@@ -31,6 +33,12 @@ export function rate(grade, off = null, combo = 0) {
   const a = off == null ? null : Math.abs(off);
   if (grade === 'great') return a != null && a > 0.0675 ? 2 : 3;
   return a == null || a <= 0.015 ? 6 : a <= 0.03 ? 5 : 4;
+}
+
+/** A whole set -> the row of its word: the judge's accuracy (0..1), Wow only for a set with no note missed (said in the log at the end). */
+export function overall(accuracy, full = false) {
+  const a = accuracy || 0;
+  return full && a >= 0.97 ? 7 : a >= 0.95 ? 6 : a >= 0.9 ? 5 : a >= 0.8 ? 4 : a >= 0.7 ? 3 : a >= 0.55 ? 2 : a >= 0.35 ? 1 : 0;
 }
 
 export class Ratings {
