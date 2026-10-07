@@ -62,11 +62,15 @@ the rules before building in the same area; a rule a machine can check goes into
 
 26. **Nothing is taken out of a list from inside that list's own update.** A callback a module calls per member (a jelly's `driven`)
     marks the member (`c.reached`); the owner removes it after the loop. A Rapier body removed mid-loop panics the whole world.
+27. **A default argument is read at the call.** A module that calls its own helper while it loads (`withFade` for the outline materials)
+    must not default that helper's argument to a constant declared further down: read it inside, when it is used.
+28. **A second copy of a dressed model is dressed the same way**, or every one of its materials is a new program. Count
+    `renderer.info.programs` before and after it first appears.
 
-26. **A field keeps one meaning.** A name already given a meaning (a setting, a window, a limit) is never reused as a working counter
+29. **A field keeps one meaning.** A name already given a meaning (a setting, a window, a limit) is never reused as a working counter
     in the same object; give the counter its own name.
 
-27. **What an event moves, its end moves back.** A position, scale or state changed for the length of an act (a merge, a hold) keeps its
+30. **What an event moves, its end moves back.** A position, scale or state changed for the length of an act (a merge, a hold) keeps its
     rest value apart and is returned to it when the act's result is gone.
 
 ## Cases
@@ -76,14 +80,34 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Cause:** `vfx/garden/tribulation.js` used `B.flick` (the window's length) as the trace's flicker counter, so the window grew with every
   flicker.
 - **Fix:** the counter is `B.frame`; `B.flick` is only the window.
-- **Rule:** 26.
+- **Rule:** 29.
 
 ### 2026-10-07 · A merge in the cocoon tree moved its slot for good
 - **Seen (Petra, measured):** after a merge, slot 0's pod hung where the two had met, for every cocoon after it.
 - **Cause:** `vfx/garden/cocoontree.js` wrote the meeting point into the slot's only position, its rest.
 - **Fix:** each slot keeps `rest` apart from `pos`; the merged pod hangs at `pos`, and opening it (or a fresh cocoon) returns it to
   `rest`. Measured: moved 2.57 m by the merge, 0.000 m from rest after the open.
+- **Rule:** 30.
+
+### 2026-10-07 · The game did not boot: "Cannot access 'COURIER_RIG' before initialization"
+- **Cause:** `withFade(material, key, U = COURIER_RIG)`: the outline materials are made by `withFade` while `render/outline.js` loads,
+  above the line that declares `COURIER_RIG`, and a default argument is read at the call.
+- **Fix:** the default is read inside the compile hook (`own || COURIER_RIG`).
 - **Rule:** 27.
+
+### 2026-10-07 · In the Dunes the siblings never came: each step they fell, woke at the workshop and warped back
+- **Seen:** the stress test (seed 2, with the party): 11,615 `sibling-lost`, the siblings at the body's spawn (0, 0, -11.5).
+- **Cause:** a place sets its floor (`killY`) on `game.player` alone (world/places.js); a sibling's body kept the default -100, and the
+  Dunes are 408 m down, so its own step called it fallen and respawned it at the spawn.
+- **Fix:** a sibling takes its leader's `killY` each step, and its respawn is a warp to its leader (coop/sibling.js).
+- **Rule:** 23 (every body in the place, not only the Courier's).
+
+### 2026-10-07 · One sibling compiled eleven new programs
+- **Cause:** the Courier's region materials carry the kiln's finish (`-fin-glaze` on their program key, `vfx/finish.js`); the sibling's
+  copies did not, so each was a program of its own (145 to 156).
+- **Fix:** a sibling is dressed by the vessel too, with a look of its own (`vessel.dress(rig, look, { own: true })`): one program left
+  (a shadow's depth variant).
+- **Rule:** 28.
 
 ### 2026-10-07 · "The Lockheart catches spirit.bind."
 - **Cause, measured:** the bus writes its own `name` (the event's) and `t` over a payload's (`core/events.js` emit), so every

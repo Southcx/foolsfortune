@@ -67,7 +67,7 @@ if (!lanesOnly) {
   const URL_ = server.resolvedUrls.local[0], env = { URL: URL_ };
   try {
     await run('stress, seed 1', 'node', ['scripts/stress.mjs', '--seed', '1'], env);
-    if (!quick) await run('stress, seed 2', 'node', ['scripts/stress.mjs', '--seed', '2'], env);
+    if (!quick) await run('stress, seed 2', 'node', ['scripts/stress.mjs', '--seed', '2', '--party'], env); // (with the five siblings: coop/)
     if (!quick) await run('playtest well', 'node', ['scripts/playtest/run.mjs', 'well'], env);
     if (!quick) await run('replay test', 'node', ['scripts/replaytest.mjs'], env);
     if (!quick) await run('qais test', 'node', ['scripts/qaistest.mjs'], env);

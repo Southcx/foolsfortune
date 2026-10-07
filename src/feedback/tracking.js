@@ -30,17 +30,6 @@ import { sfx } from '../audio/sfx.js';
 import { BY_ID } from '../progress/skills.js';
 import { DOMAINS } from '../progress/domains.js';
 const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
-import { anglingRules } from './tracking/angling.js';
-import { wellRules } from './tracking/wells.js';
-import { voyageRules } from './tracking/voyage.js';
-import { railRules } from './tracking/rail.js';
-import { gardenRules } from './tracking/garden.js';
-import { weatherRules } from './tracking/weather.js';
-import { dunemawRules } from './tracking/dunemaw.js';
-import { placeRules } from './tracking/place.js';
-import { testroomRules } from './tracking/testroom.js';
-import { qaisRules } from './tracking/qais.js';
-import { brushRules } from './tracking/brush.js';
 import { TIERS, CURIO_BY_ID, TITHE, hex } from '../world/treasure/treasure.js';
 
 const fx = (v, d = 2) => Number(v).toFixed(d);
@@ -53,6 +42,7 @@ import { LURES } from '../tools/sondelass/angling/lures.js';
 import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
 import { SLOTS } from '../pneuka/box.js';
+import { areaRules } from './tracking/rules.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -623,19 +613,8 @@ export class Tracking {
       else log.say('move', 'You leap from the line.', { key: 'zip', throttle: 1.5 });
     });
 
-    // ---- angling: feedback/tracking/angling.js
-    anglingRules({ on, L, log, where: () => this.where() });
-    // ---- the Wells: feedback/tracking/wells.js
-    wellRules({ on, L, log });
-    railRules({ on, L, log }); // (the crossing's tally, before the voyage's "You make port")
-    voyageRules({ on, L, log });
-    gardenRules({ on, L, log });
-    weatherRules({ on, L, log, g });
-    dunemawRules({ on, L, log });
-    placeRules({ on, log });
-    testroomRules({ on, L, log });
-    brushRules({ on, L, log }); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
-    qaisRules({ on, log }); // (QAIS: a report filed, a round sent, /goto; nothing counted)
+    // ---- each area's own rules: feedback/tracking/rules.js (angling, the Wells, the crossing, the garden, the weather, the party ...)
+    areaRules({ on, L, log, g, where: () => this.where() });
 
 
     // ---- treasure (src/world/treasure/chests.js, ceremony.js, cubes.js): chests in five tiers, the cubes they hold, the curios, the Tithe

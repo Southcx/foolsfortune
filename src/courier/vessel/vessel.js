@@ -59,10 +59,10 @@ export class Vessel {
   // ---------------------------------------------------------------- on a body
   /** Lay a look (theirs, unless another is given) on a Courier model: each region's material takes its glaze; the armour and the mask carry
    *  the kintsugi. */
-  dress(ch, look = this.look) {
+  dress(ch, look = this.look, { own = false } = {}) { // (own: another Courier's look, a sibling's: not kept with the Courier's rigs, so the kiln's preview and firing never reach it)
     if (!ch?.regionMats) return;
-    if (!this.dressed.has(ch)) tagRegions(ch); // (each vertex told its hit region, for the cracks: courier/vessel/damage.js)
-    this.dressed.add(ch);
+    if (!ch.regionsTagged) { tagRegions(ch); ch.regionsTagged = true; } // (each vertex told its hit region, for the cracks: courier/vessel/damage.js)
+    if (!own) this.dressed.add(ch);
     for (const r of Object.keys(REGIONS)) {
       const m = ch.regionMats[r];
       let g = this.glaze(look[r]);

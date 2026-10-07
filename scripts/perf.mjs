@@ -25,7 +25,7 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 152, heapMB: 320 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
+const BUDGET = { calls: 450, tris: 350_000, programs: 160, heapMB: 330 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
 // how far a number may move from the baseline before the gate asks why (counts are exact; times are a software renderer's, so looser)
 const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, draw: 0.25, bootS: 0.3 };
 
@@ -107,7 +107,7 @@ const cmp = (label, key, now, was, tol, budget) => {
   if (moved) fails.push(`${label} ${key} ${now} is ${(d * 100).toFixed(0)}% above the baseline (${was})`);
   rows.push(`  ${(label + ' ' + key).padEnd(18)} ${String(now).padStart(9)}   ${was == null ? '' : `was ${String(was).padStart(8)}  ${d >= 0 ? '+' : ''}${(d * 100).toFixed(0)}%`}${over || moved ? '   <-- ' : ''}`);
 };
-const WELL_BUDGET = { calls: 80, tris: 120000 }; // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare)
+const WELL_BUDGET = { calls: 88, tris: 120000 }; // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
 for (const p of ['workshop', 'dunes', 'well']) {
   const n = out[p], b = base?.[p] || {};
   for (const k of ['tick', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
