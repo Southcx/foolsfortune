@@ -99,6 +99,12 @@ the rules before building in the same area; a rule a machine can check goes into
     new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself.
 42. **Up is asked where it can differ.** A marker, a bob, a label of floors assumes world Y only where nothing else can be up; in the
     Spirit Garden each planetoid has its own, so a source says its up and the reader stands along it.
+43. **A layer over part of the body leaves the hips alone, and what a tech's weight switches follows its pose.** `Clips.blend(out, src,
+    w, mask)` moves the pelvis by `w` whatever the mask: an upper-body or one-arm layer passes `hipW = 0`. The knee guard, the joint
+    limits and the foot IK read a tech's weight (`override`, `legsOwn`); a pose faded out on its own clock keeps the weight up with it,
+    or they switch on at full strength under a pose that is still the clip's.
+44. **A body pose is judged with the kit on as well as off.** A tool worn on the back stands up through a Courier lying on it; a pose
+    that puts the body on the floor is filmed with the belt full, and puts the worn tools out of sight while it lasts if they cross it.
 
 ## Cases
 
@@ -117,6 +123,43 @@ the rules before building in the same area; a rule a machine can check goes into
   entry as its rest scale, so it squashed and stretched about nothing.
 - **Fix:** its rest scale is 1, never a reading of the moment. Measured headless: 0.89 / 1.27 / 0.89 mid-hop, visible.
 - **Rule:** 30.
+
+### 2026-10-07 · An emote's end snapped to the idle, and the folk talk's gestures moved the hips (Calissa, emotes)
+- **Seen:** measured headless on every emote through the chat line (a frame-to-frame step of every body joint after the whole pipeline):
+  an emote's last frame went straight to the body's own pose (the suite's one-shots end at their neutral stance, 17 degrees mean and 51
+  at worst from the idle); a dance left by W jumped to the walk; one emote straight into another snapped; with a fade added, the
+  cossack's squat still turned a foot 55 degrees in one frame as it ended.
+- **Cause:** the emote drew its pose only while its state was on (rule 19). Once a fade was added, the tech's weight still fell at the
+  techs' own rate (12 a second) and its `overrides` went to 0 at the end, so the knee guard switched on at full strength under a pose
+  still almost wholly the clip's. Separately, the talk's answers blended over `MASK_UPPER` with the default `hipW` of 1, pulling the
+  pelvis to the clip's (the suite's Cry and Tremble hold it 5 cm under the idle's, measured on the clips).
+- **Fix:** the emote keeps its last pose and fades it off the body's own over 0.3 s, its weight held up by that fade (`tick`), a floor
+  pose keeping its own legs to the end of it; a new emote fades the old one's pose out under it; the talk's answers pass `hipW` 0.
+  Measured after, over all 134 emotes: the largest step a frame while the last pose fades is 6.9 degrees at the median; the worst (36,
+  a dance left by W) comes from the foot IK as the walk starts and stops under it (the core alone, a tap of W from the idle: 26; the
+  same tails with the foot IK off: 9). In a talk the hips move 6 mm at most during an answer.
+- **Rule:** 19, 43.
+
+### 2026-10-07 · Three of the suite's gestures spun a forearm half a turn in one frame (Calissa, emotes)
+- **Seen:** `Taunt_KnuckleCrack` f10, `Emote_HeartHands` f53, `Emote_Hungry` f68: a 170-degree step on forearm.R between two keys (the
+  clip survey), and the three end 74 to 82 degrees from where they began.
+- **Cause, measured:** a swing and twist split of forearm.R against its rest: the twist goes 95 to 265 degrees (the same as -95) in one
+  key in all three, and stays wound to the end. In the heart the left forearm unwinds smoothly over the same frames, so the right's is
+  a bad key, not a motion.
+- **Fix:** each is played only where it is whole (`emotes.js`): the knuckles from 0.34 s (after the flip; the blend-in from the body's
+  own pose covers the start), the heart to 1.73 s and the rumble to 2.23 s (before theirs); the end fade carries the arm back.
+- **Rule:** 19 (measure a clip's per-frame jumps before playing it).
+
+### 2026-10-07 · The hover's feet went under the floor, and a tool stood up through the Courier lying down (Calissa, emotes)
+- **Seen:** `Emote_MeditateHoverEnter` and `Exit`: the feet and toes 0.116 m under the floor while the legs uncross and the hips are
+  still low. Filmed in the workshop with the debug kit on: lying down (`Emote_Sleep`, `Emote_LieBack`) a tool worn on the back stood up
+  through the body.
+- **Cause:** the clip's hips rise later than its legs swing down; the worn tools ride their back sockets whatever the body does.
+- **Fix:** a floor pose is lifted frame by frame where a foot or toe would go more than 2.5 cm under the floor (measured once by the
+  legs' FK on this skeleton, widened and smoothed: courier/moves/emote.js `liftOf`): the hover's lowest is now -0.026 m. Lying down
+  (`bare`) puts the worn tools out of sight from halfway down to halfway up (the belt's `hideWorn`; each tool shows itself again from
+  its own tick).
+- **Rule:** 44.
 
 ### 2026-10-07 · The stress test stopped on a Dreamvane dash begun on a ledge (Calissa)
 - **Seen:** the quick gate, stress seed 1: `Cannot read properties of null (reading 'drive')` in `carryInto` (tools/toolbody.js), from the

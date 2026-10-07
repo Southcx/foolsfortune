@@ -297,6 +297,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
+- **emote** (`EMOTES`, `src/courier/emotes.js`; the tech `Emote`, `courier/moves/emote.js`; events `emote.start`, `emote.end`): the Courier's
+  body language asked for on the chat line (/wave, /sit, /dance): a clip of the suite's social pack played **once**, a **loop** held until
+  they move, or a **triple** (the suite's Enter, Loop and Exit: in, held, out). Each is in a **family** (greet, joy, anger, fear, sorrow,
+  thought, pride, body, repose, dance, flirt, taunt), which is how `/emotes` lists them and what the folk feel at one; a **dance**, a
+  **flirt** and a **taunt** are the emotes of those families. A **floor pose** (`floor`) is one held on the ground (sitting, kneeling,
+  lying, the hover): its legs are the clip's. *Not:* a gesture (a held tool's own clip), nor a creature's emote clips (see the homonyms).
 
 ## Places
 
@@ -762,6 +768,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney, class `Kiln` in `world/garden/kiln.js`, to be renamed `Tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jar`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
+| emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words
