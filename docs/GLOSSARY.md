@@ -286,9 +286,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   is a `how`: `return`, `turn`, `soak`, `gulp`, `shatter`, `stagger`, `shutter`.
 - **the kick** (the Movement Art `kick`, V with nothing in the hands; `src/courier/moves/kick.js`): the unarmed moveset on the combo
   engine (`tools/moveset.js`): V's string is the **jab**, the **cross**, the **haymaker** and the **roundhouse**; after a pause at the
-  jab the **front kick** and the **shove**, at the cross the **sweep**; S + V the **uppercut** (its launcher), V in the air the **ground
-  pound**, V sprinting the **flying kick**. The first 0.26 s of every one is the parry. In the ledger `kick.hit` is a move that struck
-  (with how many things it struck), `fist.hit` each blow. *Not:* the hook (the boxer's is the haymaker here: the hook is the Sondelass's).
+  jab the **front kick** and the **shove**, at the cross the **leg sweep** (`sw`; its row in Dovina's table is `sweep`); S + V the
+  **uppercut** (its launcher), V in the air the **ground pound**, V sprinting the **flying kick**. The first 0.26 s of every one is the
+  parry. In the ledger `kick.hit` is a move that struck (with how many things it struck), `fist.hit` each blow. *Not:* the hook (the
+  boxer's is the haymaker here: the hook is the Sondelass's); a sweep (Dovina's room test: the move is always the leg sweep).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
 - **projectile** (code: an entry in `game.projectiles`): anything thrown that a parry can find: a rigid body (`{ body }`, a lobber's
@@ -643,7 +644,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   room entered, worked and left headless as a person would and as a careless one would, a screenshot at every step and a PASS/FAIL line
   a check; a defect once seen stays checked. **The garden sweep** (`garden.mjs`) was the first (`docs/plans/GARDEN-SWEEP.md`); the
   others are named for their room (`workshop`, `basement`, `dunes`, `dunemaw`, `emocean`, `tools`). *Not:* the stress test (it fuzzes
-  the whole game), a playtest (it plays to a goal), the Soul Brush's mop.
+  the whole game), a playtest (it plays to a goal), the Soul Brush's mop, the kick's leg sweep, melee.js's `sweep` (what a swing struck).
 - **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
   a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
   dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A

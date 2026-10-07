@@ -3,7 +3,7 @@
 // (melee.glb's Fist_*), run by the shared combo engine (tools/moveset.js, the grammar every tool keeps, read on V instead of LMB):
 //
 //   V           a jab, a cross, a haymaker (the upper body over whatever the legs are doing), then the ROUNDHOUSE (the whole body)
-//   V, pause    after the jab, a FRONT KICK and then a SHOVE; after the cross, the SWEEP (a full turn low along the floor)
+//   V, pause    after the jab, a FRONT KICK and then a SHOVE; after the cross, the LEG SWEEP (a full turn low along the floor)
 //   S + V       the UPPERCUT, the launcher: up they go a little, and what it strikes goes higher; V while up: the ground pound
 //   V in air    the GROUND POUND: fists overhead, a plunge, and a ring where they land
 //   sprinting   V: the FLYING KICK (its own 1.3 m, carried)
@@ -33,7 +33,7 @@ import { Moveset, rootOf } from '../../tools/moveset.js';
 import { magnet, targets } from '../../tools/melee.js';
 import { T } from '../../core/config.js';
 
-const UP = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
+const UP = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
 const PARRY_TO = 0.26; // (the opening of every move, in real seconds: the kick's parry window, as it always was)
 const STEP = { range: 2.6, stand: 0.45, max: 1.3 }; // (the step in: from as far as 2.6 m, to 0.45 m from its surface, at most 1.3 m)
 
@@ -42,16 +42,19 @@ const STEP = { range: 2.6, stand: 0.45, max: 1.3 }; // (the step in: from as far
 // shot is 1), `hit.dmg` x the kick's damage (60) is a pot's; every unarmed blow is free, so every one is weaker than a shot but the
 // finishers. `rise` (mine): the capsule really rises with the clip's hips above standing (x rise), and only the squat stays in the pose.
 // `turn` (mine): the clip ends turned; the turn goes to the facing at its end. `squat` (mine): the hips never above standing in the pose.
-// `ribbon: false` (mine): no ribbon (the pound's mark is its ring).
+// `ribbon: false` (mine): no ribbon (the pound's mark is its ring). `hit.side` (mine): how much of the swing's own direction a blow
+// keeps (the haymaker's, the roundhouse's, the leg sweep's half); the rest of every blow drives what it strikes straight away from them.
+// `bare` (mine): clip seconds the body is down on the floor (the leg sweep's hips under 0.5 m): the worn tools are out of sight, or the
+// Soul Brush on the back lies through the legs and the floor (casebook rule 44, as the emotes lying down).
 const MOVES = {
   j1: { rule: 'combo1', clip: 'Fist_Combo1', rate: 1.15, chain: [0.1, 0.5], to: 0.6, fade: 0.25, lunge: 2.2, hit: { power: 0.8, dmg: 0.6, push: 1.5 } },
   j2: { rule: 'combo2', clip: 'Fist_Combo2', rate: 1.15, chain: [0.14, 0.6], to: 0.7, fade: 0.25, lunge: 2.4, hit: { power: 0.9, dmg: 0.7, push: 2 } },
-  j3: { rule: 'combo3', clip: 'Fist_Combo3', rate: 1.1, chain: [0.2, 0.75], to: 0.85, fade: 0.3, lunge: 2.6, hit: { power: 1.1, dmg: 0.9, push: 3 } },
-  rh: { rule: 'roundhouse', clip: 'Fist_Roundhouse', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, turn: true, hit: { power: 1.6, dmg: 1.3, push: 8, cause: 'kick', heavy: true }, heat: 1 },
-  // the pause strings: after the jab, the front kick and the shove; after the cross, the sweep
+  j3: { rule: 'combo3', clip: 'Fist_Combo3', rate: 1.1, chain: [0.2, 0.75], to: 0.85, fade: 0.3, lunge: 2.6, hit: { power: 1.1, dmg: 0.9, push: 3, side: 0.5 } },
+  rh: { rule: 'roundhouse', clip: 'Fist_Roundhouse', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, turn: true, hit: { power: 1.6, dmg: 1.3, push: 8, side: 0.5, cause: 'kick', heavy: true }, heat: 1 },
+  // the pause strings: after the jab, the front kick and the shove; after the cross, the leg sweep
   fk: { clip: 'Fist_Kick', body: 'whole', root: 'xz', limb: 'footL', tip: 0.22, chain: [0.62, 1.05], hit: { power: 1.3, dmg: 1.0, push: 6, cause: 'kick' } },
   sh: { clip: 'Fist_Shove', body: 'whole', root: 'xz', rate: 1.1, hit: { power: 0.9, dmg: 0.5, push: 9, heavy: true } }, // (whole: it follows the kick's whole body)
-  sw: { rule: 'sweep', clip: 'Fist_Sweep', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, rate: 1.1, hit: { power: 1.0, dmg: 0.8, push: 2, lift: 3.5, cause: 'kick' } },
+  sw: { rule: 'sweep', clip: 'Fist_Sweep', body: 'whole', root: 'xz', limb: 'footR', tip: 0.22, rate: 1.1, bare: [0.12, 1.08], hit: { power: 1.0, dmg: 0.8, push: 2, lift: 3.5, side: 0.5, cause: 'kick' } },
   // S + V: the uppercut (the capsule rises with its hop, half again: a launcher); V in the air, or while up: the ground pound
   up: { rule: 'launcher', clip: 'Fist_Uppercut', body: 'whole', rise: 1.5, chain: [0.28, 0.56], hit: { power: 1.2, dmg: 1.0, lift: 8.5, push: 1 } },
   gp: { rule: 'groundPound', clip: 'Fist_GroundPound', body: 'whole', from: 0.24, lift: 0, squat: true, ribbon: false, plunge: { hold: 0.36, speed: 24 }, ring: 2.4, hit: { power: 1.5, dmg: 1.3, push: 6, lift: 4, heavy: true }, heat: 1 },
@@ -63,14 +66,21 @@ const RING_H = 1.2; // (the ring's reach above their feet)
 const K = 0.8; // (a creature blow is K x the move's power: a jab 0.64 of a shot, the roundhouse 1.28; Dovina's to rule on)
 const LIMB = { R: ['forearmR', 'handR'], L: ['forearmL', 'handL'], footR: ['shinR', 'toeR'], footL: ['shinL', 'toeL'] };
 
-/** The engine with the kick's own answers: a clapperjar is batted away (and stunned by a heavy blow), never broken by a bare hand. */
+/** The engine with the kick's own answers: a blow drives what it strikes away from them, and a clapperjar is batted away (and stunned
+ *  by a heavy blow), never broken by a bare hand. */
 class FistMoves extends Moveset {
   blow(kind, ent, at, dir, h, c) {
+    // (melee.js gives the direction along the swing, a blade's cut; a punch, a kick or a shove sends a thing away from them, and only a
+    // swung blow keeps `h.side` of its swing: the front kick and the shove pushed sideways, measured, before this)
+    const out = _c.set(at.x - this.P.pos.x, 0, at.z - this.P.pos.z), side = h.side ?? 0;
+    if (out.lengthSq() > 1e-6) { out.normalize().multiplyScalar(1 - side).addScaledVector(_d.copy(dir).setY(0).normalize(), side); if (out.lengthSq() > 1e-6) dir = out.normalize().clone(); }
     if (kind !== 'clapper') return super.blow(kind, ent, at, dir, h, c);
     const g = this.game, cfg = this.tool.cfg;
     if (ent.ally) return;
-    g.clappers.knock(ent, new THREE.Vector3().copy(dir).setY(0).normalize().multiplyScalar(cfg.knock * (h.power ?? 1)).setY(3 + (h.lift ?? 0) * 0.5));
+    g.clappers.knock(ent, new THREE.Vector3().copy(dir).multiplyScalar(cfg.knock * (h.power ?? 1)).setY(3 + (h.lift ?? 0) * 0.5));
     if (h.heavy && g.shells) g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray);
+    if (h.lift) this.lifted(c);
+    if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (as the engine's own blow: the air string's count)
     g.events?.emit(this.S.events.hit, { what: 'clapper', combo: this.combo, move: c?.id, by: 'courier' });
     this.S.onHit?.(kind, ent, at, dir, h, c);
   }
@@ -110,6 +120,9 @@ export class Kick extends Tech {
   }
 
   get engaged() { return this.moves.playing; }
+  /** A fight's stance while a move plays, as every held tool's (the core's combat turn, after it: the roundhouse hands its 126 degrees
+   *  to the facing, and they turn back to the aim on the core's eased turn instead of in one frame at the next press). */
+  get stance() { return this.moves.busy; }
   /** An upper-body move faces where it was aimed (the whole-body ones are faced by Launch). */
   faceYaw() { const c = this.moves.cur; return c && c.def.body !== 'whole' ? c.yaw : null; }
 
@@ -126,7 +139,7 @@ export class Kick extends Tech {
 
   tick(dt) {
     const M = this.moves;
-    if (!this.usable() || this.game.god?.controlling) { if (M.busy) M.cancel(); return; }
+    if (!this.usable() || this.game.god?.controlling) { if (M.busy) this.stop(); return; }
     const allow = this.allowed();
     M.update(dt, this.P.input, { allow });
     if (!allow && !M.busy) M.buffer = 0; // (a press made while it could not start is not kept for later)
@@ -154,7 +167,7 @@ export class Kick extends Tech {
     if (!m) return;
     const gap = Math.min(STEP.max, Math.max(0, m.dist - m.r - STEP.stand));
     const want = Math.sqrt(2 * T.movement.groundDecel * gap), have = P.vel.x * f.x + P.vel.z * f.z;
-    if (want > have + 0.2) P.impulse(f.multiplyScalar(want - Math.max(0, have)).clone(), 'brush');
+    if (want > have + 0.2) { P.impulse(f.multiplyScalar(want - Math.max(0, have)).clone(), 'brush'); this.stepC = c; }
   }
 
   /** A whole-body move carried by Launch: the kick's own root rules (`rise`, `squat`, `turn`) laid over the engine's. */
@@ -162,7 +175,10 @@ export class Kick extends Tech {
     const L = this.P.techs.get('launch'), def = c.def;
     if (def.body !== 'whole' || !L?.o || L.o.tag !== c.tag) return;
     const C = this.game.character.clips, clip = C.clips[def.clip], H0 = clip.p[1];
-    if (def.squat) L.o.poseFix = (pose) => { pose.p[1] = Math.min(pose.p[1], H0); };
+    // (each of these goes before the engine's own fix, never in place of it: that one fades a join in from the pose that was showing and
+    // keeps the pose for the next join; replaced, the uppercut and the pound joined with a pop, and the next move faded in from a stale pose)
+    const eng = L.o.poseFix;
+    if (def.squat) L.o.poseFix = (pose) => { pose.p[1] = Math.min(pose.p[1], H0); eng?.(pose); };
     if (def.rise) {
       const R = rootOf(C, def.clip), e = (t) => def.rise * Math.max(0, R.at(t, _b).y);
       L.o.gravity = 0;
@@ -171,7 +187,7 @@ export class Kick extends Tech {
         const t1 = c.t + dt * (def.rate || 1);
         vel.x *= 0.8; vel.z *= 0.8; vel.y = (e(t1) - e(c.t)) / Math.max(1e-4, dt);
       };
-      L.o.poseFix = (pose) => { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; pose.p[1] = Math.min(pose.p[1], H0); };
+      L.o.poseFix = (pose) => { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; pose.p[1] = Math.min(pose.p[1], H0); eng?.(pose); };
     }
     if (def.turn) {
       const fix = L.o.poseFix, hip = C.index.spine ?? 0;
@@ -217,10 +233,18 @@ export class Kick extends Tech {
     if (L?.o?.tag === c.tag) L.o.yaw = P.bodyYaw;
   }
 
-  reset() { this.moves.cancel(); this.flush(); }
+  reset() { this.stop(); this.flush(); }
+
+  /** Every move stopped where it is, and a whole-body move's carrier with it (the engine's cancel only unhooks it: left to run, a
+   *  ground pound's Launch, six seconds long and weightless, held them in the air with its clip frozen: casebook rule 46). */
+  stop() {
+    const L = this.P.techs.get('launch');
+    if (L?.active && L.o?.tag?.startsWith('kick.')) { L.o.onEnd = null; L.o.time = 0; L.o.gravity = 1; }
+    this.moves.cancel();
+  }
 
   /** `kick.hit { hits }` once a move, with what it struck (the ledger's kicks and the best kick: tracking.js). */
-  flush() { if (this.hits) this.game.events?.emit('kick.hit', { hits: this.hits }); this.hits = 0; }
+  flush() { if (this.hits) this.game.events?.emit('kick.hit', { hits: this.hits, by: 'courier' }); this.hits = 0; }
 
   /** Where the striking limb's tip is (world): the end bone, past it along the bone before it. */
   tip(limb, out) {
@@ -271,10 +295,29 @@ export class Kick extends Tech {
 
   /** The upper-body moves over the core's animation (the whole-body ones are Launch's); standing, their legs too. */
   animate(ch, base, dt) {
+    const cb = this.moves.cur;
+    if (cb?.def.bare && cb.t >= cb.def.bare[0] && cb.t <= cb.def.bare[1]) this.game.belt?.hideWorn(); // (each tool shows itself again from its own tick)
+    this.stepLegs(ch, base);
     if (this.w < 0.005) return;
     const C = ch.clips, m = this.moves.pose(C, (this.buf ||= C.pose()));
     if (m && m.w > 0.001) C.blend(base, m.pose, this.w * m.w, ch.MASK_UPPER, 0);
     this.moves.legs(ch, base, this.w, dt);
+  }
+
+  /** The step in on the punch's own feet (a boxer's shuffle): at the step's speed the core's legs are the run's, and its stride jumped a
+   *  toe 0.38 m in one frame under the fists, three frames in (measured; the first frame's 0.52 m is the core foot IK's stride stretch
+   *  meeting the speed, which this does not touch). The share the engine's standing legs leave (they take over as the step slows),
+   *  over the step's first 0.3 s only, so a walk under the punch comes back eased; at its own weight, not the tech's, which is still
+   *  nothing on the frame the step begins. */
+  stepLegs(ch, base) {
+    const c = this.moves.cur, P = this.P, C = ch.clips;
+    if (!c || c !== this.stepC || c.def.body === 'whole' || !P.grounded) return;
+    const k = THREE.MathUtils.smoothstep(Math.hypot(P.vel.x, P.vel.z), 0.3, 1.6) * (1 - THREE.MathUtils.smoothstep(c.age || 0, 0.15, 0.3));
+    if (k < 0.001) return;
+    if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
+    const pose = C.sample(c.def.clip, c.t, (this._sp ||= C.pose()), false), R = rootOf(C, c.def.clip);
+    if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; }
+    C.blend(base, pose, k, this.LOWER, 1);
   }
 
   label() { return 'KICK'; }

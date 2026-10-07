@@ -123,8 +123,38 @@ the rules before building in the same area; a rule a machine can check goes into
     whatever early return the frame takes. What a place changes of the world (the camera's up, the sky) it puts back on leaving.
 50. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
     runs first, and a page that will not boot is a hard failure.
+51. **A blow sends a thing the way the blow goes.** melee.js gives the direction along the swing, a blade's cut; a thrust (a jab, a
+    front kick, a shove) drives what it strikes away from the striker, and a swung blow keeps only its share of the swing. Read the
+    knock off a stub creature headless (its `knock(v)`), not off the code.
+52. **A hook laid over the engine's calls the engine's.** A tool that adds to a carrier's options (`poseFix`, `drive`, `onEnd`) wraps
+    what is there; replaced, the engine's own work in it (the join's fade from the last pose, and the pose kept for the next join)
+    silently stops, and the next move inherits the stale state.
 
 ## Cases
+
+### 2026-10-07 · The unarmed V and the psygun's moves, reviewed: eight faults found and fixed (Calissa, fistgun review)
+- **Seen, measured headless (`.scratch/fgr.mjs` against a stub creature; films front and side):** (1) the front kick knocked what it
+  struck sideways, `knock(-6.0, 0, 0.2)` facing +Z, the shove `(8.9, 0, -1.0)` (sideways and back toward the Courier), the jab and the
+  cross left and right by turns, and a clapperjar flew the same way; (2) the uppercut and the ground pound replaced the engine's
+  `poseFix`, so neither faded in from the pose before it, and the join state they left (`from`, `fadeT` 0) faded the next move in from a
+  pose long gone; (3) the kick switched off mid ground pound (the System, a reset) left its Launch running: the Courier hung at 0.93 m,
+  the clip frozen, for the Launch's six seconds; (4) R twice in the fan paid 8 Lachryma for no shots (a fan restarted in place); (5) the
+  flourish went on spinning the gun while X or a ladder holstered it; (6) the roundhouse handed its 126 degrees to the facing and left
+  them facing away, so the next press turned the whole body 127 degrees in one frame; (7) a jab begun 1.4 m from something stepped in at
+  6.0 m/s on the run's legs: a toe moved 0.38 m in one frame three frames in; (8) the leg sweep put the hips at 0.35 m with the Soul
+  Brush on the back lying through the legs and the floor. Also `kick.hit` carried no `by`, and the glossary's "sweep" was Dovina's room test.
+- **Cause:** (1) melee.js's sweep direction is tangential, right for a blade; the kick passed it on; (2) `lift()` assigned new hooks
+  over the engine's; (3) `Moveset.cancel` only unhooks the carrier's `onEnd`; (4) the engine lets a special restart itself; (5) the
+  flourish's clock ignored the holster; (6) the kick had no stance, so nothing turned the body back to the aim between moves;
+  (7) the engine's standing legs leave the step's speed to the run's; (8) a floor pose with the kit on (rule 44).
+- **Fix:** (1) `FistMoves.blow` drives every blow away from them, `hit.side` (0.5 for the haymaker, the roundhouse and the leg sweep)
+  keeping a share of the swing: now `(0.2, 0, 6.0)` and `(1.0, 0, 8.9)`; (2) the hooks wrap the engine's; (3) `Kick.stop()` ends a
+  kick-tagged Launch with the moves (they fall and land); (4) the gun's moves take no R while the fan plays; (5) the flourish stops when
+  the gun is put away by other means; (6) `Kick.stance` while a move plays, as every held tool: the body turns back on the core's eased
+  turn within 0.15 s and the next jab begins 3 degrees off; (7) the punch's own legs during the step's first 0.3 s (that jump is gone;
+  the first frame's 0.52 m is the core foot IK's stride stretch reacting to the speed, left to Petra); (8) `bare` on the leg sweep hides
+  the worn tools while the hips are down, as the emotes lying down.
+- **Rule:** 45, 46, 51, 52.
 
 ### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
 - **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,
