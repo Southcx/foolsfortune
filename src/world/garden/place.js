@@ -25,8 +25,7 @@ import { CocoonTree } from '../../vfx/garden/cocoontree.js';
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
 /** The six planetoids (radius in metres; `at` from GARDEN_AT); their names are Espada's (npc/realmnames.js: the Athanor is the furnace,
  *  the Mulberry Grove the spirits', the Chimney the peak). */
-// (the ids renamed to the canon, 2026-10-07; Espada's names and Calissa's planetoid looks still key the old ones until they rename theirs:
-// this bridge goes then)
+// (the ids renamed to the canon, 2026-10-07; Calissa's planetoid looks key the old ones until her branch lands: this bridge goes then)
 const WAS = { athanor: 'furnace', mulberryGrove: 'grove', chimney: 'peak' };
 export const PLANETOID_SITES = [
   { id: 'dantian', r: 20, at: [0, 0, 0], color: 0x9fb4d6 },
@@ -35,7 +34,7 @@ export const PLANETOID_SITES = [
   { id: 'pavilions', r: 14, at: [46, 8, 36], color: 0xcdb2dc },
   { id: 'mulberryGrove', r: 16, at: [48, -6, -38], color: 0x7cb59a },
   { id: 'chimney', r: 8, at: [0, 40, -66], color: 0xa29c94 },
-].map((p) => ({ ...p, name: NAMES[p.id]?.name || NAMES[WAS[p.id]]?.name || p.id }));
+].map((p) => ({ ...p, name: NAMES[p.id]?.name || p.id }));
 /** The lotuses' flights, both ways: the Dantian to each, and round the ring. */
 export const LINKS = [['dantian', 'terraces'], ['dantian', 'athanor'], ['dantian', 'pavilions'], ['dantian', 'mulberryGrove'], ['mulberryGrove', 'chimney'], ['terraces', 'athanor'], ['pavilions', 'mulberryGrove'], ['terraces', 'chimney']];
 export const MAX_BEDS = 8, MAX_SLOTS = 8;
