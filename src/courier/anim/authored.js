@@ -104,7 +104,7 @@ function ladder(A, ch) {
 // ---------------------------------------------------------------------------------------
 // HANGING: from a ledge (both palms on its top, fingers over the lip, the wall a hand's breadth
 // in front of the chest), or from an overhead bar (both hands on it, fingers curled over).
-//   hangLedge   idle: a slow dangle, the legs swinging a little
+//   (the ledge's idle is the suite's Trav_LedgeHang now: moves/hang.js. The bar's is still authored: the suite has none)
 //   hangShimmy  along the ledge to the character's left (mirror it for the right): hands take
 //               turns, the planted one sliding back relative to the body; one cycle is
 //               HANG.shimmyCycle of travel, so it plays by distance like the ladder
@@ -132,16 +132,6 @@ function hang(A, ch) {
     this.hand(side, V3(x, H.drop + lift, z), V3(sg * 0.55, 1.15, -0.25), V3(0, -0.15, 1), V3(0, -1, 0.1));
     this.curl(side, curl);
   };
-
-  A.clip('hangLedge', {
-    dur: 3, loop: true, base: 'idle',
-    build(u) {
-      body.call(this, u, sw(u), 16);
-      legs.call(this, u, 1);
-      ledgeHand.call(this, 'L', H.handX, H.wall + H.over, 0.8);
-      ledgeHand.call(this, 'R', -H.handX, H.wall + H.over, 0.8);
-    },
-  });
 
   // shimmy: to the character's left (+X). x(planted) slides -X relative to the body.
   A.clip('hangShimmy', {

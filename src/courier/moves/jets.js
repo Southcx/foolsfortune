@@ -10,6 +10,7 @@
 //
 // They are techs (courier/moves/techs.js): switched off (`T.tech.<id>.enabled`, the chat line's /art), the core movement is exactly
 // what it was. Prior art: Super Mario Sunshine (EAD, 2002); Jak II's jet board for the skim's feel of speed on water.
+// The hover's body is the suite's glide (Air_Glide: arms out, leaning into the way they steer) over the core's air pose, by its weight.
 //
 //   new Hover(techs) / new Rocket(techs) / new Skim(techs)   (added before the swim, so a skim is chosen before the water takes you)
 // ---------------------------------------------------------------------------------------
@@ -21,6 +22,8 @@ import { ASPECT_COLOR } from '../../world/ground/paintmap.js';
 import { stream } from '../../core/rng.js';
 
 const simRand = stream('courier/moves/jets');
+/** The hover's pose: Air_Glide over the air, at up to `w` (a little of the air loop's legs left under it). */
+const GLIDE = { clip: 'Air_Glide', w: 0.9 };
 const _v = new THREE.Vector3(), _d = new THREE.Vector3();
 
 /** The jets' spray under the Courier: drops in the load's colour, a little paint where it falls, rings on water. */
@@ -58,6 +61,7 @@ export class Hover extends Tech {
     jetSpray(this, 1);
     return true;
   }
+  animate(ch, base) { if (ch.clips.clips[GLIDE.clip]) ch.clips.blend(base, ch.clips.sample(GLIDE.clip, ch.time, ch.P.tmp), this.w * GLIDE.w); }
   label() { return 'HOVER'; }
 }
 

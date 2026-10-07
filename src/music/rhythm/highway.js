@@ -2,22 +2,23 @@
 // THE HIGHWAY (a placeholder: its look is Calissa's to make): the rhythm mode's lanes, drawn on a canvas over the scene. Ten lanes in
 // two hands of five, each in its note's colour (the Crucibelle's DEGREE_COLOR: the same key is always the same colour); the upper five
 // carry a white core. Notes fall to the line; a press lights its lane (white for a perfect, its colour for a great, dim for a good),
-// a miss darkens it. No words and no numbers: the line glows brighter the longer the combo runs, and a thread along the top fills as
-// the song goes.
+// a miss darkens it. No numbers: the line glows brighter the longer the combo runs, and a thread along the top fills as the song goes.
+// Each judged press is rated in the maker's words over the line (Miss! to Wow: ui/rating.js, the owner's ask, 2026-10-07).
 //
 // Prior art: StepMania's and Guitar Hero's note highway (notes scroll to a fixed judgement line), Beatmania's two hands of keys, and
 // Guitar Hero's star power (the board itself glowing with the streak, instead of a number).
 //
-//   const H = new Highway()   H.show(chart)   H.draw(t, { flash, combo, progress })   H.hit(lane, grade)   H.hide()
+//   const H = new Highway()   H.show(chart)   H.draw(t, { flash, combo, progress })   H.hit(lane, grade, { off, combo })   H.hide()
 // ---------------------------------------------------------------------------------------
 import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
+import { Ratings } from '../../ui/rating.js';
 
 const AHEAD = 1.6; // (seconds of notes above the line)
 const W = 34, GAP = 22, H = 360; // (a lane's width, the gap between the hands, the highway's height: CSS pixels)
 const hex = (c, a = 1) => `rgba(${(c >> 16) & 255},${(c >> 8) & 255},${c & 255},${a})`;
 
 export class Highway {
-  constructor() { this.canvas = null; this.lit = new Float32Array(10); this.litGrade = new Array(10).fill(null); }
+  constructor() { this.canvas = null; this.lit = new Float32Array(10); this.litGrade = new Array(10).fill(null); this.ratings = new Ratings(); this.combo = 0; }
   show(chart) {
     this.chart = chart;
     if (!this.canvas) {
@@ -26,15 +27,16 @@ export class Highway {
       Object.assign(c.style, { position: 'fixed', left: '50%', bottom: '8%', transform: 'translateX(-50%)', width: `${W * 10 + GAP}px`, height: `${H}px`, pointerEvents: 'none', zIndex: 5 });
       this.g = c.getContext('2d'); this.g.scale(2, 2);
     }
-    document.body.appendChild(this.canvas);
+    document.body.appendChild(this.canvas); this.ratings.attach(); this.combo = 0;
   }
-  hide() { this.canvas?.remove(); }
+  hide() { this.canvas?.remove(); this.ratings.detach(); }
   laneX(l) { return l * W + (l >= 5 ? GAP : 0); }
-  /** A judged press (or a miss) lights its lane. */
-  hit(lane, grade) { this.lit[lane] = 1; this.litGrade[lane] = grade; }
+  /** A judged press (or a miss) lights its lane and is rated over the line (off: seconds late; combo: the run with this note). */
+  hit(lane, grade, { off = null, combo = grade === 'miss' ? 0 : this.combo + 1 } = {}) { this.lit[lane] = 1; this.litGrade[lane] = grade; this.ratings.call(grade, { off, combo }); }
 
   draw(t, { combo = 0, progress = 0, dt = 1 / 60 } = {}) {
     const g = this.g; if (!g) return;
+    this.combo = combo; this.ratings.update(dt);
     const line = H - 40, px = line / AHEAD;
     g.clearRect(0, 0, W * 10 + GAP, H);
     for (let l = 0; l < 10; l++) {

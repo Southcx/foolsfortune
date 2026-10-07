@@ -1,17 +1,21 @@
 // ---------------------------------------------------------------------------------------
-// THE CUTLASS: the Sondelass's melee form, and everything a blade needs to be a good one.
+// THE CUTLASS: the Sondelass's melee form, and everything a blade needs to be a good one. Its strokes are the Courier's own suite
+// (Sond_*), run by the shared combo engine (tools/moveset.js, the grammar every tool keeps):
 //
-//   LMB       a three-stroke combo, from the Universal Animation Library's sword clips (CC0) over the upper body, so the legs keep
-//             running. A stroke has a wind-up, a window in which the blade can hurt what it passes through, and a window in which
-//             the next press chains; the third is the overhead one and cuts hardest. Each leaves a ribbon of light (trail.js).
-//   RMB tap   the STINGER: a committed thrust. They lunge six metres in a quarter of a second, blade first, the Sword_Dash clip
-//             for the whole body, and everything in the line is pierced and thrown. (courier/moves/launch.js carries them past the core's
-//             speed cap.) It costs a little of the mind.
-//   RMB hold  BLADE MODE (blade.js): time all but stops, the mouse turns a line of light through the target, LMB cuts along it.
-//   Z / MMB   lock on (lockon.js): the camera and the body hold the target, strokes and the stinger go toward it, A/D strafe it.
-//   V (hold)  GUARD: the blade comes up (the Sword_Block clip). Pressed in time (the first 0.28 s), a projectile that arrives is
-//             PARRIED: sent back where they look (parry.js, the rule the kick shares); later, it is only turned aside. Moving with the
-//             guard up is slower, and the body faces the aim.
+//   LMB         four strokes, the fourth the whole body's (a leap and a cut); after a pause at the first, a THRUST and its follow;
+//               after a pause at the second, the three wide arcs of the JRPG string
+//   hold LMB    the CHARGE: the blade drawn back while held, the charged slash on release
+//   S + LMB     the LAUNCHER: up they go, and what it cuts goes with them; LMB in the air: two cuts, then the PLUNGE, the blade
+//               driven down into the ground with a blast round them
+//   sprinting   LMB: the DASH SLASH (its own 2.3 m, carried)
+//   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
+//   RMB tap     the STINGER: a committed thrust. They lunge six metres in a quarter of a second, the suite's thrust held out, and
+//               everything in the line is pierced and thrown. (courier/moves/launch.js carries them past the core's speed cap.)
+//   RMB hold    BLADE MODE (blade.js): time all but stops, the mouse turns a line of light through the target, LMB cuts along it.
+//   MMB         lock on (lockon.js): the camera and the body hold the target, strokes and the stinger go toward it, A/D strafe it.
+//   V (hold)    GUARD: the blade comes up (Sond_Block). Pressed in time (the first 0.28 s), a projectile that arrives is PARRIED
+//               (Sond_Parry): sent back where they look (parry.js, the rule the kick shares); later, it is only turned aside. LMB with
+//               the guard up is the COUNTER: the spin slash, and the guard drops.
 //
 // Prior art, and what was taken:
 //  - Every third-person action game's light combo (Zelda's, Dark Souls' R1 string): a buffered press inside the chain window
@@ -31,16 +35,34 @@ import { BLADE_LEN } from './model.js';
 import { Trail } from '../../vfx/trail.js';
 import { BladeMode } from './blade.js';
 import { deflect, guard } from '../../courier/parry.js';
-import { arcAt } from '../viewmodel.js';
-import { measureSwing, sweep as sweepArc, magnet } from '../melee.js';
+import { Moveset, rootOf } from '../moveset.js';
 
-// (the clip time each stroke ends at, the chain window, and the clip that eases them back to guard if the combo stops there: UAL's
-// Regular_A / _B each have a recovery, _A_Rec and _B_Rec. When the blade can hurt is not typed here: it is measured from the clip, melee.js)
-const STROKES = [
-  { clip: 'swordA', dur: 0.43, chain: [0.24, 0.43], rec: 'swordARec', dmg: 1.0, lunge: 3.2, power: 1.2, trail: [0.14, 0.36] },
-  { clip: 'swordB', dur: 0.53, chain: [0.26, 0.53], rec: 'swordBRec', dmg: 1.1, lunge: 3.2, power: 1.3, trail: [0.14, 0.36] },
-  { clip: 'swordC', dur: 1.3, chain: [], dmg: 1.9, lunge: 5, power: 2.0, trail: [0.52, 0.8], fade: 0.45 },
-];
+// The strikes are the Courier's own suite (melee.glb's Sond_*), played by the shared combo engine (tools/moveset.js): the moves below
+// are its table. Clip seconds throughout; when the blade can hurt is not typed here: it is measured from the clip (melee.js).
+const MOVES = {
+  c1: { rule: 'combo1', clip: 'Sond_Combo1', rate: 1.1, chain: [0.22, 0.75], to: 0.85, fade: 0.3, hit: { power: 1.2, dmg: 1.0 }, lunge: 3.2, arc: 'r2l' },
+  c2: { rule: 'combo2', clip: 'Sond_Combo2', rate: 1.1, chain: [0.26, 0.8], to: 0.9, fade: 0.3, hit: { power: 1.3, dmg: 1.1 }, lunge: 3.2, arc: 'l2r' },
+  c3: { rule: 'combo3', clip: 'Sond_Combo3', rate: 1.1, chain: [0.42, 0.95], to: 1.05, fade: 0.35, hit: { power: 1.5, dmg: 1.3 }, lunge: 3.6, arc: 'r2l' },
+  c4: { rule: 'combo4', clip: 'Sond_Combo4', body: 'whole', root: 'xz', hit: { power: 2.0, dmg: 1.9, push: 6 }, heat: 1, arc: 'over' },
+  // the pause strings: after the first stroke, a thrust and its follow; after the second, the three wide arcs (the JRPG string)
+  t1: { rule: 'pause1', clip: 'Sond_Thrust', rate: 1.1, chain: [0.2, 0.7], to: 0.8, fade: 0.3, hit: { power: 1.5, dmg: 1.3, push: 4 }, lunge: 4, arc: 'raise' },
+  t2: { rule: 'pause3', clip: 'Sond_ThrustCombo', body: 'whole', root: 'xz', hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'raise' },
+  j1: { rule: 'pause1', clip: 'Sond_JrpgCombo1', rate: 1.1, chain: [0.45, 0.85], to: 0.95, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.6, arc: 'r2l' },
+  j2: { rule: 'pause2', clip: 'Sond_JrpgCombo2', rate: 1.1, chain: [0.6, 0.95], to: 1.05, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.6, arc: 'l2r' },
+  j3: { rule: 'pause3', clip: 'Sond_JrpgCombo3', body: 'whole', hit: { power: 2.2, dmg: 2.0, push: 7, lift: 3 }, heat: 1, arc: 'over' },
+  // S + LMB: the launcher lifts them (its own 0.92 m) and what it strikes; LMB in the air: two cuts and the plunge
+  up: { rule: 'launcher', clip: 'Sond_Launcher', body: 'whole', root: 'xyz', chain: [0.3, 1.08], hit: { power: 1.4, dmg: 1.1, lift: 9.5, push: 1 }, arc: 'over' },
+  a1: { rule: 'air1', clip: 'Sond_AirCombo1', body: 'whole', gravity: 0.12, chain: [0.22, 0.8], hit: { power: 1.2, dmg: 1.0, lift: 4, push: 1.5 }, arc: 'r2l' },
+  a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.12, chain: [0.36, 1.0], hit: { power: 1.3, dmg: 1.1, lift: 4, push: 2 }, arc: 'l2r', heat: 0.5 },
+  a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', plunge: { hold: 0.32, speed: 26 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 7, lift: 5 }, heat: 1, arc: 'over' },
+  // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard, and the special (R)
+  dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
+  hold: { clip: 'Sond_ChargeHold' },
+  burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
+  spin: { rule: 'combo3', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
+  tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
+};
+const STRINGS = { ground: ['c1', 'c2', 'c3', 'c4'], pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
 const STING = { dash: 0.26, speed: 30, dmg: 2.4, power: 3.0, reach: 2.0, radius: 0.85, cost: 6, cool: 0.5 };
 const PARRY_WIN = 0.28, HOLD = 0.16;
@@ -58,27 +80,25 @@ function segDist(a, b, p) {
 export class Cutlass {
   constructor(tool) {
     this.tool = tool;
-    this.stroke = null; // the one being played
-    this.t = 0;
-    this.n = -1; // the last stroke of the combo
-    this.buffer = 0;
-    this.idle = 9; // time since the last stroke ended
-    this.hit = new Set();
-    this.combo = 0;
     const g = tool.game;
     this.trail = g.vfx?.swing('swing.cutlass', { tint: 0xffb27a, tip: 0xfff1dc }) || new Trail(g.scene, { life: 0.3, max: 48, color: 0xffb27a, tip: 0xfff1dc, fade: 1.5 }); // (its look: vfx/library.js)
+    this.moves = new Moveset(tool, {
+      id: 'cutlass', rules: 'sondelass', moves: MOVES, strings: STRINGS, reach: REACH, pot: DMG, k: 1.4, cause: 'sliced', events: { swing: 'cut.swing', hit: 'cut.hit' },
+      trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b),
+    });
     this.blade = new BladeMode(this);
     this.rmbT = -1; // RMB down: how long (a tap is a stinger, a hold is blade mode)
     this.stinging = false; this.stCool = 0; this.stHit = new Set(); this.stPrev = new THREE.Vector3(); this.stDir = new THREE.Vector3(0, 0, 1); this.ghostT = 0;
     this.ghosts = [];
-    this.guardOn = false; this.guardT = 0; this.guardW = 0;
+    this.guardOn = false; this.guardT = 0; this.guardW = 0; this.parryT = 9;
   }
-  get busy() { return !!this.stroke || this.stinging || this.blade.active || this.guardOn; }
-  get playing() { return !!this.stroke || !!this.rec || this.blade.active || this.blade.k > 0.05 || this.guardW > 0.02; }
+  get busy() { return this.moves.busy || this.stinging || this.blade.active || this.guardOn; }
+  get playing() { return this.moves.playing || this.blade.active || this.blade.k > 0.05 || this.guardW > 0.02 || this.parryT < 0.9; }
   get game() { return this.tool.game; }
+  get combo() { return this.moves.combo; }
 
   cancel() {
-    this.stroke = null; this.rec = null; this.buffer = 0; this.rmbT = -1; this.guardOn = false;
+    this.moves.cancel(); this.rmbT = -1; this.guardOn = false;
     this.blade.exit('stow');
     this.game.lock?.release('stow');
     this.trail.gap();
@@ -86,7 +106,7 @@ export class Cutlass {
   }
 
   // ---------------------------------------------------------------- aim
-  /** Where a stroke or a thrust goes: toward the lock, or where they are looking. */
+  /** Where a thrust goes: toward the lock, or where they are looking. */
   aimDir(out, flat = true) {
     const g = this.game, P = this.tool.P;
     if (g.lock?.active) {
@@ -100,35 +120,18 @@ export class Cutlass {
     return out.normalize();
   }
 
-  // ---------------------------------------------------------------- strokes
-  start(def, n) {
-    const P = this.tool.P, g = this.game;
-    this.stroke = def; this.t = 0; this.tPrev = 0; this.n = n; this.hit.clear(); this.buffer = 0; this.rec = null;
-    def.track ??= measureSwing(g.character, def.clip);
-    // toward the lock (or the aim, drawn to the best thing in front of them: melee.js magnet): the body turns to it, and steps into it
-    const f = this.aimDir(_a);
-    let lunge = def.lunge * (P.grounded ? 1 : 0.5);
-    const m = !g.lock?.active && magnet(g, P, f, { range: 4.2, cone: 1.0 });
-    if (m) { f.set(m.pos.x - P.pos.x, 0, m.pos.z - P.pos.z).normalize(); lunge = Math.min(lunge, Math.max(0, m.dist - m.r - 1.0) * 3.2); }
-    P.bodyYaw = Math.atan2(f.x, f.z);
-    if (g.lock?.active) { g.lock.point(_e); lunge = Math.min(lunge, Math.max(0, _e.distanceTo(P.pos) - 1.3) * 3.2); } // (never through it)
-    P.impulse(_b.copy(f).setY(0).normalize().multiplyScalar(lunge), 'cut');
-    sfx.slash(false);
-    this.combo = n + 1;
-    g.events?.emit('cut.swing', { n });
-    this.tool.track?.play(this.tool.track.c.clips['stance:cutlass'] ? 'stance:cutlass' : 'swordIdle', 0, 0.2);
-  }
-
+  // ---------------------------------------------------------------- strokes: the moveset reads LMB (and R); the cutlass keeps RMB and V
   update(dt, inp) {
     const P = this.tool.P, g = this.game, raw = g.rawDt || dt;
-    this.idle += dt;
-    this.stCool -= dt;
+    this.stCool -= dt; this.parryT += dt;
     // the blade is read in real seconds: what the world is doing does not change how fast they cut
     if (this.blade.active || this.blade.k > 0 || this.blade.queue.length) { this.blade.update(dt, inp); if (this.blade.active) return; }
     if (inp.wasPressed('Mouse1')) g.lock.toggle();
+    // LMB with the guard up: the counter (the spin), and the guard drops
+    if (this.guardOn && inp.wasPressed('Mouse0') && !this.moves.busy) { this.guardOn = false; this.tool.P.guarding = false; this.moves.begin('spin', 'counter'); }
     this.guardUpdate(dt, inp);
     // RMB: a tap is the stinger, a hold is blade mode
-    if (inp.wasPressed('Mouse2') && !this.stroke && !this.stinging && !this.guardOn) this.rmbT = 0;
+    if (inp.wasPressed('Mouse2') && !this.moves.whole && !this.stinging && !this.guardOn) this.rmbT = 0;
     if (this.rmbT >= 0) {
       this.rmbT += raw;
       if (!inp.isDown('Mouse2')) { this.rmbT = -1; if (!this.busy && this.stCool <= 0) this.stinger(); }
@@ -139,37 +142,7 @@ export class Cutlass {
       }
     }
     if (this.stinging) return;
-    if (this.rec) { const r = this.rec; r.t += dt * (Math.hypot(P.vel.x, P.vel.z) > 2 ? 2.2 : 1); if (r.t >= r.dur) this.rec = null; }
-    if (!this.stroke) {
-      if (this.idle > 0.9) this.n = -1;
-      if (inp.wasPressed('Mouse0') && P.techs.active?.id !== 'swim' && !this.guardOn) this.start(STROKES[(this.n + 1) % STROKES.length], (this.n + 1) % STROKES.length);
-      return;
-    }
-    const s = this.stroke;
-    this.tPrev = this.t; this.t += dt;
-    if (inp.wasPressed('Mouse0')) this.buffer = 0.35;
-    this.buffer -= dt;
-    this.sweep();
-    // the next stroke: a press inside the chain window
-    if (s.chain.length && this.buffer > 0 && this.t >= s.chain[0] && this.t <= s.chain[1]) { this.start(STROKES[this.n + 1], this.n + 1); return; }
-    if (this.t >= s.dur) { this.stroke = null; this.idle = 0; this.trail.gap(); if (s.rec) this.rec = { clip: s.rec, t: 0, dur: 0.75 }; }
-  }
-
-  /** What the blade swept since the last frame (melee.js: a sector measured from the clip), struck once a stroke each. */
-  sweep() {
-    const g = this.game, P = this.tool.P, s = this.stroke;
-    let struck = 0;
-    sweepArc(g, P, P.bodyYaw, s.track, this.tPrev, this.t, {
-      reach: REACH, seen: this.hit,
-      hit: (kind, ent, at, dir) => {
-        struck++;
-        if (kind === 'thing') { ent.struck?.(at, dir, s.power, 'courier', 'cutlass'); return; }
-        if (kind === 'pot') { g.breakables.damage(ent, DMG * s.dmg, at, dir, s.power); g.events?.emit('cut.hit', { what: 'pot', combo: this.combo }); }
-        else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, s.power, 'sliced'); g.events?.emit('cut.hit', { what: 'clapper', combo: this.combo }); }
-        else { g.creatures.strike(ent, at, dir, 1.4 * s.power, 'sliced'); g.events?.emit('cut.hit', { what: ent.kind, combo: this.combo }); }
-      },
-    });
-    if (struck) { this.tool.model.bladeSegment(_a, _b); this.impact(s.dmg, _a, _b); }
+    this.moves.update(dt, inp, { allow: P.techs.active?.id !== 'swim' && !this.guardOn });
   }
 
   /** What a hit does to the world: the sound, the shake, the flash of the cut, and the stop (a beat of nearly nothing). */
@@ -196,14 +169,17 @@ export class Cutlass {
     sfx.stinger();
     g.events?.emit('cut.stinger', { locked: !!g.lock?.active });
     P.fovPunch = Math.max(P.fovPunch || 0, 9);
-    this.tool.track?.play('swordIdle', 0, 0.1);
+    this.tool.track?.play('Sond_Idle', 0, 0.1);
+    const root = rootOf(g.character.clips, 'Sond_Thrust');
+    // (the suite's thrust: its wind-up in a blink, the point held out for the whole lunge, then the way back; its own step taken out of the hips)
+    const map = (tt) => (tt < 0.07 ? (tt / 0.07) * 0.17 : tt < STING.dash + 0.04 ? 0.17 + ((tt - 0.07) / (STING.dash - 0.03)) * 0.07 : 0.24 + (tt - STING.dash - 0.04) * 1.6);
     launch.go(dir.clone().multiplyScalar(speed), {
       time, gravity: 0.12, drag: 0, tag: 'stinger', yaw: Math.atan2(dir.x, dir.z), endSpeed: 6,
-      clip: 'swordDash',
-      // (the clip: the wind-up in a blink, the lunge held for the whole thrust, then the way back)
-      clipMap: (tt) => (tt < 0.07 ? (tt / 0.07) * 0.22 : tt < STING.dash + 0.04 ? 0.22 + ((tt - 0.07) / (STING.dash - 0.03)) * 0.33 : 0.55 + (tt - STING.dash - 0.04) * 1.6),
+      clip: 'Sond_Thrust',
+      clipMap: map,
+      poseFix: root ? (pose) => { root.at(map(launch.clipT), _p); pose.p[0] -= _p.x; pose.p[2] -= _p.z; } : null,
       onStep: (dt) => this.stingStep(dt),
-      onEnd: () => { this.stinging = false; this.idle = 0; this.trail.gap(); },
+      onEnd: () => { this.stinging = false; this.trail.gap(); },
     });
     const lt = P.techs.get('launch'); if (lt) lt.blendIn = 30;
   }
@@ -261,7 +237,7 @@ export class Cutlass {
   // ---------------------------------------------------------------- the guard
   guardUpdate(dt, inp) {
     const P = this.tool.P, g = this.game;
-    const want = inp.isDown('KeyV') && !this.stroke && !this.stinging;
+    const want = inp.isDown('KeyV') && !this.moves.busy && !this.stinging;
     if (want && !this.guardOn) { this.guardOn = true; this.guardT = 0; sfx.guardUp?.(); g.events?.emit('guard.up', {}); }
     else if (!want && this.guardOn) this.guardOn = false;
     this.guardW = THREE.MathUtils.damp(this.guardW, this.guardOn ? 1 : 0, 16, dt);
@@ -273,23 +249,20 @@ export class Cutlass {
     const f = P.lookDir(_a).setY(0).normalize();
     const at = _b.set(P.pos.x, P.pos.y + 1.1, P.pos.z).addScaledVector(f, 0.8);
     if (this.guardT <= PARRY_WIN) {
-      if (deflect(g, { at, radius: 2.2, speedMin: 3, outMin: 13, assist: 0.5, iframes: 0.4, tool: 'cutlass' })) { this.guardT = PARRY_WIN + 1; g.lachryma.gain?.(2, 'parry'); }
+      if (deflect(g, { at, radius: 2.2, speedMin: 3, outMin: 13, assist: 0.5, iframes: 0.4, tool: 'cutlass' })) { this.guardT = PARRY_WIN + 1; this.parryT = 0; g.lachryma.gain?.(2, 'parry'); }
     } else if (guard(g, { at, radius: 1.8, tool: 'cutlass' })) g.lachryma.drain?.(3, 'guard');
   }
 
   // ---------------------------------------------------------------- what is drawn
   /** After the tool has been placed for the frame: the blade's ribbon, and the afterimages' fade. */
   afterHands(dt) {
-    const m = this.tool.model;
-    const s = this.stroke;
-    const swinging = s && this.t >= s.trail[0] && this.t <= s.trail[1];
-    if ((swinging || this.stinging) && m.bladeOut > 0.5) {
-      m.bladeSegment(_a, _b);
-      this.trail.push(_a, _b);
-    } else if (!swinging && !this.stinging) this.trail.gap();
-    this.trail.setColors(this.stinging ? 0xffe0b0 : this.stroke && this.n === 2 ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc);
-    this.trail.power = this.stinging ? 1.5 : this.stroke && this.n === 2 ? 2.2 : 1; // (the third stroke and the stinger shed more)
-    this.trail.update(dt);
+    const m = this.tool.model, c = this.moves.cur;
+    if (this.stinging && m.bladeOut > 0.5) { m.bladeSegment(_a, _b); this.trail.push(_a, _b); this.trail.update(dt); }
+    else if (m.bladeOut > 0.5) this.moves.afterHands(dt);
+    else { this.trail.gap(); this.trail.update(dt); }
+    const hot = c && (c.def.heat || 0) > 0.6;
+    this.trail.setColors(this.stinging ? 0xffe0b0 : hot ? 0xff7a4a : 0xffb27a, this.stinging ? 0xffffff : 0xfff1dc);
+    if (this.stinging) this.trail.power = 1.5; // (the finishers and the stinger shed more)
     for (let i = this.ghosts.length - 1; i >= 0; i--) {
       const gh = this.ghosts[i];
       gh.age += dt;
@@ -303,31 +276,19 @@ export class Cutlass {
   fpArc() {
     if (this.blade.active) return this.blade.swing > 0 ? { arc: this.blade.swingKind % 2 ? 'l2r' : 'r2l', u: 1 - this.blade.swing } : { arc: 'raise', u: 0.4 };
     if (this.guardW > 0.02) return { arc: 'raise', u: 0.5 * this.guardW };
-    const s = this.stroke;
-    if (!s) return null;
-    return { arc: ['r2l', 'l2r', 'over'][this.n] || 'r2l', u: arcAt(this.t, s.track?.strike || [0.2, 0.3], s.dur) };
+    return this.moves.fpArc();
   }
 
-  /** The clip layer: { pose, w } while a stroke, the guard or a blade-mode cut is playing. */
+  /** The clip layer: { pose, w } while a stroke, the guard, a parry or a blade-mode cut is playing. */
   pose(C, out) {
     const b = this.blade;
     if (b.active || b.k > 0.05) {
-      if (b.swing > 0) { const B = b.swingKind % 2 === 1; C.sample(B ? 'swordB' : 'swordA', (1 - b.swing) * (B ? 0.53 : 0.43), out, false); return { pose: out, w: 1 }; }
-      C.sample('swordC', 0.22, out, false);
+      if (b.swing > 0) { const B = b.swingKind % 2 === 1; C.sample(B ? 'Sond_Combo2' : 'Sond_Combo1', 0.05 + (1 - b.swing) * (B ? 0.3 : 0.26), out, false); return { pose: out, w: 1 }; }
+      C.sample('Sond_ChargeHold', 0.4, out, false);
       return { pose: out, w: 0.85 * b.k };
     }
-    if (this.guardW > 0.02) { C.sample('block', 0.42, out, false); return { pose: out, w: this.guardW }; }
-    const s = this.stroke;
-    if (!s) {
-      // the combo stopped: the recovery clip brings the blade back to guard, and lets go as they move off
-      const r = this.rec;
-      if (!r) return null;
-      C.sample(r.clip, r.t, out, false);
-      return { pose: out, w: 1 - THREE.MathUtils.smoothstep(r.t, r.dur - 0.3, r.dur) };
-    }
-    C.sample(s.clip, this.t, out, false);
-    // (the swing at full weight to its end: it fades only on the last stroke, which has no recovery of its own, over its follow-through)
-    const w = Math.min(1, this.t / 0.05) * (s.fade ? 1 - THREE.MathUtils.smoothstep(this.t, s.dur - s.fade, s.dur) : 1);
-    return { pose: out, w };
+    if (this.parryT < 0.9) { C.sample('Sond_Parry', 0.12 + this.parryT, out, false); return { pose: out, w: 1 - THREE.MathUtils.smoothstep(this.parryT, 0.6, 0.9) }; } // (the deflect: the suite's parry, struck through)
+    if (this.guardW > 0.02) { C.sample('Sond_Block', 0.4, out, false); return { pose: out, w: this.guardW }; }
+    return this.moves.pose(C, out);
   }
 }

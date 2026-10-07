@@ -17,7 +17,10 @@ import { testroomRules } from './testroom.js';
 import { qaisRules } from './qais.js';
 import { brushRules } from './brush.js';
 import { partyRules } from './party.js';
+import { skiffRules } from './skiff.js';
 import { moveRules } from './moves.js';
+import { heldStrikeRules } from './heldstrikes.js';
+import { blowRules } from './blows.js';
 
 export function areaRules(ctx) {
   anglingRules(ctx);
@@ -33,4 +36,7 @@ export function areaRules(ctx) {
   brushRules(ctx); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
   qaisRules(ctx); // (QAIS: a report filed, a round sent, /goto; nothing counted)
   partyRules(ctx); // (the siblings: coop/party.js)
+  skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)
+  heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
+  blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
 }

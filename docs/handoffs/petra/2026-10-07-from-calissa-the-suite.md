@@ -1,0 +1,67 @@
+**2026-10-07, from Calissa (Art): the Courier's own animation suite is in, and it crosses your lane**
+
+The owner's order to me: "a massive animation overhaul ... implement them" (melee combos, air combos, specials, Solar Skiffing, the
+busking words). Your files carry most of it. Every crossing is listed below for your review, and I'll take back anything you'd rather do
+yourself.
+
+**For publishing (needed, or the game does not boot):** three files now sit beside the bundle and are fetched, not inlined:
+- `dist/assets/core-*.bin` (2.65 MB, at boot: only the 155 clips the code names; `node scripts/bake_suite.mjs --check` says whether it
+  is current);
+- `social-*.bin` (5.80 MB, on the first emote, the overture's wave, the workbench or the ROM learner);
+- `chess-*.bin` (0.4 MB, the title's pieces, fetched on its first frame and let go when it ends).
+All three are application/octet-stream. game.js is unchanged in size.
+
+**The gate at ce5c63c** (main a7eb1f1 and Dovina's d1df291 merged in): check, unbuilt, build, stress 1 and 2 (`--party`), the Dunemaw
+playtest (8/8), replay (exact), QAIS and contracts (22/22) all pass. Perf fails one line, the heap: **337 MB against the 330 budget**.
+Main itself measures **332** under the same perf script today, so it is over too, since the 324 baseline (dbbc8c9). Measured side by side
+on built bundles, the suite costs 2 to 3 MB: 2.5 MB at boot, 2 to 3 MB after perf's tour, 5 MB in perf's own reading. Most of it is the
+boot pack kept for lazy decoding (2.65 MB). Decoded clips are 1.4 MB after the tour (37 of 244). Boot is 26.7 s against 31.8, and the same
+side by side. The budget is yours to rule on. If it holds at 330, the next cut I'd make is to fetch the held tools' moves (about 100 of
+core.bin's 155 clips) when the first tool is drawn.
+
+**What others meet**
+- `game.clipPack` (the pack; `.social` is a promise for the rest). 51 bones now: spine005 sits between spine004 and head (parent
+  first, for mirrorPose). Old clips are widened and keep their names. 14 old names now play their suite twins (`ual:<name>` keeps the
+  old).
+- `tools/moveset.js`, one combo engine (its header is the contract). Every melee tool is on it, and it reads Dovina's
+  `progress/combat/moves.js` (`rule`, `open`, `worth`, `struck`, `spec.sound`).
+- `Launch.go` takes `drive(vel, dt)` and `poseFix(pose)`, and a `go` while a launch is on restarts in place (casebook 33).
+- `melee.js` `measureSwing(ch, clip, { limb })`: 'R' (the default, as before), 'L', 'footR', 'footL', 'auto'.
+- Events, all with `by`: `move.launch`, `move.air`, `move.special` (Dovina's rules); `skiff.summon / .mount / .park / .recall / .bail
+  {why, speed}` and `skiff.ollie {geyser}`.
+- Keys: R is every tool's special; F parks and mounts the skiff; Y summons and recalls it.
+
+**The air hang (Dovina asked me to tell you):** an air string hangs the Courier at gravity x0.12 while a stroke plays, and each hit
+holds the rise at 0.6 m/s. It lives in the engine (`HANG`), never in `core/config.js`. With the tool away the core movement is today's
+(the replay test is exact).
+
+**The siblings** (your condition): they share the Courier's rig, so they play the same new clips. `docs/ref/suite_siblings.jpg`
+shows the Courier with the party called, idle, running, jumping, flipping and landed, from the front and the side. Nothing broke on
+their looks.
+
+**Files outside my lane** (each: why)
+- `src/courier/anim/suite.js` (new) and `romdata.js` (relearned): the pipeline (CLAUDE.md gives me the animation pipeline).
+- `src/courier/character.js`: spine005 in MASK_UPPER and MASK_ARM (one line).
+- `src/main.js`: `loadClips` in place of `decodeAnims`; `game.clipPack`.
+- `src/courier/moves/launch.js`: drive, poseFix and re-entry.
+- `src/tools/moveset.js` (new), `src/tools/melee.js` (limb), `src/tools/sondelass/{cutlass,sondelass}.js`, `angling/angler.js`: the
+  cutlass on the engine, and the rod's suite clips.
+- `src/courier/skiff/{skiff,boat}.js`, `rider.js` (new): the phases, the rider, the telescoping mast.
+- `src/feedback/tracking/skiff.js` (new), `heldstrikes.js` (new), `rules.js`, `tracking.js` (the skiff's first-arrival line and the
+  set's word), `help/pages.js` (skiff keys).
+- `src/title/board.js`: the owner's chess pieces (the title's art is mine).
+- The builders' areas, each listed in its own merge commit: the Soul Brush, the Dreamvane, the Crucibelle and the busking body
+  (`rhythmhold.js`), the Lockheart, the Veritome, `tools/toolbody.js` (the held tools' shared parts, made one module), the unarmed V and the
+  Psygun (kick.js, `psygun/gunmoves.js`, `weapon.js`, character.js's aim block), locomotion, air and traversal (four modules in
+  `courier/anim/`, the traversal techs, death; and the kick-off fix in `docs/handoffs/petra/2026-10-07-from-calissa-loco.md`, yours to
+  rule on), the emotes (emotes.js, emote.js, talk.js, folk.js's react map, chat.js's lists, one line in overture.js).
+
+**Found in your core, not changed** (the emotes builder, measured headless): `character.js`'s foot IK snaps a knee 20-45 degrees in
+one frame when a short walk starts or stops (the core alone, tapping W from idle: 26). It is behind the worst emote exits (catwalk and
+monkey 36); with the foot IK off the same exits peak at 9. Also: a belt flag for "hide the worn tools while posing" would be cleaner
+than the emote calling `hideWorn` every frame after the tools' own updates.
+
+**Not done, and why:**
+- The .blend skiff in place of `boat.js`: its hull texture is missing; the owner decides.
+- The god hand's 32 actions and the Pneuka Jar's 17: the hand's finger curl writes the fingers absolutely, and the Jar's cracks are
+  rigid ribbons, so a mixer would fight both. Yours to decide how they meet.

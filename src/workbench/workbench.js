@@ -341,6 +341,7 @@ export class Workbench {
       for (const cl of clips) this.clipButton(cl.name, () => { this.mixer.stopAllAction(); this.mixer.clipAction(cl).play(); this.packClip = null; });
     }
     const pack = this.game.character?.clips;
+    if (id.endsWith('/courier.glb') && pack) await this.game.clipPack?.social; // (every clip of the suite, the ones play has not asked for yet too)
     if (id.endsWith('/courier.glb') && pack) {
       const bones = {}; obj.traverse((o) => { if (o.isBone) bones[o.name] = o; });
       this.packBones = pack.bones.map((n) => bones[n]); this.packHip = bones.spine;

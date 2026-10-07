@@ -75,27 +75,90 @@ the rules before building in the same area; a rule a machine can check goes into
     rest value apart and is returned to it when the act's result is gone.
 31. **A goal a mind sets for itself keeps the safeties of the order it serves.** A sibling closing on a foe borrowed "go", the order
     that stands where told and is never warped, and was left behind when the Courier travelled; the fight's approach is its own order.
-
 32. **Every goal has a give-up, and every call a deadline.** A mind told to reach something measures its progress and, when it stops
     closing, is set down there or gives up and says so; a call to anything outside the page (Claude, a connector, the room) has a
     timeout, a cap, and a line in the log when it runs out. Nothing waits forever, and nothing spends the owner's usage unbounded.
+33. **A tech asked to start while it is on is restarted in place**, never stopped and begun: `stop()` calls `end()`, which reads the state
+    the new start has just written (Launch's options), and ends the new move instead of the old.
+34. **A service is asked for when it is needed, not when the asker is built.** The techs are made before `game.interact` (main.js); a
+    source registered in a constructor with `game.interact?.add` was silently dropped. Register on first use (`offer()`), and test it.
+35. **A committed move does not cut the core's climb.** Whatever takes the step with `endCore` (Launch, a whole-body strike) waits for the
+    mantle to finish: ended half way over a lip, the capsule is left inside it.
+36. **A position set outright is checked first.** Anything that moves the Courier without the controller (a phase's step, a teleport by
+    an animation's travel) asks whether the capsule is clear there, and keeps the last clear place to fall back on.
+37. **A tool's clip is judged with the tool in the hand.** A body clip made without the tool (the suite's) and a grip measured on
+    another clip (`torchIdle`) can disagree: measure where the tool's far end goes (its mouth, its coffin) against the head and the
+    body in body space, from the front and the side, before taking the clip as a stance; correct the hand (a wrist turn on the
+    layer) or the chain, never the clip's arm.
+38. **A method is called on its object.** `(a || obj.m)?.()` calls `m` with no `this`; pick the function and call it where it lives
+    (`a ? a() : obj.m?.()`), or bind it once where it is stored.
+39. **One handoff a frame.** A track that changes clip on a condition changes once per update (an `else if` chain): a clip handed to is
+    never left in the same frame because its own exit was already true, which drops the fade that was meant to show it.
+40. **A blast along the floor is measured along the floor.** A radius is a cylinder of any height until its height is said: a ring
+    struck from the feet takes only what stands within a body's height of them.
+41. **A move that follows a whole-body move ends that move's carrier.** Launch, left to run out its time, draws the old clip over the
+    new one; a string from the whole body to the upper body plays its next move whole too, or stops the carrier itself. So does a move
+    cut short (the tool put away, a cancel): finished, not dropped, and at the stow's first frame, not its last.
+42. **Up is asked where it can differ.** A marker, a bob, a label of floors assumes world Y only where nothing else can be up; in the
+    Spirit Garden each planetoid has its own, so a source says its up and the reader stands along it.
+43. **A layer over part of the body leaves the hips alone, and what a tech's weight switches follows its pose.** `Clips.blend(out, src,
+    w, mask)` moves the pelvis by `w` whatever the mask: an upper-body or one-arm layer passes `hipW = 0`. The knee guard, the joint
+    limits and the foot IK read a tech's weight (`override`, `legsOwn`); a pose faded out on its own clock keeps the weight up with it,
+    or they switch on at full strength under a pose that is still the clip's.
+44. **A body pose is judged with the kit on as well as off.** A tool worn on the back stands up through a Courier lying on it; a pose
+    that puts the body on the floor is filmed with the belt full, and puts the worn tools out of sight while it lasts if they cross it.
+45. **One press, one meaning, in every state the tool can be in.** When a tool's button means something else in a mode (the lens's
+    shutter, the air, the busking body that keeps the bell), shut the other meaning out there: empty the combo engine's buffer, hold the
+    tool in hand every frame. Drive the press in each state and across each edge between them (lens up then down, airborne then
+    landed), and check that the press still does what it did before the change.
 
-33. **A key one handler spends, no other handler sees.** A window that closes on Esc or P stops the event there; one key is read in
+46. **A weight that can drop in one frame is eased wherever it is blended outside the crossfade.** A move's weight goes to nothing the
+    frame it ends; the upper layer is crossfaded, but the legs and an IK weight blended after it are not. Damp the weight, and cancel
+    a move whose update stops (the tool being put away) rather than leave it on its last frame.
+
+47. **In first person, what is drawn from a tool is measured on its held placement.** The body is hidden and its bones are behind the
+    camera; a trail, a flash or a chain taken from a bone sweeps across the whole view.
+
+48. **A key one handler spends, no other handler sees.** A window that closes on Esc or P stops the event there; one key is read in
     one place a tick (two readers of P opened the box as the other closed it). Whatever closes or picks on a key spends it,
     for the body too (`input.spend(code)`: the press and the Courier's latch), or the place under the Courier opens it again.
-34. **Nothing opens under a cover, and a cover always lifts.** A page asked for inside a seam waits until the seam is up; the seam runs
+49. **Nothing opens under a cover, and a cover always lifts.** A page asked for inside a seam waits until the seam is up; the seam runs
     whatever early return the frame takes. What a place changes of the world (the camera's up, the sky) it puts back on leaving.
     One window at a time: every opener asks `game.windowOpen()` (a window, the kiln's, the dialogue box, a seam, a crossing) unless
     it is closing itself.
-35. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
+50. **The gate parses what it checks.** A rule that reads source as text passes a file no browser can load; `module.parse` (esbuild)
     runs first, and a page that will not boot is a hard failure.
+51. **An act paid for at the press and done later keeps its slot until it is done.** A second press before the first lands fires the
+    first at once (or refunds it); it never overwrites it. And what a move's row says it is worth (nothing, for a shove) holds for every
+    kind of thing it meets, not only the one the row was written for.
+52. **A whole-body clip is filmed from the eye too.** The head is hidden in first person, but the arms and the worn tools are not: a
+    clip that turns the body over or flings the arms (a flip, a kick-off's push) wheels them across the view. In first person play
+    the part that stays upright, or leave the clip out, and film both views before calling it done.
+53. **"Nothing is happening" asks every tech, the passive ones too.** A layer that plays only when the body is free (an idle break)
+    checks `active`, `override` and every `passive` tech's `engaged` (a carried crate, a kick of the unarmed V, a tool in hand).
+54. **A blow sends a thing the way the blow goes.** melee.js gives the direction along the swing, a blade's cut; a thrust (a jab, a
+    front kick, a shove) drives what it strikes away from the striker, and a swung blow keeps only its share of the swing. Read the
+    knock off a stub creature headless (its `knock(v)`), not off the code.
+55. **A hook laid over the engine's calls the engine's.** A tool that adds to a carrier's options (`poseFix`, `drive`, `onEnd`) wraps
+    what is there; replaced, the engine's own work in it (the join's fade from the last pose, and the pose kept for the next join)
+    silently stops, and the next move inherits the stale state.
+56. **A pose that cannot be crossfaded to the next in a fifth of a second leaves by its own way out first.** A seated body blended
+    straight to a standing one passes its legs through the floor; a way in left partway leaves from as far into its way out as it had
+    still to go, never from the way out's start.
 
-36. **A view that follows a thing lets go of it while the hand holds it.** Whatever the cursor moves must not move the camera the
+57. **A view that follows a thing lets go of it while the hand holds it.** Whatever the cursor moves must not move the camera the
     cursor's ray is cast from, or each frame chases the last; and what the hand holds stays on the near side of the ground.
-37. **A model two modes share is set up by the one drawing it, every frame it draws it.** The god hand and the garden share the Jar's
+58. **A model two modes share is set up by the one drawing it, every frame it draws it.** The god hand and the garden share the Jar's
     model; whichever leaves last must not decide whether the other sees it.
 
 ## Cases
+
+### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
+- **Seen (Dovina's room sweeps):** `TypeError` reading `rig` at vfx/chestfx.js:45 every frame of the Tithe's opening; the rest of that
+  tick after main.js's chest update was skipped.
+- **Cause:** the Tithe's act sets `chests.cur` with no `.chest`; the chest's effects read `C.chest.rig` whenever `chests.cur` was set.
+- **Fix:** the effects draw only for a current act that has a chest with a rig (vfx/chestfx.js).
+- **Rule:** 35's note, widened: a hook asks what it was given, not what the field usually holds.
 
 ### 2026-10-07 · The Pneuka Jar unseen after the god hand, in the garden
 - **Seen (the owner):** in the Spirit Garden, ` and back: the Jar invisible.
@@ -103,7 +166,7 @@ the rules before building in the same area; a rule a machine can check goes into
   the Jar with that same model and never set it visible again (headless: `visible: false` after the toggle).
 - **Fix:** in the garden ` opens the overhead view (`world/garden/gardencam.js`) and never the world's god hand; and the realm sets the
   model visible every frame it is the Jar's (`placeJar`), hidden only in first person.
-- **Rule:** 37.
+- **Rule:** 58.
 
 ### 2026-10-07 · The held Pneuka Jar sank into the planetoid, then fled
 - **Seen (the owner):** grabbing the Jar with the hand, you slowly clip through the planetoid you are on.
@@ -112,7 +175,7 @@ the rules before building in the same area; a rule a machine can check goes into
   (130 m/s; held still afterwards, 459 m to 861 m off the ground in 4 s).
 - **Fix:** what the hand holds is kept at least 0.1 m over the ground under it (`hand.js` grab); a followed view holds still while
   the Jar is held (`gardencam.js` anchor). Measured after: 0.6 m over the ground through the whole drag, and still.
-- **Rule:** 36.
+- **Rule:** 57.
 
 ### 2026-10-07 · The garden's water flickered as specks round its shore
 - **Seen (Petra, headless, the first build of the water):** white specks on the ground round a filled pit.
@@ -121,6 +184,83 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** only the triangles wet at all three corners are drawn (`watermesh.js`). The water under the coarse ground still does not
   show until the planetoid's mesh is as fine as the clay's (Calissa's, asked).
 - **Rule:** 1 (no aliasing crawl).
+
+### 2026-10-07 · The unarmed V and the psygun's moves, reviewed: eight faults found and fixed (Calissa, fistgun review)
+- **Seen, measured headless (`.scratch/fgr.mjs` against a stub creature; films front and side):** (1) the front kick knocked what it
+  struck sideways, `knock(-6.0, 0, 0.2)` facing +Z, the shove `(8.9, 0, -1.0)` (sideways and back toward the Courier), the jab and the
+  cross left and right by turns, and a clapperjar flew the same way; (2) the uppercut and the ground pound replaced the engine's
+  `poseFix`, so neither faded in from the pose before it, and the join state they left (`from`, `fadeT` 0) faded the next move in from a
+  pose long gone; (3) the kick switched off mid ground pound (the System, a reset) left its Launch running: the Courier hung at 0.93 m,
+  the clip frozen, for the Launch's six seconds; (4) R twice in the fan paid 8 Lachryma for no shots (a fan restarted in place); (5) the
+  flourish went on spinning the gun while X or a ladder holstered it; (6) the roundhouse handed its 126 degrees to the facing and left
+  them facing away, so the next press turned the whole body 127 degrees in one frame; (7) a jab begun 1.4 m from something stepped in at
+  6.0 m/s on the run's legs: a toe moved 0.38 m in one frame three frames in; (8) the leg sweep put the hips at 0.35 m with the Soul
+  Brush on the back lying through the legs and the floor. Also `kick.hit` carried no `by`, and the glossary's "sweep" was Dovina's room test.
+- **Cause:** (1) melee.js's sweep direction is tangential, right for a blade; the kick passed it on; (2) `lift()` assigned new hooks
+  over the engine's; (3) `Moveset.cancel` only unhooks the carrier's `onEnd`; (4) the engine lets a special restart itself; (5) the
+  flourish's clock ignored the holster; (6) the kick had no stance, so nothing turned the body back to the aim between moves;
+  (7) the engine's standing legs leave the step's speed to the run's; (8) a floor pose with the kit on (rule 44).
+- **Fix:** (1) `FistMoves.blow` drives every blow away from them, `hit.side` (0.5 for the haymaker, the roundhouse and the leg sweep)
+  keeping a share of the swing: now `(0.2, 0, 6.0)` and `(1.0, 0, 8.9)`; (2) the hooks wrap the engine's; (3) `Kick.stop()` ends a
+  kick-tagged Launch with the moves (they fall and land); (4) the gun's moves take no R while the fan plays; (5) the flourish stops when
+  the gun is put away by other means; (6) `Kick.stance` while a move plays, as every held tool: the body turns back on the core's eased
+  turn within 0.15 s and the next jab begins 3 degrees off; (7) the punch's own legs during the step's first 0.3 s (that jump is gone;
+  the first frame's 0.52 m is the core foot IK's stride stretch reacting to the speed, left to Petra); (8) `bare` on the leg sweep hides
+  the worn tools while the hips are down, as the emotes lying down.
+- **Rule:** 45, 46, 54, 55.
+
+### 2026-10-07 · The core movement's look from the suite, reviewed: four faults found and fixed (Calissa, loco review)
+- **Seen, measured headless (`.scratch/lfilm.mjs` scenarios, a per-frame bone-jump probe):** (1) a kick-off from a ladder's foot,
+  landing 0.38 s later: a fingertip jumped 1.57 m in the landing frame (a plain landing: 0.25 m); (2) in first person the slam's flip
+  and the kick-off's push swept the worn tools and a hand across the view, where the old slam held them still; (3) a big blow taken
+  crouched lifted the hips 0.25 m for 0.3 s; (4) the idle breaks played under a carried crate (Loco_IdleLookAround at 11 s,
+  Loco_IdleStretch at 20 s, the legs doing them under the crate).
+- **Cause:** (1) `airborne.js` dropped the kick layer the frame the Courier was footed, at whatever weight it had; (2) only the double
+  jump's flip was left out in first person; (3) the flinch blends Hit_Chest over the upper body with the pelvis at full weight (it came
+  across from character.js as it was); (4) `IdleBreaks.quiet` asked the active tech and `override`, not the passive techs.
+- **Fix:** (1) a landing fades the kick out over `KICK.land` (0.1 s; the landing frame's jump is 0.66 m and falling, as any landing
+  from flung arms); (2) in first person the kick-off is not drawn and the slam starts from its tuck (`tuckOnly`): the view is as still
+  as the old slam's; (3) the flinch passes `hipW = 0` (the hips now move under 0.02 m); (4) `quiet` also asks `passive && engaged`.
+- **Rule:** 43, 46, 52, 53.
+
+### 2026-10-07 · Put away mid-vault, the Courier slid on frozen in it for a second (Calissa, the brush and vane review)
+- **Seen (headless, K pressed 0.17 s into the Dreamvane's vault):** the Launch `dreamvane.vault` ran on to its 1.21 s with the pose held at
+  clip time 0.20 and the core movement shut out; the spin sweep the same (1.39 s); the Soul Brush's dive and air slam likewise (G).
+- **Cause:** a held tool's blows advance only while it is in the hand (`use`, `club.update`), so from the stow's first frame the move's
+  clock stopped while its Launch carried on; at the stow's end `Moveset.cancel` dropped the move and only nulled the Launch's `onEnd`.
+- **Fix:** both tools cut the move on the stow's first frame (`drawTarget` 0), finishing it first so the Launch ends with it
+  (dreamvane.js `cutMove`, club.js `cancel`). Measured: the Launch is off the frame K or G is pressed. The engine's own `cancel` leaves
+  the same gap for every tool (the cutlass's too): worth closing there.
+  The engine's own `cancel` now ends the launch too (tools/moveset.js), and the Sondelass cancels its stroke as the stow begins
+  (measured: a fourth stroke put away has no launch two frames later).
+- **Rule:** 41.
+
+### 2026-10-07 · From the Dreamvane's pick into its first sweep the hips swung 15 degrees in one frame (Calissa, the brush and vane review)
+- **Seen (headless, each bone's turn per frame at 60 Hz, the root's yaw taken out):** at the join of Vane_PickStrike into Vane_Combo1
+  the hips 15.5, the chest 34.2 and the head 42.7 degrees in one frame (3 to 7 either side); a Soul Brush blow held into the load, the
+  hips 33.6 and the chest 42.9.
+- **Cause:** a join crossfades the upper layer (the engine's `joined`, tools/toolbody.js `Crossfade`), but not the legs and hips:
+  `Moveset.legs` samples the new move's clip at once, drops a cut move's legs the frame it ends (`!c`), and the hips carry the chest.
+- **Fix:** both tools crossfade the lower body too, over 0.15 s, weighted by how much the legs are the tool's (`legsW`: never the
+  run's legs). Measured after: the pick into the sweep 2.4 / 11.7 / 16.8 degrees, the brush's second blow into its third 0.2 / 2.8;
+  the blow into the load 5.3 / 11.2, spread over the frames after. Still to do (the engine's): a move begun from standing ramps its
+  legs in at the engine's own rate (the vane's overhead from rest, 10.5 at the hips in its first frame).
+- **Rule:** 19, widened: every channel a move writes is eased at a join, the legs too; the engine's `legs` should do it for every tool.
+
+### 2026-10-07 · Two quick flicks of the Soul Brush paid 2 Lachryma for one fan (Calissa, the brush and vane review)
+- **Seen (headless):** RMB tapped twice within 0.13 s: 2 Lachryma spent, one `brush.flick`.
+- **Cause:** the fan leaves at the top of Brush_Flick (`startFlick(onRelease)`); the second tap replaced the first's callback before it ran.
+- **Fix:** a throw still to leave goes at once when the next begins (club.js `startFlick`). Measured: 2 spent, 2 fans.
+- **Rule:** 51.
+
+### 2026-10-07 · The Dreamvane's vault, "never a weapon", stunned clapperjars and counted as hits; its launcher led into the air string on the ground (Calissa, the brush and vane review)
+- **Seen (headless):** a sprinting LMB through a clapperjar knocked it, stunned it 2 s and emitted `dreamvane.hit` (toward the
+  Dreamquake's 200); S+LMB then LMB played Vane_Combo1 as an `air` move with the Courier standing.
+- **Cause:** Dovina's row gives the vault power 0, and the vane's blow rules asked the row only for creatures; the engine follows any
+  launcher with the air string, but the vane's jab is an upper-body move and they never leave the ground (the cutlass's lifts them).
+- **Fix:** pick.js: a move whose row is worth nothing only shoves (knocked aside, never broken, stunned or counted); a launcher on the
+  ground leads into the staff's string from its first sweep. The Dreamquake's reveal and ring use the row's radius (5 m), as its blow does.
+- **Rule:** 51 (its second half), and 35's note: a hook asks what the move became (where they are), not what it was meant to be.
 
 ### 2026-10-07 · The Spirit Garden sweep (the owner's four and ten besides; Dovina's GARDEN-SWEEP.md, measured by scripts/garden-sweep.mjs)
 - **Seen:** 40 checks passed and 25 failed on b4c39f5. The owner's four were a black screen on the first entry, an invisible Jar,
@@ -163,8 +303,199 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Not Petra's:** the chevron's own orientation, which belongs in `vfx/chevron.js` `target(p, up)` (Calissa; interact turns it
   meanwhile); the Jar's look apart from the torii, `jarhop.js` and `wirecompass.js` (Calissa); the 24,890 Hz oscillator (Wanda); the
   player names (Espada); which features each Firing opens (Dovina: PLACE lists all until her table).
-- **Rule:** 32, 33, 34; and 35 for the line this round broke: a trailing comment ate the rest of a one-line function, `npm run check`
+- **Rule:** 32, 48, 49; and 50 for the line this round broke: a trailing comment ate the rest of a one-line function, `npm run check`
   passed it, and the page would not boot.
+
+### 2026-10-07 · The bell's toll string, the coffin's flail and the book's bash, reviewed: six faults found and fixed (Calissa, belltome review)
+- **Seen, measured headless (`.scratch/rv.mjs`, films front and side):** (1) LMB in the air no longer rang the bell (the old toll did,
+  anywhere); (2) a photograph taken with the lens up, the lens let down within 0.35 s, swung a book bash (`veritome.swing b1` 17 frames
+  after the shutter); (3) at a busker's mat, another tool's key (I) or the bell's own (U) put the bell away while the busking body went
+  on playing an empty hand; (4) the legs snapped back to the run's the frame a toll, a blow of the flail or a bash ended (a shin 26.7 to
+  29.3 degrees in one frame); (5) put away mid-string, a toll or a flail stood frozen on its frame until the holster (0.3 s); (6) in first
+  person the flail's ribbon ran from the hidden body's left hand to the coffin before the eye, a sheet of gold across half the view.
+- **Cause:** (1) the engine opens a ground string only on the ground, and no air string was given; (2) the engine buffers the press
+  whether or not it may open, and opens it the first frame it may; (3) the busking body freed the hands (`handsBusy` false) so the bell
+  could stay, which freed every tool's key too, and `belt.draw` puts the bell away; (4) `standLegs` was weighted by the move's weight,
+  which `moves.pose` drops to nothing at its end; (5) `use` (and with it `moves.update`) runs only while the tool is fully held;
+  (6) `chainSegment` took the body's hand in first person too.
+- **Fix:** (1) in the air a press rings one toll at once with Bell_Toll as a gesture, `TOLL.cool` apart, and the buffer is emptied;
+  (2) the buffer is emptied while the lens is up or lifting; (3) the busking body sets the bell's `drawTarget` every step; (4) the
+  weight is damped both ways in `standLegs` (up 30/s, down 12/s): at the end no leg bone now turns more than 6 degrees in a frame; (5) the bell and
+  the coffin cancel their move once `drawTarget` is 0; (6) in first person the chain runs from the model's bail to the coffin.
+- **Rule:** 45, 46, 47.
+
+### 2026-10-07 · In the Spirit Garden the chevron leaned off its planetoid, and the compass called the garden the upper floor (Calissa)
+- **Seen (Dovina's garden sweep, #4 and #8):** the chevron off the planetoid's heart by up to 52 degrees at the Chimney; "You enter
+  UPPER FLOOR." on entering the garden.
+- **Cause:** the chevron (vfx/chevron.js) stood and bobbed along world Y whatever the source; the wire compass (vfx/wirecompass.js) read
+  the workshop's floors at any height, and the garden sits above them.
+- **Fix:** a source may give its `up` (courier/interact.js passes it on) and the chevron stands and bobs along it; the compass says no
+  place while the realm is active. Petra's `realm.offer` is to pass the feature's normal.
+- **Rule:** 42.
+
+### 2026-10-07 · The Pneuka Jar was invisible in the Spirit Garden (Calissa)
+- **Seen (Dovina's garden sweep, #2):** after the god hand, the garden's Jar could not be seen; its scale read 0.001.
+- **Cause:** leaving the god hand leaves the Jar's group at scale 0.001; the hop (vfx/garden/jarhop.js) took the scale it found at
+  entry as its rest scale, so it squashed and stretched about nothing.
+- **Fix:** its rest scale is 1, never a reading of the moment. Measured headless: 0.89 / 1.27 / 0.89 mid-hop, visible.
+- **Rule:** 30.
+
+### 2026-10-07 · An emote's end snapped to the idle, and the folk talk's gestures moved the hips (Calissa, emotes)
+- **Seen:** measured headless on every emote through the chat line (a frame-to-frame step of every body joint after the whole pipeline):
+  an emote's last frame went straight to the body's own pose (the suite's one-shots end at their neutral stance, 17 degrees mean and 51
+  at worst from the idle); a dance left by W jumped to the walk; one emote straight into another snapped; with a fade added, the
+  cossack's squat still turned a foot 55 degrees in one frame as it ended.
+- **Cause:** the emote drew its pose only while its state was on (rule 19). Once a fade was added, the tech's weight still fell at the
+  techs' own rate (12 a second) and its `overrides` went to 0 at the end, so the knee guard switched on at full strength under a pose
+  still almost wholly the clip's. Separately, the talk's answers blended over `MASK_UPPER` with the default `hipW` of 1, pulling the
+  pelvis to the clip's (the suite's Cry and Tremble hold it 5 cm under the idle's, measured on the clips).
+- **Fix:** the emote keeps its last pose and fades it off the body's own over 0.3 s, its weight held up by that fade (`tick`), a floor
+  pose keeping its own legs to the end of it; a new emote fades the old one's pose out under it; the talk's answers pass `hipW` 0.
+  Measured after, over all 134 emotes: the largest step a frame while the last pose fades is 6.9 degrees at the median; the worst (36,
+  a dance left by W) comes from the foot IK as the walk starts and stops under it (the core alone, a tap of W from the idle: 26; the
+  same tails with the foot IK off: 9). In a talk the hips move 6 mm at most during an answer.
+- **Rule:** 19, 43.
+
+### 2026-10-07 · Three of the suite's gestures spun a forearm half a turn in one frame (Calissa, emotes)
+- **Seen:** `Taunt_KnuckleCrack` f10, `Emote_HeartHands` f53, `Emote_Hungry` f68: a 170-degree step on forearm.R between two keys (the
+  clip survey), and the three end 74 to 82 degrees from where they began.
+- **Cause, measured:** a swing and twist split of forearm.R against its rest: the twist goes 95 to 265 degrees (the same as -95) in one
+  key in all three, and stays wound to the end. In the heart the left forearm unwinds smoothly over the same frames, so the right's is
+  a bad key, not a motion.
+- **Fix:** each is played only where it is whole (`emotes.js`): the knuckles from 0.34 s (after the flip; the blend-in from the body's
+  own pose covers the start), the heart to 1.73 s and the rumble to 2.23 s (before theirs); the end fade carries the arm back.
+- **Rule:** 19 (measure a clip's per-frame jumps before playing it).
+
+### 2026-10-07 · The hover's feet went under the floor, and a tool stood up through the Courier lying down (Calissa, emotes)
+- **Seen:** `Emote_MeditateHoverEnter` and `Exit`: the feet and toes 0.116 m under the floor while the legs uncross and the hips are
+  still low. Filmed in the workshop with the debug kit on: lying down (`Emote_Sleep`, `Emote_LieBack`) a tool worn on the back stood up
+  through the body.
+- **Cause:** the clip's hips rise later than its legs swing down; the worn tools ride their back sockets whatever the body does.
+- **Fix:** a floor pose is lifted frame by frame where a foot or toe would go more than 2.5 cm under the floor (measured once by the
+  legs' FK on this skeleton, widened and smoothed: courier/moves/emote.js `liftOf`): the hover's lowest is now -0.026 m. Lying down
+  (`bare`) puts the worn tools out of sight from halfway down to halfway up (the belt's `hideWorn`; each tool shows itself again from
+  its own tick).
+- **Rule:** 44.
+
+### 2026-10-07 · The Soul Brush went through the floor under every sitting emote (Calissa, the emotes review)
+- **Seen:** filmed from the side with the starting belt worn: under /sit, /hugknees, /meditate, /hover and /sulk the Soul Brush at the
+  left hip ran down through the floor, and under /sleep and /recline it came back into sight under the floor as they got up. Measured
+  on its model, the lowest point of every visible worn tool against the floor through all 134 emotes: the brush 0.135 m under (sit,
+  meditate, hover), 0.235 (sulk), 0.313 (hugknees), 0.457 (sleep and recline, at 0.77 s into their exits); every other tool stays above.
+- **Cause, measured:** the hide was only for lying down and only "halfway down to halfway up" of the clips (`bare`); a hip tool hangs
+  0.36 m above the floor standing, so any pose that brings the hips lower than that puts it through the floor, and the exits are still
+  low past their halfway mark.
+- **Fix:** under any floor pose, a worn tool whose model reaches the floor goes out of sight until it is 3 cm above it again (measured
+  on the model each frame, courier/moves/emote.js `offFloor`; its own tick shows it again, so nothing stays hidden). After, the same
+  measure over the twelve floor poses: the lowest visible point of any worn tool is 0.004 m above the floor.
+- **Rule:** 44 (measure every worn tool against the floor through the whole emote, not only the poses that lie down).
+
+### 2026-10-07 · Sitting, /wave stood the Courier up through the floor in a fifth of a second (Calissa, the emotes review)
+- **Seen:** /sit, then /wave while seated: the crossed legs unfolded to standing in 13 frames, the feet and toes down to 0.139 m under
+  the floor on the way, the knees turning 15 degrees a frame. And leaving the hover halfway up its rise, the body sprang 0.3 m higher in
+  0.15 s before it came down.
+- **Cause, measured:** one emote into another stopped the old and crossfaded its last pose into the new over 0.22 s, whatever it was;
+  from a floor pose that is a seated body blended to a standing one with no way up, the foot IK switched on at once under it. And a way
+  in left halfway began its way out from the way out's start: the hover's way out starts at the top of the hover.
+- **Fix:** from a floor pose a new emote waits for the old one's way out (courier/moves/emote.js `request`; `/stand` forgets a queued
+  one); a way in left partway begins its way out as far in as the way in had still to go (`leaving`). After: sit into wave, the lowest
+  foot -0.016 m and the wave begins when the Courier is up; the hover left at 43 % of its rise, the hips 0.439 m and then 0.438 m, down
+  from there.
+- **Rule:** 56.
+
+### 2026-10-07 · An emote whose clip is missing would have waited for ever (Calissa, the emotes review)
+- **Seen:** by reading, then tested with a clip taken out of the pack after it landed: `/bow` was accepted, never began, and said nothing.
+- **Cause:** the refusal waited on the pack's promise resolving false; a pack that lands without one of the emote's clips resolves true.
+- **Fix:** the refusal is said when the pack lands and the emote still cannot begin (courier/moves/emote.js `request`).
+- **Rule:** 32 (every call a deadline).
+
+### 2026-10-07 · The stress test stopped on a Dreamvane dash begun on a ledge (Calissa)
+- **Seen:** the quick gate, stress seed 1: `Cannot read properties of null (reading 'drive')` in `carryInto` (tools/toolbody.js), from the
+  vane's `onBegin`.
+- **Cause:** a whole-body move asked for mid-mantle is played on the upper body alone (rule 35), so it starts no launch and has no tag;
+  `carryInto` compared the launch's tag (undefined) with the move's (undefined), found them equal, and read the null launch.
+- **Fix:** it carries only a move with a tag whose launch is on (tools/toolbody.js).
+- **Rule:** 35 (and a hook on a move asks what the move became, not what it was asked to be).
+
+### 2026-10-07 · The stress test stopped on the cutlass's first swing (Calissa)
+- **Seen:** the quick gate, stress seed 1: `TypeError: Cannot read properties of undefined (reading 'ok')` at `slash`
+  (audio/sondelass.js:21), from `Moveset.begin`.
+- **Cause:** the engine's new per-tool swing sound picked the function as `(this.S.sound || sfx.slash)` and called it bare, so
+  `sfx.slash` ran without `sfx` as `this`.
+- **Fix:** the tool's own sound is called, else `sfx.slash?.()` on `sfx` (tools/moveset.js `begin`).
+- **Rule:** 38.
+
+### 2026-10-07 · The Crucibelle stood in front of the Courier's face in Bell_Idle, and the flail's coffin crossed it (Calissa, belltome)
+- **Seen:** with the suite's Bell_Idle as the bell's stance, the bell covered the face from the front; the first cut of the Lockheart's
+  flail swung the coffin across the face as the string began.
+- **Cause, measured:** Bell_Idle holds the right hand before the shoulder at (-0.26, 1.28, 0.17) m (body space); the grip measured on
+  `torchIdle` stands the bell up out of the fist, so its mouth was at (-0.22, 1.58, 0.24): 0.25 m before the face, square to it. The
+  flail placed the coffin along the forearm's line, and with the coffin held at the chest the forearm points inward: at 0.07 s into the
+  first blow the coffin was at (-0.33, 1.31, 0.56), across the face.
+- **Fix:** the bell hand's wrist turned out 0.8 rad about the hand's own Y on every Bell_* pose (the stance, the string, the gestures,
+  the busking body: `crucibelle.wrist`): the mouth at (-0.45, 1.52, 0.22), beside the head. The coffin flung along the line from the
+  shoulder to the hand, its chain let out by the hand's speed (hanging while the windup is slow), and kept out of a 0.3 m column round
+  the body.
+- **Rule:** 37.
+
+### 2026-10-07 · A kick off a ledge spent the double jump, and played the flip over the kick (Calissa)
+- **Seen:** headless, a ledge hang caught from a jump, then Space: `airJumps` 1 before the kick, 0 one step after, the air track on
+  Air_DoubleJump at 0.02 s (`.scratch/sc_kick.mjs`). From a ladder taken on the ground the same press kept it (1 after).
+- **Cause:** the hang, the ladder, the pole, the latch and the grate read the kick from `P.latch('Space')` and ended; the core ran the
+  same step and saw Space down with `jumpHeldLast` still false from before the hold, so it was a fresh press: an air jump whenever
+  `airT` was over 0.05 s (caught in the air: yes; stepped onto from the ground: no, which is why the ladder hid it).
+- **Fix:** each kick marks the press spent (`P.jumpHeldLast = true; P.jumpBuf = 0`), as the grapple's jump-off already did.
+- **Rule:** 20.
+
+### 2026-10-07 · The double jump's tuck lasted one frame (Calissa)
+- **Seen:** the survey: `flipLoop` played for a single frame, its 0.2 s fade from `flipStart` overwritten the same frame.
+- **Cause:** character.js handed `flipStart` to `flipLoop` at 0.75 s, and in the same frame `flipLoop`'s own exit (`vy < -2.5`, true by
+  then on every air jump) handed it to `jumpLoop`: two `play` calls in one update, the first fade lost.
+- **Fix:** the flip is one clip now (Air_DoubleJump, courier/anim/airborne.js), handed to the loop once, from its last frames; the
+  handoffs are an `else if` chain (one change a frame).
+- **Rule:** 39.
+
+### 2026-10-07 · The stress test's edge-of-the-Dunes skiff runs ended inside the barrier (Calissa)
+- **Seen:** stress seed 2, `edge skiff`: `guard:reset` after `tech.end`, and `guard:nudge` just after `skiff.summon` (none on main).
+- **Cause:** the skiff's new phases set the Courier's position outright (the summon's step to the board's middle, the mount's walk on,
+  the step down, the bail and the get-up), and at the barrier those places were inside it.
+- **Fix:** every phase move asks `clearAt` first and keeps the last clear place; the tech's end puts an embedded Courier back there
+  (courier/skiff/skiff.js).
+- **Rule:** 36.
+
+### 2026-10-07 · A ground pound broke the pots on the shelves above it (Calissa)
+- **Seen:** headless, the unarmed V in the air over the workshop floor: `fist.hit` on 14 pots, `kick.hit { hits: 15 }`; the pots stood
+  on shelves one to two metres up.
+- **Cause:** the combo engine's ring (tools/moveset.js `ring`) takes everything within its radius across the floor, at any height.
+- **Fix:** the kick's own ring (courier/moves/kick.js, `FistMoves.ring`) keeps to what is within 1.2 m above their feet and 0.6 m below.
+- **Rule:** 40.
+
+### 2026-10-07 · The shove played under the front kick (Calissa)
+- **Seen:** headless, the unarmed pause string: for the first 0.5 s of the shove the active tech was still `launch`, and the shove's
+  upper-body layer was drawn under the kick's held whole-body pose.
+- **Cause:** a whole-body move's Launch ends when the move finishes or another whole-body move restarts it; a whole-body move followed
+  by an upper-body one leaves it running out its time, its clip over the new move.
+- **Fix:** the shove is a whole-body move (its clip's own step carried, `root: 'xz'`), so Launch restarts in place.
+- **Rule:** 41.
+
+### 2026-10-07 · The stress test caught the Courier in a ledge after a mantle (Calissa)
+- **Seen:** the gate's stress run, seed 1: `guard:nudge` on cog0, the tech `launch`, `move.mantle` then `combo.move` 0.17 s later.
+- **Cause:** a whole-body cutlass move began during the mantle; Launch's `endCore()` stopped the climb half way over the lip.
+- **Fix:** the combo engine plays a whole-body move on the upper body alone while `P.mantle` or `P.freeze` (tools/moveset.js `carry`).
+- **Rule:** 35.
+
+### 2026-10-07 · The Solar Skiff's parked board had no chevron (Calissa)
+- **Seen:** headless, F beside a parked board did nothing; `interact.cur` was undefined.
+- **Cause:** the skiff tech registered its interact source in its constructor, and the techs are built before `game.interact` exists.
+- **Fix:** the source is registered the first frame the service is there (`Skiffing.offer()`, courier/skiff/skiff.js).
+- **Rule:** 34.
+
+### 2026-10-07 · An air string would have ended at its second cut (Calissa)
+- **Seen:** building the cutlass's air combo: the second committed move (a launcher straight into an air cut) dropped at once.
+- **Cause:** `Launch.go` while the launch was on called `mgr.begin`, which stopped the active tech; its `end()` took the options `go`
+  had just written, nulled them and called the new move's `onEnd`.
+- **Fix:** a `go` while the launch is on restarts it in place (courier/moves/launch.js).
+- **Rule:** 33.
 
 ### 2026-10-07 · A sibling sent to the Dunes walked into a wall and would not be told
 - **Seen (the owner, v105):** asked Petra to go to the Dunes; Petra pressed against the workshop's wall, and asked to teleport, did not.
@@ -416,7 +747,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `input.spend(...codes)` clears the press and, through `input.onSpend`, the latch; the dialogue box spends its keys every
   frame it reads them and on its end, the Index every key it takes, and it ignores repeats. One `game.windowOpen()` (`main.js`) read
   by B, P, the chat line, M (`cartography.js`), F8 (`qais.canOpen`) and the pointer lock.
-- **Rule:** 33 and 34 (extended).
+- **Rule:** 48 and 49 (extended).
 
 ### 2026-10-07 · Travel set the Courier in the crude, beside Saggar, and out of a Well with pay it never gave
 - **Seen:** `travel('jetty')` dropped them under the deck into the crude; `kiln` stood them 1.5 m from Saggar, so F talked to her;

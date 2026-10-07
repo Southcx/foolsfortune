@@ -36,7 +36,7 @@ import jarB64 from './assets/pneuka.glb?b64';
 import clapperB64 from './assets/clapperjar.glb?b64';
 import animsB64 from './assets/anims.bin?b64';
 import cmuB64 from './assets/anims_cmu.bin?b64';
-import { decodeAnims } from './courier/anim/anims.js';
+import { loadClips } from './courier/anim/suite.js';
 import { Clappers } from './creatures/clappers.js';
 import { LachrymaPool, Baubles } from './courier/lachryma.js';
 import { Shells, SHELL_TYPES } from './tools/psygun/shells.js';
@@ -417,9 +417,9 @@ async function main() {
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
   clappers.spawnAll();
-  const clipPack = decodeAnims(animsB64);
-  Object.assign(clipPack.clips, decodeAnims(cmuB64).clips); // (mocap: the soccer kick)
+  const clipPack = await loadClips({ packs: [animsB64, cmuB64] }); // (the Courier's own suite, fetched; the UAL and mocap packs widened to its bones: courier/anim/suite.js)
   mark('clappers+anims');
+  game.clipPack = clipPack; // (its `social` resolves when the emotes, dances, flirts and taunts are in)
   const character = new Character(scene, charG, gunG, clipPack);
   mark('character');
   character.onFootstep = () => sfx.footstep();
@@ -497,7 +497,7 @@ async function main() {
   if (character.filigree) game.filigree = new Filigree(game, character.filigree); // (the armour's lines show the Lachryma in them)
   game.hudRing = new HudRing(game); // (their Lachryma and what has noticed them, on the ground at their feet)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
-  game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10)); });
+  game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);
@@ -790,7 +790,7 @@ async function main() {
   game.ui.want('title', true); // (the HUD steps out while the title is up: hideui.js)
   const endTitle = (quiet = false) => {
     if (!title.active) return;
-    title.active = false; title.ui?.close(); game.ui.want('title', false); game.vessel.dressed.delete(titleScene.ch);
+    title.active = false; title.ui?.close(); game.ui.want('title', false); game.vessel.dressed.delete(titleScene.ch); titleScene.board?.release?.(); // (the title's chess pieces let go: title/board.js)
     if (!quiet) {
       // (from the dark of the dive into the world)
       const f = document.createElement('div'); f.style.cssText = 'position:fixed;inset:0;background:#0b0614;z-index:12;pointer-events:none;transition:opacity .8s';
@@ -1117,6 +1117,7 @@ async function main() {
         walkSpeed: T.movement.walkSpeed,
         sprintSpeed: T.movement.sprintSpeed,
         recoil: weapon.kick * held,
+        gun: weapon, // (the psygun's moves and the suite's Gun_* over the aim: tools/psygun/gunmoves.js)
         adsT: weapon.adsEase,
         landed: player.landedOut,
         techs: player.techs,

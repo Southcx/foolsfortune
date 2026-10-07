@@ -43,6 +43,7 @@ import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
 import { SLOTS } from '../pneuka/box.js';
 import { areaRules } from './tracking/rules.js';
+import { RATINGS, overall } from '../ui/rating.js';
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -292,7 +293,7 @@ export class Tracking {
     const HELP = {
       hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
-      skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, Y steps off.',
+      skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it.',
       weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 8 choose a feeling, hold LMB and let go to cast, MMB sounds the water. With the hook, LMB throws, hold to reel, RMB pays out. The treasury\'s chests open with F and come back; the Tithe takes cubes for a sealed chest on the dais. Y brings the skiff.',
       dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; hold RMB for the wheel of arts (or 1 to 5). N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
@@ -485,7 +486,7 @@ export class Tracking {
     on('rhythm.score', (e) => {
       if (e.by !== 'courier') return;
       const pct = Math.round(e.accuracy * 100); L.inc('rhythm.played'); L.inc(`rhythm.played.${e.level}`); if (e.full) L.inc('rhythm.full'); L.hi('rhythm.combo', e.combo); L.hi(`rhythm.best.${e.track}.${e.level}`, pct);
-      log.say('song', `You play ${e.title} through: ${pct} percent${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {});
+      log.say('song', `You play ${e.title} through: ${pct} percent, ${RATINGS[overall(e.accuracy, e.full)].replace(/[.!]+$/, '')}${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {}); // (the set's word: ui/rating.js overall)
     });
     on('song.play', (e) => {
       L.inc('song.play'); L.inc(`song.${e.song}`); if (e.fever >= 1) L.inc('song.fever'); L.hi('song.power', Math.round(e.power * 100));

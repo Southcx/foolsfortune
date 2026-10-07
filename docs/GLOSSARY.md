@@ -201,10 +201,14 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Box. A tool never has an inventory of its own.
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`): the gun. A **shot** is one round fired (and only that: see "shot" below). A
   **charge** winds up a piercing beam. A **shell** is a caster shell (`Type-00`...), a special round loaded in a **chamber**.
+  Its moves (`src/tools/psygun/gunmoves.js`): the **pistol whip** (LMB with a creature or a clapperjar close in front: a blow, not a
+  shot), **fanning the hammer** (R: six shots off the hip, paid for at once) and the **flourish** (the gun spun round a finger before it
+  is put away after a fight). *Not:* the Dreamvane's twirl (its parry).
 - **the Sondelass** (`src/tools/sondelass/`, `src/tools/sondelass/sondelass.js`): the blade with three **forms**: the **cutlass** (with **blade mode**,
   **zandatsu**, the **Stinger**, **guard**), the **rod** (angling: `src/tools/sondelass/angling/`), the **hook** (the grapnel; the **grapple** is what the
   Courier does on its line).
-- **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, **slam**), the **flick** of slip, **Celestial mode**
+- **the Soul Brush** (`src/tools/soulbrush/`, `src/tools/soulbrush/soulbrush.js`): the **club** (combo, the **spin** after a pause, the **dive** at a
+  sprint, the **slam**: the **air slam** let go in the air, the **ground slam** let go after landing), the **flick** of slip, **Celestial mode**
   (strokes drawn on the screen and read as **sigils**), and **inscriptions** (what a sigil writes onto a thing).
   **The load** (`tools/soulbrush/load.js`): the brush's mode, its saturation and the Lachryma it paints or mops; **the paint map**
   (`world/ground/paintmap.js`): the grid round the eye of where Lachryma lies on the ground (paint and stains), which the ground's
@@ -225,7 +229,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   and what spills is a blot.
 - **a ripple**, **a wake** (`game.water.disturb`, `courier/moves/env.js`; drawn by `vfx/water.js`): a ring spreading on a water
   surface where something touched it; the V behind something moving on it.
-- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; a **plate** is one photograph; its
+- **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; the **book bash** (LMB
+  with the lens down: the book shut and swung, two blows on the combo engine); a **plate** is one photograph; its
   **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
   and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
@@ -234,13 +239,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **reprogramming** (`src/tools/veritome/reprogram.js`, `src/tools/veritome/mind/`): rewriting a stunned creature's mind. A **macro** is a program, composed on a
   **lattice** of **Functions** on the Codex's **THE MIND** shelf, and spoken in **neuralese**.
 - **the Dreamvane** (`src/tools/dreamvane/`, `src/tools/dreamvane/dreamvane.js`): **dowse** (the needle points at Lachryma), the **pick** (strikes
-  crystals), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around), **the vane** (the weather meter on the crook's head: it turns
+  crystals; the opener of its string, held for the heavy blow: `src/tools/dreamvane/pick.js`, with the **spin sweep**, the **vault** at a sprint and
+  **the Dreamquake**, its special on R: the ground rung round them), the **fork** (a tuning fork, thrown), the **survey** (charts the ground around), **the vane** (the weather meter on the crook's head: it turns
   to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
-- **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, **songs** (note patterns with effects),
+- **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
+  pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
   **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: a swing, never a flash; the owner,
   2026-10-06).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
-  (draws Lachryma in) and **channel** (the pose while it does); a **Possibilikey** (always so called, never "key" alone) on its ring;
+  (LMB held: draws Lachryma in) and **channel** (the ultimate's pose, the hands joined before the coffin); the **flail** (LMB tapped: the
+  coffin swung on its chain let out, three blows on the combo engine); a **Possibilikey** (always so called, never "key" alone) on its ring;
   a Possibilikey's **uses** (the openings it has been turned in: brass is spent at the first, any other **breaks** with a chance that
   rises with them, `keyBreaks`, the rule Dovina's `ECON.lockheart.keyWear`); a used one keeps its uses wherever it goes and never stacks
   with fresh ones (*not* "worn": to wear is to put a tool on the belt);
@@ -249,13 +257,21 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the moveset** (`tools/moveset.js`, Calissa's; numbers `progress/combat/moves.js`, Dovina's): a tool's **string** (LMB, blow by blow),
   its **pause string** (LMB after a pause mid-string), its **charge** (LMB held), its **launcher** (S + LMB: the struck thing is
   `airborne`), its **air string** (LMB in the air, ending in a **plunge**), its **dash attack** (LMB while sprinting) and its **special**
-  (a burst that costs Lachryma, unlocked by the tool's mastery). A **bail** is being thrown off the Solar Skiff. *Not:* a combo (the
+  (a burst that costs Lachryma, unlocked by the tool's mastery). A string's last blow, its row's time spent and its strike past, may be
+  cut short by a press into a new opener: the **recovery cut** (*not* a cancel: opposites cancel). A **bail** is being thrown off the
+  Solar Skiff. *Not:* a combo (the
   club's chain, a rhythm combo). The Lockheart's is the Opening; no other tool has one yet.
 
 ## Moving
 
 - **the core movement**: walk, sprint, slide, jump, wallrun, mantle, dash, and the moves any humanoid has (swim, ladders, hanging,
   poles, grates, balance, carrying, pushing). The gold standard: nothing changes it.
+- **idle break** (`IDLE`, `src/courier/anim/idlebreak.js`): a fidget played over the idle after a still spell with nothing in hand (a look
+  round, a stretch, a shift and tap, in turn); any move ends it. *Not:* an emote (asked for by the player).
+- **hard landing** (`HARD`, `src/courier/anim/airborne.js`): how a landing from a fall past 9 m/s looks (a hand to the ground); only shown,
+  control is back at once. *Not:* the roll (the Movement Art that takes a fall of 20 m and more).
+- **kick-off**: a jump off something that holds the Courier facing it (a ladder, a ledge, a pole, the latch's wall, a grate wall), shown
+  with the suite's wall jump. *Not:* the wall jump (the core's, off a wallrun).
 - **tech** (code only: `Tech`, `src/courier/moves/techs.js`): anything that takes the Courier's body for a while: a movement tech, a tool's
   hold, a chest's opening, the kiln station, talking, the death, the Opening. In the game, a learned one is a **Movement Art**.
 - **Movement Art** (`src/progress/skills.js`): a tech the System teaches; a **variant** is one of its versions.
@@ -268,6 +284,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **shutter** (a blow winding up, stunned), the Dreamvane's **twirl** (turned aside; held after the window, it spins), the Crucibelle's
   **toll** (shattered within reach; wider on the beat), the Lockheart's **gulp** (a Lachryma shot swallowed into the pool). In code each
   is a `how`: `return`, `turn`, `soak`, `gulp`, `shatter`, `stagger`, `shutter`.
+- **the kick** (the Movement Art `kick`, V with nothing in the hands; `src/courier/moves/kick.js`): the unarmed moveset on the combo
+  engine (`tools/moveset.js`): V's string is the **jab**, the **cross**, the **haymaker** and the **roundhouse**; after a pause at the
+  jab the **front kick** and the **shove**, at the cross the **leg sweep** (`sw`; its row in Dovina's table is `sweep`); S + V the
+  **uppercut** (its launcher), V in the air the **ground pound**, V sprinting the **flying kick**. The first 0.26 s of every one is the
+  parry. In the ledger `kick.hit` is a move that struck (with how many things it struck), `fist.hit` each blow. *Not:* the hook (the
+  boxer's is the haymaker here: the hook is the Sondelass's); a sweep (Dovina's room test: the move is always the leg sweep).
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
 - **projectile** (code: an entry in `game.projectiles`): anything thrown that a parry can find: a rigid body (`{ body }`, a lobber's
@@ -276,6 +298,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   in the Dunes. *Retired:* "surfer".
 - **stance** (`src/courier/anim/stances.js`): a held pose baked from clips (a tool's idle). *Not:* a form (the Sondelass's) or a mode (blade
   mode, Celestial mode).
+- **emote** (`EMOTES`, `src/courier/emotes.js`; the tech `Emote`, `courier/moves/emote.js`; events `emote.start`, `emote.end`): the Courier's
+  body language asked for on the chat line (/wave, /sit, /dance): a clip of the suite's social pack played **once**, a **loop** held until
+  they move, or a **triple** (the suite's Enter, Loop and Exit: in, held, out). Each is in a **family** (greet, joy, anger, fear, sorrow,
+  thought, pride, body, repose, dance, flirt, taunt), which is how `/emotes` lists them and what the folk feel at one; a **dance**, a
+  **flirt** and a **taunt** are the emotes of those families. A **floor pose** (`floor`) is one held on the ground (sitting, kneeling,
+  lying, the hover): its legs are the clip's. *Not:* a gesture (a held tool's own clip), nor a creature's emote clips (see the homonyms).
 
 ## Places
 
@@ -435,6 +463,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   planetoid, a shallow-water simulation on its clay's grid that pools, spills, dries and **wears the ground** (erosion); each cell keeps
   its mix of the five feelings. A **spring** pours for good, a **drain** takes for good (the hand's WATER art sets both). A body in it
   **wades**, or **floats** when it is deeper than the body (`swim`). *Not:* the Dantian's lake (a look), the world's water (`game.water`).
+- **a track** (the garden's: `src/world/garden/races.js`): a groove the hand carved in one stroke that closes on itself, 40 m or more;
+  the spirits on its planetoid **race** a lap on it (Dovina's `RACE`). *Not:* a music track (the sound test's), the course.
+- **the plants** (the garden's: `src/world/garden/plants.js`): green that spreads cell by cell over wet moss, loam and silt, and wilts
+  elsewhere; seeded by a herb terrace and by moss painted. *Not:* a material planted in a bed (the beds grow materials).
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
@@ -629,7 +661,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   room entered, worked and left headless as a person would and as a careless one would, a screenshot at every step and a PASS/FAIL line
   a check; a defect once seen stays checked. **The garden sweep** (`garden.mjs`) was the first (`docs/plans/GARDEN-SWEEP.md`); the
   others are named for their room (`workshop`, `basement`, `dunes`, `dunemaw`, `emocean`, `tools`). *Not:* the stress test (it fuzzes
-  the whole game), a playtest (it plays to a goal), the Soul Brush's mop.
+  the whole game), a playtest (it plays to a goal), the Soul Brush's mop, the kick's leg sweep, melee.js's `sweep` (what a swing struck).
 - **replay** (`game.replay`, `src/core/replay.js`; `/replay save`, `/replay load`, `/record`): a session kept so it plays again the same:
   a header (the build, the boot seed, the seed play began with, the save then, where the Courier stood) and the **frames**, each tick's
   dt and input. **exact** when it began at the start of play; begun by `/record` mid-session, the loose world comes back as it boots. A
@@ -679,6 +711,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   weather's mode when nothing plays.
 - **a busker's mat** (`src/world/busk.js`): where the rhythm mode is begun in the world, one on each pier (Old Grog's at the Weir,
   Margarite's dock): F on it with the Crucibelle worn plays a song for tips; walking off the pier ends it. **busking**: playing there.
+  **the busking body** (`src/courier/moves/rhythmhold.js`): the Courier playing it, the Crucibelle kept in hand: a **gesture** on each judged
+  press (the lane's note), the **jam** (a groove of the whole body) while a rhythm combo runs at ten or more, the fever's peak at every
+  twenty-fifth note.
+- **gesture** (`Gestures`, `src/tools/toolbody.js`): a held tool's own clip that is not a blow (a note's, the Flash's, the coffin opened),
+  played once over its stance. *Not:* a shot (a psygun's) nor a move (a blow of the combo engine).
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`): a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the field Crucibelle's playing (improvisation, on the beat or not).
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`): the notes the rhythm mode asks for, drawn from a score's lead; a **lane** is one
@@ -686,6 +723,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   alone (that is the map's: see the homonyms).
 - **grade** (`src/music/rhythm/judge.js`): how near a press came to its note: perfect, great, good, miss. **accuracy**: the share of the
   chart's notes earned. **combo** (the rhythm mode's): a run of notes without a miss (see the homonyms).
+- **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
+  it came and the combo, worst to best: Miss!, OK..., Nice!, Great!, Excellent, Awesome, Perfect, Wow. **The set's rating**: one of the
+  same words for a whole song played through, from its accuracy, said in the log at its end. *Not:* a grade (the judge's four).
 
 ## The world (Espada's: `docs/LORE.md`, section 1)
 
@@ -746,6 +786,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jarBody`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
+| emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
+| dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
+| counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel" |
 
 ## Retired words

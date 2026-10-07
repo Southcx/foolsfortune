@@ -41,7 +41,7 @@ export class ChestFx {
     if (C !== this.cer) { this.cer = C; this.shockT = -1; this.lastPhase = null; }
     const raw = g.rawDt || dt;
     let helixWant = 0;
-    if (C) {
+    if (C?.chest?.rig) { // (an act with no chest of its own, the Tithe's, sets chests.cur too: nothing of a chest's to draw)
       const chest = C.chest, rig = chest.rig, at = rig.root.position, S = rig.scale || 1, T = C.T, ph = C.phase;
       const prism = T === 4;
       if (ph !== this.lastPhase) { if (ph === 'burst') this.shockT = 0; this.lastPhase = ph; }

@@ -8,7 +8,8 @@
 //   await px.load()                       once (the art is decoded)
 //   px.scale()                            the whole number the art is scaled by just now (device pixels per art pixel)
 //   px.art(name, pal)                     the piece recoloured, at 1x (a canvas, cached): 'xclose', 'help', 'exclaim' (and '_p' pressed),
-//                                         'confirm', 'confirm_p', 'endpiece', 'glove_point', 'glove_grab', 'glove_left', 'bead' (7 frames)
+//                                         'confirm', 'confirm_p', 'endpiece', 'glove_point', 'glove_grab', 'glove_left', 'bead' (7 frames),
+//                                         'words' (the rhythm mode's ratings, one 64 px row each: ui/rating.js)
 //   px.text(str, pal)                     a line in the maker's font (the jank font: 16 x 16 cells, ASCII from the space), proportional:
 //                                         each letter as wide as its ink, a pixel between
 //   px.show(canvas, { k })                a <canvas> element showing it at the integer scale (x k more), kept crisp across resizes
@@ -34,10 +35,11 @@ import fGPoint from '../assets/ui/px/ui_glovecursor_point32.png?b64';
 import fGGrab from '../assets/ui/px/ui_glovecursor_grab32.png?b64';
 import fGLeft from '../assets/ui/px/ui_glovepointerleft32.png?b64';
 import fBead from '../assets/ui/px/vfx_beadflash.png?b64';
+import fWords from '../assets/ui/px/ui_rhythmwords.png?b64';
 
 const SRC = {
   font: fFont, endpiece: fEnd, xclose: fX, xclose_p: fXp, help: fHelp, help_p: fHelpP, exclaim: fExc, exclaim_p: fExcP,
-  confirm: fOk, confirm_p: fOkP, glove_point: fGPoint, glove_grab: fGGrab, glove_left: fGLeft, bead: fBead,
+  confirm: fOk, confirm_p: fOkP, glove_point: fGPoint, glove_grab: fGGrab, glove_left: fGLeft, bead: fBead, words: fWords,
 };
 export const GREYS = [20, 46, 53, 59, 67, 78, 86, 102, 133, 179, 196, 233];
 export const PAL = {

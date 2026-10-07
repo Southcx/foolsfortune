@@ -26,7 +26,6 @@ export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
 /** The six planetoids (radius in metres; `at` from GARDEN_AT); their names are Espada's (npc/realmnames.js: the Athanor is the furnace,
  *  the Mulberry Grove the spirits', the Chimney the peak). */
 // (the ids renamed to the canon, 2026-10-07; Calissa's planetoid looks key the old ones until her branch lands: this bridge goes then)
-const WAS = { athanor: 'furnace', mulberryGrove: 'grove', chimney: 'peak' };
 export const PLANETOID_SITES = [
   { id: 'dantian', r: 20, at: [0, 0, 0], color: 0x9fb4d6 },
   { id: 'terraces', r: 12, at: [-50, 12, -22], color: 0x9cc58a },
@@ -74,7 +73,7 @@ export class GardenSite {
     // the planetoids: Calissa's (vfx/garden/planetoid.js: the skin, the roots, each kind dressed), on the one ground: her unsculpted shape
     // is the base, the clay's height goes on top (world/garden/clay.js), and her `surface` asks that ground (O(1), not a search)
     this.planets.forEach((P, k) => {
-      const look = new Planetoid({ kind: WAS[P.id] ?? P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } });
+      const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } });
       look.group.position.copy(P.c); g.add(look.group);
       P.look = look; P.mesh = look.mesh;
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);

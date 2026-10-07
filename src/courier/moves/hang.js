@@ -3,6 +3,10 @@
 // (W / S go hand over hand along a bar); W pulls up onto a ledge; C or S lets go; Space kicks off
 // (a bar: swings you out along it). A slanted cable is a zipline: it takes you down, hanging. Hanging leaves a hand free: the gun stays out and you can
 // aim and fire one-handed while you hang.
+// The body: the suite's ledge hang (Trav_LedgeHang) still, moved so its palms are on this game's ledge; the authored shimmy (authored.js)
+// along it, because the suite's (Trav_LedgeShimmyL/R) steps a hand only 0.13 m, so at the shimmy's 1.8 m/s it would cycle 6.8 times
+// a second against its captured once (the authored one is built for the speed); the suite's pull-up (Trav_LedgeClimbUp) over the
+// core's mantle (anim/mantle.js, from `mantle.pull`); bars and cables keep the authored bar hang.
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -14,6 +18,9 @@ const UP = new THREE.Vector3(0, 1, 0);
 const DROP = HANG.drop; // feet this far below the grip (the authored hang clips are built for it)
 const CAPSULE_WALL = 0.34; // the capsule hangs this far from the ledge's face; the body is drawn HANG.wall from it
 const solid = (c) => !c.isSensor() && !c.parent()?.isDynamic();
+/** The suite's ledge hang on this game's ledge: its palms (2.07 m up and 0.26 m ahead of its feet, measured) moved onto the authored
+ *  hang's (HANG.drop up, HANG.wall + HANG.over ahead). */
+export const LEDGE = { clip: 'Trav_LedgeHang', dy: HANG.drop - 2.07, dz: HANG.wall + HANG.over - 0.258 };
 
 export class Hang extends Tech {
   constructor(mgr) {
@@ -110,6 +117,7 @@ export class Hang extends Tech {
     if (g.kind === 'ledge') {
       // Space: kick off backwards
       if (P.latch('Space')) {
+        P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
         const out = g.n.clone().multiplyScalar(c.kickOut);
         P.vel.set(out.x, c.kickUp, out.z);
         P.grounded = false;
@@ -121,7 +129,8 @@ export class Hang extends Tech {
       if (iz > 0 && this.t > c.grace) {
         const to = g.edge.clone().addScaledVector(g.n, -0.45).setY(g.topY + 0.02);
         if (P.fits(to, true)) {
-          P.mantle = { from: P.pos.clone(), to, t: 0, dur: M.mantleTime * 1.15, exit: 2.2, edge: g.edge.clone(), right: new THREE.Vector3(g.n.z, 0, -g.n.x) };
+          P.mantle = { from: P.pos.clone(), to, t: 0, dur: M.mantleTime * 1.15, exit: 2.2, edge: g.edge.clone(), right: new THREE.Vector3(g.n.z, 0, -g.n.x),
+            pull: { x: 0, y: LEDGE.dy, z: LEDGE.dz + (CAPSULE_WALL - HANG.wall) } }; // (the pull-up's clip starts where the hang held the body: anim/mantle.js)
           P.bodyYaw = Math.atan2(this.face.x, this.face.z);
           sfx.mantle();
           this.game.events?.emit('hang.pullup', {});
@@ -151,6 +160,7 @@ export class Hang extends Tech {
     // ---- a bar: hand over hand along it ----
     const bar = g.bar;
     if (P.latch('Space')) {
+      P.jumpHeldLast = true; P.jumpBuf = 0; // (the press is the kick's: the core must not read it as an air jump too, casebook rule 20)
       // swing out along it
       const sp = bar.zip ? this.shim * 0.9 : Math.max(0, this.shim) * 1.1 + c.barKick;
       P.vel.set(this.face.x * sp, c.kickUp + (bar.zip ? Math.max(0, bar.dir.y * this.shim) : 0), this.face.z * sp);
@@ -213,7 +223,8 @@ export class Hang extends Tech {
     // (the clip runs by distance: forward along the shimmy's left / the bar's length, backward the other way)
     const dist = bar ? this.shim * (g.bar.zip ? 0 : 1) * (this.face.dot(g.along) >= 0 ? 1 : -1) : this.shim;
     this.cyc = ((this.cyc || 0) + dist * dt / L) % 1;
-    const idle = C.sample(bar ? 'hangBar' : 'hangLedge', ch.time, ch.P.tmp);
+    const idle = C.sample(bar ? 'hangBar' : LEDGE.clip, ch.time, ch.P.tmp);
+    if (!bar) { idle.p[1] += LEDGE.dy; idle.p[2] += LEDGE.dz; }
     this.mv = THREE.MathUtils.damp(this.mv || 0, Math.min(1, Math.abs(this.shim) / (bar ? 1.4 : 1.0)) * move, 10, dt);
     if (this.mv > 0.001) {
       const name = bar ? 'hangBarGo' : 'hangShimmy';

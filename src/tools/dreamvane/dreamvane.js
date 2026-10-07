@@ -7,19 +7,24 @@
 //  - DOWSE (hold RMB): the dreamcatcher turns on its pin toward the loudest Lachryma about, and its web lights and its bead ticks faster
 //    the more nearly they face it and the nearer it is (Skyward Sword's dowsing: turn until it sings). The wheel ATTUNES it: to
 //    anything, or only to crystal, to chests, to the living, to what lies loose. What it finds clearly is charted (the map).
-//  - THE PICK (LMB): a two-handed overhead blow (UAL Sword_Regular_C, the cutlass's finisher, measured: tools/melee.js). Crystal gives to it a blow at a time;
-//    pots and clapperjars and minds are struck as by any heavy thing. Struck into the sand where the vane says something is VEILED,
-//    the crystal under it rises.
-//  - THE FORK (tap RMB): thrown where they look (UAL Throw), it sticks and RINGS. In a crystal, the crystal rings with it: the pick's
+//  - THE PICK (LMB): a two-handed overhead blow into the ground (the suite's Vane_PickStrike), the opener of the staff's string; held,
+//    it stays up and comes down the harder (tools/dreamvane/pick.js: the moveset, every blow, the spin, the launcher, the vault, the
+//    Dreamquake on R). Crystal gives to it a blow at a time; pots and clapperjars and minds are struck as by any heavy thing. A blow
+//    that comes down into the sand and meets nothing strikes it: where the vane says something is VEILED, the crystal under it rises.
+//  - THE FORK (tap RMB): thrown where they look (Vane_ForkThrow: it leaves the heel at the top of the swing), it sticks and RINGS. In a crystal, the crystal rings with it: the pick's
 //    blows give twice, and the last a shard. In a creature, the ringing shakes the Lachryma out of it (liquid baubles, and its poise
 //    goes). In the ground, it rings on its own: a sound every creature near goes to look at (a lure: creatures/ai/stimuli.js). Tap again and it
-//    comes back to the heel (the Leviathan Axe's recall), or it comes back when it has rung out.
+//    comes back to the heel (the Leviathan Axe's recall, caught: Vane_ForkCatch), or it comes back when it has rung out.
 //
-//  - THE SURVEY (MMB): the heel struck into the ground, and the Mind's ring goes out from them: what is in sight is understood (Mind
+//  - THE SURVEY (MMB): the heel struck into the ground (Vane_Survey), and the Mind's ring goes out from them: what is in sight is understood (Mind
 //    Mapping's pulse: cartography.js; it was N). The compass across the top of the view is the Dreamvane's too: it shows while it is worn.
 //
-//   K      draw / stow (X, Q, G, J draw theirs instead)          RMB hold  dowse (the wheel: attune)          RMB tap  throw / recall the fork
-//   LMB    the pick                                                MMB       the survey
+//   K      draw / stow (X, Q, G, J draw theirs instead)          RMB hold  dowse (Vane_Dowse; the wheel: attune)   RMB tap  the fork
+//   LMB    the pick and the staff's blows (pick.js)                MMB       the survey                        R        the Dreamquake
+//
+// Held, the vane stands in the suite's Vane_Idle (both hands on the staff, upright at their right); moving, Vane_IdleCarry (the staff in
+// the right hand, the free arm swinging with the run). The clips put the left hand on the haft themselves; it is closed onto it only
+// where it is near, and let go where the clip takes it away (tools/toolbody.js). Nothing of the vane goes through the ground.
 //
 // Prior art: Skyward Sword's dowsing, Pikmin's and Death Stranding's scanners (a sense that points, not a map that shows), the
 // pickaxe of every mining game (Minecraft, Deep Rock Galactic), God of War's Leviathan Axe (thrown, stuck, recalled), and the tuning
@@ -29,12 +34,23 @@ import { VaneMeter } from '../../vfx/vanemeter.js';
 import * as THREE from 'three';
 import { HeldTool } from '../heldtool.js';
 import { DreamvaneModel, FORK as FORK_SIZE } from './model.js';
-import { measureSwing, sweep, magnet } from '../melee.js';
 import { G, groups } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
+import { T } from '../../core/config.js';
+import { Track } from '../../courier/anim/animator.js';
+import { VaneMoves, VANE_MOVES, VANE_STRINGS } from './pick.js';
+import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand, carryInto } from '../toolbody.js';
+import { handFromTool } from '../grip.js';
 
-const PICK = { clip: 'swordC', from: 0.25, to: 1.3 }; // (UAL Sword_Regular_C: the overhead brought down to the ground, measured: its strike 0.6-0.7 s)
-const SURVEY = { clip: 'swordC', from: 0.45, strike: 0.32, dur: 0.75 }; // (the heel struck down: the pick's downstroke for now)
+// the vane's own clips (clip seconds): the survey's heel meets the ground at `strike`; the fork leaves the heel at `release`, and is
+// caught at `at`; `busy` and `end` are real seconds from the press (the throw lets go of the hands before its pose has faded)
+const IDLE = 'Vane_Idle', CARRY = 'Vane_IdleCarry', DOWSE = 'Vane_Dowse';
+const SURVEY = { clip: 'Vane_Survey', from: 0.1, rate: 1.1, strike: 0.42, end: 1.15 };
+const THROW = { clip: 'Vane_ForkThrow', from: 0.25, rate: 1.15, release: 0.6, busy: 0.8, end: 1.0 };
+const CATCH = { clip: 'Vane_ForkCatch', at: 0.12, end: 0.77 };
+const COUNTER = 0.8; // (seconds after a parry in which LMB is the counter)
+// what of the vane must stay out of the ground (tool frame, and a radius): the hoop in the crook, the crook's top, the fork's tines, the pick
+const OFF_GROUND = [{ x: 1.0, y: 0.275, r: 0.2 }, { x: 1.0, y: 0.55, r: 0.03 }, { x: -1.0, r: 0.02 }, { x: 0.83, y: 0.26, r: 0.0 }];
 const TAP = 0.16, RANGE = 70, FORK = { speed: 34, gravity: 6, ring: 7, back: 28, reach: 60, life: 2.2 };
 export const ATTUNE = [ // (exported: the compass's vane layer wears each mode's colour and sigil, vfx/vanehud.js)
   { id: 'any', kinds: null, color: 0xe8d7b6 },
@@ -54,60 +70,79 @@ export class Dreamvane extends HeldTool {
       // across the back, the crook up over the right shoulder, the heel down by the left hip (a staff slung on a strap)
       worn: { at: [0.1, 1.05, -0.2], along: [-0.55, 1, -0.05], out: [0, 0, -1] },
       draw: { twist: -18, lean: 8, via: [-0.45, 1.25, 0.1], pole: [-0.5, -0.25, -0.35] },
-      idle: 'stance:dreamvane', idles: ['stance:dreamvane', 'idle'], grip: 'torchIdle', drawK: 1.2, // (their pilgrim's stance: courier/anim/stances.js)
+      idle: IDLE, idles: [IDLE, CARRY, 'stance:dreamvane', 'idle'], grip: 'torchIdle', drawK: 1.2, // (the suite's; the pilgrim's stance without it: courier/anim/stances.js)
     });
     this.model = new DreamvaneModel();
     this.mount();
     this.mgr.game.dreamvane = this;
     this.rmbT = -1; this.dowsing = false; this.att = 0; this.glow = 0; this.tickT = 0; this.found = new WeakSet(); this.charted = new WeakSet();
-    this.swing = null; this.throwT = -1; this.surveyT = -1;
-    // (the pick's arc through the air while it comes down: its look is vfx/library.js 'swing.dreamvane')
-    this.mgr.game.vfx?.swing('swing.dreamvane').follow((a, b) => { const s = this.swing; if (!s || s.t < 0.45 || s.t > 0.78) return false; const M = this.model.group.matrixWorld; a.set(0.4, 0, 0).applyMatrix4(M); this.model.headWorld(b); return true; });
+    this.throwT = -1; this.thrown = false; this.surveyT = -1; this.catchT = -1; this.counterT = 0;
+    this.dowseW = 0; this.dowseT = 0; this.freeW = 0; this.legClip = null; this.legState = {}; this.leftHold = {};
+    // the blows (pick.js); the arc of the head through the air is vfx/library.js 'swing.dreamvane'
+    this.trail = this.mgr.game.vfx?.swing('swing.dreamvane') || null;
+    this.moves = new VaneMoves(this, {
+      id: 'dreamvane', sound: false, moves: VANE_MOVES, strings: VANE_STRINGS, reach: 0.75, tip: 1.05, k: 1.07, cause: 'picked', pot: 60,
+      events: { swing: 'dreamvane.swing', hit: 'dreamvane.hit' }, trail: this.trail,
+      segment: (a, b) => { this.toolPoint(0.4, 0, 0, a); this.model.headWorld(b); return a; },
+      onBegin: (c) => { sfx.whoosh?.(0.8); carryInto(this.moves, c); }, onUpdate: (c) => this.onMove(c),
+    });
+    // the twirl turned something aside: for a moment, LMB is the counter (courier/parries.js)
+    this.mgr.game.events?.on('move.parry', (e) => { if (e.tool === 'dreamvane' && e.by === 'courier') this.counterT = COUNTER; });
     this.fork = { state: 'heel', mesh: null, pos: new THREE.Vector3(), vel: new THREE.Vector3(), t: 0, ring: 0, ent: null, off: new THREE.Vector3(), beat: 0 };
     this.needle = { yaw: 0, pitch: 0 };
   }
-  get busy() { return !!this.swing || this.throwT >= 0; }
-  get slow() { return this.toolOut && (this.dowsing || this.swing) ? 0.7 : 1; }
+  get throwing() { return this.throwT >= 0 && this.throwT < THROW.busy; }
+  get busy() { return this.moves.busy || this.throwing || this.surveyT >= 0; }
+  get slow() { return this.toolOut && (this.dowsing || this.moves.busy) ? 0.7 : 1; }
 
-  onStow() { this.dowsing = false; this.swing = null; this.throwT = -1; this.surveyT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  onStow() { this.dowsing = false; this.cutMove(); this.throwT = -1; this.surveyT = -1; this.catchT = -1; this.rmbT = -1; if (this.fork.state !== 'heel') this.home(); }
+  /** The move stops where it is, a whole-body one's Launch with it (the engine's cancel alone leaves the Launch running out its time,
+   *  the pose frozen: put away mid-vault, they slid on in it for a second). */
+  cutMove() { if (this.moves.cur) this.moves.finish(); this.moves.cancel(); }
 
   // ---------------------------------------------------------------- input, while it is in the hands
   use(dt, raw, inp) {
-    const g = this.game;
-    if (inp.wasPressed('Mouse0') && !this.swing && this.throwT < 0 && this.surveyT < 0) this.startSwing();
-    if (inp.wasPressed('Mouse1') && !this.swing && this.throwT < 0 && this.surveyT < 0) this.startSurvey();
+    const g = this.game, M = this.moves, free = !this.throwing && this.surveyT < 0;
+    if (this.counterT > 0 && free && !M.busy && inp.wasPressed('Mouse0')) { this.counterT = 0; M.begin('spin', 'counter'); }
+    M.update(dt, inp, { allow: free && this.P.techs.active?.id !== 'swim' });
+    if (inp.wasPressed('Mouse1') && free && !M.busy) this.startSurvey();
     if (inp.wasPressed('Mouse2')) this.rmbT = 0;
     if (this.rmbT >= 0) {
       this.rmbT += raw;
       if (!inp.isDown('Mouse2')) { if (this.rmbT < TAP && !this.dowsing) this.forkButton(); this.rmbT = -1; this.dowsing = false; }
-      else if (this.rmbT >= TAP && !this.swing) this.dowsing = true;
+      else if (this.rmbT >= TAP && !M.busy && !this.throwing) this.dowsing = true;
     }
     if (this.dowsing && inp.wheel) { this.att = (this.att + (inp.wheel > 0 ? 1 : ATTUNE.length - 1)) % ATTUNE.length; inp.wheel = 0; sfx.click?.(); g.events?.emit('dowse.attune', { to: ATTUNE[this.att].id }); }
   }
 
   // ---------------------------------------------------------------- every frame
   always(dt, raw) {
-    this.swingTick(dt);
+    if (this.drawTarget === 0 && this.moves.cur) this.cutMove(); // (being put away: the blow ends now, not frozen through the holster)
     this.surveyTick(dt);
-    if (this.throwT >= 0) { this.throwT += dt; if (this.throwT > 0.75) this.throwT = -1; }
+    this.throwTick(dt);
+    if (this.catchT >= 0 && (this.catchT += dt) >= CATCH.end) this.catchT = -1;
+    this.counterT = Math.max(0, this.counterT - dt);
+    this.dowseW = THREE.MathUtils.damp(this.dowseW, this.dowsing && this.held ? 1 : 0, 8, dt);
+    this.dowseT = this.dowseW > 0.01 ? this.dowseT + dt : 0;
     this.forkTick(dt);
     this.dowseTick(raw);
   }
 
   // ---------------------------------------------------------------- the survey (MMB): Mind Mapping's pulse, the Dreamvane's now
-  /** The heel struck into the ground: at the blow the Mind's ring goes out from them (cartography.js survey: what is in sight is
-   *  understood). A placeholder motion (the pick's downstroke) until Calissa's own. */
-  startSurvey() { this.surveyT = 0; this.surveyed = false; this.P.bodyYaw = this.P.yaw; this.game.events?.emit('dreamvane.survey', {}); }
+  /** The heel struck into the ground (Vane_Survey): at the blow the Mind's ring goes out from them (cartography.js survey: what is in
+   *  sight is understood). */
+  startSurvey() { this.surveyT = 0; this.surveyed = false; this.P.bodyYaw = this.P.yaw; this.game.events?.emit('dreamvane.survey', { by: 'courier' }); }
   surveyTick(dt) {
     if (this.surveyT < 0) return;
     this.surveyT += dt;
-    if (!this.surveyed && this.surveyT >= SURVEY.strike) {
+    const t = SURVEY.from + this.surveyT * SURVEY.rate;
+    if (!this.surveyed && t >= SURVEY.strike) {
       this.surveyed = true;
       const ok = this.game.cartography?.survey(false);
       if (!ok) { sfx.fizzle?.(); this.game.log?.say('warn', 'The Mind will not answer yet (the survey is resting, or there is too little Lachryma).', { key: 'survey.no', throttle: 3 }); }
       else { this.game.fx?.impact?.(this.P.pos.clone(), new THREE.Vector3(0, 1, 0), { sparks: 4, dust: 3 }); this.P.shake = Math.max(this.P.shake || 0, 0.15); }
     }
-    if (this.surveyT > SURVEY.dur) this.surveyT = -1;
+    if (t >= SURVEY.end) this.surveyT = -1;
   }
 
   // ---------------------------------------------------------------- dowsing
@@ -149,58 +184,48 @@ export class Dreamvane extends HeldTool {
     this.target = target;
   }
 
-  // ---------------------------------------------------------------- the pick
-  startSwing() {
-    const g = this.game, P = this.P, ch = g.character;
-    const track = measureSwing(ch, PICK.clip, { tip: 1.05 });
-    if (!track) return;
-    const m = magnet(g, P, this.aimFlat(_a).clone(), { range: 3.4, cone: 0.9 });
-    if (m) P.bodyYaw = Math.atan2(m.pos.x - P.pos.x, m.pos.z - P.pos.z);
-    else P.bodyYaw = P.yaw;
-    this.swing = { t: PICK.from, prev: PICK.from, dur: PICK.to, track, seen: new Set(), struck: 0, ground: false };
-    sfx.whoosh?.(0.8);
-    g.events?.emit('dreamvane.swing', {});
+  // ---------------------------------------------------------------- the pick (its blows: pick.js, played by the engine)
+  /** Each frame of a blow: the raised pick held up while LMB is (the charge), a blow come down into the ground, the Dreamquake's ring. */
+  onMove(c) {
+    if (c.def.holdAt != null && c.t > c.def.holdAt) c.t = c.def.holdAt;
+    if (c.def.ground != null && !c.grounded && c.t >= c.def.ground) { c.grounded = true; if (!this.moves.hit.size && this.P.grounded) this.strikeGround(); }
+    if (c.def.ringAt != null && !c.quaked && c.t >= c.def.ringAt) { c.quaked = true; this.quake(c); }
   }
-  swingTick(dt) {
-    const s = this.swing;
-    if (!s) return;
-    const g = this.game, P = this.P;
-    s.prev = s.t; s.t += dt;
-    sweep(g, P, P.bodyYaw, s.track, s.prev, s.t, {
-      reach: 0.75, seen: s.seen,
-      hit: (kind, ent, at, dir) => {
-        s.struck++;
-        if (kind === 'thing') { ent.struck?.(at, dir, 1.5, 'courier', 'dreamvane'); return; }
-        if (kind === 'pot') g.breakables.shatter(ent, at, dir, 1.4, 'picked', 'courier');
-        else if (kind === 'clapper') { if (ent.ally) return; g.clappers.knock(ent, dir.clone().setY(0).normalize().multiplyScalar(8).setY(5)); g.clappers.stun(ent, 2, g.shells.glowOutline, g.shells.xray); }
-        else g.creatures.strike(ent, at, dir, 1.6, 'picked');
-        g.events?.emit('dreamvane.hit', { what: kind === 'creature' ? ent.kind : kind });
-      },
-    });
-    // the end of the blow: into the ground, if it met nothing (the sand where the vane said: what is veiled rises)
-    if (!s.ground && s.t >= s.track.strike[1]) {
-      s.ground = true;
-      if (!s.struck) {
-        const tip = this.model.pickWorld(_a);
-        const down = g.physics.raycast(_b.copy(tip).setY(tip.y + 0.4), _c.set(0, -1, 0), 1.6, P.collider, undefined, (k) => !k.isSensor());
-        if (down) {
-          g.fx?.impact?.(down.point.clone(), down.normal.clone(), { sparks: 2, dust: 5 });
-          sfx.thunk?.();
-          P.shake = Math.max(P.shake || 0, 0.15);
-          const n = g.crystals?.reveal(down.point, 3.2, 'courier', 'pick') || 0;
-          g.ai?.stimuli.emit('noise', down.point, { radius: 12, strength: 0.4, by: 'courier' });
-          if (n) g.events?.emit('dreamvane.unearth', { n });
-        }
-      } else { P.shake = Math.max(P.shake || 0, 0.2); g.time?.pulse?.('hit', 0.06, 0.04, { release: 0.1 }); sfx.cutHit?.(1.2); }
-    }
-    if (s.t >= s.dur) this.swing = null;
+  /** A blow that met nothing comes down into the sand: what is veiled there rises (the vane said where). */
+  strikeGround() {
+    const g = this.game, P = this.P, tip = this.model.pickWorld(_a);
+    const down = g.physics.raycast(_b.copy(tip).setY(tip.y + 0.4), _c.set(0, -1, 0), 1.6, P.collider, undefined, (k) => !k.isSensor());
+    if (!down) return;
+    g.fx?.impact?.(down.point.clone(), down.normal.clone(), { sparks: 2, dust: 5 });
+    sfx.thunk?.();
+    P.shake = Math.max(P.shake || 0, 0.15);
+    const n = g.crystals?.reveal(down.point, 3.2, 'courier', 'pick') || 0;
+    g.ai?.stimuli.emit('noise', down.point, { radius: 12, strength: 0.4, by: 'courier' });
+    if (n) g.events?.emit('dreamvane.unearth', { n, by: 'courier' });
+  }
+  /** The Dreamquake comes down: the ground rings round them (the engine's ring strikes what is in it), and what is veiled rises. */
+  quake(c) {
+    const g = this.game, P = this.P, R = this.moves.rule(c.def)?.radius ?? c.def.ring; // (the ring the engine strikes in: Dovina's row's, else the table's)
+    const n = g.crystals?.reveal(P.pos.clone(), R, 'courier', 'quake') || 0;
+    g.ai?.stimuli.emit('noise', P.pos.clone(), { radius: 24, strength: 0.8, by: 'courier' });
+    g.techs?.get('slam')?.ring?.(P.pos.clone(), R);
+    P.fovPunch = Math.max(P.fovPunch || 0, 8);
+    if (n) g.events?.emit('dreamvane.unearth', { n, by: 'courier' });
   }
 
   // ---------------------------------------------------------------- the fork
   forkButton() {
     const F = this.fork;
-    if (F.state === 'heel') this.throwFork();
+    if (F.state === 'heel') { if (this.throwT < 0 && !this.moves.busy) this.startThrow(); }
     else if (F.state !== 'back') this.recall();
+  }
+  /** The throw (Vane_ForkThrow): the heel swung up and over, and the fork leaves it at the top (throwTick). */
+  startThrow() { this.throwT = 0; this.thrown = false; this.P.bodyYaw = this.P.yaw; }
+  throwTick(dt) {
+    if (this.throwT < 0) return;
+    this.throwT += dt;
+    if (!this.thrown && THROW.from + this.throwT * THROW.rate >= THROW.release) { this.thrown = true; if (this.held) this.throwFork(); }
+    if (this.throwT >= THROW.end) this.throwT = -1;
   }
   throwFork() {
     const g = this.game, P = this.P, F = this.fork;
@@ -216,9 +241,8 @@ export class Dreamvane extends HeldTool {
     F.vel.copy(d.normalize().multiplyScalar(FORK.speed)); F.vel.y += 0.5 * FORK.gravity * tFly; // (aimed a little high: it drops on the way)
     F.state = 'fly'; F.t = 0; F.ent = null; F.ring = 0;
     this.model.setFork(false);
-    this.throwT = 0;
     P.bodyYaw = P.yaw;
-    sfx.toss?.(); g.events?.emit('fork.throw', {});
+    sfx.toss?.(); g.events?.emit('fork.throw', { by: 'courier' });
   }
   recall() { const F = this.fork; if (F.state === 'heel') return; F.state = 'back'; F.t = 0; F.ent = null; sfx.whoosh?.(0.5); }
   /** Back in the heel at once (put away while it was out). */
@@ -247,7 +271,7 @@ export class Dreamvane extends HeldTool {
         if (e?.type === 'creature' && !e.ally) {
           g.baubles?.spawn(e.center(_c).clone(), 1, { spread: 0.6, up: 3, ox: 0.75 });
           g.stun?.add(e, 0.16, { by: 'courier', cause: 'fork' });
-          g.events?.emit('fork.drain', { kind: e.kind });
+          g.events?.emit('fork.drain', { kind: e.kind, by: 'courier' });
         } else if (e?.type === 'clapper' && !e.ally) { g.baubles?.spawn(e.pos.clone().setY(e.pos.y + 0.4), 1, { spread: 0.5, up: 3, ox: 0.4 }); }
         if (Math.floor(F.ring) % 2 === 0) sfx.fork?.(0.6);
       }
@@ -255,7 +279,8 @@ export class Dreamvane extends HeldTool {
     } else if (F.state === 'back') {
       const heel = this.toolPoint(-0.55, 0, 0, _c);
       const to = _a.copy(heel).sub(F.pos), d = to.length(), sp = Math.min(FORK.back, 8 + F.t * 40);
-      if (d < 0.3 || F.t > 3) { this.home(); sfx.clink?.(3, 1, 'glass'); g.events?.emit('fork.catch', {}); return; }
+      if (this.catchT < 0 && d < sp * CATCH.at + 0.3 && this.held && !this.moves.busy && !this.throwing) this.catchT = 0; // (the hands go to meet it)
+      if (d < 0.3 || F.t > 3) { this.home(); sfx.clink?.(3, 1, 'glass'); g.events?.emit('fork.catch', { by: 'courier' }); return; }
       F.pos.addScaledVector(to.normalize(), Math.min(d, sp * dt));
       F.vel.copy(to).multiplyScalar(-1); // (it flies heel-first: the tines trail)
     }
@@ -280,20 +305,85 @@ export class Dreamvane extends HeldTool {
     else if (e?.type === 'breakable') { g.breakables.shatter(e, hit.point, dir, 0.8, 'fork', 'courier'); what = 'pot'; this.recall(); }
     sfx.fork?.(1);
     g.fx?.impact?.(hit.point.clone(), hit.normal.clone(), { sparks: 6, dust: 1 });
-    g.events?.emit('fork.stick', { what });
+    g.events?.emit('fork.stick', { what, by: 'courier' });
   }
 
   // ---------------------------------------------------------------- animation and the hands
+  /** The upper body: Vane_Idle standing, Vane_IdleCarry moving (the free arm then swings with the run), and over it what plays. */
+  animate(ch, base, dt) {
+    const C = ch.clips, P = this.P;
+    if (!this.track) {
+      this.idleClip = C.clips[IDLE] ? IDLE : 'stance:dreamvane';
+      this.track = new Track(C, new Set([IDLE, CARRY, 'stance:dreamvane', 'idle']));
+      this.track.play(this.idleClip, 0, 0.01);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.xf = new Crossfade(C); this.xfLegs = new Crossfade(C, 0.15);
+      this.lower = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
+      this.mask = Float32Array.from(ch.MASK_UPPER); this.leftArm = C.bones.map((b, i) => (/L$/.test(b) && /arm|hand|f_|thumb/.test(b) ? i : -1)).filter((i) => i >= 0);
+    }
+    const layerW = this.w * smooth(T.weapon.drawGrab, 1, this.drawT) * (1 - this.mgr.override);
+    const a = this.pose(C, this.P2);
+    if (layerW <= 0.001) { this.xf.reset(); this.xfLegs.reset(); return; }
+    const moving = P.grounded && Math.hypot(P.vel.x, P.vel.z) > 1.2;
+    const want = C.clips[CARRY] && moving && !a && !this.dowsing ? CARRY : this.idleClip;
+    if (this.track.cur !== want) this.track.play(want, 0, 0.3);
+    this.track.update(dt);
+    const layer = this.track.sample(this.P1);
+    if (a) C.blend(layer, a.pose, a.w);
+    this.xf.keyed(layer, this.playKey, dt); // (one blow straight into the next: tools/toolbody.js)
+    this.freeW = THREE.MathUtils.damp(this.freeW, want === CARRY ? 1 : 0, 8, dt);
+    for (const i of this.leftArm) this.mask[i] = ch.MASK_UPPER[i] * (1 - this.freeW);
+    C.blend(base, layer, layerW, this.mask, 0);
+    this.moves.legs(ch, base, layerW, dt); // (standing to strike, the legs are the blow's: tools/moveset.js)
+    const lg = this.legClip;
+    standLegs(ch, P, base, lg?.clip ?? null, layerW, this.legState, dt, { t: lg?.t ?? 0, loop: !!lg?.loop });
+    this.xfLegs.keyed(base, this.playKey || 'stand', dt, this.lower, legsW(this.moves, this.legState) * layerW); // (the legs and hips through a join, too)
+  }
+
+  /** What plays over the stance: a blow (the engine), the throw, the catch, the survey, the dowse. */
   pose(C, out) {
-    const s = this.swing;
-    if (s) { C.sample(PICK.clip, s.t, out, false); return { pose: out, w: Math.min(1, (s.t - PICK.from) / 0.08) * (1 - smooth(s.dur - 0.3, s.dur, s.t)) }; }
-    if (this.surveyT >= 0) { C.sample(SURVEY.clip, SURVEY.from + this.surveyT * 1.1, out, false); return { pose: out, w: Math.min(1, this.surveyT / 0.08) * (1 - smooth(SURVEY.dur - 0.25, SURVEY.dur, this.surveyT)) }; }
-    if (this.throwT >= 0) { C.sample('throw', 0.15 + this.throwT * 1.1, out, false); return { pose: out, w: Math.min(1, this.throwT / 0.05) * (1 - smooth(0.5, 0.75, this.throwT)) }; }
+    this.legClip = null;
+    const m = this.moves.pose(C, out);
+    if (m) return m;
+    const fade = (t, a, b) => 1 - smooth(a, b, t);
+    if (this.throwT >= 0) {
+      const t = THROW.from + this.throwT * THROW.rate;
+      C.sample(THROW.clip, t, out, false); this.legClip = { clip: THROW.clip, t };
+      return { pose: out, w: Math.min(1, this.throwT / 0.06) * fade(this.throwT, THROW.busy - 0.2, THROW.end) };
+    }
+    if (this.surveyT >= 0) {
+      const t = SURVEY.from + this.surveyT * SURVEY.rate;
+      C.sample(SURVEY.clip, t, out, false); this.legClip = { clip: SURVEY.clip, t };
+      return { pose: out, w: Math.min(1, this.surveyT / 0.08) * fade(t, SURVEY.end - 0.3, SURVEY.end) };
+    }
+    if (this.catchT >= 0) { C.sample(CATCH.clip, this.catchT, out, false); return { pose: out, w: Math.min(1, this.catchT / 0.05) * fade(this.catchT, CATCH.end - 0.25, CATCH.end) }; }
+    if (this.dowseW > 0.01) { C.sample(DOWSE, this.dowseT, out, true); this.legClip = { clip: DOWSE, t: this.dowseT, loop: true }; return { pose: out, w: this.dowseW }; }
     return null;
   }
-  /** The left hand high on the staff, above the right (the owner's note: the upper portion of the haft), but not while it throws;
-   *  through a swing, low on it, where the pick's two-handed blow wants it. */
-  second() { return this.throwT >= 0 ? null : this.swing || this.surveyT >= 0 ? { x: -0.3 } : { x: 0.3 }; }
-  fpArc() { const s = this.swing; return s ? { arc: 'over', u: Math.min(1, (s.t - PICK.from) / (s.dur - PICK.from)) } : { lift: this.dowsing ? 0.08 : 0 }; }
+  /** What is playing now, for the crossfade between two of them (tools/toolbody.js). */
+  get playKey() { return this.moves.cur || (this.throwT >= 0 ? 'throw' : this.surveyT >= 0 ? 'survey' : this.catchT >= 0 ? 'catch' : this.dowseW > 0.5 ? 'dowse' : null); }
+
+  /** After the vane is placed in the right hand: kept out of the ground, the left hand closed on it where the clip has it, the ribbon. */
+  placed(M) {
+    const ch = this.game.character, P = this.P, model = this.model;
+    if (this.held && !P.fp && ch) {
+      if (this.offGround(ch, M)) { M.decompose(model.group.position, model.group.quaternion, model.group.scale); model.group.updateMatrixWorld(true); }
+      closeHand(ch, this.grip, M, this.leftHold, this.dt || 1 / 60, { from: -0.45, to: 0.98 });
+    }
+    this.moves.afterHands(this.dt || 1 / 60);
+  }
+  /** The suite's swings were made with a shorter staff and without the crook's hoop: where one would put the hoop, the crook or the
+   *  fork's tines through the floor, the vane is turned up about the hand until it rests on the ground (tools/toolbody.js). */
+  offGround(ch, M) {
+    const P = this.P, a = _a.set(1.0, 0, 0).applyMatrix4(M), b = _b.set(-1.0, 0, 0).applyMatrix4(M), low = a.y < b.y ? a : b;
+    if (low.y > P.renderPos.y + 0.7) return false;
+    const floor = floorUnder(this.game, P, low.x, low.z, P.renderPos.y);
+    if (liftAbove(M, OFF_GROUND, floor) <= 0) return false;
+    handFromTool(this.grip, M, 'R', _c, 0, 0, 0, _q);
+    if (!Number.isFinite(_c.x + _c.y + _c.z + _q.x + _q.w)) return false;
+    ch.reachHand('R', _c, _q, 1);
+    M.multiplyMatrices(ch.bones.handR.matrixWorld, this.grip.R);
+    return true;
+  }
+  fpArc() { return this.moves.fpArc() || { lift: this.dowsing ? 0.08 : 0 }; }
   restSig() { return `${this.fork.state}`; }
 }

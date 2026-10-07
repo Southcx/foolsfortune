@@ -17,8 +17,13 @@
 //    things are stored in it as cards or taken out as things. The binder, the film, the bestiary and the Compendium are the Codex's
 //    VERITOME shelf (B): the Codex is the Veritome's own pages.
 //  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: they read the ground off it.
+//  - THE BOOK BASH. LMB with the lens down: the book clapped shut and swung, a forehand and a backhand (the combo engine: tools/moveset.js).
+//  - THE BODY (the Courier's own suite, Tome_*): the book held open at the waist (Tome_Idle), raised to the eye before first person takes
+//    over (Tome_LensRaise), the shutter pressed (Tome_Shutter), the Flash thrust out (Tome_Flash), the pages turned while a mind is being
+//    reprogrammed (Tome_FlipPages), the ground read off it (Tome_Survey), the bash (Tome_BookBash1-2). In third person the hands carry
+//    the book (hold.js handsFrame), so every clip moves it; the hands then close on its edges.
 //
-//   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     P (while it is out)  the box and the bank
+//   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash     P (while it is out)  the box and the bank
 //   B      the Codex: the binder (Take out, Condense), the film (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
@@ -36,10 +41,12 @@ import { scorePhoto, serial } from './photo.js';
 import { kindOf, appraise } from './darkroom.js';
 import { ENGAGED } from './subjects.js';
 import { Viewfinder } from './viewfinder.js';
-import { bookFrame, holdBook } from './hold.js';
+import { bookFrame, holdBook, handsFrame } from './hold.js';
 import { measureGrip } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { hipMirror, mirrorSide } from '../heldtool.js';
+import { Moveset } from '../moveset.js';
+import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { unwrite, inscribed } from '../soulbrush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
 
@@ -50,6 +57,14 @@ const ZOOM = { wide: 64, tight: 16 };
 const CAPTURE = { range: 18, time: 1.1 };
 // (the grip measures a tool along +X; the book's spine is its +Y)
 const SPINE_TO_GRIP = new THREE.Matrix4().makeRotationZ(-Math.PI / 2);
+// The book bash, a table for the combo engine (tools/moveset.js): the book shut in the right hand and swung flat, a forehand then a
+// backhand. Numbers proposed to Dovina (docs/handoffs/dovina/): a book is a poor club (less than the Soul Brush's), the second a shove.
+const MOVES = {
+  b1: { rule: 'bash1', clip: 'Tome_BookBash1', chain: [0.34, 0.63], hit: { power: 0.9, dmg: 0.7, push: 2.5 }, lunge: 2.2, arc: 'r2l' },
+  b2: { rule: 'bash2', clip: 'Tome_BookBash2', hit: { power: 1.2, dmg: 1.0, push: 5 }, lunge: 2.2, arc: 'l2r', heat: 0.3 },
+};
+const STRINGS = { ground: ['b1', 'b2'] };
+const LIFT = 0.3; // (the lens: seconds of Tome_LensRaise in third person before first person takes over)
 
 export class Veritome extends Tech {
   constructor(mgr) {
@@ -68,10 +83,16 @@ export class Veritome extends Tech {
     this.charge = 0; this.target = null; this.chance = false;
     this.shotCool = 0; this.pending = null; this.previewT = 0; this.preview = null;
     this.readT = 0; this.readW = 0; this.holdW = 0; this.tide = 0;
+    this.liftT = -1; this.liftK = 0; this.bashK = 0; this.legSt = {};
+    this.moves = new Moveset(this, {
+      id: 'veritome', moves: MOVES, strings: STRINGS, tip: 0.3, reach: 0.3, pot: 30, k: 1.0, cause: 'bashed', events: { swing: 'veritome.swing', hit: 'veritome.hit' },
+      segment: (a, b) => { this.model.group.getWorldPosition(a); b.set(0, 0.3, 0).applyMatrix4(this.model.group.matrixWorld); },
+    });
     const last = this.book.film.plates[this.book.film.plates.length - 1];
     if (last?.thumb) this.model.setPhoto(last.thumb);
     // the Survey reads the ground off the open book (the same hold, in third person)
-    g.events?.on('map.pulse', (e) => { if (!e.god) this.read(1.5); });
+    g.events?.on('map.pulse', (e) => { if (e.god) return; this.read(1.5); if (this.readT > 0 || this.held) this.gesture('Tome_Survey'); });
+    g.events?.on('flash.fire', () => { if (this.drawT > 0.6) this.gesture('Tome_Flash', { from: 0.12, fadeOut: 0.2 }); });
   }
 
   // ---------------------------------------------------------------- what the rest of the game asks
@@ -79,7 +100,8 @@ export class Veritome extends Tech {
   get toolOut() { return this.drawTarget > 0 || this.drawT > 0.02; }
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
-  get stance() { return this.toolOut && this.lens; }
+  get stance() { return this.toolOut && (this.lens || this.moves.busy); }
+  get busy() { return this.moves.busy; }
   get slow() { return this.toolOut && this.lens ? 0.55 : 1; }
   get film() { return this.book.film; }
 
@@ -88,6 +110,8 @@ export class Veritome extends Tech {
     if (this.toolOut || this.mgr.active?.handsBusy || this.mgr.get?.('carry')?.item || this.game.belt?.inHand) return;
     this.readT = Math.max(this.readT, dur);
   }
+  /** A clip of the book's own over its idle (the Flash, the shutter, the survey): cut off by the next. */
+  gesture(clip, o = { fadeOut: 0.25 }) { this.gestures?.play(clip, o); }
 
   computeSocket(ch) {
     this.grip = measureGrip(ch);
@@ -120,14 +144,23 @@ export class Veritome extends Tech {
     if (this.drawTarget > this.drawT && free) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
     if (this.drawT > 0.02 && !this.wasOut) { this.wasOut = true; sfx.toolDraw(); g.events?.emit('veritome.draw', {}); }
-    if (this.drawT <= 0.02 && this.wasOut) { this.wasOut = false; sfx.holster?.(); this.lower(); g.events?.emit('veritome.stow', {}); }
+    if (this.drawT <= 0.02 && this.wasOut) { this.wasOut = false; sfx.holster?.(); this.lower(); this.moves.cancel(); g.events?.emit('veritome.stow', {}); }
     this.shotCool -= raw;
     if (this.held && inp.enabled && !g.codex?.open) {
-      const wantLens = inp.isDown('Mouse2');
-      if (wantLens && !this.lens) this.raise();
-      else if (!wantLens && this.lens) this.lower();
+      // RMB: the book lifted to the eye (Tome_LensRaise, in third person), then the lens (first person); already in first person, at once
+      const wantLens = inp.isDown('Mouse2') && !this.moves.busy;
+      if (wantLens && !this.lens) { this.liftT = Math.max(0, this.liftT) + raw; if (P.fp || this.liftT >= LIFT) this.raise(); }
+      else if (!wantLens) { if (this.lens) this.lower(); this.liftT = -1; }
       if (this.lens) this.lensUpdate(raw, inp);
-    } else if (this.lens) this.lower();
+      this.moves.update(dt, inp, { allow: !this.lens && this.liftT < 0 && !g.reprogram?.open && this.mgr.active?.id !== 'swim' });
+      if (this.lens || this.liftT >= 0) this.moves.buffer = 0; // (LMB with the lens up is the shutter: never a bash buffered for when it comes down)
+    } else { if (this.lens) this.lower(); this.liftT = -1; if (!this.held) this.moves.cancel(); }
+    this.liftK = THREE.MathUtils.damp(this.liftK, this.liftT >= 0 || this.lens ? 1 : 0, this.liftT >= 0 || this.lens ? 14 : 8, raw);
+    if (this.lens) this.liftAt = 0.46; else if (this.liftT >= 0) this.liftAt = this.liftT * (0.46 / LIFT); // (where in Tome_LensRaise: held there as it is let down)
+    this.bashK = THREE.MathUtils.damp(this.bashK, this.moves.busy ? 1 : 0, this.moves.busy ? 22 : 8, dt);
+    // a mind being rewritten (reprogram.js): the pages turned while they type, the book taken out for it if the hands are free
+    this.flipping = !!g.reprogram?.open;
+    if (this.flipping && !this.toolOut) this.read(0.4);
     this.lensK = THREE.MathUtils.damp(this.lensK, this.lens ? 1 : 0, 14, raw);
     this.game.ui?.want('lens', this.lens && this.toolOut); // (the lens up: the picture is the whole screen, the HUD steps out: hideui.js)
     P.lens = this.lensK > 0.001 ? { k: this.lensK, fov: THREE.MathUtils.lerp(ZOOM.wide, ZOOM.tight, this.zoom) } : null;
@@ -142,7 +175,7 @@ export class Veritome extends Tech {
     const tide = W ? (W.tide + (W.tideT || 0) / TIDE_LEN) / TIDES.length : (performance.now() / 320000) % 1;
     this.model.setTime(tide); this.tide = tide;
     this.model.setHeading(P.yaw);
-    this.model.setOpen(Math.max(smooth(HOLD, 1, this.drawT), smooth(0.2, 0.9, this.readW)));
+    this.model.setOpen(Math.max(smooth(HOLD, 1, this.drawT), smooth(0.2, 0.9, this.readW)) * (1 - this.bashK)); // (shut to be swung)
     this.model.setGlow(this.lens ? 0.4 + 0.6 * this.charge : 0);
     this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, film: { left: Math.min(this.film.left, this.book.shots || (this.game.pneuka?.count('mat.film') ? ROLL : 0)), roll: ROLL } });
     const shells = document.getElementById('shells'); // (the Psygun's shells are not the book's)
@@ -212,6 +245,7 @@ export class Veritome extends Tech {
     if (!this.book.loadFilm()) { sfx.fizzle?.(); g.log?.say('warn', 'You have no film. (Old Grog sells it on the pier.)', { key: 'nofilm', throttle: 3 }); this.shotCool = 0.4; return; }
     this.book.useShot();
     this.shotCool = 0.6;
+    this.gesture('Tome_Shutter', { fadeOut: 0.12 });
     const report = scorePhoto(g, g.camera);
     // a full charge on an engaged creature is a good plate (held; at the shutter chance, better), and the lens drinks a little from it.
     // (a photograph never stuns: that is the Flash's, on its own key)
@@ -263,13 +297,34 @@ export class Veritome extends Tech {
   posOf(s) { return s.ref?.pos?.isVector3 ? s.ref.pos : s.ref?.body?.translation ? new THREE.Vector3().copy(s.ref.body.translation()) : s.ref?.center?.isVector3 ? s.ref.center : null; }
 
   // ---------------------------------------------------------------- animation and the hands
+  /** The upper body's layer: the book held open (Tome_Idle; the pages turned, Tome_FlipPages, while a mind is reprogrammed), lifted to
+   *  the eye for the lens (Tome_LensRaise, held up while it is), a gesture (the Flash, the shutter, the survey), the bash over that;
+   *  every change crossfaded (tools/toolbody.js), the legs the clip's while they stand. */
   animate(ch, base, dt) {
-    const C = ch.clips;
-    if (!this.track) { this.track = new Track(C, new Set(['castIdle'])); this.track.play('castIdle', 0, 0.01); this.P1 = C.pose(); }
+    const C = ch.clips, P = this.P;
+    if (!this.track) {
+      this.idleClip = C.clips.Tome_Idle ? 'Tome_Idle' : 'castIdle';
+      this.track = new Track(C, new Set([this.idleClip, 'Tome_FlipPages']));
+      this.track.play(this.idleClip, 0, 0.01);
+      this.P1 = C.pose(); this.P2 = C.pose(); this.gestures = new Gestures(C); this.X = new Crossfade(C, 0.1);
+    }
+    this.gestures.update(dt);
     const layerW = Math.max(this.w * smooth(HOLD, 1, this.drawT), this.readW) * (1 - this.mgr.override);
-    if (layerW <= 0.001) return;
+    if (layerW <= 0.001) { this.X.reset(); return; }
+    const want = this.flipping && C.clips.Tome_FlipPages ? 'Tome_FlipPages' : this.idleClip;
+    if (this.track.cur !== want) this.track.play(want, 0, 0.3);
     this.track.update(dt);
-    C.blend(base, this.track.sample(this.P1), layerW, ch.MASK_UPPER, 0);
+    const layer = this.track.sample(this.P1);
+    if (this.liftK > 0.001 && C.clips.Tome_LensRaise) { C.sample('Tome_LensRaise', this.liftAt || 0, this.P2, false); C.blend(layer, this.P2, this.liftK); }
+    const sw = this.gestures.sample(this.P2);
+    if (sw > 0) C.blend(layer, this.P2, sw);
+    const m = this.moves.pose(C, this.P2);
+    if (m) C.blend(layer, m.pose, m.w);
+    if (this.gestures.fresh || this.moves.cur !== this.lastMove) { this.X.cut(this.moves.cur && this.lastMove ? 0.07 : 0.1); this.gestures.fresh = false; this.lastMove = this.moves.cur; }
+    if (this.moves.cur && this.gestures.playing) this.gestures.stop(0.06);
+    this.X.apply(layer, dt);
+    C.blend(base, layer, layerW, ch.MASK_UPPER, 0);
+    standLegs(ch, P, base, layer, layerW * Math.max(sw, m?.w ?? 0), this.legSt, dt);
   }
 
   hands(ch) {
@@ -285,24 +340,31 @@ export class Veritome extends Tech {
       M.multiply(_m2.makeTranslation(0, -0.45 * (1 - smooth(0, 0.7, this.drawT)), 0));
       this.holdW = smooth(0.4, 1, this.drawT);
     } else if (this.drawT > 0.001) {
-      // third person: reached for at the hip, swung up in the right hand, opened and taken in both
+      // third person: reached for at the hip, swung up in the right hand, opened and taken in both (between the palms: handsFrame)
+      handsFrame(ch, _m2);
       const phase = drawHands(ch, this.grip, holster, this.drawT, { hold: HOLD, twist: -8, lean: 6, via: [this.mirrored ? 0.3 : -0.3, 1.15, 0.35], out: M });
       if (phase !== 'reach' && phase !== 'worn') {
         M.multiply(SPINE_TO_GRIP);
         const k = smooth(0.55, 1, this.drawT);
-        bookFrame(ch, P, cam, { mode: 'read' }, _m2);
         M.decompose(_p1, _q1, _s); _m2.decompose(_p2, _q2, _s);
         M.compose(_p1.lerp(_p2, k), _q1.slerp(_q2, k), _s.set(1, 1, 1));
         this.holdW = smooth(0.7, 1, this.drawT);
       } else this.holdW = 0;
     } else if (this.readW > 0) {
       // the Survey's read: out of the hip and open before them for a moment
-      bookFrame(ch, P, cam, { mode: 'read' }, _m2);
+      handsFrame(ch, _m2);
       holster.decompose(_p1, _q1, _s); _m2.decompose(_p2, _q2, _s);
       const k = smooth(0, 0.6, this.readW);
       M.compose(_p1.lerp(_p2, k), _q1.slerp(_q2, k), _s.set(1, 1, 1));
       this.holdW = smooth(0.5, 1, this.readW);
     } else { M.copy(holster); this.holdW = 0; }
+    // the bash: shut, and swung in the right hand (where the draw first brings it), the left let go
+    if (this.bashK > 0.001 && !fp && this.drawT > 0.5) {
+      _m2.multiplyMatrices(B.handR.matrixWorld, this.grip.R).multiply(SPINE_TO_GRIP);
+      M.decompose(_p1, _q1, _s); _m2.decompose(_p2, _q2, _s);
+      M.compose(_p1.lerp(_p2, this.bashK), _q1.slerp(_q2, this.bashK), _s.set(1, 1, 1));
+      this.holdW *= 1 - this.bashK;
+    }
     if (!M.elements.every(Number.isFinite)) M.copy(holster);
     M.decompose(model.group.position, model.group.quaternion, model.group.scale);
     model.group.updateMatrixWorld(true);
@@ -310,7 +372,7 @@ export class Veritome extends Tech {
   }
 
   fixed() {}
-  reset() { this.lower(); this.readT = 0; }
+  reset() { this.lower(); this.readT = 0; this.liftT = -1; this.moves.cancel(); }
 }
 
 /** The strongest colour in the middle of a picture: the most vivid of a grid of samples, averaged with those near it in hue. */

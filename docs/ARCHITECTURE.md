@@ -119,7 +119,7 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | draw calls a frame (every pass) | 450 | +8% |
 | triangles a frame | 350,000 | +8% |
 | shader programs alive | 160: one shared program a look, every one compiled in the warm-up; raised only by a commit that names the looks and the reason (the last: Round 4's cocoon pod, Lachrymite crystal and stone, the Heavenly Kiln's eye, bolt and ring, 152 to 160) | +6% |
-| JS heap | 330 MB (raised from 320 when main sat on it: 322 measured, the garden 1 MB of it; 44 MB of geometry belongs to no zone, the next cut) | +12% |
+| JS heap | 340 MB (the owner, 2026-10-07: Calissa's animation suite, 337 measured, its boot pack 2.65 MB; raised from 320 to 330 earlier when main sat on it; 44 MB of geometry belongs to no zone, the next cut) | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |
 

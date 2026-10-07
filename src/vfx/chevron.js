@@ -2,7 +2,8 @@
 // THE CHEVRON: the marker that hangs over what can be used when you are close enough to use it. Two inverted pentagonal pyramids,
 // one nested in the other, the outer wide, tall and translucent and the inner small and brighter, turning against each other and
 // bobbing, each coming to a point at the bottom (it points at the thing); drawn through everything (a marker has to be found) with a bright edge on each. It pops in with a little overshoot and
-// eases from target to target rather than jumping.
+// eases from target to target rather than jumping. Where up is not the world's (a planetoid in the Spirit Garden), a source gives its
+// `up` and the chevron stands along it and bobs along it (the garden sweep's #4: it was off the planetoid's heart by up to 52 degrees).
 //
 // Prior art: the floating crystal of The Sims' Plumbob and the down-pointing arrow over the thing you can act on in Zelda, Persona
 // and every action-RPG since; the two-layer, counter-rotating build is what keeps it alive while it is doing nothing.
@@ -15,6 +16,7 @@ import { mindLineMaterial, mindFillMaterial, mindTick } from './labradorite.js';
 
 /** Ease-out-back: 0 -> 1 with a small overshoot, continuous at both ends. */
 export const backOut = (u, c = 1.4) => 1 + (c + 1) * (u - 1) ** 3 + c * (u - 1) ** 2;
+const _Y = new THREE.Vector3(0, 1, 0);
 
 export class Chevron {
   constructor(scene) {
@@ -34,12 +36,14 @@ export class Chevron {
     this.group.add(this.outer, this.inner);
     scene.add(this.group);
     this.t = 0; this.k = 0; this.want = 0; this.pos = new THREE.Vector3(); this.has = false;
+    this.up = new THREE.Vector3(0, 1, 0); this.upWant = new THREE.Vector3(0, 1, 0); // (which way is up where the thing is: a planetoid's own)
   }
 
-  /** Aim at a world point (or null to fade out). */
-  target(p) {
+  /** Aim at a world point (or null to fade out); `up`, where up is not the world's (a planetoid's normal there), points it along it. */
+  target(p, up = null) {
     if (!p) { this.want = 0; return; }
-    if (!this.has || this.k < 0.05) this.pos.copy(p); // (a fresh appearance snaps to the thing, then follows)
+    this.upWant.copy(up || _Y).normalize();
+    if (!this.has || this.k < 0.05) { this.pos.copy(p); this.up.copy(this.upWant); } // (a fresh appearance snaps to the thing, then follows)
     this.tp = p; this.want = 1; this.has = true;
   }
 
@@ -53,8 +57,9 @@ export class Chevron {
     this.group.visible = true;
     // pop in with an overshoot (ease-out-back: it lands on exactly 1, no step at the end)
     const s = backOut(this.k);
-    this.group.position.copy(this.pos);
-    this.group.position.y += 0.05 * Math.sin(this.t * 2.6);
+    this.up.lerp(this.upWant, 1 - Math.exp(-dt * 10)).normalize();
+    this.group.quaternion.setFromUnitVectors(_Y, this.up); // (it points down at the thing along the thing's own up)
+    this.group.position.copy(this.pos).addScaledVector(this.up, 0.05 * Math.sin(this.t * 2.6));
     this.group.scale.setScalar(Math.max(0.001, s));
     this.outer.rotation.y += dt * 1.1;
     this.inner.rotation.y -= dt * 1.8;

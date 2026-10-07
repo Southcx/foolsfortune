@@ -1,9 +1,9 @@
 // ---------------------------------------------------------------------------------------
-// THE HEAVENLY KILN: the tribulation's sky over the Meditation Peak (the owner, 2026-10-07: the full build, Round 4; docs/plans/
+// THE HEAVENLY KILN: the tribulation's sky over the Chimney (the owner, 2026-10-07: the full build, Round 4; docs/plans/
 // SPIRIT-GARDEN.md section 6: "the Jar on the peak's mat, lightning from a darkening sky, each strike outlined"; Espada's name: the
-// tribulation is the Heavenly Kiln). A Firing is the soul refired, so the sky over the Peak becomes a kiln seen from inside its chamber:
+// tribulation is the Heavenly Kiln). A Firing is the soul refired, so the sky over the Chimney becomes a kiln seen from inside its chamber:
 //
-//   THE OPENING  open(k): the sky darkens round the Peak and a vortex of cloud turns overhead, its eye glowing with a kiln's fire (deep
+//   THE VORTEX   open(k): the sky darkens round the Chimney and a vortex of cloud turns overhead, its eye glowing with a kiln's fire (deep
 //                red to the white of the hottest firing as k rises); the garden's dome is darkened by the caller (GardenSky.set night)
 //   A STRIKE     bolt(to, eta): the bolt's path is traced first, a faint flickering thread from the eye to where it will land (the read:
 //                it can be dodged by a hop, or sent back by the hand's flick; the parry's outline is put on `B.mesh` by the caller), and
@@ -18,7 +18,7 @@
 //                (Bayonetta's ring read before the blow); in the flick's window (`flick` seconds before) it burns gold; at the strike a
 //                ring of white heat runs out over the mat and is gone
 //
-//   const K = new HeavenlyKiln({ height })   K.group (at the Peak's top, +Y up)   K.open(k)   const B = K.bolt(toWorld, eta, { r, flick, up })
+//   const K = new HeavenlyKiln({ height })   K.group (at the Chimney's top, +Y up)   K.open(k)   const B = K.bolt(toWorld, eta, { r, flick, up })
 //   K.update(rawDt)   (B.mesh: outline it; B.ring: its ring on the mat)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';

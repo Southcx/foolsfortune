@@ -80,7 +80,7 @@ export function buildStage(id) {
   }
   else if (id === 'garden:galaxy') {
     obj = new THREE.Group(); const S = new GardenSky({ radius: 300, motes: 60 }); obj.add(S.group);
-    const L = { dantian: [0, 0, 0], terraces: [40, 8, -12], furnace: [-34, 12, 16], pavilions: [12, -6, 44], grove: [-24, -2, -40], peak: [44, 18, 30] };
+    const L = { dantian: [0, 0, 0], terraces: [40, 8, -12], athanor: [-34, 12, 16], pavilions: [12, -6, 44], mulberryGrove: [-24, -2, -40], chimney: [44, 18, 30] };
     const world = new THREE.Group(); world.scale.setScalar(0.05); obj.add(world); const P = {}; let n = 1;
     for (const [k, p] of Object.entries(L)) { const pl = new Planetoid({ kind: k, seed: n++ }); pl.group.position.set(...p); world.add(pl.group); P[k] = pl; }
     const V = Object.keys(L).filter((k) => k !== 'dantian').map((k) => { const v = new SpiritVein(new THREE.Vector3(...L.dantian), new THREE.Vector3(...L[k])); world.add(v.mesh); return v; });
@@ -115,7 +115,7 @@ export function buildStage(id) {
       F.set({ buried: Math.max(0, 1 - k / 2) }); F.awaken(Math.max(0, (k - 3) / 3)); if (k > 3 && Math.floor(k * 2) !== lastBeat) { lastBeat = Math.floor(k * 2); F.beat(); } if (k > 6.2) F.burst(); F.update(1 / 60); };
   }
   else if (id === 'garden:kiln') {
-    obj = new THREE.Group(); const P = new Planetoid({ kind: 'peak', seed: 7 }); P.group.scale.setScalar(0.12); obj.add(P.group); const top = P.surface(new THREE.Vector3(0, 1, 0));
+    obj = new THREE.Group(); const P = new Planetoid({ kind: 'chimney', seed: 7 }); P.group.scale.setScalar(0.12); obj.add(P.group); const top = P.surface(new THREE.Vector3(0, 1, 0));
     const K = new HeavenlyKiln({ height: 26 }); K.group.position.y = top; P.group.add(K.group); let next = 1;
     obj.userData.tick = (t) => { K.open(0.5 + 0.5 * Math.sin(t * 0.3)); if (t > next) { next = t + 1.6; K.bolt(P.group.localToWorld(new THREE.Vector3((Math.random() - 0.5) * 4, top + 1, (Math.random() - 0.5) * 4)), 1.2); } K.update(1 / 60); };
   }

@@ -136,9 +136,11 @@ export class Angler {
     this.emit('angle.lure', { lure: this.lureId });
   }
   castPose(C, out) {
-    if (this.castW <= 0.02) return null;
-    C.sample('swordC', Math.min(1.9, this.castT), out, false);
-    return { pose: out, w: this.castW };
+    if (this.castW > 0.02) { C.sample('Sond_Cast', Math.min(1.42, this.castT * 1.06), out, false); return { pose: out, w: this.castW }; } // (the cast's launch at 0.52 meets the clip's at 0.55)
+    if ((this.reelW || 0) <= 0.02) return null;
+    if (this.state === 'catch') C.sample('Sond_Catch', Math.min(1.56, this.stateT), out, false);
+    else C.sample(this.state === 'fight' ? 'Sond_ReelFight' : 'Sond_ReelIn', this.reelT, out, true);
+    return { pose: out, w: this.reelW };
   }
   get aspectColor() { return ASPECTS[this.aspect].color; }
   setAspect(a) {
@@ -230,9 +232,13 @@ export class Angler {
       case 'catch': this.updateCatch(dt); break;
       default: break;
     }
-    // (the cast clip's weight)
+    // (the cast clip's weight, and the reel's: the suite's own rod clips, Sond_Cast, Sond_ReelIn, Sond_ReelFight, Sond_Catch)
     const want = this.castPhase === 'charge' || this.castPhase === 'swing' ? 1 : 0;
     this.castW = THREE.MathUtils.damp(this.castW, want, want ? 14 : 8, dt);
+    this.reelT = (this.reelT || 0) + dt * (this.state === 'fight' ? 1.2 : 1);
+    if (this.state !== this.poseState) { this.poseState = this.state; this.stateT = 0; } else this.stateT = (this.stateT || 0) + dt;
+    const reel = this.state === 'fight' ? 1 : this.state === 'catch' ? 1 : this.state === 'wait' && this.reeling ? 1 : 0;
+    this.reelW = THREE.MathUtils.damp(this.reelW || 0, reel, 10, dt);
     if (this.castPhase === 'recover' && this.castW < 0.03) this.castPhase = 'none';
     // the sounding: how far the wave has reached (the pulse itself is drawn by vfx/pulse.js)
     if (this.soundT > 0) {

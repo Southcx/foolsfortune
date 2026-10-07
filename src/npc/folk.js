@@ -28,6 +28,7 @@ import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { RAPIER, GROUPS, G, groups } from '../core/physics.js';
 import { PALETTE } from '../core/config.js';
 import { Clayese } from './clayese.js';
+import { EMOTES } from '../courier/emotes.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
 const simRand = stream('npc/folk'); // (the simulation's chance: core/rng.js, the same twice)
@@ -63,19 +64,34 @@ const BODY = {
   whisper: (n, k, t) => { n.p.lean = 0.16 * k; n.p.squash -= 0.05 * k; },
 };
 
+// what a folk feels at the Courier's emotes (courier/emotes.js): by family, and the emotes that are not their family's feeling
+const SEEN = { greet: 'joy', joy: 'joy', anger: 'fear', fear: 'fear', sorrow: 'sad', thought: 'confused', pride: 'awe', body: 'calm', repose: 'calm', dance: 'joy', flirt: 'sly', taunt: 'sly' };
+const SEEN_ID = {
+  nod: 'joy', agree: 'joy', no: 'sad', deny: 'sad', fold: 'sly', shush: 'whisper', idea: 'surprise', talk: 'confused', // (thought)
+  sorry: 'calm', faint: 'surprise', // (sorrow)
+  gasp: 'surprise', startle: 'surprise', peek: 'confused', // (fear)
+  disgust: 'sad', ew: 'confused', facepalm: 'confused', // (anger)
+  smug: 'sly', triumph: 'joy', peace: 'joy', // (pride)
+  sneeze: 'surprise', cold: 'fear', hot: 'confused', hungry: 'confused', bored: 'sad', exhausted: 'sad', // (body)
+  hover: 'awe', chair: 'confused', kneel: 'confused', // (repose: a body off the ground, a chair that is not there, a tinker)
+  ballet: 'awe', sway: 'calm', robot: 'confused', // (dance)
+  coy: 'joy', smitten: 'joy', bashful: 'joy', // (flirt)
+  comeatme: 'fear', knuckles: 'fear', loser: 'anger', tooslow: 'anger', nosethumb: 'anger', pointlaugh: 'anger', // (taunt)
+};
+
 export class Folk {
   constructor(game, gltf) {
     this.game = game; this.gltf = gltf; this.list = []; this.byId = {};
     this.voice = new Clayese(sfx);
     this.clips = Object.fromEntries((gltf?.animations || []).map((c) => [c.name.replace('clapper_', ''), c]));
     this.eyeMat = new THREE.MeshBasicMaterial({ color: PALETTE.outline });
-    // the folk answer the Courier's emotes (emotes.js): a wave gets a happy hop, a faint a fright
+    // the folk answer the Courier's emotes (emotes.js): a wave gets a happy hop, a faint a fright, a taunt a sly look (SEEN)
     game.events?.on('emote.start', (e) => this.react(e.emote));
   }
 
-  /** The nearest folk (in sight, not talking) answers an emote with a feeling for a moment. */
+  /** The nearest folk (in sight, not talking) answers an emote with a feeling for a moment: its family's (SEEN), or its own. */
   react(emote) {
-    const P = this.game.player, m = { wave: 'joy', dance: 'joy', nod: 'joy', faint: 'surprise', no: 'sad', talk: 'confused', kneel: 'confused', fold: 'sly', sit: 'calm' }[emote];
+    const P = this.game.player, m = SEEN_ID[emote] || SEEN[EMOTES[emote]?.family];
     if (!m || this.game.dialogue?.open) return;
     let best = null, bd = 8;
     for (const n of this.list) { const d = n.pos.distanceTo(P.pos); if (d < bd) { bd = d; best = n; } }

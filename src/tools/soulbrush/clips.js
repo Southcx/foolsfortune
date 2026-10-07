@@ -1,6 +1,9 @@
 // ---------------------------------------------------------------------------------------
-// THE SOUL BRUSH'S OWN ANIMATION: the BRUSH SLIDE. Nothing in the free libraries (UAL, CMU) slides sideways on its feet dragging
-// something behind it, so it is authored once at startup with the key-pose author (authoring.js), as the Skiff's rider is: a
+// THE SOUL BRUSH'S OWN ANIMATION: the BRUSH SLIDE, as it was authored before the Courier's own suite had one. The suite's
+// Brush_BrushSlide is the slide now (soulbrush.js: lower and wider, the free arm out along the way they go, the brush hand trailing where
+// this one put it, so the same light correction lays the bristles on the ground); this stays only as its stand-in, and goes when
+// courier/anim/authored.js stops calling it. Nothing in the free libraries (UAL, CMU) slid sideways on its feet dragging
+// something behind it, so it was authored once at startup with the key-pose author (authoring.js), as the Skiff's rider is: a
 // snowboarder's stance on bare ground, front foot the left, low, the free arm out along the way they are going for balance, the brush
 // hand low and behind so the bristles drag on the ground in their wake. At runtime the tech turns the body sideways to the slide and only
 // corrects the brush onto the ground (a few centimetres, and the hand's turn).
