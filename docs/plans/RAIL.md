@@ -243,7 +243,21 @@ Leviathan at 64), and the breather is a breather.
 - **The rogue Leviathan is Old Nobody.** An Egregore is authored by no one, and Nobody is also the name Odysseus gave the Cyclops.
   Letty's notice reads "WANTED: NOBODY".
 
-## 13. Open for the owner
+## 13. The music (Wanda, 2026-10-07; `claude/friendly-knuth-vbv82r` e735393)
+
+Bars 62 to 96 have a version for each set piece (`stageCue(seconds, setPiece)`):
+
+| set piece | what the cue does |
+|---|---|
+| **the shoal** | a churn to bar 70 (bubbles, rising strings), then string pulses with the strikes |
+| **the Wreckers** | the crew's shanty grows astern from bar 62, a bow-chaser boom every two bars; "Haul Away the Fortune" in full over the broadside from 70, a boom with each volley; the ram at 84; the crew's chorus home from 92 |
+| **Old Nobody** | its own motif (E F E C B): it heaves at 62, comes alongside at 70 (the gills breathing two bars in four, as in `setpieces.js`), sounds at 80, and is face to face at 88 |
+
+**Lock tones:** `sfx.railLock(n, grid)`, E minor from E5, a degree per lock, heard from `rail.lock { n }`.
+**Downs:** `sfx.railDown(cls, grid)`, on the next sixteenth, heard from `rail.down { cls }`.
+The sound contract for Petra is `docs/handoffs/petra/2026-10-07-from-wanda-the-crossing-s-sound-contract.md`.
+
+## 14. Open for the owner
 
 1. **The second half is one set piece in 34 bars.** Should a long crossing (Anagami to Entropolis, King to Queen) chain two of them,
    with a second breather? The cue would want to be longer (Wanda), and a long crossing is rarer and riskier, so it would be earned.
