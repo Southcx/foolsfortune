@@ -15,6 +15,7 @@
 //
 //   const F = new Fossil({ shape: 'spiral'|'fish'|'claw', feeling })   F.group (rests on its origin)   F.set({ buried })   F.awaken(k)
 //   F.beat()   F.burst()   F.update(rawDt)
+//   fossilThing() -> { group, dispose }   the item in the Pneuka Box (fossil.lachrymite): a nodule a hand across, its spiral showing
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../weather.js';
@@ -86,4 +87,11 @@ export class Fossil {
   }
 
   dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => o.geometry?.dispose?.()); this.crystal.dispose(); this.stone.dispose(); this.mound.material.dispose(); }
+}
+
+/** The Pneuka Box's item (fossil.lachrymite): a Fossil a hand across, dug clean, its spiral showing; asleep (thingmodels.js buildThing). */
+export function fossilThing() {
+  const F = new Fossil({ shape: 'spiral', feeling: 'wonder' }); F.group.scale.setScalar(0.07); F.group.rotation.set(0.5, 0.4, -0.2);
+  const group = new THREE.Group(); group.add(F.group); F.update(0);
+  return { group, dispose: () => F.dispose() };
 }

@@ -14,7 +14,12 @@
 // waves), the anagama kiln's firebox and its colour of heat (red, orange, yellow, white: the potter's pyrometry by eye), Okami's
 // celestial brush lightning, and the Zelda boss's telegraphed strike line.
 //
-//   const K = new HeavenlyKiln({ height })   K.group (at the Peak's top, +Y up)   K.open(k)   const B = K.bolt(toWorld, eta)   K.update(rawDt)
+//   THE RING     where it will land, a ring of the kiln's fire on the mat, closing from twice its size to its own as the strike nears
+//                (Bayonetta's ring read before the blow); in the flick's window (`flick` seconds before) it burns gold; at the strike a
+//                ring of white heat runs out over the mat and is gone
+//
+//   const K = new HeavenlyKiln({ height })   K.group (at the Peak's top, +Y up)   K.open(k)   const B = K.bolt(toWorld, eta, { r, flick, up })
+//   K.update(rawDt)   (B.mesh: outline it; B.ring: its ring on the mat)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -44,9 +49,15 @@ export class HeavenlyKiln {
   /** How far open the kiln is: 0 closed .. 1 the hottest firing (eased toward). */
   open(k) { this.to = THREE.MathUtils.clamp(k, 0, 1); }
   /** A bolt from the eye to `to` (world), striking in `eta` real seconds; returns { mesh, done } (the caller outlines `mesh`). */
-  bolt(to, eta = 1.2) {
+  bolt(to, eta = 1.2, { r = 1.5, flick = 0.45, up = null } = {}) {
     const B = { to: to.clone(), eta, t: 0, mesh: new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ color: 0xfff4e0, transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending })), done: false, seed: Math.random() * 100 };
-    B.mesh.name = 'kiln-bolt'; B.mesh.frustumCulled = false; this.group.add(B.mesh); this.bolts.push(B); this.shape(B); return B;
+    B.mesh.name = 'kiln-bolt'; B.mesh.frustumCulled = false; this.group.add(B.mesh); this.bolts.push(B); this.shape(B);
+    // the ring on the mat where it will land, lying on the ground's own up there
+    B.r = r; B.flick = flick; B.ringMat = new THREE.MeshBasicMaterial({ color: 0xff7a2a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    B.ring = new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 40).rotateX(-Math.PI / 2), B.ringMat); B.ring.name = 'kiln-ring'; B.ring.frustumCulled = false;
+    this.group.worldToLocal(B.ring.position.copy(to)); if (up) B.ring.quaternion.setFromUnitVectors(_y, _c.copy(up).transformDirection(_m.copy(this.group.matrixWorld).invert()).normalize());
+    B.ring.position.addScaledVector(B.ring.up.clone().applyQuaternion(B.ring.quaternion), 0.04); this.group.add(B.ring);
+    return B;
   }
   shape(B) { // a jagged ribbon from the eye down to its mark (new each flicker)
     this.group.updateWorldMatrix(true, false); const from = this.group.localToWorld(_a.set(0, this.H, 0)), to = this.group.worldToLocal(_b.copy(B.to)), f0 = this.group.worldToLocal(from.clone());
@@ -63,12 +74,15 @@ export class HeavenlyKiln {
     for (const B of this.bolts) {
       B.t += raw; const struck = B.t >= B.eta;
       if (Math.floor(B.t * 20) !== B.flick) { B.flick = Math.floor(B.t * 20); this.shape(B); }
+      const left = B.eta - B.t, inFlick = left <= B.flick && !struck; // (the ring closes on its mark; gold in the flick's window; at the strike, a ring of heat runs out)
+      if (!struck) { B.ring.scale.setScalar(B.r * (1 + Math.max(0, left / B.eta))); B.ringMat.color.setHex(inFlick ? 0xffd76a : 0xff7a2a); B.ringMat.opacity = 0.35 + 0.5 * (1 - left / B.eta); }
+      else { const s = (B.t - B.eta) / 0.35; B.ring.scale.setScalar(B.r * (1 + 2.5 * s)); B.ringMat.color.setHex(0xfff4e0); B.ringMat.opacity = Math.max(0, 0.9 * (1 - s)); }
       B.mesh.material.opacity = struck ? Math.max(0, 1 - (B.t - B.eta) / 0.35) : 0.12 + 0.18 * Math.random() * (B.t / B.eta); // (the trace flickers, then the strike, then gone)
-      if (struck && B.t - B.eta > 0.35) { B.done = true; this.group.remove(B.mesh); B.mesh.geometry.dispose(); B.mesh.material.dispose(); }
+      if (struck && B.t - B.eta > 0.35) { B.done = true; this.group.remove(B.mesh, B.ring); B.mesh.geometry.dispose(); B.mesh.material.dispose(); B.ring.geometry.dispose(); B.ringMat.dispose(); }
     }
     this.bolts = this.bolts.filter((B) => !B.done);
   }
   dispose() { this.group.parent?.remove(this.group); this.vortex.geometry.dispose(); this.vortex.material.dispose(); for (const B of this.bolts) { B.mesh.geometry.dispose(); B.mesh.material.dispose(); } }
 }
 function rnd(x) { return (Math.sin(x * 12.9898) * 43758.5453) % 1 + (Math.sin(x * 12.9898) * 43758.5453 < 0 ? 1 : 0); }
-const _a = new THREE.Vector3(), _b = new THREE.Vector3();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _m = new THREE.Matrix4();

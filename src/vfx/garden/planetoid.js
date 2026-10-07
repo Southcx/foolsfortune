@@ -18,7 +18,7 @@
 // isles, the xianxia cave abode and its spirit fields (terraces, the pill furnace, the needle peak of a sect's mountain), and Animal
 // Crossing's soft, rounded toy-like ground.
 //
-//   const P = new Planetoid({ kind, radius, seed })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
+//   const P = new Planetoid({ kind, radius, seed, surface })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
 //   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.tint(lakeHex)   P.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -37,7 +37,8 @@ export const PLANETOIDS = {
 const BAND = 0.18; // (sculpting keeps the surface within this share of the radius, in or out)
 
 export class Planetoid {
-  constructor({ kind = 'grove', radius = null, seed = 1 } = {}) {
+  constructor({ kind = 'grove', radius = null, seed = 1, surface = null } = {}) {
+    if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
     const K = PLANETOIDS[kind] ?? PLANETOIDS.grove; this.kind = kind; this.R = radius ?? K.radius; this.K = K;
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
