@@ -65,8 +65,9 @@ export class GunMoves {
     const W = this.W, d = W.drawT, up = d > (this.lastDraw ?? 0) || (W.drawTarget > 0 && d < 1);
     this.drawU = up && d > T.weapon.drawGrab && d < 1 ? smooth(T.weapon.drawGrab, 1, d) : -1;
     this.lastDraw = d;
-    this.moves.update(dt, input, { allow });
-    if (this.flourishT >= 0) { this.flourishT += dt; if (this.flourishT >= FLOURISH.dur) this.flourishT = -1; }
+    // (R again while the fan plays is not a second fan: the engine restarts a special in place, and a double tap paid 16 for six shots)
+    this.moves.update(dt, input, { allow: allow && this.moves.cur?.id !== 'fan' });
+    if (this.flourishT >= 0) { this.flourishT += dt; if (this.flourishT >= FLOURISH.dur || W.drawTarget < 1) this.flourishT = -1; } // (put away by other means mid-spin (X, a ladder): no spin on the way to the holster)
     const C = this.game.character?.clips;
     if (!C) { this.layer = null; this.weight = 0; return; }
     let L = this.moves.pose(C, (this.buf ||= C.pose()));
