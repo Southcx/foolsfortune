@@ -533,9 +533,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   stitched sack doll on a post with a weighted ball foot; infinitely durable. Named with no article ("Strawman rocks back up").
 - **the Pithos** (Espada's name, a proposal; the log's "the Great Slip Jelly"): the Great Dunemaw's FOE, a Great Slip Jelly wearing
   the broken urn it grew in as a crown (**the urn crown**, `src/vfx/urncrown.js`); breaking the crown bares **the core**, its weak point.
-- **the Gnomon** (Espada's name, a proposal; `docs/plans/DUNES.md`): the town's sundial on the sand, where the Solar Skiffing trial
-  is begun.
-- **a slip geyser** (`docs/plans/DUNES.md`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
+- **the Gnomon** (Espada's; `world/dunes/solar.js`): the pale spire in the Dunes, the sundial's shadow-stick; the Solar Skiffing trial
+  is begun at its foot.
+- **a slip geyser** (`world/dunes/geysers.js`, `vfx/slipgeyser.js`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
