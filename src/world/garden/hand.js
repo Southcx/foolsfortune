@@ -175,7 +175,7 @@ export class GardenHand {
     if (!this.stroke) { this.stroke = { planet: P, how: 'paint', moved: false, ground: clear ? null : this.ground }; this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift(); }
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
-    if (clay.paint(this.hit.point.clone().sub(P.c), this.stroke.ground, this.size)) { this.stroke.moved = true; this.R.reshape(P); }
+    if (clay.paint(this.hit.point.clone().sub(P.c), this.stroke.ground, this.size)) { this.stroke.moved = true; this.R.reshape(P); if (this.stroke.ground === 'moss') this.R.plants?.seed(P, this.hit.point.clone().sub(P.c), this.size * 0.5); } // (moss painted is moss growing)
   }
 
   // ---- the clay

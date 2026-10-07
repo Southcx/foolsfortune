@@ -122,6 +122,7 @@ export class Plots {
       if (k >= 0) box.take(k);
     }
     p.placed = { feature, feeling };
+    if (feature === 'terrace') this.onSeed?.(p.planet, p.dir); // (a herb terrace seeds the ground round it: world/garden/plants.js)
     this.build(p);
     this.links();
     const mult = +this.mult(p).toFixed(2);

@@ -27,6 +27,7 @@ import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
 import { Waterworks } from './waterworks.js';
+import { Plants } from './plants.js';
 import { JarHop } from '../../vfx/garden/jarhop.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
@@ -58,6 +59,8 @@ export class Realm {
     this.raising = new Raising(game, this);
     this.awaken = new Awaken(game, this); this.tribulation = new Tribulation(game, this);
     this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
+    this.plants = new Plants(this); // (green that spreads over wet, fertile ground: world/garden/plants.js)
+    this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
@@ -67,13 +70,13 @@ export class Realm {
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
     game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump() }),
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump() }),
       load: (d) => {
         this.name = d?.name || null; this.awaken.load(d?.awaken);
         for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
-        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water);
+        this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants);
       },
-      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -84,6 +87,7 @@ export class Realm {
     for (const id of ['terrace', 'pavilion', 'spiritHouse', 'pond', 'lantern', 'incense', 'stone', 'drillYard']) { const F = buildFeature(id, { feeling: 'wonder' }); F.set?.({ lit: true, active: true }); F.group.position.copy(this.site.by.dantian.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); }
     { const F = new Fossil({ shape: 'spiral' }); F.awaken(0.5); F.update(0); F.group.position.copy(this.site.by.mulberryGrove.c); this.site.group.add(F.group); this.parkedLooks.push(F.group); } // (the fossil's crystal and cracking stone)
     this.site.tree.slots[0].pod.visible = true; this.tribulation.look.vortex.visible = true; // (a pod and the Heavenly Kiln's eye: put away by their own updates)
+    { const T = new THREE.InstancedMesh(this.plants.geo, this.plants.mat, 1); T.setMatrixAt(0, new THREE.Matrix4()); T.position.copy(this.site.by.dantian.c); this.site.group.add(T); this.parkedLooks.push(T); } // (the plants' tufts: world/garden/plants.js)
     ['mirth', 'wonder', 'desire', 'grief', 'dread'].forEach((f, i) => { const m = new THREE.Mesh(this.spiritGeo, this.spiritMat.clone()); m.position.copy(this.site.by.dantian.c); dressForm(m, { feeling: f, side: ['law', 'neutral', 'chaos'][i % 3], size: 0.42 }); this.site.group.add(m); this.parkedLooks.push(m); });
     this.hand.brush.group.visible = true;
     this.plots.show(true); this.parkedThread = new THREE.Line(new THREE.BufferGeometry().setFromPoints([this.site.by.chimney.c, this.site.by.dantian.c]), this.plots.threadMat.gen); this.site.group.add(this.parkedThread);
@@ -230,6 +234,7 @@ export class Realm {
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }
     if ((this.workT += dt) >= 1) { this.workT = 0; this.raising.work(this.spirits, this.plots); }
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw);
+    this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -271,7 +276,7 @@ export class Realm {
     const c = this.clays[P.id]; if (!c) return;
     this.hand.undos.push({ planet: P, h: c.snapshot() }); // (and a slip of the keys can be undone: Ctrl+Z)
     c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 });
-    this.waterworks.reset(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
+    this.waterworks.reset(P); this.plants.clear(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
     this.game.events?.emit('garden.reset', { planetoid: P.id, by: 'courier' });
   }
   reshape(P, now = false) {
