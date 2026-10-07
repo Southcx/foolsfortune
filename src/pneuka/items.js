@@ -64,6 +64,9 @@ const BOTTLE_TEXT = {
   'bottle.large': ['LARGE LACHRYMATO BOTTLE', 'A big tear bottle. It holds a lot of Lachryma, and it breaks like glass.'],
 };
 for (const id of Object.keys(BOTTLES)) ITEMS[id] = { id, kind: 'bottle', key: id.slice(7), place: 'bottle', name: BOTTLE_TEXT[id][0], glyph: '⚱', color: 0x8fb8c8, tier: id === 'bottle.large' ? 2 : 1, examine: BOTTLE_TEXT[id][1], card: null, lure: false, stack: false };
+// slip roe: what a broken clutch of the Great Slip Jelly's eggs leaves (progress/combat/dunemaw.js NURSERY.roe), a material for the
+// Spirit Garden's beds and a meal for its spirits (progress/spirits.js FEED)
+ITEMS['roe.slip'] = { id: 'roe.slip', kind: 'material', key: 'roe', name: 'SLIP ROE', glyph: '∘', color: 0xb8e0c8, tier: 1, examine: 'A cluster of slip jelly eggs, cold and quivering. A garden bed would grow more; a spirit would eat it.', card: null, lure: false, stack: 99 };
 ITEMS['mat.shard'] = { id: 'mat.shard', kind: 'material', key: 'shard', name: 'LACHRYMA SHARD', glyph: '◆', color: 0xcdb8f2, tier: 1, examine: 'A spire of set Lachryma, broken off while it rang. A Lockheart drinks it whole.', card: null, lure: false, stack: false };
 
 // what a Well gives (world/well/dunemaw.js): a material of each of the seven kinds (progress/econ/materials.js: each one carries its own

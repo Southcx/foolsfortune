@@ -87,7 +87,7 @@ export const NURSERY = {
   clutch: { eggs: [3, 6], brood: 2, hatchSeconds: 20, cap: 3, hp: 3 }, // (eggs a clutch; brood it can give; one hatches every 20 sim s while
                                                                        //  a guard lives and the Courier is within 20 m, at most 3 out)
   guard: { radius: 12, leash: 10, alarm: 15 }, // (jellies within 12 m guard it, held 10 m to it; breaking it is an alarm heard at 15 m)
-  roe: 0.3, // (each egg broken leaves slip roe at this chance: a material, the Well's own, which a Spirit Garden bed can grow)
+  roe: 0.3, roeItem: 'roe.slip', // (each egg broken leaves slip roe at this chance: the item roe.slip (pneuka/items.js), which a Spirit Garden bed grows)
 };
 
 /** THE FINDS. Pots are the town's (breakables, some holding a find); artifacts glint in the walls (the Dreamvane hears them). A warped

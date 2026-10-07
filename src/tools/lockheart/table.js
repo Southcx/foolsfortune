@@ -43,6 +43,10 @@ export const HEARTS = {
     examine: 'Lacquered black, an ace on the lid. Almost always nothing. Almost.' },
   'heart.shepherd': { mode: 'casting', name: "THE SHEPHERD'S LOCKHEART", fill: 50, color: 0x3a5a3a, trim: 0xe8d7b6, table: { kin: 35, spirit: 30, hush: 20, chest: 10, bite: 5 },
     examine: 'Green as a hillside, a crook on the lid. What comes out of it is for the flock.' },
+  // the summoning coffin (SYSTEMS.md C2; SPIRIT-GARDEN.md 5a): it does not spin outcomes; opened on a Figment laid low, it spins the catch
+  // wheel (CATCH below) and a Figment caught is bound to you. Its name and words are placeholders for Espada's.
+  'heart.summoning': { mode: 'summoning', name: "THE WARDEN'S LOCKHEART", fill: 35, color: 0x1e2a3a, trim: 0x9ec8e8, table: {},
+    examine: 'Night-blue, a keyhole like an open mouth. Opened on a Figment laid low, it asks the Figment to come with you.' },
 };
 
 /** The coffin worn sets the Lockheart's MODE (docs/plans/SYSTEMS.md, C1): CASTING spins its table of outcomes (all three coffins today);

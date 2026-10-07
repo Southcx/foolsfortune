@@ -55,7 +55,7 @@ export const SHOPS = {
   raku: {
     id: 'raku', keeper: 'raku', name: "RAKU'S TREASURY",
     blurb: 'Possibilikeys and coffins for the Lockheart. Buys curios, and anything else, cheaply. Everything is negotiable, in his favour.',
-    sells: { 'key.brass': 6, 'key.invert': 2, 'key.even': 2, 'key.loaded': 1, 'key.twin': 1, 'key.wide': 1, 'key.echo': 1, 'heart.gambler': 1, 'heart.shepherd': 1 },
+    sells: { 'key.brass': 6, 'key.invert': 2, 'key.even': 2, 'key.loaded': 1, 'key.twin': 1, 'key.wide': 1, 'key.echo': 1, 'heart.gambler': 1, 'heart.shepherd': 1, 'heart.summoning': 1 },
     // (the owner, R58: "he'll buy anything": whatever is not his trade, at half its worth, so a Cogitomap has a lowball price at home)
     trade: ['curio'], buys: ['curio', 'key', 'heart', 'map', 'crude', 'material', 'fish', 'lure', 'shell', 'bottle'], // (not instruments: no counter sells one back, so a sold lute would be gone for good)
     markup: ECON.haggle.list, haggle: true,

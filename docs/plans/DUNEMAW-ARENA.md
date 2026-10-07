@@ -52,7 +52,7 @@ Shadow of the Colossus (the room as the weapon); Hollow Knight's arenas (flat, l
 | **the walls** | r 28 | stone, unclimbable to y 4 | a ram into the wall stuns it 1 s and cracks no crown (stone it can't break is not stone you can use) |
 | **the upper ring** | r 24..28, y +4, south half only (from W round to E) | 4 m wide | a vantage for the Veritome's read and for ranged work; the FOE can't climb it, brood can |
 | **the entrance ledge** | north, z +26..+34, y +6 | 12 m wide | the reveal; two slopes down (S1, S2) and none back up: entering commits |
-| **slopes** | S1 and S2 (north, from the ledge to the floor), S3 (south, upper ring to floor) | 30°, 3 m wide, one way | sand you slide down and cannot climb (Journey's dunes) |
+| **slopes** | S1 and S2 (north, from the ledge to the floor), S3 (south, upper ring to floor) | 30°, 3 m wide; S1 and S2 one way, S3 both ways (Petra, 2026-10-07: else the upper ring could never be reached) | sand you slide down and cannot climb (Journey's dunes), but S3 can be climbed |
 | **pillars P1..P6** | r 18, at bearings 30°, 90°, 150°, 210°, 270°, 330° (none at 0°: the entrance's line stays open) | 3 m wide, 12 m tall, to the roof's shadow | 18 m from the centre: a drawn charge from the dish meets them at full speed |
 | **stalactites t1..t8** | r 12, at bearings 0°, 45° .. 315°, hanging y 14..18 | 1.5 m at the root | each falls when a ram lands on the pillar nearest it, or when the FOE surfaces under it |
 | **slip pools W0..W4** | W0 at the centre (6 m wide); W1..W4 at r 16, at bearings 0°, 90°, 180°, 270° (4 m wide) | slip, 2 m deep | where the FOE sinks and surfaces in phase 2; the Courier falling in is put back on the nearest dry floor with a crack |

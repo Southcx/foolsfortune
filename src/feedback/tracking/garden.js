@@ -27,6 +27,9 @@ export function gardenRules({ on, L, log }) {
     L.inc('spirit.bind'); L.inc(`spirit.bind.${e.from}`); L.hi('spirit.bind.cls', (e.cls || 0) + 1);
     log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.name || 'a Figment'}.${e.from === 'lockheart' || e.from === 'hand' ? ' It waits in your Pneuka Jar for the garden.' : ''}`);
   });
+  // a catch that fails: the wheel came up free, or the hand let go (Petra's rail of the catch: tools/lockheart, godhand)
+  on('catch.miss', (e) => { if (e.by !== 'courier') return; L.inc('catch.miss'); log.say('info', `It slips the coffin. (${Math.round((e.odds || 0) * 100)}%)`, { key: 'catchmiss', throttle: 1 }); });
+  on('catch.free', (e) => { if (e.by !== 'courier') return; L.inc('catch.free'); log.say('info', e.why === 'woke' ? 'It wakes in your grip and breaks free.' : 'You let it go.', { key: 'catchfree', throttle: 1 }); });
   on('spirit.feed', (e) => { if (e.by === 'courier') L.inc('spirit.feed'); });
   on('spirit.mature', (e) => { if (e.by !== 'courier') return; L.inc('spirit.mature'); L.inc(`spirit.form.${e.feeling}.${e.side}`); log.say('gain', `${e.name || 'A spirit'} matures.`); });
   on('spirit.merge', (e) => { if (e.by === 'courier') L.inc('spirit.merge'); });
