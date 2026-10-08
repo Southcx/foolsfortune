@@ -376,7 +376,9 @@ the rules before building in the same area; a rule a machine can check goes into
   with it, `uWhirlT.w`), written by the crossing's look from the arena (`sense = -sign`, vfx/crossinglook.js), the body and the sheath
   turned by `-turn` so what is written is the angle the world reads. Measured on both signs after: the ship, the eye, the sheath and
   the bands all fall at +1 and all rise at -1. Also: `CharybdisLook.reset` forgets where the lip last was (`yWas`), so a beast shown
-  again at a new arena is not seen to cross the surface from where the last crossing left it (a crown thrown at the first frame).
+  again at a new arena is not seen to cross the surface from where the last crossing left it (a crown thrown at the first frame). And the
+  throat's disc has a floor (a quarter of its colour) that stayed when the part was broken, so a broken throat still read as lit
+  (cyan, seen from above after four real seconds); the floor now eases out with the part (0.02), and the header's "out broken" is true.
 - **Rule:** 129.
 
 ### 2026-10-08 · Charybdis held fifteen metres under the crude, and the whirlpool's seam open to the sky (Calissa's Charybdis)

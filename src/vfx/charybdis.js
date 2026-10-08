@@ -194,7 +194,7 @@ export class CharybdisLook {
     tp.wire(track(new THREE.CircleGeometry(1.6, 24).rotateX(-Math.PI / 2).translate(0, 0.05, 0)), { threshold: 10 });
     // the vantages a rail circling it sees its parts best by (its frame)
     this.vantages = { above: new THREE.Vector3(0, 22, 0), flank: new THREE.Vector3(0, -2, 26), below: new THREE.Vector3(0, -22, 18) };
-    this.glow = { throat: 0, eyes: 0 };
+    this.glow = { throat: 0, eyes: 0, floor: 0.25 }; // (the throat's disc never goes black while it lives; broken, its light is out)
     this.set({ feel: 'grief' });
     this.reset();
   }
@@ -292,7 +292,8 @@ export class CharybdisLook {
     // the throat: its light swells before it swallows (its windup), flickers damaged, is out broken
     const tp = this.parts.part('throat'), th = (this.glow.throat = ease(this.glow.throat, tp.alive ? 0.45 + 0.3 * inhale + 0.9 * tp.windupK : 0.04, 4));
     const fl = tp.state === 'damaged' ? 0.6 + 0.4 * Math.sin(t * 23) * Math.sin(t * 7) : 1;
-    this.throatMat.color.copy(col).multiplyScalar(0.25 + 1.1 * th * fl); this.throatM.scale.setScalar(0.8 + 0.6 * th);
+    const floor = (this.glow.floor = ease(this.glow.floor, tp.alive ? 0.25 : 0.02, 4));
+    this.throatMat.color.copy(col).multiplyScalar(floor + 1.1 * th * fl); this.throatM.scale.setScalar(0.8 + 0.6 * th);
     this.haloMat.color.copy(col); this.haloMat.opacity = Math.min(1, 0.85 * th * fl); this.halo.scale.setScalar(0.7 + 0.7 * th);
     this.mouthMat.emissive.copy(col).multiplyScalar((0.02 + 0.12 * th) * fl); // (the gullet lit by it, so the throat's light shows from the side, over the lip)
     this.oil.uni.uHue.value += raw * 0.012 * M.spin; // (the film creeps along it as it turns)
