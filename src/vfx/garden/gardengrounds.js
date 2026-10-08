@@ -21,8 +21,8 @@
 //                  silt  (water, dread)   blue-black and glossy, crazed into mud polygons, a gleam of dread in the cracks
 //                The glints fade out past 40 m, where their texels are smaller than a pixel (no aliasing crawl: CLAUDE.md)
 //   THE WET      where the garden's water lies or lay (aWet, written by vfx/garden/gardenwater.js): the ground darker and glossier,
-//                drying over 20 real seconds, and under shallow water the liquid pack's caustics (vfx/liquid.js liqCaustic) laid on it,
-//                fading out as the water deepens past 1.5 m
+//                drying over 20 real seconds, and under shallow water the caustics (vfx/liquid.js liqCaustics: the Voronoi net in two
+//                layers, white where they meet and split into colour where they part) laid on it, fading out as the water deepens past 1.5 m
 //
 // Prior art: height-based blending of terrain layers (Andrey Mishkinis, "Advanced Terrain Texture Splatting", 2013; Unreal's
 // HeightLerp), triplanar mapping (GPU Gems 3 ch. 1; Ben Golus 2017; render/triplanar.js here), the five phases' colours of the wuxing
@@ -165,14 +165,15 @@ const FRAG_SURFACE = /* glsl */`
 const FRAG_GLOW = /* glsl */`
   { float fres = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);
     for (int k = 0; k < 5; k++) gGlow += uGAcc[k] * gB[k] * uGAmt2[k].x * fres;
+    vec3 gfw = fwidth(vGp); float gpx = max(gfw.x, max(gfw.y, gfw.z)); // (the pixel's footprint, taken here where every fragment runs: no derivative inside the branches below)
     if (vGW.y > 0.002) { // (under the water: its caustics on the floor, the light it gathers, strongest in the shallows)
       float d = vGW.y * 1.5, gk = smoothstep(0.06, 0.35, d) * (1.0 - smoothstep(0.7, 1.8, d)); // (caustics need water to focus in: none under a film)
       vec3 gn = normalize(vGn), gw = pow(abs(gn), vec3(4.0)); gw /= gw.x + gw.y + gw.z + 1e-5;
-      float t = uGTime * 0.6, c = 0.0;
-      if (gw.x > 0.05) c += liqCaustic(vGp.zy, 0.32, t) * gw.x;
-      if (gw.y > 0.05) c += liqCaustic(vGp.xz, 0.32, t) * gw.y;
-      if (gw.z > 0.05) c += liqCaustic(vGp.xy, 0.32, t) * gw.z;
-      gGlow += vec3(1.0, 0.97, 0.88) * c * gk * 0.24 * (0.35 + 0.65 * (1.0 - uGNight)); }
+      float t = uGTime * 0.8; vec3 c = vec3(0.0);
+      if (gw.x > 0.05) c += liqCaustics(vGp.zy, 1.0, t, gpx) * gw.x;
+      if (gw.y > 0.05) c += liqCaustics(vGp.xz, 1.0, t, gpx) * gw.y;
+      if (gw.z > 0.05) c += liqCaustics(vGp.xy, 1.0, t, gpx) * gw.z;
+      gGlow += c * gk * 0.4 * (0.35 + 0.65 * (1.0 - uGNight)); } // (the Voronoi net in two layers: vfx/liquid.js)
     totalEmissiveRadiance += gGlow; }
 `;
 const KEY = 'garden-grounds-2';
