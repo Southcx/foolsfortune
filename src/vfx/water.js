@@ -14,7 +14,8 @@
 //
 // LIQUID LACHRYMA (kind 'lachryma') is the same plane made heavy and slow: ink, a glossy oil highlight, the dark sky in it, and the thin
 // film's colours living in the marbling's cells and veins (the owner's photograph of oil is what Lachryma looks like close up), with an
-// iridescent meniscus where it meets the stone. The Weir's Well is filled with it.
+// iridescent meniscus where it meets the stone. The Weir's Well is filled with it. The two kinds are one shader program: which one a
+// material is, is a uniform (uLachryma), never a define, so the pond and the Well do not compile a program each (CASEBOOK rule 5).
 //
 // Prior art (researched for the owner's ask, R58; sources in docs/ART.md, "Liquid"): Super Mario Sunshine (two textures scrolled
 // against each other, the water changing with distance, the floor and its light seen through), Valve's water and flow maps (Vlachos,
@@ -54,7 +55,7 @@ void main() {
 const FRAG = `
 #include <common>
 #include <fog_pars_fragment>
-uniform sampler2D uSky; uniform vec3 uSun; uniform float uMaxDepth; uniform float uTime;
+uniform sampler2D uSky; uniform vec3 uSun; uniform float uMaxDepth; uniform float uTime; uniform float uLachryma;
 varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN;
 //SKYGLSL
 //LIQUIDGLSL
@@ -63,15 +64,16 @@ void main() {
   vec3 V = normalize(cameraPosition - vW);
   bool under = !gl_FrontFacing;
   float dist = length(cameraPosition - vW), far = smoothstep(18.0, 70.0, dist); // (far water calms: Sunshine's distance change)
-#ifdef LACHRYMA
-  float t = uTime * 0.35;                                                        // (viscous: it moves slowly)
-  vec3 pn = liqNormal(vW.xz, 0.09, t, 3.2 * (1.0 - 0.6 * far));
-#else
-  float t = uTime;
-  vec3 pn = liqNormal(vW.xz, 0.16, t, 1.7 * (1.0 - 0.7 * far));
-  vec3 fine = liqRipple(vW.xz, 0.4, t, 1.1 * (1.0 - far));                       // (the fine chop: the owner's wind-streaked ripples, close up only)
-  pn = normalize(vec3(pn.xz + fine.xz, 1.0).xzy);
-#endif
+  float t; vec3 pn;
+  if (uLachryma > 0.5) {
+    t = uTime * 0.35;                                                            // (viscous: it moves slowly)
+    pn = liqNormal(vW.xz, 0.09, t, 3.2 * (1.0 - 0.6 * far));
+  } else {
+    t = uTime;
+    pn = liqNormal(vW.xz, 0.16, t, 1.7 * (1.0 - 0.7 * far));
+    vec3 fine = liqRipple(vW.xz, 0.4, t, 1.1 * (1.0 - far));                     // (the fine chop: the owner's wind-streaked ripples, close up only)
+    pn = normalize(vec3(pn.xz + fine.xz, 1.0).xzy);
+  }
   vec3 N = normalize(vec3(vN.x + pn.x, vN.y, vN.z + pn.z));                      // (the swell's normal, the texture's slopes laid on it)
   vec3 rip = ripSlope(vW.xz);                                                     // (the rings where something touched it: vfx/ripples.js)
   N = normalize(N + vec3(-rip.x, 0.0, -rip.y) * 3.5);
@@ -84,7 +86,7 @@ void main() {
   vec3 L = normalize(uSun), H = normalize(L + V);
   float sp = max(dot(N, H), 0.0);
   vec3 col; float alpha;
-#ifdef LACHRYMA
+  if (uLachryma > 0.5) {
   // LIQUID LACHRYMA: ink, a glossy oil reflection, and the thin film's colours in the marbling's cells and veins
   float cells = liqHeight(vW.xz, 0.09, t), veins = liqTap(vW.xz * 0.09 + vec2(t * 0.021, t * 0.013)).a;
   float film = cells * 0.9 + fres * 0.7 + dot(N.xz, vec2(0.5, 0.35)) + t * 0.01;
@@ -96,7 +98,7 @@ void main() {
   col += liqFilm(film + 0.3) * rim * 0.5;
   col += liqFilm(film + rip.z * 2.0) * ripCrest * 0.6;                             // (on Lachryma a ring is a slow band of the film's colours)
   alpha = 0.96;
-#else
+  } else {
   // WATER: the light that comes back up through it (absorbed by the path it took), the floor's caustics seen through it, the sky in it
   float path = vDepth / max(abs(V.y), 0.25);                                     // (how much water the eye looks through)
   vec3 T = exp(-vec3(0.95, 0.3, 0.2) * path);                                  // (red goes first: shallows clear, deeps teal to marine)
@@ -121,7 +123,7 @@ void main() {
   col = mix(col, vec3(0.95, 0.98, 0.97), foam * 0.9);
   col = mix(col, vec3(0.92, 0.97, 0.96), ripCrest * 0.4);                       // (a ring's crest, Sunshine's white rings)
   alpha = smoothstep(0.0, 0.3, vDepth) * 0.97 + foam * 0.3;                    // (the water paints its own floor: it fades only at the very edge, onto the real sand)
-#endif
+  }
   if (under) { col *= 0.55; alpha = 0.55; }
   gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
   #include <tonemapping_fragment>
@@ -133,12 +135,12 @@ export function makeWaterMaterial(sky, kind = 'water') {
   const lach = kind === 'lachryma';
   const uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
-    ...liquidUniforms(), uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
+    ...liquidUniforms(), uLachryma: { value: lach ? 1 : 0 }, uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
   Object.assign(uniforms, RIPPLE_U); // (the ripple tank's, shared as they are: merge would have copied them)
   return new THREE.ShaderMaterial({ name: lach ? 'liquid-lachryma' : 'liquid-water',
     uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL).replace('//RIPPLEGLSL', RIPPLE_GLSL),
-    defines: lach ? { LACHRYMA: 1 } : {}, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
   });
 }
 
