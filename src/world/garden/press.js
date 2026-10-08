@@ -66,7 +66,7 @@ export class GardenPress {
       im.appendChild(hop);
       im.appendChild(el('div', 'grp', 'THE PRESS'));
       row('⟳', 'Press', inH.length ? 'the drop walks their paths; they are used up' : 'put materials in the hopper first', inH.length && !this.walking ? () => this.press(show) : null);
-      row('✶', 'Fire', 'pull the lever while the drop sits in a swatch', !this.walking ? () => this.fireLever(show) : null);
+      row('✶', 'Fire', A.s.cocked ? 'pull the lever while the drop sits in a swatch' : 'the lever is down: one firing a press', !this.walking ? () => this.fireLever(show) : null);
       im.appendChild(rows);
       im.appendChild(el('div', 'grp', 'YOUR MATERIALS'));
       const list = el('div', 'rooms');
@@ -99,7 +99,7 @@ export class GardenPress {
     const r = this.game.alchemy.fire();
     this.pull = 1;
     if (r.ok) this.fire = 1;
-    else this.game.log?.say?.('info', r.why, { throttle: 1 });
+    else { this.game.events?.emit('alchemy.refuse', { why: r.code, by: 'courier' }); this.game.log?.say?.('info', r.why, { key: 'alchemy.refuse', throttle: 1 }); } // (SOUL-ALCHEMY 4.19; the why is said at the point of use)
     show();
   }
 

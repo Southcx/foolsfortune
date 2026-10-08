@@ -233,7 +233,7 @@ export class Raid {
       this.sherdT -= dt; this.look.mend(1 - this.sherdT / (CASTS.calving.area.within || 30));
       if (!up.length || this.sherdT <= 0) {
         if (up.length) { for (const c of up) { c.alive = false; this.g.jellies.dispose(c); } F.heal(this.sherdHeal); this.moment('mend'); }
-        this.spent.push(...this.sherds); this.sherds = null; this.look.mend(0); F.show(0);
+        this.spent.push(...this.sherds.filter((c) => !up.includes(c))); this.sherds = null; this.look.mend(0); F.show(0); // (those mended in were taken down just now: never twice, casebook rule 65)
       }
     }
     // a sherd struck down stays in the scene until its pop is over; then it is taken down (a `once` jelly is never re-formed: casebook rule 65)

@@ -9,7 +9,6 @@
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
 const RULES = {
-  'film.load': (s) => s.filmWind?.(), // (a fresh roll threaded: tools/veritome/book.js)
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
   'psygun.chamber': (s) => s.chamberClick?.(),

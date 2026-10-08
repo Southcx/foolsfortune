@@ -80,14 +80,15 @@ function corners(s) {
   const joint = turn(t[j - k], t[j], t[k]) > 1.2 && turn(t[j - k], t[0], t[k]) > 1.2;
   return count + (joint ? 1 : 0);
 }
-/** A closed loop: about one turn (or a little more), and it comes back to where it began. */
+/** A closed loop: about one turn (or a little more), and it comes back to where it began: false, or { fit } (1 closed exactly, 0 at the
+ *  widest gap still taken: the drawing's quality, TRAINING.md 6, Calissa's formula). */
 function closedLoop(s) {
   const t = tidy(s), b = bbox(t), sz = Math.max(b.w, b.h), n = t.length, w = Math.abs(winding(t));
   if (sz < 12 || w < 0.72 || w > 1.5 || Math.min(b.w, b.h) < sz * 0.3) return false;
   let gap = Infinity;
   for (let i = 0; i < n * 0.4; i++) gap = Math.min(gap, dist(t[i], t[n - 1]));
   for (let j = Math.floor(n * 0.6); j < n; j++) gap = Math.min(gap, dist(t[0], t[j]));
-  return gap < sz * 0.32;
+  return gap < sz * 0.32 ? { fit: +(1 - gap / (0.32 * sz)).toFixed(3) } : false;
 }
 /** Is a point inside a polygon (a closed stroke)? */
 export function inside(p, poly) {
@@ -160,13 +161,13 @@ export function recognize(strokes) {
   // the bomb: a closed loop, and a fairly straight stroke from inside it to outside (either order)
   if (strokes.length === 2) {
     for (const [loop, fuse] of [[strokes[0], strokes[1]], [strokes[1], strokes[0]]]) {
-      if (!closedLoop(loop)) continue;
+      const L = closedLoop(loop); if (!L) continue;
       const lb = bbox(loop), a = fuse[0], b = fuse[fuse.length - 1];
       const straight = dist(a, b) / (pathLen(tidy(fuse)) || 1) > 0.7;
       const ins = (p) => inside(p, loop) || dist(p, { x: lb.cx, y: lb.cy }) < Math.max(lb.w, lb.h) * 0.35;
       if (straight && ins(a) !== ins(b)) {
         const c = { x: lb.cx, y: lb.cy }, o = ins(a) ? b : a;
-        return { ...info, name: 'bomb', score: 1, sigil: null, center: c, radius: Math.max(lb.w, lb.h) / 2, dir: { x: o.x - c.x, y: o.y - c.y } };
+        return { ...info, name: 'bomb', score: 1, fit: L.fit, sigil: null, center: c, radius: Math.max(lb.w, lb.h) / 2, dir: { x: o.x - c.x, y: o.y - c.y } };
       }
     }
   }
@@ -181,10 +182,11 @@ export function recognize(strokes) {
       const a = t[Math.max(0, n - 5)], z = t[n - 1];
       return { ...info, name: 'spiral', score: 1, sigil: null, turns: w, dir: { x: z.x - a.x, y: z.y - a.y } };
     }
-    if (closedLoop(s)) {
+    const L = closedLoop(s);
+    if (L) {
       const k = corners(s);
-      if (k === 0) return { ...info, name: 'circle', score: 1, sigil: null, radius: size / 2, poly: s };
-      if (k <= 2) return { ...info, name: 'heart', score: 1, sigil: null };
+      if (k === 0) return { ...info, name: 'circle', score: 1, fit: L.fit, sigil: null, radius: size / 2, poly: s };
+      if (k <= 2) return { ...info, name: 'heart', score: 1, fit: L.fit, sigil: null };
     }
   }
   // Penny Pincher over the templates: the best, if it is good enough and clear of the best of any other shape
