@@ -198,6 +198,10 @@ import { installEconomy } from './progress/econ/economy.js';
 import { installPsyche } from './progress/psyche.js';
 import { Voyage } from './progress/voyage.js';
 import { Garden } from './progress/garden.js';
+import { SporeBeds } from './progress/sporebeds.js';
+import { itemOf } from './pneuka/items.js';
+import { Myggdrasil } from './progress/myggdrasil.js';
+import { Keepsakes } from './progress/keepsakes.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -698,6 +702,9 @@ async function main() {
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
+  game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)
+  game.myggdrasil = new Myggdrasil(game); // (the World Mushroom on its own planetoid: progress/myggdrasil.js)
+  game.keepsakes = new Keepsakes(game); // (a spirit let go, fired into a pot that stays: progress/keepsakes.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
@@ -760,6 +767,14 @@ async function main() {
   game.debugChests = new DebugChests(game); // (what a test session needs, beside the thing under test: debug/debugchest.js, docs/plans/DEBUG-CHESTS.md)
   game.busk = new Busk(game); // (the busker's mats on the piers: F with the Crucibelle worn begins a song: world/busk.js)
   game.chat.add('garden', { help: "into your Inner Realm from where you stand (a tester's way: a Shrine is the door)", run: () => game.realm?.enter(game.shrines?.get?.(game.shrines.last) || null) });
+  // (a tester's way to the mycelium until the garden's features are placed by hand: MYCELIUM.md; every verb reports through its event)
+  game.chat.add('spore', { help: 'the spore beds: /spore bed | inoculate <bed> <feeling> | set <bed> <box slot> [slot] | back <bed> | harvest <bed>', run: (a) => {
+    const S = game.sporeBeds, n = (k) => Number(a[k]) - 1, f = { bed: () => ({ ok: true, bed: S.grant() + 1 }), inoculate: () => S.inoculate(n(1), a[2]),
+      set: () => S.set(n(1), a.slice(2).map((x) => Number(x) - 1)), back: () => S.back(n(1)), harvest: () => S.harvest(n(1)) }[a[0]];
+    const r = f ? f() : { ok: false, why: 'bed, inoculate, set, back or harvest' }; if (!r.ok && r.why) game.log.say('warn', r.why, { key: 'spore', throttle: 1 }); } });
+  game.chat.add('tree', { help: 'Myggdrasil: /tree feed <box slot> | pick | hang <arcana> | dawn', run: (a) => {
+    const T = game.myggdrasil, f = { feed: () => T.feed(Number(a[1]) - 1), pick: () => ({ ok: true, n: T.pick() }), hang: () => T.hang(a[1]), dawn: () => ({ ok: true, n: T.dawn() }) }[a[0]];
+    const r = f ? f() : { ok: false, why: 'feed, pick, hang or dawn' }; if (!r.ok && r.why) game.log.say('warn', r.why, { key: 'tree', throttle: 1 }); } });
   game.chat.add('realmname', { help: 'name your Inner Realm yourself: /realmname <name>', run: (args) => game.realm?.setName(args.join(' ')) });
   game.chat.add('cavern', { help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
     const W = game.well; if (game.emocean?.stage.active || game.death?.active) return;
