@@ -51,13 +51,14 @@ export function crossingStage(id, game) {
   const sea = new CrudeSea({ env, size: 300, cells: 120, y: 0 }); root.add(sea.mesh);
   // the ship: the sloop at half its sea size, its glow the feeling's
   const ship = new Sloop({ env }); ship.group.scale.setScalar(0.45); ship.polarity(COLOR.wonder); root.add(ship.group);
-  // above: the False Light at anchor (its keel under the crude), two monoliths of labradorite standing out of it, wired in the Mind's line
+  // above: the False Light at anchor (its keel under the crude), three monoliths of labradorite standing out of it, wired in the Mind's line
   const brig = new BrigLook({ env }); brig.group.scale.setScalar(0.6); brig.group.position.set(15, 0, 34); brig.group.rotation.y = 0.25; root.add(brig.group); warpObject(brig.group);
   const stone = warpMaterial(new THREE.MeshStandardMaterial({ color: 0x0d0b13, roughness: 0.3, metalness: 0.5, envMap: env, envMapIntensity: 0.6 }));
   const wire = warpMaterial(mindLineMaterial({ opacity: 0.9, depthTest: true, bright: 1.2 }));
+  const geos = []; // (the monoliths' own: put down with the stage)
   for (const [x, z, h, yaw] of [[-9, 12, 16, 0.4], [-14, 58, 22, -0.3], [11, 76, 13, 0.9]]) {
     const g = new THREE.BoxGeometry(2.6, h, 2.6), m = new THREE.Mesh(g, stone); m.position.set(x, h * 0.5 - h * 0.42, z); m.rotation.y = yaw; root.add(m);
-    const e = new THREE.LineSegments(new THREE.EdgesGeometry(g), wire); m.add(e);
+    const eg = new THREE.EdgesGeometry(g), e = new THREE.LineSegments(eg, wire); m.add(e); geos.push(g, eg);
   }
   // below: Old Nobody, far down, gliding across the column
   const nobody = new LeviathanLook({ env }); nobody.group.scale.setScalar(0.5); root.add(nobody.group); warpObject(nobody.group);
@@ -92,7 +93,7 @@ export function crossingStage(id, game) {
     U.dispose(); W?.set({ storm: 0, mind: null, anywhere: false }); // (mind back to the Courier's own, not the stage's 0)
     if (W) { W.k = 0; W.update(0, wb.camera); }
     S.fog = was.fog; S.background = was.bg;
-    sea.dispose(); ship.dispose(); brig.dispose(); nobody.dispose(); stone.dispose(); wire.dispose(); dome.geometry.dispose(); dome.material.dispose();
+    sea.dispose(); ship.dispose(); brig.dispose(); nobody.dispose(); stone.dispose(); wire.dispose(); for (const g of geos) g.dispose(); dome.geometry.dispose(); dome.material.dispose();
   };
   return root;
 }
