@@ -25,7 +25,7 @@
 // polarity, Star Fox 64's roll, Sin & Punishment's return.
 //
 //   const F = new ShotField({ rail, cap })   F.build(scene)   F.fire(shot, { from, ship })   (a pattern's shot: patterns.js emit's shape)
-//   F.update(dt, { ship, waves })   F.clear()   F.show(on)   F.live   F.peak   F.counts { absorbed, hit, turned, returned }
+//   F.update(dt, { ship, waves })   F.clear()   F.show(on)   F.live   F.peak   F.counts { absorbed, hit, spent (in the mercy), turned, returned }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
@@ -49,7 +49,7 @@ export class ShotField {
       trail: new Float32Array(TRAIL * 3), trailN: 0, trailK: 0, trailT: 0 }));
     this.beams = Array.from({ length: LASERS }, () => ({ on: false, o: new THREE.Vector3(), dir: new THREE.Vector3(), a: new THREE.Vector3(), b: new THREE.Vector3() }));
     this.free = []; for (let i = cap - 1; i >= 0; i--) this.free.push(i);
-    this.live = 0; this.peak = 0; this.counts = { absorbed: 0, hit: 0, turned: 0, returned: 0, fired: 0, dropped: 0 };
+    this.live = 0; this.peak = 0; this.counts = { absorbed: 0, hit: 0, spent: 0, turned: 0, returned: 0, fired: 0, dropped: 0 };
   }
 
   // ---------------------------------------------------------------- the looks (placeholders: Calissa's)
@@ -138,7 +138,8 @@ export class ShotField {
       }
       x.turned = true; x.dir.set(x.dir.x * -0.4 + (x.p.x - ship.local.x) * 0.3, 0.6, -0.3).normalize(); this.counts.turned++; ship.turned?.(x); return;
     }
-    if (ship.hit?.(x) !== false) { this.counts.hit++; this.kill(x); }
+    const spent = ship.mercy > 0; // (the mercy after a hit: the shot is spent on the ship, not taken: counted apart)
+    if (ship.hit?.(x) !== false) { this.counts[spent ? 'spent' : 'hit']++; this.kill(x); }
   }
 
   /** Proportional navigation: turn at N times the line of sight's rate (pure pursuit while it is off by more than 60 degrees), never
@@ -194,7 +195,8 @@ export class ShotField {
     if (segDist(ship.local, b.a, b.b) < (ship.hurtR ?? T.ship.hurt) + BEAM_R) {
       if (b.kind === (ship.form || 'astral')) { this.counts.absorbed++; ship.absorb?.(b); b.struck = true; return; }
       if (ship.turning) return; // (the roll carries you through)
-      if (ship.hit?.(b) !== false) { this.counts.hit++; b.struck = true; } // (a beam hurts once: the ship's mercy does the rest)
+      const spent = ship.mercy > 0;
+      if (ship.hit?.(b) !== false) { this.counts[spent ? 'spent' : 'hit']++; b.struck = true; } // (a beam hurts once: the ship's mercy does the rest)
     }
   }
 
