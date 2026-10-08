@@ -133,9 +133,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
   upper ring) carries three abstract words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
   "ledger stone" (the ledger is the game's counts).
-- **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
+- **the sealed room** (`world/ostraca.js`): a stone room by the ruins in the Dunes whose door slab the Dreamvane's fork opens by
+  ringing in it; inside, a stele. **a plaster patch** (the same): a cracked patch on the workshop's old walls that a blow knocks away,
+  an ostracon behind it. **a forgotten pot**: a pot on a floor of the Great Dunemaw that holds an ostracon (the deck: `DUNEMAW_DECK`).
+- **the Crib Sheet** (a knack, the owner's name; `game.ostraca.gloss(word)`): the English gloss beside each neuralese word that is glossed, its reach grown only by
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
-- **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
+- **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
   Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening; the name Espada's to confirm), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Slow Hand and the map's way back proposed). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
