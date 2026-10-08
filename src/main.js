@@ -85,6 +85,7 @@ import { Recoil } from './courier/moves/recoil.js';
 import { Rigging } from './courier/moves/rigging.js';
 import { Lobbers } from './creatures/lobber.js';
 import { GodMode } from './godhand/godhand.js';
+import { crackPrewarm } from './vfx/crackskin.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
@@ -861,6 +862,7 @@ async function main() {
   game.mawWipe.make?.(); const wipe = game.mawWipe.mesh; if (wipe) wipe.visible = true;
   if (game.dunes?.beach && !game.shore.built) game.shore.build(game.dunes.beach);
   const parkDrain = game.dataDrain.prewarm(); // (the data drain's cubes, beam and bracelet)
+  const parkCracks = crackPrewarm(scene, god.jar.jarBody); // (the Pneuka Jar's skinned crack and gold seam: vfx/crackskin.js)
   const parkWeather = game.weatherLook?.prewarm?.(); // (the weather's rain, motes, rings, aurora and bolt: made now, not on the first weather)
   // (a stain and a Lachrymato Bottle, made now and parked hidden, never disposed: their programs live while one exists; the casebook's rules 17 and 18)
   const brushLooks = [new Stain({ seed: 0.5 }).group, new LachrymatoBottle({ size: 'small' }).group];
@@ -875,7 +877,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain();
+  parkWeather?.(); parkDrain(); parkCracks();
   for (const o of brushLooks) o.visible = false;
   for (const o of seaLooks) o.visible = false;
   for (const o of gardenLooks) o.visible = false;
@@ -1135,6 +1137,7 @@ async function main() {
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     } else player.renderPos.copy(player.pos);
     god.applyCamera(dt);
+    god.jar.clips?.update(dt); // (the Pneuka Jar's own clips, chosen by whichever mode draws it: godhand/pneukajarclips.js)
     weapon.updateDebris(dt);
 
     diag.begin('props'); breakables.update(dt); diag.end('props');
