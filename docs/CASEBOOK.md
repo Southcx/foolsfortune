@@ -180,7 +180,30 @@ the rules before building in the same area; a rule a machine can check goes into
 69. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
     scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
+70. **A dressing laid on the ground fades out by its alpha, never by its height alone.** A bank of sand, a drift, a stain that falls to
+    nothing at its edge still shows its colour there; on a floor not its colour that margin is a pale square. Its edge is
+    transparent, and it is looked at on every floor it can stand on.
+71. **A canvas painted from a `THREE.Color` takes the colour's sRGB values.** `.r .g .b` are the renderer's linear working values: written
+    as CSS they paint far too dark. Use `getRGB(target, SRGBColorSpace)` or `getStyle()`, and shift a shade in sRGB (`getHSL` /
+    `setHSL` with `SRGBColorSpace`), where the eye judges it.
 ## Cases
+
+### 2026-10-08 · A stele's sand bank was a pale square on the great cavern's stone (found headless, swapping in the ostraca's looks)
+- **Seen:** the stele in the great cavern's upper ring stood in a bright rectangle 1.8 m by 1.4 m on the gallery's dark stone
+  (the builder's headless shot); in the Dunes it never showed, sand on sand.
+- **Cause:** the bank (`vfx/ostracon.js` `bankGeometry`) is a plane whose height falls to nothing toward its edge, but every vertex kept
+  the sand's colour at full strength: its flat margin is sand-coloured floor laid over whatever floor it stands on.
+- **Fix:** each vertex carries an alpha from its height (0 at the edge, 1 from 2 cm up, the threshold wandering by noise), and the bank's
+  material is transparent without depth writes; it is now a drift that fades into the gallery's stone and into the Dunes' sand alike.
+- **Rule:** 70.
+
+### 2026-10-08 · The plaster patch was painted far too dark (found headless, before it shipped)
+- **Seen:** the first plaster patch on the workshop's west wall rendered near black (measured RGB 45, 0, 10 against the wall's 125, 32, 22).
+- **Cause:** its canvas was painted from `THREE.Color` channels read raw (`c.r * 255`): with colour management on those are linear
+  values, so every colour went onto the canvas as if much darker, and the HSL shifts were made in linear space too.
+- **Fix:** `vfx/plasterpatch.js` reads `getRGB(target, SRGBColorSpace)` and shifts shades with `getHSL`/`setHSL` in `SRGBColorSpace`;
+  measured after: the skim 129, 37, 23 against the wall's 125, 32, 22, a shade off as meant.
+- **Rule:** 71.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame

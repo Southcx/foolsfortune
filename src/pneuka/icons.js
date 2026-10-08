@@ -78,7 +78,7 @@ function modelOf(game, it) {
     if (TOOL_TURN[it.tool]) c.rotation.set(...TOOL_TURN[it.tool]);
     return { group: g, dispose() {} };
   }
-  if (['instrument', 'heart', 'key', 'material', 'shell'].includes(it.kind)) return buildThing(it.id);
+  if (['instrument', 'heart', 'key', 'material', 'shell'].includes(it.kind) || it.id.startsWith('ostracon.')) return buildThing(it.id);
   if (it.kind === 'fish') {
     const sp = SPECIES.find((x) => x.id === it.key); if (!sp) return null;
     const f = buildFish(sp, (sp.size[0] + sp.size[1]) / 2), g = new THREE.Group();

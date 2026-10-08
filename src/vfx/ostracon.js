@@ -31,9 +31,11 @@
 // Chants of Sennaar (a glossary deduced from pictures); Tunic (a script on one lattice, its manual found a page at a time).
 //
 //   const O = new Ostracon({ word, picture? })   O.group (rests on its origin)   O.set({ buried })   O.update(dt)   O.dispose()
+//   O.arrive(t, from?)                           its arrival on the dig's clock: dug out of the sand, or fallen from `from` (world axes)
 //   const S = new Stele({ words })               S.group (stands on its origin, its face to +z)   S.set({ buried })   S.update(dt)   S.dispose()
 //   (words: the runes in rows, four to a row, or an array of rows; none, a bare face)
 //   ostraconThing(word) -> { group, dispose }    the item in the Pneuka Box: a potsherd dug clean, its face to the eye (fossilThing's way)
+//   sandstoneMaterial({ ashlar }) -> material    the stele's sandstone laid from the world: coursed ashlar (a wall), or plain (a monolith)
 //   (picture: one of blackfigure.js's ids, 'drink' .. 'hush'; left out, the word's own from PICTURES; unknown, the meander)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -174,7 +176,7 @@ function mound() {
   const m = new THREE.Mesh(MOUND.geo, MOUND.mat); m.receiveShadow = true; return m;
 }
 function sandParts() {
-  if (!MOUND) { const pts = []; for (let i = 0; i <= 14; i++) { const r = i / 14; pts.push(new THREE.Vector2(r, (Math.exp(-3 * r * r) - Math.exp(-3)) / (1 - Math.exp(-3)))); } pts.reverse(); MOUND = { geo: new THREE.LatheGeometry(pts, 28), mat: new THREE.MeshStandardMaterial({ name: 'ostracon-sand', color: SAND, roughness: 1 }) }; }
+  if (!MOUND) { const pts = []; for (let i = 0; i <= 14; i++) { const r = i / 14; pts.push(new THREE.Vector2(r, (Math.exp(-3 * r * r) - Math.exp(-3)) / (1 - Math.exp(-3)))); } pts.reverse(); MOUND = { geo: new THREE.LatheGeometry(pts, 28), mat: new THREE.MeshStandardMaterial({ name: 'ostracon-sand', color: SAND, roughness: 1 }) }; MOUND.mat.userData.shared = true; }
   return MOUND;
 }
 
@@ -240,11 +242,22 @@ export class Ostracon {
 
   /** How buried it is: 0 dug clean, lying face up on the ground .. 1 only its raised corner showing out of a mound of sand. */
   set({ buried = this.buried } = {}) {
-    const b = THREE.MathUtils.clamp(buried, 0, 1); if (b === this.buried) return; this.buried = b;
+    const b = THREE.MathUtils.clamp(buried, 0, 1); if (b === this.buried && !this.fell) return; this.buried = b; this.fell = false;
     const tilt = 0.1 + 0.5 * b; this.body.rotation.set(-Math.PI / 2 + tilt, 0, 0); this.body.position.set(0, 0, 0); this.body.updateMatrix();
     let lo = Infinity; for (const p of this.F.geo.userData.rim) lo = Math.min(lo, _a.copy(p).applyMatrix4(this.body.matrix).y);
     this.body.position.y = -lo - 0.018 * b;
     this.mound.visible = b > 0.02; this.mound.scale.set(0.15 + 0.03 * b, 0.045 * b, 0.13 + 0.03 * b); this.mound.position.z = 0.012;
+  }
+
+  /** Its arrival as `t` runs 0 .. 1 (the dig's own clock): with no `from`, dug up out of the sand (buried 1 .. 0); with `from` (where it
+   *  was set, from its resting place, in the world's axes: the wall it was plastered into, a pot's height), it falls from there, turning
+   *  from upright, its face to the way it fell, to lying on its back. */
+  arrive(t, from = null) {
+    const k = clamp(t, 0, 1);
+    if (!from) { this.set({ buried: 1 - k * k * (3 - 2 * k) }); return; }
+    this.set({ buried: 0 }); if (k >= 1) return;
+    const f = _b.copy(from).applyQuaternion(_q.copy(this.group.quaternion).invert()), u = 1 - k * k, rest = this.body.rotation.x, yaw = Math.atan2(-f.x, -f.z);
+    this.body.position.addScaledVector(f, u); this.body.rotation.set(rest * (1 - u), yaw * u, 0.6 * u * u); this.fell = true;
   }
 
   update(dt = 1 / 60) { sunOf(this.group); this.sparkle.update(dt, THREE.MathUtils.smoothstep(this.buried, 0.3, 0.9), this.normal); }
@@ -254,7 +267,7 @@ export class Ostracon {
 
 /** The Pneuka Box's item: a potsherd a hand across, dug clean, its painted face turned to the eye (pneuka/thingmodels.js buildThing). */
 export function ostraconThing(word) {
-  const O = new Ostracon({ word }); O.body.rotation.set(-0.28, 0.32, 0.04); O.body.position.set(0, 0, 0);
+  const O = new Ostracon({ word }); O.body.rotation.set(-0.28, 0.32, 0.04); O.body.position.set(0, 0, 0); O.group.remove(O.mound); // (no mound: the icon is framed on the potsherd alone)
   const group = new THREE.Group(); group.add(O.group); O.update(0);
   return { group, dispose: () => O.dispose() };
 }
@@ -280,7 +293,73 @@ function sandstoneTile() {
   return (TILE = c);
 }
 let BODY = null;
-function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; } return BODY.mat; }
+function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; BODY.mat.userData.shared = true; } return BODY.mat; } // (shared: a parent that disposes what it holds, as the bowl does, leaves it)
+
+// ---- the stele's sandstone laid as a wall: the town's isodomic ashlar (courses of one height, each block cut from the stone at its own
+// place, its arrises worn, sand in the joints), or the plain stone for a monolith; laid from the world along the axis a face looks down
+// (box mapping, as vfx/surfaces.js lays the workshop's), so any box of it takes the stone at one density with no UVs
+const AW = 2.4, AH = 2.1, APX = 400; // (the ashlar's tile in metres, three courses of 0.7 m; texels a metre)
+let ASHLAR = null;
+function ashlarTile() {
+  if (ASHLAR) return ASHLAR;
+  const W = AW * APX, H = AH * APX, c = sheet(W, H), g = c.getContext('2d'), rnd = seeded('ashlar'), T = sandstoneTile();
+  const half = sheet(TW * APX, TH * APX); half.getContext('2d').drawImage(T, 0, 0, half.width, half.height);
+  const pat = g.createPattern(half, 'repeat'), CH2 = H / 3;
+  for (let k = 0; k < 3; k++) {
+    const y0 = k * CH2; let x = rnd() * W; const end = x + W;
+    while (x < end - 1) {
+      const len = Math.min(end - x, (1 + rnd() * 0.6) * APX), x0 = x; x += len;
+      // (the block's own chances drawn once, so its two copies at a wrap agree)
+      const ox = rnd() * half.width, oy = rnd() * half.height, tone = rnd(), ta = rnd(), chips = Array.from({ length: 4 }, () => [rnd(), 6 + rnd() * 14, Array.from({ length: 12 }, rnd)]);
+      for (const sx of [x0 - W, x0]) { // (a block crossing the tile's edge is drawn on both sides of it, so the tile wraps)
+        if (sx > W || sx + len < 0) continue;
+        g.save(); g.beginPath(); g.rect(sx, y0, len, CH2); g.clip();
+        pat.setTransform(new DOMMatrix().translate(x0 + ox, y0 + oy)); g.fillStyle = pat; g.fillRect(sx, y0, len, CH2);
+        g.fillStyle = tone < 0.3 ? `rgba(236, 210, 166, ${0.1 + ta * 0.1})` : tone < 0.6 ? `rgba(120, 82, 50, ${0.08 + ta * 0.1})` : `rgba(170, 96, 52, ${0.06 + ta * 0.08})`; g.fillRect(sx, y0, len, CH2);
+        // the face sand-blown paler toward its foot; its arrises worn: lit along the top and the left, shaded under and to the right
+        let gr = g.createLinearGradient(0, y0, 0, y0 + CH2); gr.addColorStop(0, 'rgba(240, 220, 180, 0)'); gr.addColorStop(1, 'rgba(240, 220, 180, 0.12)'); g.fillStyle = gr; g.fillRect(sx, y0, len, CH2);
+        g.fillStyle = 'rgba(240, 222, 184, 0.5)'; g.fillRect(sx, y0 + 2, len, 3); g.fillRect(sx + 2, y0, 2, CH2);
+        g.fillStyle = 'rgba(78, 56, 36, 0.42)'; g.fillRect(sx, y0 + CH2 - 6, len, 4); g.fillRect(sx + len - 5, y0, 3, CH2);
+        // a corner knocked off here and there
+        [[sx, y0], [sx + len, y0], [sx, y0 + CH2], [sx + len, y0 + CH2]].forEach(([cx, cy], n) => { const [p, r, q] = chips[n]; if (p > 0.35) return; g.fillStyle = 'rgba(92, 66, 42, 0.55)'; g.beginPath(); g.moveTo(cx, cy); for (let i = 0; i <= 5; i++) { const a = (i / 5) * Math.PI * 2; g.lineTo(cx + Math.cos(a) * r * (0.6 + q[i] * 0.5), cy + Math.sin(a) * r * (0.6 + q[i + 6] * 0.5)); } g.fill(); });
+        g.restore();
+        // the joint: a dark hairline with sand lodged in it
+        g.fillStyle = 'rgba(58, 40, 24, 0.85)'; g.fillRect(sx - 1.5, y0, 3, CH2);
+      }
+    }
+    g.fillStyle = 'rgba(58, 40, 24, 0.85)'; g.fillRect(0, y0 - 1.5, W, 3);
+    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(226, 200, 150, ${0.4 + rnd() * 0.4})`; g.fillRect(rnd() * W, y0 - 1.5 + rnd() * 3, 1 + rnd() * 2, 1.2); }
+  }
+  return (ASHLAR = c);
+}
+const STONE_VS = ['#include <common>', '#include <common>\nvarying vec3 vSandP;\nvarying vec3 vSandN;', '#include <begin_vertex>', '#include <begin_vertex>\nvSandP = (modelMatrix * vec4(transformed, 1.0)).xyz; vSandN = mat3(modelMatrix) * objectNormal;'];
+const STONE_FS = `#include <common>
+varying vec3 vSandP; varying vec3 vSandN; uniform sampler2D uSand; uniform vec2 uSandTile;
+float sandHash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+float sandNoise(vec3 p) { vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(sandHash(i), sandHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 0.0)), sandHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
+    mix(mix(sandHash(i + vec3(0.0, 0.0, 1.0)), sandHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 1.0)), sandHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z); }`;
+// (the face's own axis picks the plane; the gradients come from the world position, which runs on unbroken across an edge, so the mips do too)
+const STONE_MAP = `{ vec3 an = abs(normalize(vSandN)), P = vSandP, PX = dFdx(P), PY = dFdy(P); vec2 suv, sgx, sgy;
+  if (an.x >= an.y && an.x >= an.z) { suv = P.zy; sgx = PX.zy; sgy = PY.zy; } else if (an.y >= an.z) { suv = P.xz; sgx = PX.xz; sgy = PY.xz; } else { suv = P.xy; sgx = PX.xy; sgy = PY.xy; }
+  vec3 sst = textureGrad(uSand, suv / uSandTile, sgx / uSandTile, sgy / uSandTile).rgb;
+  diffuseColor.rgb *= sst * (0.9 + 0.2 * sandNoise(P * 0.45)); }`;
+const STONES = {};
+/** The stele's sandstone as a material for walls and slabs laid in the world: `ashlar` coursed blocks (the sealed room's walls), else the
+ *  plain stone (a monolith: its door slab). Shared, one per kind, one program for both. */
+export function sandstoneMaterial({ ashlar = false } = {}) {
+  const key = ashlar ? 'ashlar' : 'plain'; if (STONES[key]) return STONES[key];
+  const tex = ashlar ? canvasTexture(ashlarTile(), true) : (steleBody(), BODY.tex), tile = ashlar ? new THREE.Vector2(AW, AH) : new THREE.Vector2(TW, TH); // (the plain stone is the stele's own texture)
+  const m = new THREE.MeshStandardMaterial({ name: `sandstone-${key}`, color: 0xffffff, roughness: 0.95 });
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uSand = { value: tex }; sh.uniforms.uSandTile = { value: tile };
+    sh.vertexShader = sh.vertexShader.replace(STONE_VS[0], STONE_VS[1]).replace(STONE_VS[2], STONE_VS[3]);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', STONE_FS).replace('#include <map_fragment>', `#include <map_fragment>\n${STONE_MAP}`);
+  };
+  m.customProgramCacheKey = () => 'sandstone-laid';
+  m.userData.sandstone = tex; m.userData.shared = true;
+  return (STONES[key] = m);
+}
 
 function cutRune(g, word, cx, cy, size, w, style) { const k = size / 8; g.beginPath(); for (const [[x0, y0], [x1, y1]] of runeStrokes(word)) { g.moveTo(cx + (x0 - 5) * k, cy + (y0 - 5) * k); g.lineTo(cx + (x1 - 5) * k, cy + (y1 - 5) * k); } g.lineWidth = w; g.strokeStyle = style; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); }
 /** A rune cut in the sandstone: the groove's shaded wall, its floor, its lit wall (the light from above and to the left). */
@@ -358,7 +437,7 @@ function anthemionGeometry() {
 }
 
 let BANK = null;
-function bankMaterial() { return (BANK ||= new THREE.MeshStandardMaterial({ name: 'stele-bank', color: 0xffffff, vertexColors: true, roughness: 1 })); }
+function bankMaterial() { if (!BANK) { BANK = new THREE.MeshStandardMaterial({ name: 'stele-bank', color: 0xffffff, vertexColors: true, roughness: 1, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }); BANK.userData.shared = true; } return BANK; } // (its thin edge fades out, so it lies on any floor: sand, or the cavern's stone)
 /** Sand banked round a footprint (half sizes hx, hz): level against the stele, deeper on the windward front, falling away concave to nothing. */
 function bankGeometry(hx, hz) {
   const g = new THREE.PlaneGeometry(1.8, 1.4, 60, 46).rotateX(-Math.PI / 2), P = g.attributes.position, col = [], sand = new THREE.Color(SAND);
@@ -367,9 +446,10 @@ function bankGeometry(hx, hz) {
     const deep = (0.075 + 0.055 * THREE.MathUtils.smoothstep(z, -hz, hz)) * (0.8 + 0.4 * noise3(x * 6 + 3, 0.5, z * 6));
     P.setY(i, deep * Math.exp(-d / 0.2) * (1 - THREE.MathUtils.smoothstep(Math.max(Math.abs(x) / 0.9, Math.abs(z) / 0.7), 0.6, 1)));
     // (shaded in the hollow where it banks against the stele, so it reads as set in sand under any light)
-    const k = 0.74 + 0.26 * THREE.MathUtils.smoothstep(d, 0, 0.14); col.push(sand.r * k, sand.g * k, sand.b * k);
+    const k = 0.74 + 0.26 * THREE.MathUtils.smoothstep(d, 0, 0.14), a = THREE.MathUtils.smoothstep(P.getY(i), 0.002 + 0.006 * noise3(x * 9, 1.5, z * 9), 0.022);
+    col.push(sand.r * k, sand.g * k, sand.b * k, a);
   }
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
   return g;
 }
 
