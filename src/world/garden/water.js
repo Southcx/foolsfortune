@@ -16,7 +16,7 @@
 // angle, Musgrave 1989).
 //
 //   const W = new PlanetWater(clay, { g })   W.step(dt) (60 a real second)   W.slump(dt) (a few a real second)   W.depthAt(dir)   W.pour(dir, volume, feeling)   W.drink(dir, volume)
-//   W.total   W.version   W.mix(k) -> [5 shares]   W.dump() / W.load(d)
+//   W.total   W.version   W.mix(k) -> [5 shares]   W.dump() / W.load(d)   basinVolume(clay) -> cubic metres its basins would hold
 // ---------------------------------------------------------------------------------------
 import { NX, NY, CELL_DIRS, uvOf } from './clay.js';
 
@@ -175,3 +175,28 @@ export class PlanetWater {
 
 /** Every cell's direction, for the look (world/garden/watermesh.js). */
 export { CELL_DIRS };
+
+/** What the clay's basins would hold, filled to their spill points (a priority-flood: Barnes, Lehman and Mulla, 2014). A planetoid has no
+ *  edge to drain over, so the outlet is its lowest cell: water there is the sea, everything held up behind a rim above it is a basin.
+ *  Read at a stroke's end, before and after (garden.sculpt's `q`: TRAINING.md 6), on the water's own grid (neighbours wrapping in
+ *  longitude and across a pole; a cell's area by its row), without making the planetoid's water. 8,192 cells, a few milliseconds. */
+export function basinVolume(clay) {
+  const n = NX * NY, z = new Float32Array(n), seen = new Uint8Array(n), lvl = new Float32Array(n), heap = [];
+  for (let k = 0; k < n; k++) z[k] = clay.base[k] + clay.h[k];
+  const R = clay.P.r, dy = (R * Math.PI) / NY, area = new Float32Array(NY);
+  for (let j = 0; j < NY; j++) { const lat = ((j + 0.5) / NY - 0.5) * Math.PI; area[j] = Math.max(dy * 0.2, (R * Math.cos(lat) * Math.PI * 2) / NX) * dy; }
+  const near = (k, out) => { const j = (k / NX) | 0, i = k - j * NX, ac = (i + NX / 2) % NX; out[0] = j * NX + (i + NX - 1) % NX; out[1] = j * NX + (i + 1) % NX; out[2] = j === NY - 1 ? j * NX + ac : (j + 1) * NX + i; out[3] = j === 0 ? ac : (j - 1) * NX + i; return out; };
+  const push = (k, v) => { lvl[k] = v; heap.push(k); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (lvl[heap[p]] <= v) break; heap[i] = heap[p]; i = p; } heap[i] = k; };
+  const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { let i = 0; const v = lvl[last]; for (;;) { let c = 2 * i + 1; if (c >= heap.length) break; if (c + 1 < heap.length && lvl[heap[c + 1]] < lvl[heap[c]]) c++; if (lvl[heap[c]] >= v) break; heap[i] = heap[c]; i = c; } heap[i] = last; } return top; };
+  let lo = 0; for (let k = 1; k < n; k++) if (z[k] < z[lo]) lo = k;
+  push(lo, z[lo]); seen[lo] = 1;
+  let vol = 0; const nb = [0, 0, 0, 0];
+  while (heap.length) {
+    const k = pop(), L = lvl[k];
+    for (const m of near(k, nb)) {
+      if (seen[m]) continue; seen[m] = 1;
+      if (z[m] < L) { vol += (L - z[m]) * area[(m / NX) | 0]; push(m, L); } else push(m, z[m]);
+    }
+  }
+  return vol;
+}
