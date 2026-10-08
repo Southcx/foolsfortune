@@ -9,3 +9,8 @@ The owner approved the rutter as a livelihood and asked for a ship trade: the sl
 - `node scripts/passage.mjs` checks both.
 
 The full design is in PASSAGE.md sections 11–13.
+
+**Wanda's hooks for encounters** (2d89e50 on claude/friendly-knuth-vbv82r): an encounter goes in the legs as
+`{ id: 'encounter', encounter: <encounters.js id> }`. While `stage.encounter` is set and `chosen` is not, its cue holds a 2-bar loop;
+`tripLayout` counts an encounter as 6 bars and marks it `held`. The leg id `stormwall` is now `eyewall`. If the music should dive with
+Charybdis, it needs `stage.foe.under`; that waits on the owner.
