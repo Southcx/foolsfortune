@@ -445,8 +445,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **crude** (`ECON.crude`): liquid Lachryma as a cargo, fossil feeling (`docs/LORE.md`, "Lachryma as crude"); graded by aspect,
   **wonder**, **mirth**, **desire**, **grief**, **dread**. Volatile, so it can **spill**; cubes cannot. *Not:* a bauble (the pool's drop).
 - **commission** (`commissionPay`): a hunt for a Figment by class (Guppy to Leviathan), the island's own thoughts kept in proportion
-  (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named stray, an Egregore or a Figment gone aberrant, under the
-  King's marque (Letty Marque). *Not:* the same thing.
+  (Seger, the Witness Cone). **bounty** (`bountyPay`): a hunt for a named Egregore (a creature of real human myth) or a Figment gone
+  stray or aberrant, under the King's marque (Letty Marque). *Not:* the same thing.
 - **the Great Dunemaw** (`game.well`, `src/world/well/dunemaw.js`; the owner's name): the Well in the Dunes, the slice's one Well. Its
   **mouth** is a dark turning pool ringed in stones out on the sand (a signature of kind `well`: the Dreamvane hears it); F there goes
   down. A Well has **floors** (three here), each laid out that **day** from `wellSeed` (`src/world/well/wellkit.js`); on every floor the

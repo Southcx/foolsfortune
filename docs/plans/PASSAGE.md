@@ -186,7 +186,7 @@ A new haven waypoint, **an encounter**: the ship is mended as at a calm, a short
 and it ends in **a choice with stakes** (FTL's events, Slay the Spire's rest-or-upgrade, Sunless Sea's storylets, Wind Waker's sea).
 Which encounter resolves on arrival (Slay the Spire's "?"): its portent shows a haven's silhouette; each one's weight doubles for every
 voyage it has gone unmet (x8 at most), so the sea shows them all in time. One stands in the middle column of every sea chart that has
-room (the anchor, in place of a plain calm). The first seven (Espada's names, proposed 2026-10-08 in LORE.md "The encounters at sea", awaiting the owner; Calissa's to film, Wanda's to
+room (the anchor, in place of a plain calm). The first seven (Espada's names, LORE.md "The encounters at sea", canon by the owner 2026-10-08; Calissa's to film, Wanda's to
 score). The mirror sea's ghost is **your double**, not "your fetch": fetch is already a word's gloss on the Crib Sheet (Dovina's ruling).
 
 | encounter | the cinematic | the choice |
