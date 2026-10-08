@@ -23,6 +23,7 @@
 //   .canBoard(from, to, ship) -> { ok, why?, hop? }   .board(from, to, ship, mounts?) -> { ok, why? } (mounts: two worn tools, progress/rail/mounts.js)   .stageResult(r) -> { lost, spilled }
 //   .crossing() -> the crossing's script (progress/rail/crossing.js) while at sea   .continueCost(share) -> cubes   .continueRun(share) -> { ok, why?, cost? }
 //   .reckon(from, to, share, q) -> share today   .reckoning(from, to) -> 0..1   .isOpen(node) -> bool
+//   .bestOf(chart) -> { key, score, rank } | null (the day's best on this sea chart)   .recordBest(chart, score, rank) -> bool (PASSAGE.md 14.3)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { NODES, hop, routeId, opensNode } from './econ/emocean.js';
@@ -31,6 +32,7 @@ import { script, continueCost, SHRINE_ISLAND, CONTINUE } from './rail/crossing.j
 import { LEVIATHAN, leviathanDeck, lootGrade } from './rail/setpieces.js';
 import { rankOf, medalOf } from './rail/score.js';
 import { loadout } from './rail/mounts.js';
+import { boardKey, better } from './rail/trip.js';
 import { deckDraw } from './econ/deck.js';
 import { stageWx } from './weather.js';
 import { crudeGrade } from './shop/catalogue.js';
@@ -39,7 +41,7 @@ import { stream } from '../core/rng.js';
 
 const simRand = stream('progress/voyage'); // (a spill's chance: core/rng.js, the same twice)
 const GRADES = Object.keys(ECON.crude.grades);
-const fresh = () => ({ at: 'anagami', sailing: null, manifest: {}, reckon: {}, opened: {} });
+const fresh = () => ({ at: 'anagami', sailing: null, manifest: {}, reckon: {}, opened: {}, best: {} });
 
 export class Voyage {
   constructor(game) {
@@ -195,5 +197,18 @@ export class Voyage {
     this.dirty();
     this.game.events.emit('emocean.reckon', { from, to, day: today(), reckoning: +r.toFixed(2), q, by: 'courier' });
     return r;
+  }
+
+  // ---------------------------------------------------------------- the day's best (PASSAGE.md 14.3: one sea chart a route a game day)
+  /** The best run on this sea chart (its route and game day), or null: what the Glass races, what a rutter's score is weighed against. */
+  bestOf(chart) { const b = this.s.best[chart.route]; return b && b.key === boardKey(chart) ? b : null; }
+  /** A passage sailed to its end: kept when it is the first on this sea chart or beats the one kept (another game day's is replaced). */
+  recordBest(chart, score, rank = null) {
+    if (!better(this.s.best[chart.route], chart, score)) return false;
+    const was = this.bestOf(chart);
+    this.s.best[chart.route] = { key: boardKey(chart), score, rank };
+    this.dirty();
+    this.game.events.emit('passage.best', { route: chart.route, day: chart.day, score, rank, beat: was?.score ?? null, by: 'courier' });
+    return true;
   }
 }

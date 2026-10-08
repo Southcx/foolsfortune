@@ -140,10 +140,10 @@ export const ECON = {
     dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
   } },
   /** THE SHIPS (the Vessoul's Emocean forms, by trade: LORE.md): how much each holds, of what, how slow a hop is (x the hop's time),
-   *  its `hull` (x the spill chance; 1 when unsaid), and its `burn` (x the hop's fuel; its `slow` when unsaid: a light hull burns little,
+   *  its `hull` (x the spill chance; 1 when unsaid), and its `fill` (x the hop's fuel, the price of a full tank: rail/ships.js `burn` is what a waypoint burns; its `slow` when unsaid: a light hull burns little,
    *  so a sloop's small hold still pays a short errand, R57: at the tanker's burn it lost 25-35 cubes a run). */
   ships: {
-    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8, burn: 0.3 },  // errands and small cargo
+    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8, fill: 0.3 },  // errands and small cargo
     frigate:   { hold: 6,  carries: ['goods'],          slow: 0.9 },  // escort
     galleon:   { hold: 40, carries: ['cubes', 'goods'], slow: 1.3 },  // refined cubes: treasure
     destroyer: { hold: 2,  carries: ['goods'],          slow: 0.7 },  // hunting Egregores

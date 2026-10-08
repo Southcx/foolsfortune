@@ -35,7 +35,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **ship** (the Emocean's rail-shooter layer): the Vessoul's sailing form between Islands of Ego, classed by real nomenclature: **sloop**,
   **frigate**, **tanker**, **destroyer**, **galleon**. *Not:* the skiff.
 - **hop** (`hop()`, `src/progress/econ/emocean.js`): one crossing of the Emocean from one island to another, on the **node map** (one node
-  an island, at its place on the Law-Chaos line). It costs fuel (the ship's **burn** times the distance) and is sailed as one **stage**.
+  an island, at its place on the Law-Chaos line). Its fuel is the price of a full **tank** (`hop().fuel`, the ship's `fill`), and it is sailed as one **stage**.
 - **stage** (`STAGE`): the rail-shooter run of a hop, about two minutes, authored once; its waves are written by **role** (`school`,
   `darter`, `heavy`), and the route's **danger** (where it runs on the line, and how far) says which Figment class fills each role. A
   ship **bears** six hits before the stage is failed. *Not:* "shield" (the Courier's Lachryma pool), "level" (a domain's).
@@ -150,6 +150,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   survey at the pier (the Dreamvane's dowse held over the sea chart: `voyage.reckon`); a rutter (item `rutter`) is a passage's map,
   made by sailing it to the end, sold or used that game day. *Not:* the course (the basement's), "forecast" (the weather's), a
   Cogitomap (a Well's), the node map (the islands).
+- **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player words Espada's to give): **the hull**
+  (the ship's `bears`, carried from leg to leg, mended only at a haven); **the tank** (the fuel a ship carries, in **measures**, filled
+  at the pier and at a calm's buoy); **burn** (the measures a waypoint costs: its type's times the ship's; *not* the hop's price, which
+  is `fill`); **adrift** (short of every way on's burn: the current carries the ship, two to one straight on, its legs capped at a C);
+  **the campfire** (a calm's choice: **mend**, half the hull back, or **reckon**, the portents ahead a quarter sharper); **the day's
+  best** (the best score on one route's sea chart for one game day: `voyage.bestOf`); **a waypoint's feeling** (its aspect, shown on
+  its portent from the silhouette up: it sets its foes' damage type and how its shots fall between the forms); **the draught's trump**
+  (the draught a leg leaves trumping the next waypoint's foes: `draughtTrump`); **a storm mark** (Slay the Spire's burning elite: a
+  threat waypoint a class stronger, always shown, never unavoidable; `STORM`). *Not:* the weather's storm (there is none: the eyewall
+  is a leg), the vessel's cracks (the hull is the ship's), a chain (the ledger's or the rail's).
 - **the Astral form**, **the Umbral form**, **the surge** (`docs/plans/RAIL-OVERHAUL.md`; the owner's names, 2026-10-08): the ship above
   the Emocean and below it, Q to breach or dive (was polarity: a shot of your form's kind is absorbed, the other hurts; an **astral
   shot** bright, an **umbral shot** dark); the surge fills by absorbing and lets the full swarm of lances go on R, its price the chain.
