@@ -13,7 +13,7 @@
 // unless felled (Panzer Dragoon's sea-beasts, Sin & Punishment's leviathan, Shadow of the Colossus's Phalanx, Moby-Dick), and once
 // driven off it is a bounty for Letty Marque to post.
 //
-//   LANCE   WAVES   SHOAL   PIRATES (.chance(casks, danger))   LEVIATHAN   leviathanDeck(danger, aspect?) -> n   lootGrade(island, route, day) -> grade
+//   LANCE   WAVES   SHOAL   PIRATES (.chance(casks, danger))   LEVIATHAN   CHARYBDIS   charybdisHurt(form, y) -> times   leviathanDeck(danger, aspect?) -> n   lootGrade(island, route, day) -> grade
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 
@@ -93,6 +93,27 @@ export const LEVIATHAN = {
    *  three shards. */
   pay: { driven: 1, felled: 3 },
 };
+
+/** CHARYBDIS, the maelstrom's Egregore (Homer's whirlpool; the owner, 2026-10-08: "it fights you in both worlds"): held at the
+ *  whirlpool's heart at the leg's peak (Petra's world/emocean/charybdis.js), it rises out of the maelstrom (the Astral) and dives back
+ *  in (the Umbral) by turns of `bars`, `rise` metres over the crude and `depth` under it, a `swing` of a bar between.
+ *  HOW IT IS HURT (Dovina's ruling, the point of the leg): only from the world it is in. A shot of the Astral form strikes it risen, of
+ *  the Umbral form dived; the other glances off (no harm, the resist mark). Crossing the surface (within `band` metres of it) it is
+ *  open to both and takes `surface` times: **the surface strike**, Ikaruga's polarity switch made a timing (catch it as it breaches or
+ *  sounds). So the leg asks you to follow it down and up on its beat, and a ship that cannot dive (the tanker, the galleon) can hurt it
+ *  only risen and at the surface: half the window, the price of a heavy hull (PASSAGE.md 11).
+ *  `hp` in shots (a lance is LANCE shots): a Leviathan's class (WAVES.hp[4], 150), so a sloop that follows it in both worlds fells it in
+ *  a 24-bar peak at about 6 shots a bar, and a ship that stays above needs about twice that (an expert's feat). Not measured in play yet.
+ *  What it leaves: felled, two crystal shards and its class's down pay (the leg's score); driven off (alive when the peak ends), nothing
+ *  more: it is in every maelstrom, so unlike Old Nobody it is no bounty (Letty posts the rogue, not the sea's own). */
+export const CHARYBDIS = {
+  bars: 4, rise: 7, depth: -6, swing: 1,
+  hp: 150, surface: 2, band: 1.5,
+  pay: { felled: 2, driven: 0 },
+};
+/** How much a shot of the ship's `form` ('astral' | 'umbral') hurts Charybdis at height `y` (metres over the crude): 1 in its own world,
+ *  0 in the other (it glances), CHARYBDIS.surface while it crosses the surface. */
+export const charybdisHurt = (form, y) => (Math.abs(y) <= CHARYBDIS.band ? CHARYBDIS.surface : (y > 0) === (form !== 'umbral') ? 1 : 0);
 
 /** The size of the Leviathan's deck on a route of this danger, under this weather's aspect (weather.js: 'dread' is the pall). */
 export function leviathanDeck(danger = 0, aspect = null) {
