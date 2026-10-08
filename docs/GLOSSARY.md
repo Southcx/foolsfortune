@@ -538,6 +538,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   entity, the player (the owner, R43): player text says "your Pneuka Jar" ("Your Pneuka Jar breaks."), never "the jar". It has integrity, it shatters, it is reforged. *Not:*
   the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
+- **the hand's clips** (`GodHandClips`, `HAND_MOVES`, `src/godhand/godhandclips.js`; the owner's `courier_godhand.blend`): the god hand's own
+  32 actions played on its own mixer, which own every bone (nothing writes the fingers after them but `GODHAND_ROM`). A clip keeps the
+  owner's name: spawn, idle, spiritFingers, grab, grabHold, release, pinch, pull, point, poke, flick, pat, slam, chop, punch, slap,
+  backhand, block, scoop, beckon, shoo, wave, snap, crush, fistClench, count, fingerGun, thumbsUp, thumbsDown, okSign, peace, vanish.
+  Where a name is another thing's too, it is qualified: **the hand's grab** (*not* `god.grab`, a thing held, nor GRAB, the garden's
+  art), **the hand's pull** (*not* PULL, the stroke it plays under), **the hand's slam** (*not* the Soul Brush's slam nor the Great Slip
+  Jelly's), **the hand's flick** (*not* the Soul Brush's flick of slip; it plays when a spirit is flicked), **the hand's point**.
+  A **contact** (`HAND_CONTACTS`) is the frame a blow lands. *Not:* an emote (the Courier's), nor a gesture (a held tool's).
+- **the Jar's clips** (`PneukaJarClips`, `JAR_MOVES`, `src/godhand/pneukajarclips.js`; the owner's `courier_pneuka.blend`): the Pneuka Jar's
+  own 17 actions on its own mixer: idle, summon, dismiss, hop, land, open, close, gulp, spit, startled, shake, happy, sad, curious,
+  rummage, sleep, wake. They own its squash and its scale (on its `root` bone); nothing else scales it. **The Jar's hop** and **the Jar's
+  land** are the garden's hop and landing as clips (*not* a hop of the Emocean); **the Jar's gulp** is the clip of a Figment swallowed
+  (*not* the Lockheart's gulp, the parry, nor the gulp mount). Its cracks are skinned to it and ride the clips (`vfx/crackskin.js`).
+- **a rig's clips** (`RigClips`, `src/courier/anim/rigclips.js`): what the two above are built on: a small rig's own actions on its own
+  mixer, by named **moves**, each a loop, a once (going on to its `then`), or held (played **in** to a **hold** rocked back and forth,
+  then **out**). *Not:* the Courier's clips (the suite, `courier/anim/animator.js`).
+- **the Vessoul's paintings** (`src/vfx/vessoulpaint.js`): the owner's textures on the god hand and the Pneuka Jar, as the Courier's
+  painted material (the painting as its colour and a share of its glow). The Jar's five gems are not painted: they are its core's light.
 
 ## Windows
 
@@ -851,7 +869,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
-| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| slam | the Soul Brush's (the air slam, the ground slam); the Great Slip Jelly's; the god hand's clip (the flat palm brought down) | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
+| gulp | the Lockheart's parry (a Lachryma shot swallowed); a mount on the rail; the Pneuka Jar's clip (a Figment swallowed) | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jarBody`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |
