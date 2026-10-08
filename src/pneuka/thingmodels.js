@@ -122,17 +122,6 @@ function shard() {
   return h;
 }
 
-/** A roll of film: a brass canister, its spool ends, and a tongue of film out of the lip. */
-function film() {
-  const can = mat(0x2a2420, { roughness: 0.4 }), brass = brassM(), strip = mat(0x6a4a2a, { roughness: 0.3, side: THREE.DoubleSide });
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.036, 12), can);
-  const a = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.048, 8), brass);
-  const lip = new THREE.Mesh(new THREE.CylinderGeometry(0.0165, 0.0165, 0.004, 12), brass); lip.position.y = 0.017;
-  const tongue = new THREE.Mesh(new THREE.PlaneGeometry(0.03, 0.026), strip); tongue.position.set(0.026, -0.002, 0); tongue.rotation.y = Math.PI / 2 - 0.25;
-  const h = holder([body, a, lip, tongue], [can, brass, strip]); h.group.rotation.set(0.35, 0.4, 0.25);
-  return h;
-}
-
 /** A caster shell (a placeholder: Calissa's models come): a brass case, a band of the shell's colour and its number stamped as notches. */
 const SHELL_COLOR = { slicer: 0xffe0c0, push: 0x9ad0ff, well: 0x8a6ad0, mark: 0xffd76a, bomb: 0xd0432a, ricochet: 0xb8f2a6, homing: 0xff9ad5, slip: 0xb3905f, groove: 0xffb27a, anchor: 0x6a8aa0, hatch: 0x9be36a };
 function shell(id) {
@@ -146,7 +135,6 @@ function shell(id) {
 }
 
 export function buildThing(id) {
-  if (id === 'mat.film') return film();
   if (id.startsWith('shell.')) return shell(id);
   if (id.startsWith('key.')) return key(id);
   if (id.startsWith('inst.')) return instrument(id);
