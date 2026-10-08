@@ -41,7 +41,7 @@ export class Mooring {
     const sea = j.top - (DECK[island] ?? 1.3), half = (s.beam ?? 2.4) / 2;
     this.at.copy(j.end).addScaledVector(out, -(s.length ?? 7) * 0.32).addScaledVector(side, 1.6 + half + SIDE); this.at.y = sea;
     const crude = g.emocean?.sea?.mesh?.visible ? g.emocean.sea : null, t = this.t;
-    const bob = crude ? crude.heightAt(this.at.x, this.at.z) : 0.12 * Math.sin(t * 0.8);
+    const bob = crude ? crude.heightAt(this.at.x, this.at.z) - crude.y : 0.12 * Math.sin(t * 0.8); // (heightAt is the world's, the crude's own y in it)
     s.group.position.set(this.at.x, sea + bob * 0.7, this.at.z);
     s.group.rotation.set(0.025 * Math.sin(t * 0.6), Math.atan2(out.x, out.z), 0.035 * Math.sin(t * 0.45 + 1), 'YXZ');
     s.set({ sail: 0.15, side: 1, glow: 0.35, t }); // (moored: the sails furled to a bundle, the drive low)

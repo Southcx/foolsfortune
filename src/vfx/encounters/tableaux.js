@@ -143,9 +143,11 @@ function lightWhale(k, { feel }) {
   return { group: g, subject: body, motion: 'alongside', at: [-2.6, 8], vz: 0.8,
     tick(t, ctx) {
       const k01 = ctx.k ?? (t % 6) / 6, rise = Math.max(0, Math.sin(Math.PI * THREE.MathUtils.clamp((k01 - 0.35) / 0.5, 0, 1))); // (the back breaks the surface in the film's second half)
-      body.position.set(0, -2.8 + 2.25 * rise, 0); // (at its height only the back clears the crude) body.rotation.x = 0.12 * Math.cos(t * 0.6) - 0.25 * (rise - 0.5) * (k01 > 0.35 ? 1 : 0);
+      body.rotation.x = 0.12 * Math.cos(t * 0.6) - 0.25 * (rise - 0.5) * (k01 > 0.35 ? 1 : 0);
+      body.position.set(0, -2.8 + 2.25 * rise, 0); // (at its height only the back clears the crude)
       tail.rotation.x = 0.35 * Math.sin(t * 1.4);
-      patch.position.set(0, 0.7, 0); // (over the swell's crests, which would cut it) patch.material.opacity = 0.35 + 0.25 * (1 - rise);
+      patch.material.opacity = 0.35 + 0.25 * (1 - rise);
+      patch.position.set(0, 0.7, 0); // (over the swell's crests, which would cut it)
       rings.forEach((r, i) => { const a = ((t * 0.55 + i / rings.length) % 1); r.position.set(0, 0.6, len * 0.2); r.scale.setScalar(1 + a * 14); r.material.opacity = 0.32 * (1 - a) ** 1.5; });
       breath.forEach((b, i) => { const a = (t * 0.9 + i / breath.length) % 1, on = rise > 0.6 ? 1 : 0; b.position.set(Math.sin(i * 2.4) * 0.4 * a, body.position.y + 1.1 + a * 3.2, len * 0.28); b.scale.setScalar(0.6 + a * 1.8); b.material.opacity = on * 0.6 * (1 - a); });
     } };

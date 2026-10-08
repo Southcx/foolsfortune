@@ -72,7 +72,7 @@ export class EncounterFilm {
     if (!st?.active || (L.done && (!st.encounter || st.encounter.chosen))) { this.stop(); return; }
     L.t += raw; const s = L.s, k = Math.min(1, L.t / SEA_FILM.dur), R = E.rail;
     if (s.motion === 'alongside') { s.local.z += s.vz * (1 - k) * raw; s.holder.quaternion.copy(R.q); R.toWorld(s.local, s.holder.position); }
-    const sea = E.sea, bob = sea?.heightAt ? sea.heightAt(s.holder.position.x, s.holder.position.z) : 0;
+    const sea = E.sea, bob = sea?.heightAt ? sea.heightAt(s.holder.position.x, s.holder.position.z) - s.holder.position.y : 0; // (the sea's height is the world's, its own y in it: a tableau is told how far it lifts from where it lies)
     s.tick(L.t, { camera: this.game.camera, k, bob });
     if (sea?.set) sea.set({ calm: Math.max(sea.k?.calm ?? 0, (s.calm ?? 0.7) * Math.min(1, L.t * 1.5)) }); // (laid down for the film: the stage sets its own again next frame)
     if (L.t > SEA_FILM.dur + 0.5 && !L.done) this.finish(); // (a sequence that never called its cue)
