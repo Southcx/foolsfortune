@@ -782,6 +782,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+- **the ribbon of light** (`ribbonLightMaterial`, `RIBBON_LOOK`, `src/vfx/ribbonlight.js`): the one shader program every flat strip of light
+  draws with, its look a uniform: the spirit veins (and Myggdrasil's threads), the sculpt brush's ring, the incense thread, the data
+  drain's beam. *Not:* a ribbon of the rail's marks (railmark.js's `ribbon` style: an Itano lance's trail).
 - **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
   audit (ours, placeholder, genre default).
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads
@@ -968,7 +971,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the keepsake pot's look** (`lekythos`, `src/vfx/garden/lekythos.js`): a white-ground **lekythos** (the Athenian funerary oil flask), in
   its spirit's colour: the spirit's **likeness** and its grave **stele** in **the white-ground hand** (`paintLikeness`, `paintStele`,
   `src/vfx/blackfigure.js`: the black-figure painter's figures outlined on a white ground and washed in a colour), a meander border and
-  a ribbon (a **taenia**) in the colour. *Not:* a glaze, the press's tiles.
+  a ribbon (a **taenia**) in the colour. One painting is shared by every pot of one kind and colour (a feeling's canon colour when the
+  pot keeps none), freed with its last pot (`lekythosShared`). *Not:* a glaze, the press's tiles.
 - **a sporeling's look** (`sporeling`, `src/vfx/garden/sporeling.js`): a cap for a head in its fruit's colour, spotted; labradorite
   gills edged in gold; a stem body with two eyes; hyphae for limbs; an idle sway, a waddle, a **hop** of its own (a squash, a stretch,
   feet tucked; *not* the Emocean's hop, nor the Jar's hop). Its mind is Petra's.
