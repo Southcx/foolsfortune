@@ -23,7 +23,7 @@ import { sfx } from '../../audio/sfx.js';
 const REACH = 2.6; // (metres from a jetty's end)
 
 /** The refusal for a heavy hull with no rutter of the route (placeholder words for Espada's; `uncharted`, ships.js). */
-const UNCHARTED = (ship) => `Uncharted: a ${ship} sails only a passage charted in a rutter.`;
+const UNCHARTED = (ship) => `Your ${ship} sails only a passage set down in a rutter.`;
 
 export class Pier {
   constructor(game) {
@@ -79,7 +79,7 @@ export class Pier {
         if (ok) d.onclick = () => this.sail(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
         if (ok) { // (the sea chart: draft the passage, read the sea, then cast off: world/emocean/seachart.js)
-          const ch = el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>draft your passage and read the sea before you sail</s></span>`);
+          const ch = el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>draft your passage, and reckon the sea, before you sail</s></span>`);
           ch.onclick = () => this.chart.open(at, id); box.appendChild(ch);
         }
       }
