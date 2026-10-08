@@ -864,8 +864,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   through the game's db. A **guest** is another person playing; the **party** is at most four. You **ask** a sibling (seconds) or send its division a **letter** (minutes). *Not:* a spirit (a bound Figment). They go out across the Emocean and resist excess Lachryma best.
 - **cogitohazard**: the umbrella word for Lachryma dangers in the environment and maliciously aligned Figments.
 - **Figment**: a thought-construct hewn from an Island of Ego's own psyche. **Egregore**: a thought-form spawned from the Emocean,
-  authored by no one. Neither is good or evil by nature.
-- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named stray, an Egregore or an aberrant Figment, given by **Letty Marque**,
+  authored by no one. Neither is good or evil by nature. **Which is which** (the owner, 2026-10-08): drawn from real human mythology, an Egregore
+  (Charybdis, Old Nobody); made up, a Figment. A Figment at large is a **stray** (wandered from its island, still itself: the Cantor)
+  or an **aberrant** (gone wrong: a blotling).
+- **commission** (a Figment hunt by class, given by **Seger, the Witness Cone**) and **bounty** (a hunt for a named Egregore or a Figment gone stray or aberrant, given by **Letty Marque**,
   a Contractor of nacre from the King's island **Margarite**, and her Tulpa **Poll**): the island's own thoughts against no one's (`docs/LORE.md`, section 6).
 - **Magnus Ibrahim Manus** (the King; his island **Margarite**) and **Entra Polearis** (the Queen; her island **Entropolis**): two other
   Islands of Ego, and the Prince of Clay's parents (`docs/LORE.md` has the rest).
@@ -878,6 +880,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **cask**: the unit of crude ("a cask of crude grief"); a sloop holds 8.
 - **the Pithos**: what the folk call the Great Slip Jelly, crowned with the broken crude jar it grew in (a *pithos*, Pandora's jar). The
   log says "the Great Slip Jelly".
+- **Charybdis** (the owner, 2026-10-08; LORE.md, "The passage"): the Whale (class 3) of the maelstrom, after Homer's whirlpool that
+  swallows the sea and spits it out: it rises out of the maelstrom (Astral) and dives back in (Umbral); one name for its five moods, its
+  feeling the waypoint's weather ("Charybdis rises, in grief."). One Egregore in every maelstrom (Dovina's ruling). **the
+  Drowned Light**: the graveyard's drowned lighthouse, the False Light's twin below. *Not:* the maelstrom (the leg, a place).
 - **the Gnomon**: the pale spire in the Dunes (`dunes.js`, the spire), a sundial's shadow-stick for the whole Dunes; it still keeps game
   hours. The Solar Skiffing trial races its shadow.
 - **Strawman**: the Workshop's test dummy, stitched by Pip; it cannot shatter and always stands back up. A name, so no article.
