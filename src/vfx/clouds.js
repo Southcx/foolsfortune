@@ -13,8 +13,10 @@
 //
 //   const c = new CloudLayer(scene, { sun: dir })    c.update(dt, camera.position, windDir (Vector2), windSpeed)    c.visible = bool
 //   c.grade({ expo, mul, cover, opacity })   the hour and the weather (vfx/weather.js): an empty grade is the layer as built
+// The layer bends with the storm over the crossing (vfx/stormwarp.js warpMaterial: the ceiling that folds); elsewhere the bend is nothing.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { warpMaterial } from './stormwarp.js';
 
 /** A tileable value-noise fbm, as a small repeating texture (made once). */
 function noiseTexture(size = 128, period = 8) {
@@ -67,6 +69,7 @@ void main() {
   #include <colorspace_fragment>
 }`,
     });
+    warpMaterial(mat); // (the storm folds the ceiling: vfx/stormwarp.js)
     // (a low-poly shell, the top of a sphere: the mapping is in the shader, so the shape only has to cover the sky)
     this.mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 6, 0, Math.PI * 2, 0, Math.PI * 0.5), mat);
     this.mesh.frustumCulled = false; this.mesh.renderOrder = -9;

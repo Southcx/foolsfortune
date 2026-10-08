@@ -101,6 +101,7 @@ export class Workbench {
     for (const B of Object.values(this.vfx.budget)) B.v = B.cap = B.rate = 1e9; // (an effect is judged here whole: the budgets are the fight's)
     this.controls = new OrbitControls(this.camera, g.renderer.domElement);
     this.controls.target.set(0, 1, 0); this.controls.enableDamping = true; this.controls.update();
+    this.controls.addEventListener('start', () => { this.follow = false; }); // (a drag takes the camera from a stage that drives its own)
     this.ui();
   }
 
@@ -135,7 +136,7 @@ export class Workbench {
     this.root.style.display = on ? '' : 'none';
     this.controls.enabled = on;
     g.ui?.want?.('workbench', on); // (the game's HUD steps out: the stage is the workbench's)
-    if (on) { document.exitPointerLock?.(); this.prevInput = g.input.enabled; g.input.enabled = false; this.show(this.tab); }
+    if (on) { document.exitPointerLock?.(); this.prevInput = g.input.enabled; g.input.enabled = false; g.stormWarp?.quiet(); this.show(this.tab); } // (the storm and the deep put down: the rail's loop does not run here, vfx/stormwarp.js)
     else { this.clearHolder(); this.stopHeld(); g.input.enabled = this.prevInput ?? true; }
     g.events?.emit(on ? 'workbench.open' : 'workbench.close', {});
   }
@@ -163,6 +164,7 @@ export class Workbench {
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
+    out.push({ id: 'crossing:surface', grp: 'the crossing', label: 'the surface crossing: the sloop diving into the Umbral and breaching (the meniscus, the splash ring, the lens\'s line, the caustics; the storm at 0.5; on a loop)' }, { id: 'crossing:storm', grp: 'the crossing', label: 'the storm warp swelling 0 to 1 and back over the crude sea (the droop, the sway, the twist, the veil; on a loop)' });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
     out.push({ id: 'garden:press', grp: 'the Spirit Garden', label: 'the spirit press' }, { id: 'garden:shrine', grp: 'the Spirit Garden', label: 'a Shrine (found, rested at, its door into the Spirit Garden opening; on a loop)' });
     out.push({ id: 'slice:cave', grp: 'the slice', label: "the Great Dunemaw's cave kit (a pillar cracking, stone, brittle and warped stalactites, the slip, a clutch)" });
@@ -312,7 +314,8 @@ export class Workbench {
 
   clearHolder() {
     if (!this.holder) return;
-    for (const c of [...this.holder.children]) this.holder.remove(c);
+    for (const c of [...this.holder.children]) { this.holder.remove(c); c.userData.dispose?.(); } // (a stage that changed its scene puts it back)
+    if (this.floor) this.floor.visible = true;
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }
 
@@ -325,17 +328,18 @@ export class Workbench {
         const bin = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
         const gl = await this.loader.parseAsync(bin.buffer, '');
         obj = gl.scene; clips = gl.animations || [];
-      } else if (!id.startsWith('thing:') && !id.startsWith('curio:')) obj = (await import('./stages.js')).buildStage(id); // (the stages load on first use: workbench/stages.js)
+      } else if (!id.startsWith('thing:') && !id.startsWith('curio:')) obj = (await import('./stages.js')).buildStage(id, this.game); // (the stages load on first use: workbench/stages.js)
       else if (id.startsWith('thing:')) obj = buildThing(id.slice(6))?.group;
       else if (id.startsWith('curio:')) obj = buildCurio(id.slice(6))?.group;
     } catch (e) { this.info.textContent = `could not build it: ${e.message}`; return; }
     if (!obj) { this.info.textContent = 'nothing to show'; return; }
     this.model = obj; this.holder.add(obj);
     obj.traverse((o) => { if (o.isMesh) { o.userData.mat0 = o.material; o.frustumCulled = false; } });
-    // standing on the floor, its middle over the centre
+    // standing on the floor, its middle over the centre (a stage that places itself, and drives its own camera, is left as it stands)
     const box = new THREE.Box3().setFromObject(obj), c = box.getCenter(new THREE.Vector3());
-    obj.position.x -= c.x; obj.position.z -= c.z; obj.position.y -= box.min.y;
-    this.applyView(); this.frameModel();
+    if (!obj.userData.placed) { obj.position.x -= c.x; obj.position.z -= c.z; obj.position.y -= box.min.y; }
+    this.floor.visible = !obj.userData.bare; this.figure.visible = !obj.userData.bare && this.mv?.figure !== false; this.follow = !!obj.userData.shot;
+    this.applyView(); if (!obj.userData.shot) this.frameModel();
     // its clips: a GLB's own, and for the Courier every clip of the game's pack
     this.clipsEl.innerHTML = '';
     if (clips.length) {
@@ -579,9 +583,10 @@ export class Workbench {
       }
       if (this.fx.loop && this.sel) { this.loopT += raw * sp; if (this.loopT >= this.fx.every) this.play(); }
     } else this.vfx.update(raw);
-    if (this.mv?.spin && this.model && this.tab === 'models') this.model.rotation.y += raw * 0.5;
+    if (this.mv?.spin && this.model && this.tab === 'models' && !this.model.userData.placed) this.model.rotation.y += raw * 0.5; // (a stage that places itself is not turned)
     if (this.mixer) this.mixer.update(raw);
     if (this.model?.userData.tick) this.model.userData.tick((this.modelT = (this.modelT || 0) + raw)); // (a model that moves on its own: the press's bath)
+    if (this.follow && this.model?.userData.shot) this.model.userData.shot(this.camera); // (a stage's own camera, until the stage is dragged)
     if (this.packClip && this.packBones) { // (the game's own clip, on the Courier: bone by bone, as character.js applies it)
       const C = g.character.clips, pose = (this.packPose ||= C.pose());
       this.packT += raw; C.sample(this.packClip, this.packT, pose, true);

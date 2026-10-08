@@ -15,8 +15,10 @@
 //   Three paintings: the maker's is DUSK (the identity grade leaves it untouched); the owner's DAY (clouds and floating soap bubbles,
 //   assets/sky_day.webp) and NIGHT (violet and green swirls over a dark crown, assets/sky_night.webp) are blended in by the hour
 //   (`day`, `night`: their shares). The reflections and `at` stay the dusk painting's.
+//   Every dome bends with the storm over the crossing (vfx/stormwarp.js warpMaterial); elsewhere the bend is nothing.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { warpMaterial } from './stormwarp.js';
 import skyB64 from '../assets/sky.webp?b64';
 import dayB64 from '../assets/sky_day.webp?b64';
 import nightB64 from '../assets/sky_night.webp?b64';
@@ -188,6 +190,7 @@ void main() {
   #include <colorspace_fragment>
 }`,
     });
+    warpMaterial(m); // (the storm bends the sky with the sea: vfx/stormwarp.js)
     return m; // (its grade's uniforms are the sky's own, shared: every dome graded at once)
   }
 }

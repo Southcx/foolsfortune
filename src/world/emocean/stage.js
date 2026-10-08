@@ -31,6 +31,7 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { CrudeSea } from '../../vfx/crudesea.js';
+import { warpObject, warpMaterial } from '../../vfx/stormwarp.js';
 import { ShipWake, swingLook } from '../../vfx/rail.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
@@ -79,6 +80,7 @@ export class Emocean {
     this.sea.mesh.visible = false; this.sea.mesh.userData.zoneFree = true; sc.add(this.sea.mesh);
     this.ship.build(sc); this.shots.build(sc); this.waves.build(sc);
     for (const p of Object.values(this.pieces)) p.build(sc);
+    for (const id of ['pirates', 'leviathan']) warpObject(this.pieces[id].look.group); warpMaterial(this.pieces.leviathan.look.shadowM?.material); // (the big objects bend with the storm, seated whole, and Old Nobody's shadow with the sea: vfx/stormwarp.js)
     this.wake = new ShipWake(g); for (const ln of this.wake.lines) { ln.m.visible = false; ln.m.userData.zoneFree = true; }
     this.built = true;
   }
@@ -232,6 +234,7 @@ export class Emocean {
     const g = this.game, act = this.plan.acts.find((a) => bar >= a.from && bar < a.to), S = this.ship;
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
     this.sea.set({ calm: this.calm }); this.sea.update(this.t, g.camera.position);
+    g.stormWarp?.set({ storm: this.piece ? 0.45 : 0.2 * (1 - this.calm), weather: g.weather?.at?.(this.to) ?? 0 }); // (the storm warp, vfx/stormwarp.js: a stand-in storm until each leg carries its own, RAIL-OVERHAUL.md section 5)
     const sl = S.sloop;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));

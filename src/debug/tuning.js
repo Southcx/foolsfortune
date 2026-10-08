@@ -57,6 +57,7 @@ const RANGES = {
   'visual.toon': [0, 1, 0.05],
   'visual.glow': [0, 1.5, 0.05],
   'visual.grade': [0, 1, 0.05],
+  'visual.warp': [0, 1, 0.05],
   'audio.volume': [0, 1.5, 0.01],
 };
 
@@ -72,6 +73,7 @@ const SECTIONS = [
 const SETTING_LABEL = {
   'camera.sensitivity': 'mouse sensitivity', 'camera.adsSensMult': 'aiming sensitivity', 'visual.resolution': 'resolution',
   'visual.upscale': 'upscale', 'visual.shadows': 'shadows', 'audio.volume': 'volume', 'charge.mode': 'a charge fires on',
+  'visual.warp': 'storm warp', // (a placeholder for Espada's word)
 };
 /** Words for the config's camelCase: "maxSlope" -> "max slope", "fpAdsFov" -> "fp ads fov". */
 export const words = (k) => k.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').toLowerCase();
