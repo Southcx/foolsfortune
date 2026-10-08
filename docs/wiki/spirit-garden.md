@@ -114,15 +114,15 @@ Prices: small 40 cubes, medium 96, large 240. A Firing opens each feature.
 
 | Feature | Size | Opens at | What it does |
 | --- | --- | --- | --- |
-| **Herb Terrace** | medium | 1st Firing | Grows more of a material you plant (it is a bed) |
+| **Planter** | medium | 1st Firing | Grows more of a material you plant (it is a bed) |
 | **Pond** | medium | 1st Firing | Water that flows downhill; visitors drink here |
 | **Lantern** | small | 1st Firing | Light at night; night visitors come |
 | **Spore Bed** | small | 1st Firing | Fungus that transforms what you put in it |
-| **Pavilion** | large | 2nd Firing | Pays cubes for a fight you beat (it is a mastery slot) |
-| **Incense Burner** | small | 2nd Firing | Calms you faster while you rest near it |
+| **Trophy Hall** | large | 2nd Firing | Pays cubes for a fight you beat (it is a mastery slot) |
+| **Incense** | small | 2nd Firing | Calms you faster while you rest near it |
 | **Booster Stone** | small | 2nd Firing | Boosts the features next to it |
 | **Spirit House** | medium | 3rd Firing | Room for two more spirits |
-| **Drill Yard** | large | 4th Firing | Spirits train here |
+| **Training Yard** | large | 4th Firing | Spirits train here |
 
 A terrace or pavilion you place gives you a bed or a slot for free. Moving a placed feature costs nothing.
 

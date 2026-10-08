@@ -130,7 +130,9 @@ A list of text rows is the last resort. In order of preference:
 
 ## 9. The label table
 
-Each player-facing mechanic gets a row here, then a glossary line. The labels below are proposals; the words are Espada's to settle.
+Each player-facing mechanic gets a row here, then a glossary line. The labels below are Espada's (2026-10-08, `docs/LORE.md` "The labels"),
+proposals until the owner rules. The garden's: Planter, Trophy Hall, Spirit House, Pond, Lantern, Incense, Booster Stone, Training Yard,
+Spore Bed. An encounter not yet met on the sea chart is a **Sighting**.
 The game must have **one** label per thing.
 
 ### The ship's mounts (the screenshot that started this)
@@ -139,10 +141,10 @@ The game must have **one** label per thing.
 |---|---|---|---|---|
 | psygun | the gun | **Blaster** | Fire with LMB; hold RMB to **lock-on** up to 8 | always mounted; 3 energy a lock |
 | sondelass | the hook | **Grapple** | Pulls loot in, yanks boarders off | 16 m; cooldown 1.5 s |
-| soulbrush | the wake brush | **Absorb spray** | Sprays a cone that eats shots of your colour | 50°, 9 m; 4 energy |
+| soulbrush | the wake brush | **Absorb** | Sprays a cone that eats shots of your colour | 50°, 9 m; 4 energy |
 | crucibelle | the toll | **Bomb** | Clears every shot around you | 10 m (14 on the beat); ×3 a crossing |
 | lockheart | the gulp | **Vacuum** | Sucks in shots and small fish; refills energy | 35°, 8 m; cooldown 6 s |
-| veritome | the plate | **Snapshot** | Opens weak points for a few seconds | 6 energy; cooldown 6 s |
+| veritome | the plate | **Flash** | Opens weak points for a few seconds | 6 energy; cooldown 6 s |
 | dreamvane | the vane | **Radar** | Warns you of attacks earlier | passive |
 
 The pier's mount panel, redrawn from section 4:
@@ -150,7 +152,7 @@ The pier's mount panel, redrawn from section 4:
 ```
 CHOOSE 2 MOUNTS                                    sloop: 2 slots
  [1] GRAPPLE        Pulls loot in, yanks boarders off    16 m · 1.5 s
- [2] ABSORB SPRAY   Sprays a cone that eats your colour  50° 9 m · 4 energy
+ [2] ABSORB         Sprays a cone that eats your colour  50° 9 m · 4 energy
  [ ] BOMB           Clears every shot around you         10 m · x3
  [ ] VACUUM         Sucks in shots, refills energy       35° 8 m · 6 s
  (the moored ship shows the selected mount's cone or ring; holding a card plays its demo)
