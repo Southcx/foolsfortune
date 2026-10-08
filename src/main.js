@@ -59,6 +59,8 @@ import { Shrines } from './world/shrines.js';
 import { Emocean } from './world/emocean/stage.js';
 import { Pier } from './world/emocean/pier.js';
 import { Margarite } from './world/emocean/margarite.js';
+import { Mooring } from './vfx/mooring.js';
+import { EncounterFilm } from './vfx/encounters/film.js';
 import { Blink } from './courier/moves/blink.js';
 import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
@@ -570,6 +572,7 @@ async function main() {
     });
     game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
     game.emocean = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
+    game.mooring = new Mooring(game); game.encounterFilm = new EncounterFilm(game); // (the chosen hull alongside the pier: vfx/mooring.js; the encounters at sea filmed: vfx/encounters/film.js)
     if (game.dunes?.beach) game.pier.add('anagami', () => { const j = game.dunes.beach.jetty; return j && { end: j.end, top: j.top, yaw: -Math.PI / 2 }; });
     game.pier.add('margarite', () => game.margarite.pier);
     game.interact.add('push', () => {
@@ -1190,7 +1193,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

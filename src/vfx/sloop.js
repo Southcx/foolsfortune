@@ -31,12 +31,13 @@ export const SLOOP = { length: 7, beam: 2.4, draft: 0.9, mast: { z: 1.1, h: 7.6 
 const C = { clay: 0xb5532d, bisque: 0xf1d9b6, gold: 0xf2c14e, mast: 0x3f7a58, sail: 0xf6e6c8, dark: 0x4a2a1e, lach: 0xffc65c };
 
 // the Pneuka Jar's profile, foot to lip (fraction of the length, fraction of the belly's radius): the hull is this turned and laid down
-const JAR = [[0, 0], [0.03, 0.34], [0.1, 0.66], [0.24, 0.93], [0.4, 1], [0.58, 0.95], [0.74, 0.78], [0.84, 0.6], [0.9, 0.5], [0.95, 0.54], [1, 0.6]];
+export const JAR = [[0, 0], [0.03, 0.34], [0.1, 0.66], [0.24, 0.93], [0.4, 1], [0.58, 0.95], [0.74, 0.78], [0.84, 0.6], [0.9, 0.5], [0.95, 0.54], [1, 0.6]];
 
-/** The hull: the jar's silhouette turned (rings round the girth), laid along Z, squashed to a hull's depth and cut at the waterline. */
-function hullGeometry() {
-  const { length: L, beam, draft } = SLOOP, R = beam / 2;
-  const pts = JAR.map(([u, r]) => new THREE.Vector2(Math.max(0.001, r * R), u * L - L * 0.5));
+/** The hull: the jar's silhouette turned (rings round the girth), laid along Z, squashed to a hull's depth and cut at the waterline.
+ *  Any pot's profile and size (the ship classes', vfx/shipclasses.js: each hull a different pot thrown and laid down). */
+export function jarHull(profile = JAR, { length: L, beam, draft, sheer: sh = [0.55, 0.4, 0.18] } = SLOOP) {
+  const R = beam / 2;
+  const pts = profile.map(([u, r]) => new THREE.Vector2(Math.max(0.001, r * R), u * L - L * 0.5));
   // (the throwing rings: a small ripple in the profile, as a thrown pot keeps the marks of the fingers)
   const ringed = [];
   for (let i = 0; i < pts.length - 1; i++) for (let k = 0; k < 4; k++) { const p = pts[i].clone().lerp(pts[i + 1], k / 4); p.x *= 1 + 0.018 * Math.sin((i * 4 + k) * 1.9); ringed.push(p); }
@@ -46,7 +47,7 @@ function hullGeometry() {
   const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     let y = p.getY(i); const t = p.getZ(i) / (L * 0.5); // (t: -1 the stern's lip .. +1 the bow's foot)
-    const sheer = 0.55 + 0.4 * Math.max(0, t) ** 2 + 0.18 * Math.max(0, -t) ** 2; // (the freeboard, rising to the bow and a little to the stern: a sheer line)
+    const sheer = sh[0] + sh[1] * Math.max(0, t) ** 2 + sh[2] * Math.max(0, -t) ** 2; // (the freeboard, rising to the bow and a little to the stern: a sheer line)
     y = y > 0 ? sheer * Math.pow(Math.min(1, y / R), 0.55) : (y / R) * draft;
     p.setY(i, y);
   }
@@ -54,21 +55,21 @@ function hullGeometry() {
   return g;
 }
 
-/** The deck: the hull's outline at the gunwale, filled. */
-function deckGeometry() {
-  const { length: L, beam } = SLOOP, R = beam / 2;
-  const half = JAR.map(([u, r]) => [r * R * 0.92, L * 0.5 - u * L]);
+/** The deck: the hull's outline at the gunwale, filled (at `y`). */
+export function jarDeck(profile = JAR, { length: L, beam } = SLOOP, y = 0.42) {
+  const R = beam / 2;
+  const half = profile.map(([u, r]) => [r * R * 0.92, L * 0.5 - u * L]);
   const s = new THREE.Shape();
   s.moveTo(0, half[0][1]);
   for (const [x, z] of half) s.lineTo(x, z);
   for (let i = half.length - 1; i >= 0; i--) s.lineTo(-half[i][0], half[i][1]);
   const g = new THREE.ShapeGeometry(s, 6);
-  g.rotateX(Math.PI / 2); g.translate(0, 0.42, 0);
+  g.rotateX(Math.PI / 2); g.translate(0, y, 0);
   return g;
 }
 
 /** A sail: a grid between its corners (luff along the mast, foot along the boom), with a belly the vertex shader fills. */
-function sailMaterial(lotus) {
+export function sailMaterial(lotus) {
   const u = { uFill: { value: 0.6 }, uSide: { value: 1 }, uLotus: { value: lotus }, uT: { value: 0 } };
   const m = new THREE.MeshStandardMaterial({ color: C.sail, roughness: 0.9, side: THREE.DoubleSide });
   m.onBeforeCompile = (sh) => {
@@ -104,8 +105,8 @@ export class Sloop {
     const clay = std(C.clay, { roughness: 0.55, side: THREE.DoubleSide, envMap: env, envMapIntensity: 0.25 });
     this.glaze = chestGlazeUniforms(0.22); this.glaze.uGlaze.value = 3.45;
     dressChestGlaze(clay, this.glaze, { goldOnly: true }); clay.userData.causticSafe = true; // (the glaze is colour only: a caustic overlay may lie over it)
-    add(this.body, hullGeometry(), clay);
-    add(this.body, deckGeometry(), std(C.bisque, { roughness: 0.85 }), 0, 0, 0, false);
+    add(this.body, jarHull(), clay);
+    add(this.body, jarDeck(), std(C.bisque, { roughness: 0.85 }), 0, 0, 0, false);
     // the jar's lip at the stern: a rim, and inside it the Lachryma that drives it, glowing
     const lipZ = -S.length * 0.5;
     const rim = new THREE.TorusGeometry(S.beam * 0.3, 0.07, 6, 24); add(this.body, rim, std(C.clay), 0, 0.25, lipZ + 0.05);

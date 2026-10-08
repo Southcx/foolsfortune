@@ -292,7 +292,7 @@ export class Emocean {
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
       if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.polarity?.(COLOR[S.aspect] ?? 0xffc65c); }
-      this.wake?.update(raw, { group: sl.group, speed: this.rail.speed + S.boostZ, length: 7 * sl.group.scale.x, beam: 2.4 * sl.group.scale.x }, this.sea);
+      this.wake?.update(raw, { group: sl.group, speed: this.rail.speed + S.boostZ, length: (sl.length ?? 7) * sl.group.scale.x, beam: (sl.beam ?? 2.4) * sl.group.scale.x }, this.sea); // (the hull's own size: vfx/shipclasses.js)
     }
   }
 

@@ -106,6 +106,22 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (the Umbral) and their **ghost ships** riding above (the Astral, pale and translucent). *Not:* the Lamp Shrine (at the Dunemaw's lip).
 - **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`): where a rail circling it sees a part best. *Not:* a
   station (a course station, the kiln station).
+- **the ship classes' looks** (`ShipClassLook`, `SHIP_FORMS`, `shipLook(id)`, `src/vfx/shipclasses.js`, Calissa's): the frigate, the
+  destroyer, the galleon and the tanker drawn in the sloop's design language, **the hull class's silhouette rules** (a pot thrown and laid
+  on its side, the foot its bow, its mouth astern glowing with the drive; kintsugi gold; the little Pneuka Jar for a figurehead; the
+  skiff's green spars and red pennant; the Mind's line along the gunwale): the frigate a **meiping** in ash-glazed stoneware, its guns
+  in rings down each side; the destroyer a **kinuta** celadon mallet vase, its long neck a submarine's tail, **the destroyer's fin** amidships
+  and the vase's **phoenix ears** for tail fins; the galleon a **ginger jar** in blue-and-white, its **lid** the stern castle; the tanker
+  an **onggi** riding low, **the hold's domes** (little lidded onggi) down its deck. Shown on the rail when that hull sails and at the
+  pier (the mooring). *Not:* a ship part (the ships have none), a fin of Old Nobody's.
+- **the mooring** (`Mooring`, `game.mooring`, `src/vfx/mooring.js`): the hull chosen at the pier lying alongside its end at life size,
+  its sails furled. *Not:* the jetty (the plank walk), the pier's page.
+- **an encounter's film** (`EncounterFilm`, `game.encounterFilm`, `src/vfx/encounters/film.js`; its camera the sequence `sea.<encounter>`,
+  `src/vfx/encounters/sequences.js`): an encounter at sea played as a short cinematic, two camera shots in about 5.6 real seconds (the
+  arrival's four bars), before its choice is offered. **a tableau** (`buildTableau`, `src/vfx/encounters/tableaux.js`): what is out on
+  the crude for it: the Dead Reckoners' ghost ships in fog, Letty's cutter the Last Word, the Cantor's light under the crude, Hap Lagan's
+  raft and Bob, the Bourse at anchor, your double in silver, the drift bottle in its shaft of light; its **subject** is what the second
+  camera shot closes on. *Not:* a set piece (a crossing's fight), a scene (three.js's), a sighting (the sea chart's mark of one unmet).
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
 - **polarity** (Q on the rail; to be the Astral and Umbral forms: RAIL-OVERHAUL.md): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:

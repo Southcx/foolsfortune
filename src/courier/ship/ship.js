@@ -37,6 +37,7 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { Sloop } from '../../vfx/sloop.js';
+import { shipLook } from '../../vfx/shipclasses.js';
 import { COLOR, OPPOSITE } from '../../progress/weather.js';
 import { axes, planeOf, VIEW_RIGS, CRUISE } from './views.js';
 import { SHIPS } from '../../progress/rail/ships.js';
@@ -91,7 +92,18 @@ export class Ship {
     this.boostZ = 0; this.bank = this.pitch = 0; this.rollT = 0; this.spin = 0;
     this.charges = T.ship.roll.charges; this.rechargeT = 0; this.parryT = 0; this.recover = 0; this.mercy = 0;
     this.locks.length = 0; this.queue.length = 0; this.painting = false; this.lastSixteenth = -1;
-    this.tint();
+    this.dress(this.hull.id); this.tint();
+  }
+
+  /** The hull's look (vfx/shipclasses.js: one built a class, on first sailing, and kept): `this.sloop` is the look of the hull sailing. */
+  dress(id) {
+    if (!this.sloop) return;
+    const L = (this.looks ||= { sloop: this.sloop }), was = this.sloop;
+    if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(SCALE); L[id].group.userData.zoneFree = true; }
+    if (L[id] === was) return;
+    const now = L[id]; now.group.visible = was.group.visible; was.group.visible = false;
+    if (!now.group.parent) was.group.parent?.add(now.group);
+    this.sloop = now;
   }
 
   get turning() { const R = T.ship.roll; return this.rollT > R.time - R.turns; }
