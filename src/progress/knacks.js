@@ -84,7 +84,7 @@ export class Knacks {
   }
   command(args = []) {
     const [id, v] = args, log = this.game.log;
-    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `Knack: ${d.name} (/knack ${k}): ${this.open(k) ? (this.on(k) ? 'on' : 'off') : 'not yet earned'}. Shows ${d.does}.`, { key: `knack.${k}`, throttle: 0.5 }); return; }
+    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `Knack: ${d.name} (${d.does}). ${this.open(k) ? (this.on(k) ? 'On' : 'Off') : 'Not yet earned'}. /knack ${k} on|off`, { key: `knack.${k}`, throttle: 0.5 }); return; }
     if (!KNACKS[id]) { log?.say('warn', `No knack called ${id}.`, { key: 'knack', throttle: 1 }); return; }
     if (!this.open(id)) { log?.say('warn', `You have not earned ${KNACKS[id].name} yet.`, { key: 'knack', throttle: 1 }); return; }
     this.set(id, v ? v !== 'off' : !this.on(id));
