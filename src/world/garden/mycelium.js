@@ -35,15 +35,17 @@ import * as calendar from '../../core/calendar.js';
 import { GARDEN_AT, dirOf } from './place.js';
 import { phaseAt } from '../../progress/weather.js';
 import { strainBed, strainsParked } from '../../vfx/garden/strains.js';
-import { lekythos, lekythosParked } from '../../vfx/garden/lekythos.js';
+import * as Lekythos from '../../vfx/garden/lekythos.js'; // (a namespace: lekythosShared is read when it lands, Calissa's cdd5ccd)
+const { lekythos, lekythosParked } = Lekythos;
 import { sporeling, sporelingParked } from '../../vfx/garden/sporeling.js';
 
 /** Where Myggdrasil's planetoid hangs from the garden's heart (below the Dantian and behind the Chimney: clear of the ring's ten slots,
  *  ORBIT.radius 95 round the Dantian, and of every first planetoid by 60 m and more), the plots it gives, its roots' clearing, the
  *  trunk's foot, and how many keepsake pots the Chimney's ring shows. */
 export const MYGG = { at: [0, -60, -160], plots: 6, roots: 6, trunk: 3.2, pots: 64, painted: 6, sporelings: 6 };
-// (painted: the newest pots drawn as Calissa's lekythos, each about 5 MB of painting; the rest stand as plain pots until a painting can be
-//  shared between pots of one kind and feeling. sporelings: as many of the tree's sporelings stand round its roots as this.)
+// (painted: the newest pots drawn as Calissa's lekythos while each painting is its own, about 5 MB; once pots of one kind and feeling
+//  share a painting (Calissa's lekythosShared) every pot is painted. sporelings: as many of the tree's sporelings stand round its roots.)
+const PAINTED = () => (Lekythos.lekythosShared ? MYGG.pots : MYGG.painted);
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, UP = new THREE.Vector3(0, 1, 0);
 const colorOf = (feeling) => new THREE.Color(COLOR[feeling] ?? 0xd8d0c8);
 /** The garden's night, 0 day .. 1 night, as the realm's sky reads it (dusk and dawn half). */
@@ -149,7 +151,7 @@ export class GardenMycelium {
       this.pots = new THREE.InstancedMesh(new THREE.LatheGeometry(pts, 12), mat, MYGG.pots); this.pots.count = 0; this.pots.name = 'keepsake-pots';
       this.pots.castShadow = true; this.R.site.group.add(this.pots);
     }
-    const n = Math.min(MYGG.pots, pots.length), first = Math.max(0, n - MYGG.painted), dirOfPot = (i) => { const row = Math.floor(i / 20); return dirOf(18 + row * 8, (i % 20) * 18 + row * 9); };
+    const n = Math.min(MYGG.pots, pots.length), first = Math.max(0, n - PAINTED()), dirOfPot = (i) => { const row = Math.floor(i / 20); return dirOf(18 + row * 8, (i % 20) * 18 + row * 9); };
     // the painted: one lekythos a pot, kept while it stays among the newest
     const want = new Set(); for (let i = first; i < n; i++) want.add(i);
     this.painted = this.painted.filter((x) => { if (want.has(x.i) && x.pot === pots[x.i]) return true; x.P.dispose(); return false; });
