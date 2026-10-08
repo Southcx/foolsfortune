@@ -179,10 +179,11 @@ export class Voyage {
     const medal = !continues && medalOf({ passed, downed, spawned });
     this.game.events.emit('emocean.stage', { from: V.from, to: V.to, passed, hits, bears, downed, spawned, lost, spilled, setPiece, setPieces, continues, at: this.s.at, end, score, rank, medal,
       chainBest, volleyBest, parried, absorbed, rolls, pointBlank, won, stolen: took, shards, by: 'courier' });
+    if (V.passage?.chart && passed && score != null) this.recordBest(V.passage.chart, score, rank); // (the day's best on this sea chart: PASSAGE.md 14.3)
     // a drafted passage sailed to its end (not broken up, not continued twice) makes a rutter: the passage's map (PASSAGE.md 6)
     if (V.passage && passed && continues < 2) {
       const P = V.passage, minutes = +(((this.game.emocean?.t ?? 120) / 60)).toFixed(2);
-      const data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: P.ids, legs: P.legs, rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read }) };
+      const data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: P.ids, legs: P.legs, rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read, storms: P.storms || 0 }) }; // (P.storms: the squalls cleared, the trip's state.storms, set by triprun.js)
       if (this.game.pneuka?.add('rutter', 'passage', 0, data) >= 0) this.game.events.emit('rutter.get', { from: V.from, to: V.to, rank, worth: data.worth, by: 'courier' });
     }
     return { lost, spilled };

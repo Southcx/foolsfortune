@@ -10,12 +10,12 @@ import { KINDS } from '../../progress/econ/materials.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
-import { STRAINS, CAPS } from '../../progress/mycelium.js';
+import { STRAINS, CAPS, STRAIN_NAMES } from '../../progress/mycelium.js';
 
 export function gardenRules({ on, L, log }) {
   // the mycelium (progress/sporebeds.js, progress/myggdrasil.js, progress/keepsakes.js: MYCELIUM.md); names Espada's (LORE.md "The
   // mycelium"), the lines placeholders for hers
-  const STRAIN = { wonder: 'the lichen', mirth: 'koji', desire: 'the inkcap', grief: 'the oyster', dread: "witches' butter" };
+  const STRAIN = STRAIN_NAMES;
   on('spore.bed', (e) => { if (e.by === 'courier') L.inc('spore.bed'); });
   on('spore.learn', (e) => { if (e.by !== 'courier') return; L.inc('spore.learn'); L.inc(`spore.learn.${e.strain}`); log.say('gain', `You have spores of ${STRAIN[e.strain]}.`); });
   on('spore.inoculate', (e) => { if (e.by === 'courier') L.inc('spore.inoculate'); });
@@ -23,7 +23,7 @@ export function gardenRules({ on, L, log }) {
   on('spore.harvest', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spore.harvest'); L.inc(`spore.${e.verb}`);
-    if (e.verb === 'graft') { L.hi('spore.graft.tier', e.tier || 0); if (e.up) L.inc('spore.graft.up'); for (const id of e.made) L.inc(`spore.graft.made.${id}`); }
+    if (e.verb === 'graft') { if (e.pair) L.inc(`spore.graft.pair.${e.pair}`); L.hi('spore.graft.tier', e.tier || 0); if (e.up) L.inc('spore.graft.up'); for (const id of e.made) L.inc(`spore.graft.made.${id}`); }
     log.say('loot', `${STRAIN[e.strain][0].toUpperCase()}${STRAIN[e.strain].slice(1)} gives up ${(e.names || e.made).join(', ')}.`);
   });
   on('myggdrasil.feed', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.feed'); L.inc('myggdrasil.fed', e.worth || 0); });

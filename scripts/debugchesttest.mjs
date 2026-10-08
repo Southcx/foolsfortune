@@ -15,7 +15,7 @@ const r = await ev(async () => {
   const say = G.log.say.bind(G.log); G.log.say = (k, s, o) => { lines.push(s); return say(k, s, o); };
   G.ostraca?.update(); D.update();
   out.world = D.list.filter((c) => !c.garden).map((c) => c.kit).sort();
-  out.places = ['press', 'garden', 'ostraca', 'crucibelle', 'dunemaw', 'throwing'].filter((k) => G.places.get(`debug.${k}`));
+  out.places = ['press', 'garden', 'ostraca', 'crucibelle', 'dunemaw', 'jetty', 'throwing'].filter((k) => G.places.get(`debug.${k}`));
   out.index = (G.course.rooms || []).filter((x) => x.group === 'DEBUG').length;
   const th = D.get('throwing'); out.throwingNear = th ? +Math.hypot(th.pos.x - 12.4, th.pos.z + 0.9).toFixed(2) : null;
   // the dunemaw kit: a Wake Whistle, two Lachrymato Bottles (small), cubes to 500
@@ -28,15 +28,15 @@ const r = await ev(async () => {
   out.gave3 = D.give('dunemaw');
   out.lines = lines.filter((s) => /debug chest/i.test(s));
   return out; });
-check('the four world chests stand (ostraca, crucibelle, dunemaw, throwing)', ['crucibelle', 'dunemaw', 'ostraca', 'throwing'].every((k) => r.world.includes(k)), r.world);
+check('the five world chests stand (ostraca, crucibelle, dunemaw, jetty, throwing)', ['crucibelle', 'dunemaw', 'jetty', 'ostraca', 'throwing'].every((k) => r.world.includes(k)), r.world);
 check('the throwing chest stands by the Index\'s lectern', r.throwingNear != null && r.throwingNear < 2.5, r.throwingNear);
-check('every kit has its place debug.<kit>', r.places.length === 6, r.places);
-check('the Index lists six under DEBUG', r.index === 6, r.index);
+check('every kit has its place debug.<kit>', r.places.length === 7, r.places);
+check('the Index lists seven under DEBUG', r.index === 7, r.index);
 check('F: the dunemaw kit (a Wake Whistle, bottles to two, cubes to 500)', r.whistle === 1 && r.bottles >= 2 && r.balance >= 500, { gave: r.gave1, bottles: r.bottles, balance: r.balance });
 check('a second F gives nothing (topped up, never past)', r.gave2.length === 0, r.gave2);
 check('spent, it tops back up', r.gave3.length === 1 && /WHISTLE/i.test(r.gave3[0]), r.gave3);
 check('nothing it gives is counted', r.counted.earned === 0, r.counted);
-check('said in the log: once what it is, then what it gave', r.lines.filter((s) => /not counted/.test(s)).length === 1 && r.lines.some((s) => /gives:/.test(s)), r.lines);
+check('said in the log: once what it is, then what it gave', r.lines.filter((s) => /is counted|not counted/.test(s)).length === 1 && r.lines.some((s) => /gives:/.test(s)), r.lines);
 // the garden's two: realm features, F through realm.use
 await ev(() => { const G = __game.game; return G.realm.enter(G.shrines?.get?.(G.shrines.last) || null); });
 await g.step(200);

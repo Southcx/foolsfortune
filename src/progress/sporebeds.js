@@ -11,11 +11,11 @@
 // Prior art: Stardew Valley's kegs and casks (set it, leave it, it waits), Legend of Mana's planting, and the garden's own beds
 // (progress/garden.js: the same save, the same clock).
 //
-//   game.sporeBeds = new SporeBeds(game, { itemOf })   .beds -> [{ strain, set, at, hours, near, tend }]   .strains -> { feeling: true }
-//   .grant()   .learn(feeling)   .inoculate(i, feeling) -> { ok, why? }   .set(i, boxSlots) -> { ok, why? }   .back(i) -> { ok, why? }
+//   game.sporeBeds = new SporeBeds(game, { itemOf })   .beds -> [{ strain, set, at, hours, near, tend, plot }]   .strains -> { feeling: true }
+//   .grant(plot?)   .bedOf(plot) -> i   .moved(from, to)   .learn(feeling)   .inoculate(i, feeling) -> { ok, why? }   .set(i, boxSlots) -> { ok, why? }   .back(i) -> { ok, why? }
 //   .near(i, feelings)   .tend(i, on)   .ready(i) -> bool   .left(i) -> real ms   .harvest(i) -> { ok, why?, out }
 // events: spore.bed, spore.learn { strain }, spore.inoculate { bed, strain }, spore.set { bed, strain, things }, spore.back { bed },
-//         spore.harvest { bed, strain, verb, made, things, tier, up }, each with `by`
+//         spore.harvest { bed, strain, verb, made, things, tier, up, pair }, each with `by`
 // ---------------------------------------------------------------------------------------
 import { STRAINS, digest, bedHours, signatureOf } from './mycelium.js';
 import * as calendar from '../core/calendar.js';
@@ -42,20 +42,25 @@ export class SporeBeds {
   constructor(game, { itemOf = () => null } = {}) {
     this.game = game; this.s = fresh(); this.itemOf = itemOf;
     game.save?.section('sporebeds', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
-    game.events?.on?.('garden.place', (e) => { if (e.by === 'courier' && e.feature === 'sporebed') this.grant(); });
+    game.events?.on?.('garden.place', (e) => { if (e.by === 'courier' && e.feature === 'sporebed') { const i = this.grant(e.plot); if (STRAINS[e.feeling] && this.s.strains[e.feeling]) this.inoculate(i, e.feeling); } }); // (placed in a feeling you hold spores of: that strain)
+    game.events?.on?.('garden.move', (e) => { if (e.feature === 'sporebed') this.moved(e.from, e.to); });
   }
   dirty() { this.game.save?.dirty('sporebeds'); }
   get beds() { return this.s.beds; }
   get strains() { return this.s.strains; }
   emit(name, e) { this.game.events?.emit(name, { ...e, by: 'courier' }); }
 
-  /** A bed granted (its feature placed: the world pays for it); the first comes with the oyster and the inkcap. */
-  grant() {
-    this.s.beds.push({ strain: null, set: null, at: 0, hours: 0, near: [], tend: false });
+  /** A bed granted (its feature placed in a plot: the world pays for it); the first comes with the oyster and the inkcap. */
+  grant(plot = null) {
+    this.s.beds.push({ strain: null, set: null, at: 0, hours: 0, near: [], tend: false, plot });
     if (this.s.beds.length === 1) for (const f of SPORE.first) this.learn(f);
     this.dirty(); this.emit('spore.bed', { bed: this.s.beds.length - 1 });
     return this.s.beds.length - 1;
   }
+  /** The bed standing in a plot (world/garden/plots.js's id), or -1. */
+  bedOf(plot) { return plot == null ? -1 : this.s.beds.findIndex((b) => b.plot === plot); }
+  /** The hand moved a bed to another plot: its colony goes with it. */
+  moved(from, to) { const i = this.bedOf(from); if (i >= 0) { this.s.beds[i].plot = to; this.dirty(); } }
   learn(feeling) { if (!STRAINS[feeling] || this.s.strains[feeling]) return false; this.s.strains[feeling] = true; this.dirty(); this.emit('spore.learn', { strain: feeling }); return true; }
 
   inoculate(i, feeling) {
@@ -107,7 +112,7 @@ export class SporeBeds {
     for (const x of r.out) give(this.game, x);
     const verb = STRAINS[b.strain].verb, things = b.set.map((x) => x.id), was = Math.max(...b.set.map((x) => signatureOf(x)?.tier ?? 0));
     b.set = null; this.dirty();
-    this.emit('spore.harvest', { bed: i, strain: b.strain, verb, made: r.out.map((x) => x.id), names: r.out.map((x) => this.itemOf(x.id)?.name || x.id), things, tier: Math.max(0, ...r.out.map((x) => this.itemOf(x.id)?.tier ?? x.tier ?? 0)), up: verb === 'graft' && (this.itemOf(r.out[0].id)?.tier ?? 0) > was });
+    this.emit('spore.harvest', { bed: i, strain: b.strain, verb, made: r.out.map((x) => x.id), names: r.out.map((x) => this.itemOf(x.id)?.name || x.id), things, tier: Math.max(0, ...r.out.map((x) => this.itemOf(x.id)?.tier ?? x.tier ?? 0)), up: verb === 'graft' && (this.itemOf(r.out[0].id)?.tier ?? 0) > was, pair: verb === 'graft' ? `${[...things].sort().join('+')}>${r.out[0]?.id}` : null }); // (pair: the Grimoire's line, a graft's two and what it made)
     return { ok: true, out: r.out };
   }
 }

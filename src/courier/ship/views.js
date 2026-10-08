@@ -17,7 +17,7 @@
 // Prior art: Star Fox 64's camera box, Einhander's mid-stage swing from side to behind, Ikaruga's vertical scroll, Sin & Punishment's
 // free reticle, Panzer Dragoon's look back; the swing eased as Squirrel Eiserloh's "Juicing Your Cameras With Math" (GDC 2016) asks.
 //
-//   VIEW_RIGS[id]   rig(id, Q, ship, out) -> { pos, look }   blendRig(a, b, k, Q, ship, out)   planeOf(id)   axes(id) -> input mapping
+//   VIEW_RIGS[id]   rig(id, Q | rail, ship, out) -> { pos, look }   blendRig(a, b, k, Q, ship, out)   planeOf(id)   axes(id) -> input mapping
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { VIEWS } from '../../progress/rail/crossing.js';
@@ -50,7 +50,8 @@ export function axes(id) {
 }
 
 /** A point in the rail frame, from Q. */
-export const local = (Q, x, y, z, out) => out.copy(Q).addScaledVector(R, x).addScaledVector(U, y).addScaledVector(F, z);
+const _l = new THREE.Vector3();
+export const local = (Q, x, y, z, out) => (Q.toWorld ? Q.toWorld(_l.set(x, y, z), out) : out.copy(Q).addScaledVector(R, x).addScaledVector(U, y).addScaledVector(F, z)); // (Q: the rail itself, its frame turned, or a bare point on a straight one)
 
 /** One view's camera now: where it stands and what it looks at, following a share of the ship's offset (ship: { x, y, z }). */
 export function rig(id, Q, ship, out = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0 }) {

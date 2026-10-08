@@ -23,7 +23,7 @@ import { sfx } from '../../audio/sfx.js';
 const REACH = 2.6; // (metres from a jetty's end)
 
 /** The refusal for a heavy hull with no rutter of the route (placeholder words for Espada's; `uncharted`, ships.js). */
-const UNCHARTED = (ship) => `Uncharted: a ${ship} sails only a passage charted in a rutter.`;
+const UNCHARTED = (ship) => `Your ${ship} sails only a passage set down in a rutter.`;
 
 export class Pier {
   constructor(game) {
@@ -74,14 +74,12 @@ export class Pier {
       for (const id of Object.keys(NODES)) {
         if (id === at) continue;
         const N = NODES[id], b = V.canBoard(at, id, this.ship), s = canSail(this.ship, { route: `${at}>${id}`, day: today(), rutter: this.rutter(at, id) }), c = b.ok && !s.ok ? { ok: false, why: UNCHARTED(this.ship) } : b, open = V.isOpen(id), ok = c.ok;
-        const sub = c.ok ? `fuel: ${c.hop.fuel} cubes` : c.why;
-        const d = el('div', 'room', `<span class="n">${ok ? '⚓' : '·'}</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${sub}</s></span>`);
-        if (ok) d.onclick = () => this.sail(at, id); else d.style.opacity = '0.55';
+        // one row an island: a way open goes by its sea chart (draft the passage, read the sea, then cast off: world/emocean/seachart.js);
+        // the direct hop is retired (the owner's passage, PASSAGE.md 2): pier.sail(from, to) stays the handle for the scripted crossings
+        const d = ok ? el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>fuel: ${c.hop.fuel} cubes · draft your passage, and reckon the sea, before you sail</s></span>`)
+          : el('div', 'room', `<span class="n">·</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${c.why}</s></span>`);
+        if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
         box.appendChild(d);
-        if (ok) { // (the sea chart: draft the passage, read the sea, then cast off: world/emocean/seachart.js)
-          const ch = el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>draft your passage and read the sea before you sail</s></span>`);
-          ch.onclick = () => this.chart.open(at, id); box.appendChild(ch);
-        }
       }
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = el('div', 'rooms');

@@ -146,14 +146,14 @@ export class Codex {
     cx.appendChild(head);
 
     const tabs = el('div', 'shelf');
-    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['sound', 'SOUND TEST']]) {
+    for (const [id, name] of [['move', 'MOVEMENT ARTS'], ['god', 'GOD ARTS'], ['angle', 'ANGLING'], ['curios', 'CURIOS'], ['veritome', 'VERITOME'], ['tools', 'TOOLS'], ['ledger', 'LEDGER'], ['records', 'RECORDS'], ['grimoire', 'GRIMOIRE'], ['sound', 'SOUND TEST']]) {
       const t = el('span', `tab${this.shelf === id ? ' on' : ''}`, name);
       t.onclick = () => { this.shelf = id; if (id === 'move' || id === 'god') this.sel = (id === 'god' ? GOD_ARTS : ABILITIES)[0].id; this.render(); };
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
-    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound') {
-      (this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
+    if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire') {
+      (this.shelf === 'grimoire' ? (c, host) => this.game.codexPages?.grimoire?.(c, host) : this.shelf === 'ledger' ? renderLedger : this.shelf === 'angle' ? renderAngling : this.shelf === 'curios' ? renderCurios : this.shelf === 'veritome' ? renderVeritome : this.shelf === 'tools' ? renderTools : this.shelf === 'sound' ? renderSoundTest : renderRecords)(this, cx);
       this.rows = {}; this.cardHost = null;
       const foot = el('footer');
       foot.appendChild(el('span', 'msg', 'counted quietly as you play · the log (lower left) says the rest'));

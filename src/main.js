@@ -123,6 +123,8 @@ import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
+import { StormWarp } from './vfx/stormwarp.js';
+import { Umbral } from './vfx/umbral.js';
 import { DataDrain } from './vfx/datadrain.js';
 import { dunemawMood } from './vfx/dunemawkit.js';
 import { Flythrough } from './cine/flythrough.js';
@@ -202,6 +204,8 @@ import { SporeBeds } from './progress/sporebeds.js';
 import { itemOf } from './pneuka/items.js';
 import { Myggdrasil } from './progress/myggdrasil.js';
 import { Keepsakes } from './progress/keepsakes.js';
+import { GardenMycelium } from './world/garden/mycelium.js';
+import { renderGrimoire } from './feedback/codex/grimoire.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -356,6 +360,7 @@ async function main() {
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.post = new Glow(renderer);
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
+  game.stormWarp = new StormWarp(game); game.umbral = new Umbral(game); // (the crossing's psychic storm and the world under the Emocean's surface: vfx/stormwarp.js, vfx/umbral.js; their screen share rides the glitch's pass)
   game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
   game.wellDress = new WellDress(game); // (the Dunemaw floor's sandfalls dressed: vfx/welldress.js)
   game.flythrough = new Flythrough(game); // (a Dunemaw floor previewed on arrival, smeared by the frame accumulation: cine/flythrough.js)
@@ -704,6 +709,8 @@ async function main() {
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)
   game.myggdrasil = new Myggdrasil(game); // (the World Mushroom on its own planetoid: progress/myggdrasil.js)
   game.keepsakes = new Keepsakes(game); // (a spirit let go, fired into a pot that stays: progress/keepsakes.js)
+  game.codexPages = { ...(game.codexPages || {}), grimoire: renderGrimoire }; // (the Grimoire of Echoes, the Codex's page of the mycelium: its tab is codex.js's)
+  if (game.realm) game.gardenMycelium = new GardenMycelium(game.realm); // (the mycelium in the Inner Realm: Myggdrasil's planetoid, the spore beds, the pots: world/garden/mycelium.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
@@ -896,6 +903,7 @@ async function main() {
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
+  const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
   // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
@@ -909,7 +917,7 @@ async function main() {
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain(); parkCracks();
   for (const o of brushLooks) o.visible = false;
-  for (const o of seaLooks) o.visible = false;
+  seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
@@ -1199,7 +1207,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

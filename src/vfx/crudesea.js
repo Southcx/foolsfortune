@@ -25,9 +25,17 @@
 //   sea.heightAt(x, z, t) -> y   (for a ship: its bob and its pitch)   sea.dispose()
 //   new CrudeSea({ geometry, y })   a surface of its own shape, laid in world xz (a shore's sector): it does not follow the eye
 //   sea.clipSector({ center, angle, half, r0 })   only the sector of a shore is sea (the shore, vfx/shore.js): elsewhere it is not drawn
+//   sea.under(on)   the eye is under the surface (vfx/umbral.js asks): the same mesh, its winding turned to face down, drawn as THE
+//                   MENISCUS (a dark mirror of the deep past the critical angle, Snell's window of the air above inside it, the film's
+//                   light leaking through); no second mesh, no second program
+//   sea.silhouettes([{ obj, r, len }])   the bellies of things floating above, as soft shadows on the meniscus (up to six)
+// It bends with the storm (vfx/stormwarp.js warpMaterial): the sea is the storm's first canvas.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { liquidUniforms, LIQUID_GLSL } from './liquid.js';
+import { warpMaterial } from './stormwarp.js';
+
+const _s = new THREE.Vector3();
 
 const N = 4;
 // the waves: direction (radians), wavelength (m), steepness, speed scale (long, low swells, a cross-sea, and a short chop on top)
@@ -45,6 +53,8 @@ export class CrudeSea {
       uCur: { value: this.k.current.clone() },
       ...liquidUniforms(),
       uClip: { value: new THREE.Vector4(0, 0, 0, -1) }, uClipA: { value: new THREE.Vector2(0, 7) }, // (center xz, r0, on; angle, half)
+      uUnder: { value: 0 }, uAbove: { value: Array.from({ length: 6 }, () => new THREE.Vector4(0, 0, 0, 0)) }, // (the meniscus: on; the floating things' bellies, x z r half-length)
+      uDeepC: { value: new THREE.Color(0x140a22) }, uLight: { value: new THREE.Color(1.0, 0.9, 0.7) }, // (the deep's colour, the storm's light above)
       uW: { value: WAVES.map(([a, L, q, s]) => new THREE.Vector4(Math.cos(a), Math.sin(a), (2 * Math.PI) / L, q)) },
       uC: { value: WAVES.map(([, L, , s]) => Math.sqrt(G * ((2 * Math.PI) / L)) * s * 0.55) }, // (dispersion: long waves travel faster; slowed, it is oil)
     };
@@ -74,7 +84,7 @@ objectNormal = normalize(mix(vec3(0.0, 1.0, 0.0), seaN, seaFar));`)
 transformed += seaD; vSeaW = seaWp.xyz + seaD; vSeaH = seaD.y;`);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
-uniform float uT, uFilm, uCalm; uniform vec2 uCur; uniform vec4 uClip; uniform vec2 uClipA; varying vec3 vSeaW; varying float vSeaH;
+uniform float uT, uFilm, uCalm, uUnder; uniform vec2 uCur; uniform vec4 uClip; uniform vec2 uClipA; uniform vec4 uAbove[6]; uniform vec3 uDeepC, uLight; varying vec3 vSeaW; varying float vSeaH;
 float seaHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float seaNoise(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(seaHash(i), seaHash(i + vec2(1, 0)), f.x), mix(seaHash(i + vec2(0, 1)), seaHash(i + vec2(1, 1)), f.x), f.y); }
@@ -98,9 +108,27 @@ float seaNear = 1.0 - smoothstep(30.0, 160.0, length(vSeaW.xz - cameraPosition.x
   float cells = liqHeight(vSeaW.xz, 0.045, uT * 0.4), veins = liqTap(vSeaW.xz * 0.045 + vec2(uT * 0.4 * 0.021, uT * 0.4 * 0.013)).a;
   float band = smoothstep(0.42, 0.78, seaStreak), vein = pow(veins, 1.8) * seaNear;
   float film = (0.2 + 0.8 * fres) * uFilm * (0.4 + 0.6 * uCalm) * max(band, vein);
-  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.1) * film * 0.12; }`);
+  totalEmissiveRadiance += seaFilm(0.15 + fres * 0.6 + seaStreak * 0.3 + cells * 0.8 + vSeaH * 0.1) * film * 0.12; }`)
+        .replace('#include <opaque_fragment>', `#include <opaque_fragment>
+if (uUnder > 0.5) { // THE MENISCUS: the surface seen from below (its winding turned: vfx/umbral.js)
+  vec3 Vv = normalize(vViewPosition), Nu = normalize(normal), I = -Vv;
+  float cosI = clamp(dot(I, Nu), 0.0, 1.0);
+  float win = smoothstep(0.6, 0.74, cosI); // (Snell's window: within ~48 degrees of straight up the air shows; past it, a mirror of the deep)
+  vec3 Rt = refract(I, -Nu, 1.33), wd = inverseTransformDirection(dot(Rt, Rt) > 0.0 ? Rt : I, viewMatrix);
+  vec3 air = uLight * (0.55 + 0.45 * smoothstep(0.0, 0.9, wd.y));
+  #ifdef ENVMAP_TYPE_CUBE_UV
+    air = mix(air, textureCubeUV(envMap, envMapRotation * wd, 0.3).rgb * 1.5, 0.55);
+  #endif
+  float shade = 1.0; // (what floats above: its belly a soft dark on the light)
+  for (int i = 0; i < 6; i++) { vec4 a = uAbove[i]; if (a.z <= 0.0) continue; vec2 q = vSeaW.xz - a.xy; q.y = max(abs(q.y) - a.w, 0.0); shade *= 1.0 - 0.8 * exp(-dot(q, q) / (a.z * a.z)); }
+  float cl = liqHeight(vSeaW.xz, 0.045, uT * 0.4);
+  vec3 leak = seaFilm(0.2 + cl * 0.8 + seaStreak * 0.3 + vSeaH * 0.1) * (0.03 + 0.09 * smoothstep(0.42, 0.78, seaStreak)) + uLight * 0.06 * smoothstep(0.35, 1.0, seaStreak);
+  vec3 mirror = uDeepC * (0.7 + 0.6 * seaStreak);
+  gl_FragColor.rgb = mix(mirror + leak * shade, air * shade * (0.75 + 0.5 * seaStreak), win);
+}`);
     };
-    m.customProgramCacheKey = () => 'crude-sea-3';
+    m.customProgramCacheKey = () => 'crude-sea-4';
+    warpMaterial(m); // (the storm bends the sea: vfx/stormwarp.js; its key carries this one)
     this.mesh = new THREE.Mesh(geo, m);
     this.mesh.position.y = y; this.mesh.frustumCulled = false; this.mesh.receiveShadow = true;
   }
@@ -112,6 +140,20 @@ float seaNear = 1.0 - smoothstep(30.0, 160.0, length(vSeaW.xz - cameraPosition.x
     if (film !== undefined) this.k.film = film;
     if (current) this.k.current.copy(current).normalize();
     this.u.uCalm.value = this.k.calm; this.u.uAmp.value = this.k.swell; this.u.uFilm.value = this.k.film; this.u.uCur.value.copy(this.k.current);
+  }
+
+  /** The eye is under the surface (or back above it): the winding turned to face it, and the meniscus's look on. */
+  under(on) {
+    const g = this.mesh.geometry;
+    if (on && !this.idxDown && g.index) { const a = g.index.array, b = new a.constructor(a.length); for (let i = 0; i < a.length; i += 3) { b[i] = a[i]; b[i + 1] = a[i + 2]; b[i + 2] = a[i + 1]; } this.idxUp = g.index; this.idxDown = new THREE.BufferAttribute(b, 1); }
+    if (this.idxDown) g.setIndex(on ? this.idxDown : this.idxUp);
+    this.u.uUnder.value = on ? 1 : 0;
+  }
+
+  /** The bellies of things above, as soft shadows on the meniscus: [{ obj, r, len }] (a capsule along the rail, about the thing's place). */
+  silhouettes(list = []) {
+    const A = this.u.uAbove.value;
+    for (let i = 0; i < 6; i++) { const h = list[i], o = h?.obj; if (o && o.visible !== false) { o.getWorldPosition(_s); A[i].set(_s.x, _s.z, h.r || 3, h.len || 0); } else A[i].set(0, 0, 0, 0); }
   }
 
   /** Only a shore's sector is sea: the bearing within `half` of `angle` from `center` (xz), and further out than `r0`. */

@@ -15,12 +15,17 @@
 //   const s = new Sloop({ env })   scene.add(s.group)   s.set({ sail 0..1, heel rad, side -1|1, glow 0..1, t })   s.dispose()
 //   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   (the crossing: docs/plans/RAIL.md)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; about 7 m long)
+// Under the storm and in the Umbral (vfx/stormwarp.js, vfx/umbral.js): the ship is never bent, the veil leaves its glows true
+// (`keepTrue`; its opaque body flies in the veil's quiet middle), and below the surface the caustics play over its hull and deck (a
+// caustic overlay: `causticsOn`, the one shared program of every overlay).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { dressChestGlaze, chestGlazeUniforms } from './chestglaze.js';
 import { vfxTexture } from './vfx.js';
 import { mergeStatic } from '../render/merge.js';
 import { addOutline } from '../render/outline.js';
+import { keepTrue } from './stormwarp.js';
+import { causticsOn } from './umbral.js';
 
 export const SLOOP = { length: 7, beam: 2.4, draft: 0.9, mast: { z: 1.1, h: 7.6 }, boom: { y: 1.7, len: 4.2 }, bowsprit: 1.4 };
 const C = { clay: 0xb5532d, bisque: 0xf1d9b6, gold: 0xf2c14e, mast: 0x3f7a58, sail: 0xf6e6c8, dark: 0x4a2a1e, lach: 0xffc65c };
@@ -98,7 +103,7 @@ export class Sloop {
     // the hull: fired terracotta, mended with gold here and there (the chest's net, a ship's size)
     const clay = std(C.clay, { roughness: 0.55, side: THREE.DoubleSide, envMap: env, envMapIntensity: 0.25 });
     this.glaze = chestGlazeUniforms(0.22); this.glaze.uGlaze.value = 3.45;
-    dressChestGlaze(clay, this.glaze, { goldOnly: true });
+    dressChestGlaze(clay, this.glaze, { goldOnly: true }); clay.userData.causticSafe = true; // (the glaze is colour only: a caustic overlay may lie over it)
     add(this.body, hullGeometry(), clay);
     add(this.body, deckGeometry(), std(C.bisque, { roughness: 0.85 }), 0, 0, 0, false);
     // the jar's lip at the stern: a rim, and inside it the Lachryma that drives it, glowing
@@ -147,6 +152,8 @@ export class Sloop {
     const keel = add(this.group, new THREE.CircleGeometry(1, 24), this.keelMat, 0, -S.draft - 0.05, 0, false); keel.rotation.x = -Math.PI / 2; keel.scale.set(S.beam * 0.6, S.length * 0.45, 1);
     // what never moves on its own is one mesh a material (the boom and the sails swing; the pennant streams)
     mergeStatic(this.body, { keep: new Set([this.boom, this.jibMesh, this.pennant, this.gunAt]) });
+    causticsOn(this.body); // (the Umbral's caustics over the hull and the deck while it is under the surface: vfx/umbral.js)
+    for (const m of this.mats) keepTrue(m); // (the storm's veil leaves the ship's glows where they are drawn: vfx/stormwarp.js; its opaque body sits in the veil's quiet middle)
     this.set({});
   }
 
