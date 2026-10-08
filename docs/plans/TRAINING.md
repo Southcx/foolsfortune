@@ -21,7 +21,7 @@ never needed and never forced. The number that would do the skill for you is opt
 
 | domain | trained by now (`domains.js`) | proposed (the owning division confirms the quality measure) |
 |---|---|---|
-| Ouranurgy | blink, the grapple's swing, the rail's stage | the Solar Skiff's tricks (quality: spins landed square); a lap circuit's medal |
+| Ouranurgy (the rules of the space around you: displacement, and **time slowed or stopped**) | blink, the grapple's swing, the rail's stage; **blade mode's cuts, zandatsu, the reprogramming's stilled window, Celestial mode's canvas** (the owner, 2026-10-08; quality: what was done in the stilled time) | the Solar Skiff's tricks (quality: spins landed square); a lap circuit's medal |
 | Manifestation | the god hand's manifest | the Soul Brush's paint laid (quality: coverage without waste); a feature placed in a good formation |
 | Divination | crystals struck (pitch), photos, the survey, a Well charted, the reckoning | reading the sky (a forecast that came true); a parry read from a windup; **a creature's agate named at appraisal** (`appraise.mood { guessed, actual }`: 1 right, 0.5 one of its two feelings, 0.1 wrong: Espada) |
 | Psychokinesis | the god hand's grab and throw | **psygun drills in the Throwing Room** (quality: the drill's score); psygun hits on creatures (quality: chain, point-blank, a headshot) |
@@ -81,7 +81,7 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
 
 - **Wanda** (`docs/handoffs/dovina/2026-10-08-from-wanda-training.md` on her branch): folded in above. **Time (the beat) has no home**:
   it runs through the bell, the rhythm mode, the rail and the parry. Ruled for now: its EXP goes to Spellscription (a note chart is a
-  script read), its seasoning to Focus (a rhythm combo of 25). **The owner's ruling (2026-10-08): no new domains, ever.** Staying on tempo is transcribing actions to time, so time is Spellscription's.
+  script read), its seasoning to Focus (a rhythm combo of 25). **The owner's ruling (2026-10-08): no new domains, ever.** Time has two faces: **keeping it** (staying on tempo is transcribing actions to time) is Spellscription's; **bending it** (anything that slows or stops time: blade mode, zandatsu, reprogramming, Celestial mode) is Ouranurgy's, the domain of the rules of the space around you. A widening for it: `ouranurgy.still` (how long time stays slowed, x1.3 at 99).
 - **Espada** (`2026-10-08-from-espada-training-words.md`, 1d71f21 on her branch): the knacks' names, Crib and Two-Tone, the agate guess
   at appraisal, the fading gloss; "knack" and "seasoning" kept. Emotional literacy's home: a mood read right seasons Charisma (added to
   `SEASONING` once `appraise.mood` exists).

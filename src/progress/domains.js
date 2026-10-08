@@ -22,7 +22,7 @@
 import { stageQuality } from './econ/emocean.js';
 
 export const DOMAINS = {
-  ouranurgy:      { id: 'ouranurgy',      name: 'Ouranurgy',      does: 'displacement: moving oneself and others through space' },
+  ouranurgy:      { id: 'ouranurgy',      name: 'Ouranurgy',      does: 'the rules of the space around you: displacement through it, and time slowed or stopped in it (the owner, 2026-10-08)' },
   manifestation:  { id: 'manifestation',  name: 'Manifestation',  does: 'solidifying thought into structures' },
   divination:     { id: 'divination',     name: 'Divination',     does: 'perceiving the hidden: signatures, habits, the true pitch' },
   psychokinesis:  { id: 'psychokinesis',  name: 'Psychokinesis',  does: 'moving things by will' },
@@ -44,6 +44,12 @@ export const SOURCES = [
   { event: 'photo.take',      domain: 'divination',     base: 8,  quality: (e) => q01(((e.stars || 1) - 1) / 3) },
   { event: 'god.grab',        domain: 'psychokinesis',  base: 4,  quality: () => 0.5 },
   { event: 'god.throw',       domain: 'psychokinesis',  base: 8,  quality: (e) => q01((e.speed || 0) / 30) },
+  // time slowed or stopped is Ouranurgy (the owner, 2026-10-08): blade mode's cuts and zandatsu, the reprogramming's stilled window,
+  // Celestial mode's canvas; quality is what was done in the stilled time (cuts, a clean macro, sigils drawn), never how long it was held
+  { event: 'blade.exit',      domain: 'ouranurgy',      base: 12, quality: (e) => q01((e.cuts || 0) / 8 + (e.zandatsu ? 0.4 : 0)) },
+  { event: 'creature.zandatsu', domain: 'ouranurgy',    base: 10, quality: () => 1 },
+  { event: 'reprogram.run',   domain: 'ouranurgy',      base: 8,  quality: (e) => (e.refused ? 0 : q01(e.q)) },
+  { event: 'brush.canvas',    domain: 'ouranurgy',      base: 6,  quality: (e) => (e.open ? null : q01((e.drawings || 0) / 3)) },
   { event: 'reprogram.run',   domain: 'possession',     base: 20, quality: (e) => (e.refused ? 0 : q01(e.q)) },
   { event: 'lockheart.drain', domain: 'possession',     base: 6,  quality: () => 0.5 },
   { event: 'god.sunder',      domain: 'alteration',     base: 10, quality: (e) => q01((e.cuts || 1) / 4) },
@@ -115,6 +121,7 @@ export function levelOf(exp = 0) {
  *  `game.psyche.widen(key)`, so switching the domain off (or level 1) restores the tool exactly. */
 export const WIDEN = {
   'ouranurgy.reach':      { domain: 'ouranurgy',      mult: true, at99: 1.5, does: 'blink and grapple reach (an art: the core movement is untouched)' },
+  'ouranurgy.still':      { domain: 'ouranurgy',      mult: true, at99: 1.3, does: 'how long time stays slowed or stopped (blade mode, the reprogramming window, Celestial mode)' },
   'ouranurgy.lane':       { domain: 'ouranurgy',      mult: true, at99: 1.5, does: "the ship's lane-change speed on the rail" },
   'manifestation.span':   { domain: 'manifestation',  mult: true, at99: 1.5, does: 'how long a manifested structure stands' },
   'manifestation.count':  { domain: 'manifestation',  plus: true, at99: 2,   does: 'how many manifested structures stand at once' },

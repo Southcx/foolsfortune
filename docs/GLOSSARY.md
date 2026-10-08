@@ -401,7 +401,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
 - **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
-  Veritome's macros; the beat: staying on tempo is transcribing actions to time). No new domains, ever (the owner, 2026-10-08).
+  Veritome's macros; the beat: staying on tempo is transcribing actions to time). **Ouranurgy** is the rules of the space
+  around you: displacement, and time slowed or stopped (blade mode, zandatsu, reprogramming, Celestial mode). No new domains, ever (the
+  owner, 2026-10-08).
   *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
   **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
