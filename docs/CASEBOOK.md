@@ -180,6 +180,9 @@ the rules before building in the same area; a rule a machine can check goes into
 69. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
     scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
+70. **"At the foot of" is found by a ray, never a fixed offset.** A thing laid beside a prop of varying size and lean is placed where a
+    ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
+
 ## Cases
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
@@ -925,3 +928,11 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the target rotation from `Matrix4.lookAt(pos, focus, up)` (the camera's convention). Measured: the mouth at y 35 of 300,
   a lump under the cursor missed by 0.013 m; hover, pinch, load, press and the lever all answer (scripts/soulalchemytest.mjs).
 - **Rule:** 68.
+
+### 2026-10-08 · The ruins' two ostraca lay on the column stumps (v116; found in a screenshot wiring Calissa's look)
+- **Seen:** the sherd "at the foot of" a broken column sat on the stump's rim, 2 m up, the chevron over it.
+- **Cause:** it was placed 1.17 m from the column's foot, and the columns are up to 1.6 m wide and lean up to 0.45 rad; the drop's ray
+  down (which puts a sherd on what is under it) found the stump.
+- **Fix:** `Ostraca.footOf`: eight bearings 2.4 m out, the first where a ray from 8 m up meets the sand within 0.3 m. Seen in a
+  screenshot after: on the sand beside the stump.
+- **Rule:** 70.
