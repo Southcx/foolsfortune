@@ -184,8 +184,37 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
+72. **The storm bends the world, never the danger, and the danger is marked where it is built.** Every material of what hurts or is
+    aimed at (a shot, an outlined shot and its parry mark, a reticle, a lock mark, a hurtbox mark) goes through `keepTrue` at its
+    owner's build (free on a transparent one; an opaque one costs a program, so say it); a big object the storm seats moves less than its
+    smallest part's radius (`STORM.seat`), because a hurtbox is where the logic puts it. Measure it: render with the veil on and off,
+    the danger isolated by differencing with and without it, and read its shift in pixels.
+73. **A wrapped `onBeforeCompile` keeps its old code in its program key, taken before the wrap.** The default
+    `customProgramCacheKey` is `this.onBeforeCompile.toString()`, read late: once the hook is wrapped it is the wrapper's text for every
+    material, and two wrapped materials of one kind with different old code would share one program.
 
 ## Cases
+
+### 2026-10-08 · The storm's veil moved the shots and the seat moved the hurtboxes (Calissa, the review of the storm warp)
+- **Seen (the rail headless, `/crossing pirates` and `/crossing shoal`, 960 x 600, the storm at its wall):** (1) the veil's haze moved a
+  foe's shot 0.5 to 3.7 px (1.9 on average) across the frame, because nothing called `keepTrue` on the shots, the reticles or the
+  lock marks (those two were not measured); (2) the seated False Light was drawn 0.99 m off her place at 41 m under the stand-in storm (0.45) and 1.53 m at the
+  wall, while her gunports' hurtboxes (radius 0.85 m) and slings' (0.9 m) stayed where the logic puts them: a drawn gunport lay beside
+  its own hurtbox; (3) `set({ mind: 'Prismatic' })` read as Balanced (`STATES` holds objects: `indexOf` on a name is -1), and the
+  workbench stage left `mind: 0` on the game's storm after it was closed, so the Courier's own state no longer weighed; (4) a wrapped
+  material's program key was the wrapper's text, not its old code's; (5) "the twist", the storm's whorl, was already the glossary's
+  word for the Great Dunemaw's rooms.
+- **Cause:** the veil marks the danger by its alpha (`keepTrue`) and the handoff left the calls to the runtime's owner, so the current
+  rail, which has no new shots yet, had none; the seat took the bend at the object's origin whole, which is a metre at 40 m;
+  `STATES.indexOf(name)`; `customProgramCacheKey` read after the wrap; a word used twice.
+- **Fix:** `world/emocean/stage.js build()` marks every mesh of `shots.meshes`, each outlined shot (and its parry shell), the two
+  reticles and the lock marks (shift now 0.03 to 1.09 px, 0.27 on average: the rest is the differencing's own edge); `warpObject`
+  caps the seat at `STORM.seat` = 0.4 m (0.28 m at 20 m, 0.4 from 40 m) and hands the shift back as `root.userData.seatOff`;
+  `mindOf` finds a name by its `name`, the stage puts `mind: null` back; `storm()` takes the old key before it wraps; the storm's
+  turn is "the whorl" (glossary, `STORM.whorl`, `uStormWhorl`). Cost: the plain shots' opaque instanced material is now non-opaque
+  (a program of its own, +1: 154 to 155 at boot), given back when the shots' new look (`vfx/railshots.js`, one transparent material)
+  replaces it.
+- **Rule:** 72, 73.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame

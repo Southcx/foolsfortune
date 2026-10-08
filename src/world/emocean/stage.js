@@ -31,7 +31,7 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { CrudeSea } from '../../vfx/crudesea.js';
-import { warpObject, warpMaterial } from '../../vfx/stormwarp.js';
+import { warpObject, warpMaterial, keepTrue } from '../../vfx/stormwarp.js';
 import { ShipWake, swingLook } from '../../vfx/rail.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
@@ -79,6 +79,7 @@ export class Emocean {
     this.sea = new CrudeSea({ env: g.sky?.env || null, y: SEA_AT.y });
     this.sea.mesh.visible = false; this.sea.mesh.userData.zoneFree = true; sc.add(this.sea.mesh);
     this.ship.build(sc); this.shots.build(sc); this.waves.build(sc);
+    for (const o of [...(this.shots.meshes || []), ...this.shots.outlines.map((r) => r.mesh), this.ship.near, this.ship.far, ...this.ship.marks]) o?.traverse((c) => { if (c.material) for (const m of [].concat(c.material)) keepTrue(m, { opaque: true }); }); // (the danger stays true under the storm's veil: the shots, the outlined and their parry mark, the reticles and the lock marks; vfx/stormwarp.js)
     for (const p of Object.values(this.pieces)) p.build(sc);
     for (const id of ['pirates', 'leviathan']) warpObject(this.pieces[id].look.group); warpMaterial(this.pieces.leviathan.look.shadowM?.material); // (the big objects bend with the storm, seated whole, and Old Nobody's shadow with the sea: vfx/stormwarp.js)
     this.wake = new ShipWake(g); for (const ln of this.wake.lines) { ln.m.visible = false; ln.m.userData.zoneFree = true; }

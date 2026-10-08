@@ -7,7 +7,7 @@
 //   THE BEND    in the vertex shader, after the projection, on the clip position (so one function serves a standard material and the
 //               sky's own ShaderMaterials alike): the world ahead DROOPS away with distance (curved near, an even lean past ~90 m, so
 //               the far sea never folds back), SWAYS by an angle (the same size on the screen near and far; its phase is the screen's
-//               own place and the log of the depth, so the horizon never crowds a wave into a few pixels), and TWISTS about the view's
+//               own place and the log of the depth, so the horizon never crowds a wave into a few pixels), and WHORLS about the view's
 //               axis, the far world turned against the near (the sea folding into a tube, at the top of the storm). Nothing within
 //               5 m moves; all of it grows to its full size by 60 m. Only x and y of the clip position change, so the depth is the
 //               depth: no fighting, no hole in the shadow. The shadow map is drawn from the unbent world and every receiver looks its
@@ -30,8 +30,9 @@
 //   .quiet()                     every shared uniform and the veil at nothing (the workbench opening: its stages set their own)
 //   warpMaterial(mat)            a material of the environment bends (and takes the Umbral's caustics: vfx/umbral.js): build time, before the warm-up
 //   deepMaterial(mat)            the same program, never bent: the caustics only (the ship, a foe)
-//   warpObject(root, { shader })  a big object: SEATED by default (drawn as one rigid thing where the storm draws the world at its place:
-//                                no new program), or every material bent (`shader: true`: curved like the sea, programs counted)
+//   warpObject(root, { shader })  a big object: SEATED by default (drawn as one rigid thing where the storm draws the world at its place,
+//                                by at most STORM.seat metres, so its parts stay on their hurtboxes; no new program), or every
+//                                material bent (`shader: true`: curved like the sea, programs counted)
 //   keepTrue(mat)                the danger: the veil leaves it where it is drawn (its blend writes 0 to the frame's alpha; free on a
 //                                transparent material, the shots' and the reticles' kind; an opaque one only with `opaque: true`, a program)
 //   .bend(worldPos, camera, out), bendPoint(...)   where a point of the environment is DRAWN now (anchor a muzzle or a burst to what is seen)
@@ -70,15 +71,17 @@ vec3 deepCaustics(vec3 w, vec3 nV) {
 }`;
 
 /** The bend's shared uniforms: one set for every warped material, written once a frame. */
-export const STORM_U = { uStormBend: { value: 0 }, uStormSway: { value: 0 }, uStormTwist: { value: 0 }, uStormT: { value: 0 } };
-/** At strength 1: the droop's lean (radians), the sway's swing (radians), the twist's turn (radians), the veil's haze and split. */
-export const STORM = { bend: 0.1, sway: 0.028, twist: 0.18, haze: 1, split: 1, ease: 1.2 }; // (at 1, the storm wall: the far world turned 10 degrees at most, 3 degrees a real second at most; past that the horizon swims)
+export const STORM_U = { uStormBend: { value: 0 }, uStormSway: { value: 0 }, uStormWhorl: { value: 0 }, uStormT: { value: 0 } };
+/** At strength 1: the droop's lean (radians), the sway's swing (radians), the whorl's turn (radians), the veil's haze and split; and the
+ *  most a SEATED object is ever moved (metres: under half of the smallest part's radius, 0.85 m, the False Light's gunports: what a part
+ *  is drawn off its hurtbox, which the logic places where it is, never where the storm draws it). */
+export const STORM = { bend: 0.1, sway: 0.028, whorl: 0.18, haze: 1, split: 1, ease: 1.2, seat: 0.4 }; // (at 1, the storm wall: the far world turned 10 degrees at most, 3 degrees a real second at most; past that the horizon swims)
 /** The Courier's mental state's weight on the storm, Stoic to Prismatic. */
 const MIND_K = [0.65, 0.82, 1, 1.18, 1.36];
 const GOLD_WHITE = new THREE.Color(1.0, 0.92, 0.74);
 
 export const STORM_GLSL = /* glsl */`
-uniform float uStormBend, uStormSway, uStormTwist, uStormT, uStormOn;
+uniform float uStormBend, uStormSway, uStormWhorl, uStormT, uStormOn;
 vec4 stormClip(vec4 c) {
   float d = c.w;                                                      // (a perspective camera's w is the depth ahead, in metres)
   if (uStormOn < 0.5 || d < 5.0) return c;
@@ -88,8 +91,8 @@ vec4 stormClip(vec4 c) {
   vec2 off = vec2(0.0, -uStormBend * d * smoothstep(5.0, 90.0, d));   // (the droop: an angle that saturates, curved near)
   float p1 = s.y * 1.9 + s.x * 0.6 + 1.2 * ld + uStormT * 0.8, p2 = s.x * 1.5 - s.y * 0.8 + 0.9 * ld + uStormT * 0.63 + 1.7;
   off += uStormSway * d * grow * vec2(0.6 * sin(p1), sin(p2));        // (the sway: an angle, so the same size near and far)
-  float a = uStormTwist * smoothstep(15.0, 220.0, d), ca = cos(a), sa = sin(a);
-  off += vec2(mv.x * (ca - 1.0) - mv.y * sa, mv.x * sa + mv.y * (ca - 1.0)); // (the twist: the far world turned about the view's axis)
+  float a = uStormWhorl * smoothstep(15.0, 220.0, d), ca = cos(a), sa = sin(a);
+  off += vec2(mv.x * (ca - 1.0) - mv.y * sa, mv.x * sa + mv.y * (ca - 1.0)); // (the whorl: the far world turned about the view's axis)
   return vec4(c.x + P0 * off.x, c.y + P1 * off.y, c.zw);
 }`;
 
@@ -100,7 +103,8 @@ function storm(mat, bend) {
   if (!mat) return mat;
   if (mat.userData.storm) { mat.userData.storm.value = bend ? 1 : 0; return mat; } // (already through here: only whether it bends changes)
   const on = (mat.userData.storm = { value: bend ? 1 : 0 });
-  const prev = mat.onBeforeCompile, prevKey = mat.customProgramCacheKey?.bind(mat);
+  const prev = mat.onBeforeCompile, own = mat.customProgramCacheKey !== THREE.Material.prototype.customProgramCacheKey;
+  const prevKey = own ? mat.customProgramCacheKey.bind(mat) : null, prevText = prev.toString(); // (the default key IS the old code's text: taken now, before the wrap, or every wrapped material shares the wrapper's)
   mat.onBeforeCompile = (sh, r) => {
     prev?.call(mat, sh, r);
     Object.assign(sh.uniforms, STORM_U, DEEP_U, { uStormOn: on });
@@ -127,7 +131,7 @@ gl_Position = stormClip(gl_Position);`);
     }
     sh.vertexShader = v; sh.fragmentShader = f;
   };
-  mat.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}|storm1`;
+  mat.customProgramCacheKey = () => `${prevKey ? prevKey() : prevText}|storm1`;
   mat.needsUpdate = true;
   return mat;
 }
@@ -135,7 +139,8 @@ export const warpMaterial = (mat) => storm(mat, true);
 export const deepMaterial = (mat) => storm(mat, false);
 /** A big object bends with the world. By default it is SEATED: drawn as one rigid thing shifted to where the storm draws the world at
  *  its place (its meshes' matrices moved for the draw and put back after it: no new program, its parts true to each other, and the
- *  logic that reads them between draws reads them unbent). `shader: true` bends every material instead (curved like the sea; free for
+ *  logic that reads them between draws reads them unbent; never moved more than `STORM.seat`, so a drawn part always lies on its hurtbox, and
+ *  the shift as last drawn is `root.userData.seatOff`). `shader: true` bends every material instead (curved like the sea; free for
  *  a material whose program is its own, a new program for a plain one shared with the rest of the game: count them). Outlines ride
  *  with their meshes either way. */
 export function warpObject(root, { shader = false } = {}) {
@@ -145,12 +150,13 @@ export function warpObject(root, { shader = false } = {}) {
     return root;
   }
   const seat = { root, frame: -1, cam: null, off: new THREE.Vector3() };
+  root.userData.seatOff = seat.off; // (the shift as it was last drawn: what a part's hurtbox may follow, in the runtime's own time)
   root.traverse((o) => {
     if (!(o.isMesh || o.isLine || o.isPoints || o.isSprite) || o.userData.seated) return;
     o.userData.seated = true;
     const before = o.onBeforeRender, after = o.onAfterRender, keep = new THREE.Matrix4();
     o.onBeforeRender = function (r, s, cam, ...rest) {
-      if (seat.frame !== r.info.render.frame || seat.cam !== cam) { seat.frame = r.info.render.frame; seat.cam = cam; root.getWorldPosition(_sp); bendPoint(_sp, cam, _sq); seat.off.subVectors(_sq, _sp); }
+      if (seat.frame !== r.info.render.frame || seat.cam !== cam) { seat.frame = r.info.render.frame; seat.cam = cam; root.getWorldPosition(_sp); bendPoint(_sp, cam, _sq); seat.off.subVectors(_sq, _sp); if (seat.off.lengthSq() > STORM.seat * STORM.seat) seat.off.setLength(STORM.seat); }
       keep.copy(this.matrixWorld); this.userData.seatKeep = keep;
       const e = this.matrixWorld.elements; e[12] += seat.off.x; e[13] += seat.off.y; e[14] += seat.off.z;
       before.call(this, r, s, cam, ...rest);
@@ -204,7 +210,7 @@ export class StormWarp {
   mindOf() {
     const m = this.target.mind;
     if (typeof m === 'number') return m;
-    if (typeof m === 'string') { const i = STATES.indexOf(m); return i < 0 ? 0 : i - 2; }
+    if (typeof m === 'string') { const i = STATES.findIndex((x) => x.name === m || x.id === m.toLowerCase()); return i < 0 ? 0 : i - 2; } // (STATES holds objects: a name is found by its `name`, never by indexOf)
     return this.game.courierMind?.mind ?? 0;
   }
 
@@ -225,7 +231,7 @@ export class StormWarp {
     const k = this.k, t = this.t, U = STORM_U;
     U.uStormBend.value = STORM.bend * k * (1 + 0.25 * Math.sin(t * 0.37));
     U.uStormSway.value = STORM.sway * k;
-    U.uStormTwist.value = STORM.twist * k * Math.sin(t * 0.29);
+    U.uStormWhorl.value = STORM.whorl * k * Math.sin(t * 0.29);
     U.uStormT.value = t;
     // the veil: haze and split by the strength; its light gold-white, leaning to the waypoint's weather
     const V = this.game.glitch?.veil; if (!V) return;
@@ -248,7 +254,7 @@ export class StormWarp {
 /** The shader's bend on the CPU (STORM_U as last written): where a world point of the environment is drawn through `camera`. */
 export function bendPoint(p, camera, out = new THREE.Vector3()) {
   out.copy(p); const U = STORM_U;
-  if (!camera || (U.uStormBend.value === 0 && U.uStormSway.value === 0 && U.uStormTwist.value === 0)) return out;
+  if (!camera || (U.uStormBend.value === 0 && U.uStormSway.value === 0 && U.uStormWhorl.value === 0)) return out;
   const mv = _w.copy(p).applyMatrix4(camera.matrixWorldInverse), d = -mv.z;
   if (d < 5) return out;
   _v.set(mv.x, mv.y, mv.z, 1).applyMatrix4(camera.projectionMatrix);
@@ -256,7 +262,7 @@ export function bendPoint(p, camera, out = new THREE.Vector3()) {
   let ox = 0, oy = -U.uStormBend.value * d * smooth(5, 90, d);
   const p1 = sy * 1.9 + sx * 0.6 + 1.2 * ld + T0 * 0.8, p2 = sx * 1.5 - sy * 0.8 + 0.9 * ld + T0 * 0.63 + 1.7;
   ox += U.uStormSway.value * d * grow * 0.6 * Math.sin(p1); oy += U.uStormSway.value * d * grow * Math.sin(p2);
-  const a = U.uStormTwist.value * smooth(15, 220, d), ca = Math.cos(a), sa = Math.sin(a);
+  const a = U.uStormWhorl.value * smooth(15, 220, d), ca = Math.cos(a), sa = Math.sin(a);
   ox += mv.x * (ca - 1) - mv.y * sa; oy += mv.x * sa + mv.y * (ca - 1);
   mv.x += ox; mv.y += oy;
   return out.copy(mv).applyMatrix4(camera.matrixWorld);

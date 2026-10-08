@@ -89,7 +89,8 @@ export function crossingStage(id, game) {
   };
   root.userData.shot = (camera) => { camera.position.copy(at); camera.up.set(0, 1, 0); camera.lookAt(look); camera.fov = 60; camera.updateProjectionMatrix(); };
   root.userData.dispose = () => {
-    U.dispose(); W?.set({ storm: 0, anywhere: false }); if (W) { W.k = 0; W.update(0, wb.camera); }
+    U.dispose(); W?.set({ storm: 0, mind: null, anywhere: false }); // (mind back to the Courier's own, not the stage's 0)
+    if (W) { W.k = 0; W.update(0, wb.camera); }
     S.fog = was.fog; S.background = was.bg;
     sea.dispose(); ship.dispose(); brig.dispose(); nobody.dispose(); stone.dispose(); wire.dispose(); dome.geometry.dispose(); dome.material.dispose();
   };

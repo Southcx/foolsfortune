@@ -25,12 +25,19 @@ The opt-ins, at build time (before the warm-up), for whatever you and the other 
 - `causticsOn(root)` (vfx/umbral.js): the deep's caustics over a foe or a part built of plain materials (one shared program for all;
   a draw a mesh, only while under). The sloop already has them.
 - `keepTrue(mat)`: the danger (the shots, the reticles, the lock marks, the hurtbox mark) stays exactly where it is drawn under the
-  veil's haze. Free on a transparent material, which yours are; call it once on each when you build them.
+  veil's haze. Free on a transparent material, which yours are; call it once on each when you build them. (Reviewed: `stage.js build()`
+  now calls it on every mesh of `shots.meshes`, each outlined shot and its parry mark, the two reticles and the lock marks, so a look
+  that keeps those names, as the shots' new one does, is covered. Cost: the plain shots' opaque instanced material is now a
+  non-opaque variant, a program of its own: +1 (154 to 155 at boot), given back when the new look's one transparent material replaces it.
+  The places' count is then 161 / 164 / 164 against the budget of 164.)
+- A seated object (`warpObject`) is moved by at most `STORM.seat` (0.4 m: under half of a gunport's radius), so a drawn part always
+  lies on its hurtbox. The shift as last drawn is `root.userData.seatOff`: follow it in a part's `local` (`partAt`) if you want the
+  storm's full seat and raise `STORM.seat`; until you do, the hurtboxes are where the logic puts them.
 
 Never warp the shots, the hurtbox, the ship, the reticles or the lock marks: the storm bends the world, never the danger.
 
 My crossings into your files (call sites only): `main.js` (construct, and the two updates in the fx line), `world/emocean/stage.js`
-(seat the brig and Old Nobody and bend Old Nobody's sea shadow in `build()`; a stand-in `stormWarp.set` in `look()`: 0.45 in a set
+(seat the brig and Old Nobody and bend Old Nobody's sea shadow in `build()`, and `keepTrue` the danger there; a stand-in `stormWarp.set` in `look()`: 0.45 in a set
 piece, 0.2 otherwise, laid down in the breather, until each leg carries its own storm), `core/config.js` (`visual.warp: 1`),
 `debug/tuned.js` (it is a setting), `debug/tuning.js` (its slider 0..1 and a placeholder label).
 

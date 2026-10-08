@@ -632,9 +632,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`): the crossing caught in a psychic storm: the environment (the crude sea,
   the sky and its clouds, the ambient geometry, the big objects) bent in the vertex shader, never the danger (the shots, the hurtbox, the
   ship, the reticles, the HUD). Its parts: **the droop** (the world ahead falling away with distance), **the sway** (a slow drift by an
-  angle), **the twist** (the far world turned about the view's axis); a big object is **seated** (drawn whole, shifted to where the storm
-  draws the world at its place). Its strength (0..1) is a leg's **storm**, the waypoint's weather and the Courier's mental state
-  (Prismatic warps the most), scaled by the setting `visual.warp`. *Not:* the weather (an island's mood); the glitch (a pulse).
+  angle), **the whorl** (the far world turned about the view's axis; *not* the twist, the Great Dunemaw's rooms); a big object is
+  **seated** (drawn whole, shifted to where the storm draws the world at its place, by at most `STORM.seat`, 0.4 m, so its parts stay on
+  their hurtboxes). Its strength (0..1) is a leg's **storm**, the waypoint's weather and the Courier's mental state (Prismatic warps the
+  most), scaled by the setting `visual.warp`. *Not:* the weather (an island's mood); the glitch (a pulse).
 - **the veil** (`game.glitch.veil`, drawn in the glitch's pass): the storm warp's and the Umbral's share of the screen: the haze (the
   frame sampled through slow scrolling noise, toward the edges), the chromatic split at the edges, the storm's gold-white light, the
   Umbral's black-violet grade, and the line of the surface across the lens. What wears `keepTrue` (the danger) is never moved by it.
@@ -643,7 +644,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   air above inside it, the oil film's light leaking through, the bellies of things floating above as soft shadows), **the column** (the
   deep's black-violet fog, motes of Lachryma rising), the **caustics** thrown down onto what is under it (`causticsOn`: a caustic
   overlay; or through `warpMaterial`). **The surface crossing** (Q, a half-bar): the **splash ring** on the surface, a crown of crude,
-  and the line of the surface wiped across the lens. *Not:* the crossing (a stage as it plays), the crown (a dive's splash in water).
+  and the line of the surface wiped across the lens (the crown is the dive's, `vfx/waterfx.js`, thrown on the crude). *Not:* the crossing (a stage as it plays).
 - **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
