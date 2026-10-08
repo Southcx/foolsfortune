@@ -255,8 +255,37 @@ the rules before building in the same area; a rule a machine can check goes into
     entering and say its end only after it has lapsed a while; a flicker is one spell, never a pair of lines each time.
 95. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
     ship is not what the cursor means; the pick starts past the shooter.
+96. **The scene is compiled once, by the boot's warm-up.** A module that compiles the whole scene itself while the game is still being
+    built compiles every material in it for the state of that moment (no cutaway plane, three lamps, flat shading), programs no frame
+    draws with, and each lives as long as its material. `compile` takes hidden objects too and the prime draw shows them, so a look made
+    at boot needs no warm-up of its own; a look made later compiles its own group, after an empty frame (78).
 
 ## Cases
+
+### 2026-10-08 · The compass, the vane's marks and the pendulum compiled their programs in play (found by the program audit, Calissa)
+- **Seen (headless, programs counted):** showing the wire compass, the Dreamvane's marks and the Crucibelle's pendulum for the first time
+  compiled 3 programs (155 to 158): a hitch the first time the Dreamvane is worn or the Crucibelle drawn.
+- **Cause:** all three were made lazily on the first tick after the warm-up (`main.js`, `game.wireCompass ||= ...`), so the warm-up
+  never saw their materials.
+- **Fix:** they are made before the warm-up and shown for its compile; their own update hides them on the first frame (`main.js`).
+  Measured: 158 at boot, 158 after showing them; nothing compiles in play.
+- **Rule:** 17 and 18 (a look made on first need is made at boot and compiled with the rest).
+
+### 2026-10-08 · Thirteen shader programs compiled for a frame that is never drawn (perf over the program budget, Calissa's program diet)
+- **Seen:** `npm run perf` on Calissa's branch read 168, 170 and 170 programs against the budget of 164. Listing every live program with
+  its cache key, thirteen (ids 2 to 14, the first compiled) had no clipping plane and three point lights in their keys (four of them
+  flat shading too), while every program the frames use has the God Hand's one plane, the light budget's eight lamps and the present's
+  smooth shading: the same looks a second time (the particles, the pots and their shards, the bismuth, a beam, and the rave's own
+  beams, ball, wire and specks).
+- **Cause:** `Rave.warm` (vfx/rave.js), called by main.js as the rave was made, compiled the whole scene with `renderer.compile` long
+  before the God Hand installed its plane (and before the lamps and the shading were set); a material keeps every program it has been
+  compiled with, so all thirteen lived on unused. Its own purpose was already met: the warm-up compiles hidden objects too, and the prime
+  draw shows them.
+- **Fix:** the rave has no warm-up of its own (main.js no longer calls one); the boot's warm-up compiles and draws it with everything
+  else. Measured after (the same listing): the thirteen are gone (no program is left without the plane but the shadow's depth
+  programs, which never clip, and one screen pass compiled in play), the rave's beams, ball, wire, pools and specks each still have
+  their program at boot, with the plane and the eight lamps, and perf's programs compiled after the warm-up stay at 2, neither the rave's.
+- **Rule:** 96.
 
 ### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
 - **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level

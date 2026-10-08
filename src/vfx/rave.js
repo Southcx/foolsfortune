@@ -122,15 +122,9 @@ export class Rave {
     this.k = 0; this.beat = 0; this.beatI = -1; this.sp = 0;
   }
 
-  /** Show everything once, off to one side, so that every material is compiled before it is needed (a hitch at the first chest would be the show's worst moment). */
-  warm(renderer, camera) {
-    this.root.visible = true;
-    const vis = [...this.specks, ...this.decals].map((m) => m.visible);
-    [...this.specks, ...this.decals].forEach((m) => { m.visible = true; });
-    try { renderer.compile(this.game.scene, camera); } catch { /* it is only a warm-up */ }
-    [...this.specks, ...this.decals].forEach((m, i) => { m.visible = vis[i]; });
-    this.root.visible = false;
-  }
+  // (no warm-up of its own: a hitch at the first chest would be the show's worst moment, and the boot's warm-up covers it, compiling
+  //  every material in the scene, hidden or not, and drawing everything hidden once: main.js. Its own warm-up compiled the whole scene
+  //  before the God Hand's cutaway plane was installed, thirteen programs for a clipping state no frame draws with: the casebook, 2026-10-08)
 
   // ---------------------------------------------------------------- start / stop
   start(cer) {
