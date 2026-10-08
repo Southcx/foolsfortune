@@ -61,8 +61,7 @@ export class Ostraca {
         const ground = new THREE.Vector3(x, D.heightAt(x, z), z);
         if (this.found(word)) continue;
         if (this.s.revealed.includes(word)) { this.drop(word, ground, 'dunes', false); continue; }
-        const b = { word, ground, veiled: true, look: new Ostracon({ word }) }; // (only its corner shows out of a mound, and the sparkle the survey finds)
-        b.look.set({ buried: 1 }); b.look.group.position.copy(ground); b.look.group.rotation.y = rnd() * 6.28; g.scene.add(b.look.group);
+        const b = { word, ground, yaw: rnd() * 6.28, veiled: true, look: null }; // (only its corner shows out of a mound, and the sparkle the survey finds: the look made within 80 m, update())
         b.sig = g.signatures?.add({ pos: ground.clone().setY(ground.y - 0.3), strength: 2.5, kind: 'ostracon', ref: b, alive: () => b.veiled && !this.found(word) });
         this.buried.push(b);
       }
@@ -153,7 +152,7 @@ export class Ostraca {
       if (!b.veiled || b.ground.distanceTo(pos) > r) continue;
       b.veiled = false; n++; this.game.signatures?.remove?.(b.sig);
       this.s.revealed.push(b.word); this.game.save?.dirty('ostraca');
-      this.drop(b.word, b.ground.clone(), 'dunes', true, b.look);
+      this.drop(b.word, b.ground.clone(), 'dunes', true, b.look, b.yaw);
     }
     this.buried = this.buried.filter((b) => b.veiled);
     return n;
@@ -169,13 +168,11 @@ export class Ostraca {
   }
 
   /** A sherd lying loose at `at`, for F. */
-  drop(word, at, place, rise = true, look = null) {
+  drop(word, at, place, rise = true, look = null, yaw = simRand() * 6.28) {
     if (this.found(word) || this.loose.some((s) => s.word === word)) { look?.dispose(); return; }
     { const down = this.game.physics?.raycast?.(_v.copy(at).setY(at.y + 1), _d, 4, this.game.player?.collider, undefined, (k) => !k.isSensor()); if (down) at = down.point.clone(); } // (it lies on whatever is under it: a pot breaks mid-height, a column's foot is not the sand beside it)
-    const g = this.game, O = look || new Ostracon({ word });
-    if (!look) { O.group.rotation.y = simRand() * 6.28; g.scene.add(O.group); }
-    O.group.position.copy(at); O.set({ buried: rise ? 1 : 0 });
-    const s = { word, place, pos: at.clone(), mesh: O.group, look: O, t: rise ? 0 : 1 };
+    const g = this.game, s = { word, place, pos: at.clone(), yaw, look, t: rise ? 0 : 1 };
+    if (look) { look.group.position.copy(at); look.set({ buried: 1 - s.t }); }
     s.sig = g.signatures?.add({ pos: at.clone(), strength: 2.5, kind: 'ostracon', ref: s, alive: () => !this.found(word) });
     this.loose.push(s);
     if (rise) g.glyphs?.pop?.('ask', at.clone().setY(at.y + 0.6), { color: 0xc98a5a, size: 0.45, life: 1.2 });
@@ -200,7 +197,7 @@ export class Ostraca {
     }
     const s = ref; if (!s || !this.loose.includes(s)) return;
     this.loose.splice(this.loose.indexOf(s), 1);
-    s.look.dispose(); g.signatures?.remove?.(s.sig);
+    s.look?.dispose(); g.signatures?.remove?.(s.sig);
     g.fx?.absorbSparkle?.(s.pos.clone().setY(s.pos.y + 0.3));
     g.events?.emit('ostracon.find', { word: s.word, gloss: NEURALESE.glossOf(s.word), place: s.place, by: 'courier' });
   }
@@ -222,9 +219,23 @@ export class Ostraca {
     this.build(); this.cavern();
     const g = this.game, P = g.player, it = g.interact?.cur;
     if (it?.id === 'ostracon' && P?.peekLatch?.('KeyF') && !g.god?.controlling) { P.latch('KeyF'); this.take(it.ref); }
-    const dt = g.rawDt ?? 1 / 60, by = (o) => o.distanceToSquared(P.pos) < 3600; // (the sparkle and the sun only within 60 m)
-    for (const s of this.loose) { if (s.t < 1) { s.t = Math.min(1, s.t + dt / 1.2); s.look.set({ buried: 1 - s.t }); } if (by(s.pos)) s.look.update(dt); } // (it is dug out of the sand)
-    for (const b of this.buried) if (by(b.ground)) b.look.update(dt);
-    for (const st of this.stelae) if (st.look.group.visible && by(st.pos)) st.look.update(dt);
+    const dt = g.rawDt ?? 1 / 60;
+    for (const s of this.loose) { if (s.t < 1) { s.t = Math.min(1, s.t + dt / 1.2); s.look?.set({ buried: 1 - s.t }); } this.tend(s, s.pos, 1 - s.t, dt); } // (it is dug out of the sand)
+    for (const b of this.buried) this.tend(b, b.ground, 1, dt);
+    for (const st of this.stelae) if (st.look.group.visible && st.pos.distanceToSquared(P.pos) < 3600) st.look.update(dt);
+  }
+  /** A sherd's look made when the Courier comes within 80 m and let go past 100 (sixteen across the island, a handful near); its
+   *  sparkle and sun within 60 m. The programs are warmed at boot (parked()). */
+  tend(x, at, buried, dt) {
+    const d2 = at.distanceToSquared(this.game.player.pos);
+    if (!x.look && d2 < 6400) { const O = x.look = new Ostracon({ word: x.word }); O.group.position.copy(at); O.group.rotation.y = x.yaw; O.set({ buried }); this.game.scene.add(O.group); }
+    else if (x.look && d2 > 10000) { x.look.dispose(); x.look = null; }
+    if (x.look && d2 < 3600) x.look.update(dt);
+  }
+  /** One sherd half buried, parked under the world for the boot's warm-up, so its body's and its sparkle's programs are compiled
+   *  with the rest (never disposed: casebook rules 17 and 18). */
+  parked() {
+    if (!this.park) { this.park = new Ostracon({ word: 'SIVA' }); this.park.set({ buried: 0.6 }); this.park.group.position.set(0, -50, 0); this.park.group.userData.zoneFree = true; this.game.scene.add(this.park.group); }
+    return [this.park.group];
   }
 }

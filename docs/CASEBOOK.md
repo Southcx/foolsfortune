@@ -182,6 +182,8 @@ the rules before building in the same area; a rule a machine can check goes into
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
 70. **"At the foot of" is found by a ray, never a fixed offset.** A thing laid beside a prop of varying size and lean is placed where a
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
+71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
+    memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
 
 ## Cases
 
@@ -936,3 +938,12 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `Ostraca.footOf`: eight bearings 2.4 m out, the first where a ray from 8 m up meets the sand within 0.3 m. Seen in a
   screenshot after: on the sand beside the stump.
 - **Rule:** 70.
+
+### 2026-10-08 · perf said the heap was over budget; the player's page was not (v117's gate)
+- **Seen:** `npm run perf` read 346 MB against a 340 budget after the round's merges (+10 MB).
+- **Cause:** perf reads the heap of the DEV server's page, which holds each module's source text and source map; a heap snapshot
+  diff of the trees before and after the merges was 5.6 MB of strings (the new modules' sources and maps) of 6.4. The built game
+  (vite preview, two gc'd boots each) read 223 MB before and 228 after.
+- **Fix:** the budget raised to 350 with that written beside it (scripts/perf.mjs); the built figure reported at publish.
+- **Rule:** 71.
+
