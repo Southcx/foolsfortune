@@ -129,8 +129,9 @@ export class BladeMode {
     }
     this.k = Math.min(1, this.k + raw * 7);
     // the mind pays for the time it holds
-    const took = g.lachryma.drain(DRAIN * raw, 'blade');
-    if (took < DRAIN * raw * 0.5 || !inp.isDown('Mouse2')) return this.exit(took < DRAIN * raw * 0.5 ? 'empty' : 'let go');
+    const ask = DRAIN * raw / (g.psyche?.widen?.('ouranurgy.still') || 1); // (Ouranurgy: time stays slowed longer on the same Lachryma)
+    const took = g.lachryma.drain(ask, 'blade');
+    if (took < ask * 0.5 || !inp.isDown('Mouse2')) return this.exit(took < ask * 0.5 ? 'empty' : 'let go');
     // the mouse sets the line
     this.cursor.x += inp.dx * 0.006; this.cursor.y -= inp.dy * 0.006;
     if (this.cursor.length() > 1) this.cursor.setLength(1);

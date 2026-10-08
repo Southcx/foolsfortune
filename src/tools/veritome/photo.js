@@ -2,7 +2,7 @@
 // PHOTOGRAPHS: what a shutter of the Veritome makes of the view. Every subject in the frame (subjects.js) is found, checked for being
 // seen (not behind a wall), and scored the way Pokémon Snap scores a photograph: SIZE (how much of the frame it fills: a subject is best
 // at a third to two thirds of the frame's height), POSE (what it is doing: a clapperjar in the air, dancing, mending), TECHNIQUE (how
-// near the middle it is, and whether it faces the lens) and a bonus for more than one of the same kind. The best subject's score sets
+// it sits on a third, with room ahead of it, and whether it faces the lens: `placement`) and a bonus for more than one of the same kind. The best subject's score sets
 // the stars (one to four). Two kinds of photograph have no subject: the open sky, and the sun.
 //
 // Prior art: Pokémon Snap (size, pose and technique, the same-species bonus, the report after each shot), Dead Rising's PP for a
@@ -20,9 +20,26 @@ import * as THREE from 'three';
 import { SUBJECTS } from './subjects.js';
 
 const POSE = { wind: 60, chase: 20, sleep: 30, melt: 30, infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
+const _l = new THREE.Vector3();
 const _v = new THREE.Vector3(), _f = new THREE.Vector3();
 
 export const starsOf = (score) => (score >= 230 ? 4 : score >= 170 ? 3 : score >= 110 ? 2 : 1);
+
+/** PLACEMENT (the rule of thirds, ruled 2026-10-08): 1 on one of the four crossings of the thirds (NDC +-1/3), 0.7 dead centre, falling
+ *  off toward the edges; a subject that faces across the frame into the room ahead of it gains a tenth, one facing out of a near edge
+ *  loses a tenth. Before this the term peaked dead centre and a subject on a third lost about 26 points of 280: the Veritome taught
+ *  "centre it". Prior art: the photographers' rule of thirds and lead room (Smith's "Remarks on Rural Scenery", 1797; every camera's grid). */
+function placement(s, ndc, camera) {
+  let thirds = 0;
+  for (const x of [-1 / 3, 1 / 3]) for (const y of [-1 / 3, 1 / 3]) thirds = Math.max(thirds, 1 - Math.min(1, Math.hypot(ndc.x - x, ndc.y - y) / 0.45));
+  const mid = 0.7 * (1 - Math.min(1, Math.hypot(ndc.x, ndc.y) / 0.9));
+  let p = Math.max(thirds, mid);
+  if (s.facing && Math.abs(ndc.x) > 0.15) {
+    const ahead = _l.copy(s.pos).add(s.facing).project(camera).x - ndc.x; // (which way it faces on the screen)
+    if (Math.abs(ahead) > 0.01) p += Math.sign(ahead) === -Math.sign(ndc.x) ? 0.1 : -0.1;
+  }
+  return Math.max(0, Math.min(1, p));
+}
 
 export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
   camera.updateMatrixWorld();
@@ -45,7 +62,7 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
       if (hit && hit.distance < d - s.r * 1.3 && hit.entity !== s.ref) continue;
       const frac = s.r / (z * tanH); // (its height as a share of the frame's)
       const size = frac < 0.33 ? frac / 0.33 : frac > 0.85 ? Math.max(0.3, 1 - (frac - 0.85) * 2) : 1;
-      const centre = 1 - Math.min(1, Math.hypot(ndc.x, ndc.y) / 0.9);
+      const centre = placement(s, ndc, camera); // (the thirds, not the middle: TRAINING.md 6, Calissa's finding; the key keeps its old name in the plate)
       const facing = s.facing ? Math.max(0, s.facing.dot(_f.copy(eye).sub(s.pos).setY(0).normalize())) : 0.5;
       let pose = 0;
       for (const st of s.states) pose = Math.max(pose, POSE[st] || 0);
