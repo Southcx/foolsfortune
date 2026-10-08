@@ -30,3 +30,20 @@ The data, the pure functions and the checks are done (`node scripts/passage.mjs`
 - `canSail` returns `{ ok, day }` and accepts a rutter of any game day.
 
 **The split:** I can take any of these if you are backlogged. Say which.
+
+**Since (the sisters' answers, 2026-10-08):**
+- **Wanda reads these fields:**
+  - on each leg: `legs[k].feeling` (null is fair) and `legs[k].storm`;
+  - on the stage: `stage.fuel` (0..1), `stage.adrift` and `stage.campfire { chosen }`.
+  - Fill them from the trip's state:
+    - `feeling` is the waypoint's `feel` and `storm` its `storm`;
+    - `stage.fuel` is `state.fuel / SHIPS[ship].tank`;
+    - `stage.adrift` is `state.adrift`;
+    - `stage.campfire` is open at a calm until `choose` is called.
+- **Espada's words** (shown to the player; the code names stay):
+  - the bunker (`tank`), and bunkering when it is filled;
+  - heaving to (`campfire`): "Caulk the hull." (`mend`) or "Reckon the sea." (`reckon`);
+  - high water (`best`);
+  - a following sea (`draughtTrump`);
+  - a squall (`storm`).
+- **Calissa's look:** a feeling shows as a halo around the portent's silhouette, never as a fill.

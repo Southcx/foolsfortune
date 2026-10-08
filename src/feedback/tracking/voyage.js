@@ -30,7 +30,7 @@ export function voyageRules({ on, L, log }) {
   on('passage.best', (e) => {
     if (e.by !== 'courier') return;
     L.inc('passage.best'); L.hi('passage.score.best', e.score || 0);
-    if (e.beat != null) log.say('record', `A new best on this sea today: ${e.score}, over ${e.beat}.`);
+    if (e.beat != null) log.say('record', `High water on this sea today: ${e.score}, over ${e.beat}.`);
   });
   on('emocean.found', (e) => { if (e.by !== 'courier') return; L.inc(`emocean.found.${e.node}`); log.say('explore', `Route divined: ${PLACE(e.node)}.`); });
   on('crude.buy', (e) => { if (e.by === 'courier') L.inc('crude.bought', e.units || 1); });

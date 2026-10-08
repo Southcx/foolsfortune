@@ -201,7 +201,9 @@ score). The mirror sea's ghost is **your double**, not "your fetch": fetch is al
 
 ## 14. The trip's pressures (the owner, 2026-10-08: "do all five"; `src/progress/rail/trip.js`)
 
-Five rules that make drafting a passage a decision. The owner's brief: mechanically robust, knock-on effects thought through, synergies
+Five rules that make drafting a passage a decision. The player's words are Espada's (LORE.md "The trip's pressures"): the
+bunker (the tank), heaving to (the campfire: caulk the hull or reckon the sea), high water (the day's best), a following sea (the
+draught's trump), a squall (the storm mark); the headings below keep the working names the code uses. The owner's brief: mechanically robust, knock-on effects thought through, synergies
 kept. Each rule below gives its numbers, what it changes elsewhere, and how it is checked (`node scripts/passage.mjs`, 6,000 sea charts).
 Relics and trinkets are out (the owner: "too much bloat").
 
@@ -255,7 +257,13 @@ Relics and trinkets are out (the owner: "too much bloat").
   - its place on the Law-Chaos line between the two islands (Margarite's mirth to Entropolis's dread), plus a step of the day's dice;
   - near the island left, the weather it had at the game day's start;
   - a tenth of the open sea is fair (no feeling).
-- **Shown:** the portent shows the feeling from the silhouette tier up (a colour on the dim shape). A storm is never fair.
+- **Why (Espada's lore):** each island's weather runs off into the Emocean as a **plume**, as a river's fresh water runs far out to sea;
+  the fair tenth is water no plume has reached.
+- **Shown** (Calissa's ruling): the class stays the crisp ink silhouette; the feeling is a **halo** round it in its canon colour,
+  textured with its weather's own motif (so it reads without colour too), from the silhouette tier up; candidates stay neutral ink; a
+  fair waypoint has none. A colour filled into an uncertain portent would read as certain. A storm is never fair.
+- **Heard** (Wanda's): the feeling recolours a leg's mode, never its key (wonder Lydian, mirth major, desire Dorian, grief natural
+  minor, dread Locrian), and sets the Crucibelle's scale for the leg.
 - **What it does (all read before you commit):**
   - **The forms:** bright feelings throw mostly astral shots, dark ones umbral (astral share: wonder 0.75, mirth 0.65, desire 0.5,
     grief 0.35, dread 0.25). A ship that cannot dive dodges every umbral shot, so a tanker's rutter favours bright lanes.
@@ -272,7 +280,8 @@ Relics and trinkets are out (the owner: "too much bloat").
 ### 14.5 The storm mark (Slay the Spire's burning elite)
 - **Count and placement:** one storm a sea chart, two from five columns. Always on a threat waypoint, from the second column on, never a
   boss.
-- **Never unavoidable:** never on a waypoint every lane must pass (`choke`), so taking one is a choice.
+- **Never unavoidable:** never on a waypoint every lane must pass (`choke`), so taking one is a choice. Espada's reason: a squall
+  gathers at a **front**, where two plumes meet and the stronger shoulders in, and a front lies across open lanes, never in a narrows.
 - **Always shown,** whatever the portent's tier: a flame on the waypoint.
 - **What it does:** the waypoint is a Figment class stronger, its feeling at full strength, and its patterns ×1.4 denser. It burns
   ×1.25 fuel.
@@ -290,6 +299,12 @@ Relics and trinkets are out (the owner: "too much bloat").
 | the draught's trump | feelings (14.4) chain into combat's trumps (`combat/types.js`) at no new cost: the Lachryma you absorb sets the next fight's advantage |
 | adrift and the havens | running dry (14.2) loses the choice of route, not the trip; a calm's buoy ends it, so calms are worth more on a long passage |
 | Charybdis | the maelstrom's Egregore takes its waypoint's feeling (14.4), so the chart says which Charybdis waits |
+| one rival, seen twice (Calissa) | high water is a pale ghost thread on the chart and the Glass's double at sea |
+| the chart as a weather map (Calissa) | the halos teach each sky's look before you sail into it |
+| one warp, two scales (Calissa) | the threads bend near a squall as the world bends in it |
+| the ship's scars are kintsugi (Calissa) | the hull's cracks are the Courier's own; caulked, they turn to gold |
+| the bunker is a Lachrymato Bottle (Calissa) | the ship's fuel in glass on its deck: one Lachryma economy |
+| a following sea in the music (Wanda) | a leg's mode follows its feeling, so the chain of feelings is heard as the passage's harmony |
 
 ### 14.7 Conflicts resolved
 - **The free mend before a boss:** withdrawn (14.1).

@@ -150,16 +150,19 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   survey at the pier (the Dreamvane's dowse held over the sea chart: `voyage.reckon`); a rutter (item `rutter`) is a passage's map,
   made by sailing it to the end, sold or used that game day. *Not:* the course (the basement's), "forecast" (the weather's), a
   Cogitomap (a Well's), the node map (the islands).
-- **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player words Espada's to give): **the hull**
-  (the ship's `bears`, carried from leg to leg, mended only at a haven); **the tank** (the fuel a ship carries, in **measures**, filled
-  at the pier and at a calm's buoy); **burn** (the measures a waypoint costs: its type's times the ship's; *not* the hop's price, which
-  is `fill`); **adrift** (short of every way on's burn: the current carries the ship, two to one straight on, its legs capped at a C);
-  **the campfire** (a calm's choice: **mend**, half the hull back, or **reckon**, the portents ahead a quarter sharper); **the day's
-  best** (the best score on one route's sea chart for one game day: `voyage.bestOf`); **a waypoint's feeling** (its aspect, shown on
-  its portent from the silhouette up: it sets its foes' damage type and how its shots fall between the forms); **the draught's trump**
-  (the draught a leg leaves trumping the next waypoint's foes: `draughtTrump`); **a storm mark** (Slay the Spire's burning elite: a
-  threat waypoint a class stronger, always shown, never unavoidable; `STORM`). *Not:* the weather's storm (there is none: the eyewall
-  is a leg), the vessel's cracks (the hull is the ship's), a chain (the ledger's or the rail's).
+- **the trip's pressures** (`src/progress/rail/trip.js`, Dovina's; PASSAGE.md section 14; the player's words Espada's, LORE.md "The
+  trip's pressures"): **the hull** (the ship's `bears`, carried from leg to leg, mended only at a haven); **the bunker** (code `tank`:
+  the fuel a ship carries, in **measures**; filling it is **bunkering**, at the pier and at a calm's buoy; *not* "tank", which is the
+  tanker's and the Lachrymato Bottle's never-word); **burn** (the measures a waypoint costs: its type's times the ship's; *not* the hop's
+  price, which is `fill`); **adrift** (short of every way on's burn: the current carries the ship, two to one straight on, its legs
+  capped at a C); **heaving to** (code `campfire`, a calm's choice: **caulk the hull** (code `mend`, half the hull back) or **reckon
+  the sea** (code `reckon`, the portents ahead a quarter sharper)); **high water** (code `best`: the best score on one route's sea
+  chart for one game day, `voyage.bestOf`); **a waypoint's feeling** (its aspect, carried out to sea in an island's **plume**: shown as
+  a halo round its portent's silhouette from the silhouette up, Calissa's; it sets its foes' damage type and how its shots fall
+  between the forms); **a following sea** (code `draughtTrump`: the draught a leg leaves trumping the next waypoint's foes); **a
+  squall** (code `storm`, `STORM`: Slay the Spire's burning elite, where two plumes meet at a **front**: a threat waypoint a class
+  stronger, always shown, never in a narrows). *Not:* the weather's storm (there is none: the eyewall is a leg), the vessel's cracks
+  (the hull is the ship's), a chain (the ledger's or the rail's).
 - **a leg's schedule** (`schedule`, `LEGS`, `src/progress/rail/legs.js`, Dovina's): what a waypoint's leg throws at the ship bar by bar
   (its waves, its patterns and their throwers, lights to lock, its director's entrance), in its phases (open, build, peak, release),
   shaped by the waypoint (class, feeling, storm) and held to the pacing law (`idle`: no two bars with nothing in reach; `node
