@@ -27,7 +27,7 @@ export function gardenRules({ on, L, log }) {
     log.say('loot', `${STRAIN[e.strain][0].toUpperCase()}${STRAIN[e.strain].slice(1)} gives up ${(e.names || e.made).join(', ')}.`);
   });
   on('myggdrasil.feed', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.feed'); L.inc('myggdrasil.fed', e.worth || 0); });
-  on('myggdrasil.girth', (e) => { if (e.by !== 'courier') return; L.hi('myggdrasil.caps', e.caps); log.say('gain', `Myggdrasil grows. ${CAPS[e.caps - 1]} opens.`); });
+  on('myggdrasil.girth', (e) => { if (e.by !== 'courier') return; L.hi('myggdrasil.caps', e.caps); { const c = CAPS[e.caps - 1]; log.say('gain', `Myggdrasil grows. ${c[0].toUpperCase()}${c.slice(1)} opens.`); } });
   on('myggdrasil.fruit', (e) => { if (e.by === 'courier') L.inc('myggdrasil.fruit', e.n || 0); });
   on('myggdrasil.pick', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.pick', e.n || 0); log.say('loot', `You pick ${e.n} from Myggdrasil's crown.`); });
   on('myggdrasil.hang', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.hang'); L.inc(`myggdrasil.hang.${e.arcana}`); log.say('info', 'You hang the card on its branch. The branch takes it.'); });
