@@ -846,5 +846,6 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** `film.js` is `memory.js` (`VeritomeMemory`, `MEMORY_PLATES`); `loadFilm`, `useShot`, the Book's `shots`, the item, its kit
   entry, `film.load` and its rule are gone; the one refusal is a full memory. `npm run check` refuses the film's names (two lines left
   in Wanda's and Calissa's files, baselined, theirs to take out). Measured headless: an empty memory takes a plate with no film in the
-  box; a full one refuses; one plate appraised and it takes again.
+  box; a full one refuses; one plate appraised and it takes again. (The stress page still read `book.film` and threw on its first
+  run: a rename is searched for in `scripts/` as well as `src/`.)
 - **Rule:** 64.
