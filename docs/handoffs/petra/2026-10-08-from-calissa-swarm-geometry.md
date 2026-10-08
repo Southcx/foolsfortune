@@ -6,9 +6,11 @@ Looks your rail's runtime will call. Nothing here moves a glint or decides a hit
 - `src/main.js` (2 lines, a bug): the warm-up moved the parked sea looks to (0, -50, 0) and never put them back, so the shoal's glints,
   its boil, the Conductor and both wake lines were drawn 50 m under the crude in every crossing (casebook, 2026-10-08, rule 72). The
   warm-up now keeps each parked look's position and restores it as it hides it.
-- `src/world/emocean/shoal.js` (2 call-site lines in `draw()`): `L.set(..., this.roll[i], this.mood[i] === 2 ? 1 : 0)` (a strike's dash:
-  its streak) and `L.ball(shipWorld, this.radius + 1, scattered ? 0 : 1)` (the ring read as one turning mass). The count is unchanged
-  (SHOAL.count, Dovina's; MAX 160 and `ShoalLook({ max: 192 })`, yours).
+- `src/world/emocean/shoal.js` (5 lines, beside `roll`, which is the same kind of number): `this.dash` per member, damped toward 1 while the
+  member's mood is the strike (2) and toward 0 otherwise, 12 a real second, reset where `roll` is (begin, rise), and `L.set(..., this.roll[i],
+  this.dash[i])` (the mood's own 0 / 1 popped every strike's streak on and off in one frame); and `L.ball(shipWorld, this.radius + 1,
+  scattered ? 0 : 1)` (the ring read as one turning mass). The count is unchanged (SHOAL.count, Dovina's; MAX 160 and
+  `ShoalLook({ max: 192 })`, yours).
 
 **The glints** (`src/vfx/shoal.js`, one instanced draw, 68 triangles a glint: 60 body, 6 fins, 2 spark)
 ```
@@ -17,7 +19,7 @@ each frame, for the live glints packed 0..n-1:  S.set(i, worldPos, worldQuat /* 
 S.count = n;  S.ball(centreWorld, radius, k 0..1);  S.glow(k 0..1);  S.update(rawDt)   // (after the sets)
 also: S.conductor(pos, quat, alive)  S.boil(pos, radius, k, sea)  S.light({ dir, hi, lo })  S.lod(near, far)
 ```
-roll: the silver turn (the telegraph, onto its side); dash: the strike (stretched, and a streak behind); ball: the bait ball's centre and
+roll: the silver turn (the telegraph, onto its side); dash: the strike (stretched, and a streak behind: ease it per member, as the rail's call site does, never a flag; its length stops at 30 px however close); ball: the bait ball's centre and
 radius (inside, darker; a band of rolling sweeps round it); glow: the school lit from within (the silhouette). The fish becomes a
 two-triangle spark between 52 and 92 m at scale 2 (each glint at its own distance), never under 2.5 px.
 
@@ -48,8 +50,11 @@ const c = G.ceiling(on, { height: 48, ahead: 240, forward })    // the folded se
 Each handle's `update(dt)` is called by `G.update`. Rings and monoliths are one instanced draw each (64 and 48 at most); a lattice is one
 draw; the folded sea one draw (22.5k triangles, crude-sea-3's program).
 
-**The storm's hook:** `warpWith(warpMaterial)` (or `{ warp }`, or `G.warp(fn)`) applies the storm builder's `warpMaterial` to every
-material of the family, made before or after. Their vertex shaders end in three's `#include <project_vertex>` with `transformed`, so a
+**The storm's hook:** `warpWith(warpMaterial, { keepTrue })` (or `new RailGeometry({ warp, keepTrue })`, or `G.warp(fn, { keepTrue })`) applies the
+storm builder's `warpMaterial` to every material of the family, made before or after, **except the silhouette's eye, its ring and its
+shards**: they are shot at, so they are made `warped: false` and the storm never bends them (the law: it bends the world, never the
+danger). `keepTrue(material)`, if given, is applied to them instead: pass `(m) => keepTrue(deepMaterial(m))` from `vfx/stormwarp.js`
+(the veil leaves the eye where it is drawn, and it keeps the warped ones' program, so the eye adds none). Their vertex shaders end in three's `#include <project_vertex>` with `transformed`, so a
 warp written for three's own materials applies unchanged; the folded sea is a MeshStandardMaterial like the sea's.
 
 **Measured** (headless, SwiftShader, the crossing at the shoal's bar 72, chase view): 600 glints and the eye add 3 draw calls

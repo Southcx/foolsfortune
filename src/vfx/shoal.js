@@ -5,7 +5,7 @@
 //
 //   THE GLINTS     a level of detail in the vertex shader, so the school is one draw however far it reaches:
 //                    near: a slim fish of ink with a pale belly and mirror flanks, a forked tail and a dorsal fin, swimming by a wave
-//                      that runs down its body (each fish on its own beat; quicker in a dash)
+//                      that runs down its body (each fish on its own beat; harder in a dash)
 //                    far:  a two-triangle spark, a diamond along its heading, never under 2 px at the 480 lines (render/present.js)
 //                    between, the fish shrinks into its spark over a band of distance that each glint crosses at its own place, so
 //                    the change runs through a school as a ripple and never pops (CLAUDE.md: no aliasing crawl)
@@ -72,7 +72,7 @@ function fishGeometry({ spark = true } = {}) {
 
 const FISH_V = /* glsl */`attribute float aBack, aSpark, aRoll, aPh, aDash;
 uniform float uT; uniform vec2 uRes, uLod; uniform vec4 uBall; uniform float uBallK;
-varying vec3 vN; varying vec3 vW; varying float vBelly; varying float vBack; varying float vSpark; varying vec2 vQ; varying float vSheen; varying float vShade; varying float vDash; varying float vPh;
+varying vec3 vN; varying vec3 vW; varying float vBelly; varying float vBack; varying float vSpark; varying vec2 vQ; varying float vSheen; varying float vShade; varying float vDash; varying float vPh; varying vec3 vL;
 uniform vec3 uSun;
 float gHash(float x) { return fract(sin(x * 91.7 + 3.1) * 43758.5); }
 void main() {
@@ -93,21 +93,22 @@ void main() {
   vec3 side = normalize(mat3(M) * vec3(cr, sr, 0.0)), V = normalize(cameraPosition - C);
   vSheen = pow(max(dot(reflect(-V, side), uSun), 0.0), 3.0) + 0.45 * smoothstep(-0.2, 0.8, reflect(-V, side).y);
   if (aSpark < 0.5) {
-    // the fish: a wave down its body (carangiform: the tail most), quicker in a dash; rolled; shrunk into its spark far off
-    vec3 p = position; float beat = 13.0 + 10.0 * aDash;
-    p.x += sin(uT * beat + aPh * 6.2832 - p.z * 9.0) * 0.055 * (0.12 + aBack * aBack);
+    // the fish: a wave down its body (carangiform: the tail most), harder in a dash; rolled; shrunk into its spark far off
+    vec3 p = position;
+    p.x += sin(uT * 13.0 + aPh * 6.2832 - p.z * (9.0 + 6.0 * aDash)) * 0.055 * (1.0 + 0.9 * aDash) * (0.12 + aBack * aBack); // (a dash beats harder and tighter, never faster: a rate that changed with it would swing the phase by the time times the change, and the tail would flutter at random through every ease)
     p.z *= 1.0 + 0.35 * aDash;
     p = vec3(p.x * cr - p.y * sr, p.x * sr + p.y * cr, p.z) * fishK;
     vec3 n = vec3(normal.x * cr - normal.y * sr, normal.x * sr + normal.y * cr, normal.z);
-    vec4 w = M * vec4(p, 1.0); vW = w.xyz; vN = normalize(mat3(M) * n);
+    vec4 w = M * vec4(p, 1.0); vW = w.xyz; vN = normalize(mat3(M) * n); vL = position;
     gl_Position = projectionMatrix * viewMatrix * w;
   } else {
     // the spark: a diamond along the heading as the screen sees it, at least 2 px; in a dash it streaks behind (a comet)
-    vW = C; vN = V;
+    vW = C; vN = V; vL = vec3(0.0);
     vec4 cc = projectionMatrix * viewMatrix * vec4(C, 1.0);
     vec4 cf = projectionMatrix * viewMatrix * vec4(C + normalize(mat3(M) * vec3(0.0, 0.0, 1.0)) * 0.34 * scl, 1.0);
     vec2 dpx = (cf.xy / cf.w - cc.xy / cc.w) * uRes * 0.5; float len = length(dpx);
     vec2 ax = len > 1e-3 ? dpx / len : vec2(0.0, 1.0), ac = vec2(ax.y, -ax.x); // (across, turned so the quad keeps its winding: the other way it faced away and was culled)
+    len = min(len, 30.0); // (a dashing glint close to the camera never throws a streak across the screen: its length stops growing at 30 px, a streak at most 156)
     float front = max(len, 1.25) * sparkG, back = front + aDash * (len * 5.0 + 6.0);
     float half_ = max(len * (0.3 - 0.18 * aDash), 1.25) * max(sparkG, aDash); // (at least 2.5 px across; a dash's streak is a thin line)
     vec2 off = ac * position.x * half_ + ax * (position.y > 0.0 ? front : -back);
@@ -115,21 +116,21 @@ void main() {
   }
 }`;
 const FISH_F = /* glsl */`uniform vec3 uSun, uHi, uLo; uniform float uGlow;
-varying vec3 vN; varying vec3 vW; varying float vBelly; varying float vBack; varying float vSpark; varying vec2 vQ; varying float vSheen; varying float vShade; varying float vDash; varying float vPh;
+varying vec3 vN; varying vec3 vW; varying float vBelly; varying float vBack; varying float vSpark; varying vec2 vQ; varying float vSheen; varying float vShade; varying float vDash; varying float vPh; varying vec3 vL;
 ${LAB_GLSL}
 void main() {
   vec3 V = normalize(cameraPosition - vW);
   if (vSpark > 0.5) {
     if (abs(vQ.x) + abs(vQ.y) > 1.0) discard; // (the diamond; stretched behind, a comet)
-    float ph = labPhase(vW, V) + vPh * 0.35;
+    float ph = labPhase(vL * 3.0, V) + vPh * 0.5; // (the stone's phase is the glint's own, never the world's: the school sails through the world at the rail's speed, and a phase pinned to it cycled each back ~3 times a second)
     vec3 c = mix(labInk(ph, 0.6) + vec3(0.04), mix(uLo, uHi, 0.6) * 1.1, clamp(vSheen, 0.0, 1.0)) * vShade;
-    c = mix(c, labradorite(0.22 + 0.2 * sin(6.2832 * (ph * 0.5 + vPh * 0.15))) * 2.0, uGlow * 0.8);
+    c = mix(c, labradorite(0.22 + 0.2 * sin(6.2832 * (ph * 0.5 + vPh * 0.75))) * 2.0, uGlow * 0.8);
     c = mix(c, uHi * 1.7, vDash * (0.6 + 0.4 * (1.0 - abs(vQ.x))));
     gl_FragColor = vec4(c, 1.0);
   } else {
     vec3 N = normalize(vN) * (gl_FrontFacing ? 1.0 : -1.0);
     float ndv = clamp(dot(N, V), 0.0, 1.0);
-    float ph = labPhase(vW, V) + vPh * 0.35;
+    float ph = labPhase(vL * 3.0, V) + vPh * 0.5; // (the glint's own, as above)
     vec3 belly = vec3(0.3, 0.29, 0.34);
     vec3 c = mix(vec3(0.05, 0.05, 0.07), belly, vBelly * 0.6);
     c = mix(c, labInk(ph, 0.5), vBack); // (the back: dark, with the Mind's schiller in it, as a mackerel's is blue-green)
@@ -139,7 +140,7 @@ void main() {
     float flank = (1.0 - vBack) * (1.0 - vBelly * 0.5); // (the back is not a mirror: a fish is countershaded)
     c = mix(c, sky * 0.8 + uHi * pow(max(dot(R, uSun), 0.0), 40.0) * 1.5, flank * 0.6);
     c += labSoft(ph) * pow(1.0 - ndv, 3.0) * 0.35; // (the Mind's edge: a labradorite rim)
-    c = mix(c, labradorite(0.22 + 0.2 * sin(6.2832 * (ph * 0.5 + vPh * 0.15))) * (1.4 + 0.6 * pow(1.0 - ndv, 2.0)), uGlow * 0.75); // (the school lit from within, in the stone's blues: violet to peacock)
+    c = mix(c, labradorite(0.22 + 0.2 * sin(6.2832 * (ph * 0.5 + vPh * 0.75))) * (1.4 + 0.6 * pow(1.0 - ndv, 2.0)), uGlow * 0.75); // (the school lit from within, in the stone's blues: violet to peacock)
     c = mix(c, uHi * 1.4, vDash * 0.25);
     gl_FragColor = vec4(c * vShade, 1.0);
   }

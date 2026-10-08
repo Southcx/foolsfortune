@@ -134,11 +134,11 @@ export function facing(centre, camPos, out = new THREE.Quaternion()) {
 export class SilhouetteEye {
   constructor({ radius = 1.6 } = {}) {
     this.group = new THREE.Group(); this.group.name = 'silhouette-eye'; this.group.userData.zoneFree = true;
-    this.mat = mindGeoMaterial('lens', { bright: 1 });
+    this.mat = mindGeoMaterial('lens', { bright: 1, warped: false }); // (the eye is shot at: the storm never bends it, vfx/railgeometry.js)
     this.lens = mindGeoMesh(new THREE.SphereGeometry(1, 28, 18), this.mat, 1); this.lens.count = 1; this.lens.setMatrixAt(0, new THREE.Matrix4());
     this.lens.scale.setScalar(radius); this.group.add(this.lens);
     // the ring round it: labradorite wire, gold when locked, always turned to the eye that looks at it
-    this.ringMat = mindGeoMaterial('wire', { grid: [16, 4], bright: 1.2 });
+    this.ringMat = mindGeoMaterial('wire', { grid: [16, 4], bright: 1.2, warped: false });
     this.ring = mindGeoMesh(new THREE.TorusGeometry(radius * 1.45, radius * 0.05, 4, 48), this.ringMat, 1); this.ring.count = 1; this.ring.setMatrixAt(0, new THREE.Matrix4()); this.group.add(this.ring);
     const _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _r = new THREE.Quaternion(), Z = new THREE.Vector3(0, 0, 1);
     this.ring.onBeforeRender = (r, s, cam) => { // (turned to the camera in the group's frame, and turning slowly in its own plane)
@@ -146,7 +146,7 @@ export class SilhouetteEye {
       this.ring.quaternion.copy(_p).multiply(_q).multiply(_r.setFromAxisAngle(Z, this.t * 0.3)); this.ring.updateMatrixWorld();
     };
     // the shards it bursts into (the same family's wire, additive)
-    this.shardMat = mindGeoMaterial('wire', { grid: [1, 1], bright: 1.4, line: 2 });
+    this.shardMat = mindGeoMaterial('wire', { grid: [1, 1], bright: 1.4, line: 2, warped: false });
     this.shards = mindGeoMesh(new THREE.TetrahedronGeometry(radius * 0.35), this.shardMat, 14); this.group.add(this.shards);
     this.sv = Array.from({ length: 14 }, () => new THREE.Vector3().randomDirection().multiplyScalar(6 + Math.random() * 8));
     this.radius = radius; this.reset();

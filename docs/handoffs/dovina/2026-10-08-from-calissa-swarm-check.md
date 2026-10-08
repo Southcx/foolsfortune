@@ -8,3 +8,8 @@ fixed in `src/main.js`). The check: while a set piece runs, `game.emocean.pieces
 **The count:** the set piece still sails SHOAL.count (48 + 24 a class) under Petra's MAX 160. I raised nothing of yours; the 600 are
 in the workbench (MODELS, "the crossing": the shoal at 600 glints). What 600 cost to draw: 3 draw calls, 42k triangles, one program;
 what the current flock costs to move them is Petra's (16 ms a step at 600 with the present hash).
+
+**A second check (the review's fix, casebook 2026-10-08, rule 76):** a strike's `dash` runs up and dies away, never a flag. From the shoal's
+frenzy (bar 70 on) over 240 frames at 30 per real second, for each live member `k` (packed in order): `game.emocean.pieces.shoal.look.dash[k]`
+reaches above 0.5 at some frame and, for one member (`game.emocean.pieces.shoal.fish[m]` the same object), never moves by more than 0.35
+between two frames (the members are `flock.alive`, in order).

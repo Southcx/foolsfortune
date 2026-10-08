@@ -15,15 +15,19 @@
 //
 // Motion is low frequency (a ring's slow turn, a slab's sway, a lattice's fold over seconds): CLAUDE.md, no aliasing crawl. Every line
 // is at least 2 px at the 480 lines (fwidth), and a grid finer than that fades to its average glow instead of shimmering.
+// The stone's colour (labPhase) is each piece's own: its local position at its size, plus its seed. Never the world's: the rail carries
+// the school (and a ring, a slab) through the world at 26 m/s, and a phase pinned to the world cycled the colours a few times a second.
 //
 // One look family, one program: the rings, the lattices, the monoliths (and the shoal's silhouette eye, vfx/shoalsilhouette.js) share a
 // ShaderMaterial source (`mindGeoMaterial(kind)`), its kind a uniform; every mesh is an InstancedMesh (a lattice is one of one), all
 // transparent and two-sided, so the variants differ only in blending and uniforms. The folded sea adds none (crude-sea-3's).
 //
 // THE STORM'S HOOK: the storm warp opts these in when it is built. Every material made here goes through `warpWith`: the storm's
-// `warpMaterial(material)` is applied to all made so far and all made after. The vertex shaders end in three's own
-// `#include <project_vertex>` (with `transformed` the object-space position), so a warp written for three's materials (a replace of that
-// chunk) bends these unchanged; the folded sea is a MeshStandardMaterial like the sea's.
+// `warpMaterial(material)` is applied to all made so far and all made after, EXCEPT what is shot at: the silhouette's eye, its ring and its
+// shards (`warped: false`) are drawn where they are (the storm bends the world, never the danger, in its word); `keepTrue`, given
+// to `warpWith`, is applied to those instead (the storm's `keepTrue`, and `deepMaterial` so the program is the warped ones'). The vertex
+// shaders end in three's own `#include <project_vertex>` (with `transformed` the object-space position), so a warp written for three's
+// materials (a replace of that chunk) bends these unchanged; the folded sea is a MeshStandardMaterial like the sea's.
 //
 // Prior art: Rez's wireframe tunnels and rings (Area 1's "network"), Child of Eden's light, 2001's monolith (its proportions, 1 : 4 : 9),
 // Koryo Miura's map fold (Miura-ori, the fold of the Space Flyer Unit's solar array; its geometry after Schenk and Guest, "Geometry of
@@ -35,7 +39,7 @@
 //   G.lattice(pos, quat, size, { cells, fold }) -> { set({ fold 0..1 }), fold, update(dt), dispose() }   (the sheet in the quat's XY)
 //   G.monolith(pos, { width, height, depth, yaw, rise }) -> { set({ rise 0..1 }), update(dt), dispose() }   (pos.y: the crude's level)
 //   G.ceiling(on, { height, ahead, forward }) -> { k, update(dt, t, camPos), dispose() }   (the folded sea: one at a time)
-//   G.warp(warpMaterial)   warpWith(warpMaterial)   (the storm's opt-in)   mindGeoMaterial(kind, opts)   G.dispose()
+//   G.warp(warpMaterial, { keepTrue })   warpWith(warpMaterial, { keepTrue })   (the storm's opt-in)   mindGeoMaterial(kind, opts)   G.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
@@ -43,16 +47,17 @@ import { CrudeSea } from './crudesea.js';
 
 // ---------------------------------------------------------------- the one program
 const GEO_V = /* glsl */`attribute float aLit; attribute float aSeed;
-varying vec3 vW; varying vec3 vView; varying vec2 vUv; varying vec3 vObj; varying vec3 vNw; varying float vLit; varying float vSeed;
+varying vec3 vW; varying vec3 vView; varying vec2 vUv; varying vec3 vObj; varying vec3 vNw; varying float vLit; varying float vSeed; varying vec3 vP;
 void main() {
   vec3 transformed = position;
   vUv = uv; vObj = position; vLit = aLit; vSeed = aSeed;
+  vP = position * vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz)); // (the stone's phase is the piece's own, at its size: never the world's, which the rail carries things through at 26 m/s)
   vec4 w = modelMatrix * instanceMatrix * vec4(transformed, 1.0); vW = w.xyz; vView = cameraPosition - w.xyz;
   vNw = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
   #include <project_vertex>
 }`;
 const GEO_F = /* glsl */`uniform float uKind, uLine, uBright, uOpacity, uSeaY, uT, uBurn, uCrack, uOpen; uniform vec2 uGrid; uniform vec3 uHi, uLo;
-varying vec3 vW; varying vec3 vView; varying vec2 vUv; varying vec3 vObj; varying vec3 vNw; varying float vLit; varying float vSeed;
+varying vec3 vW; varying vec3 vView; varying vec2 vUv; varying vec3 vObj; varying vec3 vNw; varying float vLit; varying float vSeed; varying vec3 vP;
 ${LAB_GLSL}
 vec3 geoFilm(float t) { return 0.5 + 0.5 * cos(6.2832 * (t + vec3(0.0, 0.33, 0.67))); }
 // lines along one axis of a uv grid: how near (in pixels) a line is, as coverage; a grid finer than ~3 px fades to its average glow
@@ -70,7 +75,7 @@ void main() {
     // WIRE (the rings, the lattices): labradorite lines; lit, the storm's gold, and a bead of light running round
     float line = max(geoLines(vUv.x, uGrid.x), geoLines(vUv.y, uGrid.y));
     vec3 Nf = normalize(cross(dFdx(vW), dFdy(vW))); float face = abs(dot(Nf, V));
-    float ph = labPhase(vW, V) + vSeed * 0.2;
+    float ph = labPhase(vP, V) + vSeed * 0.2;
     vec3 c = labradorite(0.22 + 0.2 * sin(6.2832 * ph)) * 1.3 * uBright; // (the stone's blues, violet to peacock: the gold is kept for a lit one)
     float bead = exp(-40.0 * pow(fract(vUv.x - uT * 0.35 + vSeed) - 0.5, 2.0)) * vLit;
     c = mix(c, uHi * 2.2, vLit * 0.75) + uHi * bead * 3.0;
@@ -80,7 +85,7 @@ void main() {
     // SLAB (the monoliths): black labradorite, the oil film at the turn of it, the storm's light on its top, a thin glowing edge,
     // and the crude sheeting off it above the waterline (the wet band sinks as the slab stands: vLit is how far it has risen)
     float ndv = abs(dot(N, V)), rim = pow(1.0 - ndv, 1.6), fres = pow(1.0 - ndv, 3.0);
-    float ph = labPhase(vW, V) + 0.25 * dot(N, vec3(0.3, 0.8, 0.5));
+    float ph = labPhase(vP, V) + vSeed * 0.3 + 0.25 * dot(N, vec3(0.3, 0.8, 0.5));
     vec3 c = labInk(ph, 0.1 + 0.75 * rim);
     vec3 R = reflect(-V, N);
     c += (R.y > 0.0 ? mix(uLo, uHi, smoothstep(0.0, 0.8, R.y)) : vec3(0.01)) * (0.04 + 0.3 * fres);
@@ -98,12 +103,12 @@ void main() {
     // that glow as it is hurt, and the burn of a lock: gold-white from the pupil out, throbbing slowly (a ramp, never a flash)
     vec3 Nv = normalize((viewMatrix * vec4(N, 0.0)).xyz);
     float ndv = clamp(Nv.z, 0.0, 1.0), rim = pow(1.0 - ndv, 2.0);
-    if (abs(Nv.y) > uOpen * 1.02 && Nv.z > 0.0) { gl_FragColor = vec4(labInk(labPhase(vW, V), 0.2 + 0.6 * rim) + labSoft(0.1) * rim * 0.4, 1.0); return; } // (the lid)
+    if (abs(Nv.y) > uOpen * 1.02 && Nv.z > 0.0) { gl_FragColor = vec4(labInk(labPhase(vP, V), 0.2 + 0.6 * rim) + labSoft(0.1) * rim * 0.4, 1.0); return; } // (the lid)
     float ang = atan(Nv.y, Nv.x), r = length(Nv.xy);
     float iris = smoothstep(0.82, 0.74, r), fibre = 0.6 + 0.4 * sin(ang * 22.0 + sin(ang * 5.0) * 2.0);
     float burn = uBurn * (0.85 + 0.15 * sin(uT * 4.0));
-    vec3 c = labInk(labPhase(vW, V), 0.15 + 0.5 * rim);
-    c = mix(c, labSoft(labPhase(vW, V) * 2.0 + r) * (0.6 + 0.6 * fibre), iris * 0.9);
+    vec3 c = labInk(labPhase(vP, V), 0.15 + 0.5 * rim);
+    c = mix(c, labSoft(labPhase(vP, V) * 2.0 + r) * (0.6 + 0.6 * fibre), iris * 0.9);
     c = mix(c, mix(vec3(0.9, 0.42, 0.2), uHi, r) * 1.5 * fibre, iris * burn * 0.7);
     float slit = (1.0 - smoothstep(0.05 + 0.1 * burn, 0.08 + 0.12 * burn, abs(Nv.x))) * step(r, 0.62);
     c = mix(c, uHi * (0.2 + 3.0 * burn), slit);
@@ -111,7 +116,7 @@ void main() {
     vec3 q = vObj * 3.0, f = fract(q) - 0.5; float cr = min(min(abs(f.x), abs(f.y)), abs(f.z)) * 2.0;
     float crack = (1.0 - smoothstep(0.02, 0.08, cr)) * step(geoHash(floor(q)), uCrack);
     c += uHi * crack * 2.2;
-    c += labSoft(labPhase(vW, V)) * rim * 0.5 * uBright;
+    c += labSoft(labPhase(vP, V)) * rim * 0.5 * uBright;
     gl_FragColor = vec4(c, 1.0);
   }
   #include <colorspace_fragment>
@@ -120,14 +125,17 @@ void main() {
 const KIND = { wire: 0, slab: 1, lens: 2 };
 const STORM_HI = new THREE.Color(0.95, 0.8, 0.55), STORM_LO = new THREE.Color(0.16, 0.13, 0.26); // (the storm's light, as vfx/shoal.js has it)
 const GEO_T = { value: 0 };
-const made = new Set(); let WARP = null;
+const made = new Set(), kept = new Set(); let WARP = null, TRUE = null;
 
-/** The storm's opt-in: `warpMaterial(material)` applied to every material of the ambient geometry, now and from now on. */
-export function warpWith(fn) { WARP = fn; if (fn) for (const m of made) fn(m); }
-const track = (m) => { made.add(m); WARP?.(m); const d = m.dispose.bind(m); m.dispose = () => { made.delete(m); d(); }; return m; };
+/** The storm's opt-in: `warpMaterial(material)` applied to every material of the ambient geometry, now and from now on. What is shot at
+ *  (the silhouette's eye) is made `warped: false` and never goes to `fn`; `keepTrue(material)`, if given, goes to it instead (the storm's
+ *  `keepTrue` after its `deepMaterial`, so it keeps the warped ones' program): the storm bends the world, never what is shot at. */
+export function warpWith(fn, { keepTrue = null } = {}) { WARP = fn; TRUE = keepTrue; if (fn) for (const m of made) fn(m); if (keepTrue) for (const m of kept) keepTrue(m); }
+const track = (m, warped = true) => { const set = warped ? made : kept; set.add(m); (warped ? WARP : TRUE)?.(m); const d = m.dispose.bind(m); m.dispose = () => { set.delete(m); d(); }; return m; };
 
-/** A material of the Mind's geometry: 'wire' (lines over dark glass), 'slab' (a monolith's stone), 'lens' (the silhouette's eye). One program. */
-export function mindGeoMaterial(kind = 'wire', { grid = [1, 1], line = 2, bright = 1, opacity = 1, seaY = 0 } = {}) {
+/** A material of the Mind's geometry: 'wire' (lines over dark glass), 'slab' (a monolith's stone), 'lens' (the silhouette's eye). One program.
+ *  `warped: false` for what is shot at (the eye, its ring and its shards): the storm never bends it (see `warpWith`). */
+export function mindGeoMaterial(kind = 'wire', { grid = [1, 1], line = 2, bright = 1, opacity = 1, seaY = 0, warped = true } = {}) {
   const wire = kind === 'wire';
   return track(new THREE.ShaderMaterial({
     name: 'mind-geometry',
@@ -138,7 +146,7 @@ export function mindGeoMaterial(kind = 'wire', { grid = [1, 1], line = 2, bright
     },
     vertexShader: GEO_V, fragmentShader: GEO_F,
     transparent: true, side: THREE.DoubleSide, depthWrite: !wire, fog: false, // (normal blending for all: a line of colour reads on a bright sky, where an added one fades)
-  }));
+  }), warped);
 }
 
 /** An InstancedMesh of the family, with its two per-instance numbers (lit, seed). */
@@ -174,10 +182,10 @@ const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quatern
 const ease = (x, to, rate, dt) => x + (to - x) * (1 - Math.exp(-rate * dt));
 
 export class RailGeometry {
-  constructor({ env = null, seaY = 0, maxRings = 64, maxMonoliths = 48, warp = null } = {}) {
+  constructor({ env = null, seaY = 0, maxRings = 64, maxMonoliths = 48, warp = null, keepTrue = null } = {}) {
     this.env = env; this.seaY = seaY; this.t = 0;
     this.group = new THREE.Group(); this.group.name = 'rail-geometry'; this.group.userData.zoneFree = true;
-    if (warp) warpWith(warp);
+    if (warp) warpWith(warp, { keepTrue });
     // the rings: one instanced draw (a torus a metre round, scaled to its r; 24 ribs and 6 lines along it)
     this.ringMat = mindGeoMaterial('wire', { grid: [24, 6], bright: 1.1 });
     this.rings = mindGeoMesh(new THREE.TorusGeometry(1, 0.045, 6, 72), this.ringMat, maxRings); this.group.add(this.rings);
@@ -190,8 +198,8 @@ export class RailGeometry {
     this.lattices = new Set(); this.sky = null;
   }
 
-  /** The storm's opt-in (the same as warpWith: for every Mind geometry material). */
-  warp(fn) { warpWith(fn); }
+  /** The storm's opt-in (the same as warpWith: for every Mind geometry material but what is shot at). */
+  warp(fn, { keepTrue = null } = {}) { warpWith(fn, { keepTrue }); }
 
   // ---------------------------------------------------------------- rail rings
   ring(pos, quat = new THREE.Quaternion(), r = 6) {

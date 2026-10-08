@@ -188,8 +188,51 @@ the rules before building in the same area; a rule a machine can check goes into
     again; never trust each owner to reposition its look every frame (a look drawn in the world's own frame never does).
 73. **A quad built in screen space keeps its winding.** Its across axis is the along axis turned clockwise on the screen ((x, y) to
     (y, -x)); turned the other way the quad is mirrored, faces away and is culled on a one-sided material.
+74. **A warp's door names who is not let in.** The storm bends the world, never the danger: whatever is shot at, hurt by or locked on
+    (an eye, a shot, a hurtbox) is made outside the warp's family and is handed only to its own hook (`warpWith`'s `keepTrue`).
+75. **A colour pinned to the world is for things that stand.** Anything the rail carries through the world (the school, the geometry
+    placed in the rail's frame) takes its stone's phase from itself (its local position at its size, plus its own seed), or the colours
+    cycle at the rail's speed.
+76. **A mark sized from a projection is clamped, and a flag that draws a mark is eased before it reaches the look.** A streak as long as
+    five fish, however close the camera, and a strike's 0 / 1 flag, are a flash on the screen in the one frame a group turns on. And a
+    rate is never driven by an eased number: the phase swings by the clock times the change.
 
 ## Cases
+
+### 2026-10-08 · The silhouette's eye, which is shot at, was handed to the storm to bend (Calissa, reviewing the swarm)
+- **Seen (read, then run in the workbench with a recording hook):** `warpWith(fn)` gave `fn` every material the Mind's geometry made, and
+  the silhouette's eye (the lens a player locks on, its ring, its shards) is made of them. The storm's droop alone at 50 m ahead and full
+  strength (`STORM.bend` 0.1) is 2.7 m, nearly the eye's own radius (3 m): drawn off the outline of glints it sits in and off where a
+  shot lands, the one thing the order says the storm never does.
+- **Cause:** one `track()` for the whole family; nothing named what is not let in.
+- **Fix:** `mindGeoMaterial(kind, { warped: false })` for the eye's three (`vfx/shoalsilhouette.js`); `warpWith(fn, { keepTrue })` hands
+  those to `keepTrue` instead (the storm's `keepTrue` and `deepMaterial`: the veil leaves it, and no new program). Recording hook: 3 eye
+  materials made, 0 given to the warp, 3 to `keepTrue`.
+- **Rule:** 74.
+
+### 2026-10-08 · The stone's colour on the school and the eye would have cycled a few times a second (Calissa, reviewing the swarm)
+- **Seen (read, then computed from the rail's own numbers):** the glints' and the geometry's colour (`labPhase`) took the fragment's world
+  position. The rail carries the school through the world at 26 m/s along +z, and the phase moves 0.057 a metre along it: 1.5 a second,
+  three of the stone's bands a second across a glint's back, and about three turns of its whole palette a second on the eye's iris, the
+  one thing the player hunts. The workbench stages never showed it: nothing there moves through the world.
+- **Cause:** the Mind's family anchors to the world (right for the things that stand: the Dunemaw, the cave).
+- **Fix:** the glints take it from their own local position and a per-fish offset (`vfx/shoal.js`, `vL`); the geometry from its local
+  position at its instance's size and its seed (`vfx/railgeometry.js`, `vP`).
+- **Rule:** 75.
+
+### 2026-10-08 · A dashing glint near the camera threw a streak across the screen, and every strike's streak came on in one frame (Calissa, reviewing the swarm)
+- **Seen (a glint set 2.5 m from the rail's camera with dash 1, rendered after the fix; the old length computed at 137 px a metre; and the
+  call site read):** the streak was five of the glint's projected lengths behind it, 470 px long and 22 px wide in gold-white; and the
+  dash was the mood's 0 / 1, so a bar's group of strikes turned its streaks on in a single frame.
+  And, once the dash was eased, the tail's beat (its rate was 13 + 10 dash a second) swung its phase by the clock times the change at
+  every step of the ease, hundreds of radians: a tail fluttering at random through every ease (computed; a rate is never driven by a
+  number that moves).
+- **Cause:** a mark sized by a projected length with no limit, fed by a flag; and a rate driven by an eased number.
+- **Fix:** the beat keeps its rate and a dash beats harder and tighter; the length stops growing at 30 px (a streak at most 156 px,
+  7 px wide), both in `vfx/shoal.js`; the dash is a per-member number eased in and out beside the roll, 12 a real second
+  (`world/emocean/shoal.js`, five lines: CROSSING). The first try, an expression of the mood's clock and the roll, stepped by up to
+  0.49 on a strike that began behind the ship: measured, so replaced.
+- **Rule:** 76.
 
 ### 2026-10-08 · The shoal's glints, its boil and the ship's wake were drawn 50 m under the crude (Calissa, wiring 600 glints)
 - **Seen (headless, a crossing under /crossing shoal, the set piece at bar 72):** no glint, no Conductor, no boil round the ship in

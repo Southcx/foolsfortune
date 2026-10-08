@@ -63,7 +63,8 @@ also sets gems with their real optics, hair finishes and skin tones.
   flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
   stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
   The ambient geometry is wire in the same blues over dark glass (gold is kept for a ring you threaded), black labradorite slabs, and
-  the crude folded overhead. One program for all of it but the glints.
+  the crude folded overhead. One program for all of it but the glints. The stone's colour on all of it is each piece's own, never the
+  world's (the rail carries them through the world at 26 m/s), and the eye, which is shot at, is never bent by the storm.
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
