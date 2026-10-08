@@ -4,21 +4,24 @@
 // (ribbons raycast over its body: world/props/potcracks.js); mended, the cracks it no longer needs turn to gold; at zero it shatters,
 // and a few seconds later it reforges, its old cracks all gold seams (kintsugi: the scars are the record). Its core glows with how whole
 // it is. Split out of godhand.js (R45's clean-up); god.jar is this, and its fields (pos, hp, max, alive, mendBy) are what the raids, the
-// clapperjars and the catch read.
+// clapperjars and the catch read. Its look is the owner's painting (vfx/vessoulpaint.js); it moves by its own clips (godhand/pneukajarclips.js,
+// `jar.clips`), which own its squash and its scale; its cracks are skinned to it, so they ride the clips (vfx/crackskin.js).
 //
-//   god.jar = new GodJar(god, gltf)   .hit(amount, from, kind)   .raidStrike(c)   .explosion(center, R)   .mend(amount)   .update(dt)
+//   god.jar = new GodJar(god, gltf)   .hit(amount, from, kind)   .raidStrike(c)   .explosion(center, R)   .mend(amount)   .update(dt)   .clips
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { addOutline } from '../render/outline.js';
 import { sfx } from '../audio/sfx.js';
-import { crackMat, goldMat, ribbonGeometry } from '../world/props/potcracks.js';
+import { crackMat, goldMat } from '../world/props/potcracks.js';
+import { pneukaJarPainting, paintFlash } from '../vfx/vessoulpaint.js';
+import { crackPointOn, crackRibbon } from '../vfx/crackskin.js';
+import { PneukaJarClips } from './pneukajarclips.js';
 import { stream } from '../core/rng.js';
 const simRand = stream('godhand/jar'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
-const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
 
 export class GodJar {
   constructor(M, gltf) {
@@ -34,7 +37,7 @@ export class GodJar {
     group.name = 'PneukaJar';
     const model = gltf.scene;
     group.add(model);
-    this.jarMat = new THREE.MeshStandardMaterial({ color: 0x9a4f36, roughness: 0.6, flatShading: true });
+    this.jarMat = pneukaJarPainting(); // (the owner's painting: vfx/vessoulpaint.js)
     this.coreMat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.4, emissive: PALETTE.glow, emissiveIntensity: 0.6 });
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
@@ -47,11 +50,12 @@ export class GodJar {
     group.visible = false;
     this.M.game.scene.add(group);
     V.group = group;
-    // a halo that shows how whole it is
+    this.clips = new PneukaJarClips(this, gltf); // (its own clips own its squash and its scale: godhand/pneukajarclips.js)
+    // a halo that shows how whole it is (on the root bone: it rises and shrinks with the Jar's summon and dismiss)
     const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.M.game.fx.haloTexture, color: PALETTE.glow, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.4 }));
     halo.scale.setScalar(2.4);
     halo.position.y = 0.7;
-    group.add(halo);
+    (this.clips.rootBone || group).add(halo);
     this.halo = halo;
     this.raycaster = new THREE.Raycaster();
   }
@@ -130,24 +134,17 @@ export class GodJar {
         // what cracked before becomes gold seams
         V.cracks.gold.push(...V.cracks.dark.splice(0)); V.cracks.gold.length = Math.min(V.cracks.gold.length, 22);
         this.rebuildCracks();
-        V.group.visible = true;
-        V.group.scale.setScalar(0.001);
-        V.regrow = 0;
+        V.group.visible = true; // (its summon rises it: the clips, on jar.reforge)
         sfx.reforge();
         g.events?.emit('jar.reforge', {});
       }
-    } else if (V.regrow !== undefined) {
-      V.regrow += dt;
-      V.group.scale.setScalar(Math.max(0.001, easeOutBack(Math.min(1, V.regrow / 0.7))));
-      if (V.regrow >= 0.7) V.regrow = undefined;
     }
     // integrity shows in the core's glow
     const k = V.hp / V.max;
     V.flash = V.flash > 0 ? Math.max(0, V.flash - dt * 4) : Math.min(0, V.flash + dt * 3);
     this.coreMat.emissiveIntensity = 0.15 + 0.85 * k + Math.max(0, V.flash) * 1.5 + Math.max(0, -V.flash) * 0.8 + (k < 0.4 ? Math.sin(this.M.t * 14) * 0.15 : 0);
     this.coreMat.emissive.setHex(k > 0.4 ? PALETTE.glow : 0xff5a3a);
-    this.jarMat.emissive.setHex(0xffffff).multiplyScalar(0);
-    if (V.flash > 0) this.jarMat.emissive.setRGB(0.5 * V.flash, 0.3 * V.flash, 0.2 * V.flash);
+    paintFlash(this.jarMat, V.flash); // (a blow's flash on its painting)
     this.halo.material.opacity = 0.2 + 0.3 * k;
     this.halo.material.color.setHex(k > 0.4 ? PALETTE.glow : 0xff5a3a);
     V.group.position.copy(g.player.pos);
@@ -161,6 +158,7 @@ export class GodJar {
     const paths = [];
     const n = amount > 12 ? 2 : 1;
     V.group.updateMatrixWorld(true);
+    body.computeBoundingSphere(); if (body.boundingBox) body.computeBoundingBox(); // (a skinned body keeps the bounds of the pose they were first taken in: the one it is in now)
     for (let k = 0; k < n; k++) {
       let ang = Math.atan2(from.x, from.z) + (simRand() - 0.5) * 1.6; // (in the world)
       let y = 0.25 + simRand() * 0.75, th = Math.PI * (0.35 + simRand() * 0.3) * (simRand() < 0.5 ? 1 : -1);
@@ -169,13 +167,9 @@ export class GodJar {
         const dir = new THREE.Vector3(Math.sin(ang), 0, Math.cos(ang));
         const origin = V.pos.clone().addScaledVector(dir, 1.2).setY(V.pos.y + y);
         this.raycaster.set(origin, dir.clone().negate());
-        const hit = this.raycaster.intersectObject(body, false)[0];
-        if (!hit) break;
-        const p = V.group.worldToLocal(hit.point.clone());
-        const nrm = hit.face.normal.clone().transformDirection(body.matrixWorld);
-        V.group.worldToLocal(nrm.add(V.group.position));
-        nrm.normalize();
-        pts.push({ p: p.addScaledVector(nrm, 0.003), n: nrm });
+        const pt = crackPointOn(body, this.raycaster.intersectObject(body, false)[0]); // (its place and skin in the bind pose: it rides the clips)
+        if (!pt) break;
+        pts.push(pt);
         th += (simRand() - 0.5) * 1.2;
         y += Math.cos(th) * 0.05;
         ang += Math.sin(th) * 0.05 / 0.25;
@@ -192,11 +186,9 @@ export class GodJar {
     const V = this;
     for (const key of ['dark', 'gold']) {
       const mk = `${key}Mesh`;
-      if (V[mk]) { V.group.remove(V[mk]); V[mk].geometry.dispose(); V[mk] = null; }
+      if (V[mk]) { V[mk].removeFromParent(); V[mk].geometry.dispose(); V[mk] = null; }
       if (!V.cracks[key].length) continue;
-      const m = new THREE.Mesh(ribbonGeometry(V.cracks[key], key === 'dark' ? 0.012 : 0.02), key === 'dark' ? crackMat : goldMat);
-      V.group.add(m);
-      V[mk] = m;
+      V[mk] = crackRibbon(this.jarBody, V.cracks[key], key === 'dark' ? 0.012 : 0.02, key === 'dark' ? crackMat : goldMat); // (skinned to the Jar: vfx/crackskin.js)
     }
   }
 }

@@ -11,11 +11,15 @@
 // Prior art: Metroid Prime's visor (the HUD belongs to a device and is drawn in perspective), the compass tape of Skyrim and of the
 // flight sims (a strip of bearings with the target marked on it), and Rez's wireframe.
 //
-//   const c = new WireCompass(game)     c.update(dt)     c.visible
+// While the Crucibelle is in the hands its pendulum hangs from the tape's centre (vfx/crucibellehud.js), and the tape's lower half opens
+// a gap there for it (`hole`), so a quarter's glyph never stands inside the swing.
+//
+//   const c = new WireCompass(game)     c.update(dt)     c.visible     c.hole(k, below, above)   (after update, each frame it is wanted)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 import { pxToWorld } from './wiremarks.js';
+import { T } from '../core/config.js';
 
 const R = 10;            // the tape's radius round the eye, metres (it is drawn through everything: only its angle matters)
 const RAISE = 0.40;      // how far up the view it sits, as a share of the half field of view
@@ -28,13 +32,15 @@ void main() {
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
 const F = /* glsl */`
-uniform vec3 uFwd; uniform float uAlpha;
+uniform vec3 uFwd; uniform float uAlpha; uniform vec4 uHole; // (uHole: strength, the cosines of its half-angles below the line and above it, the tape's height)
 varying vec3 vW; varying float vSize;
 ${LAB_GLSL}
 void main() {
   vec3 d = vW - cameraPosition;
   float c = dot(normalize(d.xz), normalize(uFwd.xz));
   float fade = smoothstep(0.55, 0.85, c);          // (the tape shows about a hundred degrees, fading at its ends)
+  float below = step(vW.y, uHole.w - 0.03), above = step(uHole.w + 0.03, vW.y);
+  fade *= 1.0 - uHole.x * (below * smoothstep(uHole.y - 0.0015, uHole.y + 0.0015, c) + above * smoothstep(uHole.z - 0.00005, uHole.z + 0.00005, c)); // (the pendulum's gap, and its bell's)
   gl_FragColor = vec4(labSoft(labPhase(vW, normalize(-d))) * (0.8 + 0.4 * vSize), uAlpha * fade * (0.45 + 0.55 * vSize));
 }`;
 
@@ -84,16 +90,16 @@ export class WireCompass {
     }
     const geo = new THREE.BufferGeometry().setFromPoints(pts);
     geo.setAttribute('aSize', new THREE.Float32BufferAttribute(size, 1));
-    this.u = { uFwd: { value: new THREE.Vector3(0, 0, -1) }, uAlpha: { value: 0 }, uMindT: mindTime };
+    this.u = { uFwd: { value: new THREE.Vector3(0, 0, -1) }, uAlpha: { value: 0 }, uHole: { value: new THREE.Vector4(0, 1, 1, 0) }, uMindT: mindTime };
     const mat = new THREE.ShaderMaterial({ uniforms: this.u, vertexShader: V, fragmentShader: F, transparent: true, depthTest: false, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
     this.tape = new THREE.LineSegments(geo, mat);
     this.tape.renderOrder = 35; this.tape.frustumCulled = false;
     // the waypoint's diamond on the tape, and the one over the place
     const dia = new THREE.BufferGeometry().setFromPoints([[0, 1], [1, 0], [1, 0], [0, -1], [0, -1], [-1, 0], [-1, 0], [0, 1], [0, 0.45], [0.45, 0], [0.45, 0], [0, -0.45], [0, -0.45], [-0.45, 0], [-0.45, 0], [0, 0.45]].map(([x, y]) => new THREE.Vector3(x, y, 0)));
     dia.setAttribute('aSize', new THREE.Float32BufferAttribute(new Array(16).fill(1), 1));
-    this.wpTape = new THREE.LineSegments(dia, mat);
+    this.wpTape = new THREE.LineSegments(dia, Object.assign(mat.clone(), { uniforms: { uFwd: this.u.uFwd, uAlpha: this.u.uAlpha, uHole: { value: new THREE.Vector4(0, 1, 1, 0) }, uMindT: mindTime } })); // (the waypoint is never in the gap)
     this.wpTape.renderOrder = 35; this.wpTape.frustumCulled = false;
-    this.wpMat = mat.clone(); this.wpMat.uniforms = { uFwd: this.u.uFwd, uAlpha: { value: 0 }, uMindT: mindTime };
+    this.wpMat = mat.clone(); this.wpMat.uniforms = { uFwd: this.u.uFwd, uAlpha: { value: 0 }, uHole: { value: new THREE.Vector4(0, 1, 1, 0) }, uMindT: mindTime };
     this.wpWorld = new THREE.LineSegments(dia, this.wpMat);
     this.wpWorld.renderOrder = 35; this.wpWorld.frustumCulled = false;
     game.scene.add(this.tape, this.wpTape, this.wpWorld);
@@ -117,7 +123,8 @@ export class WireCompass {
       if (name && name !== this.place) { this.place = name; if (!g.circuits?.active) g.events?.emit('place.enter', { room: name, layer: l?.name }); }
     }
     if (!on) return;
-    this.u.uAlpha.value = this.alpha;
+    const con = THREE.MathUtils.clamp(T.visual.compassContrast ?? 1, 0.25, 3); // (the setting: the tape's contrast, vfx/crucibellehud.js reads it too)
+    this.u.uAlpha.value = this.alpha * con;
     // the tape round the eye, raised to the top of the view
     cam.getWorldDirection(this.u.uFwd.value);
     const pitch = Math.asin(THREE.MathUtils.clamp(this.u.uFwd.value.y, -1, 1));
@@ -136,6 +143,9 @@ export class WireCompass {
     this.wpWorld.position.copy(p);
     this.wpWorld.quaternion.copy(cam.quaternion);
     this.wpWorld.scale.setScalar(pxToWorld(cam, p, 11));
-    this.wpMat.uniforms.uAlpha.value = this.wpA * this.alpha;
+    this.wpMat.uniforms.uAlpha.value = this.wpA * this.alpha * con;
   }
+  /** A gap in the tape straight ahead: `k` 0..1, `half` its half-angle below the line and `top` above it (radians). Asked after update,
+   *  every frame it is wanted. */
+  hole(k, half, top = 0) { this.u.uHole.value.set(k, Math.cos(half), Math.cos(top), this.tape.position.y); }
 }

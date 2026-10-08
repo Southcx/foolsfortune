@@ -16,6 +16,7 @@
 //   const rom = new JointLimits();
 //   rom.add(bone, restQuaternion, { hinge: [1, 0, 0], min: 0, max: 2.6, cone: 0.3 });
 //   rom.addRig(bones, restOf, RIGIFY);       // every bone the table names, both sides
+//   const hand = godhandLimits(bones, restOf);   // a rig's own table by full bone names (rigLimits: GODHAND_ROM, PNEUKA_JAR_ROM)
 //   rom.apply();                             // after posing, before drawing
 // `rom.clamped` counts how many joints had to be pulled back in the last apply (for the stress test).
 // ---------------------------------------------------------------------------------------
@@ -81,9 +82,9 @@ export class JointLimits {
   }
 }
 
-// The Courier's rig (and the god hand's): flexion limits in radians. `*` stands for the side letter.
-// Finger flexion is positive about each bone's own hinge (learned from the game's clips: romdata.js; the god hand reads its own
-// off its rest pose); the thumb bends about its own axis. Only fingers are here: see the note below.
+// The Courier's rig: flexion limits in radians. `*` stands for the side letter.
+// Finger flexion is positive about each bone's own hinge (learned from the game's clips: romdata.js; the god hand has its own table,
+// GODHAND_ROM below); the thumb bends about its own axis. Only fingers are here: see the note below.
 export const RIGIFY = {
   // (No entries for the forearm, shin or hand. They were here, and clamped what IK and the authored clips legitimately do:
   // the hinge measured for them is not the axis a solved limb bends about, so the clamp bent knees outward on jumps and slides
@@ -114,6 +115,47 @@ export const CLAPPER_ROM = {
   forearmL: { hinge: [0, 0, 1], min: -1.6, max: 1.6, cone: 0.9 },
   forearmR: { hinge: [0, 0, 1], min: -1.6, max: 1.6, cone: 0.9 },
 };
+
+// The god hand's (godhand/godhandclips.js): its own rig (18 bones, the fingers hang off `handR`, the pinky off `palmR`), so its own
+// table, learned from its 32 clips by scripts/learn_rom.mjs's method (per joint: the axis it mostly turns about, the range turned, the
+// swing off it; each widened by 0.05 rad). Every frame of every clip passes unclamped (0 of 1,506); a pose pushed past them is pulled
+// back. The middle and tip joints are pure hinges (cone 0.05); the thumb's base swings most.
+export const GODHAND_ROM = {
+  f_index01R: { hinge: [-0.177, 0.115, 0.977], min: -0.36, max: 1.71, cone: 0.45 },
+  f_index02R: { hinge: [-0.014, 0.062, 0.998], min: -0.14, max: 1.97, cone: 0.05 },
+  f_index03R: { hinge: [0.475, 0.047, 0.879], min: -0.22, max: 1.53, cone: 0.05 },
+  f_middle01R: { hinge: [-0.21, 0, 0.978], min: -0.36, max: 1.71, cone: 0.26 },
+  f_middle02R: { hinge: [0.037, -0.041, 0.998], min: -0.14, max: 1.97, cone: 0.05 },
+  f_middle03R: { hinge: [0.247, -0.012, 0.969], min: -0.22, max: 1.53, cone: 0.05 },
+  f_ring01R: { hinge: [-0.08, -0.099, 0.992], min: -0.36, max: 1.71, cone: 0.3 },
+  f_ring02R: { hinge: [0.137, -0.009, 0.991], min: -0.14, max: 1.97, cone: 0.05 },
+  f_ring03R: { hinge: [0.514, 0.044, 0.857], min: -0.22, max: 1.53, cone: 0.05 },
+  f_pinky01R: { hinge: [0.079, -0.205, 0.976], min: -0.39, max: 1.7, cone: 0.56 },
+  f_pinky02R: { hinge: [0.224, -0.11, 0.968], min: -0.14, max: 1.97, cone: 0.05 },
+  f_pinky03R: { hinge: [0.911, 0.029, 0.411], min: -0.22, max: 1.53, cone: 0.05 },
+  thumb01R: { hinge: [-0.807, 0.011, 0.59], min: -0.2, max: 0.75, cone: 0.65 },
+  thumb02R: { hinge: [-0.523, -0.085, 0.848], min: -0.22, max: 0.75, cone: 0.05 },
+  thumb03R: { hinge: [-0.581, -0.095, 0.809], min: -0.29, max: 0.84, cone: 0.05 },
+};
+
+// The Pneuka Jar's (godhand/pneukajarclips.js): five bones in a chain, root > base > belly > chest > lid, every rest rotation the
+// identity, each hinged about X (the lid's hinge is at its back: it opens negative). Measured over its 17 clips (jar.md): the lid from
+// -1.309 (spit) to +0.140 (summon), the chest -0.244 to +0.454 with a swing of 0.698 (dismiss), the belly -0.140 to +0.244; each widened.
+// The lid never folds back into the chest, the chest never turns over. `root` and `base` only move and scale.
+export const PNEUKA_JAR_ROM = {
+  lid: { hinge: [1, 0, 0], min: -1.4, max: 0.25, cone: 0.15 },
+  chest: { hinge: [1, 0, 0], min: -0.35, max: 0.6, cone: 0.8 },
+  belly: { hinge: [1, 0, 0], min: -0.25, max: 0.35, cone: 0.3 },
+};
+
+/** A rig's limits from a table keyed by its bones' full names (GODHAND_ROM, PNEUKA_JAR_ROM): `restOf(bone)` its rest quaternion. */
+export function rigLimits(bones, restOf, spec) {
+  const rom = new JointLimits();
+  for (const [name, lim] of Object.entries(spec)) if (bones[name]) rom.add(bones[name], restOf(bones[name]), lim);
+  return rom;
+}
+export const godhandLimits = (bones, restOf) => rigLimits(bones, restOf, GODHAND_ROM);
+export const pneukaJarLimits = (bones, restOf) => rigLimits(bones, restOf, PNEUKA_JAR_ROM);
 
 /**
  * The Courier's limits: the human envelope above (RIGIFY), with each finger and thumb joint's real hinge and

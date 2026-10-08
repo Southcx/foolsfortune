@@ -149,7 +149,8 @@ the rules before building in the same area; a rule a machine can check goes into
 57. **A view that follows a thing lets go of it while the hand holds it.** Whatever the cursor moves must not move the camera the
     cursor's ray is cast from, or each frame chases the last; and what the hand holds stays on the near side of the ground.
 58. **A model two modes share is set up by the one drawing it, every frame it draws it.** The god hand and the garden share the Jar's
-    model; whichever leaves last must not decide whether the other sees it.
+    model; whichever leaves last must not decide whether the other sees it. Its clip too: the mode drawing it picks the clip, and
+    entering the garden starts the Jar at idle (a dismiss held at its last frame, the root at nothing, never carries over).
 59. **What a thing adds to the scene, its own dispose takes away, all of it.** A rig that hangs two roots from the scene (the body
     and the gun) has a `dispose()` that removes both; callers never take it apart by hand.
 60. **An adapter is not the thing.** A registry's entry (the belt's tool) answers the registry's questions; to reach the thing's own
@@ -176,7 +177,26 @@ the rules before building in the same area; a rule a machine can check goes into
     timing too (a windup's eta), or holding the button early answers what has not yet come.
 68. **A pose built for a camera is built in the camera's convention.** `Object3D.lookAt` turns a plain object's +Z to its target and
     only a camera's (or a light's) -Z; a target pose for a camera is made with `Matrix4.lookAt(eye, target, up)`, or on a camera.
+69. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
+    scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
+    their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
 ## Cases
+
+### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
+- **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame
+  (godhand.js poseHand), so any clip under it was wiped; run after a clip, the finger limits learned from the old rest pose bent the
+  owner's clips on most frames, worst 27.3 degrees at `thumb03R` (punch, crush, fistClench, spawn, vanish). The Jar's group was
+  scaled by the god hand (in and out), by the reforge's regrow and by the garden's squash spring, while its new clips scale its
+  `root`: two squashes. Its crack ribbons were rigid in the group's space: up to 24.7 cm off the surface at the top of the hop,
+  19.1 cm in `sad`.
+- **Cause:** one procedural layer per rig had stood in for animation; the clips now carry what it did (the curl, the scale-up, the
+  squash), and the limits were not the rig's.
+- **Fix:** each rig plays its own actions on its own mixer (`courier/anim/rigclips.js`; `godhand/godhandclips.js`,
+  `godhand/pneukajarclips.js`); poseHand, the finger curl and every scale write on the hand and the Jar are gone; the limits are
+  learned from the clips (rom.js `GODHAND_ROM`, `PNEUKA_JAR_ROM`: 0 of 1,506 and 0 of 621 frames clamped, and none in a crossfade);
+  the cracks are skinned to the Jar (`vfx/crackskin.js`: worst 0.55 cm off the posed surface over every clip); the garden's hop
+  and landing go to the Jar's clips (`vfx/garden/jarhop.js`), the spring kept for the workbench's stand-in.
+- **Rule:** 69, and 58 widened.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases

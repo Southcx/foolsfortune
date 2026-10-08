@@ -267,8 +267,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
-  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: a swing, never a flash; the owner,
-  2026-10-06).
+  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: the brass fob below the
+  hand, a swing, never a flash; the owner, 2026-10-06). *Not:* the pendulum (the same beat on the wire compass, below).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (LMB held: draws Lachryma in) and **channel** (the ultimate's pose, the hands joined before the coffin); the **flail** (LMB tapped: the
   coffin swung on its chain let out, three blows on the combo engine); a **Possibilikey** (always so called, never "key" alone) on its ring;
@@ -538,6 +538,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   entity, the player (the owner, R43): player text says "your Pneuka Jar" ("Your Pneuka Jar breaks."), never "the jar". It has integrity, it shatters, it is reforged. *Not:*
   the vessel, and not a costume.
 - **God Arts** (`src/godhand/arts.js`): the god hand's five arts.
+- **the hand's clips** (`GodHandClips`, `HAND_MOVES`, `src/godhand/godhandclips.js`; the owner's `courier_godhand.blend`): the god hand's own
+  32 actions played on its own mixer, which own every bone (nothing writes the fingers after them but `GODHAND_ROM`). A clip keeps the
+  owner's name: spawn, idle, spiritFingers, grab, grabHold, release, pinch, pull, point, poke, flick, pat, slam, chop, punch, slap,
+  backhand, block, scoop, beckon, shoo, wave, snap, crush, fistClench, count, fingerGun, thumbsUp, thumbsDown, okSign, peace, vanish.
+  Where a name is another thing's too, it is qualified: **the hand's grab** (*not* `god.grab`, a thing held, nor GRAB, the garden's
+  art), **the hand's pull** (*not* PULL, the stroke it plays under), **the hand's slam** (*not* the Soul Brush's slam nor the Great Slip
+  Jelly's), **the hand's flick** (*not* the Soul Brush's flick of slip; it plays when a spirit is flicked), **the hand's point**.
+  A **contact** (`HAND_CONTACTS`) is the frame a blow lands. *Not:* an emote (the Courier's), nor a gesture (a held tool's).
+- **the Jar's clips** (`PneukaJarClips`, `JAR_MOVES`, `src/godhand/pneukajarclips.js`; the owner's `courier_pneuka.blend`): the Pneuka Jar's
+  own 17 actions on its own mixer: idle, summon, dismiss, hop, land, open, close, gulp, spit, startled, shake, happy, sad, curious,
+  rummage, sleep, wake. They own its squash and its scale (on its `root` bone); nothing else scales it. **The Jar's hop** and **the Jar's
+  land** are the garden's hop and landing as clips (*not* a hop of the Emocean); **the Jar's gulp** is the clip of a Figment swallowed
+  (*not* the Lockheart's gulp, the parry, nor the gulp mount). Its cracks are skinned to it and ride the clips (`vfx/crackskin.js`).
+- **a rig's clips** (`RigClips`, `src/courier/anim/rigclips.js`): what the two above are built on: a small rig's own actions on its own
+  mixer, by named **moves**, each a loop, a once (going on to its `then`), or held (played **in** to a **hold** rocked back and forth,
+  then **out**). *Not:* the Courier's clips (the suite, `courier/anim/animator.js`).
+- **the Vessoul's paintings** (`src/vfx/vessoulpaint.js`): the owner's textures on the god hand and the Pneuka Jar, as the Courier's
+  painted material (the painting as its colour and a share of its glow). The Jar's five gems are not painted: they are its core's light.
 
 ## Windows
 
@@ -557,6 +575,21 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
   bars, the fish portrait.
+- **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
+  the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
+  `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
+  the pendulum keylined in black, more as it rises.
+- **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
+  wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
+  the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
+  as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
+  *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellehud.js`; the chant's word for a sign of notes written without a staff): a note of
+  the Crucibelle written on the pendulum's arc where the bob was, by its shape, one a degree (Aikin's shape-note heads read from la:
+  the root a square, the minor third a triangle, the fourth a bowl, the fifth a diamond, the minor seventh a circle); solid on the
+  beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes along the tape; **a song's neume** is a
+  song's notes joined in one ligature, taken into the bell's mark when it is cast. *Not:* a sigil (the Soul Brush's, read from a
+  stroke in Celestial mode).
 - **ground marks** (`src/world/ground/groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
@@ -636,6 +669,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Gnomon** (Espada's; `world/dunes/solar.js`): the pale spire in the Dunes, the sundial's shadow-stick; the Solar Skiffing trial
   is begun at its foot.
 - **a slip geyser** (`world/dunes/geysers.js`, `vfx/slipgeyser.js`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
+- **an ostracon's look** (`Ostracon`, `ostraconThing`, `src/vfx/ostracon.js`; Calissa's): an **ostracon** (plural **ostraca**, Espada's
+  name: LORE.md "Digging for words"; where they lie is Dovina's, `progress/ostraca.js`) is a curved potsherd of red earthenware a hand
+  across, broken from a painted pot of the town that was, in Attic **black-figure** (the EYE CUP glaze's hand). The pot's zones run across
+  it and off its broken edges (a border of **tongues**, a frieze round the vessel with a **palmette** under each handle, **the black** of
+  its lower body); in the frieze a **picture** of what the word does (`PICTURES`, `paintPicture`, `src/vfx/blackfigure.js`), kept whole,
+  or the **meander** (the Greek key) for a word with none; on the black below, the word's **rune** as a **graffito**, scratched after the
+  firing (`runeStrokes`, `tools/veritome/mind/runes.js`: the Veritome's own glyph). Its broken edges are the paler raw body. *Not:* a
+  shard (the homonym), nor one of the sherds (the Great Slip Jelly's calves); *not* a plate (a photograph).
+- **a stele's look** (`Stele`, `src/vfx/ostracon.js`; the word is Dovina's glossary's for Espada's "ledger stone"): an Attic grave stele
+  in sandstone the Courier's height, its foot in a bank of sand: a tapered shaft, rounded and spalled, a cornice, an **anthemion** (a
+  palmette finial) crowning it; one painted **frieze** in the same black-figure hand on the floor of a recessed panel under the crown
+  (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
+  each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
+  counts).
+- **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
+  *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
+- **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a
+  sparkle (never a pixel) and never smaller than a few lines, so it cannot crawl. *Not:* glints (the water's, or the shoal's).
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
@@ -818,7 +869,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | day | a game day (the calendar, `today()`); the bright part of it (`phaseAt` 'day', between dawn and dusk) | "game day"; "daytime" |
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save | "the ship's hold"; "hold the save" |
-| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| slam | the Soul Brush's (the air slam, the ground slam); the Great Slip Jelly's; the god hand's clip (the flat palm brought down) | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
+| gulp | the Lockheart's parry (a Lachryma shot swallowed); a mount on the rail; the Pneuka Jar's clip (a Figment swallowed) | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
 | art | God Arts; Movement Arts; the god hand's strokes in the garden (`ARTS`, `garden.art`) | "a God Art", "a Movement Art", "the hand's stroke" |
 | Jar | the Pneuka Jar (the Vessoul's form; in the garden, its body `realm.jarBody`, a `PlanetBody`); the god hand's jar model (`god.jar`) | "the Pneuka Jar"; in code, `jarBody` for the garden's body |

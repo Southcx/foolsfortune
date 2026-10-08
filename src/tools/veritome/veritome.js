@@ -177,7 +177,7 @@ export class Veritome extends Tech {
     this.model.setHeading(P.yaw);
     this.model.setOpen(Math.max(smooth(HOLD, 1, this.drawT), smooth(0.2, 0.9, this.readW)) * (1 - this.bashK)); // (shut to be swung)
     this.model.setGlow(this.lens ? 0.4 + 0.6 * this.charge : 0);
-    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, memory: { left: this.memory.left, of: MEMORY_PLATES } });
+    this.vf.draw(raw, { heading: ((Math.PI - P.yaw) * 180) / Math.PI, pitch: P.pitch, tide, charge: this.charge, chance: this.chance, brackets: this.preview?.brackets, zoom: this.zoom, stars: this.preview?.stars, memory: { left: this.memory.left, of: MEMORY_PLATES }, thirds: !!this.game.knacks?.on?.('ruleOfThirds') });
     const shells = document.getElementById('shells'); // (the Psygun's shells are not the book's)
     if (shells && this.drawT > 0.02) shells.style.display = 'none';
     else if (shells && this.wasShellsHidden) shells.style.display = '';

@@ -9,6 +9,7 @@
 //                  later. The hand can't roam further from it than its tether.
 //   the hand       LMB uses the selected god art (grab and throw anything loose, cut,
 //                  swell, wring, raise clay); hold RMB for the art wheel. (Shells are the psygun's. The hand has GOD ARTS instead: see godhand/arts.js.)
+//                  It moves by its own clips (godhand/godhandclips.js) and wears the owner's painting (vfx/vessoulpaint.js).
 //   the view       Q / E turn it (a smooth eighth of a turn), the wheel zooms, WASD or the screen
 //                  edges pan. Ceilings and everything above head height are cut away.
 //   counters       grab a raider and throw it somewhere else, cut or blow it up, pin it (ANCHOR),
@@ -16,7 +17,6 @@
 //                  and mends it). Clapperjars you hatch stay.
 // ~ again (once the jar is whole) puts the Courier back where the jar stood.
 // ---------------------------------------------------------------------------------------
-import { JointLimits, RIGIFY } from '../courier/anim/rom.js';
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { RAPIER } from '../core/physics.js';
@@ -28,6 +28,8 @@ import { Raids } from '../world/basement/raids.js';
 import { stream } from '../core/rng.js';
 import { HandCatch } from './catch.js';
 import { GodJar } from './jar.js';
+import { GodHandClips } from './godhandclips.js';
+import { godHandPainting, PAINT_LIGHT } from '../vfx/vessoulpaint.js';
 const simRand = stream('godhand/godhand'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -36,7 +38,6 @@ const DEG = Math.PI / 180;
 const CLIP_OFF = 1e5; // (the cutaway, put away: far overhead)
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 const ease = (t) => t * t * (3 - 2 * t);
-const easeOutBack = (t) => 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2);
 const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 const CSS = `
@@ -89,38 +90,15 @@ export class GodMode {
     root.add(model);
     this.handScale = 0.8;
     model.scale.setScalar(this.handScale);
-    const mat = new THREE.MeshStandardMaterial({ color: PALETTE.cream, emissive: PALETTE.glow, emissiveIntensity: 0.25, roughness: 0.6, flatShading: true });
+    const mat = godHandPainting(); // (the owner's painting: vfx/vessoulpaint.js)
     const meshes = [];
     model.traverse((o) => { if (o.isMesh) meshes.push(o); });
     for (const o of meshes) { o.material = mat; o.frustumCulled = false; o.castShadow = false; addOutline(o); }
     const bones = {};
     model.traverse((o) => { if (o.isBone) bones[o.name] = o; });
-    this.hand = { root, model, bones, mat, grab: 0, point: 0, spread: 0, tip: new THREE.Vector3(0, 1.05, 0.02).multiplyScalar(this.handScale) };
-    // (the finger chains, and where each joint rests)
-    const chain = (n) => ['01', '02', '03'].map((k) => bones[`${n}${k}R`]).filter(Boolean);
-    this.chains = { index: chain('f_index'), middle: chain('f_middle'), ring: chain('f_ring'), pinky: chain('f_pinky'), thumb: chain('thumb') };
-    this.handRest = new Map();
-    for (const b of Object.values(bones)) this.handRest.set(b, b.quaternion.clone());
-    // fingers only ever bend the way fingers do (rom.js)
-    // (this model's finger bones share no local hinge axis, so each chain's own is read off its rest
-    // pose: the axis that curls the finger toward the palm, which faces the model's -Z. Fixed in the
-    // bone's frame, so a finger curled past 90 degrees still curls the same way. A live "finger x palm"
-    // axis flips there, and that is what bent them backwards.)
-    this.handLimits = new JointLimits();
-    this.hinge = new Map();
-    model.updateMatrixWorld(true);
-    const palmW = new THREE.Vector3(0, 0, -1).transformDirection(root.matrixWorld);
-    for (const [name, joints] of Object.entries(this.chains)) {
-      if (joints.length < 2) continue;
-      const dir = joints[1].getWorldPosition(new THREE.Vector3()).sub(joints[0].getWorldPosition(new THREE.Vector3())).normalize();
-      const hingeW = new THREE.Vector3().crossVectors(dir, palmW).normalize();
-      joints.forEach((bone, j) => {
-        const hingeL = hingeW.clone().applyQuaternion(bone.getWorldQuaternion(new THREE.Quaternion()).invert());
-        this.hinge.set(bone, hingeL);
-        const spec = RIGIFY[name === 'thumb' ? `thumb0${j + 1}*` : `f_${name}0${j + 1}*`];
-        this.handLimits.add(bone, this.handRest.get(bone), { ...spec, hinge: hingeL.toArray() });
-      });
-    }
+    this.hand = { root, model, bones, mat, point: 0, tip: new THREE.Vector3(0, 1.05, 0.02).multiplyScalar(this.handScale) };
+    // (its own clips on its own mixer own every bone, its spawn and its vanish included; its joint limits after them: godhand/godhandclips.js)
+    this.handClips = new GodHandClips(this, gltf);
     root.visible = false;
     this.game.scene.add(root);
   }
@@ -182,8 +160,7 @@ export class GodMode {
     V.pos.copy(P.pos);
     V.group.position.copy(P.pos);
     V.group.rotation.y = P.bodyYaw;
-    V.group.visible = true;
-    V.group.scale.setScalar(0.001);
+    V.group.visible = true; // (its summon rises it: godhand/pneukajarclips.js)
     if (V.hp <= 0 || !V.alive) { V.hp = V.max * 0.6; V.alive = true; }
     P.vel.set(0, 0, 0);
     g.techs.get('carry')?.drop?.(); // (a pot in your hands is put down)
@@ -220,8 +197,7 @@ export class GodMode {
     P.prevPos.copy(P.pos); P.renderPos.copy(P.pos);
     // no more raiders
     for (const c of g.clappers.list) if (c.alive && c.raider) g.clappers.dismiss(c);
-    this.hand.root.visible = false;
-    this.ring.visible = this.disc.visible = false;
+    this.ring.visible = this.disc.visible = false; // (the hand stays shown while its vanish plays: applyCamera)
     for (const b of this.beads) b.visible = false;
     g.hud.el.cross && (g.hud.el.cross.style.display = '');
     this.restoreUi();
@@ -277,8 +253,6 @@ export class GodMode {
       const k = Math.min(1, this.t / 1.2);
       // the courier steps out of the world; the jar stands up in their place
       if (this.t > 0.3 && !g.character.hidden) { g.character.setHidden(true); g.belt?.hideWorn(); } // (their tools go with them: their ticks do not run now)
-      const jk = Math.max(0, (this.t - 0.25) / 0.6);
-      V.group.scale.setScalar(Math.max(0.001, easeOutBack(Math.min(1, jk))));
       if (k >= 1) this.state = 'on';
     }
     this.handleKeys(dt);
@@ -362,10 +336,11 @@ export class GodMode {
       cam.position.copy(pos).lerp(pp, e);
       cam.quaternion.copy(quat).slerp(pq, e);
       cam.fov = THREE.MathUtils.lerp(fov, pf, e);
-      const V = this.jar;
-      V.group.scale.setScalar(V.alive ? Math.max(0.001, 1 - ease(Math.min(1, this.t / 0.4))) : 0.001);
+      const V = this.jar; // (its dismiss shrinks it, its clips' own: godhand/pneukajarclips.js)
       if (this.t > 0.4) V.group.visible = false;
-      if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; V.group.scale.setScalar(1); } // (put away at full size: the garden shows it again, GARDEN-SWEEP #2)
+      this.handClips.update(dt); // (the hand's vanish plays out; then it is put away)
+      if (this.handClips.move === 'vanish' && this.handClips.done) this.hand.root.visible = false;
+      if (e >= 1) { this.state = 'off'; this.clipPlane.constant = CLIP_OFF; V.group.visible = false; this.hand.root.visible = false; }
     } else {
       cam.position.copy(pos);
       cam.quaternion.copy(quat);
@@ -441,14 +416,12 @@ export class GodMode {
     this.handPos.z = THREE.MathUtils.damp(this.handPos.z, target.z, 28, dt);
     this.samples.push({ t: this.t, p: target.clone() });
     while (this.samples.length && this.t - this.samples[0].t > 0.2) this.samples.shift();
-    // ---- pose the hand and draw it
+    // ---- pose the hand (its clips) and draw it
     const live = A.live, aid = A.art.id;
-    const gr = aid === 'telekinesis' ? (this.grab ? 1 : this.hover ? 0.18 : 0) : live ? (aid === 'sunder' ? 0 : aid === 'manifest' ? -0.15 : 0.7) : 0.12;
-    H.grab = THREE.MathUtils.damp(H.grab, gr, 16, dt);
-    H.point = (aid === 'sunder' && live) ? 1 : Math.max(0, H.point - dt * 3.5);
+    H.point = (aid === 'sunder' && live) ? 1 : Math.max(0, H.point - dt * 3.5); // (the dip as it reaches down to cut: placeHand)
     A.updateUi(dt);
     this.veil.update(this.cam.focus, dt);
-    this.poseHand(dt);
+    this.handClips.update(dt);
     this.placeHand(dt);
     this.placeReticle(dt);
     this.placeTether(dt);
@@ -570,36 +543,6 @@ export class GodMode {
   }
 
   // ------------------------------------------------------------------ the hand itself
-  /** Curl the fingers about the palm: finger-by-finger amounts 0..1. */
-  poseHand(dt) {
-    const H = this.hand, t = this.t;
-    for (const [b, q] of this.handRest) b.quaternion.copy(q);
-    H.root.updateMatrixWorld(true);
-    const wob = (i) => Math.sin(t * 2.2 + i * 0.9) * 0.05;
-    const curl = { index: H.grab * 1 + wob(0) - H.point * 0.9, middle: H.grab + wob(1), ring: H.grab + wob(2), pinky: H.grab * 0.95 + wob(3), thumb: H.grab * 0.8 + wob(4) };
-    curl.index = Math.max(-0.1, H.grab * 1.0 + wob(0)) * (1 - H.point * 0.95);
-    const amt = { index: [1.0, 1.15, 0.9], middle: [1.05, 1.2, 0.9], ring: [1.05, 1.2, 0.9], pinky: [1.0, 1.15, 0.9], thumb: [0.7, 0.9, 0.7] };
-    for (const [name, joints] of Object.entries(this.chains)) {
-      const c = Math.max(-0.15, curl[name]);
-      joints.forEach((bone, j) => {
-        const hinge = this.hinge.get(bone);
-        if (!hinge) return;
-        bone.quaternion.copy(this.handRest.get(bone)).multiply(_q.setFromAxisAngle(hinge, c * amt[name][j] * 1.25 * (name === 'thumb' ? 0.9 : 1)));
-      });
-    }
-    this.handLimits.apply();
-    H.root.updateMatrixWorld(true);
-  }
-
-  rotW(bone, axis, angle) {
-    bone.updateMatrixWorld(true);
-    const wq = bone.getWorldQuaternion(new THREE.Quaternion());
-    const pq = bone.parent.getWorldQuaternion(new THREE.Quaternion());
-    const r = new THREE.Quaternion().setFromAxisAngle(axis, angle);
-    bone.quaternion.copy(pq.invert().multiply(r.multiply(wq)));
-    bone.updateMatrixWorld(true);
-  }
-
   placeHand(dt) {
     const H = this.hand, C = this.cam;
     // the fingers point out along the line from the Pneuka Jar, the wrist back toward it (the owner's note: the hand reaches out of the
@@ -620,12 +563,9 @@ export class GodMode {
     const tip = this.handPos.clone().addScaledVector(UP, T.god.hoverH * (this.grab ? 0.55 : 1) - 0.5 + bob);
     // reaching down when it points (a cast)
     tip.y -= H.point * 0.4;
-    H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length());
-    // the hand rises out of the jar as it enters
-    const k = Math.min(1, Math.max(0, (this.t - 0.6) / 0.5));
-    H.root.scale.setScalar(Math.max(0.001, easeOutBack(k)));
+    H.root.position.copy(tip).addScaledVector(fingers, -H.tip.length()); // (it rises out of the jar as its spawn clip plays)
     H.root.updateMatrixWorld(true);
-    H.mat.emissiveIntensity = 0.22 + 0.1 * Math.sin(this.t * 3) + H.point * 0.45;
+    H.mat.emissiveIntensity = PAINT_LIGHT * (1 + 0.15 * Math.sin(this.t * 3)) + H.point * 0.45; // (its painting's glow, breathing; brighter as it cuts)
   }
 
   placeReticle() {
