@@ -405,7 +405,10 @@ await run('geyser', async () => {
   for (let i = 0; i < Math.ceil((G0.until + 30) * 6) && !launched; i++) { // (a generous wait: the loop ends at the launch)
     await S.ticks(10);
     const st = await S.ev((k) => { const g = __game.game, Gy = g.geysers.list[k]; return { state: Gy.look.state, launching: !!Gy.look.launching, y: g.player.pos.y, vy: g.player.vel.y }; }, G0.i);
-    if (st.launching) { await S.ticks(20); const y = await S.ev(() => __game.game.player.pos.y); launched = { ...st, rise: +(y - G0.pos[1]).toFixed(1) }; }
+    // (the launch counted by its event since the mark, or a sample already rising fast: sampling `launching` every 10 ticks missed a
+    // throw that began and ended between two samples, Petra v117)
+    const thrown = st.launching || st.vy > 8 || (await ds(`eventsSince(${JSON.stringify(m)})`)).some((e) => e.name === 'geyser.launch');
+    if (thrown) { await S.ticks(20); const y = await S.ev(() => __game.game.player.pos.y); launched = { ...st, rise: +(y - G0.pos[1]).toFixed(1) }; }
   }
   const f = await S.shot('geyser-launch');
   S.check('geyser: standing in its ring when it erupts throws the Courier up', !!launched && launched.rise > 3, { launched, file: name(f) });

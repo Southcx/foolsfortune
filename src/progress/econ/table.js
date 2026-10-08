@@ -202,6 +202,12 @@ export const ECON = {
     seasonMax: 100, seasonCeiling: 0.13, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, formationClamp: [0.5, 2],
     pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08, memory: 0.3 }, // (memory: a drop's saturation leans this far toward the weather's strength it was won in, the owner's 7a, A) // (each feeling's hue: weather.js COLOR, the one table)
 
+  /** THE RUTTER (docs/plans/PASSAGE.md): a passage's map is worth `share` of what its sailed minutes earn at the aim, by its rank, and
+   *  `stale` of that each game day after (the sea chart reseeds daily); the Purser buys at worth (by island demand) and sells at `list`
+   *  x worth to the haulers whose charted-only ships need one. A sloop scouting and selling S rutters, read whole, earns about 0.9 x aim
+   *  from rutters alone: with its cargo it is held under the 1.5 x cap in scripts/economy.mjs (the hauler and scout profiles, to come). */
+  passage: { share: 0.6, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
+
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read
    *  in `block`s of game hours (a spell of weather holds a block at least); its strength another slow wave, CALM below `calm`. The
