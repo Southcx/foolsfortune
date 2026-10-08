@@ -461,6 +461,37 @@ roly-poly toy that rights itself, and a cup).
     the posted price." · a bounty "Letty's mark is ahead." A turn of the rail, a breach, a dive and the surge say nothing: they are
     seen.
 
+### The encounters at sea *(Espada's names for Dovina's seven, `progress/rail/encounters.js`, PASSAGE.md section 13; proposed, 2026-10-08)*
+Each: its name and root, then the log's lines (arrival · each choice) and the choices' words (STE: a verb first).
+- **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
+  own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
+  *Follow them.* "You follow the Dead Reckoners. The next 2 waypoints are clear." · *Board the last ship.* "You take 2 casks from the
+  last ship. The Wreckers will hear of it."
+- **lettysCutter: the Last Word.** A cutter (the revenue cutters chased smugglers; it also cuts), named for what Letty always has and
+  what she means to put on every stray: the irony is Old Nobody, who has no last word. "A cutter alongside: Letty Marque's Last
+  Word." · *Take her bounty.* "Letty : Splendid, a second gun on the hunt, and the sea a little cleaner by supper!" · *Sell her your
+  rutter.* "Letty : The way they came is the way we go to finish them. Poll, pay the Courier." "Poll : Paid! Paid!"
+- **lightWhale: the Cantor.** Latin *cantor*, the singer who leads the chant. Whale song carries across whole oceans in the deep sound
+  channel, so listening tells you the sea ahead (the lesson, unsaid). What it is (Figment, Egregore) is a blank. "Under the hull,
+  something sings: the Cantor." · *Listen.* "You listen. The sea ahead is clearer." · *Follow it down.* "You dive after the Cantor."
+- **castaway: Hap Lagan, and Bob.** In the law of wrecks, **lagan** is cargo sunk with a buoy tied to it, so the owner can come back for
+  it (flotsam floats off, jetsam is thrown, lagan is marked, derelict is left). *Hap* is luck. A Contractor who went down marked to be
+  found. Their Tulpa is **Bob**: a cork float of a thought-form, authored on the raft so as not to be alone; it bobs (the pun is the
+  name). Pronouns unset: write around them. "A raft, and a Contractor on it: Hap Lagan, and Bob." · *Take them aboard.* "Hap : Lagan is
+  the word for what sinks with a mark on it, so somebody comes back. You came back." "Hap Lagan and Bob come aboard." (the next leg:
+  "Hap Lagan mans the toll.") · *Sail on.* "You sail on. Bob waves."
+- **pursersBarge: the Bourse.** The purser is named for the purse (Latin *bursa*); so is the bourse, the exchange. A purse that is a
+  market, lit with aqua regia. "Lanterns on the crude: the Purser's barge, the Bourse." "Purser : Posted prices, as at the dock. The sea
+  does not change them." · *Trade casks.* · *Buy fuel.* · *Buy today's rutter.* (each said as the counter says it now).
+- **mirrorSea: the Glass, and your fetch.** Sailors call a flat sea "glass". A **fetch** is three things: the double of you seen as an
+  omen (Irish folklore), the run of open water a wind blows over (the sea's word for how waves grow), and the Crib Sheet's gloss of
+  FETA (the verb). Fallback if the owner keeps "fetch" for FETA alone: **your double**. "The sea goes flat as glass. Your fetch sails
+  beside you." · *Race it.* (won) "You beat your fetch. The leg's rank goes up a step." (lost) "Your fetch beats you, and fades." ·
+  *Let it pass.* "Your fetch sails on, and is gone."
+- **driftBottle: a drift bottle.** The real oceanographers' tool: bottles set adrift to map the currents, found years later. Who writes
+  these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a
+  portent) "Inside, a note in a steady hand: the graveyard is ahead."
+
 ## 12. Where the words live
 
 | Words | File |
