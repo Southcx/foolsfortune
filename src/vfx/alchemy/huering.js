@@ -23,10 +23,21 @@ import { wheelColour } from '../wheelcolour.js';
 
 const SAT = 0.65; // (the tiles' saturation: ECON.alchemy.sat)
 const T = { stagger: 0.08, land: 0.35, home: 0.5, lift: 0.5, heart: 0.3 }; // (real seconds: 4.3, 4.6, 4.18)
+const HALO = 0.36; // (metres across, before the light's own scale: the soft edge falls inside it, so it holds the weight the old 0.24 m sphere had)
 const AT = { seal: 0.05, hover: 0.62, lean: 0.25, tile: 0.2, heart: 0.04 }; // (metres over the seal, over the tile; the lean toward the bead; how far down a dive comes)
 const smooth = (x) => { const k = Math.max(0, Math.min(1, x)); return k * k * (3 - 2 * k); };
 const toward = (v, to, rate) => (v < to ? Math.min(to, v + rate) : Math.max(to, v - rate));
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
+/** A light's halo: one soft radial falloff, shared (a sphere's silhouette is a hard 12-sided disc, which showed as a polygon round a burning light). */
+let _halo = null;
+function haloTexture() {
+  if (_halo) return _halo;
+  const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  for (const [t, a] of [[0, 1], [0.25, 0.55], [0.6, 0.16], [1, 0]]) gr.addColorStop(t, `rgba(255,255,255,${a})`);
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  _halo = new THREE.CanvasTexture(c); _halo.generateMipmaps = true; _halo.minFilter = THREE.LinearMipmapLinearFilter; _halo.userData.shared = true;
+  return _halo;
+}
 
 export class HueRing {
   constructor(parent, hues) {
@@ -35,8 +46,8 @@ export class HueRing {
     this.still = new Array(hues.length).fill(0); this.dim = new Array(hues.length).fill(0);
     this.lights = hues.map((h, i) => {
       const col = wheelColour(h, SAT, new THREE.Color()).multiplyScalar(1.35); // (a light: its glaze's colour, run a little hotter)
-      const w = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 8), new THREE.MeshBasicMaterial({ color: col.clone() }));
-      const halo = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 8), new THREE.MeshBasicMaterial({ color: col.clone(), transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false }));
+      const w = new THREE.Mesh(new THREE.SphereGeometry(0.055, 20, 14), new THREE.MeshBasicMaterial({ color: col.clone() }));
+      const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTexture(), color: col.clone(), transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); halo.renderOrder = 3; // (its size is set each frame: HALO; drawn after the press's marks, renderOrder 2, so it lights the tile it hangs over)
       w.add(halo); w.castShadow = false; parent.add(w);
       w.userData = { a: (i / hues.length) * Math.PI * 2, y: 1.2 + 1.3 * ((i * 3) % 7) / 7, halo, col };
       return w;
@@ -75,12 +86,13 @@ export class HueRing {
       const k = 1 - 0.8 * this.dim[i];
       w.material.color.copy(u.col).multiplyScalar(k * (1 + 0.8 * burn));
       u.halo.material.color.copy(u.col).multiplyScalar(k);
-      u.halo.scale.setScalar(1 - 0.35 * this.still[i] + 0.6 * burn);
-      u.halo.material.opacity = (close ? 0.55 : 0.22 * (1 - 0.5 * s) + 0.12 * l + 0.2 * this.still[i]) * k + 0.6 * burn;
+      u.halo.scale.setScalar(HALO * (1 - 0.35 * this.still[i] + 0.6 * burn));
+      u.halo.material.depthTest = !(s > 0.01 || l > 0.01 || d > 0); // (over the bath or the kerb its soft disc would be cut straight by their planes: it lies over them instead)
+      u.halo.material.opacity = (close ? 0.8 : 0.34 * (1 - 0.5 * s) + 0.16 * l + 0.24 * this.still[i]) * k + 0.6 * burn; // (a soft glow carries less than the flat disc it replaced: the same weight at its heart, a little more of it)
     });
   }
 
   /** A light's colour (its glaze's, as drawn), for the burning glass and the seal's gold. */
   colourOf(i, out = _c) { return out.copy(this.lights[i].userData.col); }
-  dispose() { for (const w of this.lights) { w.removeFromParent(); w.geometry.dispose(); w.material.dispose(); w.userData.halo.geometry.dispose(); w.userData.halo.material.dispose(); } }
+  dispose() { for (const w of this.lights) { w.removeFromParent(); w.geometry.dispose(); w.material.dispose(); w.userData.halo.removeFromParent(); w.userData.halo.material.dispose(); } }
 }

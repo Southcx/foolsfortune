@@ -328,7 +328,7 @@ export const LIBRARY = {
   // the Great Dunemaw's mouth (vfx/dunemaw.js draws the pool): motes of the dunes' Lachryma drawn in toward it, and a breath of dark over it
   // the Pneuka Jar's mouth breathing the soul colour after a true firing, as the press view is left (docs/plans/SOUL-ALCHEMY.md 4.13)
   'jar.breath': { layers: [
-    L({ type: 'sprites', dur: 3, rate: 9, shape: 'soft', spawn: 'disc', r: 0.1, dir: 'up', speed: [0.25, 0.55], size: [0.07, 0.12], sizeEnd: 0.02, life: [0.9, 1.4], drag: 1, color: 'tint', alpha: 0.7 }),
+    L({ type: 'sprites', pool: 'alpha', dur: 3, rate: 14, shape: 'soft', spawn: 'disc', r: 0.12, dir: 'up', speed: [0.35, 0.7], size: [0.16, 0.3], sizeEnd: 0.04, life: [1.1, 1.6], drag: 1, color: 'tint', alpha: 0.85 }),
   ] },
   'dunemaw.motes': { layers: [
     L({ type: 'sprites', dur: Infinity, rate: 24, shape: 'soft', spawn: 'ring', r: [5, 8], dir: 'in', speed: [1.2, 2.2], size: [0.06, 0.1], sizeEnd: 0.02, life: [2.2, 3.2], color: ['labradorite', 'gold'], offset: [0, 0.4, 0] }),

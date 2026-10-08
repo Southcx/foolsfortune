@@ -43,7 +43,7 @@ export class PressLook {
     this.firing = new Firing();
     this.t = 0; this.ball = 1; this.ember = 0; this.eye = 0; this.flame = 0.9; this.handFade = 1; this.handLift = HAND.over; this.bead = new THREE.Vector3();
     this.sealLit = new Array(7).fill(0); this.gold = new Array(7).fill(0); this.sealFx = { ember: null, gold: this.gold };
-    this.open = false; this.logT = 0; this.trueFired = false; this.accum = false; this.lastTiles = null;
+    this.open = false; this.logT = 0; this.trueFired = false; this.accum = false; this.lastTiles = null; this.handWhole = true;
     this.seatPress();
     const on = (n, fn) => this.g.events?.on?.(n, fn);
     this.offs = [
@@ -51,7 +51,7 @@ export class PressLook {
       on('alchemy.close', () => this.closed()),
       on('alchemy.fire', (e) => this.fired(e)),
       on('alchemy.refuse', (e) => this.refused(e)),
-      on('garden.leave', () => { this.closed(); this.S.R.site?.sky?.surround(false, true); }), // (the garden left: its sky back at once)
+      on('garden.leave', () => { this.closed(); this.setHandFade(1); this.S.R.site?.sky?.surround(false, true); }), // (the garden left: its sky and the hand back at once)
     ];
   }
 
@@ -72,16 +72,15 @@ export class PressLook {
     const g = this.g, log = g.log;
     this.S.R.site?.sky?.surround(true);
     g.ui?.want?.('alchemy', true, { log: true }); // (the HUD steps out; the log stays: feedback/hideui.js)
-    if (log) { this.logMini = log.mini; log.setMini?.(true); this.logSeen = log.said || 0; this.logT = 0; }
+    if (log) { this.logMini = log.mini; log.setMini?.(true, false); this.logSeen = log.said || 0; this.logT = 0; }
   }
   closed() {
     if (!this.open) return; this.open = false;
     const g = this.g, log = g.log;
     this.S.R.site?.sky?.surround(false);
     g.ui?.want?.('alchemy', false);
-    if (log && this.logMini !== undefined) log.setMini?.(this.logMini);
+    if (log && this.logMini !== undefined) log.setMini?.(this.logMini, false);
     if (this.accum && g.post?.accum) g.post.accum.amt = 0; this.accum = false;
-    this.setHandFade(1);
     this.pb.bath.cursor(null); this.pb.marks.flush();
     if (this.trueFired && g.vfx && this.S.R.jarBody) { const J = this.S.R.jarBody; g.vfx.play('jar.breath', { pos: J.pos.clone().addScaledVector(J.up, 0.55), dir: J.up, tint: this.soulHex() }); } // (the Jar's mouth breathes the soul colour)
     this.trueFired = false;
@@ -119,8 +118,8 @@ export class PressLook {
   }
   setHandFade(k) {
     this.handFade = k; HAND_FADE.fade.value = k;
-    const model = this.g.realm?.god?.hand?.model; if (!model) return;
-    model.traverse((o) => { if (o.userData?.isOutline) o.visible = k > 0.99; }); // (no outline round a dithered hand)
+    const whole = k > 0.99, model = this.g.realm?.god?.hand?.model; if (whole === this.handWhole || !model) return; this.handWhole = whole; // (the outlines change only when the hand goes from whole to dithered or back, not each frame)
+    model.traverse((o) => { if (o.userData?.isOutline) o.visible = whole; }); // (no outline round a dithered hand)
   }
 
   // ---------------------------------------------------------------- each frame
@@ -170,21 +169,21 @@ export class PressLook {
     else U.uFire.value.set(-1, 0, 0, 0);
     B.glow(F.glow ?? 0, soul || A.colour);
     // the frame accumulation for a true firing's dive (render/glow.js), handed back at once when it ends
-    const post = g.post; if (post?.accum && !g.death?.active) { if ((F.accum ?? 0) > 0.001) { Object.assign(post.accum, { amt: F.accum, zoom: 0.003, spin: 0 }); this.accum = true; } else if (this.accum) { post.accum.amt = 0; this.accum = false; } }
+    const post = g.post; if (post?.accum && !g.death?.active) { if ((F.accum ?? 0) > 0.001 && this.open) { Object.assign(post.accum, { amt: F.accum, zoom: 0.003, spin: 0 }); this.accum = true; } else if (this.accum) { post.accum.amt = 0; this.accum = false; } }
     // the log, folded while the press view is up: a line said opens it to that line for a few real seconds
     const log = g.log;
     if (this.open && log) {
-      if ((log.said || 0) !== this.logSeen) { this.logSeen = log.said || 0; log.setMini?.(false); this.logT = LOG.open; }
-      else if (this.logT > 0 && (this.logT -= raw) <= 0) log.setMini?.(true);
+      if ((log.said || 0) !== this.logSeen) { this.logSeen = log.said || 0; log.setMini?.(false, false); this.logT = LOG.open; }
+      else if (this.logT > 0) { if (log.typing) this.logT = LOG.open; else if ((this.logT -= raw) <= 0) log.setMini?.(true, false); } // (never folded under their typing)
     }
     // the hand: half-dithered over the bath (it never hides the bead), its shadow dot the cursor; solid on the ball, at the mouth, carrying
     if (viewing) {
       const at = S.lean, overWater = !!at && at.distanceTo(S.frame.O) < S.frame.R && !S.carry && !S.lever && !S.walk;
       this.setHandFade(toward(this.handFade, overWater ? HAND.dither : 1, raw * 4));
       if (overWater) { const p = this.pb.group.worldToLocal(_v.copy(at)); B.cursor({ x: p.x, z: p.z }); } else B.cursor(null);
-    }
+    } else if (this.handFade < 1) this.setHandFade(toward(this.handFade, 1, raw * 4)); // (left: the hand fills in over a quarter of a second, not in a frame)
     marks.flush();
   }
 
-  dispose() { for (const off of this.offs) off?.(); this.closed(); }
+  dispose() { for (const off of this.offs) off?.(); this.closed(); this.setHandFade(1); }
 }

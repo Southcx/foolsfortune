@@ -184,7 +184,30 @@ the rules before building in the same area; a rule a machine can check goes into
     holds) is set by that system alone; a pose wanted elsewhere is read from the borrower's own state by whoever draws it.
 71. **Parts that meet are placed in one frame.** A spout and its basin, a press and its bath: stood each on its own ground, a planetoid's
     curve puts them a metre apart; stand them in the frame of the one that must be level, and give the other a footing.
+72. **The glow round a light is a falloff, never a low-poly sphere, and where it hangs on a surface it lies over it.** A sphere's silhouette is a hard
+    polygon at any opacity, and a camera-facing glow cut by the plane it hangs over is a straight edge: draw a soft radial sprite, and
+    with the depth test off (drawn after what it lights) wherever it sits within its own radius of a surface.
+73. **A fold the player did not choose never goes through the setter that keeps their choice.** A feature that folds a window while it is
+    up asks for the fold without keeping it (`log.setMini(v, false)`), so closing the tab mid-feature leaves their saved choice as it was.
 ## Cases
+
+### 2026-10-08 · A burning light showed as a hard polygon, then as a glow cut straight (found in the firing's frames, review of the press)
+- **Seen:** at a firing the attribute's light hung over its tile, and a pale flat 12-sided disc lay round the tile, its edges straight; in
+  a true firing, after the glow was softened, it was cut along a straight line across the bath.
+- **Cause:** the light's glow (`halo` in the code) was an additive sphere of 12 by 8 segments at full opacity (a polygon from above, grown 1.6 times at the
+  burn); a soft camera-facing sprite in its place was cut by the bath's and the kerb's planes where the light dives to 4 cm over them.
+- **Fix:** the glow is a soft radial sprite (`vfx/alchemy/huering.js`), drawn after the marks and with the depth test off while its light
+  is over the kerb or the bath (a seated, lifted or diving light); the core sphere is 20 by 14.
+- **Rule:** 72.
+
+### 2026-10-08 · Opening the press view wrote the player's log fold to their saved choice (found reading the review, Calissa)
+- **Seen:** reading `vfx/alchemy/presslook.js`: it folded the log to its tab strip when the view opened and unfolded it for 4 seconds for
+  every line said; `setMini` keeps what it is given in the saved choice each time, so a tab closed in the press view left the log folded
+  at the next boot, and a line said while they typed could fold it under them.
+- **Cause:** the setter is the player's own (the fold button, the backslash key) and kept its argument unconditionally.
+- **Fix:** `setMini(v, keep = true)` (`feedback/gamelog.js`, a small crossing): the press look folds without keeping, restores what it found
+  when the view is left, and holds the log open while they type.
+- **Rule:** 73.
 
 ### 2026-10-08 · Leaving the press view with a lump in the hand threw on the next frame (found headless, Calissa)
 - **Seen:** with a lump carried at the spirit press, F (or Esc, or W A S D) left the press view, and the next frame the garden's grab

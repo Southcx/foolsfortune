@@ -337,6 +337,7 @@ void main() {
   }
 
   dispose() {
+    this.ring.dispose();
     this.group.parent?.remove(this.group);
     this.group.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose?.(); } });
   }
