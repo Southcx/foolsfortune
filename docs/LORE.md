@@ -345,6 +345,14 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
 - **The siblings' voices** are voice cards in `src/coop/personas.js`: five built to differ on every axis (length, punctuation,
   register, what comes first, how a line ends), with the house voice's tells banned for all five.
 - **No clinical words** in player text: show mania, worry, despair; never name them.
+- **Two registers, never mixed** (the owner, 2026-10-08: "readable at a glance"; `docs/plans/CLARITY.md`). A **label** says what a thing
+  does, in the genre's word (Grapple, Bomb, Radar); a **name** says who or where it is (Charybdis, the Bourse, Myggdrasil). Labels live
+  on cards, buttons and lists; names live in the world, the folk's lines and the Codex. Every name in the Codex shows its label beside
+  it ("Myggdrasil · the World Mushroom"), so the reader can always get from one to the other.
+- **The log's plain-words rule.** Verb first, one line, a count where there is one. A name appears in the log only when its thing is on
+  screen or already on a card; the first time the player meets it, the line carries its label too ("The Cantor, a whale of light, sings
+  under the hull."). After that the name stands alone. No line needs the lore to be read: the lore is the second meaning, never the
+  only one.
 
 ### Directions from the owner's notes *(direction, not yet ruled)*
 - **The spine**: mind, ego and attention are the most valuable things; play is the most efficient interface to reality, so games are
@@ -587,6 +595,30 @@ capitals (THE DEAD RECKONERS, THE LAST WORD, THE CANTOR, A RAFT ADRIFT, THE BOUR
   "Dawn. Myggdrasil fruits: 4, leaned to mirth." (a fair day: "Dawn. Myggdrasil fruits: 4, true to its tincture."; a prismatic day:
   "Dawn. Myggdrasil fruits: 4. One shines.") · a cap opens: "Myggdrasil's girth grows. The Foundation opens." · a branch hung: "You hang
   The Tower on its branch. Myggdrasil will fruit once more each dawn." · a sporeling: "A sporeling drops from Myggdrasil's crown."
+
+### The labels *(CLARITY.md section 9; Espada's settlement of Dovina's placeholders, proposed, 2026-10-08)*
+One label per thing; the name stays in the world. The label is what the card says; the name is what the folk say.
+
+| thing | name (world, Codex) | label (UI) | why |
+|---|---|---|---|
+| the psygun at sea | the gun | **Blaster** | kept: the shmup's main gun |
+| the hook at sea | the hook | **Grapple** | kept; already the glossary's word for what the Courier does on its line |
+| the wake brush at sea | the wake brush | **Absorb** | one word: Ikaruga's verb for eating shots of your colour; "spray" is how, not what |
+| the toll at sea | the toll | **Bomb** | kept: the shmup's screen-clear (a bomb in every shmup since Xevious's) |
+| the gulp at sea | the gulp | **Vacuum** | kept: sucks in shots and small fish |
+| the plate at sea | the plate | **Flash** | was Snapshot: what it does is the Veritome's Flash (holds a weak point open); a snapshot is a photograph, which does nothing |
+| the vane at sea | the vane | **Radar** | kept: warns of attacks earlier |
+| the herb terrace (garden) | a herb terrace | **Planter** | "Herb Terrace" is also a planetoid's name (the Herb Terraces): a feature takes the plain word |
+| the pavilion (garden) | a pavilion of echoes | **Trophy Hall** | it pays for a fight mastered: a trophy room that earns |
+| the spirit house | a spirit house | **Spirit House** | kept: plain, and a real thing (the Thai *san phra phum*) |
+| the pond, the lantern | | **Pond**, **Lantern** | kept |
+| the incense burner | | **Incense** | one word |
+| the booster stone | | **Booster Stone** | kept: it says what it is, as the glossary asks of a stone in the world |
+| the drill yard (feature) | a drill yard | **Training Yard** | "the Drill Yard" is also a bought planetoid's name |
+| the spore bed | | **Spore Bed** | kept |
+| an encounter not yet met (the sea chart) | | **Sighting** | "encounter" is the Spirit Garden's word |
+
+**Blot** is ruled the player's word (Dovina, 2026-10-08); the code keeps `stain`.
 
 ## 12. Where the words live
 
