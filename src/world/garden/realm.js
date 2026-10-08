@@ -78,14 +78,17 @@ export class Realm {
     // the spirits' stand-in body (Calissa's forms come in Round 3): one sphere, tinted by kind
     this.spiritGeo = new THREE.IcosahedronGeometry(0.42, 2);
     this.spiritMat = new THREE.MeshStandardMaterial({ color: 0xd9c19a, emissive: 0x6a4f30, emissiveIntensity: 0.25, roughness: 0.5, name: 'garden-spirit' });
+    this.waiting = { clay: {}, ground: {} }; // (saved clay of planetoids not yet here: adopt takes it)
     game.save?.section('realm', { scope: 'player', version: 3,
-      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)), ground: Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)), awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }),
+      dump: () => ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }),
       load: (d) => {
         this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the bought planetoids first: their clay loads next)
         for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
+        // a planetoid that comes later (Myggdrasil's, given on entering): its clay kept until it is adopted (adopt), never dropped
+        this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
         this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
       },
-      reset: () => { this.name = null; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -250,6 +253,7 @@ export class Realm {
     this.awaken.update(dt); this.tribulation.update(dt); this.waterworks.update(raw); this.cascades.update(raw); this.press.update(raw);
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
+    g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
       const L = this.site.lotuses.find((l) => l.pos.distanceTo(J.pos) < LOTUS.r + J.radius);
@@ -303,6 +307,7 @@ export class Realm {
     for (const Q of near) { const V = this.site.link(P, Q); this.site.links?.push({ V, a: P, b: Q, ends: {} }); }
     for (const l of this.site.lotuses) if (l.planet === P) this.clays[P.id].keep(l.pos.clone().sub(P.c), 2);
     this.plots.addPlanet(P, plots); this.plots.veins(P);
+    const W = this.waiting; if (W.clay[P.id] || W.ground[P.id]) { this.clays[P.id].load(W.clay[P.id]); this.clays[P.id].loadGround(W.ground[P.id]); delete W.clay[P.id]; delete W.ground[P.id]; this.reshape(P, true); }
     P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
     P.look.group.visible = true;
   }
@@ -392,7 +397,7 @@ export class Realm {
         else this.tribulation.begin();
         return;
       }
-      default: break;
+      default: if (g.gardenMycelium?.use(f)) return; break; // (a spore bed, Myggdrasil's roots: world/garden/mycelium.js, Dovina's)
     }
     this.sync();
   }

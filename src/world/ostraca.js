@@ -14,7 +14,7 @@
 // treasure and its hidden rooms, Zelda's bombable walls (the plaster: a cracked patch a blow opens), Greek ostraca (sherds as paper).
 //
 //   const O = new Ostraca(game)   O.update(raw)   O.reveal(pos, r) -> n   O.forFloor(finds)   O.drop(word, at, place)   O.near(P)
-//   O.take(s)   O.gloss(word) -> 'SIVA (drink)' | 'SIVA'   O.glossLine(words) -> text   (the interact chevron's id: 'ostracon')
+//   O.take(s)   O.left()   O.fromSea(place) -> word   O.gloss(word) -> 'SIVA (drink)' | 'SIVA'   O.glossLine(words) -> text   (the interact chevron's id: 'ostracon')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OSTRACA, STELAE, WORD_SPLIT, DUNEMAW_DECK } from '../progress/ostraca.js';
@@ -47,6 +47,16 @@ export class Ostraca {
   }
 
   found(word) { return (this.game.ledger?.get(`ostracon.${word}`) || 0) > 0; }
+  /** The words no ostracon has given yet (the drift bottle's odds: encounters.js `wordsLeft`). */
+  unfound() { return Object.values(this.at).flat().filter((w) => !this.found(w)); }
+  left() { return this.unfound().length; }
+  /** A word found away from its sherd (the drift bottle at sea: encounters.js driftBottle.read): one not yet found, drawn. */
+  fromSea(place = 'sea') {
+    const ws = this.unfound(); if (!ws.length) return null;
+    const word = ws[Math.floor(simRand() * ws.length) % ws.length];
+    this.game.events?.emit('ostracon.find', { word, gloss: NEURALESE.glossOf(word), place, by: 'courier' });
+    return word;
+  }
 
   // ---------------------------------------------------------------- the places
   /** Once the Dunes and the workshop stand: the buried six, the columns' two, the plaster's two, the sealed room. */

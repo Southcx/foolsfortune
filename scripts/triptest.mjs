@@ -46,6 +46,16 @@ for (let i = 0; i < 600; i++) {
     seen.forms = await g.page.evaluate(() => { const G = __game.game, sh = G.emocean.ship, out = { before: sh.form };
       sh.form = 'umbral'; out.umbral = sh.form; const s0 = sh.surge; for (let k = 0; k < 30; k++) sh.absorb({ kind: 'umbral' }); out.surge = [s0, sh.surge];
       sh.letGo(G.emocean.waves, G.emocean.shots); out.after = sh.surge; out.mercy = sh.mercy > 0; sh.form = 'astral'; return out; });
+    // an encounter's asks done in the world (triprun.js act): casks, a rutter bought then sold, a word from a bottle, a bounty posted
+    seen.asks = await g.page.evaluate(() => { const G = __game.game, T = G.emocean.trip, B = G.pneuka, lines = [], out = {};
+      const say = G.log.say.bind(G.log); G.log.say = (k, s, o) => { lines.push(s); return say(k, s, o); };
+      const casks = G.voyage.casks(); T.act({ ask: 'casks', n: 2, grade: 'mirth' }); out.casks = G.voyage.casks() - casks;
+      const c0 = G.cubes.balance; T.act({ ask: 'buyRutter', route: T.chart.route, day: T.chart.day, cubes: 50 }); out.bought = c0 - G.cubes.balance; out.rutters = B.held('rutter');
+      const c1 = G.cubes.balance; T.act({ ask: 'sellRutter', cubes: 77 }); out.sold = G.cubes.balance - c1; out.rutters2 = B.held('rutter');
+      const left = G.ostraca.left(); T.act({ ask: 'ostracon' }); out.word = left - G.ostraca.left();
+      const ahead = T.wps.slice(T.k + 1).find((w) => w.type !== 'calm' && w.type !== 'encounter'); if (ahead) T.act({ ask: 'bounty', waypoint: ahead.id }); out.bounty = !!T.bounty || !ahead;
+      T.act({ ask: 'exact', waypoints: T.wps.slice(T.k + 1).map((w) => w.id) });
+      G.log.say = say; out.lines = lines; return out; });
   }
 }
 const r2 = await g.page.evaluate(() => { const G = __game.game; return { active: G.emocean.stage.active, at: G.voyage.s.at, rutter: !!G.pneuka.slots.find((s) => s?.id === 'rutter') }; });
@@ -57,6 +67,8 @@ check('the views change by phase', seen.views.size >= 2, [...seen.views]);
 check('a calm offers its campfire, and it is answered', !r0.types.includes('calm') || seen.offered.includes('campfire'), seen.offered);
 check('the forms: Umbral, a shot of its kind drunk fills the surge', seen.forms?.umbral === 'umbral' && seen.forms.surge[1] >= 100, seen.forms);
 check('the surge let go: emptied, a half bar untouchable', seen.forms?.after === 0 && seen.forms.mercy, seen.forms);
+check('an encounter\'s asks: two casks aboard, a rutter bought (50) then sold (77), a word from a bottle, a bounty posted', seen.asks?.casks === 2 && seen.asks.bought === 50 && seen.asks.sold === 77 && seen.asks.rutters2 === seen.asks.rutters - 1 && seen.asks.word === 1 && seen.asks.bounty, seen.asks);
+check('each said in the log', (seen.asks?.lines || []).length >= 6, seen.asks?.lines);
 check('the ship makes port at the end of the trip', !r2.active && r2.at === 'margarite', r2);
 check('and a rutter of the passage comes home', r2.rutter, r2.rutter);
 check('no page errors', g.errors.length === 0, g.errors.slice(0, 3));
