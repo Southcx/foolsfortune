@@ -88,7 +88,7 @@ void main() {
 /** The one material every cascade is drawn with (made on first need; shared, never disposed). */
 export function cascadeMaterial() {
   if (MAT) return MAT;
-  MAT = new THREE.ShaderMaterial({ name: 'garden-cascade', vertexShader: VERT, fragmentShader: FRAG.replace('//LIQUID', LIQUID_GLSL), transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: true,
+  MAT = new THREE.ShaderMaterial({ name: 'garden-cascade', vertexShader: VERT, fragmentShader: FRAG.replace('//LIQUID', LIQUID_GLSL), transparent: true, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, fog: true,
     uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog]) });
   Object.assign(MAT.uniforms, liquidUniforms(), { uCColor: { value: new THREE.Color(COLOR.wonder) }, uGTime: GROUND_UNIFORMS.uGTime, uGNight: GROUND_UNIFORMS.uGNight });
   MAT.userData.shared = true;

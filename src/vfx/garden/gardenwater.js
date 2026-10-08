@@ -22,7 +22,8 @@
 //   THE FOAM     made of bubbles (liqFoam) where it runs fast and shallow (over 1.5 m/s, under 0.3 m)
 //   THE GROUND   under and after it: the planetoid's aWet (how wet, drying over 20 real seconds; the depth over it), which the grounds
 //                darken, gloss and lay caustics on (vfx/garden/gardengrounds.js)
-// One material for every planetoid's water (one program; parked in the warm-up: waterParked, CASEBOOK rules 17 and 18).
+// One material for every planetoid's water (one program, drawn in one pass: a double-sided transparent material is drawn back faces then front
+// faces by default, a program each, and a sheet of water has no second layer to order; parked in the warm-up: waterParked, CASEBOOK rules 17 and 18).
 //
 // Prior art: the heightfield water of every terrain engine and From Dust's coloured water (a grid of depths over the ground), Valve's
 // crossing normal layers (Vlachos, SIGGRAPH 2010), Roystan's toon water (a shore drawn by depth, foam by threshold), Super Mario
@@ -154,7 +155,7 @@ const KEY = 'garden-water-1';
 export function waterMaterial() {
   if (MAT) return MAT;
   const LIQ = liquidUniforms();
-  MAT = new THREE.MeshStandardMaterial({ name: 'garden-water', transparent: true, depthWrite: false, side: THREE.DoubleSide, roughness: 0.07, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
+  MAT = new THREE.MeshStandardMaterial({ name: 'garden-water', transparent: true, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, roughness: 0.07, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
   MAT.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U, LIQ, { uGTime: GROUND_UNIFORMS.uGTime, uGNight: GROUND_UNIFORMS.uGNight }); // (the grounds' clock and night: one clock for the garden's looks)
     sh.vertexShader = VERT_DECL + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n${VERT_BODY}`);
