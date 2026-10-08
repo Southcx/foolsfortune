@@ -363,6 +363,9 @@ the rules before building in the same area; a rule a machine can check goes into
 130. **A boss is proved by a shooter, not by its place.** A target checked only for where it stands can stand where no view
     shows it and no gun reaches; its test fires at it (a scripted expert) and reports when it falls.
 
+131. **A writer to a store writes the shape its reader draws.** A document the page renders is written in the fields the renderer reads
+    (QAIS's Brief: `division`, `build`, `lines`, `waiting`, `at`), and read back through the page once after the first write.
+
 ## Cases
 ### 2026-10-08 · Charybdis turned against its own whirlpool, and the whirlpool against the ship half the time (the review of Calissa's Charybdis)
 - **Seen:** reading the review's numbers, not the pictures: in `crossing:charybdis` the beast's eye 0 and its sheath's ridges, as the
@@ -1857,3 +1860,12 @@ the rules before building in the same area; a rule a machine can check goes into
   the ship's aim is abeam there with the cursor free, its far plane taken along the gun's own way. Measured after: the expert fells
   it at bar 3.8 of 24.
 - **Rule:** 130.
+
+### 2026-10-08 · The Brief went blank for seventeen builds (v110 to v126; found by the owner)
+- **Seen:** QAIS's Brief tab showed a "Petra" heading and nothing under it from v110 on; the owner could not tell what had landed.
+- **Cause:** the Brief draws each document's `lines` and `waiting` (`ui/qais.js` `brief`); from v110 the publish wrote a `body` and a
+  `title` instead. The store took them; nothing read them back through the page.
+- **Fix:** the seventeen documents rewritten with `lines`, `waiting` and `at` (their `body` kept). Every Brief from here is written in
+  the renderer's fields.
+- **Rule:** 131.
+

@@ -29,9 +29,14 @@ for (let i = 0; i < 4000; i++) {
     if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0;
     const C = E.charybdis, f = C?.foe, A = (E.arenas || [])[0], s = E.rail.speed * E.t, inArena = A && s >= A.at + A.len * 0.15 && s < A.at + A.len * 0.85;
     const R = E.rail, V3 = R.Q.constructor, ship = R.toWorld(E.ship.local, new V3()), fw = f?.alive ? f.pos.clone() : null;
-    return { inArena: !!inArena, d: fw ? Math.hypot(ship.x - fw.x, ship.z - fw.z) : null, radius: A ? A.len * 0.9 / (2 * Math.PI * A.laps) : null, under: E.stage.foe?.id === 'charybdis' ? E.stage.foe.under : null, active: !!C?.active, held: !!f?.tick, up: R.up(new V3()).y, k: E.trip.k, afterArena: A ? s > A.at + A.len + 20 : false };
+    return { inArena: !!inArena, d: fw ? Math.hypot(ship.x - fw.x, ship.z - fw.z) : null, radius: A ? A.len * 0.9 / (2 * Math.PI * A.laps) : null, under: E.stage.foe?.id === 'charybdis' ? E.stage.foe.under : null, active: !!C?.active, held: !!f?.tick, up: R.up(new V3()).y, k: E.trip.k, afterArena: A ? s > A.at + A.len + 20 : false,
+      ...(() => { const L = E.looks, H = L?.mael?.heart; if (!H || !inArena) return {}; const v = H.clone().project(G.camera), eye = L.beast?.eyes?.[0]?.root?.getWorldPosition(new V3());
+        return { onScreen: v.z < 1 && Math.abs(v.x) < 0.95 && Math.abs(v.y) < 0.95, shipA: Math.atan2(ship.z - H.z, ship.x - H.x), eyeA: eye ? Math.atan2(eye.z - H.z, eye.x - H.x) : null, senses: [E.sea?.whirl?.sense ?? null, L.mael.sense, -(A.sign ?? 1)], sign: A.sign ?? 1 }; })() };
   });
   if (s.done) break;
+  if (s.inArena && s.shipA != null) { seen.onScreen = (seen.onScreen || 0) + (s.onScreen ? 1 : 0); seen.senses = s.senses; seen.sign = s.sign;
+    if (seen.last) { const d = (a, b) => { let x = a - b; while (x > Math.PI) x -= 2 * Math.PI; while (x < -Math.PI) x += 2 * Math.PI; return x; }; const ds = d(s.shipA, seen.last.shipA), de = s.eyeA != null && seen.last.eyeA != null ? d(s.eyeA, seen.last.eyeA) : 0; if (Math.abs(ds) > 1e-4) { seen.shipTurns = (seen.shipTurns || 0) + 1; if (s.sign * ds < 0) seen.shipRight = (seen.shipRight || 0) + 1; if (de * ds > 0) seen.eyeWith = (seen.eyeWith || 0) + 1; } }
+    seen.last = { shipA: s.shipA, eyeA: s.eyeA }; }
   if (s.inArena) { seen.arena++; if (s.d != null) seen.dist.push(s.d); if (s.held) seen.held++; seen.radius = s.radius; }
   if (s.under != null) seen.under.add(s.under);
   if (s.afterArena && !seen.after) seen.after = { up: s.up, active: s.active };
@@ -69,6 +74,8 @@ check('cast off through a maelstrom', r0.cast, r0);
 check('the arena is flown (the rail circles the whirlpool)', seen.arena > 50, { frames: seen.arena });
 check('Charybdis is held at its heart through the arena', seen.held > 0.9 * seen.arena, { held: seen.held, of: seen.arena });
 check('the ship circles at about the arena\'s radius from it', seen.dist.length && dmin > seen.radius * 0.7 && dmax < seen.radius * 1.3, { radius: seen.radius && +seen.radius.toFixed(1), d: [dmin, dmax].map((v) => +v.toFixed(1)) });
+check('Charybdis is on screen through the arena (the game\'s own camera)', (seen.onScreen || 0) > 0.9 * seen.arena, { onScreen: seen.onScreen, of: seen.arena });
+check('the ship, Charybdis and the whirlpool turn one way (sign * d(ship angle) < 0; senses -sign)', seen.shipTurns > 10 && seen.shipRight > 0.9 * seen.shipTurns && seen.eyeWith > 0.8 * seen.shipTurns && seen.senses?.every((x) => x === -seen.sign), { turns: seen.shipTurns, right: seen.shipRight, eyeWith: seen.eyeWith, senses: seen.senses, sign: seen.sign });
 check('it rises and dives by turns (stage.foe under, and not)', seen.under.has(true) && seen.under.has(false), [...seen.under]);
 check('said as it first rises, in the waypoint\'s feeling', r2.lines.some((l) => /Charybdis rises, in grief/.test(l)), r2.lines);
 check('let go at the release; the line comes out level', seen.after && !seen.after.active && seen.after.up > 0.999, seen.after);

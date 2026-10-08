@@ -14,7 +14,7 @@
 // all-range mode (the arena off the rail), Ikaruga's bosses that change their polarity on a beat.
 //
 //   const C = new Charybdis(stage)   C.begin(k, waypoint)   C.update(dt, bar)   C.end()   C.active
-//   events: charybdis.rise { feel }, charybdis.felled { feel, shards }, charybdis.driven { feel, hp }, all with `by`
+//   events: charybdis.rise { feel }, charybdis.dive { feel }, charybdis.felled { feel, shards }, charybdis.driven { feel, hp }, all with `by`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { whirlHeart } from '../../vfx/whirlpool.js';
@@ -23,6 +23,7 @@ import { BAR_S } from '../../progress/rail/crossing.js';
 import { CHARYBDIS, charybdisHurt } from '../../progress/rail/setpieces.js'; // (its numbers and its hit rule: Dovina's)
 
 const _c = new THREE.Vector3(), _h = new THREE.Vector3();
+const CHARYBDIS_R = 3; // (m: its hit sphere, the maw's radius)
 
 export class Charybdis {
   constructor(stage) { this.st = stage; this.game = stage.game; this.active = false; this.foe = null; }
@@ -30,7 +31,7 @@ export class Charybdis {
   /** The maelstrom leg `k` begins: its arena found (stage.arenas), its heavy taken when it comes. */
   begin(k, w) {
     const S = this.st;
-    this.k = k; this.w = w; this.arena = (S.arenas || []).find((t) => t.k === k) || null; this.foe = null; this.said = false; this.done = false;
+    this.k = k; this.w = w; this.arena = (S.arenas || []).find((t) => t.k === k) || null; this.foe = null; this.said = false; this.dove = false; this.done = false;
     this.active = !!this.arena; this.y = CHARYBDIS.depth;
     return this.active;
   }
@@ -42,7 +43,7 @@ export class Charybdis {
     if (!this.active) return;
     const S = this.st, L = S.trip.layout?.legs[this.k]; if (!L || L.peak == null) return;
     if (bar < L.peak || bar >= L.release) { if (bar >= L.release) this.end(); return; } // (the arena is the peak: at the release the line goes straight on and Charybdis goes down)
-    if (!this.foe?.alive) this.take();
+    if (!this.foe?.alive && !this.done) this.take(); // (once: felled, a heavy come after is not Charybdis back up)
     const f = this.foe; if (!f) return;
     // risen or dived, by turns of four bars from the peak; eased between over a bar
     const rel = bar - L.peak, up = Math.floor(rel / CHARYBDIS.bars) % 2 === 0, want = up ? CHARYBDIS.rise : CHARYBDIS.depth;
@@ -50,6 +51,7 @@ export class Charybdis {
     const under = this.y < 0;
     S.stage.foe = { id: 'charybdis', under };
     if (up && !this.said && this.y > 0) { this.said = true; this.game.events?.emit('charybdis.rise', { feel: this.w?.feel || null, by: 'creature' }); }
+    if (!up && this.said && !this.dove && under) { this.dove = true; this.game.events?.emit('charybdis.dive', { feel: this.w?.feel || null, by: 'creature' }); } // (its first dive only: Espada's line)
   }
 
   /** The leg's heavy is Charybdis: held at the whirlpool's heart at its height (in the world, then into the rail's frame: through the
@@ -57,7 +59,7 @@ export class Charybdis {
   take() {
     const S = this.st, W = S.waves, f = (W?.foes || []).find((x) => x.alive && x.role === 'heavy');
     if (!f) return;
-    this.foe = f; f.name = 'Charybdis'; f.solid = true; f.hp = f.maxHp = CHARYBDIS.hp; f.cls = Math.max(f.cls ?? 0, 4); if (f.mesh) f.mesh.visible = false;
+    this.foe = f; f.name = 'Charybdis'; f.solid = true; f.hp = f.maxHp = CHARYBDIS.hp; f.cls = Math.max(f.cls ?? 0, 4); f.radius = Math.max(f.radius ?? 0, CHARYBDIS_R); if (f.mesh) f.mesh.visible = false; // (struck across its 6 m maw, as it is drawn: vfx/charybdis.js)
     whirlHeart(S.rail.path, this.arena, S.sea?.y ?? 0, _h, CRUISE);
     f.tick = (dt, foe) => { S.rail.toLocal(_c.copy(_h).setY(_h.y + this.y), foe.local); return true; };
     // hurt only from the world it is in, twice over as it crosses the surface (setpieces.js charybdisHurt); a shot from the other world
