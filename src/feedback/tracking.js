@@ -428,7 +428,7 @@ export class Tracking {
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
-    on('knack.open', (e) => log.say('system', `You have the knack of it: ${KNACKS[e.knack]?.name || e.knack}, ${KNACKS[e.knack]?.does || ''}. (/knack ${e.knack} to switch it off.)`));
+    on('knack.open', (e) => log.say('system', `You have the knack of it: ${KNACKS[e.knack]?.name || e.knack}. ${KNACKS[e.knack]?.does || ''}. (/knack ${e.knack} to switch it off.)`));
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
     on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
