@@ -236,7 +236,7 @@ export class Raid {
         this.spent.push(...this.sherds); this.sherds = null; this.look.mend(0); F.show(0);
       }
     }
-    // a sherd struck down stays in the scene until its pop is over; then it is taken down (a `once` jelly is never re-formed: casebook rule 63)
+    // a sherd struck down stays in the scene until its pop is over; then it is taken down (a `once` jelly is never re-formed: casebook rule 65)
     if (this.spent.length) this.spent = this.spent.filter((c) => { if (c.alive || c.dying != null) return true; this.g.jellies?.dispose(c); return false; });
   }
 

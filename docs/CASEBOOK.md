@@ -167,9 +167,9 @@ the rules before building in the same area; a rule a machine can check goes into
     is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
     by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
 
-63. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
+65. **What a fight makes, the fight takes down, dead or alive.** A list of things a moment spawned is kept until each is gone from the
     scene; dropping the list when the last falls leaves the fallen in it (a `once` creature is never re-formed by its pool).
-64. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
+66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
     or with a line in the reader's reply saying why not.
 ## Cases
 
@@ -865,7 +865,7 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the sherds go to `spent` when the moment ends; each is taken down once its pop is over (`dying == null`); `dispose()` takes
   down every sherd, alive or dead. Measured headless (a temporary check in a copy of the Dunemaw sweep): four burst, jellies 12 before
   and 12 after the pops, `spent` empty; after leaving, bodies 840 to 816 and jellies 12 to 3, as before the cavern.
-- **Rule:** 63. (The check belongs in the Dunemaw sweep: Dovina's.)
+- **Rule:** 65. (The check belongs in the Dunemaw sweep: Dovina's.)
 
 ### 2026-10-08 · The Veritome would stop for good after 48 photographs (Calissa's survey; Espada's list)
 - **Seen:** the shutter still spent a roll of film (`mat.film`) though the owner retired film on 2026-10-06 and Old Grog no longer
@@ -878,4 +878,4 @@ the rules before building in the same area; a rule a machine can check goes into
   in Wanda's and Calissa's files, baselined, theirs to take out). Measured headless: an empty memory takes a plate with no film in the
   box; a full one refuses; one plate appraised and it takes again. (The stress page still read `book.film` and threw on its first
   run: a rename is searched for in `scripts/` as well as `src/`.)
-- **Rule:** 64.
+- **Rule:** 66.
