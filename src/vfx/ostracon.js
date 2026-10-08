@@ -35,7 +35,8 @@
 //   const S = new Stele({ words })               S.group (stands on its origin, its face to +z)   S.set({ buried })   S.update(dt)   S.dispose()
 //   (words: the runes in rows, four to a row, or an array of rows; none, a bare face)
 //   ostraconThing(word) -> { group, dispose }    the item in the Pneuka Box: a potsherd dug clean, its face to the eye (fossilThing's way)
-//   sandstoneMaterial({ ashlar }) -> material    the stele's sandstone laid from the world: coursed ashlar (a wall), or plain (a monolith)
+//   sandstoneMaterial({ ashlar }) -> material    the stele's sandstone for walls: coursed ashlar (a wall), or plain (a monolith)
+//   layStone(geometry, at?) -> geometry          a box's UVs in metres for it (`at`: its place among its neighbours, so courses run on)
 //   (picture: one of blackfigure.js's ids, 'drink' .. 'hush'; left out, the word's own from PICTURES; unknown, the meander)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -296,8 +297,8 @@ let BODY = null;
 function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; BODY.mat.userData.shared = true; } return BODY.mat; } // (shared: a parent that disposes what it holds, as the bowl does, leaves it)
 
 // ---- the stele's sandstone laid as a wall: the town's isodomic ashlar (courses of one height, each block cut from the stone at its own
-// place, its arrises worn, sand in the joints), or the plain stone for a monolith; laid from the world along the axis a face looks down
-// (box mapping, as vfx/surfaces.js lays the workshop's), so any box of it takes the stone at one density with no UVs
+// place, its arrises worn, sand in the joints), or the plain stone for a monolith; a box takes it at one density, its UVs in metres
+// along the axis each face looks down (layStone)
 const AW = 2.4, AH = 2.1, APX = 400; // (the ashlar's tile in metres, three courses of 0.7 m; texels a metre)
 let ASHLAR = null;
 function ashlarTile() {
@@ -332,33 +333,28 @@ function ashlarTile() {
   }
   return (ASHLAR = c);
 }
-const STONE_VS = ['#include <common>', '#include <common>\nvarying vec3 vSandP;\nvarying vec3 vSandN;', '#include <begin_vertex>', '#include <begin_vertex>\nvSandP = (modelMatrix * vec4(transformed, 1.0)).xyz; vSandN = mat3(modelMatrix) * objectNormal;'];
-const STONE_FS = `#include <common>
-varying vec3 vSandP; varying vec3 vSandN; uniform sampler2D uSand; uniform vec2 uSandTile;
-float sandHash(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
-float sandNoise(vec3 p) { vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(mix(sandHash(i), sandHash(i + vec3(1.0, 0.0, 0.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 0.0)), sandHash(i + vec3(1.0, 1.0, 0.0)), f.x), f.y),
-    mix(mix(sandHash(i + vec3(0.0, 0.0, 1.0)), sandHash(i + vec3(1.0, 0.0, 1.0)), f.x), mix(sandHash(i + vec3(0.0, 1.0, 1.0)), sandHash(i + vec3(1.0, 1.0, 1.0)), f.x), f.y), f.z); }`;
-// (the face's own axis picks the plane; the gradients come from the world position, which runs on unbroken across an edge, so the mips do too)
-const STONE_MAP = `{ vec3 an = abs(normalize(vSandN)), P = vSandP, PX = dFdx(P), PY = dFdy(P); vec2 suv, sgx, sgy;
-  if (an.x >= an.y && an.x >= an.z) { suv = P.zy; sgx = PX.zy; sgy = PY.zy; } else if (an.y >= an.z) { suv = P.xz; sgx = PX.xz; sgy = PY.xz; } else { suv = P.xy; sgx = PX.xy; sgy = PY.xy; }
-  vec3 sst = textureGrad(uSand, suv / uSandTile, sgx / uSandTile, sgy / uSandTile).rgb;
-  diffuseColor.rgb *= sst * (0.9 + 0.2 * sandNoise(P * 0.45)); }`;
 const STONES = {};
 /** The stele's sandstone as a material for walls and slabs laid in the world: `ashlar` coursed blocks (the sealed room's walls), else the
- *  plain stone (a monolith: its door slab). Shared, one per kind, one program for both. */
+ *  plain stone (a monolith: its door slab). A plain textured material (one program with every other), its texture repeating once a
+ *  tile of metres; a box laid in it takes its UVs in metres from `layStone`. Shared, one per kind. */
 export function sandstoneMaterial({ ashlar = false } = {}) {
   const key = ashlar ? 'ashlar' : 'plain'; if (STONES[key]) return STONES[key];
-  const tex = ashlar ? canvasTexture(ashlarTile(), true) : (steleBody(), BODY.tex), tile = ashlar ? new THREE.Vector2(AW, AH) : new THREE.Vector2(TW, TH); // (the plain stone is the stele's own texture)
-  const m = new THREE.MeshStandardMaterial({ name: `sandstone-${key}`, color: 0xffffff, roughness: 0.95 });
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.uSand = { value: tex }; sh.uniforms.uSandTile = { value: tile };
-    sh.vertexShader = sh.vertexShader.replace(STONE_VS[0], STONE_VS[1]).replace(STONE_VS[2], STONE_VS[3]);
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', STONE_FS).replace('#include <map_fragment>', `#include <map_fragment>\n${STONE_MAP}`);
-  };
-  m.customProgramCacheKey = () => 'sandstone-laid';
-  m.userData.sandstone = tex; m.userData.shared = true;
+  const tex = ashlar ? canvasTexture(ashlarTile(), true) : (steleBody(), BODY.tex.clone()); // (the plain stone is the stele's own picture: a clone shares its upload)
+  tex.repeat.set(1 / (ashlar ? AW : TW), 1 / (ashlar ? AH : TH));
+  const m = new THREE.MeshStandardMaterial({ name: `sandstone-${key}`, map: tex, roughness: 0.95 });
+  m.userData.shared = true;
   return (STONES[key] = m);
+}
+/** A box laid in the sandstone: its UVs in metres along the plane each face looks down (box mapping, as vfx/surfaces.js lays the
+ *  workshop's), from `at`, the box's place among its neighbours (its position in their group), so the courses run on from box to box. */
+export function layStone(geo, at = _a.set(0, 0, 0)) {
+  const P = geo.attributes.position, N = geo.attributes.normal, U = geo.attributes.uv;
+  for (let i = 0; i < P.count; i++) {
+    const x = P.getX(i) + at.x, y = P.getY(i) + at.y, z = P.getZ(i) + at.z, nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i));
+    if (nx >= ny && nx >= nz) U.setXY(i, z, y); else if (ny >= nz) U.setXY(i, x, z); else U.setXY(i, x, y);
+  }
+  U.needsUpdate = true;
+  return geo;
 }
 
 function cutRune(g, word, cx, cy, size, w, style) { const k = size / 8; g.beginPath(); for (const [[x0, y0], [x1, y1]] of runeStrokes(word)) { g.moveTo(cx + (x0 - 5) * k, cy + (y0 - 5) * k); g.lineTo(cx + (x1 - 5) * k, cy + (y1 - 5) * k); } g.lineWidth = w; g.strokeStyle = style; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); }
@@ -436,20 +432,19 @@ function anthemionGeometry() {
   g.translate(0, 0, -0.04); g.computeBoundingBox(); return g;
 }
 
-let BANK = null;
-function bankMaterial() { if (!BANK) { BANK = new THREE.MeshStandardMaterial({ name: 'stele-bank', color: 0xffffff, vertexColors: true, roughness: 1, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }); BANK.userData.shared = true; } return BANK; } // (its thin edge fades out, so it lies on any floor: sand, or the cavern's stone)
-/** Sand banked round a footprint (half sizes hx, hz): level against the stele, deeper on the windward front, falling away concave to nothing. */
+/** Sand banked round a footprint (half sizes hx, hz): level against the stele, deeper on the windward front, falling away concave to nothing,
+ *  and its thin margin cut away along a wandering line, so it is a drift on any floor (sand, or the cavern's stone), never a pale square.
+ *  The mound's own sand material: one program with the plainest. */
 function bankGeometry(hx, hz) {
-  const g = new THREE.PlaneGeometry(1.8, 1.4, 60, 46).rotateX(-Math.PI / 2), P = g.attributes.position, col = [], sand = new THREE.Color(SAND);
+  const g = new THREE.PlaneGeometry(1.8, 1.4, 60, 46).rotateX(-Math.PI / 2), P = g.attributes.position, keep = new Uint8Array(P.count);
   for (let i = 0; i < P.count; i++) {
     const x = P.getX(i), z = P.getZ(i), d = Math.hypot(Math.max(0, Math.abs(x) - hx), Math.max(0, Math.abs(z) - hz));
-    const deep = (0.075 + 0.055 * THREE.MathUtils.smoothstep(z, -hz, hz)) * (0.8 + 0.4 * noise3(x * 6 + 3, 0.5, z * 6));
-    P.setY(i, deep * Math.exp(-d / 0.2) * (1 - THREE.MathUtils.smoothstep(Math.max(Math.abs(x) / 0.9, Math.abs(z) / 0.7), 0.6, 1)));
-    // (shaded in the hollow where it banks against the stele, so it reads as set in sand under any light)
-    const k = 0.74 + 0.26 * THREE.MathUtils.smoothstep(d, 0, 0.14), a = THREE.MathUtils.smoothstep(P.getY(i), 0.002 + 0.006 * noise3(x * 9, 1.5, z * 9), 0.022);
-    col.push(sand.r * k, sand.g * k, sand.b * k, a);
+    const deep = (0.075 + 0.055 * THREE.MathUtils.smoothstep(z, -hz, hz)) * (0.8 + 0.4 * noise3(x * 6 + 3, 0.5, z * 6)), y = deep * Math.exp(-d / 0.2) * (1 - THREE.MathUtils.smoothstep(Math.max(Math.abs(x) / 0.9, Math.abs(z) / 0.7), 0.6, 1));
+    P.setY(i, y); keep[i] = y > 0.004 + 0.008 * noise3(x * 9, 1.5, z * 9) ? 1 : 0;
   }
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 4)); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
+  const I = g.index.array, out = [];
+  for (let t = 0; t < I.length; t += 3) if (keep[I[t]] || keep[I[t + 1]] || keep[I[t + 2]]) out.push(I[t], I[t + 1], I[t + 2]);
+  g.setIndex(out); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
   return g;
 }
 
@@ -465,7 +460,7 @@ export class Stele {
     this.crown = new THREE.Mesh(anthemionGeometry(), body); this.crown.position.y = EH + CH;
     for (const m of [this.mesh, this.cornice, this.crown]) { m.castShadow = m.receiveShadow = true; this.slab.add(m); }
     // its foot in a bank of sand; when it is buried, a dune heaped over it besides
-    this.bank = new THREE.Mesh(bankGeometry(EW / 2 - 0.02, ED / 2 - 0.02), bankMaterial()); this.bank.receiveShadow = true; this.group.add(this.bank);
+    this.bank = new THREE.Mesh(bankGeometry(EW / 2 - 0.02, ED / 2 - 0.02), sandParts().mat); this.bank.receiveShadow = true; this.group.add(this.bank);
     this.heaps = [[0, 0, 1], [-0.28, -0.12, 0.55]].map(([x, z, k]) => { const m = mound(); m.position.set(x, 0, z); m.userData.k = k; this.group.add(m); return m; });
     this.sparkle = new Sparkle(0.15, seeded(words.join(' ') || 'stele')()); this.sparkle.mesh.position.set(0, EH - 0.06, ED / 2 * 0.9 + 0.006); this.slab.add(this.sparkle.mesh);
     this.normal = new THREE.Vector3(0, 0.25, 1).normalize();

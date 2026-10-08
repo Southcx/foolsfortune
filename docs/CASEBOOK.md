@@ -180,9 +180,9 @@ the rules before building in the same area; a rule a machine can check goes into
 69. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
     scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
-70. **A dressing laid on the ground fades out by its alpha, never by its height alone.** A bank of sand, a drift, a stain that falls to
-    nothing at its edge still shows its colour there; on a floor not its colour that margin is a pale square. Its edge is
-    transparent, and it is looked at on every floor it can stand on.
+70. **A dressing laid on the ground ends at its own edge, never in a margin of its colour at zero height.** A bank of sand, a drift, a
+    stain that falls to nothing still shows its colour where it is flat; on a floor not its colour that margin is a pale square. Cut
+    it away along a wandering line (or fade it, if a program can be spared), and look at it on every floor it can stand on.
 71. **A canvas painted from a `THREE.Color` takes the colour's sRGB values.** `.r .g .b` are the renderer's linear working values: written
     as CSS they paint far too dark. Use `getRGB(target, SRGBColorSpace)` or `getStyle()`, and shift a shade in sRGB (`getHSL` /
     `setHSL` with `SRGBColorSpace`), where the eye judges it.
@@ -193,8 +193,9 @@ the rules before building in the same area; a rule a machine can check goes into
   (the builder's headless shot); in the Dunes it never showed, sand on sand.
 - **Cause:** the bank (`vfx/ostracon.js` `bankGeometry`) is a plane whose height falls to nothing toward its edge, but every vertex kept
   the sand's colour at full strength: its flat margin is sand-coloured floor laid over whatever floor it stands on.
-- **Fix:** each vertex carries an alpha from its height (0 at the edge, 1 from 2 cm up, the threshold wandering by noise), and the bank's
-  material is transparent without depth writes; it is now a drift that fades into the gallery's stone and into the Dunes' sand alike.
+- **Fix:** the triangles of the margin are cut away where the bank is under 4 to 12 mm high (the line wandering by noise), so it ends
+  as a drift on the gallery's stone and on the Dunes' sand alike, in the mound's own sand material. (A vertex-alpha fade was tried
+  first: it looked softer but cost a transparent shader program, and the Dunes stood at the 160-program budget.)
 - **Rule:** 70.
 
 ### 2026-10-08 · The plaster patch was painted far too dark (found headless, before it shipped)

@@ -28,7 +28,7 @@ import { bearingXZ } from './well/bowl.js';
 import { ARENA } from '../progress/combat/dunemaw.js';
 import { stream } from '../core/rng.js';
 import { PALETTE } from '../core/config.js';
-import { Ostracon, Stele, sandstoneMaterial } from '../vfx/ostracon.js';
+import { Ostracon, Stele, sandstoneMaterial, layStone } from '../vfx/ostracon.js';
 import { PlasterPatch } from '../vfx/plasterpatch.js';
 const simRand = stream('world/ostraca'); // (the simulation's chance: core/rng.js)
 
@@ -92,7 +92,8 @@ export class Ostraca {
     const x = DUNE.x + Math.cos(S.a) * S.r, z = DUNE.z + Math.sin(S.a) * S.r, y = D.heightAt(x, z) - 0.2, c = new THREE.Vector3(x, y, z);
     const grp = this.room = new THREE.Group(); grp.name = 'sealed-room'; g.scene.add(grp);
     const box = (sx, sy, sz, px, py, pz) => {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), this.stoneMat); m.position.set(px, py, pz); m.castShadow = m.receiveShadow = true; grp.add(m);
+      const m = new THREE.Mesh(layStone(new THREE.BoxGeometry(sx, sy, sz), _v.set(px, py, pz)), this.stoneMat); m.position.set(px, py, pz); // (the courses run on from box to box: the look's)
+      m.castShadow = m.receiveShadow = true; grp.add(m);
       const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(c.x + px, c.y + py, c.z + pz));
       return { m, b, col: W.createCollider(RAPIER.ColliderDesc.cuboid(sx / 2, sy / 2, sz / 2).setCollisionGroups(GROUPS.static), b) };
     };
@@ -104,12 +105,13 @@ export class Ostraca {
     door.ent = { type: 'sealed', ring: () => this.open() }; g.physics.register(door.col, door.ent);
     this.door = door;
     if (this.s.opened) this.open(true);
-    { const at = c.clone().add(_v.set(0, 0, -s + 0.6)); at.y = D.heightAt(at.x, at.z) - 0.15; this.addStele(STELAE.find((x2) => x2.id === 'stele.sealed'), at, grp); } // (on the sand where it stands, its face to the door)
+    { const at = c.clone().add(_v.set(0, 0, -s + 0.6)); at.y = D.heightAt(at.x, at.z) - 0.15; const st = this.addStele(STELAE.find((x2) => x2.id === 'stele.sealed'), at, grp); if (st) st.mesh.visible = !!door.open; } // (on the sand where it stands, its face to the door; drawn once the door is open: shut, nothing sees in)
   }
   /** The fork rang in the door: the slab sinks into the sand (once, kept). */
   open(quiet = false) {
     const g = this.game, d = this.door; if (!d || d.open) return;
     d.open = true; d.m.visible = false; g.physics.world.removeCollider(d.col, true);
+    const st = this.stelae.find((x) => x.def.id === 'stele.sealed'); if (st) st.mesh.visible = true; // (the stele inside, drawn from now on)
     if (!quiet) { this.s.opened = true; g.save?.dirty('ostraca'); g.events?.emit('sealed.open', { by: 'courier' }); }
   }
 
@@ -118,7 +120,8 @@ export class Ostraca {
     const rows = NEURALESE.STELE_TEXT?.[def.id]?.split('.').map((x) => x.trim().split(/\s+/).filter(Boolean)).filter((r) => r.length) ?? def.words; // (its sentence cut a clause a row: Espada's)
     const look = new Stele({ words: rows }), m = look.group; m.position.copy(pos); m.rotation.y = yaw; m.name = def.id; // (the look: Calissa's, vfx/ostracon.js; it stands on its origin, its face to +z)
     (parent ? parent : this.game.scene).add(m); if (parent) parent.worldToLocal(m.position);
-    this.stelae.push({ def, pos: pos.clone(), mesh: m, look });
+    const st = { def, pos: pos.clone(), mesh: m, look }; this.stelae.push(st);
+    return st;
   }
 
   /** The great cavern's stele, on the bowl (it goes when the bowl does), the first frame the cavern stands. */

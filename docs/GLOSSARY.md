@@ -683,8 +683,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
   each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
   counts).
-- **the stele's sandstone, laid** (`sandstoneMaterial`, `src/vfx/ostracon.js`): the stele's own stone laid on boxes from the world (box
-  mapping, no UVs): **ashlar** (the town's isodomic courses, 0.7 m high, each block cut from the stone at its own place, sand in the
+- **the stele's sandstone, laid** (`sandstoneMaterial`, `layStone`, `src/vfx/ostracon.js`): the stele's own stone on boxes, their UVs in
+  metres along the axis each face looks down, so courses run on from box to box: **ashlar** (the town's isodomic courses, 0.7 m high, each block cut from the stone at its own place, sand in the
   joints: the sealed room's walls and roof) or **plain** (one monolith: the sealed room's door slab). *Not:* the ruins' columns (stone of
   their own), nor the surfaces (`render/triplanar.js`).
 - **a plaster patch's look** (`PlasterPatch`, `src/vfx/plasterpatch.js`; the patch and its blow are Petra's, `world/ostraca.js`): the
