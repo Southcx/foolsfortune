@@ -184,8 +184,24 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
+72. **A mark the player must read carries a light part and a dark part.** The black crude and the gold storm are both grounds at sea:
+    a danger drawn only dark (ink on the ink sea) or only as added light (white on the gold) vanishes on one of them. Give it both (an
+    astral shot's dark rim, an umbral shot's pale rim, the outline's film beside its ink, a ribbon's shade at its edges) and render it
+    over both grounds before calling it done.
 
 ## Cases
+
+### 2026-10-08 · The lances' ribbons never drew in the crossing, and the outlined shots were ink on the ink sea (Calissa)
+- **Seen (headless, the crossing's pincer from above):** eight lances flown, `ribbons.active` 8, and nothing on screen; the same
+  ribbons drew on the workbench's stage. Before the shots were refired, an outlined shot was an ink body (#160c1e) inside the parry
+  mark's shell (ink, its film at a tenth) on a sea of #07050b: on the crude, nothing to see.
+- **Cause (probed, not guessed):** the ribbons' mesh had no parent after boot and never fired `removed`: an edit had put a comment
+  before `scene.add(this.ribbons.mesh)` on its line (`courier/ship/shots.js` build), so it was never added (rule 25, again). The
+  outlined shot had no light part at all.
+- **Fix:** the call put before its comment; the shots drawn by `vfx/railshots.js` (`vfx/railmark.js`): every kind with a light and a
+  dark part, the outlined with the parry mark's ink band and its film bright at the band's edge; the ribbons laid over the frame
+  (not added: added light went white on the gold) with a shade at their edges.
+- **Rule:** 72, and 25 (read the whole line after any edit that adds a comment to it).
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame

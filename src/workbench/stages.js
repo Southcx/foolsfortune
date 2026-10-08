@@ -41,12 +41,14 @@ import { SolarRing } from '../vfx/solarring.js';
 import { Ostracon, Stele } from '../vfx/ostracon.js';
 import { debugChestModel } from '../vfx/debugchest.js';
 import { PICTURES } from '../vfx/blackfigure.js';
+import { crossingShotsStage } from './crossingshots.js';
 
 export function buildStage(id) {
   let obj = null;
   if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
+  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the telegraph, the hurtbox: workbench/crossingshots.js)
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
   else if (id === 'slice:cave') {
     obj = new THREE.Group();

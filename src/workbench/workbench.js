@@ -163,6 +163,7 @@ export class Workbench {
     for (const f of Object.keys(GLBS)) out.push({ id: `glb:${f}`, grp: f.includes('/vfx/') ? 'effect meshes' : 'models', label: f.split('/').pop().replace('.glb', '') });
     out.push({ id: 'tool:dreamvane', grp: 'tools', label: 'the Dreamvane' }, { id: 'tool:crucibelle', grp: 'tools', label: 'the Crucibelle' });
     out.push({ id: 'ship:sloop', grp: 'ships', label: 'the sloop' });
+    out.push({ id: 'crossing:shots', grp: 'the crossing', label: "the shots' look (a ring, a spiral and a wall of astral, umbral and outlined shots over the storm and the crude; the ship's full auto and its hurtbox; eight lances' Itano ribbons; a telegraph closing on a part; on a loop)" });
     out.push({ id: 'slice:sea', grp: 'the slice', label: 'the crude sea (a patch)' }, { id: 'slice:mouth', grp: 'the slice', label: "the Great Dunemaw's mouth" }, { id: 'slice:kit', grp: 'the slice', label: "the Great Dunemaw's kit (a corner)" });
     out.push({ id: 'garden:press', grp: 'the Spirit Garden', label: 'the spirit press' }, { id: 'garden:shrine', grp: 'the Spirit Garden', label: 'a Shrine (found, rested at, its door into the Spirit Garden opening; on a loop)' });
     out.push({ id: 'slice:cave', grp: 'the slice', label: "the Great Dunemaw's cave kit (a pillar cracking, stone, brittle and warped stalactites, the slip, a clutch)" });
@@ -312,6 +313,7 @@ export class Workbench {
 
   clearHolder() {
     if (!this.holder) return;
+    if (this.floor) this.floor.visible = true;
     for (const c of [...this.holder.children]) this.holder.remove(c);
     this.mixer = null; this.packClip = null; this.model = null; this.texPlane = null;
   }
@@ -335,7 +337,10 @@ export class Workbench {
     // standing on the floor, its middle over the centre
     const box = new THREE.Box3().setFromObject(obj), c = box.getCenter(new THREE.Vector3());
     obj.position.x -= c.x; obj.position.z -= c.z; obj.position.y -= box.min.y;
-    this.applyView(); this.frameModel();
+    if (obj.userData.bare) { this.floor.visible = false; this.figure.visible = false; } // (a stage with grounds of its own: the crossing's sky and sea)
+    this.applyView();
+    const V = obj.userData.view; // (a stage that says where its camera starts, in its own frame: the rail's chase view)
+    if (V) { obj.updateMatrixWorld(true); this.controls.target.copy(obj.localToWorld(V.look.clone())); this.camera.position.copy(obj.localToWorld(V.pos.clone())); this.controls.update(); } else this.frameModel();
     // its clips: a GLB's own, and for the Courier every clip of the game's pack
     this.clipsEl.innerHTML = '';
     if (clips.length) {
