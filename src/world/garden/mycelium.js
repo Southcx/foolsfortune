@@ -4,9 +4,9 @@
 // "take the whole world side"). Four things:
 //   MYGGDRASIL'S PLANETOID  given at the second Firing (Sinter: ECON.myggdrasil.firing), the largest in the garden (26 m), hung below and
 //                           behind the ring so its crown rises toward the Dantian; linked by lotuses to its two nearest like a bought
-//                           one (orbit.js's way), with plots of its own. The tree on its crown is BIG (the owner: 48 m), a stand-in here
-//                           (a labradorite trunk, a gold cap lit in the tincture's colour, its ten fruiting bodies shown as they open)
-//                           until Calissa's billboarded canopy comes. F at its roots: feed it, pick the crown, hang a card.
+//                           one (orbit.js's way), with plots of its own. The tree on its crown is BIG (the owner: 48 m): Calissa's
+//                           World Mushroom (vfx/garden/myggdrasil.js, grown by the planetoid's look and reading game.myggdrasil
+//                           itself), its threads sent to the spore beds here. F at its roots' mouth: feed it, pick the crown, hang a card.
 //   THE SPORE BEDS          a placed feature (`sporebed`, progress/realm.js FEATURES); a fairy ring of caps in its strain's colour, lit
 //                           when what it works is ready. F at one: inoculate it, set what it eats, take it back, harvest. Its
 //                           neighbours' strains pace it (sporebeds.js near), worked out from the plots whenever the garden changes.
@@ -38,7 +38,6 @@ import { GARDEN_AT, dirOf } from './place.js';
 export const MYGG = { at: [0, -60, -160], plots: 6, roots: 6, trunk: 3.2, pots: 64 };
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, UP = new THREE.Vector3(0, 1, 0);
 const colorOf = (feeling) => new THREE.Color(COLOR[feeling] ?? 0xd8d0c8);
-const hsl = (h, s) => new THREE.Color().setHSL((((h ?? 0) % 360) + 360) % 360 / 360, Math.max(0.05, Math.min(1, s ?? 0)), 0.5);
 
 export class GardenMycelium {
   constructor(realm) {
@@ -59,40 +58,19 @@ export class GardenMycelium {
     const fired = g.ledger ? firingOf(ranksOf(g.ledger)) : 0;
     if (fired < E.firing) return null;
     const P = site.addPlanet({ id: 'myggdrasil', r: E.radius, c: GARDEN_AT.clone().add(new THREE.Vector3(...MYGG.at)), name: NAMES.myggdrasil?.name || 'Myggdrasil' });
-    const foot = dirOf(78, 0), top = UP.clone();
+    P.look.game = g; this.tree = P.look.growMushroom(); // (the tree reads game.myggdrasil each frame: Calissa's)
+    const foot = this.tree ? this.tree.mouthAt.clone().normalize() : dirOf(78, 0), top = UP.clone(); // (F where its mouth is drawn)
     site.features.push({ kind: 'myggdrasil', planet: P, pos: P.c.clone().addScaledVector(foot, P.radiusAt(foot)) }); // (before adopt: no plot is laid on its roots)
     site.features.push({ kind: 'myggdrasilTrunk', planet: P, pos: P.c.clone().addScaledVector(top, P.radiusAt(top)), mesh: { visible: false } }); // (kept clear of plots; never offered)
     this.R.adopt(P, MYGG.plots);
     this.R.clays.myggdrasil?.keep(top.clone().multiplyScalar(P.r), MYGG.roots * 2); // (no stroke heaves the tree)
-    this.planet = P; this.tree = this.buildTree(P); site.group.add(this.tree.group);
+    this.planet = P;
     g.events?.emit('garden.myggdrasil', { planetoid: P.id, by: 'courier' });
     return P;
   }
 
-  /** The stand-in tree (Calissa's comes): a labradorite trunk 48 m tall on flared roots, a gold cap the width of a planetoid, the ten
-   *  fruiting bodies hung on it in the Tree of Life's three pillars, the crop as lights under the cap's rim. */
-  buildTree(P) {
-    const H = ECON.myggdrasil.treeHeight, group = new THREE.Group(); group.name = 'myggdrasil-tree';
-    group.position.copy(P.c).addScaledVector(UP, P.radiusAt(UP) - 0.6);
-    const bark = new THREE.MeshStandardMaterial({ color: 0x2b3440, emissive: 0x1a2a3a, emissiveIntensity: 0.4, roughness: 0.55, metalness: 0.3, name: 'myggdrasil-bark' });
-    const cap = new THREE.MeshStandardMaterial({ color: 0xc9a24a, emissive: 0x6a4a10, emissiveIntensity: 0.5, roughness: 0.4, metalness: 0.5, name: 'myggdrasil-cap' });
-    const gill = new THREE.MeshStandardMaterial({ color: 0x8fa0c8, emissive: 0x405080, emissiveIntensity: 0.8, roughness: 0.6, side: THREE.DoubleSide, name: 'myggdrasil-gills' });
-    const add = (geo, mat, y = 0) => { const m = new THREE.Mesh(geo, mat); m.position.y = y; m.castShadow = true; m.receiveShadow = true; group.add(m); return m; };
-    add(new THREE.CylinderGeometry(MYGG.trunk * 0.55, MYGG.trunk, H, 14, 6), bark, H / 2);
-    for (let k = 0; k < MYGG.roots; k++) { const r = add(new THREE.ConeGeometry(1.4, 9, 6), bark, 2); r.rotation.set(1.05, (k / MYGG.roots) * Math.PI * 2, 0, 'YXZ'); r.position.set(Math.sin((k / MYGG.roots) * Math.PI * 2) * 3.6, 1.2, Math.cos((k / MYGG.roots) * Math.PI * 2) * 3.6); }
-    const dome = add(new THREE.SphereGeometry(20, 28, 12, 0, Math.PI * 2, 0, Math.PI / 2), cap, H - 4); dome.scale.y = 0.42;
-    add(new THREE.RingGeometry(MYGG.trunk, 20, 36, 2).rotateX(Math.PI / 2), gill, H - 4.05);
-    // the ten fruiting bodies (the sephiroth, CAPS): three pillars on the trunk's south face, the Kingdom lowest and the Crown on top
-    const at = [[0, 0.12], [0, 0.3], [-1, 0.38], [1, 0.38], [0, 0.5], [-1, 0.6], [1, 0.6], [-1, 0.78], [1, 0.78], [0, 0.94]];
-    const bodyGeo = new THREE.SphereGeometry(1.5, 12, 8); bodyGeo.scale(1, 0.5, 1);
-    this.bodies = at.map(([x, y], i) => { const m = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0xf2e6c4, emissive: 0xffd88a, emissiveIntensity: 0.9, roughness: 0.5, name: `myggdrasil-body-${i}` })); m.position.set(x * 2.6, y * (H - 6), MYGG.trunk + 0.4); m.visible = false; group.add(m); return m; });
-    this.crop = new THREE.InstancedMesh(new THREE.SphereGeometry(0.7, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 0.6, roughness: 0.4, name: 'myggdrasil-crop' }), 12);
-    this.crop.count = 0; this.crop.position.y = H - 6; group.add(this.crop);
-    return { group, cap, gill, bark };
-  }
-
   // ------------------------------------------------------------------ the garden as it is now
-  /** Everything drawn again from the kept state: the beds' rings and places, their neighbours, the tree's colour, bodies and crop,
+  /** Everything drawn again from the kept state: the beds' rings and places, their neighbours, the tree's threads to the beds,
    *  the pots. Cheap: a few dozen objects, called on entering and when anything changes. */
   sync() {
     if (!this.R.site) return;
@@ -127,13 +105,8 @@ export class GardenMycelium {
   syncTree() {
     const T = this.T, t = this.tree; if (!T || !t) return;
     T.dawn?.();
-    const sap = T.tincture, c = sap?.mass ? hsl(sap.h, sap.s) : new THREE.Color(0x6a4a10);
-    t.cap.emissive.copy(c).multiplyScalar(0.6); t.gill.emissive.copy(c);
-    this.bodies.forEach((m, i) => { m.visible = i < T.caps; });
-    const crop = T.crown || [], mtx = new THREE.Matrix4();
-    this.crop.count = Math.min(12, crop.length);
-    for (let i = 0; i < this.crop.count; i++) { const a = (i / Math.max(1, this.crop.count)) * Math.PI * 2; mtx.makeTranslation(Math.sin(a) * 17, -0.4, Math.cos(a) * 17); this.crop.setMatrixAt(i, mtx); this.crop.setColorAt(i, hsl(crop[i].hue, crop[i].sat)); }
-    this.crop.instanceMatrix.needsUpdate = true; if (this.crop.instanceColor) this.crop.instanceColor.needsUpdate = true;
+    const site = this.R.site, beds = site.features.filter((f) => f.kind === 'sporebed' && f.planet === this.planet).map((f) => site.group.localToWorld(f.pos.clone()));
+    t.threadsTo(beds); t.update(0, T); // (its threads run from its roots to each spore bed on its planetoid; its caps, tincture, branches and crop it reads itself, and now)
   }
 
   // ------------------------------------------------------------------ the keepsake pots

@@ -16,7 +16,8 @@
 // Prior art: Star Fox 64's chase and its All-Range turns, Ikaruga's and Einhander's fixed views, Sin & Punishment's over-the-shoulder,
 // Rez's view changes on the bar, Wind Waker's wake and bow spray (a boat's speed read from its water), and the PS2's feedback blur.
 //
-//   RAIL_VIEWS[name] -> { pos, look, fov }   swingLook(game, k 0..1, from, to) -> fov   new ShipWake(game)   .update(rawDt, ship, sea)
+//   RAIL_VIEWS[name] -> { pos, look, fov }   swingLook(game, k 0..1, from, to) -> fov   new ShipWake(game)   .update(rawDt, ship, sea) (ship.air: a turn of the rail, the wake along the figure)
+//   foamMaterial(uniforms = { uT })   the foam's material (one program: the wake's lines and the Umbral's splash rings, vfx/umbral.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 export { ShoalLook } from './shoal.js'; // (the set pieces' looks ride along: game.railLook.ShoalLook, .BrigLook, .LeviathanLook)
@@ -50,6 +51,11 @@ void main() {
   gl_FragColor = vec4(vec3(0.9, 0.86, 0.95) * 0.45, a * 0.4);                        // (pale foam on the ink: kept low, the scene is linear)
 }`;
 
+/** The foam's material: a strip with uv.x along it, uv.y across it and an age per vertex (aAge, 0 new .. 1 gone). One program for all. */
+export function foamMaterial(u = { uT: { value: 0 } }) {
+  return new THREE.ShaderMaterial({ name: 'ship-wake', uniforms: u, vertexShader: FOAM_V, fragmentShader: FOAM_F, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+}
+
 export class ShipWake {
   constructor(game) {
     this.game = game; this.t = 0; this.acc = 0;
@@ -60,13 +66,14 @@ export class ShipWake {
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('aAge', new THREE.BufferAttribute(age, 1).setUsage(THREE.DynamicDrawUsage));
       g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx);
-      const m = new THREE.Mesh(g, new THREE.ShaderMaterial({ name: 'ship-wake', uniforms: this.u, vertexShader: FOAM_V, fragmentShader: FOAM_F, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(g, foamMaterial(this.u));
       m.frustumCulled = false; m.renderOrder = 3; game.scene?.add(m);
       return { side, m, pts: [] }; // (pts: newest first: { x, z, dx, dz (across), born })
     });
   }
 
-  /** ship: { group (its world frame), speed (m/s), length (m), beam (m) }; sea: { heightAt(x, z) } or null. */
+  /** ship: { group (its world frame), speed (m/s), length (m), beam (m), air? }; sea: { heightAt(x, z) } or null. `air`: the ship is in a
+   *  turn of the rail (railpath.js), so the wake is left where it flew, along the figure, not laid on the sea below it. */
   update(raw, ship, sea = null) {
     if (!ship?.group) return;
     this.t += raw; this.u.uT.value = this.t;
@@ -78,7 +85,7 @@ export class ShipWake {
       this.acc = 0;
       for (const ln of this.lines) {
         const p = _p.setFromMatrixPosition(G.matrixWorld).addScaledVector(fwd, -L * 0.15).addScaledVector(right, ln.side * B * 0.45);
-        ln.pts.unshift({ x: p.x, z: p.z, dx: right.x * ln.side, dz: right.z * ln.side, born: this.t, v: speed });
+        ln.pts.unshift({ x: p.x, y: p.y, z: p.z, dx: right.x * ln.side, dy: right.y * ln.side, dz: right.z * ln.side, born: this.t, v: speed, air: !!ship.air });
         if (ln.pts.length > N) ln.pts.pop();
       }
     }
@@ -88,8 +95,9 @@ export class ShipWake {
         const q = ln.pts[Math.min(i, ln.pts.length - 1)];
         if (!q) { A.setX(i * 2, 1); A.setX(i * 2 + 1, 1); continue; }
         const age = this.t - q.born, k = Math.min(1, age / 6), spread = q.v * 0.18 * age, w = 0.25 + 0.6 * k; // (it spreads out from the hull as it ages)
-        const cx = q.x + q.dx * spread, cz = q.z + q.dz * spread, y = (sea?.heightAt?.(cx, cz) ?? G.position.y) + 0.04;
-        P.setXYZ(i * 2, cx - q.dx * w * 0.5, y, cz - q.dz * w * 0.5); P.setXYZ(i * 2 + 1, cx + q.dx * w * 0.5, y, cz + q.dz * w * 0.5);
+        const cx = q.x + q.dx * spread, cz = q.z + q.dz * spread;
+        if (q.air) { const cy = q.y + q.dy * spread - 0.15; P.setXYZ(i * 2, cx - q.dx * w * 0.5, cy - q.dy * w * 0.5, cz - q.dz * w * 0.5); P.setXYZ(i * 2 + 1, cx + q.dx * w * 0.5, cy + q.dy * w * 0.5, cz + q.dz * w * 0.5); } // (in a turn of the rail: left in the air along the figure, across the ship's own right)
+        else { const y = (sea?.heightAt?.(cx, cz) ?? G.position.y) + 0.04; P.setXYZ(i * 2, cx - q.dx * w * 0.5, y, cz - q.dz * w * 0.5); P.setXYZ(i * 2 + 1, cx + q.dx * w * 0.5, y, cz + q.dz * w * 0.5); }
         const a = i >= ln.pts.length ? 1 : k; A.setX(i * 2, a); A.setX(i * 2 + 1, a);
       }
       P.needsUpdate = true; A.needsUpdate = true;

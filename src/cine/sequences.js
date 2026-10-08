@@ -3,6 +3,7 @@
 // edits and keys them). Points are `{ at: anchor, off: [right, up, forward] }` in metres, in the frame the sequence faces; times are
 // real seconds from a segment's start. `preview` places the anchors on the workbench's stage.
 // ---------------------------------------------------------------------------------------
+import { SEA_SEQUENCES } from '../vfx/encounters/sequences.js';
 export const SEQUENCES = {
   // THE LOCKHEART'S OPENING (tools/lockheart/ultimate.js says when each segment begins; the beats and their effects are here)
   'lockheart.opening': {
@@ -175,4 +176,5 @@ export const SEQUENCES = {
       },
     };
   })(),
+  ...SEA_SEQUENCES, // (the encounters at sea, filmed: vfx/encounters/sequences.js, played by vfx/encounters/film.js)
 };

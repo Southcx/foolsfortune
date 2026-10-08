@@ -73,7 +73,8 @@ export class TripRun {
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
     this.legs = this.wps.map((w) => this.legOf(w));
     this.state = { ...start(V.ship || 'sloop'), plan: this.wps.map((w) => w.id) }; this.k = -1; this.chosen = new Set(); // (plan: "ahead" is the drafted path, encounters.js)
-    this.bounty = null; this.hidden = null; this.race = null;
+    this.bounty = null; this.hidden = null; this.race = null; this.filmed = null;
+    this.game.encounterFilm?.prepare(this.legs.map((l) => l.encounter).filter(Boolean), { hull: V.ship || 'sloop' }); // (the encounters' sets built and compiled under the cast-off's cover: vfx/encounters/film.js, Calissa's)
     this.layOut();
     this.active = true;
     const st = this.st.stage;
@@ -119,6 +120,7 @@ export class TripRun {
     if (!same) {
       const ahead = ids.map((id) => ({ ...this.chart.waypoints[id] }));
       this.wps = [...this.wps.slice(0, k + 1), ...ahead]; this.legs = [...this.legs.slice(0, k + 1), ...ahead.map((x) => this.legOf(x))];
+      this.game.encounterFilm?.prepare(this.legs.slice(k + 1).map((l) => l.encounter).filter(Boolean), { hull: this.state.ship }); // (a new encounter's set, as at cast-off)
       this.state = { ...this.state, plan: this.wps.map((x) => x.id) };
       this.layOut(); S.relay?.();
     }
@@ -140,7 +142,7 @@ export class TripRun {
       const L = this.layout.legs[k], leg = this.legs[k], rel = bar - L.at;
       if (leg.plan) this.runner.update(rel);
       // a haven's choice, as its release begins (an encounter's at once): the cue holds until it is made
-      if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || leg.type === 'encounter')) this.offer(k);
+      if (!this.chosen.has(k) && ((leg.type === 'calm' && L.release != null && bar >= L.release) || (leg.type === 'encounter' && this.filmed?.k === k && this.filmed.done))) this.offer(k); // (an encounter's once its film is held: vfx/encounters/film.js)
     }
     this.player.update(dt, S.ship);
     this.field.update(dt, { ship: S.ship, waves: S.waves });
@@ -150,6 +152,7 @@ export class TripRun {
     const leg = this.legs[k], w = this.wps[k];
     if (leg.plan) this.runner.begin({ type: w.type, strength: strengthOf(this.state, w), feel: w.feel ?? null, storm: !!w.storm }); // (the Wreckers drawn by a loot)
     else this.runner.done = true;
+    if (leg.encounter) { const f = this.filmed = { k, done: false }; f.done = !this.game.encounterFilm?.play(leg.encounter, { feel: w.feel ?? null, hull: this.state.ship, onDone: () => { f.done = true; } }); } // (filmed first, then the choice)
     this.hitsAt = this.st.run.hits; this.scoreAt = this.st.run.score;
     if (leg.plan && this.hidden && !this.hidden.k) { this.hidden.k = k; this.st.ship.form = this.hidden.form; } // (the whale's dive: this leg sailed in its form)
     this.game.events?.emit('passage.waypoint', { type: w.type, k, storm: !!w.storm, feel: w.feel || null, by: 'environment' });

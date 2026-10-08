@@ -10,6 +10,7 @@
 // pull-star paths between planets, and Dual Hearts' bridges of light.
 //
 //   const V = new SpiritVein(a, b, { color, sag })   scene.add(V.mesh)   V.set({ k })   V.update(rawDt)
+//   veinMaterial({ uT, uK, uC }) -> the veins' material for a ribbon of one's own (Myggdrasil's branches and threads)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -22,6 +23,12 @@ void main() {
   float a = ends * (core * (0.45 + 0.4 * pulse * pulse2) + across * 0.12) * uK;
   gl_FragColor = vec4(uC * (0.5 + 0.8 * core), a * 0.6);                // (low and soft: the scene is linear)
 }`;
+
+/** A material of the veins' light (its own uniforms { uT, uK, uC }; one program for every vein, Myggdrasil's threads too: a ribbon whose
+ *  uv runs along it (x, 0 .. 1, the light running toward 1) and across it (y)). */
+export function veinMaterial(u = { uT: { value: 0 }, uK: { value: 1 }, uC: { value: new THREE.Color(0x9ae8d8) } }) {
+  return new THREE.ShaderMaterial({ name: 'spirit-vein', uniforms: u, vertexShader: VEIN_V, fragmentShader: VEIN_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+}
 
 export class SpiritVein {
   constructor(a, b, { color = 0x9ae8d8, sag = 0.18, width = 2.4 } = {}) {
@@ -39,7 +46,7 @@ export class SpiritVein {
       }
     }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
-    this.mesh = new THREE.Mesh(g, new THREE.ShaderMaterial({ name: 'spirit-vein', uniforms: this.u, vertexShader: VEIN_V, fragmentShader: VEIN_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    this.mesh = new THREE.Mesh(g, veinMaterial(this.u));
     this.mesh.name = 'spirit-vein'; this.curve = curve;
   }
   set({ k = this.u.uK.value } = {}) { this.u.uK.value = k; }

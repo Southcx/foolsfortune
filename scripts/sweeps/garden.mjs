@@ -814,10 +814,11 @@ await guard('mycelium', async () => {
     const f = R.site.features.find((x) => x.kind === 'myggdrasil'); g.pneuka.add('mat.arcane', 'test', 0, { kind: 'arcane', tier: 2, hue: 200, sat: 0.6, path: [] });
     M.use(f); const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /feed it/.test(d.innerText)); row?.click();
     const fed = g.ledger.get('myggdrasil.feed'), sap = T.tincture; T.s.dawn = -1; T.s.crown = []; const n = T.dawn(); M.sync();
-    return { page: g.indexMenu.page?.name, fed, sap, fruit: n, shown: M.crop.count, bodies: M.bodies.filter((b) => b.visible).length, caps: T.caps }`);
+    for (let i = 0; i < 12; i++) M.tree.update(3, T); // (Calissa's tree opens its caps one at a time from the root up: given time, all it should)
+    return { page: g.indexMenu.page?.name, fed, sap, fruit: n, shown: M.tree.fruitShown, bodies: M.tree.cap.filter((C) => C.k >= 1).length, caps: T.caps, rootUp: M.tree.cap.every((C) => (C.k >= 1) === (C.i < T.caps)) }`);
   check('Myggdrasil: fed at its roots from its page, the tincture takes the colour', t1.page === 'garden.myggdrasil' && t1.fed >= 1 && t1.sap?.mass > 0, t1);
-  check('Myggdrasil: it fruits at dawn, the crop hangs under the cap, its open bodies shown', t1.fruit > 0 && t1.shown === Math.min(12, t1.fruit) && t1.bodies === t1.caps, t1);
-  const pk = await M(`const f = R.site.features.find((x) => x.kind === 'myggdrasil'); M.use(f); const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /Pick the crown/.test(d.innerText)); row?.click(); return { crown: T.crown.length, shown: M.crop.count, ev: g.events.counts['myggdrasil.pick'] || 0 }`);
+  check('Myggdrasil: it fruits at dawn, the crop hangs under the caps, its open caps shown from the root up', t1.fruit > 0 && t1.shown === Math.min(30, t1.fruit) && t1.bodies === t1.caps && t1.rootUp, t1);
+  const pk = await M(`const f = R.site.features.find((x) => x.kind === 'myggdrasil'); M.use(f); const row = [...document.querySelectorAll('#indexmenu .room')].find((d) => /Pick the crown/.test(d.innerText)); row?.click(); return { crown: T.crown.length, shown: M.tree.fruitShown, ev: g.events.counts['myggdrasil.pick'] || 0 }`);
   check('Myggdrasil: the crown picked from its page, bare again', pk.crown === 0 && pk.shown === 0 && pk.ev >= 1, pk);
   await closeAll();
   // a keepsake pot at the Chimney's foot

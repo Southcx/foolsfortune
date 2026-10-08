@@ -31,7 +31,9 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { CrudeSea } from '../../vfx/crudesea.js';
+import { warpObject, warpMaterial, keepTrue } from '../../vfx/stormwarp.js';
 import { ShipWake, swingLook } from '../../vfx/rail.js';
+import { CrossingLook } from '../../vfx/crossinglook.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
 import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
@@ -78,6 +80,7 @@ export class Emocean {
     this.ship = new Ship(game, this.rail); this.shots = new Shots(game, this.rail); this.waves = new Waves(game, this.rail);
     this.mounts = new Mounts(game, this);
     this.trip = new TripRun(this); // (a drafted passage sailed as the rollercoaster: Dovina's legs, patterns and shot field; world/emocean/triprun.js)
+    this.looks = new CrossingLook(this); // (Calissa's storm, Umbral, surge, geometry and the trip's pressures on the ship: vfx/crossinglook.js)
     this.pieces = { shoal: new ShoalPiece(this), pirates: new PiratesPiece(this), leviathan: new LeviathanPiece(this) };
     this.t = 0; this.bar = 0; this.run = null; this.plan = null; this.trauma = 0; this.volleys = []; this.piece = null;
     this.wire();
@@ -91,13 +94,16 @@ export class Emocean {
     this.sea = new CrudeSea({ env: g.sky?.env || null, y: SEA_AT.y });
     this.sea.mesh.visible = false; this.sea.mesh.userData.zoneFree = true; sc.add(this.sea.mesh);
     this.ship.build(sc); this.shots.build(sc); this.waves.build(sc); this.trip.boot(sc);
+    for (const o of [...(this.shots.meshes || []), ...this.shots.outlines.map((r) => r.mesh), this.ship.near, this.ship.far, ...this.ship.marks]) o?.traverse((c) => { if (c.material) for (const m of [].concat(c.material)) keepTrue(m, { opaque: true }); }); // (the danger stays true under the storm's veil: the shots, the outlined and their parry mark, the reticles and the lock marks; vfx/stormwarp.js)
     for (const p of Object.values(this.pieces)) p.build(sc);
+    for (const id of ['pirates', 'leviathan']) warpObject(this.pieces[id].look.group); warpMaterial(this.pieces.leviathan.look.shadowM?.material); // (the big objects bend with the storm, seated whole, and Old Nobody's shadow with the sea: vfx/stormwarp.js)
     this.wake = new ShipWake(g); for (const ln of this.wake.lines) { ln.m.visible = false; ln.m.userData.zoneFree = true; }
+    this.looks.build(sc);
     this.built = true;
   }
   /** What is parked for the warm-up's compile (main.js shows them for one draw, then hides them again). */
-  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked()]; }
-  show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; }
+  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked(), ...this.looks.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
+  show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; this.looks?.show(on); }
 
   /** What the ship and the waves tell the run. */
   wire() {
@@ -141,7 +147,7 @@ export class Emocean {
       this.lay(trip); this.rail.seat(0);
       this.ship.begin(aspect, V.ship || 'sloop'); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(this.plan, aspect); this.mounts.begin(V.mounts || []);
-      this.show(true);
+      this.looks.begin(); this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
       this.hold(); this.camera(0, true);
       g.events?.emit('rail.start', { setPiece: plan.setPiece, setPieces: plan.setPieces, legs: plan.legs, from: V.from, to: V.to, by: 'courier' });
@@ -294,12 +300,12 @@ export class Emocean {
   look(raw, bar) {
     const g = this.game, act = this.plan.acts.find((a) => bar >= a.from && bar < a.to), S = this.ship;
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
+    this.looks.update(raw, bar); // (the storm by the leg, the Umbral's surface, the geometry, the wake, the hull and the bunker: vfx/crossinglook.js)
     this.sea.set({ calm: this.calm }); this.sea.update(this.t, g.camera.position);
     const sl = S.sloop;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
       if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.polarity?.(COLOR[S.aspect] ?? 0xffc65c); }
-      this.wake?.update(raw, { group: sl.group, speed: this.rail.speed + S.boostZ, length: 7 * sl.group.scale.x, beam: 2.4 * sl.group.scale.x }, this.sea);
     }
   }
 
@@ -394,7 +400,7 @@ export class Emocean {
     const to = this.to;
     const go = () => {
       this.stage.active = false; this.ending = false;
-      this.waves.end(); this.shots.clear(); this.show(false); for (const p of Object.values(this.pieces)) p.show(false);
+      this.waves.end(); this.shots.clear(); this.looks.end(); this.show(false); for (const p of Object.values(this.pieces)) p.show(false);
       swingLook(g, 1);
       g.cinema?.cut('rail'); document.body.classList.remove('aboard');
       const at = passed ? g.pier?.landing(to) : g.shrines?.reformAt?.();

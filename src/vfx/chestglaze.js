@@ -15,15 +15,16 @@
 // and the colour tease of the gacha canon (Genshin's meteor, Fire Emblem Heroes' orbs) with the tell moved from a beam into the thing.
 //
 //   const U = dressChestGlaze(material, uniforms?, { goldOnly })   U.uGlaze.value = stage (0..4)   glazeAt(tier) -> its stage
-//   chestGlazeUniforms(scale)   (the net's size: 1 a chest's; less for bigger work)
+//   chestGlazeUniforms(scale)   (the net's size: 1 a chest's; less for bigger work)   U.uCgCrack.value = 0..1: cracks still open, dark seams with
+//   the crude's violet in them, on the cells the gold has not reached (the sloop's hull in a crossing: vfx/crossinglook.js; a chest leaves it 0)
 // ---------------------------------------------------------------------------------------
 
 /** How far a tier's chest is fired (0 common .. 4 prismatic). */
 export const glazeAt = (tier) => 1 + 0.75 * tier;
-export const chestGlazeUniforms = (scale = 1) => ({ uGlaze: { value: 0 }, uCgScale: { value: scale } }); // (scale: the net's cells per metre against a chest's, for bigger work: the sloop's hull)
+export const chestGlazeUniforms = (scale = 1) => ({ uGlaze: { value: 0 }, uCgScale: { value: scale }, uCgCrack: { value: 0 } }); // (scale: the net's cells per metre against a chest's, for bigger work: the sloop's hull)
 
 const HEAD = /* glsl */`
-uniform float uGlaze; uniform float uCgScale; varying vec3 vCgObj;
+uniform float uGlaze; uniform float uCgScale; uniform float uCgCrack; varying vec3 vCgObj;
 vec3 cgHash(vec3 p) { p = vec3(dot(p, vec3(127.1, 311.7, 74.7)), dot(p, vec3(269.5, 183.3, 246.1)), dot(p, vec3(113.5, 271.9, 124.6))); return fract(sin(p) * 43758.5453); }
 vec2 cgEdge(vec3 p) { // (the distance to the nearest edge between cells, and the nearest cell's own number)
   vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.0; vec3 c1 = vec3(0.0);
@@ -44,7 +45,7 @@ export function dressChestGlaze(m, uni = chestGlazeUniforms(), { goldOnly = fals
       .replace('#include <common>', `#include <common>\n${HEAD}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
   // (colours in linear light, as the shader works: celadon #7fa88c, raku white #ede5d8, copper #d98c62, gold #f2b848)
-  float cgS = uGlaze, cgFine = 0.0, cgBig = 0.0, cgGold = 0.0, cgCel = 0.0;
+  float cgS = uGlaze, cgFine = 0.0, cgBig = 0.0, cgGold = 0.0, cgCel = 0.0, cgCrack = 0.0;
   if (cgS > 0.0) {
     vec3 cgP = vCgObj * uCgScale; vec2 a = cgEdge(cgP * 9.0), b = cgEdge(cgP * 24.0);
     float px = length(fwidth(cgP)) * 24.0, keep = 1.0 - smoothstep(0.35, 0.8, px); // (the fine net goes before it can shimmer)
@@ -59,10 +60,12 @@ export function dressChestGlaze(m, uni = chestGlazeUniforms(), { goldOnly = fals
     float gk = smoothstep(${goldOnly ? '2.6' : '2.9'}, 4.0, cgS);
     cgGold = step(a.y, gk * 1.02) * (1.0 - smoothstep(0.0, ${goldOnly ? '0.06' : '0.075'}, a.x));
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.89, 0.48, 0.07), cgGold);                                   // kintsugi
+    cgCrack = step(1.0 - uCgCrack, a.y) * (1.0 - smoothstep(0.0, 0.11, a.x)) * (1.0 - cgGold);                 // a crack still open (the ship's hull: its cells from the other end of the gold's)
+    diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.006, 0.004, 0.008), cgCrack);
   }`)
       .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n  roughnessFactor = mix(mix(roughnessFactor, 0.22, cgCel), 0.25, cgGold);')
       .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n  metalnessFactor = mix(metalnessFactor, 0.7, cgGold);')
-      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3(0.89, 0.48, 0.07) * cgGold * (0.25 + 0.5 * smoothstep(3.5, 4.0, cgS));');
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3(0.89, 0.48, 0.07) * cgGold * (0.25 + 0.5 * smoothstep(3.5, 4.0, cgS)) + vec3(0.42, 0.3, 0.75) * cgCrack * 0.6;');
   };
   m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-cglaze${goldOnly ? 'g' : ''}`;
   m.needsUpdate = true;

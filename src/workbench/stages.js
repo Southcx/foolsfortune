@@ -3,7 +3,7 @@
 // each built by its id and ticked on a loop. Loaded the first time one is picked (workbench.js loadModel), so none of it costs the game's
 // boot: the looks it stages are the game's own modules, imported here and nowhere else in the workbench.
 //
-//   buildStage(id) -> Object3D (its loop on userData.tick(t)) | null
+//   buildStage(id, game) -> Object3D (its loop on userData.tick(t)) | null   (the crossing's stages: workbench/crossingstages.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DreamvaneModel } from '../tools/dreamvane/model.js';
@@ -35,6 +35,9 @@ import { buildFeature, FEATURE_IDS } from '../vfx/garden/features.js';
 import { dressForm, SIDES } from '../vfx/garden/forms.js';
 import { SculptBrush } from '../vfx/garden/sculptbrush.js';
 import { CocoonTree } from '../vfx/garden/cocoontree.js';
+import { GardenTree } from '../vfx/garden/gardentree.js';
+import { canopyTick } from '../vfx/garden/leafcanopy.js';
+import { BRANCH_PATHS } from '../vfx/garden/myggdrasil.js';
 import { Fossil } from '../vfx/garden/fossil.js';
 import { HeavenlyKiln } from '../vfx/garden/tribulation.js';
 import { artifact, WarpPocket } from '../vfx/finds.js';
@@ -42,12 +45,30 @@ import { SolarRing } from '../vfx/solarring.js';
 import { Ostracon, Stele } from '../vfx/ostracon.js';
 import { debugChestModel } from '../vfx/debugchest.js';
 import { PICTURES } from '../vfx/blackfigure.js';
+import { crossingStage } from './crossingstages.js';
+import { crossingShotsStage } from './crossingshots.js';
+import { buildSwarmStage } from './swarmstage.js';
+import { buildBossStage, BOSS_STAGE_IDS } from './bossstage.js';
+import { seaChartStage } from './seachartstage.js';
+import { shipStage } from './shipstage.js';
+import { encounterStage, ENCOUNTER_STAGE_IDS } from './encounterstage.js';
+import { strainBed } from '../vfx/garden/strains.js';
+import { lekythos } from '../vfx/garden/lekythos.js';
+import { sporeling } from '../vfx/garden/sporeling.js';
+import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 
-export function buildStage(id) {
+export function buildStage(id, game) {
   let obj = null;
-  if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
+  if (BOSS_STAGE_IDS.includes(id)) return buildBossStage(id); // (the crossing's big objects: workbench/bossstage.js)
+  if (id === 'crossing:surface' || id === 'crossing:storm') obj = crossingStage(id, game);
+  else if (id === 'ships:classes') obj = shipStage(game); // (the five hulls in echelon: workbench/shipstage.js)
+  else if (ENCOUNTER_STAGE_IDS.includes(id)) obj = encounterStage(id, game); // (the encounters at sea as filmed: workbench/encounterstage.js)
+  else if (id === 'tool:dreamvane') obj = new DreamvaneModel().group;
   else if (id === 'tool:crucibelle') obj = new CrucibelleModel().group;
   else if (id === 'ship:sloop') obj = new Sloop().group;
+  else if (id === 'crossing:shots') obj = crossingShotsStage(); // (the shots' look, the Itano ribbons, the telegraph, the hurtbox: workbench/crossingshots.js)
+  else if (id === 'crossing:shoal' || id === 'crossing:geometry') obj = buildSwarmStage(id); // (the crossing's swarm and ambient geometry: workbench/swarmstage.js)
+  else if (id === 'crossing:chart') obj = seaChartStage(); // (the sea chart at three confidences and the rutter: workbench/seachartstage.js)
   else if (id === 'folk:letty') { const L = buildLetty(), P = buildPoll(); L.parts.shoulder.add(P.group); obj = L.group; }
   else if (id === 'slice:cave') {
     obj = new THREE.Group();
@@ -113,6 +134,47 @@ export function buildStage(id) {
       T.cocoon(0, { feeling: 'wonder', k: Math.min(1, k / 1.5) }); T.cocoon(1, { feeling: 'mirth', k: Math.min(1, k / 1.5) }); if (T.slots[2].k > 0 || k < 2) T.cocoon(2, { feeling: 'dread', k: Math.min(1, k / 1.5) });
       if (k > 2 && k < 5.2) T.merge(1, 2, (k - 2) / 3); if (k > 6 && T.slots[0].open < 0 && T.slots[0].k > 0.5) T.open(0); T.update(1 / 60); };
   }
+  else if (id === 'garden:trees') {
+    // a grove of five garden trees (the leaf canopy in labradorite and gold: a gingko, a willow, a round crown, a mulberry, and gill
+    // slivers with a tincture's tint), game noon then night on a loop (10 real seconds each); the bench's lights dimmed for the night
+    // and put back when the stage is left (casebook rule 15)
+    obj = new THREE.Group();
+    const kinds = [['gingko', 3.4, 1.5], ['willow', 2.8, 1.7], ['round', 3, 1.6], ['mulberry', 3.2, 1.7], ['gill', 3, 1.5]];
+    const T = kinds.map(([leaf, height, crown], i) => { const t = new GardenTree({ leaf, height, crown, seed: i + 3, tint: leaf === 'gill' ? { color: 0xd8607a, amount: 0.55 } : null }); const a = (i / kinds.length) * Math.PI * 2 + 0.3; t.group.position.set(Math.cos(a) * 4.2, 0, Math.sin(a) * 4.2); obj.add(t.group); return t; });
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(7.5, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x5f8a6a, roughness: 0.95 })); ground.position.y = 0.01; obj.add(ground);
+    let lights = null, k = 0;
+    obj.userData.tick = (t) => {
+      if (!lights) { let S = obj; while (S.parent) S = S.parent; lights = []; S.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); }
+      const want = obj.userData.night ?? (Math.floor(t / 10) % 2); k = obj.userData.night !== undefined ? want : k + (want - k) * 0.05; // (eased over about a real second; a test's pin is taken at once)
+      for (const [L, i0] of lights) L.intensity = i0 * (1 - 0.86 * k);
+      canopyTick({ t, night: k });
+    };
+    obj.userData.dispose = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); T.forEach((x) => x.dispose()); };
+  }
+  else if (id === 'garden:myggdrasil') {
+    // Myggdrasil, the World Mushroom, on its 26 m planetoid (vfx/garden/myggdrasil.js), its state a step every 8 real seconds (caps 1, 3,
+    // 5, 10; branches none, three, seven, all twenty-two; no tincture, then a rose and a teal one; fruit as the crown fills), game noon
+    // then night every other loop. A test pins a step: userData.pin = { caps, branches, tincture, crown }, userData.night = 0 | 1
+    obj = new THREE.Group();
+    const ALL = Object.keys(BRANCH_PATHS), STEPS = [
+      { caps: 1, branches: [], tincture: null, crown: [] },
+      { caps: 3, branches: ['world', 'moon', 'sun'], tincture: null, crown: [1, 2] },
+      { caps: 5, branches: ['world', 'moon', 'sun', 'judgement', 'star', 'tower', 'temperance'], tincture: { h: 350, s: 0.55 }, crown: [1, 2, 3, 4, 5] },
+      { caps: 10, branches: ALL, tincture: { h: 175, s: 0.7 }, crown: Array.from({ length: 18 }, (_, i) => i) },
+    ];
+    const state = { ...STEPS[0] }, P = new Planetoid({ kind: 'myggdrasil', seed: 9, game: { myggdrasil: state } }); obj.add(P.group);
+    let lights = null, k = 0, last = 0;
+    obj.userData.planetoid = P;
+    obj.userData.tick = (t) => {
+      if (!lights) { let S = obj; while (S.parent) S = S.parent; lights = []; S.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); }
+      Object.assign(state, obj.userData.pin || STEPS[Math.floor(t / 8) % STEPS.length]);
+      const raw = Math.min(0.1, Math.max(0, t - last)); last = t; P.update(raw || 1 / 60);
+      const want = obj.userData.night ?? (Math.floor(t / 32) % 2); k = obj.userData.night !== undefined ? want : k + (want - k) * 0.05;
+      for (const [L, i0] of lights) L.intensity = i0 * (1 - 0.86 * k);
+      canopyTick({ t, night: k }); P.mushroom?.update(0, state); // (the glow again under the stage's own night: the planetoid's clock set the game's)
+    };
+    obj.userData.dispose = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); P.dispose(); };
+  }
   else if (id === 'garden:fossils') {
     let F = null, loop = -1, lastBeat = 0; obj = new THREE.Group();
     obj.userData.tick = (t) => { const L = Math.floor(t / 8), k = t % 8; if (L !== loop) { loop = L; if (F) { obj.remove(F.group); F.dispose(); } F = new Fossil({ shape: ['spiral', 'fish', 'claw'][L % 3], feeling: ['wonder', 'desire', 'grief'][L % 3] }); obj.add(F.group); }
@@ -134,6 +196,21 @@ export function buildStage(id) {
       C.set({ k: Math.min(1, k / 3), tug: 0.5 + 0.5 * Math.sin(t * 3) });
       if (k > 3.2 && C.state === 'hold') { if (L % 2 === 0) C.take(); else C.free(); }
       C.update(1 / 60);
+    };
+  }
+  else if (id === 'garden:strains') { // (the five strains' beds growing in, day to night and back on a 24 real second loop; a row of keepsake pots; sporelings swaying and hopping. userData.hold = { night, growth } pins them)
+    obj = new THREE.Group(); const beds = DISPLAY_ORDER.map((f, i) => { const B = strainBed(f, { seed: i + 1 }); B.group.position.set((i - 2) * 4.2, 0, -1.6); obj.add(B.group); return B; });
+    const pots = [[COLOR.wonder, 'slipjelly'], [COLOR.mirth, 'sporeling'], [COLOR.desire, 'slipjelly'], [COLOR.grief, 'sporeling'], [COLOR.dread, 'slipjelly'], [{ h: 300, s: 0.7 }, 'sporeling']].map(([colour, spirit], i) => { const P = lekythos({ colour, spirit, seed: i + 1 }); P.group.position.set((i - 2.5) * 0.85, 0, 2.0); P.group.rotation.y = (i - 2.5) * -0.12; obj.add(P.group); return P; });
+    const sp = [0xd8402a, COLOR.mirth, { h: 200, s: 0.6 }, 0x9a6ad8].map((colour, i) => { const S = sporeling({ colour, seed: i + 3 }); S.group.position.set((i - 1.5) * 1.1 + 0.3, 0, 3.2); S.group.rotation.y = (i - 1.5) * 0.25; obj.add(S.group); return S; });
+    const lights = []; let found = false, pt = 0; obj.userData.parts = { beds, pots, sporelings: sp };
+    const dim = (k) => { if (!found) { found = true; let r = obj; while (r.parent) r = r.parent; r.traverse((o) => { if (o.isLight) lights.push([o, o.intensity]); }); } for (const [L, i0] of lights) L.intensity = i0 * k; };
+    obj.userData.dispose = () => { for (const [L, i0] of lights) L.intensity = i0; [...beds, ...pots, ...sp].forEach((x) => x.dispose()); };
+    obj.userData.tick = (t) => {
+      const dt = Math.max(0, Math.min(0.1, t - pt)), k = t % 24, hold = obj.userData.hold; pt = t;
+      const night = hold?.night ?? (k < 10 ? 0 : k < 12 ? (k - 10) / 2 : k < 20 ? 1 : k < 22 ? 1 - (k - 20) / 2 : 0), growth = hold?.growth ?? Math.min(1, k / 4);
+      if (obj.parent) dim(1 - 0.86 * night);
+      beds.forEach((B) => { B.set({ growth, night }); B.update(dt); });
+      sp.forEach((S, i) => { S.set({ night }); if (!hold && Math.floor(t * 0.5 + i * 0.37) !== Math.floor((t - dt) * 0.5 + i * 0.37) && (i + Math.floor(t * 0.5)) % 2 === 0) S.hop(0.22); S.update(dt); });
     };
   }
   else if (id === 'pier:mat') { const B = new BuskerMat(); obj = B.group; obj.userData.tick = (t) => { B.tip(Math.floor(t % 14)); B.set({ playing: (t % 14) > 3 }); B.update(1 / 60); }; }

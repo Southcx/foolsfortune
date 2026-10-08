@@ -50,6 +50,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   rail you grind or a rope (the Courier's moves).
 - **plain shot**, **outlined shot** (`courier/ship/shots.js`): a foe's shot at sea. A plain one has a feeling (absorbed if it is the
   ship's, else it hurts; the roll turns it); an outlined one wears the parry mark and only the parry answers it, home to its thrower.
+  Drawn (`vfx/railshots.js`, one instanced draw over everything): an **astral shot** a white-gold core with a dark rim, an **umbral
+  shot** a black core with a pale rim, each a capsule from its **tail** to its **head** (the hit sphere's centre), the tail as long as it
+  is fast; until the forms, a plain shot of the ship's home feeling is drawn astral and any other umbral.
+- **the hurtbox** (the ship's: `T.ship.hurt`, drawn by `vfx/railshots.js`): the sphere a foe's shot must touch to hit the ship, drawn in
+  the hull as a pale core and a dark ring whose outer edge is its radius exactly. *Not:* a hit region (the vessel's six).
+- **an Itano ribbon** (`vfx/itano.js`, after Ichiro Itano's missile barrages): the trail a lance leaves, the last 0.6 real seconds of
+  where it flew, tapering, a hot spark at its head. *Not:* a weapon trail (`vfx/trail.js`, a blade's).
+- **the telegraph mark** (`vfx/telegraph.js`; Elemental Gearbolt's): a ring closing on a part about to act over its windup, the part's
+  own ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. *Not:* the parry
+  mark ("answer this"), a lane mark (Divination's, on the sea), a windup (the creature's own listing).
 - **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not) and
   the two **mounts** to take; choosing an island boards and casts off. Each island has one (Anagami's jetty, Margarite's dock), and a
   crossing makes port at the pier of the island it sails to.
@@ -64,8 +74,54 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **Old Nobody** (the rogue Leviathan, an Egregore: rare, a deck; **driven off** or **felled**; then Letty's "WANTED: NOBODY"). The
   names are Espada's (`docs/LORE.md`, "The crossing's cast"). *Not:* an
   encounter (the Spirit Garden's: an achievement group mastered).
+- **a glint's spark** (`vfx/shoal.js`): how a glint is drawn far off, two triangles along its heading, never under 2 px; near, it is
+  a fish; between, the fish shrinks into its spark. In the frenzy a striking glint's spark is drawn behind it as a **streak**.
+  *Not:* the Vessoul's soulspark.
+- **the shoal's silhouette** (`silhouetteTargets`, `vfx/shoalsilhouette.js`; the owner's plan, RAIL-OVERHAUL.md section 6): at the shoal
+  leg's peak the school drawn up into one giant body, a Leviathan's profile (the class's great body, not Old Nobody), lit from within
+  (`glow`); its **eye** (`SilhouetteEye`), a labradorite lens that opens, burns while it is locked and cracks as it is hurt, is the one
+  place that breaks it. The player's words for both are Espada's (placeholders). *Not:* Old Nobody's shadow on the sea.
+- **the ambient geometry** (`RailGeometry`, `vfx/railgeometry.js`; Calissa's): the Mind's furniture the rail runs through, drawn in
+  labradorite and wire: **rail rings** (`G.ring`: tori to thread, lit in the storm's gold when threaded), **folding lattices**
+  (`G.lattice`: Miura-ori sheets that fold and open as the rail passes), **monoliths** (`G.monolith`: black labradorite slabs, 1 : 4 : 9,
+  rising out of the crude) and **the folded sea** (`G.ceiling`: the crude's surface turned up over the horizon like a page, lying
+  overhead). *Not:* the Solar Skiffing rings (`SolarRing`), the macro lattice (reprogramming's), a ceiling of a room.
 - **leg** (`LEG`, `legsOf`, `progress/econ/emocean.js`): one set piece of a long crossing; a crossing has one to three (the owner,
   2026-10-07), a **breather** between two whose flotsam **mends** the ship.
+- **a boss part** (`BossPart`, `BossParts`, `src/vfx/bossparts.js`; Calissa's, 2026-10-08): one piece of a leg's big object that the
+  runtime hits and breaks on its own: **intact**, **damaged**, **broken**, or **sealed** (not to be hit yet: Ikaruga's covers); drawn in
+  line and glow (the Mind's labradorite); its **telegraph anchor** (`telegraphAnchor`) is where the shrinking mark sits, and its
+  **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
+  the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
+  (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
+  **windows**. *Not:* a zone's `partOf`; `rail.part` is the event that one was downed.
+- **a lighthouse lamp** (`LighthouseLamp`, `src/vfx/lighthouselamp.js`): a caged Fresnel lamp and the beam it sweeps, first a **warning
+  line** (thin and pale, harmless) then **hot** (white-gold over a dark rim); the figurehead's lamp (with iron **shutters**) and the
+  Drowned Light's. *Not:* a room (the log's word), a PointLight (`render/lights.js`).
+- **the wreck field** (`WreckField`, `src/vfx/wreckfield.js`): the False Light's debris on the crude when she goes down (planks, spars,
+  casks, gratings, rags of canvas, her figurehead face down), with **the way through** it to chase along (`way(z)`). *Not:* a lane
+  (the Dunemaw's, the note chart's).
+- **the Drowned Light** (`DrownedLight`, `src/vfx/drownedlighthouse.js`; the plan's name, Espada's to settle): the graveyard leg's peak, a
+  lighthouse sunk to its gallery in the crude: its lamp **wakes** and sweeps, its windows burn, the reef, the **sunken hulls** below
+  (the Umbral) and their **ghost ships** riding above (the Astral, pale and translucent). *Not:* the Lamp Shrine (at the Dunemaw's lip).
+- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`): where a rail circling it sees a part best. *Not:* a
+  station (a course station, the kiln station).
+- **the ship classes' looks** (`ShipClassLook`, `SHIP_FORMS`, `shipLook(id)`, `src/vfx/shipclasses.js`, Calissa's): the frigate, the
+  destroyer, the galleon and the tanker drawn in the sloop's design language, **the hull class's silhouette rules** (a pot thrown and laid
+  on its side, the foot its bow, its mouth astern glowing with the drive; kintsugi gold; the little Pneuka Jar for a figurehead; the
+  skiff's green spars and red pennant; the Mind's line along the gunwale): the frigate a **meiping** in ash-glazed stoneware, its guns
+  in rings down each side; the destroyer a **kinuta** celadon mallet vase, its long neck a submarine's tail, **the destroyer's fin** amidships
+  and the vase's **phoenix ears** for tail fins; the galleon a **ginger jar** in blue-and-white, its **lid** the stern castle; the tanker
+  an **onggi** riding low, **the hold's domes** (little lidded onggi) down its deck. Shown on the rail when that hull sails and at the
+  pier (the mooring). *Not:* a ship part (the ships have none), a fin of Old Nobody's.
+- **the mooring** (`Mooring`, `game.mooring`, `src/vfx/mooring.js`): the hull chosen at the pier lying alongside its end at life size,
+  its sails furled. *Not:* the jetty (the plank walk), the pier's page.
+- **an encounter's film** (`EncounterFilm`, `game.encounterFilm`, `src/vfx/encounters/film.js`; its camera the sequence `sea.<encounter>`,
+  `src/vfx/encounters/sequences.js`): an encounter at sea played as a short cinematic, two camera shots in about 5.6 real seconds (the
+  arrival's four bars), before its choice is offered. **a tableau** (`buildTableau`, `src/vfx/encounters/tableaux.js`): what is out on
+  the crude for it: the Dead Reckoners' ghost ships in fog, Letty's cutter the Last Word, the Cantor's light under the crude, Hap Lagan's
+  raft and Bob, the Bourse at anchor, your double in silver, the drift bottle in its shaft of light; its **subject** is what the second
+  camera shot closes on. *Not:* a set piece (a crossing's fight), a scene (three.js's), a sighting (the sea chart's mark of one unmet).
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
 - **polarity** (Q on the rail; to be the Astral and Umbral forms: RAIL-OVERHAUL.md): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
@@ -189,7 +245,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   capped at a C); **heaving to** (code `campfire`, a calm's choice: **caulk the hull** (code `mend`, half the hull back) or **reckon
   the sea** (code `reckon`, the portents ahead a quarter sharper)); **high water** (code `best`: the best score on one route's sea
   chart for one game day, `voyage.bestOf`); **a waypoint's feeling** (its aspect, carried out to sea in an island's **plume**: shown as
-  a halo round its portent's silhouette from the silhouette up, Calissa's; it sets its foes' damage type and how its shots fall
+  a nimbus round its portent's silhouette from the silhouette up (Calissa's; the halo is the weather's); it sets its foes' damage type and how its shots fall
   between the forms); **a following sea** (code `draughtTrump`: the draught a leg leaves trumping the next waypoint's foes); **a
   squall** (code `storm`, `STORM`: Slay the Spire's burning elite, where two plumes meet at a **front**: a threat waypoint a class
   stronger, always shown, never in a narrows). *Not:* the weather's storm (there is none: the eyewall is a leg), the vessel's cracks
@@ -611,6 +667,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed
   (the beds grow materials); *not* the moss ground (the paint) or a herb terrace (a feature).
+- **the leaf canopy** (`LeafCanopy`, `canopyGeometry`, `src/vfx/garden/leafcanopy.js`; the owner, 2026-10-08): a tree's crown drawn from a
+  few spheres whose every vertex is a **leaf** (a quad turned to the eye, swaying, lit by its sphere's normal, a clump from the **leaf
+  atlas**: gingko, willow, round, mulberry, gill, cap), in labradorite edged and veined in gold. One program for every canopy; a canopy
+  may take a **tint** (Myggdrasil's tincture: its flash leaned to a colour). *Not:* the plants (the green on the clay), a bed.
+- **Myggdrasil's look** (`WorldMushroom`, `src/vfx/garden/myggdrasil.js`, Calissa's; grown by its planetoid's look, `Planetoid.growMushroom`,
+  and reading `game.myggdrasil` itself): the World Mushroom 48 m from its ground to its crown's top. **The stipe** (its trunk of pale
+  clay, fibred, a gold **veil ring** under the crown) on **the roots** (buttresses running out over the ground, half sunk); between two of
+  them **Myggdrasil's mouth** (`mouthWorld`: a cup of its clay lipped in gold, its floor a pool in the tincture's colour; where it is fed,
+  and where the world's F stands; *not* the Jar's mouth, nor a Well's); above it **its face** (two round eyes with a glint, a smile, a
+  blush: drawn, never carved). **The arms** carry the side caps (`CAP_SITES`: the Tree of Life's places, spiralling round the stipe); each
+  cap is a leaf canopy, a dome of **scales** over a disc of **gills**, shut a **bud**, opening from its middle out by its slot's **gate**
+  (`canopyOpen`; *not* the Dantian's gate), one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's
+  paths between the caps) run gold when a card is hung, a ghost before. **The mycelium's threads** run from the roots' ends over the
+  ground to each spore bed on its planetoid (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on threads
+  under the caps, glowing in the tincture's colour; **perches** (shelf brackets on the stipe) are where sporelings sit (`perchWorld`).
+- **a garden tree** (`GardenTree`, `plantGrove`, `src/vfx/garden/gardentree.js`): a trunk of the garden's plum-dark bark, a few branches
+  and a leaf canopy at their ends; the Mulberry Grove's eighteen spirit trees are a grove of them (two draws). *Not:* the cocoon tree (its
+  own model, wearing a leaf canopy), nor Myggdrasil.
 - **fill** (a Well's, 0..1): how much it has to give; each run draws on it and rest fills it again (`drawWell`), and what a run pays is
   scaled by it (`wellYield`). A Well at nothing is **dry**.
 - **day** (`today()`, `DAY_MS`, `src/core/calendar.js`): one game day, an hour of real time on the wall clock (DESIGN.md section 17),
@@ -716,6 +790,23 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   of labradorite standing out of the crude, a whirl on the surface, rings on the beat of its approach (no words or numbers).
 - **the crude sea** (`src/vfx/crudesea.js`): the Emocean's surface where the ships sail, liquid Lachryma: black, its swells real, its
   current scrolled, its film in bands. **calm**: the swells laid down for the stage's breather.
+- **the sea chart's look** (`SeaChartCanvas`, `drawSeaChart`, `src/ui/seachart/seachart.js`; the pixel art `src/ui/seachart/icons.js`;
+  PASSAGE.md, Dovina's sea chart drawn): pixel art at 1x on the maker's ramp, scaled by whole numbers, over the crude with a
+  portolan's rhumb lines and wind rose laid faint. A **waypoint icon** is its **silhouette** (its class's shape: a diamond for a threat,
+  a ring for a haven, a radiant star for a boss; crisp whenever the class is known) and its **emblem** (its type's picture inside: the
+  shoal's school of glints, the Wreckers' brig with the false light, the eyewall's bolt, the graveyard's grave-cross masts, the
+  maelstrom's spiral, Old Nobody's flukes, a bounty's sight, a calm's half sun over level water, an encounter's lantern), both in
+  **the line hand** (a pale labradorite, never a feeling's colour). **A waypoint's nimbus** (`drawNimbus`, `ui/seachart/nimbus.js`):
+  its feeling shown round the icon, a glow in the feeling's colour with the weather's motif inside (wonder's motes, mirth's facets,
+  desire's sand, grief's streaks, dread's smoke), from the silhouette tier up. A portent's **candidates** are overlaid a little apart,
+  out of focus and faded by its confidence, one in front at a time. The sea chart's lanes are lines of light, the drafted ones
+  gold-white, a squall's bent; the draught's trump runs along its lane as beads of the trumping feeling. The same drawing in ink
+  (`look: 'ink'`) is a rutter's page. *Not:* the pier's window (`SeaChart`, `world/emocean/seachart.js`: the drafting and the reckoning; this is only
+  its drawing), the map (Mind Mapping), a glyph (the glyph pop's), a sigil (the Soul Brush's), the
+  weather's halo (wonder by day), an aura (a status's).
+- **the rutter's model** (`Rutter`, `rutterThing`, `src/vfx/rutter.js`): a small bound book in black-green morocco, its front board
+  tooled in gilt with its own passage (the islands as gilt stamps, the waypoints sailed as studs, a blind wind rose under them); open,
+  its spread is that game day's sea chart in ink, ruled in red, and the crossing's rank stamped in vermilion: **the rank's chop**.
 - **the spirit press**'s model (`SpiritPress`, `src/vfx/spiritpress.js`, after the owner's concept): a living shrine of root and leaf
   over a stone drum. The hopper is the crown's spiral mouth; the igniter is the platter's eye and the lever with its ball; the crucible
   is the hourglass in the pool. **the drum's pool**: the pool on the drum, the soul colour as a liquid, turning, brighter when fired (it
@@ -756,6 +847,35 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   shattering, a reprogramming): one screen pass in the glow (`post.screen`) that splits the colour, tears bands of rows, moshes blocks
   of the frame before, crushes colour to the code's cyan and magenta, drains toward a point, or cuts to a dark beat (**the drop-out**).
   Always set off by an event and short; the setting `visual.glitch` turns it off. *Not:* a bug's flicker (CLAUDE.md, aliasing crawl).
+- **the storm warp** (`game.stormWarp`, `src/vfx/stormwarp.js`): the crossing caught in a psychic storm: the environment (the crude sea,
+  the sky and its clouds, the ambient geometry, the big objects) bent in the vertex shader, never the danger (the shots, the hurtbox, the
+  ship, the reticles, the HUD). Its parts: **the droop** (the world ahead falling away with distance), **the sway** (a slow drift by an
+  angle), **the whorl** (the far world turned about the view's axis; *not* the twist, the Great Dunemaw's rooms); a big object is
+  **seated** (drawn whole, shifted to where the storm draws the world at its place, by at most `STORM.seat`, 0.4 m, so its parts stay on
+  their hurtboxes). Its strength (0..1) is a leg's **storm**, the waypoint's weather and the Courier's mental state (Prismatic warps the
+  most), scaled by the setting `visual.warp`. *Not:* the weather (an island's mood); the glitch (a pulse).
+- **the veil** (`game.glitch.veil`, drawn in the glitch's pass): the storm warp's and the Umbral's share of the screen: the haze (the
+  frame sampled through slow scrolling noise, toward the edges), the chromatic split at the edges, the storm's gold-white light, the
+  Umbral's black-violet grade, and the line of the surface across the lens. What wears `keepTrue` (the danger) is never moved by it.
+- **the Umbral** (`game.umbral`, `src/vfx/umbral.js`): the world below the Emocean's surface, where the ship's Umbral form fights: **the
+  meniscus** (the crude sea seen from below, `CrudeSea.under`: a dark mirror of the deep past the critical angle, Snell's window of the
+  air above inside it, the oil film's light leaking through, the bellies of things floating above as soft shadows), **the column** (the
+  deep's black-violet fog, motes of Lachryma rising), the **caustics** thrown down onto what is under it (`causticsOn`: a caustic
+  overlay; or through `warpMaterial`). **The surface crossing** (Q, a half-bar): the **splash ring** on the surface, a crown of crude,
+  and the line of the surface wiped across the lens (the crown is the dive's, `vfx/waterfx.js`, thrown on the crude). *Not:* the crossing (a stage as it plays).
+- **the drawn surface**, **the lift** (`CrudeSea.lift`, `surfaceAt`; set by `vfx/crossinglook.js`): in the Umbral form the crude sea is
+  DRAWN higher, over the fight and the eye, while the sea the logic rides (`heightAt`: the swells, the brig, the shoal's boil) stays
+  where it is; a dive is the drawn surface sweeping up past the ship and the lens, a breach the same down. *Not:* a drift tide, the folded sea.
+- **the crossing's look** (`CrossingLook`, `game.emocean.looks`, `src/vfx/crossinglook.js`; Calissa's): the storm looks laid on the crossing
+  as it plays, read from the stage each frame: the storm warp's strength by the leg's phase, the waypoint's weather and a turn of the rail;
+  the lift; the ambient geometry hung on the spline (**turn rings**, threaded through a turn of the rail on its heartline; **flank
+  monoliths**, rising beside a fight leg); the wake left in the air along a turn's figure; **the surge's shell** (three great circles of
+  light turning round the ship while the surge keeps it untouchable); and the trip's pressures on the ship: **the hull's scars** (`Sloop.scars`:
+  the hull's open cracks, dark seams with the crude in them, carried leg to leg, turning to gold when caulked), **the bunker's bottle** (a
+  Lachrymato Bottle on the sloop's deck, its level the fuel left), and **the current's streaks** (adrift: pale lines overtaking the ship).
+  *Not:* the crossing (a stage as it plays, Petra's), the shell of a psygun (a caster shell).
+- **a laser's warning thread** (`RailShots.beam`, the shot field's): a laser's line before it burns, a thread of its kind's light a pixel
+  and a half wide, never thinner; hot, the beam is a capsule of its kind as wide as what it hurts. *Not:* a lane mark, the wire compass.
 - **the data drain** (`game.dataDrain`, `src/vfx/datadrain.js`): a creature's data pulled out of it on a reprogramming, after .hack's:
   the **bracelet** of petals at the Courier's hand, the beam, the creature broken into polygons streaming in. It rewrites; it does
   not kill.
@@ -834,12 +954,30 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
   gets (34 joints; its eighteen clips: idle, five floats, cast, hit, death, five mood loops, three emotes, a dance). The mood loops are
   a feeling's basic ring, the emotes its onset; its flame carries the strength. *Not:* the hue ring's lights (the spirit press's).
+- **the strains' looks** (`strainBed`, `STRAIN_FUNGI`, `src/vfx/garden/strains.js`; the mycelium is Dovina's, `docs/plans/MYCELIUM.md`):
+  a spore bed drawn as its strain's real fungus on what it grows on: the **lichen** (wonder: crusts, leafy **rosettes** and pixie cups on
+  boulders and bark), **koji** (mirth: Aspergillus oryzae over rice in two cedar trays, a **koji-buta** each), the **inkcap** (desire:
+  shaggy inkcaps on loam, dissolving into **ink** from the rim), the **oyster** (grief: shelves on a rotting log and a stump), **witches'
+  butter** (dread: yellow-orange jelly on dead branches); in code a strain is its feeling, its fungus `lichen` .. `butter`. Its
+  **growth** (0 inoculated .. 1 full) brings each part up from its foot. **Foxfire** (`foxfireColour`): what glows at night in the
+  garden's fungi (the strains, a fairy ring's fruit, a sporeling's gills), the feeling's canon colour lifted to a glow's lightness, a
+  slow breath and never a flicker; *not* a light (no lamp is lent). **A fairy ring**: round a spore bed, a narrow dead edge, a darker
+  lusher **sward** outside it and the strain's own small growths on it; *not* the ring of bought planetoids, the hue ring, a ripple.
+- **the keepsake pot's look** (`lekythos`, `src/vfx/garden/lekythos.js`): a white-ground **lekythos** (the Athenian funerary oil flask), in
+  its spirit's colour: the spirit's **likeness** and its grave **stele** in **the white-ground hand** (`paintLikeness`, `paintStele`,
+  `src/vfx/blackfigure.js`: the black-figure painter's figures outlined on a white ground and washed in a colour), a meander border and
+  a ribbon (a **taenia**) in the colour. *Not:* a glaze, the press's tiles.
+- **a sporeling's look** (`sporeling`, `src/vfx/garden/sporeling.js`): a cap for a head in its fruit's colour, spotted; labradorite
+  gills edged in gold; a stem body with two eyes; hyphae for limbs; an idle sway, a waddle, a **hop** of its own (a squash, a stretch,
+  feet tucked; *not* the Emocean's hop, nor the Jar's hop). Its mind is Petra's.
 - **the shore's look** (`game.shore`, `src/vfx/shore.js`): what is seen where the Dunes meet the Emocean (Petra's beach): the crude sea
   in the shore's sector, the **swash** (the crude coming up the sand and drawing back, its oil film bright at the lip, never foam) and
   the **wet sand** behind it. The island's weather ends at the waterline.
 - **the liquid pack** (`src/assets/liquid_pack.webp`, baked by `scripts/bake_liquid.py` from `source_assets/liquid/`): the owner's
   noise photographs as one tileable texture (marbling, bubbles, sand ripples, veins) that every liquid is drawn with (`src/vfx/liquid.js`).
-  **caustics**: the net of light on a pool's floor; **glints**: the water's sparkle where the sun catches it.
+  **caustics** (`liqCaustics`, `causticTexture()` in `src/vfx/liquid.js`): the net of light on a pool's floor, a Voronoi cell texture
+  drawn in two layers a little apart (white where they meet, split into colour where they part); **glints**: the water's sparkle
+  where the sun catches it.
 - **the ground pack** (`src/assets/ground_pack.webp`, baked by `scripts/bake_ground.py` from `source_assets/vfx/Noise_Gradients/`): four
   of the owner's noise gradients as the four grey channels of one tileable texture, the heights the ground's materials are drawn from
   (R moss's cushions, G loam's rootlets, B slate's cleft, A silt's crazing; ash's come from the liquid pack's glowing cells). Fetched
@@ -1030,7 +1168,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | calm | no weather (`aspect` null, the log's "fair"); the Emocean's swells laid down for a stage's breather | "fair" for the weather; "a calm" for the stage |
 | hold | a ship's hold (how many casks may cross); to hold the save; a rig's hold (the stretch of a clip rocked back and forth while a move is held: `RigClips`, `hold: [18, 32]`) | "the ship's hold"; "hold the save"; "the clip's hold" |
 | move | a blow of the combo engine (the moveset, `kick.hit`); a rig's move (`RigClips`: a named clip choice, the hand's `snap`, the Jar's `hop`; its `release()` lets a held one go on) | "a blow" or "the kick's move"; "a rig's move" |
-| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`) | "a hop" is the Emocean's; "the Jar's hop" in full. A spirit's body is `s.body`, never `hop` |
+| hop | a crossing of the Emocean (`hop()`, the node map); the Pneuka Jar's bounce in the Spirit Garden (`JarHop`, `PlanetBody.hop`, and its clip `hop`); a sporeling's bounce (its look's `hop()`, `vfx/garden/sporeling.js`) | "a hop" is the Emocean's; "the Jar's hop", "a sporeling's hop" in full. A spirit's body is `s.body`, never `hop` |
 | slam | the Soul Brush's (the air slam, the ground slam); the Great Slip Jelly's; the god hand's clip (the flat palm brought down) | "the brush's slam", "the Great Slip Jelly's slam", "the hand's slam" |
 | gulp | the Lockheart's parry (a Lachryma shot swallowed); a mount on the rail; the Pneuka Jar's clip (a Figment swallowed) | "the Lockheart's gulp", "the gulp mount", "the Jar's gulp" |
 | kiln | the workshop's kiln (the kiln station, `kilnUI`); the Heavenly Kiln (the tribulation at the Chimney: `Tribulation`, `world/garden/tribulation.js`, `realm.tribulation`) | "the kiln" is the workshop's; "the Heavenly Kiln" in full |
@@ -1039,10 +1177,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint |
+| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass); Old Nobody's (milky, blind: `vfx/leviathan.js`); the shoal's silhouette's (the lens shot to break it: `SilhouetteEye`) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint; "Old Nobody's eye"; "the silhouette's eye" |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`); the colour wheel (Soul Alchemy's: hue the bearing, saturation the distance out; in play it is the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
 | sigil | the Soul Brush's: strokes drawn in Celestial mode and read (Spellscription); the Solar Skiff's: the ring of marks laid on the sand the boat rises out of (the model's `sigil` bone) | "a sigil" is the brush's; "the skiff's sigil" in full |
 | dome | the sky's (`vfx/sky.js`, where the night alive is drawn); the stern of the Solar Skiff's hull (the model's own word) | "the sky's dome", "the skiff's dome" |
+| lattice | reprogramming's lattice of Functions (a macro's); the ambient geometry's folding lattice (`G.lattice`, the rail's) | "the macro lattice"; "a folding lattice" |
+| ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`, the ambient geometry's); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots round the Dantian, `ORBIT`) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring" |
 
 ## Retired words
 

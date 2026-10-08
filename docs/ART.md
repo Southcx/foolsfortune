@@ -37,7 +37,13 @@ and rainbow, wonder diamond dust and halo, desire sand streaks and amber haze, g
   spires stay lilac.
 - **Liquids are drawn by one library** (`vfx/liquid.js`; packs baked by `scripts/bake_liquid.py` from the owner's noise photographs).
   Water paints its floor (ripples, caustics, depth colour, Fresnel short of a mirror, sparkle welcome); Lachryma is ink with the film in
-  its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow.
+  its cells and veins. Prior art: Sunshine's crossed waves, Portal 2's flow maps, Sea of Thieves' crest glow. **Water is never plastic**
+  (the owner, 2026-10-08: the ripple read "a little too plastic-y"): its highlight is broad and soft and its gloss varies in slow
+  patches, the rings bend the light and never whiten, and nothing glints in one even coat. **The caustics are a Voronoi cell texture
+  in two layers** (`liqCaustics`, `causticTexture()`): curved threads that swell into knots where three cells meet, the second layer
+  the same net a little apart in a cooler, more saturated hue and fainter, so the line is white where they meet and splits into colour
+  where they part (a real caustic's dispersion); the marbling bends the net so it writhes, and a slow wash keeps it from tiling. On the
+  floor under the shallows, and a faint web of it on the surface.
 - **Sacred geometry is grammar:** the owner's wife's circles (`circle_lotus`, `circle_swirl`) layered and counter-turning; hexagons are the
   lawful mind, spirals the chaotic.
 - **The world is thrown and fired** (lathe forms, slips, glazes, kiln marks); the tools are instruments with a silhouette and a stance.
@@ -87,6 +93,12 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   glint or a gutter, never a flash or a word. The hokora is the garden's palette in small: grey stone, plum-dark wood, a moss roof.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
+- **The shoal and the Mind's furniture** (`vfx/shoal.js`, `vfx/shoalsilhouette.js`, `vfx/railgeometry.js`): a glint is ink with mirror
+  flanks (the storm's gold-white above, the crude below) and a labradorite edge; drawn up into the silhouette the school glows in the
+  stone's blues, violet to peacock, so a shape of fish reads on a bright sky and the black crude alike, and its eye is the one lens.
+  The ambient geometry is wire in the same blues over dark glass (gold is kept for a ring you threaded), black labradorite slabs, and
+  the crude folded overhead. One program for all of it but the glints. The stone's colour on all of it is each piece's own, never the
+  world's (the rail carries them through the world at 26 m/s), and the eye, which is shot at, is never bent by the storm.
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
@@ -98,13 +110,17 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   **The water is the feeling, outright** (`vfx/garden/gardenwater.js`): Lachryma in its feeling's canon colour, dark where the light
   goes in and glowing from inside as it deepens (and by night), the marbling's film in its veins and at its meniscus. Two feelings in
   one pool are an agate, wedged along the marbling and never blended; opposites that meet are fair water, milky as nacre. Ground it
-  wets darkens and glosses for 20 real seconds, with caustics under the shallows. **The rain is your draught** (`gardenrain.js`): thin
+  wets darkens and glosses for 20 real seconds, with caustics under the shallows (the shared Voronoi net), a faint web of them on the
+  surface; still water lies level (its normal the planetoid's up, so no shore triangle catches the sky) and glows evenly by day. **The rain is your draught** (`gardenrain.js`): thin
   streaks drawn toward the sky's pale, each falling to its own planetoid's heart, a ring where it lands, the sky greying under it.
   **The plants are toys** (`gardenplants.js`): chunky moss cushions with fern sprigs, herb rosettes that bloom in desire's colour,
   reeds with a cattail; lit by up-turned normals like the ground they grow from, shrinking away past 18 m so the ground carries the
   green. **A cascade is a ribbon** (`gardencascade.js`): its feeling's colour scrolled down the fall, frayed white at the edges, spray
   at the foot. **The bought four** (`boughtplanetoids.js`) each keep one idea: the Moon's craters, the Koi Pond's teal crown, the Drill
-  Yard's ring of posts, the Bone Bed's ribs.
+  Yard's ring of posts, the Bone Bed's ribs. **The trees are grown, not built** (`leafcanopy.js`, `gardentree.js`; the owner's
+  billboarded leaves): a crown is a few spheres of leaf clumps lit as one soft round mass, never leaf green but labradorite (dark stone
+  walking ultramarine, blue, peacock and green as you go round it) edged and veined in gold, on plum-dark bark; the gold glows a little
+  more by night, low and steady. A crown may take a tint (Myggdrasil's tincture), which leans its flash and keeps its value.
 
 ## 6. The Courier's face
 

@@ -15,7 +15,7 @@ const r = await g.page.evaluate(async () => {
   const { next } = await import('/src/progress/econ/passage.js');
   G.cubes.earn(3000, 'test'); P.menu = P.menu || G.indexMenu;
   const from = V.s.at, to = 'margarite';
-  out.opened = C.open(from, to); out.cols = C.chart?.columns; out.svg = !!document.querySelector('#indexmenu svg [data-wp]');
+  out.opened = C.open(from, to); out.cols = C.chart?.columns; out.svg = !!document.querySelector('#indexmenu canvas.seachart') && !!document.querySelector('#indexmenu [data-wp]'); // (the chart is Calissa's canvas now, its waypoints places over it)
   // off the lanes: refused (only a lit waypoint is clickable); along them: one a column
   const bad = Object.keys(C.chart.waypoints).find((id) => C.chart.waypoints[id].col === 1); out.clickable = [...document.querySelectorAll('#indexmenu [data-wp]')].filter((n) => n.style.cursor === 'pointer').map((n) => n.getAttribute('data-wp'));
   out.firstOnly = out.clickable.every((id) => C.chart.first.includes(id));

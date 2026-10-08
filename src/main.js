@@ -59,6 +59,8 @@ import { Shrines } from './world/shrines.js';
 import { Emocean } from './world/emocean/stage.js';
 import { Pier } from './world/emocean/pier.js';
 import { Margarite } from './world/emocean/margarite.js';
+import { Mooring } from './vfx/mooring.js';
+import { EncounterFilm } from './vfx/encounters/film.js';
 import { Blink } from './courier/moves/blink.js';
 import { Hover, Rocket, Skim } from './courier/moves/jets.js';
 import { Slam } from './courier/moves/slam.js';
@@ -123,6 +125,8 @@ import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { Glitch, MOMENTS as GLITCH_MOMENTS } from './vfx/glitch.js';
+import { StormWarp } from './vfx/stormwarp.js';
+import { Umbral } from './vfx/umbral.js';
 import { DataDrain } from './vfx/datadrain.js';
 import { dunemawMood } from './vfx/dunemawkit.js';
 import { Flythrough } from './cine/flythrough.js';
@@ -358,6 +362,7 @@ async function main() {
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.post = new Glow(renderer);
   game.glitch = new Glitch(game); game.post.screen = game.glitch; // (the data showing through: a screen pass in the glow, vfx/glitch.js)
+  game.stormWarp = new StormWarp(game); game.umbral = new Umbral(game); // (the crossing's psychic storm and the world under the Emocean's surface: vfx/stormwarp.js, vfx/umbral.js; their screen share rides the glitch's pass)
   game.dataDrain = new DataDrain(game); // (a creature's data pulled out of it, on a reprogramming: vfx/datadrain.js)
   game.wellDress = new WellDress(game); // (the Dunemaw floor's sandfalls dressed: vfx/welldress.js)
   game.flythrough = new Flythrough(game); // (a Dunemaw floor previewed on arrival, smeared by the frame accumulation: cine/flythrough.js)
@@ -567,6 +572,7 @@ async function main() {
     });
     game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
     game.emocean = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
+    game.mooring = new Mooring(game); game.encounterFilm = new EncounterFilm(game); // (the chosen hull alongside the pier: vfx/mooring.js; the encounters at sea filmed: vfx/encounters/film.js)
     if (game.dunes?.beach) game.pier.add('anagami', () => { const j = game.dunes.beach.jetty; return j && { end: j.end, top: j.top, yaw: -Math.PI / 2 }; });
     game.pier.add('margarite', () => game.margarite.pier);
     game.interact.add('push', () => {
@@ -900,6 +906,7 @@ async function main() {
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked stain, never cleared: its program lives while one mark does)
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
+  const seaAt = seaLooks.map((o) => o.position.clone()); // (put back after the warm-up: the shoal's look and the wake draw in the world's own frame, and parked 50 m down they stayed under the crude: docs/CASEBOOK.md 2026-10-08)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
   // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
   // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
@@ -913,7 +920,7 @@ async function main() {
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain(); parkCracks();
   for (const o of brushLooks) o.visible = false;
-  for (const o of seaLooks) o.visible = false;
+  seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
@@ -1186,7 +1193,7 @@ async function main() {
     game.cubes.update(dt);
     game.chests.update(dt);
     game.weir.update(dt);
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1203,7 +1210,7 @@ async function main() {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     renderer.shadowMap.autoUpdate = under < 1;
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
