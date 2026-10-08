@@ -21,6 +21,7 @@
 //   FEATURE_IDS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { ribbonLightMaterial } from '../ribbonlight.js';
 import { COLOR } from '../weather.js';
 import { mergeStatic } from '../../render/merge.js';
 
@@ -102,9 +103,7 @@ function smokeThread() {
   const N = 24, g = new THREE.BufferGeometry(), pos = new Float32Array((N + 1) * 2 * 3), uv = [], idx = [];
   for (let i = 0; i <= N; i++) { uv.push(i / N, 0, i / N, 1); if (i < N) { const k = i * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); } }
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx);
-  const m = new THREE.Mesh(g, new THREE.ShaderMaterial({ name: 'incense-smoke', transparent: true, depthWrite: false, side: THREE.DoubleSide,
-    vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-    fragmentShader: 'varying vec2 vU; void main() { float a = (1.0 - abs(vU.y * 2.0 - 1.0)) * (1.0 - vU.x) * smoothstep(0.0, 0.1, vU.x); gl_FragColor = vec4(vec3(0.85, 0.82, 0.88), a * 0.35); }' }));
+  const m = new THREE.Mesh(g, ribbonLightMaterial('smoke', { uC: { value: new THREE.Color(0.85, 0.82, 0.88) } }, { name: 'incense-smoke' })); // (the ribbons' one program: vfx/ribbonlight.js)
   m.frustumCulled = false; m.name = 'incense-smoke';
   m.userData.tick = (t) => { for (let i = 0; i <= N; i++) { const f = i / N, h = f * 2.2, x = Math.sin(t * 0.8 + f * 5) * 0.12 * f + f * f * 0.3, z = Math.cos(t * 0.6 + f * 4) * 0.08 * f, w = 0.02 + 0.08 * f; pos.set([x - w, h, z, x + w, h, z], i * 6); } g.attributes.position.needsUpdate = true; };
   return m;

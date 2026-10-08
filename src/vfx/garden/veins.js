@@ -13,21 +13,12 @@
 //   veinMaterial({ uT, uK, uC }) -> the veins' material for a ribbon of one's own (Myggdrasil's branches and threads)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { ribbonLightMaterial } from '../ribbonlight.js';
 
-const VEIN_V = /* glsl */`varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const VEIN_F = /* glsl */`varying vec2 vU; uniform float uT, uK; uniform vec3 uC;
-void main() {
-  float across = 1.0 - abs(vU.y * 2.0 - 1.0), core = pow(across, 3.0);
-  float pulse = 0.5 + 0.5 * sin(vU.x * 40.0 - uT * 2.2), pulse2 = 0.5 + 0.5 * sin(vU.x * 13.0 - uT * 0.9 + 1.3);
-  float ends = smoothstep(0.0, 0.06, vU.x) * smoothstep(1.0, 0.94, vU.x);
-  float a = ends * (core * (0.45 + 0.4 * pulse * pulse2) + across * 0.12) * uK;
-  gl_FragColor = vec4(uC * (0.5 + 0.8 * core), a * 0.6);                // (low and soft: the scene is linear)
-}`;
-
-/** A material of the veins' light (its own uniforms { uT, uK, uC }; one program for every vein, Myggdrasil's threads too: a ribbon whose
- *  uv runs along it (x, 0 .. 1, the light running toward 1) and across it (y)). */
+/** A material of the veins' light (its own uniforms { uT, uK, uC }; every vein, Myggdrasil's threads too: a ribbon whose uv runs along it
+ *  (x, 0 .. 1, the light running toward 1) and across it (y)). The ribbons' one program (vfx/ribbonlight.js, its look 'vein'). */
 export function veinMaterial(u = { uT: { value: 0 }, uK: { value: 1 }, uC: { value: new THREE.Color(0x9ae8d8) } }) {
-  return new THREE.ShaderMaterial({ name: 'spirit-vein', uniforms: u, vertexShader: VEIN_V, fragmentShader: VEIN_F, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  return ribbonLightMaterial('vein', u, { name: 'spirit-vein', blending: THREE.AdditiveBlending });
 }
 
 export class SpiritVein {

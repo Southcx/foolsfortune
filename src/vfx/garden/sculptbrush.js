@@ -13,6 +13,7 @@
 //   const B = new SculptBrush({ fx })   scene.add(B.group)   B.at(planetoid, dirLocal, size, mode: 'raise'|'dig'|'smooth')   B.work(on)   B.hide()   B.update(rawDt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { ribbonLightMaterial } from '../ribbonlight.js';
 
 const MODE = { raise: 0xd8875a, dig: 0x5ec8c0, smooth: 0xf2ead8 };
 const N = 48;
@@ -24,10 +25,8 @@ export class SculptBrush {
     const pos = new Float32Array((N + 1) * 2 * 3), uv = [], idx = [];
     for (let i = 0; i <= N; i++) { uv.push(i / N, 0, i / N, 1); if (i < N) { const k = i * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); } }
     this.geo = new THREE.BufferGeometry(); this.geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); this.geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); this.geo.setIndex(idx);
-    this.u = { uC: { value: new THREE.Color() }, uA: { value: 0.6 } };
-    this.ring = new THREE.Mesh(this.geo, new THREE.ShaderMaterial({ name: 'sculpt-ring', uniforms: this.u, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
-      vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: 'varying vec2 vU; uniform vec3 uC; uniform float uA; void main() { float a = 1.0 - abs(vU.y * 2.0 - 1.0); gl_FragColor = vec4(uC * 0.6, a * a * uA); }' }));
+    this.u = { uC: { value: new THREE.Color() }, uK: { value: 0.6 } }; // (uK: the band's alpha)
+    this.ring = new THREE.Mesh(this.geo, ribbonLightMaterial('band', this.u, { name: 'sculpt-ring', blending: THREE.AdditiveBlending })); // (the ribbons' one program: vfx/ribbonlight.js)
     this.ring.frustumCulled = false; this.group.add(this.ring);
     this.mode = 'raise'; this.size = 3;
   }
@@ -53,7 +52,7 @@ export class SculptBrush {
   hide() { this.group.visible = false; this.working = false; }
 
   update(raw = 1 / 60) {
-    this.t += raw; this.u.uA.value = this.working ? 0.55 + 0.35 * Math.sin(this.t * 10) : 0.45;
+    this.t += raw; this.u.uK.value = this.working ? 0.55 + 0.35 * Math.sin(this.t * 10) : 0.45;
     const fx = this.fx; if (!fx?.alpha || !this.working || !this.pl) return;
     this.acc += raw * 18;
     while (this.acc >= 1) {
