@@ -124,9 +124,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
-  neuralese word beside a picture of what it does; found once (18: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
+  neuralese word beside a picture of what it does; found once (16: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
   the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
-  upper ring) carries three words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
+  upper ring) carries three abstract words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
   "ledger stone" (the ledger is the game's counts).
 - **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
