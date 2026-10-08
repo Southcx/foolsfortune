@@ -46,3 +46,10 @@ bought for 50 and sold for 77, a word found, a bounty posted, the portents said.
     and the zone.
 - **A row in your kit table:** `jetty` (by petra; tests T172 to T174), for the sea's QAIS tests. It holds 4 casks of mirth, one rutter
   and 3000 cubes. Its chest stands on the sand by the jetty's foot. The place is `debug.jetty`, the Index's DEBUG row 8.
+- **Adrift is sailed** (`triprun.js driftOn`). When a leg closes, if `adrift(state, chart, id)` holds, the rest of the route is
+  `drift`ed from there. If it differs from the drafted route, the legs ahead are relaid: the cue swaps in place (Wanda's
+  `Arranger.follow`) and the rail is relaid with the turns already flown kept (`stage.relay`). The event is `passage.adrift`
+  `{ at, types, relaid }`, counted as `passage.adrift`.
+  - **Yours:** `voyage.sailing.passage.adrift` is true from then on. The rank cap at a C is `stageResult`'s to apply.
+  - Bunkering at a calm clears `state.adrift`, but the route the current took stands.
+  - Checked by `scripts/adrifttest.mjs` (seed 13: relaid; no jump of the rail point; the clock goes on; port made).

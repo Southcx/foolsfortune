@@ -9,12 +9,12 @@
 //                  is started by the stage. The view is the phase's, the camera swinging at a phase's first bar.
 //   THE PRESSURES  the hull carries leg to leg (trip.js arrive); a calm's campfire (heave to: caulk the hull or reckon the sea) and an
 //                  encounter's choice are offered as their release begins, the cue holding while you choose (stage.campfire,
-//                  stage.encounter: Wanda's hold); the tank burned waypoint by waypoint (stage.fuel, shown). Adrift is not yet sailed
-//                  (the current would redraw the cue mid-trip: a later round).
+//                  stage.encounter: Wanda's hold); the tank burned waypoint by waypoint (stage.fuel, shown); a bunker short of every
+//                  way on is adrift: the current takes the rest of the route, the legs ahead relaid (driftOn).
 //   THE ASKS       an encounter's choice is Dovina's `apply` (encounters.js): its state taken, its asks done here (act): casks into the
 //                  hold, a bounty paid on a leg ahead cleared, a rutter sold or bought, the Purser's counter, a ghost raced, a word found,
 //                  portents told; the whale's hidden leg is sailed as the next fight leg in its form, paid at its rate (a leg of its
-//                  own would redraw the cue: with adrift). A squall cleared pays its leg's score at STORM.pays (trip.js legScore).
+//                  own would relay the cue mid-leg). A squall cleared pays its leg's score at STORM.pays (trip.js legScore).
 //
 // Prior art: Slay the Spire's act (the map drafted, then each room in turn, the campfire's choice), FTL's jumps, Star Fox 64's stages on
 // the beat, Rez's areas.
@@ -24,10 +24,10 @@
 // ---------------------------------------------------------------------------------------
 import { tripLayout } from '../../music/legs.js';
 import { schedule } from '../../progress/rail/legs.js';
-import { start, arrive, havenChoices, choose, legScore } from '../../progress/rail/trip.js';
+import { start, arrive, havenChoices, choose, legScore, adrift, drift } from '../../progress/rail/trip.js';
 import { ENCOUNTERS, pickEncounter, offered, apply, strengthOf } from '../../progress/rail/encounters.js';
 import { bountyPay } from '../../progress/econ/livelihoods.js';
-import { rutterWorth } from '../../progress/econ/passage.js';
+import { rutterWorth, next } from '../../progress/econ/passage.js';
 import { ECON } from '../../progress/econ/table.js';
 import { worthOf } from '../../progress/shop/catalogue.js';
 import { today } from '../../core/calendar.js';
@@ -68,19 +68,31 @@ export class TripRun {
   /** A passage sailed: its legs for the cue, the layout, the trip's state. Null for a direct hop (the old crossing). */
   begin(V) {
     this.active = false; if (!V?.passage?.waypoints?.length) return null;
-    const P = V.passage, rng = stream('rail/encounters'), seen = {}, ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart));
-    this.rng = rng; this.V = V;
+    const P = V.passage;
+    this.rng = stream('rail/encounters'); this.seen = {}; this.ghost = !!(P.chart && this.game.voyage?.bestOf?.(P.chart)); this.V = V;
     this.wps = P.waypoints.map((w) => ({ ...w })); this.chart = P.chart;
-    const legs = this.wps.map((w) => {
-      const plan = w.type === 'encounter' ? null : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm });
-      const enc = w.type === 'encounter' ? pickEncounter(seen, rng, { ghost }) : null; if (enc) seen[enc] = (seen[enc] || 0) + 1;
-      const phases = plan ? Object.fromEntries(['open', 'build', 'peak', 'release'].map((id) => [id, (plan.phases.find((p) => p.id === id)?.to ?? 0) - (plan.phases.find((p) => p.id === id)?.from ?? 0)])) : null;
-      return { id: MUSIC_ID[w.type] || w.type, type: w.type, aspect: w.feel || null, feeling: w.feel || null, storm: !!w.storm, encounter: enc, phases, plan };
-    });
-    this.layout = tripLayout(legs); this.legs = legs;
+    this.legs = this.wps.map((w) => this.legOf(w));
     this.state = { ...start(V.ship || 'sloop'), plan: this.wps.map((w) => w.id) }; this.k = -1; this.chosen = new Set(); // (plan: "ahead" is the drafted path, encounters.js)
     this.bounty = null; this.hidden = null; this.race = null;
-    // the views by phase, and a swing at each phase whose view differs from the one before (the stage's camera grammar)
+    this.layOut();
+    this.active = true;
+    const st = this.st.stage;
+    st.fuel = 1; st.adrift = false; st.campfire = null; st.encounter = null;
+    return { bars: this.layout.bars, legs: st.legs };
+  }
+
+  /** A waypoint's leg: its schedule (Dovina's), its encounter drawn, its phases as the cue lays them, its music. */
+  legOf(w) {
+    const plan = w.type === 'encounter' ? null : schedule(w.type, { strength: w.strength ?? 1, feel: w.feel ?? null, storm: !!w.storm });
+    const enc = w.type === 'encounter' ? pickEncounter(this.seen, this.rng, { ghost: this.ghost }) : null; if (enc) this.seen[enc] = (this.seen[enc] || 0) + 1;
+    const phases = plan ? Object.fromEntries(['open', 'build', 'peak', 'release'].map((id) => [id, (plan.phases.find((p) => p.id === id)?.to ?? 0) - (plan.phases.find((p) => p.id === id)?.from ?? 0)])) : null;
+    return { id: MUSIC_ID[w.type] || w.type, type: w.type, aspect: w.feel || null, feeling: w.feel || null, storm: !!w.storm, encounter: enc, phases, plan };
+  }
+
+  /** The legs laid as the cue lays them (Wanda's tripLayout), the views by phase, a swing at each phase whose view differs from the
+   *  one before (the stage's camera grammar), and the legs handed to the cue (music/legs.js tripCue reads stage.legs). */
+  layOut() {
+    const legs = this.legs; this.layout = tripLayout(legs);
     this.views = []; let prev = 'chase';
     this.layout.legs.forEach((L, k) => {
       const plan = legs[k].plan;
@@ -89,11 +101,28 @@ export class TripRun {
     });
     this.swings = [];
     for (const v of this.views) { if (v.view !== prev) this.swings.push({ bar: v.from, from: prev, to: v.view }); prev = v.view; }
-    this.active = true;
-    const st = this.st.stage;
-    st.legs = legs.map(({ plan, type, ...music }) => music); // (Wanda's cue reads these: music/legs.js tripCue)
-    st.fuel = 1; st.adrift = false; st.campfire = null; st.encounter = null;
-    return { bars: this.layout.bars, legs: st.legs };
+    this.st.stage.legs = legs.map(({ plan, type, ...music }) => music);
+  }
+
+  /** Adrift (PASSAGE.md 14.2, trip.js): at a leg's close, a bunker short of every way on's burn gives the ship to the current, which
+   *  carries it to the end (drift: straight on likelier than a diagonal). The legs ahead are relaid when its route is not the drafted
+   *  one: the cue swaps in place (Wanda's Arranger.follow keeps its bar while the past is the same), the rail is relaid keeping the
+   *  turns already flown (stage.relay). Its legs are capped at a C (Dovina's rank: `passage.adrift`). */
+  driftOn(k) {
+    const w = this.wps[k], S = this.st;
+    if (k >= this.wps.length - 1 || (!this.state.adrift && !adrift(this.state, this.chart, w.id))) return;
+    const first = !this.state.adrift; this.state = { ...this.state, adrift: true }; S.stage.adrift = true; this.V.passage.adrift = true;
+    if (!first) return; // (the route the current took is laid once, as it first takes the ship)
+    const rng = stream('rail/drift'), ids = []; let cur = w.id;
+    while (next(this.chart, cur).length) { cur = drift(this.chart, cur, rng); ids.push(cur); }
+    const planned = this.wps.slice(k + 1).map((x) => x.id), same = ids.length === planned.length && ids.every((id, i) => id === planned[i]);
+    if (!same) {
+      const ahead = ids.map((id) => ({ ...this.chart.waypoints[id] }));
+      this.wps = [...this.wps.slice(0, k + 1), ...ahead]; this.legs = [...this.legs.slice(0, k + 1), ...ahead.map((x) => this.legOf(x))];
+      this.state = { ...this.state, plan: this.wps.map((x) => x.id) };
+      this.layOut(); S.relay?.();
+    }
+    this.game.events?.emit('passage.adrift', { at: w.id, types: this.wps.slice(k + 1).map((x) => x.type), relaid: !same, by: 'environment' });
   }
 
   viewAt(bar) { return ((this.views || []).find((v) => bar >= v.from && bar < v.to) || { view: 'chase' }).view; }
@@ -139,6 +168,7 @@ export class TripRun {
     // the hull carries: the run's hits are the hull's damage (trip.js); a haven's mend shows there
     S.run.hits = Math.max(0, (SHIPS[this.state.ship]?.bears ?? S.run.bears) - this.state.hull);
     S.stage.fuel = Math.max(0, Math.min(1, this.state.fuel / (SHIPS[this.state.ship]?.tank || 1)));
+    this.driftOn(k);
   }
 
   /** A calm's campfire or an encounter's choice, offered in the Index's window (the game holds; the cue holds: Wanda's). */

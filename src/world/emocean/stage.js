@@ -251,12 +251,23 @@ export class Emocean {
   }
 
   /** The rail laid for this crossing: a drafted passage's turns of the rail flown as figures (railpath.js); a direct hop straight. */
-  lay(trip) {
+  lay(trip, keep = null) {
     const sp = this.rail.speed, len = 4 * BAR_S * sp, rng = stream('rail/path'), L = this.trip.layout;
-    const turns = trip && L ? L.turns.map((bar, i) => ({ at: bar * BAR_S * sp, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 })) : [];
+    const turns = trip && L ? L.turns.map((bar, i) => { const at = bar * BAR_S * sp, was = keep?.find((t) => Math.abs(t.at - at) < 1e-6); return was || { at, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 }; }) : [];
     this.rail.path.lay({ start: new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), length: (this.plan.seconds || STAGE.seconds) * sp + 400, turns, heart: CRUISE });
-    this.figures = turns.map((t) => t.figure);
+    this.turns = turns; this.figures = turns.map((t) => t.figure);
   }
+  /** The legs ahead relaid mid-trip (adrift: triprun.js driftOn): the plan's bars and seconds, its swings, and the rail laid again
+   *  with every turn already flown kept as it was (its figure and its place), so the line behind and under the ship does not move. */
+  relay() {
+    const T = this.trip; if (!T.active) return;
+    this.plan = { ...this.plan, swings: T.swings, bars: T.layout.bars, seconds: T.layout.bars * BAR_S };
+    this.stage.seconds = this.plan.seconds;
+    const now = this.rail.speed * this.t;
+    this.lay(true, (this.turns || []).filter((t) => t.at <= now + 4 * BAR_S * this.rail.speed)); // (a turn begun or about to begin is kept; the rest drawn anew)
+    this.rail.seat(this.t);
+  }
+
   /** The camera's roll that keeps its up the rail's up (the figure's bank, the loop's back): the angle from the up a look-at with the
    *  world's up gives (player.js camShot) to the frame's up, about the line of sight. Zero on a level rail. */
   frameRoll(pos, look) {
