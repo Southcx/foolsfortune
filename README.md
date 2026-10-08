@@ -63,7 +63,7 @@ The deeper documents:
 | `docs/DESIGN.md` | the design bible: the loops, progression, laws of design |
 | `docs/ECONOMY.md` | where cubes come from and go, by the minute |
 | `docs/LORE.md` | the world, its people and its names |
-| `docs/ART.md`, `docs/LOOK.md`, `docs/VFX.md` | what things look like and why; how effects are made |
+| `docs/ART.md`, `docs/VFX.md` | what things look like and why (colour, materials, the precepts, motion); how effects are made |
 | `docs/OST.md` | the soundtrack |
 | `docs/AI.md` | how creature minds are built |
 | `docs/plans/` | specs of systems being built |

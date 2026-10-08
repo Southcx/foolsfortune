@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // WATER'S FEEDBACK: what a swim looks like on the water and on the Courier (the owner, R46: "there needs to be more visual feedback when
-// swimming around"; docs/plans/SUNSHINE.md phase 1). It takes every disturbance of a water surface (`game.water.onDisturb`) and:
+// swimming around"; docs/plans/SUNSHINE-SYSTEMS.md phase 1). It takes every disturbance of a water surface (`game.water.onDisturb`) and:
 //
 //   RINGS        knocks it into the ripple tank (vfx/ripples.js), which the water's shader reads; the wake's V is the rings' own
 //   THE CROWN    a dive or a belly-flop throws a crown: a ring of drops flung up and out, a column in the middle, the heavy ones last

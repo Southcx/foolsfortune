@@ -26,7 +26,7 @@ export class LockOn {
   constructor(game) {
     this.game = game;
     this.target = null;
-    this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/LOOK.md)
+    this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/ART.md precept 3)
     this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0;
     this.assist = true;
     game.player.lookScale = game.player.lookScale || { lock: 1, blade: 1 };

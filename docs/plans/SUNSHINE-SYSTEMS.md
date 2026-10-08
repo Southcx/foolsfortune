@@ -1,4 +1,8 @@
-# The Soul Brush's load: paint, mop, Lachrymato Bottles and stains (Dovina, 2026-10-06; answers `docs/plans/SUNSHINE.md` section 5)
+# Water and paint: the water that talks back, and the Soul Brush's load, bottles and stains (Dovina's rules, Petra's phases, 2026-10-06)
+
+The owner, 2026-10-06: ripples and wakes on the water, Super Mario Sunshine's systems on the Soul Brush, Splatoon beside it, in synergy
+with what exists. **Built**, all five phases (section 5; the liquid is Lachryma, the owner's ruling). One file: it was SUNSHINE.md
+(Petra's note: the analysis cut to the phases) and SUNSHINE-SYSTEMS.md (Dovina's rules, which answered that note's draft).
 
 Kept by Dovina. **Built:** the data `src/progress/brushload.js` (BRUSH, BOTTLES, STAINS, CLEAN), the modes `src/tools/soulbrush/load.js`,
 the stains `src/world/ground/stains.js` (drawn by `src/vfx/stains.js`), the bottle `src/vfx/bottle.js`, the Jet Arts
@@ -7,9 +11,13 @@ folk, the water and slip loads (section 3).
 
 **The principle:** paint is a feeling laid on the ground, and washing recovers what was spilled. Every part plugs into a loop that
 exists (the ecology, the weather, the stones, the voyage's crude, the Dreamvane) instead of adding a currency.
-Prior art: Super Mario Sunshine, Splatoon, de Blob, Okami, PowerWash Simulator, Luigi's Mansion 3.
+Prior art: Super Mario Sunshine (its pollution layer, doldecomp/sms PollutionLayer, and FLUDD's tank as a leash to the scenery),
+Splatoon (paint in a texture over the level), de Blob, Okami, PowerWash Simulator (the reveal), Luigi's Mansion 3, the ripple tank
+(Hugo Elias's 2D water).
 
 ## 1. The owner's rulings (2026-10-06)
+
+(Code written before the file was cut cites ruling n as "section 4.n".)
 
 1. **Saturate on hold** (settled with Petra). Every LMB press swings the club at once (no tap window; the club's feel is untouched).
    Held past `SLAM.hold` (0.32 real seconds): on the ground the bristles saturate over the psygun's full charge time (`T.charge.time`,
@@ -61,3 +69,11 @@ Not yet emitted (the open loads): `fire.out { by }`, `slide.wet { metres, by }`.
 **Achievements to add**, under THE SOUL BRUSH, sub-category **The Load**, on the build that emits their events: wash 100 square
 metres; a stain of each grade; put out ten fires; a creature brought down standing on your own painted feeling; slide 500 metres on
 wet ground.
+
+## 5. The five phases, as built (Petra's; was SUNSHINE.md section 4)
+
+1. **The water talks back:** `game.water.disturb(x, z, strength, kind)`, Calissa's rings, wakes, crown and drips (`vfx/water.js`).
+2. **The paint map:** where Lachryma lies on the ground, read by the ground's shaders and by movement (`world/ground/paintmap.js`).
+3. **The load on the Soul Brush:** paint and mop, the saturating hold, the Lachrymato Bottle (`tools/soulbrush/load.js`).
+4. **Stains,** washed to reveal what they hid (`world/ground/stains.js`).
+5. **The jet arts,** hover, rocket and skim, opt-in through `/art` (`courier/moves/jets.js`); the Brush Slide runs on painted ground.

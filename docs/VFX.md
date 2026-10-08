@@ -39,7 +39,7 @@ adds a pop of the creature's own colour. Every blow plays `hit.<tool>.<material>
 | damage looks | `damage.<type>` | one colour and motif per type (ART.md section 2), laid over the hit |
 | temper | `vfx/temper.js`, `temper.*` | mental state and EmO on the body: gloss chalk to glass, steam, sparks |
 | **budgets** | `BUDGETS` in vfx.js | particles, flash, shake and hitstop per second of combat (token buckets): a busy fight thins out instead of washing white; a cinematic (`ctx.cine`) is outside them |
-| effect meshes | `source_assets/vfx/effects.blend` → `src/assets/vfx/*.glb` | picked up by name (LOOK.md) |
+| effect meshes | `source_assets/vfx/effects.blend` → `src/assets/vfx/*.glb` | picked up by name (ART.md, section 8) |
 | decal textures | `src/assets/vfx/tex/*.png` | any picture a decal wears (the circles: `circle_lotus`, `circle_swirl`) |
 | sequences | `cine/sequence.js`, `cine/sequences.js` | cinematics as data, below |
 | the workbench | `workbench/`, chat `/workbench` | CINEMA, EFFECTS (edit live, Apply, Copy back), MODELS (turntable, counts), TEXTURES |

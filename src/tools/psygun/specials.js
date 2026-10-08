@@ -330,7 +330,7 @@ export class Specials {
 
   // ---- lock-on reticles: Rez's lock squares, in the world (vfx/wiremarks.js) -------------------------------------------------
   // Two squares spin in opposite directions and shrink onto the target; when they coincide (as one diamond) the lock snaps on. The
-  // ORDER of a lock is how many squares are nested in its mark, never a digit (docs/LOOK.md 6).
+  // ORDER of a lock is how many squares are nested in its mark, never a digit (docs/ART.md precept 6).
   reticle(ent) {
     let r = this.reticles.get(ent);
     if (!r) {

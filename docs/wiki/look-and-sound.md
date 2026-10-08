@@ -74,7 +74,7 @@ Other cues exist for the Emocean's crossings, the garden and the Lockheart's Ope
 
 ## For the divisions
 
-- `docs/OST.md`: the plan for the whole soundtrack. `docs/ARCHITECTURE.md`: the render budgets. `docs/LOOK.md`: the look.
+- `docs/OST.md`: the plan for the whole soundtrack. `docs/ARCHITECTURE.md`: the render budgets. `docs/ART.md`: the look (colour, materials, the precepts, motion).
 - `src/render/present.js` (resolution, upscale, shading, shadow), `toon.js`, `glow.js`, `zones.js`, `propbatch.js`, `restbake.js`.
 - `src/vfx/` (`glitch.js`, `weather.js`, `sky.js`, the effect library); `src/ui/` (the kit and pixel art, `pixel.js`).
 - `src/music/` (scores, `arranger.js`, `choose.js`, `soundtest.js`); `src/audio/` and `src/audio/voice/` (the synthesizer).

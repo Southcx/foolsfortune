@@ -69,9 +69,10 @@ This file is the plan that comes out of them.
 - **The menu template** (`indexmenu.js`): the card in place of the row (CLARITY.md sections 1a and 4).
 
 ### Calissa
-- Merge `LOOK.md` into `ART.md`.
-- Move ART's placeholder audit to a dated note in the archive.
-- Merge OVERLAY with OVERLAY-LOOK, and SUNSHINE with SUNSHINE-SYSTEMS.
+- **Done (2026-10-08):**
+  - `LOOK.md` merged into `ART.md` (its precepts are ART's section 7, cited "precept N"); `LOOK.md` deleted.
+  - ART's placeholder audit moved to `docs/archive/2026-10-08-art-placeholder-audit.md`.
+  - `OVERLAY-LOOK.md` merged into `OVERLAY.md`, and `SUNSHINE.md` into `SUNSHINE-SYSTEMS.md`; every reference to the three removed files updated.
 - The card's look and the keyword icons (CLARITY.md section 5).
 
 ### Espada

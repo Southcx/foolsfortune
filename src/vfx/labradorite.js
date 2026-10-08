@@ -14,7 +14,7 @@
 //
 // Prior art: labradorite and spectrolite (the "labradorescence" of lamellar feldspar: a dark body, a directional flash, blue first);
 // the thin-film shaders of the oil slick and the soap bubble (a hue walked along a palette by the angle of view); Rez's and Vagrant
-// Story's wireframes, which this is the colour of (docs/LOOK.md, "The Mind").
+// Story's wireframes, which this is the colour of (docs/ART.md, precept 3: the Mind).
 //
 //   LAB_GLSL                          the shader chunk: labradorite(ph), labSoft(ph), labInk(ph, sheen), labPhase(worldPos, viewDir)
 //   mindTime                          the shared drift uniform; mindTick() once a frame (idempotent: anyone may call it)
