@@ -13,9 +13,10 @@
 // Two more ways to show a choice: COMPARE (a card against what it would replace: an arrow on each chip that changes, solid for better
 // and hollow for worse, green and red, the old number on hover: Monster Hunter's) and THE SLOT ROW (a loadout's slots in a bar, each
 // with what fills it and the key that fires it: Gradius' power-up bar). All of it in the window colour (ui/theme.js), keyboard and
-// mouse alike: Enter or Space picks, the arrows move between the cards of a list, a held press shows the detail.
+// mouse alike: Enter or Space picks, the arrows move between the cards of a list (the first one comes in from nothing, for Tab is the
+// game's: core/input.js), a window drawn again after a key's pick gives that card its focus back (by the row's `id`), a held press shows the detail.
 //
-// Data in: a row with Dovina's fields (`name`, `does`, `lore`, `detail`, `cost`, `charges`, `cooldown` in real seconds, `duration` in
+// Data in: a row with Dovina's fields (`id`, `name`, `does`, `lore`, `detail`, `cost`, `charges`, `cooldown` in real seconds, `duration` in
 // real seconds, `range` m, `angle` degrees, `always`) and the card's own (`icon` an icon id, `key` a string or a list of them or
 // 'passive', `state` 'equipped' | 'ready' | 'locked', `opens` the locked card's line). A table in bars is turned to seconds before it
 // comes here (ui/mountcards.js). The words on the card are the row's: the state's three words are placeholders for Espada's.
@@ -69,7 +70,7 @@ const CSS = `
   background: linear-gradient(180deg, #fff3df, #e2c49c); box-shadow: 0 2px 0 #7a4a2e, inset 0 -1px 0 rgba(0,0,0,.2); text-shadow: none; }
 .cc kbd.none { background: rgba(0,0,0,.25); box-shadow: none; border: 1px dashed rgba(255,230,200,.55); line-height: 14px; }
 .cc .cc-keys { display: flex; gap: 3px; }
-.cc .cc-state { display: inline-flex; align-items: center; gap: 3px; font: 800 9px/1 var(--f-ui, sans-serif); letter-spacing: .12em; color: #f3e2cc; opacity: .85; white-space: nowrap; }
+.cc .cc-state { display: inline-flex; align-items: center; gap: 3px; font: 800 10px/1 var(--f-ui, sans-serif); letter-spacing: .1em; color: #f3e2cc; opacity: .85; white-space: nowrap; }
 .cc.equipped .cc-state { color: #ffd98a; opacity: 1; }
 .cc .cc-opens { grid-column: 2 / span 2; margin-top: 3px; color: #f3e2cc; font-size: 11px; }
 .cc .cc-detail { display: none; position: absolute; left: -1px; right: -1px; top: calc(100% - 2px); z-index: 5; padding: 6px 9px 7px; box-sizing: border-box;
@@ -77,6 +78,7 @@ const CSS = `
   box-shadow: 0 8px 18px rgba(0,0,0,.5); font-size: 11.5px; color: #f6ead8; }
 .cc .cc-detail em { font-family: var(--f-lore, serif); font-style: italic; font-size: 1.12em; color: #fff1dc; }
 .cc:hover .cc-detail, .cc:focus-visible .cc-detail, .cc.held .cc-detail { display: block; }
+.ccards.kbd .cc:not(:focus-visible):not(.held) .cc-detail { display: none; } /* (the keys have the list: a pointer parked on another card opens nothing) */
 .cc.up .cc-detail { top: auto; bottom: calc(100% - 2px); border-top: 1px solid var(--jhi, #f1d2b0); border-bottom: none; border-radius: 4px 4px 0 0; box-shadow: 0 -8px 18px rgba(0,0,0,.5); }
 .slotrow { display: flex; gap: 3px; flex-wrap: wrap; align-items: stretch; }
 .slotrow .sl { display: grid; justify-items: center; align-content: start; gap: 3px; min-width: 66px; padding: 5px 6px 6px; box-sizing: border-box; border-radius: 4px;
@@ -89,11 +91,25 @@ const CSS = `
 .slotrow .sl .uicon { image-rendering: pixelated; }
 `;
 let installed = false;
-/** The card's rules, once (and the keywords' with them). */
+let keep = null; // (what a keyboard pick had in focus, to give it back when the window is drawn anew: { id | slot, at })
+const keepFocus = (what) => { keep = { ...what, at: performance.now() }; };
+const kept = () => (keep && performance.now() - keep.at < 600 ? keep : (keep = null));
+const ENTRY = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+/** The card's rules, once (and the keywords' with them), and the arrow keys' way in: Tab is the game's (core/input.js), so with nothing in
+ *  focus the first arrow puts it on the first card of the list on the screen (the last, going up or left); from there cardList's own keys move it. */
 export function installChoiceCards() {
   if (installed || typeof document === 'undefined') return; installed = true;
   installKeywords();
   const st = document.createElement('style'); st.id = 'cccss'; st.textContent = CSS; document.head.appendChild(st);
+  addEventListener('keydown', (e) => {
+    const dir = ENTRY[e.code]; if (!dir || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+    const a = document.activeElement;
+    if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable || a.closest?.('.cc, .sl'))) return; // (typing, or already inside a list)
+    for (const box of document.querySelectorAll('.ccards')) {
+      const all = box.querySelectorAll(':scope > .cc'); if (!all.length || !box.getClientRects().length) continue; // (a list drawn but hidden: a window shut)
+      box.classList.add('kbd'); all[dir > 0 ? 0 : all.length - 1].focus(); e.preventDefault(); return;
+    }
+  });
 }
 
 const make = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
@@ -113,7 +129,7 @@ export class ChoiceCard {
     const el = (this.el = make('div', 'cc'));
     el.tabIndex = 0; el.setAttribute('role', 'button'); el._card = this;
     el.addEventListener('click', () => { if (this.swallow) { this.swallow = false; return; } this.pick(); });
-    el.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { this.pick(); e.preventDefault(); e.stopPropagation(); } });
+    el.addEventListener('keydown', (e) => { if (e.target === el && (e.code === 'Enter' || e.code === 'Space')) { if (this.row?.state !== 'locked') keepFocus({ id: this.row?.id }); this.pick(); e.preventDefault(); e.stopPropagation(); } });
     el.addEventListener('focus', () => { el.classList.add('sel'); this.place(); }); el.addEventListener('blur', () => el.classList.remove('sel'));
     el.addEventListener('pointerenter', () => this.place());
     // held: a press kept down shows the detail (and is not a pick)
@@ -196,36 +212,45 @@ export class ChoiceCard {
 /** One card as an element. */
 export const choiceCard = (row, opts) => new ChoiceCard(row, opts).el;
 
-/** A list of cards in the window's grid; the arrow keys move between them (up and down by the row). */
+/** A list of cards in the window's grid; the arrow keys move between them (up and down by the row; the first arrow comes in from nothing:
+ *  installChoiceCards). Drawn again after a keyboard pick, the card that was picked is given its focus back. */
 export function cardList(cards, { cols = 2 } = {}) {
   installChoiceCards();
   const box = make('div', 'ccards'); box.style.setProperty('--cc-cols', cols);
-  for (const c of cards) box.append(c.el || c);
+  const els = cards.map((c) => c.el || c);
+  for (const c of els) box.append(c);
   box.addEventListener('keydown', (e) => {
     const all = [...box.querySelectorAll(':scope > .cc')], i = all.indexOf(document.activeElement); if (i < 0) return;
     const per = Math.max(1, all.filter((c) => c.offsetTop === all[0].offsetTop).length);
     const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: per, ArrowUp: -per }[e.code]; if (!step) return;
-    all[Math.max(0, Math.min(all.length - 1, i + step))].focus(); e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); e.stopPropagation(); box.classList.add('kbd');
+    if (i + step >= 0 && i + step < all.length) all[i + step].focus(); // (an edge stays where it is)
   });
+  box.addEventListener('pointermove', (e) => { if (e.movementX || e.movementY) box.classList.remove('kbd'); }); // (the pointer takes the list back when it moves)
+  const k = kept(), back = k && (k.id !== undefined ? els.find((c) => c._card?.row?.id === k.id) : k.slot !== undefined ? els.find((c) => !c.classList.contains('locked')) : null);
+  if (back) { keep = null; box.classList.add('kbd'); requestAnimationFrame(() => { if (back.isConnected) back.focus(); }); }
   return box;
 }
 
-/** A loadout's slots as a bar (Gradius): the one always fitted first, then each slot with what fills it and the key that fires it. */
+/** A loadout's slots as a bar (Gradius): the one always fitted first, then each slot with what fills it and the key that fires it. A slot
+ *  with a mount in it can be picked (it comes ashore); an empty one cannot, and nor can the one always fitted. */
 export function slotRow({ slots = 2, filled = [], always = null, onPick = null } = {}) {
   installChoiceCards();
-  const box = make('div', 'slotrow');
+  const box = make('div', 'slotrow'), live = [], k = kept(), want = k?.slot;
   const sock = (row, key, i) => {
     const s = make('div', `sl${row ? '' : ' empty'}${i < 0 ? ' always' : ''}`);
     s.append(row && hasIcon(row.icon) ? iconEl(row.icon, { px: 2 }) : make('span', 'hole'), make('span', '', row ? row.name : STATE_WORDS.empty), keyCaps(key));
     s.title = row ? [row.name, row.does].join(': ') : STATE_WORDS.empty;
-    if (i >= 0) {
-      s.tabIndex = 0; s.setAttribute('role', 'button');
+    if (i >= 0 && row) {
+      s.tabIndex = 0; s.setAttribute('role', 'button'); live.push([i, s]);
       const go = () => onPick?.(i, row); s.addEventListener('click', go);
-      s.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { go(); e.preventDefault(); e.stopPropagation(); } });
+      s.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'Space') { keepFocus({ slot: i }); go(); e.preventDefault(); e.stopPropagation(); } });
     }
     box.append(s);
   };
   if (always) sock(always, [].concat(always.key || 'LMB')[0], -1);
   for (let i = 0; i < slots; i++) sock(filled[i] || null, String(i + 1), i);
+  const back = want !== undefined && (live.find(([i]) => i === want) || live[0]); // (the slot that was picked, or the first left; else the cards take it)
+  if (back) { keep = null; requestAnimationFrame(() => { if (back[1].isConnected) back[1].focus(); }); }
   return box;
 }

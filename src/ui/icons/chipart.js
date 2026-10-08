@@ -2,7 +2,7 @@
 // THE CHIPS' ICONS AND THE CARD'S MARKS: the small pictures a choice card's stat chips carry beside their numbers (ui/choicecard.js),
 // 8 x 8 in the icons' hand (ui/icons/hand.js: 10 x 10 with the keyline), and the card's marks of state and comparison:
 //   range     a span with its ends marked (metres)          angle     a wedge and its arc (degrees)
-//   energy    a drop (the pool's cost)                      charges   three pips (uses a crossing)
+//   energy    a drop (the pool's cost)                      charges   three upright pips (uses a crossing: a row of dots read as an ellipsis at 1x)
 //   cooldown  a clock (real seconds before it is ready)     duration  an hourglass (real seconds it lasts)
 //   lock      a padlock (a card not yet opened)             check     a tick (a card equipped)
 //   up, down  an arrow (a compared number rising or falling; drawn solid for better and hollow for worse, so the comparison never
@@ -45,12 +45,12 @@ export const CHIP_ART = {
   ],
   charges: [
     '........',
-    '........',
     '##.##.##',
     '##.##.##',
-    '........',
-    '........',
-    '........',
+    '##.##.##',
+    '##.##.##',
+    '##.##.##',
+    '##.##.##',
     '........',
   ],
   cooldown: grid(8, 8, (x, y) => {

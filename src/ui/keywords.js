@@ -2,7 +2,8 @@
 // THE KEYWORDS: the twelve genre words the UI explains on hover wherever they stand (docs/plans/CLARITY.md section 5, Dovina's table;
 // the words are Espada's to settle, so every label and line here is a placeholder until then). A keyword in text is bold, in the
 // window's gold, with its icon before it (ui/icons/keywordart.js), and a hover or a keyboard focus on it opens a small tip: its icon,
-// its word, and what it means in one line. A new mechanic reuses one of these if it can; adding one is a glossary entry first.
+// its word, and what it means in one line; it follows its keyword each frame and goes when the keyword does (a window closed or
+// drawn again sends no pointerleave: casebook, 2026-10-08). A new mechanic reuses one of these if it can; adding one is a glossary entry first.
 //
 // Prior art: Slay the Spire's keywords (bold in a card's text, the meaning on hover, one fixed list), Hades' boon text (the keyword in
 // its own colour), and the Xbox Accessibility Guidelines 101 and 103 (text a player can read, colour never the only cue: the bold and
@@ -44,7 +45,7 @@ const CSS = `
 #kwtip.on { display: block; }
 #kwtip header { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font: 600 13px var(--f-title, serif); letter-spacing: .08em; color: #ffd98a; }
 `;
-let installed = false, tip = null;
+let installed = false, tip = null, tipFor = null, tipFrame = 0;
 /** Its rules and its tip, once. */
 export function installKeywords() {
   if (installed || typeof document === 'undefined') return; installed = true;
@@ -52,17 +53,33 @@ export function installKeywords() {
   tip = document.createElement('div'); tip.id = 'kwtip'; tip.setAttribute('role', 'tooltip'); document.body.appendChild(tip);
 }
 
+/** Put the tip beside the keyword it is for (below it, or above where the window ends), and say whether the keyword is still to be seen. */
+function placeTip() {
+  const el = tipFor; if (!el || !tip) return false;
+  if (!el.isConnected || !el.getClientRects().length) return false; // (the window closed or redrew under it: no pointerleave comes for a thing that is gone)
+  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  const x = Math.max(4, Math.min(innerWidth - tw - 4, r.left)), below = r.bottom + 6 + th <= innerHeight;
+  tip.style.left = `${Math.round(x)}px`; tip.style.top = `${Math.round(below ? r.bottom + 6 : r.top - th - 6)}px`;
+  return true;
+}
+/** While a tip shows it follows its keyword each frame, and goes with it (a scrolled window, a closed one, a page drawn again). */
+function followTip() { tipFrame = 0; if (!tipFor) return; if (placeTip()) tipFrame = requestAnimationFrame(followTip); else hideTip(); }
+
 function showTip(el, id) {
   const K = KEYWORDS[id]; if (!K || !tip) return;
   tip.innerHTML = '';
   const head = document.createElement('header'); head.append(iconEl(K.icon, { px: 2 }), K.label);
   const p = document.createElement('div'); p.textContent = K.means;
-  tip.append(head, p); tip.classList.add('on');
-  const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
-  const x = Math.max(4, Math.min(innerWidth - tw - 4, r.left)), below = r.bottom + 6 + th <= innerHeight;
-  tip.style.left = `${Math.round(x)}px`; tip.style.top = `${Math.round(below ? r.bottom + 6 : r.top - th - 6)}px`;
+  tip.append(head, p); tip.classList.add('on'); tipFor = el;
+  placeTip();
+  if (!tipFrame) tipFrame = requestAnimationFrame(followTip);
 }
-const hideTip = () => tip?.classList.remove('on');
+/** Hide the tip (of `el` only, when one is named: a keyword losing focus never hides the tip another keyword has opened). */
+function hideTip(el = null) {
+  if (el && tipFor !== el) return;
+  tipFor = null; tip?.classList.remove('on');
+  if (tipFrame) { cancelAnimationFrame(tipFrame); tipFrame = 0; }
+}
 
 /** A keyword alone: its icon and its word in the gold, the tip on hover or keyboard focus. */
 export function keywordEl(id, { label = null } = {}) {
@@ -71,8 +88,8 @@ export function keywordEl(id, { label = null } = {}) {
   b.className = 'kw'; b.dataset.kw = id; b.tabIndex = 0; b.setAttribute('aria-describedby', 'kwtip');
   if (!K) { b.textContent = label || id; return b; }
   b.append(iconEl(K.icon, { px: 1 }), label || K.label);
-  b.addEventListener('pointerenter', () => showTip(b, id)); b.addEventListener('pointerleave', hideTip);
-  b.addEventListener('focus', () => showTip(b, id)); b.addEventListener('blur', hideTip);
+  b.addEventListener('pointerenter', () => showTip(b, id)); b.addEventListener('pointerleave', () => hideTip(b));
+  b.addEventListener('focus', () => showTip(b, id)); b.addEventListener('blur', () => hideTip(b));
   return b;
 }
 

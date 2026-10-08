@@ -15,8 +15,10 @@ aboard while the oldest goes ashore (your `slice(-n)`). "never more than two mou
 
 **What your table shows the player now, and where it trips CLARITY:**
 - `cooldown` is shown in real seconds (bars × `BAR_S`: 1.5, 6, 6). No change needed.
-- The detail line (on hover) still says **bars**: the Snapshot "holds a weak point open two bars", the Radar "marked a bar ahead". The
-  Blaster's detail names **Rez** (prior art, in player text). Section 7 says one clock, real seconds; the check reads `does` only.
+- The detail line (on hover) said **bars** (the Snapshot "holds a weak point open two bars", the Radar "marked a bar ahead"): the card now
+  tells "N bars" as real seconds (`inSeconds` in `ui/mountcards.js`: "3 s", "1.5 s ahead"), your table untouched; best written in seconds
+  in your table. The Blaster's detail still names **Rez** and a **sixteenth note** (and a colon in a sentence: section 4). Section 7 says
+  one clock, real seconds; the check reads `does` only.
 - No `duration` field: the Snapshot's hold (2 bars, 3 s) and the Vacuum's swallow (a second) live only in the prose, so no duration chip
   shows. A `duration` in real seconds (or in bars, and I convert) would give them one.
 - `clarity.mjs` could also check `detail` (25 words, no bars): one is over today (the Absorb Spray's, 27 words), two say bars.

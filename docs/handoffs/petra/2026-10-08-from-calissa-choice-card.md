@@ -9,10 +9,12 @@ own lazy chunk (4.79 KB).
 `ui/mountcards.js` (Dovina's MOUNTS as card rows, bars turned to real seconds by `BAR_S`), and the workbench's CARDS tab
 (`workbench/cardsheet.js`).
 
-**CROSSING, `world/emocean/pier.js` (yours), 8 lines in, 9 out:** the mount rows are now the slot row and a choice card each. Same
-`this.chosen`, same `slice(-n)`, same `this.open(at)` redraw; the group title and every other row untouched. `MOUNTS` is no longer
-imported there. Played headless: a click on a ready card takes it aboard, a click on a slot takes its mount ashore, arrows and Enter do
-the same from the keyboard, the theme's glove follows the focused card; no page errors. The emocean sweep's pier part: 27 pass, 1 fail,
+**CROSSING, `world/emocean/pier.js` (yours), 10 lines in, 11 out (the review added two, the scroll):** the mount rows are now the slot
+row and a choice card each. Same `this.chosen`, same `slice(-n)`, same `this.open(at)` redraw; the group title and every other row
+untouched. `MOUNTS` is no longer imported there. `open` also keeps the page's scroll when it draws the pier page again (a pick used to
+send it to the top: 259 to 0 at 854 x 480, the mounts off the screen). Played headless: a click on a ready card takes it aboard, a click
+on a slot takes its mount ashore, and the keyboard does the same: the first arrow enters the cards (Tab is the game's), arrows move,
+Enter or Space picks and the card keeps its focus across the redraw; no page errors. The emocean sweep's pier part: 27 pass, 1 fail,
 the fail being Dovina's click by the old `.room` / `.n` selector (her handoff has the two-line fix).
 
 **The recipe for every other window** (the traffic order in CLARITY.md section 9; the sea chart is next):
@@ -28,6 +30,7 @@ im.appendChild(cardList(rows.map((r) => new ChoiceCard(r, { onPick: (row) => act
 - A table kept in bars or game hours is turned to real seconds before it reaches a card (see `ui/mountcards.js`).
 - A window with no icon of its own yet: leave `icon` out and the card keeps its slot empty; ask me for the picture.
 
-**Open, for you:** the page redraws whole on each click, so keyboard focus returns to nothing after a pick; keeping the focused card's id
-across `this.open(at)` and focusing it again after the render would fix it (two lines in pier.js, yours to place). The world preview at
-the mooring (a mount's cone or ring drawn on the moored hull, CLARITY section 6) is not in this branch.
+**Open, for you:** the pier's other rows (the islands, the ships) are still mouse-only `.room` divs: a keyboard player reaches the
+cards and the slot row and not those. The world preview at the mooring (a mount's cone or ring drawn on the moored hull, CLARITY section 6)
+is not in this branch. A card's compare arrows are built (`compareTo`) and shown on the workbench's sheet but not in the pier: a pick
+there silently bumps the oldest mount (`slice(-n)`), so an arrow needs to say which one it replaces; your call before it is wired.

@@ -71,6 +71,7 @@ export class Pier {
     const g = this.game, V = g.voyage; if (!V) return;
     const at = island || V.at;
     if (V.at !== at && !V.sailing) { if (V.arrive) V.arrive(at); else { V.s.at = at; V.dirty(); } } // (they stand at this pier: they may have come by a Shrine)
+    const was = this.menu?.open && this.menu.page?.name === 'pier' ? this.menu.root?.querySelector('.im') : null, y = was?.scrollTop || 0; // (a pick draws the page again: it stays where it was scrolled)
     this.menu?.showPage('pier', (im, el) => {
       const box = el('div', 'rooms');
       for (const id of Object.keys(NODES)) {
@@ -98,6 +99,7 @@ export class Pier {
       const out = [el('div', 'grp', `FROM ${(NODES[at]?.name || at).toUpperCase()}`), box, el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes' });
+    if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
   }
 
   /** A rutter of this route and game day in the Pneuka Box (the charted passage a heavy hull sails; none exist until the rutter item
