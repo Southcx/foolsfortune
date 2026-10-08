@@ -4,7 +4,7 @@
 // to 99, from EXP; all seven at 99 is "The World", the end of the Fool's Journey. EXP comes from doing the domain's things, and from
 // doing them WELL: every source names the event it is earned from, its base EXP, and how the event says how good it was (0 .. 1), and
 // and the weight of quality is steep on purpose (the owner, 2026-10-04: "a god-gamer should progress much faster"): SKILL's curve gives
-// a rote act 0.4 of the base, a middling one about 1, and a masterful one 5, so the grind to "The World" is about 2,100 hours and a
+// a rote act 0.4 of the base, a middling one about 1, and a masterful one 5, so the grind to "The World" (all seven at 99, 300 hours each) is about 2,100 hours and a
 // player who plays ambitiously and well gets there in about 400. A source's quality should measure ambition as well as accuracy (the
 // fragile formation's sweet spot, the long macro typed clean, the four-star photograph), never repetition. The bases are relative WEIGHTS within a domain; one PACE scales every domain alike, so 99 takes the same time in
 // each (300 hours of middling play at 6 acts a minute, about OSRS's pace for a skill: a placeholder until the owner sets it). A level widens what a domain can do and never does the skill for the player. Data and pure functions; progress/psyche.js

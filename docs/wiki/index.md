@@ -6,26 +6,23 @@ divisions) are linked at the bottom of its page.
 
 ## Pages
 
-| Page | Covers | State |
-| --- | --- | --- |
-| [Playing](playing.md) | starting, keys, moving, your clay body and its energy | first pass (from the old README) |
-| [The tools](tools.md) | the seven tools and what each one does | first pass |
-| [The god hand](god-hand.md) | becoming a jar and a hand | first pass |
-| [Places](places.md) | the workshop, basement, Dunes, Wells, Shrines | first pass |
-| [Creatures and folk](creatures-and-folk.md) | what you meet and fight | first pass |
-| [Things and money](economy.md) | cubes, chests, shops, what things are worth | first pass |
-| [The log and the Codex](log-and-codex.md) | where the game tells you things, and your records | first pass |
-| [Look and sound](look-and-sound.md) | how it is drawn and heard | first pass |
+| Page | Covers |
+| --- | --- |
+| [Playing](playing.md) | starting, keys, moving, your clay body and its energy |
+| [The tools](tools.md) | the seven tools and what each one does |
+| [The god hand](god-hand.md) | becoming a jar and a hand |
+| [Places](places.md) | the workshop, basement, Dunes, Wells, Shrines |
+| [Creatures and folk](creatures-and-folk.md) | what you meet and fight |
+| [Things and money](economy.md) | cubes, chests, shops, what things are worth |
+| [The log and the Codex](log-and-codex.md) | where the game tells you things, and your records |
+| [Look and sound](look-and-sound.md) | how it is drawn and heard |
+| [Combat](combat.md) | damage types, statuses, the parry, a creature's mood and temperament, your clay breaking |
+| [The Great Dunemaw](great-dunemaw.md) | the Well: floors, runs, the haul, the boss fight |
+| [The Emocean](emocean.md) | ships, mounts, the sea chart, the rail shooter, encounters, cargo |
+| [The Spirit Garden](spirit-garden.md) | planetoids, spirits, features, the mycelium and Myggdrasil |
+| [Soul Alchemy](soul-alchemy.md) | the press, your soul colour, raising your attributes |
+| [Feelings and weather](feelings-and-weather.md) | the five feelings, the weather, the game clock, your mental state |
+| [Progress](progress.md) | Movement Arts, knacks, achievements, standing, the domains, Luck |
+| [Co-op](co-op.md) | siblings, the party, guests, asking and letters |
 
-## Pages to write
-
-| Page | Covers | Drawn from |
-| --- | --- | --- |
-| Combat | damage types, statuses, a creature's mood and temperament | GLOSSARY, DESIGN, plans/TEMPERAMENT, plans/WHEEL |
-| The Great Dunemaw | the Well, its floors, the boss fight | plans/DUNEMAW* |
-| The Emocean | ships, the sea chart, crossing a route, the rail shooter, encounters | plans/RAIL, RAIL-OVERHAUL, PASSAGE |
-| The Spirit Garden | planetoids, catching and raising spirits, the mycelium and Myggdrasil | plans/SPIRIT-GARDEN, MYCELIUM |
-| Soul Alchemy | the press, your soul colour, raising your attributes | plans/SOUL-ALCHEMY |
-| Feelings and weather | the five feelings, the weather, the day | plans/WEATHER, WHEEL |
-| Progress | Movement Arts, knacks, achievements, standing, Luck | DESIGN, plans/TRAINING |
-| Co-op | siblings, the party, guests | plans/COOP |
+Where a page says **not built yet**, the plan exists and the game does not do it yet.

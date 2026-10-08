@@ -41,9 +41,12 @@ This file is the plan that comes out of them.
   `docs/GLOSSARY-DETAIL.md`, not loaded. Nothing was lost: the script checked all 1,075 bold terms. Duplicates were merged, and blot was
   ruled the player's word. The report is `docs/plans/research/GLOSSARY-SLIM.md`, and the divisions review it at the gate.
 
+- **The wiki** (2026-10-08, later): all sixteen pages written or rewritten to CLARITY's rules, checked against the code (each page
+  says "not built yet" where the plan is ahead of the game). About 26,700 words.
+- **ECONOMY.md's profile table** is the simulator's now: `node scripts/economy.mjs --doc` fails on drift, `--write` rewrites it.
+- **My handoff notes:** the undated ones and my answered inbox deleted.
+
 ### Dovina (mine, next)
-- **The wiki pages to write** (the index's list): combat, the Great Dunemaw, the Emocean, the Spirit Garden, Soul Alchemy,
-  feelings and weather, progress, co-op. Then rewrite the eight first-pass pages to CLARITY's rules.
 - **DESIGN.md:**
   - sections 1 to 5 stay;
   - the dated rulings (sections 10 to 22) fold into the wiki pages and specs they rule.
@@ -53,7 +56,6 @@ This file is the plan that comes out of them.
   - the garden (SPIRIT-GARDEN, MYCELIUM);
   - testing (SWEEPS, GARDEN-SWEEP, DEBUG-CHESTS).
   - The superseded files go to `docs/archive/`, with every path that cites them updated in the same commit.
-- **ECONOMY.md:** its profile table to be generated from `scripts/economy.mjs`, so it cannot drift.
 
 ### Petra
 - **The casebook:** keep the rules on top. Move the dated cases to `docs/archive/casebook/`, one file a month, about 25,000 words out of
