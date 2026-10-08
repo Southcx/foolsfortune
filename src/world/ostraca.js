@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE OSTRACA, IN THE WORLD: where the sixteen inscribed potsherds lie and how each is found, and the two stelae (the numbers and the
-// split of the words: progress/ostraca.js, Dovina's; the words and their English: npc/neuralese.js, Espada's; the look: a stand-in for
-// Calissa's vfx/ostracon.js). The words go to the places in the Functions' own order: six BURIED in the Dunes (a weak signature the
+// split of the words: progress/ostraca.js, Dovina's; the words and their English: npc/neuralese.js, Espada's; the look:
+// Calissa's vfx/ostracon.js, a buried one's corner and sparkle showing out of a mound). The words go to the places in the Functions' own order: six BURIED in the Dunes (a weak signature the
 // dowse finds, the sand shivering over it like a veiled crystal's; the pick's ground strike or the Dreamquake lifts it), six in the
 // Great Dunemaw's FORGOTTEN POTS (a floor draws from a deck: a quarter a floor, certain within eight; broken, the pot leaves the sherd),
 // two leaning at the feet of the ruins' COLUMNS in plain sight, two under the workshop's PLASTER (a patch that a blow knocks away). A
@@ -27,6 +27,7 @@ import { ROOM } from './level.js';
 import { bearingXZ } from './well/bowl.js';
 import { ARENA } from '../progress/combat/dunemaw.js';
 import { stream } from '../core/rng.js';
+import { Ostracon, Stele } from '../vfx/ostracon.js';
 const simRand = stream('world/ostraca'); // (the simulation's chance: core/rng.js)
 
 const REACH = 2.2, SEALED = { a: 2.25, r: OASIS.flat + 46, half: 2.2, h: 3 }; // (the sealed room: its bearing and distance from the oasis, its half-width and height)
@@ -40,9 +41,7 @@ export class Ostraca {
     const words = WORD_SPLIT(FUNCTIONS).ostraca, P = OSTRACA.places;
     let i = 0; this.at = {};
     for (const place of ['dunes', 'dunemaw', 'ruins', 'workshop']) { this.at[place] = words.slice(i, i + P[place].n); i += P[place].n; }
-    this.mat = new THREE.MeshStandardMaterial({ color: 0xc98a5a, roughness: 0.85, name: 'ostracon' }); // (a stand-in: Calissa's black-figure sherd, vfx/ostracon.js)
-    this.ink = new THREE.MeshBasicMaterial({ color: 0x1b1210, name: 'ostracon-ink' });
-    this.geo = new THREE.CylinderGeometry(0.16, 0.2, 0.035, 6); this.stoneGeo = new THREE.BoxGeometry(0.9, 1.6, 0.25);
+    // (the looks are Calissa's, vfx/ostracon.js: a black-figure sherd for each word, a sandstone stele; the sealed room's walls are mine)
     this.stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8378, roughness: 0.95, name: 'stele' });
     this.built = { dunes: false, workshop: false };
   }
@@ -62,13 +61,13 @@ export class Ostraca {
         const ground = new THREE.Vector3(x, D.heightAt(x, z), z);
         if (this.found(word)) continue;
         if (this.s.revealed.includes(word)) { this.drop(word, ground, 'dunes', false); continue; }
-        const b = { word, ground, veiled: true };
+        const b = { word, ground, yaw: rnd() * 6.28, veiled: true, look: null }; // (only its corner shows out of a mound, and the sparkle the survey finds: the look made within 80 m, update())
         b.sig = g.signatures?.add({ pos: ground.clone().setY(ground.y - 0.3), strength: 2.5, kind: 'ostracon', ref: b, alive: () => b.veiled && !this.found(word) });
         this.buried.push(b);
       }
       // the columns' two: leaning at the feet of two of the broken columns, out where the ruins are thickest
       const cols = D.columns.slice(0, 2);
-      this.at.ruins.forEach((word, k) => { const c = cols[k]; if (c && !this.found(word)) this.drop(word, c.clone().add(_v.set(1.1, 0.05, 0.4)), 'ruins', false); });
+      this.at.ruins.forEach((word, k) => { const c = cols[k]; if (c && !this.found(word)) this.drop(word, this.footOf(c), 'ruins', false); });
       this.sealedRoom();
     }
     if (!this.built.workshop && g.level) {
@@ -104,7 +103,7 @@ export class Ostraca {
     door.ent = { type: 'sealed', ring: () => this.open() }; g.physics.register(door.col, door.ent);
     this.door = door;
     if (this.s.opened) this.open(true);
-    { const at = c.clone().add(_v.set(0, 0, -s + 0.6)); at.y = D.heightAt(at.x, at.z) - 0.15; this.addStele(STELAE.find((x2) => x2.id === 'stele.sealed'), at, grp); } // (on the sand where it stands)
+    { const at = c.clone().add(_v.set(0, 0, -s + 0.6)); at.y = D.heightAt(at.x, at.z); this.addStele(STELAE.find((x2) => x2.id === 'stele.sealed'), at, c.clone()); } // (on the sand where it stands, facing the room)
   }
   /** The fork rang in the door: the slab sinks into the sand (once, kept). */
   open(quiet = false) {
@@ -113,19 +112,36 @@ export class Ostraca {
     if (!quiet) { this.s.opened = true; g.save?.dirty('ostraca'); g.events?.emit('sealed.open', { by: 'courier' }); }
   }
 
-  addStele(def, pos, parent = null) {
-    if (!def) return;
-    const m = new THREE.Mesh(this.stoneGeo, this.stoneMat); m.position.copy(pos).setY(pos.y + 0.8); m.name = def.id;
-    (parent ? parent : this.game.scene).add(m); if (parent) parent.worldToLocal(m.position);
-    this.stelae.push({ def, pos: pos.clone(), mesh: m });
+  /** Beside a broken column's foot on open sand: the first of eight bearings, 2.4 m out, where nothing of the column (which leans,
+   *  up to 1.6 m wide) stands over the sand; the sherd lies there, not on the stump. */
+  footOf(c) {
+    const D = this.game.dunes;
+    for (let i = 0; i < 8; i++) {
+      const a = (i * Math.PI) / 4 + 0.4, x = c.x + Math.cos(a) * 2.4, z = c.z + Math.sin(a) * 2.4, y = D.heightAt(x, z);
+      const down = this.game.physics?.raycast?.(_v.set(x, y + 8, z), _d, 9, this.game.player?.collider, undefined, (k) => !k.isSensor());
+      if (!down || down.point.y < y + 0.3) return new THREE.Vector3(x, y, z);
+    }
+    return c.clone().add(_v.set(2.4, 0, 0));
   }
 
-  /** The great cavern's stele, on the bowl (it goes when the bowl does), the first frame the cavern stands. */
+  /** A stele standing at `pos`, its face turned toward `face` (it faces its own +z: vfx/ostracon.js). */
+  addStele(def, pos, face) {
+    if (!def) return null;
+    const S = new Stele({ words: def.words }); S.group.name = def.id; this.game.scene.add(S.group);
+    const st = { def, pos: pos.clone(), mesh: S.group, look: S }; this.place(st, pos, face);
+    this.stelae.push(st); return st;
+  }
+  place(st, pos, face) { st.pos.copy(pos); st.look.group.position.copy(pos); st.look.group.rotation.y = Math.atan2(face.x - pos.x, face.z - pos.z); }
+
+  /** The great cavern's stele on the upper ring: made once and kept (its face is a texture of its own), shown only while a cavern
+   *  stands, set in each new one the first frame it does. */
   cavern() {
-    const C = this.game.well?.cur; if (!C?.isCavern || C.ostracaStele) return;
+    const C = this.game.well?.cur, on = !!(C?.isCavern && C.bowl);
+    if (this.ring) this.ring.look.group.visible = on;
+    if (!on || C.ostracaStele) return;
     C.ostracaStele = true;
-    const B = C.bowl, d = bearingXZ(222, 26.5), at = B.world(d.x, ARENA.upper.y, d.z);
-    this.addStele(STELAE.find((x) => x.id === 'stele.ring'), at, B.group);
+    const B = C.bowl, d = bearingXZ(222, 26.5), at = B.world(d.x, ARENA.upper.y, d.z), mid = B.world(0, ARENA.upper.y, 0);
+    if (this.ring) this.place(this.ring, at, mid); else this.ring = this.addStele(STELAE.find((x) => x.id === 'stele.ring'), at, mid);
   }
 
   // ---------------------------------------------------------------- the finds
@@ -136,7 +152,7 @@ export class Ostraca {
       if (!b.veiled || b.ground.distanceTo(pos) > r) continue;
       b.veiled = false; n++; this.game.signatures?.remove?.(b.sig);
       this.s.revealed.push(b.word); this.game.save?.dirty('ostraca');
-      this.drop(b.word, b.ground.clone(), 'dunes');
+      this.drop(b.word, b.ground.clone(), 'dunes', true, b.look, b.yaw);
     }
     this.buried = this.buried.filter((b) => b.veiled);
     return n;
@@ -152,12 +168,11 @@ export class Ostraca {
   }
 
   /** A sherd lying loose at `at`, for F. */
-  drop(word, at, place, rise = true) {
-    if (this.found(word) || this.loose.some((s) => s.word === word)) return;
+  drop(word, at, place, rise = true, look = null, yaw = simRand() * 6.28) {
+    if (this.found(word) || this.loose.some((s) => s.word === word)) { look?.dispose(); return; }
     { const down = this.game.physics?.raycast?.(_v.copy(at).setY(at.y + 1), _d, 4, this.game.player?.collider, undefined, (k) => !k.isSensor()); if (down) at = down.point.clone(); } // (it lies on whatever is under it: a pot breaks mid-height, a column's foot is not the sand beside it)
-    const g = this.game, m = new THREE.Mesh(this.geo, this.mat); m.position.copy(at).setY(at.y + 0.06); m.rotation.set(0.25, simRand() * 6.28, 0.15); m.castShadow = true; m.name = `ostracon-${word}`;
-    g.scene.add(m);
-    const s = { word, place, pos: at.clone(), mesh: m, t: rise ? 0 : 1 };
+    const g = this.game, s = { word, place, pos: at.clone(), yaw, look, t: rise ? 0 : 1 };
+    if (look) { look.group.position.copy(at); look.set({ buried: 1 - s.t }); }
     s.sig = g.signatures?.add({ pos: at.clone(), strength: 2.5, kind: 'ostracon', ref: s, alive: () => !this.found(word) });
     this.loose.push(s);
     if (rise) g.glyphs?.pop?.('ask', at.clone().setY(at.y + 0.6), { color: 0xc98a5a, size: 0.45, life: 1.2 });
@@ -169,7 +184,7 @@ export class Ostraca {
     let best = null;
     const consider = (pos, ref, lift) => { const d = Math.hypot(pos.x - P.pos.x, pos.z - P.pos.z); if (d < REACH && Math.abs(pos.y - P.pos.y) < 2.2 && (!best || d < best.d)) best = { pos: pos.clone().setY(pos.y + lift), d, ref }; };
     for (const s of this.loose) consider(s.pos, s, 0.7);
-    for (const st of this.stelae) if (!(this.game.ledger?.get(st.def.id) > 0)) consider(st.pos, st, 1.9);
+    for (const st of this.stelae) if (st.look.group.visible && !(this.game.ledger?.get(st.def.id) > 0)) consider(st.pos, st, 1.9);
     return best;
   }
 
@@ -182,7 +197,7 @@ export class Ostraca {
     }
     const s = ref; if (!s || !this.loose.includes(s)) return;
     this.loose.splice(this.loose.indexOf(s), 1);
-    s.mesh.removeFromParent(); g.signatures?.remove?.(s.sig);
+    s.look?.dispose(); g.signatures?.remove?.(s.sig);
     g.fx?.absorbSparkle?.(s.pos.clone().setY(s.pos.y + 0.3));
     g.events?.emit('ostracon.find', { word: s.word, gloss: NEURALESE.glossOf(s.word), place: s.place, by: 'courier' });
   }
@@ -204,6 +219,23 @@ export class Ostraca {
     this.build(); this.cavern();
     const g = this.game, P = g.player, it = g.interact?.cur;
     if (it?.id === 'ostracon' && P?.peekLatch?.('KeyF') && !g.god?.controlling) { P.latch('KeyF'); this.take(it.ref); }
-    for (const s of this.loose) if (s.t < 1) { s.t = Math.min(1, s.t + 0.02); s.mesh.position.y = s.pos.y + 0.06 - 0.4 * (1 - s.t); } // (it rises out of the sand)
+    const dt = g.rawDt ?? 1 / 60;
+    for (const s of this.loose) { if (s.t < 1) { s.t = Math.min(1, s.t + dt / 1.2); s.look?.set({ buried: 1 - s.t }); } this.tend(s, s.pos, 1 - s.t, dt); } // (it is dug out of the sand)
+    for (const b of this.buried) this.tend(b, b.ground, 1, dt);
+    for (const st of this.stelae) if (st.look.group.visible && st.pos.distanceToSquared(P.pos) < 3600) st.look.update(dt);
+  }
+  /** A sherd's look made when the Courier comes within 80 m and let go past 100 (sixteen across the island, a handful near); its
+   *  sparkle and sun within 60 m. The programs are warmed at boot (parked()). */
+  tend(x, at, buried, dt) {
+    const d2 = at.distanceToSquared(this.game.player.pos);
+    if (!x.look && d2 < 6400) { const O = x.look = new Ostracon({ word: x.word }); O.group.position.copy(at); O.group.rotation.y = x.yaw; O.set({ buried }); this.game.scene.add(O.group); }
+    else if (x.look && d2 > 10000) { x.look.dispose(); x.look = null; }
+    if (x.look && d2 < 3600) x.look.update(dt);
+  }
+  /** One sherd half buried, parked under the world for the boot's warm-up, so its body's and its sparkle's programs are compiled
+   *  with the rest (never disposed: casebook rules 17 and 18). */
+  parked() {
+    if (!this.park) { this.park = new Ostracon({ word: 'SIVA' }); this.park.set({ buried: 0.6 }); this.park.group.position.set(0, -50, 0); this.park.group.userData.zoneFree = true; this.game.scene.add(this.park.group); }
+    return [this.park.group];
   }
 }

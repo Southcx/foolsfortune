@@ -43,6 +43,8 @@ function gone(game, pr) { if (pr.vanish) pr.vanish(); else game.projectiles?.del
 /** The projectiles near `at`, fast enough, and coming toward the Courier (nearest first). */
 /** A blow is answered only when it will land within this many real seconds (the window: the siblings' own rule, coop/fight.js). */
 export const BLOW_WINDOW = 0.25;
+/** The window now: Held Breath (a knack, progress/knacks.js) holds it to 0.40 real seconds; switched off, exactly BLOW_WINDOW. */
+export const blowWindow = (game) => (game?.knacks?.on('heldBreath') ? 0.4 : BLOW_WINDOW);
 
 function incoming(game, at, radius, speedMin, all = false) {
   const P = game.player, out = [];
@@ -141,7 +143,7 @@ function shot(game, { tool, how, at, radius, paint }) {
 }
 
 function blow(game, { tool, how, at, radius }) {
-  const c = game.creatures?.windups(at, radius).find((x) => x.windup.t - 0.3 <= BLOW_WINDOW); // (only in its window: a press at a lunge's first frame answers nothing, TRAINING.md 6)
+  const c = game.creatures?.windups(at, radius).find((x) => x.windup.t - 0.3 <= blowWindow(game)); // (only in its window: a press at a lunge's first frame answers nothing, TRAINING.md 6)
   if (!c) return null;
   const lead = +Math.max(0, c.windup.t - 0.3).toFixed(3); // (seconds before the strike: read before parried() unwinds it; domains.js weighs it)
   game.creatures.parried(c);

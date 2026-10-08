@@ -354,7 +354,7 @@ export class Tracking {
     });
     on('photo.discard', (e) => L.inc('photo.discard', e.n));
     on('photo.appraise', (e) => {
-      L.inc('photo.appraised'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds);
+      L.inc('photo.appraised'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds); if (e.stars >= 4) L.inc(`photo.four.${e.kind}`); // (Rule of Thirds' feat: four kinds at four stars)
       if (e.entry && subj(e.kind)) log.say('record', `New in the Compendium: ${subj(e.kind)} (${'★'.repeat(e.stars || 1)}).`);
     });
     on('darkroom.develop', (e) => {
@@ -428,6 +428,7 @@ export class Tracking {
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
+    on('knack.open', (e) => log.say('system', `You have the knack of it: ${KNACKS[e.knack]?.name || e.knack}. ${KNACKS[e.knack]?.does || ''}. (/knack ${e.knack} to switch it off.)`));
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
     on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
@@ -472,8 +473,9 @@ export class Tracking {
     on('dreamvane.swing', () => L.inc('dreamvane.swing'));
     on('dreamvane.unearth', (e) => { L.inc('crystal.unearth', e.n); });
     on('crystal.reveal', (e) => { if (e.by === 'courier') L.inc('crystal.reveal'); log.say('find', e.how === 'pick' ? 'Crystal rises out of the sand where the pick went in.' : 'Crystal rises out of the sand at the song.', { key: 'xrev', throttle: 1 }); first('crystal', 'Logged: your first crystal. Lachryma set hard: the Dreamvane\'s pick takes it a blow at a time, and its fork, rung into it first, doubles what it gives and sounds the note it is set in. Struck where it answers in that note, it opens all at once.'); });
-    on('crystal.strike', (e) => { if (e.by === 'courier') L.inc('crystal.strike'); if (e.ringing) L.inc('crystal.strike.ringing'); });
-    on('crystal.ref', () => L.inc('crystal.ref'));
+    let sweetRun = 0; // (sweet spots struck in a row: Perfect Pitch's feat)
+    on('crystal.strike', (e) => { if (e.by === 'courier') { L.inc('crystal.strike'); sweetRun = e.sweet ? sweetRun + 1 : 0; L.hi('crystal.sweet.run', sweetRun); } if (e.ringing) L.inc('crystal.strike.ringing'); });
+    on('crystal.ref', (e) => { if (!e.again) L.inc('crystal.ref'); }); // (Perfect Pitch's second reference is not a ring)
     on('crystal.harvest', (e) => {
       if (e.by !== 'courier') return;
       L.inc('crystal.harvest'); if (e.ringing) L.inc('crystal.harvest.ringing'); if (e.shard) L.inc('crystal.shard'); if (e.key) L.inc('crystal.key');
@@ -493,7 +495,7 @@ export class Tracking {
     on('rhythm.offset', (e) => log.say('system', `The rhythm mode now judges ${Math.abs(e.ms)} ms ${e.ms < 0 ? 'earlier' : 'later'}.`, {}));
     on('rhythm.score', (e) => {
       if (e.by !== 'courier') return;
-      const pct = Math.round(e.accuracy * 100); L.inc('rhythm.played'); L.inc(`rhythm.played.${e.level}`); if (e.full) L.inc('rhythm.full'); L.hi('rhythm.combo', e.combo); L.hi(`rhythm.best.${e.track}.${e.level}`, pct);
+      const pct = Math.round(e.accuracy * 100); L.inc('rhythm.played'); L.inc(`rhythm.played.${e.level}`); if (e.full) L.inc('rhythm.full'); L.hi('rhythm.combo', e.combo); L.hi(`rhythm.best.${e.track}.${e.level}`, pct); L.hi('rhythm.accuracy.best', pct);
       log.say('song', `You play ${e.title} through: ${pct} percent, ${RATINGS[overall(e.accuracy, e.full)].replace(/[.!]+$/, '')}${e.full ? ', and not one note missed' : e.combo > 1 ? `, ${e.combo} notes at best in a row` : ''}.`, {}); // (the set's word: ui/rating.js overall)
     });
     on('song.play', (e) => {

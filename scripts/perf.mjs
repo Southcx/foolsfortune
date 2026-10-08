@@ -25,7 +25,11 @@ const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
-const BUDGET = { calls: 450, tris: 350_000, programs: 160, heapMB: 340 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
+const BUDGET = { calls: 450, tris: 350_000, programs: 164, heapMB: 350 }; // (programs: each raise is a commit with its reason; docs/ARCHITECTURE.md)
+// (heapMB is the DEV server's heap, which holds every module's source text and source map: it grows with the code, not only with what a
+// player's page holds. v117: 345 here, 228 in the built game (vite preview, gc'd), up 5 from 223 before that round's merges; raised
+// 340 -> 350 for that, Petra. The built figure is the one to watch: see the casebook, 2026-10-08. programs 160 -> 164, v117: the
+// ostracon's body and its sparkle (Calissa's black-figure sherd, vfx/ostracon.js), warmed at boot so neither is a hitch in play.)
 // how far a number may move from the baseline before the gate asks why (counts are exact; times are a software renderer's, so looser)
 const TOL = { calls: 0.08, tris: 0.08, programs: 0.06, geos: 0.1, tex: 0.1, heapMB: 0.12, tick: 0.25, draw: 0.25, bootS: 0.3 };
 

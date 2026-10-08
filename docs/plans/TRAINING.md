@@ -29,22 +29,22 @@ never needed and never forced. The number that would do the skill for you is opt
 | Alteration | the god hand's sunder, swell, wring; **terraforming strokes** (`garden.sculpt`, its `q` the water led where it pools: Petra to emit); **an inscription** (`brush.inscribe`: Calissa) | a crack mended; mopping a blot |
 | Spellscription | sigils (`brush.glyph`, its `fit` once emitted: Calissa; `sigil.pop` no longer pays twice), macros | a Cogitomap copied; a realm's name written; `reprogram.run` (quality 1 when held first time and typed clean, else 0.4: needs `held`, `typos`, Espada); **time** (the owner: staying on tempo is transcribing actions to time): `song.play` (quality: its fever) and `rhythm.score` (quality: accuracy), both in `domains.js` now; a busk's tips x1.25 |
 
-## 3. The knacks (names Espada's, 2026-10-08; achievements over the ledger)
+## 3. The knacks (names Espada's, 2026-10-08; achievements over the ledger; the table in code: `progress/knacks.js` `KNACKS`, each with where the game reads it)
 
 | knack (toggle) | does | earned by (count, the patient's way / feat, the skilled way) | owner |
 |---|---|---|---|
 | Steady Hand | the psygun's aim drawn gently onto a target near the reticle | 2,000 drill targets hit / a drill's gold | Petra |
-| Wide Bore | the psygun's shots a third wider | Psychokinesis 30 / a 25 chain | Petra |
-| Thick Walls | the shield takes a tenth more before the clay | 200 cracks mended at the kiln / a Well run without a crack | Petra |
+| Wide Bore | the psygun's shots a third wider | 5,000 drill targets hit / a 25 chain (a domain's level is not the ledger's: a knack opens by achievement only) | Petra |
+| Thick Walls | the shield takes a tenth more before the clay | 200 cracks mended / a Well run without a crack (`well.run.whole`) | Petra |
 | Perfect Pitch | a crystal's target note sounds once more before you strike | 300 crystals struck / ten struck perfect in a row | Wanda |
-| **Held Breath** (was Early Tell; the name Espada's) | a blow's parry window a beat longer (0.25 to 0.40 real seconds), its glint with it | 500 parries / 50 clean parries (`lead` 0.25 or less) | Petra, Calissa |
+| **Held Breath** (was Early Tell; Espada kept the name) | a blow's parry window a beat longer (0.25 to 0.40 real seconds), its glint with it | 500 parries / 50 clean parries (`lead` 0.25 or less) | Petra, Calissa |
 | Rule of Thirds | the Veritome's frame shows its thirds (only after the score credits the thirds: today it rewards the centre) | 300 plates appraised / four four-star plates of four kinds | Calissa |
-| Half Time | the metronome swings on every other beat (never slower: it stays on the music's grid, Wanda) | 1,000 notes on the beat / fever full for eight bars | Wanda |
+| Half Time | the pendulum swings on every other beat (never slower: it stays on the music's grid, Wanda) | 1,000 notes on the beat / five songs played in fever | Wanda |
 | Guide Tone | the next charted note sounds a beat early | 50 songs played / a song at accuracy 0.95 or more | Wanda |
 | Crib Sheet | the English gloss beside each neuralese word that is glossed (its reach grows by digging up ostraca: the owner, 2026-10-08) | 100 macros spoken / a five-Function macro held at the first try / six ostraca found (the explorer's way) | Espada, Petra |
 | Two-Tone | both of an agate's colours shown on a creature's body | 300 agates seen / 20 named right in a row | Calissa, Espada |
-| Slow Hand (Calissa's; the name Espada's) | Celestial mode waits longer after the last stroke (0.42 to 0.7 real seconds), so a two-stroke mark is not cut off | 100 marks misread (`brush.miss`: persistence through failure) / `bg3` | Calissa, Petra |
-| (Petra's; the name Espada's) | Mind Mapping shows the way back to the last Shrine you rested at | 50 rooms charted / a Cogitomap drawn on a first run of the Great Dunemaw | Petra |
+| **Wet Ink** (Calissa's; Espada's name: the ink stays wet; "Slow Hand" collided with the hands) | Celestial mode waits longer after the last stroke (0.42 to 0.7 real seconds), so a two-stroke mark is not cut off | 100 marks misread (`brush.miss`: persistence through failure) / `bg3` | Calissa, Petra |
+| **Ariadne's Thread** (Petra's; Espada's name) | Mind Mapping shows the way back to the last Shrine you rested at | 50 rooms charted / a Cogitomap drawn on a first run of the Great Dunemaw | Petra |
 
 Calibration, key bindings and volume stay **settings**, never knacks (Wanda): what makes the game playable at all is never earned.
 
@@ -111,3 +111,7 @@ Calibration, key bindings and volume stay **settings**, never knacks (Wanda): wh
   takes a `q` (the water held after the stroke against before, as a share; Petra's to emit); the parry's `lead` is hers to add. Her
   knack (the way back on the map) is in the table. **Patience** (angling) seasons Focus: a fish landed without the line breaking, once
   the landing says so (`fish.land { snapped }`).
+- **Petra, built** (a564e9b, c4630c0): every field above is emitted; a blow is answered only inside `BLOW_WINDOW` (0.25 real seconds),
+  so the parry's quality now runs 0.4 at the window's opening to 1 at the strike; `parry.missed` and `parry.run.best` are kept;
+  `photo.js` credits the thirds (1 on a crossing, 0.7 dead centre); `garden.sculpt`'s `q` is the basins' volume after over before
+  plus after (0.5 for a stroke that changed nothing). **Patience** seasons Focus on `angle.catch` (a snapped line loses the fish).

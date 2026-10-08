@@ -6,12 +6,27 @@
 //   gardenRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
 import { ATTRIBUTES } from '../../progress/alchemy.js';
+import { KINDS } from '../../progress/econ/materials.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
 
 export function gardenRules({ on, L, log }) {
-  on('alchemy.press', (e) => { if (e.by !== 'courier') return; L.inc('alchemy.press', e.count || 1); if (e.greyed) log.say('info', 'The colour greys.'); }); // (SOUL-ALCHEMY 4.20, Espada's words)
+  // one line a press, never one a material (SOUL-ALCHEMY 4.20, Espada's words): the press emits alchemy.press as each material's walk
+  // ends, about a real second apart, so the lines fold into one that names them all; "The colour greys." once a press
+  let pressed = [], greyed = false;
+  const line = () => `You press ${list(pressed)} into the bath.${greyed ? ' The colour greys.' : ''}`;
+  const list = (a) => (a.length < 2 ? a[0] : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
+  on('alchemy.press', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('alchemy.press', e.count || 1);
+    const names = (e.kinds || []).map((k) => (k === 'edge' ? 'edges' : KINDS[k]?.name || k)); // ("edges and tools" would read as two in the list; the words Espada's)
+    const l = log.say('info', '', { key: 'alchemy.press', win: 2.5, fmt: line });
+    if (l && l.n === 1) { pressed = []; greyed = false; } // (a new press: start the line again)
+    for (const n of names) if (!pressed.includes(n)) pressed.push(n);
+    greyed = greyed || !!e.greyed;
+    if (l) { l.text = pressed.length ? line() : (greyed ? 'The colour greys.' : 'You press it into the bath.'); if (l.el) l.el.lastChild.textContent = l.text; }
+  });
   on('alchemy.refuse', (e) => { if (e.by === 'courier') L.inc(`alchemy.refuse.${e.why}`); });
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;

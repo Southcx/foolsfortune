@@ -54,9 +54,10 @@ export const SEASONING = [
   { event: 'mind.settle',     attribute: 'willpower',     points: 2, when: () => true },                         // (brimming, and settling back)
   { event: 'creature.status', attribute: 'focus',         points: 1, when: (e) => e.by === 'courier' },          // (a status built on a creature)
   { event: 'rhythm.score',    attribute: 'focus',         points: 3, when: (e) => (e.combo || e.maxCombo || 0) >= 25 },
+  { event: 'angle.catch',     attribute: 'focus',         points: 2, when: () => true },                         // (patience: a snapped line loses the fish, so a catch is a line held: Petra)
   { event: 'npc.talk',        attribute: 'charisma',      points: 1, when: () => true },
   { event: 'shop.sell',       attribute: 'charisma',      points: 1, when: (e) => e.by !== 'environment' },
-  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.won !== false },
+  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.step === 'deal' },          // (a haggle struck, not each step: Petra, v114)
   { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
   { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
   { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned?.length },            // (a Throwing Room drill finished, untuned: `tuned` is the list of knobs away from default)
@@ -144,7 +145,7 @@ export class SoulAlchemy {
     for (const { i } of [...mats].sort((a, b) => b.i - a.i)) box.take(i);
     this.s.colour = { h: +r.colour.h.toFixed(1), s: +r.colour.s.toFixed(3) }; this.s.cocked = true; // (pressing cocks the lever: one firing a press, ruling 5)
     this.game.save?.dirty('alchemy');
-    this.game.events.emit('alchemy.press', { count: mats.length, hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
+    this.game.events.emit('alchemy.press', { count: mats.length, kinds: mats.map((x) => x.m.kind), hue: this.s.colour.h, sat: this.s.colour.s, near: this.near(), greyed: r.greyed, tinted: r.tinted, by: 'courier' });
     return { colour: this.colour, trail: r.trail };
   }
 
@@ -162,7 +163,7 @@ export class SoulAlchemy {
   /** The igniter: raise the attribute the colour is inside, for its aimed fuel over the press's formation. Its seasoning is spent, and
    *  the lever is let down until the next press. Refused, with `code` (outside | full | poor | spent) and why. */
   fire() {
-    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The press is spent: press something into the bath first.' };
+    if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The bath is empty. Press a material first.' };
     const N = this.nearest();
     if (!N) return { ok: false, code: 'outside', why: 'The press does not fire: the colour is outside every swatch.' };
     const { id, d, r: rad } = N, r = this.rank(id);
