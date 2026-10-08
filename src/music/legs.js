@@ -21,6 +21,10 @@
 //          ahead, so a layer joins on the next bar line (quantised: the lock tones themselves wait for the sixteenth, audio/rail.js).
 //   THE TURN 4 bars: the drums cut on the third beat with a reversed swell, a riser and a whoosh as the rail bends, the next leg's
 //          dominant under it, toms and a snare roll, and the next leg's first bar lands with a crash in its own key.
+// The trip's pressures (PASSAGE.md section 14): a waypoint's feeling recolours its leg (each note to the same degree of the feeling's mode:
+// wonder Lydian, mirth major, desire Dorian, grief as written, dread Locrian; the key and the themes stay the leg's own); a storm leg
+// is a part thicker and louder; low fuel lays a heartbeat under every leg, adrift takes the drums away (the current, not the engine); a
+// calm is the campfire (a crackle under it), its release holding for the choice of mend or reckon.
 // Under the surface (the Umbral form) the whole mix is low-passed, and breaching lifts it (music/player.js setUnder, audio/core.js).
 //
 // Prior art: Rez (Mizuguchi, 2001: the stage's music built from the player's own shots, layer by layer), Child of Eden, Panzer Dragoon
@@ -31,7 +35,8 @@
 //   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
 //     bars?: 24..64 (or each leg's own phases, RAIL-OVERHAUL.md section 6), aspect?: the maelstrom's feeling, phases?: { open, build, peak,
 //     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.emocean.stage.legs)
-//   setEncounter(waiting): an encounter's choice pending holds its cue on the bar line   setFoeUnder(under): a boss diving takes its line under
+//   setEncounter(waiting): an encounter's (or a calm's campfire) choice pending holds its cue on the bar line   setTrip({ lowFuel, adrift })
+//   legs[k].feeling (an aspect, or none: fair) and legs[k].storm   setFoeUnder(under): a boss diving takes its line under
 //   tripLayout(legs) -> { bars, legs: [{ id, at, open, build, peak, release, end }], turns: [bar] } (the stage's bars, for the runtime)
 //   railHeat(n) adds heat (HEAT.lock, .volley, .down, .part, .core: music/choose.js hears the rail's events)
 // ---------------------------------------------------------------------------------------
@@ -43,6 +48,8 @@ const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
 export const BPM = 160;
 const R = { heat: 0 };
 export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
+/** The trip's pressures (PASSAGE.md 14.2): fuel running low, or adrift on the current; read from the next bar. */
+export function setTrip({ lowFuel = false, adrift = false } = {}) { R.lowFuel = !!lowFuel; R.adrift = !!adrift; }
 /** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
 export function setEncounter(waiting) { R.waiting = !!waiting; }
 /** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
@@ -123,9 +130,9 @@ function modal(n, L) { // (a note of the Whirl, written in E minor, moved onto t
 // how many parts sound: the phase's own, the heat on top; a boss's peak is the thickest
 function stackOf(phase, i, L) {
   const base = phase === 'open' ? Math.min(4, 1 + (i >> 1)) : phase === 'build' ? Math.min(6, 4 + (i >> 3)) : phase === 'peak' ? (L.boss ? 7 : 6) : 3;
-  return Math.min(8, base + Math.round(R.heat));
+  return Math.min(8, base + Math.round(R.heat) + (L.storm && phase !== 'open' && phase !== 'release' ? 1 : 0)); // (a storm leg: a part thicker)
 }
-function legBar(L, phase, i, len) {
+function layBar(L, phase, i, len) {
   R.heat = Math.max(0, R.heat - 0.25); // (the heat cools a quarter of a part a bar)
   const c = chordOf(L, i), s = stackOf(phase, i, L), peakBoss = phase === 'peak' && L.boss, out = [...PAD(L, c, 1), ...PULSE(L)];
   const last = i === len - 1;
@@ -143,6 +150,26 @@ function legBar(L, phase, i, len) {
   if (phase === 'release') return [...out.filter((e) => !['kick', 'clap', 'snare', 'eight', 'moog'].includes(e.i)), ...(i === 0 ? [E('crash', 0, 1, null, 0.3)] : []), // (the parts falling: the theme, softer, over what is left)
     ...(s < 6 ? THEME[L.id](L, i).map((e) => ({ ...e, v: (e.v ?? 0.3) * 0.7 })) : [])];
   return out;
+}
+
+// ---- the trip's pressures (PASSAGE.md section 14): the waypoint's feeling recolours its leg; a storm is heavier; low fuel and adrift
+// are heard in every leg; a calm is the campfire. Each is read as the bar is laid out, so it lands on the next bar line.
+const MODE7 = { wonder: [0, 2, 4, 6, 7, 9, 11], mirth: [0, 2, 4, 5, 7, 9, 11], desire: [0, 2, 3, 5, 7, 9, 10], grief: [0, 2, 3, 5, 7, 8, 10], dread: [0, 1, 3, 5, 6, 8, 10] }; // (dread Locrian: the flat fifth sounds in every chord)
+const MINOR = MODE7.grief; // (every leg is written in its key's natural minor: a feeling moves each note to the same degree of its mode)
+function recolour(n, root, mode) {
+  if (n == null || !mode) return n;
+  if (Array.isArray(n)) return n.map((x) => recolour(x, root, mode));
+  const d = pc(n - root), k = MINOR.indexOf(d);
+  return k < 0 ? n : n - d + mode[k]; // (a note outside the minor scale is left as written: a chromatic passing note stays one)
+}
+function legBar(L, phase, i, len) {
+  let out = layBar(L, phase, i, len);
+  if (R.adrift) out = [...out.filter((e) => !['kick', 'clap', 'snare', 'eight', 'moog', 'taiko', 'tom', 'bodhran', 'ohat'].includes(e.i)), // (the engine quiet, carried on the current)
+    ...(i % 2 === 0 ? [E('breath', 0, 4, null, 0.18)] : [E('harp', 0, 2, chordOf(L, i).tri[0] + 12, 0.12), E('harp', 1, 2, chordOf(L, i).tri[2] + 12, 0.1)])];
+  if (R.lowFuel && !R.adrift) out.push(E('sub', 0, 0.5, chordOf(L, i).bass, 0.12), E('sub', 0.5, 0.5, chordOf(L, i).bass, 0.08), ...(i % 2 ? [E('vibes', 3, 1, chordOf(L, i).tri[1] - 1, 0.1)] : [])); // (a heartbeat, and the gauge's needle dropping a half step)
+  if (L.id === 'calm') out.push(E('crackle', 0, 0.5, null, 0.12, { dur: 3.8 })); // (the campfire)
+  const mode = L.id !== 'maelstrom' && L.feeling && MODE7[L.feeling] !== MINOR ? MODE7[L.feeling] : null, root = 64 + keyed(0, L);
+  return mode ? out.map((e) => (e.n == null || ['bell'].includes(e.i) && e.n < 50 ? e : { ...e, n: recolour(e.n, root, mode) })) : out;
 }
 
 // ---- the turn of the rail: from one leg's key into the next's, four bars
@@ -214,12 +241,12 @@ export function tripLayout(legs) {
 const CACHE = new Map();
 /** The crossing's score for a passage's legs (cached by their ids, lengths and feelings). */
 export function tripCue(legs) {
-  const key = legs.map((l) => `${l.id}:${l.bars || ''}:${l.aspect || ''}`).join('|');
+  const key = legs.map((l) => `${l.id}:${l.bars || ''}:${l.aspect || ''}:${l.feeling || ''}:${l.storm ? 's' : ''}`).join('|');
   if (CACHE.has(key)) return CACHE.get(key);
   const sections = [{ id: 'launch', bars: 4, gain: 4, sweep: [1200, 18000], bar: LAUNCH }];
   const Ls = legs.map((leg) => {
     const base = LEGS[leg.id] || LEGS.shoal, aspect = leg.aspect || 'grief';
-    return { ...base, id: LEGS[leg.id] ? leg.id : 'shoal', aspect, prog: base.prog || MODE_PROG[aspect] || MODE_PROG.grief };
+    return { ...base, id: LEGS[leg.id] ? leg.id : 'shoal', aspect, feeling: leg.feeling || null, storm: !!leg.storm, prog: base.prog || MODE_PROG[aspect] || MODE_PROG.grief };
   });
   Ls.forEach((L, k) => {
     if (k > 0) sections.push({ id: `turn:${k}`, bars: 4, gain: 2.6, sweep: [700, 16000], root: 64 + keyed(0, L), bar: (i) => turnBar(Ls[k - 1], L, i) });
@@ -229,8 +256,8 @@ export function tripCue(legs) {
     const p = phasesOf(legs[k]);
     for (const ph of ['open', 'build', 'peak', 'release']) {
       if (!p[ph]) continue; // (a calm has no peak)
-      sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6, pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
-        sweep: ph === 'release' ? [9000, 2200] : null, root: 64 + keyed(0, L), scale: L.id === 'maelstrom' ? MODES[L.aspect] : L.id === 'calm' ? MODES.mirth : null,
+      sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: (ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6) * (L.storm && ph !== 'release' ? 1.15 : 1), pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
+        sweep: ph === 'release' ? [9000, 2200] : null, hold: L.id === 'calm' && ph === 'release', root: 64 + keyed(0, L), scale: L.id === 'maelstrom' ? MODES[L.aspect] : L.feeling && MODES[L.feeling] ? MODES[L.feeling] : L.id === 'calm' ? MODES.mirth : null,
         bar: (i) => legBar(L, ph, i, p[ph]) });
     }
   });

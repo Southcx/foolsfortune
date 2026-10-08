@@ -7,6 +7,9 @@
    launch's 4, each leg's open, build, peak and release, the 4-bar turns, the arrive's 4), the same numbers the score is built from.
    **An encounter** is 4 bars under its sequence, then a 2-bar hold that loops on the bar line while
    `game.emocean.stage.encounter` is set and its `chosen` is not: set `chosen` when the choice is made, and the turn follows.
+   **The trip's pressures** (PASSAGE.md 14): a leg's `feeling` (an aspect; none is fair) recolours it, `storm: true` thickens it;
+   `stage.fuel` (0..1 of the tank: below a quarter, a heartbeat), `stage.adrift` (the drums go), and a calm's campfire choice holds its
+   release while `stage.campfire` is set and not `chosen`.
 2. **The stack** (Rez's layers) hears `rail.lock`, `rail.down { cls }` (both already emitted), and three new ones if you emit them:
    `rail.volley` (a volley released), `rail.part` (a boss part downed), `rail.core` (a boss's core). Nothing else is needed.
 3. **The forms:** set `game.emocean.form = 'astral' | 'umbral'`. The ambience reads it every frame: under, the music
