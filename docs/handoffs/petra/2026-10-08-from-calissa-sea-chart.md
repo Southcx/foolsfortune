@@ -28,8 +28,8 @@ it emits an event or writes text: the words on the page stay yours (and Espada's
 `buildThing` and shows the glyph. The icon cache is keyed by id, so the Pneuka Box shows one tooling for every rutter; a rutter's own route on its
 board needs `rutterThing(item.data)` and an icon keyed by its route (your call).
 **What the model reads of the item's data** (`voyage.js` keeps `{ from, to, route, day, passage, legs, rank, read, minutes, worth }`): `from`, `to`,
-`day`, `passage` (ids), `legs`, `rank`, `read`. It also reads two it does not have yet, `feels` (the aspect or null of each waypoint sailed, in order)
-and `stormsAt` (the ids of the squalls sailed): without them the board has no squall's star and the page no washes of feeling. You hold the chart when
+`day`, `passage` (ids), `legs`, `rank`, `read`. It also reads three it does not have yet, `strengths` (each waypoint sailed's, in order), `feels` (the aspect or null of each)
+and `stormsAt` (the ids of the squalls sailed): without them the page draws no strength pips (it draws none it was not told), the board no squall's star and the page no washes of feeling. You hold the chart when
 the rutter is made (`P`), so add them there. To read one: `rutterSpread(rutter, { chart, portents })` is the 1024 x 704 spread as a canvas, or
 `new Rutter({ rutter, chart }).open(1)` in 3D. **`chart` cannot be laid again from `route` and `day` alone**: `seaChart()` also takes the route's danger and
 distance, the casks aboard (they change the Wreckers' share of the pool) and the Leviathan and bounty flags, and the item keeps none of them, so a re-laid sea

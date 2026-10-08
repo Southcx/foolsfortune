@@ -155,8 +155,10 @@ function drawWaypoint(g, w, p, at, s, t, look, classOf) {
   if (feel) drawNimbus(g, feel, at.x, at.y, s, t, w.id, look); // (the feeling round the icon, from the silhouette tier up; never in it)
   if (tier === 'exact') {
     const icon = waypointIcon(w.type, look); blit(g, icon, at.x, at.y, s);
-    const n = Math.max(1, Math.min(5, (w.strength ?? 0) + 1)), pip = markIcon('pip', look), y = at.y + Math.ceil(icon.height / 2) + 2;
-    for (let i = 0; i < n; i++) blit(g, pip, at.x - (n - 1) * 1.5 + i * 3, y, s);
+    if (w.strength != null) { // (a strength nobody recorded is not drawn: a rutter's page made from its passage alone has none)
+      const n = Math.max(1, Math.min(5, w.strength + 1)), pip = markIcon('pip', look), y = at.y + Math.ceil(icon.height / 2) + 2;
+      for (let i = 0; i < n; i++) blit(g, pip, at.x - (n - 1) * 1.5 + i * 3, y, s);
+    }
   } else if (tier === 'two' || tier === 'three') {
     const cands = p.candidates?.length ? p.candidates : [w.type], cls = cands.map(classOf), shared = cls.every((k) => k === cls[0]);
     const { r, front, behind } = focus(c), off = OFFSETS[cands.length] || [[0, 0]], period = 2.4 * cands.length;

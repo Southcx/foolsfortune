@@ -93,8 +93,8 @@ const r5 = await C.page.evaluate(`(async () => { ${imp}
   const R = await import("/src/vfx/rutter.js"), chart = P.seaChart({ from: 'margarite', to: 'entra', day: 3, danger: 1, distance: 8, casks: 4 }), ids = []; let id = chart.first[0]; while (id) { ids.push(id); id = P.next(chart, id)[0]; }
   const rutter = { from: 'margarite', to: 'entra', day: 3, passage: ids, legs: ids.map((i) => chart.waypoints[i].type), feels: ids.map((i) => chart.waypoints[i].feel), stormsAt: ids.filter((i) => chart.waypoints[i].storm), rank: 'S', read: 0.5 };
   const out = {}; for (const [name, o] of [['alone', {}], ['with its chart', { chart }]]) { const b = new R.Rutter({ rutter, ...o }); for (const k of [0, 0.5, 1]) b.open(k); let g = 0; b.group.traverse((m) => { if (m.geometry) g++; }); out[name] = g; b.dispose(); }
-  const t = R.rutterThing(); t.dispose(); out.spread = R.rutterSpread(rutter, { chart }).width; return out; })()`);
-check('a rutter builds alone and with its chart, opens, spreads and is let go', r5.alone > 5 && r5['with its chart'] === r5.alone && r5.spread === 1024 && C.errors.length === 0, { ...r5, errors: C.errors.slice(0, 2) });
+  const t = R.rutterThing(); t.dispose(); out.spread = R.rutterSpread(rutter, { chart }).width; out.noStrength = R.chartOfRutter(rutter).waypoints[ids[0]].strength === null; out.strength = R.chartOfRutter({ ...rutter, strengths: ids.map(() => 3) }).waypoints[ids[0]].strength; return out; })()`);
+check('a rutter builds alone and with its chart, opens, spreads and is let go; a strength it was not told is none, not a default', r5.alone > 5 && r5['with its chart'] === r5.alone && r5.spread === 1024 && r5.noStrength && r5.strength === 3 && C.errors.length === 0, { ...r5, errors: C.errors.slice(0, 2) });
 await C.close();
 await browser.close();
 console.log(fails ? `sea chart look: ${fails} FAILED` : 'sea chart look: all passed'); process.exitCode = fails ? 1 : 0;

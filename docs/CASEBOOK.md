@@ -257,7 +257,8 @@ the rules before building in the same area; a rule a machine can check goes into
     ship is not what the cursor means; the pick starts past the shooter.
 96. **What a portent does not show, no part of the drawing shows.** A picture made from the truth beside what is shown leaks by its side
     channels (a lane's length, an offset, a draw order): draw twice with only the hidden fields changed and compare the pixels
-    (`scripts/seachartlooktest.mjs`: one waypoint at a time, its type, strength and a dim star's feeling).
+    (`scripts/seachartlooktest.mjs`: one waypoint at a time, its type, strength and a dim star's feeling). Nor
+    what the record never held: an unrecorded strength is not drawn as a default one.
 97. **What is made of a canvas is kept on the canvas.** A scaled or blurred copy lives in a `WeakMap` keyed by its source; a `Map` keyed by the
     canvas, emptied at a size, keeps every canvas it ever saw. Count the canvases alive after a GC (a `createElement` wrapper and
     `WeakRef`s): their pixels are outside the heap, and the heap's number will not show them.
@@ -268,6 +269,14 @@ the rules before building in the same area; a rule a machine can check goes into
     qualify (`SeaChartCanvas`).
 
 ## Cases
+
+### 2026-10-08 · A rutter's page made from its passage alone gave every waypoint two pips of strength nobody had recorded (found in review, reading what the item keeps)
+- **Seen:** \`chartOfRutter(r)\`, the page's chart when the item carries no \`chart\` (the item \`voyage.js\` makes keeps \`from, to, route, day, passage,
+  legs, rank, read, minutes, worth\`), set every sailed waypoint to strength 1, and the page drew a sailed waypoint's strength as two pips.
+- **Cause:** a default written as if it were data.
+- **Fix:** the strength is \`r.strengths?.[i] ?? null\` and a waypoint with none draws no pips; the handoff asks for \`strengths\`, \`feels\` and
+  \`stormsAt\` in the item.
+- **Rule:** 96.
 
 ### 2026-10-08 · The sea chart's lanes stopped short of a waypoint by its true class, telling a haven from a threat among a portent's candidates (found in review, a differential draw)
 - **Seen:** one waypoint at a time, its type scrambled to another class, its strength and (at a dim star) its feeling changed, over 1,187 of

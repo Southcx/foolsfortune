@@ -14,7 +14,7 @@
 //   const R = new Rutter({ rutter, chart, portents })   scene.add(R.group)   R.open(k 0..1)   R.dispose()
 //   rutterThing(rutter?) -> { group, dispose }   (the Pneuka Box's model of the item `rutter`: pneuka/thingmodels.js buildThing, Petra's)
 //   rutterCover(rutter) -> { color, orm } canvases   rutterSpread(rutter, { chart, portents }) -> canvas (1024 x 704)
-//   rutter: { from, to, day, passage: [waypoint ids 'col:row'], legs: [their types], rank: 'S' .. 'D', read, feels?: [aspect | null of each waypoint sailed], stormsAt?: [ids of the squalls sailed] }; chart: the
+//   rutter: { from, to, day, passage: [waypoint ids 'col:row'], legs: [their types], rank: 'S' .. 'D', read, strengths?: [each waypoint sailed's], feels?: [aspect | null of each], stormsAt?: [ids of the squalls sailed] }; chart: the
 //   sea chart of that route and game day (Dovina's seaChart), else one is pieced together from the passage alone.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -31,7 +31,7 @@ const sheet = (w, h) => { const c = document.createElement('canvas'); c.width = 
  *  lanes between them. */
 export function chartOfRutter(r) {
   const waypoints = {}, edges = [];
-  (r.passage || []).forEach((id, i) => { const [col, row] = id.split(':').map(Number); waypoints[id] = { id, col, row, type: r.legs?.[i] || 'shoal', strength: 1, feel: r.feels?.[i] ?? null, storm: !!r.stormsAt?.includes(id) }; if (i) edges.push([r.passage[i - 1], id]); });
+  (r.passage || []).forEach((id, i) => { const [col, row] = id.split(':').map(Number); waypoints[id] = { id, col, row, type: r.legs?.[i] || 'shoal', strength: r.strengths?.[i] ?? null, feel: r.feels?.[i] ?? null, storm: !!r.stormsAt?.includes(id) }; if (i) edges.push([r.passage[i - 1], id]); });
   const ids = Object.keys(waypoints), cols = Math.max(1, ...ids.map((id) => waypoints[id].col + 1)), rows = Math.max(4, ...ids.map((id) => waypoints[id].row + 1));
   return { route: [r.from, r.to].sort().join('-'), from: r.from, to: r.to, day: r.day || 0, columns: cols, rows, waypoints, edges, first: ids.slice(0, 1), last: ids.slice(-1) };
 }
