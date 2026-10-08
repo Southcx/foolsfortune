@@ -50,6 +50,16 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   rail you grind or a rope (the Courier's moves).
 - **plain shot**, **outlined shot** (`courier/ship/shots.js`): a foe's shot at sea. A plain one has a feeling (absorbed if it is the
   ship's, else it hurts; the roll turns it); an outlined one wears the parry mark and only the parry answers it, home to its thrower.
+  Drawn (`vfx/railshots.js`, one instanced draw over everything): an **astral shot** a white-gold core with a dark rim, an **umbral
+  shot** a black core with a pale rim, each a capsule from its **tail** to its **head** (the hit sphere's centre), the tail as long as it
+  is fast; until the forms, a plain shot of the ship's home feeling is drawn astral and any other umbral.
+- **the hurtbox** (the ship's: `T.ship.hurt`, drawn by `vfx/railshots.js`): the sphere a foe's shot must touch to hit the ship, drawn in
+  the hull as a pale core and a dark ring whose outer edge is its radius exactly. *Not:* a hit region (the vessel's six).
+- **an Itano ribbon** (`vfx/itano.js`, after Ichiro Itano's missile barrages): the trail a lance leaves, the last 0.6 real seconds of
+  where it flew, tapering, a hot spark at its head. *Not:* a weapon trail (`vfx/trail.js`, a blade's).
+- **the telegraph mark** (`vfx/telegraph.js`; Elemental Gearbolt's): a ring closing on a part about to act over its windup, the part's
+  own ring waiting fainter where it closes, both gone at the act; the parry mark's line weight, never its meaning. *Not:* the parry
+  mark ("answer this"), a lane mark (Divination's, on the sea), a windup (the creature's own listing).
 - **the pier** (`world/emocean/pier.js`): F at a jetty's end opens it, the node map as a list (where the fuel reaches, or why not) and
   the two **mounts** to take; choosing an island boards and casts off. Each island has one (Anagami's jetty, Margarite's dock), and a
   crossing makes port at the pier of the island it sails to.

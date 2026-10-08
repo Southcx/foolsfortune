@@ -122,6 +122,7 @@ export class PiratesPiece {
       sfx.explosion?.(9);
     }
     if (rel >= 8 && rel < 22 && (bar - 8) % PIRATES.broadside.every === 0) this.broadside();
+    if (rel >= 8 && rel < 21 && (bar - 8) % PIRATES.broadside.every === PIRATES.broadside.every - 1) for (const [i, p] of this.ports.entries()) if (p.alive) st.shots.telegraphs?.mark((o) => this.look.portWorld(i, SIDE, o), BAR_S, { radius: 0.85, from: 2.2, alive: () => p.alive && !this.ended }); // (each port that will fire wears the telegraph mark over the bar before the volley, none for a volley that will not come (rel < 21), and it goes with the port: vfx/telegraph.js)
     if (rel >= 9 && rel < 22 && (bar - 9) % PIRATES.boarders.every === 0) for (let k = 0; k < PIRATES.boarders.count; k++) this.board(k);
   }
 

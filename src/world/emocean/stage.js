@@ -91,7 +91,7 @@ export class Emocean {
     this.built = true;
   }
   /** What is parked for the warm-up's compile (main.js shows them for one draw, then hides them again). */
-  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked()]; }
+  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
   show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; }
 
   /** What the ship and the waves tell the run. */
