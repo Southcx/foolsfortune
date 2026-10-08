@@ -66,6 +66,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   encounter (the Spirit Garden's: an achievement group mastered).
 - **leg** (`LEG`, `legsOf`, `progress/econ/emocean.js`): one set piece of a long crossing; a crossing has one to three (the owner,
   2026-10-07), a **breather** between two whose flotsam **mends** the ship.
+- **a boss part** (`BossPart`, `BossParts`, `src/vfx/bossparts.js`; Calissa's, 2026-10-08): one piece of a leg's big object that the
+  runtime hits and breaks on its own: **intact**, **damaged**, **broken**, or **sealed** (not to be hit yet: Ikaruga's covers); drawn in
+  line and glow (the Mind's labradorite); its **telegraph anchor** (`telegraphAnchor`) is where the shrinking mark sits, and its
+  **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
+  the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
+  (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
+  **windows**. *Not:* a zone's `partOf`; `rail.part` is the event that one was downed.
+- **a lighthouse lamp** (`LighthouseLamp`, `src/vfx/lighthouselamp.js`): a caged Fresnel lamp and the beam it sweeps, first a **warning
+  line** (thin and pale, harmless) then **hot** (white-gold over a dark rim); the figurehead's lamp (with iron **shutters**) and the
+  Drowned Light's. *Not:* a room (the log's word), a PointLight (`render/lights.js`).
+- **the wreck field** (`WreckField`, `src/vfx/wreckfield.js`): the False Light's debris on the crude when she goes down (planks, spars,
+  casks, gratings, rags of canvas, her figurehead face down), with **the way through** it to chase along (`way(z)`). *Not:* a lane
+  (the Dunemaw's, the note chart's).
+- **the Drowned Light** (`DrownedLight`, `src/vfx/drownedlighthouse.js`; the plan's name, Espada's to settle): the graveyard leg's peak, a
+  lighthouse sunk to its gallery in the crude: its lamp **wakes** and sweeps, its windows burn, the reef, the **sunken hulls** below
+  (the Umbral) and their **ghost ships** riding above (the Astral, pale and translucent). *Not:* the Lamp Shrine (at the Dunemaw's lip).
+- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`): where a rail circling it sees a part best. *Not:* a
+  station (a course station, the kiln station).
 - **a continue** (`continueCost`, `voyage.continueRun`): the rail's arcade coin when the ship has borne all it can; priced by the way back
   to your last Shrine, doubling each time in one crossing; declined, the ship **breaks up** and you are made whole at that Shrine.
 - **polarity** (Q on the rail): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:

@@ -234,8 +234,26 @@ the rules before building in the same area; a rule a machine can check goes into
 88. **What is not drawn is not offered.** A thing hidden for a reason (a shut room's stele, a floor that is gone) is left out of what F
     can take or read: the offer asks `visible` as well as the distance, or the interact chevron stands over a wall and the find is
     made through it.
+89. **A mark a model lays in the world rides in the model's group, counter-moved, so it is warmed and hidden with it.** A shadow or a wake
+    added to the scene on its first use compiles in play and outlives its model's `visible`. And count a material's settings, not its
+    class: a transparent `DoubleSide` material draws twice (back faces, then front) and is two programs, and `fog: false` is a third;
+    match a material the game already warms (`renderer.info.programs` before and after), or set `forceSinglePass`.
 
 ## Cases
+
+### 2026-10-08 · Old Nobody's shadow compiled its program in play, at its first heave (found building its wake)
+- **Seen:** the boot's warm-up compiled 163 programs and `leviathan-shadow` was not among them (`renderer.info.programs`, the cache keys
+  listed before and after); the shadow mesh was added to the scene by its first `shadow()` call, so its program compiled on Old
+  Nobody's first heave, a hitch on a real GPU at the set piece's first beat. Building the boss parts, the lighthouse lamp's beam first
+  added two programs of its own (a basic map, both sides, transparent: one for the back pass and one for the front, with `fog: false`
+  a variant the game had not got).
+- **Cause:** the mark lay outside the group `stage.parked()` shows for the warm-up (casebook 18); and a material's settings, not its
+  class, make its program.
+- **Fix:** the shadow and the new wake ride in the beast's group with `matrixAutoUpdate` off and a matrix that undoes the group's
+  (`unframe`), so their vertices stay in the world's frame, they are warmed with the group and hidden with it; and both are drawn with the
+  game's own basic-map program (a soft halo for the shadow, a slick texture streaming aft for the wake), as are the beam, the glass and the
+  ghosts' sails, which keep fog to match it. Boot programs 163 before and after; `leviathan-shadow` is gone, so one fewer compiles in play.
+- **Rule:** 89.
 
 ### 2026-10-08 · An ostracon dug out on a dune's slope lay flat, and the steepest dig hovered over the drawn sand (found in review)
 - **Seen:** the buried ostraca lie on slopes of 8 to 25 degrees (five of the six sites, 13 degrees or more at four); dug out, each lay level
