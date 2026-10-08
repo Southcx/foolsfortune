@@ -74,7 +74,7 @@ const PULSE = (L) => (L.groove === 'none' ? [E('tick', 0, 0.5, null, 0.18)] : [E
 const GROOVE = {
   four: () => [...[1, 2, 3].map((b) => E('kick', b, 1, null, 0.75)), ...[0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, 0.22)), ...[0.25, 0.75, 1.25, 1.75, 2.25, 2.75, 3.25, 3.75].map((b) => E('tick', b, 0.25, null, 0.1))],
   jig: () => [E('kick', 2, 1, null, 0.6), E('bodhran', 0, 1, null, 0.45), E('bodhran', 2, 1, null, 0.4), ...[0, 2 / 3, 4 / 3, 2, 8 / 3, 10 / 3].map((b, k) => E('tick', b, 0.3, null, k % 3 ? 0.1 : 0.18))],
-  half: () => [E('taiko', 0, 1, null, 0.4, { size: 1.1 }), E('kick', 2.5, 1, null, 0.5), E('taiko', 3, 1, null, 0.25), ...[0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, 0.16))],
+  half: () => [E('taiko', 0, 1, null, 0.32, { size: 1.1 }), E('kick', 2.5, 1, null, 0.5), E('taiko', 3, 1, null, 0.25), ...[0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, 0.16))],
   two: () => [E('kick', 2.5, 1, null, 0.65), ...[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((b, k) => E('tick', b, 0.5, null, k % 2 ? 0.1 : 0.16)), E('ohat', 3.5, 0.5, null, 0.18)],
   break: () => [E('kick', 1.75, 1, null, 0.55), E('kick', 2.5, 1, null, 0.65), ...[0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, 0.2)), E('tom', 3.25, 0.5, null, 0.3, { pitch: 150 }), E('tom', 3.5, 0.5, null, 0.3, { pitch: 110 })],
   none: () => [...[1, 2, 3].map((b) => E('tick', b, 0.5, null, 0.12))],
@@ -132,7 +132,8 @@ function legBar(L, phase, i, len) {
   if (i === 0 && phase !== 'release') out.push(E('crash', 0, 1, null, phase === 'peak' ? 0.5 : 0.35), ...(phase === 'peak' ? [E('impact', 0, 1, null, 0.4)] : []));
   if (phase === 'peak' && i % 8 === 7 && L.groove !== 'none') out.push(...fill(0.45));
   if (last && phase === 'build') return [...out.filter((e) => e.b < 2), E('reverse', 2, 2, null, 0.4)]; // (the hole into the peak: cut at the third beat)
-  if (phase === 'release') return [...out.filter((e) => !['kick', 'clap', 'snare', 'eight', 'moog'].includes(e.i)), ...(i === 0 ? [E('crash', 0, 1, null, 0.3)] : [])];
+  if (phase === 'release') return [...out.filter((e) => !['kick', 'clap', 'snare', 'eight', 'moog'].includes(e.i)), ...(i === 0 ? [E('crash', 0, 1, null, 0.3)] : []), // (the parts falling: the theme, softer, over what is left)
+    ...(s < 6 ? THEME[L.id](L, i).map((e) => ({ ...e, v: (e.v ?? 0.3) * 0.7 })) : [])];
   return out;
 }
 
@@ -183,12 +184,12 @@ export function tripCue(legs) {
     if (k > 0) sections.push({ id: `turn:${k}`, bars: 4, gain: 2.6, sweep: [700, 16000], root: 64 + keyed(0, L), bar: (i) => turnBar(Ls[k - 1], L, i) });
     const p = phasesOf(legs[k]);
     for (const ph of ['open', 'build', 'peak', 'release']) {
-      sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: ph === 'peak' ? 2.4 : ph === 'release' ? 2.8 : 2.6, pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
+      sections.push({ id: `${L.id}:${ph}`, bars: p[ph], gain: ph === 'peak' ? 3.2 : ph === 'release' ? 4 : 2.6, pump: ph === 'peak' && L.groove !== 'none' && L.groove !== 'half',
         sweep: ph === 'release' ? [9000, 2200] : null, root: 64 + keyed(0, L), scale: L.id === 'maelstrom' ? MODES[L.aspect] : L.id === 'calm' ? MODES.mirth : null,
         bar: (i) => legBar(L, ph, i, p[ph]) });
     }
   });
-  sections.push({ id: 'arrive', bars: 4, gain: 4.5, bar: ARRIVE });
+  sections.push({ id: 'arrive', bars: 4, gain: 5.5, bar: ARRIVE });
   const score = { title: 'Crude Sea: the Crossing', root: 64, bpm: BPM, arrange: true, loopFrom: null, moodless: true, tail: 4, sections };
   CACHE.set(key, score);
   return score;
