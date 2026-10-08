@@ -17,7 +17,7 @@
 // soft void), Journey's and Sky's cloud seas, Chinese landscape painting's mist below the peaks (the xianxia sky), and the colour
 // matching booth's neutral surround (Josef Albers, Interaction of Color) for the grey.
 //
-//   const S = new GardenSky()   scene.add(S.group)   S.set({ draught: hex, night: 0..1 })   S.update(rawDt, camera)   S.fog (a Color: the haze)
+//   const S = new GardenSky()   scene.add(S.group)   S.set({ draught: hex, night: 0..1, rain: 0..1 })   S.update(rawDt, camera)   S.fog (a Color: the haze)
 //   S.surround(on)   S.grey (0 coloured .. 1 the grey surround, eased)   S.surround(false, true) (back at once: the garden left)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -66,17 +66,19 @@ export class GardenSky {
     this.moteG = new THREE.BufferGeometry(); this.moteG.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.motes = new THREE.Points(this.moteG, new THREE.PointsMaterial({ size: 0.16, map: softDot(), transparent: true, opacity: 0.45, depthWrite: false, blending: THREE.AdditiveBlending, color: 0xfff0d8 }));
     this.motes.frustumCulled = false; this.group.add(this.motes);
-    this.fog = new THREE.Color(); this.draught = new THREE.Color(0xf2c84a); this.night = 0; this.t = 0; this.grey = 0; this.greyTo = 0;
+    this.fog = new THREE.Color(); this.draught = new THREE.Color(0xf2c84a); this.night = 0; this.rain = 0; this.t = 0; this.grey = 0; this.greyTo = 0;
     this.set({});
   }
 
-  /** Your draught (a feeling's colour) tints the haze; `night` 0 day .. 1 the middle of the night (the game's own hour). */
-  set({ draught = null, night = this.night } = {}) {
+  /** Your draught (a feeling's colour) tints the haze; `night` 0 day .. 1 the middle of the night (the game's own hour); `rain` 0..1 greys it (vfx/garden/gardenrain.js). */
+  set({ draught = null, night = this.night, rain = this.rain } = {}) {
     if (draught != null) this.draught.setHex(draught); this.night = THREE.MathUtils.clamp(night, 0, 1);
     const k = this.night, u = this.u;
     u.uZenith.value.copy(DAY.zenith).lerp(NIGHT.zenith, k);
     u.uHaze.value.copy(DAY.haze).lerp(NIGHT.haze, k).lerp(this.draught, 0.28); // (your mood in the air)
     u.uCloud.value.copy(DAY.cloud).lerp(NIGHT.cloud, k).lerp(this.draught, 0.08);
+    this.rain = THREE.MathUtils.clamp(rain, 0, 1); const r = this.rain * 0.45; // (under rain the air greys and the light lowers)
+    if (r > 0) for (const [c, dim] of [[u.uZenith.value, 0.82], [u.uHaze.value, 0.88], [u.uCloud.value, 0.86]]) { const l = c.r * 0.3 + c.g * 0.59 + c.b * 0.11; c.lerp(_g.setRGB(l, l, l * 1.04), r).multiplyScalar(1 - (1 - dim) * this.rain); }
     toGrey(u.uZenith.value, this.grey); toGrey(u.uHaze.value, this.grey); toGrey(u.uCloud.value, this.grey); // (the grey surround: SOUL-ALCHEMY.md 4.3)
     u.uNight.value = k; this.fog.copy(u.uHaze.value);
     toGrey(this.motes.material.color.setHex(0xfff0d8).lerp(this.draught, 0.3), this.grey);

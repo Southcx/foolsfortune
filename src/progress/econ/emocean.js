@@ -69,7 +69,7 @@ export function hop(from, to, ship = 'sloop', open = (id) => !NODES[id].locked) 
   if (!a || !b || a === b || !open(from) || !open(to)) return null;
   const distance = Math.abs(a.law - b.law) * CHART.perLaw, S = ECON.ships[ship] || {}, danger = (a.law + b.law) / 2 + Math.abs(a.law - b.law) / 4;
   const legs = legsOf(distance, danger);
-  return { distance, fuel: Math.round(fuel(distance) * (S.burn ?? S.slow ?? 1)), legs, seconds: barsOf(legs) * STAGE.seconds / 100, danger };
+  return { distance, fuel: Math.round(fuel(distance) * (S.fill ?? S.slow ?? 1)), legs, seconds: barsOf(legs) * STAGE.seconds / 100, danger };
 }
 
 /** The stage, authored once. `at` is the fraction of the stage a wave enters; `lane` -1 left, 0 ahead, 1 right (null: the day picks).

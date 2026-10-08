@@ -12,7 +12,7 @@
 // combinations kept in a "Grimoire of Echoes"), and the colour wheel of every painter's colour theory (hue as an angle, saturation as the
 // distance from the grey centre).
 //
-//   KINDS[id] = { id, name, hue: [from, to], shape }      makeMaterial(kind, seed, tier) -> { kind, tier, hue, sat, path }
+//   KINDS[id] = { id, name, hue: [from, to], shape }      makeMaterial(kind, seed, tier, won?) -> { kind, tier, hue, sat, path, won? }
 //   press(colour, materials, { extra }) -> { colour, trail }   pullStep(c, to, share, wind)   colour = { h: 0..360, s: 0..1 }   distance(a, b) -> 0..1
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
@@ -38,7 +38,7 @@ function seeded(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Ma
  *  that step's length (its kind's shape: a spiral swings both ways, a zigzag alternates, an arc leans one way, a line runs straight).
  *  A rarer material pulls further. So a lump's colour says where it goes, and a complement greys by itself: the straight way to the
  *  opposite colour runs through the grey centre (Calissa's ruling 1, 2026-10-08; the 30-degree complement window is gone). */
-export function makeMaterial(kind, seed = 1, tier = 0) {
+export function makeMaterial(kind, seed = 1, tier = 0, won = null) {
   const K = KINDS[kind] || KINDS.edge, r = seeded(seed * 7919 + tier * 104729 + kind.length), P = ECON.alchemy.pull;
   const hue = K.hue[0] + r() * (K.hue[1] - K.hue[0]), sat = P.sat[0] + r() * (P.sat[1] - P.sat[0]);
   const steps = 3 + Math.floor(r() * 3), total = Math.min(0.9, P.share[0] + tier * P.share[1]), dir = r() < 0.5 ? -1 : 1, path = [];
@@ -47,7 +47,10 @@ export function makeMaterial(kind, seed = 1, tier = 0) {
     const w = K.shape === 'spiral' ? (i % 2 ? 1 : -1) * (0.6 + 0.4 * r()) : K.shape === 'zigzag' ? (i % 2 ? 1 : -1) : K.shape === 'arc' ? dir * 0.7 : 0;
     path.push([+each.toFixed(4), +(w * P.wind).toFixed(3)]);
   }
-  return { kind, tier, hue: +hue.toFixed(1), sat: +sat.toFixed(2), path };
+  // (the owner, 2026-10-08, 7a ruled A: a drop remembers the weather it was won in, as saturation only: `won` is that weather
+  // ({ strength } 0 .. 1, fair 0), and the material leans memory of the way toward it: a storm's drop more vivid, a fair day's greyer)
+  const lived = won && Number.isFinite(won.strength) ? sat + (Math.max(0, Math.min(1, won.strength)) - sat) * ECON.alchemy.memory : sat;
+  return { kind, tier, hue: +hue.toFixed(1), sat: +lived.toFixed(2), path, ...(won ? { won: +(won.strength || 0).toFixed(2) } : {}) };
 }
 
 const wrap = (h) => ((h % 360) + 360) % 360, clamp01 = (v) => Math.max(0, Math.min(1, v));

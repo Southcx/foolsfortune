@@ -8,6 +8,9 @@ Blanks stay blank.
 already in the build that this page does not name are provisional. Strings that live in code are not repeated here: the code is the
 record (section 12 says where).
 
+**Every name here is on purpose.** Each carries its root, source and puns beside it (Pithos: Pandora's jar; Hap Lagan: the law of
+wrecks), so the double meanings are known to be meant, and anyone naming the next thing can see how the last was made.
+
 ---
 
 ## 1. The frame
@@ -38,6 +41,10 @@ record (section 12 says where).
 - **Excess Lachryma** drives anyone else mad by degrees, then transfigures them into a Figment: mercury poisoning meets Mr Hyde.
 - **Cogitohazard**: the umbrella for raw Lachryma's dangers and malicious Figments. **Figments** are hewn from an island's own psyche;
   **Egregores** spawn from the Emocean, authored by no one. Neither is good or bad by nature.
+- **Which is which** (the owner, 2026-10-08): a creature drawn from real human mythology is an **Egregore** (Charybdis, Old Nobody,
+  the Leviathans); one we make up is a **Figment**, and a Figment at large is either a **stray** (wandered from its island, still
+  itself: the Cantor) or an **aberrant** (gone wrong: a blotling). The rule is the lore: the Emocean is the collective unconscious,
+  and a myth is a story the whole sea tells, authored by no one person (Jung's archetypes); a Figment is one island's own thought.
 - **The System**: the game's code made a voice; all of us making the game. Flat, helpful, rare; it never jokes.
 - **Lachryma is everything**: magic and feeling alike. **Lachrymite** is its solid form (the mineralogist's *-ite*, "of the stone":
   the stone of tears): a cube is a coin of it, a crystal a formation of it. Inert and safe, so it is money. The game divides into STORY
@@ -424,6 +431,103 @@ roly-poly toy that rights itself, and a cup).
 - **Old Nobody is Letty's white whale** (from *Moby-Dick*, with Javert of *Les Misérables* for the certainty). She posts WANTED: NOBODY
   and will chase it to the far shore; but an Egregore is authored by no one, so there is no source to finish. Her arc: the hunt that
   cannot end is how she learns the strays had no author to blame.
+
+### The passage and the overhauled crossing *(canon: the owner, 2026-10-08; Dovina's working names, Espada's verdicts)*
+`docs/plans/PASSAGE.md`, `docs/plans/RAIL-OVERHAUL.md`. Kept unless said:
+- **the sea chart** (a chart in the map's sense, so the homonym holds); **the passage** (to book passage; the Northwest Passage, a way
+  found through: say "side passage" for the Great Dunemaw's); **a waypoint** (drawn as a star, said as a waypoint); **a portent** (Latin
+  *portendere*, to stretch forth: a sign held out ahead); **a rutter** (French *routier*, the pilot's book of routes; England's first
+  printed one, 1528). **The Astral form** and **the Umbral form** are the owner's (Latin *astrum*, star; *umbra*, shadow, the Gnomon's
+  word). **The surge** (a storm surge: the sea let go at once). **A turn of the rail**, always in full ("turn" is a Possibilikey's).
+- **The reading of the sea becomes the reckoning** (one thing, one word: the code's `RECKON` is already it). Dead reckoning is the
+  navigator's way of knowing where you are by what you can work out ("ded.", deduced): Divination as deduction. You **reckon the sea**.
+- **The storm wall becomes the eyewall**: meteorology's word for the ring of the worst wind round a storm's still eye. The leg is a
+  tunnel run through it, so the player learns the real word by flying it.
+- **The graveyard** stays; its drowned lighthouse is **the Drowned Light**: the False Light rides above, a true light lies drowned
+  below. Why it drowned is a blank.
+- **The maelstrom** stays (Dutch *malen*, to grind, and *stroom*: the grinding stream; the Moskstraumen, Poe's descent). Its Whale
+  (class 3, Dovina's) is **Charybdis** (*Odyssey* XII: the whirlpool that swallows the sea and spits it out again, Scylla's neighbour;
+  Old Nobody already wears Odysseus's false name, so the crossing keeps to one book). It rises out of the maelstrom (Astral) and dives
+  back into it (Umbral), as Homer's swallows and spits. One name for every mood: its feeling is the waypoint's weather, so the log
+  names the mood beside it ("Charybdis rises, in grief."). Every maelstrom holds the same Charybdis: **an Egregore**, authored by
+  no one, wearing the feeling of wherever it rises (Dovina's ruling, 2026-10-08), so a bounty under Letty's marque may post it one day. The log: "Charybdis rises, in <feeling>." · "Charybdis dives." (at its first dive
+  only) · "Charybdis sinks into the maelstrom. The sea goes still." (when it is beaten).
+- **A calm** stays (the homonym already holds it). Its buoy is **the Purser's buoy**, where the King's tender sells fuel.
+- **The log** (`passage.*`, `rutter.*`; STE, counts but no percentages):
+  - passage.chart: "Sea chart: Anagami to Margarite, 3 waypoints." · passage.draft: "You draft the passage: 4 waypoints."
+  - passage.read: "The needle holds true. The sea chart clears." / "The needle wavers. Some of the sea chart clears." / "The needle
+    drifts. The sea chart stays dim." (and, when an earlier reckoning that game day was better: "Your first reckoning was better.")
+  - passage.waypoint: "The graveyard, as the portent showed." / "The graveyard: one of the 3 the portent showed." / "The graveyard. The
+    portent showed only a dim star."
+  - passage.redraft: "You draft the passage again from here." · passage.done: "Passage sailed: 4 legs. Rank A."
+  - rutter.get: "You get a rutter: Anagami to Margarite, game day 12." · rutter.sell: "You sell the rutter for 40 cubes." (a game day
+    old: "It is a game day old. It sells for half.")
+  - the legs' first beats: eyewall "The storm closes round you. The eyewall is ahead." · graveyard "Hulls below, ghost ships above." ·
+    the Drowned Light "The Drowned Light wakes." · maelstrom "The sea turns. The rail lets you go." and at its end "The maelstrom
+    slows. The rail takes you again." · a calm "The sea lies down. Lights rise round the hull." · the buoy "The Purser's buoy: fuel at
+    the posted price." · a bounty "Letty's mark is ahead." A turn of the rail, a breach, a dive and the surge say nothing: they are
+    seen.
+
+### The encounters at sea *(canon: the owner, 2026-10-08; Espada's names for Dovina's seven, `progress/rail/encounters.js`, PASSAGE.md section 13)*
+Each: its name and root, then the log's lines (arrival · each choice) and the choices' words (STE: a verb first).
+- **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
+  own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
+  *Follow them.* "You follow the Dead Reckoners. The next 2 waypoints are clear." · *Board the last ship.* "You take 2 casks from the
+  last ship. The Wreckers will hear of it."
+- **lettysCutter: the Last Word.** A cutter (the revenue cutters chased smugglers; it also cuts), named for what Letty always has and
+  what she means to put on every stray: the irony is Old Nobody, who has no last word. "A cutter alongside: Letty Marque's Last
+  Word." · *Take her bounty.* "Letty : Splendid, a second gun on the hunt, and the sea a little cleaner by supper!" · *Sell her your
+  rutter.* "Letty : The way they came is the way we go to finish them. Poll, pay the Courier." "Poll : Paid! Paid!"
+- **lightWhale: the Cantor.** Latin *cantor*, the singer who leads the chant. Whale song carries across whole oceans in the deep sound
+  channel, so listening tells you the sea ahead (the lesson, unsaid). It is a **Figment**, a stray (the owner: made up, so a Figment); whose island it strayed from is a blank. "Under the hull,
+  something sings: the Cantor." · *Listen.* "You listen. The sea ahead is clearer." · *Follow it down.* "You dive after the Cantor."
+- **castaway: Hap Lagan, and Bob.** In the law of wrecks, **lagan** is cargo sunk with a buoy tied to it, so the owner can come back for
+  it (flotsam floats off, jetsam is thrown, lagan is marked, derelict is left). *Hap* is luck. A Contractor who went down marked to be
+  found. Their Tulpa is **Bob**: a cork float of a thought-form, authored on the raft so as not to be alone; it bobs (the pun is the
+  name). Pronouns unset: write around them. "A raft, and a Contractor on it: Hap Lagan, and Bob." · *Take them aboard.* "Hap : Lagan is
+  the word for what sinks with a mark on it, so somebody comes back. You came back." "Hap Lagan and Bob come aboard." (the next leg:
+  "Hap Lagan mans the toll.") · *Sail on.* "You sail on. Bob waves."
+- **pursersBarge: the Bourse.** The purser is named for the purse (Latin *bursa*); so is the bourse, the exchange. A purse that is a
+  market, lit with aqua regia. "Lanterns on the crude: the Purser's barge, the Bourse." "Purser : Posted prices, as at the dock. The sea
+  does not change them." · *Trade casks.* · *Buy fuel.* · *Buy today's rutter.* (each said as the counter says it now).
+- **mirrorSea: the Glass, and your double.** Sailors call a flat sea "glass". The ghost is **your double** ("fetch", the folklore's
+  double, stays the Crib Sheet's gloss of FETA: Dovina's ruling, one word one meaning). "The sea goes flat as glass. Your double sails
+  beside you." · *Race it.* (won) "You beat your double. The leg's rank goes up a step." (lost) "Your double beats you, and fades." ·
+  *Let it pass.* "Your double sails on, and is gone."
+- **driftBottle: a drift bottle.** The real oceanographers' tool: bottles set adrift to map the currents, found years later. Who writes
+  these is a blank. "A drift bottle, bobbing in the light." · *Read it.* (a word) "Inside, a scrap with one word: SIVA (drink)." (a
+  portent) "Inside, a note in a steady hand: the graveyard is ahead."
+
+### The trip's pressures *(Espada's words for Dovina's five rules, PASSAGE.md section 14; proposed, 2026-10-08)*
+- **The hull** stays (it carries its hits from leg to leg).
+- **The tank becomes the bunker.** A ship's fuel store is its bunker, and taking fuel on is **bunkering** (coal bunkers first, oil
+  bunkers since): the Purser's buoy bunkers you mid-sea. "Tank" is refused twice over: the tanker is a ship, and the Lachrymato Bottle is
+  never a tank.
+- **A measure** stays (plain; this house says "bar" for music's measure, so no clash).
+- **Burn** stays; **adrift** stays.
+- **The campfire becomes heaving to**: a ship at sea stops and rides easy by setting her sails against each other (the sailor's rest;
+  no fire aboard a wooden ship). Its two choices: *Caulk the hull.* (caulking: oakum driven into the seams, the old mend; half the hull
+  back) or *Reckon the sea.* (the reckoning's canon verb; the portents ahead a quarter sharper).
+- **The day's best becomes high water** (the high-water mark: the furthest the tide reached that day, and a new tide every game day).
+- **The draught's trump becomes a following sea** (the blessing "fair winds and following seas": a sea running your way; "fair" is the
+  weather's word for no feeling, so only the second half is taken).
+- **A storm mark becomes a squall**: a sudden, violent, local storm, which is what it is (the weather has no storm; the eyewall is a
+  leg). Shown as a flame on its waypoint (Calissa's).
+- **Why the sea between two islands carries their feelings** (proposed): an island's weather falls on it and runs off into the
+  Emocean, and the run-off spreads out from its shore as a **plume**, as a great river's fresh water colours the sea for miles past its
+  mouth. Between two islands the plumes meet, so the sea's feeling slides from one island's to the other's along the way; far from both,
+  a tenth of the sea is fair, the Emocean's own water that no island has reached. The sea chart is laid from the game day's first
+  weather because a plume takes a game day to cross.
+- **Why squalls gather where they do** (proposed): a squall rises where two plumes meet and one shoulders into the other: a **front**,
+  as storms form where warm and cold air meet. The stronger feeling wins the front, so a squall is one feeling at full strength, and
+  Figments are drawn to it and come out of it a class bigger. A front lies across the open lanes, never in a narrows, so a squall can
+  always be sailed round. (The lesson, unsaid: weather fronts.)
+- **The log:** low: "The bunker runs low: 2 measures left." · adrift: "Your bunker is dry. You are adrift. The current takes you." and
+  ended: "You take on fuel. You are under way again." · the buoy: "The Purser's buoy bunkers you: 6 measures, 30 cubes." · a calm:
+  "A calm. You heave to." · *Caulk the hull.* "You caulk the hull: 3 hits mended." · *Reckon the sea.* "You reckon the sea. The
+  portents ahead sharpen." · a squall cleared: "The squall breaks. Its leg scores a quarter more." · high water: "High water on this sea
+  today: 4,820." and beaten: "High water on this sea today: 5,140, over 4,820." · a following sea: "A following sea: your draught trumps
+  what waits ahead."
 
 ## 12. Where the words live
 

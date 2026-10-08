@@ -4,7 +4,7 @@
 // growing cell on ground that `spreads` (Dovina's GROUND: moss, loam, silt) and is wet (water standing on it, or within a cell of it)
 // grows a stage, and a full one seeds its bare neighbours that are wet and fertile too. Dry ground holds what it has; ground that does not
 // spread (ash, slate) or none at all wilts a stage a game hour. Seeds: each herb terrace seeds the cells round its plot, and painting moss
-// seeds where it is painted. Drawn as tufts, one instanced mesh a planetoid (a stand-in: Calissa's plants, item 29).
+// seeds where it is painted. Drawn by Calissa's look (vfx/garden/gardenplants.js: moss, herbs and reeds by the ground).
 // Kept in the realm's save as runs.
 //
 // Prior art: Conway's Life and every cellular grass (From Dust's vegetation spreading over wet ground, Viva Pinata's grass that the
@@ -15,16 +15,16 @@
 import * as THREE from 'three';
 import { NX, NY, CELL_DIRS, GROUNDS } from './clay.js';
 import { GROUND } from '../../progress/realm.js';
+import { GardenPlants } from '../../vfx/garden/gardenplants.js';
 
-const PLANT = { most: 3, wet: 0.02, tufts: 3000, lift: 0.05, every: 1 }; // (stages; metres of water that wets; tufts drawn a planetoid at most; metres; game hours a step)
+const PLANT = { most: 3, wet: 0.02, every: 1 }; // (stages; metres of water that wets; game hours a step)
 const SPREADS = new Uint8Array(GROUNDS.length + 1); GROUNDS.forEach((g, i) => { SPREADS[i + 1] = GROUND[g].spreads ? 1 : 0; });
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+const _d = new THREE.Vector3();
 
 export class Plants {
   constructor(realm) {
-    this.R = realm; this.grids = {}; this.looks = {}; this.owed = 0; this.dirty = new Set();
-    this.geo = new THREE.ConeGeometry(0.14, 0.5, 5).translate(0, 0.25, 0);
-    this.mat = new THREE.MeshStandardMaterial({ name: 'garden-plant', color: 0x6fae5a, roughness: 0.9 });
+    this.R = realm; this.grids = {}; this.owed = 0; this.dirty = new Set();
+    this.look = new GardenPlants(realm); // (Calissa's look: a kind a ground, placed by density, vfx/garden/gardenplants.js)
   }
   grid(P) { return (this.grids[P.id] ||= new Uint8Array(NX * NY)); }
   at(P, dir) { const G = this.grids[P.id]; return G ? G[this.R.clays[P.id].cellOf(dir)] : 0; }
@@ -60,23 +60,8 @@ export class Plants {
     }
   }
 
-  /** The tufts redrawn where the green changed (a stand-in look: one instanced mesh a planetoid). */
-  update() {
-    for (const id of this.dirty) {
-      const P = this.R.site.by[id], G = this.grids[id], clay = this.R.clays[id]; if (!P || !G) continue;
-      let L = this.looks[id];
-      if (!L) { L = this.looks[id] = new THREE.InstancedMesh(this.geo, this.mat, PLANT.tufts); L.name = `garden-plants-${id}`; L.position.copy(P.c); L.frustumCulled = false; this.R.site.group.add(L); }
-      let n = 0;
-      for (let k = 0; k < NX * NY && n < PLANT.tufts; k++) {
-        if (!G[k]) continue;
-        _d.fromArray(CELL_DIRS, k * 3); const r = clay.groundAt(k) + PLANT.lift, h = 0.4 + 0.3 * G[k];
-        _p.copy(_d).multiplyScalar(r); _q.setFromUnitVectors(UP, _d); _s.set(h, h, h);
-        L.setMatrixAt(n++, _m.compose(_p, _q, _s));
-      }
-      L.count = n; L.instanceMatrix.needsUpdate = true; L.visible = n > 0;
-    }
-    this.dirty.clear();
-  }
+  /** The green drawn where it changed, or where the clay under it moved (Calissa's look: vfx/garden/gardenplants.js). */
+  update() { this.look.update(this.dirty, this.grids); this.dirty.clear(); }
 
   dump() {
     const out = {};

@@ -587,11 +587,11 @@ glyph, so in a week of play the eye learns to see "a little too warm, a little t
 So the press is **processing**. A material is an experience kept; pressing is thinking it through, in an order (the same experiences
 in another order make another person); the soul colour is who you are becoming; a firing is a trait settling. It holds together:
 an experience at odds with where you stand (the complement) brings you back toward grey, the calm centre; brimming tints what you
-take in with your mood (3.4); seasoning is practice. **Proposed, to make a material remember its experience** (revised on Calissa's measure, 2026-10-08): a material won in a weather is
-**more vivid the stronger the feeling it was won in** (its saturation leans toward 1 by `ECON.alchemy.memory`, proposed 0.3 x the
-weather's strength; won in fair weather, it leans grey). Not its hue: the five feelings' hues leave stretches of the colour wheel with no
-feeling, so leaning hue would starve the attributes there; and since the pull (3.1) makes a lump go where its colour says, a lump's
-lived colour is honestly where it goes. A drop won in a storm pushes harder; a fair-weather one gently. Owner to rule.
+take in with your mood (3.4); seasoning is practice. **Ruled (the owner, 2026-10-08: A): a material remembers the weather it was won in, as saturation only.** Its saturation leans
+`ECON.alchemy.memory` (0.3) of the way toward the weather's strength where it dropped: won in a storm, more vivid (a strong pull out
+toward the rim); won in fair weather, greyer (a brake for the fine aiming the top ranks want). So weather becomes a choice of where to
+gather, and both are wanted. `makeMaterial(kind, seed, tier, won)` takes `{ strength }`; the material keeps `won`. Hue is untouched:
+"easier to understand as a general principle"; drops with their own colour profiles and weirdness can come later.
 
 ## 8. Acceptance (each a check in the garden sweep, section 14)
 

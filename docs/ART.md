@@ -91,7 +91,20 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
 - **The garden** (Dual Hearts): pastel air tinted by your draught, a cloud sea below, toy planetoids (`vfx/garden/`); a feature wears its
-  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos).
+  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos). **The grounds the hand paints wear their phase, not their
+  feeling** (`vfx/garden/gardengrounds.js`): moss jade cushions, ash pale over embers, loam ochre clods and rootlets, slate silver-blue
+  cleft, silt blue-black and crazed. The feeling is only the accent (dew, embers, flecks, sheen, the gleam in a crack), so a painted
+  planetoid reads as ground first and mood second. Borders are height-blended (the higher one shows), never a smear across a cell.
+  **The water is the feeling, outright** (`vfx/garden/gardenwater.js`): Lachryma in its feeling's canon colour, dark where the light
+  goes in and glowing from inside as it deepens (and by night), the marbling's film in its veins and at its meniscus. Two feelings in
+  one pool are an agate, wedged along the marbling and never blended; opposites that meet are fair water, milky as nacre. Ground it
+  wets darkens and glosses for 20 real seconds, with caustics under the shallows. **The rain is your draught** (`gardenrain.js`): thin
+  streaks drawn toward the sky's pale, each falling to its own planetoid's heart, a ring where it lands, the sky greying under it.
+  **The plants are toys** (`gardenplants.js`): chunky moss cushions with fern sprigs, herb rosettes that bloom in desire's colour,
+  reeds with a cattail; lit by up-turned normals like the ground they grow from, shrinking away past 18 m so the ground carries the
+  green. **A cascade is a ribbon** (`gardencascade.js`): its feeling's colour scrolled down the fall, frayed white at the edges, spray
+  at the foot. **The bought four** (`boughtplanetoids.js`) each keep one idea: the Moon's craters, the Koi Pond's teal crown, the Drill
+  Yard's ring of posts, the Bone Bed's ribs.
 
 ## 6. The Courier's face
 

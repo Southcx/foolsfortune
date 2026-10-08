@@ -7,8 +7,8 @@
 // erosion, on the clay's own heights: the planetoids' authored shapes are never worn). Each cell's water keeps its mix of the five
 // feelings (the shares of each), which mixes as the water does; what a feeling's water does is Dovina's rule to come (her list, item 11).
 // Water comes from **springs** (a source the hand sets, or the garden's own) and from the hand pouring it, and leaves through **drains**,
-// the hand drinking it up, and a slow drying. A planetoid with no water and no spring sleeps. The water's look is a stand-in
-// (world/garden/watermesh.js) until Calissa's.
+// the hand drinking it up, and a slow drying. A planetoid with no water and no spring sleeps. The water's look is Calissa's
+// (vfx/garden/gardenwater.js).
 // Events: garden.water { planetoid, how: 'pour' | 'drink' | 'spring' | 'drain' | 'unset' } (the hand's, world/garden/hand.js).
 //
 // Prior art: Mei, Decaudin and Hu, "Fast Hydraulic Erosion Simulation and Visualization on GPU" (2007: the virtual pipes, the sediment's
@@ -173,7 +173,7 @@ export class PlanetWater {
   }
 }
 
-/** Every cell's direction, for the look (world/garden/watermesh.js). */
+/** Every cell's direction, for whatever reads the grid by cell. */
 export { CELL_DIRS };
 
 /** What the clay's basins would hold, filled to their spill points (a priority-flood: Barnes, Lehman and Mulla, 2014). A planetoid has no

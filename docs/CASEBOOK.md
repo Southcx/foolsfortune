@@ -234,6 +234,27 @@ the rules before building in the same area; a rule a machine can check goes into
 88. **What is not drawn is not offered.** A thing hidden for a reason (a shut room's stele, a floor that is gone) is left out of what F
     can take or read: the offer asks `visible` as well as the distance, or the interact chevron stands over a wall and the find is
     made through it.
+89. **A skipped call leaves its work owed.** A throttle that drops every other call (a counter's parity, a cooldown) drops whoever
+    lands on the skip, the same one each time when the callers come in a fixed order, and a caller that clears its own flag first never
+    asks again. Make the work cheap enough to do at every call (redraw only what changed), or keep the debt per thing and clear it when
+    the work is done.
+90. **What lies on a surface is drawn on that surface's own mesh.** A layer over the ground (water, a film, a decal that follows it) is
+    built on the ground's vertices and triangles, lifted along them, so the two can never cross between vertices; a mesh of its own,
+    coarser or finer, pokes through or hides where they disagree. Its edge is cut by a value interpolated across those triangles (a
+    depth), never by dropping whole triangles.
+91. **What stands on a surface listens for the surface.** Anything placed on ground that can move (plants on the clay, a marker on the
+    water) is placed again when the ground's version changes, not only when its own state does; test it by moving the ground under it
+    and measuring the gap.
+92. **An instance never drawn has nothing to normalize.** A pooled instance's unset attributes are zeros, and `normalize(vec3(0))` is NaN
+    in a vertex shader: what a GPU does with a NaN position is undefined (SwiftShader drops the triangle; another driver need not). Guard the
+    length (or move the dead instance outside the clip volume) before it is divided by; read every pooled shader for what its zeros do.
+93. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
+    and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
+    `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
+94. **A line said on a state's edge needs hysteresis.** Where a state can flicker (brimming at sea, overflow after overflow), say it on
+    entering and say its end only after it has lapsed a while; a flicker is one spell, never a pair of lines each time.
+95. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
+    ship is not what the cursor means; the pick starts past the shooter.
 
 ## Cases
 
@@ -473,6 +494,71 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** each jar's material is `cloneTinted(this.mat)` (`vfx/greytint.js`): the clone with the defines and the hook carried over.
   Headless, all six jars: `{ STANDARD, RIM: 0.256, GREY_REF: 0.1329 }`, the texture on each, one program for all six.
 - **Rule:** 72.
+
+### 2026-10-08 · The garden's water was two programs, and the perf budget broke (Calissa, the review of her garden look)
+- **Seen (`npm run perf` on Calissa's branch with `art-garden-water-r` merged, against her branch alone):** programs 159 / 162 / 162 (workshop /
+  dunes / well) became 165 / 168 / 168 where the garden's work was reckoned at four more; the budget is 164.
+- **Cause (measured, the warm-up's programs listed by name):** six new programs, not four or five: the grounds, the rain, the plants, the
+  cascade and the water **twice**. The two water programs differ in one bit of their cache key (`flipSided`, 5123 against 1027): the water is
+  transparent and double-sided, which three.js draws as a back-face pass and a front-face pass, a program each.
+- **Fix:** `forceSinglePass: true` on the water's and the cascade's materials (`vfx/garden/gardenwater.js`, `gardencascade.js`): one pass, one
+  program, and nothing drawn differently (a sheet of water and a ribbon have no second layer to order; the pond looks the same in the
+  renders before and after). Boot is 158 programs on this branch (it was 159). The garden's looks are still five programs (the grounds, the
+  water, the rain, the plants, the cascade), each parked in the warm-up so that nothing compiles on entering, pouring or the first cascade;
+  the budget has to carry them (the handoff to Petra says by how much).
+- **Rule:** 93.
+
+### 2026-10-08 · The garden's rain rings were NaN until each was first laid (Calissa, the review of her garden look)
+- **Seen (reading `vfx/garden/gardenrain.js`, then the shader's arithmetic by hand):** the pool of 360 rings starts with `iB` (the ring's
+  up) at zero, and the vertex shader took `normalize(iB.xyz)` for every ring, laid or not.
+- **Cause:** `normalize(vec3(0))` is NaN; the cross products and `wp = iA.xyz + (t * aQ.x + b * aQ.y) * s` carried it (`NaN * -0` is NaN, so
+  `on = 0` did not save it), so every unused ring had NaN corners. SwiftShader drops such a triangle; the spec leaves what a NaN corner
+  does undefined, so another driver might draw it. The streaks were safe (a dead one is moved to its head by `if (live < 0.5) wp = head`).
+- **Fix:** the ring's up is `iB.xyz * inversesqrt(nl)` only when its length is above 1e-6 and straight up otherwise, its age divides by
+  `max(life, 0.001)` and `on` also needs a life of 0 or more. SwiftShader never showed the fault (it drops the triangle), so it was found by
+  reading, and the rain's renders after the change were looked at (the rings and streaks are unchanged).
+- **Rule:** 92.
+
+### 2026-10-08 · The garden's tufts floated after a stroke, and the cap dropped the crown first (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** a pull or press under grown plants left their tufts hanging in the air or sunk in the
+  clay until the green next changed; with more than 3,000 planted cells, the Dantian's crown lost its tufts first.
+- **Cause (read, then measured):** `plants.js` redrew a planetoid's tufts only when its own grid changed (`dirty`); `realm.reshape`
+  never told it the clay had moved. The cap filled in cell order from the south pole. Measured with the new look's own check before it
+  follows: 10 of 239 plants more than 2 cm over their ground after a 6-pull, 3-press stroke, the worst 0.137 m.
+- **Fix:** the plants' look (`vfx/garden/gardenplants.js`) keys on each planted planetoid's clay version too, and is placed again
+  within 0.1 real seconds (the debt kept: rule 89), nearest the eye first. After the same stroke: 0 of 239 over their ground (the worst
+  2.5 cm under, its foot let down by the slope: rule 64).
+- **Rule:** 91.
+
+### 2026-10-08 · The garden's water had a hole at each pole, streaks near the crown, and compiled on the first pour (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08, `03-water-standin.png`; Petra's note, 2026-10-07):** broken white streaks in water near
+  the Dantian's crown; no water within half a metre of a pole; the first pour hitched while the water's program compiled; and the
+  water hid under the planetoid wherever the planetoid's mesh was coarser than the clay.
+- **Cause:** the stand-in (`watermesh.js`) was its own latitude-longitude sphere on the clay's grid: its cells near the crown were
+  slivers (0.2 by 1 m at 80 degrees), its quads stopped a row short of each pole, it drew only triangles wet at all three corners (so
+  the shore stepped cell by cell), and it was made on the first pour, after the warm-up (rule 18).
+- **Fix:** the water's look (`vfx/garden/gardenwater.js`) is drawn on the planetoid's own vertices (the shared icosphere the ground is
+  drawn on), each at the drawn ground plus the water's depth plus 1 cm, a lake level to its bank; triangles with a wet corner are
+  drawn and the shore is cut by the depth interpolated across them (5 mm, fading in to 6 cm), so the water always stands 1.5 cm or
+  more over the ground where it shows (rule 1); one material for every planetoid, parked in the warm-up. Measured headless on the
+  Dantian (four pits, a run down a hill): 0 drawn triangles dry at every corner, 0 wet vertices under their ground (the least 1.5 cm
+  over), 0 programs compiled on entering or pouring; two frames 1/60 s apart with the camera still flip 0 to 10 pixels of 368,640,
+  and a 4 mm camera move flips no more with the water than without it.
+- **Rule:** 90 (and 1, 18).
+
+### 2026-10-08 · The garden's ground worn by its water stayed drawn as it was on every other planetoid (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** with two planetoids eroding at once, one of them kept its old drawn ground until the
+  next stroke ended on it; the Jar stands on the clay (`radiusAt`), so it stood off the ground it was drawn on.
+- **Cause (measured, this build, main's `reshape` put back in the page):** `realm.reshape` skipped every other call that was not `now`
+  on one counter (`shapeT`) shared by every planetoid, the hand's strokes and erosion's look tick; the water's look tick clears each
+  planetoid's `eroded` flag and then calls `reshape` for it, in site order. Three planetoids worn by 0.3 m in one tick: the Dantian and
+  the Athanor drawn 0.299 m off their clay, the Terraces right; the next tick the other way round. The skip was there because the
+  redraw cost a full `toLook` (heightAt at every vertex, all normals: 4.5 to 6 ms at the clay's fineness).
+- **Fix:** the look keeps a map onto the clay's grid and redraws only the cells that changed since it last looked
+  (vfx/garden/planetoidmesh.js `refreshFromClay`, through `Clay.toLook`): a brush tick in the page 0.1 to 0.3 ms at 3 m, 0.8 to 1.8 ms at
+  12 m (p50), so `reshape` runs at every call and the skip is gone (world/garden/realm.js). The same three planetoids, three rounds:
+  every one within 2.6 micrometres of its clay after each tick.
+- **Rule:** 89.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
@@ -1217,4 +1303,18 @@ the rules before building in the same area; a rule a machine can check goes into
   (vite preview, two gc'd boots each) read 223 MB before and 228 after.
 - **Fix:** the budget raised to 350 with that written beside it (scripts/perf.mjs); the built figure reported at publish.
 - **Rule:** 71.
+
+### 2026-10-08 · "You are brimming." and "You settle." alternating at sea (found in a trip's screenshot)
+- **Seen:** on a drafted passage the log filled with the pair, a line every few seconds.
+- **Cause:** brimming lasted 2 real seconds after each overflow and its end was said at once; at sea absorbed shots overflow the pool
+  every few seconds, so each gap said "You settle." and the next shot "You are brimming." again.
+- **Fix:** courier/mind.js says "brimming" once a spell and "You settle." only after 6 real seconds with no overflow.
+- **Rule:** 94.
+
+### 2026-10-08 · The rail's gun aimed back at the camera when a foe passed close by it (v119; found by scripts/railaimtest.mjs)
+- **Seen:** in a free view the far reticle left the cursor by up to 0.13 of the screen for a frame or two, twice a crossing.
+- **Cause:** the aim takes the first foe the cursor's ray crosses; a big foe passing beside the camera was crossed in front of the ship,
+  so the aim point lay between the camera and the ship and the gun pointed back at it.
+- **Fix:** only a foe the ray meets 2 m or more beyond the ship's nose is picked. Measured: worst 0.007 of the screen through a crossing.
+- **Rule:** 95.
 
