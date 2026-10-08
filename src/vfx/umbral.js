@@ -27,7 +27,9 @@
 // Waker's caustic floor, Ecco the Dolphin's surface line and the half-in, half-out lens of a diving camera, Sunless Sea's black zee.
 //
 //   game.umbral = new Umbral(game, { scene?, vfx?, sea?, hide?, anywhere? })   .update(rawDt, camera) (each frame)
-//   .set({ below })        0 above .. 1 below (in between during the crossing); null (the default): the eye's own side of the surface
+//   .set({ below, clear })  below: 0 above .. 1 below (in between during the crossing); null (the default): the eye's own side of the
+//                          surface. clear: 0..1, the deep's murk drawn off (the maelstrom's: its throat draws it down, so Charybdis
+//                          is seen across the arena from under the surface: vfx/crossinglook.js)
 //   .splash(pos, { power = 1, dive = true })     the ring, the crown and the bubbles where something went through the surface
 //   .above(obj, { r, len }) -> { remove() }       a thing floating above whose belly darkens the meniscus (a capsule along the rail, r and
 //                                                 half-length in metres; up to six)
@@ -43,7 +45,7 @@ import { foamMaterial } from './rail.js';
 import { DEEP_U, DEEP_GLSL, keepTrue } from './stormwarp.js';
 
 /** The deep's colour and fog, the motes' rate, the ring's life (real seconds), the band of the lens's line (metres either side of the surface). */
-export const UMBRAL = { deep: 0x1a0b28, density: 0.034, motes: 30, ring: 1.4, band: 0.9 };
+export const UMBRAL = { deep: 0x1a0b28, density: 0.034, clear: 0.014, motes: 30, ring: 1.4, band: 0.9 }; // (clear: the column's density at its clearest, the maelstrom's: 45 m off, two thirds of a thing's light left, not a tenth)
 const MOTE = [new THREE.Color(1.0, 0.8, 0.45), new THREE.Color(0.62, 0.5, 1.0), new THREE.Color(0.35, 0.62, 1.0)]; // (Lachryma's gold, the pale violet, labradorite's blue)
 const CRUDE = new THREE.Color(0x231c2c), GLINT = new THREE.Color(1.0, 0.78, 0.4);
 
@@ -99,7 +101,7 @@ const surf = (sea, x, z) => (sea.surfaceAt ? sea.surfaceAt(x, z) : sea.heightAt(
 export class Umbral {
   constructor(game, { scene = null, vfx = null, sea = null, hide = null, anywhere = false } = {}) {
     this.game = game; this.scene0 = scene; this.vfx0 = vfx; this.sea0 = sea; this.hide0 = hide; this.anywhere = anywhere;
-    this.forced = null; this.below = 0; this.eye = 0; this.line = -1; this.t = 0; this.acc = 0;
+    this.forced = null; this.below = 0; this.eye = 0; this.line = -1; this.t = 0; this.acc = 0; this.clear = 0; this.clearTo = 0;
     this.deep = new THREE.Color(UMBRAL.deep);
     this.things = []; this.rings = []; this.fog = null; this.hidden = null;
     this.ringU = { uT: { value: 0 } };
@@ -109,7 +111,10 @@ export class Umbral {
   get vfx() { return this.vfx0 || this.game.vfx || null; }
 
   /** The look's side of the surface: a number steers it (the runtime's form), null hands it back to the eye. */
-  set({ below } = {}) { if (below !== undefined) this.forced = below == null ? null : THREE.MathUtils.clamp(+below || 0, 0, 1); }
+  set({ below, clear } = {}) {
+    if (below !== undefined) this.forced = below == null ? null : THREE.MathUtils.clamp(+below || 0, 0, 1);
+    if (clear !== undefined) this.clearTo = THREE.MathUtils.clamp(+clear || 0, 0, 1);
+  }
 
   /** A thing above the surface whose belly shows from below (a soft shadow on the meniscus, a capsule along the rail). */
   above(obj, { r = 3, len = 0 } = {}) {
@@ -151,6 +156,7 @@ export class Umbral {
     const eye = d < 0 ? 1 : 0;
     if (eye !== this.eye) { this.eye = eye; sea?.under?.(!!eye); }
     const want = this.forced ?? eye;
+    this.clear = THREE.MathUtils.damp(this.clear, this.clearTo, 1.5, raw);
     this.below = Math.abs(this.below - want) < 1e-3 ? want : THREE.MathUtils.damp(this.below, want, 10, raw);
     // the line of the surface across the lens: while the eye is within the band, it rises up the frame as the eye goes down
     this.line = Math.abs(d) < UMBRAL.band ? THREE.MathUtils.clamp(0.5 - d / (2 * UMBRAL.band), 0, 1) : -1;
@@ -180,7 +186,7 @@ export class Umbral {
     if (S.fog && k > 0.001) {
       const F = S.fog, mine = this.fog && F.color.equals(this.fog.wrote) && Math.abs((F.density ?? 0) - this.fog.wroteD) < 1e-6;
       if (!mine) this.fog = { color: F.color.clone(), density: F.density ?? 0, bg: S.background?.isColor ? S.background.clone() : null, wrote: new THREE.Color(), wroteD: 0 };
-      F.color.copy(this.fog.color).lerp(this.deep, k); if (F.density !== undefined) F.density = THREE.MathUtils.lerp(this.fog.density, UMBRAL.density, k);
+      F.color.copy(this.fog.color).lerp(this.deep, k); if (F.density !== undefined) F.density = THREE.MathUtils.lerp(this.fog.density, THREE.MathUtils.lerp(UMBRAL.density, UMBRAL.clear, this.clear), k);
       if (this.fog.bg && S.background?.isColor) S.background.copy(this.fog.bg).lerp(this.deep, k);
       this.fog.wrote.copy(F.color); this.fog.wroteD = F.density ?? 0;
     } else if (this.fog) { // (surfaced: what the place had is put back once; it writes its own again next frame anyway)

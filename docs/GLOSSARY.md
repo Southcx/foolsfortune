@@ -94,7 +94,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **windup** is the part's own body telegraph. The False Light's: the **rigging** (four slings and the whole rig), six **gunports**,
   the **keel** (seen from below) and **the figurehead's lamp** (her core); Old Nobody's: eight **gills** (from below), six **teeth**
   (tusks, from above), the **eye** and the **throat**, and it **quickens** as its gills shut; the Drowned Light's: its **lamp** and six
-  **windows**. *Not:* a zone's `partOf`; `rail.part` is the event that one was downed.
+  **windows**; Charybdis's: eight **baleen combs**, six **eyes** and the **throat** (below). *Not:* a zone's `partOf`; `rail.part` is
+  the event that one was downed.
 - **a lighthouse lamp** (`LighthouseLamp`, `src/vfx/lighthouselamp.js`): a caged Fresnel lamp and the beam it sweeps, first a **warning
   line** (thin and pale, harmless) then **hot** (white-gold over a dark rim); the figurehead's lamp (with iron **shutters**) and the
   Drowned Light's. *Not:* a room (the log's word), a PointLight (`render/lights.js`).
@@ -104,8 +105,30 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Drowned Light** (`DrownedLight`, `src/vfx/drownedlighthouse.js`; the plan's name, Espada's to settle): the graveyard leg's peak, a
   lighthouse sunk to its gallery in the crude: its lamp **wakes** and sweeps, its windows burn, the reef, the **sunken hulls** below
   (the Umbral) and their **ghost ships** riding above (the Astral, pale and translucent). *Not:* the Lamp Shrine (at the Dunemaw's lip).
-- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`): where a rail circling it sees a part best. *Not:* a
-  station (a course station, the kiln station).
+- **a vantage** (Old Nobody's, `vantage(name)`: `above`, `below`, `flank`, `ahead`; Charybdis's: `above`, `flank`, `below`): where a rail
+  circling it sees a part best. *Not:* a station (a course station, the kiln station).
+- **the whirlpool** (`Whirlpool`, `sea.whirlpool()`, `src/vfx/whirlpool.js`; Calissa's, 2026-10-08): the maelstrom's crude turning round
+  **the whirlpool's heart** (`whirlHeart`: the point on the sea the arena's laps circle, where Charybdis is held; the arena's centre with
+  the frame's bank taken out), drawn on the crude sea's own program (a disc of its material, `uDisc`) as a Rankine vortex: **the vortex's
+  core** turning as one body (its surface a paraboloid), the slope round it falling as 1/r², the speed rising inward; the current's
+  streaks and the oil film wound in toward its middle in two phases of a flow map (Portal 2's), its walls lit as Poe's were, a bow of the
+  film's colours over its middle, leaning to the waypoint's feeling. It turns **the way the arena's ship laps** (`sense`, +1 or -1 from the
+  arena's sign), Charybdis with it. It **swallows** (Charybdis dived: deep and fast, the crude pouring
+  over its lip into its maw: **the pour**, a skirt hung from its inner edge) and **spits** (risen: shallow and slow, the bands streaming
+  out round its sheath). The logic's sea has it too (`heightAt`). *Not:* the maelstrom (the leg, a waypoint's type), the whorl (the storm
+  warp's), the ring (the orbit's), a ripple, the vortex's core as "the core" (the Great Slip Jelly's weak point).
+- **Charybdis's look** (`CharybdisLook`, `src/vfx/charybdis.js`; Calissa's, 2026-10-08; drawn by `vfx/crossinglook.js`, held by Petra's
+  `world/emocean/charybdis.js`): a whale's body stood on end in the crude with only its mouth at the top. **Its maw**: a round gape, **its
+  lip** a rim of crude hide, **the gullet** inside rowed with labradorite teeth as a lamprey's, **the throat** (a boss part, `throat`:
+  the gullet's light at its bottom in the feeling's colour, seen from above; it swells before it swallows) and eight **baleen combs**
+  of five plates standing round the lip (`baleen.0`..`baleen.7`: from above and the side; they flare as their windup). Its six **eyes**
+  under the lip (`eye.0`..`eye.5`: from the side, and from under the surface as it dives), each in a ring of labradorite **tubercles**
+  (a humpback's knobs). **The throat pouch**: one side of its head ballooned and pleated as a lunging humpback's, its **throat pleats**
+  wound down its neck; opposite, **its rostrum**, a ridge up to the lip with the tubercles in rows. **The sheath**: a column of crude
+  whirling round its neck, where the whirlpool meets it when it spits. Below the crude, its chest, two humpback **flippers** and its
+  flukes. Risen, it **leans** its maw toward the ship (about the lip's middle, so what is struck is where it is drawn). Its five moods: the
+  feeling's colour in its eyes, its throat and the whirlpool's film, and in how it moves. *Not:* Old Nobody's throat or eye (another
+  beast's parts of the same names: always "Charybdis's"), the Jar's mouth, a Well's mouth, the False Light's keel.
 - **the ship classes' looks** (`ShipClassLook`, `SHIP_FORMS`, `shipLook(id)`, `src/vfx/shipclasses.js`, Calissa's): the frigate, the
   destroyer, the galleon and the tanker drawn in the sloop's design language, **the hull class's silhouette rules** (a pot thrown and laid
   on its side, the foot its bow, its mouth astern glowing with the drive; kintsugi gold; the little Pneuka Jar for a figurehead; the
@@ -1183,7 +1206,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | emote | the Courier's (`EMOTES`: a chat command and its clips); a creature's onset clip (the Lantern Wisp's three) | "an emote" is the Courier's; "the Wisp's emote clips" |
 | dive | the Soul Brush's dash attack (move `dive`, `Brush_Dive`); a dive into water or wet slip (`waterfx`'s `dive`); the ledger's old `brush.slam.dive` (the air slam) | "the brush's dive"; "a dive into the water" |
 | counter | the ledger's count (`L.inc`, "counter / record / first"); the blow that answers a guard or a parry (the cutlass's from its guard, the Dreamvane's after its twirl: kind `counter`) | "a ledger counter"; "the counter" is the blow |
-| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass); Old Nobody's (milky, blind: `vfx/leviathan.js`); the shoal's silhouette's (the lens shot to break it: `SilhouetteEye`) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint; "Old Nobody's eye"; "the silhouette's eye" |
+| eye | the EYE CUP's kiln pattern (pattern 6, `vfx/eyecup.js`); the camera's point of view ("the grid round the eye": the paint map, the overhead map, the ripple tank, the weather's streaks, the wire compass); Old Nobody's (milky, blind: `vfx/leviathan.js`); the shoal's silhouette's (the lens shot to break it: `SilhouetteEye`); Charybdis's six (`eye.0`..`eye.5`, `vfx/charybdis.js`) | "the eye" is the kiln pattern; "the camera's eye" or "round the view" when it is the viewpoint; "Old Nobody's eye"; "the silhouette's eye"; "Charybdis's eyes" |
 | wheel | Plutchik's wheel of feelings (`docs/plans/WHEEL.md`); the Lockheart's wheel of odds; the party's order wheel (T held: Come, Go, Help, Wait; `feedback/wheel.js`); the colour wheel (Soul Alchemy's: hue the bearing, saturation the distance out; in play it is the bath) | "the wheel of feelings"; "the Lockheart's wheel"; "the order wheel"; "the colour wheel" |
 | sigil | the Soul Brush's: strokes drawn in Celestial mode and read (Spellscription); the Solar Skiff's: the ring of marks laid on the sand the boat rises out of (the model's `sigil` bone) | "a sigil" is the brush's; "the skiff's sigil" in full |
 | dome | the sky's (`vfx/sky.js`, where the night alive is drawn); the stern of the Solar Skiff's hull (the model's own word) | "the sky's dome", "the skiff's dome" |
