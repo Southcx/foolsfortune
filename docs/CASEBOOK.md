@@ -262,6 +262,15 @@ the rules before building in the same area; a rule a machine can check goes into
 
 ## Cases
 
+### 2026-10-08 · The compass, the vane's marks and the pendulum compiled their programs in play (found by the program audit, Calissa)
+- **Seen (headless, programs counted):** showing the wire compass, the Dreamvane's marks and the Crucibelle's pendulum for the first time
+  compiled 3 programs (155 to 158): a hitch the first time the Dreamvane is worn or the Crucibelle drawn.
+- **Cause:** all three were made lazily on the first tick after the warm-up (`main.js`, `game.wireCompass ||= ...`), so the warm-up
+  never saw their materials.
+- **Fix:** they are made before the warm-up and shown for its compile; their own update hides them on the first frame (`main.js`).
+  Measured: 158 at boot, 158 after showing them; nothing compiles in play.
+- **Rule:** 17 and 18 (a look made on first need is made at boot and compiled with the rest).
+
 ### 2026-10-08 · Thirteen shader programs compiled for a frame that is never drawn (perf over the program budget, Calissa's program diet)
 - **Seen:** `npm run perf` on Calissa's branch read 168, 170 and 170 programs against the budget of 164. Listing every live program with
   its cache key, thirteen (ids 2 to 14, the first compiled) had no clipping plane and three point lights in their keys (four of them

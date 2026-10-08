@@ -897,6 +897,10 @@ async function main() {
   const gardenLooks = [...(game.realm?.parked() || []), ...(game.solar?.parked() || []), ...(game.geysers?.parked() || []), ...(game.ostraca?.parked() || []), ...(game.debugChests?.parked() || [])]; for (const o of gardenLooks) o.visible = true; // (the garden's planetoids and a spirit, compiled with the rest)
   game.emocean?.build(); const seaLooks = game.emocean ? game.emocean.parked() : []; // (the crossing's sea, ship, foes and set pieces, parked: world/emocean/stage.js)
   for (const o of seaLooks) { o.visible = true; o.position.set(0, -50, 0); }
+  // the compass and its tools' marks (the Dreamvane's vane, the Crucibelle's pendulum), made now and shown for the compile, else made on
+  // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
+  game.wireCompass ||= new WireCompass(game); game.vaneHud ||= new VaneHud(game, game.wireCompass); game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass);
+  for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
