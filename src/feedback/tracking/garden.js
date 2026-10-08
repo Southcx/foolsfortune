@@ -11,7 +11,8 @@ import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
 
 export function gardenRules({ on, L, log }) {
-  on('alchemy.press', (e) => { if (e.by === 'courier') L.inc('alchemy.press', e.count || 1); });
+  on('alchemy.press', (e) => { if (e.by !== 'courier') return; L.inc('alchemy.press', e.count || 1); if (e.greyed) log.say('info', 'The colour greys.'); }); // (SOUL-ALCHEMY 4.20, Espada's words)
+  on('alchemy.refuse', (e) => { if (e.by === 'courier') L.inc(`alchemy.refuse.${e.why}`); });
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
