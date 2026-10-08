@@ -125,7 +125,7 @@ export class Reprogram {
     this.offer.forEach(({ c: m }, i) => {
       const b = document.createElement('button'); b.className = 'm'; b.dataset.i = i;
       const head = document.createElement('span'); head.className = 'w';
-      head.append(px.show(px.text(`${i + 1}`, 'mind')), px.show(runeStrip(m.words)), px.show(px.text(m.words.join(' '), 'gold')));
+      head.append(px.show(px.text(`${i + 1}`, 'mind')), px.show(runeStrip(m.words)), px.show(px.text(this.game.ostraca?.glossLine(m.words) ?? m.words.join(' '), 'gold')));
       const d = document.createElement('span'); d.className = 'does';
       d.textContent = `${m.effects.map((e) => FUNCTIONS[e.fn].label.toLowerCase()).join(', ')} · made ${Math.round(m.q * 100)}%`;
       b.append(head, d);
@@ -145,7 +145,7 @@ export class Reprogram {
     const m = o.c;
     this.macro = o.i; this.compiled = m;
     this.line = m.words.join(' ').toLowerCase(); this.typed = ''; this.bad = 0;
-    this.total = this.t = (BASE + PER * this.line.length) * (0.8 + 0.5 * m.q);
+    this.total = this.t = (BASE + PER * this.line.length) * (0.8 + 0.5 * m.q) * (this.game.psyche?.widen?.('ouranurgy.still') || 1); // (Ouranurgy: the window held open longer)
     this.phase = 'type';
     this.does.textContent = m.effects.map((e) => FUNCTIONS[e.fn].does).join(' ');
     this.el.classList.add('typing');

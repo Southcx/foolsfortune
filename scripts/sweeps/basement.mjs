@@ -49,7 +49,7 @@ window.__bs = (() => {
     },
     /** The basement's own screen furniture. */
     hud() {
-      const disp = (id) => { const e = document.getElementById(id); return e ? getComputedStyle(e).display : null; };
+      const disp = (id) => { const e = document.getElementById(id); return e ? getComputedStyle(e).display : 'none'; }; // (no element is no panel: #course and #circuit are gone, the owner's, 2026-10-07)
       const C = g.circuits;
       return { course: disp('course'), courseText: document.getElementById('course')?.textContent || '', circuit: disp('circuit'), circuitText: document.getElementById('circuit')?.textContent || '',
         god: disp('god'), cross: g.hud?.el?.cross?.style.display ?? null, shells: g.hud?.el?.shells?.style.display ?? null,
@@ -212,7 +212,11 @@ const splits = evC.filter((e) => e.name === 'course.split'), laps = evC.filter((
 S.check('course: a split at every course station in order', splits.length === 8, `${splits.length} course.split: ${splits.map((e) => `${e.room}:${(+e.time).toFixed(2)}`).join(' ')}`);
 S.check('course: the loop in order is a lap', laps.length === 1, `${laps.length} course.lap ${JSON.stringify(laps)}`);
 const hc = await bs('hud()');
-S.check('course: the banner shows the course station being run', hc.course !== 'none' && /run|slide|hop/.test(hc.courseText), `#course display ${hc.course}: "${hc.courseText}"`);
+// (the owner, 2026-10-07: the course's timer is in the log, not on the screen)
+const pageHas = await S.ev(() => ({ course: !!document.getElementById('course'), circuit: !!document.getElementById('circuit') }));
+S.check('course: no timer on the screen (the log carries it)', hc.course === 'none' && !pageHas.course && !pageHas.circuit, `#course display ${hc.course}: "${hc.courseText}"`);
+const saidC = await S.ev(() => __game.game.log.lines.map((l) => l.text).slice(-40));
+S.check('course: the log says the laps and splits', saidC.some((t) => /Lap complete/.test(t)), saidC.slice(-6));
 // out of order: no split
 const ev1 = await bs('nEvs()');
 await touch(ring[3]); await touch(ring[5]);
@@ -254,7 +258,9 @@ for (const D of defs) {
   await S.closeAll();
   await S.ev((id) => __game.game.circuits.enter(id), D.id); await S.ticks(10);
   const h0 = await bs('hud()');
-  S.check(`circuit ${D.id}: armed, its panel and beacons shown`, h0.run?.id === D.id && h0.circuit !== 'none' && h0.beacons > 0, h0);
+  S.check(`circuit ${D.id}: armed, its beacons shown and no panel on the screen`, h0.run?.id === D.id && h0.circuit === 'none' && h0.beacons > 0, h0);
+  const saidE = await S.ev(() => __game.game.log.lines.map((l) => l.text).slice(-6));
+  S.check(`circuit ${D.id}: the log says its medal times on entering`, saidE.some((t) => /Gold under/.test(t)), saidE);
   const e0 = await bs('nEvs()');
   // a fall, after the start line
   const z = D.stages[0];

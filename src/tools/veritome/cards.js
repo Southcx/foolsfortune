@@ -29,7 +29,7 @@ const CURIO_RANK = ['F', 'D', 'B', 'A', 'S'], CURIO_LIMIT = [3, 3, 2, 1, 1];
 const FISH_RANK = ['G', 'E', 'D', 'B', 'A', 'SS'], FISH_LIMIT = [3, 3, 3, 2, 1, 1];
 
 export const SECTIONS = [
-  { id: 'arcana', name: 'THE MAJOR ARCANA', blurb: 'Truths of the workshop, photographed. Each page is a riddle until its sitting is caught on film and appraised.' },
+  { id: 'arcana', name: 'THE MAJOR ARCANA', blurb: 'Truths of the workshop, photographed. Each page is a riddle until its sitting is caught on a plate and appraised.' },
   { id: 'curio', name: 'CURIOS', blurb: 'Things with a life behind them, found in chests. A curio goes into the Pneuka Box (P); stored in the Veritome it is a card here.' },
   { id: 'creature', name: 'CREATURES', blurb: 'A portrait good enough to be a card: a creature as the main subject of a photograph of three stars or more.' },
 ];

@@ -24,7 +24,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   baseline; every other stone is a trade. One set at a time. *Not:* a stone in the world (say what it is), Strawman's or a cairn's.
 - **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
   damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
-- **mental state**, the Courier's (`COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
+- **mental state**, the Courier's (`game.courierMind`, `src/courier/mind.js`, kept with the pool; `COURIER_MIND`; the creatures' own five states, `progress/combat/mind.js`, one word for both): pushed
   up by Lachryma drunk, settled by quiet; Prismatic is power and fragility, Stoic the reverse. The player reads "your mental state".
 - **brimming** (Espada's word): the push of overflow, a vessel full past its brim (four times a drink's); the log says "You are
   brimming." and "You settle." *Not:* "drunk", which never appears in player text.
@@ -120,6 +120,28 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (a hue and a saturation on the wheel) along their paths; **firing** it while the colour sits in an **attribute**'s target raises that
   attribute a **rank**. Seven attributes (Willpower, Focus, Charisma, Perception, Dexterity, Visualization, Resilience), each widening
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
+- **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
+  Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
+  A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
+  station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
+  materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
+  bead**, the **ghost path** and **ghost bead** ahead of it, the **line blend** a press leaves; the press 4.35 m north, the plate shrine in
+  its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+  features, the ground under it and the water at it; a firing's fuel is divided by it (Dovina's ruling 3). *Not:* the plate shrine (its hokora).
+- **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
+- **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
+  neuralese word beside a picture of what it does; found once (16: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
+  the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
+  upper ring) carries three abstract words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
+  "ledger stone" (the ledger is the game's counts).
+- **the sealed room** (`world/ostraca.js`): a stone room by the ruins in the Dunes whose door slab the Dreamvane's fork opens by
+  ringing in it; inside, a stele. **a plaster patch** (the same): a cracked patch on the workshop's old walls that a blow knocks away,
+  an ostracon behind it. **a forgotten pot**: a pot on a floor of the Great Dunemaw that holds an ostracon (the deck: `DUNEMAW_DECK`).
+- **the Crib Sheet** (a knack, the owner's name; `game.ostraca.gloss(word)`): the English gloss beside each neuralese word that is glossed, its reach grown only by
+  digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
+- **knack** (`docs/plans/TRAINING.md`; `game.knacks`, `KNACKS`, `src/progress/knacks.js`, `/knack`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
+  Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening; the name Espada's to confirm), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Slow Hand and the map's way back proposed). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
@@ -231,7 +253,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; the **book bash** (LMB
   with the lens down: the book shut and swung, two blows on the combo engine); a **plate** is one photograph; its
-  **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
+  **memory** (`VeritomeMemory`, `MEMORY_PLATES`, `tools/veritome/memory.js`; a digital camera's: it holds 24 plates until they are
+  appraised, never a consumable, and a full one is the shutter's one refusal; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
   and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
@@ -244,8 +267,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
-  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: a swing, never a flash; the owner,
-  2026-10-06).
+  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: the brass fob below the
+  hand, a swing, never a flash; the owner, 2026-10-06). *Not:* the pendulum (the same beat on the wire compass, below).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (LMB held: draws Lachryma in) and **channel** (the ultimate's pose, the hands joined before the coffin); the **flail** (LMB tapped: the
   coffin swung on its chain let out, three blows on the combo engine); a **Possibilikey** (always so called, never "key" alone) on its ring;
@@ -389,7 +412,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
 - **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
-  Veritome's macros). *Retired:* Spellcasting.
+  Veritome's macros; the beat: staying on tempo is transcribing actions to time). **Ouranurgy** is the rules of the space
+  around you: displacement, and time slowed or stopped (blade mode, zandatsu, reprogramming, Celestial mode). No new domains, ever (the
+  owner, 2026-10-08).
+  *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
   **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
   carrying Delirium's status, or the reverse, hits much harder. *Not:* an element.
@@ -456,7 +482,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
 - **the garden's views** (`realm.camera`, `src/world/garden/gardencam.js`): **behind** the Jar (as it opens), **first person** (Z, the
   same setting as the world's), **overhead** (`: the god hand's view in the garden, straight down; W A S D moves the view, not the Jar).
-  *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
+  **The press view** (F at the Athanor's bath: `press`, SOUL-ALCHEMY.md 4.3): the spirit press's own framing, north locked to the press,
+  left with F, Esc or W A S D. *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
   the stroke began), carve, **roughen**; a stroke's **size** (Shift and the wheel); **undo** (Ctrl+Z, ten strokes).
 - **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by a stand-in, `watermesh.js`): Lachryma running on a
@@ -548,6 +575,21 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
   bars, the fish portrait.
+- **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
+  the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
+  `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
+  the pendulum keylined in black, more as it rises.
+- **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
+  wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
+  the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
+  as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
+  *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellehud.js`; the chant's word for a sign of notes written without a staff): a note of
+  the Crucibelle written on the pendulum's arc where the bob was, by its shape, one a degree (Aikin's shape-note heads read from la:
+  the root a square, the minor third a triangle, the fourth a bowl, the fifth a diamond, the minor seventh a circle); solid on the
+  beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes along the tape; **a song's neume** is a
+  song's notes joined in one ligature, taken into the bell's mark when it is cast. *Not:* a sigil (the Soul Brush's, read from a
+  stroke in Celestial mode).
 - **ground marks** (`src/world/ground/groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
@@ -627,6 +669,24 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Gnomon** (Espada's; `world/dunes/solar.js`): the pale spire in the Dunes, the sundial's shadow-stick; the Solar Skiffing trial
   is begun at its foot.
 - **a slip geyser** (`world/dunes/geysers.js`, `vfx/slipgeyser.js`): a column of sand and slip erupting from the Dunes on a cycle; it launches the Courier.
+- **an ostracon's look** (`Ostracon`, `ostraconThing`, `src/vfx/ostracon.js`; Calissa's): an **ostracon** (plural **ostraca**, Espada's
+  name: LORE.md "Digging for words"; where they lie is Dovina's, `progress/ostraca.js`) is a curved potsherd of red earthenware a hand
+  across, broken from a painted pot of the town that was, in Attic **black-figure** (the EYE CUP glaze's hand). The pot's zones run across
+  it and off its broken edges (a border of **tongues**, a frieze round the vessel with a **palmette** under each handle, **the black** of
+  its lower body); in the frieze a **picture** of what the word does (`PICTURES`, `paintPicture`, `src/vfx/blackfigure.js`), kept whole,
+  or the **meander** (the Greek key) for a word with none; on the black below, the word's **rune** as a **graffito**, scratched after the
+  firing (`runeStrokes`, `tools/veritome/mind/runes.js`: the Veritome's own glyph). Its broken edges are the paler raw body. *Not:* a
+  shard (the homonym), nor one of the sherds (the Great Slip Jelly's calves); *not* a plate (a photograph).
+- **a stele's look** (`Stele`, `src/vfx/ostracon.js`; the word is Dovina's glossary's for Espada's "ledger stone"): an Attic grave stele
+  in sandstone the Courier's height, its foot in a bank of sand: a tapered shaft, rounded and spalled, a cornice, an **anthemion** (a
+  palmette finial) crowning it; one painted **frieze** in the same black-figure hand on the floor of a recessed panel under the crown
+  (`paintFrieze`: the town's folk and the slip jellies at work together); the town's runes cut in rows below, a faint guide line under
+  each (the words it is given; with none, a bare face until Espada's sentence lands). *Not:* "ledger stone" (the ledger is the game's
+  counts).
+- **the black** (`WARE.black`, `src/vfx/blackfigure.js`): the black of black-figure, EYE CUP's 0x1c1410 (what museums call black gloss).
+  *Not:* "gloss" (a gloss is the Crib Sheet's: the English beside a word), nor a glaze (fired onto the vessel at the kiln).
+- **sparkle** (`Sparkle`, `src/vfx/ostracon.js`): what shows of a buried ostracon or stele: the black catching the sun, worked out once a
+  sparkle (never a pixel) and never smaller than a few lines, so it cannot crawl. *Not:* glints (the water's, or the shoal's).
 - **the maw wipe** (`game.mawWipe`, `src/vfx/mawwipe.js`): the seam into a Well covered by the Dunemaw's own pool, opening from the
   middle of the view until it fills it, turning while the floor is built, then widening its eye onto the floor. No words.
 - **the Lantern Wisp** (`src/assets/lantern_wisp.glb`, the owner's): a creature, and the baseline rig and animation suite every enemy
@@ -782,6 +842,10 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **aqua regia**: Margarite's refined lamp fuel, made from the crude the King buys; it dissolves gold.
 - **amethyst**: a charm sold in Entropolis's overground that keeps a clear head (slows excess Lachryma).
 - **moonflower**: a Spirit Garden bed that opens only at night, by the game hour.
+- **ostracon** (plural **ostraca**; `OSTRACON_PICTURES`, `src/npc/neuralese.js`; Espada's, the owner's archaeology direction, 2026-10-08): a
+  potsherd the town that was wrote on, one neuralese word beside a painted picture of what it does; dug up, it glosses that word on the
+  **Crib Sheet** (the knack: each neuralese word's English beside it, `LEXICON`). **a stele** (`STELAE`, Dovina's `progress/ostraca.js`; Greek *stēlē*, a standing
+  stone): one of two, three words each among a sentence, at the end of a harder path. *Not:* a sherd (the Pithos's calf), a plate (a Veritome photograph).
 
 ## Homonyms we keep on purpose (always qualify them)
 
@@ -822,6 +886,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | (gone; kept: the owner's own word) |
+| film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`; the owner, 2026-10-06) | `audio/cues.js` (Wanda's), `pneuka/thingmodels.js` (Calissa's) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |

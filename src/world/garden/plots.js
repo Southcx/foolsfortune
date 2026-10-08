@@ -19,14 +19,15 @@
 //   T.move(from, to)   T.settle(plot)   T.veins(planet?)   T.wet (a hook: (plot) -> a feeling or null, the realm's waterworks)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { COLOR } from '../../progress/weather.js';
 import { PLANETOID_PLOTS as PLOTS, FEATURES, costOf, formation, GENERATES, OVERCOMES, VEIN as VEIN_RULE, veinEnd } from '../../progress/realm.js';
 import { NX, NY, CELL_DIRS } from './clay.js';
 import { SpiritVein } from '../../vfx/garden/veins.js';
 import { seeded } from '../../core/rng.js';
 import { buildFeature } from '../../vfx/garden/features.js';
 
-/** The five feelings' colours (the garden's tints for a feature placed with one: Calissa's to refine). */
-export const FEELING_COLOR = { mirth: 0xffb35c, wonder: 0x7fd6a0, desire: 0xe0705a, grief: 0x9fb0d8, dread: 0x7a62b8 };
+/** The five feelings' colours: the one feeling table (progress/weather.js COLOR, Dovina's ruling of 2026-10-08), the five aspects of it. */
+export const FEELING_COLOR = Object.fromEntries(['mirth', 'wonder', 'desire', 'grief', 'dread'].map((f) => [f, COLOR[f]]));
 const NEAR = 1.75; // (two plots are neighbours within this many plot spacings)
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -52,17 +53,33 @@ export class Plots {
       const r = seeded(P.id.split('').reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261));
       // a golden spiral over the sphere, keeping clear of what is fixed there and of the lotuses
       const lotus = place.lotuses.filter((l) => l.planet === P).map((l) => l.pos.clone().sub(P.c).normalize());
-      const avoid = [...fixed, ...lotus], spacing = Math.sqrt((4 * Math.PI) / Math.max(1, n * 2.2));
-      P.spacing = spacing;
-      for (let k = 0, made = 0; made < n && k < n * 8; k++) {
-        const y = 1 - (k + 0.5) / (n * 8) * 1.6, rad = Math.sqrt(Math.max(0, 1 - y * y)), th = k * 2.39996 + r() * 0.3;
+      // over the whole sphere (a golden spiral pole to pole, never the Chimney's needle), keeping clear of what is fixed, of the lotuses and
+      // of each other; when n will not fit at the even spacing, the spacing is halved until they do, down to a plot's own width (the
+      // first spacing tried only the cap and dropped most candidates: the Chimney had none, the garden sweep's section 13)
+      const avoid = [...fixed, ...lotus], M = Math.max(96, n * 24), least = 2.6 / P.r, ground = (d) => (P.radiusAt ? P.radiusAt(d) : P.r);
+      const cands = [];
+      for (let k = 0; k < M; k++) {
+        const y = 1 - (2 * (k + 0.5)) / M, rad = Math.sqrt(Math.max(0, 1 - y * y)), th = k * 2.39996 + r() * 0.3;
         const dir = new THREE.Vector3(Math.cos(th) * rad, y, Math.sin(th) * rad).normalize();
-        if (avoid.some((a) => a.angleTo(dir) < spacing * 0.9) || this.plots.some((q) => q.planet === P && q.dir.angleTo(dir) < spacing)) continue;
-        const pos = P.c.clone().addScaledVector(dir, P.radiusAt ? P.radiusAt(dir) : P.r);
+        if (ground(dir) > P.r * 1.3) continue; // (the Chimney's needle, a steep crown: no plot stands there)
+        cands.push(dir);
+      }
+      let spacing = Math.sqrt((4 * Math.PI) / Math.max(1, n * 2.2)), chosen = [];
+      for (; spacing >= least; spacing *= 0.5) {
+        chosen = [];
+        for (const dir of cands) {
+          if (chosen.length >= n) break;
+          if (avoid.some((a) => a.angleTo(dir) < Math.max(least, spacing * 0.9)) || chosen.some((q) => q.angleTo(dir) < spacing)) continue;
+          chosen.push(dir);
+        }
+        if (chosen.length >= n) break;
+      }
+      P.spacing = Math.max(spacing, least);
+      for (const [made, dir] of chosen.entries()) {
+        const pos = P.c.clone().addScaledVector(dir, ground(dir));
         const mark = new THREE.Mesh(this.markGeo, this.markMat); mark.position.copy(pos).addScaledVector(dir, 0.06); mark.quaternion.setFromUnitVectors(UP, dir); mark.visible = false; this.group.add(mark);
         this.plots.push({ id: `${P.id}.${made}`, planet: P, i: made, dir, pos, mark, placed: null });
         clays[P.id]?.keep(dir, 2.5);
-        made++;
       }
     }
   }

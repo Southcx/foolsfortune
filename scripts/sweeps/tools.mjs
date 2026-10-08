@@ -13,7 +13,7 @@
 //
 //   npm run dev &                     (or URL=http://host:port/ for a build under `vite preview`)
 //   node scripts/sweeps/tools.mjs [--out dir] [--seed 1] [--quick] [--only places,base,draw,...]   (shots: <out>/shots, default <tmp>/sweeps/tools)
-//   parts: places base draw sondelass brush fittings swap moves god careless leak   (--only runs some, in that order; base is always run)
+//   parts: places base draw sondelass brush fittings swap moves god careless pendulum leak   (--only runs some, in that order; base is always run)
 //
 // Mouse buttons are put on the game's input directly (`input.pressed` / `input.down`, as the replay does): headless, the canvas under the
 // crosshair is not always the element Playwright's click lands on. Keys go through the page's keyboard, as a person's do.
@@ -470,6 +470,45 @@ if (part('careless')) {
   await settledChecks('careless travelled and back', { expectOut: null });
   const c = await core();
   S.check('careless: the core movement exactly as before', sameCore(c), { base: BASE, now: c });
+}
+
+// ================================================================== 9b. the Crucibelle's pendulum (vfx/crucibellehud.js), played by sight alone
+// (docs/plans/CRUCIBELLE-UI.md, acceptance 5): the sound muted, THE RALLY (1 3 5) pressed only while the pendulum's bob is in its notch and
+// swinging toward its end, as read off game.crucibelleHud.read(), never off the music's clock. The notes must land on the beat, the song
+// be cast, and the notch agree with the bell's own judgement on every note.
+if (part('pendulum')) {
+  S.phase = 'pendulum';
+  await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
+  const slot = await tl("slotOf('tool.crucibelle')");
+  if (slot >= 0) { await S.ev((s) => __game.game.pneuka.wear(s), slot); await S.ticks(10); }
+  await S.ev(() => { __game.T.audio.volume = 0; __game.game.lachryma.value = __game.game.lachryma.max; });
+  await key('KeyU', 2); await S.ticks(70);
+  const seen = await S.ev(() => __game.game.crucibelleHud?.read());
+  S.check('pendulum: shown with the Crucibelle drawn', seen?.shown === true, seen);
+  const played = await S.ev(() => {
+    const g = __game.game, I = __game.input, H = g.crucibelleHud, out = { notes: [], song: null };
+    if (!H) return { ...out, missing: 'game.crucibelleHud (Calissa\'s, not merged yet)' };
+    const offN = g.events.on('crucibelle.note', (e) => out.notes.push(e.onBeat)), offS = g.events.on('song.play', (e) => { out.song = e.song; });
+    for (const d of [1, 3, 5]) {
+      let pressed = false;
+      for (let i = 0; i < 400 && !pressed; i++) {
+        __sw.tick(1);
+        const r = H.read();
+        if (r.shown && r.inNotch && r.towardEnd) { I.pressed.add('Digit' + d); I.down.add('Digit' + d); __sw.tick(1); I.down.delete('Digit' + d); pressed = true; }
+      }
+      if (!pressed) out.notes.push('never in the notch');
+    }
+    offN(); offS();
+    return { ...out, disagree: H.read().disagree, own: H.read().own };
+  });
+  S.check('pendulum: by sight alone, THE RALLY on the beat and cast (sound muted)', played.notes.length === 3 && played.notes.every((x) => x === true) && played.song === 'rally', played);
+  S.check('pendulum: the notch agrees with the bell on every note', played.disagree === 0, { disagree: played.disagree });
+  await S.shot('pendulum-rally');
+  await key('KeyU', 2); await S.ticks(80);
+  const gone = await S.ev(() => __game.game.crucibelleHud?.read());
+  S.check('pendulum: gone when the Crucibelle is stowed', gone?.shown === false, gone);
+  await tl(`wearSet(${J(WORN0)})`);
+  await settledChecks('pendulum: after', { expectOut: null });
 }
 
 // ================================================================== 10. leaks: twenty draws and stows of each tool

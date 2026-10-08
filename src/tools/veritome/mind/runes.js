@@ -9,6 +9,7 @@
 // in wood: no curves).
 //
 //   runeCanvas(word, { ink, glow }) -> canvas (11 x 11)        runeStrip(words) -> canvas (the runes in a row, a pixel apart)
+//   runeStrokes(word) -> [[[x0, y0], [x1, y1]], ...]             the word's strokes in the 11 x 11 frame (the ostraca cut these: vfx/ostracon.js)
 // ---------------------------------------------------------------------------------------
 const P = [[1, 1], [5, 1], [9, 1], [1, 5], [5, 5], [9, 5], [1, 9], [5, 9], [9, 9]];
 // a stroke for each letter: two of the nine points (chosen so that no two letters share a stroke)
@@ -33,6 +34,11 @@ function line(g, x0, y0, x1, y1) {
     if (e2 >= dy) { err += dy; x0 += sx; }
     if (e2 <= dx) { err += dx; y0 += sy; }
   }
+}
+
+/** A word's strokes as pairs of lattice points in the 11 x 11 pixel frame: what runeCanvas draws, for a hand that draws it at another size. */
+export function runeStrokes(word) {
+  return [...String(word).toUpperCase()].map((ch) => STROKES[ch]).filter(Boolean).map(([a, b]) => [P[a], P[b]]);
 }
 
 export function runeCanvas(word, { ink = '#d2c3f4', glow = '#563889' } = {}) {

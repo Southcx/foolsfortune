@@ -91,11 +91,26 @@ export function timeline(phase, t0 = 0, until = ENRAGE) {
  *  cosmetic item drops directly from the boss"; no tokens, no second currency, no odds). `met(run)`: the run's own record, as the fight
  *  emits it on `foe.end`. The achievement of the same name (achievements.js, THE WELLS) reads the ledger the drop is counted in. */
 export const DROPS = [
-  { id: 'glaze.jellycrown', ach: 'gj1', met: (r) => r.how === 'burst' || r.how === 'reprogram' }, // (beat it: the Jelly-crown glaze)
-  { id: 'curio.crown', ach: 'gj2', met: (r) => r.win && !(r.hitBy?.crownBash > 0) },                 // (never hit by a Crown Bash: the Crown of the Dunemaw)
-  { id: 'mount.slipjelly', ach: 'gj3', met: (r) => r.win && r.clutchesLeft === 0 },                  // (every clutch broken before the pull: a slip jelly to ride)
-  { id: 'title.jellybane', ach: 'gj4', met: (r) => r.win && r.seconds <= ENRAGE - 60 },               // (the enrage a minute away: a title)
-  { id: 'pattern.crowneye', ach: 'gj5', met: (r) => r.win && (r.mirrored || 0) > 0 },                 // (its gaze turned back with the Veritome: a kiln pattern)
+  { id: 'glaze.jellycrown', ach: 'gj1', met: (r) => r.how === 'burst' || r.how === 'reprogram',     // (beat it)
+    name: 'the Jelly-crown glaze', give: { glaze: 'jellycrown', label: 'JELLY-CROWN', blurb: 'placeholder: a slip-green celadon that pools thick and wet, as the crown sat in the jelly' } },
+  { id: 'curio.crown', ach: 'gj2', met: (r) => r.win && !(r.hitBy?.crownBash > 0),                   // (never hit by a Lidfall: cast id crownBash)
+    name: 'the Crown of the Dunemaw', give: { curio: 'crown', tier: 4, glyph: '♛', chest: false, blurb: 'placeholder: the broken urn it wore, whole again in your hands, and lighter than it looked' } },
+  { id: 'mount.slipjelly', ach: 'gj3', met: (r) => r.win && r.clutchesLeft === 0,                    // (every clutch broken before the pull)
+    name: 'a slip jelly to ride', give: { mount: 'slipjelly', open: true } },
+  { id: 'title.jellybane', ach: 'gj4', met: (r) => r.win && r.seconds <= ENRAGE - 60,                 // (the enrage a minute away)
+    name: 'the title Jellybane', give: { title: 'Jellybane' } },
+  { id: 'pattern.crowneye', ach: 'gj5', met: (r) => r.win && (r.mirrored || 0) > 0,                   // (its gaze turned back with the Veritome)
+    name: 'the Eye Cup glaze, its kiln pattern the crown\'s eye', give: { glaze: 'eyecup', label: 'EYE CUP', pattern: 'eye', blurb: 'placeholder: black-figure, a staring eye on every part, the evil looked back at' } },
 ];
+/** HOW EACH IS GIVEN (Dovina's definitions; the drop is the boss's, the keeping is the achievement's, so it is never a flag):
+ *  - a glaze (`give.glaze`) is a rare glaze gated by its achievement, as the medal glazes are (`courier/vessel/glazes.js`
+ *    `{ ach }`): it opens at the kiln the moment `foe.drop.<id>` completes the achievement. The Eye Cup carries a sixth kiln pattern,
+ *    the eye (`vfx/finish.js` PATTERN 6: Calissa's).
+ *  - a curio (`give.curio`) is a CURIOS entry (`world/treasure/treasure.js`) of the top chest tier that no chest gives (`chest: false`),
+ *    put into the Pneuka Box on `foe.end` (once: a second clear that meets it again gives nothing, as a held curio's dupe would).
+ *  - a title (`give.title`) is the achievement's own title (`achievements.js` `{ title }`), as FFXIV's.
+ *  - the mount (`give.mount`) is open: a slip jelly ridden in the Dunes is a feature of its own (its body, its controls, its place
+ *    beside the Solar Skiff); until it is built, the achievement and the drop's line in the log stand, and nothing is put in the box.
+ *  The log says each as it drops (`tracking/dunemaw.js`: "It drops <name>."). */
 /** The cosmetics this fight drops: every one whose criteria the run met (the boss drops them, directly). */
 export const dropsFor = (run = {}) => DROPS.filter((d) => d.met({ win: run.how === 'burst' || run.how === 'reprogram', ...run })).map((d) => d.id);

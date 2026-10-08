@@ -66,6 +66,7 @@ section 7 says so. Section numbers are cited by code: keep them stable.
 
 ## 3. Progression
 
+- **The laws of progression are section 22** (the owner, 2026-10-08): skill skips grind, grind closes the gap, Arts only by achievement.
 - **No experience points for the arts and no growing Lachryma pool**: everything is learned by doing (Tony Hawk's goals, OSRS's
   quest-locked unlocks), and power grows sideways, not up (`maxBonus` exists, unused). The Firings follow this: they open places, not numbers. The domains'
   levels (section 10, 15) widen, never do the skill.
@@ -357,3 +358,28 @@ Punishment.
   parry is V.
 - `node scripts/rail.mjs` plays it against three players: novices clear the common set piece three times in five, good players
   always, an expert fells the Leviathan about one time in four. Par and the medal line are re-measured from the ledger once played.
+
+---
+
+## 22. The laws of progression, and the commandment (the owner, 2026-10-08)
+
+> "High skill skips grind, but long grind closes the gap in skill... Arts are unlocked by achievement and achievement only... persistence
+> and perseverance ARE skills of their own." "Game systems should endeavor as much as practicable to teach the user something...
+> without them actively recognizing they're learning."
+
+1. **Skill skips grind; grind closes the gap.** Every source of growth pays more for doing it well (the domains' quality weight, the
+   press's true firing) and still pays for doing it at all (every act's EXP, the press's seasoning). A skilled player gets there early;
+   a persistent one gets there. Neither is locked out.
+2. **Arts only by achievement.** A Movement Art, a God Art or a **knack** (a passive Art, a toggle) is opened by an achievement over the
+   ledger and nothing else. Each Art worth having gets two: one of count (the patient's way) and one of feat (the skilled way).
+3. **Accessibility is earned, optional and honest.** An assist (aim drawn to a target, a wider shot, a slower metronome) is a knack:
+   opened by practice, switched on or off at will, and counted the same either way. This refines section 9's "no number may do the
+   skill for them": none may be forced on them, and none may gate the skill.
+4. **The seven domains are all there will ever be** (the owner, 2026-10-08): a new skill finds its home in one of them. Time has two homes: keeping it (the beat, tempo) is Spellscription's, transcribing
+   actions to time; bending it (anything that slows or stops time: blade mode, zandatsu, reprogramming, Celestial mode) is Ouranurgy's,
+   the domain of the rules of the space around you.
+5. **Every system teaches something real, unannounced** (section 9's pillar, from the tools to every system): the mechanic itself is
+   the lesson (pitch from tuning crystals, the painter's eye from the press), never a tutorial or a factoid.
+
+The map of which system trains what, and the knacks: `docs/plans/TRAINING.md`. Soul Alchemy as the first system built to all four:
+`docs/plans/SOUL-ALCHEMY.md`.

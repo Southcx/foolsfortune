@@ -145,7 +145,7 @@ export class Sondelass extends Tech {
     if (this.drawTarget === 0 && this.cutlass.blade?.active) this.cutlass.blade.exit('stow'); // (put away is out of Blade Mode at once: the holster ran on its 5% time, six real seconds, SWEEPS group 4)
     // the Psygun holsters first, then this is drawn (and the reverse)
     const gunAway = g.belt ? g.belt.mayDraw(g.belt.get('sondelass')) : !wpn || wpn.drawT < 0.02; // (the belt: the hands are free of every other tool)
-    const step = dt / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
+    const step = dt * (this.game.belt?.hands ?? 1) / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
     if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
     if (this.drawTarget === 0 && this.hookshot.att) this.hookshot.release('stow'); // (put away with a line out: it comes away)

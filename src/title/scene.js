@@ -25,6 +25,7 @@ const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a),
 const OWN_BPM = 100;
 // where the board lies, from the hill (the hill's lip is the origin; they look down -Z into the spiral)
 const BOARD_AT = new THREE.Vector3(0, -34, -120);
+const FALL_HANG = 1.5; // (the most the menu's slowed fall adds to its fall time: they hang about 15 m over the board)
 
 export class TitleScene {
   constructor(game, { charG, gunG, clipPack, clapG }) {
@@ -168,7 +169,7 @@ export class TitleScene {
 
   // ---------------------------------------------------------------- the states
   /** PRESS START: the Fool's Step. */
-  go() { if (this.state !== 'idle') return; this.state = 'step'; this.st = 0; }
+  go() { if (this.state !== 'idle') return; this.state = 'step'; this.st = 0; this.hung = null; }
   /** A choice made: the camera dives after them into the spiral; `done` when the world is to be shown. */
   dive(done) { this.state = 'dive'; this.st = 0; this.onDived = done; }
 
@@ -205,7 +206,9 @@ export class TitleScene {
         // the step: up and out over the edge, then the long fall (slowed while the menu is open)
         const f = u - exitD;
         const out = Math.min(f, 0.6);
-        const fallT = this.state === 'step' ? Math.max(0, f - 0.25) : 1.15 + this.st * (this.state === 'dive' ? 1.2 : 0.1);
+        // (the menu's fall eases toward a floor of its own, FALL_HANG, well above the board however long the menu is open, and the dive
+        // carries on from where it hung: an unbounded fall passed through the board after ~35 real seconds, casebook 62)
+        const fallT = this.state === 'step' ? Math.max(0, f - 0.25) : this.state === 'menu' ? (this.hung = 1.15 + FALL_HANG * (1 - Math.exp(-this.st * 0.1 / FALL_HANG))) : (this.hung ?? 1.15) + this.st * 1.2;
         this.fall.set(0, Math.min(0, -1.4 * fallT * fallT + out * 1.6), -0.32 - out * 2.2 - fallT * 3.5); // (out over the board, clear of the hill)
         root.position.copy(this.fall);
         clip = f < 0.35 ? 'jumpStart' : 'jumpLoop'; ct = f < 0.35 ? f : f; loop = f >= 0.35;

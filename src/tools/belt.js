@@ -27,7 +27,7 @@
 //
 //   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
 //   game.belt.isWorn(id)   game.belt.wear(id, { stash }) / takeOff(id) (the box calls these; a tool wear() bumps off goes into the box)   game.belt.ready(id) (a key pressed: true, or says why not)
-//   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
+//   game.belt.hands (Dexterity: every draw and stow times this)   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
 //   has become something else and their tools' own ticks are not running, the God Hand's jar)
 // ---------------------------------------------------------------------------------------
 export const BELT_SIZE = 7;
@@ -115,6 +115,8 @@ export class ToolBelt {
     for (const t of this.tools) if (t.drawT > 0.02 || t.wants) if (!best || t.drawT > best.drawT) best = t;
     return best;
   }
+  /** How fast every tool comes out and goes back (Dexterity's widening, SOUL-ALCHEMY.md 6): each tool's draw step is times this. */
+  get hands() { return this.game.alchemy?.widen?.('dexterity.draw') ?? 1; }
   /** Any tool but this one out, or asked for. */
   others(tool) { return this.tools.some((t) => t !== tool && (t.drawT > 0.02 || t.wants)); }
   /** May this tool come out yet? (every other one is back in its holster) */

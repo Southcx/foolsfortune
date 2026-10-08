@@ -116,8 +116,9 @@ export class Weapon {
     if (W.autoHolster && !player.fp && this.idleT > W.holsterDelay && !this.moves.flourish(player)) this.drawTarget = 0; // (after a fight, the flourish first)
     const was = this.drawT;
     // (this used to step back down every other frame once fully drawn - the drawn-state flicker)
-    if (this.drawTarget > this.drawT) this.drawT = Math.min(this.drawTarget, this.drawT + dt / W.drawTime);
-    else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - dt / W.holsterTime);
+    const hands = this.game.belt?.hands ?? 1; // (Dexterity: draw and stow faster, tools/belt.js)
+    if (this.drawTarget > this.drawT) this.drawT = Math.min(this.drawTarget, this.drawT + dt * hands / W.drawTime);
+    else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - dt * hands / W.holsterTime);
     if (was === 0 && this.drawT > 0) sfx.draw?.();
     if (was > 0.3 && this.drawT <= 0.3 && this.drawTarget === 0) sfx.holster?.();
   }

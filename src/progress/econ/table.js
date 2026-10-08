@@ -190,7 +190,17 @@ export const ECON = {
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
    *  last (distance on the wheel, 0 .. 1: materials.js). Each attribute sits at saturation `sat`. */
-  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65 }, // (radius 0.22 at first let a half-grey colour count: R58)
+  alchemy: { ranks: 10, fuel: [4, 2], radius: [0.12, 0.04], sat: 0.65, // (radius 0.22 at first let a half-grey colour count: R58)
+    // (SOUL-ALCHEMY.md section 3, the owner's laws and Calissa's rulings, 2026-10-08) seasoning widens a swatch toward `seasonCeiling`
+    // (r = r_rank + (ceiling - r_rank) x seasoning / seasonMax: no swatch ever reaches a neighbour's, the rim or the grey centre, whose
+    // nearest are 0.141 away); one source gives at most seasonPerHour a game hour (played, never idled); a firing costs fuel x (aim[0] +
+    // aim[1] x d/r) / formation (the press's formation, clamped, sets the fuel, never the radius: the map the eye learns keeps its size);
+    // within `trueShare` of the BARE rank radius is a true firing (a tile's heart: seasoning never widens it); one firing per press.
+    // `pull`: a material pulls the colour share[0] + tier x share[1] of the way to its own colour over its steps, its own saturation
+    // in `sat`, bent by its kind's `wind`; `draughtPull`: each material pressed while a draught lasts pulls this share x the draught's
+    // strength more toward the draught's feeling (keyed on game.draught, which fades over a real minute; brimming lasts 2 real seconds).
+    seasonMax: 100, seasonCeiling: 0.13, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, formationClamp: [0.5, 2],
+    pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08 }, // (each feeling's hue: weather.js COLOR, the one table)
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read

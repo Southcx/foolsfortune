@@ -11,12 +11,15 @@ import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
 
 export function gardenRules({ on, L, log }) {
-  on('alchemy.press', (e) => { if (e.by === 'courier') L.inc('alchemy.press', e.count || 1); });
+  on('alchemy.press', (e) => { if (e.by !== 'courier') return; L.inc('alchemy.press', e.count || 1); if (e.greyed) log.say('info', 'The colour greys.'); }); // (SOUL-ALCHEMY 4.20, Espada's words)
+  on('alchemy.refuse', (e) => { if (e.by === 'courier') L.inc(`alchemy.refuse.${e.why}`); });
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
-    log.say('gain', `The press fires. ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}.`);
+    if (e.true) L.inc('alchemy.true'); // (a true firing: within a quarter of the swatch's radius, SOUL-ALCHEMY.md 3.3; the words are placeholders for Espada's)
+    log.say('gain', `${e.true ? 'A true firing.' : 'The press fires.'} ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}, for ${e.fuel} cubes.`);
   });
+  on('alchemy.seasoned', (e) => { if (e.by === 'courier') log.say('info', `Your ${ATTRIBUTES[e.attribute]?.name || e.attribute} is seasoned: its swatch is as wide as practice makes it.`); });
   on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} now works a garden slot.`); } } });
   on('garden.collect', (e) => { if (e.by === 'courier') L.inc('garden.dividend', e.cubes); });
   on('garden.plant', (e) => { if (e.by === 'courier') L.inc('garden.plant'); });
@@ -54,6 +57,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.race', (e) => { if (e.by !== 'courier') return; L.inc('spirit.race'); if (e.seconds != null) L.lo('spirit.race.fastest', e.seconds); });
   on('spirit.spar', (e) => { if (e.by === 'courier') { L.inc('spirit.spar'); L.hi('spirit.spar.bumps', e.bumps); } });
   on('garden.reset', (e) => { if (e.by === 'courier') L.inc('garden.reset'); });
+  on('garden.water', (e) => { if (e.by === 'courier') { L.inc('garden.water'); L.inc(`garden.water.${e.how}`); } }); // (pour, drink, spring, drain, unset: Petra's waterworks)
   on('spirit.drill', (e) => { if (e.by === 'courier') { L.inc('spirit.drill'); if (!e.gain) log.say('info', `${e.spirit || 'The spirit'} is too tired to drill.`, { key: 'tired', throttle: 3 }); } });
   on('spirit.visit', (e) => {
     if (!VISITORS[e.kind]) return;

@@ -341,9 +341,10 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       solid(new THREE.Mesh(new THREE.BoxGeometry(gap + w * 1.6, 1.3, w * 1.2), dark), [(gap + w * 1.6) / 2, 0.65, w * 0.6], new THREE.Vector3(p.x, my + h - 0.6, p.z), q);
     }
     // broken columns half sunk in the sand
+    this.columns = []; // (each broken column's foot on the sand: the ruins' ostraca lean there, world/ostraca.js)
     for (let i = 0; i < 48; i++) {
       const a = rnd() * Math.PI * 2, r = R0 - 20 + rnd() * (R1 - R0 + 20);
-      const p = place(Math.cos(a) * r, Math.sin(a) * r);
+      const p = place(Math.cos(a) * r, Math.sin(a) * r); this.columns.push(p.clone());
       const h = 2.5 + rnd() * 4.5, w = 0.9 + rnd() * 0.7;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.9, rnd() * 6.28, (rnd() - 0.5) * 0.9));
       const c = p.clone().addScaledVector(UPV.clone().applyQuaternion(q), h / 2 - 1.0);

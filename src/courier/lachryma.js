@@ -45,7 +45,7 @@ export class LachrymaPool {
   removeModifier(id) { this.modifiers.delete(id); this.value = Math.min(this.value, this.max); }
   product(fn) { let k = 1; for (const m of this.modifiers.values()) k *= fn(m) ?? 1; return k; }
 
-  get max() { let b = this.baseMax; for (const m of this.modifiers.values()) b += m.maxBonus || 0; return b; }
+  get max() { let b = this.baseMax, k = 1; for (const m of this.modifiers.values()) { b += m.maxBonus || 0; k *= m.maxMult || 1; } return b * k; } // (maxMult: Willpower's widening, read live)
   get available() { return this.value - this.reserved; }
   get fraction() { return this.value / this.max; }
 

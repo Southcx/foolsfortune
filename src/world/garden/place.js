@@ -54,7 +54,6 @@ export class GardenSite {
       lake: new THREE.MeshStandardMaterial({ color: 0x9fe0ff, emissive: 0x4fb6ff, emissiveIntensity: 0.5, roughness: 0.2, name: 'garden-lake' }),
       soil: new THREE.MeshStandardMaterial({ color: 0x5a3e2a, roughness: 1, name: 'garden-soil' }),
       roof: new THREE.MeshStandardMaterial({ color: 0xb5513c, roughness: 0.7, name: 'garden-roof' }),
-      ember: new THREE.MeshStandardMaterial({ color: 0xffb27a, emissive: 0xff7a3a, emissiveIntensity: 0.9, roughness: 0.6, name: 'garden-ember' }),
     };
     this.build();
     game.scene.add(g);
@@ -138,10 +137,13 @@ export class GardenSite {
       const mesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.35, 1.3), this.mats.soil); mesh.applyMatrix4(this.stand(T, dirOf(58, (i / MAX_BEDS) * 360), 0.1, (i / MAX_BEDS) * Math.PI * 2)); mesh.castShadow = true; g.add(mesh);
       F.push({ kind: 'bed', i, planet: T, pos: mesh.position.clone(), mesh });
     }
-    // the Athanor: the pill furnace on its crown (the spirit press)
+    // the Athanor: the spirit press on its crown, over the vent (Calissa's model, stood there by world/garden/press.js from `m`)
     { const R = this.by.athanor, m = this.stand(R, UP, 0);
-      add(this.mats.wood, new THREE.CylinderGeometry(1.6, 2, 2.6, 10).translate(0, 1.3, 0), m.clone()); add(this.mats.ember, new THREE.CylinderGeometry(1.1, 1.1, 0.3, 10).translate(0, 2.7, 0), m.clone());
-      F.push({ kind: 'athanor', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
+      F.push({ kind: 'athanor', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m), m });
+      // the plate shrine's hokora on the crown's east shoulder, its own F (SOUL-ALCHEMY.md 4.2; a stand-in for Calissa's model)
+      const h = this.stand(R, dirOf(42, 90), 0, -Math.PI / 2), hk = new THREE.Group(); hk.applyMatrix4(h); hk.name = 'hokora';
+      hk.add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.8).translate(0, 0.55, 0), this.mats.wood), new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.5, 4).rotateY(Math.PI / 4).translate(0, 1.35, 0), this.mats.roof));
+      g.add(hk); F.push({ kind: 'hokora', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(h) }); }
     // the Pavilions of Echoes: a pavilion for each slot
     const V = this.by.pavilions, pavGeo = mergeGeometries([new THREE.BoxGeometry(1.6, 1.6, 1.6).translate(0, 0.8, 0), new THREE.ConeGeometry(1.6, 1, 4).rotateY(Math.PI / 4).translate(0, 2.1, 0)], false);
     for (let i = 0; i < MAX_SLOTS; i++) {

@@ -5,7 +5,7 @@
 //  - THE BINDER: every designated page, by section, numbered (Greed Island's binder). A filled page shows its card, its rank and how
 //    many copies of its limit the Book holds; TAKE OUT puts a card with an item form into the Pneuka Box as the thing itself (with
 //    the Veritome drawn), CONDENSE turns a spare into cubes. An empty page shows the Book's back and only its riddle. Above it: pages
-//    filled, free slots used, what is in the Pneuka Box, the film.
+//    filled, free slots used, what is in the Pneuka Box, the memory.
 //  - THE FILM: the plates not yet appraised, with APPRAISE ALL (or a chosen few) and DISCARD. Appraising is a step of its own, done
 //    in a batch: the report lists each plate with its stars and what it gave (an entry, a fact, a card), Pokémon Snap's way.
 //  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD) and the facts known, the battle ones marked.
@@ -16,7 +16,7 @@
 // Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
 // ---------------------------------------------------------------------------------------
 import { CARDS, CARD, SECTIONS, FREE_SLOTS, WORTH, cardArt } from './cards.js';
-import { ROLL } from './film.js';
+import { MEMORY_PLATES } from './memory.js';
 import { CREATURES, CREATURE_IDS } from './bestiary.js';
 import { SUBJECTS } from './subjects.js';
 import { renderMind } from './mind/composer.js';
@@ -62,16 +62,16 @@ export function renderVeritome(codex, cx) {
   const g = codex.game, V = g.veritome, B = V?.book;
   if (!B) { cx.appendChild(el('p', '', 'The Veritome is not here.')); return; }
   const box = g.pneuka;
-  cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span>${box ? `<span>PNEUKA BOX ${box.used} / ${box.slots.length} (P)</span>` : ''}<span>FILM ${B.film.plates.length} / ${ROLL}</span>`));
+  cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span>${box ? `<span>PNEUKA BOX ${box.used} / ${box.slots.length} (P)</span>` : ''}<span>MEMORY ${B.memory.plates.length} / ${MEMORY_PLATES}</span>`));
   const pages = el('div', 'vtpages');
   codex.vtPage ||= 'binder';
-  for (const [id, name] of [['binder', 'THE BINDER'], ['film', `THE FILM${B.film.plates.length ? ` (${B.film.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM'], ['mind', 'THE MIND']]) {
+  for (const [id, name] of [['binder', 'THE BINDER'], ['memory', `THE MEMORY${B.memory.plates.length ? ` (${B.memory.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM'], ['mind', 'THE MIND']]) {
     const s = el('span', codex.vtPage === id ? 'on' : '', name);
     s.onclick = () => { codex.vtPage = id; codex.render(); };
     pages.appendChild(s);
   }
   cx.appendChild(pages);
-  ({ binder, film, bestiary, compendium, mind: (cd, c2, gg) => renderMind(cd, c2, gg) })[codex.vtPage](codex, cx, g, B);
+  ({ binder, memory, bestiary, compendium, mind: (cd, c2, gg) => renderMind(cd, c2, gg) })[codex.vtPage](codex, cx, g, B);
 }
 
 // ---------------------------------------------------------------- the binder
@@ -106,7 +106,7 @@ function binder(codex, cx, g, B) {
   det.appendChild(el('h3', '', n || seen ? A.name.toUpperCase() : '· · ·'));
   if (n || seen) det.appendChild(el('p', '', A.lore));
   det.appendChild(el('p', 'hint', A.section === 'arcana' ? `Sitting: ${A.hint}.` : `Comes from: ${A.hint}.`));
-  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise the film.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the film.'));
+  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise its plate.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the film.'));
   const carried = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
   if (carried) det.appendChild(el('p', '', `<span style="color:#9be36a">CARRIED</span> · ${carried} in the Pneuka Box${g.pneuka.lure === A.id ? ', on the line' : ''} (P)`));
   const btns = el('div', 'btns');
@@ -119,9 +119,9 @@ function binder(codex, cx, g, B) {
   cx.appendChild(wrap);
 }
 
-// ---------------------------------------------------------------- the film and the darkroom
-function film(codex, cx, g, B) {
-  const F = B.film, wrap = el('div', 'vt'), left = el('div');
+// ---------------------------------------------------------------- the memory and the darkroom
+function memory(codex, cx, g, B) {
+  const F = B.memory, wrap = el('div', 'vt'), left = el('div');
   codex.vtPick ||= new Set();
   const pick = codex.vtPick;
   for (const id of [...pick]) if (!F.plates.some((p) => p.id === id)) pick.delete(id);
@@ -130,7 +130,7 @@ function film(codex, cx, g, B) {
   btns.appendChild(button(`APPRAISE CHOSEN (${pick.size})`, () => { codex.vtReport = g.veritome.appraise([...pick]); pick.clear(); codex.render(); }, !pick.size));
   btns.appendChild(button(`DISCARD CHOSEN (${pick.size})`, () => { F.remove([...pick]); B.save(); g.events?.emit('photo.discard', { n: pick.size }); pick.clear(); codex.render(); }, !pick.size));
   left.appendChild(btns);
-  left.appendChild(el('div', 'sec', `ON THE ROLL · ${F.plates.length} / ${ROLL} · click a plate to choose it`));
+  left.appendChild(el('div', 'sec', `MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a plate to choose it`));
   const roll = el('div', 'roll');
   for (const p of F.plates) {
     const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PLATE ${p.id}<em>undeveloped</em>`);

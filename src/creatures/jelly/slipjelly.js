@@ -239,6 +239,7 @@ export class SlipJellies {
   }
   /** Gone for good (a spirit: it does not form again). */
   dispose(c) {
+    if (c.disposed) return; c.disposed = true; // (twice is a no-op: a second removeRigidBody poisons Rapier's world, casebook rule 65)
     const g = this.game;
     g.scene.remove(c.root); c.mat.dispose();
     try { g.physics.removeBody(c.rb); } catch { /* already gone */ }

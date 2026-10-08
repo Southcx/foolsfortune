@@ -6,7 +6,7 @@
 //
 //   THE QUAY      a stone landing over the crude, its edges railed by the air (the crude is not swum), and the lamp's tower
 //   THE PIER      a plank walk out to sea: F at its end is the pier's page (world/emocean/pier.js), the crossing home or onward
-//   THE PEARL SHRINE  (world/shrines.js 'margarite') on the quay: found, rested at, travelled to, and where a broken crossing makes
+//   THE PEARL SHRINE  (world/shrines.js 'pearl') on the quay: found, rested at, travelled to, and where a broken crossing makes
 //                 you whole if it is the last you rested at
 //   THE PURSER    the King's buyer, at the counter; the posted board beside is the price (Margarite does not haggle): F at the board
 //                 opens the Purser's counter (progress/shop/shops.js 'purser')

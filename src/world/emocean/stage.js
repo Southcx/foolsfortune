@@ -118,7 +118,7 @@ export class Emocean {
       Object.assign(this.stage, { setPieces: plan.setPieces, setPiece: plan.setPiece, seconds: plan.seconds || plan.bars * BAR_S }); // (the cue chained to them: music/choose.js)
       this.stage.active = true;
       this.t = 0; this.bar = 0; this.ending = false; this.trauma = 0; this.volleys = []; this.beaten = new Set(); this.mended = new Set(); this.piece = null; this.offering = false;
-      this.run = { passed: true, hits: 0, bears: STAGE.bears, downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
+      this.run = { passed: true, hits: 0, bears: STAGE.bears + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
       this.rail.Q.set(SEA_AT.x, SEA_AT.y, SEA_AT.z);
       this.ship.begin(aspect); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(plan, aspect); this.mounts.begin(V.mounts || []);

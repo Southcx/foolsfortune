@@ -5,19 +5,19 @@
 // words, and one number only: the date stamp, the camera's own orange LCD in the picture's corner (ui/datestamp.js; the owner):
 //
 //  - along the top margin a compass tape (the heading); down the left margin a sextant's arc (how far the lens is tipped); in the
-//    corner the clock (the tide, as the cover's hands keep it); along the foot the zoom, and the roll of film as a row of plates
+//    corner the clock (the tide, as the cover's hands keep it); along the foot the zoom, and the memory as a row of plates
 //    (an empty square for each plate still to be exposed: a full roll is no squares at all);
 //  - over each subject in frame a pair of focus brackets, darker for a better shot, in vermilion for a creature that is aware of
 //    the Courier and in the thick of it with them (only those can be held by a charged shot);
 //  - in the middle the capture circle, whose ring fills while such a creature is held in it (Fatal Frame's charge), white at the
 //    shutter chance; the stars the best subject would get; and the shutter's one flash, after which the photograph drops away into
-//    the book's corner (it goes on the film: film.js).
+//    the book's corner (it goes on the plate: memory.js).
 //
-// Prior art: Fatal Frame's Camera Obscura (the capture circle and its filling charge ring, the shutter chance, film as a count),
+// Prior art: Fatal Frame's Camera Obscura (the capture circle and its filling charge ring, the shutter chance, film as a count: here the memory's room),
 // Pokémon Snap's viewfinder brackets, Wind Waker's Picto Box (the frame is the box's own), the Sheikah Slate's camera, and a
 // sextant's arc and a compass card in a ship's log.
 //
-//   vf.show(on)  vf.draw(dt, { heading, pitch, tide, charge, chance, brackets, zoom, stars, film: { left, roll } })  vf.flash(thumb)
+//   vf.show(on)  vf.draw(dt, { heading, pitch, tide, charge, chance, brackets, zoom, stars, memory: { left, of }, thirds })  vf.flash(thumb)
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
 const CSS = `
@@ -103,6 +103,16 @@ export class Viewfinder {
     for (const [len, a] of [[15, s.tide * Math.PI * 2 * 4], [9, s.tide * Math.PI * 2]]) { g.beginPath(); g.moveTo(kx, ky); g.lineTo(kx + Math.sin(a) * len, ky - Math.cos(a) * len); g.stroke(); }
     // the date stamp, bottom right inside the picture: the camera's own orange LCD (ui/datestamp.js)
     { const h = Math.max(10, A.h * 0.035); drawStamp(g, stampText(), A.x + A.w - h * 0.8, A.y + A.h - h * 1.8, h); }
+    // the Rule of Thirds knack (progress/knacks.js `ruleOfThirds`): two faint lines each way where photo.js's placement credits the thirds (the
+    // screen's own NDC +-1/3, so the lines are honest to the score), drawn only inside the picture, with a small ring at each of the four crossings
+    if (s.thirds) {
+      g.save(); g.beginPath(); roundRect(g, A.x, A.y, A.w, A.h, r); g.clip();
+      g.strokeStyle = 'rgba(255,240,210,.32)'; g.lineWidth = 1;
+      for (const k of [1 / 3, 2 / 3]) { g.beginPath(); g.moveTo(W * k, A.y); g.lineTo(W * k, A.y + A.h); g.moveTo(A.x, H * k); g.lineTo(A.x + A.w, H * k); g.stroke(); }
+      g.strokeStyle = 'rgba(255,240,210,.5)';
+      for (const kx of [1 / 3, 2 / 3]) for (const ky of [1 / 3, 2 / 3]) { g.beginPath(); g.arc(W * kx, H * ky, 4, 0, Math.PI * 2); g.stroke(); }
+      g.restore();
+    }
     // the subjects in frame: focus brackets
     for (const b of s.brackets || []) {
       const x = (b.x * 0.5 + 0.5) * W, y = (-b.y * 0.5 + 0.5) * H, h = Math.max(14, b.h * H * 0.5), w2 = h * 0.8, L = h * 0.35;
@@ -118,14 +128,14 @@ export class Viewfinder {
       g.beginPath(); g.arc(cx, H / 2, cr + 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, s.charge)); g.stroke();
     }
     g.fillStyle = 'rgba(255,240,210,.8)'; g.beginPath(); g.arc(cx, H / 2, 2.5, 0, Math.PI * 2); g.fill();
-    // along the foot margin: the zoom (left), the film (right)
+    // along the foot margin: the zoom (left), the memory (right)
     g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = 1.5;
     const zx = A.x + 20, zy = A.y + A.h + 16;
     g.beginPath(); g.moveTo(zx, zy); g.lineTo(zx + 120, zy); g.stroke();
     g.beginPath(); g.arc(zx + 120 * s.zoom, zy, 4, 0, Math.PI * 2); g.fill();
-    if (s.film) {
-      const n = s.film.roll, gap = 9, x0 = A.x + A.w - 20 - n * gap;
-      for (let i = 0; i < n; i++) { const x = x0 + i * gap; if (i < s.film.left) g.strokeRect(x, zy - 4, 6, 8); else { g.globalAlpha = 0.25; g.fillRect(x, zy - 4, 6, 8); g.globalAlpha = 1; } }
+    if (s.memory) {
+      const n = s.memory.of, gap = 9, x0 = A.x + A.w - 20 - n * gap;
+      for (let i = 0; i < n; i++) { const x = x0 + i * gap; if (i < s.memory.left) g.strokeRect(x, zy - 4, 6, 8); else { g.globalAlpha = 0.25; g.fillRect(x, zy - 4, 6, 8); g.globalAlpha = 1; } }
     }
     // the stars the best subject would get, in the picture's lower right
     g.fillStyle = '#fff1c0';

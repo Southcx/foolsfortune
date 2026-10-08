@@ -199,14 +199,14 @@ export class Dreamvane extends HeldTool {
     g.fx?.impact?.(down.point.clone(), down.normal.clone(), { sparks: 2, dust: 5 });
     sfx.thunk?.();
     P.shake = Math.max(P.shake || 0, 0.15);
-    const n = g.crystals?.reveal(down.point, 3.2, 'courier', 'pick') || 0;
+    const n = (g.crystals?.reveal(down.point, 3.2, 'courier', 'pick') || 0) + (g.ostraca?.reveal(down.point, 3.2) || 0); // (and a buried ostracon: world/ostraca.js)
     g.ai?.stimuli.emit('noise', down.point, { radius: 12, strength: 0.4, by: 'courier' });
     if (n) g.events?.emit('dreamvane.unearth', { n, by: 'courier' });
   }
   /** The Dreamquake comes down: the ground rings round them (the engine's ring strikes what is in it), and what is veiled rises. */
   quake(c) {
     const g = this.game, P = this.P, R = this.moves.rule(c.def)?.radius ?? c.def.ring; // (the ring the engine strikes in: Dovina's row's, else the table's)
-    const n = g.crystals?.reveal(P.pos.clone(), R, 'courier', 'quake') || 0;
+    const n = (g.crystals?.reveal(P.pos.clone(), R, 'courier', 'quake') || 0) + (g.ostraca?.reveal(P.pos.clone(), R) || 0);
     g.ai?.stimuli.emit('noise', P.pos.clone(), { radius: 24, strength: 0.8, by: 'courier' });
     g.techs?.get('slam')?.ring?.(P.pos.clone(), R);
     P.fovPunch = Math.max(P.fovPunch || 0, 8);
@@ -302,6 +302,7 @@ export class Dreamvane extends HeldTool {
     if (e?.type === 'crystal') { g.crystals?.ring(e, FORK.ring); what = 'crystal'; }
     else if (e?.type === 'creature') { F.off.copy(F.pos).sub(e.pos); what = e.ally ? 'spirit' : 'creature'; if (!e.ally) g.creatures.strike(e, hit.point, dir, 0.4, 'fork'); }
     else if (e?.type === 'clapper') { F.off.copy(F.pos).sub(e.pos); what = 'clapper'; if (!e.ally) g.clappers.stun(e, 2.5, g.shells.glowOutline, g.shells.xray); }
+    else if (e?.type === 'sealed') { e.ring(); what = 'door'; } // (the sealed room's door: the fork rings in it and it opens, world/ostraca.js)
     else if (e?.type === 'breakable') { g.breakables.shatter(e, hit.point, dir, 0.8, 'fork', 'courier'); what = 'pot'; this.recall(); }
     sfx.fork?.(1);
     g.fx?.impact?.(hit.point.clone(), hit.normal.clone(), { sparks: 6, dust: 1 });

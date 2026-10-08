@@ -54,6 +54,10 @@ export const GLAZES = Object.fromEntries([
   G('kinrande', 'KINRANDE', 0xa8281c, 0.28, 0.1, 'Gold brocade: leaf gold laid over red enamel and fired a last time, low and gentle. For a lamplighter.', { ach: 'tr4' }),
   G('ru', 'RU', 0x9cc0dc, 0.3, 0.02, 'The blue of the sky after rain. Fired for twenty years at one kiln for one court; fewer than a hundred pieces survive.', { ach: 'cx5' }),
   G('yohen', 'YOHEN TENMOKU', 0x141c36, 0.12, 0.4, 'Kiln-changed: black, with blue stars haloed in it, as if the night were trapped in the glaze. Three bowls in the world.', { ach: 'gr3' }, 0.08),
+  // THE GREAT SLIP JELLY'S (Dovina's DROPS, progress/combat/greatjelly.js): opened by the achievement its drop completes. Colours stand in
+  // for Calissa's; the Eye Cup's pattern is the sixth, the eye (vfx/finish.js PATTERN 6, hers). Blurbs are placeholders for Espada's.
+  G('jellycrown', 'JELLY-CROWN', 0x6f9e7c, 0.12, 0.02, 'A slip-green celadon that pools thick and wet, as the crown sat in the jelly.', { ach: 'gj1' }),
+  G('eyecup', 'EYE CUP', 0x1c1410, 0.3, 0.05, 'Black-figure: a staring eye on every part, the evil looked back at.', { ach: 'gj5' }),
   // SHOP GLAZES (plan A11): honest everyday glazes, bought at Saggar's kiln (price: ECON.goods.glaze). Blurbs are placeholders for Espada's.
   G('ash', 'NATURAL ASH', 0x7d7a4a, 0.45, 0.02, 'No glaze at all: wood ash fell on the pot in the kiln and melted, running green down one side.', { shop: true }),
   G('kaki', 'KAKI', 0xa0522d, 0.4, 0.05, 'Persimmon: a rust-red iron glaze, matte as the fruit. A farmhouse colour.', { shop: true }),
@@ -91,7 +95,7 @@ export const GLAZES = Object.fromEntries([
   F('skin', 'aurora', 'AURORA', 0xe8eef2, 0x80ffd0, 0.3, 0, [0.4, 0.5, 2, 0], 'Every colour of the polar sky, moving at the edges of you.', { start: true }),
 ].map((g) => [g.id, g]));
 // the rare glazes' kiln patterns (vfx/finish.js PATTERN: 1 stars, 2 spots, 3 streaks, 4 crackle, 5 leaf) and the colour each is drawn in
-const PATTERNS = { yohen: [1, 0x46b4ff], oilspot: [2, 0xc4c8d0], haresfur: [3, 0xc08a48], guan: [4, 0x2c2622], raku: [4, 0x3a3634], ru: [4, 0x7890a0], kinrande: [5, 0xe8b850] };
+const PATTERNS = { yohen: [1, 0x46b4ff], oilspot: [2, 0xc4c8d0], haresfur: [3, 0xc08a48], guan: [4, 0x2c2622], raku: [4, 0x3a3634], ru: [4, 0x7890a0], kinrande: [5, 0xe8b850], eyecup: [6, 0xd8b070] };
 for (const [id, [pattern, color2]] of Object.entries(PATTERNS)) Object.assign(GLAZES[id], { pattern, color2 });
 
 /** How they are dressed until they fire anything else: as they were made. */
