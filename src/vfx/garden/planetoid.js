@@ -26,7 +26,7 @@
 //
 //   const P = new Planetoid({ kind, radius, seed, surface, detail, game })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
 //   P.reach (m: its farthest ground from the heart, kept with every sculpt; the Chimney's is 27.8 against its 8 m radius)
-//   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.fromClay(clay)   P.tint(lakeHex)   P.update(rawDt)
+//   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.fromClay(clay)   P.tint(lakeHex)   P.update(rawDt)   P.growMushroom()
 //   (P.h, P.dir, P.R, P.geo and P.rebuild() stay for a reader that sets the heights itself: h a vertex in units of R)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -165,11 +165,16 @@ export class Planetoid {
   update(raw = 1 / 60) {
     this.t += raw;
     if (this.groveToPlant) { const G = plantGrove(this.groveToPlant); this.props.add(G.bark, G.canopy); this.grove = G; this.groveToPlant = null; } // (the Mulberry Grove's trees: two meshes)
-    if (this.mushroomToGrow) { this.mushroomToGrow = false; this.mushroom = new WorldMushroom({ radius: this.R, surface: (d) => this.surface(d) }); this.group.add(this.mushroom.group); }
-    this.mushroom?.update(raw, this.game?.myggdrasil);
+    this.growMushroom()?.update(raw, this.game?.myggdrasil);
     if (!clockOwner || clockOwner.disposed) clockOwner = this;
     if (clockOwner === this) groundTick(raw);
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
+  }
+
+  /** Myggdrasil's planetoid: the World Mushroom grown now if it waits (else on the first update), and returned (null on any other). */
+  growMushroom() {
+    if (this.mushroomToGrow) { this.mushroomToGrow = false; this.mushroom = new WorldMushroom({ radius: this.R, surface: (d) => this.surface(d) }); this.group.add(this.mushroom.group); }
+    return this.mushroom || null;
   }
 
   dispose() { this.disposed = true; this.mushroom?.dispose(); this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }); } // (the canopy's and the bark's are everyone's: casebook rule 24)

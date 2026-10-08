@@ -5,7 +5,9 @@
 // three layers every world tree has, as a fungus has them.
 //
 //   THE ROOTS    hyphae buttresses flaring from the stipe's foot and running out over the planetoid's crown, half sunk in it; between
-//                two of them THE FEEDING MOUTH, a gold lip round a dark throat lit from below in the tincture's colour (`mouthWorld`)
+//                two of them MYGGDRASIL'S MOUTH, a cup of its clay lipped in gold, its floor a pool in the tincture's colour (`mouthWorld`:
+//                the world's F stands there); over it on the stipe ITS FACE, two round dark eyes with a glint, a smile and a blush (cute,
+//                never carved: a kodama's, a toy's)
 //   THE TRUNK    a pale fibrous stipe of grey clay (its fibres are ridges in the clay, no texture), flared into a volva at its foot and
 //                ringed in gold under the crown (the veil's remnant); THE MYCELIUM'S THREADS run on from the roots' ends over the ground
 //                as faint veins, their light running in toward the tree (`threadsTo(points)` sends them to the spore beds; until then
@@ -20,13 +22,14 @@
 //                BRANCHES by their trump) join the caps as threads of light: a hung one gold and running, the rest a ghost. FRUIT hangs
 //                under the open caps on threads, glowing in the tincture's colour (a breath, never a flicker; as many as the crown
 //                holds); PERCHES (shelf brackets on the stipe in the crown) are where the sporelings sit (`perchWorld`)
-//   ITS COST     the garden's one canopy program; the stipe, the gold, the throat and the fruit plain standard materials; the branches
+//   ITS COST     the garden's one canopy program; the stipe, the gold, the mouth, the face and the fruit plain standard materials; the branches
 //                and threads the spirit veins' program (vfx/garden/veins.js): no new program. Two canopies, built once: near, and a far
 //                one of fewer, larger leaves beyond MYGG.lodFar metres. A cap opening moves its slot's gate and hides the other state's
-//                leaves in the index (canopyShow): never a rebuild. The fruit and the branches are rebuilt only when what they show changes
+//                leaves in the index (canopyShow): never a rebuild. The fruit, the branches and the threads are rebuilt only when what they show changes (measured: 159 programs in the garden before it is given and after, from every view)
 //
 // Prior art: the world trees (Yggdrasil; the Siberian shamans' birch with the fly agaric at its foot; Legend of Mana's Trent), the
-// Kabbalists' Tree of Life and the Golden Dawn's tarot on its paths, Nausicaa's fungal forest (trees that are fungi, many caps on
+// Kabbalists' Tree of Life and the Golden Dawn's tarot on its paths, Princess Mononoke's kodama and Mario's Toads (a face that is two
+// dots and a smile), Nausicaa's fungal forest (trees that are fungi, many caps on
 // branching stems), real fungi (Amanita's volva and ring, a parasol's shingled scales, an agaric's radiating gills, the shelf
 // polypores for the perches, foxfire's steady glow), and the leaf canopy itself (vfx/garden/leafcanopy.js).
 //
@@ -45,7 +48,7 @@ import { wheelColour } from '../wheelcolour.js';
 
 /** Its numbers: height (m, the ground to the crown's top), the far canopy's distance (m), a cap's opening (real seconds), the caps open
  *  when the state says nothing, the most fruit drawn. */
-export const MYGG = { height: 48, lodFar: 95, openSeconds: 2.6, defaultCaps: 3, fruitMax: 30, nearDensity: 0.65, farDensity: 0.3 };
+export const MYGG = { height: 48, lodFar: 95, openSeconds: 2.6, defaultCaps: 3, fruitMax: 30, nearDensity: 0.65, farDensity: 0.3, tintMax: 0.46 };
 
 /** The ten caps, root up (Dovina's CAPS order: the Kingdom .. the Crown): height of the cap's heart over the ground (m), how far out
  *  (0: on the stipe), its bearing (degrees), its radius (m), where its arm leaves the stipe (m; `stalk`: it rises from the ground among
@@ -75,7 +78,7 @@ const BRANCH_IDS = Object.keys(BRANCH_PATHS);
 const SPIRAL = { priestess: 200 }; // (a branch between two caps on the stipe winds round it from this bearing)
 const STIPE = [[-2.4, 6.7], [0, 6.2], [1.2, 5.0], [2.6, 4.25], [5, 3.85], [9, 3.6], [15, 3.42], [22, 3.25], [30, 3.0], [34, 2.85], [38.4, 2.7], [41, 2.6]];
 const PERCH_AT = [[13.4, 165, 1.2], [15.6, 285, 1.1], [18.4, 75, 1.3], [22.6, 200, 1.2], [24.2, 340, 1.3], [31.6, 150, 1.4], [33.4, 300, 1.2], [35.2, 95, 1.1]];
-const ROOT_AZ = [110, 150, 190, 230, 270, 310, 350, 30, 70], MOUTH = { az: 90, s: 8.6 };
+const ROOT_AZ = [110, 150, 190, 230, 270, 310, 350, 30, 70], MOUTH = { az: 90, s: 9.4 }, FACE = { az: 90, y: 10.4 }; // (both between the roots at 70 and 110, under no arm: the Foundation's leaves the stipe at 20, Victory's at 120)
 const D2R = Math.PI / 180, GOLD = 0xd8ae58;
 
 /** The stipe's radius at a height over the ground (m). */
@@ -97,7 +100,7 @@ export class WorldMushroom {
       fruitThread: new THREE.LineBasicMaterial({ color: 0xe8e2d8 }),
     };
     this.cap = CAP_SITES.map((C, i) => ({ ...C, i, k: 0, shown: -1, matrix: capMatrix(C, this.y0, this.rnd), open: canopySlot(), shut: canopySlot() }));
-    this.buildBody(); this.buildCanopies(); this.buildMouth();
+    this.buildBody(); this.buildCanopies(); this.buildMouth(); this.buildFace();
     this.vein = { u: { uT: { value: 0 }, uK: { value: 0.55 }, uC: { value: new THREE.Color(0xf0dca0) } } };
     this.veins = new THREE.Mesh(new THREE.BufferGeometry(), veinMaterial(this.vein.u)); this.veins.name = 'myggdrasil-threads'; g.add(this.veins);
     this.threadsTo(null);
@@ -135,7 +138,7 @@ export class WorldMushroom {
       const az = az0 + (rnd() - 0.5) * 8, pts = [this.at(az, 2.4, 3.6), this.at(az, 5.2, 2.0)];
       for (const s of [7.5, 10, 12.5, 15.5]) pts.push(this.ground(az + (rnd() - 0.5) * 9, s, 0.55 * (16.5 - s) / 9)); // (half sunk: a buttress, then a root under the moss)
       geos.push(tube(pts, 2.0, 0.24, 9, 22, 0.75));
-      const f = pts[3], side = rnd() < 0.5 ? -1 : 1, fp = [f.clone(), this.ground(az + side * 14, 12.5, 0.15), this.ground(az + side * 22, 15, 0)];
+      const f = pts[3], toMouth = angDiff(az, MOUTH.az), side = Math.abs(toMouth) < 40 ? -Math.sign(toMouth || 1) : rnd() < 0.5 ? -1 : 1, fp = [f.clone(), this.ground(az + side * 14, 12.5, 0.15), this.ground(az + side * 22, 15, 0)];
       geos.push(tube(fp, 0.55, 0.12, 6, 10, 1));
     }
     // the arms: from the stipe out and up to each side cap's heart
@@ -161,19 +164,42 @@ export class WorldMushroom {
     this.goldGeos = [ring];
   }
 
-  // ---- the feeding mouth: a gold lip on the ground between two roots, a dark throat, a glow at its floor
+  // ---- the feeding mouth: a cup of the stipe's clay on the ground between two roots (a little volva), lipped in gold, its floor a
+  // pool lit in the tincture's colour; the planetoid's ground is never cut, so the mouth stands on it and is seen from above
   buildMouth() {
     const G = this.ground(MOUTH.az, MOUTH.s, 0), N = G.clone().normalize(), q = new THREE.Quaternion().setFromUnitVectors(_up.set(0, 1, 0), N);
     const place = (geo, lift) => { geo.applyQuaternion(q); geo.translate(G.x + N.x * lift, G.y + N.y * lift, G.z + N.z * lift); return geo; };
-    const lip = new THREE.TorusGeometry(1.75, 0.3, 8, 28); lip.rotateX(-Math.PI / 2); this.goldGeos.push(place(lip, 0.12));
+    const lip = new THREE.TorusGeometry(1.72, 0.26, 8, 28); lip.rotateX(-Math.PI / 2); this.goldGeos.push(place(lip, 0.95));
     const gold = new THREE.Mesh(mergeGeometries(this.goldGeos.map(plain), false), this.mats.gold); this.goldGeos.forEach((x) => x.dispose()); this.goldGeos = null;
     gold.name = 'myggdrasil-gold'; gold.castShadow = gold.receiveShadow = true; this.group.add(gold); this.gold = gold;
-    const prof = [[1.7, 0.18], [1.58, -0.1], [1.2, -0.8], [0.7, -1.5], [0.3, -1.9]].map(([x, y]) => new THREE.Vector2(x, y)); // (lip first, down to its floor: the lathe's faces turned in, so the throat is seen from above)
-    const throat = place(new THREE.LatheGeometry(prof, 20), 0); throat.computeVertexNormals();
-    this.throat = new THREE.Mesh(throat, barkMaterial()); this.throat.name = 'myggdrasil-mouth'; this.throat.receiveShadow = true; this.group.add(this.throat);
-    const floor = place(new THREE.CircleGeometry(0.62, 16).rotateX(-Math.PI / 2), -1.75);
+    const v2 = (pts) => pts.map(([x, y]) => new THREE.Vector2(x, y));
+    const wall = place(new THREE.LatheGeometry(v2([[2.5, -0.5], [2.45, 0.1], [2.2, 0.6], [1.9, 0.95]]), 24), 0); // (outside: the clay swelling up from the ground to the lip)
+    const cup = new THREE.Mesh(smooth(wall), this.mats.stipe); cup.name = 'myggdrasil-mouth-cup'; cup.castShadow = cup.receiveShadow = true; this.group.add(cup);
+    const inner = place(new THREE.LatheGeometry(v2([[1.62, 0.95], [1.5, 0.6], [1.15, 0.36], [0.001, 0.3]]), 24), 0); // (inside: down to its floor, the faces turned in)
+    this.throat = new THREE.Mesh(smooth(inner), barkMaterial()); this.throat.name = 'myggdrasil-mouth'; this.throat.receiveShadow = true; this.group.add(this.throat);
+    const floor = place(new THREE.CircleGeometry(1.25, 20).rotateX(-Math.PI / 2), 0.4);
     this.mouthGlow = new THREE.Mesh(floor, this.mats.glow); this.mouthGlow.name = 'myggdrasil-mouth-glow'; this.group.add(this.mouthGlow);
-    this.mouthAt = G.clone().addScaledVector(N, 0.2);
+    this.mouthAt = G.clone().addScaledVector(N, 0.4);
+  }
+
+  // ---- its face: two round dark eyes with a glint in each, a small smile and a blush, on the stipe over the mouth (a kodama's, a
+  // toy's: drawn, never carved; plain standard materials, so no program of its own)
+  buildFace() {
+    const geos = { eye: [], shine: [], smile: [], blush: [] }, o = new THREE.Vector3(), t = new THREE.Vector3(), m = new THREE.Matrix4();
+    const seat = (az, y, out) => { o.set(Math.sin(az * D2R), 0, Math.cos(az * D2R)); t.set(o.z, 0, -o.x); return m.makeBasis(t, _up.set(0, 1, 0), o).setPosition(this.at(az, stipeR(y) + out, y)); };
+    for (const side of [-1, 1]) {
+      const e = new THREE.SphereGeometry(1, 16, 12); e.scale(0.46, 0.66, 0.34); e.applyMatrix4(seat(FACE.az + side * 12.5, FACE.y, 0.1)); geos.eye.push(e);
+      const g = new THREE.SphereGeometry(0.13, 8, 6); g.translate(-0.12, 0.24, 0.3); g.applyMatrix4(seat(FACE.az + side * 12.5, FACE.y, 0.1)); geos.shine.push(g);
+      const b = new THREE.CircleGeometry(0.42, 16); b.scale(1, 0.55, 1); b.applyMatrix4(seat(FACE.az + side * 22, FACE.y - 0.9, 0.26)); geos.blush.push(b);
+    }
+    const arc = 0.62 * Math.PI, smile = new THREE.TorusGeometry(0.42, 0.075, 6, 16, arc); smile.rotateZ(-Math.PI / 2 - arc / 2); smile.applyMatrix4(seat(FACE.az, FACE.y - 0.95, 0.24)); geos.smile.push(smile);
+    const mat = {
+      eye: new THREE.MeshStandardMaterial({ name: 'myggdrasil-eyes', color: 0x2a2433, roughness: 0.22, metalness: 0 }),
+      shine: new THREE.MeshStandardMaterial({ name: 'myggdrasil-eye-glint', color: 0xffffff, emissive: 0xfff6e8, emissiveIntensity: 0.9, roughness: 0.4 }),
+      blush: new THREE.MeshStandardMaterial({ name: 'myggdrasil-blush', color: 0xeaa0a4, roughness: 0.9, metalness: 0 }),
+    };
+    mat.smile = mat.eye;
+    for (const k of Object.keys(geos)) { const g = new THREE.Mesh(mergeGeometries(geos[k].map(plain), false), mat[k]); geos[k].forEach((x) => x.dispose()); g.name = `myggdrasil-face-${k}`; this.group.add(g); }
   }
 
   // ---- the crown's canopies: every cap twice (open, shut) in one geometry, near and far
@@ -204,6 +230,8 @@ export class WorldMushroom {
   /** Sends the mycelium's threads to these points (world positions: the spore beds on this planetoid), each from its nearest root; with
    *  none, they fan out over the planetoid. */
   threadsTo(points) {
+    const key = points?.length ? points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)},${p.z.toFixed(1)}`).join('|') : '';
+    if (key === this.threadKey) return; this.threadKey = key; // (the same beds: nothing to lay again)
     const strips = [], rnd = lcg(29), here = [];
     if (points?.length) { this.group.updateWorldMatrix(true, false); for (const p of points) { const l = this.group.worldToLocal(_p.copy(p)); if (Math.abs(l.length() - this.R) < 12) here.push(l.clone()); } }
     if (here.length) {
@@ -246,9 +274,9 @@ export class WorldMushroom {
     for (const [B, S] of [[this.lit, L], [this.ghost, G]]) { B.mesh.geometry.dispose(); B.mesh.geometry = ribbonGeometry(S, 0.5, true); B.mesh.visible = S.length > 0; }
   }
 
-  /** The fruit for `n` (at most MYGG.fruitMax), hung under the open caps in turn from the root up. */
-  buildFruit(n) {
-    const hosts = this.cap.filter((C) => C.k >= 1), geos = [], lines = [], rnd = lcg(71);
+  /** The fruit for `n` (at most MYGG.fruitMax), hung under the caps open or opening (`want` of them) in turn from the root up. */
+  buildFruit(n, want) {
+    const hosts = this.cap.filter((C) => C.i < Math.max(1, want)), geos = [], lines = [], rnd = lcg(71);
     for (let j = 0; j < n && hosts.length; j++) {
       const C = hosts[j % hosts.length], k = Math.floor(j / hosts.length), a = (k * 137.5 + C.i * 41) * D2R, out = C.r * (C.out ? 0.42 + 0.12 * (k % 2) : 0.62);
       const top = _p.set(Math.sin(a) * out, -C.r * 0.13 * Math.sqrt(Math.max(0, 1 - (out / C.r) ** 2)) - 0.15, Math.cos(a) * out).applyMatrix4(C.matrix).clone();
@@ -277,10 +305,10 @@ export class WorldMushroom {
     }
     const litKey = [...S.lit].sort((a, b) => a - b).join(',');
     if (litKey !== this.keys.lit) { if (this.keys.lit !== null && S.lit.size > this.litCount) this.pulse = 1; this.buildBranches(S.lit); this.keys.lit = litKey; this.litCount = S.lit.size; } // (a card hung: the lit threads flare once)
-    const fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${this.cap.map((C) => (C.k >= 1 ? 1 : 0)).join('')}`;
-    if (fruitKey !== this.keys.fruit) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax)); }
+    const fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${S.caps}`;
+    if (fruitKey !== this.keys.fruit) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax), S.caps); }
     // the tincture: the caps' flash leaned to its colour, the fruit and the mouth glowing in it, eased over about two real seconds
-    if (S.tincture) { wheelColour(S.tincture.h, Math.max(0.6, S.tincture.s), this.colourWant); this.tintWant = 0.18 + 0.6 * THREE.MathUtils.smoothstep(S.tincture.s, 0.05, 0.6); }
+    if (S.tincture) { wheelColour(S.tincture.h, Math.max(0.6, S.tincture.s), this.colourWant); this.tintWant = MYGG.tintMax * (0.3 + 0.7 * THREE.MathUtils.smoothstep(S.tincture.s, 0.05, 0.6)); } // (leaned, never drowned: the labradorite and the gold still show through)
     else { this.colourWant.setHex(0xe8c878); this.tintWant = 0; }
     const ease = this.settle ? 1 : 1 - Math.exp(-raw * 1.6); this.settle = false; this.colour.lerp(this.colourWant, ease); this.tintAmt += (this.tintWant - this.tintAmt) * ease;
     if (Math.abs(this.tintAmt - this.tintWant) < 0.004 && Math.abs(this.colour.r - this.colourWant.r) + Math.abs(this.colour.g - this.colourWant.g) + Math.abs(this.colour.b - this.colourWant.b) < 0.004) { this.colour.copy(this.colourWant); this.tintAmt = this.tintWant; } // (settled: the table is written no more)

@@ -477,6 +477,7 @@ function backing(x, rnd, w, h, g = 110) {
   x.fillStyle = `rgb(0,${g},${Math.floor(40 + rnd() * 200)})`; x.fill();
 }
 function gillClump(x, rnd) {
+  backing(x, rnd, 50, 60, 70); // (a dark lens under the comb: the gills read as one shaded underside, never a scatter of dashes)
   for (let k = 0; k < 9; k++) {
     const id = Math.floor(40 + rnd() * 200), xo = (k - 4) * 10 + (rnd() - 0.5) * 2.5, ends = 1 - ((k - 4) / 5.2) ** 2, top = -56 * ends + rnd() * 5, bot = 56 * ends - rnd() * 5, w = 3.4 + rnd() * 1.4, bow = (rnd() - 0.5) * 3;
     x.beginPath(); x.moveTo(xo, bot); x.quadraticCurveTo(xo + w + bow, 0, xo, top); x.quadraticCurveTo(xo - w + bow, 0, xo, bot); x.closePath();
