@@ -55,7 +55,7 @@ day's hash (`hash01`), so the same game day lays the same sea (learnable, as an 
 ## 3. The passage, and what it costs
 
 You draft the passage before you cast off: click a waypoint in each column along the lanes (a path that only follows the lines).
-**Fuel** is the hop's (as now). **The pressure is the hold:** every cask aboard raises the Wreckers' share of the sea and their
+**Fuel** is the trip's budget (section 14.2: the pier fills the tank, each waypoint burns). **The pressure is the hold:** every cask aboard raises the Wreckers' share of the sea and their
 strength (a step for every four casks), so a rich cargo makes every lane wilder. You may **redraft at a calm** (the waypoints ahead
 only; the Purser's buoy sells fuel).
 
@@ -198,3 +198,145 @@ score). The mirror sea's ghost is **your double**, not "your fetch": fetch is al
 | the Bourse (`pursersBarge`) | the barge at anchor, lanterns lit | trade casks mid-sea, buy fuel, or buy today's rutter |
 | the Glass (`mirrorSea`) | your double: your best crossing beside you | race it through the next leg (a rank up if you win) or let it pass |
 | a drift bottle (`driftBottle`) | a bottle bobbing in the light | read it: a word glossed (an ostracon's), or a portent made exact |
+
+## 14. The trip's pressures (the owner, 2026-10-08: "do all five"; `src/progress/rail/trip.js`)
+
+Five rules that make drafting a passage a decision. The player's words are Espada's (LORE.md "The trip's pressures"): the
+bunker (the tank), heaving to (the campfire: caulk the hull or reckon the sea), high water (the day's best), a following sea (the
+draught's trump), a squall (the storm mark); the headings below keep the working names the code uses. The owner's brief: mechanically robust, knock-on effects thought through, synergies
+kept. Each rule below gives its numbers, what it changes elsewhere, and how it is checked (`node scripts/passage.mjs`, 6,000 sea charts).
+Relics and trinkets are out (the owner: "too much bloat").
+
+### 14.1 The hull carries (Slay the Spire's HP across a run, FTL's hull)
+- **Rule:** a ship starts the trip with its `bears` (sloop 6, tanker 14). Hits taken on a leg stay until a haven mends them:
+  - **an encounter** mends `LEG.mend` (3), then offers its own choice;
+  - **a calm** is the campfire: **mend** (half the hull back, rounded up) **or reckon** (every portent ahead read a quarter sharper). The
+    Purser's buoy at a calm sells fuel besides; buying fuel is not one of the two choices.
+- **Withdrawn:** the free mend before a boss leg (RAIL-OVERHAUL.md section 6). The boss's portent shows it early, so the haven before it
+  is a routing decision.
+- **Knock-ons:**
+  - A ship at no hull takes a continue, as now: it mends whole and caps the trip's rank at C.
+  - Spill risk rises with every leg failed (`spillChance`), so a battered tanker is a risk to its cargo.
+  - The sloop's six hits make havens worth routing through; the tanker's fourteen let it run three fights in a row.
+- **Checked:** on Anagami to Entropolis, the lane with the fewest havens sinks a sloop 60% of the time; the lane with the most, 9%.
+
+### 14.2 Fuel is the trip's budget (FTL, Sunless Sea)
+- **The tank:** a ship carries a tank measured in **measures** (sloop 7.5, frigate 8.5, destroyer 7, galleon 13, tanker 14). The pier
+  fills it, and the hop's fuel is the price of a full tank (`ECON.ships.fill`, renamed from `burn`).
+- **The burn:** each waypoint burns its type's measures times the ship's **burn**:
+  - by type: shoal 1, graveyard 1, wreckers 1.25, bounty 1.25, eyewall 1.5, maelstrom 1.5, leviathan 1.5, encounter 0.75, calm 0.5;
+  - a storm burns ×1.25 and a diagonal step ×1.15;
+  - by ship: sloop 1, frigate 1.1, destroyer 0.9, galleon 1.5, tanker 1.8.
+- **Adrift:** short of every way on's burn, the ship is **adrift**. The current carries it to a waypoint ahead, two to one straight on
+  rather than diagonal. Drifting burns nothing, and each leg sailed adrift tops out at a C. The next calm's buoy (or the Bourse) fills
+  the tank and ends it.
+- **Guarantee:** every sea chart has a lane that every ship sails on a full tank, filling at its calms (checked).
+- **Bite:** with the buoys counted, these shares of lanes are still out of a full tank's reach: sloop 16%, frigate 12%, destroyer 11%,
+  tanker 11%, galleon 1%. So a wild lane is a fuel plan as well as a fight.
+- **Knock-ons:**
+  - Hap Lagan's rescue costs a measure.
+  - The Bourse sells fuel mid-sea.
+  - The tanker sails a rutter, so it knows its burn exactly and never gambles on fuel. The sloop on an unread sea does.
+
+### 14.3 The day's best (Spelunky's daily, Slay the Spire's daily climb)
+- **Why it's free:** a sea chart is a pure function of its route and game day, so everyone on a route that game day sails the same sea.
+- **Rule:** the best score on it is kept per route and game day (`voyage.bestOf`, `recordBest`, event `passage.best`). Another game day's
+  best is replaced, not compared.
+- **A rutter is a ticket to its own day's sea**, as a Cogitomap is to its Well's (`canSail` returns the rutter's `day`). Its worth halves
+  each game day; its sea never changes.
+- **Synergies:**
+  - **The Glass** comes only where there is a run of this sea chart to race: today's best, or the run a carried rutter was made from
+    (`pickEncounter(..., { ghost })`). A double from another sea would sail through different waters.
+  - **A rutter carries its maker's score and run**, so a hauler who buys one races the scout who made it.
+  - A storm cleared counts up its leg's score (×1.25), so the best on a sea goes through its storms.
+- **Knock-on:** the sea chart is laid from the weather at the game day's start, never the weather of the moment, so the day's sea stays
+  the same for everyone (see 14.4).
+
+### 14.4 The feeling on the chart (the weather made legible before you commit)
+- **Rule:** each waypoint has a **feeling**, set three ways:
+  - its place on the Law-Chaos line between the two islands (Margarite's mirth to Entropolis's dread), plus a step of the day's dice;
+  - near the island left, the weather it had at the game day's start;
+  - a tenth of the open sea is fair (no feeling).
+- **Why (Espada's lore):** each island's weather runs off into the Emocean as a **plume**, as a river's fresh water runs far out to sea;
+  the fair tenth is water no plume has reached.
+- **Shown** (Calissa's ruling): the class stays the crisp ink silhouette; the feeling is a **halo** round it in its canon colour,
+  textured with its weather's own motif (so it reads without colour too), from the silhouette tier up; candidates stay neutral ink; a
+  fair waypoint has none. A colour filled into an uncertain portent would read as certain. A storm is never fair.
+- **Heard** (Wanda's): the feeling recolours a leg's mode, never its key (wonder Lydian, mirth major, desire Dorian, grief natural
+  minor, dread Locrian), and sets the Crucibelle's scale for the leg.
+- **What it does (all read before you commit):**
+  - **The forms:** bright feelings throw mostly astral shots, dark ones umbral (astral share: wonder 0.75, mirth 0.65, desire 0.5,
+    grief 0.35, dread 0.25). A ship that cannot dive dodges every umbral shot, so a tanker's rutter favours bright lanes.
+  - **The draught's trump:** the leg's foes carry the damage type of its feeling (`TYPE_OF`), and the draught you leave a leg with is
+    the feeling you absorbed there. When that type trumps the next waypoint's foes (`TRUMPS`), you build their status faster from the
+    first shot. 40% of lanes hold at least one such step, so it is a way to draft, never a rule (`draughtTrump`).
+  - **The crude:** a cask crosses a waypoint of its own feeling calmly (spill ×0.75) and one of its opposite feeling unsteadily (×1.5).
+    So the hauler's lane is chosen by grade too.
+  - **Charybdis** wears the maelstrom waypoint's feeling (now on the chart).
+- **Checked:**
+  - Anagami to Entropolis runs from 5% dread in the first column to 54% in the last.
+  - Anagami to Margarite runs from 5% mirth to 50%.
+
+### 14.5 The storm mark (Slay the Spire's burning elite)
+- **Count and placement:** one storm a sea chart, two from five columns. Always on a threat waypoint, from the second column on, never a
+  boss.
+- **Never unavoidable:** never on a waypoint every lane must pass (`choke`), so taking one is a choice. Espada's reason: a squall
+  gathers at a **front**, where two plumes meet and the stronger shoulders in, and a front lies across open lanes, never in a narrows.
+- **Always shown,** whatever the portent's tier: a flame on the waypoint.
+- **What it does:** the waypoint is a Figment class stronger, its feeling at full strength, and its patterns ×1.4 denser. It burns
+  ×1.25 fuel.
+- **Cleared:** the leg's score is ×1.25 and the rutter's worth ×1.25 (`rutterWorth({ storms })`).
+- **Knock-ons:**
+  - It pulls toward wild lanes, which strains both the hull (14.1) and the fuel (14.2).
+  - A calm after a storm is the classic Slay the Spire beat.
+
+### 14.6 Synergies found while planning (kept)
+| synergy | how it works |
+|---|---|
+| the rutter as a ticket and a ghost | a rutter fixes its day's sea for a charted-only ship (14.3), carries its maker's run for the Glass, and is worth more for every storm cleared (14.5) |
+| the tanker's routing | it cannot dive, so it wants bright feelings (14.4); a grade calm in its own feeling (14.4); fuel known exactly from the rutter (14.2); and a hull that can take the fights a sloop must avoid (14.1) |
+| reckon or mend | the campfire trades the hull (14.1) for Divination (the portents ahead a quarter sharper), so a reader can trade hull for sight |
+| the draught's trump | feelings (14.4) chain into combat's trumps (`combat/types.js`) at no new cost: the Lachryma you absorb sets the next fight's advantage |
+| adrift and the havens | running dry (14.2) loses the choice of route, not the trip; a calm's buoy ends it, so calms are worth more on a long passage |
+| Charybdis | the maelstrom's Egregore takes its waypoint's feeling (14.4), so the chart says which Charybdis waits |
+| one rival, seen twice (Calissa) | high water is a pale ghost thread on the chart and the Glass's double at sea |
+| the chart as a weather map (Calissa) | the halos teach each sky's look before you sail into it |
+| one warp, two scales (Calissa) | the threads bend near a squall as the world bends in it |
+| the ship's scars are kintsugi (Calissa) | the hull's cracks are the Courier's own; caulked, they turn to gold |
+| the bunker is a Lachrymato Bottle (Calissa) | the ship's fuel in glass on its deck: one Lachryma economy |
+| a following sea in the music (Wanda) | a leg's mode follows its feeling, so the chain of feelings is heard as the passage's harmony |
+
+### 14.7 Conflicts resolved
+- **The free mend before a boss:** withdrawn (14.1).
+- **`canSail`:** a rutter of any game day is a valid ticket to its own sea (14.3), where it used to need today's.
+- **`ECON.ships.burn` (the price of a hop's fuel):** renamed `fill`, so "burn" means one thing: the measures a waypoint costs.
+- **The Glass:** never offered without a run of this sea chart to race.
+- **The Cantor's dive:** never offered to a ship that cannot dive (`offered`).
+- **The sea chart:** kept a pure function of the route and game day, so the day's best holds and every rutter replays.
+
+### 14.8 Who builds what (added to section 9)
+- **Dovina:**
+  - done: `rail/trip.js`, the sea chart's feelings and storms, `voyage.bestOf` and `recordBest`, the checks;
+  - to do: the ledger and achievements for storms, adrift and the day's best.
+- **Petra:**
+  - the trip's state in the crossing: `start`, `arrive` and `choose` per waypoint;
+  - the campfire's two choices and the buoy at a calm;
+  - adrift's carry;
+  - the storm's density and strength in a leg;
+  - the feeling's form skew on the shots;
+  - the draught after a leg;
+  - the Glass's run from `bestOf` or a rutter.
+- **Calissa:**
+  - the hull and the tank on the ship (no numbers: the hull's cracks, the tank's level as a gauge on the model);
+  - the feeling's colour on a portent;
+  - the storm's flame;
+  - the draught's trump as a mark on a lane;
+  - the current's drift.
+- **Wanda:**
+  - the campfire's cue;
+  - running low on fuel, and adrift;
+  - the storm leg's weight.
+- **Espada:**
+  - the words: the tank, a measure, adrift, the campfire's two choices, the storm mark, the day's best;
+  - the log lines.
+

@@ -12,13 +12,20 @@
 // knows less further out), shown as a COUNTED SHORTLIST of candidates (Hades' doors; quantile dotplots: counts beat percentages), never
 // a number, and always true (Into the Breach: shown information is true; the hurricane cone: no crisp edge where sight ends).
 // THE RUTTER is the passage's map, sellable and stale by the game day (Sunless Sea's charts and port reports; the Cogitomap's twin).
+// THE FEELING of a waypoint (PASSAGE.md section 14.4): where it lies on the Law-Chaos line between the two islands, leaned by the weather
+// the island left had at the game day's start (so the sea is still the same for everyone that game day), shown on its portent from the
+// silhouette tier up. THE STORM MARK (14.5): Slay the Spire's burning elite, a threat waypoint a class stronger, always shown, never on a
+// waypoint every lane must pass.
 //
 //   PASSAGE (the pool and its rules)   seaChart({ from, to, day, danger, distance, casks, leviathan, bounty }) -> chart
 //   lanes(chart) -> [[waypoint id, ...]]   next(chart, id) -> [ids]   classOf(type) -> 'threat' | 'boss' | 'haven'
 //   sight(reckoning, widen, lead) -> 0..   confidence(depth, sight, level) -> 0..1   tierOf(c, depth) -> 'exact' | 'two' | 'three' | 'class' | 'star'
-//   portent(chart, waypoint, depth, sight, level) -> { tier, candidates, cls, confidence }   rutterWorth({ minutes, rank, read, daysOld }) -> cubes
+//   portent(chart, waypoint, depth, sight, level) -> { tier, candidates, cls, confidence, feel?, storm }   rutterWorth({ minutes, rank, read, daysOld, storms }) -> cubes
+//   feelOf(from, to, col, columns, r, lean?) -> aspect | null   choke(chart) -> Set(ids every lane passes)   STORM
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
+import { ASPECTS, weatherAt } from '../weather.js';
+import { DAY_MS } from '../../core/calendar.js';
 
 /** The waypoint types: a share of the live waypoints by the route's danger d (-1 calm .. +2 wild), and their rules. Shares that do not
  *  fill the sea are the shoal's (the common leg, as the monster is Slay the Spire's). `boss` legs are placed before the pool. */
@@ -44,6 +51,29 @@ export const PASSAGE = {
    *  and the Wreckers a step stronger for every four casks aboard (risk scales with what you carry). */
   strength: (danger, col, type, casks = 0) => Math.max(0, Math.min(4, Math.round(1 + danger + 0.5 * col + (type === 'wreckers' ? casks / 4 : 0)))),
 };
+
+/** The storm mark (Slay the Spire's burning elite): how many a sea chart carries (one, two from five columns), where (a threat waypoint
+ *  from the second column, never a boss, never one every lane passes through: it must be a choice), and what it does (a class
+ *  stronger, its feeling at full strength, the patterns thicker by `density`; cleared, a leg's score and the rutter's worth by `pays`). */
+export const STORM = { count: (columns) => (columns >= 5 ? 2 : 1), minCol: 1, strength: 1, density: 1.4, pays: 1.25 };
+
+/** A waypoint's feeling: its place on the Law-Chaos line between the two islands (their `law`, -2 Margarite's mirth .. +2 Entropolis's
+ *  dread), a step of the day's dice either way, and, near the island left, the weather it had at the game day's start (`lean`:
+ *  { aspect, strength }). A tenth of the open sea is fair (no feeling: the Emocean between egos). */
+export function feelOf(from, to, col, columns, r, lean = null) {
+  const t = (col + 0.5) / columns, a = ECON.islands[from]?.law ?? 0, b = ECON.islands[to]?.law ?? 0;
+  if (lean?.aspect && r() < lean.strength * (1 - t)) return lean.aspect;
+  if (r() < 0.1) return null;
+  const mood = a + (b - a) * t + (r() - 0.5) * 2.2;
+  return ASPECTS[Math.max(0, Math.min(4, Math.round(mood) + 2))];
+}
+
+/** The waypoints every lane passes through (a storm is never put on one: it must be avoidable). */
+export function choke(chart) {
+  const all = lanes(chart), out = new Set();
+  for (const id of Object.keys(chart.waypoints)) if (all.every((l) => l.includes(id))) out.add(id);
+  return out;
+}
 
 export const classOf = (type) => PASSAGE.types[type]?.cls || 'threat';
 
@@ -115,9 +145,18 @@ export function seaChart({ from, to, day = 0, danger = 0, distance = 4, casks = 
     const k = bag.findIndex((type) => legal(id, type));
     waypoints[id].type = k >= 0 ? bag.splice(k, 1)[0] : 'shoal'; // (no legal type left in the bag: the common leg)
   }
-  for (const w of Object.values(waypoints)) w.strength = PASSAGE.strength(danger, w.col, w.type, casks);
-  return { route, from, to, day: Math.floor(day), columns: C, rows: R, waypoints, edges: E,
+  // ---- the feelings (the weather the island left had at the game day's start leans the first columns), then the storm marks
+  const w0 = weatherAt(from, Math.floor(day) * DAY_MS), lean = w0.aspect ? { aspect: w0.aspect, strength: w0.strength } : null;
+  for (const id of ids) waypoints[id].feel = feelOf(from, to, waypoints[id].col, C, r, lean);
+  const chart = { route, from, to, day: Math.floor(day), columns: C, rows: R, waypoints, edges: E,
     first: ids.filter((id) => waypoints[id].col === 0), last: ids.filter((id) => waypoints[id].col === C - 1) };
+  const blocked = choke(chart), stormable = ids.filter((id) => classOf(waypoints[id].type) === 'threat' && waypoints[id].col >= STORM.minCol && !blocked.has(id));
+  for (let k = 0; k < STORM.count(C) && stormable.length; k++) {
+    const id = stormable.splice(pick(r, stormable.length), 1)[0];
+    waypoints[id].storm = true; if (!waypoints[id].feel) waypoints[id].feel = ASPECTS[pick(r, 5)]; // (a storm is never fair)
+  }
+  for (const w of Object.values(waypoints)) w.strength = Math.min(4, PASSAGE.strength(danger, w.col, w.type, casks) + (w.storm ? STORM.strength : 0));
+  return chart;
 }
 
 /** The ways on from a waypoint (or, given null, the first column). */
@@ -145,19 +184,20 @@ export const tierOf = (c, depth = 2) => (depth <= 1 || c >= 0.85 ? 'exact' : c >
 export function portent(chart, w, depth, s, level = 1) {
   const c = confidence(depth, s, level), tier = tierOf(c, depth), cls = classOf(w.type);
   const n = tier === 'exact' ? 1 : tier === 'two' ? 2 : tier === 'three' ? 3 : 0;
-  if (!n) return { tier, candidates: [], cls: tier === 'class' ? cls : null, confidence: +c.toFixed(3) };
+  const feel = tier !== 'star' ? w.feel ?? null : undefined, storm = !!w.storm; // (the feeling shows from the silhouette up; a storm always)
+  if (!n) return { tier, candidates: [], cls: tier === 'class' ? cls : null, confidence: +c.toFixed(3), feel, storm };
   const r = rngOf(`portent:${chart.route}:${chart.day}:${w.id}`), others = Object.keys(PASSAGE.types).filter((t) => t !== w.type && PASSAGE.types[t].share);
   const out = [w.type];
   while (out.length < n && others.length) out.push(others.splice(pick(r, others.length), 1)[0]);
   for (let i = out.length - 1; i > 0; i--) { const j = pick(r, i + 1); [out[i], out[j]] = [out[j], out[i]]; }
-  return { tier, candidates: out, cls, confidence: +c.toFixed(3) };
+  return { tier, candidates: out, cls, confidence: +c.toFixed(3), feel, storm };
 }
 
 // ---- the rutter
 
-/** What a rutter is worth: `ECON.passage.share` of what its sailed minutes would earn at the aim, by its rank (S 1.5 .. D 0.6) and how much of it
- *  was read before sailing, halved a game day after (the sea chart reseeds daily: yesterday's rutter is a curiosity). */
-export function rutterWorth({ minutes = 5, rank = 'B', read = 0, daysOld = 0 } = {}) {
+/** What a rutter is worth: `ECON.passage.share` of what its sailed minutes would earn at the aim, by its rank (S 1.5 .. D 0.6), how much of it
+ *  was read before sailing and the storms cleared on it (x1.25 each), halved a game day after (the sea chart reseeds daily: yesterday's rutter is a curiosity). */
+export function rutterWorth({ minutes = 5, rank = 'B', read = 0, daysOld = 0, storms = 0 } = {}) {
   const P = ECON.passage, f = P.rank[rank] ?? 1;
-  return Math.round(ECON.perMinute * minutes * P.share * f * (0.5 + 0.5 * Math.max(0, Math.min(1, read))) * Math.pow(P.stale, Math.max(0, daysOld)));
+  return Math.round(ECON.perMinute * minutes * P.share * f * (0.5 + 0.5 * Math.max(0, Math.min(1, read))) * Math.pow(P.stale, Math.max(0, daysOld)) * Math.pow(STORM.pays, storms));
 }

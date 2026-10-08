@@ -134,8 +134,9 @@ breath that scores). Wanda's musical **hole** (the drop before the peak) is the 
 through it (targets to lock, the parts winding up). An **encounter** is no leg: its sequence carries its own cue, then a turn of the rail.
 
 **Every boss:** telegraphs by a **shrinking mark** on the part about to act (Elemental Gearbolt), in Calissa's outline language; a part
-downed pays and changes the pattern (Einhander, Silvergun); clearing every part before the core pays a bonus; the ship is **mended**
-before a boss leg (Orta: revive before a boss). **Bonus foes:** a group cleared whole spawns a gold one (the Gummi lesson).
+downed pays and changes the pattern (Einhander, Silvergun); clearing every part before the core pays a bonus. **No free mend
+before a boss** (withdrawn 2026-10-08: the hull carries across the trip, PASSAGE.md 14.1; the boss's portent shows it early, so the
+haven before it is yours to route through). **Bonus foes:** a group cleared whole spawns a gold one (the Gummi lesson).
 
 **The pirates' numbers** (§1.3 fixed): she is alongside for the whole peak (24 bars), her hull is sized so an expert sinks her by bar 36
 of 56, a good player by bar 48, a novice cuts her rigging (struck colours) about half the time: measured by `scripts/rail.mjs`, never

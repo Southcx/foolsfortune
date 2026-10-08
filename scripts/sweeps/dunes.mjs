@@ -402,8 +402,12 @@ await run('geyser', async () => {
   await ds(`standOn(${G0.pos[0] + 1}, ${G0.pos[2]}, 0)`);
   const m = await ds('mark()');
   let launched = null;
-  for (let i = 0; i < Math.ceil((G0.until + 30) * 6) && !launched; i++) { // (a generous wait: the loop ends at the launch)
+  for (let i = 0; i < Math.ceil(Math.max(G0.until + 30, 150) * 6) && !launched; i++) { // (a generous wait, a whole cycle and more: the loop ends at the launch)
     await S.ticks(10);
+    // (kept in the ring: in the full run the Courier, set down mid-sand, slid or was nudged out of it between samples, so the column rose
+    // with no one in it: Petra's 255/1, 2026-10-08)
+    const off = await S.ev((p) => Math.hypot(__game.game.player.pos.x - p[0], __game.game.player.pos.z - p[2]), G0.pos);
+    if (off > 2.5) await ds(`standOn(${G0.pos[0] + 1}, ${G0.pos[2]}, 0)`);
     const st = await S.ev((k) => { const g = __game.game, Gy = g.geysers.list[k]; return { state: Gy.look.state, launching: !!Gy.look.launching, y: g.player.pos.y, vy: g.player.vel.y }; }, G0.i);
     // (the launch counted by its event since the mark, or a sample already rising fast: sampling `launching` every 10 ticks missed a
     // throw that began and ended between two samples, Petra v117)
