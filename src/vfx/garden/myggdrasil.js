@@ -305,8 +305,8 @@ export class WorldMushroom {
     }
     const litKey = [...S.lit].sort((a, b) => a - b).join(',');
     if (litKey !== this.keys.lit) { if (this.keys.lit !== null && S.lit.size > this.litCount) this.pulse = 1; this.buildBranches(S.lit); this.keys.lit = litKey; this.litCount = S.lit.size; } // (a card hung: the lit threads flare once)
-    const fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${S.caps}`;
-    if (fruitKey !== this.keys.fruit) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax), S.caps); }
+    const hosts = this.cap.reduce((n, C) => n + (C.k > 0 ? 1 : 0), 0), fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${hosts}`; // (fruit hangs under a cap only once it has begun to open: never under a bud)
+    if (fruitKey !== this.keys.fruit) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax), hosts); }
     // the tincture: the caps' flash leaned to its colour, the fruit and the mouth glowing in it, eased over about two real seconds
     if (S.tincture) { wheelColour(S.tincture.h, Math.max(0.6, S.tincture.s), this.colourWant); this.tintWant = MYGG.tintMax * (0.3 + 0.7 * THREE.MathUtils.smoothstep(S.tincture.s, 0.05, 0.6)); } // (leaned, never drowned: the labradorite and the gold still show through)
     else { this.colourWant.setHex(0xe8c878); this.tintWant = 0; }
