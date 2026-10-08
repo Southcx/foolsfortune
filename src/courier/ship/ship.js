@@ -68,17 +68,17 @@ export class Ship {
   }
 
   build(scene) {
-    this.sloop = new Sloop({ env: this.game.sky?.env || null });
-    this.sloop.group.scale.setScalar(SCALE); this.sloop.group.visible = false; this.sloop.group.userData.zoneFree = true;
-    scene.add(this.sloop.group);
+    this.look = new Sloop({ env: this.game.sky?.env || null });
+    this.look.group.scale.setScalar(SCALE); this.look.group.visible = false; this.look.group.userData.zoneFree = true;
+    scene.add(this.look.group);
     // the two reticles and the lock marks (placeholders for Calissa's: rings that face the camera)
     const ring = (r, w, c, o) => { const m = new THREE.Mesh(new THREE.RingGeometry(r - w, r, 24), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthTest: false, depthWrite: false })); m.renderOrder = 20; m.visible = false; m.userData.zoneFree = true; m.frustumCulled = false; scene.add(m); return m; };
     this.near = ring(0.32, 0.06, 0xfff2c8, 0.85); this.far = ring(0.9, 0.12, 0xfff2c8, 0.9);
     this.marks = Array.from({ length: T.ship.lock.max }, () => ring(1.2, 0.14, 0x9ff3ff, 0.95));
   }
   show(on) {
-    if (!this.sloop) return;
-    this.sloop.group.visible = on; this.near.visible = this.far.visible = on;
+    if (!this.look) return;
+    this.look.group.visible = on; this.near.visible = this.far.visible = on;
     if (!on) for (const m of this.marks) m.visible = false;
   }
 
@@ -95,15 +95,16 @@ export class Ship {
     this.dress(this.hull.id); this.tint();
   }
 
-  /** The hull's look (vfx/shipclasses.js: one built a class, on first sailing, and kept): `this.sloop` is the look of the hull sailing. */
+  get sloop() { return this.look; } // (the old name: vfx/crossinglook.js, vfx/encounters/film.js and the emocean sweep still read it; Calissa's and Dovina's to move)
+  /** The hull's look (vfx/shipclasses.js: one built a class, on first sailing, and kept): `this.look` is the look of the hull sailing. */
   dress(id) {
-    if (!this.sloop) return;
-    const L = (this.looks ||= { sloop: this.sloop }), was = this.sloop;
+    if (!this.look) return;
+    const L = (this.looks ||= { sloop: this.look }), was = this.look; // (the looks by hull, the sloop's first)
     if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(SCALE); L[id].group.userData.zoneFree = true; }
     if (L[id] === was) return;
     const now = L[id]; now.group.visible = was.group.visible; was.group.visible = false;
     if (!now.group.parent) was.group.parent?.add(now.group);
-    this.sloop = now;
+    this.look = now;
   }
 
   get turning() { const R = T.ship.roll; return this.rollT > R.time - R.turns; }
@@ -240,23 +241,23 @@ export class Ship {
   }
   turned() { sfx.ricochet?.(); }
 
-  tint() { const c = COLOR[this.aspect] ?? 0xffc65c; this.sloop?.keelMat?.color.setHex(c); } // (the ship's feeling as its keel's glow: Calissa's to dress)
+  tint() { const c = COLOR[this.aspect] ?? 0xffc65c; this.look?.keelMat?.color.setHex(c); } // (the ship's feeling as its keel's glow: Calissa's to dress)
 
   /** The model, the reticles and the lock marks in the world. */
   place(view) {
-    if (!this.sloop) return;
-    const g = this.sloop.group, t = this.game.dunes?.t ?? 0;
+    if (!this.look) return;
+    const g = this.look.group, t = this.game.dunes?.t ?? 0;
     this.rail.toWorld(this.local, g.position);
     g.rotation.set(-this.pitch, 0, this.bank + this.spin, 'YXZ'); if (this.rail.q) g.quaternion.premultiply(this.rail.q); // (the rail's turn: railpath.js)
-    this.sloop.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t });
+    this.look.set({ sail: 1, glow: this.mercy > 0 ? 1 : 0.6, t });
     const cam = this.game.camera, scroll = !RET[view];
     this.rail.toWorld(this.retNear, this.near.position); this.rail.toWorld(this.retFar, this.far.position);
-    this.near.visible = this.far.visible = this.sloop.group.visible;
+    this.near.visible = this.far.visible = this.look.group.visible;
     this.near.material.opacity = scroll ? 0.35 : 0.85;
     if (cam) { this.near.quaternion.copy(cam.quaternion); this.far.quaternion.copy(cam.quaternion); }
     this.marks.forEach((m, i) => {
       const f = this.locks[i];
-      m.visible = !!f?.alive && this.sloop.group.visible;
+      m.visible = !!f?.alive && this.look.group.visible;
       if (m.visible) { m.position.copy(f.pos); if (cam) m.quaternion.copy(cam.quaternion); m.scale.setScalar(Math.max(1, f.radius)); }
     });
   }

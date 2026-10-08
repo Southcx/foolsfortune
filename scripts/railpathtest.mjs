@@ -31,7 +31,7 @@ for (const figure of ['verticalLoop', 'corkscrew', 'crest', 'weave']) {
       const THREE = R.Q.constructor, up = R.up(new THREE()), l = new THREE(1.3, 2.1, 5.7), w = R.toWorld(l, new THREE()), back = R.toLocal(w, new THREE());
       const cam = G.camera, cu = new THREE(0, 1, 0).applyQuaternion(cam.quaternion);
       const turning = R.path.turning(R.speed * E.t), inLeg = T.active && T.k >= 0;
-      return { up: up.y, Qy: R.Q.y, Qx: R.Q.x, shipY: E.ship.sloop?.group.position.y ?? null, round: back.distanceTo(l), camUp: cu.dot(up), zone: G.zones?.zoneOf?.(G.player.pos) ?? null, turning, inLeg, figures: E.figures };
+      return { up: up.y, Qy: R.Q.y, Qx: R.Q.x, shipY: E.ship.look?.group.position.y ?? null, round: back.distanceTo(l), camUp: cu.dot(up), zone: G.zones?.zoneOf?.(G.player.pos) ?? null, turning, inLeg, figures: E.figures };
     });
     if (s.done) break;
     seen.frames++; seen.figures = s.figures;

@@ -102,7 +102,7 @@ export class Emocean {
     this.built = true;
   }
   /** What is parked for the warm-up's compile (main.js shows them for one draw, then hides them again). */
-  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked(), ...this.looks.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
+  parked() { return [this.sea.mesh, this.waves.parked, this.ship.look.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked(), ...this.looks.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
   show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; this.looks?.show(on); }
 
   /** What the ship and the waves tell the run. */
@@ -145,7 +145,7 @@ export class Emocean {
       this.run = { passed: true, hits: 0, bears: (SHIPS[V.ship]?.bears ?? STAGE.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), // (by hull: progress/rail/ships.js)
         ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
       this.lay(trip); this.rail.seat(0);
-      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
+      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.look?.polarity?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(this.plan, aspect); this.mounts.begin(V.mounts || []);
       this.looks.begin(); this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
@@ -302,7 +302,7 @@ export class Emocean {
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
     this.looks.update(raw, bar); // (the storm by the leg, the Umbral's surface, the geometry, the wake, the hull and the bunker: vfx/crossinglook.js)
     this.sea.set({ calm: this.calm }); this.sea.update(this.t, g.camera.position);
-    const sl = S.sloop;
+    const sl = S.look;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
       if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.polarity?.(COLOR[S.aspect] ?? 0xffc65c); }
