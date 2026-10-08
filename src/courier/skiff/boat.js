@@ -31,6 +31,7 @@ import { PALETTE } from '../../core/config.js';
 import { addOutline } from '../../render/outline.js';
 import { JointLimits, SKIFF_ROM } from '../anim/rom.js';
 import { BoatPose } from './boatpose.js';
+import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
 // rides where the old boat's did (the hover, 0.6 over the sand: core/config.js), the hull's belly 0.27 over it and its forefoot fin
@@ -48,14 +49,14 @@ export const SKIFF = {
 const FURLED = { yard: 0.055, sail: 0.06 };
 // the belly at full fill: each sail bone out to the side of the one below (m), from Skiff_RideCruise; Skiff_RideIdle is a third of it
 const BELLY = [0.27, 0.22, -0.14];
-// the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do: character.js PAINT_LIGHT)
-const PAINT_LIGHT = 0.45;
 const C = { rope: 0xe9d4a4, energy: 0xffc65c };
 const Zax = new THREE.Vector3(0, 0, 1), Xax = new THREE.Vector3(1, 0, 0);
 const _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _v = new THREE.Vector3();
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
-const painted = (map, o = {}) => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0, ...o });
+// the maker's paintings take the game's light and glow back a share of themselves (as the Courier's do): the Vessoul's painted material,
+// so the hull and the parts share the god hand's and the Pneuka Jar's shader program (vfx/vessoulpaint.js)
+const painted = (map, o = {}) => vessoulPainted(map, o);
 /** A texture the glTF brought, filtered so it never crawls: mipmapped down, and `near` (Blender's Closest) kept only up close. */
 function filtered(tex, near) {
   if (!tex) return null;
