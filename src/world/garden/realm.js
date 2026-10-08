@@ -391,6 +391,7 @@ export class Realm {
       case 'athanor': this.press.enter(); return; // (the bath: F opens the press view, world/garden/press.js)
       case 'hokora': this.athanor(); return; // (the plate shrine's own hokora on the Athanor's east shoulder: SOUL-ALCHEMY.md 4.2)
       case 'cocoon': this.cocoon(); return;
+      case 'debugChest': g.debugChests?.give(f.kit); return; // (a debug chest: debug/debugchest.js)
       case 'tribulationMat': {
         if (this.tribulation.active) return;
         const n = this.tribulation.open();

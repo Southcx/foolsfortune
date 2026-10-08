@@ -26,6 +26,12 @@ export function voyageRules({ on, L, log }) {
     const pct = Math.round((e.reckoning || 0) * 100), route = [e.from, e.to].sort().join('-');
     L.hi(`emocean.reckon.${route}`, pct); L.hi('emocean.reckon.best', pct);
   });
+  // the day's best on a sea chart (PASSAGE.md 14.3): kept per route; said when one is beaten, quietly when it is the first
+  on('passage.best', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('passage.best'); L.hi('passage.score.best', e.score || 0);
+    if (e.beat != null) log.say('record', `High water on this sea today: ${e.score}, over ${e.beat}.`);
+  });
   on('emocean.found', (e) => { if (e.by !== 'courier') return; L.inc(`emocean.found.${e.node}`); log.say('explore', `Route divined: ${PLACE(e.node)}.`); });
   on('crude.buy', (e) => { if (e.by === 'courier') L.inc('crude.bought', e.units || 1); });
   on('crude.sell', (e) => {

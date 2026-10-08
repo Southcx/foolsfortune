@@ -378,6 +378,7 @@ export class Tracking {
     // ---- the Pneuka Box: what they carry (src/pneuka/)
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
+      if (e.from === 'debug') return; // (a debug chest's gift is never counted: docs/plans/DEBUG-CHESTS.md)
       L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
       if (e.used >= SLOTS) L.inc('pneuka.filled'); // (every slot of the Pneuka Box: pneuka/box.js SLOTS)
       if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
@@ -428,7 +429,13 @@ export class Tracking {
     // reprogramming (tools/veritome/reprogram.js): a stunned mind opened, and the line typed into it
     on('reprogram.open', (e) => { L.inc('reprogram.open'); log.say('battle', `You open the ${KIND(e.kind)}'s mind.`, { key: 'rpo', throttle: 1 }); });
     // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
-    on('knack.open', (e) => log.say('system', `You have the knack of it: ${KNACKS[e.knack]?.name || e.knack}. ${KNACKS[e.knack]?.does || ''}. (/knack ${e.knack} to switch it off.)`));
+    on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${e.knack} off to switch it off.`));
+    on('rutter.get', (e) => log.say('gain', `A rutter of the passage (${e.rank}). It is worth about ${e.worth} cubes today.`)); // (placeholder words for Espada's; the ledger's counts are Dovina's)
+    on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} rides the surface: it cannot dive.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; the words are placeholders for Espada's)
+    on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; the words are placeholders for Espada's; nothing counted)
+      if (e.first) log.say('system', `Debug chest: ${e.kit}. What it gives is not counted.`);
+      log.say('system', e.n ? `The debug chest gives: ${e.what.join(', ')}.` : 'The debug chest has nothing more to give: you hold all it keeps.', { key: `debug.${e.kit}`, throttle: 0.5 });
+    });
     on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
     on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
     on('plaster.break', () => L.inc('plaster.break'));
@@ -648,7 +655,7 @@ export class Tracking {
     });
     on('tuning.tuned', (e) => log.say('info', `${e.count} tuning ${e.count === 1 ? 'knob stands' : 'knobs stand'} away from the defaults (Tab): what you see is not the stock game.`)); // (debug/tuned.js)
     on('domain.level', (e) => { if (e.by === 'courier') log.say('gain', `Your ${DOMAIN_NAME(e.domain)} reaches level ${e.level}.`); }); // (progress/psyche.js)
-    on('cube.earn', (e) => { L.inc(`cube.src.${e.why}`, e.n); if (e.why === 'busk') log.say('gain', `Busking tip: ${plural(e.n, 'cube')}.`); }); // (busking: Dovina's buskPay)
+    on('cube.earn', (e) => { if (e.why === 'debug') return; L.inc(`cube.src.${e.why}`, e.n); if (e.why === 'busk') log.say('gain', `Busking tip: ${plural(e.n, 'cube')}.`); }); // (busking: Dovina's buskPay)
     on('cube.spend', (e) => { L.inc(`cube.use.${e.why}`, e.n); });
     on('cube.spill', (e) => { L.inc(`cube.spill.${e.from}`, e.n); if (e.from === 'zandatsu') log.say('loot', `The core condenses into ${plural(e.n, 'Lachryma cube')}.`, { key: 'zcube', win: 1.2, fmt: () => 'The cores condense into cubes.' }); });
     on('curio.get', (e) => {

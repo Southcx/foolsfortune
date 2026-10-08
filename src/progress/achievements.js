@@ -45,7 +45,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'The Rail', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Spirits', 'The Firings'] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -581,6 +581,15 @@ export function buildAchievements(game) {
   C('sv3', 'garden', 'The Spirits', 2, 'count', 'Grown', 'Raise a spirit to its form.', 'spirit.mature', 1);
   C('sv4', 'garden', 'The Spirits', 3, 'mechanic', 'Cocoon', 'Merge two spirits into one.', 'spirit.merge', 1);
   H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
+  // the mycelium (progress/sporebeds.js, progress/myggdrasil.js: MYCELIUM.md); names placeholders for Espada's
+  C('my1', 'garden', 'The Mycelium', 1, 'count', 'Inoculated', 'Set a strain in a spore bed and give it something.', 'spore.set', 1);
+  C('my2', 'garden', 'The Mycelium', 2, 'count', 'Spore Print', 'Take ten spore prints from the inkcap.', 'spore.print', 10);
+  F('my3', 'garden', 'The Mycelium', 3, 'collect', 'Five Strains', 'Hold the spores of all five strains.', (L) => ['wonder', 'mirth', 'desire', 'grief', 'dread'].filter((f) => L.get(`spore.learn.${f}`) >= 1).length, 5);
+  C('my4', 'garden', 'The Mycelium', 4, 'mechanic', 'Coniunctio', 'Graft two curios of one tier into one a tier above.', 'spore.graft.up', 1);
+  F('my5', 'garden', 'The Mycelium', 2, 'count', 'Feeding the Tree', 'Open Myggdrasil\'s third cap.', (L) => L.get('myggdrasil.caps'), 3);
+  F('my6', 'garden', 'The Mycelium', 5, 'collect', 'The Crown', 'Open all ten of Myggdrasil\'s caps.', (L) => L.get('myggdrasil.caps'), 10, { title: 'Mycologist' });
+  C('my7', 'garden', 'The Mycelium', 5, 'collect', 'The Twenty-Two', 'Hang every branch of Myggdrasil with its Major Arcana.', 'myggdrasil.hang', 22, { title: 'Hierophant of Spores' });
+  C('my8', 'garden', 'The Spirits', 2, 'count', 'Keepsake', 'Let a spirit go into a keepsake pot.', 'keepsake.pot', 1);
   C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);
   C('ir2', 'garden', 'The Garden', 3, 'count', 'Potter of Worlds', 'Sculpt your planetoids a hundred times.', 'garden.sculpt', 100);
   // the ostraca (progress/ostraca.js; LORE.md, "Digging for words"): the explorer's track to the Crib Sheet (names Espada's)

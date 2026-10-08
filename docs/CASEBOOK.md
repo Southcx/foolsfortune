@@ -251,6 +251,10 @@ the rules before building in the same area; a rule a machine can check goes into
 93. **A double-sided transparent material is two programs unless it is told to be one.** three.js draws it back faces then front faces,
     and the two passes differ in the program's key (`flipSided`), so both compile; a sheet or a ribbon has no second layer to order, so
     `forceSinglePass: true` draws it once and compiles once. Count a new material's programs in the warm-up (`npm run perf`), not its materials.
+94. **A line said on a state's edge needs hysteresis.** Where a state can flicker (brimming at sea, overflow after overflow), say it on
+    entering and say its end only after it has lapsed a while; a flicker is one spell, never a pair of lines each time.
+95. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
+    ship is not what the cursor means; the pick starts past the shooter.
 
 ## Cases
 
@@ -1299,4 +1303,18 @@ the rules before building in the same area; a rule a machine can check goes into
   (vite preview, two gc'd boots each) read 223 MB before and 228 after.
 - **Fix:** the budget raised to 350 with that written beside it (scripts/perf.mjs); the built figure reported at publish.
 - **Rule:** 71.
+
+### 2026-10-08 · "You are brimming." and "You settle." alternating at sea (found in a trip's screenshot)
+- **Seen:** on a drafted passage the log filled with the pair, a line every few seconds.
+- **Cause:** brimming lasted 2 real seconds after each overflow and its end was said at once; at sea absorbed shots overflow the pool
+  every few seconds, so each gap said "You settle." and the next shot "You are brimming." again.
+- **Fix:** courier/mind.js says "brimming" once a spell and "You settle." only after 6 real seconds with no overflow.
+- **Rule:** 94.
+
+### 2026-10-08 · The rail's gun aimed back at the camera when a foe passed close by it (v119; found by scripts/railaimtest.mjs)
+- **Seen:** in a free view the far reticle left the cursor by up to 0.13 of the screen for a frame or two, twice a crossing.
+- **Cause:** the aim takes the first foe the cursor's ray crosses; a big foe passing beside the camera was crossed in front of the ship,
+  so the aim point lay between the camera and the ship and the gun pointed back at it.
+- **Fix:** only a foe the ray meets 2 m or more beyond the ship's nose is picked. Measured: worst 0.007 of the screen through a crossing.
+- **Rule:** 95.
 

@@ -125,10 +125,10 @@ export async function open(room) {
   /** The checks every place gets: a screenshot that is not black, the camera level, the Courier finite and shown, no window left open
    *  under a cover, no calibration where it does not belong, no page error since the last call. */
   let errSeen = 0;
-  S.common = async (label, { courier = true } = {}) => {
+  S.common = async (label, { courier = true, level = true } = {}) => {
     const f = await S.shot(label), L = await S.shotLum(f), st = await S.sw('state()'), d = await S.sw('dom()');
     S.check(`${label}: not black`, L.dark < 0.9, { screen: L, file: path.basename(f) });
-    S.check(`${label}: camera level`, Math.abs(st.roll) < 3 && Math.abs(st.camUp[1] - 1) < 0.01, { roll: st.roll, camUp: st.camUp });
+    if (level) S.check(`${label}: camera level`, Math.abs(st.roll) < 3 && Math.abs(st.camUp[1] - 1) < 0.01, { roll: st.roll, camUp: st.camUp }); // (off on a planetoid: its up is the planetoid's)
     S.check(`${label}: Courier finite`, !st.nan, st.player);
     if (courier) S.check(`${label}: Courier shown`, st.courierShown !== false, { courierShown: st.courierShown });
     S.check(`${label}: nothing under the seam`, !(d.seam > 0.5 && (d.index || d.pneuka || d.codex || d.map)), d);
