@@ -242,6 +242,6 @@ export class TripRun {
     }
   }
 
-  stop() { if (this.active && this.V?.passage) this.V.passage.storms = this.state.storms; // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
+  stop() { if (this.active && this.V?.passage) { this.V.passage.storms = this.state.storms; this.V.passage.sailed = this.wps.map(({ id, type, strength, feel, storm }) => ({ id, type, strength, feel, storm })); } // (the squalls cleared, for the rutter's worth: voyage.js reads P.storms)
     this.active = false; this.field?.clear(); this.player?.stop(); if (this.runner) this.runner.done = true; const st = this.st.stage; st.legs = null; st.campfire = null; st.encounter = null; st.fuel = null; }
 }

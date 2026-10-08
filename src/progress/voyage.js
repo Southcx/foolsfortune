@@ -184,7 +184,7 @@ export class Voyage {
     // a drafted passage sailed to its end (not broken up, not continued twice) makes a rutter: the passage's map (PASSAGE.md 6)
     if (V.passage && passed && continues < 2) {
       const P = V.passage, minutes = +(((this.game.emocean?.t ?? 120) / 60)).toFixed(2);
-      const data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: P.ids, legs: P.legs, rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read, storms: P.storms || 0 }) }; // (P.storms: the squalls cleared, the trip's state.storms, set by triprun.js)
+      const W = P.sailed || P.waypoints || [], data = { from: V.from, to: V.to, route: P.route, day: V.day, passage: W.length ? W.map((w) => w.id) : P.ids, legs: W.length ? W.map((w) => w.type) : P.legs, strengths: W.map((w) => w.strength ?? 1), feels: W.map((w) => w.feel ?? null), stormsAt: W.filter((w) => w.storm).map((w) => w.id), rank, read: P.read, minutes, worth: rutterWorth({ minutes, rank, read: P.read, storms: P.storms || 0 }) }; // (P.sailed: the waypoints sailed, adrift's route if the current took one: triprun.js; strengths, feels, stormsAt read by Calissa's rutter) // (P.storms: the squalls cleared, the trip's state.storms, set by triprun.js)
       if (this.game.pneuka?.add('rutter', 'passage', 0, data) >= 0) this.game.events.emit('rutter.get', { from: V.from, to: V.to, rank, worth: data.worth, by: 'courier' });
     }
     return { lost, spilled };
