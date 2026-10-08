@@ -262,8 +262,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   to the mood where you stand, the owner, 2026-10-06), and **reading the sky** (the dowse raised to the sky: the forecast).
 - **the Crucibelle** (`src/tools/crucibelle/`, `src/tools/crucibelle/crucibelle.js`): five **notes**, the **toll**, the **toll string** (LMB
   pressed again in time: four tolls, the last brought down overhead and rung all round), **songs** (note patterns with effects),
-  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: a swing, never a flash; the owner,
-  2026-10-06).
+  **fever**; the **mirage** (the Song of Seeming's decoy); the **metronome** (the beat shown on the bell itself: the brass fob below the
+  hand, a swing, never a flash; the owner, 2026-10-06). *Not:* the pendulum (the same beat on the wire compass, below).
 - **the Lockheart** (`src/tools/lockheart/`, `src/tools/lockheart/lockheart.js`): a **coffin** on a chain; its **heart** (which kind of coffin); **hoover**
   (LMB held: draws Lachryma in) and **channel** (the ultimate's pose, the hands joined before the coffin); the **flail** (LMB tapped: the
   coffin swung on its chain let out, three blows on the combo engine); a **Possibilikey** (always so called, never "key" alone) on its ring;
@@ -549,6 +549,21 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 
 - **world mark**: a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox
   bars, the fish portrait.
+- **the wire compass** (`WireCompass`, `src/vfx/wirecompass.js`): the tape of ticks round the eye at the top of the view (the quarters as
+  the sun's road), shown while the Dreamvane is worn or the Crucibelle is in the hands; the tools' own marks hang on it (the vane's,
+  `vfx/vanehud.js`; the pendulum). **compass contrast** (`visual.compassContrast`, a setting): the tape and its marks fainter or brighter,
+  the pendulum keylined in black, more as it rises.
+- **the pendulum** (`CrucibelleHud`, `src/vfx/crucibellehud.js`; docs/plans/CRUCIBELLE-UI.md): the Crucibelle's beat for the eye, on the
+  wire compass while the bell is in the hands: a line pendulum hung from the **bell's mark** on the tape's centre, its ends landing on
+  the bell's eighths (the music's, or the bell's own 96 bpm, drawn fainter), heavier into each bar's downbeat; a **notch** at each end
+  as wide as the bell's on-beat window; the bob an ember whose smoke rises with fever. Its size is a setting (`visual.pendulumSize`).
+  *Not:* the metronome (the fob on the bell itself); never in the rhythm mode (its note chart).
+- **neume** (`NEUMES`, `songNeume`, `src/vfx/crucibellehud.js`; the chant's word for a sign of notes written without a staff): a note of
+  the Crucibelle written on the pendulum's arc where the bob was, by its shape, one a degree (Aikin's shape-note heads read from la:
+  the root a square, the minor third a triangle, the fourth a bowl, the fifth a diamond, the minor seventh a circle); solid on the
+  beat, hollow off it, its line doubled an octave up. **The motif** is the last notes' neumes along the tape; **a song's neume** is a
+  song's notes joined in one ligature, taken into the bell's mark when it is cast. *Not:* a sigil (the Soul Brush's, read from a
+  stroke in Celestial mode).
 - **ground marks** (`src/world/ground/groundmarks.js`): footprints and trails left on soft ground. With the **trail map**
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
