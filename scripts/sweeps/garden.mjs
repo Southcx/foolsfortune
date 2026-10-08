@@ -782,11 +782,11 @@ await guard('mycelium', async () => {
     const f = R.site.features.find((x) => x.kind === 'sporebed' && x.plot === '${b1.plot}'), J = R.jarBody, d = f.pos.clone().sub(f.planet.c).normalize();
     J.pos.copy(f.pos).addScaledVector(d, 0.6); J.planet = f.planet; J.up.copy(d); J.vel.set(0, 0, 0);
     const o = R.offer(); g.pneuka.add('mat.edge', 'test', 0, { kind: 'edge', tier: 1, hue: 20, sat: 0.6, path: [] });
-    const used = M.use(R.near); return { offered: R.near?.kind, used, page: g.indexMenu.page?.name, text: document.querySelector('#indexmenu')?.innerText.replace(/\n+/g, ' | ').slice(0, 160) }`);
+    const used = M.use(R.near); return { offered: R.near?.kind, used, page: g.indexMenu.page?.name, text: document.querySelector('#indexmenu')?.innerText.replace(/\\n+/g, ' | ').slice(0, 160) }`);
   check('spore bed: the chevron offers it, F opens its page', f1.offered === 'sporebed' && f1.used && f1.page === 'garden.sporebed', f1);
   await shot('mycelium-sporebed-page');
   await page.click('#indexmenu .room >> text=EDGE'); await ticks(2);
-  const s1 = await M(`const i = S.bedOf('${b1.plot}'); return { set: !!S.beds[i].set, text: document.querySelector('#indexmenu')?.innerText.replace(/\n+/g, ' | ').slice(0, 200), ready: S.ready(i) }`);
+  const s1 = await M(`const i = S.bedOf('${b1.plot}'); return { set: !!S.beds[i].set, text: document.querySelector('#indexmenu')?.innerText.replace(/\\n+/g, ' | ').slice(0, 200), ready: S.ready(i) }`);
   check('spore bed: a thing set from the page, working, takeable back', s1.set && !s1.ready && /working/.test(s1.text) && /Take it back/.test(s1.text), s1);
   const h1 = await M(`
     const i = S.bedOf('${b1.plot}'); S.beds[i].at -= S.beds[i].hours * 150000 + 1; M.sync();
