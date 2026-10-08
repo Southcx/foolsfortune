@@ -241,7 +241,7 @@ export class Veritome extends Tech {
 
   shutter() {
     const g = this.game, P = this.P;
-    if (this.memory.full) { sfx.fizzle?.(); g.log?.say('info', 'The Veritome\'s memory is full. Appraise its plates in the Book (B).', { key: 'memoryfull', throttle: 3 }); this.shotCool = 0.4; return; } // (the one refusal: room, never film. The words are placeholders for Espada's)
+    if (this.memory.full) { sfx.memoryFull?.(); g.log?.say('info', 'The Veritome\'s memory is full. Appraise its plates in the Book (B).', { key: 'memoryfull', throttle: 3 }); this.shotCool = 0.4; return; } // (the one refusal: room, never film. The words are placeholders for Espada's)
     this.shotCool = 0.6;
     this.gesture('Tome_Shutter', { fadeOut: 0.12 });
     const report = scorePhoto(g, g.camera);
