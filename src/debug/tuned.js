@@ -16,7 +16,7 @@ import { T, DEFAULTS } from '../core/config.js';
 
 /** The player's own preferences: kept, never warned about (they are not the game under test); `visual.shadows` is one (a performance
  *  and taste choice, Calissa). */
-export const SETTINGS = new Set(['camera.sensitivity', 'camera.adsSensMult', 'visual.resolution', 'visual.upscale', 'visual.shadows', 'visual.glitch', 'visual.pendulumSize', 'visual.compassContrast', 'audio.volume', 'charge.mode']); // (shadows, glitch, the pendulum's size, the compass's contrast: Calissa)
+export const SETTINGS = new Set(['camera.sensitivity', 'camera.adsSensMult', 'visual.resolution', 'visual.upscale', 'visual.shadows', 'visual.glitch', 'visual.warp', 'visual.pendulumSize', 'visual.compassContrast', 'audio.volume', 'charge.mode']); // (shadows, glitch, the storm's warp, the pendulum's size, the compass's contrast: Calissa)
 export const isSetting = (key) => SETTINGS.has(key);
 
 const get = (o, key) => key.split('.').reduce((a, k) => (a == null ? a : a[k]), o);

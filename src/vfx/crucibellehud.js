@@ -125,8 +125,9 @@ export class CrucibelleHud {
     this.group = new THREE.Group(); this.group.renderOrder = 36;
     this.pen = new Pen(MAXV);
     this.lines = new THREE.LineSegments(this.pen.geo, lineMat()); this.lines.renderOrder = 36; this.lines.frustumCulled = false;
-    // the keyline: the same lines in black, a pixel out each way, under them (faint at the default contrast, strong above it)
-    this.keyMat = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, depthTest: false, depthWrite: false, fog: false, opacity: 0 });
+    // the keyline: the same lines in black, a pixel out each way, under them (faint at the default contrast, strong above it). Black times
+    // the pen's colours is black, so it reads the colours as the lines do and is drawn with their shader program, not one of its own
+    this.keyMat = new THREE.LineBasicMaterial({ color: 0x000000, vertexColors: true, transparent: true, depthTest: false, depthWrite: false, fog: false, opacity: 0 });
     this.keys = [[1, 0], [-1, 0], [0, 1], [0, -1]].map((o) => { const m = new THREE.LineSegments(this.pen.geo, this.keyMat); m.userData.o = o; m.renderOrder = 35; m.frustumCulled = false; this.group.add(m); return m; });
     this.group.add(this.lines);
     // the fever's peak ringing round the tape, in the world (the tape is a ring round the eye)

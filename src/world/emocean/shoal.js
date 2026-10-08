@@ -40,7 +40,7 @@ export class ShoalPiece {
     const B = SHOAL.boids;
     this.flock = new Flock({ max: MAX, sep: B.sep, align: B.align, coh: B.coh, speed: B.speed, turn: B.turn });
     this.fish = new Array(MAX).fill(null); // (the foe on the roll for each member)
-    this.mood = new Uint8Array(MAX); this.moodT = new Float32Array(MAX); this.roll = new Float32Array(MAX); this.ang = new Float32Array(MAX);
+    this.mood = new Uint8Array(MAX); this.moodT = new Float32Array(MAX); this.roll = new Float32Array(MAX); this.dash = new Float32Array(MAX); this.ang = new Float32Array(MAX); // (dash: a strike's streak, eased like the roll: vfx/shoal.js)
   }
 
   build(scene) {
@@ -56,7 +56,7 @@ export class ShoalPiece {
     const st = this.stage;
     this.leg = leg; this.cls = ROLE_CLASS.school((st.plan?.danger || 0) + LEG.deeper * (leg.k || 0));
     this.want = Math.min(MAX - 24, SHOAL.count(this.cls)); this.risen = 0;
-    this.flock.clear(); this.fish.fill(null); this.mood.fill(0); this.roll.fill(0);
+    this.flock.clear(); this.fish.fill(null); this.mood.fill(0); this.roll.fill(0); this.dash.fill(0);
     this.radius = SHOAL.ball.radius; this.scattered = false; this.scatterT = 0; this.bites = 0; this.lastBar = -1; this.downsThisBar = 0; this.ballAtBar = 0;
     this.caller = st.waves.add({
       kind: 'rail.conductor', name: 'the Conductor', role: 'caller', cls: this.cls, aspect: null, radius: 1.3, hp: SHOAL.caller.hp,
@@ -101,6 +101,7 @@ export class ShoalPiece {
       } else if (!this.scattered && this.scatterT <= 0) { const y = this.surface(_p.x, _p.z) + CRUISE_Y; if (_p.y < y - 0.2 || _p.y > y + 0.6 && m === 0) F.set(i, _p.x, THREE.MathUtils.lerp(_p.y, y, Math.min(1, dt * 4)), _p.z); }
       if ((this.scattered || this.scatterT > 0) && _p.y < -1.5) { this.sink(i); continue; }
       this.roll[i] = THREE.MathUtils.damp(this.roll[i], m >= 1 ? 1 : 0, m === 1 ? 1 / (SHOAL.frenzy.telegraph * BAR_S) : 4, dt);
+      this.dash[i] = THREE.MathUtils.damp(this.dash[i], m === 2 ? 1 : 0, 12, dt);
     }
     this.draw(raw, rel);
   }
@@ -123,7 +124,7 @@ export class ShoalPiece {
     const st = this.stage, S = st.ship.local, a = simRand() * Math.PI * 2, r = this.radius + 2;
     const x = S.x + Math.cos(a) * r, z = S.z + Math.sin(a) * r;
     const i = this.flock.add(x, this.surface(x, z) - 0.6, z, -Math.sin(a) * 6, 1.5, Math.cos(a) * 6); if (i < 0) return;
-    this.ang[i] = a; this.mood[i] = 0; this.moodT[i] = 0; this.roll[i] = 0;
+    this.ang[i] = a; this.mood[i] = 0; this.moodT[i] = 0; this.roll[i] = 0; this.dash[i] = 0;
     const self = this;
     this.fish[i] = st.waves.add({
       kind: 'rail.glint', name: 'a glint', role: 'glint', cls: this.cls, aspect: null, radius: 0.55, hp: SHOAL.fish.hp, local: _p.set(x, 0, z),
@@ -168,12 +169,13 @@ export class ShoalPiece {
       if (!F.alive[i]) continue;
       F.get(i, _p, _v); st.rail.toWorld(_p, _w); st.rail.dirWorld(_v, _u);
       _q.setFromUnitVectors(_z, _u.lengthSq() > 1e-6 ? _u.normalize() : _z);
-      L.set(n++, _w, _q, this.roll[i]);
+      L.set(n++, _w, _q, this.roll[i], this.dash[i]); // (a strike dashes: its streak is eased in and out, never a pop: vfx/shoal.js)
     }
     L.count = n;
     const c = this.caller;
     if (c?.alive) { _q.setFromAxisAngle(_u.set(0, 1, 0), -st.t * 0.6); L.conductor(c.pos, _q, true); } else L.conductor(_p, _q, false);
     st.rail.toWorld(_p.copy(st.ship.local), _w);
+    L.ball(_w, this.radius + 1, this.scattered || this.scatterT > 0 ? 0 : 1); // (the ring round the ship read as one turning mass: vfx/shoal.js)
     L.boil(_w, this.radius + 3, this.scattered ? 0 : Math.min(1, rel / 1.5) * (this.scatterT > 0 ? 0.3 : 1), st.sea);
     L.update(raw);
   }

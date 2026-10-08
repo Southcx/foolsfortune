@@ -9,25 +9,36 @@
 //   outlined   a foe's outlined shot: it wears the parry mark (vfx/parrymark.js, and nothing else does) and only the parry answers it,
 //            back at whoever threw it (Sin & Punishment); sent home it downs its thrower for three times the pay
 //
-// Drawn as instanced meshes (one draw each), the outlined as a small pool of marked meshes (the mark is a shell per mesh: made once,
-// at boot, never on first need: casebook 17). Nothing here decides what a hit means: the ship (`hit`, `absorb`) and the waves (`hitAt`,
+// Drawn by Calissa's looks (made once, at boot, parked for the warm-up: casebook 17): every shot in one instanced draw (vfx/railshots.js:
+// the gun's needles, the foes' astral and umbral capsules far to near, the outlined in the parry mark's ink and film, the ship's hurtbox
+// over them), the lances' ribbons (vfx/itano.js) and the telegraph marks a set piece puts on a part about to act (vfx/telegraph.js,
+// `S.telegraphs.mark(target, seconds)`). Nothing here decides what a hit means: the ship (`hit`, `absorb`) and the waves (`hitAt`,
 // `strike`) do.
 //
 // Prior art: every shmup's bullet pool (a fixed array, no allocation in the loop), Ikaruga's polarity, RayStorm's lock-on lasers that
 // curve onto their targets, Star Fox 64's barrel roll, Sin & Punishment's returned shot.
 //
 //   const S = new Shots(game, rail)   S.build(scene)   S.gun(p, dir)   S.lance(p, foe)   S.foe(p, vel, { aspect, outlined, from })
-//   S.update(dt, { ship, waves })   S.parry(at, radius) -> n   S.clear()   S.show(on)
+//   S.update(dt, { ship, waves })   S.parry(at, radius) -> n   S.clear()   S.show(on)   S.parked() -> meshes (the warm-up)
 //   (rail.toWorld(local, out), rail.dirWorld(local, out): the frame's map to the world)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { COLOR } from '../../progress/weather.js';
+import { RailShots } from '../../vfx/railshots.js';
+import { ItanoRibbons } from '../../vfx/itano.js';
+import { TelegraphMarks } from '../../vfx/telegraph.js';
+import { stream } from '../../core/rng.js';
 
 const CAP = { gun: 128, lance: 16, plain: 192, outlined: 24 };
 const FOE_R = 0.3, OUT_R = 0.36;
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Color();
-const Z = new THREE.Vector3(0, 0, 1);
+const _w = new THREE.Vector3(), _d = new THREE.Vector3(), _c3 = new THREE.Vector3();
+const LANCE_COLOR = 0x9ff3ff; // (the lances' ribbons: the lock marks' colour, courier/ship/ship.js)
+const rand = stream('ship/lances'); // (the simulation's chance: core/rng.js)
+// the lances fly by PROPORTIONAL NAVIGATION, Itano's way (docs/plans/research/RAIL-PATTERNS.md 3): fanned out at launch, each its own
+// navigation constant, the turn capped, pure pursuit at the last metres (where the sight line's rate blows up)
+const LANCE = { speed: 60, fan: 14, N: [2.5, 5], turn: 9, pursue: 4, wobble: 0.6 };
+const _R = new THREE.Vector3(), _V = new THREE.Vector3(), _O = new THREE.Vector3(), _A = new THREE.Vector3(), _u = new THREE.Vector3();
 const pool = (n, make) => Array.from({ length: n }, make);
 
 export class Shots {
@@ -39,36 +50,32 @@ export class Shots {
     this.outlines = pool(CAP.outlined, () => ({ on: false, p: new THREE.Vector3(), v: new THREE.Vector3(), life: 0, from: null, back: false, mesh: null }));
   }
 
-  /** The meshes (at boot, parked hidden: their programs compiled with the warm-up). */
+  /** The looks (at boot, parked hidden: their one program compiled with the warm-up). */
   build(scene) {
-    const add = (geo, mat, n) => { const m = new THREE.InstancedMesh(geo, mat, n); m.count = 0; m.frustumCulled = false; m.userData.zoneFree = true; m.visible = false; scene.add(m); return m; };
-    const bolt = new THREE.CylinderGeometry(0.07, 0.07, 1.6, 6); bolt.rotateX(Math.PI / 2);
-    this.gunMesh = add(bolt, new THREE.MeshBasicMaterial({ color: 0xffd67a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }), CAP.gun);
-    const lance = new THREE.CylinderGeometry(0.12, 0.05, 2.6, 6); lance.rotateX(Math.PI / 2);
-    this.lanceMesh = add(lance, new THREE.MeshBasicMaterial({ color: 0x9ff3ff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }), CAP.lance);
-    this.plainMesh = add(new THREE.IcosahedronGeometry(FOE_R, 1), new THREE.MeshBasicMaterial({ color: 0xffffff }), CAP.plain);
-    this.plainMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(CAP.plain * 3), 3);
-    // the outlined: ink with the parry mark round it (one shell each, made now and kept)
-    const ink = new THREE.MeshBasicMaterial({ color: 0x160c1e }), geo = new THREE.IcosahedronGeometry(OUT_R, 1);
-    for (const r of this.outlines) {
-      r.mesh = new THREE.Mesh(geo, ink); r.mesh.visible = false; r.mesh.userData.zoneFree = true; r.mesh.frustumCulled = false;
-      scene.add(r.mesh); this.game.parryMark?.mark(r.mesh);
-    }
-    this.meshes = [this.gunMesh, this.lanceMesh, this.plainMesh];
+    this.look = new RailShots({ cap: 400, guns: CAP.gun }).build(scene); // (400: the heaviest peak the overhaul plans, RAIL-OVERHAUL.md section 5)
+    this.ribbons = new ItanoRibbons({ max: 40 }); scene.add(this.ribbons.mesh); // (a volley's eight and those still running out behind; the surge's swarm to come)
+    this.telegraphs = new TelegraphMarks(); scene.add(this.telegraphs.mesh);
+    for (const r of this.outlines) { r.mesh = new THREE.Object3D(); r.mesh.visible = false; } // (a handle, not drawn: the look draws the outlined; mounts.js asks `s.mesh`)
+    this.meshes = [this.look.mesh, this.ribbons.mesh, this.telegraphs.mesh];
+    this.show(false);
   }
+  parked() { return this.meshes || []; }
   show(on) { for (const m of this.meshes || []) m.visible = on; if (!on) for (const r of this.outlines) r.mesh.visible = false; }
 
   // ---------------------------------------------------------------- firing
   gun(p, dir) {
     const s = this.guns.find((x) => !x.on); if (!s) return null;
     const G = T.ship.shot;
-    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life;
+    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life; s.dmg = 1;
     return s;
   }
   /** A lance at a painted foe (its volley keeps the count). */
   lance(p, to, volley = null) {
     const s = this.lances.find((x) => !x.on); if (!s) return null;
-    s.on = true; s.p.copy(p); s.v.set(0, 6, 22); s.life = 2.5; s.to = to; s.volley = volley;
+    s.on = true; s.p.copy(p); s.life = 2.5; s.to = to; s.volley = volley; s.age = 0;
+    const a = rand() * Math.PI * 2; s.v.set(Math.cos(a) * LANCE.fan, 6 + Math.abs(Math.sin(a)) * LANCE.fan * 0.6, 22); // (fanned: each arcs out its own way first)
+    s.N = LANCE.N[0] + rand() * (LANCE.N[1] - LANCE.N[0]); s.last = to?.local ? to.local.clone() : null; s.phase = rand() * 6.28;
+    this.ribbons?.start(s, this.rail.toWorld(s.p, _w), { color: LANCE_COLOR });
     return s;
   }
   /** A foe's shot: of a feeling (plain), or outlined (answered only by the parry). */
@@ -99,21 +106,32 @@ export class Shots {
 
   // ---------------------------------------------------------------- the frame
   update(dt, { ship, waves }) {
+    this.ship = ship;
     // the gun
     for (const s of this.guns) {
       if (!s.on) continue;
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0) { s.on = false; continue; }
       const f = waves?.hitAt(s.p, T.ship.shot.radius);
-      if (f) { waves.strike(f, 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
+      if (f) { waves.strike(f, s.dmg ?? 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
     }
     // the lances turn onto what they were sent at, and keep going if it is gone
     for (const s of this.lances) {
       if (!s.on) continue;
       s.life -= dt;
+      s.age += dt;
       if (s.to?.alive) {
-        _d.copy(s.to.local).sub(s.p); const d = _d.length();
-        s.v.lerp(_d.multiplyScalar(60 / Math.max(d, 0.001)), Math.min(1, dt * 9));
+        _R.copy(s.to.local).sub(s.p); const d = _R.length();
+        // the target's velocity from its last place (the foes move by their own rules: waves.js)
+        _V.copy(s.to.local).sub(s.last || s.to.local).divideScalar(Math.max(dt, 1e-4)).sub(s.v); s.last = (s.last || new THREE.Vector3()).copy(s.to.local);
+        const speed = Math.min(LANCE.speed, s.v.length() + 90 * dt); // (it gathers speed out of the launch)
+        _u.copy(s.v).normalize();
+        if (d < LANCE.pursue) _A.copy(_R).normalize().sub(_u).multiplyScalar(LANCE.turn * 2); // (pure pursuit, close in)
+        else { _O.crossVectors(_R, _V).divideScalar(d * d); const Vc = -_R.dot(_V) / d; _A.crossVectors(_O, _u).multiplyScalar(s.N * Math.max(Vc, 10)); }
+        const turn = Math.min(_A.length() / Math.max(speed, 1), LANCE.turn) * dt;
+        if (_A.lengthSq() > 1e-8) { _A.normalize(); _u.addScaledVector(_A, Math.tan(Math.min(turn, 1.2))).normalize(); }
+        if (s.age < 0.5) _u.addScaledVector(_V.set(Math.cos(s.phase + s.age * 18), Math.sin(s.phase + s.age * 18), 0), LANCE.wobble * (0.5 - s.age) * dt * 8).normalize(); // (a decaying wobble early: the circus)
+        s.v.copy(_u).multiplyScalar(speed);
         if (d < (s.to.radius || 1) + 0.6) { waves.strike(s.to, T.ship.lock.lance, { cause: 'lance', at: s.p, dir: s.v, volley: s.volley }); this.endLance(s, true); continue; }
       }
       s.p.addScaledVector(s.v, dt);
@@ -125,7 +143,7 @@ export class Shots {
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0 || s.p.z < -40 || Math.abs(s.p.x) > 80) { s.on = false; continue; }
       if (s.turned || !ship) continue;
-      if (s.p.distanceTo(ship.local) < T.ship.hurt + FOE_R) {
+      if (s.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + FOE_R) {
         if (s.aspect && s.aspect === ship.aspect) { ship.absorb(s); s.on = false; } // (of the ship's feeling: drunk)
         else if (ship.turning) { s.turned = true; s.v.set(s.v.x * -0.4 + (s.p.x - ship.local.x) * 8, 6, -s.v.z * 0.3); ship.turned(s); } // (the roll turns it aside)
         else if (ship.hit(s)) s.on = false;
@@ -138,37 +156,35 @@ export class Shots {
       if (r.back && r.from?.alive) { _d.copy(r.from.local).sub(r.p); const sp = r.v.length(); r.v.lerp(_d.multiplyScalar(sp / Math.max(_d.length(), 0.001)), Math.min(1, dt * 6)); } // (home: Sin & Punishment's return finds its thrower)
       // (sent home: a part says what its own shot does to it, the brig's bow 6, a gill 5; else it downs its thrower)
       if (r.back) { const f = waves?.hitAt(r.p, OUT_R + 0.2); if (f) { waves.strike(f, f.returned ?? 999, { cause: 'parry', at: r.p, dir: r.v, returned: true }); this.endOutlined(r); } continue; }
-      if (ship && r.p.distanceTo(ship.local) < T.ship.hurt + OUT_R && ship.hit(r)) this.endOutlined(r);
+      if (ship && r.p.distanceTo(ship.local) < (ship.hull?.hurt ?? T.ship.hurt) + OUT_R && ship.hit(r)) this.endOutlined(r);
     }
     this.draw();
   }
-  endLance(s, hit) { s.on = false; if (s.volley) { s.volley.flown++; if (hit) s.volley.hit++; } s.to = null; s.volley = null; }
+  endLance(s, hit) { this.ribbons?.end(s); s.on = false; if (s.volley) { s.volley.flown++; if (hit) s.volley.hit++; } s.to = null; s.volley = null; }
   endOutlined(r) { r.on = false; r.from = null; r.mesh.visible = false; }
 
-  /** Each live shot placed in the world (the frame moves with the rail every frame, so every instance is written every frame). */
+  /** Each live shot placed in the world (the frame moves with the rail every frame, so every one is written every frame): a plain shot
+   *  of the ship's own feeling is drawn astral, any other umbral (until the forms: RAIL-OVERHAUL.md section 4); turned or sent home, it
+   *  is drawn spent. */
   draw() {
-    const R = this.rail;
-    const put = (mesh, list, scaleOf) => {
-      let n = 0;
-      for (const s of list) {
-        if (!s.on) continue;
-        R.toWorld(s.p, _w); R.dirWorld(s.v, _d);
-        _q.setFromUnitVectors(Z, _d.lengthSq() > 1e-6 ? _d.normalize() : Z);
-        _m.compose(_w, _q, _s.setScalar(scaleOf ? scaleOf(s) : 1));
-        mesh.setMatrixAt(n, _m);
-        if (mesh.instanceColor) mesh.setColorAt(n, _c.setHex(s.turned ? 0x6a6470 : COLOR[s.aspect] ?? 0xffe0a0));
-        n++;
-      }
-      mesh.count = n; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    };
-    put(this.gunMesh, this.guns); put(this.lanceMesh, this.lances); put(this.plainMesh, this.plains);
-    for (const r of this.outlines) if (r.on) R.toWorld(r.p, r.mesh.position);
+    const R = this.rail, L = this.look, S = this.ship, raw = this.game.rawDt ?? 1 / 60, home = S?.home;
+    let n = 0, m = 0;
+    for (const s of this.guns) if (s.on) L.gun(m++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d));
+    for (const s of this.plains) if (s.on) L.set(n++, R.toWorld(s.p, _w), R.dirWorld(s.v, _d), s.aspect && s.aspect === home ? 'astral' : 'umbral', false, undefined, s.turned ? 0.45 : 1);
+    for (const [k, r] of this.outlines.entries()) if (r.on) L.set(n++, R.toWorld(r.p, _w), R.dirWorld(r.v, _d), r.from?.aspect && r.from.aspect === home ? 'astral' : 'umbral', true, OUT_R, r.back ? 0.45 : 1, (k * 0.618034) % 1); // (its film's phase is its record's own: the same through its flight)
+    L.count = n; L.guns = m;
+    L.color(COLOR[S?.aspect] ?? 0xffc65c);
+    L.hurtbox(S && this.look.mesh.visible ? R.toWorld(S.local, _c3) : null, S?.hull?.hurt ?? T.ship.hurt);
+    L.update(raw, this.game.camera);
+    for (const s of this.lances) if (s.on) this.ribbons.push(s, R.toWorld(s.p, _w));
+    this.ribbons.update(raw); this.telegraphs.update(raw);
   }
 
   clear() {
     for (const L of [this.guns, this.lances, this.plains]) for (const s of L) { s.on = false; s.to = null; s.volley = null; }
     for (const r of this.outlines) this.endOutlined(r);
-    if (this.gunMesh) this.draw();
+    this.ribbons?.clear(); this.telegraphs?.clear();
+    if (this.look) this.draw();
   }
   /** How many of the foes' shots are flying (the stress test's invariant: the pools never leak). */
   get live() { return this.plains.filter((s) => s.on).length + this.outlines.filter((r) => r.on).length; }

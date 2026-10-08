@@ -67,7 +67,7 @@ export function crudeRun({ ship = 'tanker', grade = 'grief', buy = 0.8, sell = 1
   const units = S.hold, worth = M(G.worth), keep = Math.pow(1 - spillChance(grade, units, S.hull ?? 1), failed);
   let got = 0;
   for (let i = 0; i < units; i++) got += worth * Math.max(0, sell - i * ECON.crude.glut);
-  return Math.round(got * keep - units * worth * buy - fuel(distance) * (S.burn ?? S.slow));
+  return Math.round(got * keep - units * worth * buy - fuel(distance) * (S.fill ?? S.slow));
 }
 
 /** What a Well yields at its `fill` (0..1). */

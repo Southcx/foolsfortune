@@ -34,6 +34,7 @@ export function worthOf(id, data = null) {
   const it = itemOf(id);
   if (!it) return 0;
   if (it.kind === 'map') return data?.worth ? Math.max(1, Math.round(data.worth)) : 0; // (a map keeps its worth: the owner, R58)
+  if (it.kind === 'rutter') return data?.worth ? Math.max(1, Math.round(data.worth * Math.pow(ECON.passage.stale, Math.max(0, today() - (data.day ?? today()))))) : 0; // (a rutter halves a game day: PASSAGE.md 6)
   if (it.kind === 'material' && data?.tier != null) return M(1 + data.tier); // (a Well's material: rarer walks further)
   if (it.kind === 'fish') return ECON.fish[it.tier] || 0;
   if (it.kind === 'curio') return ECON.curio[it.tier] || 0;
@@ -78,9 +79,9 @@ export const SHOPS = {
   },
   purser: {
     id: 'purser', keeper: 'purser', name: "THE PURSER'S COUNTER",
-    blurb: "Margarite's dock. Buys crude, Cogitomaps and whatever a Well gives, and pays as the King's island pays: dear, for order.",
+    blurb: "Margarite's dock. Buys crude, Cogitomaps, rutters and whatever a Well gives, and pays as the King's island pays: dear, for order.",
     sells: { 'cask.mirth': 8, 'cask.wonder': 8 }, // (Margarite's own grades: light, cheap to carry)
-    trade: ['crude', 'map'], buys: ['crude', 'map', 'material'],
+    trade: ['crude', 'map', 'rutter'], buys: ['crude', 'map', 'rutter', 'material'],
     markup: 1, haggle: false, island: 'margarite',
   },
 };

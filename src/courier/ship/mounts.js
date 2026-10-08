@@ -24,7 +24,7 @@ import { MOUNTS } from '../../progress/rail/mounts.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { sfx } from '../../audio/sfx.js';
 
-const KEYS = ['Digit1', 'Digit2'];
+const KEYS = ['Digit1', 'Digit2', 'Digit3']; // (a frigate carries three: mounts by hull, rail/mounts.js slotsOf)
 const _d = new THREE.Vector3(), _a = new THREE.Vector3();
 /** Is a point within a cone from `from` along unit `dir` (half-angle in degrees, reach in m)? */
 const inCone = (p, from, dir, deg, reach) => { _d.copy(p).sub(from); const d = _d.length(); return d <= reach && d > 1e-3 && _d.dot(dir) / d >= Math.cos((deg * Math.PI) / 180); };

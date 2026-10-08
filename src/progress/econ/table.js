@@ -140,10 +140,10 @@ export const ECON = {
     dread:  { worth: 1.25, volatility: 1.6 },   // the richest and the most dangerous to carry
   } },
   /** THE SHIPS (the Vessoul's Emocean forms, by trade: LORE.md): how much each holds, of what, how slow a hop is (x the hop's time),
-   *  its `hull` (x the spill chance; 1 when unsaid), and its `burn` (x the hop's fuel; its `slow` when unsaid: a light hull burns little,
+   *  its `hull` (x the spill chance; 1 when unsaid), and its `fill` (x the hop's fuel, the price of a full tank: rail/ships.js `burn` is what a waypoint burns; its `slow` when unsaid: a light hull burns little,
    *  so a sloop's small hold still pays a short errand, R57: at the tanker's burn it lost 25-35 cubes a run). */
   ships: {
-    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8, burn: 0.3 },  // errands and small cargo
+    sloop:     { hold: 8,  carries: ['crude', 'goods'], slow: 0.8, fill: 0.3 },  // errands and small cargo
     frigate:   { hold: 6,  carries: ['goods'],          slow: 0.9 },  // escort
     galleon:   { hold: 40, carries: ['cubes', 'goods'], slow: 1.3 },  // refined cubes: treasure
     destroyer: { hold: 2,  carries: ['goods'],          slow: 0.7 },  // hunting Egregores
@@ -186,6 +186,10 @@ export const ECON = {
    *  (minutes of play: the first an hour's earnings, the fourth a committed week's surplus), each also gated by a Firing so money alone
    *  never buys them; features by their size (minutes of play, plus one material of their phase); a spirit at work adds its matching
    *  stat's share of `work` to its slot or bed (999 in the stat: the whole +25%). */
+  /** MYGGDRASIL'S PLANETOID (docs/plans/MYCELIUM.md; the owner, 2026-10-08: "own planetoid", "its model BIG"): given, not bought, at the
+   *  second Firing (Sinter: a milestone opens it, Stardew's bundles), the largest planetoid (radius in metres) and the tree a landmark
+   *  seen from every other (height in metres). */
+  myggdrasil: { firing: 2, radius: 26, treeHeight: 48 },
   place: { planetoids: [60, 120, 240, 480], planetoidFiring: [3, 4, 5, 6], features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
   /** SOUL ALCHEMY: seven attributes, `ranks` each; firing at rank r spends `fuel[0] + r x fuel[1]` minutes of play in refined Lachryma
    *  (cubes), and hits only within `radius` of the attribute's place on the wheel, narrowing from radius[0] at rank 0 to radius[1] at the
@@ -200,7 +204,13 @@ export const ECON = {
     // in `sat`, bent by its kind's `wind`; `draughtPull`: each material pressed while a draught lasts pulls this share x the draught's
     // strength more toward the draught's feeling (keyed on game.draught, which fades over a real minute; brimming lasts 2 real seconds).
     seasonMax: 100, seasonCeiling: 0.13, seasonPerHour: 10, aim: [0.5, 0.5], trueShare: 0.25, formationClamp: [0.5, 2],
-    pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08 }, // (each feeling's hue: weather.js COLOR, the one table)
+    pull: { share: [0.3, 0.12], sat: [0.3, 0.95], wind: 0.35 }, draughtPull: 0.08, memory: 0.3 }, // (memory: a drop's saturation leans this far toward the weather's strength it was won in, the owner's 7a, A) // (each feeling's hue: weather.js COLOR, the one table)
+
+  /** THE RUTTER (docs/plans/PASSAGE.md): a passage's map is worth `share` of what its sailed minutes earn at the aim, by its rank, and
+   *  `stale` of that each game day after (the sea chart reseeds daily); the Purser buys at worth (by island demand) and sells at `list`
+   *  x worth to the haulers whose charted-only ships need one. A sloop scouting and selling S rutters, read whole, earns about 0.9 x aim
+   *  from rutters alone: with its cargo it is held under the 1.5 x cap in scripts/economy.mjs (the hauler and scout profiles, to come). */
+  passage: { share: 0.6, rank: { S: 1.5, A: 1.2, B: 1, C: 0.8, D: 0.6 }, stale: 0.5, list: 1.3 }, // (list: the Purser sells a rutter at 1.3 its worth: a tanker's ticket; the owner, 2026-10-08: rutters are a livelihood)
 
   // ---- emotional weather and the day (docs/plans/WEATHER.md; progress/weather.js)
   /** THE WEATHER: an island's mood, a slow wave along the Law-Chaos line about the island's own place on it (`lean` of its law), read

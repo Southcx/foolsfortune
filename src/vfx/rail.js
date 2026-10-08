@@ -17,6 +17,7 @@
 // Rez's view changes on the bar, Wind Waker's wake and bow spray (a boat's speed read from its water), and the PS2's feedback blur.
 //
 //   RAIL_VIEWS[name] -> { pos, look, fov }   swingLook(game, k 0..1, from, to) -> fov   new ShipWake(game)   .update(rawDt, ship, sea)
+//   foamMaterial(uniforms = { uT })   the foam's material (one program: the wake's lines and the Umbral's splash rings, vfx/umbral.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 export { ShoalLook } from './shoal.js'; // (the set pieces' looks ride along: game.railLook.ShoalLook, .BrigLook, .LeviathanLook)
@@ -50,6 +51,11 @@ void main() {
   gl_FragColor = vec4(vec3(0.9, 0.86, 0.95) * 0.45, a * 0.4);                        // (pale foam on the ink: kept low, the scene is linear)
 }`;
 
+/** The foam's material: a strip with uv.x along it, uv.y across it and an age per vertex (aAge, 0 new .. 1 gone). One program for all. */
+export function foamMaterial(u = { uT: { value: 0 } }) {
+  return new THREE.ShaderMaterial({ name: 'ship-wake', uniforms: u, vertexShader: FOAM_V, fragmentShader: FOAM_F, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+}
+
 export class ShipWake {
   constructor(game) {
     this.game = game; this.t = 0; this.acc = 0;
@@ -60,7 +66,7 @@ export class ShipWake {
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage)); g.setAttribute('aAge', new THREE.BufferAttribute(age, 1).setUsage(THREE.DynamicDrawUsage));
       g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx);
-      const m = new THREE.Mesh(g, new THREE.ShaderMaterial({ name: 'ship-wake', uniforms: this.u, vertexShader: FOAM_V, fragmentShader: FOAM_F, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+      const m = new THREE.Mesh(g, foamMaterial(this.u));
       m.frustumCulled = false; m.renderOrder = 3; game.scene?.add(m);
       return { side, m, pts: [] }; // (pts: newest first: { x, z, dx, dz (across), born })
     });

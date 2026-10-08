@@ -10,7 +10,7 @@
 // folklore (a genie, a spirit sealed in a vessel).
 //
 //   game.bound = new Bound(game)   .bind(creature, from, by?) -> entry   .add(entry)   .list   .release(i)
-//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, spirit, by }, spirit.release { kind, spirit, by }
+//   events: spirit.bind { from: 'lockheart' | 'hand', kind, cls, spirit, by }, spirit.release { kind, spirit, feeling, by }
 // ---------------------------------------------------------------------------------------
 import { now as calNow } from '../core/calendar.js';
 
@@ -46,7 +46,7 @@ export class Bound {
   release(i) {
     const e = this.list.splice(i, 1)[0]; if (!e) return null;
     this.game.save?.dirty('bound');
-    this.game.events?.emit('spirit.release', { kind: e.kind, spirit: e.name || null, by: 'courier' });
+    this.game.events?.emit('spirit.release', { kind: e.kind, spirit: e.name || null, feeling: e.sp?.feeling ?? null, by: 'courier' }); // (its feeling: the keepsake pot sings in its mode, Dovina's)
     return e;
   }
 }

@@ -21,7 +21,7 @@ import { stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { COLOR } from '../progress/weather.js';
 
 const DRINKS = new Set(['bauble', 'bottle', 'absorb', 'gulp', 'parry']); // (what is drunk from the world; a refill from a jackpot or a wave is not a drink)
-const BRIM = 2, QUIET = 5; // (real seconds brimming after an overflow; real seconds of quiet before it settles)
+const BRIM = 2, QUIET = 5, SAY = 6; // (real seconds brimming after an overflow; real seconds of quiet before it settles; real seconds brimming must lapse before "You settle." is said: casebook rule 72)
 
 export class CourierMind {
   constructor(game) {
@@ -47,7 +47,7 @@ export class CourierMind {
     const g = this.game, S = stoneOf(this.stone);
     this.mind = pushed(this.mind, S.heady * (over ? COURIER_MIND.perOverflow : COURIER_MIND.perDrink) * amount);
     this.quiet = 0;
-    if (over) { if (!this.brimming) g.events?.emit('mind.brim', { by: 'courier' }); this.brimT = BRIM; }
+    if (over) { if (!this.said) { this.said = true; g.events?.emit('mind.brim', { by: 'courier' }); } this.brimT = BRIM; this.sayT = 0; } // (said once a spell: overflow after overflow at sea is one spell)
     const w = g.weather?.here?.(g.player?.pos);
     if (w?.aspect) { const d = draughtOf(this.stone, w.aspect, w.strength, w.second || null, w.secondStrength || 0); if (Object.keys(d).length) g.draught = d; }
     this.dirty();
@@ -56,7 +56,8 @@ export class CourierMind {
   update(dt) {
     const g = this.game;
     this.quiet += dt;
-    if (this.brimT > 0 && (this.brimT -= dt) <= 0) g.events?.emit('mind.settle', { by: 'courier' });
+    if (this.brimT > 0) this.brimT -= dt;
+    else if (this.said && (this.sayT = (this.sayT || 0) + dt) >= SAY) { this.said = false; g.events?.emit('mind.settle', { by: 'courier' }); } // (the spell said over only when it has lapsed a while)
     if (this.quiet > QUIET && this.mind !== 0) { this.mind = settle(this.mind, dt, 0); if (this.mind === 0) this.dirty(); }
     for (const k of Object.keys(g.draught)) { g.draught[k] -= DRAUGHT.fadePerSec * dt; if (g.draught[k] <= 0) delete g.draught[k]; }
     { const d = g.draught, lead = Object.keys(d).sort((a, b) => d[b] - d[a])[0]; g.draughtHex = lead ? COLOR[lead] ?? null : null; } // (the draught's colour, from the one feeling table: the garden's sky reads it)

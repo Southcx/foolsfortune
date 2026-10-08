@@ -10,8 +10,30 @@ import { KINDS } from '../../progress/econ/materials.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
 import { FEATURES, VISITORS } from '../../progress/realm.js';
+import { STRAINS, CAPS, STRAIN_NAMES } from '../../progress/mycelium.js';
 
 export function gardenRules({ on, L, log }) {
+  // the mycelium (progress/sporebeds.js, progress/myggdrasil.js, progress/keepsakes.js: MYCELIUM.md); names Espada's (LORE.md "The
+  // mycelium"), the lines placeholders for hers
+  const STRAIN = STRAIN_NAMES;
+  on('spore.bed', (e) => { if (e.by === 'courier') L.inc('spore.bed'); });
+  on('spore.learn', (e) => { if (e.by !== 'courier') return; L.inc('spore.learn'); L.inc(`spore.learn.${e.strain}`); log.say('gain', `You have spores of ${STRAIN[e.strain]}.`); });
+  on('spore.inoculate', (e) => { if (e.by === 'courier') L.inc('spore.inoculate'); });
+  on('spore.set', (e) => { if (e.by === 'courier') L.inc('spore.set'); });
+  on('spore.harvest', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('spore.harvest'); L.inc(`spore.${e.verb}`);
+    if (e.verb === 'graft') { if (e.pair) L.inc(`spore.graft.pair.${e.pair}`); L.hi('spore.graft.tier', e.tier || 0); if (e.up) L.inc('spore.graft.up'); for (const id of e.made) L.inc(`spore.graft.made.${id}`); }
+    log.say('loot', `${STRAIN[e.strain][0].toUpperCase()}${STRAIN[e.strain].slice(1)} gives up ${(e.names || e.made).join(', ')}.`);
+  });
+  on('myggdrasil.feed', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.feed'); L.inc('myggdrasil.fed', e.worth || 0); });
+  on('myggdrasil.girth', (e) => { if (e.by !== 'courier') return; L.hi('myggdrasil.caps', e.caps); { const c = CAPS[e.caps - 1]; log.say('gain', `Myggdrasil grows. ${c[0].toUpperCase()}${c.slice(1)} opens.`); } });
+  on('myggdrasil.fruit', (e) => { if (e.by === 'courier') L.inc('myggdrasil.fruit', e.n || 0); });
+  on('myggdrasil.pick', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.pick', e.n || 0); log.say('loot', `You pick ${e.n} from Myggdrasil's crown.`); });
+  on('myggdrasil.hang', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.hang'); L.inc(`myggdrasil.hang.${e.arcana}`); log.say('info', 'You hang the card on its branch. The branch takes it.'); });
+  on('myggdrasil.sporeling', (e) => { if (e.by === 'courier') { L.inc('myggdrasil.sporeling'); log.say('info', 'A sporeling drops from the crown.'); } });
+  on('keepsake.pot', (e) => { if (e.by === 'courier') { L.inc('keepsake.pot'); log.say('info', `${e.spirit || 'Your spirit'} is fired into a keepsake pot. It stays.`); } });
+
   // one line a press, never one a material (SOUL-ALCHEMY 4.20, Espada's words): the press emits alchemy.press as each material's walk
   // ends, about a real second apart, so the lines fold into one that names them all; "The colour greys." once a press
   let pressed = [], greyed = false;

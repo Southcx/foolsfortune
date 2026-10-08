@@ -105,8 +105,8 @@ export class Cubes {
   }
 
   // ---------------------------------------------------------------- the currency (the ledger's numbers)
-  get balance() { const L = this.game.ledger; return Math.max(0, Math.round(L.get('cube.earned') - L.get('cube.spent'))); }
-  earn(n, why = 'pickup') { if (n > 0) this.game.ledger.inc('cube.earned', n); this.game.events?.emit('cube.earn', { n, why, by: 'courier' }); }
+  get balance() { const L = this.game.ledger; return Math.max(0, Math.round(L.get('cube.earned') + (L.get('cube.debug') || 0) - L.get('cube.spent'))); }
+  earn(n, why = 'pickup') { if (n > 0) this.game.ledger.inc(why === 'debug' ? 'cube.debug' : 'cube.earned', n); this.game.events?.emit('cube.earn', { n, why, by: 'courier' }); } // (a debug chest's cubes are spent like any, never counted as earned: docs/plans/DEBUG-CHESTS.md)
   spend(n, why = 'spend') {
     if (this.balance < n) return false;
     this.game.ledger.inc('cube.spent', n);

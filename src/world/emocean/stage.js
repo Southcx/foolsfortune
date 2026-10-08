@@ -23,7 +23,7 @@
 // as a line the camera rides and looks round from), the arcade's CONTINUE? screen, Squirrel Eiserloh's "Juicing Your Cameras With Math".
 //
 //   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
-//   .stage { active, seconds, setPieces }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld }
+//   .stage { active, seconds, setPieces, foe: { id, under } | null }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }
 //   .blow(n, { by, what, rollable })   .endPay(end)   (the set pieces')
 //   /crossing shoal,pirates,leviathan   (the chat line: the next crossing's set pieces, for testing them on demand; the dice and the deck otherwise)
 // ---------------------------------------------------------------------------------------
@@ -31,17 +31,22 @@ import * as THREE from 'three';
 import { T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 import { CrudeSea } from '../../vfx/crudesea.js';
+import { warpObject, warpMaterial, keepTrue } from '../../vfx/stormwarp.js';
 import { ShipWake, swingLook } from '../../vfx/rail.js';
 import { COLOR } from '../../progress/weather.js';
 import { stageAt } from '../../music/emocean.js';
 import { BAR_S, viewAt, script } from '../../progress/rail/crossing.js';
 import { SCORE, chain, chainDown, volleyBonus, downScore } from '../../progress/rail/score.js';
 import { STAGE } from '../../progress/econ/emocean.js';
-import { blendRig, rig } from '../../courier/ship/views.js';
+import { blendRig, rig, CRUISE } from '../../courier/ship/views.js';
+import { RailPath, figureFor, FIGURES } from './railpath.js';
+import { stream } from '../../core/rng.js';
 import { Ship } from '../../courier/ship/ship.js';
+import { SHIPS } from '../../progress/rail/ships.js';
 import { Shots } from '../../courier/ship/shots.js';
 import { Mounts } from '../../courier/ship/mounts.js';
 import { Waves } from './waves.js';
+import { TripRun } from './triprun.js';
 import { ShoalPiece } from './shoal.js';
 import { PiratesPiece } from './pirates.js';
 import { LeviathanPiece } from './leviathan.js';
@@ -50,6 +55,7 @@ import { openSea } from '../../render/zonemap.js';
 /** Where the crossing is sailed: the rail's first point (render/zonemap.js 'emocean' holds it), at the dunes' layer. */
 export const SEA_AT = { x: -3000, y: -420, z: -2000 };
 const _sh = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0 };
+const _up = new THREE.Vector3(), _bx = new THREE.Vector3(), _by = new THREE.Vector3(), _bz = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0), _m4 = new THREE.Matrix4();
 /** Aboard, what is the Courier's on foot steps out of the picture (as in a shot: vfx/cinema.js); the log stays, it carries what is said. */
 const CSS = 'body.aboard #compass, body.aboard #speed, body.aboard #course, body.aboard #locks, body.aboard #crosshair, body.aboard #toolstrip { opacity: 0 !important; }';
 
@@ -57,14 +63,22 @@ export class Emocean {
   constructor(game) {
     this.game = game;
     this.stage = { active: false, seconds: STAGE.seconds, setPieces: ['shoal'], setPiece: 'shoal' };
-    const Q = new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z);
+    const Q = new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), q = new THREE.Quaternion(), qi = new THREE.Quaternion();
+    // the rail's frame: the rail point Q and its turn q along the path (railpath.js: straight and level through the legs, a figure
+    // at each turn of the rail); local x is across (the chase view's screen right, world -X at no turn), y up, z along
     this.rail = {
-      Q, speed: T.ship.speed,
-      toWorld: (l, out) => out.set(Q.x - l.x, Q.y + l.y, Q.z + l.z), // (R is world -X: the chase view's screen right)
-      dirWorld: (v, out) => out.set(-v.x, v.y, v.z),
+      Q, q, qi, speed: T.ship.speed, path: new RailPath(),
+      toWorld: (l, out) => out.set(-l.x, l.y, l.z).applyQuaternion(q).add(Q),
+      dirWorld: (v, out) => out.set(-v.x, v.y, v.z).applyQuaternion(q),
+      toLocal: (w, out) => { out.copy(w).sub(Q).applyQuaternion(qi); out.x = -out.x; return out; }, // (the inverse: the aim's camera ray into the rail's frame)
+      dirLocal: (v, out) => { out.copy(v).applyQuaternion(qi); out.x = -out.x; return out; },
+      up: (out) => out.set(0, 1, 0).applyQuaternion(q),
+      /** The rail point and frame at the stage's time t (real seconds). */
+      seat: (t) => { this.rail.path.at(this.rail.speed * t, Q, q); qi.copy(q).invert(); },
     };
     this.ship = new Ship(game, this.rail); this.shots = new Shots(game, this.rail); this.waves = new Waves(game, this.rail);
     this.mounts = new Mounts(game, this);
+    this.trip = new TripRun(this); // (a drafted passage sailed as the rollercoaster: Dovina's legs, patterns and shot field; world/emocean/triprun.js)
     this.pieces = { shoal: new ShoalPiece(this), pirates: new PiratesPiece(this), leviathan: new LeviathanPiece(this) };
     this.t = 0; this.bar = 0; this.run = null; this.plan = null; this.trauma = 0; this.volleys = []; this.piece = null;
     this.wire();
@@ -77,14 +91,16 @@ export class Emocean {
     const g = this.game, sc = g.scene;
     this.sea = new CrudeSea({ env: g.sky?.env || null, y: SEA_AT.y });
     this.sea.mesh.visible = false; this.sea.mesh.userData.zoneFree = true; sc.add(this.sea.mesh);
-    this.ship.build(sc); this.shots.build(sc); this.waves.build(sc);
+    this.ship.build(sc); this.shots.build(sc); this.waves.build(sc); this.trip.boot(sc);
+    for (const o of [...(this.shots.meshes || []), ...this.shots.outlines.map((r) => r.mesh), this.ship.near, this.ship.far, ...this.ship.marks]) o?.traverse((c) => { if (c.material) for (const m of [].concat(c.material)) keepTrue(m, { opaque: true }); }); // (the danger stays true under the storm's veil: the shots, the outlined and their parry mark, the reticles and the lock marks; vfx/stormwarp.js)
     for (const p of Object.values(this.pieces)) p.build(sc);
+    for (const id of ['pirates', 'leviathan']) warpObject(this.pieces[id].look.group); warpMaterial(this.pieces.leviathan.look.shadowM?.material); // (the big objects bend with the storm, seated whole, and Old Nobody's shadow with the sea: vfx/stormwarp.js)
     this.wake = new ShipWake(g); for (const ln of this.wake.lines) { ln.m.visible = false; ln.m.userData.zoneFree = true; }
     this.built = true;
   }
   /** What is parked for the warm-up's compile (main.js shows them for one draw, then hides them again). */
-  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m)]; }
-  show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; }
+  parked() { return [this.sea.mesh, this.waves.parked, this.ship.sloop.group, this.pieces.shoal.look.group, this.pieces.pirates.look.group, this.pieces.leviathan.look.group, ...this.pieces.pirates.boarders.map((b) => b.group), ...this.wake.lines.map((l) => l.m), ...this.trip.parked(), ...this.shots.parked()]; } // (the shots' looks: vfx/railshots.js, itano.js, telegraph.js)
+  show(on) { this.sea.mesh.visible = on; this.ship.show(on); this.shots.show(on); this.trip.show(on); for (const ln of this.wake?.lines || []) ln.m.visible = on; }
 
   /** What the ship and the waves tell the run. */
   wire() {
@@ -92,6 +108,7 @@ export class Emocean {
     W.onSpawn = (n) => { if (this.run) this.run.spawned += n; };
     W.onDown = (f, { returned, volley }) => this.down(f, returned, volley);
     S.onHit = () => this.wound(1, { by: 'creature', what: 'shot' });
+    S.onSurge = () => { if (this.run) this.run.chain = chain(); }; // (the surge's price: the chain)
     S.onAbsorb = () => { const r = this.run; if (!r || this.ending) return; r.absorbed++; r.score += SCORE.absorb; this.game.lachryma?.gain(T.ship.absorb, 'absorb'); };
     S.onRoll = () => { if (this.run) this.run.rolls++; };
     S.onParry = (n) => {
@@ -113,15 +130,20 @@ export class Emocean {
     if (!V || !plan || this.stage.active) return false;
     if (!this.built) this.build();
     this.plan = plan; this.to = V.to;
+    // a drafted passage: its legs as the trip runtime lays them (the cue's layout), in place of the script's acts and waves
+    const trip = this.trip.begin(V);
+    if (trip) this.plan = { ...plan, acts: [], beats: [], waves: [], swings: this.trip.swings, bars: trip.bars, seconds: trip.bars * BAR_S };
+    this.waves.quiet = !!trip; // (on the new legs the schedule is the only source of shots: Dovina's ask)
     const aspect = g.weather?.at?.(V.from)?.aspect || 'mirth'; // (your draught when the stones keep one; until then the island's mood)
     const go = () => {
-      Object.assign(this.stage, { setPieces: plan.setPieces, setPiece: plan.setPiece, seconds: plan.seconds || plan.bars * BAR_S }); // (the cue chained to them: music/choose.js)
-      this.stage.active = true;
+      Object.assign(this.stage, { setPieces: plan.setPieces, setPiece: plan.setPiece, seconds: this.plan.seconds || this.plan.bars * BAR_S }); // (the cue chained to them: music/choose.js; a passage's legs: the trip's)
+      this.stage.active = true; this.stage.foe = null; // (a boss's state for the music: { id, under }, set by its set piece)
       this.t = 0; this.bar = 0; this.ending = false; this.trauma = 0; this.volleys = []; this.beaten = new Set(); this.mended = new Set(); this.piece = null; this.offering = false;
-      this.run = { passed: true, hits: 0, bears: STAGE.bears + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
-      this.rail.Q.set(SEA_AT.x, SEA_AT.y, SEA_AT.z);
-      this.ship.begin(aspect); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
-      this.shots.clear(); this.waves.begin(plan, aspect); this.mounts.begin(V.mounts || []);
+      this.run = { passed: true, hits: 0, bears: (SHIPS[V.ship]?.bears ?? STAGE.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), // (by hull: progress/rail/ships.js)
+        ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain() };
+      this.lay(trip); this.rail.seat(0);
+      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.sloop?.polarity?.(COLOR[aspect] ?? 0xffc65c);
+      this.shots.clear(); this.waves.begin(this.plan, aspect); this.mounts.begin(V.mounts || []);
       this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
       this.hold(); this.camera(0, true);
@@ -143,25 +165,29 @@ export class Emocean {
   /** Once a frame (before the camera: main.js). */
   update(dt) {
     const g = this.game, raw = g.rawDt ?? dt;
-    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('crossing', { help: 'the next crossing\'s set pieces, one to three of shoal, pirates, leviathan: /crossing pirates,leviathan', run: (_, arg) => { const L = String(arg || '').split(/[ ,]+/).filter((x) => this.pieces[x]).slice(0, 3); this.force = L.length ? L : null; g.events?.emit('rail.force', { setPieces: L, by: 'courier' }); } }); }
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('crossing', { help: 'the next crossing\'s set pieces, one to three of shoal, pirates, leviathan: /crossing pirates,leviathan', run: (_, arg) => { const L = String(arg || '').split(/[ ,]+/).filter((x) => this.pieces[x]).slice(0, 3); this.force = L.length ? L : null; g.events?.emit('rail.force', { setPieces: L, by: 'courier' }); } });
+      g.chat.add('figure', { help: 'the next crossing\'s turns of the rail all one figure (weave, crest, corkscrew, verticalLoop), or none to draw them: /figure verticalLoop', run: (_, arg) => { const f = String(arg || '').trim(); this.figure = FIGURES[f] ? f : null; g.events?.emit('rail.figure', { figure: this.figure, by: 'courier' }); } }); }
     if (!this.stage.active) { this.unfinished(); this.ashore(raw); return; }
     if (this.offering) { if (!g.indexMenu?.open) this.decline(); return; } // (the coin's page closed unanswered: the ship breaks up)
     this.clock(raw);
-    const bar = this.bar, sw = this.swingAt(bar), view = sw ? (sw.k < 0.5 ? sw.from : sw.to) : viewAt(bar, this.plan);
-    this.rail.Q.set(SEA_AT.x, SEA_AT.y, SEA_AT.z + this.rail.speed * this.t);
-    this.legs(bar);
+    const bar = this.bar, sw = this.swingAt(bar), view = sw ? (sw.k < 0.5 ? sw.from : sw.to) : this.viewNow(bar);
+    this.rail.seat(this.t);
+    if (!this.trip.active) this.legs(bar);
     const rel = this.piece ? bar - this.piece.leg.from : 0;
     this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) });
     if (!this.stage.active || this.offering) return;
     const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves };
     this.piece?.update(dt, rel, ctx);
     this.waves.update(dt, ctx);
+    if (this.trip.active) this.trip.update(dt, bar); // (after the waves: Dovina's order)
     this.shots.update(dt, ctx);
     this.mounts.update(dt, ctx);
     if (!this.stage.active || this.offering) return;
     this.settle();
     this.hold();
+    this.form = this.ship.form; // (Wanda's ambience reads it: under, the music low-passed)
     this.camera(raw);
+    this.ship.reaim(); // (the reticle under the cursor through this frame's camera)
     this.look(raw, bar);
     for (const b of this.plan.beats || []) if (bar >= b.bar && !this.beaten.has(b.bar)) { this.beaten.add(b.bar); g.events?.emit('rail.beat', { beat: b.beat, setPiece: b.setPiece, leg: b.leg, by: 'environment' }); }
     if (this.t >= this.stage.seconds) this.finish(true);
@@ -183,6 +209,18 @@ export class Emocean {
       const r = this.run, m = Math.min(r.hits, act.mends); r.hits -= m;
       this.game.events?.emit('rail.mend', { mend: m, hits: r.hits, bears: r.bears, by: 'environment' });
     }
+  }
+  /** The view at a bar: the trip's phase's on a drafted passage, the script's acts on a direct hop. */
+  viewNow(bar) { return this.trip.active || !this.plan?.acts?.length ? this.trip.viewAt(bar) : viewAt(bar, this.plan); } // (a trip's last frames, ending: its views kept)
+
+  /** A leg's director started at its peak (the trip's leg runner calls it): the set piece runs to its leg's end. */
+  startPiece(id) {
+    if (!this.pieces[id] || this.piece) return;
+    const L = this.trip.layout?.legs[this.trip.k], bar = this.bar;
+    this.pieceId = id; this.piece = this.pieces[id];
+    this.piece.leg = { k: this.trip.k, from: bar, to: L ? L.end : bar + 34, setPiece: id };
+    this.piece.begin(this.piece.leg);
+    this.game.glitch?.pulse({ split: 0.7, tear: 0.5, mosh: 0.25, crush: 0.5, dur: 0.7 });
   }
   /** A set piece's last bar: its director's end said and paid (if it has not been already). */
   close() {
@@ -215,16 +253,33 @@ export class Emocean {
     P.place?.();
   }
 
+  /** The rail laid for this crossing: a drafted passage's turns of the rail flown as figures (railpath.js); a direct hop straight. */
+  lay(trip) {
+    const sp = this.rail.speed, len = 4 * BAR_S * sp, rng = stream('rail/path'), L = this.trip.layout;
+    const turns = trip && L ? L.turns.map((bar, i) => ({ at: bar * BAR_S * sp, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 })) : [];
+    this.rail.path.lay({ start: new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), length: (this.plan.seconds || STAGE.seconds) * sp + 400, turns, heart: CRUISE });
+    this.figures = turns.map((t) => t.figure);
+  }
+  /** The camera's roll that keeps its up the rail's up (the figure's bank, the loop's back): the angle from the up a look-at with the
+   *  world's up gives (player.js camShot) to the frame's up, about the line of sight. Zero on a level rail. */
+  frameRoll(pos, look) {
+    this.rail.up(_up); if (_up.y > 0.9999) return 0;
+    _m4.lookAt(pos, look, _Y); _m4.extractBasis(_bx, _by, _bz);
+    _up.addScaledVector(_bz, -_up.dot(_bz)); if (_up.lengthSq() < 1e-8) return 0;
+    return Math.atan2(-_up.dot(_bx), _up.dot(_by));
+  }
+
   /** The camera: the view's rig (or the swing's blend, with its smear and breath), shaken by trauma squared, through the cinema's shot. */
   camera(raw, cut = false) {
     const g = this.game, sw = this.swingAt(this.bar), S = this.ship.local;
-    if (sw) { blendRig(sw.from, sw.to, sw.k, this.rail.Q, S, _sh); swingLook(g, sw.k, sw.from, sw.to); _sh.fov += 6 * Math.sin(Math.PI * sw.k); this.swinging = true; }
-    else { rig(viewAt(this.bar, this.plan), this.rail.Q, S, _sh); if (this.swinging) { swingLook(g, 1); this.swinging = false; } }
+    if (sw) { blendRig(sw.from, sw.to, sw.k, this.rail, S, _sh); swingLook(g, sw.k, sw.from, sw.to); _sh.fov += 6 * Math.sin(Math.PI * sw.k); this.swinging = true; }
+    else { rig(this.viewNow(this.bar), this.rail, S, _sh); if (this.swinging) { swingLook(g, 1); this.swinging = false; } }
     this.trauma = Math.max(0, this.trauma - T.ship.trauma.decay * raw);
     const k = this.trauma * this.trauma, tt = this.t * 23;
     _sh.pos.x += k * 0.5 * Math.sin(tt * 1.7); _sh.pos.y += k * 0.5 * Math.sin(tt * 2.3 + 1);
-    const roll = k * 0.06 * Math.sin(tt * 1.3 + 2);
+    const roll = k * 0.06 * Math.sin(tt * 1.3 + 2) + this.frameRoll(_sh.pos, _sh.look);
     g.cinema?.shot('rail', { pos: _sh.pos, look: _sh.look, fov: _sh.fov, roll, bars: 0, ease: cut ? 60 : 40 });
+    if (g.player?.camShot) g.player.camShot.roll = roll; // (the cinema hands the camera its shot before this runs: its pos and look are this frame's by reference, so its roll must be too, or a loop's flip is a frame upside down)
   }
 
   /** The sea and the ship's looks: the breathers lay the swells down; the wake at speed; the hull's steady glow after a hit; polarity. */
@@ -232,6 +287,7 @@ export class Emocean {
     const g = this.game, act = this.plan.acts.find((a) => bar >= a.from && bar < a.to), S = this.ship;
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
     this.sea.set({ calm: this.calm }); this.sea.update(this.t, g.camera.position);
+    g.stormWarp?.set({ storm: this.piece ? 0.45 : 0.2 * (1 - this.calm), weather: g.weather?.at?.(this.to) ?? 0 }); // (the storm warp, vfx/stormwarp.js: a stand-in storm until each leg carries its own, RAIL-OVERHAUL.md section 5)
     const sl = S.sloop;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
@@ -321,7 +377,7 @@ export class Emocean {
    *  (the ship broken) made whole at their last Shrine, as a shatter does. */
   finish(passed) {
     if (!this.stage.active || this.ending) return;
-    this.ending = true;
+    this.ending = true; this.stage.foe = null; this.trip.stop();
     const g = this.game, r = this.run;
     if (this.piece) { const end = this.piece.finish(); if (end) r.end = end; this.piece = null; }
     r.passed = passed && r.hits < r.bears;

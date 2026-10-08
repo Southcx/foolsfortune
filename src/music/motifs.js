@@ -18,6 +18,9 @@
 //            top, the In scale's; rung on a bell, then the brass's, then four calves' at once
 //   LEVIATHAN the rogue Leviathan of the crossing (docs/plans/RAIL.md): low and slow, E to the Tear's F and back, then falling to C
 //            and the B under the floor, two bars; the beast you survive more than kill (Moby-Dick, Shadow of the Colossus)
+//   BEACON   the drowned lighthouse of the crossing's graveyard (docs/plans/RAIL-OVERHAUL.md): a foghorn rising a fourth (B to E), then
+//            its lamp turning, an arpeggio up the E minor chord: the light that was a warning, woken (the Bell Rock, the Pharos)
+//   WHIRL    the maelstrom's: the Five folded on itself, two turns round and down, then to E (a whirlpool is a falling spiral)
 //
 //   import { MOTIF, quote } from './motifs.js'    quote(MOTIF.ESPADA, 'sitar', { at: 1, up: 12, x: 2, v: 0.5, o: { pan: 0.2 } })
 // ---------------------------------------------------------------------------------------
@@ -32,6 +35,8 @@ export const MOTIF = {
   AWAKEN: [[0, 1, 64], [1, 1, 69], [2, 0.5, 67], [2.5, 0.5, 71], [3, 2, 76]], // E A G B E: up a fourth, a turn, to the octave (the awakening song: a fossil woken by the Crucibelle)
   CROWN: [[0, 1, 71], [1, 1, 72], [2, 1, 76], [3, 0.5, 77], [3.5, 1.5, 76]], // B C E F E: up through the half step to the Tear on top (the Great Slip Jelly's urn crown)
   LEVIATHAN: [[0, 2, 40], [2, 1, 41], [3, 1, 40], [4, 2, 36], [6, 2, 35]], // E F E C B, two slow bars down at the floor: a whale's breath with the Tear in it (the crossing's rogue Leviathan)
+  BEACON: [[0, 3, 35], [3, 5, 40], [8, 0.5, 71], [8.5, 0.5, 76], [9, 0.5, 79], [9.5, 0.5, 83], [10, 2, 76]], // B to E, a foghorn two bars long, then the lamp turning (B E G B E): the drowned lighthouse that wakes
+  WHIRL: [[0, 0.25, 76], [0.25, 0.25, 74], [0.5, 0.25, 71], [0.75, 0.25, 74], [1, 0.25, 71], [1.25, 0.25, 69], [1.5, 0.25, 67], [1.75, 0.25, 69], [2, 2, 64]], // round and down, round and down, to E: the maelstrom
 };
 
 /** A motif as events for one instrument: `at` (beat), `up` (semitones), `x` (time stretch), `v`, and options for every note. */
