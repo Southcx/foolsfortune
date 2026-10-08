@@ -8,6 +8,9 @@ Blanks stay blank.
 already in the build that this page does not name are provisional. Strings that live in code are not repeated here: the code is the
 record (section 12 says where).
 
+**Every name here is on purpose.** Each carries its root, source and puns beside it (Pithos: Pandora's jar; Hap Lagan: the law of
+wrecks), so the double meanings are known to be meant, and anyone naming the next thing can see how the last was made.
+
 ---
 
 ## 1. The frame
@@ -38,6 +41,10 @@ record (section 12 says where).
 - **Excess Lachryma** drives anyone else mad by degrees, then transfigures them into a Figment: mercury poisoning meets Mr Hyde.
 - **Cogitohazard**: the umbrella for raw Lachryma's dangers and malicious Figments. **Figments** are hewn from an island's own psyche;
   **Egregores** spawn from the Emocean, authored by no one. Neither is good or bad by nature.
+- **Which is which** (the owner, 2026-10-08): a creature drawn from real human mythology is an **Egregore** (Charybdis, Old Nobody,
+  the Leviathans); one we make up is a **Figment**, and a Figment at large is either a **stray** (wandered from its island, still
+  itself: the Cantor) or an **aberrant** (gone wrong: a blotling). The rule is the lore: the Emocean is the collective unconscious,
+  and a myth is a story the whole sea tells, authored by no one person (Jung's archetypes); a Figment is one island's own thought.
 - **The System**: the game's code made a voice; all of us making the game. Flat, helpful, rare; it never jokes.
 - **Lachryma is everything**: magic and feeling alike. **Lachrymite** is its solid form (the mineralogist's *-ite*, "of the stone":
   the stone of tears): a cube is a coin of it, a crystal a formation of it. Inert and safe, so it is money. The game divides into STORY
@@ -461,7 +468,7 @@ roly-poly toy that rights itself, and a cup).
     the posted price." · a bounty "Letty's mark is ahead." A turn of the rail, a breach, a dive and the surge say nothing: they are
     seen.
 
-### The encounters at sea *(Espada's names for Dovina's seven, `progress/rail/encounters.js`, PASSAGE.md section 13; proposed, 2026-10-08)*
+### The encounters at sea *(canon: the owner, 2026-10-08; Espada's names for Dovina's seven, `progress/rail/encounters.js`, PASSAGE.md section 13)*
 Each: its name and root, then the log's lines (arrival · each choice) and the choices' words (STE: a verb first).
 - **ghostConvoy: the Dead Reckoners.** Ghost ships that still sail by dead reckoning (the navigator's "ded.", deduced; the reckoning's
   own word), so following them shows the way ahead. Why they sail on is a blank. "Ghost ships in the fog: the Dead Reckoners." ·
@@ -472,7 +479,7 @@ Each: its name and root, then the log's lines (arrival · each choice) and the c
   Word." · *Take her bounty.* "Letty : Splendid, a second gun on the hunt, and the sea a little cleaner by supper!" · *Sell her your
   rutter.* "Letty : The way they came is the way we go to finish them. Poll, pay the Courier." "Poll : Paid! Paid!"
 - **lightWhale: the Cantor.** Latin *cantor*, the singer who leads the chant. Whale song carries across whole oceans in the deep sound
-  channel, so listening tells you the sea ahead (the lesson, unsaid). What it is (Figment, Egregore) is a blank. "Under the hull,
+  channel, so listening tells you the sea ahead (the lesson, unsaid). It is a **Figment**, a stray (the owner: made up, so a Figment); whose island it strayed from is a blank. "Under the hull,
   something sings: the Cantor." · *Listen.* "You listen. The sea ahead is clearer." · *Follow it down.* "You dive after the Cantor."
 - **castaway: Hap Lagan, and Bob.** In the law of wrecks, **lagan** is cargo sunk with a buoy tied to it, so the owner can come back for
   it (flotsam floats off, jetsam is thrown, lagan is marked, derelict is left). *Hap* is luck. A Contractor who went down marked to be
