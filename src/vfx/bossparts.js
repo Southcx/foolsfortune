@@ -66,7 +66,7 @@ export class BossPart {
     this.glow(); return this;
   }
   seal(on = true) { if (this.sealed !== on) { this.sealed = on; this.look?.(this, 'seal'); this.glow(); } return this; }
-  windup(k) { this.windupK = THREE.MathUtils.clamp(k, 0, 1); this.look?.(this, 'windup'); return this; }
+  windup(k) { this.windupK = THREE.MathUtils.clamp(k, 0, 1); this.look?.(this, 'windup'); this.glow(); return this; } // (its line and glow rises with it: glow() reads windupK)
   world(out = new THREE.Vector3()) { return this.telegraphAnchor.getWorldPosition(out); }
 
   /** The line and glow as the state, the seal and the pulse say. */

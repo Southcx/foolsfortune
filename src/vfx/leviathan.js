@@ -232,7 +232,6 @@ export class LeviathanLook {
     for (let i = 0; i < P.count; i++) { const lx = B[i * 3] * W / 2, lz = -B[i * 3 + 2] * L / 2, x = pos.x + lx * c + lz * s, z = pos.z - lx * s + lz * c; P.setXYZ(i, x, (sea?.heightAt?.(x, z) ?? pos.y) + 0.08, z); }
     P.needsUpdate = true;
   }
-  /** A sea mark is parked in the group for the warm-up; once the group is in a scene it lies in the scene's own frame. */
   /** A sea mark lies in the world's frame though it rides in the group (so it hides with it): its matrix undoes the group's. */
   unframe(M) { this.group.updateWorldMatrix(true, false); M.matrix.copy(this.group.matrixWorld).invert(); M.matrixWorldNeedsUpdate = true; }
   vantage(name, out = new THREE.Vector3()) { return this.vantages[name]?.getWorldPosition(out) ?? out.set(0, 0, 0); }

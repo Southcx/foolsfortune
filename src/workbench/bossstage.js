@@ -12,6 +12,10 @@
 //   12 .. 16  the cores go: the False Light's lamp damaged then broken, the wreck field spilling; the Drowned Light's lamp broken, the
 //             ghosts fading; Old Nobody's eye and tusks broken
 //
+// Prior art: this workbench's own stage builders (stages.js: `ship:sloop`, `slice:sea`: an object, a `tick` and a `settle`), Unity's prefab
+// stage and Unreal's asset preview scene (a thing seen alone, from any side, on a loop), and a fighting game's training mode (every
+// state of a character shown one after another so none is left unseen).
+//
 //   buildBossStage(id) -> Object3D | null   ids: 'crossing:bosses' (all three), 'crossing:bosses.falselight', '.oldnobody', '.drownedlight'
 //   obj.userData.tick(t)   obj.userData.settle(t) (run up to t, so a still shows the eased state)   obj.userData.objects { name: Object3D }
 //   obj.userData.looks { falselight, wreckfield, oldnobody, drownedlight } (the looks themselves: their parts, for trying a state by hand)

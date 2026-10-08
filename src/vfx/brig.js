@@ -99,7 +99,7 @@ function sailGeometries(span, drop, seed) {
 
 function canvasTexture(draw, w = 64, h = 64) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; return t;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = 4; return t; // (the pixels stay pixels up close; at a distance the cloth's seams are mipmapped, not a crawl)
 }
 const sailTex = () => canvasTexture((g, w, h) => { // (old canvas: seams down its cloths, patches sewn over the holes of other fights)
   g.fillStyle = '#857a69'; g.fillRect(0, 0, w, h);
@@ -303,7 +303,7 @@ export class BrigLook {
 
   part(name) { return this.parts.part(name); }
   /** Every part whole again, the lamp sealed, the colours flying (a new set piece). */
-  reset() { this.parts.reset(); this.lampPart.seal(true); this.lamp.set({ yaw: 0, warn: 0, hot: 0 }); this.strike(0); this.hurt(0); this.sink(0); this.rigBroken = this.rigDamaged = this.keelBroken = false; }
+  reset() { this.parts.reset(); for (const sx of [1, -1]) for (const p of this.ports[sx]) { p.open = 0; p.fired = 0; } this.lampPart.seal(true); this.lamp.set({ yaw: 0, warn: 0, hot: 0 }); this.strike(0); this.hurt(0); this.sink(0); this.rigBroken = this.rigDamaged = this.keelBroken = false; }
 
   /** Per frame: her heel and pitch (rad) and time. */
   set({ heel = 0, pitch = 0, t = this.t } = {}) { this.body.rotation.set(pitch + this.k.sink * 0.32, 0, heel + this.k.sink * 0.12); this.t = t; }
@@ -312,7 +312,7 @@ export class BrigLook {
   port(i, { side = 1, open = 0, gone } = {}) {
     const p = this.ports[side]?.[i]; if (!p) return;
     if (gone === true) { if (p.part) p.part.break(); else p.gone = true; } else if (gone === false) { if (p.part) p.part.set('intact'); else p.gone = false; }
-    p.open = p.gone ? 0 : open; if (p.part) p.part.windupK = p.open;
+    p.open = p.gone ? 0 : open; if (p.part) p.part.windup(p.open);
   }
   /** The volley's flash from port i (Petra counts the shot; this is its look). */
   fire(i, side = 1) {
@@ -360,7 +360,8 @@ export class BrigLook {
     const kb = (this.kb = ease(this.kb ?? 0, this.keelBroken ? 1 : 0, 2)), kd = this.parts.part('keel').state !== 'intact' ? 1 : 0;
     for (const h of this.keelHalves) h.g.rotation.x = -h.s * kb * 0.16;
     this.rudder.rotation.set(0, kb * 0.6 + Math.sin(t * 0.8) * 0.05, kb * 0.3);
-    const seam = 0.45 + 0.4 * kd + 0.6 * kb + 0.9 * this.parts.part('keel').windupK; // (its windup: the seams flare) this.seamMat.color.setHex(C.lure).multiplyScalar(seam * (0.9 + 0.1 * Math.sin(t * 1.7)) * (1 - this.k.sink * 0.5));
+    const seam = 0.45 + 0.4 * kd + 0.6 * kb + 0.9 * this.parts.part('keel').windupK; // (its windup: the seams flare)
+    this.seamMat.color.setHex(C.lure).multiplyScalar(seam * (0.9 + 0.1 * Math.sin(t * 1.7)) * (1 - this.k.sink * 0.5));
     this.holdMat.opacity = kb * (0.75 + 0.15 * Math.sin(t * 1.3));
     // the colours: hauled down, and drooping as they come
     const s = this.k.strike, sw = Math.sin(t * 5);
