@@ -526,6 +526,9 @@ if (part('repeat')) {
     S.check('passage: drafted at the sea chart by clicks, cast off, the trip sails its legs', b.ok && t.active && t.trip && t.legs.length === b.types?.length, { ...b, ...t });
     if (b.ok) { await sail(120); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
   }
+  const rw = await S.ev(async () => { const { worthOf, SHOPS } = await import('/src/progress/shop/catalogue.js'), { today } = await import('/src/core/calendar.js');
+    return { today: worthOf('rutter', { worth: 100, day: today() }), dayOn: worthOf('rutter', { worth: 100, day: today() - 1 }), buys: SHOPS.purser.buys.includes('rutter') }; });
+  S.check('passage: a rutter is worth its worth today, half that a game day on, and the Purser buys it', rw.today === 100 && rw.dayOn === 50 && rw.buys, rw);
   await once('margarite', 'Anagami');
   const c0 = await em('counts()');
   let fails = 0, stuck = [];

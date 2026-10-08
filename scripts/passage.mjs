@@ -9,9 +9,7 @@ import { cheapestLane, laneBurn, sailable, start, arrive, choose, adrift, drift,
 import { hop } from '../src/progress/econ/emocean.js';
 import { SHIPS, canSail, holdOf } from '../src/progress/rail/ships.js';
 import { ENCOUNTERS, pickEncounter, offered } from '../src/progress/rail/encounters.js';
-import { worthOf, SHOPS } from '../src/progress/shop/catalogue.js';
 import { slotsOf, loadout, mountable, MOUNTS } from '../src/progress/rail/mounts.js';
-import { today } from '../src/core/calendar.js';
 
 const DAYS = Number(process.argv[process.argv.indexOf('--days') + 1]) || 2000;
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
@@ -118,7 +116,6 @@ check('bright feelings throw astral shots, dark umbral', formSkew('wonder') > 0.
   check('the Glass never comes without a run of this sea chart to race', glass === 0); }
 check('a ship that cannot dive is never offered the dive', !offered('lightWhale', 'tanker').some((c) => c.id === 'follow') && offered('lightWhale', 'sloop').some((c) => c.id === 'follow'));
 check('a storm cleared raises the rutter', rutterWorth({ minutes: 6, rank: 'A', read: 1, storms: 1 }) > rutterWorth({ minutes: 6, rank: 'A', read: 1 }));
-check('a rutter is worth its worth today, half that a game day on, and the Purser buys it', worthOf('rutter', { worth: 100, day: today() }) === 100 && worthOf('rutter', { worth: 100, day: today() - 1 }) === 50 && SHOPS.purser.buys.includes('rutter'));
 { const all = mountable(Object.keys(MOUNTS));
   check('a loadout is cut to the hull\'s slots', all.length >= 3 && ['sloop', 'frigate', 'tanker'].every((h) => loadout(all, all, h).length === Math.min(all.length, slotsOf(h))), Object.fromEntries(['sloop', 'frigate', 'tanker'].map((h) => [h, loadout(all, all, h).length]))); }
 console.log(fails ? `passage: ${fails} FAILED (${charts} sea charts)` : `passage: all passed (${charts} sea charts)`); process.exitCode = fails ? 1 : 0;
