@@ -35,11 +35,13 @@ export const MOVES = {
     air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
     plunge: { power: 2.0, time: 0.6, status: 'stagger', unlock: uses('move.launch', 10) },                   // (2.9 a second over the air string: short, and earned)
     dash: { power: 1.6, time: 0.5, unlock: always },
+    stinger: { power: 3.0, time: 0.7, cost: 6, unlock: always },                                             // (RMB tapped: the lunge, as today; paid in Lachryma, so not a free raise)
     special: { id: 'tidecutter', power: 7, time: 1.4, cost: 12, unlock: uses('cut.hit', 500) },              // (a line of slip: the Sondelass mastered)
   },
   unarmed: {
     combo1: { power: 0.6, time: 0.32, unlock: always }, combo2: { power: 0.6, time: 0.32, unlock: always },
     combo3: { power: 0.7, time: 0.36, unlock: always }, roundhouse: { power: 1.4, time: 0.6, unlock: always }, // (1.2 a second: fists are a last resort, the tools are the game)
+    frontKick: { power: 1.0, time: 0.45, unlock: always }, shove: { power: 0.6, time: 0.4, status: 'stagger', unlock: always }, // (the pause string after the jab: room made, not damage)
     launcher: { power: 0.6, time: 0.5, status: 'airborne', unlock: uses('kick.hit', 30) },
     groundPound: { power: 1.6, time: 0.7, unlock: uses('move.launch', 10) },
     dash: { power: 0.9, time: 0.55, unlock: always }, sweep: { power: 0.5, time: 0.5, status: 'trip', unlock: always },
@@ -48,13 +50,17 @@ export const MOVES = {
     combo1: { power: 1.68, time: 0.43, unlock: always }, combo2: { power: 1.8, time: 0.53, unlock: always },
     combo3: { power: 2.4, time: 1.3, unlock: always },                                                        // (the club's today: 2.6 a second)
     spin: { power: 0.8, hits: 3, time: 0.9, unlock: uses('brush.hit', 100) },                               // (a crowd clearer: 2.7 a second, wide)
-    airSlam: { power: 2.4, time: 0.8, unlock: always },                                                       // (the slam, as today)
+    airSlam: { power: 2.4, time: 0.8, unlock: always },                                                       // (the slam, as today: not on the combo engine)
+    air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
+    air3: { power: 1.4, time: 0.5, unlock: uses('move.launch', 10) },                                        // (the brush's air string: 2.7 a second, as the cutlass's; earned the same way)
     dash: { power: 1.2, time: 0.6, unlock: always },
   },
   dreamvane: {
     combo1: { power: 1.2, time: 0.45, unlock: always }, combo2: { power: 1.3, time: 0.5, unlock: always },
     combo3: { power: 1.6, time: 0.6, unlock: always }, pick: { power: 1.6, time: 0.55, unlock: always },     // (2.6 a second)
     pause1: { power: 1.1, time: 0.45, unlock: always }, pause2: { power: 1.1, time: 0.45, unlock: always }, pause3: { power: 2.6, time: 0.85, unlock: always },
+    launcher: { power: 0.8, time: 0.55, status: 'airborne', unlock: uses('dreamvane.hit', 50) },              // (Vane_Thrust: position, not damage, as every launcher)
+    charge: { power: 4.2, time: 1.3, unlock: always },                                                        // (the pick driven (`drive`): half at no charge, all at full, as the cutlass's charge)
     vault: { power: 0, time: 0.8, unlock: always },                                                           // (a pole-vault: movement, 1.6 m over a low thing; never a weapon)
     special: { id: 'dreamquake', power: 5, time: 1.2, cost: 10, radius: 5, status: 'stagger', unlock: uses('dreamvane.hit', 200) },
   },
@@ -75,6 +81,16 @@ export const MOVES = {
     special: { id: 'fan', power: 1, hits: 6, time: 0.6, cost: 8, unlock: uses('shot.hit', 300) },            // (Fan the Hammer: 6 shots in 0.6 s)
   },
 };
+
+/** RULINGS on the engine's open questions (Calissa's handoff, 2026-10-07):
+ *  - STATUS HOLDS, real seconds: stagger 0.8, airborne 1.6, trip 1.0 (as built).
+ *  - A blow that stops a creature stops it as its row's `status` says, never as a stun: only `creatures/stun.js` stuns, and only a stun
+ *    doubles a clapperjar's drop when it is killed (the economy's reward for the tools that stun). The unarmed builder's heavy blow
+ *    (2 s stun) is a stagger.
+ *  - The toll's beat bonus (x1.4) multiplies its stun, not its damage: the bell is support.
+ *  - Stuns from tolls refresh to the longest, never add: four tolls on one creature hold it as long as the longest one alone.
+ *  - A resisted status hardening a Stoic mind is meant: a thinking opponent learns a string that staggers it every time. */
+export const HOLDS = { stagger: 0.8, airborne: 1.6, trip: 1.0 };
 
 /** Whether a move is open to this ledger (the engine asks before it plays one; a closed move falls back to the string). */
 export const unlocked = (tool, move, L) => !!MOVES[tool]?.[move]?.unlock?.(L);

@@ -54,6 +54,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.race', (e) => { if (e.by !== 'courier') return; L.inc('spirit.race'); if (e.seconds != null) L.lo('spirit.race.fastest', e.seconds); });
   on('spirit.spar', (e) => { if (e.by === 'courier') { L.inc('spirit.spar'); L.hi('spirit.spar.bumps', e.bumps); } });
   on('garden.reset', (e) => { if (e.by === 'courier') L.inc('garden.reset'); });
+  on('garden.water', (e) => { if (e.by === 'courier') { L.inc('garden.water'); L.inc(`garden.water.${e.how}`); } }); // (pour, drink, spring, drain, unset: Petra's waterworks)
   on('spirit.drill', (e) => { if (e.by === 'courier') { L.inc('spirit.drill'); if (!e.gain) log.say('info', `${e.spirit || 'The spirit'} is too tired to drill.`, { key: 'tired', throttle: 3 }); } });
   on('spirit.visit', (e) => {
     if (!VISITORS[e.kind]) return;

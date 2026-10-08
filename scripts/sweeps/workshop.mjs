@@ -176,7 +176,8 @@ if (part('kiln')) {
   const before = await ws('openList()');
   await S.press('Escape', 10);
   const afterEsc = await ws('openList()');
-  S.check('kiln: Esc with the Codex over the station closes the Codex first', before.includes('codex') && !afterEsc.includes('codex') && afterEsc.includes('kiln'), { before, afterEsc });
+  // (B is refused over the station now: one window at a time, the check above. Esc then closes the station itself)
+  S.check('kiln: B is refused over the station, and Esc closes the station', !before.includes('codex') && before.includes('kiln') && !afterEsc.includes('kiln') && !afterEsc.includes('codex'), { before, afterEsc });
   await closeAll(); await S.ticks(30);
   // careless: set down elsewhere with the station open (a travel from the chat line, a shatter)
   await standKiln(); await F(20);
