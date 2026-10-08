@@ -16,9 +16,15 @@
 // friezes (Corinthian goats and lions confronted, head to head), the pursuit on the Francois Vase (Troilos fleeing Achilles, the one
 // running looking back), and for the melt, the set's own dashed line (the play's flight) round where the jelly stood.
 //
+// THE WHITE-GROUND HAND (the keepsake pot's: vfx/garden/lekythos.js): the same figures, the same strokes, turned inside out for the
+// Athenian funerary lekythos of the fifth century BC: outlined on a white ground in a line (the dilute glaze), the black's place taken by
+// a thin wash of colour, the incisions drawn as lines, added white kept by its outline (the Achilles Painter, the Bosanquet Painter,
+// the Reed Painter: a figure beside a grave stele, ribbons tied round it, lekythoi set on its steps).
+//
 //   PICTURES[WORD] -> picture id (the word's English, for each word of Espada's OSTRACON_PICTURES, npc/neuralese.js, that a painter here paints)
 //   paintPicture(g, id, x, y, w, h, span?) -> true | false (no such picture; span: [x0, x1], how far its groundline runs, in pixels)
-//   paintMeander(g, x, y, w, h)    paintFrieze(g, x, y, w, h)    paintTongues(g, x, y, w, h)    paintPalmette(g, cx, foot, s)    paintRosette(g, cx, cy, r)
+//   paintMeander(g, x, y, w, h, style?)    paintFrieze(g, x, y, w, h)    paintTongues(g, x, y, w, h)    paintPalmette(g, cx, foot, s)    paintRosette(g, cx, cy, r)
+//   paintLikeness(g, kind, x, y, w, h, { line, wash, ground, ribbon? })   paintStele(g, x, y, w, h, { line, ribbon, ground })   (white-ground)
 //   WARE = { black, clay, white, red }   (g: a 2D canvas context; x, y, w, h: the zone in its pixels; the zone's red ground is the caller's)
 // ---------------------------------------------------------------------------------------
 
@@ -49,14 +55,29 @@ function trace(g, t, T = ID) {
   for (const sub of t.subs) { sub.forEach(([x, y], i) => { const [X, Y] = T(x, y); if (i) g.lineTo(X, Y); else g.moveTo(X, Y); }); if (sub.closed) g.closePath(); }
 }
 function lay(g, width, style) { g.save(); g.setTransform(M0); g.lineWidth = width; g.strokeStyle = style; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(); g.restore(); }
-/** A silhouette: a scratched contour round it (it parts it from what is behind), then the black. */
-function solid(g, t, T, contour = true) { trace(g, t, T); if (contour) lay(g, INC * 2.4, WARE.clay); g.fillStyle = WARE.black; g.fill(); }
-/** An incision: scratched through the black to the red. */
-function cut(g, t, T, w = INC) { trace(g, t, T); lay(g, w, WARE.clay); }
-function paint(g, t, T, style) { trace(g, t, T); g.fillStyle = style; g.fill(); }
-function line(g, t, T, w, style = WARE.black) { trace(g, t, T); lay(g, w, style); }
-/** A limb: a thick black stroke, with its contour scratched round it where it crosses the black. */
-function limb(g, t, T, w) { trace(g, t, T); lay(g, w + INC * 2.4, WARE.clay); lay(g, w, WARE.black); }
+/** A silhouette: a scratched contour round it (it parts it from what is behind), then the black. In the white-ground hand: its wash,
+ *  and its contour drawn in the line. */
+function solid(g, t, T, contour = true) {
+  trace(g, t, T);
+  if (OUTLINE) { if (OUTLINE.wash) { g.fillStyle = OUTLINE.wash; g.fill(); } lay(g, INC * 1.7, OUTLINE.line); return; }
+  if (contour) lay(g, INC * 2.4, WARE.clay); g.fillStyle = WARE.black; g.fill();
+}
+/** An incision: scratched through the black to the red (in the white-ground hand, a line drawn in the dilute glaze). */
+function cut(g, t, T, w = INC) { trace(g, t, T); lay(g, OUTLINE ? w * 1.1 : w, OUTLINE ? OUTLINE.line : WARE.clay); }
+function paint(g, t, T, style) {
+  trace(g, t, T); g.fillStyle = OUTLINE ? outlined(style) : style; g.fill();
+  if (OUTLINE && style === WARE.white) lay(g, INC * 0.9, OUTLINE.line); // (added white on white: kept by its outline)
+}
+function line(g, t, T, w, style = WARE.black) { if (OUTLINE && style === WARE.white) return; trace(g, t, T); lay(g, OUTLINE ? Math.min(w, INC * 2) : w, OUTLINE ? OUTLINE.line : style); }
+/** A limb: a thick black stroke, with its contour scratched round it where it crosses the black (white-ground: outlined, washed). */
+function limb(g, t, T, w) {
+  trace(g, t, T);
+  if (OUTLINE) { lay(g, w + INC * 1.7, OUTLINE.line); lay(g, w, OUTLINE.wash || OUTLINE.ground); return; }
+  lay(g, w + INC * 2.4, WARE.clay); lay(g, w, WARE.black);
+}
+// ---- the white-ground hand (paintLikeness, paintStele): the same figures, outlined on a white ground in a dilute line, washed in a colour
+let OUTLINE = null;
+function outlined(style) { return style === WARE.black ? OUTLINE.line : style === WARE.white || style === WARE.clay ? OUTLINE.ground : OUTLINE.wash || OUTLINE.ground; }
 
 function frame(g, x, y, w, h, units = 100) { g.save(); g.translate(x, y + h); const s = w / units; g.scale(s, -s); M0 = g.getTransform(); return { W: units, H: h / s }; }
 function groundSpan(g, u0, u1, y = GY) { line(g, tr().M(u0, y).L(u1, y), ID, 1.1); line(g, tr().M(u0, y - 1.9).L(u1, y - 1.9), ID, 0.5); }
@@ -387,14 +408,15 @@ export function paintRosette(g, cx, cy, r) {
   for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; g.beginPath(); g.arc(cx + Math.cos(a) * r * 0.78, cy + Math.sin(a) * r * 0.78, r * 0.2, 0, Math.PI * 2); g.fill(); }
 }
 
-/** The meander (the Greek key) across the panel's middle: what a word with no picture carries. */
-export function paintMeander(g, x, y, w, h) {
+/** The meander (the Greek key) across the panel's middle: what a word with no picture carries (style: its colour, the black unless
+ *  said). It repeats every 17.6 units of a panel 54 tall: a border round a pot is seamless when its width is a whole number of them. */
+export function paintMeander(g, x, y, w, h, style = WARE.black) {
   const F = frame(g, x, y, w, h, (54 * w) / h), u = 4.4, cell = 4 * u, n = Math.ceil(F.W / cell) + 1, x0 = -cell / 2, y0 = F.H / 2 - 2 * u;
   const k = tr();
   for (let i = 0; i < n; i++) { const X = x0 + i * cell; k.M(X, y0).L(X, y0 + 4 * u).L(X + 3 * u, y0 + 4 * u).L(X + 3 * u, y0 + u).L(X + u, y0 + u).L(X + u, y0 + 3 * u).L(X + 2 * u, y0 + 3 * u).L(X + 2 * u, y0 + 2 * u); }
   k.M(x0, y0 - u * 0.1).L(x0 + n * cell, y0 - u * 0.1);
-  line(g, k, ID, u * 0.55);
-  line(g, tr().M(x0 - 2, y0 - u * 1.3).L(x0 + n * cell + 2, y0 - u * 1.3).M(x0 - 2, y0 + 5.3 * u).L(x0 + n * cell + 2, y0 + 5.3 * u), ID, 0.9);
+  line(g, k, ID, u * 0.55, style);
+  line(g, tr().M(x0 - 2, y0 - u * 1.3).L(x0 + n * cell + 2, y0 - u * 1.3).M(x0 - 2, y0 + 5.3 * u).L(x0 + n * cell + 2, y0 + 5.3 * u), ID, 0.9, style);
   g.restore();
 }
 
@@ -439,4 +461,66 @@ export function paintFrieze(g, x, y, w, h) {
   trough(g, 152 * k, 168 * k, gy, 3.4);
   jelly(g, 156 * k, gy + 3.4, { s: 0.46, squash: 0.74, eye: 'glad' }); jelly(g, 164 * k, gy + 3.4, { s: 0.46, squash: 0.9, face: -1, eye: 'glad' });
   g.restore();
+}
+
+// ---- the white-ground hand: the funerary lekythos's (vfx/garden/lekythos.js), its figures outlined in a line on the white ground and
+// washed in a colour (the Achilles Painter's and the Reed Painter's lekythoi: a figure beside a grave stele, ribbons tied round it)
+/** A sporeling (vfx/garden/sporeling.js): a cap for a head, spotted, its gills under it, a stem body with two eyes, a wave of a hypha. */
+function sporelingFigure(g, x, y, s = 1) {
+  const T = place(x, y, s);
+  limb(g, tr().M(-2.2, 3).L(-3.2, 0.2).M(2.2, 3).L(3.2, 0.2), T, 1.3 * s);
+  solid(g, tr().M(-4.8, 2.4).C(-6.6, 6, -5.4, 10.4, -3.8, 13).L(3.8, 13).C(5.4, 10.4, 6.6, 6, 4.8, 2.4).Q(0, 1.4, -4.8, 2.4).Z(), T);
+  limb(g, tr().M(-4.9, 8.2).Q(-8.4, 7.2, -9.8, 4.2).M(4.9, 8.2).Q(8.4, 9.8, 9.8, 13.2), T, 1.1 * s);
+  solid(g, tr().M(-11.4, 12.2).C(-11, 20, -5.4, 23.8, 0, 23.8).C(5.4, 23.8, 11, 20, 11.4, 12.2).Q(0, 10.2, -11.4, 12.2).Z(), T);
+  const gills = tr(); for (let i = -4; i <= 4; i++) gills.M(i * 0.8, 12.6).L(i * 2.5, 11.4 + Math.abs(i) * 0.12);
+  cut(g, gills, T, INC * 0.8);
+  for (const [cx, cy, r] of [[-6, 17.4, 1.5], [0.4, 20.6, 1.8], [6.2, 16.8, 1.3], [-2.6, 15, 0.9], [3.4, 14.4, 0.8]]) paint(g, tr().O(cx, cy, r), T, WARE.white);
+  eye(g, 'open', T, -2.1, 8.4, [0, -0.3]); eye(g, 'open', T, 2.1, 8.4, [0, -0.3]);
+  cut(g, tr().M(-1, 5.4).Q(0, 4.6, 1, 5.4), T, INC * 0.9);
+}
+/** A ribbon (a taenia) hung in the field from a peg, looped, its two tails falling: (x, top) the peg, in the frame's units. */
+function hungRibbon(g, x, top, colour) {
+  const piece = (t) => { trace(g, t, ID); g.fillStyle = colour; g.fill(); lay(g, INC * 0.8, OUTLINE.line); };
+  piece(tr().M(x - 3.4, top - 2.2).Q(x, top + 0.6, x + 3.4, top - 2.2).Q(x + 4.2, top - 5.4, x, top - 6.4).Q(x - 4.2, top - 5.4, x - 3.4, top - 2.2).Z());
+  piece(tr().M(x - 1.2, top - 6).Q(x - 3.4, top - 12, x - 1.8, top - 19).L(x - 0.4, top - 18.6).Q(x - 1.8, top - 12, x + 0.2, top - 6.2).Z());
+  piece(tr().M(x + 0.6, top - 6.2).Q(x + 2.6, top - 11, x + 2.2, top - 16).L(x + 3.6, top - 15.8).Q(x + 3.8, top - 11, x + 1.8, top - 6).Z());
+  paint(g, tr().O(x, top - 0.4, 0.7), ID, WARE.black);
+}
+/** The spirit's likeness in the white-ground hand, standing on a groundline across the panel (x, y, w, h: the panel 60 units wide).
+ *  kind: 'sporeling', or a slip jelly for anything else (most spirits were slip jellies); style: { line, wash, ground, ribbon? } as CSS
+ *  colours (ribbon: a taenia hung in the field over it, in that colour, as the lekythoi hang one in the empty ground). */
+export function paintLikeness(g, kind, x, y, w, h, style) {
+  OUTLINE = { ground: '#efe8da', ...style };
+  try {
+    const F = frame(g, x, y, w, h, 60), cx = F.W / 2;
+    groundSpan(g, 2, F.W - 2);
+    if (kind === 'sporeling') sporelingFigure(g, cx, GY, Math.min(2.1, (F.H - GY - 3) / 24));
+    else jelly(g, cx, GY, { s: Math.min(1.8, (F.H - GY - 3) / 22.8), face: -1, eye: 'open', look: [-0.5, 0.2] });
+    if (OUTLINE.ribbon && F.H > 64) hungRibbon(g, F.W * 0.78, F.H - 4, OUTLINE.ribbon);
+    g.restore();
+  } finally { OUTLINE = null; }
+}
+/** A grave stele in the white-ground hand (x, y, w, h: its panel, 30 units wide): a tapered shaft on two steps, crowned with an
+ *  anthemion, outlined on the white; a ribbon (a taenia) tied round it in `ribbon`, its ends hanging; a small lekythos on its step. */
+export function paintStele(g, x, y, w, h, style) {
+  OUTLINE = { ground: '#efe8da', ...style, wash: null };
+  try {
+    const F = frame(g, x, y, w, h, 30), c = 15, top = F.H - 9, ty = top - 7, rib = style.ribbon || OUTLINE.line;
+    groundSpan(g, 0.5, 29.5);
+    solid(g, tr().M(c - 12, GY).L(c + 12, GY).L(c + 12, GY + 3).L(c - 12, GY + 3).Z(), ID);
+    solid(g, tr().M(c - 9, GY + 3).L(c + 9, GY + 3).L(c + 9, GY + 6).L(c - 9, GY + 6).Z(), ID);
+    solid(g, tr().M(c - 6, GY + 6).L(c + 6, GY + 6).L(c + 5, top).L(c - 5, top).Z(), ID);
+    solid(g, tr().M(c - 6, top).L(c + 6, top).L(c + 6, top + 1.4).L(c - 6, top + 1.4).Z(), ID);
+    const anth = tr();
+    for (let i = -3; i <= 3; i++) { const a = i * 0.38, L = 6.4 - 0.5 * Math.abs(i); anth.M(c, top + 2).Q(c + Math.sin(a) * L * 0.8 + 1.2 * Math.sign(i), top + 2 + Math.cos(a) * L * 0.6, c + Math.sin(a) * L, top + 2 + Math.cos(a) * L); }
+    anth.M(c - 4.2, top + 2).Q(c - 6.8, top + 1.6, c - 6, top + 3.4).M(c + 4.2, top + 2).Q(c + 6.8, top + 1.6, c + 6, top + 3.4);
+    line(g, anth, ID, INC * 1.6);
+    const piece = (t) => { trace(g, t, ID); g.fillStyle = rib; g.fill(); lay(g, INC * 0.8, OUTLINE.line); };
+    piece(tr().M(c - 5.6, ty).Q(c, ty - 1.6, c + 5.6, ty).L(c + 5.6, ty - 1.6).Q(c, ty - 3.2, c - 5.6, ty - 1.6).Z());
+    for (const k of [-1, 1]) { const sx = c + k * 5.4; piece(tr().M(sx, ty - 1).Q(sx + k * 2.2, ty - 6, sx + k, ty - 11).L(sx + k * 2.2, ty - 11.4).Q(sx + k * 3.2, ty - 6, sx + k * 0.6, ty - 1.6).Z()); }
+    const lx = c + 10.4, ly = GY + 3, ls = 0.42, P = [[-2, 0], [2, 0], [2.6, 9], [4, 10], [1, 11.4], [1, 13], [2, 15], [-2, 15], [-1, 13], [-1, 11.4], [-4, 10], [-2.6, 9]], lk = tr().M(lx - 2 * ls, ly);
+    for (const [px, py] of P.slice(1)) lk.L(lx + px * ls, ly + py * ls);
+    solid(g, lk.Z(), ID);
+    g.restore();
+  } finally { OUTLINE = null; }
 }

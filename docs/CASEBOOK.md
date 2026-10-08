@@ -305,8 +305,40 @@ the rules before building in the same area; a rule a machine can check goes into
 111. **A class a module exports has a name no other module of the game exports.** The glossary calls the pier's window `SeaChart`; its drawing
     took the word for a class, and the one module that imports the one declares the other. Grep `export class` and the glossary first, and
     qualify (`SeaChartCanvas`).
+112. **A look made on the workbench is judged once on the ground it will stand on.** The workbench's floor is near black and its light
+    strong; the Spirit Garden's ground is pale (225, 230, 180) and its light soft. A colour chosen against the one is wrong on the
+    other (a "darker, lusher" ring that was near black read as a hoop), so a look for a place is placed in that place by hand, in its
+    own light and on its own ground's normal, before it is called done.
+113. **A clock a shader's sine reads wraps at a whole number of that sine's periods, and a step that is not a number is no step.** A
+    uniform wrapped at 3600 real seconds jumps the phase of `sin(0.7 t)` (2520 rad is 401.07 turns) by the fraction left over; and `NaN` added once
+    stays in a running clock for good. Wrap at N whole periods, add only a step above zero, and keep a setter's old value when it is
+    handed a number that is not one.
 
 ## Cases
+
+### 2026-10-08 · The fairy rings were black hoops on the garden's pale ground (found in review, placing the strains in the real garden)
+- **Seen:** on the workbench's dark stage the sward round a spore bed (0x18241a to 0x2c3c2a) read as dark moss. Stood by hand on the
+  Dantian (ground about (225, 230, 180) in the garden's daylight) every bed's ring was the heaviest mark on screen, a near-black hoop on
+  a pastel planetoid, not a darker, lusher ground. Standing a bed on the direction from the planetoid's centre rather than the ground's
+  normal buried the far half of its ring under the clay (the Dantian is not a sphere: `radiusAt` carries noise and the clay).
+- **Cause:** the colours were chosen against the workbench's floor and light, and the bed was placed in the garden only in the head.
+- **Fix:** the sward is moss (0x536a52 to 0x72896a) with a straw dead edge (0x8e7e56 to 0xa8986a): darker than the ground and not black,
+  in the garden and on the workbench. The handoff to Petra says to stand a bed on the ground's own normal (three samples of
+  `radiusAt`), measured to lay the whole ring on the Dantian.
+- **Rule:** 112 (a look made on the workbench is judged once on the ground it will stand on; and 64, the normal).
+
+### 2026-10-08 · The koji's foxfire boiled, a bad step poisoned the glow for good, and its clock jumped once an hour (found in review)
+- **Seen:** the foxfire's breath over a night cycle, four samples a pixel: the two koji trays showed fine per-pixel noise in how much each
+  pixel breathed (mean relative range 0.10, up to 0.35) where every other part breathed whole. `bed.update(NaN)` left the clock `NaN` for
+  good (the glow's `sin` of it undefined: black or white on a driver that does not drop it), `bed.set({ growth: NaN })` clamped to `NaN`
+  and the whole bed vanished, and a sporeling's `update(NaN)` bent every vertex to `NaN`.
+- **Cause:** the breath's phase came from each vertex's growth root, and the koji's fuzz grows each vertex from its own root, so every
+  vertex breathed on its own phase. `clamp(NaN)` and `NaN + dt` are `NaN`. The clocks wrapped at 3600 real seconds, which is 401.07 turns of
+  `sin(0.7 t)` (a step in the glow of up to 0.09) and 515.66 turns of the sporeling's `sin(0.9 t)` (up to a third of its glow).
+- **Fix:** the phase is taken from the root's quarter-metre patch (the mottle after: mean range 0.064, smooth patches); the clocks wrap
+  at 400 and 500 whole breaths; `update` adds only a step above zero, `set` keeps its old value when handed a number that is not one,
+  and `hop(NaN)` is no hop. 560 beds over every strain, seed and size, 252 pots and 30 sporelings fed bad arguments: no `NaN` attribute or uniform.
+- **Rule:** 113.
 
 ### 2026-10-08 · A rutter's page made from its passage alone gave every waypoint two pips of strength nobody had recorded (found in review, reading what the item keeps)
 - **Seen:** \`chartOfRutter(r)\`, the page's chart when the item carries no \`chart\` (the item \`voyage.js\` makes keeps \`from, to, route, day, passage,
