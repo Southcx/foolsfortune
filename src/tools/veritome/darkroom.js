@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE DARKROOM: where the film is appraised, in a batch, as a step of its own (the Codex's VERITOME shelf, FILM). Shooting is quick
+// THE DARKROOM: where the memory's plates are appraised, in a batch, as a step of its own (the Codex's VERITOME shelf, MEMORY). Shooting is quick
 // and thoughtless; appraising is where a photograph turns out to have been worth something. Each plate, in the order it was taken:
 //
 //  - THE COMPENDIUM keeps the best photograph of every kind of thing (a better one replaces it).

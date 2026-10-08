@@ -17,6 +17,9 @@
 // porcelain pieces on five-bone rigs, alive. Each idles, glances about, bows and taunts between turns; on its turn it MOVES (its own
 // move clip, a square's travel taken out of it: the board carries it from square to square, log-polar), the knight in an L and the queen
 // spinning; the king and the queen celebrate a move; a piece drawn down the drain FALLS, and comes back at the rim with its SPAWN.
+// Each stands FLUSH on the board, as a real piece on a bent board would: its holder tilted from up to the board's normal under it (the
+// slope is analytic: boardSlope), its yaw and its clip on top, and let down by the board's bend under its rim so no edge floats (the
+// common "align to the ground normal" of a prop or a vehicle, Unity's FromToRotation(up, normal); casebook 2026-10-08).
 // Its GLB bytes are fetched beside the bundle as a .bin like the clip packs (some hosts will not serve a .glb), only while the title
 // plays, and let go when it closes; until then the pieces are lathed porcelain.
 //
@@ -38,7 +41,12 @@ const SPIN = 0.018, FLOW = 0.012; // (radians a second the board turns; log-radi
 
 /** The board's height at radius r: down into the drain, up at the rim. */
 export const boardY = (r) => -26 * Math.exp(-r / 22) + 0.001 * r * r - 2;
+/** Its slope there (d boardY / dr), what a piece's base is tilted to: 0.65 (33 degrees) at 14 m, 0.36 at 30 m, 0.21 at 100 m. */
+export const boardSlope = (r) => (26 / 22) * Math.exp(-r / 22) + 0.002 * r;
+/** Its bend along the radius (d2 boardY / dr2): below nought inside ~72 m, where the board falls away from a base's tangent plane. */
+const boardBend = (r) => -(26 / 484) * Math.exp(-r / 22) + 0.002;
 const logr0 = Math.log(R0), logr1 = Math.log(R1);
+const _up = new THREE.Vector3(0, 1, 0), _n = new THREE.Vector3(), _yaw = new THREE.Quaternion();
 
 const VERT = /* glsl */ `
   uniform float uSpin, uFlow;
@@ -72,13 +80,17 @@ const FRAG = /* glsl */ `
     gl_FragColor = vec4(mix(col, uFogC, f), 1.0);
   }`;
 
-/** A piece's profile for the lathe (radius, height), in units of its height. */
+/** A piece's profile for the lathe (radius, height), in units of its height; the knight and the queen stand in as the bishop and the king. */
 const PROFILES = {
   pawn: [[0, 0], [0.42, 0], [0.42, 0.06], [0.32, 0.1], [0.3, 0.16], [0.18, 0.28], [0.13, 0.52], [0.22, 0.56], [0.22, 0.6], [0.12, 0.62], [0.2, 0.72], [0.21, 0.82], [0.15, 0.94], [0, 1]],
   rook: [[0, 0], [0.44, 0], [0.44, 0.07], [0.34, 0.12], [0.3, 0.2], [0.24, 0.3], [0.22, 0.74], [0.32, 0.8], [0.32, 1], [0, 1]],
   king: [[0, 0], [0.44, 0], [0.44, 0.06], [0.34, 0.1], [0.3, 0.18], [0.2, 0.3], [0.15, 0.62], [0.26, 0.66], [0.26, 0.7], [0.16, 0.72], [0.24, 0.84], [0.22, 0.9], [0.1, 0.94], [0, 0.95]],
   bishop: [[0, 0], [0.42, 0], [0.42, 0.06], [0.32, 0.1], [0.28, 0.18], [0.16, 0.3], [0.12, 0.56], [0.22, 0.6], [0.22, 0.64], [0.12, 0.66], [0.2, 0.76], [0.18, 0.88], [0.08, 0.96], [0.04, 1], [0, 1]],
 };
+
+const latheOf = (kind) => ({ knight: 'bishop', queen: 'king' })[kind] ?? kind;
+/** The reach of a lathed piece's base from its axis, in units of its height (its profile's foot). */
+const latheRim = (kind) => PROFILES[latheOf(kind)][1][0];
 
 function lathe(kind) {
   const g = new THREE.LatheGeometry(PROFILES[kind].map(([r, y]) => new THREE.Vector2(r, y)), 18);
@@ -133,10 +145,10 @@ export class Board {
     const cast = [['king', 1, 22, 13], ['rook', 0, 7, 10], ['pawn', 0, 2, 8], ['queen', 0, 16, 12.5], ['pawn', 1, 15, 8], ['bishop', 0, 18, 11], ['pawn', 0, 10, 7], ['knight', 1, 1, 10], ['rook', 1, 4, 10], ['pawn', 1, 20, 7], ['bishop', 1, 12, 10], ['knight', 0, 8, 10], ['pawn', 0, 23, 7]];
     this.mats = [dark, pale];
     cast.forEach(([kind, side, i, h], n) => {
-      const m = new THREE.Mesh(this.geos[kind === 'knight' ? 'bishop' : kind === 'queen' ? 'king' : kind], side ? pale : dark);
+      const m = new THREE.Mesh(this.geos[latheOf(kind)], side ? pale : dark);
       m.scale.setScalar(h);
       this.group.add(m);
-      this.pieces.push({ m, kind, side, i: i + 0.5, j: 9 + (n * 5) % 11 + 0.5, h, hop: null, yaw: Math.random() * 6.28, wait: 2 + (n % 5) * 1.7 }); // (j in log-radius squares: 9 is ~10 m out, 20 ~190 m)
+      this.pieces.push({ m, kind, side, i: i + 0.5, j: 9 + (n * 5) % 11 + 0.5, h, rim: latheRim(kind), hop: null, yaw: Math.random() * 6.28, wait: 2 + (n % 5) * 1.7 }); // (j in log-radius squares: 9 is ~10 m out, 20 ~190 m; rim: the base's reach, in the units its scale is in)
     });
     this.piecesWanted = true; // (the owner's pieces are parsed the first time the board plays: the title shown, not a test drive)
     // dice in the air, turning
@@ -165,12 +177,13 @@ export class Board {
     for (const p of this.pieces) {
       const [rn, height] = RIGS[p.kind], src = rigs[rn]; if (!src) continue;
       const rig = cloneRig(src); rig.position.set(0, 0, 0);
-      rig.traverse((o) => { if (o.isSkinnedMesh) { o.material = this.mats[p.side]; o.frustumCulled = false; } });
+      let rim = 1;
+      rig.traverse((o) => { if (o.isSkinnedMesh) { o.material = this.mats[p.side]; o.frustumCulled = false; o.geometry.computeBoundingBox(); rim = (o.geometry.boundingBox.max.x - o.geometry.boundingBox.min.x) / 2; } });
       const holder = new THREE.Group(); holder.add(rig); holder.scale.setScalar(p.h / height);
       this.group.remove(p.m); this.group.add(holder);
       const pre = `${CLIP[p.kind]}_`, mixer = new THREE.AnimationMixer(rig), clips = {};
       for (const a of gl.animations) if (a.name.startsWith(pre)) clips[a.name.slice(pre.length)] = a;
-      p.m = holder; p.unit = p.h / height; p.mixer = mixer; p.clips = clips; p.rigged = true;
+      p.m = holder; p.unit = p.h / height; p.rim = rim; p.mixer = mixer; p.clips = clips; p.rigged = true;
       this.play(p, 'idle', { loop: true, fade: 0 });
     }
   }
@@ -180,8 +193,8 @@ export class Board {
     for (const p of this.pieces) {
       if (!p.rigged) continue;
       p.mixer.stopAllAction(); this.group.remove(p.m);
-      p.m = new THREE.Mesh(this.geos[p.kind === 'knight' ? 'bishop' : p.kind === 'queen' ? 'king' : p.kind], this.mats[p.side]); this.group.add(p.m);
-      p.rigged = false; p.mixer = p.clips = p.action = null;
+      p.m = new THREE.Mesh(this.geos[latheOf(p.kind)], this.mats[p.side]); this.group.add(p.m);
+      p.rim = latheRim(p.kind); p.rigged = false; p.mixer = p.clips = p.action = null;
     }
     this.loading = false;
   }
@@ -241,10 +254,19 @@ export class Board {
       if (Math.exp(j * K - this.flow) < R0 + 2) { p.j += Math.log(R1 * 0.55 / R0) / K; p.hop = null; if (p.rigged) this.play(p, 'spawn', { fade: 0 }); }
       this.at(i, j, v);
       const r = Math.hypot(v.x, v.z), sink = THREE.MathUtils.smoothstep(r, R0, R0 + 14);
-      p.m.position.set(v.x, v.y + lift - (1 - sink) * p.h, v.z);
-      p.m.scale.setScalar((p.rigged ? p.unit : p.h) * (0.35 + 0.65 * sink));
-      if (p.rigged) { if (p.face != null) p.yaw += Math.atan2(Math.sin(p.face - p.yaw), Math.cos(p.face - p.yaw)) * Math.min(1, dt * 4); p.m.rotation.y = p.yaw; } // (it turns to where it goes)
-      else p.m.rotation.y = p.yaw + (p.kind === 'king' && p.hop ? Math.PI * 2 * (p.hop.t / p.hop.dur) : 0);
+      const scale = (p.rigged ? p.unit : p.h) * (0.35 + 0.65 * sink);
+      // the base flush on the board: stood on the surface at its square, tilted to the board's normal there (the slope is analytic), and
+      // let down by the board's fall under its rim along the radius, where the drain bends away from the tangent plane (inside ~72 m),
+      // so no edge of it floats; across the radius the board rises round it, and that edge sits a little into the board
+      const k = boardSlope(r), rim = p.rim * scale;
+      const sag = 0.5 * Math.max(0, -boardBend(r)) * rim * rim / (1 + k * k);
+      _n.set((-k * v.x) / r, 1, (-k * v.z) / r).normalize();
+      p.m.position.set(v.x, v.y - sag + lift - (1 - sink) * p.h, v.z);
+      p.m.scale.setScalar(scale);
+      if (p.rigged && p.face != null) p.yaw += Math.atan2(Math.sin(p.face - p.yaw), Math.cos(p.face - p.yaw)) * Math.min(1, dt * 4); // (it turns to where it goes)
+      const yaw = p.yaw + (!p.rigged && p.kind === 'king' && p.hop ? Math.PI * 2 * (p.hop.t / p.hop.dur) : 0);
+      // (its yaw about its own up, then the tilt: the animation plays on top of both, in the holder)
+      p.m.quaternion.setFromUnitVectors(_up, _n).multiply(_yaw.setFromAxisAngle(_up, yaw));
     }
     for (const d of this.dice) {
       if (d.tumble) {

@@ -50,7 +50,6 @@ for (const T of TOOL_ITEMS) {
 for (const [id, I] of Object.entries(INSTRUMENTS)) if (id !== 'bell') ITEMS[id] = { id, kind: 'instrument', key: id.slice(5), name: I.name, glyph: '♪', color: I.color, tier: 1, examine: I.does, card: null, lure: false, stack: false };
 for (const [id, H] of Object.entries(HEARTS)) ITEMS[id] = { id, kind: 'heart', key: id.slice(6), name: H.name, glyph: '⚰', color: H.trim, tier: 2, examine: H.examine, card: null, lure: false, stack: false };
 for (const [id, K] of Object.entries(KEYS)) ITEMS[id] = { id, kind: 'key', key: id.slice(4), name: K.name, glyph: '⚷', color: K.color, tier: id === 'key.brass' ? 0 : 2, examine: `A Possibilikey. ${K.does}`, card: null, lure: false, stack: 99 }; // (keys stack: the owner's note)
-ITEMS['mat.film'] = { id: 'mat.film', kind: 'material', key: 'film', name: 'ROLL OF FILM', glyph: '◫', color: 0xe0c070, tier: 0, examine: 'Twenty-four plates for the Veritome, wound on a brass spool. Loaded by itself when the last roll runs out.', card: null, lure: false, stack: 99 };
 // a landed fish, kept whole in the box until it is sold (Old Grog buys them on the pier: progress/shop/catalogue.js)
 for (const F of SPECIES) ITEMS[`fish.${F.id}`] = { id: `fish.${F.id}`, kind: 'fish', key: F.id, name: F.name, glyph: '∝', color: F.color, tier: F.tier, examine: F.blurb, card: null, lure: false, stack: false };
 // the caster shells, as things (for their pictures in the psygun's chambers; as loose things to be carried, a later round)

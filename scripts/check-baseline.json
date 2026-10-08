@@ -1,7 +1,6 @@
 {
  "clock.sim|src/core/save.js": 2,
  "clock.sim|src/feedback/gamelog.js": 1,
- "clock.sim|src/tools/veritome/film.js": 1,
  "module.header|src/vfx/particles.js": 1,
  "module.size|src/courier/character.js": 1,
  "module.size|src/courier/player.js": 1,
@@ -24,5 +23,6 @@
  "save.storage|src/workbench/workbench.js": 8,
  "save.storage|src/world/basement/basement.js": 2,
  "save.storage|src/world/basement/circuits.js": 2,
- "save.storage|src/world/trial.js": 2
+ "word.retired|src/audio/cues.js": 1,
+ "word.retired|src/pneuka/thingmodels.js": 1
 }

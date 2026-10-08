@@ -105,6 +105,7 @@ export class Creatures {
         return false;
       }
     }
+    if (by === 'courier') dur *= this.game.alchemy?.widen?.('focus.hold') ?? 1; // (Focus: a status you build holds longer, SOUL-ALCHEMY.md 6)
     const s = c.status.get(name);
     if (s && s.t >= dur && s.k >= k) return false;
     c.status.set(name, { t: Math.max(dur, s?.t || 0), dur, k: Math.max(k, s?.k || 0) });
@@ -118,9 +119,12 @@ export class Creatures {
    *  parried (a grab, a ram) passes `parry: false`: telegraphed by its own body, never marked. */
   windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null } = {}) {
     this.unwind(c);
-    c.windup = { at, radius, eta, kind, parry, t: eta + 0.3, mark: parry && part ? this.game.parryMark?.mark(part, { eta }) : null };
+    c.windup = { at, radius, eta, kind, parry, t: eta + 0.3, mark: parry && part ? this.game.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
   }
   unwind(c) { c.windup?.mark?.clear(); if (c.windup) c.windup = null; }
+  /** The eta a windup's mark is shown with: Perception draws the outline's thickening out over a longer lead (x its widening), and the
+   *  last quarter second, the window, is never moved (vfx/parrymark.js thickens over the 0.8 s before it; SOUL-ALCHEMY.md 6). */
+  shownEta(e) { const w = this.game.alchemy?.widen?.('perception.notice') ?? 1; return e <= 0.25 ? e : 0.25 + (e - 0.25) / w; }
   /** The answerable blows winding up within r of pos (nearest first). */
   windups(pos, r) {
     const out = [];
@@ -144,7 +148,7 @@ export class Creatures {
     const T = this.game.temper;
     for (const c of this.list) {
       for (const [k, s] of c.status) { s.t -= dt; if (s.t <= 0) { c.status.delete(k); c.onStatusEnd?.(k); } }
-      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(Math.max(0, w.t - 0.3)); if (w.t <= 0 || !c.alive) this.unwind(c); }
+      if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) this.unwind(c); }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
       c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');

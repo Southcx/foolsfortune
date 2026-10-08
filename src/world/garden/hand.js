@@ -119,7 +119,7 @@ export class GardenHand {
       if (I.wasPressed('Mouse0')) { if (this.hit) this.game.log?.say('warn', 'Let it go in the open sky, away from the planetoids.', { key: 'garden.seed', throttle: 1 }); else if (this.R.orbit.release(this.seed.id, this.seed.mesh.position)) { this.R.site.group.remove(this.seed.mesh); this.seed = null; } }
       this.brush.hide(); return this.pose(dt); }
     if (ctrl && I.wasPressed('Backspace') && !typing) this.askReset();
-    if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1]); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
+    if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1] * (this.game.alchemy?.widen?.('visualization.canvas') ?? 1)); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
     if (ctrl && I.wasPressed('KeyZ') && !typing) this.undo();
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }

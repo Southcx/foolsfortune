@@ -697,6 +697,7 @@ async function main() {
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
     const setStones = () => game.lachryma?.addModifier('stones', stoneModifier(game.vessel?.look?.stones, { night: phaseAt() === 'night' }));
+    game.lachryma?.addModifier('willpower', { get maxMult() { return game.alchemy?.widen?.('willpower.shield') ?? 1; } }); // (Willpower widens the pool, read live: SOUL-ALCHEMY.md 6)
     for (const e of ['title.enter', 'vessel.fire', 'day.phase']) events.on(e, setStones);
     setStones();
   }

@@ -123,8 +123,20 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`): the spirit press as it stands in the garden,
+  over the Athanor's vent, and its page: the **bath** drawn from above as the wheel (no numbers), the seven **swatches** (each a colour
+  and a shape), the drop, the hopper's **trail** ahead of it. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+  features, the ground under it and the water at it; every swatch's radius is times it. *Not:* the Athanor's plate shrine (the same page).
+- **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
+- **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
+  neuralese word beside a picture of what it does; found once (18: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
+  the workshop's old walls), it glosses that word into the **Crib Sheet**. A **stele** (two: the ruins' sealed room, the great cavern's
+  upper ring) carries three words no ostracon does, and a sentence. *Not:* a shard (a broken pot's piece, or a crystal shard); *not*
+  "ledger stone" (the ledger is the game's counts).
+- **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
+  digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
 - **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
-  Hand, Wide Bore...). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+  Hand, Wide Bore, Thick Walls, Perfect Pitch, Early Tell, Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
@@ -236,7 +248,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   surface where something touched it; the V behind something moving on it.
 - **the Veritome** (`src/tools/veritome/`, `src/tools/veritome/veritome.js`): the book that is a camera. The **lens**; the **book bash** (LMB
   with the lens down: the book shut and swung, two blows on the combo engine); a **plate** is one photograph; its
-  **memory** (a digital camera's: it holds 24 plates until they are appraised, never a consumable; there is no film since 2026-10-06);
+  **memory** (`VeritomeMemory`, `MEMORY_PLATES`, `tools/veritome/memory.js`; a digital camera's: it holds 24 plates until they are
+  appraised, never a consumable, and a full one is the shutter's one refusal; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
   and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
   (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
@@ -394,7 +407,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the log** (`src/feedback/gamelog.js`, rules in `src/feedback/tracking.js`): the only text feedback; **the chat line** is its typing.
 - **the domains** (six and one; `progress/domains.js` the data, `game.psyche` the EXP earned in play, `progress/psyche.js`): the seven skills of the Courier's psyche, mostly felt in the god hand: Ouranurgy, Manifestation,
   Divination, Psychokinesis, Possession, Alteration, and **Spellscription** (transcribing a thing down: the Soul Brush's glyphs, the
-  Veritome's macros). *Retired:* Spellcasting.
+  Veritome's macros; the beat: staying on tempo is transcribing actions to time). No new domains, ever (the owner, 2026-10-08).
+  *Retired:* Spellcasting.
 - **damage type** (`src/progress/combat/types.js`): what kind of force a blow is, lawful to chaotic: **Impact**, **Ego**, **Influence**,
   **Illusion**, **Delirium**. Each **builds** a status and **trumps** one other (a closed cycle). **Annihilation**: Impact on a target
   carrying Delirium's status, or the reverse, hits much harder. *Not:* an element.
@@ -810,6 +824,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | Shrine Garden | the Spirit Garden (the owner, 2026-10-06) | (gone; kept: the owner's own word) |
+| film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`; the owner, 2026-10-06) | `audio/cues.js` (Wanda's), `pneuka/thingmodels.js` (Calissa's) |
 | Lab mode | the all-arts switch (code `lendAll`, `setLendAll`; its label, "ALL ARTS" for now, is Espada's) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | course (for moving between rooms) | rooms (`game.rooms`, after the split) | `game.course` (`src/world/basement/basement.js`: the course and the room teleports in one class) |
