@@ -14,7 +14,8 @@
 //                 opens at the seam; a skirt hangs from its inner edge (the crude pouring down into the maw)
 //   THE TURNING   the current's streaks and the oil film wound into it: a pattern in log-polar space (a logarithmic spiral's arms),
 //                 carried round at the vortex's own angular speed and drawn inward, in two phases half a period apart, each restarted
-//                 while it is unseen (the flow map of Portal 2), so the shear never winds the bands finer than the grid can hold
+//                 while it is unseen (the flow map of Portal 2), so the shear never winds the bands finer than the grid can hold. It turns
+//                 the way the arena's ship laps (`sense`: the arena's sign, measured, never read off a rotation: casebook 129)
 //   THE LIGHT     Poe's: the film brightest along the steep walls ("a flood of golden glory along the black walls"), the crude
 //                 darkening down them, and a bow of the film's colours hung over the middle (his rainbow in the spray); leaning to the
 //                 waypoint's feeling
@@ -29,7 +30,7 @@
 // Portal 2" (SIGGRAPH 2010: two phases of a flow map crossfaded); the humpback's bubble net (a spiral that gathers the sea, then the
 // lunge up its middle); Sin & Punishment's and Panzer Dragoon's arena bosses (the place circles the beast).
 //
-//   const W = sea.whirlpool()  (vfx/crudesea.js makes it once, its disc beside the sea's mesh)   W.set({ at, on, swallow, apex, inner, tint })
+//   const W = sea.whirlpool()  (vfx/crudesea.js makes it once, its disc beside the sea's mesh)   W.set({ at, on, swallow, apex, inner, tint, sense })
 //   W.update(rawDt)   W.depthAt(x, z)   W.taperAt(x, z)   W.under(on)   W.mesh   W.dispose()
 //   whirlHeart(path, turn, seaY, out)   the whirlpool's heart: the point on the sea the arena's laps circle (railpath.js lays them)
 //   WHIRL (its numbers), WHIRL_U(), WHIRL_VERT, WHIRL_FRAG (the crude sea's shader takes them)
@@ -56,7 +57,7 @@ export const WHIRL_U = () => ({
   uWhirl: { value: new THREE.Vector4(0, 0, W.radius, 0) }, // (heart x, z; the disc's radius; on)
   uWhirlA: { value: new THREE.Vector4(W.core, 0, W.bare.inner, W.swell) }, // (the core's radius; A, the depth's scale with `on` in it; the inner edge; the swells' least)
   uWhirlF: { value: new THREE.Vector4(0, 0, 0, 0) }, // (the two phases' turn at the core, radians; the two phases' draw, log-radius)
-  uWhirlT: { value: new THREE.Vector4(0, 0, 0, 0) }, // (phase 0's place in its period; the feeling's share of the film; the bow; spare)
+  uWhirlT: { value: new THREE.Vector4(0, 0, 0, 1) }, // (phase 0's place in its period; the feeling's share of the film; the bow; the sense it turns: +1 toward atan2(z, x) rising, -1 the other way)
   uWhirlC: { value: new THREE.Color(1, 1, 1) }, // (the feeling's colour)
 });
 
@@ -79,7 +80,7 @@ float whirlNoise(vec2 p, float P) { vec2 i = floor(p), f = fract(p); f = f * f *
 float whirlStreak(vec2 d, float r, float phi, float psi) {
   float c = uWhirlA.x, s = r < c ? 1.0 : c * c / (r * r);             // (the vortex's own angular speed, as a share of the core's)
   float lr = log(max(r, 0.4)), a = (atan(d.y, d.x) - phi * s) / 6.2831853;
-  float x = a * 12.0 + lr * 2.4, y = (lr + psi) * 7.0;                // (twelve arms round, wound as a log spiral; seven bands an e-fold in)
+  float x = a * 12.0 + lr * 2.4 * uWhirlT.w, y = (lr + psi) * 7.0;    // (twelve arms round, wound as a log spiral trailing the turn, whichever way it goes; seven bands an e-fold in)
   return whirlNoise(vec2(x, y), 12.0) * 0.6 + whirlNoise(vec2(x * 2.0 + 5.0, y * 2.3), 24.0) * 0.4;
 }`;
 
@@ -118,7 +119,7 @@ export class Whirlpool {
     this.sea = sea; this.u = sea.u;
     this.on = 0; this.swallow = 1; this.apex = W.bare.apex; this.inner = W.bare.inner; this.A = 0; this.tint = 0;
     this.want = { on: 0, swallow: 1, apex: W.bare.apex, inner: W.bare.inner, tint: 0 };
-    this.at = new THREE.Vector2(); this.tau = 0; this.phi = [0, 0]; this.psi = [0, 0]; this.cycle = 0;
+    this.at = new THREE.Vector2(); this.sense = 1; this.tau = 0; this.phi = [0, 0]; this.psi = [0, 0]; this.cycle = 0;
     this.geo = discGeometry(); this.idxUp = this.geo.index;
     this.mat = sea.material(true);
     this.mat.polygonOffset = true; this.mat.polygonOffsetFactor = -1; this.mat.polygonOffsetUnits = -2; // (where it runs on under the sea round it, it is the one drawn: a state, not a program)
@@ -127,9 +128,10 @@ export class Whirlpool {
   }
 
   /** What it should be (each kept until set again): `at` the heart (world, a Vector3 or { x, z }), `on` 0..1, `swallow` 0..1, `apex` the
-   *  height (m, from the drawn sea) its surface meets the middle at, `inner` that middle's radius (m), `tint` a Color or null. */
-  set({ at, on, swallow, apex, inner, tint } = {}) {
-    const S = this.want;
+   *  height (m, from the drawn sea) its surface meets the middle at, `inner` that middle's radius (m), `tint` a Color or null, `sense`
+   *  +1 or -1: which way round it turns (+1 toward atan2(z, x) rising, as seen in the world's x and z: the way a ship laps at sign -1). */
+  set({ at, on, swallow, apex, inner, tint, sense } = {}) {
+    const S = this.want; if (sense !== undefined) this.sense = sense < 0 ? -1 : 1;
     if (at) this.at.set(at.x, at.z);
     if (on !== undefined) S.on = THREE.MathUtils.clamp(on, 0, 1);
     if (swallow !== undefined) S.swallow = THREE.MathUtils.clamp(swallow, 0, 1);
@@ -151,11 +153,11 @@ export class Whirlpool {
     const t0 = this.tau, t1 = (t0 + 0.5) % 1; this.tau = (t0 + raw / W.period) % 1;
     if (this.tau < t0) { this.cycle++; this.phi[0] = 0; this.psi[0] = (this.cycle * 0.37) % 5; }
     if ((this.tau + 0.5) % 1 < t1) { this.phi[1] = 0; this.psi[1] = (this.cycle * 0.53 + 2.1) % 5; }
-    for (let k = 0; k < 2; k++) { this.phi[k] += spin * raw; this.psi[k] += draw * raw; }
+    for (let k = 0; k < 2; k++) { this.phi[k] += spin * raw * this.sense; this.psi[k] += draw * raw; }
     u.uWhirl.value.set(this.at.x, this.at.y, R, this.on);
     u.uWhirlA.value.set(c, this.A, ri, W.swell);
     u.uWhirlF.value.set(this.phi[0], this.phi[1], this.psi[0], this.psi[1]);
-    u.uWhirlT.value.set(this.tau, this.tint, this.swallow * this.on, 0);
+    u.uWhirlT.value.set(this.tau, this.tint, this.swallow * this.on, this.sense);
     const sea = this.sea; this.mesh.position.set(0, sea.y + sea.lift, 0);
     this.mesh.visible = this.on > 0 && sea.mesh.visible !== false;
   }

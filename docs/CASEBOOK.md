@@ -357,8 +357,28 @@ the rules before building in the same area; a rule a machine can check goes into
 128. **Two meshes that meet on a curve overlap; they never abut.** A ring of chords lies inside its circle and a camera-following grid
     never matches a fixed one, so a seam cut on the circle opens a sliver onto whatever is under the world (the sky's dome, from above).
     Run one a few metres on under the other and let it win their shared ground by polygon offset (a state, not a program).
+129. **A way of turning is measured on the thing, never read off a sign.** three.js's positive rotation about y takes +x toward -z, so
+    it turns the world's `atan2(z, x)` the other way; a look that turns "with" a flow, or a flow "with" a ship, is checked by reading each
+    one's angle in that one function over a few frames and comparing the signs (a look's own `sense`, +1 or -1, carries it to all of them).
 
 ## Cases
+### 2026-10-08 · Charybdis turned against its own whirlpool, and the whirlpool against the ship half the time (the review of Calissa's Charybdis)
+- **Seen:** reading the review's numbers, not the pictures: in `crossing:charybdis` the beast's eye 0 and its sheath's ridges, as the
+  world's `atan2(z, x)` has them, fell (0.156 to 0.106, and -0.424 to -0.664 radians in 1.5 real seconds) while the whirlpool's bands
+  (`phi`, 0.141 to 0.236) rose: the sheath that is meant to be the crude whirling round its neck turned against the crude beside it. In
+  a real maelstrom crossing the ship's own lap went the way the beast did on one arena sign (+1) and against the whirlpool, and the
+  other way on the other sign (-1): half the crossings sail against the current.
+- **Cause (measured on both signs, seeds 9 and 1):** the look wrote `body.rotation.y = turn` as if a positive turn were the whirl's, and
+  the whirlpool's pattern angle is `atan2(z, x)` (rising with `phi`); three.js's rotation about y lowers that angle, so the two had
+  opposite senses. And the whirlpool had one sense, the arena's `sign` (+1 or -1, `rng() < 0.5`, railpath.js) two: the ship laps toward a
+  falling angle at +1 and a rising one at -1.
+- **Fix:** one `sense` (+1 or -1) for the look and the whirlpool (`CharybdisLook.set`, `Whirlpool.set`; the spiral arms' handedness
+  with it, `uWhirlT.w`), written by the crossing's look from the arena (`sense = -sign`, vfx/crossinglook.js), the body and the sheath
+  turned by `-turn` so what is written is the angle the world reads. Measured on both signs after: the ship, the eye, the sheath and
+  the bands all fall at +1 and all rise at -1. Also: `CharybdisLook.reset` forgets where the lip last was (`yWas`), so a beast shown
+  again at a new arena is not seen to cross the surface from where the last crossing left it (a crown thrown at the first frame).
+- **Rule:** 129.
+
 ### 2026-10-08 · Charybdis held fifteen metres under the crude, and the whirlpool's seam open to the sky (Calissa's Charybdis)
 - **Seen:** building Charybdis's look on Petra's director (world/emocean/charybdis.js): the foe it holds at the arena's centre measured
   15.1 m under the crude's level all through the arena's laps (a 24-bar peak, 3 laps), so "risen 7 m" stood 8.6 m under the sea and

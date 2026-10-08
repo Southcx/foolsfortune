@@ -34,7 +34,7 @@
 // (vfx/telegraph.js closes on a part's anchor); Shadow of the Colossus (weak points that glow on a body that is a place).
 //
 //   const C = new CharybdisLook({ env, fx })   C.group (its own frame: the lip's middle at the origin, Y up, the body hanging below)
-//   C.set({ y (m over the crude: how high it stands, Petra's charybdis.y), feel })   C.place(heart (world, on the sea), sea?)
+//   C.set({ y (m over the crude: how high it stands, Petra's charybdis.y), feel, sense (which way it turns, the whirlpool's) })   C.place(heart (world, on the sea), sea?)
 //   C.part(name) -> BossPart (names: 'baleen.0'..'baleen.7', 'eye.0'..'eye.5', 'throat')   C.parts   C.reset()   C.hit(power)
 //   C.whirlFor(y, lift) -> { swallow, apex, inner } (what the whirlpool's middle is: vfx/whirlpool.js set)   C.vantage(name, out)
 //   C.crossing(yW, out) (where its leaning axis crosses a height: the whirlpool's middle follows it)
@@ -115,7 +115,7 @@ const _w = new THREE.Vector3();
 
 export class CharybdisLook {
   constructor({ env = null, fx = null } = {}) {
-    this.fx = fx; this.t = 0; this.y = 0; this.yWas = null; this.feel = null; this.mood = MOOD0; this.turn = 0; this.sheathTurn = 0; this.sheet = 0;
+    this.fx = fx; this.t = 0; this.y = 0; this.yWas = null; this.feel = null; this.mood = MOOD0; this.turn = 0; this.sheathTurn = 0; this.sheet = 0; this.sense = 1;
     this.leanK = 0; this.leanA = 0;
     this.group = new THREE.Group(); this.group.name = 'charybdis';
     this.mats = []; this.geos = [];
@@ -228,13 +228,15 @@ export class CharybdisLook {
   }
 
   part(name) { return this.parts.part(name); }
-  reset() { this.parts.reset(); for (const C of this.combs) C.flare = 0; }
+  reset() { this.parts.reset(); for (const C of this.combs) C.flare = 0; this.yWas = null; this.sheet = 0; } // (a beast shown again is not seen to cross the surface from where it was last)
   /** A blow on its body (the foe the runtime strikes): every open part's line and glow lifts a little. */
   hit(power = 1) { for (const p of this.parts.map.values()) if (p.open) p.hit(0.35 * power); }
 
-  /** How high it stands (m over the crude) and the feeling it wears (COLOR: its eyes, its throat, the whirlpool's film). */
-  set({ y, feel } = {}) {
+  /** How high it stands (m over the crude), the feeling it wears (COLOR: its eyes, its throat, the whirlpool's film) and which way it
+   *  turns with the whirlpool (`sense`, vfx/whirlpool.js: +1 toward atan2(z, x) rising, -1 the other way). */
+  set({ y, feel, sense } = {}) {
     if (y !== undefined) this.y = y;
+    if (sense !== undefined) this.sense = sense < 0 ? -1 : 1;
     if (feel !== undefined && feel !== this.feel) { this.feel = feel; this.mood = MOOD[feel] || MOOD0; this.color = new THREE.Color(COLOR[feel] ?? 0xffc65c); }
   }
   /** Its place: the lip's middle over the whirlpool's heart (world), at its height over the crude the logic rides. */
@@ -263,11 +265,11 @@ export class CharybdisLook {
     if (toward) { const a = Math.atan2(toward.z - P.z, toward.x - P.x); let d = a - this.leanA; d = Math.atan2(Math.sin(d), Math.cos(d)); this.leanA += d * (1 - Math.exp(-raw * 3)); }
     this.leanK = ease(this.leanK, toward ? K.lean * kr : 0, 2);
     // it turns with the vortex, its sheath faster; it bobs and breathes in its mood; a dread one shivers
-    this.turn += raw * 0.12 * M.spin; this.sheathTurn += raw * 0.55 * M.spin;
-    this.body.rotation.set(M.droop + 0.02 * Math.sin(t * 0.5), this.turn, 0.02 * Math.cos(t * 0.43) + (M.shiver ? 0.006 * Math.sin(t * 37) : 0));
+    this.turn += raw * 0.12 * M.spin * this.sense; this.sheathTurn += raw * 0.55 * M.spin * this.sense; // (angles as the world's atan2(z, x) reads them, as the whirlpool's: three's rotation about y turns that angle the other way, so the minus below)
+    this.body.rotation.set(M.droop + 0.02 * Math.sin(t * 0.5), -this.turn, 0.02 * Math.cos(t * 0.43) + (M.shiver ? 0.006 * Math.sin(t * 37) : 0));
     this.body.position.y = 0.25 * M.bob * Math.sin(t * 1.1 * M.breath);
     const sw = 1 + 0.025 * Math.sin(t * 1.6 * M.breath + 0.6); this.body.scale.set(sw, 1, sw); // (it swells and draws in as it swallows)
-    this.sheath.rotation.y = this.sheathTurn;
+    this.sheath.rotation.y = -this.sheathTurn;
     for (const f of this.fins) f.droop.rotation.z = -0.95 + 0.22 * Math.sin(t * 0.7 + f.k); // (a slow scull)
     this.flukes.rotation.x = 0.12 * Math.sin(t * 0.6);
     // the baleen: its mood's flare, its windup's (wide), a damaged comb hanging

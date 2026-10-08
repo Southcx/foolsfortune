@@ -112,7 +112,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the frame's bank taken out), drawn on the crude sea's own program (a disc of its material, `uDisc`) as a Rankine vortex: **the vortex's
   core** turning as one body (its surface a paraboloid), the slope round it falling as 1/r², the speed rising inward; the current's
   streaks and the oil film wound in toward its middle in two phases of a flow map (Portal 2's), its walls lit as Poe's were, a bow of the
-  film's colours over its middle, leaning to the waypoint's feeling. It **swallows** (Charybdis dived: deep and fast, the crude pouring
+  film's colours over its middle, leaning to the waypoint's feeling. It turns **the way the arena's ship laps** (`sense`, +1 or -1 from the
+  arena's sign), Charybdis with it. It **swallows** (Charybdis dived: deep and fast, the crude pouring
   over its lip into its maw: **the pour**, a skirt hung from its inner edge) and **spits** (risen: shallow and slow, the bands streaming
   out round its sheath). The logic's sea has it too (`heightAt`). *Not:* the maelstrom (the leg, a waypoint's type), the whorl (the storm
   warp's), the ring (the orbit's), a ripple, the vortex's core as "the core" (the Great Slip Jelly's weak point).

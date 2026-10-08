@@ -80,7 +80,7 @@ export class CrossingLook {
     this.lift = 0; this.side = 0; this.shellT = 0; this.shellForm = 'astral'; this.gilt = 0; this.hitsWas = 0;
     this.rings = []; this.slabs = []; this.plan = { rings: [], slabs: [] }; this.prevShip = new THREE.Vector3(); this.hasPrev = false;
     this.streaks = Array.from({ length: C.drift.n }, (_, i) => ({ x: (hash(i) - 0.5) * 22, y: 0.3 + hash(i + 7) * 1.8, z: -20 + hash(i + 13) * 100 }));
-    this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0 };
+    this.mael = { arena: null, heart: new THREE.Vector3(), shown: false, y: 0, feel: null, hitT: 0, sense: 1 };
     this.game.events?.on?.('rail.surge', () => { this.shellT = C.shell.time; this.shellForm = this.st.ship?.form || 'astral'; });
   }
 
@@ -224,13 +224,13 @@ export class CrossingLook {
    *  it is beaten or let go, the whirlpool going still. */
   maelstrom(raw) {
     const st = this.st, Ch = st.charybdis, sea = st.sea, W = this.whirl, L = this.beast, M = this.mael; if (!Ch || !sea || !W || !L) return;
-    if (Ch.active && Ch.arena && M.arena !== Ch.arena) { M.arena = Ch.arena; whirlHeart(st.rail.path, Ch.arena, sea.y, M.heart, CRUISE); }
+    if (Ch.active && Ch.arena && M.arena !== Ch.arena) { M.arena = Ch.arena; M.sense = -(Ch.arena.sign ?? 1); whirlHeart(st.rail.path, Ch.arena, sea.y, M.heart, CRUISE); } // (it turns the way the ship laps: sign +1 laps toward atan2(z, x) falling, measured on a crossing of each sign)
     const f = Ch.foe, alive = !!f?.alive;
     if (alive) { M.shown = true; M.y = Ch.y; M.feel = Ch.w?.feel || null; }
     else if (M.shown) { M.y -= raw * CHARYBDIS_LOOK.sink; if (M.y < -45) M.shown = false; } // (beaten or let go: it sinks into the maelstrom)
     L.group.visible = M.shown && sea.mesh.visible;
     if (M.shown) {
-      L.set({ y: M.y, feel: M.feel }); L.place(M.heart, sea);
+      L.set({ y: M.y, feel: M.feel, sense: M.sense }); L.place(M.heart, sea);
       if (f && (f.hitT || 0) > M.hitT + 1e-3) L.hit(1); // (a blow on its body: the parts' line and glow lift)
       M.hitT = f?.hitT || 0;
       st.ship?.look?.group?.getWorldPosition(_hw);
@@ -238,7 +238,7 @@ export class CrossingLook {
     }
     const w = M.shown && M.y > -14 ? L.whirlFor(M.y, sea.lift) : { swallow: 1, apex: WHIRL.bare.apex - sea.lift, inner: WHIRL.bare.inner };
     const here = Ch.active && !!M.arena && !(f && !alive); // (beaten: the sea goes still)
-    W.set({ at: M.shown && M.y > -14 ? L.crossing(sea.y + sea.lift + w.apex, _hc) : M.heart, on: here ? 1 : 0, ...w, tint: M.feel ? _tint.setHex(COLOR[M.feel] ?? 0xffffff) : null });
+    W.set({ at: M.shown && M.y > -14 ? L.crossing(sea.y + sea.lift + w.apex, _hc) : M.heart, on: here ? 1 : 0, ...w, sense: M.sense, tint: M.feel ? _tint.setHex(COLOR[M.feel] ?? 0xffffff) : null });
     W.update(raw);
     this.game.umbral?.set?.({ clear: M.shown ? 1 : 0 }); // (under the surface, the murk drawn off so it is seen across the arena)
   }
