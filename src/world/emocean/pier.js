@@ -18,6 +18,7 @@ import { MOUNTS, slotsOf, mountable } from '../../progress/rail/mounts.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
 import { SeaChart } from './seachart.js';
+import { sfx } from '../../audio/sfx.js';
 
 const REACH = 2.6; // (metres from a jetty's end)
 
@@ -51,6 +52,7 @@ export class Pier {
   /** Once a frame: F at a pier's end opens its page. */
   update() {
     const g = this.game, P = g.player, it = g.interact?.cur;
+    if (this.chart.sounding && !(this.menu?.open && this.menu.page?.name === 'seachart')) { this.chart.sounding = false; sfx.seaChart?.(false); } // (the chart shut)
     if (it?.id !== 'pier' || !P.peekLatch?.('KeyF') || g.god?.controlling) return;
     P.latch('KeyF');
     this.open(it.ref);
@@ -112,7 +114,7 @@ export class Pier {
    *  rutter (voyage.stageResult). */
   castOff(from, to) {
     const C = this.chart; if (!C.done()) return false;
-    return this.sail(from, to, { ids: [...C.path], legs: C.path.map((id) => C.chart.waypoints[id].type), pieces: C.legs(), route: `${from}>${to}`, read: +this.game.voyage.reckoning(from, to).toFixed(2) });
+    return this.sail(from, to, { ids: [...C.path], legs: C.path.map((id) => C.chart.waypoints[id].type), waypoints: C.path.map((id) => ({ ...C.chart.waypoints[id] })), chart: C.chart, pieces: C.legs(), route: `${from}>${to}`, read: +this.game.voyage.reckoning(from, to).toFixed(2) });
   }
 
   /** Board and go: the voyage pays the fuel and draws the set pieces; the stage takes the Courier aboard. */

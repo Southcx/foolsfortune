@@ -68,7 +68,7 @@ export class Shots {
   gun(p, dir) {
     const s = this.guns.find((x) => !x.on); if (!s) return null;
     const G = T.ship.shot;
-    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life;
+    s.on = true; s.p.copy(p); s.v.copy(dir).normalize().multiplyScalar(G.speed); s.life = G.life; s.dmg = 1;
     return s;
   }
   /** A lance at a painted foe (its volley keeps the count). */
@@ -113,7 +113,7 @@ export class Shots {
       s.p.addScaledVector(s.v, dt); s.life -= dt;
       if (s.life <= 0) { s.on = false; continue; }
       const f = waves?.hitAt(s.p, T.ship.shot.radius);
-      if (f) { waves.strike(f, 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
+      if (f) { waves.strike(f, s.dmg ?? 1, { cause: 'shot', at: s.p, dir: s.v }); s.on = false; }
     }
     // the lances turn onto what they were sent at, and keep going if it is gone
     for (const s of this.lances) {

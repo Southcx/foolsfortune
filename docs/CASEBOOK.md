@@ -184,6 +184,10 @@ the rules before building in the same area; a rule a machine can check goes into
     ray down from above meets the ground it was meant for (open sand, not the prop), trying bearings until one does.
 71. **Know what a number measures before acting on it.** perf's heap is the dev page's (code and source maps included); a player's
     memory is the built page's. A budget over on the first is checked against the second before anything is cut or raised.
+72. **A line said on a state's edge needs hysteresis.** Where a state can flicker (brimming at sea, overflow after overflow), say it on
+    entering and say its end only after it has lapsed a while; a flicker is one spell, never a pair of lines each time.
+73. **A ray from the eye picks only what lies beyond the one who shoots.** What the cursor's ray crosses between the camera and the
+    ship is not what the cursor means; the pick starts past the shooter.
 
 ## Cases
 
@@ -946,4 +950,18 @@ the rules before building in the same area; a rule a machine can check goes into
   (vite preview, two gc'd boots each) read 223 MB before and 228 after.
 - **Fix:** the budget raised to 350 with that written beside it (scripts/perf.mjs); the built figure reported at publish.
 - **Rule:** 71.
+
+### 2026-10-08 · "You are brimming." and "You settle." alternating at sea (found in a trip's screenshot)
+- **Seen:** on a drafted passage the log filled with the pair, a line every few seconds.
+- **Cause:** brimming lasted 2 real seconds after each overflow and its end was said at once; at sea absorbed shots overflow the pool
+  every few seconds, so each gap said "You settle." and the next shot "You are brimming." again.
+- **Fix:** courier/mind.js says "brimming" once a spell and "You settle." only after 6 real seconds with no overflow.
+- **Rule:** 72.
+
+### 2026-10-08 · The rail's gun aimed back at the camera when a foe passed close by it (v119; found by scripts/railaimtest.mjs)
+- **Seen:** in a free view the far reticle left the cursor by up to 0.13 of the screen for a frame or two, twice a crossing.
+- **Cause:** the aim takes the first foe the cursor's ray crosses; a big foe passing beside the camera was crossed in front of the ship,
+  so the aim point lay between the camera and the ship and the gun pointed back at it.
+- **Fix:** only a foe the ray meets 2 m or more beyond the ship's nose is picked. Measured: worst 0.007 of the screen through a crossing.
+- **Rule:** 73.
 
