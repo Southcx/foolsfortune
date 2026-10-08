@@ -75,8 +75,16 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
 - **The data drain** (`vfx/datadrain.js`): polygons streaming into the bracelet, unlit, so it reads on white sand and in the dark.
 - **The night sky** lives in the dome's shader (`vfx/sky.js` NIGHT_GLSL): our own stars, each at least 1.5 px, turning once a game day;
   meteors every 25 to 70 s; the aurora at the Shore. No draw call, no program.
-- **The spirit press:** the soul colour is its only bright thing, shown as the bath, the bead and the hue ring, never written; it is the
-  vessel's Lachryma, so a new Courier looks exactly as made.
+- **The spirit press:** the soul colour is its only bright thing, shown as the soul bead, the drum's pool and the hue ring, never written;
+  it is the vessel's Lachryma, so a new Courier looks exactly as made. **The bath is neutral** (SOUL-ALCHEMY.md 4.4, Albers): black
+  Lachryma over a dished clay floor, pale over the grey centre and black at the lip, never lit in the soul colour. Every colour on it is
+  `wheelColour` (`vfx/wheelcolour.js`, Oklab) and self-lit through `selfLit` (`vfx/selflit.js`, the tone curve and grade undone), so a
+  tile shows its glaze exactly and the bead dead on it vanishes. Distinctions are carried four ways before colour: bearing and distance,
+  the seals' shapes, value and gloss, motion. **The surround is grey while you judge** (4.3): the press view eases the garden's sky,
+  haze and fog to the grey of their own lightness, and the HUD steps out but for the folded log. **Everything that answers is
+  physical** (4.12, 4.13): the lever's ball up or down and warming, the eye brightening, the press's lantern tall or guttering; a firing
+  is a hit-stop, a burning glass, a white kiln heat cooling to crazing and the tile shrinking a step; a refusal is a crawl, a break's
+  glint or a gutter, never a flash or a word. The hokora is the garden's palette in small: grey stone, plum-dark wood, a moss roof.
 - **The crossing:** the sea is ink; everything you can shoot carries the one warm or pale thing on it. Parryable things wear only the
   Lachryma outline (`vfx/parrymark.js`).
 - **The Great Slip Jelly's bowl:** stone is ammunition (seam, log, rubble); the sand streams toward the pool it is in; the slip ripples

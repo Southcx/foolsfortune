@@ -10,7 +10,12 @@
 // what is under the cursor (godhand.js, arts.js); in the Spirit Garden, the art, the stroke and what is held (world/garden/hand.js).
 // The moments come off the bus: an art chosen snaps, a grab grabs, a throw releases, a cut chops, a catch bound crushes; in the
 // garden a pet pats, a flick flicks, an undo backhands, a planetoid put back slams. ~ in plays spawn; ~ out plays vanish, and the hand
-// stays shown until it ends (godhand.js applyCamera). Contact frames (`HAND_CONTACTS`) are where a blow lands: `clips.hit` is true on
+// stays shown until it ends (godhand.js applyCamera).
+// At the spirit press (docs/plans/SOUL-ALCHEMY.md 4.17; the station is world/garden/press.js) the hand reads the station: `point` held
+// over a lump, `pinch` held carrying one, `press` (the pat looped) on the mouth while it presses, `grab` then `grabHold` on the ball and
+// `pull` held as it is dragged, `idle` over the bath (raised and half-dithered there: vfx/alchemy/presslook.js); and the moments come
+// off the bus: the view opened beckons, closed shoos, a lump loaded releases, one taken back flicks, a firing clenches the fist through
+// the hit-stop, a refusal throws the hand open (a quick release). Contact frames (`HAND_CONTACTS`) are where a blow lands: `clips.hit` is true on
 // the frame a clip crosses one, for a sound or an effect on the beat.
 //
 // Prior art: Black & White's hand (one hand as your whole presence: grab, pat, slap, point), the clapperjar's crossfaded clips
@@ -43,6 +48,7 @@ export const HAND_MOVES = {
   pat: { clip: 'pat', fade: 0.08, contact: 10, firm: true },
   press: { clip: 'pat', loop: true, fade: 0.12 },
   shoo: { clip: 'shoo', loop: true, fade: 0.15 },
+  shooOnce: { clip: 'shoo', fade: 0.12 }, // (the press view left: once, played out)
   slam: { clip: 'slam', fade: 0.08, contact: 20, firm: true },
   flick: { clip: 'flick', fade: 0.06, contact: 14, firm: true },
   poke: { clip: 'poke', fade: 0.06, contact: 9, firm: true },
@@ -57,6 +63,7 @@ for (const c of ['wave', 'beckon', 'block', 'thumbsUp', 'thumbsDown', 'okSign', 
 const HELD = { sunder: 'point', swell: 'pinch', wring: 'pinch', manifest: 'scoop' }; // (the world's arts held: the clip held while LMB is)
 const STROKE = { pull: 'pull', press: 'press', smooth: 'shoo', flatten: 'press', carve: 'point', roughen: 'spiritFingers', paint: 'shoo' }; // (the garden's strokes)
 const THROWN = 3; // (m/s: a throw faster than this lets go briskly)
+const MOMENTS = new Set(['beckon', 'shooOnce', 'release', 'flick', 'fistClench']); // (the press's moments, played out before the station's state takes the hand again)
 
 export class GodHandClips {
   constructor(god, gltf) {
@@ -82,6 +89,14 @@ export class GodHandClips {
     on('garden.reset', () => { if (garden()) this.R.play('slam', { again: true }); });
     on('spirit.pet', () => { if (garden()) this.R.play('pat', { again: true }); });
     on('spirit.flick', () => { if (garden()) this.R.play('flick', { again: true }); });
+    // the spirit press's moments (SOUL-ALCHEMY.md 4.17)
+    const press = () => garden() && this.game.realm.press;
+    on('alchemy.open', () => { if (press()) this.R.play('beckon', { again: true, speed: 1.6 }); });
+    on('alchemy.close', () => { if (press()) this.R.play('shooOnce', { again: true, speed: 1.6 }); });
+    on('alchemy.load', () => { if (press()) this.R.play('release', { again: true }); });
+    on('alchemy.unload', (e) => { if (press()?.viewing && e.count === 1) this.R.play('flick', { again: true }); });
+    on('alchemy.fire', () => { if (press()) this.R.play('fistClench', { again: true, speed: 1.5 }); });
+    on('alchemy.refuse', () => { if (press()) this.R.play('release', { again: true, speed: 1.8 }); });
   }
 
   get move() { return this.R.move; }
@@ -121,6 +136,7 @@ export class GodHandClips {
   }
 
   garden(realm) {
+    if (realm.press?.viewing) return this.atPress(realm.press);
     const H = realm.hand, I = this.game.input, R = this.R;
     const held = H.seed || H.held;
     if (held && !this.held) R.play('grab', { again: true });
@@ -136,6 +152,21 @@ export class GodHandClips {
     if (H.art === 'water' && I.isDown('Mouse2')) return this.choose('scoop', true); // (drinking up: the palm cupped)
     if (H.art === 'water' && I.isDown('Mouse0')) return this.choose('pour', true);
     this.choose(H.art === 'place' ? 'point' : 'idle');
+  }
+
+  /** At the spirit press: the clip the station's state wants (the moments are the bus's, above). */
+  atPress(S) {
+    const R = this.R;
+    if (!S.lever && R.busy && MOMENTS.has(R.move)) return; // (a moment the bus called for plays out: the beckon, a release, a flick, the clench)
+    if (S.lever) {
+      if (!['grab', 'grabHold', 'pull', 'fistClench'].includes(R.move)) R.play('grab', { again: true });
+      if (S.pull > 0.15) this.choose('pull', true);
+      return;
+    }
+    if (S.carry) return this.choose('pinch', true);
+    if (S.walk || S.beatT != null) return this.choose('press', true);
+    if (S.hover) return this.choose('point', true);
+    this.choose('idle');
   }
 
   dispose() { this.R.dispose(); }

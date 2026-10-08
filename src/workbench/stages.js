@@ -20,6 +20,7 @@ import { LachrymatoBottle } from '../vfx/bottle.js';
 import { Stain } from '../vfx/stains.js';
 import { coat } from '../vfx/coat.js';
 import { ShrineModel } from '../vfx/shrine.js';
+import { Hokora } from '../vfx/garden/hokora.js';
 import { SlipGeyser } from '../vfx/slipgeyser.js';
 import { Pillar, Stalactite, slipMaterial, Clutch, dressBrood } from '../vfx/cavekit.js';
 import { bowlSand, bowlSandTick, PoolRing } from '../vfx/bowl.js';
@@ -160,6 +161,7 @@ export function buildStage(id) {
   else if (id === 'workshop:strawman') { const S = new StrawmanModel(); obj = S.group; let last = 0, pt = 0; obj.userData.tick = (t) => { if (t - last > 2) { last = t; S.group.updateMatrixWorld(true); const p = S.body.localToWorld(new THREE.Vector3(0, -0.53, -0.4)); S.hit(p, new THREE.Vector3(Math.sin(t), 0, -1).normalize(), 1); } S.update(Math.max(0, t - pt)); pt = t; }; }
   else if (id === 'garden:regia') { const P = new SpiritPress(); P.set({ soul: { h: 40, s: 0.6 }, fire: 0.5, near: 2 }); obj = P.group; obj.userData.tick = (t) => { if (t % 6 < 0.05) P.set({ regia: 1 }); P.update(t); }; }
   else if (id === 'garden:shrine') { const S = new ShrineModel({ ground: 'stone_flags' }); obj = S.group; let pt = 0; obj.userData.tick = (t) => { const k = t % 12; S.set({ found: k > 2, resting: k > 4 && k < 7, open: k > 7.5 }); S.update(Math.max(0, t - pt)); pt = t; }; }
+  else if (id === 'garden:hokora') { obj = new Hokora().group; }
   else if (id === 'garden:press') { const P = new SpiritPress(); P.set({ soul: { h: 226, s: 0.5 }, fire: 0.6, press: 0.5, near: 4, queue: [20, 123, 277] }); obj = P.group; obj.userData.tick = (t) => P.update(t); }
   else if (id === 'folk:purser') obj = buildPurser().group;
   else if (id === 'folk:board') obj = buildBountyBoard().group;

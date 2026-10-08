@@ -20,6 +20,7 @@ import { Planetoid } from '../../vfx/garden/planetoid.js';
 import { GardenSky } from '../../vfx/garden/gardensky.js';
 import { SpiritVein } from '../../vfx/garden/veins.js';
 import { CocoonTree } from '../../vfx/garden/cocoontree.js';
+import { Hokora } from '../../vfx/garden/hokora.js';
 
 /** Where the garden hangs: far over the workshop's north, no other zone near (render/zonemap.js 'garden'). */
 export const GARDEN_AT = new THREE.Vector3(0, 1200, 3000);
@@ -140,9 +141,9 @@ export class GardenSite {
     // the Athanor: the spirit press on its crown, over the vent (Calissa's model, stood there by world/garden/press.js from `m`)
     { const R = this.by.athanor, m = this.stand(R, UP, 0);
       F.push({ kind: 'athanor', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(m), m });
-      // the plate shrine's hokora on the crown's east shoulder, its own F (SOUL-ALCHEMY.md 4.2; a stand-in for Calissa's model)
+      // the plate shrine's hokora on the crown's east shoulder, its own F (SOUL-ALCHEMY.md 4.2; Calissa's model, vfx/garden/hokora.js)
       const h = this.stand(R, dirOf(42, 90), 0, -Math.PI / 2), hk = new THREE.Group(); hk.applyMatrix4(h); hk.name = 'hokora';
-      hk.add(new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.8).translate(0, 0.55, 0), this.mats.wood), new THREE.Mesh(new THREE.ConeGeometry(0.8, 0.5, 4).rotateY(Math.PI / 4).translate(0, 1.35, 0), this.mats.roof));
+      hk.add(new Hokora().group);
       g.add(hk); F.push({ kind: 'hokora', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(h) }); }
     // the Pavilions of Echoes: a pavilion for each slot
     const V = this.by.pavilions, pavGeo = mergeGeometries([new THREE.BoxGeometry(1.6, 1.6, 1.6).translate(0, 0.8, 0), new THREE.ConeGeometry(1.6, 1, 4).rotateY(Math.PI / 4).translate(0, 2.1, 0)], false);

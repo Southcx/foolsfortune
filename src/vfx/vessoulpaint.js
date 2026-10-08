@@ -11,8 +11,11 @@
 // and Okami's sumi-e ink, which glow a little of their own colour back so the paint reads in shade.
 //
 //   const m = godHandPainting()   const j = pneukaJarPainting()   paintFlash(j, flash)  (a blow's flash, a mend's warmth: -1 .. 1)
+//   HAND_FADE.fade.value = 0.5   (the god hand half-dithered, a screen door: over the press's bath it never hides the soul bead;
+//   render/outline.js withFade, the Courier's own fade, on the hand's own uniforms: one program)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { withFade, rigUniforms } from '../render/outline.js';
 import handB64 from '../assets/courier/courier_godhand_base.png?b64';
 import jarB64 from '../assets/courier/courier_pneukajar_base.png?b64';
 
@@ -28,8 +31,10 @@ function painting(b64) {
 }
 const painted = (map, o = {}) => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0, ...o });
 
-/** The god hand's painted clay (one material: godhand.js sets its glow's pulse). */
-export function godHandPainting() { const m = painted(painting(handB64)); m.name = 'Courier_Godhand'; return m; }
+/** The god hand's own fade (1 whole .. 0 gone, a 4 x 4 screen door) and dissolve, apart from the Courier's. */
+export const HAND_FADE = rigUniforms();
+/** The god hand's painted clay (one material: godhand.js sets its glow's pulse), on its own fade. */
+export function godHandPainting() { const m = withFade(painted(painting(handB64)), 'godhand', HAND_FADE); m.name = 'Courier_Godhand'; return m; }
 /** The Pneuka Jar's painted clay (its body; the gems keep the core's light). */
 export function pneukaJarPainting() { const m = painted(painting(jarB64), { roughness: 0.6 }); m.name = 'Courier_PneukaJar'; return m; }
 

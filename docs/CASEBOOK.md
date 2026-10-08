@@ -216,8 +216,55 @@ the rules before building in the same area; a rule a machine can check goes into
     else that borrows the emissive (the firing's kiln-orange) is looked at on it before it ships. What it does to the emissive is done
     before the emissive map (`LIGHT_BEFORE`), never after: the light other code adds right behind the map (the cracks' Lachryma, the
     mend's gold, `kintsugi.js`) is nobody's colour to multiply.
+82. **A mode never writes another mode's state to borrow its look.** A field one system keeps (the garden hand's `held`: the body it
+    holds) is set by that system alone; a pose wanted elsewhere is read from the borrower's own state by whoever draws it.
+83. **Parts that meet are placed in one frame.** A spout and its basin, a press and its bath: stood each on its own ground, a planetoid's
+    curve puts them a metre apart; stand them in the frame of the one that must be level, and give the other a footing.
+84. **The glow round a light is a falloff, never a low-poly sphere, and where it hangs on a surface it lies over it.** A sphere's silhouette is a hard
+    polygon at any opacity, and a camera-facing glow cut by the plane it hangs over is a straight edge: draw a soft radial sprite, and
+    with the depth test off (drawn after what it lights) wherever it sits within its own radius of a surface.
+85. **A fold the player did not choose never goes through the setter that keeps their choice.** A feature that folds a window while it is
+    up asks for the fold without keeping it (`log.setMini(v, false)`), so closing the tab mid-feature leaves their saved choice as it was.
 
 ## Cases
+
+### 2026-10-08 · A burning light showed as a hard polygon, then as a glow cut straight (found in the firing's frames, review of the press)
+- **Seen:** at a firing the attribute's light hung over its tile, and a pale flat 12-sided disc lay round the tile, its edges straight; in
+  a true firing, after the glow was softened, it was cut along a straight line across the bath.
+- **Cause:** the light's glow (`halo` in the code) was an additive sphere of 12 by 8 segments at full opacity (a polygon from above, grown 1.6 times at the
+  burn); a soft camera-facing sprite in its place was cut by the bath's and the kerb's planes where the light dives to 4 cm over them.
+- **Fix:** the glow is a soft radial sprite (`vfx/alchemy/huering.js`), drawn after the marks and with the depth test off while its light
+  is over the kerb or the bath (a seated, lifted or diving light); the core sphere is 20 by 14.
+- **Rule:** 84.
+
+### 2026-10-08 · Opening the press view wrote the player's log fold to their saved choice (found reading the review, Calissa)
+- **Seen:** reading `vfx/alchemy/presslook.js`: it folded the log to its tab strip when the view opened and unfolded it for 4 seconds for
+  every line said; `setMini` keeps what it is given in the saved choice each time, so a tab closed in the press view left the log folded
+  at the next boot, and a line said while they typed could fold it under them.
+- **Cause:** the setter is the player's own (the fold button, the backslash key) and kept its argument unconditionally.
+- **Fix:** `setMini(v, keep = true)` (`feedback/gamelog.js`, a small crossing): the press look folds without keeping, restores what it found
+  when the view is left, and holds the log open while they type.
+- **Rule:** 85.
+
+### 2026-10-08 · Leaving the press view with a lump in the hand threw on the next frame (found headless, Calissa)
+- **Seen:** with a lump carried at the spirit press, F (or Esc, or W A S D) left the press view, and the next frame the garden's grab
+  threw `Cannot read properties of undefined (reading 'radius')`; reproduced headless by setting what the station set and leaving.
+- **Cause:** the station wrote its carry into the garden hand's own `held` (`hand.held = !!this.carry`, a boolean where the hand keeps
+  the body it holds) to get a pinching pose, and the leave returned before the line that set it back; the garden's grab then read
+  `held.body.radius` off `true`. The same flag also sent the hand to the last thing it had held and played the garden's grab clip.
+- **Fix:** the station no longer touches the hand's state: the hand's clips read the station's own `carry`, `hover`, `lever` and
+  `walk` (`godhand/godhandclips.js` `atPress`), and where the hand stands is the press's look (`vfx/alchemy/presslook.js` `handPoint`).
+- **Rule:** 82.
+
+### 2026-10-08 · The spirit press stood a metre under its bath, its drum inside the basin's plinth (Calissa, from the side renders)
+- **Seen:** from the side the press's drum was hidden behind the basin's plinth, its front lip 0.28 m under the liquid and 3.22 m from
+  the centre, inside the ware ring (measured headless), so no spout could pour from it into the bath.
+- **Cause:** the bath was laid level over the highest ground under its footprint, the press stood on the ground 4.35 m north, and on
+  the Athanor (10 m across) the ground falls 1.06 m in that distance: two parts that work together were each placed on their own ground.
+- **Fix:** the press stands in the bath's own frame, 4.35 m north and 5 cm under the liquid, on **the press's footing** (a round of the
+  basin's stone with its own skirt into the ground, merged into the basin's mesh: `vfx/alchemy/basin.js` `FOOTING`); the root spout
+  then reaches from the drum's lip over the ware ring and the kerb, and the thread falls into the bath at north.
+- **Rule:** 83.
 
 ### 2026-10-08 · A cracked vessel in EYE CUP or JELLY-CROWN lost the violet thread in its cracks, and its mending gold read orange and green (Calissa, the reviewer of the Great Slip Jelly's glazes)
 - **Seen (headless, cracks 0.85 on every region, then mending, four looks side by side: terracotta, guan, EYE CUP, JELLY-CROWN):**

@@ -90,7 +90,7 @@ export const FEELING_HUE = Object.fromEntries(Object.entries(COLOR).map(([k, hex
   return [k, Math.round(((h * 60) + 360) % 360)];
 }));
 
-const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing)
+const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false, stars: {} }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing; stars: each attribute's true firings, ten at most)
 const GAME_HOUR = DAY_MS / 24, wrapH = (h) => ((h % 360) + 360) % 360;
 export class SoulAlchemy {
   constructor(game) {
@@ -103,6 +103,10 @@ export class SoulAlchemy {
   get colour() { return { ...this.s.colour }; }
   rank(id) { return this.s.ranks[id] || 0; }
   seasoning(id) { return this.s.season[id] || 0; }
+  /** A tile's yohen stars: its true firings, kept, ten at most (SOUL-ALCHEMY.md 3.3, 4.13). */
+  stars(id) { return this.s.stars?.[id] || 0; }
+  /** Pressed since the last firing: the lever's ball is up (one firing a press). */
+  get cocked() { return !!this.s.cocked; }
   widen(key) { return widenAtRank(key, KNOB[key] ? this.rank(KNOB[key].attr) : 0); }
   /** The press's formation where it stands (the Athanor's features and ground: world/garden/press.js), 1 when there is no press. */
   formation() { return this.game.realm?.press?.formation?.() ?? 1; }
@@ -172,6 +176,7 @@ export class SoulAlchemy {
     if (!this.game.cubes?.spend(fuel, 'alchemy')) return { ok: false, code: 'poor', why: `The press does not fire: it needs ${fuel} cubes.` };
     const isT = isTrue(d, r);
     this.s.ranks[id] = r + 1; this.s.season[id] = 0; this.s.cocked = false;
+    if (isT) (this.s.stars ||= {})[id] = Math.min(A.ranks, (this.s.stars[id] || 0) + 1); // (kept as a yohen star on the tile)
     this.game.save?.dirty('alchemy');
     this.game.events.emit('alchemy.fire', { attribute: id, rank: r + 1, fuel, true: isT, d: +(d / rad).toFixed(2), by: 'courier' });
     return { ok: true, attribute: id, rank: r + 1, true: isT, fuel };
