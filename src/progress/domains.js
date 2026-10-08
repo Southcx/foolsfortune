@@ -39,11 +39,17 @@ export const SOURCES = [
   { event: 'move.blink',      domain: 'ouranurgy',      base: 6,  quality: () => 0.5 },
   { event: 'grapple.swing',   domain: 'ouranurgy',      base: 10, quality: (e) => (e.phase === 'end' ? q01((e.peak || 0) / 14) : null) },
   { event: 'god.manifest',    domain: 'manifestation',  base: 18, quality: (e) => q01((e.len || 0) / 10) },
-  { event: 'map.pulse',       domain: 'divination',     base: 8,  quality: () => 0.5 },
+  { event: 'map.surveyed',    domain: 'divination',     base: 8,  quality: (e) => q01((e.gained || 0) * 4) }, // (a quarter newly charted is masterful; a pulse over charted ground is rote: Petra, 2026-10-08)
   { event: 'crystal.strike',  domain: 'divination',     base: 6,  quality: (e) => (e.by === 'courier' ? (e.sweet ? 1 : q01(e.near)) : null) },
-  { event: 'photo.take',      domain: 'divination',     base: 8,  quality: (e) => q01(((e.stars || 1) - 1) / 3) },
+  // (Calissa, 2026-10-08: the continuous score once photo.take carries it, halved for a kind the Compendium already holds as well:
+  // 24 plates of one pot must not pay 24 times; until then the stars)
+  { event: 'photo.take',      domain: 'divination',     base: 8,  quality: (e) => (e.score != null ? q01((e.score - 50) / 200) * (e.fresh === false ? 0.5 : 1) : q01(((e.stars || 1) - 1) / 3)) },
+  // a parry read from a blow's windup (blows only): the later in the window, the better (Calissa's lead, the outline's own ramp); an
+  // early press still pays as rote. Projectiles, by how close they came (`d` of the parry's reach) once the event carries it.
+  { event: 'move.parry',      domain: 'divination',     base: 6,  quality: (e) => (e.by !== 'courier' ? null : e.what === 'blow' ? (e.lead == null ? 0.5 : e.lead <= 0.25 ? 1 : q01(1 - (e.lead - 0.25) / 0.8)) : e.d != null && e.reach ? q01(1 - e.d / e.reach) : null) },
   { event: 'god.grab',        domain: 'psychokinesis',  base: 4,  quality: () => 0.5 },
   { event: 'god.throw',       domain: 'psychokinesis',  base: 8,  quality: (e) => q01((e.speed || 0) / 30) },
+  { event: 'drill.end',       domain: 'psychokinesis',  base: 12, quality: (e) => (e.tuned?.length ? null : e.run?.shots ? q01((e.run.hits || 0) / e.run.shots) : null) }, // (the Throwing Room; a tuned game earns nothing: Petra)
   // time slowed or stopped is Ouranurgy (the owner, 2026-10-08): blade mode's cuts and zandatsu, the reprogramming's stilled window,
   // Celestial mode's canvas; quality is what was done in the stilled time (cuts, a clean macro, sigils drawn), never how long it was held
   { event: 'blade.exit',      domain: 'ouranurgy',      base: 12, quality: (e) => q01((e.cuts || 0) / 8 + (e.zandatsu ? 0.4 : 0)) },
@@ -55,9 +61,16 @@ export const SOURCES = [
   { event: 'god.sunder',      domain: 'alteration',     base: 10, quality: (e) => q01((e.cuts || 1) / 4) },
   { event: 'god.swell',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
   { event: 'god.wring',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
+  { event: 'garden.sculpt',   domain: 'alteration',     base: 4,  quality: (e) => (e.by !== 'courier' ? null : e.q != null ? q01(e.q) : 0.3) }, // (q: the water led to pool, Petra's to emit)
+  { event: 'brush.inscribe',  domain: 'alteration',     base: 6,  quality: () => 0.5 },                  // (an inscription changes what a thing is: Calissa)
   { event: 'reprogram.run',   domain: 'spellscription', base: 14, quality: (e) => q01(1 - (e.misses || 0) / Math.max(1, (e.chars || 1) / 4)) },
-  { event: 'brush.glyph',     domain: 'spellscription', base: 10, quality: (e) => q01((e.sigils || 0) / 3 + 0.4) },
-  { event: 'sigil.pop',       domain: 'spellscription', base: 4,  quality: () => 0.5 },
+  // (Calissa: `fit`, how neat the drawing was, once emitted; wash lays slip on the world and is Manifestation's; sigil.pop always fires
+  // beside a glyph, so it no longer pays twice)
+  { event: 'brush.glyph',     domain: 'spellscription', base: 10, quality: (e) => (e.technique === 'wash' ? null : e.fit != null ? q01(e.fit * Math.min(1, ((e.n || 0) + (e.sigils || 0)) / 3)) : q01((e.sigils || 0) / 3 + 0.4)) },
+  { event: 'brush.glyph',     domain: 'manifestation',  base: 6,  quality: (e) => (e.technique === 'wash' ? q01((e.n || 0) / 12) : null) },
+  // keeping time (the owner: staying on tempo is transcribing actions to time; Wanda's measures)
+  { event: 'song.play',       domain: 'spellscription', base: 8,  quality: (e) => q01(e.fever) },
+  { event: 'rhythm.score',    domain: 'spellscription', acts: 12, quality: (e) => q01(e.accuracy) }, // (a song of about two real minutes: as many acts as the time)
   // the slice's big acts (docs/plans/SLICE.md), counted in `acts`: as many of the domain's ordinary acts as the time they take, so a
   // layer pays EXP at the same rate a minute as the rest of play (a two-minute stage is 12 acts at PACE) and does not skew the scale
   { event: 'emocean.stage',   domain: 'ouranurgy',      acts: 12, quality: (e) => (e.by === 'courier' ? stageQuality(e) : null) },

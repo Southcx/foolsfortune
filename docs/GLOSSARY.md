@@ -122,7 +122,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the **vessel** as a domain widens the tools. *Not:* "stats"; Luck is apart.
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
-  A **true firing** is one within a quarter of the swatch's radius: cheaper, said, counted. *Not:* a stage of a glaze, or a Firing.
+  A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
 - **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`): the spirit press as it stands in the garden,
   over the Athanor's vent, and its page: the **bath** drawn from above as the wheel (no numbers), the seven **swatches** (each a colour
   and a shape), the drop, the hopper's **trail** ahead of it. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
@@ -136,7 +136,7 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the Crib Sheet** (a knack, the owner's name): the English gloss beside each neuralese word that is glossed, its reach grown only by
   digging; opened by 100 macros spoken, a five-Function macro held first time, or six ostraca found (`CRIB`).
 - **knack** (`docs/plans/TRAINING.md`): a passive Art, a toggle, opened by an achievement like every Art: where an assist lives (Steady
-  Hand, Wide Bore, Thick Walls, Perfect Pitch, Early Tell, Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
+  Hand, Wide Bore, Thick Walls, Perfect Pitch, Held Breath (was Early Tell, 2026-10-08: it stacked on Perception's widening; the name Espada's to confirm), Rule of Thirds, Half Time, Guide Tone, the Crib Sheet, Two-Tone: Espada's names, the owner's approval; Slow Hand and the map's way back proposed). *Not:* a widening (a domain's level does that), nor a Movement Art (a verb).
 - **voyage** (`game.voyage`, `src/progress/voyage.js`): the Emocean hop's systems: where the Courier is on the node map, the crossing
   (fuel, the stage's result, making port), the reckoning kept, and the **manifest** (each cask's origin and price, first in, first out).
 - **cask** (`cask.<grade>`): the unit of crude Lachryma, carried in the Pneuka Box; a ship's **hold** is how many casks may cross.
