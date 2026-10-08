@@ -10,6 +10,7 @@
 //
 //   node scripts/economy.mjs            cubes an hour by profile (before and after R38), mixed profiles, the Tithe's return and its odds as
 //                                       met, the curio curve under the deck, the Lockheart per opening, the mastery dividend, achievement points
+//   node scripts/economy.mjs --doc      also checks docs/ECONOMY.md's profile table against the run (fails on drift); --write rewrites it
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../src/progress/econ/table.js';
 import { TIERS, rollTier, curiosOf } from '../src/world/treasure/treasure.js';
@@ -101,6 +102,18 @@ console.log(`cubes an hour (aim ${aim}: ${ECON.perMinute} a minute of ordinary p
 console.log(`${pad('profile', 14)}${'before'.padStart(9)}${'after'.padStart(9)}   x aim`);
 for (const k of Object.keys(after)) console.log(`${pad(k, 14)}${num(before[k])}${num(after[k])}   ${(after[k] / aim).toFixed(2)}`);
 const tb = tithe(OLD), ta = tithe(ECON);
+// ECONOMY.md's profile table is this run's, never typed (docs/plans/DOCS-CLEANUP.md): --doc fails when a row's cubes or x aim differ,
+// --write puts this run's numbers in. A row is found by the profile's name at its start ("| fighter (...) | 608 | 1.27 |").
+if (process.argv.includes('--doc') || process.argv.includes('--write')) {
+  const docPath = new URL('../docs/ECONOMY.md', import.meta.url), doc = readFileSync(docPath, 'utf8'), drift = [];
+  const out = doc.replace(/^\| (fighter|miner|photographer|angler|treasury)([^|]*)\| *([\d,]+) *\| *([\d.]+) *\|$/gm, (row, k, rest, cubes, x) => {
+    const want = [Math.round(after[k]).toLocaleString('en'), (after[k] / aim).toFixed(2)];
+    if (cubes !== want[0] || x !== want[1]) drift.push(`${k}: the doc says ${cubes} (${x}), the run ${want[0]} (${want[1]})`);
+    return `| ${k}${rest}| ${want[0]} | ${want[1]} |`;
+  });
+  if (process.argv.includes('--write')) { (await import('node:fs')).writeFileSync(docPath, out); console.log(`ECONOMY.md's profile table written (${drift.length} rows changed)`); }
+  else { console.log(drift.length ? `FAIL ECONOMY.md's profile table drifted: ${drift.join('; ')} (node scripts/economy.mjs --write)` : 'PASS ECONOMY.md\'s profile table is this run\'s'); if (drift.length) process.exitCode = 1; }
+}
 console.log(`\nthe Tithe returns ${(tb * 100).toFixed(0)}% of what it takes before, ${(ta * 100).toFixed(0)}% after (pity and dupes counted; the curio is the rest of the prize)`);
 console.log(`a gambler with an hour's fighting (${Math.round(after.fighter)}) pulls ${Math.floor(after.fighter / ECON.tithe.cost)} sealed chests and keeps ~${Math.round(after.fighter * ta)} cubes of it`);
 

@@ -53,6 +53,7 @@ const RET = { chase: 1, free: 1, astern: 1 };
  *  surface from below: the dive's look). */
 const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
 const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot fills 4; full at 100; untouchable half a bar of the cue) // (the views with a free cursor; above and side fire along the scroll)
+const _fv = new THREE.Vector3();
 const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Ship {
@@ -110,7 +111,7 @@ export class Ship {
   get turning() { const R = T.ship.roll; return this.rollT > R.time - R.turns; }
 
   // ---------------------------------------------------------------- the frame
-  update(dt, { view, plane, sixteenth, shots, waves, abeam = false }) {
+  update(dt, { view, plane, sixteenth, shots, waves, abeam = false, arena = false }) {
     const S = T.ship, I = this.game.input, raw = this.game.rawDt ?? dt, keys = I?.down || new Set(), hit = I?.pressed || new Set();
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
@@ -133,7 +134,7 @@ export class Ship {
     const sx = (pl === 'wall' ? this.vel.z : this.vel.x * (VIEW_RIGHT[view] || 1)), sy = this.vel.y;
     this.bank = damp(this.bank, clamp(sx * S.bank, -S.bankMax, S.bankMax) * D2R, 10, dt);
     this.pitch = damp(this.pitch, clamp(sy * S.pitch, -S.pitchMax, S.pitchMax) * D2R, 10, dt);
-    this.aimAt(view, I, abeam && view === 'side', waves); this.aimArgs = [view, abeam && view === 'side', waves];
+    this.aimAt(view, I, abeam && view === 'side', waves, arena); this.aimArgs = [view, abeam && view === 'side', waves, arena];
     // the roll, its charges, the parry's window, the mercy after a hit
     const R = S.roll;
     if (hit.has('KeyE') && this.rollT <= 0 && this.charges >= 1) { this.rollT = R.time; this.charges--; sfx.roll(); this.onRoll?.(); }
@@ -175,8 +176,8 @@ export class Ship {
   }
 
   /** Where the gun points: from the nose to the reticle at 36 m (free views), or along the scroll (above, side). */
-  aimAt(view, I, abeam = false, waves = null) {
-    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, free = RET[view] && VIEW_RIGS[view] != null; // (abeam: a set piece alongside, the gun at it, into the screen)
+  aimAt(view, I, abeam = false, waves = null, arena = false) {
+    const [d1, d2] = T.ship.reticles, f = abeam ? [-1, 0, 0] : VIEW_FWD[view] || VIEW_FWD.chase, free = (RET[view] || arena) && VIEW_RIGS[view] != null; // (arena: the maelstrom's, abeam in the side view with the cursor free: charybdis.js) // (abeam: a set piece alongside, the gun at it, into the screen)
     this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
     // the cursor: the mouse's pixels as a share of the screen, so it covers all of it and never moves with the camera (a swing keeps it)
     const W = innerWidth || 960, H = innerHeight || 540, C = this.cursor;
@@ -185,7 +186,7 @@ export class Ship {
     if (free && cam && R.toLocal) {
       cam.updateMatrixWorld(); _ray.setFromCamera(_c2.set(C.x, C.y), cam);
       R.toLocal(_ray.ray.origin, _o); R.dirLocal(_ray.ray.direction, _d);
-      const t = Math.abs(_d.z) > 1e-4 ? (far.z - _o.z) / _d.z : -1; // (the plane 36 m ahead of the nose, square to the view)
+      _fv.set(f[0], f[1], f[2]); const dn = _d.dot(_fv), t = Math.abs(dn) > 1e-4 ? _w.copy(far).sub(_o).dot(_fv) / dn : -1; // (the plane 36 m out from the nose along the gun's way, square to it)
       if (t > 0) far.copy(_o).addScaledVector(_d, t);
       // the first foe the ray crosses, nearer than that plane, is aimed at there (what is under the cursor is what is shot)
       let best = t > 0 ? t : Infinity; const past = _w.copy(this.nose).sub(_o).dot(_d) + 2; // (only a foe the ray meets beyond the ship: one passing by the camera is not what the cursor means)
@@ -202,7 +203,7 @@ export class Ship {
 
   /** Aimed again once the camera is placed this frame (the stage calls it after its camera): the cursor's ray through this frame's
    *  camera, so the reticle never lags it by a frame when it shakes or swings. */
-  reaim() { if (!this.aimArgs) return; const [view, abeam, waves] = this.aimArgs; this.aimAt(view, null, abeam, waves); this.place(view); }
+  reaim() { if (!this.aimArgs) return; const [view, abeam, waves, arena] = this.aimArgs; this.aimAt(view, null, abeam, waves, arena); this.place(view); }
 
   /** The sweep: the foe nearest the far reticle on the screen, within reach and not painted yet. */
   paint(waves) {

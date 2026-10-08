@@ -47,6 +47,9 @@ export const MYGG = { at: [0, -60, -160], plots: 6, roots: 6, trunk: 3.2, pots: 
 //  share a painting (Calissa's lekythosShared) every pot is painted. sporelings: as many of the tree's sporelings stand round its roots.)
 const PAINTED = () => (Lekythos.lekythosShared ? MYGG.pots : MYGG.painted);
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24, UP = new THREE.Vector3(0, 1, 0);
+/** What a strain does and what a branch gives, in plain words (docs/plans/CLARITY.md; the words Espada's to settle). */
+const VERB_LINE = { graft: 'Fuses two curios into one', ferment: 'Makes a material more vivid', print: 'Copies anything as a material of its colour', rot: 'Breaks anything down into materials', dissolve: 'Makes a material paler' };
+const ADDS_LINE = { fruit: 'one more fruit each dawn', sharp: 'its fruit closer to its colour', seed: 'a new kind of spores', sporeling: 'sporelings come more often' };
 const colorOf = (feeling) => new THREE.Color(COLOR[feeling] ?? 0xd8d0c8);
 /** The garden's night, 0 day .. 1 night, as the realm's sky reads it (dusk and dawn half). */
 const nightNow = () => { const ph = phaseAt(); return ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0; };
@@ -206,21 +209,21 @@ export class GardenMycelium {
       const rows = el('div', 'rooms'), row = (glyph, t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">${glyph}</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.45; if (run && !dim) d.onclick = run; rows.appendChild(d); };
       if (!b.strain) {
         const held = Object.keys(S.strains).filter((f) => S.strains[f]);
-        for (const f of held) row('✻', `Inoculate with ${STRAIN_NAMES[f]}`, `it ${STRAINS[f].verb}s: ${STRAINS[f].eats.join(', ')}`, () => done(S.inoculate(i, f)));
-        if (!held.length) row('·', 'You hold no spores', 'the first bed brings the oyster and the inkcap; Myggdrasil seeds the rest');
+        for (const f of held) row('✻', `Plant ${STRAIN_NAMES[f].replace(/^the /, '')} spores`, VERB_LINE[STRAINS[f].verb], () => done(S.inoculate(i, f)));
+        if (!held.length) row('·', 'No spores yet', 'Your first bed gives two kinds; Myggdrasil gives the rest');
       } else if (!b.set) {
         const St = STRAINS[b.strain], want = this.things((x) => St.eats.includes(x.kind) && signatureOf(x));
         if (St.pair) {
-          if (first == null) for (const w of want) row('◇', w.name, 'the first of two curios to graft', () => this.bedPage(plot, w.k));
-          else for (const w of want.filter((w) => w.k !== first)) row('◆', w.name, 'graft it with the first', () => done(S.set(i, [first, w.k])));
-        } else for (const w of want) row('◇', w.name, `set it for ${STRAIN_NAMES[b.strain]} to ${St.verb}`, () => done(S.set(i, [w.k])));
-        if (!want.length) row('·', 'Nothing it eats', `${STRAIN_NAMES[b.strain]} eats ${St.eats.join(', ')}, from your Pneuka Box`);
+          if (first == null) for (const w of want) row('◇', w.name, 'Pick the first of two curios to fuse', () => this.bedPage(plot, w.k));
+          else for (const w of want.filter((w) => w.k !== first)) row('◆', w.name, 'Fuse it with the first', () => done(S.set(i, [first, w.k])));
+        } else for (const w of want) row('◇', w.name, `Put it in: ${VERB_LINE[St.verb].toLowerCase()}`, () => done(S.set(i, [w.k])));
+        if (!want.length) row('·', 'Nothing it can use', `It takes: ${St.eats.join(', ')}s from your Pneuka Box`);
       } else if (S.ready(i)) {
-        row('❀', 'Harvest', `what ${STRAIN_NAMES[b.strain]} has made`, () => done(S.harvest(i)));
+        row('❀', 'Harvest', 'Take what it made', () => done(S.harvest(i)));
       } else {
         const hrs = S.left(i) / GAME_HOUR, early = calendar.now() - b.at <= GAME_HOUR;
-        row('◌', `${STRAIN_NAMES[b.strain][0].toUpperCase()}${STRAIN_NAMES[b.strain].slice(1)} is working`, `about ${hrs < 1 ? 'less than a game hour' : `${Math.ceil(hrs)} game hours`} left`);
-        if (early) row('↶', 'Take it back', 'unchanged: the colony has not taken yet', () => done(S.back(i)));
+        row('◌', 'Working', `Ready in about ${Math.max(1, Math.ceil(hrs * 2.5))} min`); // (a game hour is 2.5 real minutes: CLARITY.md, one clock)
+        if (early) row('↶', 'Take it back', 'Still unchanged: you can take it out', () => done(S.back(i)));
       }
       im.appendChild(el('div', 'grp', `A SPORE BED${b.strain ? `: ${STRAIN_NAMES[b.strain].toUpperCase()}` : ''}`)); im.appendChild(rows);
     }, { title: 'A SPORE BED', sub: 'click to choose · F closes' });
@@ -233,14 +236,14 @@ export class GardenMycelium {
     M.showPage('garden.myggdrasil', (im, el) => {
       const mk = (title) => { im.appendChild(el('div', 'grp', title)); const rows = el('div', 'rooms'); im.appendChild(rows); return (glyph, t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">${glyph}</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.45; if (run && !dim) d.onclick = run; rows.appendChild(d); }; };
       const crown = mk('THE CROWN'), n = T.crown.length;
-      crown('❦', n ? `Pick the crown (${n})` : 'The crown is bare', n ? 'every fruit into your Pneuka Box' : `it fruits at dawn; fruiting bodies open: ${T.caps} of ${CAPS.length}`, n ? () => { T.pick(); again(); } : null, !n);
+      crown('❦', n ? `Pick the fruit (${n})` : 'No fruit yet', n ? 'All fruit into your Pneuka Box' : `Fruits every dawn; ${T.caps} of ${CAPS.length} caps grown`, n ? () => { T.pick(); again(); } : null, !n);
       const roots = mk('THE ROOTS');
       const food = this.things((x) => !!signatureOf(x));
-      for (const w of food.slice(0, 24)) roots('◇', w.name, `feed it to the roots (worth ${signatureOf(w.x).worth})`, () => again(T.feed(w.k)));
-      if (!food.length) roots('·', 'Nothing to feed it', 'it eats anything with a colour: a curio, a material, a fish');
+      for (const w of food.slice(0, 24)) roots('◇', w.name, `Feed it: the tree grows and takes its colour`, () => again(T.feed(w.k)));
+      if (!food.length) roots('·', 'Nothing to feed it', 'It eats curios, materials and fish');
       const branches = mk('THE BRANCHES'), cards = Object.keys(BRANCHES).filter((a) => !T.branches[a] && book?.has?.(`arcana.${a}`));
-      for (const a of cards) branches('✦', `Hang ${a}`, `the card given to its branch, for good: ${BRANCHES[a].adds}`, () => again(T.hang(a)));
-      branches('·', `${Object.keys(T.branches).length} of ${Object.keys(BRANCHES).length} branches hung`, cards.length ? 'a Major Arcana card from the Book hangs on its own branch' : 'a Major Arcana card in the Book can be hung here');
+      for (const a of cards) branches('✦', `Hang ${a[0].toUpperCase()}${a.slice(1)}`, `Uses up the card: ${ADDS_LINE[BRANCHES[a].adds] || BRANCHES[a].adds}`, () => again(T.hang(a)));
+      branches('·', `${Object.keys(T.branches).length} of ${Object.keys(BRANCHES).length} branches hung`, 'Hang a Major Arcana card from your Book for a lasting bonus');
     }, { title: NAMES.myggdrasil?.name?.toUpperCase?.() || 'MYGGDRASIL', sub: 'click to choose · F closes' });
   }
 

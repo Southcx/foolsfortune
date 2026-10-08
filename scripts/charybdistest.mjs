@@ -37,6 +37,33 @@ for (let i = 0; i < 4000; i++) {
   if (s.afterArena && !seen.after) seen.after = { up: s.up, active: s.active };
 }
 const r2 = await g.page.evaluate(() => ({ active: __game.game.emocean.stage.active, at: __game.game.voyage.s.at, lines: window.__lines.filter((l) => /Charybdis/.test(l)), foe: __game.game.emocean.stage.foe }));
+// a second maelstrom, flown by a scripted expert (Dovina's ask): the cursor on Charybdis, the gun held, the ship's form following it
+// between the worlds (as a diver would); the bar of the peak it falls at, or driven off with what hp it kept
+await g.step(200);
+const r3 = await g.page.evaluate(async () => {
+  const G = __game.game, P = G.pier, V = G.voyage, C = P.chart; window.__fell = null;
+  G.events.on('charybdis.felled', () => { const E = G.emocean, L = E.trip.layout.legs[E.charybdis.k]; window.__fell = +(E.bar - L.peak).toFixed(1); });
+  G.events.on('charybdis.driven', (e) => { window.__fell = { driven: e.hp }; });
+  const { lanes } = await import('/src/progress/econ/passage.js');
+  C.open(V.s.at, V.s.at === 'margarite' ? 'anagami' : 'margarite'); const lane = lanes(C.chart).sort((a, b) => b.length - a.length)[0];
+  const at = lane[Math.min(1, lane.length - 1)]; C.chart.waypoints[at].type = 'maelstrom'; for (const id of lane) C.pick(id);
+  return P.castOff(V.s.at, V.s.at === 'margarite' ? 'anagami' : 'margarite');
+});
+await g.step(240);
+for (let i = 0; i < 4000; i++) {
+  await g.step(4);
+  const done = await g.page.evaluate(() => { const G = __game.game, E = G.emocean, M = G.indexMenu, Cy = E.charybdis;
+    if (!E.stage.active) return true;
+    if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0;
+    const f = Cy?.active && Cy.foe?.alive ? Cy.foe : null;
+    if (f) { const v = f.pos.clone().project(G.camera); E.ship.cursor.x = Math.max(-1, Math.min(1, v.x)); E.ship.cursor.y = Math.max(-1, Math.min(1, v.y)); E.ship.form = Cy.y > 0 ? 'astral' : 'umbral'; G.input.down.add('Mouse0'); }
+    else G.input.down.delete('Mouse0');
+    return window.__fell != null && !Cy?.active; });
+  if (done) break;
+}
+const fell = await g.page.evaluate(() => { __game.game.input.down.delete('Mouse0'); return window.__fell; });
+console.log(`  (the scripted expert: ${typeof fell === 'number' ? `Charybdis felled at bar ${fell} of the 24-bar peak` : fell ? `driven off with ${fell.driven} of 150 hp` : 'not met'})`);
+
 const dmin = Math.min(...seen.dist), dmax = Math.max(...seen.dist);
 check('cast off through a maelstrom', r0.cast, r0);
 check('the arena is flown (the rail circles the whirlpool)', seen.arena > 50, { frames: seen.arena });
@@ -46,6 +73,8 @@ check('it rises and dives by turns (stage.foe under, and not)', seen.under.has(t
 check('said as it first rises, in the waypoint\'s feeling', r2.lines.some((l) => /Charybdis rises, in grief/.test(l)), r2.lines);
 check('let go at the release; the line comes out level', seen.after && !seen.after.active && seen.after.up > 0.999, seen.after);
 check('port made, no boss left set', !r2.active && r2.at === 'margarite' && !r2.foe, r2);
+check('the second crossing cast off', r3, r3);
+check('the scripted expert meets it: felled or driven off, said', fell != null, fell);
 check('no page errors', g.errors.length === 0, g.errors.slice(0, 3));
 console.log(fails ? `charybdis: ${fails} FAILED` : 'charybdis: all passed'); process.exitCode = fails ? 1 : 0;
 await g.close();

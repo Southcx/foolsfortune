@@ -51,6 +51,7 @@ const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/r
 
 const LOTUS = { r: 1.3, seconds: 2 };
 const FEATURE_R = 3.2; // (F works a place within this of the Jar)
+const NIGHT_LIGHT = { hemiSky: new THREE.Color(0x4c3a7a), hemiGnd: new THREE.Color(0x1e1430), sunC: new THREE.Color(0x9aa6ff), hemi: 0.3, amb: 0.55, sun: 0.15 }; // (the garden's light at the middle of the night, as shares of the day's: render/daylight.js NIGHT's colours, kept lighter, the garden's glows to be read by)
 const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it is set down by the gate: GARDEN-SWEEP #5)
 const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
@@ -94,7 +95,7 @@ export class Realm {
         this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
         this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
       },
-      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
+      reset: () => { this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); } }); // (a wipe puts the ground back too: the clay, the paint, the water)
   }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
@@ -125,7 +126,8 @@ export class Realm {
     const go = () => {
       this.entering = false;
       this.lake = this.waterworks.feeling(); this.site.by.dantian?.look?.tint?.(FEELING_COLOR[this.lake]); // (the Dantian's lake is the draught you entered with: item 11)
-      const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density }; // (what the garden changes of the world's, put back on leaving: casebook rule 30, GARDEN-SWEEP #12)
+      const sc = g.scene; this.kept = { up: g.camera.up.clone(), bg: sc.background?.isColor ? sc.background.clone() : null, fog: sc.fog?.color.clone(), fogD: sc.fog?.density };
+      this.nightK = null; const Lt = g.dunes?.lights; if (Lt) Object.assign(this.kept, { hemiSky: Lt.hemi.color.clone(), hemiGnd: Lt.hemi.groundColor.clone(), hemiI: Lt.hemi.intensity, ambI: Lt.amb.intensity, sunC: Lt.sun.color.clone() }); // (the light the hour dims in here: light()) // (what the garden changes of the world's, put back on leaving: casebook rule 30, GARDEN-SWEEP #12)
       const D = this.site.by.dantian, gate = this.site.features.find((f) => f.kind === 'gate'), start = this.gateStart();
       this.jarBody = new PlanetBody({ planets: this.site.planets, pos: start, radius: 0.5 });
       this.jarBody.planet = D; this.jarBody.up.copy(start).sub(D.c).normalize();
@@ -176,7 +178,7 @@ export class Realm {
       const V = this.god?.jar; if (V?.group && !this.god.active) V.group.visible = false;
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
       g.character?.setHidden(false);
-      const K = this.kept, sc = g.scene; if (K) { g.camera.up.copy(K.up); if (K.bg && sc.background?.isColor) sc.background.copy(K.bg); if (K.fog && sc.fog) { sc.fog.color.copy(K.fog); sc.fog.density = K.fogD; } this.kept = null; }
+      const K = this.kept, sc = g.scene; if (K) { g.camera.up.copy(K.up); if (K.bg && sc.background?.isColor) sc.background.copy(K.bg); if (K.fog && sc.fog) { sc.fog.color.copy(K.fog); sc.fog.density = K.fogD; } const Lt = g.dunes?.lights; if (Lt && K.hemiSky) { Lt.hemi.color.copy(K.hemiSky); Lt.hemi.groundColor.copy(K.hemiGnd); Lt.hemi.intensity = K.hemiI; Lt.amb.intensity = K.ambI; Lt.sun.color.copy(K.sunC); } this.kept = null; }
       g.hud?.el?.cross && (g.hud.el.cross.style.display = '');
       const cmp = document.getElementById('compass'); if (cmp) cmp.style.visibility = '';
       this.hand.letGo();
@@ -317,7 +319,7 @@ export class Realm {
     const near = this.site.planets.filter((Q) => Q !== P && !Q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2);
     for (const Q of near) { const V = this.site.link(P, Q); this.site.links?.push({ V, a: P, b: Q, ends: {} }); }
     for (const l of this.site.lotuses) if (l.planet === P) this.clays[P.id].keep(l.pos.clone().sub(P.c), 2);
-    this.plots.addPlanet(P, plots); this.plots.veins(P);
+    this.plots.addPlanet(P, plots); this.plots.placeWaiting?.(P); this.plots.veins(P);
     const W = this.waiting; if (W.clay[P.id] || W.ground[P.id]) { this.clays[P.id].load(W.clay[P.id]); this.clays[P.id].loadGround(W.ground[P.id]); delete W.clay[P.id]; delete W.ground[P.id]; this.reshape(P, true); }
     P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
     P.look.group.visible = true;
@@ -469,5 +471,13 @@ export class Realm {
     S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0 });
     sc.fog.color.copy(S.fog); sc.fog.density = storm ? 0.012 : 0.003;
     if (sc.background?.isColor) sc.background.copy(S.fog);
+    // the ground under it darkens with the hour as the sky does (the garden's own lamps, its water's and foxfire's glow, then read):
+    // the kept light eased toward NIGHT_LIGHT's share, a moon's blue for the sun; the sun's intensity is set afresh each frame (main.js)
+    const K = this.kept, Lt = this.game.dunes?.lights; if (!K?.hemiSky || !Lt) return;
+    this.nightK = (this.nightK ?? S.night) + (S.night - (this.nightK ?? S.night)) * (1 - Math.exp(-(this.game.rawDt ?? 0.016) * 0.6)); // (eased: a phase turns over seconds, never in a frame)
+    const n = this.nightK, N = NIGHT_LIGHT;
+    Lt.hemi.color.copy(K.hemiSky).lerp(N.hemiSky, n); Lt.hemi.groundColor.copy(K.hemiGnd).lerp(N.hemiGnd, n);
+    Lt.hemi.intensity = K.hemiI * (1 - n * (1 - N.hemi)); Lt.amb.intensity = K.ambI * (1 - n * (1 - N.amb));
+    Lt.sun.color.copy(K.sunC).lerp(N.sunC, n); Lt.sun.intensity *= 1 - n * (1 - N.sun);
   }
 }

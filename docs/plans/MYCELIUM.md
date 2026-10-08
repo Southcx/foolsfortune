@@ -250,7 +250,7 @@ Each step lands when the one before runs clean in the garden sweep.
   - **The keepsake pots:** a ring at the Chimney's foot, white-ground, washed in their feeling.
 - **`src/feedback/codex/grimoire.js`:** the Grimoire of Echoes. It shows only what you have met: the strains held, every graft made
   (`spore.graft.pair.<a>+<b>><made>`), the tree's girth, tincture and open bodies, the branches (???), and the pots.
-- **Petra's hooks still to land** (`docs/handoffs/petra/dovina-mycelium.md`):
+- **Petra's hooks, landed** (the note is done and deleted):
   - `realm.use` asking the mycelium first (until then F does nothing at a bed or at the roots);
   - its `update`;
   - the Codex tab;

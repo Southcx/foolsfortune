@@ -360,6 +360,8 @@ the rules before building in the same area; a rule a machine can check goes into
 129. **A way of turning is measured on the thing, never read off a sign.** three.js's positive rotation about y takes +x toward -z, so
     it turns the world's `atan2(z, x)` the other way; a look that turns "with" a flow, or a flow "with" a ship, is checked by reading each
     one's angle in that one function over a few frames and comparing the signs (a look's own `sense`, +1 or -1, carries it to all of them).
+130. **A boss is proved by a shooter, not by its place.** A target checked only for where it stands can stand where no view
+    shows it and no gun reaches; its test fires at it (a scripted expert) and reports when it falls.
 
 ## Cases
 ### 2026-10-08 · Charybdis turned against its own whirlpool, and the whirlpool against the ship half the time (the review of Calissa's Charybdis)
@@ -1845,3 +1847,13 @@ the rules before building in the same area; a rule a machine can check goes into
 - **Fix:** the adrift and Charybdis tests open the game with the clock pinned (`&clock=1791160275000`, perf's), the seed re-found
   for it. Both pass.
 - **Rule:** 126.
+
+### 2026-10-08 · Charybdis could not be shot (v123 and v124; found adding the expert Dovina asked for)
+- **Seen:** a scripted expert holding the gun with the cursor on Charybdis did no damage; it was driven off at 150 of 150 hp.
+- **Cause:** the arena's centre is exactly abeam of the ship (local x -45, z 0), and the peak's view was the free view, looking
+  ahead: Charybdis was at screen x -3.4, off the screen, and the cursor's far plane was fixed on z. charybdistest.mjs checked its
+  place, its rising and diving, and never fired a shot.
+- **Fix:** the arena circles with its centre always on -x; the peak is held in the side view, which looks across the ship at it;
+  the ship's aim is abeam there with the cursor free, its far plane taken along the gun's own way. Measured after: the expert fells
+  it at bar 3.8 of 24.
+- **Rule:** 130.

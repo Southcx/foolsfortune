@@ -19,6 +19,8 @@ than about 1.5x the aim**, except luck (a prismatic chest is a windfall).
 
 ## What each profile earns (`node scripts/economy.mjs`, from its `PLAY` rates)
 
+The numbers below are the simulator's, checked by `node scripts/economy.mjs --doc` and rewritten by `--write`: never edit them by hand.
+
 | profile | cubes an hour of play | x aim |
 |---|---:|---:|
 | fighter (jellies, zandatsu) | 608 | 1.27 |

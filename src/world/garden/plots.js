@@ -182,9 +182,22 @@ export class Plots {
     for (const p of this.plots) if (p.placed) { out.features[p.placed.feature] = (out.features[p.placed.feature] || 0) + 1; out.feelings[p.placed.feeling] = (out.feelings[p.placed.feeling] || 0) + 1; }
     return out;
   }
-  dump() { return this.plots.filter((p) => p.placed).map((p) => ({ planet: p.planet.id, i: p.i, feature: p.placed.feature, feeling: p.placed.feeling })); }
+  /** The placed plots, and those kept for a planetoid not yet here (`waiting`: given later, Myggdrasil's; addPlanet takes them). */
+  dump() { return [...this.plots.filter((p) => p.placed).map((p) => ({ planet: p.planet.id, i: p.i, feature: p.placed.feature, feeling: p.placed.feeling })), ...(this.waiting || [])]; }
   load(list = []) {
-    for (const e of list || []) { const p = this.plots.find((q) => q.planet.id === e.planet && q.i === e.i); if (p && !p.placed) { p.placed = { feature: e.feature, feeling: e.feeling }; this.build(p); } }
+    this.waiting = [];
+    for (const e of list || []) {
+      const p = this.plots.find((q) => q.planet.id === e.planet && q.i === e.i);
+      if (p && !p.placed) { p.placed = { feature: e.feature, feeling: e.feeling }; this.build(p); }
+      else if (!p && !this.plots.some((q) => q.planet.id === e.planet)) this.waiting.push(e); // (its planetoid comes later: held, never dropped)
+    }
+    this.links();
+  }
+  /** A planetoid come late: the plots kept for it placed now. */
+  placeWaiting(P) {
+    const mine = (this.waiting || []).filter((e) => e.planet === P.id); if (!mine.length) return;
+    this.waiting = this.waiting.filter((e) => e.planet !== P.id);
+    for (const e of mine) { const p = this.plots.find((q) => q.planet === P && q.i === e.i); if (p && !p.placed) { p.placed = { feature: e.feature, feeling: e.feeling }; this.build(p); } }
     this.links();
   }
 }

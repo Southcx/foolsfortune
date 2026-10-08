@@ -179,7 +179,7 @@ export class Emocean {
     this.rail.seat(this.t);
     if (!this.trip.active) this.legs(bar);
     const rel = this.piece ? bar - this.piece.leg.from : 0;
-    this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) });
+    this.ship.update(dt, { view, plane: view, sixteenth: Math.floor(bar * 16), shots: this.shots, waves: this.waves, abeam: !!this.piece?.abeam?.(rel) || !!this.charybdis?.holding, arena: !!this.charybdis?.holding }); // (the arena: Charybdis abeam, the cursor free in the side view)
     if (!this.stage.active || this.offering) return;
     const ctx = { bar, ship: this.ship, shots: this.shots, waves: this.waves };
     this.piece?.update(dt, rel, ctx);
@@ -263,7 +263,7 @@ export class Emocean {
     const sp = this.rail.speed, len = 4 * BAR_S * sp, rng = stream('rail/path'), L = this.trip.layout;
     const turns = trip && L ? L.turns.map((bar, i) => { const at = bar * BAR_S * sp, was = keep?.find((t) => Math.abs(t.at - at) < 1e-6); return was || { at, len, figure: this.figure || figureFor(this.trip.legs[i + 1]?.type, rng), sign: rng() < 0.5 ? -1 : 1 }; }) : [];
     // a maelstrom's peak leaves the line for its arena: whole laps round the whirlpool (railpath.js `arena`; charybdis.js holds it)
-    if (trip && L) L.legs.forEach((lg, k) => { if (this.trip.legs[k]?.type !== 'maelstrom' || lg.peak == null) return; const at = lg.peak * BAR_S * sp, was = keep?.find((t) => t.figure === 'arena' && Math.abs(t.at - at) < 1e-6), alen = (lg.release - lg.peak) * BAR_S * sp; turns.push(was || { at, len: alen, figure: 'arena', laps: arenaLaps(alen), sign: rng() < 0.5 ? -1 : 1, k }); });
+    if (trip && L) L.legs.forEach((lg, k) => { if (this.trip.legs[k]?.type !== 'maelstrom' || lg.peak == null) return; const at = lg.peak * BAR_S * sp, was = keep?.find((t) => t.figure === 'arena' && Math.abs(t.at - at) < 1e-6), alen = (lg.release - lg.peak) * BAR_S * sp; turns.push(was || { at, len: alen, figure: 'arena', laps: arenaLaps(alen), sign: 1, k }); }); // (sign 1: the centre on the frame's -x, abeam where the side view looks and the gun turns)
     this.rail.path.lay({ start: new THREE.Vector3(SEA_AT.x, SEA_AT.y, SEA_AT.z), length: (this.plan.seconds || STAGE.seconds) * sp + 400, turns, heart: CRUISE });
     this.turns = turns; this.figures = turns.filter((t) => t.figure !== 'arena').map((t) => t.figure); this.arenas = turns.filter((t) => t.figure === 'arena');
   }

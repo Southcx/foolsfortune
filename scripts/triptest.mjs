@@ -59,7 +59,7 @@ for (let i = 0; i < 600; i++) {
       const c0 = G.cubes.balance; T.act({ ask: 'buyRutter', route: T.chart.route, day: T.chart.day, cubes: 50 }); out.bought = c0 - G.cubes.balance; out.rutters = B.held('rutter');
       const c1 = G.cubes.balance; T.act({ ask: 'sellRutter', cubes: 77 }); out.sold = G.cubes.balance - c1; out.rutters2 = B.held('rutter');
       const left = G.ostraca.left(); T.act({ ask: 'ostracon' }); out.word = left - G.ostraca.left();
-      const ahead = T.wps.slice(T.k + 1).find((w) => w.type !== 'calm' && w.type !== 'encounter'); if (ahead) T.act({ ask: 'bounty', waypoint: ahead.id }); out.bounty = !!T.bounty || !ahead;
+      const ahead = T.wps.slice(T.k + 1).find((w) => w.type !== 'calm' && w.type !== 'encounter'); if (ahead) T.act({ ask: 'bounty', waypoint: ahead.id, cubes: 72 }); out.bounty = T.bounty?.cubes === 72 || !ahead;
       T.act({ ask: 'exact', waypoints: T.wps.slice(T.k + 1).map((w) => w.id) });
       G.log.say = say; out.lines = lines; return out; });
   }
