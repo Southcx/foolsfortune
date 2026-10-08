@@ -35,7 +35,7 @@
 import * as THREE from 'three';
 import { MarkBuffer, STYLE } from './railmark.js';
 import { RailGeometry } from './railgeometry.js';
-import { warpMaterial, keepTrue } from './stormwarp.js';
+import { warpMaterial, deepMaterial, keepTrue } from './stormwarp.js';
 import { LachrymatoBottle } from './bottle.js';
 import { CRUISE } from '../courier/ship/views.js';
 import { BAR_S } from '../progress/rail/crossing.js';
@@ -81,7 +81,7 @@ export class CrossingLook {
     keepTrue(this.marks.mat); this.marks.mesh.visible = false; scene.add(this.marks.mesh);
     for (const m of st.trip?.field?.meshes || []) keepTrue(m.material); // (the shot field's shots: the danger, never moved by the veil)
     if (st.trip?.field?.look) st.trip.field.look.camera ||= this.game.camera; // (its sort's eye and its beams' near limit before its first draw)
-    this.geo = new RailGeometry({ env: this.game.sky?.env || null, seaY: st.sea?.y ?? 0, warp: warpMaterial, keepTrue, maxRings: 32, maxMonoliths: 16 });
+    this.geo = new RailGeometry({ env: this.game.sky?.env || null, seaY: st.sea?.y ?? 0, warp: warpMaterial, keepTrue: (m) => keepTrue(deepMaterial(m)), maxRings: 32, maxMonoliths: 16 });
     this.geo.group.visible = false; scene.add(this.geo.group);
     // one of each, parked for the warm-up's compile (casebook 17: a program first drawn in play is a hitch); put down at the first cast-off
     this.parkedRing = this.geo.ring(new THREE.Vector3(0, -1e4, 0), new THREE.Quaternion(), 1);

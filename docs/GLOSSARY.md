@@ -780,6 +780,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   (`src/world/ground/trailmap.js`) and the skiff's **wake** (`src/world/ground/wake.js`).
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`): a named VFX entry, played by name; its look is data. **particles**: the emitter
   pools under the effects (`src/vfx/particles.js`, to be folded into `src/vfx/`).
+- **the ribbon of light** (`ribbonLightMaterial`, `RIBBON_LOOK`, `src/vfx/ribbonlight.js`): the one shader program every flat strip of light
+  draws with, its look a uniform: the spirit veins (and Myggdrasil's threads), the sculpt brush's ring, the incense thread, the data
+  drain's beam. *Not:* a ribbon of the rail's marks (railmark.js's `ribbon` style: an Itano lance's trail).
 - **the art bible** (`docs/ART.md`, Calissa's): what each colour, material and shape means and why, the glaze catalogue, and the placeholder
   audit (ours, placeholder, genre default).
 - **damage look** (`damage.<type>` in the library): the colour and motif a damage type adds to a hit effect, so a blow's type reads

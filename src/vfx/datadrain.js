@@ -21,6 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../core/config.js';
+import { ribbonLightMaterial } from './ribbonlight.js';
 
 const N = 360, PETALS = 6;
 const CYAN = new THREE.Color(0x46f0ff), MAGENTA = new THREE.Color(0xff3fd2), WHITE = new THREE.Color(0xffffff);
@@ -61,19 +62,9 @@ export class DataDrain {
     this.cubes.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
     this.cubes.frustumCulled = false;
     // the beam: a flat ribbon along +z, its stripes scrolling inward
-    this.beamU = { uT: { value: 0 }, uA: { value: 0 } };
+    this.beamU = { uT: { value: 0 }, uK: { value: 0 } }; // (uK: the beam's alpha)
     const beamGeo = new THREE.PlaneGeometry(1, 1, 1, 1); beamGeo.translate(0, 0.5, 0); beamGeo.rotateX(Math.PI / 2);
-    this.beam = new THREE.Mesh(beamGeo, new THREE.ShaderMaterial({
-      name: 'datadrain-beam', uniforms: this.beamU, transparent: true, depthWrite: false, fog: false, toneMapped: false, side: THREE.DoubleSide,
-      vertexShader: 'varying vec2 vU; void main() { vU = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: `varying vec2 vU; uniform float uT, uA;
-void main() {
-  float across = 1.0 - abs(vU.x - 0.5) * 2.0, core = pow(across, 6.0), edge = pow(across, 1.5);
-  float stripe = step(0.55, fract(vU.y * 14.0 + uT * 6.0)); // (running toward the bracelet)
-  vec3 c = mix(vec3(1.0, 0.25, 0.82), vec3(0.27, 0.94, 1.0), smoothstep(0.2, 0.7, across)) * (0.55 + 0.45 * stripe) + vec3(core);
-  c = mix(vec3(0.05, 0.0, 0.1), c, smoothstep(0.0, 0.25, across)); // (a dark edge, so the beam reads on the bright sand)
-  gl_FragColor = vec4(c, uA * smoothstep(0.0, 0.08, across));
-}` }));
+    this.beam = new THREE.Mesh(beamGeo, ribbonLightMaterial('beam', this.beamU, { name: 'datadrain-beam', toneMapped: false })); // (the ribbons' one program: vfx/ribbonlight.js)
     this.beam.frustumCulled = false;
     // the bracelet: six petals of a lattice (thin rhombi), opening and turning
     const petalGeo = new THREE.BufferGeometry(); petalGeo.setAttribute('position', new THREE.Float32BufferAttribute([0, 0.04, 0, 0.11, 0.26, 0, 0, 0.56, 0, 0, 0.04, 0, 0, 0.56, 0, -0.11, 0.26, 0], 3)); // (a rhombus petal, solid)
@@ -120,7 +111,7 @@ void main() {
     // the beam: from the bracelet to the creature, up fast, held, gone with the last of the data
     const len = R.from.distanceTo(to);
     this.beam.position.copy(R.from); this.beam.lookAt(to); this.beam.scale.set(0.34 + 0.08 * Math.sin(R.t * 40), 1, len);
-    this.beamU.uT.value = R.t; this.beamU.uA.value = Math.min(1, x / 0.12) * (1 - Math.max(0, (x - 0.85) / 0.15));
+    this.beamU.uT.value = R.t; this.beamU.uK.value = Math.min(1, x / 0.12) * (1 - Math.max(0, (x - 0.85) / 0.15));
     // the creature's body blinks out in steps while its data goes (and is given back at the end: stop())
     if (C.root) C.root.visible = x < 0.25 ? true : x > 0.8 ? Math.random() < 0.5 : Math.random() < 0.3;
     // the polygons: each flickers on the surface, lifts off at its own moment, and spirals down the beam

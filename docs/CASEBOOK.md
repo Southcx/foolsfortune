@@ -342,7 +342,38 @@ the rules before building in the same area; a rule a machine can check goes into
     lies at -420), so a thing placed *relative* to a parent that already stands on the sea takes `heightAt(...) - parent.y`, never the bare value.
     On the workbench the sea lies at y 0 and the two are the same, which is how the wrong one passed there.
 
+124. **A wrapper that adds to a program's key makes a new program of every program it touches; a look of a few lines shares its family's.**
+     The storm's `warpMaterial` (and any chained `onBeforeCompile` with its own key) on a material of the game's shared basic-map
+     program is a program of its own, two if it is transparent and both-sided: give a mark that rides a body the body's seat instead,
+     and wrap only materials whose program is already their own. A flat look with the same settings and vertex shader as another
+     (a ribbon, a band, a smoke thread) is a branch on a uniform in that one program (`vfx/ribbonlight.js`), never a ShaderMaterial of
+     its own. List the boot's programs by name and cache key against main's before calling a branch's count its own.
+
 ## Cases
+### 2026-10-08 · Five shader programs over main's at boot, two of them one shadow (perf over the program budget, Calissa's program diet, round two)
+- **Seen:** `npm run perf` on Calissa's branch (8ce7551) read 165 programs in every scene against the budget of 164 (main: 160), and the heap
+  367 MB against 365. The boot's programs listed by name and cache key against main's: `leaf-canopy`, `mind-geometry`, `rail-mark`,
+  `umbral-caustics` new, and two basic-map programs with `|storm1` on their key (1027 and 5123: the front and back passes of one
+  transparent both-sided material), less one basic program main had and the branch no longer draws: +5.
+- **Cause (measured, the materials found by their constructor's stack):** the two storm programs were Old Nobody's shadow
+  (vfx/leviathan.js): world/emocean/stage.js put it through the storm's `warpMaterial`, which wraps its `onBeforeCompile` and adds
+  `|storm1` to the key, so the game's shared basic-map program was compiled again for it, once a pass. It was seated with Old Nobody's
+  body too (`warpObject` on its group), so it was moved twice. The other four are new looks, each already one program for its family
+  (`mind-geometry`'s header is true: the rings, lattices and monoliths share it; the shoal's silhouette eye did not yet, see below).
+- **Fix:** the shadow is seated with the body and no longer wrapped (stage.js): it draws with the game's basic-map program again, as its
+  wake does (the workbench's storm stage already drew it so). Seen against the old way in the storm stage at full strength
+  (`warpObject` and the old wrap side by side): the soft patch sits where Old Nobody is drawn rather than where the swell is bent, a
+  shift in a blur with no edge. Four flat looks with the veins' vertex shader and settings, the spirit veins and Myggdrasil's threads,
+  the sculpt brush's ring, the incense thread and the data drain's beam, are one program (`vfx/ribbonlight.js`, the look a uniform; each
+  look's code kept): rendered old and new on one plane each, every pixel the same. Boot 163 to 158; perf 158 / 160 / 160 / 160, programs
+  after the warm-up 2 (was 2). The shoal's silhouette eye (kept true under the storm) now goes through `deepMaterial` as the ambient
+  geometry's header says, so it shares the warped geometry's program when the rail builds it (vfx/crossinglook.js).
+- **Not fixed: the heap.** A heap snapshot of the boot against main's: +8 MB, of which +2.7 MB the new modules' source and +2.3 MB their
+  inline source maps (the dev server's), +1.6 MB typed arrays (0.6 MB the rail's mark buffers, 0.3 MB Rapier's memory, the rest the new
+  geometry). The built game (vite preview, two gc'd boots): main 230.2 MB, the branch's head 233.4, this branch 233.4. No look holds a
+  freeable buffer of that size; the gap is the code (rule 71).
+- **Rule:** 124.
+
 ### 2026-10-08 · The shot field's marks ran their clock at a fixed 60 a second (review of art-crossing-wire)
 
 - **Seen:** not in play: read. `ShotField.draw()` handed the look `dt = 1 / 60` whatever the frame, and `clear()` drew once more and
