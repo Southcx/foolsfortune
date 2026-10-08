@@ -13,18 +13,23 @@
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
 //                mulberryGrove the Mulberry Grove, 16 m: moss and round-crowned spirit trees, and the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
+//   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
+//                vertices), brought up to the god hand's clay (world/garden/clay.js) by `fromClay`, only where a stroke changed it; and
+//                its painted grounds (moss, ash, loam, slate, silt) drawn over the skin (vfx/garden/gardengrounds.js)
 //
 // Prior art: Super Mario Galaxy's planetoids (a world you run round in seconds, a single readable shape each), Dual Hearts' floating
 // isles, the xianxia cave abode and its spirit fields (terraces, the pill furnace, the needle peak of a sect's mountain), and Animal
 // Crossing's soft, rounded toy-like ground.
 //
-//   const P = new Planetoid({ kind, radius, seed, surface })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
+//   const P = new Planetoid({ kind, radius, seed, surface, detail })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
 //   P.reach (m: its farthest ground from the heart, kept with every sculpt; the Chimney's is 27.8 against its 8 m radius)
-//   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.tint(lakeHex)   P.update(rawDt)
+//   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.fromClay(clay)   P.tint(lakeHex)   P.update(rawDt)
+//   (P.h, P.dir, P.R, P.geo and P.rebuild() stay for a reader that sets the heights itself: h a vertex in units of R)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStatic } from '../../render/merge.js';
+import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
+import { groundMaterial, groundTick } from './gardengrounds.js';
 
 export const PLANETOIDS = {
   dantian: { radius: 20, top: 0x9fd88a, low: 0x7fb08a, rock: 0x8a7f94 },
@@ -35,23 +40,22 @@ export const PLANETOIDS = {
   chimney: { radius: 8, top: 0xd8d2dc, low: 0xa89cb4, rock: 0x7a7088 },
 };
 
-const WAS = { furnace: 'athanor', grove: 'mulberryGrove', peak: 'chimney' }; // (the ids before the rename of 2026-10-07)
 const BAND = 0.18; // (sculpting keeps the surface within this share of the radius, in or out)
+let clockOwner = null; // (the one planetoid whose update runs the grounds' shared clock, once a frame)
 
 export class Planetoid {
-  constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null } = {}) {
+  constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL } = {}) {
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
-    kind = WAS[kind] ?? kind; // (an old id while place.js keeps its bridge: dropped with it)
     const K = PLANETOIDS[kind] ?? PLANETOIDS.mulberryGrove; this.kind = kind; this.R = radius ?? K.radius; this.K = K;
+    this.cTop = new THREE.Color(K.top); this.cLow = new THREE.Color(K.low); this.cRock = new THREE.Color(K.rock);
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
-    let g = new THREE.IcosahedronGeometry(1, Math.min(6, Math.round(3 + this.R / 6))); g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g);
-    this.geo = g; const P = g.attributes.position, n = P.count;
-    this.dir = new Float32Array(n * 3); this.h = new Float32Array(n); this.base = new Float32Array(n);
-    for (let i = 0; i < n; i++) { const x = P.getX(i), y = P.getY(i), z = P.getZ(i); this.dir.set([x, y, z], i * 3); this.base[i] = this.shape(x, y, z); }
-    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3), 3));
-    this.mat = new THREE.MeshStandardMaterial({ name: `planetoid-${kind}`, vertexColors: true, roughness: 0.85, flatShading: false });
-    this.mesh = new THREE.Mesh(g, this.mat); this.mesh.name = 'planetoid-ground'; this.mesh.receiveShadow = true; this.mesh.castShadow = true;
+    const S = this.sphere = unitSphere(detail), n = S.n, D = S.dir;
+    this.geo = sphereGeometry(S); this.dir = D; // (the directions are the shared sphere's: read them, never write them)
+    this.h = new Float32Array(n); this.base = new Float32Array(n);
+    for (let i = 0; i < n; i++) this.base[i] = this.shape(D[i * 3], D[i * 3 + 1], D[i * 3 + 2]);
+    this.mat = groundMaterial(new THREE.MeshStandardMaterial({ name: `planetoid-${kind}`, vertexColors: true, roughness: 0.85, flatShading: false }));
+    this.mesh = new THREE.Mesh(this.geo, this.mat); this.mesh.name = 'planetoid-ground'; this.mesh.receiveShadow = true; this.mesh.castShadow = true;
     this.group.add(this.mesh);
     this.rebuild();
     this.props = new THREE.Group(); this.props.name = 'planetoid-props'; this.group.add(this.props);
@@ -71,21 +75,24 @@ export class Planetoid {
     return r;
   }
 
-  /** Recompute the mesh from the heights (after a sculpt). */
+  /** Recompute the whole mesh from the heights (after a sculpt of its own, or a reader that set `h`). */
   rebuild() {
-    const P = this.geo.attributes.position, C = this.geo.attributes.color, K = this.K, R = this.R;
-    const top = _c1.setHex(K.top), low = _c2.setHex(K.low), rock = _c3.setHex(K.rock);
-    for (let i = 0; i < P.count; i++) {
-      const x = this.dir[i * 3], y = this.dir[i * 3 + 1], z = this.dir[i * 3 + 2], r = R * (this.base[i] + this.h[i]);
-      P.setXYZ(i, x * r, y * r, z * r);
-      const grass = THREE.MathUtils.smoothstep(y, -0.45, -0.1), up = THREE.MathUtils.smoothstep(y, 0.1, 0.8), dug = THREE.MathUtils.clamp(-this.h[i] / BAND * 2, 0, 1);
-      _c4.copy(low).lerp(top, up).lerp(rock, 1 - grass).lerp(rock, dug * 0.6); // (green over the top, rock under it, and where it is dug)
-      const v = 0.94 + 0.06 * Math.sin(x * 31 + z * 17 + y * 23); C.setXYZ(i, _c4.r * v, _c4.g * v, _c4.b * v);
-    }
-    P.needsUpdate = true; C.needsUpdate = true; this.geo.computeVertexNormals(); this.geo.computeBoundingSphere();
-    let far = 0; for (let i = 0; i < this.h.length; i++) far = Math.max(far, this.base[i] + this.h[i]);
-    this.reach = R * far + 0.6; // (its farthest ground from the heart, its crown's platform and props over it: what a body or a ray must test out to)
+    const P = this.geo.attributes.position.array, C = this.geo.attributes.color, D = this.dir, R = this.R;
+    for (let i = 0; i < this.h.length; i++) { const r = R * (this.base[i] + this.h[i]); P[i * 3] = D[i * 3] * r; P[i * 3 + 1] = D[i * 3 + 1] * r; P[i * 3 + 2] = D[i * 3 + 2] * r; this.colourOf(i, C); }
+    vertexNormals(this.geo, this.sphere); bounds(this); // (the reach: its farthest ground from the heart, its crown's platform and props over it: what a body or a ray must test out to)
+    for (const k of ['position', 'normal', 'color']) sendWhole(this.geo.attributes[k]);
+    this.claySeen = null; // (heights set here, not from the clay: the next fromClay looks at every cell again)
   }
+  /** A vertex's skin colour by its height and latitude (into the colour attribute `C`). */
+  colourOf(i, C) {
+    const x = this.dir[i * 3], y = this.dir[i * 3 + 1], z = this.dir[i * 3 + 2];
+    const grass = THREE.MathUtils.smoothstep(y, -0.45, -0.1), up = THREE.MathUtils.smoothstep(y, 0.1, 0.8), dug = THREE.MathUtils.clamp(-this.h[i] / BAND * 2, 0, 1);
+    _c4.copy(this.cLow).lerp(this.cTop, up).lerp(this.cRock, 1 - grass).lerp(this.cRock, dug * 0.6); // (green over the top, rock under it, and where it is dug)
+    const v = 0.94 + 0.06 * Math.sin(x * 31 + z * 17 + y * 23), a = C.array; a[i * 3] = _c4.r * v; a[i * 3 + 1] = _c4.g * v; a[i * 3 + 2] = _c4.b * v;
+  }
+  /** Brought up to the god hand's clay (world/garden/clay.js), only where it changed since the last time: its heights, its normals round
+   *  them, its painted grounds. What changed, counted: { cells, moved, normals, painted }. */
+  fromClay(clay) { return refreshFromClay(this, clay); }
 
   /** Its surface's radius in a direction (local; normalised here). */
   surface(dir) {
@@ -141,12 +148,14 @@ export class Planetoid {
 
   update(raw = 1 / 60) {
     this.t += raw;
+    if (!clockOwner || clockOwner.disposed) clockOwner = this;
+    if (clockOwner === this) groundTick(raw);
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 
-  dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); }
+  dispose() { this.disposed = true; this.group.parent?.remove(this.group); this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); }
 }
 
 function lcg(seed) { let a = Math.floor(Math.abs(seed) * 1000) % 2147483647 || 7; return () => ((a = (a * 16807) % 2147483647) / 2147483647); }
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _e = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0);
-const _c1 = new THREE.Color(), _c2 = new THREE.Color(), _c3 = new THREE.Color(), _c4 = new THREE.Color();
+const _c4 = new THREE.Color();

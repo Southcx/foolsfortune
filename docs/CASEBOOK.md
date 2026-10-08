@@ -172,7 +172,25 @@ the rules before building in the same area; a rule a machine can check goes into
     down is idempotent: a second `dispose` does nothing.
 66. **A handoff is deleted with the work, never instead of it.** A note leaves `docs/handoffs/` in the commit that does what it asks,
     or with a line in the reader's reply saying why not.
+67. **A skipped call leaves its work owed.** A throttle that drops every other call (a counter's parity, a cooldown) drops whoever
+    lands on the skip, the same one each time when the callers come in a fixed order, and a caller that clears its own flag first never
+    asks again. Make the work cheap enough to do at every call (redraw only what changed), or keep the debt per thing and clear it when
+    the work is done.
 ## Cases
+
+### 2026-10-08 · The garden's ground worn by its water stayed drawn as it was on every other planetoid (Calissa, from the survey)
+- **Seen (Calissa's garden survey, 2026-10-08):** with two planetoids eroding at once, one of them kept its old drawn ground until the
+  next stroke ended on it; the Jar stands on the clay (`radiusAt`), so it stood off the ground it was drawn on.
+- **Cause (measured, this build, main's `reshape` put back in the page):** `realm.reshape` skipped every other call that was not `now`
+  on one counter (`shapeT`) shared by every planetoid, the hand's strokes and erosion's look tick; the water's look tick clears each
+  planetoid's `eroded` flag and then calls `reshape` for it, in site order. Three planetoids worn by 0.3 m in one tick: the Dantian and
+  the Athanor drawn 0.299 m off their clay, the Terraces right; the next tick the other way round. The skip was there because the
+  redraw cost a full `toLook` (heightAt at every vertex, all normals: 4.5 to 6 ms at the clay's fineness).
+- **Fix:** the look keeps a map onto the clay's grid and redraws only the cells that changed since it last looked
+  (vfx/garden/planetoidmesh.js `refreshFromClay`, through `Clay.toLook`): a brush tick in the page 0.1 to 0.3 ms at 3 m, 0.8 to 1.8 ms at
+  12 m (p50), so `reshape` runs at every call and the skip is gone (world/garden/realm.js). The same three planetoids, three rounds:
+  every one within 2.6 micrometres of its clay after each tick.
+- **Rule:** 67.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases

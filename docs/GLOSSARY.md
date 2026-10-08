@@ -471,8 +471,9 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **launch lotus** flies the Jar to a neighbour in two real seconds. *Not:* "hopper" (the press's mouth), "island" (the bowl's rubble).
 - **the ground's materials** (`GROUND`, `src/progress/realm.js`; SPIRIT-GARDEN.md section 7): what the god hand paints a planetoid's
   ground with, one a phase: **moss** (wood, wonder), **ash** (fire, mirth), **loam** (earth, desire), **slate** (metal, grief), **silt**
-  (water, dread). Free; a feature counts its ground in its formation. *Not:* a material (Soul Alchemy's, pressed), the formation
-  **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
+  (water, dread). Free; a feature counts its ground in its formation. Drawn by `src/vfx/garden/gardengrounds.js` over the planetoid's
+  skin (each in its phase's colours, its accent its feeling's), blended at their borders by height. *Not:* a material (Soul Alchemy's,
+  pressed), the formation **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
 - **the garden's views** (`realm.camera`, `src/world/garden/gardencam.js`): **behind** the Jar (as it opens), **first person** (Z, the
   same setting as the world's), **overhead** (`: the god hand's view in the garden, straight down; W A S D moves the view, not the Jar).
   *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
@@ -654,6 +655,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **the liquid pack** (`src/assets/liquid_pack.webp`, baked by `scripts/bake_liquid.py` from `source_assets/liquid/`): the owner's
   noise photographs as one tileable texture (marbling, bubbles, sand ripples, veins) that every liquid is drawn with (`src/vfx/liquid.js`).
   **caustics**: the net of light on a pool's floor; **glints**: the water's sparkle where the sun catches it.
+- **the ground pack** (`src/assets/ground_pack.webp`, baked by `scripts/bake_ground.py` from `source_assets/vfx/Noise_Gradients/`): four
+  of the owner's noise gradients as the four grey channels of one tileable texture, the heights the ground's materials are drawn from
+  (R moss's cushions, G loam's rootlets, B slate's cleft, A silt's crazing; ash's come from the liquid pack's glowing cells). Fetched
+  beside the bundle (never inlined in it) when the first planetoid is made. *Not:* the liquid pack, nor the surfaces
+  (`render/triplanar.js`).
 - **the markup window** (`BugMarkup`, `src/ui/bugmarkup.js`): the bug report's window over the frozen frame (F8: QAIS's Reports
   tab, `src/debug/qais/report.js`): the frame at a whole-number scale, **marks** on a layer of their own (pen, arrow, ring, box; red or white;
   undo), a title, what happened, what should have, a kind and a severity.

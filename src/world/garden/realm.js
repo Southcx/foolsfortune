@@ -326,8 +326,7 @@ export class Realm {
   }
   reshape(P, now = false) {
     const clay = this.clays[P.id]; if (!clay) return;
-    if (!now && (this.shapeT = (this.shapeT || 0) + 1) % 2) return;
-    clay.toLook(P.look);
+    clay.toLook(P.look); // (every call: the look redraws only the cells that changed, well under a millisecond; casebook 2026-10-08)
     if (now) this.flowAll();
   }
   /** Every pond's water led downhill (world/garden/clay.js flow): a ribbon of Lachryma along the ground to where it pools. */

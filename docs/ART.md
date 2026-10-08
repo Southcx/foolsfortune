@@ -63,7 +63,10 @@ also sets gems with their real optics, hair finishes and skin tones.
   where it will rise, never a painted ring; **the body is the telegraph** (`vfx/foelook.js`, one shape per cast).
 - **The catch:** one look for the Jar and the coffin: a mouth drinking a mind (`vfx/catch.js`).
 - **The garden** (Dual Hearts): pastel air tinted by your draught, a cloud sea below, toy planetoids (`vfx/garden/`); a feature wears its
-  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos).
+  feeling's colour; a form is its element plus a halo (Law) or horns (Chaos). **The grounds the hand paints wear their phase, not their
+  feeling** (`vfx/garden/gardengrounds.js`): moss jade cushions, ash pale over embers, loam ochre clods and rootlets, slate silver-blue
+  cleft, silt blue-black and crazed. The feeling is only the accent (dew, embers, flecks, sheen, the gleam in a crack), so a painted
+  planetoid reads as ground first and mood second. Borders are height-blended (the higher one shows), never a smear across a cell.
 
 ## 6. The Courier's face
 
