@@ -166,8 +166,23 @@ the rules before building in the same area; a rule a machine can check goes into
 64. **What stands on a surface stands on its normal.** Tilt it from up to the surface's normal under it (analytic where the surface
     is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
     by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
+65. **A material's `clone()` keeps its numbers, not its shader.** A Standard or Physical material's copy resets its defines to
+    `STANDARD` alone, and no copy keeps `onBeforeCompile` or `customProgramCacheKey`: a material dressed by a define (the rim) or a
+    hook (the grey tint) is cloned with what carries them over (`vfx/greytint.js` `cloneTinted`), or dressed again after, and the
+    copy's defines are read once headless.
 
 ## Cases
+
+### 2026-10-08 · Every clapperjar had lost its rim (Calissa, putting on the owner's texture)
+- **Seen:** measured, not seen: the shared clapperjar material carried `RIM 0.256` (render/toon.js `addRim`, the Courier's thin
+  Lachryma rim), and every jar in the workshop drew with `{ STANDARD: '' }` alone. The owner's grey texture would have lost its tint
+  the same way (read from three.js, not run: the copy keeps the map but not the hook, so each jar would draw a plain multiply).
+- **Cause (measured):** `Clappers.spawn` gives each jar `this.mat.clone()` (its own colour, for the kiln's heat). three.js's
+  `MeshStandardMaterial.copy` sets `defines = { STANDARD: '' }` after copying the rest, and `Material.copy` never copies
+  `onBeforeCompile` or `customProgramCacheKey`. The colour, roughness and flat shading came across; the rim never did.
+- **Fix:** each jar's material is `cloneTinted(this.mat)` (`vfx/greytint.js`): the clone with the defines and the hook carried over.
+  Headless, all six jars: `{ STANDARD, RIM: 0.256, GREY_REF: 0.1329 }`, the texture on each, one program for all six.
+- **Rule:** 65.
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
 - **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases

@@ -600,6 +600,11 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   the surface faces; no UVs. In 'detail' mode the texture brings only its light and shade, the colour stays the material's. The
   textures are **the surfaces** (Calissa's six CC0 sets, `src/assets/textures/`: sand, sand_packed, rock, clay_floor, plaster,
   stone_flags). *Not:* the level's dressing (`vfx/surfaces.js`: box mapping of procedural patterns by colour).
+- **the grey tint** (`greyTint`, `greyTexture`, `cloneTinted`, `src/vfx/greytint.js`): a painting in greys under its material's colour:
+  the painting's **reference grey** (its body's own) is the colour exactly, a darker grey darkens it toward black, a lighter lifts it
+  toward white, so any colour the game gives the thing (the kiln's heat, a raider's red, a turned jar's cream) reads as itself with
+  the painting on it. The clapperjar wears it (the owner's grey texture, `source_assets/clapperjar_base.png`, reference 102 of 255).
+  *Not:* a glaze (fired at the kiln), nor triplanar's 'detail' (light and shade only, no UVs).
 - **rock** (`src/world/well/rock.js`): the Great Dunemaw's walls and pillars drawn rough over their box colliders, a noise field
   pushing the skin up to 0.3 m sideways.
 - **a drift tide** (`docs/plans/DUNEMAW.md`, phase 2): a sand slope in the Great Dunemaw rising and falling on the sim clock.
