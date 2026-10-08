@@ -21,6 +21,9 @@ export function placeRules({ on, log }) {
   on('garden.art', (e) => log.say('system', `Your hand: ${ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your draught' : e.feeling}.` : ''}`, { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
   on('garden.reset.ask', () => log.say('warn', 'Again to put this planetoid back as it was: its clay, its ground and its water.', { key: 'garden.reset', throttle: 1 }));
   on('garden.reset', () => log.say('info', 'The planetoid is back as it was. Ctrl+Z undoes it.', { key: 'garden.reset', throttle: 1 }));
+  on('mind.brim', () => log.say('warn', 'You are brimming.', { key: 'mind.brim', throttle: 2 })); // (Espada's words, the glossary)
+  on('mind.settle', () => log.say('info', 'You settle.', { key: 'mind.settle', throttle: 2 }));
+  on('mind.state', (e) => log.say('info', `Your mental state: ${e.state}.`, { key: 'mind.state', throttle: 3 }));
   on('spirit.name', (e) => log.say('info', `${e.was[0].toUpperCase()}${e.was.slice(1)} is named ${e.spirit}.`, { key: 'spirit.name', throttle: 0.5 })); // (words a placeholder, Espada's)
   on('spirit.spar.start', (e) => log.say('info', `Your ${e.a} and your ${e.b} square up.`, { key: 'spar', throttle: 1 })); // (words placeholders, Espada's)
   on('spirit.spar', (e) => log.say('info', `The spar ends after ${e.seconds} real seconds. Each grows stronger: ${e.stats.join(' and ')}.`, { key: 'spar', throttle: 1 }));

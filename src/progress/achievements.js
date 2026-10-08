@@ -485,8 +485,8 @@ export function buildAchievements(game) {
   C('gj1', 'battle', 'The Crowned', 3, 'perfect', 'The Jelly-crown', 'Beat the Great Slip Jelly. It drops its glaze.', 'foe.drop.glaze.jellycrown', 1);
   C('gj2', 'battle', 'The Crowned', 5, 'perfect', 'Not a Scratch on the Crown', 'Beat it without being hit by a Lidfall. It drops the Crown of the Dunemaw.', 'foe.drop.curio.crown', 1);
   C('gj3', 'battle', 'The Crowned', 4, 'perfect', 'Empty Nest', 'Beat it with every clutch broken before the pull. It drops a slip jelly to ride.', 'foe.drop.mount.slipjelly', 1);
-  C('gj4', 'battle', 'The Crowned', 4, 'speed', 'A Minute to Spare', 'Beat it with the enrage more than a minute away. A title.', 'foe.drop.title.jellybane', 1);
-  C('gj5', 'battle', 'The Crowned', 3, 'mechanic', 'Mirror, Mirror', 'Turn its gaze back with the Veritome, and beat it. A kiln pattern.', 'foe.drop.pattern.crowneye', 1);
+  C('gj4', 'battle', 'The Crowned', 4, 'speed', 'A Minute to Spare', 'Beat it with the enrage more than a minute away. The title Jellybane.', 'foe.drop.title.jellybane', 1, { title: 'Jellybane' });
+  C('gj5', 'battle', 'The Crowned', 3, 'mechanic', 'Mirror, Mirror', 'Turn its gaze back with the Veritome, and beat it. The Eye Cup glaze.', 'foe.drop.pattern.crowneye', 1);
   C('dn4', 'battle', 'The Crowned', 4, 'mechanic', 'Nursemaid', 'Reprogram the Great Slip Jelly and keep its nursery.', 'foe.reprogram', 1);
   C('dn5', 'battle', 'The Crowned', 2, 'count', 'Clutch Breaker', 'Break ten clutches of slip jelly eggs.', 'clutch.break', 10);
   C('dn6', 'explore', 'The Finds', 1, 'count', 'The Town Remembers', 'Take ten finds from the Great Dunemaw\'s pots.', 'find.pot', 10);
@@ -583,10 +583,17 @@ export function buildAchievements(game) {
   H('sv5', 'garden', 'The Spirits', 4, 'collect', 'Big Catch', 'Bind a Figment of the Whale class or greater.', 'spirit.bind.cls', 4);
   C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);
   C('ir2', 'garden', 'The Garden', 3, 'count', 'Potter of Worlds', 'Sculpt your planetoids a hundred times.', 'garden.sculpt', 100);
+  // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
+  F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
+  C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);
+  C('tf3', 'garden', 'The Garden', 2, 'count', 'Rearranged', 'Move a placed feature ten times.', 'garden.move', 10);
+  C('tf4', 'garden', 'The Spirits', 2, 'count', 'Racecourse', 'Carve a track your spirits can race on.', 'garden.track', 1);
+  C('tf5', 'garden', 'The Spirits', 3, 'endure', 'Photo Finish', 'Race your spirits twenty times.', 'spirit.race', 20);
+  C('tf6', 'garden', 'The Spirits', 2, 'count', 'Sparring Partners', 'Spar your spirits at the Chimney ten times.', 'spirit.spar', 10);
   F('ir3', 'garden', 'The Spirits', 3, 'collect', 'Open House', 'Have every kind of visitor settle.', (L) => ['slipjelly', 'clapperjar', 'glint', 'lobber'].filter((k) => L.get(`spirit.settle.${k}`) >= 1).length, 4);
   H('fi1', 'garden', 'The Firings', 2, 'count', 'The Second Firing', 'Pass a tribulation.', 'firing', 2);
   H('fi2', 'garden', 'The Firings', 4, 'count', 'The Sixth Firing', 'Reach the sixth Firing.', 'firing', 6, { title: 'Refired' });
-  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Idle Hands', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
+  C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Put to Work', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
   C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
   C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);

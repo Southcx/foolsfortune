@@ -11,6 +11,8 @@
 //   ATTRIBUTES[id] = { id, name, hue, does, widen: { key: { mult | plus, atMax } } }   targetOf(id) -> { h, s }   radiusAt(rank)   fuelAt(rank)
 //   game.alchemy = new SoulAlchemy(game)   .colour   .rank(id)   .press(slots) -> { colour, trail }   .near() -> id | null
 //   .fire() -> { ok, why?, attribute?, rank? }   .widen(key) -> a multiplier, or a bonus to a count (1 / +0 at rank 0)
+//   SEASONING (event -> attribute, points, when)   swatchRadius(rank, seasoning, formation)   aimedFuel(rank, d, r)   isTrue(d, r)
+//   complementGrey(colour, hue)   (the press's new rules: docs/plans/SOUL-ALCHEMY.md, the owner's laws of 2026-10-08)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { press, distance } from './econ/materials.js';
@@ -39,6 +41,43 @@ export function widenAtRank(key, rank = 0) {
   if (!w) return 1;
   const f = Math.min(1, Math.max(0, rank) / A.ranks);
   return w.plus ? Math.round(w.atMax * f) : 1 + (w.atMax - 1) * f;
+}
+
+// ---- the press's new rules (SOUL-ALCHEMY.md section 3; Petra wires them into SoulAlchemy and the press, these are their numbers)
+
+/** SEASONING: what doing each attribute's thing anywhere gives it (0 .. ECON.alchemy.seasonMax), each source at most seasonPerHour a game
+ *  hour. `when(e)` filters the event (the Courier's, and done well enough to count). The grind that closes the gap (DESIGN.md 22). */
+export const SEASONING = [
+  { event: 'vessel.shield',   attribute: 'willpower',     points: 1, when: (e) => e.by !== 'environment' },      // (a blow taken on the shield)
+  { event: 'mind.settle',     attribute: 'willpower',     points: 2, when: () => true },                         // (brimming, and settling back)
+  { event: 'creature.status', attribute: 'focus',         points: 1, when: (e) => e.by === 'courier' },          // (a status built on a creature)
+  { event: 'rhythm.score',    attribute: 'focus',         points: 3, when: (e) => (e.combo || e.maxCombo || 0) >= 25 },
+  { event: 'npc.talk',        attribute: 'charisma',      points: 1, when: () => true },
+  { event: 'shop.sell',       attribute: 'charisma',      points: 1, when: (e) => e.by !== 'environment' },
+  { event: 'shop.haggle',     attribute: 'charisma',      points: 2, when: (e) => e.won !== false },
+  { event: 'move.parry',      attribute: 'perception',    points: 2, when: (e) => e.by === 'courier' && e.how },  // (a parry that answered something)
+  { event: 'photo.appraise',  attribute: 'perception',    points: 2, when: (e) => (e.stars || 0) >= 3 },
+  { event: 'drill.end',       attribute: 'dexterity',     points: 3, when: (e) => !e.tuned },                    // (a Throwing Room drill finished, untuned)
+  { event: 'creature.zandatsu', attribute: 'dexterity',   points: 2, when: (e) => e.by !== 'environment' },
+  { event: 'sigil.pop',       attribute: 'visualization', points: 2, when: (e) => e.by !== 'environment' },
+  { event: 'garden.sculpt',   attribute: 'visualization', points: 1, when: (e) => e.by === 'courier' },
+  { event: 'vessel.mend',     attribute: 'resilience',    points: 2, when: () => true },                         // (a crack mended: break it, mend it)
+  { event: 'emocean.stage',   attribute: 'resilience',    points: 4, when: (e) => !!e.passed },                  // (a crossing survived)
+];
+/** A swatch's radius now: its rank's (narrowing), widened by seasoning, times the press's formation (clamped). */
+export const swatchRadius = (rank = 0, seasoning = 0, formation = 1) => {
+  const [lo, hi] = A.formationClamp, f = Math.max(lo, Math.min(hi, formation));
+  return radiusAt(rank) * (1 + A.seasonWiden * Math.max(0, Math.min(A.seasonMax, seasoning)) / A.seasonMax) * f;
+};
+/** The cubes a firing costs, aimed: half at the swatch's heart, all of it at its rim. */
+export const aimedFuel = (rank = 0, d = 0, r = 1) => M((A.fuel[0] + rank * A.fuel[1]) * (A.aim[0] + A.aim[1] * Math.min(1, Math.max(0, d / Math.max(1e-6, r)))));
+/** A true firing: within trueShare of the radius. */
+export const isTrue = (d, r) => d <= r * A.trueShare;
+/** The painter's rule: a material whose hue lies within complementArc of the colour's opposite greys it by `complement` of its own
+ *  saturation step (returned: the saturation to take off, 0 if it is no complement). */
+export function complementGrey(colour, hue, satStep) {
+  const opp = (colour.h + 180) % 360, off = Math.abs(((hue - opp + 540) % 360) - 180);
+  return off <= A.complementArc ? A.complement * Math.abs(satStep || 0) : 0;
 }
 
 const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {} });

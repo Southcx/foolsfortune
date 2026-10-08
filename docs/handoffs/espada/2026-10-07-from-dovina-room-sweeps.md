@@ -20,3 +20,9 @@ Already fixed on my branch:
 - "an Apprentice".
 
 Delete this note in your branch when done.
+
+**Added after v110:**
+- The Great Slip Jelly's drops are said as "It drops <name>." with placeholder names in `greatjelly.js` DROPS: the Jelly-crown glaze, the
+  Crown of the Dunemaw, a slip jelly to ride, the title Jellybane, the Eye Cup glaze. The glaze and curio blurbs are placeholders too.
+- Six new garden achievements (tf1 to tf6: Five Grounds, Wellspring, Rearranged, Racecourse, Photo Finish, Sparring Partners) and sg1
+  renamed "Put to Work" (it shared "Idle Hands" with gd2): all placeholder names.

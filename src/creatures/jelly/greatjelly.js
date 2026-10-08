@@ -360,6 +360,7 @@ export class GreatJelly {
       g.creatures.remove(c);
     }
     g.events?.emit('foe.end', { how, by, ...(this.raid?.record() || {}) }); // (the run's record: the drops its achievements guarantee read it)
+    if (by === 'courier' && g.ledger?.get?.('foe.drop.curio.crown') === 1 && !g.pneuka?.slots.some((s) => s?.id === 'curio.crown')) g.pneuka?.add('curio.crown', 'foe'); // (the Crown, once: the first clear that earns it; Dovina's DROPS)
   }
 
   update(dt) {

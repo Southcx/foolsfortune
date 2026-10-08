@@ -453,7 +453,7 @@ if (at) {
 await page.mouse.move(480 + 60, 300 + 40); await ticks(6);
 const h0 = await ev(() => { const R = __game.game.realm, h = R.hand.hit; if (!h) return null; window.__pit = h.point.clone().sub(h.planet.c).normalize(); return R.clays[h.planet.id].heightAt(__pit); });
 await page.mouse.down(); await ticks(150); await page.mouse.up(); await ticks(30);
-const fl = h0 === null ? null : await ev((h0) => { const R = __game.game.realm, J = R.jarBody, P = J.planet, W = R.waterworks?.waters?.[P.id]; if (!W) return null; const pit = +(R.clays[P.id].heightAt(__pit) - h0).toFixed(2);
+const fl = h0 === null ? null : await ev((h0) => { const R = __game.game.realm, J = R.jarBody, P = J.planet, W = R.waterworks?.water?.(P) || R.waterworks?.waters?.[P.id]; if (!W) return null; const pit = +(R.clays[P.id].heightAt(__pit) - h0).toFixed(2);
   J.vel.set(0, 0, 0); J.pos.copy(P.c).addScaledVector(__pit, P.radiusAt(__pit) + J.radius + 0.1); J.up.copy(__pit); // (the Jar set in the pit)
   W.pour(__pit, 60, 'wonder'); W.wake?.(); return { planet: P.id, pit }; }, h0);
 check('water: the waterworks has the Jar\'s planetoid', !!fl, fl);
@@ -471,6 +471,286 @@ check('views: Z again comes back', (await view()) !== 'first', await view());
 await ev(() => __game.game.realm.leave()); await ticks(60); await settle();
 const out = await sw('state()');
 check('terraform: leaving restores the world camera up', Math.abs(out.camUp[1] - 1) < 0.01, out.camUp);
+
+// ================================================================== 13. the features of section 7 (items 3, 31, 6, 7, 11, 13, 30, 15, 17b, 17c, 19)
+// Hooks as the code has them (src/world/garden/): races.offer(planet, path) takes a planetoid and a path of directions (Petra's header says
+// offer(stroke)); the vein ends are site.links[i].ends[planetId]; the camera's arm is camera.arm; a planetoid is reset by realm.resetPlanetoid(P).
+phase = 'features';
+const guard = async (id, fn) => { try { await fn(); } catch (e) { check(id, false, `threw: ${String(e?.message || e).slice(0, 240)}`); } };
+const evn = (n) => ev((n) => __game.game.events.counts[n] || 0, n);
+const ledgerOf = (k) => ev((k) => __game.game.ledger.get(k), k);
+const cubesNow = () => ev(() => __game.game.cubes.balance);
+await enter(); await ticks(40); await settle(); await closeAll(); await ticks(10);
+await ev(() => {
+  const g = __game.game, T = __game.THREE;
+  const R = () => g.realm;
+  { const NX = 128, NY = 64, a = new Float32Array(NX * NY * 3); for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { const lon = (i / NX) * Math.PI * 2, lat = ((j + 0.5) / NY - 0.5) * Math.PI; a.set([Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)], (j * NX + i) * 3); } window.__cellDirs = a; } // (clay.js CELL_DIRS, worked again here: the page cannot import it)
+  window.__s13 = {
+    /** A direction on a planetoid with the most room round it (clear of features, lotuses, plots), away from `from` by `arc` metres. */
+    spot(id, from = null, arc = 0) {
+      const P = R().site.by[id], clay = R().clays[id], out = [];
+      for (let k = 0; k < 3000; k++) {
+        const y = 1 - 2 * (k + 0.5) / 3000, rad = Math.sqrt(1 - y * y), th = k * 2.39996; if (Math.abs(y) > 0.7) continue;
+        const d = new T.Vector3(Math.cos(th) * rad, y, Math.sin(th) * rad); if (from && P.r * d.angleTo(new T.Vector3(...from)) < arc) continue;
+        let m = 1e9; for (const q of clay.kept) m = Math.min(m, P.r * d.angleTo(q.d) - q.r); out.push([m, d]);
+      }
+      out.sort((a, b) => b[0] - a[0]); return out[0][1];
+    },
+    dig(id, d, n = 30, r = 4) { const P = R().site.by[id]; for (let i = 0; i < n; i++) R().clays[id].brush(d, 'press', 0.3, r); R().reshape(P, true); R().waterworks.disturb(P); },
+    pour(id, d, vol, feeling) { const W = R().waterworks.water(R().site.by[id]); W.pour(d, vol, feeling); W.wake(); },
+    margin() { const c = __game.camera.position; let m = 1e9; for (const P of R().site.planets) { const d = c.distanceTo(P.c); m = Math.min(m, d - P.radiusAt(c.clone().sub(P.c).divideScalar(d || 1))); } return m; },
+    wetDepth(id, d) { return R().waterworks.waters[id]?.depthAt(d) ?? 0; },
+    cleanAll() { for (const P of R().site.planets) R().resetPlanetoid(P); R().hand.undos.length = 0; },
+  };
+  window.__s13.cleanAll();
+});
+await ticks(10);
+
+// ---- item 3: the camera and the ground
+await guard('camera: a hill behind the Jar', async () => {
+  const a = await ev(() => {
+    const g = __game.game, R = g.realm, T = __game.THREE, P = R.site.by.dantian, H = __s13.spot('dantian');
+    const f = R.camera.fwd.clone().projectOnPlane(H); if (f.lengthSq() < 0.1) f.set(0, 1, 0).cross(H); f.normalize();
+    const ax = H.clone().cross(f).normalize(), Jd = H.clone().applyAxisAngle(ax, 6 / P.r); // (the Jar 6 m in front of the hill's centre, the camera looking along f)
+    R.lotusLock = null; __sw.put('dantian', Jd.toArray()); R.camera.up.copy(Jd); R.camera.fwd.copy(f).projectOnPlane(Jd).normalize(); window.__hill = H;
+    __sw.tick(40); return { arm: +R.camera.arm.toFixed(2), margin: +__s13.margin().toFixed(2), view: R.camera.view };
+  });
+  const b = await ev(() => {
+    const g = __game.game, R = g.realm, P = R.site.by.dantian; for (let i = 0; i < 40; i++) R.clays.dantian.brush(__hill, 'pull', 0.3, 3); R.reshape(P, true); R.waterworks.disturb(P);
+    let min = 1e9, armMin = 1; for (let i = 0; i < 6; i++) { __sw.tick(10); min = Math.min(min, __s13.margin()); armMin = Math.min(armMin, R.camera.arm); }
+    return { hill: +R.clays.dantian.heightAt(__hill).toFixed(2), armBefore: 1, armAfter: +armMin.toFixed(2), minHeightOverGround: +min.toFixed(2), jarAlt: +(R.jarBody.pos.distanceTo(P.c) - P.radiusAt(R.jarBody.pos.clone().sub(P.c).normalize())).toFixed(2) };
+  });
+  await shot('camera-hill');
+  check('camera: a hill 6 m behind the Jar is raised', b.hill > 2, { flat: a, hill: b.hill });
+  check('camera: the hill shortens the arm', b.armAfter < 1, { arm: a.arm, armAfter: b.armAfter });
+  check('camera: stays above the ground behind a hill', b.minHeightOverGround > 0.2, `lowest the camera came over the ground in 60 ticks: ${b.minHeightOverGround} m (flat ground ${a.margin} m); arm ${b.armAfter}`);
+});
+await guard('camera: overhead zoomed far', async () => {
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, T = __game.THREE, out = []; let worst = 1e9;
+    for (const P of R.site.planets.filter((p) => !p.bought)) {
+      const Q = R.site.planets.filter((q) => q !== P && !q.bought).sort((x, y) => x.c.distanceTo(P.c) - y.c.distanceTo(P.c))[0], d = Q.c.clone().sub(P.c).normalize(); // (toward the nearest neighbour: the view looks across the gap)
+      R.lotusLock = null; __sw.put(P.id, d.toArray()); R.camera.up.copy(d); if (!R.camera.over) R.camera.toggleOverhead(); R.camera.over.dist = 70;
+      let m = 1e9; for (let i = 0; i < 4; i++) { __sw.tick(8); m = Math.min(m, __s13.margin()); }
+      out.push(`${P.id}->${Q.id}: ${m.toFixed(1)} m`); worst = Math.min(worst, m); R.camera.toggleOverhead();
+    }
+    return { worst: +worst.toFixed(2), out };
+  });
+  check('camera: overhead, zoomed far, inside no planetoid', r.worst > 0, `lowest over any planetoid's ground ${r.worst} m: ${r.out.join('; ')}`);
+});
+await ev(() => __s13.cleanAll()); await ticks(10);
+
+// ---- item 31: the water's frame budget
+await guard('waterworks: cost', async () => {
+  const pit = await ev(() => { const d = __s13.spot('dantian'); window.__pitD = d; __s13.dig('dantian', d, 30, 4); __s13.pour('dantian', d, 80, 'wonder'); return d.toArray(); });
+  const costs = [];
+  for (let k = 0; k < 10; k++) { await ticks(30); costs.push(await ev(() => { __s13.pour('dantian', __pitD, 6, 'wonder'); const W = __game.game.realm.waterworks; return [+W.cost.toFixed(2), W.every, +W.waters.dantian.total.toFixed(1)]; })); }
+  const late = costs.slice(2), worst = Math.max(...late.map((c) => c[0])), total = costs.at(-1)[2];
+  note('waterworks: measured', `cost (ms a fixed step, averaged) per half-second while pouring on the Dantian: ${costs.map((c) => c[0]).join(' ')}; steps folded ${costs.at(-1)[1]}; budget 2 ms (Petra measured 1.29; SwiftShader here)`);
+  check('waterworks: water is running on the Dantian', total > 20, `${total} cubic metres standing`);
+  check('waterworks: a pour costs under 4 ms a step (budget 2)', worst < 4, `worst ${worst} ms after warm-up, budget 2, ceiling here 4`);
+});
+await ev(() => __s13.cleanAll()); await ticks(10);
+
+// ---- item 6: paint
+await guard('paint', async () => {
+  await ev(() => { const R = __game.game.realm, d = __s13.spot('dantian'); R.lotusLock = null; __sw.put('dantian', d.toArray()); R.camera.up.copy(d); if (!R.camera.over) R.camera.toggleOverhead(); R.hand.setArt('paint'); });
+  await ticks(20);
+  const art = await ev(() => __game.game.realm.hand.art); check('paint: 0 / setArt gives the paint art', art === 'paint', art);
+  const GR = ['moss', 'ash', 'loam', 'slate', 'silt'];
+  const g0 = await ev(() => __game.game.realm.hand.ground), seq = [];
+  for (let k = 0; k < 5; k++) { await press('KeyR', 3); seq.push(await ev(() => __game.game.realm.hand.ground)); }
+  const want = Array.from({ length: 5 }, (_, k) => GR[(GR.indexOf(g0) + k + 1) % 5]);
+  check('paint: R turns moss, ash, loam, slate, silt in turn', JSON.stringify(seq) === JSON.stringify(want), { from: g0, got: seq, want });
+  const c0 = await cubesNow(), spots = [[480, 300], [280, 300], [680, 300], [480, 150], [480, 450]];
+  for (let k = 0; k < 5; k++) {
+    const gr = GR[k]; for (let t = 0; t < 5 && (await ev(() => __game.game.realm.hand.ground)) !== gr; t++) await press('KeyR', 3);
+    const n0 = await ledgerOf(`garden.paint.${gr}`), e0 = await evn('garden.paint'), [x, y] = spots[k];
+    await page.mouse.move(x, y); await ticks(6); await page.mouse.down(); await ticks(14);
+    const h = await ev(() => { const hit = __game.game.realm.hand.hit; if (!hit) return null; const d = hit.point.clone().sub(hit.planet.c).normalize(); window.__ph = { id: hit.planet.id, d }; return { id: hit.planet.id }; });
+    await page.mouse.up(); await ticks(4);
+    const res = h ? await ev(() => { const R = __game.game.realm; return { ground: R.clays[__ph.id].groundOf(__ph.d), plant: R.plants.at(R.site.by[__ph.id], __ph.d), last: __game.game.events.last('garden.paint') }; }) : null;
+    const n1 = await ledgerOf(`garden.paint.${gr}`), e1 = await evn('garden.paint');
+    check(`paint: ${gr} lays ${gr} under the hand, said and counted`, !!res && res.ground === gr && n1 === n0 + 1 && e1 === e0 + 1 && res.last?.planetoid === h.id && res.last?.ground === gr, { hit: h, groundOf: res?.ground, ledger: [n0, n1], events: [e0, e1], last: res?.last && { planetoid: res.last.planetoid, ground: res.last.ground } });
+    if (gr === 'moss') check('paint: moss painted is moss growing (plants seeded)', !!res && res.plant >= 1, `plants.at the stroke = ${res?.plant}`);
+  }
+  await shot('painted');
+  check('paint: costs nothing (cubes unchanged)', (await cubesNow()) === c0, `cubes ${c0} -> ${await cubesNow()}`);
+  await ev(() => { const R = __game.game.realm; R.hand.setArt('grab'); R.camera.over && R.camera.toggleOverhead(); __s13.cleanAll(); });
+  await page.mouse.move(480, 300); await ticks(10);
+});
+
+// ---- item 7: moving a placed feature
+await guard('plots: move', async () => {
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, D = R.site.by.dantian, free = R.plots.plots.filter((p) => p.planet === D && !p.placed);
+    if (free.length < 2) return { err: `only ${free.length} free plots on the Dantian` };
+    const [a, b, c] = free, c0 = g.cubes.balance, m0 = g.events.counts['garden.move'] || 0;
+    const placed = R.plots.place(a, 'lantern', 'wonder', { free: true }), c1 = R.plots.place(c, 'lantern', 'mirth', { free: true });
+    const onto = R.plots.move(a, c), fromEmpty = R.plots.move(b, a); // (onto a taken plot, and from an empty one: refused)
+    const ok = R.plots.move(a, b), e = g.events.last('garden.move');
+    return { placed: placed.ok && c1.ok, onto, fromEmpty, ok, aEmpty: !a.placed, bFeature: b.placed?.feature, bFeeling: b.placed?.feeling, bGroup: !!b.group, aGroup: !!a.group, atB: b.group ? +b.group.position.distanceTo(b.pos).toFixed(3) : null, events: (g.events.counts['garden.move'] || 0) - m0, ev: e && { from: e.from, to: e.to, planetoid: e.planetoid, feature: e.feature }, ids: [a.id, b.id], cubes: [c0, g.cubes.balance] };
+  });
+  check('plots: a placed feature moves to a free plot, free', !r.err && r.placed && r.ok && r.aEmpty && r.bFeature === 'lantern' && r.bFeeling === 'wonder' && r.bGroup && !r.aGroup && r.atB < 0.01 && r.cubes[0] === r.cubes[1], r);
+  check('plots: a move onto a taken plot or from an empty one is refused', !r.err && r.onto === false && r.fromEmpty === false, { onto: r.onto, fromEmpty: r.fromEmpty });
+  check('plots: a move says garden.move once, with both plots', !r.err && r.events === 1 && r.ev?.from === r.ids[0] && r.ev?.to === r.ids[1] && r.ev?.planetoid === 'dantian', { events: r.events, ev: r.ev, ids: r.ids });
+});
+
+// ---- item 11: water keeps a feeling
+await guard('water: feeling', async () => {
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, P = R.site.by.mulberryGrove, A = __s13.spot('mulberryGrove'), B = __s13.spot('mulberryGrove', A.toArray(), 12), C = __s13.spot('mulberryGrove', A.toArray(), 12);
+    __s13.dig('mulberryGrove', A, 30, 4); __s13.dig('mulberryGrove', B, 30, 4); window.__fA = A; window.__fB = B; window.__fC = C.clone();
+    __s13.pour('mulberryGrove', A, 60, 'grief'); __s13.pour('mulberryGrove', B, 40, 'wonder'); __s13.pour('mulberryGrove', B, 40, 'grief'); __sw.tick(240);
+    const W = R.waterworks, dry = __s13.spot('mulberryGrove', A.toArray(), 20);
+    return { A: [W.feelingAt(P, A), +__s13.wetDepth('mulberryGrove', A).toFixed(2)], B: [W.feelingAt(P, B), +__s13.wetDepth('mulberryGrove', B).toFixed(2)], dry: [W.feelingAt(P, dry), +__s13.wetDepth('mulberryGrove', dry).toFixed(2)] };
+  });
+  check('water: grief poured into a pit is grief there', r.A[0] === 'grief' && r.A[1] >= 0.05, { feelingAt: r.A[0], depth: r.A[1] });
+  check('water: wonder and grief mixed in one pit cancel to fair water', r.B[0] === null && r.B[1] >= 0.05, { feelingAt: r.B[0], depth: r.B[1] });
+  check('water: dry ground has no feeling', r.dry[0] === null, r.dry);
+});
+await ev(() => __s13.cleanAll()); await ticks(10);
+
+// ---- item 13: the veins follow a ridge
+await guard('veins: ridge', async () => {
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, T = __game.THREE, S = R.site, L = S.links.find((l) => l.a.r >= 12) || S.links[0], P = L.a, Q = L.b, clay = R.clays[P.id];
+    const to = Q.c.clone().sub(P.c).normalize(), before = L.ends[P.id].clone(), ref = Math.abs(to.y) < 0.9 ? new T.Vector3(0, 1, 0) : new T.Vector3(1, 0, 0), u = ref.cross(to).normalize();
+    let best = null, bm = -1e9;
+    for (let k = 0; k < 16; k++) { const perp = u.clone().applyAxisAngle(to, (k / 16) * Math.PI * 2), d = to.clone().applyAxisAngle(perp, 20 * Math.PI / 180); let m = 1e9; for (const q of clay.kept) m = Math.min(m, P.r * d.angleTo(q.d) - q.r); if (m > bm) { bm = m; best = d; } }
+    const k0 = clay.cellOf(best); for (let i = 0; i < 40; i++) clay.brush(best, 'pull', 0.3, 3);
+    // the ridge's highest cell within 4 m of its centre
+    let peak = -1, ph = -1e9; const d3 = new T.Vector3();
+    for (let k = 0; k < clay.h.length; k++) { d3.fromArray(window.__cellDirs, k * 3); if (P.r * d3.angleTo(best) < 4 && clay.groundAt(k) > ph) { ph = clay.groundAt(k); peak = k; } }
+    R.reshape(P, true); R.plots.veins(P);
+    const after = L.ends[P.id], endK = clay.cellOf(after), peakDir = new T.Vector3().fromArray(window.__cellDirs, peak * 3);
+    return { link: `${P.id}-${Q.id}`, clearance: +bm.toFixed(1), ridgeHeight: +clay.heightAt(best).toFixed(2), movedM: +(P.r * before.angleTo(after)).toFixed(1), beforeToPeakM: +(P.r * before.angleTo(peakDir)).toFixed(1), afterToPeakM: +(P.r * after.angleTo(peakDir)).toFixed(1), endHeight: +clay.groundAt(endK).toFixed(2), peakHeight: +ph.toFixed(2), endInConeDeg: +(after.angleTo(to) * 180 / Math.PI).toFixed(1) };
+  });
+  check('veins: a ridge raised in the cone draws the vein\'s end to its crest', r.ridgeHeight > 2 && r.movedM > 1 && r.afterToPeakM < r.beforeToPeakM && r.afterToPeakM <= 4 && r.endInConeDeg <= 35.5, r);
+});
+await ev(() => __s13.cleanAll()); await ticks(10);
+
+// ---- item 30: a planetoid put back to its rest shape (Ctrl+Backspace twice), and Ctrl+Z
+await guard('reset', async () => {
+  const set = await ev(() => {
+    const g = __game.game, R = g.realm, P = R.site.by.terraces, d = __s13.spot('terraces'); window.__rd = d;
+    R.lotusLock = null; __sw.put('terraces', d.toArray()); R.camera.up.copy(d); if (!R.camera.over) R.camera.toggleOverhead(); R.hand.setArt('grab');
+    __s13.dig('terraces', d, 25, 3); R.clays.terraces.paint(d, 'ash', 3); R.reshape(P, true); __s13.pour('terraces', d, 30, 'mirth'); R.plants.seed(P, d, 2); __sw.tick(30); R.hand.undos.length = 0;
+    return { dug: +R.clays.terraces.heightAt(d).toFixed(2), ground: R.clays.terraces.groundOf(d), water: +R.waterworks.waters.terraces.total.toFixed(1), plant: R.plants.at(P, d) };
+  });
+  check('reset: set up (a pit, ash, water and green on the Terraces)', set.dug < -0.3 && set.ground === 'ash' && set.water > 1 && set.plant >= 1, set);
+  await page.mouse.move(480, 300); await ticks(10);
+  const hitP = await ev(() => __game.game.realm.hand.hit?.planet.id || null);
+  const r0 = await evn('garden.reset'), a0 = await evn('garden.reset.ask');
+  await page.keyboard.down('Control'); await press('Backspace', 4);
+  const once = await ev(() => ({ h: +__game.game.realm.clays.terraces.heightAt(__rd).toFixed(2) }));
+  const asked = (await evn('garden.reset.ask')) - a0, resetAfterOne = (await evn('garden.reset')) - r0;
+  await press('Backspace', 4); await page.keyboard.up('Control'); await ticks(10);
+  const res = await ev(() => { const R = __game.game.realm, P = R.site.by.terraces, d = __rd, e = __game.game.events.last('garden.reset'); return { h: +R.clays.terraces.heightAt(d).toFixed(3), ground: R.clays.terraces.groundOf(d), painted: R.clays.terraces.painted, water: +(R.waterworks.waters.terraces?.total || 0).toFixed(2), plant: R.plants.at(P, d), ev: e && { planetoid: e.planetoid, by: e.by } }; });
+  const r1 = (await evn('garden.reset')) - r0;
+  check('reset: the hand was over the Terraces', hitP === 'terraces', hitP);
+  check('reset: Ctrl+Backspace once only asks', asked === 1 && resetAfterOne === 0 && once.h < -0.3, { asked, reset: resetAfterOne, heightAfterOne: once.h });
+  check('reset: Ctrl+Backspace twice puts the clay back (heightAt 0 where it was dug)', Math.abs(res.h) < 0.01 && r1 === 1 && res.ev?.planetoid === 'terraces', { heightAt: res.h, resets: r1, ev: res.ev });
+  check('reset: the paint, the water and the green go with it', res.ground === null && res.painted === 0 && res.water === 0 && res.plant === 0, res);
+  await page.keyboard.down('Control'); await press('KeyZ', 4); await page.keyboard.up('Control');
+  const back = await ev(() => { const R = __game.game.realm; return { h: +R.clays.terraces.heightAt(__rd).toFixed(2), ground: R.clays.terraces.groundOf(__rd) }; });
+  check('reset: Ctrl+Z undoes it (the pit and the ash come back)', Math.abs(back.h - set.dug) < 0.02 && back.ground === 'ash', { before: set, back });
+  await ev(() => { const R = __game.game.realm; R.camera.over && R.camera.toggleOverhead(); __s13.cleanAll(); });
+});
+await ticks(10);
+
+// ---- item 15: plants spread only on wet moss, loam and silt
+await guard('plants', async () => {
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, T = __game.THREE, out = {};
+    const setup = (id, ground, pour) => { const P = R.site.by[id], d = __s13.spot(id), clay = R.clays[id]; __s13.dig(id, d, 30, 4); clay.paint(d, ground, 3); R.reshape(P, true); R.plants.seed(P, d, 2); if (pour) __s13.pour(id, d, 80, 'wonder'); return d; };
+    window.__pm = setup('pavilions', 'moss', true); window.__pa = setup('terraces', 'ash', true); window.__pd = setup('athanor', 'moss', false);
+    __sw.tick(240);
+    const count = (id) => R.plants.grids[id].reduce((a, v) => a + (v ? 1 : 0), 0);
+    out.start = { moss: R.plants.at(R.site.by.pavilions, __pm), ash: R.plants.at(R.site.by.terraces, __pa), dry: R.plants.at(R.site.by.athanor, __pd), depthMoss: +__s13.wetDepth('pavilions', __pm).toFixed(2), depthAsh: +__s13.wetDepth('terraces', __pa).toFixed(2), n0: count('pavilions') };
+    R.plants.tick(6); R.plants.update();
+    out.after6 = { moss: R.plants.at(R.site.by.pavilions, __pm), ash: R.plants.at(R.site.by.terraces, __pa), dry: R.plants.at(R.site.by.athanor, __pd) };
+    R.plants.tick(10);
+    const G = R.plants.grids.pavilions, clay = R.clays.pavilions; let bad = 0, n = 0; for (let k = 0; k < G.length; k++) if (G[k]) { n++; if (clay.ground[k] !== 1) bad++; } // (ground 1 is moss)
+    out.spread = { before: out.start.n0, after: n, onOtherGround: bad };
+    return out;
+  });
+  check('plants: the wet moss pit holds water', r.start.depthMoss >= 0.05 && r.start.depthAsh >= 0.05, { moss: r.start.depthMoss, ash: r.start.depthAsh });
+  check('plants: wet moss grows to full in game hours', r.start.moss === 1 && r.after6.moss === 3, { seeded: r.start.moss, after6GameHours: r.after6.moss });
+  check('plants: they spread to bare wet moss round them', r.spread.after > r.spread.before, r.spread);
+  check('plants: they spread only onto moss, loam or silt (here: moss only)', r.spread.onOtherGround === 0, r.spread);
+  check('plants: on painted ash with water, none', r.start.ash === 1 && r.after6.ash === 0, { seeded: r.start.ash, after6GameHours: r.after6.ash });
+  check('plants: on dry moss they hold what they have', r.start.dry === 1 && r.after6.dry === 1, { seeded: r.start.dry, after6GameHours: r.after6.dry });
+});
+await ev(() => __s13.cleanAll()); await ticks(10);
+
+// ---- item 17b: sparring, and 17c: tracks and races (two spirits bound and put in the Grove)
+await ev(() => { const g = __game.game; for (let i = 0; i < 2; i++) g.bound.add({ kind: 'slipjelly', name: null, cls: 1, from: 'test', emo: 0.4, mind: 0.5, traits: null, at: 0 }); g.realm.respawn(); });
+await ticks(30);
+const nSp = await ev(() => __game.game.realm.spirits.length);
+if (nSp < 2) note('spar and race', `could not bind two spirits (${nSp} in the garden): not checked`);
+else {
+  await guard('spar', async () => {
+    const sum = () => ev(() => __game.game.realm.spirits.slice(0, 2).reduce((a, s) => a + Object.values(s.e.sp.stats).reduce((x, y) => x + y, 0), 0));
+    const s0 = await sum(), l0 = await ledgerOf('spirit.spar'), e0 = await evn('spirit.spar'), st0 = await evn('spirit.spar.start');
+    const began = await ev(() => { const R = __game.game.realm, [a, b] = R.spirits; return R.raising.spar(a, b); });
+    const again = await ev(() => { const R = __game.game.realm; return R.raising.spar(R.spirits[0], R.spirits[1]); }); // (one spar at a time)
+    await ticks(10); await ev(() => { for (const s of __game.game.realm.spirits.slice(0, 2)) s.e.sp.fatigue = 100; }); await ticks(10);
+    const s1 = await sum(), l1 = await ledgerOf('spirit.spar'), e1 = await evn('spirit.spar'), ev1 = await ev(() => { const e = __game.game.events.last('spirit.spar'); return e && { stats: e.stats, by: e.by }; });
+    check('spar: begins, one at a time', began === true && again === false && (await evn('spirit.spar.start')) === st0 + 1, { began, again });
+    check('spar: ends, each gains SPAR.gain (6) in its strongest stat', e1 === e0 + 1 && s1 - s0 === 12, { statSum: [s0, s1], ev: ev1 });
+    check('spar: the ledger counts spirit.spar', l1 === l0 + 1, { ledger: [l0, l1] });
+  });
+  await guard('race', async () => {
+    const setup = await ev(() => {
+      const g = __game.game, R = g.realm, T = __game.THREE, P = R.spirits[0].body.planet, c = P.c.clone().sub(P.c).add(new T.Vector3(0.3, 0.9, 0.2)).normalize();
+      const ring = (arcM, n, close = true) => { const al = Math.min(1.2, arcM / P.r), u = new T.Vector3(0, 1, 0).cross(c).normalize(), v = c.clone().cross(u), pts = []; for (let i = 0; i < n; i++) { const t = (i / (n - 1)) * Math.PI * 2 * (close ? 1 : 0.6); pts.push(c.clone().multiplyScalar(Math.cos(al)).addScaledVector(u, Math.sin(al) * Math.cos(t)).addScaledVector(v, Math.sin(al) * Math.sin(t)).normalize()); } return pts; };
+      const open = R.races.offer(P, ring(9, 72, false)), tiny = R.races.offer(P, ring(2, 40)), t0 = g.events.counts['garden.track'] || 0, l0 = g.ledger.get('garden.track');
+      const T1 = R.races.offer(P, ring(9, 72));
+      return { planet: P.id, open: !!open, tiny: !!tiny, made: !!T1, metres: T1 && Math.round(T1.len), tracks: R.races.tracks.length, evTrack: (g.events.counts['garden.track'] || 0) - t0, ledTrack: g.ledger.get('garden.track') - l0 };
+    });
+    check('race: an open stroke and a tiny loop are no track', setup.open === false && setup.tiny === false, setup);
+    check('race: a closed carved loop of 40 m or more is a track, said and counted', setup.made && setup.metres >= 40 && setup.evTrack === 1 && setup.ledTrack === 1, setup);
+    const b0 = await ev(() => __game.game.realm.spirits.slice(0, 2).map((s) => s.e.sp.bond)), r0 = await evn('spirit.race'), rl0 = await ledgerOf('spirit.race'), rs0 = await evn('spirit.race.start');
+    const started = await ev(() => { const R = __game.game.realm; return R.races.start(R.races.tracks.at(-1), R.spirits.slice(0, 2)); });
+    const running = await ev(() => !!__game.game.realm.races.running);
+    let done = false; for (let k = 0; k < 40 && !done; k++) { await ticks(60); done = !(await ev(() => __game.game.realm.races.running)); }
+    const fin = await ev(() => { const R = __game.game.realm, e = __game.game.events.last('spirit.race'); return { bonds: R.spirits.slice(0, 2).map((s) => s.e.sp.bond), held: R.spirits.slice(0, 2).map((s) => s.body.held), e: e && { winner: e.winner, seconds: e.seconds, runners: e.runners, metres: e.metres } }; });
+    check('race: starts on the track with the spirits on its planetoid', started === true && running && (await evn('spirit.race.start')) === rs0 + 1, { started, running });
+    check('race: runs to a finish, a winner named', done && fin.e?.winner && fin.e.seconds > 0 && fin.e.runners === 2 && fin.held.every((h) => !h), { done, fin });
+    check('race: the winner gains RACE.bond (2) of bond', fin.bonds.reduce((a, x) => a + x, 0) - b0.reduce((a, x) => a + x, 0) === 2, { before: b0, after: fin.bonds });
+    check('race: the ledger counts spirit.race', (await evn('spirit.race')) === r0 + 1 && (await ledgerOf('spirit.race')) === rl0 + 1, { events: [r0, await evn('spirit.race')], ledger: [rl0, await ledgerOf('spirit.race')] });
+  });
+}
+
+// ---- item 19: a bought planetoid sits on the ring round the Dantian
+await guard('orbit', async () => {
+  const refusal = await ev(() => __game.game.realm.orbit.buy());
+  note('orbit: buy() with no cubes and no Firing', refusal);
+  check('orbit: buy() refuses (a reason, nothing taken)', typeof refusal === 'string' && refusal.length > 0, refusal);
+  const r = await ev(() => {
+    const g = __game.game, R = g.realm, T = __game.THREE, O = R.orbit, D = R.site.by.dantian, free = O.slots().filter((s) => s.free), s = free[Math.min(2, free.length - 1)];
+    const e0 = g.events.counts['garden.planetoid'] || 0, ok = O.release('moon', s.pos.clone().add(new T.Vector3(3, 3, 3))), P = R.site.by.moon, e = g.events.last('garden.planetoid');
+    if (!P) return { ok, err: 'no planetoid made' };
+    const rel = P.c.clone().sub(D.c), dist = rel.length(), elev = Math.asin(rel.y / dist) * 180 / Math.PI, az = ((Math.atan2(rel.x, rel.z) * 180 / Math.PI) + 360) % 360;
+    const near = R.site.planets.filter((q) => q !== P && !q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2).map((q) => q.id).sort();
+    const links = R.site.links.filter((l) => l.a === P).map((l) => l.b.id).sort();
+    const clay = R.clays.moon, d = new T.Vector3(0, 1, 0), h0 = clay.heightAt(d), moved = clay.brush(d, 'pull', 0.3, 3);
+    return { ok, slot: e?.slot, chosen: s.n, dist: +dist.toFixed(2), elev: +elev.toFixed(1), az: +az.toFixed(1), plots: R.plots.plots.filter((p) => p.planet === P).length, near, links, lotuses: R.site.lotuses.filter((l) => l.planet === P).length, hasEnds: R.site.links.filter((l) => l.a === P).every((l) => !!l.ends[P.id]), sculpts: moved, slotTaken: !O.slots()[s.n].free, ev: (g.events.counts['garden.planetoid'] || 0) - e0 };
+  });
+  check('orbit: a seed let go in the sky takes the free slot nearest, said once', r.ok === true && r.slot === r.chosen && r.ev === 1 && r.slotTaken, r);
+  const slotAngle = await ev((n) => 360 / 10 * n, r.slot ?? 0), slotTilt = r.slot % 2 ? -12 : 12;
+  check('orbit: it sits 95 m from the Dantian\'s heart', Math.abs(r.dist - 95) < 0.5, { dist: r.dist });
+  check('orbit: 12 degrees above or below the equator by turn, at its slot\'s angle', Math.abs(r.elev - slotTilt) < 0.5 && Math.abs(((r.az - slotAngle + 540) % 360) - 180) < 0.5, { elev: r.elev, wantElev: slotTilt, az: r.az, wantAz: slotAngle });
+  check('orbit: it is clay with a vein and lotuses to its two nearest', r.sculpts === true && JSON.stringify(r.links) === JSON.stringify(r.near) && r.lotuses >= 2 && r.hasEnds, { sculpts: r.sculpts, links: r.links, near: r.near, lotuses: r.lotuses, ends: r.hasEnds });
+  check('orbit: the Moonflower Moon has the 4 plots BOUGHT says', r.plots === 4, `${r.plots} plots (orbit.js BOUGHT moon plots: 4; plots.addPlanet places fewer when its golden spiral cannot fit them)`);
+  const want = { dantian: 6, terraces: 6, athanor: 3, pavilions: 5, mulberryGrove: 8, chimney: 2 }, have = await ev(() => { const o = {}; for (const p of __game.game.realm.plots.plots) o[p.planet.id] = (o[p.planet.id] || 0) + 1; return o; });
+  const short = Object.entries(want).filter(([k, n]) => have[k] !== n).map(([k, n]) => `${k} ${have[k]}/${n}`);
+  check('plots: each of the first six planetoids has the plots PLANETOID_PLOTS says', !short.length, short.length ? short.join(', ') : 'all');
+  await ticks(30); await shot('orbit');
+});
+
+await ev(() => __game.game.realm.leave()); await ticks(60); await settle();
 
 // ================================================================== the page's errors
 phase = 'end';

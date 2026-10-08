@@ -126,7 +126,7 @@ export class Voyage {
    *  to the island of the last Shrine rested at; and paying it (refused, with the reason, when the purse is short). */
   continueCost(share = 0) {
     const V = this.s.sailing;
-    return V ? continueCost(V.from, V.to, share, this.game.shrines?.last || 'workshop', V.continues || 0) : 0;
+    return V ? continueCost(V.from, V.to, share, this.game.shrines?.last || 'bisque', V.continues || 0) : 0;
   }
   continueRun(share = 0) {
     const V = this.s.sailing, cost = this.continueCost(share);

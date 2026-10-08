@@ -68,6 +68,7 @@ export const CURIOS = [
   { id: 'orb',        tier: 4, name: 'Oil-Slick Orb',           glyph: '◎', blurb: 'It is the colour of every puddle you were told not to stand in.' },
   { id: 'bloom',      tier: 4, name: 'Blacklight Bloom',        glyph: '✿', blurb: 'It is a very ordinary flower until the lights go out.' },
   { id: 'koi',        tier: 4, name: 'Kaleidoscope Koi',        glyph: '❖', blurb: 'It swims in the air of the room it was found in and has not once been seen to blink.' },
+  { id: 'crown',      tier: 4, name: 'Crown of the Dunemaw',    glyph: '♛', chest: false, blurb: 'The broken urn it wore, whole again in your hands, and lighter than it looked.' }, // (the Great Slip Jelly's drop, never a chest's: greatjelly.js DROPS; the words a placeholder for Espada's)
 ];
 export const CURIO_BY_ID = Object.fromEntries(CURIOS.map((c) => [c.id, c]));
-export const curiosOf = (tier) => CURIOS.filter((c) => c.tier === tier);
+export const curiosOf = (tier) => CURIOS.filter((c) => c.tier === tier && c.chest !== false); // (what a chest of that tier may hold)

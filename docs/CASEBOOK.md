@@ -156,8 +156,41 @@ the rules before building in the same area; a rule a machine can check goes into
     state (the Sondelass's Blade Mode), ask the thing's own service (`game.techs.get`), and check the call did something.
 61. **A shortcut to a shared folder is never committed.** A worktree's link to `node_modules` (or any folder outside the tree) is
     named in `.gitignore` as a file as well as a folder, and a commit made with `add -A` is read before it is merged.
+62. **A motion written as a curve of time has a floor, and the next stage starts where it stopped.** A wait the player controls (a
+    menu left open) can be any length: a fall that grows with it is bounded by an easing that ends above whatever it falls toward, and
+    the stage after it reads where it hung, never its own start again.
+63. **An export moves a child by its matrix against its parent, never by its location alone.** Blender keeps part of a parented
+    object's place in its parent inverse: zero the location and the inverse still carries it. Keep `parent.matrix_world⁻¹ @
+    child.matrix_world`, clear the inverse, and have the export print where each mesh stands on its rig (a skinned mesh off its rig
+    turns about a far pivot, and reads as stretching).
+64. **What stands on a surface stands on its normal.** Tilt it from up to the surface's normal under it (analytic where the surface
+    is), its yaw and its clip on top, and measure its rim against the surface: on a bent surface one tilt leaves the rim apart from it
+    by half the bend times the reach squared, so let it down by that where the surface falls away, and say what is left.
 
 ## Cases
+
+### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
+- **Seen (the owner):** "the chess pieces are stretching all over the place with their animations, and they need to have their bases
+  snapped to the surface of the checkerboard black hole" (THE FOOL'S PRECIPICE).
+- **Cause (measured):** two. (1) The export, not the file. In `chess_pieces.blend` each mesh stands with its rig at the rig's place in
+  the row, parented with an inverse that undoes that place (+15 the pawn, +12 the rook, +9 the knight, +6 the bishop, +3 the queen, 0
+  the king). `scripts/export_chess.py` zeroed the rig's location and the mesh's but kept the inverse, so each mesh left its rig by that
+  much (the pawn's POSITION x 14..16, its joints and inverse binds at x 0) and every bone's turn swung the body round a pivot that far
+  off: the widest frame of lookAround 14.1 units (the pawn), 11.9 (the rook), 9.2 (the knight), 6.7 (the bishop), 4.6 (the queen)
+  against 2 at rest; the king alone was right (2.1). On the board the bases' rims stood −11.0 m to +9.3 m off the surface. (The script
+  also wrote `chess.bin.glb`: Blender adds `.glb` to any other name, so the pack had not been re-exported since its rename.) (2)
+  `title/board.js` stood each piece upright at its square's centre; the drain slopes 0.65 (33 degrees) at 14 m, so with the export
+  fixed a rim still floated downhill and sank uphill by up to 1.5 m at 18 m out, 0.65 m at 40 to 80 m.
+- **Fix:** the export keeps each mesh's matrix against its rig, clears the inverse, takes the pair to the origin, prints each mesh's
+  centre on its rig (all 0.0000) and warns when one is off; it writes the `.glb` and renames it to the `.bin`. Every clip's widest
+  frame is now its rest width or what the clip authors (the pawn's lookAround 2.00; bow, fall and getUp lean or lay the piece over,
+  2.6 to 5.2, as the king's always did). `board.js` tilts each holder from up to the board's normal (`boardSlope`, analytic), its yaw
+  and its clip on top, and lets it down by half the radial bend times the rim's reach squared, so no edge floats. The rim against the
+  board while a piece stands idle, over 40 s of play headless: +0.2 cm at most; across the radius the board rises round the base, so
+  that edge sits in by 21 cm at the steepest square a piece stands on (the queen, rim 2.9 m, 18 m out), 11 cm at 25 to 40 m, 3.5 cm at
+  40 to 80 m, under 1 cm beyond (a pixel at the title's camera is about 19 cm at 100 m). The drain's sink, the fall and the spawn are
+  as they were.
+- **Rule:** 63, 64.
 
 ### 2026-10-07 · The Tithe's opening threw every frame (Calissa)
 - **Seen (Dovina's room sweeps):** `TypeError` reading `rig` at vfx/chestfx.js:45 every frame of the Tithe's opening; the rest of that
@@ -810,3 +843,12 @@ the rules before building in the same area; a rule a machine can check goes into
   worktree retired.
 - **Rule:** 61.
 
+### 2026-10-08 · On the title, the Courier fell through the board while the menu was open (the owner)
+- **Seen:** after the Fool's Step, waiting at the menu, the Courier passed through the checkerboard and fell on into the void.
+- **Cause:** the menu's slowed fall was `1.15 + 0.1 x` real seconds open, unbounded: measured from the board's own height
+  (`boardY`), the Courier crossed it at about 35 real seconds (3.5 m under it then). The dive also started its fall time at 1.15
+  again, so a long wait would have snapped the Courier back up into view as the dive began.
+- **Fix:** the menu's fall eases toward `FALL_HANG` (1.5 added at most, the same 0.1 a second at its start): they hang 15.4 m over
+  the board after 600 real seconds (measured in the running title); the dive carries on from where they hung and ends 2.9 m over it
+  at the worst.
+- **Rule:** 62.

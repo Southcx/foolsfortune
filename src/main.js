@@ -8,6 +8,7 @@
 //
 //   window.__game (the test harness's handle: tick(dt), draw(), game)   window.__boot (ms at each stage of loading)
 // ---------------------------------------------------------------------------------------
+import { CourierMind } from './courier/mind.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { T, PALETTE, loadTuning } from './core/config.js';
@@ -693,6 +694,7 @@ async function main() {
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
+  game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   { // the stones set the pool's terms (progress/stones.js): fired at the kiln, and by day or night (moonstone)
     const setStones = () => game.lachryma?.addModifier('stones', stoneModifier(game.vessel?.look?.stones, { night: phaseAt() === 'night' }));
     for (const e of ['title.enter', 'vessel.fire', 'day.phase']) events.on(e, setStones);
@@ -1142,7 +1144,7 @@ async function main() {
     shells.update(dt);
     baubles.update(dt);
     baubles.tick(dt);
-    lachryma.update(dt);
+    lachryma.update(dt); game.courierMind?.update(dt);
     level.updateFeatures?.(dt, game);
     course.update(dt);
     game.circuits.update(dt);
