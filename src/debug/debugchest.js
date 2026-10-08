@@ -22,6 +22,9 @@ import { MATS } from '../world/busk.js';
 import { TR } from '../world/testroom/layout.js';
 import { zoneOf } from '../render/zonemap.js';
 
+/** Calissa's crate, casting no shadow (a debug crate is not the world's: and no depth program compiled in play for it). */
+const crate = () => { const C = debugChestModel(); C.group.traverse((o) => { o.castShadow = false; }); return C; };
+
 const REACH = 2.0, GARDEN = new Set(['athanor', 'shed']);
 const _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 
@@ -44,6 +47,11 @@ export class DebugChests {
   }
 
   get(kit) { return this.list.find((c) => c.kit === kit) || null; }
+  /** One crate parked under the world for the boot's warm-up, so its program is compiled with the rest (kept: casebook rules 17, 18). */
+  parked() {
+    if (!this.park) { this.park = crate(); this.park.group.position.set(0, -50, 0); this.park.group.userData.zoneFree = true; this.game.scene.add(this.park.group); }
+    return [this.park.group];
+  }
 
   /** Once a frame: each chest stands once its spot does; F at a world chest tops it up. */
   update(dt = 1 / 60) {
@@ -70,7 +78,7 @@ export class DebugChests {
 
   stand(kit, K) {
     const s = this.spot(K.at); if (!s) return null;
-    const look = debugChestModel(); look.group.name = `debug-chest-${kit}`;
+    const look = crate(); look.group.name = `debug-chest-${kit}`;
     look.group.position.copy(s.pos); look.group.rotation.y = Math.atan2(s.face.x - s.pos.x, s.face.z - s.pos.z);
     look.group.userData.zone = zoneOf(s.pos) ?? undefined;
     this.game.scene.add(look.group);
@@ -83,7 +91,7 @@ export class DebugChests {
     const shed = site.features.find((f) => f.kind === 'shed');
     const put = (kit, planet, near, face) => {
       const dir = near.clone().sub(planet.c).normalize(), pos = planet.c.clone().addScaledVector(dir, planet.radiusAt ? planet.radiusAt(dir) : planet.r);
-      const look = debugChestModel(); look.group.name = `debug-chest-${kit}`;
+      const look = crate(); look.group.name = `debug-chest-${kit}`;
       const fwd = face.clone().sub(pos).projectOnPlane(dir).normalize(), side = new THREE.Vector3().crossVectors(dir, fwd);
       look.group.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(side, dir, fwd)); look.group.position.copy(pos);
       site.group.add(look.group);
