@@ -28,7 +28,8 @@ export const PASSAGE = {
     wreckers:  { cls: 'threat', share: (d, casks) => Math.min(0.30, 0.10 + 0.05 * d + 0.03 * casks), minCol: 1, noRepeat: true },
     eyewall:   { cls: 'threat', share: (d) => 0.12 + 0.04 * d, noRepeat: true },
     graveyard: { cls: 'threat', share: () => 0.12 },
-    calm:      { cls: 'haven',  share: (d) => 0.18 - 0.04 * d, noRepeat: true, notLast: true },
+    calm:      { cls: 'haven',  share: (d) => 0.10 - 0.03 * d, noRepeat: true, notLast: true },
+    encounter: { cls: 'haven',  share: (d) => 0.10 - 0.01 * d, noRepeat: true, notLast: true }, // (a calm with a cinematic event: progress/rail/encounters.js)
     maelstrom: { cls: 'boss',   one: true, minCol: 2 },
     bounty:    { cls: 'boss',   one: true, minCol: 1 },
     leviathan: { cls: 'boss',   one: true, lastCols: 2 },
@@ -106,7 +107,7 @@ export function seaChart({ from, to, day = 0, danger = 0, distance = 4, casks = 
   if (bounty) place('bounty', ids);
   if (C >= 4) place('maelstrom', ids);
   const mid = Math.floor((C - 1) / 2);
-  place('calm', ids.filter((id) => waypoints[id].col === mid));
+  if (!place('encounter', ids.filter((id) => waypoints[id].col === mid))) place('calm', ids.filter((id) => waypoints[id].col === mid));
   const free = ids.filter((id) => !waypoints[id].type), N = free.length, bag = [];
   for (const [type, t] of Object.entries(T)) if (t.share) for (let k = 0; k < Math.round(N * Math.max(0, t.share(danger, casks))); k++) bag.push(type);
   for (let i = bag.length - 1; i > 0; i--) { const j = pick(r, i + 1); [bag[i], bag[j]] = [bag[j], bag[i]]; }
@@ -154,7 +155,7 @@ export function portent(chart, w, depth, s, level = 1) {
 
 // ---- the rutter
 
-/** What a rutter is worth: a quarter of what its sailed minutes would earn at the aim, by its rank (S 1.5 .. D 0.6) and how much of it
+/** What a rutter is worth: `ECON.passage.share` of what its sailed minutes would earn at the aim, by its rank (S 1.5 .. D 0.6) and how much of it
  *  was read before sailing, halved a game day after (the sea chart reseeds daily: yesterday's rutter is a curiosity). */
 export function rutterWorth({ minutes = 5, rank = 'B', read = 0, daysOld = 0 } = {}) {
   const P = ECON.passage, f = P.rank[rank] ?? 1;

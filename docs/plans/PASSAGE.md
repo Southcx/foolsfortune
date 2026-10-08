@@ -40,7 +40,8 @@ in the next, merging allowed, **crossing never**; waypoints off every lane remov
 | the eyewall | 12% + 4% d | never two in a row |
 | the graveyard | 12% | |
 | the maelstrom | at most one a sea chart, from the third column | |
-| a calm (haven) | 18% - 4% d | never two in a row; never in the last column |
+| a calm (haven) | 10% - 3% d | never two in a row; never in the last column |
+| an encounter (haven, §13) | 10% - 1% d | never two in a row; never in the last column; the middle column's anchor |
 | a bounty | one, if Letty has posted one on this route | |
 | Old Nobody | from its deck (`LEVIATHAN.deck`), drawn when the sea chart is laid: if drawn, one waypoint of the last two columns | the deck's guarantee is kept, and a portent can now see it coming |
 
@@ -110,11 +111,11 @@ as the sea chart of that game day with every waypoint you sailed exact, and the 
 - **Used the same game day:** at the pier it shows that route's sea chart fully (a ticket to a known sea, as a Cogitomap is to a Well).
 - **Copied** by Spellscription (`spellscription.copy`, extended from Cogitomaps).
 
-**Its worth** (`rutterWorth`, `ECON.passage`): `round(perMinute x minutes x 0.25 x rankFactor x (0.5 + 0.5 x read))`, minutes the passage's sailed real
+**Its worth** (`rutterWorth`, `ECON.passage`): `round(perMinute x minutes x 0.6 x rankFactor x (0.5 + 0.5 x read))`, minutes the passage's sailed real
 minutes, rankFactor S 1.5, A 1.2, B 1, C 0.8, D 0.6; **stale** by game days: x0.5 a game day after (the sea chart reseeds daily, so
 yesterday's rutter is a curiosity), and the existing glut (`demand`'s `sold`). Its cap keeps a trip's pay under 1.5 x the aim with the
 rest of the trip's earnings (ECONOMY.md), measured in `scripts/economy.mjs` (a new **hauler** profile). At six real minutes, read
-whole: S 18, A 14, B 12, C 10, D 7 cubes (a side income; the cargo is the trip's living).
+whole: S 43, A 35, B 29, C 23, D 17 cubes (the owner, 2026-10-08: rutters are a livelihood: §12).
 
 ## 7. Events, ledger, achievements (Dovina's)
 
@@ -148,3 +149,51 @@ weather); **a rutter sold for its full worth**; **Old Nobody foreseen** (seen in
 3. A reckoning of quality 1 at level 1 shows the second column at two candidates or better (sight 1 x 0.62 = 0.62).
 4. A passage sailed to its end gives one rutter, with its legs and rank; sold at Margarite above Entropolis.
 5. A debug chest at the jetty: the Dreamvane and cubes for fuel.
+
+## 11. The ships: a trade, not an upgrade (the owner, 2026-10-08; `src/progress/rail/ships.js`)
+
+> "You could take a light and agile powerful sloop on dangerous passages requiring dexterity, or you could take a heavily loaded Tanker
+> on an easier, pre-charted path."
+
+| ship | speed | box | hurtbox | bears | locks | dives | mounts | sails | the sea for it | hold (ECON.ships) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| sloop | x1.2 | x1 | x1 | 6 | 8 | yes | 2 | any lane | as charted | 8 casks |
+| frigate | x1.1 | x1 | x1.1 | 8 | 8 | yes | 3 | any lane | as charted | 6 goods |
+| destroyer | x1.3 | x1.1 | x0.9 | 5 | 8 | yes | 2 | any lane | half a step wilder | 2 goods |
+| galleon | x0.8 | x0.8 | x1.5 | 12 | 4 | no | 1 | **charted only** | a step gentler | 40 (cubes) |
+| tanker | x0.7 | x0.7 | x1.6 | 14 | 4 | no | 1 | **charted only** | a step gentler | 60 casks |
+
+**Charted only** means the ship sails **a rutter's passage** for that route and game day: its waypoints are known (every portent
+exact), the sea is a step gentler (`danger` -1: you know where every wave comes), but it cannot choose the wild lanes, it cannot dive
+(the Umbral's shots are the ones it must dodge on the surface), and its hold draws the Wreckers (their share and strength rise with the
+casks aboard: §2). The double hull spills less (`hull: 0.35`).
+
+## 12. The rutter as a livelihood (the owner: "a solid, enthusiastic yes")
+
+The two ships make a market: **the sloop scouts** (skill: the wild lanes, the dives, the reckoning; its reward is the rank and the
+rutter), **the tanker hauls** (grind: a great hold along a known passage; its ticket is a rutter). The Purser **buys** rutters at their
+worth (by island demand: Margarite dearest) and **sells** today's rutter of a route at 1.3 x its worth (`ECON.passage.list`), to anyone
+whose ship needs one; the Purser's barge sells one mid-sea (§13). The same player can be both: scout a route at dawn in the sloop, sell
+or keep its rutter, haul its crude in the tanker that game day. **Skill skips grind** (an S rutter of a wild passage is worth twice a D
+one of a gentle one, and is a living by itself); **grind closes the gap** (the tanker's hold earns as much over a known passage).
+Numbers: a rutter is worth 0.6 of its sailed minutes at the aim, by rank (S 1.5 .. D 0.6) and read share, halved a game day after: an S
+rutter of six minutes, read whole, 43 cubes; a scout making and selling them runs about 0.9 x aim from rutters alone, held with its
+cargo under the 1.5 x cap by two new profiles in `scripts/economy.mjs` (the scout and the hauler: to measure before the numbers ship).
+
+## 13. Encounters at sea (the owner: "a rest site hybridized with an event node"; `src/progress/rail/encounters.js`)
+
+A new haven waypoint, **an encounter**: the ship is mended as at a calm, a short cinematic plays (a sequence: `game.cine`, Calissa's),
+and it ends in **a choice with stakes** (FTL's events, Slay the Spire's rest-or-upgrade, Sunless Sea's storylets, Wind Waker's sea).
+Which encounter resolves on arrival (Slay the Spire's "?"): its portent shows a haven's silhouette; each one's weight doubles for every
+voyage it has gone unmet (x8 at most), so the sea shows them all in time. One stands in the middle column of every sea chart that has
+room (the anchor, in place of a plain calm). The first seven (working names, Espada's to name, Calissa's to film, Wanda's to score):
+
+| encounter | the cinematic | the choice |
+|---|---|---|
+| ghost convoy | ghost ships passing in the fog | follow (the next two portents exact) or loot the last (2 casks; the Wreckers drawn to you) |
+| Letty's cutter | Letty Marque and Poll alongside | take a bounty onto this passage, or sell her your rutter at 1.25 its worth |
+| a whale of light | a whale singing under the crude | listen (the reckoning up a quarter) or follow it down (a hidden Umbral leg: a diver's dare) |
+| a castaway | a Contractor on a raft | rescue (a quarter of the fuel; a hand mans a mount next leg) or leave |
+| the Purser's barge | the barge at anchor, lanterns lit | trade casks mid-sea, buy fuel, or buy today's rutter |
+| the mirror sea | your best crossing's ghost beside you | race it through the next leg (a rank up if you win) or let it pass |
+| a drift bottle | a bottle bobbing in the light | read it: a word glossed (an ostracon's), or a portent made exact |

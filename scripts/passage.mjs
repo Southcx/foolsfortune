@@ -6,6 +6,8 @@
 // ---------------------------------------------------------------------------------------
 import { seaChart, lanes, next, portent, sight, confidence, tierOf, PASSAGE, rutterWorth } from '../src/progress/econ/passage.js';
 import { hop } from '../src/progress/econ/emocean.js';
+import { SHIPS, canSail, holdOf } from '../src/progress/rail/ships.js';
+import { ENCOUNTERS, pickEncounter } from '../src/progress/rail/encounters.js';
 
 const DAYS = Number(process.argv[process.argv.indexOf('--days') + 1]) || 2000;
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
@@ -54,11 +56,19 @@ check('one maelstrom, bounty and Leviathan at most', bad.ones === 0, bad.ones);
 check('a portent\'s shortlist always holds the truth', portentMiss === 0, portentMiss);
 check('the next waypoint is always exact', nextNotExact === 0, nextNotExact);
 const shares = Object.fromEntries(Object.entries(counts).map(([k, v]) => [k, +(v / waypointsAll).toFixed(3)]));
-check('every type appears', ['shoal', 'wreckers', 'eyewall', 'graveyard', 'calm', 'maelstrom', 'bounty', 'leviathan'].every((t) => counts[t] > 0), shares);
+check('every type appears', ['shoal', 'wreckers', 'eyewall', 'graveyard', 'calm', 'encounter', 'maelstrom', 'bounty', 'leviathan'].every((t) => counts[t] > 0), shares);
 check('sizes by route', true, sizes);
 // acceptance 3: a reading of quality 1 at level 1 shows the second column at two candidates or better
 check('a full reading at level 1 shows depth 2 as two candidates', tierOf(confidence(2, sight(1, 1, 1), 1), 2) === 'two', confidence(2, sight(1, 1, 1), 1));
 check('a bare reading at level 1 shows depth 2 as a silhouette at best', ['class', 'star'].includes(tierOf(confidence(2, sight(0, 1, 1), 1), 2)), confidence(2, sight(0, 1, 1), 1));
 const tbl = ['S', 'A', 'B', 'C', 'D'].map((rank) => `${rank} ${rutterWorth({ minutes: 6, rank, read: 1 })}`).join(', ');
 check('a rutter of six minutes, read whole, by rank', rutterWorth({ minutes: 6, rank: 'S', read: 1 }) > rutterWorth({ minutes: 6, rank: 'D', read: 0 }), tbl);
+// the ships (section 11): a charted-only ship sails only today's rutter of its route; every ship has a hold in the economy's table
+check('a tanker refuses an uncharted passage, sails its rutter', !canSail('tanker', { route: 'anagami-margarite', day: 3 }).ok && canSail('tanker', { route: 'anagami-margarite', day: 3, rutter: { route: 'anagami-margarite', day: 3 } }).ok && !canSail('tanker', { route: 'anagami-margarite', day: 4, rutter: { route: 'anagami-margarite', day: 3 } }).ok);
+check('the sloop sails anywhere', canSail('sloop', { route: 'anagami-entra', day: 9 }).ok);
+check('every ship has a hold', Object.keys(SHIPS).every((s) => holdOf(s) > 0), Object.fromEntries(Object.keys(SHIPS).map((s) => [s, holdOf(s)])));
+// the encounters (section 13): an unseen one's odds rise, so a long voyage meets them all
+{ let x = 7; const rng = () => ((x = (x * 16807) % 2147483647) / 2147483647); const seen = {}, met = new Set(); let voyages = 0;
+  while (met.size < Object.keys(ENCOUNTERS).length && voyages < 200) { voyages++; const id = pickEncounter(seen, rng); met.add(id); for (const k of Object.keys(ENCOUNTERS)) seen[k] = k === id ? 0 : (seen[k] || 0) + 1; }
+  check('every encounter met within 40 encounters', voyages <= 40, `${voyages} encounters`); }
 console.log(fails ? `passage: ${fails} FAILED (${charts} sea charts)` : `passage: all passed (${charts} sea charts)`); process.exitCode = fails ? 1 : 0;
