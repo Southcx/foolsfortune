@@ -160,8 +160,29 @@ the rules before building in the same area; a rule a machine can check goes into
 62. **A rig with its own clips is moved by them alone.** The code places the group it stands in (where, which way) and nothing more: no
     scale writes, no squash spring, no procedural pose under or over the clips. Its joint limits are learned from those clips (none of
     their frames clamped), and anything laid on it (a crack, a decal) is skinned to its skeleton, never left rigid beside it.
+63. **A stretch cut from a lean clip is sampled, never cut by keys.** `AnimationUtils.subclip` keeps only the keys inside the stretch; a
+    lean export keeps few keys (a straight line is two), so a bone with none inside drops out of the held clip and falls to its rest
+    pose. Sample every frame of the stretch through each track's own interpolant (`RigClips.cut`), and test a held move against the
+    full clip at the same frames (the largest bone difference, the largest step at the seam).
+64. **A clip chosen by a state reads the whole of that state.** The catch's `held` is let go of the moment the Figment is drawn in, 0.45
+    s before it is bound: the Jar must read the look's `take` too, or its lid shuts and opens again for the gulp.
 
 ## Cases
+
+### 2026-10-08 · The god hand's pointing finger fell open in its hold, and the Jar shut its lid before it swallowed (Calissa's review)
+- **Seen (headless, after the clips went in):** a held move (the hand's `point` while Sunder is held, its `scoop`, the Jar's `hop`) is
+  played in to a held stretch cut from the clip. In the page the ring finger of `point` stepped 102 degrees in one frame at the seam
+  into its hold (the cut clip had 9 of the clip's 20 tracks), and `scoop` lost 7: the hand showed an open claw, not a point. In a
+  catch the Jar was `open` while the Figment struggled, `idle` (lid shut) for the 0.45 s it was drawn down the tether, then `gulp`
+  from its first frame.
+- **Cause:** `RigClips.cut` used `AnimationUtils.subclip`, which keeps the keys inside the stretch and nothing else, and the clips are
+  lean (a straight run of poses is two keys): a bone with no key inside the stretch is dropped from the cut clip, and the mixer puts a
+  bone no action drives back at its rest pose. The Jar's chooser read `catch.held`, which `HandCatch.hold` clears when the draw-in
+  begins, not the look's `take`.
+- **Fix:** `cut` samples every frame of the stretch through each track's own interpolant (all 20 tracks, held pose within 2 degrees
+  of the full clip's at every frame, no step at the seam); the Jar's chooser keeps `open` while the look is taking, so the gulp enters
+  at frame 7 as its `from` meant.
+- **Rule:** 63 and 64.
 
 ### 2026-10-08 · The god hand's and the Pneuka Jar's own clips would have been wiped, bent, scaled twice and left their cracks behind (Calissa)
 - **Seen (the surveys, measured headless before the clips went in):** the hand's pose code reset all 18 bones to rest every frame
