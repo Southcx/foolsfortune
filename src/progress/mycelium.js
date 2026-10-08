@@ -6,7 +6,7 @@
 // Calissa's, the names Espada's (the working names here are placeholders).
 //
 // Everything a fungus eats has a COLOUR SIGNATURE (a hue and a saturation on Soul Alchemy's wheel: a material its own, a curio the one
-// its blurb paints, a fish its feeling's), and what a fungus gives back is coloured by what it ate. So the mycelium is a second road to
+// its blurb paints, a fish its feeling's or its own colour), and what a fungus gives back is coloured by what it ate. So the mycelium is a second road to
 // a colour: not the Wells' luck of the draw, but a colour chosen, by what you feed it.
 //
 //   A SPORE BED (a bed a strain has colonised, its fairy ring drawn round it) works one verb, by its strain's feeling (the five phases' own verbs):
@@ -78,7 +78,7 @@ export function signatureOf(item) {
   const M = (n) => Math.round(n * ECON.perMinute);
   if (item.kind === 'material') return { h: item.hue, s: item.sat, worth: M(1 + (item.tier || 0)), tier: item.tier || 0 };
   if (item.kind === 'curio') { const c = CURIO_BY_ID[item.key] || CURIO_BY_ID[String(item.id || '').replace('curio.', '')]; const S = c && SIGNATURE[c.id]; return S ? { ...S, worth: ECON.curio[c.tier] || 0, tier: c.tier } : null; }
-  if (item.kind === 'fish' && item.feeling) return { h: FEELING_HUE[item.feeling] ?? 0, s: 0.7, worth: ECON.fish[item.tier] || 0, tier: Math.min(4, item.tier || 0) };
+  if (item.kind === 'fish') { const h = item.feeling ? FEELING_HUE[item.feeling] : item.color != null ? hueOfHex(item.color) : null; return h == null ? null : { h, s: 0.6, worth: ECON.fish[item.tier] || 0, tier: Math.min(4, item.tier || 0) }; } // (a fish by its feeling, else its own colour: species.js)
   return null;
 }
 
@@ -182,7 +182,7 @@ export function fruit(tree, weekday = 0, seed = 1) {
   const out = []; let s = { ...sap };
   for (let i = 0; i < n && s.mass > 0; i++) {
     let c = { h: s.h, s: s.s };
-    if (FEELING_HUE[day] != null) c = pullStep(c, { h: FEELING_HUE[day], s: 0.9 }, TREE.lean, 0);
+    if (FEELING_HUE[day] != null) c = pullStep(c, { h: FEELING_HUE[day], s: 0.9 }, TREE.lean * Math.pow(0.6, tree.branches?.sharp || 0), 0); // (each sharper tincture leans less)
     if (day === 'prismatic' && i === 0) c = { h: c.h, s: 1 };
     out.push(materialOf(c.h, c.s, TREE.fruitTier[Math.min(i, TREE.bodies - 1)], seed + i * 97, true));
     s = { ...s, mass: +(s.mass * (1 - TREE.sapPerFruit)).toFixed(1) };

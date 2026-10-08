@@ -13,6 +13,10 @@ import { ARCANA } from '../src/tools/veritome/arcana.js';
 import { ATTRIBUTES } from '../src/progress/alchemy.js';
 import { makeMaterial, KIND_IDS, distance } from '../src/progress/econ/materials.js';
 import { ECON } from '../src/progress/econ/table.js';
+import { SporeBeds } from '../src/progress/sporebeds.js';
+import { Myggdrasil } from '../src/progress/myggdrasil.js';
+import { Keepsakes } from '../src/progress/keepsakes.js';
+import { setClock, DAY_MS } from '../src/core/calendar.js';
 
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
 const curio = (id) => ({ kind: 'curio', id: `curio.${id}`, key: id });
@@ -82,4 +86,43 @@ check('the tree grows a step of girth as its meals double, and opens a fruiting 
   check('twenty-two branches, one for each Major Arcana card, and ten caps', ids.length === 22 && ids.every((id) => BRANCHES[id]) && Object.keys(BRANCHES).length === 22 && CAPS.length === TREE.bodies,
     { fruit: n('fruit'), sharp: n('sharp'), seed: n('seed'), sporeling: n('sporeling') });
   check('each strain has its branch to seed it', seeds.join() === Object.keys(STRAINS).sort().join(), seeds); }
+
+// ---- the services, played against a stand-in game (a box, a bus, a save, a Book, a clock)
+{ let now = 10 * DAY_MS + 6 * DAY_MS / 24; setClock(() => now); const H = DAY_MS / 24;
+  const evs = [], on = {}, box = { slots: new Array(12).fill(null),
+    add(id, from, uses, data) { const i = this.slots.indexOf(null); if (i < 0) return -1; this.slots[i] = { id, ...(data ? { data } : {}) }; return i; },
+    take(k) { const x = this.slots[k]; this.slots[k] = null; return x?.id; } };
+  const cards = { 'arcana.world': 1 };
+  const game = { pneuka: box, events: { emit: (n, e) => { evs.push({ n, ...e }); for (const f of on[n] || []) f(e); }, on: (n, f) => (on[n] ||= []).push(f) },
+    save: { section() {}, dirty() {} }, veritome: { book: { has: (id) => cards[id] > 0, take: (id) => (cards[id] > 0 ? (cards[id]--, true) : false) } } };
+  const itemOf = (id) => id.startsWith('curio.') ? { kind: 'curio', key: id.slice(6), tier: CURIOS.find((c) => `curio.${c.id}` === id)?.tier ?? 0, name: id } : id.startsWith('mat.') ? { kind: 'material', name: id } : null;
+  const S = (game.sporeBeds = new SporeBeds(game, { itemOf })), T = (game.myggdrasil = new Myggdrasil(game)), K = new Keepsakes(game);
+  game.events.emit('garden.place', { feature: 'sporebed', by: 'courier' });
+  check('a spore bed placed is granted, with the oyster and the inkcap', S.beds.length === 1 && S.strains.grief && S.strains.desire && !S.strains.wonder);
+  box.add('curio.whelk'); box.add('curio.storm');
+  check('a strain you do not hold is refused', !S.inoculate(0, 'wonder').ok);
+  S.inoculate(0, 'desire'); const r1 = S.set(0, [0]);
+  check('a curio set in the inkcap leaves the box', r1.ok && box.slots[0] === null, r1);
+  check('taken back unchanged in the first game hour', S.back(0).ok && box.slots.some((x) => x?.id === 'curio.whelk'));
+  const k = box.slots.findIndex((x) => x?.id === 'curio.whelk'); S.set(0, [k]); now += 0.5 * H;
+  check('not ready before its hours, and no longer taken back after the first', !S.ready(0) && (now += 0.6 * H, !S.back(0).ok));
+  now += 4 * H; const h = S.harvest(0);
+  const pr = box.slots.find((x) => x?.id?.startsWith('mat.'));
+  check('the inkcap\'s print comes out exactly the whelk\'s colour', h.ok && pr && Math.abs(pr.data.hue - SIGNATURE.whelk.h) < 0.11 && pr.data.path.length === 1, pr?.data);
+  // the tree
+  const before = T.girth; let fed = 0; for (let i = 0; i < 12; i++) { const j = box.add('curio.lodestone'); if (j >= 0 && T.feed(j).ok) fed++; }
+  check('Myggdrasil eats what it is given, and grows', fed > 0 && T.girth > before && T.tincture?.mass > 0, { fed, girth: T.girth, caps: T.caps, tincture: T.tincture });
+  check('it will not eat what has no colour', (box.slots[0] = { id: 'tool.psygun' }, !T.feed(0).ok));
+  box.slots[0] = null;
+  const n0 = T.dawn(now), n1 = T.dawn(now); now += DAY_MS; const n2 = T.dawn(now);
+  check('it fruits once a dawn, and a crop waiting holds the crown (no second crop, nothing lost)', n0 === T.caps && n1 === 0 && n2 === 0, { dawn: n0, again: n1, nextDawnUnpicked: n2 });
+  for (let i = 0; i < box.slots.length; i++) box.slots[i] = null;
+  check('picking puts the crop in the box', T.pick() === n0 && box.slots.filter(Boolean).length === n0);
+  now += DAY_MS; check('the next dawn fruits again once picked', T.dawn(now) === T.caps);
+  cards['arcana.lovers'] = 1;
+  check('a card hung opens its branch for good, and seeds its strain', T.hang('lovers').ok && S.strains.wonder && cards['arcana.lovers'] === 0 && !T.hang('lovers').ok);
+  check('a branch with no card in the Book is refused', !T.hang('sun').ok);
+  game.events.emit('spirit.release', { kind: 'wisp', spirit: 'Pip', by: 'courier' });
+  check('a spirit let go is fired into a keepsake pot', K.pots.length === 1 && K.pots[0].spirit === 'Pip');
+  check('every outcome said with by', evs.filter((e) => /^(spore|myggdrasil|keepsake)\./.test(e.n)).every((e) => e.by === 'courier')); }
 console.log(fails ? `mycelium: ${fails} FAILED` : 'mycelium: all passed'); process.exitCode = fails ? 1 : 0;

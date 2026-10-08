@@ -210,10 +210,27 @@ The spirits are already caught, bound, fed, drilled, raced, sparred and merged (
 
 Each step lands when the one before runs clean in the garden sweep.
 
-## 9. For the owner (to answer when you are back; my default holds until you say otherwise)
+## 9. The owner's rulings (2026-10-08)
 
-1. **The tree's place:** a planetoid of its own, bought (my default), or the Mulberry Grove's cocoon tree grown into it?
-2. **Release into a keepsake pot (5):** keep it? Spiritfarer's ending is the genre's most loved moment, and it fits clay; but it is a
-   new way to let a spirit go.
-3. **The research's open question 2:** do fungi change a thing's kind or its hue? My answer is both, by strain: rot and print change
-   what a thing is (into materials of its colour); ferment and dissolve move only its colour. Overturn if you meant one.
+- **Myggdrasil has its own planetoid**, the largest in the garden (radius 26 m against the others' 8 to 20), given, not bought, at the
+  second Firing (Sinter), and **its model is BIG** (the owner): 48 m tall, a landmark seen from every planetoid (`ECON.myggdrasil`).
+- **The keepsake pots stay:** a spirit let go is fired into one (`src/progress/keepsakes.js`).
+- **The strains grounded in real fungi** ("I love the strain functions being grounded in reality"); Myggdrasil's name approved ("so
+  cute").
+- **Fungi change both:** rot and print change what a thing is; ferment and dissolve its colour (my default, unchallenged).
+
+## 10. Built this round (Dovina's side)
+
+- **The services:**
+  - `src/progress/sporebeds.js` (`game.sporeBeds`): grant, inoculate, set, back, near, tend, ready, harvest;
+  - `src/progress/myggdrasil.js` (`game.myggdrasil`): feed, dawn, pick, hang;
+  - `src/progress/keepsakes.js` (`game.keepsakes`): a pot on every release.
+  - Each keeps its own save section.
+- **Their events, log lines and ledger counts:** `feedback/tracking/garden.js`, the lines placeholders for Espada's.
+- **Achievements:** eight new, in the Spirit Garden's new sub "The Mycelium" and in "The Spirits"; two give titles, Mycologist and
+  Hierophant of Spores.
+- **The chat line, for testing until the world's features exist:**
+  - `/spore bed | inoculate | set | back | harvest`;
+  - `/tree feed | pick | hang | dawn`.
+- **`node scripts/mycelium.mjs`:** the rules, plus the services played against a stand-in game (a bed's whole life, the tree's
+  feeding, dawn, picking and hanging, a pot on release). All pass.
