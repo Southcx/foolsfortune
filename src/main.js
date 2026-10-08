@@ -843,6 +843,7 @@ async function main() {
   addEventListener('keydown', (e) => {
     if (e.code !== 'Escape' || e.repeat || !cursorFree() || !input.enabled || guiOpen || modalOpen() || game.dialogue?.open) return;
     e.preventDefault();
+    if (game.realm?.press?.viewing) { game.realm.press.leave('esc'); return; } // (Esc leaves the press view, not to the pause menu: SOUL-ALCHEMY.md 4.3)
     if (god.arts.wheelOpen) { god.arts.closeWheel(false); return; }
     overlay.style.display = 'flex'; input.enabled = false; game.realm?.hand?.letGo(); // (what the garden's hand held is set down, not left hanging under the pause: GARDEN-SWEEP #14)
   });

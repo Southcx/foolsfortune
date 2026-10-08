@@ -123,10 +123,12 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the press's wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.
-- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`): the spirit press as it stands in the garden,
-  over the Athanor's vent, and its page: the **bath** drawn from above as the wheel (no numbers), the seven **swatches** (each a colour
-  and a shape), the drop, the hopper's **trail** ahead of it. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
-  features, the ground under it and the water at it; every swatch's radius is times it. *Not:* the Athanor's plate shrine (the same page).
+- **the press at the Athanor** (`GardenPress`, `realm.press`, `src/world/garden/press.js`; its look a stand-in, `pressbath.js`): the
+  station on the Athanor's crown: the **bath** (the wheel, 5 m across, no numbers), its **kerb**, the **ware ring** (the Pneuka Box's
+  materials laid out as **lumps** at their hues), the seven **tiles** (a swatch: its tile, its **spread**, **a tile's heart**), the **soul
+  bead**, the **ghost path** and **ghost bead** ahead of it, the **line blend** a press leaves; the press 4.35 m north, the plate shrine in
+  its own **hokora** on the east shoulder. Its **formation** (`press.formation()`) is fire's, counting the Athanor's
+  features, the ground under it and the water at it; a firing's fuel is divided by it (Dovina's ruling 3). *Not:* the plate shrine (its hokora).
 - **the hands** (`belt.hands`, `src/tools/belt.js`): Dexterity's widening as the belt gives it, what every tool's draw and stow is times.
 - **an ostracon** (plural **ostraca**; `src/progress/ostraca.js`, Espada's lore, LORE.md "Digging for words"): a potsherd carrying one
   neuralese word beside a picture of what it does; found once (16: the Dunes' dig, the Great Dunemaw's forgotten pots, the ruins' columns,
@@ -480,7 +482,8 @@ Entries: **term** (code name, where) is what it means. *Not:* what it must not b
   **stone** (a feature), or clay (the Courier's body; `world/garden/clay.js` is the planetoids' sculpted surface).
 - **the garden's views** (`realm.camera`, `src/world/garden/gardencam.js`): **behind** the Jar (as it opens), **first person** (Z, the
   same setting as the world's), **overhead** (`: the god hand's view in the garden, straight down; W A S D moves the view, not the Jar).
-  *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
+  **The press view** (F at the Athanor's bath: `press`, SOUL-ALCHEMY.md 4.3): the spirit press's own framing, north locked to the press,
+  left with F, Esc or W A S D. *Not:* the god hand's isometric view (the world's, `godhand/godhand.js`), which the garden never uses.
 - **terraforming** (the hand's strokes on the clay, `src/world/garden/clay.js`): pull, press, smooth, **flatten** (to the height where
   the stroke began), carve, **roughen**; a stroke's **size** (Shift and the wheel); **undo** (Ctrl+Z, ten strokes).
 - **the garden's water** (`src/world/garden/water.js`, `waterworks.js`; drawn by a stand-in, `watermesh.js`): Lachryma running on a

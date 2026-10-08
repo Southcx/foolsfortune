@@ -174,6 +174,8 @@ the rules before building in the same area; a rule a machine can check goes into
     or with a line in the reader's reply saying why not.
 67. **An answer reads the window it answers.** A check that runs every frame of a press (the parry's window) tests the thing's own
     timing too (a windup's eta), or holding the button early answers what has not yet come.
+68. **A pose built for a camera is built in the camera's convention.** `Object3D.lookAt` turns a plain object's +Z to its target and
+    only a camera's (or a light's) -Z; a target pose for a camera is made with `Matrix4.lookAt(eye, target, up)`, or on a camera.
 ## Cases
 
 ### 2026-10-08 · The title's chess pieces stretched with their clips, and their bases floated on the drain (Calissa, from Petra's measure)
@@ -895,3 +897,11 @@ the rules before building in the same area; a rule a machine can check goes into
   (a blow) or `d` and `reach` (a shot); an outlined windup run out with the Courier in reach is `parry.missed`, which starts the
   ledger's `parry.run.best` over. Measured headless: 0.8 s early refused, 0.2 s answered (`lead` 0.2), a run-out windup counted missed.
 - **Rule:** 67.
+
+### 2026-10-08 · The press view looked away from the bath (found headless, before it shipped)
+- **Seen:** in the press view the cursor's ray missed every lump by 13.5 m and the press drew at the bottom of the frame.
+- **Cause:** the view's target pose was a plain `Object3D` turned with `lookAt(focus)`, which points its +Z at the focus; the camera
+  slerped to that rotation and so looked down its -Z, straight away from the bath and upside down.
+- **Fix:** the target rotation from `Matrix4.lookAt(pos, focus, up)` (the camera's convention). Measured: the mouth at y 35 of 300,
+  a lump under the cursor missed by 0.013 m; hover, pinch, load, press and the lever all answer (scripts/soulalchemytest.mjs).
+- **Rule:** 68.
